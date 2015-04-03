@@ -8,11 +8,13 @@
 
 // general ROOT includes
 #include <TCanvas.h>
+#include <TMath.h>
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include <THnSparse.h>
 #include <TList.h>
 #include <TLorentzVector.h>
@@ -76,13 +78,18 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
+  fDetectorType(kVZEROComb),
+  fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.),
+  fNAcceptedTracks(0), fLeadingJet(0), fExcludeLeadingJetsFromFit(1.),
+  fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fCentBinSize(1),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
-  fDoEffCorr(0), fEffFunctionCorr(0),
+  fDoEffCorr(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  doEventPlaneRes(0),
   doComments(0),
   doFlavourJetAnalysis(0), fJetFlavTag(-99),
   fBeam(kNA),
@@ -111,6 +118,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fHistJetHaddPHI(0),
   fHistPID(0),
   fhnPID(0x0), fhnMixedEvents(0x0), fhnJH(0x0), fhnCorr(0x0),
+  fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), // test
   fJetsCont(0), fTracksCont(0), fCaloClustersCont(0),
   fContainerAllJets(0), fContainerPIDJets(1)
 {
@@ -120,7 +128,14 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
       //fHistTrackEtaPhi[ilab][ipta]=0; // keep out for now
     }  // end of pt-associated loop
   } // end of lab loop
-    
+
+  for(Int_t cen = 0; cen<10; cen++){
+    fProfV2Resolution[cen]=0;
+    fProfV3Resolution[cen]=0;
+    fProfV4Resolution[cen]=0;
+    fProfV5Resolution[cen]=0;
+  }
+
   for(Int_t itrackpt=0; itrackpt<9; itrackpt++){
     fHistJetHadbindPhi[itrackpt]=0;
     fHistJetHadbindPhiIN[itrackpt]=0;
@@ -182,13 +197,18 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
+  fDetectorType(kVZEROComb),
+  fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), 
+  fNAcceptedTracks(0), fLeadingJet(0), fExcludeLeadingJetsFromFit(1.),
+  fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fCentBinSize(1),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
-  fDoEffCorr(0), fEffFunctionCorr(0),
+  fDoEffCorr(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  doEventPlaneRes(0),
   doComments(0),
   doFlavourJetAnalysis(0), fJetFlavTag(-99),
   fBeam(kNA),
@@ -217,6 +237,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fHistJetHaddPHI(0),
   fHistPID(0),
   fhnPID(0x0), fhnMixedEvents(0x0), fhnJH(0x0), fhnCorr(0x0),
+  fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), // test
   fJetsCont(0), fTracksCont(0), fCaloClustersCont(0),
   fContainerAllJets(0), fContainerPIDJets(1)
 {   
@@ -226,6 +247,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
       //fHistTrackEtaPhi[ilab][ipta]=0; //keep out for now
     }  // end of pt-associated loop
   } // end of lab loop
+
+  for(Int_t cen = 0; cen<10; cen++){
+    fProfV2Resolution[cen]=0;
+    fProfV3Resolution[cen]=0;
+    fProfV4Resolution[cen]=0;
+    fProfV5Resolution[cen]=0;
+  }
 
   for(Int_t itrackpt=0; itrackpt<9; itrackpt++){
     fHistJetHadbindPhi[itrackpt]=0;
@@ -284,10 +312,12 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
 AliAnalysisTaskEmcalJetHadEPpid::~AliAnalysisTaskEmcalJetHadEPpid()
 {
   // destructor
-  if (fOutput) {
-    delete fOutput;
-    fOutput = 0;
-  }
+  if (fOutput)                {delete fOutput;                fOutput = 0;}
+  if(fCentralityClasses)      {delete fCentralityClasses;     fCentralityClasses = 0x0;} // test
+  if(fChi2A)                  {delete fChi2A;                 fChi2A = 0x0;}
+  if(fChi2C)                  {delete fChi2C;                 fChi2C = 0x0;}
+  if(fChi3A)                  {delete fChi3A;                 fChi3A = 0x0;}
+  if(fChi3C)                  {delete fChi3C;                 fChi3C = 0x0;}
 }
 
 //________________________________________________________________________
@@ -343,6 +373,56 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 
   fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 400, 0.0, 20.0, 500, 0, 500);
   fOutput->Add(fHistTPCdEdX);
+
+  if(doEventPlaneRes){
+    // Reaction Plane resolution as function of centrality - corrected for 2nd order event plane
+    for (Int_t i = 0; i<10; ++i){
+      fProfV2Resolution[i] = new TProfile(Form("fProfV2Resolution_%i", i), Form("fProfV2Resolution_%i", i), 11, -0.5, 10.5);
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(4, "<cos(2(#Psi_{VZEROC} - #Psi_{VZEROA}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(5, "<cos(2(#Psi_{VZEROA} - #Psi_{TPC}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(6, "<cos(2(#Psi_{TPC} - #Psi_{VZEROA}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(7, "<cos(2(#Psi_{VZEROC} - #Psi_{TPC}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(8, "<cos(2(#Psi_{TPC} - #Psi_{VZEROC}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(9, "<cos(2(#Psi_{VZERO} - #Psi_{TPC_A}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(10, "<cos(2(#Psi_{VZERO} - #Psi_{TPC_B}))>");
+      fProfV2Resolution[i]->GetXaxis()->SetBinLabel(11, "<cos(2(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
+      fOutput->Add(fProfV2Resolution[i]); 
+      fProfV3Resolution[i] = new TProfile(Form("fProfV3Resolution_%i", i), Form("fProfV3Resolution_%i", i), 11, -0.5, 10.5);
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(3, "<cos(3(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(4, "<cos(3(#Psi_{VZEROC} - #Psi_{VZEROA}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(5, "<cos(3(#Psi_{VZEROA} - #Psi_{TPC}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(6, "<cos(3(#Psi_{TPC} - #Psi_{VZEROA}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(7, "<cos(3(#Psi_{VZEROC} - #Psi_{TPC}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(8, "<cos(3(#Psi_{TPC} - #Psi_{VZEROC}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(9, "<cos(3(#Psi_{VZERO} - #Psi_{TPC_A}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(10, "<cos(3(#Psi_{VZERO} - #Psi_{TPC_B}))>");
+      fProfV3Resolution[i]->GetXaxis()->SetBinLabel(11, "<cos(3(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
+      fOutput->Add(fProfV3Resolution[i]); 
+      fProfV4Resolution[i] = new TProfile(Form("fProfV4Resolution_%i", i), Form("fProfV4Resolution_%i", i), 11, -0.5, 10.5);
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(3, "<cos(4(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(4, "<cos(4(#Psi_{VZEROC} - #Psi_{VZEROA}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(5, "<cos(4(#Psi_{VZEROA} - #Psi_{TPC}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(6, "<cos(4(#Psi_{TPC} - #Psi_{VZEROA}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(7, "<cos(4(#Psi_{VZEROC} - #Psi_{TPC}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(8, "<cos(4(#Psi_{TPC} - #Psi_{VZEROC}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(9, "<cos(4(#Psi_{VZERO} - #Psi_{TPC_A}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(10, "<cos(4(#Psi_{VZERO} - #Psi_{TPC_B}))>");
+      fProfV4Resolution[i]->GetXaxis()->SetBinLabel(11, "<cos(4(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
+      fOutput->Add(fProfV4Resolution[i]); 
+      fProfV5Resolution[i] = new TProfile(Form("fProfV5Resolution_%i", i), Form("fProfV5Resolution_%i", i), 11, -0.5, 10.5);
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(3, "<cos(5(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(4, "<cos(5(#Psi_{VZEROC} - #Psi_{VZEROA}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(5, "<cos(5(#Psi_{VZEROA} - #Psi_{TPC}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(6, "<cos(5(#Psi_{TPC} - #Psi_{VZEROA}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(7, "<cos(5(#Psi_{VZEROC} - #Psi_{TPC}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(8, "<cos(5(#Psi_{TPC} - #Psi_{VZEROC}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(9, "<cos(5(#Psi_{VZERO} - #Psi_{TPC_A}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(10, "<cos(5(#Psi_{VZERO} - #Psi_{TPC_B}))>");
+      fProfV5Resolution[i]->GetXaxis()->SetBinLabel(11, "<cos(5(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
+      fOutput->Add(fProfV5Resolution[i]);
+    }
+  }
 
   // create histo's used for general QA
   if (makeQAhistos) {
@@ -642,6 +722,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     nCentralityBinsPbPb = 10;
     mult = 10.0;
   }
+
   Double_t centralityBinsPbPb[nCentralityBinsPbPb]; // nCentralityBinsPbPb
   for(Int_t ic=0; ic<nCentralityBinsPbPb; ic++){
    centralityBinsPbPb[ic]=mult*ic;
@@ -663,7 +744,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   Int_t trackDepth = fMixingTracks;
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
   Int_t nZvtxBins  = 5+1+5;
-  Double_t vertexBins[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
+  Double_t vertexBins[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
   Double_t* zvtxbin = vertexBins;
   if(fBeam == 0) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, centralityBinspp, nZvtxBins, zvtxbin);
   if(fBeam == 1) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, centralityBinsPbPb, nZvtxBins, zvtxbin);
@@ -759,6 +840,14 @@ void AliAnalysisTaskEmcalJetHadEPpid::ExecOnce()
   if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
 }
 
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskEmcalJetHadEPpid::Notify()
+{
+    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    ReadVZEROCalibration2011h();
+    return kTRUE;
+}
+
 //_________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 { // Main loop called for each event
@@ -838,6 +927,21 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // get centrality
   Int_t centbin = GetCentBin(fCent);
   if (makeQAhistos) fHistCentrality->Fill(fCent); // won't be filled in pp collision (Keep this in mind!)
+
+///// HERE!
+/*
+  if(fCent <= fCentralityClasses->At(0) || fCent >= fCentralityClasses->At(fCentralityClasses->GetSize()-1) || TMath::Abs(fCent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) return kFALSE;
+  // determine centrality class
+  fInCentralitySelection = -1;
+  for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
+      if(fCent >= fCentralityClasses->At(i) && fCent <= fCentralityClasses->At(1+i)) {
+          fInCentralitySelection = i;
+          break;
+      }
+  } 
+  if(fInCentralitySelection<0) return kFALSE;     // should be null op
+/////
+*/
 
   // if we are on PbPb data do cut on centrality > 90%, else by default DON'T
   if (GetBeamType() == 1) {
@@ -954,6 +1058,29 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     if (makeQAhistos) fHistTrackPtallcent->Fill(track->Pt());
   } // end of loop over tracks
 
+  if(doEventPlaneRes){
+    // cut on event selection before calculating reaction plane and filling histo's
+    if ((trig & fTriggerEventType)) {
+      // cache the leading jet within acceptance
+      fLeadingJet = GetLeadingJet();
+
+      // set storage vectors for 2nd and 3rd order event plane values for different subevents
+      Double_t vzero[2][2];
+      /* for the combined vzero event plane
+       * [0] psi2         [1] psi3
+      */
+      Double_t vzeroComb[2];
+      // [0] psi2         [1] psi3
+      Double_t tpc[2];
+      // evaluate the actual event planes
+      // grab the actual data
+      CalculateEventPlaneVZERO(vzero);
+      CalculateEventPlaneCombinedVZERO(vzeroComb);
+      CalculateEventPlaneTPC(tpc);
+      CalculateEventPlaneResolution(vzero, vzeroComb, tpc);
+    }
+  }
+
   // get rho from event and fill relative histo's
   fRho = GetRhoFromEvent(fRhoName);
   fRhoVal = fRho->GetVal();
@@ -1060,7 +1187,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      if(makeextraCORRhistos) fHistJetPtNcon[centbin]->Fill(jetPt,jet->GetNumberOfConstituents());
      if(makeextraCORRhistos) fHistJetPtNconCh[centbin]->Fill(jetPt,jet->GetNumberOfTracks());
      if(makeextraCORRhistos) fHistJetPtNconEm[centbin]->Fill(jetPt,jet->GetNumberOfClusters());
-     if (makeoldJEThadhistos) fHistJetPt[centbin]->Fill(jet->Pt());  // fill #jets vs pT histo
+     if(makeoldJEThadhistos) fHistJetPt[centbin]->Fill(jet->Pt());  // fill #jets vs pT histo
      //fHistDeltaPtvsArea->Fill(jetPt,jet->Area());
 
      // make histo's with BIAS applied
@@ -1130,11 +1257,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         //Double_t dR=sqrt(deta*deta+dphijh*dphijh);     // difference of R between jet and hadron track		
 
         // calculate single particle tracking efficiency for correlations
-        //TF2 effCORR = fEffFunctionCorr;
         Double_t trefficiency = -999;
         trefficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorr);
-
-        //if(trefficiency < 0.1) cout<<"track#: "<<iTracks<<"  pt: "<<track->Pt()<<"  eta: "<<track->Eta()<<"  cent: "<<fCent<<"  Eff: "<<trefficiency<<endl;
 
         Int_t ieta = -1;       // initialize deta bin
         Int_t iptjet = -1;     // initialize jet pT bin
@@ -1142,7 +1266,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   		  ieta=GetEtaBin(deta);             // bin of eta
 	      if(ieta<0) continue;              // double check we don't have a negative array index
           iptjet=GetpTjetBin(jet->Pt());    // bin of jet pt
-   	      if(iptjet<0) continue; 			  // double check we don't have a negative array index
+          if(iptjet<0) continue;            // double check we don't have a negative array index
 		}
 
         // dPHI between jet and hadron
@@ -1160,7 +1284,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
           // set up and fill Jet-Hadron THnSparse
           Double_t triggerEntries[9] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
-          //cout<<"itracks#: "<<iTracks<<"   tracking efficiency: "<<trefficiency<<endl;
           if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
 
           // fill histo's
@@ -1203,12 +1326,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
         if(fPIDResponse) fHistTPCdEdX->Fill(track->Pt(), track->GetTPCsignal());
 
-        if(doPID && ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) ){
+        if(doPID && (fPIDResponse) && ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) ){
           // get parameters of track
           charge = track->Charge();    // charge of track
           pt     = track->Pt();        // pT of track
 
-          if (!fPIDResponse) return kTRUE; // just return, maybe put at beginning
+          //if (!fPIDResponse) return kTRUE; // just return, maybe put at beginning
 
           fHistEventQA->Fill(13); // check for AliVEvent and fPIDresponse objects
 
@@ -1491,8 +1614,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               // calculate single particle tracking efficiency of mixed events for correlations
               Double_t mixefficiency = -999;
               mixefficiency = EffCorrection(part->Eta(), part->Pt(), fDoEffCorr);                           
-
-              //if(mixefficiency < 0.1) cout<<"mixtrack#: "<<ibg<<"  pt: "<<part->Pt()<<"  eta: "<<part->Eta()<<"  cent: "<<fCent<<"  Eff: "<<mixefficiency<<endl;
 
               // create / fill mixed event sparse
               Double_t triggerEntries[9] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
@@ -2350,9 +2471,15 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
   Double_t ptaxis = 0;
 
   if(effSwitch < 1) {
-    if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309)) runSwitchGood = 0;
+    // Semi-GOOD IROC C13 runlists
+    // DO NOT USE THESE:
+    // Runs:  (169040, 169044, 169045, 169099, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169584, 169586, 169587, 169588, 169590, 169591) 
 
-    if ((runNUM == 167903 || runNUM == 167915 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
+    // Semi-GOOD OROC C08 runlists
+    if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170152 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309)) runSwitchGood = 0;
+
+    // GOOD runlists
+    if ((runNUM == 167902 || runNUM == 167903 || runNUM == 167915 || runNUM == 167920 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
 
     if(fCent>=0 && fCent<10) centbin = 0;
     else if (fCent>=10 && fCent<30)	centbin = 1;
@@ -2367,7 +2494,6 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
     if(runSwitchGood == 1 && centbin == 1) effSwitch = 7;
     if(runSwitchGood == 1 && centbin == 2) effSwitch = 8;
     if(runSwitchGood == 1 && centbin == 3) effSwitch = 9;
-
   }
 
   // 0-10% centrality: Semi-Good Runs
@@ -2425,7 +2551,6 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
 
     case 6 :
       // Parameter values for GOOD TPC (LHC11h) runs (0-10%):
-      //TRefficiency = ((x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x)) + ((x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x)) * ((y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.9),p0_10G[9])) + p0_10G[10]*y)) + ((y>=0.0 && y<0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y)) + ((y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.9),p0_10G[16]))));
       ptaxis = (x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x) + (x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x);
       etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.91),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.91),p0_10G[16])));
       TRefficiency = ptaxis*etaaxis;
@@ -2464,3 +2589,300 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
   return TRefficiency;
 }
 
+//_____________________________________________________________________________
+void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const 
+{
+    // by default use the ep from the event header (make sure EP selection task is enabled!)
+    Double_t a(0), b(0), c(0), d(0), e(0), f(0), g(0), h(0);
+    vzero[0][0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, a, b);
+    vzero[1][0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, c, d);
+    vzero[0][1] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 3, e, f);
+    vzero[1][1] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 3, g, h);
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneCombinedVZERO(Double_t* comb) const
+{
+    // define some placeholders
+    Double_t Q2[] = {-999., -999.};            
+    Double_t Q3[] = {-999., -999.};
+
+    // for all other types use calibrated event plane from the event header
+    //
+    // note that the code is a bit messy here, for 11h done all in this function
+    // reason is that the procedure is much shorter as the calibration is done in another task
+    //
+    // define some pleaceholders to the values by reference
+    Double_t qx2a(0), qy2a(0), qx2c(0), qy2c(0), qx3a(0), qy3a(0), qx3c(0), qy3c(0);
+    // get the q-vectors by reference
+    InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, qx2a, qy2a); // 2nd order VZERO Aside
+    InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, qx2c, qy2c); // 2nd order VZERO Cside
+    InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 3, qx3a, qy3a); // 3rd order VZERO Aside
+    InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 3, qx3c, qy3c); // 3rd order VZERO Cside
+
+    // get cache index and retrieve the chi weights for this centrality
+//    Int_t VZEROcentralityBin(GetCentBin(fCent)); // won't work because I use different bins then calibration value bins
+    Int_t VZEROcentralityBin(GetVZEROCentralityBin());
+    Double_t chi2A(fChi2A->At(VZEROcentralityBin));
+    Double_t chi2C(fChi2C->At(VZEROcentralityBin));
+    Double_t chi3A(fChi3A->At(VZEROcentralityBin));
+    Double_t chi3C(fChi3C->At(VZEROcentralityBin));
+
+    // combine the vzeroa and vzeroc signal
+    Q2[0] = chi2A*chi2A*qx2a+chi2C*chi2C*qx2c;
+    Q2[1] = chi2A*chi2A*qy2a+chi2C*chi2C*qy2c;
+    Q3[0] = chi3A*chi3A*qx3a+chi3C*chi3C*qx3c;
+    Q3[1] = chi3A*chi3A*qy3a+chi3C*chi3C*qy3c;
+
+    comb[0] = .5*TMath::ATan2(Q2[1], Q2[0]);
+    comb[1] = (1./3.)*TMath::ATan2(Q3[1], Q3[0]);
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneTPC(Double_t* tpc)
+{
+   // grab the TPC event plane
+   fNAcceptedTracks = 0;        // reset the track counter
+   Double_t qx2(0), qy2(0);     // for psi2
+   Double_t qx3(0), qy3(0);     // for psi3
+
+   // first check for track object
+   if(fTracks) {
+       Float_t excludeInEta = -999;
+       if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
+           if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
+       }
+       
+       // loop over tracks in TPC
+       for(Int_t iTPC(0); iTPC < fTracks->GetEntries(); iTPC++) {
+           AliVParticle *track = dynamic_cast<AliVParticle*>(fTracks->At(iTPC));
+
+           // apply general track cuts
+           if(TMath::Abs(track->Eta())>0.9) continue;
+           if(track->Pt()<0.15) continue;
+           if(track->Pt() < fSoftTrackMinPt || track->Pt() > fSoftTrackMaxPt) continue; // APPLY soft cut
+           if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < fJetRad*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRad - fEtamax ) > 0 )) continue;
+           fNAcceptedTracks++;
+
+           // sum up q-vectors
+           qx2+= TMath::Cos(2.*track->Phi());
+           qy2+= TMath::Sin(2.*track->Phi());
+           qx3+= TMath::Cos(3.*track->Phi());
+           qy3+= TMath::Sin(3.*track->Phi());
+       }
+   }
+   tpc[0] = .5*TMath::ATan2(qy2, qx2);
+   tpc[1] = (1./3.)*TMath::ATan2(qy3, qx3);
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
+{
+    // fill the profiles for the resolution parameters
+    Int_t centbin = GetCentBin(fCent);
+    fInCentralitySelection = centbin;
+
+    // R2 resolution for 2nd order event plane
+    fProfV2Resolution[fInCentralitySelection]->Fill(2., TMath::Cos(2.*(vzero[0][0] - vzero[1][0])));
+    fProfV2Resolution[fInCentralitySelection]->Fill(3., TMath::Cos(2.*(vzero[1][0] - vzero[0][0])));
+    fProfV2Resolution[fInCentralitySelection]->Fill(4., TMath::Cos(2.*(vzero[0][0] - tpc[0])));
+    fProfV2Resolution[fInCentralitySelection]->Fill(5., TMath::Cos(2.*(tpc[0] - vzero[0][0])));
+    fProfV2Resolution[fInCentralitySelection]->Fill(6., TMath::Cos(2.*(vzero[1][0] - tpc[0])));
+    fProfV2Resolution[fInCentralitySelection]->Fill(7., TMath::Cos(2.*(tpc[0] - vzero[1][0])));
+    // R3 resolution for 2nd order event plane
+    fProfV3Resolution[fInCentralitySelection]->Fill(2., TMath::Cos(3.*(vzero[0][0] - vzero[1][0])));
+    fProfV3Resolution[fInCentralitySelection]->Fill(3., TMath::Cos(3.*(vzero[1][0] - vzero[0][0])));
+    fProfV3Resolution[fInCentralitySelection]->Fill(4., TMath::Cos(3.*(vzero[0][0] - tpc[0])));
+    fProfV3Resolution[fInCentralitySelection]->Fill(5., TMath::Cos(3.*(tpc[0] - vzero[0][0])));
+    fProfV3Resolution[fInCentralitySelection]->Fill(6., TMath::Cos(3.*(vzero[1][0] - tpc[0])));
+    fProfV3Resolution[fInCentralitySelection]->Fill(7., TMath::Cos(3.*(tpc[0] - vzero[1][0])));
+    // R4 resolution for 2nd order event plane
+    fProfV4Resolution[fInCentralitySelection]->Fill(2., TMath::Cos(4.*(vzero[0][0] - vzero[1][0])));
+    fProfV4Resolution[fInCentralitySelection]->Fill(3., TMath::Cos(4.*(vzero[1][0] - vzero[0][0])));
+    fProfV4Resolution[fInCentralitySelection]->Fill(4., TMath::Cos(4.*(vzero[0][0] - tpc[0])));
+    fProfV4Resolution[fInCentralitySelection]->Fill(5., TMath::Cos(4.*(tpc[0] - vzero[0][0])));
+    fProfV4Resolution[fInCentralitySelection]->Fill(6., TMath::Cos(4.*(vzero[1][0] - tpc[0])));
+    fProfV4Resolution[fInCentralitySelection]->Fill(7., TMath::Cos(4.*(tpc[0] - vzero[1][0])));
+    // R5 resolution for 2nd order event plane
+    fProfV5Resolution[fInCentralitySelection]->Fill(2., TMath::Cos(5.*(vzero[0][0] - vzero[1][0])));
+    fProfV5Resolution[fInCentralitySelection]->Fill(3., TMath::Cos(5.*(vzero[1][0] - vzero[0][0])));
+    fProfV5Resolution[fInCentralitySelection]->Fill(4., TMath::Cos(5.*(vzero[0][0] - tpc[0])));
+    fProfV5Resolution[fInCentralitySelection]->Fill(5., TMath::Cos(5.*(tpc[0] - vzero[0][0])));
+    fProfV5Resolution[fInCentralitySelection]->Fill(6., TMath::Cos(5.*(vzero[1][0] - tpc[0])));
+    fProfV5Resolution[fInCentralitySelection]->Fill(7., TMath::Cos(5.*(tpc[0] - vzero[1][0])));
+
+    // for the resolution of the combined vzero event plane, use two tpc halves as uncorrelated subdetectors
+    Double_t qx2a(0), qy2a(0);     // for psi2a, negative eta
+    Double_t qx3a(0), qy3a(0);     // for psi3a, negative eta
+    Double_t qx2b(0), qy2b(0);     // for psi2c, positive eta
+    Double_t qx3b(0), qy3b(0);     // for psi3c, positive eta
+    // not needed
+    Double_t qx4a(0), qy4a(0);     // for psi4a, negative eta
+    Double_t qx5a(0), qy5a(0);     // for psi4a, negative eta
+    Double_t qx4b(0), qy4b(0);     // for psi5c, positive eta
+    Double_t qx5b(0), qy5b(0);     // for psi5c, positive eta
+
+    // check for track object and loop over tpc tracks
+    if(fTracks) {
+       Int_t iTracks(fTracks->GetEntriesFast());
+       for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
+           AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(iTPC));
+
+           // apply track cuts
+           if(TMath::Abs(track->Eta())>0.9) continue;
+           if(track->Pt()<0.15) continue;        
+           if(track->Pt() < fSoftTrackMinPt || track->Pt() > fSoftTrackMaxPt) continue;
+           if(track->Eta() < 0 ) {
+               // negative Eta q-vect calculation
+               qx2a+= TMath::Cos(2.*track->Phi());
+               qy2a+= TMath::Sin(2.*track->Phi());
+               qx3a+= TMath::Cos(3.*track->Phi());
+               qy3a+= TMath::Sin(3.*track->Phi());
+               qx4a+= TMath::Cos(4.*track->Phi());
+               qy4a+= TMath::Sin(4.*track->Phi());
+               qx5a+= TMath::Cos(5.*track->Phi());
+               qy5a+= TMath::Sin(5.*track->Phi());
+           } else if (track->Eta() > 0) {
+               // positive Eta q-vect calculation
+               qx2b+= TMath::Cos(2.*track->Phi());
+               qy2b+= TMath::Sin(2.*track->Phi());
+               qx3b+= TMath::Cos(3.*track->Phi());
+               qy3b+= TMath::Sin(3.*track->Phi());
+               qx4b+= TMath::Cos(4.*track->Phi());
+               qy4b+= TMath::Sin(4.*track->Phi());
+               qx5b+= TMath::Cos(5.*track->Phi());
+               qy5b+= TMath::Sin(5.*track->Phi());
+           }
+       }
+   }
+
+   // combine x-y vectors for neg and pos Eta ranges
+   Double_t tpca2(.5*TMath::ATan2(qy2a, qx2a));
+   Double_t tpca3((1./3.)*TMath::ATan2(qy3a, qx3a));
+   Double_t tpcb2(.5*TMath::ATan2(qy2b, qx2b));
+   Double_t tpcb3((1./3.)*TMath::ATan2(qy3b, qx3b));
+   // not needed
+   Double_t tpca4(.25*TMath::ATan2(qy4a, qx4a));
+   Double_t tpca5((.2)*TMath::ATan2(qy5a, qx5a));
+   Double_t tpcb4(.25*TMath::ATan2(qy4b, qx4b));
+   Double_t tpcb5((.2)*TMath::ATan2(qy5b, qx5b));
+
+   // R2 resolution for 2nd order event plane
+   fProfV2Resolution[fInCentralitySelection]->Fill(8., TMath::Cos(2.*(vzeroComb[0] - tpca2)));
+   fProfV2Resolution[fInCentralitySelection]->Fill(9., TMath::Cos(2.*(vzeroComb[0] - tpcb2)));
+   fProfV2Resolution[fInCentralitySelection]->Fill(10., TMath::Cos(2.*(tpca2 - tpcb2))); 
+   // R3 resolution for 2nd order event plane
+   fProfV3Resolution[fInCentralitySelection]->Fill(8., TMath::Cos(3.*(vzeroComb[1] - tpca2)));
+   fProfV3Resolution[fInCentralitySelection]->Fill(9., TMath::Cos(3.*(vzeroComb[1] - tpcb2)));
+   fProfV3Resolution[fInCentralitySelection]->Fill(10., TMath::Cos(3.*(tpca2 - tpcb2))); 
+   // R4 resolution for 2nd order event plane
+   fProfV4Resolution[fInCentralitySelection]->Fill(8., TMath::Cos(4.*(vzeroComb[0] - tpca2)));
+   fProfV4Resolution[fInCentralitySelection]->Fill(9., TMath::Cos(4.*(vzeroComb[0] - tpcb2)));
+   fProfV4Resolution[fInCentralitySelection]->Fill(10., TMath::Cos(4.*(tpca2 - tpcb2))); 
+   // R5 resolution for 2nd order event plane
+   fProfV5Resolution[fInCentralitySelection]->Fill(8., TMath::Cos(5.*(vzeroComb[1] - tpca2)));
+   fProfV5Resolution[fInCentralitySelection]->Fill(9., TMath::Cos(5.*(vzeroComb[1] - tpcb2)));
+   fProfV5Resolution[fInCentralitySelection]->Fill(10., TMath::Cos(5.*(tpca2 - tpcb2))); 
+}   
+
+//_____________________________________________________________________________i
+void AliAnalysisTaskEmcalJetHadEPpid::ReadVZEROCalibration2011h()
+{    
+    // make sure calibration parameters are present for vzero ep 11h data
+    //
+    // chi values can be calculated using the static helper function 
+    // AliAnalysisTaskJetV2::CalculateEventPlaneChi(Double_t res) where res is the event plane
+    // resolution in a given centrality bin
+    //
+    // the resolutions that were used for these defaults are
+    // this might need a bit of updating as they were read 'by-eye' from a performance plot ..
+    // Double_t R2VZEROA[] = {.35, .40, .48, .50, .48, .45, .38, .26, .16};
+    // Double_t R2VZEROC[] = {.45, .60, .70, .73, .68, .60, .40, .36, .17};
+    // Double_t R3VZEROA[] = {.22, .23, .22, .19, .15, .12, .08, .00, .00};
+    // Double_t R3VZEROC[] = {.30, .30, .28, .25, .22, .17, .11, .00, .00};
+
+    Double_t chiA2[] = {0.582214, 0.674622, 0.832214, 0.873962, 0.832214, 0.771423, 0.637146, 0.424255, 0.257385};
+    Double_t chiC2[] = {0.771423, 1.10236, 1.38116, 1.48077, 1.31964, 1.10236, 0.674622, 0.600403, 0.273865};
+    Double_t chiA3[] = {0.356628, 0.373474, 0.356628, 0.306702, 0.24115, 0.192322, 0.127869, 6.10352e-05, 6.10352e-05};
+    Double_t chiC3[] = {0.493347, 0.493347, 0.458557, 0.407166, 0.356628, 0.273865, 0.176208, 6.10352e-05, 6.10352e-05};
+
+    // when the user wants to, set the weights to 1 (effectively disabling them)
+    if(!fUseChiWeightForVZERO) {
+        for(Int_t i(0); i < 9; i++) {
+            chiA2[i] = 1.;
+            chiA3[i] = 1.;
+            chiC2[i] = 1.;
+            chiC3[i] = 1.;
+        }
+    }
+
+    if(!fChi2A) fChi2A = new TArrayD(9, chiA2);
+    if(!fChi2C) fChi2C = new TArrayD(9, chiC2);
+    if(!fChi3A) fChi3A = new TArrayD(9, chiA3);
+    if(!fChi3C) fChi3C = new TArrayD(9, chiC3);
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetHadEPpid::GetVZEROCentralityBin() const
+{
+    // return cache index number corresponding to the event centrality
+    Float_t v0Centr(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+    if(v0Centr < 5) return 0;
+    else if(v0Centr < 10) return  1;
+    else if(v0Centr < 20) return  2;
+    else if(v0Centr < 30) return  3;
+    else if(v0Centr < 40) return  4;
+    else if(v0Centr < 50) return  5;
+    else if(v0Centr < 60) return  6;
+    else if(v0Centr < 70) return  7;
+    else return 8;
+}
+
+//_____________________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalJetHadEPpid::GetLeadingJet(AliLocalRhoParameter* localRho) {
+    // return pointer to the highest pt jet (before background subtraction) within acceptance
+    // only rudimentary cuts are applied on this level, hence the implementation outside of
+    // the framework
+    Int_t iJets(fJets->GetEntriesFast());
+    Double_t pt(0);
+    AliEmcalJet* leadingJet(0x0);
+    if(!localRho) {
+        for(Int_t i(0); i < iJets; i++) {
+            AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
+            if(!AcceptMyJet(jet)) continue;
+            if(jet->Pt() > pt) {
+               leadingJet = jet;
+               pt = leadingJet->Pt();
+            }
+        }
+        return leadingJet;
+    } else {
+        // return leading jet after background subtraction
+        Double_t rho(0);
+        for(Int_t i(0); i < iJets; i++) {
+            AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
+            if(!AcceptMyJet(jet)) continue;
+            //rho = localRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
+            rho = localRho->GetLocalVal(jet->Phi(), fJetRad);
+            if((jet->Pt()-jet->Area()*rho) > pt) {
+               leadingJet = jet;
+               pt = (leadingJet->Pt()-jet->Area()*rho);
+            }
+        }
+        return leadingJet;
+
+    }
+    return 0x0;
+}
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneChi(Double_t res)
+{
+    // return chi for given resolution to combine event plane estimates from two subevents
+    // see Phys. Rev. C no. CS6346 (http://arxiv.org/abs/nucl-ex/9805001)
+    Double_t chi(2.), delta(1.), con((TMath::Sqrt(TMath::Pi()))/(2.*TMath::Sqrt(2)));
+    for (Int_t i(0); i < 15; i++) {
+        chi = ((con*chi*TMath::Exp(-chi*chi/4.)*(TMath::BesselI0(chi*chi/4.)+TMath::BesselI1(chi*chi/4.))) < res) ? chi + delta : chi - delta;
+        delta = delta / 2.;
+    }
+    return chi;
+}

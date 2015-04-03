@@ -3,10 +3,12 @@
 
 // root classes
 class TClonesArray;
+class TF1;
 class TH1F;
 class TH2F;
 class TH3F;
 class THnSparse;
+class TProfile;
 class TList;
 class TLorentzVector;
 class TGraph;
@@ -38,6 +40,7 @@ class AliClusterContainer;
 #include <TMath.h>
 #include <TRandom3.h>
 #include <AliLog.h>
+#include <TArrayD.h>
 #include "AliESDtrackCuts.h"
 
 // Local Rho includes
@@ -51,6 +54,7 @@ class AliClusterContainer;
 
 class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
  public:
+  enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used for event plane
   AliAnalysisTaskEmcalJetHadEPpid();
   AliAnalysisTaskEmcalJetHadEPpid(const char *name);
   //virtual ~AliAnalysisTaskEmcalJetHadEPpid() {}
@@ -64,6 +68,20 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            GetDimParamsPID(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
   virtual THnSparse*      NewTHnSparseFCorr(const char* name, UInt_t entries);
   virtual void            GetDimParamsCorr(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+
+        // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
+//        /* inline */    static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
+//        /* inline */    static Double_t ChiSquare(TH1& histo, TF1* func) {
+            // evaluate the chi2 using a poissonian error estimate on bins
+//            Double_t chi2(0.);
+/*
+            for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
+                if(histo.GetBinContent(i+1) <= 0.) continue;
+                chi2 += TMath::Power((histo.GetBinContent(i+1)-func->Eval(histo.GetXaxis()->GetBinCenter(1+i))), 2)/histo.GetBinContent(i+1);
+            }
+           return chi2;
+        }
+*/
 
   // set a bun of histogram switches up
   void                    SetPlotGlobalRho(Bool_t g)            { doPlotGlobalRho = g; } // plot global rho switch
@@ -83,12 +101,35 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // esd track cuts setters
   void SetTrackCuts(AliESDtrackCuts *cuts)                      { fesdTrackCuts = cuts; }
 
+  // reference of detector for event plane resolution
+  void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
+
+  // set soft track min/max
+  void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
+  void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
+
+  // set centrality classes up
+  void                    SetCentralityClasses(TArrayD* c)      {fCentralityClasses = c;}
+
+  // set Chi2 for VZERO A and C
+  void                    SetChi2VZEROA(TArrayD* a)                       { fChi2A = a;}
+  void                    SetChi2VZEROC(TArrayD* a)                       { fChi2C = a;}
+  void                    SetChi3VZEROA(TArrayD* a)                       { fChi3A = a;}
+  void                    SetChi3VZEROC(TArrayD* a)                       { fChi3C = a;}
+  void                    SetUseChiWeightForVZERO(Bool_t w)               { fUseChiWeightForVZERO = w; }
+  void                    ReadVZEROCalibration2011h();
+  Int_t                   GetVZEROCentralityBin() const;
+  AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+
+  // switch for Event Plane Resolution analysis
+  void            SetdoEventPlaneRes(Bool_t depr)       { doEventPlaneRes = depr; } // do EP res switch
+
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
 
   // setter switch for flavour jet analysis
   void 					  SetFlavourJetAnalysis(Bool_t flj)     { doFlavourJetAnalysis = flj; } // set on flavour jet analysis
-  virtual void			  SetJETFlavourTag(Int_t fltag)        { fJetFlavTag = fltag; } // set manual tag #
+  virtual void			  SetJETFlavourTag(Int_t fltag)         { fJetFlavTag = fltag; } // set manual tag #
 
   // setter for beamtype (needed for UserCreateObjects section)
   virtual void			  SetCollType(BeamType bm) { fBeam = bm; } // set beamtype 
@@ -126,9 +167,8 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            SetMixedEventType(UInt_t me)         { fMixingEventType = me; }
   virtual void            SetCentBinSize(Int_t centbins)       { fCentBinSize = centbins; }
 
-  // set efficiency correction
+  // efficiency correction setter
   void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorr = effcorr; }
-  virtual void            SetEffCorrFunc(Double_t efffunc)     { fEffFunctionCorr = efffunc; }
 
   // jet container - setters
   void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
@@ -137,6 +177,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
 protected:
   // functions 
   void					 ExecOnce();
+  virtual Bool_t         Notify();
   Bool_t		         Run();
   virtual void           Terminate(Option_t *); 
   virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
@@ -153,6 +194,11 @@ protected:
   //virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM, Int_t NUM2, Int_t NUM3); // flavour jet acceptor
   virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM); // flavour jet acceptor
   Double_t               EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
+  static Double_t        CalculateEventPlaneChi(Double_t res);
+  void                   CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
+  void                   CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
+  void                   CalculateEventPlaneTPC(Double_t* tpc);
+  void                   CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
 
   // parameters of detector to cut on for event
   Double_t               fPhimin;                  // phi min
@@ -170,6 +216,18 @@ protected:
   // esd track cuts
   AliESDtrackCuts       *fesdTrackCuts;			   // esdTrackCuts
 
+  // detector type
+  detectorType           fDetectorType;          // type of detector
+
+  // used for event plane resolution calculation
+  Float_t                fSoftTrackMinPt;        // min pt for soft tracks
+  Float_t                fSoftTrackMaxPt;        // max pt for soft tracks
+  Int_t                  fNAcceptedTracks;       //! number of accepted tracks
+  AliEmcalJet*           fLeadingJet;            //! leading jet
+  Float_t                fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
+  TArrayD*               fCentralityClasses;     //-> centrality classes (maximum 10)
+  Int_t                  fInCentralitySelection; //! centrality bin
+
   // event mixing
   Int_t			 fDoEventMixing;
   Int_t			 fMixingTracks;
@@ -182,8 +240,7 @@ protected:
   UInt_t         fMixingEventType;
 
   // efficiency correction
-  Int_t    fDoEffCorr;
-  Double_t       fEffFunctionCorr;
+  Int_t          fDoEffCorr;
 
   // switches for plots
   Bool_t		 doPlotGlobalRho;
@@ -201,6 +258,9 @@ protected:
   // switches for PID
   Bool_t		 doPID;
   Bool_t		 doPIDtrackBIAS;
+
+  // do EP resolution switch
+  Bool_t         doEventPlaneRes;
 
   // do comment switch
   Bool_t		 doComments;
@@ -300,6 +360,17 @@ protected:
 
   TH2                   *fHistJetEtaPhi;//!  
   TH2                   *fHistTrackEtaPhi[4][7];//!
+
+  TProfile              *fProfV2Resolution[10];//! resolution parameters for v2
+  TProfile              *fProfV3Resolution[10];//! resolution parameters for v3
+  TProfile              *fProfV4Resolution[10];//! resolution parameters for v4
+  TProfile              *fProfV5Resolution[10];//! resolution parameters for v5
+  TArrayD*              fChi2A;                         // chi vs cent for vzero A ep_2
+  TArrayD*              fChi2C;                         // chi vs cent for vzero C ep_2
+  TArrayD*              fChi3A;                         // chi vs cent for vzero A ep_3
+  TArrayD*              fChi3C;                         // chi vs cent for vzero C ep_3
+  Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
+
   TH1		        	*fHistJetHadbindPhi[9];//! 
   TH1					*fHistJetHadbindPhiIN[9];//! 
   TH1					*fHistJetHadbindPhiMID[9];//! 
@@ -313,8 +384,6 @@ protected:
   TH2                   *fHistJetH[6][5][3];//!
   TH2                   *fHistJetHBias[6][5][3];//!
   TH2                   *fHistJetHTT[6][5][3];//!
-  TH1F					*fHistJetHdPHI[11];//!
-  TH2F					*fHistJetHdETAdPHI[11];//!
   TH2F                  *fHistSEphieta;//! // single events phi-eta distributions
   TH2F                  *fHistMEphieta;//! // mixed events phi-eta distributions
   TH1F					*fHistJetHaddPHI;//!
