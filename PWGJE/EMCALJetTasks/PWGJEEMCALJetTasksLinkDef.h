@@ -94,6 +94,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventData+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup+;
