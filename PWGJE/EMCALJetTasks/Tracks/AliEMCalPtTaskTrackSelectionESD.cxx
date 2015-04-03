@@ -12,14 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Implementation of the track selection for the analysis on ESDs using
- * AliESDtrackCuts as underlying structure
- *
- * Author:
- * 		Markus Fasel
- */
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include "AliEMCalPtTaskTrackSelectionESD.h"
 #include <memory>
 
@@ -28,138 +22,76 @@
 #include "AliESDtrackCuts.h"
 #include "AliLog.h"
 #include "AliPicoTrack.h"
+#include "AliVCuts.h"
 
-
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEMCalPtTaskTrackSelectionESD::AliEMCalPtTaskTrackSelectionESD():
-		AliEMCalPtTaskVTrackSelection(),
-		fTrackCuts(NULL)
+		AliEMCalPtTaskVTrackSelection()
 {
-	/*
-	 * Default constructor
-	 */
 }
 
-//______________________________________________________________________________
+/**
+ * Constructor with cuts
+ */
 AliEMCalPtTaskTrackSelectionESD::AliEMCalPtTaskTrackSelectionESD(AliESDtrackCuts* cuts):
-		AliEMCalPtTaskVTrackSelection(),
-		fTrackCuts(cuts)
+		AliEMCalPtTaskVTrackSelection()
 {
-	/*
-	 * Constructor with cuts
-	 */
+  this->AddTrackCuts(cuts);
 }
 
-//______________________________________________________________________________
-AliEMCalPtTaskTrackSelectionESD::AliEMCalPtTaskTrackSelectionESD(
-		const AliEMCalPtTaskTrackSelectionESD& ref):
-		AliEMCalPtTaskVTrackSelection(ref),
-		fTrackCuts(NULL)
-{
-	/*
-	 * Copy constructor, creating a new cut object
-	 */
-	if(ref.fTrackCuts) fTrackCuts = new AliESDtrackCuts(*(ref.fTrackCuts));
-}
 
-//______________________________________________________________________________
-AliEMCalPtTaskTrackSelectionESD& AliEMCalPtTaskTrackSelectionESD::operator=(
-		const AliEMCalPtTaskTrackSelectionESD& ref)
-{
-	/*
-	 * Assignment operator
-	 */
-	AliEMCalPtTaskVTrackSelection::operator=(ref);
-	if(&ref != this){
-		if(fTrackCuts) {
-			delete fTrackCuts;
-			fTrackCuts = NULL;
-		}
-		if(ref.fTrackCuts) fTrackCuts = new AliESDtrackCuts(*(ref.fTrackCuts));
-	}
-	return *this;
-}
-
-//______________________________________________________________________________
-AliEMCalPtTaskTrackSelectionESD::~AliEMCalPtTaskTrackSelectionESD() {
-	/*
-	 * Destructor, deleting track cuts
-	 */
-	if(fTrackCuts) delete fTrackCuts;
-}
-
-//______________________________________________________________________________
-TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(
-		const TClonesArray* const tracks) {
-	/*
-	 * Select tracks from a TClonesArray of input tracks
-	 *
-	 * @param tracks: TClonesArray of tracks (must not be null)
-	 * @return: TObjArray of selected tracks
-	 */
+/**
+ * Select tracks from a TClonesArray of input tracks
+ *
+ * \param tracks TClonesArray of tracks (must not be null)
+ * \return: TObjArray of selected tracks
+ */
+TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const TClonesArray* const tracks) {
 	if(!fListOfTracks) fListOfTracks = new TObjArray;
 	else fListOfTracks->Clear();
-	if(!fTrackCuts){
-		AliError("Track cuts not provided");
-		return fListOfTracks;
-	}
-	TIter trackIter(tracks);
-	AliESDtrack *track(NULL);
-	AliPicoTrack *picoTrack(NULL);
-	TObject *containerObject(NULL);
-	while((containerObject = dynamic_cast<TObject *>(trackIter()))){
-	  // Handle pico tracks
-	  if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject)))
-	    track = dynamic_cast<AliESDtrack *>(picoTrack->GetTrack());
-	  else
-	    track = dynamic_cast<AliESDtrack *>(containerObject);
-		if(fTrackCuts->AcceptTrack(track)) fListOfTracks->AddLast(track);
+	for(TIter trackIter = TIter(tracks).Begin(); trackIter != TIter::End(); ++trackIter){
+	  if(IsTrackAccepted(static_cast<AliVTrack *>(*trackIter))) fListOfTracks->Add(*trackIter);
 	}
 	return fListOfTracks;
 }
 
-
-
-//______________________________________________________________________________
+/**
+ * Select tracks from a virtual event. Delegates selection process to function IsTrackAccepted
+ *
+ * \param event AliESDEvent, via interface of virtual event (must not be null)
+ * \return TObjArray of selected tracks
+ */
 TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const AliVEvent* const event) {
-	/*
-	 * Select tracks from a virtual event
-	 *
-	 * @param event: AliESDEvent, via interface of virtual event (must not be null)
-	 * @return: TObjArray of selected tracks
-	 */
 	if(!fListOfTracks) fListOfTracks = new TObjArray;
 	else fListOfTracks->Clear();
-	if(!fTrackCuts){
-		AliError("Track cuts not provided");
-		return fListOfTracks;
-	}
 	const AliESDEvent *esd = dynamic_cast<const AliESDEvent *>(event);
 	if(!esd){
 		AliError("Event not of type AliESDEvent");
 		return fListOfTracks;
 	}
-	std::auto_ptr<TObjArray> accepted(fTrackCuts->GetAcceptedTracks(esd));
-	TIter trackIter(accepted.get());
-	AliESDtrack *track(NULL);
-	while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
-		fListOfTracks->AddLast(track);
+	for(int itrk = 0; itrk < esd->GetNumberOfTracks(); itrk++){
+	  AliESDtrack *trk = static_cast<AliESDtrack *>(esd->GetTrack(itrk));
+	  if(IsTrackAccepted(trk)) fListOfTracks->AddLast(trk);
 	}
 	return fListOfTracks;
 }
 
-//______________________________________________________________________________
+/**
+ * Check whether track is accepted. Itterates over all cuts assinged to the track selection.
+ *
+ * \param trk: Track to check
+ * \return: true if selected, false otherwise
+ */
 bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
-  /*
-   * Check whether track is accepted
-   *
-   * @param trk: Track to check
-   * @return: true if selected, false otherwise
-   */
+  if(!fListOfCuts) return kTRUE;
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
   if(!esdt){
     AliPicoTrack *picoTrack = dynamic_cast<AliPicoTrack *>(trk);
@@ -170,7 +102,12 @@ bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
       return kFALSE;
     }
   }
-  return fTrackCuts->AcceptTrack(esdt);
+
+  bool result = true;
+  for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
+    if(!(static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) result = false;
+  }
+  return result;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

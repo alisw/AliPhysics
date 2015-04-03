@@ -67,6 +67,7 @@ set(SRCS
     Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
     Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
     Tracks/AliEMCalPtTaskVTrackSelection.cxx
+    Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
     Tracks/AliEMCalTriggerBinningFactory.cxx

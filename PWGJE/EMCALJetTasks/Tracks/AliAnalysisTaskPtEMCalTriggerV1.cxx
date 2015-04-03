@@ -16,7 +16,11 @@
 #include "AliParticleContainer.h"
 #include "AliJetContainer.h"
 
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliPicoTrack.h"
 
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
@@ -39,7 +43,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     AliAnalysisTaskEmcalJet(),
     fTaskGroups(NULL),
     fBinning(NULL),
-	fTriggerDecisionConfig(NULL),
+    fTriggerDecisionConfig(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
     fSwapTriggerThresholds(kFALSE),
@@ -151,17 +155,24 @@ void AliAnalysisTaskPtEMCalTriggerV1::SetBinning(const char* dimname, const TArr
 
 /**
  * Build event structure. Take the information about the different containers
- * from the base analysis task.
+ * from the base analysis task. Also checks whether the track has the event pointer set,
+ * and in case not sets it back to this event.
  *
  * \return the resulting event structure
  */
-AliEMCalTriggerEventData* AliAnalysisTaskPtEMCalTriggerV1::BuildEvent() const {
+AliEMCalTriggerEventData* AliAnalysisTaskPtEMCalTriggerV1::BuildEvent() {
   AliEMCalTriggerEventData *eventstruct = new AliEMCalTriggerEventData;
   eventstruct->SetRecEvent(fInputEvent);
+  // Check whether all tracks have the back pointer to the event itself set
+  for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++){
+    FixTrackInputEvent(static_cast<AliVTrack *>(fInputEvent->GetTrack(itrk)));
+  }
   eventstruct->SetMCEvent(fMCEvent);
   eventstruct->SetTriggerPatchContainer(fTriggerPatchInfo);
   eventstruct->SetClusterContainer(fCaloClusters);
   eventstruct->SetTrackContainer(fTracks);
+  for(TIter trackIter = TIter(fTracks).Begin(); trackIter != TIter::End(); ++trackIter)
+    FixTrackInputEvent(static_cast<AliVTrack *>(*trackIter));
   if(fMCJetContainer.Length()){
     AliJetContainer *jcmc = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject(fMCJetContainer.Data()));
     eventstruct->SetParticleContainer(jcmc->GetParticleContainer()->GetArray());
@@ -180,6 +191,29 @@ AliEMCalTriggerEventData* AliAnalysisTaskPtEMCalTriggerV1::BuildEvent() const {
  */
 void AliAnalysisTaskPtEMCalTriggerV1::AddAnalysisGroup(AliEMCalTriggerTaskGroup *taskGroup) {
   fTaskGroups->Add(taskGroup);
+}
+
+/**
+ * Set the corresponding pointer to the original event to the track in a transparent way for
+ * ESD, AOD and pico tracks
+ * \param trk The track to handle
+ */
+void AliAnalysisTaskPtEMCalTriggerV1::FixTrackInputEvent(AliVTrack* trk) {
+  if(!trk->GetEvent()){
+    if(trk->IsA() == AliESDtrack::Class())
+      (static_cast<AliESDtrack *>(trk))->SetESDEvent(static_cast<AliESDEvent *>(fInputEvent));
+    else if(trk->IsA() == AliAODTrack::Class())
+      (static_cast<AliAODTrack *>(trk))->SetAODEvent(static_cast<AliAODEvent *>(fInputEvent));
+    else if(trk->IsA() == AliPicoTrack::Class()){
+      AliPicoTrack *mytrk = static_cast<AliPicoTrack *>(trk);
+      if(!mytrk->GetEvent()){
+        if(mytrk->GetTrack()->IsA() == AliESDtrack::Class())
+          (static_cast<AliESDtrack *>(mytrk->GetTrack()))->SetESDEvent(static_cast<AliESDEvent *>(fInputEvent));
+        else
+          (static_cast<AliAODTrack *>(mytrk->GetTrack()))->SetAODEvent(static_cast<AliAODEvent *>(fInputEvent));
+      }
+    }
+  }
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

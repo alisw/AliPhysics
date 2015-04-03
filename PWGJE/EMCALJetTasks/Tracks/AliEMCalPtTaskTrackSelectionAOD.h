@@ -37,20 +37,11 @@ class AliEMCalPtTaskTrackSelectionAOD: public AliEMCalPtTaskVTrackSelection {
 public:
 	AliEMCalPtTaskTrackSelectionAOD();
 	AliEMCalPtTaskTrackSelectionAOD(AliESDtrackCuts *cuts, UInt_t filterbits);
-	AliEMCalPtTaskTrackSelectionAOD(const AliEMCalPtTaskTrackSelectionAOD &ref);
-	AliEMCalPtTaskTrackSelectionAOD &operator=(const AliEMCalPtTaskTrackSelectionAOD &ref);
-	virtual ~AliEMCalPtTaskTrackSelectionAOD();
+	virtual ~AliEMCalPtTaskTrackSelectionAOD() {}
 
 	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
 	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 	virtual bool IsTrackAccepted(AliVTrack * const trk);
-
-	/**
-	 * Get the track cuts.
-	 *
-	 * \return The track cuts (NULL if not defined).
-	 */
-	virtual TObject *GetTrackCuts() { return fTrackCuts; }
 
 	/**
 	 * Add a new filter bit to the track selection. Multiple filter bits can be set
@@ -60,15 +51,8 @@ public:
 	 */
 	void AddFilterBit(UInt_t filterbits) { fFilterBits |= filterbits; }
 
-	/**
-	 * Set the track cuts object (of type AliESDtrackCuts)
-	 *
-	 * \param trackCuts
-	 */
-	void SetTrackCuts(AliESDtrackCuts *trackCuts) { fTrackCuts = trackCuts; }
 
 private:
-	AliESDtrackCuts *fTrackCuts;				///< Track cuts
 	UInt_t			fFilterBits;				    ///< Track filter bits
 
 	/// \cond CLASSIMP

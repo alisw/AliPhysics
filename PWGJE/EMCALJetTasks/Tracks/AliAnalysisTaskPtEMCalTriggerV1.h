@@ -78,7 +78,8 @@ public:
   void SetTriggerDecisionConfig(AliEMCalTriggerAnaTriggerDecisionConfig *config) { fTriggerDecisionConfig = config; }
 
 protected:
-  AliEMCalTriggerEventData *BuildEvent() const;
+  AliEMCalTriggerEventData *BuildEvent();
+  void FixTrackInputEvent(AliVTrack *trk);
 
   TObjArray                           *fTaskGroups;                       ///< grouped analysis components
   AliEMCalTriggerBinningComponent     *fBinning;                          ///< Global binning component
