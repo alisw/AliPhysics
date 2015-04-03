@@ -293,8 +293,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    //Int_t sigmaG    = 100; // deviation from mean value (increased to 100)
 	    //Int_t sigmaGTRU = 5; // deviation from mean value for TRUs
 	    Double_t dL1GEntries = hL1GammaPatch->GetEntries();
-	    Int_t badL1G[48][104]  = { 0 }; // cols and rows including DCAL
-	    Int_t badL1GTRU[2][23] = { 0 }; // 23 TRUs PER SIDE with DCAL (before 16)
+	    Int_t badL1G[48][104] //cols and rows including DCAL
+	    Int_t badL1GTRU[2][23] = {{0}} ; //23 TRUs PER SIDE with DCAL (before 16)
 	    Int_t nBadL1G    = 0;
 	    Int_t nBadL1GTRU = 0;
 	    Double_t binContentTRU[2][23] = {{0.}};//23 TRUs PER SIDE with DCAL (before 16)
