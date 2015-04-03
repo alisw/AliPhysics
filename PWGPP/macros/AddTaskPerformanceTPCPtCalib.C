@@ -13,7 +13,7 @@
 // gSystem->Load("libTPCcalib");
 // gSystem->Load("libPWGPP");
 //
-// gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceTPCPtCalib.C");
+// gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceTPCPtCalib.C");
 // AliPerformanceTask *tpcQA = AddTaskPerformanceTPCPtCalib("kTRUE","kTRUE","CINT1B-ABCE-NOPF-ALL"); 
 // 
 // Output:
@@ -71,7 +71,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kFALSE, Bool_
   //
   // Add physics selection task to analysis manager
   //
-  //    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  //    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   //    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   //    mgr->AddTask(physSelTask);
 

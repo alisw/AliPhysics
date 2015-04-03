@@ -13,7 +13,7 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
   // A.Dainese, andrea.dainese@pd.infn.it
   //
 
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS -g"); 
 
   //
   TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
@@ -118,7 +118,7 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
   if(runSPD) {
     if(!uselibPWGPP) gROOT->LoadMacro("AliAnalysisTaskSPD.cxx++g");
     taskName="AddTaskSPDQA.C"; 
-    taskName.Prepend("$ALICE_ROOT/PWGPP/PilotTrain/");
+    taskName.Prepend("$ALICE_PHYSICS/PWGPP/PilotTrain/");
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSPD *spdTask = AddTaskSPDQA();
   }
@@ -133,7 +133,7 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
 
   
   // Apply the event selection
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   Bool_t bkgRej=kTRUE;
   //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(readMC,bkgRej);
   
@@ -220,7 +220,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
-   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -g");
+   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS -g");
    if(!uselibPWGPP) {
      //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
      plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliAnalysisTaskITSTrackingCheck.h AliAnalysisTaskITSTrackingCheck.cxx AliAnalysisTaskSEImpParRes.h AliAnalysisTaskSEImpParRes.cxx AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libGui.so libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");

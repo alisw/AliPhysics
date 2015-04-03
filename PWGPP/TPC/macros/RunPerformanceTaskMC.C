@@ -20,9 +20,9 @@
 /*
   //1. Run locally e.g.
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/LoadMyLibs.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/LoadMyLibs.C");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("list_flatP_JB.txt", 500, 0);
   chain->Lookup();
 
@@ -32,17 +32,17 @@
   // set magnetic field
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/RunPerformanceTaskMC.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kFALSE, kFALSE, 0);
 
   //2. Run on PROOF Lite e.g.
 
   TProof::Open(""); 
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/ProofEnableAliRoot.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ProofEnableAliRoot.C");
   ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/trunkJB");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("list_flatP_JB.txt", 400, 0);
   chain->Lookup();
 
@@ -51,7 +51,7 @@
   // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
   gProof->Exec("gROOT->Macro(\"MagField.C\")");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/RunPerformanceTaskMC.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE,0);
 
   //3. Run only on static PROOF at GSI e.g.
@@ -62,10 +62,10 @@
   TProof * proof = proofmgr->CreateSession();
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/ProofEnableAliRoot.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/ProofEnableAliRoot.C");
   ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEADJB/");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("flat_JB.txt", 50, 0);
   chain->Lookup();
 
@@ -75,7 +75,7 @@
   // set magnetic field
   gProof->Exec("gROOT->ProcessLine(\"TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\", 1., 1., AliMagF::k5kG))\")");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/RunPerformanceTaskMC.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE);
 
   //4. Make final spectra and store them in the

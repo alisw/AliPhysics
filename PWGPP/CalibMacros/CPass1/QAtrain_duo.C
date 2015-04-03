@@ -142,7 +142,7 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
 
 void LoadLibraries()
 {
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/PWGPP -I$ALICE_PHYSICS/PWGPP/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
@@ -183,7 +183,7 @@ void AddAnalysisTasks(const char *suffix)
   // CDB connection
   //
   if (doCDBconnect) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
     AliCDBManager *cdb = AliCDBManager::Instance();
@@ -195,7 +195,7 @@ void AddAnalysisTasks(const char *suffix)
   // Event Statistics (Jan Fiete)
   //
   if (doEventStat) {
-      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
       AliAnalysisDataContainer *cstatsout = (AliAnalysisDataContainer*)mgr->GetOutputs()->FindObject("cstatsout");
       cstatsout->SetFileName(Form("EventStat_temp%s.root", suffix));
@@ -209,7 +209,7 @@ void AddAnalysisTasks(const char *suffix)
         printf("Disabling centrality task for p-p\n");
         doCentrality = kFALSE;
      } else {           
-        gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
      }   
   }   
@@ -217,7 +217,7 @@ void AddAnalysisTasks(const char *suffix)
   // Vertexing (A. Dainese)
   // 
   if (doVertex && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskVertexESD.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskVertexESD.C");
     AliAnalysisTaskVertexESD* taskvertexesd =  AddTaskVertexESD(kFALSE, kTriggerMask);
     taskvertexesd->SelectCollisionCandidates(kTriggerMask);
   }  
@@ -226,19 +226,19 @@ void AddAnalysisTasks(const char *suffix)
   //
   if (doQAsym && (ibarrel || iall)) {
   // offline trigger in AddTask
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskQAsym.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskQAsym.C");
     AliAnalysisTaskSE * taskqasim = AddTaskQAsym(0, kTriggerMask, kTriggerHM, kTriggerEMC, kTriggerMuonBarrel);
   }  
   //
   // VZERO QA  (C. Cheshkov)
   //
   if (doVZERO && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskVZEROQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskVZEROQA.C");
     AliAnalysisTaskSE * taskv0qa = AddTaskVZEROQA(0);
 //  taskv0qa->SelectCollisionCandidates();
   }
   if (doVZEROPbPb && iCollisionType==1) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/VZERO/AddTaskVZEROPbPb.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/VZERO/AddTaskVZEROPbPb.C");
     AliAnaVZEROPbPb* taskV0PbPb = (AliAnaVZEROPbPb*)AddTaskVZEROPbPb(0);
 //    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVLNWU-,CVLN-");
 //    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU,CPBI2,CPBI1WU-,CPBI1-,CVHNWU,CVHN,CVLNWU,CVLN");
@@ -255,7 +255,7 @@ void AddAnalysisTasks(const char *suffix)
   // to false
   // Optionally highMult axis can be used by setting the 3st argument to true (for PbPb)
   if (doTPC && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
     AliPerformanceTask *tpcQA = 0;
     if (iCollisionType) {
        // High multiplicity Pb-Pb
@@ -269,7 +269,7 @@ void AddAnalysisTasks(const char *suffix)
 
   // HLT (Alberica Toia)
   if (doHLT && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
     AliPerformanceTask *hltQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kFALSE,0,kTRUE);
     hltQA->SelectCollisionCandidates(kTriggerMask);
   }  
@@ -277,7 +277,7 @@ void AddAnalysisTasks(const char *suffix)
   // SPD (A. Mastroserio)
   //
   if (doSPD && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskSPDQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSPD* taskspdqa = (AliAnalysisTaskSPD*)AddTaskSPDQA();
     // Request from Annalisa
     if (iCollisionType) taskspdqa->SetHeavyIonMode();
@@ -288,7 +288,7 @@ void AddAnalysisTasks(const char *suffix)
   // SDD (F. Prino)
   //
   if (doSDD && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddSDDPoints.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddSDDPoints.C");
     AliAnalysisTaskSE* tasksdd = AddSDDPoints();
     tasksdd->SelectCollisionCandidates(kTriggerMask);
   }
@@ -296,7 +296,7 @@ void AddAnalysisTasks(const char *suffix)
   // SSD dEdx (Marek Chojnacki)
   //
   if (doSSDdEdx && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskdEdxSSDQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskdEdxSSDQA.C");
     AliAnalysisTaskSE* taskssddedx = AddTaskdEdxSSDQA();
     taskssddedx->SelectCollisionCandidates(kTriggerMask);
   }
@@ -306,7 +306,7 @@ void AddAnalysisTasks(const char *suffix)
   //
   if (doITS && (ibarrel || iall)) {
   // hardcoded non-zero trigger mask
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceITS.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceITS.C");
       AliAnalysisTaskITSTrackingCheck *itsQA = 0;
       AliAnalysisTaskITSTrackingCheck *itsQACent0010 = 0;
       AliAnalysisTaskITSTrackingCheck *itsQACent3050 = 0;
@@ -325,13 +325,13 @@ void AddAnalysisTasks(const char *suffix)
   //
   if (doITSsaTracks && (ibarrel || iall)) {
   // offline trigger in AddTask
-     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskITSsaTracks.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskITSsaTracks.C");
      AliAnalysisTaskITSsaTracks *itssaTracks = AddTaskITSsaTracks(kFALSE,kFALSE);
      itssaTracks->SelectCollisionCandidates(kTriggerMask);
   }   
   if (doITSalign && (ibarrel || iall)) {
   // no offline trigger selection
-     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskITSAlign.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskITSAlign.C");
      AliAnalysisTaskITSAlignQA *itsAlign = AddTaskITSAlign(0,2012);
   }   
   //
@@ -339,7 +339,7 @@ void AddAnalysisTasks(const char *suffix)
   //
   if(doTRD && (ibarrel || iall)) {
   // no offline trigger selection
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
       // steer individual TRD tasks
       Bool_t 
       doCheckESD(kTRUE),  // AliTRDcheckESD
@@ -356,7 +356,7 @@ void AddAnalysisTasks(const char *suffix)
   //
   if(doZDC && (ibarrel || iall)) {
   // hardcoded kMB trigger mask
-     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/ZDC/AddTaskZDCQA.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQA.C");
      AliAnalysisTaskSE *taskZDC = AddTaskZDCQA();
      taskZDC->SelectCollisionCandidates(kTriggerMask);
   }   
@@ -365,7 +365,7 @@ void AddAnalysisTasks(const char *suffix)
   //
 
   if(doCALO) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
       AliAnalysisTaskCaloTrackCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", 2012, kFALSE, kFALSE);
       taskCaloQA->SetDebugLevel(0);
       // offline mask set in AddTask to kMB
@@ -382,7 +382,7 @@ void AddAnalysisTasks(const char *suffix)
   
   if(doMUONTrig) {
   // no offline trigger selection
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
       AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
   }
 
@@ -390,7 +390,7 @@ void AddAnalysisTasks(const char *suffix)
   // Impact parameter resolution (xianbao.yuan@pd.infn.it, andrea.dainese@pd.infn.it)
   //
   if (doImpParRes && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskImpParRes.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskImpParRes.C");
     AliAnalysisTaskSE* taskimpparres=0;
     if(iCollisionType==0) {
        taskimpparres= AddTaskImpParRes();
@@ -404,14 +404,14 @@ void AddAnalysisTasks(const char *suffix)
   //
   if (doMUON) {
   // trigger analysis internal
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
     AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA();
   }  
   //
   // TOF (Francesca Bellini)
   //
   if (doTOF && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TOF/AddTaskTOFQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TOF/AddTaskTOFQA.C");
     AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA();
     tofQA->SelectCollisionCandidates(kTriggerMask);
   } 
@@ -419,7 +419,7 @@ void AddAnalysisTasks(const char *suffix)
   // PIDResponse(JENS)
   //
   if (doPIDResponse && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
+    gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskPIDResponse.C"); 
     AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
     PIDResponse->SelectCollisionCandidates(kTriggerMask);
   }  
@@ -428,7 +428,7 @@ void AddAnalysisTasks(const char *suffix)
   // PIDqa(JENS)
   //
   if (doPIDqa && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskPIDqa.C");
     AliAnalysisTaskPIDqa *PIDQA = AddTaskPIDqa();
     PIDQA->SelectCollisionCandidates(kTriggerMask);
   }  
@@ -437,7 +437,7 @@ void AddAnalysisTasks(const char *suffix)
   // HMPID QA (Giacomo Volpe)
   //
   if (doHMPID && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/HMPID/AddTaskHmpidQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/HMPID/AddTaskHmpidQA.C");
     AliAnalysisTaskSE* taskhmpidqa= AddTaskHmpidQA(kFALSE);
       // offline mask set in AddTask to kMB
     taskhmpidqa->SelectCollisionCandidates(kTriggerMask);
@@ -447,13 +447,13 @@ void AddAnalysisTasks(const char *suffix)
   // T0 QA (Alla Mayevskaya)
   if (doT0 && (ibarrel || iall)) {
   // no offline trigger selection
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/T0/AddTaskT0QA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/T0/AddTaskT0QA.C");
     AliT0AnalysisTaskQA* taskt0qa= AddTaskT0QA();
     taskt0qa->SelectCollisionCandidates(kTriggerMask);
   }      
   // FMD QA (Christian Holm Christiansen)
   if (doFMD && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskForwardQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskForwardQA.C");
     // Parameters: usemc, usecentrality
     AliAnalysisTaskSE *forwardQA = (AliAnalysisTaskSE *)AddTaskForwardQA(kFALSE, kFALSE);
     // No offline trigger config. needed (see #84077)
@@ -462,7 +462,7 @@ void AddAnalysisTasks(const char *suffix)
   // PHOS QA (Boris Polishchuk)
   //
   if (doPHOS) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
     AliAnalysisTaskCaloCellsQA *taskPHOSCellQA1 = AddTaskCaloCellsQA(4, 1, NULL,"PHOSCellsQA_AnyInt"); 
     taskPHOSCellQA1->SelectCollisionCandidates(kTriggerMask);
     taskPHOSCellQA1->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0);
@@ -471,19 +471,19 @@ void AddAnalysisTasks(const char *suffix)
     taskPHOSCellQA2->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0);
     // Pi0 QA fo PbPb
     if (iCollisionType) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPbQA/macros/AddTaskPHOSPbPb.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPbQA/macros/AddTaskPHOSPbPb.C");
       AliAnalysisTaskPHOSPbPbQA* phosPbPb = AddTaskPHOSPbPbQA(0);
     }
   }    
   if (doPHOSTrig) {
-     gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_TriggerQA/macros/AddTaskPHOSTriggerQA.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_TriggerQA/macros/AddTaskPHOSTriggerQA.C");
      AliAnalysisTaskPHOSTriggerQA *taskPHOSTrig = AddTaskPHOSTriggerQA(NULL);
   }
   //
   // EMCAL QA (Gustavo Conesa)
   //
   if (doEMCAL) {
-     gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");
      AliAnalysisTaskEMCALTriggerQA *emctrig = AddTaskEMCALTriggerQA();
 //     emctrig->GetRecoUtils()->SwitchOffBadChannelsRemoval();
   }   
@@ -491,7 +491,7 @@ void AddAnalysisTasks(const char *suffix)
   // FLOW and BF QA (C.Perez && A.Rodriguez)
   //
   if (doFBFqa && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFBFqa.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskFBFqa.C");
     AliAnalysisTaskSE *qaFBFMB = (AliAnalysisTaskSE*) AddTaskFBFqa("qaFBFmb",kFALSE);
     qaFBFMB->SelectCollisionCandidates(AliVEvent::kMB);
     AliAnalysisTaskSE *qaFBFSC = (AliAnalysisTaskSE*) AddTaskFBFqa("qaFBFsc",kFALSE);

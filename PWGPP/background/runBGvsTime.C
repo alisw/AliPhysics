@@ -108,7 +108,7 @@ void Load() {
   gSystem->Load("libPWG0base") ;
 
   //compile online the task class
-  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_ROOT/PWG0/ -I$ROOTSYS/include");
+  gSystem->SetIncludePath("-I. -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/PWG0/ -I$ROOTSYS/include");
   //  gROOT->LoadMacro("./AliAnalysisTaskCombPIDSpectra.cxx+");
   //  gROOT->LoadMacro("AliBackgroundSelection.cxx++g");
   gROOT->LoadMacro("AliHistoListWrapper.cxx++g");   

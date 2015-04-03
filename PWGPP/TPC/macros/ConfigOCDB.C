@@ -5,7 +5,7 @@
  - the geometry and mag. field initialized from GRP
  
  Example:
- .L $ALICE_ROOT/PWGPP/TPC/macros/ConfigOCDB.C
+ .L $ALICE_PHYSICS/PWGPP/TPC/macros/ConfigOCDB.C
  ConfigOCDB(129160,"raw://");
 
 */

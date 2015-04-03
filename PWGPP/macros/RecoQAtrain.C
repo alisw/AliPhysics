@@ -38,7 +38,7 @@ void RecoQAtrain(Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE)
 
 void LoadLibraries()
 {
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/PWGPP -I$ALICE_PHYSICS/PWGPP/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
@@ -55,11 +55,11 @@ void AddAnalysisTasks(Bool_t writeITSTP, Bool_t useTPCcrv)
   mgr->SetCommonFileName("RecoQAresults.root");
   //
   // Event Statistics (Jan Fiete)
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
   //
   // add standard ITSAlignQA task with only SDD calibration histos activated
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskITSAlign.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskITSAlign.C");
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskITSAlign(0,2011,kTRUE);
   itsAlign->SetLoadGeometryFromOCDB(kFALSE);
   itsAlign->SetDoSPDResiduals(kFALSE);

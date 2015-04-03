@@ -15,7 +15,7 @@
  // Local creation e.g using:
  //
 
- .L $ALICE_ROOT/PWGPP/PWGPPmacros/syswatchEvalTrain.C
+ .L $ALICE_PHYSICS/PWGPP/PWGPPmacros/syswatchEvalTrain.C
 
 */
 

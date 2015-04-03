@@ -325,7 +325,7 @@ void AliTRDpwgppHelper::MergeProd(const Char_t *mark, const Char_t *files, const
   Int_t first(0);
   for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
     first = ibatch*nBatch;
-    if(gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWGPP/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
+    if(gSystem->Exec(Form("aliroot -b -q \'$ALICE_PHYSICS/PWGPP/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
     gSystem->Exec(Form("mv %d_%s merge/%d_%d_%s", first, mark, level, first, mark));
     gSystem->Exec(Form("echo %s/merge/%d_%d_%s >> %s", gSystem->ExpandPathName("$PWD"), level, first, mark, lMERGE));
   }
@@ -335,7 +335,7 @@ void AliTRDpwgppHelper::MergeProd(const Char_t *mark, const Char_t *files, const
     gSystem->Exec(Form("mv merge/%d_%d_%s %s", level, first, mark, mark));
   } else if(nBatches<=nBatch){
     Info("AliTRDpwgppHelper::MergeProd()", "Merge %d files in 1 batch.", nBatches);
-    if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWGPP/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE)\'", mark, lMERGE, nBatches))) return;
+    if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_PHYSICS/PWGPP/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE)\'", mark, lMERGE, nBatches))) return;
     gSystem->Exec(Form("mv 0_%s %s", mark, mark));
   } else {
     level++;

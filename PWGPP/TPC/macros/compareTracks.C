@@ -24,7 +24,7 @@
   // visualization part:   
   // 
   Example usage:
-  aliroot -b -q $ALICE_ROOT/TPC/macros/compareTracks.C+
+  aliroot -b -q $ALICE_PHYSICS/TPC/macros/compareTracks.C+
   //
   //
   .x $HOME/rootlogon.C
@@ -33,7 +33,7 @@
   gSystem->Load("libPWG0base");
   gSystem->Load("libPWG0dep");
   gSystem->Load("libPWG0selectors");
-  .L $ALICE_ROOT/PWGPP/TPC/macros/compareTracks.C+
+  .L $ALICE_PHYSICS/PWGPP/TPC/macros/compareTracks.C+
   //
   compareTracks("compare.list");
   //
@@ -478,7 +478,7 @@ void DrawDiffEff(){
     mkdir dir$a
     cd dir$a
     mv ../$a compare.list
-    bsub -q proof -oo outcompare.log aliroot -b -q $ALICE_ROOT/PWGPP/TPC/macroscompareTracks.C+
+    bsub -q proof -oo outcompare.log aliroot -b -q $ALICE_PHYSICS/PWGPP/TPC/macroscompareTracks.C+
     cd $wdir
   done;
 

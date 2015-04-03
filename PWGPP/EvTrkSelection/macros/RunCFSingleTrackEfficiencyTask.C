@@ -4,7 +4,7 @@ class AliAnalysisAlien;
 //_______________________________| Loading Libraries |________________________________
 void Load() {
     
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGPP -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER/STEER -I$ALICE_PHYSICS/STEER/STEERBase -I$ALICE_PHYSICS/STEER/ESD -I$ALICE_PHYSICS/STEER/AOD -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGPP -g"); 
 
   //load the required aliroot libraries
   gSystem->Load("libTree");
@@ -67,17 +67,17 @@ void RunCFSingleTrackEfficiencyTask()
 
   // Run physics selection if not reading AODs
   if (!readAOD) {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE);
   }
 
   // Add new tasks
   //
   // First add the task for the PID response setting
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(kTRUE,kTRUE);
 	 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskPIDqa.C");
   AliAnalysisTaskPIDqa *pidQA = AddTaskPIDqa();
 
   // gROOT->LoadMacro("AliSingleTrackEffCuts.cxx++g");
@@ -126,7 +126,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test", TString testfiles
   else plugin->SetDataPattern("*/AliESDs.root");
   
   Int_t totruns=0;
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/AddGoodRuns.C");
   totruns += AddGoodRuns(plugin,"LHC13b","LHC13b");
   totruns += AddGoodRuns(plugin,"LHC13c","LHC13c");
   plugin->SetNrunsPerMaster(totruns);
@@ -139,7 +139,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test", TString testfiles
   plugin->SetExecutable("ST290713.sh");
   plugin->SetAnalysisSource("AliSingleTrackEffCuts.cxx AliCFSingleTrackEfficiencyTask.cxx");
   plugin->SetAdditionalLibs("AliSingleTrackEffCuts.h AliSingleTrackEffCuts.cxx AliCFSingleTrackEfficiencyTask.cxx AliCFSingleTrackEfficiencyTask.h");  
-  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OADB -g"); 
+  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER/STEER -I$ALICE_PHYSICS/STEER/STEERBase -I$ALICE_PHYSICS/STEER/ESD -I$ALICE_PHYSICS/STEER/AOD -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS -I$ALICE_PHYSICS/OADB -g"); 
   
   plugin->SetDefaultOutputs(kTRUE);
   // merging via jdl

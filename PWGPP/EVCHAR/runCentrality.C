@@ -12,7 +12,7 @@ void runCentrality(const char * type = "a", const char *mode="grid")
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");   
   // Use AliRoot includes to compile our task
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
 
   // form filename 
   TString filenameStr = Form("%s",type);
@@ -45,7 +45,7 @@ void runCentrality(const char * type = "a", const char *mode="grid")
   mgr->SetInputEventHandler(esdH);
   
   // Physics selection
-  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kFALSE);
   // Selecting collision candidates
   //task->SelectCollisionCandidates();
