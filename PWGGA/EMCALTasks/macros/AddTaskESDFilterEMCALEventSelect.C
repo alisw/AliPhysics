@@ -1,5 +1,15 @@
-// $Id$
 
+/// \file AddTaskESDFilterEMCALEventSelect.C
+/// \brief Configuration of EMCal filtering task.
+///
+/// This task reclusterizes on the fly EMCal clusters, creates a new
+/// branch with those clusters so that it can be used by another analysis
+/// task accessing this cluster branch.
+///
+/// Add more info ...
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS) and ??
+///
 Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t enableTPCOnlyAODTracksLocalFlag=kFALSE;

@@ -1,4 +1,3 @@
-// $Id$
 //--------------------------------------------------
 // Example macro to do Calorimeters filtering
 // copy ESDs into AODs
@@ -9,6 +8,21 @@
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
 //-------------------------------------------------
+//--------------------------------------------------
+/// \file emcalReclusterize.C
+/// \brief Example of execution macro to run the EMCAL clusterization task locally or on the grid (not plugin)
+///
+/// Basic example macro to do EMCal reclusterization.
+///
+/// Pay attention to the options and definitions
+/// set in the lines below
+///
+/// A more up-to-date macro can be found in PWGGA/CaloTrackCorrelations/macros/ana.C
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+//
+//-------------------------------------------------
+
 enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //mLocal: Analyze locally files in your computer
 //mLocalCAF: Analyze locally CAF files

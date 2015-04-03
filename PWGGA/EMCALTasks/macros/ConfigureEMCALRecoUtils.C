@@ -1,5 +1,21 @@
-// $Id$
-
+///
+/// \file ConfigureEMCALRecoUtils.C
+/// \brief Configuration of AliEMCALRecoUtils.
+///
+/// Example of configuration of AliEMCALRecoUtils. Called in different analysis configuration macros.
+/// This class is used to calibrate/correct/accept EMCal clusters.
+///
+/// The input parameters:
+/// \param reco: pointer to object to initialize in this macro.
+/// \param bMC: Bool, indicates if data is MC.
+/// \param bExotic: Bool, indicates if exotic clusters are removed.
+/// \param bNonLin: Bool, indicates if non linearity correction is applied on clusters.
+/// \param bRecalE: Bool, indicates if energy recalibration is applied.
+/// \param bBad: Bool, indicates if bad channels/clusters are removed.
+/// \param bRecalT: Bool, indicates if time is calibrated.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bMC    = kFALSE,
                              Bool_t  bExotic= kTRUE,
@@ -7,10 +23,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bRecalE= kTRUE,
                              Bool_t  bBad   = kTRUE,
                              Bool_t  bRecalT= kTRUE)
-{  
-
-  // Configure RecoUtils with OADB objects
-  
+{
   printf("**** Configure AliEMCALRecoUtils ***\n");
   
   // Exotic cells removal
@@ -26,7 +39,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
     reco->SetExoticCellMinAmplitudeCut(4.); // 4 GeV    
   }  
   
-  //Recalibration factors
+  // Recalibration factors
   
   if(bRecalE && ! bMC)
   {
@@ -49,7 +62,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
     reco->SwitchOnTimeRecalibration();
   }
     
-  // position
+  // Recalculate position with method
     
   reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
 

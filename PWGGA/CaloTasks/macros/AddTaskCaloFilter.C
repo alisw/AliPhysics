@@ -1,4 +1,23 @@
-AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE, 
+/// \file AddTaskCaloFilter.C
+/// \brief Configuration analysis task filtering events and calorimeter data into AOD format.
+///
+/// The parameters for the analysis are:
+/// \param bias: bias or not depending on EMCal signal.
+/// \param mc: simulation or data.
+/// \param minE: at least one cluster in EMCal with this energy.
+/// \param minN: at least one cluster in EMCal with this number of cells.
+/// \param vz: z vertex cut.
+/// \param opt: filter EMCal only, PHOS only or both.
+/// \param correct: calibrate the EMCal, remove bad cells ...
+/// \param fillTrack: Fill event with hybrid tracks
+/// \param fillAOD: Output AOD is filled, not used only for a secondary task analysis at the same time.
+///
+/// The configuration is EMCal oriented, if PHOS oriented modifications are needed.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
                                               const Bool_t  mc        = kFALSE,
                                               const Float_t minE      = 6, 
                                               const Float_t minN      = 3, 

@@ -1,13 +1,24 @@
-// $Id$
-
+///
+/// \file ConfigEMCALClusterize.C
+/// \brief Configuration analysis task for EMCAL clusterization.
+///
+/// Basic example of configuration, using alternative configuration way.
+/// Configuration is applied at the initialization time of the task.
+/// This macro is obsolete.
+/// The suggested macro is though AddTaskEMCALClusterize.C
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 AliAnalysisTaskEMCALClusterize* ConfigEMCALClusterize()
 {
     
   AliAnalysisTaskEMCALClusterize* clusterize = new AliAnalysisTaskEMCALClusterize("EMCALClusterize");
+    
   clusterize->SelectCollisionCandidates();
   clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
   clusterize->FillAODFile(kTRUE); // fill aod.root with clusters?, not really needed for analysis.
   clusterize->JustUnfold(kFALSE); // if TRUE, do just unfolding, do not recluster cells
+  
   AliEMCALRecParam * params = clusterize->GetRecParam();
   params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
@@ -18,29 +29,29 @@ AliAnalysisTaskEMCALClusterize* ConfigEMCALClusterize()
   params->SetTimeMin(-1); //Open this cut for AODs
   params->SetTimeMax(1e6);//Open this cut for AODs    
   
-  //Allignment matrices  
-  clusterize->SwitchOnLoadOwnGeometryMatrices();
-  TGeoHMatrix *matrix[4];
-  double rotationMatrix[4][9] = {
-    -0.014587, -0.999892, -0.002031, 0.999892, -0.014591,  0.001979, -0.002009, -0.002002,  0.999996,
-    -0.014587,  0.999892,  0.002031, 0.999892,  0.014591, -0.001979, -0.002009,  0.002002, -0.999996,
-    -0.345864, -0.938278, -0.003412, 0.938276, -0.345874,  0.003010, -0.004004, -0.002161,  0.999990,
-    -0.345864,  0.938278,  0.003412, 0.938276,  0.345874, -0.003010, -0.004004,  0.002161, -0.999990
-  };
-  
-  double translationMatrix[4][3] = {
-    0.351659, 447.576446,  176.269742,
-    1.062577, 446.893974, -173.728870,
-    -154.213287, 419.306156,  176.753692,
-    -153.018950, 418.623681, -173.243605};
-  
-  for(int j=0; j<4; j++){
-    matrix[j] = new TGeoHMatrix();
-    matrix[j]->SetRotation(rotationMatrix[j]);
-    matrix[j]->SetTranslation(translationMatrix[j]);
-    //matrix[j]->Print();
-    clusterize->SetGeometryMatrixInSM(matrix[j],j);
-  }
+  // Alignment matrices
+//  clusterize->SwitchOnLoadOwnGeometryMatrices();
+//  TGeoHMatrix *matrix[4];
+//  double rotationMatrix[4][9] = {
+//    -0.014587, -0.999892, -0.002031, 0.999892, -0.014591,  0.001979, -0.002009, -0.002002,  0.999996,
+//    -0.014587,  0.999892,  0.002031, 0.999892,  0.014591, -0.001979, -0.002009,  0.002002, -0.999996,
+//    -0.345864, -0.938278, -0.003412, 0.938276, -0.345874,  0.003010, -0.004004, -0.002161,  0.999990,
+//    -0.345864,  0.938278,  0.003412, 0.938276,  0.345874, -0.003010, -0.004004,  0.002161, -0.999990
+//  };
+//  
+//  double translationMatrix[4][3] = {
+//    0.351659, 447.576446,  176.269742,
+//    1.062577, 446.893974, -173.728870,
+//    -154.213287, 419.306156,  176.753692,
+//    -153.018950, 418.623681, -173.243605};
+//  
+//  for(int j=0; j<4; j++){
+//    matrix[j] = new TGeoHMatrix();
+//    matrix[j]->SetRotation(rotationMatrix[j]);
+//    matrix[j]->SetTranslation(translationMatrix[j]);
+//    //matrix[j]->Print();
+//    clusterize->SetGeometryMatrixInSM(matrix[j],j);
+//  }
   
   
 //  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();

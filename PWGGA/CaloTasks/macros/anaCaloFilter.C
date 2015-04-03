@@ -1,12 +1,16 @@
-/* $Id:  $ */
 //--------------------------------------------------
-// Example macro to do Calorimeters filtering
-// copy ESDs into AODs
-//
-// Pay attention to the options and definitions
-// set in the lines below
-//
-//  Author : Gustavo Conesa Balbastre (INFN-LNF)
+/// \file anaCaloFilter.C
+/// \brief Example of execution macro to run the Calorimeter filter task locally or on the grid (not plugin)
+///
+/// Basic example macro to do Calorimeters filtering
+/// copy ESDs into AODs, or AODs to AODs and filtering
+///
+/// Pay attention to the options and definitions
+/// set in the lines below
+///
+/// A more up-to-date macro can be found in PWGGA/CaloTrackCorrelations/macros/ana.C
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 //
 //-------------------------------------------------
 enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
