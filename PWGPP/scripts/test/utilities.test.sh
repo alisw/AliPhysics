@@ -5,7 +5,7 @@
 # To run the test: 
 
 # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_guessRunData)
-# ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_guessRunData)
+# ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_OCDBYear)
 
 source $ALICE_PHYSICS/../src/PWGPP/scripts/alilog4bash.sh
 source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh
