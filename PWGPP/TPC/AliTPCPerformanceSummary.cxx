@@ -150,7 +150,7 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
    
     (*pcstream)<<"tpcQA"<<"\n";
     TTree * tree = ((*pcstream)<<"tpcQA").GetTree();
-    tree->SeAlias("nEvents","entriesMult");
+    tree->SetAlias("nEvents","entriesMult");
     
 }
 
