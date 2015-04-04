@@ -72,7 +72,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
  
 
 // Histograms
-		enum{kH0, kH1, kH2, kH3, kH4, kH5, kNH}; //harmonics
+		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kNH}; //harmonics
 		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
 		double fEta_min;
 		double fEta_max;
