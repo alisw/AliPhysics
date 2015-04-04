@@ -75,11 +75,13 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void SetIsWeakDeacyExclude( Bool_t WeakDecay){ IsExcludeWeakDecay=WeakDecay; cout << "Setting Exclude Weak Decay Particles = " << WeakDecay << endl;}
   void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl; };
   void SetEtaRange( double eta_min, double eta_max ){ fEta_min=eta_min; fEta_max=eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " << fEta_max << endl;};
+  void SetPtRange( double pt_min, double pt_max){ fPt_min = pt_min; fPt_max = pt_max; cout << "setting Pt range as " << fPt_min << " ~ " << fPt_max << endl;};
   inline void DEBUG(int level, TString msg){ if(level < fDebugLevel){ std::cout<< level << "\t" << msg << endl;}};
   void SetFFlucTaskName(TString taskname){fTaskName = taskname;};
   TString GetFFlucTaskName(){return fTaskName;};
   void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
   Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
+  void SetIsCentFlat( Bool_t isCentFlat);
 
  private:
   TString fTaskName;
@@ -88,9 +90,13 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   int fFilterBit; 
   double fEta_min;
   double fEta_max;
+  double fPt_min;
+  double fPt_max;
   Bool_t IsMC;
   Bool_t IsExcludeWeakDecay;
-  TClonesArray * fInputList;  // tracklist  
+  Bool_t IsCentFlat;
+  TClonesArray * fInputList;  // tracklist 
+  TH1D *h_ratio; 
   AliJFFlucAnalysis *fFFlucAna; // analysis code
   TDirectory *fOutput;     // output
   ClassDef(AliJFFlucTask, 1);

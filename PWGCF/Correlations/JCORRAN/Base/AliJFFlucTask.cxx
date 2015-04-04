@@ -46,7 +46,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fInputList(0),
     AliAnalysisTaskSE(), 
     fFFlucAna(0x0),
-	fOutput()
+	fOutput(),
+	h_ratio(0)
 {
  fEvtNum=0;
  fFilterBit = 0;
@@ -61,7 +62,8 @@ AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t I
 	fInputList(0),
     AliAnalysisTaskSE(name), 
     fFFlucAna(0x0),
-	fOutput()
+	fOutput(),
+	h_ratio(0)
 {
  DefineOutput(1, TDirectory::Class());
   fEvtNum=0;
@@ -98,6 +100,7 @@ AliJFFlucTask::~AliJFFlucTask()
 		delete fFFlucAna;
 		delete fInputList;
 		delete fOutput;
+		delete h_ratio;
 }
 
 //________________________________________________________________________
@@ -143,12 +146,12 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 	// load current event and save track, event info 
 	AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+	fCent = ReadAODCentrality( currentEvent, "V0M"  ) ; 
 
 	if( IsGoodEvent( currentEvent )){
 
 			ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 			ReadVertexInfo( currentEvent, fvertex); // read vertex info
-			fCent = 			ReadAODCentrality( currentEvent, "V0M"  ) ; 
 			Int_t Ntracks = fInputList->GetEntriesFast();
 
 			// Analysis Part 
@@ -202,12 +205,16 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				if( track->IsPhysicalPrimary() ){
 						// insert AMTP weak decay switch here
 						if(IsExcludeWeakDecay == kTRUE){
+								//cout << "finding weak decaying particle ... " << endl;
 								Bool_t kExcludeParticle = kFALSE;
 								Int_t gMotherIndex = track->GetMother(); // check and ask about this to DJ changed to mother from firstmother
 								if(gMotherIndex != -1) {
+//								cout << "this mother is " << gMotherIndex << endl;
 										AliAODMCParticle *motherParticle = (AliAODMCParticle*)mcArray->At(gMotherIndex);
+//										cout << "mother pdg code is " << motherParticle->GetPdgCode() << endl;
 										if(motherParticle) {
 												if(IsThisAWeakDecayingParticle(motherParticle)){
+//													cout << "!!!!!!! FOUND!!!!!!!" <<endl;
 													kExcludeParticle = kTRUE;
 												}
 										}
@@ -216,8 +223,10 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 								if(kExcludeParticle) continue;
 						} // weak decay particles are excluded
 						double track_abs_eta = TMath::Abs( track->Eta() );
-						//if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
-						//if( track->Pt() < 0.2 || track->Pt() > 5 ) continue ; // test pt cut
+						double Pt = track->Pt(); 
+						if( fPt_min > 0){
+							if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
+						}
 						Int_t pdg = track->GetPdgCode();
 						Char_t ch = (Char_t) track->Charge();
 						Int_t label = track->GetLabel();
@@ -237,16 +246,21 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
 				if(track->TestFilterBit( fFilterBit )){ // hybrid cut
+						double Pt = track->Pt(); 
+						if( fPt_min > 0){
+							if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
+						}
+
 //						double track_abs_eta = TMath::Abs( track->Eta() );
 //						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
-								AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack; 
+								AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack;
 								//itrack->SetID( track->GetID() );
 								itrack->SetID( TrackList->GetEntriesFast() ) ;
 								itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 								itrack->SetParticleType(kJHadron);
 								itrack->SetCharge(track->Charge() );
 								itrack->SetStatus(track->GetStatus() );
-//						} no eta cut in task file
+								//						} no eta cut in task file
 				}
 		}
 	} //read aod reco track done.
@@ -254,48 +268,137 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 
-	Bool_t Event_status = kFALSE;
-	// check vertex 
-	AliVVertex *vtx = event->GetPrimaryVertex();
-	if(vtx){
-			if( vtx->GetNContributors() > 0 ){
-					double zVert = vtx->GetZ();
-					if( zVert > -10 && zVert < 10) Event_status = kTRUE;
-			}
-	}
-	return Event_status;
-/*
-//	Bool_t Trigger_kCentral = kFALSE; // init
-//	Trigger_kCentral =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-->IsEventSelected() & AliVEvent::kCentral);
-//	return Trigger_kCentral;
-//	*/
+		//event selection here!
+		Bool_t Event_status = kFALSE;
+
+		// check vertex 
+		AliVVertex *vtx = event->GetPrimaryVertex();
+		if(vtx){
+				if( vtx->GetNContributors() > 0 ){
+						double zVert = vtx->GetZ();
+						if( zVert > -10 && zVert < 10) Event_status = kTRUE;
+				}
+		}
+
+		// event cent flatting  --- do it only when IsCentFlat is true
+		if( Event_status== kTRUE && IsCentFlat == kTRUE ){
+				float centrality = ReadAODCentrality( event, "V0M");
+				double cent_flat_ratio = h_ratio->GetBinContent( (h_ratio->GetXaxis()->FindBin(centrality))) ;
+				if (gRandom->Uniform(0, cent_flat_ratio) > 1 ){
+				//	cout << "this event is excluded with random pro" << endl;
+					Event_status = kFALSE;
+				}
+				
+		}
+
+		return Event_status;
+		/*
+		//	Bool_t Trigger_kCentral = kFALSE; // init
+		//	Trigger_kCentral =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+		->IsEventSelected() & AliVEvent::kCentral);
+		//	return Trigger_kCentral;
+		//	*/
 }
 //
 //______________________________________________________________________________
 void AliJFFlucTask::Terminate(Option_t *)
 {
-//    fFFlucAna->Terminate("");
-	// Processing when the event loop is ended
-	cout<<"AliJFFlucTask Analysis DONE !!"<<endl; 
+		//    fFFlucAna->Terminate("");
+		// Processing when the event loop is ended
+		cout<<"AliJFFlucTask Analysis DONE !!"<<endl; 
 }
 
 
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 {
-  // In order to prevent analyzing daughters from weak decays 
-  // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
-Int_t pdgcode = TMath::Abs( thisGuy->GetPdgCode() );
- Int_t myWeakParticles[7] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
-                              3122, 3112, // Lambda0 Sigma+-
-                              130, 310 // K_L0 K_S0
- };
- Bool_t found = kFALSE;
- for(Int_t i=0; i!=7; ++i)
-   if( myWeakParticles[i] == pdgcode ) {
-     found = kTRUE;
-     break;
-   }
- return found;
+		// In order to prevent analyzing daughters from weak decays 
+		// - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
+		Int_t pdgcode = TMath::Abs( thisGuy->GetPdgCode() );
+		Int_t myWeakParticles[7] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+				3122, 3112, // Lambda0 Sigma+-
+				130, 310 // K_L0 K_S0
+		};
+		Bool_t found = kFALSE;
+		for(Int_t i=0; i!=7; ++i)
+				if( myWeakParticles[i] == pdgcode ) {
+						found = kTRUE;
+						break;
+				}
+		return found;
 }
+//______________________________________________________________________________
+void AliJFFlucTask::SetIsCentFlat( Bool_t isCentFlat )
+{
+		cout << "Setting to flatting Centrality with LHC11h data.. " << endl;
+		if( IsMC == kTRUE ) Printf("this is not LHC11h data");
+		IsCentFlat = isCentFlat;
+
+		if(IsCentFlat == kTRUE){
+				// ratio from ExtractCentRatio.C // do not change this manually	
+				h_ratio = new TH1D("h_ratio","",60,0,60);
+				h_ratio->SetBinContent(1,1);
+				h_ratio->SetBinContent(2,1.04705);
+				h_ratio->SetBinContent(3,1.06116);
+				h_ratio->SetBinContent(4,1.06961);
+				h_ratio->SetBinContent(5,1.06418);
+				h_ratio->SetBinContent(6,1.32022);
+				h_ratio->SetBinContent(7,1.33321);
+				h_ratio->SetBinContent(8,1.29442);
+				h_ratio->SetBinContent(9,1.22629);
+				h_ratio->SetBinContent(10,1);
+				h_ratio->SetBinContent(11,2.53223);
+				h_ratio->SetBinContent(12,1.43706);
+				h_ratio->SetBinContent(13,1.04602);
+				h_ratio->SetBinContent(14,1.02736);
+				h_ratio->SetBinContent(15,1.02187);
+				h_ratio->SetBinContent(16,1);
+				h_ratio->SetBinContent(17,1.02364);
+				h_ratio->SetBinContent(18,1.00895);
+				h_ratio->SetBinContent(19,1.00213);
+				h_ratio->SetBinContent(20,1.03277);
+				h_ratio->SetBinContent(21,1.02793);
+				h_ratio->SetBinContent(22,1.05164);
+				h_ratio->SetBinContent(23,1.03922);
+				h_ratio->SetBinContent(24,1.04664);
+				h_ratio->SetBinContent(25,1.01487);
+				h_ratio->SetBinContent(26,1.01047);
+				h_ratio->SetBinContent(27,1.03473);
+				h_ratio->SetBinContent(28,1.04211);
+				h_ratio->SetBinContent(29,1.00174);
+				h_ratio->SetBinContent(30,1);
+				h_ratio->SetBinContent(31,1.04261);
+				h_ratio->SetBinContent(32,1.01121);
+				h_ratio->SetBinContent(33,1);
+				h_ratio->SetBinContent(34,1.00863);
+				h_ratio->SetBinContent(35,1.02587);
+				h_ratio->SetBinContent(36,1.00558);
+				h_ratio->SetBinContent(37,1.02542);
+				h_ratio->SetBinContent(38,1.00648);
+				h_ratio->SetBinContent(39,1.03365);
+				h_ratio->SetBinContent(40,1.0166);
+				h_ratio->SetBinContent(41,1.01691);
+				h_ratio->SetBinContent(42,1.00623);
+				h_ratio->SetBinContent(43,1);
+				h_ratio->SetBinContent(44,1.02026);
+				h_ratio->SetBinContent(45,1.0043);
+				h_ratio->SetBinContent(46,1.03178);
+				h_ratio->SetBinContent(47,1.00555);
+				h_ratio->SetBinContent(48,1.01814);
+				h_ratio->SetBinContent(49,1.00046);
+				h_ratio->SetBinContent(50,1.00857);
+				h_ratio->SetBinContent(51,13.4844);
+				h_ratio->SetBinContent(52,12.6347);
+				h_ratio->SetBinContent(53,11.2659);
+				h_ratio->SetBinContent(54,8.80011);
+				h_ratio->SetBinContent(55,5.4266);
+				h_ratio->SetBinContent(56,2.38822);
+				h_ratio->SetBinContent(57,1.12582);
+				h_ratio->SetBinContent(58,1.01973);
+				h_ratio->SetBinContent(59,1);
+				h_ratio->SetBinContent(60,1.03022);
+		}
+}
+//
+//
+
