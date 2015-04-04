@@ -102,11 +102,20 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     //}  
   time = (startTimeGRP+stopTimeGRP)/2;
   duration = (stopTimeGRP-startTimeGRP);
-    
+  TObjString period(gSystem->Getenv("eperiod"));
+  TObjString pass(gSystem->Getenv("epass"));
+  TObjString dataType(gSystem->Getenv("edataType"));
+  ::Info(" AliTPCPerformanceSummary::WriteToTTreeSRedirector",TString::Format("%s/%s/%s",dataType.GetName(), period.GetName(),pass.GetName()).Data());
+  Int_t year=0;
+  if (gSystem->Getenv("eyear")) year=atoi(gSystem->Getenv("eyear"));
     if (!pcstream) return;
     (*pcstream)<<"tpcQA"<<      
       "run="<<run<<
       "time="<<time<<
+      "year="<<year<<
+      "period.="<<&period<<
+      "pass.="<<&pass<<
+      "dataType.="<<&dataType<<
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
       "duration="<<duration<<
@@ -1116,19 +1125,21 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       }
       graphNclMostProbPhiSector[igr]=new TGraphErrors(18, vecSector.GetMatrixArray(), vecNclSector.GetMatrixArray());      
     }
-
+    static TVectorD normMedian(4);
     for (Int_t igr=0;igr<4; igr++){
-       graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
-       graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
-       graphNclMostProbPhiSector[igr]->SetMarkerStyle(21+igr);
-       graphNclMostProbPhiSector[igr]->SetMarkerColor(1+igr);
+      normMedian[igr] = TMath::Median(nbins, graphNclMostProbPhi[igr]->GetY());
+      graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
+      graphNclMostProbPhiSector[igr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhiSector[igr]->SetMarkerColor(1+igr);
     } 
 
     (*pcstream)<<"tpcQA"<<
-      "grNclPhiPosA.="<< graphNclMostProbPhi[0]<<  //   phi NCL/findable profile
-      "grNclPhiNegA.="<< graphNclMostProbPhi[1]<<  // 
-      "grNclPhiPosC.="<< graphNclMostProbPhi[2]<<  // 
-      "grNclPhiNegC.="<< graphNclMostProbPhi[3];   // 
+      "grNclPhiMedian.="<<&normMedian<<            //  median value (144 phi bins)  of the number of clusters 
+      "grNclPhiPosA.="<< graphNclMostProbPhi[0]<<  //  phi NCL/findable profile per phi bin - positive tracks A side
+      "grNclPhiNegA.="<< graphNclMostProbPhi[1]<<  //  phi NCL/findable profile per phi bin - negative tracks A side
+      "grNclPhiPosC.="<< graphNclMostProbPhi[2]<<  //  phi NCL/findable profile per phi bin - positive tracks C side
+      "grNclPhiNegC.="<< graphNclMostProbPhi[3];   //  phi NCL/findable profile per phi bin - negative tracks C side
 
     (*pcstream)<<"tpcQA"<<
       "grNclSectorPosA.="<< graphNclMostProbPhiSector[0]<<  //  sector NCL/findable profile
