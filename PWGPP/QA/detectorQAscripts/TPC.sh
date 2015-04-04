@@ -11,6 +11,14 @@ runLevelQA()
   qaFile=$1
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/MakeTrend.C .
+  echo $dataType/$year/$period/$pass/$runNumber
+  echo $ocdbStorage
+  export edataType=$dataType
+  export eyear=$year
+  export eperiod=$period
+  export epass=$pass
+  export erunNumber=$runNumber
+  export eocdbStorage=$ocdbStorage
   aliroot -b -q -l "MakeTrend.C(\"$qaFile\",$runNumber)" 
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/drawPerformanceTPCQAMatch.C .
