@@ -38,7 +38,6 @@
 #include <TClonesArray.h>
 #include  "TDatabasePDG.h"
 #include <TGrid.h>
-
 #include "AliAnalysisTaskJetCluster.h"
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
@@ -166,6 +165,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fTCARandomConesOutRan(0x0),
   fAODJetBackgroundOut(0x0),
   fRandom(0),
+  fCorrectForSemigood(kFALSE),
+  fTpcHolePos(4.71),
+  fTpcHoleWidth(0.2),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -336,6 +338,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fTCARandomConesOutRan(0x0),
   fAODJetBackgroundOut(0x0),
   fRandom(0),
+  fCorrectForSemigood(kFALSE),
+  fTpcHolePos(4.71),
+  fTpcHoleWidth(0.2),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -1513,7 +1518,17 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     //background estimates:all bckg jets(0) & wo the 2 hardest(1)
 
     if(fAODJetBackgroundOut){
-      vector<fastjet::PseudoJet> jets2=sortedJets;
+     
+      vector<fastjet::PseudoJet> jetsbackground=sortedJets;
+
+      if(fCorrectForSemigood){
+         for(int k=0;k<jetsbackground.size();k++){
+         double dphi=RelativePhi(jetsbackground[k].phi(),fTpcHolePos);
+	 
+         if(TMath::Abs(dphi)<fTpcHoleWidth+fRparam) jetsbackground.erase(jetsbackground.begin()+k);}
+         }
+
+      vector<fastjet::PseudoJet> jets2=jetsbackground;
       if(jets2.size()>2) jets2.erase(jets2.begin(),jets2.begin()+2); 
 
       Double_t bkg1=0;
@@ -1532,7 +1547,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
       //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
       //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));      
-      clustSeq.get_median_rho_and_sigma(sortedJets, range, true, bkg4, sigma4, meanarea4, true);
+      clustSeq.get_median_rho_and_sigma(jetsbackground, range, true, bkg4, sigma4, meanarea4, true);
       fAODJetBackgroundOut->SetBackground(3,bkg4,sigma4,meanarea4);
 
       //////////////////////
@@ -2302,3 +2317,15 @@ bool AliAnalysisTaskJetCluster::IsDMeson(int pc){
 return false;
 }
 
+
+Double_t AliAnalysisTaskJetCluster::RelativePhi(Double_t mphi,Double_t vphi){
+
+  if (vphi < -1*TMath::Pi()) vphi += (2*TMath::Pi());
+  else if (vphi > TMath::Pi()) vphi -= (2*TMath::Pi());
+  if (mphi < -1*TMath::Pi()) mphi += (2*TMath::Pi());
+  else if (mphi > TMath::Pi()) mphi -= (2*TMath::Pi());
+  double dphi = mphi-vphi;
+  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
+  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
+  return dphi;//dphi in [-Pi, Pi]
+}
