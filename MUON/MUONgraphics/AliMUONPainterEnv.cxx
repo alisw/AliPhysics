@@ -24,6 +24,7 @@
 #include "Riostream.h"
 #include "AliLog.h"
 #include <cassert>
+#include <limits>
 
 ///\class AliMUONPainterEnv
 ///
