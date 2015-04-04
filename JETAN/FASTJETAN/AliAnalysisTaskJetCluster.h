@@ -135,7 +135,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     //
 	virtual bool	IsBMeson(int pc);
 	virtual bool	IsDMeson(int pc);
-
+        Double_t            RelativePhi(Double_t phi1,Double_t phi2);
     // we have different cases
     // AOD reading -> MC from AOD
     // ESD reading -> MC from Kinematics
@@ -242,6 +242,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     AliAODJetEventBackground *fAODJetBackgroundOut; //! jet background to be written out
 
     TRandom3*     fRandom;   //! random number generator
+    Bool_t         fCorrectForSemigood;  //!if kTRUE, skip kT clusters  that overlap with malfunctioning TPC sectors, to compute rho
+    Double_t     fTpcHolePos; //!position of the malfunctioning sector, in radians
+    Double_t     fTpcHoleWidth; //! width of the malfunctioning area, in radians
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
     TH1F*         fh1PtHard;  //! Pt har of the event...       
@@ -349,7 +352,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 26) 
+    ClassDef(AliAnalysisTaskJetCluster, 27) 
 };
  
 #endif
