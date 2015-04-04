@@ -200,7 +200,7 @@ setYear()
   path=${path/\/\//\/}
   # The previous line would transform raw:// in raw:/
   # The next fixes this
-  echo ${path/%:\//:\/\/}
+  echo ${path/:\//:\/\/}
   return 0
 }
 
