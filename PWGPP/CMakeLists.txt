@@ -278,17 +278,18 @@ install(FILES ITS/QA/MakeTrendingITSQA.C
 	      DESTINATION PWGPP/ITS/QA)
 install(FILES TOF/AddTaskTOFQA.C
               TOF/AddTaskTOFqaID.C
-	      TOF/trending/MakeTrendingTOFQA.C
+              DESTINATION PWGPP/TOF)
+install(FILES TOF/trending/MakeTrendingTOFQA.C
 	      TOF/trending/DrawTrendingTOFQA.C
 	      TOF/trending/MakeTrendingTOFQAv2.C
-        DESTINATION PWGPP/TOF)
+              DESTINATION PWGPP/TOF/trending)
 install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
 install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
 install(DIRECTORY TRD/macros DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.C")
 install(FILES TRD/run.C TRD/runQAesds.C TRD/cacheOCDB.C DESTINATION PWGPP/TRD)
 install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
-            TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
-         DESTINATION PWGPP/TRD)
+              TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
+              DESTINATION PWGPP/TRD)
 install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
 install(FILES AD/AddTaskADQA.C DESTINATION PWGPP/AD)
 install(FILES PilotTrain/AddTaskMuonQA.C DESTINATION PWGPP/PilotTrain/ )
