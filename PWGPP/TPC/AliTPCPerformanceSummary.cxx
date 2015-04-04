@@ -149,6 +149,9 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     AnalyzeConstrain(pConstrain, pcstream);
    
     (*pcstream)<<"tpcQA"<<"\n";
+    TTree * tree = ((*pcstream)<<"tpcQA").GetTree();
+    tree->SeAlias("nEvents","entriesMult");
+    
 }
 
 //_____________________________________________________________________________
@@ -1626,13 +1629,17 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     //
     // 
     //
+    static Double_t entriesVertX=0;
     static Double_t meanVertX=0;
     static Double_t rmsVertX=0;
+    static Double_t entriesVertY=0;
     static Double_t meanVertY=0;
     static Double_t rmsVertY=0;
+    static Double_t entriesVertZ=0;
     static Double_t meanVertZ=0;
     static Double_t rmsVertZ=0;
     static Double_t vertStatus=0;
+    static Double_t entriesMult=0;
     static Double_t meanMult=0;
     static Double_t rmsMult=0;
     static Double_t meanMultPos=0;
@@ -1667,7 +1674,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
        his1D = pTPC->GetTPCEventHisto()->Projection(0);
     }
     if(!his1D) return 1;
-
+    entriesVertX = his1D->GetEntries(); 
     meanVertX = his1D->GetMean();    
     rmsVertX    = his1D->GetRMS();
     delete his1D;
@@ -1682,6 +1689,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     }
     if(!his1D) return 1;
 
+    entriesVertY = his1D->GetEntries();
     meanVertY = his1D->GetMean();
     rmsVertY    = his1D->GetRMS();
     delete his1D;
@@ -1697,6 +1705,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     }    
     if(!his1D) return 1;
 
+    entriesVertZ = his1D->GetEntries();
     meanVertZ = his1D->GetMean();
     rmsVertZ    = his1D->GetRMS();
     delete his1D;
@@ -1712,6 +1721,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     }
     if(!his1D) return 1;
 
+    entriesMult = his1D->GetEntries();
     meanMult    = his1D->GetMean();
     rmsMult     = his1D->GetRMS();
     delete his1D;
@@ -1742,15 +1752,19 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
     //
     (*pcstream)<<"tpcQA"<<
+        "entriesVertX="<<entriesVertX<<
         "meanVertX="<<meanVertX<<
         "rmsVertX="<<rmsVertX<<
+        "entriesVertY="<<entriesVertY<<
         "meanVertY="<<meanVertY<<
         "rmsVertY="<<rmsVertY<<
+        "entriesVertZ="<<entriesVertZ<<
         "meanVertZ="<<meanVertZ<<
         "rmsVertZ="<<rmsVertZ<<
         "vertStatus="<<vertStatus<<
         "vertAll="<<vertAll<<
         "vertOK="<<vertOK<<
+        "entriesMult="<<entriesMult<<
         "meanMult="<<meanMult<<
         "rmsMult="<<rmsMult<<
         "meanMultPos="<<meanMultPos<<
