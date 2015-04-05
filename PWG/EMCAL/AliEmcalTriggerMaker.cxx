@@ -386,13 +386,15 @@ Bool_t AliEmcalTriggerMaker::Run()
         }
       }
 
-      // level 0 triggers
-      if(fRunTriggerType[kTMEMCalLevel0]){
-        trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
-        // save main level0 trigger in the event
-        if (trigger) {
-          if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-            triggerMainLevel0 = trigger;
+      // level 0 triggers (only in case of online patches)
+      if(!isOfflineSimple){
+        if(fRunTriggerType[kTMEMCalLevel0]){
+          trigger = ProcessPatch(kTMEMCalLevel0, kFALSE);
+          // save main level0 trigger in the event
+          if (trigger) {
+            if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+              triggerMainLevel0 = trigger;
+          }
         }
       }
 
@@ -871,6 +873,10 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
  */
 Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
   Int_t row, col;trg.GetPosition(col, row);
+  if(col < 0 | row < 0){
+    AliError(Form("Patch outside range [col %d, row %d]", col, row));
+    return kFALSE;
+  }
   Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
   fGeom->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
   fGeom->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
@@ -884,6 +890,8 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
       fGeom->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
       fGeom->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
       if(trumod != truref) continue;
+      if(col + jpos >= kPatchCols) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
+      if(row + ipos >= kPatchRows) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
       Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
       if(l0times > 7 && l0times < 10) nvalid++;
     }
