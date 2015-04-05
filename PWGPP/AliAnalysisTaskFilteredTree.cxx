@@ -890,6 +890,32 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+  Int_t ntracks = esdEvent->GetNumberOfTracks();
+  // Global event id calculation using orbitID, bunchCrossingID and periodID 
+  ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+  ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+  ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+  ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+  TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+  Float_t bz = esdEvent->GetMagneticField();
+  Int_t runNumber = esdEvent->GetRunNumber();
+  Int_t evtTimeStamp = esdEvent->GetTimeStamp();
+  Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+  Int_t mult = vtxESD->GetNContributors();
+  (*fTreeSRedirector)<<"eventInfoTracks"<<
+    "gid="<<gid<<
+    "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
+    "runNumber="<<runNumber<<                             // runNumber
+    "evtTimeStamp="<<evtTimeStamp<<           // time stamp of event (in seconds)
+    "evtNumberInFile="<<evtNumberInFile<<     // event number
+    "triggerClass="<<&triggerClass<<          // trigger class as a string
+    "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
+    "mult="<<mult<<                           // multiplicity of tracks pointing to the primary vertex
+    "ntracks="<<ntracks<<                     // number of the esd tracks (to take into account the pileup in the TPC)
+    "isEventOK="<<isEventOK<<                 // flag - AliFilteredTreeEventCuts - track dumped only for selected events 
+    "isEventTriggered="<<isEventTriggered<<   // flag - if tigger required - track dumped only for selected events 
+    "/n";
+
 
 
   // check event cuts
@@ -913,11 +939,6 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     vert[1] = vtxESD->GetY();
     vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
-    Float_t bz = esdEvent->GetMagneticField();
-    Int_t runNumber = esdEvent->GetRunNumber();
-    Int_t evtTimeStamp = esdEvent->GetTimeStamp();
-    Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
     Int_t numberOfTracks=esdEvent->GetNumberOfTracks();
     // high pT tracks
     for (Int_t iTrack = 0; iTrack < numberOfTracks; iTrack++)
@@ -1339,14 +1360,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           if (!particleMotherITS) {particleMotherITS=&dummyparticle;}
         }
 
-        Int_t ntracks = esdEvent->GetNumberOfTracks();
-
-        // Global event id calculation using orbitID, bunchCrossingID and periodID 
-        ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
-        ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
-        ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
-        ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
-
+     
         // fill histograms
         FillHistograms(track, tpcInnerC, centralityF, (Double_t)chi2(0,0));
 	TVectorD tofClInfo(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
@@ -1446,7 +1460,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         delete trackInnerC2;
         delete outerITSc;
         delete trackInnerC3;
-      }
+    }
   }
 }
 
@@ -1819,6 +1833,36 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+  Int_t ntracks = esdEvent->GetNumberOfTracks();
+  // Global event id calculation using orbitID, bunchCrossingID and periodID 
+  ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+  ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+  ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+  ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+  TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+  Float_t bz = esdEvent->GetMagneticField();
+  Int_t run = esdEvent->GetRunNumber();
+  Int_t time = esdEvent->GetTimeStamp();
+  Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+  Int_t nV0s = esdEvent->GetNumberOfV0s();
+  Int_t mult = vtxESD->GetNContributors();
+  (*fTreeSRedirector)<<"eventInfoV0"<<
+    "gid="<<gid<<
+    "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
+    "run="<<run<<                             // runNumber
+    "time="<<time<<                           // time stamp of event (in seconds)
+    "evtNumberInFile="<<evtNumberInFile<<     // event number
+    "triggerClass="<<&triggerClass<<          // trigger class as a string
+    "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
+    "mult="<<mult<<                           // multiplicity of tracks pointing to the primary vertex
+    "ntracks="<<ntracks<<                     // number of the esd tracks (to take into account the pileup in the TPC)
+    "nV0s="<<nV0s<<                           // number of V0s
+    "isEventOK="<<isEventOK<<                 // flag - AliFilteredTreeEventCuts - track dumped only for selected events 
+    "isEventTriggered="<<isEventTriggered<<   // flag - if tigger required - track dumped only for selected events 
+    "/n";
+
+
+
 
   // check event cuts
   if(isEventOK && isEventTriggered) {
@@ -1826,17 +1870,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     // Dump the pt downscaled V0 into the tree
     // 
     Int_t ntracks = esdEvent->GetNumberOfTracks();
-    Int_t nV0s = esdEvent->GetNumberOfV0s();
-    Int_t run = esdEvent->GetRunNumber();
-    Int_t time= esdEvent->GetTimeStamp();
     Int_t evNr=esdEvent->GetEventNumberInFile();
-    Double_t bz = esdEvent->GetMagneticField();
-
-    // Global event id calculation using orbitID, bunchCrossingID and periodID
-    ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
-    ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
-    ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
-    ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
 
 
     for (Int_t iv0=0; iv0<nV0s; iv0++){
