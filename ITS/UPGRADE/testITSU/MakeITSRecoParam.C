@@ -25,13 +25,13 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   TObjArray *recoParamArray = new TObjArray();
   //
   {
-    AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetCosmicTestParam();
+    AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetCosmicTestParam(kFALSE);
     //
     itsRecoParam->SetNLayers(nLr);
     //
     //******************************************************************
-    itsRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
-    itsRecoParam->SetTitle("Cosmic");
+    //    itsRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
+    //    itsRecoParam->SetTitle("Cosmic");
     itsRecoParam->SetTracker(defSATracker);
     itsRecoParam->SetSAonly(saOnly);
     itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
@@ -110,13 +110,13 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 
   //
   {
-    AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
+    AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam(kFALSE);
     //
     itsRecoParam->SetNLayers(nLr);
     //
     //******************************************************************
-    itsRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
-    itsRecoParam->SetTitle("LowMult");
+    //    itsRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
+    //    itsRecoParam->SetTitle("LowMult");
     itsRecoParam->SetTracker(defSATracker);
     itsRecoParam->SetSAonly(saOnly);
     itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
@@ -211,13 +211,13 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     // Add tracking conditions <<<
   }
   {
-    AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetHighFluxParam();
+    AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetHighFluxParam(kFALSE);
     //
     itsRecoParam->SetNLayers(nLr);
     //
     //******************************************************************
-    itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
-    itsRecoParam->SetTitle("HighMult");
+    //    itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
+    //    itsRecoParam->SetTitle("HighMult");
     itsRecoParam->SetTracker(defSATracker);
     itsRecoParam->SetSAonly(saOnly);
     itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
