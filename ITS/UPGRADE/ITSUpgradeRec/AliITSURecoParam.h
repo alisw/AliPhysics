@@ -25,9 +25,10 @@ class AliITSURecoParam : public AliDetectorRecoParam
   AliITSURecoParam(Int_t nLr);
   virtual ~AliITSURecoParam();
 
-  static AliITSURecoParam *GetLowFluxParam();// make reco parameters for low flux env.
-  static AliITSURecoParam *GetHighFluxParam();// make reco parameters for high flux env. 
-  static AliITSURecoParam *GetCosmicTestParam();// special setting for cosmic  
+  static AliITSURecoParam *GetLowFluxParam(Bool_t init=kTRUE);// make reco parameters for low flux env.
+  static AliITSURecoParam *GetHighFluxParam(Bool_t init=kTRUE);// make reco parameters for high flux env. 
+  static AliITSURecoParam *GetCosmicTestParam(Bool_t init=kTRUE);// special setting for cosmic  
+  static void              SetDefaultSettings(AliITSURecoParam* itsRecoParam); 
 
   Double_t    GetMaxDforV0dghtrForProlongation() const {return fMaxDforV0dghtrForProlongation;}
   Double_t    GetMaxDForProlongation()           const {return fMaxDForProlongation;}

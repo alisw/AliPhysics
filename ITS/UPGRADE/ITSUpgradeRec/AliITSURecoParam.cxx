@@ -112,37 +112,28 @@ AliITSURecoParam::~AliITSURecoParam()
 }
 
 //_____________________________________________________________________________
-AliITSURecoParam *AliITSURecoParam::GetHighFluxParam() 
+void AliITSURecoParam::SetDefaultSettings(AliITSURecoParam* itsRecoParam) 
 {
   // make default reconstruction  parameters for hig  flux env.
-
   // The settings below are taken from Ruben's MakeITSRecoParam.C
-    enum {
-      kBit0=0x1<<0, kBit1=0x1<<1, kBit2=0x1<<2, kBit3=0x1<<3,
-      kBit4=0x1<<4, kBit5=0x1<<5, kBit6=0x1<<6, kBit7=0x7<<2, kBit8=0x1<<8
-    };
-    const Bool_t kAllowDiagCl = kFALSE;
-    const Bool_t kUseLUT[3]={kTRUE,kTRUE,kFALSE};
-    //Use TGeo mat.queries only for RefitInward
-
-    Int_t nLr=7;
-
-    AliITSURecoParam * itsRecoParam = new AliITSURecoParam();
-    //
-    itsRecoParam->SetNLayers(nLr);
-    //
-    //******************************************************************
-    itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
-    itsRecoParam->SetTitle("HighMult");
-    //******************************************************************
-    for (int i=0; i<nLr; i++) 
-        itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
-    for (int i=AliITSURecoParam::kNTrackingPhases; i--;) 
-        itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
-
-    // Add tracking conditions >>>
-    AliITSUTrackCond *trCond=0;
-    {
+  enum {
+    kBit0=0x1<<0, kBit1=0x1<<1, kBit2=0x1<<2, kBit3=0x1<<3,
+    kBit4=0x1<<4, kBit5=0x1<<5, kBit6=0x1<<6, kBit7=0x7<<2, kBit8=0x1<<8
+  };
+  const Bool_t kAllowDiagCl = kFALSE;
+  const Bool_t kUseLUT[3]={kTRUE,kTRUE,kFALSE};
+  //Use TGeo mat.queries only for RefitInward
+  Int_t nLr=7;
+  itsRecoParam->SetNLayers(nLr);
+  //
+  for (int i=0; i<nLr; i++) 
+    itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
+  for (int i=AliITSURecoParam::kNTrackingPhases; i--;) 
+    itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
+  
+  // Add tracking conditions >>>
+  AliITSUTrackCond *trCond=0;
+  {
     int c0nBranch[7] = {3,9,15,4,5,7,10}; // max branching for the seed on layer
     int c0nCands[7]  = {10,15,45,20,60,20,10};// max candidates for the TPC seed
     float c0tr2clChi2[7] ={20,25,30,40,45,45,70};//cut on cluster to track chi2 
@@ -151,7 +142,7 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
     float c0maxChi2SA[14]={0.,0.,0.,0.,2.5,5.,10.,20.,20.,20.,20.,20.,20.,20.};
     // chi2SA vs Nclus
     float c0maxChi2Match = 10.;
- 
+    
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
     trCond->SetMaxITSTPCMatchChi2(c0maxChi2Match);
@@ -163,9 +154,9 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
       trCond->SetMaxChi2GloNrm(i,c0gloChi2[i]);  // cut on cluster to track global chi2
       trCond->SetMissPenalty(i,c0missPen[i]);    // missing cluster penalty
     }
-
+    
     for (int i=1; i<=2*nLr; i++) trCond->SetMaxITSSAChi2(i,c0maxChi2SA[i-1]);
-
+    
     trCond->AddNewCondition(5); // min hits
     trCond->AddGroupPattern( kBit0|kBit1|kBit2, 2); // at least 2 hits in 3 inner layers
     trCond->AddGroupPattern( kBit3|kBit4      , 1); // at least 1 hit in 2 middle layers
@@ -174,11 +165,11 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
     trCond->Init();
     //
     itsRecoParam->AddTrackingCondition(trCond);
-    }
-
-    //-----------------------------------------------------------
-    // short tracks
-    {
+  }
+  
+  //-----------------------------------------------------------
+  // short tracks
+  {
     int c1nBranch[7] = {0,0,0,4,6,6,10}; // max branching for the seed on layer
     int c1nCands[7]  = {0,0,0,5,5,5,8}; // max candidates for the TPC seed
     float c1tr2clChi2[7]= {0,0,0,20,20,20,30}; // cut on cluster to track chi2 
@@ -187,7 +178,7 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
     float c1maxChi2SA[14]={0.,0.,0.,5.,13.,13.,18.,10.,10.,10.,10.,10.,10.,10.};
     // chi2SA vs Nclus
     float c1maxChi2Match = 10.;
-
+    
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
     //
@@ -206,7 +197,7 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
       trCond->SetMaxChi2GloNrm(i,c1gloChi2[i]);  // cut on cluster to track global chi2
       trCond->SetMissPenalty(i,c1missPen[i]);    // missing cluster penalty
     }
-
+    
     for (int i=1; i<=2*nLr; i++) trCond->SetMaxITSSAChi2(i,c1maxChi2SA[i-1]);
     
     trCond->AddNewCondition(4); // min hits
@@ -215,11 +206,11 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
     trCond->Init();
     
     itsRecoParam->AddTrackingCondition(trCond);
-    }
-
-    //-----------------------------------------------------------
-    // very short tracks
-    {
+  }
+  
+  //-----------------------------------------------------------
+  // very short tracks
+  {
     int c2nBranch[7] = {0,0,0,0,0,6,10}; // max branching for the seed on layer
     int c2nCands[7]  = {0,0,0,0,0,5,8}; // max candidates for the TPC seed
     float c2tr2clChi2[7]= {0,0,0,0,0,15,20}; // cut on cluster to track chi2
@@ -228,7 +219,7 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
     float c2maxChi2SA[14]={0.,5.,5.,5.,13.,13.,18.,10.,10.,10.,10.,10.,10.,10.};
     // chi2SA vs Nclus, meaningless for 2 point tracks 
     float c2maxChi2Match = 6.;
-
+    
     trCond = new AliITSUTrackCond();
     trCond->SetNLayers(nLr); 
     //
@@ -249,7 +240,7 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
       trCond->SetMaxChi2GloNrm(i,c2gloChi2[i]);  // cut on cluster to track global chi2
       trCond->SetMissPenalty(i,c2missPen[i]);    // missing cluster penalty
     }
-
+    
     for (int i=1;i<=2*nLr;i++) trCond->SetMaxITSSAChi2(i,c2maxChi2SA[i-1]);
     //
     trCond->AddNewCondition(2); // min hits
@@ -258,24 +249,42 @@ AliITSURecoParam *AliITSURecoParam::GetHighFluxParam()
     trCond->Init();
     //
     itsRecoParam->AddTrackingCondition(trCond);
-    }
-    return itsRecoParam;
+  }
+  //
 }
 
 //_____________________________________________________________________________
-AliITSURecoParam *AliITSURecoParam::GetLowFluxParam() 
+AliITSURecoParam *AliITSURecoParam::GetHighFluxParam(Bool_t init) 
 {
   // make default reconstruction  parameters for low  flux env.
   AliITSURecoParam *param = new AliITSURecoParam();
+  param->SetEventSpecie(AliRecoParam::kHighMult);
+  param->SetTitle("HighMult");
+  if (init) SetDefaultSettings(param);
   // put here params
   return param;
 }
 
 //_____________________________________________________________________________
-AliITSURecoParam *AliITSURecoParam::GetCosmicTestParam() 
+AliITSURecoParam *AliITSURecoParam::GetLowFluxParam(Bool_t init) 
+{
+  // make default reconstruction  parameters for low  flux env.
+  AliITSURecoParam *param = new AliITSURecoParam();
+  param->SetEventSpecie(AliRecoParam::kLowMult);
+  param->SetTitle("LowMult");
+  if (init) SetDefaultSettings(param);
+  // put here params
+  return param;
+}
+
+//_____________________________________________________________________________
+AliITSURecoParam *AliITSURecoParam::GetCosmicTestParam(Bool_t init) 
 {
   // make default reconstruction  parameters for cosmics
   AliITSURecoParam *param = new AliITSURecoParam();
+  param->SetEventSpecie(AliRecoParam::kCosmic);
+  param->SetTitle("Cosmic");
+  if (init) SetDefaultSettings(param);
   // put here params
   return param;
 }
