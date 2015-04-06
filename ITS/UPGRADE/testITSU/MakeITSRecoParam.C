@@ -1,4 +1,5 @@
-void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult, const char* cdbURI="local://") {
+void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult, const char* cdbURI="local://",
+		      int defSATracker=2,Bool_t saOnly=kFALSE) {
 //========================================================================
 //
 // Steering macro for ITSU reconstruction parameters
@@ -31,8 +32,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //******************************************************************
     itsRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
     itsRecoParam->SetTitle("Cosmic");
-    itsRecoParam->SetTracker(0);
-    itsRecoParam->SetSAonly(kFALSE);
+    itsRecoParam->SetTracker(defSATracker);
+    itsRecoParam->SetSAonly(saOnly);
     itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
     recoParamArray->AddLast(itsRecoParam);
   }
@@ -116,8 +117,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //******************************************************************
     itsRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     itsRecoParam->SetTitle("LowMult");
-    itsRecoParam->SetTracker(0);
-    itsRecoParam->SetSAonly(kFALSE);
+    itsRecoParam->SetTracker(defSATracker);
+    itsRecoParam->SetSAonly(saOnly);
     itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
@@ -217,8 +218,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //******************************************************************
     itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     itsRecoParam->SetTitle("HighMult");
-    itsRecoParam->SetTracker(0);
-    itsRecoParam->SetSAonly(kFALSE);
+    itsRecoParam->SetTracker(defSATracker);
+    itsRecoParam->SetSAonly(saOnly);
     itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
