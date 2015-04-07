@@ -116,10 +116,13 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   private:
   ULong64_t fEventTriggerMask; //!< Fired trigger mask in the event
+  UInt_t fEventL0Inputs; //!< L0 trigger inputs in the event
+  UInt_t fEventL1Inputs; //!< L1 trigger inputs in the event
+  UInt_t fEventL2Inputs; //!< L2 trigger inputs in the event
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
   enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
-  ClassDef(AliMuonEventCuts, 6); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 7); // Class for muon event filters
 };
 
 #endif

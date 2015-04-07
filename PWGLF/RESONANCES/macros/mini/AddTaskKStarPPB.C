@@ -43,7 +43,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
  Float_t     nsigmaKa = 2.0,
  Bool_t      enableMonitor = kTRUE,
  Bool_t      IsMcTrueOnly = kFALSE,
- TString     monitorOpt = "",
+ TString     monitorOpt = "NoSIGN",
  Bool_t      useMixLS = 0,
  Bool_t      checkReflex = 0,
  AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt
