@@ -52,11 +52,41 @@
     \frac{1}{N}\frac{\mathrm{d}\Nch{}}{\mathrm{d}\varphi}%
     \ifx|#1|\else\right|_{#1}\fi%
 }}
-\newcommand\FIXME[1]{}
-%% \newcommand\FIXME[1]{\marginpar{\raggedright\textbf{FIXME:} #1}}
+%% \newcommand\FIXME[1]{}
+\usepackage[]{pdfcomment}
+% \newcommand\FIXME[1]{\marginpar{\raggedright\textbf{FIXME:} #1}}
+%\let\FIXME\pdfcomment
+\def\FIXME#1{%
+  \pdfmargincomment{#1}
+  \pdffreetextcomment[fontcolor=aliceyellow,%
+                      width=\textwidth,%
+                      height=4ex,%
+                      type=typewriter]{#1}}
+%\let\FIXME\pdffreetextcomment
+%\newcommand\FIXME[1]{% 
+%  \begin{pdfsidelinecomment}
+%    #1
+%  \end{pdfsidelinecomment}}
 \newcommand\headColor{\rowcolor{alicered!25!white}}
 \newcommand\altRowColor{\rowcolor{aliceyellow!25!white}}
-
+% Appendix
+\let\oldSecRef\secref
+\def\@lastoffour#1#2#3#4{\@extract@RefType#4@end}
+\def\@extract@RefType#1.#2@end{\edef\@refType{#1}}
+\def\@extractRefType#1#2#3{% 
+  \def\@refType{}%
+  \ifx#1\relax
+  \protect\G@refundefinedtrue
+  \nfss@text{\reset@font\bfseries ??}%
+  \@latex@warning{Argh! Reference `#3' on page \thepage \space
+    undefined}%
+  \else
+    \expandafter#2#1
+  \fi}
+\renewcommand\secref[1]{% 
+  \expandafter\@extractRefType\csname r@#1\endcsname\@lastoffour{#1}%
+  \ifcase\pdf@strcmp{\@refType}{appendix}{\appendixname~\ref{#1}}%
+  \else\oldSecRef{#1}\fi}
 % Azimuthal acceptance
 \newcommand{\Corners}{\ensuremath A^{\varphi}_{t}} 
 % Acceptance due to dead strips
@@ -76,3 +106,7 @@
 %% Tight lists
 \setlist[itemize]{noitemsep,nolistsep}
 \setlist[description]{noitemsep,nolistsep}
+%% Local Variables:
+%%   TeX-master: "PWGLF_Forward_analysis_note.tex"
+%%   ispell-dictionary: "british"
+%% End:

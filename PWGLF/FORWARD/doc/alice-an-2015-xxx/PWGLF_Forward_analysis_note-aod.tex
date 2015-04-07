@@ -45,8 +45,7 @@ event $i$ and FMD ring $r$.
   $\dndetadphi[\subIPz{},i]$ histogram, taking care of the overlaps
   between the detector rings.  In principle, this histogram is
   independent of the vertex, except that the pseudo--rapidity range,
-  and possible holes in that range, depends on $\IPz{}$ --- or rather
-  the bin in which the $\IPz{}$ falls (see
+  and possible holes in that range, depends on $\IPz{}$ (see
   \secref{sec:sub:hist_collector}).
 \end{description}
 
@@ -58,7 +57,7 @@ Each of these steps will be detailed in the following.
 \paragraph{Trigger} 
 The first thing to do, is to inspect the event for triggers.  A number
 of trigger bits, like \INEL{} (Minimum Bias for Pb+Pb), \INELONE{},
-\NSD{}, and so on is then propagated to the \AOD{} output.
+\NSD{}, and so on are propagated to the \AOD{} output.
 
 \paragraph{Pile--up} 
 The event is checked for pile-up using up three different
@@ -105,17 +104,19 @@ further processing of that event takes place.
 The analysis can be set up to run on the `displaced vertices' that
 occur during \LHC{} 2010 \PbPbCol{} running. Details on the displaced
 vertices, and their selection can be found in the \VZERO{} analysis note
-\cite{maxime} (see also \secref{sec:sub:empirical}).
+\cite{maxime}. In \secref{sec:sub:empirical} we detail how these
+events is used to form the \emph{empirical} correction for secondary
+particle production.
 
 \subsection{\ESD{} fix-up}
 \label{sec:sub:fixer} 
 
-For the 2010-13 data, the \FMD{} strip signals in the \ESD{} are not
+For the 2010--'13 data, the \FMD{} strip signals in the \ESD{} are not
 aligned at the real zero, due to a bug in the reconstruction code.  In
 the reconstruction pass only a $1\times\sigma$ ($\sigma$ is the noise
 in a given strip) was added, but the electronics had suppressed
 $4\times\sigma$.  To align at the proper zero, we therefor add
-$3\times\sigma$ scaled by the gain factor $\DeltaMip$.  This cause is
+$3\times\sigma$ scaled by the gain factor $\DeltaMip$.  This is
 entirely understood and the fix is implemented to automatically
 correct the zero signal if needed. 
 
@@ -136,11 +137,11 @@ to well understood issues.  The result of this step is a modified
 \label{sec:sub:sharing_filter}
 
 A particle originating from the vertex can, because of its incident
-angle on the \FMD{} sensors traverse more than one strip (see
+angle on the \FMD{} sensors, traverse more than one strip (see
 \figref{fig:share_fraction}).  This means that the energy loss of the
-particle is distributed over 1 or more strips.  The signal in each
-strip should therefore possibly be merged with its neighbouring strip
-signals to properly reconstruct the energy loss of a single particle.
+particle is distributed over 1 or more strips.  To reconstruct the
+energy loss of a single particle, one may possibly need to merge the
+signals of adjacent strips.
 
 \begin{figure}[htbp]
   \centering
@@ -273,41 +274,44 @@ varied in the analysis (see also \secref{sec:cuts}).
 
 
 In short, each strip \DataSty{t} of a radial sector is investigated in
-turn.  If we have a non--null sum \DataSty{s}, then that value is used
-as this strip signal (lines 21 to 24).  If the signal \DataSty{c} is
-larger than the cut defined by \DataSty{l} it is considered a
-candidate for merging (line 29).  Depending on the signal in the next
-strip (\DataSty{n}) a number of possible things happen.
+turn.  
 \begin{itemize}
-\item \DataSty{c} $<$ \DataSty{h} or \DataSty{n} $<$ \DataSty{h} (line
-  30), then
+\item If a strip signal \DataSty{c} is invalid, the output for that is
+  set to invalid, and the current sum flushed (lines 12 to 17).
+\item If a strip signal is below \DataSty{l}, then output of that
+  strip is set to null and the current sum flushed (lines 13 to 17).
+\item If we have a non--null sum \DataSty{s}, then that value is used
+  as this strip signal (lines 21 to 24).  
+\item If a strip is flagged as used already, the output for that strip
+  is set to null (lines 26 to 28).
+\item If the signal \DataSty{c} is larger than the cut defined by
+  \DataSty{l} it is considered a candidate for merging (line 29).
+  Depending on the signal in the next strip (\DataSty{n}) a number of
+  possible things happen.
   \begin{itemize}
-  \item \DataSty{c} $>$ \DataSty{n} then the two signals are added and
-    output that as this strip \DataSty{t} signal.  The current sum
-    \DataSty{s} is reset and the next strip is flagged as used (lines
-    31 to 33).
-  \item \DataSty{c} $\le$ \DataSty{n} then the strip signals
-    \DataSty{c} and \DataSty{n} is added to the current sum
-    \DataSty{s}, and the value of this strip is set to null, and the
-    next strip flagged as used (lines 34 to 36). 
+  \item \DataSty{c} $<$ \DataSty{h} or \DataSty{n} $<$ \DataSty{h}
+    (line 30), then
+    \begin{itemize}
+    \item \DataSty{c} $>$ \DataSty{n} then the two signals are added
+      and output that as this strip \DataSty{t} signal.  The current
+      sum \DataSty{s} is reset and the next strip is flagged as used
+      (lines 31 to 33).
+    \item \DataSty{c} $\le$ \DataSty{n} then the strip signals
+      \DataSty{c} and \DataSty{n} is added to the current sum
+      \DataSty{s}, and the value of this strip is set to null, and the
+      next strip flagged as used (lines 34 to 36).
+    \end{itemize}
+  \item Otherwise, the current strip signal \DataSty{c} is output
+    as--is.
   \end{itemize}
-\item Otherwise, the current strip signal \DataSty{c} is output
-  as--is. 
 \end{itemize}
-If a strip signal \DataSty{c} is invalid, the output for that is set
-to invalid, and the current sum flushed (lines 12 to 17).  If a strip
-signal is below \DataSty{l}, then output of that strip is set to null
-and the current sum flushed (lines 13 to 17).  If a strip is flagged
-as used already, the output for that strip is set to null (lines 26 to
-28).
-
 The result of this pass is a new \ESD{} object where signals that are
 spread of two strips have been merged into one (see also
 \figref{fig:sharing:effect}).
 
 \begin{figure}[htbp]
   \centering
-  \figinput[.8\linewidth]{sharing}
+  \figinput[.9\linewidth]{sharing}
   \caption{The effect of the sharing filter.  The light distributions
     are from the reconstruction, while the darker distributions are
     after the algorithm has been applied.  The yellow band indicates
@@ -392,7 +396,7 @@ $\Delta\varphi$ is $2\pi$ divided by the number of sectors in the ring
 this correction is a hardware--related correction, and does not depend
 on the properties of the collision (e.g., primary vertex location).
 
-We can then define the $\varphi$--acceptance corrected signal in a strip
+We then define the $\varphi$--acceptance corrected signal in a strip
 $t$ as 
 \begin{align}
   n'_t &= \Corners{} n_t
@@ -414,22 +418,20 @@ within an $\etaphi$ bin.
 where $t$ runs over the strips in the $\etaphi$ bin. 
 
 This method has the advantage that it takes into account the energy
-loss $\Delta_t$ of each strip.  The down--side of the the approach is
-that it is sensitive to the event sample to which
-$f_N(xt;\Delta_p,\xi,\sigma)$ where fitted.  For low--multiplicity
-environments such as \ppCol{} the sensitivity is relatively small,
-while this method implies a bias toward the minimum bias sample for
-larger multiplicities. 
+loss $\Delta_t$ of each strip.  The down--side of the approach is its
+sensitivity to the event sample to which $f_N(xt;\Delta_p,\xi,\sigma)$
+where fitted.  For low--multiplicity environments such as \ppCol{} the
+sensitivity is relatively small, while this method implies a bias
+toward the minimum bias sample for larger multiplicities.
 
 \subsubsection{Inclusive number of charged particles: Poisson Approach} 
 \label{sec:sub:sub:poisson}
 
 % \newcommand\muR{\ensuremath\mu_R}
-\newcommand\muR{\ensuremath\mu}
-Another approach to the calculation of the number of charged particles
-is using Poisson statistics. This is the default choice because it is
-less sensitive to the stability of the fits and the underlying data
-required for the energy fits method. 
+\newcommand\muR{\ensuremath\mu} Another approach to the calculation of
+the number of charged particles is using Poisson statistics. This is
+the default choice as it is less sensitive to the stability of the
+fits and the underlying data than required for the energy fits method.
 
 Firstly we define a strip $t$ as being `hit' if 
 \begin{align*}
@@ -506,7 +508,7 @@ likewise be varied (see also \secref{sec:cuts}).
 
 \begin{figure}[htbp]
   \centering
-  \figinput[.8\linewidth]{corr_method}
+  \figinput[.9\linewidth]{corr_method}
   \caption{Correlation of the two methods to estimate
     $\dndetadphi[incl,r,\subIPz,i]$.  The spread for all sub--detectors is
     less than 1\%.}
@@ -523,16 +525,16 @@ the systematic error (see also \figref{fig:density:corr}).
 
 For a given $\eta$ bin, the calculation
 $\dndetadphi[incl,r,\subIPz,i]$ also counts the number of strips with
-$t_{hit}\neq\text{undefined}$ and the total number of strips, and then
+$t_{hit}\neq\text{undefined}$, and the total number of strips, and then
 forms the ratio
 \begin{align}
   \label{eq:overflow}
   \phiAcc &= \frac{\sum_t^{t\in\eta \wedge
       t\neq\text{undefined}}}{\sum_t^{t\in\eta}} \quad,
 \end{align}
-which is the per--event, per $\eta$ range azimuthal acceptance.  This
+which is the per--event, per $\eta$ bin azimuthal acceptance.  This
 number is stored in the corresponding overflow bin of the 5 output
-$\etaphi$ histograms, and can late be used to correct for the
+$\etaphi$ histograms, and can later be used to correct for the
 $\varphi$ acceptance.
 
 \subsection{Corrections}
@@ -676,14 +678,14 @@ generators\footnote{Pythia6 was used for all \ppCol{} energies, DpmJet
   for \pPbCol{}/\PbpCol{}, and Hijing for \PbPbCol{}.} and the
 resulting primary particle distribution. 
 
-To see this a study was made, selecting the \ppCol{} at
+To see this, a study was performed, selecting the \ppCol{} at
 \usNN{pp}{0900} as the baseline.  In the study each particle (primary
 and secondary) entering \eqref{eq:secondary} was weighted according to
 their ultimate primary particle $\eta$ and $\pT$.  Particle weights
 where assigned to the following set of particle (and anti--particle)
 types\footnote{The weights for $e$, $\mu$, were the same.  Most of the
   primary photons come from $pi^{0}$ decays so it is possible to
-  weight neutral pions produced by the event generator not photons.}: 
+  weight neutral pions produced by the event generator not photons.}:
 %%
 $\gamma$, 
 $e^\pm$,
@@ -707,20 +709,20 @@ The weight for a given particle type $i$ for system $j$ is given by
   W_{i}= \left(
   \frac1{\Nch}\diffFrac{^{2}N_{i}}{\pT\mathrm{d}y} \right)_{%
   \text{\ppCol{}},\GeV[900]{}} \Big/ 
-  \left(\frac1{\Nch}\diffFrac{^{2}N_{i}}{\pT{}\mathrm{d}y}\right)_{j}
-\end{align}.
+  \left(\frac1{\Nch}\diffFrac{^{2}N_{i}}{\pT{}\mathrm{d}y}\right)_{j}\quad.
+\end{align}
 
-\FIXME{We should fix up \figref{fig:weights}}
-\begin{figure}[]
+\begin{figure}[h!tbp]
   \centering
-  \figinput[.7\textwidth]{310weights}
+  \figinput[.8\textwidth]{310weights}
   \caption{The $K^{0}_{s}$ weights for \PbPbCol{} calculated based on
-    \eqref{eq:weights}.  The bottom panels show the averaged weights
-    for some pseudorapidity and transverse momentum slices.}
+    \eqref{eq:weights}.  Top--left and bottom--right panels show the
+    averaged weights for some pseudorapidity and transverse momentum
+    slices as indicated by the dashed lines on the bottom left.}
   \label{fig:weights}
 \end{figure} 
 
-\begin{figure}[]
+\begin{figure}[h!tbp]
  \centering
   \figinput[.8\textwidth]{secmap_pp_aa_one_weighted}
   \caption{Same as \figref{fig:secmap:all}, but with the particle weights
@@ -737,16 +739,30 @@ The weight for a given particle type $i$ for system $j$ is given by
 \end{figure} 
 
 The binning of weights depended on available statistic for a given
-particle species.  \figref {fig:secmapweighted:all} shows an example
-of the weights for $K^{0}_{s}$ for \PbPbCol{}.
-\figref{fig:secmapweighted:all} shows the comparison of the secondary
-maps from the weighting procedure for all the system. It is clear that
-all discrepancies observed in Figure \ref{fig:secmap:all} are
-compressed by the weighting procedure.
+particle species.  \figref {fig:weights} shows an example of the
+weights for $K^{0}_{s}$ for
+\PbPbCol{}. \figref{fig:secmapweighted:all} shows the comparison of
+the secondary maps from the weighting procedure for all the system. It
+is clear that all discrepancies observed in
+\figref{fig:secmap:all} are compressed by the weighting procedure.
+The effect of this sensitivity to the hadron--chemistry is accounted
+for in the systematic uncertainties (see
+\secref{sec:sub:dndeta:syserr}), with an additional component for the
+region of \FMD{1}. 
 
-\FIXME{Conclusion on this, and why does it affect FMD1 the most. Also,
-words on pending weights from `real' data, and the final effect on the
-systematics.} 
+%% 
+%% We presume that FMD1 is most effected because of 
+%%
+%%  - Large bin-flow of secondaries - in particular in FMD1
+%%  - Larger slope on dN/deta in that region which tends to accentuate
+%%    the effect of the hadron--chemistry. 
+%%
+\FIXME{Conclusion on this}
+%% 
+%% Marek is looking at the real-data weights.  We should compare these
+%% to our MC weights to get an idea of how realistic those MC weights
+%% really are. 
+%% 
 
 %For pp, different event
 %generators were used and found to give compatible results within
@@ -804,14 +820,14 @@ $\dndetadphi[incl,\subIPz,i]$.  In either case, the same algorithm is
 applied, and one can substitute the inclusive histograms for primary
 histogram in the below description. 
 
-To do this, it first calculates, for each vertex bin, the $\eta$ bin
-range to use for each ring.  It investigates the secondary correction
-maps $\SecMap{}$ to find the edges of each map.  The edges are given
-by the $\eta$ range where $\SecMap{}$ is larger than some
-threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. The code
-applies safety margin of a number of bins,
-$N_{cut}$\footnote{Typically $N_{cut}=1$.}, to ensure that the data
-selected does not have too large corrections associated with it.
+To do this, we first calculates, for each vertex bin, the $\eta$ bin
+range to use for each ring.  We then investigates the secondary
+correction maps $\SecMap{}$ to find the edges of each map.  The edges
+are given by the $\eta$ range where $\SecMap{}$ is larger than some
+threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. An additional
+safety margin of a number of bins, $N_{cut}$\footnote{Typically
+  $N_{cut}=1$.} is applied to ensure that the data selected does not
+have too large corrections associated with it.
 
 It then loops over the bins in the defined $\eta$ range and sums the
 contributions from each of the 5 histograms.  In the $\eta$ ranges
@@ -848,7 +864,7 @@ If the secondary map correction was turned of, this becomes
 
 The histogram collector stores the found $\eta$ ranges in the
 underflow bin of the histogram produced.  The content of the underflow
-bins are 
+bins is %% "Content" is singular
 \begin{align}
   \label{eq:underflow}
   \etaCov &= 
