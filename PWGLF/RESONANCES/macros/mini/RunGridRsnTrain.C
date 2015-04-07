@@ -230,8 +230,8 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode,
   plugin->SetNrunsPerMaster(1);
   
   /**** feel free to modify the list of include paths and libraries according to your need! ****/
-  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TOF -I/$ALICE_ROOT/ANALYSIS -I/$ALICE_PHYSICS/EVENTMIX -I/$ALICE_PHYSICS/PWGLF/RESONANCES -g"); 
-  plugin->SetAdditionalLibs("AnalysisSetup.C libGui.so libProof.so libMinuit.so libANALYSIS.so libOADB.so libANALYSISalice.so libCDB.so libVZERObase.so libVZEROrec.so libTENDER.so libTENDERSupplies.so libEventMixing.so libPWGLFresonances.so");
+  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TOF -I/$ALICE_ROOT/ANALYSIS -I/$ALICE_ROOT/ANALYSISalice -I/$ALICE_PHYSICS/EVENTMIX -I/$ALICE_PHYSICS/PWGLF/RESONANCES -g"); 
+  plugin->SetAdditionalLibs("AnalysisSetup.C libGui.so libProof.so libMinuit.so libANALYSIS.so libOADB.so libANALYSISalice.so libEventMixing.so libPWGLFresonances.so");
 
   /**** these have to be customized ****/
   plugin->SetAnalysisMacro(myMacroName.Data()); 
