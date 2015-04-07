@@ -76,7 +76,14 @@ int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
-  
+
+  /* another magic line - for TMinuit */
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
+                                        "Minuit",
+                                        "TMinuitMinimizer",
+                                        "Minuit",
+                                        "TMinuitMinimizer(const char*)");  
+
   int i, status;
   
   /* log start of process */
