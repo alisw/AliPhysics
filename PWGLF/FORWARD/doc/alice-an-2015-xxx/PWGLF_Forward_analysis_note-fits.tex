@@ -2,7 +2,6 @@
 \section{$\Delta$ Fits}
 \label{sec:fits}
 
-\FIXME{Example plots}
 The single particle distribution of energy loss $x$ is best fit with a
 Landau folded with a Gaussian \cite{nim:b1:16,phyrev:a28:615}.
 \begin{align} 
@@ -28,6 +27,15 @@ corresponding to $ i$ particles i.e., with the substitutions
   \sigma    &\rightarrow \sigma_i    = \sqrt{i}\sigma\\
   \sigma'^2 &\rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
 \end{align*}
+Examples of the fit results is shown in \figref{fig:fits:examples}.
+
+\begin{figure}[h!tbp]
+  \centering
+  \figinput{fits}
+  \caption{Examples of fits to the $x=\Delta_t=\Delta/\Delta_{\text{mip}}$
+    distributions.}
+  \label{fig:fits:examples}
+\end{figure}
 
 Because of the convolution with a Gaussian, the most-probable-value
 $\Delta_p'$ of the resulting distribution is not really at the
@@ -42,18 +50,15 @@ solving
      \int_{-\infty}^{+\infty} dx' f'_{L}(x',\Delta_p,\xi)
      e^{-\frac{(x-x')^2}{2\sigma'^2}}
 \end{align*}
-for $x$ as a function of $\Delta_p,\xi,\sigma,i$. However,
-do to the complex nature of the Landau distribution this is not
-really feasible.
-
-Instead, the shift was studied numerically. Landau-Gauss
-distributions for $i=1,\ldots$ where generated with varying
-$\xi$ and $\sigma$.  The distributions was then numerically
-differentiated and the root $\Delta_p'$ of that derivative
-found numerically.  The difference
-$\delta\Delta_p=\Delta_p'-\Delta_p$ was then studied as a
-function of the $\sigma,\xi$ parameters and an approximate
-expression was found
+for $x$ as a function of $\Delta_p,\xi,\sigma,i$. However, do to the
+complex nature of the Landau distribution this is not
+feasible. Instead, the shift was studied numerically. Landau-Gauss
+distributions for $i=1,\ldots$ where generated with varying $\xi$ and
+$\sigma$.  The distributions was then numerically differentiated and
+the root $\Delta_p'$ of that derivative found numerically.  The
+difference $\delta\Delta_p=\Delta_p'-\Delta_p$ was then studied as a
+function of the $\sigma,\xi$ parameters and an approximate expression
+was found
 \begin{align}
   \delta\Delta_p \approx \frac{c \sigma u}{(1+1/i)^{p u^{3/2}}}
 \end{align}
@@ -100,6 +105,7 @@ energy loss $\Delta_t$ in strip $t$ we can evaluate
     \sum_i^{N_{max}}\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}
   \tag{\ref{eq:nt}}\quad. 
 \end{align}
+
 %% Local Variables:
 %%   TeX-master: "PWGLF_Forward_analysis_note.tex"
 %%   ispell-dictionary: "british"

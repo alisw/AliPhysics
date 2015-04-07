@@ -38,16 +38,16 @@ High--Multiplicity Task--Force.
 
 \paragraph{\ppCol{} event classes and trigger efficiencies} 
 
-When determining $\dndeta$ for physical event classes, such as
-the full in--elastic cross--section, or the non--single--diffractive
-events, in \ppCol{} we choose the underlying hardware and replayed
-software trigger that gives the highest efficiency for that event
-class.  \tabref{tab:dndeta:ppclasses} summarises the interesting
+When determining $\ndndeta$ for physical event classes in \ppCol{},
+such as the full in--elastic cross--section, or the
+non--single--diffractive events, we choose the underlying hardware and
+replayed software trigger that gives the highest efficiency for that
+event class.  \tabref{tab:dndeta:ppclasses} summarises the interesting
 physical event classes in \ppCol{}, together with the underlying
 trigger and its corresponding efficiency for each of the studied
 collision energies.  Note, that the event class \INELGT{} is a pure
 experimental event class, and as such the trigger efficiency is by
-definition unity. 
+definition unity.
 
 \begin{table}[hbtp]
   \centering
@@ -91,8 +91,8 @@ definition unity.
 
 \subsection{Summing $\dndeta$ and normalisation} 
 
-To build the final $\dndeta$ distribution it is enough to sum
-\eqref{eq:superhist} (\eqref{eq:superhist:2} if the secondary map
+To build the final $\ndndeta$ distribution it is enough to sum
+\eqref{eq:superhist} (or \eqref{eq:superhist:2} if the secondary map
 correction was turned off) and \eqref{eq:overflow} over all accepted
 events, $\NA$, and correct for the acceptance
 $\PhiAcc{}\,$\footnote{Since $\phiAcc$ is 1 or slightly less, we have
@@ -172,7 +172,8 @@ calculated from simulations using the expression
     \mult[,\text{primary}]\etaphi}{\frac{1}{\N{X}{}}\sum_i^{\N{X}{}}
     \mult[,\text{primary}]\etaphi}
 \end{align*}
-Note that typically $B\etaphi$ is unity.
+Note that typically $B\etaphi$ is unity independent of collision
+system, energy, or particle multiplicity. 
 
 %% --- Sub section on the empirical correction -----------------------
 \subsection{The Empirical Correction} 
@@ -182,13 +183,13 @@ The precision of the simulation based correction for secondary
 particle production $\SecMap{}$ depends strongly on the accuracy with
 which the material is specified in the simulation.  If there is not
 enough or too much material (compared to the actual experiment)
-specified in the simulations, we will calculate a too low or to high
-value for $\SecMap$.  If the correct amount of material \emph{is}
-present, but placed incorrectly, we will have a wrong distribution of
-$\SecMap$.  Since there are many parts in the various detectors, some
-of which are hard to describe, it is very unlikely that we will ever
-reach a high enough accuracy so that $\SecMap$ is not associated with
-very large uncertainties.
+specified in the simulations, we will calculate a too low or too high
+value for $\SecMap$.  Also, even if the correct amount of material
+\emph{is} present, but placed incorrectly, we will have a wrong
+distribution of $\SecMap$.  Since there are many parts in the various
+detectors, some of which are hard to describe, it is very unlikely
+that we will ever reach a high enough accuracy so that $\SecMap$ is
+not associated with very large uncertainties.
 
 \begin{figure}[th!bp]
   \centering
@@ -224,13 +225,13 @@ and were a consequence of the so-called `debunching effect'
 point collisions pass through very different regions of \ALICE{}, as
 illustrated in \figref{fig:satellite_geom}.  
 
-As illustrated in \figref{fig:satellite_geom}, particles produced in
-collisions at say $z\approx\unit[225]{\text{cm}}$ pass through a lot
-less material than particles produced at the nominal interaction
-region ($z\approx\unit[0]{\text{cm}}$), and the material they do pass
-through is a lot simpler and much better described in the simulations.
-This was exploited to produce the \ndndeta{} distributions for
-\PbPbCol{} at \usNN{PbPb}{2760} for centrality bins $0-5-10-20-30\%$
+Particles produced in collisions at say
+$z\approx\unit[225]{\text{cm}}$ pass through a lot less material than
+particles produced at the nominal interaction region
+($z\approx\unit[0]{\text{cm}}$), and the material they do pass through
+is a lot simpler and much better described in the simulations.  This
+was exploited to produce the \ndndeta{} distributions for \PbPbCol{}
+at \usNN{PbPb}{2760} for centrality bins $0-5-10-20-30\%$
 \cite{Abbas:2013bpa}.  Another benefit of this approach was the
 overlap between the \FMD{} and \VZERO{} acceptance, and that the
 \VZERO{} and \FMD{} results could be checked against the results from
@@ -273,10 +274,10 @@ defined as
 where the denominator is the result from the satellite \PbPbCol{} at
 \usNN{PbPb}{2760} analysis \cite{Abbas:2013bpa}, and the numerator is
 the result from collisions at the nominal interaction point
-\emph{without} the secondary correction.   The sub-script $c$
-indicates that we can form this ratio separately in each of the 4
-centrality bins we have satellite results from.  The result can be
-seen in \figref{fig:empirical:cent}. 
+\emph{without} the secondary correction.  The sub-script $c$ indicates
+that we can form this ratio separately in each of the 4 centrality
+bins we have satellite results for.  The result is shown in
+\figref{fig:empirical:cent}.
 
 \paragraph{Stability}
 We see that the correction is stable over all centralities and that we
@@ -287,13 +288,13 @@ can use the weighted average over all centralities to define
   \EmpCor{} = \frac{\sum_c \Delta c\EmpCor[c]{}}{\sum_c \Delta c}\quad.
 \end{equation}
 
-Further motivation for the empirical correction as a correction
-for the produced secondary corrections, is found in
+Further motivation for the empirical correction as a correction for
+the produced secondary corrections, is found in
 \figref{fig:empirical:secmap}.  Here, the simulation based $\SecMap$
-is compared to the data driven $\EmpCor$.  We see that $\EmpCor$
-follows the shape of $\SecMap$ overall with differences at $\eta<0$
+is compared to the data driven $\EmpCor$.  We see that overall
+$\EmpCor$ follows the shape of $\SecMap$ with differences at $\eta<0$
 and around $\eta=2$ -- as we would expect from a correction that
-depends on the material distribution. 
+depends on the material distribution.
 
 \begin{figure}[h!tbp]
   \centering
@@ -310,14 +311,15 @@ depends on the material distribution.
   \label{fig:empirical:methods}
 \end{figure}
 
-In principle we could form the ratio of \eqref{eq:empirical:cent} in
-separate $\IPz$ bins and separately for each \FMD{} ring.  We would
-then apply that correction $\EmpCor[\subIPz,r]{}$ instead of $\SecMap$
-as outlined in \secref{sec:sub:sub:secmap}.  A comparison of the two
-methods is shown in \figref{fig:empirical:methods}.  We see that the
-difference in using either the single correction $\EmpCor$ or the
-interaction point, ring dependent correction $\EmpCor[\subIPz,r]{}$ is
-less than 2\%.
+The correction $\EmpCor$ is applied after summing over events, rings,
+and interaction points.  In principle we could form the ratio of
+\eqref{eq:empirical:cent} in separate $\IPz$ bins and separately for
+each \FMD{} ring.  We would then apply that correction
+$\EmpCor[\subIPz,r]{}$ instead of $\SecMap$ as outlined in
+\secref{sec:sub:sub:secmap}.  A comparison of the two methods is shown
+in \figref{fig:empirical:methods}.  We see that the difference in
+using either the single correction $\EmpCor$ or the interaction point,
+ring dependent correction $\EmpCor[\subIPz,r]{}$ is less than 2\%.
 
 \begin{figure}[h!tbp]
   \centering
@@ -351,10 +353,9 @@ Howver, as shown in \figref{fig:secmap:all} there is a residual
 uncertainty from the hadron chemistry which especially effects
 \FMD{1}.  This forces us to assign a systematic error of the order of
 a few percent more in the \FMD{1} region than what we would otherwise
-to in the remaining regions. 
-\FIXME{Marek, if your studies show we can ignore this, then this
-  should be reformulated}
-
+to in the remaining regions.  Note, that the uncertainty of the
+empirical correction already contains a 2\% uncertainty from the
+hadron--chemistry (see also \secref{sec:dndeta:sys:emp}).
 
 The empirical correction is seen to be stable and known to within
 $\pm5\%$.  
@@ -386,7 +387,8 @@ uncertainties and their sizes.
     event selection in \ppCol{} are taken from \cite{pwgud:2015}.
     Errors on the centrality selection in \pPbCol{} and \PbpCol{} from
     \cite{Adam:2014qja}.  \PbPbCol{} systematics from
-    \cite{PbPbCent:XXX}. \newline
+    \cite{PbPbCent:XXX}. Numbers in parenthesis are for \FMD{1} which
+    receives and additional uncertainty from the hadron--chemistry. \newline
     %% 
     \textsuperscript{*}These
     entries are not directly calculated into the total. \newline
@@ -465,7 +467,7 @@ uncertainties and their sizes.
     & n 
     & \multicolumn{4}{c|}{4\%} 
     & \multicolumn{2}{c|}{4\%} 
-    & 5\%?\\ 
+    & 5\%\\ 
     \altRowColor{}\cellcolor{white} 
     \multirow{-3}{*}{Empirical} 
     & As--applied
@@ -476,8 +478,8 @@ uncertainties and their sizes.
     \hline
     \multicolumn{2}{|c|}{Hadron chemistry\hspace*{4em}}
     & n 
-    & \multicolumn{4}{c|}{2\%(?)} 
-    & \multicolumn{2}{c|}{2\%(?)} 
+    & \multicolumn{4}{c|}{2\%} 
+    & \multicolumn{2}{c|}{2\%} 
     & 2\%\\ 
     \hline
     \altRowColor\cellcolor{white}
@@ -569,9 +571,9 @@ uncertainties and their sizes.
 \item[Hadron Chemistry] An additional 2\% in the \FMD{1} region should
   be added in quadrature and stems from the additional sensitivity to
   the hadron chemistry discussed elsewhere in
-  \secref{sec:sub:sub:secmap}.
-\FIXME{Note that the systematic error on the empirical correction
-  already contain 2-3\% error on this in the FMD region --- see \tabref{tab:satellite:syserrs}.} 
+  \secref{sec:sub:sub:secmap}. Note that the systematic error on the
+  empirical correction already contain 2\% error on this in the FMD
+  region --- see \tabref{tab:satellite:syserrs}.
 \end{description}
 
 \subsubsection{Systematics error on the Empirical Correction} 
@@ -646,7 +648,9 @@ errors as weights, and finally the common systematics errors are added
 in quadrature.  The result is shown in the top of
 \figref{fig:dndeta:sat:results}. Subtracting the common error from the
 centrality estimate from the systematic error leaves us with an error
-of 7.2\% in the high limit, and 3.6\% in the low limit.
+of 7.2\% in the high limit, and 3.6\% in the low limit over the whole
+$\eta$ range.  In the limited range of $-3.5\le\eta\le5$ for nominal
+$\IPz$ we found a low value of $4.2\%$ and a high value of $4.9\%$
  
 \begin{figure}[h!tbp]
   \centering
@@ -688,8 +692,8 @@ correction to be
   \langle\delta\EmpCor{}\rangle &= 5.8\%\quad.\\
 \end{align}
 Considering the overall variation across $\eta$ is relatively small,
-we err on the side caution and choose $\delta\EmpCor{}=6.1\%$ for the
-systematic error of empirical correction. 
+we err on the side of caution and choose $\delta\EmpCor{}=6.1\%$ for
+the systematic uncertainty of empirical correction.
 %% Local Variables:
 %%   TeX-master: "PWGLF_Forward_analysis_note.tex"
 %%   ispell-dictionary: "british"
