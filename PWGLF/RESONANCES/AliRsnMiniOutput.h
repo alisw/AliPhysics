@@ -138,7 +138,7 @@ private:
    Bool_t 	    fRejectIfNoQuark;  // flag to remove events not generated with PYTHIA
    Bool_t           fCheckHistRange;   //  check if values is in histogram range
 
-   ClassDef(AliRsnMiniOutput, 4)  // AliRsnMiniOutput class
+   ClassDef(AliRsnMiniOutput, 5)  // AliRsnMiniOutput class
 };
 
 #endif

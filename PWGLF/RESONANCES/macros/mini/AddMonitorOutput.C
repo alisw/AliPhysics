@@ -13,7 +13,7 @@ Options ("opt" argument):
 - NoTrackQ  --> disable track quality monitoring (DCA, nCls) histos
 /***************************************************************************/
 
-void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
+void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="NoSIGN",AliRsnLoopDaughter *lm=0)
 {
   //Set options
   Bool_t useTH1 = opt.Contains("dim1");
@@ -21,7 +21,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   Bool_t monitorSign = !opt.Contains("NoSIGN");
   Bool_t monitorTrackQ = !opt.Contains("NoTrackQ");
   Bool_t monitorTPCpid = !opt.Contains("NoTPCSIGMA");
-  Bool_t monitorTOFpid = !opt.Contains("NoTPCSIGMA");
+  Bool_t monitorTOFpid = !opt.Contains("NoTOFSIGMA");
   
   // Multiplicity/centrality
   AliRsnValueEvent *multi = new AliRsnValueEvent("multi",AliRsnValueEvent::kMult);
