@@ -70,7 +70,7 @@ fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kTRUE),
-fUseTPCMultiplicityCorrection(kTRUE),  
+fUseTPCMultiplicityCorrection(kTRUE),
 fUserDataRecoPass(-1)
 {
   //
@@ -93,14 +93,14 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   //
   // Create the output QA objects
   //
-  
+
   AliLog::SetClassDebugLevel("AliAnalysisTaskPIDResponse",10);
-  
+
   //input hander
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
   if (!inputHandler) AliFatal("Input handler needed");
-  
+
   //pid response object
   inputHandler->CreatePIDResponse(fIsMC);
   fPIDResponse=inputHandler->GetPIDResponse();
@@ -129,7 +129,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
       }
     }
     delete arr;
-  }  
+  }
 }
 
 //______________________________________________________________________________
@@ -140,16 +140,17 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
   AliVEvent *event=InputEvent();
   if (!event) return;
   fRun=event->GetRunNumber();
-  
+
   if (fRun!=fOldRun){
     SetRecoInfo();
     fOldRun=fRun;
-    
+
     fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
     fPIDResponse->SetUseTPCMultiplicityCorrection(fUseTPCMultiplicityCorrection);
   }
 
   fPIDResponse->InitialiseEvent(event,fRecoPass);
+  fPIDResponse->SetCurrentMCEvent(MCEvent());
   AliESDpid *pidresp = dynamic_cast<AliESDpid*>(fPIDResponse);
   if(pidresp && AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
       pidresp->SetEventHandler(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -166,11 +167,11 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   //
   // Set reconstruction information
   //
-  
+
   //reset information
   fRecoPass=0;
-  
-  //Get UserInfo from the current tree 
+
+  //Get UserInfo from the current tree
   AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   if (!inputHandler) return;
@@ -190,7 +191,7 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   }
 
   fPIDResponse->SetCurrentAliRootRev(prodInfo.GetAlirootSvnVersion());
-  
+
   if (prodInfo.IsMC() == kTRUE) fIsMC=kTRUE;         // protection if user didn't use macro switch
   if ( (prodInfo.IsMC() == kFALSE) && (fIsMC == kFALSE) ) {      // reco pass is needed only for data
 
@@ -212,7 +213,7 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
 	} else if (fileName.Contains("pass5") ) {
 	  fRecoPass=5;
 	}
-    } 
+    }
     }
     if (fRecoPass <= 0) {
       AliError(" ******** Failed to find reconstruction pass number *********");

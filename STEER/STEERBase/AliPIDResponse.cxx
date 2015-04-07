@@ -35,9 +35,11 @@
 #include <TLinearFitter.h>
 #include <TSystem.h>
 #include <TMD5.h>
+#include "TRandom.h"
 
 #include <AliVEvent.h>
 #include <AliVTrack.h>
+#include <AliMCEvent.h>
 #include <AliLog.h>
 #include <AliPID.h>
 #include <AliOADBContainer.h>
@@ -97,6 +99,7 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
+fCurrentMCEvent(NULL),
 fCurrCentrality(0.0),
 fBeamTypeNum(kPP),
 fNoTOFmism(kFALSE)
@@ -165,6 +168,7 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
+fCurrentMCEvent(NULL),
 fCurrCentrality(0.0),
 fBeamTypeNum(kPP),
 fNoTOFmism(other.fNoTOFmism)
@@ -224,6 +228,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTOFPIDParams=NULL;
     fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
+    fCurrentMCEvent=other.fCurrentMCEvent;
     fNoTOFmism = other.fNoTOFmism;
 
   }
@@ -236,11 +241,11 @@ Float_t AliPIDResponse::NumberOfSigmas(EDetector detector, const AliVParticle *v
   //
   // NumberOfSigmas for 'detCode'
   //
-  
+
   const AliVTrack *track=static_cast<const AliVTrack*>(vtrack);
   // look for cached value first
   const AliDetectorPID *detPID=track->GetDetectorPID();
-  
+
   if ( detPID && detPID->HasNumberOfSigmas(detector)){
     return detPID->GetNumberOfSigmas(detector, type);
   } else if (fCachePID) {
@@ -248,7 +253,7 @@ Float_t AliPIDResponse::NumberOfSigmas(EDetector detector, const AliVParticle *v
     detPID=track->GetDetectorPID();
     return detPID->GetNumberOfSigmas(detector, type);
   }
-  
+
   return GetNumberOfSigmas(detector, track, type);
 }
 
@@ -259,7 +264,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::NumberOfSigmas(EDetector detCode, 
   //
   // NumberOfSigmas with detector status as return value
   //
-  
+
   val=NumberOfSigmas(detCode, track, type);
   return CheckPIDStatus(detCode, (AliVTrack*)track);
 }
@@ -274,7 +279,7 @@ Float_t AliPIDResponse::NumberOfSigmasITS(const AliVParticle *vtrack, AliPID::EP
   //
   // Calculate the number of sigmas in the ITS
   //
-  
+
   return NumberOfSigmas(kITS, vtrack, type);
 }
 
@@ -284,12 +289,12 @@ Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EP
   //
   // Calculate the number of sigmas in the TPC
   //
-  
+
   return NumberOfSigmas(kTPC, vtrack, type);
 }
 
 //______________________________________________________________________________
-Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack, 
+Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack,
                                            AliPID::EParticleType type,
                                            AliTPCPIDResponse::ETPCdEdxSource dedxSource) const
 {
@@ -316,7 +321,7 @@ Float_t AliPIDResponse::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EP
   //
   // Calculate the number of sigmas in the TOF
   //
-  
+
   return NumberOfSigmas(kTOF, vtrack, type);
 }
 
@@ -326,7 +331,7 @@ Float_t AliPIDResponse::NumberOfSigmasHMPID(const AliVParticle *vtrack, AliPID::
   //
   // Calculate the number of sigmas in the EMCAL
   //
-  
+
   return NumberOfSigmas(kHMPID, vtrack, type);
 }
 
@@ -336,7 +341,7 @@ Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::
   //
   // Calculate the number of sigmas in the EMCAL
   //
-  
+
   return NumberOfSigmas(kEMCAL, vtrack, type);
 }
 
@@ -347,11 +352,11 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
   // emcal nsigma with eop and showershape
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  
+
   AliVCluster *matchedClus = NULL;
 
-  Double_t mom     = -1.; 
-  Double_t pt      = -1.; 
+  Double_t mom     = -1.;
+  Double_t pt      = -1.;
   Double_t EovP    = -1.;
   Double_t fClsE   = -1.;
 
@@ -360,10 +365,10 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
   for(Int_t i = 0; i < 4; i++){
     showershape[i] = -1.;
   }
-  
+
   Int_t nMatchClus = -1;
   Int_t charge     = 0;
-  
+
   // Track matching
   nMatchClus = track->GetEMCALcluster();
   if(nMatchClus > -1){
@@ -371,17 +376,17 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
     mom    = track->P();
     pt     = track->Pt();
     charge = track->Charge();
-    
+
     matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
-    
+
     if(matchedClus){
-      
+
       // matched cluster is EMCAL
       if(matchedClus->IsEMCAL()){
-	
+
 	fClsE       = matchedClus->E();
 	EovP        = fClsE/mom;
-	
+
 	// fill used EMCAL variables here
 	eop            = EovP; // E/p
 	showershape[0] = matchedClus->GetNCells(); // number of cells in cluster
@@ -392,7 +397,7 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
         // look for cached value first
         const AliDetectorPID *detPID=track->GetDetectorPID();
         const EDetector detector=kEMCAL;
-        
+
         if ( detPID && detPID->HasNumberOfSigmas(detector)){
           return detPID->GetNumberOfSigmas(detector, type);
         } else if (fCachePID) {
@@ -400,7 +405,7 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
           detPID=track->GetDetectorPID();
           return detPID->GetNumberOfSigmas(detector, type);
         }
-        
+
         // NSigma value really meaningful only for electrons!
         return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge);
       }
@@ -443,7 +448,7 @@ Double_t AliPIDResponse::GetSignalDelta(EDetector detCode, const AliVParticle *t
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
 {
   // Compute PID response of 'detCode'
-  
+
   // find detector code from detector bit mask
   Int_t detector=-1;
   for (Int_t idet=0; idet<kNdetectors; ++idet) if ( (detCode&(1<<idet)) ) { detector=idet; break; }
@@ -468,7 +473,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePIDProbability  (EDetector 
     detPID=track->GetDetectorPID();
     return detPID->GetRawProbability(detector, p, nSpecies);
   }
-  
+
   //if no caching return values calculated from scratch
   return GetComputePIDProbability(detector, track, nSpecies, p);
 }
@@ -511,7 +516,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeEMCALProbability  (const Al
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePHOSProbability (const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
 {
   // Compute PID response for the PHOS
-  
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   return kDetNoSignal;
@@ -535,11 +540,11 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliV
 AliPIDResponse::EDetPidStatus AliPIDResponse::CheckPIDStatus(EDetector detector, const AliVTrack *track) const
 {
   // calculate detector pid status
-  
+
   const Int_t iDetCode=(Int_t)detector;
   if (iDetCode<0||iDetCode>=kNdetectors) return kDetNoSignal;
   const AliDetectorPID *detPID=track->GetDetectorPID();
-  
+
   if ( detPID ){
     return detPID->GetPIDStatus(detector);
   } else if (fCachePID) {
@@ -547,7 +552,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::CheckPIDStatus(EDetector detector,
     detPID=track->GetDetectorPID();
     return detPID->GetPIDStatus(detector);
   }
-  
+
   // if not buffered and no buffering is requested
   return GetPIDStatus(detector, track);
 }
@@ -559,25 +564,25 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   // Apply settings for the current event
   //
   fRecoPass=pass;
-  
+
 
   fCurrentEvent=NULL;
   if (!event) return;
   fCurrentEvent=event;
   if (run>0) fRun=run;
   else fRun=event->GetRunNumber();
-  
+
   if (fRun!=fOldRun){
     ExecNewRun();
     fOldRun=fRun;
   }
-  
+
   //TPC resolution parametrisation PbPb
   if ( fResolutionCorrection ){
     Double_t corrSigma=fResolutionCorrection->Eval(GetTPCMultiplicityBin(event));
     fTPCResponse.SetSigma(3.79301e-03*corrSigma, 2.21280e+04);
   }
-  
+
   // Set up TPC multiplicity for PbPb
   if (fUseTPCMultiplicityCorrection) {
     Int_t numESDtracks = event->GetNumberOfESDTracks();
@@ -589,7 +594,7 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   }
   else
     fTPCResponse.SetCurrentEventMultiplicity(0);
-  
+
   //TOF resolution
   SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFPIDParams->GetStartTimeMethod());
 
@@ -606,7 +611,7 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   // Set centrality percentile for EMCAL
   fEMCALResponse.SetCentrality(fCurrCentrality);
 
-  // switch off some TOF channel according to OADB to match data TOF matching eff 
+  // switch off some TOF channel according to OADB to match data TOF matching eff
   if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) && fTOFPIDParams->GetTOFmatchingLossMC() > 0.01){
     Int_t ntrk = event->GetNumberOfTracks();
     for(Int_t i=0;i < ntrk;i++){
@@ -626,21 +631,21 @@ void AliPIDResponse::ExecNewRun()
   // Things to Execute upon a new run
   //
   SetRecoInfo();
-  
+
   SetITSParametrisation();
-  
+
   SetTPCPidResponseMaster();
   SetTPCParametrisation();
   SetTPCEtaMaps();
 
-  SetTRDPidResponseMaster(); 
+  SetTRDPidResponseMaster();
   //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
   SetTRDdEdxParams();
   InitializeTRDResponse();
 
-  SetEMCALPidResponseMaster(); 
+  SetEMCALPidResponseMaster();
   InitializeEMCALResponse();
-  
+
   SetTOFPidResponseMaster();
   InitializeTOFResponse();
 
@@ -656,7 +661,7 @@ Double_t AliPIDResponse::GetTPCMultiplicityBin(const AliVEvent * const event)
   //
   // Get TPC multiplicity in bins of 150
   //
-  
+
   const AliVVertex* vertexTPC = event->GetPrimaryVertex();
   Double_t tpcMulti=0.;
   if(vertexTPC){
@@ -664,7 +669,7 @@ Double_t AliPIDResponse::GetTPCMultiplicityBin(const AliVEvent * const event)
     tpcMulti=vertexContribTPC/150.;
     if (tpcMulti>20.) tpcMulti=20.;
   }
-  
+
   return tpcMulti;
 }
 
@@ -674,18 +679,18 @@ void AliPIDResponse::SetRecoInfo()
   //
   // Set reconstruction information
   //
-  
+
   //reset information
   fLHCperiod="";
   fMCperiodTPC="";
-  
+
   fBeamType="";
-    
+
   fBeamType="PP";
   fBeamTypeNum=kPP;
 
   Bool_t hasProdInfo=(fCurrentFile.BeginsWith("LHC"));
-  
+
   TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)[/_].*");
   if (hasProdInfo) reg=TPRegexp("LHC1[1-2][a-z]+[0-9]+[a-z_]*");
   TPRegexp reg12a17("LHC1[2-4][a-z]");
@@ -713,7 +718,7 @@ void AliPIDResponse::SetRecoInfo()
   // also for 11e (159650-162750),f(162751-165771) use 11d
   else if (fRun>=159650&&fRun<=162750) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
   else if (fRun>=162751&&fRun<=165771) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
-  
+
   else if (fRun>=165772 && fRun<=170718) {
     fLHCperiod="LHC11H";
     fMCperiodTPC="LHC11A10";
@@ -765,22 +770,22 @@ void AliPIDResponse::SetRecoInfo()
     if (fCurrentAliRootRev >= 62714)
       fMCperiodTPC="LHC13B2_FIXn1";
   }
-  
+
   // New parametrisation for 2013 pPb runs
   if (fRun >= 194480) {
-    fLHCperiod="LHC13B"; 
+    fLHCperiod="LHC13B";
     fBeamType="PPB";
     fBeamTypeNum=kPPB;
     fMCperiodTPC="LHC12G";
-  
+
     if (fCurrentAliRootRev >= 61605)
       fMCperiodTPC="LHC13B2_FIX";
     if (fCurrentAliRootRev >= 62714)
       fMCperiodTPC="LHC13B2_FIXn1";
-    
+
     // High luminosity pPb runs require different parametrisations
     if (fRun >= 195875 && fRun <= 197411) {
-      fLHCperiod="LHC13F"; 
+      fLHCperiod="LHC13F";
     }
   }
 
@@ -804,13 +809,13 @@ void AliPIDResponse::SetITSParametrisation()
   //
 }
 
- 
+
 //______________________________________________________________________________
 void AliPIDResponse::AddPointToHyperplane(TH2D* h, TLinearFitter* linExtrapolation, Int_t binX, Int_t binY)
 {
   if (h->GetBinContent(binX, binY) <= 1e-4)
     return; // Reject bins without content (within some numerical precision) or with strange content
-    
+
   Double_t coord[2] = {0, 0};
   coord[0] = h->GetXaxis()->GetBinCenter(binX);
   coord[1] = h->GetYaxis()->GetBinCenter(binY);
@@ -828,10 +833,10 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
 {
   if (!h)
     return 0x0;
-  
+
   // Interpolate to finer map
   TLinearFitter* linExtrapolation = new TLinearFitter(2, "hyp2", "");
-  
+
   Double_t upperMapBoundY = h->GetYaxis()->GetBinUpEdge(h->GetYaxis()->GetNbins());
   Double_t lowerMapBoundY = h->GetYaxis()->GetBinLowEdge(1);
   Int_t nBinsX = 30;
@@ -839,139 +844,139 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
   // scale the number of bins correspondingly
   Int_t nBinsY = TMath::Nint((upperMapBoundY - lowerMapBoundY) / (0.02 - 0.0016) * 40);
   Int_t nBinsXrefined = nBinsX * refineFactorX;
-  Int_t nBinsYrefined = nBinsY * refineFactorY; 
-  
+  Int_t nBinsYrefined = nBinsY * refineFactorY;
+
   TH2D* hRefined = new TH2D(Form("%s_refined", h->GetName()),  Form("%s (refined)", h->GetTitle()),
                             nBinsXrefined, h->GetXaxis()->GetBinLowEdge(1), h->GetXaxis()->GetBinUpEdge(h->GetXaxis()->GetNbins()),
                             nBinsYrefined, lowerMapBoundY, upperMapBoundY);
-  
+
   for (Int_t binX = 1; binX <= nBinsXrefined; binX++)  {
     for (Int_t binY = 1; binY <= nBinsYrefined; binY++)  {
-      
+
       hRefined->SetBinContent(binX, binY, 1); // Default value is 1
-      
+
       Double_t centerX = hRefined->GetXaxis()->GetBinCenter(binX);
       Double_t centerY = hRefined->GetYaxis()->GetBinCenter(binY);
-      
+
       /*OLD
       linExtrapolation->ClearPoints();
-      
+
       // For interpolation: Just take the corresponding bin from the old histo.
       // For extrapolation: take the last available bin from the old histo.
       // If the boundaries are to be skipped, also skip the corresponding bins
       Int_t oldBinX = h->GetXaxis()->FindBin(centerX);
-      if (oldBinX < 1)  
+      if (oldBinX < 1)
         oldBinX = 1;
       if (oldBinX > nBinsX)
         oldBinX = nBinsX;
-      
+
       Int_t oldBinY = h->GetYaxis()->FindBin(centerY);
-      if (oldBinY < 1)  
+      if (oldBinY < 1)
         oldBinY = 1;
       if (oldBinY > nBinsY)
         oldBinY = nBinsY;
-      
+
       // Neighbours left column
       if (oldBinX >= 2) {
         if (oldBinY >= 2) {
           AddPointToHyperplane(h, linExtrapolation, oldBinX - 1, oldBinY - 1);
         }
-        
+
         AddPointToHyperplane(h, linExtrapolation, oldBinX - 1, oldBinY);
-        
+
         if (oldBinY < nBinsY) {
           AddPointToHyperplane(h, linExtrapolation, oldBinX - 1, oldBinY + 1);
         }
       }
-      
+
       // Neighbours (and point itself) same column
       if (oldBinY >= 2) {
         AddPointToHyperplane(h, linExtrapolation, oldBinX, oldBinY - 1);
       }
-        
+
       AddPointToHyperplane(h, linExtrapolation, oldBinX, oldBinY);
-        
+
       if (oldBinY < nBinsY) {
         AddPointToHyperplane(h, linExtrapolation, oldBinX, oldBinY + 1);
       }
-      
+
       // Neighbours right column
       if (oldBinX < nBinsX) {
         if (oldBinY >= 2) {
           AddPointToHyperplane(h, linExtrapolation, oldBinX + 1, oldBinY - 1);
         }
-        
+
         AddPointToHyperplane(h, linExtrapolation, oldBinX + 1, oldBinY);
-        
+
         if (oldBinY < nBinsY) {
           AddPointToHyperplane(h, linExtrapolation, oldBinX + 1, oldBinY + 1);
         }
       }
-      
-      
+
+
       // Fit 2D-hyperplane
       if (linExtrapolation->GetNpoints() <= 0)
         continue;
-        
+
       if (linExtrapolation->Eval() != 0)// EvalRobust -> Takes much, much, [...], much more time (~hours instead of seconds)
         continue;
-      
+
       // Fill the bin of the refined histogram with the extrapolated value
       Double_t interpolatedValue = linExtrapolation->GetParameter(0) + linExtrapolation->GetParameter(1) * centerX
                                  + linExtrapolation->GetParameter(2) * centerY;
       */
       Double_t interpolatedValue = h->Interpolate(centerX, centerY) ;
-      hRefined->SetBinContent(binX, binY, interpolatedValue);      
+      hRefined->SetBinContent(binX, binY, interpolatedValue);
     }
-  } 
-  
-  
+  }
+
+
   // Problem: Interpolation does not work before/beyond center of first/last bin (as the name suggests).
   // Therefore, for each row in dEdx: Take last bin from old map and interpolate values from center and edge.
   // Assume line through these points and extropolate to last bin of refined map
   const Double_t firstOldXbinUpEdge = h->GetXaxis()->GetBinUpEdge(1);
   const Double_t firstOldXbinCenter = h->GetXaxis()->GetBinCenter(1);
-  
+
   const Double_t oldXbinHalfWidth = firstOldXbinUpEdge - firstOldXbinCenter;
-  
+
   const Double_t lastOldXbinLowEdge = h->GetXaxis()->GetBinLowEdge(h->GetNbinsX());
   const Double_t lastOldXbinCenter = h->GetXaxis()->GetBinCenter(h->GetNbinsX());
-  
+
   for (Int_t binY = 1; binY <= nBinsYrefined; binY++)  {
     Double_t centerY = hRefined->GetYaxis()->GetBinCenter(binY);
-    
+
     const Double_t interpolatedCenterFirstXbin = h->Interpolate(firstOldXbinCenter, centerY);
     const Double_t interpolatedUpEdgeFirstXbin = h->Interpolate(firstOldXbinUpEdge, centerY);
-    
+
     const Double_t extrapolationSlopeFirstXbin = (interpolatedUpEdgeFirstXbin - interpolatedCenterFirstXbin) / oldXbinHalfWidth;
     const Double_t extrapolationOffsetFirstXbin = interpolatedCenterFirstXbin;
-    
-    
+
+
     const Double_t interpolatedCenterLastXbin = h->Interpolate(lastOldXbinCenter, centerY);
     const Double_t interpolatedLowEdgeLastXbin = h->Interpolate(lastOldXbinLowEdge, centerY);
-    
+
     const Double_t extrapolationSlopeLastXbin = (interpolatedCenterLastXbin - interpolatedLowEdgeLastXbin) / oldXbinHalfWidth;
     const Double_t extrapolationOffsetLastXbin = interpolatedCenterLastXbin;
 
     for (Int_t binX = 1; binX <= nBinsXrefined; binX++)  {
       Double_t centerX = hRefined->GetXaxis()->GetBinCenter(binX);
-     
+
       if (centerX < firstOldXbinCenter) {
         Double_t extrapolatedValue = extrapolationOffsetFirstXbin + (centerX - firstOldXbinCenter) * extrapolationSlopeFirstXbin;
-        hRefined->SetBinContent(binX, binY, extrapolatedValue);      
+        hRefined->SetBinContent(binX, binY, extrapolatedValue);
       }
       else if (centerX <= lastOldXbinCenter) {
         continue;
       }
       else {
         Double_t extrapolatedValue = extrapolationOffsetLastXbin + (centerX - lastOldXbinCenter) * extrapolationSlopeLastXbin;
-        hRefined->SetBinContent(binX, binY, extrapolatedValue);     
+        hRefined->SetBinContent(binX, binY, extrapolatedValue);
       }
     }
-  } 
-  
+  }
+
   delete linExtrapolation;
-  
+
   return hRefined;
 }
 
@@ -982,32 +987,32 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   //
   // Load the TPC eta correction maps from the OADB
   //
-  
+
   if (fUseTPCEtaCorrection == kFALSE) {
     // Disable eta correction via setting no maps
     if (!fTPCResponse.SetEtaCorrMap(0x0))
-      AliInfo("Request to disable TPC eta correction -> Eta correction has been disabled"); 
+      AliInfo("Request to disable TPC eta correction -> Eta correction has been disabled");
     else
       AliError("Request to disable TPC eta correction -> Some error occured when unloading the correction maps");
-    
+
     if (!fTPCResponse.SetSigmaParams(0x0, 0))
-      AliInfo("Request to disable TPC eta correction -> Using old parametrisation for sigma"); 
+      AliInfo("Request to disable TPC eta correction -> Using old parametrisation for sigma");
     else
       AliError("Request to disable TPC eta correction -> Some error occured when unloading the sigma maps");
-    
+
     return;
   }
-  
+
   TString dataType = "DATA";
   TString period = fLHCperiod.IsNull() ? "No period information" : fLHCperiod;
-  
+
   if (fIsMC)  {
     if (!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) {
       period=fMCperiodTPC;
       dataType="MC";
     }
     fRecoPass = 1;
-    
+
     if (!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) && fMCperiodTPC.IsNull()) {
       AliFatal("MC detected, but no MC period set -> Not changing eta maps!");
       return;
@@ -1017,22 +1022,22 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   Int_t recopass = fRecoPass;
   if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) )
     recopass = fRecoPassUser;
-  
+
   TString defaultObj = Form("Default_%s_pass%d", dataType.Data(), recopass);
-  
+
   AliInfo(Form("Current period and reco pass: %s.pass%d", period.Data(), recopass));
-  
+
   // Invalidate old maps
   fTPCResponse.SetEtaCorrMap(0x0);
   fTPCResponse.SetSigmaParams(0x0, 0);
-  
-  
+
+
   TString fileNameMaps(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
   if (!fCustomTPCetaMaps.IsNull()) fileNameMaps=fCustomTPCetaMaps;
-  
+
   // Load the eta correction maps
-  AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass)); 
-  
+  AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
+
   Int_t statusCont = etaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta correction maps from OADB -> Disabled eta correction");
@@ -1040,9 +1045,9 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   }
   else {
     AliInfo(Form("Loading TPC eta correction map from %s", fileNameMaps.Data()));
-    
+
     TH2D* etaMap = 0x0;
-    
+
     if (fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) {
       TString searchMap = Form("TPCetaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), recopass);
       etaMap = dynamic_cast<TH2D *>(etaMapsCont.GetDefaultObject(searchMap.Data()));
@@ -1054,15 +1059,15 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     else {
       etaMap = dynamic_cast<TH2D *>(etaMapsCont.GetObject(fRun, defaultObj.Data()));
     }
-    
-        
+
+
     if (!etaMap) {
       AliError(Form("TPC eta correction map not found for run %d and also no default map found -> Disabled eta correction!!!", fRun));
       fUseTPCEtaCorrection = kFALSE;
     }
     else {
       TH2D* etaMapRefined = RefineHistoViaLinearInterpolation(etaMap, refineFactorMapX, refineFactorMapY);
-      
+
       if (etaMapRefined) {
         if (!fTPCResponse.SetEtaCorrMap(etaMapRefined)) {
           AliError(Form("Failed to set TPC eta correction map for run %d -> Disabled eta correction!!!", fRun));
@@ -1070,11 +1075,11 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fUseTPCEtaCorrection = kFALSE;
         }
         else {
-          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s)", 
+          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s)",
                        refineFactorMapX, refineFactorMapY, fileNameMaps.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
                        GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
         }
-        
+
         delete etaMapRefined;
       }
       else {
@@ -1083,25 +1088,25 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
       }
     }
   }
-  
+
   // If there was some problem loading the eta maps, it makes no sense to load the sigma maps (that require eta corrected data)
   if (fUseTPCEtaCorrection == kFALSE) {
-    AliError("Failed to load TPC eta correction map required by sigma maps -> Using old parametrisation for sigma"); 
+    AliError("Failed to load TPC eta correction map required by sigma maps -> Using old parametrisation for sigma");
     return;
   }
-  
+
   // Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta))
-  AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass)); 
-  
+  AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
+
   statusCont = etaSigmaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta sigma maps from OADB -> Using old sigma parametrisation");
   }
   else {
     AliInfo(Form("Loading TPC eta sigma map from %s", fileNameMaps.Data()));
-    
+
     TObjArray* etaSigmaPars = 0x0;
-    
+
     if (fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) {
       TString searchMap = Form("TPCetaSigmaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), recopass);
       etaSigmaPars = dynamic_cast<TObjArray *>(etaSigmaMapsCont.GetDefaultObject(searchMap.Data()));
@@ -1113,7 +1118,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     else {
       etaSigmaPars = dynamic_cast<TObjArray *>(etaSigmaMapsCont.GetObject(fRun, defaultObj.Data()));
     }
-    
+
     if (!etaSigmaPars) {
       AliError(Form("TPC eta sigma parametrisation not found for run %d -> Using old sigma parametrisation!!!", fRun));
     }
@@ -1121,7 +1126,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
       TH2D* etaSigmaPar1Map = dynamic_cast<TH2D *>(etaSigmaPars->FindObject("sigmaPar1Map"));
       TNamed* sigmaPar0Info = dynamic_cast<TNamed *>(etaSigmaPars->FindObject("sigmaPar0"));
       Double_t sigmaPar0 = 0.0;
-      
+
       if (sigmaPar0Info) {
         TString sigmaPar0String = sigmaPar0Info->GetTitle();
         sigmaPar0 = sigmaPar0String.Atof();
@@ -1130,21 +1135,21 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
         // Something is weired because the object for parameter 0 could not be loaded -> New sigma parametrisation can not be used!
         etaSigmaPar1Map = 0x0;
       }
-      
+
       TH2D* etaSigmaPar1MapRefined = RefineHistoViaLinearInterpolation(etaSigmaPar1Map, refineFactorSigmaMapX, refineFactorSigmaMapY);
-      
-      
+
+
       if (etaSigmaPar1MapRefined) {
         if (!fTPCResponse.SetSigmaParams(etaSigmaPar1MapRefined, sigmaPar0)) {
           AliError(Form("Failed to set TPC eta sigma map for run %d -> Using old sigma parametrisation!!!", fRun));
           fTPCResponse.SetSigmaParams(0x0, 0);
         }
         else {
-          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s, sigmaPar0 = %f)", 
+          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s, sigmaPar0 = %f)",
                        refineFactorSigmaMapX, refineFactorSigmaMapY, fileNameMaps.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
                        GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
         }
-        
+
         delete etaSigmaPar1MapRefined;
       }
       else {
@@ -1164,17 +1169,17 @@ void AliPIDResponse::SetTPCPidResponseMaster()
   //
   //don't load twice for the moment
    if (fArrPidResponseMaster) return;
- 
+
 
   //reset the PID response functions
   delete fArrPidResponseMaster;
   fArrPidResponseMaster=NULL;
-  
+
   TFile *f=NULL;
-  
+
   TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
   if (!fCustomTPCpidResponse.IsNull()) fileNamePIDresponse=fCustomTPCpidResponse;
-  
+
   f=TFile::Open(fileNamePIDresponse.Data());
   if (f && f->IsOpen() && !f->IsZombie()){
     fArrPidResponseMaster=dynamic_cast<TObjArray*>(f->Get("TPCPIDResponse"));
@@ -1187,7 +1192,7 @@ void AliPIDResponse::SetTPCPidResponseMaster()
     fOADBvoltageMaps=dynamic_cast<AliOADBContainer*>(f->Get("TPCvoltageSettings"));
   }
   delete f;
-  
+
   if (!fArrPidResponseMaster){
     AliFatal(Form("Could not retrieve the TPC pid response from: %s",fileNamePIDresponse.Data()));
     return;
@@ -1207,21 +1212,21 @@ void AliPIDResponse::SetTPCParametrisation()
   //
   // Change BB parametrisation for current run
   //
-  
+
   //
   //reset old splines
   //
   fTPCResponse.ResetSplines();
-  
+
   if (fLHCperiod.IsNull()) {
     AliError("No period set, not changing parametrisation");
     return;
   }
-  
+
   //
   // Set default parametrisations for data and MC
   //
-  
+
   //data type
   TString datatype="DATA";
   //in case of mc fRecoPass is per default 1
@@ -1236,7 +1241,7 @@ void AliPIDResponse::SetTPCParametrisation()
 
   Int_t recopass = fRecoPass;
   if(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) recopass = fRecoPassUser;
-    
+
   AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   Bool_t found=kFALSE;
   //
@@ -1261,7 +1266,7 @@ void AliPIDResponse::SetTPCParametrisation()
         TObject *responseFunction=fArrPidResponseMaster->At(iresp);
         if (responseFunction==NULL) continue;
         TString responseName=responseFunction->GetName();
-         
+
         if (!reg.MatchB(responseName)) continue;
 
         TObjArray *arr=reg.MatchS(responseName); if (!arr) continue;
@@ -1273,7 +1278,7 @@ void AliPIDResponse::SetTPCParametrisation()
         delete arr;
         if (particleName.IsNull()) continue;
         if (!grAll && particleName=="ALL" && gainScenarioName==gainScenario) grAll=responseFunction;
-        else 
+        else
         {
           for (Int_t ispec=0; ispec<(AliTPCPIDResponse::fgkNumberOfParticleSpecies); ++ispec)
           {
@@ -1294,15 +1299,15 @@ void AliPIDResponse::SetTPCParametrisation()
           }
         }
       }
-      
+
       // Retrieve responsefunction for pions - will (if available) be used for muons if there are no dedicated muon splines.
       // For light nuclei, try to set the proton spline, if no dedicated splines are available.
       // In both cases: Use default splines, if no dedicated splines and no pion/proton splines are available.
-      TObject* responseFunctionPion = fTPCResponse.GetResponseFunction( (AliPID::EParticleType)AliPID::kPion,                             
+      TObject* responseFunctionPion = fTPCResponse.GetResponseFunction( (AliPID::EParticleType)AliPID::kPion,
                                                                         (AliTPCPIDResponse::ETPCgainScenario)igainScenario);
-      TObject* responseFunctionProton = fTPCResponse.GetResponseFunction( (AliPID::EParticleType)AliPID::kProton,                             
+      TObject* responseFunctionProton = fTPCResponse.GetResponseFunction( (AliPID::EParticleType)AliPID::kProton,
                                                                           (AliTPCPIDResponse::ETPCgainScenario)igainScenario);
-      
+
       for (Int_t ispec=0; ispec<(AliTPCPIDResponse::fgkNumberOfParticleSpecies); ++ispec)
       {
         if (!fTPCResponse.GetResponseFunction( (AliPID::EParticleType)ispec,
@@ -1316,7 +1321,7 @@ void AliPIDResponse::SetTPCParametrisation()
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionPion->GetName(),
                            GetChecksum((TSpline3*)responseFunctionPion).Data()));
-              found=kTRUE;  
+              found=kTRUE;
             }
             else if (grAll) {
               fTPCResponse.SetResponseFunction( grAll,
@@ -1338,7 +1343,7 @@ void AliPIDResponse::SetTPCParametrisation()
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionProton->GetName(),
                            GetChecksum((TSpline3*)responseFunctionProton).Data()));
-              found=kTRUE;  
+              found=kTRUE;
             }
             else if (grAll) {
               fTPCResponse.SetResponseFunction( grAll,
@@ -1367,18 +1372,18 @@ void AliPIDResponse::SetTPCParametrisation()
   //
   // Setup multiplicity correction (only used for non-pp collisions)
   //
-  
+
   const Bool_t isPP = (fBeamType.CompareTo("PP") == 0);
-  
+
   // 2013 pPb data taking at low luminosity
   const Bool_t isPPb2013LowLuminosity = period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D");
   // PbPb 2010, period 10h.pass2
   //TODO Needs further development const Bool_t is10hpass2 = period.Contains("LHC10H") && recopass == 2;
-  
-  
+
+
   // In case of MC without(!) tune on data activated for the TPC, don't use the multiplicity correction for the moment
   Bool_t isMCandNotTPCtuneOnData = fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC));
-  
+
   // If correction is available, but disabled (highly NOT recommended!), print warning
   if (!fUseTPCMultiplicityCorrection && !isPP && !isMCandNotTPCtuneOnData) {
     //TODO: Needs further development if (is10hpass2 || isPPb2013LowLuminosity) {
@@ -1386,11 +1391,11 @@ void AliPIDResponse::SetTPCParametrisation()
       AliWarning("Mulitplicity correction disabled, but correction parameters for this period exist. It is highly recommended to use enable the correction. Otherwise the splines might be off!");
     }
   }
-  
+
   if (fUseTPCMultiplicityCorrection && !isPP && !isMCandNotTPCtuneOnData) {
     AliInfo("Multiplicity correction enabled!");
-    
-    //TODO After testing, load parameters from outside       
+
+    //TODO After testing, load parameters from outside
     /*TODO no correction for MC
     if (period.Contains("LHC11A10"))  {//LHC11A10A
       AliInfo("Using multiplicity correction parameters for 11a10!");
@@ -1399,7 +1404,7 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicityCorrection(2, 1.80220e-02);
       fTPCResponse.SetParameterMultiplicityCorrection(3, 0.1);
       fTPCResponse.SetParameterMultiplicityCorrection(4, 6.45306e-03);
-      
+
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -2.85505e-07);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, -1.31911e-06);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
@@ -1411,33 +1416,33 @@ void AliPIDResponse::SetTPCParametrisation()
     }
     else*/ if (isPPb2013LowLuminosity)  {// 2013 pPb data taking at low luminosity
       AliInfo("Using multiplicity correction parameters for 13b.pass2 (at least also valid for 13{c,d} and pass 3)!");
-      
+
       fTPCResponse.SetParameterMultiplicityCorrection(0, -5.906e-06);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -5.064e-04);
       fTPCResponse.SetParameterMultiplicityCorrection(2, -3.521e-02);
       fTPCResponse.SetParameterMultiplicityCorrection(3, 2.469e-02);
       fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
-      
+
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -5.32e-06);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 1.177e-05);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
-      
+
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, 0.);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 0.);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, 0.);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 0.);
-      
+
       /* Not too bad, but far from perfect in the details
       fTPCResponse.SetParameterMultiplicityCorrection(0, -6.27187e-06);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -4.60649e-04);
       fTPCResponse.SetParameterMultiplicityCorrection(2, -4.26450e-02);
       fTPCResponse.SetParameterMultiplicityCorrection(3, 2.40590e-02);
       fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
-      
+
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -5.338e-06);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 1.220e-05);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
-      
+
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, 7.89237e-05);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, -1.30662e-02);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, 8.91548e-01);
@@ -1445,18 +1450,18 @@ void AliPIDResponse::SetTPCParametrisation()
       */
     }
     /*TODO: Needs further development
-    else if (is10hpass2) {    
+    else if (is10hpass2) {
       AliInfo("Using multiplicity correction parameters for 10h.pass2!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 3.21636e-07);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -6.65876e-04);
       fTPCResponse.SetParameterMultiplicityCorrection(2, 1.28786e-03);
       fTPCResponse.SetParameterMultiplicityCorrection(3, 1.47677e-02);
       fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
-      
+
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, 7.23591e-08);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 2.7469e-06);
       fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
-      
+
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, -1.22590e-05);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 6.88888e-03);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -3.20788e-01);
@@ -1476,7 +1481,7 @@ void AliPIDResponse::SetTPCParametrisation()
     // correction factor inside THIS class. Nevertheless, experts can access the TPCPIDResponse
     // directly and use it for calculations - which should still give valid results, even if
     // the multiplicity correction is explicitely enabled in such expert calls.
-    
+
     TString reasonForDisabling = "requested by user";
     if (fUseTPCMultiplicityCorrection) {
       if (isPP)
@@ -1484,14 +1489,14 @@ void AliPIDResponse::SetTPCParametrisation()
       else
         reasonForDisabling = "MC w/o tune on data";
     }
-    
+
     AliInfo(Form("Multiplicity correction %sdisabled (%s)!", fUseTPCMultiplicityCorrection ? "automatically " : "",
                  reasonForDisabling.Data()));
-    
+
     fUseTPCMultiplicityCorrection = kFALSE;
     fTPCResponse.ResetMultiplicityCorrectionFunctions();
   }
-  
+
   if (fUseTPCMultiplicityCorrection) {
     for (Int_t i = 0; i <= 4 + 1; i++) {
       AliInfo(Form("parMultCorr: %d, %e", i, fTPCResponse.GetMultiplicityCorrectionFunction()->GetParameter(i)));
@@ -1503,40 +1508,40 @@ void AliPIDResponse::SetTPCParametrisation()
       AliInfo(Form("parMultSigmaCorr: %d, %e", j, fTPCResponse.GetMultiplicitySigmaCorrectionFunction()->GetParameter(j)));
     }
   }
-  
+
   //
   // Setup old resolution parametrisation
   //
-  
+
   //default
   fTPCResponse.SetSigma(3.79301e-03, 2.21280e+04);
-  
+
   if (fRun>=122195){ //LHC10d
     fTPCResponse.SetSigma(2.30176e-02, 5.60422e+02);
   }
-  
+
   if (fRun>=170719){ // LHC12a
     fTPCResponse.SetSigma(2.95714e-03, 1.01953e+05);
   }
-  
+
   if (fRun>=177312){ // LHC12b
     fTPCResponse.SetSigma(3.74633e-03, 7.11829e+04 );
   }
-  
+
   if (fRun>=186346){ // LHC12e
     fTPCResponse.SetSigma(8.62022e-04, 9.08156e+05);
   }
-  
+
   if (fArrPidResponseMaster)
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
-  
+
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s  (MD5(corr function) = %s)",
                                           fResolutionCorrection->GetName(), GetChecksum(fResolutionCorrection).Data()));
 
   //read in the voltage map
   TVectorF* gsm = 0x0;
   if (fOADBvoltageMaps) gsm=dynamic_cast<TVectorF*>(fOADBvoltageMaps->GetObject(fRun));
-  if (gsm) 
+  if (gsm)
   {
     fTPCResponse.SetVoltageMap(*gsm);
     TString vals;
@@ -1560,7 +1565,7 @@ void AliPIDResponse::SetTRDPidResponseMaster()
   // Load the TRD pid params and references from the OADB
   //
   if(fTRDPIDResponseObject) return;
-  AliOADBContainer contParams("contParams"); 
+  AliOADBContainer contParams("contParams");
 
   Int_t statusResponse = contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDResponse.root", fOADBPath.Data()), "AliTRDPIDResponseObject");
   if(statusResponse){
@@ -1578,7 +1583,7 @@ void AliPIDResponse::SetTRDPidResponseMaster()
 void AliPIDResponse::InitializeTRDResponse(){
   //
   // Set PID Params and references to the TRD PID response
-  // 
+  //
     fTRDResponse.SetPIDResponseObject(fTRDPIDResponseObject);
     fTRDResponse.SetdEdxParams(fTRDdEdxParams);
 }
@@ -1603,19 +1608,19 @@ void AliPIDResponse::SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::E
     }
     AliDebug(1,Form("Slice Range set to %d - %d",TRDslicesForPID[0],TRDslicesForPID[1]));
 }
-//______________________________________________________________________________ 
+//______________________________________________________________________________
 void AliPIDResponse::SetTRDdEdxParams()
 {
   if(fTRDdEdxParams) return;
 
   const TString containerName = "TRDdEdxParamsContainer";
-  AliOADBContainer cont(containerName.Data()); 
-  
+  AliOADBContainer cont(containerName.Data());
+
   const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxParams.root", fOADBPath.Data());
 
   const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
   if (statusCont){
-    AliFatal("Failed initializing settings from OADB"); 
+    AliFatal("Failed initializing settings from OADB");
   }
   else{
     AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
@@ -1716,7 +1721,7 @@ void AliPIDResponse::SetHMPIDPidResponseMaster()
   if (fHMPIDPIDParams) delete fHMPIDPIDParams;
   fHMPIDPIDParams=NULL;
 
-  TFile *oadbf; 
+  TFile *oadbf;
   if(!fIsMC) oadbf = new TFile(Form("%s/COMMON/PID/data/HMPIDPIDParams.root",fOADBPath.Data()));
   else       oadbf = new TFile(Form("%s/COMMON/PID/MC/HMPIDPIDParams.root",fOADBPath.Data()));
   if (oadbf && oadbf->IsOpen()) {
@@ -1763,7 +1768,7 @@ Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Int_t &n
   Int_t nmomenta = 0;
   for(Int_t iPl=0;iPl<AliVTrack::kTRDnPlanes;iPl++){
     if(vtrack->GetTRDmomentum(iPl) > 0.){
-      trdmomenta[nmomenta++] = vtrack->GetTRDmomentum(iPl); 
+      trdmomenta[nmomenta++] = vtrack->GetTRDmomentum(iPl);
     }
   }
   p = TMath::Mean(nmomenta, trdmomenta);
@@ -1781,12 +1786,12 @@ void AliPIDResponse::SetEMCALPidResponseMaster()
   TObjArray* fEMCALPIDParamsPass     = NULL;
 
   if(fEMCALPIDParams) return;
-  AliOADBContainer contParams("contParams"); 
+  AliOADBContainer contParams("contParams");
 
   Int_t statusPars = contParams.InitFromFile(Form("%s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()), "AliEMCALPIDParams");
   if(statusPars){
     AliError("Failed initializing PID Params from OADB");
-  } 
+  }
   else {
     AliInfo(Form("Loading EMCAL Params from %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));
 
@@ -1803,7 +1808,7 @@ void AliPIDResponse::SetEMCALPidResponseMaster()
       if(fEMCALPIDParamsPass) fEMCALPIDParams     = dynamic_cast<TObjArray *>(fEMCALPIDParamsPass->FindObject(Form("EMCALPIDParams_Particles")));
 
       if(!fEMCALPIDParams){
-	AliError(Form("DEFAULT EMCAL Params (LHC11d) not found in file %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));	
+	AliError(Form("DEFAULT EMCAL Params (LHC11d) not found in file %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));
       }
     }
   }
@@ -1813,7 +1818,7 @@ void AliPIDResponse::SetEMCALPidResponseMaster()
 void AliPIDResponse::InitializeEMCALResponse(){
   //
   // Set PID Params to the EMCAL PID response
-  // 
+  //
   fEMCALResponse.SetPIDParams(fEMCALPIDParams);
 
 }
@@ -1824,34 +1829,34 @@ void AliPIDResponse::FillTrackDetectorPID(const AliVTrack *track, EDetector dete
   //
   // create detector PID information and setup the transient pointer in the track
   //
-  
+
   // check if detector number is inside accepted range
   if (detector == kNdetectors) return;
-  
+
   // get detector pid
   AliDetectorPID *detPID=const_cast<AliDetectorPID*>(track->GetDetectorPID());
   if (!detPID) {
     detPID=new AliDetectorPID;
     (const_cast<AliVTrack*>(track))->SetDetectorPID(detPID);
   }
-  
+
   //check if values exist
   if (detPID->HasRawProbability(detector) && detPID->HasNumberOfSigmas(detector)) return;
-  
+
   //TODO: which particles to include? See also the loops below...
   Double_t values[AliPID::kSPECIESC]={0};
 
   //probabilities
   EDetPidStatus status=GetComputePIDProbability(detector,track,AliPID::kSPECIESC,values);
   detPID->SetRawProbability(detector, values, (Int_t)AliPID::kSPECIESC, status);
-  
+
   //nsigmas
   for (Int_t ipart=0; ipart<AliPID::kSPECIESC; ++ipart)
     values[ipart]=GetNumberOfSigmas(detector,track,(AliPID::EParticleType)ipart);
   // the pid status is the same for probabilities and nSigmas, so it is
   // fine to use the one from the probabilities also here
   detPID->SetNumberOfSigmas(detector, values, (Int_t)AliPID::kSPECIESC, status);
-  
+
 }
 
 //______________________________________________________________________________
@@ -1862,7 +1867,7 @@ void AliPIDResponse::FillTrackDetectorPID()
   //
 
   if (!fCurrentEvent) return;
-  
+
   for (Int_t itrack=0; itrack<fCurrentEvent->GetNumberOfTracks(); ++itrack){
     AliVTrack *track=dynamic_cast<AliVTrack*>(fCurrentEvent->GetTrack(itrack));
     if (!track) continue;
@@ -2115,7 +2120,7 @@ Float_t AliPIDResponse::GetNumberOfSigmas(EDetector detector, const AliVParticle
   //
 
   const AliVTrack *track=static_cast<const AliVTrack*>(vtrack);
-  
+
   switch (detector){
     case kITS:   return GetNumberOfSigmasITS(track, type);   break;
     case kTPC:   return GetNumberOfSigmasTPC(track, type);   break;
@@ -2135,7 +2140,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasITS(const AliVParticle *vtrack, AliPID:
   //
   // Calculate the number of sigmas in the ITS
   //
-  
+
   AliVTrack *track=(AliVTrack*)vtrack;
 
   const EDetPidStatus pidStatus=GetITSPIDStatus(track);
@@ -2150,7 +2155,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   //
   // Calculate the number of sigmas in the TPC
   //
-  
+
   AliVTrack *track=(AliVTrack*)vtrack;
 
   const EDetPidStatus pidStatus=GetTPCPIDStatus(track);
@@ -2160,8 +2165,8 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
   // if using tuned on data
   if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))
-    this->GetTPCsignalTunedOnData(track);
-  
+    GetTPCsignalTunedOnData(track);
+
   return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
 }
 
@@ -2171,12 +2176,12 @@ Float_t AliPIDResponse::GetNumberOfSigmasTRD(const AliVParticle *vtrack, AliPID:
   //
   // Calculate the number of sigmas in the TRD
   //
-  
+
   AliVTrack *track=(AliVTrack*)vtrack;
-  
+
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
-  
+
   return fTRDResponse.GetNumberOfSigmas(track,type);
 }
 
@@ -2186,12 +2191,12 @@ Float_t AliPIDResponse::GetNumberOfSigmasTOF(const AliVParticle *vtrack, AliPID:
   //
   // Calculate the number of sigmas in the TOF
   //
-  
+
   AliVTrack *track=(AliVTrack*)vtrack;
 
   const EDetPidStatus pidStatus=GetTOFPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
-  
+
   return GetNumberOfSigmasTOFold(vtrack, type);
 }
 //______________________________________________________________________________
@@ -2200,12 +2205,12 @@ Float_t AliPIDResponse::GetNumberOfSigmasHMPID(const AliVParticle *vtrack, AliPI
 {
   //
   // Calculate the number of sigmas in the HMPID
-  //  
+  //
   AliVTrack *track=(AliVTrack*)vtrack;
-    
+
   const EDetPidStatus pidStatus=GetHMPIDPIDStatus(track);
-  if (pidStatus!=kDetPidOk) return -999.; 
-  
+  if (pidStatus!=kDetPidOk) return -999.;
+
   return fHMPIDResponse.GetNumberOfSigmas(track, type);
 }
 
@@ -2215,7 +2220,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPI
   //
   // Calculate the number of sigmas in the EMCAL
   //
-  
+
   AliVTrack *track=(AliVTrack*)vtrack;
 
   const EDetPidStatus pidStatus=GetEMCALPIDStatus(track);
@@ -2223,13 +2228,13 @@ Float_t AliPIDResponse::GetNumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPI
 
   const Int_t nMatchClus = track->GetEMCALcluster();
   AliVCluster *matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
-  
+
   const Double_t mom    = track->P();
   const Double_t pt     = track->Pt();
   const Int_t    charge = track->Charge();
   const Double_t fClsE  = matchedClus->E();
   const Double_t EovP   = fClsE/mom;
-  
+
   return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge);
 }
 
@@ -2241,7 +2246,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaITS(const AliVPartic
   //
   AliVTrack *track=(AliVTrack*)vtrack;
   val=fITSResponse.GetSignalDelta(track,type,ratio);
-  
+
   return GetITSPIDStatus(track);
 }
 
@@ -2252,15 +2257,15 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVPartic
   // Signal minus expected Signal for TPC
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  
+
   // the following call is needed in order to fill the transient data member
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
   // if using tuned on data
   if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))
-    this->GetTPCsignalTunedOnData(track);
-  
+    GetTPCsignalTunedOnData(track);
+
   val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, ratio);
-  
+
   return GetTPCPIDStatus(track);
 }
 
@@ -2272,7 +2277,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTRD(const AliVPartic
   //
   AliVTrack *track=(AliVTrack*)vtrack;
   val=fTRDResponse.GetSignalDelta(track,type,ratio);
-  
+
   return GetTRDPIDStatus(track);
 }
 
@@ -2284,7 +2289,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTOF(const AliVPartic
   //
   AliVTrack *track=(AliVTrack*)vtrack;
   val=GetSignalDeltaTOFold(track, type, ratio);
-  
+
   return GetTOFPIDStatus(track);
 }
 
@@ -2296,7 +2301,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaHMPID(const AliVPart
   //
   AliVTrack *track=(AliVTrack*)vtrack;
   val=fHMPIDResponse.GetSignalDelta(track, type, ratio);
-  
+
   return GetHMPIDPIDStatus(track);
 }
 
@@ -2325,17 +2330,17 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   //
   // Compute PID response for the ITS
   //
-  
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  
+
   const EDetPidStatus pidStatus=GetITSPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
-  
+
   if (track->GetDetectorPID()){
     return track->GetDetectorPID()->GetRawProbability(kITS, p, nSpecies);
   }
-  
+
   //check for ITS standalone tracks
   Bool_t isSA=kTRUE;
   if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
@@ -2378,27 +2383,27 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   //
   // Compute PID response for the TPC
   //
-  
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  
+
   const EDetPidStatus pidStatus=GetTPCPIDStatus(track);
   if (pidStatus==kDetNoSignal) return pidStatus;
-  
+
   Double_t dedx=track->GetTPCsignal();
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
-  
-  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) dedx = this->GetTPCsignalTunedOnData(track);
-  
+
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) dedx = GetTPCsignalTunedOnData(track);
+
   Double_t bethe = 0.;
   Double_t sigma = 0.;
-  
+
   for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
-    
+
     bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
     sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
-    
+
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
     } else {
@@ -2406,11 +2411,11 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
       mismatch=kFALSE;
     }
   }
-  
+
   if (mismatch){
     for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   }
-  
+
   return pidStatus;
 }
 //______________________________________________________________________________
@@ -2431,7 +2436,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   if(! (kNoMism | fNoTOFmism)){ // this flag allows to disable mismatch for iterative procedure to get priors
     mismPropagationFactor[3] = 1 + TMath::Exp(1 - 1.12*pt);// it has to be alligned with the one in AliPIDCombined
     mismPropagationFactor[4] = 1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt);// it has to be alligned with the one in AliPIDCombined
-    
+
   Int_t nTOFcluster = 0;
   if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask() && track->GetTOFHeader()->GetNumberOfTOFclusters() > -1){ // N TOF clusters available
     nTOFcluster = track->GetTOFHeader()->GetNumberOfTOFclusters();
@@ -2462,26 +2467,26 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
       //       nTOFcluster *= 1;
       break;
     }
-    
+
     if(nTOFcluster < 0) nTOFcluster = 10;
 
-    
+
     fgTOFmismatchProb=fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * nTOFcluster *6E-6 * (1 + 2.90505e-01/pt/pt); // mism weight * tof occupancy (including matching window factor) * pt dependence
-    
+
   }
 
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  
+
   const EDetPidStatus pidStatus=GetTOFPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
 
   const Double_t meanCorrFactor = 0.07/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
-  
+
   for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     const Double_t nsigmas=GetNumberOfSigmasTOFold(track,type) + meanCorrFactor;
-    
+
     const Double_t expTime = fTOFResponse.GetExpectedSignal(track,type);
     const Double_t sig     = fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
 
@@ -2489,10 +2494,10 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
       p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
     else
       p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
-    
+
     p[j] += fgTOFmismatchProb*mismPropagationFactor[j];
   }
-  
+
   return kDetPidOk;
 }
 
@@ -2524,10 +2529,10 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const A
   //
   // Compute PID probabilities for the TRD
   //
-  
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  
+
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
 
@@ -2542,7 +2547,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeEMCALProbability  (const
   //
   // Compute PID response for the EMCAL
   //
-  
+
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
 
   const EDetPidStatus pidStatus=GetEMCALPIDStatus(track);
@@ -2550,13 +2555,13 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeEMCALProbability  (const
 
   const Int_t nMatchClus = track->GetEMCALcluster();
   AliVCluster *matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
-  
+
   const Double_t mom    = track->P();
   const Double_t pt     = track->Pt();
   const Int_t    charge = track->Charge();
   const Double_t fClsE  = matchedClus->E();
   const Double_t EovP   = fClsE/mom;
-  
+
   // compute the probabilities
   fEMCALResponse.ComputeEMCALProbability(nSpecies,pt,EovP,charge,p);
   return kDetPidOk;
@@ -2568,7 +2573,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputePHOSProbability (const A
   //
   // Compute PID response for the PHOS
   //
-  
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   return kDetNoSignal;
@@ -2580,15 +2585,15 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeHMPIDProbability(const A
   //
   // Compute PID response for the HMPID
   //
-  
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  
+
   const EDetPidStatus pidStatus=GetHMPIDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
-  
+
   fHMPIDResponse.GetProbability(track,nSpecies,p);
-    
+
   return kDetPidOk;
 }
 
@@ -2603,18 +2608,18 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetITSPIDStatus(const AliVTrack *t
 
   const Float_t dEdx=track->GetITSsignal();
   if (dEdx<=0) return kDetNoSignal;
-  
+
   // requite at least 3 pid clusters
   const UChar_t clumap=track->GetITSClusterMap();
   Int_t nPointsForPid=0;
   for(Int_t i=2; i<6; i++){
     if(clumap&(1<<i)) ++nPointsForPid;
   }
-  
-  if(nPointsForPid<3) { 
+
+  if(nPointsForPid<3) {
     return kDetNoSignal;
   }
-  
+
   return kDetPidOk;
 }
 
@@ -2622,7 +2627,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetITSPIDStatus(const AliVTrack *t
 AliPIDResponse::EDetPidStatus AliPIDResponse:: GetTPCPIDStatus(const AliVTrack *track) const
 {
   // compute TPC pid status
-  
+
   // check quality of the track
   if ( (track->GetStatus()&AliVTrack::kTPCin )==0 && (track->GetStatus()&AliVTrack::kTPCout)==0 ) return kDetNoSignal;
 
@@ -2632,7 +2637,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse:: GetTPCPIDStatus(const AliVTrack *
   if (signalN<10 || dedx<10) return kDetNoSignal;
 
   if (!(fArrPidResponseMaster && fArrPidResponseMaster->At(AliPID::kPion))) return kDetNoParams;
-  
+
   return kDetPidOk;
 }
 
@@ -2671,23 +2676,23 @@ Float_t AliPIDResponse::GetTOFMismatchProbability(const AliVTrack *track) const
   //mismatch
   const EDetPidStatus tpcStatus=GetTPCPIDStatus(track);
   if (tpcStatus==kDetNoSignal) return 0.;
-  
+
   const Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
   Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
   for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     const Double_t nsigmas=GetNumberOfSigmasTOFold(track,type) + meanCorrFactor;
-    
+
     if (TMath::Abs(nsigmas)<5.){
       const Double_t nsigmasTPC=GetNumberOfSigmasTPC(track,type);
       if (TMath::Abs(nsigmasTPC)<5.) mismatch=kFALSE;
     }
   }
-  
+
   if (mismatch){
     return 1.;
   }
-  
+
   return 0.;
 }
 
@@ -2695,12 +2700,12 @@ Float_t AliPIDResponse::GetTOFMismatchProbability(const AliVTrack *track) const
 AliPIDResponse::EDetPidStatus AliPIDResponse:: GetHMPIDPIDStatus(const AliVTrack *track) const
 {
   // compute HMPID pid status
-  
+
   Int_t ch = track->GetHMPIDcluIdx()/1000000;
-  Double_t HMPIDsignal = track->GetHMPIDsignal(); 
-  
+  Double_t HMPIDsignal = track->GetHMPIDsignal();
+
   if((track->GetStatus()&AliVTrack::kHMPIDpid)==0 || ch<0 || ch>6 || HMPIDsignal<0) return kDetNoSignal;
-  
+
   return kDetPidOk;
 }
 
@@ -2708,7 +2713,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse:: GetHMPIDPIDStatus(const AliVTrack
 AliPIDResponse::EDetPidStatus AliPIDResponse:: GetPHOSPIDStatus(const AliVTrack */*track*/) const
 {
   // compute PHOS pid status
-  return kDetNoSignal;  
+  return kDetNoSignal;
 }
 
 //______________________________________________________________________________
@@ -2729,7 +2734,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse:: GetEMCALPIDStatus(const AliVTrack
   if (TMath::Abs(charge)!=1) return kDetNoSignal;
 
   if (!(fEMCALPIDParams && fEMCALPIDParams->At(AliPID::kElectron))) return kDetNoParams;
-  
+
   return kDetPidOk;
 
 }
@@ -2752,54 +2757,124 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetPIDStatus(EDetector detector, c
     default: return kDetNoSignal;
   }
   return kDetNoSignal;
-  
+
 }
 
 //______________________________________________________________________________
 TString AliPIDResponse::GetChecksum(const TObject* obj) const
 {
   // Return the checksum for an object obj (tested to work properly at least for histograms and TSplines).
-  
+
   TString fileName = Form("tempChecksum.C"); // File name must be fixed for data type "TSpline3", since the file name will end up in the file content!
-  
+
   // For parallel processing, a unique file pathname is required. Uniqueness can be guaranteed by using a unique directory name
   UInt_t index = 0;
   TString uniquePathName = Form("tempChecksum_%u", index);
-  
+
   // To get a unique path name, increase the index until no directory
   // of such a name exists.
   // NOTE: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
   while (!gSystem->AccessPathName(uniquePathName.Data()))
     uniquePathName = Form("tempChecksum_%u", ++index);
-  
+
   if (gSystem->mkdir(uniquePathName.Data()) < 0) {
     AliError("Could not create temporary directory to store temp file for checksum determination!");
     return "ERROR";
   }
-  
+
   TString option = "";
-  
+
   // Save object as a macro, which will be deleted immediately after the checksum has been computed
   // (does not work for desired data types if saved as *.root for some reason) - one only wants to compare the content, not
   // the modification time etc. ...
   if (dynamic_cast<const TH1*>(obj))
     option = "colz"; // Histos need this option, since w/o this option, a counter is added to the filename
-  
-  
+
+
   // SaveAs must be called with the fixed fileName only, since the first argument goes into the file content
   // for some object types. Thus, change the directory, save the file and then go back
   TString oldDir = gSystem->pwd();
   gSystem->cd(uniquePathName.Data());
   obj->SaveAs(fileName.Data(), option.Data());
   gSystem->cd(oldDir.Data());
-  
+
   // Use the file to calculate the MD5 checksum
   TMD5* md5 = TMD5::FileChecksum(Form("%s/%s", uniquePathName.Data(), fileName.Data()));
   TString checksum = md5->AsString();
-  
+
   // Clean up
   delete md5;
   gSystem->Exec(Form("rm -rf %s", uniquePathName.Data()));
-  
+
   return checksum;
+}
+
+//_________________________________________________________________________
+Float_t AliPIDResponse::GetTPCsignalTunedOnData(const AliVTrack *t) const
+{
+  /// Create gaussian signal response based on the dE/dx response observed in data
+
+  Float_t dedx = t->GetTPCsignalTunedOnData();
+
+  if(dedx > 0) return dedx;
+
+  dedx = t->GetTPCsignal();
+  ((AliVTrack*)t)->SetTPCsignalTunedOnData(dedx);
+  if(dedx < 20) return dedx;
+
+  // check if we have MC information
+  if (!fCurrentMCEvent) {
+    AliError("Tune On Data requested, but MC event not set. Call 'SetCurrentMCEvent' before!");
+    return dedx;
+  }
+
+  AliPID::EParticleType type = AliPID::kPion;
+
+  Bool_t kGood = kFALSE;
+  AliVParticle *mcPart = fCurrentMCEvent->GetTrack(TMath::Abs(t->GetLabel()));
+  if (mcPart != NULL) { // protect against label-0 track (initial proton in Pythia events)
+    Int_t iS = TMath::Abs(mcPart->PdgCode());
+
+    for (Int_t ipart=0; ipart<AliPID::kSPECIESC; ++ipart) {
+      if (iS == AliPID::ParticleCode(ipart)) {
+        type = static_cast<AliPID::EParticleType>(ipart);
+        kGood=kTRUE;
+        break;
+      }
+    }
+  }
+
+  if(kGood){
+    //TODO maybe introduce different dEdxSources?
+    Double_t bethe = fTPCResponse.GetExpectedSignal(t, type, AliTPCPIDResponse::kdEdxDefault, UseTPCEtaCorrection(),
+                                                    UseTPCMultiplicityCorrection());
+    Double_t sigma = fTPCResponse.GetExpectedSigma(t, type, AliTPCPIDResponse::kdEdxDefault, UseTPCEtaCorrection(),
+                                                    UseTPCMultiplicityCorrection());
+    dedx = gRandom->Gaus(bethe,sigma);
+    //              if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
+  }
+
+  const_cast<AliVTrack*>(t)->SetTPCsignalTunedOnData(dedx);
+  return dedx;
+}
+
+//_________________________________________________________________________
+Float_t AliPIDResponse::GetTOFsignalTunedOnData(const AliVTrack *t) const
+{
+  /// Calculate the TOF signal tuned on data by adding a tail
+  Double_t tofSignal = t->GetTOFsignalTunedOnData();
+
+  if(tofSignal <  99999) return (Float_t)tofSignal; // it has been already set
+
+  // read additional mismatch fraction
+  Float_t addmism = GetTOFPIDParams()->GetTOFadditionalMismForMC();
+  if(addmism > 1.){
+    Float_t centr = GetCurrentCentrality();
+    if(centr > 50) addmism *= 0.1667;
+    else if(centr > 20) addmism *= 0.33;
+  }
+
+  tofSignal = t->GetTOFsignal() + fTOFResponse.GetTailRandomValue(t->Pt(),t->Eta(),t->GetTOFsignal(),addmism);
+  const_cast<AliVTrack*>(t)->SetTOFsignalTunedOnData(tofSignal);
+  return (Float_t)tofSignal;
 }

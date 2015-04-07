@@ -8,7 +8,7 @@
 //-------------------------------------------------------
 //                    Combined PID class
 //           for the Event Summary Data class
-//   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+//   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //   Modified: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch
 //-------------------------------------------------------
 #include <Rtypes.h>
@@ -30,7 +30,7 @@ public:
 AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMismatch), fEventHandler(NULL){;};
 AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDResponse::operator=(a); fRangeTOFMismatch=a.fRangeTOFMismatch; fEventHandler=NULL; return *this;};
   virtual ~AliESDpid() {}
-  
+
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
   void  MakePIDForTracking(AliESDEvent *event) const;
 
@@ -46,12 +46,9 @@ AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDRespo
 
 //   Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return AliPIDResponse::NumberOfSigmasTOF(track,type);}
 //   Float_t GetNumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
-  
+
   void SetNMaxSigmaTOFTPCMismatch(Float_t range) {fRangeTOFMismatch=range;}
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
-
-  Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
-  Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const;
 
   void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
 protected:
@@ -62,7 +59,7 @@ private:
 
   Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
   AliVEventHandler *fEventHandler; //! MC event handler
-  
+
   ClassDef(AliESDpid,7)  // PID calculation class
 };
 

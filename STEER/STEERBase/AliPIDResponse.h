@@ -29,6 +29,7 @@ class TObjArray;
 class TLinearFitter;
 
 class AliVEvent;
+class AliMCEvent;
 class AliTRDPIDResponseObject;
 class AliTRDdEdxParams;
 class AliTOFPIDParams;
@@ -50,7 +51,7 @@ public:
     kPHOS=6,
     kNdetectors=7
   };
-  
+
   enum EDetCode {
     kDetITS = 0x1,
     kDetTPC = 0x2,
@@ -66,7 +67,7 @@ public:
     kPPB,
     kPBPB
   };
- 
+
   enum EStartTimeType_t {kFILL_T0,kTOF_T0, kT0_T0, kBest_T0};
 
   enum ITSPIDmethod { kITSTruncMean, kITSLikelihood };
@@ -87,12 +88,12 @@ public:
   // -----------------------------------------
   // buffered getters
   //
-  
+
   // Number of sigmas
   EDetPidStatus NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
-  
+
   Float_t NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
-  
+
   virtual Float_t NumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource) const;
@@ -105,16 +106,16 @@ public:
 
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Int_t &ntracklets, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
-  
+
 
   // Signal delta
   EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   Double_t GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;
-  
+
   // Probabilities
   EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  
+
   virtual EDetPidStatus ComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
@@ -124,7 +125,7 @@ public:
   virtual EDetPidStatus ComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
 
   virtual EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const;
-  
+
   // pid status
   EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
@@ -132,19 +133,19 @@ public:
   Float_t GetTOFMismatchProbability(const AliVTrack *track = NULL) const; // if empty argument return the value stored during TOF probability computation
 
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
-  
+
   void SetOADBPath(const char* path) {fOADBPath=path;}
   const char *GetOADBPath() const {return fOADBPath.Data();}
 
   void SetCustomTPCpidResponse(const char* tpcpid) { fCustomTPCpidResponse = tpcpid; }
   const char* GetCustomTPCpidResponse() const { return fCustomTPCpidResponse.Data(); }
-  
+
   void SetCustomTPCetaMaps(const char* tpcEtaMaps) { fCustomTPCetaMaps = tpcEtaMaps; }
   const char* GetCustomTPCetaMaps() const { return fCustomTPCetaMaps.Data(); }
-  
+
   void InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run=-1);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
-  
+
   void SetCurrentAliRootRev(Int_t alirootRev) { fCurrentAliRootRev = alirootRev; }
   Int_t GetCurrentAliRootRev() const { return fCurrentAliRootRev; }
 
@@ -154,7 +155,9 @@ public:
   void FillTrackDetectorPID(const AliVTrack *track, EDetector detector) const;
   void FillTrackDetectorPID();
 
-  AliVEvent * GetCurrentEvent() const {return fCurrentEvent;}
+  AliVEvent*  GetCurrentEvent()   const {return fCurrentEvent;  }
+  AliMCEvent* GetCurrentMCEvent() const {return fCurrentMCEvent;}
+  void SetCurrentMCEvent(AliMCEvent* mcEvent) {fCurrentMCEvent=mcEvent;}
 
   // User settings for the MC period and reco pass
   void SetMCperiod(const char *mcPeriod) {fMCperiodUser=mcPeriod;}
@@ -166,16 +169,16 @@ public:
   // TPC setting
   void SetUseTPCEtaCorrection(Bool_t useEtaCorrection = kTRUE) { fUseTPCEtaCorrection = useEtaCorrection; };
   Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
-  
+
   void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
-  
+
   // TOF setting
   void SetTOFtail(Float_t tail=0.9){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
-  virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const {return t->GetTPCsignal();};
-  virtual Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const {return t->GetTOFsignal();};
+  virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
+  virtual Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const;
   Bool_t IsTunedOnData() const {return fTuneMConData;};
   void SetTunedOnData(Bool_t flag=kTRUE,Int_t recoPass=0){fTuneMConData = flag; if(recoPass>0) fRecoPassUser = recoPass;};
   Int_t GetTunedOnDataMask() const {return fTuneMConDataMask;};
@@ -183,7 +186,7 @@ public:
 
   // Utilities
   TString GetChecksum(const TObject* obj) const;
-    
+
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
@@ -223,7 +226,7 @@ private:
   TString fOADBPath;                   // OADB path to use
   TString fCustomTPCpidResponse;       // Custom TPC Pid Response file for debugging purposes
   TString fCustomTPCetaMaps;           // Custom TPC eta map file for debugging purposes
-  
+
   TString fBeamType;                   //! beam type (PP) or (PBPB)
   TString fLHCperiod;                  //! LHC period
   TString fMCperiodTPC;                //! corresponding MC period to use for the TPC splines
@@ -237,7 +240,7 @@ private:
   Float_t fResT0A;                     //! T0A resolution in current run
   Float_t fResT0C;                     //! T0C resolution in current run
   Float_t fResT0AC;                    //! T0A.and.T0C resolution in current run
-  
+
   TObjArray *fArrPidResponseMaster;     //!  TPC pid splines
   TF1       *fResolutionCorrection;     //! TPC resolution correction
   AliOADBContainer* fOADBvoltageMaps;   //! container with the voltage maps
@@ -249,35 +252,36 @@ private:
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
   AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
-  
+
   AliHMPIDPIDParams *fHMPIDPIDParams;  //! HMPID PID Params (OADB loaded)
 
-  TObjArray *fEMCALPIDParams;             //! EMCAL PID Params
+  TObjArray *fEMCALPIDParams;          //! EMCAL PID Params
 
-  AliVEvent *fCurrentEvent;            //! event currently being processed
+  AliVEvent  *fCurrentEvent;           //! event currently being processed
+  AliMCEvent *fCurrentMCEvent;         //! MC event of event currently being processed
 
   Float_t fCurrCentrality;             //! current centrality
 
-  EBeamType fBeamTypeNum;              //! beam type enum 
-  
+  EBeamType fBeamTypeNum;              //! beam type enum
+
   Bool_t fNoTOFmism;                   //! flag to switch off the TOF mismatch in the TOF weights (to check with old aliroot version)
 
   void ExecNewRun();
-  
+
   //
   //setup parametrisations
   //
 
   //ITS
   void SetITSParametrisation();
-  
+
   //TPC
   void SetTPCEtaMaps(Double_t refineFactorMapX = 6.0, Double_t refineFactorMapY = 6.0, Double_t refineFactorSigmaMapX = 6.0,
                      Double_t refineFactorSigmaMapY = 6.0);
   void SetTPCPidResponseMaster();
   void SetTPCParametrisation();
   Double_t GetTPCMultiplicityBin(const AliVEvent * const event);
-  
+
   // TPC helpers for the eta maps
   void AddPointToHyperplane(TH2D* h, TLinearFitter* linExtrapolation, Int_t binX, Int_t binY);
   TH2D* RefineHistoViaLinearInterpolation(TH2D* h, Double_t refineFactorX = 6.0, Double_t refineFactorY = 6.0);
@@ -306,7 +310,7 @@ private:
   //-------------------------------------------------
   //unbuffered PID calculation
   //
-  
+
   // Number of sigmas
   Float_t GetNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
@@ -325,7 +329,7 @@ private:
   EDetPidStatus GetSignalDeltaTRD(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   EDetPidStatus GetSignalDeltaTOF(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   EDetPidStatus GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
-  
+
   // Probabilities
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
