@@ -151,7 +151,7 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} DESTINATION include)
+install(DIRECTORY . DESTINATION include FILES_MATCHING PATTERN "*.h")
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)
