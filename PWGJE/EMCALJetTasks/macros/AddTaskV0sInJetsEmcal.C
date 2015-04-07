@@ -1,4 +1,16 @@
-AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "", Double_t dRadius = 0.2, TString jetBranchBgName = "", Double_t dRadiusBg = 0.2, TString outputFile = "output.root", Bool_t bIsMC = kFALSE, TString label = "", TString tracksName = "PicoTracks", TString clustersCorrName = "CaloClustersCorr", TString rhoName = "Rho", TString sType = "TPC")
+AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
+  TString jetBranchName = "",
+  Double_t dRadius = 0.2,
+  TString jetBranchBgName = "",
+  Double_t dRadiusBg = 0.2,
+  TString outputFile = "output.root",
+  Bool_t bIsMC = kFALSE,
+  TString label = "",
+  TString tracksName = "PicoTracks",
+  TString clustersCorrName = "CaloClustersCorr",
+  TString rhoName = "Rho",
+  TString sType = "TPC"
+)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr)
