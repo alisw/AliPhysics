@@ -544,8 +544,8 @@ Double_t AliTPCPIDResponse::GetExpectedSigma(const AliVTrack* track,
   // for the specified particle type 
   //
   
-  if (!responseFunction)
-    return 999;
+  //if (!responseFunction)
+    //return 999;
     
   //TODO Check whether it makes sense to set correctMultiplicity to kTRUE while correctEta might be kFALSE
   
