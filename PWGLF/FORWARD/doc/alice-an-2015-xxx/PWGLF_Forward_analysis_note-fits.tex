@@ -1,0 +1,106 @@
+%% === Section on energy loss fits ===================================
+\section{$\Delta$ Fits}
+\label{sec:fits}
+
+\FIXME{Example plots}
+The single particle distribution of energy loss $x$ is best fit with a
+Landau folded with a Gaussian \cite{nim:b1:16,phyrev:a28:615}.
+\begin{align} 
+  \label{eq:f}
+ f(x;\Delta_p,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
+ \int_{-\infty}^{+\infty} dx' f'_{L}(x',\Delta_p,\xi)
+ e^{-\frac{(x-x')^2}{2\sigma'^2}}\quad,
+\end{align}
+where $ f'_{L}$ is the Landau distribution, $\Delta_p$ the most
+probable energy loss, $ \xi$ the width of the Landau, and $
+\sigma'^2=\sigma^2-\sigma_n^2 $.  Here, $\sigma$ is the variance of
+the Gaussian, and $\sigma_n$ is a parameter modelling noise in the
+detector.
+
+For $i$ particles this is modified to 
+\begin{align}
+  f_i(x;\Delta_{p},\xi,\sigma')=f(x;\Delta_{p,i},\xi_i,\sigma_i')\quad,
+\end{align}
+corresponding to $ i$ particles i.e., with the substitutions 
+\begin{align*}
+  \Delta_p  &\rightarrow \Delta_{p,i} = i\left(\Delta_p + \xi\log(i)\right)\\
+  \xi       &\rightarrow \xi_i       = i \xi\\
+  \sigma    &\rightarrow \sigma_i    = \sqrt{i}\sigma\\
+  \sigma'^2 &\rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
+\end{align*}
+
+Because of the convolution with a Gaussian, the most-probable-value
+$\Delta_p'$ of the resulting distribution is not really at the
+Landau most-probable-value $\Delta_p$.  In fact we find that
+$\Delta_p' > \Delta_p$.
+
+Ideally, one would find an analytic expression for this shift by
+solving
+\begin{align*}
+  0 &= \frac{\text{d} f_i(x;\Delta_p,\xi,\sigma)}{\text{d}x}\nonumber\\
+    &= \frac{\text{d}}{\text{d}x}\frac{1}{\sigma' \sqrt{2 \pi}}
+     \int_{-\infty}^{+\infty} dx' f'_{L}(x',\Delta_p,\xi)
+     e^{-\frac{(x-x')^2}{2\sigma'^2}}
+\end{align*}
+for $x$ as a function of $\Delta_p,\xi,\sigma,i$. However,
+do to the complex nature of the Landau distribution this is not
+really feasible.
+
+Instead, the shift was studied numerically. Landau-Gauss
+distributions for $i=1,\ldots$ where generated with varying
+$\xi$ and $\sigma$.  The distributions was then numerically
+differentiated and the root $\Delta_p'$ of that derivative
+found numerically.  The difference
+$\delta\Delta_p=\Delta_p'-\Delta_p$ was then studied as a
+function of the $\sigma,\xi$ parameters and an approximate
+expression was found
+\begin{align}
+  \delta\Delta_p \approx \frac{c \sigma u}{(1+1/i)^{p u^{3/2}}}
+\end{align}
+where $ u=\sigma/\xi$.  The parameters $c$ and $p$ is
+found to depend on $ u$ only weakly, and for practical
+applications where $u\approx1$, we set $ c=p=1/2$. 
+
+For the evaluating the full energy loss distribution from
+$1+2+\ldots,n$ particles, we evaluate
+\begin{align}
+  f_N(x;\Delta_p,\xi,\sigma',\mathbf{a})=\sum_{i=1}^N a_i
+  f_i(x;\Delta_p,\xi,\sigma',a)\quad,
+\end{align}
+where $ f(x;\Delta_p,\xi,\sigma')$ is the convolution of a Landau with
+a Gaussian, and $\mathbf{a}$ is a vector of weights for each $
+f_i$. Note that $a_1 = 1$.
+
+We fit the function 
+$$
+F_j(x;C,\Delta_p,\xi,\sigma,\mathbf{a}) = C
+f_j(x;\Delta_p,\xi,\sigma',\mathbf{a})
+$$
+to energy loss distribution for a given $\eta$ bin for a sub-detector
+in steps of increasing $j$.  The fit procedure is stopped and
+$N_{\text{max}}=j$ when for
+$j+1$: 
+\begin{itemize}
+\item the reduced $\chi^2$ exceeds a certain threshold (usually 20), or
+\item the relative error $\delta p/p$ of any parameter of the fit
+  exceeds a certain threshold (usually 0.12), or 
+\item when the weight $a_{j+1}$ is smaller than some number (typically
+  $10^{-5}$). 
+\end{itemize}
+The parameters $\Delta_p,\xi,\sigma,$ and $\mathbf{a}$ are stored for
+later use in the density calculations (see
+\secref{sec:sub:density_calculator}) and to define various cuts on
+the energy loss (see \secref{sec:cuts}). 
+
+To estimate the number of charge particles $n_t$ corresponding to a given
+energy loss $\Delta_t$ in strip $t$ we can evaluate 
+\begin{align}
+  n_t &= G_{N_{\text{max}}}(\Delta_t;\Delta_p,\xi,\sigma,\mathbf{a}) =
+  \frac{\sum_i^{N_{max}} i\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}{
+    \sum_i^{N_{max}}\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}
+  \tag{\ref{eq:nt}}\quad. 
+\end{align}
+%% Local Variables:
+%%   TeX-master: "PWGLF_Forward_analysis_note.tex"
+%%   ispell-dictionary: "british"
+%% End:
