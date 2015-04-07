@@ -104,9 +104,9 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
 	    Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
 	    return 1;
 	  }
-
 	  for(Int_t iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2)
 	    if(f.Get(Form("hBadChMap%d",iDDL))){
+	      badMap->Reset(AliPHOSCpvParam::DDL2Mod(iDDL));
 	      TH2* hBadMap = (TH2*)f.Get(Form("hBadChMap%d",iDDL));
 	      for(Int_t iX = 0; iX<AliPHOSCpvParam::kPadPcX;iX++)
 		for(Int_t iY = 0; iY<AliPHOSCpvParam::kPadPcY;iY++)
@@ -182,9 +182,9 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
       //Store CPV calibration data
       Bool_t storeOK_GAIN = Store("Calib", "CpvGainPedestals", calib, &md, 0, kTRUE);
     }//if(GAIN)
-    if(storeOK_GAIN) Log("PHYSICS run: I successfully updated gain calibration coeffs!");
-    if(storeOK_BCM) Log("PHYSICS run: I successfully updated bad channel map!");
-    if(!(storeOK_GAIN||storeOK_BCM)) Log("PHYSICS run: I did nothing this time");
+    if(GAIN) Log("PHYSICS run: I successfully updated gain calibration coeffs!");
+    if(BCM) Log("PHYSICS run: I successfully updated bad channel map!");
+    if(!(GAIN||BCM)) Log("PHYSICS run: I did nothing this time");
     return 0;
   }//if(runType=="PHYSICS")
 
@@ -236,8 +236,8 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
       //Store CPV calibration data
       Bool_t storeOK_PED = Store("Calib", "CpvGainPedestals", calib, &md, 0, kTRUE);
     }//if(PED)
-    if(storeOK_PED) Log("PEDESTAL run: I successfully updated pedestals!");
-    if(!storeOK_PED) Log("PEDESTAL run: I did nothing this time");
+    if(PED) Log("PEDESTAL run: I successfully updated pedestals!");
+    if(!PED) Log("PEDESTAL run: I did nothing this time");
   }//if(runType=="PEDESTAL")
   Log(Form("Unknown or unused run type %s. Do nothing and return OK.",runType.Data()));
   return 0;
