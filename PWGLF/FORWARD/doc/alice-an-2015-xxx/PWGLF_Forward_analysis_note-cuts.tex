@@ -1,0 +1,47 @@
+%% === Section on how cuts are defined ===============================
+\section{Cuts}
+\label{sec:cuts}
+
+\FIXME{Possibly some plots}
+Cuts on the energy loss can be defined in 6 ways all with the single
+parameter $X$:
+\begin{description}
+\item[\emph{Fixed value} $c=X$]
+  The cut is defined as a hard cut at a particular value $X$.  This
+  type of cut is typically used in the sharing filter (see
+  \secref{sec:sub:sharing_filter}) for the lower cut.
+\item[\emph{Fit range}]
+  The cut $c$ is set to the lower bound of the fit range of the energy
+  loss fits (see \secref{sec:fits}).  This type of cut is deprecated.
+\item[\emph{Fraction of $\Delta_p$} $c=X\Delta_p$] The cut is defined
+  as some fraction $X<1$ of the most probably value of obtained in
+  the energy loss fits.  Cuts defined this way are not used in the
+  analysis. 
+\item[\emph{Landau width} $c=\Delta_p-X\xi$] The cut is defined as
+  some number (not necessarily integer) Landau widths below the most
+  probably value obtained in the energy loss fits. Cuts defined this
+  way are not used in the analysis. 
+\item[\emph{Landau and Gauss width} $c=\Delta_p - X(\xi+\sigma)$] The
+  cut is defined as some number (not necessarily integer) Landau and
+  Gaussian widths below the most probably value obtained in the energy
+  loss fits. This type of cuts is typically used in the sharing filter
+  (see \secref{sec:sub:sharing_filter}) for the high cut, and in the
+  density calculations (see \secref{sec:sub:density_calculator}) for
+  the `hit' threshold.
+\item[\emph{Probability} $c:P(x<c)<X$] The cut $c$ is defined as
+  the largest value for which 
+  \begin{align*}
+    P(x<c) &= \int_0^c\text{d}x f(x;\Delta_p;\xi;\sigma) < X\quad.
+  \end{align*}
+  Although mathematically sound, it is slow to compute and adds very
+  little in terms of signal quality over the \emph{Landau and Gauss
+    width}  cut type.  It is not used in the analysis.
+\end{description}
+In the above $\Delta_p,\xi,\sigma,$ and $\mathbf{a}$ refers to the
+parameters obtained in the energy loss fits (see \secref{sec:fits}),
+and $f$ is defined in \eqref{eq:f}.
+
+%% Local Variables:
+%%   TeX-master: "PWGLF_Forward_analysis_note.tex"
+%%   ispell-dictionary: "british"
+%% End:

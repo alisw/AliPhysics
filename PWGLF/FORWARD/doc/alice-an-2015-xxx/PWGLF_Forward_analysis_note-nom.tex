@@ -1,0 +1,87 @@
+\section{Nomenclature} 
+\label{app:nomen}
+
+\begin{table}[hbp]
+  \centering  
+  \caption{Nomenclature used in this document}
+  \small
+  \begin{tabular}[t]{|lp{.8\textwidth}|}
+    \hline 
+    \textbf{Symbol}&\textbf{Description}\\
+    \hline 
+    \INEL & In--elastic event\\ 
+    \INELONE & In--elastic event with at least one tracklet in the
+               \SPD{} in the region $-1\le\eta\le1$\\ 
+    \NSD{} & Non--single--diffractive event.  Single diffractive
+             events are events where one of the incident collision
+             systems (proton or nucleus) is excited and radiates
+             particles, but there is no other processes taking place\\  
+    \hline
+    $\NT{}$ & Number of events with a valid trigger\\
+    $\NV{}$ & Number of events with a valid trigger \emph{and} a valid
+              vertex.\\  
+    $\NA{}$ & Number of events with a valid trigger
+              \emph{and} a valid vertex \emph{within} the selected
+              vertex range.\\  
+    $\N{a,c,ac,e}{}$ & Number of events with background triggers $A$,
+                       $B$, $AC$, or $E$, \emph{and} a valid off-line
+                       trigger of the considered type.   Background
+                       triggers are typically flagged with the trigger
+                       words \texttt{CINT1-A},  \texttt{CINT1-C}, 
+                       \texttt{CINT1-AC}, \texttt{CINT1-E}, or
+                       similar.\\ 
+    \hline
+    $\mult{}$ & Charged particle multiplicity\\ 
+    $\mult[,\text{primary}]$ & Primary charged particle multiplicity
+                               as given by simulations\\ 
+    $\mult[,\text{\FMD{}}]$ & Number of charged particles that hit the
+                              \FMD{} as given by simulations\\ 
+    $n_t$ & Number of charged particles in an \FMD{} strip as
+            given by evaluating the energy response functions $G$\\ 
+    \hline
+    $F$ & Energy response function (see \secref{sec:fits})\\
+    $\Delta_{p}$ & Most probably energy loss\\ 
+    $\xi$ & `Width' parameter of a Landau distribution\\
+    $\sigma$ & Variance of a Gaussian distribution\\ 
+    $a_i$ & Relative weight of the $i$--fold MIP peak in the energy
+            loss spectra.\\ 
+    \hline
+    $\Corners{}$ & Azimuthal acceptance of strip $t$\\ 
+    $\SecMap{}$ & Secondary particle correction factor in $\etaphi$
+                  for a given interaction point $\IPz$\\  
+    $\DeadCh{}$ & Acceptance in $\etaphi$ for a given interaction
+                  point $\IPz$\\  
+    \hline
+    $\dndetadphi[incl,r,\subIPz,i]$ & Inclusive (primary \emph{and}
+                                      secondary) charge particle
+                                      density in event $i$ with
+                                      interaction point $\IPz$, 
+                                      for \FMD{} ring $r$.\\ 
+    $\dndetadphi[r,\subIPz,i]$ & Primary charged particle
+                                 density in event $i$ with interaction
+                                 point $\IPz$ for \FMD{} ring $r$. \\ 
+    $\dndetadphi[\subIPz,i]$ & Primary charged particle density in
+                               event $i$ with interaction point
+                               $\IPz$\\   
+    $\phiAcc$ & $\varphi$ acceptance in $\eta$ bin for event $i$\\
+    $\etaCov$ & $\eta$ coverage of event $i$\\ 
+    $\PhiAcc$ & Integrated $\eta$ acceptance over $\NA$ events.
+                Note, that this has a value of $\NA$ for $(\eta)$ bins
+                where we have full coverage\\ 
+    \hline 
+    $X_t$ & Value $X$ for strip number $t$ (0-511 for inner rings,
+            0-255 for outer rings)\\ 
+    $X_r$ & Value $X$ for ring $r$ (where rings are \FMD{1i},
+            \FMD{2i}, \FMD{2o}, \FMD{3o}, and \FMD{3i} in decreasing
+            $\eta$ coverage).\\ 
+    $X_{\subIPz}$ & Value $X$ for interaction point $\IPz$ (typically
+                    10 bins from -10cm to +10cm)\\ 
+    $X_i$ & Value $X$ for event $i$\\
+    \hline
+  \end{tabular}
+  \label{tab:nomenclature}
+\end{table}
+%% Local Variables:
+%%   TeX-master: "PWGLF_Forward_analysis_note.tex"
+%%   ispell-dictionary: "british"
+%% End:
