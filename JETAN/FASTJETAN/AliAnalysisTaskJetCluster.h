@@ -92,7 +92,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
     virtual void SetStoreRhoLeadingTrackCorr(Bool_t b) {fStoreRhoLeadingTrackCorr=b;}
-
+    virtual void SetCorrectForSemigood(Bool_t b) {fCorrectForSemigood=b;}
+    virtual void SetTpcHolePos(Double_t pos){fTpcHolePos=pos;}
+    virtual void SetTpcHoleWidth(Double_t width){fTpcHoleWidth=width;}
     //Setters for detector level effects
     virtual void SetUseTrResolutionFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Resolution/PtResol_LHCh_Cent0-10_v1.root") {fUseTrPtResolutionFromOADB = b; fPathTrPtResolution=path;}
     virtual void SetUseTrEfficiencyFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Efficiency/Efficiency_LHC11a2aj_Cent0_v1.root") {fUseTrEfficiencyFromOADB = b; fPathTrEfficiency=path;}
