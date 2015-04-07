@@ -629,70 +629,6 @@ AliAnalysisTaskV0sInJetsEmcal::~AliAnalysisTaskV0sInJetsEmcal()
   fRandom = 0;
 }
 
-void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
-{
-  AliAnalysisTaskEmcalJet::ExecOnce();
-
-  if(fbJetSelection)
-  {
-    if(fJetsCont && fJetsCont->GetArray() == 0)
-      fJetsCont = 0;
-    if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
-      fJetsBgCont = 0;
-  }
-
-  printf("=======================================================\n");
-  printf("AliAnalysisTaskV0sInJetsEmcal: Configuration summary:\n");
-  printf("task name: %s\n", GetName());
-  printf("-------------------------------------------------------\n");
-  printf("collision system: %s\n", fbIsPbPb ? "Pb+Pb" : "p+p");
-  printf("data type: %s\n", fbMCAnalysis ? "MC" : "real");
-  if(fbIsPbPb)
-    printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
-  if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
-  if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
-  if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
-  printf("-------------------------------------------------------\n");
-  if(fbTPCRefit) printf("TPC refit for daughter tracks\n");
-  if(fbRejectKinks) printf("reject kink-like production vertices of daughter tracks\n");
-  if(fbFindableClusters) printf("require positive number of findable clusters\n");
-  if(fdCutNCrossedRowsTPCMin > 0.) printf("min number of crossed TPC rows: %g\n", fdCutNCrossedRowsTPCMin);
-  if(fdCutCrossedRowsOverFindMin > 0.) printf("min ratio crossed rows / findable clusters: %g\n", fdCutCrossedRowsOverFindMin);
-  if(fdCutCrossedRowsOverFindMax > 0.) printf("max ratio crossed rows / findable clusters: %g\n", fdCutCrossedRowsOverFindMax);
-  if(fdCutPtDaughterMin > 0.) printf("min pt of daughter tracks [GeV/c]: %g\n", fdCutPtDaughterMin);
-  if(fdCutDCAToPrimVtxMin > 0.) printf("min DCA of daughters to the prim vtx [cm]: %g\n", fdCutDCAToPrimVtxMin);
-  if(fdCutDCADaughtersMax > 0.) printf("max DCA between daughters [sigma of TPC tracking]: %g\n", fdCutDCADaughtersMax);
-  if(fdCutEtaDaughterMax > 0.) printf("max |eta| of daughter tracks: %g\n", fdCutEtaDaughterMax);
-  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax);
-  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
-  printf("V0 reconstruction method: %s\n", fbOnFly ? "on-the-fly" : "offline");
-  if(fdCutCPAKMin > 0.) printf("min CPA, K0S: %g\n", fdCutCPAKMin);
-  if(fdCutCPALMin > 0.) printf("min CPA, (A)Lambda: %g\n", fdCutCPALMin);
-  if(fdCutRadiusDecayMin > 0. && fdCutRadiusDecayMax > 0.) printf("R of the decay vertex [cm]: %g-%g\n", fdCutRadiusDecayMin, fdCutRadiusDecayMax);
-  if(fdCutEtaV0Max > 0.) printf("max |eta| of V0: %g\n", fdCutEtaV0Max);
-  if(fdCutRapV0Max > 0.) printf("max |y| of V0: %g\n", fdCutRapV0Max);
-  if(fdCutNTauKMax > 0.) printf("max proper lifetime, K0S [tau]: %g\n", fdCutNTauKMax);
-  if(fdCutNTauLMax > 0.) printf("max proper lifetime, (A)Lambda [tau]: %g\n", fdCutNTauLMax);
-  if(fbCutArmPod) printf("Armenteros-Podolanski cut for K0S\n");
-//  if(fbCutCross) printf("cross contamination cut\n");
-  printf("-------------------------------------------------------\n");
-  printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
-  if(fbJetSelection)
-  {
-    if(fdCutPtJetMin > 0.) printf("min jet pt [GeV/c]: %g\n", fdCutPtJetMin);
-    if(fdCutPtTrackMin > 0.) printf("min pt of leading jet-track [GeV/c]: %g\n", fdCutPtTrackMin);
-    printf("max distance between V0 and jet axis: %g\n", fdDistanceV0JetMax);
-  }
-  printf("=======================================================\n");
-}
-
-Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
-{
-// Run analysis code here, if needed. It will be executed before FillHistograms().
-
-  return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
-}
-
 void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
 {
   // Called once
@@ -1303,6 +1239,70 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   PostData(2, fOutputListQA);
   PostData(3, fOutputListCuts);
   PostData(4, fOutputListMC);
+}
+
+void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
+{
+  AliAnalysisTaskEmcalJet::ExecOnce();
+
+  if(fbJetSelection)
+  {
+    if(fJetsCont && fJetsCont->GetArray() == 0)
+      fJetsCont = 0;
+    if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
+      fJetsBgCont = 0;
+  }
+
+  printf("=======================================================\n");
+  printf("AliAnalysisTaskV0sInJetsEmcal: Configuration summary:\n");
+  printf("task name: %s\n", GetName());
+  printf("-------------------------------------------------------\n");
+  printf("collision system: %s\n", fbIsPbPb ? "Pb+Pb" : "p+p");
+  printf("data type: %s\n", fbMCAnalysis ? "MC" : "real");
+  if(fbIsPbPb)
+    printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
+  if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
+  if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
+  if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
+  printf("-------------------------------------------------------\n");
+  if(fbTPCRefit) printf("TPC refit for daughter tracks\n");
+  if(fbRejectKinks) printf("reject kink-like production vertices of daughter tracks\n");
+  if(fbFindableClusters) printf("require positive number of findable clusters\n");
+  if(fdCutNCrossedRowsTPCMin > 0.) printf("min number of crossed TPC rows: %g\n", fdCutNCrossedRowsTPCMin);
+  if(fdCutCrossedRowsOverFindMin > 0.) printf("min ratio crossed rows / findable clusters: %g\n", fdCutCrossedRowsOverFindMin);
+  if(fdCutCrossedRowsOverFindMax > 0.) printf("max ratio crossed rows / findable clusters: %g\n", fdCutCrossedRowsOverFindMax);
+  if(fdCutPtDaughterMin > 0.) printf("min pt of daughter tracks [GeV/c]: %g\n", fdCutPtDaughterMin);
+  if(fdCutDCAToPrimVtxMin > 0.) printf("min DCA of daughters to the prim vtx [cm]: %g\n", fdCutDCAToPrimVtxMin);
+  if(fdCutDCADaughtersMax > 0.) printf("max DCA between daughters [sigma of TPC tracking]: %g\n", fdCutDCADaughtersMax);
+  if(fdCutEtaDaughterMax > 0.) printf("max |eta| of daughter tracks: %g\n", fdCutEtaDaughterMax);
+  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax);
+  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
+  printf("V0 reconstruction method: %s\n", fbOnFly ? "on-the-fly" : "offline");
+  if(fdCutCPAKMin > 0.) printf("min CPA, K0S: %g\n", fdCutCPAKMin);
+  if(fdCutCPALMin > 0.) printf("min CPA, (A)Lambda: %g\n", fdCutCPALMin);
+  if(fdCutRadiusDecayMin > 0. && fdCutRadiusDecayMax > 0.) printf("R of the decay vertex [cm]: %g-%g\n", fdCutRadiusDecayMin, fdCutRadiusDecayMax);
+  if(fdCutEtaV0Max > 0.) printf("max |eta| of V0: %g\n", fdCutEtaV0Max);
+  if(fdCutRapV0Max > 0.) printf("max |y| of V0: %g\n", fdCutRapV0Max);
+  if(fdCutNTauKMax > 0.) printf("max proper lifetime, K0S [tau]: %g\n", fdCutNTauKMax);
+  if(fdCutNTauLMax > 0.) printf("max proper lifetime, (A)Lambda [tau]: %g\n", fdCutNTauLMax);
+  if(fbCutArmPod) printf("Armenteros-Podolanski cut for K0S\n");
+//  if(fbCutCross) printf("cross contamination cut\n");
+  printf("-------------------------------------------------------\n");
+  printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
+  if(fbJetSelection)
+  {
+    if(fdCutPtJetMin > 0.) printf("min jet pt [GeV/c]: %g\n", fdCutPtJetMin);
+    if(fdCutPtTrackMin > 0.) printf("min pt of leading jet-track [GeV/c]: %g\n", fdCutPtTrackMin);
+    printf("max distance between V0 and jet axis: %g\n", fdDistanceV0JetMax);
+  }
+  printf("=======================================================\n");
+}
+
+Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
+{
+// Run analysis code here, if needed. It will be executed before FillHistograms().
+
+  return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
 }
 
 Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
