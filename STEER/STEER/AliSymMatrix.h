@@ -36,6 +36,7 @@ class AliSymMatrix : public AliMatrixSq {
   Float_t       GetDensity()                                     const;
   AliSymMatrix& operator=(const AliSymMatrix& src);
   AliSymMatrix& operator+=(const AliSymMatrix& src);
+  AliSymMatrix& operator-=(const AliSymMatrix& src);
   Double_t      operator()(Int_t rown, Int_t coln)               const;
   Double_t&     operator()(Int_t rown, Int_t coln);
   //
@@ -49,6 +50,7 @@ class AliSymMatrix : public AliMatrixSq {
   void          SetSizeUsed(Int_t sz)                                  {fRowLwb = sz;}
   //
   void          Scale(Double_t coeff);
+  Bool_t        Multiply(const AliSymMatrix& right);
   void          MultiplyByVec(const Double_t* vecIn, Double_t* vecOut) const;
   void          MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const;
   void          AddToRow(Int_t r, Double_t *valc, Int_t *indc,Int_t n);

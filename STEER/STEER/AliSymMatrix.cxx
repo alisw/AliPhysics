@@ -142,6 +142,18 @@ AliSymMatrix& AliSymMatrix::operator+=(const AliSymMatrix& src)
 }
 
 //___________________________________________________________
+AliSymMatrix& AliSymMatrix::operator-=(const AliSymMatrix& src)
+{
+  // minus operator
+  if (GetSizeUsed() != src.GetSizeUsed()) {
+    AliError("Matrix sizes are different");
+    return *this;
+  }
+  for (int i=0;i<GetSizeUsed();i++) for (int j=i;j<GetSizeUsed();j++) (*this)(j,i) -= src(j,i);
+  return *this;
+}
+
+//___________________________________________________________
 void AliSymMatrix::Clear(Option_t*)
 {
   // clear dynamic part
@@ -190,6 +202,32 @@ void AliSymMatrix::MultiplyByVec(const Double_t *vecIn,Double_t *vecOut) const
     for (int j=GetSizeUsed();j--;) vecOut[i] += vecIn[j]*GetEl(i,j);
   }
   //
+}
+
+//___________________________________________________________
+Bool_t AliSymMatrix::Multiply(const AliSymMatrix& right)
+{
+  // multiply from the right
+  int sz = GetSizeUsed();
+  if (sz != right.GetSizeUsed()) {
+    AliError("Matrix sizes are different");
+    return kFALSE;
+  }
+  if (!fgBuffer || fgBuffer->GetSizeUsed()!=sz) {
+    delete fgBuffer; 
+    fgBuffer = new AliSymMatrix(*this);    
+  }
+  else (*fgBuffer) = *this;
+  //
+  for (int i=sz;i--;) {
+    for (int j=i+1;j--;) {
+      double val = 0.;
+      for (int k=sz;k--;) val += fgBuffer->GetEl(i,k)*right.GetEl(k,j);
+      SetEl(i,j,val);
+    }
+  }
+  //
+  return kTRUE;
 }
 
 //___________________________________________________________
