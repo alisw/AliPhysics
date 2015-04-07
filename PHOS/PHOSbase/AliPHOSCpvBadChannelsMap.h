@@ -24,7 +24,8 @@ public:
   Bool_t IsBadChannel(Int_t module, Int_t col, Int_t row) const { return fBadChannelCpv[module-1][col-1][row-1]; }
   Int_t GetNumOfBadChannels() const {  return fBads; }
   void BadChannelIds(Int_t *badIds=0);
-  void Reset();
+  void Reset();//reset all channels as good
+  void Reset(Int_t module);//reset all channels in module as good
 
 private:
   

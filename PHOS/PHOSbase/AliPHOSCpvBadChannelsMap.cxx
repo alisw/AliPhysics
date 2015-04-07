@@ -50,6 +50,22 @@ void AliPHOSCpvBadChannelsMap::Reset()
 
 //________________________________________________________________
 
+void AliPHOSCpvBadChannelsMap::Reset(Int_t module)
+{
+  //Set all channels in module as good.
+  Int_t nBadsInModule=0;
+  for(Int_t column=0; column<AliPHOSCpvParam::kPadPcX; column++) 
+    for(Int_t row=0; row<AliPHOSCpvParam::kPadPcY; row++)
+      if(fBadChannelCpv[module][column][row]){
+	fBadChannelCpv[module][column][row] = kFALSE;
+	nBadsInModule++;
+      }
+  fBads-=nBadsInModule;
+
+}
+
+//________________________________________________________________
+
 AliPHOSCpvBadChannelsMap::AliPHOSCpvBadChannelsMap(const AliPHOSCpvBadChannelsMap &map):
   TObject(map),fBads(map.fBads)
 {
@@ -111,8 +127,8 @@ void AliPHOSCpvBadChannelsMap::BadChannelIds(Int_t *badIds)
   relId[1] =  -1; // CPV pad
 
   for(Int_t mod=1; mod<=AliPHOSCpvParam::kNDDL; mod++) { 
-    for(Int_t col=1; col<AliPHOSCpvParam::kPadPcX; col++) { 
-      for(Int_t row=1; row<AliPHOSCpvParam::kPadPcY; row++) {
+    for(Int_t col=1; col<=AliPHOSCpvParam::kPadPcX; col++) { 
+      for(Int_t row=1; row<=AliPHOSCpvParam::kPadPcY; row++) {
 	if(IsBadChannel(mod,col,row)) {
 	  relId[0] = mod;
 	  relId[3] = col;

@@ -151,12 +151,6 @@ int main( int argc, char **argv )
   daqDA_progressReport(95);
 
   if(iPhysEvnt>=1000){//we have enough events to publish data
-    status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
-    if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
-  
-    status = daqDA_FES_storeFile("CpvPeds.root","CPVPEDS");
-    if(status) printf("Failed to store CpvPeds.root in DAQ FXS!\n");
-
     for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++){
       if(pedProducer -> CalcPedestal(iDDL)){
 	pedProducer -> WritePedFiles(iDDL);
@@ -167,6 +161,12 @@ int main( int argc, char **argv )
       }
     }
     pedProducer->WriteAllHistsToFile("CpvPeds.root");
+
+    status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
+    if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
+  
+    status = daqDA_FES_storeFile("CpvPeds.root","CPVPEDS");
+    if(status) printf("Failed to store CpvPeds.root in DAQ FXS!\n");
 
     //send file with histos to amore
     setenv("AMORE_DA_NAME","CPV-DAs",1);
