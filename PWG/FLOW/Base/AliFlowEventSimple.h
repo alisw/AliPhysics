@@ -10,6 +10,7 @@
           Ante Bilandzic     (anteb@nikhef.nl)         
           Raimond Snellings  (Raimond.Snellings@nikhef.nl)    
   mods:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
+          Redmer A. Bertens  (rbertens@cern.ch)
 *****************************************************************/
 
 #ifndef ALIFLOWEVENTSIMPLE_H
@@ -20,6 +21,7 @@
 #include "TMath.h"
 class TTree;
 class TF1;
+class TF2;
 class AliFlowVector;
 class AliFlowTrackSimple;
 class AliFlowTrackSimpleCuts;
@@ -101,12 +103,14 @@ class AliFlowEventSimple: public TObject {
   void AddFlow(Double_t v1, Double_t v2, Double_t v3, Double_t v4, Double_t v5,
                Double_t rp1, Double_t rp2, Double_t rp3, Double_t rp4, Double_t rp5 );
   void AddV2( TF1* ptDepV2 );
+  void AddV2( TF2* ptEtaDepV2 );
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
   Int_t CleanUpDeadTracks();
   virtual void ClearFast();
  
   static TF1* SimplePtSpectrum();
   static TF1* SimplePtDepV2();
+  static TF2* SimplePtEtaDepV2();
 
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 
