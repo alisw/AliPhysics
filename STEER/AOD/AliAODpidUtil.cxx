@@ -40,97 +40,6 @@
 ClassImp(AliAODpidUtil)
 
 //_________________________________________________________________________
-Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
-    AliAODTrack *track = (AliAODTrack *) t;
-    Float_t dedx = track->GetTPCsignalTunedOnData();
-    if(dedx > 0) return dedx;
-
-    dedx = t->GetTPCsignal();
-    track->SetTPCsignalTunedOnData(dedx);
-
-    if(dedx < 20) return dedx;
-
-    
-    AliPID::EParticleType type = AliPID::kPion;
-    
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(track->GetAODEvent()->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    if (mcHeader) {
-        
-	TClonesArray *mcArray = (TClonesArray*)track->GetAODEvent()->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-	
-	Bool_t kGood = kTRUE;
-
-	if ( mcArray->At(TMath::Abs(t->GetLabel())) != NULL ) {  // protects against label-0 tracks e.g. the initial proton for Phythia events
-	  Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
-	  if(iS==AliPID::ParticleCode(AliPID::kElectron)){
-	    type = AliPID::kElectron;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kMuon)){
-	    type = AliPID::kMuon;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kPion)){
-	    type = AliPID::kPion;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kKaon)){
-	    type = AliPID::kKaon;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kProton)){
-	    type = AliPID::kProton;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kDeuteron)){ // d
-	    type = AliPID::kDeuteron;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kTriton)){ // t
-	    type = AliPID::kTriton;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kHe3)){ // 3He
-	    type = AliPID::kHe3;
-	  }
-	  else if(iS==AliPID::ParticleCode(AliPID::kAlpha)){ // 4He
-	    type = AliPID::kAlpha;
-	  }
-	else
-	    kGood = kFALSE;
-	} else kGood = kFALSE;
-
-	if(kGood){
-	    //TODO maybe introduce different dEdxSources?
-        Double_t bethe = fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
-                                                        this->UseTPCMultiplicityCorrection());
-        Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
-                                                       this->UseTPCMultiplicityCorrection());
-        dedx = gRandom->Gaus(bethe,sigma);
-        
-// 	    if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
-	}
-
-    }
-
-    track->SetTPCsignalTunedOnData(dedx);
-    return dedx;
-}
-//_________________________________________________________________________
-Float_t AliAODpidUtil::GetTOFsignalTunedOnData(const AliVTrack *t) const {
-    AliAODTrack *track = (AliAODTrack *) t;
-    Double_t tofSignal = track->GetTOFsignalTunedOnData();
-
-    if(tofSignal <  99999) return (Float_t)tofSignal; // it has been already set
-
-    // read additional mismatch fraction
-    Float_t addmism = GetTOFPIDParams()->GetTOFadditionalMismForMC();
-    if(addmism > 1.){
-      Float_t centr = GetCurrentCentrality();
-      if(centr > 50) addmism *= 0.1667;
-      else if(centr > 20) addmism *= 0.33;
-    }
-
-    AliAODPid *pidObj = track->GetDetPid();
-    tofSignal = pidObj->GetTOFsignal() + fTOFResponse.GetTailRandomValue(t->Pt(),t->Eta(),pidObj->GetTOFsignal(),addmism);
-    track->SetTOFsignalTunedOnData(tofSignal);
-    return (Float_t)tofSignal;
-}
-
-//_________________________________________________________________________
 Float_t AliAODpidUtil::GetITSsignalTunedOnData(const AliVTrack *t) const {
   AliAODTrack *trk = (AliAODTrack *) t;
   Float_t dedx = trk->GetITSsignalTunedOnData();
@@ -194,7 +103,7 @@ Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::
   //
   // Number of sigma implementation for the TOF
   //
-  
+
   AliAODTrack *track=(AliAODTrack*)vtrack;
   AliAODPid *pidObj = track->GetDetPid();
   if (!pidObj) return -9999.;
@@ -219,7 +128,7 @@ Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::
 
   if (!ratio) delta=tofTime-expTime;
   else if (expTime>1.e-20) delta=tofTime/expTime;
-  
+
   return delta;
 }
 
@@ -229,7 +138,7 @@ Float_t AliAODpidUtil::GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPI
   //
   // Number of sigma implementation for the TOF
   //
-  
+
   AliAODTrack *track=(AliAODTrack*)vtrack;
 
   Bool_t oldAod=kTRUE;
