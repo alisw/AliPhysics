@@ -10,7 +10,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 								Bool_t 		enableUseTHnSparse 			= kTRUE,							// enable THnSparse	for mixed event BG
 								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
 								TString		fileNameInputForCentFlattening 	= "InterpValuesAndFlattening.root",
-								Int_t 		doFlattening 				= 1
+								Int_t 		doFlattening 				= 0
                            ) {
 
 	// ================= Load Librariers =================================
