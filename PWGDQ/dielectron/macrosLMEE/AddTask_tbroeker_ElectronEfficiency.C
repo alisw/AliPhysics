@@ -44,10 +44,9 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Char_t* outputFileName="LME
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   //event related
-  task->SetMC(hasMC);
-  task->SetRequireVertex(reqVertex);
-  task->SetMaxVertexZ(vertexZcut);
+  task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
+  task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
   task->SetCheckV0daughterElectron(checkV0dauEle);
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
