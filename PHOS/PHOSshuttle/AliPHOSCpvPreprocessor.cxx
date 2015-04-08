@@ -104,7 +104,6 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
 	    Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
 	    return 1;
 	  }
-	  badMap->Reset();
 	  for(Int_t iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2)
 	    if(f.Get(Form("hBadChMap%d",iDDL))){
 	      badMap->Reset(AliPHOSCpvParam::DDL2Mod(iDDL));
