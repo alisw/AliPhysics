@@ -2392,7 +2392,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::GetMesonKine(Int_t centrality)
     TH2F *histo = 0x0;
     
     for(Int_t imc=0; imc< fAODArrayMCInfo->GetEntries(); imc++){
-      AliAODMCParticle *mctrack0 = (AliAODMCParticle*)fAODArrayMCInfo->At(imc);
+      mctrack0 = (AliAODMCParticle*)fAODArrayMCInfo->At(imc);
       // IsPrimary
       Bool_t primMC = mctrack0->IsPrimary();
       if(!primMC) continue;
