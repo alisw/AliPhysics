@@ -155,11 +155,11 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   FILL_SW(individual,kTimingEventInspector);
 
   if (found & AliFMDEventInspector::kNoEvent)    { 
-    fHStatus->Fill(1);
+    fHStatus->Fill(kStatusNoEvent);
     return false;
   }
   if (found & AliFMDEventInspector::kNoTriggers) {
-    fHStatus->Fill(2);
+    fHStatus->Fill(kStatusNoTrigger);
     return false;
   } 
 
@@ -177,21 +177,26 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   //   return false;
   // }
   if (found    & AliFMDEventInspector::kNoFMD) {
-    fHStatus->Fill(4);
+    fHStatus->Fill(kStatusNoFMD);
     return false;
   }
   if (found    & AliFMDEventInspector::kNoVertex) {
-    fHStatus->Fill(5);
+    fHStatus->Fill(kStatusNoVertex);
     return false;
   }
   // Also analyse pile-up events - we'll remove them in later steps. 
   if (triggers & AliAODForwardMult::kPileUp) {
-    fHStatus->Fill(6);
-    return false;
+    fHStatus->Fill(kStatusPileup);
+    // return false;
+  }
+  // Also analyse SPD outliers events - we'll remove them in later steps. 
+  if (triggers & AliAODForwardMult::kSPDOutlier) {
+    fHStatus->Fill(kStatusSPDOutlier);
+    // return false;
   }
   fAODFMD.SetIpZ(ip.Z());
   if (found & AliFMDEventInspector::kBadVertex) {
-    fHStatus->Fill(7);
+    fHStatus->Fill(kStatusIPzOutOfRange);
     return false;
   }
 
@@ -208,7 +213,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   START_SW(individual);
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
-    fHStatus->Fill(8);
+    fHStatus->Fill(kStatusFailSharing);
     return false;
   }
   FILL_SW(individual,kTimingSharingFilter);
@@ -218,7 +223,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
-    fHStatus->Fill(9);
+    fHStatus->Fill(kStatusFailDensity);
     return false;
   }
   FILL_SW(individual,kTimingDensityCalculator);
@@ -229,7 +234,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
     if (!fEventPlaneFinder.FindEventplane(&esd, fAODEP, 
 					  &(fAODFMD.GetHistogram()), &fHistos)){
       AliWarning("Eventplane finder failed!");
-      fHStatus->Fill(10);
+      fHStatus->Fill(kStatusFailEventPlane);
     }
     FILL_SW(individual,kTimingEventPlaneFinder);
   }
@@ -244,7 +249,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   }
   if (nSkip > 0) {
     // Skip the rest if we have too many outliers 
-    fHStatus->Fill(11);
+    fHStatus->Fill(kStatusOutlier);
     return false;
   }
   
@@ -252,7 +257,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   START_SW(individual);
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
-    fHStatus->Fill(12);
+    fHStatus->Fill(kStatusFailCorrector);
     return false;
   }
   FILL_SW(individual,kTimingCorrections);
@@ -270,18 +275,18 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
 			      false, 
 			      add)) {
     AliWarning("Histogram collector failed");
-    fHStatus->Fill(13);
+    fHStatus->Fill(kStatusFailCollector);
     return false;
   }
   FILL_SW(individual,kTimingHistCollector);
 
   if (!add) {
-    fHStatus->Fill(14);
+    fHStatus->Fill(kStatusNotAdded);
   }
   else {
     // Collect rough Min. Bias result
     fHData->Add(&(fAODFMD.GetHistogram()));
-    fHStatus->Fill(15);
+    fHStatus->Fill(kStatusAllThrough);
   }
   FILL_SW(total,kTimingTotal);
   

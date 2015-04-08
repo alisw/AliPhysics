@@ -82,6 +82,9 @@ class TProfile;
 class AliForwardMultiplicityBase : public AliBaseESDTask
 {
 public:
+  /** 
+   * Bins in timing histogram 
+   */
   enum { 
     kTimingEventInspector    = 1,
     kTimingSharingFilter     = 2, 
@@ -90,6 +93,27 @@ public:
     kTimingHistCollector     = 5, 
     kTimingEventPlaneFinder  = 6, 
     kTimingTotal             = 7
+  };
+  /** 
+   * Bins in status histogram 
+   */
+  enum {
+    kStatusNoEvent = 1,
+    kStatusNoTrigger,
+    kStatusNoSPD,
+    kStatusNoFMD,
+    kStatusNoVertex,
+    kStatusPileup,
+    kStatusSPDOutlier,
+    kStatusIPzOutOfRange,
+    kStatusFailSharing,
+    kStatusFailDensity,
+    kStatusFailEventPlane,
+    kStatusOutlier,
+    kStatusFailCorrector,
+    kStatusFailCollector,
+    kStatusNotAdded,
+    kStatusAllThrough
   };
   /** 
    * @{ 

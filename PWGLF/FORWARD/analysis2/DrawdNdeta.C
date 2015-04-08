@@ -843,8 +843,10 @@ struct dNdetaDrawer
     }
     if (!fCentMeth) 
       fCentMeth = results->FindObject("centEstimator");
-    if (!fCentMeth && HasCent())
-      fCentMeth = new TNamed("centEstimator", "V0M");
+    if (!fCentMeth && HasCent()) {
+      fCentMeth = new TNamed("centEstimator", "default");
+      fCentMeth->SetUniqueID(1);
+    }
 
     if (fTriggerEff < 0) { 
       // Allow complete overwrite by passing negative number 
@@ -945,8 +947,37 @@ struct dNdetaDrawer
     UShort_t sys   = (fSysString  ? fSysString->GetUniqueID() : 0);
     UShort_t trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
     UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
+    UShort_t cen   = (fCentMeth   ? fCentMeth->GetUniqueID() : 0);
     if (centLow < centHigh) {
-      // Possibly modify trg according to method 
+      // Possibly modify trg according to method
+      UShort_t msk = 0;
+      if (cen == 0 && fCentMeth) {
+	TString cm(fCentMeth->GetTitle());
+	if      (cm.EqualTo("V0M", TString::kIgnoreCase))    msk = 0x01;
+	else if (cm.EqualTo("V0A", TString::kIgnoreCase))    msk = 0x02;
+	else if (cm.EqualTo("ZNA", TString::kIgnoreCase))    msk = 0x04;
+	else if (cm.EqualTo("ZNC", TString::kIgnoreCase))    msk = 0x08;
+	else if (cm.EqualTo("V0C", TString::kIgnoreCase))    msk = 0x10;
+	else if (cm.EqualTo("Cl1", TString::kIgnoreCase))    msk = 0x20;
+      }
+      else {
+	switch (cen) {
+	case 1: case 2:   msk = 0x01; break; // V0M
+	case 3:           msk = 0x02; break; // V0A
+	case 4:                       break; // V0A123
+	case 5:           msk = 0x10; break; // V0C
+	case 6: case 7: case 8: case 9: break; // FMD,Tracks,Tracklets,CL0
+	case 10:          msk = 0x20; break; // CL1
+	case 11:          msk = 0x04; break; // ZNA
+	case 12:          msk = 0x08; break; // ZNC
+	case 13: case 14: case 15:    break; // ZPA, ZPC, NPA
+	case 16: case 17: case 18:    break; // V0MvsFMD, V0MvsTracklets, ZEM
+	case 19:                      break; // RefMult
+	case 20: case 21: case 22:    break; // HMTF V0A, V0M, V0C
+	default:                      break;
+	}
+      }
+      trg = (trg & 0x200f) | msk;
     }
     Long_t   ret   = 
       gROOT->ProcessLine(Form("RefData::GetData(%d,%d,%d,%d,%d,%d);",
@@ -1710,6 +1741,8 @@ struct dNdetaDrawer
 	tS = "by N_{#lower[-.2]{ch}} |#it{#eta}|<0.8";
       else 
 	tS  = "by centrality";
+      if (fCentMeth) tS.Append(Form(" (%s)", fCentMeth->GetTitle()));
+#if 0
       UShort_t trg = fTrigString->GetUniqueID();
       switch (trg) { 
       case 0x10: tS.Append(" (V0M)"); break;
@@ -1717,6 +1750,7 @@ struct dNdetaDrawer
       case 0x40: tS.Append(" (ZNA)"); break;
       case 0x80: tS.Append(" (ZNC)"); break;
       }
+#endif
     }
     
     TLatex* tt = new TLatex(xR, yR, Form("%s #sqrt{s%s}=%s, %s", 

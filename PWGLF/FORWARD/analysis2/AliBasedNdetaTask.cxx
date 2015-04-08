@@ -712,12 +712,12 @@ AliBasedNdetaTask::Finalize()
   UShort_t sys; 
   ULong_t  trig;
   UShort_t scheme;
-  // Int_t    centID;
+  Int_t    centID;
   AliForwardUtil::GetParameter(fSums->FindObject("sNN"), sNN);
   AliForwardUtil::GetParameter(fSums->FindObject("sys"), sys);
   AliForwardUtil::GetParameter(fSums->FindObject("trigger"), trig);
   AliForwardUtil::GetParameter(fSums->FindObject("scheme"), scheme);
-  //AliForwardUtil::GetParameter(fSums->FindObject("centEstimator"), centID);
+  AliForwardUtil::GetParameter(fSums->FindObject("centEstimator"), centID);
 
   TH1*   cH = static_cast<TH1*>(fSums->FindObject("centAxis"));
   Info("", "centAxis: %p (%s)", cH, (cH ? cH->ClassName() : "null"));
@@ -798,9 +798,11 @@ AliBasedNdetaTask::Finalize()
     fResults->Add(sysObj); // fSysString->Clone());
   }
 
-  // Output centrality axis 
+  // Output centrality axis
+  TNamed* centEstimator = new TNamed("centEstimator", fCentMethod.Data());
+  centEstimator->SetUniqueID(centID);
   fResults->Add(&fCentAxis);
-  fResults->Add(new TNamed("centEstimator", fCentMethod.Data()));
+  fResults->Add(centEstimator);
 
   // Output trigger string 
   if (trig) { 

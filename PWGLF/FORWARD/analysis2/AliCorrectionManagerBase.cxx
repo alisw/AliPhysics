@@ -212,7 +212,9 @@ AliCorrectionManagerBase::Append(const TString& addition,
 }
 //____________________________________________________________________
 Bool_t
-AliCorrectionManagerBase::CleanUp(const TString& destination, Bool_t verb) const
+AliCorrectionManagerBase::CleanUp(const TString& destination,
+				  Bool_t         verb,
+				  Bool_t         all) const
 {
   AliOADBForward* db = fDB;
   if (!db) db = new AliOADBForward;
@@ -226,7 +228,7 @@ AliCorrectionManagerBase::CleanUp(const TString& destination, Bool_t verb) const
       continue;
     }
     Info("CleanUp", "Will clean up table %s", c->GetName());
-    c->CleanIt(db, destination, verb);
+    c->CleanIt(db, destination, verb, all);
   }
   return true;
 }
@@ -584,6 +586,22 @@ AliCorrectionManagerBase::Correction::MassageFields(ULong_t&  run,
   if (!(fQueryFields & kMC))        mc  = false;
   if (!(fQueryFields & kSatellite)) sat = false;
 }
+//____________________________________________________________________
+void
+AliCorrectionManagerBase::Correction::CorrectFields(ULong_t&  run,
+						    UShort_t& sys,
+						    UShort_t& sNN, 
+						    Short_t & fld, 
+						    Bool_t&   mc, 
+						    Bool_t&   sat) const
+{
+  // Massage fields according to settings
+  if (run <= 197388 && run >= 196433) {
+    // These are Pb-p runs
+    sys = 4; // AliAODForwardMult::kPbp;
+  }
+  if (sNN == 27615) sNN = 2760;
+}
 
 //____________________________________________________________________
 Bool_t
@@ -824,7 +842,8 @@ AliCorrectionManagerBase::Correction::Browse(TBrowser* b)
 Bool_t
 AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
 					      const TString& dest,
-					      Bool_t verb) const
+					      Bool_t verb,
+					      Bool_t all) const
 {
   // Open the table for this correction 
   if (!OpenIt(db, verb , false)) {
@@ -842,13 +861,18 @@ AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
   // Get some pointers and make a bit mask of entries to copy
   TTree* tree = t->fTree;
   Int_t  nEnt = tree->GetEntries();
+  Int_t  nCpy = 0;
   TBits  copy(nEnt);
-  copy.ResetAllBits(false);
-  // TString runs;
+  copy.ResetAllBits();
 
   // Loop over all entries 
   Info("CleanIt", "Looping over %d entries in tree", nEnt);
-  for (Int_t i = 0; i < nEnt; i++) { 
+  for (Int_t i = 0; i < nEnt; i++) {
+    if (all) {
+      copy.SetBitNumber(i, true);
+      continue;
+    }
+    
     // Read in next entry 
     tree->GetEntry(i);
 
@@ -868,7 +892,7 @@ AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
     Bool_t   sat = e->fSatellite;
     TString  txt = e->GetTitle();
     MassageFields(run, sys, sNN, fld, mc, sat);
-
+    CorrectFields(run, sys, sNN, fld, mc, sat);
     
     Int_t r = t->GetEntry(run, AliOADBForward::kDefault, 
 			  sys, sNN, fld, mc, sat);
@@ -901,7 +925,7 @@ AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
 
     // If the entry found by the query and this entry is the same, 
     // then we should keep it 
-	 copy.SetBitNumber(i,true);
+    copy.SetBitNumber(i,true);
     // runs.Append(Form("%7lu", run));
   }
   
@@ -929,14 +953,19 @@ AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
     Bool_t   sat = e->fSatellite;
     TObject* obj = e->fData;
     TString  txt = e->GetTitle();
-    Printf("Storing %3d: %s %s", i, txt.Data(), GetName());
+    CorrectFields(run, sys, sNN, fld, mc, sat);
+    Printf("Storing %3d: %s -> %9d/%d/%05d/%2d/%s/%s %s",
+	   i, txt.Data(), run, sys, sNN, fld, (mc?"simu":"real"),
+	   (sat?"sat":"nom"), GetName());
     if (!StoreIt(0, obj, run, sys, sNN, fld, mc, sat, dest.Data(),
 		 AliOADBForward::Mode2String(t->fMode))) {
       Warning("CleanIt", "Failed to write new entry to %s", dest.Data());
       continue;
     }
+    nCpy++;
   }
   // Printf("Runs: %s", runs.Data());
+  Printf("Copied %6d entries of %6d for %s", nCpy, nEnt, fName.Data());
   return true;
 }
 

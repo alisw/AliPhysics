@@ -58,7 +58,10 @@ protected:
 
     // --- Load libraries/pars ---------------------------------------
     fRailway->LoadLibrary("PWGLFforward2");
-    
+    // fRailway->LoadLibrary("AOD");
+    // gSystem->ListLibraries();
+    // gSystem->Load("libAOD");
+
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
