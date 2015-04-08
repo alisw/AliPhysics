@@ -32,17 +32,17 @@ public:
   AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC) {;}
   virtual ~AliAODpidUtil() {;}
 
-
   Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
   Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const;
-
+  Float_t GetITSsignalTunedOnData(const AliVTrack *t) const;
+  
 protected:
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;
   virtual Float_t GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPID::EParticleType type) const;
   
 private:
   
-  ClassDef(AliAODpidUtil,3)  // PID calculation class
+  ClassDef(AliAODpidUtil,4)  // PID calculation class
 };
 
 

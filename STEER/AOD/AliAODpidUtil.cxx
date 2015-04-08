@@ -131,6 +131,64 @@ Float_t AliAODpidUtil::GetTOFsignalTunedOnData(const AliVTrack *t) const {
 }
 
 //_________________________________________________________________________
+Float_t AliAODpidUtil::GetITSsignalTunedOnData(const AliVTrack *t) const {
+  AliAODTrack *trk = (AliAODTrack *) t;
+  Float_t dedx = trk->GetITSsignalTunedOnData();
+  if(dedx > 0) return dedx;
+
+  Int_t nITSpid = 0;
+  for(Int_t i=2; i<6; i++){
+    if(trk->HasPointOnITSLayer(i)) nITSpid++;
+  }
+
+  Bool_t isSA = kFALSE;
+  if(trk->TestFilterBit(AliAODTrack::kTrkITSsa)==kTRUE) isSA=kTRUE;
+
+  AliPID::EParticleType type = AliPID::kPion;
+
+  AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(trk->GetAODEvent()->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+  if(mcHeader){
+
+    TClonesArray *mcArray = (TClonesArray*)trk->GetAODEvent()->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+
+    Bool_t kGood = kTRUE;
+    if ( mcArray->At(TMath::Abs(t->GetLabel())) != NULL ) {  // protects against label-0 tracks e.g. the initial proton for Phythia events
+      Int_t part = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
+      if(part==AliPID::ParticleCode(AliPID::kElectron)){ // e
+	type = AliPID::kElectron;
+      }
+      else if(part==AliPID::ParticleCode(AliPID::kPion)){ // pi
+	type = AliPID::kPion;
+      }
+      else if(part==AliPID::ParticleCode(AliPID::kKaon)){ // K
+	type = AliPID::kKaon;
+      }
+      else if(part==AliPID::ParticleCode(AliPID::kProton)){ // p 
+	type = AliPID::kProton;
+      }
+      else if(part==AliPID::ParticleCode(AliPID::kDeuteron)){ // d
+	type = AliPID::kDeuteron;
+      }
+      else if(part==AliPID::ParticleCode(AliPID::kTriton)){ // t
+	type = AliPID::kTriton;
+      }
+      else
+	kGood = kFALSE;
+    } else kGood = kFALSE;
+
+    if(kGood){
+      Double_t bethe = fITSResponse.Bethe(trk->P(),type,isSA);
+      Double_t sigma = fITSResponse.GetResolution(bethe,nITSpid,isSA,trk->P(),type);
+      dedx = gRandom->Gaus(bethe,sigma);
+    }
+    
+  }
+    trk->SetITSsignalTunedOnData(dedx);
+    return dedx;
+}
+
+
+//_________________________________________________________________________
 Float_t AliAODpidUtil::GetSignalDeltaTOFold(const AliVParticle *vtrack, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/) const
 {
   //

@@ -122,6 +122,8 @@ public:
   virtual void     ResetStatus(ULong_t /*flags*/) {;}
 
   virtual Double_t  GetITSsignal()       const {return 0.;}
+  virtual Double_t  GetITSsignalTunedOnData() const {return 0.;}
+  virtual void      SetITSsignalTunedOnData(Double_t /*signal*/) {}
   virtual Double_t  GetTPCsignal()       const {return 0.;}
   virtual Double_t  GetTPCsignalTunedOnData() const {return 0.;}
   virtual void      SetTPCsignalTunedOnData(Double_t /*signal*/) {}
