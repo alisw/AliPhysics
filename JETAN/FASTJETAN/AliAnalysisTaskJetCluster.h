@@ -244,9 +244,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     AliAODJetEventBackground *fAODJetBackgroundOut; //! jet background to be written out
 
     TRandom3*     fRandom;   //! random number generator
-    Bool_t         fCorrectForSemigood;  //!if kTRUE, skip kT clusters  that overlap with malfunctioning TPC sectors, to compute rho
-    Double_t     fTpcHolePos; //!position of the malfunctioning sector, in radians
-    Double_t     fTpcHoleWidth; //! width of the malfunctioning area, in radians
+    Bool_t         fCorrectForSemigood;  //if kTRUE, skip kT clusters  that overlap with malfunctioning TPC sectors, to compute rho
+    Double_t     fTpcHolePos; //position of the malfunctioning sector, in radians
+    Double_t     fTpcHoleWidth; // width of the malfunctioning area, in radians
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
     TH1F*         fh1PtHard;  //! Pt har of the event...       
