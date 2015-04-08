@@ -221,6 +221,7 @@ struct ForwardOADBGUI
     fSysSelect.AddEntry("p-p",   1);
     fSysSelect.AddEntry("Pb-Pb ",2);
     fSysSelect.AddEntry("p-Pb",  3);
+    fSysSelect.AddEntry("Pb-p",  4);
     fSysSelect.SetHeight(22);
     fSelectFrame.AddFrame(&fSysFrame, &fFrameHints);
     fSysFrame.AddFrame(&fSysLabel, &fLabelHints);
@@ -499,7 +500,8 @@ struct ForwardOADBGUI
     lve->SetSubnames(Form("%lu", e->fRunNo), 
 		     (e->fSys == 1 ? "p-p" : 
 		      e->fSys == 2 ? "Pb-Pb" : 
-		      e->fSys == 3 ? "p-Pb" : "?"),
+		      e->fSys == 3 ? "p-Pb" :
+		      e->fSys == 4 ? "Pb-p" : "?"),
 		     Form("%4huGeV",e->fSNN), 
 		     Form("%+2hdkG", e->fField), 
 		     (e->fMC ? "MC" : "Real"),
@@ -712,8 +714,9 @@ struct ForwardOADBGUI
   {
     const char* opt = "++g";
     const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
-    gSystem->AddIncludePath(Form("-I$ALICE_PHYSICS/include -I%s -I%s/scripts",
-				 fwd, fwd));
+    gSystem->AddIncludePath(Form("-I$ALICE_ROOT/include "
+				 "-I$ALICE_PHYSICS/include "
+				 "-I%s -I%s/scripts", fwd, fwd));
     Info("CorrDraw", "Loading SummaryDrawer.C%s", opt);
     gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C%s", fwd, opt));
     // gROOT->ProcessLine(".Class SummaryDrawer");
@@ -759,7 +762,8 @@ struct ForwardOADBGUI
     out.Append(Form("_run%09lu", fEntry->fRunNo));
     out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
 			    fEntry->fSys == 2 ? "PbPb" :
-			    fEntry->fSys == 3 ? "pPb" : "XX")));
+			    fEntry->fSys == 3 ? "pPb" :
+			    fEntry->fSys == 4 ? "Pbp" : "XX")));
     out.Append(Form("_%04huGeV", fEntry->fSNN));
     out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
 		    TMath::Abs(fEntry->fField)));

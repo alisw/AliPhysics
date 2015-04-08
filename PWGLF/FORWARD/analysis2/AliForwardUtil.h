@@ -6,11 +6,10 @@
 #define ALIFORWARDUTIL_H
 /**
  * @file   AliForwardUtil.h
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 14:06:54 2011
  * 
- * @brief  
- * 
+ * @brief  Various utilities used in PWGLF/FORWARD
  * 
  * @ingroup pwglf_forward 
  */
@@ -74,6 +73,7 @@ public:
    * @return branch identifer encoded in bits 
    */
   static ULong_t AliROOTBranch();
+  /* @} */
   //==================================================================
   /** 
    * @{ 
@@ -268,15 +268,85 @@ public:
    * @{ 
    * @name Member functions to store and retrieve analysis parameters 
    */
+  /** 
+   * Make a parameter 
+   * 
+   * @param name   Name of the parameter 
+   * @param value  Value of the parameter 
+   * 
+   * @return Newly allocated parameter object 
+   */
   static TObject* MakeParameter(const char* name, UShort_t value);
+  /** 
+   * Make a parameter 
+   * 
+   * @param name   Name of the parameter 
+   * @param value  Value of the parameter 
+   * 
+   * @return Newly allocated parameter object 
+   */
   static TObject* MakeParameter(const char* name, Int_t value);
+  /** 
+   * Make a parameter 
+   * 
+   * @param name   Name of the parameter 
+   * @param value  Value of the parameter 
+   * 
+   * @return Newly allocated parameter object 
+   */
   static TObject* MakeParameter(const char* name, Double_t value);
+  /** 
+   * Make a parameter 
+   * 
+   * @param name   Name of the parameter 
+   * @param value  Value of the parameter 
+   * 
+   * @return Newly allocated parameter object 
+   */
   static TObject* MakeParameter(const char* name, Bool_t value);
+  /** 
+   * Make a parameter 
+   * 
+   * @param name   Name of the parameter 
+   * @param value  Value of the parameter 
+   * 
+   * @return Newly allocated parameter object 
+   */
   static TObject* MakeParameter(const char* name, ULong_t value);
+  /** 
+   * Get a parameter value from an object
+   * 
+   * @param o      Object
+   * @param value  On return, the parameter value 
+   */
   static void GetParameter(TObject* o, UShort_t& value);
+  /** 
+   * Get a parameter value from an object
+   * 
+   * @param o      Object
+   * @param value  On return, the parameter value 
+   */
   static void GetParameter(TObject* o, Int_t& value);
+  /** 
+   * Get a parameter value from an object
+   * 
+   * @param o      Object
+   * @param value  On return, the parameter value 
+   */
   static void GetParameter(TObject* o, Double_t& value);
+  /** 
+   * Get a parameter value from an object
+   * 
+   * @param o      Object
+   * @param value  On return, the parameter value 
+   */
   static void GetParameter(TObject* o, Bool_t& value);
+  /** 
+   * Get a parameter value from an object
+   * 
+   * @param o      Object
+   * @param value  On return, the parameter value 
+   */
   static void GetParameter(TObject* o, ULong_t& value);
   /* @} */
 
@@ -285,349 +355,59 @@ public:
    * @{ 
    * @name Axis functions 
    */
+  /** 
+   * Make a full @f$ \mbox{IP}_z@f$ axis 
+   * 
+   * @param nCenter Number of bins in the center 
+   * 
+   * @return Newly allocated axis object. 
+   */
   static TAxis* MakeFullIpZAxis(Int_t nCenter=20);
+  /** 
+   * Make a full @f$ \mbox{IP}_z@f$ axis 
+   * 
+   * @param nCenter Number of bins in the center 
+   * @param bins    On return, the bin edges 
+   */
   static void MakeFullIpZAxis(Int_t nCenter, TArrayD& bins);
-  static void MakeLogScale(Int_t nBins, Int_t minOrder, Int_t maxOrder, TArrayD& bins);
-  static void PrintTask(const TObject& o);
-  static void PrintName(const char* name);
-  static void PrintField(const char* name, const char* value, ...);
+  /** 
+   * Make a log-scale axis.  That is, each bin has constant with when
+   * drawn on a log scale.
+   * 
+   * @param nBins      Number of bins
+   * @param minOrder   Least power of 10 
+   * @param maxOrder   Largest power of 10
+   * @param bins       On return, the bin edges
+   */
+  static void MakeLogScale(Int_t nBins, Int_t minOrder, Int_t maxOrder,
+			   TArrayD& bins);
   /* @} */
 
   //==================================================================
-#if 0 // Moved to separate classes
   /** 
    * @{ 
-   * @name Energy stragling functions 
+   * @name Printing utilities 
    */
-  //__________________________________________________________________
-  /**
-   * Number of steps to do in the Landau, Gaussiam convolution 
+  /** 
+   * Print a task 
+   * 
+   * @param o The task to print 
    */
-  static Int_t fgConvolutionSteps; // Number of convolution steps
-  //------------------------------------------------------------------
+  static void PrintTask(const TObject& o);
   /** 
-   * How many sigma's of the Gaussian in the Landau, Gaussian
-   * convolution to integrate over
+   * Print a name 
+   * 
+   * @param name The name to pring 
    */
-  static Double_t fgConvolutionNSigma; // Number of convolution sigmas 
-  //------------------------------------------------------------------
+  static void PrintName(const char* name);
   /** 
-   * Calculate the shifted Landau
-   * @f[
-   *    f'_{L}(x;\Delta,\xi) = f_L(x;\Delta+0.22278298\xi)
-   * @f]
-   *
-   * where @f$ f_{L}@f$ is the ROOT implementation of the Landau
-   * distribution (known to have @f$ \Delta_{p}=-0.22278298@f$ for
-   * @f$\Delta=0,\xi=1@f$. 
-   *
-   * @param x      Where to evaluate @f$ f'_{L}@f$ 
-   * @param delta  Most probable value 
-   * @param xi     The 'width' of the distribution 
-   *
-   * @return @f$ f'_{L}(x;\Delta,\xi) @f$
+   * Print a field 
+   * 
+   * @param name  The name of the field
+   * @param value Format for the value 
    */
-  static Double_t Landau(Double_t x, Double_t delta, Double_t xi);
-  
-  //------------------------------------------------------------------
-  /** 
-   * Calculate the value of a Landau convolved with a Gaussian 
-   * 
-   * @f[ 
-   * f(x;\Delta,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
-   *    \int_{-\infty}^{+\infty} d\Delta' f'_{L}(x;\Delta',\xi)
-   *    \exp{-\frac{(\Delta-\Delta')^2}{2\sigma'^2}}
-   * @f]
-   * 
-   * where @f$ f'_{L}@f$ is the Landau distribution, @f$ \Delta@f$ the
-   * energy loss, @f$ \xi@f$ the width of the Landau, and 
-   * @f$ \sigma'^2=\sigma^2-\sigma_n^2 @f$.  Here, @f$\sigma@f$ is the
-   * variance of the Gaussian, and @f$\sigma_n@f$ is a parameter modelling 
-   * noise in the detector.  
-   *
-   * Note that this function uses the constants fgConvolutionSteps and
-   * fgConvolutionNSigma
-   * 
-   * References: 
-   *  - <a href="http://dx.doi.org/10.1016/0168-583X(84)90472-5">Nucl.Instrum.Meth.B1:16</a>
-   *  - <a href="http://dx.doi.org/10.1103/PhysRevA.28.615">Phys.Rev.A28:615</a>
-   *  - <a href="http://root.cern.ch/root/htmldoc/tutorials/fit/langaus.C.html">ROOT implementation</a>
-   * 
-   * @param x         where to evaluate @f$ f@f$
-   * @param delta     @f$ \Delta@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
-   * @param xi        @f$ \xi@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
-   * @param sigma     @f$ \sigma@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
-   * @param sigma_n   @f$ \sigma_n@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
-   * 
-   * @return @f$ f@f$ evaluated at @f$ x@f$.  
-   */
-  static Double_t LandauGaus(Double_t x, Double_t delta, Double_t xi, 
-			     Double_t sigma, Double_t sigma_n);
-
-  //------------------------------------------------------------------
-  /** 
-   * Evaluate 
-   * @f[ 
-   *    f_i(x;\Delta,\xi,\sigma') = f(x;\Delta_i,\xi_i,\sigma_i')
-   * @f] 
-   * corresponding to @f$ i@f$ particles i.e., with the substitutions 
-   * @f{eqnarray*}{ 
-   *    \Delta    \rightarrow \Delta_i    &=& i(\Delta + \xi\log(i))\\
-   *    \xi       \rightarrow \xi_i       &=& i \xi\\
-   *    \sigma    \rightarrow \sigma_i    &=& \sqrt{i}\sigma\\
-   *    \sigma'^2 \rightarrow \sigma_i'^2 &=& \sigma_n^2 + \sigma_i^2
-   * @f} 
-   * 
-   * @param x        Where to evaluate 
-   * @param delta    @f$ \Delta@f$ 
-   * @param xi       @f$ \xi@f$ 
-   * @param sigma    @f$ \sigma@f$ 
-   * @param sigma_n  @f$ \sigma_n@f$
-   * @param i        @f$ i @f$
-   * 
-   * @return @f$ f_i @f$ evaluated
-   */  
-  static Double_t ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
-			      Double_t sigma, Double_t sigma_n, Int_t i);
-
-  //------------------------------------------------------------------
-  /** 
-   * Numerically evaluate 
-   * @f[ 
-   *    \left.\frac{\partial f_i}{\partial p_i}\right|_{x}
-   * @f] 
-   * where @f$ p_i@f$ is the @f$ i^{\mbox{th}}@f$ parameter.  The mapping 
-   * of the parameters is given by 
-   *
-   * - 0: @f$\Delta@f$ 
-   * - 1: @f$\xi@f$ 
-   * - 2: @f$\sigma@f$ 
-   * - 3: @f$\sigma_n@f$ 
-   *
-   * This is the partial derivative with respect to the parameter of
-   * the response function corresponding to @f$ i@f$ particles i.e.,
-   * with the substitutions
-   * @f[ 
-   *    \Delta    \rightarrow \Delta_i    = i(\Delta + \xi\log(i))\\
-   *    \xi       \rightarrow \xi_i       = i \xi\\
-   *    \sigma    \rightarrow \sigma_i    = \sqrt{i}\sigma\\
-   *    \sigma'^2 \rightarrow \sigma_i'^2 = \sigma_n^2 + \sigma_i^2
-   * @f] 
-   * 
-   * @param x        Where to evaluate 
-   * @param ipar     Parameter number 
-   * @param dp       @f$ \epsilon\delta p_i@f$ for some value of @f$\epsilon@f$
-   * @param delta    @f$ \Delta@f$ 
-   * @param xi       @f$ \xi@f$ 
-   * @param sigma    @f$ \sigma@f$ 
-   * @param sigma_n  @f$ \sigma_n@f$
-   * @param i        @f$ i@f$
-   * 
-   * @return @f$ f_i@f$ evaluated
-   */  
-  static Double_t IdLandauGausdPar(Double_t x, UShort_t ipar, Double_t dp,
-				   Double_t delta, Double_t xi, 
-				   Double_t sigma, Double_t sigma_n, Int_t i);
-
-  //------------------------------------------------------------------
-  /** 
-   * Evaluate 
-   * @f[ 
-   *   f_N(x;\Delta,\xi,\sigma') = \sum_{i=1}^N a_i f_i(x;\Delta,\xi,\sigma'a)
-   * @f] 
-   * 
-   * where @f$ f(x;\Delta,\xi,\sigma')@f$ is the convolution of a
-   * Landau with a Gaussian (see LandauGaus).  Note that 
-   * @f$ a_1 = 1@f$, @f$\Delta_i = i(\Delta_1 + \xi\log(i))@f$, 
-   * @f$\xi_i=i\xi_1@f$, and @f$\sigma_i'^2 = \sigma_n^2 + i\sigma_1^2@f$. 
-   *  
-   * References: 
-   *  - <a href="http://dx.doi.org/10.1016/0168-583X(84)90472-5">Nucl.Instrum.Meth.B1:16</a>
-   *  - <a href="http://dx.doi.org/10.1103/PhysRevA.28.615">Phys.Rev.A28:615</a>
-   *  - <a href="http://root.cern.ch/root/htmldoc/tutorials/fit/langaus.C.html">ROOT implementation</a>
-   * 
-   * @param x        Where to evaluate @f$ f_N@f$
-   * @param delta    @f$ \Delta_1@f$ 
-   * @param xi       @f$ \xi_1@f$
-   * @param sigma    @f$ \sigma_1@f$ 
-   * @param sigma_n  @f$ \sigma_n@f$ 
-   * @param n        @f$ N@f$ in the sum above.
-   * @param a        Array of size @f$ N-1@f$ of the weights @f$ a_i@f$ for 
-   *                 @f$ i > 1@f$ 
-   * 
-   * @return @f$ f_N(x;\Delta,\xi,\sigma')@f$ 
-   */
-  static Double_t NLandauGaus(Double_t x, Double_t delta, Double_t xi, 
-			      Double_t sigma, Double_t sigma_n, Int_t n, 
-			      const Double_t* a);
-  /** 
-   * Generate a TF1 object of @f$ f_I@f$ 
-   * 
-   * @param c        Constant
-   * @param delta    @f$ \Delta@f$ 
-   * @param xi       @f$ \xi_1@f$	       
-   * @param sigma    @f$ \sigma_1@f$ 	       
-   * @param sigma_n  @f$ \sigma_n@f$ 	       
-   * @param i 	     @f$ i@f$ - the number of particles
-   * @param xmin     Least value of range
-   * @param xmax     Largest value of range
-   * 
-   * @return Newly allocated TF1 object
-   */
-  static TF1* MakeILandauGaus(Double_t c, 
-			      Double_t delta, Double_t xi, 
-			      Double_t sigma, Double_t sigma_n,
-			      Int_t    i, 
-			      Double_t xmin,  Double_t  xmax);
-  /** 
-   * Generate a TF1 object of @f$ f_N@f$ 
-   * 
-   * @param c         Constant			       
-   * @param delta     @f$ \Delta@f$ 		       
-   * @param xi 	      @f$ \xi_1@f$	       	       
-   * @param sigma     @f$ \sigma_1@f$ 	       	       
-   * @param sigma_n   @f$ \sigma_n@f$ 	       	       
-   * @param n 	      @f$ N@f$ - how many particles to sum to
-   * @param a         Array of size @f$ N-1@f$ of the weights @f$ a_i@f$ for 
-   *                  @f$ i > 1@f$ 
-   * @param xmin      Least value of range  
-   * @param xmax      Largest value of range
-   * 
-   * @return Newly allocated TF1 object
-   */
-  static TF1* MakeNLandauGaus(Double_t c, 
-			      Double_t delta, Double_t  xi, 
-			      Double_t sigma, Double_t  sigma_n,
-			      Int_t    n,     const Double_t* a, 
-			      Double_t xmin,  Double_t  xmax);
-			    			    
-  //__________________________________________________________________
-  /** 
-   * Structure to do fits to the energy loss spectrum 
-   * 
-   * @ingroup pwglf_forward 
-   */
-  struct ELossFitter 
-  {
-    enum { 
-      kC     = 0,
-      kDelta, 
-      kXi, 
-      kSigma, 
-      kSigmaN, 
-      kN, 
-      kA
-    };
-    /** 
-     * Constructor 
-     * 
-     * @param lowCut     Lower cut of spectrum - data below this cuts is ignored
-     * @param maxRange   Maximum range to fit to 
-     * @param minusBins  The number of bins below maximum to use 
-     */
-    ELossFitter(Double_t lowCut, Double_t maxRange, UShort_t minusBins); 
-    /** 
-     * Destructor
-     * 
-     */
-    virtual ~ELossFitter();
-    void SetDebug(Bool_t debug=true) { fDebug = debug; }
-    /** 
-     * Clear internal arrays
-     * 
-     */
-    void Clear();
-    /** 
-     * Fit a 1-particle signal to the passed energy loss distribution 
-     * 
-     * Note that this function clears the internal arrays first 
-     *
-     * @param dist    Data to fit the function to 
-     * @param sigman If larger than zero, the initial guess of the
-     *               detector induced noise. If zero or less, then this 
-     *               parameter is ignored in the fit (fixed at 0)
-     * 
-     * @return The function fitted to the data 
-     */
-    TF1* Fit1Particle(TH1* dist, Double_t sigman=-1);
-    /** 
-     * Fit a N-particle signal to the passed energy loss distribution 
-     *
-     * If there's no 1-particle fit present, it does that first 
-     *
-     * @param dist   Data to fit the function to 
-     * @param n      Number of particle signals to fit 
-     * @param sigman If larger than zero, the initial guess of the
-     *               detector induced noise. If zero or less, then this 
-     *               parameter is ignored in the fit (fixed at 0)
-     * 
-     * @return The function fitted to the data 
-     */
-    TF1* FitNParticle(TH1* dist, UShort_t n, Double_t sigman=-1);
-    /** 
-     * Fit a composite distribution of energy loss from both primaries
-     * and secondaries
-     * 
-     * @param dist   Distribution 
-     * @param sigman If larger than zero, the initial guess of the
-     *                detector included noise.  If zero or less this
-     *                parameter is fixed to 0.
-     * 
-     * @return Function fitted to the data 
-     */
-    TF1* FitComposite(TH1* dist, Double_t sigman);
-    /**
-     * Get Lower cut on data 
-     *
-     * @return Lower cut on data 
-     */
-    Double_t GetLowCut() const { return fLowCut; }
-    /**
-     * Get Maximum range to fit 
-     *
-     * @return Maximum range to fit 
-     */
-    Double_t GetMaxRange() const { return fMaxRange; }
-    /**
-     * Get Number of bins from maximum to fit 1st peak
-     *
-     * @return Number of bins from maximum to fit 1st peak
-     */
-    UShort_t GetMinusBins() const { return fMinusBins; }
-    /**
-     * Get Array of fit results 
-     *
-     * @return Array of fit results 
-     */
-    const TObjArray& GetFitResults() const { return fFitResults; }
-    /** 
-     * Get Array of fit results  
-     *
-     * @return Array of fit results 
-     */
-    TObjArray& GetFitResults() { return fFitResults; }
-    /**
-     * Get Array of functions 
-     *
-     * @return Array of functions 
-     */
-    const TObjArray& GetFunctions() const { return fFunctions; }
-    /** 
-     * Get Array of functions  
-     *
-     * @return Array of functions 
-     */
-    TObjArray& GetFunctions() { return fFunctions; }
-  private:
-    const Double_t fLowCut;     // Lower cut on data 
-    const Double_t fMaxRange;   // Maximum range to fit 
-    const UShort_t fMinusBins;  // Number of bins from maximum to fit 1st peak
-    TObjArray fFitResults;      // Array of fit results 
-    TObjArray fFunctions;       // Array of functions 
-    Bool_t    fDebug;
-  };
+  static void PrintField(const char* name, const char* value, ...);
   /* @} */
-#endif      
 
   //==================================================================
   /** 
@@ -643,8 +423,6 @@ public:
   {	
     /** 
      * Constructor 
-     * 
-     * 
      */
     Histos() : fFMD1i(0), fFMD2i(0), fFMD2o(0), fFMD3i(0), fFMD3o(0) {}
     /** 
@@ -712,7 +490,6 @@ public:
      * @param option Not used 
      */
     void  Clear(Option_t* option="");
-    // const TH2D* Get(UShort_t d, Char_t r) const;
     /** 
      * Get the histogram for a particular detector,ring
      * 
@@ -741,11 +518,10 @@ public:
   {
     /** 
      * Constructor
-     * 
      */
     RingHistos() : fDet(0), fRing('\0'), fName(""), fkNSector(0), fkNStrip(0) {}
     /** 
-     * 
+     * Constructor
      * 
      * @param d Detector
      * @param r Ring 
@@ -813,7 +589,6 @@ public:
     TH1* GetOutputHist(const TList* d, const char* name) const;
     /** 
      * Get the colour of this ring 
-     * 
      * 
      * @return 
      */
