@@ -16,8 +16,8 @@
 // Flow task class for the ALICE HFE group
 //
 //
-#ifndef ALIANALYSISTASKFLOWTPCTOFEPSP_H
-#define ALIANALYSISTASKFLOWTPCTOFEPSP_H
+#ifndef ALIANALYSISTASKFLOWTPCTOFEPSPTEST_H
+#define ALIANALYSISTASKFLOWTPCTOFEPSPTEST_H
 
 #ifndef ROOT_TArrayD
 #include <TArrayD.h>
@@ -148,6 +148,11 @@ public:
 
   void  SetPileUpCut(Bool_t cut=kTRUE) { fPileUpCut=cut; }
 
+  Bool_t IsFromHijing(Int_t Index);
+  Int_t  GetPrimary(Int_t id);
+  void   GetMesonKine(Int_t centrality);
+  void   SelectGenerator(Int_t selectGenerator) { fSelectGenerator = selectGenerator; };
+
   
 private:
   TList     *fListHist;         //! TH list
@@ -160,6 +165,7 @@ private:
   Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
   Double_t fBinLimit[kBgPtBins+1];      // Electron pt bin edges
   AliHFEmcQA *fMCQA;                    //! MC QA
+  Int_t     fSelectGenerator;           // For photonic background, select type of generators -1 no selection, 0 Hijing, 1 the rest
   
   Bool_t    fVZEROEventPlane;  // Use Event Planes from VZERO
   Bool_t    fVZEROEventPlaneA; // Use Event Planes from VZERO A
@@ -276,7 +282,7 @@ private:
   TTreeSRedirector  *fDebugStreamer;               //!Debug streamer
     
   
-  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 4); // analysisclass
+  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 5); // analysisclass
 };
 
 #endif

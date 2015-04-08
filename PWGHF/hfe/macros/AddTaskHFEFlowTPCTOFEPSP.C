@@ -21,7 +21,8 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Bool_t useMC=kFALSE,
 					  Double_t ITSclustersback=0,
 					  Double_t minTPCback=-2.0,
 					  Double_t maxTPCback=5.0,
-					  Int_t wei=-1){
+					  Int_t wei=-1,
+					  Int_t selectgenerator=-1){
 
   //
   // Define TPC cut for 2011 data
@@ -89,7 +90,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Bool_t useMC=kFALSE,
 
   
   // Name
-  TString appendixx(TString::Format("t%df%ds%dp%dM%dTPC%dr%dp%dITS%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%der%dbin%di%dt%dt%d%dW%d",(Int_t)trigger,aodfilter,(Int_t)scalarProduct,(Int_t)cutPileup,(Int_t)variableM,tpcCls,(Int_t)tpcClsr,tpcClspid,itsCls,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)(etarange*0.1),(Int_t)withetacorrection,(Int_t)withmultcorrection,(Int_t)ITSclustersback,(Int_t)(minTPCback*10.0),(Int_t)(maxTPCback*10.0),wei));
+  TString appendixx(TString::Format("t%df%ds%dp%dM%dTPC%dr%dp%dITS%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%der%dbin%di%dt%dt%d%dW%dSG%d",(Int_t)trigger,aodfilter,(Int_t)scalarProduct,(Int_t)cutPileup,(Int_t)variableM,tpcCls,(Int_t)tpcClsr,tpcClspid,itsCls,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)(etarange*0.1),(Int_t)withetacorrection,(Int_t)withmultcorrection,(Int_t)ITSclustersback,(Int_t)(minTPCback*10.0),(Int_t)(maxTPCback*10.0),wei,selectgenerator));
   //TString appendixx("tpctofv2");
   
   //printf("appendixx %s\n",appendixx.Data());
@@ -104,7 +105,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Bool_t useMC=kFALSE,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   //printf("Create the task\n");
-  AliAnalysisTaskFlowTPCTOFEPSP *task = ConfigHFE_FLOW_TOFTPC(useMC,appendixx,trigger,aodfilter,scalarProduct,cutPileup,variableM,tpcCls, tpcClsr, tpcClspid, itsCls, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,withetacorrection,withmultcorrection,ITSclustersback,minTPCback,maxTPCback,wei);  
+  AliAnalysisTaskFlowTPCTOFEPSP *task = ConfigHFE_FLOW_TOFTPC(useMC,appendixx,trigger,aodfilter,scalarProduct,cutPileup,variableM,tpcCls, tpcClsr, tpcClspid, itsCls, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,withetacorrection,withmultcorrection,ITSclustersback,minTPCback,maxTPCback,wei,selectgenerator);  
   
   task->SetNbBinsCentralityQCumulant(4);
   //task->SetBinCentralityLess(0,0.0);
