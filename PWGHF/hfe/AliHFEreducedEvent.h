@@ -131,6 +131,16 @@ class AliHFEreducedEvent : public TObject{
   void SetTRDSETrigger() { SETBIT(fTrigger, kTRDSE); }
   void SetTRDDQTrigger() { SETBIT(fTrigger, kTRDDQ); }
   void SetINTTrigger() { SETBIT(fTrigger, kINTTRG); }
+  
+  void SetV0PlanePhi(Float_t phi){fV0PlanePhi=phi;}
+  void SetV0APlanePhi(Float_t phi){fV0APlanePhi=phi;}
+  void SetV0CPlanePhi(Float_t phi){fV0CPlanePhi=phi;}
+  void SetTPCPlanePhi(Float_t phi){fTPCPlanePhi=phi;}
+  
+  Float_t GetV0PlanePhi() const {return fV0PlanePhi;}
+  Float_t GetV0APlanePhi() const {return fV0APlanePhi;}
+  Float_t GetV0CPlanePhi() const {return fV0CPlanePhi;}
+  Float_t GetTPCPlanePhi() const {return fTPCPlanePhi;}
 
   void SetV0Multiplicity(Float_t v0A, Float_t v0C) {
     fV0Multiplicity[0] = v0A;
@@ -138,6 +148,9 @@ class AliHFEreducedEvent : public TObject{
   }
   inline void SetZDCEnergy(Float_t zna, Float_t znc, Float_t zpa, Float_t zpc);
   void SetSPDMultiplicity(Int_t mult) { fSPDMultiplicity = mult; }
+  
+  
+  
   
  private:
   typedef enum{
@@ -170,8 +183,13 @@ class AliHFEreducedEvent : public TObject{
   Float_t  fZDCEnergy[4];       // ZDC Energy (n,p)
   Int_t    fSPDMultiplicity;    // SPD tracklet multiplicity
   Bool_t   fPileupFlag;         // Flag for Pileup event
+  Float_t fV0PlanePhi;          // V0 Event Plane
+  Float_t fV0APlanePhi;         // V0 Event Plane
+  Float_t fV0CPlanePhi;         // V0 Event Plane
+  Float_t fTPCPlanePhi;         // TPC Event Plane
   
-  ClassDef(AliHFEreducedEvent, 5)
+  
+  ClassDef(AliHFEreducedEvent, 6)
 };
 
 //____________________________________________________________

@@ -80,6 +80,7 @@ AliHFECorrectSpectrumBase(name),
   fIPanaHadronBgSubtract(kFALSE),
   fIPanaCharmBgSubtract(kFALSE),
   fIPanaNonHFEBgSubtract(kFALSE),
+  fIPanaProtonBgSubtract(kFALSE),
   fIPParameterizedEff(kFALSE),
   fNonHFEsyst(0),
   fBeauty2ndMethod(kFALSE),
@@ -104,7 +105,9 @@ AliHFECorrectSpectrumBase(name),
   fEtaSyst(kTRUE),
   fDebugLevel(0),
   fWriteToFile(kFALSE),
-  fUnfoldBG(kFALSE)
+  fUnfoldBG(kFALSE),
+  fProtonhist(NULL)
+  
 {
   //
   // Default constructor
@@ -116,6 +119,8 @@ AliHFECorrectSpectrumBase(name),
     fLowBoundaryCentralityBinAtTheEnd[k] = 0;
     fHighBoundaryCentralityBinAtTheEnd[k] = 0;
   }
+
+  fProtonhist = 0;	
   fNMCbgEvents = 0;  
   fEfficiencyTOFPIDD = 0;
   fEfficiencyesdTOFPIDD = 0;
@@ -158,6 +163,7 @@ AliHFEBeautySpectrum::AliHFEBeautySpectrum(const AliHFEBeautySpectrum &ref):
   fIPanaHadronBgSubtract(ref.fIPanaHadronBgSubtract),
   fIPanaCharmBgSubtract(ref.fIPanaCharmBgSubtract),
   fIPanaNonHFEBgSubtract(ref.fIPanaNonHFEBgSubtract),
+  fIPanaProtonBgSubtract(ref.fIPanaProtonBgSubtract),
   fIPParameterizedEff(ref.fIPParameterizedEff),
   fNonHFEsyst(ref.fNonHFEsyst),
   fBeauty2ndMethod(ref.fBeauty2ndMethod),
@@ -216,6 +222,7 @@ void AliHFEBeautySpectrum::Copy(TObject &o) const {
   target.fIPanaHadronBgSubtract = fIPanaHadronBgSubtract;
   target.fIPanaCharmBgSubtract = fIPanaCharmBgSubtract;
   target.fIPanaNonHFEBgSubtract = fIPanaNonHFEBgSubtract;
+  target.fIPanaProtonBgSubtract = fIPanaProtonBgSubtract;
   target.fIPParameterizedEff = fIPParameterizedEff;
   target.fNonHFEsyst = fNonHFEsyst;
   target.fBeauty2ndMethod = fBeauty2ndMethod;
@@ -531,7 +538,8 @@ Bool_t AliHFEBeautySpectrum::Correct(Bool_t subtractcontamination, Bool_t /*subt
     fEfficiencyBeautySigD->SetTitle("IPEfficiencyForBeautySig");
     fEfficiencyBeautySigD->SetName("IPEfficiencyForBeautySig");
     fEfficiencyBeautySigD->Write();
-    fCharmEff->SetTitle("IPEfficiencyForCharm");
+
+fCharmEff->SetTitle("IPEfficiencyForCharm");
     fCharmEff->SetName("IPEfficiencyForCharm");
     fCharmEff->Write();
     fBeautyEff->SetTitle("IPEfficiencyForBeauty");
@@ -556,7 +564,6 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
   // Apply background subtraction for IP analysis
   //
   
-  Int_t nbins=1;
   printf("subtracting background\n");
   // Raw spectrum
   AliCFContainer *dataContainer = GetContainer(kDataContainer);
@@ -577,7 +584,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
     return NULL;
   }
     
-  Int_t stepbackground = 1;
+  Int_t stepbackground = 2;
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("ContaminationGrid","ContaminationGrid",*backgroundContainer,stepbackground);
   
   const Int_t bgPlots = 8;
@@ -585,28 +592,21 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
   TH1D *hadron = 0x0;
   TH1D *charm = 0x0;
   TH1D *nonHFE[bgPlots];
+  TH1D *proton = 0x0;
   TH1D *subtracted = 0x0;
   
   THnSparseF* sparseIncElec = (THnSparseF *) dataspectrumbeforesubstraction->GetGrid();  
   incElec = (TH1D *) sparseIncElec->Projection(0);
   AliHFEtools::NormaliseBinWidth(incElec);
 
-  TH1D* htemp;
-  Int_t* bins=new Int_t[2];
-
   if(fIPanaHadronBgSubtract){
     // Hadron background
     printf("Hadron background for IP analysis subtracted!\n");
-    htemp  = (TH1D *) fHadronEffbyIPcut->Projection(0);
-    bins[0]=htemp->GetNbinsX();
     
-    AliCFDataGrid *hbgContainer = new AliCFDataGrid("hbgContainer","hadron bg after IP cut",nbins,bins);
-    hbgContainer->SetGrid(fHadronEffbyIPcut);
-    backgroundGrid->Multiply(hbgContainer,1);
     // subtract hadron contamination
     spectrumSubtracted->Add(backgroundGrid,-1.0);
     // draw raw hadron bg spectra     
-    THnSparseF* sparseHbg = (THnSparseF *) hbgContainer->GetGrid();
+    THnSparseF* sparseHbg = (THnSparseF *) backgroundGrid->GetGrid();
     hadron = (TH1D *) sparseHbg->Projection(0);
     AliHFEtools::NormaliseBinWidth(hadron);
   }
@@ -639,6 +639,16 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
       }
       if(!(fNonHFEsyst && (fBeamType == 1)))break;
     } 
+  }
+  
+ if(fIPanaProtonBgSubtract){
+   // Proton background
+	 printf("Proton background for IP analysis subtracted!\n");
+	 AliCFDataGrid *protonbgContainer = (AliCFDataGrid *) GetProtonBackground(dataspectrumbeforesubstraction);
+	 spectrumSubtracted->Add(protonbgContainer,-1.0);
+     THnSparseF *sparseProtonbg = (THnSparseF *) protonbgContainer->GetGrid();
+	 proton = (TH1D *) sparseProtonbg->Projection(0);
+	 AliHFEtools::NormaliseBinWidth(proton);
   }
 
   TLegend *lRaw = new TLegend(0.55,0.55,0.85,0.85);
@@ -685,6 +695,14 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
     }
   }
 
+  if(fIPanaProtonBgSubtract){
+	proton->Draw("samep");
+	proton->SetMarkerColor(46);
+	proton->SetMarkerStyle(20);
+	proton->GetXaxis()->SetRangeUser(0.4,8.0);
+	lRaw->AddEntry(proton,"proton contamination");
+  }
+
   THnSparseF* sparseSubtracted = (THnSparseF *) spectrumSubtracted->GetGrid();
   subtracted = (TH1D *) sparseSubtracted->Projection(0);
   AliHFEtools::NormaliseBinWidth(subtracted);
@@ -692,8 +710,6 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
   subtracted->SetMarkerStyle(24);
   lRaw->AddEntry(subtracted,"subtracted electron spectrum");
   lRaw->Draw("SAME");
- 
-  delete[] bins; 
 
   TH1D *measuredTH1background = (TH1D *) backgroundGrid->Project(0);
   AliHFEtools::NormaliseBinWidth(measuredTH1background);
@@ -739,7 +755,8 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
       if(source == 0)
         for(Int_t iSource = 1; iSource < kElecBgSources-3; iSource++){
           if(iSource == 1)
-            backgroundContainer->Add(fNonHFESourceContainer[iSource][0],1.41);//correction for the eta Dalitz decay branching ratio in PYTHIA
+            backgroundContainer->Add(fNonHFESourceContainer[iSource][0],1.);//correction for the eta Dalitz decay branching ratio in PYTHIA
+            //backgroundContainer->Add(fNonHFESourceContainer[iSource][0],1.41);//correction for the eta Dalitz decay branching ratio in PYTHIA
           else
             backgroundContainer->Add(fNonHFESourceContainer[iSource][0]);   
         }
@@ -761,16 +778,17 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("backgroundGrid","backgroundGrid",*backgroundContainer,stepbackground);
  
   Double_t rangelow = 1.;
-  Double_t rangeup = 6.;
+  //Double_t rangeup = 6.;
   if(decay == 1) rangelow = 0.9;
 
 
-  const Char_t *dmode[2]={"Conversions","Dalitz decays"};
-  TF1 *fitHagedorn = new TF1("fitHagedorn", "[0]/TMath::Power(([1]+x/[2]), [3])", rangelow, rangeup);
+  //const Char_t *dmode[2]={"Conversions","Dalitz decays"};
+//  TF1 *fitHagedorn = new TF1("fitHagedorn", "[0]/TMath::Power(([1]+x/[2]), [3])", rangelow, rangeup);
   fNonHFEbg = 0x0;
   TH1D *h1 = (TH1D*)backgroundGrid->Project(0);
   TAxis *axis = h1->GetXaxis();
   AliHFEtools::NormaliseBinWidth(h1);
+/*
   if(source == 0){
     fitHagedorn->SetParameter(0, 0.15);
     fitHagedorn->SetParameter(1, 0.09);
@@ -783,6 +801,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
     // h1->Draw();
     if(!(fNonHFEbg = h1->GetFunction("fitHagedorn")))printf("electron background fit failed for %s\n",dmode[decay]);
   }
+*/
   
   Int_t *nBinpp=new Int_t[1];
   Int_t *binspp=new Int_t[1];
@@ -952,6 +971,49 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetCharmBackground(){
   if(fUnfoldBG) UnfoldBG(charmBackgroundGrid);
 
   return charmBackgroundGrid;
+}
+//___________________________________________________________minjung 140115
+AliCFDataGrid* AliHFEBeautySpectrum::GetProtonBackground(AliCFDataGrid* const bgsubpectrum){
+  //
+  // calculate proton background; when using centrality binning 2: centBin = 0 for 0-20%, centBin = 5 for 40-80%
+  //
+
+  Int_t nDim = 1;
+  
+  AliCFDataGrid *dataGrid = 0x0;
+  if(bgsubpectrum) {
+    dataGrid = bgsubpectrum;
+  }
+  else {
+
+    AliCFContainer *dataContainer = GetContainer(kDataContainer);
+    if(!dataContainer){
+      AliError("Data Container not available");
+      return NULL;
+    }
+
+    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainer, fStepData);
+  }
+  
+  AliCFDataGrid *protonBackgroundGrid = (AliCFDataGrid *) dataGrid->Clone();
+  TH1D *protonafteripcut = (TH1D *) protonBackgroundGrid->Project(0);
+  Int_t* bins=new Int_t[2];
+  bins[0]=protonafteripcut->GetNbinsX();
+  
+  AliCFDataGrid *fractionProtonContainer = new AliCFDataGrid("fractionProtonContainer","fractionProtonContainer",nDim,bins);
+  fractionProtonContainer->SetGrid(GetProtonFraction()); // get fraction of proton/inc_elec.
+ // TH1D* protonfraction = (TH1D*)fractionProtonContainer->Project(0);
+  protonBackgroundGrid->Multiply(fractionProtonContainer,1.);
+  protonafteripcut = (TH1D*)protonBackgroundGrid->Project(0);
+  
+  AliHFEtools::NormaliseBinWidth(protonafteripcut);
+  protonafteripcut->SetMarkerStyle(24);
+  protonafteripcut->Draw("samep");
+  protonafteripcut->SetName(Form("proton"));
+  delete[] bins;
+  
+  return protonBackgroundGrid;
+
 }
 //____________________________________________________________
 AliCFDataGrid *AliHFEBeautySpectrum::CorrectParametrizedEfficiency(AliCFDataGrid* const bgsubpectrum){  
@@ -1221,10 +1283,20 @@ THnSparse* AliHFEBeautySpectrum::GetCharmWeights(Int_t centBin){
   fWeightCharm = new THnSparseF("weightHisto", "weighting factor; pt[GeV/c]", nDimpp, nBinpp);
   fWeightCharm->SetBinEdges(0, ptbinning1);
  
+//Weighting factor for pPb
+
+//new with final D meson xsection
+//center================
+  Double_t weightpp[kSignalPtBins]={0.076918, 0.074284, 0.070318, 0.068352, 0.070161, 0.075252, 0.081308, 0.085685, 0.088932, 0.092923, 0.094794, 0.093865, 0.093933, 0.092228, 0.087360, 0.084477, 0.077495, 0.072373, 0.067053, 0.059029, 0.052839, 0.047945, 0.039748, 0.034803, 0.030937, 0.028636, 0.026184, 0.024246, 0.022247, 0.021322, 0.017006, 0.013970, 0.020426, 0.022797, 0.010383};
+//high================
+//Double_t weightpp[kSignalPtBins]={0.097848, 0.096106, 0.091761, 0.089068, 0.090737, 0.096887, 0.104093, 0.108429, 0.111577, 0.115395, 0.116458, 0.113762, 0.112186, 0.108589, 0.101590, 0.096459, 0.086998, 0.080778, 0.074774, 0.065818, 0.058941, 0.053499, 0.044446, 0.038985, 0.034739, 0.032273, 0.029610, 0.027492, 0.025413, 0.024483, 0.019856, 0.016476, 0.024272, 0.027733, 0.014309};
+//low================
+//Double_t weightpp[kSignalPtBins]={0.055401, 0.052416, 0.049124, 0.047904, 0.049553, 0.053453, 0.058153, 0.062018, 0.064974, 0.068678, 0.070809, 0.071094, 0.072229, 0.071888, 0.069087, 0.068072, 0.063746, 0.060318, 0.056306, 0.049923, 0.044913, 0.040906, 0.034038, 0.029640, 0.026281, 0.024163, 0.021763, 0.020033, 0.017504, 0.015812, 0.010224, 0.006689, 0.005701, 0.001853, -0.000405};
+
   // //if(fBeamType == 0){// Weighting factor for pp
   //Double_t weightpp[kSignalPtBins]={0.859260, 0.872552, 0.847475, 0.823631, 0.839386, 0.874024, 0.916755, 0.942801, 0.965856, 0.933905, 0.933414, 0.931936, 0.847826, 0.810902, 0.796608, 0.727002, 0.659227, 0.583610, 0.549956, 0.512633, 0.472254, 0.412364, 0.353191, 0.319145, 0.305412, 0.290334, 0.269863, 0.254646, 0.230245, 0.200859, 0.275953, 0.276271, 0.227332, 0.197004, 0.474385};
 //TPC+TOF standard cut 4800
-  Double_t weightpp[kSignalPtBins]={0.050326, 0.045826, 0.042043, 0.039641, 0.039872, 0.041796, 0.044320, 0.046273, 0.047376, 0.047657, 0.047973, 0.048307, 0.045325, 0.044067, 0.043367, 0.040417, 0.037048, 0.033695, 0.032192, 0.029270, 0.027270, 0.024451, 0.020846, 0.019032, 0.018210, 0.017554, 0.015604, 0.015194, 0.013542, 0.013447, 0.015160, 0.015507, 0.014989, 0.012533, 0.025603}; 
+  //Double_t weightpp[kSignalPtBins]={0.050326, 0.045826, 0.042043, 0.039641, 0.039872, 0.041796, 0.044320, 0.046273, 0.047376, 0.047657, 0.047973, 0.048307, 0.045325, 0.044067, 0.043367, 0.040417, 0.037048, 0.033695, 0.032192, 0.029270, 0.027270, 0.024451, 0.020846, 0.019032, 0.018210, 0.017554, 0.015604, 0.015194, 0.013542, 0.013447, 0.015160, 0.015507, 0.014989, 0.012533, 0.025603}; 
   //}
   //else{
   //if(centBin == 0){
@@ -1277,6 +1349,70 @@ THnSparse* AliHFEBeautySpectrum::GetCharmWeights(Int_t centBin){
   delete[] binfill;
 
   return fWeightCharm;
+}
+//____________________________________________________________________________mjkim 140115
+THnSparse* AliHFEBeautySpectrum::GetProtonFraction(){
+  const Int_t nDimpp=1;
+  Int_t nBinpp[nDimpp] = {kSignalPtBins};
+  Double_t ptbinning1[kSignalPtBins+1] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+  Int_t looppt=nBinpp[0];
+  fProtonFraction = new THnSparseF("fractionHisto", "fraction; pt[GeV/c]", nDimpp, nBinpp);
+  fProtonFraction->SetBinEdges(0, ptbinning1);
+
+  Double_t fraction[kSignalPtBins];
+  Double_t error[kSignalPtBins];
+  for(Int_t ipt = 0; ipt < kSignalPtBins; ipt++){
+	  fraction[ipt] = fProtonhist->GetBinContent(ipt);
+	  error[ipt] = fProtonhist->GetBinError(ipt);
+  }
+/*
+  if(kprotonsys==1){
+    for(Int_t ipt = 0; ipt < kSignalPtBins; ipt++){
+	 fraction[ipt] = fractionpPb[ipt]+syserrpPb[ipt]/2.;
+  }
+  }
+  if(kprotonsys==-1){
+   for(Int_t ipt = 0; ipt < kSignalPtBins; ipt++){
+	fraction[ipt] = fractionpPb[ipt]-syserrpPb[ipt]/2.;
+  }
+  }
+  Double_t error[kSignalPtBins];
+  for(Int_t ipt = 0; ipt < kSignalPtBins; ipt++){
+	  error[ipt] = errfpPb[ipt];
+  }
+*/
+  //points
+  Double_t pt[1];
+  Double_t contents[2];
+  for(int i=0; i<looppt; i++){
+	  pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
+	  contents[0]=pt[0];
+	  fProtonFraction->Fill(contents,fraction[i]);
+  }
+
+  Int_t nDimSparse = fProtonFraction->GetNdimensions();
+  Int_t* binsvar = new Int_t[nDimSparse]; // number of bins for each variable
+  Long_t nBins = 1; // used to calculate the total number of bins in the THnSparse
+	  
+  for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+	binsvar[iVar] = fProtonFraction->GetAxis(iVar)->GetNbins();
+	nBins *= binsvar[iVar];
+  }
+  Int_t *binfill = new Int_t[nDimSparse]; // bin to fill the THnSparse (holding the bin coordinates)
+  // loop that sets 0 error in each bin
+  for (Long_t iBin=0; iBin<nBins; iBin++) {
+	  Long_t bintmp = iBin ;
+	  for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+		  binfill[iVar] = 1 + bintmp % binsvar[iVar] ;
+		  bintmp /= binsvar[iVar] ;
+	  }
+  fProtonFraction->SetBinError(binfill,error[iBin]); // put 0 everywhere
+  }
+  delete[] binsvar;
+  delete[] binfill;
+  
+  return fProtonFraction;
+
 }
 //____________________________________________________________________________
 void AliHFEBeautySpectrum::SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions){
@@ -2243,4 +2379,13 @@ void AliHFEBeautySpectrum::UnfoldBG(AliCFDataGrid* const bgsubpectrum){
 
     file->Close();
   }
+}
+//_______________________________________________________________________
+TH1F* AliHFEBeautySpectrum::SetProtonContamation(const char *file,int isTOF,int TOFlevel, int isTPC, int TPClow, int TPChigh, int iplevel,int syslevel){
+  
+  TFile *fileProton = TFile::Open(file);
+  fProtonhist = new TH1F(*static_cast<TH1F*>(fileProton->Get(Form("TOF_%i_%i_TPC_%i_%i_%i_ip_%i_sys_%i",isTOF,TOFlevel,isTPC,TPClow,TPChigh,iplevel,syslevel))));
+  std::cout<<Form("TOF_%i_%i_TPC_%i_%i_%i_ip_%i_sys_%i",isTOF,TOFlevel,isTPC,TPClow,TPChigh,iplevel,syslevel)<<std::endl;
+
+  return fProtonhist;
 }

@@ -43,9 +43,11 @@ TObject(),
   fMCPhi(0.),
   fMCPDG(0),
   fMCMotherPdg(0),
+  fMCGrandMotherPdg(0),
   fMCSignal(kFALSE),
   fMCSource(5),
   fMCEleSource(0),
+  fMCEleSourcePt(0),
   fTrackStatus(8),
   fNclustersITS(0),
   fNclustersTPC(0),
@@ -68,9 +70,11 @@ TObject(),
   fTPCsigmaEl(-1000.),
   fTPCsigmaElCorrected(-1000.),
   fTOFsigmaEl(-1000.),
+  fTOFsigmaP(-1000.),
   fTOFsigmaDeuteron(-1000.),
   fTOFmismatchProb(0.),
   fITSsigmaEl(-1000.),
+  fITSsigmaP(-1000.),
   fEoverP(-1.),
   fEMCALsigmaEl(-1000.),
   fV0PID(kV0undef),
@@ -104,9 +108,11 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fMCPhi(ref.fMCPhi),
   fMCPDG(ref.fMCPDG),
   fMCMotherPdg(ref.fMCMotherPdg),
+  fMCGrandMotherPdg(ref.fMCGrandMotherPdg),
   fMCSignal(ref.fMCSignal),
   fMCSource(ref.fMCSource),
   fMCEleSource(ref.fMCEleSource),
+  fMCEleSourcePt(ref.fMCEleSourcePt),
   fTrackStatus(ref.fTrackStatus),
   fNclustersITS(ref.fNclustersITS),
   fNclustersTPC(ref.fNclustersTPC),
@@ -129,9 +135,11 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fTPCsigmaEl(ref.fTPCsigmaEl),
   fTPCsigmaElCorrected(ref.fTPCsigmaElCorrected),
   fTOFsigmaEl(ref.fTOFsigmaEl),
+  fTOFsigmaP(ref.fTOFsigmaP),
   fTOFsigmaDeuteron(ref.fTOFsigmaDeuteron),
   fTOFmismatchProb(ref.fTOFmismatchProb),
   fITSsigmaEl(ref.fITSsigmaEl),
+  fITSsigmaP(ref.fITSsigmaP),
   fEoverP(ref.fEoverP),
   fEMCALsigmaEl(ref.fEMCALsigmaEl),
   fV0PID(ref.fV0PID),
@@ -168,9 +176,11 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     fMCPhi = ref.fMCPhi;
     fMCPDG = ref.fMCPDG;
     fMCMotherPdg = ref.fMCMotherPdg;
+    fMCGrandMotherPdg = ref.fMCGrandMotherPdg;
     fMCSignal = ref.fMCSignal;
     fMCSource = ref.fMCSource;
     fMCEleSource = ref.fMCEleSource;
+    fMCEleSourcePt = ref.fMCEleSourcePt;
     memcpy(fMCProdVtx, ref.fMCProdVtx, sizeof(Double_t) *3);
     memcpy(fMCMotherProdVtx, ref.fMCMotherProdVtx, sizeof(Double_t) *3);
     fTrackStatus =ref.fTrackStatus;
@@ -195,8 +205,10 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     fTPCsigmaEl = ref.fTPCsigmaEl;
     fTPCsigmaElCorrected = ref.fTPCsigmaElCorrected;
     fTOFsigmaEl = ref.fTOFsigmaEl;
+    fTOFsigmaP = ref.fTOFsigmaP;
     fTOFmismatchProb = ref.fTOFmismatchProb;
     fITSsigmaEl = ref.fITSsigmaEl;
+    fITSsigmaP = ref.fITSsigmaP;
     fEoverP = ref.fEoverP;
     fEMCALsigmaEl = ref.fEMCALsigmaEl;
     fV0PID = ref.fV0PID;

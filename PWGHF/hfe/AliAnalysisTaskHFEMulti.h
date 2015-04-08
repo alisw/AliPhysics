@@ -17,8 +17,8 @@
 // Fills a single-inclusive electron pt-spectrum
 // For further information see implementation file
 //
-#ifndef ALIANALYSISTASKHFE_H
-#define ALIANALYSISTASKHFE_H
+#ifndef ALIANALYSISTASKHFEMULTI_H
+#define ALIANALYSISTASKHFEMULTI_H
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -35,6 +35,7 @@
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 class AliHFEcontainer;
+class AliHFEparamBag;
 class AliHFEcollection;
 class AliHFEcuts;
 class AliHFEextraCuts;
@@ -60,7 +61,7 @@ class TH1I;
 class TList;
 class TClonesArray;
 
-class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
+class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
   public:
     enum{
       kPIDqa = 0,
@@ -68,13 +69,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     };
     enum{
       kPriVtx = 0,
-      kSecVtx = 1,
-      kIsElecBackGround = 2,
-      kPostProcess = 3,
-      kDEstep = 4,
-      kTaggedTrackAnalysis = 5,
-      kNonPhotonicElectron = 6,
-      kNonPhotonicElectronBeauty = 7
+      kNonPhotonicElectron = 1,
     };
     enum CreationProcess_t{
       kSignalCharm = 0,
@@ -94,12 +89,12 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kPbPb = 2
     } ECollisionSystem_t;
 
-    AliAnalysisTaskHFE();
-    AliAnalysisTaskHFE(const char * name);
-    AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
-    AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
+    AliAnalysisTaskHFEMulti();
+    AliAnalysisTaskHFEMulti(const char * name);
+    AliAnalysisTaskHFEMulti(const AliAnalysisTaskHFEMulti &ref);
+    AliAnalysisTaskHFEMulti& operator=(const AliAnalysisTaskHFEMulti &ref);
     virtual void Copy(TObject &o) const;
-    virtual ~AliAnalysisTaskHFE();
+    virtual ~AliAnalysisTaskHFEMulti();
 
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
@@ -124,11 +119,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFENonPhotonicElectron *GetHFEBackgroundSubtraction() const { return fBackgroundSubtraction; }
 
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
-    void SetTaggedTrackCuts(AliHFEcuts * const cuts) { fTaggedTrackCuts = cuts; }
-    void SetCleanTaggedTrack(Bool_t clean) { fCleanTaggedTrack = clean; };
-    void SetVariablesTRDTaggedTrack(Bool_t variablesTRD) { fVariablesTRDTaggedTrack = variablesTRD; };
     void SetHFECutsPreselect(AliESDtrackCuts * const cuts) { fCutspreselect = cuts; };
-    void SetHFEElecBackGround(AliHFEelecbackground * const elecBackGround) { fElecBackGround = elecBackGround; };
     void SetHFEBackgroundSubtraction(AliHFENonPhotonicElectron * const backgroundSubtraction) { fBackgroundSubtraction = backgroundSubtraction; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SwitchOnPlugin(Int_t plug);
@@ -141,7 +132,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
-    void SetTRDTrigger(Bool_t activateTRDTrigger, Int_t trdtrigger) {fTRDTrigger=activateTRDTrigger; fWhichTRDTrigger=trdtrigger;};
     void SetCollisionSystem(ECollisionSystem_t system){
       fCollisionSystem.Clear();
       fCollisionSystem.SetBitNumber(system, kTRUE);
@@ -166,7 +156,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr) {fCentralityLimits[icentr] = valuecentr;};
     void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
     void SetNonHFEsystematics(Bool_t isSystematics) {fisNonHFEsystematics = isSystematics; };
-    void SetCalcContamBeauty(Bool_t isCalcContamBeauty) { fCalcContamBeauty = isCalcContamBeauty;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SetRejectMCFakeTracks(Bool_t rejectFakes = kTRUE) { fRejectMCFakeTracks = rejectFakes; };
     void SetBackGroundFactorsFunction(const TF1 * const backGroundFactorsFunction, Int_t centralitybin=0){  
@@ -182,10 +171,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
     void SetWeightHist() {SetBit(kWeightHist);};
-    Bool_t CheckTRDTriggerESD(AliESDEvent *ev);
-    Bool_t CheckTRDTrigger(AliVEvent *ev);
-    void DrawTRDTrigger(AliESDEvent *ev);
-    void DrawTRDTriggerAnalysis(AliVEvent *ev);
+    void SetParams(AliHFEparamBag *pars) {fParams = pars;};
 
   private:
     enum{
@@ -193,7 +179,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kAODanalysis = BIT(20),
       kBackgroundInitialized = BIT(21),
       kTreeStream = BIT(22),
-      kWeightHist = BIT(23) // be careful to use the numbers > 23
+      kWeightHist = BIT(23)
     };
 
     Bool_t FillProductionVertex(const AliVParticle * const track) const;
@@ -207,6 +193,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void ProcessESD();
     void ProcessAOD();
     Int_t GetITSMultiplicity(AliVEvent *ev);
+    Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult); 
     Bool_t IsMCFakeTrack(const AliVTrack * const trk) const;
     Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
@@ -229,12 +216,12 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fPbPbUserCentralityBinning;    // PbPb user centrality binning
     Bool_t fRemoveFirstEvent;             // Remove first event from chunk
     Bool_t fisNonHFEsystematics;          // Non-HFE background systematics analysis
-    Bool_t fCalcContamBeauty;             // Apply ip cut right before the PIDQA to sotre pidqa histos
     AliOADBContainer *fSpecialTrigger;    // Special trigger selection
     Int_t   fCentralityF;                 // Centrality bin
     Float_t fCentralityPercent;           // Centrality percentile
     TString fCentralityEstimator;         // Centrality Estimator
     Float_t fContributors;                // Contributors
+    Int_t   fSPDtracklets;                // SPD tracklets
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex
     const TF1  *fkBackGroundFactorArray[12];   // Array of BackGround factors for each centrality bin, bin0 = min bias
@@ -245,39 +232,28 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEvarManager *fVarManager;        // The var manager as the backbone of the analysis
     AliHFEsignalCuts *fSignalCuts;        //! MC true signal (electron coming from certain source) 
     AliCFManager *fCFM;                   //! Correction Framework Manager
-    AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
     AliHFEpid *fPID;                      // PID
     AliHFEpidQAmanager *fPIDqa;           // PID QA
-    AliTRDTriggerAnalysis *fTRDTriggerAnalysismb; //! TRD Trigger Analysis for mb analysis
-    AliTRDTriggerAnalysis *fTRDTriggerAnalysistrg; //! TRD Trigger Analysis for trg sample analysis
     AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
-    AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks
-    Bool_t fCleanTaggedTrack;             // Loose cleaning of the V0 tagged tracks electron
-    Bool_t fVariablesTRDTaggedTrack;      // Take the variables at the TRD for the V0 tagged tracks electron
     AliAnalysisUtils *fAnalysisUtils;     // Utility object to remove the first event of a chunk from the analysis
     AliESDtrackCuts *fCutspreselect;      // Cut Collection for pre-selected tracks
-    AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
-    AliHFEelecbackground *fElecBackGround;//! Background analysis
     AliHFEmcQA *fMCQA;                    //! MC QA
-    AliHFEtaggedTrackAnalysis *fTaggedTrackAnalysis;     //!Analyse V0-tagged tracks
     AliHFEextraCuts *fExtraCuts;          //! temporary implementation for IP QA
     AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
-    Bool_t fTRDTrigger;                   // Check if event is TRD triggered event
-    Int_t  fWhichTRDTrigger;               // Select type of TRD trigger
 
-    AliHFEV0taginfo *fV0Tagger;           // Tags v0 tracks per Event 
 
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output
+    AliHFEparamBag *fParams;              //! parameters
     TList *fHistMCQA;                     //! Output container for MC QA histograms 
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
 
-    ClassDef(AliAnalysisTaskHFE, 3)       // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFEMulti, 1)       // The electron Analysis Task
 };
 #endif
 

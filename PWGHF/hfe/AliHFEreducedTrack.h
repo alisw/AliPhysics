@@ -60,6 +60,7 @@ class AliHFEreducedTrack : public TObject{
   Bool_t MCSignal() const { return fMCSignal; }
   Int_t MCSource() const { return fMCSource; }
   Int_t MCElectronSource() const { return static_cast<Int_t>(fMCEleSource); }
+  Double_t MCElectronSourcePt() const { return fMCEleSourcePt; }
   Double_t MCProdVtxX() const { return fMCProdVtx[0]; }
   Double_t MCProdVtxY() const { return fMCProdVtx[1]; }
   Double_t MCProdVtxZ() const { return fMCProdVtx[2]; }
@@ -115,9 +116,11 @@ class AliHFEreducedTrack : public TObject{
   Double_t GetTPCsigmaEl() const { return fTPCsigmaEl; }
   Double_t GetTPCsigmaElCorrected() const { return fTPCsigmaElCorrected; }
   Double_t GetTOFsigmaEl() const { return fTOFsigmaEl; }
+  Double_t GetTOFsigmaP() const { return fTOFsigmaP; }
   Double_t GetTOFsigmaDeuteron() const { return fTOFsigmaDeuteron; }
   Float_t GetTOFmismatchProb() const { return fTOFmismatchProb; }
   Double_t GetITSsigmaEl() const { return fITSsigmaEl; }
+  Double_t GetITSsigmaP() const { return fITSsigmaP; }
   Double_t GetEMCALEoverP() const { return fEoverP; }
   Double_t GetEMCALSigmaEl() const { return fEMCALsigmaEl; }
   void GetEMCALShowerShape(Double_t showershape[4]) const{
@@ -165,6 +168,7 @@ class AliHFEreducedTrack : public TObject{
   void SetMCSignal() { fMCSignal = kTRUE; }
   void SetMCSource(Int_t mcsource) { fMCSource = mcsource; }
   void SetMCElectronSource(Int_t source) { fMCEleSource = static_cast<UChar_t>(source); }
+  void SetMCElectronSourcePt(Double_t sourcept) { fMCEleSourcePt = sourcept; }
   void SetMCProdVtx(Double_t vx, Double_t vy, Double_t vz){
     fMCProdVtx[0] = vx;
     fMCProdVtx[1] = vy;
@@ -216,9 +220,11 @@ class AliHFEreducedTrack : public TObject{
   void SetTPCsigmaEl(Double_t sigma) { fTPCsigmaEl = sigma; }
   void SetTPCsigmaElCorrected(Double_t sigma) { fTPCsigmaElCorrected = sigma; }
   void SetTOFsigmaEl(Double_t sigma) { fTOFsigmaEl = sigma; }
+  void SetTOFsigmaP(Double_t sigma) { fTOFsigmaP = sigma; }
   void SetTOFsigmaDeuteron(Double_t sigma) { fTOFsigmaDeuteron = sigma; }
   void SetTOFmismatchProbability(Float_t mismatchProb) { fTOFmismatchProb = mismatchProb; }
   void SetITSsigmaEl(Double_t sigma) { fITSsigmaEl = sigma; }
+  void SetITSsigmaP(Double_t sigma) { fITSsigmaP = sigma; }
   void SetEMCALEoverP(Double_t eop) { fEoverP = eop; }
   void SetEMCALSigmaEl(Double_t sigma) { fEMCALsigmaEl = sigma; }
   void SetEMCALShowerShape(Double_t showershape[4]){
@@ -252,9 +258,11 @@ class AliHFEreducedTrack : public TObject{
   Double_t fMCPhi;                        // MCPhi
   Int_t    fMCPDG;                        // MCPDG
   Int_t    fMCMotherPdg;                  // MCMP
+  Int_t    fMCGrandMotherPdg;             // MCGMP
   Bool_t   fMCSignal;                     // MCSignal
   Int_t    fMCSource;                     // MCSource
   UChar_t  fMCEleSource;                  // MC Electron Source (AliHFEmcQA)
+  Double_t fMCEleSourcePt;                // MC Electron Source's pt (AliHFEmcQA)
   Double_t fMCProdVtx[3];                 // MC prod Vtx
   Double_t fMCMotherProdVtx[3];           // MC prod Vtx of the mother
   TBits    fTrackStatus;                  // Track Status
@@ -279,9 +287,11 @@ class AliHFEreducedTrack : public TObject{
   Double_t fTPCsigmaEl;                   // TPC sigma el
   Double_t fTPCsigmaElCorrected;          // TPC sigma el corrected
   Double_t fTOFsigmaEl;                   // TOF sigma el
+  Double_t fTOFsigmaP;                   // TOF sigma el
   Double_t fTOFsigmaDeuteron;             // TOF sigma deuteron
   Float_t  fTOFmismatchProb;              // TOF mismatch prob
   Double_t fITSsigmaEl;                   // ITS sigma el
+  Double_t fITSsigmaP;                    // ITS sigma p 
   Double_t fEoverP;                       // Eoverp
   Double_t fEMCALsigmaEl;                 // EMCAl sigmal el
   Double_t fShowerShape[4];               // showershape
@@ -291,6 +301,6 @@ class AliHFEreducedTrack : public TObject{
   Double_t  fV0ProdR;                      // V0 doughter production vertex R in x-y plane 
   Double_t fDCAerr;                       // New: Error on Track DCA
   
-  ClassDef(AliHFEreducedTrack, 3)
+  ClassDef(AliHFEreducedTrack, 4)
 };
 #endif
