@@ -87,6 +87,8 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   //!<! histogram that stores the pT of the constituents (RECO level)
   TH2F                               *fhAllpTGen;
   //!<! histogram that stores the pT of the constituents (PART level)
+  TH2F                               *fhAllpTCor;
+  //!<! histogram that stores the pT of the constituents (CORR level)
   THnSparse                          *fhConstRecGen;           //!<! number of constituent correlation
   TList                              *fListOfOutputFromClass;      //!<! list of output from class AliEmcalJetByJetCorrection
   Bool_t                             fSwitchResolutionhn;          ///< switch on/off (default on) the 2 THnSparse for the mass resolution
@@ -95,7 +97,7 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetMassStructure(const AliAnalysisTaskEmcalJetMassStructure&);            // not implemented
   AliAnalysisTaskEmcalJetMassStructure &operator=(const AliAnalysisTaskEmcalJetMassStructure&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 5)
+  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 6)
 };
 #endif
 
