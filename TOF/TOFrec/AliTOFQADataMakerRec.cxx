@@ -295,19 +295,28 @@ void AliTOFQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
 
   TH1I * h0 =  new TH1I("hTOFRaws","TOF raw hit multiplicity; TOF raw hits number; Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TPaveText * hitsMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
+  h0->GetListOfFunctions()->Add(hitsMsg);
+  hitsMsg->SetName("hitsMsg");
+
   TH1I * h1 =  new TH1I("hTOFRawsIA","TOF raw hit multiplicity - I/A side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
   TH1I * h2 =  new TH1I("hTOFRawsOA","TOF raw hit multiplicity - O/A side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
   TH1I * h3 =  new TH1I("hTOFRawsIC","TOF raw hit multiplicity - I/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
   TH1I * h4 =  new TH1I("hTOFRawsOC","TOF raw hit multiplicity - O/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
 
   TH1F * h5  = new TH1F("hTOFRawsTime", "TOF Raws - Hit time (ns);Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
+  TPaveText * timeMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
+  h5->GetListOfFunctions()->Add(timeMsg);
+  timeMsg->SetName("timeMsg");
   TH1F * h6  = new TH1F("hTOFRawsTimeIA", "TOF Raws - Hit time (ns) - I/A side;Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
   TH1F * h7  = new TH1F("hTOFRawsTimeOA", "TOF Raws - Hit time (ns) - O/A side;Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
   TH1F * h8  = new TH1F("hTOFRawsTimeIC", "TOF Raws - Hit time (ns) - I/C side;Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
   TH1F * h9  = new TH1F("hTOFRawsTimeOC", "TOF Raws - Hit time (ns) - O/C side;Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
   
   TH1F * h10  = new TH1F("hTOFRawsToT", "TOF Raws - Hit ToT (ns);Measured Hit ToT (ns);Hits", 100, 0., 48.8); 
-  
+  TPaveText * totMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
+  h10->GetListOfFunctions()->Add(totMsg);
+  totMsg->SetName("totMsg");
   TH1F * h11  = new TH1F("hTOFRawsToTIA", "TOF Raws - Hit ToT (ns) - I/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8); 
   TH1F * h12  = new TH1F("hTOFRawsToTOA", "TOF Raws - Hit ToT (ns) - O/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8); 
   TH1F * h13  = new TH1F("hTOFRawsToTIC", "TOF Raws - Hit ToT (ns) - I/C side;Measured Hit ToT (ns);Hits", 100, 0., 48.8); 
@@ -315,7 +324,8 @@ void AliTOFQADataMakerRec::InitRaws()
   
   TH1F * h15 = new TH1F("hTOFRawsLTMHits", "LTMs OR signals; Crate; Counts",  72, 0., 72.);
   TH2F * h16  = new TH2F("hTOFrefMap", "TOF enabled channel reference map;sector;strip",  72, 0., 18., 91, 0., 91.);
-  TH2F * h17  = new TH2F("hTOFRawHitMap","TOF raw hit map;sector;strip", 72, 0., 18., 91, 0., 91.);
+  TH2F * h17  = new TH2F("hTOFRawHitMap","TOF raw hit map (1 bin = 1 FEA/24);sector;strip", 72, 0., 18., 91, 0., 91.);
+ 
   TH2I * h18 = new TH2I("hTOFDecodingErrors","Decoding error monitoring; DDL; Error ", 72, 0, 72, 13,1,14);
   
   h18->GetYaxis()->SetBinLabel(1,"DRM ");
@@ -341,9 +351,10 @@ void AliTOFQADataMakerRec::InitRaws()
   TH2F * h25 = new TH2F("hTOFhitsCTTM","Map of hit pads according to CTTM numbering;LTM index;bit index",  72, 0., 72., 23, 0., 23.);
   TH2F * h26 = new TH2F("hTOFmacropadCTTM","Map of hit macropads according to CTTM numbering;LTM index; bit index",  72, 0., 72., 23, 0., 23.);
   TH2F * h27 = new TH2F("hTOFmacropadDeltaPhiTime","#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX",  18, 0., 180., 20, 0., 20.0);
-  TH2I *h28 = new TH2I("hBXVsCttmBit","BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24); 
-  TH2F *h29 = new TH2F("hTimeVsCttmBit","TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime); 
-
+  TH2I * h28 = new TH2I("hBXVsCttmBit","BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24); 
+  TH2F * h29 = new TH2F("hTimeVsCttmBit","TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime); 
+  TH2F * h30 = new TH2F("hTOFRawHitMap24","TOF raw hit map (1 bin = 1 FEA/24);sector;strip", 72, 0., 18., 91, 0., 91.);
+  h30->SetOption("colz");
   h25->GetYaxis()->SetTickLength(-0.02);
   h26->GetYaxis()->SetTickLength(-0.02);
   h25->GetYaxis()->SetNdivisions(210);
@@ -354,18 +365,16 @@ void AliTOFQADataMakerRec::InitRaws()
   h26->GetXaxis()->SetLabelOffset(0.015);
   h25->GetXaxis()->SetNdivisions(515);
   h26->GetXaxis()->SetNdivisions(515);
-  
+
   h0->Sumw2() ;
   h1->Sumw2() ;
   h2->Sumw2() ;
   h3->Sumw2() ;
   h4->Sumw2() ;
-  //  h5->Sumw2() ;
   h6->Sumw2() ;
   h7->Sumw2() ;
   h8->Sumw2() ;
   h9->Sumw2() ;
-  // h10->Sumw2() ;
   h11->Sumw2() ;
   h12->Sumw2() ;
   h13->Sumw2() ;
@@ -385,10 +394,11 @@ void AliTOFQADataMakerRec::InitRaws()
   h27->Sumw2() ;
   h28->Sumw2() ;
   h29->Sumw2() ;
+  h30->Sumw2() ;
 
   //add lines for DQM shifter
-  fLineExpTimeMin = new TLine(200., 0., 200., 0.);
-  fLineExpTimeMax = new TLine(300., 0., 300., 0.);
+  fLineExpTimeMin = new TLine(150., 0., 150., 0.);
+  fLineExpTimeMax = new TLine(250., 0., 250., 0.);
   fLineExpTotMin = new TLine(10., 0., 10., 0.);
   fLineExpTotMax = new TLine(15., 0., 15., 0.);
 
@@ -403,35 +413,12 @@ void AliTOFQADataMakerRec::InitRaws()
   
   fLineExpTotMax->SetLineColor(kGreen);
   fLineExpTotMax->SetLineWidth(2);
-  
-  /*
-    for (Int_t sm=0;sm<17;sm++){
-    fLineSMid[sm]->SetLineColor(kMagenta);
-    fLineSMid[sm]->SetLineWidth(2);
-  }
-  */
+
   h5->GetListOfFunctions()->Add(fLineExpTimeMin);
   h5->GetListOfFunctions()->Add(fLineExpTimeMax);
   h10->GetListOfFunctions()->Add(fLineExpTotMin);
   h10->GetListOfFunctions()->Add(fLineExpTotMax);
-  /*
-  for (Int_t sm=0;sm<17;sm++){
-    h16->GetListOfFunctions()->Add(fLineSMid[sm]);
-    h17->GetListOfFunctions()->Add(fLineSMid[sm]);
-  }
-  for (Int_t sm=0;sm<71;sm++){
-    fLineLTMid[sm]->SetLineColor(kBlack);
-    fLineLTMid[sm]->SetLineWidth(1);
-    h26->GetListOfFunctions()->Add(fLineLTMid[sm]);
-    h25->GetListOfFunctions()->Add(fLineLTMid[sm]);
-  }
-  for (Int_t sm=0;sm<22;sm++){
-    fLineLTMbitId[sm]->SetLineColor(kBlack);
-    fLineLTMbitId[sm]->SetLineWidth(1);
-    h26->GetListOfFunctions()->Add(fLineLTMbitId[sm]);
-    h25->GetListOfFunctions()->Add(fLineLTMbitId[sm]);
-  }
-  */
+
   TPaveText *phosHoleBox=new TPaveText(13,38,16,53,"b");	
   phosHoleBox->SetFillStyle(0);
   phosHoleBox->SetFillColor(kWhite);
@@ -440,10 +427,7 @@ void AliTOFQADataMakerRec::InitRaws()
   phosHoleBox->AddText("PHOS");	
   h16->GetListOfFunctions()->Add(phosHoleBox);
   h17->GetListOfFunctions()->Add(phosHoleBox);
-
-  // h0->SetDrawOption("logy");
-  // h5->SetDrawOption("logy");
-  // h10->SetDrawOption("logy");
+  h30->GetListOfFunctions()->Add(phosHoleBox);
 
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
   Add2RawsList(h1,   1,  expert, !image, !saveCorr) ;
@@ -475,7 +459,8 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h27, 27,  expert, !image, !saveCorr) ;
   Add2RawsList(h28, 28,  expert, !image, !saveCorr) ;
   Add2RawsList(h29, 29,  expert, !image, !saveCorr) ;
-  
+  Add2RawsList(h30, 30, !expert,  image, !saveCorr) ;
+
 //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
@@ -608,6 +593,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // AliLog::SetClassDebugLevel("AliTOFRawStream",0);
   // AliLog::SetClassDebugLevel("AliTOFDecoderV2",0);
   AliLog::SetGlobalLogLevel(AliLog::kError);
+
   if (rawReader->GetType()==7) {
    
     Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;//in ns
@@ -765,6 +751,8 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  Short_t fea = volumeID2[4]/12;
 		  Float_t hitmapx = volumeID2[0] + ((Double_t)(3 - fea) + 0.5) *0.25;
 		  FillRawsData(17,hitmapx,GetStripIndex(volumeID2));
+		  FillRawsData(30,hitmapx,GetStripIndex(volumeID2));
+		  
 		  if (fCalib.IsChannelEnabled(chIndex,kTRUE,kTRUE))//checks also if efficient and if problematic
 		    FillRawsData(24,hitmapx,GetStripIndex(volumeID2));
 		}//noise filter
@@ -814,9 +802,9 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       AliTOFRawStream::Geant2EquipmentId(geoId,detId); 
       if ((detId[1]<0)||(detId[0]<0)) continue;
       trmIndex=(detId[1]-3)+detId[0]*10;
-
+      
       if ( (!(fCalibData->GetNoiseStatus(ch)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad))
-      	   && (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk) ){
+	   && (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk) ){
 	//fill reference map with info from OCDB
 	Short_t fea = geoId[4]/12;
 	Float_t hitmapx = geoId[0] + ((Double_t)(3 - fea) + 0.5)*0.25;
@@ -825,7 +813,6 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }
     fIsSOC=kFALSE;
   }
-  
   //enable options for DQM shifter
   EnableDqmShifterOpt(kTRUE);
   //
@@ -996,6 +983,9 @@ void AliTOFQADataMakerRec::StartOfDetectorCycle()
   //Detector specific actions at start of cycle
   fCalibData = GetCalibData();
   fIsSOC=kTRUE;
+  for (int itc=-1;itc<GetNTrigClasses();itc++) { 
+      ((TH1*) GetRawsData(30, itc))->Reset("ICESM");
+  }    
   return;
 }  
 
@@ -1011,7 +1001,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
     SetEventSpecie(AliRecoParam::ConvertIndex(specie));  
 
     for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over eventual clones per trigger class
-
+      
       if (fEnableDqmShifterOpt) {
 	// RS: fetch the histograms for given trigger class
 	TObjArray& arrRW = *GetRawsDataOfTrigClass(itc);
@@ -1021,7 +1011,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	
 	printf("=========>Processed %i physics raw of specie %s with TrigGlass %d\n",
 	       GetEvCountCycleRaws(itc),AliRecoParam::GetEventSpecieName(specie), itc);
-	
+	 
 	//Double_t monitorPeriodLength=fProcessedRawEventN*600*1E-9;//in s
       
 	if (fCalibData){
@@ -1080,7 +1070,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  if ( (htmp=(TH1*)arrRW[23]) ) htmp->SetOption("colz"); 
 	  if ( (htmp=(TH1*)arrRW[24]) ) htmp->SetOption("colz"); 
 	  if ( (htmp=(TH1*)arrRW[28]) ) htmp->SetOption("colz"); 
-	  if ( (htmp=(TH1*)arrRW[29]) ) htmp->SetOption("colz"); 
+	  if ( (htmp=(TH1*)arrRW[29]) ) htmp->SetOption("colz");
 
 	  if ( (htmp=(TH1*)arrRW[25]) ) {
 	    htmp->SetOption("colz"); 
@@ -1095,12 +1085,14 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    htmp->SetTitle(title27.Data());
 	  }
 	}
+	if (GetRawsData(30, itc)) {
+	  GetRawsData(30, itc)->Scale(1./24.);
+	} 
       }//END ENABLE DQM SHIFTER OPT
     } // RS: loop over trigger classes
   } //end for
-  //
+  
   AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
-  //
 }
 //____________________________________________________________________________
 void AliTOFQADataMakerRec::GetMapIndeces(const Int_t* const in , Int_t* out)
