@@ -41,6 +41,7 @@ class AliHFEreducedMCParticle : public TObject{
   Int_t MotherPdg() const { return fMotherPdg; }
   Int_t Source() const { return static_cast<Int_t>(fSource); }
   Int_t GetElectronSource() const { return static_cast<Int_t>(fEleSource); }
+  Double_t GetElectronSourcePt() const { return fEleSourcePt; }
   Bool_t IsSignal() const { return fSignal; }
   Double_t RadialProductionVertex() const { return TMath::Abs(fProductionVertex[0]*fProductionVertex[0]+fProductionVertex[1]*fProductionVertex[1]); }
   Double_t VX() const { return fProductionVertex[0]; }
@@ -61,6 +62,7 @@ class AliHFEreducedMCParticle : public TObject{
   void SetMotherPdg(Int_t pdg) { fMotherPdg = pdg; }
   void SetSource(Int_t source) { fSource = static_cast<Char_t>(source); }
   void SetElectronSource(Int_t source) { fEleSource = static_cast<UChar_t>(source); }
+  void SetElectronSourcePt(Double_t sourcept) { fEleSourcePt = sourcept; }
   void SetSignal() { fSignal = kTRUE; }
   void SetProductionVertex(Double_t vx, Double_t vy, Double_t vz) {
     fProductionVertex[0] = vx;
@@ -85,8 +87,9 @@ class AliHFEreducedMCParticle : public TObject{
   Double_t  fProductionVertex[3];   // production vertex
   Double_t  fMotherProductionVertex[3];   // production vertex
   UChar_t   fEleSource;             // Electron source (AliHFEmcQA)
+  Double_t  fEleSourcePt;           // Electron source's pt (AliHFEmcQA)
   
-  ClassDef(AliHFEreducedMCParticle, 2)
+  ClassDef(AliHFEreducedMCParticle, 3)
   
 };
 #endif

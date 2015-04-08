@@ -148,8 +148,8 @@ AliHFEsignalCuts::ESignalSource_t AliHFEsignalCuts::GetSignalSource(const TObjec
   Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA::kDirectCharm) source = kEleCharm;
   else if(esources == AliHFEmcQA::kDirectBeauty || esources == AliHFEmcQA::kBeautyCharm) source = kEleBeauty;
-  else if(esources >= AliHFEmcQA::kGammaPi0 && esources <= AliHFEmcQA::kGammaRho0) source = kEleGamma;
-  else if(esources == AliHFEmcQA:: kPi0 || esources == AliHFEmcQA::kEta || esources == AliHFEmcQA::kOmega || esources == AliHFEmcQA::kPhi || esources == AliHFEmcQA::kEtaPrime || esources == AliHFEmcQA::kRho0) source = kEleNonHFE;
+  else if((esources >= AliHFEmcQA::kGammaPi0 && esources <= AliHFEmcQA::kGammaRho0) || esources == AliHFEmcQA::kGammaK0s2P || esources == AliHFEmcQA::kGammaK0l2P || esources == AliHFEmcQA::kGammaLamda2P || esources == AliHFEmcQA::kGammaSigma2P || esources == AliHFEmcQA::kGammaK2P) source = kEleGamma;
+  else if(esources == AliHFEmcQA:: kPi0 || esources == AliHFEmcQA::kEta || esources == AliHFEmcQA::kOmega || esources == AliHFEmcQA::kPhi || esources == AliHFEmcQA::kEtaPrime || esources == AliHFEmcQA::kRho0 || esources == AliHFEmcQA::kK0s2P || esources == AliHFEmcQA::kK0l2P || esources == AliHFEmcQA::kLamda2P || esources == AliHFEmcQA::kSigma2P || esources == AliHFEmcQA::kK2P ) source = kEleNonHFE;
   else if(esources == AliHFEmcQA::kJpsi) source = kEleJPsi;
   else if(esources == AliHFEmcQA::kB2Jpsi) source = kEleBtoJPsi;
   else if(esources == AliHFEmcQA::kKe3) source = kEleKe3;
@@ -458,7 +458,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
   const AliVParticle *mctrack = NULL;
   TParticle *mcpart = NULL;
   Int_t label = TMath::Abs(track->GetLabel());
-  AliMCParticle *esdmcmother = NULL;
+  //AliMCParticle *esdmcmother = NULL;
   if(type == AliESDtrack::Class()){
     //
     if(!fMC) {
@@ -491,6 +491,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
       mcpart = esdmc->Particle();
       eSource=fMCQA->GetElecSource(mcpart,kTRUE);
       // considering secondary pions
+      /*
       if(type == AliESDtrack::Class()){
        if(eSource>=AliHFEmcQA::kGammaPi0 && eSource<=AliHFEmcQA::kGammaRho0) {  // conversion electron, be careful with the enum odering
         Int_t glabel=TMath::Abs(esdmc->GetMother()); // gamma label
@@ -507,7 +508,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
           if(glabel>fMC->GetNumberOfPrimaries()) eSource=AliHFEmcQA::kScdryM;
         }
        }
-      }
+      }*/
     }
   } else {
     eSource=fMCQA->GetElecSource(mctrack,kTRUE);

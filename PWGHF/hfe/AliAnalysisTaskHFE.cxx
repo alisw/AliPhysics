@@ -112,6 +112,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fPbPbUserCentralityBinning(kFALSE)
   , fRemoveFirstEvent(kFALSE)
   , fisNonHFEsystematics(kFALSE)
+  , fCalcContamBeauty(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
   , fCentralityPercent(-1)
@@ -184,6 +185,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fPbPbUserCentralityBinning(kFALSE)
   , fRemoveFirstEvent(kFALSE)
   , fisNonHFEsystematics(kFALSE)
+  , fCalcContamBeauty(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
   , fCentralityPercent(-1)
@@ -268,6 +270,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fPbPbUserCentralityBinning(ref.fPbPbUserCentralityBinning)
   , fRemoveFirstEvent(ref.fRemoveFirstEvent)
   , fisNonHFEsystematics(ref.fisNonHFEsystematics)
+  , fCalcContamBeauty(ref.fCalcContamBeauty)
   , fSpecialTrigger(ref.fSpecialTrigger)
   , fCentralityF(ref.fCentralityF)
   , fCentralityPercent(ref.fCentralityPercent)
@@ -347,6 +350,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fPbPbUserCentralityBinning = fPbPbUserCentralityBinning;
   target.fRemoveFirstEvent = fRemoveFirstEvent;
   target.fisNonHFEsystematics = fisNonHFEsystematics;
+  target.fCalcContamBeauty = fCalcContamBeauty;
   target.fSpecialTrigger = fSpecialTrigger;
   target.fCentralityF = fCentralityF;
   target.fCentralityPercent = fCentralityPercent;
@@ -1171,26 +1175,29 @@ void AliAnalysisTaskHFE::ProcessESD(){
            //Fill additional containers for electron source distinction
            Int_t elecSource = 0;
            elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
-           const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
+           const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
-           Int_t iName = 0;
-           for(Int_t iSource = AliHFEmcQA::kPi0; iSource <=  AliHFEmcQA::kGammaRho0; iSource++){
-             if((iSource == AliHFEmcQA::kElse)||(iSource == AliHFEmcQA::kMisID)) continue;
-             if(elecSource == iSource){
                for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-                 if(weightElecBgV0[iLevel]>0){ 
-                   fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-                 } 
-                 else if(weightElecBgV0[iLevel]<0){ 
-                   fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-                 }
-                 if(IsPbPb())break;
-               }
-               break;
-             }
-             iName++;
-             if(iName == kElecBgSpecies)iName = 0;
-           }
+				   if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0],levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+				    
+				   else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+				 }
          }
          //else{
            if(weightElecBgV0[0]>0) {
@@ -1263,6 +1270,9 @@ void AliAnalysisTaskHFE::ProcessESD(){
 	else hfetrack.SetPP();
     }
     fPID->SetVarManager(fVarManager);
+    if(fCalcContamBeauty) {
+      if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
+    }
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     nElectronCandidates++;
     
@@ -1279,6 +1289,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
 	    fMCQA->SetCentrality(fCentralityF);
 	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
 	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+            fMCQA->SetContainerStep(2);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
 	}
@@ -1385,22 +1396,29 @@ void AliAnalysisTaskHFE::ProcessESD(){
           if(fisNonHFEsystematics){
             //Fill additional containers for electron source distinction           
             elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
-            const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
-            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
-            Int_t iName = 0;
-            for(Int_t iSource = AliHFEmcQA::kPi0; iSource <=  AliHFEmcQA::kGammaRho0; iSource++){
-              if((iSource == AliHFEmcQA::kElse)||(iSource == AliHFEmcQA::kMisID)) continue;
-              if(elecSource == iSource){
-                for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-                  if(weightElecBgV0[iLevel]>0) fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-                  else if(weightElecBgV0[iLevel]<0) fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-                  if(IsPbPb())break;
-                }
-                break;
-              }
-              iName++;
-              if(iName == kElecBgSpecies)iName = 0;
-            }
+           const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
+           const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+ 		   for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+				   if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+				    
+				   else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+				 }
           }
           //else{
           if(weightElecBgV0[0]>0) {
@@ -1450,22 +1468,29 @@ void AliAnalysisTaskHFE::ProcessESD(){
           if(fisNonHFEsystematics){
             //Fill additional containers for electron source distinction             
             elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
-            const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
-            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
-            Int_t iName = 0;
-            for(Int_t iSource = AliHFEmcQA::kPi0; iSource <=  AliHFEmcQA::kGammaRho0; iSource++){
-              if((iSource == AliHFEmcQA::kElse)||(iSource == AliHFEmcQA::kMisID)) continue;
-              if(elecSource == iSource){
-                for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-                  if(weightElecBgV0[iLevel]>0) fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-                  else if(weightElecBgV0[iLevel]<0) fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-                  if(IsPbPb())break;
-                }
-                break;
-              }
-              iName++;
-              if(iName == kElecBgSpecies)iName = 0;
-            }
+          const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
+           const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+				   if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				   else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+				    
+				   else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				   else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+				 }
           }
           // else{
             if(weightElecBgV0[0]>0) {
@@ -1504,6 +1529,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
             fMCQA->SetCentrality(fCentralityF);
             fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
             mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+            fMCQA->SetContainerStep(4);
             weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
           }
         }
@@ -1749,6 +1775,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         fMCQA->SetCentrality(fCentralityF);
         if(mctrack && (TMath::Abs(mctrack->GetPdgCode()) == 11)){
          Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
+         fMCQA->SetContainerStep(3);
          for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
          }
@@ -1841,6 +1868,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 	    fMCQA->SetCentrality(fCentralityF);
 	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
 	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+            fMCQA->SetContainerStep(2);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	    //weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactorForPrimaries(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
@@ -1922,6 +1950,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 	    fMCQA->SetCentrality(fCentralityF);
 	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
 	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+            fMCQA->SetContainerStep(4);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
 	}
@@ -2070,7 +2099,7 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
     fContainer->Sumw2("mesonElecs");
    
     if(fisNonHFEsystematics){
-      const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
+      const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
       const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
       for(Int_t iSource = 0; iSource < kElecBgSpecies; iSource++){
         for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
