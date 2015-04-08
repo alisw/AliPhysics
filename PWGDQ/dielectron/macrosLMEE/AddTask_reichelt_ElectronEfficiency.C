@@ -1,6 +1,8 @@
-AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="LMEEoutput.root", 
+AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="reichelt_ElectronEfficiency.root", 
                                                      Bool_t getFromAlien=kFALSE,
-                                                     Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
+                                                     Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
+                                                     Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
+                                                     Int_t collCands=AliVEvent::kAny
                                                      )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -9,15 +11,16 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="LME
     return 0;
   }
   
+  // environment for testing/running at GSI:
   TString configBasePath("$TRAIN_ROOT/reichelt_lowmass/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  // typical Aliroot environment:
   if (trainRoot.IsNull()) configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_ElectronEfficiency.C ."))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
-      // Task files (.cxx & .h) not possible because they need to be compiled...
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -54,10 +57,18 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="LME
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("reichelt_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   //event related
-  task->SetMC(hasMC);
-  task->SetRequireVertex(reqVertex);
-  task->SetMaxVertexZ(vertexZcut);
+  // Note: event cuts are identical for all analysis 'cutInstance's that run together!
+  if (!hasMC) task->UsePhysicsSelection();
+  if (!hasMC) task->SetTriggerMask(triggerNames);
+  if (forcePhysSelAndTrigInMC) { // should be kFALSE by default! (may be needed for new MC productions according to Mahmut)
+    task->UsePhysicsSelection();
+    task->SetTriggerMask(triggerNames);
+  }
+  task->SelectCollisionCandidates(collCands); // didnt check its meaning and effect...!
+  //---
+  task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
+  task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
   task->SetCheckV0daughterElectron(checkV0dauEle);
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
@@ -83,6 +94,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="LME
     // fill std vectors with all information which is individual per track setting:
     task->AttachTrackCuts(trackCuts);
     task->AttachDoPrefilterEff(isPrefilterCutset);
+    task->AttachExtraTrackCuts(anaFilterExtra);
     task->AttachRejCutMee(rejCutMee);
     task->AttachRejCutTheta(rejCutTheta);
     task->AttachRejCutPhiV(rejCutPhiV);
@@ -101,12 +113,15 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="LME
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("reichelt_EffTree", TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("reichelt_stats", TH1D::Class(),
+                                                            AliAnalysisManager::kOutputContainer,outputFileName);
 
   //connect input/output
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
+  mgr->ConnectOutput(task,4,coutput4);
 
   return task;
 
