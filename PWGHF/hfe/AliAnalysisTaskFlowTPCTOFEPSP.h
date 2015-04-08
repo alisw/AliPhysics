@@ -76,7 +76,7 @@ public:
 
   enum{
     kBgPtBins = 44,
-    kElecBgSpecies = 6,
+    kElecBgSpecies = 9,
     kCentBins = 11,
     kBgLevels = 3
   };
@@ -282,7 +282,7 @@ private:
   TTreeSRedirector  *fDebugStreamer;               //!Debug streamer
     
   
-  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 5); // analysisclass
+  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 6); // analysisclass
 };
 
 #endif
