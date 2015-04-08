@@ -309,6 +309,8 @@ class AliAODTrack : public AliVTrack {
   //pid signal interface
   Double_t  GetITSsignal()       const { return fDetPid?fDetPid->GetITSsignal():0.;    }
   void      GetITSdEdxSamples(Double_t s[4]) const;
+  Double_t  GetITSsignalTunedOnData() const {return fITSsignalTuned ;}
+  void      SetITSsignalTunedOnData(Double_t signal) {fITSsignalTuned = signal;}
   Double_t  GetTPCsignal()       const { return fDetPid?fDetPid->GetTPCsignal():0.;    }
   Double_t  GetTPCsignalTunedOnData() const { return fTPCsignalTuned;}
   void      SetTPCsignalTunedOnData(Double_t signal) {fTPCsignalTuned = signal;}
@@ -490,6 +492,7 @@ class AliAODTrack : public AliVTrack {
 
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
   Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
+  Double_t      fITSsignalTuned;    //! ITS signal tuned on data when using MC
 
   ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 
