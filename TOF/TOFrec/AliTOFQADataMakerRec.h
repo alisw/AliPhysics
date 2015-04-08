@@ -26,7 +26,7 @@ class AliTOFDecoderSummaryData;
 
 class AliTOFQADataMakerRec: public AliQADataMakerRec {
 
-public:
+ public:
   AliTOFQADataMakerRec() ;          // ctor
   AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) ;   
   AliTOFQADataMakerRec& operator = (const AliTOFQADataMakerRec& qadm) ;
@@ -44,10 +44,10 @@ public:
   Float_t GetRangeMinTime(){return fgRangeMinTime;}//range min in time plot
   Float_t GetRangeMaxTime(){return fgRangeMaxTime;}; //range max in time plot
 
-protected: 
+ protected: 
   AliTOFChannelOnlineStatusArray * fCalibData;        //! calibration data
   
-private:
+ private:
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 
@@ -57,51 +57,44 @@ private:
   virtual void   StartOfDetectorCycle() ; 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
   virtual void   GetMapIndeces(const Int_t * const in, Int_t *out) ; 
-  	  Int_t  GetStripIndex(const Int_t * const in);
+  Int_t  GetStripIndex(const Int_t * const in);
   virtual void   EnableNoiseFiltering(Bool_t enable){fEnableNoiseFiltering = enable;};
   virtual void   EnableDqmShifterOpt(Bool_t enable){ fEnableDqmShifterOpt = enable;};
-          Bool_t CheckVolumeID(const Int_t * const equipmentID); 
-          Bool_t CheckEquipID( const Int_t * const equipmentID); 
-          Bool_t FilterLTMData(const Int_t * const equipmentID) const ; 
-          Bool_t FilterSpare(  const Int_t * const equipmentID) const ;
-	  Int_t  GetNumberOfFiredMacropad(AliRawReader * rawReader);
+  Bool_t CheckVolumeID(const Int_t * const equipmentID); 
+  Bool_t CheckEquipID( const Int_t * const equipmentID); 
+  Bool_t FilterLTMData(const Int_t * const equipmentID) const ; 
+  Bool_t FilterSpare(  const Int_t * const equipmentID) const ;
+  Int_t  GetNumberOfFiredMacropad(AliRawReader * rawReader);
   static void SetNbinsMultiplicityHisto(Int_t value){fgNbinsMultiplicity=value; return;}; 
   static void SetMultiplicityHistoRange (Int_t valueMin, Int_t valueMax){fgRangeMinMultiplicity=valueMin; fgRangeMaxMultiplicity=valueMax; return;}
   static void SetNbinsTimeHisto(Int_t value){fgNbinsTime=value; return;};
   static void SetTimeHistoRange (Float_t valueMin, Float_t valueMax){fgRangeMinTime=valueMin; fgRangeMaxTime=valueMax; return;};
   static void SetCutNmaxFiredMacropad(Int_t value){fgCutNmaxFiredMacropad=value;return;};
 
- 	  // void   ResetAllTRMcounters();
-	  Bool_t fEnableNoiseFiltering; //the choice is not implemented so far
-	  Bool_t fEnableDqmShifterOpt;  // draw option flag to help
-					// DQM shifter in the
-					// interpretation of the TOF
-					// raw QA histograms
-	  Bool_t fIsSOC;  //flag for StartOfCycle operations
-	  //lines for the DQM GUI
-	  TLine* fLineExpTimeMin;
-	  TLine* fLineExpTimeMax;
-	  TLine* fLineExpTotMin;
-	  TLine* fLineExpTotMax;
-	  /* TLine* fLineSMid[17]; */
-	  /* TLine* fLineLTMid[71]; */
-	  /* TLine* fLineLTMbitId[22]; */
+  // void   ResetAllTRMcounters();
+  Bool_t fEnableNoiseFiltering; //the choice is not implemented so far
+  Bool_t fEnableDqmShifterOpt;  //draw Pave text for DQM shifter 
+  Bool_t fIsSOC;  //flag for StartOfCycle operations
+  TLine* fLineExpTimeMin; //threshold line for DQM
+  TLine* fLineExpTimeMax; //threshold line for DQM
+  TLine* fLineExpTotMin; //threshold line for DQM
+  TLine* fLineExpTotMax; //threshold line for DQM
 
-	  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable 
-	  AliTOFDecoderSummaryData * fDecoderSummary; //pointer to decoder summary data object
-	  Int_t fRunNumber; //run number
-	  static Int_t fgNbinsMultiplicity;//number of bins in multiplicity plot
-	  static Int_t fgRangeMinMultiplicity;//min range in multiplicity plot
-	  static Int_t fgRangeMaxMultiplicity;//max range in multiplicity plot
-	  static Int_t fgNbinsTime;//number of bins in time plot
-	  static const Float_t fgkNbinsWidthTime;//width of bins in time plot
-	  static Float_t fgRangeMinTime;//range min in time plot
-	  static Float_t fgRangeMaxTime; //range max in time plot
-	  static Int_t fgCutNmaxFiredMacropad; //cut on max number of fired macropad 
-	  static const Int_t fgkFiredMacropadLimit; //limit on cut on number of fired macropad 
-	  AliTOFcalib fCalib;//calibration object
+  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable 
+  AliTOFDecoderSummaryData * fDecoderSummary; //pointer to decoder summary data object
+  Int_t fRunNumber; //run number
+  static Int_t fgNbinsMultiplicity;//number of bins in multiplicity plot
+  static Int_t fgRangeMinMultiplicity;//min range in multiplicity plot
+  static Int_t fgRangeMaxMultiplicity;//max range in multiplicity plot
+  static Int_t fgNbinsTime;//number of bins in time plot
+  static const Float_t fgkNbinsWidthTime;//width of bins in time plot
+  static Float_t fgRangeMinTime;//range min in time plot
+  static Float_t fgRangeMaxTime; //range max in time plot
+  static Int_t fgCutNmaxFiredMacropad; //cut on max number of fired macropad 
+  static const Int_t fgkFiredMacropadLimit; //limit on cut on number of fired macropad 
+  AliTOFcalib fCalib;//calibration object
 
-	  ClassDef(AliTOFQADataMakerRec,8)  // description 	    
-};
+  ClassDef(AliTOFQADataMakerRec,8)  // description 	    
+    };
 
 #endif // ALITOFQADATAMAKERREC_H
