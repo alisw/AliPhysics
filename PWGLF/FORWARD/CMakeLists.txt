@@ -260,7 +260,7 @@ install ( DIRECTORY analysis2/gse
 	  USE_SOURCE_PERMISSIONS
 	  PATTERN "*~"    EXCLUDE)
 # Install other scripts
-install ( FILES analysis2/AddTaskCentraldNdeta.C
+install ( FILES analysis2/AddTaskdNdeta.C
   		analysis2/AddTaskCentralMCCorr.C
 		analysis2/AddTaskCentralMult.C
   		analysis2/AddTaskCentralTracks.C
@@ -273,8 +273,6 @@ install ( FILES analysis2/AddTaskCentraldNdeta.C
                 analysis2/AddTaskForwardMult.C
                 analysis2/AddTaskForwardMultDists.C
                 analysis2/AddTaskForwardQA.C
-		analysis2/AddTaskForwarddNdeta.C
-		analysis2/AddTaskMCTruthdNdeta.C
 		analysis2/AddTaskMCParticleFilter.C
 		analysis2/DrawdNdeta.C
 		analysis2/DrawdNdetaSummary.C
