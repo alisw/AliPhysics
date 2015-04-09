@@ -571,6 +571,32 @@ void AliADQADataMakerRec::InitRaws()
   h1i = new TH1I("H1I_MultiBGCoincidence_ADC", "Number of BG flag coincidences in ADC;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBGCoincADC, !expert, image, saveCorr);   iHisto++;
   
+  h2i = new TH2I("H2I_BBCoincCorr", "Number of BB flag coincidences;# of BB Coincidences ADA;# of BB Coincidences ADC",5, -0.5, 4.5, 5, -0.5, 4.5);
+  Add2RawsList(h2i,kNBBCoincCorr, !expert, image, !saveCorr); iHisto++;
+  
+  h2i = new TH2I("H2I_BGCoincCorr", "Number of BG flag coincidences;# of BG Coincidences ADA;# of BG Coincidences ADC",5, -0.5, 4.5, 5, -0.5, 4.5);
+  Add2RawsList(h2i,kNBGCoincCorr, !expert, image, !saveCorr); iHisto++;
+  
+  //Creation of trigger histogram
+  h1d = new TH1F("H1D_Trigger_Type", "AD0 Trigger Type;;Counts", 11,0 ,11) ;  
+  Add2RawsList(h1d,kTriggers, !expert, image, saveCorr);   iHisto++;
+  h1d->SetFillColor(kAzure-8);
+  h1d->SetLineWidth(2);
+  h1d->GetXaxis()->SetLabelSize(0.045);
+  h1d->GetXaxis()->SetNdivisions(808,kFALSE);
+  h1d->GetXaxis()->SetBinLabel(1, "UBA");
+  h1d->GetXaxis()->SetBinLabel(2, "UBC");
+  h1d->GetXaxis()->SetBinLabel(3, "UGA");
+  h1d->GetXaxis()->SetBinLabel(4, "UGC");
+  h1d->GetXaxis()->SetBinLabel(5, "UBA & UBC");
+  h1d->GetXaxis()->SetBinLabel(6, "UBA || UBC");
+  h1d->GetXaxis()->SetBinLabel(7, "(UBA || UBC) & !(UGA || UGC)");
+  h1d->GetXaxis()->SetBinLabel(8, "UGA & UBC");
+  h1d->GetXaxis()->SetBinLabel(9, "UGC & UBA");
+  h1d->GetXaxis()->SetBinLabel(10, "UGA || UGC");
+  h1d->GetXaxis()->SetBinLabel(11, "(UGA & UBC) || (UGC & UBA)");
+  
+  //Creation of debug histograms
   h1d = new TH1F("H1D_Pair_TimeDiffMean","Time difference mean for coincidence pair [ns];Pair number;Time mean [ns]",kNPairBins, kPairMin, kPairMax);
   Add2RawsList(h1d,kPairTimeDiffMean, expert, !image, !saveCorr); iHisto++;
   
@@ -882,17 +908,40 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     FillRawsData(kNBBCoincADC,pBBmulADC);
     FillRawsData(kNBGCoincADA,pBGmulADA);
     FillRawsData(kNBGCoincADC,pBGmulADC);
-	
-	
+    FillRawsData(kNBBCoincCorr,pBBmulADA,pBBmulADC);
+    FillRawsData(kNBGCoincCorr,pBGmulADA,pBGmulADC);
+    
+    //Triggers
+    Bool_t UBA = kFALSE;
+    Bool_t UBC = kFALSE;
+    Bool_t UGA = kFALSE;
+    Bool_t UGC = kFALSE;
+    
+    if(pBBmulADA>1) UBA = kTRUE;
+    if(pBBmulADC>1) UBC = kTRUE;
+    if(pBGmulADA>1) UGA = kTRUE;
+    if(pBGmulADC>1) UGC = kTRUE;
+
+    if(UBA) FillRawsData(kTriggers,0);
+    if(UBC) FillRawsData(kTriggers,1);
+    if(UGA) FillRawsData(kTriggers,2);
+    if(UGC) FillRawsData(kTriggers,3);
+    if(UBA && UBC) FillRawsData(kTriggers,4);
+    if(UBA || UBC) FillRawsData(kTriggers,5);
+    if((UBA || UBC) && !(UGA || UGC)) FillRawsData(kTriggers,6);
+    if(UGA && UBC) FillRawsData(kTriggers,7);
+    if(UGC && UBA) FillRawsData(kTriggers,8);
+    if(UGA || UGC) FillRawsData(kTriggers,9);
+    if((UGA && UBC) || (UGC && UBA)) FillRawsData(kTriggers,10);
+    	
+    //Average times
     if(weightADA>1.e-6) timeADA /= weightADA; 
     else timeADA = -1024.;
     if(weightADC>1.e-6) timeADC /= weightADC;
     else timeADC = -1024.;
     if(timeADA<-1024.+1.e-6 || timeADC<-1024.+1.e-6) diffTime = -1024.;
     else diffTime = timeADA - timeADC;
-    
-
-		
+    	
     FillRawsData(kADATime,timeADA);
     FillRawsData(kADCTime,timeADC);
     FillRawsData(kDiffTime,diffTime);

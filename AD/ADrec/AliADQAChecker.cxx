@@ -459,7 +459,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	TVirtualPad* pCoinc  = 0;
     	TVirtualPad* pPed  = 0;
     	TVirtualPad* pMaxCh  = 0;
-    	TVirtualPad* pDebug  = 0;
+	TVirtualPad* pFlagCorr  = 0;
+    	TVirtualPad* pTrigger  = 0;
 
     	TPad* pCh = new TPad("Charge", "Charge Pad", 0, 0.83, 1.0, 0.95);
     	fImage[esIndex]->cd();
@@ -476,20 +477,30 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pCl->Draw();
     	pClock = pCl;
     
-    	TPad* pCo = new TPad("Coincidences", "Coincidences Pad", 0, 0.35, 1.0, 0.47);
+    	TPad* pCo = new TPad("Coincidences", "Coincidences Pad", 0, 0.23, 1.0, 0.35);
     	fImage[esIndex]->cd();
     	pCo->Draw();
     	pCoinc = pCo;
     
-    	TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0.25, 0.23, 0.75, 0.35);
+    	TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0, 0.35, 0.5, 0.47);
     	fImage[esIndex]->cd();
     	pP->Draw();
     	pPed = pP;
     
-    	TPad* pM = new TPad("Max Charge", "Max Charge Pad", 0.25, 0.11, 0.75, 0.23);
+    	TPad* pM = new TPad("Max Charge", "Max Charge Pad", 0.5, 0.35, 1.0, 0.47);
     	fImage[esIndex]->cd();
     	pM->Draw();
     	pMaxCh = pM;
+	
+	TPad* pFC = new TPad("Flag correlations", "Flag correlations Pad", 0.25, 0.11, 0.75, 0.23);
+    	fImage[esIndex]->cd();
+    	pFC->Draw();
+    	pFlagCorr = pFC;
+	
+	TPad* pTr = new TPad("Triggers", "Triggers Pad", 0, 0.0, 1.0, 0.11);
+    	fImage[esIndex]->cd();
+    	pTr->Draw();
+    	pTrigger = pTr;
 
     	pCharge->Divide(3, 1);
     	pTime->Divide(4, 1);
@@ -497,12 +508,13 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
     	pMaxCh->Divide(2, 1);
+	pFlagCorr->Divide(2, 1);
 	
   
     	TIter nexthist(&tmpArr);
     	Int_t npad = 1; 
     	TH1* histo = 0;
-    	while ( npad < 20) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
+    	while ( npad < 23) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
       		histo=(TH1*)nexthist();
       		histo->SetStats(kFALSE);
       		TVirtualPad* pad = 0;
@@ -513,13 +525,15 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       		if(npad>11 && npad<16) pad = pCoinc->cd(npad-11);
       		if(npad>15 && npad<18) pad = pPed->cd(npad-15);
       		if(npad>17 && npad<20) pad = pMaxCh->cd(npad-17);
+		if(npad>19 && npad<22) pad = pFlagCorr->cd(npad-19);
+		if(npad == 22) pad = pTrigger->cd();
       
       		pad->SetRightMargin(0.10);
       		pad->SetLeftMargin(0.10);
       		pad->SetBottomMargin(0.10);
       
       		if(npad ==1 || npad==2 || npad==12 || npad==13 || npad==14 || npad==15) gPad->SetLogy();
-      		if(npad ==3 || npad ==18 || npad ==19) gPad->SetLogz();
+      		if(npad ==3 || npad ==18 || npad ==19 || npad ==20 || npad ==21) gPad->SetLogz();
       		histo->DrawCopy("colz");  
      
       		npad++; 
@@ -538,12 +552,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	TIter nexthist(&tmpArr);
     	Int_t npad = 1; 
     	TH1* histo = 0;
-    	while ( npad < 22) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
+    	while ( npad < 25) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
       		histo=(TH1*)nexthist();
       		histo->SetStats(kFALSE);
       		TVirtualPad* pad = 0;
-        	if((npad>19 && npad<22)) {
-			pad = pPed->cd(npad-19);
+        	if((npad>22 && npad<25)) {
+			pad = pPed->cd(npad-22);
       			pad->SetRightMargin(0.10);
       			pad->SetLeftMargin(0.10);
       			pad->SetBottomMargin(0.10);

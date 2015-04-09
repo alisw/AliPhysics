@@ -35,6 +35,8 @@ public:
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
 		   kPedestalDiffInt0,kPedestalDiffInt1,
 		   kChargeEoIInt0,kChargeEoIInt1,
+		   kNBBCoincCorr,kNBGCoincCorr,
+		   kTriggers,
 		   kPedestalInt0,kPedestalInt1,
 		   kFlagNoTime,kTimeNoFlag,
 		   kWidthBB,kWidthBG,
