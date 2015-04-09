@@ -50,6 +50,8 @@ public:
    * @param max Maximum (in centermeter)
    */  
   void SetIpZRange(Double_t min, Double_t max) { fMinIpZ=min; fMaxIpZ=max; }
+  void SetIpZMin(Double_t min) { fMinIpZ = min; }
+  void SetIpZMax(Double_t max) { fMaxIpZ = max; }
   /** 
    * Set the trigger maskl 
    * 
@@ -93,6 +95,13 @@ public:
    * @param high Upper bound
    */
   void SetCentralityAxis(Short_t low, Short_t high);
+  /** 
+   * Set the centrality axis to use based on a string.  The bin edges
+   * are separated by colons.
+   * 
+   * @param bins String of bin edges
+   */
+  void SetCentralityAxis(const char* bins);
   /* @} */
   /** 
    * @{ 

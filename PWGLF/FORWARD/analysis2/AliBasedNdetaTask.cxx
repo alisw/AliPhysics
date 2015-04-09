@@ -33,7 +33,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCentMethod("default"),
     fPileupMask(0),
     fAnaUtil(),
-    fCheckSPDOutlier(false)
+    fCheckSPDOutlier(true)
 {
   // 
   // Constructor

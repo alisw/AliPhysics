@@ -116,7 +116,32 @@ AliBaseAODTask::SetCentralityAxis(UShort_t n, Short_t* bins)
   for (UShort_t i = 0; i <= n; i++) 
     dbins[i] = (bins[i] == 100 ? 100.1 : bins[i]);
   fCentAxis.Set(n, dbins.GetArray());
+
 }
+//________________________________________________________________________
+void 
+AliBaseAODTask::SetCentralityAxis(const char* bins)
+{
+  DGUARD(fDebug,3,"Set centrality axis: %s", bins);
+  if (!bins || bins[0] == '\0') return;
+
+  TString     spec(bins);
+  TObjArray*  tokens = spec.Tokenize(":");
+  TObjString* token  = 0;
+  Int_t       cnt    = 0;
+  if (tokens->GetEntriesFast() <= 0) return;
+				       
+  TArrayD     edges(tokens->GetEntriesFast());
+  TIter       next(tokens);
+  while ((token = static_cast<TObjString*>(next()))) {
+    TString& str = token->String();
+    edges[cnt] = str.Atof();
+    cnt++;
+  }
+  delete tokens;
+  SetCentralityAxis(edges.GetSize()-1, edges.GetArray());
+}
+
 //________________________________________________________________________
 void 
 AliBaseAODTask::SetCentralityAxis(UShort_t n, Double_t* bins)
