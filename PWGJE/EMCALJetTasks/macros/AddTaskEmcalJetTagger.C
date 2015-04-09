@@ -54,18 +54,20 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 
   AliEmcalJetTask* jetFinderTaskBase = 0x0;
   if (strcmp(type,"TPC")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data(),1.);
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data(),ptminTrack,kFALSE,kFALSE);
   else if (strcmp(type,"EMCAL")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data(),1.);
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data(),ptminTrack,kFALSE,kFALSE);
   jetFinderTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
 
-  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag2.Data(),1.);
+  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag2.Data(),ptminTag,kFALSE,kFALSE);
   jetFinderTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
 
   if(tag1.EqualTo("JetPythia"))
-    jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
+    jetFinderTaskBase->SetTrackLabelRange(99999,9999999);
+  //    jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
   if(tag2.EqualTo("JetPythia"))
-    jetFinderTaskTag->SelectConstituents(TObject::kBitMask, 0);
+    jetFinderTaskTag->SetTrackLabelRange(99999,9999999);
+  //    jetFinderTaskTag->SelectConstituents(TObject::kBitMask, 0);
   
   TString strJetsBase = jetFinderTaskBase->GetName();
   TString strJetsTag  = jetFinderTaskTag->GetName();
@@ -266,10 +268,9 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   }
   jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   if(tag.EqualTo("JetPythia")) {
-    jetFinderKt->SelectConstituents(TObject::kBitMask, 0);
-    jetFinderAKt->SelectConstituents(TObject::kBitMask, 0);
+    jetFinderKt->SetTrackLabelRange(99999,9999999);
+    jetFinderAKt->SetTrackLabelRange(99999,9999999);
   }
-
 
   return rhoTaskBase;
 }
