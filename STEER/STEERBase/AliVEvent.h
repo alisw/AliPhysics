@@ -222,9 +222,9 @@ public:
 
   // Primary vertex
   virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
-  //virtual const AliVVertex   *GetPrimaryVertexSPD() const {return 0x0;}
-  //virtual const AliVVertex   *GetPrimaryVertexTPC() const {return 0x0;}
-  //virtual const AliVVertex   *GetPrimaryVertexTracks() const {return 0x0;}
+  virtual const AliVVertex   *GetPrimaryVertexSPD() const {return 0x0;}
+  virtual const AliVVertex   *GetPrimaryVertexTPC() const {return 0x0;}
+  virtual const AliVVertex   *GetPrimaryVertexTracks() const {return 0x0;}
 
   virtual Int_t GetPrimaryVertex( AliESDVertex & ) const {return 0;}
   virtual Int_t GetPrimaryVertexTPC( AliESDVertex & ) const {return 0;}
