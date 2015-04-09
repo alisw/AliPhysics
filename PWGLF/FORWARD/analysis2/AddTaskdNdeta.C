@@ -10,7 +10,7 @@
  * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
- * Create the Forward @f$ dN/d\eta@f$ analysis task 
+ * Create a @f$ dN/d\eta@f$ analysis task 
  * 
  * 
  * @param config Configuration script  
