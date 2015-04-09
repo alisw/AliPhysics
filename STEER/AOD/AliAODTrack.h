@@ -289,6 +289,7 @@ class AliAODTrack : public AliVTrack {
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
   UShort_t GetTPCNCrossedRows()  const { return fTPCNCrossedRows;}
+  Float_t GetTPCCrossedRows() const {return (Float_t) GetTPCNCrossedRows();}
   Float_t  GetTPCFoundFraction() const { return fTPCNCrossedRows>0 ? float(GetTPCNcls())/fTPCNCrossedRows : 0;}
 
   // Calorimeter Cluster
