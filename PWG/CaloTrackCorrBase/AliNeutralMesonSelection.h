@@ -28,14 +28,15 @@ class TH2F    ;
 
 class AliNeutralMesonSelection : public TObject {
   
- public: 
+ public:
+    
   AliNeutralMesonSelection() ; // default ctor
   
   /// Virtual destructor.
   virtual ~AliNeutralMesonSelection() { ; }   
 
   // General
-
+    
   TList *  GetCreateOutputObjects();
   
   void     InitParameters();	
@@ -49,6 +50,9 @@ class AliNeutralMesonSelection : public TObject {
   
   void     SetParticle(TString particleName) ;  // Do some default settings for "Pi0" or "Eta"
   TString  GetParticle()                          const { return fParticle               ; }
+  
+  Int_t  GetDebug()                               const { return fDebug                  ; }
+  void   SetDebug(Int_t d)                              { fDebug = d                     ; }
   
   // Asymmetry selection
     
@@ -123,7 +127,7 @@ class AliNeutralMesonSelection : public TObject {
     if (tag & (1<<fDecayBit) ) return  kTRUE ;
     else return kFALSE ;
   }
-  
+    
   // Histograms setters and getters
   
   virtual void SetHistoERangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -190,7 +194,9 @@ class AliNeutralMesonSelection : public TObject {
   
   UInt_t   fDecayBit;                     ///<  Decay type flag, set while selecting, depending on fParticle and side range. See enum decayTypes for possible bits.
 
-  //Histograms
+  Int_t    fDebug ;                       ///< Debug level.
+    
+  // Histograms
   TH2F *   fhAnglePairNoCut ;             //!<! Aperture angle of decay photons, no cuts.
   
   TH2F *   fhAnglePairOpeningAngleCut ;   //!<! Aperture angle of decay photons, cut on opening angle.
@@ -215,7 +221,7 @@ class AliNeutralMesonSelection : public TObject {
   TH2F *   fhAsymmetryAllCut ;            //!<! Asymmetry of decay photons, all cuts.
   
   
-  //Histograms binning and range    
+  // Histograms binning and range
   Int_t    fHistoNEBins ;                 ///< Number of bins in pi0 E axis.
   
   Float_t  fHistoEMax ;                   ///< Maximum value of pi0 E histogram range.
