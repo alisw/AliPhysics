@@ -1,42 +1,32 @@
-void MakeOCDBConfigPreprocessor()
+void MakeOCDBConfigPreprocessor(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", Int_t firstRun, Int_t lastRun)
 {
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(storageUri);
   // create the object and set some values:
-  AliCDBEntry *fCDBEntry = new AliCDBEntry();
-  TEnv *fConfEnv = new TEnv();
+  AliCDBEntry *cdbEntry = new AliCDBEntry();
+  TEnv *confEnv = new TEnv();
 
-  fConfEnv->SetValue("Pedestal","DAQ");
-  fConfEnv->SetValue("Signal","DAQ");
-  fConfEnv->SetValue("Temperature","ON");
-  fConfEnv->SetValue("ErrorHandling","ON");
+  confEnv->SetValue("Pedestal","DAQ");
+  confEnv->SetValue("Signal","DAQ");
+  confEnv->SetValue("Temperature","ON");
+  confEnv->SetValue("ErrorHandling","ON");
 
-  fCDBEntry->SetObject(fConfEnv);
+  cdbEntry->SetObject(confEnv);
 
   // done; now save it..; add some metadata business etc.
   Int_t firstRun   =  0;
   Int_t lastRun    =  999999999;
-  Int_t version = 0;
-  Int_t subversion = 0;
   Int_t beamPeriod =  1;
-
-  char filename[200];
-  sprintf(filename, "Preprocessor/Run%d_%d_v%d_s%d.root",
-	  firstRun, lastRun, version, subversion);
 
   AliCDBMetaData md;
   md.SetBeamPeriod(beamPeriod);
   md.SetResponsible("David Silvermyr");
   
-  AliCDBId id("EMCAL/Config/Preprocessor", firstRun, lastRun, version, subversion);
+  AliCDBId id("EMCAL/Config/Preprocessor", firstRun, lastRun);
 
-  fCDBEntry->SetId(id);
-  fCDBEntry->SetMetaData(&md);
+  cdbEntry->SetId(id);
+  cdbEntry->SetMetaData(&md);
 
-  // ok, write the file
-  TFile f(filename, "recreate");
-  if (!f.IsZombie()) {
-    f.cd();
-    fCDBEntry->Write("AliCDBEntry");
-    f.Close();
-  }
+  cdb->Put(cdbEntry);
 
 }
