@@ -1,7 +1,10 @@
-void MakeOCDBTempTree()
+void MakeOCDBTempTree(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", Int_t firstRun=0, Int_t lastRun=999999999)
 {
-  AliCDBEntry *fCDBEntry = new AliCDBEntry();
-  TEnv *fConfEnv = new TEnv();
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(storageUri);
+
+  AliCDBEntry *cdbEntry = new AliCDBEntry();
+  TEnv *confEnv = new TEnv();
 
   // variables for tree
   Int_t Sensor=0; // 0 to 169
@@ -38,34 +41,20 @@ void MakeOCDBTempTree()
     }
   }
 
-  fCDBEntry->SetObject(treeT);
+  cdbEntry->SetObject(treeT);
 
   // done; now save it..; add some metadata business etc.
-  Int_t firstRun   =  217000; // a runno from between Run1 and Run2 (LS1)
-  Int_t lastRun    =  999999999;
-  Int_t version = 0;
-  Int_t subversion = 0;
   Int_t beamPeriod =  1;
-
-  char filename[200];
-  sprintf(filename, "Temperature/Run%d_%d_v%d_s%d.root",
-	  firstRun, lastRun, version, subversion);
 
   AliCDBMetaData md;
   md.SetBeamPeriod(beamPeriod);
   md.SetResponsible("David Silvermyr");
   
-  AliCDBId id("EMCAL/Config/Temperature", firstRun, lastRun, version, subversion);
+  AliCDBId id("EMCAL/Config/Temperature", firstRun, lastRun);
 
-  fCDBEntry->SetId(id);
-  fCDBEntry->SetMetaData(&md);
+  cdbEntry->SetId(id);
+  cdbEntry->SetMetaData(&md);
 
-  // ok, write the file
-  TFile f(filename, "recreate");
-  if (!f.IsZombie()) {
-    f.cd();
-    fCDBEntry->Write("AliCDBEntry");
-    f.Close();
-  }
+  cdb->Put(cdbEntry);
 
 }
