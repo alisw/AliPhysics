@@ -42,6 +42,7 @@ set(SRCS
   AliAnalysisTaskCaloTrackCorrelation.cxx
   AliAnalysisTaskCaloTrackCorrelationM.cxx
   AliHistogramRanges.cxx
+  AliAnaWeights.cxx
   )
 
 # Headers from sources
