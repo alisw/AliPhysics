@@ -54,7 +54,6 @@ set(SRCS
     AliHFJetsContainer.cxx
     AliHFJetsContainerVertex.cxx
     AliAnalysisTaskSEHFJets.cxx
-    AliAnalysisTaskHFEDiJets.cxx
 )
 
 if(FASTJET_FOUND)
