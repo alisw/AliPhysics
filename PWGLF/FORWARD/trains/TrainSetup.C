@@ -491,7 +491,6 @@ protected:
    * @{ 
    * @name Overloadable behaviour 
    */
-  //------------------------------------------------------------------
   /** 
    * Create the analysis manager 
    * 
@@ -503,7 +502,6 @@ protected:
   {
     return new AliAnalysisManager(name,"Analysis Train");
   }
-  //------------------------------------------------------------------
   /** 
    * Create input handler 
    * 
@@ -520,7 +518,6 @@ protected:
     }
     return 0;
   }
-  //------------------------------------------------------------------
   /** 
    * Create MC input handler 
    * 
@@ -535,7 +532,6 @@ protected:
     mcHandler->SetReadTR(true); 
     return mcHandler;
   }
-  //------------------------------------------------------------------
   /** 
    * Create output event handler 
    * 
@@ -559,7 +555,6 @@ protected:
     
     return ret;
   }
-  //------------------------------------------------------------------
   /** 
    * Create physics selection, and add to manager
    * 
@@ -584,7 +579,6 @@ protected:
     mgr->RegisterExtraFile("event_stat.root");
     mgr->AddStatisticsTask(AliVEvent::kAny);
   }
-  //------------------------------------------------------------------
   /** 
    * Create centrality selection, and add to manager
    * 
@@ -599,13 +593,18 @@ protected:
     if (!ctask) return;
     if (mc) ctask->SetMCInput();
   }
-  //------------------------------------------------------------------
   /** 
    * Create analysis tasks.  Must be overloaded by sub-class
    * 
    * @param mgr  Manager
    */
   virtual void CreateTasks(AliAnalysisManager* mgr)=0;
+  /* @} */
+  // -----------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Functions for adding Cars (tasks) 
+   */
   /** 
    * Add a task using a script and possibly some arguments 
    * 
@@ -695,6 +694,115 @@ protected:
 		name.Data());
     return task;
   }
+  /* @} */
+  //------------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Set parameters on a task 
+   */
+  /** 
+   * Set a real parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 Double_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lf)",cls,task,what,val));
+  }    
+  /** 
+   * Set a boolean parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 Bool_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+  }    
+  /** 
+   * Set a string parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 const char* val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(\"%s\")",cls,task,what,val));
+  }
+  /* @} */
+  //------------------------------------------------------------------
+  /** 
+   * @{
+   * @name Set parameters on tasks based on options 
+   */
+  /** 
+   * Set a real parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		  const char* what,
+		  const char* opt,
+		  Double_t defval)
+  {
+    Double_t val = fOptions.AsDouble(opt,defval);;
+    SetOnTask(task, what, val);
+  }
+  /** 
+   * Set a boolean parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		  const char* what,
+		  const char* opt,
+		  Bool_t      /*defval*/)
+  {
+    Bool_t val = fOptions.AsBool(opt);;
+    SetOnTask(task, what, val);
+  }
+  /** 
+   * Set a string parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		 const char* what,
+		 const char* opt,
+		 const char* defval)
+  {
+    TString val = fOptions.AsString(opt,defval);;
+    SetOnTask(task, what, val.Data());
+  }
+  /* @} */
+
+  // -----------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Train query utilities 
+   */
   /** 
    * Check if we have an MC handler attached 
    * 
@@ -707,6 +815,7 @@ protected:
     if (!mgr) return false;
     return mgr->GetMCtruthEventHandler() != 0;
   }
+  /* @} */
   /** 
    * Set the name of the train - should be name of the class.  Must be
    * overloaded.
@@ -850,6 +959,12 @@ protected:
     //      nam.Data());
     return true;
   }
+  /* @} */
+  // -----------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name For post-processing 
+   */
   /** 
    * Save the setup as a ROOT script and possibly also a shell script
    * 
@@ -1044,8 +1159,7 @@ protected:
       << std::endl;
     f.close();
     gSystem->Exec("chmod a+x post.sh");
-  }
-    
+  }    
   /* @} */
   TString      fName;
   TString      fEscapedName;
