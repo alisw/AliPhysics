@@ -137,7 +137,7 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
 
   
 }
-AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,Int_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t variableMr = 1,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0, Int_t wei=-1)
+AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,Int_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t variableMr = 1,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0, Int_t wei=-1, Int_t selectgenerator=-1)
 {
   //
   // HFE flow task 
@@ -262,6 +262,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     if(useMC) {
       //printf("test put weights\n");
       if(wei>=0) backe->SetWithWeights(0);
+      task->SelectGenerator(selectgenerator);
     }
 
     

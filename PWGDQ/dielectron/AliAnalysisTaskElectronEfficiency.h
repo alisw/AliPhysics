@@ -28,12 +28,13 @@
 
 
 #include "AliAnalysisTaskSE.h"
-#include "TTreeStream.h"
 
 #include <vector>
-
+#include "AliAnalysisCuts.h"
+#include "AliAnalysisFilter.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
+#include "TTreeStream.h"//why?
 
 class AliPIDResponse;
 class TH1F;
@@ -42,26 +43,29 @@ class TH3F;
 class TList;
 class AliESDEvent;
 class AliMCEvent;
-class AliESDtrackCuts;
-class AliDielectronPID;
-class TString;
+
 
 class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
  public:
-
-  AliAnalysisTaskElectronEfficiency(const char *name = "AliAnalysisTaskElectronEfficiency");
+  
+  //AliAnalysisTaskElectronEfficiency();
+  /// default constructor is mandatory to call in the AddTask: 'task->SetTriggerMask(triggerNames);'
+  /// dont understand how this is inherited from: void AliEventTagCuts::SetTriggerMask(ULong64_t trmask)
+  /// and it can crash, so instead, we implement the function and checks within this task, as done in 'AliAnalysisTaskMultiDielectron'.
+  AliAnalysisTaskElectronEfficiency(const char *name); //const char *name = "AliAnalysisTaskElectronEfficiency"
   virtual ~AliAnalysisTaskElectronEfficiency();
   
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(const Option_t*);
   
-  void          SetMC(Bool_t hasMC)                           {fIsMC = hasMC;}
-  void          SetRequireVertex(Bool_t bReqVtx)              {fRequireVtx=bReqVtx;}
-  void          SetMaxVertexZ(Double_t maxZ)                  {fMaxVtxZ=maxZ;}
+  void          UsePhysicsSelection(Bool_t phy=kTRUE)         {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
+  void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
+  void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
   void          SetCentralityRange(Double_t min, Double_t max){fCentMin=min; fCentMax=max;}
   void          SetCheckV0daughterElectron(Bool_t bCheckV0)   {fCheckV0daughterElectron=bCheckV0;}
   void          SetCutInjectedSignal(Bool_t bCutInj)          {fCutInjectedSignal=bCutInj;}
+  void          SetNminEleInEventForRej(UInt_t nEle)          {fNminEleInEventForRej=nEle;}
   void          SetEtaRangeGEN(Double_t min, Double_t max)    {fEtaMinGEN=min; fEtaMaxGEN=max;}
   void          SetPtRangeGEN(Double_t min, Double_t max)     {fPtMinGEN=min; fPtMaxGEN=max;}
   void          SetSupportedCutInstance(Int_t supp)           {fSupportedCutInstance=supp;}
@@ -74,6 +78,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
     /**/        }
   void          SetRunBins(TString runs)                      { fsRunBins=runs; }
   void          AttachTrackCuts(AliAnalysisFilter *cuts)      { fvTrackCuts.push_back(cuts); }
+  void          AttachExtraTrackCuts(AliAnalysisFilter *cuts) { fvExtraTrackCuts.push_back(cuts); }
   void          AttachDoPrefilterEff(Bool_t doPref)           { fvDoPrefilterEff.push_back(doPref); }
   void          AttachRejCutMee(Double_t rejcut)              { fvRejCutMee.push_back(rejcut); }
   void          AttachRejCutTheta(Double_t rejcut)            { fvRejCutTheta.push_back(rejcut); }
@@ -84,12 +89,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          CreateHistoGen();
   void          CreateSupportHistos();
   
-  Int_t         GetNCutsets() const { return fvReco_Ele.size(); }
+  UInt_t        GetNCutsets() const { return fvReco_Ele.size(); } // 'cutset' and 'cutInstance' are used as synonymes in this task!
   //AliPIDResponse* GetPIDResponse() { return fPIDResponse; }
   
  private:
   Bool_t        IsInjectedSignal(AliMCEvent* mcEventLocal, Int_t tracklabel);
-  void          CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand);
+  void          CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra);
   Double_t      PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 fD1, TVector3 fD2);
   const char*   GetParticleName(Int_t pdg) {
     /**/          TParticlePDG* p1 = TDatabasePDG::Instance()->GetParticle(pdg);
@@ -100,39 +105,43 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
   AliPIDResponse*   fPIDResponse;
-  Bool_t            fIsMC;
+  Bool_t            fSelectPhysics;             // Whether to use physics selection
+  UInt_t            fTriggerMask;               // Event trigger mask
+  AliAnalysisCuts*  fEventFilter;               // event filter
   Bool_t            fRequireVtx;
   Bool_t            fCheckV0daughterElectron;
-  Bool_t            fCutInjectedSignal;
+  Bool_t            fCutInjectedSignal;         // this flag is needed because the function IsInjectedSignal() doesnt behave properly when there are no injected signals. (e.g. in p-Pb MC)
+  UInt_t            fNminEleInEventForRej;      // should be fNminEleInEventForRej=2, because if there are less than 2 electrons, then no random ee-pair would be possible.
+  Int_t             fSupportedCutInstance;      // for debugging
+  //Int_t             fEventcount;
+  
   Double_t          fMaxVtxZ;
-  Double_t          fCentMin;
+  Double_t          fCentMin;                   // should be fCentMin=-1 for pp and p-Pb
   Double_t          fCentMax;
   Double_t          fEtaMinGEN;
   Double_t          fEtaMaxGEN;
   Double_t          fPtMinGEN;
   Double_t          fPtMaxGEN;
-  Int_t             fSupportedCutInstance;
-  //Int_t             fEventcount; // for debugging
-  
   Int_t             fNptBins;
   Int_t             fNetaBins;
   Int_t             fNphiBins;
   Double_t*         fPtBins;
   Double_t*         fEtaBins;
   Double_t*         fPhiBins;
-  TString           fsRunBins; // for run dependency histogram
+  TString           fsRunBins;                  // for run dependency histograms
   
   //Cut Settings
   std::vector<AliAnalysisFilter*> fvTrackCuts;
+  std::vector<AliAnalysisFilter*> fvExtraTrackCuts; // used in prefilter cutsets for global electron cuts to find relevant events for prefilter efficiency determination. // has to be a subset of 'fvTrackCuts', otherwise the treatment is incorrect!
   std::vector<Bool_t>             fvDoPrefilterEff;
   std::vector<Double_t>           fvRejCutMee;
   std::vector<Double_t>           fvRejCutTheta;
   std::vector<Double_t>           fvRejCutPhiV;
   //Efficiency Histograms
   TH3F*                           fNgen;
-  std::vector<TH3F*>              fvReco_Ele;
-  std::vector<TH3F*>              fvReco_Ele_poslabel; // store also result when using only positive label tracks.
-  TH3F*                           fAllPions;
+  std::vector<TH3F*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3F*>              fvReco_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
+  std::vector<TH3F*>              fvAllPionsForRej;     // testparticles for prefilter efficiency determination.
   std::vector<TH3F*>              fvPionsRejByAllSigns;
   std::vector<TH3F*>              fvPionsRejByUnlike;
   //std::vector<TH3F*>             fvReco_Pio; // be really careful if you need to implement this (see comments in UserExec).
@@ -141,6 +150,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   
+  TH1D*                           fEventStat;               // ! Histogram with event statistics
   
   //Output Tree with Tracks
   TTree*                          tracksT;
@@ -191,7 +201,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Float_t   pyMC;
   Float_t   pzMC;
   UInt_t    selectedByCut; // bit mask
+  UInt_t    selectedByExtraCut; // bit mask
   
+  //protected:
+  enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kEventStatBins};
+
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
   

@@ -562,8 +562,11 @@ void AliAnaCaloTrackCorrBaseClass::InitDebug()
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
   
   if( GetIsolationCut()->GetDebug() >= 0 )
-    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()   ->ClassName(),GetIsolationCut()->GetDebug());
-  
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()->ClassName(),GetIsolationCut()->GetDebug());
+
+  if( GetNeutralMesonSelection()->GetDebug() >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetNeutralMesonSelection()->ClassName(),GetNeutralMesonSelection()->GetDebug());
+    
   //printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
 }
 

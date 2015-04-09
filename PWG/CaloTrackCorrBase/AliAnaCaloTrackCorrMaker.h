@@ -71,6 +71,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    SwitchOnDataControlHistograms()  { fFillDataControlHisto = kTRUE  ; }
   void    SwitchOffDataControlHistograms() { fFillDataControlHisto = kFALSE ; }
 
+  void    SwitchOnSumw2Histograms()     { fSumw2 = kTRUE      ; }
+  void    SwitchOffSumw2Histograms()    { fSumw2 = kFALSE     ; }
   
   AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
                                                                         return fReader    ; }
@@ -100,17 +102,27 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   // General Data members
   
   AliCaloTrackReader  *  fReader ;                   ///<  Pointer to AliCaloTrackReader.
+    
   AliCalorimeterUtils *  fCaloUtils ;                ///<  Pointer to AliCalorimeterUtils.
   
   TList *  fOutputContainer ;                        //!<! Output histograms container.
+    
   TList *  fAnalysisContainer ;                      ///<  List with analysis pointers.
+    
   Bool_t   fMakeHisto ;                              ///<  If true makes final analysis with histograms as output.
+    
   Bool_t   fMakeAOD ;                                ///<  If true makes analysis generating AODs.
+    
   Int_t    fAnaDebug;                                ///<  Debugging info.
+    
   TList *  fCuts ;	                                 //!<! List with analysis cuts.
+    
   Double_t fScaleFactor ;                            ///<  Scaling factor needed for normalization.
+    
   Bool_t   fFillDataControlHisto;                    ///<  Fill histograms only interesting with data.
-  
+    
+  Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
+    
   // Control histograms
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
@@ -169,7 +181,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,22) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,23) ;
   /// \endcond
 
 } ;

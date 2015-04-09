@@ -105,6 +105,8 @@ set(SRCS
   AliAnalysisTaskHFEQA.cxx
   AliAnalysisTaskHFEemcQA.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
+  AliAnalysisTaskHFEMulti.cxx
+  AliHFEhadronicbackground.cxx
   )
 
 # Headers from sources

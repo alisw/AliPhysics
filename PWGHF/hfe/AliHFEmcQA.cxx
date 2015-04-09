@@ -226,15 +226,6 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
       fMCQACollection->CreateTH1Farray(Form("etapspectra_centrbin%i",centbin), "etap yields: MC p_{t} ", iBin[1],kPtRange);
       fMCQACollection->CreateTH1Farray(Form("rhospectra_centrbin%i",centbin), "rho yields: MC p_{t} ", iBin[1],kPtRange);
 
-      fMCQACollection->CreateTH1Farray(Form("pionspectrapri_centrbin%i",centbin), "pion yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("etaspectrapri_centrbin%i",centbin), "eta yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("pionspectrasec_centrbin%i",centbin), "pion yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("etaspectrasec_centrbin%i",centbin), "eta yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("pionspectraLogpri_centrbin%i",centbin), "pion yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("etaspectraLogpri_centrbin%i",centbin), "eta yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("pionspectraLogsec_centrbin%i",centbin), "pion yields: MC p_{t} ", iBin[1],kPtRange);
-      fMCQACollection->CreateTH1Farray(Form("etaspectraLogsec_centrbin%i",centbin), "eta yields: MC p_{t} ", iBin[1],kPtRange);
-
       fMCQACollection->CreateTH1F(Form("pionspectraLog_centrbin%i",centbin), "pion yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
       fMCQACollection->CreateTH1F(Form("etaspectraLog_centrbin%i",centbin), "eta yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
       fMCQACollection->CreateTH1F(Form("omegaspectraLog_centrbin%i",centbin), "omega yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
@@ -243,13 +234,16 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
       fMCQACollection->CreateTH1F(Form("rhospectraLog_centrbin%i",centbin), "rho yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
       fMCQACollection->CreateTH1F(Form("kaonspectraLog_centrbin%i",centbin), "kaon yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
       fMCQACollection->CreateTH1F(Form("k0LspectraLog_centrbin%i",centbin), "k0L yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH1F(Form("k0SspectraLog_centrbin%i",centbin), "k0S yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH1F(Form("lamdaspectraLog_centrbin%i",centbin), "lamda yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH1F(Form("sigmaspectraLog_centrbin%i",centbin), "sigma yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
 
-      fMCQACollection->CreateTH2F(Form("pionspectraLog2D_centrbin%i",centbin), "pion yields: MC p_{t} ", 32, -1.5, 30.5, iBin[0],kPtbound[0], kPtbound[1], 1);
-      fMCQACollection->CreateTH2F(Form("etaspectraLog2D_centrbin%i",centbin), "eta yields: MC p_{t} ", 32, -1.5, 30.5, iBin[0],kPtbound[0], kPtbound[1], 1);
-      fMCQACollection->CreateTH2F(Form("omegaspectraLog2D_centrbin%i",centbin), "omega yields: MC p_{t} ", 32, -1.5, 30.5, iBin[0],kPtbound[0], kPtbound[1], 1);
-      fMCQACollection->CreateTH2F(Form("phispectraLog2D_centrbin%i",centbin), "phi yields: MC p_{t} ", 32, -1.5, 30.5, iBin[0],kPtbound[0], kPtbound[1], 1);
-      fMCQACollection->CreateTH2F(Form("etapspectraLog2D_centrbin%i",centbin), "etap yields: MC p_{t} ", 32, -1.5, 30.5, iBin[0],kPtbound[0], kPtbound[1], 1);
-      fMCQACollection->CreateTH2F(Form("rhospectraLog2D_centrbin%i",centbin), "rho yields: MC p_{t} ", 32, -1.5, 30.5, iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH2F(Form("pionspectraLog2D_centrbin%i",centbin), "pion yields: MC p_{t} ", 42, -1.5, 40.5, iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH2F(Form("etaspectraLog2D_centrbin%i",centbin), "eta yields: MC p_{t} ", 42, -1.5, 40.5, iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH2F(Form("omegaspectraLog2D_centrbin%i",centbin), "omega yields: MC p_{t} ", 40, -1.5, 40.5, iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH2F(Form("phispectraLog2D_centrbin%i",centbin), "phi yields: MC p_{t} ", 42, -1.5, 40.5, iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH2F(Form("etapspectraLog2D_centrbin%i",centbin), "etap yields: MC p_{t} ", 45, -1.5, 40.5, iBin[0],kPtbound[0], kPtbound[1], 1);
+      fMCQACollection->CreateTH2F(Form("rhospectraLog2D_centrbin%i",centbin), "rho yields: MC p_{t} ", 42, -1.5, 40.5, iBin[0],kPtbound[0], kPtbound[1], 1);
 
       fMCQACollection->CreateTH1F(Form("piondaughters_centrbin%i",centbin), "pion yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
       fMCQACollection->CreateTH1F(Form("etadaughters_centrbin%i",centbin), "eta yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
@@ -510,8 +504,8 @@ void AliHFEmcQA::GetMesonKine()
   AliMCParticle *mctrackd= NULL;
   Int_t id1=0, id2=0;
 
-
-  if(fCentrality>=11) {
+ 
+  if(fCentrality>11) {
       AliWarning(Form("Centrality out of histogram array limits: %d", fCentrality));
       return;
   }
@@ -537,15 +531,7 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("pionspectra_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("pionspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("pionspectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
-            if(imc>fMCEvent->GetNumberOfPrimaries()) {
-              fMCQACollection->Fill(Form("pionspectrasec_centrbin%i",fCentrality),mctrack0->Pt());
-              fMCQACollection->Fill(Form("pionspectraLogsec_centrbin%i",fCentrality),mctrack0->Pt());
-            }
-            else {
-              fMCQACollection->Fill(Form("pionspectrapri_centrbin%i",fCentrality),mctrack0->Pt());
-              fMCQACollection->Fill(Form("pionspectraLogpri_centrbin%i",fCentrality),mctrack0->Pt());
-            }
-          }
+	}
           id1=mctrack0->GetFirstDaughter();
           id2=mctrack0->GetLastDaughter();
           if(!((id2-id1)==2)) continue;
@@ -565,14 +551,6 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("etaspectra_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("etaspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("etaspectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
-            if(imc>fMCEvent->GetNumberOfPrimaries()) {
-              fMCQACollection->Fill(Form("etaspectrasec_centrbin%i",fCentrality),mctrack0->Pt());
-              fMCQACollection->Fill(Form("etaspectraLogsec_centrbin%i",fCentrality),mctrack0->Pt());
-            }
-            else {
-              fMCQACollection->Fill(Form("etaspectrapri_centrbin%i",fCentrality),mctrack0->Pt());
-              fMCQACollection->Fill(Form("etaspectraLogpri_centrbin%i",fCentrality),mctrack0->Pt());
-            }
           } 
           id1=mctrack0->GetFirstDaughter();
           id2=mctrack0->GetLastDaughter();
@@ -664,7 +642,26 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("k0LspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
           }
        }
-     }
+     
+     else if(TMath::Abs(mctrack0->PdgCode()) == 310) // k0S
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill(Form("k0SspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
+          }
+       }
+     else if(TMath::Abs(mctrack0->PdgCode()) == 3122) // lamda
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill(Form("lamdaspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
+          }
+       }
+     else if(TMath::Abs(mctrack0->PdgCode()) == 3222) // sigma
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill(Form("sigmaspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
+          }
+       }
+    }
 
 }
 //__________________________________________
@@ -1745,6 +1742,13 @@ Int_t AliHFEmcQA::GetSource(const TParticle * const mcpart) const
 //__________________________________________
 Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
 {
+  Double_t mpt;
+  return GetElecSource(mcpart, isElec, mpt);
+}
+
+//__________________________________________
+Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_t &mpt) const
+{
   // decay particle's origin 
 
   if(!mcpart){
@@ -1769,6 +1773,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
   TParticle *partMother = mctrack->Particle();
   TParticle *partMotherCopy = mctrack->Particle();
   Int_t maPdgcode = partMother->GetPdgCode();
+  mpt = partMother->Pt();
   Int_t grmaPdgcode = 0;
   Int_t ggrmaPdgcode;
 
@@ -1776,9 +1781,10 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
 
    if(TMath::Abs(maPdgcode)==443){ // J/spi
       Int_t jLabel = partMother->GetFirstMother();
-      if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))){
+      if((jLabel>=0) && (mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))){
         TParticle* grandMa = mctrack->Particle();
         Int_t grandMaPDG = grandMa->GetPdgCode();
+        mpt = grandMa->Pt();
         if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) return kB2Jpsi;
       }
       return kJpsi;   
@@ -1795,6 +1801,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
      // iterate until you find B hadron as a mother or become top ancester 
      for (Int_t i=1; i<fgkMaxIter; i++){
 
+        mpt = partMother->Pt();
         Int_t jLabel = partMother->GetFirstMother();
         if (jLabel == -1){
           return kDirectCharm;
@@ -1811,6 +1818,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
 
         for (Int_t j=0; j<fNparents; j++){
            if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
+             mpt = grandMa->Pt();
              return kBeautyCharm;
            }
         }
@@ -1821,6 +1829,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
    else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
      for (Int_t i=0; i<fNparents; i++){
         if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
+          mpt = partMotherCopy->Pt();
           return kDirectBeauty;
         }
      }
@@ -1828,30 +1837,40 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
    else if ( TMath::Abs(maPdgcode) == 22 ) { //conversion
 
      tmpMomLabel = partMotherCopy->GetFirstMother();
-     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) return -1;
+     mpt = partMotherCopy->Pt();
+     if(tmpMomLabel==-1) return kGamma; // no grand mother
+     if(tmpMomLabel<0) return -1;
+     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(tmpMomLabel)))) return -1;
      partMother = mctrack->Particle();
      maPdgcode = partMother->GetPdgCode();
 
      // check if the ligth meson is the decay product of heavy mesons
      tmpMomLabel = partMother->GetFirstMother();
-     if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+     if((tmpMomLabel>=0) && (mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(tmpMomLabel)))) { // grandgrandmother
       partMother = mctrack->Particle();
       grmaPdgcode = partMother->GetPdgCode();
+      mpt = partMother->Pt();
 
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
 
       tmpMomLabel = partMother->GetFirstMother();
-      if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+      if((tmpMomLabel>=0) && (mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(tmpMomLabel)))) { // grandgrandgrandmother
        partMother = mctrack->Particle();
        ggrmaPdgcode = partMother->GetPdgCode();
+       mpt = partMother->Pt();
 
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
-      }
+      } // grandgrandgrandmother
 
       if ( TMath::Abs(maPdgcode) == 111 ) {
         if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+         else if(grmaPdgcode == 310) return kGammaK0s2P;
+         else if(grmaPdgcode == 130) return kGammaK0l2P;
+         else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
+         else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
+         else if(grmaPdgcode == 3222) return kGammaSigma2P;
         return kGammaPi0;
       } 
       else if ( TMath::Abs(maPdgcode) == 221 ) {
@@ -1874,9 +1893,32 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
         return kGammaRho0;
       }
-      else origin = kElse;
+      else {
+	origin = kElse; // grandgrandmother there but nothing we identify
+      }
+     } // grandgrandmother
+     else { // no grandgrandmother
+
+       if ( TMath::Abs(maPdgcode) == 111 ) {
+	 return kGammaPi0;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 221 ) {
+	 return kGammaEta;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 223 ) {
+	 return kGammaOmega;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 333 ) {
+	 return kGammaPhi;
+       }
+       else if ( TMath::Abs(maPdgcode) == 331 ) {
+	 return kGammaEtaPrime; 
+       }
+       else if ( TMath::Abs(maPdgcode) == 113 ) {
+	 return kGammaRho0;
+       }
+       else origin = kElse;//grandmother is primary but nothing we identify
      }
-     else origin = kElse;
      return origin;
 
    } 
@@ -1884,24 +1926,32 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
 
      // check if the ligth meson is the decay product of heavy mesons
      tmpMomLabel = partMotherCopy->GetFirstMother();
-     if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+     mpt = partMotherCopy->Pt();
+     if((tmpMomLabel>=0) && (mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {//grandmother
       partMother = mctrack->Particle();
       grmaPdgcode = partMother->GetPdgCode();
+      mpt = partMother->Pt();
 
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kB2M;
       if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) return kD2M;
 
       tmpMomLabel = partMother->GetFirstMother();
-      if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+      if((tmpMomLabel>=0) && (mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) { // grandgrandmother
        partMother = mctrack->Particle();
        ggrmaPdgcode = partMother->GetPdgCode();
+       mpt = partMother->Pt();
 
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kB2M;
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kD2M;
-      }
+      } //grandgrandmother 
 
       if ( TMath::Abs(maPdgcode) == 111 ) {
         if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+         else if(grmaPdgcode == 310) return kK0s2P;
+         else if(grmaPdgcode == 130) return kK0l2P;
+         else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
+         else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
+         else if(grmaPdgcode == 3222) return kSigma2P;
         return kPi0;
       } 
       else if ( TMath::Abs(maPdgcode) == 221 ) {
@@ -1924,19 +1974,55 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
         return kRho0;
       } 
-      else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
+      else if ( TMath::Abs(maPdgcode) == 321 ) {
         return kKe3;
       }
-      else origin = kElse;
+      else if ( TMath::Abs(maPdgcode) == 130 ) {
+        return kK0L;
+      }
+      else origin = kElse; //grandmother exist but nothing we identify
      }
-     else origin = kElse;
+     else {// mother is primary
+       
+       if ( TMath::Abs(maPdgcode) == 111 ) {
+	 return kPi0;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 221 ) {
+	 return kEta;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 223 ) {
+	 return kOmega;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 333 ) {
+	 return kPhi;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 331 ) {
+	 return kEtaPrime;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 113 ) {
+	 return kRho0;
+       } 
+       else if ( TMath::Abs(maPdgcode) == 321 ) {
+	 return kKe3;
+       }
+       else if ( TMath::Abs(maPdgcode) == 130 ) {
+	 return kK0L;
+       }else origin = kElse;
+     }
 
-   }
+   }//mother is something different from J/psi,charm,beauty or gamma
    return origin;
 }
 
 //__________________________________________
 Int_t AliHFEmcQA::GetElecSource(const AliVParticle * const mctrack, Bool_t isElec) const
+{
+  Double_t mpt;
+  return GetElecSource(mctrack, isElec, mpt);
+}
+
+//__________________________________________
+Int_t AliHFEmcQA::GetElecSource(const AliVParticle * const mctrack, Bool_t isElec, Double_t &mpt) const
 {
   //
   // decay particle's origin 
@@ -1953,7 +2039,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliVParticle * const mctrack, Bool_t isEle
     const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
     if(esdmc){
       TParticle *mcpart =  esdmc->Particle();
-      return GetElecSource(mcpart, isElec);
+      return GetElecSource(mcpart, isElec, mpt);
     }
     else return -1;
   }
@@ -2067,6 +2153,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart, Bool_t is
     //conversion
     //
     tmpMomLabel = partMotherCopy->GetMother();
+    if(tmpMomLabel==-1) return kGamma;
     if((tmpMomLabel<0) || (tmpMomLabel>=fMCArray->GetEntriesFast())) {
       return -1;
     }
@@ -2078,7 +2165,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart, Bool_t is
     
     // check if the ligth meson is the decay product of heavy mesons
     tmpMomLabel = partMother->GetMother();
-    if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
+    if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
       if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
 	partMother = mctrack;
 	grmaPdgcode = partMother->GetPdgCode();
@@ -2091,7 +2178,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart, Bool_t is
 	}
 	
 	tmpMomLabel = partMother->GetMother();
-	if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
+	if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandgrandmother
 	  if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
 	    partMother = mctrack;
 	    ggrmaPdgcode = partMother->GetPdgCode();
@@ -2102,105 +2189,166 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart, Bool_t is
 	    if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
 	      return kGammaD2M;
 	    }
-	   }
+	  }
+	}//grandgrandgrandmother
+	
+	if ( TMath::Abs(maPdgcode) == 111 ) {
+	  if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+	    else if(grmaPdgcode == 310) return kGammaK0s2P;
+        else if(grmaPdgcode == 130) return kGammaK0l2P;
+        else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
+        else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
+        else if(grmaPdgcode == 3222) return kGammaSigma2P;
+	  return kGammaPi0;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 221 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+	  return kGammaEta;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 223 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+	  return kGammaOmega;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 333 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+	  return kGammaPhi;
 	}
-
-        if ( TMath::Abs(maPdgcode) == 111 ) {
-          if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-          return kGammaPi0;
-        } 
-        else if ( TMath::Abs(maPdgcode) == 221 ) {
-          if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-          return kGammaEta;
-        } 
-        else if ( TMath::Abs(maPdgcode) == 223 ) {
-          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-          return kGammaOmega;
-        } 
-        else if ( TMath::Abs(maPdgcode) == 333 ) {
-          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-          return kGammaPhi;
-        }
-        else if ( TMath::Abs(maPdgcode) == 331 ) {
-          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
-          return kGammaEtaPrime; 
-        }
-        else if ( TMath::Abs(maPdgcode) == 113 ) {
-          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
-          return kGammaRho0;
-        }
-        else origin = kElse;
-      }
+	else if ( TMath::Abs(maPdgcode) == 331 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
+	  return kGammaEtaPrime; 
+	}
+	else if ( TMath::Abs(maPdgcode) == 113 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
+	  return kGammaRho0;
+	}
+	else origin = kElse;//grandgrandmother but nothing we identify
+      }//mctrack grandgrandmother
     }
-    else origin = kElse;
-   
+    else {
+      // grandmother is primary
+      if ( TMath::Abs(maPdgcode) == 111 ) {
+	return kGammaPi0;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 221 ) {
+	return kGammaEta;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 223 ) {
+	return kGammaOmega;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 333 ) {
+	return kGammaPhi;
+      }
+      else if ( TMath::Abs(maPdgcode) == 331 ) {
+	return kGammaEtaPrime; 
+      }
+      else if ( TMath::Abs(maPdgcode) == 113 ) {
+	return kGammaRho0;
+      }
+      else origin = kElse;//grandmother is primary but nothing we identify
+    }
+    
     return origin;
     
   } 
-   else {
-     //
-     // check if the ligth meson is the decay product of heavy mesons
-     //
-     tmpMomLabel = partMotherCopy->GetMother();
-     if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
-       if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-	 partMother = mctrack;
-	 grmaPdgcode = partMother->GetPdgCode();
-	 
-	 if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
-	   return kB2M;
-	 }
-	 if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
-	   return kD2M;
-	 }
-	 
-	 tmpMomLabel = partMother->GetMother();
-	 if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
-	   if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-	     partMother = mctrack;
-	     ggrmaPdgcode = partMother->GetPdgCode();
-	     
-	     if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
-	       return kB2M;
-	     }
-	     if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
-	       return kD2M;
-	     }
-	   }
-	 }
-
-         if ( TMath::Abs(maPdgcode) == 111 ) {
-           if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	   return kPi0;
-         } 
-         else if ( TMath::Abs(maPdgcode) == 221 ) {
-           if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	   return kEta;
-         } 
-         else if ( TMath::Abs(maPdgcode) == 223 ) {
-           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	   return kOmega;
-         } 
-         else if ( TMath::Abs(maPdgcode) == 333 ) {
-           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	   return kPhi;
-         } 
-         else if ( TMath::Abs(maPdgcode) == 331 ) {
-           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
-  	   return kEtaPrime;
-         } 
-         else if ( TMath::Abs(maPdgcode) == 113 ) {
-           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
-	   return kRho0;
-         } 
-         else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
-	   return kKe3;
-         }
-         else origin = kElse;
-       }
-     }
-     else origin = kElse;
-   }
+  else {
+    //
+    // check if the ligth meson is the decay product of heavy mesons
+    //
+    tmpMomLabel = partMotherCopy->GetMother();
+    if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandmother
+      if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+	partMother = mctrack;
+	grmaPdgcode = partMother->GetPdgCode();
+	
+	if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+	  return kB2M;
+	}
+	if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+	  return kD2M;
+	}
+	
+	tmpMomLabel = partMother->GetMother();
+	if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
+	  if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+	    partMother = mctrack;
+	    ggrmaPdgcode = partMother->GetPdgCode();
+	    
+	    if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+	      return kB2M;
+	    }
+	    if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+	      return kD2M;
+	    }
+	  }
+	}//grandgrandmother
+	
+	if ( TMath::Abs(maPdgcode) == 111 ) {
+	  if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	   else if(grmaPdgcode == 310) return kK0s2P;
+       else if(grmaPdgcode == 130) return kK0l2P;
+       else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
+       else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
+       else if(grmaPdgcode == 3222) return kSigma2P;
+	  return kPi0;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 221 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	  return kEta;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 223 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	  return kOmega;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 333 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	  return kPhi;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 331 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
+	  return kEtaPrime;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 113 ) {
+	  if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
+	  return kRho0;
+	} 
+	else if ( TMath::Abs(maPdgcode) == 321 ) {
+	  return kKe3;
+	}
+	else if ( TMath::Abs(maPdgcode) == 130 ) {
+	  return kK0L;
+	}
+	else origin = kElse;//grandmother but nothing we identidy
+      }//mctrack grandmother
+    }
+    else {
+      // no grandmother
+      if ( TMath::Abs(maPdgcode) == 111 ) {
+	return kPi0;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 221 ) {
+	return kEta;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 223 ) {
+	return kOmega;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 333 ) {
+	return kPhi;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 331 ) {
+	return kEtaPrime;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 113 ) {
+	return kRho0;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 321 ) {
+	return kKe3;
+      }
+      else if ( TMath::Abs(maPdgcode) == 130 ) {
+	return kK0L;
+      }
+      else origin = kElse;//mother but nothing we identify
+    }
+  }//mother is something different from J/psi,charm,beauty or gamma
   return origin;
 }
 //__________________________________________
@@ -2211,7 +2359,9 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
   AliMCParticle *mctrackmother = NULL;  
   Double_t weightElecBg = 0.;
   Double_t mesonPt = 0.;
+  Double_t mesonMotherPt = 0.;
   Double_t bgcategory = 0.;
+  //Bool_t condition = kTRUE;
   Int_t mArr = -1;  
   Int_t mesonID = GetElecSource(mctrack->Particle(), kTRUE);
   if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
@@ -2220,8 +2370,11 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
   else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
   else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
   else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
+  else if(mesonID==kKe3 || mesonID==kGammaK2P|| mesonID==kK2P) mArr=6; //ke3 or K->pi->e
+  else if(mesonID==kK0L || mesonID==kGammaK0s2P|| mesonID==kK0s2P) mArr=7; //K0L->e+X or k0s->pi->e
+  else if(mesonID==kGammaLamda2P|| mesonID==kLamda2P) mArr=8;    //lambda->pi->e
 
-  Double_t datamc[25]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999};
+  Double_t datamc[30]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999,-999};
   Double_t xr[3]={-999,-999,-999};
   datamc[0] = mesonID;
   datamc[17] = mctrack->Pt(); //electron pt
@@ -2234,10 +2387,13 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
   TParticle *mcpart = mctrack->Particle();
   if(mcpart){
     datamc[14] = mcpart->GetUniqueID();
+    datamc[19] = (mcpart->IsPrimary()) ? 1 : 0;
   }
+  datamc[24] = mctrack->Label();
+  if(fMCEvent) datamc[20] = fMCEvent->IsPhysicalPrimary(mctrack->Label()) ? 1 : 0;
 
   if(!(mArr<0)){
-     if(mesonID>=kGammaPi0) {  // conversion electron, be careful with the enum odering 
+     if((mesonID>=kGammaPi0 && mesonID<=kGammaRho0) || mesonID==kGammaK2P || mesonID==kGammaK0s2P || mesonID==kGammaLamda2P) {  // conversion electron, be careful with the enum odering 
         Int_t glabel=TMath::Abs(mctrack->GetMother()); // gamma label
         if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
           glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's label
@@ -2246,24 +2402,35 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
             bgcategory = 1.;
             datamc[1] = bgcategory;
             datamc[2] = mesonPt;
+            datamc[28] = mctrackmother->Eta();
             mctrackmother->XvYvZv(xr);
             datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
             datamc[12] = xr[2];
-
+	   
             mcpart = mctrackmother->Particle();
             if(mcpart){
               datamc[15] = mcpart->GetUniqueID();
+              datamc[21] = mcpart->IsPrimary() ? 1 : 0;
+	      //if(TMath::Abs(AliHFEtools::GetRapidity(mcpart))>0.8) condition = kFALSE;
             }
+            datamc[22] = fMCEvent->IsPhysicalPrimary(glabel) ? 1 : 0;
+            datamc[25] = glabel;
+            datamc[27] = fMCEvent->GetNumberOfPrimaries();
             if(glabel>fMCEvent->GetNumberOfPrimaries()) {
-              bgcategory = 2.;
-              datamc[1] = bgcategory;
+	      //condition = kFALSE;
+              bgcategory = 1.; 
+              datamc[1] = 2;
               //printf("I should be gamma meson = %d  mesonlabel= %d  NumberOfPrimaries= %d \n",mctrackmother->PdgCode(),glabel,fMCEvent->GetNumberOfPrimaries()); 
               glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+              datamc[26] = glabel;
               if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
                 datamc[3]=mctrackmother->PdgCode();
-                datamc[4]=mctrackmother->Pt();
+                mesonMotherPt=mctrackmother->Pt();
+                datamc[4]=mesonMotherPt; 
+                datamc[29]=mctrackmother->Eta();
                 if(TMath::Abs(mctrackmother->PdgCode())==310){
-                  bgcategory = 3.;
+                  bgcategory = 1.; // it was 3 in old code
+                  datamc[1] = 3;
                   glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother's mother
                   if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
                     datamc[5]=mctrackmother->PdgCode();
@@ -2286,6 +2453,8 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
           else bgcategory = -1.;
           datamc[1] = bgcategory;
           datamc[2] = mesonPt;
+          datamc[28] = mctrackmother->Eta();
+          datamc[23] = mctrackmother->PdgCode();
           mctrackmother->XvYvZv(xr);
           datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
           datamc[12] = xr[2];
@@ -2293,21 +2462,31 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
           mcpart = mctrackmother->Particle();
           if(mcpart){
             datamc[15] = mcpart->GetUniqueID();
+            datamc[21] = mcpart->IsPrimary() ? 1 : 0;
+	    //if(TMath::Abs(AliHFEtools::GetRapidity(mcpart))>0.8) condition = kFALSE;
           }
+          datamc[22] = fMCEvent->IsPhysicalPrimary(glabel) ? 1 : 0;
+          datamc[25] = glabel;
+          datamc[27] = fMCEvent->GetNumberOfPrimaries();
           if(glabel>fMCEvent->GetNumberOfPrimaries()) {
-            if(mesonID==kEta) bgcategory = -2.82; // to consider new branching ratio for the eta Dalitz decay (1.41)
-            else bgcategory = -2.;
-            datamc[1] = bgcategory;
-            glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+	    //condition = kFALSE;
+            if(mesonID==kEta) bgcategory = -1.41; // to consider new branching ratio for the eta Dalitz decay (1.41). It was -2.82 in old code
+            else bgcategory = -1.; // it was -2 in old code
+            datamc[1] = -2;
+            glabel=TMath::Abs(mctrackmother->GetMother()); // mesons's mother
+            datamc[26] = glabel;
             if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
               datamc[3]=mctrackmother->PdgCode();
-              datamc[4]=mctrackmother->Pt();
+              mesonMotherPt=mctrackmother->Pt();
+              datamc[4]=mesonMotherPt;
+              datamc[29]=mctrackmother->Eta();
               if(TMath::Abs(mctrackmother->PdgCode())==310){
-               bgcategory = -3.;
-               glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother's mother
+               bgcategory = -1.; // it was -3 in old code
+               datamc[1] = -3;
+               glabel=TMath::Abs(mctrackmother->GetMother()); // mesons's mother's mother
                if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
                  datamc[5]=mctrackmother->PdgCode();
-                 glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+                 glabel=TMath::Abs(mctrackmother->GetMother()); // mesons's mother's mother's mother 
                  if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
                    datamc[6]=mctrackmother->PdgCode();
                  }
@@ -2318,28 +2497,32 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
         }
      }
 
-
+     Int_t centBin = 0;
      if(fIsPbPb){
-       Int_t centBin = GetWeightCentralityBin(fPerCentrality);
-       if(centBin < 0)return 0.;
-       weightElecBg=fElecBackgroundFactor[iBgLevel][centBin][mArr][kBgPtBins-1];                        
+       centBin = GetWeightCentralityBin(fPerCentrality);
+       if(centBin < 0) return 0.;
+     }
+
+     weightElecBg=fElecBackgroundFactor[iBgLevel][centBin][mArr][kBgPtBins-1];                         
+     if(mArr<=5 || mesonID==kKe3 || mesonID==kK0L){ 
        for(int ii=0; ii<kBgPtBins; ii++){              
 	 if((mesonPt > fBinLimit[ii]) && (mesonPt < fBinLimit[ii+1])){
 	   weightElecBg = fElecBackgroundFactor[iBgLevel][centBin][mArr][ii];
-	   break;
+  	   break;
 	 }
        }
      }
      else{
-       weightElecBg=fElecBackgroundFactor[iBgLevel][0][mArr][kBgPtBins-1];                         
        for(int ii=0; ii<kBgPtBins; ii++){              
-	 if((mesonPt > fBinLimit[ii]) && (mesonPt < fBinLimit[ii+1])){
-	   weightElecBg = fElecBackgroundFactor[iBgLevel][0][mArr][ii];
-	   break;
+	 if((mesonMotherPt > fBinLimit[ii]) && (mesonMotherPt < fBinLimit[ii+1])){
+	   weightElecBg = fElecBackgroundFactor[iBgLevel][centBin][mArr][ii];
+  	   break;
 	 }
        }
-     }    
+     }
   }
+
+  //if(!condition) weightElecBg=0.;
 
   datamc[13] = weightElecBg;
   datamc[16] = Double_t(fContainerStep);
@@ -2347,12 +2530,6 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
   datamc[7] = fHfeImpactR;
   datamc[8] = fHfeImpactnsigmaR;
 
-  datamc[19] = fRecPt;
-  datamc[20] = fRecEta;
-  datamc[21] = fRecPhi;
-  datamc[22] = fLyrhit;
-  datamc[23] = fLyrstat;
-  datamc[24] = fCentrality;
 
   if(fIsDebugStreamerON && fTreeStream){
    if(!iBgLevel){
@@ -2376,12 +2553,17 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
         "containerStep="<<datamc[16]<<
         "emcpt="<<datamc[17]<<
         "emceta="<<datamc[18]<<
-        "erecpt="<<datamc[19]<<
-        "ereceta="<<datamc[20]<<
-        "erecphi="<<datamc[21]<< 
-        "itshit="<<datamc[22]<<
-	"itsstat="<<datamc[23]<<
-        "centrality="<<datamc[24]
+        "eprim="<<datamc[19]<<
+        "ephysiprim="<<datamc[20]<<
+        "mprim="<<datamc[21]<< 
+        "mphysiprim="<<datamc[22]<<
+        "mesonPdg="<<datamc[23]<<
+        "glabel="<<datamc[24]<<
+        "motherglabel="<<datamc[25]<<
+        "gmotherglabel="<<datamc[26]<<
+        "NumberOfPrimaries="<<datamc[27]<<
+        "mesonEta="<<datamc[28]<<
+        "mesonMomEta="<<datamc[29]
         << "\n";
    }
   }
@@ -2402,7 +2584,9 @@ Double_t AliHFEmcQA::GetWeightFactor(const AliAODMCParticle * const mcpart, cons
 
   Double_t weightElecBg = 0.;
   Double_t mesonPt = 0.;
+  Double_t mesonMotherPt = 0.;
   Double_t bgcategory = 0.;
+  Bool_t condition = kTRUE;
   Int_t mArr = -1;
   Int_t mesonID = GetElecSource(mcpart, kTRUE);
   if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
@@ -2411,35 +2595,122 @@ Double_t AliHFEmcQA::GetWeightFactor(const AliAODMCParticle * const mcpart, cons
   else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
   else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
   else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
+  else if(mesonID==kKe3 || mesonID==kGammaK2P|| mesonID==kK2P) mArr=6; //ke3 or K->pi->e
+  else if(mesonID==kK0L || mesonID==kGammaK0s2P|| mesonID==kK0s2P) mArr=7; //K0L->e+X or k0s->pi->e
+  else if(mesonID==kGammaLamda2P|| mesonID==kLamda2P) mArr=8;    //lambda->pi->e
+
+  Double_t datamc[30]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999,-999};
+  Double_t xr[3]={-999,-999,-999};
+  datamc[0] = mesonID;
+  datamc[17] = mcpart->Pt(); //electron pt
+  datamc[18] = mcpart->Eta(); //electron eta
+
+  mcpart->XvYvZv(xr);
+  datamc[9] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+  datamc[10] = xr[2];
+
+  datamc[19] = (mcpart->IsPrimary()) ? 1 : 0;
+  datamc[20] = (mcpart->IsPhysicalPrimary()) ? 1 : 0;
+
+  datamc[24] = mcpart->Label();
 
   if(!(mArr<0)){
 
      AliAODMCParticle *mctrackmother = NULL; // will change all the time
 
-     if(mesonID>=kGammaPi0) {  // conversion electron, be careful with the enum odering
+     if((mesonID>=kGammaPi0 && mesonID<=kGammaRho0) || mesonID==kGammaK2P || mesonID==kGammaK0s2P || mesonID==kGammaLamda2P) { // conversion electron
         Int_t iLabel = mcpart->GetMother(); //gamma label
         if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
         iLabel = mctrackmother->GetMother(); //gamma's mother's label
         if(!(mctrackmother= dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
         mesonPt = mctrackmother->Pt(); //meson pt
+        datamc[28] = mctrackmother->Eta(); //meson eta
         bgcategory = 1.;
+	if(TMath::Abs(AliHFEtools::GetRapidity(mctrackmother))>0.8) condition = kFALSE;
+	if(!mctrackmother->IsPrimary()) condition = kFALSE;
+        datamc[1] = bgcategory;
+        datamc[2] = mesonPt;
+        mctrackmother->XvYvZv(xr);
+        datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+        datamc[12] = xr[2];
+        
+        datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+        datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
 
-        //if(glabel>fMCEvent->GetNumberOfPrimaries()) bgcategory = 2.;
+        //bgcategory 2, 3 is not defined for AOD
+ 
+        iLabel=mctrackmother->GetMother(); // gamma's mother's mother
+        datamc[26] = iLabel;
+        if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+          datamc[3]=mctrackmother->PdgCode();
+          mesonMotherPt=mctrackmother->Pt();
+          datamc[4]=mesonMotherPt;
+          datamc[29] = mctrackmother->Eta(); //meson mother's eta
+          if(TMath::Abs(mctrackmother->PdgCode())==310){
+            datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+            datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+            iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
+            if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+              datamc[5]=mctrackmother->PdgCode();
+              iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
+              if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+                datamc[6]=mctrackmother->PdgCode();
+              }
+            }
+          }
+        }
      }
      else{ // nonHFE except for the conversion electron
         Int_t iLabel = mcpart->GetMother(); //meson label
         if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
         mesonPt = mctrackmother->Pt(); //meson pt
+        datamc[28] = mctrackmother->Eta(); //meson eta
         if(mesonID==kEta) bgcategory = -1.41; // to consider new branching ratio for the eta Dalitz decay
         else bgcategory = -1.;
+	if(TMath::Abs(AliHFEtools::GetRapidity(mctrackmother))>0.8) condition = kFALSE;
+	if(!mctrackmother->IsPrimary()) condition = kFALSE;
+        datamc[1] = bgcategory;
+        datamc[2] = mesonPt;
+        datamc[23] = mctrackmother->PdgCode();
+        mctrackmother->XvYvZv(xr);
+        datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+        datamc[12] = xr[2];
 
-        //if(glabel>fMCEvent->GetNumberOfPrimaries()) bgcategory = -2.;
+        datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+        datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+
+        //bgcategory 2, 3 is not defined for AOD
+
+        iLabel=mctrackmother->GetMother(); // mesons' mother
+        datamc[26] = iLabel;
+        if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+          datamc[3]=mctrackmother->PdgCode();
+          mesonMotherPt=mctrackmother->Pt();
+          datamc[4]=mesonMotherPt;
+          datamc[29] = mctrackmother->Eta(); //meson mother's eta
+          if(TMath::Abs(mctrackmother->PdgCode())==310){
+            datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+            datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+            iLabel=mctrackmother->GetMother(); // mesons' mother's mother
+            if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+              datamc[5]=mctrackmother->PdgCode();
+              iLabel=mctrackmother->GetMother(); // meson's mother's mother's mother
+              if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){ 
+                datamc[6]=mctrackmother->PdgCode();
+              }
+            }
+          }
+        }
      }
 
-     if(fIsPbPb){
-       Int_t centBin = GetWeightCentralityBin(fPerCentrality);
-       if(centBin < 0)return 0.;
-       weightElecBg=fElecBackgroundFactor[iBgLevel][centBin][mArr][kBgPtBins-1];
+     Int_t centBin = 0;
+     if(fIsPbPb) {
+       centBin = GetWeightCentralityBin(fPerCentrality);
+       if(centBin < 0) return 0.;
+     }
+
+     weightElecBg=fElecBackgroundFactor[iBgLevel][centBin][mArr][kBgPtBins-1];
+     if(mArr<=5 || mesonID==kKe3 || mesonID==kK0L){
        for(int ii=0; ii<kBgPtBins; ii++){
          if((mesonPt > fBinLimit[ii]) && (mesonPt < fBinLimit[ii+1])){
            weightElecBg = fElecBackgroundFactor[iBgLevel][centBin][mArr][ii];
@@ -2448,14 +2719,59 @@ Double_t AliHFEmcQA::GetWeightFactor(const AliAODMCParticle * const mcpart, cons
        }
      }
      else{
-       weightElecBg=fElecBackgroundFactor[iBgLevel][0][mArr][kBgPtBins-1];
        for(int ii=0; ii<kBgPtBins; ii++){
-         if((mesonPt > fBinLimit[ii]) && (mesonPt < fBinLimit[ii+1])){
-           weightElecBg = fElecBackgroundFactor[iBgLevel][0][mArr][ii];
+         if((mesonMotherPt > fBinLimit[ii]) && (mesonMotherPt < fBinLimit[ii+1])){
+           weightElecBg = fElecBackgroundFactor[iBgLevel][centBin][mArr][ii];
            break;
          }
        }
      }
+  }
+
+  if(!condition) weightElecBg=0.;
+
+  datamc[13] = weightElecBg;
+  datamc[16] = Double_t(fContainerStep);
+
+  datamc[7] = fHfeImpactR;
+  datamc[8] = fHfeImpactnsigmaR;
+
+
+  if(fIsDebugStreamerON && fTreeStream){
+   if(!iBgLevel){
+    (*fTreeStream)<<"nonhfeQA"<<
+        "mesonID="<<datamc[0]<<
+        "bgcategory="<<datamc[1]<<
+        "mesonPt="<<datamc[2]<<
+        "mesonMomPdg="<<datamc[3]<<
+        "mesonMomPt="<<datamc[4]<<
+        "mesonGMomPdg="<<datamc[5]<<
+        "mesonGGMomPdg="<<datamc[6]<<
+        "eIPAbs="<<datamc[7]<<
+        "eIPSig="<<datamc[8]<<
+        "eR="<<datamc[9]<<
+        "eZ="<<datamc[10]<<
+        "mesonR="<<datamc[11]<<
+        "mesonZ="<<datamc[12]<<
+        "weightElecBg="<<datamc[13]<<
+        "eUniqID="<<datamc[14]<<
+        "mesonUniqID="<<datamc[15]<<
+        "containerStep="<<datamc[16]<<
+        "emcpt="<<datamc[17]<<
+        "emceta="<<datamc[18]<<
+        "eprim="<<datamc[19]<<
+        "ephysiprim="<<datamc[20]<<
+        "mprim="<<datamc[21]<<
+        "mphysiprim="<<datamc[22]<<
+        "mesonPdg="<<datamc[23]<<
+        "glabel="<<datamc[24]<<
+        "motherglabel="<<datamc[25]<<
+        "gmotherglabel="<<datamc[26]<<
+        "NumberOfPrimaries="<<datamc[27]<<
+        "mesonEta="<<datamc[28]<<
+        "mesonMomEta="<<datamc[29]
+        << "\n";
+   }
   }
 
   Double_t returnval = bgcategory*weightElecBg;

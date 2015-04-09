@@ -37,7 +37,11 @@ TObject(),
   fRunNumber(0),
   fTrigger(0),
   fSPDMultiplicity(0),
-  fPileupFlag(kFALSE)
+  fPileupFlag(kFALSE),
+  fV0PlanePhi(0.),
+  fV0APlanePhi(0.),
+  fV0CPlanePhi(0.),
+  fTPCPlanePhi(0.)
 {
   //
   // Default constructor
@@ -70,7 +74,11 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   fRunNumber(ref.fRunNumber),
   fTrigger(ref.fTrigger),
   fSPDMultiplicity(ref.fSPDMultiplicity),
-  fPileupFlag(ref.fPileupFlag)
+  fPileupFlag(ref.fPileupFlag),
+  fV0PlanePhi(ref.fV0PlanePhi),
+  fV0APlanePhi(ref.fV0APlanePhi),
+  fV0CPlanePhi(ref.fV0CPlanePhi),
+  fTPCPlanePhi(ref.fTPCPlanePhi)
 {
   //
   // Copy constructor
