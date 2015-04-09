@@ -60,7 +60,13 @@ class FT2 : public TObject
     //
     Float_t  hitY;
     Float_t  hitZ;
-    Float_t  hitSect;
+    Int_t    hitSect;
+    //
+    void GetXYZLab(Float_t xyz[3]) const
+    {
+      float phi = (hitSect*20+10)*TMath::DegToRad(), cs=TMath::Cos(phi), sn=TMath::Sin(phi);      
+      xyz[0] = x*cs - hitY*sn; xyz[1] = x*sn + hitY*cs; xyz[2] = hitZ;
+    }
   };
   typedef struct FT2TPCLayer FT2TPCLayer_t;
 	
