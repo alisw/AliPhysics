@@ -1,12 +1,6 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoCoulomb: This is a Coulomb correction class which             //
-//  1. Reads in the dat from a file                                      //  
-//  2. Performs a linear interpolation in R and creates any array of     //
-//     interpolations                                                    //
-//  3. Interpolates in eta and returns the Coulomb correction to user    //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCoulomb.cxx
+///
 
 #include "AliFemtoCoulomb.h"
 //#include "Stiostream.h"
@@ -16,16 +10,19 @@
 #define fine_structure_const 0.00729735
 
 #ifdef __ROOT__
+/// \cond CLASSIMP
 ClassImp(AliFemtoCoulomb)
+/// \endcond
 #endif
 
-AliFemtoCoulomb::AliFemtoCoulomb() :
+AliFemtoCoulomb::AliFemtoCoulomb():
   fFile(""),
   fRadius(-1.0),
   fZ1Z2(1.0),
   fNLines(0)
 {
-  // Default constructor
+  /// Default constructor
+
   fFile = "/afs/rhic/star/hbt/coul/AliFemtoCorrectionFiles/correctionpp.dat";
   if (!fFile) {
     cout << " No file, dummy!" << endl;
@@ -39,13 +36,14 @@ AliFemtoCoulomb::AliFemtoCoulomb() :
   }
 }
 
-AliFemtoCoulomb::AliFemtoCoulomb(const AliFemtoCoulomb& aCoul) :
+AliFemtoCoulomb::AliFemtoCoulomb(const AliFemtoCoulomb& aCoul):
   fFile(aCoul.fFile),
   fRadius(aCoul.fRadius),
   fZ1Z2(aCoul.fZ1Z2),
   fNLines(0)
 {
-  // copy constructor
+  /// copy constructor
+
   CreateLookupTable(fRadius);
 }
 
@@ -55,7 +53,8 @@ AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, con
   fZ1Z2(0),
   fNLines(0)
 {
-  // constructor with explicit filename
+  /// constructor with explicit filename
+
   fFile = readFile;
   fRadius = radius;
   CreateLookupTable(fRadius);
@@ -64,12 +63,14 @@ AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, con
 }
 
 AliFemtoCoulomb::~AliFemtoCoulomb() {
-  // destructor
+  /// destructor
+
 }
 
 AliFemtoCoulomb& AliFemtoCoulomb::operator=(const AliFemtoCoulomb& aCoul)
 {
-  // assignment operator
+  /// assignment operator
+
   if (this == &aCoul)
     return *this;
 
@@ -78,25 +79,28 @@ AliFemtoCoulomb& AliFemtoCoulomb::operator=(const AliFemtoCoulomb& aCoul)
   fZ1Z2 = aCoul.fZ1Z2;
 
   CreateLookupTable(fRadius);
-  
+
   return *this;
 }
 
 
 void AliFemtoCoulomb::SetRadius(const double& radius) {
-  // set the coulomb radius
+  /// set the coulomb radius
+
   cout << " AliFemtoCoulomb::setRadius() " << endl;
   fRadius = radius;
   CreateLookupTable(fRadius);
 }
 
 double AliFemtoCoulomb::GetRadius() const {
-  // return coulomb radius
+  /// return coulomb radius
+
   return (fRadius);
 }
 
 void AliFemtoCoulomb::SetFile(const char* readFile) {
-  // set the filename with coulomb calculations
+  /// set the filename with coulomb calculations
+
   cout << " AliFemtoCoulomb::SetFile() " << endl;
   fFile = readFile;
   // Create new lookup table since file has changed
@@ -106,11 +110,12 @@ void AliFemtoCoulomb::SetFile(const char* readFile) {
 }
 
 void AliFemtoCoulomb::SetChargeProduct(const double& charge) {
-  // set pair charge
+  /// set pair charge
+
   cout << " AliFemtoCoulomb::SetChargeProduct() " << endl;
-  if ( fZ1Z2!=charge ) { 
+  if ( fZ1Z2 != charge ) {
     fZ1Z2 = charge;
-    if ( fZ1Z2>0 ) {
+    if ( fZ1Z2 > 0 ) {
       fFile = "/afs/rhic/star/hbt/coul/AliFemtoCorrectionFiles/correctionpp.dat";
     }
     else {
@@ -121,11 +126,12 @@ void AliFemtoCoulomb::SetChargeProduct(const double& charge) {
 }
 
 void AliFemtoCoulomb::CreateLookupTable(const double& radius) {
-  // Read radii from fFile
-  // Create array(pair) of linear interpolation between radii
+  /// Read radii from fFile
+  /// Create array(pair) of linear interpolation between radii
+
   cout << " AliFemtoCoulomb::CreateLookupTable() " << endl;
 
-  if (radius<0.0) {
+  if (radius < 0.0) {
     cout << " AliFemtoCoulomb::CreateLookupTable -> NEGATIVE RADIUS " << endl;
     cout << "  call AliFemtoCoulomb::SetRadius(r) with positive r " << endl;
     cerr << " AliFemtoCoulomb::CreateLookupTable -> NEGATIVE RADIUS " << endl;
@@ -199,8 +205,10 @@ void AliFemtoCoulomb::CreateLookupTable(const double& radius) {
   cout << "Lookup Table is created with " << fNLines << " points" << endl;
 }
 
-double AliFemtoCoulomb::CoulombCorrect(const double& eta) {
-  // Interpolates in eta
+double AliFemtoCoulomb::CoulombCorrect(const double& eta)
+{
+  /// Interpolates in eta
+
   if (fRadius < 0.0) {
     cout << "AliFemtoCoulomb::CoulombCorrect(eta) --> Trying to correct for negative radius!" << endl;
     cerr << "AliFemtoCoulomb::CoulombCorrect(eta) --> Trying to correct for negative radius!" << endl;
@@ -216,7 +224,7 @@ double AliFemtoCoulomb::CoulombCorrect(const double& eta) {
 
   static double tCorr = 0;
   tCorr = -1.0;
-  
+
   if ( (eta>fEta[0]) && (fEta[0]>0.0) ) {
     tCorr = fCoulomb[0];
     return (tCorr);
@@ -250,11 +258,11 @@ double AliFemtoCoulomb::CoulombCorrect(const double& eta) {
   // Make sure we found the right one
   if ( (fEta[low] >= eta) && (eta >= fEta[low+1]) ) {
     static double tLowEta = 0;
-    static double tHighEta = 0;    
+    static double tHighEta = 0;
     static double tLowCoulomb = 0;
     static double tHighCoulomb = 0;
     tLowEta = fEta[low];
-    tHighEta = fEta[low+1];    
+    tHighEta = fEta[low+1];
     tLowCoulomb = fCoulomb[low];
     tHighCoulomb = fCoulomb[low+1];
     //      cout << tLowEta << " *** Eta *** " << tHighEta << endl;
@@ -267,16 +275,15 @@ double AliFemtoCoulomb::CoulombCorrect(const double& eta) {
     cerr << "AliFemtoCoulomb::CoulombCorrect(eta) --> No correction" << endl;
     cerr << "  Check range of eta in file: Input eta  " << eta << endl;
     assert(0);
-  } 
+  }
   return (tCorr);
-
 }
 
-double AliFemtoCoulomb::CoulombCorrect(const double& eta,
-				const double& radius) {
-  // Checks radii ... input radius and fRadius
-  // Calls createLookupTable if neccessary
-  // Interpolate(linear) between etas in the created lookup table
+double AliFemtoCoulomb::CoulombCorrect(const double& eta, const double& radius)
+{
+  /// Checks radii ... input radius and fRadius
+  /// Calls createLookupTable if neccessary
+  /// Interpolate(linear) between etas in the created lookup table
 
   if (radius < 0.0) {
     if (fRadius < 0.0) {
@@ -307,12 +314,15 @@ double AliFemtoCoulomb::CoulombCorrect(const AliFemtoPair* pair) {
   return ( CoulombCorrect( Eta(pair) ) );;
 }
 
-double AliFemtoCoulomb::CoulombCorrect(const AliFemtoPair* pair, const double& radius) {
+double AliFemtoCoulomb::CoulombCorrect(const AliFemtoPair* pair, const double& radius)
+{
   return ( CoulombCorrect( Eta(pair),radius ) );
 }
 
-double AliFemtoCoulomb::Eta(const AliFemtoPair* pair) {
-  // calculate eta
+double AliFemtoCoulomb::Eta(const AliFemtoPair* pair)
+{
+  /// calculate eta
+
   static double px1,py1,pz1,px2,py2,pz2;
   static double px1new,py1new,pz1new;
   static double px2new,py2new,pz2new;
@@ -333,7 +343,7 @@ double AliFemtoCoulomb::Eta(const AliFemtoPair* pair) {
   py2 = pair->Track2()->FourMomentum().py();
   pz2 = pair->Track2()->FourMomentum().pz();
   e2 = pair->Track2()->FourMomentum().e();
-  
+
   tVcmsX = ( px1+px2 )/( e1+e2 );
   tVcmsY = ( py1+py2 )/( e1+e2 );
   tVcmsZ = ( pz1+pz2 )/( e1+e2 );
@@ -393,7 +403,7 @@ double AliFemtoCoulomb::Eta(const AliFemtoPair* pair) {
 
 TH1D* AliFemtoCoulomb::CorrectionHistogram(const double& mass1, const double& mass2, const int& nBins, 
 						const double& low, const double& high) {
-  // return correction histogram
+  /// return correction histogram
 
   if ( mass1!=mass2 ) {
     cout << "Masses not equal ... try again.  No histogram created." << endl;
@@ -404,52 +414,52 @@ TH1D* AliFemtoCoulomb::CorrectionHistogram(const double& mass1, const double& ma
   double qInv = low;
   //double dQinv = (high-low)/( (double)nBins );
   double eta;
-  for (int ii=1; ii<=nBins; ii++) 
-    {
-      qInv = correction->GetBinCenter(ii);
-      eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/( qInv );
-      CoulombCorrect( eta );
-      correction->Fill( qInv, CoulombCorrect(eta,fRadius) );
-    }
+  for (int ii=1; ii<=nBins; ii++) {
+    qInv = correction->GetBinCenter(ii);
+    eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/qInv;
+    CoulombCorrect( eta );
+    correction->Fill( qInv, CoulombCorrect(eta,fRadius) );
+  }
 
   return (correction);
 }
 
 #ifdef __ROOT__
-TH1D* AliFemtoCoulomb::CorrectionHistogram(const TH1D* histo, const double mass) {
+TH1D* AliFemtoCoulomb::CorrectionHistogram(const TH1D* histo, const double mass)
+{
   // return correction histogram - 1D case
   TH1D* correction = (TH1D*) ((TH1D*)histo)->Clone();
   correction->Reset();
   correction->SetDirectory(0);
-  int    nBins = correction->GetXaxis()->GetNbins();
+  int nBins = correction->GetXaxis()->GetNbins();
   const double kReducedMass = 0.5*mass;
   double qInv;
   double eta;
-  for (int ii=1; ii<=nBins; ii++) 
-    {
-      qInv = correction->GetBinCenter(ii);
-      eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/( qInv );
-      correction->Fill( qInv, CoulombCorrect(eta,fRadius) );
-    }
+  for (int ii=1; ii<=nBins; ii++) {
+    qInv = correction->GetBinCenter(ii);
+    eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/( qInv );
+    correction->Fill( qInv, CoulombCorrect(eta,fRadius) );
+  }
 
   return (correction);
 }
 
-TH3D* AliFemtoCoulomb::CorrectionHistogram(const TH3D* histo, const double mass) {
-  // return correction histogram - 3D case
+TH3D* AliFemtoCoulomb::CorrectionHistogram(const TH3D* histo, const double mass)
+{
+  /// return correction histogram - 3D case
   TH3D* correction = (TH3D*) ((TH3D*)histo)->Clone();
   correction->Reset();
   correction->SetDirectory(0);
-  int    nBinsX = correction->GetXaxis()->GetNbins();
-  int    nBinsY = correction->GetYaxis()->GetNbins();
-  int    nBinsZ = correction->GetZaxis()->GetNbins();
+  int nBinsX = correction->GetXaxis()->GetNbins();
+  int nBinsY = correction->GetYaxis()->GetNbins();
+  int nBinsZ = correction->GetZaxis()->GetNbins();
   const double kReducedMass = 0.5*mass;
   double eta;
   double qInv;
   int binNumber;
-  for (int ii=1; ii<=nBinsX; ii++) { 
-    for (int iii=1; iii<=nBinsY; iii++) {
-      for (int iv=1; iv<=nBinsZ; iv++) {
+  for (int ii = 1; ii <= nBinsX; ii++) {
+    for (int iii = 1; iii <= nBinsY; iii++) {
+      for (int iv  =1; iv <= nBinsZ; iv++) {
 	binNumber = histo->GetBin(ii,iii,iv);
 	qInv = histo->GetBinContent(binNumber);
 	eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/( qInv );
@@ -461,12 +471,13 @@ TH3D* AliFemtoCoulomb::CorrectionHistogram(const TH3D* histo, const double mass)
 }
 #endif
 
-double AliFemtoCoulomb::CoulombCorrect(const double& mass, const double& charge,
-				    const double& radius, const double& qInv) {
-  // return correction factor
+double AliFemtoCoulomb::CoulombCorrect(const double& mass, const double& charge, const double& radius, const double& qInv)
+{
+  /// return correction factor
+
   fRadius = radius;
   fZ1Z2 = charge;
   const double kReducedMass = 0.5*mass; // must be same mass particles
-  double eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/( qInv );
-  return ( CoulombCorrect(eta,fRadius) );
+  double eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/qInv;
+  return CoulombCorrect(eta,fRadius);
 }

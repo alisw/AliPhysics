@@ -872,8 +872,8 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
  * \return True if the patch is accepted, false otherwise.
  */
 Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
-  Int_t row, col;trg.GetPosition(col, row);
-  if(col < 0 | row < 0){
+  Int_t row(-1), col(-1); trg.GetPosition(col, row);
+  if(col < 0 || row < 0){
     AliError(Form("Patch outside range [col %d, row %d]", col, row));
     return kFALSE;
   }

@@ -37,7 +37,8 @@ TObject(),
   fMotherPdg(0),
   fSource(5),
   fSignal(kFALSE),
-  fEleSource(0)
+  fEleSource(0),
+  fEleSourcePt(0.)
 {
   //
   // Default constructor
@@ -57,7 +58,8 @@ AliHFEreducedMCParticle::AliHFEreducedMCParticle(const AliHFEreducedMCParticle &
   fMotherPdg(ref.fMotherPdg),
   fSource(ref.fSource),
   fSignal(ref.fSignal),
-  fEleSource(ref.fEleSource)
+  fEleSource(ref.fEleSource),
+  fEleSourcePt(ref.fEleSourcePt)
 {
   //
   // Copy constructor
@@ -82,6 +84,7 @@ AliHFEreducedMCParticle &AliHFEreducedMCParticle::operator=(const AliHFEreducedM
     fSource = ref.fSource;
     fSignal = ref.fSignal;
     fEleSource = ref.fEleSource;
+    fEleSourcePt = ref.fEleSourcePt;
     memcpy(fProductionVertex, ref.fProductionVertex, sizeof(Double_t) *3); 
     memcpy(fMotherProductionVertex, ref.fMotherProductionVertex, sizeof(Double_t) *3); 
   }

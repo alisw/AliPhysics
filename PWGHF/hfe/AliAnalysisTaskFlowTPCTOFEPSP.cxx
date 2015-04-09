@@ -61,6 +61,10 @@
 #include "AliAODTrack.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliAODMCHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliHFEcollection.h"
 
 #include "AliFlowCandidateTrack.h"
 #include "AliFlowEvent.h"
@@ -97,6 +101,7 @@ AliAnalysisTaskSE(),
   fAODArrayMCInfo(NULL),
   fBackgroundSubtraction(NULL),
   fMCQA(NULL),
+  fSelectGenerator(-1),
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -192,6 +197,7 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fAODArrayMCInfo(NULL),
   fBackgroundSubtraction(NULL),
   fMCQA(NULL),
+  fSelectGenerator(-1),
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -307,6 +313,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fAODArrayMCInfo(ref.fAODArrayMCInfo),
   fBackgroundSubtraction(ref.fBackgroundSubtraction),
   fMCQA(NULL),
+  fSelectGenerator(ref.fSelectGenerator),
   fVZEROEventPlane(ref.fVZEROEventPlane),
   fVZEROEventPlaneA(ref.fVZEROEventPlaneA),
   fVZEROEventPlaneC(ref.fVZEROEventPlaneC),
@@ -420,6 +427,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fAODArrayMCInfo = fAODArrayMCInfo;
   target.fBackgroundSubtraction = fBackgroundSubtraction;
   target.fMCQA = fMCQA;
+  target.fSelectGenerator = fSelectGenerator;
   target.fVZEROEventPlane = fVZEROEventPlane;
   target.fVZEROEventPlaneA = fVZEROEventPlaneA;
   target.fVZEROEventPlaneC = fVZEROEventPlaneC;
@@ -1728,7 +1736,9 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       //printf("Init fMCQA\n");
       fMCQA->Init();
       //printf("GetMesonKine\n");
-      if(!fAODAnalysis) fMCQA->GetMesonKine();
+      //if(!fAODAnalysis) fMCQA->GetMesonKine();
+      // Light variant of fMCQA->GetMesonKine();
+      GetMesonKine(binct);
     }
   }
     
@@ -2065,33 +2075,79 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       Int_t indexmother = -1;
       Int_t source = -1;
       Int_t mcQAsource = -1;
-      Double_t weightNonPhotonicFactor = 1.; 
+      Double_t weightNonPhotonicFactor = 1.;
+      Bool_t fillphotonic = kTRUE;
       if(mcthere) {
-	if(fAODAnalysis) source = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
-	if(fBackgroundSubtraction->GetLevelBack()>=0) {
-	  if(fMCQA) {
-	    mcQAsource = fMCQA->GetElecSource(mctrackaod, kTRUE);
-	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrackaod, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+	if(fAODAnalysis) {
+	  //printf("AOD\n");
+	  source = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
+	  //printf("source %d\n",source);
+	  if(fBackgroundSubtraction->GetLevelBack()>=0) {
+	    //printf("Background level %d\n",fBackgroundSubtraction->GetLevelBack());
+	    // weights
+	    if(fMCQA) {
+	      mcQAsource = fMCQA->GetElecSource(mctrackaod, kTRUE);
+	      weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrackaod, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE
+	      //printf("weight %f\n",weightNonPhotonicFactor);
+	    }
 	  }
+	   if(fSelectGenerator>=0) {
+	     //printf("SelectGenerator %d\n",fSelectGenerator);
+	     // select generator
+	     Int_t Prim = GetPrimary(TMath::Abs(track->GetLabel()));
+	     //printf("Prim %d\n",Prim);
+	     if(Prim>=0) {
+	       AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)fAODArrayMCInfo->At(TMath::Abs(Prim));
+	       Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle array
+	       if(IsFromHijing(trkIndexPrim)) {
+		 if(fSelectGenerator==1) fillphotonic = kFALSE;
+		 //printf("Is from Hijing\n");
+	       }
+	       else {
+		 if(fSelectGenerator==0) fillphotonic = kFALSE;
+	       }
+	     }
+	     else fillphotonic = kFALSE;
+	   }
 	}
 	else {
+	  //printf("ESD\n");
 	  if(mctrack) source = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
 	  if(fBackgroundSubtraction->GetLevelBack()>=0) {
+	    // weights
 	    if(fMCQA) {
 	      mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	      weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	    }
 	  }
+	  if(fSelectGenerator>=0) {
+	    // select generator
+	    Int_t Prim = GetPrimary(mctrack->GetLabel());
+	    if(Prim>=0) {
+	      AliMCParticle *MCtrackPrim = (AliMCParticle *)(fMCEvent->GetTrack(TMath::Abs(Prim)));
+	      Int_t trkIndexPrim = MCtrackPrim->GetLabel();//gives index of the particle in original MCparticle array
+	      if(IsFromHijing(trkIndexPrim)) {
+		if(fSelectGenerator==1) fillphotonic = kFALSE;
+	      }
+	      else {
+		if(fSelectGenerator==0) fillphotonic = kFALSE;
+	      }
+	    }
+	    else fillphotonic = kFALSE;
+	  }
 	}
       }
       //printf("source %d and weight %f\n",source,weightNonPhotonicFactor);
-      fBackgroundSubtraction->LookAtNonHFE(k, track, fInputEvent, weightNonPhotonicFactor, binct, deltaphi, source, indexmother, mcQAsource);
+      if(fillphotonic) {
+	//printf("Fill histos\n");
+	fBackgroundSubtraction->LookAtNonHFE(k, track, fInputEvent, weightNonPhotonicFactor, binct, deltaphi, source, indexmother, mcQAsource);
+      }
       //printf("Look At Non HFE\n");
     }
-
+    
     
   }
-
+  
   //////////////////////////////////////////////////////////////////////////////
   ///////////////////////////AFTERBURNER
   if (fAfterBurnerOn &  fMonitorQCumulant)
@@ -2100,23 +2156,23 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       fflowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
     }
   //////////////////////////////////////////////////////////////////////////////
-
-
-
+  
+  
+  
   //for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
   //  if((fBinCentralityLess[bincless]< cntr) && (cntr < fBinCentralityLess[bincless+1])) PostData(bincless+2,fflowEvent);
   //}
-
   
-
+  
+  
   if(fMonitorPhotonic) fBackgroundSubtraction->CountPoolAssociated(fInputEvent,binct);
-
+  
   //printf("Finish\n");
   
   PostData(1, fListHist);
- 
-
- 
+  
+  
+  
 }
 //______________________________________________________________________________
 AliFlowCandidateTrack *AliAnalysisTaskFlowTPCTOFEPSP::MakeTrack( Double_t mass, 
@@ -2155,4 +2211,268 @@ Double_t AliAnalysisTaskFlowTPCTOFEPSP::GetPhiAfterAddV2(Double_t phi,Double_t r
     if (TMath::AreEqualAbs(phiprev,phiend,fPrecisionPhi)) break;
   }
   return phiend;
+}
+//___________________________________________________________________________
+Bool_t AliAnalysisTaskFlowTPCTOFEPSP::IsFromHijing(Int_t Index)
+{
+  //
+  //Check if the particle is from Hijing or Enhanced event
+  //
+
+  Int_t nBG =-1;
+  
+  if(fAODAnalysis) {
+    AliAODMCHeader *mcHeader;
+   
+    
+    mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!mcHeader) {
+      //printf("Could not find MC Header in AOD\n");
+        return kFALSE;
+    }
+    
+    TList *List = mcHeader->GetCocktailHeaders();
+    AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(List->FindObject("Hijing"));
+    if (!hijingH){
+      //printf("no GenHijing header");
+        return kFALSE;
+    }
+    nBG = hijingH->NProduced();
+  }
+  else {
+
+    if(!fMCEvent) return kFALSE;
+    
+    TString genname=fMCEvent->GenEventHeader()->ClassName();
+    //Int_t typeHF=-1;
+    TList* List=0x0;
+    if(genname.Contains("CocktailEventHeader")){
+      AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
+      List=cockhead->GetHeaders();
+      AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(List->FindObject("Hijing"));
+      if (!hijingH){
+        //printf("no GenHijing header");
+        return kFALSE;
+      }
+      nBG = hijingH->NProduced();
+    }
+    else {
+      //printf("No cocktail generators\n");
+      return kFALSE;
+    }
+
+  }
+  
+    return (Index < nBG);
+}
+//_________________________________________
+
+Int_t AliAnalysisTaskFlowTPCTOFEPSP::GetPrimary(Int_t id)
+{
+    
+  //
+  // Return number of primary that has generated track
+  //
+
+  if(fAODAnalysis && (!fAODArrayMCInfo)) return -1;
+  if((!fAODAnalysis) && (!fMCEvent)) return -1;
+  
+  int current, parent;
+    parent=id;
+    while (1) {
+        current=parent;
+	if(fAODAnalysis) {
+	  AliAODMCParticle *Part = (AliAODMCParticle*)fAODArrayMCInfo->At(current);
+	  parent=Part->GetMother();
+	}
+	else {
+	  AliMCParticle *Part = (AliMCParticle *) fMCEvent->GetTrack(current);
+	  parent = ((TParticle *)Part->Particle())->GetFirstMother();
+	}
+        //  cout << "GetPartArr momid :"  << parent << endl;
+        if(parent<0) return current;
+    }
+}
+//__________________________________________
+void AliAnalysisTaskFlowTPCTOFEPSP::GetMesonKine(Int_t centrality) 
+{
+  //
+  // Get meson pt spectra
+  //
+
+  if(!fMCQA) return;
+  if(fAODAnalysis && (!fAODArrayMCInfo)) return;
+  if((!fAODAnalysis) && (!fMCEvent)) return;
+
+  TList *qalist = fMCQA->GetList();
+  //qalist->Print();
+  TList *mcQACollectionlist = (TList *) qalist->FindObject("list_TaskMCQA");
+  if(!mcQACollectionlist) {
+    //printf("No MC QA collection list\n");
+    return;
+  }
+  //mcQACollectionlist->Print();
+
+  if(centrality>=11) {
+    //printf("Centrality out of histogram array limits: %d", centrality);
+    return;
+  }
+
+
+  if(!fAODAnalysis) {
+
+     AliVParticle *mctrack2 = NULL;
+     AliMCParticle *mctrack0 = NULL;
+     TH2F *histo = 0x0;
+    
+     for(Int_t imc = 0; imc <fMCEvent->GetNumberOfPrimaries(); imc++){
+       if(!(mctrack2 = fMCEvent->GetTrack(imc))) continue;
+       TParticle* mcpart0 = fMCEvent->Stack()->Particle(imc);
+       if(!mcpart0) continue;
+       mctrack0 = dynamic_cast<AliMCParticle *>(mctrack2);
+       if(!mctrack0) continue;
+       if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))>0.8) continue;
+       // mc source
+       Float_t mcsource = fMCQA->GetElecSource(mctrack0, kFALSE);
+       // generator
+       Bool_t fillphotonic = kTRUE;
+       if(fSelectGenerator>=0) {
+	 // select generator
+	 Int_t Prim = GetPrimary(mctrack2->GetLabel());
+	 if(Prim>=0) {
+	   AliMCParticle *MCtrackPrim = (AliMCParticle *)(fMCEvent->GetTrack(TMath::Abs(Prim)));
+	   Int_t trkIndexPrim = MCtrackPrim->GetLabel();//gives index of the particle in original MCparticle array
+	   if(IsFromHijing(trkIndexPrim)) {
+	     if(fSelectGenerator==1) fillphotonic = kFALSE;
+	   }
+	   else {
+	     if(fSelectGenerator==0) fillphotonic = kFALSE;
+	   }
+	 }
+	 else fillphotonic = kFALSE;
+       }
+       if(!fillphotonic) continue;
+
+       
+       if(TMath::Abs(mctrack0->PdgCode()) == 111) // pi0 
+       {
+	 histo = (TH2F *) mcQACollectionlist->FindObject(Form("pionspectraLog2D_centrbin%i",centrality));
+	 if(histo) histo->Fill(mcsource,mctrack0->Pt()); 
+       }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 221) // eta 
+	 {
+	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("etaspectraLog2D_centrbin%i",centrality));
+	   if(histo) histo->Fill(mcsource,mctrack0->Pt());
+	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 223) // omega
+	 {
+	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("omegaspectraLog2D_centrbin%i",centrality));
+	   if(histo) histo->Fill(mcsource,mctrack0->Pt());
+	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 333) // phi 
+	 {
+	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("phispectraLog2D_centrbin%i",centrality));
+	   if(histo) histo->Fill(mcsource,mctrack0->Pt());
+         }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 331) // eta prime
+	 {
+	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("etapspectraLog2D_centrbin%i",centrality));
+	   if(histo) histo->Fill(mcsource,mctrack0->Pt());
+	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 113) // rho
+	 {
+	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("rhospectraLog2D_centrbin%i",centrality));
+	   if(histo) histo->Fill(mcsource,mctrack0->Pt());
+	 }
+     }  
+  } else {
+
+ 
+    AliAODMCParticle *mctrack0 = NULL;
+    TH2F *histo = 0x0;
+    
+    for(Int_t imc=0; imc< fAODArrayMCInfo->GetEntries(); imc++){
+      mctrack0 = (AliAODMCParticle*)fAODArrayMCInfo->At(imc);
+      // IsPrimary
+      Bool_t primMC = mctrack0->IsPrimary();
+      if(!primMC) continue;
+      // Eta cut
+      if(TMath::Abs(mctrack0->Eta()) > 0.8) continue;
+      // mc source
+      Float_t mcsource = fMCQA->GetElecSource(mctrack0, kFALSE);
+      //printf("PdgCode %d\n",mctrack0->PdgCode());
+      // Generator
+      Bool_t fillphotonic = kTRUE;
+      if(fSelectGenerator>=0) {
+	//printf("SelectGenerator %d\n",fSelectGenerator);
+	// select generator
+	Int_t Prim = GetPrimary(imc);
+	//printf("Prim %d\n",Prim);
+	if(Prim>=0) {
+	  AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)fAODArrayMCInfo->At(TMath::Abs(Prim));
+	  Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle array
+	  if(IsFromHijing(trkIndexPrim)) {
+	    if(fSelectGenerator==1) fillphotonic = kFALSE;
+	    //printf("Is from Hijing\n");
+	  }
+	  else {
+	    if(fSelectGenerator==0) fillphotonic = kFALSE;
+	  }
+	}
+	else fillphotonic = kFALSE;
+      }
+      if(!fillphotonic) continue;
+      //printf("Fill\n");
+      // Fill
+      if(TMath::Abs(mctrack0->PdgCode()) == 111) // pi0 
+       { 
+	 histo = (TH2F *) mcQACollectionlist->FindObject(Form("pionspectraLog2D_centrbin%i",centrality));
+	 if(histo) {
+	   histo->Fill(mcsource,mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("pionspectraLog2D_centrbin%i",centrality));
+	 }
+       }
+      else if(TMath::Abs(mctrack0->PdgCode()) == 221) // eta 
+	{
+	  histo = (TH2F *) mcQACollectionlist->FindObject(Form("etaspectraLog2D_centrbin%i",centrality));
+	  if(histo) {
+	    histo->Fill(mcsource,mctrack0->Pt());
+	    //printf("Fill histo %s\n",Form("etaspectraLog2D_centrbin%i",centrality));
+	  }
+	}
+      else if(TMath::Abs(mctrack0->PdgCode()) == 223) // omega
+	 {
+	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("omegaspectraLog2D_centrbin%i",centrality));
+	   if(histo) {
+	     histo->Fill(mcsource,mctrack0->Pt());
+	     //printf("Fill histo %s\n",Form("omegaspectraLog2D_centrbin%i",centrality));
+	   }
+	 }
+      else if(TMath::Abs(mctrack0->PdgCode()) == 333) // phi 
+	{
+	  histo = (TH2F *) mcQACollectionlist->FindObject(Form("phispectraLog2D_centrbin%i",centrality));
+	  if(histo) {
+	    histo->Fill(mcsource,mctrack0->Pt());
+	    //printf("Fill histo %s\n",Form("phispectraLog2D_centrbin%i",centrality));
+	  }
+	}
+      else if(TMath::Abs(mctrack0->PdgCode()) == 331) // eta prime
+	{
+	  histo = (TH2F *) mcQACollectionlist->FindObject(Form("etapspectraLog2D_centrbin%i",centrality));
+	  if(histo) {
+	    histo->Fill(mcsource,mctrack0->Pt());
+	    //printf("Fill histo %s\n",Form("etapspectraLog2D_centrbin%i",centrality));
+	  }
+	}
+      else if(TMath::Abs(mctrack0->PdgCode()) == 113) // rho
+	{
+	  histo = (TH2F *) mcQACollectionlist->FindObject(Form("rhospectraLog2D_centrbin%i",centrality));
+	  if(histo) {
+	    histo->Fill(mcsource,mctrack0->Pt());
+	    //printf("Fill histo %s\n",Form("rhospectraLog2D_centrbin%i",centrality));
+	  }
+	}
+    }  
+  }
+  
 }

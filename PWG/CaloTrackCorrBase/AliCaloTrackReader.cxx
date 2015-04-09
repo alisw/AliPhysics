@@ -46,6 +46,7 @@
 // ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
+
 // ---- Jets ----
 #include "AliAODJet.h"
 #include "AliAODJetEventBackground.h"
@@ -96,6 +97,7 @@ fBitEGA(0),                  fBitEJE(0),
 
 fAnaLED(kFALSE),
 fTaskName(""),               fCaloUtils(0x0),
+fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
@@ -206,6 +208,8 @@ void AliCaloTrackReader::DeletePointers()
   fRejectEventsWithBit.Reset();
   fAcceptEventsWithBit.Reset();
   
+  if ( fWeightUtils ) delete fWeightUtils ;
+    
   //  Pointers not owned, done by the analysis frame
   //  if(fInputEvent)  delete fInputEvent ;
   //  if(fOutputEvent) delete fOutputEvent ;
@@ -761,6 +765,10 @@ void AliCaloTrackReader::Init()
     fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
+
+  // Activate debug level in AliAnaWeights
+  if( fWeightUtils->GetDebug() >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fWeightUtils->ClassName(), fWeightUtils->GetDebug());
 }
 
 //_______________________________________
@@ -874,6 +882,10 @@ void AliCaloTrackReader::InitParameters()
   if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
 
   fSmearShowerShapeWidth = 0.005;
+    
+  fWeightUtils = new AliAnaWeights() ;
+  fEventWeight = 1 ;
+    
 }
 
 //___________________________________________________
@@ -1191,14 +1203,24 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   //------------------------------------------------------
   
   //If we need a centrality bin, we select only those events in the corresponding bin.
+  Int_t cen = -1;
   if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100)
   {
-    Int_t cen = GetEventCentrality();
+    cen = GetEventCentrality();
+      
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
     
     AliDebug(1,"Pass centrality rejection");
   }
   
+  // Recover the weight assigned to the event, if provided
+  // right now only for pT-hard bins and centrality depedent weights
+  if ( fWeightUtils->IsWeightSettingOn() )
+  {
+    fWeightUtils->SetCentrality(cen);
+      
+    fEventWeight = fWeightUtils->GetWeight();
+  }
   //---------------------------------------------------------------------------
   // In case of MC analysis, set the range of interest in the MC particles list
   // The particle selection is done inside the FillInputDetector() methods

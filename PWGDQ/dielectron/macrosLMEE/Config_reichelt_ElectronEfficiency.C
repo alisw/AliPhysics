@@ -6,7 +6,9 @@ const Int_t nDie=arrNames->GetEntriesFast();
 Int_t       selectedCentrality=-1; // not yet implemented
 // the following settings must be initialized each time SetupTrackCutsAndSettings() is called.
 Int_t       selectedPID;
+Int_t       selectedPIDextra;
 Bool_t      isPrefilterCutset;
+AliAnalysisFilter *anaFilterExtra;
 Double_t    rejCutMee;
 Double_t    rejCutTheta;
 Double_t    rejCutPhiV;
@@ -37,17 +39,18 @@ const TString sRuns("167915, 167920, 167985, 167987, 168069, 168076, 168105, 168
 
 //________________________________________________________________
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
-const Bool_t    writeTree = kTRUE;
+const Bool_t    writeTree = kFALSE;
 // specify for which "cutInstance" the support histos should be filled!
 const Int_t     supportedCutInstance = 1;
+// activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut)
+const Bool_t    forcePhysSelAndTrigInMC = kFALSE; // default kFALSE
 //
 //________________________________________________________________
 // settings which are identical for all configs that run together
 // event cuts
-const Bool_t    reqVertex = kTRUE;
-const Double_t  vertexZcut = 10.;
-const Double_t  CentMin =  0.;
-const Double_t  CentMax = 90.;
+// main cuts done via 'SetupEventCuts()'
+const Double_t  CentMin     =  0.;
+const Double_t  CentMax     = 90.;
 // track cuts
 const Bool_t    checkV0dauEle = kFALSE;
 // MC cuts
@@ -57,6 +60,7 @@ const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any s
 const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
 
 const Bool_t    CutInjectedSignals = kTRUE;
+const UInt_t    NminEleInEventForRej = 2;
 // ^^^^^^^^^^ [/end common settings] ^^^^^^^^^^
 
 //________________________________________________________________
@@ -64,7 +68,7 @@ const Bool_t    CutInjectedSignals = kTRUE;
 // Strategy:  One cutInstance for analysis tracking&PID efficiency (as usual).
 //            Optional, separate cutInstance for prefilter efficiencies: it also produces the usual tracking&PID efficiency
 //            (but of course for the specified prefilter track sample, so mainly for convenience and curiosity),
-//            and then additionally the pair rejection efficiency, using random rejection of pions with the selected electrons.
+//            and then additionally the pair rejection efficiency, using random rejection of "testparticles" (pions) with the selected electrons.
 //________________________________________________________________
 
 
@@ -76,13 +80,34 @@ const Bool_t    CutInjectedSignals = kTRUE;
 
 
 //________________________________________________________________
+AliAnalysisCuts* SetupEventCuts()
+{
+  // event cuts are identical for all analysis 'cutInstance's that run together!
+  //
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  eventCuts->SetVertexZ(-10.,10.);
+  //not sure if this can be used, probably not:
+  // Patrick:
+  //  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
+  // Mahmut:
+  //  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTracksOrSPD);
+  //  eventCuts->SetRequireV0and();
+  return eventCuts;
+}
+
+
+//________________________________________________________________
 AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
 {
   std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
   // do not change these initial values!
   selectedPID=-1;
+  selectedPIDextra=-1;
   isPrefilterCutset=kFALSE;
+  anaFilterExtra = new AliAnalysisFilter("anaFilterExtra","anaFilter");
   rejCutMee=-1;
   rejCutTheta=-1;
   rejCutPhiV=3.2; // relevant are values below pi, so initialization to 3.2 means disabling.
@@ -111,6 +136,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
     }
     else if (cutInstance==1+nCutsUsingConfigFunctions) {
       selectedPID = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
+      selectedPIDextra = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
       isPrefilterCutset=kTRUE;
     }
 //    else if (cutInstance==1+nCutsUsingConfigFunctions) {
@@ -143,11 +169,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
       // the function 'GetPIDCutsAna()' must also call 'GetTrackCutsAna()'!
       anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
     }
-    else {
+    else { // cutInstance for prefilter efficiency determination:
       // the function 'GetPIDCutsPre()' must also call 'GetTrackCutsPre()'!
       anaFilter->AddCuts( LMcutlib->GetPIDCutsPre(selectedPID) );
-//      // instead, use this for testing consistency compared to no prefiltering (or set 'isPrefilterCutset=kFALSE' above):
-//      anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+      // cuts for final analysis electrons
+      if (selectedPIDextra<0) selectedPIDextra=selectedPID;
+      anaFilterExtra->AddCuts( LMcutlib->GetPIDCutsAna(selectedPIDextra) );
     }
 
   }

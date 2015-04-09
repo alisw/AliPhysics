@@ -1,5 +1,5 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
-//void InitCF(AliDielectron* die, Int_t cutDefinition);
+void InitCF(AliDielectron* die, Int_t cutDefinition);
 
 void SetupEventCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
@@ -32,9 +32,11 @@ TVectorD *GetRunNumbers() {
 // returns a vector with the runnumber used in the period                                                                                                                                                                                                                                                            
   Double_t first=0;
   Double_t last =1;
+	
+	
   switch(iPeriod) {
   case k10b: first=114737; last=117223; break;
-  case k10c: first=117777; last=121418; break;
+  case k10c: first=117777; last=121417; break;
   case k10d: first=121692; last=126438; break;
   case k10e: first=127102; last=130851; break;
   case k10f: first=130931; last=135031; break;
@@ -43,34 +45,43 @@ TVectorD *GetRunNumbers() {
   case k11d: first=155838; last=159649; break;
   case k11h: first=165772; last=170718; break;
   case k12h: first=188720; last=192738; break;
-  case k10pp : first=114737; last=139517; break;
   }
-  //   printf("iPeriod***************: %d \t %.0f-%.0f \n",iPeriod,first,last);                                                                                                                                                                                                                                                        
-  return (AliDielectronHelper::MakeLogBinning(last-first, first, last));
+  // printf("iPeriod: %d \t %.0f-%.0f \n",iPeriod,first,last);                                                                                                                                                                                                                                                        
+  return (AliDielectronHelper::MakeLinBinning(last-first, first, last));
 }
 
-//printf("iPeriod:************************************************pppppppppp:",iPeriod);                                                                                                                           
-                                                                                                        
-TVectorD *GetRunList(){
-  //TString *GetRunList(){
-switch(iPeriod) {
- case k10b :TString run_numbers="114737,114786,114798,114918,114920,114924,114930,114931,115056,115186,115193,115310,1153102,115318,115322,115327,115328,115335,115345,115369,115393,115399,115401,115406,115414,115521,116079,116081,116102,116288,116358,116360,116372,116402,116403,116429,116431,116432,116562,116571,116574,116643,116645,116787,117048,117050,117052,117053,117059,117060,117063,117092,117099,117109,117112,117116,117220,117222,117222+1";
-   break;
- case k10c : TString run_numbers ="117777,118506,118507,118512,118518,118556,118558,118560,118561,119159,119161,119163,119841,119842,119844,119845,119846,119849,119853,119856,119859,119862,120067,120069,120072,120073,120076,120079,120244,120503,120504,120505,120616,120617,120671,120741,120750,120758,120820,120821,120822,120823,120824,120825,120829,121039,121040,121417,121417+1";
-   break;
- case k10d : TString run_numbers="121692,122374,122375,124751,125023,125085,125097,125100,125101,125134,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,125941,125942,125943,125944,125945,125946,125947,125948,125949,125950,125951,125952,125953,125954,125955,125956,125957,125958,125959,125960,125961,125962,125963,125964,125965,125966,125969,125970,125976,125978,125981,125982,125983,125984,125985,125986,125997,125998,125999,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126168,126283,126284,126285,126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,126432,126437,126437+1";
-   break;
- case k10e :TString run_numbers ="127102,127712,127714,127718,127719,127822,127931,127933,127935,127936,127937,127940,127941,127942,128185,128186,128189,128191,128192,128260,128263,128366,128452,128483,128486,128494,128495,128498,128503,128504,128505,128507,128582,128605,128609,128611,128615,128621,128677,128678,128777,128778,128820,128823,128824,128833,128835,128836,128843,128850,128853,128855,128913,129512,129513,129514,129520,129523,129527,129528,129540,129586,129587,129599,129639,129641,129647,129650,129652,129653,129654,129659,129666,129667,129723,129725,129726,129729,129735,129736,129738,129742,129744,129959,129960,129961,129983,130149,130157,130158,130172,130178,130179,130342,130343,130354,130356,130375,130480,130517,130519,130520,130529,130601,130608,130696,130704,130793,130795,130798,130799,130834,130840,130842,130844,130847,130848,130850,130851";
-   break;
- case k10pp:TString run_numbers="114737,114786,114798,114918,114920,114924,114930,114931,115056,115186,115193,115310,1153102,115318,115322,115327,115328,115335,115345,115369,115393,115399,115401,115406,115414,115521,116079,116081,116102,116288,116358,116360,116372,116402,116403,116429,116431,116432,116562,116571,116574,116643,116645,116787,117048,117050,117052,117053,117059,117060,117063,117092,117099,117109,117112,117116,117220,117222,117777,118506,118507,118512,118518,118556,118558,118560,118561,119159,119161,119163,119841,119842,119844,119845,119846,119849,119853,119856,119859,119862,120067,120069,120072,120073,120076,120079,120244,120503,120504,120505,120616,120617,120671,120741,120750,120758,120820,120821,120822,120823,120824,120825,120829,121039,121040,121417,121692,122374,122375,124751,125023,125085,125097,125100,125101,125134,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,125941,125942,125943,125944,125945,125946,125947,125948,125949,125950,125951,125952,125953,125954,125955,125956,125957,125958,125959,125960,125961,125962,125963,125964,125965,125966,125969,125970,125976,125978,125981,125982,125983,125984,125985,125986,125997,125998,125999,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126168,126283,126284,126285,126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,126432,126437,127102,127712,127714,127718,127719,127822,127931,127933,127935,127936,127937,127940,127941,127942,128185,128186,128189,128191,128192,128260,128263,128366,128452,128483,128486,128494,128495,128498,128503,128504,128505,128507,128582,128605,128609,128611,128615,128621,128677,128678,128777,128778,128820,128823,128824,128833,128835,128836,128843,128850,128853,128855,128913,129512,129513,129514,129520,129523,129527,129528,129540,129586,129587,129599,129639,129641,129647,129650,129652,129653,129654,129659,129666,129667,129723,129725,129726,129729,129735,129736,129738,129742,129744,129959,129960,129961,129983,130149,130157,130158,130172,130178,130179,130342,130343,130354,130356,130375,130480,130517,130519,130520,130529,130601,130608,130696,130704,130793,130795,130798,130799,130834,130840,130842,130844,130847,130848,130850,130851";
-   break;
+
+
+
+//TString run_numbers;
+//if( list.Contains("LHC10b")){
+
+TString run_numbers = "114786,114798,114918,114920,114924,114930,114931,115186,115193,115310,115318,115322,115328,115335,115345,115393,115399,115401,115414,115521,116079,116081,116102,116288,116402,116403,116562,116571,116574,116643,116645,117048,117050,117052,117053,117059,117060,117063,117092,117099,117109,117112,117116,117220,117222,118506,118507,118512,118518,118556,118558,118560,118561,119159,119161,119163,119841,119842,119844,119845,119846,119849,119853,119856,119859,119863,120067,120069,120072,120073,120076,120079,120244,120503,120504,120505,120616,120617,120671,120741,120750,120758,120820,120821,120822,120823,120824,120825,120829,121039,121040,122370,122374,122375,124751,125023,125085,125097,125100,125101,125134,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,125941,125942,125943,125944,125945,125946,125947,125948,125949,125950,125951,125952,125953,125954,125955,125956,125957,125958,125959,125960,125961,125962,125963,125964,125965,125966,125969,125970,125976,125978,125981,125982,125983,125984,125985,125986,125997,125998,125999,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126168,126283,126284,126285,126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,126432,126437,126438";
+
+/*
+ TVectorD *GetRunNumbers() {
+ Double_t runLHC10b[]={114786,114920,126422,126424,126425,126432};
  }
  return (AliDielectronHelper::MakeArbitraryBinning(run_numbers));
  }
 
 
+//TString run_numbers = "114786,114798,114918,114920,114924,114930,114931,115186,115193,115310,115318,115322,115328,115335,115345,115393,115399,115401,115414,115521,116079,116081,116102,116288,116402,116403,116562,116571,116574,116643,116645,117048,117050,117052,117053,117059,117060,117063,117092,117099,117109,117112,117116,117220,117222,118506,118507,118512,118518,118556,118558,118560,118561,119159,119161,119163,119841,119842,119844,119845,119846,119849,119853,119856,119859,119863,120067,120069,120072,120073,120076,120079,120244,120503,120504,120505,120616,120617,120671,120741,120750,120758,120820,120821,120822,120823,120824,120825,120829,121039,121040,122370,122374,122375,124751,125023,125085,125097,125100,125101,125134,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,125941,125942,125943,125944,125945,125946,125947,125948,125949,125950,125951,125952,125953,125954,125955,125956,125957,125958,125959,125960,125961,125962,125963,125964,125965,125966,125969,125970,125976,125978,125981,125982,125983,125984,125985,125986,125997,125998,125999,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126168,126283,126284,126285,126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,126432";
+//}
 
-  // increasing order of run array is important
+
+//TString run_numbers = "114785,114786,114798,114918,114920,114924,114930,114931,115056,115186,115193,115310,115312,115318,115322,115327,115328,115335,115345,115369,115393,115399,115401,115406,115414,115521,116079,116081,116102,116288,116358,116360,116372,116402,116403,116429,116431,116432,116562,116571,116574,116643,116645,116787,117048,117050,117052,117053,117059,117060,117063,117092,117099,117109,117112,117116,117220,117222,118506,118507,118512,118518,118556,118558,118560,118561,119159,119161,119163,119841,119842,119844,119845,119846,119849,119853,119856,119859,119862,120067,120069,120072,120073,120076,120079,120244,120503,120504,120505,120616,120617,120671,120741,120750,120758,120820,120821,120822,120823,120824,120825,120829,121039,121040,122374,122375,124751,125023,125083,125085,125097,125100,125101,125133,125134,125139,125140,125156,125186,125295,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126167,126168,126283,126284,126285,126350126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,
+
+
+
+
+//TVectorD *GetRunNumbers();
+//*TVectorD *GetRunNumbers() {
+// if (period="LHC10d"){
+// return AliDielectronHelper::MakeArbitraryBinning ("122374,122375,124751,125023,125085,125097,125100,125101,125134,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,125941,125942,125943,125944,125945,125946,125947,125948,125949,125950,125951,125952,125953,125954,125955,125956,125957,125958,125959,125960,125961,125962,125963,125964,125965,125966,125969,125970,125976,125978,125981,125982,125983,125984,125985,125986,125997,125998,125999,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126168,126283,126284,126285,126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,126432");
+//   }
+//}
+// increasing order of run array is important
 
 //TString names=("default");
 TString names=("JPsi;kHFe;Lmee;Jpsi_activevolume;Jpsi_conversions;Jpsi_conversions_wPID");
@@ -123,9 +134,21 @@ AliAnalysisTask* AddTask_jpsi_Default(TString prod="LHCpp", Bool_t isMC=kFALSE)
   else if( !prod.CompareTo("LHC12d") ) iPeriod = k13d;
   else if( !prod.CompareTo("LHC12e") ) iPeriod = k13e;
   else if( !prod.CompareTo("LHC12f") ) iPeriod = k13f;
- 
-   //Do 
-   // // aod monte carlo
+  
+  //  printf("prod***********%s",prod.Data());
+  ///
+  /*  if(!prod.CompareTo("LHC10b")){
+  //TString run_numbers= "117220"                                                                                                                                       
+  run_numbers="114786,114798,114918,114824,114930,114931,115186,115193,115310,115318,115322,115328,115335,115345,115393,115399,115401,115414,115521,116079,116081,116102,16288,116402,116403,116562,116571,116574,116643,116645,117048,117050,117052,117053,117059,117060,117063,117092,117099,117109,117112,117116,117220,117222";
+  }
+  else if (!prod.CompareTo("LHC10d")){
+  run_numbers = "122370,122374,122375,124751,125023,125085,125097,125100,125101,125134,125296,125628,125630,125632,125633,125842,125843,125844,125847,125848,125849,125850,125851,125855,125941,125942,125943,125944,125945,125946,125947,125948,125949,125950,125951,125952,125953,125954,125955,125956,125957,125958,125959,125960,125961,125962,125963,125964,125965,125966,125969,125970,125976,125978,125981,125982,125983,125984,125985,125986,125997,125998,125999,126004,126007,126008,126073,126078,126081,126082,126088,126090,126097,126158,126160,126168,126283,126284,126285,126351,126352,126359,126403,126404,126405,126406,126407,126408,126409,126422,126424,126425,126432";
+  }
+  */
+  //
+  //////                                                                                                                                                                                                                                             
+  //Do 
+  // // aod monte carlo
   // if( list.Contains("LHC11a10") ||
   //     list.Contains("LHC11b10") ||
   //     list.Contains("LHC12a17") ||
@@ -256,8 +279,7 @@ AliDielectron* ConfigDefault(Int_t cutDefinition)
   // Monte Carlo Signals
   if (hasMC) SetupMCsignals(die);
   // prefilter settings
-  //die->SetPreFilterUnlikeOnly();
-  //  die->SetNoPairing();//  die->SetPreFilterAllSigns();
+  // die->SetPreFilterUnlikeOnly();//  die->SetNoPairing();//  die->SetPreFilterAllSigns();
   // cut QA
   // die->SetCutQA();
 
@@ -267,12 +289,11 @@ AliDielectron* ConfigDefault(Int_t cutDefinition)
   // if (cutDefinition ==0){
   // InitCF(die,cutDefinition);
   // }
-  //add event mixing
-  //  AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-  //mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-8,-5,0,5,8,10");
-  //mix->AddVariable(AliDielectronVarManager::kPhi ,"0,3.14,6.3");
-  //mix->SetDepth(10);
-  //die->SetMixingHandler(mix);
+  //   AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
+  //   mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-8,-5,0,5,8,10");
+  //   mix->AddVariable(AliDielectronVarManager::kPhi ,"0,3.14,6.3");
+  //   mix->SetDepth(10);
+  //  die->SetMixingHandler(mix);
   //
   
   return die;
@@ -290,7 +311,7 @@ void SetupEventCuts(AliDielectron *die, Int_t cutDefinition)
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->Print();
+  //eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
 
 }
@@ -379,6 +400,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.,1000.);
     pt->AddCut(AliDielectronVarManager::kTOFnSigmaEle,-3.,3.); 
+    //rjim Nitsclusters cut
+    //  pt->AddCut(AliDielectronVarManager::kNclsITS,4.,160.);
     //add ncrossed rows tpc instead cluster instead Ncluster
     pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
     pt->AddCut(AliDielectronVarManager::kNFclsTPCfCross,0.8,1.0);    
@@ -455,23 +478,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   grpRecCuts->AddCut(varRecCuts);
   die->GetTrackFilter().AddCuts(grpRecCuts);
   grpRecCuts->Print();
-
-
-  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
-  AliDielectronVarCuts *pidVarCuts = new AliDielectronVarCuts("varPIDCuts","varPIDCuts");
-  pidVarCuts->AddCut(AliDielectronVarManager::kTPCnSigmaEle,  -2. ,    3.     ); //-3.0
-  pidVarCuts->AddCut(AliDielectronVarManager::kTPCnSigmaPio,   3.5, 1000.     );
-  pidVarCuts->AddCut(AliDielectronVarManager::kTPCnSigmaPro,   4. , 1000.     ); //3.0
-  //  AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts"); //not used
-  AliDielectronCutGroup *grpPIDCuts = new AliDielectronCutGroup("PID","PID",AliDielectronCutGroup::kCompAND);
-  // grpPIDCuts->AddCut(pidVarCuts);
-  //grpPIDCuts->AddCut(pidCuts);
-  //  die->GetTrackFilter().AddCuts(grpPIDCuts);
-  // grpPIDCuts->Print();
-
-  //
-
-
+	 
+  
+  */ 
+  
   //exclude conversion electrons selected by the tender
   //   AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","noConv");
   //   noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
@@ -481,28 +491,28 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 }
 void SetupV0Cuts(AliDielectron *die, Int_t cutDefinition)
 {
-	//
-	// Setup the V0 cuts
-	//
-	AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
-	gammaV0Cuts->SetPdgCodes(22,11,11);
-	gammaV0Cuts->SetDefaultPID(13); // TPC+-10, TOF+-3 if available
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle,TMath::Cos(0.02),1.0, kFALSE);
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0,  10.0, kFALSE);//to be checked, if properly filled
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0,   0.25, kFALSE);
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kR, 3.0,  90.0, kFALSE);
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0,   0.05, kFALSE);
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kM, 0.0,   0.05, kFALSE);
-	// gammaV0Cuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0,   0.1, kFALSE);
-	gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0,   0.05, kFALSE);
-	// gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35,0.35, kFALSE); // not sure if it works as expected
-	gammaV0Cuts->SetExcludeTracks(kTRUE);//ktrue excludes tracks v0s, 
-	//kfalse 
-	// gammaV0Cuts->Print();
-	//  const Double_t |cutAlphaG| < 0.35; &&  const Double_t cutQTG < 0.05;
-	//  const Double_t |cutAlphaG2|[2] = {0.6, 0.8}; && const Double_t cutQTG2 < 0.04;
-	die->GetTrackFilter().AddCuts(gammaV0Cuts);
-	gammaV0Cuts->Print();	// 
+  //
+  // Setup the V0 cuts
+  //
+  AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
+  gammaV0Cuts->SetPdgCodes(22,11,11);
+  gammaV0Cuts->SetDefaultPID(13); // TPC+-10, TOF+-3 if available
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle,TMath::Cos(0.02),1.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0,  10.0, kFALSE);//to be checked, if properly filled
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0,   0.25, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kR, 3.0,  90.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0,   0.05, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kM, 0.0,   0.05, kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0,   0.1, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0,   0.05, kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35,0.35, kFALSE); // not sure if it works as expected
+  gammaV0Cuts->SetExcludeTracks(kTRUE);//ktrue excludes tracks v0s, 
+  //kfalse 
+  // gammaV0Cuts->Print();
+  //  const Double_t |cutAlphaG| < 0.35; &&  const Double_t cutQTG < 0.05;
+  //  const Double_t |cutAlphaG2|[2] = {0.6, 0.8}; && const Double_t cutQTG2 < 0.04;
+  die->GetTrackFilter().AddCuts(gammaV0Cuts);
+  //gammaV0Cuts->Print();	// 
 }
 
 void SetupV0add(AliDielectron *die, Int_t cutDefinition)
@@ -523,14 +533,14 @@ void SetupV0add(AliDielectron *die, Int_t cutDefinition)
 	gammaV0Add->AddCut(AliDielectronVarManager::kArmPt, 0.0,   0.05, kFALSE);
 	// gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35,0.35, kFALSE); // not sure if it works as expected
 	
-	gammaV0Add->SetExcludeTracks(kFALSE);//ktrue excludes tracks v0s, 
-	
-	//kfalse 
-	// gammaV0Cuts->Print();
-	//  const Double_t |cutAlphaG| < 0.35; &&  const Double_t cutQTG < 0.05;
-	//  const Double_t |cutAlphaG2|[2] = {0.6, 0.8}; && const Double_t cutQTG2 < 0.04;
-	die->GetTrackFilter().AddCuts(gammaV0Add);
-	gammaV0Add->Print();	// 
+  gammaV0Add->SetExcludeTracks(kFALSE);//ktrue excludes tracks v0s, 
+  
+  //kfalse 
+  // gammaV0Cuts->Print();
+  //  const Double_t |cutAlphaG| < 0.35; &&  const Double_t cutQTG < 0.05;
+  //  const Double_t |cutAlphaG2|[2] = {0.6, 0.8}; && const Double_t cutQTG2 < 0.04;
+  die->GetTrackFilter().AddCuts(gammaV0Add);
+  //gammaV0Add->Print();	// 
 }
 //______________________________________________________________________________________
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
@@ -587,46 +597,53 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
       histos->AddClass(Form("Track_Legs_%s",         sigMCname.Data())); 
     }
   }
+  if(cutDefinition==0){
+    
+    //add histograms to event class
+    histos->AddClass("Event");
+    histos->UserHistogram("Event","","",700,0.,700.,AliDielectronVarManager::kNTrk);
+    histos->UserHistogram("Event","","",100,0.,10.,AliDielectronVarManager::kPairs);
+    histos->UserHistogram("Event","","",4,0.,4.,AliDielectronVarManager::kNevents);    
+    histos->UserHistogram("Event","","",300,-15.,15.,AliDielectronVarManager::kZvPrim);
+    histos->UserHistogram("Event","","",100,-2.,2.,100,-2.,2.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kYvPrim);
+    // histos->UserHistogram("Event","","",AliDielectronHelper::MakeArbitraryBinning(run_numbers),AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","","",AliDielectronVarManager::kNTrk, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","","",AliDielectronVarManager::kPairs, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserHistogram("Event","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(700,0.,700.),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kNTrk);
+    histos->UserHistogram("Event","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(10000,0.,10.),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kPairs);    
+  }
   
-  //add histograms to event class
-  histos->AddClass("Event");  
-  
-  histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",
-			4,0.,4.,AliDielectronVarManager::kNevents);
-  histos->UserHistogram("Event","Ntrk","tracks/event; Ntracks; #Entries",
-			 700,0.0,700.,AliDielectronVarManager::kNTrk);
-  histos->UserHistogram("Events","","",100,0.,10.,AliDielectronVarManager::kPairs);
-  histos->UserHistogram("Event","","",
-			100,-2.,2.,100,-2.,2.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kYvPrim);
-  histos->UserHistogram("Event","VtxZ","Vertex Z;Z[cm]",300,-15.,15.,AliDielectronVarManager::kZvPrim);
-  histos->UserHistogram("Event","","",GetRunList(),AliDielectronVarManager::kRunNumber);
-  histos->UserProfile("Event","","",AliDielectronVarManager::kPairs,GetRunList(),AliDielectronVarManager::kRunNumber);
-
   //add histograms to Track classes
-  histos->UserProfile("Track","","",AliDielectronVarManager::kPIn,GetRunList(),AliDielectronVarManager::kRunNumber);
-  histos->UserProfile("Track","","", AliDielectronVarManager::kTPCnSigmaEle,GetRunList(),AliDielectronVarManager::kRunNumber);
-  histos->UserProfile("Track","","", AliDielectronVarManager::kTOFnSigmaEle,GetRunList(), AliDielectronVarManager::kRunNumber);
-  histos->UserProfile("Track","","", AliDielectronVarManager::kITSnSigmaEle,GetRunList(),AliDielectronVarManager::kRunNumber);
-  //  histos->UserProfile("Track","","", AliDielectronVarManager::kNclsTRD,GetRunList(), AliDielectronVarManager::kRunNumber);
-  histos->UserProfile("Track","","",AliDielectronVarManager::kEta,GetRunList(),AliDielectronVarManager::kRunNumber);
-  histos->UserProfile("Track","","", AliDielectronVarManager::kPhi,GetRunList(),AliDielectronVarManager::kRunNumber);
-
-  histos->UserHistogram("Track","","",200,0.0,20.0,AliDielectronVarManager::kPt);
- 
+  //run number dependence
+  histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(100,-5.,+5.),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kTPCnSigmaEle);
+  histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(100,-5.,+5.),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kTOFnSigmaEle);
+  histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(100,-5.,+5.),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kITSnSigmaEle);  
+  histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(200,0.,200.),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kNclsTPC);
+  histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(20,-1.0,1.0),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kEta);
+  histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(63,0.,6.32),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kPhi);
+  //nsigma
   histos->UserHistogram("Track","","",
-			100,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
+			200,0.2,20.,AliDielectronVarManager::kPt); 
   histos->UserHistogram("Track","","",
-                        100,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+			80,-1.0,1.0,AliDielectronVarManager::kEta); 
   histos->UserHistogram("Track","","",
-                        100,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
+			400,0.0,4.0,AliDielectronVarManager::kPhi);  
   histos->UserHistogram("Track","","",
-                        100,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro,kTRUE);
+			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
+  histos->UserHistogram("Track","","",
+			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+  histos->UserHistogram("Track","","",
+			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
+  histos->UserHistogram("Track","","",
+			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro,kTRUE);
   histos->UserHistogram("Track","","",
 			200,0.2,20.,100,-15.,15.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao,kTRUE);    	
   histos->UserHistogram("Track","","",
 			200,0.2,20.,100,0.,1.2,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFbeta,kTRUE);
   histos->UserHistogram("Track","","",
 			200,0.2,20.,200,-20.,20.,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaEle,kTRUE);    
+  histos->UserHistogram("Track","","",
+			100,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal); 
   histos->UserHistogram("Track","","",
 			144,0.0,6.285,100,0.0,200,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCsignal);
   histos->UserHistogram("Track","","",
@@ -635,121 +652,121 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			100,-5,5.,100,-5.,5.,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kITSnSigmaEle);
   histos->UserHistogram("Track","","",
 			100,-5,5.,100,-5.,5.,AliDielectronVarManager::kTOFnSigmaEle,AliDielectronVarManager::kTPCnSigmaEle);
-  //histos->UserHistogram("Track","","",
-  //                    100,-2,2,144,0,6.285,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","","",
                         160,-0.5,159.5,AliDielectronVarManager::kNclsTPC);
   histos->UserHistogram("Track","","",
                         100,0.,10.,AliDielectronVarManager::kTPCchi2Cl);
   histos->UserHistogram("Track","","",
-			160,-0.5,159.5,100,0.,10.,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kTPCchi2Cl);
-  // histos->UserHistogram("Track","","",
-  //			150,-15,15,160,-0.5,159.5,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTPCsignalN);
+			160,-0.5,159.5,AliDielectronVarManager::kNFclsTPCr);
+  histos->UserHistogram("Track","","",
+			160,0,1.1,AliDielectronVarManager::kNFclsTPCrFrac);
+  histos->UserHistogram("Track","","",200,0.,200.,AliDielectronVarManager::kNclsTPC, 200.,0.,20., AliDielectronVarManager::kPt);
+  histos->UserHistogram("Track","","",
+			150,-15,15,160,-0.5,159.5,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTPCsignalN); 
+  //  histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(300,0.5,300.5),AliDielectronVarManager::kNclsTRD);
+  histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(150,0.,150.),AliDielectronVarManager::kNaccTrckltsEsd10Corr);
+  histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(5,-0.5,2.0),AliDielectronVarManager::kTOFPIDBit);
   //rjim findable cluster vs pt
   histos->UserHistogram("Track","","",
 			200.,0.0.,20.0, 161,-0.5,161.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   //rjim frac find vs pt
   histos->UserHistogram("Track","","",
 			200.0,0.0,20.0,160,0,1.1,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCrFrac);
-  histos->UserHistogram("Track","","", 100.,0.2,20.,200,0.,200.,AliDielectronVarManager::kPt,AliDielectronVarManager::kNclsTPC);
-  //  histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(300,0.5,300.5),AliDielectronVarManager::kNclsTRD);
-  histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(150,0.,150.),AliDielectronVarManager::kNaccTrckltsEsd10Corr);
-  histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(5,-0.5,2.0),AliDielectronVarManager::kTOFPIDBit);  
+  
   // histos rjimenez 2nd part
   //check tofbit
+  //  histos->UserHistogram("Track","","",3.,-0.5,2.5, 200,0.,20.,AliDielectronVarManager::kTOFPIDBit,AliDielectronVarManager::kPt);
+  
+  //rjimenez nsigma vseta
+  histos->UserHistogram("Track","","",
+			20,-1.0,1.0,100,-10.,10.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
   
   histos->UserHistogram("Track","","",
-			3.,-0.5,2.5, 200,0.,20.,AliDielectronVarManager::kTOFPIDBit,AliDielectronVarManager::kPt);
-    histos->UserHistogram("Track","","",
-			  160,-0.5,159.5,AliDielectronVarManager::kNFclsTPCr);
-    histos->UserHistogram("Track","","",
-			  160,0,1.1,AliDielectronVarManager::kNFclsTPCrFrac);
-    //rjimenez nsigma vseta
-    histos->UserHistogram("Track","","",
-			  20,-1.0,1.0,100,-10.,10.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
-    
-    histos->UserHistogram("Track","","",
-			  20,-1.0,1.0,100,-10.,10.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
-    
-    histos->UserHistogram("Track","","",
-			  20,-1.0,1.0,100,-10.,10.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle); 
-    //rjimenez nsigma vs phi
-    histos->UserHistogram("Track","","",
-			  20,0.0,7.0,100,-10.,10.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kITSnSigmaEle);
-    
-    histos->UserHistogram("Track","","",
-			  20,0.0,7.0,100,-10.,10.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCnSigmaEle);
-    
-      histos->UserHistogram("Track","","",
-    			  20,0.0,7.0,100,-10.,10.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTOFnSigmaEle);
-    
-    //for now SPD tracklets but multiplicity should be implemented
-    //   histos->UserHistogram("Track","","",
-    //100,0.0,100.,100,-10.,10.,AliDielectronVarManager::kNaccTrckltsEsd10Corr,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
-    //histos->UserHistogram("Track","","",
-    //			  100,0.0,100.,200,-20.,20.,AliDielectronVarManager::kNaccTrckltsEsd10Corr,AliDielectronVarManager::kTOFnSigmaEle,kTRUE);      
-    //	
-    //inner and outer read out TPC clusters
-    //    histos->UserHistogram("Track","","",
-      //			  70,0.0,7.0,160.,0.0,160.0,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCclsIRO);
-// histos->UserHistogram("Track","","",
-      //		  70,0.0,7.0,160.,0.0,160.0,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCclsORO);
-    
-//  histos->UserHistogram("Track","","",
-//			  11,-0.5,10.5.,AliDielectronVarManager::kTRDntracklets);
-//  histos->UserHistogram("Track","","",
-//			  200.,0.0.,20.0,11,-0.5,10.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTRDntracklets);
-    
-    histos->UserHistogram("Track","","",
-			  100000,0.0,1.0.,AliDielectronVarManager::kM);
-    histos->UserHistogram("Track","","",
-			  200,0.0,2.0,100000,0.0,1.0.,AliDielectronVarManager::kPt,AliDielectronVarManager::kM);
-      
-      /*
-	histos->UserHistogram("Track","","",
-	150.,-15.0.,15.0,20,0.,1.,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTRDprobEle);
+			20,-1.0,1.0,100,-10.,10.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
   
   histos->UserHistogram("Track","","",
-			150.,-15.0,15.0,20,0.,1.,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTRDprobPio);
+			20,-1.0,1.0,100,-10.,10.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle); 
+  //rjimenez nsigma vs phi
+  histos->UserHistogram("Track","","",
+			20,0.0,7.0,100,-10.,10.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kITSnSigmaEle);
   
   histos->UserHistogram("Track","","",
-			200.,0.2,20.0,20,0.,1.,AliDielectronVarManager::kP,AliDielectronVarManager::kTRDprob2DEle);
+			20,0.0,7.0,100,-10.,10.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCnSigmaEle);
   
   histos->UserHistogram("Track","","",
-			200.,0.2,20.0,20,0.,1.,AliDielectronVarManager::kP,AliDielectronVarManager::kTRDprob2DPio);
+			20,0.0,7.0,100,-10.,10.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTOFnSigmaEle);
+  
+  //for now SPD tracklets but multiplicity should be implemented
+  histos->UserHistogram("Track","","",
+			100,0.0,100.,100,-10.,10.,AliDielectronVarManager::kNaccTrckltsEsd10Corr,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+  histos->UserHistogram("Track","","",
+			100,0.0,100.,200,-20.,20.,AliDielectronVarManager::kNaccTrckltsEsd10Corr,AliDielectronVarManager::kTOFnSigmaEle,kTRUE);      
+  //
   
   histos->UserHistogram("Track","","",
-			8.,-0.5,7.5,AliDielectronVarManager::kTRDpidQuality);
+			200,-20.,20.,100,-10.,10.,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTPCnSigmaEle);
   
   histos->UserHistogram("Track","","",
-			100.,0.0,1.0,AliDielectronVarManager::kTRDpidEffLeg);
+			200,-20.,20.,200,0.2,20.,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kPIn);
   
+  //inner and outer read out TPC clusters
   histos->UserHistogram("Track","","",
-			20,-1.0,1.0,70,-3.5,3.5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTRDphi);
-  
-  histos->UserHistogram("Track","","",500,-1.,1.,AliDielectronVarManager::kImpactParXY);
-  histos->UserHistogram("Track","","",600,-3.,3.,AliDielectronVarManager::kImpactParZ);
-
-  //add histograms to Pair classes
-
-  if(cutDefinition ==0){
-  histos->UserHistogram("Pair","","",
-                        301,-.01,6.01,AliDielectronVarManager::kM);
-  histos->UserHistogram("Pair","","",
-                        100,-1.,1.,AliDielectronVarManager::kY);
-  histos->UserHistogram("Pair","","",
-                        100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
-  histos->UserHistogram("Pair","","",
-                        301,-.01,6.01,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
-  histos->UserHistogram("Pair","","",
-                        301,-.01,6.01,200,0.2,20.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
-
-  }
-  die->SetHistogramManager(histos);
-
+			70,0.0,7.0,160.,0.0,160.0,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCclsIRO);
+  histos->UserHistogram("Track","","",
+			70,0.0,7.0,160.,0.0,160.0,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCclsORO);
+  histos->UserHistogram("Track","","",
+			10000,0.0,1.0,AliDielectronVarManager::kM);
+  //  histos->UserHistogram("Track","","",
+//	200,0.0,20.0,10000,0.0,1.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kM);
+	/* histos->UserHistogram("Track","","",
+	 11,-0.5,10.5.,AliDielectronVarManager::kTRDntracklets);
+	 
+	 histos->UserHistogram("Track","","",
+	 200.,0.0.,20.0,11,-0.5,10.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTRDntracklets);
+	 
+	 histos->UserHistogram("Track","","",
+	 150.,-15.0.,15.0,20,0.,1.,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTRDprobEle);
+	 
+	 histos->UserHistogram("Track","","",
+	 150.,-15.0,15.0,20,0.,1.,AliDielectronVarManager::kYsignedIn,AliDielectronVarManager::kTRDprobPio);
+	 
+	 histos->UserHistogram("Track","","",
+	 200.,0.2,20.0,20,0.,1.,AliDielectronVarManager::kP,AliDielectronVarManager::kTRDprob2DEle);
+	 
+	 histos->UserHistogram("Track","","",
+	 200.,0.2,20.0,20,0.,1.,AliDielectronVarManager::kP,AliDielectronVarManager::kTRDprob2DPio);
+	 
+	 histos->UserHistogram("Track","","",
+	 8.,-0.5,7.5,AliDielectronVarManager::kTRDpidQuality);
+	 
+	 histos->UserHistogram("Track","","",
+	 100.,0.0,1.0,AliDielectronVarManager::kTRDpidEffLeg);
+	 
+	 histos->UserHistogram("Track","","",
+	 20,-1.0,1.0,70,-3.5,3.5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTRDphi);
+	*/
+	histos->UserHistogram("Track","","",500,-1.,1.,AliDielectronVarManager::kImpactParXY);
+	histos->UserHistogram("Track","","",600,-3.,3.,AliDielectronVarManager::kImpactParZ);
+	
+	//add histograms to Pair classes
+	
+	if(cutDefinition ==0){
+	  histos->UserHistogram("Pair","","",
+				301,-.01,6.01,AliDielectronVarManager::kM);
+	  histos->UserHistogram("Pair","","",
+				100,-1.,1.,AliDielectronVarManager::kY);
+	  histos->UserHistogram("Pair","","",
+				100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
+	  histos->UserHistogram("Pair","","",
+				301,-.01,6.01,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+	  histos->UserHistogram("Pair","","",
+				301,-.01,6.01,200,0.2,20.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+	  
+	}
+	die->SetHistogramManager(histos);
+	
 }
 
-/*
 //______________________________________________________________________________________
 void InitCF(AliDielectron* die, Int_t cutDefinition)
 {
@@ -788,9 +805,9 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
     }
   }
   // cf->SetStepsForSignal();
-
-  // die->SetCFManagerPair(cf);
-}*/
+	
+  die->SetCFManagerPair(cf);
+}
 
 //______________________________________________________________________________________
 void SetupMCsignals(AliDielectron *die){
