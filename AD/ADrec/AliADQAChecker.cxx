@@ -22,7 +22,8 @@
 
 // --- ROOT system ---
 #include <TClass.h>
-#include <TH1F.h> 
+#include <TH2F.h> 
+#include <TH1D.h> 
 #include <TH1I.h> 
 #include <TIterator.h> 
 #include <TKey.h> 
@@ -30,6 +31,7 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TLatex.h>
+#include <TString.h>
 
 // --- Standard library ---
 
@@ -62,15 +64,13 @@ void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     check[specie] = 1.0;
-    // no check on cosmic or calibration events
-    if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic || AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)
-      continue;
+    // no check on calibration events
+    if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)continue;
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue;
     if (index == AliQAv1::kRAW) {
       check[specie] =  CheckRaws(list[specie]);
     } else if (index == AliQAv1::kESD) {
-      // Check for one disk missing (FATAL) or one ring missing (ERROR) in ESDs (to be redone)
       check[specie] =  CheckEsds(list[specie]);
     } 
   }
@@ -87,8 +87,251 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
   Double_t test = 1.0;
   if (list->GetEntries() == 0){  
     AliWarning("There are no histograms to be checked");
+  }
+  else {  
+    TH2F *hChargeEoIInt0 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt0);
+    if (!hChargeEoIInt0) {
+      AliWarning("ChargeEoIInt0 histogram is not found");
+    }
+    else {
+    	if(hChargeEoIInt0->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt0->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hChargeEoIInt0->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hChargeEoIInt0->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hChargeEoIInt0->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hChargeSlice;
+			Int_t NbadChannels = 0;
+			TString badChannels = " ";
+			
+    			for(Int_t i=0; i<16; i++){
+      				hChargeSlice = hChargeEoIInt0->ProjectionY("hChargeSlice",i+1,i+1);
+				Double_t saturation = hChargeSlice->Integral(1000,1025);
+				if(saturation > 1000){
+					test = 0.1;
+					if(NbadChannels == 0){
+						QAbox->SetFillColor(kRed);
+						QAbox->AddText("Saturation on channel ");
+						}
+					badChannels += i;
+					badChannels += ", ";
+					NbadChannels++;
+					}
+				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+				}
+			if(NbadChannels == 0){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("OK");
+				}		
+    			}
+		}
+    	}
+    TH2F *hChargeEoIInt1 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt1);
+    if (!hChargeEoIInt1) {
+      AliWarning("ChargeEoIInt1 histogram is not found");
+    }
+    else {
+    	if(hChargeEoIInt1->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt1->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hChargeEoIInt1->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hChargeEoIInt1->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hChargeEoIInt1->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hChargeSlice;
+			Int_t NbadChannels = 0;
+			TString badChannels = " ";
+			
+    			for(Int_t i=0; i<16; i++){
+      				hChargeSlice = hChargeEoIInt1->ProjectionY("hChargeSlice",i+1,i+1);
+				Double_t saturation = hChargeSlice->Integral(1000,1025);
+				if(saturation > 1000){
+					test = 0.1;
+					if(NbadChannels == 0){
+						QAbox->SetFillColor(kRed);
+						QAbox->AddText("Saturation on channel ");
+						}
+					badChannels += i;
+					badChannels += ", ";
+					NbadChannels++;
+					}
+				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+				}
+			if(NbadChannels == 0){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("OK");
+				}		
+    			}
+		}
+    	}  
+    TH2F *hBBFlagVsClock = (TH2F*)list->At(AliADQADataMakerRec::kBBFlagVsClock);
+    if (!hBBFlagVsClock) {
+      AliWarning("BBFlagVsClock histogram is not found");
+    }
+    else {
+    	if(hBBFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBBFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hBBFlagVsClock->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hBBFlagVsClock->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hBBFlagVsClock->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hClockSlice;
+			Bool_t notSynch = kFALSE;
+
+    			for(Int_t i=0; i<16; i++){
+      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
+				Double_t center = hClockSlice->GetBinContent(11);
+				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
+				if(center == 0){
+					test = 0.1;
+					QAbox->SetFillColor(kRed);
+					QAbox->AddText("AD not synchronized");
+					notSynch = kTRUE;
+					break;
+					} 
+				if(around/center > 0.5) {
+					test = 0.1;
+					test = 0.1;
+					QAbox->SetFillColor(kRed);
+					QAbox->AddText("AD not synchronized");
+					notSynch = kTRUE;
+					break;
+					}
+				}
+			if(!notSynch){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("OK");
+				}		
+    			}
+		}
+    	} 
+    TH2F *hBGFlagVsClock = (TH2F*)list->At(AliADQADataMakerRec::kBGFlagVsClock);
+    if (!hBGFlagVsClock) {
+      AliWarning("BGFlagVsClock histogram is not found");
+    }
+    else {
+    	if(hBGFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBGFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hBGFlagVsClock->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hBGFlagVsClock->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hBGFlagVsClock->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hClockSlice;
+			Bool_t notSynch = kFALSE;
+
+    			for(Int_t i=0; i<16; i++){
+      				hClockSlice = hBGFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
+				Double_t center = hClockSlice->GetBinContent(11);
+				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
+				if(center == 0){
+					test = 0.1;
+					QAbox->SetFillColor(kRed);
+					QAbox->AddText("AD not synchronized");
+					notSynch = kTRUE;
+					break;
+					} 
+				if(around/center > 0.5) {
+					test = 0.1;
+					test = 0.1;
+					QAbox->SetFillColor(kRed);
+					QAbox->AddText("AD not synchronized");
+					notSynch = kTRUE;
+					break;
+					}
+				}
+			if(!notSynch){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("OK");
+				}		
+    			}
+		}
+    	}  
+     
+    TH2F *hPedestalDiffInt0  = (TH2F*)list->At(AliADQADataMakerRec::kPedestalDiffInt0);
+    if (!hPedestalDiffInt0) {
+      AliWarning("PedestalInt0 histogram is not found");
+    }
+    else {
+    	if(hPedestalDiffInt0->GetListOfFunctions()->GetEntries()<1) hPedestalDiffInt0->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hPedestalDiffInt0->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hPedestalDiffInt0->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hPedestalDiffInt0->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hPedestalSlice;
+			Int_t NbadChannels = 0;
+			TString badChannels = " ";
+    			for(Int_t i=0; i<16; i++){
+      				hPedestalSlice = hPedestalDiffInt0->ProjectionY("hPedestalSlice",i+1,i+1);
+				Double_t mean = hPedestalSlice->GetMean();
+				if(TMath::Abs(mean)>1) {
+					test = 0.1;
+					if(NbadChannels == 0){
+						QAbox->SetFillColor(kRed);
+						QAbox->AddText("Bad pedestal for channel ");
+						}
+					badChannels += i;
+					badChannels += ", ";
+					NbadChannels++;
+					}
+				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+				}
+			if(NbadChannels == 0){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("OK");
+				}		
+    			}
+		}
+    	}
+    TH2F *hPedestalDiffInt1  = (TH2F*)list->At(AliADQADataMakerRec::kPedestalDiffInt1);
+    if (!hPedestalDiffInt1) {
+      AliWarning("PedestalInt1 histogram is not found");
+    }
+    else {
+    	if(hPedestalDiffInt1->GetListOfFunctions()->GetEntries()<1) hPedestalDiffInt1->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hPedestalDiffInt1->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hPedestalDiffInt1->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hPedestalDiffInt1->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hPedestalSlice;
+			Int_t NbadChannels = 0;
+			TString badChannels = " ";
+    			for(Int_t i=0; i<16; i++){
+      				hPedestalSlice = hPedestalDiffInt1->ProjectionY("hPedestalSlice",i+1,i+1);
+				Double_t mean = hPedestalSlice->GetMean();
+				if(TMath::Abs(mean)>1) {
+					test = 0.1;
+					if(NbadChannels == 0){
+						QAbox->SetFillColor(kRed);
+						QAbox->AddText("Bad pedestal for channel ");
+						}
+					badChannels += i;
+					badChannels += ", ";
+					NbadChannels++;
+					}
+				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+				}
+			if(NbadChannels == 0){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("OK");
+				}		
+    			}
+		}
+    	}
   } 
-  return test ; 
+  return test ;  
 }  
 
 //_________________________________________________________________
