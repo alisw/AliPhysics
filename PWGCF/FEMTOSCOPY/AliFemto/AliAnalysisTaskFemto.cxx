@@ -1,10 +1,7 @@
-//------------------------------------------------------
-// AliAnalysisTaskFemto - A task for the analysis framework
-// from the FEMTOSCOPY analysis of PWG2. Creates the necessary
-// connection between the ESD or AOD input and the femtoscopic
-// code.
-// Author: Adam Kisiel, OSU; Adam.Kisiel@cern.ch
-//------------------------------------------------------
+///
+/// \file AliAnalysisTaskFemto.cxx
+///
+
 #include "TROOT.h"
 #include "TChain.h"
 #include "TH1.h"
