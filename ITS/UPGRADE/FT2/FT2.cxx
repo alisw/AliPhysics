@@ -31,12 +31,13 @@ using namespace AliITSUAux;
 float FT2::fgMaxStepTGeo = 1.0;
 
 //________________________________________________
-FT2::FT2() :
-fITSRec(0)
+FT2::FT2() 
+:  fITSRec(0)
   ,fITS(0)
   ,fUsePIDForTracking(0)
   ,fIsTPC(kFALSE)
   ,fPIDResponse(0)
+  ,fTPCParaFile(0)
   ,fTPCSignalElectron(0)
   ,fTPCSignalMuon(0)
   ,fTPCSignalPion(0)
