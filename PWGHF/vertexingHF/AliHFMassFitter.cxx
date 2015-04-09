@@ -1453,6 +1453,17 @@ Double_t AliHFMassFitter::GetReducedChiSquare() const{
   return funcmass->GetChisquare()/funcmass->GetNDF();
 }
 
+//_________________________________________________________________________
+Double_t AliHFMassFitter::GetFitProbability() const{
+  //Get fir probability
+  TF1 *funcmass=(TF1*)fhistoInvMass->GetFunction("funcmass");
+  if(!funcmass) {
+    cout<<"funcmass not found"<<endl;
+    return -1;
+  }
+  return funcmass->GetProb();
+}
+
 //*********output
 
 //_________________________________________________________________________
