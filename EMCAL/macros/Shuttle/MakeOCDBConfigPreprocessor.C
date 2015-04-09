@@ -1,4 +1,4 @@
-void MakeOCDBConfigPreprocessor(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", Int_t firstRun, Int_t lastRun)
+void MakeOCDBConfigPreprocessor(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", Int_t firstRun=0, Int_t lastRun=999999999)
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(storageUri);
