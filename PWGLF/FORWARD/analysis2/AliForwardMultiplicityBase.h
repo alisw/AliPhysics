@@ -113,7 +113,7 @@ public:
     kStatusFailCorrector,
     kStatusFailCollector,
     kStatusNotAdded,
-    kStatusAllThrough
+    kStatusAllThrough       
   };
   /** 
    * @{ 

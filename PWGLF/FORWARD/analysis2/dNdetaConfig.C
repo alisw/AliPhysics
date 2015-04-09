@@ -109,7 +109,7 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   // au.SetnSigmaPlpDiamZ(5);
 
   // - Set whether to check for SPD outliers 
-  // task->SetCheckSPDOutlier(false);
+  // task->SetCheckSPDOutlier(true);
 
   // - Set the centrality estimator to use 
   // task->SetCentralityMethod(cent);

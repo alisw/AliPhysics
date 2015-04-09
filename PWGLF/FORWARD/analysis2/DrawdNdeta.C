@@ -950,6 +950,8 @@ struct dNdetaDrawer
     UShort_t cen   = (fCentMeth   ? fCentMeth->GetUniqueID() : 0);
     if (centLow < centHigh) {
       // Possibly modify trg according to method
+      // Printf("We have centrality cen=%d meth=%s", cen,
+      //        (fCentMeth ? fCentMeth->GetTitle() : "?"));
       UShort_t msk = 0;
       if (cen == 0 && fCentMeth) {
 	TString cm(fCentMeth->GetTitle());
@@ -968,16 +970,17 @@ struct dNdetaDrawer
 	case 5:           msk = 0x10; break; // V0C
 	case 6: case 7: case 8: case 9: break; // FMD,Tracks,Tracklets,CL0
 	case 10:          msk = 0x20; break; // CL1
-	case 11:          msk = 0x04; break; // ZNA
-	case 12:          msk = 0x08; break; // ZNC
-	case 13: case 14: case 15:    break; // ZPA, ZPC, NPA
-	case 16: case 17: case 18:    break; // V0MvsFMD, V0MvsTracklets, ZEM
-	case 19:                      break; // RefMult
-	case 20: case 21: case 22:    break; // HMTF V0A, V0M, V0C
+	case 11:                      break; // CND
+	case 12:          msk = 0x04; break; // ZNA
+	case 13:          msk = 0x08; break; // ZNC
+	case 14: case 15: case 16:   break; // ZPA, ZPC, NPA
+	case 17: case 18: case 19:   break; // V0MvsFMD, V0MvsTracklets, ZEM
+	case 20:                      break; // RefMult
+	case 21: case 22: case 23:    break; // HMTF V0A, V0M, V0C
 	default:                      break;
 	}
       }
-      trg = (trg & 0x200f) | msk;
+      trg = (trg & 0x200f) | (msk << 4);
     }
     Long_t   ret   = 
       gROOT->ProcessLine(Form("RefData::GetData(%d,%d,%d,%d,%d,%d);",
@@ -2409,6 +2412,54 @@ struct dNdetaDrawer
     }
     return ret;
   }
+  /** 
+   * Get error bands from vanilla graph
+   *
+   * @param g 
+   * @param low
+   * @param up
+   */
+  static void ErrorGraphs(const TGraph* g, TGraph*& low, TGraph*& up)
+  {
+    Warning("ErrorGraphs", "Called with vanila TGraph (%s)",
+	    g->IsA()->GetName());
+    Int_t n = g->GetN();
+    low = new TGraph(n);
+    up  = new TGraph(n);
+    for (Int_t i = 0; i < n; i++) {
+      low->SetPoint(i, 0, 0);
+      up->SetPoint(i, 0, 0);
+    }
+  }
+  /** 
+   * Get error bands 
+   */
+  static void ErrorGraphs(const TGraphErrors* g, TGraph*& low, TGraph*& up)
+  {
+    // Info("ErrorGraphs", "Called with TGraphErrors");
+    Int_t n = g->GetN();
+    low = new TGraph(n);
+    up  = new TGraph(n);
+    for (Int_t i = 0; i < n; i++) {
+      low->SetPoint(i, g->GetX()[i], g->GetY()[i] - g->GetEY()[i]);
+      up->SetPoint(i, g->GetX()[i], g->GetY()[i] + g->GetEY()[i]);
+    }
+  }
+  /** 
+   * Get error bands 
+   */
+  static void ErrorGraphs(const TGraphAsymmErrors* g, TGraph*& low, TGraph*& up)
+  {
+    // Info("ErrorGraphs", "Called with TGraphAsymmErrors");
+    Int_t n = g->GetN();
+    low = new TGraph(n);
+    up  = new TGraph(n);
+    for (Int_t i = 0; i < n; i++) {
+      low->SetPoint(i, g->GetX()[i], g->GetY()[i] - g->GetEYlow()[i]);
+      up->SetPoint(i, g->GetX()[i], g->GetY()[i] + g->GetEYhigh()[i]);
+    }
+  }
+
   //__________________________________________________________________
   /** 
    * Make the ratio of h1 to h2 
@@ -2504,15 +2555,19 @@ struct dNdetaDrawer
     Int_t    n     = g->GetN();
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[n-1];
+    TGraph*  glow  = 0;
+    TGraph*  ghigh = 0;
     if (g->IsA()->InheritsFrom(TGraphErrors::Class())) { 
       const TGraphErrors* ge = static_cast<const TGraphErrors*>(g);
       xlow  -= ge->GetErrorXlow(0);
       xhigh += ge->GetErrorXhigh(n-1);
+      ErrorGraphs(ge, glow, ghigh);
     }
     if (g->IsA()->InheritsFrom(TGraphAsymmErrors::Class())) { 
       const TGraphAsymmErrors* ge = static_cast<const TGraphAsymmErrors*>(g);
       xlow  -= ge->GetErrorXlow(0);
       xhigh += ge->GetErrorXhigh(n-1);
+      ErrorGraphs(ge, glow, ghigh);
     }
     if (xlow > xhigh) { Double_t t = xhigh; xhigh = xlow; xlow = t; }
 
@@ -2524,10 +2579,15 @@ struct dNdetaDrawer
       if (x < xlow || x > xhigh) continue; 
 
       Double_t f = g->Eval(x);
-      if (f <= 0) continue; 
+      if (f <= 0) continue;
+
+      Double_t efl = f - glow->Eval(x);
+      Double_t efh = ghigh->Eval(x) - f;
+      Double_t ec  = h->GetBinError(i);
+      Double_t e   = TMath::Max(ec, TMath::Max(efl, efh));
 
       ret->SetBinContent(i, c / f);
-      ret->SetBinError(i, h->GetBinError(i) / f);
+      ret->SetBinError(i, e / f);
     }
     return ret;
   }
