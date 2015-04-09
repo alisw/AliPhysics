@@ -766,6 +766,19 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fOutputContainer->Add(fhScaleFactor);
   }
   
+  if(GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn())
+  {
+    TList * templist =  GetReader()->GetWeightUtils()->GetCreateOutputHistograms();
+      
+    if ( templist && templist->GetEntries() == 2 )
+    {
+      templist->SetOwner(kFALSE); //Owner is fOutputContainer.
+    
+      fOutputContainer->Add(templist->At(0));
+      fOutputContainer->Add(templist->At(1));
+    }
+  }
+    
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
     AliWarning("Analysis job list not initialized!!!");
@@ -783,12 +796,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     {
       
       //Fill container with appropriate histograms
-      TList * templist =  ana ->GetCreateOutputObjects();
+      TList * templist =  ana->GetCreateOutputObjects();
       templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       
       for(Int_t i = 0; i < templist->GetEntries(); i++)
       {
-        
         //Add only  to the histogram name the name of the task
         if(   strcmp((templist->At(i))->ClassName(),"TObjString")   )
         {
@@ -799,7 +811,6 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
         
         //Add histogram to general container
         fOutputContainer->Add(templist->At(i)) ;
-        
       }
       
       delete templist;

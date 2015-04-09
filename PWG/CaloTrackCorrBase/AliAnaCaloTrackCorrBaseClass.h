@@ -234,6 +234,8 @@ public:
   virtual Int_t          GetEventMixBin()                  const ;
   virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
   
+  virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
+    
   virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } // number of bins for vertex position
   virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } // number of bins in reaction plain
   virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } // number of bins in centrality
