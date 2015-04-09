@@ -15,7 +15,6 @@
 #pragma link C++ class AliHFJetsContainer+;
 #pragma link C++ class AliHFJetsContainerVertex+;
 #pragma link C++ class AliAnalysisTaskSEHFJets+;
-#pragma link C++ class AliAnalysisTaskHFEDiJets+;
 
 
 #endif
