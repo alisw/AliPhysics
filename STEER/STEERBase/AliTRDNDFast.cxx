@@ -153,10 +153,8 @@ void AliTRDNDFast::Cleanup(){
 	delete[] fHistos;
 	fHistos=NULL;
     }
-    if(fPars){
-	for(Int_t ipar=0;ipar<kNpar;ipar++){
-	    fPars[ipar].Reset();
-	}
+    for(Int_t ipar=0;ipar<kNpar;ipar++){
+      fPars[ipar].Reset();
     }
     if(fFunc){
 	for(Int_t idim=0;idim<fNDim;idim++){
