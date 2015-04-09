@@ -2324,6 +2324,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::GetMesonKine(Int_t centrality)
      AliVParticle *mctrack2 = NULL;
      AliMCParticle *mctrack0 = NULL;
      TH2F *histo = 0x0;
+     TH1F *histo1D = 0x0;
     
      for(Int_t imc = 0; imc <fMCEvent->GetNumberOfPrimaries(); imc++){
        if(!(mctrack2 = fMCEvent->GetTrack(imc))) continue;
@@ -2384,12 +2385,53 @@ void AliAnalysisTaskFlowTPCTOFEPSP::GetMesonKine(Int_t centrality)
 	   histo = (TH2F *) mcQACollectionlist->FindObject(Form("rhospectraLog2D_centrbin%i",centrality));
 	   if(histo) histo->Fill(mcsource,mctrack0->Pt());
 	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 321) // kaon+-
+       {
+	 histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("kaonspectraLog_centrbin%i",centrality));
+	 if(histo1D) {
+	   histo1D->Fill(mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("kaonspectraLog_centrbin%i",centrality));
+	 }
+       }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 130) // k0L
+	 {
+	   histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("k0LspectraLog_centrbin%i",centrality));
+	   if(histo1D) {
+	     histo1D->Fill(mctrack0->Pt());
+	     //printf("Fill histo %s\n",Form("k0LpspectraLog_centrbin%i",centrality));
+	   }
+	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 310) // k0S
+	 {
+	   histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("k0SspectraLog_centrbin%i",centrality));
+	   if(histo1D) {
+	     histo1D->Fill(mctrack0->Pt());
+	     //printf("Fill histo %s\n",Form("k0SpspectraLog_centrbin%i",centrality));
+	   }
+	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 3122) // lamda
+	 {
+	   histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("lamdaspectraLog_centrbin%i",centrality));
+	   if(histo1D) {
+	     histo1D->Fill(mctrack0->Pt());
+	     //printf("Fill histo %s\n",Form("lamdaspectraLog_centrbin%i",centrality));
+	   }
+	 }
+       else if(TMath::Abs(mctrack0->PdgCode()) == 3222) // sigma
+	 {
+	   histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("sigmaspectraLog_centrbin%i",centrality));
+	   if(histo1D) {
+	     histo1D->Fill(mctrack0->Pt());
+	     //printf("Fill histo %s\n",Form("sigmaspectraLog_centrbin%i",centrality));
+	   }	 
+	 }
      }  
   } else {
 
  
     AliAODMCParticle *mctrack0 = NULL;
     TH2F *histo = 0x0;
+    TH1F *histo1D = 0x0;
     
     for(Int_t imc=0; imc< fAODArrayMCInfo->GetEntries(); imc++){
       mctrack0 = (AliAODMCParticle*)fAODArrayMCInfo->At(imc);
@@ -2472,7 +2514,46 @@ void AliAnalysisTaskFlowTPCTOFEPSP::GetMesonKine(Int_t centrality)
 	    //printf("Fill histo %s\n",Form("rhospectraLog2D_centrbin%i",centrality));
 	  }
 	}
+      else if(TMath::Abs(mctrack0->PdgCode()) == 321) // kaon+-
+       {
+	 histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("kaonspectraLog_centrbin%i",centrality));
+	 if(histo1D) {
+	   histo1D->Fill(mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("kaonspectraLog_centrbin%i",centrality));
+	 }
+       }
+     else if(TMath::Abs(mctrack0->PdgCode()) == 130) // k0L
+       {
+	 histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("k0LspectraLog_centrbin%i",centrality));
+	 if(histo1D) {
+	   histo1D->Fill(mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("k0LpspectraLog_centrbin%i",centrality));
+	 }
+       }
+     else if(TMath::Abs(mctrack0->PdgCode()) == 310) // k0S
+       {
+	 histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("k0SspectraLog_centrbin%i",centrality));
+	 if(histo1D) {
+	   histo1D->Fill(mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("k0SpspectraLog_centrbin%i",centrality));
+	 }
+       }
+     else if(TMath::Abs(mctrack0->PdgCode()) == 3122) // lamda
+       {
+	 histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("lamdaspectraLog_centrbin%i",centrality));
+	 if(histo1D) {
+	   histo1D->Fill(mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("lamdaspectraLog_centrbin%i",centrality));
+	 }
+       }
+     else if(TMath::Abs(mctrack0->PdgCode()) == 3222) // sigma
+       {
+	 histo1D = (TH1F *) mcQACollectionlist->FindObject(Form("sigmaspectraLog_centrbin%i",centrality));
+	 if(histo1D) {
+	   histo1D->Fill(mctrack0->Pt());
+	   //printf("Fill histo %s\n",Form("sigmaspectraLog_centrbin%i",centrality));
+	 }	 
+       }
     }  
   }
-  
 }
