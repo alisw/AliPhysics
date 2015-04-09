@@ -429,7 +429,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     if (!fAodTracks)continue;
       
     if(fSetFilterBit) if (!fAodTracks->TestFilterBit(fbit)) continue;
-    if(fAodTracks->Eta() < -0.8 || fAodTracks->Eta() > 0.8)continue;
+    if(fAodTracks->Eta() < -0.9 || fAodTracks->Eta() > 0.9)continue;
     if (fAodTracks->Pt() < 0.5 || fAodTracks->Pt() > 20.)continue;
     
     fHistNEvents->Fill(5);
@@ -490,7 +490,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         TObject* obj1 = fTrackArray->At(entryT2);
         AliAODTrack* fAodTracksT2 = (AliAODTrack*)obj1;
 	
-           if(fAodTracksT2->Pt() >= fTrigger2pTLowThr && fAodTracksT2->Pt() <= fTrigger2pTHighThr){
+           if(fAodTracksT2->Pt() >= fTrigger2pTLowThr && fAodTracksT2->Pt() <= fTrigger2pTHighThr && fAodTracksT2->Pt() < fAodTracksT1->Pt()){
            
         fHistNEvents->Fill(9);
         Double_t phiT1 = fAodTracksT1->Phi();
@@ -549,12 +549,12 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                    
                    if(fAodTracksAS->Pt() < fAodTracksT1->Pt()){
                        
-                       Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
+                      /* Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
                        if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;
                        
                        Bool_t CutForTwoTrackEffiTrg1 = TwoTrackEfficiencyCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS, bSign);
                        if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
-                       fHistT1CorrTrack->Fill(4);
+                       fHistT1CorrTrack->Fill(4);*/
                        
                        Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
@@ -574,12 +574,12 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                    
                    if (fAodTracksAS->Pt() < fAodTracksT2->Pt()){
                        
-                       Bool_t CutForConversionResonanceTrg2 = ConversionResonanceCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS,fControlConvResT2, fHistT2CorrTrack);
+                      /* Bool_t CutForConversionResonanceTrg2 = ConversionResonanceCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS,fControlConvResT2, fHistT2CorrTrack);
                        if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg2)continue;
                        
                        Bool_t CutForTwoTrackEffiTrg2 = TwoTrackEfficiencyCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS, bSign);
                        if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg2)continue;
-                       fHistT2CorrTrack->Fill(4);
+                       fHistT2CorrTrack->Fill(4);*/
                        
                        Double_t deltaPhi2 =  AssignCorrectPhiRange(fAodTracksT2->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta2 = fAodTracksT2->Eta() - fAodTracksAS->Eta();
@@ -684,12 +684,12 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                                                         
                                 if(fAodTracksAS->Pt() < fAodTracksT1->Pt()){
                                     
-                                    Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
+                                   /* Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
                                     if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;
                                     
                                     Bool_t CutForTwoTrackEffiTrg1 = TwoTrackEfficiencyCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS, bSign);
                                     if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
-                                    fHistT1CorrTrack->Fill(4);
+                                    fHistT1CorrTrack->Fill(4);*/
                                     
                                     Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                                     Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
