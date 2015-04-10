@@ -1580,6 +1580,11 @@ struct Drawer {
 	  
 	TPair* p = GetDataOther(leg, unique, *pSys, *pSNN, trgS, exps,
 				"e5", true, true,  effs);
+	if (!p) {
+	  Warning("", "No data for pad %d", iPad-1);
+	  pSNN++;
+	  continue;
+	}
 	if (!p->Key()) {
 	  Warning("", "No data for pad %d", iPad-1);
 	  pSNN++;
