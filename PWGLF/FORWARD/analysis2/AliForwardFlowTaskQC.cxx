@@ -1388,7 +1388,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
   }
   for (Int_t etaBin = 1; etaBin <= fCumuDiff->GetNbinsX(); etaBin++) {
     Double_t eta = fCumuDiff->GetXaxis()->GetBinCenter(etaBin);
-    Double_t refetaBin = fCumuRef->GetXaxis()->FindBin(eta);
+    Int_t    refetaBin = fCumuRef->GetXaxis()->FindBin(eta);
     if (fCumuRef->GetBinContent(refetaBin, 0) <= 3) continue;
     if (fCumuDiff->GetBinContent(etaBin, 0) == 0) continue;
     for (Int_t qBin = 0; qBin <= fCumuDiff->GetNbinsY(); qBin++) {
