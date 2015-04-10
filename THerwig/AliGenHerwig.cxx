@@ -60,6 +60,7 @@ ClassImp(AliGenHerwig)
     fProcess(0),
     fPtHardMin(0.),
     fPtHardMax(9999.),
+    fWeightPower(0),
     fPtRMS(0.),
     fMaxPr(10),
     fMaxErrors(1000),
@@ -98,6 +99,7 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fProcess(0),
     fPtHardMin(0.),
     fPtHardMax(9999.),
+    fWeightPower(0),
     fPtRMS(0.),
     fMaxPr(10),
     fMaxErrors(1000),
@@ -137,6 +139,10 @@ void AliGenHerwig::Init()
   fHerwig->Initialize(fProjectile.Data(), fTarget.Data(), fMomentum1, fMomentum2, fProcess); // 
   // reset parameters according to user needs
   InitPDF();
+  if(fWeightPower !=0){
+  fHerwig->SetPTPOW(fWeightPower);
+  fHerwig->SetNOWEIGHTED(0);
+  }
   fHerwig->SetPTMIN(fPtHardMin);
   fHerwig->SetPTMAX(fPtHardMax);
   fHerwig->SetPTRMS(fPtRMS);

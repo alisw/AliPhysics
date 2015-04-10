@@ -48,6 +48,7 @@ class AliGenHerwig : public AliGenMC
       {fStrucFunc = func;}
     virtual void    SetPtHardMin(Double_t pt) {fPtHardMin=pt;}
     virtual void    SetPtHardMax(Double_t pt) {fPtHardMax=pt;}
+    virtual void    SetWeightPower(Double_t ptweight) {fWeightPower=ptweight;}
     virtual void    SetPtRMS(Double_t pt) {fPtRMS=pt;}
     virtual void    SetMaxPr(Int_t i) {fMaxPr=i;}
     virtual void    SetMaxErrors(Int_t i) {fMaxErrors=i;}
@@ -101,6 +102,7 @@ class AliGenHerwig : public AliGenMC
     Int_t       fProcess;        // Process number
     Double_t    fPtHardMin;      // higher pT-hard cut
     Double_t    fPtHardMax;      // lower pT-hard cut
+    Double_t    fWeightPower;   //power of the event weight
     Double_t    fPtRMS;          // intrinsic pt of incoming hadrons
     Int_t       fMaxPr;          // maximum number of events to print out
     Int_t       fMaxErrors;      // maximum number of errors allowed
