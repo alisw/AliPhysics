@@ -383,6 +383,7 @@ void AliITSUv1Layer::CreateLayer(TGeoVolume *moth){
 						    new TGeoRotation("",phi,0,0)));
   }
 
+  layVol->GetShape()->ComputeBBox(); //RS: enfore recompting of BBox
 
   // Finally put everything in the mother volume
   moth->AddNode(layVol, 1, 0);
@@ -449,6 +450,7 @@ void AliITSUv1Layer::CreateLayerTurbo(TGeoVolume *moth){
 						    new TGeoRotation("", phi-fStaveTilt,0,0)));
   }
 
+  layVol->GetShape()->ComputeBBox(); //RS: enfore recompting of BBox
 
   // Finally put everything in the mother volume
   moth->AddNode(layVol, 1, 0);
@@ -551,6 +553,7 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
     } // if (fStaveModel)
   }
   
+  staveVol->GetShape()->ComputeBBox(); //RS: enfore recompting of BBox
 
   // Done, return the stave
   return staveVol;
