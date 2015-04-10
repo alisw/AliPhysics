@@ -8,7 +8,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 								TString 	periodName 					= "LHC13d2",  						// name of the period for added signals and weighting
 								Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 								Bool_t 		enableUseTHnSparse 			= kTRUE,							// enable THnSparse	for mixed event BG
-								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Int_t 		enableV0EffiStudies 		= 0,							// enables V0finding efficiency histograms
 								TString		fileNameInputForCentFlattening 	= "InterpValuesAndFlattening.root",
 								Int_t 		doFlattening 				= 0
                            ) {
@@ -55,6 +55,19 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	//=========  Set Cutnumber for V0Reader ================================
 	TString cutnumberPhoton = "00000008400100001500000000";
 	TString cutnumberEvent = "1000000";
+	
+	Bool_t enableV0findingEffi = kFALSE;
+	if(enableV0EffiStudies > 0){
+		enableV0findingEffi = kTRUE;
+		if(enableV0EffiStudies == 1){
+			cutnumberEvent = "5010001";
+		} else if(enableV0EffiStudies == 2){
+			cutnumberEvent = "5250001";
+		} else if(enableV0EffiStudies == 3){
+			cutnumberEvent = "5080001";
+		}
+	}
+	
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
@@ -63,6 +76,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+
 		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
