@@ -55,7 +55,7 @@ protected:
     AliAnalysisTaskSE* tsk = CoupleSECar("AddTaskdNdeta.C",
 					 Form("\"%s\",\"%s\"", which, cfg));
     if (!tsk) {
-      Printf("Failed to add task via %s(%s)", macro, cfg);
+      Printf("Failed to add task via AddTaskdNdeta.C(%s,%s)", cfg);
       return false;
     }
     FromOption(tsk, "TriggerMask",         "trig",     "INEL");

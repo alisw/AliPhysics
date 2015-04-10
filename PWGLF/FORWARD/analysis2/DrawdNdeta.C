@@ -929,9 +929,10 @@ struct dNdetaDrawer
 	   fNormString->GetTitle(), fNormString->GetUniqueID(),
 	   centTxt.Data(), (options ? options->GetTitle() : "none"));
     }
-    if (fSysString->GetUniqueID() == 3) {
+    if (fSysString->GetUniqueID() == 3 ||
+	fSysString->GetUniqueID() == 4) {
       Info("FetchInformation", "Left/Right assymmetry, mirror, and systematic "
-	   "errors explicitly disabled for pPb");
+	   "errors explicitly disabled for pPb/Pbp");
       fOptions   &= ~kShowLeftRight;
       fOptions   &= ~kMirror;
       fFwdSysErr =  0;
@@ -952,7 +953,7 @@ struct dNdetaDrawer
       // Possibly modify trg according to method
       // Printf("We have centrality cen=%d meth=%s", cen,
       //        (fCentMeth ? fCentMeth->GetTitle() : "?"));
-      UShort_t msk = 0;
+      UShort_t msk = 0x01; // Default to V0M comparison
       if (cen == 0 && fCentMeth) {
 	TString cm(fCentMeth->GetTitle());
 	if      (cm.EqualTo("V0M", TString::kIgnoreCase))    msk = 0x01;
@@ -964,20 +965,30 @@ struct dNdetaDrawer
       }
       else {
 	switch (cen) {
-	case 1: case 2:   msk = 0x01; break; // V0M
-	case 3:           msk = 0x02; break; // V0A
-	case 4:                       break; // V0A123
-	case 5:           msk = 0x10; break; // V0C
-	case 6: case 7: case 8: case 9: break; // FMD,Tracks,Tracklets,CL0
-	case 10:          msk = 0x20; break; // CL1
-	case 11:                      break; // CND
-	case 12:          msk = 0x04; break; // ZNA
-	case 13:          msk = 0x08; break; // ZNC
-	case 14: case 15: case 16:   break; // ZPA, ZPC, NPA
-	case 17: case 18: case 19:   break; // V0MvsFMD, V0MvsTracklets, ZEM
-	case 20:                      break; // RefMult
-	case 21: case 22: case 23:    break; // HMTF V0A, V0M, V0C
-	default:                      break;
+	case 1:   msk = 0x01; break; // default V0M
+	case 2:   msk = 0x01; break; // V0M
+	case 3:   msk = 0x02; break; // V0A
+	case 4:               break; // V0A123
+	case 5:   msk = 0x10; break; // V0C
+	case 6:               break; // FMD
+	case 7:               break; // Tracks
+	case 8:               break; // Tracklets
+	case 9:               break; // CL0
+	case 10:  msk = 0x20; break; // CL1
+	case 11:              break; // CND
+	case 12:  msk = 0x04; break; // ZNA
+	case 13:  msk = 0x08; break; // ZNC
+	case 14:              break; // ZPA
+	case 15:              break; // ZPC
+	case 16:              break; // NPA
+	case 17:              break; // V0MvsFMD
+	case 18:              break; // V0MvsTracklets
+	case 19:              break; // ZEMvsZDC
+	case 20:              break; // RefMult
+	case 21:              break; // HMTF V0A
+	case 22:              break; // HMTF V0M
+	case 23:              break; // HMTF V0C
+	default:              break;
 	}
       }
       trg = (trg & 0x200f) | (msk << 4);
@@ -2987,11 +2998,16 @@ struct dNdetaDrawer
     TString clean(Form("sed -e 's/\\(_[0-9]\\{3\\}d[0-9]\\{2\\}\\)"
 		       "\\(_[ac]\\|\\)"
 		       "_[0-9a-f]\\{4\\}"
-		       "\\(__[0-9]\\{2,3\\}\\|\\)/\\1\\2/g' "
+		       "\\(__[0-9]\\{1,3\\}\\|\\)/\\1\\2/g' "
 		       "-e 's/%s/%s/g' < %s > %s.C",
 		       bname.Data(), tgt.Data(), fname.Data(), tgt.Data()));
-    Printf("Execute \"%s\"", clean.Data());
+    // Printf("Execute \"%s\"", clean.Data());
     gSystem->Exec(clean);
+    Printf("Copy %s.C to %s/%s/%05d/%s%s/%s.C",tgt.Data(),
+	   (fEmpirical.IsNull() ? "normal" : "nosec"),
+	   fSysString->GetTitle(), snn, (fCentMeth ? "CENT" : ""),
+	   (fCentMeth ? fCentMeth->GetTitle() : fTrigString->GetTitle()),
+	   tgt.Data());
   }
   /* @} */ 
   /** 

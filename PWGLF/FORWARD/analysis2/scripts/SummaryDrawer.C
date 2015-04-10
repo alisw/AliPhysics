@@ -150,9 +150,10 @@ protected:
   {
     str = "?";
     switch (sys) { 
-    case 1: str = "pp"; break;
+    case 1: str = "pp";   break;
     case 2: str = "PbPb"; break;
-    case 3: str = "pPb"; break;
+    case 3: str = "pPb";  break;
+    case 4: str = "Pbp";  break;
     }
   }
   //____________________________________________________________________

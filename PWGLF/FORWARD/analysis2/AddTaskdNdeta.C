@@ -43,7 +43,7 @@ AddTaskdNdeta(const char* which    = "Forward",
   AliBasedNdetaTask*    task = 0;
   TString w(which);
   if (w.EqualTo("Forward",TString::kIgnoreCase))
-    task = new AliForwarddNdaetaTask("Forward");
+    task = new AliForwarddNdetaTask("Forward");
   else if (w.EqualTo("Central",TString::kIgnoreCase))
     task = new AliCentraldNdetaTask("Central");
   else if (w.EqualTo("MCTruth", TString::kIgnoreCase))
