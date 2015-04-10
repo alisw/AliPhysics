@@ -39,6 +39,7 @@ AliADPreprocessor::AliADPreprocessor(AliShuttleInterface* shuttle) :
   AddRunType("STANDALONE_PULSER");
   AddRunType("STANDALONE_BC");
   AddRunType("PHYSICS");
+  AddRunType("PEDESTAL");
     
 }
 
