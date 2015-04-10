@@ -93,6 +93,7 @@ TString bitNames[NBITS] = {
   TString refClass="";
   Double_t refSigma=-1;
   Double_t refEff = 1.;
+
   if      (               run<=118501) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
   else if (run>=118502 && run<=118561) { refSigma=  47.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_0.90: 47mb=52 mb *0.91=sigma(INEL)*R(INT1/INEL) (arxiv: 1208.4968, fig.10 + table 3)
   else if (run>=118903 && run<=120829) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
@@ -114,9 +115,21 @@ TString bitNames[NBITS] = {
   else if (run>=176658 && run<=177143) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=177146 && run<=177147) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=177148 && run<=177149) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=177150 && run<=177506) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=177580 && run<=178220) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=179444 && run<=188229) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177150 && run<=177165) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177166 && run<=177166) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177167 && run<=177167) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177168 && run<=177168) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177169 && run<=177172) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177173 && run<=177173) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177174 && run<=177506) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177507 && run<=178017) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=178018 && run<=178029) { refSigma=  67.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond), CINT1/C0TVX=2.7 from 178052
+  else if (run>=178030 && run<=178053) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=178055 && run<=178062) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALL";       } // pp_8.00: (Artem, 2013-10-04,RunCond), vdM
+  else if (run>=178062 && run<=178220) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=179444 && run<=184844) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=184845 && run<=184990) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=184991 && run<=188229) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=188230 && run<=188366) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: pilot. arxiv:1405.1849
   else if (run>=188367 && run<=193692) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=193693 && run<=193766) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
