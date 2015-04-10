@@ -1187,11 +1187,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoTrueEtaInvMassPt[iCut]->SetXTitle("M_{inv,#eta} (GeV/c^{2})");
 				fHistoTrueEtaInvMassPt[iCut]->SetYTitle("#eta p_{T} (GeV/c)");
 				fTrueList[iCut]->Add(fHistoTrueEtaInvMassPt[iCut]);
-				fHistoTruePi0MatchedInvMassPt[iCut] = new TH2F("ESD_TruePi0_Matched_InvMass_Pt","ESD_TruePi0_Matched_InvMass_Pt",800,0,0.8,250,0,25);
+				fHistoTruePi0MatchedInvMassPt[iCut] = new TH2F("ESD_TruePi0_Matched_InvMass_Pt","ESD_TruePi0_Matched_InvMass_Pt",800,0,0.8,300,0,30);
 				fHistoTruePi0MatchedInvMassPt[iCut]->SetXTitle("M_{inv,#pi^{0}} (GeV/c^{2})");
 				fHistoTruePi0MatchedInvMassPt[iCut]->SetYTitle("#pi^{0} p_{T} (GeV/c)");
 				fTrueList[iCut]->Add(fHistoTruePi0MatchedInvMassPt[iCut]);
-				fHistoTrueEtaMatchedInvMassPt[iCut] = new TH2F("ESD_TrueEta_Matched_InvMass_Pt","ESD_TrueEta_Matched_InvMass_Pt",800,0,0.8,250,0,25);
+				fHistoTrueEtaMatchedInvMassPt[iCut] = new TH2F("ESD_TrueEta_Matched_InvMass_Pt","ESD_TrueEta_Matched_InvMass_Pt",800,0,0.8,300,0,30);
 				fHistoTrueEtaMatchedInvMassPt[iCut]->SetXTitle("M_{inv,#eta} (GeV/c^{2})");
 				fHistoTrueEtaMatchedInvMassPt[iCut]->SetYTitle("#eta p_{T} (GeV/c)");
 				fTrueList[iCut]->Add(fHistoTrueEtaMatchedInvMassPt[iCut]);
