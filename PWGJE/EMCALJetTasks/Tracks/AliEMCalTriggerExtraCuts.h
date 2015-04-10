@@ -46,7 +46,7 @@ public:
    * Setter for minimum crossed rows in the TPC
    * \param crossedRows Minimum crossed rows requested
    */
-  void SetMinTPCCrossedRows(UInt_t crossedRows){
+  void SetMinTPCCrossedRows(Int_t crossedRows){
     fMinCrossedRowsTPC = crossedRows;
     fRequestBitmap.SetBitNumber(kTPCCrossedRows);
   }
@@ -71,8 +71,9 @@ protected:
     kTPCTrackLength         = 1       ///< Bit for TPC track length cut
   };
 
+  Float_t GetTPCCrossedRows(const AliVTrack *const trk) const;
   Double_t CalculateTPCTrackLength(AliVTrack *trk) const;
-  UInt_t                fMinCrossedRowsTPC;             ///< Min. number of crossed rows in the TPC
+  Int_t                 fMinCrossedRowsTPC;             ///< Min. number of crossed rows in the TPC
   TBits                 fRequestBitmap;                 ///< Bitmap for cuts enabled
 
   /// \cond CLASSIMP

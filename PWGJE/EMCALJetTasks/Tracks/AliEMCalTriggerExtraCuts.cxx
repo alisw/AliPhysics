@@ -52,16 +52,37 @@ Bool_t AliEMCalTriggerExtraCuts::IsSelected(TObject *o){
   Bool_t isSelected(true);
 
   if(fRequestBitmap.TestBitNumber(kTPCCrossedRows)){
-    if(static_cast<UInt_t>(rectrack->GetTPCCrossedRows()) < fMinCrossedRowsTPC)
+    //test
+    Float_t ncrossed = GetTPCCrossedRows(rectrack);
+    AliDebug(2, Form("Crossed rows %f, min %d\n", ncrossed, fMinCrossedRowsTPC));
+    if(ncrossed < fMinCrossedRowsTPC)
       isSelected = false;
+    AliDebug(1, Form("Selected : %s", isSelected ? "Yes" : "No"));
   }
 
   if(fRequestBitmap.TestBitNumber(kTPCTrackLength)){
-    if(CalculateTPCTrackLength(rectrack) < 0.85*(130-5*TMath::Abs(1./rectrack->Pt())))
+    Double_t tracklength = CalculateTPCTrackLength(rectrack),
+             cut = 0.85*(130-5*TMath::Abs(1./rectrack->Pt()));
+    AliDebug(2, Form("track length %f, min %f\n", tracklength, cut));
+    if(tracklength < cut)
       isSelected = false;
+    AliDebug(1, Form("Selected : %s", isSelected ? "Yes" : "No"));
   }
 
   return isSelected;
+}
+
+/**
+ * Temporary, until interface is unified
+ * @return
+ */
+Float_t AliEMCalTriggerExtraCuts::GetTPCCrossedRows(const AliVTrack *const trk) const {
+  if(trk->IsA() == AliESDtrack::Class()){
+    return (static_cast<const AliESDtrack *>(trk))->GetTPCCrossedRows();
+  } else if(trk->IsA() == AliAODTrack::Class()){
+    return static_cast<Float_t>((static_cast<const AliAODTrack * >(trk))->GetTPCNCrossedRows());
+  }
+  return 0.;
 }
 
 /**

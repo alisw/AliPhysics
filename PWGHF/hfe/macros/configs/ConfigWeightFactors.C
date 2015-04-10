@@ -4,9 +4,11 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
   // Option "collType": 0 for pp 2.76 TeV; 1 for pp 7 TeV; 2 for PbPb; 3 for DPMJET pPb; 4 for HIJING pPb; 5 for DPMJET/HIJING pPb: 6 Pb-Pb LHC11a10abis; 7 Pb-Pb LHC11a10b_plus; 8 Pb-Pb LHC11a10b_plus for LHC11a10abis ; 9 Pb-Pb LHC11a10b_plus for LHC11a10bbis; 10 for pp LHC106; 11 for pp LHC106a; 12 for pp LHC107a_d
   //
   //Get the correction factors for Non-HF electron yields from a root-file
-  Double_t elecBackGroundWeight[11][6][44][3];//centrality, species, momentum, background level
+
+  const int nSpec = 9;
+  Double_t elecBackGroundWeight[11][9][44][3];//centrality, species, momentum, background level
   for(Int_t iCent = 0; iCent < 11; iCent++){
-    for(Int_t iSpecies = 0; iSpecies < 6; iSpecies++){
+    for(Int_t iSpecies = 0; iSpecies < nSpec; iSpecies++){
       for(Int_t iBin = 0; iBin < 44; iBin++){
         for(Int_t iError = 0; iError < 3; iError++){
           elecBackGroundWeight[iCent][iSpecies][iBin][iError] = 0;
@@ -14,13 +16,16 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
       }
     }
   }
-  const Char_t *backNameMC[6] = {"pion","eta","omega","phi","etap","rho"};
-  printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s",filename.Data()));
+
+  const Char_t *backNameMC[9] = {"pion","eta","omega","phi","etap","rho","kaon","k0s","lambda"};
+  printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
+  //printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+  TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
+  //TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
   printf("collType %d\n",collType);
-  TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s",filename.Data()));
   if(weightFile){
     if(syst){
-      TH1F *hRelErr[2][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
+      TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
       if(collType == 1){
         hRelErr[0][0] = (TH1F*)weightFile->Get("hErrorspionLower");
         hRelErr[0][1] = (TH1F*)weightFile->Get("hErrorspionUpper");
@@ -40,10 +45,20 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
           hRelErr[0][0]->SetBinContent(i+1, -0.07);
           hRelErr[0][1]->SetBinContent(i+1, 0.07);
         }
-      }
+      if(collType == 4){
+		  hRelErr[6][0] = (TH1F*)weightFile->Get("hErrors_pPb_5.023TeV_kaonLower");
+		  hRelErr[6][1] = (TH1F*)weightFile->Get("hErrors_pPb_5.023TeV_kaonUpper");
+		  hRelErr[7][0] = (TH1F*)weightFile->Get("hErrors_pPb_5.023TeV_k0sLower");
+		  hRelErr[7][1] = (TH1F*)weightFile->Get("hErrors_pPb_5.023TeV_k0sUpper");
+		  hRelErr[8][0] = (TH1F*)weightFile->Get("hErrors_pPb_5.023TeV_lambdaLower");
+		  hRelErr[8][1] = (TH1F*)weightFile->Get("hErrors_pPb_5.023TeV_lambdaUpper");
+
+	  }
+	 }
     }
+
     for(Int_t iCent = 0; iCent < 11; iCent++){//centrality bins
-      for(Int_t iSpecies = 0; iSpecies < 6; iSpecies++){//species of decaying mesons
+      for(Int_t iSpecies = 0; iSpecies < nSpec; iSpecies++){//species of decaying mesons
         TH1F *hRatio = 0x0;
         if(collType == 1){
           hRatio = (TH1F*)weightFile->Get(Form("hRatio%s",backNameMC[iSpecies]));
@@ -131,7 +146,9 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
               for(Int_t iError = 0; iError < 2; iError++){//0: best estimate, 1,2: lower, upper uncertainty level
                 if((iSpecies == 1) && (collType == 1))
                   elecBackGroundWeight[iCent][iSpecies][iBin-1][iError+1]=elecBackGroundWeight[iCent][iSpecies][iBin-1][0]*(1+hRelErr[1][iError]->GetBinContent(iBin));
-                else
+				else if((iSpecies > 5) && (collType ==4))
+				   elecBackGroundWeight[iCent][iSpecies][iBin-1][iError+1]=elecBackGroundWeight[iCent][iSpecies][iBin-1][0]*(1+hRelErr[iSpecies][iError]->GetBinContent(iBin));
+				else
                   elecBackGroundWeight[iCent][iSpecies][iBin-1][iError+1]=elecBackGroundWeight[iCent][iSpecies][iBin-1][0]*(1+hRelErr[0][iError]->GetBinContent(iBin));//Addition of relative errors from histograms with "+", because lower errors are defined as negative numbers in the reference histograms!
 	      }
 	    }
@@ -155,7 +172,7 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
   for(Int_t iCent = 0; iCent < 11; iCent++){//centrality bins
     for(Int_t iBin = 1; iBin < 45; iBin++){//for all centralities, pt bins and all meson decays, set weighting factors for daughter electrons
       task->SetBinLimits(iBin-1,binLimit[iBin-1]);
-      for(Int_t iSpecies = 0; iSpecies < 6; iSpecies++){
+      for(Int_t iSpecies = 0; iSpecies < nSpec; iSpecies++){
         for(Int_t iError = 0; iError < 3; iError++)
           task->SetElecBackGroundFactors(iBin-1, iSpecies, iCent, iError, elecBackGroundWeight[iCent][iSpecies][iBin-1][iError]);
       }

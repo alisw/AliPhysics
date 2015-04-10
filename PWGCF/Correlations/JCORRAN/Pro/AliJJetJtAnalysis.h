@@ -136,17 +136,22 @@ class AliJJetJtAnalysis{
         AliJTH1D fhKNumber;
         AliJTH1D fhJetPt ;
         AliJTH1D fhJetPtBin;
+        AliJTH1D fhJetPtWeight ;
+        AliJTH1D fhJetPtWeightBin;
         AliJTH1D fhZ ;
         AliJTH1D fhZBin;
         AliJTH1D fhJt ;
         AliJTH1D fhJtBin;
         AliJTH1D fhJtWeightBin;
         AliJTH1D fhLogJtWeightBin;
+        AliJTH1D fhLogJtWeight2Bin;
         AliJTH1D fhJtWithPtCutWeightBinBin;
         AliJTH1D fhLogJtWithPtCutWeightBinBin;
+        AliJTH1D fhLogJtWithPtCutWeight2BinBin;
         AliJTH1D fhJtBinLimBin;
         AliJTH1D fhJtWeightBinLimBin;
         AliJTH1D fhLogJtWeightBinLimBin;
+        AliJTH1D fhLogJtWeight2BinLimBin;
         
         
         AliJTH1D fhJetBgPt ;
@@ -157,15 +162,20 @@ class AliJJetJtAnalysis{
         AliJTH1D fhBgJtBin;
         AliJTH1D fhBgJtWeightBin;
         AliJTH1D fhBgLogJtWeightBin;
+        AliJTH1D fhBgLogJtWeight2Bin;
         AliJTH1D fhBgJtWithPtCutWeightBinBin;
         AliJTH1D fhBgLogJtWithPtCutWeightBinBin;
+        AliJTH1D fhBgLogJtWithPtCutWeight2BinBin;
         AliJTH1D fhBgJtWithPtCutWeightBinBinSmallerR;
         AliJTH1D fhBgLogJtWithPtCutWeightBinBinSmallerR;
+        AliJTH1D fhBgLogJtWithPtCutWeight2BinBinSmallerR;
         AliJTH1D fhBgJtWithPtCutWeightBinBinDiffR;
         AliJTH1D fhBgLogJtWithPtCutWeightBinBinDiffR;
+        AliJTH1D fhBgLogJtWithPtCutWeight2BinBinDiffR;
         AliJTH1D fhBgJtBinLimBin;
         AliJTH1D fhBgJtWeightBinLimBin;
         AliJTH1D fhBgLogJtWeightBinLimBin;
+        AliJTH1D fhBgLogJtWeight2BinLimBin;
         AliJTH1D fhTrkPt;
         AliJTH1D fhTrkPtBin;
         AliJTH1D fhTrkPtWeightBin;
