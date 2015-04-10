@@ -1026,8 +1026,8 @@ void AliFourPion::ParInit()
 
 
   // Pair-Exchange amplitudes from c3 fits
-  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
-  TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))");
+  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8.*pow(x*[1]/0.19733,3) - 12.*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16.*pow(x*[1]/0.19733,4) -48.*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120.*x*[1]/0.19733) + [5]/(720.*pow(2.,3.))*(64.*pow(x*[1]/0.19733,6) - 480.*pow(x*[1]/0.19733,4) + 720.*pow(x*[1]/0.19733,2) - 120.))");
+  TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(-x*[1]/0.19733 + 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4.*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9.*pow(x*[1]/0.19733,2) - 18.*x*[1]/0.19733 + 6) + [5]/24.*(pow(x*[1]/0.19733,4) - 16.*pow(x*[1]/0.19733,3) + 72.*pow(x*[1]/0.19733,2) - 96.*x*[1]/0.19733 +24.))");
   
   if(!fMCcase && !fTabulatePairs){
     for(Int_t FT=0; FT<2; FT++){// c3 or C3
@@ -1045,40 +1045,44 @@ void AliFourPion::ParInit()
 	    ExchangeAmp[i][j][FT]->FixParameter(1, fPbPbc3FitEA[FT]->GetBinContent(i+1, 2, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(2, fPbPbc3FitEA[FT]->GetBinContent(i+1, 3, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(3, fPbPbc3FitEA[FT]->GetBinContent(i+1, 4, j+1));
-	    ExchangeAmp[i][j][FT]->FixParameter(4, 0);
+	    ExchangeAmp[i][j][FT]->FixParameter(4, fPbPbc3FitEA[FT]->GetBinContent(i+1, 5, j+1));
+	    ExchangeAmp[i][j][FT]->FixParameter(5, fPbPbc3FitEA[FT]->GetBinContent(i+1, 6, j+1));
 	  }else if(fCollisionType==1){
 	    ExchangeAmp[i][j][FT]->FixParameter(0, fpPbc3FitEA[FT]->GetBinContent(i+1, 1, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(1, fpPbc3FitEA[FT]->GetBinContent(i+1, 2, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(2, fpPbc3FitEA[FT]->GetBinContent(i+1, 3, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(3, fpPbc3FitEA[FT]->GetBinContent(i+1, 4, j+1));
-	    ExchangeAmp[i][j][FT]->FixParameter(4, 0);
+	    ExchangeAmp[i][j][FT]->FixParameter(4, fpPbc3FitEA[FT]->GetBinContent(i+1, 5, j+1));
+	    ExchangeAmp[i][j][FT]->FixParameter(5, fpPbc3FitEA[FT]->GetBinContent(i+1, 6, j+1));
 	  }else{
 	    ExchangeAmp[i][j][FT]->FixParameter(0, fppc3FitEA[FT]->GetBinContent(i+1, 1, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(1, fppc3FitEA[FT]->GetBinContent(i+1, 2, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(2, fppc3FitEA[FT]->GetBinContent(i+1, 3, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(3, fppc3FitEA[FT]->GetBinContent(i+1, 4, j+1));
-	    ExchangeAmp[i][j][FT]->FixParameter(4, 0);
+	    ExchangeAmp[i][j][FT]->FixParameter(4, fppc3FitEA[FT]->GetBinContent(i+1, 5, j+1));
+	    ExchangeAmp[i][j][FT]->FixParameter(5, fppc3FitEA[FT]->GetBinContent(i+1, 6, j+1));
 	  }
 	}
       }
     }
   }
 
+ 
   
   // mean +- RMS
-  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x - ([2] + [3]*x)",0,1.0);
+  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x + ([2] + [3]*x)",0,1.0);
   fqOutFcn->FixParameter(0, 5.25711e-03);// mean
   fqOutFcn->FixParameter(1, 2.07835);// mean
   fqOutFcn->FixParameter(2, -1.82312e-03);// rms
   fqOutFcn->FixParameter(3, 8.74446e-01);// rms
-  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) - ([4] + [5]*x)",0,1.0);
+  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) + ([4] + [5]*x)",0,1.0);
   fqSideFcn->FixParameter(0, 1.47222e-02);// mean
   fqSideFcn->FixParameter(1, 8.42044e-01);// mean
   fqSideFcn->FixParameter(2, 2.82436);// mean
   fqSideFcn->FixParameter(3, -5.47032);// mean
   fqSideFcn->FixParameter(4, 1.92920e-03);// rms
   fqSideFcn->FixParameter(5, 3.91368e-01);// rms
-  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) - ([4] + [5]*x)",0,1.0);
+  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) + ([4] + [5]*x)",0,1.0);
   fqLongFcn->FixParameter(0, 1.94838e-02);// mean 
   fqLongFcn->FixParameter(1, 9.22609e-01);// mean
   fqLongFcn->FixParameter(2, 1.32699);// mean
@@ -1086,7 +1090,7 @@ void AliFourPion::ParInit()
   fqLongFcn->FixParameter(4, -2.23316e-04);// rms
   fqLongFcn->FixParameter(5, 3.98127e-01);// rms
   
-
+  
   /////////////////////////////////////////////
   /////////////////////////////////////////////
  
@@ -1836,6 +1840,7 @@ void AliFourPion::UserCreateOutputObjects()
   ///////////////////////////////////  
   
   PostData(1, fOutputList);
+  
 }
 
 //________________________________________________________________________
@@ -1869,7 +1874,7 @@ void AliFourPion::UserExec(Option_t *)
     isSelected[3] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMult);
     if(!isSelected[fTriggerType] && !fMCcase) return;
   }
-
+  
   
   AliCentrality *centrality;// for AODs and ESDs
   
