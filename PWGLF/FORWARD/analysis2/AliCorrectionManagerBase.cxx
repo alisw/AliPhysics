@@ -954,7 +954,7 @@ AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
     TObject* obj = e->fData;
     TString  txt = e->GetTitle();
     CorrectFields(run, sys, sNN, fld, mc, sat);
-    Printf("Storing %3d: %s -> %9d/%d/%05d/%2d/%s/%s %s",
+    Printf("Storing %3d: %s -> %9lu/%d/%05d/%2d/%s/%s %s",
 	   i, txt.Data(), run, sys, sNN, fld, (mc?"simu":"real"),
 	   (sat?"sat":"nom"), GetName());
     if (!StoreIt(0, obj, run, sys, sNN, fld, mc, sat, dest.Data(),
