@@ -317,6 +317,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       jet2  = NULL;
       jetS  = NULL;
       
+      if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
+        continue;
+
       //Get constituent subtacted version of jet
       Int_t ifound = 0;
       Int_t ilab = -1;
