@@ -127,7 +127,9 @@ TString bitNames[NBITS] = {
   else if (run>=178030 && run<=178053) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=178055 && run<=178062) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALL";       } // pp_8.00: (Artem, 2013-10-04,RunCond), vdM
   else if (run>=178062 && run<=178220) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=179444 && run<=184844) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=179444 && run<=180715) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=180716 && run<=180720) { refSigma=  56.; refEff = 1.00; refClass = "CINT7-S-NOPF-ALLNOTRD";  } // no C0TVX in these runs, taking VBAND cross section
+  else if (run>=180721 && run<=184844) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=184845 && run<=184990) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=184991 && run<=188229) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=188230 && run<=188366) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: pilot. arxiv:1405.1849
