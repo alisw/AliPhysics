@@ -1,16 +1,16 @@
-AliGenerator* AddMCGenHerwig(Float_t e_beam1=7,Float_t e_beam2=7, Double_t ptHardMin = 0., Double_t ptHardMax = 1.) 
+AliGenerator* AddMCGenHerwig(Float_t e_beam1=3500,Float_t e_beam2=3500, Double_t ptHardMin = 10., Double_t ptHardMax = 100000.,Double_t ptWeight=0) 
 {
   //Add Herwig generator: pt-hard bin or min bias
 
 
  
   AliGenerator *genH = NULL;
-  genH = CreateHerwigGen(e_beam1,e_beam2, ptHardMin, ptHardMax);
+  genH = CreateHerwigGen(e_beam1,e_beam2, ptHardMin, ptHardMax,ptWeight);
   
   return genH;
 }
 
-AliGenerator* CreateHerwigGen(Float_t e_beam1,Float_t e_beam2, Int_t ptHardMin, Int_t ptHardMax) {
+AliGenerator* CreateHerwigGen(Float_t e_beam1,Float_t e_beam2, Int_t ptHardMin, Int_t ptHardMax,Double_t ptWeight) {
     
   gSystem->Load("libTHerwig");
   gSystem->Load("libHERWIG");
@@ -31,9 +31,9 @@ AliGenerator* CreateHerwigGen(Float_t e_beam1,Float_t e_beam2, Int_t ptHardMin, 
 
   if(ptHardMin>0.) {
     genH->SetProcess(1500);
-    genH->SetPtHard((float)ptHardMin,(float)ptHardMax);
-    //event weight not yet implemented
-    //  if(ptWeight>0) genH->SetWeightPower(ptWeight);
+    genH->SetPtHardMin((float)ptHardMin);
+    genH->SetPtHardMax((float)ptHardMax);    
+    if(ptWeight>0) genH->SetWeightPower(ptWeight);
   } else
     genH->SetProcess(8000); // Minimum Bias  soft hadron-hadron
 

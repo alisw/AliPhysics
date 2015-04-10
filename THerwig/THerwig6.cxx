@@ -595,6 +595,9 @@ void THerwig6::PrintEvt()
     
 }
 
+
+
+
   // acces to hep common block
 int         THerwig6::GetNEVHEP        () const     { return HEPEVT.NEVHEP; }
 int         THerwig6::GetNhep          () const     { return HEPEVT.NHEP; }
@@ -676,7 +679,7 @@ void        THerwig6::SetMAXER    (int i)           const     { HWEVNT.MAXER = i
 int         THerwig6::GetNRN      (int i)           const     { return HWEVNT.NRN[i-1]; }
 void        THerwig6::SetNRN    (int i, int j)      const     { HWEVNT.NRN[i-1] = j; }
 double      THerwig6::GetEVWGT         ()           const     { return HWEVNT.EVWGT; }
-
+void        THerwig6::SetNOWEIGHTED(int i)        const {HWEVNT.NOWGT=i;}         
 int         THerwig6::GetIDHW     (int i)           const     { return HWEVNT.IDHW[i]; }
 
 int         THerwig6::GetIERROR        ()           const     { return HWEVNT.IERROR; }
