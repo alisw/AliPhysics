@@ -45,7 +45,7 @@ TObject(),
   PiFitHist = (TH1D *)(functionFile->Get("pions")); // must be normalized
   PiFitHist->Scale(1.0/PiFitHist->GetMaximum());
   PiHistCenter=(PiFitHist->GetXaxis())->GetBinCenter(PiFitHist->GetMaximumBin());
-  //cout << "PiHistCenter: " << PiHistCenter << endl;
+  printf("PiHistCenter: %f\n",PiHistCenter);
   PiFitHist->SetDirectory(0);
   functionFile->Close();
   
@@ -64,7 +64,7 @@ TObject(),
 }
 
 AliHFEhadronicbackground::~AliHFEhadronicbackground(){
-  //cout << "destructor." << endl;
+  printf("destructor.\n");
   if(ranCalculation)
     {
       delete fCenterPi;
@@ -406,7 +406,7 @@ void AliHFEhadronicbackground::Process(TH2D* hSigmaTPC, Double_t pMin, Double_t 
       if(piAfterCut<0.1)piAfterCut=0.1;
       fContamination->Fill(parMin+i*parStep,piAfterCut/(piAfterCut+elAfterCut));
       fContamination->SetBinError(i+1, 1.0/TMath::Sqrt(piAfterCut)*piAfterCut/(piAfterCut+elAfterCut));
-      //cout << "Nr el at " << parMin+i*parStep  << "GeV : " << elnr << endl;
+      printf("Nr el at %f GeV: %f\n",parMin+i*parStep,elnr);
       fCenterEl->SetBinError(i+1, 2.002/TMath::Sqrt(elnr));
       fEfficiency->Fill(parMin+i*parStep,1.-elAfterCut/elnr);
     }
@@ -489,7 +489,7 @@ void AliHFEhadronicbackground::Process(TH2D* hSigmaTPC, Double_t pMin, Double_t 
   ranCalculation=true;
   
   
-  //cout << "End of Process()" << endl;
+  printf("End of Process()\n");
 }
 
 
@@ -546,7 +546,7 @@ void AliHFEhadronicbackground::FitSlice(TH1 *hslice, Double_t momentum){
   Double_t maxEle = 1e9;
   Double_t maxPi = 2*hslice->GetMaximum();
   
-  //cout << "\n\nNow fitting slice at momentum " << momentum << "GeV\n" << endl;
+  printf("\n\nNow fitting slice at momentum %f GeV\n",momentum);
   
   combined->FixParameter(9, momentum);
   combined->SetParLimits(6, minEle, maxEle);
@@ -599,12 +599,12 @@ void AliHFEhadronicbackground::FitSlice(TH1 *hslice, Double_t momentum){
   
   tempCombined=combined;
   
-  //cout << "end of FitSlice" << endl;
+  printf("end of FitSlice\n");
 }
 
 void AliHFEhadronicbackground::DrawDiagrams(void)
 {
-  //cout << "Start Draw Diagram Function" << endl;
+  printf("Start Draw Diagram Function\n");
   char name[30];
   TCanvas ** IndividualSlice=new TCanvas*[nParameters/4+1];
   for(int i=0;i<nParameters/4+1;i++)
@@ -864,7 +864,7 @@ AliESDpid* AliHFEhadronicbackground::SetupPIDSplinesTPC(const TString &periodin,
             if (old) delete old;
             fESDpid->GetTPCResponse().SetResponseFunction((AliPID::EParticleType)ispec,responseFunction);
             fESDpid->GetTPCResponse().SetUseDatabase(kTRUE);
-            //Info("SetupPIDSplinesTPC",Form("Adding graph: %d - %s\n",ispec,(const char*)responseFunction->GetName()));
+            printf("SetupPIDSplinesTPC Adding graph: %d - %s\n",ispec,(const char*)responseFunction->GetName());
             break;
           }
         }
@@ -888,7 +888,7 @@ AliESDpid* AliHFEhadronicbackground::SetupPIDSplinesTPC(const TString &periodin,
           }
          
           fESDpid->GetTPCResponse().SetResponseFunction((AliPID::EParticleType)ispec,responseFunction);
-          //Info("SetupPIDSplinesTPC",Form("Adding graph: %d - %s\n",ispec,(const char*)grAll->GetName()));
+          printf("SetupPIDSplinesTPC Adding graph: %d - %s\n",ispec,(const char *)grAll->GetName());
         }
       }
     }

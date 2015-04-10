@@ -177,7 +177,7 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
 
   TH1F *fProtonhist; //proton fraction histogram
   
-  ClassDef(AliHFEBeautySpectrum, 1) 
+  ClassDef(AliHFEBeautySpectrum, 2) 
 };
 #endif
 

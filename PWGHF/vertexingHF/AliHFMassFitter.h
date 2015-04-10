@@ -72,6 +72,7 @@ class AliHFMassFitter : public TNamed {
   Double_t GetRawYieldError()const {return fRawYieldErr;}
   Double_t GetChiSquare() const;
   Double_t GetReducedChiSquare() const;
+  Double_t GetFitProbability() const;
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
   Bool_t*  GetFixParam()const {return fFixPar;}
   Bool_t   GetFixThisParam(Int_t thispar)const;

@@ -485,7 +485,7 @@ AliAnalysisTask *RegisterTaskNPEpPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   printf("Add macro appendix %s\n", appendix.Data());
 
  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
-     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigWeightFactors.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/ConfigWeightFactors.C");
  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepPb")) 
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEnpepPb.C");
 
@@ -613,7 +613,7 @@ AliAnalysisTask *RegisterTaskNPEpPbTOFworkaround(Bool_t useMC, Bool_t isAOD, Boo
   printf("Add macro appendix %s\n", appendix.Data());
 
  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
-     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigWeightFactors.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/ConfigWeightFactors.C");
  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepPbTOFworkaround")) 
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEnpepPbTOFworkaround.C");
 
