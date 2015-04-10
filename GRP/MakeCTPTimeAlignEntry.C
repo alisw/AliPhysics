@@ -1,4 +1,4 @@
-void MakeCTPTimeAlignEntry(const char *cdbStorage = "local://$ALICE_ROOT/OCDB",Bool_t storeFill1069 = kFALSE){
+void MakeCTPTimeAlignEntry(const char *cdbStorage = "local://$ALICE_ROOT/OCDB", Bool_t storeFill1069 = kFALSE){
 
 	// Example macro to put in OCDB the dummy entries for CTP timing params valid for perioid
         // File *.tip interpretation:
