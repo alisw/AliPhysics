@@ -363,6 +363,8 @@ void AliITSUv0::CreateGeometry() {
   }
   delete[] wrapVols; // delete pointer only, not the volumes
   //
+  ((TGeoVolumeAssembly*)vITSV)->GetShape()->ComputeBBox(); // RS enforce recomputing BBox
+  //
 }
 
 //______________________________________________________________________
