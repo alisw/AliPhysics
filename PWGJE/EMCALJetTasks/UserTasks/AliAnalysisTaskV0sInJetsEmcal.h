@@ -43,7 +43,8 @@ public:
   // jet selection
   void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
   void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
-  void SetPtTrackMin(Double_t ptMin = 0) {fdCutPtTrackMin = ptMin;}
+  void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
+  void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
 
   void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsCandALambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda, Bool_t IsInPeakALambda);
@@ -162,7 +163,8 @@ private:
   // Jet selection
   Bool_t fbJetSelection; // (yes) switch for the analysis of V0s in jets
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
-  Double_t fdCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the jet cone
 
   // EMCal containers
@@ -415,7 +417,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 5) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 6) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

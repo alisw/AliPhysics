@@ -128,7 +128,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
 
   fbJetSelection(0),
   fdCutPtJetMin(0),
-  fdCutPtTrackMin(0),
+  fdCutPtTrackJetMin(0),
+  fdCutAreaPercJetMin(0),
   fdDistanceV0JetMax(0.4),
 
   fJetsCont(0),
@@ -394,7 +395,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
 
   fbJetSelection(0),
   fdCutPtJetMin(0),
-  fdCutPtTrackMin(0),
+  fdCutPtTrackJetMin(0),
+  fdCutAreaPercJetMin(0),
   fdDistanceV0JetMax(0.4),
 
   fJetsCont(0),
@@ -1253,6 +1255,16 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
       fJetsBgCont = 0;
   }
 
+  // Jet selection
+  Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
+  if(fbJetSelection && fJetsCont)
+  {
+//    fJetsCont->SetJetPtCut(fdCutPtJetMin); // needs to be applied on the pt after bg subtraction
+    if(fdCutPtTrackJetMin > 0.) fJetsCont->SetPtBiasJetTrack(fdCutPtTrackJetMin);
+    if(fdCutAreaPercJetMin > 0.) fJetsCont->SetPercAreaCut(fdCutAreaPercJetMin);
+    if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) fJetsCont->SetJetEtaLimits(-dCutEtaJetMax, dCutEtaJetMax);
+  }
+
   printf("=======================================================\n");
   printf("AliAnalysisTaskV0sInJetsEmcal: Configuration summary:\n");
   printf("task name: %s\n", GetName());
@@ -1292,8 +1304,15 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fbJetSelection)
   {
     if(fdCutPtJetMin > 0.) printf("min jet pt [GeV/c]: %g\n", fdCutPtJetMin);
-    if(fdCutPtTrackMin > 0.) printf("min pt of leading jet-track [GeV/c]: %g\n", fdCutPtTrackMin);
+    if(fdCutPtTrackJetMin > 0.) printf("min pt of leading jet-track [GeV/c]: %g\n", fdCutPtTrackJetMin);
+    if(fdCutAreaPercJetMin > 0.) printf("min area of jet [pi*R^2]: %g\n", fdCutAreaPercJetMin);
+    if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) printf("max |eta| of jet: %g\n", dCutEtaJetMax);
     printf("max distance between V0 and jet axis: %g\n", fdDistanceV0JetMax);
+    printf("-------------------------------------------------------\n");
+    printf("Jet container cuts\n");
+    fJetsCont->PrintCuts();
+    printf("Bg jet container cuts\n");
+    fJetsBgCont->PrintCuts();
   }
   printf("=======================================================\n");
 }
@@ -1437,22 +1456,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Int_t iPdgCodeK0s = 310;
   Int_t iPdgCodeLambda = 3122;
 
-  // Jet selection: fdCutPtJetMin, fdCutPtTrackMin
-  Double_t dJetEtaWindow = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
-  Double_t dRadiusJet = 0;
-  if(fbJetSelection && fJetsCont)
-    dRadiusJet = fJetsCont->GetJetRadius();
-  Double_t dCutJetAreaMin = 0.6 * TMath::Pi() * dRadiusJet * dRadiusJet; // minimum jet area
+  Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
   Double_t dRadiusExcludeCone = 2 * fdDistanceV0JetMax; // radius of cones around jets excluded for V0 outside jets
-  Bool_t bLeadingJetOnly = 0;
-
-  if(fbJetSelection && fJetsCont)
-  {
-//    fJetsCont->SetJetPtCut(fdCutPtJetMin); // needs to be applied on the pt after bg subtraction
-    if(fdCutPtTrackMin > 0.) fJetsCont->SetPtBiasJetTrack(fdCutPtTrackMin);
-    fJetsCont->SetPercAreaCut(0.6);
-    if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) fJetsCont->SetJetEtaLimits(-dJetEtaWindow, dJetEtaWindow);
-  }
+  Bool_t bLeadingJetOnly = 0; // consider only leading jets
 
   Int_t iNJet = 0; // number of reconstructed jets in the input
   TClonesArray* jetArraySel = new TClonesArray("AliAODJet", 0); // object where the selected jets are copied
@@ -1516,35 +1522,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dPtJetCorr = jetSel->PtSub(dRho);
       if(bPrintJetSelection)
         if(fDebug > 7) printf("jet: i = %d, pT = %g, eta = %g, phi = %g, pt lead tr = %g, pt corr = %g ", iJet, jetSel->Pt(), jetSel->Eta(), jetSel->Phi(), fJetsCont->GetLeadingHadronPt(jetSel), dPtJetCorr);
-//          printf("TaskV0sInJetsEmcal: Checking pt > %.2f for jet %d with pt %.2f\n",fdCutPtJetMin,iJet,jetSel->Pt());
       if(fdCutPtJetMin > 0. && dPtJetCorr < fdCutPtJetMin) // selection of high-pt jets, needs to be applied on the pt after bg subtraction
       {
         if(bPrintJetSelection)
           if(fDebug > 7) printf("rejected (pt)\n");
         continue;
-      }
-//          printf("TaskV0sInJetsEmcal: Checking |eta| < %.2f for jet %d with |eta| %.2f\n",dJetEtaWindow,iJet,TMath::Abs(jetSel->Eta()));
-      if(TMath::Abs(jetSel->Eta()) > dJetEtaWindow) // selection of jets in the chosen pseudorapidity range
-      {
-        if(bPrintJetSelection)
-          if(fDebug > 7) printf("rejected (eta)\n");
-        continue;
-      }
-      if(jetSel->Area() < dCutJetAreaMin)
-      {
-        if(bPrintJetSelection)
-          if(fDebug > 7) printf("rejected (area)\n");
-        continue;
-      }
-      Double_t dPtTrack = fJetsCont->GetLeadingHadronPt(jetSel);
-      if(fdCutPtTrackMin > 0.) // a positive min leading track pt is set
-      {
-        if(dPtTrack < fdCutPtTrackMin) // selection of high-pt jet-track events
-        {
-          if(bPrintJetSelection)
-            if(fDebug > 7) printf("rejected (track pt)\n");
-          continue;
-        }
       }
       if(bPrintJetSelection)
         if(fDebug > 7) printf("accepted\n");
@@ -1560,7 +1542,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding jet number %d\n", iNJetSel);
       new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
-      fh1PtJetTrackLeading[iCentIndex]->Fill(dPtTrack); // pt of leading jet track
+      fh1PtJetTrackLeading[iCentIndex]->Fill(fJetsCont->GetLeadingHadronPt(jetSel)); // pt of leading jet track
     }
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: Added jets: %d\n", iNJetSel);
     iNJetSel = jetArraySel->GetEntriesFast();
@@ -1599,13 +1581,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   if(iNJetSel)
   {
-    jetRnd = GetRandomCone(jetArraySel, dJetEtaWindow, 2 * fdDistanceV0JetMax);
+    jetRnd = GetRandomCone(jetArraySel, dCutEtaJetMax, 2 * fdDistanceV0JetMax);
     if(jetRnd)
     {
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    jetMed = GetMedianCluster(fJetsBgCont, dJetEtaWindow);
+    jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
     if(jetMed)
     {
       fh1NMedConeCent->Fill(iCentIndex);
