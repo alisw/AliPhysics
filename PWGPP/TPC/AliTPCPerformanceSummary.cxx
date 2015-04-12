@@ -1103,9 +1103,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     for (Int_t igr=0; igr<4; igr++){
       hisNcl= ((igr%2==0)) ?  new TH3D(*hisNclpos) : new TH3D(*hisNclneg);   // track sign
       if (igr<2) {
-	hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);   // A side
+	hisNcl->GetYaxis()->SetRangeUser(0.3,0.9);   // A side
       }else{
-	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2); // C side
+	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.3); // C side
       }
       Int_t sign=((igr%2==0)) ? 1:-1;
       if (bz>0) sign*=-1;  // sign of the Bz
@@ -2668,7 +2668,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // normalization
-  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A side
+  h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A side
   h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
   his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_norm"));
   if(!his2D) return 4;
@@ -2680,7 +2680,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // A_side IROC
-  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A_side
+  h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A_side
   h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_side_IROC"));
@@ -2724,7 +2724,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   minOcc=0.;
   ////////////////////////////////////////////
   // A_side OROC
-  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A_side
+  h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A_side
   h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_side_OROC"));
@@ -2772,7 +2772,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   //////////////////////////////////////////
   
   // normalization
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C side
+  h3D_1->GetZaxis()->SetRangeUser(-1,-0.2); //C side
   h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
   his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_norm"));
   if(!his2D) return 4;
@@ -2784,7 +2784,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // C_side IROC
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C_side
+  h3D_1->GetZaxis()->SetRangeUser(-1,-0.2); //C_side
   h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_IROC"));
@@ -2829,7 +2829,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
 
   ////////////////////////////////////////////
   // C_side OROC
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C_side
+  h3D_1->GetZaxis()->SetRangeUser(-1,-0.2); //C_side
   h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_OROC"));
@@ -2906,20 +2906,22 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   for (Int_t isec=0; isec<72; isec++) roc[isec]=isec;
   //
   //
+  AliTPCCalPad * padActive=calibDB->GetPadGainFactor();
   AliTPCCalPad * padLocalMax=dataQA->GetNLocalMaxima();
   AliTPCCalPad * padNoThreshold=dataQA->GetNoThreshold();
   AliTPCCalPad * padMaxCharge=dataQA->GetMaxCharge();
-  AliTPCCalPad * padMeanCharge=dataQA->GetMeanCharge();
-  AliTPCCalPad * padInput[4]={padLocalMax,padNoThreshold, padMaxCharge,padMeanCharge};
+
+  AliTPCCalPad * padInput[5]={padActive, padLocalMax, padNoThreshold, padMaxCharge};
   TGraphErrors *grRaw[8]={0};
   TGraphErrors *grStatus[8]={0};
   const char * side[2]={"A","C"};
-  Int_t kcolors[4]={1,2,4,3};
-  Int_t kmarkers[4]={21,25,20,24};
+  Int_t kcolors[5]={1,2,4,3,6};
+  Int_t kmarkers[5]={21,25,20,24,26};
    
   for (Int_t itype=0; itype<4; itype++){    
     for (Int_t isec=0; isec<72; isec++) {
       value[isec]=padInput[itype]->GetCalROC(isec)->GetLTM(); 
+      if (itype==0) value[isec]=padInput[itype]->GetCalROC(isec)->GetMean(); 
       valueRMS[isec]=padInput[itype]->GetCalROC(isec)->GetRMS();
       if (value[isec]>0)valueRMS[isec]/=value[isec];
       valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
@@ -2950,7 +2952,8 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       pad->Draw();
       pad->cd()->SetLogz();
       TH1* histo = 0;
-      if (padInput[itype]->GetMedian()>0){
+      if (padInput[itype]->GetMedian()>0){	
+	padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
 	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
 	histo->SetName(TString::Format("%s  %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
 	histo->SetTitle(TString::Format("%s %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
@@ -3023,16 +3026,16 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
 
   if (pcstream){
     (*pcstream)<<"tpcQA"<<
-      "rawClusterCounter="<<clusterCounter<<
-      "rawSignalCounter="<<signalCounter<<
-      "grRawLocalMax.="<<grRaw[0]<<
-      "grRawAboveThr.="<<grRaw[1]<<
-      "grRawQMax.="<<grRaw[2]<<
-      "grRawQtot.="<<grRaw[3]<<
+      "rawClusterCounter="<<clusterCounter<<    // absolute number of cluster  in Raw QA          -  calibDB->GetDataQA()->GetClusterCounter();
+      "rawSignalCounter="<<signalCounter<<      // absolute number of signal above Thr  in Raw QA -  calibDB->GetDataQA()->GetSignalCounter()
+      "grOCDBStatus.="<<grRaw[0]<<              // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
+      "grRawLocalMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
+      "grRawAboveThr.="<<grRaw[2]<<             // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
+      "grRawQMax.="<<grRaw[3]<<                 // RAQ QA OCDB max charge              - LTM:calibDB->GetDataQA()->GetMaxCharge();
       //
-      "grROCStatus.="<<grStatus[0]<<
-      "grROCTimeFraction.="<<grStatus[1]<<
-      "grROCMedianVoltage.="<<grStatus[2]<<
-      "grROCNominalVoltage.="<<grStatus[3];
+      "grROCHVStatus.="<<grStatus[0]<<          // ROC HV status - enable/disable chambers beacus of LOW HV
+      "grROCHVTimeFraction.="<<grStatus[1]<<    // ROC HV fraction of time disabled
+      "grROCHVMedian.="<<grStatus[2]<<          // ROC median voltage
+      "grROCHVNominal.="<<grStatus[3];          // ROC Nominal voltage corrected for common median shift
   }
 }
