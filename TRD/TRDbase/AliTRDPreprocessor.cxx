@@ -252,6 +252,9 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
     if(oneTRDDCS->GetStoreName().Contains("trd_hvAnodeImon")){
       oneTRDDCS->RemoveAbsBelowThreshold(0.010);
     }
+    if(oneTRDDCS->GetStoreName().Contains("trd_hvDriftImon")){
+      oneTRDDCS->RemoveAbsBelowThreshold(0.10);
+    }
 
     // Store the data point
     results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kFALSE); 
