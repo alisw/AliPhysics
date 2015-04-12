@@ -36,7 +36,7 @@ const Double_t kSigma2=0.0005*0.0005;
 const Double_t kmaxChi2PerCluster=20.;
 const Double_t kmaxChi2PerTrack=30.;
 // Tracking "road" from layer to layer
-const Double_t kRoadY=0.7;
+const Double_t kRoadY=0.2;
 const Double_t kRoadZ=0.7;
 // Minimal number of attached clusters
 const Int_t kminNumberOfClusters=4;
@@ -219,12 +219,10 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
    AliITSUlayer &layer1=fgLayers[kSeedingLayer1];
    AliITSUlayer &layer2=fgLayers[kSeedingLayer2];
    AliITSUlayer &layer3=fgLayers[kSeedingLayer3];
-   Double_t r1=layer1.GetR();
-   Double_t r2=layer2.GetR();
-   Double_t r3=layer3.GetR();
 
    const Double_t maxC  = TMath::Abs(GetBz()*kB2C/kminPt);
-   const Double_t kpWin = TMath::ASin(0.5*maxC*r1) - TMath::ASin(0.5*maxC*r2);
+   const Double_t kpWin = TMath::ASin(0.5*maxC*layer1.GetR()) - 
+                          TMath::ASin(0.5*maxC*layer2.GetR());
 
    Int_t nClusters1=layer1.GetNumberOfClusters();
    Int_t nClusters2=layer2.GetNumberOfClusters();
@@ -237,8 +235,10 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
      //
      Double_t z1=c1->GetZ();
      Float_t xyz1[3]; c1->GetGlobalXYZ(xyz1);
+     Double_t r1=TMath::Sqrt(xyz1[0]*xyz1[0] + xyz1[1]*xyz1[1]);
      Double_t phi1=layer1.GetClusterPhi(n1);
-     Double_t zr2=zv + r2/r1*(z1-zv);
+
+     Double_t zr2=zv + layer2.GetR()/r1*(z1-zv);
      Int_t start2=layer2.FindClusterIndex(zr2-kzWin);
      for (Int_t n2=start2; n2<nClusters2; n2++) {
          AliCluster *c2=layer2.GetCluster(n2);
@@ -248,29 +248,32 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
          Double_t z2=c2->GetZ();
          if (z2 > (zr2+kzWin)) break;  //check in Z
 
-         Float_t xyz2[3]; c2->GetGlobalXYZ(xyz2);
          Double_t phi2=layer2.GetClusterPhi(n2);
          if (TMath::Abs(phi2-phi1) > kpWin) continue;  //check in Phi
 
-         Double_t zr3=z1 + (r3-r1)/(r2-r1)*(z2-z1);
-         Double_t crv=f1(xyz1[0], xyz1[1], xyz2[0], xyz2[1], GetX(), GetY());
-         Double_t phir3 = phi1 + 0.5*crv*(r3 - r1); 
+         Float_t xyz2[3]; c2->GetGlobalXYZ(xyz2);
+         Double_t r2=TMath::Sqrt(xyz2[0]*xyz2[0] + xyz2[1]*xyz2[1]);
+         Double_t crv=f1(xyz1[0], xyz1[1], xyz2[0], xyz2[1], GetX(),GetY());
 
-         Int_t start3=layer3.FindClusterIndex(zr3-kzWin/2);
+         Double_t zr3=z1 + (layer3.GetR()-r1)/(r2-r1)*(z2-z1);
+	 Double_t dz=kzWin/2;
+         Int_t start3=layer3.FindClusterIndex(zr3-dz);
          for (Int_t n3=start3; n3<nClusters3; n3++) {
              AliCluster *c3=layer3.GetCluster(n3);
              //
              //if (c3->GetLabel(0)!=lab) continue;
              //
              Double_t z3=c3->GetZ();
-             if (z3 > (zr3+kzWin/2)) break;  //check in Z
+             if (z3 > (zr3+dz)) break;  //check in Z
 
-             Float_t xyz3[3]; c3->GetGlobalXYZ(xyz3);
+             Double_t r3=layer3.GetXRef(n3);
+             Double_t phir3 = phi1 + 0.5*crv*(r3 - r1); 
              Double_t phi3=layer3.GetClusterPhi(n3);
              if (TMath::Abs(phir3-phi3) > kpWin/100) continue;  //check in Phi
 
              AliITSUClusterPix cc(*((AliITSUClusterPix*)c2));
              cc.GoToFrameTrk();
+             Float_t xyz3[3]; c3->GetGlobalXYZ(xyz3);
              AddCookedSeed(xyz1, kSeedingLayer1, n1,
                            xyz3, kSeedingLayer3, n3, 
                            &cc,  kSeedingLayer2, n2);
@@ -312,13 +315,20 @@ void AliITSUTrackerCooked::LoopOverSeeds(Int_t idx[], Int_t n) {
       if (phi<0.) phi+=pi2;
       else if (phi >= pi2) phi-=pi2;
 
-      for (Int_t l=0; l<kSeedingLayer2; l++) {
-        Double_t z;
-        track->GetZAt(fgLayers[l].GetR(),GetBz(),z);
+      Double_t z=track->GetZ();
+      Double_t crv=track->GetC(GetBz());
+      Double_t tgl=track->GetTgl();
+      Double_t r1=fgLayers[kSeedingLayer2].GetR();
+
+      for (Int_t l=kSeedingLayer2-1; l>=0; l--) {
+        Double_t r2=fgLayers[l].GetR();
+        phi += 0.5*crv*(r2-r1);
+        z += tgl/(0.5*crv)*(TMath::ASin(0.5*crv*r2) - TMath::ASin(0.5*crv*r1)); 
         data[l].Nsel()=0;
         data[l].ResetSelectedClusters();
         fgLayers[l].SelectClusters
-           (data[l].Nsel(),data[l].Index(), phi,kRoadY,z,kRoadZ);
+           (data[l].Nsel(),data[l].Index(), phi, kRoadY, z, kRoadZ);
+        r1=r2;
       }
 
       AliITSUTrackCooked *best = new AliITSUTrackCooked(*track);
@@ -344,6 +354,7 @@ void AliITSUTrackerCooked::LoopOverSeeds(Int_t idx[], Int_t n) {
 		 delete best;
                  best=new AliITSUTrackCooked(t0);
 	      }
+              volID=-1;
 	    }
             data[0].ResetSelectedClusters();
 	  }
