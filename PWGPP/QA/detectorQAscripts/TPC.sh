@@ -11,6 +11,8 @@ runLevelQA()
   qaFile=$1
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/MakeTrend.C .
+  cp $ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C .
+
   echo $dataType/$year/$period/$pass/$runNumber
   echo $ocdbStorage
   export edataType=$dataType
@@ -19,10 +21,12 @@ runLevelQA()
   export epass=$pass
   export erunNumber=$runNumber
   export eocdbStorage=$ocdbStorage
-  aliroot -b -q -l "MakeTrend.C(\"$qaFile\",$runNumber)" 
+  echo aliroot -b -q -l "ConfigCalibTrain.C\($runNumber,\"$ocdbStorage\"\)  MakeTrend.C(\"$qaFile\",$runNumber)" 
+  aliroot -b -q -l ConfigCalibTrain.C\($runNumber,\"$ocdbStorage\"\)  "MakeTrend.C(\"$qaFile\",$runNumber)" 
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/drawPerformanceTPCQAMatch.C .
-  aliroot -b -q -l "drawPerformanceTPCQAMatch.C(\"$qaFile\")"
+  echo aliroot -b -q -l " drawPerformanceTPCQAMatch.C(\"$qaFile\")"
+  aliroot -b -q -l " drawPerformanceTPCQAMatch.C(\"$qaFile\")"
   makeHTMLindexPerRun
 }
 

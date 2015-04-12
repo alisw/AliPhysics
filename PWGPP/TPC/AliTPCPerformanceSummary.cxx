@@ -9,6 +9,9 @@
 // and writes the output (tree and histograms) to another rootfile.
 //
 // by M.Knichel 15/10/2010
+//
+// Modifications:
+//    by Marian Ivanov, m.ivanov@cern.ch;
 //------------------------------------------------------------------------------
 
 #include <fstream>
@@ -30,6 +33,7 @@
 #include "TGraph.h"
 #include "TPad.h"
 #include "TCanvas.h"
+#include "TStyle.h"
 
 #include "AliGRPObject.h"
 #include "AliTPCcalibDB.h"
@@ -40,7 +44,16 @@
 #include "AliPerformanceDCA.h"
 #include "AliPerformanceMatch.h"
 #include "TGraphErrors.h"
-
+#include "TLegend.h"
+//
+#include "AliCDBManager.h"
+#include "AliGRPManager.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCdataQA.h"
+#include "AliTPCCalROC.h"
+#include "TGeoGlobalMagField.h"
+#include "AliMathBase.h"
 #include "AliTPCPerformanceSummary.h"
 
 using std::ifstream;
@@ -53,54 +66,42 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 //_____________________________________________________________________________
 void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch,const AliPerformanceMatch* pTPCPull, const AliPerformanceMatch* pConstrain, TTreeSRedirector* const pcstream, Int_t run)
 {
-   // 
-    // Extracts performance parameters from pTPC and pTPCgain.
-    // Output is written to pcstream.
-    // The run number must be provided since it is not stored in 
-    // AliPerformanceTPC or AliPerformanceDEdx.
-    //
-    if (run <= 0 ) {
-        if (pTPCMatch) {run = pTPCMatch->GetRunNumber(); }
-        if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
-        if (pTPC) { run = pTPC->GetRunNumber(); }
-    }
-    TObjString runType;
-
-    //AliTPCcalibDB     *calibDB=0;
-
-//     AliTPCcalibDButil *dbutil =0;
-    Int_t startTimeGRP=0;
-    Int_t stopTimeGRP=0;   
-    Int_t time=0;
-    Int_t duration=0;
-
-    //Float_t currentL3 =0;
-    //Int_t polarityL3 = 0;
-    //Float_t bz = 0;
-
-    //calibDB = AliTPCcalibDB::Instance();
-
-//     dbutil= new AliTPCcalibDButil;   
-        
-    //printf("Processing run %d ...\n",run);
-    //if (calibDB) { 
-    //AliTPCcalibDB::Instance()->SetRun(run); 
-
-//     dbutil->UpdateFromCalibDB();
-//     dbutil->SetReferenceRun(run);
-//     dbutil->UpdateRefDataFromOCDB();     
-     
-    //if (calibDB->GetGRP(run)){
-    //startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
-    //stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
-    //currentL3 = AliTPCcalibDB::GetL3Current(run);
-    //polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
-    //bz = AliTPCcalibDB::GetBz(run);
-    
-    //}    
-    //runType = AliTPCcalibDB::GetRunType(run).Data();  
-    //}  
-  time = (startTimeGRP+stopTimeGRP)/2;
+  // 
+  // Extracts performance parameters from pTPC and pTPCgain.
+  // Output is written to pcstream.
+  // The run number must be provided since it is not stored in 
+  // AliPerformanceTPC or AliPerformanceDEdx.
+  // Here we assume that 
+  //
+  if (run <= 0 ) {
+    if (pTPCMatch) {run = pTPCMatch->GetRunNumber(); }
+    if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
+    if (pTPC) { run = pTPC->GetRunNumber(); }
+  }
+  TObjString runType;
+  
+  Int_t startTimeGRP=0;
+  Int_t stopTimeGRP=0;   
+  Int_t time=0;
+  Int_t duration=0;
+  Float_t currentL3 =0;
+  Int_t polarityL3 = 0;
+  Float_t bz = 0;
+  if (AliCDBManager::Instance()->GetRun()==run){
+    AliTPCcalibDB     *calibDB=0;
+    calibDB = AliTPCcalibDB::Instance();         
+    if (calibDB->GetGRP(run)){
+      startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
+      stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
+      currentL3 = AliTPCcalibDB::GetL3Current(run);
+      polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
+      bz = AliTPCcalibDB::GetBz(run);
+      if (polarityL3>0) bz*=-1; 
+      runType = AliTPCcalibDB::GetRunType(run).Data();  
+    }    
+  }
+  
+  time = startTimeGRP;
   duration = (stopTimeGRP-startTimeGRP);
   TObjString period(gSystem->Getenv("eperiod"));
   TObjString pass(gSystem->Getenv("epass"));
@@ -119,12 +120,14 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
       "duration="<<duration<<
+      "bz="<<bz<<
       "runType.="<<&runType;
     if (pTPC) {
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
         pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
         pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
         AnalyzeNCL(pTPC, pcstream);    
+	MakeRawOCDBQAPlot(pcstream);
         AnalyzeDrift(pTPC, pcstream);
         AnalyzeDriftPos(pTPC, pcstream);
         AnalyzeDriftNeg(pTPC, pcstream);    
@@ -1072,6 +1075,13 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       "slopeCTPCnclErr="<< slopeCTPCnclErr;
     //
     // Get ncl:sector map estimator without having ncl map
+    Double_t bz = 0;
+    if (TGeoGlobalMagField::Instance()->GetField()) {
+      Int_t polarityL3 = AliTPCcalibDB::GetL3Polarity(pTPC->GetRunNumber());
+      bz = AliTPCcalibDB::GetBz(pTPC->GetRunNumber());
+      if (polarityL3>0) bz*=-1; 
+    }
+    
     TH3D * hisNclpos = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
     TH3D * hisNclneg = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
     Int_t nbins= hisNclpos->GetZaxis()->GetNbins();
@@ -1098,6 +1108,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
 	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2); // C side
       }
       Int_t sign=((igr%2==0)) ? 1:-1;
+      if (bz>0) sign*=-1;  // sign of the Bz
       TH2* his2=  (TH2*)hisNcl->Project3D("xz");
       for (Int_t ibin=1; ibin<=nbins; ibin++){
 	TH1 * his1D = (TH1*)his2->ProjectionY("his1D",ibin,ibin);
@@ -2871,6 +2882,157 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
    //A/C side OROC
    "TPC_Occ_OROC.="<< &meanOccArray_oroc;   
 
- return 0;
+  return 0;
+}
+
+
+
+
+
+
+
+void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
+  //
+  //  Draw RAW OCDB QA plot and store the summary graphs in the trending tree
+  //    1.) Occupancy and cluster charge maps
+  //    2.) HV information
+  //
+  gStyle->SetLabelSize(0.08,"XYZ");
+  gStyle->SetTitleSize(0.08,"XYZ");
+  gStyle->SetTitleOffset(0.5,"XYZ");
+  AliTPCcalibDB *calibDB = AliTPCcalibDB::Instance();
+  TVectorD   value(72), valueNorm(72),valueRMS(72), roc(72);  
+  AliTPCdataQA*  dataQA= calibDB->GetDataQA();
+  for (Int_t isec=0; isec<72; isec++) roc[isec]=isec;
+  //
+  //
+  AliTPCCalPad * padLocalMax=dataQA->GetNLocalMaxima();
+  AliTPCCalPad * padNoThreshold=dataQA->GetNoThreshold();
+  AliTPCCalPad * padMaxCharge=dataQA->GetMaxCharge();
+  AliTPCCalPad * padMeanCharge=dataQA->GetMeanCharge();
+  AliTPCCalPad * padInput[4]={padLocalMax,padNoThreshold, padMaxCharge,padMeanCharge};
+  TGraphErrors *grRaw[8]={0};
+  TGraphErrors *grStatus[8]={0};
+  const char * side[2]={"A","C"};
+  Int_t kcolors[4]={1,2,4,3};
+  Int_t kmarkers[4]={21,25,20,24};
+   
+  for (Int_t itype=0; itype<4; itype++){    
+    for (Int_t isec=0; isec<72; isec++) {
+      value[isec]=padInput[itype]->GetCalROC(isec)->GetLTM(); 
+      valueRMS[isec]=padInput[itype]->GetCalROC(isec)->GetRMS();
+      if (value[isec]>0)valueRMS[isec]/=value[isec];
+      valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
+    }
+    for (Int_t isec=0; isec<72; isec++) {
+      Int_t offset=36*(isec/36);
+      Double_t norm,rms;
+      AliMathBase::EvaluateUni(36, &(value.GetMatrixArray()[offset]),norm,rms,33);
+      valueNorm[isec]=value[isec]/norm;
+    }
+    grRaw[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,valueRMS.GetMatrixArray());
+    grRaw[itype]->SetMarkerColor(kcolors[itype]);
+    grRaw[itype]->SetMarkerStyle(kmarkers[itype]);
+    grRaw[itype]->GetXaxis()->SetTitle("sector");
+    grRaw[itype]->GetYaxis()->SetTitle("Norm. value");
+    grRaw[itype]->SetMinimum(0); 
+    grRaw[itype]->SetMaximum(2); 
   }
 
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(1);
+  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0","canvasRawQA0",1000,500);
+  for (Int_t itype=0; itype<4; itype++){
+    for (Int_t iplot=0; iplot<2; iplot++){
+      canvasRawQA0->cd()->SetLogz();
+      TPad *pad = new TPad("xxx","xxx",(itype+0)*0.25+0.005,(iplot+1)*0.33+0.005, (itype+1)*0.25-0.005,(iplot+2)*0.33-0.005);
+      pad->Draw();
+      pad->cd()->SetLogz();
+      TH1* histo = 0;
+      if (padInput[itype]->GetMedian()>0){
+	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
+	histo->SetName(TString::Format("%s  %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
+	histo->SetTitle(TString::Format("%s %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
+	histo->Draw("colz");
+      }
+    }
+  }
+  canvasRawQA0->cd(); 
+  gStyle->SetOptTitle(1);
+  TPad *pad = new TPad("graph","graph",0,0,1,0.33);
+  pad->SetRightMargin(0.01);
+  pad->Draw();
+  pad->cd();
+  TLegend * legend = new TLegend(0.2,0.70,0.5,0.89,"Raw data QA (normalized to median))");
+  legend->SetBorderSize(0);
+  legend->SetNColumns(2);
+  for (Int_t itype=0; itype<4; itype++){
+    if (itype==0) grRaw[itype]->Draw("ap");
+    grRaw[itype]->Draw("p");
+    legend->AddEntry(grRaw[itype], padInput[itype]->GetTitle(),"p");
+  }
+  legend->Draw();
+  canvasRawQA0->SaveAs("rawQAInformation.png");
+  static Int_t clusterCounter= dataQA->GetClusterCounter();
+  static Int_t signalCounter= dataQA->GetSignalCounter();
+  //
+  // add aso HV status
+  //
+  for (Int_t itype=0; itype<4; itype++){
+    for (Int_t isec=0; isec<72; isec++){
+      if (itype==0) valueNorm[isec]=calibDB->GetChamberHVStatus(isec);
+      if (itype==1) valueNorm[isec]=calibDB->GetChamberGoodHighVoltageFraction(isec);
+      if (itype==2) valueNorm[isec]=calibDB->GetChamberHighVoltageMedian(isec);
+      if (itype==3) valueNorm[isec]=calibDB->GetChamberCurrentNominalHighVoltage(isec);  
+    }    
+    grStatus[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,0);
+    grStatus[itype]->SetMarkerColor(kcolors[itype]);
+    grStatus[itype]->SetMarkerStyle(kmarkers[itype]);
+    grStatus[itype]->GetXaxis()->SetTitle("sector");
+    grStatus[itype]->GetYaxis()->SetTitle("Norm. value");
+    grStatus[itype]->SetMinimum(0); 
+  }
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(1);
+  TCanvas *canvasROCStatusOCDB = new TCanvas("canvasROCStatusOCDB","canvasROCStatusOCDB",1000,500);
+  canvasROCStatusOCDB->Divide(1,2);
+  canvasROCStatusOCDB->SetRightMargin(0.02);
+  TLegend * legendStatus = new TLegend(0.2,0.20,0.5,0.4,"Chamber status");
+  TLegend * legendVoltage = new TLegend(0.2,0.20,0.5,0.4,"Chamber voltage");
+  legendStatus->SetBorderSize(0);
+  legendVoltage->SetBorderSize(0);
+  {
+    canvasROCStatusOCDB->cd(1)->SetRightMargin(0.02); 
+    grStatus[0]->SetMinimum(0);
+    grStatus[0]->Draw("ap");
+    grStatus[1]->Draw("p");
+    legendStatus->AddEntry(grStatus[0],"Chamber status","p");
+    legendStatus->AddEntry(grStatus[1],"Time fraction in nominal condition","p");
+    legendStatus->Draw();
+    //
+    canvasROCStatusOCDB->cd(2)->SetRightMargin(0.02);
+    grStatus[3]->SetMinimum(0);
+    grStatus[3]->Draw("ap");
+    grStatus[2]->Draw("p");
+    legendVoltage->AddEntry(grStatus[0],"Chamber nominal voltage (-TPC median)","p");
+    legendVoltage->AddEntry(grStatus[1],"Chamber voltage","p");
+    legendVoltage->Draw();
+  }
+  canvasROCStatusOCDB->SaveAs("canvasROCStatusOCDB.png");
+
+  if (pcstream){
+    (*pcstream)<<"tpcQA"<<
+      "rawClusterCounter="<<clusterCounter<<
+      "rawSignalCounter="<<signalCounter<<
+      "grRawLocalMax.="<<grRaw[0]<<
+      "grRawAboveThr.="<<grRaw[1]<<
+      "grRawQMax.="<<grRaw[2]<<
+      "grRawQtot.="<<grRaw[3]<<
+      //
+      "grROCStatus.="<<grStatus[0]<<
+      "grROCTimeFraction.="<<grStatus[1]<<
+      "grROCMedianVoltage.="<<grStatus[2]<<
+      "grROCNominalVoltage.="<<grStatus[3];
+  }
+}
