@@ -126,7 +126,7 @@ TObjArray *AliTRDSensorArray::GetList()
   // group of sensor 
   //
 	
-	TObjArray * list = new TObjArray (20);
+	TObjArray * list = new TObjArray (23);
 	list->SetOwner (kTRUE);
 	AliTRDSensorArray * aH = 0x0;
 	
@@ -203,6 +203,15 @@ TObjArray *AliTRDSensorArray::GetList()
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_hvDriftUmon%03d", 	"trd_hvDriftUmon",  
 				    -1, (TClonesArray*)listSensor540.Clone ());
+	list->Add (aH);
+	aH = new AliTRDSensorArray ("trd_gaschromatographXe", 	"trd_gaschromatographXe",  
+				    -1, (TClonesArray*)listSensor1.Clone ());
+	list->Add (aH);
+	aH = new AliTRDSensorArray ("trd_gaschromatographCO2", 	"trd_gaschromatographCO2",  
+				    -1, (TClonesArray*)listSensor1.Clone ());
+	list->Add (aH);
+	aH = new AliTRDSensorArray ("trd_gaschromatographN2", 	"trd_gaschromatographN2",  
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	                          
 	return list;
