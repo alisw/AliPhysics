@@ -114,12 +114,14 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
                     kmcAntiProton = 10,    kmcPrompt   = 11,      kmcFragmentation = 12,
                     kmcISR        = 13,    kmcString   = 14  };
 
+  /// Total number of cluster MC origin histograms
   static const Int_t fgkNmcTypes = 15;
 
   /// For MC histograms in arrays, index in the array corresponds to a MC generated primary particle type
   enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay      = 1,  kmcPEtaDecay = 2,     kmcPOtherDecay = 3,
                     kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR      = 6 };
   
+  /// Total number of MC primary histograms
   static const Int_t fgkNmcPrimTypes = 7;
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
