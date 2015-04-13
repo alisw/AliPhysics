@@ -27,6 +27,7 @@ void geom_emcal()
   }
   
   TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, node);
+    emcal_re->SetVisLevel(1);
   gEve->AddGlobalElement(emcal_re);
   gEve->Redraw3D();
 }

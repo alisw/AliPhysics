@@ -149,7 +149,7 @@ void AliEveSaveViews::Save()
         view->GetGLViewer()->SavePictureUsingBB(viewFilename);
         fTempImg = new TASImage(viewFilename);
         
-//        fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
+        //        fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
         
         
         // Second option is to use FBO instead of BB
@@ -157,42 +157,43 @@ void AliEveSaveViews::Save()
         // but is causes a bug (moving mouse over views makes them disappear
         // on new event being loaded
         
-//         if(index==0){
-//         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
-//         }
-//         else {
-//         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
-//         }
-//        
+        //         if(index==0){
+        //         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+        //         }
+        //         else {
+        //         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+        //         }
+        //
         
-        // copy view image in the composite image
-        int currentWidth = fTempImg->GetWidth();
-        int currentHeight = fTempImg->GetHeight();
-        
-        if(index==0){
-            if(currentWidth < aspectRatio*currentHeight)
-            {
-                fTempImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
-            }
-            else
-            {
-                fTempImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
-            }
+        if(fTempImg){
+            // copy view image in the composite image
+            int currentWidth = fTempImg->GetWidth();
+            int currentHeight = fTempImg->GetHeight();
             
-            fTempImg->Scale(width3DView,height3DView);
-            fTempImg->CopyArea(fCompositeImg, 0,0, width3DView, height3DView);
-            
+            if(index==0){
+                if(currentWidth < aspectRatio*currentHeight)
+                {
+                    fTempImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
+                }
+                else
+                {
+                    fTempImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
+                }
+                
+                fTempImg->Scale(width3DView,height3DView);
+                fTempImg->CopyArea(fCompositeImg, 0,0, width3DView, height3DView);
+                
+            }
+            else {
+                fTempImg->Crop((currentWidth-widthChildView)*0.5,
+                               (currentHeight-heightChildView)*0.5,
+                               widthChildView,
+                               heightChildView);
+                fTempImg->CopyArea(fCompositeImg, 0,0, widthChildView, heightChildView, x,y);
+                fCompositeImg->DrawRectangle(x,y, widthChildView, heightChildView, "#C0C0C0"); // draw a border around child views
+            }
+            delete fTempImg;fTempImg=0;
         }
-        else {
-            fTempImg->Crop((currentWidth-widthChildView)*0.5,
-                           (currentHeight-heightChildView)*0.5,
-                           widthChildView,
-                           heightChildView);
-            fTempImg->CopyArea(fCompositeImg, 0,0, widthChildView, heightChildView, x,y);
-            fCompositeImg->DrawRectangle(x,y, widthChildView, heightChildView, "#C0C0C0"); // draw a border around child views
-        }
-        
-        if(fTempImg){delete fTempImg;fTempImg=0;}
         if(index>0){ // skip 3D View
             y+=heightChildView;
         }

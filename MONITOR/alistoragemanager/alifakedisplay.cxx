@@ -95,24 +95,36 @@ int main(int argc, char **argv)
     else if(atoi(argv[1])==1)
     {
         socket = SERVER_COMMUNICATION_REQ;
+        manager->CreateSocket(socket);
+        
+        struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+        requestMessage->messageType = REQUEST_GET_LAST_EVENT;
+        
         while(1)
         {
-            struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-            requestMessage->messageType = REQUEST_GET_LAST_EVENT;
+            sleep(1);
+            if(!manager->Send(requestMessage,socket))
+            {
+                cout<<"Couldn't send request"<<endl;
+                continue;
+            }
             
-            manager->Send(requestMessage,socket);
-            manager->Get(event,socket);
+            if(!manager->Get(event,socket))
+            {
+                cout<<"Couldn't receive response"<<endl;
+                manager->RecreateSocket(socket);
+                continue;
+            }
+            
             if(event)
             {
                 cout<<"Last event - Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
-                
                 delete event;
             }
             else
             {
                 cout<<"NO EVENT"<<endl;
             }
-            sleep(1);
         }
     }
     else if(atoi(argv[1])==2)
