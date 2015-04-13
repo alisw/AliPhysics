@@ -107,8 +107,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			
     			for(Int_t i=0; i<16; i++){
       				hChargeSlice = hChargeEoIInt0->ProjectionY("hChargeSlice",i+1,i+1);
-				Double_t saturation = hChargeSlice->Integral(1000,1025);
-				if(saturation > 1000){
+				Double_t saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
+				if(saturation > 0.1){
 					test = 0.1;
 					if(NbadChannels == 0){
 						QAbox->SetFillColor(kRed);
@@ -146,8 +146,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			
     			for(Int_t i=0; i<16; i++){
       				hChargeSlice = hChargeEoIInt1->ProjectionY("hChargeSlice",i+1,i+1);
-				Double_t saturation = hChargeSlice->Integral(1000,1025);
-				if(saturation > 1000){
+				Double_t saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
+				if(saturation > 0.1){
 					test = 0.1;
 					if(NbadChannels == 0){
 						QAbox->SetFillColor(kRed);
