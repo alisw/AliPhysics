@@ -40,6 +40,7 @@
 #include "AliJEventHeader.h"
 #include "AliJHistManager.h"
 #include "AliInputEventHandler.h"
+#include "AliJEfficiency.h"
 
 //______________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask():
@@ -125,6 +126,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
   OpenFile(1);
   fOutput = gDirectory;
   fOutput->cd();
+  fFFlucAna->SetEffConfig( fEffMode, fEffFilterBit );
   fFFlucAna->UserCreateOutputObjects(); 
 
   PostData(1, fOutput);
@@ -142,11 +144,19 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 	double fvertex[3] = {-999,-999,-999};	
 
 	fEvtNum++;
-//	if(fEvtNum % 100 == 0){ cout << "evt : " << fEvtNum <<endl ;}
+	if(fEvtNum % 100 == 0){ cout << "evt : " << fEvtNum <<endl ;}
 
 	// load current event and save track, event info 
 	AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 	fCent = ReadAODCentrality( currentEvent, "V0M"  ) ; 
+
+
+	if( fEvtNum == 1 ){
+			cout << "setting AliJEfficiency RunNumber : " << currentEvent->GetRunNumber() << endl;
+			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( currentEvent->GetRunNumber() );
+			fFFlucAna->GetAliJEfficiency()->Load();
+	}
+
 
 	if( IsGoodEvent( currentEvent )){
 
@@ -326,6 +336,16 @@ Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 						break;
 				}
 		return found;
+}
+//______________________________________________________________________________
+void AliJFFlucTask::SetEffConfig( int effMode, int FilterBit)
+{
+	fEffMode = effMode;
+	fEffFilterBit = 0; // as defualt
+	if( FilterBit == 128 ) fEffFilterBit = 0;
+	if( FilterBit == 768 ) fEffFilterBit = 5;
+	cout << "setting to EffCorr Mode : " << effMode << endl;
+	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
 void AliJFFlucTask::SetIsCentFlat( Bool_t isCentFlat )

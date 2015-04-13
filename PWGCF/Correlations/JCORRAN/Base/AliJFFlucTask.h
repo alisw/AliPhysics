@@ -28,7 +28,6 @@
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "AliJFFlucAnalysis.h"
-#include "AliJEfficiencyScanner.h"
 #include "AliAnalysisUtils.h"
 #include "AliVVertex.h" 
 
@@ -60,7 +59,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 
   // methods to fill from AliAnalysisTaskSE
   virtual void UserCreateOutputObjects(); 
- virtual void Init();   
+  virtual void Init();   
   virtual void LocalInit() { Init(); }
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t* opt=""  );
@@ -82,12 +81,16 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
   Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
   void SetIsCentFlat( Bool_t isCentFlat);
+  void SetEffConfig( int effMode, int FilterBit );
+
 
  private:
   TString fTaskName;
   int fDebugLevel;
   int fEvtNum;
   int fFilterBit; 
+  int fEffMode;
+  int fEffFilterBit;
   double fEta_min;
   double fEta_max;
   double fPt_min;
