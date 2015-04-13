@@ -4,12 +4,6 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class to check results from simulations or reconstructed real data. 
-// Fill few histograms and do some checking plots
-//
-//-- Author: Gustavo Conesa (INFN-LNF)
-
-//_________________________________________________________________________
 /// \class AliAnaCalorimeterQA
 /// \brief Class for the Calorimeter QA analysis
 ///
@@ -204,9 +198,9 @@ public:
   Float_t  fExoNDTimeCuts    ;                  ///<  Number of time cuts
   Float_t  fExoDTimeCuts[5]  ;                  ///<  List of time cuts
   
-  TLorentzVector fClusterMomentum;              //!<! Cluster momentum
-  TLorentzVector fClusterMomentum2;             //!<! Cluster momentum
-  TLorentzVector fPrimaryMomentum;              //!<! Primary MC momentum
+  TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
+  TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, temporary container
+  TLorentzVector fPrimaryMomentum;              //!<! Primary MC momentum, temporary container
   
   // Calorimeter Clusters
     
