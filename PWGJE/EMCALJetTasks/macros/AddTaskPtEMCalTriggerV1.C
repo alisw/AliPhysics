@@ -373,10 +373,10 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
   if(isAOD){
 	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
 	  aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-	  //EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
-	  //extraCuts->SetMinTPCCrossedRows(120);
+	  EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+	  extraCuts->SetMinTPCCrossedRows(120);
 	  //extraCuts->SetMinTPCTrackLengthCut();
-	  //aodsel->AddTrackCuts(extraCuts);
+	  aodsel->AddTrackCuts(extraCuts);
 	  trackSelection = aodsel;
   } else {
 	  AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
@@ -406,7 +406,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
   EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
   if(isAOD){
 	  // Purely use filter bits
-	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD(NULL);
+	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
 	  aodsel->AddFilterBit(256);
 	  aodsel->AddFilterBit(512);
 	  trackSelection = aodsel;
