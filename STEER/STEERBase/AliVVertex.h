@@ -42,6 +42,7 @@ public:
     }
 
   virtual Int_t    GetNContributors() const = 0;
+  virtual Bool_t   GetStatus() const { return 0;}
   virtual void     PrintIndices() const = 0;
   virtual void     Print(Option_t* option = "") const = 0;
 
