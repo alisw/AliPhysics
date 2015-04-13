@@ -67,15 +67,18 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fESDTrackCutsLowPt(0),
   fOutputContainer(0),
 //thnf
-//  fTHnFK0s(0),
-// fTHnFL(0),
-//  fTHnFAL(0),
+/*
+  fTHnFK0s(0),
+  fTHnFL(0),
+  fTHnFAL(0),
+
   fTHnFK0sDauEta(0),
   fTHnFLDauEta(0),
   fTHnFALDauEta(0),
   fTHnFK0sDauPhi(0),
   fTHnFLDauPhi(0),
   fTHnFALDauPhi(0),
+*/
 //event histos
   fHistITSLayerHits(0),
   fHistOneHitWithSDD(0),
@@ -103,6 +106,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fHistPiPiMass(0),
   fHistPiPiMassVSPt(0),
   fHistPiPiMassVSPtMCTruth(0),
+  fHistPiPiMassVSPtPosMCTruth(0),
+  fHistPiPiMassVSPtNegMCTruth(0),
   fHistPiPiMassVSY(0),
   fHistPiPiPtVSY(0),
 // fHistPiPiMassVSAlpha(0),
@@ -115,8 +120,9 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fHistPiPiDCADaughters(0), 
 //  fHistPiPiPtDaughters(0),
   fHistPiPiDCAVSMass(0),
-//fHistPiPiDCAZPos(0),
-//fHistPiPiDCAZNeg(0),
+  fHistPiPiDCAZVSMass(0),
+  fHistPiPiDCAZPos(0),
+  fHistPiPiDCAZNeg(0),
   fHistPiPiTrackLengthPosVsMass(0),
   fHistPiPiTrackLengthNegVsMass(0),  
   fHistPiPiMonitorCuts(0),
@@ -132,6 +138,10 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fHistNCRowsTPCNegK0(0),
   fHistRatioFoundOverFinableTPCK0Pos(0),
   fHistRatioFoundOverFinableTPCK0Neg(0),
+  fHistPiPiDistDaughtersTPCEntrVsMass(0),
+//Lambda Antilambda
+  fHistPiPDistDaughtersTPCEntrVsMass(0),
+  fHistPiAPDistDaughtersTPCEntrVsMass(0),
 //------------MC only histos-----------
   fHistPrimVtxZESDVSNContributorsMC(0),
   fHistPrimVtxZESDTPCVSNContributorsMC(0),
@@ -202,14 +212,16 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fVtxStatus(0),
   fNcr(0),              
   fChi2cls(0),      
-  fTPCrefit(0),      
+  fTPCrefit(0),
   fITSrefit(0),
   fNcrCh(0),      
   fChi2clsCh(0),         
-  fTPCrefitCh(0),   
+  fTPCrefitCh(0),  
+  fITSrefitCh(0),
   fNcrLpt(0),            
   fChi2clsLpt(0),     
   fTPCrefitLpt(0),
+  fITSrefitLpt(0),
   fUsePID(0),
   fUsePIDPion(0),
   fNSigma(0),
@@ -237,7 +249,11 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fRap(0),
   fEtaCutMCDaughters(0),
   fEtaCutMCDaughtersVal(0),
-  fMinPt(0),
+  fUseXi0(0),
+  fUseXiM(0),
+  fUseOmega(0),
+  fCutRapXi(0),
+  fMinPt(0),  
   fAlfaCut(0),
   fQtCut(0),
   fQtCutPt(0),
@@ -285,493 +301,18 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fLHighMassCut(0),
   fSetFillDetAL(0),
   fSetPtDepHist(0),
-  fStopLoop(0)
-  //  fShift(0),
-  // fDeltaInvP(0)
+  fStopLoop(0),
+  fDistDauForCheck(0),
+  fShift(0),
+  fDeltaInvP(0)
 {  // Constructor.
 
   DefineOutput(1,TList::Class());
   // define defaults for globals
-  /*
-    fShift = kFALSE;                       // shift in charge/pt yes/no
-    fDeltaInvP = 0.00;                     // shift value
-  */
-   
-  fMCMode = kFALSE;
-  fMCTruthMode = kFALSE;
-
-  fUseCentrality = 0;
-  fUseCentralityBin = 0;
-  fUseCentralityRange =0;
-
-  fAnapp = kFALSE;
-  fRejectPileUpSPD = kFALSE;
-  fSelSDD = kFALSE;
-  fSelNoSDD= kFALSE;
-   
-  fSelectInjected = kFALSE;
-  fSelectMBMotherMC = kFALSE;
-  fCheckNegLabelReco = kFALSE;
-  fOnlyFoundRecoV0= kFALSE;
-
-  fVertexZCut = 100000.0;
-  fVtxStatus = kFALSE;
-
-  fOntheFly = kTRUE;
-
-  //----- define defaults for V0 and track cuts ----//
-  fNcr = 70;              
-  fChi2cls = 4;      
-  fTPCrefit = kTRUE;  
-  fITSrefit = kFALSE;
-  fNcrCh = 70;      
-  fChi2clsCh =4;         
-  fTPCrefitCh = kTRUE;   
-  fNcrLpt = 70;            
-  fChi2clsLpt = 4;     
-  fTPCrefitLpt = kTRUE; 
-
-  fUsePID = kFALSE;
-  fUsePIDPion = kFALSE;
-  fMoreNclsThanRows = kFALSE;
-  fMoreNclsThanFindable = kFALSE;
-  fMoreNclsThanFindableMax = kFALSE;
-  fRatioFoundOverFindable = -1.0;
-  fRatioMaxCRowsOverFindable = 1000.0;
-
-
-  fChi2PerClusterITS = 100000.0;
-  fDistanceTPCInner = -1.0;
-  fMinNCLSITSPos = -1;
-  fMaxNCLSITSPos = 1000;
-  fMinNCLSITSNeg = -1;
-  fMaxNCLSITSNeg = 1000;
-  fSwitchCaseITSCls = kFALSE;
-
-  fCutMITrackLength = kFALSE;
-  fCutMICrossedR    = kFALSE;
-  fCutMITPCncls     = kFALSE;
-  fCutMITrackLengthLengthF = 1.0;
-  fCutMICrossedRLengthF = 0.85;
-
-  fNSigma   = 100000.0;
-  fNSigma2  = 100000.0;
-  fPPIDcut  = 100.0;
-  fPtTPCCut = -1.0;
-
-
-  fRapCutV0=kFALSE;
-  fRap=1000.0;
-  fRap=1000.0;
-
-  fAlfaCut= -100.0;
-  fQtCut = -1.0;
-  fQtCutPt = 100.0;
-  fQtCutPtLow = -1.0;
-  fArmCutK0=kFALSE;     
-  fArmCutL=kFALSE;  
-  fArmQtSlope =0.2;
-  fExcludeLambdaFromK0s = -1.0;
-  fExcludeK0sFromLambda = -1.0;
-  fExcludePhotonsFromK0s = -1.0;
-  fExcludePhotonsFromLambda = -1.0;
-
-  fEtaCutMCDaughters = kFALSE;
-  fEtaCutMCDaughtersVal = 50.0;
-
-  fMinPt= -1.0;
-
-  fDCAToVertexK0 = 10000.0;
-  fDCAToVertexL = 10000.0;
-  fDCAXK=10000.0;
-  fDCAYK=10000.0;
-  fDCAXL=10000.0;
-  fDCAYL=10000.0;
-  fDCAZ=10000.0;
-   
-  fDCADaughtersL=10000.0;
-  fDCADaughtersAL=10000.0;
-  fDCADaughtersK0=10000.0;
-
-  fDCADaughtersToVtxLarge=-1.0;
-  fDCADaughtersToVtxSmall=-1.0;
-
-  fDecayRadXYMin = -100000.0;
-  fDecayRadXYMax = 1000000.0;
-  fPtDecRadMin = 1000000.0;
-  fDecayLengthMax = 100000.0;
-  fDecayLengthMin = -1000000.0;
-   
-  fDecRadCutITSMin = 0.0000;
-  fDecRadCutITSMax = 10000.0;
-
-  fCosPointAngL=-1.0;
-  fCosPointAngK=-1.0;
-  fCPAPtCutK0 = 1000.0;
-  fCPAPtCutL = -1000.0;//xxx
-  fOpengAngleDaughters = -1.0;
-  fOpAngPtCut = -1.0;
-      
-  fCtauK0s=10e6;
-  fCtauL=10e6;
-  fCtauPtCutK0=10e6;
-  fCtauPtCutL=10e6;
-
-  fChiCutKf=1000000.0;
-
-  fK0sLowMassCut  = 0.25;
-  fK0sHighMassCut = 0.75;
-
-  fLLowMassCut  = 1.05;
-  fLHighMassCut = 1.25;
-
-
-  fSetFillDetAL = kFALSE;
-
-  fSetPtDepHist=kFALSE;
-
-  fStopLoop = kFALSE;
-
-  //---- histograms ----//
-  for(Int_t j=0;j<2;j++){
-    fHistArmenteros[j]=NULL;
-    fHistV0RadiusZ[j] =NULL;
-    fHistV0RadiusZVSPt[j] =NULL;
-    fHistV0RadiusXY[j] =NULL;
-    fHistV0RadiusXYVSY[j] =NULL;
-         
-    //Lambda
-    fHistPiPMass[j]=NULL;
-    fHistPiPMassVSPt[j]=NULL;
-    fHistPiPMassVSY[j] = NULL;
-    fHistPiPMassVSPtMCTruth[j]=NULL;
-    fHistPiPRadiusXY[j]=NULL;
-    fHistPiPCosPointAng[j]=NULL;
-    fHistPiPDecayLengthVsPt[j]=NULL;
-    fHistPiPDecayLengthVsMass[j]=NULL;
-    fHistPiPDecayLengthVsCtau[j]=NULL;
-    fHistPiPDCADaughterPosToPrimVtxVSMass[j]=NULL;
-    fHistPiPDCADaughterNegToPrimVtxVSMass[j]=NULL;
-    fHistPiPMassVSPtSecSigma[j]=NULL;
-    fHistPiPMassVSPtSecXi[j]=NULL;
-    fHistPiPMassVSPtSecOmega[j]=NULL;
-    fHistPiPMassVSYSecXi[j]=NULL;
-    fHistPiPXi0PtVSLambdaPt[j]=NULL;
-    fHistPiPXiMinusPtVSLambdaPt[j]=NULL;
-    fHistPiPOmegaPtVSLambdaPt[j]=NULL;
-    fHistPiPDCADaughters[j]=NULL;
-    //  fHistPiPPtDaughters[j]=NULL;
-    fHistPiPPtVSY[j]=NULL;
-    fHistPiPDCAVSMass[j]=NULL;
-    fHistPiPMonitorCuts[j] =NULL;
-    fHistPiPMonitorMCCuts[j] =NULL;
-    fHistPiPDecayLengthResolution[j] =NULL;
-    //    fHistPiPDCAZPos[j] =NULL;
-    //fHistPiPDCAZNeg[j] =NULL;
-    fHistPiPTrackLengthPosVsMass[j] = NULL;
-    fHistPiPTrackLengthNegVsMass[j] = NULL;
-
-    //ALambda
-    fHistPiAPMass[j]=NULL;
-    fHistPiAPMassVSPt[j]=NULL;
-    fHistPiAPMassVSY[j] = NULL;
-    fHistPiAPMassVSPtMCTruth[j]=NULL;
-    fHistPiAPRadiusXY[j]=NULL;
-    fHistPiAPCosPointAng[j]=NULL;
-    fHistPiAPDecayLengthVsPt[j]=NULL;
-    fHistPiAPDecayLengthVsMass[j]=NULL;
-    fHistPiAPDecayLengthVsCtau[j]=NULL;
-    fHistPiAPDCADaughterPosToPrimVtxVSMass[j]=NULL;
-    fHistPiAPDCADaughterNegToPrimVtxVSMass[j]=NULL;
-    fHistPiAPMassVSPtSecSigma[j]=NULL;
-    fHistPiAPMassVSPtSecXi[j]=NULL;
-    fHistPiAPMassVSPtSecOmega[j]=NULL;
-    fHistPiAPMassVSYSecXi[j]=NULL;
-    fHistPiAPXi0PtVSLambdaPt[j]=NULL;
-    fHistPiAPXiMinusPtVSLambdaPt[j]=NULL;
-    fHistPiAPOmegaPtVSLambdaPt[j] =NULL;
-    fHistPiAPDCADaughters[j]=NULL;
-    // fHistPiAPPtDaughters[j]=NULL;
-    fHistPiAPPtVSY[j]=NULL;
-    fHistPiAPDCAVSMass[j]=NULL;
-    fHistPiAPMonitorCuts[j] =NULL;
-    fHistPiAPMonitorMCCuts[j] =NULL;
-    fHistPiAPDecayLengthResolution[j] =NULL;
-    //    fHistPiAPDCAZPos[j] =NULL;
-    //fHistPiAPDCAZNeg[j] =NULL;
-    fHistPiAPTrackLengthPosVsMass[j] = NULL;
-    fHistPiAPTrackLengthNegVsMass[j] = NULL;
-
-    //other 
-    fHistDedxSecProt[j]=NULL;
-    fHistDedxSecAProt[j]=NULL;
-    fHistDedxSecPiMinus[j]=NULL;
-    fHistDedxSecPiPlus[j]=NULL;
-    fHistDedxProt[j]=NULL;
-    fHistDedxAProt[j]=NULL;
-    fHistDedxPiMinus[j]=NULL;
-    fHistDedxPiPlus[j]=NULL;
-    fHistNclsITS[j]=NULL;
-    fHistNclsTPC[j]=NULL;
-    fHistNclsITSPosL[j]=NULL;
-    fHistNclsITSNegL[j]=NULL;
-    fHistNclsTPCPosL[j]=NULL;
-    fHistNclsTPCNegL[j]=NULL;
-    fHistChi2PerNclsITSPosL[j]=NULL;
-    fHistChi2PerNclsITSNegL[j]=NULL;
-    fHistNCRowsTPCPosL[j]=NULL;
-    fHistNCRowsTPCNegL[j]=NULL;
-    fHistRatioFoundOverFinableTPCLPos[j]=NULL;
-    fHistRatioFoundOverFinableTPCLNeg[j]=NULL;
-    fHistPiPiEtaDMC[j] = NULL;
-    fHistPiPiEtaDReco[j] = NULL;
-    fHistPiPEtaDMC[j] = NULL;
-    fHistPiPEtaDReco[j] = NULL;
-  }
-   
-}
-//________________________________________________________________________
-AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
- :AliAnalysisTaskSE(name),
-  fESD(0),
-  fMCev(0),
-  //other objects
-  fESDpid(0),
-  fESDTrackCuts(0),
-  fESDTrackCutsCharged(0),
-  fESDTrackCutsLowPt(0),
-  fOutputContainer(0),
-  //thnf
-  //  fTHnFK0s(0),
-  // fTHnFL(0),
-  // fTHnFAL(0),
-  fTHnFK0sDauEta(0),
-  fTHnFLDauEta(0),
-  fTHnFALDauEta(0),
-  fTHnFK0sDauPhi(0),
-  fTHnFLDauPhi(0),
-  fTHnFALDauPhi(0),
-  //event histos
-  fHistITSLayerHits(0),
-  fHistOneHitWithSDD(0),
-  fHistNEvents(0),
-  fHistPrimVtxZESDVSNContributors(0),
-  fHistPrimVtxZESDTPCVSNContributors(0),
-  fHistPrimVtxZESDSPDVSNContributors(0),
-  fHistPrimVtxZESD(0),
-  fHistPrimVtxZESDTPC(0),
-  fHistPrimVtxZESDSPD(0),
-  fHistESDVertexZ(0),
-  fHistMuliplicity(0),
-  fHistMuliplicityRaw(0),
-  fHistCentBinRaw(0),
-  fHistCentBin(0),
-  fHistMultiplicityPrimary(0),
-  fHistNPrim(0),
-  fHistPiPiK0sVsLambdaMass(0),
-  fHistPiPiK0sVsALambdaMass(0),
-  fHistPiPK0sVsLambdaMass(0),
-  fHistPiAPK0sVsALambdaMass(0),
-  fHistPiPALambdaVsLambdaMass(0),
-  fHistPiAPLambdaVsALambdaMass(0),
-  //-----------K0 histos -------------------//
-  fHistPiPiMass(0),
-  fHistPiPiMassVSPt(0),
-  fHistPiPiMassVSPtMCTruth(0),
-  fHistPiPiMassVSY(0),
-  fHistPiPiPtVSY(0),
- 
-  // fHistPiPiMassVSAlpha(0),
-  fHistPiPiRadiusXY(0),
-  fHistPiPiCosPointAng(0),
-  fHistPiPiDCADaughterPosToPrimVtxVSMass(0),  
-  fHistPiPiDecayLengthVsPt(0),
-  fHistPiPiDecayLengthVsMass(0),
-  fHistPiPiDecayLengthVsCtau(0),
-  fHistPiPiDCADaughters(0), 
-  //    fHistPiPiPtDaughters(0),
-  fHistPiPiDCAVSMass(0),
-  //  fHistPiPiDCAZPos(0),
-  //fHistPiPiDCAZNeg(0),
-  fHistPiPiTrackLengthPosVsMass(0),
-  fHistPiPiTrackLengthNegVsMass(0),  
-  fHistPiPiMonitorCuts(0),
-  fHistPiPiMonitorMCCuts(0),
-  fHistPiPiDecayLengthResolution(0),
-  fHistNclsITSPosK0(0),
-  fHistNclsITSNegK0(0),
-  fHistNclsTPCPosK0(0),
-  fHistNclsTPCNegK0(0),
-  fHistChi2PerNclsITSPosK0(0),
-  fHistChi2PerNclsITSNegK0(0),
-  fHistNCRowsTPCPosK0(0),
-  fHistNCRowsTPCNegK0(0),
-  fHistRatioFoundOverFinableTPCK0Pos(0),
-  fHistRatioFoundOverFinableTPCK0Neg(0),
-  //------------MC only histos-----------
-  fHistPrimVtxZESDVSNContributorsMC(0),
-  fHistPrimVtxZESDTPCVSNContributorsMC(0),
-  fHistPrimVtxZESDSPDVSNContributorsMC(0),
-  fHistMCVertexZ(0),
-  fHistPiPiPDGCode(0),
-  fHistPiPPDGCode(0),
-  fHistPiAPPDGCode(0),
   
-  // //-- BG of K0s
-  // fHistPiPiGA(0),
-  // fHistPiPiKch(0),
-  // fHistPiPiPhi(0),
-  // fHistPiPiL(0),
-  // fHistPiPiPi0(0),
-  // fHistPiPiPich(0),
-  // fHistPiPiRoh(0),
-  // fHistPiPiOmega(0),
-  // fHistPiPiKStar(0),
-  // fHistPiPiNoMother(0),
-  // fHistPiPiK0s(0),
-  // fHistPiPiK0L(0),
-  // fHistPiPiN(0),
-  // fHistPiPiSigma(0),
-  // fHistPiPiXi(0),
-  // fHistPiPiDelta(0),
-  // fHistPiPiB(0),
-  // fHistPiPiD(0),
-  // fHistPiPiEta(0),
-  // //-- BG of Lambda
-  // fHistPiPGA(0),
-  // fHistPiPKch(0),
-  // fHistPiPK0s(0),
-  // fHistPiPPi0(0),
-  // fHistPiPPich(0),
-  // fHistPiPKStar(0),
-  // fHistPiPN(0),
-  // fHistPiPNoMother(0),
-  // fHistPiPL(0),
- 
-  //cosine of pointing angle of Xi vs pt histos
-  fHistPiPCosPointAngXiVsPt(0),
-  fHistPiAPCosPointAngXiVsPt(0),
-  fHistPiPMassVSPtSecXiMCTruth(0),
-  fHistPiPMassVSPtSecOmegaMCTruth(0),
-  fHistPiAPMassVSPtSecXiMCTruth(0),
-  fHistPiAPMassVSPtSecOmegaMCTruth(0),
-  // fHistUserPtShift(0),
-  //fHistPiPiPhiPosVsPtPosVsMass(0),//xxx
-  //fHistPiPPhiPosVsPtPosVsMass(0),//xxx
-  //fHistPiAPPhiPosVsPtPosVsMass(0),//xxx
-  //selection booleans and values
-  fMCMode(0),
-  fMCTruthMode(0),
-  fSelectInjected(0),
-  fSelectMBMotherMC(0),
-  fCheckNegLabelReco(0),
-  fOnlyFoundRecoV0(0),
-  fUseCentrality(0),
-  fUseCentralityBin(0),
-  fUseCentralityRange(0),
-  fAnapp(0),
-  fRejectPileUpSPD(0),
-  fSelSDD(0),
-  fSelNoSDD(0),
-  fOntheFly(0),
-  fVertexZCut(0),
-  fVtxStatus(0),
-  fNcr(0),              
-  fChi2cls(0),      
-  fTPCrefit(0),  
-  fITSrefit(0),
-  fNcrCh(0),      
-  fChi2clsCh(0),         
-  fTPCrefitCh(0),   
-  fNcrLpt(0),            
-  fChi2clsLpt(0),     
-  fTPCrefitLpt(0),
-  fUsePID(0),
-  fUsePIDPion(0),
-  fNSigma(0),
-  fNSigma2(0),
-  fPPIDcut(0),
-  fPtTPCCut(0),
-  fMoreNclsThanRows(0),
-  fMoreNclsThanFindable(0),
-  fMoreNclsThanFindableMax(0),
-  fRatioFoundOverFindable(0),
-  fRatioMaxCRowsOverFindable(0),
-  fChi2PerClusterITS(0),
-  fDistanceTPCInner(0),
-  fMinNCLSITSPos(0),
-  fMinNCLSITSNeg(0),
-  fMaxNCLSITSPos(0),
-  fMaxNCLSITSNeg(0),
-  fSwitchCaseITSCls(0),
-  fCutMITrackLength(0),
-  fCutMICrossedR(0),
-  fCutMITPCncls(0),
-  fCutMITrackLengthLengthF(0),
-  fCutMICrossedRLengthF(0),
-  fRapCutV0(0),
-  fRap(0),
-  fEtaCutMCDaughters(0),
-  fEtaCutMCDaughtersVal(0),
-  fMinPt(0),
-  fAlfaCut(0),
-  fQtCut(0),
-  fQtCutPt(0),
-  fQtCutPtLow(0),
-  fArmCutK0(0),      
-  fArmCutL(0),
-  fArmQtSlope(0),
-  fExcludeLambdaFromK0s(0),
-  fExcludeK0sFromLambda(0),
-  fExcludePhotonsFromK0s(0),
-  fExcludePhotonsFromLambda(0),
-  fDCAToVertexK0(0),
-  fDCAToVertexL(0),
-  fDCAXK(0),
-  fDCAYK(0),
-  fDCAXL(0),
-  fDCAYL(0),
-  fDCAZ(0),
-  fDCADaughtersL(0),
-  fDCADaughtersAL(0),
-  fDCADaughtersK0(0),
-  fDCADaughtersToVtxLarge(0),
-  fDCADaughtersToVtxSmall(0),
-  fDecayRadXYMin(0),
-  fDecayRadXYMax(0),
-  fPtDecRadMin(0),
-  fCosPointAngL(0),
-  fCosPointAngK(0),
-  fCPAPtCutK0(0),
-  fCPAPtCutL(0),
-  fOpengAngleDaughters(0),
-  fOpAngPtCut(0),
-  fDecayLengthMax(0),
-  fDecayLengthMin(0),
-  fDecRadCutITSMin(0),
-  fDecRadCutITSMax(0),
-  fCtauK0s(0),
-  fCtauL(0),
-  fCtauPtCutK0(0),
-  fCtauPtCutL(0),
-  fChiCutKf(0),			
-  fK0sLowMassCut(0),
-  fK0sHighMassCut(0),
-  fLLowMassCut(0),
-  fLHighMassCut(0),
-  fSetFillDetAL(0),
-  fSetPtDepHist(0),
-  fStopLoop(0)
-  //  fShift(0),
-  // fDeltaInvP(0)
-{// Constructor.
-
-  DefineOutput(1,TList::Class());
-  // define defaults for globals
-  /*
-    fShift = kFALSE;                       // shift in charge/pt yes/no
-    fDeltaInvP = 0.00;                     // shift value
-  */
+  fShift = kFALSE;                       // shift in charge/pt yes/no
+  fDeltaInvP = 0.00;                     // shift value
+    
    
   fMCMode = kFALSE;
   fMCTruthMode = kFALSE;
@@ -792,7 +333,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
 
   fVertexZCut = 100000.0;
   fVtxStatus = kFALSE;
-   
+
   fOntheFly = kTRUE;
 
   //----- define defaults for V0 and track cuts ----//
@@ -802,10 +343,12 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   fITSrefit = kFALSE;
   fNcrCh = 70;      
   fChi2clsCh =4;         
-  fTPCrefitCh = kTRUE;   
+  fTPCrefitCh = kTRUE; 
+  fITSrefitCh = kFALSE;
   fNcrLpt = 70;            
   fChi2clsLpt = 4;     
-  fTPCrefitLpt = kTRUE;
+  fTPCrefitLpt = kTRUE; 
+  fITSrefitLpt = kFALSE; 
 
   fUsePID = kFALSE;
   fUsePIDPion = kFALSE;
@@ -854,6 +397,542 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
 
   fEtaCutMCDaughters = kFALSE;
   fEtaCutMCDaughtersVal = 50.0;
+
+  fUseXi0= kTRUE;
+  fUseXiM = kTRUE;
+  fUseOmega =kTRUE;
+  fCutRapXi = kFALSE;
+  
+  fMinPt= -1.0;
+
+  fDCAToVertexK0 = 10000.0;
+  fDCAToVertexL = 10000.0;
+  fDCAXK=10000.0;
+  fDCAYK=10000.0;
+  fDCAXL=10000.0;
+  fDCAYL=10000.0;
+  fDCAZ=10000.0;
+   
+  fDCADaughtersL=10000.0;
+  fDCADaughtersAL=10000.0;
+  fDCADaughtersK0=10000.0;
+
+  fDCADaughtersToVtxLarge=-1.0;
+  fDCADaughtersToVtxSmall=-1.0;
+
+  fDecayRadXYMin = -100000.0;
+  fDecayRadXYMax = 1000000.0;
+  fPtDecRadMin = 1000000.0;
+  fDecayLengthMax = 100000.0;
+  fDecayLengthMin = -1000000.0;
+   
+  fDecRadCutITSMin = 0.0000;
+  fDecRadCutITSMax = 10000.0;
+
+  fCosPointAngL=-1.0;
+  fCosPointAngK=-1.0;
+  fCPAPtCutK0 = 1000.0;
+  fCPAPtCutL = -1000.0;//xxx
+  fOpengAngleDaughters = -1.0;
+  fOpAngPtCut = -1.0;
+      
+  fCtauK0s=10e6;
+  fCtauL=10e6;
+  fCtauPtCutK0=10e6;
+  fCtauPtCutL=10e6;
+
+  fChiCutKf=1000000.0;
+
+  fK0sLowMassCut  = 0.25;
+  fK0sHighMassCut = 0.75;
+
+  fLLowMassCut  = 1.05;
+  fLHighMassCut = 1.25;
+
+
+  fSetFillDetAL = kFALSE;
+
+  fSetPtDepHist=kFALSE;
+
+  fStopLoop = kFALSE;
+
+  fDistDauForCheck =5.0;
+
+  //---- histograms ----//
+  for(Int_t j=0;j<2;j++){
+    fHistArmenteros[j]=NULL;
+    fHistV0RadiusZ[j] =NULL;
+    fHistV0RadiusZVSPt[j] =NULL;
+    fHistV0RadiusXY[j] =NULL;
+    fHistV0RadiusXYVSY[j] =NULL;
+   
+    //Lambda
+    fHistPiPMass[j]=NULL;
+    fHistPiPMassVSPt[j]=NULL;
+    fHistPiPMassVSY[j] = NULL;
+    fHistPiPMassVSPtMCTruth[j]=NULL;
+    fHistPiPMassVSPtPosMCTruth[j]=NULL;
+    fHistPiPMassVSPtNegMCTruth[j]=NULL;
+    fHistPiPRadiusXY[j]=NULL;
+    fHistPiPCosPointAng[j]=NULL;
+    fHistPiPDecayLengthVsPt[j]=NULL;
+    fHistPiPDecayLengthVsMass[j]=NULL;
+    fHistPiPDecayLengthVsCtau[j]=NULL;
+    fHistPiPDCADaughterPosToPrimVtxVSMass[j]=NULL;
+    fHistPiPDCADaughterNegToPrimVtxVSMass[j]=NULL;
+    fHistPiPMassVSPtSecSigma[j]=NULL;
+    fHistPiPMassVSPtSecXi[j]=NULL;
+    fHistPiPMassVSPtSecOmega[j]=NULL;
+    fHistPiPMassVSYSecXi[j]=NULL;
+    fHistPiPXi0PtVSLambdaPt[j]=NULL;
+    fHistPiPXiMinusPtVSLambdaPt[j]=NULL;
+    fHistPiPOmegaPtVSLambdaPt[j]=NULL;
+    fHistPiPDCADaughters[j]=NULL;
+    //  fHistPiPPtDaughters[j]=NULL;
+    fHistPiPPtVSY[j]=NULL;
+    fHistPiPDCAVSMass[j]=NULL;
+    fHistPiPDCAZVSMass[j]=NULL;
+    fHistPiPMonitorCuts[j] =NULL;
+    fHistPiPMonitorMCCuts[j] =NULL;
+    fHistPiPDecayLengthResolution[j] =NULL;
+    fHistPiPDCAZPos[j] =NULL;
+    fHistPiPDCAZNeg[j] =NULL;
+    fHistPiPTrackLengthPosVsMass[j] = NULL;
+    fHistPiPTrackLengthNegVsMass[j] = NULL;
+
+    //ALambda
+    fHistPiAPMass[j]=NULL;
+    fHistPiAPMassVSPt[j]=NULL;
+    fHistPiAPMassVSY[j] = NULL;
+    fHistPiAPMassVSPtMCTruth[j]=NULL;
+    fHistPiAPMassVSPtPosMCTruth[j]=NULL;
+    fHistPiAPMassVSPtNegMCTruth[j]=NULL;
+    fHistPiAPRadiusXY[j]=NULL;
+    fHistPiAPCosPointAng[j]=NULL;
+    fHistPiAPDecayLengthVsPt[j]=NULL;
+    fHistPiAPDecayLengthVsMass[j]=NULL;
+    fHistPiAPDecayLengthVsCtau[j]=NULL;
+    fHistPiAPDCADaughterPosToPrimVtxVSMass[j]=NULL;
+    fHistPiAPDCADaughterNegToPrimVtxVSMass[j]=NULL;
+    fHistPiAPMassVSPtSecSigma[j]=NULL;
+    fHistPiAPMassVSPtSecXi[j]=NULL;
+    fHistPiAPMassVSPtSecOmega[j]=NULL;
+    fHistPiAPMassVSYSecXi[j]=NULL;
+    fHistPiAPXi0PtVSLambdaPt[j]=NULL;
+    fHistPiAPXiMinusPtVSLambdaPt[j]=NULL;
+    fHistPiAPOmegaPtVSLambdaPt[j] =NULL;
+    fHistPiAPDCADaughters[j]=NULL;
+    // fHistPiAPPtDaughters[j]=NULL;
+    fHistPiAPPtVSY[j]=NULL;
+    fHistPiAPDCAVSMass[j]=NULL;
+    fHistPiAPDCAZVSMass[j]=NULL;
+    fHistPiAPMonitorCuts[j] =NULL;
+    fHistPiAPMonitorMCCuts[j] =NULL;
+    fHistPiAPDecayLengthResolution[j] =NULL;
+    //    fHistPiAPDCAZPos[j] =NULL;
+    //fHistPiAPDCAZNeg[j] =NULL;
+    fHistPiAPTrackLengthPosVsMass[j] = NULL;
+    fHistPiAPTrackLengthNegVsMass[j] = NULL;
+
+    //other 
+    fHistDedxSecProt[j]=NULL;
+    fHistDedxSecAProt[j]=NULL;
+    fHistDedxSecPiMinus[j]=NULL;
+    fHistDedxSecPiPlus[j]=NULL;
+    fHistDedxProt[j]=NULL;
+    fHistDedxAProt[j]=NULL;
+    fHistDedxPiMinus[j]=NULL;
+    fHistDedxPiPlus[j]=NULL;
+    fHistNclsITS[j]=NULL;
+    fHistNclsTPC[j]=NULL;
+    fHistNclsITSPosL[j]=NULL;
+    fHistNclsITSNegL[j]=NULL;
+    fHistNclsTPCPosL[j]=NULL;
+    fHistNclsTPCNegL[j]=NULL;
+    fHistChi2PerNclsITSPosL[j]=NULL;
+    fHistChi2PerNclsITSNegL[j]=NULL;
+    fHistNCRowsTPCPosL[j]=NULL;
+    fHistNCRowsTPCNegL[j]=NULL;
+    fHistRatioFoundOverFinableTPCLPos[j]=NULL;
+    fHistRatioFoundOverFinableTPCLNeg[j]=NULL;
+    fHistPiPiEtaDMC[j] = NULL;
+    fHistPiPiEtaDReco[j] = NULL;
+    fHistPiPEtaDMC[j] = NULL;
+    fHistPiPEtaDReco[j] = NULL;
+  }
+  /*
+    for(Int_t m=0;m<3;m++){
+
+    fHistPiPiDistDaughtersPos[m]=NULL;
+    fHistPiPiDistDaughtersNeg[m]=NULL;
+    fHistPiPiDCADaughtersPos[m]=NULL;
+    fHistPiPiDCADaughtersNeg[m]=NULL;
+    fHistPiPiRadAtDCA5cmDaughtersPos[m]=NULL;
+    fHistPiPiRadAtDCA5cmDaughtersNeg[m]=NULL;
+    
+    fHistPiPDistDaughtersPos[m]=NULL;
+    fHistPiPDistDaughtersNeg[m]=NULL;
+    fHistPiPDCADaughtersPos[m]=NULL;
+    fHistPiPDCADaughtersNeg[m]=NULL;
+    fHistPiPRadAtDCA5cmDaughtersPos[m]=NULL;
+    fHistPiPRadAtDCA5cmDaughtersNeg[m]=NULL;
+
+    fHistPiAPDistDaughtersPos[m]=NULL;
+    fHistPiAPDistDaughtersNeg[m]=NULL;
+    fHistPiAPDCADaughtersPos[m]=NULL;
+    fHistPiAPDCADaughtersNeg[m]=NULL;
+    fHistPiAPRadAtDCA5cmDaughtersPos[m]=NULL;
+    fHistPiAPRadAtDCA5cmDaughtersNeg[m]=NULL;
+    }
+  */
+}
+//________________________________________________________________________
+AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
+  :AliAnalysisTaskSE(name),
+   fESD(0),
+   fMCev(0),
+   //other objects
+   fESDpid(0),
+   fESDTrackCuts(0),
+   fESDTrackCutsCharged(0),
+   fESDTrackCutsLowPt(0),
+   fOutputContainer(0),
+   //thnf
+
+   /* 
+      fTHnFK0s(0),
+      fTHnFL(0),
+      fTHnFAL(0),
+      fTHnFK0sDauEta(0),
+      fTHnFLDauEta(0),
+      fTHnFALDauEta(0),
+      fTHnFK0sDauPhi(0),
+      fTHnFLDauPhi(0),
+      fTHnFALDauPhi(0),
+   */
+   //event histos
+   fHistITSLayerHits(0),
+   fHistOneHitWithSDD(0),
+   fHistNEvents(0),
+   fHistPrimVtxZESDVSNContributors(0),
+   fHistPrimVtxZESDTPCVSNContributors(0),
+   fHistPrimVtxZESDSPDVSNContributors(0),
+   fHistPrimVtxZESD(0),
+   fHistPrimVtxZESDTPC(0),
+   fHistPrimVtxZESDSPD(0),
+   fHistESDVertexZ(0),
+   fHistMuliplicity(0),
+   fHistMuliplicityRaw(0),
+   fHistCentBinRaw(0),
+   fHistCentBin(0),
+   fHistMultiplicityPrimary(0),
+   fHistNPrim(0),
+   fHistPiPiK0sVsLambdaMass(0),
+   fHistPiPiK0sVsALambdaMass(0),
+   fHistPiPK0sVsLambdaMass(0),
+   fHistPiAPK0sVsALambdaMass(0),
+   fHistPiPALambdaVsLambdaMass(0),
+   fHistPiAPLambdaVsALambdaMass(0),
+   //-----------K0 histos -------------------//
+   fHistPiPiMass(0),
+   fHistPiPiMassVSPt(0),
+   fHistPiPiMassVSPtMCTruth(0),
+   fHistPiPiMassVSPtPosMCTruth(0),
+   fHistPiPiMassVSPtNegMCTruth(0),
+   fHistPiPiMassVSY(0),
+   fHistPiPiPtVSY(0),
+ 
+   // fHistPiPiMassVSAlpha(0),
+   fHistPiPiRadiusXY(0),
+   fHistPiPiCosPointAng(0),
+   fHistPiPiDCADaughterPosToPrimVtxVSMass(0),  
+   fHistPiPiDecayLengthVsPt(0),
+   fHistPiPiDecayLengthVsMass(0),
+   fHistPiPiDecayLengthVsCtau(0),
+   fHistPiPiDCADaughters(0), 
+   //    fHistPiPiPtDaughters(0),
+   fHistPiPiDCAVSMass(0),
+   fHistPiPiDCAZVSMass(0),
+   fHistPiPiDCAZPos(0),
+   fHistPiPiDCAZNeg(0),
+   fHistPiPiTrackLengthPosVsMass(0),
+   fHistPiPiTrackLengthNegVsMass(0),  
+   fHistPiPiMonitorCuts(0),
+   fHistPiPiMonitorMCCuts(0),
+   fHistPiPiDecayLengthResolution(0),
+   fHistNclsITSPosK0(0),
+   fHistNclsITSNegK0(0),
+   fHistNclsTPCPosK0(0),
+   fHistNclsTPCNegK0(0),
+   fHistChi2PerNclsITSPosK0(0),
+   fHistChi2PerNclsITSNegK0(0),
+   fHistNCRowsTPCPosK0(0),
+   fHistNCRowsTPCNegK0(0),
+   fHistRatioFoundOverFinableTPCK0Pos(0),
+   fHistRatioFoundOverFinableTPCK0Neg(0),
+   fHistPiPiDistDaughtersTPCEntrVsMass(0),
+   //Lambda Antilambda
+   fHistPiPDistDaughtersTPCEntrVsMass(0),
+   fHistPiAPDistDaughtersTPCEntrVsMass(0),
+   //------------MC only histos-----------
+   fHistPrimVtxZESDVSNContributorsMC(0),
+   fHistPrimVtxZESDTPCVSNContributorsMC(0),
+   fHistPrimVtxZESDSPDVSNContributorsMC(0),
+   fHistMCVertexZ(0),
+   fHistPiPiPDGCode(0),
+   fHistPiPPDGCode(0),
+   fHistPiAPPDGCode(0),
+  
+   // //-- BG of K0s
+   // fHistPiPiGA(0),
+   // fHistPiPiKch(0),
+   // fHistPiPiPhi(0),
+   // fHistPiPiL(0),
+   // fHistPiPiPi0(0),
+   // fHistPiPiPich(0),
+   // fHistPiPiRoh(0),
+   // fHistPiPiOmega(0),
+   // fHistPiPiKStar(0),
+   // fHistPiPiNoMother(0),
+   // fHistPiPiK0s(0),
+   // fHistPiPiK0L(0),
+   // fHistPiPiN(0),
+   // fHistPiPiSigma(0),
+   // fHistPiPiXi(0),
+   // fHistPiPiDelta(0),
+   // fHistPiPiB(0),
+   // fHistPiPiD(0),
+   // fHistPiPiEta(0),
+   // //-- BG of Lambda
+   // fHistPiPGA(0),
+   // fHistPiPKch(0),
+   // fHistPiPK0s(0),
+   // fHistPiPPi0(0),
+   // fHistPiPPich(0),
+   // fHistPiPKStar(0),
+   // fHistPiPN(0),
+   // fHistPiPNoMother(0),
+   // fHistPiPL(0),
+ 
+   //cosine of pointing angle of Xi vs pt histos
+   fHistPiPCosPointAngXiVsPt(0),
+   fHistPiAPCosPointAngXiVsPt(0),
+   fHistPiPMassVSPtSecXiMCTruth(0),
+   fHistPiPMassVSPtSecOmegaMCTruth(0),
+   fHistPiAPMassVSPtSecXiMCTruth(0),
+   fHistPiAPMassVSPtSecOmegaMCTruth(0),
+   // fHistUserPtShift(0),
+   //fHistPiPiPhiPosVsPtPosVsMass(0),//xxx
+   //fHistPiPPhiPosVsPtPosVsMass(0),//xxx
+   //fHistPiAPPhiPosVsPtPosVsMass(0),//xxx
+   //selection booleans and values
+   fMCMode(0),
+   fMCTruthMode(0),
+   fSelectInjected(0),
+   fSelectMBMotherMC(0),
+   fCheckNegLabelReco(0),
+   fOnlyFoundRecoV0(0),
+   fUseCentrality(0),
+   fUseCentralityBin(0),
+   fUseCentralityRange(0),
+   fAnapp(0),
+   fRejectPileUpSPD(0),
+   fSelSDD(0),
+   fSelNoSDD(0),
+   fOntheFly(0),
+   fVertexZCut(0),
+   fVtxStatus(0),
+   fNcr(0),              
+   fChi2cls(0),      
+   fTPCrefit(0), 
+   fITSrefit(0),
+   fNcrCh(0),      
+   fChi2clsCh(0),         
+   fTPCrefitCh(0),
+   fITSrefitCh(0),   
+   fNcrLpt(0),            
+   fChi2clsLpt(0),     
+   fTPCrefitLpt(0),
+   fITSrefitLpt(0),
+   fUsePID(0),
+   fUsePIDPion(0),
+   fNSigma(0),
+   fNSigma2(0),
+   fPPIDcut(0),
+   fPtTPCCut(0),
+   fMoreNclsThanRows(0),
+   fMoreNclsThanFindable(0),
+   fMoreNclsThanFindableMax(0),
+   fRatioFoundOverFindable(0),
+   fRatioMaxCRowsOverFindable(0),
+   fChi2PerClusterITS(0),
+   fDistanceTPCInner(0),
+   fMinNCLSITSPos(0),
+   fMinNCLSITSNeg(0),
+   fMaxNCLSITSPos(0),
+   fMaxNCLSITSNeg(0),
+   fSwitchCaseITSCls(0),
+   fCutMITrackLength(0),
+   fCutMICrossedR(0),
+   fCutMITPCncls(0),
+   fCutMITrackLengthLengthF(0),
+   fCutMICrossedRLengthF(0),
+   fRapCutV0(0),
+   fRap(0),
+   fEtaCutMCDaughters(0),
+   fEtaCutMCDaughtersVal(0),
+   fUseXi0(0),
+   fUseXiM(0),
+   fUseOmega(0),
+   fCutRapXi(0),
+   fMinPt(0),
+   fAlfaCut(0),
+   fQtCut(0),
+   fQtCutPt(0),
+   fQtCutPtLow(0),
+   fArmCutK0(0),      
+   fArmCutL(0),
+   fArmQtSlope(0),
+   fExcludeLambdaFromK0s(0),
+   fExcludeK0sFromLambda(0),
+   fExcludePhotonsFromK0s(0),
+   fExcludePhotonsFromLambda(0),
+   fDCAToVertexK0(0),
+   fDCAToVertexL(0),
+   fDCAXK(0),
+   fDCAYK(0),
+   fDCAXL(0),
+   fDCAYL(0),
+   fDCAZ(0),
+   fDCADaughtersL(0),
+   fDCADaughtersAL(0),
+   fDCADaughtersK0(0),
+   fDCADaughtersToVtxLarge(0),
+   fDCADaughtersToVtxSmall(0),
+   fDecayRadXYMin(0),
+   fDecayRadXYMax(0),
+   fPtDecRadMin(0),
+   fCosPointAngL(0),
+   fCosPointAngK(0),
+   fCPAPtCutK0(0),
+   fCPAPtCutL(0),
+   fOpengAngleDaughters(0),
+   fOpAngPtCut(0),
+   fDecayLengthMax(0),
+   fDecayLengthMin(0),
+   fDecRadCutITSMin(0),
+   fDecRadCutITSMax(0),
+   fCtauK0s(0),
+   fCtauL(0),
+   fCtauPtCutK0(0),
+   fCtauPtCutL(0),
+   fChiCutKf(0),			
+   fK0sLowMassCut(0),
+   fK0sHighMassCut(0),
+   fLLowMassCut(0),
+   fLHighMassCut(0),
+   fSetFillDetAL(0),
+   fSetPtDepHist(0),
+   fStopLoop(0),
+   fDistDauForCheck(0),
+   fShift(0),
+   fDeltaInvP(0)
+{// Constructor.
+
+  DefineOutput(1,TList::Class());
+  // define defaults for globals
+  
+  fShift = kFALSE;                       // shift in charge/pt yes/no
+  fDeltaInvP = 0.00;                     // shift value
+    
+  fMCMode = kFALSE;
+  fMCTruthMode = kFALSE;
+
+  fUseCentrality = 0;
+  fUseCentralityBin = 0;
+  fUseCentralityRange =0;
+
+  fAnapp = kFALSE;
+  fRejectPileUpSPD = kFALSE;
+  fSelSDD = kFALSE;
+  fSelNoSDD= kFALSE;
+   
+  fSelectInjected = kFALSE;
+  fSelectMBMotherMC = kFALSE;
+  fCheckNegLabelReco = kFALSE;
+  fOnlyFoundRecoV0= kFALSE;
+
+  fVertexZCut = 100000.0;
+  fVtxStatus = kFALSE;
+   
+  fOntheFly = kTRUE;
+
+  //----- define defaults for V0 and track cuts ----//
+  fNcr = 70;              
+  fChi2cls = 4;      
+  fTPCrefit = kTRUE;      
+  fITSrefit =kFALSE;
+  fNcrCh = 70;      
+  fChi2clsCh =4;         
+  fTPCrefitCh = kTRUE;
+  fITSrefitCh = kFALSE;   
+  fNcrLpt = 70;            
+  fChi2clsLpt = 4;     
+  fTPCrefitLpt = kTRUE;
+  fITSrefitLpt =kFALSE;
+
+  fUsePID = kFALSE;
+  fUsePIDPion = kFALSE;
+  fMoreNclsThanRows = kFALSE;
+  fMoreNclsThanFindable = kFALSE;
+  fMoreNclsThanFindableMax = kFALSE;
+  fRatioFoundOverFindable = -1.0;
+  fRatioMaxCRowsOverFindable = 1000.0;
+
+
+  fChi2PerClusterITS = 100000.0;
+  fDistanceTPCInner = -1.0;
+  fMinNCLSITSPos = -1;
+  fMaxNCLSITSPos = 1000;
+  fMinNCLSITSNeg = -1;
+  fMaxNCLSITSNeg = 1000;
+  fSwitchCaseITSCls = kFALSE;
+
+  fCutMITrackLength = kFALSE;
+  fCutMICrossedR    = kFALSE;
+  fCutMITPCncls     = kFALSE;
+  fCutMITrackLengthLengthF = 1.0;
+  fCutMICrossedRLengthF = 0.85;
+
+  fNSigma   = 100000.0;
+  fNSigma2  = 100000.0;
+  fPPIDcut  = 100.0;
+  fPtTPCCut = -1.0;
+
+
+  fRapCutV0=kFALSE;
+  fRap=1000.0;
+  fRap=1000.0;
+
+  fAlfaCut= -100.0;
+  fQtCut = -1.0;
+  fQtCutPt = 100.0;
+  fQtCutPtLow = -1.0;
+  fArmCutK0=kFALSE;     
+  fArmCutL=kFALSE;  
+  fArmQtSlope =0.2;
+  fExcludeLambdaFromK0s = -1.0;
+  fExcludeK0sFromLambda = -1.0;
+  fExcludePhotonsFromK0s = -1.0;
+  fExcludePhotonsFromLambda = -1.0;
+
+  fEtaCutMCDaughters = kFALSE;
+  fEtaCutMCDaughtersVal = 50.0;
+
+  fUseXi0= kTRUE;
+  fUseXiM= kTRUE;
+  fUseOmega = kTRUE;
+  fCutRapXi =kFALSE;
 
   fMinPt= -1.0;
 
@@ -908,6 +987,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
 
   fStopLoop = kFALSE;
 
+  fDistDauForCheck = 5.0;
+
   //---- histograms ----//
   for(Int_t j=0;j<2;j++){
     fHistArmenteros[j]=NULL;
@@ -921,6 +1002,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     fHistPiPMassVSPt[j]=NULL;
     fHistPiPMassVSY[j] = NULL;
     fHistPiPMassVSPtMCTruth[j]=NULL;
+    fHistPiPMassVSPtPosMCTruth[j]=NULL;
+    fHistPiPMassVSPtNegMCTruth[j]=NULL;
     fHistPiPRadiusXY[j]=NULL;
     fHistPiPCosPointAng[j]=NULL;
     fHistPiPDecayLengthVsPt[j]=NULL;
@@ -939,11 +1022,12 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     //  fHistPiPPtDaughters[j]=NULL;
     fHistPiPPtVSY[j]=NULL;
     fHistPiPDCAVSMass[j]=NULL;
+    fHistPiPDCAZVSMass[j]=NULL;
     fHistPiPMonitorCuts[j] =NULL;
     fHistPiPMonitorMCCuts[j] =NULL;
     fHistPiPDecayLengthResolution[j] =NULL;
-    //    fHistPiPDCAZPos[j] =NULL;
-    //fHistPiPDCAZNeg[j] =NULL;
+    fHistPiPDCAZPos[j] =NULL;
+    fHistPiPDCAZNeg[j] =NULL;
     fHistPiPTrackLengthPosVsMass[j] = NULL;
     fHistPiPTrackLengthNegVsMass[j] = NULL;
 
@@ -952,6 +1036,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     fHistPiAPMassVSPt[j]=NULL;
     fHistPiAPMassVSY[j] = NULL;
     fHistPiAPMassVSPtMCTruth[j]=NULL;
+    fHistPiAPMassVSPtPosMCTruth[j]=NULL;
+    fHistPiAPMassVSPtNegMCTruth[j]=NULL;
     fHistPiAPRadiusXY[j]=NULL;
     fHistPiAPCosPointAng[j]=NULL;
     fHistPiAPDecayLengthVsPt[j]=NULL;
@@ -970,6 +1056,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     // fHistPiAPPtDaughters[j]=NULL;
     fHistPiAPPtVSY[j]=NULL;
     fHistPiAPDCAVSMass[j]=NULL;
+    fHistPiAPDCAZVSMass[j]=NULL;
     fHistPiAPMonitorCuts[j] =NULL;
     fHistPiAPMonitorMCCuts[j] =NULL;
     fHistPiAPDecayLengthResolution[j] =NULL;
@@ -1004,7 +1091,30 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     fHistPiPEtaDMC[j] = NULL;
     fHistPiPEtaDReco[j] = NULL;
   }
-   
+  /*
+    for(Int_t m=0;m<3;m++){
+    fHistPiPiDistDaughtersPos[m]=NULL;
+    fHistPiPiDistDaughtersNeg[m]=NULL;
+    fHistPiPiDCADaughtersPos[m]=NULL;
+    fHistPiPiDCADaughtersNeg[m]=NULL;
+    fHistPiPiRadAtDCA5cmDaughtersPos[m]=NULL;
+    fHistPiPiRadAtDCA5cmDaughtersNeg[m]=NULL;
+    
+    fHistPiPDistDaughtersPos[m]=NULL;
+    fHistPiPDistDaughtersNeg[m]=NULL;
+    fHistPiPDCADaughtersPos[m]=NULL;
+    fHistPiPDCADaughtersNeg[m]=NULL;
+    fHistPiPRadAtDCA5cmDaughtersPos[m]=NULL;
+    fHistPiPRadAtDCA5cmDaughtersNeg[m]=NULL;
+
+    fHistPiAPDistDaughtersPos[m]=NULL;
+    fHistPiAPDistDaughtersNeg[m]=NULL;
+    fHistPiAPDCADaughtersPos[m]=NULL;
+    fHistPiAPDCADaughtersNeg[m]=NULL;
+    fHistPiAPRadAtDCA5cmDaughtersPos[m]=NULL;
+    fHistPiAPRadAtDCA5cmDaughtersNeg[m]=NULL;
+    }
+  */
 }
 //_____________________________________________________
 AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
@@ -1027,8 +1137,9 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fESDTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fESDTrackCuts->SetRequireTPCRefit(fTPCrefit);
   fESDTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  fESDTrackCuts->SetRequireITSRefit(fITSrefit);//shall be kFALSE for on-the-fly
-   
+  fESDTrackCuts->SetRequireITSRefit(fITSrefit);
+
+
   // esd track cuts for protons high pt
   TString cutsnameCh = cutsname;
   cutsnameCh +="_charged";
@@ -1038,8 +1149,8 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fESDTrackCutsCharged->SetAcceptKinkDaughters(kFALSE);
   fESDTrackCutsCharged->SetRequireTPCRefit(fTPCrefitCh);
   fESDTrackCutsCharged->SetRequireSigmaToVertex(kFALSE);
-  fESDTrackCutsCharged->SetRequireITSRefit(fITSrefit);//shall be kFALSE for on-the-fly
-
+  fESDTrackCutsCharged->SetRequireITSRefit(fITSrefit);
+ 
   // esd track cuts for all low pt
   TString cutsnameLowPt  = cutsname;
   cutsnameLowPt +="_lowpt";
@@ -1049,7 +1160,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fESDTrackCutsLowPt->SetAcceptKinkDaughters(kFALSE);
   fESDTrackCutsLowPt->SetRequireTPCRefit(fTPCrefitLpt);
   fESDTrackCutsLowPt->SetRequireSigmaToVertex(kFALSE);  
-  fESDTrackCutsLowPt->SetRequireITSRefit(fITSrefit);//shall be kFALSE for on-the-fly
+  fESDTrackCutsLowPt->SetRequireITSRefit(fITSrefit);
 
 
   //create output objects
@@ -1061,6 +1172,9 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fOutputContainer->SetName(GetName()) ;
   fOutputContainer->SetOwner();
   
+  //  TH1::SetDefaultSumw2();
+  //  TH2::SetDefaultSumw2();
+
   Int_t mchist = 1;// for Data
   if((fMCMode && fMCTruthMode) || fMCTruthMode) mchist = 2;//for MC to create sec. Lambda histos	
 
@@ -1116,103 +1230,108 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    
   // ------------------- add always ---------------------------//
   //THnF
-  Double_t piForAx = 2.0*TMath::Pi();
-  // Int_t binsTHnV0K0s[4] = {150,100,80,18};
-  // Int_t binsTHnV0L[4] = {100,100,80,18};
 
-  Int_t binsTHnV0DauEtaK0s[4] = {150,100,40,18};
-  Int_t binsTHnV0DauEtaL[4] = {100,100,40,18};
+  // Double_t piForAx = 2.0*TMath::Pi();
+  // Int_t binsTHnV0K0s[4] = {100,40,15,40};
+  // Int_t binsTHnV0L[4] = {100,40,15,40};
+  /*
+    Int_t binsTHnV0DauEtaK0s[4] = {150,100,40,40};
+    Int_t binsTHnV0DauEtaL[4] = {100,100,40,40};
 
-  Int_t binsTHnV0DauPhiK0s[4] = {150, 100,40,18};
-  Int_t binsTHnV0DauPhiL[4] = {100, 100,40,18};
+    Int_t binsTHnV0DauPhiK0s[5] = {150, 18,18, 7,7};
+    Int_t binsTHnV0DauPhiL[5] = {100, 18,18, 7,7};
+  */
 
-  //Double_t minK0s[4] = {0.35,0.0,0.0,0.0};
-  //Double_t maxK0s[4] = {0.65,50.0,40.0,piForAx};
-  Double_t minK0sDauEta[4] = {0.35, 0.0,-0.8,0.0};
-  Double_t maxK0sDauEta[4] = {0.65,50.0, 0.8,piForAx};
-  Double_t minK0sDauPhi[4] = {0.35,0.0,-0.8,0.0};
-  Double_t maxK0sDauPhi[4] = {0.65,50.0,0.8,piForAx};
+  // Double_t minK0s[4] = {0.35,0.0,0.0,0.0};
+  // Double_t maxK0s[4] = {0.65,20.0,60.0,20.0};
+  /*
+    Double_t minK0sDauEta[4] = {0.35, 0.0,-0.8,-0.8};
+    Double_t maxK0sDauEta[4] = {0.65,50.0, 0.8, 0.8};
+    Double_t minK0sDauPhi[5] = {0.35,0.0,0.0,-0.5,-0.5};
+    Double_t maxK0sDauPhi[5] = {0.65,piForAx,piForAx,6.5,6.5};
+  */
 
-  //Double_t minL[4] = {1.07, 0.0,0.0,0.0};
-  // Double_t maxL[4] = {1.17,50.0, 40.0,piForAx};
-  Double_t minLDauEta[4] = {1.07, 0.0,-0.8,0.0};
-  Double_t maxLDauEta[4] = {1.17,50.0, 0.8, piForAx};
-  Double_t minLDauPhi[4] = {1.07,0.0,-0.8,0.0};
-  Double_t maxLDauPhi[4] = {1.17,50.0,0.8,piForAx};
+  // Double_t minL[4] = {1.07, 0.0,0.0,0.0};
+  // Double_t maxL[4] = {1.17,20.0, 60.0,20.0};
+  /*
+    Double_t minLDauEta[4] = {1.07, 0.0,-0.8,-0.8};
+    Double_t maxLDauEta[4] = {1.17,50.0, 0.8, 0.8};
+    Double_t minLDauPhi[5] = {1.07,0.0,0.0,-0.5,-0.5};
+    Double_t maxLDauPhi[5] = {1.17,piForAx,piForAx,6.5, 6.5};
+  */
   
+  // char histTitK0s[255];
+  // snprintf(histTitK0s,255,"fTHnFK0s");
+  // char histTitL[255];
+  // snprintf(histTitL,255,"fTHnFL");
+  // char histTitAL[255];
+  // snprintf(histTitAL,255,"fTHnFAL");
+
   /*
-  char histTitK0s[255];
-  snprintf(histTitK0s,255,"fTHnFK0s");
-  char histTitL[255];
-  snprintf(histTitL,255,"fTHnFL");
-  char histTitAL[255];
-  snprintf(histTitAL,255,"fTHnFAL");
+    char histTitK0sDauEta[255];
+    snprintf(histTitK0sDauEta,255,"fTHnFK0sDauEta");
+    char histTitLDauEta[255];
+    snprintf(histTitLDauEta,255,"fTHnFLDauEta");
+    char histTitALDauEta[255];
+    snprintf(histTitALDauEta,255,"fTHnFALDauEta");
+
+
+    char histTitK0sDauPhi[255];
+    snprintf(histTitK0sDauPhi,255,"fTHnFK0sDauPhi");
+    char histTitLDauPhi[255];
+    snprintf(histTitLDauPhi,255,"fTHnFLDauPhi");
+    char histTitALDauPhi[255];
+    snprintf(histTitALDauPhi,255,"fTHnFALDauPhi");
   */
-
-  char histTitK0sDauEta[255];
-  snprintf(histTitK0sDauEta,255,"fTHnFK0sDauEta");
-  char histTitLDauEta[255];
-  snprintf(histTitLDauEta,255,"fTHnFLDauEta");
-  char histTitALDauEta[255];
-  snprintf(histTitALDauEta,255,"fTHnFALDauEta");
-
-
-  char histTitK0sDauPhi[255];
-  snprintf(histTitK0sDauPhi,255,"fTHnFK0sDauPhi");
-  char histTitLDauPhi[255];
-  snprintf(histTitLDauPhi,255,"fTHnFLDauPhi");
-  char histTitALDauPhi[255];
-  snprintf(histTitALDauPhi,255,"fTHnFALDauPhi");
+  // char axTitK0s[255];
+  // snprintf(axTitK0s,255,"K^{0}_{s};m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta(V0);#phi(V0)");
+  // char axTitL[255];
+  // snprintf(axTitL,255,"#Lambda;m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta(V0);#phi(V0)");
+  // char axTitAL[255];
+  // snprintf(axTitAL,255,"#bar{#Lambda};m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta(V0);#phi(V0)");
+ 
   /*
-  char axTitK0s[255];
-  snprintf(axTitK0s,255,"K^{0}_{s};m_{inv} (GeV/c^{2});p_{T} (GeV/c);c#tau(V0);#phi(V0)");
-  char axTitL[255];
-  snprintf(axTitL,255,"#Lambda;m_{inv} (GeV/c^{2});p_{T} (GeV/c);c#tau(V0);#phi(V0)");
-  char axTitAL[255];
-  snprintf(axTitAL,255,"#bar{#Lambda};m_{inv} (GeV/c^{2});p_{T} (GeV/c);c#tau(V0);#phi(V0)");
+    char axTitK0sDauEta[255];
+    snprintf(axTitK0sDauEta,255,"K^{0}_{s} daughter;m_{inv} (GeV/c^{2});p_{T} (Gev/c);#eta_{pos};#eta_{neg}");
+    char axTitLDauEta[255];
+    snprintf(axTitLDauEta,255,"#Lambda daughter;m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta_{pos};#eta_{neg}");
+    char axTitALDauEta[255];
+    snprintf(axTitALDauEta,255,"#bar{#Lambda} daughter;m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta_{pos};#eta_{neg}");
+
+
+    char axTitK0sDauPhi[255];
+    snprintf(axTitK0sDauPhi,255,"K^{0}_{s} daughter;m_{inv} (GeV/c^{2});#phi_{pos};#phi_{neg};ITS hits (pos);ITS hits (neg)");
+    char axTitLDauPhi[255];
+    snprintf(axTitLDauPhi,255,"#Lambda daughter;m_{inv} (GeV/c^{2});#phi_{pos};#phi_{neg};ITS hits (pos);ITS hits (neg)");
+    char axTitALDauPhi[255];
+    snprintf(axTitALDauPhi,255,"#bar{#Lambda} daughter;m_{inv} (GeV/c^{2});#phi_{pos};#phi_{neg};ITS hits (pos);ITS hits (neg)");
+
   */
-
-  char axTitK0sDauEta[255];
-  snprintf(axTitK0sDauEta,255,"K^{0}_{s} daughter;m_{inv} (GeV/c^{2});p_{T} (Gev/c);#eta_{pos};#phi_{pos}");
-  char axTitLDauEta[255];
-  snprintf(axTitLDauEta,255,"#Lambda daughter;m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta_{pos};#phi_{pos}");
-  char axTitALDauEta[255];
-  snprintf(axTitALDauEta,255,"#bar{#Lambda} daughter;m_{inv} (GeV/c^{2});p_{T} (GeV/c);#eta_{pos};#phi_{pos}");
-
-
-  char axTitK0sDauPhi[255];
-  snprintf(axTitK0sDauPhi,255,"K^{0}_{s} daughter;m_{inv} (GeV/c^{2});p_{T}(GeV/c);#eta_{neg};#phi_{neg}");
-  char axTitLDauPhi[255];
-  snprintf(axTitLDauPhi,255,"#Lambda daughter;m_{inv} (GeV/c^{2});p_{T}(GeV/c);#eta_{neg};#phi_{neg}");
-  char axTitALDauPhi[255];
-  snprintf(axTitALDauPhi,255,"#bar{#Lambda} daughter;m_{inv} (GeV/c^{2});p_{T}(GeV/c);#eta_{neg};#phi_{neg}");
-
-  /*
-  fTHnFK0s = new 	THnF(histTitK0s,axTitK0s,4,binsTHnV0K0s,minK0s,maxK0s);
-  // fTHnFK0s->Sumw2();
-  fTHnFL   = new 	THnF(histTitL  ,axTitL  ,4,binsTHnV0L,minL  ,maxL);
-  // fTHnFL->Sumw2();
-  fTHnFAL  = new 	THnF(histTitAL ,axTitAL ,4,binsTHnV0L,minL  ,maxL);
+  // fTHnFK0s = new 	THnF(histTitK0s,axTitK0s,4,binsTHnV0K0s,minK0s,maxK0s);
+  // // fTHnFK0s->Sumw2();
+  // fTHnFL   = new 	THnF(histTitL  ,axTitL  ,4,binsTHnV0L,minL  ,maxL);
+  // // fTHnFL->Sumw2();
+  // fTHnFAL  = new 	THnF(histTitAL ,axTitAL ,4,binsTHnV0L,minL  ,maxL);
   //  fTHnFAL->Sumw2();
-  */
+  /*
 
-  fTHnFK0sDauEta = new 	THnF(histTitK0sDauEta,axTitK0sDauEta,4,binsTHnV0DauEtaK0s,minK0sDauEta,maxK0sDauEta);
-  //  fTHnFK0sDauEta->Sumw2();
-  fTHnFLDauEta   = new 	THnF(histTitLDauEta  ,axTitLDauEta  ,4,binsTHnV0DauEtaL,minLDauEta  ,maxLDauEta);
-  //  fTHnFLDauEta->Sumw2();
-  fTHnFALDauEta  = new 	THnF(histTitALDauEta ,axTitALDauEta ,4,binsTHnV0DauEtaL,minLDauEta  ,maxLDauEta);
-  // fTHnFALDauEta->Sumw2();
+    fTHnFK0sDauEta = new 	THnF(histTitK0sDauEta,axTitK0sDauEta,4,binsTHnV0DauEtaK0s,minK0sDauEta,maxK0sDauEta);
+    //  fTHnFK0sDauEta->Sumw2();
+    fTHnFLDauEta   = new 	THnF(histTitLDauEta  ,axTitLDauEta  ,4,binsTHnV0DauEtaL,minLDauEta  ,maxLDauEta);
+    //  fTHnFLDauEta->Sumw2();
+    fTHnFALDauEta  = new 	THnF(histTitALDauEta ,axTitALDauEta ,4,binsTHnV0DauEtaL,minLDauEta  ,maxLDauEta);
+    // fTHnFALDauEta->Sumw2();
 
-  fTHnFK0sDauPhi = new 	THnF(histTitK0sDauPhi,axTitK0sDauPhi,4,binsTHnV0DauPhiK0s,minK0sDauPhi,maxK0sDauPhi);
-  // fTHnFK0sDauPhi->Sumw2();
-  fTHnFLDauPhi   = new 	THnF(histTitLDauPhi  ,axTitLDauPhi  ,4,binsTHnV0DauPhiL,minLDauPhi  ,maxLDauPhi);
-  // fTHnFLDauPhi->Sumw2();
-  fTHnFALDauPhi  = new 	THnF(histTitALDauPhi ,axTitALDauPhi ,4,binsTHnV0DauPhiL,minLDauPhi  ,maxLDauPhi); 
-  //fTHnFALDauPhi->Sumw2();
-
+    fTHnFK0sDauPhi = new 	THnF(histTitK0sDauPhi,axTitK0sDauPhi,5,binsTHnV0DauPhiK0s,minK0sDauPhi,maxK0sDauPhi);
+    // fTHnFK0sDauPhi->Sumw2();
+    fTHnFLDauPhi   = new 	THnF(histTitLDauPhi  ,axTitLDauPhi  ,5,binsTHnV0DauPhiL,minLDauPhi  ,maxLDauPhi);
+    // fTHnFLDauPhi->Sumw2();
+    fTHnFALDauPhi  = new 	THnF(histTitALDauPhi ,axTitALDauPhi ,5,binsTHnV0DauPhiL,minLDauPhi  ,maxLDauPhi); 
+    //fTHnFALDauPhi->Sumw2();
+    */
  
   fHistV0RadiusZ[0]  = new TH2F("fHistV0RadiusZ","z of decay radius vs 2D radius",100,0.0,100.0,250,-125.0,125.0);
-  fHistV0RadiusZVSPt[0]  = new TH2F("fHistV0RadiusZVSPt","z of decay radius vs pt radius",500,0.0,50.0,125,0.0,125.0);
+  fHistV0RadiusZVSPt[0]  = new TH2F("fHistV0RadiusZVSPt","z of decay radius vs pt radius",200,0.0,20.0,125,0.0,125.0);
   fHistV0RadiusXY[0]  = new TH2F("fHistV0RadiusXY","y vs x decay radius",250,-125.0,125.0,250,-125.0,125.0);
   fHistV0RadiusXYVSY[0]  = new TH2F("fHistV0RadiusXYVSY","2D decay radius vs rap",100,-1,1,100,0.0,100.0);
   fHistArmenteros[0] = new TH2F("fHistArmenteros"," pi+pi- armenteros",nbMass,-1.,1.,500,0.,0.5);
@@ -1230,11 +1349,13 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 
   //-----K0s---------//
   fHistPiPiMass = new TH1F("fHistPiPiMass"," pi+pi- InvMass distribution",2*nbMass,0.,2.);
-  fHistPiPiMassVSPt = new TH2F("fHistPiPiMassVSPt","pi+pi- InvMass distribution",nbMass,0.25,0.75,500,0.0,50.0);
-  fHistPiPiMassVSPtMCTruth = new TH2F("fHistPiPiMassVSPtMCTruth","pi+pi- InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,500,0.0,50.0);
+  fHistPiPiMassVSPt = new TH2F("fHistPiPiMassVSPt","pi+pi- InvMass distribution",nbMass,0.25,0.75,200,0.0,20.0);
+  fHistPiPiMassVSPtMCTruth = new TH2F("fHistPiPiMassVSPtMCTruth","pi+pi- InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,200,0.0,20.0);
+  fHistPiPiMassVSPtPosMCTruth = new TH2F("fHistPiPiMassVSPtPosMCTruth","pi+ InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,200,0.0,20.0);
+  fHistPiPiMassVSPtNegMCTruth = new TH2F("fHistPiPiMassVSPtNegMCTruth","pi- InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,200,0.0,20.0);
   fHistPiPiMassVSY = new TH2F("fHistPiPiMassVSY","pi+pi- InvMass distribution vs rapidity",nbMass,0.25,0.75,200,-1.0,1.0);
   fHistPiPiPtVSY = new TH2F("fHistPiPiPtVSY","phi vs mass",100,-1,1,100,0.0,20);
-  fHistPiPiDecayLengthVsPt = new TH2F("fHistPiPiDecayLengthVsPt","K0 decay length vs pt",500,0.0,50.0,220,0.0,110.0);
+  fHistPiPiDecayLengthVsPt = new TH2F("fHistPiPiDecayLengthVsPt","K0 decay length vs pt",200,0.0,20.0,220,0.0,110.0);
   fHistPiPiDecayLengthVsMass = new TH2F("fHistPiPiDecayLengthVsMass","K0s decay length vs mass",nbMass,0.25,0.75,220,0.0,110.0);  
   //  fHistPiPiPhiPosVsPtPosVsMass = new TH3F("fHistPiPiPhiPosVsPtPosVsMass","ctau K0s vs pt vs mass",250,0.25,0.75,120,0.0,60.0,200,0.0,20.0);//4.0);//xxx      
   if(!fSetPtDepHist){
@@ -1249,18 +1370,20 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   
   //---------------Lambda--------------//
   fHistPiPMass[0] = new TH1F("fHistPiPMass"," p+pi- InvMass distribution",2*nbMass,0.,2.);
-  fHistPiPMassVSPt[0] = new TH2F("fHistPiPMassVSPt","p+pi- InvMass distribution",nbMass,1.05,1.25,500,0.0,50.0);
-  fHistPiPMassVSPtMCTruth[0] = new TH2F("fHistPiPMassVSPtMCTruth","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,500,0.0,50.0);
+  fHistPiPMassVSPt[0] = new TH2F("fHistPiPMassVSPt","p+pi- InvMass distribution",nbMass,1.05,1.25,200,0.0,20.0);
+  fHistPiPMassVSPtMCTruth[0] = new TH2F("fHistPiPMassVSPtMCTruth","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+  fHistPiPMassVSPtPosMCTruth[0] = new TH2F("fHistPiPMassVSPtPosMCTruth","p+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+  fHistPiPMassVSPtNegMCTruth[0] = new TH2F("fHistPiPMassVSPtNegMCTruth","pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
   fHistPiPMassVSY[0] = new TH2F("fHistPiPMassVSY","p+pi- InvMass distribution vs rapidity",nbMass,1.05,1.25,200,-1.0,1.0);
   fHistPiPPtVSY[0] = new TH2F("fHistPiPPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
-  fHistPiPDecayLengthVsPt[0] = new TH2F("fHistPiPDecayLengthVsPt","#Lambda decay length vs pt",500,0.0,50.0,220,0.0,110.0);
+  fHistPiPDecayLengthVsPt[0] = new TH2F("fHistPiPDecayLengthVsPt","#Lambda decay length vs pt",200,0.0,20.0,220,0.0,110.0);
   fHistPiPDecayLengthVsMass[0] = new TH2F("fHistPiPDecayLengthVsMass","#Lambda decay length vs mass",nbMass,1.05,1.25,220,0.0,110.0);
   //  fHistPiPPhiPosVsPtPosVsMass  = new TH3F("fHistPiPPhiPosVsPtPosVsMass","ctau L vs pt vs mass",200,1.05,1.25,120,0.0,60.0,200,0.0,20.0);//4.0);//xxx        
   if(!fSetPtDepHist){
-    fHistPiPDecayLengthVsCtau[0] = new TH2F("fHistPiPDecayLengthVsCtau","L ctau vs mass",nbMass,1.05,1.25,250,0.0,50.0);
+    fHistPiPDecayLengthVsCtau[0] = new TH2F("fHistPiPDecayLengthVsCtau","L ctau vs mass",nbMass,1.05,1.25,120,0.0,60.0);
   }
   else{
-    fHistPiPDecayLengthVsCtau[0] = new TH2F("fHistPiPDecayLengthVsCtau","L ctau vs pt",500,0.0,50.0,250,0.0,50.0);
+    fHistPiPDecayLengthVsCtau[0] = new TH2F("fHistPiPDecayLengthVsCtau","L ctau vs pt",200,0.0,20.0,120,0.0,60.0);
   }
   
   fHistPiPMonitorCuts[0] = new TH1F("fHistPiPMonitorCuts","#Lambda cut monitor",35,0.5,35.5);
@@ -1268,18 +1391,20 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   
   //-------------ALamda-------------//
   fHistPiAPMass[0] = new TH1F("fHistPiAPMass"," ap-pi+ InvMass distribution",2*nbMass,0.,2.);
-  fHistPiAPMassVSPt[0] = new TH2F("fHistPiAPMassVSPt","p-pi+ InvMass distribution",nbMass,1.05,1.25,500,0.0,50.0);
-  fHistPiAPMassVSPtMCTruth[0] = new TH2F("fHistPiAPMassVSPtMCTruth","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,500,0.0,50.0);
+  fHistPiAPMassVSPt[0] = new TH2F("fHistPiAPMassVSPt","p-pi+ InvMass distribution",nbMass,1.05,1.25,200,0.0,20.0);
+  fHistPiAPMassVSPtMCTruth[0] = new TH2F("fHistPiAPMassVSPtMCTruth","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+  fHistPiAPMassVSPtPosMCTruth[0] = new TH2F("fHistPiAPMassVSPtPosMCTruth","pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+  fHistPiAPMassVSPtNegMCTruth[0] = new TH2F("fHistPiAPMassVSPtNegMCTruth","p- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
   fHistPiAPMassVSY[0] = new TH2F("fHistPiAPMassVSY","p-pi+ InvMass distribution vs rapidity",nbMass,1.05,1.25,200,-1.0,1.0);
   fHistPiAPPtVSY[0] = new TH2F("fHistPiAPPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
-  fHistPiAPDecayLengthVsPt[0] = new TH2F("fHistPiAPDecayLengthVsPt","#bar{#Lambda} decay length vs pt",500,0.0,50.0,220,0.0,110.0);
+  fHistPiAPDecayLengthVsPt[0] = new TH2F("fHistPiAPDecayLengthVsPt","#bar{#Lambda} decay length vs pt",200,0.0,20.0,220,0.0,110.0);
   fHistPiAPDecayLengthVsMass[0] = new TH2F("fHistPiAPDecayLengthVsMass","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,220,0.0,110.0);
   //  if(fMCTruthMode) fHistPiAPPhiPosVsPtPosVsMass  = new TH3F("fHistPiAPPhiPosVsPtPosVsMass","ctau AL vs pt vs mass",200,1.05,1.25,120,0.0,60.0,200,0.0,20.0);//4.0);//xxx   
   if(!fSetPtDepHist){
-    fHistPiAPDecayLengthVsCtau[0] = new TH2F("fHistPiAPDecayLengthVsCtau","AL ctau vs mass",nbMass,1.05,1.25,250,0.0,50.0);
+    fHistPiAPDecayLengthVsCtau[0] = new TH2F("fHistPiAPDecayLengthVsCtau","AL ctau vs mass",nbMass,1.05,1.25,120,0.0,60.0);
   }
   else{
-    fHistPiAPDecayLengthVsCtau[0] = new TH2F("fHistPiAPDecayLengthVsCtau","AL ctau vs pt",500,0.0,50.0,250,0.0,50.0);
+    fHistPiAPDecayLengthVsCtau[0] = new TH2F("fHistPiAPDecayLengthVsCtau","AL ctau vs pt",200,0.0,20.0,120,0.0,60.0);
   }
   
   fHistPiAPMonitorCuts[0] = new TH1F("fHistPiAPMonitorCuts","#bar{#Lambda} cut monitor",35,0.5,35.5);
@@ -1288,7 +1413,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   // ---------------------------------------------for MC reco secondaries -----------------------------------------//
   if(mchist==2){
     fHistV0RadiusZ[1]  = new TH2F("fHistV0RadiusZSec","z of decay radius vs 2D radius",100,0.0,100.0,250,-125.0,125.0);
-    fHistV0RadiusZVSPt[1]  = new TH2F("fHistV0RadiusZVSPtSec","z of decay radius vs pt radius",500,0.0,50.0,125,0.0,125.0);
+    fHistV0RadiusZVSPt[1]  = new TH2F("fHistV0RadiusZVSPtSec","z of decay radius vs pt radius",200,0.0,20.0,125,0.0,125.0);
     fHistV0RadiusXY[1]  = new TH2F("fHistV0RadiusXYSec","y vs x decay radius",250,-125.0,125.0,250,-125.0,125.0);
     fHistV0RadiusXYVSY[1]  = new TH2F("fHistV0RadiusXYVSYSec","2D decay radius vs rap",100,-1,1,100,0.0,100.0);
     fHistArmenteros[1] = new TH2F("fHistArmenterosSec"," pi+pi- armenteros",nbMass,-1.,1.,500,0.,0.5);
@@ -1296,17 +1421,19 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     //-----------------K0s------------//
     //--------------- Lambda----------//
     fHistPiPMass[1] = new TH1F("fHistPiPMassSec"," p+pi- InvMass distribution",2*nbMass,0.,2.);
-    fHistPiPMassVSPt[1] = new TH2F("fHistPiPMassVSPtSec","p+pi- InvMass distribution",nbMass,1.05,1.25,500,0.0,50.0);
-    fHistPiPMassVSPtMCTruth[1] = new TH2F("fHistPiPMassVSPtMCTruthSec","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPMassVSPt[1] = new TH2F("fHistPiPMassVSPtSec","p+pi- InvMass distribution",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiPMassVSPtMCTruth[1] = new TH2F("fHistPiPMassVSPtMCTruthSec","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiPMassVSPtPosMCTruth[1] = new TH2F("fHistPiPMassVSPtPosMCTruthSec","p+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiPMassVSPtNegMCTruth[1] = new TH2F("fHistPiPMassVSPtNegMCTruthSec","pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
     fHistPiPMassVSY[1] = new TH2F("fHistPiPMassVSYSec","p+pi- InvMass distribution vs rapidity",nbMass,1.05,1.25,200,-1.0,1.0);   
     fHistPiPPtVSY[1] = new TH2F("fHistPiPPtVSYSec","p{t} vs y",100,-1,1,100,0.0,20);
-    fHistPiPDecayLengthVsPt[1] = new TH2F("fHistPiPDecayLengthVsPtSec","#Lambda decay length vs pt",500,0.0,50.0,220,0.0,110.0);
+    fHistPiPDecayLengthVsPt[1] = new TH2F("fHistPiPDecayLengthVsPtSec","#Lambda decay length vs pt",200,0.0,20.0,220,0.0,110.0);
     fHistPiPDecayLengthVsMass[1] = new TH2F("fHistPiPDecayLengthVsMassSec","#Lambda decay length vs mass",nbMass,1.05,1.25,220,0.0,110.0);
     if(!fSetPtDepHist){
-      fHistPiPDecayLengthVsCtau[1] = new TH2F("fHistPiPDecayLengthVsCtauSec","L ctau vs mass",nbMass,1.05,1.25,250,0.0,50.0);
+      fHistPiPDecayLengthVsCtau[1] = new TH2F("fHistPiPDecayLengthVsCtauSec","L ctau vs mass",nbMass,1.05,1.25,120,0.0,60.0);
     }
     else{
-      fHistPiPDecayLengthVsCtau[1] = new TH2F("fHistPiPDecayLengthVsCtauSec","L ctau vs pt",500,0.0,50.0,250,0.0,50.0);
+      fHistPiPDecayLengthVsCtau[1] = new TH2F("fHistPiPDecayLengthVsCtauSec","L ctau vs pt",200,0.0,20.0,120,0.0,60.0);
     }
     
     fHistPiPMonitorCuts[1] = new TH1F("fHistPiPMonitorCutsSec","#Lambda cut monitor",35,0.5,35.5);
@@ -1314,17 +1441,19 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 
     //----------------ALambda---------//
     fHistPiAPMass[1] = new TH1F("fHistPiAPMassSec"," ap-pi+ InvMass distribution",2*nbMass,0.,2.);
-    fHistPiAPMassVSPt[1] = new TH2F("fHistPiAPMassVSPtSec","p-pi+ InvMass distribution",nbMass,1.05,1.25,500,0.0,50.0);
-    fHistPiAPMassVSPtMCTruth[1] = new TH2F("fHistPiAPMassVSPtMCTruthSec","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiAPMassVSPt[1] = new TH2F("fHistPiAPMassVSPtSec","p-pi+ InvMass distribution",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiAPMassVSPtMCTruth[1] = new TH2F("fHistPiAPMassVSPtMCTruthSec","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiAPMassVSPtPosMCTruth[1] = new TH2F("fHistPiAPMassVSPtPosMCTruthSec","p+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiAPMassVSPtNegMCTruth[1] = new TH2F("fHistPiAPMassVSPtNegMCTruthSec","pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,200,0.0,20.0);
     fHistPiAPMassVSY[1] = new TH2F("fHistPiAPMassVSYSec","p-pi+ InvMass distribution vs rapidity",nbMass,1.05,1.25,200,-1.0,1.0);
     fHistPiAPPtVSY[1] = new TH2F("fHistPiAPPtVSYSec","p{t} vs y",100,-1,1,100,0.0,20);
-    fHistPiAPDecayLengthVsPt[1] = new TH2F("fHistPiAPDecayLengthVsPtSec","#bar{#Lambda} decay length vs pt",500,0.0,50.0,220,0.0,110.0);
+    fHistPiAPDecayLengthVsPt[1] = new TH2F("fHistPiAPDecayLengthVsPtSec","#bar{#Lambda} decay length vs pt",200,0.0,20.0,220,0.0,110.0);
     fHistPiAPDecayLengthVsMass[1] = new TH2F("fHistPiAPDecayLengthVsMassSec","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,220,0.0,110.0);
     if(!fSetPtDepHist){
-      fHistPiAPDecayLengthVsCtau[1] = new TH2F("fHistPiAPDecayLengthVsCtauSec","AL ctau vs mass",nbMass,1.05,1.25,250,0.0,50.0);
+      fHistPiAPDecayLengthVsCtau[1] = new TH2F("fHistPiAPDecayLengthVsCtauSec","AL ctau vs mass",nbMass,1.05,1.25,120,0.0,60.0);
     }
     else{
-      fHistPiAPDecayLengthVsCtau[1] = new TH2F("fHistPiAPDecayLengthVsCtauSec","AL ctau vs pt",500,0.0,50.0,250,0.0,50.0);
+      fHistPiAPDecayLengthVsCtau[1] = new TH2F("fHistPiAPDecayLengthVsCtauSec","AL ctau vs pt",200,0.0,20.0,120,0.0,60.0);
     }
 
     fHistPiAPMonitorCuts[1] = new TH1F("fHistPiAPMonitorCutsSec","#bar{#Lambda} cut monitor",35,0.5,35.5);
@@ -1336,6 +1465,8 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fOutputContainer->Add(fHistPiPiMass);	 
   fOutputContainer->Add(fHistPiPiMassVSPt);
   fOutputContainer->Add(fHistPiPiMassVSPtMCTruth);
+  fOutputContainer->Add(fHistPiPiMassVSPtPosMCTruth);
+  fOutputContainer->Add(fHistPiPiMassVSPtNegMCTruth);
   fOutputContainer->Add(fHistPiPiMassVSY);
   fOutputContainer->Add(fHistPiPiPtVSY);
   fOutputContainer->Add(fHistPiPiDecayLengthVsPt);
@@ -1345,27 +1476,32 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fOutputContainer->Add(fHistPiPiMonitorMCCuts);
   fOutputContainer->Add(fHistPiPiK0sVsLambdaMass);
   fOutputContainer->Add(fHistPiPiK0sVsALambdaMass);
-  //  fOutputContainer->Add(fTHnFK0s);
-  fOutputContainer->Add(fTHnFK0sDauEta);
-  fOutputContainer->Add(fTHnFK0sDauPhi);
-  //fOutputContainer->Add(fHistPiPiPhiPosVsPtPosVsMass);//xxx      
 
+  //  fOutputContainer->Add(fTHnFK0s);
+  /*
+    fOutputContainer->Add(fTHnFK0sDauEta);
+    fOutputContainer->Add(fTHnFK0sDauPhi);
+    //fOutputContainer->Add(fHistPiPiPhiPosVsPtPosVsMass);//xxx      
+    */
   // --------------- Lambda ---------------//
   fOutputContainer->Add(fHistPiPK0sVsLambdaMass);
   fOutputContainer->Add(fHistPiPALambdaVsLambdaMass);
   //  fOutputContainer->Add(fHistPiPPhiPosVsPtPosVsMass);//xxx
-  //fOutputContainer->Add(fTHnFL);
-  fOutputContainer->Add(fTHnFLDauEta);
-  fOutputContainer->Add(fTHnFLDauPhi);
-
+  //  fOutputContainer->Add(fTHnFL);
+  /*
+    fOutputContainer->Add(fTHnFLDauEta);
+    fOutputContainer->Add(fTHnFLDauPhi);
+  */
   // --------------- ALambda ---------------//
   fOutputContainer->Add(fHistPiAPK0sVsALambdaMass);
   fOutputContainer->Add(fHistPiAPLambdaVsALambdaMass);
   //  if(fMCTruthMode)  fOutputContainer->Add(fHistPiAPPhiPosVsPtPosVsMass);//xxx
-  //fOutputContainer->Add(fTHnFAL);
-  fOutputContainer->Add(fTHnFALDauEta);
-  fOutputContainer->Add(fTHnFALDauPhi);
 
+  // fOutputContainer->Add(fTHnFAL);
+  /*
+    fOutputContainer->Add(fTHnFALDauEta);
+    fOutputContainer->Add(fTHnFALDauPhi);
+  */
   
   for(Int_t j=0;j<mchist;j++){
     fOutputContainer->Add(fHistArmenteros[j]);
@@ -1378,7 +1514,11 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistPiPMassVSPt[j]);
     fOutputContainer->Add(fHistPiAPMassVSPt[j]);
     fOutputContainer->Add(fHistPiPMassVSPtMCTruth[j]);
+    fOutputContainer->Add(fHistPiPMassVSPtPosMCTruth[j]);
+    fOutputContainer->Add(fHistPiPMassVSPtNegMCTruth[j]);
     fOutputContainer->Add(fHistPiAPMassVSPtMCTruth[j]);
+    fOutputContainer->Add(fHistPiAPMassVSPtPosMCTruth[j]);
+    fOutputContainer->Add(fHistPiAPMassVSPtNegMCTruth[j]);
     fOutputContainer->Add(fHistPiPMassVSY[j]);
     fOutputContainer->Add(fHistPiAPMassVSY[j]);      
     fOutputContainer->Add(fHistPiPPtVSY[j]);
@@ -1408,64 +1548,141 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistPiPEtaDReco[1]);
 	
     //-------------K0---------------//
+    /*
     // fHistPiPiMassVSAlpha = new TH2F("fHistPiPiMassVSAlpha"," alpha armenteros vs pi+pi- InvMass distribution",nbMass,0.25,0.75,500,-1.,1.);
+    fHistPiPiDistDaughtersPos[0]= new TH2F("fHistPiPiDistDaughtersPosPt0","K0s pos daughters distance to other tracks vs mass for pt 0-2GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDistDaughtersNeg[0]= new TH2F("fHistPiPiDistDaughtersNegPt0","K0s neg daughters distance to other tracks vs mass for pt 0-2GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDCADaughtersPos[0]= new TH2F("fHistPiPiDCADaughtersPosPt0","K0s pos daughters DCA to other tracks vs mass for pt 0-2GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDCADaughtersNeg[0]= new TH2F("fHistPiPiDCADaughtersNegPt0","K0s neg daughters DCA to other tracks vs mass for pt 0-2GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiRadAtDCA5cmDaughtersPos[0]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersPosPt0","K0s pos daughter position for DCA < 5cm vs mass for pt 0-2GeV/c",250,0.25,0.75,160,0.0,240.0);//xxx
+    fHistPiPiRadAtDCA5cmDaughtersNeg[0]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersNegPt0","K0s pos daughter position for DCA < 5cm vs mass for pt 0-2GeV/c",250,0.25,0.75,160,0.0,240.0);
+
+    fHistPiPiDistDaughtersPos[1]= new TH2F("fHistPiPiDistDaughtersPosPt1","K0s pos daughters distance to other tracks vs mass for pt 2-6GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDistDaughtersNeg[1]= new TH2F("fHistPiPiDistDaughtersNegPt1","K0s neg daughters distance to other tracks vs mass for pt 2-6GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDCADaughtersPos[1]= new TH2F("fHistPiPiDCADaughtersPosPt1","K0s pos daughters DCA to other tracks vs mass for pt 2-6GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDCADaughtersNeg[1]= new TH2F("fHistPiPiDCADaughtersNegPt1","K0s neg daughters DCA to other tracks vs mass for pt 2-6GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiRadAtDCA5cmDaughtersPos[1]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersPosPt1","K0s pos daughter position for DCA < 5cm vs mass for pt 2-6GeV/c",250,0.25,0.75,160,0.0,240.0);
+    fHistPiPiRadAtDCA5cmDaughtersNeg[1]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersNegPt1","K0s pos daughter position for DCA < 5cm vs mass for pt 2-6GeV/c",250,0.25,0.75,160,0.0,240.0);
+
+    fHistPiPiDistDaughtersPos[2]= new TH2F("fHistPiPiDistDaughtersPosPt2","K0s pos daughters distance to other tracks vs mass for pt > 6 GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDistDaughtersNeg[2]= new TH2F("fHistPiPiDistDaughtersNegPt2","K0s neg daughters distance to other tracks vs mass for pt > 6 GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDCADaughtersPos[2]= new TH2F("fHistPiPiDCADaughtersPosPt2","K0s pos daughters DCA to other tracks vs mass for pt > 6 GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiDCADaughtersNeg[2]= new TH2F("fHistPiPiDCADaughtersNegPt2","K0s neg daughters DCA to other tracks vs mass for pt > 6 GeV/c",250,0.25,0.75,100,0.0,20.0);
+    fHistPiPiRadAtDCA5cmDaughtersPos[2]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersPosPt2","K0s pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,0.25,0.75,160,0.0,240.0);
+    fHistPiPiRadAtDCA5cmDaughtersNeg[2]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersNegPt2","K0s pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,0.25,0.75,160,0.0,240.0);
+    */   
+    fHistPiPiDistDaughtersTPCEntrVsMass = new TH2F("fHistPiPiDistDaughtersTPCEntrVsMass","K0s distance of daughters at TPC entrance vs mass",nbMass,0.25,0.75,100,0.0,20.0);
+   
     if(!fSetPtDepHist){
       fHistPiPiDCADaughters = new TH2F("fHistPiPiDCADaughters","dca of K0 daughters",nbMass,0.25,0.75,250,0.0,2);
       fHistPiPiDCADaughterPosToPrimVtxVSMass = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vsinvmass",nbMass,0.25,0.75,250,0.0,10.0);
       fHistPiPiDCAVSMass = new TH2F("fHistPiPiDCAVSMass","pi+pi- dca  vs pt",nbMass,0.25,0.75,250,0.0,5.0);
+      fHistPiPiDCAZVSMass = new TH2F("fHistPiPiDCAZVSMass","pi+pi- dca z vs pt",nbMass,0.25,0.75,200,-20.0,20.0);
       fHistPiPiCosPointAng  = new TH2F("fHistPiPiCosPointAng","K0 cosine of pointing angle vs mass ",nbMass,0.25,0.75,200,0.99,1.00);
       fHistPiPiRadiusXY = new TH2F("fHistPiPiRadiusXY","pi+pi- phi dist vs mass",nbMass,0.25,0.75,200,0.0,4.0);
       // fHistPiPiPtDaughters = new TH2F("fHistPiPiPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
-      // fHistPiPiDCAZPos = new TH2F("fHistPiPiDCAZPos","dca z  of K0 pos daughters",nbMass,0.25,0.75,200,-20.0,20.0);
-      //fHistPiPiDCAZNeg = new TH2F("fHistPiPiDCAZNeg","dca z  of K0 neg daughters",nbMass,0.25,0.75,200,-20.0,20.0);
+      fHistPiPiDCAZPos = new TH2F("fHistPiPiDCAZPos","dca z  of K0 pos daughters",nbMass,0.25,0.75,200,-20.0,20.0);
+      fHistPiPiDCAZNeg = new TH2F("fHistPiPiDCAZNeg","dca z  of K0 neg daughters",nbMass,0.25,0.75,200,-20.0,20.0);
       fHistPiPiTrackLengthPosVsMass = new TH2F("fHistPiPiTrackLengthPosVsMass","track lenght of pos K0s daughter in TPC",nbMass,0.25,0.75,250,0.0,250.0);
       fHistPiPiTrackLengthNegVsMass = new TH2F("fHistPiPiTrackLengthNegVsMass","track lenght of neg K0s daughter in TPC",nbMass,0.25,0.75,250,0.0,250.0);
     }
     else{//pt dependence
-      fHistPiPiDCADaughters = new TH2F("fHistPiPiDCADaughters","dca of K0 daughters",500,0.0,50.0,250,0.0,2);
-      fHistPiPiDCADaughterPosToPrimVtxVSMass = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vsinvmass",500,0.0,50.0,250,0.0,10.0);
-      fHistPiPiDCAVSMass = new TH2F("fHistPiPiDCAVSMass","pi+pi- dca  vs pt",500,0.0,50.0,250,0.0,5.0);
-      fHistPiPiCosPointAng  = new TH2F("fHistPiPiCosPointAng","K0 cosine of pointing angle vs mass ",500,0.0,50.0,200,0.99,1.00);
-      fHistPiPiRadiusXY = new TH2F("fHistPiPiRadiusXY","pi+pi- phi dist vs mass",500,0.0,50.0,200,0.0,4.0);
-      // fHistPiPiDCAZPos = new TH2F("fHistPiPiDCAZPos","dca z  of K0 pos daughters",500,0.0,50.0,200,-20.0,20.0);
-      // fHistPiPiDCAZNeg = new TH2F("fHistPiPiDCAZNeg","dca z  of K0 neg daughters",500,0.0,50.0,200,-20.0,20.0);
-      fHistPiPiTrackLengthPosVsMass = new TH2F("fHistPiPiTrackLengthPosVsMass","track lenght of pos K0s daughter in TPC",500,0.0,50.0,250,0.0,250.0);
-      fHistPiPiTrackLengthNegVsMass = new TH2F("fHistPiPiTrackLengthNegVsMass","track lenght of neg K0s daughter in TPC",500,0.0,50.0,250,0.0,250.0);
+      fHistPiPiDCADaughters = new TH2F("fHistPiPiDCADaughters","dca of K0 daughters",200,0.0,20.0,250,0.0,2);
+      fHistPiPiDCADaughterPosToPrimVtxVSMass = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vsinvmass",200,0.0,20.0,250,0.0,10.0);
+      fHistPiPiDCAVSMass = new TH2F("fHistPiPiDCAVSMass","pi+pi- dca  vs pt",200,0.0,20.0,250,0.0,5.0);
+      fHistPiPiDCAZVSMass = new TH2F("fHistPiPiDCAZVSMass","pi+pi- dca z vs pt",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiPiCosPointAng  = new TH2F("fHistPiPiCosPointAng","K0 cosine of pointing angle vs mass ",200,0.0,20.0,200,0.99,1.00);
+      fHistPiPiRadiusXY = new TH2F("fHistPiPiRadiusXY","pi+pi- phi dist vs mass",200,0.0,20.0,200,0.0,4.0);
+      fHistPiPiDCAZPos = new TH2F("fHistPiPiDCAZPos","dca z  of K0 pos daughters",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiPiDCAZNeg = new TH2F("fHistPiPiDCAZNeg","dca z  of K0 neg daughters",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiPiTrackLengthPosVsMass = new TH2F("fHistPiPiTrackLengthPosVsMass","track lenght of pos K0s daughter in TPC",200,0.0,20.0,250,0.0,250.0);
+      fHistPiPiTrackLengthNegVsMass = new TH2F("fHistPiPiTrackLengthNegVsMass","track lenght of neg K0s daughter in TPC",200,0.0,20.0,250,0.0,250.0);
     }
 
     //---------------Lambda-------------//
+    /*
+      fHistPiPDistDaughtersPos[0]= new TH2F("fHistPiPDistDaughtersPosPt0","Lambda pos daughters distance to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDistDaughtersNeg[0]= new TH2F("fHistPiPDistDaughtersNegPt0","Lambda neg daughters distance to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDCADaughtersPos[0]= new TH2F("fHistPiPDCADaughtersPosPt0","Lambda pos daughters DCA to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDCADaughtersNeg[0]= new TH2F("fHistPiPDCADaughtersNegPt0","Lambda neg daughters DCA to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPRadAtDCA5cmDaughtersPos[0]= new TH2F("fHistPiPRadAtDCA5cmDaughtersPosPt0","Lambda pos daughter position for DCA < 5cm vs mass for pt 0-2GeV/c",250,1.05,1.25,160,0.0,240.0);
+      fHistPiPRadAtDCA5cmDaughtersNeg[0]= new TH2F("fHistPiPRadAtDCA5cmDaughtersNegPt0","Lambda pos daughter position for DCA < 5cm vs mass for pt 0-2GeV/c",250,1.05,1.25,160,0.0,240.0);
+
+      fHistPiPDistDaughtersPos[1]= new TH2F("fHistPiPDistDaughtersPosPt1","Lambda pos daughters distance to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDistDaughtersNeg[1]= new TH2F("fHistPiPDistDaughtersNegPt1","Lambda neg daughters distance to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDCADaughtersPos[1]= new TH2F("fHistPiPDCADaughtersPosPt1","Lambda pos daughters DCA to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDCADaughtersNeg[1]= new TH2F("fHistPiPDCADaughtersNegPt1","Lambda neg daughters DCA to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPRadAtDCA5cmDaughtersPos[1]= new TH2F("fHistPiPRadAtDCA5cmDaughtersPosPt1","Lambda pos daughter position for DCA < 5cm vs mass for pt 2-6GeV/c",250,1.05,1.25,160,0.0,240.0);
+      fHistPiPRadAtDCA5cmDaughtersNeg[1]= new TH2F("fHistPiPRadAtDCA5cmDaughtersNegPt1","Lambda pos daughter position for DCA < 5cm vs mass for pt 2-6GeV/c",250,1.05,1.25,160,0.0,240.0);
+
+      fHistPiPDistDaughtersPos[2]= new TH2F("fHistPiPDistDaughtersPosPt2","Lambda pos daughters distance to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDistDaughtersNeg[2]= new TH2F("fHistPiPDistDaughtersNegPt2","Lambda neg daughters distance to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDCADaughtersPos[2]= new TH2F("fHistPiPDCADaughtersPosPt2","Lambda pos daughters DCA to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPDCADaughtersNeg[2]= new TH2F("fHistPiPDCADaughtersNegPt2","Lambda neg daughters DCA to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiPRadAtDCA5cmDaughtersPos[2]= new TH2F("fHistPiPRadAtDCA5cmDaughtersPosPt2","Lambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
+      fHistPiPRadAtDCA5cmDaughtersNeg[2]= new TH2F("fHistPiPRadAtDCA5cmDaughtersNegPt2","Lambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
+    */
+    fHistPiPDistDaughtersTPCEntrVsMass = new TH2F("fHistPiPDistDaughtersTPCEntrVsMass","Lambda distance of daughters at TPC entrance vs mass",nbMass,1.05,1.25,100,0.0,20.0);
+
     if(!fSetPtDepHist){
       fHistPiPDCADaughters[0] = new TH2F("fHistPiPDCADaughters","dca of #Lambda daughters",nbMass,1.05,1.25,250,0.0,2.0);
       fHistPiPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMass","pos DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
       fHistPiPDCADaughterNegToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterNegToPrimVtxVSMass","neg DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
       fHistPiPDCAVSMass[0] = new TH2F("fHistPiPDCAVSMass","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+      fHistPiPDCAZVSMass[0] = new TH2F("fHistPiPDCAZVSMass","ppi- dca z vs pt",nbMass,1.05,1.25,200,-20.0,20.0);
       fHistPiPCosPointAng[0]  = new TH2F("fHistPiPCosPointAng","#Lambda cosine of pointing angle vs mass ",nbMass,1.05,1.25,200,0.99,1.00);
       fHistPiPRadiusXY[0] = new TH2F("fHistPiPRadiusXY","pi-p+ phi dist vs mass",nbMass,1.05,1.25,200,0.0,4.0);
       // fHistPiPPtDaughters[0] = new TH2F("fHistPiPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
-      //	fHistPiPDCAZPos[0] = new TH2F("fHistPiPDCAZPos","dca z  of Lambda pos daughters",nbMass,1.05,1.25,200,-20.0,20.0);
-      //fHistPiPDCAZNeg[0] = new TH2F("fHistPiPDCAZNeg","dca z  of Lambda neg daughters",nbMass,1.05,1.25,200,-20.0,20.0);
+      fHistPiPDCAZPos[0] = new TH2F("fHistPiPDCAZPos","dca z  of Lambda pos daughters",nbMass,1.05,1.25,200,-20.0,20.0);
+      fHistPiPDCAZNeg[0] = new TH2F("fHistPiPDCAZNeg","dca z  of Lambda neg daughters",nbMass,1.05,1.25,200,-20.0,20.0);
       fHistPiPTrackLengthPosVsMass[0] = new TH2F("fHistPiPTrackLengthPosVsMass","track length of pos Lambda daughter in TPC",nbMass,1.05,1.25,250,0.0,250.0);
       fHistPiPTrackLengthNegVsMass[0] = new TH2F("fHistPiPTrackLengthNegVsMass","track length of neg Lambda daughter in TPC",nbMass,1.05,1.25,250,0.0,250.0);
     }
     else{//pt dependence
-      fHistPiPDCADaughters[0] = new TH2F("fHistPiPDCADaughters","dca of #Lambda daughters",500,0.0,50.0,250,0.0,2.0);
-      fHistPiPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMass","pos DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-      fHistPiPDCADaughterNegToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterNegToPrimVtxVSMass","neg DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-      fHistPiPDCAVSMass[0] = new TH2F("fHistPiPDCAVSMass","ppi- dca  vs pt",500,0.0,50.0,250,0.0,5.0);
-      fHistPiPCosPointAng[0]  = new TH2F("fHistPiPCosPointAng","#Lambda cosine of pointing angle vs mass ",500,0.0,50.0,200,0.99,1.00);
-      fHistPiPRadiusXY[0] = new TH2F("fHistPiPRadiusXY","pi-p+ phi dist vs mass",500,0.0,50.0,200,0.0,4.0);
-      //fHistPiPDCAZPos[0] = new TH2F("fHistPiPDCAZPos","dca z  of Lambda pos daughters",200,0.0,20.0,200,-20.0,20.0);
-      //fHistPiPDCAZNeg[0] = new TH2F("fHistPiPDCAZNeg","dca z  of Lambda neg daughters",200,0.0,20.0,200,-20.0,20.0);
-      fHistPiPTrackLengthPosVsMass[0] = new TH2F("fHistPiPTrackLengthPosVsMass","track length of pos Lambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
-      fHistPiPTrackLengthNegVsMass[0] = new TH2F("fHistPiPTrackLengthNegVsMass","track length of neg Lambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
+      fHistPiPDCADaughters[0] = new TH2F("fHistPiPDCADaughters","dca of #Lambda daughters",200,0.0,20.0,250,0.0,2.0);
+      fHistPiPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMass","pos DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+      fHistPiPDCADaughterNegToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterNegToPrimVtxVSMass","neg DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+      fHistPiPDCAVSMass[0] = new TH2F("fHistPiPDCAVSMass","ppi- dca  vs pt",200,0.0,20.0,250,0.0,5.0);
+      fHistPiPDCAZVSMass[0] = new TH2F("fHistPiPDCAZVSMass","ppi- dca z vs pt",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiPCosPointAng[0]  = new TH2F("fHistPiPCosPointAng","#Lambda cosine of pointing angle vs mass ",200,0.0,20.0,200,0.99,1.00);
+      fHistPiPRadiusXY[0] = new TH2F("fHistPiPRadiusXY","pi-p+ phi dist vs mass",200,0.0,20.0,200,0.0,4.0);
+      fHistPiPDCAZPos[0] = new TH2F("fHistPiPDCAZPos","dca z  of Lambda pos daughters",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiPDCAZNeg[0] = new TH2F("fHistPiPDCAZNeg","dca z  of Lambda neg daughters",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiPTrackLengthPosVsMass[0] = new TH2F("fHistPiPTrackLengthPosVsMass","track length of pos Lambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
+      fHistPiPTrackLengthNegVsMass[0] = new TH2F("fHistPiPTrackLengthNegVsMass","track length of neg Lambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
     }
 
     //-------------------AntiLambda-------------//
+    /*
+      fHistPiAPDistDaughtersPos[0]= new TH2F("fHistPiAPDistDaughtersPosPt0","ALambda pos daughters distance to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDistDaughtersNeg[0]= new TH2F("fHistPiAPDistDaughtersNegPt0","ALambda neg daughters distance to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDCADaughtersPos[0]= new TH2F("fHistPiAPDCADaughtersPosPt0","ALambda pos daughters DCA to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDCADaughtersNeg[0]= new TH2F("fHistPiAPDCADaughtersNegPt0","ALambda neg daughters DCA to other tracks vs mass for pt 0-2GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPRadAtDCA5cmDaughtersPos[0]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersPosPt0","ALambda pos daughter position for DCA < 5cm vs mass for pt 0-2GeV/c",250,1.05,1.25,160,0.0,240.0);
+      fHistPiAPRadAtDCA5cmDaughtersNeg[0]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersNegPt0","ALambda pos daughter position for DCA < 5cm vs mass for pt 0-2GeV/c",250,1.05,1.25,160,0.0,240.0);
+
+      fHistPiAPDistDaughtersPos[1]= new TH2F("fHistPiAPDistDaughtersPosPt1","ALambda pos daughters distance to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDistDaughtersNeg[1]= new TH2F("fHistPiAPDistDaughtersNegPt1","ALambda neg daughters distance to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDCADaughtersPos[1]= new TH2F("fHistPiAPDCADaughtersPosPt1","ALambda pos daughters DCA to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDCADaughtersNeg[1]= new TH2F("fHistPiAPDCADaughtersNegPt1","ALambda neg daughters DCA to other tracks vs mass for pt 2-6GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPRadAtDCA5cmDaughtersPos[1]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersPosPt1","ALambda pos daughter position for DCA < 5cm vs mass for pt 2-6GeV/c",250,1.05,1.25,160,0.0,240.0);
+      fHistPiAPRadAtDCA5cmDaughtersNeg[1]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersNegPt1","ALambda pos daughter position for DCA < 5cm vs mass for pt 2-6GeV/c",250,1.05,1.25,160,0.0,240.0);
+
+      fHistPiAPDistDaughtersPos[2]= new TH2F("fHistPiAPDistDaughtersPosPt2","ALambda pos daughters distance to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDistDaughtersNeg[2]= new TH2F("fHistPiAPDistDaughtersNegPt2","ALambda neg daughters distance to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDCADaughtersPos[2]= new TH2F("fHistPiAPDCADaughtersPosPt2","ALambda pos daughters DCA to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPDCADaughtersNeg[2]= new TH2F("fHistPiAPDCADaughtersNegPt2","ALambda neg daughters DCA to other tracks vs mass for pt > 6 GeV/c",250,1.05,1.25,100,0.0,20.0);
+      fHistPiAPRadAtDCA5cmDaughtersPos[2]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersPosPt2","ALambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
+      fHistPiAPRadAtDCA5cmDaughtersNeg[2]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersNegPt2","ALambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
+    */
+    fHistPiAPDistDaughtersTPCEntrVsMass = new TH2F("fHistPiAPDistDaughtersTPCEntrVsMass","ALambda distance of daughters at TPC entrance vs mass",nbMass,1.05,1.25,100,0.0,20.0);
+
     if(!fSetPtDepHist){
       fHistPiAPDCADaughters[0] = new TH2F("fHistPiAPDCADaughters","dca of #bar{#Lambda} daughters",nbMass,1.05,1.25,250,0.0,2.0);
       fHistPiAPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMass","pos DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
       fHistPiAPDCADaughterNegToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterNegToPrimVtxVSMass","neg DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
       fHistPiAPDCAVSMass[0] = new TH2F("fHistPiAPDCAVSMass","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+      fHistPiAPDCAZVSMass[0] = new TH2F("fHistPiAPDCAZVSMass","pi+p- dca z vs pt",nbMass,1.05,1.25,200,-20.0,20.0);
       fHistPiAPCosPointAng[0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs mass",nbMass,1.05,1.25,200,0.99,1.00);
       fHistPiAPRadiusXY[0] = new TH2F("fHistPiAPRadiusXY","pi+p- phi dist vs mass",nbMass,1.05,1.25,200,0.0,4.0);
       // fHistPiAPPtDaughters[0] = new TH2F("fHistPiAPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
@@ -1475,16 +1692,17 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fHistPiAPTrackLengthNegVsMass[0] = new TH2F("fHistPiAPTrackLengthNegVsMass","track length of neg ALambda daughter in TPC",nbMass,1.05,1.25,250,0.0,250.0);
     }
     else{//pt dependence
-      fHistPiAPDCADaughters[0] = new TH2F("fHistPiAPDCADaughters","dca of #bar{#Lambda} daughters",500,0.0,50.0,250,0.0,2.0);
-      fHistPiAPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMass","pos DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-      fHistPiAPDCADaughterNegToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterNegToPrimVtxVSMass","neg DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-      fHistPiAPDCAVSMass[0] = new TH2F("fHistPiAPDCAVSMass","pi+p- dca  vs pt",500,0.0,50.0,250,0.0,5.0);
-      fHistPiAPCosPointAng[0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs mass",500,0.0,50.0,200,0.99,1.00);
-      fHistPiAPRadiusXY[0] = new TH2F("fHistPiAPRadiusXY","pi+p- phi dist vs mass",500,0.0,50.0,200,0.0,4.0);
-      //	fHistPiAPDCAZPos[0] = new TH2F("fHistPiAPDCAZPos","dca z  of ALambda pos daughters",500,0.0,50.0,200,-20.0,20.0);
-      //fHistPiAPDCAZNeg[0] = new TH2F("fHistPiAPDCAZNeg","dca z  of ALambda neg daughters",500,0.0,50.0,200,-20.0,20.0);
-      fHistPiAPTrackLengthPosVsMass[0] = new TH2F("fHistPiAPTrackLengthPosVsMass","track length of pos ALambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
-      fHistPiAPTrackLengthNegVsMass[0] = new TH2F("fHistPiAPTrackLengthNegVsMass","track length of neg ALambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
+      fHistPiAPDCADaughters[0] = new TH2F("fHistPiAPDCADaughters","dca of #bar{#Lambda} daughters",200,0.0,20.0,250,0.0,2.0);
+      fHistPiAPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMass","pos DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+      fHistPiAPDCADaughterNegToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterNegToPrimVtxVSMass","neg DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+      fHistPiAPDCAVSMass[0] = new TH2F("fHistPiAPDCAVSMass","pi+p- dca  vs pt",200,0.0,20.0,250,0.0,5.0);
+      fHistPiAPDCAZVSMass[0] = new TH2F("fHistPiAPDCAZVSMass","pi+p- dca z vs pt",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiAPCosPointAng[0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs mass",200,0.0,20.0,200,0.99,1.00);
+      fHistPiAPRadiusXY[0] = new TH2F("fHistPiAPRadiusXY","pi+p- phi dist vs mass",200,0.0,20.0,200,0.0,4.0);
+      //	fHistPiAPDCAZPos[0] = new TH2F("fHistPiAPDCAZPos","dca z  of ALambda pos daughters",200,0.0,20.0,200,-20.0,20.0);
+      //fHistPiAPDCAZNeg[0] = new TH2F("fHistPiAPDCAZNeg","dca z  of ALambda neg daughters",200,0.0,20.0,200,-20.0,20.0);
+      fHistPiAPTrackLengthPosVsMass[0] = new TH2F("fHistPiAPTrackLengthPosVsMass","track length of pos ALambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
+      fHistPiAPTrackLengthNegVsMass[0] = new TH2F("fHistPiAPTrackLengthNegVsMass","track length of neg ALambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
     }
    
     //------dedx--------//
@@ -1539,35 +1757,35 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     }
     else{//pt dependence
       //K0s
-      fHistNclsITSPosK0 = new TH2F("fHistNclsITSPosK0","fHistNclsITSPos  vs pt L pos",500,0.0,50.0,7,-0.5,6.5);
-      fHistNclsITSNegK0 = new TH2F("fHistNclsITSNegK0","fHistNclsITSNeg vs pt L neg",500,0.0,50.0,7,-0.5,6.5);
+      fHistNclsITSPosK0 = new TH2F("fHistNclsITSPosK0","fHistNclsITSPos  vs pt L pos",200,0.0,20.0,7,-0.5,6.5);
+      fHistNclsITSNegK0 = new TH2F("fHistNclsITSNegK0","fHistNclsITSNeg vs pt L neg",200,0.0,20.0,7,-0.5,6.5);
 	  
-      fHistNclsTPCPosK0 = new TH2F("fHistNclsTPCPosK0","L mass vs phi pos",500,0.0,50.0,200,0.0,200.0);
-      fHistNclsTPCNegK0 = new TH2F("fHistNclsTPCNegK0","L mass vs phi neg",500,0.0,50.0,200,0.0,200.0);
+      fHistNclsTPCPosK0 = new TH2F("fHistNclsTPCPosK0","L mass vs phi pos",200,0.0,20.0,200,0.0,200.0);
+      fHistNclsTPCNegK0 = new TH2F("fHistNclsTPCNegK0","L mass vs phi neg",200,0.0,20.0,200,0.0,200.0);
 	  
-      fHistChi2PerNclsITSPosK0 = new TH2F("fHistChi2PerNclsITSPosK0","chi2 per cluster ITS L pos",500,0.0,50.0,250,0.0,25.0);
-      fHistChi2PerNclsITSNegK0 = new TH2F("fHistChi2PerNclsITSNegK0","chi2 per cluster ITS L neg",500,0.0,50.0,250,0.0,25.0);
+      fHistChi2PerNclsITSPosK0 = new TH2F("fHistChi2PerNclsITSPosK0","chi2 per cluster ITS L pos",200,0.0,20.0,250,0.0,25.0);
+      fHistChi2PerNclsITSNegK0 = new TH2F("fHistChi2PerNclsITSNegK0","chi2 per cluster ITS L neg",200,0.0,20.0,250,0.0,25.0);
 	  
-      fHistNCRowsTPCPosK0 = new TH2F("fHistNCRowsTPCPosK0","n crossed rows vs L pos",500,0.0,50.0,200,0.0,200.0);
-      fHistNCRowsTPCNegK0 = new TH2F("fHistNCRowsTPCNegK0","n crossed rows vs L neg",500,0.0,50.0,200,0.0,200.0);
+      fHistNCRowsTPCPosK0 = new TH2F("fHistNCRowsTPCPosK0","n crossed rows vs L pos",200,0.0,20.0,200,0.0,200.0);
+      fHistNCRowsTPCNegK0 = new TH2F("fHistNCRowsTPCNegK0","n crossed rows vs L neg",200,0.0,20.0,200,0.0,200.0);
    
-      fHistRatioFoundOverFinableTPCK0Pos = new TH2F("fHistRatioFoundOverFinableTPCK0Pos","ncls found over findable L pos sec",500,0.0,50.0,200,0.0,2.0);
-      fHistRatioFoundOverFinableTPCK0Neg = new TH2F("fHistRatioFoundOverFinableTPCK0Neg","ncls found over findable L neg sec",500,0.0,50.0,200,0.0,2.0);
+      fHistRatioFoundOverFinableTPCK0Pos = new TH2F("fHistRatioFoundOverFinableTPCK0Pos","ncls found over findable L pos sec",200,0.0,20.0,200,0.0,2.0);
+      fHistRatioFoundOverFinableTPCK0Neg = new TH2F("fHistRatioFoundOverFinableTPCK0Neg","ncls found over findable L neg sec",200,0.0,20.0,200,0.0,2.0);
       //Lambda
-      fHistNclsITSPosL[0] = new TH2F("fHistNclsITSPosL","fHistNclsITSPos  vs pt L pos",500,0.0,50.0,7,-0.5,6.5);
-      fHistNclsITSNegL[0] = new TH2F("fHistNclsITSNegL","fHistNclsITSNeg vs pt L neg",500,0.0,50.0,7,-0.5,6.5);
+      fHistNclsITSPosL[0] = new TH2F("fHistNclsITSPosL","fHistNclsITSPos  vs pt L pos",200,0.0,20.0,7,-0.5,6.5);
+      fHistNclsITSNegL[0] = new TH2F("fHistNclsITSNegL","fHistNclsITSNeg vs pt L neg",200,0.0,20.0,7,-0.5,6.5);
 	  
-      fHistNclsTPCPosL[0] = new TH2F("fHistNclsTPCPosL","L mass vs phi pos",500,0.0,50.0,200,0.0,200.0);
-      fHistNclsTPCNegL[0] = new TH2F("fHistNclsTPCNegL","L mass vs phi neg",500,0.0,50.0,200,0.0,200.0);
+      fHistNclsTPCPosL[0] = new TH2F("fHistNclsTPCPosL","L mass vs phi pos",200,0.0,20.0,200,0.0,200.0);
+      fHistNclsTPCNegL[0] = new TH2F("fHistNclsTPCNegL","L mass vs phi neg",200,0.0,20.0,200,0.0,200.0);
 	  
-      fHistChi2PerNclsITSPosL[0] = new TH2F("fHistChi2PerNclsITSPosL","chi2 per cluster ITS L pos",500,0.0,50.0,250,0.0,25.0);
-      fHistChi2PerNclsITSNegL[0] = new TH2F("fHistChi2PerNclsITSNegL","chi2 per cluster ITS L neg",500,0.0,50.0,250,0.0,25.0);
+      fHistChi2PerNclsITSPosL[0] = new TH2F("fHistChi2PerNclsITSPosL","chi2 per cluster ITS L pos",200,0.0,20.0,250,0.0,25.0);
+      fHistChi2PerNclsITSNegL[0] = new TH2F("fHistChi2PerNclsITSNegL","chi2 per cluster ITS L neg",200,0.0,20.0,250,0.0,25.0);
 	  
-      fHistNCRowsTPCPosL[0] = new TH2F("fHistNCRowsTPCPosL","n crossed rows vs L pos",500,0.0,50.0,200,0.0,200.0);
-      fHistNCRowsTPCNegL[0] = new TH2F("fHistNCRowsTPCNegL","n crossed rows vs L neg",500,0.0,50.0,200,0.0,200.0);
+      fHistNCRowsTPCPosL[0] = new TH2F("fHistNCRowsTPCPosL","n crossed rows vs L pos",200,0.0,20.0,200,0.0,200.0);
+      fHistNCRowsTPCNegL[0] = new TH2F("fHistNCRowsTPCNegL","n crossed rows vs L neg",200,0.0,20.0,200,0.0,200.0);
    
-      fHistRatioFoundOverFinableTPCLPos[0] = new TH2F("fHistRatioFoundOverFinableTPCLPos","ncls found over findable L pos sec",500,0.0,50.0,200,0.0,2.0);
-      fHistRatioFoundOverFinableTPCLNeg[0] = new TH2F("fHistRatioFoundOverFinableTPCLNeg","ncls found over findable L neg sec",500,0.0,50.0,200,0.0,2.0);
+      fHistRatioFoundOverFinableTPCLPos[0] = new TH2F("fHistRatioFoundOverFinableTPCLPos","ncls found over findable L pos sec",200,0.0,20.0,200,0.0,2.0);
+      fHistRatioFoundOverFinableTPCLNeg[0] = new TH2F("fHistRatioFoundOverFinableTPCLNeg","ncls found over findable L neg sec",200,0.0,20.0,200,0.0,2.0);
     }
 
     // --------------------------------------------- for MC reco secondaries -----------------------------------------//
@@ -1580,26 +1798,28 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 	fHistPiPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMassSec","pos sec DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
 	fHistPiPDCADaughterNegToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterNegToPrimVtxVSMassSec","neg sec DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
 	fHistPiPDCAVSMass[1] = new TH2F("fHistPiPDCAVSMassSec","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+	fHistPiPDCAZVSMass[1] = new TH2F("fHistPiPDCAZVSMassSec","ppi- dca z vs pt",nbMass,1.05,1.25,200,-20.0,20.0);
 	fHistPiPCosPointAng[1]  = new TH2F("fHistPiPCosPointAngSec","#Lambda cosine of pointing angle vs mass",nbMass,1.05,1.25,200,0.99,1.00);
 	//	 fHistPiPDecayLengthVsMass[1] = new TH2F("fHistPiPDecayLengthVsMassSec","#Lambda decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
 	fHistPiPRadiusXY[1] = new TH2F("fHistPiPRadiusXYSec","pi-p+ phi dist vs mass",nbMass,1.05,1.25,200,0.0,4.0);
 	// fHistPiPPtDaughters[0] = new TH2F("fHistPiPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
-	//	  fHistPiPDCAZPos[1] = new TH2F("fHistPiPDCAZPosSec","dca z  of Lambda sec pos daughters",nbMass,1.05,1.25,200,-20.0,20.0);
-	//	  fHistPiPDCAZNeg[1] = new TH2F("fHistPiPDCAZNegSec","dca z  of Lambda sec neg daughters",nbMass,1.05,1.25,200,-20.0,20.0);
+	fHistPiPDCAZPos[1] = new TH2F("fHistPiPDCAZPosSec","dca z  of Lambda sec pos daughters",nbMass,1.05,1.25,200,-20.0,20.0);
+	fHistPiPDCAZNeg[1] = new TH2F("fHistPiPDCAZNegSec","dca z  of Lambda sec neg daughters",nbMass,1.05,1.25,200,-20.0,20.0);
 	fHistPiPTrackLengthPosVsMass[1] = new TH2F("fHistPiPTrackLengthPosVsMassSec","track length of pos sec Lambda daughter in TPC",nbMass,1.05,1.25,250,0.0,250.0);
 	fHistPiPTrackLengthNegVsMass[1] = new TH2F("fHistPiPTrackLengthNegVsMassSec","track length of neg sec Lambda daughter in TPC",nbMass,1.05,1.25,250,0.0,250.0);
       }
       else{
-	fHistPiPDCADaughters[1] = new TH2F("fHistPiPDCADaughtersSec","dca of #Lambda daughters",500,0.0,50.0,250,0.0,2.0);
-	fHistPiPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMassSec","pos sec DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-	fHistPiPDCADaughterNegToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterNegToPrimVtxVSMassSec","neg sec DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-	fHistPiPDCAVSMass[1] = new TH2F("fHistPiPDCAVSMassSec","ppi- dca  vs pt",500,0.0,50.0,250,0.0,5.0);
-	fHistPiPCosPointAng[1]  = new TH2F("fHistPiPCosPointAngSec","#Lambda cosine of pointing angle vs mass",500,0.0,50.0,200,0.99,1.00);
-	fHistPiPRadiusXY[1] = new TH2F("fHistPiPRadiusXYSec","pi-p+ phi dist vs mass",500,0.0,50.0,200,0.0,4.0);
-	//	  fHistPiPDCAZPos[1] = new TH2F("fHistPiPDCAZPosSec","dca z  of Lambda sec pos daughters",200,0.0,20.0,200,-20.0,20.0);
-	//fHistPiPDCAZNeg[1] = new TH2F("fHistPiPDCAZNegSec","dca z  of Lambda sec neg daughters",200,0.0,20.0,200,-20.0,20.0);
-	fHistPiPTrackLengthPosVsMass[1] = new TH2F("fHistPiPTrackLengthPosVsMassSec","track length of pos sec Lambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
-	fHistPiPTrackLengthNegVsMass[1] = new TH2F("fHistPiPTrackLengthNegVsMassSec","track length of neg sec Lambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
+	fHistPiPDCADaughters[1] = new TH2F("fHistPiPDCADaughtersSec","dca of #Lambda daughters",200,0.0,20.0,250,0.0,2.0);
+	fHistPiPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMassSec","pos sec DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+	fHistPiPDCADaughterNegToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterNegToPrimVtxVSMassSec","neg sec DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+	fHistPiPDCAVSMass[1] = new TH2F("fHistPiPDCAVSMassSec","ppi- dca  vs pt",200,0.0,20.0,250,0.0,5.0);
+	fHistPiPDCAZVSMass[1] = new TH2F("fHistPiPDCAZVSMassSec","ppi- dca  vs pt",200,0.0,20.0,200,-20.0,20.0);
+	fHistPiPCosPointAng[1]  = new TH2F("fHistPiPCosPointAngSec","#Lambda cosine of pointing angle vs mass",200,0.0,20.0,200,0.99,1.00);
+	fHistPiPRadiusXY[1] = new TH2F("fHistPiPRadiusXYSec","pi-p+ phi dist vs mass",200,0.0,20.0,200,0.0,4.0);
+	fHistPiPDCAZPos[1] = new TH2F("fHistPiPDCAZPosSec","dca z  of Lambda sec pos daughters",200,0.0,20.0,200,-20.0,20.0);
+	fHistPiPDCAZNeg[1] = new TH2F("fHistPiPDCAZNegSec","dca z  of Lambda sec neg daughters",200,0.0,20.0,200,-20.0,20.0);
+	fHistPiPTrackLengthPosVsMass[1] = new TH2F("fHistPiPTrackLengthPosVsMassSec","track length of pos sec Lambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
+	fHistPiPTrackLengthNegVsMass[1] = new TH2F("fHistPiPTrackLengthNegVsMassSec","track length of neg sec Lambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
       }
 	  
       //--------------------ALambda--------------//
@@ -1608,6 +1828,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 	fHistPiAPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMassSec","pos sec DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
 	fHistPiAPDCADaughterNegToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterNegToPrimVtxVSMassSec","neg sec DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,10.0);
 	fHistPiAPDCAVSMass[1]   = new TH2F("fHistPiAPDCAVSMassSec","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+	fHistPiAPDCAZVSMass[1]   = new TH2F("fHistPiAPDCAZVSMassSec","pi+p- dca z  vs pt",nbMass,1.05,1.25,200,-20.0,20.0);
 	fHistPiAPCosPointAng[1] = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs mass",nbMass,1.05,1.25,200,0.99,1.00);
 	//	 fHistPiAPDecayLengthVsMass[1] = new TH2F("fHistPiAPDecayLengthVsMassSec","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
 	fHistPiAPRadiusXY[1] = new TH2F("fHistPiAPRadiusXYSec","pi+p- phi dist vs mass",nbMass,1.05,1.25,200,0.0,4.0);
@@ -1618,16 +1839,17 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 	fHistPiAPTrackLengthNegVsMass[1] = new TH2F("fHistPiAPTrackLengthNegVsMassSec","track length of neg sec ALambda daughter in TPC",nbMass,1.05,1.25,250,0.0,250.0);
       }
       else{
-	fHistPiAPDCADaughters[1] = new TH2F("fHistPiAPDCADaughtersSec","dca of #bar{#Lambda} daughters",500,0.0,50.0,250,0.0,2.0);
-	fHistPiAPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMassSec","pos sec DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-	fHistPiAPDCADaughterNegToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterNegToPrimVtxVSMassSec","neg sec DCA daughter to prim vtx vs invmass",500,0.0,50.0,250,0.0,10.0);
-	fHistPiAPDCAVSMass[1]   = new TH2F("fHistPiAPDCAVSMassSec","pi+p- dca  vs pt",500,0.0,50.0,250,0.0,5.0);
-	fHistPiAPCosPointAng[1] = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs mass",500,0.0,50.0,200,0.99,1.00);
-	fHistPiAPRadiusXY[1] = new TH2F("fHistPiAPRadiusXYSec","pi+p- phi dist vs mass",500,0.0,50.0,200,0.0,4.0);
+	fHistPiAPDCADaughters[1] = new TH2F("fHistPiAPDCADaughtersSec","dca of #bar{#Lambda} daughters",200,0.0,20.0,250,0.0,2.0);
+	fHistPiAPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMassSec","pos sec DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+	fHistPiAPDCADaughterNegToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterNegToPrimVtxVSMassSec","neg sec DCA daughter to prim vtx vs invmass",200,0.0,20.0,250,0.0,10.0);
+	fHistPiAPDCAVSMass[1]   = new TH2F("fHistPiAPDCAVSMassSec","pi+p- dca  vs pt",200,0.0,20.0,250,0.0,5.0);
+	fHistPiAPDCAZVSMass[1]   = new TH2F("fHistPiAPDCAZVSMassSec","pi+p- dca z vs pt",200,0.0,20.0,200,-20.0,20.0);
+	fHistPiAPCosPointAng[1] = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs mass",200,0.0,20.0,200,0.99,1.00);
+	fHistPiAPRadiusXY[1] = new TH2F("fHistPiAPRadiusXYSec","pi+p- phi dist vs mass",200,0.0,20.0,200,0.0,4.0);
 	//	  fHistPiAPDCAZPos[1] = new TH2F("fHistPiAPDCAZPosSec","dca z  of ALambda sec pos daughters",200,0.0,20.0,200,-20.0,20.0);
 	//fHistPiAPDCAZNeg[1] = new TH2F("fHistPiAPDCAZNegSec","dca z  of ALambda sec neg daughters",200,0.0,20.0,200,-20.0,20.0);
-	fHistPiAPTrackLengthPosVsMass[1] = new TH2F("fHistPiAPTrackLengthPosVsMassSec","track length of pos sec ALambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
-	fHistPiAPTrackLengthNegVsMass[1] = new TH2F("fHistPiAPTrackLengthNegVsMassSec","track length of neg sec ALambda daughter in TPC",500,0.0,50.0,250,0.0,250.0);
+	fHistPiAPTrackLengthPosVsMass[1] = new TH2F("fHistPiAPTrackLengthPosVsMassSec","track length of pos sec ALambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
+	fHistPiAPTrackLengthNegVsMass[1] = new TH2F("fHistPiAPTrackLengthNegVsMassSec","track length of neg sec ALambda daughter in TPC",200,0.0,20.0,250,0.0,250.0);
       }
 
       //-------------dedx------------//
@@ -1658,20 +1880,20 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 	fHistRatioFoundOverFinableTPCLNeg[1] = new TH2F("fHistRatioFoundOverFinableTPCLNegSec","ncls found over findable L neg sec",nbMass,1.05,1.25,200,0.0,2.0);
       }
       else{
-	fHistNclsITSPosL[1] = new TH2F("fHistNclsITSPosLSec","fHistNclsITSPos  vs pt L pos",500,0.0,50.0,7,-0.5,6.5);
-	fHistNclsITSNegL[1] = new TH2F("fHistNclsITSNegLSec","fHistNclsITSNeg vs pt L neg",500,0.0,50.0,7,-0.5,6.5);
+	fHistNclsITSPosL[1] = new TH2F("fHistNclsITSPosLSec","fHistNclsITSPos  vs pt L pos",200,0.0,20.0,7,-0.5,6.5);
+	fHistNclsITSNegL[1] = new TH2F("fHistNclsITSNegLSec","fHistNclsITSNeg vs pt L neg",200,0.0,20.0,7,-0.5,6.5);
 	  
-	fHistNclsTPCPosL[1] = new TH2F("fHistNclsTPCPosLSec","L mass vs phi pos",500,0.0,50.0,200,0.0,200.0);
-	fHistNclsTPCNegL[1] = new TH2F("fHistNclsTPCNegLSec","L mass vs phi neg",500,0.0,50.0,200,0.0,200.0);
+	fHistNclsTPCPosL[1] = new TH2F("fHistNclsTPCPosLSec","L mass vs phi pos",200,0.0,20.0,200,0.0,200.0);
+	fHistNclsTPCNegL[1] = new TH2F("fHistNclsTPCNegLSec","L mass vs phi neg",200,0.0,20.0,200,0.0,200.0);
 	  
-	fHistChi2PerNclsITSPosL[1] = new TH2F("fHistChi2PerNclsITSPosLSec","chi2 per cluster ITS L pos",500,0.0,50.0,250,0.0,25.0);
-	fHistChi2PerNclsITSNegL[1] = new TH2F("fHistChi2PerNclsITSNegLSec","chi2 per cluster ITS L neg",500,0.0,50.0,250,0.0,25.0);
+	fHistChi2PerNclsITSPosL[1] = new TH2F("fHistChi2PerNclsITSPosLSec","chi2 per cluster ITS L pos",200,0.0,20.0,250,0.0,25.0);
+	fHistChi2PerNclsITSNegL[1] = new TH2F("fHistChi2PerNclsITSNegLSec","chi2 per cluster ITS L neg",200,0.0,20.0,250,0.0,25.0);
 	  
-	fHistNCRowsTPCPosL[1] = new TH2F("fHistNCRowsTPCPosLSec","n crossed rows vs L pos",500,0.0,50.0,200,0.0,200.0);
-	fHistNCRowsTPCNegL[1] = new TH2F("fHistNCRowsTPCNegLSec","n crossed rows vs L neg",500,0.0,50.0,200,0.0,200.0);
+	fHistNCRowsTPCPosL[1] = new TH2F("fHistNCRowsTPCPosLSec","n crossed rows vs L pos",200,0.0,20.0,200,0.0,200.0);
+	fHistNCRowsTPCNegL[1] = new TH2F("fHistNCRowsTPCNegLSec","n crossed rows vs L neg",200,0.0,20.0,200,0.0,200.0);
    
-	fHistRatioFoundOverFinableTPCLPos[1] = new TH2F("fHistRatioFoundOverFinableTPCLPosSec","ncls found over findable L pos sec",500,0.0,50.0,200,0.0,2.0);
-	fHistRatioFoundOverFinableTPCLNeg[1] = new TH2F("fHistRatioFoundOverFinableTPCLNegSec","ncls found over findable L neg sec",500,0.0,50.0,200,0.0,2.0);
+	fHistRatioFoundOverFinableTPCLPos[1] = new TH2F("fHistRatioFoundOverFinableTPCLPosSec","ncls found over findable L pos sec",200,0.0,20.0,200,0.0,2.0);
+	fHistRatioFoundOverFinableTPCLNeg[1] = new TH2F("fHistRatioFoundOverFinableTPCLNegSec","ncls found over findable L neg sec",200,0.0,20.0,200,0.0,2.0);
       }
 	
     }
@@ -1683,11 +1905,12 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistNclsTPC[1]);
 
     //-----------K0s ------------------//
-    //    fOutputContainer->Add(fHistPiPiDCAZNeg);
-    //fOutputContainer->Add(fHistPiPiDCAZPos);
+    fOutputContainer->Add(fHistPiPiDCAZNeg);
+    fOutputContainer->Add(fHistPiPiDCAZPos);
     fOutputContainer->Add(fHistPiPiDCADaughters); 
     fOutputContainer->Add(fHistPiPiDCADaughterPosToPrimVtxVSMass);
     fOutputContainer->Add(fHistPiPiDCAVSMass);
+    fOutputContainer->Add(fHistPiPiDCAZVSMass);
     fOutputContainer->Add(fHistPiPiCosPointAng);
     fOutputContainer->Add(fHistPiPiTrackLengthPosVsMass);
     fOutputContainer->Add(fHistPiPiTrackLengthNegVsMass);
@@ -1703,8 +1926,31 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistNCRowsTPCNegK0);
     fOutputContainer->Add(fHistRatioFoundOverFinableTPCK0Pos);
     fOutputContainer->Add(fHistRatioFoundOverFinableTPCK0Neg);
+    /*
+      fOutputContainer->Add(fHistPiPiDistDaughtersPos[0]);
+      fOutputContainer->Add(fHistPiPiDistDaughtersNeg[0]);
+      fOutputContainer->Add(fHistPiPiDCADaughtersPos[0]);
+      fOutputContainer->Add(fHistPiPiDCADaughtersNeg[0]);
+      fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersPos[0]);
+      fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersNeg[0]);
     
+      fOutputContainer->Add(fHistPiPiDistDaughtersPos[1]);
+      fOutputContainer->Add(fHistPiPiDistDaughtersNeg[1]);
+      fOutputContainer->Add(fHistPiPiDCADaughtersPos[1]);
+      fOutputContainer->Add(fHistPiPiDCADaughtersNeg[1]);
+      fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersPos[1]);
+      fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersNeg[1]);
+
+      fOutputContainer->Add(fHistPiPiDistDaughtersPos[2]);
+      fOutputContainer->Add(fHistPiPiDistDaughtersNeg[2]);
+      fOutputContainer->Add(fHistPiPiDCADaughtersPos[2]);
+      fOutputContainer->Add(fHistPiPiDCADaughtersNeg[2]);
+      fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersPos[2]);
+      fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersNeg[2]);
+    */
+    fOutputContainer->Add(fHistPiPiDistDaughtersTPCEntrVsMass);
     //----------- Lambda Antilambda -------------//
+
     for(Int_t j=0;j<mchist;j++){
       fOutputContainer->Add(fHistPiPDCADaughters[j]); 
       fOutputContainer->Add(fHistPiAPDCADaughters[j]);
@@ -1715,11 +1961,13 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       //fOutputContainer->Add( fHistPiPPtDaughters[j]);
       //fOutputContainer->Add( fHistPiAPPtDaughters[j]);
       fOutputContainer->Add(fHistPiPDCAVSMass[j]);
+      fOutputContainer->Add(fHistPiPDCAZVSMass[j]);
       fOutputContainer->Add(fHistPiAPDCAVSMass[j]);
+      fOutputContainer->Add(fHistPiAPDCAZVSMass[j]);
       fOutputContainer->Add(fHistPiPCosPointAng[j]);
       fOutputContainer->Add(fHistPiAPCosPointAng[j]);
-      //fOutputContainer->Add(fHistPiPDCAZNeg[j]);
-      //fOutputContainer->Add(fHistPiPDCAZPos[j]);
+      fOutputContainer->Add(fHistPiPDCAZNeg[j]);
+      fOutputContainer->Add(fHistPiPDCAZPos[j]);
       //fOutputContainer->Add(fHistPiAPDCAZNeg[j]);
       //fOutputContainer->Add(fHistPiAPDCAZPos[j]);
       fOutputContainer->Add(fHistPiPTrackLengthPosVsMass[j]);
@@ -1751,6 +1999,54 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fOutputContainer->Add(fHistRatioFoundOverFinableTPCLPos[j]);
       fOutputContainer->Add(fHistRatioFoundOverFinableTPCLNeg[j]);
     }  
+    /*
+      fOutputContainer->Add(fHistPiPDistDaughtersPos[0]);
+      fOutputContainer->Add(fHistPiPDistDaughtersNeg[0]);
+      fOutputContainer->Add(fHistPiPDCADaughtersPos[0]);
+      fOutputContainer->Add(fHistPiPDCADaughtersNeg[0]);
+      fOutputContainer->Add(fHistPiPRadAtDCA5cmDaughtersPos[0]);
+      fOutputContainer->Add(fHistPiPRadAtDCA5cmDaughtersNeg[0]);
+    
+      fOutputContainer->Add(fHistPiPDistDaughtersPos[1]);
+      fOutputContainer->Add(fHistPiPDistDaughtersNeg[1]);
+      fOutputContainer->Add(fHistPiPDCADaughtersPos[1]);
+      fOutputContainer->Add(fHistPiPDCADaughtersNeg[1]);
+      fOutputContainer->Add(fHistPiPRadAtDCA5cmDaughtersPos[1]);
+      fOutputContainer->Add(fHistPiPRadAtDCA5cmDaughtersNeg[1]);
+
+      fOutputContainer->Add(fHistPiPDistDaughtersPos[2]);
+      fOutputContainer->Add(fHistPiPDistDaughtersNeg[2]);
+      fOutputContainer->Add(fHistPiPDCADaughtersPos[2]);
+      fOutputContainer->Add(fHistPiPDCADaughtersNeg[2]);
+      fOutputContainer->Add(fHistPiPRadAtDCA5cmDaughtersPos[2]);
+      fOutputContainer->Add(fHistPiPRadAtDCA5cmDaughtersNeg[2]);
+   
+
+      fOutputContainer->Add(fHistPiAPDistDaughtersPos[0]);
+      fOutputContainer->Add(fHistPiAPDistDaughtersNeg[0]);
+      fOutputContainer->Add(fHistPiAPDCADaughtersPos[0]);
+      fOutputContainer->Add(fHistPiAPDCADaughtersNeg[0]);
+      fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersPos[0]);
+      fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersNeg[0]);
+    
+      fOutputContainer->Add(fHistPiAPDistDaughtersPos[1]);
+      fOutputContainer->Add(fHistPiAPDistDaughtersNeg[1]);
+      fOutputContainer->Add(fHistPiAPDCADaughtersPos[1]);
+      fOutputContainer->Add(fHistPiAPDCADaughtersNeg[1]);
+      fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersPos[1]);
+      fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersNeg[1]);
+
+      fOutputContainer->Add(fHistPiAPDistDaughtersPos[2]);
+      fOutputContainer->Add(fHistPiAPDistDaughtersNeg[2]);
+      fOutputContainer->Add(fHistPiAPDCADaughtersPos[2]);
+      fOutputContainer->Add(fHistPiAPDCADaughtersNeg[2]);
+      fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersPos[2]);
+      fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersNeg[2]);
+    */   
+    fOutputContainer->Add(fHistPiPDistDaughtersTPCEntrVsMass);   
+    fOutputContainer->Add(fHistPiAPDistDaughtersTPCEntrVsMass);
+   
+
   }
 
   //----------------------------- MC reco or MC truth only --------------------------//
@@ -1765,9 +2061,9 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     }
     fHistMCVertexZ= new TH1F("fHistMCVertexZ"," z vertex distr in cm MC",500,-50,50);
     fOutputContainer->Add(fHistMCVertexZ);
-    fHistPiPCosPointAngXiVsPt= new TH2F("fHistPiPCosPointAngXiVsPt","pi-p cos of pointing angle vs pt from xi",500,0.0,50.0,250,0.99,1.00);
+    fHistPiPCosPointAngXiVsPt= new TH2F("fHistPiPCosPointAngXiVsPt","pi-p cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.99,1.00);
     fOutputContainer->Add(fHistPiPCosPointAngXiVsPt);
-    fHistPiAPCosPointAngXiVsPt= new TH2F("fHistPiAPCosPointAngXiVsPt","pi+p- cos of pointing angle vs pt from xi",500,0.0,50.0,250,0.99,1.00);	
+    fHistPiAPCosPointAngXiVsPt= new TH2F("fHistPiAPCosPointAngXiVsPt","pi+p- cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.99,1.00);	
     fOutputContainer->Add(fHistPiAPCosPointAngXiVsPt);    
     fHistPiPiEtaDMC[0] = new TH2F("fHistPiPiEtaDMCRaw","K0s daughters etaMC raw",300,-6,6,100,0,20);//
     fOutputContainer->Add(fHistPiPiEtaDMC[0]);
@@ -1792,23 +2088,23 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fHistPiPMassVSPtSecXi[0] = new TH2F("fHistPiPMassVSPtSecXiMC"," pi-p+ InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,200,0.,20);
     fHistPiPMassVSPtSecXi[1] = new TH2F("fHistPiPMassVSPtSecXi"," pi-p+ InvMass distribution secondaries from  xi  reco",nbMass,1.05,1.25,200,0.,20);
 
-    fHistPiPMassVSPtSecXiMCTruth = new TH2F("fHistPiPMassVSPtSecXiMCTruth","Lambda mass reco vs pt sec Lambda from xi MC truth pt",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPMassVSPtSecXiMCTruth = new TH2F("fHistPiPMassVSPtSecXiMCTruth","Lambda mass reco vs pt sec Lambda from xi MC truth pt",nbMass,1.05,1.25,200,0.0,20.0);
  
     fHistPiPMassVSYSecXi[0] = new TH2F("fHistPiPMassVSYSecXiMC"," pi-p+ InvMass distribution secondaries from xi MC",nbMass,1.05,1.25,100,-2.,2);
     fHistPiPMassVSYSecXi[1] = new TH2F("fHistPiPMassVSYSecXi"," pi-p+ InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
 
-    fHistPiPXi0PtVSLambdaPt[0]= new TH2F("fHistPiPXi0PtVSLambdaPtMC"," pt xi 0 vs pt lambda MC truth",500,0.0,50.0,500,0.0,50.0);
-    fHistPiPXi0PtVSLambdaPt[1]= new TH2F("fHistPiPXi0PtVSLambdaPt"," pt xi 0 truth vs pt lambda reco",500,0.0,50.0,500,0.0,50.0);
+    fHistPiPXi0PtVSLambdaPt[0]= new TH2F("fHistPiPXi0PtVSLambdaPtMC"," pt xi 0 vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
+    fHistPiPXi0PtVSLambdaPt[1]= new TH2F("fHistPiPXi0PtVSLambdaPt"," pt xi 0 truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
 
-    fHistPiPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiPXiMinusPtVSLambdaPtMC","pt xi- vs pt lambda MC truth",500,0.0,50.0,500,0.0,50.0);
-    fHistPiPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiPXiMinusPtVSLambdaPt","pt xi- truth vs pt lambda reco",500,0.0,50.0,500,0.0,50.0);
+    fHistPiPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiPXiMinusPtVSLambdaPtMC","pt xi- vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
+    fHistPiPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiPXiMinusPtVSLambdaPt","pt xi- truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
 
-    fHistPiPOmegaPtVSLambdaPt[0] = new TH2F("fHistPiPOmegaPtVSLambdaPtMC","pt omega vs pt lambda MC truth",500,0.0,50.0,500,0.0,50.0);
-    fHistPiPOmegaPtVSLambdaPt[1] = new TH2F("fHistPiPOmegaPtVSLambdaPt","pt omega vs pt lambda MC reco",500,0.0,50.0,500,0.0,50.0);
+    fHistPiPOmegaPtVSLambdaPt[0] = new TH2F("fHistPiPOmegaPtVSLambdaPtMC","pt omega vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
+    fHistPiPOmegaPtVSLambdaPt[1] = new TH2F("fHistPiPOmegaPtVSLambdaPt","pt omega vs pt lambda MC reco",200,0.0,20.0,200,0.0,20.0);
 
-    fHistPiPMassVSPtSecOmega[0] = new TH2F("fHistPiPMassVSPtSecOmegaMC","Lambda mass vs pt omega MCtruth",nbMass,1.05,1.25,500,0.0,50.0);
-    fHistPiPMassVSPtSecOmega[1] = new TH2F("fHistPiPMassVSPtSecOmega","Lambda mass vs pt omega MCreco",nbMass,1.05,1.25,500,0.0,50.0);
-    fHistPiPMassVSPtSecOmegaMCTruth= new TH2F("fHistPiPMassVSPtSecOmegaMCTruth","Lambda mass vs pt sec Lambda from Omega MC truth pt",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPMassVSPtSecOmega[0] = new TH2F("fHistPiPMassVSPtSecOmegaMC","Lambda mass vs pt omega MCtruth",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiPMassVSPtSecOmega[1] = new TH2F("fHistPiPMassVSPtSecOmega","Lambda mass vs pt omega MCreco",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiPMassVSPtSecOmegaMCTruth= new TH2F("fHistPiPMassVSPtSecOmegaMCTruth","Lambda mass vs pt sec Lambda from Omega MC truth pt",nbMass,1.05,1.25,200,0.0,20.0);
 
     //--------------ALambda-----------------//
     fHistPiAPDecayLengthResolution[0] = new TH2F("fHistPiAPDecayLengthResolution","ALambda decay length resolution MC",220,0.0,110.0,220,0.0,110);
@@ -1820,24 +2116,24 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fHistPiAPMassVSPtSecXi[0] = new TH2F("fHistPiAPMassVSPtSecXiMC"," pi+p- InvMass distribution secondaries from xi MC",nbMass,1.05,1.25,200,0.,20);
     fHistPiAPMassVSPtSecXi[1] = new TH2F("fHistPiAPMassVSPtSecXi"," pi+p- InvMass distribution secondaries from  Xi reco",nbMass,1.05,1.25,200,0.,20);
 
-    fHistPiAPMassVSPtSecXiMCTruth = new TH2F("fHistPiAPMassVSPtSecXiMCTruth","ALambda mass reco vs pt sec Lambda from xi MC truth pt",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiAPMassVSPtSecXiMCTruth = new TH2F("fHistPiAPMassVSPtSecXiMCTruth","ALambda mass reco vs pt sec Lambda from xi MC truth pt",nbMass,1.05,1.25,200,0.0,20.0);
       
     fHistPiAPMassVSYSecXi[0] = new TH2F("fHistPiAPMassVSYSecXiMC"," pi+p- InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,100,-2,2);
     fHistPiAPMassVSYSecXi[1] = new TH2F("fHistPiAPMassVSYSecXi"," pi+p- InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
 
      
-    fHistPiAPXi0PtVSLambdaPt[0]= new TH2F("fHistPiAPXi0PtVSLambdaPtMC"," pt xi 0 vs pt Alambda MC truth",500,0.0,50.0,500,0.0,50.0);
-    fHistPiAPXi0PtVSLambdaPt[1]= new TH2F("fHistPiAPXi0PtVSLambdaPt"," pt xi 0 truth vs pt Alambda reco",500,0.0,50.0,500,0.0,50.0);
+    fHistPiAPXi0PtVSLambdaPt[0]= new TH2F("fHistPiAPXi0PtVSLambdaPtMC"," pt xi 0 vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
+    fHistPiAPXi0PtVSLambdaPt[1]= new TH2F("fHistPiAPXi0PtVSLambdaPt"," pt xi 0 truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
 
-    fHistPiAPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiAPXiMinusPtVSLambdaPtMC","pt xi- vs pt Alambda MC truth",500,0.0,50.0,500,0.0,50.0);
-    fHistPiAPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiAPXiMinusPtVSLambdaPt","pt xi- truth vs pt Alambda reco",500,0.0,50.0,500,0.0,50.0);
+    fHistPiAPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiAPXiMinusPtVSLambdaPtMC","pt xi- vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
+    fHistPiAPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiAPXiMinusPtVSLambdaPt","pt xi- truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
 
-    fHistPiAPOmegaPtVSLambdaPt[0] = new TH2F("fHistPiAPOmegaPtVSLambdaPtMC","pt omega vs pt alambda MC truth",500,0.0,50.0,500,0.0,50.0);
-    fHistPiAPOmegaPtVSLambdaPt[1] = new TH2F("fHistPiAPOmegaPtVSLambdaPt","pt omega vs pt alambda MC reco",500,0.0,50.0,500,0.0,50.0);
+    fHistPiAPOmegaPtVSLambdaPt[0] = new TH2F("fHistPiAPOmegaPtVSLambdaPtMC","pt omega vs pt alambda MC truth",200,0.0,20.0,200,0.0,20.0);
+    fHistPiAPOmegaPtVSLambdaPt[1] = new TH2F("fHistPiAPOmegaPtVSLambdaPt","pt omega vs pt alambda MC reco",200,0.0,20.0,200,0.0,20.0);
 
-    fHistPiAPMassVSPtSecOmega[0] = new TH2F("fHistPiAPMassVSPtSecOmegaMC","ALambda mass vs pt omega MCtruth",nbMass,1.05,1.25,500,0.0,50.0);
-    fHistPiAPMassVSPtSecOmega[1] = new TH2F("fHistPiAPMassVSPtSecOmega","ALambda mass vs pt omega MCreco",nbMass,1.05,1.25,500,0.0,50.0);
-    fHistPiAPMassVSPtSecOmegaMCTruth= new TH2F("fHistPiAPMassVSPtSecOmegaMCTruth","ALambda mass vs pt sec Lambda from Omega MC truth pt",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiAPMassVSPtSecOmega[0] = new TH2F("fHistPiAPMassVSPtSecOmegaMC","ALambda mass vs pt omega MCtruth",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiAPMassVSPtSecOmega[1] = new TH2F("fHistPiAPMassVSPtSecOmega","ALambda mass vs pt omega MCreco",nbMass,1.05,1.25,200,0.0,20.0);
+    fHistPiAPMassVSPtSecOmegaMCTruth= new TH2F("fHistPiAPMassVSPtSecOmegaMCTruth","ALambda mass vs pt sec Lambda from Omega MC truth pt",nbMass,1.05,1.25,200,0.0,20.0);
    
     fOutputContainer->Add(fHistPiPMassVSPtSecXiMCTruth);
     fOutputContainer->Add(fHistPiPMassVSPtSecOmegaMCTruth);
@@ -1922,19 +2218,19 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 
 
     //Lambda
-    fHistPiPGA = new TH2F("fHistPiPGA","photons in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPGA = new TH2F("fHistPiPGA","photons in L BG",nbMass,1.05,1.25,200,0.0,20.0);
     fOutputContainer->Add(fHistPiPGA);
-    fHistPiPKch = new TH2F("fHistPiPKch","ch kaons in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPKch = new TH2F("fHistPiPKch","ch kaons in L BG",nbMass,1.05,1.25,200,0.0,20.0);
     fOutputContainer->Add(fHistPiPKch);
-    fHistPiPK0s = new TH2F("fHistPiPK0s","K0s in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPK0s = new TH2F("fHistPiPK0s","K0s in L BG",nbMass,1.05,1.25,200,0.0,20.0);
     fOutputContainer->Add(fHistPiPK0s);
-    fHistPiPPi0 = new TH2F("fHistPiPPi0","pi0 in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPPi0 = new TH2F("fHistPiPPi0","pi0 in L BG",nbMass,1.05,1.25,200,0.0,20.0);
     fOutputContainer->Add(fHistPiPPi0);
-    fHistPiPPich = new TH2F("fHistPiPPich","ch pions in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPPich = new TH2F("fHistPiPPich","ch pions in L BG",nbMass,1.05,1.25,200,0.0,20.0);
     fOutputContainer->Add(fHistPiPPich);
-    fHistPiPKStar = new TH2F("fHistPiPKStar","Kstar in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPKStar = new TH2F("fHistPiPKStar","Kstar in L BG",nbMass,1.05,1.25,200,0.0,20.0);
     fOutputContainer->Add(fHistPiPKStar);
-    fHistPiPN = new TH2F("fHistPiPN","neutron in L BG",nbMass,1.05,1.25,500,0.0,50.0);
+    fHistPiPN = new TH2F("fHistPiPN","neutron in L BG",nbMass,1.05,1.25,200,0.0,20.0y);
     fOutputContainer->Add(fHistPiPN);
     fHistPiPNoMother= new TH2F("fHistPiPNoMother","combi BG  vs pt Lambda ",nbMass,1.05,1.25,200,0,20.0);
     fOutputContainer->Add(fHistPiPNoMother);
@@ -2396,7 +2692,7 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
     Double_t rapidity = p0->Y();
     Double_t massV0MC = p0->GetMass();
     Double_t ptV0MC =  p0->Pt();
-    //Double_t pV0MC =  p0->P();
+    Double_t pV0MC =  p0->P();
 
      
     //----------------- mother variables-----------------//
@@ -2407,15 +2703,13 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
     Int_t uniqueIDmother=0;
     Double_t ptXiMother=0.0;
     Double_t rapXiMother = 0.0;
-
-
+ 
     //------check mother and fill mother histos---------//
     Bool_t isPrim= stack->IsPhysicalPrimary(iMc);
    
     if(!isPrim){//secondary
-      isSecd=1;// is secondary V0s
+      isSecd = -1;// is secondary V0s
       if(indexMother1 >-1){// && !isPrim){//secondary V0s
-	//     isSecd=1;// is secondary V0s
 	// if(fSelectMBMotherMC && !fMCev->IsFromBGEvent(indexMother1)) continue;//xxx only standard hijing particles for sec. lambdas:not needed
 	
 	//-- check for mother --//
@@ -2481,7 +2775,12 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 		if(!fEtaCutMCDaughters  ||  (fabs(etaMC00)<fEtaCutMCDaughtersVal|| fabs(etaMC01)<fEtaCutMCDaughtersVal)){
 		  fHistPiPMassVSPtSecXi[0]->Fill(massV0MC,ptV0MC);
 		  fHistPiPMassVSYSecXi[0]->Fill(massV0MC,rapidity);
-		  if(!fRapCutV0 || fabs(rapXiMother)<fRap) fHistPiPXi0PtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+  		  if(!fCutRapXi || fabs(rapXiMother)<fRap) {
+		    fHistPiPXi0PtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		    if(fUseXi0) isSecd=1;// is secondary V0s
+		    // cout<<"xi 0 rap ok  "<<fRapCutV0<<" "<<rapXiMother<<endl;
+		    //  rapXiMotherOK  = kTRUE;
+		  }
 		}
 	      }
 	    }
@@ -2492,7 +2791,12 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 		if(!fEtaCutMCDaughters  ||  (fabs(etaMC00)<fEtaCutMCDaughtersVal|| fabs(etaMC01)<fEtaCutMCDaughtersVal)){
 		  fHistPiPMassVSPtSecXi[0]->Fill(massV0MC,ptV0MC);
 		  fHistPiPMassVSYSecXi[0]->Fill(massV0MC,rapidity);
-		  if(!fRapCutV0 || fabs(rapXiMother)<fRap)  fHistPiPXiMinusPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		  if(!fCutRapXi || fabs(rapXiMother)<fRap) {
+		    fHistPiPXiMinusPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		    // rapXiMotherOK =kTRUE;
+		    if(fUseXiM) isSecd=1;// is secondary V0s
+		    // cout<<"xi M rap ok  "<<fRapCutV0<<" "<<rapXiMother<<endl;
+		  }
 		}
 	      }
 	    }
@@ -2500,8 +2804,13 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	  if(pdgMother == 3334)//omega-
 	    {
 	      //  fHistPiPDCAtoPrimVtxOmega[0]->Fill(p0->GetMass(),dcaV0ToPrimVertex);
-	      if(!fRapCutV0 || fabs(rapXiMother)<fRap) fHistPiPOmegaPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
-	      fHistPiPMassVSPtSecOmega[0]->Fill(massV0MC,ptV0MC);
+	      fHistPiPMassVSPtSecOmega[0]->Fill(massV0MC,ptV0MC);	      
+	      if(!fCutRapXi || fabs(rapXiMother)<fRap){
+		fHistPiPOmegaPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		if(fUseOmega) isSecd=1;// is secondary V0s
+		//	rapXiMotherOK =kTRUE;
+		
+	      }
 	    }
 	}
 	
@@ -2526,7 +2835,12 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 		if(!fEtaCutMCDaughters  ||  (fabs(etaMC00)<fEtaCutMCDaughtersVal|| fabs(etaMC01)<fEtaCutMCDaughtersVal)){
 		  fHistPiAPMassVSPtSecXi[0]->Fill(massV0MC,ptV0MC);
 		  fHistPiAPMassVSYSecXi[0]->Fill(massV0MC,rapidity);
-		  if(!fRapCutV0 || fabs(rapXiMother)<fRap) fHistPiAPXi0PtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		  if(!fCutRapXi || fabs(rapXiMother)<fRap)    {
+		    fHistPiAPXi0PtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		    //  rapXiMotherOK =kTRUE;
+		    if(fUseXi0) isSecd=1;// is secondary V0s
+		  }
+		   
 		}
 	      }
 	    }
@@ -2537,7 +2851,11 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 		if(!fEtaCutMCDaughters  ||  (fabs(etaMC00)<fEtaCutMCDaughtersVal|| fabs(etaMC01)<fEtaCutMCDaughtersVal)){
 		  fHistPiAPMassVSPtSecXi[0]->Fill(massV0MC,ptV0MC);
 		  fHistPiAPMassVSYSecXi[0]->Fill(massV0MC,rapidity);
-		  if(!fRapCutV0 || fabs(rapXiMother)<fRap) fHistPiAPXiMinusPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		  if(!fCutRapXi || fabs(rapXiMother)<fRap) {
+		    fHistPiAPXiMinusPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
+		    //    rapXiMotherOK =kTRUE;
+		    if(fUseXiM)  isSecd=1;// is secondary V0s
+		  }
 		}
 	      }
 	    }
@@ -2545,10 +2863,17 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	  if(pdgMother == -3334)//omega+
 	    {
 	      fHistPiAPOmegaPtVSLambdaPt[0]->Fill(ptV0MC,ptXiMother);
-	      if(!fRapCutV0 || fabs(rapXiMother)<fRap) fHistPiAPMassVSPtSecOmega[0]->Fill(massV0MC,ptV0MC);
+	      if(!fCutRapXi || fabs(rapXiMother)<fRap) {
+		fHistPiAPMassVSPtSecOmega[0]->Fill(massV0MC,ptV0MC);
+		//	rapXiMotherOK =kTRUE;
+		if(fUseOmega) isSecd=1;// is secondary V0s
+	      }
 	      // fHistPiAPDCAtoPrimVtxOmega[0]->Fill(p0->GetMass(),dcaV0ToPrimVertex);
 	    }
 	}
+	
+
+
       }	
     }//end secondaries
     else{//primaries
@@ -2561,8 +2886,9 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
       fHistPiPMonitorMCCuts[0]->Fill(10*fillFlagL);
       fHistPiAPMonitorMCCuts[0]->Fill(10*fillFlagAL);
     }
-    
-
+   
+    // if(isSecd == 1 && !rapXiMotherOK &&  fCutRapXi) continue;
+    if(isSecd == -1) continue;
     //-------------- MC truth or reco mode -----------------//
     if(fMCTruthMode && !fMCMode){//MC true ana
       fHistPiPiMonitorMCCuts->Fill(14*fillFlagK0);
@@ -2662,16 +2988,17 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
       fHistPiPMonitorMCCuts[isSecd]->Fill(16*fillFlagL);
       fHistPiAPMonitorMCCuts[isSecd]->Fill(16*fillFlagAL);
 
-    
-      //      Double_t phiMC =   p0->Phi(); 
-      //Double_t etaMC =   p0->Eta(); 
-
-      //      Double_t valTHnMC[4]  = {massV0MC,ptV0MC,0.0,phiMC}; 
-      Double_t valTHnMCDauEta[4] = {massV0MC,ptPlus,etaMCPos,phiMCPos};//ptV0MC
-      Double_t valTHnMCDauPhi[4] = {massV0MC,ptMinus,etaMCNeg,phiMCNeg};
-
+      /*
+	Double_t phiMC =   p0->Phi(); 
+	Double_t etaMC =   p0->Eta(); 
+      */
+      /*
+	Double_t valTHnMC[4] = {massV0MC,ptV0MC,etaMC,phiMC};
+	Double_t valTHnMCDauEta[4] = {massV0MC,ptV0MC,etaMCPos,etaMCNeg};
+	Double_t valTHnMCDauPhi[5] = {massV0MC,phiMCPos,phiMCNeg,0.0,0.0};
+      */
       //-- Fill Particle histos --//
-      if (pdgCode==310){//K0s
+      if(pdgCode==310){//K0s
 	fHistPiPiMonitorMCCuts->Fill(17);
 
 	fHistPiPiEtaDMC[1]->Fill(etaMC00,ptV0MC);
@@ -2679,15 +3006,20 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	  
 	fHistPiPiMass->Fill(massV0MC);
 	fHistPiPiMassVSPt->Fill(massV0MC,ptV0MC);
+	if(rapidity>0.0) fHistPiPiMassVSPtPosMCTruth->Fill(massV0MC,ptV0MC);//check rap dependence of ana
+	else fHistPiPiMassVSPtNegMCTruth->Fill(massV0MC,ptV0MC);
 	fHistPiPiMassVSY->Fill(massV0MC,rapidity);
 	// fHistPiPiPtDaughters->Fill(ptMinus,ptPlus);
 	fHistPiPiPtVSY->Fill(rapidity,ptV0MC);
-	Double_t ctTK0s=0.0;//,ctK0s=0.0;
-	//	if(pV0MC>0.0) ctK0s=declength3d*0.497614/pV0MC;
+	Double_t ctTK0s=0.0,ctK0s=0.0;
+	if(pV0MC>0.0) ctK0s=declength3d*0.497614/pV0MC;
 	if(ptV0MC>0.0) ctTK0s=declength*0.497614/ptV0MC;
 	fHistPiPiDecayLengthResolution->Fill(declength3d,declength);
 	fHistPiPiDecayLengthVsPt->Fill(ptV0MC,declength);//ptV0MC,ctK0s);
-	fHistPiPiDecayLengthVsCtau->Fill(massV0MC,ctTK0s);
+
+	if(!fSetPtDepHist) fHistPiPiDecayLengthVsCtau->Fill(massV0MC,ctTK0s);
+	else fHistPiPiDecayLengthVsCtau->Fill(ptV0MC,ctTK0s);
+	
 	fHistPiPiDecayLengthVsMass->Fill(massV0MC,declength);
 	//all V0s histo
 	fHistArmenteros[isSecd]->Fill(alfa,qt);
@@ -2696,11 +3028,12 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	fHistV0RadiusZVSPt[isSecd]->Fill(ptV0MC,xyzMC[2]);
 	// fHistPiPiPhiPosVsPtPosVsMass->Fill(massV0MC,ctTK0s,ptV0MC);//,ctK0s);//phiPosMC);//xxx
 	fHistPiPiK0sVsLambdaMass->Fill(calcLambdamass,calcK0smass);
-	fHistPiPiK0sVsALambdaMass->Fill(calcALambdamass,calcK0smass);
-	//	valTHnMC[2] = ctTK0s; 
-	//	fTHnFK0s->Fill(valTHnMC);
-	fTHnFK0sDauEta->Fill(valTHnMCDauEta);
-	fTHnFK0sDauPhi->Fill(valTHnMCDauPhi);
+	fHistPiPiK0sVsALambdaMass->Fill(calcALambdamass,calcK0smass); 
+	/*
+	  fTHnFK0s->Fill(valTHnMC);
+	  fTHnFK0sDauEta->Fill(valTHnMCDauEta);
+	  fTHnFK0sDauPhi->Fill(valTHnMCDauPhi);
+	*/
       }
       if (pdgCode==3122){ //Lambda
 	fHistPiPMonitorMCCuts[isSecd]->Fill(17);
@@ -2709,31 +3042,33 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	fHistPiPEtaDMC[1]->Fill(etaMC01,ptV0MC);
 
 	fHistPiPMassVSPt[isSecd]->Fill(massV0MC,ptV0MC);
+	if(rapidity> 0.0) 	fHistPiPMassVSPtPosMCTruth[isSecd]->Fill(massV0MC,ptV0MC);
+	else fHistPiPMassVSPtNegMCTruth[isSecd]->Fill(massV0MC,ptV0MC);
 	fHistPiPMass[isSecd]->Fill(massV0MC);  
 	fHistPiPMassVSY[isSecd]->Fill(massV0MC,rapidity);
 	//  fHistPiPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
 	fHistPiPPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	  
 	
-	Double_t ctTL=0.0;//, ctL=0.0;
-	//	if(pV0MC>0.0) ctL=declength3d*1.115683/pV0MC;
+	Double_t ctTL=0.0, ctL=0.0;
+	if(pV0MC>0.0) ctL=declength3d*1.115683/pV0MC;
 	if(ptV0MC>0.0) ctTL=declength*1.115683/ptV0MC;
 	fHistPiPDecayLengthResolution[0]->Fill(declength3d,declength);
 	fHistPiPDecayLengthVsPt[isSecd]->Fill(ptV0MC,declength);//(ptV0MC,ctL);
-	fHistPiPDecayLengthVsCtau[isSecd]->Fill(massV0MC,ctTL);
+	if(!fSetPtDepHist)	fHistPiPDecayLengthVsCtau[isSecd]->Fill(massV0MC,ctTL);
+	else 	fHistPiPDecayLengthVsCtau[isSecd]->Fill(ptV0MC,ctTL);
 	fHistPiPDecayLengthVsMass[isSecd]->Fill(massV0MC,declength);
 	//all V0s hito	
 	fHistArmenteros[isSecd]->Fill(alfa,qt);
-	fHistV0RadiusZ[isSecd]->Fill(rMC2D,xyzMC[2]);
-	fHistV0RadiusXY[isSecd]->Fill(xyzMC[0],xyzMC[1]);
+	fHistV0RadiusZ[isSecd]->Fill(rMC2D,xyzMC[2]);	fHistV0RadiusXY[isSecd]->Fill(xyzMC[0],xyzMC[1]);
 	fHistV0RadiusZVSPt[isSecd]->Fill(ptV0MC,xyzMC[2]);
 	
 	fHistPiPK0sVsLambdaMass->Fill(calcLambdamass,calcK0smass);
-
-	//valTHnMC[2] = ctTL;
-	//fTHnFL->Fill(valTHnMC);
-	fTHnFLDauEta->Fill(valTHnMCDauEta);
-	fTHnFLDauPhi->Fill(valTHnMCDauPhi);
+	/*
+	  fTHnFL->Fill(valTHnMC);
+	  fTHnFLDauEta->Fill(valTHnMCDauEta);
+	  fTHnFLDauPhi->Fill(valTHnMCDauPhi);
+	*/
       }
       if (pdgCode==-3122){ //AntiLambda
 	fHistPiAPMonitorMCCuts[isSecd]->Fill(17);
@@ -2742,18 +3077,21 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	fHistPiPEtaDMC[1]->Fill(etaMC01,ptV0MC);
 
 	fHistPiAPMassVSPt[isSecd]->Fill(massV0MC,ptV0MC);
+	if(rapidity>0.0)	fHistPiAPMassVSPtPosMCTruth[isSecd]->Fill(massV0MC,ptV0MC);
+	else fHistPiAPMassVSPtNegMCTruth[isSecd]->Fill(massV0MC,ptV0MC);
 	fHistPiAPMass[isSecd]->Fill(massV0MC);
 	fHistPiPMassVSY[isSecd]->Fill(massV0MC,rapidity);
 	//  fHistPiAPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
 	fHistPiAPPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	
-	Double_t ctTAL=0.0;//, ctAL=0.0;
-	//	if(pV0MC>0.0) ctAL=declength3d*1.115683/pV0MC;
+	Double_t ctTAL=0.0, ctAL=0.0;
+	if(pV0MC>0.0) ctAL=declength3d*1.115683/pV0MC;
 	if(ptV0MC>0.0) ctTAL=declength*1.115683/ptV0MC;
 	fHistPiAPDecayLengthResolution[0]->Fill(declength3d,declength);
 	fHistPiAPDecayLengthVsPt[isSecd]->Fill(ptV0MC,declength);//(ptV0MC,ctAL);
-	fHistPiAPDecayLengthVsCtau[isSecd]->Fill(massV0MC,ctTAL);
-	fHistPiAPDecayLengthVsMass[isSecd]->Fill(massV0MC,declength);
+	if(!fSetPtDepHist)	fHistPiAPDecayLengthVsCtau[isSecd]->Fill(massV0MC,ctAL);
+	else	fHistPiAPDecayLengthVsCtau[isSecd]->Fill(ptV0MC,ctAL);
+	fHistPiAPDecayLengthVsMass[isSecd]->Fill(massV0MC,ctTAL);//declength);
 	//all V0s histo	   
 	fHistArmenteros[isSecd]->Fill(alfa,qt);
 	fHistV0RadiusZ[isSecd]->Fill(rMC2D,xyzMC[2]);
@@ -2764,10 +3102,11 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	// if(isSecd <1) fHistPiPPhiPosVsPtPosVsMass->Fill(massV0MC,ctTL,ptV0MC);//,ctK0s);//phiPosMC);//xxx
 	//else fHistPiAPPhiPosVsPtPosVsMass->Fill(massV0MC,ctTL,ptV0MC);//,ctK0s);//phiPosMC);//xxx	  
 	//fHistPiAPPhiPosVsPtPosVsMass->Fill(massV0MC,ctTL,ptV0MC);//,ctK0s);//phiPosMC);//xxx
-	//	valTHnMC[2] = ctTAL;
-	//fTHnFAL->Fill(valTHnMC);
-	fTHnFALDauEta->Fill(valTHnMCDauEta);
-	fTHnFALDauPhi->Fill(valTHnMCDauPhi);
+	/*
+	  fTHnFAL->Fill(valTHnMC);
+	  fTHnFALDauEta->Fill(valTHnMCDauEta);
+	  fTHnFALDauPhi->Fill(valTHnMCDauPhi);
+	*/
       }
     }//MC true ana
     else{// V0 reco ana
@@ -2795,6 +3134,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
   TLorentzVector positivesMIPi;
   TLorentzVector negativesMIPi;
 
+  Double_t magField = fESD->GetMagneticField();
   /*
     AliKFParticle::SetField(fESD->GetMagneticField());
     AliKFVertex primVtx(*(fESD->GetPrimaryVertex()));
@@ -2825,9 +3165,11 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
   Bool_t stopLoop = kFALSE;
   Int_t trackID[sizenV0][2];
 
-  //----------- loop over V0 for daughter track position mapping ------------//
-  //tbd
-
+  //----------- store V0 for daughter track id for position mapping ------------//
+  Float_t v0idForDauPositionK0s[sizenV0];
+  Float_t v0idForDauPositionL[sizenV0];
+  Float_t v0idForDauPositionAL[sizenV0];
+ 
   //---------------------- for MC mode only ------------------//
   AliStack *stackRec = NULL;
   if(fMCMode && !fMCTruthMode) stackRec = fMCev->Stack();
@@ -2835,6 +3177,10 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
   //------------------------ V0 reco loop --------------------//
   for(Int_t iV0MI = 0; iV0MI < nV0; iV0MI++) {//V0 loop
       
+    v0idForDauPositionK0s[iV0MI] = 0.0;
+    v0idForDauPositionL[iV0MI] = 0.0;
+    v0idForDauPositionAL[iV0MI] = 0.0;
+
     //-- get V0 info --//
     v0MIs = fESD->GetV0(iV0MI);
     if(!v0MIs ) continue;
@@ -2863,6 +3209,11 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     fHistPiPMonitorCuts[isSecd]->Fill(3);
     fHistPiAPMonitorCuts[isSecd]->Fill(3);
          
+
+    Int_t indexPos = 0,indexNeg=0;
+    indexPos = v0MIs->GetPindex();
+    indexNeg = v0MIs->GetNindex();
+
     //-- for MC mode --//
     if(fMCMode){
       //check MC labels (and find partners for MC truth V0 daughters for fMCTruthMode=kTRUE)
@@ -2872,7 +3223,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     else{
       //check if V0 was alread found
       if(fStopLoop){
-	if(CheckMultipleV0Candidates(v0MIs,iV0MI,trackID)) continue;
+	if(CheckMultipleV0Candidates(indexPos,indexNeg,iV0MI,trackID)) continue;
       }
     }
 
@@ -2891,13 +3242,12 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     Double_t eta01 = trackNegTest->Eta();
             
 
-    Int_t indexPos = 0,indexNeg=0;
+  
     //---------- check sign assignment for daughters --------//
     Bool_t switchSign = kFALSE;
      
     if( trackPosTest->GetSign() >0){//pos
-      indexPos = v0MIs->GetPindex();
-      indexNeg = v0MIs->GetNindex();
+   
 	
       v0MIs->GetPPxPyPz(pp[0],pp[1],pp[2]);
       v0MIs->GetNPxPyPz(pm[0],pm[1],pm[2]);
@@ -2954,17 +3304,58 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     trackNeg =fESD->GetTrack(indexNeg);
     
     // ------------- calc masses and 4 vectors -------------- //
-    //K0
+
     positivesMIPi.SetXYZM(pp[0],pp[1],pp[2],massPi);
     negativesMIPi.SetXYZM(pm[0],pm[1],pm[2],massPi);
-    TLorentzVector v0K0=positivesMIPi+negativesMIPi;
-    
-    //Lambda
     positivesMIP.SetXYZM(pp[0],pp[1],pp[2],massP);
-    TLorentzVector v0Lambda=positivesMIP+negativesMIPi;
-     
-    //Anitlambda
     negativesMIAP.SetXYZM(pm[0],pm[1],pm[2],massP);
+    //  cout<<positivesMIPi.Pt()<<"  "<< positivesMIPi.Px()<<"  "<< positivesMIPi.Py()<<"  "<< positivesMIPi.Pz()<<"  "<< positivesMIPi.M()<<endl;
+    //  //  cout<<negativesMIPi.Pt()<<"  "<< negativesMIPi.Px()<<"  "<< negativesMIPi.Py()<<"  "<< negativesMIPi.Pz()<<"  "<< negativesMIPi.M()<<endl;
+    if(fShift && fabs(fDeltaInvP) >0.0){//shift in pT by 1/deltaPt
+      //pos pion
+      Double_t getPtPos = positivesMIPi.Pt();
+      Double_t shiftPtPos = 0.0;
+      if(getPtPos >0.0){
+	shiftPtPos = 1.0/getPtPos + fDeltaInvP;
+	if(fabs(shiftPtPos)>0.0) getPtPos  = 1.0/shiftPtPos;
+      }
+      Double_t getPzPos = positivesMIPi.Pz();
+      Double_t calcPtotPos = sqrt(pow(getPtPos,2.0)+pow(getPzPos,2.0));
+      Double_t calcEtaPos = 0.5*log((calcPtotPos + getPzPos)/(calcPtotPos-getPzPos));
+           
+      //neg pion
+      Double_t getPtNeg = negativesMIPi.Pt();
+      Double_t shiftPtNeg = 0.0;
+      if(getPtNeg >0.0){
+	shiftPtNeg = -1.0/getPtNeg + fDeltaInvP;
+	if(fabs(shiftPtNeg)>0.0) getPtNeg  = 1.0/shiftPtNeg;
+      }
+      Double_t getPzNeg = negativesMIPi.Pz();
+      Double_t calcPtotNeg = sqrt(pow(getPtNeg,2.0)+pow(getPzNeg,2.0));
+      Double_t calcEtaNeg = 0.5*log((calcPtotNeg + getPzNeg)/(calcPtotNeg-getPzNeg));
+
+      //set new pt
+      positivesMIPi.SetPtEtaPhiM(fabs(getPtPos),calcEtaPos,positivesMIPi.Phi(),massPi);
+      negativesMIPi.SetPtEtaPhiM(fabs(getPtNeg),calcEtaNeg,negativesMIPi.Phi(),massPi);
+      positivesMIP.SetPtEtaPhiM(fabs(getPtPos),calcEtaPos,positivesMIPi.Phi(),massP);
+      negativesMIAP.SetPtEtaPhiM(fabs(getPtNeg),calcEtaNeg,negativesMIPi.Phi(),massP);     
+      if(getPtPos < 0.0 && getPtNeg > 0.0) {
+	positivesMIPi.SetPtEtaPhiM(fabs(getPtNeg),calcEtaNeg,negativesMIPi.Phi(),massPi);
+	negativesMIPi.SetPtEtaPhiM(fabs(getPtPos),calcEtaPos,positivesMIPi.Phi(),massPi);
+	positivesMIP.SetPtEtaPhiM(fabs(getPtNeg),calcEtaNeg,negativesMIPi.Phi(),massP);
+	negativesMIAP.SetPtEtaPhiM(fabs(getPtPos),calcEtaPos,positivesMIPi.Phi(),massP);    
+      }
+      if((getPtPos < 0.0 && getPtNeg< 0.0) ||(getPtPos > 0.0 && getPtNeg > 0.0)) continue;
+      // cout<<"*************"<<endl;
+      //  //  cout<<positivesMIPi.Pt()<<"  "<< positivesMIPi.Px()<<"  "<< positivesMIPi.Py()<<"  "<< positivesMIPi.Pz()<<"  "<< positivesMIPi.M()<<endl;
+      //  cout<<negativesMIPi.Pt()<<"  "<< negativesMIPi.Px()<<"  "<< negativesMIPi.Py()<<"  "<< negativesMIPi.Pz()<<"  "<< negativesMIPi.M()<<endl;
+    }
+    // cout<<"------------------------------*************"<<endl;
+    //K0
+    TLorentzVector v0K0=positivesMIPi+negativesMIPi;
+    //Lambda
+    TLorentzVector v0Lambda=positivesMIP+negativesMIPi;
+    //Anitlambda
     TLorentzVector v0ALambda=positivesMIPi+negativesMIAP;
 
     //---------------------AliKFParticle ---------------------//
@@ -3045,8 +3436,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 
     v0MIs->GetXYZ(xr[0],xr[1],xr[2]);  
 
-    Double_t posDaughterPt = ppTrack.Pt();
-    Double_t negDaughterPt = pmTrack.Pt();
+    // Double_t posDaughterPt = ppTrack.Pt();
+    // Double_t negDaughterPt = pmTrack.Pt();
  
     /*
       Double_t v0sPt=v0MIs->Pt();
@@ -3139,8 +3530,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     if(nclsTPCFindablePos >0.0) ratioFoFiPos =double(nclsTPCPos)/ double(nclsTPCFindablePos);
 
     //track length TPC cut
-    Double_t lengthTPCPos = trackPos->GetLengthInActiveZone(0,3,236, fESD->GetMagneticField(),0,0);//-5 ,0,0);
-    Double_t lengthTPCNeg = trackNeg->GetLengthInActiveZone(0,3,236, fESD->GetMagneticField(),0,0);//-5 ,0,0);
+    Double_t lengthTPCPos = trackPos->GetLengthInActiveZone(0,3,236, magField,0,0);//-5 ,0,0);
+    Double_t lengthTPCNeg = trackNeg->GetLengthInActiveZone(0,3,236, magField,0,0);//-5 ,0,0);
     if(fCutMITrackLength && lengthTPCPos <=  fCutMITrackLengthLengthF * (130.0 - 5.0*fabs(trackPos->GetSigned1Pt()))) continue;
     fHistPiPiMonitorCuts->Fill(7);
     fHistPiPMonitorCuts[isSecd]->Fill(7);
@@ -3367,7 +3758,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	trackNeg->GetImpactParameters(bN,dcaToVertexZNeg);
     */
 
-    // Double_t dcaToVertexZPos = 0.0, dcaToVertexZNeg = 0.0;
+    Double_t dcaToVertexZPos = 0.0, dcaToVertexZNeg = 0.0;
     AliExternalTrackParam *parPos = NULL;
     AliExternalTrackParam *parNeg = NULL;
     Double_t dcaYZP[2],dcaYZN[2],covar[3];
@@ -3379,11 +3770,11 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
       parPos = new AliExternalTrackParam( *v0MIs->GetParamN());
       parNeg = new AliExternalTrackParam( *v0MIs->GetParamP());
     }
-    Bool_t checkProp = parPos->PropagateToDCA(fESD->GetPrimaryVertex(),fESD->GetMagneticField(),40.0,dcaYZP,covar);
-    //dcaToVertexZPos =  dcaYZP[1];
+    Bool_t checkProp = parPos->PropagateToDCA(fESD->GetPrimaryVertex(),magField,40.0,dcaYZP,covar);
+    dcaToVertexZPos =  dcaYZP[1];
     delete parPos;
-    checkProp = parNeg->PropagateToDCA(fESD->GetPrimaryVertex(),fESD->GetMagneticField(),40.0,dcaYZN,covar);
-    // dcaToVertexZNeg =  dcaYZN[1];
+    checkProp = parNeg->PropagateToDCA(fESD->GetPrimaryVertex(),magField,40.0,dcaYZN,covar);
+    dcaToVertexZNeg =  dcaYZN[1];
     delete parNeg;
 
 
@@ -3404,6 +3795,9 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     // dcaNegToVertex  =   negPiKF->GetDistanceFromVertexXY(primaryVtxPosition);
 
     Double_t  dcaV0ToPrimVertex= v0MIs->GetD(primaryVtxPosition[0],primaryVtxPosition[1]);////v0K0KF.GetDistanceFromVertexXY(tPrimaryVtxPosition); 
+
+    Double_t dcaZ=(primaryVtxPosition[0]-xr[0])*v0K0.Y() - (primaryVtxPosition[1]-xr[1])*v0K0.X();
+    Double_t dcaZToVertex=TMath::Sqrt(dcaZ*dcaZ/(pow(v0K0.X(),2)+pow(v0K0.Y(),2)));
         
     //------------------- decay length V0 -------------//
       
@@ -3479,12 +3873,12 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
       
     //    if( ppTrack.Angle(pmTrack)<0.001) continue;  
     //    if( ppTrack.Angle(pmTrack)<0.004) continue;   
-      
-    //    Double_t px = v0K0.Px();
-    //    Double_t py = v0K0.Py();
-    //    Double_t phi  = TMath::Pi()+TMath::ATan2(-py, -px);
-    //    Double_t eta =  v0K0.Eta();
-
+    /*    
+	  Double_t px = v0K0.Px();
+	  Double_t py = v0K0.Py();
+	  Double_t phi  = TMath::Pi()+TMath::ATan2(-py, -px);
+	  Double_t eta =  v0K0.Eta();
+    */
     /*     
     //introduce more histo
     Double_t errOnMassK0s = v0MIs->ChangeMassHypothesis(310);
@@ -3510,7 +3904,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     if(dcaV0ToPrimVertex > fDCAToVertexK0)  cutOKK0s = kFALSE;
     else fHistPiPiMonitorCuts->Fill(24);
       
-    if(fabs(xr[2])> fDCAZ) cutOKK0s = kFALSE; //like decay radius z component
+    if(fabs(dcaToVertexZNeg) > fDCAZ  || fabs(dcaToVertexZPos) > fDCAZ ) cutOKK0s = kFALSE;
+    //    if(fabs(xr[2])> fDCAZ) cutOKK0s = kFALSE; //like decay radius z component
     else fHistPiPiMonitorCuts->Fill(25);
       
     Double_t ctK0 = 0.0,ctTK0 = 0.0;
@@ -3548,10 +3943,12 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     
      
     //-------------------------- Lambda cuts -------------------------//
+
     if(dcaV0ToPrimVertex > fDCAToVertexL) cutOKLambda = kFALSE;
     else  fHistPiPMonitorCuts[isSecd]->Fill(24);
 
-    if(fabs(xr[2])>fDCAZ) cutOKLambda = kFALSE; //like decay radius z component
+    if(fabs(dcaToVertexZNeg) > fDCAZ  || fabs(dcaToVertexZPos) > fDCAZ ) cutOKLambda = kFALSE;
+    //    if(fabs(xr[2])>fDCAZ) cutOKLambda = kFALSE; //like decay radius z component
     else  fHistPiPMonitorCuts[isSecd]->Fill(25);
          
     Double_t ctL = 0.0,ctTL=0.0;
@@ -3594,7 +3991,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     if(dcaV0ToPrimVertex > fDCAToVertexL) cutOKALambda = kFALSE;
     else fHistPiAPMonitorCuts[isSecd]->Fill(24);
  
-    if(fabs(xr[2])> fDCAZ) cutOKALambda = kFALSE;//continue;//like decay radius z component
+    //    if(fabs(xr[2])> fDCAZ) cutOKALambda = kFALSE;//continue;//like decay radius z component
+    if(fabs(dcaToVertexZNeg) > fDCAZ  || fabs(dcaToVertexZPos) > fDCAZ ) cutOKALambda = kFALSE;
     else fHistPiAPMonitorCuts[isSecd]->Fill(25);
 
     Double_t ctAL = 0.0,ctTAL=0.0;
@@ -3671,21 +4069,29 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      declengthV0MC = dim2V0Radius;
 	    }
 	    fHistPiPiMonitorCuts->Fill(35);
+
+	    v0idForDauPositionK0s[iV0MI] = massK0s;
+	    
 	    fHistPiPiMass->Fill(massK0s);
 	    fHistPiPiMassVSPt->Fill(massK0s,ptK0s);
 	    fHistPiPiMassVSPtMCTruth->Fill(massK0s,ptV0MC);
+	    if(rapK0s >0.0) fHistPiPiMassVSPtPosMCTruth->Fill(massK0s,ptV0MC);//check rap dep
+	    else   fHistPiPiMassVSPtNegMCTruth->Fill(massK0s,ptV0MC);
 	    fHistPiPiMassVSY->Fill(massK0s,rapK0s);
 	    fHistPiPiPtVSY->Fill(rapK0s,ptK0s);
 	    fHistPiPiDecayLengthVsMass->Fill(massK0s,dim2V0Radius);//decayLength);
+	    fHistPiPiDistDaughtersTPCEntrVsMass->Fill(massK0s,distTPCinner);
 	    // fHistPiPiPhiPosVsPtPosVsMass->Fill(massK0s,ctTK0,ptV0MC);//,ctK0);//posDaughterPhi);//xxx
-	    //Double_t valTHnK0s[4]= {massK0s,ptV0MC,ctTK0,phi};
-	    Double_t valTHnK0sDauEta[4]= {massK0s,posDaughterPt,posDaughterEta,posDaughterPhi};//ptV0MC
-	    Double_t valTHnK0sDauPhi[4]= {massK0s,negDaughterPt,negDaughterEta,negDaughterPhi};
-	    if(massK0s >=0.35 && massK0s <= 0.65){
-	      // fTHnFK0s->Fill(valTHnK0s);	    
+	    /*
+	      Double_t valTHnK0s[4]= {massK0s,ptV0MC,dim2V0Radius,distTPCinner};
+	      fTHnFK0s->Fill(valTHnK0s);	    
+	   
+	      Double_t valTHnK0sDauEta[4]= {massK0s,ptV0MC,posDaughterEta,negDaughterEta};
+	      Double_t valTHnK0sDauPhi[5]= {massK0s,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
+
 	      fTHnFK0sDauEta->Fill(valTHnK0sDauEta);
 	      fTHnFK0sDauPhi->Fill(valTHnK0sDauPhi);
-	    }
+	    */
 	    /*
 	      if(fMCMode && !fMCTruthMode){
 	      fHistPiPiPDGCode->Fill(pdgBG);
@@ -3719,11 +4125,12 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      fHistPiPiDecayLengthVsCtau->Fill(massK0s,ctTK0);
 	      fHistPiPiTrackLengthPosVsMass->Fill(massK0s,lengthTPCPos);
 	      fHistPiPiTrackLengthNegVsMass->Fill(massK0s,lengthTPCNeg);
-	      //fHistPiPiDCAZPos->Fill(massK0s,dcaToVertexZPos);
-	      //fHistPiPiDCAZNeg->Fill(massK0s,dcaToVertexZNeg);
+	      fHistPiPiDCAZPos->Fill(massK0s,dcaToVertexZPos);
+	      fHistPiPiDCAZNeg->Fill(massK0s,dcaToVertexZNeg);
 	      fHistPiPiDCADaughters->Fill(massK0s,dcaDaughters);
 	      fHistPiPiDCADaughterPosToPrimVtxVSMass->Fill(massK0s,dcaPosToVertex);
 	      fHistPiPiDCAVSMass->Fill(massK0s,dcaV0ToPrimVertex);
+	      fHistPiPiDCAZVSMass->Fill(massK0s,dcaZToVertex);
 	
 	    }
 	    else{
@@ -3732,12 +4139,12 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      fHistPiPiDecayLengthVsCtau->Fill(ptV0MC,ctTK0);
 	      fHistPiPiTrackLengthPosVsMass->Fill(ptV0MC,lengthTPCPos);
 	      fHistPiPiTrackLengthNegVsMass->Fill(ptV0MC,lengthTPCNeg);
-	      //fHistPiPiDCAZPos->Fill(ptV0MC,dcaToVertexZPos);
-	      //fHistPiPiDCAZNeg->Fill(ptV0MC,dcaToVertexZNeg);
+	      fHistPiPiDCAZPos->Fill(ptV0MC,dcaToVertexZPos);
+	      fHistPiPiDCAZNeg->Fill(ptV0MC,dcaToVertexZNeg);
 	      fHistPiPiDCADaughters->Fill(ptV0MC,dcaDaughters);
 	      fHistPiPiDCADaughterPosToPrimVtxVSMass->Fill(ptV0MC,dcaPosToVertex);
 	      fHistPiPiDCAVSMass->Fill(ptV0MC,dcaV0ToPrimVertex);
-	
+	      fHistPiPiDCAZVSMass->Fill(ptV0MC,dcaZToVertex);
 	    }
 
 	    if(fMCMode && fMCTruthMode)  fHistPiPiDecayLengthResolution->Fill(declengthV0MC,dim2V0Radius);
@@ -3813,26 +4220,29 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      declengthV0MC = dim2V0Radius;
 	    }
 	    fHistPiPMonitorCuts[isSecd]->Fill(35);
+
+	    v0idForDauPositionL[iV0MI] = massLambda;
+
 	    fHistPiPMass[isSecd]->Fill(massLambda);
 	    fHistPiPMassVSPt[isSecd]->Fill(massLambda,ptLambda);
 	    fHistPiPMassVSPtMCTruth[isSecd]->Fill(massLambda,ptV0MC);
+	    if(rapL >0.0) fHistPiPMassVSPtPosMCTruth[isSecd]->Fill(massLambda,ptV0MC);//check rap dep
+	    else  fHistPiPMassVSPtNegMCTruth[isSecd]->Fill(massLambda,ptV0MC);
 	    fHistPiPMassVSY[isSecd]->Fill(massLambda,rapL);
 	    fHistPiPPtVSY[isSecd]->Fill(rapL,ptLambda);
+	    fHistPiPDistDaughtersTPCEntrVsMass->Fill(massLambda,distTPCinner);
 	    //fHistPiPDecayLengthVsPt[isSecd]->Fill(ptLambda,ctL);
-	    //Double_t valTHnL[4]= {massLambda,ptV0MC,eta,phi};
-	    //Double_t valTHnLDauEta[4]= {massLambda,ptV0MC,posDaughterEta,negDaughterEta};
-	    //	    Double_t valTHnLDauPhi[5]= {massLambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
+	    /*
+	      Double_t valTHnL[4]= {massLambda,ptV0MC,dim2V0Radius,distTPCinner};
+	      fTHnFL->Fill(valTHnL);
+	      Double_t valTHnL[4]= {massLambda,ptV0MC,eta,phi};
+	      Double_t valTHnLDauEta[4]= {massLambda,ptV0MC,posDaughterEta,negDaughterEta};
+	      Double_t valTHnLDauPhi[5]= {massLambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
 
-	    //	    Double_t valTHnL[4]= {massLambda,ptV0MC,ctTL,phi};
-	    Double_t valTHnLDauEta[4]= {massLambda,posDaughterPt,posDaughterEta,posDaughterPhi};
-	    Double_t valTHnLDauPhi[4]= {massLambda,negDaughterPt,negDaughterEta,negDaughterPhi};//ptV0MC
 
-
-	    if(massLambda >=1.07 && massLambda <= 1.17){
-	      //	      fTHnFL->Fill(valTHnL);
 	      fTHnFLDauEta->Fill(valTHnLDauEta);
 	      fTHnFLDauPhi->Fill(valTHnLDauPhi);
-	    }
+	    */
 	    /*	      
 		      if(fMCMode && !fMCTruthMode) {
 		      fHistPiPPDGCode->Fill(pdgBG);
@@ -3855,10 +4265,11 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      fHistPiPCosPointAng[isSecd]->Fill(massLambda,cosOPAng);
 	      fHistPiPTrackLengthPosVsMass[isSecd]->Fill(massLambda,lengthTPCPos);
 	      fHistPiPTrackLengthNegVsMass[isSecd]->Fill(massLambda,lengthTPCNeg);
-	      //fHistPiPDCAZPos[isSecd]->Fill(massLambda,dcaToVertexZPos);
-	      //fHistPiPDCAZNeg[isSecd]->Fill(massLambda,dcaToVertexZNeg);
+	      fHistPiPDCAZPos[isSecd]->Fill(massLambda,dcaToVertexZPos);
+	      fHistPiPDCAZNeg[isSecd]->Fill(massLambda,dcaToVertexZNeg);
 	      fHistPiPDCADaughters[isSecd]->Fill(massLambda,dcaDaughters);
 	      fHistPiPDCAVSMass[isSecd]->Fill(massLambda,dcaV0ToPrimVertex);
+	      fHistPiPDCAZVSMass[isSecd]->Fill(massLambda,dcaZToVertex);
 	      fHistPiPDCADaughterPosToPrimVtxVSMass[isSecd]->Fill(massLambda,dcaPosToVertex);
 	      fHistPiPDCADaughterNegToPrimVtxVSMass[isSecd]->Fill(massLambda,dcaNegToVertex);
 	      fHistPiPDecayLengthVsCtau[isSecd]->Fill(massLambda,ctTL);
@@ -3868,10 +4279,11 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      fHistPiPCosPointAng[isSecd]->Fill(ptV0MC,cosOPAng);
 	      fHistPiPTrackLengthPosVsMass[isSecd]->Fill(ptV0MC,lengthTPCPos);
 	      fHistPiPTrackLengthNegVsMass[isSecd]->Fill(ptV0MC,lengthTPCNeg);
-	      //fHistPiPDCAZPos[isSecd]->Fill(ptV0MC,dcaToVertexZPos);
-	      //fHistPiPDCAZNeg[isSecd]->Fill(ptV0MC,dcaToVertexZNeg);
+	      fHistPiPDCAZPos[isSecd]->Fill(ptV0MC,dcaToVertexZPos);
+	      fHistPiPDCAZNeg[isSecd]->Fill(ptV0MC,dcaToVertexZNeg);
 	      fHistPiPDCADaughters[isSecd]->Fill(ptV0MC,dcaDaughters);
 	      fHistPiPDCAVSMass[isSecd]->Fill(ptV0MC,dcaV0ToPrimVertex);
+	      fHistPiPDCAZVSMass[isSecd]->Fill(ptV0MC,dcaZToVertex);
 	      fHistPiPDCADaughterPosToPrimVtxVSMass[isSecd]->Fill(ptV0MC,dcaPosToVertex);
 	      fHistPiPDCADaughterNegToPrimVtxVSMass[isSecd]->Fill(ptV0MC,dcaNegToVertex);
 	      fHistPiPDecayLengthVsCtau[isSecd]->Fill(ptV0MC,ctTL);
@@ -3968,31 +4380,34 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      declengthV0MC = dim2V0Radius;
 	    }
 	    fHistPiAPMonitorCuts[isSecd]->Fill(35);
+
+	    v0idForDauPositionAL[iV0MI] = massALambda;
+
 	    fHistPiAPMass[isSecd]->Fill(massALambda);
 	    fHistPiAPMassVSPt[isSecd]->Fill(massALambda,ptALambda);
 	    fHistPiAPMassVSPtMCTruth[isSecd]->Fill(massALambda,ptV0MC);
+	    if(rapAL >0.0) fHistPiAPMassVSPtPosMCTruth[isSecd]->Fill(massALambda,ptV0MC);//check rap dep
+	    else  fHistPiAPMassVSPtNegMCTruth[isSecd]->Fill(massALambda,ptV0MC);
 	    fHistPiAPMassVSY[isSecd]->Fill(massALambda,rapAL);
 	    fHistPiAPPtVSY[isSecd]->Fill(rapAL,ptALambda);
+	    fHistPiAPDistDaughtersTPCEntrVsMass->Fill(massALambda,distTPCinner);
 	    //  fHistPiAPPtDaughters[isSecd]->Fill(posDaughterPt,negDaughterPt);
 	    //  fHistPiAPPhiPosVsPtPosVsMass->Fill(massALambda,ctTAL,ptV0MC);//
-	    //  if(isSecd < 1) fHistPiPPhiPosVsPtPosVsMass->Fill(massLambda,ctTL,ptV0MC);//
+	    //  if(isSecd < 1) fHistPiPPhiPosVsPtPosVsMass->Fill(massALambda,ctTL,ptV0MC);//
 	    // else {
-	    //	if(fMCTruthMode) fHistPiAPPhiPosVsPtPosVsMass->Fill(massLambda,ctTL,ptV0MC);
+	    //	if(fMCTruthMode) fHistPiAPPhiPosVsPtPosVsMass->Fill(massALambda,ctTL,ptV0MC);
 	    // }	      
 	    /*
-	    Double_t valTHnAL[4]= {massALambda,ptV0MC,eta,phi};
-	    Double_t valTHnALDauEta[4]={massALambda,ptV0MC,posDaughterEta,negDaughterEta};
-	    Double_t valTHnALDauPhi[5]={massALambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
-	    */
-	    //Double_t valTHnAL[4]= {massALambda,ptV0MC,ctTAL,phi};
-	    Double_t valTHnALDauEta[4]= {massALambda,posDaughterPt,posDaughterEta,posDaughterPhi};
-	    Double_t valTHnALDauPhi[4]= {massALambda,negDaughterPt,negDaughterEta,negDaughterPhi};//ptV0MC
-
-	    if(massALambda >=1.07 && massALambda <= 1.17){
+	      Double_t valTHnAL[4]= {massALambda,ptV0MC,dim2V0Radius,distTPCinner};
+	      fTHnFAL->Fill(valTHnAL);
+	      Double_t valTHnAL[4]= {massALambda,ptV0MC,eta,phi};
+	      Double_t valTHnALDauEta[4]={massALambda,ptV0MC,posDaughterEta,negDaughterEta};
+	      Double_t valTHnALDauPhi[5]={massALambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
+	       
 	      fTHnFALDauEta->Fill(valTHnALDauEta);
 	      fTHnFALDauPhi->Fill(valTHnALDauPhi);
-	      //fTHnFAL->Fill(valTHnAL);
-	    }
+	      fTHnFAL->Fill(valTHnAL);
+	    */
 	    if(fMCMode && !fMCTruthMode) fHistPiAPPDGCode->Fill(pdgBG);
 	    if( massALambda>1.108 && massALambda<1.123 )  fHistPiAPDecayLengthVsPt[isSecd]->Fill(ptV0MC,dim2V0Radius);//decayLength);
 	    fHistPiAPDecayLengthVsMass[isSecd]->Fill(massALambda,dim2V0Radius);//decayLength);
@@ -4006,6 +4421,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      //fHistPiAPDCAZNeg[isSecd]->Fill(massALambda,dcaToVertexZNeg);
 	      fHistPiAPDCADaughters[isSecd]->Fill(massALambda,dcaDaughters);
 	      fHistPiAPDCAVSMass[isSecd]->Fill(massALambda,dcaV0ToPrimVertex);
+	      fHistPiAPDCAZVSMass[isSecd]->Fill(massALambda,dcaZToVertex);
 	      fHistPiAPDCADaughterPosToPrimVtxVSMass[isSecd]->Fill(massALambda,dcaPosToVertex);
 	      fHistPiAPDCADaughterNegToPrimVtxVSMass[isSecd]->Fill(massALambda,dcaNegToVertex);
 	      fHistPiAPDecayLengthVsCtau[isSecd]->Fill(massALambda,ctTAL);
@@ -4019,6 +4435,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	      //fHistPiAPDCAZNeg[isSecd]->Fill(ptV0MC,dcaToVertexZNeg);
 	      fHistPiAPDCADaughters[isSecd]->Fill(ptV0MC,dcaDaughters);
 	      fHistPiAPDCAVSMass[isSecd]->Fill(ptV0MC,dcaV0ToPrimVertex);
+	      fHistPiAPDCAZVSMass[isSecd]->Fill(ptV0MC,dcaZToVertex);
 	      fHistPiAPDCADaughterPosToPrimVtxVSMass[isSecd]->Fill(ptV0MC,dcaPosToVertex);
 	      fHistPiAPDCADaughterNegToPrimVtxVSMass[isSecd]->Fill(ptV0MC,dcaNegToVertex);
 	      fHistPiAPDecayLengthVsCtau[isSecd]->Fill(ptV0MC,ctTAL);
@@ -4109,9 +4526,13 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     if (posPKF)  delete posPKF; posPKF=NULL;
     if (negAPKF) delete negAPKF; negAPKF=NULL;
     */
-      
+
   }//---- end V0 reco loop----//
-   
+   /*
+     CheckDistanceOfDaughters( nV0,v0idForDauPositionK0s,magField,0);
+     CheckDistanceOfDaughters( nV0,v0idForDauPositionL,magField,1);
+     CheckDistanceOfDaughters( nV0,v0idForDauPositionAL,magField,2);
+   */
 }
   
 //________________________________________________________________________
@@ -4185,15 +4606,145 @@ Bool_t  AliAnalysisTaskV0ForRAA::GetMCTruthPartner(AliESDtrack *pos,AliESDtrack 
 }
 
 //__________________________________________________________________________________________________________
-Bool_t  AliAnalysisTaskV0ForRAA::CheckMultipleV0Candidates(AliESDv0 *v0MIs,Int_t iV0MI,Int_t trackID[][2]){
-  Int_t part1 = v0MIs->GetPindex();
-  Int_t part2 = v0MIs->GetNindex();
+Bool_t  AliAnalysisTaskV0ForRAA::CheckMultipleV0Candidates(Int_t part1,Int_t part2,Int_t iV0MI,Int_t trackID[][2]){
+ 
   Bool_t multFoundV0=kFALSE;
   for(Int_t i = 0; i < iV0MI;i++){
     if(trackID[i][0] == part1 && trackID[1][i] == part2) multFoundV0 = kTRUE;
     if(trackID[i][1] == part2 && trackID[1][i] == part1) multFoundV0 = kTRUE;
   }  
   return multFoundV0;
+}
+//__________________________________________________________________________________________________________
+void  AliAnalysisTaskV0ForRAA::CheckDistanceOfDaughters(Int_t iV0MI,Float_t V0ID[],Double_t magF,Int_t particle){
+  //particle 0=K0s, 1=Lambda, 2 = AntiLambda
+
+  //fESD->GetMagneticField()
+  AliESDv0 *v01 = NULL;
+  AliExternalTrackParam *parPos1 = NULL;
+  AliExternalTrackParam *parNeg1 = NULL;
+  AliESDtrack *trackPosTest1 = NULL;
+  AliESDtrack *trackNegTest1 = NULL;
+  AliESDv0 *v02 = NULL;
+  AliExternalTrackParam *parPos2 = NULL;
+  AliExternalTrackParam *parNeg2 = NULL;
+  AliESDtrack *trackPosTest2 = NULL;
+  AliESDtrack *trackNegTest2 = NULL;
+ 
+  for(Int_t i = 0; i < iV0MI-1;i++){
+    if(V0ID[i] < 0.00001) continue;
+    v01 = fESD->GetV0(i);  
+    //-- esd tracks --//
+    trackPosTest1 = fESD->GetTrack(v01->GetPindex());
+    trackNegTest1 = fESD->GetTrack(v01->GetNindex());
+    if(trackPosTest1->GetSign() <0){
+      parPos1 = new AliExternalTrackParam( *v01->GetParamN());
+      parNeg1 = new AliExternalTrackParam( *v01->GetParamP()); 
+    }
+    else{
+      parPos1 = new AliExternalTrackParam( *v01->GetParamP());
+      parNeg1 = new AliExternalTrackParam( *v01->GetParamN()); 
+    }
+    Bool_t dPos = kFALSE;
+    Bool_t dNeg = kFALSE;
+    Double_t distPos[3], distNeg[3];
+    Double_t  averagePos = 0.0;
+    Double_t  averageNeg = 0.0;
+    Double_t pt = v01->Pt();
+    Int_t fillPtHist = 0;
+    if(pt > 2.0 && pt <6.0) fillPtHist =1;
+    if( pt >= 6.0)  fillPtHist =2;
+
+    for(Int_t k=i+1;k<iV0MI;k++){
+      if(V0ID[k] < 0.00001 ) continue;
+      v02 = fESD->GetV0(k);  
+      //-- esd tracks --//
+      trackPosTest2 = fESD->GetTrack(v02->GetPindex());
+      trackNegTest2 = fESD->GetTrack(v02->GetNindex());
+      if(trackPosTest2->GetSign() <0){
+	parPos2 = new AliExternalTrackParam( *v02->GetParamN());
+	parNeg2 = new AliExternalTrackParam( *v02->GetParamP()); 
+      }
+      else{
+	parPos2 = new AliExternalTrackParam( *v02->GetParamP());
+	parNeg2 = new AliExternalTrackParam( *v02->GetParamN()); 
+      }
+      
+      for(Int_t j = 0;j<9;j++){
+	Double_t atX = 84.5+ j*20.0; //every 20 cm in TPC
+	dPos = parPos1->GetDistance(parPos2,atX,distPos,magF);
+	dNeg = parNeg1->GetDistance(parNeg2,atX,distNeg,magF);
+	Double_t rP = sqrt(pow(distPos[0],2.0)+pow(distPos[1],2.0)+pow(distPos[2],2.0));
+	Double_t rN = sqrt(pow(distNeg[0],2.0)+pow(distNeg[1],2.0)+pow(distNeg[2],2.0));
+	averagePos += rP;
+	averageNeg += rN;
+      }
+      averagePos /= 9.0;
+      averageNeg /= 9.0;
+      Double_t atRPos1 = 0.0,atRPos2=0.0;
+      Double_t atRNeg1 = 0.0,atRNeg2=0.0;
+      Double_t dcaPos = parPos1->GetDCA(parPos2,magF, atRPos1,atRPos2);
+      Double_t dcaNeg = parNeg1->GetDCA(parNeg2,magF, atRNeg1,atRNeg2);
+      
+      switch(particle){
+      case 0:
+	if( averagePos <=20.0) {
+	  fHistPiPiDistDaughtersPos[fillPtHist]->Fill(V0ID[k],averagePos);
+	  fHistPiPiDCADaughtersPos[fillPtHist]->Fill(V0ID[k],dcaPos);      
+	}	
+	if( averageNeg <=20.0){
+	  fHistPiPiDistDaughtersNeg[fillPtHist]->Fill(V0ID[k],averageNeg);
+	  fHistPiPiDCADaughtersNeg[fillPtHist]->Fill(V0ID[k],dcaNeg);
+	}
+	//	if(dcaPos < fDistDauForCheck && atRPos1 > 80.0 && atRPos1 < 240.0) {
+	fHistPiPiRadAtDCA5cmDaughtersPos[fillPtHist]->Fill(V0ID[k],atRPos1);
+	//	}
+	//	if(dcaNeg < fDistDauForCheck && atRNeg2 > 80.0 && atRNeg2 < 240.0) {
+	fHistPiPiRadAtDCA5cmDaughtersNeg[fillPtHist]->Fill(V0ID[k],atRNeg1);
+	//	}
+	break;
+      case 1:
+	if( averagePos <=20.0) {
+	  fHistPiPDistDaughtersPos[fillPtHist]->Fill(V0ID[k],averagePos);
+	  fHistPiPDCADaughtersPos[fillPtHist]->Fill(V0ID[k],dcaPos);	
+	}
+	if( averageNeg <=20.0){
+	  fHistPiPDistDaughtersNeg[fillPtHist]->Fill(V0ID[k],averageNeg);
+	  fHistPiPDCADaughtersNeg[fillPtHist]->Fill(V0ID[k],dcaNeg);
+	}
+	//	if(dcaPos < fDistDauForCheck  && atRPos1 > 80.0 && atRPos1 < 240.0) {
+	fHistPiPRadAtDCA5cmDaughtersPos[fillPtHist]->Fill(V0ID[k],atRPos1);
+	//	}
+	//if(dcaNeg < fDistDauForCheck  && atRNeg1 > 80.0 && atRNeg1 < 240.0) {
+	fHistPiPRadAtDCA5cmDaughtersNeg[fillPtHist]->Fill(V0ID[k],atRNeg1);
+	//	}
+	break;
+      case 2:
+     	if( averagePos <=20.0) {
+	  fHistPiAPDistDaughtersPos[fillPtHist]->Fill(V0ID[k],averagePos);
+	  fHistPiAPDCADaughtersPos[fillPtHist]->Fill(V0ID[k],dcaPos);	
+	}
+	if( averageNeg <=20.0){
+	  fHistPiAPDistDaughtersNeg[fillPtHist]->Fill(V0ID[k],averageNeg);
+	  fHistPiAPDCADaughtersNeg[fillPtHist]->Fill(V0ID[k],dcaNeg);
+	}
+	//	if(dcaPos < fDistDauForCheck  && atRPos1 > 80.0 && atRPos1 < 240.0) {
+	fHistPiAPRadAtDCA5cmDaughtersPos[fillPtHist]->Fill(V0ID[k],atRPos1);
+	//}
+	//	if(dcaNeg < fDistDauForCheck  && atRNeg1 > 80.0 && atRNeg1 < 240.0) {
+	fHistPiAPRadAtDCA5cmDaughtersNeg[fillPtHist]->Fill(V0ID[k],atRNeg1);
+	//	}
+	break;
+      }
+
+      delete parPos2;
+      delete parNeg2;
+    }
+    delete parPos1;
+    delete parNeg1;
+
+  }  
+
 }
 
 //__________________________________________________________________________________________________________
