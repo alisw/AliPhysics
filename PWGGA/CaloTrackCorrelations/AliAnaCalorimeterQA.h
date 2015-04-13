@@ -217,8 +217,8 @@ public:
   TH2F *   fhEtaPhiCharged;                     //!<! eta distribution, Reco, matched with track
   TH3F *   fhEtaPhiECharged;                    //!<! eta vs phi vs E, Reco, matched with track
     
-  TH2F *   fhIM;                                //!<! cluster pairs invariant mass
-  TH2F *   fhAsym;                              //!<! cluster pairs invariant mass
+  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass
+  TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass
   
   TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
   TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy vs eta of cluster
@@ -239,12 +239,12 @@ public:
   TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhClusterMaxCellECross;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
   
-  TH2F *   fhLambda0;                           //!<! cluster Lambda0    vs Energy
-  TH2F *   fhLambda1;                           //!<! cluster Lambda1    vs Energy
-  TH2F *   fhDispersion;                        //!<! cluster Dispersion vs Energy
+  TH2F *   fhLambda0;                           //!<! Cluster Lambda0    vs Energy
+  TH2F *   fhLambda1;                           //!<! Cluster Lambda1    vs Energy
+  TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   
   // Bad clusters histograms
-  TH1F *   fhBadClusterEnergy;                  //!<! energy of bad cluster
+  TH1F *   fhBadClusterEnergy;                  //!<! Energy of bad cluster
   TH2F *   fhBadClusterTimeEnergy;              //!<! Time Max cell of bad cluster
   TH2F *   fhBadClusterPairDiffTimeE;           //!<! Pair of clusters time difference vs E, bad cluster
   TH2F *   fhBadCellTimeSpreadRespectToCellMax; //!<! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
@@ -454,7 +454,7 @@ public:
   TH2F *   fhMCChHad2MatchdEdx;                 //!<! dE/dx vs. momentum for all matches, MC charged
 	
   TH2F *   fhMCNeutral1EOverP;                  //!<! p/E for track-cluster matches, MC neutral
-  TH1F *   fhMCNeutral1dR;                      //!<! distance between projected track and cluster, MC neutral
+  TH1F *   fhMCNeutral1dR;                      //!<! Distance between projected track and cluster, MC neutral
   TH2F *   fhMCNeutral2MatchdEdx;               //!<! dE/dx vs. momentum for all matches, MC neutral
 	
   TH2F *   fh1EOverPR02;                        //!<! p/E for track-cluster matches, dR < 0.2
