@@ -76,14 +76,8 @@ TString myMacroName = "RunRsnAnalysisExample";
 /* the macros are normally in the Rsn Package */
 TString loadMacroPath = "${ALICE_PHYSICS}/PWGLF/RESONANCES/macros/mini";
 
-/* The analysis mode can be "local" or "grid"
-Use "grid" if you need to access any file on the grid. 
-This is optional in test mode, mandatory for full and terminate mode.
-Use "local" instead if you do not need the grid connection at all */
-TString analysisMode  = "grid"; 
-
 /* Set the usage of the alien plugin to kTRUE to run the analysis on grid or in test mode,
-   set it to kFALSE to run test locally*/
+   set it to kFALSE to run test locally */
 Bool_t useAlienPlugin = 1;
 
 /* If you want to run merging via plugin, disable the local merge when running in "full" mode or "terminate" mode (multiple merging stages are possible).
@@ -123,7 +117,8 @@ void RunGridRsnTrain(TString pluginmode="test",
 		     TString aliPhysicsVer = "vAN-20150222") { 
   
   Long64_t nentries=100000, firstentry=0; //needed to read input when running locally
-  
+  TString analysisMode  = "grid"; 
+
   // Connect to AliEn only if needed
   if(analysisMode=="grid") {
     TGrid::Connect("alien://");
