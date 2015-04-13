@@ -16,6 +16,7 @@
 
 class TClonesArray;
 class AliJBaseTrack;
+class AliJEfficiency;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
@@ -36,6 +37,9 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		void SetEventVertex( double *vtx ){ fVertex = vtx; };
 		void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; };
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
+		void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; 
+									cout << "fEffMode set = " << fEffMode << endl;};
+
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
 
 
@@ -50,9 +54,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		double Complex_abs( double real, double img);
 		double Complex_sqr_real( double real, double img);
 		double Complex_sqr_img( double real, double img);
-
-
 		double Get_ScaledMoments( int k, int harmonics);
+		AliJEfficiency* GetAliJEfficiency() { return fEfficiency;}
 
 
 	private:
@@ -62,13 +65,14 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		double * fVertex;
 		Float_t		fCent;
 		int			fDebugLevel;
-
 		int fNCent;
 		int fCBin;
 		double *fCentBin;
-
 		int fNJacek;  
 		double *fPttJacek;
+		AliJEfficiency *fEfficiency;
+		int fEffMode;
+		int fEffFilterBit;
  
 
 // Histograms
@@ -100,11 +104,6 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 
 		AliJTH1D fh_correlator; // some more complex correlator
-
-		AliJTH1D fh_vn_test1;
-		AliJTH1D fh_vn_test2;
-		AliJTH1D fh_vn_vn_test1;
-		AliJTH1D fh_vn_vn_test2;
 
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis
