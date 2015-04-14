@@ -25,6 +25,8 @@ class AliAnalysisMuMuNch : public AliAnalysisMuMuBase
 {
 public:
   
+  AliAnalysisMuMuNch(TRootIOCtor* ioCtor);
+
   AliAnalysisMuMuNch(TH2F* spdCorrection=0x0, TProfile* spdMeanCorrection = 0x0, Double_t meanTrRef=-1., Double_t etaMin=-0.5, Double_t etaMax=0.5
                      , Double_t zmin=-10., Double_t zmax=10., Bool_t disableHistos=kFALSE ,Bool_t computeResolution=kFALSE);
   
