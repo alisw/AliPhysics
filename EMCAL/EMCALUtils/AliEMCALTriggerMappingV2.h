@@ -88,6 +88,12 @@ public:
   //L0 Index
   //********************************************
   Bool_t  GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const;
+
+  Bool_t GetInfoFromAbsFastORIndex(
+    const Int_t id, 
+    Int_t& iTRU , Int_t& iADC , Int_t& iEta_TRU , Int_t& iPhi_TRU , 
+    Int_t& iSM  ,               Int_t& iEta_SM  , Int_t& iPhi_SM  
+    ) const;
 	
 private:
 	         
@@ -132,13 +138,7 @@ private:
     if( iSM < 20) return kDCAL_Ext       ;
     return -1 ;
   }
-  
-  Bool_t GetInfoFromAbsFastORIndex(
-    const Int_t id, 
-    Int_t& iTRU , Int_t& iADC , Int_t& iEta_TRU , Int_t& iPhi_TRU , 
-    Int_t& iSM  ,               Int_t& iEta_SM  , Int_t& iPhi_SM  
-    ) const;
-  
+    
   ClassDef(AliEMCALTriggerMappingV2,1)
 };
  
