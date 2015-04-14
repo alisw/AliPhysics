@@ -361,6 +361,7 @@ protected:
     TH2* bin0 = GetH2(c, "sum0");
     TH1* type = GetH1(c, "events");
     TH1* trig = GetH1(c, "triggers");
+    TH1* stat = GetH1(c, "status");
     if (!bin0 || !bin || !trig || !type) return;
 
     type->SetFillStyle(3001);
@@ -371,15 +372,18 @@ protected:
     DrawInPad(fBody, 1, trig, "HIST TEXT");
     DrawInPad(fBody, 2, type, "HIST TEXT");
     DrawInPad(fBody, 3, bin,  "colz");
-    DrawInPad(fBody, 4, bin0, "colz");
     
     if (bin0->GetEntries() <= 0) {
-      fBody->cd(4);
-      TLatex* l = new TLatex(0.5, 0.5, "No 0-bin events");
-      l->SetNDC();
-      l->SetTextAlign(22);
-      l->Draw();
+      DrawInPad(fBody, 4, stat, "HIST TEXT");
+      // fBody->cd(4);
+      // TLatex* l = new TLatex(0.5, 0.5, "No 0-bin events");
+      // l->SetNDC();
+      // l->SetTextAlign(22);
+      // l->Draw();
     }
+    else
+      DrawInPad(fBody, 4, bin0, "colz");
+      
     PrintCanvas(title);
   }
   //____________________________________________________________________
@@ -445,15 +449,18 @@ protected:
     TAxis*   centAxis = (onlyMB ? 0 : GetCentAxis(c));
     if (centAxis && centAxis->GetNbins() < 1) centAxis = 0;
 
+    THStack* dndeta_  = GetStack(c, "dndeta");
+    if (!dndeta_ || !dndeta_->GetHists() ||
+	dndeta_->GetHists()->GetEntries() < 0) return 0;
+    
     TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, 
 			     onlyMB || !centAxis? "" : "Centralities");
     l->SetNColumns(fLandscape ? 1 : 2);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
-
-    THStack* dndeta_  = GetStack(c, "dndeta");
     THStack* dndeta   = CleanStack(dndeta_, l, centAxis);
 
+    
     if (!onlyMB) {
       Double_t y1 = fLandscape ? 0  : .3;
       Double_t x2 = fLandscape ? .7 : 1;

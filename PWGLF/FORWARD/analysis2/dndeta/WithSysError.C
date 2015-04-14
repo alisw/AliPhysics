@@ -11,15 +11,18 @@
 void
 WithSysError(const TString&  system, 
 	     UShort_t        sNN, 
-	     const TString&  trigger, 
+	     TString&        trigger, 
 	     const Option_t* option="e5",
 	     Bool_t          rebinned=true, 
-	     Bool_t          empirical=true)
+	     Bool_t          empirical=true,
+	     Bool_t          alsoLog=true)
 {
   // --- Search path -------------------------------------------------
   const char* fwd = 0;
   if (gSystem->Getenv("FWD"))
     fwd = gSystem->Getenv("FWD");
+  else if (gSystem->Getenv("ANA_SRC")) 
+    fwd = gSystem->Getenv("ANA_SRC");
   else 
     fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
   gROOT->SetMacroPath(Form("%s:%s/dndeta:%s/gse:%s/scripts",
@@ -124,6 +127,10 @@ WithSysError(const TString&  system,
     TString n(h->GetName());
     if (n.Contains("syserror", TString::kIgnoreCase)) continue;
 
+    // Color_t col = h->GetMarkerColor();
+    // h->SetMarkerColor(col);
+    // h->SetLineColor(col);
+    // h->SetFillColor(col);
     GraphSysErr* gse = adder->Make(h, (first ? el : 0));
     gse->SetTitle(""); 
     gse->Draw(Form("%s %s", (first ? "axis" : ""), opt));
@@ -140,7 +147,7 @@ WithSysError(const TString&  system,
   }
 
   // --- Draw the others ---------------------------------------------
-  other->Draw("p");
+  if (other) other->Draw("p");
 
   // --- Build legend of unique names --------------------------------
   TParameter<int>* um =
@@ -183,7 +190,7 @@ WithSysError(const TString&  system,
   c->Print(Form("%s.pdf", base.Data()));
   c->Print(Form("%s.png", base.Data()));
 
-  if (trigLegTitle.IsNull()) return;
+  if (trigLegTitle.IsNull() || !alsoLog) return;
   
   frame->SetMinimum(5);
   frame->SetMaximum(3*frame->GetMaximum());

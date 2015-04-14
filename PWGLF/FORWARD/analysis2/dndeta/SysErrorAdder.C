@@ -5,6 +5,7 @@
 # include <TLegend.h>
 # include <TLegendEntry.h>
 # include <TObjString.h>
+# include <TColor.h>
 #else
 class GraphSysErr;
 class TH1;
@@ -13,15 +14,22 @@ class TLegend;
 
 struct SysErrorAdder
 {
+  /** 
+   * Fill styles 
+   */
   enum {
-    kTriggerFill = 1001, // 3144
-    kMergingFill = 3001, // 3001,
-    kDensityFill = 3002, // 3002,
-    kEmpiricalFill = 3144, // 3244
-    kHadronFill = 3244
+    kTriggerFill   = 1001, // 0, // 3144
+    kMergingFill   = 3001, // 0, // 3001,
+    kDensityFill   = 3002, // 0, // 3002,
+    kEmpiricalFill = 3144, // 0, // 3244
+    kHadronFill    = 3244, // 0,
+    kOtherFill     = 0
   };
+  /** System */
   TString fSys;
+  /** Energy */
   UShort_t fSNN;
+  /** Trigger */
   TString fTrig;
   /** 
    * Constructor 
@@ -35,19 +43,65 @@ struct SysErrorAdder
 		const TString& trig)
     : fSys(sys), fSNN(sNN), fTrig(trig)
   {}
+  /** 
+   * Destructor 
+   */
   virtual ~SysErrorAdder() {}
+  /** 
+   * Trigger name
+   * 
+   * @return The trigger name 
+   */
   virtual const char* GetTriggerName() const { return "Trigger"; }
+  Int_t ModColor(Color_t n, UShort_t off) const
+  {
+    ULong_t max   = 0xff;
+    ULong_t pixel = TColor::Number2Pixel(n);
+    ULong_t r     = TMath::Min((((pixel >> 16) & max) + off), max);
+    ULong_t g     = TMath::Min((((pixel >>  8) & max) + off), max);
+    ULong_t b     = TMath::Min((((pixel >>  0) & max) + off), max);
+    ULong_t next  = (r << 16) | (g << 8) | (b << 0);
+    // Printf("0x%08x -> 0x%08x", pixel, next);
+    return TColor::GetColor(next);
+  }
+    
+  /** 
+   * Modify an error 
+   * 
+   * @param gse   Graph 
+   * @param id    Identifier 
+   * @param fill  Fill style 
+   * @param l     Legend 
+   */
   void ModError(GraphSysErr* gse, Int_t id, Style_t fill, TLegend* l) const
   {
-    gse->SetSysFillColor(id,gse->GetMarkerColor());
-    gse->SetSysLineColor(id,gse->GetMarkerColor());
+    UShort_t off = 64; // (id-1) * 32;
+    // switch (fill) {
+    // case kMergingFill:    off = 16; break; 
+    // case kDensityFill:    off = 32; break;
+    // case kEmpiricalFill:  off = 48; break;
+    // case kHadronFill:     off = 64; break;
+    // }
+    Color_t c = ModColor(gse->GetMarkerColor(), off);
+	
+    gse->SetSysFillColor(id, c);
+    gse->SetSysLineColor(id, c);
     gse->SetSysLineWidth(id, 1);
-    gse->SetSysLineStyle(id, 1);
+    gse->SetSysLineStyle(id, id);
     gse->SetSysFillStyle(id, fill);
-    gse->SetSysOption(id, GraphSysErr::kBox);
+    // gse->SetSysOption(id, GraphSysErr::kBox);
+    gse->SetSysOption(id, GraphSysErr::kRect);
     
     AddLegend(l, id, gse->GetSysTitle(id), fill);
   }
+  /** 
+   * Add legend entry 
+   * 
+   * @param l       Legend
+   * @param id      Identifier 
+   * @param title   Title 
+   * @param fill    Fill style 
+   */
   void AddLegend(TLegend* l, Int_t id, const char* title, Style_t fill) const
   {
     if (!l) return;
@@ -55,12 +109,14 @@ struct SysErrorAdder
     e->SetFillStyle(fill);
     e->SetFillColor(kBlack);
     e->SetLineColor(kBlack);
+    e->SetLineStyle(id);
     e->SetLineWidth(1);
   }
   /** 
    * Declare the systematic error from the trigger 
    * 
    * @param gse Graph 
+   * @param l    Legend
    * 
    * @return Id of systmatic error or -1
    */
@@ -78,6 +134,7 @@ struct SysErrorAdder
    * Declare the systematic error from the merging 
    * 
    * @param gse Graph 
+   * @param l    Legend
    * 
    * @return Id of systmatic error or -1
    */
@@ -92,6 +149,7 @@ struct SysErrorAdder
    * Declare the systematic error from the denisty calculation
    * 
    * @param gse Graph 
+   * @param l    Legend
    * 
    * @return Id of systmatic error or -1
    */
@@ -106,6 +164,7 @@ struct SysErrorAdder
    * Declare the systematic error from the empirical correction 
    * 
    * @param gse Graph 
+   * @param l    Legend
    * 
    * @return Id of systmatic error or -1
    */
@@ -116,6 +175,14 @@ struct SysErrorAdder
     ModError(gse, id, kEmpiricalFill, l);
     return id;
   }
+  /** 
+   *  Declare the systematic error from the hadron chemistry
+   * 
+   * @param gse  Graph 
+   * @param l    Legend
+   * 
+   * @return Identifier 
+   */
   virtual Int_t MakeHadron(GraphSysErr* gse, TLegend* l) const
   {
     if (GetHadron(4) <= 0) return -1;
@@ -330,7 +397,7 @@ struct CENTAdder : public SysErrorAdder
       fMin = 0.04; fMax = 0.06;
     }
     else {
-      fMin = 0.01; fMax = 0.02;
+      fMin = 0.01; fMax = 0.10; // 0.02
     }
   }
   const char* GetTriggerName() const 
@@ -349,7 +416,9 @@ struct CENTAdder : public SysErrorAdder
    */
   virtual void GetTrigger(Double_t& low, Double_t& high) const
   {
-    low = high = ((fCent-2.5)/100) * (fMax-fMin) + fMin;
+    Double_t    e = fMax*TMath::Power(fCent/100,2)+fMin;
+    // Double_t e = ((fCent-2.5)/100) * (fMax-fMin) + fMin;
+    low = high = e;
     // Printf("Trigger error for centrality = %f -> %f", fCent, low);
   }
   /** 
