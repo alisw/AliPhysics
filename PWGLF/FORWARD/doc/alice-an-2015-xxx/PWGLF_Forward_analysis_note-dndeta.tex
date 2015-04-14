@@ -105,11 +105,12 @@ $\PhiAcc{}\,$\footnote{Since $\phiAcc$ is 1 or slightly less, we have
   \frac{\NA}{\N{X}{}} \frac1{\Delta\eta} \int_0^{2\pi} \text{d}\varphi
   \frac{\dndetadphi}{\PhiAcc}\quad,\label{eq:eventnormdndeta}
 \end{align}
-where $\NA/\N{X}{}$ is the trigger normalisation.  The trigger
-normalisation is given by 
+where $\NA/\N{X}{}$ is the trigger normalisation for events of type
+$X$.  The trigger normalisation $\N{X}{}$ is given by
+\cite{normalization} 
 \begin{align}
   \N{X}{} &= \frac{1}{\epsilon_X}\left[\NA +
-    \alpha(\NnotV -
+    \alpha(\NnotV{} -
     \beta)\right]  \label{eq:fulleventnorm}\\
   & = \frac{1}{\epsilon_X}\left[\NA + \frac{\NA}{\NV}(\NT-\NV{} -
     \beta)\right]\nonumber \\
@@ -124,7 +125,7 @@ where
   $X\in\{\INEL,\INELONE,\NSD\}$ for \ppCol{} data and $\text{CENT}$
   for \PbPbCol{} and \pPbCol{}/\PbpCol{} data
 \item[$\epsilon_V=\frac{\NV{}}{\NT{}}$] is the primary vertex
-  efficiency evaluated over the data.
+  efficiency evaluated over the data sample.
 \item[$\NA$] is the number of events with a trigger \emph{and} a valid
   vertex in the selected range
 \item[$\NV{}$] is the number of events with a trigger \emph{and} a valid
@@ -132,17 +133,17 @@ where
 \item[$\NT$] is the number of events with a trigger.
 \item[$\NnotV{}=\NT-\NV{}$] is the number of events with a trigger
   \emph{but no} valid vertex
-\item[$\alpha=\frac{\NA}{\NV}$] is the fraction of accepted events of
-  the total number of events with a trigger and valid vertex.  
+\item[$\alpha=\frac{\NA}{\NV}$] is the fraction of accepted events
+  relative to the total number of events that have a trigger and valid vertex.  
 \item[$\beta=\N{a}{}+\N{c}{}-\N{e}{}$] is the number of background
   events \emph{with} a valid off-line trigger. This formula is the
   simplest case of one bunch crossing per trigger/background
   class. For more complicated collision setups the fractions in the
   formula change.
 \end{description}
-The two terms under the parenthesis in \eqref{eq:fulleventnorm} refers
+The two terms under the parentheses in \eqref{eq:fulleventnorm} refer
 to the observed number of event $\NA$, and the events missed because
-of no vertex reconstruction.  Note, for $\beta\ll\NT{}$
+of missing vertex reconstruction.  Note, for $\beta\ll\NT{}$
 %% \eqref{eq:fulleventnorm} 
 this reduces to the simpler expression
 $$
@@ -154,10 +155,11 @@ evaluated from simulations as
   \epsilon_X = \frac{\N{X\wedge \text{T}}{}}{\N{X}{}}\quad,
 \end{align*}
 that is, the ratio of number of events of type $X$ with a
-corresponding trigger $T$ to the number of events of type $X$.
+corresponding trigger $T$ relative to the number of events of type
+$X$.
 
 If the trigger $X$ introduces a bias on the measured number of events,
-then \eqref{eq:eventnormdndeta} need to be modified to 
+then \eqref{eq:eventnormdndeta} needs to be modified to 
 \begin{align}
   \ndndeta &= 
   \frac{\NA}{\N{X}{}}\frac1{\Delta\eta} \int_0^{2\pi} \text{d}\varphi
@@ -187,9 +189,10 @@ specified in the simulations, we will calculate a too low or too high
 value for $\SecMap$.  Also, even if the correct amount of material
 \emph{is} present, but placed incorrectly, we will have a wrong
 distribution of $\SecMap$.  Since there are many parts in the various
-detectors, some of which are hard to describe, it is very unlikely
-that we will ever reach a high enough accuracy so that $\SecMap$ is
-not associated with very large uncertainties.
+detectors, some of which are hard to describe and hence incompletely
+specified, it is very unlikely that we will ever reach a high enough
+accuracy so that $\SecMap$ is not associated with very large
+uncertainties.
 
 \begin{figure}[th!bp]
   \centering
@@ -215,27 +218,28 @@ However, in the \PbPbCol{} running of 2010\footnote{The
   \texttt{LHC10h} period.} we were fortunate that the machine provided
 collisions of beams at so--called \emph{satellite} locations.
 
-These collisions happened at
+These collisions occurred at
 $$
 z \approx -187.5, -150, \ldots, -37.5, 37.5, 75, \ldots, 300,
 \unit[337.5]{\text{cm}} \quad, 
 $$ 
 and were a consequence of the so-called `debunching effect'
 \cite{maxime}.  Particles produced in these off--nominal interaction
-point collisions pass through very different regions of \ALICE{}, as
-illustrated in \figref{fig:satellite_geom}.  
+point collisions propagate through very different regions of the
+\ALICE{} detector material, as illustrated in
+\figref{fig:satellite_geom}.
 
 Particles produced in collisions at say
 $z\approx\unit[225]{\text{cm}}$ pass through a lot less material than
 particles produced at the nominal interaction region
 ($z\approx\unit[0]{\text{cm}}$), and the material they do pass through
-is a lot simpler and much better described in the simulations.  This
-was exploited to produce the \ndndeta{} distributions for \PbPbCol{}
-at \usNN{PbPb}{2760} for centrality bins $0-5-10-20-30\%$
-\cite{Abbas:2013bpa}.  Another benefit of this approach was the
-overlap between the \FMD{} and \VZERO{} acceptance, and that the
-\VZERO{} and \FMD{} results could be checked against the results from
-the \SPD{} tracklets.
+(mostly the beam--pipe) is a lot simpler and much better described in
+the simulations.  This was exploited to produce the \ndndeta{}
+distributions for \PbPbCol{} at \usNN{PbPb}{2760} for centrality bins
+$0-5-10-20-30\%$ \cite{Abbas:2013bpa}.  Another benefit of this
+approach was the overlap between the \FMD{} and \VZERO{} acceptance,
+and that the \VZERO{} and \FMD{} results could be checked against the
+results from the \SPD{} tracklets.
 
 \begin{figure}[h!tbp]
   \centering
@@ -244,13 +248,17 @@ the \SPD{} tracklets.
   \subfigure[]{
     \label{fig:empirical:secmap}\figinput[.45\linewidth]{secmap_empcor}}
   \caption{\subref{fig:empirical:cent} The empirical correction
-    $\EmpCor[c]{}$ for 4 centralities, and the mean of these.  The
+    $\EmpCor[c]{}$ for 4 centralities, and the average of these.  The
     lower plot shows the ratio of $\EmpCor[c]{}$ to the mean.  From
     this we see we $\pm2\%$ systematic error on
     $\EmpCor{}$. \subref{fig:empirical:secmap} The average empirical
     correction compared to simulation based
     $\langle\SecMap\rangle=1/2\pi\int\text{d}\varphi\SecMap{}$ for
-    given $\IPz{}$ bin. } 
+    given $\IPz{}$ bin. Black points show the \emph{empirical}
+    correction obtained from the satellite \PbPbCol{} collisions.  The
+    filled coloured regions show the
+    $\langle\SecMap\rangle=1/2\pi\int\text{d}\varphi\SecMap{}$
+    obtained from simulations.} 
 \end{figure}
 
 
@@ -262,8 +270,9 @@ secondaries) analysis for the pseudo--rapidity density
 \usNN{PbPb}{2760} at nominal interaction points
 ($z\in[\unit[-10]{\text{cm}},\unit[+10]{\text{cm}}]$) by turning off
 the secondary correction $\SecMap$ (see
-\secref{sec:sub:sub:secmap}).The \emph{empirical correction} is then
-defined as
+\secref{sec:sub:sub:secmap}). 
+
+The \emph{empirical correction} is then defined as
 
 \begin{equation}
   \label{eq:empirical:cent}
@@ -302,11 +311,11 @@ depends on the material distribution.
     \label{fig:empirical:compare_es}\figinput[.55\linewidth]{compare_es}}
   \subfigure[]{
     \label{fig:empirical:es_pp0900}\figinput[.35\linewidth]{es_pp0900}}
-  \caption{\subref{fig:empirical:compare_es} Comparison of $\EmpCor$ and
-    $\EmpCor[\subIPz,r]{}$.  The spread of $\EmpCor[\subIPz,r]{}$
+  \caption{\subref{fig:empirical:compare_es} Comparison of $\EmpCor$
+    and $\EmpCor[\subIPz,r]{}$.  The spread of $\EmpCor[\subIPz,r]{}$
     reflects the different material seen at different values of
-    $\IPz$.   \subref{fig:empirical:es_pp0900} Comparison of applying
-    either $\EmpCor$ or $\EmpCor[\subIPz,r]{}$ to \ppCol{} at
+    $\IPz$.  \subref{fig:empirical:es_pp0900} Comparison between
+    applying either $\EmpCor$ or $\EmpCor[\subIPz,r]{}$ to \ppCol{} at
     \usNN{pp}{0900}. }
   \label{fig:empirical:methods}
 \end{figure}
@@ -319,19 +328,19 @@ $\EmpCor[\subIPz,r]{}$ instead of $\SecMap$ as outlined in
 \secref{sec:sub:sub:secmap}.  A comparison of the two methods is shown
 in \figref{fig:empirical:methods}.  We see that the difference in
 using either the single correction $\EmpCor$ or the interaction point,
-ring dependent correction $\EmpCor[\subIPz,r]{}$ is less than 2\%.
+ring dependent correction $\EmpCor[\subIPz,r]{}$, is less than 2\%.
 
 \begin{figure}[h!tbp]
   \centering
   \figinput[.9\linewidth]{empcor_stable}
   \caption{Stability of $\EmpCor$. The top panel shows the empirical
     correction using different runs for the inclusive reference
-    (numerator of \eqref{eq:empirical:cent}). At the bottom, the ratio
-    to the canonical reference run (138190) is shown, as well as the
-    average distance to that canonical reference. Two groups are
-    clearly seen: Before run 138190 and after run 138190.  From the
-    Quality Assurance we know that the runs before 138190 are
-    problematic, and are therefore not considered. }
+    (numerator of \eqref{eq:empirical:cent}).  At the bottom, the
+    ratio to the canonical reference run (138190) is shown, as well as
+    the average distance to that canonical reference. Two groups are
+    clearly seen: Before run 138190 (circles) and after run 138190
+    (squares).  From the Quality Assurance we know that the runs
+    before 138190 are problematic, and are therefore not considered. }
   \label{fig:empirical:empcor_stable}
 \end{figure}
 
@@ -340,9 +349,11 @@ from analysing a single run (138190) to obtain the numerator of
 \eqref{eq:empirical:cent}.  To access the stability of the correction
 with respect to the reference data, all of the \PbPbCol{} data from
 2010 was analysed.  The result is shown in
-\figref{fig:empirical:empcor_stable}.  Apart from the problematic runs
-before run 138190, the resulting corrections all fall within
-$\pm5\%$. 
+\figref{fig:empirical:empcor_stable}.  Apart from a few problematic
+runs before run 138190\footnote{QA of these earlier runs show a low
+  energy loss contamination in all detectors --- typically attributed
+  to an unknown beam--background.}, the resulting corrections all
+agree within $\pm5\%$.
 
 
 \paragraph{Universality} The empirical correction $\EmpCor$ as a
@@ -387,7 +398,7 @@ uncertainties and their sizes.
     event selection in \ppCol{} are taken from \cite{pwgud:2015}.
     Errors on the centrality selection in \pPbCol{} and \PbpCol{} from
     \cite{Adam:2014qja}.  \PbPbCol{} systematics from
-    \cite{PbPbCent:XXX}. Numbers in parenthesis are for \FMD{1} which
+    \cite{PbPbCent:XXX}. Numbers in parentheses are for \FMD{1} which
     receives and additional uncertainty from the hadron--chemistry. \newline
     %% 
     \textsuperscript{*}These
@@ -548,8 +559,8 @@ uncertainties and their sizes.
     integrity. 
   \end{description}
 \item[Secondary map] This row is mainly included for historical
-  reasons and apply only in the case where the $\SecMap$ correction is
-  applied to the data (see \secref{sec:sub:sub:secmap}). 
+  reasons and apply in case the $\SecMap$ correction is
+  applied to the data (see \secref{sec:sub:sub:secmap}) only. 
 \item[Empirical] \hbox{}\hfill 
   \begin{description}
   \item[Satellite] These are the systematic errors from the published
@@ -643,8 +654,8 @@ the various contributions.
   \label{tab:satellite:syserrs}
 \end{table}
 
-The 3 measurements was then added up using the non--common systematic
-errors as weights, and finally the common systematics errors are added
+The 3 measurements were added up using the non--common systematic
+errors as weights, and finally the common systematics errors were added
 in quadrature.  The result is shown in the top of
 \figref{fig:dndeta:sat:results}. Subtracting the common error from the
 centrality estimate from the systematic error leaves us with an error
@@ -658,11 +669,11 @@ $\IPz$ we found a low value of $4.2\%$ and a high value of $4.9\%$
   \caption{Top shows the \ndndeta{} from satellite collisions after
     summing the 3 measurements, and adding the common systematics in
     quadrature \cite{Abbas:2013bpa}.  The bottom panel shows the
-    result relative systematic error for each centrality bin. For the
-    points relevant for the forward analysis we see a variation from
-    3.75\% --- for the most central --- up to 7.5\% --- for the most
-    peripheral.  The dashed line indicates the centrality weighted
-    mean. }
+    resulting relative systematic error for each centrality bin. For
+    the points relevant for the forward analysis we see a variation
+    from 3.75\% --- for the most central --- up to 7.5\% --- for the
+    most peripheral.  The dashed line indicates the centrality
+    weighted mean. }
   \label{fig:dndeta:sat:results}
 \end{figure}
 
