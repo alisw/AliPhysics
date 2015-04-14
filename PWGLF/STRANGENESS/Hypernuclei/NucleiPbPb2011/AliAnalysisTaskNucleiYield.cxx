@@ -37,9 +37,9 @@
 
 using TMath::TwoPi;
 
-/// \cond CLASSIMP
+///\cond CLASSIMP
 ClassImp(AliAnalysisTaskNucleiYield);
-/// \endcond
+///\endcond
 
 /// Standard and default constructor of the class.
 ///
@@ -82,6 +82,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fRequireMaxDCAz(1.f)
 ,fRequireTPCpidSigmas(3.f)
 ,fRequireITSpidSigmas(-1.f)
+,fRequireMinEnergyLoss(0.)
+,fRequireMagneticField(0)
 ,fParticle(AliPID::kUnknown)
 ,fCentBins(0x0)
 ,fDCABins(0x0)
@@ -228,6 +230,19 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
     fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
                            nCentBins,centBins,nPtBins,pTbins);
+    
+    fMTPCphiCounts = new TH2F("fMTPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
+                              36,0.2,2.);
+    fMTOFphiSignal = new TH3F("fMTOFphiSignal",
+                             ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
+                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
+    fATPCphiCounts = new TH2F("fATPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
+                              36,0.2,2.);
+    fATOFphiSignal = new TH3F("fATOFphiSignal",
+                              ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
+                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     fList->Add(fATOFsignal);
     fList->Add(fATPCcounts);
     fList->Add(fMDCAxyTPC);
@@ -236,6 +251,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fList->Add(fMDCAzTOF);
     fList->Add(fMTOFsignal);
     fList->Add(fMTPCcounts);
+    fList->Add(fMTPCphiCounts);
+    fList->Add(fMTOFphiSignal);
+    fList->Add(fATPCphiCounts);
+    fList->Add(fATOFphiSignal);
   }
   
   PostData(1,fList);
@@ -250,7 +269,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   /// What is inside this function:
   AliVEvent *ev = dynamic_cast<AliVEvent*> (InputEvent());
   
-  // Check event selection mask
+  /// Check event selection mask
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
   UInt_t mask = handl->IsEventSelected();
@@ -267,21 +286,27 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   
   AliCentrality *centr = ev->GetCentrality();
   
-  // Centrality selection in PbPb, percentile determined with V0
+  /// Centrality selection in PbPb, percentile determined with V0
   float centrality = centr->GetCentralityPercentile("V0M");
-  //select only events with centralities between 0 and 80 %
+  /// Select only events with centralities between 0 and 80 %
   if (centrality < 0. || centrality > 80.) {
     PostData(1, fList);
     return;
   }
 
-  // Primary vertex displacement cut
+  /// Primary vertex displacement cut
   fPrimaryVertex = (AliVVertex*)ev->GetPrimaryVertex();
   if(TMath::Abs(fPrimaryVertex->GetZ()) > 10.) {
     PostData(1, fList);
     return;
   }
+
+  /// Magnetic field cut 
   fMagField = ev->GetMagneticField();
+  if (fRequireMagneticField != 0 && fRequireMagneticField * fMagField < 0.) {
+    PostData(1, fList);
+    return;
+  }
   
   fCentrality->Fill(centrality);
   if (Flatten(centrality)) {
@@ -364,9 +389,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
         fMDCAzTPC->Fill(centrality, pT, dca[1]);
         fMTPCcounts->Fill(centrality, pT);
-      } else
+        fMTPCphiCounts->Fill(track->Phi(),pT);
+      } else {
+        fATPCphiCounts->Fill(track->Phi(),pT);
         fATPCcounts->Fill(centrality, pT);
-      
+      }
       if (beta < 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m = track->GetTPCmomentum() * (TMath::Sqrt(1.f - beta * beta) / beta);
@@ -374,8 +401,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMDCAxyTOF->Fill(centrality, pT, dca[0]);
         fMDCAzTOF->Fill(centrality, pT, dca[1]);
         fMTOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
+        fMTOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
       } else {
         fATOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
+        fATOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
       }
     }
     
@@ -418,6 +447,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
       nITS++;
     }
   }
+  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
   if (nITS < fRequireITSrecPoints) return kFALSE;
   if (nSPD < fRequireSPDrecPoints) return kFALSE;
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
