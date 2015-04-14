@@ -113,6 +113,16 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
+#pragma link C++ namespace HighPtTracks+;
+#pragma link C++ class HighPtTracks::AliReducedEmcalCluster+;
+#pragma link C++ class HighPtTracks::AliReducedPatchInfo+;
+#pragma link C++ class HighPtTracks::AliReducedPatchContainer+;
+#pragma link C++ class HighPtTracks::AliReducedMCHeader+;
+#pragma link C++ class HighPtTracks::AliReducedGeneratedParticle+;
+#pragma link C++ class HighPtTracks::AliReducedReconstructedTrack+;
+#pragma link C++ class HighPtTracks::AliReducedHighPtEvent+;
+#pragma link C++ class HighPtTracks::AliReducedHighPtEventCreator+;
+#pragma link C++ class HighPtTracks::AliReducedTrackSelectionContainer+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetUtility+;
@@ -125,7 +135,6 @@
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskHJetSpectra+;
-#pragma link C++ namespace HighPtTracks+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
 #pragma link C++ class HighPtTracks::AliReducedJetEvent+;
 #pragma link C++ class HighPtTracks::AliReducedJetInfo+;
