@@ -24,6 +24,10 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliTPCParam.h"
+#include "TVectorD.h"
 #endif
 
 TH1F* CreateHisto(const char* name, const char* title, 
@@ -171,7 +175,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   // PID
 
   AliPIDResponse pidResponse(kTRUE); // kTRUE means Monte-Carlo
-  pidResponse.SetOADBPath("$ALICE_ROOT/OADB");
+  pidResponse.SetOADBPath("$ALICE_PHYSICS/OADB");
   
   AliPIDCombined pidCombined;
   Int_t maskPID =
@@ -184,6 +188,15 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     | AliPIDResponse::kDetPHOS
     ;
   pidCombined.SetDetectorMask(maskPID);
+
+  //set correct BB parameters. Assume the ones from the ALIROOT OCDB were used for simulation
+  AliCDBManager *man=AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT/../src/OCDB");
+  man->SetRun(0);
+  const AliCDBEntry *eParam   = man->Get("TPC/Calib/Parameters");
+  AliTPCParam *params   = (AliTPCParam*)eParam->GetObject();
+  TVectorD    &bbParams = *params->GetBetheBlochParametersMC();
+  pidResponse.GetTPCResponse().SetBetheBlochParameters(bbParams(0), bbParams(1), bbParams(2), bbParams(3), bbParams(4));
 
   // efficiency and resolution histograms
   Int_t nBinsPt = 15;
@@ -212,12 +225,15 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   Double_t partFrac[AliPID::kSPECIES] = 
     {0.01, 0.01, 0.83, 0.10, 0.05};
   Int_t identified[AliPID::kSPECIES+1][AliPID::kSPECIES];
+  Int_t identifiedTPCtr[AliPID::kSPECIES+1][AliPID::kSPECIES];
   for (Int_t iGen = 0; iGen < AliPID::kSPECIES+1; iGen++) {
     for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
       identified[iGen][iRec] = 0;
+      identifiedTPCtr[iGen][iRec] = 0;
     }
   }
   Int_t nIdentified = 0;
+  Int_t nIdentifiedTPCtr = 0;
 
   // dE/dx and TOF
   TH2F* hDEdxRight = new TH2F("hDEdxRight", "", 300, 0, 3, 100, 0, 400);
@@ -370,8 +386,15 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 	  iRec = i;
 	}
       }
+
+      // PID for tracking
+      Int_t iRecTPCtr = track->GetPIDForTracking();
+      
+
       identified[iGen][iRec]++;
+      identifiedTPCtr[iGen][iRecTPCtr]++;
       if (iGen == iRec) nIdentified++;
+      if (iGen == iRecTPCtr) nIdentifiedTPCtr++;
 
       // dE/dx and TOF
       Double_t time[AliPID::kSPECIESC];
@@ -526,13 +549,13 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 
     // PID
     if (nRec > 0) {
-      Double_t eff = nIdentified*1./nRec;
-      Double_t effError = TMath::Sqrt(eff*(1.-eff) / nRec);
+      Double_t effPID = nIdentified*1./nRec;
+      Double_t effPIDError = TMath::Sqrt(effPID*(1.-effPID) / nRec);
       Info("CheckESD", "PID eff = (%.1f +- %.1f) %%", 
-	   100.*eff, 100.*effError);
-      if (eff < checkPIDEffLow - checkPIDEffSigma*effError) {
+	   100.*effPID, 100.*effPIDError);
+      if (effPID < checkPIDEffLow - checkPIDEffSigma*effPIDError) {
 	Warning("CheckESD", "low PID efficiency: (%.1f +- %.1f) %%", 
-		100.*eff, 100.*effError);
+		100.*effPID, 100.*effPIDError);
       }
     }
 
@@ -556,6 +579,33 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 		res, resError);
       }
     }
+
+    // PID for tracking
+    if (nRec > 0) {
+      Info("CheckESD: TPC PID for Tracking:", " ");
+      Double_t effPID = nIdentifiedTPCtr*1./nRec;
+      Double_t effPIDError = TMath::Sqrt(effPID*(1.-effPID) / nRec);
+      Info("CheckESD", "PID eff = (%.1f +- %.1f) %%", 
+	   100.*effPID, 100.*effPIDError);
+      if (effPID < checkPIDEffLow - checkPIDEffSigma*effPIDError) {
+	Warning("CheckESD", "low PID efficiency: (%.1f +- %.1f) %%", 
+		100.*effPID, 100.*effPIDError);
+      }
+    }
+
+    printf("%9s:", "gen\\rec");
+    for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
+      printf("%9s", partName[iRec]);
+    }
+    printf("\n");
+    for (Int_t iGen = 0; iGen < AliPID::kSPECIES+1; iGen++) {
+      printf("%9s:", partName[iGen]);
+      for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
+	printf("%9d", identifiedTPCtr[iGen][iRec]);
+      }
+      printf("\n");
+    }
+
 
     // calorimeters
     if (hEPHOS->Integral() < checkPHOSNLow) {
@@ -597,28 +647,28 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 
     // V0s
     if (nGenV0s > 0) {
-      Double_t eff = nRecV0s*1./nGenV0s;
-      Double_t effError = TMath::Sqrt(eff*(1.-eff) / nGenV0s);
-      if (effError == 0) effError = checkV0EffLow / TMath::Sqrt(1.*nGenV0s);
+      Double_t effV0 = nRecV0s*1./nGenV0s;
+      Double_t effV0Error = TMath::Sqrt(effV0*(1.-effV0) / nGenV0s);
+      if (effV0Error == 0) effV0Error = checkV0EffLow / TMath::Sqrt(1.*nGenV0s);
       Info("CheckESD", "V0 eff = (%.1f +- %.1f) %%", 
-	   100.*eff, 100.*effError);
-      if (eff < checkV0EffLow - checkV0EffSigma*effError) {
+	   100.*effV0, 100.*effV0Error);
+      if (effV0 < checkV0EffLow - checkV0EffSigma*effV0Error) {
 	Warning("CheckESD", "low V0 efficiency: (%.1f +- %.1f) %%", 
-		100.*eff, 100.*effError);
+		100.*effV0, 100.*effV0Error);
       }
     }
 
     // Cascades
     if (nGenCascades > 0) {
-      Double_t eff = nRecCascades*1./nGenCascades;
-      Double_t effError = TMath::Sqrt(eff*(1.-eff) / nGenCascades);
-      if (effError == 0) effError = checkV0EffLow / 
+      Double_t effCsc = nRecCascades*1./nGenCascades;
+      Double_t effCscError = TMath::Sqrt(effCsc*(1.-effCsc) / nGenCascades);
+      if (effCscError == 0) effCscError = checkV0EffLow / 
 			   TMath::Sqrt(1.*nGenCascades);
       Info("CheckESD", "Cascade eff = (%.1f +- %.1f) %%", 
-	   100.*eff, 100.*effError);
-      if (eff < checkCascadeEffLow - checkCascadeEffSigma*effError) {
+	   100.*effCsc, 100.*effCscError);
+      if (effCsc < checkCascadeEffLow - checkCascadeEffSigma*effCscError) {
 	Warning("CheckESD", "low Cascade efficiency: (%.1f +- %.1f) %%", 
-		100.*eff, 100.*effError);
+		100.*effCsc, 100.*effCscError);
       }
     }
   }
