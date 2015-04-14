@@ -256,7 +256,7 @@ bool AliZMQManager::Send(vector<serverListStruct> list,storageSockets socket)
 
 bool AliZMQManager::Send(struct serverRequestStruct *request,storageSockets socket)
 {
-    int sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
+    size_t sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
     
     cout<<"MANAGER -- sending serverRequestStruct:"<<request->messageType<<"\t"<<request->list.runNumber[0]<<endl;
     
@@ -405,6 +405,7 @@ bool AliZMQManager::Get(std::vector<serverListStruct>* &result,storageSockets so
     zmqInit(&buffer);
     if(!zmqRecv(&buffer,fSockets[socket],0))
     {
+        cout<<"MANAGER -- couldn't receive number of records inside GetServerListVector."<<endl;
         zmq_msg_close(&buffer);
         return false;
     }

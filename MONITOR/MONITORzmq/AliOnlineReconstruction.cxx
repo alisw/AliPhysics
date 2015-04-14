@@ -184,7 +184,8 @@ void AliOnlineReconstruction::ReconstructionLoop()
 {
   cout<<"\n\nCreating sockets\n\n"<<endl;
 	AliZMQManager *eventManager = AliZMQManager::GetInstance();
-
+    eventManager->CreateSocket(EVENTS_SERVER_PUB);
+    
 	cout<<"\n\nStarting reconstruction\n\n"<<endl;
 	fAliReco->Begin(NULL);
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;

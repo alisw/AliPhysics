@@ -82,9 +82,11 @@ void AliStorageDatabase::InsertEvent(int runNumber,
     TSQLResult *res = fServer->Query(Form("select * FROM %s WHERE run_number = %d AND event_number = %d AND permanent = 1;",fTable.c_str(),runNumber,eventNumber));
     TSQLRow *row = res->Next();
     
+    cout<<"DATABASE -- insterting:"<<Form("REPLACE INTO %s (run_number,event_number,system,multiplicity,permanent,file_path,trigger_mask,trigger_mask_next) VALUES (%d,%d,'%s',%d,0,'%s',%llu,%llu);",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath,triggerMask,triggerMaskNext50)<<endl;
+    
     if(!row)
     {
-        res = fServer->Query(Form("REPLACE INTO %s (run_number,event_number,system,multiplicity,permanent,file_path,trigger_mask,trigger_mask_next) VALUES (%d,%d,'%s',%d,0,'%s',%ld,%ld);",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath,triggerMask,triggerMaskNext50));
+        res = fServer->Query(Form("REPLACE INTO %s (run_number,event_number,system,multiplicity,permanent,file_path,trigger_mask,trigger_mask_next) VALUES (%d,%d,'%s',%d,0,'%s',%llu,%llu);",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath,triggerMask,triggerMaskNext50));
     }
     
     delete row;
@@ -149,9 +151,9 @@ vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct li
     TThread::Lock();
     TSQLResult *result = NULL;
     
-    if(list.triggerMask!=0)
+    if(list.triggerMask!=0 || list.triggerMaskNext50!=0)
     {
-        result =  fServer->Query(Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND trigger_mask = %llu AND trigger_mask_next = %llu ORDER BY run_number,event_number;",
+        result =  fServer->Query(Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND ((trigger_mask & %llu) > 0 OR (trigger_mask_next & %llu) > 0) ORDER BY run_number,event_number;",
                                       fTable.c_str(),
                                       list.runNumber[0],
                                       list.runNumber[1],
@@ -166,7 +168,7 @@ vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct li
                                       list.triggerMask,
                                       list.triggerMaskNext50));
         
-        cout<<"Query:"<<Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND trigger_mask = %llu AND trigger_mask_next = %llu ORDER BY run_number,event_number;",
+        cout<<"Query:"<<Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND ((trigger_mask & %llu) > 0 OR (trigger_mask_next & %llu) > 0) ORDER BY run_number,event_number;",
                              fTable.c_str(),
                              list.runNumber[0],
                              list.runNumber[1],

@@ -256,18 +256,23 @@ void AliEveEventManager::GetNextEvent()
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
     cout<<"Waiting for response"<<endl;
     vector<serverListStruct> *tmpVector;
-    vector<serverListStruct> &receivedList = *tmpVector;
+    vector<serverListStruct> receivedList;
     bool isVectorOk = false;
     if(eventManager->Get(tmpVector,SERVER_COMMUNICATION_REQ))
     {
         cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
-//        receivedList = *tmpVector;
+        receivedList = *tmpVector;
     
         for(int i=0;i<tmpVector->size();i++)
         {
             cout<<"ev:"<<receivedList[i].eventNumber<<endl;
         }
         isVectorOk = true;
+    }
+    else
+    {
+        cout<<"EVENT DISPLAY -- problems receiving list of marked events"<<endl;
+        eventManager->RecreateSocket(SERVER_COMMUNICATION_REQ);
     }
     int iter=0;
     

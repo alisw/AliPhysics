@@ -189,6 +189,10 @@ void AliEventsCollectorThread::CollectorHandle()
                 eventFile->Close();
                 delete eventFile;
 		TThread::Lock();
+                
+                cout<<"COLLECTOR -- events mask:"<<event->GetTriggerMask()<<endl;
+                cout<<"COLLECTOR -- events mask next 50:"<<event->GetTriggerMaskNext50()<<endl;
+                
                 fDatabase->InsertEvent(event->GetRunNumber(),
                                        event->GetEventNumberInFile(),
                                        (char*)event->GetBeamType(),

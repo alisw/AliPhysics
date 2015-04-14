@@ -43,6 +43,8 @@ int main(int argc, char **argv)
     
     if(atoi(argv[1])==0)
     {
+        manager->CreateSocket(EVENTS_SERVER_SUB);
+        
         while(1)
         {
             cout<<"waiting for event..."<<flush;

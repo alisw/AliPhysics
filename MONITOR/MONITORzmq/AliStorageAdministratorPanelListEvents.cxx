@@ -74,7 +74,7 @@ fOnlineMode(0)
     SetLayoutBroken(kTRUE);
     
     InitWindow();
-//    TriggerClassesFromLogbook();
+    TriggerClassesFromLogbook();
 }
 
 AliStorageAdministratorPanelListEvents::~AliStorageAdministratorPanelListEvents()
@@ -238,6 +238,7 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
     fTriggerBox = new TGComboBox(fTriggerGroupFrame,TRIGGER_BOX);
     fTriggerBox->AddEntry("No trigger selection",-1);
     fTriggerBox->Select(-1,kFALSE);
+//    fTriggerBox->EnableTextInput(true);
     fTriggerGroupFrame->AddFrame(fTriggerBox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
     fTriggerBox->MoveResize(8,22,200,19);
     
@@ -360,7 +361,35 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
     else{strcpy(list.system[0],"");}
     if(fPbPbcheckbox->GetState()==1){strcpy(list.system[1],"A-A");}
     else{strcpy(list.system[1],"");}
-    list.triggerMask = 0;
+    
+    int triggerNumber = fTriggerBox->GetSelected();
+    cout<<"LIST EVENTS -- selected trigger class number:"<<triggerNumber<<endl;
+    ULong64_t triggerMask = 0;
+    ULong64_t triggerMaskNext50 = 0;
+    
+    if(triggerNumber<50 && triggerNumber>0)
+    {
+        triggerMask=1;
+        for(int i=0;i<triggerNumber;i++)
+        {
+            triggerMask = triggerMask<<1;
+        }
+        triggerMaskNext50=0;
+    }
+    else if(triggerNumber>50)
+    {
+        triggerMaskNext50=1;
+        for(int i=0;i<triggerNumber-50;i++)
+        {
+            triggerMaskNext50 = triggerMaskNext50<<1;
+        }
+        triggerMask=0;
+    }
+
+    cout<<"LIST EVENTS -- resulting trigger mask:"<<triggerMask<<"\t"<<triggerMaskNext50<<endl;
+    
+    list.triggerMask = triggerMask;
+    list.triggerMaskNext50 = triggerMaskNext50;
     
     requestMessage->messageType = REQUEST_LIST_EVENTS;
     requestMessage->list = list;
