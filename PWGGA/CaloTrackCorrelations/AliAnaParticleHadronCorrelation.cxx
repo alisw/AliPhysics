@@ -454,7 +454,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
 }
 
 //___________________________________________________________________________________________________________________________________
-// Fill MC histograms independently of AOD or ESD.
+/// Fill MC histograms independently of AOD or ESD.
 //___________________________________________________________________________________________________________________________________
 Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float_t mcAssocPt, Float_t mcAssocPhi, Float_t mcAssocEta,
                                                                            Float_t mcTrigPt,  Float_t mcTrigPhi,  Float_t mcTrigEta,
