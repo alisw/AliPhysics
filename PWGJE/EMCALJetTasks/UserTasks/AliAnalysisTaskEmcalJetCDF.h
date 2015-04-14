@@ -91,6 +91,9 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     TH1D       *fH8;               //!<!  Momentum distribution for leading jet (fragmentation function)
     TH1D       *fH8xi;             //!<!  Xi distribution for leading jet (fragmentation function)
 
+    TH1D       *fH8_all;           //!<!  Momentum distribution for jets (fragmentation function)
+    TH1D       *fH8xi_all;         //!<!  Xi distribution for jets (fragmentation function)
+
     TProfile   *fH9;               //!<!  N vs the Azimuthal Angle from Jet1
     TProfile   *fH10;              //!<!  P_{T} sum vs the Azimuthal Angle from Jet1
 
@@ -108,52 +111,19 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     TH1D      *fH15_bin_n80;       //!<!  p_{T} track vs the Distance R from Jet1 - 80% of particles
     TH1D      *fH15_bin_pt80;      //!<!  p_{T} track vs the Distance R from Jet1 - 80% of Pt
 
+    TH1D      *fH15_bin_all;           //!<!  p_{T} track vs the Distance R from owner jet
+    TH1D      *fH15_bin_n80_all;       //!<!  p_{T} track vs the Distance R from owner jet - 80% of particles
+    TH1D      *fH15_bin_pt80_all;      //!<!  p_{T} track vs the Distance R from owner jet - 80% of Pt
+
     TH1D      *fH20;               //!<!  Distribution of R in leading jet
     TH1D      *fH20_n80;           //!<!  Distribution of R in leading jet - 80% of particles
     TH1D      *fH20_pt80;          //!<!  Distribution of R in leading jet - 80% of Pt
 
-    TProfile  *fH21;               //!<!  N(in the event - including jet1) vs P_{T}(jet1) - full phi
-    TProfile  *fH21Toward;         //!<!  N(in the event - including jet1) vs P_{T}(jet1) - toward
-    TProfile  *fH21Transverse_min; //!<!  N(in the event - including jet1) vs P_{T}(jet1) - trans min
-    TProfile  *fH21Transverse_max; //!<!  N(in the event - including jet1) vs P_{T}(jet1) - trans max
-    TProfile  *fH21Away;           //!<!  N(in the event - including jet1) vs P_{T}(jet1) - away
+    TH1D      *fH20_all;               //!<!  Distribution of R in jets
+    TH1D      *fH20_n80_all;           //!<!  Distribution of R in jets - 80% of particles
+    TH1D      *fH20_pt80_all;          //!<!  Distribution of R in jets - 80% of Pt
 
-    TH1D      *fH21_bin;               //!<!  N(in the event - including jet1) vs P_{T}(jet1) - per bin sum - full phi
-    TH1D      *fH21Toward_bin;         //!<!  N(in the event - including jet1) vs P_{T}(jet1) - per bin sum - toward
-    TH1D      *fH21Transverse_min_bin; //!<!  N(in the event - including jet1) vs P_{T}(jet1) - per bin sum - trans min
-    TH1D      *fH21Transverse_max_bin; //!<!  N(in the event - including jet1) vs P_{T}(jet1) - per bin sum - trans max
-    TH1D      *fH21Away_bin;           //!<!  N(in the event - including jet1) vs P_{T}(jet1) - per bin sum - away
-
-    TH1D      *fH21_bin_wojet1;               //!<!  N(in the event - without jet1) vs P_{T}(jet1) - per bin sum - full phi
-    TH1D      *fH21Toward_bin_wojet1;         //!<!  N(in the event - without jet1) vs P_{T}(jet1) - per bin sum - toward
-    TH1D      *fH21Transverse_min_bin_wojet1; //!<!  N(in the event - without jet1) vs P_{T}(jet1) - per bin sum - trans min
-    TH1D      *fH21Transverse_max_bin_wojet1; //!<!  N(in the event - without jet1) vs P_{T}(jet1) - per bin sum - trans max
-    TH1D      *fH21Away_bin_wojet1;           //!<!  N(in the event - without jet1) vs P_{T}(jet1) - per bin sum - away
-
-    TProfile  *fH22;               //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - full phi
-    TProfile  *fH22Toward;         //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - toward
-    TProfile  *fH22Transverse_min; //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - trans min
-    TProfile  *fH22Transverse_max; //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - trans max
-    TProfile  *fH22Away;           //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - away
-
-    TH1D  *fH22_bin;               //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - per bin sum - full phi
-    TH1D  *fH22Toward_bin;         //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - per bin sum - toward
-    TH1D  *fH22Transverse_min_bin; //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - per bin sum - trans min
-    TH1D  *fH22Transverse_max_bin; //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - per bin sum - trans max
-    TH1D  *fH22Away_bin;           //!<!  PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - away
-
-    TH1D  *fH22_bin_wojet1;               //!<!  PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - per bin sum - full phi
-    TH1D  *fH22Toward_bin_wojet1;         //!<!  PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - per bin sum - toward
-    TH1D  *fH22Transverse_min_bin_wojet1; //!<!  PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - per bin sum - trans min
-    TH1D  *fH22Transverse_max_bin_wojet1; //!<!  PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - per bin sum - trans max
-    TH1D  *fH22Away_bin_wojet1;           //!<!  PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - per bin sum - away
-
-    TH1D      *fH23;               //!<!  Event Pt Distribution of particles
     TH1D      *fH23jet1;           //!<!  Jet1 Pt Distribution of particles
-    TH1D      *fH23Toward;         //!<!  'Toward' Pt Distribution of particles
-    TH1D      *fH23Transverse_min; //!<!  'Transverse' MIN Pt Distribution of particles
-    TH1D      *fH23Transverse_max; //!<!  'Transverse' MAX Pt Distribution of particles
-    TH1D      *fH23Away;           //!<!  'Away' Pt Distribution of particles
 
     TProfile  *fH24;               //!<!  Jet1 Size vs P_{T}(jet1) - 80% of particles
     TProfile  *fH25;               //!<!  Jet1 Size vs P_{T}(jet1) - 80% of Pt
@@ -186,31 +156,8 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     TH1D  *fH27jet1_n80_bin;   //!<!  PT_{sum}(jet1) vs the Distance R from Jet1 - 80% of particles
     TH1D  *fH27jet1_pt80_bin;  //!<!  PT_{sum}(jet1) vs the Distance R from Jet1 - 80% of Pt
 
-    TProfile  *fH40;           //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - full phi
-    TProfile  *fH40toward;     //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - toward
-    TProfile  *fH40away;       //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - away
-    TProfile  *fH40transmin;   //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - trans min
-    TProfile  *fH40transmax;   //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - trans max
 
-    TH1D  *fH40_bin;           //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - per bin sum - full phi
-    TH1D  *fH40toward_bin;     //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - per bin sum - toward
-    TH1D  *fH40away_bin;       //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - per bin sum - away
-    TH1D  *fH40transmin_bin;   //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - per bin sum - trans min
-    TH1D  *fH40transmax_bin;   //!<!  total particles fNPart w.r.t PTmax (pt of leading particle from leading jet) - per bin sum - trans max
-
-    TProfile  *fH41;           //!<!  PTsum w.r.t PTmax - full phi
-    TProfile  *fH41toward;     //!<!  PTsum w.r.t PTmax - toward
-    TProfile  *fH41away;       //!<!  PTsum w.r.t PTmax - away
-    TProfile  *fH41transmin;   //!<!  PTsum w.r.t PTmax - trans min
-    TProfile  *fH41transmax;   //!<!  PTsum w.r.t PTmax - trans max
-
-    TH1D  *fH41_bin;           //!<!  PTsum w.r.t PTmax - per bin sum - full phi
-    TH1D  *fH41toward_bin;     //!<!  PTsum w.r.t PTmax - per bin sum - toward
-    TH1D  *fH41away_bin;       //!<!  PTsum w.r.t PTmax - per bin sum - away
-    TH1D  *fH41transmin_bin;   //!<!  PTsum w.r.t PTmax - per bin sum - trans min
-    TH1D  *fH41transmax_bin;   //!<!  PTsum w.r.t PTmax - per bin sum - trans max
-
-
+    //_________________________________________________________________________
     AliJetContainer           *fJetsCont;                   //!<! Jets Container
     AliParticleContainer      *fTracksCont;                 //!<! Tracks Container
     AliClusterContainer       *fCaloClustersCont;           //!<! Clusters Container
