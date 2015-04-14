@@ -62,13 +62,13 @@ void AliAnalysisMuMuGlobal::FillHistosForEvent(const char* eventSelection,
   
   if (!IsHistogramDisabled("EventsWOL0inputs"))
   {
-    UInt_t l0 = AliAnalysisMuonUtility::GetL0TriggerInputs(Event());
+    UInt_t l0 = Event()->GetHeader()->GetL0TriggerInputs();
     
     if ( l0 == 0 ) Histo(eventSelection,triggerClassName,centrality,"EventsWOL0inputs")->Fill(1.);
   }
   
   const AliVVertex* vertex = Event()->GetPrimaryVertex();
-  const AliVVertex* vertexFromSPD = AliAnalysisMuonUtility::GetVertexSPD(Event());
+  const AliVVertex* vertexFromSPD = Event()->GetPrimaryVertexSPD();
   
   if ( vertex )
   {
@@ -291,7 +291,7 @@ void AliAnalysisMuMuGlobal::FillHistosForMCEvent(const char* eventSelection,
       MCHisto(eventSelection,triggerClassName,centrality,"RecZvertexVsMCZvertex")->Fill(Zvertex,vertex->GetZ());
     }
     
-    const AliVVertex* vertexFromSPD = AliAnalysisMuonUtility::GetVertexSPD(Event());
+    const AliVVertex* vertexFromSPD = Event()->GetPrimaryVertexSPD();
     if  (vertexFromSPD && vertexFromSPD->GetNContributors()>0)
     {
       MCHisto(eventSelection,triggerClassName,centrality,"RecSPDZvertexVsMCZvertex")->Fill(Zvertex,vertexFromSPD->GetZ());

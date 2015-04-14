@@ -206,7 +206,7 @@ UInt_t AliAnalysisMuonUtility::GetMUONTrigHitsMapTrg ( const AliVParticle* track
 Int_t AliAnalysisMuonUtility::GetMuonTrigDevSign ( const AliVParticle* track )
 {
   /// Get trigger deviation sign
-  return ( IsAODTrack(track) ) ? const_cast<AliAODTrack*>(static_cast<const AliAODTrack*>(track))->GetMuonTrigDevSign() : static_cast<const AliESDMuonTrack*>(track)->GetMuonTrigDevSign();
+  return ( IsAODTrack(track) ) ? static_cast<const AliAODTrack*>(track)->GetMuonTrigDevSign() : static_cast<const AliESDMuonTrack*>(track)->GetMuonTrigDevSign();
 }
 
 //________________________________________________________________________
@@ -215,19 +215,12 @@ Int_t AliAnalysisMuonUtility::GetLoCircuit ( const AliVParticle* track )
   /// Get local board
   Int_t loCircuit = 0;
   if ( IsAODTrack (track) ) {
-    UInt_t pattern = const_cast<AliAODTrack*>(static_cast<const AliAODTrack*>(track))->GetMUONTrigHitsMapTrg();
+    UInt_t pattern = static_cast<const AliAODTrack*>(track)->GetMUONTrigHitsMapTrg();
     loCircuit = AliESDMuonTrack::GetCrossedBoard(pattern);
   }
   else loCircuit = static_cast<const AliESDMuonTrack*>(track)->LoCircuit();
   
   return loCircuit;
-}
-
-//________________________________________________________________________
-TString AliAnalysisMuonUtility::GetFiredTriggerClasses ( const AliVEvent* event )
-{
-  /// Check if track is from ESD or AOD
-  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetFiredTriggerClasses() : static_cast<const AliESDEvent*>(event)->GetFiredTriggerClasses();
 }
 
 //________________________________________________________________________
@@ -237,33 +230,6 @@ Int_t AliAnalysisMuonUtility::GetNTracks ( const AliVEvent* event )
   /// Return the number of tracks in event
   //
   return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetNumberOfTracks() : static_cast<const AliESDEvent*>(event)->GetNumberOfMuonTracks();
-}
-
-//________________________________________________________________________
-UInt_t AliAnalysisMuonUtility::GetL0TriggerInputs ( const AliVEvent* event )
-{
-  //
-  /// Return the L0 trigger inputs
-  //
-  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetHeader()->GetL0TriggerInputs() : static_cast<const AliESDEvent*>(event)->GetHeader()->GetL0TriggerInputs();
-}
-
-//________________________________________________________________________
-UInt_t AliAnalysisMuonUtility::GetL1TriggerInputs ( const AliVEvent* event )
-{
-  //
-  /// Return the L1 trigger inputs
-  //
-  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetHeader()->GetL1TriggerInputs() : static_cast<const AliESDEvent*>(event)->GetHeader()->GetL1TriggerInputs();
-}
-
-//________________________________________________________________________
-UInt_t AliAnalysisMuonUtility::GetL2TriggerInputs ( const AliVEvent* event )
-{
-  //
-  /// Return the L2 trigger inputs
-  //
-  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetHeader()->GetL2TriggerInputs() : static_cast<const AliESDEvent*>(event)->GetHeader()->GetL2TriggerInputs();
 }
 
 //________________________________________________________________________
@@ -338,35 +304,6 @@ Double_t AliAnalysisMuonUtility::GetMCVertexZ ( const AliVEvent* event, const Al
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisMuonUtility::GetMotherIndex ( const AliVParticle* mcParticle )
-{
-  //
-  /// Return the mother index
-  //
-  return ( IsAODMCTrack(mcParticle) ) ? static_cast<const AliAODMCParticle*>(mcParticle)->GetMother() : static_cast<const AliMCParticle*>(mcParticle)->GetMother();
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisMuonUtility::GetDaughterIndex ( const AliVParticle* mcParticle, Int_t idaughter )
-{
-  //
-  /// Return the daughter index
-  /// idaughter can be:
-  /// 0 -> first daughter
-  /// 1 -> last daughter
-  //
-  if ( idaughter < 0 || idaughter > 1 ) {
-    AliErrorClass(Form("Requested daughter %i Daughter index can be either 0 (first) or 1 (last)", idaughter));
-    return -1;
-  }
-  
-  if ( IsAODMCTrack(mcParticle) ) return static_cast<const AliAODMCParticle*>(mcParticle)->GetDaughter(idaughter);
-  
-  if ( idaughter == 0 ) return static_cast<const AliMCParticle*>(mcParticle)->GetFirstDaughter();
-  else return static_cast<const AliMCParticle*>(mcParticle)->GetLastDaughter();
-}
-
-//________________________________________________________________________
 Bool_t AliAnalysisMuonUtility::IsPrimary ( const AliVParticle* mcParticle, const AliMCEvent* mcEvent )
 {
   /// Check if the particle is primary
@@ -411,17 +348,6 @@ UInt_t AliAnalysisMuonUtility::GetStatusCode ( const AliVParticle* mcParticle )
   return statusCode;
 }
 
-//________________________________________________________________________
-AliVVertex* AliAnalysisMuonUtility::GetVertexSPD ( const AliVEvent* event )
-{
-  //
-  /// Get vertex SPD
-  //
-  
-  AliVVertex* primaryVertex = ( IsAODEvent(event) ) ? (AliVVertex*)static_cast<const AliAODEvent*>(event)->GetPrimaryVertexSPD() : (AliVVertex*)static_cast<const AliESDEvent*>(event)->GetPrimaryVertexSPD();
-  return primaryVertex;
-}
-
 
 //________________________________________________________________________
 TString AliAnalysisMuonUtility::GetPassName ( const AliInputEventHandler* eventHandler )
@@ -444,7 +370,7 @@ TString AliAnalysisMuonUtility::GetPassName ( const AliInputEventHandler* eventH
     // try first to find the info in the AOD header
     // (which is a priori safer because it works even on local copies of AODs)
     // and if it does not work, directly check the path to the AOD
-    AliAODHeader * header = dynamic_cast<AliAODHeader*>(static_cast<const AliAODEvent*> (event)->GetHeader());
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(event->GetHeader());
     assert(header && "Not a standard AOD");
     filePath = header->GetESDFileName();
     TString passName = GetPassName(filePath.Data());
@@ -548,7 +474,7 @@ TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, con
     if ( imother != fakeMother ) trackHistory.Append(Form("%i ", imother));
     trackHistory.Append(Form("(%s)", pname.Data()));
     if ( verbose ) trackHistory.Append(Form(" [vz %g  mc %i]", part->Zv(), GetMCProcess(part)));
-    imother = AliAnalysisMuonUtility::GetMotherIndex(part);
+    imother = part->GetMother();
   }
   return trackHistory;
 }

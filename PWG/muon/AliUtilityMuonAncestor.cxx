@@ -122,7 +122,7 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
   // Track is not a muon
   if ( TMath::Abs(recoPdg) == 13 ) SETBIT(fMask,kIsMuon);
   
-  Int_t imother = AliAnalysisMuonUtility::GetMotherIndex(mcParticle);
+  Int_t imother = mcParticle->GetMother();
 
   while ( imother >= 0 ) {
     AliVParticle* part = mcEvent->GetTrack(imother);
@@ -160,7 +160,7 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
       }
     } // is secondary
     
-    imother = AliAnalysisMuonUtility::GetMotherIndex(part);
+    imother = part->GetMother();
     
   } // loop on mothers
   return kTRUE;
@@ -218,7 +218,7 @@ Bool_t AliUtilityMuonAncestor::IsBJpsiMu ( AliVParticle* track, const AliMCEvent
 {
   /// Muon B->J/psi decays
   if ( IsBeautyMu(track,mcEvent) ) {
-    Int_t imother = AliAnalysisMuonUtility::GetMotherIndex(track);
+    Int_t imother = track->GetMother();
     if ( imother >= 0 ) return ( mcEvent->GetTrack(imother)->PdgCode() == 443 );
   }
   return kFALSE;

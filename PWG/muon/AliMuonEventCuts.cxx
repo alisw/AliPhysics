@@ -219,7 +219,7 @@ UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
   if ( fSelectedTrigClassesInEvent->GetEntries() > 0 ) selectionMask |= kSelectedTrig;
   
   if ( checkMask & kGoodVertex ) {
-    AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(event);
+    const AliVVertex* vertex = event->GetPrimaryVertexSPD();
     if ( vertex->GetNContributors() >= GetVertexMinNContributors() &&
       vertex->GetZ() >= GetVertexVzMin() && vertex->GetZ() <= GetVertexVzMax() ) selectionMask |= kGoodVertex;
   }
@@ -261,7 +261,7 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event )
   if ( fSelectedTrigClassesInEvent && ( fEventTriggerMask == event->GetTriggerMask() ) &&
       ( fEventL0Inputs == l0Inputs ) && ( fEventL1Inputs == l1Inputs ) && ( fEventL2Inputs == l2Inputs ) ) return kFALSE;
   
-  BuildTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(event), l0Inputs, l1Inputs, l2Inputs);
+  BuildTriggerClasses(event->GetFiredTriggerClasses(), l0Inputs, l1Inputs, l2Inputs);
 
   fEventTriggerMask = event->GetTriggerMask();
   fEventL0Inputs = l0Inputs;
