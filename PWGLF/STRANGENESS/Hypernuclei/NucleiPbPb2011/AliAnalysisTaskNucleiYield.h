@@ -58,6 +58,8 @@ public:
   void SetRequireMaxDCAz (float maxDCA) { fRequireMaxDCAz = maxDCA; }
   void SetRequireTPCpidSigmas (float sig) { fRequireTPCpidSigmas = (sig > 0) ? sig : -sig; }
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
+  void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
+  void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
   
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -88,24 +90,24 @@ private:
   Float_t               fPDGMassOverZ;          ///<  PDG mass over z
   Bool_t                fIsMC;                  ///<  Switch between MC and data
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
-
+  
   AliPIDResponse       *fPID;                   //!<! PID response class
   Float_t               fMagField;              ///<  Magnetic field value for the current event
   AliVVertex           *fPrimaryVertex;         //!<! Primary vertex of the current event
-
-  TList                 fMmc;                   ///<  *MC only* List of matter particles
-  TList                 fAmc;                   ///<  *MC only* List of anti-matter particles
-
+  
+  TList                 fMmc;                   ///<  *(MC only)* List of matter particles
+  TList                 fAmc;                   ///<  *(MC only)* List of anti-matter particles
+  
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
-
+  
   TArrayF               fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
   TArrayF               fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
-
+  
   Float_t               fTOFlowBoundary;        ///<  Lower limit for the TOF mass spectra histograms
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
   Int_t                 fTOFnBins;              ///<  Number of bins used for the TOF mass spectra
-
+  
   Bool_t                fRequireITSrefit;       ///<  Cut on tracks: set true to require ITS refit
   Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
   Bool_t                fRequireNoKinks;        ///<  Cut on tracks: set true to exclude tracks from kink vertices
@@ -122,48 +124,55 @@ private:
   Float_t               fRequireMaxDCAxy;       ///<  Cut on tracks: maximum \f$DCA_{xy}\f$ for the track
   Float_t               fRequireMaxDCAz;        ///<  Cut on tracks: maximum \f$DCA_{z}\f$ for the track
   Float_t               fRequireTPCpidSigmas;   ///<  Cut on TPC PID number of sigmas
-  Float_t               fRequireITSpidSigmas;
-
+  Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
+  Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
+  Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
+  
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
   TArrayF               fDCABins;               ///<  DCA bins
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
-
+  
   // Event related histograms
   TH1F                 *fCentrality;            //!<! Events centrality distribution
   TH1F                 *fFlattenedCentrality;   //!<! Events centrality distribution after the flattening
   TH1F                 *fCentralityClasses;     //!<! Events statistics per centrality classes
-
+  
   // MC only histograms
-  TH1F                 *fProduction;            //!<! *MC only* Total number of produced particles
-  TH2F                 *fAITS_TPC;              //!<! *MC only* Tracks reconstructed in ITS-TPC acceptance (anti-matter)
-  TH2F                 *fAITS_TPC_TOF;          //!<! *MC only* Tracks reconstructed in ITS-TPC-TOF acceptance (anti-matter)
-  TH2F                 *fATotal;                //!<! *MC only* Particles in acceptance (anti-matter)
-  TH2F                 *fAPtCorrection;         //!<! *MC only* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for anti-matter
-  TH2F                 *fMITS_TPC;              //!<! *MC only* Tracks reconstructed in ITS-TPC acceptance (matter)
-  TH2F                 *fMITS_TPC_TOF;          //!<! *MC only* Tracks reconstructed in ITS-TPC-TOF acceptance (matter)
-  TH2F                 *fMTotal;                //!<! *MC only* Particles in acceptance (matter)
-  TH2F                 *fMPtCorrection;         //!<! *MC only* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for matter
-  TH3F                 *fMDCAPrimaryTPC;        //!<! *MC only* \f$DCA_{xy}\f$ distribution of primaries for ITS+TPC tracks
-  TH3F                 *fMDCASecondaryTPC;      //!<! *MC only* \f$DCA_{xy}\f$ distribution of secondaries for ITS+TPC tracks
-  TH3F                 *fMDCAPrimaryTOF;        //!<! *MC only* \f$DCA_{xy}\f$ distribution of primaries for ITS+TPC+TOF tracks
-  TH3F                 *fMDCASecondaryTOF;      //!<! *MC only* \f$DCA_{xy}\f$ distribution of secondaries for ITS+TPC+TOF tracks
-
+  TH1F                 *fProduction;            //!<! *(MC only)* Total number of produced particles
+  TH2F                 *fAITS_TPC;              //!<! *(MC only)* Tracks reconstructed in ITS-TPC acceptance (anti-matter)
+  TH2F                 *fAITS_TPC_TOF;          //!<! *(MC only)* Tracks reconstructed in ITS-TPC-TOF acceptance (anti-matter)
+  TH2F                 *fATotal;                //!<! *(MC only)* Particles in acceptance (anti-matter)
+  TH2F                 *fAPtCorrection;         //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for anti-matter
+  TH2F                 *fMITS_TPC;              //!<! *(MC only)* Tracks reconstructed in ITS-TPC acceptance (matter)
+  TH2F                 *fMITS_TPC_TOF;          //!<! *(MC only)* Tracks reconstructed in ITS-TPC-TOF acceptance (matter)
+  TH2F                 *fMTotal;                //!<! *(MC only)* Particles in acceptance (matter)
+  TH2F                 *fMPtCorrection;         //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for matter
+  TH3F                 *fMDCAPrimaryTPC;        //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries for ITS+TPC tracks
+  TH3F                 *fMDCASecondaryTPC;      //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries for ITS+TPC tracks
+  TH3F                 *fMDCAPrimaryTOF;        //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries for ITS+TPC+TOF tracks
+  TH3F                 *fMDCASecondaryTOF;      //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries for ITS+TPC+TOF tracks
+  
   // Data histograms
-  TH3F                 *fATOFsignal;            //!<! *Data only* TOF signal for anti-matter
-  TH2F                 *fATPCcounts;            //!<! *Data only* TPC counts for anti-matter
-  TH3F                 *fMDCAxyTPC;             //!<! *Data only* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
-  TH3F                 *fMDCAzTPC;              //!<! *Data only* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
-  TH3F                 *fMDCAxyTOF;             //!<! *Data only* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
-  TH3F                 *fMDCAzTOF;              //!<! *Data only* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
-  TH3F                 *fMTOFsignal;            //!<! *Data only* TOF signal for matter
-  TH2F                 *fMTPCcounts;            //!<! *Data only* TPC counts for matter
-
+  TH3F                 *fATOFsignal;            //!<! *(Data only)* TOF signal for anti-matter
+  TH2F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
+  TH3F                 *fATOFphiSignal;         //!<! *(Data only)* TOF signal for anti-matter as a function of \f$\phi\f$
+  TH2F                 *fATPCphiCounts;         //!<! *(Data only)* TPC counts for anti-matter as a function of \f$\phi\f$
+  TH3F                 *fMDCAxyTPC;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
+  TH3F                 *fMDCAzTPC;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
+  TH3F                 *fMDCAxyTOF;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
+  TH3F                 *fMDCAzTOF;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
+  TH3F                 *fMTOFsignal;            //!<! *(Data only)* TOF signal for matter
+  TH2F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
+  TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
+  TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
+  
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
-  /// \endcond
+  /// \endcond 
 };
+
 
 #endif /* defined(__AliAnalysisTaskNucleiYield__) */
