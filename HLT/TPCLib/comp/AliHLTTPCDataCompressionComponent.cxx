@@ -895,7 +895,12 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     fHistoTrackClusterRatio=histoTrackClusterRatio.release();
   }
 
-  if (iResult>=0 && (iResult=InitDriftTimeTransformation())<0) return iResult;
+  // only init drift time if actually needed
+  // i.e. when using track model compression
+  // transform init takes ages.....
+  if (fMode==kCompressionModeV1TrackModel || fMode==kCompressionModeV2TrackModel) {
+    if (iResult>=0 && (iResult=InitDriftTimeTransformation())<0) return iResult;
+  }
 
   return iResult;
 }
