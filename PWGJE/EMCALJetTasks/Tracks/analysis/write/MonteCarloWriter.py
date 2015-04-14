@@ -279,7 +279,7 @@ def RunTrackProjection(doAcc = False, doMCKine = False, etaSel = "all", phiSel =
     else:
         writer.SetRecKine()
     if etaSel == "centcms":
-        writer.SetEtaCut(-0.8, -0.3, "centcms")
+        writer.SetEtaCut(-0.79999, -0.3001, "centcms")
     elif etaSel == "emc":
         writer.SetEtaCut(-0.5, 0.5, "emc")
     if phiSel:
