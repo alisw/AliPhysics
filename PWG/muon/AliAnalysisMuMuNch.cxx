@@ -100,6 +100,44 @@ namespace {
 
 }
 
+//______________________________________________________________________________
+AliAnalysisMuMuNch::AliAnalysisMuMuNch(TRootIOCtor* ioCtor)
+: AliAnalysisMuMuBase(),
+fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
+fSPDCorrectionMap(0x0),
+fSPDCorrectionList(0x0),
+fSPDMeanTracklets(0x0),
+fSPDMeanTrackletsCorrToCompare(0x0),
+fV0MeanMult(0x0),
+fEtaAxis(0x0),
+fZAxis(0x0),
+fCurrentEvent(0x0),
+fMeanTrRef(-1.),
+fMeanV0Ref(-1.),
+fEtaMin(0.),
+fEtaMax(0.),
+fEtaMinToCompare(0.),
+fEtaMaxToCompare(0.),
+fetaRange(),
+fZMin(0.),
+fZMax(0.),
+fResolution(kFALSE),
+frand(0x0),
+fGeneratorHeaderClass(0x0),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(0x0)
+{
+  /// default ctor
+}
+
+
 ////_____________________________________________________________________________
 //AliAnalysisMuMuNch::AliAnalysisMuMuNch(TH2* spdCorrection, Double_t etaMin, Double_t etaMax
 //                                      , Double_t zMin, Double_t zMax,Bool_t disableHistos, Bool_t computeResolution)
@@ -145,7 +183,7 @@ fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
 fMeanTrRef(meanTrRef),
-fMeanV0Ref(-1),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(0.),
@@ -162,7 +200,7 @@ fSPD2LR(0x0),
 fSPD2LL(0x0),
 fMCWeightList(0x0),
 fMCWeight(1.),
-fV0side(new TString(""))
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
   
@@ -199,6 +237,7 @@ fV0side(new TString(""))
     fSPDMeanTracklets->SetDirectory(0);
   }
   
+  if ( !spdCorrection && !spdMeanCorrection ) AliInfo("Raw tracklets analysis");
   DefineSPDAcceptance();
   
   if ( disableHistos ) // FIXME: Is this really useful? it breaks when setting to ktrue due to non existence of histos in SetEvent(). Answer: It is useful, it will speed up the task when we want to execute only SetEvent and not fill all the multiplicity histos (i.e. doing J/psi vs multiplicity analysis). The problem is that disabling the histos the method CreateHisto() does not create histos thats why the task breaks in SetEvent, so fix this
@@ -222,8 +261,8 @@ fV0MeanMult(0x0),
 fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
-fMeanTrRef(-1),
-fMeanV0Ref(-1),
+fMeanTrRef(-1.),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(0.),
@@ -240,7 +279,7 @@ fSPD2LR(0x0),
 fSPD2LL(0x0),
 fMCWeightList(0x0),
 fMCWeight(1.),
-fV0side(new TString(""))
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
 
@@ -293,7 +332,7 @@ fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
 fMeanTrRef(meanTrRef),
-fMeanV0Ref(-1),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(etaMinToCompare),
@@ -310,7 +349,7 @@ fSPD2LR(0x0),
 fSPD2LL(0x0),
 fMCWeightList(0x0),
 fMCWeight(1.),
-fV0side(new TString(""))
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
   
@@ -365,7 +404,7 @@ fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
 fMeanTrRef(meanTrRef),
-fMeanV0Ref(-1),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(0.),
@@ -382,7 +421,7 @@ fSPD2LR(0x0),
 fSPD2LL(0x0),
 fMCWeightList(0x0),
 fMCWeight(1.),
-fV0side(new TString(""))
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
   
@@ -622,51 +661,54 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
   
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"TrackletsVsNch",Form("Number of tracklets vs number of generated charged particles in |#eta| < %1.1f;N_{ch};N_{tracklets}",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax); //Response matrix
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"TrackletsVsNch",Form("Number of tracklets vs %s in |#eta| < %1.1f;%s;N_{tracklets}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr2",Form("Number of tracklets (2) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr10",Form("Number of tracklets (10) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr40",Form("Number of tracklets (40) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
 
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr60",Form("Number of tracklets (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr80",Form("Number of tracklets (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
-
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr2",Form("%s (2)- number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr10",Form("%s (10) - number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr40",Form("%s (40) - number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr60",Form("%s (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr80",Form("%s (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
-
+  //========== Nch-Ntr dispersion histos===========
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr2",Form("Number of tracklets (2) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr10",Form("Number of tracklets (10) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr40",Form("Number of tracklets (40) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr60",Form("Number of tracklets (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr80",Form("Number of tracklets (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr2",Form("%s (2)- number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr10",Form("%s (10) - number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr40",Form("%s (40) - number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr60",Form("%s (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr80",Form("%s (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//
    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaVsMCdNchdeta",Form("Corrected dN_{ch}/d#eta vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{MC};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  
-  
+    //====================================
+
   //__________V0 Histos
+  if ( fV0side )
+  {
+    Double_t multMinV0 = -0.5;  //Tracklets multiplicity range
+    Double_t multMaxV0 = 1000.5;
+    Int_t nbinsMultV0 = GetNbins(multMinV0,multMaxV0,1.);
 
-  Double_t multMinV0 = -0.5;  //Tracklets multiplicity range
-  Double_t multMaxV0 = 1000.5;
-  Int_t nbinsMultV0 = GetNbins(multMinV0,multMaxV0,1.);
+    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0AMultVsNch",Form("V0A multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0A Mult",fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0AMultVsNch",Form("V0A multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0A Mult",fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0CMultVsNch",Form("V0C multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0C Mult",fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0CMultVsNch",Form("V0C multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0C Mult",fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0MultVsTracklets",Form("Raw %s multiplicity vs raw tracklets in |#eta| < %1.1f;N_{tr};V0A Mult",fV0side->Data(),fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0MultVsTracklets",Form("Raw %s multiplicity vs raw tracklets in |#eta| < %1.1f;N_{tr};V0A Mult",fV0side->Data(),fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMultVsNch",Form("%s corr. multiplicity vs %s in |#eta| < %1.1f;%s;%s Mult",fV0side->Data(),TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMultVsNch",Form("%s corr. multiplicity vs %s in |#eta| < %1.1f;%s;%s Mult",fV0side->Data(),TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanV0MultVsZVertex",Form("Mean raw %s mult. vs Z vertex;Z vertex;<%s_{mult}>",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
 
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanV0MultVsZVertex",Form("Mean raw %s mult. vs Z vertex;Z vertex;<%s_{mult}>",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanV0CorrMultVsZVertex",Form("Mean corrected %s mult. vs Z vertex;Z vertex;<%s_{mult}>",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
 
-   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanV0CorrMultVsZVertex",Form("Mean corrected %s mult. vs Z vertex;Z vertex;<%s_{mult}>",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0MultVsZVertex",Form("%s raw multiplicity vs Z vertex;Z vertex;%s mult.",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0MultVsZVertex",Form("%s raw multiplicity vs Z vertex;Z vertex;%s mult.",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMultVsZVertex",Form("%s corrected multiplicity vs Z vertex;Z vertex;%s mult.",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMultVsZVertex",Form("%s corrected multiplicity vs Z vertex;Z vertex;%s mult.",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0Mult",Form("%s multiplicity distribution;%s mult.;N_{events}",fV0side->Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0);
 
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0Mult",Form("%s multiplicity distribution;%s mult.;N_{events}",fV0side->Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0);
-
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMult",Form("Corrected %s multiplicity distribution;%s mult.;N_{events}",fV0side->Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0);
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMult",Form("Corrected %s multiplicity distribution;%s mult.;N_{events}",fV0side->Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0);
+  }
   //______________________
 
-  
+
 //  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"NchVsTracklets","Number of generated charged particles vs reco tracklets;N_{tracklets};N_{ch}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
   if ( fSPDMeanTrackletsCorrToCompare )
@@ -685,17 +727,17 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
     CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"CheckNtrCorr","Check for NtrCorr distribution;N^{corr}_{tr};N_{events}",nbinsMult,multMin,multMax);
   }
   
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}) /(dN_{ch}/d#eta)_{gen}",fEtaMax),201,-1.005,1.005);
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}",fEtaMax),402,-100.5,100.5);
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-    
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta) /(dN_{ch}/d#eta)_{gen};N_{events}",fEtaMax),201,-1.005,1.005);
-     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta;N_{events}",fEtaMax),402,-100.5,100.5);
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}) /(dN_{ch}/d#eta)_{gen}",fEtaMax),201,-1.005,1.005);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}",fEtaMax),402,-100.5,100.5);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta) /(dN_{ch}/d#eta)_{gen};N_{events}",fEtaMax),201,-1.005,1.005);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta;N_{events}",fEtaMax),402,-100.5,100.5);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
-//   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch","Reco tracklets corrected vs number of generated charged particles;N_{ch};N_{tracklets}^{corr}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch",Form("%s vs number of generated charged particles in |#eta| < %1.1f;N_{ch};%s",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
+
+  //   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch","Reco tracklets corrected vs number of generated charged particles;N_{ch};N_{tracklets}^{corr}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch",Form("%s vs number of generated charged particles in |#eta| < %1.1f;N_{ch};%s",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
   // profile histograms
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanTrackletsVsEta","Mean number of tracklets vs #eta;#eta;<N_{Tracklets}>",fEtaAxis->GetNbins(),fEtaAxis->GetXmin(),fEtaAxis->GetXmax(),0);
@@ -798,7 +840,7 @@ void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
   TH1* SPDCorrection(0x0);
   Int_t runRef(0);
   Int_t i(0); // SPDCorrection index in the list
-//  Bool_t weightMap(kFALSE);
+
   while ( (SPDCorrection = static_cast<TH1*>(next())) ) // Checks if the correction list format is ok and if it is ordered
   {
     if ( static_cast<TH1*>(SPDCorrection)->IsA() != TH2::Class() && static_cast<TH1*>(SPDCorrection)->IsA() != TProfile::Class() )
@@ -809,38 +851,17 @@ void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
     TString name = SPDCorrection->GetName(); // This will be the first valid run for the correction
     if ( !name.BeginsWith("SPDCorrection_") ) AliFatal(Form("Incorrect SPD correction at %d format: Objects in list must be named as 'SPDCorrection_1stValidRunNumber_lastValidRunNumber'",i));
 
-//    if ( name.CountChar('_') == 3 && !fMCWeightMap ) // If the correction name has three "_" means that a weight has been given
-//    {
-//      AliWarning("A weight will be applied to events, this is wrong if you are running on data"); // No possible weight in data
-//
-//      fMCWeightMap = new TMap; //Creates the map for the MC weights in case is not yet defined
-//      fMCWeightMap->SetOwnerKeyValue(kTRUE,kTRUE);
-//
-//      weightMap = kTRUE;
-//    }
-    
     name.Remove(0,name.First("_") + 1);
     TString nameLast = name; // This will be the last valid run for the correction
-//    TString nameWeight(""); // This will be the MC weight for the run
+
     name.Remove(name.First("_"),name.Length());
     nameLast.Remove(0,nameLast.First("_") + 1);
+
     if ( !name.IsDigit() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve first valid run number",i));
-//    if ( !weightMap )
-//    {
-      if ( !nameLast.IsDigit() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve last valid run number",i));
-//    }
-//    else
-//    {
-//      nameWeight = nameLast;
-//      nameLast.Remove(nameLast.First("_"),nameLast.Length());
-//      nameWeight.Remove(0,nameWeight.First("_")+1);
 
-//      AliInfo(Form(" MC weight = %s",nameWeight.Data()));
+    if ( !nameLast.IsDigit() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve last valid run number",i));
 
-//      if ( !nameLast.IsDigit() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve last valid run number",i));
-//      if ( !nameWeight.IsFloat() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve MC weight",i));
-//    }
-    
+
     Int_t runLow = name.Atoi();
     Int_t runHigh = nameLast.Atoi();
     if ( runHigh < runLow ) AliFatal(Form("SPD correction at %d validity range not valid",i));
@@ -850,10 +871,8 @@ void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
     for ( Int_t j = runLow ; j <= runHigh ; j++ )
     {
       fSPDCorrectionMap->Add(new TObjString(Form("%d",j)),new TObjString(Form("%d",i))); // The mapping is done between the runs and the index of the correction in the spdCorrection List
-
-//      if ( weightMap ) fMCWeightMap->Add(new TObjString(Form("%d",j)),new TObjString(Form("%s",nameWeight.Data()))); // Mapping between runs and weight for MC events
     }
-    
+
     i++;
   }
   
@@ -897,51 +916,6 @@ void AliAnalysisMuMuNch::DefineSPDFluctuationsMap(TH2F* spdFluctuations)
     fSPDFluctuationsList->Add(h);
     fSPDFluctuationsMap->Add(new TObjString(Form("%f.2-%f.2",h->GetXaxis()->GetBinLowEdge(bin),h->GetXaxis()->GetBinUpEdge(bin+1))),new TObjString(Form("%d",50+i))); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
   }
-
-//  TH1D* h1 = spdFluctuations->ProjectionX("Fluctuations_0_5",1,5); // Project n bins of Ntr corrected by AccxEff over the Nch axis
-//  h1->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h1); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("0-4.5"),new TObjString("0")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h2 = spdFluctuations->ProjectionX("Fluctuations_6_10",6,10);
-//  h2->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h2); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("4.5-9.5"),new TObjString("1")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h3 = spdFluctuations->ProjectionX("Fluctuations_11_15",11,15);
-//  h3->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h3); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("9.5-14.5"),new TObjString("2")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h4 = spdFluctuations->ProjectionX("Fluctuations_16_20",16,20);
-//  h4->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h4); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("14.5-19.5"),new TObjString("3")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h5 = spdFluctuations->ProjectionX("Fluctuations_21_25",21,25);
-//  h5->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h5); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("19.5-24.5"),new TObjString("4")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h6 = spdFluctuations->ProjectionX("Fluctuations_26_30",26,30);
-//  h6->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h6); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("24.5-29.5"),new TObjString("5")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h7 = spdFluctuations->ProjectionX("Fluctuations_31_35",31,35);
-//  h7->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h7); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("29.5-34.5"),new TObjString("6")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h8 = spdFluctuations->ProjectionX("Fluctuations_36_40",36,40);
-//  h8->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h8); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("34.5-39.5"),new TObjString("7")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
-//
-//  TH1D* h9 = spdFluctuations->ProjectionX("Fluctuations_41_50",41,50);
-//  h9->SetDirectory(0);
-//  fSPDFluctuationsList->Add(h9); // Add fluctuations distribution to array
-//  fSPDFluctuationsMap->Add(new TObjString("39.5-49.5"),new TObjString("8")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
 
   TH1D* h10 = spdFluctuations->ProjectionX("Fluctuations_62_70",62,70);
   h10->SetDirectory(0);
@@ -1025,19 +999,6 @@ void AliAnalysisMuMuNch::AttachSPDAcceptance(UInt_t dataType,
 Double_t AliAnalysisMuMuNch::ApplyFluctuations(Double_t dNtrCorrdeta)
 {
 
-//  TString trRange("");
-//  if ( dNtrCorrdeta >= -0.5 && dNtrCorrdeta < 4.5 ) trRange = "0-4.5";
-//  else if ( dNtrCorrdeta >= 4.5 && dNtrCorrdeta < 9.5 ) trRange = "4.5-9.5";
-//  else if ( dNtrCorrdeta >= 9.5 && dNtrCorrdeta < 14.5 ) trRange = "9.5-14.5";
-//  else if ( dNtrCorrdeta >= 14.5 && dNtrCorrdeta < 19.5 ) trRange = "14.5-19.5";
-//  else if ( dNtrCorrdeta >= 19.5 && dNtrCorrdeta < 24.5 ) trRange = "19.5-24.5";
-//  else if ( dNtrCorrdeta >= 24.5 && dNtrCorrdeta < 29.5 ) trRange = "24.5-29.5";
-//  else if ( dNtrCorrdeta >= 29.5 && dNtrCorrdeta < 34.5 ) trRange = "29.5-34.5";
-//  else if ( dNtrCorrdeta >= 34.5 && dNtrCorrdeta < 39.5 ) trRange = "34.5-39.5";
-//  else if ( dNtrCorrdeta >= 39.5 && dNtrCorrdeta < 49.5 ) trRange = "39.5-49.5";
-//  else if ( dNtrCorrdeta >= 49.5 && dNtrCorrdeta < 69.5 ) trRange = "49.5-69.5";
-//  else if ( dNtrCorrdeta >= 69.5 && dNtrCorrdeta < 149.5 ) trRange = "69.5-149.5";
-
   Int_t iSPDFluctuationsIndex(0);
   Int_t i(0);
   Bool_t foundRange(kFALSE);
@@ -1069,12 +1030,6 @@ Double_t AliAnalysisMuMuNch::ApplyFluctuations(Double_t dNtrCorrdeta)
     if ( (dNtrCorrdeta >= 61.5) && (dNtrCorrdeta < 69.5) ) iSPDFluctuationsIndex = 56;
     else if ( (dNtrCorrdeta >= 69.5) && (dNtrCorrdeta < 149.5) ) iSPDFluctuationsIndex = 57;
   }
-//
-//  TObjString*  sSPDFluctuationsKey = static_cast<TObjString*>(fSPDFluctuationsMap->GetValue(trRange)); // Get the corresponding SPDCorrection map key for the run
-//
-//  Int_t iSPDFluctuationsIndex(0);
-//  if ( sSPDFluctuationsKey ) iSPDFluctuationsIndex = sSPDFluctuationsKey->String().Atoi(); // Converts the key into Int, if found
-//  else AliWarning(Form("No fluctuations distribution found for Ntr %f",dNtrCorrdeta));
 
   TH1D* hSPDFluctuations = static_cast<TH1D*>(fSPDFluctuationsList->At(iSPDFluctuationsIndex)); // Gets the SPD correction at key position from the list
 
@@ -1605,17 +1560,17 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     {
       static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch"))->Fill(nchSum,p->GetVal(),fMCWeight);
 
-      if (SPDZv > -0.5 && SPDZv < 0.5 )
-      {
-        if ( p->GetVal() > 1.5 && p->GetVal() < 2.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr2")->Fill(nchSum - p->GetVal(),fMCWeight);
-        if ( p->GetVal() > 9.5 && p->GetVal() < 10.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr10")->Fill(nchSum - p->GetVal(),fMCWeight);
-        if ( p->GetVal() > 39.5 && p->GetVal() < 40.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr40")->Fill(nchSum - p->GetVal(),fMCWeight);
-      }
-      if (SPDZv > -2.0 && SPDZv < 2.0 )
-      {
-        if ( p->GetVal() > 59.5 && p->GetVal() < 60.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr60")->Fill(nchSum - p->GetVal(),fMCWeight);
-        if ( p->GetVal() > 79.5 && p->GetVal() < 80.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr80")->Fill(nchSum - p->GetVal(),fMCWeight);
-      }
+//      if (SPDZv > -0.5 && SPDZv < 0.5 )
+//      {
+//        if ( p->GetVal() > 1.5 && p->GetVal() < 2.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr2")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 9.5 && p->GetVal() < 10.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr10")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 39.5 && p->GetVal() < 40.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr40")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
+//      if (SPDZv > -2.0 && SPDZv < 2.0 )
+//      {
+//        if ( p->GetVal() > 59.5 && p->GetVal() < 60.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr60")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 79.5 && p->GetVal() < 80.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr80")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
 
       TObjArray* binsNtrCorr = Binning()->CreateBinObjArray("psi","ntrcorr","");
       TIter nextBinNtrCorr(binsNtrCorr);
@@ -1652,17 +1607,17 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     {
       static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"TrackletsVsNch"))->Fill(nchSum,p->GetVal(),fMCWeight);
 
-      if (SPDZv > 4. && SPDZv < 5.5 )
-      {
-        if ( p->GetVal() > 1.5 && p->GetVal() < 2.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr2")->Fill(nchSum - p->GetVal(),fMCWeight);
-        if ( p->GetVal() > 9.5 && p->GetVal() < 10.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr10")->Fill(nchSum - p->GetVal(),fMCWeight);
-        if ( p->GetVal() > 39.5 && p->GetVal() < 40.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr40")->Fill(nchSum - p->GetVal(),fMCWeight);
-      }
-      if (SPDZv > 3.5 && SPDZv < 6.0 )
-      {
-        if ( p->GetVal() > 59.5 && p->GetVal() < 60.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr60")->Fill(nchSum - p->GetVal(),fMCWeight);
-        if ( p->GetVal() > 79.5 && p->GetVal() < 80.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr80")->Fill(nchSum - p->GetVal(),fMCWeight);
-      }
+//      if (SPDZv > 4. && SPDZv < 5.5 )
+//      {
+//        if ( p->GetVal() > 1.5 && p->GetVal() < 2.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr2")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 9.5 && p->GetVal() < 10.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr10")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 39.5 && p->GetVal() < 40.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr40")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
+//      if (SPDZv > 3.5 && SPDZv < 6.0 )
+//      {
+//        if ( p->GetVal() > 59.5 && p->GetVal() < 60.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr60")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 79.5 && p->GetVal() < 80.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr80")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
 
       TObjArray* binsNtrRaw = Binning()->CreateBinObjArray("psi","ntr","");
       TIter nextBinNtrRaw(binsNtrRaw);
@@ -1694,20 +1649,23 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     }
   }
   
-  Double_t V0AMult = 0.;
-  Double_t V0CMult = 0.;
-  
-  AliVVZERO* vzero = Event()->GetVZEROData();
-  if (vzero)
+  if ( fV0side )
   {
-    Double_t multV0A = vzero->GetMTotV0A();
-    V0AMult = AliESDUtils::GetCorrV0A(multV0A,MCZv);
-    Double_t multV0C = vzero->GetMTotV0C();
-    V0CMult = AliESDUtils::GetCorrV0C(multV0C,MCZv);
+    Double_t V0AMult = 0.;
+    Double_t V0CMult = 0.;
     
-    static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0AMultVsNch"))->Fill(V0AMult,nchSum,fMCWeight);
-    static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0CMultVsNch"))->Fill(V0CMult,nchSum,fMCWeight);
-    
+    AliVVZERO* vzero = Event()->GetVZEROData();
+    if (vzero)
+    {
+      Double_t multV0A = vzero->GetMTotV0A();
+//      V0AMult = AliESDUtils::GetCorrV0A(multV0A,MCZv);
+      Double_t multV0C = vzero->GetMTotV0C();
+//      V0CMult = AliESDUtils::GetCorrV0C(multV0C,MCZv);
+
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0AMultVsNch"))->Fill(V0AMult,nchSum,fMCWeight);
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0CMultVsNch"))->Fill(V0CMult,nchSum,fMCWeight);
+
+    }
   }
   //____
 }
@@ -2319,17 +2277,17 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
     if (vzero)
     {
       Double_t multV0(0.);
-      if ( fV0side->Contains("V0A") )
+      if ( fV0side && fV0side->Contains("V0A") )
       {
         multV0 = vzero->GetMTotV0A();
         nchList->Add(new TParameter<Double_t>("V0ARaw",multV0));
       }
-      else if ( fV0side->Contains("V0C") )
+      else if ( fV0side && fV0side->Contains("V0C") )
       {
         multV0 = vzero->GetMTotV0C();
         nchList->Add(new TParameter<Double_t>("V0CRaw",multV0));
       }
-      else if ( fV0side->Contains("V0M") )
+      else if ( fV0side && fV0side->Contains("V0M") )
       {
         multV0 = vzero->GetMTotV0A() + vzero->GetMTotV0C();
         nchList->Add(new TParameter<Double_t>("V0MRaw",multV0));
@@ -2343,9 +2301,9 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
         if ( V0r < -999.) V0m = -1;
         else V0m = multV0 + V0r;
 
-        if ( fV0side->Contains("V0A") ) nchList->Add(new TParameter<Double_t>("V0ACorr",V0m));// We add the corrected V0A multiplicity to the event. It will serve us as a multiplicity estimator.
-        else if ( fV0side->Contains("V0C") ) nchList->Add(new TParameter<Double_t>("V0CCorr",V0m));
-        else if ( fV0side->Contains("V0M") ) nchList->Add(new TParameter<Double_t>("V0MCorr",V0m));
+        if ( fV0side && fV0side->Contains("V0A") ) nchList->Add(new TParameter<Double_t>("V0ACorr",V0m));// We add the corrected V0A multiplicity to the event. It will serve us as a multiplicity estimator.
+        else if ( fV0side && fV0side->Contains("V0C") ) nchList->Add(new TParameter<Double_t>("V0CCorr",V0m));
+        else if ( fV0side && fV0side->Contains("V0M") ) nchList->Add(new TParameter<Double_t>("V0MCorr",V0m));
       }
     }
     //_________

@@ -46,6 +46,13 @@
 ClassImp(AliAnalysisMuMuEventCutter)
 
 //______________________________________________________________________________
+AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TRootIOCtor* ioCtor)
+: TObject(), fMuonEventCuts(0x0)
+{
+  /// default ctor
+}
+
+//______________________________________________________________________________
 AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TList* triggerClasses, TList* triggerInputsMap)
 : TObject(), fMuonEventCuts(0x0)
 {
