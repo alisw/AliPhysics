@@ -12,50 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// After-burner for the EMCAL cluster unfolding algorithm
-//
-// Input: TObjArray  *clusArray -- array of AliVClusters;
-//        AliVCaloCells  *cellsEMCAL -- EMCAL cells.
-//
-// Output is appended to clusArray, the original (unfolded or not) clusters
-// are deleted or moved to another position in clusArray.
-//
-// If you want to use particular geometry, you must initialize it _before_
-// creating AliEMCALAfterBurnerUF instance. Add this or similar line to the
-// initialization section:
-//
-//    AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
-//
-// gGeoManager must be initialized for this code to work! Do it yourself or
-// provide geometry.root file in the current directory so that
-// AliEMCALAfterBurnerUF will take it by itself.
-// How to use:
-//
-//   // add this lines to the initialization section of your analysis
-//   AliEMCALAfterBurnerUF *abuf = new AliEMCALAfterBurnerUF();
-//   TObjArray *clusArray = new TObjArray(100);
-//
-//
-//   AliVEvent *event = InputEvent();
-//   AliVCaloCells *cellsEMCAL = event->GetEMCALCells();
-//
-//   for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
-//   {
-//     AliVCluster *clus = event->GetCaloCluster(i);
-//
-//     clusArray->Add(clus->Clone());   // NOTE _CLONE_ in this line
-//   }
-//
-//   abuf->UnfoldClusters(clusArray, cellsEMCAL);
-//
-//   // do an analysis with clusArray
-//   // ....
-//
-//   // prevent memory leak
-//   clusArray->Delete();
-//
-//----
-//  Author: Olga Driga (SUBATECH)
 
 // --- ROOT system ---
 #include <TObjArray.h>
@@ -126,8 +82,8 @@ void AliEMCALAfterBurnerUF::Init()
 
   // initialize geometry, if not yet initialized
   if (!AliEMCALGeometry::GetInstance()) {
-    Warning("AliEMCALAfterBurnerUF::Init", "AliEMCALGeometry is not yet initialized. Initializing with EMCAL_COMPLETEV1");
-    AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+    Warning("AliEMCALAfterBurnerUF::Init", "AliEMCALGeometry is not yet initialized. Initializing with EMCAL_COMPLETE12SMV1_DCAL_8SM");
+    AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   }
 
   // AliEMCALRecPoint is using exactly this call

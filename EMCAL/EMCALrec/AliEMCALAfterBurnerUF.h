@@ -3,26 +3,63 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//_________________________________________________________________________
-//  After-burner for the EMCAL cluster unfolding algorithm
-//
-//  See cxx for details on how to use it
-//
-//  Author: Olga Driga (SUBATECH)
-//
+//-------------------------------------------------------------------------
+/// After-burner for the EMCAL cluster unfolding algorithm
+///
+/// Input: TObjArray  *clusArray -- array of AliVClusters;
+////       AliVCaloCells  *cellsEMCAL -- EMCAL cells.
+///
+/// Output is appended to clusArray, the original (unfolded or not) clusters
+/// are deleted or moved to another position in clusArray.
+///
+/// If you want to use particular geometry, you must initialize it _before_
+/// creating AliEMCALAfterBurnerUF instance. Add this or similar line to the
+/// initialization section:
+///
+///    AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+///
+/// gGeoManager must be initialized for this code to work! Do it yourself or
+/// provide geometry.root file in the current directory so that
+/// AliEMCALAfterBurnerUF will take it by itself.
+/// How to use:
+///
+///   // add this lines to the initialization section of your analysis
+///   AliEMCALAfterBurnerUF *abuf = new AliEMCALAfterBurnerUF();
+///   TObjArray *clusArray = new TObjArray(100);
+///
+///
+///   AliVEvent *event = InputEvent();
+///   AliVCaloCells *cellsEMCAL = event->GetEMCALCells();
+///
+///   for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
+///   {
+///     AliVCluster *clus = event->GetCaloCluster(i);
+///
+///     clusArray->Add(clus->Clone());   // NOTE _CLONE_ in this line
+///   }
+///
+///   abuf->UnfoldClusters(clusArray, cellsEMCAL);
+///
+///   // do an analysis with clusArray
+///   // ....
+///
+///   // prevent memory leak
+///   clusArray->Delete();
+///
+///
+///  \author: Olga Driga (SUBATECH)
+//-------------------------------------------------------------------------
 
 // --- ROOT system ---
 class TObjArray;
 class TClonesArray;
-
-// --- Standard library ---
 
 // --- AliRoot header files ---
 class AliEMCALGeometry;
 class AliEMCALUnfolding;
 class AliVCaloCells;
 
-class AliEMCALAfterBurnerUF{
+class AliEMCALAfterBurnerUF {
 
   public:
     AliEMCALAfterBurnerUF();
