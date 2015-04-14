@@ -10,7 +10,7 @@
 /// AliAnalysisMuMu : helper class to digest/plot/massage results from
 /// AliAnalysisTaskMuMu
 ///
-/// author : Laurent Aphecetche (Subatech)
+/// author : Laurent Aphecetche (Subatech) and Javier Martin Blanco
 
 #include "AliAnalysisMuMuBinning.h"
 #include "TNamed.h"
@@ -79,7 +79,8 @@ public:
   void ComputeDiffFnormFromInt(const char* triggerCluster="MUON", const char* eventSelection="PSALL", AliMergeableCollection* mc=0x0, const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI",Bool_t printout=kTRUE);
   
   void ComputeDiffFnormFromCounters(const char* filePileUpCorr="", const char* what="psi", const char* quantity="ntrcorr",
-                                    const char* flavour="D2H",const char* triggerCluster="MUON", const char* eventSelectionFNorm="PSALL",
+                                    const char* flavour="D2H",const char* triggerCluster="MUON",
+                                    const char* eventSelectionFNorm="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
                                     const char* eventSelectionYield="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", Bool_t printout=kTRUE);
 
   void ComputeDiffFnormFromGlobal(const char* what="psi",const char* quantity="ntrcorr",const char* flavour="D2H",const char* triggerCluster="MUON",
@@ -88,21 +89,23 @@ public:
   
   void ComputeMeanFnorm(const char* triggerCluster="MUON", const char* eventSelection="PSALL", const char* what="psi",const char* quantity="ntrcorr",
                         const char* flavour="D2H");
-  
+
   void ComputeIntFnormFromCounters(const char* filePileUpCorr="", const char* triggerCluster="MUON", const char* eventSelectionFNorm="PSALL",
-                                   const char* eventSelectionYield="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", Bool_t printout=kTRUE);
-  
+                                   const char* eventSelectionYield="PSALL", Bool_t printout=kTRUE);
+
   void PlotYiedWSyst(const char* triggerCluster="MUON");
-  
+
 //  void ComputeJpsiYield(AliMergeableCollection* oc=0x0, Bool_t relative=kFALSE, const char* fNormType="mean",const char* triggerCluster="MUON",const char* whatever="PSI-DNCHDETA-AccEffCorr",const char* sResName="",AliMergeableCollection* ocMBTrigger=0x0, Double_t mNTrCorrection=0.);
 
-  void ComputeJpsiYield( Bool_t relative=kTRUE, const char* fNormType="mean", const char* triggerCluster="MUON",
-                        const char* whatever="PSI-NTRCORR-AccEffCorr", const char* sResName="");
+  void ComputeJpsiYield( Bool_t relative=kTRUE, const char* fNormType="mean", const char* evSelInt="PSALL",
+                        const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
+                        const char* triggerCluster="MUON", const char* whatever="PSI-NTRCORR-AccEffCorr", const char* sResName="");
 
 //  void ComputeJpsiMPt(Bool_t relative=kFALSE, const char* whatever="PSI-DNCHDETA-AccEffCorr-MeanPtVsMinvUS",const char* sResName="",AliMergeableCollection* ocMBTrigger=0x0, Double_t mNTrCorrection=0.);
 
-   void ComputeJpsiMPt(Bool_t relative=kTRUE, const char* whatever="PSI-NTRCORR-AccEffCorr-MeanPtVsMinvUS",const char* sResName="");
-  
+   void ComputeJpsiMPt(Bool_t relative=kTRUE, const char* evSelInt="PSALL", const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00"
+                       ,const char* spectra="PSI-NTRCORR-AccEffCorr-MeanPtVsMinvUS",const char* sResName="");
+
   void ComputeMBXSectionFractionInBins(const char* filePileUpCorr="", const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
                                        const char* what="psi",const char* quantity="ntrcorr", const char* flavour="D2H");
   
