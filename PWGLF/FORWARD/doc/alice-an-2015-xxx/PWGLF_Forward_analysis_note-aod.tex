@@ -73,12 +73,13 @@ The pile--up status is propagated to the \AOD{} output.
 
 \paragraph{\SPD{} outlier} 
 The number of clusters in the \SPD{} is compared to the number of
-tracklets from the \SPD{}, and events with too many clusters compared
+tracklets from the \SPD{}, and events with too many clusters, compared
 to the number of tracklets is flagged in the \AOD{} as an outlier
 event\footnote{The equivalent of the method
   \texttt{IsSPDClusterVsTrackletBG} of \texttt{AliAnalysisUtils} is
   used.  See also
-  \href{https://groups.cern.ch/group/alice-analysis-operations/Lists/Archive/Flat.aspx?RootFolder=\%2Fgroup\%2Falice-analysis-operations\%2FLists\%2FArchive\%2FSPD\%20cluster-vs-tracklet\%20cut\%20for\%20background\%20rejection&FolderCTID=0x01200200726CA2ECC2B5D14F9300A07F2C08D3A2}{this post}.}
+  \href{https://groups.cern.ch/group/alice-analysis-operations/Lists/Archive/Flat.aspx?RootFolder=\%2Fgroup\%2Falice-analysis-operations\%2FLists\%2FArchive\%2FSPD\%20cluster-vs-tracklet\%20cut\%20for\%20background\%20rejection&FolderCTID=0x01200200726CA2ECC2B5D14F9300A07F2C08D3A2}{this
+    post}.}
 %% 
 %% The SPD pile-up check was implicit in earlier version of
 %% AliPhysicsSelction up to LHC10x, pass2.  Since then it has been
@@ -118,7 +119,9 @@ in a given strip) was added, but the electronics had suppressed
 $4\times\sigma$.  To align at the proper zero, we therefor add
 $3\times\sigma$ scaled by the gain factor $\DeltaMip$.  This is
 entirely understood and the fix is implemented to automatically
-correct the zero signal if needed. 
+correct the zero signal if needed\footnote{The reconstruction code has
+  been fixed, so that for newer data this is no longer a problem, in
+  which case this step is not taken.}. 
 
 For some of the earlier runs, the off--line shuttle\footnote{The
   software that processes only conditions and writes these to the
@@ -130,7 +133,7 @@ gain, or a noise--to--gain factor larger than some cut-off (typically
 
 The fixes applied in this step are entirely mechanical and corresponds
 to well understood issues.  The result of this step is a modified
-\ESD{} object which is passed on in to the next step in the chain.
+\ESD{} object which is passed on into the next step in the chain. 
 
 
 \subsection{Sharing filter}
@@ -163,31 +166,32 @@ high that most likely each and every strip will be hit and the effect
 cancels out on average.
 \fi
 
-Since the particles travel more or less in straight lines toward the
+Since the particles travel in more or less straight lines toward the
 \FMD{} sensors, the sharing effect is predominantly in the $r$ or
 \emph{strip} direction.  Only neighbouring strips in a given sector are
 therefore investigated for this effect.  
 
-Algorithm~\ref{algo:sharing}\footnote{The algorithm is shown here
+Algorithm~\ref{algo:sharing} on page~\pageref{algo:sharing} is applied to
+the signals in a given sector\footnote{The algorithm is shown here
   almost as it is coded.  As it stands here, it could easily be
   simplified.  However, in the code (\texttt{AliFMDSharingFilter})
   there are side--effects and settings which will influence the
   flow. In particular, Algorithm~\ref{algo:sharing} shows the case
   where at most 2 strips can be merged (default setting), but it is
-  possible for the code to merge over 2 or 3 strips.} is applied to
-the signals in a given sector. Here the function
-\FuncSty{SignalInStrip}($t$) returns the properly path--length
-corrected signal in strip $t$.  Two cuts are used in this algorithm:
+  possible for the code to merge over 2 or 3 strips.}. Here the
+function \FuncSty{SignalInStrip}($t$) returns the properly
+path--length corrected signal in strip $t$.  Two cuts are used in this
+algorithm:
 \begin{description}
-\item[\FuncSty{GetLowCut}] Signals below this cut is considered
+\item[\FuncSty{GetLowCut}] Signals below this cut are considered
   pedestal remnants and are never merged. 
 \item[\FuncSty{GetHighCut}] Signals above this cut are considered
   isolated hits, but can be merged with a neighbouring signal below
   this cut. 
 \end{description}
-The exact value returned by the two functions  \FuncSty{GetLowCut} and
-\FuncSty{GetHighCut} and how it those values are obtained can be
-varied in the analysis (see also \secref{sec:cuts}).  
+The exact value returned by the two functions \FuncSty{GetLowCut} and
+\FuncSty{GetHighCut} and how those values are obtained can be varied
+in the analysis (see also \secref{sec:cuts}).
 
 
 \begin{algorithm}[htpb]
@@ -306,7 +310,7 @@ turn.
   \end{itemize}
 \end{itemize}
 The result of this pass is a new \ESD{} object where signals that are
-spread of two strips have been merged into one (see also
+spread over two strips have been merged into one (see also
 \figref{fig:sharing:effect}).
 
 \begin{figure}[htbp]
@@ -359,21 +363,24 @@ depends on settings, but default values are listed in
 
 To evaluate the charge particle multiplicity for a given strip $t$, we
 evaluate the weighted energy loss fits (see \secref{sec:fits}) at the
-reconstructed (possibly merged) energy loss $\Delta_t$ of the strip 
+reconstructed (possibly merged) energy loss
+$\Delta_t=\Delta/\Delta_{\text{mip}}$ of the strip
 \begin{align}
   \label{eq:nt}
   n_t &= G_{N_{\text{max}}}(\Delta_t;\Delta_p,\xi,\sigma,\mathbf{a}) =
-  \frac{\sum_i^{N_{max}} i\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}{
-    \sum_i^{N_{max}}\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}\quad,
+  \frac{\sum_{i=1}^{N_{max}} i\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}{
+    \sum_{i=1}^{N_{max}}\,a_i\,f_i(\Delta_t;\Delta_p,\xi,\sigma)}\quad,
 \end{align}
 That is, the $\Nch$ weighted average of the fit to the energy loss
-distributions at the given energy loss $\Delta_t$. 
+distributions at the given energy loss $\Delta_t$.  $n_t$ is thus the
+most probable number of charged particles that impinged on strip $t$,
+according to the energy loss fit.  
 
 The sensors of the \FMD{} are not perfect arc--segments
 \cite{cholm:2009} --- the two top corners are cut off to allow the
 largest possible sensor on a 6'' Si-wafer.  This means, however, that
 the strips in these outer regions do not fully cover $2\pi$ in
-azimuth, and there is therefore a need to correct for this limited
+azimuth. It is therefore necessary to correct for this limited
 acceptance.
 
 The correction is only applicable where the strip length does not
@@ -386,21 +393,34 @@ simply
      \left\{
        \begin{array}{cl}
          1 & \text{for non-cut strips}\\
-         \Delta\varphi/l_t & \\
+         \Delta\varphi/l_t & \text{for cut strips}\\
        \end{array}\right.
      \quad
 \end{align}
-where $l_t$ is the strip length in radians at constant $r$, and
-$\Delta\varphi$ is $2\pi$ divided by the number of sectors in the ring
-(20 for inner type rings, and 40 for outer type rings). Note, that
-this correction is a hardware--related correction, and does not depend
-on the properties of the collision (e.g., primary vertex location).
+where $l_t$ is the strip length of strip $t$ in radians at constant
+$r$, and $\Delta\varphi$ is $2\pi$ divided by the number of sectors in
+the ring (20 for inner type rings, and 40 for outer type rings). Note,
+that this correction is a hardware--related correction, and does not
+depend on the properties of the collision (e.g., primary vertex
+location).  See also \figref{fig:density:corners}
 
 We then define the $\varphi$--acceptance corrected signal in a strip
 $t$ as 
 \begin{align}
   n'_t &= \Corners{} n_t
 \end{align}
+
+\begin{figure}[htbp]
+  \centering
+  \figinput[.9\linewidth]{corners}
+  \caption{$\varphi$ acceptance of inner and outer type rings as a
+    function of radial strip number $t$. The dashed lines indicate the
+    strips that have lower acceptance due to cut corners.}
+  \label{fig:density:corners}
+  %% There's no point in adding a ratio plot here, even if the
+  %% difference between the two distributions is hard to see over some
+  %% value.  The point of this figure is really in the low part. 
+\end{figure}
 
 To fill the 5 per--ring, per--event, $\etaphi$, vertex-dependent
 output histograms $\dndetadphi[incl,r,\subIPz,i]$ we can proceed in
@@ -409,8 +429,8 @@ one of two ways detailed in the following.
 \subsubsection{Inclusive number of charged particles: Energy Fits} 
 \label{sec:sub:sub:eloss_fits}
 
-For this method, we simply sum up $n'_t$ for all strips that fall
-within an $\etaphi$ bin.  
+For this method, we simply sum up $n'_t$ for all strips within an
+$\etaphi$ bin.
 \begin{align}
   \label{eq:density1}
   \dndetadphi[incl,r,\subIPz,i] &= \sum_t^{t\in\etaphi} n'_t
@@ -418,11 +438,14 @@ within an $\etaphi$ bin.
 where $t$ runs over the strips in the $\etaphi$ bin. 
 
 This method has the advantage that it takes into account the energy
-loss $\Delta_t$ of each strip.  The down--side of the approach is its
-sensitivity to the event sample to which $f_N(xt;\Delta_p,\xi,\sigma)$
-where fitted.  For low--multiplicity environments such as \ppCol{} the
-sensitivity is relatively small, while this method implies a bias
-toward the minimum bias sample for larger multiplicities.
+loss $\Delta_t$ in each strip.  The down--side of the approach is its
+sensitivity to the event sample to which the
+$f_N(xt;\Delta_p,\xi,\sigma)$ were fitted.  Typically the fits are
+performed on a minimum bias event sample, and the parameters
+$\mathbf{a}$ therefor reflect the $\Nch$ distribution of that sample.
+For low--multiplicity environments such as \ppCol{} the sensitivity is
+relatively small.  However, this method implies a bias toward the
+minimum bias sample for events with larger multiplicities.
 
 \subsubsection{Inclusive number of charged particles: Poisson Approach} 
 \label{sec:sub:sub:poisson}
@@ -466,7 +489,7 @@ In particular we have
 \end{align*}
 with $f=\Nempty{}/\Ntotal{}$.  That means we can calculate the mean
 number of particles per $\etaphi$ bin of a larger $\etaphi$ region by
-simply count the number of strips with no signal\footnote{Or rather, a
+simply counting the number of strips with no signal\footnote{Or rather, a
   signal below threshold.}.
 
 The expected number of particles in a strip \emph{with a signal above
@@ -484,10 +507,10 @@ The expected number of particles in a strip \emph{with a signal above
   \intertext{Inserting $\muR=-\log(f)$ gives}\nonumber
   &=
   \frac{-\log(f)}{1-e^{\log(f})}
-   =  \frac{-\log(f)}{1-f}
+   =  \frac{-\log(f)}{1-f}\quad.
 \end{align}
-and the final number of particles in each of the $\etaphi$ bin of the
-defined region becomes 
+The final number of particles in each of the $\etaphi$ bin of the
+defined region is then 
 \begin{align}
   \label{eq:density2}
   \dndetadphi[incl,r,\subIPz,i] &= \Nhit{}\,N_{\text{expected},R} 
@@ -504,7 +527,9 @@ defined by the the Poisson calculation as set to $\sqrt{\Nch}$.
 The size of the regions used can be varied in the analysis.  The
 default is $\unit[32]{strips}\times\unit[4]{sectors}$ (see also
 \tabref{tab:fmd:overview}).  The exact definition of the threshold can
-likewise be varied (see also \secref{sec:cuts}). 
+likewise be varied (see also \secref{sec:cuts}).   Note, this does not
+effect the $\varphi$ resolution, since \eqref{eq:density2} takes this
+into account. 
 
 \begin{figure}[htbp]
   \centering
@@ -574,9 +599,10 @@ up to two corrections.
 %% - hHits_FMD<d><r>_vtx<v>  is 2D of eta,phi for all track-refs that
 %%   hit the FMD - The 2D version of hMCHits_nocuts_FMD<d><r>_vtx<v>
 %%   used below. 
-This is a 2 dimensional histogram generated from simulations, as the
-ratio of the total number of particles to the number of primary
-particles that fall within an $\etaphi$ bin for a given vertex bin
+This is a 2 dimensional histogram generated from simulations. It is
+the ratio of the total number of particles to the number of primary
+particles\footnote{Here, 'primary' follows the standard definition of
+  \ALICE{}.} that fall within an $\etaphi$ bin for a given vertex bin
 
 \begin{align}
   \label{eq:secondary}
@@ -630,7 +656,11 @@ $\SecMap$ varies from $\approx 1.5$ for the most forward bins to
 $\approx 3$ for the more central bins. \figref{fig:secondaries:origin}
 shows the $\dndeta$ of secondaries from various sources assessed with
 simulations to give an idea of the magnitude of the effects of
-secondaries.
+secondaries. For \ppCol{}, at least some millions of events must be
+accumulated to reach satisfactory statistics.  For \PbPbCol{} where
+the general hit density is larger, reasonable statistics can be
+achieved with less simulated data. \pPbCol{}/\PbpCol{} sits somewhere
+in between.
 
 \begin{figure}[htbp]
   \centering
@@ -651,9 +681,11 @@ secondaries.
     $\SecMap$ for each collision system to the average $\SecMap$ over
     all collision systems. All systems fall with--in 5\%, except
     \PbpCol{} and \PbPbCol{} in \FMD{1} which deviates with up to
-    10\%. }
+    7\%. }
   \label{fig:secmap:all}
 \end{figure} 
+
+
  
 The systematics of the secondary correction was evaluated through a
 comprehensive simulation production
@@ -663,22 +695,22 @@ the same underlying geometric description. An example of that study is
 shown in \figref{fig:secmap:all}.  It is seen, that the secondary map
 is independent of the particle multiplicity, as one would expect from
 how the track propagation code (\GEANT{3}) works: Each track is
-propagated independent of other particles --- \textit{i.e.}, one will
+propagated independently of other particles --- \textit{i.e.}, one will
 get the same value of $\SecMap$ from $N$ events with $n$ particles as
 one would from a single event with $N\times n$ particles, or
 $N\times n$ events with a single particle.
 
 Overall, the secondary maps for different collision systems and
-energies agree within at least 5\% --- except for \PbPbCol{} and
-\PbpCol{} which deviates more in the region of \FMD{1}.  This effect
-was studied in detail using the above mentioned simulation
-production.  The effect was found to be a consequence of the different
-hadron chemistry encoded in each of the underlying event
-generators\footnote{Pythia6 was used for all \ppCol{} energies, DpmJet
-  for \pPbCol{}/\PbpCol{}, and Hijing for \PbPbCol{}.} and the
-resulting primary particle distribution. 
+energies agree within at least 5\% (see \figref{fig:secmap:all}) ---
+except for \PbPbCol{} and \PbpCol{} which deviates more in the region
+of \FMD{1}.  This effect was studied in detail using the above
+mentioned simulation production.  The effect was found to be a
+consequence of the different hadron chemistry encoded in each of the
+underlying event generators\footnote{Pythia6 was used for all \ppCol{}
+  energies, DpmJet for \pPbCol{}/\PbpCol{}, and Hijing for
+  \PbPbCol{}.} and the resulting primary particle distribution.
 
-To see this, a study was performed, selecting the \ppCol{} at
+To see this, a study was performed, selecting the \ppCol{} reaction at
 \usNN{pp}{0900} as the baseline.  In the study each particle (primary
 and secondary) entering \eqref{eq:secondary} was weighted according to
 their ultimate primary particle $\eta$ and $\pT$.  Particle weights
@@ -709,12 +741,14 @@ The weight for a given particle type $i$ for system $j$ is given by
   W_{i}= \left(
   \frac1{\Nch}\diffFrac{^{2}N_{i}}{\pT\mathrm{d}y} \right)_{%
   \text{\ppCol{}},\GeV[900]{}} \Big/ 
-  \left(\frac1{\Nch}\diffFrac{^{2}N_{i}}{\pT{}\mathrm{d}y}\right)_{j}\quad.
+  \left(\frac1{\Nch}\diffFrac{^{2}N_{i}}{\pT{}\mathrm{d}y}\right)_{j}\quad,
 \end{align}
+that is, we re--calibrate the $\eta$ and $\pT$ distributions to that
+of \ppCol{} at $\usNN{pp}{0900}$. 
 
 \begin{figure}[h!tbp]
   \centering
-  \figinput[.8\textwidth]{310weights}
+  \figinput[.9\textwidth]{310weights}
   \caption{The $K^{0}_{s}$ weights for \PbPbCol{} calculated based on
     \eqref{eq:weights}.  Top--left and bottom--right panels show the
     averaged weights for some pseudorapidity and transverse momentum
@@ -744,7 +778,8 @@ weights for $K^{0}_{s}$ for
 \PbPbCol{}. \figref{fig:secmapweighted:all} shows the comparison of
 the secondary maps from the weighting procedure for all the system. It
 is clear that all discrepancies observed in
-\figref{fig:secmap:all} are compressed by the weighting procedure.
+\figref{fig:secmap:all} are systematically reduced by the weighting
+procedure, so that the deviations are now $\le4\%$.
 The effect of this sensitivity to the hadron--chemistry is accounted
 for in the systematic uncertainties (see
 \secref{sec:sub:dndeta:syserr}), with an additional component for the
@@ -767,10 +802,6 @@ region of \FMD{1}.
 %For pp, different event
 %generators were used and found to give compatible results within
 %3--5\%.   
-For \ppCol{}, at least some millions of events must be accumulated to
-reach satisfactory statistics.  For \PbPbCol{} where the general hit
-density is larger, reasonable statistics can be achieved with less
-simulated data. \pPbCol{}/\PbpCol{} sits somewhere in between. 
 
 \subsubsection{Acceptance due to dead channels}
 
@@ -805,10 +836,11 @@ charged particle density is then given by
 \subsection{Histogram collector}
 \label{sec:sub:hist_collector}
 
-The histogram collector collects the information from the 5 vertex
+The histogram collector assembles the information from the 5 vertex
 dependent, per--ring histograms of the primary charged particle
 density $\dndetadphi[r,\subIPz,i]$ into a single vertex dependent
 histogram of the charged particle density $\dndetadphi[\subIPz,i]$.
+Here, the subscript $i$ denotes the event. 
 
 In case the secondary map correction was turned off, as in the case
 when the empirical correction is applied, the histogram collector
@@ -870,27 +902,13 @@ bins is %% "Content" is singular
   \etaCov &= 
   \frac{1}{N_{r\in(\eta)}}
   \sum_{r}^{r\in(\eta)} \left\{\begin{array}{cl} 
-      0 & \eta \text{\ bin not selected}\\ 
-      1 & \eta \text{\ bin selected}
+      0 & \eta \text{\ bin not selected in event $i$}\\ 
+      1 & \eta \text{\ bin selected in event $i$}
       \end{array}\right.\quad,
 \end{align}
 where $N_{r\in(\eta)}$ is the number of overlapping histograms in the
 given $\eta$ bin.  The subscript $i$ indicates that the content
 depends on the current interaction point of event $i$.
-
-\begin{figure}[]
-  \centering
-  \figinput[.98\textwidth]{steps}
-  \caption{Step--by--step evolution of $\dndeta$ in the analysis.
-    Note for this particular analysis, the secondary correction
-    $\SecMap{}$ was turned off (see \secref{sec:sub:sub:secmap}). The
-    figure should be read from the top-left, downward,
-    continuing on the top right, and finally ending up in the lower
-    right corner. Dark blue markers are for \FMD{3i}, light blue is
-    \FMD{3o}, light green \FMD{2o}, dark green \FMD{2i}, and red
-    \FMD{1i}.}
-  \label{fig:steps}
-\end{figure} 
 
 All the steps involved are summarised in \figref{fig:steps}. 
 
@@ -899,26 +917,49 @@ All the steps involved are summarised in \figref{fig:steps}.
 The final \FMD{} \AOD{} is stored on a separate branch\footnote{The
   branch name is \texttt{Forward} for normal data, and
   \texttt{ForwardMC} for simulated data. Both branches store a single
-  \texttt{AliAODForwardMult} object per event.} and contains 
+  \texttt{AliAODForwardMult} object per event.} and contains for each
+event 
 
 \begin{tabular}[T]{p{.2\linewidth}p{.76\linewidth}}
-  $\dndetadphi[\subIPz,i]$ & A 2--dimensional histogram of the
-                             exclusive number of charged primary
-                             particles per $\etaphi$ bin
-                             \eqref{eq:superhist}, \emph{or}\\ 
-  $\dndetadphi[incl,\subIPz,i]$ & A 2--dimensional histogram of the
-                                  inclusive number of charged primary
-                                  and secondary particles per
-                                  $\etaphi$ bin \eqref{eq:superhist:2}
-                                  in case the secondary map correction
-                                  was turned off.\\   
-  $\phiAcc{}$ & A 1--dimensional histogram of the $\varphi$ acceptance
-                per $\eta$ bin \eqref{eq:overflow}. \\
-  $\IPz$ & The $z$ coordinate of the interaction point used in the
-           above steps.\\
-  Trigger bits & A bit field of seen triggers and conditions
-                 (pile--up, \SPD{} outlier, etc.) during the above steps.\\ 
+  $\dndetadphi[\subIPz,i]$ 
+  & A 2--dimensional histogram of the
+    exclusive number of charged primary
+    particles per $\etaphi$ bin in event $i$
+    \eqref{eq:superhist}, \emph{or}\\ 
+  $\dndetadphi[incl,\subIPz,i]$ 
+  & A 2--dimensional histogram of the
+    inclusive number of charged primary
+    and secondary particles per
+    $\etaphi$ bin  in event $i$ \eqref{eq:superhist:2}
+    in case the secondary map correction
+    was turned off.\\   
+  $\phiAcc{}$ 
+  & A 1--dimensional histogram of the $\varphi$ acceptance
+    per $\eta$ bin  in event $i$ \eqref{eq:overflow}. \\
+  $\IPz$ 
+  & The $z$ coordinate of the interaction point  in event $i$ used in the
+    above steps.\\
+  Trigger bits 
+  & A bit field of seen triggers and conditions
+    (pile--up, \SPD{} outlier, etc.) in event $i$ during the above steps.\\ 
 \end{tabular}
+
+Again, the sub--script $i$ denotes this is per--event information. 
+
+\begin{figure}[]
+  \centering
+  \figinput[.98\textwidth]{steps}
+  \caption{A cartoon of the step--by--step evolution of $\dndeta$ in
+    the analysis.  Note for this particular analysis, the secondary
+    correction $\SecMap{}$ was turned off (see
+    \secref{sec:sub:sub:secmap}). The figure should be read from the
+    top-left, downward, continuing on the top right, and finally
+    ending up in the lower right corner. Dark blue markers are for
+    \FMD{3i}, light blue is \FMD{3o}, light green \FMD{2o}, dark green
+    \FMD{2i}, and red \FMD{1i}.}
+  \label{fig:steps}
+\end{figure} 
+
 
 %% Local Variables:
 %%   TeX-master: "PWGLF_Forward_analysis_note.tex"

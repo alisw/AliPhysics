@@ -3,7 +3,7 @@
 
 This note describes the steps performed in the analysis of the
 charged particle multiplicity in the forward pseudo--rapidity regions
-with the \FMD{} detector \cite{FWD:2004mz,cholm:2009}. 
+using the \FMD{} \cite{FWD:2004mz,cholm:2009}. 
 
 \paragraph{The \FMD{}}
 The \FMD{} is organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2},
@@ -65,14 +65,14 @@ interaction point.
 The analysis is performed as a two--step process.  
 \begin{enumerate}
 \item The Event--Summary--Data (\ESD{}) is processed event--by--event.
-  On each event, the data is passed through a number of algorithms,
+  For each event, the data is passed through a number of algorithms,
   and $\dndetadphi$ for each event is output to an
   Analysis--Object--Data (\AOD{}) tree.
 \item The \AOD{} data is read in and the sub--sample of the data under
   investigation is selected. For \ppCol{} we select of for example
   \INEL{}, \INELONE{}, and \NSD{}\footnote{Recently, capability to
-    select on other estimators relevant for high--multiplicity studies
-    have been implemented.}. For \PbPbCol{}, \pPbCol{}, and \PbpCol{}
+    select other estimators relevant for high--multiplicity studies
+    has been implemented.}. For \PbPbCol{}, \pPbCol{}, and \PbpCol{}
   we select on centrality estimators.  The $\dndetadphi$ histogram
   read for the selected events is used to build up $\ndndeta$.
 \end{enumerate}
