@@ -396,9 +396,9 @@ void AliAnalysisTaskMuMu::GetSelectedTrigClassesInEvent(const AliVEvent* event, 
   }
   
   TString firedTriggerClasses = event->GetFiredTriggerClasses();
-  UInt_t l0 = AliAnalysisMuonUtility::GetL0TriggerInputs(event);
-  UInt_t l1 = AliAnalysisMuonUtility::GetL1TriggerInputs(event);
-  UInt_t l2 = AliAnalysisMuonUtility::GetL2TriggerInputs(event);
+  UInt_t l0 = event->GetHeader()->GetL0TriggerInputs();
+  UInt_t l1 = event->GetHeader()->GetL1TriggerInputs();
+  UInt_t l2 = event->GetHeader()->GetL2TriggerInputs();
 
   std::set<std::string> tmpArray;
   
@@ -621,7 +621,7 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   }
 
 
-  TString firedTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(Event()));
+  TString firedTriggerClasses(Event()->GetFiredTriggerClasses());
     
   // first loop to count things not associated to a specific trigger
   TIter nextEventCutCombination(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kEvent));

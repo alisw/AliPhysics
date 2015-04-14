@@ -31,12 +31,8 @@ class AliAnalysisMuonUtility : public TObject {
   
   // Transparently handle ESD/AOD
   static Bool_t IsAODEvent ( const AliVEvent* event );
-  static TString GetFiredTriggerClasses ( const AliVEvent* event );
   static Int_t GetNTracks ( const AliVEvent* event );
   static AliVParticle* GetTrack ( Int_t itrack, const AliVEvent* event );
-  static UInt_t GetL0TriggerInputs ( const AliVEvent* event );
-  static UInt_t GetL1TriggerInputs ( const AliVEvent* event );
-  static UInt_t GetL2TriggerInputs ( const AliVEvent* event );
   
   static Bool_t IsAODTrack ( const AliVParticle* track );
   static Bool_t IsMuonTrack ( const AliVParticle* track );
@@ -68,8 +64,6 @@ class AliAnalysisMuonUtility : public TObject {
   
   static Bool_t IsAODMCTrack ( const AliVParticle* mcParticle );
   static Bool_t IsMCTrack ( const AliVParticle* mcParticle );
-  static Int_t GetMotherIndex ( const AliVParticle* mcParticle );
-  static Int_t GetDaughterIndex ( const AliVParticle* mcParticle, Int_t idaughter );
   static Bool_t IsPrimary ( const AliVParticle* mcParticle, const AliMCEvent* mcEvent );
   static UInt_t GetMCProcess ( const AliVParticle* mcParticle );
   static UInt_t GetStatusCode ( const AliVParticle* mcParticle );
@@ -78,9 +72,6 @@ class AliAnalysisMuonUtility : public TObject {
 
   // A useful constant
   static Double_t MuonMass2();
-  
-  // Transparently handle vertex
-  static AliVVertex* GetVertexSPD ( const AliVEvent* event );
   
   // Utilities for ESD/AOD
   static Int_t GetPassNumber ( const AliInputEventHandler* eventHandler );

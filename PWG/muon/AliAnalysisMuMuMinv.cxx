@@ -859,7 +859,7 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
     AliVParticle* part = MCEvent()->GetTrack(i);
     
     if  (AliAnalysisMuonUtility::IsPrimary(part,MCEvent()) &&
-         AliAnalysisMuonUtility::GetMotherIndex(part)==-1)
+         part->GetMother()==-1)
     {
       Double_t inputWeight = WeightDistribution(part->Pt(),part->Y());
       
@@ -1031,7 +1031,7 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
 //    AliVParticle* part = MCEvent()->GetTrack(i);
 //    
 //    if  (AliAnalysisMuonUtility::IsPrimary(part,MCEvent()) &&
-//         AliAnalysisMuonUtility::GetMotherIndex(part)==-1)
+//         part->GetMother()==-1)
 //    {
 //      
 //      Histo(MCInputPrefix(),"ALL","Pt")->Fill(part->Pt());

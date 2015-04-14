@@ -1052,7 +1052,7 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   
   if ( fResolution ) return; //When computing resolutions we skip this method
   
-  AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(Event());
+  const AliVVertex* vertex = Event()->GetPrimaryVertexSPD();
   
   TList* nchList = static_cast<TList*>(Event()->FindListObject("NCH"));
   
@@ -1372,8 +1372,7 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
   }
   
   Double_t MCZv = AliAnalysisMuonUtility::GetMCVertexZ(Event(),MCEvent()); // Definition of MC generated z vertex
-
-  AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(Event());
+  const AliVVertex* vertex = Event()->GetPrimaryVertexSPD();
   
   Double_t SPDZv = vertex->GetZ();;
   TParameter<Double_t>* p(0x0);
@@ -2085,7 +2084,7 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   nchList->Clear(); // We clear the NCH list for this new event
 
   
-  AliVVertex* vertexSPD = AliAnalysisMuonUtility::GetVertexSPD(event);
+  const AliVVertex* vertexSPD = event->GetPrimaryVertexSPD();
   Double_t SPDZv = vertexSPD->GetZ();
 
   AliAODTracklets* tracklets = GetTracklets(event);

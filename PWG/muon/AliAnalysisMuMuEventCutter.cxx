@@ -262,7 +262,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsAbsZSPDBelowValue(const AliVEvent& event, c
   Double_t SPDzv(0.);
   Bool_t vertexFound(kFALSE);
   
-  AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
+  const AliVVertex* SPDVertex = event.GetPrimaryVertexSPD();
   if ( SPDVertex )
   {
     vertexFound = kTRUE;
@@ -284,7 +284,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzVertexInRange(AliVEvent& event, const D
 {
   /// Whether or not the SPD Z vertex is in the range [zMin,zMax[
   
-  AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
+  const AliVVertex* SPDVertex = event.GetPrimaryVertexSPD();
   
   if ( !SPDVertex )
   {
@@ -302,7 +302,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzVertexInRange(AliVEvent& event, const D
 Bool_t AliAnalysisMuMuEventCutter::HasSPDVertex(AliVEvent& event) const
 {
   /// Does the event have a SPD vertex ?
-  AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
+  const AliVVertex* SPDVertex = event.GetPrimaryVertexSPD();
   if ( SPDVertex && SPDVertex->GetNContributors() > 0) return kTRUE;
   else return kFALSE;
 }
@@ -318,7 +318,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzQA(const AliVEvent& event, /*const AliV
   
   if ( vertex )
   {
-    AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
+    const AliVVertex* SPDVertex = event.GetPrimaryVertexSPD();
     if ( SPDVertex )
     {
       TString vtxTyp = SPDVertex->GetTitle();
