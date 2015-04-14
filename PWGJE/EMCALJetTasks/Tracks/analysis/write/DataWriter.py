@@ -206,7 +206,7 @@ def WriteTracks(filename, inAcceptance = False, etaSel = "all", isNew = True):
     writer = DataTrackWriter(filename, isNew)
     writer.SetInAcceptance(inAcceptance)
     if etaSel == "centcms":
-        writer.SetEtaCut("centcms", -0.8, -0.3)
+        writer.SetEtaCut("centcms", -0.7999, -0.3001)
     writer.Convert()
     writer.WriteOutput()
 
