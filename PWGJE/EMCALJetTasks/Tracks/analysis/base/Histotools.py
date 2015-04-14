@@ -23,7 +23,7 @@ Module containing simple histogram tools. Currently implemented:
 @since: April 14, 2015
 """
 
-from ROOT import TH1D, 
+from ROOT import TH1D
 from numpy import array
 from copy import deepcopy
 
