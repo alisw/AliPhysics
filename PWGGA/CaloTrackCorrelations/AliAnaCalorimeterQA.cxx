@@ -140,7 +140,7 @@ fhCaloCenNCells(0),                    fhCaloCenECells(0),
 fhCaloEvPNClusters(0),                 fhCaloEvPEClusters(0),
 fhCaloEvPNCells(0),                    fhCaloEvPECells(0),
 
-// Super-Module dependent histgrams
+// Super-Module dependent histograms
 fhEMod(0),                             fhAmpMod(0),                            fhTimeMod(0),  
 fhNClustersMod(0),                     fhNCellsMod(0),
 fhNCellsPerClusterMod(0),              fhNCellsPerClusterModNoCut(0), 

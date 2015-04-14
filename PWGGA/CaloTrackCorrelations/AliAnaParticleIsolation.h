@@ -37,7 +37,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
     
   AliAnaParticleIsolation() ;
     
-  /// Virtual dtor
+  /// Virtual destructor.
   virtual ~AliAnaParticleIsolation() { ; }
 
   // Main general methods
@@ -171,7 +171,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
                      kmcPrimPi0    = 7, kmcPrimEta      = 8                                               } ;
   
-  static const Int_t fgkNmcPrimTypes = 9; ///< Number of MC primary particle types used in the analysis.
+  static const Int_t fgkNmcPrimTypes = 9; ///< Number of MC primary particle types used in the analysis in the histogram arrays.
   
   /// For histograms in arrays, index in the array, corresponding to any particle origin.
   enum mcTypes     { kmcPhoton   = 0, kmcPrompt     = 1, kmcFragment         = 2,
@@ -179,7 +179,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
                      kmcEta      = 6, kmcEtaDecay   = 7, kmcEtaDecayLostPair = 8,
                      kmcOtherDecay=9, kmcElectron   =10, kmcHadron           =11  } ;
   
-  static const Int_t fgkNmcTypes = 12;
+  static const Int_t fgkNmcTypes = 12; ///< Number of MC type particles originating the clusters used in the analysis in the histogram arrays.
 
  private:
   

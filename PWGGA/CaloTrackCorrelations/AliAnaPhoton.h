@@ -128,6 +128,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,
                     kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
   
+  /// Total number of MC histograms for shower shape studies.
   static const Int_t fgkNssTypes = 6 ;
   
   private:
