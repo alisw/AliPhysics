@@ -194,8 +194,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
     }
   }
   
-  Int_t nTowersPerSM = 2*AliEMCALTriggerMappingV2::fNPhi*2*AliEMCALTriggerMappingV2::fNEta; // number of towers in a SuperModule; 24x48
-  Double_t nTot = fgknSM * nTowersPerSM ;
+  Double_t nTot = AliEMCALTriggerMappingV2::fNTotalTRU*AliEMCALTriggerMappingV2::fNModulesInTRU*4; //46(NTRUs)*96(NModulesInTRU)*NTowersPerModule
   TList *lstF = 0;
   Int_t calibSpecieId = (Int_t)TMath::Log2( AliRecoParam::kCalib );
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
