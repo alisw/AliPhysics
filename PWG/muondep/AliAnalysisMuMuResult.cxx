@@ -383,6 +383,8 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
       {
         Double_t val = r->GetValue(name);
         Double_t err = r->GetErrorStat(name);
+
+        if ( !(err>0.0 ) ) continue; // If the error is not correct we skip the subresult
         // weight
         Double_t wstat = 1./val;
         Double_t w = 1./err/err/wstat;
@@ -508,13 +510,21 @@ Double_t AliAnalysisMuMuResult::GetRMS(const char* name, const char* subResultNa
   {
     if ( IsIncluded(r->Alias()) && r->HasValue(name) )
     {
-      Double_t e2 = r->GetErrorStat(name);
+      Double_t val = r->GetValue(name);
+      Double_t err = r->GetErrorStat(name);
       
-      e2 *= e2;
+      if ( !(err>0.0 ) ) continue; // If the error is not correct we skip the subresult
+      // weight
+      Double_t wstat = 1./val;
+      Double_t wi = 1./err/err/wstat;
       
-      if ( !(e2>0.0) ) e2 = TMath::Sqrt(r->GetValue(name));
-      
-      Double_t wi = 1.0/e2;
+//      Double_t e2 = r->GetErrorStat(name);
+//
+//      e2 *= e2;
+//
+//      if ( !(e2>0.0) ) e2 = TMath::Sqrt(r->GetValue(name));
+//
+//      Double_t wi = 1.0/e2;
       v1 += wi;
       v2 += wi*wi;
       Double_t diff = r->GetValue(name) - xmean;
@@ -608,7 +618,7 @@ Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResult
       {
         Double_t e = r->GetErrorStat(name)/TMath::Sqrt(r->GetValue(name)); //The Sqrt(r->GetValue(name)) was not here before
         Double_t e2 = e*e;
-        if ( !(e2>0.0 ) ) e2 = TMath::Sqrt(r->GetValue(name));
+        if ( !(e2>0.0 ) ) continue; /*e2 = TMath::Sqrt(r->GetValue(name));*/ // If the error is not correct we skip the subresult
 
         mean += r->GetValue(name)/e2;
         errorSum += 1.0/e2;
