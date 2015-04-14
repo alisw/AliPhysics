@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKEMCALTRIGGERQA_H
 
 //------------------------------------------------------------------------
-/// \class AliAnalysisTaskTriggerQA
+/// \class AliAnalysisTaskEMCALTriggerQA
 /// \brief Fill histograms with basic QA information for EMCAL offline trigger.
 ///
 ///  Fill histograms with basic QA information for EMCAL offline trigger.
