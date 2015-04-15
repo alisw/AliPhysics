@@ -1096,9 +1096,6 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
     rp = (AliPHOSEmcRecPoint*)fEMCRecPoints->At(iRP);
     //evaluate distance to border
     relid[0]=rp->GetPHOSMod() ;
-    relid[1]=0 ;
-    relid[2]=1 ;
-    relid[3]=1 ;
     Float_t xcorner=0,zcorner=0.;
     Float_t xmin,xmax,zmin,zmax ;
     fGeom->GetCrystalsEdges(rp->GetPHOSMod(),xmin, zmin, xmax, zmax) ;
@@ -1106,10 +1103,13 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
     Float_t minDistX = 2.2+TMath::Min(lpos.X()-xmin,xmax-lpos.X()); //2.2 - crystal size
     Float_t minDistZ = 2.2+TMath::Min(lpos.Z()-zmin,zmax-lpos.Z()); //2.2 - crystal size
     minDist=TMath::Min(minDistX,minDistZ) ;
+    Int_t ixmin=32+Int_t(xmin/2.2) ;
     for(Int_t iBad=0; iBad<fgCalibData->GetNumOfEmcBadChannels(); iBad++) {
       fGeom->AbsToRelNumbering(badIds[iBad],relid)  ;
       if(relid[0]!=rp->GetPHOSMod()) //We can not evaluate global position directly since 
         continue ;                   //bad channels can be in the module which does not exist in simulations.
+      if(relid[2]<=ixmin) //non-existing part of mod 4
+	continue ;
       rp->GetGlobalPosition(gposRecPoint,gmat);
       fGeom->RelPosInAlice(badIds[iBad],gposBadChannel);
       AliDebug(2,Form("BC position:[%.3f,%.3f,%.3f], RP position:[%.3f,%.3f,%.3f]. E=%.3f\n",
