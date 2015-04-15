@@ -180,7 +180,7 @@ void AliMEStender::UserCreateOutputObjects()
 	case AliMESconfigTender::kIterative:
   {  // data priors identified @ 10.02.2015 by Cristi for LHC10d
     AliInfo("Getting iterative data priors ...");
-    TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
+	TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
     if (lPriors->IsZombie()) {
 	    AliError("Could not open the priors file");
 	    break;
@@ -190,13 +190,15 @@ void AliMEStender::UserCreateOutputObjects()
 		fPIDcomb->SetPriorDistribution(AliPID::kPion, (TH1F*)lPriors->Get("priors_pi_final"));
 		fPIDcomb->SetPriorDistribution(AliPID::kKaon, (TH1F*)lPriors->Get("priors_K_final"));
 		fPIDcomb->SetPriorDistribution(AliPID::kProton, (TH1F*)lPriors->Get("priors_p_final"));
-    AliInfo(" Done loading iterative data priors.");
-    lPriors->Close();
+   		AliInfo("Done loading iterative data priors.");
+    	lPriors->Close();
 		break;
   }
   case AliMESconfigTender::kNoPP:
+  { // flat priors for pi, K, p and e and 0 for mu
 		fPIDcomb->SetEnablePriors(kFALSE);  // FLAT priors
 		break;
+	}
   default:
     AliDebug(2, "No PID priors selected");
     break;
