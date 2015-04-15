@@ -1,4 +1,4 @@
-AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t openingAngle, Double_t invMass,TString nonHFEalgorithm){
+AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC){
   //
   // HFE standard task configuration
   //
@@ -21,14 +21,11 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   AliAnalysisTaskFlowTPCEMCalEP *task = new AliAnalysisTaskFlowTPCEMCalEP("HFE v2");
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
-  task->SetOpeningAngleCut(openingAngle);
-  task->SetInvariantMassCut(invMass);
-  task->SetNonHFEalgorithm(nonHFEalgorithm);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
   if(useMC) pid->SetHasMCData(kTRUE);
-  pid->AddDetector("TPC", 0);
+//   pid->AddDetector("TPC", 0);
 
   Double_t params[4];
   char *cutmodel;
