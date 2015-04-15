@@ -18,6 +18,7 @@
 #include "TMath.h"
 #include "TFormula.h"
 #include "THashList.h"
+#include "TList.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TFile.h"
@@ -28,6 +29,7 @@
 #include "TArrayI.h"
 #include "TRegexp.h"
 #include "TPRegexp.h"
+#include "TDataMember.h"
 
 #include "AliLog.h"
 #include "AliInputEventHandler.h"
@@ -58,6 +60,7 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fSelectedTrigLevel(0x0),
   fSelectedTrigCombination(0x0),
   fTrigInputsMap(0x0),
+  fPhysSelBits(0x0),
   fAllSelectedTrigClasses(0x0),
   fCentralityClasses(0x0),
   fAnalysisUtils(0x0),
@@ -83,6 +86,7 @@ AliAnalysisCuts(name, title),
   fSelectedTrigLevel(new TObjArray()),
   fSelectedTrigCombination(new TObjArray()),
   fTrigInputsMap(new THashList()),
+  fPhysSelBits(new THashList()),
   fAllSelectedTrigClasses(new THashList()),
   fCentralityClasses(0x0),
   fAnalysisUtils(0x0),
@@ -114,8 +118,9 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fRejectedTrigPattern(( obj.fRejectedTrigPattern ) ? static_cast<TObjArray*>(obj.fRejectedTrigPattern->Clone() ) : 0x0),
   fSelectedTrigLevel(( obj.fSelectedTrigLevel ) ? static_cast<TObjArray*>(obj.fSelectedTrigLevel->Clone() ) : 0x0),
   fSelectedTrigCombination(( obj.fSelectedTrigCombination ) ? static_cast<TObjArray*>(obj.fSelectedTrigCombination->Clone() ) : 0x0),
-  fTrigInputsMap(( obj.fTrigInputsMap ) ? static_cast<TList*>(obj.fTrigInputsMap->Clone() ) : 0x0),
-  fAllSelectedTrigClasses(( obj.fAllSelectedTrigClasses ) ? static_cast<TList*>(obj.fAllSelectedTrigClasses->Clone() ) : 0x0),
+  fTrigInputsMap(( obj.fTrigInputsMap ) ? static_cast<THashList*>(obj.fTrigInputsMap->Clone() ) : 0x0),
+  fPhysSelBits(( obj.fPhysSelBits ) ? static_cast<THashList*>(obj.fPhysSelBits->Clone()) : 0x0 ),
+  fAllSelectedTrigClasses(( obj.fAllSelectedTrigClasses ) ? static_cast<THashList*>(obj.fAllSelectedTrigClasses->Clone() ) : 0x0),
   fCentralityClasses(( obj.fCentralityClasses ) ? static_cast<TAxis*>(obj.fCentralityClasses->Clone() ) : 0x0),
   fAnalysisUtils(( obj.fAnalysisUtils ) ? static_cast<AliAnalysisUtils*>(obj.fAnalysisUtils->Clone() ) : 0x0),
   fEventTriggerMask(obj.fEventTriggerMask),
@@ -148,9 +153,11 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     delete fSelectedTrigCombination;
     fSelectedTrigCombination = ( obj.fSelectedTrigCombination ) ? static_cast<TObjArray*>(obj.fSelectedTrigCombination->Clone() ) : 0x0;
     delete fTrigInputsMap;
-    fTrigInputsMap = ( obj.fTrigInputsMap ) ? static_cast<TList*>(obj.fTrigInputsMap->Clone() ) : 0x0;
+    fTrigInputsMap = ( obj.fTrigInputsMap ) ? static_cast<THashList*>(obj.fTrigInputsMap->Clone() ) : 0x0;
+    delete fPhysSelBits;
+    fPhysSelBits = ( obj.fPhysSelBits ) ? static_cast<THashList*>(obj.fPhysSelBits->Clone()) : 0x0;
     delete fAllSelectedTrigClasses;
-    fAllSelectedTrigClasses = ( obj.fAllSelectedTrigClasses ) ? static_cast<TList*>(obj.fAllSelectedTrigClasses->Clone() ) : 0x0;
+    fAllSelectedTrigClasses = ( obj.fAllSelectedTrigClasses ) ? static_cast<THashList*>(obj.fAllSelectedTrigClasses->Clone() ) : 0x0;
     delete fCentralityClasses;
     fCentralityClasses = ( obj.fCentralityClasses ) ? static_cast<TAxis*>(obj.fCentralityClasses->Clone() ) : 0x0;
     delete fAnalysisUtils;
@@ -175,6 +182,7 @@ AliMuonEventCuts::~AliMuonEventCuts()
   delete fSelectedTrigLevel;
   delete fSelectedTrigCombination;
   delete fTrigInputsMap;
+  delete fPhysSelBits;
   delete fAllSelectedTrigClasses;
   delete fSelectedTrigClassesInEvent;
   delete fCentralityClasses;
@@ -205,8 +213,10 @@ UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
   
   const AliInputEventHandler* inputHandler = static_cast<const AliInputEventHandler*> ( obj );
   
+  UInt_t physicsSelection = const_cast<AliInputEventHandler*>(inputHandler)->IsEventSelected();
+
   if ( checkMask & kPhysicsSelected ) {
-    if ( const_cast<AliInputEventHandler*>(inputHandler)->IsEventSelected() & fPhysicsSelectionMask ) selectionMask |= kPhysicsSelected;
+    if ( physicsSelection & fPhysicsSelectionMask ) selectionMask |= kPhysicsSelected;
   }
   
   const AliVEvent* event = inputHandler->GetEvent();
@@ -214,7 +224,7 @@ UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
   Double_t centrality = GetCentrality(event);
   if ( centrality >= fCentralityClasses->GetXmin() && centrality <= fCentralityClasses->GetXmax() ) selectionMask |= kSelectedCentrality;
   
-  UpdateEvent(event);
+  UpdateEvent(event,physicsSelection);
   
   if ( fSelectedTrigClassesInEvent->GetEntries() > 0 ) selectionMask |= kSelectedTrig;
   
@@ -250,7 +260,7 @@ Bool_t AliMuonEventCuts::IsSelected( TList* /* list */)
 }
 
 //________________________________________________________________________
-Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event )
+Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event, UInt_t physicsSelection )
 {
   /// Update the transient data member per event
   
@@ -261,7 +271,7 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event )
   if ( fSelectedTrigClassesInEvent && ( fEventTriggerMask == event->GetTriggerMask() ) &&
       ( fEventL0Inputs == l0Inputs ) && ( fEventL1Inputs == l1Inputs ) && ( fEventL2Inputs == l2Inputs ) ) return kFALSE;
   
-  BuildTriggerClasses(event->GetFiredTriggerClasses(), l0Inputs, l1Inputs, l2Inputs);
+  BuildTriggerClasses(event->GetFiredTriggerClasses(), l0Inputs, l1Inputs, l2Inputs, physicsSelection);
 
   fEventTriggerMask = event->GetTriggerMask();
   fEventL0Inputs = l0Inputs;
@@ -360,7 +370,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
   ///       when merging different chuncks.
   ///
   ///
-  /// 2) specify a combination of triggers
+  /// 2) specify a combination of triggers (or physics selection bits)
   /// combined through a logical AND "&" or a logical OR "|" (wildcard * NOT accepted)
   /// It is also possible to ask for a trigger class containing a specific trigger input:
   /// e.g. CMSL7-B-NOPF-MUON&0MSH,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON|CMSL8-B-NOPF-MUON
@@ -368,6 +378,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
   /// - the single low trigger class fired and containing a single high trigger input
   /// - the single low trigger class fired
   /// - the single low trigger class 7 or 8 fired
+  /// Also, kMUU7|kMUL7 will give events firing either AliVEvent::kMUU7 or AliVEvent::kMUL7
   /// By default, when specific trigger combinations are provided, the most general case
   /// based on trigger pattern is disabled...but it can be activated with the disableTrigPattern flag
   ///
@@ -383,9 +394,15 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
   if ( fRejectedTrigPattern->GetEntries() > 0 ) fRejectedTrigPattern->Delete();
 
   SetTrigInputsMap(trigInputsMap);
+  SetPhysSelBits();
 
   TString badSyntax = "", duplicated = "";
-  TString listName[4] = {"L0","L1","L2","trigClass"};
+  TString listName[kNtypes];
+  listName[kL0Input] = "L0";
+  listName[kL1Input] = "L1";
+  listName[kL2Input] = "L2";
+  listName[kPhysSelBit] = "PhysSelBit";
+  listName[kTrigClass] = "trigClass";
   
   TString pattern(trigPattern);
   pattern.ReplaceAll(" ","");
@@ -398,7 +415,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
   while ( ( objString = static_cast<TObjString*>(next()) ) ) {
     TString currPattern = objString->String();
     Bool_t isCombination = ( currPattern.Contains("&") || currPattern.Contains("|") );
-    Bool_t isSingleTrigger = ( ! isCombination && ! currPattern.BeginsWith("0") && ! currPattern.BeginsWith("1") && ! currPattern.BeginsWith("2") );
+    Bool_t isSingleTrigger = ( ! isCombination && ! currPattern.BeginsWith("0") && ! currPattern.BeginsWith("1") && ! currPattern.BeginsWith("2") & ! currPattern.BeginsWith("k") );
     Bool_t isMatchPattern = ( currPattern.Contains("*") || isSingleTrigger );
     Bool_t isRejectPattern = kFALSE;
     if ( isMatchPattern && currPattern.Contains("!") ) {
@@ -468,10 +485,11 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
     TObjString* an = 0x0;
     while ( ( an = static_cast<TObjString*>(nextA()) ) )
     {
-      Int_t listIdx = 3;
-      if ( an->String().BeginsWith("0") ) listIdx = 0;
-      else if ( an->String().BeginsWith("1") ) listIdx = 1;
-      else if ( an->String().BeginsWith("2") ) listIdx = 2;
+      Int_t listIdx = kTrigClass;
+      if ( an->String().BeginsWith("0") ) listIdx = kL0Input;
+      else if ( an->String().BeginsWith("1") ) listIdx = kL1Input;
+      else if ( an->String().BeginsWith("2") ) listIdx = kL2Input;
+      else if ( an->String().BeginsWith("k") ) listIdx = kPhysSelBit;
       
       TObjArray* currList = static_cast<TObjArray*>(trigCombo->FindObject(listName[listIdx].Data()));
       if ( ! currList ) {
@@ -479,25 +497,43 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
         currList->SetOwner();
         currList->SetName(listName[listIdx].Data());
         currList->SetUniqueID(listIdx);
-        trigCombo->AddAt(currList,listIdx);
+        trigCombo->Add(currList);
       }
       TObjString* currStr = new TObjString(an->String());
       
-      if ( listIdx < 3 ) {
+      TObject* toBeAdded = currStr;
+
+      Bool_t isOk = kTRUE;
+
+      if ( listIdx <= kL2Input ) {
         // that's an input
         TObject* trigInput = fTrigInputsMap->FindObject(an->String().Data());
         if ( trigInput ) currStr->SetUniqueID(trigInput->GetUniqueID());
         else {
           AliError(Form("Uknown input %s in formula %s", an->String().Data(), currPattern.Data()));
-          delete trigCombo;
-          trigCombo = 0x0;
-          break;
+          isOk = kFALSE;
         }
       }
-      currList->AddLast(currStr);
+      else if ( listIdx == kPhysSelBit ) {
+        // That's a physics selection bit
+        TObject* physSelBit = fPhysSelBits->FindObject(an->String().Data());
+        // FIXME: When AliBits will be in place, change this with:
+        // toBeAdded = physSelBit
+        if ( physSelBit ) currStr->SetUniqueID(physSelBit->GetUniqueID());
+        else {
+          AliError(Form("Uknown physSelBit %s in formula %s", an->String().Data(), currPattern.Data()));
+          isOk = kFALSE;
+        }
+      }
+      if ( ! isOk ) {
+        delete trigCombo;
+        trigCombo = 0x0;
+        break;
+      }
+      currList->AddLast(toBeAdded);
     }
     delete arr;
-    if ( trigCombo) {
+    if ( trigCombo ) {
       fSelectedTrigCombination->AddLast(trigCombo);
       AliDebug(1,Form("Adding %s to trigger combination (type %u)",currPattern.Data(),trigCombo->GetUniqueID()));
     }
@@ -603,6 +639,30 @@ TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( TString trigClassName ) const
   return ptCutLevel;
 }
 
+//________________________________________________________________________
+void AliMuonEventCuts::SetPhysSelBits ()
+{
+  /// Set the correspondence between the physics selection
+  /// bit name and its actual value
+
+  if ( ! fPhysSelBits ) fPhysSelBits = new THashList();
+  fPhysSelBits->SetOwner();
+
+  TList* dmList = AliVEvent::Class()->GetListOfDataMembers();
+  TDataMember* dm = 0x0;
+  TIter next(dmList);
+  TString typeName = "";
+  while (( dm = static_cast<TDataMember*>(next()))) {
+    typeName = dm->GetTypeName();
+    if ( typeName != "AliVEvent::EOfflineTriggerTypes" ) continue;
+    UInt_t bitVal = (UInt_t)gROOT->ProcessLineFast(Form("AliVEvent::%s",dm->GetName()));
+    TObjString* physSelBit = new TObjString(dm->GetName());
+    physSelBit->SetUniqueID(bitVal);
+    fPhysSelBits->Add(physSelBit);
+    AliDebug(3,Form("PhysSelBit %s 0x%x",dm->GetName(),bitVal));
+  }
+}
+
 
 //________________________________________________________________________
 void AliMuonEventCuts::SetTrigInputsMap ( TString trigInputsMap )
@@ -638,30 +698,54 @@ void AliMuonEventCuts::SetTrigInputsMap ( TString trigInputsMap )
 
 //________________________________________________________________________
 const TObjArray*
-AliMuonEventCuts::GetSelectedTrigClassesInEvent(const TString& firedTriggerClasses,
-                                                UInt_t l0Inputs, UInt_t l1Inputs,
-                                                UInt_t l2Inputs)
+AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const TString& firedTriggerClasses,
+                                                 UInt_t l0Inputs, UInt_t l1Inputs,
+                                                 UInt_t l2Inputs, UInt_t physicsSelection )
 {
   /// Return the selected trigger classes in the fired trigger classes
   /// give also the L0,L1,L2 input bit masks
   
-  BuildTriggerClasses(firedTriggerClasses,l0Inputs,l1Inputs,l2Inputs);
+  BuildTriggerClasses(firedTriggerClasses,l0Inputs,l1Inputs,l2Inputs,physicsSelection);
 
   return fSelectedTrigClassesInEvent;
 }
 
 //________________________________________________________________________
-const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent( const AliVEvent* event )
+const TObjArray*
+AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const TString& firedTriggerClasses,
+                                                  UInt_t l0Inputs, UInt_t l1Inputs,
+                                                  UInt_t l2Inputs )
+{
+  /// Return the selected trigger classes in the fired trigger classes
+  /// give also the L0,L1,L2 input bit masks
+
+  BuildTriggerClasses(firedTriggerClasses,l0Inputs,l1Inputs,l2Inputs,0xFFFFFFFF);
+
+  return fSelectedTrigClassesInEvent;
+}
+
+//________________________________________________________________________
+const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const AliVEvent* event )
 {
   /// Return the selected trigger classes in the current event
-  UpdateEvent(event);
+  UpdateEvent(event,0xFFFFFFFF);
+  return fSelectedTrigClassesInEvent;
+}
+
+//________________________________________________________________________
+const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const AliInputEventHandler* eventHandler )
+{
+  /// Return the selected trigger classes in the current event
+  const AliVEvent* event = eventHandler->GetEvent();
+  UpdateEvent(event,const_cast<AliInputEventHandler*>(eventHandler)->IsEventSelected());
   return fSelectedTrigClassesInEvent;
 }
 
 
 //________________________________________________________________________
 void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
-                                             UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs )
+                                             UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs,
+                                             UInt_t physicsSelection )
 {
   //
   /// Return the list of trigger classes to be considered
@@ -698,7 +782,7 @@ void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
   
   for ( Int_t icomb=0; icomb<fSelectedTrigCombination->GetEntries(); icomb++ ) {
     TObjArray* currComb = static_cast<TObjArray*>(fSelectedTrigCombination->At(icomb));
-    if ( CheckTriggerClassCombination(currComb, firedTrigClassesAny, l0Inputs, l1Inputs, l2Inputs) ) {
+    if ( CheckTriggerClassCombination(currComb, firedTrigClassesAny, l0Inputs, l1Inputs, l2Inputs,physicsSelection) ) {
       TObjString* foundTrig = static_cast<TObjString*>(fAllSelectedTrigClasses->FindObject(currComb->GetName()));
       AddToEventSelectedClass ( currComb->GetName(), foundTrig, currComb->GetUniqueID() );
     }
@@ -727,7 +811,8 @@ AliMuonEventCuts::CheckTriggerClassPattern ( const TString& toCheck ) const
 Bool_t
 AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
                                                  const TString& firedTriggerClasses,
-                                                 UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const
+                                                 UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs,
+                                                 UInt_t physicsSelection ) const
 {
   // Check if the "toCheck" class (or logical combination of classes and L0 inputs)
   // are within the "firedTriggerClasses"
@@ -744,18 +829,22 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
   while ( ( currList = static_cast<TObjArray*>(nextObj()) ) ) {
     Int_t listIdx = currList->GetUniqueID();
     TIter nextA(currList);
-    TObjString* an = 0x0;
+    TObject* an = 0x0;
     while ( ( an = static_cast<TObjString*>(nextA()) ) )
     {
-      if ( listIdx < 3 ) {
+      if ( listIdx <= kL2Input ) {
         UInt_t bit = an->GetUniqueID();
         ok = ( (trigInputs[listIdx] & bit) == bit );
       }
+      else if ( listIdx == kPhysSelBit ) {
+        UInt_t bit = an->GetUniqueID();
+        ok = ( physicsSelection & bit );
+      }
       else {
-        TPRegexp re(Form("(^|[ ])%s([ ]|$)",an->String().Data()));
+        TPRegexp re(Form("(^|[ ])%s([ ]|$)",an->GetName()));
         ok = firedTriggerClasses.Contains(re);
       }
-      if ( combo->GetUniqueID() == kComboFormula ) comp.ReplaceAll(an->String().Data(),Form("%d",ok));
+      if ( combo->GetUniqueID() == kComboFormula ) comp.ReplaceAll(an->GetName(),Form("%d",ok));
       else if ( ( combo->GetUniqueID() == kComboAND && ! ok ) || ( combo->GetUniqueID() == kComboOR && ok ) ) {
         exitLoop = kTRUE;
         break;
