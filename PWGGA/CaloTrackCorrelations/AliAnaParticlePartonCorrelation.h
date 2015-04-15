@@ -4,9 +4,17 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class that contains the algorithm for the analysis of particle-parton correlation
-// Particle (for example direct gamma) must be found in a previous analysis 
-//-- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliAnaParticlePartonCorrelation
+/// \brief Particle-parton correlation
+///
+/// Class that contains the algorithm for the analysis of particle-parton correlation
+/// Particle (for example direct gamma) must be found in a previous analysis
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations)
+/// and particularly in this [section](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations#AliAnaParticlePartonCorrelation).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT ---
 class TH2F ;
@@ -18,38 +26,50 @@ class AliAnaParticlePartonCorrelation : public AliAnaCaloTrackCorrBaseClass {
        
 public:
   
-  AliAnaParticlePartonCorrelation() ; // default ctor
-  virtual ~AliAnaParticlePartonCorrelation() {;} //virtual dtor              
-  
-  TList * GetCreateOutputObjects();
-  
-  void InitParameters();
+           AliAnaParticlePartonCorrelation() ;
     
-  void MakeAnalysisFillAOD()  ;
+  /// Virtual destructor.
+  virtual ~AliAnaParticlePartonCorrelation() { ; }
   
-  void MakeAnalysisFillHistograms() ; 
+  TList *  GetCreateOutputObjects();
   
-  void Print(const Option_t * opt) const;
+  void     InitParameters();
+    
+  void     MakeAnalysisFillAOD()  ;
+  
+  void     MakeAnalysisFillHistograms() ;
+  
+  void     Print(const Option_t * opt) const;
   
 private:
   
-  TH2F * fhDeltaEtaNearParton; //! Difference of parton eta and prompt trigger particle eta
-  TH2F * fhDeltaPhiNearParton; //! Difference of parton phi and prompt trigger particle phi
-  TH2F * fhDeltaPtNearParton;  //! Difference of parton pT and prompt trigger particle pT
-  TH2F * fhPtRatNearParton;    //! Ratio of parton pT and prompt trigger particle pT
+  TH2F * fhDeltaEtaNearParton; //!<! Difference of parton eta and prompt trigger particle eta
+    
+  TH2F * fhDeltaPhiNearParton; //!<! Difference of parton phi and prompt trigger particle phi
+    
+  TH2F * fhDeltaPtNearParton;  //!<! Difference of parton pT and prompt trigger particle pT
+    
+  TH2F * fhPtRatNearParton;    //!<! Ratio of parton pT and prompt trigger particle pT
   
-  TH2F * fhDeltaEtaAwayParton; //! Difference of parton eta and prompt trigger particle eta
-  TH2F * fhDeltaPhiAwayParton; //! Difference of parton phi and prompt trigger particle phi
-  TH2F * fhDeltaPtAwayParton;  //! Difference of parton pT and prompt trigger particle pT
-  TH2F * fhPtRatAwayParton;    //! Ratio of parton pT and prompt trigger particle pT
+  TH2F * fhDeltaEtaAwayParton; //!<! Difference of parton eta and prompt trigger particle eta
+    
+  TH2F * fhDeltaPhiAwayParton; //!<! Difference of parton phi and prompt trigger particle phi
+    
+  TH2F * fhDeltaPtAwayParton;  //!<! Difference of parton pT and prompt trigger particle pT
+    
+  TH2F * fhPtRatAwayParton;    //!<! Ratio of parton pT and prompt trigger particle pT
   
-  AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) ;               // cpy ctor
-  AliAnaParticlePartonCorrelation & operator = (const AliAnaParticlePartonCorrelation & g) ; // cpy assignment
+  /// Copy constructor not implemented.
+  AliAnaParticlePartonCorrelation              (const AliAnaParticlePartonCorrelation & g) ;
+    
+  /// Assignment operator not implemented.
+  AliAnaParticlePartonCorrelation & operator = (const AliAnaParticlePartonCorrelation & g) ;
   
-  ClassDef(AliAnaParticlePartonCorrelation,1)
-  
-} ;
+  /// \cond CLASSIMP
+  ClassDef(AliAnaParticlePartonCorrelation,1) ;
+  /// \endcond
 
+} ;
 
 #endif //ALIANAPARTICLEPARTONCORRELATION_H
 
