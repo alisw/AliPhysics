@@ -4,19 +4,12 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-/// \class AliAnaClusterPileUp
-/// \brief Fill histograms for cluster spectra dependence on pile-up.
-///
-/// Class for the study of Pile-up effect on
-/// Calorimeter clusters.
-/// Open time cuts in reader.
-///
-/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations)
-/// and particularly in this [section](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations#AliAnaClusterPileUp).
-///
-/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
-//_________________________________________________________________________
-
+//
+// Class for the study of Pile-up effect on
+// Calorimeter clusters.
+// Open time cuts in reader.
+//
+//-- Author: Gustavo Conesa (CNRS-LPSC-Grenoble)
 
 // --- ROOT system ---
 class TH2F ;
@@ -30,10 +23,8 @@ class TList ;
 class AliAnaClusterPileUp : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
-           AliAnaClusterPileUp() ;
-    
-  /// Virtual destructor.
-  virtual ~AliAnaClusterPileUp() { ; }
+           AliAnaClusterPileUp() ;     // default ctor
+  virtual ~AliAnaClusterPileUp() { ; } // virtual dtor
 	
   //---------------------------------------
   // General analysis frame methods
@@ -58,52 +49,47 @@ class AliAnaClusterPileUp : public AliAnaCaloTrackCorrBaseClass {
   
 private:
  
-  Int_t   fNCellsCut ;                              ///<  Accept for the analysis clusters with more than fNCellsCut cells
+  Int_t   fNCellsCut ;                              // Accept for the analysis clusters with more than fNCellsCut cells
 
-  TLorentzVector fMomentum;                         //!<! Cluster momentum
+  TLorentzVector fMomentum;                         //! Cluster momentum
   
   //Histograms
   
-  TH1F * fhPtPileUp[7];                             //!<! pT distribution of clusters before any selection
-  TH1F * fhPtNeutralPileUp[7];                      //!<! pT distribution of track matched clusters
-  TH2F * fhLambda0PileUp[7];                        //!<! E vs M02 distribution of clusters, before any selection
-  TH2F * fhLambda0NeutralPileUp[7];                 //!<! E vs M02 distribution of clusters, track matched clusters
-  TH2F * fhClusterCellTimePileUp[7];                //!<! E vs Time inside cluster, before any selection, not max cell
-  TH2F * fhClusterTimeDiffPileUp[7];                //!<! E vs Time difference inside cluster, before any selection
-  TH2F * fhClusterTimeDiffNeutralPileUp[7];         //!<! E vs Time difference inside cluster for track matched clusters
-  TH2F * fhClusterEFracLongTimePileUp[7];           //!<! E vs fraction of cluster energy from cells with large time
-  TH2F * fhTimePtNoCut;                             //!<! Time of cluster vs Pt, no cut
-  TH2F * fhTimePtSPD;                               //!<! Time of cluster vs Pt, IsSPDPileUp
-  TH2F * fhTimeNPileUpVertSPD;                      //!<! Time of cluster vs n pile-up vertices from SPD
-  TH2F * fhTimeNPileUpVertTrack;                    //!<! Time of cluster vs n pile-up vertices from Tracks
-  TH2F * fhTimeNPileUpVertContributors;             //!<! Time of cluster vs n pile-up vertex from SPD contributors
-  TH2F * fhTimePileUpMainVertexZDistance;           //!<! Time of cluster vs difference of z main vertex and pile-up vertex
-  TH2F * fhTimePileUpMainVertexZDiamond;            //!<! Time of cluster vs difference of z diamond and pile-up vertex
-  TH2F * fhClusterMultSPDPileUp[4];                 //!<! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, pile up event
-  TH2F * fhClusterMultNoPileUp[4];                  //!<! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, not pile up event
-  TH2F * fhEtaPhiBC0;                               //!<! eta/phi of clusters in BC=0
-  TH2F * fhEtaPhiBCPlus;                            //!<! eta/phi of clusters in BC>0
-  TH2F * fhEtaPhiBCMinus;                           //!<! eta/phi of clusters in BC<0
-  TH2F * fhEtaPhiBC0PileUpSPD;                      //!<! eta/phi of clusters in BC=0, SPD pile-up
-  TH2F * fhEtaPhiBCPlusPileUpSPD;                   //!<! eta/phi of clusters in BC>0, SPD pile-up
-  TH2F * fhEtaPhiBCMinusPileUpSPD;                  //!<! eta/phi of clusters in BC<0, SPD pile-up
+  TH1F * fhPtPileUp[7];                             //! pT distribution of clusters before any selection
+  TH1F * fhPtNeutralPileUp[7];                      //! pT distribution of track matched clusters
+  TH2F * fhLambda0PileUp[7];                        //! E vs M02 distribution of clusters, before any selection
+  TH2F * fhLambda0NeutralPileUp[7];                 //! E vs M02 distribution of clusters, track matched clusters
+  TH2F * fhClusterCellTimePileUp[7];                //! E vs Time inside cluster, before any selection, not max cell
+  TH2F * fhClusterTimeDiffPileUp[7];                //! E vs Time difference inside cluster, before any selection
+  TH2F * fhClusterTimeDiffNeutralPileUp[7];         //! E vs Time difference inside cluster for track matched clusters
+  TH2F * fhClusterEFracLongTimePileUp[7];           //! E vs fraction of cluster energy from cells with large time
+  TH2F * fhTimePtNoCut;                             //! time of cluster vs Pt, no cut
+  TH2F * fhTimePtSPD;                               //! time of cluster vs Pt, IsSPDPileUp
+  TH2F * fhTimeNPileUpVertSPD;                      //! time of cluster vs n pile-up vertices from SPD
+  TH2F * fhTimeNPileUpVertTrack;                    //! time of cluster vs n pile-up vertices from Tracks
+  TH2F * fhTimeNPileUpVertContributors;             //! time of cluster vs n pile-up vertex from SPD contributors
+  TH2F * fhTimePileUpMainVertexZDistance;           //! time of cluster vs difference of z main vertex and pile-up vertex
+  TH2F * fhTimePileUpMainVertexZDiamond;            //! time of cluster vs difference of z diamond and pile-up vertex
+  TH2F * fhClusterMultSPDPileUp[4];                 //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, pile up event
+  TH2F * fhClusterMultNoPileUp[4];                  //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, not pile up event
+  TH2F * fhEtaPhiBC0;                               //! eta/phi of clusters in BC=0
+  TH2F * fhEtaPhiBCPlus;                            //! eta/phi of clusters in BC>0
+  TH2F * fhEtaPhiBCMinus;                           //! eta/phi of clusters in BC<0
+  TH2F * fhEtaPhiBC0PileUpSPD;                      //! eta/phi of clusters in BC=0, SPD pile-up
+  TH2F * fhEtaPhiBCPlusPileUpSPD;                   //! eta/phi of clusters in BC>0, SPD pile-up
+  TH2F * fhEtaPhiBCMinusPileUpSPD;                  //! eta/phi of clusters in BC<0, SPD pile-up
 
-  TH2F * fhPtNPileUpSPDVtx;	                        //!<! Cluster pt vs number of spd pile-up vertices
-  TH2F * fhPtNPileUpTrkVtx;                         //!<! Cluster pt vs number of track pile-up vertices
-  TH2F * fhPtNPileUpSPDVtxTimeCut;	                //!<! Cluster pt vs number of spd pile-up vertices, time cut +-25 ns
-  TH2F * fhPtNPileUpTrkVtxTimeCut;                  //!<! Cluster pt vs number of track pile-up vertices, time cut +- 25 ns
-  TH2F * fhPtNPileUpSPDVtxTimeCut2;	                //!<! Cluster pt vs number of spd pile-up vertices, time cut +-75 ns
-  TH2F * fhPtNPileUpTrkVtxTimeCut2;                 //!<! Cluster pt vs number of track pile-up vertices, time cut +- 75 ns
-	
-  /// Copy constructor not implemented.
-  AliAnaClusterPileUp(              const AliAnaClusterPileUp & pu) ;
-    
-  /// Assignment operator not implemented.
-  AliAnaClusterPileUp & operator = (const AliAnaClusterPileUp & pu) ;
+  TH2F * fhPtNPileUpSPDVtx;	                        //! cluster pt vs number of spd pile-up vertices
+  TH2F * fhPtNPileUpTrkVtx;                         //! cluster pt vs number of track pile-up vertices
+  TH2F * fhPtNPileUpSPDVtxTimeCut;	                //! cluster pt vs number of spd pile-up vertices, time cut +-25 ns
+  TH2F * fhPtNPileUpTrkVtxTimeCut;                  //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns
+  TH2F * fhPtNPileUpSPDVtxTimeCut2;	                //! cluster pt vs number of spd pile-up vertices, time cut +-75 ns
+  TH2F * fhPtNPileUpTrkVtxTimeCut2;                 //! cluster pt vs number of track pile-up vertices, time cut +- 75 ns
+	 
+  AliAnaClusterPileUp(              const AliAnaClusterPileUp & pu) ; // cpy ctor
+  AliAnaClusterPileUp & operator = (const AliAnaClusterPileUp & pu) ; // cpy assignment
   
-  /// \cond CLASSIMP
-  ClassDef(AliAnaClusterPileUp,2) ;
-  /// \endcond
+  ClassDef(AliAnaClusterPileUp,2)
 
 } ;
  

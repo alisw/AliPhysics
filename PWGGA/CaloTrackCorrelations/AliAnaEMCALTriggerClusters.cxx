@@ -13,6 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//_________________________________________________________________________
+//
+// Class for study of EMCAL trigger behavior
+//
+// -- Author: Gustavo Conesa (CNRS-LPSC-Grenoble)
+//////////////////////////////////////////////////////////////////////////////
+
+
 // --- ROOT system ---
 #include <TH2F.h>
 #include <TClonesArray.h>
@@ -30,12 +38,8 @@
 // --- Detectors ---
 #include "AliEMCALGeometry.h"
 
-/// \cond CLASSIMP
 ClassImp(AliAnaEMCALTriggerClusters)
-/// \endcond
 
-//______________________________________________________
-/// Default constructor. Initialize parameters.
 //______________________________________________________
 AliAnaEMCALTriggerClusters::AliAnaEMCALTriggerClusters() :
 AliAnaCaloTrackCorrBaseClass(),
@@ -80,6 +84,8 @@ fhTimeSelectedTriggerEMCALBC0UMReMatchOpenTime(0),
 fhTimeSelectedTriggerEMCALBC0UMReMatchCheckNeigh(0),
 fhTimeSelectedTriggerEMCALBC0UMReMatchBoth(0)
 {
+  //default ctor
+  
   for(Int_t i = 0; i < 11; i++)
   {
     fhEtaPhiTriggerEMCALBC             [i] = 0 ;
@@ -99,14 +105,16 @@ fhTimeSelectedTriggerEMCALBC0UMReMatchBoth(0)
     fhEtaPhiTriggerEMCALBCUMCluster    [i] = 0 ;    
   }
   
+  //Initialize parameters
   InitParameters();
+  
 }
 
 //_____________________________________________________________
-/// Fill Bad events histo, study bad/exotic trigger BC.
-//_____________________________________________________________
 void AliAnaEMCALTriggerClusters::FillBadTriggerEventHistogram()
 {
+  // Fill Bad events histo, study bad/exotic trigger BC
+  
   Int_t  idTrig = GetReader()->GetTriggerClusterIndex();
   Bool_t exotic = GetReader()->IsExoticEvent();
   Bool_t bad    = GetReader()->IsBadCellTriggerEvent();
@@ -151,57 +159,58 @@ void AliAnaEMCALTriggerClusters::FillBadTriggerEventHistogram()
   {
     if(GetReader()->IsTriggerMatched())
     {
-      fhEtaPhiTriggerEMCALBCBadExoticCluster->Fill(etaclusterBad, phiclusterBad, GetEventWeight());
-      fhTimeTriggerEMCALBCBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad, GetEventWeight());
+      fhEtaPhiTriggerEMCALBCBadExoticCluster->Fill(etaclusterBad, phiclusterBad);
+      fhTimeTriggerEMCALBCBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad);
     }
     else
     {
-      fhEtaPhiTriggerEMCALBCUMBadExoticCluster->Fill(etaclusterBad, phiclusterBad, GetEventWeight());
-      fhTimeTriggerEMCALBCUMBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad, GetEventWeight());
+      fhEtaPhiTriggerEMCALBCUMBadExoticCluster->Fill(etaclusterBad, phiclusterBad);
+      fhTimeTriggerEMCALBCUMBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad);
     }
   }
   else if( bad && !exotic )
   {
     if(GetReader()->IsTriggerMatched())
     {
-      fhEtaPhiTriggerEMCALBCBadCluster->Fill(etaclusterBad, phiclusterBad, GetEventWeight());
-      fhTimeTriggerEMCALBCBadCluster  ->Fill(eclusterBad,   tofclusterBad, GetEventWeight());
+      fhEtaPhiTriggerEMCALBCBadCluster->Fill(etaclusterBad, phiclusterBad);
+      fhTimeTriggerEMCALBCBadCluster  ->Fill(eclusterBad,   tofclusterBad);
     }
     else
     {
-      fhEtaPhiTriggerEMCALBCUMBadCluster->Fill(etaclusterBad, phiclusterBad, GetEventWeight());
-      fhTimeTriggerEMCALBCUMBadCluster  ->Fill(eclusterBad,   tofclusterBad, GetEventWeight());
+      fhEtaPhiTriggerEMCALBCUMBadCluster->Fill(etaclusterBad, phiclusterBad);
+      fhTimeTriggerEMCALBCUMBadCluster  ->Fill(eclusterBad,   tofclusterBad);
     }
   }// Bad cluster trigger
   else if( !bad && exotic )
   {
     if(GetReader()->IsTriggerMatched())
     {
-      fhEtaPhiTriggerEMCALBCExoticCluster->Fill(etaclusterBad, phiclusterBad, GetEventWeight());
-      fhTimeTriggerEMCALBCExoticCluster  ->Fill(eclusterBad  , tofclusterBad, GetEventWeight());
+      fhEtaPhiTriggerEMCALBCExoticCluster->Fill(etaclusterBad, phiclusterBad);
+      fhTimeTriggerEMCALBCExoticCluster  ->Fill(eclusterBad, tofclusterBad);
     }
     else
     {
-      fhEtaPhiTriggerEMCALBCUMExoticCluster->Fill(etaclusterBad, phiclusterBad, GetEventWeight());
-      fhTimeTriggerEMCALBCUMExoticCluster  ->Fill(eclusterBad  , tofclusterBad, GetEventWeight());
+      fhEtaPhiTriggerEMCALBCUMExoticCluster->Fill(etaclusterBad, phiclusterBad);
+      fhTimeTriggerEMCALBCUMExoticCluster  ->Fill(eclusterBad, tofclusterBad);
     }
   }
+  
 }
 
-//____________________________________________________________________________________________________________________________
-/// Fill trigger related histograms.
 //____________________________________________________________________________________________________________________________
 void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo,       Float_t ecluster,  Float_t tofcluster,
                                                                     Float_t etacluster, Float_t phicluster)
 
 {
+  // Fill trigger related histograms
+  
   Float_t tofclusterUS = TMath::Abs(tofcluster);
   
   if(ecluster > 2)
   {
-    if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(etacluster, phicluster, GetEventWeight());
-    else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(etacluster, phicluster, GetEventWeight());
-    else                        fhEtaPhiEMCALBCN->Fill(etacluster, phicluster, GetEventWeight());
+    if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(etacluster, phicluster);
+    else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(etacluster, phicluster);
+    else                        fhEtaPhiEMCALBCN->Fill(etacluster, phicluster);
   }
   
   Int_t  bc     = GetReader()->GetTriggerClusterBC();
@@ -214,8 +223,8 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
   if(id==-2)
   {
     //printf("AliAnaEMCALTriggerClusters::ClusterSelected() - No trigger found bc=%d\n",bc);
-    fhEtaPhiNoTrigger->Fill(etacluster, phicluster, GetEventWeight());
-    fhTimeNoTrigger  ->Fill(ecluster  , tofcluster, GetEventWeight());
+    fhEtaPhiNoTrigger->Fill(etacluster, phicluster);
+    fhTimeNoTrigger  ->Fill(ecluster, tofcluster);
   }
   else if(TMath::Abs(bc) < 6)
   {
@@ -223,18 +232,14 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
     {
       if(GetReader()->IsTriggerMatched())
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBC       [histoBC]->Fill(etacluster, phicluster, GetEventWeight());
-          
-        fhTimeTriggerEMCALBC             [histoBC]->Fill(ecluster  , tofcluster, GetEventWeight());
-          
-        if(GetReader()->IsPileUpFromSPD())
-            fhTimeTriggerEMCALBCPileUpSPD[histoBC]->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBC[histoBC]->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBC[histoBC]->Fill(ecluster, tofcluster);
+        if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[histoBC]->Fill(ecluster, tofcluster);
         
         if(idcalo ==  GetReader()->GetTriggerClusterId())
         {
-          fhEtaPhiTriggerEMCALBCCluster[histoBC]->Fill(etacluster, phicluster, GetEventWeight());
-          fhTimeTriggerEMCALBCCluster           ->Fill(ecluster  , tofcluster, GetEventWeight());
+          fhEtaPhiTriggerEMCALBCCluster[histoBC]->Fill(etacluster, phicluster);
+          fhTimeTriggerEMCALBCCluster        ->Fill(ecluster, tofcluster);
           
           if(bc==0)
           {
@@ -242,58 +247,56 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
             if(GetReader()->IsEventEMCALL0()) threshold = GetReader()->GetEventTriggerL0Threshold() ;
             
             if(ecluster > threshold)
-              fhEtaPhiTriggerEMCALBCClusterOverTh  ->Fill(etacluster, phicluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCClusterOverTh->Fill(etacluster, phicluster);
             else if(ecluster > threshold-1)
-              fhEtaPhiTriggerEMCALBCClusterBelowTh1->Fill(etacluster, phicluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCClusterBelowTh1->Fill(etacluster, phicluster);
             else
-              fhEtaPhiTriggerEMCALBCClusterBelowTh2->Fill(etacluster, phicluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCClusterBelowTh2->Fill(etacluster, phicluster);
           }
         }
       }
       else
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCUM[histoBC]->Fill(etacluster, phicluster, GetEventWeight());
-          
-        fhTimeTriggerEMCALBCUM      [histoBC]->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUM[histoBC]->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUM[histoBC]->Fill(ecluster, tofcluster);
         
         if(bc==0)
         {
-          if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeTriggerEMCALBC0UMReMatchOpenTime   ->Fill(ecluster, tofcluster, GetEventWeight());
-          if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(ecluster, tofcluster, GetEventWeight());
-          if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeTriggerEMCALBC0UMReMatchBoth       ->Fill(ecluster, tofcluster, GetEventWeight());
+          if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeTriggerEMCALBC0UMReMatchOpenTime   ->Fill(ecluster, tofcluster);
+          if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(ecluster, tofcluster);
+          if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeTriggerEMCALBC0UMReMatchBoth       ->Fill(ecluster, tofcluster);
         }
         
         if(idcalo ==  GetReader()->GetTriggerClusterId())
         {
-          fhEtaPhiTriggerEMCALBCUMCluster[histoBC]->Fill(etacluster, phicluster, GetEventWeight());
-          fhTimeTriggerEMCALBCUMCluster           ->Fill(ecluster  , tofcluster, GetEventWeight());
+          fhEtaPhiTriggerEMCALBCUMCluster[histoBC]->Fill(etacluster, phicluster);
+          fhTimeTriggerEMCALBCUMCluster->Fill(ecluster, tofcluster);
           if(bc==0)
           {
             Float_t threshold = GetReader()->GetEventTriggerL1Threshold() ;
             if(GetReader()->IsEventEMCALL0()) threshold = GetReader()->GetEventTriggerL0Threshold() ;
             
             if(ecluster > threshold)
-              fhEtaPhiTriggerEMCALBCUMClusterOverTh  ->Fill(etacluster, phicluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCUMClusterOverTh->Fill(etacluster, phicluster);
             else if(ecluster > threshold-1)
-              fhEtaPhiTriggerEMCALBCUMClusterBelowTh1->Fill(etacluster, phicluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCUMClusterBelowTh1->Fill(etacluster, phicluster);
             else
-              fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->Fill(etacluster, phicluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->Fill(etacluster, phicluster);
             
             if(GetReader()->IsTriggerMatchedOpenCuts(0))
             {
-              fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->Fill(etacluster, phicluster, GetEventWeight());
-              fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster  ->Fill(ecluster  , tofcluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster  ->Fill(ecluster, tofcluster);
             }
             if(GetReader()->IsTriggerMatchedOpenCuts(1))
             {
-              fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->Fill(etacluster, phicluster, GetEventWeight());
-              fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster  ->Fill(ecluster  , tofcluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster  ->Fill(ecluster, tofcluster);
             }
             if(GetReader()->IsTriggerMatchedOpenCuts(2))
             {
-              fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->Fill(etacluster, phicluster, GetEventWeight());
-              fhTimeTriggerEMCALBCUMReMatchBothCluster  ->Fill(ecluster  , tofcluster, GetEventWeight());
+              fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchBothCluster  ->Fill(ecluster, tofcluster);
             }
             
           }
@@ -304,23 +307,15 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
     {
       if(GetReader()->IsTriggerMatched())
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCBadExotic   ->Fill(etacluster, phicluster, GetEventWeight());
-        
-        fhTimeTriggerEMCALBCBadExotic         ->Fill(ecluster  , tofcluster, GetEventWeight());
-        
-        if(badMax)
-          fhTimeTriggerEMCALBCBadMaxCellExotic->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCBadExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCBadExotic->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCBadMaxCellExotic->Fill(ecluster, tofcluster);
       }
       else
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCUMBadExotic     ->Fill(etacluster, phicluster, GetEventWeight());
-          
-        fhTimeTriggerEMCALBCUMBadExotic           ->Fill(ecluster  , tofcluster, GetEventWeight());
-          
-        if(badMax)
-            fhTimeTriggerEMCALBCUMBadMaxCellExotic->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBadExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUMBadExotic->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCellExotic->Fill(ecluster, tofcluster);
         
       }
     }// Bad and exotic cluster trigger
@@ -328,51 +323,40 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
     {
       if(GetReader()->IsTriggerMatched())
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCBad     ->Fill(etacluster, phicluster, GetEventWeight());
-          
-        fhTimeTriggerEMCALBCBad           ->Fill(ecluster  , tofcluster, GetEventWeight());
-          
-        if(badMax)
-            fhTimeTriggerEMCALBCBadMaxCell->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCBad->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCBad->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCBadMaxCell->Fill(ecluster, tofcluster);
       }
       else
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCUMBad     ->Fill(etacluster, phicluster, GetEventWeight());
-          
-        fhTimeTriggerEMCALBCUMBad           ->Fill(ecluster  , tofcluster, GetEventWeight());
-          
-        if(badMax)
-            fhTimeTriggerEMCALBCUMBadMaxCell->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBad->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUMBad->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCell->Fill(ecluster, tofcluster);
       }
     }// Bad cluster trigger
     else if(GetReader()->IsExoticEvent() )
     {
       if(GetReader()->IsTriggerMatched())
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCExotic->Fill(etacluster, phicluster, GetEventWeight());
-        
-        fhTimeTriggerEMCALBCExotic      ->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCExotic->Fill(ecluster, tofcluster);
       }
       else
       {
-        if(ecluster > 2)
-            fhEtaPhiTriggerEMCALBCUMExotic->Fill(etacluster, phicluster, GetEventWeight());
-        
-        fhTimeTriggerEMCALBCUMExotic      ->Fill(ecluster  , tofcluster, GetEventWeight());
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUMExotic->Fill(ecluster, tofcluster);
       }
     }
   }
   else if(TMath::Abs(bc) >= 6) AliWarning(Form("Trigger BC not expected = %d\n",bc));
+  
 }
 
-//_________________________________________________________
-/// Save parameters used for analysis.
+
 //_________________________________________________________
 TObjString *  AliAnaEMCALTriggerClusters::GetAnalysisCuts()
 {
+  //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -393,11 +377,10 @@ TObjString *  AliAnaEMCALTriggerClusters::GetAnalysisCuts()
 }
 
 //___________________________________________________________
-/// Create histograms to be saved in output file and
-/// store them in outputContainer.
-//___________________________________________________________
 TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
 {
+  // Create histograms to be saved in output file and
+  // store them in outputContainer
   TList * outputContainer = new TList() ;
   outputContainer->SetName("EMCALTriggerClusters") ;
 	
@@ -943,6 +926,7 @@ TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
     fhTimeSelectedTriggerEMCALBCUM[i]->SetXTitle("#it{E} (GeV)");
     fhTimeSelectedTriggerEMCALBCUM[i]->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeSelectedTriggerEMCALBCUM[i]);
+    
   }
   
   fhTimeSelectedTriggerEMCALBC0UMReMatchOpenTime = new TH2F("hTimeSelectedTriggerBC0_UnMatch_ReMatch_OpenTime",
@@ -968,39 +952,41 @@ TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
   outputContainer->Add(fhTimeSelectedTriggerEMCALBC0UMReMatchBoth);
   
   return outputContainer ;
+  
 }
 
 //_____________________________________
-/// Init. Check that EMCal data is recovered
-/// and it is no MC data, if not abort.
-//_____________________________________
 void AliAnaEMCALTriggerClusters::Init()
 {
+  
+  //Init
+  //Do some checks
   if(!GetReader()->IsEMCALSwitchedOn() || GetReader()->GetDataType() == AliCaloTrackReader::kMC)
   {
     AliFatal("You want to use EMCAL real data in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
+  
 }
 
 //_______________________________________________
-/// Initialize the parameters of the analysis with default values.
-//_______________________________________________
 void AliAnaEMCALTriggerClusters::InitParameters()
 {
+  
+  //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaEMCALTriggerCluster_");
 	
   fRejectTrackMatch = kTRUE;
   fMinM02           = 0.1;
   fMaxM02           = 0.3;
   fNCellsCut        = 2;
+  
 }
 
 //____________________________________________________________
-/// Main method. Fill some histograms with cluster kinematics
-/// or time dependent on the trigger.
-//____________________________________________________________
 void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
 {
+  //Do photon analysis and fill aods
+  
   TObjArray * pl = GetEMCALClusters();
   
   if(!pl)
@@ -1038,8 +1024,8 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
     
     if(idTrig < 0) continue;
     
-    fhE->Fill(ecluster, GetEventWeight());
-    if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight());
+    fhE->Fill(ecluster);
+    if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster);
     
     //.......................................
     //If too small or big energy, skip it
@@ -1064,16 +1050,16 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
     //Skip matched clusters with Large shower shape
     if(calo->GetM02() < fMinM02 || calo->GetM02() > fMaxM02) continue;
     
-    fhESelected ->Fill(ecluster, GetEventWeight());
-    if(ecluster > 0.5) fhEtaPhiSelected->Fill(etacluster, phicluster, GetEventWeight());
+    fhESelected ->Fill(ecluster);
+    if(ecluster > 0.5) fhEtaPhiSelected->Fill(etacluster, phicluster);
     
     Float_t  tofUS = TMath::Abs(tofcluster);
     
     if(calo->E() > 2)
     {
-      if      (tofUS < 25) fhEtaPhiSelectedEMCALBC0->Fill(etacluster, phicluster, GetEventWeight());
-      else if (tofUS < 75) fhEtaPhiSelectedEMCALBC1->Fill(etacluster, phicluster, GetEventWeight());
-      else                 fhEtaPhiSelectedEMCALBCN->Fill(etacluster, phicluster, GetEventWeight());
+      if      (tofUS < 25) fhEtaPhiSelectedEMCALBC0->Fill(etacluster, phicluster);
+      else if (tofUS < 75) fhEtaPhiSelectedEMCALBC1->Fill(etacluster, phicluster);
+      else                 fhEtaPhiSelectedEMCALBCN->Fill(etacluster, phicluster);
     }
     
     Int_t bc = GetReader()->GetTriggerClusterBC();
@@ -1084,20 +1070,20 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
     {
       if(GetReader()->IsTriggerMatched())
       {
-        if(calo->E() > 2) fhEtaPhiSelectedTriggerEMCALBC[histoBC]->Fill(etacluster, phicluster, GetEventWeight());
-        fhTimeSelectedTriggerEMCALBC[histoBC]->Fill(ecluster, tofcluster, GetEventWeight());
-        if(GetReader()->IsPileUpFromSPD()) fhTimeSelectedTriggerEMCALBCPileUpSPD[histoBC]->Fill(ecluster, tofcluster, GetEventWeight());
+        if(calo->E() > 2) fhEtaPhiSelectedTriggerEMCALBC[histoBC]->Fill(etacluster, phicluster);
+        fhTimeSelectedTriggerEMCALBC[histoBC]->Fill(ecluster, tofcluster);
+        if(GetReader()->IsPileUpFromSPD()) fhTimeSelectedTriggerEMCALBCPileUpSPD[histoBC]->Fill(ecluster, tofcluster);
       }
       else
       {
-        if(calo->E() > 2) fhEtaPhiSelectedTriggerEMCALBCUM[histoBC]->Fill(etacluster, phicluster, GetEventWeight());
-        fhTimeSelectedTriggerEMCALBCUM[histoBC]->Fill(calo->E(), tofcluster, GetEventWeight());
+        if(calo->E() > 2) fhEtaPhiSelectedTriggerEMCALBCUM[histoBC]->Fill(etacluster, phicluster);
+        fhTimeSelectedTriggerEMCALBCUM[histoBC]->Fill(calo->E(), tofcluster);
         
         if(bc==0)
         {
-          if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeSelectedTriggerEMCALBC0UMReMatchOpenTime   ->Fill(ecluster, tofcluster, GetEventWeight());
-          if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeSelectedTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(ecluster, tofcluster, GetEventWeight());
-          if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeSelectedTriggerEMCALBC0UMReMatchBoth       ->Fill(ecluster, tofcluster, GetEventWeight());
+          if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeSelectedTriggerEMCALBC0UMReMatchOpenTime   ->Fill(ecluster, tofcluster);
+          if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeSelectedTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(ecluster, tofcluster);
+          if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeSelectedTriggerEMCALBC0UMReMatchBoth       ->Fill(ecluster, tofcluster);
         }
       }
     }
@@ -1107,13 +1093,15 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
   }// cluster loop
   
   AliDebug(1,"End fill histograms");
+  
 }
 
-//________________________________________________________________
-/// Print some relevant parameters set for the analysis.
-//________________________________________________________________
+
+//__________________________________________________________________
 void AliAnaEMCALTriggerClusters::Print(const Option_t * opt) const
 {
+  //Print some relevant parameters set for the analysis
+  
   if(! opt)
     return;
   

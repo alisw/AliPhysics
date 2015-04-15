@@ -13,6 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//_________________________________________________________________________
+// Gerenate a random trigger, input for other analysis
+// Set flat energy distribution over acceptance of EMCAL, PHOS or CTS
+// Be careful, correlate only with Min Bias events this trigger
+//
+//
+//-- Author: Gustavo Conesa (LPSC-Grenoble)
+//_________________________________________________________________________
+
+
 // --- ROOT system ---
 #include <TH2F.h>
 #include <TClonesArray.h>
@@ -22,14 +32,10 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliEMCALGeometry.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnaRandomTrigger) ;
-/// \endcond
-
+ClassImp(AliAnaRandomTrigger)
+  
 //__________________________________________
-/// Default Constructor. Initialize parameters.
-//__________________________________________
-AliAnaRandomTrigger::AliAnaRandomTrigger() :
+AliAnaRandomTrigger::AliAnaRandomTrigger() : 
     AliAnaCaloTrackCorrBaseClass(),
     fTriggerDetector(kEMCAL),
     fTriggerDetectorString("EMCAL"),
@@ -39,15 +45,19 @@ AliAnaRandomTrigger::AliAnaRandomTrigger() :
     fhPhi(0),           fhEta(0), 
     fhEtaPhi(0) 
 {
+  //Default Ctor
+
+  //Initialize parameters
   InitParameters();
+
 }
 
 //_________________________________________________________________________
-/// Check if there is a dead or bad region in a detector.
-/// Only EMCAL for now.
-//_________________________________________________________________________
 Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
 {
+  // Check if there is a dead or bad region in a detector
+  // Now only EMCAL
+
   if(fTriggerDetector!=kEMCAL) return kFALSE;
   
   //-------------------------------------
@@ -121,13 +131,14 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
    //printf("\t OK\n");
   
   return kFALSE;
+  
 }
 
-//__________________________________________________
-/// Save parameters used for analysis.
+
 //__________________________________________________
 TObjString *  AliAnaRandomTrigger::GetAnalysisCuts()
 {  	
+  //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -148,12 +159,12 @@ TObjString *  AliAnaRandomTrigger::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//____________________________________________________
-/// Create histograms to be saved in output file and
-/// store them in fOutputContainer
-//____________________________________________________
+//_______________________________________________________
 TList *  AliAnaRandomTrigger::GetCreateOutputObjects()
-{
+{  
+  // Create histograms to be saved in output file and 
+  // store them in fOutputContainer
+  
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("RandomTrigger") ; 
   
@@ -187,13 +198,13 @@ TList *  AliAnaRandomTrigger::GetCreateOutputObjects()
   outputContainer->Add(fhEtaPhi);
     
   return outputContainer;
+
 }
 
-//________________________________________
-/// Initialize the parameters of the analysis.
-//________________________________________
+//___________________________________________
 void AliAnaRandomTrigger::InitParameters()
 { 
+  //Initialize the parameters of the analysis.
   SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   SetOutputAODName("RandomTrigger");
 
@@ -204,13 +215,13 @@ void AliAnaRandomTrigger::InitParameters()
   fPhiCut[1] = TMath::TwoPi() ;
   fEtaCut[0] =-1.   ;
   fEtaCut[1] = 1.   ;
+  
 }
 
-//_________________________________________________________
-/// Print some relevant parameters set for the analysis.
-//_________________________________________________________
+//____________________________________________________________
 void AliAnaRandomTrigger::Print(const Option_t * opt) const
 {
+  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -221,15 +232,16 @@ void AliAnaRandomTrigger::Print(const Option_t * opt) const
   printf("Min E   = %3.2f - Max E   = %3.2f\n", GetMinPt(), GetMaxPt());
   printf("Min Eta = %3.2f - Max Eta = %3.2f\n", fEtaCut[0], fEtaCut[1]);
   printf("Min Phi = %3.2f - Max Phi = %3.2f\n", fPhiCut[0], fPhiCut[1]);
+
 } 
 
 //______________________________________________
-/// Do analysis and fill aods.
-/// Generate particle randomly.
-/// fNRandom particles per event.
-//______________________________________________
-void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
+void  AliAnaRandomTrigger::MakeAnalysisFillAOD() 
 {
+  // Do analysis and fill aods
+  // Generate particle randomly
+  // fNRandom particles per event
+  
   for(Int_t irandom = 0; irandom < fNRandom; irandom++)
   {
     // Get the random variables of the trigger
@@ -240,7 +252,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
     // Check if particle falls into a dead region, if inside, get new
     Bool_t excluded =  ExcludeDeadBadRegions(eta,phi);
     
-    // If excluded, generate a new trigger until accepted
+    // if excluded, generate a new trigger until accepted
     while (excluded)
     {
       pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
@@ -267,11 +279,11 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
 } 
 
 //_____________________________________________________
-// Fill control histograms with generated trigger kinematics.
-//_____________________________________________________
-void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
+void  AliAnaRandomTrigger::MakeAnalysisFillHistograms() 
 {
-  // Loop on stored AODParticles
+  // Fill histograms
+  
+  //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
   AliDebug(1,Form("AOD branch entries %d, fNRandom %d", naod, fNRandom));
@@ -280,19 +292,22 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
   {
     AliAODPWG4Particle* trigger =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     
-    fhPt    ->Fill(trigger->Pt (),                 GetEventWeight());
-    fhE     ->Fill(trigger->E  (),                 GetEventWeight());
-    fhPhi   ->Fill(trigger->Pt (), trigger->Phi(), GetEventWeight());
-    fhEta   ->Fill(trigger->Pt (), trigger->Eta(), GetEventWeight());
-    fhEtaPhi->Fill(trigger->Eta(), trigger->Phi(), GetEventWeight());
+    fhPt    ->Fill(trigger->Pt());
+    fhE     ->Fill(trigger->E());
+    fhPhi   ->Fill(trigger->Pt(), trigger->Phi());
+    fhEta   ->Fill(trigger->Pt(), trigger->Eta());
+    fhEtaPhi->Fill(trigger->Eta(),trigger->Phi());
+    
   }// aod branch loop
+  
 }
 
-//_________________________________________________________
-/// Set the detrimeter for the analysis.
+
 //_________________________________________________________
 void AliAnaRandomTrigger::SetTriggerDetector(TString & det)
 {
+  // Set the detrimeter for the analysis
+  
   fTriggerDetectorString = det;
   
   if     (det=="EMCAL") fTriggerDetector = kEMCAL;
@@ -301,21 +316,23 @@ void AliAnaRandomTrigger::SetTriggerDetector(TString & det)
   else if(det=="DCAL")  fTriggerDetector = kDCAL;
   else if(det.Contains("DCAL") && det.Contains("PHOS")) fTriggerDetector = kDCALPHOS;
   else AliFatal(Form("Detector < %s > not known!", det.Data()));
+  
 }
 
 //______________________________________________________
-// Set the calorimeter for the analysis.
-//______________________________________________________
 void AliAnaRandomTrigger::SetTriggerDetector(Int_t det)
 {
+  // Set the detrimeter for the analysis
+  
   fTriggerDetector = det;
   
-  if     ( det == kEMCAL   ) fTriggerDetectorString = "EMCAL";
-  else if( det == kPHOS    ) fTriggerDetectorString = "PHOS";
-  else if( det == kCTS     ) fTriggerDetectorString = "CTS";
-  else if( det == kDCAL    ) fTriggerDetectorString = "DCAL";
-  else if( det == kDCALPHOS) fTriggerDetectorString = "DCAL_PHOS";
+  if     (det==kEMCAL)    fTriggerDetectorString = "EMCAL";
+  else if(det==kPHOS )    fTriggerDetectorString = "PHOS";
+  else if(det==kCTS)      fTriggerDetectorString = "CTS";
+  else if(det==kDCAL)     fTriggerDetectorString = "DCAL";
+  else if(det==kDCALPHOS) fTriggerDetectorString = "DCAL_PHOS";
   else AliFatal(Form("Detector < %d > not known!", det));
+  
 }
 
 
