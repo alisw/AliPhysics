@@ -305,6 +305,7 @@ install(DIRECTORY QA/scripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
+	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
 	      DESTINATION PWGPP/EvTrkSelection)
 install(FILES CalibMacros/CPass0/LoadLibraries.C
 	      CalibMacros/CPass0/ConfigCalibTrain.C
