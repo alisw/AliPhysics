@@ -234,6 +234,7 @@ AliESDtrack::AliESDtrack() :
   fHMPIDchi2(0),
   fGlobalChi2(0),
   fITSsignal(0),
+  fITSsignalTuned(0),
   fTPCsignal(0),
   fTPCsignalTuned(0),
   fTPCsignalS(0),
@@ -353,6 +354,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fHMPIDchi2(track.fHMPIDchi2),
   fGlobalChi2(track.fGlobalChi2),
   fITSsignal(track.fITSsignal),
+  fITSsignalTuned(track.fITSsignalTuned),
   fTPCsignal(track.fTPCsignal),
   fTPCsignalTuned(track.fTPCsignalTuned),
   fTPCsignalS(track.fTPCsignalS),
@@ -530,6 +532,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fHMPIDchi2(0),
   fGlobalChi2(0),
   fITSsignal(0),
+  fITSsignalTuned(0),
   fTPCsignal(0),
   fTPCsignalTuned(0),
   fTPCsignalS(0),
@@ -639,6 +642,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   //
   // PID info
   fITSsignal = track->GetITSsignal();
+  fITSsignalTuned = track->GetITSsignalTunedOnData();
   double itsdEdx[4];
   track->GetITSdEdxSamples(itsdEdx);
   SetITSdEdxSamples(itsdEdx);
@@ -727,6 +731,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fHMPIDchi2(0),
   fGlobalChi2(0),
   fITSsignal(0),
+  fITSsignalTuned(0),
   fTPCsignal(0),
   fTPCsignalTuned(0),
   fTPCsignalS(0),
@@ -1079,6 +1084,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
   fGlobalChi2 = source.fGlobalChi2;      
 
   fITSsignal  = source.fITSsignal;     
+  fITSsignalTuned = source.fITSsignalTuned;
   for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=source.fITSdEdxSamples[i];}
   fTPCsignal  = source.fTPCsignal;     
   fTPCsignalTuned  = source.fTPCsignalTuned;
@@ -1318,6 +1324,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fITSClusterMap=0;
   fITSSharedMap=0;
   fITSsignal = 0;     
+  fITSsignalTuned = 0;
   for (Int_t i=0;i<4;i++) fITSdEdxSamples[i] = 0.;
   if (fITSr) for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       

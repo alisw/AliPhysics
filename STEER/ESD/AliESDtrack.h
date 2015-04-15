@@ -177,6 +177,9 @@ public:
   void    SetITSdEdxSamples(const Double_t s[4]);
   void    GetITSdEdxSamples(Double_t s[4]) const;
 
+  Double_t  GetITSsignalTunedOnData() const {return fITSsignalTuned;}
+  void      SetITSsignalTunedOnData(Double_t signal) { fITSsignalTuned=signal; }
+
   void    SetITSchi2(Double_t ITSchi2){fITSchi2 = ITSchi2;}
   void    SetITSNcls(Char_t ITSncls){fITSncls = ITSncls;}
 
@@ -555,7 +558,8 @@ protected:
 
   Double32_t fGlobalChi2;       // [0.,0.,8] chi2 of the global track
 
-  Double32_t  fITSsignal;     // [0.,0.,10] detector's PID signal
+  Double32_t  fITSsignal;         // [0.,0.,10] detector's PID signal
+  Double32_t  fITSsignalTuned;    //! [0.,0.,10] detector's PID signal
   Double32_t  fITSdEdxSamples[4]; // [0.,0.,10] ITS dE/dx samples
 
   Double32_t  fTPCsignal;        // [0.,0.,10] detector's PID signal
