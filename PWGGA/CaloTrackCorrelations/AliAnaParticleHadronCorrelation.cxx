@@ -37,7 +37,7 @@
 #include "AliEventplane.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnaParticleHadronCorrelation)
+ClassImp(AliAnaParticleHadronCorrelation) ;
 /// \endcond
 
 

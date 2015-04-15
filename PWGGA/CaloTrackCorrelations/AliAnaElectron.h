@@ -259,7 +259,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   AliAnaElectron & operator = (const AliAnaElectron & el) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaElectron,5)
+  ClassDef(AliAnaElectron,5) ;
   /// \endcond
 
 } ;
