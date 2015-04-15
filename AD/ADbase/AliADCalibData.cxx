@@ -1104,7 +1104,7 @@ Int_t AliADCalibData::GetOfflineChannelNumber(Int_t board, Int_t channel)
     return -1;
   }
 
-  Int_t offCh = kOfflineChannel[(board+1)*channel];
+  Int_t offCh = kOfflineChannel[channel+(8*board)];
 
   return offCh;
 }
