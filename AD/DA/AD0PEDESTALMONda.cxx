@@ -120,12 +120,12 @@ int main(int argc, char **argv) {
 //___________________________________________________
 // Book HISTOGRAMS - dynamics of p-p collisions -
       
-  char     adcName[6]; 
-  char     pedName[6]; 
+  char     adcName[10]; 
+  char     pedName[10]; 
   TH1F     *hADCname[32];
   TH1F     *hPEDname[32];  
   
-  char  texte[12];
+  char  texte[20];
   for (Int_t i=0; i<16; i++) {
   	for(Int_t j=0; j<2; j++){
        		sprintf(adcName,"hADC%d%d",i,j);
