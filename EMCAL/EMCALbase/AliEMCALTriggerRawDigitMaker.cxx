@@ -293,6 +293,12 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	fRawReader->Reset();
 	fRawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL());
 
+	AliRawVEvent *event = fRawReader->GetEvent();
+	if (!event) {
+	  AliError(Form("STU DDL# %d not available!",AliDAQ::GetFirstSTUDDL()));
+	  return;
+	}
+
 	Bool_t isSTUin = kFALSE;
 	
 	Int_t nSubEv = fRawReader->GetEvent()->GetNSubEvents();
