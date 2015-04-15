@@ -13,14 +13,25 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//_________________________________________________________________________
+// class to extract omega(782)->pi0+gamma->3gamma
+//  Mar. 22, 2011: Additional method, espeically for EMCAL. A high E cluster 
+//  is assumpted as pi0 (two photons are overlapped) without unfolding
+//
+//-- Author: Renzhuo Wan (IOPP-Wuhan, China)
+//_________________________________________________________________________
+
 // --- ROOT system
 class TROOT;
+
+// --- AliRoot system
+//class AliVEvent;
+// --- ROOT system ---
 #include "TH2F.h"
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TCanvas.h"
 #include "TFile.h"
-
 //---- AliRoot system ----
 #include "AliAnaOmegaToPi0Gamma.h"
 #include "AliCaloTrackReader.h"
@@ -29,13 +40,8 @@ class TROOT;
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
+ClassImp(AliAnaOmegaToPi0Gamma)
 
-/// \cond CLASSIMP
-ClassImp(AliAnaOmegaToPi0Gamma) ;
-/// \endcond
-
-//______________________________________________________________________________
-/// Default constructor.
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaCaloTrackCorrBaseClass(),
 fInputAODPi0(0), fInputAODGammaName(""),
@@ -53,48 +59,44 @@ fMixBOmega2(0), fMixCOmega2(0),
 fhFakeOmega(0),
 fhOmegaPriPt(0)
 {
+ //Default Ctor
  InitParameters();
 }
 
-//_____________________________________________
-/// Destructor
-//_____________________________________________
-AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma()
-{
-//  Done by the maker
+//______________________________________________________________________________
+AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma() {
+
+  //dtor
+//  Done by the maker  
 //  if(fInputAODPi0){
 //    fInputAODPi0->Clear();
 //    delete fInputAODPi0;
 //  }  
 
   if(fEventsList){
-     for(Int_t i=0;i<fNVtxZBin;i++)
-     {
-        for(Int_t j=0;j<fNCentBin;j++)
-        {
-           for(Int_t k=0;k<fNRpBin;k++)
-           {
+     for(Int_t i=0;i<fNVtxZBin;i++){
+        for(Int_t j=0;j<fNCentBin;j++){
+           for(Int_t k=0;k<fNRpBin;k++){
                fEventsList[i*fNCentBin*fNRpBin+j*fNRpBin+k]->Clear();
                delete fEventsList[i*fNCentBin*fNRpBin+j*fNRpBin+k];
            }
         }
      }
   }
-    
   delete [] fEventsList;
   fEventsList=0;
 
-  delete [] fVtxZCut;
-  delete [] fCent;
-  delete [] fRp;
+ delete [] fVtxZCut;
+ delete [] fCent;
+ delete [] fRp;
+
 }
 
-//__________________________________________
-/// Init parameters when first called the analysis.
-/// Set default parameters.
-//__________________________________________
+//______________________________________________________________________________
 void AliAnaOmegaToPi0Gamma::InitParameters()
 {
+//Init parameters when first called the analysis
+//Set default parameters
  fInputAODGammaName="PhotonsDetector";  
  fNVtxZBin=1;              
  fNCentBin=1;               
@@ -110,11 +112,11 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
  fEOverlapCluster=6;
 }
 
-//_____________________________________________________
-/// Create histograms to be saved in output file.
-//_____________________________________________________
+
+//______________________________________________________________________________
 TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
 {
+  //
   fVtxZCut = new Double_t [fNVtxZBin];
   for(Int_t i=0;i<fNVtxZBin;i++) fVtxZCut[i]=10*(i+1);
   
@@ -290,11 +292,10 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
   return outputContainer;
 }
 
-//_______________________________________________________________
-/// Print some relevant parameters set in the analysis.
-//_______________________________________________________________
+//______________________________________________________________________________
 void AliAnaOmegaToPi0Gamma::Print(const Option_t * /*opt*/) const
 {
+  //Print some relevant parameters set in the analysis
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   printf("Omega->pi0+gamma->3gamma\n");
@@ -307,12 +308,10 @@ void AliAnaOmegaToPi0Gamma::Print(const Option_t * /*opt*/) const
   printf("Number of DistToBadChannel cuts:      %d\n", fNBadChDistBin);
 } 
 
-//______________________________________________________
-/// Do analysis, fill histograms.
-//______________________________________________________
-void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
+//______________________________________________________________________________
+void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms() 
 {
-  // Fill the MC AOD if needed first.
+  //fill the MC AOD if needed first
   //-----------
   //need to be further implemented
   AliStack * stack = 0x0;
@@ -324,10 +323,8 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   Double_t pt=0;
   Double_t eta=0;
   
-  if(IsDataMC())
-  {
-    if(GetReader()->ReadStack())
-    {
+  if(IsDataMC()){
+    if(GetReader()->ReadStack()){
       stack =  GetMCStack() ;
       if(!stack){
         printf("AliAnaAcceptance::MakeAnalysisFillHistograms() - There is no stack!\n");
@@ -339,7 +336,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
           eta=prim->Eta();
           pt=prim->Pt();
           if(TMath::Abs(eta)<0.5) {
-            if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
+            if(pdg==223) fhOmegaPriPt->Fill(pt);
           }
         }
       }
@@ -361,7 +358,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
           pt=aodprimary->Pt();
           if(TMath::Abs(eta)<0.5)
           {
-            if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
+            if(pdg==223) fhOmegaPriPt->Fill(pt);
           }
           
         }
@@ -490,9 +487,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
                  photon3->DistToBad()>=idist ){
                 //fill the histograms
                 if(GetDebug() > 2) printf("Real: index  %d  pt  %2.3f  mass   %2.3f \n", index, pi0gammapt, pi0gammamass);
-                fRealOmega0[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                if(pi0asy<0.7) fRealOmega1[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                if(pi0asy<0.8) fRealOmega2[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
+                fRealOmega0[index]->Fill(pi0gammapt,pi0gammamass);
+                if(pi0asy<0.7) fRealOmega1[index]->Fill(pi0gammapt,pi0gammamass);
+                if(pi0asy<0.8) fRealOmega2[index]->Fill(pi0gammapt,pi0gammamass);
               }
             }
 	        }
@@ -531,10 +528,11 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
                  mix1ph->DistToBad()>=idist ){
                 if(GetDebug() > 2) printf("MixA: index  %d   pt  %2.3f  mass   %2.3f \n",index, pi0gammapt, pi0gammamass);
                 //fill the histograms
-                fMixAOmega0[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                if(pi0asy<0.7)fMixAOmega1[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                if(pi0asy<0.8)fMixAOmega2[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
+                fMixAOmega0[index]->Fill(pi0gammapt,pi0gammamass);
+                if(pi0asy<0.7)fMixAOmega1[index]->Fill(pi0gammapt,pi0gammamass);
+                if(pi0asy<0.8)fMixAOmega2[index]->Fill(pi0gammapt,pi0gammamass);
                 //printf("mix A  %d  %2.2f \n", index, pi0gammamass);
+                
               }
             }
           }
@@ -570,7 +568,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
 
         fakeOmega=fakePi0+vph;
         for(Int_t ii=0;ii<fNCentBin;ii++){ 
-           fhFakeOmega[icentbin]->Fill(fakeOmega.Pt(), fakeOmega.M(), GetEventWeight());
+           fhFakeOmega[icentbin]->Fill(fakeOmega.Pt(), fakeOmega.M());
         }
     }//j
 
@@ -608,9 +606,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
                    ph3->DistToBad()>=idist ){
                   if(GetDebug() > 2) printf("MixB: index  %d   pt  %2.3f  mass   %2.3f \n", index, pi0gammapt, pi0gammamass);
                   //fill histograms
-                  fMixBOmega0[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                  if(pi0asy<0.7) fMixBOmega1[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                  if(pi0asy<0.8) fMixBOmega2[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
+                  fMixBOmega0[index]->Fill(pi0gammapt,pi0gammamass);
+                  if(pi0asy<0.7) fMixBOmega1[index]->Fill(pi0gammapt,pi0gammamass);
+                  if(pi0asy<0.8) fMixBOmega2[index]->Fill(pi0gammapt,pi0gammamass);
                   //printf("mix B  %d  %2.2f \n", index, pi0gammamass);
                 }
               }		    
@@ -646,9 +644,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
                      ph3->DistToBad()>=idist ){
                     if(GetDebug() > 2) printf("MixC: index  %d  pt  %2.3f  mass   %2.3f \n", index, pi0gammapt, pi0gammamass);
                     //fill histograms
-                    fMixCOmega0[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                    if(pi0asy<0.7) fMixCOmega1[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
-                    if(pi0asy<0.8) fMixCOmega2[index]->Fill(pi0gammapt, pi0gammamass, GetEventWeight());
+                    fMixCOmega0[index]->Fill(pi0gammapt,pi0gammamass);
+                    if(pi0asy<0.7) fMixCOmega1[index]->Fill(pi0gammapt,pi0gammamass);
+                    if(pi0asy<0.8) fMixCOmega2[index]->Fill(pi0gammapt,pi0gammamass);
                     //printf("mix C  %d  %2.2f \n", index, pi0gammamass);
                   }
                 }
@@ -672,19 +670,19 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
       delete tmp ;
     }
   }
-  else
-  {
+  else{ 
     delete currentEvent ;
     currentEvent=0 ;
   }
+  
 }
 
-//____________________________________________________________
-/// Read the histograms.
-/// For the finalization of the terminate analysis.
-//____________________________________________________________
+//______________________________________________________________________________
 void AliAnaOmegaToPi0Gamma::ReadHistograms(TList * outputList)
 {
+ //read the histograms 
+ //for the finalization of the terminate analysis
+
  Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"RealToPi0Gamma_Vz0C0Rp0Pid0Dist0"));
 
   Int_t ndim=fNVtxZBin*fNCentBin*fNRpBin*fNBadChDistBin*fNpid;
@@ -704,20 +702,13 @@ void AliAnaOmegaToPi0Gamma::ReadHistograms(TList * outputList)
  if(!fMixBOmega2) fMixBOmega2 =new TH2F*[ndim];
  if(!fMixCOmega2) fMixCOmega2 =new TH2F*[ndim];
 
-  for(Int_t i=0;i<fNVtxZBin;i++)
-  {
-     for(Int_t j=0;j<fNCentBin;j++)
-     {
-         for(Int_t k=0;k<fNRpBin;k++)
-         { //at event level
+  for(Int_t i=0;i<fNVtxZBin;i++){
+     for(Int_t j=0;j<fNCentBin;j++){
+         for(Int_t k=0;k<fNRpBin;k++){ //at event level
              Int_t idim=i*fNCentBin*fNRpBin+j*fNRpBin+k;
-             
-             for(Int_t ipid=0;ipid<fNpid;ipid++)
-             {
-                for(Int_t idist=0;idist<fNBadChDistBin;idist++)
-                { //at particle
+             for(Int_t ipid=0;ipid<fNpid;ipid++){ 
+                for(Int_t idist=0;idist<fNBadChDistBin;idist++){ //at particle
                     Int_t ind=idim*fNpid*fNBadChDistBin+ipid*fNBadChDistBin+idist;
-                    
                     fRealOmega0[ind]= (TH2F*) outputList->At(index++);
                     fMixAOmega0[ind]= (TH2F*) outputList->At(index++);
                     fMixBOmega0[ind]= (TH2F*) outputList->At(index++);
@@ -732,23 +723,24 @@ void AliAnaOmegaToPi0Gamma::ReadHistograms(TList * outputList)
                     fMixAOmega2[ind]= (TH2F*) outputList->At(index++);
                     fMixBOmega2[ind]= (TH2F*) outputList->At(index++);
                     fMixCOmega2[ind]= (TH2F*) outputList->At(index++);
+                    
+                 
                 }
               }
           }
       }
   }
   
-  if(IsDataMC())
-  {
+  if(IsDataMC()){
      fhOmegaPriPt  = (TH1F*)  outputList->At(index++);
   }
+
 }
 
-//_______________________________________________________
-/// Do some calculations and plots from the final histograms.
-//_______________________________________________________
-void AliAnaOmegaToPi0Gamma::Terminate(TList * outputList)
+//______________________________________________________________________________
+void AliAnaOmegaToPi0Gamma::Terminate(TList * outputList) 
 {
+// //Do some calculations and plots from the final histograms.
   if(GetDebug() >= 0) printf("AliAnaOmegaToPi0Gamma::Terminate() \n");
   ReadHistograms(outputList);
   const Int_t buffersize = 255;
@@ -799,4 +791,5 @@ void AliAnaOmegaToPi0Gamma::Terminate(TList * outputList)
   snprintf(eps,buffersize,"CVS_%s_IVM.eps",fInputAODGammaName.Data());
   cvsIVM->Print(eps);
   cvsIVM->Modified();
+ 
 }

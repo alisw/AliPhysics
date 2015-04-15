@@ -13,7 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//_________________________________________________________________________
+// Class for the analysis of particle-parton correlations
+// Particle (for example direct gamma) must be found in a previous analysis 
+// -- Author: Gustavo Conesa (LNF-INFN) 
+//////////////////////////////////////////////////////////////////////////////
+
 // --- ROOT system ---
+//#include "Riostream.h"
 #include "TH2F.h"
 #include "TParticle.h"
 #include "TClass.h"
@@ -23,28 +30,28 @@
 #include "AliStack.h"  
 #include "AliAODPWG4ParticleCorrelation.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnaParticlePartonCorrelation) ;
-/// \endcond
+ClassImp(AliAnaParticlePartonCorrelation)
+
 
 //________________________________________________________________
-/// Default Constructor. Initialize parameters.
-//________________________________________________________________
-AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation() :
+AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation() : 
 AliAnaCaloTrackCorrBaseClass(),   
 fhDeltaEtaNearParton(0), fhDeltaPhiNearParton(0), 
 fhDeltaPtNearParton(0),  fhPtRatNearParton(0),
 fhDeltaEtaAwayParton(0), fhDeltaPhiAwayParton(0), 
 fhDeltaPtAwayParton(0),  fhPtRatAwayParton(0)
 {
+  //Default Ctor
+  
+  //Initialize parameters
   InitParameters();
 }
 
 //________________________________________________________________
-/// Create histograms to be saved in output file.
-//________________________________________________________________
 TList *  AliAnaParticlePartonCorrelation::GetCreateOutputObjects()
-{
+{  
+  // Create histograms to be saved in output file 
+  
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticlePartonHistos") ; 
   
@@ -105,41 +112,44 @@ TList *  AliAnaParticlePartonCorrelation::GetCreateOutputObjects()
   outputContainer->Add(fhPtRatAwayParton);
   
   return outputContainer;
+  
 }
 
-//____________________________________________________
-// Initialize the parameters of the analysis.
 //____________________________________________________
 void AliAnaParticlePartonCorrelation::InitParameters()
 {
+  
+  //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
   SetAODObjArrayName("Partons");  
   AddToHistogramsName("AnaPartonCorr_");
+  
 }
 
 //_____________________________________________________________________
-// Print some relevant parameters set for the analysis.
-//_____________________________________________________________________
 void AliAnaParticlePartonCorrelation::Print(const Option_t * opt) const
 {
+  
+  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
+  
 } 
 
 //__________________________________________________________
-/// Particle-Parton Correlation Analysis, create AODs.
-/// Add partons to the reference list of the trigger particle,
-/// Partons are considered those in the first eight possitions in the stack
-/// being 0, and 1 the 2 protons, and 6 and 7 the outgoing final partons.
-//__________________________________________________________
-void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
+void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()  
 {
+  //Particle-Parton Correlation Analysis, create AODs
+  //Add partons to the reference list of the trigger particle
+  //Partons are considered those in the first eight possitions in the stack
+  //being 0, and 1 the 2 protons, and 6 and 7 the outgoing final partons.
   if(!GetInputAODBranch())
     AliFatal(Form("No input particles in AOD with name branch < %s > ",GetInputAODName().Data()));
   
+	
   if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
     AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
              GetInputAODBranch()->GetClass()->GetName()));
@@ -192,10 +202,10 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
 }
 
 //_________________________________________________________________
-// Particle-Parton Correlation Analysis, fill histograms.
-//_________________________________________________________________
-void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
+void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() 
 {
+  //Particle-Parton Correlation Analysis, fill histograms
+  
   if(!GetInputAODBranch())
   {
     AliFatal(Form("No input particles in AOD with name branch < %s >",GetInputAODName().Data()));
@@ -212,7 +222,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     return;// coverity
   }
   
-  // Loop on stored AOD particles
+  //Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   TParticle *  mom = NULL ;
   
@@ -233,7 +243,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       return; // coverity
     }
     
-    // Check and get indeces of mother and parton
+    //Check and get indeces of mother and parton    
     if(imom < 8 ) iparent = imom ;   //mother is already a parton
     else if (imom <  stack->GetNtrack()) {
       mom =  stack->Particle(imom);
@@ -260,16 +270,16 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       continue ;
     }
     
-    // Near parton is the parton that fragmented and created the mother
+    //Near parton is the parton that fragmented and created the mother    
     TParticle * nearParton = (TParticle*) objarray->At(iparent);
     Float_t  ptNearParton    = nearParton->Pt();
     Float_t  phiNearParton   = nearParton->Phi() ;
     Float_t  etaNearParton   = nearParton->Eta() ;
     
-    fhDeltaEtaNearParton->Fill(ptTrigg, etaTrigg-etaNearParton, GetEventWeight());
-    fhDeltaPhiNearParton->Fill(ptTrigg, phiTrigg-phiNearParton, GetEventWeight());
-    fhDeltaPtNearParton ->Fill(ptTrigg, ptTrigg-ptNearParton  , GetEventWeight());
-    fhPtRatNearParton   ->Fill(ptTrigg, ptNearParton/ptTrigg   , GetEventWeight());
+    fhDeltaEtaNearParton->Fill(ptTrigg,etaTrigg-etaNearParton);
+    fhDeltaPhiNearParton->Fill(ptTrigg,phiTrigg-phiNearParton);
+    fhDeltaPtNearParton->Fill(ptTrigg,ptTrigg-ptNearParton);
+    fhPtRatNearParton->Fill(ptTrigg,ptNearParton/ptTrigg);
     
     if     (iparent == 7) iawayparent = 6;
     else if(iparent == 6) iawayparent = 7;
@@ -279,17 +289,18 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       continue;
     }
     
-    // Away parton is the other final parton.
+    //Away parton is the other final parton.
     TParticle * awayParton = (TParticle*) objarray->At(iawayparent);
     Float_t  ptAwayParton    = awayParton->Pt();
     Float_t  phiAwayParton   = awayParton->Phi() ;
     Float_t  etaAwayParton   = awayParton->Eta() ;
-    fhDeltaEtaAwayParton->Fill(ptTrigg, etaTrigg-etaAwayParton, GetEventWeight());
-    fhDeltaPhiAwayParton->Fill(ptTrigg, phiTrigg-phiAwayParton, GetEventWeight());
-    fhDeltaPtAwayParton ->Fill(ptTrigg, ptTrigg-ptAwayParton  , GetEventWeight());
-    fhPtRatAwayParton   ->Fill(ptTrigg, ptAwayParton/ptTrigg  , GetEventWeight());
+    fhDeltaEtaAwayParton->Fill(ptTrigg,etaTrigg-etaAwayParton);
+    fhDeltaPhiAwayParton->Fill(ptTrigg,phiTrigg-phiAwayParton);
+    fhDeltaPtAwayParton->Fill(ptTrigg,ptTrigg-ptAwayParton);
+    fhPtRatAwayParton->Fill(ptTrigg,ptAwayParton/ptTrigg);
     
   }
   
   AliDebug(1,"End fill histograms");
+  
 } 

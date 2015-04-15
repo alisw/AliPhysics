@@ -13,6 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//_________________________________________________________________________
+//
+// Class for the study of Pile-up effect on
+// Calorimeter clusters.
+// Open time cuts in reader.
+//
+//-- Author: Gustavo Conesa (CNRS-LPSC-Grenoble)
+//////////////////////////////////////////////////////////////////////////////
+
 // --- ROOT system ---
 #include <TH2F.h>
 #include <TClonesArray.h>
@@ -26,12 +35,8 @@
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnaClusterPileUp) ;
-/// \endcond
+ClassImp(AliAnaClusterPileUp)
 
-//___________________________________________
-/// Default constructor. Initialize parameters.
 //___________________________________________
 AliAnaClusterPileUp::AliAnaClusterPileUp() :
 AliAnaCaloTrackCorrBaseClass(),
@@ -50,6 +55,8 @@ fhPtNPileUpSPDVtx(0),                 fhPtNPileUpTrkVtx(0),
 fhPtNPileUpSPDVtxTimeCut(0),          fhPtNPileUpTrkVtxTimeCut(0),
 fhPtNPileUpSPDVtxTimeCut2(0),         fhPtNPileUpTrkVtxTimeCut2(0)
 {
+  //default ctor
+
   for(Int_t i = 0; i < 7; i++)
   {
     fhPtPileUp       [i] = 0;
@@ -72,14 +79,15 @@ fhPtNPileUpSPDVtxTimeCut2(0),         fhPtNPileUpTrkVtxTimeCut2(0)
     fhClusterMultNoPileUp [i] = 0;
   }
   
+  //Initialize parameters
   InitParameters();
+  
 }
 
 //__________________________________________________
-/// Save parameters used for analysis.
-//__________________________________________________
 TObjString *  AliAnaClusterPileUp::GetAnalysisCuts()
 {
+  //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -95,12 +103,11 @@ TObjString *  AliAnaClusterPileUp::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//____________________________________________________
-/// Create histograms to be saved in output file and
-/// store them in outputContainer.
-//____________________________________________________
+//________________________________________________________________________
 TList *  AliAnaClusterPileUp::GetCreateOutputObjects()
 {
+  // Create histograms to be saved in output file and
+  // store them in outputContainer
   TList * outputContainer = new TList() ;
   outputContainer->SetName("PhotonHistos") ;
 	
@@ -109,6 +116,7 @@ TList *  AliAnaClusterPileUp::GetCreateOutputObjects()
   Int_t netabins = GetHistogramRanges()->GetHistoEtaBins(); Float_t etamax = GetHistogramRanges()->GetHistoEtaMax(); Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
   Int_t ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax   = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin   = GetHistogramRanges()->GetHistoShowerShapeMin();
   Int_t ntimebins= GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();
+  
   
   fhTimePtNoCut  = new TH2F ("hTimePt_NoCut","time of cluster vs pT of clusters, no event selection", nptbins,ptmin,ptimecluster, ntimebins,timemin,timemax);
   fhTimePtNoCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -289,14 +297,15 @@ TList *  AliAnaClusterPileUp::GetCreateOutputObjects()
   }
   
   return outputContainer ;
+  
 }
 
-//______________________________
-/// Init analysis. Check if selected calorimeter
-/// data is available, and not MC, if not abort.
-//______________________________
+//_______________________
 void AliAnaClusterPileUp::Init()
 {
+  //Init
+  
+  //Do some checks
   if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn())
     AliFatal("You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
   
@@ -305,25 +314,26 @@ void AliAnaClusterPileUp::Init()
   
   if(GetReader()->GetDataType() == AliCaloTrackReader::kMC)
     AliFatal("You want to use MC data in analysis but this is not possible in pile-up!!");
+  
 }
 
-//________________________________________
-/// Initialize the parameters of the analysis.
-//________________________________________
+//____________________________________________________________________________
 void AliAnaClusterPileUp::InitParameters()
 {
+  
+  //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaClusterPileUp_");
   
-  fNCellsCut = 2;
+ 	fNCellsCut   = 2;
 }
 
-//_____________________________________________________
-/// Main method. Do cluster analysis
-/// Remember to open time cuts in reader.
-//_____________________________________________________
+//__________________________________________________________________
 void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
 {
-  // Select the calorimeter
+  // Do cluster analysis
+  // Remember to open time cuts in reader
+  
+  //Select the calorimeter
   TObjArray * pl = 0x0;
   AliVCaloCells* cells    = 0;
   if      (GetCalorimeter() == kPHOS )
@@ -369,7 +379,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
 
   AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
   
-  // Init variables
+  //Init variables
   Int_t   idMax = 0;
   Float_t ptMax = 0;
   Float_t  tMax = 0;
@@ -394,14 +404,14 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
 
     //.......................................
-    // If too small or big energy, skip it
+    //If too small or big energy, skip it
     if(ecluster < GetMinEnergy() || ecluster > GetMaxEnergy() ) continue ;
 
     //.......................................
     if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) continue;
     
-    //.......................................
-    // Check acceptance selection
+     //.......................................
+    //Check acceptance selection
     if(IsFiducialCutOn())
     {
       Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
@@ -419,33 +429,33 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     //-------------------------------------
     // Cluster timing for different pile-up
     
-    fhTimePtNoCut->Fill(ptcluster, tofcluster, GetEventWeight());
-    if(GetReader()->IsPileUpFromSPD()) fhTimePtSPD->Fill(ptcluster, tofcluster, GetEventWeight());
+    fhTimePtNoCut->Fill(ptcluster,tofcluster);
+    if(GetReader()->IsPileUpFromSPD()) fhTimePtSPD->Fill(ptcluster,tofcluster);
     
     //----------------------------------------
-    // Correlate cluster and number of vertices
+    // correlate cluster and number of vertices
     
-    fhPtNPileUpSPDVtx->Fill(ptcluster, nVtxSPD, GetEventWeight());
-    fhPtNPileUpTrkVtx->Fill(ptcluster, nVtxTrk, GetEventWeight());
+    fhPtNPileUpSPDVtx->Fill(ptcluster,nVtxSPD);
+		fhPtNPileUpTrkVtx->Fill(ptcluster,nVtxTrk);
     
-    if(TMath::Abs(tofcluster) < 30)
-    {
-        fhPtNPileUpSPDVtxTimeCut->Fill(ptcluster, nVtxSPD, GetEventWeight());
-        fhPtNPileUpTrkVtxTimeCut->Fill(ptcluster, nVtxTrk, GetEventWeight());
-    }
+		if(TMath::Abs(tofcluster) < 30)
+		{
+			fhPtNPileUpSPDVtxTimeCut->Fill(ptcluster,nVtxSPD);
+			fhPtNPileUpTrkVtxTimeCut->Fill(ptcluster,nVtxTrk);
+		}
     
     if(tofcluster < 75 && tofcluster > -30)
     {
-      fhPtNPileUpSPDVtxTimeCut2->Fill(ptcluster, nVtxSPD, GetEventWeight());
-      fhPtNPileUpTrkVtxTimeCut2->Fill(ptcluster, nVtxTrk, GetEventWeight());
+      fhPtNPileUpSPDVtxTimeCut2->Fill(ptcluster,nVtxSPD);
+      fhPtNPileUpTrkVtxTimeCut2->Fill(ptcluster,nVtxTrk);
     }
     
     // Loop on the vertices arrays, correlate with timing
     // only for sufficiently large cluster energy
     if(ecluster > 8)
     {
-      fhTimeNPileUpVertSPD  ->Fill(tofcluster, nVtxSPD, GetEventWeight());
-      fhTimeNPileUpVertTrack->Fill(tofcluster, nVtxTrk, GetEventWeight());
+      fhTimeNPileUpVertSPD  ->Fill(tofcluster,nVtxSPD);
+      fhTimeNPileUpVertTrack->Fill(tofcluster,nVtxTrk);
       
       Int_t ncont = -1;
       Float_t z1 = -1, z2 = -1;
@@ -473,9 +483,9 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
         Double_t distZ  = TMath::Abs(z2-z1);
         diamZ  = TMath::Abs(z2-diamZ);
         
-        fhTimeNPileUpVertContributors  ->Fill(tofcluster, ncont, GetEventWeight());
-        fhTimePileUpMainVertexZDistance->Fill(tofcluster, distZ, GetEventWeight());
-        fhTimePileUpMainVertexZDiamond ->Fill(tofcluster, diamZ, GetEventWeight());
+        fhTimeNPileUpVertContributors  ->Fill(tofcluster,ncont);
+        fhTimePileUpMainVertexZDistance->Fill(tofcluster,distZ);
+        fhTimePileUpMainVertexZDiamond ->Fill(tofcluster,diamZ);
         
       }// vertex loop
     }
@@ -485,100 +495,39 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     // Continue only for BC0
     if      (tofcluster > 28)
     {
-      fhEtaPhiBCPlus ->Fill(etacluster, phicluster, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPD())
-          fhEtaPhiBCPlusPileUpSPD ->Fill(etacluster, phicluster, GetEventWeight());
+      fhEtaPhiBCPlus ->Fill(etacluster,phicluster);
+      if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCPlusPileUpSPD ->Fill(etacluster,phicluster);
       continue;
     }
     else if (tofcluster <-28)
     {
-      fhEtaPhiBCMinus->Fill(etacluster, phicluster, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPD())
-          fhEtaPhiBCMinusPileUpSPD->Fill(etacluster, phicluster, GetEventWeight());
-        
+      fhEtaPhiBCMinus->Fill(etacluster,phicluster);
+      if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCMinusPileUpSPD->Fill(etacluster,phicluster);
       continue ;
     }
     
     //--------------------------------------
     // Fill histograms for clusters in BC=0
     
-    fhEtaPhiBC0->Fill(etacluster, phicluster, GetEventWeight());
+    fhEtaPhiBC0->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(etacluster,phicluster);
     
-    if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD->Fill(etacluster, phicluster, GetEventWeight());
-    
-    if(GetReader()->IsPileUpFromSPD())
-    {
-        fhPtPileUp     [0]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[0]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
-    if(GetReader()->IsPileUpFromEMCal())
-    {
-        fhPtPileUp     [1]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[1]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
-    if(GetReader()->IsPileUpFromSPDOrEMCal())
-    {
-        fhPtPileUp     [2]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[2]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
-    if(GetReader()->IsPileUpFromSPDAndEMCal())
-    {
-        fhPtPileUp     [3]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[3]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())
-    {
-        fhPtPileUp     [4]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[4]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())
-    {
-        fhPtPileUp     [5]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[5]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
-    {
-        fhPtPileUp     [6]->Fill(ptcluster, GetEventWeight());
-        fhLambda0PileUp[6]->Fill(ptcluster, l0cluster, GetEventWeight());
-    }
+    if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ptcluster,l0cluster); }
+    if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ptcluster,l0cluster); }
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ptcluster,l0cluster); }
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ptcluster,l0cluster); }
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ptcluster,l0cluster); }
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ptcluster,l0cluster); }
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ptcluster,l0cluster); }
     
     if(!matched)
     {
-      if(GetReader()->IsPileUpFromSPD())
-      {
-          fhPtNeutralPileUp     [0]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[0]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
-      if(GetReader()->IsPileUpFromEMCal())
-      {
-          fhPtNeutralPileUp     [1]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[1]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
-      if(GetReader()->IsPileUpFromSPDOrEMCal())
-      {
-          fhPtNeutralPileUp     [2]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[2]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
-      if(GetReader()->IsPileUpFromSPDAndEMCal())
-      {
-          fhPtNeutralPileUp     [3]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[3]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())
-      {
-          fhPtNeutralPileUp     [4]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[4]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())
-      {
-          fhPtNeutralPileUp     [5]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[5]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
-      {
-          fhPtNeutralPileUp     [6]->Fill(ptcluster, GetEventWeight());
-          fhLambda0NeutralPileUp[6]->Fill(ptcluster, l0cluster, GetEventWeight());
-      }
+      if(GetReader()->IsPileUpFromSPD())               {fhPtNeutralPileUp[0]->Fill(ptcluster); fhLambda0NeutralPileUp[0]->Fill(ptcluster,l0cluster); }
+      if(GetReader()->IsPileUpFromEMCal())             {fhPtNeutralPileUp[1]->Fill(ptcluster); fhLambda0NeutralPileUp[1]->Fill(ptcluster,l0cluster); }
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtNeutralPileUp[2]->Fill(ptcluster); fhLambda0NeutralPileUp[2]->Fill(ptcluster,l0cluster); }
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtNeutralPileUp[3]->Fill(ptcluster); fhLambda0NeutralPileUp[3]->Fill(ptcluster,l0cluster); }
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtNeutralPileUp[4]->Fill(ptcluster); fhLambda0NeutralPileUp[4]->Fill(ptcluster,l0cluster); }
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtNeutralPileUp[5]->Fill(ptcluster); fhLambda0NeutralPileUp[5]->Fill(ptcluster,l0cluster); }
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtNeutralPileUp[6]->Fill(ptcluster); fhLambda0NeutralPileUp[6]->Fill(ptcluster,l0cluster); }
     }
 
     //----------------------------------------------------------------------------
@@ -615,51 +564,51 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
       
       if(GetReader()->IsPileUpFromSPD())
       {
-        fhClusterCellTimePileUp[0]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[0]->Fill(ptcluster, diff), GetEventWeight();
-        if(!matched) fhClusterTimeDiffNeutralPileUp[0]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[0]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[0]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[0]->Fill(ptcluster, diff);
       }
       
       if(GetReader()->IsPileUpFromEMCal())
       {
-        fhClusterCellTimePileUp[1]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[1]->Fill(ptcluster, diff, GetEventWeight());
-        if(!matched) fhClusterTimeDiffNeutralPileUp[1]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[1]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[1]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[1]->Fill(ptcluster, diff);
       }
       
       if(GetReader()->IsPileUpFromSPDOrEMCal())
       {
-        fhClusterCellTimePileUp[2]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[2]->Fill(ptcluster, diff, GetEventWeight());
-        if(!matched) fhClusterTimeDiffNeutralPileUp[2]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[2]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[2]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[2]->Fill(ptcluster, diff);
       }
       
       if(GetReader()->IsPileUpFromSPDAndEMCal())
       {
-        fhClusterCellTimePileUp[3]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[3]->Fill(ptcluster, diff, GetEventWeight());
-        if(!matched) fhClusterTimeDiffNeutralPileUp[3]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[3]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[3]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[3]->Fill(ptcluster, diff);
       }
       
       if(GetReader()->IsPileUpFromSPDAndNotEMCal())
       {
-        fhClusterCellTimePileUp[4]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[4]->Fill(ptcluster, diff, GetEventWeight());
-        if(!matched) fhClusterTimeDiffNeutralPileUp[4]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[4]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[4]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[4]->Fill(ptcluster, diff);
       }
       
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())
       {
-        fhClusterCellTimePileUp[5]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[5]->Fill(ptcluster, diff, GetEventWeight());
-        if(!matched) fhClusterTimeDiffNeutralPileUp[5]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[5]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[5]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[5]->Fill(ptcluster, diff);
       }
       
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
       {
-        fhClusterCellTimePileUp[6]->Fill(ptcluster, time, GetEventWeight());
-        fhClusterTimeDiffPileUp[6]->Fill(ptcluster, diff, GetEventWeight());
-        if(!matched) fhClusterTimeDiffNeutralPileUp[6]->Fill(ptcluster, diff, GetEventWeight());
+        fhClusterCellTimePileUp[6]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[6]->Fill(ptcluster, diff);
+        if(!matched) fhClusterTimeDiffNeutralPileUp[6]->Fill(ptcluster, diff);
       }
     }//loop
     
@@ -668,13 +617,13 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
       frac = clusterLongTimePt/(clusterLongTimePt+clusterOKTimePt);
     //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimePt,clusterOKTimePt,frac,ptcluster);
     
-    if(GetReader()->IsPileUpFromSPD())               fhClusterEFracLongTimePileUp[0]->Fill(ptcluster, frac, GetEventWeight());
-    if(GetReader()->IsPileUpFromEMCal())             fhClusterEFracLongTimePileUp[1]->Fill(ptcluster, frac, GetEventWeight());
-    if(GetReader()->IsPileUpFromSPDOrEMCal())        fhClusterEFracLongTimePileUp[2]->Fill(ptcluster, frac, GetEventWeight());
-    if(GetReader()->IsPileUpFromSPDAndEMCal())       fhClusterEFracLongTimePileUp[3]->Fill(ptcluster, frac, GetEventWeight());
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhClusterEFracLongTimePileUp[4]->Fill(ptcluster, frac, GetEventWeight());
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhClusterEFracLongTimePileUp[5]->Fill(ptcluster, frac, GetEventWeight());
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhClusterEFracLongTimePileUp[6]->Fill(ptcluster, frac, GetEventWeight());
+    if(GetReader()->IsPileUpFromSPD())               fhClusterEFracLongTimePileUp[0]->Fill(ptcluster,frac);
+    if(GetReader()->IsPileUpFromEMCal())             fhClusterEFracLongTimePileUp[1]->Fill(ptcluster,frac);
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        fhClusterEFracLongTimePileUp[2]->Fill(ptcluster,frac);
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       fhClusterEFracLongTimePileUp[3]->Fill(ptcluster,frac);
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhClusterEFracLongTimePileUp[4]->Fill(ptcluster,frac);
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhClusterEFracLongTimePileUp[5]->Fill(ptcluster,frac);
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhClusterEFracLongTimePileUp[6]->Fill(ptcluster,frac);
   }//loop
   
   //----------------------------------------------------------------------------------------------
@@ -703,29 +652,30 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
   // Check pile-up and fill histograms depending on the different cluster multiplicities
   if(GetReader()->IsPileUpFromSPD())
   {
-    fhClusterMultSPDPileUp[0]->Fill(ptMax, n  , GetEventWeight());
-    fhClusterMultSPDPileUp[1]->Fill(ptMax, nOK, GetEventWeight());
-    fhClusterMultSPDPileUp[2]->Fill(ptMax, n20, GetEventWeight());
-    fhClusterMultSPDPileUp[3]->Fill(ptMax, n40, GetEventWeight());
+    fhClusterMultSPDPileUp[0]->Fill(ptMax,n  );
+    fhClusterMultSPDPileUp[1]->Fill(ptMax,nOK);
+    fhClusterMultSPDPileUp[2]->Fill(ptMax,n20);
+    fhClusterMultSPDPileUp[3]->Fill(ptMax,n40);
   }
   else
   {
-    fhClusterMultNoPileUp[0]->Fill(ptMax, n  , GetEventWeight());
-    fhClusterMultNoPileUp[1]->Fill(ptMax, nOK, GetEventWeight());
-    fhClusterMultNoPileUp[2]->Fill(ptMax, n20, GetEventWeight());
-    fhClusterMultNoPileUp[3]->Fill(ptMax, n40, GetEventWeight());
+    fhClusterMultNoPileUp[0]->Fill(ptMax,n  );
+    fhClusterMultNoPileUp[1]->Fill(ptMax,nOK);
+    fhClusterMultNoPileUp[2]->Fill(ptMax,n20);
+    fhClusterMultNoPileUp[3]->Fill(ptMax,n40);
   }
 
   AliDebug(1,"End fill histograms");
+  
 }
 
 
 
-//_________________________________________________________
-/// Print some relevant parameters set for the analysis.
-//_________________________________________________________
+//__________________________________________________________________
 void AliAnaClusterPileUp::Print(const Option_t * opt) const
 {
+  //Print some relevant parameters set for the analysis
+  
   if(! opt)
     return;
   
@@ -734,4 +684,5 @@ void AliAnaClusterPileUp::Print(const Option_t * opt) const
   
   printf("Calorimeter            =     %s\n", GetCalorimeterString().Data()) ;
   printf("    \n") ;
+	
 }

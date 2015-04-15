@@ -4,19 +4,13 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-/// \class AliAnaPhotonConvInCalo
-/// \brief Conversions pairs clusters analysis.
-///
-/// Conversions pairs clusters analysis.
-/// Check if cluster comes from a conversion in the material in front of the calorimeter
-/// Do invariant mass of all pairs, if mass is close to 0, then it is conversion.
-/// Input are selected clusters with AliAnaPhoton
-///
-/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations)
-/// and particularly in this [section](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations#AliAnaPhotonInCalo).
-///
-/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
-//_________________________________________________________________________
+//
+// Conversions pairs analysis
+// Check if cluster comes from a conversion in the material in front of the calorimeter
+// Do invariant mass of all pairs, if mass is close to 0, then it is conversion.
+// Input are selected clusters with AliAnaPhoton
+//
+//-- Author: Gustavo Conesa (LPSC-IN2P3-CNRS)
 
 // --- ROOT system ---
 class TH2F;
@@ -31,10 +25,8 @@ class TList ;
 class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
-               AliAnaPhotonConvInCalo() ;
-
-  /// Virtual destructor.
-  virtual     ~AliAnaPhotonConvInCalo() { ; }
+  AliAnaPhotonConvInCalo() ;              // default ctor
+  virtual ~AliAnaPhotonConvInCalo() { ; } // virtual dtor
 	
   //---------------------------------------
   // General analysis frame methods
@@ -80,88 +72,83 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   
   private:
  
-  Bool_t   fRemoveConvertedPair;          ///<  Remove conversion pairs
-  Bool_t   fAddConvertedPairsToAOD;       ///<  Put Converted pairs in AOD
-  Float_t  fMassCut;                      ///<  Mass cut for the conversion pairs selection
-  Float_t  fConvAsymCut;                  ///<  Select conversion pairs when asymmetry is smaller than cut
-  Float_t  fConvDEtaCut;                  ///<  Select conversion pairs when deta of pair smaller than cut
-  Float_t  fConvDPhiMinCut;               ///<  Select conversion pairs when dphi of pair lager than cut
-  Float_t  fConvDPhiMaxCut;               ///<  Select conversion pairs when dphi of pair smaller than cut
+  Bool_t   fRemoveConvertedPair;          // Remove conversion pairs
+  Bool_t   fAddConvertedPairsToAOD;       // Put Converted pairs in AOD
+  Float_t  fMassCut;                      // Mass cut for the conversion pairs selection  
+  Float_t  fConvAsymCut;                  // Select conversion pairs when asymmetry is smaller than cut
+  Float_t  fConvDEtaCut;                  // Select conversion pairs when deta of pair smaller than cut
+  Float_t  fConvDPhiMinCut;               // Select conversion pairs when dphi of pair lager than cut
+  Float_t  fConvDPhiMaxCut;               // Select conversion pairs when dphi of pair smaller than cut
 
-  TLorentzVector fMomentum ;              //!<! Cluster momentum
-  TVector3       fProdVertex;             //!<! Production vertex
+  TLorentzVector fMomentum ;              //! Cluster momentum
+  TVector3       fProdVertex;             //! Production vertex
   
   // Histograms
-  TH1F * fhPtPhotonConv   ;               //!<! Number of identified photon vs transerse momentum 
-  TH2F * fhEtaPhiPhotonConv  ;            //!<! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5, for converted
-  TH2F * fhEtaPhi05PhotonConv  ;          //!<! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5, for converted
-  TH2F * fhConvDeltaEta;                  //!<! Small mass photons, correlation in eta
-  TH2F * fhConvDeltaPhi;                  //!<! Small mass photons, correlation in phi
-  TH2F * fhConvDeltaEtaPhi;               //!<! Small mass photons, correlation in phi and eta
-  TH2F * fhConvAsym;                      //!<! Small mass photons, correlation in energy asymmetry
-  TH2F * fhConvPt;                        //!<! Small mass photons, pT of pair
+  TH1F * fhPtPhotonConv   ;               //! Number of identified photon vs transerse momentum 
+  TH2F * fhEtaPhiPhotonConv  ;            //! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5, for converted
+  TH2F * fhEtaPhi05PhotonConv  ;          //! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5, for converted
+  TH2F * fhConvDeltaEta;                  //! Small mass photons, correlation in eta
+  TH2F * fhConvDeltaPhi;                  //! Small mass photons, correlation in phi
+  TH2F * fhConvDeltaEtaPhi;               //! Small mass photons, correlation in phi and eta
+  TH2F * fhConvAsym;                      //! Small mass photons, correlation in energy asymmetry
+  TH2F * fhConvPt;                        //! Small mass photons, pT of pair
   
   //Vertex distance
-  TH2F * fhConvDistEta;                   //!<! Approx distance to vertex vs cluster Eta 
-  TH2F * fhConvDistEn;                    //!<! Approx distance to vertex vs Energy
-  TH2F * fhConvDistMass;                  //!<! Approx distance to vertex vs Mass
-  TH2F * fhConvDistEtaCutEta;             //!<! Approx distance to vertex vs cluster Eta, dEta < 0.05 
-  TH2F * fhConvDistEnCutEta;              //!<! Approx distance to vertex vs Energy, dEta < 0.05
-  TH2F * fhConvDistMassCutEta;            //!<! Approx distance to vertex vs Mass, dEta < 0.05
-  TH2F * fhConvDistEtaCutMass;            //!<! Approx distance to vertex vs cluster Eta, dEta < 0.05, m < 10 MeV 
-  TH2F * fhConvDistEnCutMass;             //!<! Approx distance to vertex vs Energy, dEta < 0.05, m < 10 MeV
-  TH2F * fhConvDistEtaCutAsy;             //!<! Approx distance to vertex vs cluster Eta, dEta < 0.05, m < 10 MeV, A < 0.1
-  TH2F * fhConvDistEnCutAsy;              //!<! Approx distance to vertex vs energy, dEta < 0.05, m < 10 MeV, A < 0.1
+  TH2F * fhConvDistEta;                   //! Approx distance to vertex vs cluster Eta 
+  TH2F * fhConvDistEn;                    //! Approx distance to vertex vs Energy
+  TH2F * fhConvDistMass;                  //! Approx distance to vertex vs Mass
+  TH2F * fhConvDistEtaCutEta;             //! Approx distance to vertex vs cluster Eta, dEta < 0.05 
+  TH2F * fhConvDistEnCutEta;              //! Approx distance to vertex vs Energy, dEta < 0.05
+  TH2F * fhConvDistMassCutEta;            //! Approx distance to vertex vs Mass, dEta < 0.05
+  TH2F * fhConvDistEtaCutMass;            //! Approx distance to vertex vs cluster Eta, dEta < 0.05, m < 10 MeV 
+  TH2F * fhConvDistEnCutMass;             //! Approx distance to vertex vs Energy, dEta < 0.05, m < 10 MeV
+  TH2F * fhConvDistEtaCutAsy;             //! Approx distance to vertex vs cluster Eta, dEta < 0.05, m < 10 MeV, A < 0.1
+  TH2F * fhConvDistEnCutAsy;              //! Approx distance to vertex vs energy, dEta < 0.05, m < 10 MeV, A < 0.1
 
   //Conversion pairs analysis histograms
-  TH1F * fhPtConversionTagged;            //!<! Number of identified gamma from Conversion , tagged as conversion 
-  TH1F * fhPtAntiNeutronTagged;           //!<! Number of identified gamma from AntiNeutrons gamma, tagged as conversion 
-  TH1F * fhPtAntiProtonTagged;            //!<! Number of identified gamma from AntiProtons gamma, tagged as conversion 
-  TH1F * fhPtUnknownTagged;               //!<! Number of identified gamma from unknown, tagged as conversion 
+  TH1F * fhPtConversionTagged;            //! Number of identified gamma from Conversion , tagged as conversion 
+  TH1F * fhPtAntiNeutronTagged;           //! Number of identified gamma from AntiNeutrons gamma, tagged as conversion 
+  TH1F * fhPtAntiProtonTagged;            //! Number of identified gamma from AntiProtons gamma, tagged as conversion 
+  TH1F * fhPtUnknownTagged;               //! Number of identified gamma from unknown, tagged as conversion 
   
-  TH2F * fhConvDeltaEtaMCConversion;      //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is conversion
-  TH2F * fhConvDeltaPhiMCConversion;      //!<! Small mass cluster pairs, correlation in phi, origin of both clusters is conversion
-  TH2F * fhConvDeltaEtaPhiMCConversion;   //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is conversion
-  TH2F * fhConvAsymMCConversion;          //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is conversion
-  TH2F * fhConvPtMCConversion;            //!<! Small mass cluster pairs, pt of pair, origin of both clusters is conversion
-  TH2F * fhConvDispersionMCConversion;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
-  TH2F * fhConvM02MCConversion;           //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2 
+  TH2F * fhConvDeltaEtaMCConversion;      //! Small mass cluster pairs, correlation in eta, origin of both clusters is conversion
+  TH2F * fhConvDeltaPhiMCConversion;      //! Small mass cluster pairs, correlation in phi, origin of both clusters is conversion
+  TH2F * fhConvDeltaEtaPhiMCConversion;   //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is conversion
+  TH2F * fhConvAsymMCConversion;          //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is conversion
+  TH2F * fhConvPtMCConversion;            //! Small mass cluster pairs, pt of pair, origin of both clusters is conversion
+  TH2F * fhConvDispersionMCConversion;    //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
+  TH2F * fhConvM02MCConversion;           //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2 
 
-  TH2F * fhConvDeltaEtaMCAntiNeutron;     //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is anti neutron
-  TH2F * fhConvDeltaPhiMCAntiNeutron;     //!<! Small mass cluster pairs, correlation in phi, origin of both clusters is anti neutron
-  TH2F * fhConvDeltaEtaPhiMCAntiNeutron;  //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti neutron
-  TH2F * fhConvAsymMCAntiNeutron;         //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti neutron
-  TH2F * fhConvPtMCAntiNeutron;           //!<! Small mass cluster pairs, pt of pair, origin of both clusters is anti neutron
-  TH2F * fhConvDispersionMCAntiNeutron;   //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti neutron
-  TH2F * fhConvM02MCAntiNeutron;          //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti neutron
+  TH2F * fhConvDeltaEtaMCAntiNeutron;     //! Small mass cluster pairs, correlation in eta, origin of both clusters is anti neutron
+  TH2F * fhConvDeltaPhiMCAntiNeutron;     //! Small mass cluster pairs, correlation in phi, origin of both clusters is anti neutron
+  TH2F * fhConvDeltaEtaPhiMCAntiNeutron;  //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti neutron
+  TH2F * fhConvAsymMCAntiNeutron;         //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti neutron
+  TH2F * fhConvPtMCAntiNeutron;           //! Small mass cluster pairs, pt of pair, origin of both clusters is anti neutron
+  TH2F * fhConvDispersionMCAntiNeutron;   //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti neutron
+  TH2F * fhConvM02MCAntiNeutron;          //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti neutron
 
-  TH2F * fhConvDeltaEtaMCAntiProton;      //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is anti proton
-  TH2F * fhConvDeltaPhiMCAntiProton;      //!<! Small mass cluster pairs, correlation in phi, origin of both clusters is anti proton
-  TH2F * fhConvDeltaEtaPhiMCAntiProton;   //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti proton
-  TH2F * fhConvAsymMCAntiProton;          //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti proton
-  TH2F * fhConvPtMCAntiProton;            //!<! Small mass cluster pairs, pt of pairs, origin of both clusters is anti proton
-  TH2F * fhConvDispersionMCAntiProton;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti proton
-  TH2F * fhConvM02MCAntiProton;           //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti proton
+  TH2F * fhConvDeltaEtaMCAntiProton;      //! Small mass cluster pairs, correlation in eta, origin of both clusters is anti proton
+  TH2F * fhConvDeltaPhiMCAntiProton;      //! Small mass cluster pairs, correlation in phi, origin of both clusters is anti proton
+  TH2F * fhConvDeltaEtaPhiMCAntiProton;   //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti proton
+  TH2F * fhConvAsymMCAntiProton;          //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti proton
+  TH2F * fhConvPtMCAntiProton;            //! Small mass cluster pairs, pt of pairs, origin of both clusters is anti proton
+  TH2F * fhConvDispersionMCAntiProton;    //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti proton
+  TH2F * fhConvM02MCAntiProton;           //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti proton
 
-  TH2F * fhConvDeltaEtaMCString;          //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is string
-  TH2F * fhConvDeltaPhiMCString;          //!<! Small mass cluster pairs, correlation in phi, origin of both clusters is string
-  TH2F * fhConvDeltaEtaPhiMCString;       //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is string
-  TH2F * fhConvAsymMCString;              //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is string
-  TH2F * fhConvPtMCString;                //!<! Small mass cluster pairs, pt of pairs, origin of both clusters is string
-  TH2F * fhConvDispersionMCString;        //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
-  TH2F * fhConvM02MCString;               //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
-  TH2F * fhConvDistMCConversion;          //!<! Calculated conversion distance vs real distance to vertex       
-  TH2F * fhConvDistMCConversionCuts;      //!<! Calculated conversion distance vs real distance to vertex        
+  TH2F * fhConvDeltaEtaMCString;          //! Small mass cluster pairs, correlation in eta, origin of both clusters is string
+  TH2F * fhConvDeltaPhiMCString;          //! Small mass cluster pairs, correlation in phi, origin of both clusters is string
+  TH2F * fhConvDeltaEtaPhiMCString;       //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is string
+  TH2F * fhConvAsymMCString;              //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is string
+  TH2F * fhConvPtMCString;                //! Small mass cluster pairs, pt of pairs, origin of both clusters is string
+  TH2F * fhConvDispersionMCString;        //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
+  TH2F * fhConvM02MCString;               //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
+  TH2F * fhConvDistMCConversion;          //! Calculated conversion distance vs real distance to vertex       
+  TH2F * fhConvDistMCConversionCuts;      //! Calculated conversion distance vs real distance to vertex        
 
-  /// Copy constructor not implemented.
-  AliAnaPhotonConvInCalo(              const AliAnaPhotonConvInCalo & g) ;
-    
-  /// Assignment operator not implemented.
-  AliAnaPhotonConvInCalo & operator = (const AliAnaPhotonConvInCalo & g) ;
+  AliAnaPhotonConvInCalo(              const AliAnaPhotonConvInCalo & g) ; // cpy ctor
+  AliAnaPhotonConvInCalo & operator = (const AliAnaPhotonConvInCalo & g) ; // cpy assignment
   
-  /// \cond CLASSIMP
-  ClassDef(AliAnaPhotonConvInCalo,1) ;
-  /// \endcond
+  ClassDef(AliAnaPhotonConvInCalo,1)
 
 } ;
  
