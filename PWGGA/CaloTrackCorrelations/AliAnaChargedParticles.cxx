@@ -31,7 +31,7 @@
 #include "AliESDEvent.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnaChargedParticles)
+ClassImp(AliAnaChargedParticles) ;
 /// \endcond
 
 //__________________________________________________
