@@ -35,7 +35,7 @@
 #include "AliMixedEvent.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnaElectron)
+ClassImp(AliAnaElectron) ;
 /// \endcond
 
 //________________________________

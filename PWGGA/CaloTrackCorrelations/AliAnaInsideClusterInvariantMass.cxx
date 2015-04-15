@@ -36,7 +36,7 @@
 #include "AliEMCALGeometry.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnaInsideClusterInvariantMass)
+ClassImp(AliAnaInsideClusterInvariantMass) ;
 /// \endcond
 
 //__________________________________________________________________
