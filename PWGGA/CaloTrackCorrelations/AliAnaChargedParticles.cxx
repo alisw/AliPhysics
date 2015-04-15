@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-//
-// Class for track selection and identification (not done now)
-// Tracks from the CTS are kept in the AOD.
-// Few histograms produced.
-//
-//-- Author: Gustavo Conesa (INFN-LNF)
-//_________________________________________________________________________
-
-
 // --- ROOT system ---
 #include "TParticle.h"
 #include "TH2F.h"
@@ -40,42 +30,42 @@
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 
+/// \cond CLASSIMP
 ClassImp(AliAnaChargedParticles)
-  
+/// \endcond
+
 //__________________________________________________
-  AliAnaChargedParticles::AliAnaChargedParticles() :
-    AliAnaCaloTrackCorrBaseClass(),
-    fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
-    fMomentum(),
-    //Histograms
-    fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
-    fhPtCutDCA(0),     fhPtCutDCABCOK(0),
-    fhPtNotPrimary(),  fhPtNotSharedClusterCut(0),
-    fhPhiNeg(0),       fhEtaNeg(0),
-    fhPhiPos(0),       fhEtaPos(0), 
-    fhEtaPhiPos(0),    fhEtaPhiNeg(0),
-    fhPtVtxOutBC0(0),  fhEtaPhiVtxOutBC0(0),
-    fhPtVtxInBC0(0),   fhEtaPhiVtxInBC0(0),
-    fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
-    fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
-    fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
-
-    //TOF
-    fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
-    fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
-    fhPtTOFSignalVtxOutBC0(0), fhPtTOFSignalVtxInBC0(0),
-    fhPtTOFStatus0(0), fhEtaPhiTOFStatus0(0),
-    fhEtaPhiTOFBC0(0), fhEtaPhiTOFBCPlus(0), fhEtaPhiTOFBCMinus(0),
-    fhEtaPhiTOFBC0PileUpSPD(0),
-    fhEtaPhiTOFBCPlusPileUpSPD(0),
-    fhEtaPhiTOFBCMinusPileUpSPD(0),
-    fhProductionVertexBC(0),
-    fhPtNPileUpSPDVtx(0),    fhPtNPileUpTrkVtx(0),
-    fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
-
+/// Default constructor. Initialize parameters with default values.
+//__________________________________________________
+AliAnaChargedParticles::AliAnaChargedParticles() :
+AliAnaCaloTrackCorrBaseClass(),
+fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
+fMomentum(),
+// Histograms
+fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
+fhPtCutDCA(0),     fhPtCutDCABCOK(0),
+fhPtNotPrimary(),  fhPtNotSharedClusterCut(0),
+fhPhiNeg(0),       fhEtaNeg(0),
+fhPhiPos(0),       fhEtaPos(0),
+fhEtaPhiPos(0),    fhEtaPhiNeg(0),
+fhPtVtxOutBC0(0),  fhEtaPhiVtxOutBC0(0),
+fhPtVtxInBC0(0),   fhEtaPhiVtxInBC0(0),
+fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
+fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
+fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
+// TOF
+fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
+fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
+fhPtTOFSignalVtxOutBC0(0), fhPtTOFSignalVtxInBC0(0),
+fhPtTOFStatus0(0), fhEtaPhiTOFStatus0(0),
+fhEtaPhiTOFBC0(0), fhEtaPhiTOFBCPlus(0), fhEtaPhiTOFBCMinus(0),
+fhEtaPhiTOFBC0PileUpSPD(0),
+fhEtaPhiTOFBCPlusPileUpSPD(0),
+fhEtaPhiTOFBCMinusPileUpSPD(0),
+fhProductionVertexBC(0),
+fhPtNPileUpSPDVtx(0),    fhPtNPileUpTrkVtx(0),
+fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
 {
-  //Default Ctor
-
   for(Int_t i = 0; i < 7; i++)
   {
     fhPtPileUp         [i] = 0;
@@ -123,14 +113,13 @@ ClassImp(AliAnaChargedParticles)
   
   //Initialize parameters
   InitParameters();
-
 }
 
 //__________________________________________________
+/// Fill primary generated particles histograms if MC data is available.
+//__________________________________________________
 void AliAnaChargedParticles::FillPrimaryHistograms()
 {
-  // Fill primary generated particles histograms if MC data is available
-  
   Int_t    pdg       =  0 ;
   Int_t    nprim     =  0 ;
   
@@ -221,19 +210,19 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
     Bool_t in = GetFiducialCut()->IsInFiducialCut(etaPrim,phiPrim,kCTS) ;
     
     if(in)
-      fhPtMCPrimPart[mcType]->Fill(ptPrim);
-    fhEtaMCPrimPart[mcType]->Fill(ptPrim,etaPrim);
-    fhPhiMCPrimPart[mcType]->Fill(ptPrim,phiPrim);
+      fhPtMCPrimPart[mcType]->Fill(ptPrim, GetEventWeight());
+      
+    fhEtaMCPrimPart [mcType]->Fill(ptPrim, etaPrim, GetEventWeight());
+    fhPhiMCPrimPart [mcType]->Fill(ptPrim, phiPrim, GetEventWeight());
   }
 }
 
 //_______________________________________________________
+/// Create histograms to be saved in output file and
+/// store them in fOutputContainer.
+//_______________________________________________________
 TList *  AliAnaChargedParticles::GetCreateOutputObjects()
-{  
-  // Create histograms to be saved in output file and 
-  // store them in fOutputContainer
-  
-  
+{
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ChargedParticleHistos") ;
   
@@ -482,7 +471,6 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       }
     }
  
-    
     if(fFillTrackBCHistograms)
     {
       fhEtaPhiTOFBC0  = new TH2F ("hEtaPhiTOFBC0","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
@@ -518,7 +506,6 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
         outputContainer->Add(fhEtaPhiTOFBCMinusPileUpSPD);
       }
     }
-    
   }
   
   fhPtTOFStatus0  = new TH1F ("hPtTOFStatus0","#it{p}_{T} distribution of tracks not hitting TOF", nptbins,ptmin,ptmax);
@@ -538,7 +525,6 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   
   for(Int_t i = 0 ; i < 3 ; i++)
   {
-    
     fhPtDCA[i]  = new TH2F(Form("hPtDCA%s",dcaName[i].Data()),
                            Form("Track DCA%s vs #it{p}_{T}distribution",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
@@ -677,7 +663,6 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
         fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxInBC0PileUpNoTOFHit[i]);
-        
       }
     }
   }
@@ -731,7 +716,6 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhEtaMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhEtaMCPrimPart[imcPart]);
     }
-    
   }
   
   fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
@@ -762,25 +746,24 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   }
 
   return outputContainer;
-
 }
 
-
+//___________________________________________
+/// Initialize the parameters of the analysis.
 //___________________________________________
 void AliAnaChargedParticles::InitParameters()
 { 
-  //Initialize the parameters of the analysis.
   SetOutputAODClassName("AliAODPWG4Particle");
   SetOutputAODName("PWG4Particle");
 
   AddToHistogramsName("AnaCharged_");
-  
 }
 
 //____________________________________________________________
+/// Print some relevant parameters set for the analysis.
+//____________________________________________________________
 void AliAnaChargedParticles::Print(const Option_t * opt) const
 {
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -789,30 +772,28 @@ void AliAnaChargedParticles::Print(const Option_t * opt) const
 	
   printf("Min Pt = %3.2f\n", GetMinPt());
   printf("Max Pt = %3.2f\n", GetMaxPt());
-  
 } 
 
 //_________________________________
+/// Init. Check that tracks are read, if not abort.
+//_________________________________
 void AliAnaChargedParticles::Init()
-{  
-  //Init
-  //Do some checks
-  
+{
   if(!GetReader()->IsCTSSwitchedOn())
     AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!");
-  
 }
 
 //_________________________________________________
-void  AliAnaChargedParticles::MakeAnalysisFillAOD() 
+/// Do here the track selection and aod filling.
+/// Fill control histograms on the tracks.
+//_________________________________________________
+void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 {
-  //Do analysis and fill aods
   if(!GetCTSTracks() || GetCTSTracks()->GetEntriesFast() == 0) return ;
   
   Int_t ntracks = GetCTSTracks()->GetEntriesFast();
   Double_t vert[3] = {0,0,0}; //vertex ;
   
-  //Some prints
   AliDebug(1,Form("In CTS aod entries %d", ntracks));
   
   AliVEvent  * event = GetReader()->GetInputEvent();
@@ -824,16 +805,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 
   if(fFillVertexBC0Histograms)
   {
-    fhProductionVertexBC->Fill(vtxBC);
+    fhProductionVertexBC->Fill(vtxBC, GetEventWeight());
+      
     if(IsPileUpAnalysisOn())
     {
-      if(GetReader()->IsPileUpFromSPD())               fhProductionVertexBCPileUp[0]->Fill(vtxBC);
-      if(GetReader()->IsPileUpFromEMCal())             fhProductionVertexBCPileUp[1]->Fill(vtxBC);
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhProductionVertexBCPileUp[2]->Fill(vtxBC);
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhProductionVertexBCPileUp[3]->Fill(vtxBC);
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhProductionVertexBCPileUp[4]->Fill(vtxBC);
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhProductionVertexBCPileUp[5]->Fill(vtxBC);
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhProductionVertexBCPileUp[6]->Fill(vtxBC);
+      if(GetReader()->IsPileUpFromSPD())               fhProductionVertexBCPileUp[0]->Fill(vtxBC, GetEventWeight());
+      if(GetReader()->IsPileUpFromEMCal())             fhProductionVertexBCPileUp[1]->Fill(vtxBC, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhProductionVertexBCPileUp[2]->Fill(vtxBC, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhProductionVertexBCPileUp[3]->Fill(vtxBC, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhProductionVertexBCPileUp[4]->Fill(vtxBC, GetEventWeight());
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhProductionVertexBCPileUp[5]->Fill(vtxBC, GetEventWeight());
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhProductionVertexBCPileUp[6]->Fill(vtxBC, GetEventWeight());
     }
   }
   
@@ -858,7 +840,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   
   Double_t bz = event->GetMagneticField();
 
-  //Fill AODParticle with CTS aods
+  // Fill AODParticle with CTS aods
   Float_t pt  = 0;
   Float_t phi = 0;
   Float_t eta = 0;
@@ -871,10 +853,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     eta = track->Eta();
     phi = track->Phi();
 
-    fhPtNoCut->Fill(pt);
+    fhPtNoCut->Fill(pt, GetEventWeight());
     
-    fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);
-    fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
+    fhPtNPileUpSPDVtx->Fill(pt, nVtxSPD, GetEventWeight());
+    fhPtNPileUpTrkVtx->Fill(pt, nVtxTrk, GetEventWeight());
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
@@ -884,18 +866,18 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       Double_t frac = Double_t(aodTrack->GetTPCnclsS()) / Double_t(aodTrack->GetTPCncls());
       
       if ( frac > GetReader()->GetTPCSharedClusterFraction() ) 
-        fhPtNotSharedClusterCut->Fill(pt);
+        fhPtNotSharedClusterCut->Fill(pt, GetEventWeight());
 
       if ( aodTrack->GetType()!= AliAODTrack::kPrimary ) 
-        fhPtNotPrimary->Fill(pt);
+        fhPtNotPrimary->Fill(pt, GetEventWeight());
     }
     
-    //TOF
+    // TOF
     ULong_t status = track->GetStatus();
     Bool_t okTOF = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
     Double32_t tof = track->GetTOFsignal()*1e-3;    
     
-    //DCA
+    // DCA
     Double_t dcaCons = -999;
     if(aodTrack)
     {
@@ -911,50 +893,51 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     if(dcaCons == -999)
     {
-      fhPtDCA[0]->Fill(pt, dca[0]);
-      fhPtDCA[1]->Fill(pt, dca[1]);
+      fhPtDCA[0]->Fill(pt, dca[0], GetEventWeight());
+      fhPtDCA[1]->Fill(pt, dca[1], GetEventWeight());
     }
     else
     {
       trackDCA = dcaCons;
-      fhPtDCA[2]->Fill(pt, dcaCons);
+      fhPtDCA[2]->Fill(pt, dcaCons, GetEventWeight());
     }
     
-    if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() ) fhPtCutDCA->Fill(pt);
+    if ( GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() )
+        fhPtCutDCA->Fill(pt, GetEventWeight());
     
     if(fFillVertexBC0Histograms)
     {
       if(TMath::Abs(vtxBC) > 0 && vtxBC!=AliVTrack::kTOFBCNA)
       {        
-        fhPtVtxOutBC0->Fill(pt);
-        fhEtaPhiVtxOutBC0->Fill(eta,phi);
+        fhPtVtxOutBC0->Fill(pt, GetEventWeight());
+        fhEtaPhiVtxOutBC0->Fill(eta, phi, GetEventWeight());
         
         if(dcaCons == -999)
         {
-          fhPtDCAVtxOutBC0[0]->Fill(pt, dca[0]);
-          fhPtDCAVtxOutBC0[1]->Fill(pt, dca[1]);
+          fhPtDCAVtxOutBC0[0]->Fill(pt, dca[0], GetEventWeight());
+          fhPtDCAVtxOutBC0[1]->Fill(pt, dca[1], GetEventWeight());
         }
         else
-          fhPtDCAVtxOutBC0[2]->Fill(pt, dcaCons);
+          fhPtDCAVtxOutBC0[2]->Fill(pt, dcaCons, GetEventWeight());
       }
       else
       {
-        fhPtVtxInBC0->Fill(pt);
-        fhEtaPhiVtxInBC0->Fill(eta,phi);
+        fhPtVtxInBC0->Fill(pt, GetEventWeight());
+        fhEtaPhiVtxInBC0->Fill(eta, phi, GetEventWeight());
         
-        fhPtNPileUpSPDVtxBC0->Fill(pt,nVtxSPD);
-        fhPtNPileUpTrkVtxBC0->Fill(pt,nVtxTrk);
+        fhPtNPileUpSPDVtxBC0->Fill(pt, nVtxSPD, GetEventWeight());
+        fhPtNPileUpTrkVtxBC0->Fill(pt, nVtxTrk, GetEventWeight());
         
-        if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() ) fhPtCutDCABCOK->Fill(pt);
+        if ( GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() )
+            fhPtCutDCABCOK->Fill(pt, GetEventWeight());
         
         if(dcaCons == -999)
         {
-          fhPtDCAVtxInBC0[0]->Fill(pt, dca[0]);
-          fhPtDCAVtxInBC0[1]->Fill(pt, dca[1]);
+          fhPtDCAVtxInBC0[0]->Fill(pt, dca[0], GetEventWeight());
+          fhPtDCAVtxInBC0[1]->Fill(pt, dca[1], GetEventWeight());
         }
         else
-          fhPtDCAVtxInBC0[2]->Fill(pt, dcaCons);
-        
+          fhPtDCAVtxInBC0[2]->Fill(pt, dcaCons, GetEventWeight());
       }
     }
     
@@ -962,11 +945,11 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {
       if(dcaCons == -999)
       {
-        fhPtDCAPileUp[0]->Fill(pt, dca[0]);
-        fhPtDCAPileUp[1]->Fill(pt, dca[1]);
+        fhPtDCAPileUp[0]->Fill(pt, dca[0], GetEventWeight());
+        fhPtDCAPileUp[1]->Fill(pt, dca[1], GetEventWeight());
       }
       else
-        fhPtDCAPileUp[2]->Fill(pt, dcaCons);
+        fhPtDCAPileUp[2]->Fill(pt, dcaCons, GetEventWeight());
 
       if(fFillVertexBC0Histograms)
       {
@@ -974,19 +957,19 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         {
           if(dcaCons == -999)
           {
-            fhPtDCAVtxOutBC0PileUp[0]->Fill(pt, dca[0]);
-            fhPtDCAVtxOutBC0PileUp[1]->Fill(pt, dca[1]);
+            fhPtDCAVtxOutBC0PileUp[0]->Fill(pt, dca[0], GetEventWeight());
+            fhPtDCAVtxOutBC0PileUp[1]->Fill(pt, dca[1], GetEventWeight());
           }
-          else fhPtDCAVtxOutBC0PileUp[2]->Fill(pt, dcaCons);
+          else fhPtDCAVtxOutBC0PileUp[2]->Fill(pt, dcaCons, GetEventWeight());
         }
         else
         {
           if(dcaCons == -999)
           {
-            fhPtDCAVtxInBC0PileUp[0]->Fill(pt, dca[0]);
-            fhPtDCAVtxInBC0PileUp[1]->Fill(pt, dca[1]);
+            fhPtDCAVtxInBC0PileUp[0]->Fill(pt, dca[0], GetEventWeight());
+            fhPtDCAVtxInBC0PileUp[1]->Fill(pt, dca[1], GetEventWeight());
           }
-          else fhPtDCAVtxInBC0PileUp[2]->Fill(pt, dcaCons);
+          else fhPtDCAVtxInBC0PileUp[2]->Fill(pt, dcaCons, GetEventWeight());
         }
       }
     }
@@ -995,11 +978,11 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {
       if(dcaCons == -999)
       {
-        fhPtDCANoTOFHit[0]->Fill(pt, dca[0]);
-        fhPtDCANoTOFHit[1]->Fill(pt, dca[1]);
+        fhPtDCANoTOFHit[0]->Fill(pt, dca[0], GetEventWeight());
+        fhPtDCANoTOFHit[1]->Fill(pt, dca[1], GetEventWeight());
       }
       else
-        fhPtDCANoTOFHit[2]->Fill(pt, dcaCons);
+        fhPtDCANoTOFHit[2]->Fill(pt, dcaCons, GetEventWeight());
       
       if(fFillVertexBC0Histograms)
       {
@@ -1007,21 +990,21 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         {
           if(dcaCons == -999)
           {
-            fhPtDCAVtxOutBC0NoTOFHit[0]->Fill(pt, dca[0]);
-            fhPtDCAVtxOutBC0NoTOFHit[1]->Fill(pt, dca[1]);
+            fhPtDCAVtxOutBC0NoTOFHit[0]->Fill(pt, dca[0], GetEventWeight());
+            fhPtDCAVtxOutBC0NoTOFHit[1]->Fill(pt, dca[1], GetEventWeight());
           }
           else
-            fhPtDCAVtxOutBC0NoTOFHit[2]->Fill(pt, dcaCons);
+            fhPtDCAVtxOutBC0NoTOFHit[2]->Fill(pt, dcaCons, GetEventWeight());
         }
         else
         {
           if(dcaCons == -999)
           {
-            fhPtDCAVtxInBC0NoTOFHit[0]->Fill(pt, dca[0]);
-            fhPtDCAVtxInBC0NoTOFHit[1]->Fill(pt, dca[1]);
+            fhPtDCAVtxInBC0NoTOFHit[0]->Fill(pt, dca[0], GetEventWeight());
+            fhPtDCAVtxInBC0NoTOFHit[1]->Fill(pt, dca[1], GetEventWeight());
           }
           else
-            fhPtDCAVtxInBC0NoTOFHit[2]->Fill(pt, dcaCons);
+            fhPtDCAVtxInBC0NoTOFHit[2]->Fill(pt, dcaCons, GetEventWeight());
           
         }
       }
@@ -1030,11 +1013,11 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       {
         if(dcaCons == -999)
         {
-          fhPtDCAPileUpNoTOFHit[0]->Fill(pt, dca[0]);
-          fhPtDCAPileUpNoTOFHit[1]->Fill(pt, dca[1]);
+          fhPtDCAPileUpNoTOFHit[0]->Fill(pt, dca[0], GetEventWeight());
+          fhPtDCAPileUpNoTOFHit[1]->Fill(pt, dca[1], GetEventWeight());
         }
         else
-          fhPtDCAPileUpNoTOFHit[2]->Fill(pt, dcaCons);
+          fhPtDCAPileUpNoTOFHit[2]->Fill(pt, dcaCons, GetEventWeight());
         
         if(fFillVertexBC0Histograms)
         {
@@ -1042,21 +1025,21 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
           {
             if(dcaCons == -999)
             {
-              fhPtDCAVtxOutBC0PileUpNoTOFHit[0]->Fill(pt, dca[0]);
-              fhPtDCAVtxOutBC0PileUpNoTOFHit[1]->Fill(pt, dca[1]);
+              fhPtDCAVtxOutBC0PileUpNoTOFHit[0]->Fill(pt, dca[0], GetEventWeight());
+              fhPtDCAVtxOutBC0PileUpNoTOFHit[1]->Fill(pt, dca[1], GetEventWeight());
             }
             else
-              fhPtDCAVtxOutBC0PileUpNoTOFHit[2]->Fill(pt, dcaCons);
+              fhPtDCAVtxOutBC0PileUpNoTOFHit[2]->Fill(pt, dcaCons, GetEventWeight());
           }
           else
           {
             if(dcaCons == -999)
             {
-              fhPtDCAVtxInBC0PileUpNoTOFHit[0]->Fill(pt, dca[0]);
-              fhPtDCAVtxInBC0PileUpNoTOFHit[1]->Fill(pt, dca[1]);
+              fhPtDCAVtxInBC0PileUpNoTOFHit[0]->Fill(pt, dca[0], GetEventWeight());
+              fhPtDCAVtxInBC0PileUpNoTOFHit[1]->Fill(pt, dca[1], GetEventWeight());
             }
             else
-              fhPtDCAVtxInBC0PileUpNoTOFHit[2]->Fill(pt, dcaCons);
+              fhPtDCAVtxInBC0PileUpNoTOFHit[2]->Fill(pt, dcaCons, GetEventWeight());
             
           }
         }
@@ -1073,16 +1056,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     if(okTOF)
     {
-      fhTOFSignal  ->Fill(tof);
-      fhPtTOFSignal->Fill(pt, tof);
-      if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() ) fhPtTOFSignalDCACut->Fill(pt, tof);
+      fhTOFSignal  ->Fill(tof, GetEventWeight());
+      fhPtTOFSignal->Fill(pt, tof, GetEventWeight());
+      if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() )
+          fhPtTOFSignalDCACut->Fill(pt, tof, GetEventWeight());
         
       if(fFillVertexBC0Histograms)
       {
         if(TMath::Abs(vtxBC) > 0 && vtxBC!=AliVTrack::kTOFBCNA)
-          fhPtTOFSignalVtxOutBC0->Fill(pt, tof);
+          fhPtTOFSignalVtxOutBC0->Fill(pt, tof, GetEventWeight());
         else
-          fhPtTOFSignalVtxInBC0->Fill(pt, tof);
+          fhPtTOFSignalVtxInBC0->Fill(pt, tof, GetEventWeight());
       }
       
       Int_t trackBC = 1000;
@@ -1093,100 +1077,114 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 
         if(trackBC==0)
         {
-          fhTOFSignalBCOK->Fill(tof);
+          fhTOFSignalBCOK->Fill(tof, GetEventWeight());
           
           if(dcaCons == -999)
           {
-            fhPtDCATOFBC0[0]->Fill(pt, dca[0]);
-            fhPtDCATOFBC0[1]->Fill(pt, dca[1]);
+            fhPtDCATOFBC0[0]->Fill(pt, dca[0], GetEventWeight());
+            fhPtDCATOFBC0[1]->Fill(pt, dca[1], GetEventWeight());
           }
           else
-            fhPtDCATOFBC0[2]->Fill(pt, dcaCons);
+            fhPtDCATOFBC0[2]->Fill(pt, dcaCons, GetEventWeight());
           
           if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
           {
             if(dcaCons == -999)
             {
-              fhPtDCAPileUpTOFBC0[0]->Fill(pt, dca[0]);
-              fhPtDCAPileUpTOFBC0[1]->Fill(pt, dca[1]);
+              fhPtDCAPileUpTOFBC0[0]->Fill(pt, dca[0], GetEventWeight());
+              fhPtDCAPileUpTOFBC0[1]->Fill(pt, dca[1], GetEventWeight());
             }
             else
-              fhPtDCAPileUpTOFBC0[2]->Fill(pt, dcaCons);
+              fhPtDCAPileUpTOFBC0[2]->Fill(pt, dcaCons, GetEventWeight());
           }
         }
         else if(trackBC!=AliVTrack::kTOFBCNA)
         {
           if(dcaCons == -999)
           {
-            fhPtDCATOFBCOut[0]->Fill(pt, dca[0]);
-            fhPtDCATOFBCOut[1]->Fill(pt, dca[1]);
+            fhPtDCATOFBCOut[0]->Fill(pt, dca[0], GetEventWeight());
+            fhPtDCATOFBCOut[1]->Fill(pt, dca[1], GetEventWeight());
           }
           else
-            fhPtDCATOFBCOut[2]->Fill(pt, dcaCons);
-          
+            fhPtDCATOFBCOut[2]->Fill(pt, dcaCons, GetEventWeight());
         }
       }
       
       if(IsPileUpAnalysisOn())
       {
-        if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalPileUp[0]->Fill(pt, tof);
-        if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalPileUp[1]->Fill(pt, tof);
-        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalPileUp[2]->Fill(pt, tof);
-        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalPileUp[3]->Fill(pt, tof);
-        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalPileUp[4]->Fill(pt, tof);
-        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalPileUp[5]->Fill(pt, tof);
-        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalPileUp[6]->Fill(pt, tof);
+        if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalPileUp[0]->Fill(pt, tof, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalPileUp[1]->Fill(pt, tof, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalPileUp[2]->Fill(pt, tof, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalPileUp[3]->Fill(pt, tof, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalPileUp[4]->Fill(pt, tof, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalPileUp[5]->Fill(pt, tof, GetEventWeight());
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalPileUp[6]->Fill(pt, tof, GetEventWeight());
         
         if(fFillTrackBCHistograms)
         {
-          if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
-          else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
-          else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
+          if      (trackBC == 0 )
+          {
+              fhEtaPhiTOFBC0    ->Fill(eta, phi, GetEventWeight());
+              if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
+                  fhEtaPhiTOFBC0PileUpSPD->Fill(eta, phi, GetEventWeight());
+          }
+          else if (trackBC  < 0 )
+          {
+              fhEtaPhiTOFBCPlus ->Fill(eta, phi, GetEventWeight());
+              if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
+                  fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta, phi, GetEventWeight());
+          }
+          else if (trackBC > 0)
+          {
+              fhEtaPhiTOFBCMinus->Fill(eta, phi, GetEventWeight());
+              if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
+                  fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta, phi, GetEventWeight());
+          }
         }
         
         if(fFillVertexBC0Histograms)
         {
           if(TMath::Abs(vtxBC) > 0 && vtxBC!=AliVTrack::kTOFBCNA)
           {            
-            if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalVtxOutBC0PileUp[0]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalVtxOutBC0PileUp[1]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalVtxOutBC0PileUp[2]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalVtxOutBC0PileUp[3]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalVtxOutBC0PileUp[4]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalVtxOutBC0PileUp[5]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalVtxOutBC0PileUp[6]->Fill(pt, tof);
+            if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalVtxOutBC0PileUp[0]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalVtxOutBC0PileUp[1]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalVtxOutBC0PileUp[2]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalVtxOutBC0PileUp[3]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalVtxOutBC0PileUp[4]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalVtxOutBC0PileUp[5]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalVtxOutBC0PileUp[6]->Fill(pt, tof, GetEventWeight());
           }
           else
           {            
-            if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalVtxInBC0PileUp[0]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalVtxInBC0PileUp[1]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalVtxInBC0PileUp[2]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalVtxInBC0PileUp[3]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalVtxInBC0PileUp[4]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalVtxInBC0PileUp[5]->Fill(pt, tof);
-            if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalVtxInBC0PileUp[6]->Fill(pt, tof);
+            if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalVtxInBC0PileUp[0]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalVtxInBC0PileUp[1]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalVtxInBC0PileUp[2]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalVtxInBC0PileUp[3]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalVtxInBC0PileUp[4]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalVtxInBC0PileUp[5]->Fill(pt, tof, GetEventWeight());
+            if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalVtxInBC0PileUp[6]->Fill(pt, tof, GetEventWeight());
           }
         }
       }
     }
     
-    //Fill AODParticle after some selection
+    // Fill AODParticle after some selection
     fMomentum.SetPxPyPzE(track->Px(),track->Py(),track->Pz(),0);
     Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ;
     
     AliDebug(1,Form("Track pt %2.2f, eta %2.2f, phi %2.2f in fiducial cut %d",pt,eta,phi,in));
     
-    //Acceptance selection
+    // Acceptance selection
     if(IsFiducialCutOn() && ! in ) continue ;
     
     // Momentum selection
     if(pt < GetMinPt() || pt > GetMaxPt()) continue;
     
-    if(okTOF) fhTOFSignalPtCut->Fill(tof); 
+    if(okTOF) fhTOFSignalPtCut->Fill(tof, GetEventWeight());
     else
     {
-      fhPtTOFStatus0    ->Fill(pt);
-      fhEtaPhiTOFStatus0->Fill(eta,phi);
+      fhPtTOFStatus0    ->Fill(pt, GetEventWeight());
+      fhEtaPhiTOFStatus0->Fill(eta, phi, GetEventWeight());
     }
     
     Bool_t bITSRefit    = (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
@@ -1200,46 +1198,45 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {      
       if(bITSRefit)
       {
-        fhPtNoSPDRefit->Fill(pt);
-        if(pt < 2)fhEtaPhiNoSPDRefitPt02->Fill(eta,phi);
-        if(pt > 3)fhEtaPhiNoSPDRefitPt3 ->Fill(eta,phi);
+        fhPtNoSPDRefit->Fill(pt, GetEventWeight());
+        if(pt < 2)fhEtaPhiNoSPDRefitPt02->Fill(eta, phi, GetEventWeight());
+        if(pt > 3)fhEtaPhiNoSPDRefitPt3 ->Fill(eta, phi, GetEventWeight());
         
         if(dcaCons == -999)
         {
-          fhPtDCANoSPDRefit[0]->Fill(pt, dca[0]);
-          fhPtDCANoSPDRefit[1]->Fill(pt, dca[1]);
+          fhPtDCANoSPDRefit[0]->Fill(pt, dca[0], GetEventWeight());
+          fhPtDCANoSPDRefit[1]->Fill(pt, dca[1], GetEventWeight());
         }
         else
-          fhPtDCANoSPDRefit[2]->Fill(pt, dcaCons);
+          fhPtDCANoSPDRefit[2]->Fill(pt, dcaCons, GetEventWeight());
         
       }
       else
       {
-        fhPtNoSPDNoRefit->Fill(pt);
-        if(pt < 2)fhEtaPhiNoSPDNoRefitPt02->Fill(eta,phi);
-        if(pt > 3)fhEtaPhiNoSPDNoRefitPt3 ->Fill(eta,phi);
+        fhPtNoSPDNoRefit->Fill(pt, GetEventWeight());
+        if(pt < 2)fhEtaPhiNoSPDNoRefitPt02->Fill(eta, phi, GetEventWeight());
+        if(pt > 3)fhEtaPhiNoSPDNoRefitPt3 ->Fill(eta, phi, GetEventWeight());
         if(dcaCons == -999)
         {
-          fhPtDCANoSPDNoRefit[0]->Fill(pt, dca[0]);
-          fhPtDCANoSPDNoRefit[1]->Fill(pt, dca[1]);
+          fhPtDCANoSPDNoRefit[0]->Fill(pt, dca[0], GetEventWeight());
+          fhPtDCANoSPDNoRefit[1]->Fill(pt, dca[1], GetEventWeight());
         }
         else
-          fhPtDCANoSPDNoRefit[2]->Fill(pt, dcaCons);
-
+          fhPtDCANoSPDNoRefit[2]->Fill(pt, dcaCons, GetEventWeight());
       }
     }
     else
     {
-      fhPtSPDRefit->Fill(pt);
-      if(pt < 2)fhEtaPhiSPDRefitPt02->Fill(eta,phi);
-      if(pt > 3)fhEtaPhiSPDRefitPt3 ->Fill(eta,phi);
+      fhPtSPDRefit->Fill(pt, GetEventWeight());
+      if(pt < 2)fhEtaPhiSPDRefitPt02->Fill(eta, phi, GetEventWeight());
+      if(pt > 3)fhEtaPhiSPDRefitPt3 ->Fill(eta, phi, GetEventWeight());
       if(dcaCons == -999)
       {
-        fhPtDCASPDRefit[0]->Fill(pt, dca[0]);
-        fhPtDCASPDRefit[1]->Fill(pt, dca[1]);
+        fhPtDCASPDRefit[0]->Fill(pt, dca[0], GetEventWeight());
+        fhPtDCASPDRefit[1]->Fill(pt, dca[1], GetEventWeight());
       }
       else
-        fhPtDCASPDRefit[2]->Fill(pt, dcaCons);
+        fhPtDCASPDRefit[2]->Fill(pt, dcaCons, GetEventWeight());
     }
         
     // Mixed event
@@ -1258,24 +1255,22 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     tr.SetChargedBit(track->Charge()>0);
 		
     AddAODParticle(tr);
-    
-  }//loop
+  } // loop
   
   AliDebug(1,Form("Final aod branch entries %d", GetOutputAODBranch()->GetEntriesFast()));
-  
 } 
 
-//__________________________________________________________________
+//________________________________________________________
+/// Fill histograms for the selected tracks.
+//________________________________________________________
 void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
 {
-  //Do analysis and fill histograms
-  
   if(IsDataMC()) FillPrimaryHistograms();
   
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
-  fhNtracks->Fill(GetReader()->GetTrackMultiplicity()) ;
+  fhNtracks->Fill(GetReader()->GetTrackMultiplicity(), GetEventWeight()) ;
   
   AliDebug(1,Form("AOD branch entries %d", naod));
   
@@ -1291,36 +1286,35 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     eta = track->Eta();
     phi = track->Phi();
     
-    fhPt->Fill(pt);
+    fhPt->Fill(pt, GetEventWeight());
     
     if(track->GetChargedBit())
     {
-      fhPhiPos   ->Fill(pt, phi);
-      fhEtaPos   ->Fill(pt, eta);
-      fhEtaPhiPos->Fill(eta,phi);
+      fhPhiPos   ->Fill(pt,  phi, GetEventWeight());
+      fhEtaPos   ->Fill(pt,  eta, GetEventWeight());
+      fhEtaPhiPos->Fill(eta, phi, GetEventWeight());
     }
     else
     {
-      fhPhiNeg   ->Fill(pt, phi);
-      fhEtaNeg   ->Fill(pt, eta);
-      fhEtaPhiNeg->Fill(eta,phi);
+      fhPhiNeg   ->Fill(pt,  phi, GetEventWeight());
+      fhEtaNeg   ->Fill(pt,  eta, GetEventWeight());
+      fhEtaPhiNeg->Fill(eta, phi, GetEventWeight());
     }
     
     if(IsPileUpAnalysisOn())
     {
-      if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(pt);}
-      if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(pt);}
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(pt);}
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(pt);}
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(pt);}
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(pt);}
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(pt);}
+      if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(pt, GetEventWeight());}
+      if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(pt, GetEventWeight());}
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(pt, GetEventWeight());}
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(pt, GetEventWeight());}
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(pt, GetEventWeight());}
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(pt, GetEventWeight());}
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(pt, GetEventWeight());}
     }
-    
     
     if(IsDataMC())
     {
-      //Play with the MC stack if available
+      // Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
       
@@ -1347,12 +1341,11 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       else if(mompdg==11  ) mcType = kmcElectron;
       else if(mompdg==13  ) mcType = kmcMuon;
       
-      fhPtMCPart [mcType]->Fill(pt);
-      fhEtaMCPart[mcType]->Fill(pt,eta);
-      fhPhiMCPart[mcType]->Fill(pt,phi);
+      fhPtMCPart [mcType]->Fill(pt,      GetEventWeight());
+      fhEtaMCPart[mcType]->Fill(pt, eta, GetEventWeight());
+      fhPhiMCPart[mcType]->Fill(pt, phi, GetEventWeight());
       
-    }//Work with stack also
+    } // Work with stack also
     
-  }// aod branch loop
-  
+  } // aod branch loop
 }
