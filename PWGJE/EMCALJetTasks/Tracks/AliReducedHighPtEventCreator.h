@@ -123,10 +123,12 @@ public:
 
 protected:
   Bool_t SelectEvent(AliVEvent *event) const;
-  Bool_t SelectParticle(AliVParticle *part) const;
-  Bool_t SelectCluster(AliVCluster *clust) const;
+  Bool_t SelectParticle(const AliVParticle *part) const;
+  Bool_t SelectCluster(const AliVCluster *clust) const;
   Int_t  SelectTrack(AliVTrack *track, TArrayI &cutindices) const;
   void ConvertTriggerPatches(TClonesArray *patches, AliReducedPatchContainer *cont);
+  void FixTrackInputEvent(AliVTrack *trk);
+  Int_t GetTPCCrossedRows(const AliVTrack *trk) const;
   TTree                   *fOutputTree;                   ///< Output tree
   AliReducedHighPtEvent   *fOutputEvent;                  ///< Output event
   TObjArray               *fTrackSelections;              ///< List of track selections

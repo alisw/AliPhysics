@@ -31,7 +31,11 @@ AliReducedReconstructedTrack::AliReducedReconstructedTrack() :
    fTrackCutsMap(0),
    fClusterIndex(-1),
    fParticleIndex(-1),
-   fGoodMCTrack(kFALSE)
+   fGoodMCTrack(kFALSE),
+   fClustersTPC(0),
+   fCrossedRowsTPC(0),
+   fSharedClustersTPC(0),
+   fFindableClustersTPC(0)
 {
   memset(fPVec, 0, sizeof(Double_t)*3);
 }

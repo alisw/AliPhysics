@@ -21,11 +21,16 @@
 #include <TTree.h>
 
 #include "AliAnalysisUtils.h"
+#include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliAODTrack.h"
 #include "AliCentrality.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliPicoTrack.h"
 #include "AliStack.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
@@ -110,7 +115,8 @@ void AliReducedHighPtEventCreator::UserCreateOutputObjects() {
   fOutputEvent = new AliReducedHighPtEvent();
   fOutputTree->Branch("ReducedEvent", "AliReducedHighPtEvent", fOutputEvent, 128000, 0);
 
-  PostData(1, fOutputTree);
+  PostData(1, fOutput);
+  PostData(2, fOutputTree);
 }
 
 /**
@@ -195,7 +201,15 @@ Bool_t AliReducedHighPtEventCreator::Run() {
 
   // Filter tracks
   for(TIter trkiter = TIter(fTracks).Begin(); trkiter != TIter::End(); ++trkiter){
-    AliVTrack *trackToCheck = static_cast<AliVTrack *>(*trkiter);
+    AliVTrack *trackRaw = static_cast<AliVTrack *>(*trkiter), *trackToCheck(NULL);
+    // handlinf for pico tracks as input
+    if(trackRaw->IsA() == AliPicoTrack::Class()){
+      AliPicoTrack *picotrack = static_cast<AliPicoTrack *>(trackRaw);
+      trackToCheck = picotrack->GetTrack();
+    } else {
+      trackToCheck = trackRaw;
+    }
+    FixTrackInputEvent(trackToCheck);
     TArrayI cutIndices;
     if(!SelectTrack(trackToCheck,cutIndices)) continue;
     AliReducedReconstructedTrack *rectrack = new AliReducedReconstructedTrack;
@@ -212,6 +226,10 @@ Bool_t AliReducedHighPtEventCreator::Run() {
           rectrack->SetMatchedParticleIndex(found->second);
         }
         if(label >= 0) rectrack->SetGoodTrackLabel(kTRUE);
+        rectrack->SetTPCClusters(trackToCheck->GetTPCNcls());
+        rectrack->SetTPCCrossedRows(GetTPCCrossedRows(trackToCheck));
+        rectrack->SetTPCSharedClusters(trackToCheck->GetTPCSharedMapPtr()->CountBits());
+        rectrack->SetTPCFindableClusters(trackToCheck->GetTPCNclsF());
       }
     }
     // handle clusters
@@ -225,7 +243,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   }
 
   fOutputTree->Fill();
-  PostData(1, fOutputTree);
+  PostData(2, fOutputTree);
   return kTRUE;
 }
 
@@ -259,7 +277,7 @@ Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
  * \param clust
  * \return True if the cluster was selected, false otherwise
  */
-Bool_t AliReducedHighPtEventCreator::SelectCluster(AliVCluster* clust) const {
+Bool_t AliReducedHighPtEventCreator::SelectCluster(const AliVCluster* clust) const {
     if(!clust->IsEMCAL()) return kFALSE;
     if(clust->E() < fMinClusterE || clust->E() > fMaxClusterE) return kFALSE;
     return kTRUE;
@@ -293,6 +311,21 @@ Int_t AliReducedHighPtEventCreator::SelectTrack(AliVTrack* track, TArrayI& cutin
 }
 
 /**
+ * Access number of TPC crossed rows in a transparent way both for
+ * \param trk Track to check
+ * \return Number of TPC crossed rows
+ */
+Int_t AliReducedHighPtEventCreator::GetTPCCrossedRows(const AliVTrack* trk) const {
+  if(trk->IsA() == AliESDtrack::Class()){
+    return (static_cast<const AliESDtrack *>(trk))->GetTPCCrossedRows();
+  } else if(trk->IsA() == AliAODTrack::Class()){
+    return (static_cast<const AliAODTrack *>(trk))->GetTPCNCrossedRows();
+  }
+  return 0;
+}
+
+
+/**
  * Convert trigger patches to the reduced format
  * \param patches Input patches
  * \param cont Output container
@@ -303,18 +336,52 @@ void AliReducedHighPtEventCreator::ConvertTriggerPatches(TClonesArray* patches,
     AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
     if(!mypatch->IsOfflineSimple() && mypatch->IsLevel0()) continue;
     AliReducedPatchContainer::PatchType_t triggertype;
+    Bool_t isDefined(kFALSE);
     if(mypatch->IsOfflineSimple()){
-      if(mypatch->IsGammaHighSimple()) triggertype = AliReducedPatchContainer::kEMCGammaHigh;
-      if(mypatch->IsGammaLowSimple()) triggertype = AliReducedPatchContainer::kEMCGammaLow;
-      if(mypatch->IsJetHighSimple()) triggertype = AliReducedPatchContainer::kEMCJetHigh;
-      if(mypatch->IsJetLowSimple()) triggertype = AliReducedPatchContainer::kEMCJetLow;
+      if(mypatch->IsGammaHighSimple()) { triggertype = AliReducedPatchContainer::kEMCGammaHigh; isDefined = kTRUE; }
+      if(mypatch->IsGammaLowSimple()) { triggertype = AliReducedPatchContainer::kEMCGammaLow; isDefined = kTRUE; }
+      if(mypatch->IsJetHighSimple()) { triggertype = AliReducedPatchContainer::kEMCJetHigh; isDefined = kTRUE; }
+      if(mypatch->IsJetLowSimple()) { triggertype = AliReducedPatchContainer::kEMCJetLow; isDefined = kTRUE; }
+      if(!isDefined){
+        AliDebug(2, "Unknown offline patch type");
+        continue;
+      }
+      AliDebug(2, Form("Adding offline patch of type %d", int(triggertype)));
       cont->AddTriggerPatch(kTRUE, triggertype, mypatch->GetPatchE(), mypatch->GetADCAmp(), mypatch->GetEtaGeo(), mypatch->GetPhiGeo());
     } else {
-      if(mypatch->IsGammaHigh()) triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCGammaLow : AliReducedPatchContainer::kEMCGammaHigh;
-      if(mypatch->IsGammaLow()) triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCGammaHigh : AliReducedPatchContainer::kEMCGammaLow;
-      if(mypatch->IsJetHigh()) triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCJetLow : AliReducedPatchContainer::kEMCJetHigh;
-      if(mypatch->IsJetLow()) triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCJetHigh : AliReducedPatchContainer::kEMCJetLow;
-      cont->AddTriggerPatch(kTRUE, triggertype, mypatch->GetPatchE(), mypatch->GetADCOfflineAmp(), mypatch->GetEtaGeo(), mypatch->GetPhiGeo());
+      if(mypatch->IsGammaHigh()) { triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCGammaLow : AliReducedPatchContainer::kEMCGammaHigh; isDefined=kTRUE; }
+      if(mypatch->IsGammaLow()) { triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCGammaHigh : AliReducedPatchContainer::kEMCGammaLow; isDefined=kTRUE; }
+      if(mypatch->IsJetHigh()) { triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCJetLow : AliReducedPatchContainer::kEMCJetHigh; isDefined=kTRUE; }
+      if(mypatch->IsJetLow()) { triggertype = fSwapTriggerThresholds ? AliReducedPatchContainer::kEMCJetHigh : AliReducedPatchContainer::kEMCJetLow; isDefined=kTRUE; }
+      if(!isDefined){
+        AliDebug(2, "Unknown online patch type");
+        continue;
+      }
+      AliDebug(2, Form("Adding online patch of type %d", int(triggertype)));
+      cont->AddTriggerPatch(kFALSE, triggertype, mypatch->GetPatchE(), mypatch->GetADCAmp(), mypatch->GetEtaGeo(), mypatch->GetPhiGeo());
+    }
+  }
+}
+
+/**
+ * Set the corresponding pointer to the original event to the track in a transparent way for
+ * ESD, AOD and pico tracks
+ * \param trk The track to handle
+ */
+void AliReducedHighPtEventCreator::FixTrackInputEvent(AliVTrack* trk) {
+  if(!trk->GetEvent()){
+    if(trk->IsA() == AliESDtrack::Class())
+      (static_cast<AliESDtrack *>(trk))->SetESDEvent(static_cast<AliESDEvent *>(fInputEvent));
+    else if(trk->IsA() == AliAODTrack::Class())
+      (static_cast<AliAODTrack *>(trk))->SetAODEvent(static_cast<AliAODEvent *>(fInputEvent));
+    else if(trk->IsA() == AliPicoTrack::Class()){
+      AliPicoTrack *mytrk = static_cast<AliPicoTrack *>(trk);
+      if(!mytrk->GetEvent()){
+        if(mytrk->GetTrack()->IsA() == AliESDtrack::Class())
+          (static_cast<AliESDtrack *>(mytrk->GetTrack()))->SetESDEvent(static_cast<AliESDEvent *>(fInputEvent));
+        else
+          (static_cast<AliAODTrack *>(mytrk->GetTrack()))->SetAODEvent(static_cast<AliAODEvent *>(fInputEvent));
+      }
     }
   }
 }
@@ -346,7 +413,6 @@ AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer(
 AliReducedTrackSelectionContainer::~AliReducedTrackSelectionContainer() {
   if(fTrackSelection) delete fTrackSelection;
 }
-
 
 } /* namespace HighPtTracks */
 
