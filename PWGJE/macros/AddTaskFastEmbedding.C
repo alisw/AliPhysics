@@ -3,11 +3,11 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if(!mgr){
-      ::Error("AddTaskCentralitySelection", "No analysis manager to connect ot.");
+      ::Error("AddTaskFastEmbedding", "No analysis manager to connect ot.");
       return NULL;
    }
    if(!mgr->GetInputEventHandler()){
-      ::Error("AddTaskCentralitySelection", "This task requires an input event handler.");
+      ::Error("AddTaskFastEmbedding", "This task requires an input event handler.");
       return NULL;
    }
 
@@ -15,7 +15,8 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    AliAnalysisTaskFastEmbedding *task = new AliAnalysisTaskFastEmbedding("FastEmbedding");
    // ## set embedding mode ##
    // kAODFull=0, kAODJetTracks, kAODJet4Mom, kToySingle4Mom
-   task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kToyTracks);
+   //task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kToyTracks);
+   task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kAODFull);      // embed full event: all tracks in PYTHIA event are added to PbPb data event 
 
    // ## set ranges for toy ##
    //SetToyTrackRanges(
@@ -34,21 +35,76 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    // kEventsAll=0; kEventsJetPt
    task->SetEvtSelecMode(AliAnalysisTaskFastEmbedding::kEventsJetPt);
 
+   // event selection
+   task->SetOfflineTrgMask(AliVEvent::kMB);
+   task->SetCentMin(0.);
+   task->SetCentMax(10.);
+
+   //task->SetVtxMin(-10.);
+   //task->SetVtxMax(10.);
+
    // ## set jet pT range for event selection ##
    // SetEvtSelJetPtRange(Float_t minPt, Float_t maxPt)
-   task->SetEvtSelJetPtRange(50.,110.);
+   task->SetEvtSelJetPtRange(5.,110.);
    //task->SetEvtSelJetEtaRange(-0.4, 0.4); // smaller eta window for LHC10h pass1
    task->SetEvtSelJetEtaRange(-0.5, 0.5);
 
    task->SetTrackFilterMap(272);
 
-   // event selection
-   task->SetOfflineTrgMask(AliVEvent::kMB);
-   task->SetCentMin(0.);
-   task->SetCentMax(80.);
+   task->SetJetBranch("clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00");
+   task->SetEvtSelJetPtRange(5.,10000.);  //jet min pt cut
+   //task->SetEvtSelJetPtRange(10.,10000.);  //jet min pt cut
+   task->SetEvtSelJetEtaRange(-0.5,0.5); 
+   task->SetEvtSelJetMinLConstPt(1);
+   task->SetFFRadius(0.2); //jet cone size
 
-   //task->SetVtxMin(-10.);
-   //task->SetVtxMax(10.);
+ //v0 cuts for embedded candidates
+
+
+  Int_t K0type = AliAnalysisTaskFastEmbedding::kOffl;
+  Int_t Latype = AliAnalysisTaskFastEmbedding::kOffl;
+  Int_t ALatype = AliAnalysisTaskFastEmbedding::kOffl;
+
+  TString strK0type;
+  if(K0type ==  AliAnalysisTaskFastEmbedding::kOnFly)     strK0type = "OnFly";
+  if(K0type ==  AliAnalysisTaskFastEmbedding::kOffl)      strK0type = "Offl";
+  TString strLatype;
+  if(Latype ==  AliAnalysisTaskFastEmbedding::kOnFly)     strLatype = "OnFly";
+  if(Latype ==  AliAnalysisTaskFastEmbedding::kOffl)      strLatype = "Offl";
+  
+  TString strALatype;
+  if(ALatype ==  AliAnalysisTaskFastEmbedding::kOnFly)     strALatype = "OnFly";
+  if(ALatype ==  AliAnalysisTaskFastEmbedding::kOffl)      strALatype = "Offl";
+
+
+  //pp V0 cut selection 
+
+  task->SetK0Type(K0type);
+  task->SetLaType(Latype); 
+  task->SetALaType(ALatype); 
+
+  task->SetCuttrackPosEta(0.8);
+  task->SetCuttrackNegEta(0.8);
+  task->SetCutV0Eta(0.7); //pseudorapidity cut, dont use 0.5, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
+  task->SetCosOfPointingAngle(0.97);//David:0.97//K0s, Lambda cut is stricter (0.995) and hardcoded inside task
+  task->SetAcceptKinkDaughters(kFALSE);//accept kink daughters -> dont use this cut anymore
+  task->SetRequireTPCRefit(kTRUE); 
+  task->SetCutV0DecayMin(0.);//multiples of ctau, cut on 2D decay distance over transverse mom. (for K0s, Lambda, Antilambda)
+  task->SetCutV0DecayMax(30.);//David: 20.(K0s), 30.(La)  //multiples of ctau (for K0s, Lambda, Antilambda) Lee Barnby uses 3.0, use 5.0!!!!!
+  task->SetCutDcaV0Daughters(1.);//cut value in multiples of sigma default: 1.
+  task->SetCutDcaPosToPrimVertex(0.06); //cut value in cm 
+  task->SetCutDcaNegToPrimVertex(0.06); //cut value in cm
+  task->SetCutV0RadiusMin(0.5);//0.5//in cm previous value was 0.9 cm
+  task->SetCutV0RadiusMax(1000.);//in cm
+ 
+  //task->SetCutArmenteros(0.2);//not needed in pp data/MC
+
+
+
+
+
+
+
 
    mgr->AddTask(task);
 
