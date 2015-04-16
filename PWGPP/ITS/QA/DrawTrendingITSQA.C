@@ -58,13 +58,13 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   
   Int_t nrun,nEvents, nEventsTriggered;
   Float_t minDrTime,errminDrTime;
-  Double_t  meanDrTime,errmeanDrTime,EmptyModulesSDD;
-  Double_t fracTrackWithClu1,fracTrackWithClu2,errfracTrackWithClu1,errfracTrackWithClu2;
-  Double_t fracTrackWithClu3,fracTrackWithClu4,errfracTrackWithClu3,errfracTrackWithClu4;
-  Double_t fracTrackWithClu5,fracTrackWithClu6,errfracTrackWithClu5,errfracTrackWithClu6;  
-  Double_t MPVdEdxLay3,errMPVdEdxLay3,MPVdEdxLay4,errMPVdEdxLay4;
-  Double_t MPVdEdxTB0,errMPVdEdxTB0,MPVdEdxTB5,errMPVdEdxTB5; 
-  Double_t fracExtra,errfracExtra;
+  Float_t  meanDrTime,errmeanDrTime,EmptyModulesSDD;
+  Float_t fracTrackWithClu1,fracTrackWithClu2,errfracTrackWithClu1,errfracTrackWithClu2;
+  Float_t fracTrackWithClu3,fracTrackWithClu4,errfracTrackWithClu3,errfracTrackWithClu4;
+  Float_t fracTrackWithClu5,fracTrackWithClu6,errfracTrackWithClu5,errfracTrackWithClu6;
+  Float_t MPVdEdxLay3,errMPVdEdxLay3,MPVdEdxLay4,errMPVdEdxLay4;
+  Float_t MPVdEdxTB0,errMPVdEdxTB0,MPVdEdxTB5,errMPVdEdxTB5;
+  Float_t fracExtra,errfracExtra;
   
   ttree->SetBranchAddress("nrun",&nrun);
   ttree->SetBranchAddress("nEvents",&nEvents);
@@ -102,14 +102,14 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   
   //************************************************ VERTEX ************************************************//
     
-  Double_t meanVtxTRKx,meanVtxTRKy,meanVtxTRKz;
-  Double_t meanVtxSPDx,meanVtxSPDy,meanVtxSPDz;
-  Double_t sigmaVtxTRKx,sigmaVtxTRKy,sigmaVtxTRKz;
-  Double_t sigmaVtxSPDx,sigmaVtxSPDy,sigmaVtxSPDz;
-  Double_t meanVtxTRKxErr,meanVtxTRKyErr,meanVtxTRKzErr;
-  Double_t meanVtxSPDxErr,meanVtxSPDyErr,meanVtxSPDzErr;
-  Double_t sigmaVtxTRKxErr,sigmaVtxTRKyErr,sigmaVtxTRKzErr;
-  Double_t sigmaVtxSPDxErr,sigmaVtxSPDyErr,sigmaVtxSPDzErr;  
+  Float_t meanVtxTRKx,meanVtxTRKy,meanVtxTRKz;
+  Float_t meanVtxSPDx,meanVtxSPDy,meanVtxSPDz;
+  Float_t sigmaVtxTRKx,sigmaVtxTRKy,sigmaVtxTRKz;
+  Float_t sigmaVtxSPDx,sigmaVtxSPDy,sigmaVtxSPDz;
+  Float_t meanVtxTRKxErr,meanVtxTRKyErr,meanVtxTRKzErr;
+  Float_t meanVtxSPDxErr,meanVtxSPDyErr,meanVtxSPDzErr;
+  Float_t sigmaVtxTRKxErr,sigmaVtxTRKyErr,sigmaVtxTRKzErr;
+  Float_t sigmaVtxSPDxErr,sigmaVtxSPDyErr,sigmaVtxSPDzErr;
 
   ttree->SetBranchAddress("meanVtxTRKx",&meanVtxTRKx); // mean of tracks vertex position - x
   ttree->SetBranchAddress("meanVtxTRKy",&meanVtxTRKy); // mean of tracks vertex position - y
@@ -139,66 +139,66 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
 
   //************************************************ SSD **************************************************//
      
-  Double_t MPVL5,MPVErrL5;
-  Double_t MPVL6,MPVErrL6;
-  Double_t ChargeRatioL5,ChargeRatioErrL5;
-  Double_t ChargeRatioL6,ChargeRatioErrL6;
+  Float_t MPVL5,MPVErrL5;
+  Float_t MPVL6,MPVErrL6;
+  Float_t ChargeRatioL5,ChargeRatioErrL5;
+  Float_t ChargeRatioL6,ChargeRatioErrL6;
     
 
   //************************************************ MATCHING *********************************************//
   
-  Double_t FracSPD1;
-  Double_t errFracSPD1;
-  Double_t FracSPD2;
-  Double_t errFracSPD2;
-  Double_t Eff6Pt02;
-  Double_t errEff6Pt02;
-  Double_t Eff6Pt1;
-  Double_t errEff6Pt1;
-  Double_t Eff6Pt10;
-  Double_t errEff6Pt10;
-  Double_t Eff5Pt02;
-  Double_t errEff5Pt02;
-  Double_t Eff5Pt1;
-  Double_t errEff5Pt1;
-  Double_t Eff5Pt10;
-  Double_t errEff5Pt10;
-  Double_t Eff4Pt02;
-  Double_t errEff4Pt02;
-  Double_t Eff4Pt1;
-  Double_t errEff4Pt1;
-  Double_t Eff4Pt10;
-  Double_t errEff4Pt10;
-  Double_t Eff3Pt02;
-  Double_t errEff3Pt02;
-  Double_t Eff3Pt1;
-  Double_t errEff3Pt1;
-  Double_t Eff3Pt10;
-  Double_t errEff3Pt10;
-  Double_t Eff2Pt02;
-  Double_t errEff2Pt02;
-  Double_t Eff2Pt1;
-  Double_t errEff2Pt1;
-  Double_t Eff2Pt10;
-  Double_t errEff2Pt10;
-  Double_t EffSPDPt02;
-  Double_t errEffSPDPt02;
-  Double_t EffSPDPt1;
-  Double_t errEffSPDPt1;
-  Double_t EffSPDPt10;
-  Double_t errEffSPDPt10;
-  Double_t EffoneSPDPt02;
-  Double_t errEffoneSPDPt02;
-  Double_t EffoneSPDPt1;
-  Double_t errEffoneSPDPt1;
-  Double_t EffoneSPDPt10;
-  Double_t errEffoneSPDPt10;
-  Double_t EffTOTPt02;
-  Double_t errEffTOTPt02;
-  Double_t EffTOTPt1;
-  Double_t errEffTOTPt1;
-  Double_t EffTOTPt10;
-  Double_t errEffTOTPt10;
+  Float_t FracSPD1;
+  Float_t errFracSPD1;
+  Float_t FracSPD2;
+  Float_t errFracSPD2;
+  Float_t Eff6Pt02;
+  Float_t errEff6Pt02;
+  Float_t Eff6Pt1;
+  Float_t errEff6Pt1;
+  Float_t Eff6Pt10;
+  Float_t errEff6Pt10;
+  Float_t Eff5Pt02;
+  Float_t errEff5Pt02;
+  Float_t Eff5Pt1;
+  Float_t errEff5Pt1;
+  Float_t Eff5Pt10;
+  Float_t errEff5Pt10;
+  Float_t Eff4Pt02;
+  Float_t errEff4Pt02;
+  Float_t Eff4Pt1;
+  Float_t errEff4Pt1;
+  Float_t Eff4Pt10;
+  Float_t errEff4Pt10;
+  Float_t Eff3Pt02;
+  Float_t errEff3Pt02;
+  Float_t Eff3Pt1;
+  Float_t errEff3Pt1;
+  Float_t Eff3Pt10;
+  Float_t errEff3Pt10;
+  Float_t Eff2Pt02;
+  Float_t errEff2Pt02;
+  Float_t Eff2Pt1;
+  Float_t errEff2Pt1;
+  Float_t Eff2Pt10;
+  Float_t errEff2Pt10;
+  Float_t EffSPDPt02;
+  Float_t errEffSPDPt02;
+  Float_t EffSPDPt1;
+  Float_t errEffSPDPt1;
+  Float_t EffSPDPt10;
+  Float_t errEffSPDPt10;
+  Float_t EffoneSPDPt02;
+  Float_t errEffoneSPDPt02;
+  Float_t EffoneSPDPt1;
+  Float_t errEffoneSPDPt1;
+  Float_t EffoneSPDPt10;
+  Float_t errEffoneSPDPt10;
+  Float_t EffTOTPt02;
+  Float_t errEffTOTPt02;
+  Float_t EffTOTPt1;
+  Float_t errEffTOTPt1;
+  Float_t EffTOTPt10;
+  Float_t errEffTOTPt10;
 
 
 
@@ -722,7 +722,7 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   hMeanVx->SetLineColor(kBlue+2);
   hMeanVx->SetMarkerColor(kBlue+2);
   hMeanVx->SetMarkerStyle(20);
-  hMeanVx->SetMinimum(0.03);
+  hMeanVx->SetMinimum(-0.1);
   hMeanVx->SetMaximum(0.1);
   hMeanVx->GetYaxis()->SetTitle("Vertex X coordinate");
   hMeanVx->Draw();
@@ -737,8 +737,8 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   hMeanVy->SetLineColor(kBlue+2);
   hMeanVy->SetMarkerColor(kBlue+2);
   hMeanVy->SetMarkerStyle(20);
-  hMeanVy->SetMinimum(0.25);
-  hMeanVy->SetMaximum(0.50);
+  hMeanVy->SetMinimum(-0.4);
+  hMeanVy->SetMaximum(0.4);
   hMeanVy->GetYaxis()->SetTitle("Vertex Y coordinate");
   hMeanVy->Draw();
   hMeanVySPD->SetLineWidth(2);
@@ -752,8 +752,8 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   hMeanVz->SetLineColor(kBlue+2);
   hMeanVz->SetMarkerColor(kBlue+2);
   hMeanVz->SetMarkerStyle(20);
-  //   hMeanVz->SetMinimum(-1.);
-  //   hMeanVz->SetMaximum(1.);
+     hMeanVz->SetMinimum(-9.);
+     hMeanVz->SetMaximum(9.);
   hMeanVz->GetYaxis()->SetTitle("Vertex Z coordinate");
   hMeanVz->Draw();
   hMeanVzSPD->SetLineWidth(2);
@@ -768,7 +768,7 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   hSigmaVx->SetMarkerColor(kBlue+2);
   hSigmaVx->SetMarkerStyle(20);
   hSigmaVx->SetMinimum(0.);
-  hSigmaVx->SetMaximum(0.1);
+  hSigmaVx->SetMaximum(0.2);
   hSigmaVx->GetYaxis()->SetTitle("sigma on x coordinate");
   hSigmaVx->Draw();
   hSigmaVxSPD->SetLineWidth(2);
@@ -797,8 +797,8 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   hSigmaVz->SetLineColor(kBlue+2);
   hSigmaVz->SetMarkerColor(kBlue+2);
   hSigmaVz->SetMarkerStyle(20);
-  //   hSigmaVz->SetMinimum(6.);
-  //   hSigmaVz->SetMaximum(10.);
+    hSigmaVz->SetMinimum(-2.);
+    hSigmaVz->SetMaximum(10.);
   hSigmaVz->GetYaxis()->SetTitle("sigma on z coordinate");
   hSigmaVz->Draw();
   hSigmaVzSPD->SetLineWidth(2);
@@ -816,11 +816,13 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   histoTrackClu1->SetLineColor(kGray+1);
   histoTrackClu1->SetMarkerColor(kGray+1);
   histoTrackClu1->SetMarkerStyle(24);
+    histoTrackClu1->SetMinimum(0);
+    histoTrackClu1->SetMaximum(1);
   histoTrackClu1->Draw();
   histoTrackClu2->SetLineColor(kGray+2);
   histoTrackClu2->SetMarkerColor(kGray+2);
   histoTrackClu2->SetMarkerStyle(26);
-  histoTrackClu2->Draw();
+  histoTrackClu2->Draw("same");
   histoTrackClu3->Draw("same");
   histoTrackClu3->SetLineColor(1);
   histoTrackClu3->SetMarkerStyle(20);
@@ -841,6 +843,13 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
   histoTrackClu6->SetTitle("Fraction of tracks with points in ITS");
   histoTrackClu6->Draw("same");
   histoTrackClu3->GetYaxis()->SetTitle("Fraction of Tracks with Points in ITS Layers");
+    histoTrackClu3->SetMinimum(0);
+    histoTrackClu3->SetMaximum(1);
+    histoTrackClu6->SetMinimum(0);
+    histoTrackClu6->SetMaximum(1);
+    histoTrackClu1->GetYaxis()->SetRangeUser(0,1);
+
+
   TLegend* leg3=new TLegend(0.7,0.15,0.88,0.35);
   TLegendEntry* ent;
   ent=leg3->AddEntry(histoTrackClu1,"Layer1","PL");
