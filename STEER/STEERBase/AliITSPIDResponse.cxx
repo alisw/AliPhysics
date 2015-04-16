@@ -422,7 +422,8 @@ Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::E
   Bool_t isSA=kTRUE;
   if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
 
-  const Float_t dEdx=track->GetITSsignal();
+  Float_t dEdx=track->GetITSsignal();
+  if (track->GetITSsignalTunedOnData()>0) dEdx = track->GetITSsignalTunedOnData();
 
   //TODO: in case of the electron, use the SA parametrisation,
   //      this needs to be changed if ITS provides a parametrisation
@@ -441,7 +442,9 @@ Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   Bool_t isSA=kTRUE;
   if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
 
-  const Float_t dEdx=track->GetITSsignal();
+  Float_t dEdx=track->GetITSsignal();
+  if (track->GetITSsignalTunedOnData()>0) dEdx = track->GetITSsignalTunedOnData();
+
 
   //TODO: in case of the electron, use the SA parametrisation,
   //      this needs to be changed if ITS provides a parametrisation

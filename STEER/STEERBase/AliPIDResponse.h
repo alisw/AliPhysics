@@ -177,8 +177,11 @@ public:
   void SetTOFtail(Float_t tail=0.9){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
+  // TunedOnData functionality
+  virtual Float_t GetITSsignalTunedOnData(const AliVTrack *t) const;
   virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
   virtual Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const;
+
   Bool_t IsTunedOnData() const {return fTuneMConData;};
   void SetTunedOnData(Bool_t flag=kTRUE,Int_t recoPass=0){fTuneMConData = flag; if(recoPass>0) fRecoPassUser = recoPass;};
   Int_t GetTunedOnDataMask() const {return fTuneMConDataMask;};
