@@ -48,7 +48,7 @@ AliPIDCombined::AliPIDCombined():
 	TNamed("CombinedPID","CombinedPID"),
 	fDetectorMask(0),
 	fRejectMismatchMask(0x7F),
-	fEnablePriors(kTRUE),
+	fEnablePriors(kFALSE),
 	fSelectedSpecies(AliPID::kSPECIES),
 	fUseDefaultTPCPriors(kFALSE)
 {	
@@ -64,7 +64,7 @@ AliPIDCombined::AliPIDCombined(const TString& name,const TString& title):
 	TNamed(name,title),
 	fDetectorMask(0),
 	fRejectMismatchMask(0x7F),
-	fEnablePriors(kTRUE),
+	fEnablePriors(kFALSE),
 	fSelectedSpecies(AliPID::kSPECIES),
 	fUseDefaultTPCPriors(kFALSE)
 {
