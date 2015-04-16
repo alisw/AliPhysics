@@ -2143,17 +2143,17 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent
 	
 	//depending on the value of the flag, flattening in different cent. range
 	if ( fDoCentralityFlat == 1){
-		if(centrality > -1. && centrality < 10.0001){
+		if(centrality > -1. && centrality <= 10.){
 			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
 			maximum = hCentralityNotFlat->GetMaximum();
 		} else {return 1;}
 	} else if ( fDoCentralityFlat == 2){
-		if(centrality > 9.9999 && centrality < 20.0001){
+		if(centrality >=10. && centrality <= 20.){
 			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
 			maximum = hCentralityNotFlat->GetMaximum();
 		} else {return 1;}
 	} else if ( fDoCentralityFlat == 9 ){
-		if(centrality > -1. && centrality < 10.0001){
+		if(centrality > -1. && centrality <= 10.){
 			GetValueForWeight = 1.;
 			maximum = 2.;
 		}
