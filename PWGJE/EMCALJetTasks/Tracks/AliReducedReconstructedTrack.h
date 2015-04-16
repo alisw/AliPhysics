@@ -74,6 +74,26 @@ public:
    * \return True if track is good, false otherwise
    */
   Bool_t IsGoodTrack() const {return fGoodMCTrack; }
+  /**
+   * Get the number of TPC clusters
+   * \return Number of TPC clustes
+   */
+  Int_t GetNumberOfTPCClusters() const { return fClustersTPC; }
+  /**
+   * Get the number of TPC crossed rows
+   * \return Number of TPC crossed rows
+   */
+  Int_t GetNumberOfTPCCrossedRows() const { return fCrossedRowsTPC; }
+  /**
+   * Get the number of shared clusters in the TPC
+   * \return Number of shared clusters
+   */
+  Int_t GetNumberOfTPCSharedClusters() const { return fSharedClustersTPC; }
+  /**
+   * Get the number of findable clusters in the TPC
+   * \return Number of findable clusters
+   */
+  Int_t GetNumberOfTPCFindableClusters() const { return fFindableClustersTPC; }
 
   /**
    * Mark track as selected by a given track cuts using the index
@@ -96,6 +116,26 @@ public:
    * \param isGood Boolean for good tracks
    */
   void SetGoodTrackLabel(Bool_t isGood) { fGoodMCTrack = isGood; }
+  /**
+   * Set the number of clusters in the TPC
+   * \param nclusters Number of clusters
+   */
+  void SetTPCClusters(Int_t nclusters) { fClustersTPC = nclusters; }
+  /**
+   * Set the number of crossed rows in the TPC
+   * \param crossedRows Number of crossed rows
+   */
+  void SetTPCCrossedRows(Int_t crossedRows) { fCrossedRowsTPC = crossedRows; }
+  /**
+   * Set Number of shared clusters in the TPC
+   * @param nshared Number of shared clusters
+   */
+  void SetTPCSharedClusters(Int_t nshared) { fSharedClustersTPC = nshared; }
+  /**
+   * Set number of findable clusters in the TPC
+   * \param nfindable Number of findable clusters
+   */
+  void SetTPCFindableClusters(Int_t nfindable) { fFindableClustersTPC = nfindable; }
 
 
 protected:
@@ -104,6 +144,10 @@ protected:
   Int_t                         fClusterIndex;        ///< Index of cluster matched to the track
   Int_t                         fParticleIndex;       ///< Index of true particle matched to this track
   Bool_t                        fGoodMCTrack;         ///< Mark track as good (according to the track label)
+  Char_t                        fClustersTPC;         ///< Number of TPC clusters
+  Char_t                        fCrossedRowsTPC;      ///< Number of TPC crossed rows
+  Char_t                        fSharedClustersTPC;   ///< Number of shared clusters in the TPC
+  Char_t                        fFindableClustersTPC; ///< Number of findable clusters in the TPC
 
   /// \cond CLASSIMP
   ClassDef(AliReducedReconstructedTrack, 1);
