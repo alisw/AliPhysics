@@ -143,7 +143,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 3){ //EMCAL minNCells variation
         eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053031230000"; mesonCutArray[0] = "01631031000000"; //n cells >= 1
         eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "10000053033230000"; mesonCutArray[1] = "01631031000000"; //n cells >= 3
-        eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "10000053032200000"; mesonCutArray[2] = "01631031000000"; //no M02 cut
+        eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "10000053032200000"; mesonCutArray[2] = "01631031000000"; //no max M02 cut
         eventCutArray[ 3] = "0000311"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10031053032230000"; mesonCutArray[3] = "01631031000000"; //only modules with TRD infront
         eventCutArray[ 4] = "0000311"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "10012053032230000"; mesonCutArray[4] = "01631031000000"; //no modules with TRD infront
 	} else if (trainConfig == 4){ // EMCAL track matching variations 
