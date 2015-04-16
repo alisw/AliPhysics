@@ -491,9 +491,9 @@ class AliAODTrack : public AliVTrack {
 
   Bool_t fIsMuonGlobalTrack;        // True if the track is built from the combination of MUON and MFT clusters     // AU
 
+  Double_t      fITSsignalTuned;    //! ITS signal tuned on data when using MC
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
   Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
-  Double_t      fITSsignalTuned;    //! ITS signal tuned on data when using MC
 
   ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 

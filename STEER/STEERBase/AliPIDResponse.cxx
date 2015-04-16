@@ -2146,6 +2146,12 @@ Float_t AliPIDResponse::GetNumberOfSigmasITS(const AliVParticle *vtrack, AliPID:
   const EDetPidStatus pidStatus=GetITSPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
 
+  // the following call is needed in order to fill the transient data member
+  // fITSsignalTuned which is used in the ITSPIDResponse to judge
+  // if using tuned on data
+  if (fTuneMConData && ((fTuneMConDataMask & kDetITS) == kDetITS))
+    GetITSsignalTunedOnData(track);
+
   return fITSResponse.GetNumberOfSigmas(track,type);
 }
 
@@ -2245,6 +2251,13 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaITS(const AliVPartic
   // Signal minus expected Signal for ITS
   //
   AliVTrack *track=(AliVTrack*)vtrack;
+
+  // the following call is needed in order to fill the transient data member
+  // fITSsignalTuned which is used in the ITSPIDResponse to judge
+  // if using tuned on data
+  if (fTuneMConData && ((fTuneMConDataMask & kDetITS) == kDetITS))
+    GetITSsignalTunedOnData(track);
+
   val=fITSResponse.GetSignalDelta(track,type,ratio);
 
   return GetITSPIDStatus(track);
@@ -2347,6 +2360,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
 
   Double_t mom=track->P();
   Double_t dedx=track->GetITSsignal();
+  if (fTuneMConData && ((fTuneMConDataMask & kDetITS) == kDetITS)) dedx = GetITSsignalTunedOnData(track);
+
   Double_t momITS=mom;
   UChar_t clumap=track->GetITSClusterMap();
   Int_t nPointsForPid=0;
@@ -2810,6 +2825,61 @@ TString AliPIDResponse::GetChecksum(const TObject* obj) const
 }
 
 //_________________________________________________________________________
+Float_t AliPIDResponse::GetITSsignalTunedOnData(const AliVTrack *t) const
+{
+  /// Create gaussian signal response based on the dE/dx response observed in data
+  /// Currently only for deuterons and triton. The other particles are fine in MC
+
+  Float_t dedx = t->GetITSsignalTunedOnData();
+  if(dedx > 0) return dedx;
+
+  dedx = t->GetITSsignal();
+  ((AliVTrack*)t)->SetITSsignalTunedOnData(dedx);
+  if(dedx < 20) return dedx;
+
+  Int_t nITSpid = 0;
+  for(Int_t i=2; i<6; i++){
+    if(t->HasPointOnITSLayer(i)) nITSpid++;
+  }
+
+  Bool_t isSA=kTRUE;
+  if( t->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+
+  // check if we have MC information
+  if (!fCurrentMCEvent) {
+    AliError("Tune On Data requested, but MC event not set. Call 'SetCurrentMCEvent' before!");
+    return dedx;
+  }
+
+  // get MC particle
+  AliVParticle *mcPart = fCurrentMCEvent->GetTrack(TMath::Abs(t->GetLabel()));
+
+  if (mcPart != NULL) { // protect against label-0 track (initial proton in Pythia events)
+    AliPID::EParticleType type = AliPID::kPion;
+    Bool_t kGood = kFALSE;
+    Int_t iS = TMath::Abs(mcPart->PdgCode());
+
+    for (Int_t ipart=0; ipart<AliPID::kSPECIESC; ++ipart) {
+      if (iS == AliPID::ParticleCode(ipart)) {
+        type = static_cast<AliPID::EParticleType>(ipart);
+        kGood=kTRUE;
+        break;
+      }
+    }
+
+    // NOTE: currently only tune for deuterons and triton
+    if(kGood && (iS == AliPID::ParticleCode(AliPID::kDeuteron) || (iS == AliPID::ParticleCode(AliPID::kTriton))) ) {
+      Double_t bethe = fITSResponse.Bethe(t->P(),type,isSA);
+      Double_t sigma = fITSResponse.GetResolution(bethe,nITSpid,isSA,t->P(),type);
+      dedx = gRandom->Gaus(bethe,sigma);
+    }
+  }
+
+  const_cast<AliVTrack*>(t)->SetITSsignalTunedOnData(dedx);
+  return dedx;
+}
+
+//_________________________________________________________________________
 Float_t AliPIDResponse::GetTPCsignalTunedOnData(const AliVTrack *t) const
 {
   /// Create gaussian signal response based on the dE/dx response observed in data
@@ -2828,11 +2898,12 @@ Float_t AliPIDResponse::GetTPCsignalTunedOnData(const AliVTrack *t) const
     return dedx;
   }
 
-  AliPID::EParticleType type = AliPID::kPion;
-
-  Bool_t kGood = kFALSE;
+  // get MC particle
   AliVParticle *mcPart = fCurrentMCEvent->GetTrack(TMath::Abs(t->GetLabel()));
+
   if (mcPart != NULL) { // protect against label-0 track (initial proton in Pythia events)
+    AliPID::EParticleType type = AliPID::kPion;
+    Bool_t kGood = kFALSE;
     Int_t iS = TMath::Abs(mcPart->PdgCode());
 
     for (Int_t ipart=0; ipart<AliPID::kSPECIESC; ++ipart) {
@@ -2842,16 +2913,16 @@ Float_t AliPIDResponse::GetTPCsignalTunedOnData(const AliVTrack *t) const
         break;
       }
     }
-  }
 
-  if(kGood){
-    //TODO maybe introduce different dEdxSources?
-    Double_t bethe = fTPCResponse.GetExpectedSignal(t, type, AliTPCPIDResponse::kdEdxDefault, UseTPCEtaCorrection(),
-                                                    UseTPCMultiplicityCorrection());
-    Double_t sigma = fTPCResponse.GetExpectedSigma(t, type, AliTPCPIDResponse::kdEdxDefault, UseTPCEtaCorrection(),
-                                                    UseTPCMultiplicityCorrection());
-    dedx = gRandom->Gaus(bethe,sigma);
-    //              if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
+    if(kGood){
+      //TODO maybe introduce different dEdxSources?
+      Double_t bethe = fTPCResponse.GetExpectedSignal(t, type, AliTPCPIDResponse::kdEdxDefault, UseTPCEtaCorrection(),
+                                                      UseTPCMultiplicityCorrection());
+      Double_t sigma = fTPCResponse.GetExpectedSigma(t, type, AliTPCPIDResponse::kdEdxDefault, UseTPCEtaCorrection(),
+                                                     UseTPCMultiplicityCorrection());
+      dedx = gRandom->Gaus(bethe,sigma);
+      //              if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
+    }
   }
 
   const_cast<AliVTrack*>(t)->SetTPCsignalTunedOnData(dedx);

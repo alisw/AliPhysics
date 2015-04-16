@@ -13,13 +13,7 @@
 //   Modified: Pietro Antonioli, INFN BO, pietro.antonioli@bo.infn.it
 //-------------------------------------------------------
 #include <Rtypes.h>
-#include <TMatrixD.h>
-#include <AliLog.h>
-#include "AliAODEvent.h" // Needed for inline functions
-#include "AliAODTrack.h" // Needed for inline functions
-#include "AliAODPid.h" // Needed for inline functions
-#include "AliTOFHeader.h" //Needed for inline functions
-//#include "HMPID/AliHMPID.h"
+#include "AliPID.h" // Needed for inline functions
 
 #include "AliPIDResponse.h"
 
@@ -31,8 +25,6 @@ public:
   //TODO: isMC???
   AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC) {;}
   virtual ~AliAODpidUtil() {;}
-
-  Float_t GetITSsignalTunedOnData(const AliVTrack *t) const;
 
 protected:
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;

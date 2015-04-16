@@ -67,6 +67,7 @@ AliAODTrack::AliAODTrack() :
   fTrackEtaOnEMCal(-999),
   fTrackPtOnEMCal(-999),
   fIsMuonGlobalTrack(kFALSE),    // AU
+  fITSsignalTuned(0.),
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
   fMFTClusterPattern(0),         // AU
@@ -128,6 +129,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fTrackEtaOnEMCal(-999),
   fTrackPtOnEMCal(-999),
   fIsMuonGlobalTrack(kFALSE),    // AU
+  fITSsignalTuned(0),
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
   fMFTClusterPattern(0),         // AU
@@ -193,6 +195,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fTrackEtaOnEMCal(-999),
   fTrackPtOnEMCal(-999),
   fIsMuonGlobalTrack(kFALSE),    // AU
+  fITSsignalTuned(0),
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
   fMFTClusterPattern(0),         // AU
@@ -255,6 +258,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
   fTrackPtOnEMCal(trk.fTrackPtOnEMCal),
   fIsMuonGlobalTrack(trk.fIsMuonGlobalTrack),    // AU
+  fITSsignalTuned(trk.fITSsignalTuned),
   fTPCsignalTuned(trk.fTPCsignalTuned),
   fTOFsignalTuned(trk.fTOFsignalTuned),
   fMFTClusterPattern(trk.fMFTClusterPattern),    // AU
@@ -312,6 +316,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
     fTrackPtOnEMCal    = trk.fTrackPtOnEMCal;
     fIsMuonGlobalTrack = trk.fIsMuonGlobalTrack;     // AU
+    fITSsignalTuned    = trk.fITSsignalTuned;
     fTPCsignalTuned    = trk.fTPCsignalTuned;
     fTOFsignalTuned    = trk.fTOFsignalTuned;
     fMFTClusterPattern = trk.fMFTClusterPattern;     // AU
