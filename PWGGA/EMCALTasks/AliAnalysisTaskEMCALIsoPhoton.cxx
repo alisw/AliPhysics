@@ -97,6 +97,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fInConeInvMass(""),
   fInConePairClEt(""),
   fNSigNeutMesonCut(2.0),
+  fSigmaSmear(0.0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -216,6 +217,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fInConeInvMass(""),
   fInConePairClEt(""),
   fNSigNeutMesonCut(2.0),
+  fSigmaSmear(0.0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -907,7 +909,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     else
       ptmc = -0.1;
     outputValues[0] = Et;
-    outputValues[1] = c->GetM02();
+    outputValues[1] = SmearM02(c->GetM02());
     outputValues[2] = ceiso/*cecore*/-ceisoue;
     outputValues[3] = triso-trisoue;
     outputValues[4] = alliso/*cecore*/-allisoue - trcore;
@@ -1039,8 +1041,10 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       }
     }
     Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
-    if(nEt<0)
+    if(nEt<0){
       printf("nEt=%1.1f\n",nEt);
+      continue;
+    }
     if(R<fIsoConeR){
       if(c->GetM02()>0.1 && c->GetM02()<0.3 && !(matchedpt>0)){
 	TLorentzVector lv, lvec;
@@ -1816,6 +1820,14 @@ void AliAnalysisTaskEMCALIsoPhoton::CheckTriggerPatch()
     if(!pti->IsLevel0())
       continue;
   }
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALIsoPhoton::SmearM02(Double_t m02)
+{
+  if(!fStack && !fAODMCParticles)
+    return m02;
+  TRandom3 *r = new TRandom3(0);
+  return m02*r->Gaus(0,fSigmaSmear);
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
