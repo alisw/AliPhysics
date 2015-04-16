@@ -69,7 +69,7 @@ void TestESD() {
   
   //Init geometry and array that will contain the clusters
   TRefArray* caloClusters = new TRefArray();
-  AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEAR") ;  	
+  AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM") ;  	
   Float_t pos[3];
   
   //Loop of events
