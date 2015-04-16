@@ -41,14 +41,17 @@ void ReducedEventCutVariation(HighPtTracks::AliReducedHighPtEventCreator *task, 
   if((trackcuts = CreateDefaultTrackCutsChangeCrossRows(isAOD, 140))) task->AddVirtualTrackSelection(trackcuts, 5);
   if((trackcuts = CreateDefaultTrackCutsChangeDCAZ(isAOD, 0.5))) task->AddVirtualTrackSelection(trackcuts, 6);
   if((trackcuts = CreateDefaultTrackCutsChangeDCAZ(isAOD, 1.))) task->AddVirtualTrackSelection(trackcuts, 7);
-  if((trackcuts = CreateDefaultTrackCutsChangeDCAZ(isAOD, 3.2))) task->AddVirtualTrackSelection(trackcuts, 8);
+  if((trackcuts = CreateDefaultTrackCutsChangeDCAZ(isAOD, 4.))) task->AddVirtualTrackSelection(trackcuts, 8);
   if((trackcuts = CreateDefaultTrackCutsChangeDCAR(isAOD, "0.0382+0.0350/pt^1.01"))) task->AddVirtualTrackSelection(trackcuts, 9);
   if((trackcuts = CreateDefaultTrackCutsChangeDCAR(isAOD, "0.0082+0.0350/pt^1.01"))) task->AddVirtualTrackSelection(trackcuts, 10);
   if((trackcuts = CreateDefaultTrackCutsChangeDCAR(isAOD, "0.0182+0.0650/pt^1.01"))) task->AddVirtualTrackSelection(trackcuts, 11);
   if((trackcuts = CreateDefaultTrackCutsChangeDCAR(isAOD, "0.0182+0.0150/pt^1.01"))) task->AddVirtualTrackSelection(trackcuts, 12);
-  if((trackcuts = CreateDefaultTrackCutsChangeGoldenCut(isAOD, 18))) task->AddVirtualTrackSelection(trackcuts, 13);
-  if((trackcuts = CreateDefaultTrackCutsChangeChi2ITS(isAOD, 18))) task->AddVirtualTrackSelection(trackcuts, 14);
-  if((trackcuts = CreateDefaultTrackCutsChangeChi2TPC(isAOD, 6))) task->AddVirtualTrackSelection(trackcuts, 15);
+  if((trackcuts = CreateDefaultTrackCutsChangeGoldenCut(isAOD, 56))) task->AddVirtualTrackSelection(trackcuts, 13);
+  if((trackcuts = CreateDefaultTrackCutsChangeGoldenCut(isAOD, 18))) task->AddVirtualTrackSelection(trackcuts, 14);
+  if((trackcuts = CreateDefaultTrackCutsChangeChi2ITS(isAOD, 56))) task->AddVirtualTrackSelection(trackcuts, 15);
+  if((trackcuts = CreateDefaultTrackCutsChangeChi2ITS(isAOD, 18))) task->AddVirtualTrackSelection(trackcuts, 16);
+  if((trackcuts = CreateDefaultTrackCutsChangeChi2TPC(isAOD, 6))) task->AddVirtualTrackSelection(trackcuts, 17);
+  if((trackcuts = CreateDefaultTrackCutsChangeChi2TPC(isAOD, 2))) task->AddVirtualTrackSelection(trackcuts, 18);
 }
 
 /**

@@ -24,6 +24,7 @@ namespace HighPtTracks {
  * Default (dummy) constructor
  */
 AliReducedGeneratedParticle::AliReducedGeneratedParticle():
+  TObject(),
   fParticleID(-1),
   fPDGCode(-10000),
   fEnergy(-1.)
@@ -42,6 +43,7 @@ AliReducedGeneratedParticle::AliReducedGeneratedParticle():
  */
 AliReducedGeneratedParticle::AliReducedGeneratedParticle(Int_t id, Int_t pdg,
     Double_t px, Double_t py, Double_t pz, Double_t energy):
+  TObject(),
   fParticleID(id),
   fPDGCode(pdg),
   fEnergy(energy)

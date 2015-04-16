@@ -35,6 +35,7 @@ namespace HighPtTracks {
  * \param doAlloc if true then the containers are allocated
  */
 AliReducedHighPtEvent::AliReducedHighPtEvent(Bool_t doAlloc):
+  TObject(),
   fCentralityPercentile(100.),
   fVertexZ(-999.9),
   fMCHeader(NULL),
@@ -63,6 +64,7 @@ AliReducedHighPtEvent::AliReducedHighPtEvent(Bool_t doAlloc):
  * \param ref The reference for the copy
  */
 AliReducedHighPtEvent::AliReducedHighPtEvent(const AliReducedHighPtEvent& ref):
+  TObject(ref),
   fCentralityPercentile(ref.fCentralityPercentile),
   fVertexZ(ref.fVertexZ),
   fMCHeader(NULL),
