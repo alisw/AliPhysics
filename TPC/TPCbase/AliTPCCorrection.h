@@ -71,7 +71,7 @@ public:
   TH2F* CreateHistoDZinZR   (Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
 
 
-  TTree* CreateDistortionTree(Double_t step=5);
+  TTree* CreateDistortionTree(Double_t step=5, Int_t type=0);
   static void  MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type, Int_t integ=1);
   static void  MakeDistortionMapCosmic(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type);
   static void  MakeDistortionMapSector(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run, Int_t type);

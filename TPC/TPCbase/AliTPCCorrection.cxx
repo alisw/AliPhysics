@@ -1886,72 +1886,126 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
 
 
 
-TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
+TTree* AliTPCCorrection::CreateDistortionTree(Double_t step, Int_t type/*=0*/)
+{
   /// create the distortion tree on a mesh with granularity given by step
   /// return the tree with distortions at given position
   /// Map is created on the mesh with given step size
+  /// type - 0: Call GetDistortion()
+  ///        1: Call GetDistortionIntegralDz()
+
+  if (type<0 || type>1) {
+    AliError("Unknown type");
+    return 0x0;
+  }
 
   TTreeSRedirector *pcstream = new TTreeSRedirector(Form("correction%s.root",GetName()));
-  Float_t xyz[3];
+  Float_t xyz[3];     // current point
+  Float_t dist[3];    // distorion
+  Float_t corr[3];    // correction
+  Float_t xyzdist[3]; // distorted point
+  Float_t xyzcorr[3]; // corrected point
+
+  AliMagF* mag= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!mag) AliError("Magnetic field - not initialized");
+
   for (Double_t x= -250; x<250; x+=step){
     for (Double_t y= -250; y<250; y+=step){
       Double_t r    = TMath::Sqrt(x*x+y*y);
       if (r<80) continue;
       if (r>250) continue;
-      for (Double_t z= -250; z<250; z+=step){
-	Int_t roc=(z>0)?0:18;
-	xyz[0]=x;
-	xyz[1]=y;
-	xyz[2]=z;
-	Double_t phi  = TMath::ATan2(y,x);
-	DistortPoint(xyz,roc);
-	Double_t r1    = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-	Double_t phi1  = TMath::ATan2(xyz[1],xyz[0]);
-	if ((phi1-phi)>TMath::Pi()) phi1-=TMath::Pi();
-	if ((phi1-phi)<-TMath::Pi()) phi1+=TMath::Pi();
-	Double_t dx = xyz[0]-x;
-	Double_t dy = xyz[1]-y;
-	Double_t dz = xyz[2]-z;
-	Double_t dr=r1-r;
-	Double_t drphi=(phi1-phi)*r;
 
-	AliMagF* mag= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-	if (!mag) AliError("Magnetic field - not initialized");
-	
-	Double_t bxyz[3];
-	Double_t xyz[3] = {r1*TMath::Cos(phi1),r1*TMath::Sin(phi1),z};
-	mag->Field(xyz,bxyz);
-	Double_t br	= 0.;
-	Double_t brfi = 0.;
-	if(r!=0){
-	  br	= (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/r;
-	  brfi	= (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/r;
-	}
-	
-	(*pcstream)<<"distortion"<<
-	  "x="<<x<<           // original position
-	  "y="<<y<<
-	  "z="<<z<<
-	  "r="<<r<<
-	  "phi="<<phi<<
-	  "x1="<<xyz[0]<<      // distorted position
-	  "y1="<<xyz[1]<<
-	  "z1="<<xyz[2]<<
-	  "r1="<<r1<<
-	  "phi1="<<phi1<<
-	  //
-	  "dx="<<dx<<          // delta position
-	  "dy="<<dy<<
-	  "dz="<<dz<<
-	  "dr="<<dr<<
-	  "drphi="<<drphi<<
-	  // B-field integ
-	  "bx="<<bxyz[0]<<
-	  "by="<<bxyz[1]<<
-	  "bz="<<bxyz[2]<<
-	  "br="<< br<<
-	  "brfi="<<brfi<<
-	  "\n";
+      Double_t phi  = TMath::ATan2(y,x);
+
+      for (Double_t z= -250; z<250; z+=step){
+        Int_t roc=(z>0)?0:18;
+        xyz[0]=x;
+        xyz[1]=y;
+        xyz[2]=z;
+
+        // === Get distortions and corrections =========================
+        if (type==0) {
+          GetDistortion(xyz, roc, dist);
+          GetCorrection(xyz, roc, corr);
+        } else if (type==1) {
+          GetDistortionIntegralDz(xyz, roc, dist, .5);
+          GetCorrectionIntegralDz(xyz, roc, corr, .5);
+        }
+
+        for (Int_t i=0; i<3; ++i) {
+          xyzdist[i]=xyz[i]+dist[i];
+          xyzcorr[i]=xyz[i]+corr[i];
+        }
+
+        // === r, rphi + residuals for the distorted point =========================
+        Double_t rdist    = TMath::Sqrt(xyzdist[0]*xyzdist[0]+xyzdist[1]*xyzdist[1]);
+        Double_t phidist  = TMath::ATan2(xyzdist[1],xyzdist[0]);
+        if ((phidist-phi)>TMath::Pi()) phidist-=TMath::Pi();
+        if ((phidist-phi)<-TMath::Pi()) phidist+=TMath::Pi();
+
+        Double_t drdist=rdist-r;
+        Double_t drphidist=(phidist-phi)*r;
+
+        // === r, rphi + residuals for the corrected point =========================
+        Double_t rcorr    = TMath::Sqrt(xyzcorr[0]*xyzcorr[0]+xyzcorr[1]*xyzcorr[1]);
+        Double_t phicorr  = TMath::ATan2(xyzcorr[1],xyzcorr[0]);
+        if ((phicorr-phi)>TMath::Pi()) phicorr-=TMath::Pi();
+        if ((phicorr-phi)<-TMath::Pi()) phicorr+=TMath::Pi();
+
+        Double_t drcorr=rcorr-r;
+        Double_t drphicorr=(phicorr-phi)*r;
+
+        // === get b field ===============
+        Double_t bxyz[3]={0.,0.,0.};
+        Double_t dblxyz[3] = {Double_t(xyzdist[0]),Double_t(xyzdist[1]),Double_t(xyzdist[2])};
+        Double_t br	= 0.;
+        Double_t brfi = 0.;
+        if (mag) {
+          mag->Field(dblxyz,bxyz);
+          if(rdist>0){
+            br = (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/rdist;
+            brfi = (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/rdist;
+          }
+        }
+
+        (*pcstream)<<"distortion"<<
+        "x="  << x   <<           // original position
+        "y="  << y   <<
+        "z="  << z   <<
+        "r="  << r   <<
+        "phi="<< phi <<
+        //
+        "x_dist="    << xyzdist[0] <<      // distorted position
+        "y_dist="    << xyzdist[1] <<
+        "z_dist="    << xyzdist[2] <<
+        "r_dist="    << rdist      <<
+        "phi_dist="  << phidist    <<
+        //
+        "dx_dist="   << dist[0]    <<     // distortion
+        "dy_dist="   << dist[1]    <<
+        "dz_dist="   << dist[2]    <<
+        "dr_dist="   << drdist     <<
+        "drphi_dist="<< drphidist  <<
+        //
+        //
+        "x_corr="    << xyzcorr[0] <<      // corrected position
+        "y_corr="    << xyzcorr[1] <<
+        "z_corr="    << xyzcorr[2] <<
+        "r_corr="    << rcorr      <<
+        "phi_corr="  << phicorr    <<
+        //
+        "dx_corr="   << corr[0]    <<     // correction
+        "dy_corr="   << corr[1]    <<
+        "dz_corr="   << corr[2]    <<
+        "dr_corr="   << drcorr     <<
+        "drphi_corr="<< drphicorr  <<
+        // B-field integ
+        "bx="<<bxyz[0]<<
+        "by="<<bxyz[1]<<
+        "bz="<<bxyz[2]<<
+        "br="<< br<<
+        "brfi="<<brfi<<
+        "\n";
       }
     }
   }
