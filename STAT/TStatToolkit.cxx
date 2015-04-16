@@ -67,7 +67,7 @@ TStatToolkit::~TStatToolkit()
 {
   //
   // Destructor
-  //
+  // 
 }
 
 
@@ -1736,7 +1736,8 @@ TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, co
   const Int_t ngr = oaAlias->GetEntriesFast();
   for (Int_t i=0; i<ngr; i++){
     snprintf(query,200, "%f*(%s-0.5):%s", 1.+igr, oaAlias->At(i)->GetName(), var_x);
-    multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,marArr[i],colArr[i],sizeArr[i],shiftArr[i]) );
+    TGraphErrors * gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,marArr[i],colArr[i],sizeArr[i],shiftArr[i]);
+    if (gr) multGr->Add(gr);
   }
   //
   multGr->SetName(varname);
@@ -2134,4 +2135,28 @@ void TStatToolkit::CheckTreeAliases(TTree * tree, Int_t ncheck){
       ::Info("Alias:\tOK",aliases->At(i)->GetName());
     }
   }
+}
+
+
+
+
+Double_t TStatToolkit::GetDefaultStat(TTree * tree, const char * var, const char * selection, TStatType statType){
+  //
+  //
+  //
+  Int_t entries = tree->Draw(var,selection,"goff");
+  if (entries==0) return 0;
+  switch(statType){    
+  case kEntries:    
+    return entries;
+  case kSum:    
+    return entries*TMath::Mean(entries, tree->GetV1());
+  case kMean:    
+    return TMath::Mean(entries, tree->GetV1());
+  case kRMS:     
+    return TMath::RMS(entries, tree->GetV1());
+  case kMedian:  
+    return TMath::Median(entries, tree->GetV1());    
+  }
+  return 0;
 }

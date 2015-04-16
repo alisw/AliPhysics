@@ -32,6 +32,8 @@ class TTreeSRedirector;
 class TStatToolkit : public TObject
 {
  public:
+  enum TStatType {kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS}; 
+  enum TDistanceType {kL1, kL2, kLp, kMaxNorm, kHammingDistance };   // http://en.wikipedia.org/w/index.php?title=Norm_(mathematics)&oldid=655824636
   TStatToolkit();
   virtual ~TStatToolkit();
   //
@@ -85,6 +87,8 @@ class TStatToolkit : public TObject
   static TTree*  WriteStatusToTree(TObject* oStatusGr);
   static TMultiGraph*  MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias);
   static void  MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, TObjString& sumID, TCut &selection);
+  static Double_t GetDefaultStat(TTree * tree, const char * var, const char * selection, TStatType statType);
+  static Double_t GetDistance(TTree * tree, const char * var, const char * selection, TDistanceType distanceType){;}
   //
   // TTree function for robust draw
   //
