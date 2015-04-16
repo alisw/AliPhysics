@@ -114,6 +114,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ namespace HighPtTracks+;
+#pragma link C++ class HighPtTracks::AliReducedClusterParticle+;
 #pragma link C++ class HighPtTracks::AliReducedEmcalCluster+;
 #pragma link C++ class HighPtTracks::AliReducedPatchInfo+;
 #pragma link C++ class HighPtTracks::AliReducedPatchContainer+;

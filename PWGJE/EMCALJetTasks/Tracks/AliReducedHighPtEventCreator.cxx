@@ -15,7 +15,10 @@
 #include <map>
 #include <vector>
 
+#include <TArrayD.h>
+#include <TArrayI.h>
 #include <TClonesArray.h>
+#include <TMath.h>
 #include <TObjArray.h>
 #include <TString.h>
 #include <TTree.h>
@@ -167,8 +170,9 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     for(Int_t ipart = 0; ipart < mcev->GetNumberOfTracks(); ipart++){
       AliVParticle *part = mcev->GetTrack(ipart);
       Double_t pt(TMath::Abs(part->Pt())), eta(part->Eta());
-      if(pt < fMinPt || pt > fMaxPt) return 0;
-      if(eta < fMinEta || eta > fMaxEta) return 0;
+      if(pt < fMinPt || pt > fMaxPt) continue;
+      if(eta < fMinEta || eta > fMaxEta) continue;
+      if(!part->Charge()) continue;
       if(part->IsA() == AliAODMCParticle::Class()){
         AliAODMCParticle *aodpart = static_cast<AliAODMCParticle *>(part);
         if(!aodpart->IsPhysicalPrimary()) continue;
@@ -194,6 +198,24 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     TLorentzVector clustervec;
     incluster->GetMomentum(clustervec, vtxpos);
     AliReducedEmcalCluster *redcluster = new AliReducedEmcalCluster(ncluster, incluster->E(), clustervec.Eta(), clustervec.Phi(), incluster->GetM02(), incluster->GetM20());
+    // Get leading 3 cell energies
+    TArrayD cellEnergies;
+    GetCellEnergies(incluster, cellEnergies);
+    TArrayI indices(cellEnergies.GetSize());
+    TMath::Sort(cellEnergies.GetSize(), cellEnergies.GetArray(), indices.GetArray(), kTRUE);
+    redcluster->SetLeadingCellEnergies(
+        cellEnergies[indices[0]],
+        cellEnergies.GetSize() > 1 ? cellEnergies[indices[1]] : 0,
+        cellEnergies.GetSize() > 2 ? cellEnergies[indices[2]] : 0
+    );
+    // Assing MC particles
+    if(MCEvent()){
+      for(Int_t ilab = 0; ilab < incluster->GetNLabels(); ilab++){
+        AliVParticle *assigned = MCEvent()->GetTrack(TMath::Abs(incluster->GetLabels()[ilab]));
+        if(!assigned) continue;
+        redcluster->AddTrueContributor(assigned->PdgCode(), assigned->Px(), assigned->Py(), assigned->Pz(), assigned->E());
+      }
+    }
     fOutputEvent->AddReducedCluster(redcluster);
     clusterindexmap.insert(std::pair<int,int>(incluster->GetID(), ncluster));
     ncluster++;
@@ -268,7 +290,7 @@ Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
   if(TMath::Abs(primvtx->GetZ()) > 10.) return kFALSE;
   if(event->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return kFALSE;
   AliAnalysisUtils eventSelUtil;
-  if(!eventSelUtil.IsVertexSelected2013pA(event)) return kTRUE;
+  if(!eventSelUtil.IsVertexSelected2013pA(event)) return kFALSE;
   return kTRUE;
 }
 
@@ -324,6 +346,23 @@ Int_t AliReducedHighPtEventCreator::GetTPCCrossedRows(const AliVTrack* trk) cons
   return 0;
 }
 
+/**
+ * Get the cluster cell energies
+ * \param emccluster EMCAL cluster to check
+ * \param energies Array storing the cell energies
+ */
+void AliReducedHighPtEventCreator::GetCellEnergies(AliVCluster* emccluster, TArrayD& energies) const {
+  if(!fInputEvent->GetEMCALCells()) {
+    AliError("No EMCAL cells");
+    return;
+  }
+  AliDebug(2, Form("Number of cells: %d, array: %p", emccluster->GetNCells(), emccluster->GetCellsAbsId()));
+  energies.Set(emccluster->GetNCells());
+  for(int icell = 0; icell < emccluster->GetNCells(); icell++){
+    // printf("Cell ID: %d\n", emccluster->GetCellsAbsId()[icell]);
+    energies[icell] = fInputEvent->GetEMCALCells()->GetCellAmplitude(emccluster->GetCellsAbsId()[icell]);
+  }
+}
 
 /**
  * Convert trigger patches to the reduced format

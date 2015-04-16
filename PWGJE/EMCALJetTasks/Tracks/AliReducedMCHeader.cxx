@@ -24,6 +24,7 @@ namespace HighPtTracks {
  * Dummy constructor
  */
 AliReducedMCHeader::AliReducedMCHeader():
+  TObject(),
   fCrossSection(-1),
   fNumberOfTrials(-1),
   fPtHard(-1)
@@ -37,6 +38,7 @@ AliReducedMCHeader::AliReducedMCHeader():
  * \param pthard The \f$ p_{t} \f$ of the hard interaction
  */
 AliReducedMCHeader::AliReducedMCHeader(Double_t crosssection,Double_t numberOfTrials, Double_t pthard):
+  TObject(),
   fCrossSection(crosssection),
   fNumberOfTrials(numberOfTrials),
   fPtHard(pthard)

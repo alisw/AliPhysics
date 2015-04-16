@@ -14,6 +14,10 @@
 
 #include <TObject.h>
 
+class TArrayD;
+class TLorentzVector;
+class TObjArray;
+
 /**
  * \namespace HighPtTracks
  * \brief Namespace for classes creating trees of events with jets
@@ -31,6 +35,60 @@
 namespace HighPtTracks {
 
 /**
+ * \class AliReducedClusterParticle
+ * \brief MC true contributor to a reconstructed EMCAL cluster
+ *
+ * This class is part of the reduced EMCAL cluster and stores true information of particles
+ * matched to the EMCAL cluster based on the label
+ * - 4-momentum vector
+ * - PDG code
+ */
+class AliReducedClusterParticle : public TObject {
+public:
+  AliReducedClusterParticle();
+  AliReducedClusterParticle(Int_t pdg, Double_t px, Double_t py, Double_t pz, Double_t energy);
+  virtual ~AliReducedClusterParticle();
+
+  void FillLorentzVector(TLorentzVector &target) const;
+  /**
+   * Get the PDG code of the particle
+   * \return PDG code of the particle
+   */
+  Int_t GetPdgCode() const { return fPdg; }
+
+  /**
+   * Set the particle momentum
+   * \param px x-component of the particle momentum
+   * \param py y-component of the particle momentum
+   * \param pz z-component of the particle momentum
+   */
+  void SetMomentum(Double_t px, Double_t py, Double_t pz){
+    fPvec[0]= px;
+    fPvec[1]= py;
+    fPvec[2]= pz;
+  }
+  /**
+   * Set the particle energy
+   * \param energy The particle energy
+   */
+  void SetEnergy(Double_t energy) { fEnergy = energy; }
+  /**
+   * Set the particle PDG code
+   * \param The PDG code of the particle
+   */
+  void SetPdgCode(Int_t pdg) { fPdg = pdg; }
+
+protected:
+  Int_t               fPdg;               ///< Particle PDG code
+  Double_t            fPvec[3];           ///< Particle momentum vector
+  Double_t            fEnergy;            ///< Particle energy
+
+  /// \cond CLASSIMP
+  ClassDef(AliReducedClusterParticle, 1);
+  /// \endcond
+};
+
+/**
  * \class AliReducedEmcalCluster
  * \brief Reduced EMCAL cluster information
  *
@@ -45,7 +103,10 @@ class AliReducedEmcalCluster: public TObject {
 public:
   AliReducedEmcalCluster();
   AliReducedEmcalCluster(Int_t id, Float_t energy, Float_t eta, Float_t phi, Float_t m02, Float_t m20);
+  AliReducedEmcalCluster(const AliReducedEmcalCluster &ref);
+  AliReducedEmcalCluster &operator=(const AliReducedEmcalCluster &ref);
   virtual ~AliReducedEmcalCluster();
+  void Copy(TObject *target) const;
 
   /**
    * Get the ID of the cluster inside the event
@@ -77,6 +138,12 @@ public:
    * \return the M20 shower shape parameter
    */
   Float_t         GetM20() const              { return fM20; }
+  void            FillCellEnergies(TArrayD &target);
+  /**
+   * Get MC-true contributing particles
+   * \return Array of contributing particles (NULL if not available)
+   */
+  TObjArray      *GetClusterContributors() const { return fContributors; }
 
   /**
    * Set the cluster ID
@@ -101,6 +168,17 @@ public:
    */
   void            SetShowerShapeParameters(Float_t m02, Float_t m20)              { fM02 = m02; fM20 = m20; }
   /**
+   * Set the leading cell energies
+   * \param e1 max cell energy
+   * \param e2 2nd highest cell energy
+   * \param e3 3rd highest cell energy
+   */
+  void            SetLeadingCellEnergies(Double_t e1, Double_t e2, Double_t e3)   {
+    fCellEnergies[0] = e1;
+    fCellEnergies[1] = e2;
+    fCellEnergies[2] = e3;
+  }
+  /**
    * Set cluster parameters
    * \param id ID of the cluster
    * \param energy Energy of the cluster
@@ -117,6 +195,7 @@ public:
     fM02 = m02;
     fM20 = m20;
   }
+  void AddTrueContributor(Int_t pdg, Double_t px, Double_t py, Double_t pz, Double_t energy);
 protected:
   Int_t                     fClusterID;             ///< ID of the cluster
   Float_t                   fEnergy;                ///< Energy of the cluster
@@ -124,6 +203,8 @@ protected:
   Float_t                   fPhi;                   ///< Cluster position in \f$ \phi \f$ relative to the primary vertex
   Float_t                   fM02;                   ///< M02 shower shape parameter
   Float_t                   fM20;                   ///< M20 shower shape parameter
+  Float_t                   fCellEnergies[3];       ///< Leading cell energies
+  TObjArray                 *fContributors;         ///< True particles contributing to the cluster
 
   /// \cond CLASSIMP
   ClassDef(AliReducedEmcalCluster, 1);
