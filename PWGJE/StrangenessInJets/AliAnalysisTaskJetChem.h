@@ -60,6 +60,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     virtual void FillFF(Float_t trackPt, Float_t invM, Float_t jetPt,Bool_t incrementJetPt);
     virtual void AddToOutput(TList* list) const;
 
+
+
+
   private:
 
     Int_t   fNBinsJetPt;    // FF histos bins
@@ -107,9 +110,10 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   static  void   SetProperties(TH3F* h,const char* x, const char* y,const char* z);
 
-  Bool_t IsAccepteddEdx(Double_t mom, Double_t signal, AliPID::EParticleType n, Double_t cutnSig) const;//not used anymore
+  //Bool_t IsAccepteddEdx(Double_t mom, Double_t signal, AliPID::EParticleType n, Double_t cutnSig) const;//not used anymore
+
   Bool_t IsK0InvMass(Double_t mass) const; 
-  Int_t  GetListOfV0s(TList *list, Int_t type, Int_t particletype, AliAODVertex* primVertex, AliAODEvent* aod);
+  Int_t  GetListOfV0s(TList *list, Int_t type, Int_t particletype, Int_t tracktype, AliAODVertex* primVertex, AliAODEvent* aod);
   Int_t  GetListOfParticles(TList *list, Int_t type, Int_t particletype, AliAODVertex* primVertex);
   Int_t  GetListOfMCParticles(TList *outputlist, Int_t particletype, AliAODEvent* mcaodevent);
   void   GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt, Double_t minPt, Double_t maxPt, Bool_t& isBadPt);
@@ -129,7 +133,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   AliAODJet* GetMedianCluster();
   Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const;  
 
-
   virtual void SetK0Type(Int_t i){ fK0Type = i; }
   virtual void SetFilterMaskK0(UInt_t i) {fFilterMaskK0 = i;}
 
@@ -141,13 +144,12 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetFilterMaskALa(UInt_t i) {fFilterMaskALa = i;}
 
   virtual void SetSelectArmenteros(Bool_t b) {IsArmenterosSelected = b;}
-  //virtual void SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}  //already inherited by AliAnalysisFragmentationFunctionTask
-  //virtual void UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;} //already inherited by AliAnalysisFragmentationFunctionTask
-
+  virtual void UseExtraTracks()        { fUseExtraTracks =  1;}
+  virtual void UseExtraonlyTracks()    { fUseExtraTracks = -1;}
+  
   void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
   
   Bool_t AcceptBetheBloch(AliAODv0 *v0, AliPIDResponse *PIDResponse, Int_t particletype); //don't use this method for MC Analysis
-
 
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
 
@@ -210,6 +212,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Double_t fCutV0RadiusMax;
   Double_t fCutBetheBloch;
   Double_t fCutRatio;
+  Float_t fCutFractionPtEmbedded;   // cut on ratio of embedded pt found in jet
+  Float_t fCutDeltaREmbedded;       // cut dR rec-embedded jet
+  //TString fBranchEmbeddedJets;    // branch name for embedded jets
 
   // cuts
   void SetCuttrackPosNcls(Double_t posNcls){fCuttrackPosNcls=posNcls; Printf("AliAnalysisTaskJetChem:: SetCuttrackPosNcls %f",posNcls);}
@@ -237,12 +242,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   void SetCutRatioTPC(Double_t cutRatioTPC){fCutRatio=cutRatioTPC; Printf("AliAnalysisTaskJetChem:: SetCutRatioTPC %f", cutRatioTPC);}
   void SetAnalysisMC(Bool_t analysisMC) {fAnalysisMC = analysisMC;}
   void SetDeltaZVertexCut(Float_t deltaVtxZ){fDeltaVertexZ = deltaVtxZ;}
+  virtual void SetCutFractionPtEmbedded(Float_t cut = 0) { fCutFractionPtEmbedded = cut; }
+  virtual void   SetCutDeltaREmbedded(Float_t cut) { fCutDeltaREmbedded = cut; }
+
 
  private:
-  
-
-
-
 
   Int_t fK0Type;                                           // K0 cuts
   UInt_t fFilterMaskK0;  
@@ -250,16 +254,22 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* jetConeK0list;
   TList* jetConeLalist;
   TList* jetConeALalist;
+  TList* jetConeK0Emblist;
+  TList* jetConeLaEmblist;
+  TList* jetConeALaEmblist;
   TList* jetPerpConeK0list;
+  TList* jetPerpConeK0Emblist;
   TList* jetPerpConeLalist;
+  TList* jetPerpConeLaEmblist;
   TList* jetPerpConeALalist;
+  TList* jetPerpConeALaEmblist;
   TList* jetMedianConeK0list;
   TList* jetMedianConeLalist;
   TList* jetMedianConeALalist;
   TList* fListK0sRC;
   TList* fListLaRC;
   TList* fListALaRC;
-
+  TList* fTracksPerpCone;
                                   //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
   AliPIDResponse *fPIDResponse;	                           // PID
@@ -294,7 +304,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* fListMCgenALaCone;                                //! MC generated Antilambdas in cone around jet axis, particles are from fragmentation but also from underlying event
 
   Bool_t IsArmenterosSelected;                             //Armenteros-Podolanski Cut (is/isn't) applied  
- 
+  Int_t   fUseExtraTracks;          // +/- 1: embedded extra/extra only tracks, default: 0 (is set in initialisation list of task, ignore extra tracks)
+
   //AliFragFuncHistosInvMass*  fFFHistosIMALaAllEvt;          //! ALa pt spec for all events
   //AliFragFuncHistosInvMass*  fFFHistosIMALaJet;             //! ALa FF all dPhi   
   // AliFragFuncHistosInvMass*  fFFHistosIMALaCone;            //! ALa FF jet cone   
@@ -362,10 +373,22 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1JetEta;        
   TH1F* fh1JetPhi;                   
   TH2F* fh2JetEtaPhi;  
-  // TH1F* fh1V0JetPt; 
+
+  //embedding
+  TH1F* fh1nEmbeddedJets;
+  TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
+  TH1F* fh1FractionPtEmbedded;             //! ratio embedded pt in rec jet to embedded jet pt 
+  TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
+
+  TH2F* fh2TracksPerpCone;
+  TH1F* fh1PerpCone;
+  TH1F* fh1V0PtCandidate; 
   TH1F* fh1IMK0Cone; //jet pt distribution for normalisation by number of jets
   TH1F* fh1IMLaCone;
   TH1F* fh1IMALaCone;
+  TH1F* fh1IMK0EmbCone; //jet pt distribution for normalisation by number of jets
+  TH1F* fh1IMLaEmbCone;
+  TH1F* fh1IMALaEmbCone;
   TH2F* fh2FFJetTrackEta; //charged jet track eta distribution                 
   //  TH1F* fh1trackPosNCls;             
   //  TH1F* fh1trackNegNCls; 
@@ -447,13 +470,19 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnALaSecContinCone;
   THnSparse* fhnK0sIncl;
   THnSparse* fhnK0sCone;
+  THnSparse* fhnK0sEmbCone;
   THnSparse* fhnLaIncl;
   THnSparse* fhnLaCone;
+  THnSparse* fhnLaEmbCone;
   THnSparse* fhnALaIncl;
   THnSparse* fhnALaCone;
+  THnSparse* fhnALaEmbCone;
   THnSparse* fhnK0sPC;
+  THnSparse* fhnK0sEmbPC;
   THnSparse* fhnLaPC;
+  THnSparse* fhnLaEmbPC;
   THnSparse* fhnALaPC;
+  THnSparse* fhnALaEmbPC;
   THnSparse* fhnK0sMCC;
   THnSparse* fhnLaMCC;
   THnSparse* fhnALaMCC;
