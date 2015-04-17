@@ -317,7 +317,7 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 //____________________________________________________________________________
 void AliPHOSGeoUtils::GetCrystalsEdges(Int_t mod, Float_t & xmin, Float_t &zmin, Float_t &xmax, Float_t &zmax){
   //return coordinated of crystal matrix edges in local frame
-  Int_t relid[4]={mod,0.,1.,1} ;
+  Int_t relid[4]={mod,0,1,1} ;
   relid[0]=mod ;
   //check if this is 1/2 of the module 
   Bool_t halfMod=kFALSE ;
