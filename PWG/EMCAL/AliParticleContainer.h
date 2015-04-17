@@ -33,6 +33,8 @@ class AliParticleContainer : public AliEmcalContainer {
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
   Int_t                       GetNAcceptedParticles()                   ;
 
+  void                        SetArray(AliVEvent *event);
+
   void                        SetClassName(const char *clname);
   void                        SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
@@ -48,6 +50,7 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SelectPhysicalPrimaries(Bool_t s)                 { if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
                                                                                   else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
   void                        SetCharge(Short_t c)                              { fCharge = c         ; }
+  void                        SetFilterHybridTracks(Bool_t f)                   { fFilterHybridTracks = f; }
 
  protected:
   Double_t                    fParticlePtCut;                 // cut on particle pt
@@ -64,12 +67,13 @@ class AliParticleContainer : public AliEmcalContainer {
   UInt_t                      fMCFlag;                        // select MC particles with flags
   Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
   Short_t                     fCharge;                        // select particles with charge=fCharge
+  Bool_t                      fFilterHybridTracks;            // filter hybrid tracks (only works with AOD tracks)
 
  private:
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
-  ClassDef(AliParticleContainer,6);
+  ClassDef(AliParticleContainer,7);
 
 };
 
