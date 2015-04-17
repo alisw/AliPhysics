@@ -30,10 +30,14 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   Int_t debug = fdebug; // debug level
   if(debug>=0) task->SetDebugLevel(debug);
   
-  TString branchRecJets(recJetsBranch);
-  if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
-
   // Double_t V0EtaCut, Double_t jetEtaCut, Bool_t IsMC, Double_t DeltaVtxZCut can be set externally
+
+  //task->SetBranchRecJets("clustersAOD_ANTIKT02_B2_Filter00272_Cut00150_Skip00");//to be set in wagon configuration
+  task->SetBranchRecJets("clustersAODextra_ANTIKT02_B2_Filter00272_Cut00150_Skip00");//proper filter mask for 2.76TeV PYTHIA?
+  //task->SetBranchRecJets("clustersAODextraonly_ANTIKT02_B2_Filter00272_Cut00150_Skip00");
+
+  TString branchRecJets(recJetsBranch);
+  if(!branchRecJets.Contains("noRecJets")) task->SetBranchecJets(branchRecJets);
 
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
@@ -148,7 +152,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									Form("%s:PWG4_zimmerma_JetChem",AliAnalysisManager::GetCommonFileName()));
-       
+          if(useExtraOnlyTracks){listName1 += "_exonly";} 
+	if(useExtraTracks){listName1 += "_extra";}
      }
 
    if((IsArmenterosSelected == 1) && (IsJetPtBiasSelected == 0)){
@@ -157,7 +162,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									Form("%s:PWG4_zimmerma_JetChem_Armenteros",AliAnalysisManager::GetCommonFileName()));
-       
+     if(useExtraOnlyTracks){listName2 += "_exonly";} 
+	if(useExtraTracks){listName2 += "_extra";}   
      }
       
    
@@ -167,6 +173,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									Form("%s:PWG4_zimmerma_JetChem_JetPtBias",AliAnalysisManager::GetCommonFileName()));
+ if(useExtraOnlyTracks){listName3 += "_exonly";} 
+	if(useExtraTracks){listName3 += "_extra";}
      }
    
    if((IsArmenterosSelected == 1) && (IsJetPtBiasSelected == 1)) {
@@ -175,6 +183,9 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									Form("%s:PWG4_zimmerma_JetChem_Armenteros_JetPtBias",AliAnalysisManager::GetCommonFileName()));
+ if(useExtraOnlyTracks){listName4 += "_exonly";} 
+	if(useExtraTracks){listName4 += "_extra";}
+
      } 
    
 

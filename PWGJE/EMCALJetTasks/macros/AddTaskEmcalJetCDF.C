@@ -5,7 +5,7 @@
 /// N80 and Pt80 and Toward, Transverse, Away UE histos
 ///
 /// \author Adrian SEVCENCO <Adrian.Sevcenco@cern.ch>, Institute of Space Science, Romania
-/// \date Mar 23, 2015
+/// \date Mar 19, 2015
 
 /// Add a AliAnalysisTaskEmcalJetCDF task - detailed signature
 /// \param const char *ntracks
@@ -63,13 +63,11 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
 
   if ( !rho.IsNull() )  { name += "_" + rho; }
 
-  if ( !acctype.IsNull() ) { name += "_" + acctype; }
-
-  if ( acctype.CompareTo ( "TPC" ) ) { acctype = "TPC"; }
-
+  if ( acctype.CompareTo ( "TPC" ) )   { acctype = "TPC"; }
   if ( acctype.CompareTo ( "EMCAL" ) ) { acctype = "EMCAL"; }
-
   if ( acctype.CompareTo ( "KUSER" ) ) { acctype = "kUser"; }
+
+  if ( !acctype.IsNull() ) { name += "_" + acctype; }
 
   AliAnalysisTaskEmcalJetCDF *jetTask = new AliAnalysisTaskEmcalJetCDF ( name );
   jetTask->SetCentRange ( 0., 100. );
@@ -99,10 +97,12 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
   //-------------------------------------------------------
   mgr->AddTask ( jetTask );
 
-  TString contname ( name ); contname += "_histos";
+  TString contname = name + "_histos";
+  TString outfile = AliAnalysisManager::GetCommonFileName();
+
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer ( contname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form ( "%s", AliAnalysisManager::GetCommonFileName() ) );
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer ( contname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data() );
 
   mgr->ConnectInput ( jetTask, 0,  cinput1 );
   mgr->ConnectOutput ( jetTask, 1, coutput1 );

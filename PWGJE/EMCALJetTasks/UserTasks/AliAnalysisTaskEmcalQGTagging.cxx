@@ -360,7 +360,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
       if ((fJetShapeType == kData || fJetShapeType== kDetEmb))
         if (ptSubtracted < fPtThreshold) continue;
-     
+      if((fCentSelectOn==kFALSE) && (jet1->GetNumberOfTracks()==1)) continue;
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
       fShapesVar[3] = GetJetMass(jet1,0);

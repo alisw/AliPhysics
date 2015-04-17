@@ -52,6 +52,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   LoopOnCells();
   bool                   IsExotic(AliVCluster *c);
   void                   CheckTriggerPatch();
+  Double_t               SmearM02(Double_t m02);
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
@@ -82,6 +83,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetPileUpRejSPD()                       { fPileUpRejSPD       = kTRUE;   }
   void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
   void                  SetNSigmaNeutMesonCut(Double_t n)       { fNSigNeutMesonCut   = n;       }
+  void                  SetSmearM02On(Double_t s)               { fSigmaSmear         = s;       }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -134,6 +136,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TString                fInConeInvMass;         // string to hold the array of inv. mass values of the candidate with isolation clusters
   TString                fInConePairClEt;        // string to hold the array of Et of paired clusters in the pi0 mass (isolation clusters pairs only)
   Double_t               fNSigNeutMesonCut;      // definition of the cut size on the neutral meson peaks to remove the additional dcy photon in isolation  
+  Double_t               fSigmaSmear;            //std dev of the gaussian smearing for the MC M02 values
 
  private:
   AliESDEvent *fESD;      //! ESD object

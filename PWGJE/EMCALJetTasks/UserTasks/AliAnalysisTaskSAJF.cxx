@@ -94,9 +94,9 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
 
   if (fForceBeamType != kpp) {
     title[dim] = "Centrality (%)";
-    nbins[dim] = 22;
-    min[dim] = -5;
-    max[dim] = 105;
+    nbins[dim] = 20;
+    min[dim] = 0;
+    max[dim] = 100;
     dim++;
     
     title[dim] = "#phi_{jet} - #psi_{RP}";
@@ -107,15 +107,15 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   }
 
   title[dim] = "#eta_{jet}";
-  nbins[dim] = 100;
+  nbins[dim] = 50;
   min[dim] = -1;
   max[dim] = 1;
   dim++;
 
   title[dim] = "#phi_{jet} (rad)";
-  nbins[dim] = 201;
+  nbins[dim] = 150;
   min[dim] = 0;
-  max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
+  max[dim] = 2*TMath::Pi();
   dim++;
 
   title[dim] = "p_{T} (GeV/c)";
@@ -160,11 +160,20 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   max[dim] = 1.02;
   dim++;
 
-  title[dim] = "No. of constituents";
-  nbins[dim] = 250;
-  min[dim] = -0.5;
-  max[dim] = 249.5;
-  dim++;
+  if (fForceBeamType != kpp) {
+    title[dim] = "No. of constituents";
+    nbins[dim] = 250;
+    min[dim] = -0.5;
+    max[dim] = 249.5;
+    dim++;
+  }
+  else {
+    title[dim] = "No. of constituents";
+    nbins[dim] = 50;
+    min[dim] = -0.5;
+    max[dim] = 49.5;
+    dim++;
+  }
 
   title[dim] = "p_{T,particle}^{leading} (GeV/c)";
   nbins[dim] = 120;
