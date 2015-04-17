@@ -1,12 +1,53 @@
-// Configuration macro for analysis of isolated photon spectra
-// Author : Gustavo Conesa;  Marie Germain.
+/// \file AddTaskIsoPhoton.C
+/// \brief Isolated photon spectra configuration.
+///
+/// Configuration of the isolated photon analysis analysis
+/// based on AddTaskIsoPhoton by Gustavo Conesa & Marie Germain.
+///
+/// \author : Marie Germain <Marie.Germain@cern.ch>, SUBATECH, main author.
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
-TString kAnaIsoPhotonName = "";
-Int_t   kDebug         = -1;
-TString kCalorimeter   = "EMCAL";
-TString kData = "";
-TString kPrint = 0 ;
- 
+TString kAnaIsoPhotonName = "";   /// Global name to be composed of the settings, used to set the AOD branch name
+
+Int_t   kDebug         = -1;      /// Global debug level
+
+TString kCalorimeter   = "EMCAL"; /// Global setting of calorimeter of photon
+TString kData  = "" ;             /// Global string for data type
+Bool_t  kPrint = 0  ;             /// Global bool for print option
+
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
+/// The options that can be passed to the macro are:
+/// \param cone : A float setting the isolation cone size
+/// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param leading : select leading trigger clusters?
+/// \param timecut : activate time cut
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle
+/// \param simulation : A bool identifying the data as simulation
+/// \param exotic : reject exotic clusters
+/// \param nonlin : A bool to set the use of the non linearity correction
+/// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
+/// \param tm : A bool to select neutral clusters as triggers
+/// \param minCen : An int to select the minimum centrality, -1 means no selection
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection
+/// \param deltaphicut : track matching residual cut in azimuth
+/// \param deltaetacut : track matching residual cut in pseudo-rapidity
+/// \param tmin : minimum cluster time
+/// \param tmax : maximum cluster time
+/// \param trackTcut : apply time cut on tracks
+/// \param disttobad : value of cut on distance to bad channel
+/// \param nlmMax : maximum value of shower shape parameter
+/// \param qaan : activate detector qa analysis
+/// \param primvtx : select primary vertex
+/// \param notrackcut : reject events without tracks
+/// \param rdmtrigger : do the analysis with random triggers
+/// \param tag : name to pass to analysis generated branch and histo container
+/// \param debug : An int to define the debug level of all the tasks
+/// \param print : A bool to enable the print of the settings per task
+///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone          = 0.4,
                                                       const Float_t  pth           = 2.,
                                                       const Bool_t   leading       = kFALSE,
@@ -38,7 +79,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 kDebug = debug;
 kCalorimeter  = calorimeter ;
 kPrint = print ;
-  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
   printf("AddTaskIsoPhoton() - Settings: cone %2.2f, pth %2.2f, timeCut On %d, NLM max cut %d, calorimeter %s, simu %d, exotic %d, non lin %d, trigger %s, TM %d, qa %d, debug %d, centrality %d-%d\n",
                                          cone,    pth,    timecut   ,    nlmMax,      calorimeter.Data(),simu, exotic,    nonlin,     trigger.Data(), tm,    qaan,   debug, minCen, maxCen );
@@ -164,15 +204,15 @@ else
   return task;
 }
 
-//____________________________________
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+///
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKinematics = kFALSE, Bool_t simu = kFALSE,
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
                                      Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t tmin, Float_t tmax,
                                      Bool_t trackTcut = kFALSE, Float_t minCen = -1, Float_t maxCen = -1,
                                      Int_t debug = -1, Bool_t print = kFALSE)
 {
-  // Init reader settings: event selection, basic cluster track cuts, etc
-  
   if(simu)
   {
     if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
@@ -356,13 +396,13 @@ else
   if(print) reader->Print("");
   
   return reader;
-    
 }
 
-//_______________________________________
+///
+/// Configure the class handling the calorimeter clusters specific methods
+///
 AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = kTRUE ,Bool_t simu = kFALSE, Bool_t timecut = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
-  
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debug);
   
@@ -408,13 +448,14 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   if(print) cu->Print("");
   
   return cu;
-  
 }
 
-//_____________________________________
+///
+/// Configure the task doing the first photon cluster selections
+/// Basically the track matching, minor shower shape cut, NLM selection ...
+///
 AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Float_t deltaphicut = 0.02, Float_t deltaetacut = 0.03,Int_t disttobad=0,Int_t nlmMax = 2, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
-  
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(debug); //10 for lots of messages
   
@@ -492,11 +533,13 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm =
   if(print) ana->Print("");
   
   return ana;
-  
 }
 
-//____________________________________________________________________________________________________
-AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL", TString particle="Photon",
+///
+/// Configure the task doing the trigger cluster/random isolation
+///
+AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL",
+                                                    TString particle="Photon",
                                                     Int_t  partInCone = AliIsolationCut::kOnlyCharged,
                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
                                                     Float_t cone = 0.3,
@@ -506,7 +549,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
                                                     Bool_t multi = kFALSE, Bool_t simu = kFALSE,
                                                     Int_t debug = -1, Bool_t print = kFALSE)
 {
-  
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
   ana->SetDebug(debug);
   
@@ -606,14 +648,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   if(print) ana->Print("");
   
   return ana;
-  
 }
 
-
-//________________________________________
+///
+/// Configure the task doing standard calorimeter QA
+///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
-  
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   ana->SetDebug(debug); //10 for lots of messages
   ana->SetCalorimeter(calorimeter);
@@ -644,13 +685,13 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t s
   if(print) ana->Print("");
   
   return ana;
-  
 }
 
-//___________________________________________________________________________________
+///
+/// Configure the task doing charged track selection
+///
 AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugLevel)
 {
-  
   AliAnaChargedParticles *ana = new AliAnaChargedParticles();
   ana->SetDebug(debugLevel); //10 for lots of messages
   
@@ -680,12 +721,13 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugL
   if(debugLevel > 0) ana->Print("");
   
   return ana;
-  
 }
 
+///
+/// Configure the task doing random trigger generation
+///
 AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
 {
-  
   AliAnaRandomTrigger *ana = new AliAnaRandomTrigger();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -738,12 +780,11 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-
-
-//________________________________________________________
+///
+/// Configure the selection of MC events
+///
 void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana, Bool_t simu = kFALSE)
 {
   if(simu) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
@@ -753,16 +794,15 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana, Bool_t simu = kFALSE)
   //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 }  
 
-//________________________________________________________
+///
+/// Set common histograms binning and ranges
+///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter = "EMCAL")
 {
-  // Set common bins for all analysis and MC histograms filling
-    
   histoRanges->SetHistoPtRangeAndNBins(0., 100., 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
   {
-    
     histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
     histoRanges->SetHistoXRangeAndNBins(-600,90,200); // QA
     histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA
@@ -808,10 +848,11 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  
 }
 
-//_____________________________
+///
+/// Configure the task doing the trigger cluster-jet correlation
+///
 UInt_t SetTriggerMaskFromName(TString trigger)
 {
   if(trigger=="EMC7")

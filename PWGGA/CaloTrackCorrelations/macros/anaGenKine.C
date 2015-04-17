@@ -1,4 +1,3 @@
-/* $Id:  $ */
 //--------------------------------------------------
 // Example of simple analysis of a single file
 // accessing directly the MC kinematics information
