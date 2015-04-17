@@ -7,6 +7,7 @@
 #include "AliPicoTrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliVCluster.h"
+#include "AliAODTrack.h"
 
 //_________________________________________________________________________________________________
 AliPicoTrack::AliPicoTrack() :
@@ -121,4 +122,31 @@ Byte_t AliPicoTrack::GetTrackType(const AliVTrack *t)
   else if (t->TestBit(BIT(22)) && t->TestBit(BIT(23)))
     ret = 3;
   return ret;
+}
+
+//________________________________________________________________________
+Byte_t AliPicoTrack::GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2)
+{
+  // Return track type: 0 = filterBit1, 1 = filterBit2 && ITS, 2 = filterBit2 && !ITS.
+  // Returns 3 if filterBit1 and filterBit2 do not test.
+  // WARNING: only works with AOD tracks and AOD filter bits must be provided. Otherwise will always return 0.
+
+  Int_t res = 0;
+
+  if (aodTrack->TestFilterBit(filterBit1)) {
+    res = 0;
+  }
+  else if (aodTrack->TestFilterBit(filterBit2)) {
+    if ((aodTrack->GetStatus()&AliVTrack::kITSrefit)!=0) {
+      res = 1;
+    }
+    else {
+      res = 2;
+    }
+  }
+  else {
+    res = 3;
+  }
+
+  return res;
 }
