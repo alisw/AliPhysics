@@ -6,7 +6,10 @@
 //
 // some utilities which do net exist in the standard ROOT
 //
- 
+/// \file TStatToolkit.h
+/// \class TStatToolkit
+/// \brief Summary of statistics functions
+
 #include "TObject.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
@@ -33,7 +36,7 @@ class TStatToolkit : public TObject
 {
  public:
   enum TStatType {kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS}; 
-  enum TDistanceType {kL1, kL2, kLp, kMaxNorm, kHammingDistance };   // http://en.wikipedia.org/w/index.php?title=Norm_(mathematics)&oldid=655824636
+  enum ENormType {kL1, kL2, kLp, kMax, kHamming, kNNormType };   // http://en.wikipedia.org/w/index.php?title=Norm_(mathematics)&oldid=655824636
   TStatToolkit();
   virtual ~TStatToolkit();
   //
@@ -88,7 +91,35 @@ class TStatToolkit : public TObject
   static TMultiGraph*  MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias);
   static void  MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, TObjString& sumID, TCut &selection);
   static Double_t GetDefaultStat(TTree * tree, const char * var, const char * selection, TStatType statType);
-  static Double_t GetDistance(TTree * tree, const char * var, const char * selection, TDistanceType distanceType){;}
+  //
+  // norm (distance) functions
+  //
+  /// Collect all variables from the last draw in one array
+  /// It is assumed that the Draw function of the TTree was called before
+  /// if e.g. Draw("v1:v2:v3") had been called, then values will contain
+  /// the concatenated array of the values from v1,v2 and v3
+  /// \param[in]  tree   input tree
+  /// \param[out] values array in which to summarise all 'drawn' values
+  static void     CombineArray(TTree *tree, TVectorD &values);
+  /// Calculate the distance of the elements in values using a certain norm
+  /// \param[in] values array with input values
+  /// \param[in] normType normalisation to use
+  /// \param[in] pvalue the p value for the p-type norm, ignored for all other norms
+  /// \return           calculated distance
+  static Double_t GetDistance(const TVectorD &values, const ENormType normType, const Int_t pvalue=1);
+  /// Calculate the distance of the elements in values using a certain norm
+  /// \sa GetDistance()
+  static Double_t GetDistance(const Int_t size, const Double_t *values, const ENormType normType, const Int_t pvalue=1);
+  /// Calculate the distance of the values selecte in tree->Draw(var, selection)
+  /// If var contains more than one variable (separated by ':' as usual) the arrays
+  /// are concatenated
+  /// \param[in] tree      input tree
+  /// \param[in] var       variable expression for the tree->Draw()
+  /// \param[in] selection selection for the tree->Draw()
+  /// \param[in] normType  norm to use for calculating the point distances
+  /// \param[in] pvalue    p-value for the p-norm (ignored for other norm types
+  /// \return              calculated distnace
+  static Double_t GetDistance(TTree * tree, const char * var, const char * selection, const ENormType normType, const Int_t pvalue=1);
   //
   // TTree function for robust draw
   //
