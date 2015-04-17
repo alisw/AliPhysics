@@ -1,6 +1,4 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
-                                       Double_t invMass = 0.01,
-                                       TString nonHFEalgorithm = "KF")
+AliAnalysisTask *AddTaskFlowTPCEMCalEP()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -49,9 +47,9 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
 //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx++g");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
 
-  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
-  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
-  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
+  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
+  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
+  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
  
   mgr->AddTask(taskcorrMB);
   mgr->AddTask(taskMB);
@@ -80,8 +78,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
   mgr->ConnectInput(taskMB, 0, cinput);
   mgr->ConnectOutput(taskMB, 1, coutput1);
   
-  //L1 gamma and jet trigger
-  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
+  //L1 gamma trigger
+  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA);
 
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalL1GammaV2";
@@ -93,7 +91,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
   
   if(MCthere){
     
-    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
+    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
     mgr->AddTask(taskMC);
     
     taskMC->SelectCollisionCandidates(AliVEvent::kMB);

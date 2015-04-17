@@ -65,6 +65,9 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
   } else {
     Printf("INFO: QA output file %s open. \n",fin->GetName());
   }
+
+    TFile * trendFile = new TFile(treePostFileName,"recreate");
+
   
     ///// SDD Variables
     
@@ -80,8 +83,8 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     Int_t nTrigEvents;
     Double_t averPoints=0.;
     Double_t cntBins=0.;
-    Double_t minTime=-999.;
-    Double_t errMinTime=0.;
+    Float_t minTime=-999.;
+    Float_t errMinTime=0.;
     Float_t MPVdEdxLay3,errMPVdEdxLay3,MPVdEdxLay4,errMPVdEdxLay4;
     Float_t MPVdEdxTB0,errMPVdEdxTB0,MPVdEdxTB5,errMPVdEdxTB5;
    
@@ -175,156 +178,156 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     ttree->Branch("nEventsTriggered",&nEventsTriggered,"nEventsTriggered/I");
     ttree->Branch("minDrTime",&minDrTime,"minDrTime/F");
     ttree->Branch("errminDrTime",&errminDrTime,"errminDrTime/F");
-    ttree->Branch("meanDrTime",&meanDrTime,"meanDrTime/D");
-    ttree->Branch("errmeanDrTime",&errmeanDrTime,"errmeanDrTime/D"); //mean time
-    ttree->Branch("fracTrackWithClu1",&fracTrackWithClu1,"fracTrackWithClu1/D"); //fraction of tracks with cluster in layer 1
+    ttree->Branch("meanDrTime",&meanDrTime,"meanDrTime/F");
+    ttree->Branch("errmeanDrTime",&errmeanDrTime,"errmeanDrTime/F"); //mean time
+    ttree->Branch("fracTrackWithClu1",&fracTrackWithClu1,"fracTrackWithClu1/F"); //fraction of tracks with cluster in layer 1
 
-    ttree->Branch("errfracTrackWithClu1",&errfracTrackWithClu1,"errfracTrackWithClu1/D"); //error fraction of tracks with cluster in layer 1
-    ttree->Branch("fracTrackWithClu2",&fracTrackWithClu2,"fracTrackWithClu2/D"); //
-    ttree->Branch("errfracTrackWithClu2",&errfracTrackWithClu2,"errfracTrackWithClu2/D"); //
-    ttree->Branch("fracTrackWithClu3",&fracTrackWithClu3,"fracTrackWithClu3/D");
-    ttree->Branch("errfracTrackWithClu3",&errfracTrackWithClu3,"errfracTrackWithClu3/D");
-    ttree->Branch("fracTrackWithClu4",&fracTrackWithClu4,"fracTrackWithClu4/D");
-    ttree->Branch("errfracTrackWithClu4",&errfracTrackWithClu4,"errfracTrackWithClu4/D");
-    ttree->Branch("fracTrackWithClu5",&fracTrackWithClu5,"fracTrackWithClu5/D");
-    ttree->Branch("errfracTrackWithClu5",&errfracTrackWithClu5,"errfracTrackWithClu5/D");
-    ttree->Branch("fracTrackWithClu6",&fracTrackWithClu6,"fracTrackWithClu6/D");
-    ttree->Branch("errfracTrackWithClu6",&errfracTrackWithClu6,"errfracTrackWithClu6/D");
-
-
-    
-    ttree->Branch("meanVtxTRKx",&meanVtxTRKx,"meanVtxTRKx/D"); // mean of tracks vertex position - x
-    ttree->Branch("meanVtxTRKy",&meanVtxTRKy,"meanVtxTRKy/D"); // mean of tracks vertex position - y
-    ttree->Branch("meanVtxTRKz",&meanVtxTRKz,"meanVtxTRKz/D"); // mean of tracks vertex position - z
-    ttree->Branch("meanVtxTRKxErr",&meanVtxTRKxErr,"meanVtxTRKxErr/D"); // error mean of tracks vertex position - x
-    ttree->Branch("meanVtxTRKyErr",&meanVtxTRKyErr,"meanVtxTRKyErr/D"); // error mean of tracks vertex position - y
-    ttree->Branch("meanVtxTRKzErr",&meanVtxTRKzErr,"meanVtxTRKzErr/D"); // error mean of tracks vertex position - z
-
-    ttree->Branch("meanVtxSPDx",&meanVtxSPDx,"meanVtxSPDx/D"); // mean of SPD vertex position - x
-    ttree->Branch("meanVtxSPDy",&meanVtxSPDy,"meanVtxSPDy/D"); // mean of SPD vertex position - y
-    ttree->Branch("meanVtxSPDz",&meanVtxSPDz,"meanVtxSPDz/D"); // mean of SPD vertex position - z
-    ttree->Branch("meanVtxSPDxErr",&meanVtxSPDxErr,"meanVtxSPDxErr/D"); // error mean of SPD vertex position - x
-    ttree->Branch("meanVtxSPDyErr",&meanVtxSPDyErr,"meanVtxSPDyErr/D"); // error mean of SPD vertex position - y
-    ttree->Branch("meanVtxSPDzErr",&meanVtxSPDzErr,"meanVtxSPDzErr/D"); // error mean of SPD vertex position - z
-
-    ttree->Branch("sigmaVtxTRKx",&sigmaVtxTRKx,"sigmaVtxTRKx/D"); // sigma of tracks vertex position - x
-    ttree->Branch("sigmaVtxTRKy",&sigmaVtxTRKy,"sigmaVtxTRKy/D"); // sigma of tracks vertex position - y
-    ttree->Branch("sigmaVtxTRKz",&sigmaVtxTRKz,"sigmaVtxTRKz/D"); // sigma of tracks vertex position - z
-    ttree->Branch("sigmaVtxTRKxErr",&sigmaVtxTRKxErr,"sigmaVtxTRKxErr/D"); // error sigma of tracks vertex position - x
-    ttree->Branch("sigmaVtxTRKyErr",&sigmaVtxTRKyErr,"sigmaVtxTRKyErr/D"); // error sigma of tracks vertex position - y
-    ttree->Branch("sigmaVtxTRKzErr",&sigmaVtxTRKzErr,"sigmaVtxTRKzErr/D"); // error sigma of tracks vertex position - z
-
-    ttree->Branch("sigmaVtxSPDx",&sigmaVtxSPDx,"sigmaVtxSPDx/D"); // sigma of tracks vertex position - x
-    ttree->Branch("sigmaVtxSPDy",&sigmaVtxSPDy,"sigmaVtxSPDy/D"); // sigma of tracks vertex position - y
-    ttree->Branch("sigmaVtxSPDz",&sigmaVtxSPDz,"sigmaVtxSPDz/D"); // sigma of tracks vertex position - z
-    ttree->Branch("sigmaVtxSPDxErr",&sigmaVtxSPDxErr,"sigmaVtxSPDxErr/D"); // error sigma of tracks vertex position - x
-    ttree->Branch("sigmaVtxSPDyErr",&sigmaVtxSPDyErr,"sigmaVtxSPDyErr/D"); // error sigma of tracks vertex position - y
-    ttree->Branch("sigmaVtxSPDzErr",&sigmaVtxSPDzErr,"sigmaVtxSPDzErr/D"); // error sigma of tracks vertex position - z
-    
-    
-    
-    ttree->Branch("MPVL5",&MPVL5,"MPVL5/D"); // Most Probable Value dEdx Layer 5
-    ttree->Branch("MPVErrL5",&MPVErrL5,"MPVErrL5/D"); // Most Probable Value error dEdx Layer 5
-
-    ttree->Branch("MPVL6",&MPVL6,"MPVL6/D"); // Most Probable Value dEdx Layer 6
-    ttree->Branch("MPVErrL6",&MPVErrL6,"MPVErrL6/D"); // Most Probable Value error dEdx Layer 6
-
-    ttree->Branch("ChargeRatioL5",&ChargeRatioL5,"ChargeRatioL5/D"); // Charge ratio (2 sides of SSD) Layer 5
-    ttree->Branch("ChargeRatioErrL5",&ChargeRatioErrL5,"ChargeRatioErrL5/D"); // Charge ratio error (2 sides of SSD) Layer 5
-
-    ttree->Branch("ChargeRatioL6",&ChargeRatioL6,"ChargeRatioL6/D"); // Charge ratio (2 sides of SSD) Layer 6
-    ttree->Branch("ChargeRatioErrL6",&ChargeRatioErrL6,"ChargeRatioErrL6/D"); // Charge ratio error(2 sides of SSD) Layer 6
-
-    ttree->Branch("EmptyModulesSDD",&EmptyModulesSDD,"EmptyModulesSDD/D"); // Number of empty SSD  modules
+    ttree->Branch("errfracTrackWithClu1",&errfracTrackWithClu1,"errfracTrackWithClu1/F"); //error fraction of tracks with cluster in layer 1
+    ttree->Branch("fracTrackWithClu2",&fracTrackWithClu2,"fracTrackWithClu2/F"); //
+    ttree->Branch("errfracTrackWithClu2",&errfracTrackWithClu2,"errfracTrackWithClu2/F"); //
+    ttree->Branch("fracTrackWithClu3",&fracTrackWithClu3,"fracTrackWithClu3/F");
+    ttree->Branch("errfracTrackWithClu3",&errfracTrackWithClu3,"errfracTrackWithClu3/F");
+    ttree->Branch("fracTrackWithClu4",&fracTrackWithClu4,"fracTrackWithClu4/F");
+    ttree->Branch("errfracTrackWithClu4",&errfracTrackWithClu4,"errfracTrackWithClu4/F");
+    ttree->Branch("fracTrackWithClu5",&fracTrackWithClu5,"fracTrackWithClu5/F");
+    ttree->Branch("errfracTrackWithClu5",&errfracTrackWithClu5,"errfracTrackWithClu5/F");
+    ttree->Branch("fracTrackWithClu6",&fracTrackWithClu6,"fracTrackWithClu6/F");
+    ttree->Branch("errfracTrackWithClu6",&errfracTrackWithClu6,"errfracTrackWithClu6/F");
 
 
     
-    ttree->Branch("fracExtra",&fracExtra,"fracExtra/D"); // fraction of extra clusters in SDD
-    ttree->Branch("errfracExtra",&errfracExtra,"errfracExtra/D"); // fraction of extra clusters in SDD
+    ttree->Branch("meanVtxTRKx",&meanVtxTRKx,"meanVtxTRKx/F"); // mean of tracks vertex position - x
+    ttree->Branch("meanVtxTRKy",&meanVtxTRKy,"meanVtxTRKy/F"); // mean of tracks vertex position - y
+    ttree->Branch("meanVtxTRKz",&meanVtxTRKz,"meanVtxTRKz/F"); // mean of tracks vertex position - z
+    ttree->Branch("meanVtxTRKxErr",&meanVtxTRKxErr,"meanVtxTRKxErr/F"); // error mean of tracks vertex position - x
+    ttree->Branch("meanVtxTRKyErr",&meanVtxTRKyErr,"meanVtxTRKyErr/F"); // error mean of tracks vertex position - y
+    ttree->Branch("meanVtxTRKzErr",&meanVtxTRKzErr,"meanVtxTRKzErr/F"); // error mean of tracks vertex position - z
+
+    ttree->Branch("meanVtxSPDx",&meanVtxSPDx,"meanVtxSPDx/F"); // mean of SPD vertex position - x
+    ttree->Branch("meanVtxSPDy",&meanVtxSPDy,"meanVtxSPDy/F"); // mean of SPD vertex position - y
+    ttree->Branch("meanVtxSPDz",&meanVtxSPDz,"meanVtxSPDz/F"); // mean of SPD vertex position - z
+    ttree->Branch("meanVtxSPDxErr",&meanVtxSPDxErr,"meanVtxSPDxErr/F"); // error mean of SPD vertex position - x
+    ttree->Branch("meanVtxSPDyErr",&meanVtxSPDyErr,"meanVtxSPDyErr/F"); // error mean of SPD vertex position - y
+    ttree->Branch("meanVtxSPDzErr",&meanVtxSPDzErr,"meanVtxSPDzErr/F"); // error mean of SPD vertex position - z
+
+    ttree->Branch("sigmaVtxTRKx",&sigmaVtxTRKx,"sigmaVtxTRKx/F"); // sigma of tracks vertex position - x
+    ttree->Branch("sigmaVtxTRKy",&sigmaVtxTRKy,"sigmaVtxTRKy/F"); // sigma of tracks vertex position - y
+    ttree->Branch("sigmaVtxTRKz",&sigmaVtxTRKz,"sigmaVtxTRKz/F"); // sigma of tracks vertex position - z
+    ttree->Branch("sigmaVtxTRKxErr",&sigmaVtxTRKxErr,"sigmaVtxTRKxErr/F"); // error sigma of tracks vertex position - x
+    ttree->Branch("sigmaVtxTRKyErr",&sigmaVtxTRKyErr,"sigmaVtxTRKyErr/F"); // error sigma of tracks vertex position - y
+    ttree->Branch("sigmaVtxTRKzErr",&sigmaVtxTRKzErr,"sigmaVtxTRKzErr/F"); // error sigma of tracks vertex position - z
+
+    ttree->Branch("sigmaVtxSPDx",&sigmaVtxSPDx,"sigmaVtxSPDx/F"); // sigma of tracks vertex position - x
+    ttree->Branch("sigmaVtxSPDy",&sigmaVtxSPDy,"sigmaVtxSPDy/F"); // sigma of tracks vertex position - y
+    ttree->Branch("sigmaVtxSPDz",&sigmaVtxSPDz,"sigmaVtxSPDz/F"); // sigma of tracks vertex position - z
+    ttree->Branch("sigmaVtxSPDxErr",&sigmaVtxSPDxErr,"sigmaVtxSPDxErr/F"); // error sigma of tracks vertex position - x
+    ttree->Branch("sigmaVtxSPDyErr",&sigmaVtxSPDyErr,"sigmaVtxSPDyErr/F"); // error sigma of tracks vertex position - y
+    ttree->Branch("sigmaVtxSPDzErr",&sigmaVtxSPDzErr,"sigmaVtxSPDzErr/F"); // error sigma of tracks vertex position - z
     
-    ttree->Branch("minTime",&minTime,"minTime/D"); // minimum drift time SDD
-    ttree->Branch("errMinTime",&errMinTime,"errMinTime/D"); //  error on minimum drift time SDD
     
-    ttree->Branch("MPVdEdxLay3",&MPVdEdxLay3,"MPVdEdxLay3/D"); // most probable value of dE/dx distribution of SDD Layer 3
-    ttree->Branch("errMPVdEdxLay3",&errMPVdEdxLay3,"errMPVdEdxLay3/D"); // error  most probable value of dE/dx distribution of SDD Layer 3
+    
+    ttree->Branch("MPVL5",&MPVL5,"MPVL5/F"); // Most Probable Value dEdx Layer 5
+    ttree->Branch("MPVErrL5",&MPVErrL5,"MPVErrL5/F"); // Most Probable Value error dEdx Layer 5
 
-    ttree->Branch("MPVdEdxLay4",&MPVdEdxLay4,"MPVdEdxLay4/D"); // most probable value of dE/dx distribution of SDD Layer 4
-    ttree->Branch("errMPVdEdxLay4",&errMPVdEdxLay4,"errMPVdEdxLay4/D"); // error  most probable value of dE/dx distribution of SDD Layer 4
+    ttree->Branch("MPVL6",&MPVL6,"MPVL6/F"); // Most Probable Value dEdx Layer 6
+    ttree->Branch("MPVErrL6",&MPVErrL6,"MPVErrL6/F"); // Most Probable Value error dEdx Layer 6
 
-    ttree->Branch("MPVdEdxTB0",&MPVdEdxTB0,"MPVdEdxTB0/D"); // most probable value of dE/dx distribution of SDD - small drift time
-    ttree->Branch("errMPVdEdxTB0",&errMPVdEdxTB0,"errMPVdEdxTB0/D"); // most probable value of dE/dx distribution of SDD - small drift time
+    ttree->Branch("ChargeRatioL5",&ChargeRatioL5,"ChargeRatioL5/F"); // Charge ratio (2 sides of SSD) Layer 5
+    ttree->Branch("ChargeRatioErrL5",&ChargeRatioErrL5,"ChargeRatioErrL5/F"); // Charge ratio error (2 sides of SSD) Layer 5
 
-    ttree->Branch("MPVdEdxTB5",&MPVdEdxTB5,"MPVdEdxTB5/D"); // most probable value of dE/dx distribution of SDD - large drift time
-    ttree->Branch("errMPVdEdxTB5",&errMPVdEdxTB5,"errMPVdEdxTB5/D"); // most probable value of dE/dx distribution of SDD - large drift time
+    ttree->Branch("ChargeRatioL6",&ChargeRatioL6,"ChargeRatioL6/F"); // Charge ratio (2 sides of SSD) Layer 6
+    ttree->Branch("ChargeRatioErrL6",&ChargeRatioErrL6,"ChargeRatioErrL6/F"); // Charge ratio error(2 sides of SSD) Layer 6
+
+    ttree->Branch("EmptyModulesSDD",&EmptyModulesSDD,"EmptyModulesSDD/F"); // Number of empty SSD  modules
+
+
+    
+    ttree->Branch("fracExtra",&fracExtra,"fracExtra/F"); // fraction of extra clusters in SDD
+    ttree->Branch("errfracExtra",&errfracExtra,"errfracExtra/F"); // fraction of extra clusters in SDD
+    
+    ttree->Branch("minTime",&minTime,"minTime/F"); // minimum drift time SDD
+    ttree->Branch("errMinTime",&errMinTime,"errMinTime/F"); //  error on minimum drift time SDD
+    
+    ttree->Branch("MPVdEdxLay3",&MPVdEdxLay3,"MPVdEdxLay3/F"); // most probable value of dE/Fx distribution of SDD Layer 3
+    ttree->Branch("errMPVdEdxLay3",&errMPVdEdxLay3,"errMPVdEdxLay3/F"); // error  most probable value of dE/Fx distribution of SDD Layer 3
+
+    ttree->Branch("MPVdEdxLay4",&MPVdEdxLay4,"MPVdEdxLay4/F"); // most probable value of dE/Fx distribution of SDD Layer 4
+    ttree->Branch("errMPVdEdxLay4",&errMPVdEdxLay4,"errMPVdEdxLay4/F"); // error  most probable value of dE/Fx distribution of SDD Layer 4
+
+    ttree->Branch("MPVdEdxTB0",&MPVdEdxTB0,"MPVdEdxTB0/F"); // most probable value of dE/Fx distribution of SDD - small drift time
+    ttree->Branch("errMPVdEdxTB0",&errMPVdEdxTB0,"errMPVdEdxTB0/F"); // most probable value of dE/Fx distribution of SDD - small drift time
+
+    ttree->Branch("MPVdEdxTB5",&MPVdEdxTB5,"MPVdEdxTB5/F"); // most probable value of dE/Fx distribution of SDD - large drift time
+    ttree->Branch("errMPVdEdxTB5",&errMPVdEdxTB5,"errMPVdEdxTB5/F"); // most probable value of dE/Fx distribution of SDD - large drift time
 
   
     
     
-    ttree->Branch("Eff6Pt02",&Eff6Pt02,"Eff6Pt02/D"); // matching efficiency low pt 6 clusters
-    ttree->Branch("errEff6Pt02",&errEff6Pt02,"errEff6Pt02/D"); // error matching efficiency low pt 6 clusters
-    ttree->Branch("Eff5Pt02",&Eff5Pt02,"Eff5Pt02/D"); // matching efficiency low pt 5 clusters
-    ttree->Branch("errEff5Pt02",&errEff5Pt02,"errEff5Pt02/D"); // error matching efficiency low pt 5 clusters
-    ttree->Branch("Eff4Pt02",&Eff4Pt02,"Eff4Pt02/D"); // matching efficiency low pt 4 clusters
-    ttree->Branch("errEff4Pt02",&errEff4Pt02,"errEff4Pt02/D"); // error matching efficiency low pt 4 clusters
-    ttree->Branch("Eff3Pt02",&Eff3Pt02,"Eff3Pt02/D"); // matching efficiency low pt 3 clusters
-    ttree->Branch("errEff3Pt02",&errEff3Pt02,"errEff3Pt02/D"); // error matching efficiency low pt 3 clusters
-    ttree->Branch("Eff2Pt02",&Eff2Pt02,"Eff2Pt02/D"); // matching efficiency low pt 2 clusters
-    ttree->Branch("errEff2Pt02",&errEff2Pt02,"errEff2Pt02/D"); // error matching efficiency low pt 2 clusters
-    ttree->Branch("EffSPDPt02",&EffSPDPt02,"EffSPDPt02/D"); // matching efficiency low pt 2 SPD
-    ttree->Branch("errEffSPDPt02",&errEffSPDPt02,"errEffSPDPt02/D"); // error matching efficiency low pt 2 SPD
-    ttree->Branch("EffoneSPDPt02",&EffoneSPDPt02,"EffoneSPDPt02/D"); // matching efficiency low pt 6 one SPD
-    ttree->Branch("errEffoneSPDPt02",&errEffoneSPDPt02,"errEffoneSPDPt02/D"); // error matching efficiency low pt one SPD
-    ttree->Branch("EffTOTPt02",&EffTOTPt02,"EffTOTPt02/D"); // matching efficiency low pt
-    ttree->Branch("errEffTOTPt02",&errEffTOTPt02,"errEffTOTPt02/D"); // error matching efficiency low pt
+    ttree->Branch("Eff6Pt02",&Eff6Pt02,"Eff6Pt02/F"); // matching efficiency low pt 6 clusters
+    ttree->Branch("errEff6Pt02",&errEff6Pt02,"errEff6Pt02/F"); // error matching efficiency low pt 6 clusters
+    ttree->Branch("Eff5Pt02",&Eff5Pt02,"Eff5Pt02/F"); // matching efficiency low pt 5 clusters
+    ttree->Branch("errEff5Pt02",&errEff5Pt02,"errEff5Pt02/F"); // error matching efficiency low pt 5 clusters
+    ttree->Branch("Eff4Pt02",&Eff4Pt02,"Eff4Pt02/F"); // matching efficiency low pt 4 clusters
+    ttree->Branch("errEff4Pt02",&errEff4Pt02,"errEff4Pt02/F"); // error matching efficiency low pt 4 clusters
+    ttree->Branch("Eff3Pt02",&Eff3Pt02,"Eff3Pt02/F"); // matching efficiency low pt 3 clusters
+    ttree->Branch("errEff3Pt02",&errEff3Pt02,"errEff3Pt02/F"); // error matching efficiency low pt 3 clusters
+    ttree->Branch("Eff2Pt02",&Eff2Pt02,"Eff2Pt02/F"); // matching efficiency low pt 2 clusters
+    ttree->Branch("errEff2Pt02",&errEff2Pt02,"errEff2Pt02/F"); // error matching efficiency low pt 2 clusters
+    ttree->Branch("EffSPDPt02",&EffSPDPt02,"EffSPDPt02/F"); // matching efficiency low pt 2 SPD
+    ttree->Branch("errEffSPDPt02",&errEffSPDPt02,"errEffSPDPt02/F"); // error matching efficiency low pt 2 SPD
+    ttree->Branch("EffoneSPDPt02",&EffoneSPDPt02,"EffoneSPDPt02/F"); // matching efficiency low pt 6 one SPD
+    ttree->Branch("errEffoneSPDPt02",&errEffoneSPDPt02,"errEffoneSPDPt02/F"); // error matching efficiency low pt one SPD
+    ttree->Branch("EffTOTPt02",&EffTOTPt02,"EffTOTPt02/F"); // matching efficiency low pt
+    ttree->Branch("errEffTOTPt02",&errEffTOTPt02,"errEffTOTPt02/F"); // error matching efficiency low pt
     
     
 
     
     
-    ttree->Branch("Eff6Pt1",&Eff6Pt1,"Eff6Pt1/D"); // matching efficiency mid pt 6 clusters
-    ttree->Branch("errEff6Pt1",&errEff6Pt1,"errEff6Pt1/D"); // error matching efficiency mid pt 6 clusters
-    ttree->Branch("Eff5Pt1",&Eff5Pt1,"Eff5Pt1/D"); // matching efficiency mid pt 5 clusters
-    ttree->Branch("errEff5Pt1",&errEff5Pt1,"errEff5Pt1/D"); // error matching efficiency mid pt 5 clusters
-    ttree->Branch("Eff4Pt1",&Eff4Pt1,"Eff4Pt1/D"); // matching efficiency mid pt 4 clusters
-    ttree->Branch("errEff4Pt1",&errEff4Pt1,"errEff4Pt1/D"); // error matching efficiency mid pt 4 clusters
-    ttree->Branch("Eff3Pt1",&Eff3Pt1,"Eff3Pt1/D"); // matching efficiency mid pt 3 clusters
-    ttree->Branch("errEff3Pt1",&errEff3Pt1,"errEff3Pt1/D"); // error matching efficiency mid pt 3 clusters
-    ttree->Branch("Eff2Pt1",&Eff2Pt1,"Eff2Pt1/D"); // matching efficiency mid pt 2 clusters
-    ttree->Branch("errEff2Pt1",&errEff2Pt1,"errEff2Pt1/D"); // error matching efficiency mid pt 2 clusters
-    ttree->Branch("EffSPDPt1",&EffSPDPt1,"EffSPDPt1/D"); // matching efficiency mid pt 2 SPD
-    ttree->Branch("errEffSPDPt1",&errEffSPDPt1,"errEffSPDPt1/D"); // error matching efficiency mid pt 2 SPD
-    ttree->Branch("EffoneSPDPt1",&EffoneSPDPt1,"EffoneSPDPt1/D"); // matching efficiency mid pt 6 one SPD
-    ttree->Branch("errEffoneSPDPt1",&errEffoneSPDPt1,"errEffoneSPDPt1/D"); // error matching efficiency mid pt one SPD
-    ttree->Branch("EffTOTPt1",&EffTOTPt1,"EffTOTPt1/D"); // matching efficiency mid pt
-    ttree->Branch("errEffTOTPt1",&errEffTOTPt1,"errEffTOTPt1/D"); // error matching efficiency mid pt
-    
-    
-    
-    
-    ttree->Branch("Eff6Pt10",&Eff6Pt10,"Eff6Pt10/D"); // matching efficiency high pt 6 clusters
-    ttree->Branch("errEff6Pt10",&errEff6Pt10,"errEff6Pt10/D"); // error matching efficiency high pt 6 clusters
-    ttree->Branch("Eff5Pt10",&Eff5Pt10,"Eff5Pt10/D"); // matching efficiency high pt 5 clusters
-    ttree->Branch("errEff5Pt10",&errEff5Pt10,"errEff5Pt10/D"); // error matching efficiency high pt 5 clusters
-    ttree->Branch("Eff4Pt10",&Eff4Pt10,"Eff4Pt10/D"); // matching efficiency high pt 4 clusters
-    ttree->Branch("errEff4Pt10",&errEff4Pt10,"errEff4Pt10/D"); // error matching efficiency high pt 4 clusters
-    ttree->Branch("Eff3Pt10",&Eff3Pt10,"Eff3Pt10/D"); // matching efficiency high pt 3 clusters
-    ttree->Branch("errEff3Pt10",&errEff3Pt10,"errEff3Pt10/D"); // error matching efficiency high pt 3 clusters
-    ttree->Branch("Eff2Pt10",&Eff2Pt10,"Eff2Pt10/D"); // matching efficiency high pt 2 clusters
-    ttree->Branch("errEff2Pt10",&errEff2Pt10,"errEff2Pt10/D"); // error matching efficiency high pt 2 clusters
-    ttree->Branch("EffSPDPt10",&EffSPDPt10,"EffSPDPt10/D"); // matching efficiency high pt 2 SPD
-    ttree->Branch("errEffSPDPt10",&errEffSPDPt10,"errEffSPDPt10/D"); // error matching efficiency high pt 2 SPD
-    ttree->Branch("EffoneSPDPt10",&EffoneSPDPt10,"EffoneSPDPt10/D"); // matching efficiency high pt 6 one SPD
-    ttree->Branch("errEffoneSPDPt10",&errEffoneSPDPt10,"errEffoneSPDPt10/D"); // error matching efficiency high pt one SPD
-    ttree->Branch("EffTOTPt10",&EffTOTPt10,"EffTOTPt10/D"); // matching efficiency high pt
-    ttree->Branch("errEffTOTPt10",&errEffTOTPt10,"errEffTOTPt10/D"); // error matching efficiency high pt
+    ttree->Branch("Eff6Pt1",&Eff6Pt1,"Eff6Pt1/F"); // matching efficiency mid pt 6 clusters
+    ttree->Branch("errEff6Pt1",&errEff6Pt1,"errEff6Pt1/F"); // error matching efficiency mid pt 6 clusters
+    ttree->Branch("Eff5Pt1",&Eff5Pt1,"Eff5Pt1/F"); // matching efficiency mid pt 5 clusters
+    ttree->Branch("errEff5Pt1",&errEff5Pt1,"errEff5Pt1/F"); // error matching efficiency mid pt 5 clusters
+    ttree->Branch("Eff4Pt1",&Eff4Pt1,"Eff4Pt1/F"); // matching efficiency mid pt 4 clusters
+    ttree->Branch("errEff4Pt1",&errEff4Pt1,"errEff4Pt1/F"); // error matching efficiency mid pt 4 clusters
+    ttree->Branch("Eff3Pt1",&Eff3Pt1,"Eff3Pt1/F"); // matching efficiency mid pt 3 clusters
+    ttree->Branch("errEff3Pt1",&errEff3Pt1,"errEff3Pt1/F"); // error matching efficiency mid pt 3 clusters
+    ttree->Branch("Eff2Pt1",&Eff2Pt1,"Eff2Pt1/F"); // matching efficiency mid pt 2 clusters
+    ttree->Branch("errEff2Pt1",&errEff2Pt1,"errEff2Pt1/F"); // error matching efficiency mid pt 2 clusters
+    ttree->Branch("EffSPDPt1",&EffSPDPt1,"EffSPDPt1/F"); // matching efficiency mid pt 2 SPD
+    ttree->Branch("errEffSPDPt1",&errEffSPDPt1,"errEffSPDPt1/F"); // error matching efficiency mid pt 2 SPD
+    ttree->Branch("EffoneSPDPt1",&EffoneSPDPt1,"EffoneSPDPt1/F"); // matching efficiency mid pt 6 one SPD
+    ttree->Branch("errEffoneSPDPt1",&errEffoneSPDPt1,"errEffoneSPDPt1/F"); // error matching efficiency mid pt one SPD
+    ttree->Branch("EffTOTPt1",&EffTOTPt1,"EffTOTPt1/F"); // matching efficiency mid pt
+    ttree->Branch("errEffTOTPt1",&errEffTOTPt1,"errEffTOTPt1/F"); // error matching efficiency mid pt
+
+
+
+
+    ttree->Branch("Eff6Pt10",&Eff6Pt10,"Eff6Pt10/F"); // matching efficiency high pt 6 clusters
+    ttree->Branch("errEff6Pt10",&errEff6Pt10,"errEff6Pt10/F"); // error matching efficiency high pt 6 clusters
+    ttree->Branch("Eff5Pt10",&Eff5Pt10,"Eff5Pt10/F"); // matching efficiency high pt 5 clusters
+    ttree->Branch("errEff5Pt10",&errEff5Pt10,"errEff5Pt10/F"); // error matching efficiency high pt 5 clusters
+    ttree->Branch("Eff4Pt10",&Eff4Pt10,"Eff4Pt10/F"); // matching efficiency high pt 4 clusters
+    ttree->Branch("errEff4Pt10",&errEff4Pt10,"errEff4Pt10/F"); // error matching efficiency high pt 4 clusters
+    ttree->Branch("Eff3Pt10",&Eff3Pt10,"Eff3Pt10/F"); // matching efficiency high pt 3 clusters
+    ttree->Branch("errEff3Pt10",&errEff3Pt10,"errEff3Pt10/F"); // error matching efficiency high pt 3 clusters
+    ttree->Branch("Eff2Pt10",&Eff2Pt10,"Eff2Pt10/F"); // matching efficiency high pt 2 clusters
+    ttree->Branch("errEff2Pt10",&errEff2Pt10,"errEff2Pt10/F"); // error matching efficiency high pt 2 clusters
+    ttree->Branch("EffSPDPt10",&EffSPDPt10,"EffSPDPt10/F"); // matching efficiency high pt 2 SPD
+    ttree->Branch("errEffSPDPt10",&errEffSPDPt10,"errEffSPDPt10/F"); // error matching efficiency high pt 2 SPD
+    ttree->Branch("EffoneSPDPt10",&EffoneSPDPt10,"EffoneSPDPt10/F"); // matching efficiency high pt 6 one SPD
+    ttree->Branch("errEffoneSPDPt10",&errEffoneSPDPt10,"errEffoneSPDPt10/F"); // error matching efficiency high pt one SPD
+    ttree->Branch("EffTOTPt10",&EffTOTPt10,"EffTOTPt10/F"); // matching efficiency high pt
+    ttree->Branch("errEffTOTPt10",&errEffTOTPt10,"errEffTOTPt10/F"); // error matching efficiency high pt
 
     
     
-    ttree->Branch("FracSPD1",&FracSPD1,"FracSPD1/D"); // fraction SPD layers active on 1 layer
-    ttree->Branch("errFracSPD1",&errFracSPD1,"errFracSPD1/D");
+    ttree->Branch("FracSPD1",&FracSPD1,"FracSPD1/F"); // fraction SPD layers active on 1 layer
+    ttree->Branch("errFracSPD1",&errFracSPD1,"errFracSPD1/F");
 
-    ttree->Branch("FracSPD2",&FracSPD2,"FracSPD2/D"); // fraction SPD layers active on 1 layer
-    ttree->Branch("errFracSPD2",&errFracSPD2,"errFracSPD2/D");
+    ttree->Branch("FracSPD2",&FracSPD2,"FracSPD2/F"); // fraction SPD layers active on 1 layer
+    ttree->Branch("errFracSPD2",&errFracSPD2,"errFracSPD2/F");
     
     
 ///////////////   Vertex part
@@ -610,6 +613,8 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     fracTrackWithClu6=fracT[5];
     errfracTrackWithClu6=efracT[5];
     
+    cout<<endl<<errfracTrackWithClu6<<endl;
+
     TH1F* hmodT=(TH1F*)SDDList->FindObject("hTPMod");
   
     
@@ -649,13 +654,14 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
         averPoints/=cntBins;
         for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
             if(htimT->GetBinContent(iBin)>0.5*averPoints){
-                minTime=htimT->GetBinCenter(iBin);
-                errMinTime=0.5*htimT->GetBinWidth(iBin);
+                minDrTime=htimT->GetBinCenter(iBin);
+                errminDrTime=0.5*htimT->GetBinWidth(iBin);
                 break;
             }
         }
     }
-    
+      meanDrTime=htimT->GetMean();
+    errmeanDrTime=htimT->GetMeanError();
     TH2F* hdedxmod=(TH2F*)SDDList->FindObject("hdEdxVsMod");
     
     
@@ -949,7 +955,6 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     
     
     
-    TFile * trendFile = new TFile(treePostFileName,"recreate");
 
      ttree->Fill();
   printf("==============  Saving trending quantities in tree for run %i ===============\n",runNumber);

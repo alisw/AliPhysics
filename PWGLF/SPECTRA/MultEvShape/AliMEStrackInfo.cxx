@@ -32,6 +32,8 @@ AliMEStrackInfo::AliMEStrackInfo()
   ,fEta(-100.)
   ,fPhi(-100.)
   ,fY(0.)
+  ,fdEdx(0.)
+  ,fBeta(0.)
   ,fPID()
   ,fFilterParam(NULL)
 {
@@ -55,6 +57,8 @@ AliMEStrackInfo::AliMEStrackInfo(const AliMEStrackInfo &t)
 ,fEta(t.fEta)
 ,fPhi(t.fPhi)
 ,fY(t.fY)
+,fdEdx(t.fdEdx)
+,fBeta(t.fBeta)
 ,fPID()
 ,fFilterParam(NULL)
 {
@@ -89,6 +93,8 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
   ,fEta(t->Eta())
   ,fPhi(t->Phi())
   ,fY(0.)
+  ,fdEdx(t->GetTPCsignal())
+  ,fBeta(-1.)
   ,fPID()
   ,fFilterParam(NULL)
 {
@@ -134,12 +140,19 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
   Float_t bCov[3];
   t->GetImpactParameters(fDCA, bCov);
 
+  // set the PID QA info
+
+  // beta
+  Double_t tof = t->GetTOFsignal();
+  if(tof > 0.) fBeta = ( (t->GetIntegratedLength()) / (tof * TMath::C()) ) *10e9;
+  else fBeta = -1.;
+
   // fill in debug mode also the filter param
   if(AliMESbaseTask::DebugUsers()){
     fFilterParam = new AliMESfilterParam;
     fFilterParam->fNcl = t->GetNcls(1);
     fFilterParam->fChi2Cl = t->GetTPCchi2();
-  }  
+  }
 }
 
 //______________________________________________________________
@@ -156,6 +169,8 @@ AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)
   ,fEta(t->Eta())
   ,fPhi(t->Phi())
   ,fY(t->Y())
+  ,fdEdx(-1.)
+  ,fBeta(-1.)
   ,fPID()
   ,fFilterParam(NULL)
 {
