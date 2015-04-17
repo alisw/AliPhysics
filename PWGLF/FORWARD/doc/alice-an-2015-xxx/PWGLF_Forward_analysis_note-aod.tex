@@ -460,12 +460,12 @@ Firstly we define a strip $t$ as being `hit' if
 \begin{align*}
   t_{\text{hit}} &= \left\{ 
     \begin{array}{cl}
-      1 & \Delta_t > c(\eta_t) \wedge\ n'_t > 0.9\\
-      0 & 0 \leq \Delta_t \leq c(\eta_t)\vee\  0 \leq \vee n'_t \leq 0.9\\
+      1 & \Delta_t > T(\eta_t) \wedge\ n'_t > 0.9\\
+      0 & 0 \leq \Delta_t \leq T(\eta_t)\vee\  0 \leq \vee n'_t \leq 0.9\\
       \text{undefined} & \text{otherwise}\\ 
     \end{array}\right.
 \end{align*}
-where $c(\eta_t)$ is some cut that defines a lower threshold for when
+where $T(\eta_t)$ is some cut that defines a lower threshold for when
 a signal is considered a `hit' (see also \secref{sec:cuts}).  For a
 given set of strips $R$ we then define 
 \begin{align*}

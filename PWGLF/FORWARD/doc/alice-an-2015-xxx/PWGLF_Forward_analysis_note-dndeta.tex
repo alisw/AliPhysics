@@ -250,7 +250,7 @@ results from the \SPD{} tracklets.
   \caption{\subref{fig:empirical:cent} The empirical correction
     $\EmpCor[c]{}$ for 4 centralities, and the average of these.  The
     lower plot shows the ratio of $\EmpCor[c]{}$ to the mean.  From
-    this we see we $\pm2\%$ systematic error on
+    this we see we $\pm2\%$ systematic uncertainty on
     $\EmpCor{}$. \subref{fig:empirical:secmap} The average empirical
     correction compared to simulation based
     $\langle\SecMap\rangle=1/2\pi\int\text{d}\varphi\SecMap{}$ for
@@ -362,10 +362,10 @@ correction for secondary particle production is by nature
 system and energy since it depends only on the material in \ALICE{}.
 Howver, as shown in \figref{fig:secmap:all} there is a residual
 uncertainty from the hadron chemistry which especially effects
-\FMD{1}.  This forces us to assign a systematic error of the order of
-a few percent more in the \FMD{1} region than what we would otherwise
-to in the remaining regions.  Note, that the uncertainty of the
-empirical correction already contains a 2\% uncertainty from the
+\FMD{1}.  This forces us to assign a systematic uncertainty of the
+order of a few percent more in the \FMD{1} region than what we would
+otherwise to in the remaining regions.  Note, that the uncertainty of
+the empirical correction already contains a 2\% uncertainty from the
 hadron--chemistry (see also \secref{sec:dndeta:sys:emp}).
 
 The empirical correction is seen to be stable and known to within
@@ -393,10 +393,10 @@ uncertainties and their sizes.
   %% Although this note really only deals with PbPb, I think we should
   %% show all we know here. 
   \centering
-  \caption[Summary of systematic errors]{Summary of systematic
-    errors. Errors on the 
+  \caption[Summary of systematic uncertainties]{Summary of systematic
+    uncertainties. The uncertainties from the 
     event selection in \ppCol{} are taken from \cite{pwgud:2015}.
-    Errors on the centrality selection in \pPbCol{} and \PbpCol{} from
+    Uncertainties from the centrality selection in \pPbCol{} and \PbpCol{} from
     \cite{Adam:2014qja}.  \PbPbCol{} systematics from
     \cite{PbPbCent:XXX}. Numbers in parentheses are for \FMD{1} which
     receives and additional uncertainty from the hadron--chemistry. \newline
@@ -406,18 +406,18 @@ uncertainties and their sizes.
     \textsuperscript{**}These are estimated from the difference to the
     empirical correction.}
   \footnotesize
-  \begin{tabular}[t]{|cc|c|cccc|cc|c|}
+  \begin{tabular}[t]{|ll|c|cccc|cc|c|}
     \hline
     \headColor%
-    \multicolumn{2}{|l|}{\textbf{System}} 
-    & Corre- 
-    & \multicolumn{4}{c|}{\ppCol{}} 
-    & \pPbCol{} 
-    & Pb-p 
-    & \PbPbCol{}\\
+    \multicolumn{2}{|l|}{\textbf{System/}} 
+    & \textbf{Corre-}
+    & \multicolumn{4}{c|}{\textbf{\ppCol{}}} 
+    & \textbf{\pPbCol{}}
+    & \textbf{\PbpCol{}}
+    & \textbf{\PbPbCol{}}\\
     \headColor%
     \multicolumn{2}{|l|}{\textbf{Source}} 
-    & lated 
+    & \textbf{lated}
     & \GeV[900]{}
     & \TeV[2.76]{} 
     & \TeV[7]{}
@@ -427,10 +427,10 @@ uncertainties and their sizes.
     \hline
     & \INEL   
     & y 
-    & ${}_{-0.1}^{+0.3}\%$ 
-    & ${}_{-0.35}^{+0.6}\%$ 
-    & ${}_{-0.3}^{+0.6}\%$ 
-    & ${}_{-0.3}^{+0.6}\%$ 
+    & ${}_{-0.1}^{+0.3}$\% 
+    & ${}_{-0.35}^{+0.6}$\% 
+    & ${}_{-0.3}^{+0.6}$\% 
+    & ${}_{-0.3}^{+0.6}$\% 
     & \multicolumn{2}{c|}{n/a}
     & n/a \\
     \altRowColor \cellcolor{white}
@@ -439,13 +439,13 @@ uncertainties and their sizes.
     & \multicolumn{4}{c|}{negl.} 
     & \multicolumn{2}{c|}{n/a} 
     & n/a \\
-    & \NSD    & y & $\pm2\%$ 
-    & $\pm3\%$  
-    & $\pm2\%$ 
-    & $\pm2\%$ 
+    & \NSD    & y & $\pm2$\% 
+    & $\pm3$\%  
+    & $\pm2$\% 
+    & $\pm2$\% 
     & 1--2\% & 1--2\% & n/a \\
     \altRowColor\cellcolor{white}
-    \multirow{-4}{*}{\minitab[c]{\rowcolor{white}Event\\ selection}} 
+    \multirow{-4}{*}{\minitab[l]{\rowcolor{white}Event\\ selection}} 
     & Centrality 
     & y 
     & \multicolumn{4}{c|}{n/a} 
@@ -462,11 +462,11 @@ uncertainties and their sizes.
     \multirow{-2}{*}{Analysis} 
     & Density 
     & n 
-    & \multicolumn{4}{c|}{1\%} 
-    & \multicolumn{2}{c|}{1\%} 
-    & 1\%\\ 
+    & \multicolumn{4}{c|}{${}^{+1}_{-2}$\%} 
+    & \multicolumn{2}{c|}{${}^{+1}_{-2}$\%} 
+    & ${}^{+1}_{-2}$\%\\[.3ex]
     \hline
-    \multicolumn{2}{|c|}{Secondary map\textsuperscript{*}\hspace*{4em}} 
+    \multicolumn{2}{|l|}{Secondary map\textsuperscript{*}} 
     & n 
     & \multicolumn{7}{c|}{5-15\%\textsuperscript{**}}\\
     \hline
@@ -487,7 +487,7 @@ uncertainties and their sizes.
     & \multicolumn{2}{c|}{6.1\%} 
     & 6.1\%\\ 
     \hline
-    \multicolumn{2}{|c|}{Hadron chemistry\hspace*{4em}}
+    \multicolumn{2}{|l|}{Hadron chemistry}
     & n 
     & \multicolumn{4}{c|}{2\%} 
     & \multicolumn{2}{c|}{2\%} 
@@ -528,18 +528,18 @@ uncertainties and their sizes.
 \begin{description}
 \item[Event selection] \hbox{}\hfill
   \begin{description}
-  \item[\INEL{} \& \NSD{}] The source of this systematic error is
-    mainly the estimated error on the trigger selection, as well as
-    the estimated error on the vertex reconstruction.  Other sources
-    include pile-up.  Of these sources, the most dominant is the
-    trigger efficiency and the rest are considered negligible
-    \cite{pwgud:2015}.
+  \item[\INEL{} \& \NSD{}] The source of this systematic uncertainty
+    is mainly the estimated uncertainty on the trigger selection, as
+    well as the estimated uncertainty on the vertex reconstruction.
+    Other sources include pile-up.  Of these sources, the most
+    dominant is the trigger efficiency and the rest are considered
+    negligible \cite{pwgud:2015}.
   \item[\INELGT{}] Since this trigger is purely experimentally defined
-    there is not or very small errors associated with the trigger
+    there is not or very small uncertainty associated with the trigger
     efficiency, and the remaining contributions from vertex
     reconstruction and pile-up are negligible \cite{pwgud:2015}.
   \item[Centrality] The ranges given here are from most central (lower
-    systematic error) to most peripheral (higher systematic error)
+    systematic error) to most peripheral (higher systematic uncertainty)
     \cite{Adam:2014qja,PbPbCent:XXX}.
   \end{description}
 \item[Analysis] \hbox{}\hfill
@@ -547,59 +547,62 @@ uncertainties and their sizes.
   \item[Merging] This comes from the process of merging signals that
     are shared over 2 strips (see \secref{sec:sub:sharing_filter}).
     This has been evaluated by varying cuts and cut definitions (see
-    \secref{sec:cuts}). The cuts were varied within the ranges that
-    maintained the signal integrity.
+    \secref{sec:cuts} and \figref{fig:cuts:syserr}). The cuts were
+    varied within the ranges that maintained the signal integrity.
   \item[Density] This comes from the estimation of the inclusive
     number of charge particles per $\etaphi$--bin.  The size of this
-    error is estimated by evaluating the correlation between the two
-    available methods for obtaining $\dndetadphi[incl,r,\subIPz,i]$
-    (see \secref{sec:sub:density_calculator}), and by varying the
-    threshold cut and cut definitions (see \secref{sec:cuts}).  The
-    cuts were varied within the ranges that maintained the signal
-    integrity. 
+    uncertainty is estimated by evaluating the correlation between the
+    two available methods for obtaining
+    $\dndetadphi[incl,r,\subIPz,i]$ (see
+    \secref{sec:sub:density_calculator}), and by varying the threshold
+    cut and cut definitions (see \secref{sec:cuts} and
+    \figref{fig:cuts:syserr}).  The cuts were varied within the ranges
+    that maintained the signal integrity.
   \end{description}
 \item[Secondary map] This row is mainly included for historical
   reasons and apply in case the $\SecMap$ correction is
   applied to the data (see \secref{sec:sub:sub:secmap}) only. 
 \item[Empirical] \hbox{}\hfill 
   \begin{description}
-  \item[Satellite] These are the systematic errors from the published
-    $\ndndeta$ based on an analysis of satellite collisions
+  \item[Satellite] These are the systematic uncertainty from the
+    published $\ndndeta$ based on an analysis of satellite collisions
     \cite{Abbas:2013bpa}.  The variation in the number stems from the
     uncertainty in the centrality determination, which presumably
     biases both the denominator and numerator of
     \eqref{eq:empirical:cent} in the same direction. The effect on the
-    empirical correction is discussed in \secref{sec:dndeta:sys:emp}. 
+    empirical correction is discussed in \secref{sec:dndeta:sys:emp}.
   \item[Reference] As shown in \figref{fig:empirical:cent} and
     \ref{fig:empirical:methods} the variation of chosen reference run
-    and the choice of method results in a 5\% systematic error. The
-    effect on the empirical correction is discussed in
-    \secref{sec:dndeta:sys:emp}.
-  \item[As--applied] This is the systematic error as applied to the
-    data in the this analysis. The error is discussed in
+    and the choice of method results in a 5\% systematic
+    uncertainty. The effect on the empirical correction is discussed
+    in \secref{sec:dndeta:sys:emp}.
+  \item[As--applied] This is the systematic uncertainty as applied to
+    the data in the this analysis. The error is discussed in
     \secref{sec:dndeta:sys:emp}.
   \end{description}
 \item[Hadron Chemistry] An additional 2\% in the \FMD{1} region should
   be added in quadrature and stems from the additional sensitivity to
   the hadron chemistry discussed elsewhere in
-  \secref{sec:sub:sub:secmap}. Note that the systematic error on the
-  empirical correction already contain 2\% error on this in the FMD
-  region --- see \tabref{tab:satellite:syserrs}.
+  \secref{sec:sub:sub:secmap}. Note that the systematic uncertainty on
+  the empirical correction already contain a 2\% systematic
+  uncertainty on this in the FMD region --- see
+  \tabref{tab:satellite:syserrs}.
 \end{description}
 
-\subsubsection{Systematics error on the Empirical Correction} 
+\subsubsection{Systematics Uncertainty from the Empirical Correction}
 \label{sec:dndeta:sys:emp}
 
 The \ndndeta{} in centrality bins from 0 to 30\% previously published
 \cite{Abbas:2013bpa} is based on three measurements: \SPD{} tracklets,
 \VZERO{} amplitude match to the \SPD{}, and the \FMD{} signals.  Each
-of these measurements carried their own set of systematic errors, as
-well as some common ones. \tabref{tab:satellite:syserrs} summarises
-the various contributions. 
+of these measurements carried their own set of systematic
+uncertainties, as well as some common
+ones. \tabref{tab:satellite:syserrs} summarises the various
+contributions.
 
 \begin{table}[htbp]
   \centering
-  \caption{The systematic errors of the published \ndndeta{}.  Adapted
+  \caption{The systematic uncertainties of the published \ndndeta{}.  Adapted
     from \cite{Abbas:2013bpa}.}
   \begin{tabular}[T]{|clc|}
     \hline 
@@ -655,13 +658,14 @@ the various contributions.
 \end{table}
 
 The 3 measurements were added up using the non--common systematic
-errors as weights, and finally the common systematics errors were added
-in quadrature.  The result is shown in the top of
-\figref{fig:dndeta:sat:results}. Subtracting the common error from the
-centrality estimate from the systematic error leaves us with an error
-of 7.2\% in the high limit, and 3.6\% in the low limit over the whole
-$\eta$ range.  In the limited range of $-3.5\le\eta\le5$ for nominal
-$\IPz$ we found a low value of $4.2\%$ and a high value of $4.9\%$
+uncertainties as weights, and finally the common systematic
+uncertainties were added in quadrature.  The result is shown in the
+top of \figref{fig:dndeta:sat:results}. Subtracting the common
+components from the centrality estimate from the systematic
+uncertainty leaves us with an error of 7.2\% in the high limit, and
+3.6\% in the low limit over the whole $\eta$ range.  In the limited
+range of $-3.5\le\eta\le5$ for nominal $\IPz$ we found a low value of
+$4.2$\% and a high value of $4.9$\%
  
 \begin{figure}[h!tbp]
   \centering
@@ -684,12 +688,12 @@ formed by averaging over the available centralities
   \tag{\ref{eq:empirical}}
 \end{equation}
 where $\EmpCor[c]{}$ is given by \eqref{eq:empirical:cent}.  That
-means, we should consider the centrality weighted systematic error (as
-shown in \figref{fig:dndeta:sat:results}), and we find a low value of
-$\sqrt{4.2^2-1.5^2}=3.9\%$ and a high value of
-$\sqrt{4.9^2-1.5^2}=4.7\%$, with an average of
+means, we should consider the centrality weighted systematic
+uncertainty (as shown in \figref{fig:dndeta:sat:results}), and we find
+a low value of $\sqrt{4.2^2-1.5^2}=3.9$\% and a high value of
+$\sqrt{4.9^2-1.5^2}=4.7$\%, with an average of
 $\sqrt{4.5^2-1.5^2}=4.2$ in the $\eta$ regions relevant for this
-analysis. 
+analysis.
 
 The error on the numerator of \eqref{eq:empirical:cent} is given by
 the run--to--run variation illustrated in
@@ -703,7 +707,7 @@ correction to be
   \langle\delta\EmpCor{}\rangle &= 5.8\%\quad.\\
 \end{align}
 Considering the overall variation across $\eta$ is relatively small,
-we err on the side of caution and choose $\delta\EmpCor{}=6.1\%$ for
+we err on the side of caution and choose $\delta\EmpCor{}=6.1$\% for
 the systematic uncertainty of empirical correction.
 %% Local Variables:
 %%   TeX-master: "PWGLF_Forward_analysis_note.tex"

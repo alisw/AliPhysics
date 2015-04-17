@@ -35,11 +35,116 @@ parameter $X$:
   \end{align*}
   Although mathematically sound, it is slow to compute and adds very
   little in terms of signal quality over the \emph{Landau and Gauss
-    width}  cut type.  It is not used in the analysis.
+    width}  cut type.  See also \figref{fig:cut:prob:rel} for the
+  correspondance of the two method. It is not used in the analysis.
 \end{description}
 In the above $\Delta_p,\xi,\sigma,$ and $\mathbf{a}$ refers to the
 parameters obtained in the energy loss fits (see \secref{sec:fits}),
 and $f$ is defined in \eqref{eq:f}.
+
+\begin{figure}[h!tbp]
+  \centering
+  \figinput[.8\linewidth]{prob_rel}
+  \caption{Approximate relation between $X$ value chosen for the
+    \emph{Landau Gauss Width} type cut ($c=\Delta_p - X(\xi+\sigma)$),
+    and the $X$ of the \emph{Probability} cut ($c:P(x<c)<X$).  The
+    dashed lines indicate the interesting region.  The chosen value of
+    $X=1$ for the \emph{Landau Gauss Width} type cut corresponds to a
+    rejection probability of roughly 3.5\%}
+  \label{fig:cut:prob:rel}
+\end{figure}
+
+\tabref{tab:cuts:used} summarises the cut methods and corresponding
+values of the cut parameter $X$ used in the analysis. 
+
+\begin{table}[h!tbp]
+  \centering
+  \caption{The cut definitions and values used in the analysis.}
+  \label{tab:cuts:used}
+  \begin{tabular}[T]{|c|ll|l|c|}
+    \hline 
+    \headColor
+    \textbf{Name} 
+    & \multicolumn{2}{l|}{\textbf{Description}}
+    & \textbf{Method} 
+    & $X$ \\
+    \hline 
+    \DataSty{l} 
+    & Low sharing cut
+    & \secref{sec:sub:sharing_filter} 
+    & $c=X$
+    & 0.15\\
+    \altRowColor 
+    \DataSty{h} 
+    & High sharing cut
+    & \secref{sec:sub:sharing_filter} 
+    & $c=\Delta_p - X(\xi+\sigma)$
+    & 1\\
+    \hline
+    $T(\eta_t)$
+    & Hit threshold
+    & \secref{sec:sub:density_calculator}
+    & $c=\Delta_p - X(\xi+\sigma)$
+    & 1\\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Considerations on choosing cut values}
+
+\begin{description}
+\item[\DataSty{l} --- low sharing cut:]  This cut removes pedestal
+  remnants left in the data after the on--line pedestal subtraction.
+  If $X$ is set too low, then the data is polluted by electronics
+  noise.  If it is set too high, then we remove possibly interesting
+  hits.  The optimum value was chosen by varying $X$ between 0.12 and
+  0.18. 
+\item[\DataSty{h} --- high sharing cut:]  This cut defines when we
+  consider a signal in a given strip $t$ as corresponding to the
+  traversal of a single particle entirely within the strips boundaries
+  i.e., the particle did not deposit energy in neighbouring strips.
+  If $X$ is set too low (corresponding to a higher value of cut), then
+  we will start to merge signals from two isolated particles that
+  traverse neighbouring strips.  If $X$ is set too high, we will fail
+  to merge signals distributed over more than 1 strip, and we loose
+  hits.  The optimum value was chosen by varying $X$ between 0.8 and
+  1.5. 
+\item[$T(\eta_t)$ --- hit threshold:] This cut discriminates between a
+  \emph{hit} or \emph{empty} strip.  If $X$ is set too low,
+  corresponding to a higher cut value, we loose signals, and the
+  correspondence between the two methods of estimating the inclusive
+  number of charged particles (see \secref{sec:sub:sub:eloss_fits} and
+  \secref{sec:sub:sub:poisson}) is lost.  Conversely, if $X$ is set
+  too high, we will overestimate the inclusive number of charged
+  particles. Note, $T(\eta_t)$ should always be equal to or larger
+  than \DataSty{h}, or equivalently $X_T\le X_{\DataSty{h}}$.  The
+  optimum value was chosen by varying $X$ from 0.8 up to the chosen
+  value of $X_{\DataSty{h}}$.
+\end{description}
+
+\figref{fig:cuts:syserr} shows the effect of varying the cut
+parameters $X$ on the inclusive (primary and secondary) $\ndndeta$ for
+minimum bias \PbPbCol{} events at $\usNN{PbPb}{2760}$.  For the cuts
+relating to merging of shared signals, we see that the variations are
+all within $1\%$ (except pathological edges) and we therefor adopt a
+$1\%$ systematic uncertainty from this.  For the inclusive $\Nch$
+calculation we get a systematic uncertainty of ${}_{-2}^{+1}\%$.
+
+\begin{figure}[h!tbp]
+  \centering
+  \figinput{cut_syserr.png}
+  \caption{Systematic uncertainty from variation of cuts.  Top shows
+    the inclusive $\ndndeta$ distributions for minimum bias \PbPbCol{}
+    for different values of $X_{\DataSty{l}}$, $X_{\DataSty{h}}$, and
+    $X_T$.  Closed markers corresponds to variations for the sharing
+    filter, while open markers correspond to variations in the
+    inclusive charge particle calculations.  The bottom shows the
+    ratio of the inclusive $\ndndeta$ for each cut set to the
+    inclusive $\ndndeta$ using the default cut values. }
+  \label{fig:cuts:syserr}
+\end{figure}
+
+
 
 %% Local Variables:
 %%   TeX-master: "PWGLF_Forward_analysis_note.tex"
