@@ -56,6 +56,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetShowJetArea(Bool_t b = kTRUE)         { fShowJetArea         = b   ; }
   void SetShowJetConstituents(Bool_t b = kTRUE) { fShowJetConstituents = b   ; }
   void SetShowMatchingLevel(Bool_t b = kTRUE)   { fShowMatchingLevel   = b   ; }
+  void SetShowDaughterDistance(Int_t n = 2)     { fShowDaughterDistance= n   ; }
   void SetCandidateType(ECandidateType c)       { fCandidateType       = c   ; }
   void SetMaxR(Double_t r)                      { fMaxR       = r > 0 ? r : 1; }
   void SetMatchingType(EMatchingType m)         { fMatchingType        = m   ; }
@@ -78,7 +79,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   
   void                 AllocateTHnSparse();
   void                 FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
-                                     TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel);
+                                     TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel, Double_t daughterDist[5]);
   Int_t                FindMatchedJet(EMatchingType matchType, AliAODRecoDecay* cand, TArrayD& matchingLevel, TList& matchedJets);
   Double_t             CalculateMatchingLevel(EMatchingType matchType, AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
   Double_t             CalculateGeometricalMatchingLevel(AliVTrack* cand, AliEmcalJet* jet);
@@ -87,31 +88,32 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   static Double_t      AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
-  AliRDHFCuts     *fCuts               ; //  Analysis cuts     
-  ECandidateType   fCandidateType      ; //  Candidate type, D0 or D*
-  Double_t         fMinMass            ; //  Min mass in histogram axis
-  Double_t         fMaxMass            ; //  Max mass in histogram axis
-  Int_t            fNBinsMass          ; //  Number of bins in mass axis
-  Double_t         fMaxR               ; //  Maximum distance for a jet to be matched with a D candidate
-  Bool_t           fShowPositionD      ; //  Add the D meson eta/phi axis in the THnSparse
-  Bool_t           fShowInvMass        ; //  Add the invariant mass axis in the THnSparse
-  Bool_t           fShow2ProngInvMass  ; //  Add the 2 prong invariant mass axis in the THnSparse (for D* this is the inv mass of the D0)
-  Bool_t           fShowDeltaInvMass   ; //  Add the delta invariant mass (mass(D*) - mass(D0)) axis in the THnSparse (for D*)
-  Bool_t           fShowSoftPionPt     ; //  Add the soft pion pt axis in the THnSparse (for D*)
-  Bool_t           fShowDmesonZ        ; //  Add the z of the D meson axis in the THnSparse
-  Bool_t           fShowDeltaR         ; //  Add the delta R axis in the THnSparse
-  Bool_t           fShowDeltaEta       ; //  Add the delta eta axis in the THnSparse
-  Bool_t           fShowDeltaPhi       ; //  Add the delta phi axis in the THnSparse
-  Bool_t           fShowPositionJet    ; //  Add the jet eta/phi axis in the THnSparse
-  Bool_t           fShowLeadingPt      ; //  Add the leading pt axis in the THnSparse
-  Bool_t           fShowJetArea        ; //  Add the jet area axis in the THnSparse
-  Bool_t           fShowJetConstituents; //  Add the jet constituent axis in the THnSparse
-  Bool_t           fShowMatchingLevel  ; //  Add the matching level axis in the THnSparse
-  Bool_t           fInhibitTask        ; //  Inhibit the task
-  EMatchingType    fMatchingType       ; //  Dmeson-jet matching type
-  Bool_t           fOnlyAcceptedJets   ; //  Only matched accepted jets are plotted (in any case jets are rejected AFTER matching)
-  Bool_t           fOnlySingleMatches  ; //  Only unambiguosly matched jets are plotted
-  Bool_t           fCheckTrackColl     ; //  if true, makes histograms with tracks found in D meson candidates, that are NOT found in the track collection used for jet finding
+  AliRDHFCuts     *fCuts                  ; //  Analysis cuts
+  ECandidateType   fCandidateType         ; //  Candidate type, D0 or D*
+  Double_t         fMinMass               ; //  Min mass in histogram axis
+  Double_t         fMaxMass               ; //  Max mass in histogram axis
+  Int_t            fNBinsMass             ; //  Number of bins in mass axis
+  Double_t         fMaxR                  ; //  Maximum distance for a jet to be matched with a D candidate
+  Bool_t           fShowPositionD         ; //  Add the D meson eta/phi axis in the THnSparse
+  Bool_t           fShowInvMass           ; //  Add the invariant mass axis in the THnSparse
+  Bool_t           fShow2ProngInvMass     ; //  Add the 2 prong invariant mass axis in the THnSparse (for D* this is the inv mass of the D0)
+  Bool_t           fShowDeltaInvMass      ; //  Add the delta invariant mass (mass(D*) - mass(D0)) axis in the THnSparse (for D*)
+  Bool_t           fShowSoftPionPt        ; //  Add the soft pion pt axis in the THnSparse (for D*)
+  Bool_t           fShowDmesonZ           ; //  Add the z of the D meson axis in the THnSparse
+  Bool_t           fShowDeltaR            ; //  Add the delta R axis in the THnSparse
+  Bool_t           fShowDeltaEta          ; //  Add the delta eta axis in the THnSparse
+  Bool_t           fShowDeltaPhi          ; //  Add the delta phi axis in the THnSparse
+  Bool_t           fShowPositionJet       ; //  Add the jet eta/phi axis in the THnSparse
+  Bool_t           fShowLeadingPt         ; //  Add the leading pt axis in the THnSparse
+  Bool_t           fShowJetArea           ; //  Add the jet area axis in the THnSparse
+  Bool_t           fShowJetConstituents   ; //  Add the jet constituent axis in the THnSparse
+  Bool_t           fShowMatchingLevel     ; //  Add the matching level axis in the THnSparse
+  Int_t            fShowDaughterDistance  ; //  Add n axis in THnSparse with the daughters' distances
+  Bool_t           fInhibitTask           ; //  Inhibit the task
+  EMatchingType    fMatchingType          ; //  Dmeson-jet matching type
+  Bool_t           fOnlyAcceptedJets      ; //  Only matched accepted jets are plotted (in any case jets are rejected AFTER matching)
+  Bool_t           fOnlySingleMatches     ; //  Only unambiguosly matched jets are plotted
+  Bool_t           fCheckTrackColl        ; //  if true, makes histograms with tracks found in D meson candidates, that are NOT found in the track collection used for jet finding
 
   AliAODEvent     *fAodEvent                  ; //! AOD event
   TClonesArray    *fCandidateArray            ; //! D meson candidate array
