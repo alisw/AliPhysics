@@ -1369,7 +1369,7 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(5,  "Bit4");
   axis->SetBinLabel(6,  "Bit5");
   axis->SetBinLabel(7,  "Bit6");
-  axis->SetBinLabel(8,  "Bit7");
+  axis->SetBinLabel(8,  "NotHybridTrack");
   axis->SetBinLabel(9,  "MCFlag");
   axis->SetBinLabel(10, "MCGenerator");
   axis->SetBinLabel(11, "ChargeCut");
