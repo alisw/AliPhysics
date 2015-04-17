@@ -72,9 +72,9 @@ void AliT0Trigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "0T0A", "T0",  0 ) );
-   fInputs.AddLast( new AliTriggerInput( "0T0C", "T0", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "0TVX", "T0", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_A_L0", "T0",  0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_C_L0", "T0", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_Vertex_L0", "T0", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "T0_Centr_L0", "T0",  0 ) );
    fInputs.AddLast( new AliTriggerInput( "T0_SemiCentral_L0", "T0",  0 ) );
 
@@ -118,10 +118,10 @@ void AliT0Trigger::Trigger()
   Int_t ampCentr = fTrigPar->GetAmpCentr(); 
   Int_t ampSemiCentr =  fTrigPar->GetAmpSemiCentr();
 
-  if (besttimeA > 0 && besttimeA <99999)  SetInput("0T0A");
-  if (besttimeC > 0  && besttimeC<99999)   SetInput("0T0C"); 
+  if (besttimeA > 0 && besttimeA <99999)  SetInput("T0_A_L0");
+  if (besttimeC > 0  && besttimeC<99999)   SetInput("T0_C_L0"); 
   //6093 corrsponds to vertex -20cm, 6202 vertex +20 with delay 150nc eqalized on the TVDC unit 
-  if (timeDiff >timeWindowLow && timeDiff < timeWindowHigh) SetInput("0TVX");
+  if (timeDiff >timeWindowLow && timeDiff < timeWindowHigh) SetInput("T0_Vertex_L0");
   if (sumMult > ampCentr)  SetInput("T0_Centr_L0");
   if (sumMult> ampSemiCentr && sumMult <= ampCentr) SetInput("T0_SemiCentral_L0");;
 
