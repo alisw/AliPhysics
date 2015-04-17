@@ -1041,12 +1041,12 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
             eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "00200009217000008260440000"; mesonCutArray[ 2] = "01621035009000";  // min R =5 cm & only photon quality 3
             eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "00900009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =7.5 cm & only photon quality 3
         } else if (trainConfig == 185) {
-            eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00300009217000008260440000"; mesonCutArray[ 0] = "01621035009000";  // min R =10 cm & only photon quality 3
+            eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00500009217000008260440000"; mesonCutArray[ 0] = "01621035009000";  // min R =10 cm & only photon quality 3
             eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "00800009217000008260440000"; mesonCutArray[ 1] = "01621035009000";  // min R =12.5 cm & only photon quality 3
             eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "00600009217000008260440000"; mesonCutArray[ 2] = "01621035009000";  // min R =20 cm & only photon quality 3
             eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "00700009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3 
        } else if (trainConfig == 186) {
-            eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00300009217000008260440000"; mesonCutArray[ 0] = "01621035009000";  // min R =10 cm & only photon quality 3
+            eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00500009217000008260440000"; mesonCutArray[ 0] = "01621035009000";  // min R =10 cm & only photon quality 3
             eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "00800009217000008260440000"; mesonCutArray[ 1] = "01621035009000";  // min R =12.5 cm & only photon quality 3
             eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "00600009217000008260440000"; mesonCutArray[ 2] = "01621035009000";  // min R =20 cm & only photon quality 3
             eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "00700009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3  
