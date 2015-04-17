@@ -30,6 +30,7 @@ include_directories(${AliRoot_SOURCE_DIR}/AD/ADbase
 
 # Sources in alphabetical order
 set(SRCS
+    AliADDecision.cxx
     AliADQAChecker.cxx
     AliADQADataMakerRec.cxx
     AliADReconstructor.cxx
