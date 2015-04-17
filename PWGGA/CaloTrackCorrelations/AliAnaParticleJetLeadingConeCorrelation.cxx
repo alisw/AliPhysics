@@ -13,27 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class that contains the algorithm for the reconstruction of jet, cone around leading particle
-// The seed is a backward particle (direct photon)
-// 1) Take the trigger particle stored in AliAODPWG4ParticleCorrelation,
-// 2) Search for the highest pt leading particle opposite to the photon within a phi, pt window
-// 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
-//
-//  Class created from old AliPHOSGammaJet
-//  (see AliRoot versions previous Release 4-09)
-//
-//*-- Author: Gustavo Conesa (LNF-INFN)
-//////////////////////////////////////////////////////////////////////////////
-
-
 // --- ROOT system ---
 #include "TH2F.h"
 #include "TClonesArray.h"
 #include "TClass.h"
 //#include "Riostream.h"
 
-//---- Analysis system ----
+// --- Analysis system ---
 #include "AliVTrack.h"
 #include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
@@ -43,9 +29,12 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliFiducialCut.h"
 
-ClassImp(AliAnaParticleJetLeadingConeCorrelation)
+/// \cond CLASSIMP
+ClassImp(AliAnaParticleJetLeadingConeCorrelation) ;
+/// \endcond
 
-
+//_________________________________________________________________________________
+/// Default constructor. Initialize parameters.
 //_________________________________________________________________________________
 AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation() :
 AliAnaCaloTrackCorrBaseClass(), fJetsOnlyInCTS(kFALSE), fPbPb(kFALSE),
@@ -59,9 +48,9 @@ fJetPtThreshold(0),fJetPtThresPbPb(0),
 fPtTriggerSelectionCut(0.0), fSelect(0),fSelectIsolated(0),
 fTrackVector(),fBkgMom(),fJetMom(),fJetConstMom(),
 fLeadingMom(),fLeadingPi0Mom(),fLeadingPhoMom1(),fLeadingPhoMom2(),fLeadingChargeMom(),
-//Histograms
+// Histograms
 fOutCont(0x0),
-//Leading
+// Leading
 fhChargedLeadingPt(0),fhChargedLeadingPhi(0),fhChargedLeadingEta(0),
 fhChargedLeadingDeltaPt(0),fhChargedLeadingDeltaPhi(0),fhChargedLeadingDeltaEta(0),
 fhChargedLeadingRatioPt(0),
@@ -77,7 +66,7 @@ fhJetFFz(0),fhJetFFxi(0),fhJetFFpt(0),fhJetNTracksInCone(0),
 fhBkgPt(0),fhBkgRatioPt(0),fhBkgDeltaPhi(0), fhBkgDeltaEta(0),
 fhBkgLeadingRatioPt(0),fhBkgLeadingDeltaPhi(0),fhBkgLeadingDeltaEta(0),
 fhBkgFFz(0),fhBkgFFxi(0),fhBkgFFpt(0),fhBkgNTracksInCone(0),
-//Several cones and thres histograms
+// Several cones and thres histograms
 fhJetPts(),fhJetRatioPts(),fhJetDeltaPhis(), fhJetDeltaEtas(),
 fhJetLeadingRatioPts(),fhJetLeadingDeltaPhis(),fhJetLeadingDeltaEtas(),
 fhJetFFzs(),fhJetFFxis(),fhJetFFpts(),fhJetNTracksInCones(),
@@ -85,11 +74,8 @@ fhBkgPts(),fhBkgRatioPts(),fhBkgDeltaPhis(), fhBkgDeltaEtas(),
 fhBkgLeadingRatioPts(),fhBkgLeadingDeltaPhis(),fhBkgLeadingDeltaEtas(),
 fhBkgFFzs(),fhBkgFFxis(),fhBkgFFpts(),fhBkgNTracksInCones()
 {
-  //Default Ctor
-  
-  //Initialize parameters
-  
-  for(Int_t i = 0; i<6; i++){
+  for(Int_t i = 0; i<6; i++)
+  {
     fJetXMin1[i]     = 0.0 ;
     fJetXMin2[i]     = 0.0 ;
     fJetXMax1[i]     = 0.0 ;
@@ -104,13 +90,15 @@ fhBkgFFzs(),fhBkgFFxis(),fhBkgFFpts(),fhBkgNTracksInCones()
     }
   }
   
-  //Several cones and thres histograms
-  for(Int_t i = 0; i<5; i++){
+  // Several cones and thres histograms
+  for(Int_t i = 0; i<5; i++)
+  {
     fJetCones[i]         = 0.0 ;
     fJetNameCones[i]     = ""  ;
     fJetPtThres[i]      = 0.0 ;
     fJetNamePtThres[i]  = ""  ;
-    for(Int_t j = 0; j<5; j++){
+    for(Int_t j = 0; j<5; j++)
+    {
       fhJetPts[i][j]=0 ;
       fhJetRatioPts[i][j]=0 ;
       fhJetDeltaPhis[i][j]=0 ;
@@ -137,13 +125,15 @@ fhBkgFFzs(),fhBkgFFxis(),fhBkgFFpts(),fhBkgNTracksInCones()
   }
   
   InitParameters();
-  
 }
 
 //____________________________________________________________________________
-Double_t AliAnaParticleJetLeadingConeCorrelation::CalculateJetRatioLimit(Double_t ptg, const Double_t *par, const Double_t *x) const {
-  //Calculate the ratio of the jet and trigger particle limit for the selection
-  //WARNING: need to check what it does
+/// Calculate the ratio of the jet and trigger particle limit for the selection
+/// WARNING: need to check what it does.
+//____________________________________________________________________________
+Double_t AliAnaParticleJetLeadingConeCorrelation::CalculateJetRatioLimit(Double_t ptg,
+                                                                         const Double_t *par, const Double_t *x) const
+{
   //printf("CalculateLimit: x1 %2.3f, x2%2.3f\n",x[0],x[1]);
   Double_t ePP = par[0] + par[1] * ptg ;
   Double_t sPP = par[2] + par[3] * ptg ;
@@ -157,11 +147,12 @@ Double_t AliAnaParticleJetLeadingConeCorrelation::CalculateJetRatioLimit(Double_
 }
 
 //___________________________________________________________________________________________________
+/// Fill jet and background histograms.
+//___________________________________________________________________________________________________
 void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCorrelation * particle,
                                                             const TLorentzVector jet,
                                                             const TString & type, const TString & lastname)
 {
-  //Fill jet and background histograms
   Double_t ptTrig  = particle->Pt();
   Double_t ptJet   = jet.Pt();
   Double_t ptLead  = fLeadingMom.Pt();
@@ -176,46 +167,48 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   
   TH2F *h1 = 0x0;
   h1 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sPt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h1)h1->Fill(ptTrig,ptJet);
+  if(h1) h1->Fill(ptTrig, ptJet, GetEventWeight());
   
   TH2F *h2 = 0x0;
   h2 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sRatioPt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h2) h2->Fill(ptTrig,ptJet/ptTrig);
+  if(h2) h2->Fill(ptTrig, ptJet/ptTrig, GetEventWeight());
   
   TH2F *h3 = 0x0;
   h3 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sLeadingRatioPt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h3)h3->Fill(ptTrig,ptLead/ptJet);
+  if(h3) h3->Fill(ptTrig, ptLead/ptJet, GetEventWeight());
   
   //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sPhi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
   //     Fill(ptTrig,phiJet);
   TH2F *h4 = 0x0;
   h4 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sDeltaPhi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h4) h4->Fill(ptTrig,phiJet-phiTrig);
+  if(h4) h4->Fill(ptTrig, phiJet-phiTrig, GetEventWeight());
+    
   TH2F *h5 = 0x0;
   h5 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sLeadingDeltaPhi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h5) h5->Fill(ptTrig,phiJet-phiLead);
+  if(h5) h5->Fill(ptTrig, phiJet-phiLead, GetEventWeight());
   
   //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sEta%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
   //     Fill(ptTrig,etaJet);
   TH2F *h6 = 0x0;
   h6 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sDeltaEta%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h6) h6->Fill(ptTrig,etaJet-etaTrig);
+  if(h6) h6->Fill(ptTrig, etaJet-etaTrig, GetEventWeight());
+    
   TH2F *h7 = 0x0;
   h7 = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sLeadingDeltaEta%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-  if(h7) h7->Fill(ptTrig,etaJet-etaLead);
+  if(h7) h7->Fill(ptTrig, etaJet-etaLead, GetEventWeight());
   
-  //Construct fragmentation function
+  // Construct fragmentation function
   TObjArray * pl = new TObjArray;
   
-  if(type == "Jet") pl = particle->GetObjArray(Form("%sTracks",GetAODObjArrayName().Data()));
+  if     (type == "Jet") pl = particle->GetObjArray(Form("%sTracks",GetAODObjArrayName().Data()));
   else if(type == "Bkg") particle->GetObjArray(Form("%sTracksBkg",GetAODObjArrayName().Data()));
   
   if(!pl) return ;
   
-  //Different pt cut for jet particles in different collisions systems
-  //Only needed when jet is recalculated from AODs
-  //Float_t ptcut = fJetPtThreshold;
-  //if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
+  // Different pt cut for jet particles in different collisions systems
+  // Only needed when jet is recalculated from AODs
+  // Float_t ptcut = fJetPtThreshold;
+  // if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
   
   Int_t nTracksInCone = 0;
   
@@ -232,28 +225,29 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
     nTracksInCone++;
     
     TH2F *ha =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFz%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-    if(ha) ha->Fill(ptTrig,fTrackVector.Pt()/ptTrig);
+    if(ha) ha->Fill(ptTrig, fTrackVector.Pt()/ptTrig, GetEventWeight());
+      
     TH2F *hb  =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFxi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-    if(hb) hb->Fill(ptTrig,TMath::Log(ptTrig/fTrackVector.Pt()));
+    if(hb) hb->Fill(ptTrig, TMath::Log(ptTrig/fTrackVector.Pt()), GetEventWeight());
+      
     TH2F *hc =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFpt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-    if(hc) hc->Fill(ptTrig,fTrackVector.Pt());
+    if(hc) hc->Fill(ptTrig, fTrackVector.Pt(), GetEventWeight());
     
   }//track loop
   
   if(nTracksInCone > 0)
   {
     TH2F *hd = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sNTracksInCone%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
-    if(hd)hd->Fill(ptTrig, nTracksInCone);
+    if(hd) hd->Fill(ptTrig, nTracksInCone, GetEventWeight());
   }
-  
 }
 
 //________________________________________________________________________
+/// Create histograms to be saved in output file and
+/// store them in fOutCont.
+//________________________________________________________________________
 TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
 {
-  // Create histograms to be saved in output file and
-  // store them in fOutCont
-  
   fOutCont = new TList() ;
   fOutCont->SetName("ParticleJetLeadingInConeCorrelationHistograms") ;
   
@@ -625,7 +619,6 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
     delete nmsHistos;
   }
   
-  
   //  if(GetDebug() > 2)
   //  {
   //    printf("AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects() - All histograms names : \n");
@@ -635,15 +628,13 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
   //  }
   
   return fOutCont;
-  
 }
 
 //__________________________________________________________________________________________________________
+/// Search Charged or Neutral leading particle, select the highest one and fill AOD.
+//__________________________________________________________________________________________________________
 Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4ParticleCorrelation * particle)
 {
-  //Search Charged or Neutral leading particle, select the highest one and fill AOD
-  
-  
   GetLeadingCharge(particle) ;
   if(!fJetsOnlyInCTS) GetLeadingPi0(particle) ;
   
@@ -682,15 +673,14 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4Pa
   AliDebug(1,"NO LEADING PARTICLE FOUND");
   
   return kFALSE;
-  
 }
 
 //_______________________________________________________________________________________________________
+/// Search for the charged particle with highest pt and with
+/// Phi=Phi_trigger-Pi and pT=0.1E_gamma.
+//_______________________________________________________________________________________________________
 void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODPWG4ParticleCorrelation * particle)
 {
-  //Search for the charged particle with highest pt and with
-  //Phi=Phi_trigger-Pi and pT=0.1E_gamma
-  
   if(!GetCTSTracks()) return;
   
   Double_t ptTrig  = particle->Pt();
@@ -725,15 +715,14 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODPWG4Partic
   
   if( ptl > 0 )AliDebug(1,Form("Leading in CTS: pt %2.3f eta %2.3f phi %2.3f pt/ptTrig %2.3f, |phiTrig-phi| %2.3f",
                                ptl, fLeadingChargeMom.Eta(), phil,ptl/ptTrig, TMath::Abs(phiTrig-phil))) ;
-  
 }
 
 //____________________________________________________________________________________________________
+/// Search for the neutral pion with highest pt and with
+/// Phi=Phi_trigger-Pi and pT=0.1E_gamma.
+//____________________________________________________________________________________________________
 void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleCorrelation * particle)
 {
-  //Search for the neutral pion with highest pt and with
-  //Phi=Phi_trigger-Pi and pT=0.1E_gamma
-  
   if(!GetEMCALClusters()) return ;
   
   Double_t ptTrig  = particle->Pt();
@@ -820,8 +809,6 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
               AliDebug(1,Form("Neutral Hadron Correlation: Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f",
                               ptl,phil,(fLeadingPhoMom1+fLeadingPhoMom2).Eta(), (fLeadingPhoMom1+fLeadingPhoMom2).M()));
             }//pi0 selection
-            
-            
           }//Pair selected as leading
         }//if pair of gammas
       }//2nd loop
@@ -831,13 +818,13 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
   if(fLeadingPi0Mom.Pt() > 0 )
     AliDebug(1,Form("Leading EMCAL: pt %2.3f eta %2.3f phi %2.3f pt/Eg %2.3f",
                     fLeadingPi0Mom.Pt(), fLeadingPi0Mom.Eta(), phil,  fLeadingPi0Mom.Pt()/ptTrig)) ;
-  
 }
 
 //____________________________________________________________________________
+/// Initialize the parameters of the analysis.
+//____________________________________________________________________________
 void AliAnaParticleJetLeadingConeCorrelation::InitParameters()
 {
-  //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
   SetAODObjArrayName("JetLeadingCone");
   AddToHistogramsName("AnaJetLCCorr_");
@@ -920,12 +907,12 @@ void AliAnaParticleJetLeadingConeCorrelation::InitParameters()
 }
 
 //__________________________________________________________________________________________________
+/// Given the pt of the jet and the trigger particle, select the jet or not
+/// 3 options, fSelect=0 accepts all, fSelect=1 selects jets depending on a
+/// function energy dependent and fSelect=2 selects on simple fixed cuts.
+//__________________________________________________________________________________________________
 Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(Double_t ptTrig, Double_t ptjet) const
 {
-  //Given the pt of the jet and the trigger particle, select the jet or not
-  //3 options, fSelect=0 accepts all, fSelect=1 selects jets depending on a
-  //function energy dependent and fSelect=2 selects on simple fixed cuts
-  
   if(ptjet == 0) return kFALSE;
   
   Double_t rat = ptTrig / ptjet ;
@@ -934,7 +921,8 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(Double_t ptTrig, D
   if(fSelect == 0)
     return kTRUE; //Accept all jets, no restriction
   //###############################################################
-  else if(fSelect == 1){
+  else if(fSelect == 1)
+  {
     //Check if the energy of the reconstructed jet is within an energy window
     //WARNING: to be rechecked, don't remember what all the steps mean
     Double_t par[6];
@@ -962,8 +950,10 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(Double_t ptTrig, D
       //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
       
     }
-    else{
-      if(ptTrig > fPtTriggerSelectionCut){
+    else
+    {
+      if(ptTrig > fPtTriggerSelectionCut)
+      {
         //Phythia +PbPb with  pt_th > 2 GeV/c, r = 0.3
         par[0] = fJetE1[0]; par[1] = fJetE2[0];
         //Energy of the jet peak, same as in pp
@@ -979,9 +969,9 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(Double_t ptTrig, D
         //by observation, of mono jet ratios (ptjet/ptTrig) mixed with PbPb Bkg,
         //pt_th > 2 GeV, r = 0.3
         //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
-        
       }
-      else{
+      else
+      {
         //Phythia + PbPb with  pt_th > 0.5 GeV/c, r = 0.3
         par[0] = fJetE1[1]; par[1] = fJetE2[1];
         //Energy of the jet peak, pt_th > 2 GeV/c, r = 0.3
@@ -997,7 +987,6 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(Double_t ptTrig, D
         //by observation, of mono jet ratios (ptjet/ptTrig) mixed with PbPb Bkg,
         //pt_th > 2 GeV, r = 0.3
         //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
-        
       }//If low pt jet in bkg
     }//if Bkg
     
@@ -1033,15 +1022,15 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(Double_t ptTrig, D
   }
   
   return kFALSE;
-  
 }
 
 //___________________________________________________________________
-Bool_t AliAnaParticleJetLeadingConeCorrelation::IsParticleInJetCone(Double_t eta, Double_t phi, Double_t etal,  Double_t phil)
-const {
-  //Check if the particle is inside the cone defined by the leading particle
-  //WARNING: To be rechecked
-  
+/// Check if the particle is inside the cone defined by the leading particle.
+/// WARNING: To be rechecked.
+//___________________________________________________________________
+Bool_t AliAnaParticleJetLeadingConeCorrelation::IsParticleInJetCone(Double_t eta , Double_t phi,
+                                                                    Double_t etal, Double_t phil) const
+{
   if(phi < 0) phi+=TMath::TwoPi();
   if(phil < 0) phil+=TMath::TwoPi();
   Double_t  rad = 10000 + fJetCone;
@@ -1056,15 +1045,14 @@ const {
   }
   
   if(rad < fJetCone) return kTRUE ;
-  else return kFALSE ;
-  
+  else               return kFALSE ;
 }
 
 //__________________________________________________________________
+// Particle-Jet/Hadron Correlation Analysis, fill AODs.
+//__________________________________________________________________
 void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD()
 {
-  //Particle-Hadron Correlation Analysis, fill AODs
-  
   if(!GetInputAODBranch())
   {
     AliFatal(Form("No input particles in AOD with name branch < %s >",GetInputAODName().Data()));
@@ -1100,15 +1088,13 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD()
   }//AOD trigger particle loop
   
   AliDebug(1,"End of jet leading cone analysis, fill AODs");
-  
 }
 
 //_________________________________________________________________________
+/// Particle-Jet/Hadron Correlation Analysis, fill histograms.
+//_________________________________________________________________________
 void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
 {
-  
-  //Particle-Hadron Correlation Analysis, fill histograms
-  
   if(!GetInputAODBranch())
   {
     printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s >",
@@ -1148,32 +1134,32 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
       
       if(det == kCTS)
       {
-        fhChargedLeadingPt->Fill(pt,ptL);
-        fhChargedLeadingPhi->Fill(pt,phiL);
-        fhChargedLeadingEta->Fill(pt,etaL);
-        fhChargedLeadingDeltaPt->Fill(pt,pt-ptL);
-        fhChargedLeadingDeltaPhi->Fill(pt,TMath::Abs(phi-phiL));
-        fhChargedLeadingDeltaEta->Fill(pt,eta-etaL);
-        fhChargedLeadingRatioPt->Fill(pt,ptL/pt);
-        fhChargedLeadingXi->Fill(pt,TMath::Log(pt/ptL));
-        if(pt > 30) fhChargedLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL),ptL/pt);
-        if(pt > 50) fhChargedLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL),ptL/pt);
+        fhChargedLeadingPt      ->Fill(pt, ptL     , GetEventWeight());
+        fhChargedLeadingPhi     ->Fill(pt, phiL    , GetEventWeight());
+        fhChargedLeadingEta     ->Fill(pt, etaL    , GetEventWeight());
+        fhChargedLeadingDeltaPt ->Fill(pt, pt-ptL  , GetEventWeight());
+        fhChargedLeadingDeltaPhi->Fill(pt, TMath::Abs(phi-phiL), GetEventWeight());
+        fhChargedLeadingDeltaEta->Fill(pt, eta-etaL, GetEventWeight());
+        fhChargedLeadingRatioPt ->Fill(pt, ptL/pt  , GetEventWeight());
+        fhChargedLeadingXi      ->Fill(pt, TMath::Log(pt/ptL), GetEventWeight());
+        if(pt > 30) fhChargedLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL), ptL/pt, GetEventWeight());
+        if(pt > 50) fhChargedLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL), ptL/pt, GetEventWeight());
       }
-      else if(det== kEMCAL)
+      else if(det == kEMCAL)
       {
-        fhNeutralLeadingPt->Fill(pt,ptL);
-        fhNeutralLeadingPhi->Fill(pt,phiL);
-        fhNeutralLeadingEta->Fill(pt,etaL);
-        fhNeutralLeadingDeltaPt->Fill(pt,pt-ptL);
-        fhNeutralLeadingDeltaPhi->Fill(pt,TMath::Abs(phi-phiL));
-        fhNeutralLeadingDeltaEta->Fill(pt,eta-etaL);
-        fhNeutralLeadingRatioPt->Fill(pt,ptL/pt);
-        fhNeutralLeadingXi->Fill(pt,TMath::Log(pt/ptL));
-        if(pt > 30) fhNeutralLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL),ptL/pt);
-        if(pt > 50) fhNeutralLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL),ptL/pt);
+        fhNeutralLeadingPt      ->Fill(pt, ptL   , GetEventWeight());
+        fhNeutralLeadingPhi     ->Fill(pt, phiL  , GetEventWeight());
+        fhNeutralLeadingEta     ->Fill(pt, etaL  , GetEventWeight());
+        fhNeutralLeadingDeltaPt ->Fill(pt, pt-ptL, GetEventWeight());
+        fhNeutralLeadingDeltaPhi->Fill(pt, TMath::Abs(phi-phiL), GetEventWeight());
+        fhNeutralLeadingDeltaEta->Fill(pt, eta-etaL, GetEventWeight());
+        fhNeutralLeadingRatioPt ->Fill(pt, ptL/pt  , GetEventWeight());
+        fhNeutralLeadingXi      ->Fill(pt, TMath::Log(pt/ptL), GetEventWeight());
+        if(pt > 30) fhNeutralLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL), ptL/pt, GetEventWeight());
+        if(pt > 50) fhNeutralLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL), ptL/pt, GetEventWeight());
       }
       
-      //Fill Jet histograms
+      // Fill Jet histograms
       
       if(!fSeveralConeAndPtCuts)
       {//just fill histograms
@@ -1214,35 +1200,34 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
   }//AOD trigger particle loop
   
   AliDebug(1,"End of jet leading cone analysis, fill histograms");
-  
 }
 
 //_______________________________________________________________________________________________
+/// Fill the jet with the particles around the leading particle with
+/// R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and
+/// fill aod with found information.
+//_______________________________________________________________________________________________
 void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorrelation *particle)
 {
-  //Fill the jet with the particles around the leading particle with
-  //R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and
-  //fill aod with found information
-  
   Double_t ptTrig   = particle->Pt();
   Double_t phiTrig  = particle->Phi();
   Double_t phil     = fLeadingMom.Phi();
   if(phil<0) phil+=TMath::TwoPi();
   Double_t etal     = fLeadingMom.Eta();
   
-  //Different pt cut for jet particles in different collisions systems
+  // Different pt cut for jet particles in different collisions systems
   Float_t ptcut = fJetPtThreshold;
   if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
   
-  //Add charged particles to jet if they are in cone around the leading particle
+  // Add charged particles to jet if they are in cone around the leading particle
   if(!GetCTSTracks())
   {
     AliFatal("Cannot construct jets without tracks, STOP analysis");
     return;
   }
   
-  //Fill jet with tracks
-  //Initialize reference arrays that will contain jet and background tracks
+  // Fill jet with tracks
+  // Initialize reference arrays that will contain jet and background tracks
   TObjArray * reftracks     = new TObjArray;
   TObjArray * reftracksbkg  = new TObjArray;
   
@@ -1262,7 +1247,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
       }
     }
     
-    //Background around (phi_gamma-pi, eta_leading)
+    // Background around (phi_gamma-pi, eta_leading)
     else if(IsParticleInJetCone(fTrackVector.Eta(),fTrackVector.Phi(),etal, phiTrig)) {
       
       reftracksbkg->Add(track);
@@ -1272,9 +1257,9 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
         fBkgMom+=fJetConstMom;
       }
     }
-  }//Track loop
+  }// Track loop
   
-  //Add referenced tracks to AOD
+  // Add referenced tracks to AOD
   if(reftracks->GetEntriesFast() > 0 )
   {
     reftracks->SetName(Form("%sTracks",GetAODObjArrayName().Data()));
@@ -1289,13 +1274,13 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
   }
   else AliDebug(1,"No background tracks in jet cone");
   
-  //Add neutral particles to jet
-  //Initialize reference arrays that will contain jet and background tracks
+  // Add neutral particles to jet
+  // Initialize reference arrays that will contain jet and background tracks
   TObjArray * refclusters     = new TObjArray;
   TObjArray * refclustersbkg  = new TObjArray;
-  if(!fJetsOnlyInCTS && GetEMCALClusters()){
-    
-    //Get vertex for photon momentum calculation
+  if(!fJetsOnlyInCTS && GetEMCALClusters())
+  {
+    // Get vertex for photon momentum calculation
     Double_t vertex[]  = {0,0,0} ; //vertex
     if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC)
     {
@@ -1307,23 +1292,22 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
     {
       AliVCluster * calo = (AliVCluster *) (GetEMCALClusters()->At(iclus)) ;
       
-      //Cluster selection, not charged
+      // Cluster selection, not charged
       if(IsTrackMatched(calo,GetReader()->GetInputEvent())) continue ;
       
-      //Get Momentum vector,
+      // Get Momentum vector,
       calo->GetMomentum(fJetConstMom,vertex) ;//Assume that come from vertex in straight line
       
-      //Particles in jet
-      if(IsParticleInJetCone(fJetConstMom.Eta(),fJetConstMom.Phi(), etal, phil)){
-        
+      // Particles in jet
+      if(IsParticleInJetCone(fJetConstMom.Eta(),fJetConstMom.Phi(), etal, phil))
+      {
         refclusters->Add(calo);
         
         if(fJetConstMom.Pt() > ptcut )  fJetMom+=fJetConstMom;
       }
       //Background around (phi_gamma-pi, eta_leading)
-      else if(IsParticleInJetCone(fJetConstMom.Eta(),fJetConstMom.Phi(),etal, phiTrig)){
-        
-        
+      else if(IsParticleInJetCone(fJetConstMom.Eta(),fJetConstMom.Phi(),etal, phiTrig))
+      {
         refclustersbkg->Add(calo);
         
         if(fJetConstMom.Pt() > ptcut )  fBkgMom+=fJetConstMom;
@@ -1346,24 +1330,23 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
   }
   else AliDebug(1,"No background clusters in jet cone");
   
-  //If there is any jet found, select after some criteria and
-  //and fill AOD with corresponding TLorentzVector kinematics
+  // If there is any jet found, select after some criteria and
+  // and fill AOD with corresponding TLorentzVector kinematics
   if(IsJetSelected(particle->Pt(), fJetMom.Pt()))
   {
     particle->SetCorrelatedJet(fJetMom);
     particle->SetCorrelatedBackground(fBkgMom);
     AliDebug(1,Form("Found jet: Trigger  pt %2.3f, Jet pt %2.3f, Bkg pt %2.3f",ptTrig,fJetMom.Pt(),fBkgMom.Pt()));
   }
-  
 }
 
 //______________________________________________________________________________________________________
+/// Fill the jet with the particles around the leading particle with
+/// R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and
+/// fill aod tlorentzvectors with jet and bakcground found.
+//______________________________________________________________________________________________________
 void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleCorrelation *particle)
 {
-  //Fill the jet with the particles around the leading particle with
-  //R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and
-  //fill aod tlorentzvectors with jet and bakcground found
-  
   Double_t ptTrig  = particle->Pt();
   Double_t phiTrig = particle->Phi();
   Double_t etal    = fLeadingMom.Eta();
@@ -1396,7 +1379,8 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
       }
     }//jet Track loop
   }
-  //Particles in background
+    
+  // Particles in background
   if(reftracksbkg){
     for(Int_t ipr = 0;ipr < reftracksbkg->GetEntriesFast() ; ipr ++ )
     {
@@ -1410,17 +1394,17 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
     }//background Track loop
   }
   
-  //Add neutral particles to jet
+  // Add neutral particles to jet
   if(!fJetsOnlyInCTS && refclusters)
   {
-    //Get vertex for photon momentum calculation
+    // Get vertex for photon momentum calculation
     Double_t vertex[]  = {0,0,0} ; //vertex
     if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC)
     {
       GetReader()->GetVertex(vertex);
     }
     
-    //Loop on jet particles
+    // Loop on jet particles
     if(refclusters){
       for(Int_t iclus = 0;iclus < refclusters->GetEntriesFast() ; iclus ++ )
       {
@@ -1432,7 +1416,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
       }//jet cluster loop
     }
     
-    //Loop on background particles
+    // Loop on background particles
     if(refclustersbkg)
     {
       for(Int_t iclus = 0;iclus < refclustersbkg->GetEntriesFast() ; iclus ++ )
@@ -1442,26 +1426,25 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
         calo->GetMomentum(fJetConstMom,vertex) ;//Assume that come from vertex in straight line
         
         if( fJetConstMom.Pt() > ptcut && IsParticleInJetCone(fJetConstMom.Eta(),fJetConstMom.Phi(),etal, phiTrig)) fBkgMom+=fJetConstMom;
-      }//background cluster loop
+      }// background cluster loop
     }
-  }//clusters in jet
+  }// clusters in jet
   
-  //If there is any jet found, leave jet and bkg as they are,
-  //if not set them to 0.
+  // If there is any jet found, leave jet and bkg as they are,
+  // if not set them to 0.
   if(!IsJetSelected(particle->Pt(), fJetMom.Pt()))
   {
     fJetMom.SetPxPyPzE(0.,0.,0.,0.);
     fBkgMom.SetPxPyPzE(0.,0.,0.,0.);
   }
   else AliDebug(1,Form("Found jet: Trigger  pt %2.3f, Jet pt %2.3f, Bkg pt %2.3f",ptTrig,fJetMom.Pt(),fBkgMom.Pt()));
-  
 }
 
 //__________________________________________________________________
+// Print some relevant parameters set for the analysis.
+//__________________________________________________________________
 void AliAnaParticleJetLeadingConeCorrelation::Print(const Option_t * opt) const
 {
-  
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -1495,5 +1478,5 @@ void AliAnaParticleJetLeadingConeCorrelation::Print(const Option_t * opt) const
     printf("Wrong jet selection option:   %d \n", fSelect) ;
   
   printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
-  
 } 
+
