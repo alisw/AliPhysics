@@ -15,12 +15,15 @@
 #include "TCut.h"
 #include "TCanvas.h"
 #include "TLinearFitter.h"
+#include "TMultiGraph.h"
+#include "TObjArray.h"
 
 TObjArray arrayFit(3);
 Int_t kMarkers[10]={25,24,20,21,22};
 Int_t kColors[10]={1,2,4,3,6};
 const char * names[10] = {"LTM","LThisto","LTMhistoPar","Gaus fit", "Gaus in range"};
 const char * distNames[10] = {"Gauss","Gauss+flat","Gauss(m)+0.2*Gauss(m+5#sigma)","Gauss(m)+0.4*Gauss(m+5#sigma)"};
+const char * normNames[TStatToolkit::kNNormType] = { "L1", "L2", "LP", "Max", "Hamming" };
 
 
 void TestLTM(Int_t nevents=10000){
@@ -194,7 +197,7 @@ void TestLTM(Int_t nevents=10000){
   // 1. Get numerical error estimate of the LTM method for gaussian distribution  
   //
   TH2 * hisLTMTrunc[10]={0};  
-  TH1 * hisResol[10]={0};
+  //TH1 * hisResol[10]={0};
   TGraphErrors * grSigma[10]={0};
   TCanvas *canvasLTM= new TCanvas("canvasLTM","canvasLTM",800,700);
   canvasLTM->Divide(2,2,0,0);
@@ -230,3 +233,99 @@ void TestLTM(Int_t nevents=10000){
 
 
 }
+
+void TestNormTypes() 
+{
+   //input arrays
+   const Int_t nValues=5;
+
+   Double_t v1=0.;
+   Double_t v2=0.;
+   Double_t v3=0.;
+
+   TTree t1("t1","t1");
+   TTree t2("t2","t2");
+
+   t1.Branch("v1", &v1);
+   t1.Branch("v2", &v2);
+   t1.Branch("v3", &v3);
+   t2.Branch("v1", &v1);
+   t2.Branch("v2", &v2);
+   t2.Branch("v3", &v3);
+
+   for (Int_t ival=0; ival<nValues; ++ival) {
+     v1=ival;
+     v2=v1*v1;
+     v3=2*ival; // same in both trees
+     t1.Fill();
+
+     v1=ival+1;
+     v2=v1*v1;
+     t2.Fill();
+   }
+
+   t1.AddFriend(&t2,"t2");
+
+   // store norm for all type and different variable combinations
+   const Int_t nVec = 6;
+   const char* statGraphNames[nVec] = {"T1 v1", "T1 v2", "T1 v1&v2", "T2 v1", "T1-T2 v1", "T1-T2 v3"};
+   TVectorD statTypesT1v1(TStatToolkit::kNNormType);
+   TVectorD statTypesT1v2(TStatToolkit::kNNormType);
+   TVectorD statTypesT1v1v2(TStatToolkit::kNNormType);
+   TVectorD statTypesT2v1(TStatToolkit::kNNormType);
+   TVectorD statTypesT1T2v1Diff(TStatToolkit::kNNormType);
+   TVectorD statTypesT1T2v3Diff(TStatToolkit::kNNormType);
+   TVectorD vx(TStatToolkit::kNNormType);
+
+   TObjArray arrVect;
+   arrVect.Add(&statTypesT1v1);
+   arrVect.Add(&statTypesT1v2);
+   arrVect.Add(&statTypesT1v1v2);
+   arrVect.Add(&statTypesT2v1);
+   arrVect.Add(&statTypesT1T2v1Diff);
+   arrVect.Add(&statTypesT1T2v3Diff);
+
+   // fill distance variables
+   for (Int_t inormType=0; inormType<TStatToolkit::kNNormType; ++inormType) {
+     vx(inormType) = inormType;
+     statTypesT1v1(inormType)         = TStatToolkit::GetDistance(&t1, "v1",          "", (TStatToolkit::ENormType)inormType, 3);
+     statTypesT1v2(inormType)         = TStatToolkit::GetDistance(&t1, "v2",          "", (TStatToolkit::ENormType)inormType, 3);
+     statTypesT1v1v2(inormType)       = TStatToolkit::GetDistance(&t1, "v1:v2",       "", (TStatToolkit::ENormType)inormType, 3);
+     statTypesT2v1(inormType)         = TStatToolkit::GetDistance(&t2, "v1",          "", (TStatToolkit::ENormType)inormType, 3);
+     statTypesT1T2v1Diff(inormType)   = TStatToolkit::GetDistance(&t1, "v1-t2.v1",    "", (TStatToolkit::ENormType)inormType, 3);
+     statTypesT1T2v3Diff(inormType)   = TStatToolkit::GetDistance(&t1, "v3-t2.v3",    "", (TStatToolkit::ENormType)inormType, 3);
+   }
+
+   // create graphs and draw
+   TMultiGraph *mgr = new TMultiGraph;
+
+   TLegend *leg = new TLegend(0.6, 0.6, 0.9, .9);
+   leg->SetFillColor(10);
+   leg->SetBorderSize(1);
+
+   for (Int_t igraph=0; igraph<arrVect.GetEntriesFast(); ++igraph) {
+     TVectorD vx2(vx);
+     vx2+=1./(nVec+1)*(igraph+1);
+     TGraph *gr = new TGraph(vx2, *((TVectorD*)arrVect.At(igraph)));
+     gr->SetMarkerColor(igraph+1);
+     gr->SetMarkerSize(1);
+     gr->SetMarkerStyle(21);
+     gr->SetTitle(statGraphNames[igraph]);
+     leg->AddEntry(gr, statGraphNames[igraph], "p");
+     mgr->Add(gr);
+   }
+
+   TCanvas *c=new TCanvas("statSummary","statSummary");
+   TH1F *hDummy = new TH1F("hDummy", ";norm type;norm", TStatToolkit::kNNormType, 0., (Double_t)TStatToolkit::kNNormType);
+   hDummy->SetMaximum(70);
+   hDummy->Draw();
+   mgr->Draw("p");
+   TAxis *xAxis = hDummy->GetXaxis();
+   for (Int_t inormType=0; inormType<TStatToolkit::kNNormType; ++inormType) {
+     xAxis->SetBinLabel(inormType+1, normNames[inormType]);
+   }
+   leg->Draw();
+   c->Modified();
+   c->Update();
+}
+

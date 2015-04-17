@@ -15,9 +15,10 @@
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Class TStatToolkit
-// 
-// Subset of  matheamtical functions  not included in the TMath
+/// \file TStatToolkit.cxx
+/// \class TStatToolkit
+/// \brief Summary of statistics functions
+/// Subset of  matheamtical functions  not included in the TMath
 //
 //
 /////////////////////////////////////////////////////////////////////////
@@ -1416,12 +1417,12 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   const Int_t entries =  tree->Draw(expr,cut,"goff");
   if (entries<=0) {
     TStatToolkit t;
-    t.Error("TStatToolkit::MakeGraphError",Form("Empty or Not valid expression (%s) or cut *%s)", expr,cut));
+    t.Error("TStatToolkit::MakeGraphError","Empty or Not valid expression (%s) or cut *%s)", expr,cut);
     return 0;
   }
   if (  tree->GetV2()==0){
     TStatToolkit t;
-    t.Error("TStatToolkit::MakeGraphError",Form("Not valid expression (%s) ", expr));
+    t.Error("TStatToolkit::MakeGraphError","Not valid expression (%s) ", expr);
     return 0;
   }
   TGraphErrors * graph=0;
@@ -1458,7 +1459,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   const Int_t entries = tree->Draw(expr,cut,"goff");
   if (entries<=0) {
     TStatToolkit t;
-    t.Error("TStatToolkit::MakeGraphSparse",Form("Empty or Not valid expression (%s) or cut (%s)", expr, cut));
+    t.Error("TStatToolkit::MakeGraphSparse","Empty or Not valid expression (%s) or cut (%s)", expr, cut);
     return 0;
   }
   //  TGraph * graph = (TGraph*)gPad->GetPrimitive("Graph"); // 2D
@@ -2130,9 +2131,9 @@ void TStatToolkit::CheckTreeAliases(TTree * tree, Int_t ncheck){
     if (!object) continue;
     Int_t ndraw=tree->Draw(aliases->At(i)->GetName(),"1","goff",nCheck);
     if (ndraw==0){
-      ::Error("Alias:\tProblem",aliases->At(i)->GetName());
+      ::Error("Alias:\tProblem","%s",aliases->At(i)->GetName());
     }else{
-      ::Info("Alias:\tOK",aliases->At(i)->GetName());
+      ::Info("Alias:\tOK","%s",aliases->At(i)->GetName());
     }
   }
 }
@@ -2159,4 +2160,81 @@ Double_t TStatToolkit::GetDefaultStat(TTree * tree, const char * var, const char
     return TMath::Median(entries, tree->GetV1());    
   }
   return 0;
+}
+
+//_____________________________________________________________________________
+void TStatToolkit::CombineArray(TTree *tree, TVectorD &values)
+{
+  const Int_t numberOfDimensions = tree->GetPlayer()->GetDimension();
+  if (numberOfDimensions==1) {
+    values.Use(tree->GetSelectedRows(), tree->GetVal(0));
+    return;
+  }
+
+  const Int_t numberOfSelectedRows = tree->GetSelectedRows();
+  values.ResizeTo(numberOfDimensions * numberOfSelectedRows);
+
+  Int_t nfill=0;
+  for (Int_t idim=0; idim<numberOfDimensions; ++idim) {
+    const Double_t *arr = tree->GetVal(idim);
+    if (!arr) continue;
+
+    for (Int_t ival=0; ival<numberOfSelectedRows; ++ival) {
+      values.GetMatrixArray()[nfill++] = arr[ival];
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
+Double_t TStatToolkit::GetDistance(const TVectorD &values, const ENormType normType, const Int_t pvalue/*=1*/)
+{
+  switch (normType) {
+    case kL1:
+      return values.Norm1();
+
+    case kL2:
+      return TMath::Sqrt(values.Norm2Sqr());
+
+    case kLp:
+    {
+      Double_t sum=0.;
+      for (Int_t ival=0; ival<values.GetNrows(); ++ival) {
+        sum+=TMath::Power(TMath::Abs(values.GetMatrixArray()[ival]), pvalue);
+      }
+      return TMath::Power(sum, 1./Double_t(pvalue));
+    }
+
+    case kMax:
+      return values.NormInf();
+
+    case kHamming:
+    {
+      Double_t sum=0.;
+      for (Int_t ival=0; ival<values.GetNrows(); ++ival) {
+        if (TMath::Abs(values.GetMatrixArray()[ival])>1e-30) ++sum;
+      }
+      return sum;
+    }
+  }
+  return 0.;
+}
+
+//_____________________________________________________________________________
+Double_t TStatToolkit::GetDistance(const Int_t size, const Double_t *values, const ENormType normType, const Int_t pvalue/*=1*/)
+{
+  TVectorD vecvalues;
+  vecvalues.Use(size, values);
+  return GetDistance(vecvalues, normType, pvalue);
+}
+
+//_____________________________________________________________________________
+Double_t TStatToolkit::GetDistance(TTree * tree, const char* var, const char * selection, const ENormType normType, const Int_t pvalue/*=1*/)
+{
+  Int_t entries = tree->Draw(var,selection,"goff");
+  if (entries==0) return 0.;
+
+  TVectorD values;
+  CombineArray(tree, values);
+  return GetDistance(values, normType, pvalue);
 }
