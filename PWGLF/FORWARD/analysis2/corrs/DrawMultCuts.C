@@ -7,6 +7,8 @@ DrawMultCuts(ULong_t       runNo=999,
 	     const Char_t* local=0)
 {
   const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+  if (gSystem->Getenv("ANA_SRC"))
+    fwd = gSystem->Getenv("ANA_SRC");
   gROOT->SetMacroPath(Form("%s/scripts:%s/corrs:%s", 
 			   gROOT->GetMacroPath(), fwd, fwd));
   if (!gROOT->GetClass("AliForwardCorrectionManager"))
