@@ -63,6 +63,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetPlotOnlyAcceptedJets(Bool_t b)        { fOnlyAcceptedJets    = b   ; }
   void SetPlotOnlySingleMatches(Bool_t b)       { fOnlySingleMatches   = b   ; }
   void SetCheckTrackColl(Bool_t b)              { fCheckTrackColl      = b   ; }
+  void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
    
