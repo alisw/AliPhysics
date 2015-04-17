@@ -1,39 +1,46 @@
 /// \file AddTaskMergedPi0Selection.C
 /// \brief Configuration analysis identifying single EMCal clusters as merged decays
 ///
-///
-///
 /// Configuration macro for analysis of merged pi0 spectra analysis
 /// It does the tagging of EMCAL clusters as pi0 via shower shape and splitting criteria in AliAnaPi0EbE
 ///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+
+/// Global name to be composed of the settings, used to set the AOD branch name
+TString kAnaMergedPi0 = "";
+
 ///
-/// The options that can be passed to the macro are: 
+/// Main method calling all the configuration 
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
 ///   * A bool identifying the data as simulation
 ///   * The year the data was taken, used to configure some histograms
-///   * A string with the colliding system 
+///   * A string with the colliding system
 ///   * A string with the trigger class, abbreviated, defined in method below SetTriggerMaskFromName()
 ///   * An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 ///   * A string with the array of clusters not being the default (default is empty string)
 ///   * A bool indicating if the tender was running before this analysis
 ///   * A bool indicating that the non linearity correction is needed
-///   * An int to select the minimum centrality, -1 means no selection 
-///   * An int to select the maximum centrality, -1 means no selection 
+///   * An int to select the minimum centrality, -1 means no selection
+///   * An int to select the maximum centrality, -1 means no selection
 ///   * A string to change the name of the histograms output file, default is AnalysisResults.root
 ///   * A bool to enable the print of the settings per task
 ///   * An int to define the debug level of all the tasks
 ///
-/// 
-///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
-
-// Set includes for compilation
-
-
-TString kAnaMergedPi0 = ""; /// Global name to be composed of the settings, used to set the AOD branch name
-
-///
-/// Main method calling all the configuration 
-/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+/// The options that can be passed to the macro are:
+/// \param simulation : A bool identifying the data as simulation
+/// \param year: The year the data was taken, used to configure some histograms
+/// \param col: A string with the colliding system
+/// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param tender : A bool indicating if the tender was running before this analysis
+/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param minCen : An int to select the minimum centrality, -1 means no selection
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection
+/// \param outputFile : A string to change the name of the histograms output file, default is AnalysisResults.root
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskMergedPi0Selection
 (

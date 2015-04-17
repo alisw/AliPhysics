@@ -1,33 +1,45 @@
+/// \file AddTaskCaloTrackCorr.C
+/// \brief Example of configuration of CaloTrackCorrelation package.
+///
+/// Example of configuration of different analysis combinations
+/// of the package CaloTrackCorrelations.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
-Bool_t  kPrint         = kFALSE;
-Bool_t  kSimulation    = kFALSE;
-Bool_t  kUseKinematics = kFALSE;
-Bool_t  kOutputAOD     = kFALSE;
-Bool_t  kEventSelection= kFALSE;
-Bool_t  kExotic        = kTRUE;
-Bool_t  kNonLinearity  = kFALSE;
-Int_t   kYears         = 2011;
-TString kCollisions    = "pp";
-TString kTrig          = "EMC7" ;
-TString kClusterArray  = "";
-TString kData          = ""; // MC or deltaAOD
-TString kInputDataType = "ESD";
-TString kCalorimeter   = "EMCAL";
-Bool_t  kTM            = kTRUE;
-Bool_t  kRecalTM       = kTRUE;
-Int_t   kMinCen        = -1;
-Int_t   kMaxCen        = -1;
-TString kName          = "";
-Int_t   kDebug         = -1; 
-Bool_t  kQA            = kFALSE;
-Bool_t  kHadronAN      = kFALSE;
-Bool_t  kCalibE        = kTRUE;
-Bool_t  kCalibT        = kTRUE;
-Bool_t  kBadMap        = kTRUE;
-Bool_t  kTender        = kFALSE;
-Bool_t  kMix           = kFALSE;
-Int_t   kRunNumber     = -1;
+/// Global variables to be accessed by the different methods
+Bool_t  kPrint         = kFALSE;    ///< Print setted parameters when configuring
+Bool_t  kSimulation    = kFALSE;    ///< Declare the analysis simulation
+Bool_t  kUseKinematics = kFALSE;    ///< Use the MC information
+Bool_t  kOutputAOD     = kFALSE;    ///< Create output AOD with generated particle AOD objects
+Bool_t  kEventSelection= kFALSE;    ///< Remove bad events
+Bool_t  kExotic        = kTRUE;     ///< Remove exotic clusters
+Bool_t  kNonLinearity  = kFALSE;    ///< Correct cluster non linearity
+Int_t   kYears         = 2011;      ///< Declare the year of the data
+TString kCollisions    = "pp";      ///< Declare the collision type of the data
+TString kTrig          = "EMC7" ;   ///< Set the trigger type to analyze in data
+TString kClusterArray  = "";        ///< Name of branch with clusters, default none, standard branch
+TString kData          = "";        ///< Declare data MC or deltaAOD
+TString kInputDataType = "ESD";     ///< Declare data ESD/AOD
+TString kCalorimeter   = "EMCAL";   ///< Use main analysis detector EMCal or PHOS or CTS
+Bool_t  kTM            = kTRUE;     ///< Remove matched clusters to tracks
+Bool_t  kRecalTM       = kTRUE;     ///< Recalculate track-cluster matching
+Int_t   kMinCen        = -1;        ///< Set the minimum centrality to be analyzed
+Int_t   kMaxCen        = -1;        ///< Set the maximum centrality to be analyzed
+TString kName          = "";        ///< Name of the analysis, used in created AOD branches and histo container
+Int_t   kDebug         = -1;        ///< Do the analysis with this debug level
+Bool_t  kQA            = kFALSE;    ///< Execute the calorimeter QA analaysis
+Bool_t  kHadronAN      = kFALSE;    ///< Execute the hadron selection and correlation analysis
+Bool_t  kCalibE        = kTRUE;     ///< Calibrate energy of clusters
+Bool_t  kCalibT        = kTRUE;     ///< Calibrate time of clusters
+Bool_t  kBadMap        = kTRUE;     ///< Reject bad cells/clusters
+Bool_t  kTender        = kFALSE;    ///< Declare that tender was executed
+Bool_t  kMix           = kFALSE;    ///< Do mixing analysis
+Int_t   kRunNumber     = -1;        ///< Declare the run number
 
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "",
                                                           const TString  calorimeter   = "EMCAL", 
                                                           const Bool_t   simulation    = kFALSE,
@@ -258,10 +270,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   return task;
 }
 
-//____________________________________
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+///
 AliCaloTrackReader * ConfigureReader()
 {
-  
   AliCaloTrackReader * reader = 0;
   if     (kInputDataType == "ESD"&& kData=="MC" ) 
     reader = new AliCaloTrackMCReader();
@@ -507,10 +520,11 @@ AliCaloTrackReader * ConfigureReader()
   if(kPrint) reader->Print("");
   
   return reader;
-  
 }
 
-//_______________________________________
+///
+/// Configure the class handling the calorimeter clusters specific methods
+///
 AliCalorimeterUtils* ConfigureCaloUtils()
 {
   
@@ -598,13 +612,14 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   if(kPrint) cu->Print("");
   
   return cu;
-  
 }
 
-//_____________________________________
+///
+/// Configure the task doing the first photon cluster selections
+/// Basically the track matching, minor shower shape cut, NLM selection ...
+///
 AliAnaPhoton* ConfigurePhotonAnalysis()
 {
-  
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -692,15 +707,15 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//________________________________________________________________
+///
+/// Configure the task doing the checks on clusters triggered events
+/// For filling all histograms meaninfully, in the reader, time cut must be off
+/// and bad triggered events not rejected, and of course analyze triggered events.
+///
 AliAnaEMCALTriggerClusters* ConfigureEMCALTriggerClusterAnalysis()
 {
-  // For filling all histograms meaninfully, in the reader, time cut must be off
-  // and bad triggered events not rejected, and of course analyze triggered events.
-  
   AliAnaEMCALTriggerClusters *ana = new AliAnaEMCALTriggerClusters();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -719,15 +734,15 @@ AliAnaEMCALTriggerClusters* ConfigureEMCALTriggerClusterAnalysis()
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//___________________________________________________
+///
+/// Configure the task doing the checks on clusters pile-up events
+/// For filling all histograms meaninfully, in the reader, time cut must be off
+/// and bad triggered events in different BC not rejected.
+///
 AliAnaClusterPileUp* ConfigureClusterPileUpAnalysis()
 {
-  // For filling all histograms meaninfully, in the reader, time cut must be off
-  // and bad triggered events in different BC not rejected
-  
   AliAnaClusterPileUp *ana = new AliAnaClusterPileUp();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -744,13 +759,14 @@ AliAnaClusterPileUp* ConfigureClusterPileUpAnalysis()
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//________________________________________________________________________________
+///
+/// Configure the task doing electron (or charged hadron) cluster selections
+/// Basically the track matching, minor shower shape cut, NLM selection, dEdx, E/p ...
+///
 AliAnaElectron* ConfigureElectronAnalysis()
 {
-  
   AliAnaElectron *ana = new AliAnaElectron();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -813,13 +829,13 @@ AliAnaElectron* ConfigureElectronAnalysis()
   if(kPrint) ana->Print("");
   
   return ana ;
-  
 }
 
-//__________________________________________________________________________________________
+///
+/// Configure the task doing random trigger generation
+///
 AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
 {
-  
   AliAnaRandomTrigger *ana = new AliAnaRandomTrigger();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -872,10 +888,11 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//__________________________________________________________________________________________
+///
+/// Configure the task doing cluster identification as merged pi0/eta decays
+///
 AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Bool_t useSS = kTRUE, Bool_t useAsy = kFALSE)
 {
   AliAnaInsideClusterInvariantMass *ana = new AliAnaInsideClusterInvariantMass();
@@ -978,10 +995,11 @@ AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Bool_t useSS = kT
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//_______________________________________________
+///
+/// Configure the task doing charged track selection
+///
 AliAnaChargedParticles* ConfigureChargedAnalysis()
 {
   
@@ -1022,11 +1040,12 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
 
-//_____________________________________________________
+///
+/// Configure the task doing the pi0 even by event selection via the split method
+///
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
                                       Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE)
 {
@@ -1184,7 +1203,9 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   
 }
 
-//____________________________________________________________________________________________________
+///
+/// Configure the task doing the trigger particle isolation
+///
 AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon", 
                                                     Int_t  partInCone = AliIsolationCut::kOnlyCharged,
                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
@@ -1192,7 +1213,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
                                                     Float_t pth  = 0.3,
                                                     Bool_t multi      = kFALSE)
 {
-  
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
   //ana->SetDebug(kDebug);
   ana->SetDebug(kDebug);
@@ -1305,18 +1325,18 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//___________________________________________________________________________________
-AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle, 
+///
+/// Configure the task doing the trigger particle hadron correlation
+///
+AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle,
                                                                     Bool_t bIsolated,
                                                                     Int_t  partInCone = AliIsolationCut::kOnlyCharged,
                                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
                                                                     Float_t cone = 0.3,
                                                                     Float_t pth  = 0.3)
 {
-  
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
   ana->SetDebug(kDebug);
   
@@ -1492,13 +1512,13 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   if(kPrint) ana->Print("");  
   
   return ana;
-  
 }
 
-//________________________________________
+///
+/// Configure the task doing standard calorimeter QA
+///
 AliAnaCalorimeterQA* ConfigureQAAnalysis()
 {
-  
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   ana->SetDebug(kDebug); //10 for lots of messages
   ana->SetCalorimeter(kCalorimeter);
@@ -1537,14 +1557,14 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   if(kPrint) ana->Print("");	
   
   return ana;
-  
 }
 
-//________________________________________________________________
+///
+/// Configure the task doing analysis at the generator level
+/// of high pT photon or pi0 and correlations.
+///
 AliAnaGeneratorKine* ConfigureGenKineAnalysis()
 {
-  // Analysis for parton, jets correlation with photon and pi0
-  
   AliAnaGeneratorKine *ana = new AliAnaGeneratorKine();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -1574,10 +1594,11 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis()
   if(kPrint) ana->Print("");
   
   return ana;
-  
 }
 
-//________________________________________________________
+///
+/// Configure the selection of MC events
+///
 void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana)
 {
   if(kSimulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
@@ -1587,7 +1608,9 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana)
   //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 }  
 
-//________________________________________________________
+///
+/// Set common histograms binning and ranges
+///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
 {
   // Set common bins for all analysis and MC histograms filling
@@ -1674,7 +1697,10 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   
 }
 
-//_____________________________
+///
+/// Set the trigger requested for the analysis,
+/// depending on a string given
+///
 UInt_t SetTriggerMaskFromName()
 {
   if(kTrig=="EMC7")

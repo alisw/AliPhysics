@@ -1,4 +1,3 @@
-/* $Id$ */
 //-------------------------------------------------
 enum anaModes {mLocal, mGRID};
 //mLocal    = 0: Analyze locally files in your computer

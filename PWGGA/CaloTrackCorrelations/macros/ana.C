@@ -1,4 +1,3 @@
-/* $Id:  $ */
 //--------------------------------------------------
 // Example macro to do analysis with the 
 // analysis classes in CaloTrackCorrelations

@@ -1,11 +1,50 @@
-// Configuration macro for analysis of photon-jet analysis
-// Author: Adam Matyja
-// based on AddTaskIsoPhoton by Gustavo Conesa & Marie Germain.
+/// \file AddTaskGammaJetCorrelation.C
+/// \brief gamma-jet correlation configuration.
+///
+/// Configuration of the gamma-jet correlation analysis
+/// based on AddTaskIsoPhoton by Gustavo Conesa & Marie Germain.
+///
+/// \author : Adam Matyja <Adam.Matyja@cern.ch>, INP-PAN-Krakow.
+///
 
-//new macro
-TString kGammaJetCorrelationName          = "";
+/// Global name to be composed of the settings, used to set the AOD branch name
+TString kGammaJetCorrelationName = "";
 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  isoCone       = 0.4,
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
+/// The options that can be passed to the macro are:
+/// \param isoCone : A float setting the isolation cone size
+/// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param maxLambda0Cut : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
+/// \param maxNLMCut : maximum value of shower shape parameter
+/// \param timecut : activate time cut
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle
+/// \param simulation : A bool identifying the data as simulation
+/// \param evensel : reject bad events (pile-up ...)
+/// \param exotic : reject exotic clusters
+/// \param nonlin : A bool to set the use of the non linearity correction
+/// \param collision : A string with the colliding system
+/// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
+/// \param firedTrigger : In case of events with 2 L1 triggers, specify which one
+/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param mix : A bool to switch the correlation mixing analysis
+/// \param tm : A bool to select neutral clusters as triggers
+/// \param minCen : An int to select the minimum centrality, -1 means no selection
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection
+/// \param jetBranchName : Name of branch with reconstructed jets
+/// \param jetBkgBranchName : Name of branch with reconstructed background jets
+/// \param minDeltaPhi : minimum cut on photon-jet azimuthal angle
+/// \param maxDeltaPhi : maximum cut on photon-jet azimuthal angle
+/// \param minPtRatio : minimum cut on jet/photon pT ratio
+/// \param maxPtRatio : maximum cut on jet/photon pT ratio
+/// \param debug : An int to define the debug level of all the tasks
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param scaleFactor : scale factor in case for pT-hard simulation bins. Not useful with train.
+///
+AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
+                                const Float_t  isoCone       = 0.4,
 								const Float_t  isoPth        = 0.5,
 								const Double_t maxLambda0Cut = 0.5,
 								const Int_t    maxNLMcut     = 2,
@@ -25,18 +64,15 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
 								const Int_t    maxCen        = -1,
 								const TString  jetBranchName = "clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00",
 								const TString  jetBkgBranchName = "jeteventbackground_clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00",
-                const Float_t  jetMinPt      = 0,
-                const Float_t  minDeltaPhi   = 1.5,
+                                const Float_t  jetMinPt      = 0,
+                                const Float_t  minDeltaPhi   = 1.5,
 								const Float_t  maxDeltaPhi   = 4.5,
 								const Float_t  minPtRatio    = 0,
 								const Float_t  maxPtRatio    = 5,   
 								const Int_t    debug         = -1,
 								const Bool_t   printSettings = kFALSE,
-								const Double_t scaleFactor   = -1
-								)
+								const Double_t scaleFactor   = -1      )
 {
-  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
-
   // Get the pointer to the existing analysis manager via the static access method.
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -159,7 +195,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
   return task;
 }
 
-//____________________________________
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+///
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calorimeter = "EMCAL",Bool_t useKinematics = kFALSE,
 				     Bool_t simulation = kFALSE,Bool_t   eventsel      = kFALSE,Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
 				     TString  collision     = "pp",TString trigger="MB",TString firedTrigger="EG1",
@@ -168,7 +206,6 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 				     Float_t minCen = -1, Float_t maxCen = -1,
 				     Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
-  
   Bool_t useTender=kTRUE;
 
   if(simulation)
@@ -438,13 +475,13 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   if(printSettings) reader->Print("");
   
   return reader;
-  
 }
 
-//_______________________________________
+///
+/// Configure the class handling the calorimeter clusters specific methods
+///
 AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  collision     = "pp",Bool_t nonlin = kTRUE,Bool_t exotic = kTRUE ,Bool_t simulation = kFALSE,Bool_t timecut = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
-  
   Bool_t useTender=kTRUE;
 
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -538,13 +575,14 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
   if(printSettings) cu->Print("");
   
   return cu;
-  
 }
 
-//_____________________________________
+///
+/// Configure the task doing the first photon cluster selections
+/// Basically the track matching, minor shower shape cut, NLM selection ...
+///
 AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = kFALSE,Bool_t simulation = kFALSE,Double_t maxLambda0Cut=0.5,Int_t maxNLMcut=2,Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
-  
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(debug); //10 for lots of messages
   
@@ -633,10 +671,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   if(printSettings) ana->Print("");
   
   return ana;
-  
 }
 
-//____________________________________________________________________________________________________
+///
+/// Configure the task doing the trigger cluster isolation
+///
 AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL",
 						    TString  collision     = "pp",
 						    TString particle="Photon", 
@@ -649,7 +688,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
 						    Int_t debug = -1,
 						    Bool_t printSettings = kFALSE)
 {
-  
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
   ana->SetDebug(debug);
     
@@ -772,7 +810,9 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   
 }
 
-//________________________________________________________
+///
+/// Configure the selection of MC events
+///
 void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana,Bool_t simulation = kFALSE)
 {
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
@@ -782,11 +822,11 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana,Bool_t simulation = kFALSE)
   //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 }  
 
-//________________________________________________________
+///
+/// Set common histograms binning and ranges
+///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,TString calorimeter = "EMCAL")
 {
-  // Set common bins for all analysis and MC histograms filling
-    
   histoRanges->SetHistoPtRangeAndNBins(-0.25, 99.75, 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
@@ -837,10 +877,12 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,TString calorimeter 
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  
 }
 
-//_________________
+///
+/// Set the trigger requested for the analysis,
+/// depending on a string given
+///
 UInt_t SetTriggerMaskFromName(TString trigger)
 {
   if(trigger=="EMC7")
@@ -921,11 +963,14 @@ UInt_t SetTriggerMaskFromName(TString trigger)
 
 }
 
+///
+/// Configure the task doing the trigger cluster-jet correlation
+///
 AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(TString calorimeter = "EMCAL",Float_t gammaConeSize = 0.3, Float_t  jetMinPt  = 0, 
 							       Float_t  minDeltaPhi   = 1.5,Float_t  maxDeltaPhi   = 4.5,
 							       Float_t  minPtRatio    = 0,Float_t  maxPtRatio    = 5,
-							       Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE){
-
+							       Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
+{
   AliAnaParticleJetFinderCorrelation *ana = new AliAnaParticleJetFinderCorrelation();
   ana->SetDebug(debug);
   TString particle="Photon";
