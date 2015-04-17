@@ -140,7 +140,7 @@ struct SysErrorAdder
    */
   Int_t MakeMerging(GraphSysErr* gse, TLegend* l) const
   {
-    if (GetMerging() <= 0) return -1;
+    if (GetMerging(-1) <= 0 && GetMerging(+1) <= 0) return -1;
     Int_t id = gse->DeclarePoint2Point("Merging", true); 
     ModError(gse, id, kMergingFill, l);
     return id;
@@ -155,7 +155,7 @@ struct SysErrorAdder
    */
   Int_t MakeDensity(GraphSysErr* gse, TLegend* l) const
   {
-    if (GetDensity() <= 0) return -1;
+    if (GetDensity(-1) <= 0 && GetDensity(+1) <= 0) return -1;
     Int_t id = gse->DeclarePoint2Point("Density", true);
     ModError(gse, id, kDensityFill, l);
     return id;
@@ -193,11 +193,11 @@ struct SysErrorAdder
   /** 
    * @return The systematic error from merging 
    */
-  virtual Double_t GetMerging() const { return 0.01; }
+  virtual Double_t GetMerging(Short_t ) const { return 0.01; }
   /** 
    * @return The systematic error from density calculator 
    */
-  virtual Double_t GetDensity() const { return 0.01; }
+  virtual Double_t GetDensity(Short_t w) const { return (w<0?0.02:0.01); }
   /** 
    * @return The systematic error from empirical correction 
    */
@@ -259,10 +259,14 @@ struct SysErrorAdder
       gse->SetPointError(cnt, ex);
       gse->SetStatError(cnt, ey);
 
-      if (idMerge>=0) gse->SetSysError(idMerge, cnt, ex, GetMerging());
-      if (idDens >=0) gse->SetSysError(idDens,  cnt, ex, GetDensity());
-      if (idEmp  >=0) gse->SetSysError(idEmp,   cnt, ex, GetEmpirical());
-      if (idHad  >=0) gse->SetSysError(idHad,   cnt, ex, GetHadron(x));
+      if (idMerge>=0)
+	gse->SetSysError(idMerge, cnt, ex, ex, GetMerging(-1), GetMerging(1));
+      if (idDens >=0)
+	gse->SetSysError(idDens,  cnt, ex, ex, GetDensity(-1), GetDensity(1));
+      if (idEmp  >=0)
+	gse->SetSysError(idEmp,   cnt, ex, GetEmpirical());
+      if (idHad  >=0)
+	gse->SetSysError(idHad,   cnt, ex, GetHadron(x));
       cnt++;
     }
     return gse;
@@ -282,9 +286,10 @@ struct INELAdder : public SysErrorAdder
    * @param sys Collision system 
    * @param sNN Collision energy
    */
-  INELAdder(const TString& sys, UShort_t sNN)
-    : SysErrorAdder(sys, sNN, "INEL"), fLow(0), fHigh(0)
+  INELAdder(const TString& sys, UShort_t sNN, Double_t low=-1, Double_t high=-1)
+    : SysErrorAdder(sys, sNN, "INEL"), fLow(low), fHigh(high)
   {
+    if (low > 0 && high > 0) return;
     if (fSys.EqualTo("pp", TString::kIgnoreCase)) {
       switch (fSNN) {
       case  900:   fLow = 0.001;  fHigh = 0.003; break;
@@ -346,9 +351,10 @@ struct NSDAdder : public SysErrorAdder
    * @param sys Collision system 
    * @param sNN Collision energy
    */
-  NSDAdder(const TString& sys, UShort_t sNN)
-    : SysErrorAdder(sys, sNN, "NSD"), fValue(0)
+  NSDAdder(const TString& sys, UShort_t sNN, Double_t value=-1)
+    : SysErrorAdder(sys, sNN, "NSD"), fValue(value)
   {
+    if (value > 0) return;
     if (fSys.EqualTo("pp", TString::kIgnoreCase)) {
       switch (fSNN) {
       case  900:   fValue = 0.02; break;
