@@ -13,20 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class for the analysis of particle (direct gamma) -jet (jet found with finder) correlations
-//*-- Author: Gustavo Conesa (LNF-INFN)
-//*-- Modified: Adam Matyja (INP PAN Cracow) 
-//////////////////////////////////////////////////////////////////////////////
-
-
 // --- ROOT system ---
 #include "TH2F.h"
 #include "TClonesArray.h"
 #include "TClass.h"
 //#include "Riostream.h"
 
-//---- AliRoot system ----
+// ---- AliRoot system ----
 #include "AliCaloTrackReader.h"
 #include "AliAODJet.h"
 #include "AliAnaParticleJetFinderCorrelation.h" 
@@ -35,20 +28,25 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
 
-//jets
+// ---- Jets ----
 #include "AliAODJetEventBackground.h"
 #include "TRandom2.h"
 //MC access
 #include "AliStack.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAODMCParticle.h"
+
 // --- Detectors ---
 #include "AliEMCALGeometry.h"
 
-ClassImp(AliAnaParticleJetFinderCorrelation)
+/// \cond CLASSIMP
+ClassImp(AliAnaParticleJetFinderCorrelation) ;
+/// \endcond
 
 //________________________________________________________________________
-AliAnaParticleJetFinderCorrelation::AliAnaParticleJetFinderCorrelation() : 
+/// Default constructor. Initialize parameters.
+//________________________________________________________________________
+AliAnaParticleJetFinderCorrelation::AliAnaParticleJetFinderCorrelation() :
 AliAnaCaloTrackCorrBaseClass(),  
   fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fRatioMaxCut(0.),  fRatioMinCut(0.), 
   fConeSize(0.), fPtThresholdInCone(0.),fUseJetRefTracks(kTRUE),
@@ -144,34 +142,32 @@ fMCJetCh150ConePt(0),
 fMCJetCh150ConeNPart(0),
 fMCJetCh150ConeEta(0),
 fMCJetCh150ConePhi(0)
-
 {
-  //Default Ctor
-  //printf("constructor\n");
-  
-  //Initialize parameters
   InitParameters();
-  for(Int_t i=0;i<10;i++){
-    fhJetNjetOverPtCut[i] = 0;
+  for(Int_t i=0;i<10;i++)
+  {
+    fhJetNjetOverPtCut     [i] = 0;
     fhPhotonNgammaOverPtCut[i] = 0;
   }
+    
   fGenerator = new TRandom2();
   fGenerator->SetSeed(0);
 }
 
 //___________________________________________________________________
-AliAnaParticleJetFinderCorrelation::~AliAnaParticleJetFinderCorrelation(){
+/// Destructor.
+//___________________________________________________________________
+AliAnaParticleJetFinderCorrelation::~AliAnaParticleJetFinderCorrelation()
+{
   delete fGenerator;
 }
 
-
+//___________________________________________________________________
+/// Create histograms to be saved in output file and
+/// store them in fOutputContainer.
 //___________________________________________________________________
 TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
-{  
-  // Create histograms to be saved in output file and 
-  // store them in fOutputContainer
-  //printf("GetCreateOutputObjects\n");    
-
+{
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticleJetFinderHistos") ; 
   
@@ -887,14 +883,13 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   }
 
   return outputContainer;
-
 }
 
 //_______________________________________________________
+/// Initialize the parameters of the analysis.
+//_______________________________________________________
 void AliAnaParticleJetFinderCorrelation::InitParameters()
 {
-  //printf("InitParameters\n");
-  //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
   AddToHistogramsName("AnaJetFinderCorr_");
 
@@ -925,12 +920,11 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
 }
 
 //__________________________________________________________________
+/// Input for jets is TClonesArray *aodRecJets.
+/// \return the index of the jet that is opposite to the particle.
+//__________________________________________________________________
 Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * particle, TClonesArray *aodRecJets)
 {
-  //Input for jets is TClonesArray *aodRecJets
-  //Returns the index of the jet that is opposite to the particle
-  //printf(" SelectJet ");
-  
   Double_t particlePt=particle->Pt();
   if(fUseBackgroundSubtractionGamma) {
       particlePt-=(fGamRho*particle->GetNCells());
@@ -961,28 +955,40 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   
   Bool_t photonOnlyOnce=kTRUE;  
 
-  for(Int_t ijet = 0; ijet < njets ; ijet++){
+  for(Int_t ijet = 0; ijet < njets ; ijet++)
+  {
     jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+      
     if(!jet)
     {
       AliInfo("Jet not in container");
       continue;
     }
-    fhCuts2->Fill(2.,1.);
+      
+    fhCuts2->Fill(2., GetEventWeight());
+      
     jetPt=jet->Pt();
     if(jetPt<fJetMinPt) continue;
-    fhCuts2->Fill(3.,1.);
+      
+    fhCuts2->Fill(3., GetEventWeight());
     //put jet eta requirement here |eta_jet|<0.9-jet_cone_size
     if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
-    fhCuts2->Fill(4.,1.);
+      
+    fhCuts2->Fill(4., GetEventWeight());
+      
     if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
-    fhCuts2->Fill(5.,1.);
-    if(fBackgroundJetFromReader ){
+      
+    fhCuts2->Fill(5., GetEventWeight());
+      
+    if(fBackgroundJetFromReader )
+    {
       jetPt-= (fJetRho * jet->EffectiveAreaCharged() );
     }
 
     if(jetPt<fJetMinPtBkgSub) continue;
-    fhCuts2->Fill(6.,1.);
+      
+    fhCuts2->Fill(6., GetEventWeight());
+      
     //printf("jet found\n");
     Double_t deltaPhi0pi  = TMath::Abs(particle->Phi()-jet->Phi());
     Double_t ratio = jetPt/particlePt;
@@ -991,26 +997,29 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
     if ( deltaPhi0pi > TMath::Pi() ) deltaPhi0pi = 2. * TMath::Pi() - deltaPhi0pi ;
     if(deltaPhi<0) deltaPhi +=(TMath::Pi()*2.);
     
-    //new histogram for Leticia x-check
-    //isolated photon + jet(s)
+    // new histogram for Leticia x-check
+    // isolated photon + jet(s)
     if(OnlyIsolated() && !particle->IsIsolated() && 
-       (deltaPhi > fDeltaPhiMinCut) && (deltaPhi < fDeltaPhiMaxCut) ){
+       (deltaPhi > fDeltaPhiMinCut) && (deltaPhi < fDeltaPhiMaxCut) )
+    {
       //fill 1D photon + 2D photon+jets
-      if(photonOnlyOnce) {
-	fhGamPtPerTrig->Fill(particlePt);
-	photonOnlyOnce=kFALSE;
+      if(photonOnlyOnce)
+      {
+	    fhGamPtPerTrig->Fill(particlePt, GetEventWeight());
+	    photonOnlyOnce=kFALSE;
       }
-      fhPtGamPtJet->Fill(particlePt,jetPt);
+        
+      fhPtGamPtJet->Fill(particlePt, jetPt, GetEventWeight());
     }
     
 
-    fhDeltaPtBefore ->Fill(particlePt, particlePt - jetPt);
-    fhDeltaPhiBefore->Fill(particlePt, deltaPhi);
-    fhDeltaEtaBefore->Fill(particlePt, particle->Eta() - jet->Eta());
-    fhPtRatioBefore ->Fill(particlePt, jetPt/particlePt);
-    fhPtBefore      ->Fill(particlePt, jetPt);
+    fhDeltaPtBefore ->Fill(particlePt, particlePt - jetPt          , GetEventWeight());
+    fhDeltaPhiBefore->Fill(particlePt, deltaPhi                    , GetEventWeight());
+    fhDeltaEtaBefore->Fill(particlePt, particle->Eta() - jet->Eta(), GetEventWeight());
+    fhPtRatioBefore ->Fill(particlePt, jetPt/particlePt            , GetEventWeight());
+    fhPtBefore      ->Fill(particlePt, jetPt                       , GetEventWeight());
     
-    fhDeltaPhi0PiCorrectBefore->Fill(particlePt, deltaPhi0pi);//good
+    fhDeltaPhi0PiCorrectBefore->Fill(particlePt, deltaPhi0pi , GetEventWeight());//good
     
     AliDebug(5,Form("Jet %d, Ratio pT %2.3f, Delta phi %2.3f",ijet,ratio,deltaPhi));
     
@@ -1023,15 +1032,14 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   }//AOD Jet loop
   
   return index ;
-  
 }
 
 //__________________________________________________________________
+/// Particle-Jet Correlation Analysis, fill AODs.
+//__________________________________________________________________
 void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
 {
-  //Particle-Jet Correlation Analysis, fill AODs
-  //  printf("I use MakeAnalysisFillAOD\n");
-  //Get the event, check if there are AODs available, if not, skip this analysis
+  // Get the event, check if there are AODs available, if not, skip this analysis
   AliAODEvent * event = NULL;
   
   //  cout<<"GetReader()->GetOutputEvent() "<<GetReader()->GetOutputEvent()<<endl;
@@ -1093,7 +1101,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   }
   
   //
-  //Background jets
+  // Background jets
   //
   AliAODJetEventBackground* aodBkgJets = 0;
   if(IsBackgroundJetFromReader()){//jet branch from reader
@@ -1109,9 +1117,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   }
   
   Double_t rhoEvent=0.;
-  if(aodBkgJets && IsBackgroundJetFromReader() ) {
+  if(aodBkgJets && IsBackgroundJetFromReader() )
+  {
     rhoEvent = aodBkgJets->GetBackground(2);//hardcoded
   }
+    
   fJetRho = rhoEvent;
   
   
@@ -1173,8 +1183,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
       delete [] photonRhoArr;
     }
   }//end of if background calculation for gamma
-  fGamRho = medianPhotonRho;
   
+  fGamRho = medianPhotonRho;
   
   //
   //take most energetic photon and most energetic jet and combine
@@ -1258,15 +1268,14 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
 } 
 
 //__________________________________________________________________
+/// Particle-Jet Correlation Analysis, fill histograms.
+//__________________________________________________________________
 void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
 {
-  //Particle-Jet Correlation Analysis, fill histograms
-  
   AliDebug(3,"I use MakeAnalysisFillHistograms");
   AliDebug(3,Form("ntracks before iso %d\n",GetCTSTracks()->GetEntriesFast()));
 
-
-  //Get the event, check if there are AODs available, if not, skip this analysis
+  // Get the event, check if there are AODs available, if not, skip this analysis
   AliAODEvent * event = NULL;
   
   //printf("GetReader()->GetOutputEvent() %d\n",GetReader()->GetOutputEvent() );
@@ -1319,7 +1328,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   }
   
   //
-  //Background jets
+  // Background jets
   //
   AliAODJetEventBackground* aodBkgJets = 0;
   if(IsBackgroundJetFromReader()){//jet branch from reader
@@ -1342,42 +1351,51 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   Double_t rhoEvent=0.;
   if(aodBkgJets) {
     if(IsBackgroundJetFromReader() ) rhoEvent = aodBkgJets->GetBackground(2);
-    if(IsHistogramJetBkg()) {
-      fhJetRhoVsCentrality->Fill(GetEventCentrality(),rhoEvent);
-      for(Int_t i=0;i<4;i++){
-        fhBkgJetBackground[i]->Fill(aodBkgJets->GetBackground(i));
-        fhBkgJetSigma[i]->Fill(aodBkgJets->GetSigma(i));
-        fhBkgJetArea[i]->Fill(aodBkgJets->GetMeanarea(i));
+    if(IsHistogramJetBkg())
+    {
+      fhJetRhoVsCentrality->Fill(GetEventCentrality(), rhoEvent, GetEventWeight());
+        
+      for(Int_t i=0;i<4;i++)
+      {
+        fhBkgJetBackground[i]->Fill(aodBkgJets->GetBackground(i), GetEventWeight());
+        fhBkgJetSigma     [i]->Fill(aodBkgJets->GetSigma(i)     , GetEventWeight());
+        fhBkgJetArea      [i]->Fill(aodBkgJets->GetMeanarea(i)  , GetEventWeight());
       }
     }//end of if fill HistogramJetBkg
   }//end if aodBkgJets exists
   
   //
-  //only track information
+  // only track information
   //
   Int_t nCTSTracks = GetCTSTracks()->GetEntriesFast();
   AliAODTrack *aodtrack;
   Int_t itrack = 0;
-  if(IsHistogramTracks()) {
+  if(IsHistogramTracks())
+  {
     Double_t sumTrackPt=0;
-    for(itrack = 0; itrack < nCTSTracks ; itrack++){
+    for(itrack = 0; itrack < nCTSTracks ; itrack++)
+    {
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
+      
       if(!aodtrack) continue;
-      fhTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());
+        
+      fhTrackPhiVsEta->Fill(aodtrack->Phi(), aodtrack->Eta(), GetEventWeight());
+        
       sumTrackPt+=aodtrack->Pt();
     }
+      
     if(nCTSTracks)
-      fhTrackAveTrackPt->Fill(sumTrackPt/nCTSTracks);
+      fhTrackAveTrackPt->Fill(sumTrackPt/nCTSTracks, GetEventWeight());
   }//end if IsHistogramTracks
   
   //
-  //only jet informations
+  // only jet informations
   //
   AliAODJet * jettmp = 0 ;
   Double_t jetPttmp = 0.;
   Double_t var1tmp = 0.;
   Double_t var2tmp = 0.;
-  //  fhJetNjet->Fill(nJets);
+  //  fhJetNjet->Fill(nJets, GetEventWeight());
   Double_t ptMostEne=0;
   //  Int_t indexMostEne=-1;
   Int_t nJetsOverThreshold[10]={nJets,0,0,0,0,0,0,0,0,0};
@@ -1386,27 +1404,41 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   Int_t sumNJetTrack=0;
   Int_t nTracksInJet=0;
   Int_t itrk=0;
-  for(Int_t ijet = 0; ijet < nJets ; ijet++){
+  for(Int_t ijet = 0; ijet < nJets ; ijet++)
+  {
     jettmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+      
     if(!jettmp) continue;
-    fhJetPtBefore->Fill(jettmp->Pt());
+      
+    fhJetPtBefore->Fill(jettmp->Pt(), GetEventWeight());
+      
     jetPttmp  = jettmp->Pt() - rhoEvent * jettmp->EffectiveAreaCharged();//<<---changed here
     
     //calculate number of tracks above 1,2,3,4,5 GeV in jet
     AliVTrack* jettrack = 0x0 ;
     
     Int_t nTrackThrGeV[5]={0,0,0,0,0};
+    
     nTracksInJet=(jettmp->GetRefTracks())->GetEntriesFast();
-    fhJetNparticlesInJet->Fill(nTracksInJet);
+      
+    fhJetNparticlesInJet->Fill(nTracksInJet, GetEventWeight());
+      
     if(nTracksInJet==0) continue;
+      
     sumNJetTrack+=nTracksInJet;
-    for(itrack=0;itrack<nTracksInJet;itrack++){
+      
+    for(itrack=0;itrack<nTracksInJet;itrack++)
+    {
       jettrack=(AliVTrack *) ((jettmp->GetRefTracks())->At(itrack));
+        
       if(!jettrack) continue;
       
-      fhJetDeltaEtaDeltaPhi->Fill(jettmp->Eta()-jettrack->Eta(),jettmp->Phi()-jettrack->Phi());
+      fhJetDeltaEtaDeltaPhi->Fill(jettmp->Eta()-jettrack->Eta(), jettmp->Phi()-jettrack->Phi(), GetEventWeight());
+        
       sumJetTrackPt+=jettrack->Pt();
-      if(IsHistogramJetTracks()){
+      
+      if(IsHistogramJetTracks())
+      {
         if(jettrack->Pt()>1.) nTrackThrGeV[0]++;
         if(jettrack->Pt()>2.) nTrackThrGeV[1]++;
         if(jettrack->Pt()>3.) nTrackThrGeV[2]++;
@@ -1416,30 +1448,33 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     }//end of jet track loop
     //printf("jetPt %f ntrks %d ntrks>1,2,3,4,5GeV in jet %d, %d, %d, %d, %d\n",jetPttmp,nTracksInJet,nTrackThrGeV[0],nTrackThrGeV[1],nTrackThrGeV[2],nTrackThrGeV[3],nTrackThrGeV[4]);
     
-    for(itrack = 0; itrack < nCTSTracks ; itrack++){
+    for(itrack = 0; itrack < nCTSTracks ; itrack++)
+    {
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
-      if(aodtrack) fhJetDeltaEtaDeltaPhiAllTracks->Fill(jettmp->Eta()-aodtrack->Eta(),jettmp->Phi()-aodtrack->Phi());
+        
+      if(aodtrack) fhJetDeltaEtaDeltaPhiAllTracks->Fill(jettmp->Eta()-aodtrack->Eta(),
+                                                        jettmp->Phi()-aodtrack->Phi(), GetEventWeight());
     }
     
     
     if(IsHistogramJetTracks()){
-      fhJetNtracksInJetAboveThr[0]->Fill(jetPttmp,nTracksInJet);//all jets
+      fhJetNtracksInJetAboveThr[0]->Fill(jetPttmp, nTracksInJet, GetEventWeight());//all jets
       
       for(itrk=0;itrk<5;itrk++) {
-        fhJetNtracksInJetAboveThr[itrk+1]->Fill(jetPttmp,nTrackThrGeV[itrk]);//all jets
-        fhJetRatioNTrkAboveToNTrk[itrk]->Fill(jetPttmp,(Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet);//all jets
+        fhJetNtracksInJetAboveThr[itrk+1]->Fill(jetPttmp, nTrackThrGeV[itrk], GetEventWeight());//all jets
+        fhJetRatioNTrkAboveToNTrk[itrk]  ->Fill(jetPttmp, (Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet, GetEventWeight());//all jets
       }
       if(ijet==0){//most ene jet
         for(itrk=0;itrk<5;itrk++)
-          fhJetNtrackRatioMostEne[itrk]->Fill(jetPttmp,(Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet);
+          fhJetNtrackRatioMostEne[itrk]->Fill(jetPttmp, (Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet, GetEventWeight());
       }
       if(jetPttmp>5){//jet with pt>5GeV/c
         for(itrk=0;itrk<5;itrk++)
-          fhJetNtrackRatioJet5GeV[itrk]->Fill(jetPttmp,(Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet);
+          fhJetNtrackRatioJet5GeV[itrk]->Fill(jetPttmp, (Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet, GetEventWeight());
       }
       if(nTrackThrGeV[4]>0){//jet with leading particle pt>5GeV/c
         for(itrk=0;itrk<5;itrk++)
-          fhJetNtrackRatioLead5GeV[itrk]->Fill(jetPttmp,(Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet);
+          fhJetNtrackRatioLead5GeV[itrk]->Fill(jetPttmp, (Double_t)nTrackThrGeV[itrk]/(Double_t)nTracksInJet, GetEventWeight());
       }
     }//end of if IsHistogramJetTracks
     
@@ -1447,21 +1482,24 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     Double_t effectiveChargedBgEnergy=(IsBackgroundJetFromReader()?rhoEvent * jettmp->EffectiveAreaCharged():jettmp->ChargedBgEnergy());
     
     
-    fhJetChBkgEnergyVsArea->Fill(effectiveChargedBgEnergy,jettmp->EffectiveAreaCharged());
+    fhJetChBkgEnergyVsArea->Fill(effectiveChargedBgEnergy, jettmp->EffectiveAreaCharged(), GetEventWeight());
     //if(jettmp->EffectiveAreaCharged()>0)
-    fhJetRhoVsPt->Fill(jetPttmp,jettmp->ChargedBgEnergy()*jettmp->EffectiveAreaCharged());
+    fhJetRhoVsPt->Fill(jetPttmp, jettmp->ChargedBgEnergy()*jettmp->EffectiveAreaCharged(), GetEventWeight());
     
-    if(jetPttmp>ptMostEne) {
+    if(jetPttmp>ptMostEne)
+    {
       ptMostEne = jetPttmp;
       //indexMostEne=ijet;
     }
     if(jettmp->Pt()>=fJetMinPt)
-      fhJetPtBeforeCut->Fill(jetPttmp);
+      fhJetPtBeforeCut->Fill(jetPttmp, GetEventWeight());
 
-    fhJetPt->Fill(jetPttmp);
-    fhJetChBkgEnergyVsPt->Fill(jetPttmp,effectiveChargedBgEnergy);
-    fhJetChAreaVsPt->Fill(jetPttmp,jettmp->EffectiveAreaCharged());
+    fhJetPt->Fill(jetPttmp, GetEventWeight());
+    fhJetChBkgEnergyVsPt->Fill(jetPttmp,effectiveChargedBgEnergy, GetEventWeight());
+    fhJetChAreaVsPt->Fill(jetPttmp,jettmp->EffectiveAreaCharged(), GetEventWeight());
+    
     AliDebug(5,Form("ChargedBgEnergy %f EffectiveAreaCharged %f\n", jettmp->ChargedBgEnergy(),jettmp->EffectiveAreaCharged()));
+   
     for(iCounter=1;iCounter<10;iCounter++)
     {
       if(jetPttmp>iCounter) nJetsOverThreshold[iCounter]++;
@@ -1469,26 +1507,34 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     var1tmp  = jettmp->Phi();
     var2tmp  = jettmp->Eta();
-    fhJetPhi->Fill(var1tmp);
-    fhJetEta->Fill(var2tmp);
-    fhJetPhiVsEta->Fill(var1tmp,var2tmp);
-    fhJetEtaVsPt->Fill(jetPttmp,var2tmp);
-    fhJetEtaVsNpartInJet->Fill(var2tmp,nTracksInJet);
+      
+    fhJetPhi->Fill(var1tmp, GetEventWeight());
+    fhJetEta->Fill(var2tmp, GetEventWeight());
+      
+    fhJetPhiVsEta->Fill(var1tmp, var2tmp, GetEventWeight());
+    fhJetEtaVsPt->Fill(jetPttmp, var2tmp, GetEventWeight());
+      
+    fhJetEtaVsNpartInJet->Fill(var2tmp, nTracksInJet, GetEventWeight());
+      
     if(jetPttmp>0)
-      fhJetEtaVsNpartInJetBkg->Fill(var2tmp,nTracksInJet);
+      fhJetEtaVsNpartInJetBkg->Fill(var2tmp, nTracksInJet, GetEventWeight());
     
   }//end of jet loop
-  if(IsHistogramJetTracks()){
-    if(sumNJetTrack>0){
+    
+  if(IsHistogramJetTracks())
+  {
+    if(sumNJetTrack>0)
+    {
       //printf("average track pt %f\n",sumJetTrackPt/sumNJetTrack);
-      fhJetAveTrackPt->Fill(sumJetTrackPt/sumNJetTrack);
+      fhJetAveTrackPt->Fill(sumJetTrackPt/sumNJetTrack, GetEventWeight());
     }
   }//end of if IsHistogramJetTracks
   
   
-  fhJetPtMostEne->Fill(ptMostEne);
-  for(iCounter=0;iCounter<10;iCounter++){
-    fhJetNjetOverPtCut[iCounter]->Fill(nJetsOverThreshold[iCounter]);
+  fhJetPtMostEne->Fill(ptMostEne, GetEventWeight());
+  for(iCounter=0;iCounter<10;iCounter++)
+  {
+    fhJetNjetOverPtCut[iCounter]->Fill(nJetsOverThreshold[iCounter], GetEventWeight());
     nJetsOverThreshold[iCounter]=0;
   }
   
@@ -1503,7 +1549,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   AliDebug(1,Form("In particle branch aod entries %d\n", ntrig));
   AliDebug(1,Form("In jet output branch aod entries %d\n", event->GetNJets()));
   
-  fhNjetsNgammas->Fill(nJets,ntrig);
+  fhNjetsNgammas->Fill(nJets, ntrig, GetEventWeight());
   
   //if(nJets==0)   return;//to speed up
   //printf("ntrig %d, njets %d\n",ntrig,nJets);
@@ -1516,20 +1562,27 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   Double_t tmpPt=0.;
   Double_t sumPt=0.;
   nJetsOverThreshold[0]=ntrig;
-  for(Int_t iaod = 0; iaod < ntrig ; iaod++){
+    
+  for(Int_t iaod = 0; iaod < ntrig ; iaod++)
+  {
     AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     tmpPt = particlecorr->Pt();
-    if(tmpPt>maxPt) {
+    if(tmpPt>maxPt)
+    {
       maxPt = tmpPt;
       maxIndex = iaod;
     }
-    for(iCounter=1;iCounter<10;iCounter++){
+    
+    for(iCounter=1;iCounter<10;iCounter++)
+    {
       if(tmpPt>iCounter) nJetsOverThreshold[iCounter]++;
     }
     sumPt+=tmpPt;
   }
-  for(iCounter=0;iCounter<10;iCounter++){
-    fhPhotonNgammaOverPtCut[iCounter]->Fill(nJetsOverThreshold[iCounter]);
+  
+  for(iCounter=0;iCounter<10;iCounter++)
+  {
+    fhPhotonNgammaOverPtCut[iCounter]->Fill(nJetsOverThreshold[iCounter], GetEventWeight());
     //    nJetsOverThreshold[iCounter]=0;
   }
   
@@ -1543,13 +1596,13 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   //AliVCluster *cluster = 0;
   if(ntrig>1){
     Double_t *photonRhoArr=new Double_t[ntrig-1];
-    fhPhotonPtMostEne->Fill(maxPt);
-    //    fhPhotonIndexMostEne->Fill(indexMaxPt);
-    fhPhotonAverageEnergy->Fill(sumPt/ntrig);
-    fhPhotonRatioAveEneToMostEne->Fill(sumPt/(ntrig*maxPt));
-    fhPhotonAverageEnergyMinus1->Fill((sumPt-maxPt)/(ntrig-1));
+    fhPhotonPtMostEne->Fill(maxPt, GetEventWeight());
+    //    fhPhotonIndexMostEne->Fill(indexMaxPt, GetEventWeight());
+    fhPhotonAverageEnergy       ->Fill(sumPt/ntrig, GetEventWeight());
+    fhPhotonRatioAveEneToMostEne->Fill(sumPt/(ntrig*maxPt), GetEventWeight());
+    fhPhotonAverageEnergyMinus1 ->Fill((sumPt-maxPt)/(ntrig-1), GetEventWeight());
     fGamAvEne=(sumPt-maxPt)/(ntrig-1);
-    fhPhotonRatioAveEneMinus1ToMostEne->Fill((sumPt-maxPt)/((ntrig-1)*maxPt));
+    fhPhotonRatioAveEneMinus1ToMostEne->Fill((sumPt-maxPt)/((ntrig-1)*maxPt), GetEventWeight());
     
     Int_t counterGamma=0;
     Int_t counterGammaMinus1=0;
@@ -1573,15 +1626,16 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     }
     if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
     delete [] photonRhoArr;
-    fhPhotonNgammaMoreAverageToNgamma->Fill((Double_t)counterGamma / (Double_t)ntrig);
-    fhPhotonNgammaMoreAverageMinus1ToNgamma->Fill((Double_t)counterGammaMinus1 / (Double_t)ntrig);
+    fhPhotonNgammaMoreAverageToNgamma      ->Fill((Double_t)counterGamma / (Double_t)ntrig, GetEventWeight());
+    fhPhotonNgammaMoreAverageMinus1ToNgamma->Fill((Double_t)counterGammaMinus1 / (Double_t)ntrig, GetEventWeight());
   }
-  //printf("median = %f\n",medianPhotonRho);
-  fhPhotonBkgRhoVsNtracks->Fill(GetCTSTracks()->GetEntriesFast(),medianPhotonRho);
-  fhPhotonBkgRhoVsNclusters->Fill(ntrig,medianPhotonRho);
-  fhPhotonBkgRhoVsCentrality->Fill(GetEventCentrality(),medianPhotonRho);
-  fhPhotonBkgRhoVsNcells->Fill(numberOfcells,medianPhotonRho);
   
+  //printf("median = %f\n",medianPhotonRho);
+    
+  fhPhotonBkgRhoVsNtracks   ->Fill(GetCTSTracks()->GetEntriesFast(), medianPhotonRho, GetEventWeight());
+  fhPhotonBkgRhoVsNclusters ->Fill(ntrig, medianPhotonRho, GetEventWeight());
+  fhPhotonBkgRhoVsCentrality->Fill(GetEventCentrality(), medianPhotonRho, GetEventWeight());
+  fhPhotonBkgRhoVsNcells    ->Fill(numberOfcells, medianPhotonRho, GetEventWeight());
   
   //AliVCluster *cluster2 = 0;
   Double_t photon2Corrected=0;
@@ -1590,21 +1644,22 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   AliVTrack* trackTmp = 0x0 ;
   TVector3 p3Tmp;
   
-  for(Int_t iaod = 0; iaod < ntrig ; iaod++){
+  for(Int_t iaod = 0; iaod < ntrig ; iaod++)
+  {
     AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
 //    clusterID = particlecorr->GetCaloLabel(0) ;
 //    if(clusterID < 0) continue;
 //    cluster = FindCluster(clusters,clusterID,iclustmp);
 //  Int_t ncells = cluster->GetNCells();
     Int_t ncells = particlecorr->GetNCells();
-    fhPhotonPt->Fill(particlecorr->Pt());
-    fhPhotonPtCorrected->Fill(particlecorr->Pt() - ncells * medianPhotonRho);
-    fhPhotonPtDiff->Fill(ncells * medianPhotonRho);
-    fhPhotonPtDiffVsCentrality->Fill(GetEventCentrality(),ncells * medianPhotonRho);
-    fhPhotonPtDiffVsNcells->Fill(numberOfcells,ncells * medianPhotonRho);
-    fhPhotonPtDiffVsNtracks->Fill(GetCTSTracks()->GetEntriesFast(),ncells * medianPhotonRho);
-    fhPhotonPtDiffVsNclusters->Fill(ntrig,ncells * medianPhotonRho);
-    fhPhotonPtCorrectedZoom->Fill(particlecorr->Pt() - ncells * medianPhotonRho);
+    fhPhotonPt                ->Fill(particlecorr->Pt(), GetEventWeight());
+    fhPhotonPtCorrected       ->Fill(particlecorr->Pt() - ncells * medianPhotonRho, GetEventWeight());
+    fhPhotonPtDiff            ->Fill(ncells * medianPhotonRho, GetEventWeight());
+    fhPhotonPtDiffVsCentrality->Fill(GetEventCentrality(),ncells * medianPhotonRho, GetEventWeight());
+    fhPhotonPtDiffVsNcells    ->Fill(numberOfcells,ncells * medianPhotonRho, GetEventWeight());
+    fhPhotonPtDiffVsNtracks   ->Fill(GetCTSTracks()->GetEntriesFast(),ncells * medianPhotonRho, GetEventWeight());
+    fhPhotonPtDiffVsNclusters ->Fill(ntrig,ncells * medianPhotonRho, GetEventWeight());
+    fhPhotonPtCorrectedZoom   ->Fill(particlecorr->Pt() - ncells * medianPhotonRho, GetEventWeight());
     
     //test: sum_pt in the cone 0.3 for each photon
     //should be: random fake gamma from MB
@@ -1612,8 +1667,10 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     sumPtTmp=0.;
     sumPtCorrectTmp=0.;
     
-    for(Int_t iaod2 = 0; iaod2 < ntrig ; iaod2++){
+    for(Int_t iaod2 = 0; iaod2 < ntrig ; iaod2++)
+    {
       if(iaod==iaod2) continue;
+        
       AliAODPWG4ParticleCorrelation* particlecorr2 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod2));
 //      clusterID = particlecorr2->GetCaloLabel(0) ;
 //      if(clusterID < 0) continue;
@@ -1628,8 +1685,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
         sumPtCorrectTmp+=photon2Corrected;
       }
     }
-    fhPhotonSumPtInCone->Fill(sumPtTmp);
-    fhPhotonSumPtCorrectInCone->Fill(sumPtCorrectTmp);
+      
+    fhPhotonSumPtInCone->Fill(sumPtTmp, GetEventWeight());
+    fhPhotonSumPtCorrectInCone->Fill(sumPtCorrectTmp, GetEventWeight());
     
     //test: sum_pt in the cone 0.3 for each track
     //should be: random fake gamma from MB
@@ -1643,7 +1701,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
         sumPtTmp+=p3Tmp.Pt();
       }
     }//end of loop over tracks
-    fhPhotonSumPtChargedInCone->Fill(sumPtTmp);
+      
+    fhPhotonSumPtChargedInCone->Fill(sumPtTmp, GetEventWeight());
   }
   
   //End of Fill temporary photon histograms
@@ -1666,18 +1725,21 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   //
   //Loop on stored AOD particles, trigger
   //
-  for(Int_t iaod = 0; iaod < ntrig ; iaod++){
+  for(Int_t iaod = 0; iaod < ntrig ; iaod++)
+  {
     AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    fhCuts->Fill(0);
-    fhCuts2->Fill(0.,(Double_t)nJets);
+    fhCuts ->Fill(0., GetEventWeight());
+    fhCuts2->Fill(0., (Double_t)nJets * GetEventWeight());
     AliDebug(1,Form("OnlyIsolated %d  !particlecorr->IsIsolated() %d \n",OnlyIsolated(), !particlecorr->IsIsolated()));
     
     if(OnlyIsolated() && !particlecorr->IsIsolated()) continue;
-    fhCuts->Fill(1);
-    fhCuts2->Fill(1.,nJets);
+      
+    fhCuts ->Fill(1., GetEventWeight());
+    fhCuts2->Fill(1., nJets * GetEventWeight());
     
-    if(nJets>0) {
-      fhCuts->Fill(2);
+    if(nJets>0)
+    {
+      fhCuts->Fill(2., GetEventWeight());
     }
     
     //Recover the jet correlated, found previously.
@@ -1698,8 +1760,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     }
     
     if (!jet) continue ;
-    fhCuts->Fill(3);
-    fhCuts2->Fill(7.,1.);
+      
+    fhCuts ->Fill(3., GetEventWeight());
+    fhCuts2->Fill(7., GetEventWeight());
 
     //check MC genereted information
     if(fMCStudies) FindMCgenInfo();
@@ -1726,28 +1789,30 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     if(deltaPhi<0)deltaPhi+=(TMath::Pi()*2.);
     //printf("pT trigger %2.3f, pT jet %2.3f, Delta phi %2.3f, Delta eta %2.3f, Delta pT %2.3f, ratio %2.3f \n",
     //	ptTrig,ptJet, phiJet-phiTrig, etaJet-etaTrig, ptTrig-ptJet, ptJet/ptTrig);
-    fhDeltaPt ->Fill(ptTrig, ptTrig-ptJet);
+    fhDeltaPt ->Fill(ptTrig, ptTrig-ptJet, GetEventWeight());
     //    fhDeltaPhi->Fill(ptTrig, phiTrig-phiJet);//need to be shifted by 2pi
     
-    fhDeltaPhiCorrect->Fill(ptTrig, deltaPhi);//correct
+    fhDeltaPhiCorrect->Fill(ptTrig, deltaPhi, GetEventWeight());//correct
     
     Double_t deltaPhiCorrect = TMath::Abs( particlecorr->Phi() - jet->Phi() );
     if ( deltaPhiCorrect > TMath::Pi() ) deltaPhiCorrect = 2. * TMath::Pi() - deltaPhiCorrect ;
-    fhDeltaPhi0PiCorrect->Fill(ptTrig, deltaPhiCorrect);
+    fhDeltaPhi0PiCorrect->Fill(ptTrig, deltaPhiCorrect, GetEventWeight());
     
-    fhDeltaEta->Fill(ptTrig, etaTrig-etaJet);
-    fhPtRatio ->Fill(ptTrig, ptJet/ptTrig);
-    fhPt      ->Fill(ptTrig, ptJet);
+    fhDeltaEta->Fill(ptTrig, etaTrig-etaJet, GetEventWeight());
+    fhPtRatio ->Fill(ptTrig, ptJet/ptTrig  , GetEventWeight());
+    fhPt      ->Fill(ptTrig, ptJet         , GetEventWeight());
     
-    fhSelectedJetPhiVsEta->Fill(phiJet,etaJet);
-    fhSelectedJetChBkgEnergyVsPtJet->Fill(ptJet,(IsBackgroundJetFromReader()?rhoEvent * jet->EffectiveAreaCharged():jet->ChargedBgEnergy()) );
-    fhSelectedJetChAreaVsPtJet->Fill(ptJet,jet->EffectiveAreaCharged());
-    fhSelectedJetNjet->Fill(nJets);
-    fhSelectedNtracks->Fill(GetCTSTracks()->GetEntriesFast());//to be checked
-    fhSelectedPhotonNLMVsPt->Fill(ptTrig,particlecorr->GetNLM());
+    fhSelectedJetPhiVsEta->Fill(phiJet, etaJet, GetEventWeight());
+  
+    fhSelectedJetChBkgEnergyVsPtJet->Fill(ptJet, (IsBackgroundJetFromReader()?rhoEvent * jet->EffectiveAreaCharged():jet->ChargedBgEnergy()), GetEventWeight());
+      
+    fhSelectedJetChAreaVsPtJet->Fill(ptJet, jet->EffectiveAreaCharged(), GetEventWeight());
+    fhSelectedJetNjet         ->Fill(nJets, GetEventWeight());
+    fhSelectedNtracks         ->Fill(GetCTSTracks()->GetEntriesFast(), GetEventWeight());//to be checked
+    fhSelectedPhotonNLMVsPt   ->Fill(ptTrig, particlecorr->GetNLM(), GetEventWeight());
     
 //    if(clusterID < 0 ){
-//      fhSelectedPhotonLambda0VsPt->Fill(ptTrig,-1);
+//      fhSelectedPhotonLambda0VsPt->Fill(ptTrig, -1, GetEventWeight());
 //      //fill tree variables
 //      fGamLambda0  = -1;
 //      fGamTime = -1;
@@ -1760,7 +1825,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       TObjArray* clusters = GetEMCALClusters();
       //cluster = FindCluster(clusters,clusterID,iclustmp);
       Double_t lambda0=particlecorr->GetM02();
-      fhSelectedPhotonLambda0VsPt->Fill(ptTrig,lambda0);
+      fhSelectedPhotonLambda0VsPt->Fill(ptTrig, lambda0, GetEventWeight());
       //fill tree variables
       fGamLambda0  = lambda0;
       fGamTime = particlecorr->GetTime();
@@ -1798,7 +1863,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
       if(!aodtrack) continue;
-      fhSelectedTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());//fill histogram here
+      fhSelectedTrackPhiVsEta->Fill(aodtrack->Phi(), aodtrack->Eta(), GetEventWeight());//fill histogram here
       //      if(aodtrack->Pt()<0.15) continue;//hardcoded
       if(aodtrack->Pt()<fPtThresholdInCone) continue;
       if(!aodtrack->IsHybridGlobalConstrainedGlobal()) continue;
@@ -1812,7 +1877,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     //    for(Int_t itrack = 0; itrack < nCTSTracks ; itrack++){
     //      aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
-    //      fhSelectedTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());
+    //      fhSelectedTrackPhiVsEta->Fill(aodtrack->Phi(), aodtrack->Eta(), GetEventWeight());
     //    }
     
     //
@@ -1863,26 +1928,28 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaJet)*(eta-etaJet)+ (phi-phiJet)*(phi-phiJet));
-      if(rad < fConeSize  && pt > fPtThresholdInCone){
+      if(rad < fConeSize  && pt > fPtThresholdInCone)
+      {
         //printf("charged in jet cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         npartcone++;
-        fhFFz ->Fill(ptTrig, pt/ptTrig);
-        fhFFxi->Fill(ptTrig, TMath::Log(ptTrig/pt));
-        fhFFpt->Fill(ptTrig, pt);
+        fhFFz ->Fill(ptTrig, pt/ptTrig, GetEventWeight());
+        fhFFxi->Fill(ptTrig, TMath::Log(ptTrig/pt), GetEventWeight());
+        fhFFpt->Fill(ptTrig, pt, GetEventWeight());
         
         //according to jet axis
-        fhJetFFz ->Fill(ptJet, pt/ptJet);
-        fhJetFFxi->Fill(ptJet, TMath::Log(ptJet/pt));
-        fhJetFFpt->Fill(ptJet, pt);
+        fhJetFFz ->Fill(ptJet, pt/ptJet, GetEventWeight());
+        fhJetFFxi->Fill(ptJet, TMath::Log(ptJet/pt), GetEventWeight());
+        fhJetFFpt->Fill(ptJet, pt, GetEventWeight());
         
         
-        if(TMath::Cos(angleJetGam)<0 && ptJet!=0 && pt!=0 ){
-          fhJetFFzCor ->Fill(ptJet, -pt*TMath::Cos(angleJetGam)/ptJet);
-          fhJetFFxiCor->Fill(ptJet, TMath::Log(ptJet/(-pt*TMath::Cos(angleJetGam))));
+        if(TMath::Cos(angleJetGam)<0 && ptJet!=0 && pt!=0 )
+        {
+          fhJetFFzCor ->Fill(ptJet, -pt*TMath::Cos(angleJetGam)/ptJet, GetEventWeight());
+          fhJetFFxiCor->Fill(ptJet, TMath::Log(ptJet/(-pt*TMath::Cos(angleJetGam))), GetEventWeight());
         }
       }
     }//Tracks
-    fhNTracksInCone->Fill(ptTrig, npartcone);
+    fhNTracksInCone->Fill(ptTrig, npartcone, GetEventWeight());
     //fill tree here for each photon-jet (isolation required usually)
     
     fGamPt      = ptTrig;
@@ -1924,12 +1991,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   AliDebug(1,"End fill histograms");
 }
 
-
+//__________________________________________________________________
+/// Print some relevant parameters set for the analysis
 //__________________________________________________________________
 void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
 {
-  
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -1967,18 +2033,17 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
   printf("fUseHistogramTracks = %d\n",fUseHistogramTracks);
   printf("fUseHistogramJetTracks = %d\n",fUseHistogramJetTracks);
   printf("fMCStudies = %d\n",fMCStudies);
-
 } 
 
 //__________________________________________________________________
-void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 jet,Double_t vertex[3],Int_t type=2){
-  //
-  // calculate background for fragmentation function and fill histograms
-  // 1. 90 degrees from jet axis in random place = perpendicular cone
-  // 2. Random cone not belonging to jet cone nor photon cone
-  // 3. In the middle point from jet and photon momentum vectors
-  // 4. 90 degrees from photon direction in random place = perpendicular cone 2
-
+/// Calculate background for fragmentation function and fill histograms:
+///  * 1. 90 degrees from jet axis in random place = perpendicular cone
+///  * 2. Random cone not belonging to jet cone nor photon cone
+///  * 3. In the middle point from jet and photon momentum vectors
+///  * 4. 90 degrees from photon direction in random place = perpendicular cone 2
+//__________________________________________________________________
+void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 jet,Double_t vertex[3],Int_t type=2)
+{
   //
   // implementation of 2 works, 1 and 4 works
   //
@@ -2028,7 +2093,8 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
 
     TVector3 perp;
     //randomise
-    do{
+    do
+    {
       refPhi=fGenerator->Rndm()*TMath::Pi()*2.;
       //refPhi=fGenerator->Uniform(-1,1)*TMath::Pi();
       xVar=TMath::Cos(refPhi);
@@ -2051,12 +2117,14 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
     } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
-    fhRandomPhiEta[2]->Fill(refPhi,refEta);
+      fhRandomPhiEta[2]->Fill(refPhi, refEta, GetEventWeight());
 
   }
-  else if(type==2){//random cone
+  else if(type==2)
+  {//random cone
     //randomise
-    do{
+    do
+    {
       refPhi=fGenerator->Rndm()*TMath::Pi()*2.;
       refEta=fGenerator->Uniform(-(0.9-fJetConeSize),0.9-fJetConeSize);
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
@@ -2065,7 +2133,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       //example: FF fConeSize=0.4, fJetConeSize=0.4, fIsoGammaConeSize=0.3
     } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize);
     //photon:0.7=0.4+0.3; jets:0.8=0.4 +0.4 //rad<fConeSize+fJetConeSize rad2<fConeSize+0.3
-    fhRandomPhiEta[0]->Fill(refPhi,refEta);
+    fhRandomPhiEta[0]->Fill(refPhi, refEta, GetEventWeight());
   }
   else if(type==4){//perpendicular to photon axis
     Double_t xVar;
@@ -2125,7 +2193,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
     } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
-    fhRandomPhiEta[1]->Fill(refPhi,refEta);
+    fhRandomPhiEta[1]->Fill(refPhi, refEta, GetEventWeight());
 
   }
   else if(type==3){//mid point
@@ -2170,7 +2238,8 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
     rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
 
-    if (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize) fhRandomPhiEta[3]->Fill(refPhi,refEta);
+    if (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize)
+        fhRandomPhiEta[3]->Fill(refPhi, refEta, GetEventWeight());
   }
   else if(type==5){//tmp                                                                                                                                                   
     //printf("vertex: %f %f %f \n",vertex[0],vertex[1],vertex[2]);                                                                                                         
@@ -2215,12 +2284,10 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
     } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
-    fhRandomPhiEta[4]->Fill(refPhi,refEta);
+    fhRandomPhiEta[4]->Fill(refPhi, refEta, GetEventWeight());
   }
 
-
-
-  //calculate FF in background
+  // calculate FF in background
   Int_t ntracks =  0;
   ntracks =GetCTSTracks()->GetEntriesFast();
   AliVTrack* track = 0x0 ;
@@ -2247,74 +2314,73 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
         npartcone++;
 	sumPt+=pt;
 	if(type==1){//perp jet
-	  fhBkgFFz[1] ->Fill(gammaPt, pt/gammaPt);
-	  fhBkgFFxi[1]->Fill(gammaPt, TMath::Log(gammaPt/pt));
-	  fhBkgFFpt[1]->Fill(gammaPt, pt);
+	  fhBkgFFz[1] ->Fill(gammaPt, pt/gammaPt, GetEventWeight());
+	  fhBkgFFxi[1]->Fill(gammaPt, TMath::Log(gammaPt/pt), GetEventWeight());
+	  fhBkgFFpt[1]->Fill(gammaPt, pt, GetEventWeight());
 	}
 	else if(type==2){//RC
-	  fhBkgFFz[0] ->Fill(gammaPt, pt/gammaPt);
-	  fhBkgFFxi[0]->Fill(gammaPt, TMath::Log(gammaPt/pt));
-	  fhBkgFFpt[0]->Fill(gammaPt, pt);
+	  fhBkgFFz[0] ->Fill(gammaPt, pt/gammaPt, GetEventWeight());
+	  fhBkgFFxi[0]->Fill(gammaPt, TMath::Log(gammaPt/pt), GetEventWeight());
+	  fhBkgFFpt[0]->Fill(gammaPt, pt, GetEventWeight());
 	}
 	else if(type==3){//mid point
-	  fhBkgFFz[3] ->Fill(gammaPt, pt/gammaPt);
-	  fhBkgFFxi[3]->Fill(gammaPt, TMath::Log(gammaPt/pt));
-	  fhBkgFFpt[3]->Fill(gammaPt, pt);
+	  fhBkgFFz[3] ->Fill(gammaPt, pt/gammaPt, GetEventWeight());
+	  fhBkgFFxi[3]->Fill(gammaPt, TMath::Log(gammaPt/pt), GetEventWeight());
+	  fhBkgFFpt[3]->Fill(gammaPt, pt, GetEventWeight());
 	}
 	else if(type==4){//perp jet
-	  fhBkgFFz[2] ->Fill(gammaPt, pt/gammaPt);
-          fhBkgFFxi[2]->Fill(gammaPt, TMath::Log(gammaPt/pt));
-          fhBkgFFpt[2]->Fill(gammaPt, pt);
+	  fhBkgFFz[2] ->Fill(gammaPt, pt/gammaPt, GetEventWeight());
+          fhBkgFFxi[2]->Fill(gammaPt, TMath::Log(gammaPt/pt), GetEventWeight());
+          fhBkgFFpt[2]->Fill(gammaPt, pt, GetEventWeight());
         }
 	else if(type==5){//test
-	  fhBkgFFz[4] ->Fill(gammaPt, pt/gammaPt);
-	  fhBkgFFxi[4]->Fill(gammaPt, TMath::Log(gammaPt/pt));
-	  fhBkgFFpt[4]->Fill(gammaPt, pt);
+	  fhBkgFFz[4] ->Fill(gammaPt, pt/gammaPt, GetEventWeight());
+	  fhBkgFFxi[4]->Fill(gammaPt, TMath::Log(gammaPt/pt), GetEventWeight());
+	  fhBkgFFpt[4]->Fill(gammaPt, pt, GetEventWeight());
 	}
-
-
     }
   }//end of loop over tracks
+    
   Double_t sumOverTracks=0.;
   if(npartcone!=0) sumOverTracks = sumPt/npartcone;
-  if(type==1) {
-    fhBkgNTracksInCone[1]->Fill(gammaPt, npartcone);
-    fhBkgSumPtInCone[1]->Fill(gammaPt,sumPt);
-    fhBkgSumPtnTracksInCone[1]->Fill(gammaPt,sumOverTracks);
+  if(type==1)
+  {
+    fhBkgNTracksInCone     [1]->Fill(gammaPt, npartcone    , GetEventWeight());
+    fhBkgSumPtInCone       [1]->Fill(gammaPt, sumPt        , GetEventWeight());
+    fhBkgSumPtnTracksInCone[1]->Fill(gammaPt, sumOverTracks, GetEventWeight());
   }
-  else if(type==2) {
-    fhBkgNTracksInCone[0]->Fill(gammaPt, npartcone);
-    fhBkgSumPtInCone[0]->Fill(gammaPt,sumPt);
-    fhBkgSumPtnTracksInCone[0]->Fill(gammaPt,sumOverTracks);
+  else if(type==2)
+  {
+    fhBkgNTracksInCone     [0]->Fill(gammaPt, npartcone    , GetEventWeight());
+    fhBkgSumPtInCone       [0]->Fill(gammaPt, sumPt        , GetEventWeight());
+    fhBkgSumPtnTracksInCone[0]->Fill(gammaPt, sumOverTracks, GetEventWeight());
   }
-  else if(type==3) {
-    fhBkgNTracksInCone[3]->Fill(gammaPt, npartcone);
-    fhBkgSumPtInCone[3]->Fill(gammaPt,sumPt);
-    fhBkgSumPtnTracksInCone[3]->Fill(gammaPt,sumOverTracks);
+  else if(type==3)
+  {
+    fhBkgNTracksInCone     [3]->Fill(gammaPt, npartcone    , GetEventWeight());
+    fhBkgSumPtInCone       [3]->Fill(gammaPt, sumPt        , GetEventWeight());
+    fhBkgSumPtnTracksInCone[3]->Fill(gammaPt, sumOverTracks, GetEventWeight());
   }
-  else if(type==4) {
-    fhBkgNTracksInCone[2]->Fill(gammaPt, npartcone);
-    fhBkgSumPtInCone[2]->Fill(gammaPt,sumPt);
-    fhBkgSumPtnTracksInCone[2]->Fill(gammaPt,sumOverTracks);
+  else if(type==4)
+  {
+    fhBkgNTracksInCone     [2]->Fill(gammaPt, npartcone   , GetEventWeight());
+    fhBkgSumPtInCone       [2]->Fill(gammaPt,sumPt        , GetEventWeight());
+    fhBkgSumPtnTracksInCone[2]->Fill(gammaPt,sumOverTracks, GetEventWeight());
   }
-  else if(type==5) {
-    fhBkgNTracksInCone[4]->Fill(gammaPt, npartcone);
-    fhBkgSumPtInCone[4]->Fill(gammaPt,sumPt);
-    fhBkgSumPtnTracksInCone[4]->Fill(gammaPt,sumOverTracks);
+  else if(type==5)
+  {
+    fhBkgNTracksInCone     [4]->Fill(gammaPt, npartcone    , GetEventWeight());
+    fhBkgSumPtInCone       [4]->Fill(gammaPt, sumPt        , GetEventWeight());
+    fhBkgSumPtnTracksInCone[4]->Fill(gammaPt, sumOverTracks, GetEventWeight());
   }
 }
 
-
-
-
-
 //__________________________________________________________________
-void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
-  //
-  // Find information about photon and (quark or gluon) on generated level 
-  //
-
-  //frequently used variables
+/// Find information about photon and (quark or gluon) on generated level.
+//__________________________________________________________________
+void AliAnaParticleJetFinderCorrelation::FindMCgenInfo()
+{
+  // frequently used variables
   Int_t pdg    = 0 ;
   Int_t mother = -1 ; 
   Int_t absID  = 0 ;
@@ -2327,7 +2393,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
   Bool_t   inacceptance = kFALSE;
   AliAODMCParticle * primTmp = NULL;
 
-  //jet counters
+  // jet counters
   Int_t nParticlesInJet=0;
   Int_t nChargedParticlesInJet=0;
   Int_t nParticlesInJet150=0;
@@ -2389,14 +2455,14 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
       pdg=primTmp->GetPdgCode();
        AliDebug(3,Form("id 6 pdg %d, pt %f ",pdg,primTmp->Pt() ));
       if(TMath::Abs(pdg)<=6 ||pdg==21) {
-	fhMCJetOrigin->Fill(pdg);
+	fhMCJetOrigin->Fill(pdg, GetEventWeight());
 	fMCPartonType=pdg;
       }
       primTmp = (AliAODMCParticle *) mcparticles->At(7);
       pdg=primTmp->GetPdgCode();
        AliDebug(3,Form("id 7 pdg %d, pt %f",pdg,primTmp->Pt() ));
       if(TMath::Abs(pdg)<=6 ||pdg==21) {
-	fhMCJetOrigin->Fill(pdg);
+	fhMCJetOrigin->Fill(pdg, GetEventWeight());
 	fMCPartonType=pdg;
       }
       //end of jet origin
@@ -2409,35 +2475,48 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	mother=prim->GetMother();
 	//photon=22, gluon=21, quarks=(1,...,6), antiquarks=(-1,...,-6)
 	if(pdg == 22){//photon
-	  fhMCPhotonCuts->Fill(0);
+	  fhMCPhotonCuts->Fill(0., GetEventWeight());
+        
 	  if(prim->GetStatus()!=1) continue;
-	  fhMCPhotonCuts->Fill(1);
+        
+	  fhMCPhotonCuts->Fill(1., GetEventWeight());
+        
 	   AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d\n",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus()));
-	  while(mother>7){
+	  while(mother>7)
+      {
 	    primTmp = (AliAODMCParticle *) mcparticles->At(mother);
 	    mother=primTmp->GetMother();
 	  }
-	  if(mother<6)continue;
-	  fhMCPhotonCuts->Fill(2);
+	  
+      if(mother<6)continue;
+        
+	  fhMCPhotonCuts->Fill(2., GetEventWeight());
+        
 	  primTmp = (AliAODMCParticle *) mcparticles->At(mother);
+        
 	  if(primTmp->GetPdgCode()!=22)continue;
-	  fhMCPhotonCuts->Fill(3);
+        
+	  fhMCPhotonCuts->Fill(3., GetEventWeight());
 
 	  //Get photon kinematics
 	  photonPt  = prim->Pt() ;
 	  photonPhi = prim->Phi() ;
 	  if(photonPhi < 0) photonPhi+=TMath::TwoPi();
 	  photonEta = prim->Eta() ;
-	  fhMCPhotonPt->Fill(photonPt);
-	  fhMCPhotonEtaPhi->Fill(photonPhi,photonEta);
+        
+	  fhMCPhotonPt    ->Fill(photonPt, GetEventWeight());
+	  fhMCPhotonEtaPhi->Fill(photonPhi, photonEta, GetEventWeight());
 	  
 	  //Check if photons hit the Calorimeter
 	  fMomentum.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
 	  inacceptance = kFALSE;
-	  if(GetCaloUtils()->IsEMCALGeoMatrixSet()){
-	    fhMCPhotonCuts->Fill(4);
+	  if(GetCaloUtils()->IsEMCALGeoMatrixSet())
+      {
+	    fhMCPhotonCuts->Fill(4, GetEventWeight());
+          
 	    //check if in EMCAL
-	    if(GetEMCALGeometry()) {
+	    if(GetEMCALGeometry())
+        {
 	      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
 	      if(absID >= 0) inacceptance = kTRUE;
 	      AliDebug(3,Form("In EMCAL Real acceptance? %d",inacceptance));
@@ -2446,10 +2525,14 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	      if(GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) inacceptance = kTRUE ;
 	      AliDebug(1,Form("In EMCAL fiducial cut acceptance? %d",inacceptance));
 	    }
-	  }else{//no EMCAL nor EMCALGeoMatrixSet
+	  }
+      else
+      {//no EMCAL nor EMCALGeoMatrixSet
 	    AliWarning("not EMCALGeoMatrix set");
 	  }//end of check if EMCAL
-	  if(inacceptance)fhMCPhotonCuts->Fill(5);
+	  
+        if(inacceptance)fhMCPhotonCuts->Fill(5, GetEventWeight());
+        
 	  AliDebug(5,Form("Photon Energy %f, Pt %f",prim->E(),prim->Pt()));
 	  fMCGamPt=photonPt;
 	  fMCGamEta=photonEta;
@@ -2458,6 +2541,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	else
   {//not photon
 	  if(prim->GetStatus()!=1) continue;
+      
 	  AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d, pdg %d, E %f",
                     i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus(),prim->GetPdgCode(),prim->E()));
     
@@ -2597,7 +2681,6 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 
   jetParticleIndex.clear();
 
-
   //printouts
   
   AliDebug(3,Form("cone full %f, charged %f, full150 %f, charged150 %f",coneJet,coneChargedJet,coneJet150,coneChargedJet150));
@@ -2607,20 +2690,20 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
   AliDebug(3,Form("eta/phi tot %f/%f, ch %f/%f, tot150 %f/%f,  ch150 %f/%f, ch150cone %f/%f\n",etaParticlesInJet,phiParticlesInJet,etaChargedParticlesInJet,phiChargedParticlesInJet,etaParticlesInJet150,phiParticlesInJet150,etaChargedParticlesInJet150,phiChargedParticlesInJet150,etaChargedParticlesInJet150Cone,phiChargedParticlesInJet150Cone));
   
   //fill histograms
-  if(ptParticlesInJet) fhMCJetRatioChFull->Fill(ptChargedParticlesInJet/ptParticlesInJet);
-  if(ptChargedParticlesInJet) fhMCJetRatioCh150Ch->Fill(ptChargedParticlesInJet150/ptChargedParticlesInJet);
+  if(ptParticlesInJet) fhMCJetRatioChFull->Fill(ptChargedParticlesInJet/ptParticlesInJet, GetEventWeight());
+  if(ptChargedParticlesInJet) fhMCJetRatioCh150Ch->Fill(ptChargedParticlesInJet150/ptChargedParticlesInJet, GetEventWeight());
 
-  fhMCJetNPartVsPt     ->Fill(ptParticlesInJet,nParticlesInJet);
-  fhMCJetChNPartVsPt   ->Fill(ptChargedParticlesInJet,nChargedParticlesInJet);
-  fhMCJetNPart150VsPt  ->Fill(ptParticlesInJet150,nParticlesInJet150);
-  fhMCJetChNPart150VsPt->Fill(ptChargedParticlesInJet150,nChargedParticlesInJet150);
-  fhMCJetChNPart150ConeVsPt->Fill(ptChargedParticlesInJet150Cone,nChargedParticlesInJet150Cone);
+  fhMCJetNPartVsPt     ->Fill(ptParticlesInJet,nParticlesInJet, GetEventWeight());
+  fhMCJetChNPartVsPt   ->Fill(ptChargedParticlesInJet,nChargedParticlesInJet, GetEventWeight());
+  fhMCJetNPart150VsPt  ->Fill(ptParticlesInJet150,nParticlesInJet150, GetEventWeight());
+  fhMCJetChNPart150VsPt->Fill(ptChargedParticlesInJet150,nChargedParticlesInJet150, GetEventWeight());
+  fhMCJetChNPart150ConeVsPt->Fill(ptChargedParticlesInJet150Cone,nChargedParticlesInJet150Cone, GetEventWeight());
 
-  fhMCJetEtaPhi->Fill(phiParticlesInJet,etaParticlesInJet);
-  fhMCJetChEtaPhi->Fill(phiChargedParticlesInJet,etaChargedParticlesInJet);
-  fhMCJet150EtaPhi->Fill(phiParticlesInJet150,etaParticlesInJet150);
-  fhMCJetCh150EtaPhi->Fill(phiChargedParticlesInJet150,etaChargedParticlesInJet150);
-  fhMCJetCh150ConeEtaPhi->Fill(phiChargedParticlesInJet150Cone,etaChargedParticlesInJet150Cone);
+  fhMCJetEtaPhi->Fill(phiParticlesInJet,etaParticlesInJet, GetEventWeight());
+  fhMCJetChEtaPhi->Fill(phiChargedParticlesInJet,etaChargedParticlesInJet, GetEventWeight());
+  fhMCJet150EtaPhi->Fill(phiParticlesInJet150,etaParticlesInJet150, GetEventWeight());
+  fhMCJetCh150EtaPhi->Fill(phiChargedParticlesInJet150,etaChargedParticlesInJet150, GetEventWeight());
+  fhMCJetCh150ConeEtaPhi->Fill(phiChargedParticlesInJet150Cone,etaChargedParticlesInJet150Cone, GetEventWeight());
 
   //fill tree
   fMCJetPt      = ptParticlesInJet;
@@ -2645,4 +2728,6 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
   fMCJetCh150ConeEta   = etaChargedParticlesInJet150Cone;
   fMCJetCh150ConePhi   = phiChargedParticlesInJet150Cone;
 
-}//end of method FindMCgenInfo
+} // end of method FindMCgenInfo
+
+
