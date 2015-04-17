@@ -240,7 +240,7 @@ void AliEmcalJetTask::FindJets()
 
       if (!t) continue;
 
-      if (fFilterHybridTracks) {
+      if (fFilterHybridTracks) {  // the cast is safe because fFilterHybridTracks is reset in DoInit if the object type is not AliAODTrack
         AliAODTrack* aodTrack = static_cast<AliAODTrack*>(t);
         if (!aodTrack->IsHybridGlobalConstrainedGlobal()) continue;
       }
