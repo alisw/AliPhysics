@@ -37,6 +37,7 @@
 #include "AliADConst.h"
 #include "AliADCalibData.h"
 #include "AliADRawStream.h"
+#include "AliADDecision.h"
 
 ClassImp(AliADReconstructor)
 //_____________________________________________________________________________
@@ -259,12 +260,12 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetBGFlag(aBGflag);
   //fESDAD->SetBit(AliESDAD::kCorrectedForSaturation,kTRUE);
 
-  /*/ now fill the AD decision and channel flags
+  // now fill the AD decision (only average times for the moment)
   {
     AliADDecision offlineDecision;
     offlineDecision.SetRecoParam(GetRecoParam());
-    offlineDecision.FillDecisions(fESDAD, fCalibData, fTimeSlewing);
-  }/*/
+    offlineDecision.FillDecisions(fESDAD);
+  }
 
   if (esd) { 
      AliDebug(1, Form("Writing AD data to ESD tree"));

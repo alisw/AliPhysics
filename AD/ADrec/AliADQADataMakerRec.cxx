@@ -548,7 +548,7 @@ void AliADQADataMakerRec::InitRaws()
   h1d = new TH1F("H1D_Diff_Time","Diff ADA-ADC Time;Time [ns];Counts",kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
   Add2RawsList(h1d,kDiffTime, expert, !image, !saveCorr); iHisto++;
 
-  h2d = new TH2F("H2D_TimeADA_ADC", "Mean Time in ADC versus ADA;Time ADA [ns];Time ADC [ns]", kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax) ;  
+  h2d = new TH2F("H2D_TimeADA_ADC", "Mean Time in ADC versus ADA;Time ADA [ns];Time ADC [ns]", kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax) ;  
   Add2RawsList(h2d,kTimeADAADC, expert, !image, !saveCorr);   iHisto++;
   
   h2d = new TH2F("H2D_TimeSlewingOff", "Time Vs Charge (no slewing correction);Leading Time[ns];Charge [ADC counts]", kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax) ;  
@@ -804,35 +804,24 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  chargeADA += adc[offlineCh];
 	}
       }
-		   
-  
       // Fill HPTDC Time Histograms
       timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
-      //timeCorr[offlineCh] = time[offlineCh];
-
-      //const Float_t p1 = 2.50; // photostatistics term in the time resolution
-      //const Float_t p2 = 3.00; // sleewing related term in the time resolution
-      if(timeCorr[offlineCh]>-1024 + 1.e-6){
-	//Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
+   
+      if(time[offlineCh] > 1.e-6){
 	Float_t timeErr = 1;
-	/*/
-	if (nphe>1.e-6) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
-					      p1*p1/nphe+
-					      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
-					      TMath::Power(adc[offlineCh]/fCalibData->GetCalibDiscriThr(offlineCh,kTRUE),2.*(fTimeSlewing->GetParameter(1)-1.))/
-					      (fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)*fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)));/*/
+	if (adc[offlineCh]>1) timeErr = 1/adc[offlineCh];
 
-	if (timeErr>1.e-6) {
-	  if (offlineCh<8) {
+	if (offlineCh<8) {
 	    itimeADC++;
-	    timeADC += timeCorr[offlineCh]/(timeErr*timeErr);
+	    timeADC += time[offlineCh]/(timeErr*timeErr);
 	    weightADC += 1./(timeErr*timeErr);
-	  }else{
+	  }
+	else{
 	    itimeADA++;
-	    timeADA += timeCorr[offlineCh]/(timeErr*timeErr);
+	    timeADA += time[offlineCh]/(timeErr*timeErr);
 	    weightADA += 1./(timeErr*timeErr);
 	  }
-	}
+	
       }
       
       // Fill Flag and Charge Versus LHC-Clock histograms
@@ -935,11 +924,11 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     if((UGA && UBC) || (UGC && UBA)) FillRawsData(kTriggers,10);
     	
     //Average times
-    if(weightADA>1.e-6) timeADA /= weightADA; 
+    if(weightADA>1) timeADA /= weightADA; 
     else timeADA = -1024.;
-    if(weightADC>1.e-6) timeADC /= weightADC;
+    if(weightADC>1) timeADC /= weightADC;
     else timeADC = -1024.;
-    if(timeADA<-1024.+1.e-6 || timeADC<-1024.+1.e-6) diffTime = -1024.;
+    if(timeADA<1.e-6 || timeADC<1.e-6) diffTime = -1024.;
     else diffTime = timeADA - timeADC;
     	
     FillRawsData(kADATime,timeADA);

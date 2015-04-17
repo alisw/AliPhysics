@@ -12,5 +12,6 @@
 #pragma link C++ class  AliADQADataMakerRec+;
 #pragma link C++ class  AliADTrending+;
 #pragma link C++ class  AliADQAChecker+;
+#pragma link C++ class  AliADDecision+;
 
 #endif
