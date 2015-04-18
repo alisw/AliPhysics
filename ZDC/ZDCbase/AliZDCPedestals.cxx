@@ -30,11 +30,13 @@ AliZDCPedestals::AliZDCPedestals():
 TNamed()
 {
   Reset();
+  SetPedModeBit(kFALSE);
 }
 
 //________________________________________________________________
 AliZDCPedestals::AliZDCPedestals(const char* name):
-TNamed()
+TNamed(),
+fPedSubModefromOCDB(0)
 {
   // Constructor
   TString namst = "Calib_";
@@ -49,7 +51,8 @@ TNamed()
     fOOTPedWidth[i] = 0.;
     for(Int_t j=0; j<2; j++) fPedCorrCoeff[j][i] = 0.;
   }
-  
+  for(Int_t i=0; i<24; i++) fUseCorrFit[i] = kFALSE;
+  SetPedModeBit(kFALSE);
   
 }
 
@@ -69,6 +72,7 @@ AliZDCPedestals::AliZDCPedestals(const AliZDCPedestals& calibda) :
      fPedCorrCoeff[0][t] = calibda.GetPedCorrCoeff0(t);
      fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
   }
+  for(Int_t i=0; i<24; i++) fUseCorrFit[i] = calibda.GetUseCorrFit(i);
 }
 
 //________________________________________________________________
@@ -86,6 +90,7 @@ AliZDCPedestals &AliZDCPedestals::operator =(const AliZDCPedestals& calibda)
      fPedCorrCoeff[0][t] = calibda.GetPedCorrCoeff0(t);
      fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
   }
+  for(Int_t i=0; i<24; i++) fUseCorrFit[i] = calibda.GetUseCorrFit(i);
 
   return *this;
 }
@@ -110,14 +115,16 @@ void AliZDCPedestals::Reset()
 void  AliZDCPedestals::Print(Option_t *) const
 {
    // Printing of calibration object
+   printf(" \n  Pedestal subtraction mode bit %d\n",AliZDCPedestals::TestPedModeBit());
    printf("\n ####### In-time pedestal values (mean value, sigma) ####### \n");
    for(int t=0; t<48; t++) 
       printf("\t ADC%d (%.1f, %.1f)\n",t,fMeanPedestal[t],fMeanPedWidth[t]);
    //
-   printf("\n\n ####### Out-of-time pedestal values (mean value, sigma) ####### \n");
-   for(int t=0; t<48; t++)
-      printf("\t ADC-OoT%d (%.1f, %.1f)\n",t,fOOTPedestal[t],fOOTPedWidth[t]);
- 
+   if(AliZDCPedestals::TestPedModeBit()){
+     printf("\n\n ####### Out-of-time pedestal values (mean value, sigma) ####### \n");
+     for(int t=0; t<48; t++)
+       printf("\t ADC-OoT%d (%.1f, %.1f)\n",t,fOOTPedestal[t],fOOTPedWidth[t]);
+   }
 } 
 
 //________________________________________________________________

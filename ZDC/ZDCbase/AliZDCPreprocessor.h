@@ -27,6 +27,7 @@ class AliZDCPreprocessor : public AliPreprocessor
     virtual Bool_t ProcessDCS();
     AliZDCPreprocessor(const AliZDCPreprocessor&);
     AliZDCPreprocessor& operator=(const AliZDCPreprocessor&);
+    void SetPedSubMethFlag(Bool_t ifv) {fPedSubMethFlag = ifv;}
 
   private:
     UInt_t ProcessDCSData(TMap* dcsAliasMap);
@@ -38,8 +39,9 @@ class AliZDCPreprocessor : public AliPreprocessor
     UInt_t ProcessMBCalibData();
 
     AliZDCDataDCS *fData;    // OCDB class that stores DCS data
+    Bool_t         fPedSubMethFlag; //flag for pedestal subtraction mode (from RUN2)
 
-    ClassDef(AliZDCPreprocessor, 0);
+    ClassDef(AliZDCPreprocessor, 1);
 };
 
     

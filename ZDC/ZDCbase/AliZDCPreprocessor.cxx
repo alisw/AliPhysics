@@ -73,8 +73,6 @@ AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
   AddRunType("STANDALONE_COSMIC");
   AddRunType("CALIBRATION_EMD");
   AddRunType("CALIBRATION_MB");
-  AddRunType("CALIBRATION_CENTRAL");
-  AddRunType("CALIBRATION_SEMICENTRAL");
   AddRunType("CALIBRATION_BC");
   AddRunType("PHYSICS");
 }
@@ -103,6 +101,7 @@ void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   fEndTime = endTime;
 
   fData = new AliZDCDataDCS(fRun, fStartTime, fEndTime, GetStartTimeDCSQuery(), GetEndTimeDCSQuery());
+  fPedSubMethFlag = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -624,18 +623,37 @@ UInt_t AliZDCPreprocessor::ProcessCalibData(Float_t beamEnergy)
 //______________________________________________________________________________________________
 UInt_t AliZDCPreprocessor::ProcessPedestalData()
 {
-  TList* daqSources = GetFileSources(kDAQ, "PEDESTALDATA");
-  if(!daqSources){
-    Log(Form("No source for STANDALONE_PEDESTAL run %d !", fRun));
+  // ____________________________________________________________________
+  // 1: read mean values and fit parameters from ascii data file
+  TList* daqSource1 = GetFileSources(kDAQ, "PEDESTALDATA");
+  if(!daqSource1){
+    Log(Form("No source1 for STANDALONE_PEDESTAL run %d !", fRun));
     return 10;
   }
-  if(daqSources->GetEntries()==0) return 10;
-  Log("\t List of DAQ sources for PEDESTALDATA id: "); daqSources->Print();
+  if(daqSource1->GetEntries()==0) return 10;
   //
-  TIter iter(daqSources);
+  // ____________________________________________________________________
+  // 2: read channels to be subtracted from correlation fit (implemented from RUN2)
+  Bool_t resPedSubDecision=kFALSE;
+  TList* daqSource2 = GetFileSources(kDAQ, "PEDCORRTOFIT");
+  if(!daqSource2){
+    Log(Form("No source2 for STANDALONE_PEDESTAL run %d !", fRun));
+    resPedSubDecision = kTRUE;
+  }
+  if(daqSource2->GetEntries()==0) return 10;
+  
+  Log("\t List of DAQ sources for PEDESTALDATA id: "); 
+  daqSource1->Print();
+  daqSource2->Print();
+  //
+  // ____________________________________________________________________
+  // 1: read mean values and fit parameters from ascii data file
+  TIter iter(daqSource1);
   TObjString* source;
-  Int_t i=0;
+  //int i=0;
   Bool_t resPedCal=kTRUE, resPedHist=kTRUE;
+  // --- Initializing pedestal calibration object
+  AliZDCPedestals *pedCalib = new AliZDCPedestals("ZDC");
   
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
      TString stringPedFileName = GetFile(kDAQ, "PEDESTALDATA", source->GetName());
@@ -644,10 +662,8 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
         return 10;
      }
      const char* pedFileName = stringPedFileName.Data();
-     Log(Form("\t Getting file #%d: %s from %s\n",++i,pedFileName,source->GetName()));
+     Log(Form("\t Getting file %s from %s\n",pedFileName,source->GetName()));
      //
-     // --- Initializing pedestal calibration object
-     AliZDCPedestals *pedCalib = new AliZDCPedestals("ZDC");
      // --- Reading file with pedestal calibration data
      // no. ADCch = (22 signal ch. + 2 reference PMs) * 2 gain chain = 48
      const Int_t knZDCch = 48;
@@ -661,33 +677,78 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
      for(Int_t k=0; k<(3*knZDCch); k++){
         for(Int_t j=0; j<2; j++){
            int aleggi = fscanf(file,"%f",&pedVal[k][j]);
-           if(aleggi==0) AliDebug(3," Failing reading data from pedestal file");
+           if(aleggi==0) AliDebug(3," Failing reading data from PEDESTALDATA file");
            //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
         }
-        if(k<knZDCch){
+        if(k<knZDCch){ // in time signals
           pedCalib->SetMeanPed(k,pedVal[k][0]);
           pedCalib->SetMeanPedWidth(k,pedVal[k][1]);
         }
-        else if(k>=knZDCch && k<(2*knZDCch)){
+        else if(k>=knZDCch && k<(2*knZDCch)){ // out of time signals
           pedCalib->SetOOTPed(k-knZDCch,pedVal[k][0]);
           pedCalib->SetOOTPedWidth(k-knZDCch,pedVal[k][1]);
         }
-        else if(k>=(2*knZDCch) && k<(3*knZDCch)){
+        else if(k>=(2*knZDCch) && k<(3*knZDCch)){ // correlazioni
           pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][0],pedVal[k][1]);
         }
      }
      fclose(file);
-     //pedCalib->Print("");
-     // 
-     AliCDBMetaData metaData;
-     metaData.SetBeamPeriod(0);
-     metaData.SetResponsible("Chiara Oppedisano");
-     metaData.SetComment("Filling AliZDCPedestals object");  
-     //
-     resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, kTRUE);
-     if(resPedCal==kFALSE) return 11;
   }
-  delete daqSources; daqSources = 0;
+  // ____________________________________________________________________
+  // 2: read channels to be subtracted from correlation fit (implemented from RUN2)
+  if(resPedSubDecision){
+    TIter iter2(daqSource2);
+    TObjString* source2;
+  
+    while((source2 = dynamic_cast<TObjString*> (iter2.Next()))){
+       TString stringFileName = GetFile(kDAQ, "PEDCORRTOFIT", source2->GetName());
+       if(stringFileName.Length() <= 0){
+          Log(Form("No PEDESTALDATA file from source %s!", source2->GetName()));
+          return 10;
+       }
+       const char* pedFileName = stringFileName.Data();
+       Log(Form("\t Getting file %s from %s\n",pedFileName,source2->GetName()));
+       //
+       const Int_t kNch = 24;
+       FILE *file;
+       if((file = fopen(pedFileName,"r")) == NULL){
+         printf("Cannot open file %s \n",pedFileName);
+         return 10;
+       }
+       Log(Form("File %s connected to process pedestal data", pedFileName));
+       pedCalib->SetPedModeBit(kTRUE);
+       //
+       Int_t val[kNch][2];
+       for(Int_t k=0; k<kNch; k++){
+          for(int j=0; j<2; j++){
+      	     int aleggi = fscanf(file,"%d",&val[k][1]);
+             if(aleggi==0) AliDebug(3," Failing reading data from PEDCORRTOFIT file");
+             //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
+             pedCalib->SetSubFromCorr(k, aleggi);
+          }
+      }
+      fclose(file);
+    }
+  }
+  // 
+  pedCalib->Print("");
+  
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Chiara Oppedisano");
+  metaData.SetComment("Creating AliZDCPedestals object");  
+  //
+  resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, kTRUE);
+  if(resPedCal==kFALSE) return 11;
+  //
+  if(daqSource1){
+    delete daqSource1; 
+    daqSource1 = 0;
+  }
+  if(daqSource2){
+    delete daqSource2; 
+    daqSource2 = 0;
+  }
   
   TList* daqSourceH = GetFileSources(kDAQ, "PEDESTALHISTOS");
   if(!daqSourceH){

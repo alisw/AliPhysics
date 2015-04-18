@@ -188,6 +188,8 @@ class AliZDCRawStream: public TObject {
     
     void SetReadCDH(Bool_t value) {fReadCDH=value;}
     void SetSODReading(Bool_t iset) {fSODReading = iset;}
+    
+    void SetCabledSignal(int sigcode) {fCabledSignal = sigcode;}
      
   private :
     AliZDCRawStream(const AliZDCRawStream& stream);
