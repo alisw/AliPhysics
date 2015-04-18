@@ -47,13 +47,13 @@ AliADDecision::AliADDecision()
    fRecoParam(NULL)
 {
   // Default constructor
-  //AD has two layers, filling average 
+  /*/AD has two layers, filling average 
   Float_t zADA = (TMath::Abs(GetZPosition("AD/ADA1")) + TMath::Abs(GetZPosition("AD/ADA2")))/2; 
   Float_t zADC = (TMath::Abs(GetZPosition("AD/ADC1")) + TMath::Abs(GetZPosition("AD/ADC2")))/2;
 
   // distance in time units from nominal vertex to V0
   fADADist = zADA/TMath::Ccgs()*1e9;
-  fADCDist = zADC/TMath::Ccgs()*1e9;
+  fADCDist = zADC/TMath::Ccgs()*1e9;/*/
 }
 
 //________________________________________________________________________________
