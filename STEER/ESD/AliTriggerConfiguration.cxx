@@ -575,14 +575,23 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        break;
      case 2:
        // Read interaction
-       if (ntokens != 2) {
+       {
+        TString inter;
+        if (ntokens < 2) {
 	 AliError(Form("Invalid trigger interaction syntax (%s)!",strLine.Data()));
 	 delete tokens;
 	 return kFALSE;
+        } else if (ntokens == 2) {
+         inter=((TObjString*)tokens->At(1))->String();
+        } else {
+	 AliWarning(Form("Trigger interaction syntax (%s)!",strLine.Data()));
+	 for(Int_t i=1;i<ntokens;i++){
+	    inter=inter+((TObjString*)tokens->At(i))->String();
+	 }
+        }
+        AddInteraction(((TObjString*)tokens->At(0))->String(),inter);
+        break;
        }
-       AddInteraction(((TObjString*)tokens->At(0))->String(),
-			   ((TObjString*)tokens->At(1))->String());
-       break;
      case 3:
        // Read logical functions and descriptors
        if (ntokens < 2) {
