@@ -28,7 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskEMCALClusterize.cxx 
+    AliAnalysisTaskEMCALClusterize.cxx
     AliAnalysisTaskEMCALIsolation.cxx
     AliAnalysisTaskEMCALIsoPhoton.cxx
     AliAnalysisTaskEMCALMesonGGSDM.cxx
@@ -36,6 +36,7 @@ set(SRCS
     AliAnalysisTaskEMCALPhoton.cxx
     AliAnalysisTaskEMCALPhotonIsolation.cxx
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
+    AliAnalysisTaskEMCALPi0Gamma.cxx
     AliAnalysisTaskEMCALPi0PbPb.cxx
     AliAnalysisTaskEMCALPi0V2ShSh.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
@@ -45,7 +46,12 @@ set(SRCS
     AliAnalysisTaskSDMGammaMC.cxx
     AliAnalysisTaskTrgContam.cxx
     AliEMCalpi0ClusterEvaluationTask.cxx
-    AliAnalysisTaskEMCALPi0Gamma.cxx
+    AliEMCalpi0Task.cxx
+    Alipi0ClusterStatStruct.cxx
+    Alipi0EventStatStruct.cxx
+    Alipi0DiClusterStatStruct.cxx
+    Alipi0EventStatStruct.cxx
+    Alipi0mixedDiClusterStatStruct.cxx
     AliStaObjects.cxx
    )
 
@@ -68,7 +74,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
