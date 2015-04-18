@@ -9,8 +9,6 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "TH1.h"
-#include "AliCDBEntry.h"
 
 class AliZDC;
 
@@ -23,6 +21,10 @@ class AliZDCPedestals: public TNamed {
   AliZDCPedestals& operator= (const AliZDCPedestals &calibda);
   virtual ~AliZDCPedestals();
   void Reset();
+  enum ESubPedModeBit{
+     kPedSubModeFromOCDB = 14
+  };
+
   virtual void  Print(Option_t *) const; 
   //
   Float_t  GetMeanPed(Int_t channel)   	   const {return fMeanPedestal[channel];}
@@ -36,6 +38,11 @@ class AliZDCPedestals: public TNamed {
   Float_t  GetPedCorrCoeff0(Int_t channel) const {return fPedCorrCoeff[0][channel];}
   Float_t  GetPedCorrCoeff1(Int_t channel) const {return fPedCorrCoeff[1][channel];}
   Float_t* GetPedCorrCoeff()		   const {return (float*)fPedCorrCoeff;}
+  
+  UInt_t   GetPedSubModefromOCDB()         const {return fPedSubModefromOCDB;}
+  Bool_t   TestPedModeBit()	   	   const {return TESTBIT(fPedSubModefromOCDB, kPedSubModeFromOCDB);}
+  Bool_t   GetUseCorrFit(int ich)	   const 
+  	   {if(AliZDCPedestals::TestPedModeBit()) return fUseCorrFit[ich]; else return kFALSE;}
 
   void  SetMeanPed(Int_t channel, Float_t val) {fMeanPedestal[channel]=val;}
   void  SetMeanPed(Float_t* MeanPed);
@@ -50,6 +57,10 @@ class AliZDCPedestals: public TNamed {
   void  SetPedCorrCoeff(Float_t* PedCorrCoeff);
   void  SetPedCorrCoeff(Float_t* PedCorrCoeff0, Float_t* PedCorrCoeff1);
   
+  void  SetPedModeBit(Bool_t on=kTRUE) 
+  	{on ? SETBIT(fPedSubModefromOCDB, kPedSubModeFromOCDB) : CLRBIT(fPedSubModefromOCDB, kPedSubModeFromOCDB);}
+  void  SetSubFromCorr(int ich, Bool_t ifv) {fUseCorrFit[ich] = kTRUE;}
+  
  protected:
   // --- Pedestals
   Float_t  fMeanPedestal[48];	 // Mean pedestal values 
@@ -57,8 +68,10 @@ class AliZDCPedestals: public TNamed {
   Float_t  fOOTPedestal[48];	 // "Out of Time" pedestal values
   Float_t  fOOTPedWidth[48];	 // "Out of Time" pedestal widths
   Float_t  fPedCorrCoeff[2][48]; // Fit of correlation in-time vs. out-of-time
+  UInt_t   fPedSubModefromOCDB;  // test whether the OCDB provides the ped sub mode ch.bych. (from RUN2)
+  Bool_t   fUseCorrFit[24];      // if pedestal subtraction mode is from OCDB decide the mode!
   //
-  ClassDef(AliZDCPedestals,3)    // ZDC pedestal calibration data
+  ClassDef(AliZDCPedestals,4)    // ZDC pedestal calibration data
 };
 
 #endif

@@ -32,6 +32,15 @@ class AliZDCTowerCalib: public TNamed {
   Float_t* GetZN2EqualCoeffs()		   const {return (float*)fZN2EqualCoeff;}
   Float_t  GetZP2EqualCoeff(Int_t channel) const {return fZP2EqualCoeff[channel];}
   Float_t* GetZP2EqualCoeffs()		   const {return (float*)fZP2EqualCoeff;}
+  //
+  Float_t  GetZNCEqualCoeff(Int_t channel) const {return fZN1EqualCoeff[channel];}
+  Float_t* GetZNCEqualCoeffs()		   const {return (float*)fZN1EqualCoeff;}
+  Float_t  GetZPCEqualCoeff(Int_t channel) const {return fZP1EqualCoeff[channel];}
+  Float_t* GetZPCEqualCoeffs()		   const {return (float*)fZP1EqualCoeff;}
+  Float_t  GetZNAEqualCoeff(Int_t channel) const {return fZN2EqualCoeff[channel];}
+  Float_t* GetZNAEqualCoeffs()		   const {return (float*)fZN2EqualCoeff;}
+  Float_t  GetZPAEqualCoeff(Int_t channel) const {return fZP2EqualCoeff[channel];}
+  Float_t* GetZPAEqualCoeffs()		   const {return (float*)fZP2EqualCoeff;}
 
   void 	SetZN1EqualCoeff(Int_t channel, Float_t val) {fZN1EqualCoeff[channel]=val;}
   void 	SetZN1EqualCoeff(Float_t* EqualCoeff);

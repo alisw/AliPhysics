@@ -1,8 +1,13 @@
 MakeZDCPedestalCalib(){
    // Create OCDB object for ZDC pedestal
    const char* macroname = "MakeZDCPedestalCalib.C";
+   
+   Bool_t pedSubMode = kTRUE; // 0 = mean ped subtraction, 1 = subtraction from corr.
+   AliZDCPedestals *calibPed = new AliZDCPedestals("ZDC");
+   if(pedSubMode) calibPed->SetPedModeBit(kTRUE);
  
    const Int_t nch = 24;
+   Float_t pedsubmode[nch];
    Float_t MeanPed[2*nch], MeanPedWidth[2*nch], 
            MeanPedOOT[2*nch], MeanPedWidthOOT[2*nch],
            CorrCoeff0[2*nch], CorrCoeff1[2*nch];
@@ -12,21 +17,22 @@ MakeZDCPedestalCalib(){
        MeanPedWidth[j] = MeanPedWidthOOT[j] = 4.;
        CorrCoeff0[j] = 0.;
        CorrCoeff1[j] = 1.;
+       if(pedSubMode) calibPed->SetSubFromCorr(j, pedSubMode);
      }
      else{
        MeanPed[j] = MeanPedOOT[j] = 8.*50.;
-       MeanPedWidth[j] = MeanPedWidthOOT[j] = 8.*4..;
+       MeanPedWidth[j] = MeanPedWidthOOT[j] = 8.*4.;
        CorrCoeff0[j] = 0.;
        CorrCoeff1[j] = 1.;
      }
    }
   
-   AliZDCPedestals *calibPed = new AliZDCPedestals("ZDC");
    calibPed->SetMeanPed(MeanPed);
    calibPed->SetMeanPedWidth(MeanPedWidth);
    calibPed->SetOOTPed(MeanPedOOT);
    calibPed->SetOOTPedWidth(MeanPedWidthOOT);
-   calibPed->SetPedCorrCoeff(CorrCoeff0, CorrCoeff1); 
+   calibPed->SetPedCorrCoeff(CorrCoeff0, CorrCoeff1);      
+ 
 
    if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
      // save in file
@@ -36,7 +42,7 @@ MakeZDCPedestalCalib(){
        Error(macroname,"cannot open file for output\n");
        return;
      }
-     Info(macroname,"Saving alignment objects to the file %s", filename);
+     Info(macroname,"Saving pedestal object to the file %s", filename);
      f.cd();
      f.WriteObject(calibPed,"ZDCPedestals","kSingleKey");
      f.Close();

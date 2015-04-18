@@ -66,6 +66,7 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALDATA", "LDC", "ZDCPedestal.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALHISTOS", "LDC", "ZDCPedHisto.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDCORRTOFIT", "LDC", "ZDCPedCh2FitvsOOT.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASERDATA", "LDC", "ZDCLaserCalib.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASERHISTOS", "LDC", "ZDCLaserHisto.root");
