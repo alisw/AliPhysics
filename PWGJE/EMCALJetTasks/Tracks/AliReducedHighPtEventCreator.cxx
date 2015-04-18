@@ -371,6 +371,10 @@ void AliReducedHighPtEventCreator::GetCellEnergies(AliVCluster* emccluster, TArr
  */
 void AliReducedHighPtEventCreator::ConvertTriggerPatches(TClonesArray* patches,
     AliReducedPatchContainer* cont) {
+  if(!patches){
+    AliError("Trigger patch container not found\n");
+    return;
+  }
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
     if(!mypatch->IsOfflineSimple() && mypatch->IsLevel0()) continue;
