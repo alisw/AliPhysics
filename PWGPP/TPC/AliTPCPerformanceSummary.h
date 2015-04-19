@@ -58,7 +58,8 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeQAPosNegDpT(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeQADCAFitParameter(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
-    
+  
+  static void  MakeMissingChambersAliases(TTree * tree); 
     static void MakeRawOCDBQAPlot(TTreeSRedirector *pcstream);
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)

@@ -45,8 +45,11 @@
 #include "AliPerformanceMatch.h"
 #include "TGraphErrors.h"
 #include "TLegend.h"
+#include "TLine.h"
+#include "TLatex.h"
 //
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliGRPManager.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
@@ -1090,8 +1093,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     //
     // 0.) As an estimator most probable value of the ncl/nclfindable used
     //
-    static TGraphErrors * graphNclMostProbPhi[5]={0};
-    static TGraphErrors * graphNclMostProbPhiSector[5]={0};
+    static TGraphErrors * graphNclMostProbPhi[8]={0};
+    static TGraphErrors * graphNclMostProbPhiSector[8]={0};
     TVectorD vecMP(nbins);
     TVectorD vecPhi(nbins);
     TVectorD vecMostProb(nbins);
@@ -1100,7 +1103,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     TVectorD vecNcl(nbins);
     //
     //
-    for (Int_t igr=0; igr<4; igr++){
+    for (Int_t jgr=0; jgr<8; jgr++){
+      Int_t igr=jgr%4;
       hisNcl= ((igr%2==0)) ?  new TH3D(*hisNclpos) : new TH3D(*hisNclneg);   // track sign
       if (igr<2) {
 	hisNcl->GetYaxis()->SetRangeUser(0.3,0.9);   // A side
@@ -1112,21 +1116,22 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       TH2* his2=  (TH2*)hisNcl->Project3D("xz");
       for (Int_t ibin=1; ibin<=nbins; ibin++){
 	TH1 * his1D = (TH1*)his2->ProjectionY("his1D",ibin,ibin);
-	vecMP[ibin-1]=his1D->GetBinCenter(his1D->GetMaximumBin());
+	if (jgr<4) vecMP[ibin-1]=his1D->GetBinCenter(his1D->GetMaximumBin());
+	if (jgr>=4) vecMP[ibin-1]=his1D->GetEntries();
 	vecPhi[ibin-1]=9.*paxisPhi->GetBinCenter((ibin+sign*4+nbins)%nbins)/TMath::Pi();
 	delete his1D;
       }
-      graphNclMostProbPhi[igr]=new TGraphErrors(nbins,vecPhi.GetMatrixArray(), vecMP.GetMatrixArray());          
-      graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
-      graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
-      graphNclMostProbPhi[igr]->SetLineColor(1+igr);
+      graphNclMostProbPhi[jgr]=new TGraphErrors(nbins,vecPhi.GetMatrixArray(), vecMP.GetMatrixArray());          
+      graphNclMostProbPhi[jgr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhi[jgr]->SetMarkerColor(1+igr);
+      graphNclMostProbPhi[jgr]->SetLineColor(1+igr);
       delete his2;
       delete hisNcl;
       hisNcl=0;
-    }
+    }    
     //
     //
-    for (Int_t igr=0;igr<4; igr++){
+    for (Int_t igr=0;igr<8; igr++){
       for (Int_t isec=0; isec<18; isec++){
 	Int_t bins=0;
 	for (Int_t ibin=0;ibin<nbins; ibin++){    
@@ -1139,8 +1144,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       }
       graphNclMostProbPhiSector[igr]=new TGraphErrors(18, vecSector.GetMatrixArray(), vecNclSector.GetMatrixArray());      
     }
-    static TVectorD normMedian(4);
-    for (Int_t igr=0;igr<4; igr++){
+    static TVectorD normMedian(8);
+    for (Int_t jgr=0;jgr<8; jgr++){
+      Int_t igr=jgr%4;
       normMedian[igr] = TMath::Median(nbins, graphNclMostProbPhi[igr]->GetY());
       graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
       graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
@@ -1153,13 +1159,21 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       "grNclPhiPosA.="<< graphNclMostProbPhi[0]<<  //  phi NCL/findable profile per phi bin - positive tracks A side
       "grNclPhiNegA.="<< graphNclMostProbPhi[1]<<  //  phi NCL/findable profile per phi bin - negative tracks A side
       "grNclPhiPosC.="<< graphNclMostProbPhi[2]<<  //  phi NCL/findable profile per phi bin - positive tracks C side
-      "grNclPhiNegC.="<< graphNclMostProbPhi[3];   //  phi NCL/findable profile per phi bin - negative tracks C side
+      "grNclPhiNegC.="<< graphNclMostProbPhi[3]<<  //  phi NCL/findable profile per phi bin - negative tracks C side
+      "grNtrPhiPosA.="<< graphNclMostProbPhi[4]<<  //  phi entries per phi bin - positive tracks A side
+      "grNtrPhiNegA.="<< graphNclMostProbPhi[5]<<  //  phi entries per phi bin - negative tracks A side
+      "grNtrPhiPosC.="<< graphNclMostProbPhi[6]<<  //  phi entries per phi bin - positive tracks C side
+      "grNtrPhiNegC.="<< graphNclMostProbPhi[7];   //  phi entries per phi bin - negative tracks C side
 
     (*pcstream)<<"tpcQA"<<
       "grNclSectorPosA.="<< graphNclMostProbPhiSector[0]<<  //  sector NCL/findable profile
       "grNclSectorNegA.="<< graphNclMostProbPhiSector[1]<<  // 
       "grNclSectorPosC.="<< graphNclMostProbPhiSector[2]<<  // 
-      "grNclSectorNegC.="<< graphNclMostProbPhiSector[3];   // 
+      "grNclSectorNegC.="<< graphNclMostProbPhiSector[3]<<  // 
+      "grNtrSectorPosA.="<< graphNclMostProbPhiSector[4]<<  //  sector entries per sector
+      "grNtrSectorNegA.="<< graphNclMostProbPhiSector[5]<<  // 
+      "grNtrSectorPosC.="<< graphNclMostProbPhiSector[6]<<  // 
+      "grNtrSectorNegC.="<< graphNclMostProbPhiSector[7];   // 
  
 
     return 0;
@@ -2772,7 +2786,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   //////////////////////////////////////////
   
   // normalization
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.2); //C side
+  h3D_1->GetZaxis()->SetRangeUser(1.1,2.1); //C side
   h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
   his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_norm"));
   if(!his2D) return 4;
@@ -2784,7 +2798,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // C_side IROC
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.2); //C_side
+  h3D_1->GetZaxis()->SetRangeUser(1.1,2.1); //C_side
   h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_IROC"));
@@ -2829,7 +2843,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
 
   ////////////////////////////////////////////
   // C_side OROC
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.2); //C_side
+  h3D_1->GetZaxis()->SetRangeUser(1.1,2.1); //C_side
   h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_OROC"));
@@ -2910,6 +2924,11 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   AliTPCCalPad * padLocalMax=dataQA->GetNLocalMaxima();
   AliTPCCalPad * padNoThreshold=dataQA->GetNoThreshold();
   AliTPCCalPad * padMaxCharge=dataQA->GetMaxCharge();
+  AliTPCCalPad * padMeanCharge=dataQA->GetMeanCharge();
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry * entry=  man->Get("TPC/Calib/QA");
+  static Bool_t hasRawQA = entry->GetId().GetFirstRun()== man->GetRun();
+
 
   AliTPCCalPad * padInput[5]={padActive, padLocalMax, padNoThreshold, padMaxCharge};
   TGraphErrors *grRaw[8]={0};
@@ -2920,8 +2939,9 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
    
   for (Int_t itype=0; itype<4; itype++){    
     for (Int_t isec=0; isec<72; isec++) {
-      value[isec]=padInput[itype]->GetCalROC(isec)->GetLTM(); 
+      value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian() ; 
       if (itype==0) value[isec]=padInput[itype]->GetCalROC(isec)->GetMean(); 
+      if (itype==2) value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian(); 
       valueRMS[isec]=padInput[itype]->GetCalROC(isec)->GetRMS();
       if (value[isec]>0)valueRMS[isec]/=value[isec];
       valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
@@ -2944,7 +2964,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(1);
-  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0","canvasRawQA0",1000,500);
+  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0","canvasRawQA0",1400,700);
   for (Int_t itype=0; itype<4; itype++){
     for (Int_t iplot=0; iplot<2; iplot++){
       canvasRawQA0->cd()->SetLogz();
@@ -2953,8 +2973,9 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       pad->cd()->SetLogz();
       TH1* histo = 0;
       if (padInput[itype]->GetMedian()>0){	
-	padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
+        padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
 	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
+	if (histo->GetMaximum()>2) histo->SetMaximum(2.); 
 	histo->SetName(TString::Format("%s  %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
 	histo->SetTitle(TString::Format("%s %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
 	histo->Draw("colz");
@@ -2976,18 +2997,26 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
     legend->AddEntry(grRaw[itype], padInput[itype]->GetTitle(),"p");
   }
   legend->Draw();
+  TLine *line = new TLine(0,0.70,72,0.70);
+  line->SetLineStyle(2);
+  line->SetLineColor(2);
+  line->SetLineWidth(3);
+  line->Draw();
+  TLatex latex;
+  latex.DrawLatex(73,0.70,"Threshold");
   canvasRawQA0->SaveAs("rawQAInformation.png");
   static Int_t clusterCounter= dataQA->GetClusterCounter();
   static Int_t signalCounter= dataQA->GetSignalCounter();
   //
   // add aso HV status
   //
-  for (Int_t itype=0; itype<4; itype++){
+  for (Int_t itype=0; itype<5; itype++){
     for (Int_t isec=0; isec<72; isec++){
       if (itype==0) valueNorm[isec]=calibDB->GetChamberHVStatus(isec);
       if (itype==1) valueNorm[isec]=calibDB->GetChamberGoodHighVoltageFraction(isec);
       if (itype==2) valueNorm[isec]=calibDB->GetChamberHighVoltageMedian(isec);
       if (itype==3) valueNorm[isec]=calibDB->GetChamberCurrentNominalHighVoltage(isec);  
+      if (itype==4) valueNorm[isec]=calibDB->GetChamberCurrentNominalHighVoltage(isec)-50.;  
     }    
     grStatus[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,0);
     grStatus[itype]->SetMarkerColor(kcolors[itype]);
@@ -3018,17 +3047,26 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
     grStatus[3]->SetMinimum(0);
     grStatus[3]->Draw("ap");
     grStatus[2]->Draw("p");
-    legendVoltage->AddEntry(grStatus[0],"Chamber nominal voltage (-TPC median)","p");
-    legendVoltage->AddEntry(grStatus[1],"Chamber voltage","p");
+    grStatus[4]->SetMarkerColor(2);
+    grStatus[4]->SetMarkerStyle(kmarkers[2]);
+    grStatus[4]->SetMarkerSize(0.75);
+    grStatus[4]->SetLineColor(2);
+    grStatus[4]->SetLineWidth(3);
+    grStatus[4]->Draw("lp");
+    legendVoltage->AddEntry(grStatus[2],"Chamber voltage","p");
+    legendVoltage->AddEntry(grStatus[3],"Chamber nominal voltage (-TPC median)","p");
+    legendVoltage->AddEntry(grStatus[4],"Chamber voltage Threshold","p");
     legendVoltage->Draw();
   }
   canvasROCStatusOCDB->SaveAs("canvasROCStatusOCDB.png");
 
   if (pcstream){
     (*pcstream)<<"tpcQA"<<
+      "hasRawQA="<<hasRawQA<<                   // flag - Raw QA present
       "rawClusterCounter="<<clusterCounter<<    // absolute number of cluster  in Raw QA          -  calibDB->GetDataQA()->GetClusterCounter();
       "rawSignalCounter="<<signalCounter<<      // absolute number of signal above Thr  in Raw QA -  calibDB->GetDataQA()->GetSignalCounter()
       "grOCDBStatus.="<<grRaw[0]<<              // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
+      //
       "grRawLocalMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
       "grRawAboveThr.="<<grRaw[2]<<             // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
       "grRawQMax.="<<grRaw[3]<<                 // RAQ QA OCDB max charge              - LTM:calibDB->GetDataQA()->GetMaxCharge();
@@ -3038,4 +3076,43 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       "grROCHVMedian.="<<grStatus[2]<<          // ROC median voltage
       "grROCHVNominal.="<<grStatus[3];          // ROC Nominal voltage corrected for common median shift
   }
+}
+
+
+
+void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
+  //
+  // Make default aliases for the "missing chamber selection"
+  //
+  tree->SetAlias("sectorNclMissing70","Sum$((max(grNclSectorNegA.fY,grNclSectorPosA.fY)/grNclPhiMedian.fElements[0])<0.7)+Sum$((max(grNclSectorNegC.fY,grNclSectorPosC.fY)/grNclPhiMedian.fElements[0])<0.7)");  
+  // Missing chambers according StandardQA - using Ncl:phi  histogram.  
+  //   sum( Ncl_sector/<Ncl>_median < 70% ) 
+  tree->SetAlias("sectorNtrMissing70","Sum$((18*grNtrSectorPosC.fY/Sum$(grNtrSectorPosC.fY))<0.7)+Sum$((18*grNtrSectorPosA.fY/Sum$(grNtrSectorPosA.fY))<0.7)");
+  // Missing chambers according StandardQA - using Ncl:phi  track counter
+  //  sum( Ntr_sector/<Ntr>_median < 70% ) 
+  tree->SetAlias("ocdbStatusCounter","hasRawQA*Sum$(grOCDBStatus.fY<0.75)");               // counter status for the OCDB
+  tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
+  tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
+  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(grRawQMax.fEY<0.03)");
+  // counter outliers 75 (Qmax or occupancy based)  
+  // for laser data Q is not reliable - disable decission for data with big RMS 
+  tree->SetAlias("ocdbHVStatusCounter","Sum$(grROCHVStatus.fY<0.5)");                      // chambers not active  - according  HV decission
+  tree->SetAlias("ocdbLowerHVCounter50","Sum$(grROCHVMedian.fY<(grROCHVNominal.fY-50))");    // chambers not active  - according  maximal diff of HV
+  tree->SetAlias("qaClOccupancyCounter60","(Sum$((36*TPC_Occ_IROC.fElements)<0.60)+Sum$((36*TPC_Occ_OROC.fElements)<0.60))");   // missing chambers according cluster occupancy
+
+  //
+  // dEdx outlier alaiases
+  //
+  tree->SetAlias("normdEdxSector","(36*meanMIPvsSector.fElements/Sum$(meanMIPvsSector.fElements))");  
+  // dEdx_{sector}/<dEdx>
+  tree->SetAlias("wrongdEdxSectorCounter5","Sum$(abs(normdEdxSector-1)>0.05)&&rawLowCounter75==0&&sectorNtrMissing70<36");  
+  tree->SetAlias("wrongdEdxSectorCounter2","Sum$(abs(normdEdxSector-1)>0.02)&&rawLowCounter75==0&&sectorNtrMissing70<36");  
+  // dEdx_{sector}/<dEdx>
+  //
+  //
+  tree->SetAlias("disabledGoodChambers","(sectorNclMissing70>0||sectorNtrMissing70>0)&&rawLowCounter75==0&&sectorNtrMissing70<36");
+  // disabled good chambers counter
+  tree->SetAlias("emptyQA","(sectorNtrMissing70==36)");
+  // empty QA counter
+
 }
