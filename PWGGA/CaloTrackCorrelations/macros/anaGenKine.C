@@ -1,10 +1,15 @@
-//--------------------------------------------------
-// Example of simple analysis of a single file
-// accessing directly the MC kinematics information
-// nothing else.
-// Execute the analysis in AliAnaGenKine
-//-------------------------------------------------
+/// \file anaGenKine.C
+/// \brief Example of execution macro for analysis at generation level
+///
+/// Example of simple analysis of a single file
+/// accessing directly the MC kinematics information
+/// nothing else.
+/// Execute the analysis in class AliAnaGeneratorKine
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
+//___________________________
+/// Main execution method.
 //________________________
 void anaGenKine(Int_t mode)
 {
@@ -90,13 +95,11 @@ void anaGenKine(Int_t mode)
   
 }
 
-//_____________________________
+//--------------------------------------
+/// Load the needed libraries most of them already loaded by aliroot
+//--------------------------------------
 void  LoadLibraries()
 {
-  
-  //--------------------------------------
-  // Load the needed libraries most of them already loaded by aliroot
-  //--------------------------------------
   gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
@@ -130,25 +133,24 @@ void  LoadLibraries()
   //SetupPar("PWGCaloTrackCorrBase");
   //SetupPar("PWGGACaloTrackCorrelations");
   
-  
   // needed for plugin?
   gSystem->AddIncludePath("-I$ALICE_ROOT");
   gSystem->AddIncludePath("-I$ALICE_PHYSICS");
   gSystem->AddIncludePath("-I./");
-  
 }
 
 //_________________________________
+/// Load par files, create analysis libraries
+/// For testing, if par file already decompressed and modified
+/// classes then do not decompress.
+//_________________________________
 void SetupPar(char* pararchivename)
 {
-  //Load par files, create analysis libraries
-  //For testing, if par file already decompressed and modified
-  //classes then do not decompress.
-  
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
   
-  if ( gSystem->AccessPathName(pararchivename) ) {  
+  if ( gSystem->AccessPathName(pararchivename) )
+  {
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
     gROOT->ProcessLine(processline.Data());
   }
@@ -181,31 +183,35 @@ void SetupPar(char* pararchivename)
   printf("Current dir: %s\n", ocwd.Data());
 }
 
-//_________________________________________________________________
+//______________________________________________________________________________
+/// Read the PYTHIA statistics from the file pyxsec.root created by
+/// the function WriteXsection():
+/// integrated cross section (xsection) and
+/// the  number of Pyevent() calls (ntrials)
+/// and calculate the weight per one event xsection/ntrials
+/// The spectrum calculated by a user should be
+/// multiplied by this weight, something like this:
+/// TH1F *userSpectrum ... // book and fill the spectrum
+/// userSpectrum->Scale(weight)
+///
+/// Yuri Kharlov 19 June 2007
+/// Gustavo Conesa 15 April 2008
+/// Add recovery of xs from pyxsec_hists.root file 15/jan/2015
+//______________________________________________________________________________
 void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
 {
-  // Read the PYTHIA statistics from the file pyxsec.root created by
-  // the function WriteXsection():
-  // integrated cross section (xsection) and
-  // the  number of Pyevent() calls (ntrials)
-  // and calculate the weight per one event xsection/ntrials
-  // The spectrum calculated by a user should be
-  // multiplied by this weight, something like this:
-  // TH1F *userSpectrum ... // book and fill the spectrum
-  // userSpectrum->Scale(weight)
-  //
-  // Yuri Kharlov 19 June 2007
-  // Gustavo Conesa 15 April 2008
   Double_t xsection = 0;
   UInt_t    ntrials = 0;
   xs = 0;
   ntr = 0;
   
   Int_t nfiles =  tree->GetEntries()  ;
-  if (tree && nfiles > 0) {
+  if (tree && nfiles > 0)
+  {
     tree->SetBranchAddress("xsection",&xsection);
     tree->SetBranchAddress("ntrials" ,&ntrials );
-    for(Int_t i = 0; i < nfiles; i++){
+    for(Int_t i = 0; i < nfiles; i++)
+    {
       tree->GetEntry(i);
       xs  += xsection ;
       ntr += ntrials ;
@@ -219,7 +225,6 @@ void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
     cout << "-----------------------------------------------------------------"<<endl;
   } 
   else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
-  
 }
 
 

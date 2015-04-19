@@ -1,28 +1,34 @@
-//--------------------------------------------------
-// Example macro to do analysis with the 
-// analysis classes in CaloTrackCorrelations
-// Can be executed with Root and AliRoot
-//
-// Pay attention to the options and definitions
-// set in the lines below
-//
-//  Author : Gustavo Conesa Balbastre (INFN-LNF)
-//
-//-------------------------------------------------
-enum anaModes {mLocal=0, mPROOF=1, mPlugin=2, mGRID=3};
-//mLocal    = 0: Analyze locally files in your computer
-//mPROOF    = 1: Analyze files on GRID with Plugin
-//mPlugin   = 2: Analyze files on GRID with Plugin
-//mGRID     = 3: Analyze files on GRID, jobs launched from aliensh
+/// \file ana.C
+/// \brief Example of execution macro
+///
+/// Example macro to do analysis with the
+/// analysis classes in CaloTrackCorrelations,
+/// in local, grid or plugin modes.
+///
+/// Pay attention to the options and definitions
+/// set in the lines below
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+//---------------------------------------------------------------------------
+/// Different analysis modes
+enum anaModes
+{
+    mLocal  = 0, /// Analyze locally files in your computer.
+    mPROOF  = 1, /// Analyze files on GRID with Plugin
+    mPlugin = 2, /// Analyze files on GRID with Plugin
+    mGRID   = 3  /// Analyze files on GRID, jobs launched from aliensh
+};
 
 //---------------------------------------------------------------------------
 // Settings to read locally several files, only for "mLocal" mode
 // The different values are default, they can be set with environmental 
 // variables: INDIR, PATTERN, NFILES, respectivelly
 
-char * kInDir   = "/user/data/files/"; 
-char * kPattern = ""; // Data are in files kInDir/kPattern+i 
-Int_t  kFile    = 2; 
+char * kInDir   = "/user/data/files/";  /// Global,  path to data files
+char * kPattern = ""; /// Data are in files kInDir/kPattern+i
+Int_t  kFile    = 2;  /// Number of files to analyze in local mode.
 
 //---------------------------------------------------------------------------
 // Dataset for proof analysis, mode=mPROOF
@@ -36,14 +42,14 @@ TString alienUserName     = "narbor" ;
 //---------------------------------------------------------------------------
 // Collection file for grid analysis
 
-char * kXML = "collection.xml";
+char * kXML = "collection.xml"; /// Global name for the xml collection file with data on grid
 
 //---------------------------------------------------------------------------
 //Scale histograms from file. Change to kTRUE when xsection file exists
 //Put name of file containing xsection 
 //Put number of events per ESD file
 //This is an specific case for normalization of Pythia files.
-const char * kXSFileName = "pyxsec.root";
+const char * kXSFileName = "pyxsec.root"; /// Name of file with pT-hard cross sections
 
 // container of xs if xs in file pyxsec_hist.root
 TArrayF* xsArr;
@@ -53,33 +59,40 @@ TArrayI* trArr;
 
 //Set some default values, but used values are set in the code!
 
-Bool_t  kMC        = kFALSE; //With real data kMC = kFALSE
-TString kInputData = "ESD"; //ESD, AOD, MC, deltaAOD
+Bool_t  kMC        = kFALSE; /// With real data kMC = kFALSE
+TString kInputData = "ESD"; /// ESD, AOD, MC, deltaAOD
 Int_t   kYear      = 2011;
 TString kCollision = "pp";
-Bool_t  outAOD     = kFALSE; //Some tasks doesnt need it.
+Bool_t  outAOD     = kFALSE; /// Some tasks doesnt need it.
 TString kTreeName;
 TString kPass      = "";
 char    kTrigger[1024];
 Int_t   kRun       = 0;
 
-//________________________
+//___________________________
+/// Main execution method. It:
+/// * 1) loads the needed libraries in method LoadLibraries
+/// * 2) depending on the files path, run etc, the variables year, collision type, data type, are obtained in methods CheckInputData and CheckEnvironmentVariables
+/// * 3) put the data files in a list to be passed to the analysis frame in method CreateChain
+/// * 4) In case of MC pt-Hard bin simulations, the file containing the cross sections is read and scaling parameter is obtained via the method GetAverageXsection
+/// * 5) The analysis frame is initialized via de analysis manager
+/// * 6) Different general analysis are initialized: Physics selection, centrality etc.
+/// * 7) Specialized analysis are initialized: AliAnalysistaskCounter, AliAnalysisTaskEMCALClusterizer, AliAnalysisTaskCaloTrackCorrelations and executed for different settings.
+/// * 8) The output/input containers are passed to the analysis manager
+/// * 9) The analysis is executed
+///
+/// \param mode: analysis mode defined in enum anaModes
+//___________________________
 void ana(Int_t mode=mGRID)
 {
-  // Main
-  
   //--------------------------------------------------------------------
   // Load analysis libraries
-  // Look at the method below, 
-  // change whatever you need for your analysis case
-  // ------------------------------------------------------------------
-  
+
   LoadLibraries(mode) ;
   //gSystem->ListLibraries();
   
-  //-------------------------------------------------------------------------------------------------
-  //Create chain from ESD and from cross sections files, look below for options.
-  //-------------------------------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // Create chain from ESD and from cross sections files, look below for options.
   
   // Set kInputData and kTreeName looking to the kINDIR
   
@@ -132,7 +145,6 @@ void ana(Int_t mode=mGRID)
     
   }
 
-  
   printf("*********************************************\n");
   printf("number of entries # %lld, skipped %d\n", chain->GetEntries()) ; 	
   printf("*********************************************\n");
@@ -490,8 +502,6 @@ void ana(Int_t mode=mGRID)
     
   }
   
-
-  
   //-----------------------
   // Run the analysis
   //-----------------------    
@@ -503,14 +513,15 @@ void ana(Int_t mode=mGRID)
   else                      mgr->StartAnalysis("local",chain);
   
   cout <<" Analysis ended sucessfully "<< endl ;
-  
 }
 
 //_____________________________
+/// Load analysis libraries.
+//_____________________________
 void  LoadLibraries(Int_t mode)
 {
-  
-  if (mode == mPROOF) {
+  if (mode == mPROOF)
+  {
     //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
     gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
     TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGEMCAL:PWGGAEMCALTasks");
@@ -621,16 +632,15 @@ void  LoadLibraries(Int_t mode)
   gSystem->AddIncludePath("-I$ALICE_ROOT");
   gSystem->AddIncludePath("-I$ALICE_PHYSICS");
   gSystem->AddIncludePath("-I./");
-  
 }
 
 //_________________________________
+/// Load par files, create analysis libraries
+/// For testing, if par file already decompressed and modified
+/// classes then do not decompress.
+//_________________________________
 void SetupPar(char* pararchivename)
 {
-  //Load par files, create analysis libraries
-  //For testing, if par file already decompressed and modified
-  //classes then do not decompress.
-  
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
   
@@ -668,10 +678,10 @@ void SetupPar(char* pararchivename)
 }
 
 //______________________________________
+/// Sets input data and tree strings.
+//______________________________________
 void CheckInputData(const anaModes mode)
 {
-  //Sets input data and tree
-  
   TString ocwd = gSystem->WorkingDirectory();
   
   //---------------------------------------
@@ -907,13 +917,13 @@ void CheckInputData(const anaModes mode)
   }// proof analysis
   
   gSystem->ChangeDirectory(ocwd.Data());
-  
 }
 
 //_____________________________________________________________________
+/// Fills chain with data files paths.
+//_____________________________________________________________________
 void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
 {
-  //Fills chain with data
   TString ocwd = gSystem->WorkingDirectory();
   
   if(kInputData == "AOD")
@@ -925,7 +935,8 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   //---------------------------------------
   // Local files analysis
   //---------------------------------------
-  if(mode == mLocal){
+  if(mode == mLocal)
+  {
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
@@ -943,9 +954,11 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
     else cout<<"NFILES not set, use default: "<<kFile<<endl;
     
     //Check if env variables are set and are correct
-    if ( kInDir  && kFile) {
+    if ( kInDir  && kFile)
+    {
       printf("Get %d files from directory %s\n",kFile,kInDir);
-      if ( ! gSystem->cd(kInDir) ) {//check if ESDs directory exist
+      if ( ! gSystem->cd(kInDir) )
+      {//check if ESDs directory exist
         printf("%s does not exist\n", kInDir) ;
         return ;
       }
@@ -954,7 +967,8 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       //kXSFileName = gSystem->Getenv("XSFILE") ;
       //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;
       char * kGener = gSystem->Getenv("GENER");
-      if(kGener) {
+      if(kGener)
+      {
         cout<<"GENER "<<kGener<<endl;
         if     (!strcmp(kGener,"PYTHIA")) kXSFileName = "pyxsec.root";
         else if(!strcmp(kGener,"HERWIG")) kXSFileName = "hexsec.root";
@@ -979,7 +993,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       else if(kInputData.Contains("AOD")) datafile = "AliAOD.root"  ;
       else if(kInputData == "MC")         datafile = "galice.root"  ;
       
-      //Loop on ESD/AOD/MC files, add them to chain
+      // Loop on ESD/AOD/MC files, add them to chain
       Int_t event =0;
       Int_t skipped=0 ;
       char file[120] ;
@@ -989,9 +1003,11 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
         sprintf(file,   "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ;
         sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ;
         TFile * fData = 0 ;
-        //Check if file exists and add it, if not skip it
-        if ( fData = TFile::Open(file)) {
-          if ( fData->Get(kTreeName) ) {
+        // Check if file exists and add it, if not skip it
+        if ( fData = TFile::Open(file))
+        {
+          if ( fData->Get(kTreeName) )
+          {
             printf("++++ Adding %s\n", file) ;
             chain->AddFile(file);
             
@@ -1030,14 +1046,13 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
                 printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, event);
                 //chainxs->Add(tree);
                 //fileTMP->Close();
-                
-                
               } // fxsec exists
             } // xs in AODs
             
           }
         }
-        else {
+        else
+        {
           printf("---- Skipping %s\n", file) ;
           skipped++ ;
         }
@@ -1054,7 +1069,8 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   //------------------------------
   // GRID xml files
   //------------------------------
-  else if(mode == mGRID){
+  else if(mode == mGRID)
+  {
     //Get colection file. It is specified by the environmental
     //variable XML
     
@@ -1114,15 +1130,14 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
           
         } // fxsec exists
       } // xs in AODs
-      
     }
   }// xml analysis
   
   //------------------------------
   // PROOF
   //------------------------------
-  else if (mode == mPROOF) {
-    
+  else if (mode == mPROOF)
+  {
     TFileCollection* ds= gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
     
     gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/dataset_management/CreateChainFromDataSet.C");
@@ -1131,13 +1146,15 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   }
   
   gSystem->ChangeDirectory(ocwd.Data());
-  
 }
 
 //______________________________
+/// Access one data file and set the year,
+/// collision type and run number.
+/// It is possible to set them via external parameters.
+//______________________________
 void CheckEnvironmentVariables()
 {
-  
   sprintf(kTrigger,"");
   
   Bool_t bRecalibrate = kFALSE;
@@ -1162,7 +1179,8 @@ void CheckEnvironmentVariables()
     if (!(strcmp(gApplication->Argv(i),"--badchannel")))
       bBadChannel = atoi(gApplication->Argv(i+1));
     
-    if (!(strcmp(gApplication->Argv(i),"--run"))){
+    if (!(strcmp(gApplication->Argv(i),"--run")))
+    {
       sRun = gApplication->Argv(i+1);
       if(sRun.Contains("LHC10")) {
         kYear = 2010;
@@ -1177,7 +1195,8 @@ void CheckEnvironmentVariables()
     
   }// args loop
   
-  if(!sRun.Contains("LHC10")){
+  if(!sRun.Contains("LHC10"))
+  {
     if     ( kRun < 140000) 
     {
       kYear = 2010;
@@ -1206,22 +1225,22 @@ void CheckEnvironmentVariables()
 }
 
 //______________________________________________________________________________
+/// Read the PYTHIA statistics from the file pyxsec.root created by
+/// the function WriteXsection():
+/// integrated cross section (xsection) and
+/// the  number of Pyevent() calls (ntrials)
+/// and calculate the weight per one event xsection/ntrials
+/// The spectrum calculated by a user should be
+/// multiplied by this weight, something like this:
+/// TH1F *userSpectrum ... // book and fill the spectrum
+/// userSpectrum->Scale(weight)
+///
+/// Yuri Kharlov 19 June 2007
+/// Gustavo Conesa 15 April 2008
+/// Add recovery of xs from pyxsec_hists.root file 15/jan/2015
+//______________________________________________________________________________
 Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
 {
-  // Read the PYTHIA statistics from the file pyxsec.root created by
-  // the function WriteXsection():
-  // integrated cross section (xsection) and
-  // the  number of Pyevent() calls (ntrials)
-  // and calculate the weight per one event xsection/ntrials
-  // The spectrum calculated by a user should be
-  // multiplied by this weight, something like this:
-  // TH1F *userSpectrum ... // book and fill the spectrum
-  // userSpectrum->Scale(weight)
-  //
-  // Yuri Kharlov 19 June 2007
-  // Gustavo Conesa 15 April 2008
-  // Add recovery of xs from pyxsec_hists.root file 15/jan/2015
-  
   Double_t xsection = 0 ;
   UInt_t    ntrials = 0 ;
   Int_t      nfiles = 0 ;
@@ -1271,7 +1290,6 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
   cout << "-----------------------------------------------------------------"<<endl;
   
   return kTRUE;
-  
 }
 
 
