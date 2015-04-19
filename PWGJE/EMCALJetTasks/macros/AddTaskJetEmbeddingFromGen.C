@@ -34,7 +34,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   }
   else if(genType==3){ //HERWIG
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenHerwig.C");
-    genGen=AddMCGenHerwig(ecms/2,ecms/2,ptHardMin,ptHardMax,ptWeight);
+    genGen=AddMCGenHerwig(ecms/2,ecms/2,ptHardMin,ptHardMax,ptWeight);}
   if(!genGen)   {
     ::Error("AddTaskJetEmbeddingFromGenTask", "Generator does not exist");
     return NULL;
