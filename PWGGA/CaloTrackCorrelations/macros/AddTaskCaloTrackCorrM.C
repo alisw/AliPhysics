@@ -1,5 +1,5 @@
-/// \file AddTaskCaloTrackCorr.C
-/// \brief Example of configuration of CaloTrackCorrelation withing mixing frame.
+/// \file AddTaskCaloTrackCorrM.C
+/// \brief Example of configuration of CaloTrackCorrelation within the mixing frame.
 ///
 /// Example of configuration of different analysis combinations
 /// of the package CaloTrackCorrelations when executed in the mixing frame.
