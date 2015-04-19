@@ -16,6 +16,7 @@
 # Libraries from subdirectories
 add_subdirectory(pid)
 add_subdirectory(EVCHAR)
+add_subdirectory(EVCHAR/EventPlaneFramework)
 add_subdirectory(MUON)
 
 #Module
