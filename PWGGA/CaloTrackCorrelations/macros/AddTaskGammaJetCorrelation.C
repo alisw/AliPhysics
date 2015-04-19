@@ -64,8 +64,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
 								const Int_t    maxCen        = -1,
 								const TString  jetBranchName = "clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00",
 								const TString  jetBkgBranchName = "jeteventbackground_clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00",
-                                const Float_t  jetMinPt      = 0,
-                                const Float_t  minDeltaPhi   = 1.5,
+                                                                const Float_t  jetMinPt      = 0,
+                                                                const Float_t  minDeltaPhi   = 1.5,
 								const Float_t  maxDeltaPhi   = 4.5,
 								const Float_t  minPtRatio    = 0,
 								const Float_t  maxPtRatio    = 5,   
@@ -92,23 +92,17 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
   
   // Make sure the B field is enabled for track selection, some cuts need it
   ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
-
-//  inputDataType = "AOD";
-//  if(!kData.Contains("delta"))
-//    inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
-  //input jets
+  // input jets
   TString     deltaAODJetName   = "AliAOD.Jets.root"; //Jet input AOD name
   if(deltaAODJetName.Length()!=0)
-    {
-      // External file with Jets
-     // aodHandler->AddFriend(deltaAODJetName.Data());
-      mgr->RegisterExtraFile(deltaAODJetName.Data());
-      cout<<"Jet file registered "<<endl;
-      cout<<"Extra files: "<<mgr->GetExtraFiles()<<endl;
-    }
-
-
+  {
+    // External file with Jets
+    // aodHandler->AddFriend(deltaAODJetName.Data());
+    mgr->RegisterExtraFile(deltaAODJetName.Data());
+    cout<<"Jet file registered "<<endl;
+    cout<<"Extra files: "<<mgr->GetExtraFiles()<<endl;
+  }
 
   Bool_t useKinematics = kFALSE;
   useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
@@ -119,7 +113,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
   //  kGammaJetCorrelationName = Form("%s_Trig%s_Cl%s_TM%d",calorimeter.Data(), trigger.Data(),clustersArray.Data(),tm);
   kGammaJetCorrelationName = Form("%s_Trig%s_Fired%s_Cl%s_TM%d_l02%1.2f",calorimeter.Data(), trigger.Data(),firedTrigger.Data(),clustersArray.Data(),tm,maxLambda0Cut);//<<<---changed here
 
-  
   if(collision=="PbPb" && maxCen>=0) kGammaJetCorrelationName+=Form("Cen%d_%d",minCen,maxCen);
     
   printf("<<<< NAME: %s >>>>>\n",kGammaJetCorrelationName.Data());
