@@ -1,15 +1,33 @@
-//
-// Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
-//                
-//
+/// \file AddTaskCalorimeter.C
+/// \brief Configuration of EMCal QA
+///
+/// Configuration macro of EMCal detector QA analysis, although it can be
+/// also used for PHOS.
+///
+/// Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch, Marie.Germain@cern.ch
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+
+///
+/// Main method calling all the configuration
+/// It creates a CaloTrackCorrelations task for calorimeters performance studies,
+/// configures it and adds it to the analysis manager.
+///
+/// The options that can be passed to the macro are:
+/// \param suffix : A string with the type of trigger (default: MB, EMC)
+/// \param kSimulation : A bool identifying the data as simulation
+/// \param outputFile : A string to change the name of the histograms output file, default is AnalysisResults.root
+/// \param year: The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="default",
                                                           Bool_t kSimulation = kFALSE,
                                                           TString outputFile = "",
                                                           Int_t year = 2012, 
                                                           Bool_t kPrintSettings = kFALSE)
 {
-  // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
-  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
