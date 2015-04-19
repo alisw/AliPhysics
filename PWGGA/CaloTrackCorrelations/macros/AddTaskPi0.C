@@ -617,7 +617,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   else if(col == "PbPb")
   {
     ana->SetNCentrBin(10);
-    ana->SetNZvertBin(3);
+    ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
     ana->SetNMaxEvMix(10);
     ana->SetMinPt(1.5);
