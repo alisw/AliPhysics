@@ -419,7 +419,7 @@ void AliEMCalpi0Task::UserExec( Option_t* )
 
 
 
-        AliInfo( Form( "pT : %d", pii.Pt()) );
+        AliInfo( Form( "pT : %f", pii.Pt()) );
         for (Int_t iclus2 = iclus+1;  iclus2< kNumberOfEMCALClusters; iclus2++)
         {
 
