@@ -45,19 +45,19 @@ TString alienUserName     = "narbor" ;
 char * kXML = "collection.xml"; /// Global name for the xml collection file with data on grid
 
 //---------------------------------------------------------------------------
-//Scale histograms from file. Change to kTRUE when xsection file exists
-//Put name of file containing xsection 
-//Put number of events per ESD file
-//This is an specific case for normalization of Pythia files.
+// Scale histograms from file. Change to kTRUE when xsection file exists
+// Put name of file containing xsection
+// Put number of events per ESD file
+// This is an specific case for normalization of Pythia files.
 const char * kXSFileName = "pyxsec.root"; /// Name of file with pT-hard cross sections
 
-// container of xs if xs in file pyxsec_hist.root
+// Container of xs if xs in file pyxsec_hist.root
 TArrayF* xsArr;
 TArrayI* trArr;
 
 //---------------------------------------------------------------------------
 
-//Set some default values, but used values are set in the code!
+// Set some default values, but used values are set in the code!
 
 Bool_t  kMC        = kFALSE; /// With real data kMC = kFALSE
 TString kInputData = "ESD"; /// ESD, AOD, MC, deltaAOD
@@ -641,10 +641,12 @@ void  LoadLibraries(Int_t mode)
 //_________________________________
 void SetupPar(char* pararchivename)
 {
-  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ;
+    
   TString parpar(Form("%s.par", pararchivename)) ; 
   
-  if ( gSystem->AccessPathName(pararchivename) ) {  
+  if ( gSystem->AccessPathName(pararchivename) )
+  {
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
     gROOT->ProcessLine(processline.Data());
   }
@@ -653,19 +655,22 @@ void SetupPar(char* pararchivename)
   gSystem->ChangeDirectory(pararchivename);
   
   // check for BUILD.sh and execute
-  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh"))
+  {
     printf("*******************************\n");
     printf("*** Building PAR archive    ***\n");
     cout<<pararchivename<<endl;
     printf("*******************************\n");
     
-    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+    if (gSystem->Exec("PROOF-INF/BUILD.sh"))
+    {
       Error("runProcess","Cannot Build the PAR Archive! - Abort!");
       return -1;
     }
   }
   // check for SETUP.C and execute
-  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C"))
+  {
     printf("*******************************\n");
     printf("*** Setup PAR archive       ***\n");
     cout<<pararchivename<<endl;
@@ -685,7 +690,7 @@ void CheckInputData(const anaModes mode)
   TString ocwd = gSystem->WorkingDirectory();
   
   //---------------------------------------
-  //Local files analysis
+  // Local files analysis
   //---------------------------------------
   if(mode == mLocal){    
     //If you want to add several ESD files sitting in a common directory INDIR
