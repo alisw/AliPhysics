@@ -409,16 +409,11 @@ THnF* AliEventPlaneHelper::AddHistogram( const Char_t* name, const Char_t* title
   //
   // create a multi-dimensional histogram THnF with equal or variable bin widths
   //
-  if(!binLimits) {std::cout<<"no axes defined!"<<std::endl;return 0x0;}
+  if(!binLimits) return 0x0;
   TString hname = name;
 
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
-
-  std::cout<<"!!!!!!!!!!!!! heeeyhooooo !!!!!!!!!!!!!" <<std::endl;
-  std::cout<<binLimits <<std::endl;
-  //std::cout<<binLimits[0] <<std::endl;
-  std::cout<<binLimits[0].GetNbins() <<std::endl;
 
   Double_t* xmin = new Double_t[nDimensions];
   Double_t* xmax = new Double_t[nDimensions];
