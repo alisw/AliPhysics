@@ -14,6 +14,7 @@
  **************************************************************************/
 
 /* $Id: AliADCalibData.cxx,                                            */
+#include <Riostream.h>
 
 #include <TMath.h>
 #include <TObjString.h>
@@ -1130,6 +1131,97 @@ Int_t AliADCalibData::GetBoardNumber(Int_t channel)
   AliErrorClass(Form("Wrong channel index: %d",channel));
   return -1;
 }
+//________________________________________________________________
+void AliADCalibData::PrintConfig()
+{
+
+printf("\n");  
+printf("======================================================\n");
+printf("=======================CCIU config====================\n");
+printf("======================================================\n");
+printf("\n"); 
+ 
+printf("Selected triggers = ");
+for(Int_t i = 0; i<5 ; i++) printf("%d ",GetTriggerSelected(i));
+printf("\n");
+
+printf("BBA thr = %d, BBC thr = %d\n",GetBBAThreshold(),GetBBCThreshold());
+printf("BGA thr = %d, BGC thr = %d\n",GetBGAThreshold(),GetBGCThreshold());
+printf("BBAforBG thr = %d, BBCforBG thr = %d\n",GetBBAForBGThreshold(),GetBBCForBGThreshold());
+
+  
+printf("\n"); 
+printf("======================================================\n");
+printf("=======================CIUs config====================\n");
+printf("======================================================\n");
+printf("\n");
+ 
+ for(Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
+    printf("CIU= %d, Time Res= %f, Width Res= %f, RollOver= %d, TrigCountOffset= %d, SearchWin= %d, MatchWin= %d\n",
+	   CIUNumber,
+	   GetTimeResolution(CIUNumber),
+	   GetWidthResolution(CIUNumber),
+	   GetRollOver(CIUNumber),
+	   GetTriggerCountOffset(CIUNumber),
+	   GetSearchWindow(CIUNumber),
+	   GetMatchWindow(CIUNumber));
+	   
+	  
+  }
+
+printf("\n");
+printf("=======================Trigger windows================\n"); 
+printf("\n");
+Bool_t gatesOpen = kTRUE;
+for (Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
+    if (GetDelayClk1Win1(CIUNumber)!=0 || GetDelayClk2Win1(CIUNumber)!=0 || GetDelayClk1Win2(CIUNumber)!=0 || GetDelayClk2Win2(CIUNumber)!=0) gatesOpen = kFALSE;
+    }
+if(!gatesOpen){
+ for(Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
+    printf("CIU= %d Clk1WinBB= %d DelayClk1WinBB = %d Clk2WinBB = %d DelayClk2WinBB = %d Clk1WinBG= %d DelayClk1WinBG = %d Clk2WinBG = %d DelayClk2WinBG = %d\n",
+	   CIUNumber,
+	   GetClk1Win1(CIUNumber),
+	   GetDelayClk1Win1(CIUNumber),
+	   GetClk2Win1(CIUNumber),
+	   GetDelayClk2Win1(CIUNumber),
+	   GetClk1Win2(CIUNumber),
+	   GetDelayClk1Win2(CIUNumber),
+	   GetClk2Win2(CIUNumber),
+	   GetDelayClk2Win2(CIUNumber));	  
+  }
+}
+else printf("Test windows 25ns\n");
+
+printf("\n");  
+printf("======================================================\n");
+printf("====================Channels config===================\n");
+printf("======================================================\n");
+printf("\n"); 
+ 
+  for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
+    printf("ChOff = %d, ChOn = %d, HV = %.1f, Dead = %s, Threshold = %.1f, DelayHit = %.2f\n",
+	   pmNumber,
+	   kOfflineChannel[pmNumber],
+	   GetMeanHV(pmNumber),
+	   IsChannelDead(pmNumber)?"yes":"no",
+	   GetDiscriThr(pmNumber),
+	   GetTimeOffset(pmNumber)
+	   );
+  }
+  
+printf("\n");
+printf("======================================================\n");
+printf("======================= Pedestal =====================\n");
+printf("======================================================\n");
+printf("\n");
+
+    for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
+    	for(Int_t integrator = 0; integrator < 2; ++integrator){
+    		if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.3f, Width = %3f,", pmNumber, kOfflineChannel[pmNumber],integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
+		else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));	
+			}
+  }
 
 
 
+}
