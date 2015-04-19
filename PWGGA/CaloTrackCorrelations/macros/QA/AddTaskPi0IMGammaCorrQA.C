@@ -27,7 +27,6 @@
 /// \param hadronan: execute the track QA and cluster-track correlation analysis.
 /// \param minCen : An int to select the minimum centrality, -1 means no selection.
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection.
-/// \param mixOn : A bool to switch the correlation mixing analysis.
 /// \param debugLevel : An int to define the debug level of all the tasks.
 ///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calorimeter   = "EMCAL",

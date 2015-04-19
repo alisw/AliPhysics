@@ -1,4 +1,4 @@
-/// \file AddTaskCalorimeter.C
+/// \file AddTaskCalorimeterQA.C
 /// \brief Configuration of EMCal QA
 ///
 /// Configuration macro of EMCal detector QA analysis, although it can be
@@ -17,16 +17,16 @@
 ///
 /// The options that can be passed to the macro are:
 /// \param suffix : A string with the type of trigger (default: MB, EMC)
-/// \param kSimulation : A bool identifying the data as simulation
+/// \param simulation : A bool identifying the data as simulation
 /// \param outputFile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param printSettings : A bool to enable the print of the settings per task
 ///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="default",
-                                                          Bool_t kSimulation = kFALSE,
+                                                          Bool_t simulation = kFALSE,
                                                           TString outputFile = "",
                                                           Int_t year = 2012, 
-                                                          Bool_t kPrintSettings = kFALSE)
+                                                          Bool_t printSettings = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -48,9 +48,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
   
   TString ssuffix = suffix;
-  if(kUseKinematics || kSimulation)
+  if(kUseKinematics || simulation)
   {
-    kSimulation = kTRUE;
+    simulation = kTRUE;
     printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
     if(!ssuffix.Contains("default")) return;
   }
@@ -76,7 +76,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
-  if(kSimulation)
+  if(simulation)
   {
     if(inputDataType == "ESD")
     {
@@ -101,7 +101,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
     //reader->SetEventTriggerL0Threshold(2.);
   }
   
-  if(kPrintSettings) reader->Print("");
+  if(printSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -119,14 +119,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
   
   cu->SetDebug(-1);
-  if(kPrintSettings) cu->Print("");	
+  if(printSettings) cu->Print("");	
   
   // ##### Analysis algorithm settings ####
   
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(10); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
-  if(kSimulation)
+  if(simulation)
   {
     emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
     emcalQA->SwitchOffStudyBadClusters();
@@ -188,7 +188,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->GetHistogramRanges()->SetHistoTrackResidualEtaRangeAndNBins(-0.075,0.075,50);
   emcalQA->GetHistogramRanges()->SetHistoTrackResidualPhiRangeAndNBins(-0.075,0.075,50);
 
-  if(kPrintSettings) emcalQA->Print("");
+  if(printSettings) emcalQA->Print("");
   
   // #### Configure Maker ####
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
@@ -200,7 +200,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   maker->SetAnaDebug(-1)  ; // 0 to at least print the event number
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
-  if(kPrintSettings) maker->Print("");
+  if(printSettings) maker->Print("");
   
   printf("======================== \n");
   printf(" End Configuration of Calorimeter QA \n");

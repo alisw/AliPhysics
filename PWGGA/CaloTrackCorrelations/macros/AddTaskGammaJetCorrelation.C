@@ -16,13 +16,13 @@ TString kGammaJetCorrelationName = "";
 ///
 /// The options that can be passed to the macro are:
 /// \param isoCone : A float setting the isolation cone size
-/// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param isoPth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
 /// \param maxLambda0Cut : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
-/// \param maxNLMCut : maximum value of shower shape parameter
+/// \param maxNLMcut : maximum value of shower shape parameter
 /// \param timecut : activate time cut
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle
 /// \param simulation : A bool identifying the data as simulation
-/// \param evensel : reject bad events (pile-up ...)
+/// \param eventsel : reject bad events (pile-up ...)
 /// \param exotic : reject exotic clusters
 /// \param nonlin : A bool to set the use of the non linearity correction
 /// \param collision : A string with the colliding system
@@ -35,13 +35,14 @@ TString kGammaJetCorrelationName = "";
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param jetBranchName : Name of branch with reconstructed jets
 /// \param jetBkgBranchName : Name of branch with reconstructed background jets
-/// \param minDeltaPhi : minimum cut on photon-jet azimuthal angle
-/// \param maxDeltaPhi : maximum cut on photon-jet azimuthal angle
-/// \param minPtRatio : minimum cut on jet/photon pT ratio
-/// \param maxPtRatio : maximum cut on jet/photon pT ratio
+/// \param jetMinPt : Minimum jet pT.
+/// \param minDeltaPhi : Minimum cut on photon-jet azimuthal angle
+/// \param maxDeltaPhi : Maximum cut on photon-jet azimuthal angle
+/// \param minPtRatio : Minimum cut on jet/photon pT ratio
+/// \param maxPtRatio : Maximum cut on jet/photon pT ratio
 /// \param debug : An int to define the debug level of all the tasks
 /// \param printSettings : A bool to enable the print of the settings per task
-/// \param scaleFactor : scale factor in case for pT-hard simulation bins. Not useful with train.
+/// \param scaleFactor : Scale factor in case for pT-hard simulation bins. Not useful with train.
 ///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
                                 const Float_t  isoCone       = 0.4,
@@ -64,8 +65,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
 								const Int_t    maxCen        = -1,
 								const TString  jetBranchName = "clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00",
 								const TString  jetBkgBranchName = "jeteventbackground_clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00",
-                                                                const Float_t  jetMinPt      = 0,
-                                                                const Float_t  minDeltaPhi   = 1.5,
+                                const Float_t  jetMinPt      = 0,
+                                const Float_t  minDeltaPhi   = 1.5,
 								const Float_t  maxDeltaPhi   = 4.5,
 								const Float_t  minPtRatio    = 0,
 								const Float_t  maxPtRatio    = 5,   

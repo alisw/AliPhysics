@@ -122,7 +122,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param mixOn : A bool to switch the correlation mixing analysis
 /// \param qaAn : A bool to switch the calorimeter QA analysis
 /// \param chargedAn : A bool to switch the selected tracks QA analysis
-/// \param outputFile : A string to change the name of the histograms output file, default is AnalysisResults.root
+/// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
 ///
