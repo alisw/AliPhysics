@@ -1697,20 +1697,60 @@ TH1* AliAnalysisMuMu::PlotAccEfficiency(const char* whatever)
 }
 
 //_____________________________________________________________________________
-TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const char* flavour,const char* value2Test, const char* binListToExclude)
+void AliAnalysisMuMu::ComputeRelativeValueAndSESystematics(const char* quantity,const char* flavour,const char* value2Test, const char* binListToExclude, const char* fNormType, const char* evSelInt, const char* evSelDiff, const char* triggerCluster)
 {
-  /// what,quantity and flavour defines de binning to test (output will be 1 plot per bin)
+  /// Compute the relative (bin/integrated) Jpsi yield or <pT> in "quantity,flavour" bins from the mean value of the relative values of the tests used for the systematic uncertainty of signal extraction computation. Store also the systematic uncertainty tests.
+  ///
+  /// Important considerations:
+  ///   - No corrections can be applied to the yields or x-axis with this method
+  ///
+  ///   - The analysed file must contain the CMUL, CINT, CMSL, CMSL&0MUL and CINT&0MSL triggers to work correctly.
+  ///
+  ///   - The analysed file must contain the event selection PSALL (for the integrated signal extraction) and the one used in the yield analysis (i.e. PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00) to work correctly.
+  ///
+  /// Parameters:
+  ///   - what,quantity and flavour defines the binning to test (output will be 1 plot per bin)
   /// value2test is the observable we want to test ( i.e. NJpsi(bin)/integratedNJpsi, <pt>(bin)/integrated<pt>... )
-  /// --value2test == yield -> NJpsi(bin)/integratedNJpsi
-  /// --value2test == mpt -> <pt>(bin)/integrated<pt>
+  ///   - value2test == yield -> NJpsi(bin)/integratedNJpsi
+  ///   - value2test == mpt -> <pt>(bin)/integrated<pt>
+  ///   - relative: kTRUE if relative yield (y/y_int) wants to be computed. Note that here the ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios
+  ///   - fNormType: Desired FNorm to use: "offline", "global" or "mean"
+  ///   - evSelInt: Event selection to compute integrated NofJpsi
+  ///   - evSelDiff: Event selection to compute diferential NofJpsi
+  ///   - triggercluster: cluster where the CMSL trigger is ("MUON" for pA but for pp2012 could be also "ALLNOTRD" for certain runs, the option "MUON-ALLNOTRD" accounts for both at the same time). By default is "MUON".
 
-  TString path(Form("%s/%s/%s/%s",
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data()));
-  
-  AliWarning("First entry of the Config lists will be used");
+
+  TString sfNormType(fNormType);
+  TString sevSelInt(evSelInt);
+  TString sevSelDiff(evSelDiff);
+
+  if ( IsSimulation() )
+  {
+    AliError("Cannot compute J/Psi yield: Is a simulation file");
+    return;
+  }
+
+  TString intPath(Form("%s/%s/%s/%s",
+                       sevSelInt.Data(),
+                       First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
+                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
+                       First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to get/store integrated results from Mergeable Collection
+
+  TString diffPath(Form("%s/%s/%s/%s",
+                        sevSelDiff.Data(),
+                        First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
+                        First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
+                        First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to get/store differential results from Mergeable Collection
+
+  TString striggerCluster(triggerCluster);
+  if ( striggerCluster.Contains("MUON") && !striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON";
+  else if ( striggerCluster.Contains("ALLNOTRD") && !striggerCluster.Contains("MUON") ) striggerCluster = "ALLNOTRD";
+  else if ( striggerCluster.Contains("MUON") && striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON-ALLNOTRD";
+  else
+  {
+    AliError("Unknown trigger cluster");
+    return;
+  }
 
   TString svalue2Test(value2Test);
   TString shName("");
@@ -1720,12 +1760,62 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
   TString squantity(quantity);
   squantity.ToUpper();
   
+  TH1* hMB(0x0);
+  Double_t nEqMBTot(0.),nEqMBTotError(0.);
   if ( !svalue2Test.CompareTo("yield",TString::kIgnoreCase) )
   {
     sObsInt = "PSI-INTEGRATED-AccEffCorr";
     sObsBin = Form("PSI-%s-AccEffCorr",squantity.Data());
     svalue2Test = "NofJPsi";
     shName = "N^{J/#psi}_{bin}/N^{J/#psi}_{int}";
+
+     TH1* hMBTot = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNEqMB",striggerCluster.Data(),sevSelInt.Data()));
+    if ( !hMBTot )
+    {
+      AliWarning(Form("No eq Nof MB events found in %s: Yield will not be calculated",Form("/FNORM-%s/%s/V0A/hNEqMB",striggerCluster.Data(),sevSelInt.Data())));
+    }
+    nEqMBTot = hMBTot->GetBinContent(1);
+    nEqMBTotError = hMBTot->GetBinError(1);
+
+
+    if ( sfNormType.Contains("offline") )
+    {
+      hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%s",striggerCluster.Data(),sevSelDiff.Data(),quantity));
+      if ( !hMB )
+      {
+        AliWarning(Form("Histo hNofEqMBVS%s not found: Yield will not be calculated",quantity));
+      }
+
+      std::cout << " Using Fnorm from offline method " << std::endl;
+      std::cout <<  std::endl;
+    }
+    else if ( sfNormType.Contains("global") )
+    {
+      hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%sFromGlobal",striggerCluster.Data(),sevSelDiff.Data(),quantity));
+      if ( !hMB )
+      {
+        AliError(Form("Histo hNofEqMBVS%sFromGlobal not found: Yield will not be calculated",quantity));
+      }
+
+      std::cout << " Using Fnorm from global method " << std::endl;
+      std::cout <<  std::endl;
+    }
+    else if ( sfNormType.Contains("mean") )
+    {
+      hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%sFromMean",striggerCluster.Data(),sevSelDiff.Data(),quantity));
+      if ( !hMB )
+      {
+        AliError(Form("Histo hNofEqMBVS%sFromMean not found: Yield will not be calculated",quantity));
+      }
+
+      std::cout << " Using mean Fnorm " << std::endl;
+      std::cout <<  std::endl;
+    }
+    else
+    {
+      AliWarning("Dont know what Fnorm use: Yield will not be calculated");
+    }
+
   }
   else if ( !svalue2Test.CompareTo("mpt",TString::kIgnoreCase) )
   {
@@ -1737,32 +1827,32 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
   else
   {
     AliError("unrecognized value to test");
-    return  0x0;
+    return;
   }
-  
-  TString id(Form("/TESTSYST/%s",path.Data()));
-  
+
+  TString id(Form("/TESTSYST/%s/%s",sevSelInt.Data(),sevSelDiff.Data()));
+
   //________Get the integrated results
-  AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",path.Data(),sObsInt.Data())));
+  AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",intPath.Data(),sObsInt.Data())));
   if ( !sInt )
   {
-    AliError(Form("No integrated spectra %s found in %s",sObsInt.Data(),path.Data()));
-    return 0x0;
+    AliError(Form("No integrated spectra %s found in %s",sObsInt.Data(),intPath.Data()));
+    return;
   }
-  
+
   TObjArray* bin = BIN()->CreateBinObjArray("psi","integrated","");
   if ( !bin )
   {
     AliError("No integrated bin found");
-    return 0x0;
+    return;
   }
   AliAnalysisMuMuBinning::Range* r = static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(0));
-  
+
   AliAnalysisMuMuJpsiResult* resInt =  static_cast<AliAnalysisMuMuJpsiResult*>(sInt->GetResultForBin(*r));
   if ( !resInt )
   {
-    AliError(Form("No integrated result found in spectra %s at %s",sObsInt.Data(),path.Data()));
-    return 0x0;
+    AliError(Form("No integrated result found in spectra %s at %s",sObsInt.Data(),intPath.Data()));
+    return;
   }
   TObjArray* sresIntArray = resInt->SubResults();
 
@@ -1774,7 +1864,7 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
   if ( !bin )
   {
     AliError(Form("%s-%s-%s binning does not exist","psi",squantity.Data(),sflavour.Data()));
-    return 0x0;
+    return;
   }
   
   //_______ Exclude desired bins
@@ -1798,6 +1888,7 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
     }
     excl++;
   }
+  std::cout <<  std::endl;
   bin->Compress();
   //_________________
 
@@ -1806,15 +1897,23 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
   Int_t nbin = bin->GetEntries();
   Int_t nsres = sresIntArray->GetEntries();
   TObjArray* sResultNameArray= new TObjArray();
+  sResultNameArray->SetOwner();
   std::vector<std::vector<double> > valuesArr;
   valuesArr.resize(nbin+1, std::vector<double>(nsres,0));
   std::vector<std::vector<double> > valuesErrorArr;
   valuesErrorArr.resize(nbin+1, std::vector<double>(nsres,0));
   //_________________________
-  
+
+
   //________Get the integrated values from results
   TIter nextIntSubResult(sresIntArray);
   AliAnalysisMuMuResult* sresInt(0x0);
+
+  TString testSig(""); //Strings for testing the name of the subresult to extract the number of tests for the systematics
+  TString testSPsip("");
+  TString testSresIntNameSig("");
+  TString testSresIntNameSPsip("");
+
   Int_t nFitsSameSignal(0);
   Int_t j(0);
   while ( ( sresInt = static_cast<AliAnalysisMuMuResult*>(nextIntSubResult()) ) ) //Integrated SubResult loop
@@ -1824,22 +1923,35 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
     valuesArr[0][j] = sresInt->GetValue(svalue2Test.Data());
     valuesErrorArr[0][j] = sresInt->GetErrorStat(svalue2Test.Data());
     sResultNameArray->Add(new TObjString(sresIntName.Data()));
-        
-    if ( sresIntName.Contains("CB2") ) //This counts the number of times a fit with the same signal is repeated. FIXME: If we do not use CB2 this wont work
+
+    if ( j ==0 ) // Get the first and last part of name of the first subresult
+    {
+      testSresIntNameSig = sresIntName.Data();
+      testSresIntNameSPsip = sresIntName.Data();
+
+      testSresIntNameSig.Remove(3,testSresIntNameSig.Sizeof()-3); // Get the first 3 characters which correspond to the signal shape (e.g CB2, NA6(0) ...)
+      testSresIntNameSPsip.Remove(0,testSresIntNameSPsip.Sizeof()-6); // Get the last 5 characters which correspond to the Psi' sigma (e.g. SP0.9 ...)
+    }
+
+    if ( sresIntName.Contains(testSresIntNameSig.Data()) && sresIntName.Contains(testSresIntNameSPsip.Data()) ) //This counts the number of times a fit with the same signal and same SigmaPsiP is repeated. This will be the number of tests for a given signal.
     {
       nFitsSameSignal++;
     }
     j++;
   }
+
+  std::cout << "Number of tests per signal/SigmaPsi' combination = " << nFitsSameSignal << std::endl;
+  std::cout <<  std::endl;
   //____________________________________
   
   //__________Get the bin per bin results and the values
-  AliAnalysisMuMuSpectra* sBin = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",path.Data(),sObsBin.Data())));
+  AliAnalysisMuMuSpectra* sBin = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",diffPath.Data(),sObsBin.Data())));
   if ( !sBin )
   {
-    AliError(Form("No integrated spectra %s found in %s",sObsBin.Data(),path.Data()));
-    return 0x0;
+    AliError(Form("No integrated spectra %s found in %s",sObsBin.Data(),diffPath.Data()));
     delete bin;
+    delete sResultNameArray;
+    return;
   }
   
   TIter nextBin(bin);
@@ -1850,13 +1962,22 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
     sresBin =  static_cast<AliAnalysisMuMuJpsiResult*>(sBin->GetResultForBin(*r));
     if ( !sresBin )
     {
-      AliError(Form("No result found in spectra %s at %s for bin %s",sObsInt.Data(),path.Data(),r->AsString().Data()));
-      return 0x0;
+      AliError(Form("No result found in spectra %s at %s for bin %s",sObsInt.Data(),diffPath.Data(),r->AsString().Data()));
       delete bin;
+      delete sResultNameArray;
+      return;
     }
     
     TObjArray* sresBinArray = sresBin->SubResults();
     
+    if ( nsres != sresBinArray->GetEntries() )
+    {
+      AliError("Integrated and bins spectra have different number of subresults");
+      delete bin;
+      delete sResultNameArray;
+      return;
+    }
+
     TIter nextSubResult(sresBinArray);
     j = 0;
     while ( (sresBin = static_cast<AliAnalysisMuMuJpsiResult*>(nextSubResult())) ) // Subresults loop
@@ -1871,141 +1992,194 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
 
   } //End bin loop
   //___________________________
-  
 
-  //____________Compute the value ratios and systematic uncertainties on the ratios
+
+  //____________Compute the value ratios and systematic uncertainties on the ratios bin by bin
+
+      //______ Create histos to store signal extraction systematic uncertainties
   TH1* hsyst = new TH1F(Form("%s_Systematics",value2Test),Form("%s Systematics results",value2Test),nbin,0,nbin);
-  
-  TString binName("");
-  for ( Int_t b = 1 ; b < i ; b++ ) //Bin loop
+      //_________________________________
+
+      //______ Create histos to store relative Jpsi yield or <p_T> vs bins
+  Int_t size = bin->GetEntriesFast();
+  Double_t* axis = new Double_t[size+1];
+  TIter next(bin);
+  AliAnalysisMuMuBinning::Range* b;
+  TH1* hy(0x0);
+  i = 0;
+  while ( ( b = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
   {
+    axis[i] = b->Xmin();
+    ++i;
+  }
+
+  b = static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(size-1));
+
+  axis[i] = b->Xmax();
+
+  if ( !svalue2Test.CompareTo("NofJPsi",TString::kIgnoreCase) )
+  {
+    hy = new TH1D(Form("hMeanJPsiYieldVS%sRelative",quantity),Form("Relative J/#psi yield vs %s;%s;Y^{J/#psi}/Y^{J/#psi}_{int}",quantity,quantity)
+                  ,size,axis);
+  }
+  else if ( !svalue2Test.CompareTo("MeanPtJPsi",TString::kIgnoreCase) )
+  {
+    hy = new TH1D(Form("hMeanJPsiMPtVS%sRelative",quantity),Form("Relative J/#psi <p_{T}> vs %s;%s;<p_{T}>^{J/#psi}/<p_{T}>^{J/#psi}_{int}",quantity,quantity)
+                  ,size,axis);
+  }
+
+  if ( !hy )
+  {
+    AliError("No histogram created to store the results");
+    return;
+  }
+  delete axis;
+       //_________________________________
+
+  TString binName("");
+  for ( Int_t b = 1 ; b <= size ; b++ ) //Bin loop
+  {
+
     binName = static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(b-1))->AsString().Data();
-    TString savePath(Form("%s/%s",id.Data(),binName.Data()));
-    
+//    TString savePath(Form("%s/%s",id.Data(),binName.Data()));
+
     Int_t binUCTotal(1);
-    
+
     TH1* hratiosBin = new TH1D(Form("SystTests_%s_Bkg_%s",sObsBin.Data(),binName.Data()),
-                          Form("%s Systematics tests for %s",binName.Data(),shName.Data()),j*nFitsSameSignal,0,
-                          j*nFitsSameSignal);
-    
-    for ( Int_t k = 0 ; k <= j ; k++ ) // Subresults loop for integrated values
+                               Form("%s Systematics tests for %s",binName.Data(),shName.Data()),j*nFitsSameSignal,0,
+                               j*nFitsSameSignal);
+
+    for ( Int_t k = 0 ; k < j ; k++ ) // Subresults loop for integrated values
     {
-      TString hName("");
-      
-      if ( k == 0 ) hName = "UC";
-      else hName = sResultNameArray->At(k-1)->GetName();
-     
-      
-//      TH1* hratios = new TH1D(Form("SystTests_%s_%s",sObsBin.Data(),hName.Data()),
-//                              Form("%s Systematics tests for %s(%s)",binName.Data(),shName.Data(),hName.Data()),j,0,j);
-//      hratios->SetNdivisions(j+1);
-//
-//      TH1* hratiosUC(0x0);
-//      if ( k != 0 )
-//      {
-//        hratiosUC = new TH1D(Form("SystTests_%s_%s_Bkg",sObsBin.Data(),hName.Data()),
-//                                         Form("%s Systematics tests for %s(%s bkg)",binName.Data(),shName.Data(),hName.Data()),nFitsSameSignal,0,nFitsSameSignal);
-//        hratiosUC->SetNdivisions(nFitsSameSignal+1);
-//      }
-      
-      TString signalName(hName.Data());
-      Int_t sizeName = signalName.Sizeof();
-      signalName.Remove(2,sizeName-3);
-      Int_t binUC(1);
-      
+      //__Get the name of the signal and the Psi' sigma for the integrated result
+      TString signalNameInt(sResultNameArray->At(k)->GetName());
+      TString sPsiPNameInt(signalNameInt.Data());
+
+      signalNameInt.Remove(3,signalNameInt.Sizeof()-3); // Get the first 3 characters which correspond to the signal shape (e.g CB2, NA6(0) ...)
+      sPsiPNameInt.Remove(0,sPsiPNameInt.Sizeof()-6); // Get the last 5 characters which correspond to the Psi' sigma (e.g. SP0.9 ...)
+      //__
+
+      //      Int_t sizeName = signalName.Sizeof();
+      //      signalName.Remove(2,sizeName-3);
+      //      Int_t binUC(1);
+
       for ( Int_t l = 0; l < j ; l++) //Subresults loop for bins values
       {
         TString binSignalName(sResultNameArray->At(l)->GetName());
-        
-        Double_t ratio,ratioError;
-        if ( k == 0)
+
+        Double_t ratio,ratioError(0.);
+
+        ratio = valuesArr[b][l] / valuesArr[0][k];
+        //          ratioError = TMath::Sqrt( TMath::Power(valuesErrorArr[b][l] / valuesArr[0][k],2.) + TMath::Power(valuesArr[b][l]*valuesErrorArr[0][k] / TMath::Power(valuesArr[0][k],2.),2.) );
+
+        if ( (valuesErrorArr[b][l] != 0) && (valuesErrorArr[0][k] != 0) ) // We only give an error!=0 if the errors of the int and bin values are both !=0 (Otherwise it means that there was a problem with the fit so we fix the error to 0 to skip the test later on)
         {
-          ratio = valuesArr[b][l] / valuesArr[0][l];
-          ratioError = TMath::Sqrt( TMath::Power(valuesErrorArr[b][l] / valuesArr[0][l],2.) + TMath::Power(valuesArr[b][l]*valuesErrorArr[0][l] / TMath::Power(valuesArr[0][l],2.),2.) );
-          
-//          hratios->GetXaxis()->SetBinLabel(l+1,sResultNameArray->At(l)->GetName());
+          ratioError = ratio*TMath::Sqrt( TMath::Power(valuesErrorArr[b][l] / valuesArr[b][l],2.) + TMath::Power(valuesErrorArr[0][k] / valuesArr[0][k],2.) );
         }
-        else
+
+        if ( binSignalName.Contains(signalNameInt.Data()) && binSignalName.Contains(sPsiPNameInt.Data()) ) // In this case the integrated and bin values have the same signal shape and Psi' sigma, so the result is stored
         {
-          ratio = valuesArr[b][l] / valuesArr[0][k-1];
-          ratioError = TMath::Sqrt( TMath::Power(valuesErrorArr[b][l] / valuesArr[0][k-1],2.) + TMath::Power(valuesArr[b][l]*valuesErrorArr[0][k-1] / TMath::Power(valuesArr[0][k-1],2.),2.) );
-          
-//          hratios->GetXaxis()->SetBinLabel(l+1,Form("%s/%s",sResultNameArray->At(l)->GetName(),sResultNameArray->At(k-1)->GetName()));
-          
-          if ( binSignalName.Contains(signalName.Data()) )
-          {
-//            hratiosUC->GetXaxis()->SetBinLabel(binUC,Form("%s/%s",sResultNameArray->At(l)->GetName(),sResultNameArray->At(k-1)->GetName()));
-//
-//            hratiosUC->SetBinContent(binUC,ratio);
-//            hratiosUC->SetBinError(binUC,ratioError);
-            
-            hratiosBin->GetXaxis()->SetBinLabel(binUCTotal,Form("%s/%s",sResultNameArray->At(l)->GetName(),sResultNameArray->At(k-1)->GetName()));
-            
-            hratiosBin->SetBinContent(binUCTotal,ratio);
-            hratiosBin->SetBinError(binUCTotal,ratioError);
-            
-            binUC++;
-            binUCTotal++;
-          }
+          hratiosBin->GetXaxis()->SetBinLabel(binUCTotal,Form("%s/%s",sResultNameArray->At(l)->GetName(),sResultNameArray->At(k)->GetName()));
+
+          hratiosBin->SetBinContent(binUCTotal,ratio);
+          hratiosBin->SetBinError(binUCTotal,ratioError);
+
+          binUCTotal++;
         }
-        
-//        hratios->SetBinContent(l+1,ratio);
-//        hratios->SetBinError(l+1,ratioError);
+
       }
-      
-      
-      
-      
-//      TH1* o = OC()->Histo(Form("%s",savePath.Data()),hratios->GetName());
-//      
-//      if (o)
-//      {
-//        AliWarning(Form("Replacing %s/%s",savePath.Data(),hratios->GetName()));
-//        OC()->Remove(Form("%s/%s",savePath.Data(),hratios->GetName()));
-//      }
-//      
-//      Bool_t adoptOK = OC()->Adopt(savePath.Data(),hratios);
-//      
-//      if ( adoptOK ) std::cout << "+++syst histo " << hratios->GetName() << " adopted" << std::endl;
-//      else AliError(Form("Could not adopt syst histo %s",hratios->GetName()));
-//      
-//      if ( hratiosUC )
-//      {
-//        o = OC()->Histo(Form("%s",savePath.Data()),hratiosUC->GetName());
-//        
-//        if (o)
-//        {
-//          AliWarning(Form("Replacing %s/%s",savePath.Data(),hratiosUC->GetName()));
-//          OC()->Remove(Form("%s/%s",savePath.Data(),hratiosUC->GetName()));
-//        }
-//        
-//        adoptOK = OC()->Adopt(savePath.Data(),hratiosUC);
-//        
-//        if ( adoptOK ) std::cout << "+++syst histo " << hratiosUC->GetName() << " adopted" << std::endl;
-//        else AliError(Form("Could not adopt syst histo %s",hratiosUC->GetName()));
-//      }
+
     }
-    
-    
-    //Syst computation for bin
+    //____ Take the Eq Nof MB events from the histos
+    Double_t nMBRatio(1.),nMBRatioError(0.);
+    if ( !svalue2Test.CompareTo("NofJPsi",TString::kIgnoreCase) )
+    {
+      for (Int_t i = 1 ; i <= hMB->GetNbinsX() ; i++ )
+      {
+
+        if ( !binName.CompareTo(hMB->GetXaxis()->GetBinLabel(i)) )
+        {
+          Double_t eqMBBin = hMB->GetBinContent(i);
+
+          nMBRatio = nEqMBTot/eqMBBin;
+          nMBRatioError = nMBRatio*TMath::Sqrt( TMath::Power(nEqMBTotError/nEqMBTot,2.) + TMath::Power(hMB->GetBinError(i)/eqMBBin,2.) );
+        }
+
+      }
+    }
+    //_____________________
+
+    //________Mean, error on the mean and systematic uncertainty(signal extraction) computation for bin
+    //__Mean computation
     Double_t num(0.),deno(0.);
     for ( Int_t m = 1 ; m <= hratiosBin->GetNbinsX() ; m++ )
     {
-      Double_t value = hratiosBin->GetBinContent(m);
-      Double_t error = hratiosBin->GetBinError(m);
-      
-      num += value/TMath::Power(error,2.);
-      deno += 1./TMath::Power(error,2.);
+      Double_t value = hratiosBin->GetBinContent(m); // Bin/Int value
+      Double_t error = hratiosBin->GetBinError(m); // Before this was divided by TMath::Sqrt(value);
+
+      if ( !(error>0.0 ) ) continue; // Skip values with error=0 (There were problems with the fit)
+
+      num += value; // We do not weight the values anymore with TMath::Power(weight,2.);
+      deno += 1.; // We do not weight the values anymore with 1./TMath::Power(weight,2.);
     }
-    
+
     Double_t mean = num/deno;
+    Double_t jpsiMean = mean*nMBRatio ; //Compute relative Jpsi yield
+    //__
+
+    //__Error on the mean
+    Int_t nofvalidResults(0),nofTests(0);
+    Double_t w2err2(0.),sumw(0.);
+    for ( Int_t n = 1 ; n <= hratiosBin->GetNbinsX() ; n++ )
+    {
+      Double_t value = hratiosBin->GetBinContent(n);
+      Double_t error = hratiosBin->GetBinError(n);
+      Double_t weight = 1.; // We do not weight the values anymore with (error*error)/value;
+
+      nofTests++;
+
+      if ( !(error>0.0 ) ) continue; // Skip values with error=0 (There were problems with the fit)
+
+      w2err2 += weight*weight*error*error;
+      sumw += 1./weight;
+
+      nofvalidResults++;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Bin " << b << " number of valid tests = " << nofvalidResults << "(" << nofvalidResults*100./nofTests << "%)" << std::endl;
+    std::cout << std::endl;
+
+    Double_t errorMean = TMath::Sqrt(w2err2*nofvalidResults)/sumw;
+    Double_t jpsiErrorMean = jpsiMean*TMath::Sqrt( TMath::Power(errorMean/mean,2.) + TMath::Power(nMBRatioError/nMBRatio,2.) ); //Compute relative Jpsi yield error
+    //__
+
+    Double_t val(0.),err(0.);
+    if ( !svalue2Test.CompareTo("NofJPsi",TString::kIgnoreCase) )
+    {
+      val = jpsiMean;
+      err = jpsiErrorMean;
+    }
+    else if ( !svalue2Test.CompareTo("MeanPtJPsi",TString::kIgnoreCase) )
+    {
+      val = mean;
+      err = errorMean;
+    }
+
+    hy->SetBinContent(b,val);
+    hy->SetBinError(b,err);
+    hy->GetXaxis()->SetBinLabel(b,binName.Data());
+
+    //__Systematic uncertainty
     Double_t v1(0.),v2(0.),sum(0.);
     for ( Int_t l = 1 ; l <= hratiosBin->GetNbinsX() ; l++ )
     {
       Double_t value = hratiosBin->GetBinContent(l);
-      Double_t error = hratiosBin->GetBinError(l);
-      
-      Double_t wi = 1./TMath::Power(error,2.);
+      Double_t error = hratiosBin->GetBinError(l); // Before this was divided by TMath::Sqrt(value);
+
+      if ( !(error>0.0 ) ) continue; // Skip values with error=0 (There were problems with the fit)
+
+      Double_t wi = 1.; // We do not wight anymore with 1./TMath::Power(error,2.);
       v1 += wi;
       v2 += wi*wi;
       Double_t diff = value - mean;
@@ -2014,10 +2188,11 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
     }
 
     Double_t syst = TMath::Sqrt( (v1/(v1*v1-v2)) * sum);
+    //__
     
     hsyst->GetXaxis()->SetBinLabel(b,binName.Data());
     hsyst->SetBinContent(b,(syst*100.)/mean);
-    
+    //________
     
     //___
     TF1* meanF = new TF1("mean","[0]",0,j*nFitsSameSignal);
@@ -2035,21 +2210,25 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
     hratiosBin->GetListOfFunctions()->Add(meanFPS);
     hratiosBin->GetListOfFunctions()->Add(meanFMS);
     
-    TH1* o = OC()->Histo(Form("%s",savePath.Data()),hratiosBin->GetName());
+    //___ Save the signal extraction systematic uncertainty histo for each bin
+    TH1* o = OC()->Histo(Form("%s",id.Data()),hratiosBin->GetName());
     
     if (o)
     {
-      AliWarning(Form("Replacing %s/%s",savePath.Data(),hratiosBin->GetName()));
-      OC()->Remove(Form("%s/%s",savePath.Data(),hratiosBin->GetName()));
+      AliWarning(Form("Replacing %s/%s",id.Data(),hratiosBin->GetName()));
+      OC()->Remove(Form("%s/%s",id.Data(),hratiosBin->GetName()));
     }
     
-    Bool_t adoptOK = OC()->Adopt(savePath.Data(),hratiosBin);
+    Bool_t adoptOK = OC()->Adopt(id.Data(),hratiosBin);
     
     if ( adoptOK ) std::cout << "+++syst histo " << hratiosBin->GetName() << " adopted" << std::endl;
     else AliError(Form("Could not adopt syst histo %s",hratiosBin->GetName()));
+    //__________________
   }
+  //_____________________________________________________________________________
   
   
+  //___ Save the signal extraction systematic uncertainty histo for all the bins
   TH1* o = OC()->Histo(Form("%s",id.Data()),hsyst->GetName());
   
   if (o)
@@ -2062,12 +2241,29 @@ TH1* AliAnalysisMuMu::PlotSystematicsTestsRelative(const char* quantity,const ch
   
   if ( adoptOK ) std::cout << "+++syst histo " << hsyst->GetName() << " adopted" << std::endl;
   else AliError(Form("Could not adopt syst histo %s",hsyst->GetName()));
+  //__________________
+
+
+  //___ Save the Jpsi relative yield or <pT> histo
+  o = OC()->Histo(Form("/RESULTS-%s/%s",striggerCluster.Data(),diffPath.Data()),hy->GetName());
+
+  if (o)
+  {
+    AliWarning(Form("Replacing %s/%s","/RESULTS-%s/PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00/V0A",hy->GetName()));
+    OC()->Remove(Form("/RESULTS-%s/%s/%s",striggerCluster.Data(),diffPath.Data(),hy->GetName()));
+  }
+
+  adoptOK = OC()->Adopt(Form("/RESULTS-%s/%s",striggerCluster.Data(),diffPath.Data()),hy);
+
+  if ( adoptOK ) std::cout << "+++Yield histo " << hy->GetName() << " adopted" << std::endl;
+  else AliError(Form("Could not adopt Yield histo %s",hy->GetName()));
+  //__________________
   
   
   delete bin;
   delete sResultNameArray;
   
-  return 0x0;
+  return;
   
 }
 
@@ -4399,293 +4595,20 @@ void AliAnalysisMuMu::PlotYiedWSyst(const char* triggerCluster)
   hYSyst->Draw("same");
 }
 
-
 //_____________________________________________________________________________
-//void AliAnalysisMuMu::ComputeJpsiYield(AliMergeableCollection* oc, Bool_t relative, const char* fNormType, const char* triggerCluster,
-//                                       const char* whatever, const char* sResName, AliMergeableCollection* ocMBTrigger, Double_t mNTrCorrection)
-//{
-//  // This method is suppossed to be used from the file with the counters, oc is the AliMergeableCollection of the file with the histograms (if separated, which is better since we do not need the minv,mean pt... analysis in CINT&0MUL... triggers)
-//  // ocMBTrigger is the mergeableCollection with the MB trigger dNchdEta plot (migth be the same as oc, in which case we set ocMBTrigger=0x0)
-//  //FIXME::Make it general
-//
-//  TString sfNormType(fNormType);
-//  TString swhat("");
-//  TString sres("");
-//  TString swhatever(whatever);
-//  if ( swhatever.Contains("DNCHDETA"))
-//  {
-//    swhat = "dNchdEta";
-//    if ( strlen(sResName) > 0 ) sres = sResName; //"PSIPSIPRIMECB2VWGINDEPTAILS";
-//  }
-//  else if ( swhatever.Contains("NTRCORR") )
-//  {
-//    swhat = "Nch";
-//    if ( strlen(sResName) > 0 ) sres = sResName; //"PSIPSIPRIMECB2VWG_2.0_5.0";
-//  }
-//
-//  if ( IsSimulation() )
-//  {
-//    AliError("Cannot compute J/Psi yield: Is a simulation file");
-//    return;
-//  }
-//
-//  TString striggerCluster(triggerCluster);
-//  if ( striggerCluster.Contains("MUON") && !striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON";
-//  else if ( striggerCluster.Contains("ALLNOTRD") && !striggerCluster.Contains("MUON") ) striggerCluster = "ALLNOTRD";
-//  else if ( striggerCluster.Contains("MUON") && striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON-ALLNOTRD";
-//  else
-//  {
-//    AliError("Unknown trigger cluster");
-//    return;
-//  }
-//
-//  TString path(Form("%s/%s/%s/%s",
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data()));
-//
-//  AliMergeableCollection* mc;
-//  if ( !oc ) mc = OC();
-//  else mc = oc;
-//
-//  Double_t bR = 0.0593; // BR(JPsi->mu+mu-)
-//  Double_t bRerror = 0.0006 ;
-//
-//  //_________Integrated yield
-//  AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(mc->GetObject(Form("/%s/%s",path.Data(),"PSI-INTEGRATED-AccEffCorr")));
-//  if ( !sInt )
-//  {
-//    AliError(Form("No spectra %s found in %s","PSI-INTEGRATED-AccEffCorr",path.Data()));
-//    return;
-//  }
-//
-//  AliAnalysisMuMuBinning* b = new AliAnalysisMuMuBinning;
-//  b->AddBin("psi","INTEGRATED");
-//
-//  AliAnalysisMuMuBinning::Range* bin = static_cast<AliAnalysisMuMuBinning::Range*>(b->CreateBinObjArray()->At(0));
-//
-//  AliAnalysisMuMuResult* result = sInt->GetResultForBin(*bin);
-//  if ( !result )
-//  {
-//    AliError(Form("No result for bin %s found in %s",bin->AsString().Data(),"PSI-INTEGRATED-AccEffCorr"));
-//    return;
-//  }
-//
-////  if ( strlen(sResName) > 0/*sResName.Sizeof() > 0*/ )
-////  {
-////    result = result->SubResult(sres.Data());//INDEPTAILS
-////    if ( !result )
-////    {
-////      AliError(Form("No subresult %s found in %s",sres.Data(),path.Data()));
-////      return;
-////    }
-////  }
-//
-//  Double_t NofJPsiTot = result->GetValue("NofJPsi");
-//  Double_t NofJPsiTotError = result->GetErrorStat("NofJPsi");
-//
-//  TH1* hMBTot = OC()->Histo(Form("/FNORM-%s/PSALL/V0A/hNEqMB",striggerCluster.Data()));//HASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00
-//  if ( !hMBTot )
-//  {
-//    AliError(Form("No eq Nof MB events found in %s",Form("/FNORM-%s/PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00/V0A/hNEqMB",striggerCluster.Data())));
-//    return;
-//  }
-//
-//  Double_t nEqMBTot = hMBTot->GetBinContent(1);
-//  Double_t nEqMBTotError = hMBTot->GetBinError(1);
-//
-//  Double_t yieldInt = NofJPsiTot/(nEqMBTot*bR);
-//  Double_t yieldIntError = TMath::Sqrt(TMath::Power(NofJPsiTotError/(nEqMBTot*bR),2.) +
-//                                       TMath::Power(nEqMBTotError*NofJPsiTot*bR/TMath::Power(nEqMBTot*bR,2.),2.) +
-//                                       TMath::Power(NofJPsiTot*nEqMBTot*bRerror/TMath::Power(nEqMBTot*bR,2.),2.));
-//
-//  std::cout << "Integrated yield = " << yieldInt << " +- " << yieldIntError << std::endl;
-//
-//  TH1* hYint = new TH1F("hJPsiYieldInt","Integrated J/#psi yield",1,0.,1.);
-//  hYint->SetBinContent(1,yieldInt);
-//  hYint->SetBinError(1,yieldIntError);
-//
-//  TH1* o = mc->Histo(Form("/RESULTS-%s/%s",striggerCluster.Data(),path.Data()),hYint->GetName());
-//
-//  if (o)
-//  {
-//    AliWarning(Form("Replacing /RESULTS-%s/%s/%s",striggerCluster.Data(),path.Data(),hYint->GetName()));
-//    mc->Remove(Form("/RESULTS-%s/%s/%s",striggerCluster.Data(),path.Data(),hYint->GetName()));
-//  }
-//
-//  Bool_t adoptOK = mc->Adopt(Form("/RESULTS-%s/%s",striggerCluster.Data(),path.Data()),hYint);
-//
-//  if ( adoptOK ) std::cout << "+++Yield histo " << hYint->GetName() << " adopted" << std::endl;
-//  else AliError(Form("Could not adopt Yield histo %s",hYint->GetName()));
-//
-//  delete b;
-//
-//  //_____Differential yield
-//
-//  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(mc->GetObject(Form("/%s/%s",path.Data(),whatever)));
-//  if ( !s )
-//  {
-//    AliError(Form("No spectra %s found in %s",whatever,path.Data()));
-//    return;
-//  }
-//
-//  std::cout << "Number of J/Psi:" << std::endl;
-//  TH1* hry = s->Plot("NofJPsi",sres.Data(),kFALSE);//INDEPTAILS //Number of Jpsi
-//
-//  std::cout << "" << std::endl;
-//
-////  std::cout << "Equivalent number of MB events:" << std::endl;
-//  TH1* hMB(0x0);
-//  if ( sfNormType.Contains("offline") )
-//  {
-//    hMB = OC()->Histo(Form("/FNORM-%s/PSALL/V0A/hNofEqMBVSdNchdEta",striggerCluster.Data()));//HASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00
-//    if ( !hMB )
-//    {
-//      AliError("Histo hNofEqMBVSdNchdEta not found");
-//      return;
-//    }
-//  }
-//  else if ( sfNormType.Contains("global") )
-//  {
-//    hMB = OC()->Histo(Form("/FNORM-%s/PSALL/V0A/hNofEqMBVSdNchdEtaFromGlobal",striggerCluster.Data()));//HASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00
-//    if ( !hMB )
-//    {
-//      AliError("Histo hNofEqMBVSdNchdEtaFromGlobal not found");
-//      return;
-//    }
-//  }
-//  else if ( sfNormType.Contains("mean") )
-//  {
-//    hMB = OC()->Histo(Form("/FNORM-%s/PSALL/V0A/hNofEqMBVSdNchdEtaFromMean",striggerCluster.Data()));//HASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00
-//    if ( !hMB )
-//    {
-//      AliError("Histo hNofEqMBVSdNchdEtaFromMean not found");
-//      return;
-//    }
-//  }
-//  else
-//  {
-//    AliError("Dont know what Fnorm use");
-//    return;
-//  }
-//
-//  TH1* hy;
-//  if ( relative )
-//  {
-//    TString path2(Form("/%s/%s/%s",
-//                      First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-//                      First(Config()->GetList(AliAnalysisMuMuConfig::kMinbiasTriggerList,kFALSE)).Data(),
-//                      First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data()));
-//
-//    TH1* hdNch;
-//    if ( ocMBTrigger ) hdNch = ocMBTrigger->Histo(path2.Data(),swhat.Data());//dNchdEta
-//    else hdNch = mc->Histo(path2.Data(),swhat.Data());//dNchdEta
-//
-//    const TArrayD* binArray = hry->GetXaxis()->GetXbins();
-//    Int_t size = binArray->GetSize();
-//    Double_t* axis = new Double_t[size];
-//    for ( Int_t k = 0 ; k < size ; k++ )
-//    {
-//      axis[k] = binArray->At(k)/(hdNch->GetMean()*(1 - mNTrCorrection));
-//    }
-//
-//    hy = new TH1D("hJPsiYieldVSdNchdEtaRelative","Relative J/#psi yield vs dN_{ch}/d#eta;dN_{ch}/d#eta/<dN_{ch}/d#eta>;Y^{J/#psi}/Y^{J/#psi}_{int}",size-1,axis);
-//    delete axis;
-//  }
-//  else
-//  {
-//    hy = static_cast<TH1D*>(hry->Clone("hJPsiYieldVSdNchdEta"));
-//    hy->SetTitle("J/#psi yield vs dN_{ch}/d#eta");
-//    hy->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-//    hy->GetYaxis()->SetTitle("Y^{J/#psi}");
-//  }
-//                                    // AccxEff(from rel diff or paper)  // Signal extraction
-////  Double_t systNofJpsiBin[9] = {TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.01,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.008,2.) ),TMath::Sqrt( TMath::Power(0.022,2.) + TMath::Power(0.007,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.008,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.007,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.009,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.008,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.016 ,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.033,2.) )}; //FIXME: find a way to give this as input
-////  Double_t systFNorm[9] = {0.003,0.001,0.002,0.003,0.002,0.004,0.011,0.012,0.071};
-////  Double_t systPU[9] = {0.00,0.01,0.012,0.014,0.014,0.019,0.020,0.021,0.040}; //_______pPb
-//       // AccxEff(from paper)
-////  Double_t systNofJpsiTot = 0.015;
-//
-////  Double_t systNofJpsiBin[9] = {TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.007,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.006,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.005,2.) ),TMath::Sqrt( TMath::Power(0.028,2.) + TMath::Power(0.006,2.) ),TMath::Sqrt( TMath::Power(0.016,2.) + TMath::Power(0.004,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.004,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.006,2.) ),TMath::Sqrt( TMath::Power(0.024,2.) + TMath::Power(0.005 ,2.) ),TMath::Sqrt( TMath::Power(0.015,2.) + TMath::Power(0.016,2.) )}; //FIXME: find a way to give this as input
-////  Double_t systFNorm[9] = {0.005,0.004,0.004,0.004,0.003,0.002,0.002,0.04,0.04};
-////  Double_t systPU[9] = {0.00,0.007,0.015,0.011,0.014,0.018,0.014,0.011,0.020}; //______Pbp
-////  Double_t systNofJpsiTot = 0.015;
-//
-////  Double_t systNofJpsiBin[9] = {TMath::Sqrt( TMath::Power(0.034,2.) + TMath::Power(0.005,2.) ),TMath::Sqrt( TMath::Power(0.017,2.) + TMath::Power(0.005,2.) ),TMath::Sqrt( TMath::Power(0.017,2.) + TMath::Power(0.004,2.) ),TMath::Sqrt( TMath::Power(0.017,2.) + TMath::Power(0.005,2.) ),TMath::Sqrt( TMath::Power(0.042,2.) + TMath::Power(0.002,2.) ),TMath::Sqrt( TMath::Power(0.063,2.) + TMath::Power(0.014,2.) ),TMath::Sqrt( TMath::Power(0.094,2.) + TMath::Power(0.009,2.) ),TMath::Sqrt( TMath::Power(0.00,2.) + TMath::Power(0.00 ,2.) ),TMath::Sqrt( TMath::Power(0.00,2.) + TMath::Power(0.00,2.) )}; //FIXME: find a way to give this as input
-////  Double_t systFNorm[9] = {0.004,0.019,0.002,0.012,0.048,0.063,0.082,0.000,0.000};
-////  Double_t systPU[9] = {0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00}; //______pp |eta|<0.5
-////  Double_t systNofJpsiTot = 0.017;
-//
-//  Double_t systNofJpsiBin[9] = {TMath::Sqrt( TMath::Power(0.037,2.) + TMath::Power(0.002,2.) ),TMath::Sqrt( TMath::Power(0.021,2.) + TMath::Power(0.002,2.) ),TMath::Sqrt( TMath::Power(0.022,2.) + TMath::Power(0.002,2.) ),TMath::Sqrt( TMath::Power(0.017,2.) + TMath::Power(0.002,2.) ),TMath::Sqrt( TMath::Power(0.019,2.) + TMath::Power(0.001,2.) ),TMath::Sqrt( TMath::Power(0.036,2.) + TMath::Power(0.002,2.) ),TMath::Sqrt( TMath::Power(0.042,2.) + TMath::Power(0.001,2.) ),TMath::Sqrt( TMath::Power(0.039,2.) + TMath::Power(0.012 ,2.) ),TMath::Sqrt( TMath::Power(0.000,2.) + TMath::Power(0.000,2.) )}; //FIXME: find a way to give this as input
-//  Double_t systFNorm[9] = {0.026,0.002,0.015,0.019,0.012,0.030,0.015,0.119,0.000};
-//  Double_t systPU[9] = {0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00}; //______pp |eta|<1
-//  Double_t systNofJpsiTot = 0.017;
-//
-//  for ( Int_t i = 1 ; i <= hy->GetNbinsX() ; i++ )
-//  {
-//    Double_t yield = hry->GetBinContent(i)/(hMB->GetBinContent(i)*bR);
-//    Double_t yieldError = TMath::Sqrt(TMath::Power(hry->GetBinError(i)/(hMB->GetBinContent(i)*bR),2.) +
-//                                      TMath::Power(hMB->GetBinError(i)*hry->GetBinContent(i)*bR/TMath::Power(hMB->GetBinContent(i)*bR,2.),2.) +
-//                                      TMath::Power(hry->GetBinContent(i)*hMB->GetBinContent(i)*bRerror/TMath::Power(hMB->GetBinContent(i)*bR,2.),2.));
-//
-////    std::cout << "Differential yield bin " << i << " = " << yield << " +- " << yieldError << std::endl;
-//
-//    if ( relative )
-//    {
-//      yieldError = TMath::Sqrt(TMath::Power(yieldError/yieldInt,2.) + TMath::Power((yield*yieldIntError)/TMath::Power(yieldInt,2.),2.));
-//      yield /= yieldInt;
-//
-////      std::cout << "relative yield bin " << i << " = " << yield << " +- " << yieldError << std::endl;
-//      Double_t sNJpsiBin = hry->GetBinContent(i)*systNofJpsiBin[i-1];
-//      Double_t sNJpsiTot = NofJPsiTot*systNofJpsiTot;
-//      Double_t sMBBin = hMB->GetBinContent(i)*systFNorm[i-1];
-//      Double_t sMBTot = nEqMBTot*0.01;
-//
-//      Double_t syst = TMath::Sqrt( TMath::Power((sNJpsiBin/NofJPsiTot)*(nEqMBTot/hMB->GetBinContent(i)),2.) + TMath::Power((hry->GetBinContent(i)*sNJpsiTot/TMath::Power(NofJPsiTot,2.))*(nEqMBTot/hMB->GetBinContent(i)),2.) + TMath::Power((hry->GetBinContent(i)/NofJPsiTot)*(sMBTot/hMB->GetBinContent(i)),2.) + TMath::Power((hry->GetBinContent(i)/NofJPsiTot)*(sMBBin*nEqMBTot/TMath::Power(hMB->GetBinContent(i),2.)),2.) );
-//
-//      std::cout << "sys" << syst/yield << " w/pu = " << TMath::Sqrt( TMath::Power(syst/yield,2.) + TMath::Power(systPU[i-1],2.)) << std::endl;
-//      std::cout << yield << " +- " << yieldError << std::endl;
-//    }
-//
-//    hy->SetBinContent(i,yield);
-//    hy->SetBinError(i,yieldError);
-//  }
-//
-//  o = mc->Histo(Form("/RESULTS-%s/%s",striggerCluster.Data(),path.Data()),hy->GetName());
-//
-//  if (o)
-//  {
-//    AliWarning(Form("Replacing %s/%s","/RESULTS-%s/PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00/V0A",hy->GetName()));
-//    mc->Remove(Form("/RESULTS-%s/%s/%s",striggerCluster.Data(),path.Data(),hy->GetName()));
-//  }
-//
-//  adoptOK = mc->Adopt(Form("/RESULTS-%s/%s",striggerCluster.Data(),path.Data()),hy);
-//
-//  if ( adoptOK ) std::cout << "+++Yield histo " << hy->GetName() << " adopted" << std::endl;
-//  else AliError(Form("Could not adopt Yield histo %s",hy->GetName()));
-//
-//
-//
-//  delete hry;
-//
-//
-//  return;
-//}
-
 void AliAnalysisMuMu::ComputeJpsiYield( Bool_t relative, const char* fNormType, const char* evSelInt, const char* evSelDiff, const char* triggerCluster, const char* spectra, const char* sResName)
 {
-  /// Compute the Jpsi yield integrated and bins
+  /// Compute the Jpsi yield integrated and in bins, absolute or relative (Y_bin/Y_int). It can be calculated for an specific subresult (fit with an specific background shape, signal, fitting range... combination) or from the mean of all the subresults.
   ///
   /// Important considerations:
   ///   - No corrections can be applied to the yields or x-axis with this method
   ///
   ///   - The analysed file must contain the CMUL, CINT, CMSL, CMSL&0MUL and CINT&0MSL triggers to work correctly.
   ///
-  ///   - The analysed file must contain the event selection PSALL and the one used in the yield analysis (i.e. PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00) to work correctly. (the first to compute the Fnorm and the second to get the NofCMUL used in the yield analysis to get the correct NofEqMB = Fnorm*NofCMUL)
+  ///   - The analysed file must contain the event selection PSALL (fot integrated signal extraction) and the one used in the bin by bin yield analysis (i.e. PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00) to work correctly.
   ///
   /// Parameters:
-  ///   -relative: kTRUE if relative yield (y/y_int) wants to be computed
+  ///   -relative: kTRUE if relative yield (y/y_int) is to be computed. Note that here the ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios
   ///   -fNormType: Desired FNorm to use: "offline", "global" or "mean"
   ///   -evSelInt: Event selection to compute integrated NofJpsi
   ///   -evSelDiff: Event selection to compute diferential NofJpsi
@@ -4736,6 +4659,8 @@ void AliAnalysisMuMu::ComputeJpsiYield( Bool_t relative, const char* fNormType, 
 
   Double_t bR = 0.0593; // BR(JPsi->mu+mu-)
   Double_t bRerror = 0.0006 ;
+
+  if ( relative ) AliWarning("The ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios");
 
   //_________Integrated yield
   AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",intPath.Data(),"PSI-INTEGRATED-AccEffCorr"))); //FIXME::Make it general
@@ -4863,14 +4788,15 @@ void AliAnalysisMuMu::ComputeJpsiYield( Bool_t relative, const char* fNormType, 
   Int_t size = binArray->GetSize();
   const Double_t* axis = binArray->GetArray();
 
+  if (sres.IsNull()) sres += "mean"; // To indicate that the result is computed from the mean yield of all the subresults
+
   if ( relative )
   {
-    hy = new TH1D(Form("hJPsiYieldVS%sRelative",swhat.Data()),Form("Relative J/#psi yield vs %s;%s;Y^{J/#psi}/Y^{J/#psi}_{int}",swhat.Data(),swhat.Data())
-                  ,size-1,axis);
+    hy = new TH1D(Form("hJPsiYieldVS%sRelative",swhat.Data()),Form("Relative J/#psi yield vs %s (%s);%s;Y^{J/#psi}/Y^{J/#psi}_{int}",swhat.Data(),sres.Data(),swhat.Data()),size-1,axis);
   }
   else
   {
-    hy = new TH1D(Form("hJPsiYieldVS%s",swhat.Data()),Form("J/#psi yield vs %s;%s;Y^{J/#psi}",swhat.Data(),swhat.Data())
+    hy = new TH1D(Form("hJPsiYieldVS%s",swhat.Data()),Form("J/#psi yield vs %s (%s);%s;Y^{J/#psi}",swhat.Data(),sres.Data(),swhat.Data())
                   ,size-1,axis);
   }
 
@@ -4972,218 +4898,13 @@ void AliAnalysisMuMu::ComputeJpsiYield( Bool_t relative, const char* fNormType, 
   return;
 }
 
-
-////_____________________________________________________________________________
-//void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* whatever, const char* sResName, AliMergeableCollection* ocMBTrigger, Double_t mNTrCorrection)
-//{
-//  // ocMBTrigger is the mergeableCollection with the MB trigger dNchdEta plot (migth be the same as oc, in which case we set ocMBTrigger=0x0)
-//  //FIXME::Make it general
-//
-//
-//  TString swhat("");
-//  TString sres("");
-//  TString swhatever(whatever);
-////  if ( swhatever.Contains("DNCHDETA"))
-////  {
-////    swhat = "dNchdEta";
-////    sres = "MPT2CB2VWGPOL2INDEPTAILS";
-////  }
-////  else
-//    if ( swhatever.Contains("NTRCORR") )
-//  {
-//    swhat = "Nch";
-//    if ( strlen(sResName) > 0 ) sres = sResName; //sres = "MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2";
-//  }
-//
-//  if ( IsSimulation() )
-//  {
-//    AliError("Cannot compute J/Psi yield: Is a simulation file");
-//    return;
-//  }
-//
-//  TString path(Form("%s/%s/%s/%s",
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-//                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data()));
-//
-//  //_________Integrated mean pt
-//  AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",path.Data(),"PSI-INTEGRATED-AccEffCorr-MeanPtVsMinvUS")));
-//  if ( !sInt )
-//  {
-//    AliError(Form("No spectra %s found in %s","PSI-INTEGRATED-AccEffCorr-MeanPtVsMinvUS",path.Data()));
-//    return;
-//  }
-//
-//  AliAnalysisMuMuBinning* b = new AliAnalysisMuMuBinning;
-//  b->AddBin("psi","INTEGRATED");
-//
-//  AliAnalysisMuMuBinning::Range* bin = static_cast<AliAnalysisMuMuBinning::Range*>(b->CreateBinObjArray()->At(0));
-//
-//  AliAnalysisMuMuResult* result = sInt->GetResultForBin(*bin);
-//  if ( !result )
-//  {
-//    AliError(Form("No result for bin %s found in spectra %s",bin->AsString().Data(),sInt->GetName()));
-//    return;
-//  }
-//
-////  if ( sres.Sizeof() > 0 )
-////  {
-////    result = result->SubResult(sres.Data());
-////    if ( !result )
-////    {
-////      AliError(Form("No subresult %s found in result",result->GetName()));
-////      return;
-////    }
-////  AliAnalysisMuMuResult* subresult = result->SubResult(sres.Data());//"MPT2CB2VWGPOL2INDEPTAILS"
-////  if ( !subresult )
-////  {
-////    AliError(Form("No subresult MPT2CB2VWGPOL2 found in result %s",result->GetName()));
-////    return;
-////  }
-//
-////  }
-////  Double_t JPsiMPtTot = subresult->GetValue("MeanPtJPsi");
-////  Double_t JPsiMPtTotError = subresult->GetErrorStat("MeanPtJPsi");
-//
-//  Double_t JPsiMPtTot = result->GetValue("MeanPtJPsi");
-//  Double_t JPsiMPtTotError = result->GetErrorStat("MeanPtJPsi");
-//
-//  TH1* hMPtint = new TH1F("hJPsiMPtInt","Integrated J/#psi mean p_{T}",1,0.,1.);
-//  hMPtint->SetBinContent(1,JPsiMPtTot);
-//  hMPtint->SetBinError(1,JPsiMPtTotError);
-//
-//  TH1* o = OC()->Histo(Form("/RESULTS/%s",path.Data()),hMPtint->GetName());
-//
-//  if (o)
-//  {
-//    AliWarning(Form("Replacing /RESULTS/%s/%s",path.Data(),hMPtint->GetName()));
-//    OC()->Remove(Form("/RESULTS/%s/%s",path.Data(),hMPtint->GetName()));
-//  }
-//
-//  Bool_t adoptOK = OC()->Adopt(Form("/RESULTS/%s",path.Data()),hMPtint);
-//
-//  if ( adoptOK ) std::cout << "+++Mean Pt histo " << hMPtint->GetName() << " adopted" << std::endl;
-//  else AliError(Form("Could not adopt Mean Pt histo %s",hMPtint->GetName()));
-//
-//  delete b;
-//
-//   //_____Differential mean pt
-//
-//  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",path.Data(),whatever)));
-//  if ( !s )
-//  {
-//    AliError(Form("No spectra %s found in %s",whatever,path.Data()));
-//    return;
-//  }
-//
-//  std::cout << "Mean pt of J/Psi:" << std::endl;
-//  TH1* hrmPt = s->Plot("MeanPtJPsi",sres.Data(),kFALSE); //MPT2CB2VWGPOL2INDEPTAILS//mean pt of Jpsi
-//  std::cout << "" << std::endl;
-//
-//  Double_t ptInt,ptIntError;
-//  TH1* hmPt;
-//  if ( relative )
-//  {
-//    TString path2(Form("/%s/%s/%s",
-//                       First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-//                       First(Config()->GetList(AliAnalysisMuMuConfig::kMinbiasTriggerList,kFALSE)).Data(),
-//                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data()));
-//
-//    TH1* hdNch;
-//    if ( ocMBTrigger ) hdNch = ocMBTrigger->Histo(path2.Data(),swhat.Data());
-//    else hdNch = OC()->Histo(path2.Data(),swhat.Data());
-//
-//    const TArrayD* binArray = hrmPt->GetXaxis()->GetXbins();
-//    Int_t size = binArray->GetSize();
-//    Double_t* axis = new Double_t[size];
-//    for ( Int_t k = 0 ; k < size ; k++ )
-//    {
-//      axis[k] = binArray->At(k)/(hdNch->GetMean()*(1 - mNTrCorrection));
-//    }
-//
-//    hmPt = new TH1D("hJPsiMeanPtVSdNchdEtaRelative","Relative J/#psi mean p_{T} vs dN_{ch}/d#eta/<dN_{ch}/d#eta>;dN_{ch}/d#eta/<dN_{ch}/d#eta>;<p_{T}^{J/#psi}>/<p_{T}^{J/#psi}_{int}>",size-1,axis);
-//    delete axis;
-//
-//    ptInt = result->GetValue("MeanPtJPsi",sres.Data());
-//    ptIntError = result->GetErrorStat("MeanPtJPsi",sres.Data());
-//
-////    delete b;
-//  }
-//  else
-//  {
-//    hmPt = static_cast<TH1D*>(hrmPt->Clone("hJPsiMeanPtVSdNchdEta"));
-//    hmPt->SetTitle("J/#psi mean p_{T} vs dN_{ch}/d#eta");
-//    hmPt->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-//    hmPt->GetYaxis()->SetTitle("<p_{T}^{J/#psi}>");
-//  }
-//
-//  Double_t systMptInt[9] = {0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014}; //FIXME: find a way to give this as input
-//  Double_t systMptBin[9] = {0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014};
-//
-//  Double_t systMptRel[9] = {0.002,0.001,0.001,0.002,0.002,0.002,0.002,0.004,0.004}; //signal extraction pPb
-//
-////  Double_t systMptRel[9] = {0.002,0.001,0.012,0.001,0.002,0.002,0.001,0.004,0.003}; //signal extraction Pbp
-//
-////  Double_t systMptRel[9] = {0.001,0.002,0.001,0.002,0.002,0.003,0.005,0.000,0.000}; //signal extraction pp|eta|<05
-//
-////  Double_t systMptRel[9] = {0.002,0.002,0.002,0.002,0.001,0.002,0.001,0.012,0.000}; //signal extraction pp|eta|<1
-//
-//  for ( Int_t i = 1 ; i <= hrmPt->GetNbinsX() ; i++ )
-//  {
-//    Double_t pt = hrmPt->GetBinContent(i);
-//    Double_t ptError = hrmPt->GetBinError(i);
-//
-//    if ( relative )
-//    {
-//      ptError = TMath::Sqrt(TMath::Power(ptError/ptInt,2.) + TMath::Power((pt*ptIntError)/TMath::Power(ptInt,2.),2.));
-//
-//      Double_t sMptInt = ptInt*systMptInt[i-1];
-//      Double_t sMptBin = pt*systMptBin[i-1];
-//      Double_t sysMptRel = TMath::Sqrt( TMath::Power(sMptBin/ptInt,2) + TMath::Power(pt*sMptInt/TMath::Power(ptInt,2.),2.) );
-//
-//      pt /= ptInt;
-//
-//      std::cout << TMath::Sqrt( TMath::Power(sysMptRel/pt,2.) +TMath::Power(systMptRel[i-1],2.) ) << std::endl;
-//
-//      std::cout << pt << " +- " << ptError << std::endl;
-//
-//    }
-//
-//    hmPt->SetBinContent(i,pt);
-//    hmPt->SetBinError(i,ptError);
-//  }
-//
-//  o = fMergeableCollection->Histo(Form("/RESULTS/%s",path.Data()),hmPt->GetName());
-//
-//  if (o)
-//  {
-//    AliWarning(Form("Replacing /RESULTS/%s/%s",path.Data(),hmPt->GetName()));
-//    fMergeableCollection->Remove(Form("/RESULTS/%s/%s",path.Data(),hmPt->GetName()));
-//  }
-//
-//  adoptOK = fMergeableCollection->Adopt(Form("/RESULTS/%s",path.Data()),hmPt);
-//
-//  if ( adoptOK ) std::cout << "+++Mean Pt histo " << hmPt->GetName() << " adopted" << std::endl;
-//  else AliError(Form("Could not adopt mean pt histo %s",hmPt->GetName()));
-//
-//
-//
-//  delete hrmPt;
-//
-//
-//  return;
-//
-//
-//}
-
-
 //_____________________________________________________________________________
 void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, const char* evSelDiff,const char* spectra, const char* sResName)
 {
   // ocMBTrigger is the mergeableCollection with the MB trigger dNchdEta plot (migth be the same as oc, in which case we set ocMBTrigger=0x0)
   //FIXME::Make it general
-  
+  // Note that here the ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios
+
 
   TString swhat("");
   TString sres("");
@@ -5214,6 +4935,8 @@ void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, cons
                         First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
                         First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to store differential result in Mergeable Collection
   
+  if ( relative ) AliWarning("The ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios");
+
   //_________Integrated mean pt
   AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",intPath.Data(),"PSI-INTEGRATED-AccEffCorr-MeanPtVsMinvUS")));
   if ( !sInt )

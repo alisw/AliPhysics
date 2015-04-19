@@ -95,23 +95,24 @@ public:
 
   void PlotYiedWSyst(const char* triggerCluster="MUON");
 
-//  void ComputeJpsiYield(AliMergeableCollection* oc=0x0, Bool_t relative=kFALSE, const char* fNormType="mean",const char* triggerCluster="MUON",const char* whatever="PSI-DNCHDETA-AccEffCorr",const char* sResName="",AliMergeableCollection* ocMBTrigger=0x0, Double_t mNTrCorrection=0.);
+  void ComputeRelativeValueAndSESystematics(const char* quantity,const char* flavour,const char* value2Test, const char* binListToExclude,
+                                            const char* fNormType="mean", const char* evSelInt="PSALL",
+                                            const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
+                                            const char* triggerCluster="MUON");
 
   void ComputeJpsiYield( Bool_t relative=kTRUE, const char* fNormType="mean", const char* evSelInt="PSALL",
                         const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
                         const char* triggerCluster="MUON", const char* whatever="PSI-NTRCORR-AccEffCorr", const char* sResName="");
 
-//  void ComputeJpsiMPt(Bool_t relative=kFALSE, const char* whatever="PSI-DNCHDETA-AccEffCorr-MeanPtVsMinvUS",const char* sResName="",AliMergeableCollection* ocMBTrigger=0x0, Double_t mNTrCorrection=0.);
-
-   void ComputeJpsiMPt(Bool_t relative=kTRUE, const char* evSelInt="PSALL", const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00"
-                       ,const char* spectra="PSI-NTRCORR-AccEffCorr-MeanPtVsMinvUS",const char* sResName="");
+  void ComputeJpsiMPt(Bool_t relative=kTRUE, const char* evSelInt="PSALL", const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00"
+                      ,const char* spectra="PSI-NTRCORR-AccEffCorr-MeanPtVsMinvUS",const char* sResName="");
 
   void ComputeMBXSectionFractionInBins(const char* filePileUpCorr="", const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
                                        const char* what="psi",const char* quantity="ntrcorr", const char* flavour="D2H");
-  
-  Double_t ErrorPropagationAxBoverCxD(Double_t a,Double_t b,Double_t c,Double_t d);
-  
+
   TH1* ComputeEquNofMB(const char* what="psi",const char* quantity="dnchdeta",const char* flavour="JAVI",Bool_t printout=kFALSE);
+
+  Double_t ErrorPropagationAxBoverCxD(Double_t a,Double_t b,Double_t c,Double_t d);
 
   void TwikiOutputFnorm(const char* series="FnormOffline2PUPS,FnormScalersPUPS,FnormBest2,RelDifFnormScalersPUPSvsFnormOffline2PUPS,FnormScalersPUVDM,RelDifFnormScalersPUPSvsFnormScalersPUVDM") const;
 
@@ -161,8 +162,6 @@ public:
   TH1* PlotAccEfficiency(const char* whatever="PSI-INTEGRATED");
   
   TH1* PlotJpsiYield(const char* whatever="PSI-DNCHDETA-AccEffCorr");
-  
-  TH1* PlotSystematicsTestsRelative(const char* quantity,const char* flavour,const char* value2Test, const char* binListToExclude);
   
   UInt_t GetSum(AliCounterCollection& cc, const char* triggerList, const char* eventSelection, Int_t runNumber=-1);
   
