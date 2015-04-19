@@ -65,14 +65,21 @@ AliAnalysisTaskEventPlaneCalibration::AliAnalysisTaskEventPlaneCalibration() :
  AliAnalysisTaskSE(),
  fRunLightWeight(kFALSE),
  fCalibrateByRun(kTRUE),
+ fUseFriendEvent(kFALSE),
  fFillTPC(kFALSE),
  fFillVZERO(kFALSE),
  fFillTZERO(kFALSE),
  fFillZDC(kFALSE),
  fFillFMD(kFALSE),
+ fChannelEqualization(kFALSE),
+ fRecenterQvec(kFALSE),
+ fRotateQvec(kFALSE),
+ fTwistQvec(kFALSE),
+ fScaleQvec(kFALSE),
  fInitialized(kFALSE),
  fTree(0x0),
  fHistosFile(0x0),
+ fQvectorFile(0x0),
  fListHistos(),
  fListHistosQA(),
  fFriendEventNo(0),
@@ -94,14 +101,21 @@ AliAnalysisTaskEventPlaneCalibration::AliAnalysisTaskEventPlaneCalibration(const
  AliAnalysisTaskSE(name),
  fRunLightWeight(kFALSE),
  fCalibrateByRun(kTRUE),
+ fUseFriendEvent(kFALSE),
  fFillTPC(kFALSE),
  fFillVZERO(kFALSE),
  fFillTZERO(kFALSE),
  fFillZDC(kFALSE),
  fFillFMD(kFALSE),
+ fChannelEqualization(kFALSE),
+ fRecenterQvec(kFALSE),
+ fRotateQvec(kFALSE),
+ fTwistQvec(kFALSE),
+ fScaleQvec(kFALSE),
  fInitialized(kFALSE),
  fTree(0x0),
  fHistosFile(0x0),
+ fQvectorFile(0x0),
  fListHistos(),
  fListHistosQA(),
  fFriendEventNo(0),
@@ -474,7 +488,6 @@ void AliAnalysisTaskEventPlaneCalibration::FinishTaskOutput()
          for(Int_t ih=fgkEPMinHarmonics; ih<=fgkEPMaxHarmonics; ++ih) {
            for(Int_t ic=0; ic<2; ++ic){
            detector->Add(EPconf->CalibrationHistogramQ(is,ih,ic));
-           cout<<"Entries  "<<EPconf->CalibrationHistogramQ(is,ih,ic)->GetEntries()<<endl;
            }
          }
          detector->Add(EPconf->CalibrationHistogramE(is));
@@ -532,6 +545,7 @@ void AliAnalysisTaskEventPlaneCalibration::FinishTaskOutput()
 
 //__________________________________________________________________
 Bool_t AliAnalysisTaskEventPlaneCalibration::IsEventSelected(Float_t* values) {
+  if(!fEventCuts) return kTRUE;
   return fEventCuts->IsSelected(values);
 }
 

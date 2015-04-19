@@ -22,7 +22,7 @@
 #include <TProfile.h>
 //#include <AliESDEvent.h>
 //#include <AliESDtrackCuts.h>
-#include "AliReducedEvent.h"
+//#include "AliReducedEvent.h"
 #include "AliEventPlaneBinning.h"
 #include "AliEventPlaneQvector.h"
 #include "AliEventPlaneConfiguration.h"
