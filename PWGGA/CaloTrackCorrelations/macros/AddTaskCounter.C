@@ -4,6 +4,9 @@
 /// Example of configuration of AliAnalysisTaskCounter,
 /// simple task counting events
 /// Gets the cross section from file pyxsec if requested.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+
 
 ///
 /// Main method for the configuration.
