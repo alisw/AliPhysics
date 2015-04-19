@@ -1,39 +1,48 @@
-///////////////////////////////////////////
-//
-// Macro to plot comparison of different
-// distributions (spectra, correlations)
-// produced in QA trains but different data
-// Based on the plots provided by DrawAnaCaloTrackQA.C
-//
-// To execute: root -q -b -l DrawProductionComparison.C'("Pi0IM_GammaTrackCorr_EMCAL_default","AnalysisResults.root")'
-// The input files must be placed in different directoried,
-// each one defined in the string array "prod"
-//     TString prod[] = {"AOD142","AOD115","ESD"};
-// that has to be modified inside the macro.
-// The number of productions has to be specified
-//     const Int_t nProd = 3;
-// There is no limitation to the amount of productions
-//
-// Author: Gustavo.Conesa.Balbastre@cern.ch
-//
-//
+/// \file DrawProductionComparison.C
+/// \brief Plot N productions comparison analysis of QA histograms from EMCal PWG-GA wagon
+///
+///
+/// Macro to plot comparison of different
+/// distributions (spectra, correlations)
+/// produced in QA trains but different data
+/// Based on the plots provided by DrawAnaCaloTrackQA.C
+///
+/// To execute: root -q -b -l DrawProductionComparison.C'("Pi0IM_GammaTrackCorr_EMCAL_default","AnalysisResults.root")'
+/// The input files must be placed in different directoried,
+/// each one defined in the string array "prod"
+///     TString prod[] = {"AOD142","AOD115","ESD"};
+/// that has to be modified inside the macro.
+/// The number of productions has to be specified
+///     const Int_t nProd = 3;
+/// There is no limitation to the amount of productions
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 // Some global variables
-const Int_t nProd = 3;
-TString prod[] = {"AOD142","AOD115","ESD"};
+const Int_t nProd = 3; /// total number of productions
+
+TString prod[] = {"AOD142","AOD115","ESD"}; /// productions directory name
 
 TList *list[nProd];
+
 TFile *file[nProd];
+
 TString histoTag = "";
+
 Int_t color[]={kBlack,kRed,kBlue,kOrange+1,kYellow+1,kGreen+2,kCyan+1,kViolet,kMagenta+2,kGray};
 
 Float_t nEvents[nProd] = 0;
 
 //_______________________________________________________________________
+/// Main method, produce the plots with the comparisons
+///
+/// \param listName: Name of list with histograms in file (same for all productions)
+/// \param fileName: File name (same for all productions)
+//_______________________________________________________________________
 void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
                               TString fileName = "AnalysisResults.root")
 {
-
   printf("Open <%s>; Get List : <%s>\n",fileName.Data(),listName.Data());
   
   histoTag = listName;
@@ -731,9 +740,11 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
 }
 
 //_____________________________________________________
+/// Access the file and list with histograms and number
+/// of analyzed events per each production.
+//_____________________________________________________
 void GetFileAndList(TString fileName, TString listName)
 {
-
   for(Int_t iprod = 0; iprod < nProd; iprod++)
   {
     file[iprod]  = new TFile(Form("%s/%s",prod[iprod].Data(),fileName.Data()),"read");
@@ -752,14 +763,14 @@ void GetFileAndList(TString fileName, TString listName)
     }
     else list[iprod] = 0;
   }
-  
 }
 
 //___________________________________
+/// Check if the list is available,
+/// if not get the histo directly from file
+//___________________________________
 TObject * GetHisto(TString histoName, Int_t iprod)
 {
-  // Check if the list is available, if not get the histo directly from file
-  
   if(list[iprod]) return list[iprod]->FindObject(histoName);
   else            return file[iprod]->Get       (histoName);
 }
