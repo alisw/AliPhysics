@@ -158,6 +158,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   
   maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
 
+    maker->AddAnalysis(ConfigurePi0Analysis(), n++); // Invariant mass of photon clusters
+
   // Invariant mass analysis Put here to tag selected photons as decay
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay    
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, invariant mass and photon tagging from decay
@@ -1042,14 +1044,68 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   return ana;
 }
 
+///
+/// Configure the task doing the 2 cluster invariant mass analysis
+///
+AliAnaPi0* ConfigurePi0Analysis()
+{
+  AliAnaPi0 *ana = new AliAnaPi0();
+
+  ana->SetDebug(kDebug);//10 for lots of messages
+    
+  // Input delta AOD settings
+  ana->SetInputAODName(Form("Photon%s",kName.Data()));
+  
+  // Calorimeter settings
+  ana->SetCalorimeter(kCalorimeter);
+  
+  // settings for pp collision mixing
+  ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
+  
+  // Cuts
+  if(kCalorimeter=="EMCAL") ana->SetPairTimeCut(40);
+  
+  ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
+  // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
+    
+  if     (kCollisions=="pp"  )
+  {
+    ana->SetNCentrBin(1);
+    ana->SetNZvertBin(10);
+    ana->SetNRPBin(1);
+    ana->SetNMaxEvMix(100);
+  }
+  else if(kCollisions=="PbPb")
+  {
+    ana->SetNCentrBin(5);
+    ana->SetNZvertBin(3);
+    ana->SetNRPBin(1);
+    ana->SetNMaxEvMix(5);
+  }
+    
+  ana->SwitchOffSMCombinations();
+  ana->SwitchOffMultipleCutAnalysis();
+    
+  // Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaPi0_TM%d_",kTM));
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+}
 
 ///
-/// Configure the task doing the pi0 even by event selection via the split method
+/// Configure the task doing the pi0 even by event selection via the split method.
+/// Here the pairs, clusters, are added to an AOD branch to be used by other analysis
+/// unlike in ConfigurePi0Analysis.
 ///
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
                                       Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE)
 {
-  
   AliAnaPi0EbE *ana = new AliAnaPi0EbE();
   ana->SetDebug(kDebug);//10 for lots of messages
   
@@ -1201,6 +1257,45 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   
   return  ana;
   
+}
+
+///
+/// Configure the task doing the identification of merged clusters as pi0 or eta
+/// same as one of the options of ConfigurePi0EbEAnalysis, but here no AOD with
+/// selected particles is created
+///
+AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Float_t l0max)
+{
+  AliAnaInsideClusterInvariantMass *ana = new AliAnaInsideClusterInvariantMass();
+  ana->SetDebug(kDebug); //10 for lots of messages
+
+  // selection cuts
+  
+  ana->SetMinEnergy(5);
+  ana->SetMaxEnergy(200.);
+  ana->SetMinNCells(3);
+  ana->SetM02Cut(l0min,l0max);
+  ana->SetCalorimeter(kCalorimeter);
+    
+  //ana->AddToHistogramsName(Form("AnaInClusterIM_%1.2f_%1.2f_",l0min,l0max));
+  ana->AddToHistogramsName("AnaInClusterIM_");
+    
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.030);
+  caloPID->SetClusterSplittingM02Cut(0,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
+    
+  caloPID->SetPi0MassRange(0.10, 0.18);
+  caloPID->SetEtaMassRange(0.40, 0.60);
+  caloPID->SetPhotonMassRange(0.00, 0.08);
+  
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
 }
 
 ///
