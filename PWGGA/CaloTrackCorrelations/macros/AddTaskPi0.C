@@ -27,7 +27,7 @@ TString kAnaPi0 = "";
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
-/// \param outputFile : A string to change the name of the histograms output file, default is AnalysisResults.root
+/// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
 ///

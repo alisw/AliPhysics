@@ -26,7 +26,7 @@ Bool_t  kPrint = 0  ;             /// Global bool for print option
 /// \param leading : select leading trigger clusters?
 /// \param timecut : activate time cut
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle
-/// \param simulation : A bool identifying the data as simulation
+/// \param simu : A bool identifying the data as simulation
 /// \param exotic : reject exotic clusters
 /// \param nonlin : A bool to set the use of the non linearity correction
 /// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
