@@ -337,6 +337,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// DAQ FXS         //
 	//=================//
 
+        // Let's skip the raw data tags
+        /*
 	Log("*************** Processing DAQ FXS");
 
 	UInt_t iDaqFxs = ProcessDaqFxs();
@@ -346,6 +348,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log(Form("DAQ FXS, could not store run raw tag file!!!"));
 		error |= 2;
 	}
+        */
 	
 	//=================//
 	// DCS FXS         //
