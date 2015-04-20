@@ -253,7 +253,9 @@ else()
 
   # Include Vc own cmake
   include(Vc/Vc.cmake)
-  add_subdirectory(Vc)
+  if (NOT ROOT_HASVC)
+    add_subdirectory(Vc)
+  endif (NOT ROOT_HASVC)
 
   # AliRoot common macros
   add_subdirectory(macros)

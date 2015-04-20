@@ -279,6 +279,21 @@ if(ROOTSYS)
         endif()
     endif()
 
+    # Checking for Vc from Root
+    execute_process(COMMAND ${ROOT_CONFIG} --has-vc OUTPUT_VARIABLE ROOT_HASVC ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error checking if ROOT was built with VCt: ${error}")
+    endif(error)
+    
+    if(ROOT_HASVC)
+        string(STRIP "${ROOT_HASVC}" ROOT_HASVC)
+        if(ROOT_HASVC STREQUAL "yes")
+            set(ROOT_HASVC TRUE)
+        else()
+            set(ROOT_HASVC FALSE)
+        endif()
+    endif()
+
     # Checking for fortran compiler
     execute_process(COMMAND ${ROOT_CONFIG} --f77 OUTPUT_VARIABLE ROOT_FORTRAN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
