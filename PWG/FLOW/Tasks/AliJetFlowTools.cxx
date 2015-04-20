@@ -4468,10 +4468,6 @@ void AliJetFlowTools::MakeAU() {
     TH1D* dPtdPhi[fBinsTrue->GetSize()];
     for(Int_t i(0); i < ptBins; i++) dPtdPhi[i] = new TH1D(Form("dPtdPhi_%i", i), Form("dPtdPhi_%i", i), dPhiBins, 0, TMath::Pi());
 
-    // for the output initialize a canvas
-    TCanvas* v2Fits(new TCanvas("v2 fits", "v2 fits"));
-    v2Fits->Divide(4, TMath::Floor((1+ptBins)/(float)4)+(((1+ptBins)%4)>0));
-
     for(Int_t i(0); i < dPhiBins; i++) {
         // 1) manipulation of input histograms
         // check if the input variables are present
@@ -4566,7 +4562,6 @@ void AliJetFlowTools::MakeAU() {
     TF1* fourier = new TF1("fourier", "[0]*(1.+0.5*[1]*(TMath::Cos(2.*x)))", 0, TMath::Pi());
     TH1D* v2(new TH1D("v2FromFit", "v2FromFit", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
     for(Int_t i(0); i < ptBins; i++) {
-        v2Fits->cd(i+1);
         dPtdPhi[i]->Fit(fourier, "VI");
         Style(gPad, "PEARSON");
         Style(dPtdPhi[i], kBlue, kDeltaPhi); 
@@ -4581,12 +4576,11 @@ void AliJetFlowTools::MakeAU() {
                 );
         v2->SetBinContent(1+i, fourier->GetParameter(1));
         v2->SetBinError(1+i, fourier->GetParError(1));
+        Style(gPad, "PEARSON");
+        Style(v2, kBlack, kV2, kTRUE);
+        v2->DrawCopy();
+        dPtdPhi[i]->Write();
     }
-    v2Fits->cd(1+ptBins);
-    Style(gPad, "PEARSON");
-    Style(v2, kBlack, kV2, kTRUE);
-    v2->DrawCopy();
-    v2Fits->Write();
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphErrors* graph) {
