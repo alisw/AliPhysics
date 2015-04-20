@@ -1,17 +1,12 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoBasicEventCut - the basic cut for events.                          //
-// Only cuts on event multiplicity and z-vertex position                      //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliFemtoBasicEventCut
+/// \brief The basic cut for events.
+///
+/// Only cuts on event multiplicity and z-vertex position
+///
 
 #ifndef ALIFEMTOBASICEVENTCUT_H
 #define ALIFEMTOBASICEVENTCUT_H
-
-// do I need these lines ?
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
 
 #include "AliFemtoEventCut.h"
 
@@ -42,17 +37,19 @@ public:
 
 private:   // here are the quantities I want to cut on...
 
-  int fEventMult[2];      // range of multiplicity
-  float fVertZPos[2];     // range of z-position of vertex
-  float fPsiEP[2];     // range of vzero ep angle
-  bool fAcceptBadVertex;  // Set to true to accept events with bad vertex
-  long fNEventsPassed;    // Number of events checked by this cut that passed
-  long fNEventsFailed;    // Number of events checked by this cut that failed
-  bool fAcceptOnlyPhysics;// Accept only physics events
-  int  fSelectTrigger;    // If set, only given trigger will be selected
+  int fEventMult[2];       ///< range of multiplicity
+  float fVertZPos[2];      ///< range of z-position of vertex
+  float fPsiEP[2];         ///< range of vzero ep angle
+  bool fAcceptBadVertex;   ///< Set to true to accept events with bad vertex
+  long fNEventsPassed;     ///< Number of events checked by this cut that passed
+  long fNEventsFailed;     ///< Number of events checked by this cut that failed
+  bool fAcceptOnlyPhysics; ///< Accept only physics events
+  int  fSelectTrigger;     ///< If set, only given trigger will be selected
 
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoBasicEventCut, 1)
+  /// \endcond
 #endif
 
 };
