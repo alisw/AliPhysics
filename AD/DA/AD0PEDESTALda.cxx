@@ -47,6 +47,7 @@
 #include "TPluginManager.h"
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TMath.h>
 
 /* Main routine --- Arguments: monitoring data source */
@@ -123,7 +124,7 @@ int main(int argc, char **argv) {
   char     adcName[10]; 
   char     pedName[10]; 
   TH1F     *hADCname[32];
-  TH1F     *hPEDname[32];  
+  TH1F     *hPEDname[32]; 
   
   char  texte[20];
   for (Int_t i=0; i<16; i++) {
@@ -136,6 +137,14 @@ int main(int argc, char **argv) {
        		hPEDname[i + 16*j]  = new TH1F(pedName,texte,1024,-0.5, 1023.5);
        		}
        }
+       
+  char Chi2Name[20];
+  TH2F *hChi2PerEvent[2];
+  for (Int_t i=0; i<2; i++) {
+  	sprintf(Chi2Name,"hChi2PerEventInt%d",i);
+   	hChi2PerEvent[i] = new TH2F(Chi2Name,Chi2Name,16,0,16,100,0,10);
+	}
+   
 //___________________________________________________ 
 
   /* open result file to be exported to FES */
@@ -239,11 +248,18 @@ int main(int argc, char **argv) {
 		       		Int_t integrator = rawStream->GetIntegratorFlag(i,j);
 		       		Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
 		   			chi2[integrator] += (mean[integrator] - pedestal) * (mean[integrator] - pedestal);
-	   			}	
+	   			}
+				chi2[0] = chi2[0]/(kClockMax-kClockMin+1);
+				chi2[1] = chi2[1]/(kClockMax-kClockMin+1);
+				
+				for(int ii=0;ii<2;ii++)hChi2PerEvent[ii]->Fill(i,chi2[ii]);
+					
 	   			if(chi2[0]<kChi2Max && chi2[1]<kChi2Max) {
-					for(int ii=0;ii<2;ii++){
-						if(mean[ii] >1.e-6) hPEDname[i + 16*ii]->Fill(mean[ii]);
-					}
+					for(Int_t j=kClockMin;j <= kClockMax;j++){
+		       				Int_t integrator = rawStream->GetIntegratorFlag(i,j);
+		       				Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
+						hPEDname[i + 16*integrator]->Fill(pedestal);
+	   				}
 				}
 
 			} 
@@ -279,10 +295,10 @@ int main(int argc, char **argv) {
 //  and dumps the ordered values into the output text file for SHUTTLE
 	
   for(Int_t i=0; i<32; i++) {
-      hPEDname[i]->GetXaxis()->SetRange(0,kHighCut);
+      hPEDname[i]->GetXaxis()->SetRangeUser(0,kHighCut);
       pedMean[i]  = hPEDname[i]->GetMean(); 
       pedSigma[i] = hPEDname[i]->GetRMS(); 
-      hADCname[i]->GetXaxis()->SetRange(kLowCut,1024);
+      hADCname[i]->GetXaxis()->SetRangeUser(kLowCut,1024);
       adcMean[i]  = hADCname[i]->GetMean();
       adcSigma[i] = hADCname[i]->GetRMS(); 
 //      printf(" i = %d, %.3f %.3f %.3f %.3f\n",i,pedMean[i],pedSigma[i],adcMean[i],adcSigma[i]);
@@ -319,8 +335,10 @@ int main(int argc, char **argv) {
   for (Int_t i=0; i<32; i++) {
        hADCname[i]->GetXaxis()->SetRange(0,1024);
        hADCname[i]->Write(); 
-       hPEDname[i]->Write(); }
-
+       hPEDname[i]->Write(); 
+       }
+  hChi2PerEvent[0]->Write();
+  hChi2PerEvent[1]->Write();
   histoFile->Close(); 
   delete histoFile;
   
