@@ -208,9 +208,9 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
      corrCoeff0[jj] = fPedData->GetPedCorrCoeff0(jj);
      corrCoeff1[jj] = fPedData->GetPedCorrCoeff1(jj);
   }
-printf("   pedSubMode from OCDB object (data member) %d\n", fPedData->GetPedSubModefromOCDB());
+//printf("   pedSubMode from OCDB object (data member) %d\n", fPedData->GetPedSubModefromOCDB());
   Bool_t testPedSubBit = fPedData->TestPedModeBit();
-printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
+//printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
   
   Bool_t chPedSubMode[kNch] = {0,};
   if(testPedSubBit){
@@ -351,8 +351,8 @@ printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
   }
   
    // Ch. debug
-   printf("\n ---- AliZDCReconstructor: rec from digits\n");
-   for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], adcCorr[ich][0]);
+//   printf("\n ---- AliZDCReconstructor: rec from digits\n");
+//   for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], adcCorr[ich][0]);
    
   UInt_t counts[32];
   Int_t  tdc[32][4];
@@ -394,7 +394,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
      //printf("  %d   %1.4f  %1.4f\n", jj,corrCoeff0[jj],corrCoeff1[jj]);
   }
   Bool_t testPedSubBit = fPedData->TestPedModeBit();
-printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
+//printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
   
   // Reading mapping from OCDB ******* implemented only for ADC ch. !!!
   //  !!!! NB !!!! The mapping was NOT correctly set in 2013 data !!!!
@@ -539,8 +539,8 @@ printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
       }
   }
    // Ch. debug
-   printf("\n  **** AliZDCReconstructor: rec from RAW DATA\n");
-   for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d meanPed %f  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], adcCorr[ich][0]);
+//   printf("\n  **** AliZDCReconstructor: rec from RAW DATA\n");
+//   for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d meanPed %f  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], adcCorr[ich][0]);
   
     
   if(fRecoMode==1) // p-p data
@@ -560,7 +560,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   // ****************** Reconstruct one event ******************
 
   int const kNch = 24;
-  Int_t channels[6] = {0};
+  Int_t channels[6] = {0,};
   Float_t corrADCZNC[10] = {0,}, corrADCZPC[10] = {0,};
   Float_t corrADCZNA[10] = {0,}, corrADCZPA[10] = {0,};
   Float_t corrADCZEM1[2] = {0,0}, corrADCZEM2[2] = {0,0};
@@ -654,12 +654,12 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   //for(int i=0; i<6; i++) printf("  %d \n", channels[i]);
   
   // CH. debug
-  printf("\n*************************************************\n");
+  /*printf("\n*************************************************\n");
   printf(" ReconstructEventpp -> values after pedestal subtraction:\n");
   for(int ich=0; ich<24; ich++) printf(" ch.%d ADC hg %1.2f  lg %1.2f\n", ich, adc[ich][0],adc[ich][1]);
-  printf("*************************************************\n");
+  printf("*************************************************\n");*/
   // CH. debug
-  printf("\n*************************************************\n");
+  /*printf("\n*************************************************\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
         corrADCZNC[0],corrADCZNC[1],corrADCZNC[2],corrADCZNC[3],corrADCZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -669,7 +669,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   printf(" ADCZPA [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
         corrADCZPA[0],corrADCZPA[1],corrADCZPA[2],corrADCZPA[3],corrADCZPA[4]);
   printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",corrADCZEM1[0],corrADCZEM2[0]);
-  printf("*************************************************\n"); 
+  printf("*************************************************\n"); */
   
   // ---------------------- Setting reco flags for ESD
   UInt_t rFlags[32];
@@ -749,7 +749,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
      }
   }
   // Ch. debug
-  printf("\n ------------- EQUALIZATION -------------\n");
+  /*printf("\n ------------- EQUALIZATION -------------\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZNC[0],equalTowZNC[1],equalTowZNC[2],equalTowZNC[3],equalTowZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -758,7 +758,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   	equalTowZNA[0],equalTowZNA[1],equalTowZNA[2],equalTowZNA[3],equalTowZNA[4]);
   printf(" ADCZPA [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZPA[0],equalTowZPA[1],equalTowZPA[2],equalTowZPA[3],equalTowZPA[4]);
-  printf(" ----------------------------------------\n");
+  printf(" ----------------------------------------\n");*/
   
   //  *** p-A RUN 2013 -> new calibration object
   //      to take into account saturation in ZN PMC
@@ -773,10 +773,10 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 	calibSatZNA[3]*equalTowZNA[0]*equalTowZNA[0]*equalTowZNA[0]*equalTowZNA[0]*equalTowZNA[0];
 
   // Ch. debug
-  printf("\n ------------- SATURATION CORRECTION -------------\n");
+  /*printf("\n ------------- SATURATION CORRECTION -------------\n");
   printf(" ZNC PMC %1.2f\n", equalTowZNC[0]);
   printf(" ZNA PMC %1.2f\n", equalTowZNA[0]);
-  printf(" ----------------------------------------\n");
+  printf(" ----------------------------------------\n");*/
   
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
   Float_t calibSumZNC[2]={0,0}, calibSumZNA[2]={0,0}, calibSumZPC[2]={0,0}, calibSumZPA[2]={0,0};
@@ -823,7 +823,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   calibZEM2[0] = corrADCZEM2[0]*calibEne[5];
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
   // Ch. debug
-  printf("\n ------------- CALIBRATION -------------\n");
+  /*printf("\n ------------- CALIBRATION -------------\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	calibTowZNC[0],calibTowZNC[1],calibTowZNC[2],calibTowZNC[3],calibTowZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -833,7 +833,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   printf(" ADCZPA [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	calibTowZPA[0],calibTowZPA[1],calibTowZPA[2],calibTowZPA[3],calibTowZPA[4]);
   printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",calibZEM1[0],calibZEM2[0]);
-  printf(" ----------------------------------------\n");
+  printf(" ----------------------------------------\n");*/
   
   //  ******	No. of spectator and participants nucleons
   //  Variables calculated to comply with ESD structure
@@ -957,19 +957,19 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     }
         
     // Ch. Debug
-    printf("  ADC ch. %d  cabled signal %d\n",i, signalCodeADC[i]);
+    //printf("  ADC ch. %d  cabled signal %d\n",i, signalCodeADC[i]);
   }
   // Ch. Debug
-  printf("  Common PMT are in channels: (ZNA, ZPA, ZEM1, ZEM2, ZNC, ZPC)\n");
-  for(int ich=0; ich<6; ich++) printf("  %d \n",channels[ich]);
+//  printf("  Common PMT are in channels: (ZNA, ZPA, ZEM1, ZEM2, ZNC, ZPC)\n");
+//  for(int ich=0; ich<6; ich++) printf("  %d \n",channels[ich]);
   
   // CH. debug
-  printf("\n*************************************************\n");
+  /*printf("\n*************************************************\n");
   printf(" ReconstructEventPbPb -> values after pedestal subtraction:\n");
   for(int ich=0; ich<24; ich++) printf(" ch.%d ADC hg %1.2f  lg %1.2f\n", ich, adc[ich][0],adc[ich][1]);
-  printf("*************************************************\n");
+  printf("*************************************************\n");*/
   // CH. debug
-  printf("\n*************************************************\n");
+  /*printf("\n*************************************************\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
         corrADCZNC[0],corrADCZNC[1],corrADCZNC[2],corrADCZNC[3],corrADCZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -979,7 +979,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   printf(" ADCZPA [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
         corrADCZPA[0],corrADCZPA[1],corrADCZPA[2],corrADCZPA[3],corrADCZPA[4]);
   printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",corrADCZEM1[0],corrADCZEM2[0]);
-  printf("*************************************************\n"); 
+  printf("*************************************************\n"); */
 
   // ---------------------- Setting reco flags for ESD
   UInt_t rFlags[32];
@@ -1058,7 +1058,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   }
   
   // Ch. debug
-  printf("\n ------------- EQUALIZATION -------------\n");
+  /*printf("\n ------------- EQUALIZATION -------------\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZNC[0],equalTowZNC[1],equalTowZNC[2],equalTowZNC[3],equalTowZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -1067,8 +1067,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   	equalTowZNA[0],equalTowZNA[1],equalTowZNA[2],equalTowZNA[3],equalTowZNA[4]);
   printf(" ADCZPA [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	equalTowZPA[0],equalTowZPA[1],equalTowZPA[2],equalTowZPA[3],equalTowZPA[4]);
-  printf(" ----------------------------------------\n");
-
+  printf(" ----------------------------------------\n");*/
   
   //  *** p-A RUN 2013 -> new calibration object
   //      to take into account saturation in ZN PMC
@@ -1131,7 +1130,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   }
 
   // Ch. debug
-  printf("\n ------------- CALIBRATION -------------\n");
+  /*printf("\n ------------- CALIBRATION -------------\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	calibTowZNC[0],calibTowZNC[1],calibTowZNC[2],calibTowZNC[3],calibTowZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -1141,7 +1140,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   printf(" ADCZPA [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
   	calibTowZPA[0],calibTowZPA[1],calibTowZPA[2],calibTowZPA[3],calibTowZPA[4]);
   printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",calibZEM1[0],calibZEM2[0]);
-  printf(" ----------------------------------------\n");
+  printf(" ----------------------------------------\n");*/
   
   //  ******	Number of detected spectator nucleons
   Int_t nDetSpecNLeft=0, nDetSpecPLeft=0, nDetSpecNRight=0, nDetSpecPRight=0;
