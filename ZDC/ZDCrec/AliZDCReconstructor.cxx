@@ -560,7 +560,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   // ****************** Reconstruct one event ******************
 
   int const kNch = 24;
-  Int_t channels[6];
+  Int_t channels[6] = {0};
   Float_t corrADCZNC[10] = {0,}, corrADCZPC[10] = {0,};
   Float_t corrADCZNA[10] = {0,}, corrADCZPA[10] = {0,};
   Float_t corrADCZEM1[2] = {0,0}, corrADCZEM2[2] = {0,0};
