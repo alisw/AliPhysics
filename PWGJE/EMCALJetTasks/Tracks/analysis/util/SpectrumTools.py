@@ -15,12 +15,18 @@
 """
 Toolset module for histogram operations
 
+Original author (ROOT macro):
 @author: Jacek Otwinowski
 @organization: ALICE Collaboration
-Translated into PYTHON by Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+Translated into PYTHON by  
+@author: Markus Fasel
+@contact: markus.fasel@cern.ch
+@organization: ALICE Collaboration
+@organization: Lawrence Berkeley National Laboratory
+@copyright: 1998-2014, ALICE Experiment at CERN, All rights reserved.
 """
 
-from ROOT import TF1, TGraph, TGraphErrors, TMultiGraph
+from ROOT import TF1, TGraph, TGraphAsymmErrors, TGraphErrors, TMultiGraph
 from PWGJE.EMCALJetTasks.Tracks.analysis.util.Interpolator import Interpolator
 import math
 from copy import deepcopy
@@ -36,7 +42,7 @@ class SpectrumTools(object):
     """
 
 
-    def __init__(self, params):
+    def __init__(self):
         """
         Constructor
         """
@@ -155,7 +161,7 @@ class SpectrumTools(object):
         lower = -1
         upper = -1
         for i in range(0, graph.GetN()-1):
-            if x >= graph.GetX()[i] and x <= graph.GetX()[i]:
+            if x >= graph.GetX()[i] and x <= graph.GetX()[i+1]:
                 lower = i 
                 upper = i+1
                 break
@@ -177,7 +183,7 @@ class SpectrumTools(object):
             return h
         h1 = deepcopy(h)
         h1.Sumw2()
-        for i in range(i = 1, h1.GetNbinsX()+1):
+        for i in range(1, h1.GetNbinsX()+1):
             value = h1.GetBinContent(i)
             width = h1.GetBinWidth(i)
             center = h1.GetBinCenter(i)
@@ -393,6 +399,9 @@ class SpectrumTools(object):
         h = deepcopy(prototype)
         h.Reset()
   
+        dx1 = 0
+        dx2 = 0 
+        ey = 0
         for i in range(1, h.GetNbinsX()+1):
             x = h.GetBinCenter(i)   
             # check the x range
@@ -407,24 +416,54 @@ class SpectrumTools(object):
             x2 = g.GetX()[upper]
             y1 = g.GetY()[lower]
             y2 = g.GetY()[upper]
-            y  = self.__GetInterpolatedValue(x,x1,y1,x2,y2,options,h.GetBinLowEdge(i),h.GetBinUpEdge(i))    
+            y  = self.__GetInterpolatedValue(x,x1,y1,x2,y2,options,h.GetXaxis().GetBinLowEdge(i),h.GetXaxis().GetBinUpEdge(i))    
             if errx:
-                dx1 = g.GetEX()[lower]
-                dx2 = g.GetEX()[upper]
+                exlow, exhigh = self.__GetXerrors(g, lower)
+                dx1 = max(exlow, exhigh) if exlow and exhigh else 0.
+                exlow, exhigh = self.__GetXerrors(g, upper)
+                dx2 = max(exlow, exhigh) if exlow and exhigh else 0.
             if erry:
-                dy1 = g.GetEY()[lower]
-                dy2 = g.GetEY()[upper]
+                eylow, eyhigh = self.__GetYerrors(g, lower)
+                dy1 = max(eylow, eyhigh) if eylow and eyhigh else 0.
+                eylow, eyhigh = self.__GetYerrors(g, upper)
+                dy2 = max(eylow, eyhigh) if eylow and eyhigh else 0.
             if errx or erry:
                 if errc:
-                    ymax = self.__GetInterpolatedValue(x,x1,y1+dy1,x2,y2+dy2,options,h.GetBinLowEdge(i),h.GetBinUpEdge(i))
-                    ymin = self.__GetInterpolatedValue(x,x1,y1-dy1,x2,y2-dy2,options,h.GetBinLowEdge(i),h.GetBinUpEdge(i))
+                    ymax = self.__GetInterpolatedValue(x,x1,y1+dy1,x2,y2+dy2,options,h.GetXaxis().GetBinLowEdge(i),h.GetXaxis().GetBinUpEdge(i))
+                    ymin = self.__GetInterpolatedValue(x,x1,y1-dy1,x2,y2-dy2,options,h.GetXaxis().GetBinLowEdge(i),h.GetXaxis().GetBinUpEdge(i))
                     ey = max(math.fabs(y-ymin),math.fabs(y-ymax))
                 else:
-                    ey = self.__GetInterpolatedUncertainty(x,x1,y1,x2,y2,dx1,dy1,dx2,dy2,options,h.GetBinLowEdge(i),h.GetBinUpEdge(i))
+                    ey = self.__GetInterpolatedUncertainty(x,x1,y1,x2,y2,dx1,dy1,dx2,dy2,options,h.GetXaxis().GetBinLowEdge(i),h.GetXaxis().GetBinUpEdge(i))
             h.SetBinContent(i,y)
             h.SetBinError(i,ey)
         h.SetName(g.GetName()) 
         return h
+    
+    def __GetXerrors(self, inputgraph, pointID):
+        """
+        Get the x-errors (low, up) in a transparent way for TGraph and TGraphErrors
+        @param inputgraph: input for the graph
+        @return: tuple of lower and upper x error
+        """
+        if isinstance(inputgraph, TGraphAsymmErrors):
+            return inputgraph.GetEXlow()[pointID], inputgraph.GetEXhigh()[pointID]
+        elif isinstance(inputgraph, TGraphErrors):
+            return inputgraph.GetEX()[pointID], inputgraph.GetEX()[pointID]
+        else:
+            return None
+        
+    def __GetYerrors(self, inputgraph, pointID):
+        """
+        Get the y-errors (low, up) in a transparent way for TGraph and TGraphErrors
+        @param inputgraph: input for the graph
+        @return: tuple of lower and upper y error
+        """
+        if isinstance(inputgraph, TGraphAsymmErrors):
+            return inputgraph.GetEYlow()[pointID], inputgraph.GetEYhigh()[pointID]
+        elif isinstance(inputgraph, TGraphErrors):
+            return inputgraph.GetEY()[pointID], inputgraph.GetEY()[pointID]
+        else:
+            return None
 
     def SetParameters(self, f, x1, y1, x2, y2):
         """
@@ -497,15 +536,15 @@ class SpectrumTools(object):
                 return y1*math.pow(y1/y2,(x - x1)/(x1 - x2));
             #end of "exp"
         elif "pow" in options:
-            c = math.pow(x1,-math.log(y1/y2)/(math.log(x1) - math.log(x2)));
-            n = math.log(y1/y2)/(math.log(x1) - math.log(x2));
+            c = math.pow(x1,-math.log(y1/y2)/(math.log(x1) - math.log(x2)))
+            n = math.log(y1/y2)/(math.log(x1) - math.log(x2))
             if integrate: 
                 if math.fabs(n+1.) < 1e-6:
                     return (c*(math.log(xmax) - math.log(xmin)))/(xmax - xmin)
                 else: 
-                    (c*(math.pow(xmax,1 + n) - math.pow(xmin,1 + n)))/((1 + n)*(xmax - xmin));
+                    (c*(math.pow(xmax,1 + n) - math.pow(xmin,1 + n)))/((1 + n)*(xmax - xmin))
             else:
-                return c*math.pow(x,n);
+                return c*math.pow(x,n)
             # end of "pow"
         else:
             return 0
@@ -526,7 +565,7 @@ class SpectrumTools(object):
         @param dy1: uncertainty in y at point 1 
         @param dx2: uncertainty in x at point 2 
         @param dy2: uncertainty in y at point 2 
-        @param option: Interpolatoin method
+        @param option: Interpolation method
         @param xmin:
         @param xmax:
         @return: error value
