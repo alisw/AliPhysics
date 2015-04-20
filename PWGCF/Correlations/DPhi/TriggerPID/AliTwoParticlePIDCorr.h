@@ -23,6 +23,7 @@ class AliAODVertex;
 class AliEventPoolManager;
 class TFormula;
 class AliAnalysisUtils;
+class AliPPVsMultUtils;
 class LRCParticlePID;
 class AliVParticle;
 class AliCFContainer;
@@ -132,7 +133,10 @@ fVzMax_MC=VzMax_MC;
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
-  void SetPPVsMultUtils(Bool_t val)  {fPPVsMultUtils = val;}
+  void SetPPVsMult(Bool_t val, Bool_t PileUp_zvtx_INEL_evsel){
+    fPPVsMult = val;
+    fPileUp_zvtx_INEL_evsel=PileUp_zvtx_INEL_evsel;
+  }
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
   void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t RequestEventPlanemixing,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
 fRequestEventPlane=RequestEventPlane;
@@ -325,7 +329,8 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
 
 
     TString    fCentralityMethod;     // Method to determine centrality
-    Bool_t fPPVsMultUtils;//switch to ON quantile information for pp 7 TeV case
+    Bool_t fPPVsMult;//switch to ON quantile information for pp 7 TeV case
+    Bool_t fPileUp_zvtx_INEL_evsel;
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Bool_t fRequestEventPlane; //only for PbPb
     Bool_t fRequestEventPlanemixing; //only for PbPb
@@ -643,6 +648,8 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
 
     
    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
+   AliPPVsMultUtils*  fPPVsMultUtils;
+
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
   //*****************************************************************************V0 related objects are here
   Bool_t fV0TrigCorr;
