@@ -153,7 +153,11 @@ public:
  Bool_t GetCalculateCRCBck() const {return this->fCalculateCRCBck;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
+ void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
+ Bool_t GetUseCRCRecenter() const {return this->fUseCRCRecenter;};
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
+ void SetQVecList(TList* const kList) {this->fQVecList = kList;};
+ TList* GetQVecList() const {return this->fQVecList;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -217,8 +221,10 @@ private:
  Bool_t fCalculateCRCPt;
  Bool_t fCalculateCRCBck;
  Bool_t fUseNUAforCRC;
+ Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
+ TList *fQVecList;           // list with weights
  
  ClassDef(AliAnalysisTaskCRC, 2);
 };

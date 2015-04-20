@@ -122,6 +122,9 @@ class AliFlowEventSimple: public TObject {
 
   void SetCentrality(Double_t c) {fCentrality=c;}
   Double_t GetCentrality() const {return fCentrality;}
+ 
+  void SetRun(Int_t const run) {fRun = run;};
+  Int_t GetRun() const {return fRun;};
 
  protected:
   virtual void Generate( Int_t nParticles,
@@ -156,7 +159,8 @@ class AliFlowEventSimple: public TObject {
   Int_t*                  fShuffledIndexes;           //! placeholder for randomized indexes
   Bool_t                  fShuffleTracks;             // do we shuffle tracks on get?
   TObjArray*              fMothersCollection;         //!cache the particles with daughters
-  Double_t                fCentrality;                //centrality
+  Double_t                fCentrality;                // centrality
+  Int_t                   fRun;                       // run number
  
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
