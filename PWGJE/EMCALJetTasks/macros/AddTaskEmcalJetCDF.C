@@ -63,7 +63,7 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
 
   if ( !rho.IsNull() )  { name += "_" + rho; }
 
-  if ( acctype.CompareTo ( "TPC" ) )   { acctype = "TPC"; }
+  if ( acctype.CompareTo ( "TPC" )   ) { acctype = "TPC"; }
   if ( acctype.CompareTo ( "EMCAL" ) ) { acctype = "EMCAL"; }
   if ( acctype.CompareTo ( "KUSER" ) ) { acctype = "kUser"; }
 
@@ -128,17 +128,48 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF ( AliEmcalJetTask *jetFinderTask,
     const char  *nrho         = "",
     const char  *taskname     = "JetCDF" )
   {
+  if ( !jetFinderTask->InheritsFrom ( AliEmcalJetTask::Class() ) )
+    { AliError("AddTaskEmcalJetSample :: task is not/ does not inherits from AliEmcalJetTask"); }
+
   const char *ntracks            = jetFinderTask->GetTracksName();
   const char *nclusters          = jetFinderTask->GetClusName();
   const char *njets              = jetFinderTask->GetJetsName();
   Double_t    jetradius          = jetFinderTask->GetRadius();
 
   return AddTaskEmcalJetCDF ( ntracks , nclusters, njets, nrho, jetradius, jetptcut, jetareacut, type, leadhadtype, taskname );
-
   }
 
 
+/// Add a AliAnalysisTaskEmcalJetCDF task - info from char* taskname
+/// \param const char* taskname ; to be retrieved from list of tasks
+/// \param Double_t jetptcut
+/// \param Double_t jetareacut
+/// \param const char *type ; either TPC, EMCAL or USER
+/// \param Int_t leadhadtype ; 0 = charged, 1 = neutral, 2 = both
+/// \param const char *nrho
+/// \param const char *taskname
+/// \return AliAnalysisTaskEmcalJetCDF* task
+AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF ( const char* taskname,
+    Double_t     jetptcut     = 1.,
+    Double_t     jetareacut   = 0.001,
+    const char  *type         = "TPC",     // EMCAL, TPC
+    Int_t        leadhadtype  = 0,         // AliJetContainer :: Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
+    const char  *nrho         = "",
+    const char  *taskname     = "JetCDF" )
+  {
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) { ::Error("AddTaskEmcalJetCDF", "No analysis manager to connect to."); }
+
+  AliEmcalJetTask* jf = dynamic_cast<AliEmcalJetTask*>(mgr->GetTask(taskname));
+  if (!jf) { AliError("AddTaskEmcalJetCDF :: task is not EmcalJetTask");}
+
+  const char *ntracks            = jf->GetTracksName();
+  const char *nclusters          = jf->GetClusName();
+  const char *njets              = jf->GetJetsName();
+  Double_t    jetradius          = jf->GetRadius();
+
+  return AddTaskEmcalJetCDF ( ntracks , nclusters, njets, nrho, jetradius, jetptcut, jetareacut, type, leadhadtype, taskname );
+  }
 
 
 // kate: indent-mode none; indent-width 2; replace-tabs on;
-
