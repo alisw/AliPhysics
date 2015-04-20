@@ -14,9 +14,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-
 //_________________________________________________________________________
 //  Utility Class for handling Raw data
 //  Does all transitions from Digits to Raw and vice versa, 
@@ -280,18 +277,25 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
     }//digit existed replace it
 }
 
-
-void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap, TClonesArray *digitsTRG, AliEMCALTriggerData* trgData)
+/// Conversion of raw data to digits.
+void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
+                                  TClonesArray *digitsTRG, AliEMCALTriggerData* trgData)
 {
-  //conversion of raw data to digits
-  if ( digitsArr) digitsArr->Clear("C"); 
-  if (!digitsArr) { Error("Raw2Digits", "no digits found !");return;}
-  if (!reader) {Error("Raw2Digits", "no raw reader found !");return;}
+  if ( digitsArr) digitsArr->Clear("C");
+    
+  if (!digitsArr) { Error("Raw2Digits", "no digits found !")    ; return ; }
+    
+  if (!reader)    { Error("Raw2Digits", "no raw reader found !"); return ; }
+    
   AliEMCALTriggerSTURawStream inSTU(reader);
-  AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);	
+    
+  AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);
+    
   reader->Select("EMCAL",0,AliDAQ::GetFirstSTUDDL()-1);
+    
   fTriggerRawDigitMaker->Reset();	
   fTriggerRawDigitMaker->SetIO(reader, in, inSTU, digitsTRG, trgData);
+    
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
     
   Int_t lowGain  = 0;
@@ -303,45 +307,73 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   //AliCDBManager* man = AliCDBManager::Instance();
   //Int_t runNumber = man->GetRun();
 	
- Int_t runNumber = reader->GetRunNumber();
+  Int_t runNumber = reader->GetRunNumber();
 
   if ((runNumber >130850 ) && (bcMod4==0 || bcMod4==1)) 
     bcTimePhaseCorr = -1e-7; // subtract 100 ns for certain BC values
 
   while (in.NextDDL()) 
+  {
+    while (in.NextChannel())
     {
-      while (in.NextChannel()) 
-	{
-    	  caloFlag = in.GetCaloFlag();
-	  if (caloFlag > 2) continue; // Work with ALTRO and FALTRO 
-    	  if(caloFlag < 2 && fRemoveBadChannels && pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow()))
-	    {
-	      continue;
-	    }  
-      	  vector<AliCaloBunchInfo> bunchlist; 
-	  while (in.NextBunch()) 
-	    {
-	      bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
-	    } 
-	  if (bunchlist.size() == 0) continue;
-      	  if ( caloFlag < 2 )
-	    { // ALTRO
-	      Int_t id = fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-	      lowGain  = in.IsLowGain();
-	      fRawAnalyzer->SetL1Phase( in.GetL1Phase() );
-	      AliCaloFitResults res =  fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2());  
-	      if(res.GetAmp() >= fNoiseThreshold )
-		{
-		  AddDigit(digitsArr, id, lowGain, res.GetAmp(),  res.GetTime()+bcTimePhaseCorr, res.GetChi2(),  res.GetNdf() ); 
-		}
-	    }//ALTRO
-	  else if(fUseFALTRO)
-	    {// Fake ALTRO
-	      fTriggerRawDigitMaker->Add( bunchlist );
-	    }//Fake ALTRO
-	} // end while over channel   
-    } //end while over DDL's, of input stream 
-  fTriggerRawDigitMaker->PostProcess();	
+      caloFlag = in.GetCaloFlag();
+    
+      if ( caloFlag > 2 ) continue; // Work with ALTRO and FALTRO
+    
+      // Online mapping and numbering is the same for EMCal and DCal SMs
+      // DCal odd SM, online cols: 16-47; offline cols 0-31. Same for even SMs
+        
+      Int_t sm     = in.GetModule() ;
+      Int_t row    = in.GetRow   () ;
+      Int_t column = in.GetColumn() ; // OK for EMCal, and 1/3 SMs, not for odd DCal.
+        
+      if ( sm == 13 || sm == 15 || sm == 17 )
+      {
+        // DCal odd SMs
+        column -= 16; // missing 1/3 of eta acceptance
+      }
+ 
+      if ( caloFlag < 2 && fRemoveBadChannels && pedbadmap->IsBadChannel(sm, column, row) )
+      {
+        /// CAREFUL here for Odd DCal 2/3 SM
+        continue;
+      }
+    
+      vector<AliCaloBunchInfo> bunchlist;
+	
+      while (in.NextBunch())
+      {
+        bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
+      }
+	  
+      if (bunchlist.size() == 0) continue;
+        
+      if ( caloFlag < 2 )
+      {
+        // ALTRO
+          
+        Int_t id = fGeom->GetAbsCellIdFromCellIndexes(sm, row, column) ;
+                
+        lowGain  = in.IsLowGain();
+                
+        fRawAnalyzer->SetL1Phase( in.GetL1Phase() );
+                
+        AliCaloFitResults res =  fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2());
+                
+        if(res.GetAmp() >= fNoiseThreshold )
+        {
+          AddDigit(digitsArr, id, lowGain, res.GetAmp(),  res.GetTime()+bcTimePhaseCorr, res.GetChi2(),  res.GetNdf() );
+        }
+      }// ALTRO
+      else if ( fUseFALTRO )
+      {// Fake ALTRO
+        fTriggerRawDigitMaker->Add( bunchlist );
+      }// Fake ALTRO
+    } // End while over channel
+  } // End while over DDL's, of input stream
+    
+  fTriggerRawDigitMaker->PostProcess();
+    
   TrimDigits(digitsArr);
 }
 
