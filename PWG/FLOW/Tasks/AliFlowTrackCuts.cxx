@@ -177,7 +177,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fContoursFile(0),
   fCutContourList(0),
   fMaxITSclusterShared(0),
-  fMaxITSChi2(0)
+  fMaxITSChi2(0),
+  fRun(0)
 {
   //io constructor 
   SetPriors(); //init arrays
@@ -299,7 +300,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fContoursFile(0),
   fCutContourList(0),
   fMaxITSclusterShared(0),
-  fMaxITSChi2(0)
+  fMaxITSChi2(0),
+  fRun(0)
 {
   //constructor
   SetTitle("AliFlowTrackCuts");
@@ -423,7 +425,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fContoursFile(0),
   fCutContourList(0),
   fMaxITSclusterShared(0),
-  fMaxITSChi2(0)
+  fMaxITSChi2(0),
+  fRun(0)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -588,6 +591,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 
   fPIDResponse = that.fPIDResponse;
   fNsigmaCut2 = that.fNsigmaCut2;
+ 
+  fRun = that.fRun;
 
   return *this;
 }
@@ -644,6 +649,9 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   Clear();
   fEvent=event;
   fMCevent=mcEvent;
+ 
+ //set run number
+ if(fEvent->GetRunNumber()) fRun = fEvent->GetRunNumber();
 
   // Get PID response
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();

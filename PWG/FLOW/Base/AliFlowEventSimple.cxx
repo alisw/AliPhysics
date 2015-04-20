@@ -76,6 +76,7 @@ AliFlowEventSimple::AliFlowEventSimple():
   fShuffleTracks(kFALSE),
   fMothersCollection(NULL),
   fCentrality(-1.),
+  fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
 {
@@ -115,6 +116,7 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
+  fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -155,6 +157,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fShuffleTracks(anEvent.fShuffleTracks),
   fMothersCollection(new TObjArray()),
   fCentrality(anEvent.fCentrality),
+  fRun(anEvent.fRun),
   fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -221,8 +224,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap;
   fNumberOfRPsWrap = anEvent.fNumberOfRPsWrap;
   fNumberOfPOIsWrap = anEvent.fNumberOfPOIsWrap;
-  fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
-  fShuffleTracks=anEvent.fShuffleTracks;
+  fMCReactionPlaneAngleWrap = anEvent.fMCReactionPlaneAngleWrap;
+  fShuffleTracks = anEvent.fShuffleTracks;
+  fCentrality = anEvent.fCentrality;
+  fRun = anEvent.fRun;
   delete [] fShuffledIndexes;
   return *this;
 }
@@ -745,6 +750,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
+  fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
