@@ -36,7 +36,8 @@ protected:
 	Double_t fTPCmomentum;	// momentum after TPC reconstruction
 	Double_t fTPCSignal;	// TPC signal
 	UShort_t fTPCSignalN;
-	Double_t fAbsPdgCode;	// pdg code of particle
+	Double_t fAbsPdgCode;	// |pdg code| of particle
+	Double_t fPdgCode;		// pdg code of particle
 	Int_t fAbsPdgCodeForTracking;
 	ClassDef(FTProbe,1)
 };
@@ -76,6 +77,7 @@ public:
 	
 	void InitEnvLocal();
 	void InitTPCParaFile(const char *TPCparaFile);
+	void InitXSectionFile(const char *XSectionFile);
 	void InitTPCPIDResponse();
 	void InitDetector(Bool_t addTPC=kTRUE, Float_t sigYTPC=0.1, Float_t sigZTPC=0.1,
 					  Float_t effTPC=1.00, Float_t scEdge=2.6); // effTPC = 0.99
@@ -126,6 +128,7 @@ public:
 	//
 	Double_t GetITSRMin() const;
 	Double_t ParticleDecayProbability(Double_t step);
+	Double_t ParticleAbsorptionProbability(Double_t length,Double_t rho, Double_t A, Double_t Z);
 	//
 protected:
 	void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=1.00, Float_t scEdge=2.6); // eff=0.99
@@ -155,11 +158,8 @@ protected:
 	Bool_t fIsTPC;                 // TPC added
 	AliPIDResponse* fPIDResponse;
 	TFile *fTPCParaFile;
-	TFile *fTPCSignalElectron;
-	TFile *fTPCSignalMuon;
-	TFile *fTPCSignalPion;
-	TFile *fTPCSignalKaon;
-	TFile *fTPCSignalProton;
+	TFile *fXSectionFile;
+	TH1F* fXSectionHp[6];
 	Float_t fTPCSectorEdge;        // cut in cm on sector edge
 	Double_t fMaxSnpTPC;           // stop particle if snp>fMaxSnpTPC
 	std::vector<FT2TPCLayer_t> fTPCLayers;
