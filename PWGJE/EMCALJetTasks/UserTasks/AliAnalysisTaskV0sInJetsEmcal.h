@@ -86,6 +86,7 @@ public:
   TString GetCentBinLabel(Int_t index);
   Double_t MassPeakSigmaOld(Double_t pt, Int_t particle);
   static bool CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2); // compare clusters by their pt/area
+  Double_t GetNormalPhi(Double_t phi) { while(phi >= fgkdDeltaPhiMax) phi -= TMath::TwoPi(); while(phi < fgkdDeltaPhiMin) phi += TMath::TwoPi(); return phi; }
 
   // upper edges of centrality bins
   static const Int_t fgkiNBinsCent = 1; // number of centrality bins
@@ -106,6 +107,9 @@ public:
   static const Int_t fgkiNBinsMassLambda; // number of bins (uniform binning)
   static const Double_t fgkdMassLambdaMin; // minimum Lambda mass
   static const Double_t fgkdMassLambdaMax; // maximum Lambda mass
+  // delta phi range
+  static const Double_t fgkdDeltaPhiMin; // minimum delta-phi_V0-jet
+  static const Double_t fgkdDeltaPhiMax; // maximum delta-phi_V0-jet
 
 protected:
   void ExecOnce();
@@ -214,7 +218,7 @@ private:
 
   // K0s
   TH1D* fh1V0CounterCentK0s[fgkiNBinsCent]; //! number of K0s candidates after various cuts
-  TH1D* fh1V0InvMassK0sAll[fgkiNCategV0]; //! V0 invariant mass, selection steps
+  TH1D* fh1V0InvMassK0sAll[fgkiNCategV0]; //! V0 invariant mass for each selection steps
   TH2D* fh2QAV0EtaPtK0sPeak[fgkiNQAIndeces]; //! daughters pseudorapidity vs V0 pt, in mass peak
   TH2D* fh2QAV0EtaEtaK0s[fgkiNQAIndeces]; //! daughters pseudorapidity vs pseudorapidity
   TH2D* fh2QAV0PhiPhiK0s[fgkiNQAIndeces]; //! daughters azimuth vs azimuth
@@ -224,14 +228,16 @@ private:
   TH1D* fh1V0CandPerEventCentK0s[fgkiNBinsCent]; //! number of K0s candidates per event, in centrality bins
   TH1D* fh1V0InvMassK0sCent[fgkiNBinsCent]; //! V0 invariant mass, in centrality bins
   // K0s Inclusive
-  THnSparse* fhnV0InclusiveK0s[fgkiNBinsCent]; //! V0 inv mass vs pt before and after cuts, in centrality bins
+  THnSparse* fhnV0InclusiveK0s[fgkiNBinsCent]; //! V0 inclusive, in a centrality bin, m_V0; pt_V0; eta_V0
   // K0s Cones
-  THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0InPerpK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0InRndK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0InMedK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0OutJetK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt, in centrality bins
-  THnSparse* fhnV0NoJetK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt, in centrality bins
+  THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
+  THnSparse* fhnV0InPerpK0s[fgkiNBinsCent]; //! V0 in perpendicular cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
+  THnSparse* fhnV0InRndK0s[fgkiNBinsCent]; //! V0 in random cones, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0InMedK0s[fgkiNBinsCent]; //! V0 in medium cones, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0OutJetK0s[fgkiNBinsCent]; //! V0 outside jet cones, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0NoJetK0s[fgkiNBinsCent]; //! V0 in no-jet events, in a centrality bin, m_V0; pt_V0; eta_V0
+  // K0S delta phi
+  THnSparse* fhnV0CorrelK0s[fgkiNBinsCent]; //! V0-jet phi correlations, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet
 
   TH2D* fh2V0PtJetAngleK0s[fgkiNBinsCent]; //! pt jet vs angle V0-jet, in centrality bins
   TH1D* fh1DCAInK0s[fgkiNBinsCent]; //! DCA between daughters of V0 inside jets, in centrality bins
