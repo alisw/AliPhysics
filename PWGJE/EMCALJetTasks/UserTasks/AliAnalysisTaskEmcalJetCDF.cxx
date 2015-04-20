@@ -301,10 +301,6 @@ Bool_t AliAnalysisTaskEmcalJetCDF::Run()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   {
-  // consts used in analysis
-//   Double_t const kPI_3 = TMath::Pi() / 3.;
-//   Double_t const k2PI_3 = 2 * kPI_3;
-
   AliVParticle *track = NULL;
   AliEmcalJet *jet = NULL;
 
