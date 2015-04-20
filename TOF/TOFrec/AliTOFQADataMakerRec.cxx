@@ -983,8 +983,9 @@ void AliTOFQADataMakerRec::StartOfDetectorCycle()
   //Detector specific actions at start of cycle
   fCalibData = GetCalibData();
   fIsSOC=kTRUE;
-  for (int itc=-1;itc<GetNTrigClasses();itc++) { 
-      ((TH1*) GetRawsData(30, itc))->Reset("ICESM");
+  for (int itc=-1;itc<GetNTrigClasses();itc++) {
+    TH1* hist = (TH1*) GetRawsData(30, itc);
+      if (hist) hist->Reset("ICESM");
   }    
   return;
 }  
