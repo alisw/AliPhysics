@@ -136,12 +136,12 @@ public:
 
   void PrintValue(const char* key, const char* opt, Double_t value, Double_t errorStat, Double_t rms=0.0) const;
 
-  void ProcessMinvFit(TFitResultPtr fitResult, TF1* fitTotal, TF1* bckInit, const char* fitOption, Int_t iParKPsip, Int_t iLastParBkg);
+  void ProcessMinvFit(TFitResultPtr& fitResult, TF1* fitTotal, TF1* bckInit, const char* fitOption, Int_t iParKPsip, Int_t iLastParBkg);
 
-  void ProcessBkgFit(TFitResultPtr fitResultInit, TF1* bckInit, const char* bkgFuncName, const char* fitOption);
+  void ProcessBkgFit(TFitResultPtr& fitResultInit, TF1* bckInit, const char* bkgFuncName, const char* fitOption);
 
   TString FitFunctionName() const { return fFitFunction; }
-  
+
   TString GetFitFunctionMethodName() const;
   
   void Draw(Option_t* opt="");

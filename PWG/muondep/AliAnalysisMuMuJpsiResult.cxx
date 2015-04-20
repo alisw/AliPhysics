@@ -1509,7 +1509,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
 
   TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
 
-  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
 
   //___________
 
@@ -1647,7 +1647,6 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
 
 
   delete bckInit; //Delete the initial background funtion
-
 
   //___________Set parameters and fit functions to store in the result
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
@@ -2239,7 +2238,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
   fitTotal->SetParameter(11, fHisto->GetBinContent(bin)*0.5); //kPsi'
   fitTotal->SetParLimits(11, fHisto->GetBinContent(bin)*0.01,fHisto->GetBinContent(bin));
   
-  const char* fitOption = "SERI";
+  const char* fitOption = "SER";
   
   //_____________First fit attempt
   TFitResultPtr fitResult = fHisto->Fit(fitTotal,fitOption,"");
@@ -2252,9 +2251,8 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
   if ( static_cast<int>(fitResult) ) ProcessMinvFit(fitResult,fitTotal,bckInit,fitOption,11,3);
   //___________
   
-  
+
   delete bckInit; //Delete the initial background funtion
-  
 
   //___________Set parameters and fit functions to store in the result
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
@@ -5876,7 +5874,7 @@ void AliAnalysisMuMuJpsiResult::PrintParticle(const char* particle, const char* 
 }
 
 //________________________
-void AliAnalysisMuMuJpsiResult::ProcessMinvFit(TFitResultPtr fitResult, TF1* fitTotal, TF1* bckInit, const char* fitOption, Int_t iParKPsip, Int_t iLastParBkg)
+void AliAnalysisMuMuJpsiResult::ProcessMinvFit(TFitResultPtr& fitResult, TF1* fitTotal, TF1* bckInit, const char* fitOption, Int_t iParKPsip, Int_t iLastParBkg)
 {
   // If a Minv fit fails this algorithm changes some initial parameters to get the fit converged
 
@@ -5978,10 +5976,11 @@ void AliAnalysisMuMuJpsiResult::ProcessMinvFit(TFitResultPtr fitResult, TF1* fit
 
     if ( static_cast<int>(fitResult) ) std::cout << "//-------Cannot fit properly, try something else..." << std::endl;
   }
+
 }
 
 //________________________
-void AliAnalysisMuMuJpsiResult::ProcessBkgFit(TFitResultPtr fitResultInit, TF1* bckInit, const char* bkgFuncName, const char* fitOption)
+void AliAnalysisMuMuJpsiResult::ProcessBkgFit(TFitResultPtr &fitResultInit, TF1* bckInit, const char* bkgFuncName, const char* fitOption)
 {
   // If a Bkg fit fails this algorithm changes some initial parameters or fitting range to get the fit converged. Can be refined
 
