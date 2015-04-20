@@ -320,22 +320,40 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
     
       if ( caloFlag > 2 ) continue; // Work with ALTRO and FALTRO
     
-      // Online mapping and numbering is the same for EMCal and DCal SMs
-      // DCal odd SM, online cols: 16-47; offline cols 0-31. Same for even SMs
+      //----------------------------------------------------------------------
+      //
+      // Online mapping and numbering is the same for EMCal and DCal SMs but:
+      //  - DCal odd SM (13,15,17) has online cols: 16-47; offline cols 0-31.
+      //  - Even DCal SMs have the same numbering online and offline 0-31.
+      //  - DCal 1/3 SM (18,19), online rows 16-23; offline rows 0-7
+      //
+      // In the next lines shift the online cols or rows depending on the
+      // SM to match the offline mapping.
+      // To be understood the cause/need of the shifts.
+      //
         
       Int_t sm     = in.GetModule() ;
       Int_t row    = in.GetRow   () ;
-      Int_t column = in.GetColumn() ; // OK for EMCal, and 1/3 SMs, not for odd DCal.
+      Int_t column = in.GetColumn() ;
+        
+      // Apply the shifts:
         
       if ( sm == 13 || sm == 15 || sm == 17 )
       {
         // DCal odd SMs
-        column -= 16; // missing 1/3 of eta acceptance
+        column -= 16; // why?
       }
- 
+
+      if ( sm == 18 || sm == 19 )
+      {
+        // DCal 1/3 SMs
+        row -= 16; // why?
+      }
+      //
+      //---------------------------------------------------------------------
+        
       if ( caloFlag < 2 && fRemoveBadChannels && pedbadmap->IsBadChannel(sm, column, row) )
       {
-        /// CAREFUL here for Odd DCal 2/3 SM
         continue;
       }
     
