@@ -38,11 +38,7 @@ fITSRec(0)
 ,fIsTPC(kFALSE)
 ,fPIDResponse(0)
 ,fTPCParaFile(0)
-,fTPCSignalElectron(0)
-,fTPCSignalMuon(0)
-,fTPCSignalPion(0)
-,fTPCSignalKaon(0)
-,fTPCSignalProton(0)
+,fXSectionFile(0)
 ,fTPCSectorEdge(0)
 ,fMaxSnpTPC(0.95)
 ,fTPCLayers()
@@ -104,12 +100,27 @@ FT2::~FT2()
 //________________________________________________
 void FT2::InitTPCParaFile(const char *TPCParaFile)
 {
-	AliInfo("Setting Files");
+	AliInfo("Setting TPC Files");
 	
 	fTPCParaFile = TFile::Open(TPCParaFile);
 	if(fTPCParaFile->IsZombie()) AliFatal("Problem with opening TPC Parameterization File - File not available!");
 	
 	fTPCClsLossProb = (TF1*)fTPCParaFile->Get("TPCClsLossProbability");
+}
+//________________________________________________
+void FT2::InitXSectionFile(const char *XSectionFile)
+{
+	AliInfo("Setting X-Section Files");
+	
+	fXSectionFile = TFile::Open(XSectionFile);
+	if(fXSectionFile->IsZombie()) AliFatal("Problem with opening X-Section File - File not available!");
+	
+	fXSectionHp[0] = (TH1F*)fXSectionFile->Get("hPiplusPXSection");
+	fXSectionHp[1] = (TH1F*)fXSectionFile->Get("hPiminusPXSection");
+	fXSectionHp[2] = (TH1F*)fXSectionFile->Get("hKplusPXSection");
+	fXSectionHp[3] = (TH1F*)fXSectionFile->Get("hKminusPXSection");
+	fXSectionHp[4] = (TH1F*)fXSectionFile->Get("hPplusPXSection");
+	fXSectionHp[5] = (TH1F*)fXSectionFile->Get("hPminusPXSection");
 }
 //________________________________________________
 void FT2::InitDetector(Bool_t addTPC, Float_t sigYTPC,Float_t sigZTPC,Float_t effTPC,Float_t scEdge)
@@ -393,6 +404,7 @@ Bool_t FT2::InitProbe(TParticle* part)
 	Double_t charge = pdgp->Charge();
 	fProbe.fProbeMass = pdgp->Mass();
 	fProbe.fAbsPdgCode = TMath::Abs(pdgCode);
+	fProbe.fPdgCode = pdgCode;
 	//
 	param[0] = ver.Y();
 	param[1] = ver.Z();
@@ -416,6 +428,7 @@ Bool_t FT2::PrepareProbe()
 	//
 	double xyzTmp[3];
 	double xyzAft[3];
+	double params[8];
 	//
 	for (int ilr=0;ilr<nlrITS;ilr++) {
 		AliITSURecoLayer* lr = fITS->GetLayer(ilr);
@@ -433,7 +446,12 @@ Bool_t FT2::PrepareProbe()
 #if DEBUG>5
 			cout << ilr << " New Step Length in ITS is: " << dits << endl;
 #endif
-			if(gRandom->Rndm()<ParticleDecayProbability(dits)) {
+		//	if(gRandom->Rndm()<ParticleDecayProbability(dits)) {
+		//		return kFALSE;
+		//	}
+//			cout << "Computing Absorption Probability ITS " << ilr << endl;
+			AliTrackerBase::MeanMaterialBudget(xyzTmp,xyzAft,params);
+			if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
 				return kFALSE;
 			}
 		}
@@ -461,7 +479,7 @@ Bool_t FT2::PrepareProbe()
 			
 			FT2TPCLayer_t &tpcLr = fTPCLayers[ilr];
 			
-/*			if(fAllowDecay){
+			if(fAllowDecay){
 				if(ilr!=(int)fTPCLayers.size()-1){
 					FT2TPCLayer_t &tpcLrNext = fTPCLayers[ilr+1];
 					Float_t positionNow[3];
@@ -473,13 +491,13 @@ Bool_t FT2::PrepareProbe()
 												+(positionNow[1]-positionNext[1])*(positionNow[1]-positionNext[1])
 												+(positionNow[2]-positionNext[2])*(positionNow[2]-positionNext[2]));
 				
-					cout << ilr << " Old Step Length in TPC is: " << step << endl;
+				//	cout << ilr << " Old Step Length in TPC is: " << step << endl;
 
-				//	if(gRandom->Rndm()<ParticleDecayProbability(step)) {
-				//		return kFALSE;
-				//	}
+					if(gRandom->Rndm()<ParticleDecayProbability(step)) {
+						return kFALSE;
+					}
 				}
-			}*/
+			}
 			
 			tpcLr.hitSect = -1;
 			fProbe.GetXYZ(xyzTmp);
@@ -532,7 +550,12 @@ Bool_t FT2::PrepareProbe()
 #if DEBUG>5
 				cout << ilr << " New Step Length in TPC is: " << d << endl;
 #endif
-				if(gRandom->Rndm()<ParticleDecayProbability(d)) {
+			//	if(gRandom->Rndm()<ParticleDecayProbability(d)) {
+			//		return kFALSE;
+			//	}
+	//			cout << "Computing Absorption Probability TPC " << ilr << endl;
+				AliTrackerBase::MeanMaterialBudget(xyzTmp,xyzAft,params);
+				if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
 					return kFALSE;
 				}
 			}
@@ -1429,4 +1452,48 @@ Double_t FT2::ParticleDecayProbability(Double_t step){
 	else{
 		return (1.-TMath::Exp(-step/((energy/mass)*sol*lifetime)));
 	}
+}
+//_________________________________________________________
+Double_t FT2::ParticleAbsorptionProbability(Double_t length,Double_t rho, Double_t A, Double_t Z){
+	
+	Double_t Navo = 6.022E23; // Avogadro
+	
+	Double_t sigma0 = 0.;
+	Int_t pdg = fProbe.fPdgCode;
+	Double_t mom = fProbe.P();
+	
+
+	if(pdg==+211){		sigma0 = fXSectionHp[0]->GetBinContent(fXSectionHp[0]->FindBin(mom));}
+	else if(pdg==-211){	sigma0 = fXSectionHp[1]->GetBinContent(fXSectionHp[1]->FindBin(mom));}
+	else if(pdg==+321){	sigma0 = fXSectionHp[2]->GetBinContent(fXSectionHp[2]->FindBin(mom));}
+	else if(pdg==-321){	sigma0 = fXSectionHp[3]->GetBinContent(fXSectionHp[3]->FindBin(mom));}
+	else if(pdg==+2212){sigma0 = fXSectionHp[4]->GetBinContent(fXSectionHp[4]->FindBin(mom));}
+	else if(pdg==-2212){sigma0 = fXSectionHp[5]->GetBinContent(fXSectionHp[5]->FindBin(mom));}
+	else if(pdg==+11){
+		Double_t mass		= fProbe.fProbeMass;
+		Double_t energy		= TMath::Sqrt(mass*mass+mom*mom);
+		Double_t gamma		= energy/mass;
+		Double_t radLength	= (1432.8*A)/(Z*(Z+1)*(11.319-TMath::Log(Z))); // g/cm2
+		return (1.-TMath::Exp(-length*rho/radLength));
+	}
+	else if(pdg==-11){
+		Double_t mass		= fProbe.fProbeMass;
+		Double_t energy		= TMath::Sqrt(mass*mass+mom*mom);
+		Double_t gamma		= energy/mass;
+		Double_t radLength	= (1432.8*A)/(Z*(Z+1)*(11.319-TMath::Log(Z))); // g/cm2
+		Double_t radiusEl	= 2.8179403267E-13; // cm
+		Double_t sigmaAni	= Z*TMath::Pi()*radiusEl*radiusEl/(gamma+1)*((gamma*gamma+4.*gamma+1)/(gamma*gamma-1)*TMath::Log(gamma+TMath::Sqrt(gamma*gamma-1))-(gamma+3)/TMath::Sqrt(gamma*gamma-1));
+		
+		Double_t lambdaAni = A/(rho*Navo*sigmaAni);
+
+		return (2.-TMath::Exp(-length*rho/radLength)-TMath::Exp(-length*rho/lambdaAni));
+	}
+	else return -1;
+	sigma0*=1E-27; // X-Section from mb to cm2
+	
+	Double_t lambda = TMath::Power(A,1./3.)/(rho*Navo*sigma0);
+#if DEBUG>5
+	AliInfo(Form("\n### %i with p = %f\n### Rho: %f\n### A: %f\n### Z: %f\n### Navo: %E\n### sigma0: %E\n### x: %E\n### Lambda: %f\n### xrho/La: %f\n",pdg,mom,rho,A,Z,Navo,sigma0,length,lambda,length*rho/lambda));
+#endif
+	return (1.-TMath::Exp(-length*rho/lambda));
 }
