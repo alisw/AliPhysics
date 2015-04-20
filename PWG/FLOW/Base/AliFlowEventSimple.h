@@ -166,7 +166,7 @@ class AliFlowEventSimple: public TObject {
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
-  ClassDef(AliFlowEventSimple,1)
+  ClassDef(AliFlowEventSimple,2)
 };
 
 #endif
