@@ -144,7 +144,9 @@ public:
     /** Out of bunch pileup */
     kPileupBC    = 0x40000,
     /** SPD pile-up in mult bins */
-    kPileupBins  = 0x80000
+    kPileupBins  = 0x80000,
+    /** Our default negative filter */
+    kDefaultFilter = kPileupBins|kSPDOutlier
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -202,7 +204,9 @@ public:
     /** Event trigger isn't in the supplied mask */
     kWrongTrigger, 
     /** Event is a pile-up event */
-    kIsPileup, 
+    kIsPileup,
+    /** Other filter cut */
+    kIsFilterOut,
     /** Event has no interaction point information */
     kNoVertex, 
     /** Event interaction point is out of range */
@@ -453,10 +457,11 @@ public:
    * Get a string correspondig to the trigger mask
    * 
    * @param mask Trigger mask 
+   * @param sep  Field separator
    * 
    * @return Static string (copy before use)
    */
-  static const Char_t* GetTriggerString(UInt_t mask);
+  static const Char_t* GetTriggerString(UInt_t mask, const char* sep="&");
   /** 
    * Utility function to make a trigger mask from the passed string. 
    * 
@@ -468,10 +473,11 @@ public:
    * - NSD 
    * 
    * @param what Which triggers to put in the mask. 
+   * @param sep  Field separator
    * 
    * @return The generated trigger mask. 
    */
-  static UInt_t MakeTriggerMask(const char* what);
+  static UInt_t MakeTriggerMask(const char* what, const char* sep="&");
   /* @} */
   /** 
    * @{ 
@@ -699,23 +705,25 @@ public:
    * If a histogram is passed in the last parameter, then that
    * histogram is filled with the trigger bits. 
    * 
-   * @param triggerMask  Trigger mask
+   * @param triggerMask  Trigger mask. All bits in this mask must be
+   *                     set (AND)
    * @param vzMin        Minimum @f$ v_z@f$ (in centimeters)
    * @param vzMax        Maximum @f$ v_z@f$ (in centimeters) 
    * @param cMin         Minimum centrality (in percent)
    * @param cMax         Maximum centrality (in percent)
    * @param hist         Histogram to fill 
    * @param status       Histogram to fill 
-   * @param removePileup If true, do not accept pile-up events (default)
+   * @param filterMask   Mask of trigger bits to filter on. If any bit
+   * in this mask is set, reject the event (OR)
    * 
    * @return @c true if the event meets the requirements 
    */
   Bool_t CheckEvent(Int_t    triggerMask=kInel,
 		    Double_t vzMin=-10, Double_t vzMax=10,
-		    UShort_t cMin=0,    UShort_t cMax=100, 
+		    Double_t cMin=0,    Double_t cMax=100, 
 		    TH1*     hist=0,
 		    TH1*     status=0,
-		    Bool_t   removePileup=true) const;
+		    Int_t    pileUpMask=kDefaultFilter) const;
   /** 
    * Make a histogram to record triggers in. 
    *

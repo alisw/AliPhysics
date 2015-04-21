@@ -186,8 +186,8 @@ struct dNdetaDrawer
       fShowOthers(0),        // Show other data
       // Settings 
       fRebin(0),             // Rebinning factor 
-      fFwdSysErr(0.076),     // Systematic error in forward range
-      fCenSysErr(0),         // Systematic error in central range 
+      fFwdSysErr(0.07),      // Systematic error in forward range
+      fCenSysErr(0.02),      // Systematic error in central range 
       fTitle(""),            // Title on plot
       fBase(""),             // Optional base name of output files
       fClusterScale(""),     // Scaling of clusters to tracklets      
@@ -528,7 +528,7 @@ struct dNdetaDrawer
     fCentSeen         = 0;
     fOptions          = flags;
     fFormats          = formats;
-    SetForwardSysError(flags & kShowSysError ? 0.076 : 0);
+    SetForwardSysError(flags & kShowSysError ? 0.07 : 0);
     SetFinalMC        (flags & kUseFinalMC ? "forward_dndetamc.root" : "");
     // "EmpiricalCorrection.root"
     SetEmpirical      (flags & kUseEmpirical ? fEmpirical.Data() : "");
@@ -765,7 +765,7 @@ struct dNdetaDrawer
 	CorrectCentral(cen);
 	Double_t low, high;
 	TH1* tmp = Merge(cen, fwd, low, high);
-	TF1* f   = FitMerged(tmp, low, high);
+	TF1* f   = 0; // FitMerged(tmp, low, high);
 	MakeSysError(tmp, cen, fwd, f);
 	delete f;
 
@@ -780,12 +780,12 @@ struct dNdetaDrawer
 	    tmppp->SetBinError(k, 0);
 	    tmppp->SetBinContent(k, 0);
 	  }
-	  fResults->GetHists()->AddFirst(tmpp, "e5");
+	  fResults->GetHists()->AddFirst(tmpp, (f ? "e5" : "e2"));
 	}
 
 	if (fOptions & kVerbose) 
 	  Info("", "Adding systematic error histogram %s", tmp->GetName());
-	fResults->GetHists()->AddFirst(tmp, "e5");
+	fResults->GetHists()->AddFirst(tmp, (f ? "e5" : "e2"));
 
 	if (!(fOptions & kMirror)) continue;
 
@@ -931,12 +931,10 @@ struct dNdetaDrawer
     }
     if (fSysString->GetUniqueID() == 3 ||
 	fSysString->GetUniqueID() == 4) {
-      Info("FetchInformation", "Left/Right assymmetry, mirror, and systematic "
-	   "errors explicitly disabled for pPb/Pbp");
+      Info("FetchInformation", "Left/Right asymmetry, and mirroring "
+	   "explicitly disabled for pPb/Pbp");
       fOptions   &= ~kShowLeftRight;
       fOptions   &= ~kMirror;
-      fFwdSysErr =  0;
-      fCenSysErr =  0;
     }
   }
   //__________________________________________________________________
@@ -997,6 +995,7 @@ struct dNdetaDrawer
       gROOT->ProcessLine(Form("RefData::GetData(%d,%d,%d,%d,%d,%d);",
 			      sys,snn,trg,centLow,centHigh,fShowOthers));
     if (!ret) {
+#if 0
       Warning("", "RefData::GetData(%d,%d,0x%x,%d,%d,0x%x);",
 	      sys,snn,trg,centLow,centHigh,fShowOthers);
       Warning("FetchOthers", 
@@ -1005,6 +1004,7 @@ struct dNdetaDrawer
 	      fTrigString ? fTrigString->GetTitle() : "unknown", 
 	      fSNNString  ? fSNNString->GetTitle()  : "unknown", 
 	      centLow, centHigh, fShowOthers);
+#endif
       return 0;
     }
 
@@ -2037,6 +2037,21 @@ struct dNdetaDrawer
    * @{ 
    * @name Data utility functions 
    */
+  Color_t Brighten(Color_t origNum, Int_t nTimes=2) const
+  {
+    TColor* col   = gROOT->GetColor(origNum);
+    if (!col) return origNum;
+    Int_t   origR = Int_t(0xFF * col->GetRed());
+    Int_t   origG = Int_t(0xFF * col->GetGreen());
+    Int_t   origB = Int_t(0xFF * col->GetBlue());
+    // TColor::Pixel2RGB(TColor::Number2Pixel(origNum), origR, origG, origB);
+    Int_t off    = nTimes*0x33;
+    Int_t newR   = TMath::Min((origR+off),0xff);
+    Int_t newG   = TMath::Min((origG+off),0xff);
+    Int_t newB   = TMath::Min((origB+off),0xff);
+    Int_t newNum = TColor::GetColor(newR, newG, newB);
+    return newNum;
+  }
   //__________________________________________________________________
   /** 
    * Get the color for a centrality bin
@@ -2064,7 +2079,7 @@ struct dNdetaDrawer
     Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
     Int_t    col      = gStyle->GetColorPalette(icol);
     //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
-    return col;
+    return Brighten(col);
   }
   //__________________________________________________________________
   /** 
@@ -2870,19 +2885,24 @@ struct dNdetaDrawer
   void
   MakeSysError(TH1* tmp, TH1* cen, TH1* fwd, TF1* fit)
   {
-    if (!tmp || !fwd || !fit) return;
+    if (!tmp || !fwd) return;
     for (Int_t i = 1; i <= tmp->GetNbinsX(); i++) {
       Double_t tc = tmp->GetBinContent(i);
       if (tc < 0.01) continue;
-      Double_t fc = fwd->GetBinContent(i);
-      Double_t cc = cen ? cen->GetBinContent(i) : 0;
+      Double_t fc     = fwd->GetBinContent(i);
+      Double_t cc     = cen ? cen->GetBinContent(i) : 0;
       Double_t sysErr = fFwdSysErr;
-      if (cc > .01 && fc > 0.01) 
+      Double_t mc     = fc;
+      if (cc > .01 && fc > 0.01) {
 	sysErr = (fFwdSysErr+fCenSysErr) / 2;
-      else if (cc > .01) 
+	mc     = (fc+cc) / 2;
+      }
+      else if (cc > .01) {
 	sysErr = fCenSysErr;
+	mc     = cc;
+      }
       Double_t x = tmp->GetXaxis()->GetBinCenter(i);
-      Double_t y = fit->Eval(x);
+      Double_t y = (fit ? fit->Eval(x) : mc);
       tmp->SetBinContent(i, y);
       tmp->SetBinError(i,sysErr*y);
     }

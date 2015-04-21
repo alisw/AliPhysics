@@ -31,16 +31,16 @@ public:
   : TrainSetup(name)
   {
     fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
+    fOptions.Add("filter",   "TYPE", "Filter type", "OUTLIER|PILEUP-BIN");
     fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
     fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
     fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "EVENT,TRIGGER");
-    fOptions.Add("trigEff",  "EFFICENCY", "Trigger effeciency", "1");
-    fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
+    fOptions.Add("trigEff",  "EFFICIENCY", "Trigger efficiency", "1");
+    fOptions.Add("trigEff0", "EFFICIENCY", "0-bin trigger effeciency", "1");
     fOptions.Add("cent",     "ESTIMATOR", "Use centrality", "none");
     fOptions.Add("centBins", "EDGES", "Centrality bin edges", "");
     fOptions.Add("mc",       "Also make dN/deta for MC truth");
     fOptions.Add("satellite","Restrict analysis to satellite events", false);
-    fOptions.Add("outliers", "Ignore SPD outlier events", true);
     fOptions.Add("forward-config", "FILE", "Forward configuration", 
 		 "dNdetaConfig.C");
     fOptions.Add("central-config", "FILE", "Central configuration", 
@@ -59,16 +59,15 @@ protected:
       return false;
     }
     FromOption(tsk, "TriggerMask",         "trig",     "INEL");
+    FromOption(tsk, "FilterMask",          "filter",   "OUTLIER|PILEUP-BIN");
     FromOption(tsk, "NormalizationScheme", "scheme",   "EVENT,TRIGGER");
     FromOption(tsk, "IpZMin",              "vzmin",    -10.);
     FromOption(tsk, "IpZMax",              "vzmax",    +10.);
     FromOption(tsk, "TriggerEff",          "trigEff",  1.);
     FromOption(tsk, "TriggerEff0",         "trigEff0", 1.);
     FromOption(tsk, "CentralityMethod",    "cent",     "");
-    FromOption(tsk, "CentralityAxis",      "centBins",
-	       "0:5:10:20:30:40:50:60:80:101");
+    FromOption(tsk, "CentralityAxis",      "centBins", "default");
     FromOption(tsk, "SatelliteVertices",   "satellite", false);
-    FromOption(tsk, "CheckSPDOutlier",     "outliers", true);
     return true;
 
   }
@@ -227,7 +226,7 @@ protected:
     o << "void Draw(const TString& title=\"" << fName << "\",\n"
       << "          UShort_t       rebin=5,\n"
       << "          UShort_t       others=0xf,\n"
-      << "          UInt_t         flags=0x1C487,\n"
+      << "          UInt_t         flags=0x3C487,\n"
       << "          UShort_t       sNN=0,\n"
       << "          UShort_t       sys=0,\n"
       << "          UShort_t       trg=0,\n"

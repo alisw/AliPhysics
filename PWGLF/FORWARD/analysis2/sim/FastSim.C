@@ -268,6 +268,67 @@ struct FastMonitor : public TObject, public TQObject
 };
 
 
+struct FastCentEstimator : public TNamed
+{
+  TAxis fCentAxis;
+  FastCentEstimator(const char* name)
+    : TNamed(name,name),
+      fCentaxis()
+  {}
+  virtual void SetCentralityAxis(Int_t n, Double_t low, Double_t high)
+  {
+    fCentAxis.Set(n, low, high);
+  }
+  virtual void SetCentralityAxis(Int_t n, Double_t* bins)
+  {
+    fCentAxis.Set(n, bins);
+  }
+  virtual void Setup(TList* out);
+  virtual void PreEvent() {}
+  virtual void AcceptParticle(TParticle* p) = 0;
+  virtual void PostEvent() {}
+  virtual void Terminate(TList* out) {};
+};
+struct Fast1DCentEstimator : public FastCentEstimator
+{
+  Double_t fCache = 0;
+  Fast1DCentEstimator(const char* name)
+    : FastCentEstimator(name)
+  {}
+  virtual void PreEvent()
+  {
+    fCache = 0;
+  }
+  virtual void PostEvent()
+  {
+    GetHistogram()->Fill(fCache);
+  }
+  virtual void Terminate(TList* out)
+  {
+    TH1* h = GetHistogram(out);
+    
+    Int_t    nX         = h->GetNbinsX();
+    Double_t total      = h->Integral(1,nX);
+    Int_t    curCenBin  = 1;
+    Double_t curX       = h->GetBinLowEdge(nX);
+    for (Int_t i = h->GetNbinsX(); i > 0; i--) {
+      Double_t curInt     = h->Integral(i, nX);
+      if (curInt > fCentAxis.GetBinLowEdge(curCenBin)) {
+	// Take last X value as cut value
+	
+	curCenBin++;
+      }
+      curX = h->GetXaxis()->GetBinLowEdge(i);
+    }
+
+  }
+};
+
+    
+	
+    
+  
+
 //====================================================================
 /** 
  * Run a event generator simulation 
