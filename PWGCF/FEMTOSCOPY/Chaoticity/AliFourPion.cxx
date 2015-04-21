@@ -934,7 +934,7 @@ void AliFourPion::ParInit()
     fQupperBoundQinv3D = 0.6;
   }
   
-  //fQLowerCut = 0.005;
+  
   fKupperBound = 1.0;
   //
   fKstepY[0] = 1.6;
@@ -2836,7 +2836,7 @@ void AliFourPion::UserExec(Option_t *)
     
 
   
- 
+  
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////
@@ -3081,7 +3081,7 @@ void AliFourPion::UserExec(Option_t *)
 		}// MC array check
 	      }// MC case
 	      
-		
+	     
 	      
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
@@ -3517,7 +3517,7 @@ void AliFourPion::UserExec(Option_t *)
 		  Int_t chGroup4[4]={ch1,ch2,ch3,ch4};
 		  Float_t QinvMCGroup4[6]={0};
 		  Float_t kTGroup4[6]={0};
-		  
+		 
 		  if(fMCcase){// for momentum resolution and muon correction
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en3)->fTracks[k].fLabel) continue;
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en2)->fTracks[j].fLabel) continue;
@@ -3545,7 +3545,7 @@ void AliFourPion::UserExec(Option_t *)
 		  Float_t QoutSum = fabs(qout12) + fabs(qout13) + fabs(qout14) + fabs(qout23) + fabs(qout24) + fabs(qout34);
 		  Float_t QsideSum = fabs(qside12) + fabs(qside13) + fabs(qside14) + fabs(qside23) + fabs(qside24) + fabs(qside34);
 		  Float_t QlongSum = fabs(qlong12) + fabs(qlong13) + fabs(qlong14) + fabs(qlong23) + fabs(qlong24) + fabs(qlong34);
-		  
+		
 		  if(!fq2Binning && !fLowMultBinning && fQdirectionBinning==0){
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
@@ -3713,11 +3713,13 @@ void AliFourPion::UserExec(Option_t *)
 		    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[EDindex4].FourPT[12].fPrimeBuildFromFits->Fill(2, 4, q4, 1);
 		    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[EDindex4].FourPT[12].fPrimePrimeBuildFromFits->Fill(2, 4, q4, 1);
 		    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[EDindex4].FourPT[12].fCumulantBuildFromFits->Fill(2, 4, q4, 1);
+		    
 		    // Full Weight reconstruction
 		    for(Int_t type=0; type<3; type++){// C2 interpolation, c3 fit, C3 fit
 		      if(type==0 && fCollisionType!=0) continue;
 		      for(Int_t RcohIndex=0; RcohIndex<7; RcohIndex++){// Rcoh=0,1,2,3,4,5 fm, then Rcoh=Rch
 			if(RcohIndex>1 && RcohIndex<6) continue;// save cpu time
+			if(fCollisionType!=0 && RcohIndex!=6) continue;// save cpu time
 			t12 = exp(-pow(RcohIndex/FmToGeV * qinv12,2)/2.);
 			t13 = exp(-pow(RcohIndex/FmToGeV * qinv13,2)/2.);
 			t14 = exp(-pow(RcohIndex/FmToGeV * qinv14,2)/2.);
@@ -3830,7 +3832,7 @@ void AliFourPion::UserExec(Option_t *)
 		    //Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[EDindex4].FourPT[12].fBuildErr->Fill(4, q4, weightTotalErr);
 		    
 		    // Radius estimations for c4
-		    if(fMbin==0 && EDindex4==0){
+		    if(fMbin==0 && EDindex4==0 && fCollisionType==0){
 		      for(Int_t Rindex=0; Rindex<7; Rindex++){
 			Float_t R = (6. + Rindex)/FmToGeV;
 			Float_t arg12=qinv12*R;
