@@ -1094,6 +1094,14 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
     Double_t entries = projch->GetEntries();
     //printf("Number of entries %f for det %d\n",entries,idet);
 
+    TVectorD error(3);
+    Bool_t heree    = fAliTRDCalibraVdriftLinearFit->GetError(idet,&error);
+    Double_t entriesvd = 0.;
+    if(heree) {
+      entriesvd = error[2];
+    }
+    //printf("Number of entries for detector %d for gain %f and for vd %f\n",idet,entries,entriesvd);
+    
     // sm number
     Int_t smnumber = (Int_t) idet/30;
 
@@ -1123,6 +1131,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
 
     if(TMath::Abs(gainmeanSM[smnumber]-gain) < 0.000001  ||
        TMath::Abs(vdriftmeanSM[smnumber]-vdrift) < 0.000001 ||
+       entries < fMinStatsGain                              ||
+       entriesvd < fMinStatsVdriftLinear                    ||
        TMath::Abs(exbmeanSM[smnumber]-exb) < 0.000001) {
       
       //printf(" chamber det %03d notcalibrated sm %d \n",idet,smnumber);
