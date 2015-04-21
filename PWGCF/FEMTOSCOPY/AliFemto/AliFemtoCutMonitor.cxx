@@ -1,9 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCutMonitor - the  base class for cut monitor                       //
-// A cut monitor saves the entities that passed and failed the given cut      //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCutMonitor.cxx
+///
+
 #include "AliFemtoCutMonitor.h"
 
 void AliFemtoCutMonitor::EventBegin(const AliFemtoEvent* /* aEvent */ ) 

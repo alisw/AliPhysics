@@ -7,6 +7,7 @@
 #include "AliAODMCParticle.h"
 
 class AliVCluster;
+class AliAODTrack;
 
 class AliPicoTrack: public AliVTrack {
  public:
@@ -97,6 +98,7 @@ class AliPicoTrack: public AliVTrack {
 
   static void     GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
   static Byte_t   GetTrackType(const AliVTrack *t);
+  static Byte_t   GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2);
 
  protected:
   Double32_t      fPt;             //[0,0,12]   pt at vertex

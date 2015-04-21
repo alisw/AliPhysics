@@ -13,6 +13,7 @@ class TList;
 class AliPIDResponse;
 class AliAODEvent;
 class AliESDEvent;
+class AliTOFTriggerMask;
 
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
@@ -62,8 +63,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Bool_t fTrigger[ntrg];
   Bool_t fTriggerInputsMC[ntrg];
   UInt_t fL0inputs, fL1inputs;
-  Bool_t fTOFtrig1, fTOFtrig2;
-  Double_t fTOFphi[4];
+  AliTOFTriggerMask *fTOFmask;
   Bool_t fIsPhysicsSelected;
   
   Double_t fPIDTPCMuon[4];

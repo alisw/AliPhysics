@@ -391,7 +391,7 @@ Int_t AliAnalysisTaskEmcalJetMassStructure::CalculateNMissingTracks(AliEmcalJet 
 
    avgpTRec/=(Float_t)NconstRec;
    avgpTGen/=(Float_t)NconstGen;
-   Double_t fill[7] = {NconstRec - NconstGen, avgpTRec, avgpTGen, jet1->Pt(), jPart->Pt(), (Float_t)NconstRec/(Float_t)NconstGen, (Double_t)countMatch/(Double_t)NconstRec};
+   Double_t fill[7] = {(Double_t)(NconstRec - NconstGen), avgpTRec, avgpTGen, jet1->Pt(), jPart->Pt(), (Float_t)NconstRec/(Float_t)NconstGen, (Double_t)countMatch/(Double_t)NconstRec};
    fhConstRecGen->Fill(fill);
    fhtmppTGen->Add(fhtmppTRec, -1);
    Nmissed = fhtmppTGen->Integral();

@@ -1248,9 +1248,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             fhMiSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
             outputContainer->Add(fhMiSameSideEMCALMod[imod]) ;
           }
-        }//EMCAL
-      }// own mix
-    }//loop combinations
+        } // EMCAL
+      } // own mix
+    } // loop combinations
   } // SM combinations
   
 //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
@@ -2107,6 +2107,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   for(Int_t i1=0; i1<nPhot-1; i1++)
   {
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+      
+    // Select photons within a pT range
+    if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
+
     //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster1 id %d/%d\n",i1,nPhot-1);
     
     // get the event index in the mixed buffer where the photon comes from
@@ -2156,6 +2160,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     for(Int_t i2=i1+1; i2<nPhot; i2++)
     {
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
+        
+      // Select photons within a pT range
+      if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
+
       //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster2 i %d/%d\n",i2,nPhot);
       
       //In case of mixing frame, check we are not in the same event as the first cluster
@@ -2267,7 +2275,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(module1==module2 && module1 >=0 && module1<fNModules)
           fhReMod[module1]->Fill(pt, m, GetEventWeight()) ;
         
-        if(GetCalorimeter()==kEMCAL)
+        if (GetCalorimeter() == kEMCAL )
         {
           // Same sector
           Int_t j=0;
@@ -2282,7 +2290,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight());
           }
         } // EMCAL
-        else { // PHOS
+        else
+        { // PHOS
           if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
           if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
           if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;

@@ -20,9 +20,10 @@ class AliEmcalContainer : public TNamed {
     kPtCut = 1<<1,
     kAcceptanceCut = 1<<2,
     kBitMapCut = 1<<3,
-    // leave bits 4-7 free for future implementations
+    // leave bits 4-6 free for future implementations
     
     // AliParticleContainer
+    kNotHybridTrack = 1<<7,
     kMCFlag = 1<<8,
     kMCGeneratorCut = 1<<9,
     kChargeCut = 1<<10,
@@ -54,6 +55,7 @@ class AliEmcalContainer : public TNamed {
 
   TClonesArray               *GetArray() const                      { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
+  const TString&              GetClassName()                  const { return fClassName                 ; }
   Int_t                       GetCurrentID()                  const { return fCurrentID-1               ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;

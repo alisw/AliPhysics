@@ -343,7 +343,7 @@ void AliAnalysisTaskSEHFJets::AnalyseDataMode(){
       // In case there is an AOD filter writing a standard AOD, use the AOD 
       // event in memory rather than the input event.    
       aod = dynamic_cast<AliAODEvent*> (AODEvent());
-    } else AliError(RED"No AOD handler found or no standard AOD!"Bee);
+    } else AliError(RED"No AOD handler found or no standard AOD!" Bee);
   }
 
   fEvent = aod;
@@ -440,7 +440,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
       // In case there is an AOD filter writing a standard AOD, use the AOD 
       // event in memory rather than the input event.    
       aod = dynamic_cast<AliAODEvent*> (AODEvent());
-    } else AliError(RED"No AOD handler found or no standard AOD!"Bee);
+    } else AliError(RED"No AOD handler found or no standard AOD!" Bee);
   }
 
   fEvent = aod;
@@ -490,7 +490,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
   // load MC header
   aodmcHeader =
     (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  if(!aodmcHeader) AliError(RED"MC header branch not found!"Bee);
+  if(!aodmcHeader) AliError(RED"MC header branch not found!" Bee);
 
    if(fSelectPtHard){
     TString title = aodmcHeader->GetGeneratorName();
@@ -509,7 +509,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
   // Multiplicity MC (for vertex reco correction)
   // Get array of MC particles
   fArrayMC = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!fArrayMC) AliError(RED"MC particles branch not found!"Bee);
+  if(!fArrayMC) AliError(RED"MC particles branch not found!" Bee);
   // Count number of primary MC partcles
   Int_t nMC = fArrayMC->GetEntries();
   Int_t multMC = 0;
@@ -517,7 +517,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
     AliAODMCParticle *part = (AliAODMCParticle*)fArrayMC->At(i);
     if (part->IsPhysicalPrimary()) multMC++;
   }
-  AliInfo(Form(cy"MC particles %d primaries %d"Bee,nMC, multMC ));
+  AliInfo(Form(cy"MC particles %d primaries %d" Bee,nMC, multMC ));
 
   // Init steps
   AliHFJetsContainer::CFSteps step;
@@ -556,7 +556,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
 
     // this is for g,ud,s,c,b
     mcBJets[count]=partonnatMC[meth]; 
-    Printf(RED"MC mcBJets: %d  partonnatMC: %f position: %d"Bee, mcBJets.At(count), partonnatMC[meth], count);
+    Printf(RED"MC mcBJets: %d  partonnatMC: %f position: %d" Bee, mcBJets.At(count), partonnatMC[meth], count);
     // Fill container tagger
     step=AliHFJetsContainer::kCFStepAll;
     //fhBJets->FillStepBJets(step,multMC,jetMC,0,partonnatMC,contributionMC,ptpartMC[0]);
@@ -600,7 +600,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
 
   // load MC particles
   arrayMC = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!arrayMC) AliError(RED"MC particles branch not found!"Bee);
+  if(!arrayMC) AliError(RED"MC particles branch not found!" Bee);
 
 
   // MC primary vertex
@@ -661,7 +661,7 @@ void AliAnalysisTaskSEHFJets::AnalyseCorrectionsMode(){
 	
       // GetJetMatching(listMCJets, genJets, fTrackArrayMc, listTaggedJets, recJets, fTrackArrayRec, matchIndex, pTFraction, debug, maxDist, mode);
       // Int_t index=matchIndex.At(0);
-      // Printf(MAG"JET %d INDEX %d pT fraction %f"Bee, recJets, index, pTFraction.At(0));
+      // Printf(MAG"JET %d INDEX %d pT fraction %f" Bee, recJets, index, pTFraction.At(0));
       // AliEmcalJet * matchedJet;
       //       if (index >= 0){
       // 	matchedJet=(AliAODJet*)listMCJets->At(index);
@@ -765,7 +765,7 @@ void AliAnalysisTaskSEHFJets::GetFlavour2Methods(AliEmcalJet *jet, Double_t (&pa
   if(parton[0]!=0){
     Int_t pdg=TMath::Abs(parton[0]->PdgCode());
     //if(pdg==4 || pdg==5) 
-    AliInfo(Form(cy"parton method -> pdg parton: %d"Bee,pdg));
+    AliInfo(Form(cy"parton method -> pdg parton: %d" Bee,pdg));
     if(pdg==21)partonnat[0]=1;
     else if(pdg<4)partonnat[0]=2;
     else if(pdg==4)partonnat[0]=3;
@@ -776,7 +776,7 @@ void AliAnalysisTaskSEHFJets::GetFlavour2Methods(AliEmcalJet *jet, Double_t (&pa
   if(parton[1]!=0){
     Int_t pdg=TMath::Abs(parton[1]->PdgCode());
     //if((pdg>=400 && pdg<=600) || (pdg>=4000 && pdg<=6000))
-    AliInfo(Form(cy"meson method -> pdg parton: %d"Bee,pdg));
+    AliInfo(Form(cy"meson method -> pdg parton: %d" Bee,pdg));
     if((pdg>=400 && pdg<=500) || (pdg>=4000 && pdg<=5000))partonnat[1]=3;
     else{
       if((pdg>=500 && pdg<=600) || (pdg>=5000 && pdg<=6000))partonnat[1]=4;
@@ -1154,7 +1154,7 @@ Bool_t AliAnalysisTaskSEHFJets::UserNotify()
   // load MC header
   aodmcHeader =
     (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  if(!aodmcHeader) AliError(RED"MC header branch not found!"Bee);
+  if(!aodmcHeader) AliError(RED"MC header branch not found!" Bee);
 
     TString title = aodmcHeader->GetGeneratorName();
     if (!title.Contains(fPtHardMin) || !title.Contains(fFlavor)) return kFALSE; 

@@ -1,36 +1,55 @@
-/* $Id:  $ */
-//--------------------------------------------------
-// Example macro to do analysis with the 
-// analysis classes in PWG4PartCorr
-// Can be executed with Root and AliRoot
-//
-// Pay attention to the options and definitions
-// set in the lines below
-//
-//  Author : Gustavo Conesa Balbastre (INFN-LNF)
-//
-//-------------------------------------------------
-enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
-//mLocal: Analyze locally files in your computer
-//mLocalCAF: Analyze locally CAF files
-//mPROOF: Analyze CAF files with PROOF
+/// \file anaQA.C
+/// \brief Example of execution macro for calorimeter QA analysis
+///
+/// Example macro to do for calorimeter QA analysis
+/// in local, grid or plugin modes.
+///
+/// Pay attention to the options and definitions
+/// set in the lines below
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 //---------------------------------------------------------------------------
-//Settings to read locally several files, only for "mLocal" mode
-//The different values are default, they can be set with environmental 
-//variables: INDIR, PATTERN, NFILES, respectivelly
-char * kInDir = "/user/data/files/"; 
-char * kPattern = ""; // Data are in files kInDir/kPattern+i 
-Int_t kFile = 1; // Number of files
-//---------------------------------------------------------------------------
-//Collection file for grid analysis
-char * kXML = "collection.xml";
+/// Different analysis modes
+enum anaModes
+{
+    mLocal  = 0, /// Analyze locally files in your computer.
+    mPROOF  = 1, /// Analyze files on GRID with Plugin
+    mPlugin = 2, /// Analyze files on GRID with Plugin
+    mGRID   = 3  /// Analyze files on GRID, jobs launched from aliensh
+};
 
-const Bool_t kMC = kFALSE; //With real data kMC = kFALSE
-const TString kInputData = "ESD"; //ESD, AOD, MC
+//---------------------------------------------------------------------------
+// Settings to read locally several files, only for "mLocal" mode
+// The different values are default, they can be set with environmental
+// variables: INDIR, PATTERN, NFILES, respectivelly
+
+char * kInDir   = "/user/data/files/";  /// Global,  path to data files
+char * kPattern = ""; /// Data are in files kInDir/kPattern+i
+Int_t  kFile    = 2;  /// Number of files to analyze in local mode.
+
+//---------------------------------------------------------------------------
+// Collection file for grid analysis
+
+char * kXML = "collection.xml"; /// Global name for the xml collection file with data on grid
+
+const Bool_t kMC = kFALSE; /// With real data kMC = kFALSE
+const TString kInputData = "ESD"; /// ESD, AOD, MC
 TString kTreeName = "esdTree";
 
-void ana(Int_t mode=mLocal)
+//___________________________
+/// Main execution method. It:
+/// * 1) loads the needed libraries in method LoadLibraries
+/// * 2) The analysis frame is initialized via de analysis manager
+/// * 3) Different general analysis are initialized: Physics selection, centrality etc.
+/// * 4) Specialized analysis are initialized: AliAnalysistaskCounter,  AliAnalysisTaskCaloTrackCorrelations with QA analysis in it.
+/// * 5) The output/input containers are passed to the analysis manager
+/// * 6) The analysis is executed
+///
+/// \param mode: analysis mode defined in enum anaModes
+//___________________________
+void anaQA(Int_t mode=mLocal)
 {
   // Main
 
@@ -43,12 +62,13 @@ void ana(Int_t mode=mLocal)
   //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
 
   //-------------------------------------------------------------------------------------------------
-  //Create chain from ESD and from cross sections files, look below for options.
+  // Create chain from ESD and from cross sections files, look below for options.
   //-------------------------------------------------------------------------------------------------
-  if(kInputData == "ESD") kTreeName = "esdTree" ;
-  else if(kInputData == "AOD") kTreeName = "aodTree" ;
-  else if (kInputData == "MC") kTreeName = "TE" ;
-  else {
+  if      (kInputData == "ESD") kTreeName = "esdTree" ;
+  else if (kInputData == "AOD") kTreeName = "aodTree" ;
+  else if (kInputData == "MC" ) kTreeName = "TE" ;
+  else
+  {
     cout<<"Wrong  data type "<<kInputData<<endl;
     break;
   }
@@ -56,7 +76,8 @@ void ana(Int_t mode=mLocal)
   TChain *chain       = new TChain(kTreeName) ;
   CreateChain(mode, chain);  
 
-  if(chain){
+  if(chain)
+  {
     AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
     
     //--------------------------------------
@@ -73,13 +94,14 @@ void ana(Int_t mode=mLocal)
     
     //input
     if(kInputData == "ESD")
-      {
-       // ESD handler
-       AliESDInputHandler *esdHandler = new AliESDInputHandler();
-       mgr->SetInputEventHandler(esdHandler);
-       cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
-      }
-    if(kInputData == "AOD"){
+    {
+      // ESD handler
+      AliESDInputHandler *esdHandler = new AliESDInputHandler();
+      mgr->SetInputEventHandler(esdHandler);
+      cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
+    }
+    if(kInputData == "AOD")
+    {
       // AOD handler
       AliAODInputHandler *aodHandler = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodHandler);
@@ -96,7 +118,7 @@ void ana(Int_t mode=mLocal)
     mgr->SetOutputEventHandler(aodoutHandler);
     
     //-------------------------------------------------------------------------
-    //Define task, put here any other task that you want to use.
+    // Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
     
     TString outputFile = AliAnalysisManager::GetCommonFileName(); 
@@ -184,11 +206,11 @@ cout <<" Analysis ended sucessfully "<< endl ;
   
 }
 
-void  LoadLibraries(const anaModes mode) {
-  
-  //--------------------------------------
-  // Load the needed libraries most of them already loaded by aliroot
-  //--------------------------------------
+//_____________________________
+/// Load analysis libraries.
+//_____________________________
+void  LoadLibraries(const anaModes mode)
+{
   gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
@@ -240,14 +262,13 @@ void  LoadLibraries(const anaModes mode) {
 //
 //     SetupPar("PWGCaloTrackCorrBase");
 //     SetupPar("PWGGACaloTrackCorrelations");
-
-
   }
 
   //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
-  else if (mode==mPROOF) {
+  else if (mode==mPROOF)
+  {
     //
     // Connect to proof
     // Put appropriate username here
@@ -282,27 +303,32 @@ void  LoadLibraries(const anaModes mode) {
 	gProof->UploadPackage("PWG4PartCorrDep.par");
     gProof->EnablePackage("PWG4PartCorrDep");    
     gProof->ShowEnabledPackages();
-  }  
-  
+  }
 }
 
+//_________________________________
+/// Load par files, create analysis libraries
+/// For testing, if par file already decompressed and modified
+/// classes then do not decompress.
+//_________________________________
 void SetupPar(char* pararchivename)
 {
-  //Load par files, create analysis libraries
-  //For testing, if par file already decompressed and modified
-  //classes then do not decompress.
- 
-  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
-  TString parpar(Form("%s.par", pararchivename)) ; 
-  if ( gSystem->AccessPathName(parpar.Data()) ) {
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ;
+    
+  TString parpar(Form("%s.par", pararchivename)) ;
+    
+  if ( gSystem->AccessPathName(parpar.Data()) )
+  {
     gSystem->ChangeDirectory(gSystem->Getenv("ALICE_PHYSICS")) ;
     TString processline(Form(".! make %s", parpar.Data())) ; 
     gROOT->ProcessLine(processline.Data()) ;
     gSystem->ChangeDirectory(cdir) ; 
     processline = Form(".! mv $ALICE_PHYSICS/%s .", parpar.Data()) ;
     gROOT->ProcessLine(processline.Data()) ;
-  } 
-  if ( gSystem->AccessPathName(pararchivename) ) {  
+  }
+    
+  if ( gSystem->AccessPathName(pararchivename) )
+  {
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
     gROOT->ProcessLine(processline.Data());
   }
@@ -311,19 +337,22 @@ void SetupPar(char* pararchivename)
   gSystem->ChangeDirectory(pararchivename);
   
   // check for BUILD.sh and execute
-  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh"))
+  {
     printf("*******************************\n");
     printf("*** Building PAR archive    ***\n");
     cout<<pararchivename<<endl;
     printf("*******************************\n");
     
-    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+    if (gSystem->Exec("PROOF-INF/BUILD.sh"))
+    {
       Error("runProcess","Cannot Build the PAR Archive! - Abort!");
       return -1;
     }
   }
   // check for SETUP.C and execute
-  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C"))
+  {
     printf("*******************************\n");
     printf("*** Setup PAR archive       ***\n");
     cout<<pararchivename<<endl;
@@ -335,16 +364,18 @@ void SetupPar(char* pararchivename)
   printf("Current dir: %s\n", ocwd.Data());
 }
 
-
-
-void CreateChain(const anaModes mode, TChain * chain){
-  //Fills chain with data
+//_____________________________________________________________________
+/// Fills chain with data files paths.
+//_____________________________________________________________________
+void CreateChain(const anaModes mode, TChain * chain)
+{
   TString ocwd = gSystem->WorkingDirectory();
   
   //-----------------------------------------------------------
-  //Analysis of CAF data locally and with PROOF
+  // Analysis of CAF data locally and with PROOF
   //-----------------------------------------------------------
-  if(mode ==mPROOF || mode ==mLocalCAF){
+  if(mode ==mPROOF || mode ==mLocalCAF)
+  {
     // Chain from CAF
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/CreateESDChain.C");
     // The second parameter is the number of input files in the chain
@@ -352,9 +383,10 @@ void CreateChain(const anaModes mode, TChain * chain){
   }
   
   //---------------------------------------
-  //Local files analysis
+  // Local files analysis
   //---------------------------------------
-  else if(mode == mLocal){    
+  else if(mode == mLocal)
+  {
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)

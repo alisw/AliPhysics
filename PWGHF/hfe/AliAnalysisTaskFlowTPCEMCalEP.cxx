@@ -621,7 +621,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) continue;
        
     if (m20>0.02 && m02>0.02){
-      Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,EovP};
+      Double_t corr[7]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi};
       if (iCent==0 && (GetCollisionCandidates()==AliVEvent::kCentral || GetCollisionCandidates()==AliVEvent::kSemiCentral)) fCorr->Fill(corr,EPweight);
       else fCorr->Fill(corr);
     }
@@ -729,10 +729,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fOutputList->Add(fTPCsubEPres);
   
   //iCent,iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,EoP
-  Int_t binsv2[8]={3,8,100,100,100,120,100,100}; 
-  Double_t xminv2[8]={0,0,-5,-5,0,0,-1,0};
-  Double_t xmaxv2[8]={3,8,5,5,2,TMath::Pi(),1,2}; 
-  fCorr = new THnSparseD ("fCorr","Correlations",8,binsv2,xminv2,xmaxv2);
+  Int_t binsv2[7]={3,8,100,100,100,120,100}; 
+  Double_t xminv2[7]={0,0,-5,-5,0,0,-1};
+  Double_t xmaxv2[7]={3,8,5,5,2,TMath::Pi(),1}; 
+  fCorr = new THnSparseD ("fCorr","Correlations",7,binsv2,xminv2,xmaxv2);
   fCorr->Sumw2();
   fOutputList->Add(fCorr);
   
@@ -1000,8 +1000,9 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetSigmaEMCal(Double_t EoverP, Double_t 
   Double_t ptRange[9] = {1.5,2,2.5,3,4,6,8,10,13};
 
   if (iCent==0){
-    Double_t mean[8]={0.953184,0.957259,0.97798,0.9875,1.03409,1.06257,1.02776,1.04338};
-    Double_t sigma[8]={0.130003,0.113493,0.092966,0.0836828,0.101804,0.0893414,0.0950752,0.050427};
+    Double_t mean[8]={1.04892,1.04471,1.04397,1.04715,1.04617,1.04147,1.05363,1.04902};
+    Double_t sigma[8]={0.157249,0.143196,0.130118,0.118269,0.105798,0.100816,0.0910207,0.0953318};
+
     for(Int_t i=0;i<8;i++) {
       if (pt>=ptRange[i] && pt<ptRange[i+1]){
         NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];
@@ -1010,8 +1011,8 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetSigmaEMCal(Double_t EoverP, Double_t 
     }
   }
   if (iCent==1){
-    Double_t mean[8]={0.96905,0.952985,0.96871,0.983934,1.00047,0.988736,1.02101,1.04557};
-    Double_t sigma[8]={0.0978103,0.103215,0.0958494,0.0797962,0.0719482,0.0672677,0.0754882,0.0461192};
+    Double_t mean[8]={1.01201,1.01064,1.01248,1.01728,1.02346,1.02177,1.04038,1.03314};
+    Double_t sigma[8]={0.144614,0.126229,0.120568,0.107897,0.0919854,0.0920917,0.0859356,0.085302};
     for(Int_t i=0;i<8;i++) {
       if (pt>=ptRange[i] && pt<ptRange[i+1]){
         NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];
@@ -1020,8 +1021,8 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetSigmaEMCal(Double_t EoverP, Double_t 
     }
   }
   if (iCent==2){
-    Double_t mean[8]={0.947362,0.951933,0.959288,0.977004,0.984502,1.02004,1.00489,0.986696};
-    Double_t sigma[8]={0.100127,0.0887731,0.0842077,0.0787335,0.0804325,0.0652376,0.0766669,0.0597849};
+    Double_t mean[8]={0.975778,0.975963,0.983835,0.988513,0.999726,1.00552,1.01144,1.00319};
+    Double_t sigma[8]={0.130389,0.117007,0.10375,0.0971151,0.0893869,0.0873147,0.083138,0.0874688};
     for(Int_t i=0;i<8;i++) {
       if (pt>=ptRange[i] && pt<ptRange[i+1]){
         NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];

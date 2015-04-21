@@ -15,36 +15,6 @@
 ///   * Correlation of the pi0 and charged tracks, twice, one without isolation condition, and other with isolation condition
 ///   * Optionally, the QA tasks AliAnaCalorimeterQA and AliAnaChargedParticle are executed
 ///
-///
-///
-/// The options that can be passed to the macro are: 
-///   * A string with he calorimeter used to measure the trigger particle
-///   * A bool identifying the data as simulation
-///   * The year the data was taken, used to configure some histograms
-///   * A string with the colliding system 
-///   * A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
-///   * An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
-///   * A string with the array of clusters not being the default (default is empty string)
-///   * A bool indicating if the tender was running before this analysis
-///   * A bool to set the use of the non linearity correction 
-///   * A float setting the maximum value of the shower shape of the clusters for the correlation analysis 
-///   * A float setting the isolation cone size 
-///   * A float setting the isolation pT threshold (sum of particles in cone or leading particle)
-///   * An int setting the isolation method: AliIsolationCut::kPtThresIC, ...  
-///   * An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
-///   * An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
-///   * A bool to select neutral clusters as triggers
-///   * An int to select the minimum centrality, -1 means no selection 
-///   * An int to select the maximum centrality, -1 means no selection 
-///   * A bool to switch the correlation mixing analysis
-///   * A bool to switch the calorimeter QA analysis
-///   * A bool to switch the selected tracks QA analysis
-///   * A string to change the name of the histograms output file, default is AnalysisResults.root
-///   * A bool to enable the print of the settings per task
-///   * An int to define the debug level of all the tasks
-///
-/// 
-///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 // Set includes for compilation
@@ -123,11 +93,38 @@
 //                                              Bool_t printSettings, Int_t debug);
 //UInt_t SetTriggerMaskFromName                (TString trigger);
 
-TString kAnaGammaHadronCorr = ""; /// Global name to be composed of the settings, used to set the AOD branch name
+/// Global name to be composed of the settings, used to set the AOD branch name
+TString kAnaGammaHadronCorr = "";
 
 ///
 /// Main method calling all the configuration 
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
+/// The options that can be passed to the macro are:
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle
+/// \param simulation : A bool identifying the data as simulation
+/// \param year: The year the data was taken, used to configure some histograms
+/// \param col: A string with the colliding system
+/// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param tender : A bool indicating if the tender was running before this analysis
+/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
+/// \param isoCone : A float setting the isolation cone size
+/// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+/// \param isoContent : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
+/// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
+/// \param tm : A bool to select neutral clusters as triggers
+/// \param minCen : An int to select the minimum centrality, -1 means no selection
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection
+/// \param mixOn : A bool to switch the correlation mixing analysis
+/// \param qaAn : A bool to switch the calorimeter QA analysis
+/// \param chargedAn : A bool to switch the selected tracks QA analysis
+/// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 (

@@ -62,13 +62,13 @@ void AliAnalysisMuMuGlobal::FillHistosForEvent(const char* eventSelection,
   
   if (!IsHistogramDisabled("EventsWOL0inputs"))
   {
-    UInt_t l0 = AliAnalysisMuonUtility::GetL0TriggerInputs(Event());
+    UInt_t l0 = Event()->GetHeader()->GetL0TriggerInputs();
     
     if ( l0 == 0 ) Histo(eventSelection,triggerClassName,centrality,"EventsWOL0inputs")->Fill(1.);
   }
   
   const AliVVertex* vertex = Event()->GetPrimaryVertex();
-  const AliVVertex* vertexFromSPD = AliAnalysisMuonUtility::GetVertexSPD(Event());
+  const AliVVertex* vertexFromSPD = Event()->GetPrimaryVertexSPD();
   
   if ( vertex )
   {
@@ -118,6 +118,10 @@ void AliAnalysisMuMuGlobal::FillHistosForEvent(const char* eventSelection,
           static_cast<const AliAODVertex*>(vertexFromSPD)->GetCovarianceMatrix(cov);
           
           Histo(eventSelection,triggerClassName,centrality,"SPDZvertexResolutionNContributors")->Fill(vertexFromSPD->GetNContributors(),TMath::Sqrt(cov[5]));
+        }
+        if (!IsHistogramDisabled("SPDVertexType"))
+        {
+          Histo(eventSelection,triggerClassName,centrality,"SPDVertexType")->Fill(vertexFromSPD->GetTitle(),1.0);
         }
 
       }
@@ -182,9 +186,9 @@ void AliAnalysisMuMuGlobal::FillHistosForEvent(const char* eventSelection,
       {
         Histo(eventSelection,triggerClassName,centrality,"V0CMult")->Fill(v0cMult);
       }
-      if (!IsHistogramDisabled("V0Mult"))
+      if (!IsHistogramDisabled("V0TotMult"))
       {
-        Histo(eventSelection,triggerClassName,centrality,"V0Mult")->Fill(multV0);
+        Histo(eventSelection,triggerClassName,centrality,"V0TotMult")->Fill(multV0);
       }
     }
     
@@ -287,11 +291,28 @@ void AliAnalysisMuMuGlobal::FillHistosForMCEvent(const char* eventSelection,
       MCHisto(eventSelection,triggerClassName,centrality,"RecZvertexVsMCZvertex")->Fill(Zvertex,vertex->GetZ());
     }
     
-    const AliVVertex* vertexFromSPD = AliAnalysisMuonUtility::GetVertexSPD(Event());
+    const AliVVertex* vertexFromSPD = Event()->GetPrimaryVertexSPD();
     if  (vertexFromSPD && vertexFromSPD->GetNContributors()>0)
     {
       MCHisto(eventSelection,triggerClassName,centrality,"RecSPDZvertexVsMCZvertex")->Fill(Zvertex,vertexFromSPD->GetZ());
       MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexVsMCZvertex")->Fill(Zvertex,1);
+
+      TString vtxTyp = vertexFromSPD->GetTitle();
+      if ( !vtxTyp.Contains("vertexer: Z") )
+      {
+        MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexAndNoVtexerZVsMCZvertex")->Fill(Zvertex,1);
+
+        Double_t cov[6]={0};
+        vertexFromSPD->GetCovarianceMatrix(cov);
+        Double_t zRes = TMath::Sqrt(cov[5]);
+        Double_t zvertex = vertexFromSPD->GetZ();
+        if ( (zRes <= 0.25) && TMath::Abs(zvertex - vertex->GetZ()) <= 0.5 ) //These events are those passing AliAnalysisMuMuEventCutter::IsSPDzQA()
+        {
+          MCHisto(eventSelection,triggerClassName,centrality,"NofEvPassingVtxQAVsMCZvertex")->Fill(Zvertex,1);
+        }
+        else MCHisto(eventSelection,triggerClassName,centrality,"NofEvNotPassingVtxResCutVsMCZvertex")->Fill(Zvertex,1);
+      }
+      else MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexAndVtexerZVsMCZvertex")->Fill(Zvertex,1);
     }
     else MCHisto(eventSelection,triggerClassName,centrality,"NofEvWOSPDZvertexVsMCZvertex")->Fill(Zvertex,1);
   }
@@ -328,14 +349,27 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
                     "RecSPDZvertexVsMCZvertex","Reconstructed SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax,nbins,xmin,xmax);
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
                     "NofEvWSPDZvertexVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax);
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
-                    "NofEvWOSPDZvertexVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax);
   
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvWSPDZvertexAndNoVtexerZVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) and no vertexer: Z vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvPassingVtxQAVsMCZvertex","Number of events with SPD vertex passing QA vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvNotPassingVtxResCutVsMCZvertex","Number of events with SPD vertex not passing resolution cut vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvWSPDZvertexAndVtexerZVsMCZvertex","Number of events with SPD vertex and vertexer: Z vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvWOSPDZvertexVsMCZvertex","Number of events without SPD vertex vs MC vertex",nbins,xmin,xmax);
+
 
   xmin = -5;
   xmax = 5;
   nbins = GetNbins(xmin,xmax,0.01);
-  
+
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"ZvertexMinusZvertexSPD","Primary vertex z - SPD vertex",nbins,xmin,xmax);
   
   xmin = -1;
@@ -372,6 +406,10 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
   CreateEventHistos(kHistoForMCInput | kHistoForData,eventSelection,triggerClassName,centrality,
                     "VertexClass","Type of vertex used",10,0,10);
 
+  CreateEventHistos(kHistoForMCInput | kHistoForData,eventSelection,triggerClassName,centrality,
+                    "SPDVertexType","Type of SPD vertexer used",10,0,10);
+
+
 
   xmin = 0;
   xmax = 3564;
@@ -398,9 +436,9 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
   xmax = 600;
   nbins = GetNbins(xmin,xmax,1);
   
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0AMult","V0A multiplicity;V0A mult;N_{events}",nbins,xmin,xmax);
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CMult","V0C multiplicity;V0C mult;N_{events}",nbins,xmin,xmax);
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0Mult","V0 multiplicity;V0 mult;N_{events}",nbins,xmin,xmax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0AMult","V0A multiplicity (Corrected by AliESDUtils);V0A mult;N_{events}",nbins,xmin,xmax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CMult","V0C multiplicity (Corrected by AliESDUtils);V0C mult;N_{events}",nbins,xmin,xmax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0TotMult","V0 multiplicity;V0 mult;N_{events}",nbins,xmin,xmax);
   
   if ( !IsHistogramDisabled("Centrality") )
   {

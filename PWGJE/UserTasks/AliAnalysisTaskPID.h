@@ -21,6 +21,7 @@ class AliMCParticle;
 class AliPID;
 class AliPIDCombined;
 class AliPIDResponse;
+class AliPPVsMultUtils;
 class AliTOFPIDResponse;
 class AliVEvent;
 class AliVTrack;
@@ -130,7 +131,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   void PrintSystematicsSettings() const;
   
-  Bool_t ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile, Double_t jetPt) ;
+  Bool_t ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile, Double_t jetPt, Bool_t isMBSelected = kFALSE,
+                      Bool_t isMultSelected = kTRUE);
   
   ErrorCode GenerateDetectorResponse(ErrorCode errCode, Double_t mean, Double_t sigma, Double_t* responses,
                                      Int_t nResponses,
@@ -294,6 +296,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
  private:
   Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
+  AliPPVsMultUtils* fPPVsMultUtils; //! Utilities for pp vs. mult analysis
   
   Bool_t fInputFromOtherTask; // If set to kTRUE, no events are processed and the input must be fed in from another task. If set to kFALSE, normal event processing
   
@@ -438,7 +441,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 22);
+  ClassDef(AliAnalysisTaskPID, 23);
 };
 
 

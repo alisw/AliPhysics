@@ -1,13 +1,26 @@
+/// \file AddTaskGenKine.C
+/// \brief Analysis at generator level configuration.
+///
+/// Example of configuration AliAnaGeneratorKine task
+/// of the package CaloTrackCorrelations. Do analysis at generator
+/// level only on high-pT photon/pi0/eta and correlate with charged particles
+/// jets, partons.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
-TString  kCalorimeter = "EMCAL";
-Int_t    kYears       = 2011;
-Int_t    kDebug       = -1;
-Bool_t   kPrint       = kFALSE;
+/// Global variables to be accessed by the different methods.
+TString  kCalorimeter = "EMCAL"; /// detector acceptance of trigger particle.
+Int_t    kYears       = 2011;    /// year configuration for geometry setting.
+Int_t    kDebug       = -1;      /// debug level.
+Bool_t   kPrint       = kFALSE;  /// print configuration settings.
 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskGenKine(TString outputfile, const Double_t scaleFactor   = -1)
+///
+/// Main method calling all the configuration.
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
+AliAnalysisTaskCaloTrackCorrelation *AddTaskGenKine(TString outputfile,
+                                                    const Double_t scaleFactor   = -1)
 {
-  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
-    
   // Get the pointer to the existing analysis manager via the static access method.
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -69,10 +82,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGenKine(TString outputfile, const Do
   return task;
 }
 
-//____________________________________
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+/// Set it off for most of its utilities, no data filtering just access kine MC.
+///
 AliCaloTrackReader * ConfigureReader()
 {
-  
   AliCaloTrackReader * reader = new AliCaloTrackMCReader();
   
   reader->SetDebug(kDebug);//10 for lots of messages
@@ -83,7 +98,6 @@ AliCaloTrackReader * ConfigureReader()
 //  reader->SetPtHardAndClusterPtComparison(kTRUE);
 //  reader->SetPtHardAndClusterPtFactor(1.);
 
-  
   reader->SwitchOffWriteDeltaAOD()  ;
   
   reader->SwitchOnStack();          
@@ -123,7 +137,10 @@ AliCaloTrackReader * ConfigureReader()
 }
 
 
-//_______________________________________
+///
+/// Configure the class handling the calorimeter clusters specific methods.
+/// Set it off for most of its utilities, no data no calorimeter clusters used, access kine MC.
+///
 AliCalorimeterUtils* ConfigureCaloUtils()
 {
   
@@ -157,10 +174,11 @@ AliCalorimeterUtils* ConfigureCaloUtils()
 }
 
 
-//_____________________________________
+///
+/// Configure the task doing analysis at the generator level
+///
 AliAnaGeneratorKine* ConfigureGenKine()
 {
-  
   AliAnaGeneratorKine *ana = new AliAnaGeneratorKine();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -175,14 +193,13 @@ AliAnaGeneratorKine* ConfigureGenKine()
   if(kPrint)ana->Print("");
   
   return ana;
-  
 }
 
-//________________________________________________________
+///
+/// Set common histograms binning and ranges
+///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
 {
-  // Set common bins for all analysis and MC histograms filling
-  
   histoRanges->SetHistoPtRangeAndNBins(0, 200, 400) ; // Energy and pt histograms
   
   if(kCalorimeter=="EMCAL")
@@ -243,5 +260,5 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
-  
 }
+

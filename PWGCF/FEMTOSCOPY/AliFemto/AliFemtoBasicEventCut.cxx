@@ -1,44 +1,45 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoBasicEventCut - the basic cut for events.                          //
-// Only cuts on event multiplicity and z-vertex position                      //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoBasicEventCut.cxx
+///
 
 #include "AliFemtoBasicEventCut.h"
-//#include <cstdio>
 
 #ifdef __ROOT__
+/// \cond CLASSIMP
 ClassImp(AliFemtoBasicEventCut)
+/// \endcond
 #endif
 
-AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
+AliFemtoBasicEventCut::AliFemtoBasicEventCut():
   AliFemtoEventCut(),
   fEventMult(),
   fVertZPos(),
-  fAcceptBadVertex(false), 
-  fNEventsPassed(0), 
+  fAcceptBadVertex(false),
+  fNEventsPassed(0),
   fNEventsFailed(0),
   fSelectTrigger(0)
 {
-  // Default constructor
+  /// Default constructor
+
   fEventMult[0] = 0;
   fEventMult[1] = 100000;
   fVertZPos[0] = -100.0;
   fVertZPos[1] = 100.0;
   fPsiEP[0] = -1000.0;
   fPsiEP[1] = 1000.0;
-} 
-//------------------------------
-AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
-  // Default destructor
 }
 //------------------------------
-bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){  
+AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
+  /// Default destructor
 
-  // Pass events if they fall within the multiplicity and z-vertex
-  // position range. Fail otherwise
-  //  int mult =  event->NumberOfTracks();
+}
+//------------------------------
+bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
+
+  /// Pass events if they fall within the multiplicity and z-vertex
+  /// position range. Fail otherwise
+  ///  int mult =  event->NumberOfTracks();
+
   int mult = (int) event->UncorrectedNumberOfPrimaries();
   double vertexZPos = event->PrimVertPos().z();
 
@@ -57,8 +58,8 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   // cout << "AliFemtoBasicEventCut:: fSelectTrigger: " << fSelectTrigger << endl;
   // cout << "AliFemtoBasicEventCut:: " << endl;
   bool goodEvent =
-    ((mult >= fEventMult[0]) && 
-     (mult <= fEventMult[1]) && 
+    ((mult >= fEventMult[0]) &&
+     (mult <= fEventMult[1]) &&
      (vertexZPos > fVertZPos[0]) &&
      (vertexZPos < fVertZPos[1]) &&
      (epvzero > fPsiEP[0]) &&
@@ -77,7 +78,8 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
 }
 //------------------------------
 AliFemtoString AliFemtoBasicEventCut::Report(){
-  // Prepare report
+  /// Prepare report
+
   string stemp;
   char ctemp[100];
   snprintf(ctemp , 100, "\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
