@@ -57,13 +57,20 @@ public:
    * 
    * @param mask Trigger mask
    */
-  void SetTriggerMask(UShort_t mask);
+  void SetTriggerMask(UInt_t mask);
   /** 
    * Set the trigger mask 
    * 
    * @param mask trigger mask 
    */
   void SetTriggerMask(const char* mask);
+  /** 
+   * Set mask of events to filter out 
+   * 
+   * @param mask The fitler mask 
+   */
+  void SetFilterMask(UInt_t mask);
+  void SetFilterMask(const char* mask);
   /** 
    * Set the centrality bins to use. 
    * 
@@ -279,6 +286,7 @@ protected:
    * enable event processing - even if the event is not within cuts.
    * 
    * @param forward Forward object
+   * @param filter  Our negative filter 
    * 
    * @return true if the event is within the cuts. 
    */
@@ -325,6 +333,7 @@ protected:
   virtual const char* DefaultConfig() const { return "dNdetaConfig.C"; }
 
   UInt_t   fTriggerMask;   // Trigger mask 
+  UInt_t   fFilterMask;    // Events to filter out 
   Double_t fMinIpZ;        // Least z--coordiante of interaction point
   Double_t fMaxIpZ;        // Largest z--coordiante of interaction point
   TAxis    fCentAxis;      // Centrality axis 
@@ -339,7 +348,7 @@ protected:
   TList*   fSums;          // Output list of sums
   TList*   fResults;       // Output list of results
 
-  ClassDef(AliBaseAODTask,1)
+  ClassDef(AliBaseAODTask,2)
 };
 #endif
 //

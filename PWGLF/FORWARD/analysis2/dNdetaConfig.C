@@ -29,6 +29,9 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   // - Set the trigger mask to use (INEL,INEL>0,NSD)
   // task->SetTriggerMask(trig);
 
+  // - set the rejection mask (PILEUP OUTLIER)
+  // task->SetFilterMask(filter);
+
   // - Set the trigger efficiency 
   // task->SetTriggerEff(trigEff); // 0.997535);
   // task->SetTriggerEff0(trigEff0); 
@@ -52,20 +55,12 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   //   Default is kFull
   // task->SetNormalizationScheme(scheme);
 
-  // - Set which pile-up flags to mask out. Bit mask of 
+  // - Whether to use util for pile-up filtering 
+  // task->SetUseUtilPileup(false);
   // 
-  //    kPileupNormal	Use the flag from AOD (default)
-  //    kPileupSPD	Check the pile-up flag from SPD 
-  //    kPileupTrk	Check the pileup flag from tracks 
-  //    kPileupBC	Check the out-of-bunch pileup flag 
-  //    kPileupFull	Use the flag from AOD 
-  //    kPileupIgnore	Also accept pileup 
-  //    kPileupUtil     Use AliAnalysisUtils 
-  // 
-  // task->SetPileupMask(AliBasedNdetaTask::kPileupNormal);
-  // 
-  // If the pile-up mask is set to kPileupUtil above, one can do 
+  // If the above is set to true, then one can do 
   // AliAnalysisUtils& au = task->GetAnalysisUtils();
+  // 
   // - Use 'multi-vertex' pile-up selection.  If true use track
   //   vertices rather than tracklet vertices
   // au.SetUseMVPlpSelection(false);
@@ -108,9 +103,6 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   //   sigma along Z of the interaction diamond.
   // au.SetnSigmaPlpDiamZ(5);
 
-  // - Set whether to check for SPD outliers 
-  // task->SetCheckSPDOutlier(true);
-
   // - Set the centrality estimator to use 
   // task->SetCentralityMethod(cent);
 
@@ -120,6 +112,9 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   //   especially, and the upper bound is inclusive in that case .
   // Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
   // task->SetCentralityAxis(10, bins);
+  // task->SetCentralityAxis("pbpb");
+  // task->SetCentralityAxis("ppb");
+  // task->SetCentralityAxis("0-5-10-20-30-40-50-60-80-90");
   
   // - Set satellite vertex flag
   // task->SetSatelliteVertices(satVtx);

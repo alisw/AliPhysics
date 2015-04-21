@@ -191,6 +191,7 @@ public:
    * @param use Whether to use TH2::ProjectionX
    */
   void SetUseROOTProjectX(Bool_t use) { fUseROOTProj = use; }
+  void SetUseUtilPileup(Bool_t use) { fUseUtilPileup = use; }
   /** 
    * Trigger efficiency for selected trigger(s)
    * 
@@ -265,12 +266,6 @@ public:
    */
   void SetNormalizationScheme(const char* what);
   /** 
-   * Set the mask for checking pile-up events 
-   *
-   * @param bits A bit pattern of EPileupMask bits 
-   */
-  void SetPileupMask(UShort_t bits) { fPileupMask = bits; }
-  /** 
    * Filename of final MC correction
    * 
    * @param filename filename
@@ -279,22 +274,6 @@ public:
     fFinalMCCorrFile.Clear();
     fFinalMCCorrFile.Append(filename); 
   }
-  /** 
-   * Flag whether we should disregard SPD outlier events, as flagged
-   * by AliTriggerAnalysis::IsSPDClusterVsTrackletBG. The default
-   * setting for this flags events as outliers if
-   *
-   @f[ 
-   N_{cluster} > 65 + 4 N_{tracklet}
-   @f] 
-   * 
-   * where @f$N_{cluster}@f$ is the total number of clusters in both
-   * SPD layers, and @f$N_{tracklet}@f$ is the total number of
-   * tracklets in the SPD.
-   * 
-   * @param check If true, then check for SPD outlier events before processing. 
-   */
-  void SetCheckSPDOutlier(Bool_t check=true) { fCheckSPDOutlier = check; }
   /** @} */
   /** 
    * Print information 
@@ -724,7 +703,7 @@ protected:
      * @param vzMax       Maximum IP z coordinate
      * @param data        Data histogram 
      * @param mc          MC histogram
-     * @param checkPileup If true, disregard pile-up events (global flag)
+     * @param filter      Mask of trigger bits to filter out
      *
      * @return true if the event was selected
      */
@@ -735,7 +714,7 @@ protected:
 				Double_t                 vzMax, 
 				const TH2D*              data, 
 				const TH2D*              mc,
-				Bool_t                   checkPileup);
+				Int_t                    filter);
     /** 
      * Calculate the Event-Level normalization. 
      * 
@@ -973,6 +952,7 @@ protected:
      * @param vzMin        Least @f$ v_z@f$
      * @param vzMax        Largest @f$ v_z@f$
      * @param checkPileup  If true, faile on pile-up
+     * @param filter      Mask of trigger bits to filter out
      * 
      * @return true if the event is to be used 
      */
@@ -980,7 +960,7 @@ protected:
 			      Int_t                    triggerMask,
 			      Double_t                 vzMin, 
 			      Double_t                 vzMax,
-			      Bool_t                   checkPileup);
+			      Int_t                    filter);
     TList*   fSums;      // Output list 
     TList*   fOutput;    // Output list 
     Sum*     fSum;       // Sum histogram
@@ -1006,10 +986,9 @@ protected:
   TH2D*           fEmpiricalCorrection; // Empirical correction 
   TH2D* 	  fMeanVsC;         //mean signal per event vs cent
   TString         fCentMethod;    // Centrality estimator 
-  UShort_t        fPileupMask;    // Pile-up checks 
   AliAnalysisUtils fAnaUtil;      // Analysis utility 
-  Bool_t          fCheckSPDOutlier; // Check for SPD outliers 
-  ClassDef(AliBasedNdetaTask,18); // Determine charged particle density
+  Bool_t          fUseUtilPileup; // Check for SPD outliers 
+  ClassDef(AliBasedNdetaTask,19); // Determine charged particle density
 };
 
 #endif

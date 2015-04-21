@@ -152,7 +152,7 @@ WithSysError(const TString&  system,
   // --- Build legend of unique names --------------------------------
   TParameter<int>* um =
     new TParameter<int>("PWG-LF/GEO - work in progress", 20);
-  um->SetUniqueID(kBlack);
+  um->SetUniqueID(trigLegTitle.IsNull() ? kRed+2 : kBlack);
   u.Add(um);
   Drawer::MakeUniqueLegend(ul, u, 1);
   ul->Draw();
@@ -189,6 +189,8 @@ WithSysError(const TString&  system,
   c->cd(); 
   c->Print(Form("%s.pdf", base.Data()));
   c->Print(Form("%s.png", base.Data()));
+  c->SaveAs(Form("%s_canvas.root", base.Data()));
+  /// c->SaveAs(Form("%s_canvas.C", base.Data()));
 
   if (trigLegTitle.IsNull() || !alsoLog) return;
   

@@ -46,9 +46,15 @@ public:
    * @return 
    */
   static Color_t RingColor(UShort_t d, Char_t r)
-  { 
+  {
+#if 0
     return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
 	    + ((r == 'I' || r == 'i') ? 2 : -3));
+#else
+    // Brigher colours that look better in print 
+    return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
+	    + ((r == 'I' || r == 'i') ? -3 : -9));
+#endif
   }
   //==================================================================
   /** 

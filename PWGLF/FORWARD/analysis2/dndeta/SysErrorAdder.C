@@ -73,9 +73,10 @@ struct SysErrorAdder
    * @param fill  Fill style 
    * @param l     Legend 
    */
-  void ModError(GraphSysErr* gse, Int_t id, Style_t fill, TLegend* l) const
+  void ModError(GraphSysErr* gse, Int_t id, Style_t fill,
+		TLegend* l, UShort_t off=64) const
   {
-    UShort_t off = 64; // (id-1) * 32;
+    // UShort_t off = 64; // (id-1) * 32;
     // switch (fill) {
     // case kMergingFill:    off = 16; break; 
     // case kDensityFill:    off = 32; break;
@@ -127,7 +128,7 @@ struct SysErrorAdder
     if (low == 0 && high == 0) return -1;
     
     Int_t id = gse->DefineCommon(GetTriggerName(), true, low, high);
-    ModError(gse, id, kTriggerFill, l);
+    ModError(gse, id, kTriggerFill, l, 0);
     return id;
   }
   /** 
@@ -403,7 +404,7 @@ struct CENTAdder : public SysErrorAdder
       fMin = 0.04; fMax = 0.06;
     }
     else {
-      fMin = 0.01; fMax = 0.10; // 0.02
+      fMin = 0.004; fMax = 0.062; // 0.02
     }
   }
   const char* GetTriggerName() const 

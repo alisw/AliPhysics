@@ -14,6 +14,7 @@
 AliBaseAODTask::AliBaseAODTask()
   : AliAnalysisTaskSE(),
     fTriggerMask(0xFFFFFFFF), 
+    fFilterMask(AliAODForwardMult::kDefaultFilter),
     fMinIpZ(0), 
     fMaxIpZ(-1), 
     fCentAxis(0, 0, -1), 
@@ -34,6 +35,7 @@ AliBaseAODTask::AliBaseAODTask(const char* name,
 			       const char* title)
   : AliAnalysisTaskSE(name),
     fTriggerMask(0xFFFFFFFF), 
+    fFilterMask(AliAODForwardMult::kDefaultFilter),
     fMinIpZ(0), 
     fMaxIpZ(-1), 
     fCentAxis(0, 0, -1), 
@@ -100,12 +102,30 @@ AliBaseAODTask::SetTriggerMask(const char* mask)
 }
 //________________________________________________________________________
 void 
-AliBaseAODTask::SetTriggerMask(UShort_t mask) 
+AliBaseAODTask::SetTriggerMask(UInt_t mask) 
 { 
   DGUARD(fDebug,3,"Set the trigger mask: 0x%0x", mask);
   fTriggerMask = mask; 
-  // if (fTriggerString) delete fTriggerString;
-  // fTriggerString = AliForwardUtil::MakeParameter("trigger", fTriggerMask);
+}
+//________________________________________________________________________
+void 
+AliBaseAODTask::SetFilterMask(const char* mask)
+{
+  // 
+  // Set the trigger maskl 
+  // 
+  // Parameters:
+  //    mask Trigger mask
+  //
+  DGUARD(fDebug,3,"Set the filter mask: %s", mask);
+  SetFilterMask(AliAODForwardMult::MakeTriggerMask(mask, "|"));
+}
+//________________________________________________________________________
+void 
+AliBaseAODTask::SetFilterMask(UInt_t mask) 
+{ 
+  DGUARD(fDebug,3,"Set the filter mask: 0x%0x", mask);
+  fFilterMask = mask; 
 }
 //________________________________________________________________________
 void 
@@ -276,7 +296,7 @@ AliBaseAODTask::UserCreateOutputObjects()
   fVertex->SetYTitle("Events");
   fVertex->SetDirectory(0);
   fVertex->SetFillColor(kRed+2);
-  fVertex->SetFillStyle(3001);
+  fVertex->SetFillStyle(3002);
   fVertex->SetLineColor(kRed+2);
   fSums->Add(fVertex);
   fAccVertex = static_cast<TH1D*>(fVertex->Clone("vertexAcc"));
@@ -286,11 +306,11 @@ AliBaseAODTask::UserCreateOutputObjects()
   fAccVertex->SetLineColor(kGreen+2);
   fSums->Add(fAccVertex);
 
-  fCent = new TH1D("cent","Centrality of all events",100, 0, 100);
+  fCent = new TH1D("cent","Centrality of all events",102, -1, 101);
   fCent->SetXTitle("Centrality [%]");
   fCent->SetYTitle("Events");
   fCent->SetFillColor(kRed+2);
-  fCent->SetFillStyle(3001);
+  fCent->SetFillStyle(3002);
   fCent->SetLineColor(kRed+2);
   fCent->SetDirectory(0);
   fSums->Add(fCent);
@@ -301,9 +321,6 @@ AliBaseAODTask::UserCreateOutputObjects()
   fAccCent->SetLineColor(kGreen+2);
   fSums->Add(fAccCent);
 
-
-  if (!Book()) AliFatalF("Failed to book output objects for %s", GetName());
-
   // Store centrality axis as a histogram - which can be merged
   TH1* cH = 0;
   if (fCentAxis.GetXbins() && fCentAxis.GetXbins()->GetSize() > 0) 
@@ -313,16 +330,23 @@ AliBaseAODTask::UserCreateOutputObjects()
     cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
 		  fCentAxis.GetNbins(), fCentAxis.GetXmin(), 
 		  fCentAxis.GetXmax());
+  cH->SetBinContent(1,1);
   cH->GetXaxis()->SetTitle(fCentAxis.GetTitle());
   cH->GetXaxis()->SetName(fCentAxis.GetName());
 
   fSums->Add(cH);
+  
   fSums->Add(AliForwardUtil::MakeParameter("trigger", ULong_t(fTriggerMask)));
+  fSums->Add(AliForwardUtil::MakeParameter("filter",  ULong_t(fFilterMask)));
   fSums->Add(AliForwardUtil::MakeParameter("count", 1));
   fSums->Add(AliForwardUtil::MakeParameter("alirootRev", 
 					   AliForwardUtil::AliROOTRevision()));
   fSums->Add(AliForwardUtil::MakeParameter("alirootBranch", 
 					   AliForwardUtil::AliROOTBranch()));
+
+
+
+  if (!Book()) AliFatalF("Failed to book output objects for %s", GetName());
 
   Print();
 
@@ -362,7 +386,11 @@ Double_t
 AliBaseAODTask::GetCentrality(AliAODEvent&,
 			      AliAODForwardMult* forward)
 {
-  return forward->GetCentrality();
+  Double_t cent = forward->GetCentrality();
+  Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
+  if (cent < 0)   cent = -.5;
+  if (cent > max) cent = TMath::Max(max+.1,100.5);
+  return cent;  
 }
 //____________________________________________________________________
 Double_t
@@ -376,7 +404,7 @@ AliBaseAODTask::GetIpZ(AliAODEvent&,
 AliAODCentralMult*
 AliBaseAODTask::GetCentral(const AliAODEvent& aod, Bool_t mc, Bool_t verb)
 {
-  // Get the forward object that contains our event selection stuff 
+  // Get the central object that contains our event selection stuff 
   TObject* obj = 0;
   if (mc) obj = aod.FindListObject("CentralClustersMC");
   else    obj = aod.FindListObject("CentralClusters");
@@ -392,10 +420,7 @@ TH2D*
 AliBaseAODTask::GetPrimary(const AliAODEvent& aod)
 {
   TObject* obj = aod.FindListObject("primary");
-  // We should have a forward object at least 
-  if (!obj) {
-    return 0;
-  }
+  if (!obj) return 0;
   TH2D* ret = static_cast<TH2D*>(obj);
   return ret;
 }
@@ -456,11 +481,13 @@ AliBaseAODTask::CheckEvent(const AliAODForwardMult& forward)
 {
   if (HasCentrality())
     return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-			      UShort_t(fCentAxis.GetXmin()), 
-			      UShort_t(fCentAxis.GetXmax()), 
-			      fTriggers, fEventStatus);
+			      fCentAxis.GetXmin(), 
+			      fCentAxis.GetXmax(), 
+			      fTriggers, fEventStatus,
+			      fFilterMask);
  return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-			   0, 0, fTriggers, fEventStatus);
+			   0, 0, fTriggers, fEventStatus,
+			   fFilterMask);
 }
 
 //____________________________________________________________________
@@ -528,6 +555,7 @@ AliBaseAODTask::Print(Option_t* /*option=""*/) const
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();
   PFV("Trigger mask",  AliAODForwardMult::GetTriggerString(fTriggerMask));
+  PFV("Filter mask",   AliAODForwardMult::GetTriggerString(fFilterMask,"|"));
   PF("IP z range", "%++6.1f - %+6.1f", fMinIpZ, fMaxIpZ);
   PFV("Centrality bins", (HasCentrality() ? "" : "none"));
   gROOT->IndentLevel();
