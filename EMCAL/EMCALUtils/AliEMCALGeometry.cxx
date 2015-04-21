@@ -252,8 +252,8 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text
   }else{
     if ( strcmp(fgGeom->GetName(), name) != 0) {
       printf("\ncurrent geometry is %s : ", fgGeom->GetName());
-      printf(" you cannot call %s ",name);  
-    }else{
+      printf(" you should not call %s ",name);
+    // }else{
       rv = (AliEMCALGeometry *) fgGeom; 
     } // end 
   }  // end if fgGeom
