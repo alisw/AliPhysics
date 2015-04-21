@@ -28,6 +28,7 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   if (gSystem->Getenv("disableOuter")){
     rec.SetRunLocalReconstruction("ITS TPC TRD TOF T0");
     rec.SetRunReconstruction("ITS TPC TRD TOF T0");
+    rec.SetRunTracking("ITS TPC TRD TOF T0");
   }
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
