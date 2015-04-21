@@ -25,6 +25,10 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   
   // Reconstruction settings
   AliReconstruction rec;
+  if (gSystem->Getenv("disableOuter")){
+    rec.SetRunLocalReconstruction("ITS TPC TRD TOF T0");
+    rec.SetRunReconstruction("ITS TPC TRD TOF T0");
+  }
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
     rec.SetCDBSnapshotMode("OCDB.root");
