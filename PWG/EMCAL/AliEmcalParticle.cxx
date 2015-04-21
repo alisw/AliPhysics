@@ -26,9 +26,9 @@ AliEmcalParticle::AliEmcalParticle() :
 }
 
 //_________________________________________________________________________________________________
-AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Double_t vy, Double_t vz) :
+AliEmcalParticle::AliEmcalParticle(AliVTrack* track, Int_t id) :
   AliVParticle(),
-  fTrack(0), 
+  fTrack(track), 
   fCluster(0),
   fNMatched(0),
   fId(id),
@@ -40,34 +40,46 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
 {
   // Constructor.
 
-  if (!particle) {
+  if (!track) {
     AliWarning("Null pointer passed as particle.");
     return;
   }
 
-  fTrack = dynamic_cast<AliVTrack*>(particle);
-  if (fTrack) {
-    fEta = fTrack->Eta();
-    fPhi = fTrack->Phi();
-    fPt  = fTrack->Pt();
-    fM   = fTrack->M();
-  } else {
-    fCluster = dynamic_cast<AliVCluster*>(particle);
-    if (fCluster) {
-      Double_t vtx[3]; vtx[0]=vx;vtx[1]=vy;vtx[2]=vz;
-      TLorentzVector vect;
-      fCluster->GetMomentum(vect, vtx);
-      fEta = vect.Eta();
-      fPhi = vect.Phi();
-      fPt  = vect.Pt();
-      fM   = 0.;
-    }
-  }
+  fEta = fTrack->Eta();
+  fPhi = fTrack->Phi();
+  fPt  = fTrack->Pt();
+  fM   = fTrack->M();
 
-  if (!fTrack && !fCluster) {
-    AliWarning("Particle type not recognized (not AliVTrack nor AliVCluster).");
+  ResetMatchedObjects();
+}
+
+//_________________________________________________________________________________________________
+AliEmcalParticle::AliEmcalParticle(AliVCluster* cluster, Int_t id, Double_t vx, Double_t vy, Double_t vz) :
+  AliVParticle(),
+  fTrack(0), 
+  fCluster(cluster),
+  fNMatched(0),
+  fId(id),
+  fPhi(0),
+  fEta(0),
+  fPt(0),
+  fM(0),
+  fMatchedPtr(0)
+{
+  // Constructor.
+
+  if (!cluster) {
+    AliWarning("Null pointer passed as particle.");
     return;
   }
+
+  Double_t vtx[3]; vtx[0]=vx;vtx[1]=vy;vtx[2]=vz;
+  TLorentzVector vect;
+  fCluster->GetMomentum(vect, vtx);
+  fEta = vect.Eta();
+  fPhi = vect.Phi();
+  fPt  = vect.Pt();
+  fM   = 0.;
 
   ResetMatchedObjects();
 }
