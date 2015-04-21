@@ -476,7 +476,7 @@ void AliEventPlaneHistos::AddHistogram(const Char_t* histClass,
     TAxis* axis = h->GetAxis(idim);
     axis->SetUniqueID(vars[idim]);
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
-    if(axLabels && axLabels[idim].Data()!='\0') 
+    if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());
   }
   hList->Add(h);
@@ -531,7 +531,7 @@ void AliEventPlaneHistos::AddHistogram(const Char_t* histClass,
     //  axis->SetTitle(Form("%s %s", VAR::fVariableNames[vars[idim]][0],
     //                (VAR::fVariableNames[vars[idim]][1][0]=='\0' ? "" : Form("(%s)", VAR::fVariableNames[vars[idim]][1]))));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
-    if(axLabels && axLabels[idim].Data()!='\0')
+    if(axLabels && !axLabels[idim].IsNull())
       MakeAxisLabels(axis, axLabels[idim].Data());
   }
   hList->Add(h);
