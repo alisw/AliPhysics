@@ -1386,7 +1386,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
     if (fDoPID || fDoDeDxCheck || fDoPtResolution) 
-      ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
+      ProcessTrack(track, pdg, centralityPercentile, -1, isMBSelected, isMultSelected); // No jet information in this case -> Set jet pT to -1
     
     if (fDoPtResolution) {
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
