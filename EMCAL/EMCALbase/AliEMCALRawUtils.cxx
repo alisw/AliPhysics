@@ -153,11 +153,11 @@ void AliEMCALRawUtils::Digits2Raw()
       }
         
       // Get cell indices
-      Int_t nSM = 0;
-      Int_t nIphi = 0;
-      Int_t nIeta = 0;
-      Int_t iphi = 0;
-      Int_t ieta = 0;
+      Int_t nSM     = 0;
+      Int_t nIphi   = 0;
+      Int_t nIeta   = 0;
+      Int_t iphi    = 0;
+      Int_t ieta    = 0;
       Int_t nModule = 0;
         
       fGeom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
@@ -172,7 +172,6 @@ void AliEMCALRawUtils::Digits2Raw()
       //
       // In the next lines shift the online cols or rows depending on the
       // SM to match the offline mapping.
-      // To be understood the cause/need of the shifts.
       //
         
       // Apply the shifts (inverse to those in Raw2Digits):
@@ -180,19 +179,19 @@ void AliEMCALRawUtils::Digits2Raw()
       if ( nSM == 13 || nSM == 15 || nSM == 17 )
       {
         // DCal odd SMs
-        ieta += 16; // why?
+        ieta += 16; // Same cabling mapping as for EMCal, not considered offline.
       }
         
       if ( nSM == 18 || nSM == 19 )
       {
         // DCal 1/3 SMs
-        iphi += 16; // why?
+        iphi += 16; // Needed due to cabling mistake.
       }
       //
       //----------------------------------------------------------------------
 
       // Check which is the RCU, 0 or 1, of the cell.
-      // What to do in Run2?, there are no RCU ...
+      // *** RCU corresponds to DDL in a SuperModule ***
       Int_t iRCU = -111;
       if      (  0<=iphi&&iphi< 8 )                      iRCU=0; // first cable row
       else if (  8<=iphi&&iphi<16 &&  0<=ieta&&ieta<24 ) iRCU=0; // first half;
@@ -202,7 +201,7 @@ void AliEMCALRawUtils::Digits2Raw()
       if (nSM%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
       
       if (iRCU<0) 
-        Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
+        Fatal("Digits2Raw()","Non-existent RCU/DDL number: %d", iRCU);
     
       // Which DDL?
       Int_t iDDL = NRCUSPERMODULE*nSM + iRCU;
@@ -391,7 +390,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       //
       // In the next lines shift the online cols or rows depending on the
       // SM to match the offline mapping.
-      // To be understood the cause/need of the shifts.
       //
         
       Int_t sm     = in.GetModule() ;
@@ -403,13 +401,13 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       if ( sm == 13 || sm == 15 || sm == 17 )
       {
         // DCal odd SMs
-        column -= 16; // why?
+        column -= 16; // Same cabling mapping as for EMCal, not considered offline.
       }
 
       if ( sm == 18 || sm == 19 )
       {
         // DCal 1/3 SMs
-        row -= 16; // why?
+        row -= 16; // Needed due to cabling mistake.
       }
       //
       //---------------------------------------------------------------------
