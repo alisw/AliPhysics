@@ -47,7 +47,7 @@ main ()
     #TODO: this is stupid
     if [[ ! -d ${targetEntryPath} ]]; then
       firstRun=${runRange[0]}
-      echo copyOCDBentry ${cdbEntry} ${ocdbSource} ${ocdbTarget} ${firstRun} "999999999"
+      copyOCDBentry ${cdbEntry} ${ocdbSource} ${ocdbTarget} ${firstRun} "999999999"
     fi
   done
 }
