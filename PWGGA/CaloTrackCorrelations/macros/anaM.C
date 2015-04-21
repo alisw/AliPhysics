@@ -1,4 +1,16 @@
-/* $Id$ */
+/// \file anaM.C
+/// \brief Example of execution macro for mixing frame analysis
+///
+/// Example macro to do analysis with the
+/// analysis classes in CaloTrackCorrelations within the mixing frame
+/// in local or grid modes.
+///
+/// Not being used for long time, keep it in case it is useful in future
+///
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
 //-------------------------------------------------
 enum anaModes {mLocal, mGRID};
 //mLocal    = 0: Analyze locally files in your computer
@@ -27,6 +39,9 @@ const Bool_t kDoESDFilter = kFALSE;  //filter the tracks from the esd
 
 Int_t mode = mGRID;
 
+//________________________
+/// Main execution method.
+//________________________
 void anaM()
 {
   // Main
@@ -38,7 +53,7 @@ void anaM()
   LoadLibraries() ;
   
   //-------------------------------------------------------------------------------------------------
-  //Create chain from ESD and from cross sections files, look below for options.
+  // Create chain from ESD and from cross sections files, look below for options.
   //------------------------------------------------------------------------------------------------- 
   if(kInputData == "ESD") kTreeName = "esdTree" ;
   else if(kInputData == "AOD") kTreeName = "aodTree" ;
@@ -50,10 +65,11 @@ void anaM()
   
   TChain * chain   = new TChain(kTreeName) ;
   
-	CreateChain(mode, chain);//, chainxs);  
+  CreateChain(mode, chain);//, chainxs);
   cout<<"Chain created"<<endl;
   
-  if( chain ){
+  if( chain )
+  {
     AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
     
     //--------------------------------------
@@ -138,7 +154,11 @@ void anaM()
   
 }
 
-void  LoadLibraries() {
+//_____________________________
+/// Load analysis libraries. Out of date.
+//_____________________________
+void  LoadLibraries()
+{
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
@@ -171,14 +191,16 @@ void  LoadLibraries() {
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-	  gSystem->Load("libPHOSUtils");
-	  gSystem->Load("libEMCALUtils");
+    gSystem->Load("libPHOSUtils");
+    gSystem->Load("libEMCALUtils");
     gSystem->Load("libPWGCaloTrackCorrBase");
     gSystem->Load("libPWGGACaloTrackCorrelations");
   }
-  
 }
 
+//_________________________________
+/// Par files compilation method.
+//_________________________________
 void SetupPar(char* pararchivename)
 {
   //Load par files, create analysis libraries
@@ -221,7 +243,9 @@ void SetupPar(char* pararchivename)
 }
 
 
-
+//_____________________________________________________________________
+/// Fills chain with data files paths.
+//_____________________________________________________________________
 void CreateChain(const anaModes mode, TChain * chain){//, TChain * chainxs){
   //Fills chain with data
   
@@ -233,9 +257,10 @@ void CreateChain(const anaModes mode, TChain * chain){//, TChain * chainxs){
   TString ocwd = gSystem->WorkingDirectory();
   
   //---------------------------------------
-  //Local files analysis
+  // Local files analysis
   //---------------------------------------
-  if(mode == mLocal){
+  if(mode == mLocal)
+  {
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
@@ -266,7 +291,8 @@ void CreateChain(const anaModes mode, TChain * chain){//, TChain * chainxs){
   //------------------------------
   //GRID xml files
   //-----------------------------
-  else if(mode == mGRID){
+  else if(mode == mGRID)
+  {
     //Load necessary libraries and connect to the GRID
     gSystem->Load("libNetx") ;
     gSystem->Load("libRAliEn");

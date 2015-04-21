@@ -1,4 +1,3 @@
-// $Id$
 //
 // General QA task.
 //
@@ -12,11 +11,14 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
+#include "AliAODTrack.h"
 #include "AliEmcalJet.h"
 #include "AliVEventHandler.h"
 #include "AliAODEvent.h"
@@ -75,6 +77,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 {
   // Default constructor.
 
+  fAODfilterBits[0] = 0;
+  fAODfilterBits[1] = 0;
+
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -119,6 +124,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistJetsPtArea(0)
 {
   // Standard 
+
+  fAODfilterBits[0] = 0;
+  fAODfilterBits[1] = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -813,8 +821,8 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
 {
   // Do cluster loop.
 
-  if (!fCaloClusters)
-    return 0;
+  AliClusterContainer* clusters = GetClusterContainer(0);
+  if (!clusters) return 0;
 
   Int_t nAccClusters = 0;
 
@@ -824,18 +832,10 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
   leading = 0;
 
   // Cluster loop
-  const Int_t nclusters = fCaloClusters->GetEntriesFast();
 
-  for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
-    AliVCluster* cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
-    if (!cluster) {
-      AliError(Form("Could not receive cluster %d", iClusters));
-      continue;
-    }  
-
-    if (!AcceptCluster(cluster))
-      continue;
-
+  AliVCluster* cluster = 0;
+  clusters->ResetCurrentID();
+  while ((cluster = clusters->GetNextAcceptCluster())) {
     sum += cluster->E();
 
     if (!leading || leading->E() < cluster->E()) leading = cluster;
@@ -856,8 +856,9 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
 
     if (cells) fHistFcrossEnergy[fCentBin]->Fill(cluster->E(), GetFcross(cluster, cells));
 
-    if (fHistClusMCEnergyFraction[fCentBin])
+    if (fHistClusMCEnergyFraction[fCentBin]) {
       fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
+    }
 
     nAccClusters++;
   }
@@ -869,29 +870,21 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
 Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
 {
   // Do track loop.
-  if (!fTracks)
-    return 0;
+  AliParticleContainer* tracks = GetParticleContainer(0);
+
+  if (!tracks) return 0;
 
   Int_t nAccTracks = 0;
 
   sum = 0;
   leading = 0;
 
-  const Int_t ntracks = fTracks->GetEntriesFast();
   Int_t neg = 0;
   Int_t zero = 0;
 
-  for (Int_t i = 0; i < ntracks; i++) {
-    AliVParticle* track = static_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track  
-
-    if (!track) {
-      AliError(Form("Could not retrieve track %d",i)); 
-      continue; 
-    }
-
-    if (!AcceptTrack(track)) 
-      continue;
-
+  tracks->ResetCurrentID();
+  AliVParticle* track = 0;
+  while ((track = tracks->GetNextAcceptParticle())) {
     nAccTracks++;
 
     sum += track->P();
@@ -902,7 +895,6 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
       fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
     }
     else {
-      fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
       if (track->GetLabel() == 0) {
 	zero++;
 	if (fHistTrPhiEtaZeroLab[fCentBin]) {
@@ -911,30 +903,32 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
 	}
       }
 
-      if (track->GetLabel() < 0)
+      if (track->GetLabel() < 0) {
 	neg++;
+      }
 
       Int_t type = 0;
 
-      AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
-
-      if (vtrack) {
-        AliPicoTrack* ptrack = dynamic_cast<AliPicoTrack*>(track);
-        if (ptrack) {
-          type = ptrack->GetTrackType();
+      if (tracks->GetClassName() == "AliPicoTrack") {
+        type = static_cast<AliPicoTrack*>(track)->GetTrackType();
+      }
+      else if (tracks->GetClassName() == "AliAODTrack") {
+        if (fAODfilterBits[0] != 0 || fAODfilterBits[1] != 0) {
+          type = AliPicoTrack::GetTrackType(static_cast<AliAODTrack*>(track), fAODfilterBits[0], fAODfilterBits[1]);
         }
         else {
-          type = AliPicoTrack::GetTrackType(vtrack);
+          type = AliPicoTrack::GetTrackType(static_cast<AliVTrack*>(track));
         }
       }
-    
-      if (type >= 0 && type < 3) {
+
+      if (type >= 0 && type <= 3) {
 	fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       }
       else {
 	AliDebug(2,Form("%s: track type %d not recognized!", GetName(), type));
       }
 
+      AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
       if (!vtrack) continue;
 
       if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
@@ -955,11 +949,13 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
     }
   }
 
-  if (fHistTrNegativeLabels[fCentBin])
-    fHistTrNegativeLabels[fCentBin]->Fill(1. * neg / ntracks);
+  if (fHistTrNegativeLabels[fCentBin]) {
+    fHistTrNegativeLabels[fCentBin]->Fill(1. * neg / nAccTracks);
+  }
 
-  if (fHistTrZeroLabels[fCentBin])
-    fHistTrZeroLabels[fCentBin]->Fill(1. * zero / ntracks);
+  if (fHistTrZeroLabels[fCentBin]) {
+    fHistTrZeroLabels[fCentBin]->Fill(1. * zero / nAccTracks);
+  }
 
   return nAccTracks;
 }

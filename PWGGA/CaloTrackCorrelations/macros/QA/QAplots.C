@@ -1,4 +1,28 @@
-#if !defined(__CINT__) || defined(__MAKECINT__) 
+/// \file QAplots.C
+/// \brief Do EMCal QA plots
+///
+/// Macro to do some EMCAL QA plots (from QA outputs (QAresults.root) of the QA train (AliAnaCalorimeterQA task) )
+///
+/// * 1. macro needs AliEMCALGeometry to compute maps
+/// * 2. this macro makes the QA plots for
+///    * period or single runs
+/// * 3. to use it you should have the
+///    * QAresults.root files in period/pass/runnumber.root
+///    * and if you are running in period mode a runlist.txt
+///   file in the same directory: period/pass/runlist.txt
+///   were runlist is the list of the runs you want to check
+/// * 4. To save the plots you must create prior tu usig the macro in the
+///   period/pass/ directory as many subdirectories as number of runs
+///   with the name runnumber
+///   all gif files will be saved in those subdirectories
+/// * 5. The trigger corresponds to the name of the output directory in the root
+///   file so "EMC7" for EMC triggers and "default" for AnyInt (Minbias)
+///
+/// \author Alexis Mas, SUBATECH
+/// \author Marie Germain,  SUBATECH
+
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -25,37 +49,8 @@
 #endif
 using namespace std;
 
-
-
-// Macro to do some EMCAL QA plots (from QA outputs (QAresults.root) of the QA train (AliAnaCalorimeterQA task) )
-//
-//
-// 1. macro needs AliEMCALGeometry to compute maps
-
-// 2. this macro makes the QA plots for 
-// - period or single runs
-// 
-// 3. to use it you should have the
-//-  QAresults.root files in period/pass/runnumber.root 
-//-  and if you are running in period mode a runlist.txt
-// file in the same directory: period/pass/runlist.txt
-// were runlist is the list of the runs you want to check
-//
-// 4. To save the plots you must create prior tu usig the macro in the 
-//  period/pass/ directory as many subdirectories as number of runs 
-//  with the name runnumber
-//  all gif files will be saved in those subdirectories
-//
-//
-// 5. The trigger corresponds to the name of the output directory in the root 
-// file so
-// "EMC7" for EMC triggers and "default" for AnyInt (Minbias) 
-// 
-// Authors: Alexis Mas, M. Germain  SUBATECH, 
-
-
-void QAplots(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", TString trigger= "default"){   
-  
+void QAplots(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", TString trigger= "default")
+{
   FILE * pFile;
   TString file = "";
   if (trigger=="default") file = "/scratch/alicehp2/germain/QA/"+period+"/"+ pass + "/runlistMB.txt" ;
@@ -102,7 +97,8 @@ void QAplots(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString 
   }
 }
 
-void QAplots(Int_t run, TString period ="LHC11h", TString pass="pass1_HLT", TString trigger= "default"){
+void QAplots(Int_t run, TString period ="LHC11h", TString pass="pass1_HLT", TString trigger= "default")
+{
   TString base ;
   base = "/scratch/alicehp2/germain/QA/";
   base += period ;
@@ -118,7 +114,9 @@ void QAplots(Int_t run, TString period ="LHC11h", TString pass="pass1_HLT", TStr
   f->Close();
 }
 
-void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT", TString trigger= "default", TFile *f =0x0){
+void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT",
+                   TString trigger= "default", TFile *f =0x0)
+{
   TH2D *hEnergyMap = new TH2D("hEnergyMap","",96,-48,48,120,-0,120);
   TH2D *hOccupancyMap = new TH2D("hOccupancyMap","",96,-48,48,120,-0,120); 
   TH2D *hEnergyMapReal = new TH2D("hEnergyMapReal","",96,-48,48,120,-0,120);
@@ -193,14 +191,16 @@ void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT
   if ( trigger=="EMC7") Eth=20.;
   
   
-  for(Int_t i = 0; i < 11520 ; i++){ 
+  for(Int_t i = 0; i < 11520 ; i++)
+  {
     Double_t Esum = 0;
     Double_t Nsum = 0;  
     Double_t EsumH = 0;
     Double_t NsumH = 0;
     Double_t Ratio = 0;
     
-    for (Int_t j = 1; j <= hCellAmplitude->GetNbinsX(); j++) {
+    for (Int_t j = 1; j <= hCellAmplitude->GetNbinsX(); j++)
+    {
       Double_t E = hCellAmplitude->GetXaxis()->GetBinCenter(j);
       Double_t N = hCellAmplitude->GetBinContent(j, i+1);
       
@@ -247,13 +247,11 @@ void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT
      */
     if (nSupMod%2==0) bineta=ieta-48;
     
-    
-    
     hEnergyMapReal->Fill(realbineta,realbinphi,Esum/(Double_t)Events);
     hOccupancyMapReal->Fill(realbineta,realbinphi,Nsum/(Double_t)Events);
     // }
-    
   }
+    
   cout<<"N events : "<<Events<<endl;
   
   TString Energy ; Energy = base +  "MapEnergy.pdf";
@@ -304,10 +302,11 @@ void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT
   c2->cd();
   c2->SaveAs(Entries);
   c2->SaveAs(Entries2);
-  
 }
-void  DrawRun(const Int_t run = 167713, TString period ="LHC11h", TString pass="pass1_HLT", TString trigger= "default", TFile *f =0x0){
-  
+
+void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
+              TString pass="pass1_HLT", TString trigger= "default", TFile *f =0x0)
+{
   gStyle->SetPalette(1);
   TString base = "/scratch/alicehp2/germain/QA/"; 
   base += period ;
@@ -674,5 +673,4 @@ void  DrawRun(const Int_t run = 167713, TString period ="LHC11h", TString pass="
   
   c35->SaveAs(outfilename);
   c35->SaveAs(outfilename2);
-  
 }

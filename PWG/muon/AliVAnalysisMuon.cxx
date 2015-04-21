@@ -320,7 +320,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
   //
   // Global event info
   //
-  const TObjArray* selectTrigClasses = fMuonEventCuts->GetSelectedTrigClassesInEvent(InputEvent());
+  const TObjArray* selectTrigClasses = fMuonEventCuts->GetSelectedTrigClassesInEvent(fInputHandler);
 
   Double_t centrality = fMuonEventCuts->GetCentrality(InputEvent());
   Int_t centralityBin = GetCentralityClasses()->FindBin(centrality);

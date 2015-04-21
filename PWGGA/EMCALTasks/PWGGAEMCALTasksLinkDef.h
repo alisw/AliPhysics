@@ -1,7 +1,7 @@
 // $Id$
 
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -28,11 +28,19 @@
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0V2ShSh+;
-#pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;
 #pragma link C++ class AliAnalysisTaskEMCALIsolation+;
 #pragma link C++ class AliAnalysisTaskEMCALPhotonIsolation+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDM+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDMpPb+;
 #pragma link C++ class AliAnalysisTaskSDMGammaMC+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0Gamma+;
+
+///I (Astrid) decide to put all my classes at the end because the list above is already not in alphabetical order :)
+#pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;
+#pragma link C++ class AliEMCalpi0Task+;
+#pragma link C++ class ClusterStatStruct+;
+#pragma link C++ class EventStatStruct+;
+#pragma link C++ class diClusterStatStruct+;
+#pragma link C++ class EventStatStruct+;
+#pragma link C++ class mixedDiClusterStatStruct+;
 #endif

@@ -216,7 +216,7 @@ void AliEMCalTriggerPatchAnalysisComponent::FillTriggerInfoHistogram(TString his
  */
 void AliEMCalTriggerPatchAnalysisComponent::FillAmplitudeHistogram(TString histo, const AliEmcalTriggerPatchInfo* const patch) {
 	bool isMain = patch->IsOfflineSimple() ? patch->IsMainTriggerSimple() : patch->IsMainTrigger();
-  double amplitudeinfo[5] = {patch->GetADCAmp(), patch->GetADCOfflineAmp(), patch->GetEtaGeo(), patch->GetPhiGeo(), isMain ? 1. : 0.};
+	double amplitudeinfo[5] = {(double)patch->GetADCAmp(), (double)patch->GetADCOfflineAmp(), (double)patch->GetEtaGeo(), (double)patch->GetPhiGeo(), isMain ? 1. : 0.};
   fHistos->FillTHnSparse(histo.Data(), amplitudeinfo);
 }
 

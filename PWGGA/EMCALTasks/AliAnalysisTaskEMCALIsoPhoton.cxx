@@ -1827,7 +1827,7 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::SmearM02(Double_t m02)
   if(!fStack && !fAODMCParticles)
     return m02;
   TRandom3 *r = new TRandom3(0);
-  return m02*r->Gaus(0,fSigmaSmear);
+  return m02*(1+r->Gaus(0,fSigmaSmear));
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 

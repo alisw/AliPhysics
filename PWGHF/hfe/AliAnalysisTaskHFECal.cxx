@@ -186,6 +186,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncpTMCM20pho_pi0e(0)	
   ,fPhoElecPtMCM20_pi0e(0)
   ,fSameElecPtMCM20_pi0e(0)
+  ,fIncpTMCM20pho_pi0Dalitz(0)	
+  ,fPhoElecPtMCM20_pi0Dalitz(0)
+  ,fSameElecPtMCM20_pi0Dalitz(0)
   ,fIncpTMCM20pho_eta(0)	
   ,fPhoElecPtMCM20_eta(0)
   ,fSameElecPtMCM20_eta(0)
@@ -355,6 +358,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncpTMCM20pho_pi0e(0)	
   ,fPhoElecPtMCM20_pi0e(0)
   ,fSameElecPtMCM20_pi0e(0)
+  ,fIncpTMCM20pho_pi0Dalitz(0)	
+  ,fPhoElecPtMCM20_pi0Dalitz(0)
+  ,fSameElecPtMCM20_pi0Dalitz(0)
   ,fIncpTMCM20pho_eta(0)	
   ,fPhoElecPtMCM20_eta(0)
   ,fSameElecPtMCM20_eta(0)
@@ -619,6 +625,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     Bool_t mcDtoE= kFALSE;
     Bool_t mcBtoE= kFALSE;
     Bool_t mcOrgPi0 = kFALSE;
+    Bool_t mcOrgPi0Dalitz = kFALSE;
     Bool_t mcOrgEta = kFALSE;
     double mcele = -1.;
     double mcpT = 0.0;
@@ -669,6 +676,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		       {
 			       //cout << "find pi0->e " <<  endl;
 			       mcOrgPi0 = kTRUE;
+			       mcOrgPi0Dalitz = kTRUE;
 			       mcWeight = GetMCweight(mcMompT); 
 		       }
 		       // eta->e (Dalitz)
@@ -1101,6 +1109,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                   if(fFlagPhotonicElec)fPhoVertexReco_Invmass->Fill(track->Pt(),conv_proR,mcWeight);
 
                   }
+               if(mcOrgPi0Dalitz)
+                 {
+                  fIncpTMCM20pho_pi0Dalitz->Fill(phoval,mcWeight);    
+                  if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0Dalitz->Fill(phoval,mcWeight);
+                  if(fFlagConvinatElec) fSameElecPtMCM20_pi0Dalitz->Fill(phoval,mcWeight);
+                 }
+
                // --- eta
                if(mcOrgEta)
                  {
@@ -1459,6 +1474,20 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtMCM20_pi0e = new THnSparseD("fSameElecPtMCM20_pi0e", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
   fSameElecPtMCM20_pi0e->Sumw2();
   fOutputList->Add(fSameElecPtMCM20_pi0e);
+
+ //
+  fIncpTMCM20pho_pi0Dalitz = new THnSparseD("fIncpTMCM20pho_pi0Dalitz","MC Pho pi0->e pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
+  fIncpTMCM20pho_pi0Dalitz->Sumw2();
+  fOutputList->Add(fIncpTMCM20pho_pi0Dalitz);
+
+  fPhoElecPtMCM20_pi0Dalitz = new THnSparseD("fPhoElecPtMCM20_pi0Dalitz", "MC Pho-inclusive electron pt with M20 pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMCM20_pi0Dalitz->Sumw2();
+  fOutputList->Add(fPhoElecPtMCM20_pi0Dalitz);
+
+  fSameElecPtMCM20_pi0Dalitz = new THnSparseD("fSameElecPtMCM20_pi0Dalitz", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMCM20_pi0Dalitz->Sumw2();
+  fOutputList->Add(fSameElecPtMCM20_pi0Dalitz);
+
  // 
   fIncpTMCM20pho_eta = new THnSparseD("fIncpTMCM20pho_eta","MC Pho pi0->e pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
   fIncpTMCM20pho_eta->Sumw2();

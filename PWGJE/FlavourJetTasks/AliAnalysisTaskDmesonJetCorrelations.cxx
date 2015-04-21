@@ -55,7 +55,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fCandidateType(kDstartoKpipi),
   fMinMass(0.),
   fMaxMass(1.),
-  fNBinsMass(195),
+  fNBinsMass(65),
   fMaxR(0.2),
   fShowPositionD(kTRUE),
   fShowInvMass(kFALSE),
@@ -70,7 +70,8 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fShowLeadingPt(kFALSE),
   fShowJetArea(kFALSE),
   fShowJetConstituents(kFALSE),
-  fShowMatchingLevel(kTRUE),
+  fShowMatchingLevel(kFALSE),
+  fShowDaughterDistance(0),
   fInhibitTask(kFALSE),
   fMatchingType(kGeometricalMatching),
   fOnlyAcceptedJets(kTRUE),
@@ -94,7 +95,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fCandidateType(cand),
   fMinMass(0.),
   fMaxMass(1.),
-  fNBinsMass(195),
+  fNBinsMass(65),
   fMaxR(0.2),
   fShowPositionD(kTRUE),
   fShowInvMass(kFALSE),
@@ -109,7 +110,8 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fShowLeadingPt(kFALSE),
   fShowJetArea(kFALSE),
   fShowJetConstituents(kFALSE),
-  fShowMatchingLevel(kTRUE),
+  fShowMatchingLevel(kFALSE),
+  fShowDaughterDistance(0),
   fInhibitTask(kFALSE),
   fMatchingType(kGeometricalMatching),
   fOnlyAcceptedJets(kTRUE),
@@ -271,6 +273,8 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
     Double_t areaJet = 0;
     Int_t constJet = 0;
 
+    Double_t daughterDist[5] = {0.};
+
     if (fCandidateType == kD0toKpi) {
       AliDebug(2,"Checking if D0 meson is selected");
       Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
@@ -346,11 +350,21 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
         leadPtJet = jet->MaxPartPt();
         areaJet = jet->Area();
         constJet = jet->N();
+
+        if (fShowDaughterDistance > 0) {
+          TObjArray daughters(5);
+          AddDaughters(Dcand, daughters);
+          for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
+            AliVTrack* track = static_cast<AliVTrack*>(daughters.At(i));
+            if (!track) continue;
+            daughterDist[i] = jet->DeltaR(track);
+          }
+        }
       }
     }
 
     AliDebug(2,"Filling THnSparse");
-    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel[0]);
+    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel[0], daughterDist);
   }
   
   return kTRUE;
@@ -778,6 +792,14 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
     dim++;
   }
 
+  for (Int_t i = 0; i < fShowDaughterDistance; i++) {
+    title[dim] = Form("#Delta R_{d%d-jet}", i);
+    nbins[dim] = 100;
+    min[dim] = 0;
+    max[dim] = 4;
+    dim++;
+  }
+  
   fDmesons = new THnSparseD("fDmesons","fDmesons",dim,nbins,min,max);
   fOutput->Add(fDmesons);
   for (Int_t i = 0; i < dim; i++) {
@@ -787,7 +809,7 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
 //_______________________________________________________________________________
 void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
-                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel)
+                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel, Double_t daughterDist[5])
 {
   // Fill the THnSparse histogram.
 
@@ -830,6 +852,9 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Doubl
     else if (title=="No. of constituents")                           contents[i] = constJet;
     else if (title=="Matching status")                               contents[i] = matchingStatus;
     else if (title=="Matching level")                                contents[i] = matchingLevel;
+    else if (title=="#Delta R_{d0-jet}")                             contents[i] = daughterDist[0];
+    else if (title=="#Delta R_{d1-jet}")                             contents[i] = daughterDist[1];
+    else if (title=="#Delta R_{d2-jet}")                             contents[i] = daughterDist[2];
     else AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
 

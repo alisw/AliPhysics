@@ -16,24 +16,48 @@
 Helper tools for spectrum plotting
 
 @author Markus Fasel
+@contact: markus.fasel@cern.ch
+@organization: ALICE Collaboration
+@organization: Lawrence Berkeley National Laboratory
+@copyright: 1998-2014, ALICE Experiment at CERN, All rights reserved
 """
-
 from ROOT import TFile, TGraphErrors, gDirectory
 from copy import deepcopy
 
 def NormaliseBinWidth(hist):
     """
     Normalise each bin by its width
+    @param hist: Histogram to normalize by the bin width
     """
-    for mybin in range(1,hist.GetXaxis().GetNbins()):
+    for mybin in range(1,hist.GetXaxis().GetNbins()+1):
         bw = hist.GetXaxis().GetBinWidth(mybin)
         hist.SetBinContent(mybin, hist.GetBinContent(mybin)/bw)
         hist.SetBinError(mybin, hist.GetBinError(mybin)/bw)
+        
+def GetListOfBinLimits(inputhist):
+    """
+    Convert bin limits to a list
+    @param inputhist: Histogram to obtain the bin limits from
+    @return: list of bin limits
+    """
+    binlimits = []
+    for i in range(1, inputhist.GetXaxis().GetNbins()+1):
+        if i == 1:
+            binlimits.append(inputhist.GetXaxis().GetBinLowEdge(i))
+        newlimit = inputhist.GetXaxis().GetBinUpEdge(i)
+        if newlimit in binlimits:
+            continue
+        binlimits.append(newlimit)
+    return binlimits    
 
 def MakeRatio(num, den, isBinomial = False):
     """
     Calculate ratio between 2 histograms
     Option indicates whether we use binomial error calculation or gaussian error calculation
+    @param num: Numerator hisrogram
+    @param den: Denominator histogram
+    @param isBinomial: If true binomial errors are used 
+    @return: The division result
     """
     result = deepcopy(num)
     option = ""
@@ -43,6 +67,13 @@ def MakeRatio(num, den, isBinomial = False):
     return result
 
 def HistToGraph(hist, xmin = None, xmax = None):
+    """
+    Build a graph from a histogram. Optionally one can set the bin ranges
+    @param hist: Histogram to build the graph from
+    @param xmin: Minimum x for the x-range of the points
+    @param xmax: Maximum x for the x-range of the points  
+    @return: A TGraphErrors created from the histogram
+    """
     output = TGraphErrors()
     npoints = 0
     for mybin in range(1, hist.GetXaxis().GetNbins()+1):

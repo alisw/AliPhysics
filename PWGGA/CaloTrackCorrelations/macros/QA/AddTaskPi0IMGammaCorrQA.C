@@ -1,4 +1,34 @@
+/// \file AddTaskPi0IMGammaCorrQA.C
+/// \brief Configuration of the analysis QA wagon for PWG-GA EMCal analysis
+///
+/// Configuration macro of EMCal related PWG-GA  analysis, although it can be
+/// also used for PHOS. It does:
+/// * a simple photon cluster selection
+/// * invariant mass analysis
+/// * cluster-charged track correlation analysis (optional)
+/// * detector general QA analysis (optional)
+/// * track general QA analysis (optional)
+///
+/// Wagon responsible: Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
+
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
+/// The options that can be passed to the macro are:
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle.
+/// \param simulation : A bool identifying the data as simulation.
+/// \param collision: A string with the colliding system.
+/// \param suffix : A string with the type of trigger (default: MB, EMC).
+/// \param qaan: execute the detector QA analysis.
+/// \param hadronan: execute the track QA and cluster-track correlation analysis.
+/// \param minCen : An int to select the minimum centrality, -1 means no selection.
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection.
+/// \param debugLevel : An int to define the debug level of all the tasks.
+///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calorimeter   = "EMCAL",
                                                              const Bool_t   simulation    = kFALSE,
                                                              const TString  collision     = "pp",
@@ -10,9 +40,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              const Int_t    debugLevel    = -1
                                                           )
 {
-  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
-  
-  
   if(simulation && !suffix.Contains("default"))
   {
     printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation!! \n");
@@ -116,12 +143,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   return task;
 }
 
-//___________________________________________________________________________
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+///
 AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
                                      Int_t   minCen,        Int_t maxCen,
                                      Bool_t  simulation,    Int_t debugLevel)
 {
-  
   AliCaloTrackReader * reader = 0;
   if     (inputDataType=="AOD")
     reader = new AliCaloTrackAODReader();
@@ -236,13 +264,13 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   if(debugLevel > 0) reader->Print("");
   
   return reader;
-  
 }
 
-//_______________________________________________________________________________________________
+///
+/// Configure the class handling the calorimeter clusters specific methods
+///
 AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, Int_t debugLevel)
 {
-  
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debugLevel);
   
@@ -291,15 +319,16 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   if(debugLevel > 0) cu->Print("");
   
   return cu;
-  
 }
 
-//_______________________________________________________________________________
+///
+/// Configure the task doing the first photon cluster selections
+/// Basically the track matching, minor shower shape cut, NLM selection ...
+///
 AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString collision,
                                       TString containerName,
                                       Bool_t simulation, Int_t debugLevel)
 {
-  
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(debugLevel); //10 for lots of messages
   
@@ -373,12 +402,13 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString collision,
   
 }
 
-//_________________________________________________________________________
+///
+/// Configure the task doing the 2 cluster invariant mass analysis
+///
 AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
                                 TString containerName, Bool_t simulation,
                                 Bool_t qaan, Int_t debugLevel)
 {
-  
   AliAnaPi0 *ana = new AliAnaPi0();
   
   ana->SetDebug(debugLevel);//10 for lots of messages
@@ -394,13 +424,18 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   
   // Cuts 
   if(calorimeter=="EMCAL") ana->SetPairTimeCut(70);
-  
+    
+  ana->SetNPIDBits(1);
+  ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
+  // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
+    
   if     (collision == "pp"  )
   {
     ana->SetNCentrBin(1);
     ana->SetNZvertBin(10);
     ana->SetNRPBin(1);
-    ana->SetNMaxEvMix(100);    
+    ana->SetNMaxEvMix(100);
+    ana->SetMinPt(0.5);
   }
   else if(collision =="PbPb")
   {
@@ -408,6 +443,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
     ana->SetNMaxEvMix(10);
+    ana->SetMinPt(1.5);
   }
   else if(collision =="pPb")
   {
@@ -415,14 +451,13 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
     ana->SetNMaxEvMix(100);
+    ana->SetMinPt(0.5);
   }
 
   ana->SwitchOffMultipleCutAnalysis();
   ana->SwitchOnSMCombinations();
   ana->SwitchOffFillAngleHisto();
   ana->SwitchOffFillOriginHisto();
-
-  ana->SetNPIDBits(1);
   
   //Set Histograms name tag, bins and ranges
   
@@ -434,14 +469,14 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   if(debugLevel > 0) ana->Print("");
   
   return ana;
-  
 }
 
-//___________________________________________________________________________________
+///
+/// Configure the task doing charged track selection
+///
 AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString containerName,
                                                  Bool_t simulation, Int_t debugLevel)
 {
-  
   AliAnaChargedParticles *ana = new AliAnaChargedParticles();
   ana->SetDebug(debugLevel); //10 for lots of messages
   
@@ -474,7 +509,9 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
   
 }
 
-//__________________________________________________________________________________________________________
+///
+/// Configure the task doing the trigger particle hadron correlation
+///
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle,  TString calorimeter,
                                                                     TString collision, TString containerName,
                                                                     Bool_t simulation, Int_t debugLevel)
@@ -559,11 +596,12 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
 }
 
-//________________________________________________________________________________
+///
+/// Configure the task doing standard calorimeter QA
+///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  TString collision,
                                          Bool_t simulation,    Int_t debugLevel)
 {
-  
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   ana->SetDebug(debugLevel); //10 for lots of messages
   ana->SetCalorimeter(calorimeter);
@@ -589,16 +627,15 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  TString collision
   if(debugLevel > 0) ana->Print("");
   
   return ana;
-  
 }
 
 
-//________________________________________________________
+///
+/// Configure the selection of MC events
+///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,
                             TString calorimeter, TString collision)
 {
-  // Set common bins for all analysis and MC histograms filling
-    
   histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")

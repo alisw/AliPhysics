@@ -180,6 +180,9 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fIncpTMCM20pho_pi0e;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMCM20_pi0e;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20_pi0e;	        //! Same inclusive ele pt
+ THnSparseD 		*fIncpTMCM20pho_pi0Dalitz;	//! MC HFE pid electron vs centrality
+ THnSparseD 		*fPhoElecPtMCM20_pi0Dalitz;	        //! Pho inclusive ele pt
+ THnSparseD 		*fSameElecPtMCM20_pi0Dalitz;	        //! Same inclusive ele pt
  THnSparseD 		*fIncpTMCM20pho_eta;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMCM20_eta;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20_eta;	        //! Same inclusive ele pt
