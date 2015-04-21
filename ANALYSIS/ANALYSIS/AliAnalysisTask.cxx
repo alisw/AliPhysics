@@ -103,6 +103,7 @@
 #include <TCollection.h>
 #include <TTree.h>
 #include <TROOT.h>
+#include <TClonesArray.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataSlot.h"
@@ -284,7 +285,7 @@ Bool_t AliAnalysisTask::CheckOwnership() const
    TObject *outdata;
    for (Int_t islot=0; islot<fNoutputs; islot++) {
       outdata = GetOutputData(islot);
-      if (outdata && outdata->InheritsFrom(TCollection::Class())) {
+      if (outdata && outdata->InheritsFrom(TCollection::Class()) && !outdata->InheritsFrom(TClonesArray::Class())) {
          TCollection *coll = (TCollection*)outdata;
          if (!coll->IsOwner()) {
             Error("CheckOwnership","####### IMPORTANT! ####### \n\n\n\
