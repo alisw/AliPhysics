@@ -638,9 +638,10 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
   TList* daqSource2 = GetFileSources(kDAQ, "PEDCORRTOFIT");
   if(!daqSource2){
     Log(Form("No source2 for STANDALONE_PEDESTAL run %d !", fRun));
-    resPedSubDecision = kTRUE;
+    return 10;
   }
   if(daqSource2->GetEntries()==0) return 10;
+  else   resPedSubDecision = kTRUE;
   
   Log("\t List of DAQ sources for PEDESTALDATA id: "); 
   daqSource1->Print();
