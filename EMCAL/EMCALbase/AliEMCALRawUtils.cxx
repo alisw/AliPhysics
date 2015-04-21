@@ -43,7 +43,10 @@ using namespace CALO;
 using namespace EMCAL;
 
 using std::vector;
-ClassImp(AliEMCALRawUtils)
+
+/// \cond CLASSIMP
+ClassImp(AliEMCALRawUtils) ;
+/// \endcond
 
 ///
 /// Constructor. Set up fitting algorightm, geometry
@@ -262,63 +265,81 @@ void AliEMCALRawUtils::Digits2Raw()
   loader->UnloadDigits();
 }
 
-
-
-void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf) 
+///
+/// Create the digit from raw fit  and add it to the list of digits
+///
+void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain,
+                                Float_t amp, Float_t time, Float_t chi2, Int_t ndf)
 {
-  // comment
   AliEMCALDigit *digit = 0, *tmpdigit = 0;
   TIter nextdigit(digitsArr);
  
   while (digit == 0 && (tmpdigit = (AliEMCALDigit*) nextdigit())) 
-    {
-      if (tmpdigit->GetId() == id) digit = tmpdigit;
-    }
-  
-  if (!digit) { // no digit existed for this tower; create one
+  {
+    if (tmpdigit->GetId() == id) digit = tmpdigit;
+  }
+
+  // No digit existed for this tower; create one.
+  if (!digit)
+  {
     Int_t type = AliEMCALDigit::kHG; // use enum in AliEMCALDigit
+      
     if (lowGain) 
-      { 
-	amp *= HGLGFACTOR;
-	type = AliEMCALDigit::kLGnoHG;
-      } 
+    {
+	  amp *= HGLGFACTOR;
+	  type = AliEMCALDigit::kLGnoHG;
+    }
     
     Int_t idigit = digitsArr->GetEntries();
-    new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit, chi2, ndf); 
+      
+    new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit, chi2, ndf);
+      
     AliDebug(2,Form("Add digit Id %d for the first time, type %d", id, type));
-  }//digit added first time
+  }// digit added first time.
+    
+  // A digit already exists, check range
+  // (use high gain if signal < cut value, otherwise low gain)
   else 
-    { // a digit already exists, check range 
-		// (use high gain if signal < cut value, otherwise low gain)
-      if (lowGain) 
-	{ // new digit is low gain
+  {
+    if (lowGain)
+	{
+      // New digit is low gain
 	  if (digit->GetAmplitude() >  OVERFLOWCUT ) 
-	    {  // use if previously stored (HG) digit is out of range
-	      digit->SetAmplitude( HGLGFACTOR * amp);
-	      digit->SetTime(time);
-	      digit->SetType(AliEMCALDigit::kLG);
-	      AliDebug(2,Form("Add LG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
-	    }
-	}//new low gain digit
-      else { // new digit is high gain 
-	
-	if (amp <  OVERFLOWCUT  ) 
-	  { // new digit is high gain; use if not out of range
-	    digit->SetAmplitude(amp);
-	    digit->SetTime(time);
-	    digit->SetType(AliEMCALDigit::kHG);
-	    AliDebug(2,Form("Add HG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
-	  }
-	else 
-	  { // HG out of range, just change flag value to show that HG did exist
+      {
+        // Use if previously stored (HG) digit is out of range
+        digit->SetAmplitude( HGLGFACTOR * amp);
+        digit->SetTime(time);
+        digit->SetType(AliEMCALDigit::kLG);
+          
+        AliDebug(2,Form("Add LG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
+      }
+	} // New low gain digit
+    else
+    {
+      // New digit is high gain
+	  if (amp <  OVERFLOWCUT  )
+      {
+        // New digit is high gain; use if not out of range
+        digit->SetAmplitude(amp);
+        digit->SetTime(time);
+        digit->SetType(AliEMCALDigit::kHG);
+        
+        AliDebug(2,Form("Add HG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
+      }
+      else
+      {
+        // HG out of range, just change flag value to show that HG did exist
 	    digit->SetType(AliEMCALDigit::kLG);
+          
 	    AliDebug(2,Form("Change LG digit to HG, ID %d, type %d", digit->GetId(), digit->GetType()));
-	  }
-      }//new high gain digit
-    }//digit existed replace it
+      }
+    } // New high gain digit
+  }// Digit existed replace it
 }
 
+///
 /// Conversion of raw data to digits.
+///
 void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
                                   TClonesArray *digitsTRG, AliEMCALTriggerData* trgData)
 {
@@ -436,40 +457,54 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   TrimDigits(digitsArr);
 }
 
-
-void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr) 
-{ // rm entries with LGnoHG (unphysical), out of time window, and too bad chi2
+///
+/// Remove entries with LGnoHG (unphysical), out of time window, and too bad chi2.
+///
+void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
+{
   AliEMCALDigit *digit = 0;
+  
   Int_t n = 0;
   Int_t nDigits = digitsArr->GetEntriesFast();
+  
   TIter nextdigit(digitsArr);
-  while ((digit = (AliEMCALDigit*) nextdigit())) {
-    if (digit->GetType() == AliEMCALDigit::kLGnoHG) {
+    
+  while ((digit = (AliEMCALDigit*) nextdigit()))
+  {
+    if (digit->GetType() == AliEMCALDigit::kLGnoHG)
+    {
       AliDebug(1,Form("Remove digit with id %d, LGnoHG",digit->GetId()));
       digitsArr->Remove(digit);
     }
-    else if(fTimeMin > digit->GetTime() || fTimeMax < digit->GetTime()) {
+    else if(fTimeMin > digit->GetTime() || fTimeMax < digit->GetTime())
+    {
       digitsArr->Remove(digit);
       AliDebug(1,Form("Remove digit with id %d, Bad Time %e",digit->GetId(), digit->GetTime()));
     }
-    else if (0 > digit->GetChi2()) {
+    else if (0 > digit->GetChi2())
+    {
       digitsArr->Remove(digit);
       AliDebug(1,Form("Remove digit with id %d, Bad Chi2 %e",digit->GetId(), digit->GetChi2()));
     }
-    else {
+    else
+    {
       digit->SetIndexInList(n);	
       n++;
     }    
   }//while
   
   digitsArr->Compress();
+    
   AliDebug(1,Form("N Digits before trimming : %d; after array compression %d",nDigits,digitsArr->GetEntriesFast()));
 }
 
-
+///
+/// Select which fitting algo should be used.
+///
 void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)              
-{ // select which fitting algo should be used
+{
   delete fRawAnalyzer; // delete doesn't do anything if the pointer is 0x0
+    
   fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer( fitAlgo );
   fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done, for the new methods
   fRawAnalyzer->SetOverflowCut ( OVERFLOWCUT );
