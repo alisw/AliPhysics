@@ -47,6 +47,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fbit(0),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
+  fConfiguration(kFast), // default  use the minimal configuration
   fHistEventsProcessed(0x0)
 {
   //
@@ -67,6 +68,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fbit(0),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
+  fConfiguration(kFast), // default  use the minimal configuration
   fHistEventsProcessed(0x0)
 {
   //
@@ -108,6 +110,8 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
 
     fEvalCentrality = c.fEvalCentrality;
     fCentralityEstimator = c.fCentralityEstimator;
+      
+    fConfiguration = c.fConfiguration;
 
     fHistEventsProcessed = c.fHistEventsProcessed;
   }
@@ -127,6 +131,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fbit(c.fbit),
   fEvalCentrality(c.fEvalCentrality),
   fCentralityEstimator(c.fCentralityEstimator),
+  fConfiguration(c.fConfiguration),
   fHistEventsProcessed(c.fHistEventsProcessed)
 {
   //
@@ -347,7 +352,7 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"All events");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Good MC events");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Good Reconstructed events");
-       
+    
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fQAHistList) ;
@@ -396,7 +401,7 @@ void AliCFSingleTrackEfficiencyTask::CheckESDMCParticles()
       AliDebug(3,"MC Particle not passing through genetations criteria\n");
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
 
     // Step 2. Particle passing through Kinematic criteria and filling
     if( !fMCCuts->IsMCParticleInKineAcceptance(mcPart) ) {
@@ -411,7 +416,7 @@ void AliCFSingleTrackEfficiencyTask::CheckESDMCParticles()
       AliDebug(3,"MC Particle not in the reconstructible\n");
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
 
   }// end of particle loop
 
@@ -476,7 +481,7 @@ void AliCFSingleTrackEfficiencyTask::CheckAODMCParticles()
       AliDebug(3,"MC Particle not passing quality criteria\n");
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
 
     // Step 2. Particle passing through Kinematic criteria and filling
     if( !fMCCuts->IsMCParticleInKineAcceptance(mcPart) ) {
@@ -487,7 +492,8 @@ void AliCFSingleTrackEfficiencyTask::CheckAODMCParticles()
 
     // Step 3. Particle passing through Track Ref criteria and filling
     // but no info available for Track ref in AOD fillng same as above
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
+      
   }
 
   return;
@@ -576,13 +582,13 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     //
     // Step 4. Track that are recostructed, filling
     //
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed);
 
     //
     // Step 5. Track that are recostructed and pass acceptance cuts, filling
     //
     if (!fMCCuts->IsRecoParticleKineAcceptance(track)) continue;
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoKineCuts);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoKineCuts);
 
     // is track associated to particle ? if yes + implimenting the physical primary..
     Int_t label = TMath::Abs(track->GetLabel());
@@ -637,7 +643,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
       continue;
     }
     //    cout<<" analysis cuts passed"<<endl;
-    fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
     //    cout << " checking particle pid"<<endl;
 
@@ -649,7 +655,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
       if(isAOD) { delete tmptrack; tmptrack=NULL; }
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
+    if(fConfiguration!=kFast) fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
     //    cout << " all steps filled"<<endl;
 
     if(isAOD) { delete tmptrack; tmptrack=NULL; }

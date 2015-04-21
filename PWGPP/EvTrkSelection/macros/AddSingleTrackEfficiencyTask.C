@@ -55,11 +55,11 @@ const Float_t centmax_60_100 = 100.;
 
 
 AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
-							     TString suffix="", // suffix for the output directory
+							     TString suffix="default", // suffix for the output directory
 							     AliPID::EParticleType specie=AliPID::kPion, Int_t pdgcode=0, //particle specie
 							     ULong64_t triggerMask=AliVEvent::kAnyINT,
-							     Bool_t useCentrality = kFALSE
-							     )
+							     Bool_t useCentrality = kFALSE,
+                                 Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast)
 {
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -86,20 +86,20 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   const Int_t nbinpt_8_16 = 4;  //bins in pt from 8 to 16 GeV
   const Int_t nbinpt_16_24 = 1; //bins in pt from 16 to 24 GeV
   //   A2. Bins variation by hand for other variables
-  const Int_t nbin2 = 9; //bins in eta
-  const Int_t nbin3 = 9; //bins in phi
-  const Int_t nbin4 = 9; //bins in theta
-  const Int_t nbin5 = 10; //bins in zvtx
+  const Int_t nbin2 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 3; //bins in eta
+  const Int_t nbin3 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in phi
+  const Int_t nbin4 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in theta
+    const Int_t nbin5 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 5; //bins in zvtx
   //   A3. Bins for multiplicity
-  const Int_t nbinmult = 24;  //bins in multiplicity (total number)	
-  const Int_t nbinmult_0_20 = 10; //bins in multiplicity between 0 and 20
-  const Int_t nbinmult_20_50 = 10; //bins in multiplicity between 20 and 50
-  const Int_t nbinmult_50_102 = 4; //bins in multiplicity between 50 and 102
+  const Int_t nbinmult = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 24 : 3;  //bins in multiplicity (total number)
+  const Int_t nbinmult_0_20 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1; //bins in multiplicity between 0 and 20
+  const Int_t nbinmult_20_50 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1; //bins in multiplicity between 20 and 50
+  const Int_t nbinmult_50_102 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 4 : 1; //bins in multiplicity between 50 and 102
   //  A4. Bins for centrality
-  const Int_t nbincent = 16;  //bins in centrality
-  const Int_t nbincent_0_10 = 2;  //bins in centrality between 0 and 10
-  const Int_t nbincent_10_60 = 10;  //bins in centrality between 10 and 60
-  const Int_t nbincent_60_100 = 4;  //bins in centrality between 60 and 100
+  const Int_t nbincent = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 16 : 3;  //bins in centrality
+  const Int_t nbincent_0_10 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 2 : 1;  //bins in centrality between 0 and 10
+  const Int_t nbincent_10_60 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1;  //bins in centrality between 10 and 60
+  const Int_t nbincent_60_100 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 4 : 1;  //bins in centrality between 60 and 100
 
   //arrays for the number of bins in each dimension
   Int_t iBin[nvar];
@@ -144,7 +144,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_0_10+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i;
 
   // Container  
-  AliCFContainer* container = new AliCFContainer("container","container for tracks",nstep,nvar,iBin);
+  AliCFContainer* container = new AliCFContainer(Form("container%s",suffix.Data()),"container for tracks",nstep,nvar,iBin);
   container -> SetBinLimits(ipt,binLimpT);    // pt
   container -> SetBinLimits(iy,binLim2);      // eta
   container -> SetBinLimits(iphi,binLim3);    // phi
@@ -157,7 +157,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   container -> SetVarTitle(ipt,"pt");
   container -> SetVarTitle(iy, "y");
   container -> SetVarTitle(iphi,"phi");
-  container -> SetVarTitle(itheta, "theata");
+  container -> SetVarTitle(itheta, "theta");
   container -> SetVarTitle(izvtx, "Zvtx");
   container -> SetVarTitle(imult, "Multiplicity");
   container -> SetVarTitle(icent, "Centrality");
@@ -253,6 +253,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   task->SetFilterType(fBit);
   //  task->SelectCollisionCandidates(triggerMask);//AliVEvent::kMB);
   if(useCentrality) task->SetUseCentrality(useCentrality,centralityEstimator);
+  task->SetConfiguration(configuration);
   task->SetCFManager(man); //here is set the CF manager
 
   //
@@ -284,7 +285,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   TString input1name="cchain0";
   TString output2name="HistEventsProcessed", output3name="container",output4name="list",output5name="ESDtrackCuts",output6name="MCtrackCuts";
   outputfile += ":PWGPP_CFSingleTrack";
-  outputfile += suffix;
+//  outputfile += suffix;
   output2name += suffix;
   output3name += suffix;
   output4name += suffix;
