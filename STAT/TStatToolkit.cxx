@@ -2165,6 +2165,15 @@ Double_t TStatToolkit::GetDefaultStat(TTree * tree, const char * var, const char
 //_____________________________________________________________________________
 void TStatToolkit::CombineArray(TTree *tree, TVectorD &values)
 {
+  /// Collect all variables from the last draw in one array.
+  ///
+  /// It is assumed that the Draw function of the TTree was called before
+  /// if e.g. Draw("v1:v2:v3") had been called, then values will contain
+  /// the concatenated array of the values from v1,v2 and v3.
+  /// E.g. if the v1[0..n], v2[0..n], v3[0..n] then
+  /// values[0..3n] = [v1, v2, v3]
+  /// \param[in]  tree   input tree
+  /// \param[out] values array in which to summarise all 'drawn' values
   const Int_t numberOfDimensions = tree->GetPlayer()->GetDimension();
   if (numberOfDimensions==1) {
     values.Use(tree->GetSelectedRows(), tree->GetVal(0));
@@ -2187,54 +2196,91 @@ void TStatToolkit::CombineArray(TTree *tree, TVectorD &values)
 }
 
 //_____________________________________________________________________________
-Double_t TStatToolkit::GetDistance(const TVectorD &values, const ENormType normType, const Int_t pvalue/*=1*/)
+Double_t TStatToolkit::GetDistance(const TVectorD &values, const ENormType normType,
+                                   const Bool_t normaliseToEntries/*=kFALSE*/, const Double_t pvalue/*=1*/)
 {
+  /// Calculate the distance of the elements in values using a certain norm
+  /// \param[in] values             array with input values
+  /// \param[in] normType           normalisation to use
+  /// \param[in] normaliseToEntries divide the norm by the number of eleements ('average norm')
+  /// \param[in] pvalue             the p value for the p-type norm, ignored for all other norms
+  /// \return                       calculated distance
+
+  Double_t norm=0.;
+
   switch (normType) {
     case kL1:
-      return values.Norm1();
-
+      norm=values.Norm1();
+      break;
     case kL2:
-      return TMath::Sqrt(values.Norm2Sqr());
-
+      norm=TMath::Sqrt(values.Norm2Sqr());
+      break;
     case kLp:
     {
+      if (pvalue<1.) {
+        ::Error("TStatToolkit::GetDistance","Lp norm: p-value=%5.3g not valid. Only p-value>=1 is allowed", pvalue);
+        break;
+      }
       Double_t sum=0.;
       for (Int_t ival=0; ival<values.GetNrows(); ++ival) {
         sum+=TMath::Power(TMath::Abs(values.GetMatrixArray()[ival]), pvalue);
       }
-      return TMath::Power(sum, 1./Double_t(pvalue));
+      norm=TMath::Power(sum, 1./pvalue);
     }
-
+    break;
     case kMax:
-      return values.NormInf();
-
+      norm=values.NormInf();
+      break;
     case kHamming:
     {
       Double_t sum=0.;
       for (Int_t ival=0; ival<values.GetNrows(); ++ival) {
         if (TMath::Abs(values.GetMatrixArray()[ival])>1e-30) ++sum;
       }
-      return sum;
+      norm=sum;
     }
+    break;
   }
-  return 0.;
+  if (normaliseToEntries && values.GetNrows()>0) {
+    norm/=values.GetNrows();
+  }
+  return norm;
 }
 
 //_____________________________________________________________________________
-Double_t TStatToolkit::GetDistance(const Int_t size, const Double_t *values, const ENormType normType, const Int_t pvalue/*=1*/)
+Double_t TStatToolkit::GetDistance(const Int_t size, const Double_t *values, const ENormType normType,
+                                   const Bool_t normaliseToEntries/*=kFALSE*/, const Double_t pvalue/*=1*/)
 {
+  /// Calculate the distance of the elements in values using a certain norm
+  /// \sa GetDistance()
   TVectorD vecvalues;
   vecvalues.Use(size, values);
-  return GetDistance(vecvalues, normType, pvalue);
+  return GetDistance(vecvalues, normType, normaliseToEntries, pvalue);
 }
 
 //_____________________________________________________________________________
-Double_t TStatToolkit::GetDistance(TTree * tree, const char* var, const char * selection, const ENormType normType, const Int_t pvalue/*=1*/)
+Double_t TStatToolkit::GetDistance(TTree * tree, const char* var, const char * selection,
+                                   const ENormType normType, const Bool_t normaliseToEntries/*=kFALSE*/, const Double_t pvalue/*=1*/)
 {
+  /// Calculate the distance of the values selecte in tree->Draw(var, selection)
+  ///
+  /// If var contains more than one variable (separated by ':' as usual) the arrays
+  /// are concatenated:<BR>
+  /// E.g. if var="v1:v2:v3", then the norm of the
+  /// the concatenated array of the values from v1,v2 and v3 will be calculated:<BR>
+  /// This means if the internal tree arrays for each variable are v1[0..n], v2[0..n], v3[0..n] then
+  /// the norm of vx[0..3n] = [v1, v2, v3] is calculated.
+  /// \param[in] tree               input tree
+  /// \param[in] var                variable expression for the tree->Draw()
+  /// \param[in] selection          selection for the tree->Draw()
+  /// \param[in] normType           norm to use for calculating the point distances
+  /// \param[in] normaliseToEntries divide the norm by the number of eleements ('average norm')
+  /// \param[in] pvalue             p-value for the p-norm (ignored for other norm types
+  /// \return                       calculated distnace
   Int_t entries = tree->Draw(var,selection,"goff");
   if (entries==0) return 0.;
 
   TVectorD values;
   CombineArray(tree, values);
-  return GetDistance(values, normType, pvalue);
+  return GetDistance(values, normType, normaliseToEntries, pvalue);
 }
