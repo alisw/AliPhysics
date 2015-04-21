@@ -24,6 +24,8 @@
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 
+#include "AliPPVsMultUtils.h"
+
 #include "AliAnalysisTaskPID.h"
 
 /*
@@ -50,6 +52,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
   , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
+  , fPPVsMultUtils(new AliPPVsMultUtils())
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
@@ -192,6 +195,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   : AliAnalysisTaskPIDV0base(name)
   , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
+  , fPPVsMultUtils(new AliPPVsMultUtils())
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
@@ -346,6 +350,12 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   // dtor
   
   CleanupParticleFractionHistos();
+  
+  delete fPIDcombined;
+  fPIDcombined = 0x0;
+  
+  delete fPPVsMultUtils;
+  fPPVsMultUtils = 0x0;
   
   delete fOutputContainer;
   fOutputContainer = 0x0;
@@ -590,6 +600,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fOutputContainer->SetName(GetName());
   fOutputContainer->SetOwner(kTRUE);
   
+  /* Old binning (coarser in the intermediate region and a real subset of the new binning)
   const Int_t nPtBins = 68;
   Double_t binsPt[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45,
            0.5,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95,
@@ -597,13 +608,23 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
            2.0,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 ,
            4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0,
            11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
-           26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
+           26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };*/
+  
+  const Int_t nPtBins = 73;
+  Double_t binsPt[nPtBins + 1] = {0.,  0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+                                  0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
+                                   1.,  1.1, 1.2,  1.3, 1.4,  1.5, 1.6,  1.7, 1.8,  1.9,
+                                   2.,  2.1, 2.2,  2.3, 2.4,  2.5, 2.6,  2.7, 2.8,  2.9, 
+                                   3.,  3.2, 3.4,  3.6, 3.8,   4., 4.5,   5., 5.5,   6.,
+                                  6.5,   7.,  8.,   9., 10.,  11., 12.,  13., 14.,  15.,
+                                  16.,  18., 20.,  22., 24.,  26., 28.,  30., 32.,  34., 
+                                  36.,  40., 45.,  50. };
   
   const Bool_t useITSTPCtrackletsCentEstimatorWithNewBinning = fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0
                                                                && fStoreCentralityPercentile;
   
   const Int_t nCentBinsGeneral = 12;
-  const Int_t nCentBinsNewITSTPCtracklets = 17;
+  const Int_t nCentBinsNewITSTPCtracklets = 16;
   
   const Int_t nCentBins = useITSTPCtrackletsCentEstimatorWithNewBinning ? nCentBinsNewITSTPCtracklets : nCentBinsGeneral;
 
@@ -615,7 +636,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
   
   // These centrality estimators deal with integers! This implies that the ranges are always [lowlim, uplim - 1]
-  Double_t binsCentITSTPCTracklets[nCentBinsNewITSTPCtracklets+1] = { -9999, 0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 9999 };
+  Double_t binsCentITSTPCTracklets[nCentBinsNewITSTPCtracklets+1] = { 0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 9999 };
   Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
   
   // Special centrality binning for pp
@@ -1104,14 +1125,23 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
   }
   
+  const Bool_t nonNegativeCentralityPercentile = centralityPercentile >= 0;
+  
+  // MB
   // Check if vertex is ok, but don't apply cut on z position
-  const Bool_t passedVertexSelection = GetVertexIsOk(fEvent, kFALSE);
+  const Bool_t passedVertexSelectionMB = GetVertexIsOk(fEvent, kFALSE);
   // Now check again, but also require z position to be in desired range
-  const Bool_t passedVertexZSelection = GetVertexIsOk(fEvent, kTRUE);
+  const Bool_t passedVertexZSelectionMB = GetVertexIsOk(fEvent, kTRUE);
   // Check pile-up
-  const Bool_t isPileUp = GetIsPileUp(fEvent, fPileUpRejectionType);
+  const Bool_t isPileUpMB = GetIsPileUp(fEvent, fPileUpRejectionType);
   
-  
+  // Mult (check only needed for non-negative centrality percentile, otherwise, event is not used anyway
+  // Check if is INEL > 0 (slight abuse of notation with "vertex selection"....)
+  const Bool_t passedVertexSelectionMult = nonNegativeCentralityPercentile ? fPPVsMultUtils->IsINELgtZERO(fEvent) : kFALSE;
+  // Check z position of vertex
+  const Bool_t passedVertexZSelectionMult = nonNegativeCentralityPercentile ? fPPVsMultUtils->IsAcceptedVertexPosition(fEvent) : kFALSE;
+  // Check pile-up
+  const Bool_t isPileUpMult = nonNegativeCentralityPercentile ? !fPPVsMultUtils->IsNotPileupSPDInMultBins(fEvent) : kTRUE;
   
   if (fDoBinZeroStudy && fMC) {
     for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
@@ -1127,16 +1157,32 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
       const Double_t ptGen = mcPart->Pt();
       
       Double_t values[kBinZeroStudyNumAxes] = { 0. };
-      values[kBinZeroStudyCentrality] = centralityPercentile;
       values[kBinZeroStudyGenPt] = ptGen;
       values[kBinZeroStudyGenEta] = etaGen;
       
+      // For multiplicity selection:
+      if (nonNegativeCentralityPercentile) {
+        values[kBinZeroStudyCentrality] = centralityPercentile;
+        fChargedGenPrimariesTriggerSel->Fill(values);
+        if (passedVertexSelectionMult) {
+            fChargedGenPrimariesTriggerSelVtxCut->Fill(values);
+          if (passedVertexZSelectionMult) {
+              fChargedGenPrimariesTriggerSelVtxCutZ->Fill(values);
+            if (!isPileUpMult) {
+              fChargedGenPrimariesTriggerSelVtxCutZPileUpRej->Fill(values);
+            }
+          }
+        }
+      }
+      
+      // For MB selection:
+      values[kBinZeroStudyCentrality] = -13;
       fChargedGenPrimariesTriggerSel->Fill(values);
-      if (passedVertexSelection) {
+      if (passedVertexSelectionMB) {
           fChargedGenPrimariesTriggerSelVtxCut->Fill(values);
-        if (passedVertexZSelection) {
+        if (passedVertexZSelectionMB) {
             fChargedGenPrimariesTriggerSelVtxCutZ->Fill(values);
-          if (!isPileUp) {
+          if (!isPileUpMB) {
             fChargedGenPrimariesTriggerSelVtxCutZPileUpRej->Fill(values);
           }
         }
@@ -1145,30 +1191,54 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   }
   
   
+  // Flags that indicate whether the event passed all selections for MB and/or mult
+  Bool_t isMBSelected = kFALSE;
+  Bool_t isMultSelected = kFALSE;
   
-  // Event counters for trigger selection, vertex cuts and pile-up rejection
-  IncrementEventCounter(centralityPercentile, kTriggerSel);
+  // Increment event counters (trigger selection, vertex cuts and pile-up rejection) for MB and mult:
+  // MB
+  IncrementEventCounter(-13, kTriggerSel);
+  if (passedVertexSelectionMB) {
+    IncrementEventCounter(-13, kTriggerSelAndVtxCut);
+    
+    if (passedVertexZSelectionMB) {
+      IncrementEventCounter(-13, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+      if (!isPileUpMB) {
+        // ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
+        // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
+        // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to 
+        // number of events. But if it does change the spectra, this must somehow be corrected for.
+        // NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity 
+        // bins. Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it. 
+        // Pile-up rejection has only a minor impact, so maybe there is no need to dig further.
+        IncrementEventCounter(-13, kTriggerSelAndVtxCutAndZvtxCut);
+        isMBSelected = kTRUE;
+      }
+    }
+  }
   
-  if (!passedVertexSelection)
+  // Mult (again, only centrality percentile >= 0 considered)
+  if (nonNegativeCentralityPercentile) {
+    IncrementEventCounter(centralityPercentile, kTriggerSel);
+    if (passedVertexSelectionMult) {
+      IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
+      
+      if (passedVertexZSelectionMult) {
+        IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+        if (!isPileUpMult) {
+          // NOTE: Same comment as for MB
+          IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
+          isMultSelected = kTRUE;
+        }
+      }
+    }
+  }
+  
+  
+  // Done, if neither MB, nor mult requirements fulfilled.
+  if (!isMBSelected && !isMultSelected)
     return;
   
-  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
-  
-  if (!passedVertexZSelection)
-    return;
-  
-  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
-  // ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
-  // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
-  // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to number
-  // of events. But if it does change the spectra, this must somehow be corrected for.
-  // NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity bins.
-  // Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it. Pile-up
-  // rejection has only a minor impact, so maybe there is no need to dig further.
-  if (isPileUp)
-    return;
-  
-  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
   
   Double_t magField = fEvent->GetMagneticField();
   
@@ -1202,8 +1272,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         if (fDoPID) {
           Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
           valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
-        
-          fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
+          
+          if (isMultSelected)
+            fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
+          
+          if (isMBSelected) {
+            valuesGenYield[kGenYieldCentrality] = -13;
+            fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
+          }
         }
         
         
@@ -1211,7 +1287,13 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
           Double_t valueEff[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
                                             -1, -1, -1 };
           
-          fContainerEff->Fill(valueEff, kStepGenWithGenCuts);    
+          if (isMultSelected)
+            fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
+          
+          if (isMBSelected) {
+            valueEff[kEffCentrality] = -13;
+            fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
+          }
         }
       }
     }
@@ -1277,13 +1359,25 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
             IsInAcceptedEtaRange(TMath::Abs(mcTrack->Eta()))) {
           
           // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-          Double_t value[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
-                                          -1, -1, -1 };
-          fContainerEff->Fill(value, kStepRecWithGenCuts);    
+          Double_t value[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3.,
+                                           centralityPercentile, -1, -1, -1 };
+          if (isMultSelected)
+            fContainerEff->Fill(value, kStepRecWithGenCuts);
+          
+          if (isMBSelected) {
+            value[kEffCentrality] = -13;
+            fContainerEff->Fill(value, kStepRecWithGenCuts);
+          }
             
-          Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), centralityPercentile,
-                                              -1, -1, -1 };
-          fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);    
+          Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), 
+                                               centralityPercentile, -1, -1, -1 };
+          if (isMultSelected)
+            fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);
+          
+          if (isMBSelected) {
+            valueMeas[kEffCentrality] = -13;
+            fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);
+          }
         }
       }
     }
@@ -1298,26 +1392,50 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt(), mcTrack->Charge() / 3., centralityPercentile };
-        FillPtResolution(mcID, valuePtRes);
+        
+        if (isMultSelected)
+          FillPtResolution(mcID, valuePtRes);
+        
+        if (isMBSelected) {
+          valuePtRes[kPtResCentrality] = -13;
+          FillPtResolution(mcID, valuePtRes);
+        }
       }
     }
     
     if (fDoEfficiency) {
       if (mcTrack) {
-        Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), centralityPercentile,
-                                                  -1, -1, -1 };
-        fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
+        Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(), static_cast<Double_t>(track->Charge()), 
+                                                   centralityPercentile, -1, -1, -1 };
+        Double_t weight = IsSecondaryWithStrangeMotherMC(fMC, TMath::Abs(label)) ? GetMCStrangenessFactorCMS(fMC, mcTrack) : 1.0;
         
-        Double_t weight = IsSecondaryWithStrangeMotherMC(fMC, TMath::Abs(label)) ? 
-                                                                GetMCStrangenessFactorCMS(fMC, mcTrack) : 1.0;
-        fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
+        if (isMultSelected) {
+          fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
+          fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
+        }
+        
+        if (isMBSelected) {
+          valueRecAllCuts[kEffCentrality] = -13;
+          fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
+          fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
+        }
+        
         
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t valueGenAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
-                                                  centralityPercentile, -1, -1, -1 };
+                                                   centralityPercentile, -1, -1, -1 };
         if (fMC->IsPhysicalPrimary(TMath::Abs(label))) {
-          fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);
-          fContainerEff->Fill(valueGenAllCuts, kStepRecWithRecCutsPrimaries);
+          if (isMultSelected) {
+            valueRecAllCuts[kEffCentrality] = centralityPercentile;
+            fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);
+            fContainerEff->Fill(valueGenAllCuts, kStepRecWithRecCutsPrimaries);
+          }
+          if (isMBSelected) {
+            valueRecAllCuts[kEffCentrality] = -13;
+            valueGenAllCuts[kEffCentrality] = -13;
+            fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);
+            fContainerEff->Fill(valueGenAllCuts, kStepRecWithRecCutsPrimaries);
+          }
         }
       }
     }
@@ -2435,7 +2553,7 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile,
-                                        Double_t jetPt) 
+                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected) 
 {
   // Process the track (generate expected response, fill histos, etc.).
   // particlePDGcode == 0 means data. Otherwise, the corresponding MC ID will be assumed.
@@ -2445,6 +2563,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   if(fDebug > 1)
     printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
+  
+  if (!isMBSelected && !isMultSelected)
+    return kTRUE; // Obviously, this event was not selected at all
   
   if (!fDoPID && !fDoDeDxCheck && !fDoPtResolution)
     return kFALSE;
@@ -3046,10 +3167,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   Double_t entry[fStoreAdditionalJetInformation ? kDataNumAxes : kDataNumAxes - fgkNumJetAxes];
   entry[kDataMCID] = binMC;
-  entry[kDataSelectSpecies] = 0;
   entry[kDataPt] = pT;
-  entry[kDataDeltaPrimeSpecies] = deltaPrimeElectron;
-  entry[kDataCentrality] = centralityPercentile;
   
   if (fStoreAdditionalJetInformation) {
     entry[kDataJetPt] = jetPt;
@@ -3060,19 +3178,37 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   entry[GetIndexOfChargeAxisData()] = trackCharge;
   entry[GetIndexOfTOFpidInfoAxisData()] = tofPIDinfo;
   
-  fhPIDdataAll->Fill(entry);
-  
-  entry[kDataSelectSpecies] = 1;
-  entry[kDataDeltaPrimeSpecies] = deltaPrimeKaon;
-  fhPIDdataAll->Fill(entry);
+  // Now consider both cases MB and mult and set centrality to negative value for MB
+  for (Int_t k = 0; k < 2; k++) {
+    if (k == 0) {
+      if (!isMultSelected)
+        continue;
+      
+      entry[kDataCentrality] = centralityPercentile;
+    }
+    else {
+      if (!isMBSelected)
+        continue;
+      
+      entry[kDataCentrality] = -13;
+    }
     
-  entry[kDataSelectSpecies] = 2;
-  entry[kDataDeltaPrimeSpecies] = deltaPrimePion;
-  fhPIDdataAll->Fill(entry);
+    entry[kDataSelectSpecies] = 0;
+    entry[kDataDeltaPrimeSpecies] = deltaPrimeElectron;
+    fhPIDdataAll->Fill(entry);
     
-  entry[kDataSelectSpecies] = 3;
-  entry[kDataDeltaPrimeSpecies] = deltaPrimeProton;
-  fhPIDdataAll->Fill(entry);
+    entry[kDataSelectSpecies] = 1;
+    entry[kDataDeltaPrimeSpecies] = deltaPrimeKaon;
+    fhPIDdataAll->Fill(entry);
+    
+    entry[kDataSelectSpecies] = 2;
+    entry[kDataDeltaPrimeSpecies] = deltaPrimePion;
+    fhPIDdataAll->Fill(entry);
+    
+    entry[kDataSelectSpecies] = 3;
+    entry[kDataDeltaPrimeSpecies] = deltaPrimeProton;
+    fhPIDdataAll->Fill(entry);
+  }
   
   
   // Construct the expected shape for the transition p -> pT
@@ -3197,92 +3333,109 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
         genEntry[kGenMCID] = 4;  // ... a proton
     }
     
-    // Electrons
-    genEntry[kGenSelectSpecies] = 0;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeEl[n];
-    fhGenEl->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 1;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeKa[n];
-    fhGenEl->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 2;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePi[n];
-    fhGenEl->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 3;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePr[n];
-    fhGenEl->Fill(genEntry);
-    
-    // Kaons
-    genEntry[kGenSelectSpecies] = 0;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeEl[n];
-    fhGenKa->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 1;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeKa[n];
-    fhGenKa->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 2;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePi[n];
-    fhGenKa->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 3;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePr[n];
-    fhGenKa->Fill(genEntry);
-    
-    // Pions
-    genEntry[kGenSelectSpecies] = 0;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeEl[n];
-    fhGenPi->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 1;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeKa[n];
-    fhGenPi->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 2;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePi[n];
-    fhGenPi->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 3;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePr[n];
-    fhGenPi->Fill(genEntry);
-    
-    if (fTakeIntoAccountMuons) {
-      // Muons, if desired
+    // Now consider both cases MB and mult and set centrality to negative value for MB
+    for (Int_t k = 0; k < 2; k++) {
+      if (k == 0) {
+        if (!isMultSelected)
+          continue;
+        
+        genEntry[kGenCentrality] = centralityPercentile;
+      }
+      else {
+        if (!isMBSelected)
+          continue;
+        
+        genEntry[kGenCentrality] = -13;
+      }
+      
+      
+      // Electrons
       genEntry[kGenSelectSpecies] = 0;
-      genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeEl[n];
-      fhGenMu->Fill(genEntry);
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeEl[n];
+      fhGenEl->Fill(genEntry);
       
       genEntry[kGenSelectSpecies] = 1;
-      genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeKa[n];
-      fhGenMu->Fill(genEntry);
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeKa[n];
+      fhGenEl->Fill(genEntry);
       
       genEntry[kGenSelectSpecies] = 2;
-      genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePi[n];
-      fhGenMu->Fill(genEntry);
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePi[n];
+      fhGenEl->Fill(genEntry);
       
       genEntry[kGenSelectSpecies] = 3;
-      genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePr[n];
-      fhGenMu->Fill(genEntry);
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePr[n];
+      fhGenEl->Fill(genEntry);
+      
+      // Kaons
+      genEntry[kGenSelectSpecies] = 0;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeEl[n];
+      fhGenKa->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 1;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeKa[n];
+      fhGenKa->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 2;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePi[n];
+      fhGenKa->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 3;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePr[n];
+      fhGenKa->Fill(genEntry);
+      
+      // Pions
+      genEntry[kGenSelectSpecies] = 0;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeEl[n];
+      fhGenPi->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 1;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeKa[n];
+      fhGenPi->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 2;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePi[n];
+      fhGenPi->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 3;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePr[n];
+      fhGenPi->Fill(genEntry);
+      
+      if (fTakeIntoAccountMuons) {
+        // Muons, if desired
+        genEntry[kGenSelectSpecies] = 0;
+        genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeEl[n];
+        fhGenMu->Fill(genEntry);
+        
+        genEntry[kGenSelectSpecies] = 1;
+        genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeKa[n];
+        fhGenMu->Fill(genEntry);
+        
+        genEntry[kGenSelectSpecies] = 2;
+        genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePi[n];
+        fhGenMu->Fill(genEntry);
+        
+        genEntry[kGenSelectSpecies] = 3;
+        genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePr[n];
+        fhGenMu->Fill(genEntry);
+      }
+      
+      // Protons
+      genEntry[kGenSelectSpecies] = 0;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeEl[n];
+      fhGenPr->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 1;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeKa[n];
+      fhGenPr->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 2;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePi[n];
+      fhGenPr->Fill(genEntry);
+      
+      genEntry[kGenSelectSpecies] = 3;
+      genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePr[n];
+      fhGenPr->Fill(genEntry);
     }
-    
-    // Protons
-    genEntry[kGenSelectSpecies] = 0;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeEl[n];
-    fhGenPr->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 1;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeKa[n];
-    fhGenPr->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 2;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePi[n];
-    fhGenPr->Fill(genEntry);
-    
-    genEntry[kGenSelectSpecies] = 3;
-    genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePr[n];
-    fhGenPr->Fill(genEntry);
   }
   
   if(fDebug > 2)
