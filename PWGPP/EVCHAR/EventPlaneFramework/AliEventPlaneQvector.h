@@ -72,7 +72,7 @@ class AliEventPlaneQvector : public TObject {
   Float_t QxNorm(Int_t harmonic) const { return  (harmonic>=fgkEPMinHarmonics && harmonic<=fgkEPMaxHarmonics ? Qx(harmonic)/Length(harmonic) : 0.0 );}
   Float_t QyNorm(Int_t harmonic) const { return  (harmonic>=fgkEPMinHarmonics && harmonic<=fgkEPMaxHarmonics ? Qy(harmonic)/Length(harmonic) : 0.0 );}
   Int_t Bin() const { return fBin;}
-  UChar_t GetEventPlaneStatus(Int_t h) const {return (h>=fgkEPMinHarmonics && h<=fgkEPMaxHarmonics ? fEventPlaneStatus[h-fgkEPMinHarmonics] : 999);} 
+  UInt_t GetEventPlaneStatus(Int_t h) const {return (h>=fgkEPMinHarmonics && h<=fgkEPMaxHarmonics ? fEventPlaneStatus[h-fgkEPMinHarmonics] : 999);} 
   Bool_t  CheckEventPlaneStatus(Int_t h, EventPlaneStatus flag) const;
   Float_t  Multiplicity()   const {return fMultiplicity;}
   Double_t EventPlane(Int_t h) const;
