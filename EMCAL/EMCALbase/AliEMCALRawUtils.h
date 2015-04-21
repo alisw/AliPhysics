@@ -16,9 +16,9 @@
 ///  either high-gain or low-gain
 ///  No pedestal is added to the raw signal.
 ///
-/// \author Marco van Leeuwen (LBL). First implementation.
-/// \author Per Thomas Hille (Yale). Major refactoring.
-/// \author David Silvermyr (Oak Ridge). Trimming and real data adjustments.
+/// \author Marco van Leeuwen <Marco.Van.Leeuwen@cern.ch>, LBL. First implementation.
+/// \author Per Thomas Hille <p.t.hille@fys.uio.no>, Yale. Major refactoring.
+/// \author David Silvermyr <David.Silvermyr@cern.ch>, Oak Ridge. Trimming and real data adjustments.
 //_________________________________________________________________________
 
 #include "TObject.h" // for ROOT types
@@ -112,11 +112,11 @@ private:
     
   Float_t fTimeMax;                     ///< Maximum threshold for the time of the signal.
     
-  Bool_t  fUseFALTRO;			        ///< Use FALTRO and pass it to the digits.
+  Bool_t  fUseFALTRO;                   ///< Use FALTRO and pass it to the digits.
     
   AliCaloRawAnalyzer *fRawAnalyzer;     ///< e.g. for sample selection for fits.
     
-  AliEMCALTriggerRawDigitMaker* fTriggerRawDigitMaker;	// Trigger raw digit info.
+  AliEMCALTriggerRawDigitMaker* fTriggerRawDigitMaker;	///< Trigger raw digit info.
  
   /// \cond CLASSIMP
   ClassDef(AliEMCALRawUtils,7) ;
