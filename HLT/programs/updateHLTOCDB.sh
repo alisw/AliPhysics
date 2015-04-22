@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 ocdbSource="/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/"
 ocdbTarget="OCDB/2015/"
-cdbEntries="GRP/*/*"
+cdbEntries="*/*/*"
+firstRun=""
 
 main ()
 {
@@ -14,7 +15,7 @@ main ()
     echo '* aliroot -b -q $ALICE_SRC'"'"'/HLT/programs/downloadCDB.C(999999,"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB","local://OCDB/2015","*/*/*")'"'"
     echo
     echo "example:"
-    echo "  ${0##*/} ocdbSource=/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=OCDB/2015/ cdbEntries=GRP/*/*"
+    echo "  ${0##*/} ocdbSource=/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=OCDB/2015/ cdbEntries=*/*/*"
     return 1
   fi
 
@@ -42,7 +43,11 @@ main ()
     #in which case we do nothing, because it should already be copied
     [[ -z ${runRangeLatest[1]} ]] && continue
 
-    runRange=( "${runRangeLatest[@]}" )
+    if [[ -z ${firstRun} ]]; then
+      runRange=( "${runRangeLatest[@]}" )
+    else
+      runRange=( ${firstRun} "999999999" "v0" "s0" )
+    fi
 
     #TODO: this is stupid
     if [[ ! -d ${targetEntryPath} ]]; then
@@ -80,7 +85,7 @@ entryID.SetRunRange(${firstRun},${lastRun});
 entry->SetId(entryID);
 
 AliCDBStorage * targetStorage = AliCDBManager::Instance()->GetStorage("${ocdbTarget}");
-printf("storing ${cdbEntry} with range: %i-%i in ${ocdbTarget}\n",${runNumber},${lastRun});
+printf("storing ${cdbEntry} with range: %i-%i in ${ocdbTarget}\n",${firstRun},${lastRun});
 targetStorage->Put(entry);
 EOF
 }
