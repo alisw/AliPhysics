@@ -2592,7 +2592,7 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
       Double_t HV= GetChamberHighVoltage(run,isec, timeStamp);
       if (HV<=0){ // check if the HV was available
 	AliDCSSensor* sensor = GetChamberHVSensor(isec);
-	if (sensor->GetGraph()==NULL &&  sensor->GetFit()==NULL){
+	if (sensor && sensor->GetGraph()==NULL &&  sensor->GetFit()==NULL){
 	  HV=fParam->GetNominalVoltage(isec);
 	}     
       }
