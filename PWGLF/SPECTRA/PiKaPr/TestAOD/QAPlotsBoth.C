@@ -130,8 +130,12 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 		return 0;
 
 
-	Float_t datavertexratio=((Float_t)(events_data))/((Float_t)ecuts_data->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries());
-         Float_t mcvertexratio=((Float_t)(events_mc))/((Float_t)ecuts_mc->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries());
+	Float_t datavertexratio=-1.0;
+	if(ecuts_data->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries()>0.0)
+		datavertexratio=((Float_t)(events_data))/((Float_t)ecuts_data->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries());
+         Float_t mcvertexratio=-1.0;
+	if(ecuts_mc->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries()>0.0)	
+		mcvertexratio=((Float_t)(events_mc))/((Float_t)ecuts_mc->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries());
 	 TH1F* fHistoEtaAftSeldata=(TH1F*)ecuts_data->GetHistoEtaAftSel();
 	 TH1F* fHistoEtaAftSelmc=(TH1F*)ecuts_mc->GetHistoEtaAftSel();
 	flistcanvas->Add(plot_on_canvas("ETA",fHistoEtaAftSeldata,fHistoEtaAftSelmc));
@@ -173,9 +177,9 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	
 	binzero->Draw("E1");
 	flistcanvas->Add(cbc);
-	if(TMath::Abs(hmul->GetEntries()/events_mc-1.0)>0.001)
+	if(events_mc>0&&TMath::Abs(hmul->GetEntries()/events_mc-1.0)>0.001)
 		cout<<"MC merging problem"<<endl;
-	if(TMath::Abs(hman_data->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()/events_data-1.0)>0.001)
+	if(events_data>0&&TMath::Abs(hman_data->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()/events_data-1.0)>0.001)
 		cout<<"Data merging problem"<<endl;
 	
 	if(fullicorr)
