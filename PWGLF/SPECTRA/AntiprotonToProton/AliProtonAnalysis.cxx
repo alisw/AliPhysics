@@ -1424,7 +1424,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliAODEvent* const fAOD) {
-  //Main analysis part - AOD
+/*  //Main analysis part - AOD
   if(!fProtonAnalysisBase) return;
   fHistEvents->Fill(1); //number of analyzed events
   Int_t nTracks = fAOD->GetNumberOfTracks();
@@ -1448,7 +1448,7 @@ void AliProtonAnalysis::Analyze(AliAODEvent* const fAOD) {
       else if(track->Charge() < 0) 
 	fHistYPtAntiProtons->Fill(track->Y(fParticleType),gPt);
     }//proton check
-  }//track loop 
+  }//track loop */
 }
 
 //____________________________________________________________________//
