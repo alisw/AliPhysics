@@ -86,7 +86,6 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Double_t             CalculateGeometricalMatchingLevel(AliVTrack* cand, AliEmcalJet* jet);
   Double_t             CalculateConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
 
-  static Double_t      AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
   AliRDHFCuts     *fCuts                  ; //  Analysis cuts
