@@ -43,6 +43,7 @@
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 #include "AliAnalysisTaskDmesonJetCorrelations.h"
 
@@ -353,7 +354,7 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 
         if (fShowDaughterDistance > 0) {
           TObjArray daughters(5);
-          AddDaughters(Dcand, daughters);
+          AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(Dcand, daughters);
           for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
             AliVTrack* track = static_cast<AliVTrack*>(daughters.At(i));
             if (!track) continue;
@@ -469,7 +470,7 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
   
   if (prevCand != cand || reset) {
     daughters.Clear();
-    ptTot = AddDaughters(cand, daughters);
+    ptTot = AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(cand, daughters);
     prevCand = cand;
 
     if (fCheckTrackColl) {
@@ -518,44 +519,6 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
   Double_t m = 1 - pt / ptTot;
   
   return m;
-}
-
-//_______________________________________________________________________________
-Double_t AliAnalysisTaskDmesonJetCorrelations::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
-{
-  // Add all the dauthers of cand in an array. Follows all the decay cascades.
-  
-  Int_t n = cand->GetNDaughters();
-
-  //Printf("AddDaughters: the number of dauhters is %d", n);
-  
-  Int_t ntot = 0;
-  Double_t pt = 0;
-  for (Int_t i = 0; i < n; i++) {
-    AliVTrack* track = dynamic_cast<AliVTrack*>(cand->GetDaughter(i));
-    if (!track) continue;
-
-    AliAODRecoDecay* cand2 = dynamic_cast<AliAODRecoDecay*>(track);
-
-    if (cand2) {
-      //Printf("Daughter pT = %.3f --> ", track->Pt());
-      pt += AddDaughters(cand2, daughters);
-    }
-    else {
-      if (!track->InheritsFrom("AliAODTrack")) {
-        Printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.");
-        continue;
-      }
-      //Printf("Daughter pT = %.3f", track->Pt());
-      daughters.AddLast(track);
-      pt += track->Pt();
-      ntot++;
-    }
-  }
-
-  //Printf("Total pt of the daughters = %.3f", pt);
-  
-  return pt;
 }
 
 //_______________________________________________________________________________
