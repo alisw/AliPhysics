@@ -732,7 +732,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
     }
   }
   // 
-  pedCalib->Print("");
+  //pedCalib->Print("");
   
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
@@ -926,7 +926,6 @@ UInt_t AliZDCPreprocessor::ProcessMBCalibData()
      //mbCalib->Dump();
      //
      resMBCal = Store("Calib","MBCalib",mbCalib, &metaData, 0, kTRUE);
-       printf(" here 1000\n");
      if(resMBCal==kFALSE) return 19;
   }
   delete daqSources; daqSources = 0;
