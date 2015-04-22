@@ -72,6 +72,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fOutput(0), 
 		fHistNEvents(0),
 		fHistNEventsRejTM(0),
+		fhMassLcPt(0),
+		fhMassLcPtSig(0),
 		fhSelectBit(0),
 		fNtupleLambdac(0),
 		fIsLc(0),
@@ -79,6 +81,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fRDCutsAnalysis(0),
 		fListCuts(0),
 		fFillNtuple(0),
+		fUpmasslimit(2.486),
+		fLowmasslimit(2.086),
 		fReadMC(kFALSE),
 		fMCPid(kFALSE),
 		fRealPid(kFALSE),
@@ -97,7 +101,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 	// Default constructor
 	//
 
-	for(Int_t i=0;i<11;i++) { 
+	for(Int_t i=0;i<12;i++) { 
 		fhNBkgNI[i]=0x0;
 		fhNLc[i]=0x0;
 		fhNLcc[i]=0x0;
@@ -159,12 +163,16 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fOutput(0), 
 	fHistNEvents(0),
 	fHistNEventsRejTM(0),
+	fhMassLcPt(0),
+	fhMassLcPtSig(0),
 	fhSelectBit(0),
 	fNtupleLambdac(0),
 	fIsLc(0),
 	fIsLcResonant(0),
 	fRDCutsAnalysis(lccutsana),
 	fListCuts(0),
+  fUpmasslimit(2.486),
+  fLowmasslimit(2.086),
 	fFillNtuple(fillNtuple),
 	fReadMC(kFALSE),
 	fMCPid(kFALSE),
@@ -183,7 +191,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	// Default constructor
 	// Output slot #1 writes into a TList container
 	//
-	for(Int_t i=0;i<11;i++) { 
+	for(Int_t i=0;i<12;i++) { 
 		fhNBkgNI[i]=0x0;
 		fhNLc[i]=0x0;
 		fhNLcc[i]=0x0;
@@ -344,8 +352,13 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fHistNEvents->SetMinimum(0);
 	fOutput->Add(fHistNEvents);
 
-	TString stepnames[11] = {"GeneratedLimAcc","Generated","GeneratedAcc","Reco3Prong","LcBit","IsSelectedTracks","IsInFidAcc","PtRange","IsSelectedCandidate","IsSelectedPID","IsSelectedNtuple"};
-	for(Int_t i=0;i<11;i++) { // histograms for efficiency cross check
+	fhMassLcPt = new TH2F("hMassLcPt","hMassLcPt;3-Prong p_{T} GeV/c;3-Prong Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhMassLcPtSig = new TH2F("hMassLcPtSig","hMassLcPtSig;3-Prong signal p_{T} GeV/c;3-Prong signal Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fOutput->Add(fhMassLcPt);
+	fOutput->Add(fhMassLcPtSig);
+
+	TString stepnames[12] = {"GeneratedLimAcc","GeneratedAll","Generated","GeneratedAcc","Reco3Prong","LcBit","IsSelectedTracks","IsInFidAcc","PtRange","IsSelectedCandidate","IsSelectedPID","IsSelectedNtuple"};
+	for(Int_t i=0;i<12;i++) { // histograms for efficiency cross check
 		//Lc vs Pt histograms
 		hisname.Form("hNBkgNI%i",i);
 		histitle.Form("N Bkg not injected %s",stepnames[i].Data());
@@ -759,6 +772,7 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 				SetLambdacDaugh(mcPart,arrayMC,isInAcc);
 				if(fIsLcResonant>=1) {
 					AliDebug(2,"Lc has p K pi in final state");
+					FillEffHists(kGeneratedAll);
 					fNentries->Fill(4);
 					if(isInFidAcc){
 						fNentries->Fill(5);
@@ -838,6 +852,32 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		if(!selection) continue;
 		FillEffHists(kIsSelectedCandidate);
 		fNentries->Fill(11);
+
+		//Prod. cuts - fill inv mass histogram
+		//Bkg + signal
+		if(isSelectedPID==1){
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpKpi());
+		}
+		else if(isSelectedPID==2){
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpiKp());
+		}
+		else if(isSelectedPID==3){
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+		}
+		//signal
+		if(fIsLc>=1) {
+			if(isSelectedPID==1){
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpKpi());
+			}
+			else if(isSelectedPID==2){
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpiKp());
+			}
+			else if(isSelectedPID==3){
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+			}
+		}
 
 		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
