@@ -448,10 +448,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //Pair classes
   // to fill also mixed event histograms loop until 10
-  Int_t pairClasses [5] = {0,1,2,4, 10};
+  Int_t pairClasses [11] = {0,1,2,3,4,5,6,7,8,9, 10};
   
   
-  for (Int_t i=0; i<5; ++i){
+  for (Int_t i=0; i<11; ++i){
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(pairClasses[i])));
   }
 
@@ -470,8 +470,14 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   
   
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
+  histos->UserHistogram("Track","","",
+			400,0.0,4.0,AliDielectronVarManager::kPhi);  
   histos->UserHistogram("Track","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
                         400,0.2,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
+  histos->UserHistogram("Track","","",
+			144,0.0,6.285,200,0.0,200,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCsignal);
+  histos->UserHistogram("Track","","",
+			40,-1.0,1.0,100,0.0,200,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal);
   
   histos->UserHistogram("Track","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons",
                         100,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
