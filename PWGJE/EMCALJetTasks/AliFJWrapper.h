@@ -23,8 +23,8 @@ class AliFJWrapper
   virtual void  CopySettingsFrom (const AliFJWrapper& wrapper);
   virtual void  GetMedianAndSigma(Double_t& median, Double_t& sigma, Int_t remove = 0) const;
   fastjet::ClusterSequenceArea*           GetClusterSequence() const { return fClustSeq;                   }
-  const std::vector<fastjet::PseudoJet>   GetInputVectors()    const { return fInputVectors;               }
-  const std::vector<fastjet::PseudoJet>   GetInclusiveJets()   const { return fInclusiveJets;              }
+  const std::vector<fastjet::PseudoJet>&  GetInputVectors()    const { return fInputVectors;               }
+  const std::vector<fastjet::PseudoJet>&  GetInclusiveJets()   const { return fInclusiveJets;              }
   std::vector<fastjet::PseudoJet>         GetJetConstituents(UInt_t idx) const;
   Double_t                                GetMedianUsedForBgSubtraction() const { return fMedUsedForBgSub; }
   const char*                             GetName()            const { return fName;                       }
@@ -388,7 +388,7 @@ Double_t AliFJWrapper::GetJetSubtractedPt(UInt_t idx) const
 }
 
 //_________________________________________________________________________________________________
-std::vector<fastjet::PseudoJet> 
+std::vector<fastjet::PseudoJet>
 AliFJWrapper::GetJetConstituents(UInt_t idx) const
 {
   // Get jets constituents.
