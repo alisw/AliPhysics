@@ -84,6 +84,14 @@
 
 // AntiprotonToProton
 #pragma link C++ class AliProtonAnalysisBase+;
+#pragma link C++ class AliProtonAnalysis+;
 #pragma link C++ class AliProtonQAAnalysis+;
+#pragma link C++ class AliAnalysisTaskProtons+;
+#pragma link C++ class AliAnalysisTaskProtonsQA+;
+#pragma link C++ class AliProtonFeedDownAnalysisTask+;
+#pragma link C++ class AliProtonFeedDownAnalysis+;
+#pragma link C++ class AliProtonAbsorptionCorrection+;
+#pragma link C++ class AliProtonSpectraCorrection+;
+#pragma link C++ class AliProtonCorrectionAnalysisTask+;
 
 #endif
