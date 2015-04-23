@@ -509,7 +509,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
           
 	    Double_t TrigDPhi12 =  AssignCorrectPhiRange(TrigDPhi);
                
-        cout<<"TrigDPhi before b2b"<<TrigDPhi12<<endl;
+        //cout<<"TrigDPhi before b2b"<<TrigDPhi12<<endl;
             
     //check if trigger particles have a delta phi = pi +/- alpha
     
@@ -520,7 +520,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
             
       fHistTrigDPhi->Fill(TrigDPhi12);
                
-               cout<<"TrigDPhi12"<<TrigDPhi12<<endl;
+               //cout<<"TrigDPhi12"<<TrigDPhi12<<endl;
     
       if(TMath::Abs(TrigDPhi12)>(TMath::Pi())/8) continue;
                
