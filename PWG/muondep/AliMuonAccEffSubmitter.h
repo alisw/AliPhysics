@@ -48,9 +48,10 @@ public:
   
   Int_t GetSplitMaxInputFileNumber() const { return fSplitMaxInputFileNumber; }
   
-  Int_t CompactMode() const { return fCompactMode; }
+  void SetCompactMode(Int_t mode);
   
-  void SetCompactMode(Int_t mode) { fCompactMode=mode; }
+  /// Set the output files to be kept
+  void SetCustomOutFiles(const char* logFiles, const char* rootFiles) { fLogOutToKeep = logFiles; fRootOutToKeep = rootFiles; }
   
   Bool_t MakeOCDBSnapshots();
   
@@ -89,13 +90,14 @@ private:
   Int_t fMaxEventsPerChunk; // max events to generate per subjob
   TString fOCDBPath; // OCDB path
   Int_t fSplitMaxInputFileNumber; // used for merging jdl
-  Int_t fCompactMode; // controls which outputs are kept (0=everything, 1=only aods)
+  TString fLogOutToKeep; // specify the log files to be kept
+  TString fRootOutToKeep; // specify the output files to be kept
   TString fExternalConfig; // path to an (optional) external config file
   Bool_t fUseOCDBSnapshots; // whether to use OCDB snapshots or not
   TString fSnapshotDir; // directory for OCDB snapshots
   Bool_t fUseAODMerging; // whether or not to perform (aod) merging
   
-  ClassDef(AliMuonAccEffSubmitter,2) // Helper class to submit AccxEff single particle simulations
+  ClassDef(AliMuonAccEffSubmitter,3) // Helper class to submit AccxEff single particle simulations
 };
 
 #endif
