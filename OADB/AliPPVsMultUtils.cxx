@@ -607,11 +607,13 @@ Bool_t AliPPVsMultUtils::HasConsistentSPDandTrackVertices(AliVEvent *event)
 }
 
 //______________________________________________________________________
-Long_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event)
+Long_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool_t lEmbedEventSelection)
 //Event selection snippet
 {
     //It's consistent until proven otherwise...
-    Long_t lReturnValue = -6; //Stuff went very wrong = -20
+    Long_t lReturnValue = -10; //Kill this event, please
+    
+    if( !IsEventSelected(event) && lEmbedEventSelection ) return lReturnValue; 
 
     /* get ESD vertex */
     if (event->InheritsFrom("AliESDEvent")) {

@@ -35,7 +35,7 @@ public:
     static Bool_t IsEventSelected(AliVEvent *event);
     
     //Wrapper with fallback to tracklets
-    static Long_t GetStandardReferenceMultiplicity (AliVEvent *event);
+    static Long_t GetStandardReferenceMultiplicity (AliVEvent *event, Bool_t lEmbedEventSelection = kTRUE);
     
     Float_t MinVal( Float_t A, Float_t B ); 
 
