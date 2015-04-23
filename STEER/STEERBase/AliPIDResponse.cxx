@@ -1014,7 +1014,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     fRecoPass = 1;
 
     if (!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) && fMCperiodTPC.IsNull()) {
-      AliFatal("MC detected, but no MC period set -> Not changing eta maps!");
+      AliError("***** Risk for unreliable TPC PID detected:                      ********");
+      AliError("      MC detected, but no MC period set -> Not changing eta maps!");
       return;
     }
   }
@@ -1233,6 +1234,14 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fIsMC) {
       if(!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) datatype="MC";
       fRecoPass=1;
+  } else {
+    if (fRecoPass<=0) {
+      fTPCResponse.SetUseDatabase(kFALSE);
+      AliError("******** Risk for unreliable TPC PID detected               **********");
+      AliError("         no proper reco pass was set, no splines can be set");
+      AliError("         an outdate Bethe Bloch parametrisation will be used");
+      return;
+    }
   }
 
   // period
@@ -1365,6 +1374,7 @@ void AliPIDResponse::SetTPCParametrisation()
   else AliInfo("no fArrPidResponseMaster");
 
   if (!found){
+    AliError("***** Risk for unreliable TPC PID detected:                      ********");
     AliError(Form("No splines found for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   }
 
@@ -1660,10 +1670,19 @@ void AliPIDResponse::SetTOFPidResponseMaster()
   delete oadbf;
 
   if (!fTOFPIDParams) AliFatal("TOFPIDParams could not be retrieved");
+
+  if (TString(fTOFPIDParams->GetOADBentryTag()) == "default") {
+    AliWarning("******* Risk for unreliable TOF PID detected *********");
+    if (!fIsMC && fRecoPass<=0) {
+      AliWarningF("        Invalid reco pass for data (%d) was detected", fRecoPass);
+    }
+    AliWarning("        The default object was loaded");
+  }
 }
 
 //______________________________________________________________________________
-void AliPIDResponse::InitializeTOFResponse(){
+void AliPIDResponse::InitializeTOFResponse()
+{
   //
   // Set PID Params to the TOF PID response
   //
