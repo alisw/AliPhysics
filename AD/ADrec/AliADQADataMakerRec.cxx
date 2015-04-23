@@ -488,11 +488,11 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1i,kMultiADC, expert, !image, !saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1F("H1D_Charge_ADA", "Total Charge in ADA;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  h1d = new TH1F("H1D_Charge_ADA", "Total Charge;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADA, !expert, image, saveCorr);   iHisto++;
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kBlue);
-  h1d = new TH1F("H1D_Charge_ADC", "Total Charge in ADC;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  h1d = new TH1F("H1D_Charge_ADC", "Total Charge;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADC, !expert, image, saveCorr);   iHisto++;
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kRed);
@@ -544,19 +544,23 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
 
   //Mean time histograms	
-  h1d = new TH1F("H1D_MeanTimeADA", "ADA Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  h1d = new TH1F("H1D_MeanTimeADA", "Mean Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h1d,kMeanTimeADA, expert, !image, !saveCorr); iHisto++;
+  h1d->SetLineWidth(2);
+  h1d->SetLineColor(kBlue);
 	
-  h1d = new TH1F("H1D_MeanTimeADC", "ADC Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  h1d = new TH1F("H1D_MeanTimeADC", "Mean Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h1d,kMeanTimeADC, expert, !image, !saveCorr); iHisto++;
+  h1d->SetLineWidth(2);
+  h1d->SetLineColor(kRed);
 	
-  h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t{C} [ns];Counts",kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
+  h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t{C} [ns];Counts",1024,-150,150);
   Add2RawsList(h1d,kMeanTimeDiff, expert, !image, !saveCorr); iHisto++;
 
-  h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax) ;  
+  h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNTdcTimeBins/10, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins/10, kTdcTimeMin,kTdcTimeMax) ;  
   Add2RawsList(h2d,kMeanTimeCorr, expert, !image, !saveCorr);   iHisto++;
  
-  h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t{C} [ns];AD Mean time t_{A} + t{C} [ns]", 1024,-150,150,1024,0,400);  
+  h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t{C} [ns];AD Mean time t_{A} + t{C} [ns]", 99, -150.0, 149.707031, 100, 0.0, 400.390625);  
   Add2RawsList(h2d,kMeanTimeSumDiff, expert, !image, !saveCorr);   iHisto++;
  
   //Slewing histograms
@@ -570,15 +574,23 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h2d,kWidthSlewing, expert, !image, !saveCorr);   iHisto++;
   
   //Creation of pair coincidence histograms
-  h1i = new TH1I("H1I_MultiBBCoincidence_ADA", "Number of BB flag coincidences in ADA;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
+  h1i = new TH1I("H1I_MultiBBCoincidence_ADA", "Number of BB flag coincidences;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBBCoincADA, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_MultiBBCoincidence_ADC", "Number of BB flag coincidences in ADC;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
+  h1i->SetLineWidth(2);
+  h1i->SetLineColor(kBlue);
+  h1i = new TH1I("H1I_MultiBBCoincidence_ADC", "Number of BB flag coincidences;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBBCoincADC, !expert, image, saveCorr);   iHisto++;
+  h1i->SetLineWidth(2);
+  h1i->SetLineColor(kRed);
   
-  h1i = new TH1I("H1I_MultiBGCoincidence_ADA", "Number of BG flag coincidences in ADA;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
+  h1i = new TH1I("H1I_MultiBGCoincidence_ADA", "Number of BG flag coincidences;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBGCoincADA, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_MultiBGCoincidence_ADC", "Number of BG flag coincidences in ADC;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
+  h1i->SetLineWidth(2);
+  h1i->SetLineColor(kBlue);
+  h1i = new TH1I("H1I_MultiBGCoincidence_ADC", "Number of BG flag coincidences;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBGCoincADC, !expert, image, saveCorr);   iHisto++;
+  h1i->SetLineWidth(2);
+  h1i->SetLineColor(kRed);
   
   h2i = new TH2I("H2I_BBCoincCorr", "Number of BB flag coincidences;# of BB Coincidences ADA;# of BB Coincidences ADC",5, -0.5, 4.5, 5, -0.5, 4.5);
   Add2RawsList(h2i,kNBBCoincCorr, !expert, image, !saveCorr); iHisto++;
