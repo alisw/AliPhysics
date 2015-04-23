@@ -24,7 +24,7 @@ const double kTrackToler = 1.e-6; // tracking tolerance
 class FTProbe : public AliExternalTrackParam
 {
 public:
-	FTProbe(){};
+	FTProbe();
 	virtual ~FTProbe(){};
 	virtual Double_t GetTPCmomentum() const {return fTPCmomentum;}
 	virtual Double_t GetTPCsignal() const {return fTPCSignal;}
@@ -39,6 +39,7 @@ protected:
 	Double_t fAbsPdgCode;	// |pdg code| of particle
 	Double_t fPdgCode;		// pdg code of particle
 	Int_t fAbsPdgCodeForTracking;
+	Double_t fTrueMass;    // true mass of the particle
 	ClassDef(FTProbe,1)
 };
 
