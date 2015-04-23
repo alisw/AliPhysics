@@ -26,11 +26,16 @@ public:
     //Called internally (automatically)
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
 
-    //EvSel Snippets
-    Bool_t IsINELgtZERO             (AliVEvent *event);
-    Bool_t IsAcceptedVertexPosition (AliVEvent *event);
-    Bool_t IsNotPileupSPDInMultBins (AliVEvent *event);
-    Bool_t IsEventSelected(AliVEvent *event);
+    //static EvSel Snippets
+    static Bool_t IsINELgtZERO                     (AliVEvent *event);
+    static Bool_t IsAcceptedVertexPosition         (AliVEvent *event);
+    static Bool_t IsNotPileupSPDInMultBins         (AliVEvent *event);
+    static Bool_t HasConsistentSPDandTrackVertices (AliVEvent *event);
+    static Bool_t IsEventSelected(AliVEvent *event);
+    
+    //Wrapper with fallback to tracklets
+    static Long_t GetStandardReferenceMultiplicity (AliVEvent *event);
+    
     Float_t MinVal( Float_t A, Float_t B ); 
 
 private:
