@@ -13,13 +13,11 @@ event generator.
 
 ## Usage:
 
-    RunFast`.C(URL,OPTIONS)
+    RunFast.C(URL)
 
 
-Here `URL` is a string specifying the job, and `OPTIONS` is a string
-of optional options.
-
-The `URL` argument has the format
+Here `URL` is a string specifying the job. The `URL` argument has the
+format 
 
     PROTOCOL://[HOST]/?[OPTIONS]
 
@@ -56,19 +54,85 @@ The `HOST` part only makes sense for `PROTOCOL=proof`.
 `OPTIONS` can also contain options for the execution environment, such
 as `workers=N` for ProofLite.
 
+### Example:
+
+    RunFast.C("lite:///?events=10000&eg=default&run=138190")
+
+will make 10000 events using the default generator (Hijing), anchored
+in run 138190 (LHC10h, PbPb @ 2.76TeV).  The output file will be
+
+    Hijing_000138190_AA_02760_10k.root
+
+## Analysis:
+
+    ProcessFast.C(URL,OUTPUT)
+
+where, again the URL argument specifies the input and execution
+environment.  It has the format
+
+    PROTOCOL://[HOST]/[INPUT]?[OPTIONS]
+
+
+where `PROTOCOL` and `HOST` is as above. The `INPUT` part specifies
+the input file to read. `OPTIONS` is again a list of options separated
+by ampersands.  Valid options are
+
+* `events=NUMBER`: Number of events to analyze
+* `type=NAME` Type of analysis to perform.  Defined types are
+   * `INEL`
+   * `NSD`
+   * `CENTV0M`
+   * `CENTV0A`
+   * `CENTV0C`
+   * `MULTRefMult00d80`
+   * `MULTRefMult00d50`
+
+`OPTIONS` can also contain options for the execution environment, such
+as `workers=N` for ProofLite.
+
+The `OUTPUT` argument specifies which ROOT file to write the results
+to.
+
+### Example
+
+Using the output from the above example
+
+    ProcessFast.C("lite:///${PWD}/Hijing_000138190_AA_02760_10k.root?events=1000&type=CENTV0M","out.root")
+
+will analyze 1000 events from the above run, and build dN/deta per
+centrality bin, using a simulated V0M centrality estimator. 
+
+### Centrality selection
+
+The centrality estimation is simulated by counting the number of
+charged particles in a given region - e.g., the eta region
+corresponding to the V0 acceptance.  The distribution of that signal
+is then integrated from the top to the bottom and the incremental
+integral is written to a histogram.  Furthermore, the estimator
+quantity is saved as a separate branch in the output tree.
+
+All this happens during `RunFast.C`.  When looping over the data with
+`ProcessFast.C` we retrieve the integral histogram from the input
+file, and for each event we use the stored estimator quantity to look
+up the centrality of that event.
+
+In this way, we do not need an additional pass to extract the
+centrality information, and we are sure that the data is
+self-consistent because of we replay the estimator quantity using the
+stored value. 
+
 ## Technicalities
 
 The fast simulation uses the same strategy as for full simulations.
 For more details see README.md in this directory.
 
-Local Variables:
-  mode: markdown
-End:
-
-
-
-
-
-
-
- 
+<!-- Local Variables: -->
+<!--   mode: markdown -->
+<!--   ispell-dictionary: "british" -->
+<!-- End: -->
+<!--  LocalWords:  RunFast multi ProofLite GRP eg Hijing Pythia TeV
+ -->
+<!--  LocalWords:  DpmJet ProcessFast PbPb LHC PWD INEL NSD CENTV dN
+ -->
+<!--  LocalWords:  MULTRefMult deta LocalWords
+ -->

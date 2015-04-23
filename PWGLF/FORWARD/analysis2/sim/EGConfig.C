@@ -73,6 +73,7 @@ protected:
     else if (t.BeginsWith("lego"))            g=Lego(rt);
     if (!g && !fIsLego)
       Fatal("", "Invalid run type \"%s\" specified", t.Data());
+    AliPDG::AddParticlesToPdgDataBase();
     return g;
   }
   /** 
