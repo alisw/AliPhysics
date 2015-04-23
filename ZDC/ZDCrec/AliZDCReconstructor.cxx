@@ -82,14 +82,17 @@ AliZDCReconstructor::~AliZDCReconstructor()
 {
 // destructor
 //   if(fgRecoParam)    delete fgRecoParam;
-   if(fPedData)      delete fPedData;    
-   if(fEnCalibData)  delete fEnCalibData;
-   if(fSatCalibData) delete fSatCalibData;
-   if(fTowCalibData) delete fTowCalibData;
-   if(fgMBCalibData) delete fgMBCalibData;
-   if(fTDCCalibData) delete fTDCCalibData;
-   if(fMapping)      delete fMapping;
-   if(fESDZDC)       delete fESDZDC;
+  AliCDBManager * man = AliCDBManager::Instance();
+  if (man && !man->GetCacheFlag()) { // CDB objects must NOT be deleted if cache is active!
+    if(fPedData)      delete fPedData;    
+    if(fEnCalibData)  delete fEnCalibData;
+    if(fSatCalibData) delete fSatCalibData;
+    if(fTowCalibData) delete fTowCalibData;
+    if(fgMBCalibData) delete fgMBCalibData;
+    if(fTDCCalibData) delete fTDCCalibData;
+    if(fMapping)      delete fMapping;
+  }
+  if(fESDZDC)       delete fESDZDC;
 }
 
 //____________________________________________________________________________
