@@ -1,6 +1,6 @@
 ///*******************************************************
 ///Config Description
-/// 14 July 2014
+/// April 22, 2015
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -78,7 +78,7 @@ Bool_t isTender = kFALSE
 	
 	//hfecuts->SetUseCorrelationVertex();
 	//hfecuts->SetSPDVtxResolutionCut();
-	//hfecuts->SetpApileupCut();
+	hfecuts->SetpApileupCut();
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
@@ -95,11 +95,17 @@ Bool_t isTender = kFALSE
 	
 	if(isEMCal) task->SetUseEMCal();
 		//Bool_t isTrigger = kFALSE;
-	if(isTrigger) task->SetUseTrigger();
+	
+	if(isTrigger){
+		task->SetUseTrigger();
+		task->SetUseShowerShapeCut(kTRUE);
+		//task->SetM02Cut(0.0,0.3);
+		task->SetM20Cut(0.0,0.3);
+		
+	}
 	
 	if(isTender) task->SetUseTender();
-		//task->SetUseTender();
-
+		
 	
 	if(configIndex==104)  task->SetdcaCut(2,3);//r,z
 	else if(configIndex==105)  task->SetdcaCut(1.5,2.5);//r,z
@@ -108,12 +114,14 @@ Bool_t isTender = kFALSE
 	else if(configIndex==108)  task->SetdcaCut(0.1,0.2);//r,z
 	//else task->SetdcaCut(1,2);//r,z
 	
-		
+	/*	
 	if(configIndex==100){
 		task->SetUseShowerShapeCut(kTRUE);
 		//task->SetM02Cut(0.0,0.3);
 		task->SetM20Cut(0.0,0.3);
 	}
+	*/
+	
 	task->SetBackground(kTRUE);
 	
 	//nonHFE cuts
