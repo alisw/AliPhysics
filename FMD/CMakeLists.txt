@@ -25,6 +25,7 @@ endif()
 
 # Install files to destination
 install(DIRECTORY scripts DESTINATION FMD)
+install(DIRECTORY macros DESTINATION FMD)
 install(FILES 
             Config.C
             MakeFMDFullMisAlignment.C

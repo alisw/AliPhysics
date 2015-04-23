@@ -60,5 +60,6 @@ add_subdirectory(shuttle)
 add_subdirectory(sim)
 
 include("CMakehltdoc.conf")
+install(DIRECTORY macros DESTINATION HLT)
 
 message(STATUS "HLT enabled")

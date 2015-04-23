@@ -21,6 +21,7 @@ if(DA)
     add_subdirectory(DA)
 endif(DA)
 
+install(DIRECTORY macros DESTINATION ZDC)
 install(FILES 
   GlauberMCDist.root
   GlauberMCHistos.root

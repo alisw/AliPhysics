@@ -1,7 +1,11 @@
-void PopulateLocalOCDB(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", const char* dets="ALL", Int_t runMin=0, Int_t runMax=0)
+void PopulateLocalOCDB(const char* storageUri, const char* dets="ALL", Int_t runMin=0, Int_t runMax=0)
 {
   // dets: comma-separated list of detectors for which to make the CDB objects
   //
+  TString storageString(storageUri);
+  if(!storageUri || storageString.IsNull()) {
+    storageUri = gSystem->ExpandPathName("local://$ALICE_ROOT/OCDB");
+  }
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(storageUri);
   if (runMax==0)
@@ -18,8 +22,8 @@ void PopulateLocalOCDB(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OC
   }
 
   // For the 'MakeZeroMisalignment' macros
-  gSystem->Setenv("TOCDB","kTRUE");
-  gSystem->Setenv("STORAGE","local://$ALICE_ROOT/../AliRoot/OCDB");
+  gSystem->Setenv("TOCDB", "kTRUE");
+  gSystem->Setenv("STORAGE", storageUri);
 
   TObjArray *detsArray = detectors.Tokenize(',');
   TString macroPath = gROOT->GetMacroPath();
@@ -36,8 +40,9 @@ void PopulateLocalOCDB(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OC
     if (! macroPath.EndsWith(":")) {
       macroPath += ":";
     }
-    macroPath += gSystem->ExpandPathName("${ALICE_SOURCE}/");
+    macroPath += gSystem->ExpandPathName("${ALICE_ROOT}/");
     macroPath += stringDet;
+    macroPath += "/macros";
     gROOT->SetMacroPath(macroPath);
     gROOT->LoadMacro(sDetMacro.Data());
     sDetMacro = (sDetMacro(0, sDetMacro.Length()-2));
