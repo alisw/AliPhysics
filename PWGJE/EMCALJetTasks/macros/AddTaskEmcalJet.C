@@ -10,6 +10,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag             = "Jet",
   const Double_t minJetPt     = 0.,
   const Bool_t selectPhysPrim = kFALSE,
+  const Int_t useExchangeCont = 0,
   const Bool_t lockTask       = kTRUE
 )
 {  
@@ -113,10 +114,9 @@ AliEmcalJetTask* AddTaskEmcalJet(
   std::cout << "Jet task name: " << name.Data() << std::endl;
  
   AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
-  if (mgrTask)
-    return mgrTask;  
+  if (mgrTask) return mgrTask;  
 
-  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name, useExchangeCont);
   jetTask->SetTracksName(nTracks);
   jetTask->SetClusName(nClusters);
   jetTask->SetJetsName(name);
@@ -138,8 +138,34 @@ AliEmcalJetTask* AddTaskEmcalJet(
   mgr->AddTask(jetTask);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
-  mgr->ConnectInput  (jetTask, 0, cinput);
+  AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(jetTask, 0, cinput);
+
+  if (useExchangeCont > 0) {
+    TObjArray* cnt = mgr->GetContainers();
+
+    if (strcmp(nTracks, "") != 0) {
+      AliAnalysisDataContainer* trackCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nTracks));
+      if (trackCont) {
+        mgr->ConnectInput(jetTask, 1, trackCont);
+      }
+      else {
+        ::Error("AddTaskEmcalJet", "Could not find input container '%s'!", nTracks);
+      }
+    }
+  }
+
+  if (useExchangeCont > 1) {
+    if (strcmp(nClusters, "") != 0) {
+      AliAnalysisDataContainer* clusCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nClusters));
+      if (clusCont) {
+        mgr->ConnectInput(jetTask, 2, clusCont);
+      }
+      else {
+        ::Error("AddTaskEmcalJet", "Could not find input container '%s'!", nClusters);
+      }
+    }
+  }
 
   return jetTask;
 }
@@ -158,6 +184,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag            = "Jet",
   const Double_t minJetPt    = 0.,
   const Bool_t selectPhysPrim = kFALSE,
+  const Int_t useExchangeCont = 0,
   const Bool_t lockTask       = kTRUE
 )
 {  
@@ -189,5 +216,5 @@ AliEmcalJetTask* AddTaskEmcalJet(
     return NULL;
   }
 
-  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, lockTask);
+  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, useExchangeCont, lockTask);
 }

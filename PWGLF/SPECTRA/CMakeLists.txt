@@ -96,6 +96,14 @@ set(SRCS
   MultEvShape/AliMESppColTask.cxx
   AntiprotonToProton/AliProtonAnalysisBase.cxx
   AntiprotonToProton/AliProtonQAAnalysis.cxx
+  AntiprotonToProton/AliProtonAnalysis.cxx
+  AntiprotonToProton/AliAnalysisTaskProtons.cxx
+  AntiprotonToProton/AliAnalysisTaskProtonsQA.cxx  
+  AntiprotonToProton/AliProtonFeedDownAnalysisTask.cxx 
+  AntiprotonToProton/AliProtonFeedDownAnalysis.cxx 
+  AntiprotonToProton/AliProtonAbsorptionCorrection.cxx 
+  AntiprotonToProton/AliProtonSpectraCorrection.cxx 
+  AntiprotonToProton/AliProtonCorrectionAnalysisTask.cxx
 )
 
 # Headers from sources

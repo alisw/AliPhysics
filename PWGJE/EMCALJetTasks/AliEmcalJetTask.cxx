@@ -66,6 +66,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fGeneratorIndex(-1),
   fUtilities(0),
   fFilterHybridTracks(kFALSE),
+  fUseExchangeCont(0),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -86,7 +87,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
 }
 
 //________________________________________________________________________
-AliEmcalJetTask::AliEmcalJetTask(const char *name) :
+AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   AliAnalysisTaskSE(name),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -117,6 +118,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fGeneratorIndex(-1),
   fUtilities(0),
   fFilterHybridTracks(kFALSE),
+  fUseExchangeCont(useExchangeCont),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -130,6 +132,10 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fFastJetWrapper(name,name)
 {
   // Standard constructor.
+
+  for (Int_t i = 0; i < fUseExchangeCont; i++) {
+    DefineInput(i+1, TClonesArray::Class());
+  }
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 
@@ -214,19 +220,21 @@ void AliEmcalJetTask::UserExec(Option_t *)
   // get primary vertex
   if(fEvent->GetPrimaryVertex()) fEvent->GetPrimaryVertex()->GetXYZ(fVertex);
 
-  FindJets();
+  Int_t n = FindJets();
 
+  if (n == 0) return;
+  
   FillJetBranch();
 }
 
 //________________________________________________________________________
-void AliEmcalJetTask::FindJets()
+Int_t AliEmcalJetTask::FindJets()
 {
   // Find jets.
 
   if (!fTracks && !fClus){
     AliError("No tracks or clusters, returning.");
-    return;
+    return 0;
   }
 
   fFastJetWrapper.Clear();
@@ -345,8 +353,12 @@ void AliEmcalJetTask::FindJets()
     }
   }
 
+  if (fFastJetWrapper.GetInputVectors().size() == 0) return 0;
+  
   // run jet finder
   fFastJetWrapper.Run();
+
+  return fFastJetWrapper.GetInclusiveJets().size();
 }
 
 //________________________________________________________________________
@@ -450,37 +462,71 @@ Bool_t AliEmcalJetTask::DoInit()
     return 0;
   }
 
-  if (fTracksName == "Tracks")
-    am->LoadBranch("Tracks");
-  if (!fTracks && !fTracksName.IsNull()) {
-    fTracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
-      return 0;
+  if (!fTracks) {
+    if (fUseExchangeCont > 0) {
+      fTracks = dynamic_cast<TClonesArray*>(GetInputData(1));
+      if (!fTracks) {
+        AliError(Form("%s: Could not get tracks form the input container n. 1", GetName()));
+        return 0;
+      }
     }
-
-    if (fFilterHybridTracks) {
-      TClass* cl = fTracks->GetClass();
-      if (!cl->InheritsFrom("AliAODTrack")) {
-        AliWarning(Form("Track collection contains objects of type '%s' that does not derive from 'AliAODTrack'. The hybrid track filter will not be applied.", cl->GetName()));
-        fFilterHybridTracks = kFALSE;
+    else if (!fTracksName.IsNull()) {
+      if (fTracksName == "Tracks") am->LoadBranch("Tracks");
+      fTracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
+      if (!fTracks) {
+        AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
+        return 0;
       }
     }
   }
 
-  if (fCaloName == "CaloClusters")
-    am->LoadBranch("CaloClusters");
-  if (!fClus && !fCaloName.IsNull()) {
-    fClus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
-    if (!fClus) {
-      AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
-      return 0;
+  if (fTracks) {
+    TClass cls(fTracks->GetClass()->GetName());
+
+    if (cls.InheritsFrom("AliVParticle")) {
+      if (fFilterHybridTracks) {
+        if (!cls.InheritsFrom("AliAODTrack")) {
+          AliWarning(Form("Track collection contains objects of type '%s' that does not derive from 'AliAODTrack'. The hybrid track filter will not be applied.", cls.GetName()));
+          fFilterHybridTracks = kFALSE;
+        }
+      }
+    }
+    else {
+      AliError(Form("Track collection contains objects of type '%s' that does not derive from 'AliVParticle'. This input collection will be ignored!", cls.GetName()));
+      fTracks = 0;
     }
   }
+
+  if (!fClus) {
+    if (fUseExchangeCont > 1) {
+      fClus = dynamic_cast<TClonesArray*>(GetInputData(2));
+      if (!fClus) {
+        AliError(Form("%s: Could not get clusters form the input container n. 2", GetName()));
+        return 0;
+      }
+    }
+    else if (!fCaloName.IsNull()) {
+      if (fCaloName == "CaloClusters") am->LoadBranch("CaloClusters");
+      fClus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
+      if (!fClus) {
+        AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
+        return 0;
+      }
+    }
+  }
+  
   if (fClus) {
     TClass cls(fClus->GetClass()->GetName());
-    if (cls.InheritsFrom("AliEmcalParticle"))
+    if (cls.InheritsFrom("AliEmcalParticle")) {
       fIsEmcPart = 1;
+    }
+    else if (cls.InheritsFrom("AliVCluster")) {
+      fIsEmcPart = 0;
+    }
+    else {
+      AliError(Form("Cluster collection contains objects of type '%s' that does not derive from 'AliEmcalParticle' or 'AliVCluster'. This input collection will be ignored!", cls.GetName()));
+      fTracks = 0;
+    }
   }
 
   // add jets to event if not yet there
@@ -624,7 +670,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();
-        AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(t);
+        AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(dynamic_cast<AliVTrack*>(t));   // SA: probably need to be fixed!!
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
         jet->AddTrackAt(part_sub_id, nt);
       }

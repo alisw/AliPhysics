@@ -21,14 +21,19 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
  public:
 
   enum {
-    kStepMCGenCut         = 0, // selected generated particles, event selection
+    kStepMCGenCut         = 0, // selected generated particles, event selection  (kSlow only)
     kStepMCKineCut        = 1, // generated particles after acceptance cuts
-    kStepMCAccpCut        = 2, // particles with a minimum number of clusters in detector (ESD only)
-    kStepReconstructed    = 3, // reconstructed tracks
-    kStepRecoKineCuts     = 4, // reconstructed tracks after acceptance
-    kStepReconstructedMC  = 5, // tracks passing ESD+MC trackCuts (kine properties)
+    kStepMCAccpCut        = 2, // particles with a minimum number of clusters in detector (ESD only, kSlow only)
+    kStepReconstructed    = 3, // reconstructed tracks (kSlow only)
+    kStepRecoKineCuts     = 4, // reconstructed tracks after acceptance (kSlow only)
+    kStepReconstructedMC  = 5, // tracks passing ESD+MC trackCuts (kine properties, kSlow only)
     kStepRecoQualityCuts  = 6, // tracks passing ESD+MC trackCuts (reco properties)
-    kStepRecoPID          = 7  // tracks after PID criteria
+    kStepRecoPID          = 7  // tracks after PID criteria (kSlow only)
+  };
+
+  enum{
+     kSlow = 0, // fast configuration, only a subset of variables
+     kFast = 1  // slow configuration, all variables
   };
 
   AliCFSingleTrackEfficiencyTask();
@@ -59,7 +64,13 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
   // set whether to evaluate centrality
   void SetUseCentrality(Bool_t flag, TString estimator=""){ fEvalCentrality=flag; fCentralityEstimator=estimator; }
-
+    
+  void SetConfiguration(Int_t configuration) {
+      (configuration == kSlow) ? Printf("Slow configuration chosen, all variables will be used!") : Printf("Fast configuration chosen, not all steps will be filled!");
+      fConfiguration = configuration;
+  }
+  Int_t GetConfiguration() const { return fConfiguration; }
+    
   // Getters
   // analyze AOD:1 or ESD:0 data
   Bool_t IsReadAODData()   const { return fReadAODData; }
@@ -99,10 +110,12 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
 
   Bool_t fEvalCentrality;        // flag to enable centrality determination
   TString fCentralityEstimator;  // centrality estimator
+    
+  Int_t fConfiguration;          // Configuration to run: 0 = slow (all variables), 1 = fast (min variables)
 
   TH1I  *fHistEventsProcessed;   //! histo for monitoring the number of events processed slot 1
 
-  ClassDef(AliCFSingleTrackEfficiencyTask,2)
+  ClassDef(AliCFSingleTrackEfficiencyTask,3)
 };
 
 #endif

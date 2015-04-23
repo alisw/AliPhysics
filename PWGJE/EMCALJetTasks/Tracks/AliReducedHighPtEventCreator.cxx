@@ -72,7 +72,8 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fMinPt(-1),
   fMaxPt(1000),
   fMinEta(-1000),
-  fMaxEta(1000)
+  fMaxEta(1000),
+  fCentralityMethod("V0A")
 {
 
 }
@@ -92,7 +93,8 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fMinPt(-1),
   fMaxPt(1000),
   fMinEta(-1000),
-  fMaxEta(1000)
+  fMaxEta(1000),
+  fCentralityMethod("V0A")
 {
   DefineOutput(2, TTree::Class());
 
@@ -147,7 +149,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   // Write event specific information
   fOutputEvent->SetVertexZ(fInputEvent->GetPrimaryVertex()->GetZ());
   AliCentrality *centralityHandler = fInputEvent->GetCentrality();
-  if(centralityHandler) fOutputEvent->SetCentralityPercentile(centralityHandler->GetCentralityPercentile("V0A"));
+  if(centralityHandler) fOutputEvent->SetCentralityPercentile(centralityHandler->GetCentralityPercentile(fCentralityMethod.Data()));
   ConvertTriggerPatches(fTriggerPatchInfo, fOutputEvent->GetPatchContainer());
   TString triggerString(fInputEvent->GetFiredTriggerClasses());
   fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EG1"), triggerString.Contains("EG2"), triggerString.Contains("EJ1"), triggerString.Contains("EJ2"));

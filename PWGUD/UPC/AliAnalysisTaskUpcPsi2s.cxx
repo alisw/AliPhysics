@@ -1129,10 +1129,49 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fTriggerInputsMC[0] = kFALSE;//0SM2
-  fTriggerInputsMC[1] = fL0inputs & (1 << 0);//0VBA
-  fTriggerInputsMC[2] = fL0inputs & (1 << 1);//0VBC
-  fTriggerInputsMC[3] = fL0inputs & (1 << 9);//0OMU
+  fTriggerInputsMC[0] = fL0inputs & (1 << 0);   //0VBA VZERO A
+  fTriggerInputsMC[1] = fL0inputs & (1 << 1);   //0VBC VZERO C
+  fTriggerInputsMC[2] = fL0inputs & (1 << 11);  //0OMU TOF two hits with topology
+  fTriggerInputsMC[3] = fL0inputs & (1 << 23);	//0OM2 TOF two hits
+						
+  //SPD inputs
+  const AliAODTracklets *mult = aod->GetMultiplicity();
+  Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
+  Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+
+  Int_t nInner(0), nOuter(0);
+  for (Int_t i(0); i<1200; ++i) {
+    Bool_t isFired(mult->TestFastOrFiredChips(i));
+    if (i<400) {
+      vPhiInner[i/20] += isFired;
+      nInner += isFired;
+    } else {
+      vPhiOuter[(i-400)/20] += isFired;
+      nOuter += isFired;
+    }
+  }
+ 
+  Int_t fired(0);
+  for (Int_t i(0); i<10; ++i) {
+    for (Int_t j(0); j<2; ++j) {
+      const Int_t k(2*i+j);
+      fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
+                    vPhiOuter[k+2]      )
+                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
+                    vPhiOuter[(k+22)%40])
+                && (vPhiInner[i]    || vPhiInner[i+1]       )
+                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+    }
+  }
+  //0SMB - At least one hit in SPD
+  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[4] = kTRUE;
+  //0SM2 - Two hits on outer layer
+  if (nOuter > 1) fTriggerInputsMC[5] = kTRUE;
+  //0STP - Topological SPD trigger (two pairs)
+  if (fired != 0) fTriggerInputsMC[6] = kTRUE;
+  //0SH1 - More then 6 hits on outer layer
+  if (nOuter >= 7) fTriggerInputsMC[7] = kTRUE;
+  
 
   fGenPart->Clear("C");
 
@@ -1705,9 +1744,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
 {
-
-  AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
-  fTrigAna->SetAnalyzeMC(isMC);
   
   fTriggerInputsMC[0] = esd->GetHeader()->IsTriggerInputFired("0VBA"); //VZERO A
   fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0VBC"); //VZERO C

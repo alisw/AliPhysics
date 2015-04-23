@@ -43,12 +43,14 @@
 #include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
+#include "AliEmcalParticle.h"
+#include "AliParticleContainer.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
 
 //_______________________________________________________________________________
 AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskEmcal(),
   fUseMCInfo(kFALSE),
   fUseReco(kTRUE),
   fCandidateType(0),
@@ -60,15 +62,15 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fMinMass(0.),
   fMaxMass(0.),
   fInhibitTask(kFALSE),
-  fInitOk(kFALSE),
+  fCombineDmesons(kFALSE),
   fAodEvent(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
+  fCombinedDmesons(0),
   fNCand(0),
   fNSBCand(0),
-  fOutput(0),
   fHistStat(0),
   fHistNSBCandEv(0),
   fHistNCandEv(0),
@@ -105,11 +107,13 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
    
    for (Int_t i=4; i--;) fPDGdaughters[i] = 0;
    for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
+
+   fNeedEmcalGeom = kFALSE;
 }
 
 //_______________________________________________________________________________
 AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *name, AliRDHFCuts *cuts, ECandidateType candtype) :
-  AliAnalysisTaskSE(name),
+  AliAnalysisTaskEmcal(name, kTRUE),
   fUseMCInfo(kFALSE),
   fUseReco(kTRUE),
   fCandidateType(candtype),
@@ -121,15 +125,15 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fMinMass(0.),
   fMaxMass(0.),
   fInhibitTask(kFALSE),
-  fInitOk(kFALSE),
+  fCombineDmesons(kFALSE),
   fAodEvent(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
+  fCombinedDmesons(0),
   fNCand(0),
   fNSBCand(0),
-  fOutput(0),
   fHistStat(0),
   fHistNSBCandEv(0),
   fHistNCandEv(0),
@@ -163,8 +167,10 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
    //
    // Constructor. Initialization of Inputs and Outputs
    //
-   
+  
    Info("AliAnalysisTaskSEDmesonsFilterCJ","Calling Constructor");
+
+   fNeedEmcalGeom = kFALSE;
    
    for (Int_t i=4; i--;) fPDGdaughters[i] = 0;
    for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
@@ -184,7 +190,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
       fBranchName = "D0toKpi";
       break;
    case 1 :
-      fCandidateName = "Dstar";
+      fCandidateName = "DStar";
       fPDGmother = 413;
       fNProngs = 3;
       fPDGdaughters[1] = 211; // pi soft
@@ -212,6 +218,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
    DefineOutput(2, AliRDHFCuts::Class()); // my cuts
    DefineOutput(3, TClonesArray::Class()); //array of candidates
    DefineOutput(4, TClonesArray::Class()); //array of SB candidates
+   DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
 }
 
 //_______________________________________________________________________________
@@ -223,11 +230,10 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
    
    Info("~AliAnalysisTaskSEDmesonsFilterCJ","Calling Destructor");  
    
-   if (fOutput) { delete fOutput; fOutput = 0; }
    if (fCuts)   { delete fCuts;   fCuts   = 0; }
    if (fCandidateArray)  { delete fCandidateArray;  fCandidateArray = 0; }
-   delete fSideBandArray;
-   
+   if (fSideBandArray)  { delete fSideBandArray;  fSideBandArray = 0; }
+   if (fCombinedDmesons)  { delete fCombinedDmesons;  fCombinedDmesons = 0; }
 }
 
 //_______________________________________________________________________________
@@ -268,18 +274,18 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    
    Info("UserCreateOutputObjects","CreateOutputObjects of task %s", GetName());
    
-   fOutput = new TList();
-   fOutput->SetOwner();
+   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
    DefineHistoForAnalysis(); // define histograms
 
    if (fUseReco) {
      if (fCandidateType == kD0toKpi){
-       fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",0);
-       fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",0); 
+       fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",10);
+       fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",10); 
      }
      else if (fCandidateType == kDstartoKpipi) {
-       fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",0);
-       fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0);
+       fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",10);
+       fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",10);
      }
      else {
        AliWarning(Form("Candidate type %d not recognized!", fCandidateType));
@@ -287,43 +293,132 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
      }
    }
    else {
-     fCandidateArray = new TClonesArray("AliAODMCParticle",0);
+     fCandidateArray = new TClonesArray("AliAODMCParticle",10);
      fSideBandArray = new TClonesArray("TObject",0); // not used
+   }
+
+   if (fCombineDmesons) {
+     fCombinedDmesons = new TClonesArray("AliEmcalParticle",50);
+   }
+   else {
+     fCombinedDmesons = new TClonesArray("TObject",0); // not used
    }
    
    fCandidateArray->SetOwner();
-   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   fCandidateArray->SetName(Form("Dcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
    
    //this is used for the DStar side bands and MC!
    fSideBandArray->SetOwner();
-   fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   fSideBandArray->SetName(Form("DSBcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+
+   fCombinedDmesons->SetOwner();
+   fCombinedDmesons->SetName(Form("DcandidatesAndTracks%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
   
    PostData(1, fOutput);
    PostData(3, fCandidateArray);
    PostData(4, fSideBandArray);
+   PostData(5, fCombinedDmesons);
+
+   Info("UserCreateOutputObjects","Data posted for task %s", GetName());
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
+void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
+{
+  //
+  // To be executed only once, for the first event
+  //
+
+  AliDebug(2, "Entering ExecOnce()");
+  
+  if (fInhibitTask) return;
+
+  // Load the event
+  fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+
+  if (fAodEvent) {
+    fArrayDStartoD0pi = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(fBranchName.Data()));
+  }
+  else {
+    if (AODEvent() && IsStandardAOD()) {
+      
+      // In case there is an AOD handler writing a standard AOD, use the AOD 
+      // event in memory rather than the input (ESD) event.    
+      fAodEvent = dynamic_cast<AliAODEvent*>(AODEvent());
+      
+      // in this case the branches in the deltaAOD (AliAOD.VertexingHF.root)
+      // have to taken from the AOD event hold by the AliAODExtension
+      AliAODHandler *aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+      if(aodHandler->GetExtensions()) {
+        AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+        AliAODEvent *aodFromExt = ext->GetAOD();
+        fArrayDStartoD0pi = (TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
+      }
+      else {
+        AliError(Form("This task need an AOD event! Task '%s' will be disabled!", GetName()));
+        fInhibitTask = kTRUE;
+        return;
+      }
+    }
+  }
+
+  if (fArrayDStartoD0pi) {
+    TString objname(fArrayDStartoD0pi->GetClass()->GetName());
+    TClass cls(objname);
+    if (!cls.InheritsFrom("AliAODRecoDecayHF2Prong")) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!", 
+                    GetName(), cls.GetName(), fArrayDStartoD0pi->GetName()));
+      fInhibitTask = kTRUE;
+      fArrayDStartoD0pi = 0;
+      return;
+    }
+  }
+  else {
+    AliError(Form("Could not find array %s, skipping the event. Task '%s' will be disabled!", fBranchName.Data(), GetName()));
+    fInhibitTask = kTRUE;
+    return;
+  }
+
+  if (fUseMCInfo) {
+    fMCarray = dynamic_cast<TClonesArray*>(fAodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!fMCarray) {
+      AliError(Form("MC particles not found! Task '%s' will be disabled!", GetName()));
+      fInhibitTask = kTRUE;
+      return;
+    }
+  }
+
+  if (fCombineDmesons) AddObjectToEvent(fCombinedDmesons);
+
+  AliAnalysisTaskEmcal::ExecOnce();
+}
+
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
 {
   //
   // Analysis execution
   //
  
-  if (!fInitOk) ExecOnce();
-  if (fInhibitTask) return;
+  if (fInhibitTask) return kFALSE;
 
-  AliDebug(2, "Entering UserExec()");
+  AliDebug(2, "Entering Run()");
+
+  //clear the TClonesArray from the previous event
+  fCandidateArray->Clear();
+  fSideBandArray->Clear();
+  fCombinedDmesons->Clear();
+  AliDebug(2, "TClonesArray cleared");
   
   fHistStat->Fill(0);
   
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return;
+  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
    
   //Event selection
   Bool_t iseventselected = fCuts->IsEventSelected(fAodEvent);
-  if (!iseventselected) return;
+  if (!iseventselected) return kFALSE;
   fHistStat->Fill(1);
 
   AliDebug(2, "Event selected");
@@ -334,12 +429,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
 
   Int_t pdgMeson = 413;
   if (fCandidateType == kD0toKpi) pdgMeson = 421;
-
-  //clear the TClonesArray from the previous event
-  fCandidateArray->Clear();
-  fSideBandArray->Clear();
-  AliDebug(2, "TClonesArray cleared");
-
+  
   fNCand = 0;
   fNSBCand = 0;
   
@@ -371,6 +461,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
 
     //candidate selected by cuts and PID
     isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
+
+    if (!isSelected) continue;
     
     if (fCandidateType == kDstartoKpipi) {
       ProcessDstar(dstar, isSelected);
@@ -381,6 +473,10 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
   } // end of D cand loop
 
   AliDebug(2, "Loop done");
+
+  if (fCombineDmesons && fCombinedDmesons->GetEntriesFast() > 0) {
+    AddEventTracks(fCombinedDmesons, GetParticleContainer(0));
+  }
   
   fHistNCandEv->Fill(fCandidateArray->GetEntriesFast());
   if (fCandidateType == kDstartoKpipi || fUseMCInfo) {
@@ -392,101 +488,17 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
   PostData(1, fOutput);
   PostData(3, fCandidateArray);
   PostData(4, fSideBandArray);
+  PostData(5, fCombinedDmesons);
 
   AliDebug(2, "Exiting method");
-}
 
-//_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::Terminate(Option_t*)
-{
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
-   
-  Info("Terminate"," terminate");
-  AliAnalysisTaskSE::Terminate();
-   
-  fOutput = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fOutput) {
-    AliError("fOutput not available");
-    return;
-  }
-}
-
-//_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
-{
-  //
-  // To be executed only once, for the first event
-  //
-
-  if (fInhibitTask) return;
-
-  AliDebug(2, "Entering ExecOnce()");
-
-  // Load the event
-  fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-
-  if (fAodEvent) {
-    fArrayDStartoD0pi = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(fBranchName.Data()));
-  }
-  else {
-    if (AODEvent() && IsStandardAOD()) {
-      
-      // In case there is an AOD handler writing a standard AOD, use the AOD 
-      // event in memory rather than the input (ESD) event.    
-      fAodEvent = dynamic_cast<AliAODEvent*>(AODEvent());
-      
-      // in this case the branches in the deltaAOD (AliAOD.VertexingHF.root)
-      // have to taken from the AOD event hold by the AliAODExtension
-      AliAODHandler *aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-      if(aodHandler->GetExtensions()) {
-        AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
-        AliAODEvent *aodFromExt = ext->GetAOD();
-        fArrayDStartoD0pi = (TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
-      }
-      else {
-        AliError(Form("This task need an AOD event! Task '%s' will be disabled!", GetName()));
-        fInhibitTask = kTRUE;
-        return;
-      }
-    }
-  }
-   
-  if (fArrayDStartoD0pi) {
-    TString objname(fArrayDStartoD0pi->GetClass()->GetName());
-    TClass cls(objname);
-    if (!cls.InheritsFrom("AliAODRecoDecayHF2Prong")) {
-      AliError(Form("%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!", 
-                    GetName(), cls.GetName(), fArrayDStartoD0pi->GetName()));
-      fInhibitTask = kTRUE;
-      fArrayDStartoD0pi = 0;
-      return;
-    }
-  }
-  else {
-    AliError(Form("Could not find array %s, skipping the event. Task '%s' will be disabled!", fBranchName.Data(), GetName()));
-    fInhibitTask = kTRUE;
-    return;
-  }
-
-  if (fUseMCInfo) {
-    fMCarray = dynamic_cast<TClonesArray*>(fAodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!fMCarray) {
-      AliError(Form("MC particles not found! Task '%s' will be disabled!", GetName()));
-      fInhibitTask = kTRUE;
-      return;
-    }
-  }
-
-  fInitOk = kTRUE;
+  return kTRUE;
 }
 
 //_______________________________________________________________________________
 void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected)
 {
   // Process the D0 candidate.
-
 
   // For MC analysis look for the AOD MC particle associated with the charm candidate
   AliAODMCParticle* charmPart = 0;
@@ -504,8 +516,6 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   else {
     fHistStat->Fill(2);
   }
-
-  if (!isSelected) return;
   
   // For MC background fill fSideBandArray
   if (fUseMCInfo && !charmPart) { 
@@ -525,13 +535,17 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
     if (fUseReco) {
       new ((*fCandidateArray)[fNCand]) AliAODRecoDecayHF2Prong(*charmCand);
 
+      if (fCombineDmesons) {
+        new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(charmCand);
+      }
+
       fHistImpParS->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
       fHistImpParS->Fill(charmCand->Getd0Prong(1), charmCand->PtProng(1));
       fHistInvMassS->Fill(charmCand->InvMassD0());
       fHistInvMassS->Fill(charmCand->InvMassD0bar());
     }
     // For MC with requirement particle level fill with AliAODMCParticle
-    else { 
+    else {
       new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
     }
     fHistStat->Fill(3);      	 
@@ -592,8 +606,6 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
   else {
     fHistStat->Fill(2);
   }
-
-  if (!isSelected) return;
   
   AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
 
@@ -614,9 +626,13 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
     // For data or MC signal with the requirement fUseReco fill with candidates    
     if (fUseReco) {
       new ((*fCandidateArray)[fNCand]) AliAODRecoCascadeHF(*dstar);
+      
+      if (fCombineDmesons) {
+        new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(dstar);       
+      }
     } 
     // For MC signal with requirement particle level fill with AliAODMCParticle
-    else { 
+    else {
       new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
     }
     fNCand++;
@@ -903,7 +919,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
     fHistPtPion->GetYaxis()->SetTitle("entries");
     fOutput->Add(fHistPtPion);
   }
-   
+
   // Invariant mass related histograms
   const Int_t nbinsmass = 200;
   const Int_t ptbinsD = 100;
@@ -1039,4 +1055,72 @@ Float_t AliAnalysisTaskSEDmesonsFilterCJ::DeltaR(AliVParticle *p1, AliVParticle 
   Double_t deltaR = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
   
   return deltaR;
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliParticleContainer* tracks)
+{
+  //
+  // Add event tracks to a collection that already contains the D candidates, excluding the daughters of the D candidates
+  //
+
+  if (!tracks) return;
+  
+  TObjArray allDaughters(10);
+  allDaughters.SetOwner(kFALSE);
+
+  TIter next(coll);
+  AliEmcalParticle* emcpart = 0;
+  while ((emcpart = static_cast<AliEmcalParticle*>(next()))) {
+    AliAODRecoDecay* reco = dynamic_cast<AliAODRecoDecay*>(emcpart->GetTrack());
+    if (reco) AddDaughters(reco, allDaughters);
+  }
+
+  tracks->ResetCurrentID();
+  AliVTrack* track = 0;
+  Int_t n = coll->GetEntriesFast();
+  while ((track = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))) {
+    if (allDaughters.Remove(track) == 0) {
+      new ((*coll)[n]) AliEmcalParticle(track);
+      n++;
+    }
+  }
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
+{
+  // Add all the dauthers of cand in an array. Follows all the decay cascades.
+  
+  Int_t n = cand->GetNDaughters();
+
+  //Printf("AddDaughters: the number of dauhters is %d", n);
+  
+  Int_t ntot = 0;
+  Double_t pt = 0;
+  for (Int_t i = 0; i < n; i++) {
+    AliVTrack* track = dynamic_cast<AliVTrack*>(cand->GetDaughter(i));
+    if (!track) continue;
+
+    AliAODRecoDecay* cand2 = dynamic_cast<AliAODRecoDecay*>(track);
+
+    if (cand2) {
+      //Printf("Daughter pT = %.3f --> ", track->Pt());
+      pt += AddDaughters(cand2, daughters);
+    }
+    else {
+      if (!track->InheritsFrom("AliAODTrack")) {
+        Printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.");
+        continue;
+      }
+      //Printf("Daughter pT = %.3f", track->Pt());
+      daughters.AddLast(track);
+      pt += track->Pt();
+      ntot++;
+    }
+  }
+
+  //Printf("Total pt of the daughters = %.3f", pt);
+  
+  return pt;
 }
