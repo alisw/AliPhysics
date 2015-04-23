@@ -13,6 +13,7 @@
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 
+class TList;
 class TString;
 class AliVParticle;
 class AliVTrack;
@@ -86,6 +87,8 @@ protected:
   const AliVParticle *IsMCTrueTrack(const AliVTrack *const trk, const AliMCEvent *evnt) const;
   void FillHistogram(const TString &histname, const AliVTrack *const trk, const AliVParticle *assocMC, const AliVEvent * const recev, Bool_t useMCkine, Double_t weight);
   void FillCorrelation(const AliVParticle *const genparticle, const AliVParticle * const recparticle, double weight = 1.);
+  void MatchTriggerPatches(const AliVTrack *rectrack, const TClonesArray *inputpatches, TList &outputpatches) const;
+  Bool_t HasMatchedPatchOfType(TString triggertype, const TList & patches) const;
 
   AliEMCalPtTaskVTrackSelection *   fTrackSelection;          ///< Track selection cuts used in the analysis
   Bool_t                            fSwapEta;                 ///< Swap eta sign
