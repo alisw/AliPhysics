@@ -90,6 +90,14 @@ int main(int argc, char **argv) {
   Float_t  kChi2Max; 		// = 1.  Maximum chi2 
   std::string runType;
   std::string configFile;
+  Bool_t runFound = kFALSE;
+
+
+  if(getenv("DATE_RUN_TYPE") == NULL){
+  	printf("DATE_RUN_TYPE enviroment variable undefined");
+	return -1;
+	}
+  
 
   status = daqDA_DB_getFile("AD0_Runtypes.config","AD0_Runtypes.config");
   
@@ -97,8 +105,15 @@ int main(int argc, char **argv) {
   else{
   	ifstream infile("AD0_Runtypes.config");
   	while(infile>>runType>>configFile){ 
-  		if(runType == getenv("DATE_RUN_TYPE")) break;
+  		if(runType == getenv("DATE_RUN_TYPE")) {
+			runFound = kTRUE; 
+			break;
+			}
 		}
+	}
+  if(!runFound){
+  	printf("Run type %s not found in config file",getenv("DATE_RUN_TYPE"));
+	return -1;
 	}
   
   status = daqDA_DB_getFile(configFile.c_str(),configFile.c_str());
