@@ -39,6 +39,10 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   
   task->SetCentralityEstimator(centEstimator);
   
+//   char *cDisableTrigger = "",
+//   
+//   task->DisableOnlineTriggerStrings(cDisableTrigger);
+  
   task->SetEventplaneSelector("Q");
   
   task->SetCutMinNCrossedRowsTPC(dNCrossedRowsTPC);
