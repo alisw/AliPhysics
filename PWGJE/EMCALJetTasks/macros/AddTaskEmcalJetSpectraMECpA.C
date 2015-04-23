@@ -45,9 +45,8 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   const Int_t cCHARGEDJETS        = 1;
   const Int_t cNEUTRALJETS        = 2;
 
-  UInt_t typeTPC                = AliAnalysisTaskEmcal::kTPC;
-  UInt_t typeEMC                = AliAnalysisTaskEmcal::kEMCAL;
-
+  char *typeEMC = "EMC";
+  char *typeTPC = "TPC";
     
   float AreaCut = 0.6*radius*radius*TMath::Pi();
 
@@ -70,7 +69,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
   
   if(!(usedTracks=="")){
-    cout << "USEDTRACKS EXISTS" << usedTracks <<endl;
+    //cout << "USEDTRACKS EXISTS" << usedTracks <<endl;
     AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
 
     AliEmcalJetTask* jetFinderTaskChBackall = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt,0.01,"Jets_allpt");
