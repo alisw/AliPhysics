@@ -24,6 +24,8 @@
 #include "AliPPVsMultUtils.h"
 #include <TFile.h>
 #include "AliAODHeader.h"
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 
 
 ClassImp(AliPPVsMultUtils)
@@ -230,10 +232,11 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliVEvent *event, TString lM
             fBoundaryHisto_V0SB -> GetBinContent( fBoundaryHisto_V0SB->FindBin( MinVal( multV0Apartial / fAverageAmplitudes->GetBinContent(3) , multV0Cpartial / fAverageAmplitudes->GetBinContent(4) ) ) );
 
     if ( lEmbedEventSelection ) {
+        if(IsMinimumBias                    ( event ) == kFALSE ) lreturnval = -201;
         if(IsINELgtZERO                     ( event ) == kFALSE ) lreturnval = -200;
         if(IsAcceptedVertexPosition         ( event ) == kFALSE ) lreturnval = -199;
         if(IsNotPileupSPDInMultBins         ( event ) == kFALSE ) lreturnval = -198;
-	if(HasConsistentSPDandTrackVertices ( event ) == kFALSE ) lreturnval = -197;
+        if(HasConsistentSPDandTrackVertices ( event ) == kFALSE ) lreturnval = -197;
     }
 
     return lreturnval;
@@ -500,6 +503,16 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
 }
 
 //______________________________________________________________________
+Bool_t AliPPVsMultUtils::IsMinimumBias(AliVEvent* event)
+{
+    //Code to reject events that aren't kMB
+    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isSelected = 0;
+    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+    return isSelected;
+}
+
+//______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsINELgtZERO(AliVEvent *event)
 //Event selection snippet
 {
@@ -600,14 +613,11 @@ Long_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event)
     //It's consistent until proven otherwise...
     Long_t lReturnValue = -6; //Stuff went very wrong = -20
 
-    //Getting around to the vertex -> typecast to ESD/AOD
-    const AliVVertex *lPrimaryVtxTracks = NULL;
-
     /* get ESD vertex */
     if (event->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
         if (!esdevent) return kFALSE;
-	//It should always be this easy...
+        //It should always be this easy...
         const AliESDVertex *lPrimaryVtxTracks = esdevent->GetPrimaryVertexTracks();
         if (!lPrimaryVtxTracks->GetStatus()) {
             //If no track vertex available, fall back on kTracklets
@@ -624,10 +634,10 @@ Long_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event)
 
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
         Long_t lStoredRefMult = header->GetRefMultiplicityComb08();
-	// (-1) -> kept, user might discard, but will be killed anyhow by ev. sel. 
-	// (-2) -> kept, user might discard, but will be killed anyhow by ev. sel. 
-	// (-3) -> only if old AOD, but then -> recompute
-	// (-4) -> kept, user might discard, but will be killed anyhow by ev. sel. 
+        // (-1) -> kept, user might discard, but will be killed anyhow by ev. sel.
+        // (-2) -> kept, user might discard, but will be killed anyhow by ev. sel.
+        // (-3) -> only if old AOD, but then -> recompute
+        // (-4) -> kept, user might discard, but will be killed anyhow by ev. sel.
 
         //Hack: if this is -3, this is an old AOD filtering and we need to fall back on tracklets.
         //Let's count them...
@@ -675,7 +685,8 @@ Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event)
     if ( IsNotPileupSPDInMultBins           ( event ) == kTRUE &&
             IsINELgtZERO                    ( event ) == kTRUE &&
             IsAcceptedVertexPosition        ( event ) == kTRUE &&
-            HasConsistentSPDandTrackVertices( event ) == kTRUE
+            HasConsistentSPDandTrackVertices( event ) == kTRUE &&
+            IsMinimumBias                   ( event ) == kTRUE
        ) lReturnValue = kTRUE;
     return lReturnValue;
 }
