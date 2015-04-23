@@ -79,6 +79,7 @@ fMCEventplaneDist(0),
 fCorrelEventplaneMCDATA(0),
 fCorrelEventplaneDefaultCorrected(0),
 fEventplaneSubtractedPercentage(0),
+fChargeOverPtRuns(0),
 // cross check for event plane resolution
 fEPDistCent(0),
 fPhiCent(0),
@@ -93,10 +94,12 @@ fMCRecTracksMult(0),
 fMCGenTracksMult(0),
 fCrossCheckFilterBitPhiCent(0),
 fTriggerStringsFired(0),
+fTriggerStringComplete(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
 fCentEstimator("V0M"),
+fDisabledTriggerString(""),
 // event cut variables
 fCutMaxZVertex(10.),  
 // track kinematic cut variables
@@ -633,6 +636,14 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fEventplaneSubtractedPercentage->GetYaxis()->SetTitle("centrality");
   fEventplaneSubtractedPercentage->Sumw2();
   
+  fChargeOverPtRuns = new TH2F("fChargeOverPtRuns","fChargeOverPtRuns",2000, -10, 10, fRunNumberNbins-1, fBinsRunNumber );
+  fChargeOverPtRuns->GetXaxis()->SetTitle("q/#it{p}_{T}");
+  fChargeOverPtRuns->GetYaxis()->SetTitle("runnumber");
+  char cChargeOverPtTitle[255];
+  snprintf(cChargeOverPtTitle, 255, "%.2f < pT < %.2f, %.2f < #eta < %.2f",GetCutPtMin(), GetCutPtMax(), GetCutEtaMin(), GetCutEtaMax());
+  fChargeOverPtRuns->SetTitle(cChargeOverPtTitle);
+  fChargeOverPtRuns->Sumw2();
+  
   // cross check for event plane resolution
   fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
@@ -700,6 +711,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fTriggerStringsFired->GetYaxis()->SetTitle("number of fired triggers");
   fTriggerStringsFired->Sumw2();
   
+  fTriggerStringComplete = new TH1F("fTriggerStringComplete","fTriggerStringComplete",15,0,15);
+  fTriggerStringComplete->SetBit(TH1::kCanRebin);
+  fTriggerStringComplete->GetYaxis()->SetTitle("number of events");
+  fTriggerStringComplete->Sumw2();
+  
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaPhiCent);
@@ -729,10 +745,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   if(AreCrossCheckCorrelationHistosEnabled())
   {
 	for(Int_t i = 0; i < cqMax; i++)
-  	{   
-		fOutputList->Add(fCrossCheckAll[i]);
-		fOutputList->Add(fCrossCheckAcc[i]);
-  	}
+	{   
+	  fOutputList->Add(fCrossCheckAll[i]);
+	  fOutputList->Add(fCrossCheckAcc[i]);
+	}
   }
   fOutputList->Add(fCutPercClusters);
   fOutputList->Add(fCutPercCrossed);
@@ -750,6 +766,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fCorrelEventplaneDefaultCorrected);
   fOutputList->Add(fEventplaneSubtractedPercentage);
   
+  fOutputList->Add(fChargeOverPtRuns);
+  
   fOutputList->Add(fEPDistCent);
   fOutputList->Add(fPhiCent);
   fOutputList->Add(fPcosEPCent);
@@ -766,6 +784,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fCrossCheckFilterBitPhiCent);
   
   fOutputList->Add(fTriggerStringsFired);
+  fOutputList->Add(fTriggerStringComplete);
   
   StoreCutSettingsToHistogram();
   
@@ -838,9 +857,21 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   // check, which trigger has been fired
   inputHandler = (AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  bIsEventSelectedMB = ( inputHandler->IsEventSelected() & AliVEvent::kMB);
-  bIsEventSelectedSemi = ( inputHandler->IsEventSelected() & AliVEvent::kSemiCentral);
-  bIsEventSelectedCentral = ( inputHandler->IsEventSelected() & AliVEvent::kCentral);
+  // only take tracks of events, which are triggered
+  bIsEventSelected = ( inputHandler->IsEventSelected() & GetCollisionCandidates() );
+  if(!bIsEventSelected) { return; }
+  
+  //   Bool_t isMB = (event->GetTriggerMask() & (ULong64_t(1)<<1));
+  //   Bool_t isCentral = (event->GetTriggerMask() & (ULong64_t(1)<<4));
+  //   Bool_t isSemiCentral = (event->GetTriggerMask() & (ULong64_t(1)<<7));
+  
+  //   bIsEventSelectedMB = ( inputHandler->IsEventSelected() & AliVEvent::kMB);
+  //   bIsEventSelectedSemi = ( inputHandler->IsEventSelected() & AliVEvent::kSemiCentral);
+  //   bIsEventSelectedCentral = ( inputHandler->IsEventSelected() & AliVEvent::kCentral);
+  
+  bIsEventSelectedMB = (eventAOD->GetTriggerMask() & (ULong64_t(1)<<1));
+  bIsEventSelectedCentral = (eventAOD->GetTriggerMask() & (ULong64_t(1)<<4));
+  bIsEventSelectedSemi = (eventAOD->GetTriggerMask() & (ULong64_t(1)<<7));
   
   if(bIsEventSelectedMB || bIsEventSelectedSemi || bIsEventSelectedCentral) fTriggerStatistics->Fill("all triggered events",1);
   if(bIsEventSelectedMB) { fTriggerStatistics->Fill("MB trigger",1); nTriggerFired++; }
@@ -848,17 +879,33 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if(bIsEventSelectedCentral) { fTriggerStatistics->Fill("Central trigger",1); nTriggerFired++; }
   if(nTriggerFired == 0) { fTriggerStatistics->Fill("No trigger",1); }
   
-  bIsEventSelected = ( inputHandler->IsEventSelected() & GetCollisionCandidates() );
+  //   cout << "Fired Trigger Classes: " << eventAOD->GetFiredTriggerClasses().Data() << endl;
   
-  // only take tracks of events, which are triggered
-  if(nTriggerFired == 0) { return; } 
+  TString sFiredTrigger = eventAOD->GetFiredTriggerClasses();
+  
+  // do not use some of the triggers
+  TString sDisabledOnlineTrigger = GetDisabledOnlineTrigger();
+  TObjArray *oaDisabledTrigger = sDisabledOnlineTrigger.Tokenize(" ");
+  for(Int_t iString = 0; iString < oaDisabledTrigger->GetEntries(); iString++)
+  {
+	TObjString *os = (TObjString*)oaDisabledTrigger->At(iString);
+	if(sFiredTrigger.Contains(os->GetString())) return;
+  }
+  
+  // store trigger strings to histogram
+  TObjArray *oaFiredTrigger = sFiredTrigger.Tokenize(" ");
+  for(Int_t iString = 0; iString < oaFiredTrigger->GetEntries(); iString++)
+  {
+	TObjString *os = (TObjString*)oaFiredTrigger->At(iString);
+	fTriggerStringsFired->Fill(os->GetString().Data(),1);
+  }
+  
+  fTriggerStringComplete->Fill(sFiredTrigger.Data(), 1);
   
   
-  //   if( !bIsEventSelected || nTriggerFired>1 ) return;
-  
+  //   if(nTriggerFired == 0) { return; }   
+  //   if( !bIsEventSelected || nTriggerFired>1 ) return;  
   //   fEventStatistics->Fill("events with only coll. cand.", 1);
-  
-  
   
   // check if there is a stack, if yes, then do MC loop
   TList *list = eventAOD->GetList();
@@ -887,24 +934,14 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   }
   
   AliCentrality* aCentrality = eventAOD->GetCentrality();
-//   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
+  //   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
   Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
- 
-  //cout << "Fired Trigger Classes: " << eventAOD->GetFiredTriggerClasses().Data() << endl;
   
-  TString sFiredTrigger = eventAOD->GetFiredTriggerClasses();
-  TObjArray *oaFiredTrigger = sFiredTrigger.Tokenize(" ");
-  for(Int_t iString = 0; iString < oaFiredTrigger->GetEntries(); iString++)
-  {
-	TObjString *os = (TObjString*)oaFiredTrigger->At(iString);
-	fTriggerStringsFired->Fill(os->GetString().Data(),1);
-  }
-
   if( dCentrality < 0 ) return;
   
   // protection for bias on pt spectra if all triggers selected
   if( (bIsEventSelectedCentral)  && (dCentrality > 10) ) return;
-  if( (bIsEventSelectedSemi) && ((dCentrality < 20) || (dCentrality > 50))) return;
+  //   if( (bIsEventSelectedSemi) && ((dCentrality < 20) || (dCentrality > 50))) return;
   
   fEventStatistics->Fill("after centrality selection",1);
   
@@ -1219,6 +1256,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  
 	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
 	  fDeltaPhiSymCent->Fill(dTrackDeltaphiPtEtaPhiCent[0], dCentrality);
+	  
+	  fChargeOverPtRuns->Fill(track->Charge()/track->Pt(), (Double_t)eventAOD->GetRunNumber());
 	}
   } // end track loop
   
@@ -1264,29 +1303,29 @@ Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP, D
   Double_t dPhi = 0;
   dPhi = TMath::Abs(phiTrack - phiEP);
   
-//   if( dPhi <= TMath::Pi() )
-//   {
-// 	return dPhi;
-//   }
-  if( dPhi > TMath::Pi() )
-  {
-	dPhi = 2.*TMath::Pi() - dPhi;
-// 	return dPhi;
-  }
-  
-  if( dPhi > dMaxDeltaPhi)
-  {
-	dPhi = 2.*dMaxDeltaPhi - dPhi;
-  }
-  
-  if(dPhi > dMaxDeltaPhi)
-  {
-    Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f, maxDeltaPhi = %.4f", dPhi, phiTrack, phiEP, dMaxDeltaPhi);
-  }
-  
-//   return -9999.;
-  
-  return dPhi;
+  //   if( dPhi <= TMath::Pi() )
+  //   {
+	// 	return dPhi;
+	//   }
+	if( dPhi > TMath::Pi() )
+	{
+	  dPhi = 2.*TMath::Pi() - dPhi;
+	  // 	return dPhi;
+	}
+	
+	if( dPhi > dMaxDeltaPhi)
+	{
+	  dPhi = 2.*dMaxDeltaPhi - dPhi;
+	}
+	
+	if(dPhi > dMaxDeltaPhi)
+	{
+	  Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f, maxDeltaPhi = %.4f", dPhi, phiTrack, phiEP, dMaxDeltaPhi);
+	}
+	
+	//   return -9999.;
+	
+	return dPhi;
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::SetRelativeCuts(AliAODEvent *event)
