@@ -1135,16 +1135,20 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
       }
       nEvtRun = TMath::Nint(fRatio * trigger->Value());
     }
-    
-    Int_t nChunk = 1;
-    
-    while (nEvtRun/nChunk+0.5 > MaxEventsPerChunk())
-    {
-      ++nChunk;
+
+    Int_t nChunk = nEvtRun/MaxEventsPerChunk();
+    if ( nChunk == 0 ) nChunk++;
+    Int_t nEvtChunk = 0, delta = MaxEventsPerChunk();
+    for ( Int_t tmpnChunk=nChunk; tmpnChunk<=nChunk+1; tmpnChunk++ ) {
+      Int_t tmpnEventChunk = TMath::Min(nEvtRun/tmpnChunk,MaxEventsPerChunk());
+      Int_t tmpDelta = TMath::Abs(tmpnChunk*tmpnEventChunk-nEvtRun);
+      if ( tmpDelta < delta ) {
+        nChunk = tmpnChunk;
+        nEvtChunk = tmpnEventChunk;
+        delta = tmpDelta;
+      }
     }
-    
-    Int_t nEvtChunk = TMath::Nint(nEvtRun/nChunk + 0.5);
-    
+
     nJobs += nChunk;
     
     nEvts += nChunk*nEvtChunk;
