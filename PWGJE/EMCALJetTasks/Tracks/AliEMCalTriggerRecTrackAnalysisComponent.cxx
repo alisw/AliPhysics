@@ -219,9 +219,9 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
     if(testtrack->GetEMCALcluster() >= 0 && (clust = dynamic_cast<AliVCluster *>(data->GetClusterContainer()->At(testtrack->GetEMCALcluster()))))
       hasCluster = kTRUE;
 
-    // Try to match to EMCAL patches
+    // Try to match to EMCAL patches (only in case the event is triggered)
     TList patches;
-    MatchTriggerPatches(track, data->GetTriggerPatchContainer(), patches);
+    if(triggernames.size()) MatchTriggerPatches(track, data->GetTriggerPatchContainer(), patches);
 
     // Fill histograms
     for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); name++){
