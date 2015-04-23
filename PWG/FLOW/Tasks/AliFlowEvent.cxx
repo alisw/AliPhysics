@@ -111,7 +111,7 @@ AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
   //assignment operator
   if (&event==this) return *this;       // check self-assignment
 
-  fApplyRecentering = event.fApplyRecentering; 
+  fApplyRecentering = event.fApplyRecentering;
   fCachedRun = event.fCachedRun; 
   fVZEROcentralityBin = event.fVZEROcentralityBin;
   fEvent = 0x0; // should never be copied
@@ -259,7 +259,7 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20),  fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -272,7 +272,10 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
             }
         }
     }
-   
+ 
+  //set run number
+  if(anInput->GetRunNumber()) fRun = anInput->GetRunNumber();
+ 
   //Fills the event from the ESD
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
@@ -332,6 +335,10 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
             }
         }
     }
+ 
+  //set run number
+  if(anInput->GetRunNumber()) fRun = anInput->GetRunNumber();
+ 
   //Fills the event from the AOD
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
 
@@ -795,6 +802,9 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
   AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
   AliFlowTrack* pTrack=NULL;
+ 
+  //set run
+ if(rpCuts->GetRun()) fRun = rpCuts->GetRun();
  
   // if the source for rp's or poi's is the VZERO detector, get the calibration 
   // and set the calibration parameters
