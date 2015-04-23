@@ -60,6 +60,7 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
   void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
+  void SetEnablePtCorrection(bool cut) { fEnablePtCorrection = cut; }
   
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -108,6 +109,7 @@ private:
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
   Int_t                 fTOFnBins;              ///<  Number of bins used for the TOF mass spectra
   
+  Bool_t                fEnablePtCorrection;    ///<  If true enables the MC based \f$p_{T}\f$ correction
   Bool_t                fRequireITSrefit;       ///<  Cut on tracks: set true to require ITS refit
   Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
   Bool_t                fRequireNoKinks;        ///<  Cut on tracks: set true to exclude tracks from kink vertices
