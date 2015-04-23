@@ -32,6 +32,8 @@
 #include <TPaveText.h>
 #include <TLatex.h>
 #include <TString.h>
+#include <TLegend.h>
+#include <TStyle.h>
 
 // --- Standard library ---
 
@@ -343,7 +345,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					test = 0.3;
 					if(NbadChannels == 0){
 						QAbox->SetFillColor(kOrange);
-						QAbox->AddText("Bad pedestal for channel ");
+						QAbox->AddText("Unstable pedestal for channel ");
 						}
 					badChannels += i;
 					badChannels += ", ";
@@ -381,7 +383,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					test = 0.3;
 					if(NbadChannels == 0){
 						QAbox->SetFillColor(kOrange);
-						QAbox->AddText("Bad pedestal for channel ");
+						QAbox->AddText("Unstable pedestal for channel ");
 						}
 					badChannels += i;
 					badChannels += ", ";
@@ -492,7 +494,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
     //
     if ( !fImage[esIndex] ) {
-    	if(esIndex != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2000,2820);
+    	if(esIndex != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2000,3500);
 	else fImage[esIndex] = new TCanvas(title, title,400,600);
 	}
     //
@@ -521,6 +523,14 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     topText->SetNDC();
     topText->Draw();
     
+    gStyle->SetOptStat(0);
+    gStyle->SetLabelSize(1.1,"xyz");
+    gStyle->SetLabelFont(42,"xyz"); 
+    gStyle->SetLabelOffset(0.01,"xyz");
+    gStyle->SetTitleFont(42,"xyz");  
+    gStyle->SetTitleOffset(1.0,"xyz");  
+    gStyle->SetTitleSize(1.1,"xyz");  
+    
     if(esIndex != AliRecoParam::kCalib){
 
     	TVirtualPad* pCharge = 0;
@@ -529,88 +539,167 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	TVirtualPad* pCoinc  = 0;
     	TVirtualPad* pPed  = 0;
     	TVirtualPad* pMaxCh  = 0;
-	TVirtualPad* pFlagCorr  = 0;
+	TVirtualPad* pMeanTime  = 0;
     	TVirtualPad* pTrigger  = 0;
+	
+	const UInt_t nRows = 7;
+	const UInt_t nLargeRows = 1;
+	Bool_t isLarge[] = {0,1,0,0,0,0,0};
+	const Double_t timesLarger = 2.0;
+	Double_t xRow[nRows];
+	xRow[0] = 0.95;
+	Double_t xStep = 0.95/((nRows-nLargeRows)+ timesLarger*nLargeRows);
+	for(Int_t iRow = 1; iRow<nRows; iRow++){
+		if(!isLarge[iRow-1]) xRow[iRow] = xRow[iRow-1]-xStep;
+		else xRow[iRow] = xRow[iRow-1]-timesLarger*xStep;
+		}
+	
+	UInt_t iRow = 0;	
 
-    	TPad* pCh = new TPad("Charge", "Charge Pad", 0, 0.83, 1.0, 0.95);
+    	TPad* pCh = new TPad("Charge", "Charge Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pCh->Draw();
     	pCharge = pCh;
+	iRow++;
 
-    	TPad* pT = new TPad("Time", "Time Pad", 0, 0.59, 1.0, 0.83);
+    	TPad* pT = new TPad("Time", "Time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pT->Draw();
     	pTime = pT;
+	iRow++;
+	
+	TPad* pMT = new TPad("Mean time", "Mean time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
+    	fImage[esIndex]->cd();
+    	pMT->Draw();
+    	pMeanTime = pMT;
+	iRow++;
     
-    	TPad* pCl = new TPad("Clock", "Clock Pad", 0, 0.47, 1.0, 0.59);
+    	TPad* pCl = new TPad("Clock", "Clock Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pCl->Draw();
     	pClock = pCl;
+	iRow++;
     
-    	TPad* pCo = new TPad("Coincidences", "Coincidences Pad", 0, 0.23, 1.0, 0.35);
+    	TPad* pCo = new TPad("Coincidences", "Coincidences Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pCo->Draw();
     	pCoinc = pCo;
+	iRow++;
     
-    	TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0, 0.35, 0.5, 0.47);
+    	TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0, xRow[iRow+1], 0.5, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pP->Draw();
     	pPed = pP;
     
-    	TPad* pM = new TPad("Max Charge", "Max Charge Pad", 0.5, 0.35, 1.0, 0.47);
+    	TPad* pM = new TPad("Max Charge", "Max Charge Pad", 0.5, xRow[iRow+1], 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pM->Draw();
     	pMaxCh = pM;
+	iRow++;
 	
-	TPad* pFC = new TPad("Flag correlations", "Flag correlations Pad", 0.25, 0.11, 0.75, 0.23);
-    	fImage[esIndex]->cd();
-    	pFC->Draw();
-    	pFlagCorr = pFC;
-	
-	TPad* pTr = new TPad("Triggers", "Triggers Pad", 0, 0.0, 1.0, 0.11);
+	TPad* pTr = new TPad("Triggers", "Triggers Pad", 0, 0.0, 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pTr->Draw();
     	pTrigger = pTr;
 
-    	pCharge->Divide(3, 1);
+    	pCharge->Divide(2, 1);
     	pTime->Divide(4, 1);
     	pClock->Divide(4, 1);
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
     	pMaxCh->Divide(2, 1);
-	pFlagCorr->Divide(2, 1);
+	pMeanTime->Divide(4, 1);
 	
-  
-    	TIter nexthist(&tmpArr);
-    	Int_t npad = 1; 
     	TH1* histo = 0;
-    	while ( npad < 23) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
-      		histo=(TH1*)nexthist();
-      		histo->SetStats(kFALSE);
-      		TVirtualPad* pad = 0;
-       
-      		if(npad<4) pad = pCharge->cd(npad);
-      		if(npad>3 && npad<8) pad = pTime->cd(npad-3);
-      		if(npad>7 && npad<12) pad = pClock->cd(npad-7);
-      		if(npad>11 && npad<16) pad = pCoinc->cd(npad-11);
-      		if(npad>15 && npad<18) pad = pPed->cd(npad-15);
-      		if(npad>17 && npad<20) pad = pMaxCh->cd(npad-17);
-		if(npad>19 && npad<22) pad = pFlagCorr->cd(npad-19);
-		if(npad == 22) pad = pTrigger->cd();
-      
-      		pad->SetRightMargin(0.10);
-      		pad->SetLeftMargin(0.10);
-      		pad->SetBottomMargin(0.10);
-      
-      		if(npad ==1 || npad==2 || npad==12 || npad==13 || npad==14 || npad==15) gPad->SetLogy();
-      		if(npad ==3 || npad ==18 || npad ==19 || npad ==20 || npad ==21) gPad->SetLogz();
-      		histo->DrawCopy("colz");  
-     
-      		npad++; 
-    	}
+	TH1* histoADA = 0;
+	TH1* histoADC = 0;
+      	TVirtualPad* pad = 0;
+       		
+	//Charge pad
+      	pad = pCharge->cd(1);
+	gPad->SetLogy();
+	histoADA=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADA);
+	histoADA->DrawCopy();
+	histoADC=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADC);
+	histoADC->DrawCopy("same");
+	TLegend *myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
+	myLegend1->SetTextFont(42);
+  	myLegend1->SetBorderSize(0);
+  	myLegend1->SetFillStyle(0);
+  	myLegend1->SetFillColor(0);
+  	myLegend1->SetMargin(0.25);
+  	myLegend1->SetTextSize(0.04);
+  	myLegend1->SetEntrySeparation(0.5);
+	myLegend1->AddEntry(histoADA,"ADA","l");
+	myLegend1->AddEntry(histoADC,"ADC","l");
+	myLegend1->Draw();
+	pad = pCharge->cd(2);
+	gPad->SetLogz();
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoI);
+	histo->DrawCopy("COLZ");
+	//Time pad
+	for(Int_t iHist = 0; iHist<4; iHist++){
+		pad = pTime->cd(iHist+1);
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTime+iHist);
+		histo->DrawCopy("COLZ");
+		}
+	//Clock pad
+	for(Int_t iHist = 0; iHist<4; iHist++){
+		pad = pClock->cd(iHist+1);
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist);
+		histo->DrawCopy("COLZ");
+		}
+	//Coincidences pad
+	for(Int_t iHist = 0; iHist<2; iHist++){
+		pad = pCoinc->cd(iHist+1);
+		gPad->SetLogy();
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist);
+		histo->DrawCopy();
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADC+2*iHist);
+		histo->DrawCopy("same");
+		myLegend1->Draw();
+		}
+	for(Int_t iHist = 0; iHist<2; iHist++){
+		pad = pCoinc->cd(iHist+3);
+		gPad->SetLogz();
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincCorr+iHist);
+		histo->DrawCopy("COLZ");
+		}
+	//Pedestal monitoring pad
+	for(Int_t iHist = 0; iHist<2; iHist++){
+		pad = pPed->cd(iHist+1);
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalDiffInt0+iHist);
+		histo->DrawCopy("COLZ");
+		}
+	//Saturation monitoring pad
+	for(Int_t iHist = 0; iHist<2; iHist++){
+		pad = pMaxCh->cd(iHist+1);
+		gPad->SetLogz();
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoIInt0+iHist);
+		histo->DrawCopy("COLZ");
+		}
+	//Trigger inputs pad
+	pad = pTrigger->cd();
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTriggers);
+	gPad->SetLogy();
+	histo->DrawCopy();
+	//Mean time pad
+	pad = pMeanTime->cd(1);
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
+	histo->DrawCopy();
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
+	histo->DrawCopy("same");
+	myLegend1->Draw();
+	for(Int_t iHist = 0; iHist<3; iHist++){
+		pad = pMeanTime->cd(iHist+2);
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeDiff+iHist);
+		histo->DrawCopy("COLZ");
+		}	
+
     }
     else{
 	TVirtualPad* pPed  = 0;
+	TH1* histo = 0;
 	
     	TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0.0, 0.1, 1.0, 0.95);
     	fImage[esIndex]->cd();
@@ -618,26 +707,20 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pPed = pP;
 	pPed->Divide(1, 2);
 	
+	TVirtualPad* pad = 0;
 	
-	TIter nexthist(&tmpArr);
-    	Int_t npad = 1; 
-    	TH1* histo = 0;
-    	while ( npad < 25) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
-      		histo=(TH1*)nexthist();
-      		histo->SetStats(kFALSE);
-      		TVirtualPad* pad = 0;
-        	if((npad>22 && npad<25)) {
-			pad = pPed->cd(npad-22);
-      			pad->SetRightMargin(0.10);
-      			pad->SetLeftMargin(0.10);
-      			pad->SetBottomMargin(0.10);
-      			histo->DrawCopy("colz"); 
-			} 
-      		npad++; 
-    	}
+      	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt0);
+      	histo->SetStats(kFALSE);
+	pad = pPed->cd(1);
+      	histo->DrawCopy("colz");
+	
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt0);
+      	histo->SetStats(kFALSE); 
+	pad = pPed->cd(2);
+	histo->DrawCopy("colz");
     }
     
-    //fImage[esIndex]->SaveAs(Form("QAcanvas%d.png",esIndex));
+    fImage[esIndex]->SaveAs(Form("QAcanvas%d.png",esIndex));
     fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
   }
 }
