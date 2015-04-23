@@ -62,9 +62,24 @@ AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
   TString clustersCorrName = "CaloClustersCorr";
   TString rhoName = "";
 
+  enum AlgoType {kKT, kANTIKT};
+  enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
+  int doBkg = 1;
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName,clustersCorrName,1,0.4,1,0.15,0.300); // anti-kt
+  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName,clustersCorrName,kANTIKT,0.4,kFULLJETS,0.15,0.300); // anti-kt
+
+  if (doBkg) {
+    rhoName = "Rho";
+    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(tracksName, clustersCorrName, kKT, 0.4, kFULLJETS, 0.150, 0.300);
+
+    TString kTpcKtJetsName = jetFinderTaskKT->GetName();
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+    rhotask = (AliAnalysisTaskRho*) AddTaskRho(kTpcKtJetsName, tracksName, clustersCorrName, rhoName, 0.4, "TPC", 0.01, 0, 0, 2, kTRUE);
+    //rhotask__->SetScaleFunction(sfunc);
+    //rhotask->SelectCollisionCandidates(kPhysSel);
+    rhotask->SetHistoBins(100,0,250);
+  }
 
   ntracks = tracksName;
   nclusters = clustersCorrName;
