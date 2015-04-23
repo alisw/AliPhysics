@@ -5,6 +5,7 @@
 #include "AD/macros/MakeADPMGainsEntry.C"
 #include "AD/macros/MakeADCalibEntry.C"
 #include "AD/macros/MakeADTimeSlewingEntry.C"
+#include "AD/macros/MakeADQAParamEntry.C"
 
 void MakeADCDBObjects()
 {
@@ -15,5 +16,5 @@ void MakeADCDBObjects()
   MakeADPMGainsEntry();       // AD/Calib/PMGains                
   MakeADCalibEntry();         // AD/Calib/Data                   
   MakeADTimeSlewingEntry();   // AD/Calib/TimeSlewing            
-
+  MakeADQAParamEntry();       // AD/Calib/QAParam
 }

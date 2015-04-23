@@ -13,6 +13,8 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+install(DIRECTORY macros DESTINATION HMPID)
+
 # HMPID libraries
 add_subdirectory(HMPIDbase)
 add_subdirectory(HMPIDrec)
