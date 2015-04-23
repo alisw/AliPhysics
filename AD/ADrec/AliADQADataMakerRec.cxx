@@ -829,10 +829,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Int_t nbgFlag = 0;
       
       for(Int_t iEvent=0; iEvent<21; iEvent++){
-	charge = rawStream->GetPedestal(iChannel,iEvent);
-	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
-	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
-	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
+	charge = rawStream->GetPedestal(iChannel,20-iEvent);
+	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,20-iEvent);
+	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel, 20-iEvent);
+	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,20-iEvent );
 	if(bbFlag) nbbFlag++;
 	if(bgFlag) nbgFlag++;
 	
