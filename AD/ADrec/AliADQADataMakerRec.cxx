@@ -490,8 +490,12 @@ void AliADQADataMakerRec::InitRaws()
   // Creation of Total Charge Histograms
   h1d = new TH1F("H1D_Charge_ADA", "Total Charge in ADA;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADA, !expert, image, saveCorr);   iHisto++;
+  h1d->SetLineWidth(2);
+  h1d->SetLineColor(kBlue);
   h1d = new TH1F("H1D_Charge_ADC", "Total Charge in ADC;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADC, !expert, image, saveCorr);   iHisto++;
+  h1d->SetLineWidth(2);
+  h1d->SetLineColor(kRed);
   h1d = new TH1F("H1D_Charge_AD", "Total Charge in AD;Charge [ADC counts];Counts", 2*kNChargeSideBins, kChargeSideMin, 1+2*kNChargeSideBins) ;  
   Add2RawsList(h1d,kChargeAD, !expert,  !image, !saveCorr);   iHisto++;
    
@@ -538,19 +542,24 @@ void AliADQADataMakerRec::InitRaws()
 
   h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
-	
-  h1d = new TH1F("H1D_ADA_Time", "ADA Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
-  Add2RawsList(h1d,kADATime, expert, !image, !saveCorr); iHisto++;
-	
-  h1d = new TH1F("H1D_ADC_Time", "ADC Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
-  Add2RawsList(h1d,kADCTime, expert, !image, !saveCorr); iHisto++;
-	
-  h1d = new TH1F("H1D_Diff_Time","Diff ADA-ADC Time;Time [ns];Counts",kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
-  Add2RawsList(h1d,kDiffTime, expert, !image, !saveCorr); iHisto++;
 
-  h2d = new TH2F("H2D_TimeADA_ADC", "Mean Time in ADC versus ADA;Time ADA [ns];Time ADC [ns]", kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax) ;  
-  Add2RawsList(h2d,kTimeADAADC, expert, !image, !saveCorr);   iHisto++;
-  
+  //Mean time histograms	
+  h1d = new TH1F("H1D_MeanTimeADA", "ADA Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  Add2RawsList(h1d,kMeanTimeADA, expert, !image, !saveCorr); iHisto++;
+	
+  h1d = new TH1F("H1D_MeanTimeADC", "ADC Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  Add2RawsList(h1d,kMeanTimeADC, expert, !image, !saveCorr); iHisto++;
+	
+  h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t{C} [ns];Counts",kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
+  Add2RawsList(h1d,kMeanTimeDiff, expert, !image, !saveCorr); iHisto++;
+
+  h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins, kTdcTimeMin,kTdcTimeMax) ;  
+  Add2RawsList(h2d,kMeanTimeCorr, expert, !image, !saveCorr);   iHisto++;
+ 
+  h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t{C} [ns];AD Mean time t_{A} + t{C} [ns]", 1024,-150,150,1024,0,400);  
+  Add2RawsList(h2d,kMeanTimeSumDiff, expert, !image, !saveCorr);   iHisto++;
+ 
+  //Slewing histograms
   h2d = new TH2F("H2D_TimeSlewingOff", "Time Vs Charge (no slewing correction);Leading Time[ns];Charge [ADC counts]", kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax) ;  
   Add2RawsList(h2d,kTimeSlewingOff, expert, !image, !saveCorr);   iHisto++;
   
@@ -699,7 +708,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   UInt_t   itimeADA=0, itimeADC=0;
   Double_t chargeADA=0., chargeADC=0.;
 
-  Double_t diffTime=-100000.;
+  Double_t diffTime=-100000, sumTime = -10000;
   
   Int_t	   pBBmulADA = 0;
   Int_t	   pBBmulADC = 0;
@@ -928,13 +937,20 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     else timeADA = -1024.;
     if(weightADC>1) timeADC /= weightADC;
     else timeADC = -1024.;
-    if(timeADA<1.e-6 || timeADC<1.e-6) diffTime = -1024.;
-    else diffTime = timeADA - timeADC;
+    if(timeADA<1.e-6 || timeADC<1.e-6) {
+    	diffTime = -1024.;
+	sumTime = -1024;
+	}
+    else {
+    	diffTime = timeADA - timeADC;
+	sumTime = timeADA + timeADC;
+	}
     	
-    FillRawsData(kADATime,timeADA);
-    FillRawsData(kADCTime,timeADC);
-    FillRawsData(kDiffTime,diffTime);
-    FillRawsData(kTimeADAADC,timeADA,timeADC);
+    FillRawsData(kMeanTimeADA,timeADA);
+    FillRawsData(kMeanTimeADC,timeADC);
+    FillRawsData(kMeanTimeDiff,diffTime);
+    FillRawsData(kMeanTimeCorr,timeADA,timeADC);
+    FillRawsData(kMeanTimeSumDiff,diffTime,sumTime);
 
     FillRawsData(kMultiADA,mulADA);
     FillRawsData(kMultiADC,mulADC);
@@ -945,31 +961,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    
     break;
   } // END of SWITCH : EVENT TYPE 
-	
-  TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kMultiADA)->GetName()))) ; 
-  if (p) p->SetVal((double)mulADA) ; 
-
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kMultiADC)->GetName()))) ; 
-  if (p) p->SetVal((double)mulADC) ;                     
-
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeADA)->GetName()))) ; 
-  if (p) p->SetVal((double)chargeADA) ; 
-
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeADC)->GetName()))) ; 
-  if (p) p->SetVal((double)chargeADC) ;                     
-
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeAD)->GetName()))) ; 
-  if (p) p->SetVal((double)(chargeADA + chargeADC)) ;                     
-	                   	
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kADATime)->GetName()))) ; 
-  if (p) p->SetVal((double)timeADA) ; 
-	
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kADCTime)->GetName()))) ; 
-  if (p) p->SetVal((double)timeADC) ;                     
-	
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kDiffTime)->GetName()))) ; 
-  if (p) p->SetVal((double)diffTime) ;                     
-	
+	 
   delete rawStream; rawStream = 0x0;      
   //
   IncEvCountCycleRaws();
