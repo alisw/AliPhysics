@@ -138,10 +138,10 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fHistNCRowsTPCNegK0(0),
   fHistRatioFoundOverFinableTPCK0Pos(0),
   fHistRatioFoundOverFinableTPCK0Neg(0),
-  fHistPiPiDistDaughtersTPCEntrVsMass(0),
+//  fHistPiPiDistDaughtersTPCEntrVsMass(0),
 //Lambda Antilambda
-  fHistPiPDistDaughtersTPCEntrVsMass(0),
-  fHistPiAPDistDaughtersTPCEntrVsMass(0),
+// fHistPiPDistDaughtersTPCEntrVsMass(0),
+// fHistPiAPDistDaughtersTPCEntrVsMass(0),
 //------------MC only histos-----------
   fHistPrimVtxZESDVSNContributorsMC(0),
   fHistPrimVtxZESDTPCVSNContributorsMC(0),
@@ -589,255 +589,254 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
 //________________________________________________________________________
 AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   :AliAnalysisTaskSE(name),
-   fESD(0),
-   fMCev(0),
-   //other objects
-   fESDpid(0),
-   fESDTrackCuts(0),
-   fESDTrackCutsCharged(0),
-   fESDTrackCutsLowPt(0),
-   fOutputContainer(0),
-   //thnf
+  fESD(0),
+  fMCev(0),
+//other objects
+  fESDpid(0),
+  fESDTrackCuts(0),
+  fESDTrackCutsCharged(0),
+  fESDTrackCutsLowPt(0),
+  fOutputContainer(0),
+//thnf
+/*
+  fTHnFK0s(0),
+  fTHnFL(0),
+  fTHnFAL(0),
 
-   /* 
-      fTHnFK0s(0),
-      fTHnFL(0),
-      fTHnFAL(0),
-      fTHnFK0sDauEta(0),
-      fTHnFLDauEta(0),
-      fTHnFALDauEta(0),
-      fTHnFK0sDauPhi(0),
-      fTHnFLDauPhi(0),
-      fTHnFALDauPhi(0),
-   */
-   //event histos
-   fHistITSLayerHits(0),
-   fHistOneHitWithSDD(0),
-   fHistNEvents(0),
-   fHistPrimVtxZESDVSNContributors(0),
-   fHistPrimVtxZESDTPCVSNContributors(0),
-   fHistPrimVtxZESDSPDVSNContributors(0),
-   fHistPrimVtxZESD(0),
-   fHistPrimVtxZESDTPC(0),
-   fHistPrimVtxZESDSPD(0),
-   fHistESDVertexZ(0),
-   fHistMuliplicity(0),
-   fHistMuliplicityRaw(0),
-   fHistCentBinRaw(0),
-   fHistCentBin(0),
-   fHistMultiplicityPrimary(0),
-   fHistNPrim(0),
-   fHistPiPiK0sVsLambdaMass(0),
-   fHistPiPiK0sVsALambdaMass(0),
-   fHistPiPK0sVsLambdaMass(0),
-   fHistPiAPK0sVsALambdaMass(0),
-   fHistPiPALambdaVsLambdaMass(0),
-   fHistPiAPLambdaVsALambdaMass(0),
-   //-----------K0 histos -------------------//
-   fHistPiPiMass(0),
-   fHistPiPiMassVSPt(0),
-   fHistPiPiMassVSPtMCTruth(0),
-   fHistPiPiMassVSPtPosMCTruth(0),
-   fHistPiPiMassVSPtNegMCTruth(0),
-   fHistPiPiMassVSY(0),
-   fHistPiPiPtVSY(0),
- 
-   // fHistPiPiMassVSAlpha(0),
-   fHistPiPiRadiusXY(0),
-   fHistPiPiCosPointAng(0),
-   fHistPiPiDCADaughterPosToPrimVtxVSMass(0),  
-   fHistPiPiDecayLengthVsPt(0),
-   fHistPiPiDecayLengthVsMass(0),
-   fHistPiPiDecayLengthVsCtau(0),
-   fHistPiPiDCADaughters(0), 
-   //    fHistPiPiPtDaughters(0),
-   fHistPiPiDCAVSMass(0),
-   fHistPiPiDCAZVSMass(0),
-   fHistPiPiDCAZPos(0),
-   fHistPiPiDCAZNeg(0),
-   fHistPiPiTrackLengthPosVsMass(0),
-   fHistPiPiTrackLengthNegVsMass(0),  
-   fHistPiPiMonitorCuts(0),
-   fHistPiPiMonitorMCCuts(0),
-   fHistPiPiDecayLengthResolution(0),
-   fHistNclsITSPosK0(0),
-   fHistNclsITSNegK0(0),
-   fHistNclsTPCPosK0(0),
-   fHistNclsTPCNegK0(0),
-   fHistChi2PerNclsITSPosK0(0),
-   fHistChi2PerNclsITSNegK0(0),
-   fHistNCRowsTPCPosK0(0),
-   fHistNCRowsTPCNegK0(0),
-   fHistRatioFoundOverFinableTPCK0Pos(0),
-   fHistRatioFoundOverFinableTPCK0Neg(0),
-   fHistPiPiDistDaughtersTPCEntrVsMass(0),
-   //Lambda Antilambda
-   fHistPiPDistDaughtersTPCEntrVsMass(0),
-   fHistPiAPDistDaughtersTPCEntrVsMass(0),
-   //------------MC only histos-----------
-   fHistPrimVtxZESDVSNContributorsMC(0),
-   fHistPrimVtxZESDTPCVSNContributorsMC(0),
-   fHistPrimVtxZESDSPDVSNContributorsMC(0),
-   fHistMCVertexZ(0),
-   fHistPiPiPDGCode(0),
-   fHistPiPPDGCode(0),
-   fHistPiAPPDGCode(0),
-  
-   // //-- BG of K0s
-   // fHistPiPiGA(0),
-   // fHistPiPiKch(0),
-   // fHistPiPiPhi(0),
-   // fHistPiPiL(0),
-   // fHistPiPiPi0(0),
-   // fHistPiPiPich(0),
-   // fHistPiPiRoh(0),
-   // fHistPiPiOmega(0),
-   // fHistPiPiKStar(0),
-   // fHistPiPiNoMother(0),
-   // fHistPiPiK0s(0),
-   // fHistPiPiK0L(0),
-   // fHistPiPiN(0),
-   // fHistPiPiSigma(0),
-   // fHistPiPiXi(0),
-   // fHistPiPiDelta(0),
-   // fHistPiPiB(0),
-   // fHistPiPiD(0),
-   // fHistPiPiEta(0),
-   // //-- BG of Lambda
-   // fHistPiPGA(0),
-   // fHistPiPKch(0),
-   // fHistPiPK0s(0),
-   // fHistPiPPi0(0),
-   // fHistPiPPich(0),
-   // fHistPiPKStar(0),
-   // fHistPiPN(0),
-   // fHistPiPNoMother(0),
-   // fHistPiPL(0),
- 
-   //cosine of pointing angle of Xi vs pt histos
-   fHistPiPCosPointAngXiVsPt(0),
-   fHistPiAPCosPointAngXiVsPt(0),
-   fHistPiPMassVSPtSecXiMCTruth(0),
-   fHistPiPMassVSPtSecOmegaMCTruth(0),
-   fHistPiAPMassVSPtSecXiMCTruth(0),
-   fHistPiAPMassVSPtSecOmegaMCTruth(0),
-   // fHistUserPtShift(0),
-   //fHistPiPiPhiPosVsPtPosVsMass(0),//xxx
-   //fHistPiPPhiPosVsPtPosVsMass(0),//xxx
-   //fHistPiAPPhiPosVsPtPosVsMass(0),//xxx
-   //selection booleans and values
-   fMCMode(0),
-   fMCTruthMode(0),
-   fSelectInjected(0),
-   fSelectMBMotherMC(0),
-   fCheckNegLabelReco(0),
-   fOnlyFoundRecoV0(0),
-   fUseCentrality(0),
-   fUseCentralityBin(0),
-   fUseCentralityRange(0),
-   fAnapp(0),
-   fRejectPileUpSPD(0),
-   fSelSDD(0),
-   fSelNoSDD(0),
-   fOntheFly(0),
-   fVertexZCut(0),
-   fVtxStatus(0),
-   fNcr(0),              
-   fChi2cls(0),      
-   fTPCrefit(0), 
-   fITSrefit(0),
-   fNcrCh(0),      
-   fChi2clsCh(0),         
-   fTPCrefitCh(0),
-   fITSrefitCh(0),   
-   fNcrLpt(0),            
-   fChi2clsLpt(0),     
-   fTPCrefitLpt(0),
-   fITSrefitLpt(0),
-   fUsePID(0),
-   fUsePIDPion(0),
-   fNSigma(0),
-   fNSigma2(0),
-   fPPIDcut(0),
-   fPtTPCCut(0),
-   fMoreNclsThanRows(0),
-   fMoreNclsThanFindable(0),
-   fMoreNclsThanFindableMax(0),
-   fRatioFoundOverFindable(0),
-   fRatioMaxCRowsOverFindable(0),
-   fChi2PerClusterITS(0),
-   fDistanceTPCInner(0),
-   fMinNCLSITSPos(0),
-   fMinNCLSITSNeg(0),
-   fMaxNCLSITSPos(0),
-   fMaxNCLSITSNeg(0),
-   fSwitchCaseITSCls(0),
-   fCutMITrackLength(0),
-   fCutMICrossedR(0),
-   fCutMITPCncls(0),
-   fCutMITrackLengthLengthF(0),
-   fCutMICrossedRLengthF(0),
-   fRapCutV0(0),
-   fRap(0),
-   fEtaCutMCDaughters(0),
-   fEtaCutMCDaughtersVal(0),
-   fUseXi0(0),
-   fUseXiM(0),
-   fUseOmega(0),
-   fCutRapXi(0),
-   fMinPt(0),
-   fAlfaCut(0),
-   fQtCut(0),
-   fQtCutPt(0),
-   fQtCutPtLow(0),
-   fArmCutK0(0),      
-   fArmCutL(0),
-   fArmQtSlope(0),
-   fExcludeLambdaFromK0s(0),
-   fExcludeK0sFromLambda(0),
-   fExcludePhotonsFromK0s(0),
-   fExcludePhotonsFromLambda(0),
-   fDCAToVertexK0(0),
-   fDCAToVertexL(0),
-   fDCAXK(0),
-   fDCAYK(0),
-   fDCAXL(0),
-   fDCAYL(0),
-   fDCAZ(0),
-   fDCADaughtersL(0),
-   fDCADaughtersAL(0),
-   fDCADaughtersK0(0),
-   fDCADaughtersToVtxLarge(0),
-   fDCADaughtersToVtxSmall(0),
-   fDecayRadXYMin(0),
-   fDecayRadXYMax(0),
-   fPtDecRadMin(0),
-   fCosPointAngL(0),
-   fCosPointAngK(0),
-   fCPAPtCutK0(0),
-   fCPAPtCutL(0),
-   fOpengAngleDaughters(0),
-   fOpAngPtCut(0),
-   fDecayLengthMax(0),
-   fDecayLengthMin(0),
-   fDecRadCutITSMin(0),
-   fDecRadCutITSMax(0),
-   fCtauK0s(0),
-   fCtauL(0),
-   fCtauPtCutK0(0),
-   fCtauPtCutL(0),
-   fChiCutKf(0),			
-   fK0sLowMassCut(0),
-   fK0sHighMassCut(0),
-   fLLowMassCut(0),
-   fLHighMassCut(0),
-   fSetFillDetAL(0),
-   fSetPtDepHist(0),
-   fStopLoop(0),
-   fDistDauForCheck(0),
-   fShift(0),
-   fDeltaInvP(0)
-{// Constructor.
+  fTHnFK0sDauEta(0),
+  fTHnFLDauEta(0),
+  fTHnFALDauEta(0),
+  fTHnFK0sDauPhi(0),
+  fTHnFLDauPhi(0),
+  fTHnFALDauPhi(0),
+*/
+//event histos
+  fHistITSLayerHits(0),
+  fHistOneHitWithSDD(0),
+  fHistNEvents(0),
+  fHistPrimVtxZESDVSNContributors(0),
+  fHistPrimVtxZESDTPCVSNContributors(0),
+  fHistPrimVtxZESDSPDVSNContributors(0),
+  fHistPrimVtxZESD(0),
+  fHistPrimVtxZESDTPC(0),
+  fHistPrimVtxZESDSPD(0),
+  fHistESDVertexZ(0),
+  fHistMuliplicity(0),
+  fHistMuliplicityRaw(0),
+  fHistCentBinRaw(0),
+  fHistCentBin(0),
+  fHistMultiplicityPrimary(0),
+  fHistNPrim(0),
+  fHistPiPiK0sVsLambdaMass(0),
+  fHistPiPiK0sVsALambdaMass(0),
+  fHistPiPK0sVsLambdaMass(0),
+  fHistPiAPK0sVsALambdaMass(0),
+  fHistPiPALambdaVsLambdaMass(0),
+  fHistPiAPLambdaVsALambdaMass(0),
+//-----------K0 histos -------------------//
+  fHistPiPiMass(0),
+  fHistPiPiMassVSPt(0),
+  fHistPiPiMassVSPtMCTruth(0),
+  fHistPiPiMassVSPtPosMCTruth(0),
+  fHistPiPiMassVSPtNegMCTruth(0),
+  fHistPiPiMassVSY(0),
+  fHistPiPiPtVSY(0),
+// fHistPiPiMassVSAlpha(0),
+  fHistPiPiRadiusXY(0),
+  fHistPiPiCosPointAng(0),
+  fHistPiPiDCADaughterPosToPrimVtxVSMass(0),  
+  fHistPiPiDecayLengthVsPt(0),
+  fHistPiPiDecayLengthVsMass(0),
+  fHistPiPiDecayLengthVsCtau(0),
+  fHistPiPiDCADaughters(0), 
+//  fHistPiPiPtDaughters(0),
+  fHistPiPiDCAVSMass(0),
+  fHistPiPiDCAZVSMass(0),
+  fHistPiPiDCAZPos(0),
+  fHistPiPiDCAZNeg(0),
+  fHistPiPiTrackLengthPosVsMass(0),
+  fHistPiPiTrackLengthNegVsMass(0),  
+  fHistPiPiMonitorCuts(0),
+  fHistPiPiMonitorMCCuts(0),
+  fHistPiPiDecayLengthResolution(0),
+  fHistNclsITSPosK0(0),
+  fHistNclsITSNegK0(0),
+  fHistNclsTPCPosK0(0),
+  fHistNclsTPCNegK0(0),
+  fHistChi2PerNclsITSPosK0(0),
+  fHistChi2PerNclsITSNegK0(0),
+  fHistNCRowsTPCPosK0(0),
+  fHistNCRowsTPCNegK0(0),
+  fHistRatioFoundOverFinableTPCK0Pos(0),
+  fHistRatioFoundOverFinableTPCK0Neg(0),
+   //  fHistPiPiDistDaughtersTPCEntrVsMass(0),
+//Lambda Antilambda
+   // fHistPiPDistDaughtersTPCEntrVsMass(0),
+   // fHistPiAPDistDaughtersTPCEntrVsMass(0),
+//------------MC only histos-----------
+  fHistPrimVtxZESDVSNContributorsMC(0),
+  fHistPrimVtxZESDTPCVSNContributorsMC(0),
+  fHistPrimVtxZESDSPDVSNContributorsMC(0),
+  fHistMCVertexZ(0),
+  fHistPiPiPDGCode(0),
+  fHistPiPPDGCode(0),
+  fHistPiAPPDGCode(0),
+
+//-- BG of K0s
+// fHistPiPiGA(0),
+// fHistPiPiKch(0),
+// fHistPiPiPhi(0),
+// fHistPiPiL(0),
+// fHistPiPiPi0(0),
+// fHistPiPiPich(0),
+// fHistPiPiRoh(0),
+// fHistPiPiOmega(0),
+// fHistPiPiKStar(0),
+// fHistPiPiNoMother(0),
+// fHistPiPiK0s(0),
+// fHistPiPiK0L(0),
+// fHistPiPiN(0),
+// fHistPiPiSigma(0),
+// fHistPiPiXi(0),
+// fHistPiPiDelta(0),
+// fHistPiPiB(0),
+// fHistPiPiD(0),
+// fHistPiPiEta(0),
+// //-- BG of Lambda
+// fHistPiPGA(0),
+// fHistPiPKch(0),
+// fHistPiPK0s(0),
+// fHistPiPPi0(0),
+// fHistPiPPich(0),
+// fHistPiPKStar(0),
+// fHistPiPN(0),
+// fHistPiPNoMother(0),
+// fHistPiPL(0),
+
+//cosine of pointing angle of Xi vs pt histos
+  fHistPiPCosPointAngXiVsPt(0),
+  fHistPiAPCosPointAngXiVsPt(0),
+  fHistPiPMassVSPtSecXiMCTruth(0),
+  fHistPiPMassVSPtSecOmegaMCTruth(0),
+  fHistPiAPMassVSPtSecXiMCTruth(0),
+  fHistPiAPMassVSPtSecOmegaMCTruth(0),
+// fHistUserPtShift(0),
+// fHistPiPiPhiPosVsPtPosVsMass(0),//xxx
+// fHistPiPPhiPosVsPtPosVsMass(0),//xxx
+// fHistPiAPPhiPosVsPtPosVsMass(0),//xxx
+//selection booleans and values
+  fMCMode(0),
+  fMCTruthMode(0),
+  fSelectInjected(0),
+  fSelectMBMotherMC(0),
+  fCheckNegLabelReco(0),
+  fOnlyFoundRecoV0(0),
+  fUseCentrality(0),
+  fUseCentralityBin(0),
+  fUseCentralityRange(0),
+  fAnapp(0),
+  fRejectPileUpSPD(0),
+  fSelSDD(0),
+  fSelNoSDD(0),
+  fOntheFly(0),
+  fVertexZCut(0),
+  fVtxStatus(0),
+  fNcr(0),              
+  fChi2cls(0),      
+  fTPCrefit(0),
+  fITSrefit(0),
+  fNcrCh(0),      
+  fChi2clsCh(0),         
+  fTPCrefitCh(0),  
+  fITSrefitCh(0),
+  fNcrLpt(0),            
+  fChi2clsLpt(0),     
+  fTPCrefitLpt(0),
+  fITSrefitLpt(0),
+  fUsePID(0),
+  fUsePIDPion(0),
+  fNSigma(0),
+  fNSigma2(0),
+  fPPIDcut(0),
+  fPtTPCCut(0),
+  fMoreNclsThanRows(0),
+  fMoreNclsThanFindable(0),
+  fMoreNclsThanFindableMax(0),
+  fRatioFoundOverFindable(0),
+  fRatioMaxCRowsOverFindable(0),
+  fChi2PerClusterITS(0),
+  fDistanceTPCInner(0),
+  fMinNCLSITSPos(0),
+  fMinNCLSITSNeg(0),
+  fMaxNCLSITSPos(0),
+  fMaxNCLSITSNeg(0),
+  fSwitchCaseITSCls(0),
+  fCutMITrackLength(0),
+  fCutMICrossedR(0),
+  fCutMITPCncls(0),
+  fCutMITrackLengthLengthF(0),
+  fCutMICrossedRLengthF(0),
+  fRapCutV0(0),
+  fRap(0),
+  fEtaCutMCDaughters(0),
+  fEtaCutMCDaughtersVal(0),
+  fUseXi0(0),
+  fUseXiM(0),
+  fUseOmega(0),
+  fCutRapXi(0),
+  fMinPt(0),  
+  fAlfaCut(0),
+  fQtCut(0),
+  fQtCutPt(0),
+  fQtCutPtLow(0),
+  fArmCutK0(0),      
+  fArmCutL(0),
+  fArmQtSlope(0),
+  fExcludeLambdaFromK0s(0),
+  fExcludeK0sFromLambda(0),
+  fExcludePhotonsFromK0s(0),
+  fExcludePhotonsFromLambda(0),
+  fDCAToVertexK0(0),
+  fDCAToVertexL(0),
+  fDCAXK(0),
+  fDCAYK(0),
+  fDCAXL(0),
+  fDCAYL(0),
+  fDCAZ(0),
+  fDCADaughtersL(0),
+  fDCADaughtersAL(0),
+  fDCADaughtersK0(0),
+  fDCADaughtersToVtxLarge(0),
+  fDCADaughtersToVtxSmall(0),
+  fDecayRadXYMin(0),
+  fDecayRadXYMax(0),
+  fPtDecRadMin(0),
+  fCosPointAngL(0),
+  fCosPointAngK(0),
+  fCPAPtCutK0(0),
+  fCPAPtCutL(0),
+  fOpengAngleDaughters(0),
+  fOpAngPtCut(0),
+  fDecayLengthMax(0),
+  fDecayLengthMin(0),
+  fDecRadCutITSMin(0),
+  fDecRadCutITSMax(0),
+  fCtauK0s(0),
+  fCtauL(0),
+  fCtauPtCutK0(0),
+  fCtauPtCutL(0),
+  fChiCutKf(0),			
+  fK0sLowMassCut(0),
+  fK0sHighMassCut(0),
+  fLLowMassCut(0),
+  fLHighMassCut(0),
+  fSetFillDetAL(0),
+  fSetPtDepHist(0),
+  fStopLoop(0),
+  fDistDauForCheck(0),
+  fShift(0),
+  fDeltaInvP(0)
+{  // Constructor.
 
   DefineOutput(1,TList::Class());
   // define defaults for globals
@@ -845,6 +844,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   fShift = kFALSE;                       // shift in charge/pt yes/no
   fDeltaInvP = 0.00;                     // shift value
     
+   
   fMCMode = kFALSE;
   fMCTruthMode = kFALSE;
 
@@ -864,22 +864,22 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
 
   fVertexZCut = 100000.0;
   fVtxStatus = kFALSE;
-   
+
   fOntheFly = kTRUE;
 
   //----- define defaults for V0 and track cuts ----//
   fNcr = 70;              
   fChi2cls = 4;      
-  fTPCrefit = kTRUE;      
-  fITSrefit =kFALSE;
+  fTPCrefit = kTRUE;   
+  fITSrefit = kFALSE;
   fNcrCh = 70;      
   fChi2clsCh =4;         
-  fTPCrefitCh = kTRUE;
-  fITSrefitCh = kFALSE;   
+  fTPCrefitCh = kTRUE; 
+  fITSrefitCh = kFALSE;
   fNcrLpt = 70;            
   fChi2clsLpt = 4;     
-  fTPCrefitLpt = kTRUE;
-  fITSrefitLpt =kFALSE;
+  fTPCrefitLpt = kTRUE; 
+  fITSrefitLpt = kFALSE; 
 
   fUsePID = kFALSE;
   fUsePIDPion = kFALSE;
@@ -930,10 +930,10 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   fEtaCutMCDaughtersVal = 50.0;
 
   fUseXi0= kTRUE;
-  fUseXiM= kTRUE;
-  fUseOmega = kTRUE;
-  fCutRapXi =kFALSE;
-
+  fUseXiM = kTRUE;
+  fUseOmega =kTRUE;
+  fCutRapXi = kFALSE;
+  
   fMinPt= -1.0;
 
   fDCAToVertexK0 = 10000.0;
@@ -987,7 +987,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
 
   fStopLoop = kFALSE;
 
-  fDistDauForCheck = 5.0;
+  fDistDauForCheck =5.0;
 
   //---- histograms ----//
   for(Int_t j=0;j<2;j++){
@@ -996,7 +996,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     fHistV0RadiusZVSPt[j] =NULL;
     fHistV0RadiusXY[j] =NULL;
     fHistV0RadiusXYVSY[j] =NULL;
-         
+   
     //Lambda
     fHistPiPMass[j]=NULL;
     fHistPiPMassVSPt[j]=NULL;
@@ -1093,6 +1093,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   }
   /*
     for(Int_t m=0;m<3;m++){
+
     fHistPiPiDistDaughtersPos[m]=NULL;
     fHistPiPiDistDaughtersNeg[m]=NULL;
     fHistPiPiDCADaughtersPos[m]=NULL;
@@ -1114,7 +1115,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
     fHistPiAPRadAtDCA5cmDaughtersPos[m]=NULL;
     fHistPiAPRadAtDCA5cmDaughtersNeg[m]=NULL;
     }
-  */
+  */ 
 }
 //_____________________________________________________
 AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
@@ -1571,7 +1572,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
     fHistPiPiRadAtDCA5cmDaughtersPos[2]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersPosPt2","K0s pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,0.25,0.75,160,0.0,240.0);
     fHistPiPiRadAtDCA5cmDaughtersNeg[2]= new TH2F("fHistPiPiRadAtDCA5cmDaughtersNegPt2","K0s pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,0.25,0.75,160,0.0,240.0);
     */   
-    fHistPiPiDistDaughtersTPCEntrVsMass = new TH2F("fHistPiPiDistDaughtersTPCEntrVsMass","K0s distance of daughters at TPC entrance vs mass",nbMass,0.25,0.75,100,0.0,20.0);
+    // fHistPiPiDistDaughtersTPCEntrVsMass = new TH2F("fHistPiPiDistDaughtersTPCEntrVsMass","K0s distance of daughters at TPC entrance vs mass",nbMass,0.25,0.75,100,0.0,20.0);
    
     if(!fSetPtDepHist){
       fHistPiPiDCADaughters = new TH2F("fHistPiPiDCADaughters","dca of K0 daughters",nbMass,0.25,0.75,250,0.0,2);
@@ -1622,7 +1623,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fHistPiPRadAtDCA5cmDaughtersPos[2]= new TH2F("fHistPiPRadAtDCA5cmDaughtersPosPt2","Lambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
       fHistPiPRadAtDCA5cmDaughtersNeg[2]= new TH2F("fHistPiPRadAtDCA5cmDaughtersNegPt2","Lambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
     */
-    fHistPiPDistDaughtersTPCEntrVsMass = new TH2F("fHistPiPDistDaughtersTPCEntrVsMass","Lambda distance of daughters at TPC entrance vs mass",nbMass,1.05,1.25,100,0.0,20.0);
+    // fHistPiPDistDaughtersTPCEntrVsMass = new TH2F("fHistPiPDistDaughtersTPCEntrVsMass","Lambda distance of daughters at TPC entrance vs mass",nbMass,1.05,1.25,100,0.0,20.0);
 
     if(!fSetPtDepHist){
       fHistPiPDCADaughters[0] = new TH2F("fHistPiPDCADaughters","dca of #Lambda daughters",nbMass,1.05,1.25,250,0.0,2.0);
@@ -1675,7 +1676,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fHistPiAPRadAtDCA5cmDaughtersPos[2]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersPosPt2","ALambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
       fHistPiAPRadAtDCA5cmDaughtersNeg[2]= new TH2F("fHistPiAPRadAtDCA5cmDaughtersNegPt2","ALambda pos daughter position for DCA < 5cm vs mass for pt > 6 GeV/c",250,1.05,1.25,160,0.0,240.0);
     */
-    fHistPiAPDistDaughtersTPCEntrVsMass = new TH2F("fHistPiAPDistDaughtersTPCEntrVsMass","ALambda distance of daughters at TPC entrance vs mass",nbMass,1.05,1.25,100,0.0,20.0);
+    // fHistPiAPDistDaughtersTPCEntrVsMass = new TH2F("fHistPiAPDistDaughtersTPCEntrVsMass","ALambda distance of daughters at TPC entrance vs mass",nbMass,1.05,1.25,100,0.0,20.0);
 
     if(!fSetPtDepHist){
       fHistPiAPDCADaughters[0] = new TH2F("fHistPiAPDCADaughters","dca of #bar{#Lambda} daughters",nbMass,1.05,1.25,250,0.0,2.0);
@@ -1948,7 +1949,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersPos[2]);
       fOutputContainer->Add(fHistPiPiRadAtDCA5cmDaughtersNeg[2]);
     */
-    fOutputContainer->Add(fHistPiPiDistDaughtersTPCEntrVsMass);
+    // fOutputContainer->Add(fHistPiPiDistDaughtersTPCEntrVsMass);
     //----------- Lambda Antilambda -------------//
 
     for(Int_t j=0;j<mchist;j++){
@@ -2043,8 +2044,8 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersPos[2]);
       fOutputContainer->Add(fHistPiAPRadAtDCA5cmDaughtersNeg[2]);
     */   
-    fOutputContainer->Add(fHistPiPDistDaughtersTPCEntrVsMass);   
-    fOutputContainer->Add(fHistPiAPDistDaughtersTPCEntrVsMass);
+    // fOutputContainer->Add(fHistPiPDistDaughtersTPCEntrVsMass);   
+    // fOutputContainer->Add(fHistPiAPDistDaughtersTPCEntrVsMass);
    
 
   }
@@ -4080,7 +4081,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    fHistPiPiMassVSY->Fill(massK0s,rapK0s);
 	    fHistPiPiPtVSY->Fill(rapK0s,ptK0s);
 	    fHistPiPiDecayLengthVsMass->Fill(massK0s,dim2V0Radius);//decayLength);
-	    fHistPiPiDistDaughtersTPCEntrVsMass->Fill(massK0s,distTPCinner);
+	    //  fHistPiPiDistDaughtersTPCEntrVsMass->Fill(massK0s,distTPCinner);
 	    // fHistPiPiPhiPosVsPtPosVsMass->Fill(massK0s,ctTK0,ptV0MC);//,ctK0);//posDaughterPhi);//xxx
 	    /*
 	      Double_t valTHnK0s[4]= {massK0s,ptV0MC,dim2V0Radius,distTPCinner};
@@ -4230,7 +4231,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    else  fHistPiPMassVSPtNegMCTruth[isSecd]->Fill(massLambda,ptV0MC);
 	    fHistPiPMassVSY[isSecd]->Fill(massLambda,rapL);
 	    fHistPiPPtVSY[isSecd]->Fill(rapL,ptLambda);
-	    fHistPiPDistDaughtersTPCEntrVsMass->Fill(massLambda,distTPCinner);
+	    //  fHistPiPDistDaughtersTPCEntrVsMass->Fill(massLambda,distTPCinner);
 	    //fHistPiPDecayLengthVsPt[isSecd]->Fill(ptLambda,ctL);
 	    /*
 	      Double_t valTHnL[4]= {massLambda,ptV0MC,dim2V0Radius,distTPCinner};
@@ -4390,7 +4391,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    else  fHistPiAPMassVSPtNegMCTruth[isSecd]->Fill(massALambda,ptV0MC);
 	    fHistPiAPMassVSY[isSecd]->Fill(massALambda,rapAL);
 	    fHistPiAPPtVSY[isSecd]->Fill(rapAL,ptALambda);
-	    fHistPiAPDistDaughtersTPCEntrVsMass->Fill(massALambda,distTPCinner);
+	    //   fHistPiAPDistDaughtersTPCEntrVsMass->Fill(massALambda,distTPCinner);
 	    //  fHistPiAPPtDaughters[isSecd]->Fill(posDaughterPt,negDaughterPt);
 	    //  fHistPiAPPhiPosVsPtPosVsMass->Fill(massALambda,ctTAL,ptV0MC);//
 	    //  if(isSecd < 1) fHistPiPPhiPosVsPtPosVsMass->Fill(massALambda,ctTL,ptV0MC);//
@@ -4616,6 +4617,7 @@ Bool_t  AliAnalysisTaskV0ForRAA::CheckMultipleV0Candidates(Int_t part1,Int_t par
   return multFoundV0;
 }
 //__________________________________________________________________________________________________________
+  /*
 void  AliAnalysisTaskV0ForRAA::CheckDistanceOfDaughters(Int_t iV0MI,Float_t V0ID[],Double_t magF,Int_t particle){
   //particle 0=K0s, 1=Lambda, 2 = AntiLambda
 
@@ -4683,9 +4685,10 @@ void  AliAnalysisTaskV0ForRAA::CheckDistanceOfDaughters(Int_t iV0MI,Float_t V0ID
       averageNeg /= 9.0;
       Double_t atRPos1 = 0.0,atRPos2=0.0;
       Double_t atRNeg1 = 0.0,atRNeg2=0.0;
+       
       Double_t dcaPos = parPos1->GetDCA(parPos2,magF, atRPos1,atRPos2);
       Double_t dcaNeg = parNeg1->GetDCA(parNeg2,magF, atRNeg1,atRNeg2);
-      
+     
       switch(particle){
       case 0:
 	if( averagePos <=20.0) {
@@ -4736,7 +4739,7 @@ void  AliAnalysisTaskV0ForRAA::CheckDistanceOfDaughters(Int_t iV0MI,Float_t V0ID
 	//	}
 	break;
       }
-
+     
       delete parPos2;
       delete parNeg2;
     }
@@ -4746,7 +4749,7 @@ void  AliAnalysisTaskV0ForRAA::CheckDistanceOfDaughters(Int_t iV0MI,Float_t V0ID
   }  
 
 }
-
+ */
 //__________________________________________________________________________________________________________
 Int_t  AliAnalysisTaskV0ForRAA::FindPDGCode(AliStack *stackRec,AliESDtrack *trackPos,AliESDtrack *trackNeg){
   
