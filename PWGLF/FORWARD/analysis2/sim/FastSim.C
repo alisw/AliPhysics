@@ -14,6 +14,7 @@
 # include "AliGenDPMjetEventHeader.h"
 # include "AliGenGeVSimEventHeader.h"
 # include "AliGenHerwigEventHeader.h"
+# include "AliPDG.h"
 # include <TROOT.h>
 # include <TString.h>
 # include <TMath.h>
@@ -31,6 +32,7 @@
 # include <TTimer.h>
 # include <TRandom.h>
 # include <TUrl.h>
+# include <TMacro.h>
 # include <fstream>
 #else
 class AliGenerator;
@@ -49,6 +51,9 @@ class TCanvas;
 class TVirtualPad;
 class TTimer;
 class TUrl;
+class TAxis;
+class TParticle;
+class TMacro;
 #endif
 
 /** To get DPMJEt common block */
@@ -108,11 +113,13 @@ struct FastMonitor : public TObject, public TQObject
     fCanvas->SetTopMargin(0.01);
     fCanvas->SetRightMargin(0.01);
 
-    fCanvas->Divide(2,2);
-    RegisterDraw(1, "type",   "", 0);
-    RegisterDraw(2, "b",      "", 0);
-    RegisterDraw(3, "cent",   "", 0);
-    RegisterDraw(4, "dNdeta", "", 0x8);
+    fCanvas->Divide(3,2);
+    RegisterDraw(1, "type",                       "", 0);
+    RegisterDraw(2, "b",                          "", 0);
+    RegisterDraw(3, "cent",                       "", 0);
+    RegisterDraw(4, "dNdeta",                     "", 0x8);
+    RegisterDraw(5, "estimators/rawV0M",          "", 0x2);
+    RegisterDraw(6, "estimators/rawRefMult00d80", "", 0x2);
   }
   /** 
    * Register a draw of a an object 
@@ -188,6 +195,43 @@ struct FastMonitor : public TObject, public TQObject
     return 0;
   }
   /** 
+   * Find an object in the list @a l which corresponds to a registered
+   * pad.
+   * 
+   * @param padName Pad's name 
+   * @param l       Input collection 
+   * 
+   * @return The found object, or null
+   */
+  TObject* FindPadObject(const Char_t* padName, TCollection* l)
+  {
+    TString path(padName);
+    path.Remove(0,2);
+    if (path.Index("/") == kNPOS)
+      return l->FindObject(path);
+    TObjArray*   tokens  = path.Tokenize("/");
+    Int_t        nTokens = tokens->GetEntriesFast();
+    TCollection* current = l;
+    TObject*     ret     = 0;
+    for (Int_t i = 0; i < nTokens; i++) {
+      TObject* o = current->FindObject(tokens->At(i)->GetName());
+      if (!o) break;
+      if (i == nTokens - 1) {
+	ret = o;
+	break;
+      }
+      if (!o->IsA()->InheritsFrom(TCollection::Class())) {
+	Warning("FindPadObject", "Path object %s of %s is not a collection "
+		"but a %s", o->GetName(), path.Data(), o->ClassName());
+	break;
+      }
+      current = static_cast<TCollection*>(o);
+    }
+    delete tokens;
+    return ret;
+  }
+    
+  /** 
    * Called when we get notified of 
    * 
    * @param objs List of monitored objects
@@ -209,7 +253,36 @@ struct FastMonitor : public TObject, public TQObject
       nEvents = static_cast<TH1*>(oIpz)->GetEntries();
     else 
       Warning("Feedback", "Histogram ipZ not found");
-    
+
+    Int_t        iPad = 1;
+    TVirtualPad* p    = 0;
+    while ((p = fCanvas->GetPad(iPad))) {
+      TObject* o = FindPadObject(p->GetName(), l);
+      if (!o) {
+	Warning("Feedback", "Object correspondig to pad %s (%d) not found",
+		p->GetName(), iPad);
+	iPad++;
+      }
+      p->cd();
+      if (o->IsA()->InheritsFrom(TH1::Class())) {
+	TH1* h = static_cast<TH1*>(o);
+	TH1* c = h->DrawCopy(p->GetTitle());
+	c->SetDirectory(0);
+	c->SetBit(TObject::kCanDelete);
+	if (p->TestBit(BIT(15))) {
+	  // Info("Feedback", "Scaling %s by 1./%d and width",
+	  //      c->GetName(), nEvents);
+	  c->Scale(1./nEvents, "width");
+	}
+      }
+      else {
+	TObject* c = o->DrawClone(p->GetTitle());
+	c->SetBit(TObject::kCanDelete);
+      }
+      p->Modified();
+      iPad++;
+    }
+#if 0
     TIter next(l);
     TObject* o = 0;
     while ((o = next())) {
@@ -236,6 +309,7 @@ struct FastMonitor : public TObject, public TQObject
       }
       p->Modified();
     }
+#endif
     fCanvas->Modified();
     fCanvas->Update();
     fCanvas->cd();
@@ -267,66 +341,411 @@ struct FastMonitor : public TObject, public TQObject
   ClassDef(FastMonitor,1);
 };
 
-
-struct FastCentEstimator : public TNamed
+#if 0
+struct FastCentAxis
 {
+  /** The centrality axis to use */
   TAxis fCentAxis;
-  FastCentEstimator(const char* name)
-    : TNamed(name,name),
-      fCentaxis()
-  {}
+  FastCentAxis() : fCentAxis(1, 0, 0) {}
+  /** 
+   * Set the centrality axis 
+   * 
+   * @param n     Number of bins 
+   * @param low   Low limit 
+   * @param high  High limit
+   */
   virtual void SetCentralityAxis(Int_t n, Double_t low, Double_t high)
   {
     fCentAxis.Set(n, low, high);
   }
+  /** 
+   * Set the centrality axis 
+   * 
+   * @param n     Number of bins 
+   * @param bins  Array of (n+1) bin edges 
+   */
   virtual void SetCentralityAxis(Int_t n, Double_t* bins)
   {
     fCentAxis.Set(n, bins);
-  }
-  virtual void Setup(TList* out);
-  virtual void PreEvent() {}
-  virtual void AcceptParticle(TParticle* p) = 0;
-  virtual void PostEvent() {}
-  virtual void Terminate(TList* out) {};
+  }  
 };
+#endif
+
+/** 
+ * Base class for centrality estimators 
+ */
+struct FastCentEstimator : public TObject
+{
+  TString fName;
+  /** 
+   * Constructor 
+   * 
+   * @param name Name of the estimator 
+   */
+  FastCentEstimator(const char* name="")
+    : TObject(), fName(name)
+  {}
+  /** 
+   * Destructor 
+   */
+  virtual ~FastCentEstimator() {}
+  /**
+   * Get the name 
+   *
+   * @return The name 
+   */
+  const char* GetName() const { return fName.Data(); }
+  /** 
+   * Set-up this estimator.  Output objects should be stored in @a
+   * out, and a branch can be registerd in the TTree.
+   * 
+   * @param out  Output list to add stuff to 
+   * @param tree 
+   */
+  virtual void Setup(TCollection* out, TTree* tree) = 0;
+  /** 
+   * Called before the start of an event 
+   * 
+   */
+  virtual void PreEvent() {}
+  /** 
+   * Called for each particle produced by the event generator.
+   * Sub-classes should decide if they want to take the information
+   * from the passed particle, and then process that information.
+   * 
+   * @param p Generated particle 
+   */
+  virtual void Process(const TParticle* p) = 0;
+  /** 
+   * Called at the end of an event 
+   */
+  virtual void PostEvent() {}
+  /** 
+   * Do the final calculations 
+   * 
+   * @param out Output list to add stuff to 
+   */
+  virtual void Terminate(TCollection* out) = 0;
+  /** 
+   * Get the particle polar angle 
+   * 
+   * @param p Particle 
+   * 
+   * @return Polar angle 
+   */
+  static Double_t Theta(const TParticle* p)
+  {
+    Double_t pT    = p->Pt();
+    Double_t pZ    = p->Pz();
+    Double_t theta = TMath::ATan2(pT, pZ);
+    return theta;
+  }
+  /** 
+   * Get the particle pseudo-rapidity @f$\eta@f$ 
+   * 
+   * @param p The particle 
+   * 
+   * @return Pseudo-rapidity @f$\eta@f$ 
+   */
+  static Double_t Eta(const TParticle* p)
+  {
+    Double_t theta = Theta(p);
+    Double_t eta   = -TMath::Log(TMath::Tan(theta/2));
+    return eta;
+  }
+  /** 
+   * Check if a particle is primary 
+   * 
+   * @param p Particle 
+   * 
+   * @return true if primary 
+   */
+  static Bool_t IsPrimary(const TParticle* p)
+  {
+    return p->TestBit(BIT(14));
+  }
+  /** 
+   * Check if particle is from weak decay 
+   * 
+   * @param p Particle 
+   * 
+   * @return true if from weak decay 
+   */
+  static Bool_t IsWeakDecay(const TParticle* p)
+  {
+    return p->TestBit(BIT(15));
+  }
+  /** 
+   * Check if particle is charged 
+   * 
+   * @param p Particle 
+   * 
+   * @return true if particle is charged 
+   */
+  static Bool_t IsCharged(const TParticle* p)
+  {
+    return p->TestBit(BIT(16));
+  }
+  ClassDef(FastCentEstimator,1);
+};
+
+/** 
+ * A 1-dimensional centrality estimator 
+ */
 struct Fast1DCentEstimator : public FastCentEstimator
 {
-  Double_t fCache = 0;
-  Fast1DCentEstimator(const char* name)
-    : FastCentEstimator(name)
+  /** Sum of signals for a given event */ 
+  Double_t fCache;
+  /** 
+   * Our histogram. The Setup member function must be overridden to
+   * define this member. 
+   */
+  TH1* fHistogram; //!
+  /** 
+   * Constructor 
+   * 
+   * @param name Name of the estimator 
+   */
+  Fast1DCentEstimator(const char* name="")
+    : FastCentEstimator(name), fHistogram(0)
   {}
+  /** 
+   * Destructor 
+   */
+  virtual ~Fast1DCentEstimator() {}
+  /** 
+   * Set-up this object.  Defines the internal histogram and add to
+   * output
+   * 
+   * @param l Output list
+   * @param tree Tree to add branch to 
+   */
+  void Setup(TCollection* l, TTree* tree)
+  {
+    if (fHistogram && l) l->Add(fHistogram);
+    if (tree) tree->Branch(GetName(), &fCache, "value/D");
+  }
+  /** 
+   * Called before each event.  Zeros the cache variable 
+   */
   virtual void PreEvent()
   {
     fCache = 0;
   }
+  /** 
+   * Fills the summed observable into the histogram 
+   */
   virtual void PostEvent()
   {
-    GetHistogram()->Fill(fCache);
+    fHistogram->Fill(fCache);
   }
-  virtual void Terminate(TList* out)
+  virtual TH1* GetHistogram(TCollection* l) = 0;
+  /** 
+   * Called at the end of the processing.  The member function
+   * produces a histogram like the defined observable histogram, but
+   * the bin content corresponds to the centrality corresponding to
+   * that bin.  In that way, we can do a simple look-up in the output
+   * histogram to extract the centrality
+   * 
+   * @param out Output list to add information to. 
+   */
+  virtual void Terminate(TCollection* out)
   {
-    TH1* h = GetHistogram(out);
+    TH1* h    = GetHistogram(out);
+    TH1* cent = static_cast<TH1*>(h->Clone(GetName()));
+    cent->SetDirectory(0);
+    cent->SetYTitle("Centrality [%]");
+    cent->SetTitle(Form("%s mapping", GetName()));
+    cent->Reset();
+    out->Add(cent);
     
     Int_t    nX         = h->GetNbinsX();
     Double_t total      = h->Integral(1,nX);
-    Int_t    curCenBin  = 1;
-    Double_t curX       = h->GetBinLowEdge(nX);
     for (Int_t i = h->GetNbinsX(); i > 0; i--) {
-      Double_t curInt     = h->Integral(i, nX);
-      if (curInt > fCentAxis.GetBinLowEdge(curCenBin)) {
-	// Take last X value as cut value
-	
-	curCenBin++;
-      }
-      curX = h->GetXaxis()->GetBinLowEdge(i);
-    }
-
+      Double_t curInt  = h->Integral(i, nX);
+      if (curInt <= 0) continue;
+      Double_t curCent = curInt / total * 100;
+      cent->SetBinContent(i, curCent);
+    }    
   }
+  ClassDef(Fast1DCentEstimator,1);
 };
 
-    
-	
-    
+/**
+ * Centrality estimator using charged particles 
+ */
+struct FastNchCentEstimator : public Fast1DCentEstimator
+{
+  /** 
+   * Constructor 
+   * 
+   * @param name Name 
+   */
+  FastNchCentEstimator(const char* name="")
+    : Fast1DCentEstimator(name)
+  {}
+  /** 
+   * Destructor 
+   */
+  virtual ~FastNchCentEstimator() {}
+  /** 
+   * Process a single particle. 
+   * 
+   * @param p Particle 
+   */
+  virtual void Process(const TParticle* p)
+  {
+    if (!IsCharged(p)) return;
+    if (!Accept(p))    return;
+    fCache++;
+  }
+  /** 
+   * Must be overloaded. Should return true if we accept the particle 
+   *
+   * @param p Particle to investigate 
+   *
+   * @return true if we are to count this particle 
+   */
+  virtual Bool_t Accept(const TParticle* p) = 0;
+  ClassDef(FastNchCentEstimator,1);
+};
+/**
+ * Centrality estimator using the V0 signal 
+ */
+struct V0CentEstimator : public FastNchCentEstimator
+{
+  /** Mode: Negative, use C side, positive use A side, otherwise sum */
+  Short_t fMode;
+  /** 
+   * Constructor 
+   * 
+   * @param mode Mode: Negative, use C side, positive use A side, otherwise sum 
+   */
+  V0CentEstimator(Short_t mode=0) 
+    : FastNchCentEstimator(mode < 0 ? "V0C" : mode > 0 ? "V0A" : "V0M"),
+      fMode(mode)
+  {}
+  /** 
+   * Set-up this object.  Defines the internal histogram and add to
+   * output
+   * 
+   * @param l Output list
+   * @param tree Tree to add branch to 
+   */
+  void Setup(TCollection* l, TTree* tree)
+  {
+    Color_t color = (fMode < 0 ? kRed : fMode > 0 ? kBlue : kGreen)+2;
+    UInt_t  max   = 13000;
+    fHistogram = new TH1D(Form("raw%s",GetName()),
+			  Form("%s #it{N}_{ch} distribution", GetName()),
+			  max/10, 0, (fMode == 0 ? 2 : 1)*max);
+    fHistogram->SetXTitle("#it{N}_{ch}");
+    fHistogram->SetYTitle("Raw #it{P}(#it{N}_{ch})");
+    fHistogram->SetDirectory(0);
+    fHistogram->SetLineColor(color);
+    fHistogram->SetFillColor(color);
+    fHistogram->SetMarkerColor(color);
+    fHistogram->SetMarkerStyle(20);
+    fHistogram->SetFillStyle(3002);
+
+    Fast1DCentEstimator::Setup(l, tree);
+  }
+  /** 
+   * Whether we should accept a particle.  We accept a particle if it
+   * falls within the acceptance of the V0.
+   * 
+   * @param p Particle to investigate 
+   * 
+   * @return true if to be used 
+   */
+  Bool_t Accept(const TParticle* p)
+  {
+    Double_t eta = Eta(p);
+    Bool_t   v0A = ((eta >= +2.8) && (eta <= +5.1));
+    Bool_t   v0C = ((eta >= -3.7) && (eta <= -1.7));
+    if (fMode < 0) return v0C;
+    if (fMode > 0) return v0A;
+    return v0A || v0C;
+  }
+  /** 
+   * Get the histogram to accumulate the observable in.  
+   * 
+   * @return Pointer to the histogram. 
+   */
+  virtual TH1* GetHistogram(TCollection* l)
+  {
+    return static_cast<TH1*>(l->FindObject(Form("raw%s",GetName())));
+  }
+  ClassDef(V0CentEstimator,1);
+};
+/**
+ * Centrality estimator using the V0 signal 
+ */
+struct RefMultEstimator : public FastNchCentEstimator
+{
+  /** Mode: Negative, use C side, positive use A side, otherwise sum */
+  Double_t fEtaCut;
+  /** 
+   * Constructor 
+   * 
+   * @param mode Mode: Negative, use C side, positive use A side, otherwise sum 
+   */
+  RefMultEstimator(Double_t etaCut=0.8) 
+    : FastNchCentEstimator(Form("RefMult%02dd%02d",
+				Int_t(etaCut), Int_t(100*etaCut)%100)),
+      fEtaCut(etaCut)
+  {}
+  /** 
+   * Set-up this object.  Defines the internal histogram and add to
+   * output
+   * 
+   * @param l Output list
+   * @param tree Tree to add branch to 
+   */
+  void Setup(TCollection* l, TTree* tree)
+  {
+    Color_t color = kMagenta;
+    UInt_t  max   = 15000;
+    fHistogram = new TH1D(Form("raw%s",GetName()),
+			  Form("#it{N}_{ch} |#it{#eta}|<%5.2f distribution",
+			       fEtaCut), max/10, 0, max);
+    fHistogram->SetXTitle("#it{N}_{ch}");
+    fHistogram->SetYTitle("Raw #it{P}(#it{N}_{ch})");
+    fHistogram->SetDirectory(0);
+    fHistogram->SetLineColor(color);
+    fHistogram->SetFillColor(color);
+    fHistogram->SetMarkerColor(color);
+    fHistogram->SetMarkerStyle(20);
+    fHistogram->SetFillStyle(3002);
+
+    Fast1DCentEstimator::Setup(l, tree);
+  }
+  /** 
+   * Whether we should accept a particle.  We accept a particle if it
+   * falls within the acceptance of the V0.
+   * 
+   * @param p Particle to investigate 
+   * 
+   * @return true if to be used 
+   */
+  Bool_t Accept(const TParticle* p)
+  {
+    Double_t eta = Eta(p);
+    if (!IsPrimary(p)) return false;
+    if (TMath::Abs(eta) > fEtaCut) return false;
+    return true;
+  }
+  /** 
+   * Get the histogram to accumulate the observable in.  
+   * 
+   * @return Pointer to the histogram. 
+   */
+  virtual TH1* GetHistogram(TCollection* l)
+  {
+    return static_cast<TH1*>(l->FindObject(Form("raw%s",GetName())));
+  }
+  ClassDef(RefMultEstimator,1);
+};
   
 
 //====================================================================
@@ -371,6 +790,7 @@ struct FastSim : public TSelector
       fHB(0),
       fHPhiR(0),
       fHTime(0),
+      fCentEstimators(0),
       fProofFile(0),
       fFile(0),
       fFileName("")
@@ -539,9 +959,19 @@ struct FastSim : public TSelector
     fList->Add(fHPhiR);
     fList->Add(fHTime);
 
+    TList* estimators = new TList;
+    estimators->SetName("estimators");
+    fList->Add(estimators);
+    
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->Setup(estimators, fTree);
+
     // Info("SetupOutput", "Adding list ot outputs");
     fOutput->Add(fList);
-
+    fOutput->ls();
+    
     return true;
   }
   /** 
@@ -614,7 +1044,7 @@ struct FastSim : public TSelector
     // Info("SetupGen", "tgt=%s (%3d,%2d) proj=%s (%3d,%2d) CMS=%fGeV",
     //      tgt.Data(), tgtA, tgtZ, proj.Data(), projA, projZ,
     //      fGenerator->GetEnergyCMS());
-
+      
     if (fFileName.IsNull()) FileName();
     // Info("SetupRun", "File name is '%s'", fFileName.Data());
 
@@ -716,6 +1146,12 @@ struct FastSim : public TSelector
 	gProof->AddInput(fGRP);
       }
     }
+    fCentEstimators = new TList;
+    fCentEstimators->Add(new V0CentEstimator(-1));
+    fCentEstimators->Add(new V0CentEstimator( 0));
+    fCentEstimators->Add(new V0CentEstimator(+1));
+    fCentEstimators->Add(new RefMultEstimator(0.8));
+    fCentEstimators->Add(new RefMultEstimator(0.5));
   }
   /** 
    * Set-up this sub-job 
@@ -755,6 +1191,11 @@ struct FastSim : public TSelector
     fStack->Reset();
     fRunLoader->MakeTree("K");
 
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->PreEvent();
+    
     return true;
   }
   /** 
@@ -978,6 +1419,11 @@ struct FastSim : public TSelector
 
       new ((*fParticles)[iPart]) TParticle(*particle);
 
+      TIter next(fCentEstimators);
+      FastCentEstimator* estimator = 0;
+      while ((estimator = static_cast<FastCentEstimator*>(next())))
+	estimator->Process(particle);
+      
       if (!selected || !charged || !primary) continue;
       Double_t pT    = particle->Pt();
       if (pT < 1e-10) continue; /// Along beam axis 
@@ -1004,6 +1450,11 @@ struct FastSim : public TSelector
     
     fRunLoader->TreeE()->Fill();
     fRunLoader->WriteKinematics("OVERWRITE");
+
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->PostEvent();
   }    
   /** 
    * Process one event 
@@ -1053,6 +1504,7 @@ struct FastSim : public TSelector
     fGenerator->Write();
     fRunLoader->Write();
 
+    fOutput->ls();
     if (fFile) {
       if (fProofFile) {
 	fOutput->Add(fProofFile);
@@ -1073,7 +1525,7 @@ struct FastSim : public TSelector
   void Terminate()
   {
     if (gProof) gProof->ClearFeedback();
-    
+
     if (!fList)
       fList = static_cast<TList*>(fOutput->FindObject("histograms"));
     if (!fList) {
@@ -1091,7 +1543,12 @@ struct FastSim : public TSelector
       fFile = fProofFile->OpenFile("UPDATE");
     if (!fFile)
       fFile = TFile::Open(FileName(),"UPDATE");
-    
+
+    TList* estimators = static_cast<TList*>(fList->FindObject("estimators"));
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->Terminate(estimators);
 	
     fHEta  = static_cast<TH1*>(fList->FindObject("dNdeta"));
     fHIpz  = static_cast<TH1*>(fList->FindObject("ipZ"));
@@ -1118,14 +1575,9 @@ struct FastSim : public TSelector
       return;
     }
 
-    fHEta ->Write();
-    fHIpz ->Write();
-    fHType->Write();
-    fHCent->Write();
-    fHB   ->Write();
-    fHPhiR->Write();
-    fHTime->Write();
-
+    // Write content of list 
+    fList->Write();
+    
     fTree = static_cast<TTree*>(fFile->Get("T"));
     if (!fTree)  Warning("Terminate", "No tree");
     
@@ -1178,6 +1630,12 @@ struct FastSim : public TSelector
   TH1*   fHB;                     //! B histogram
   TH1*   fHPhiR;                  //! Reaction plane
   TH1*   fHTime;                  //! Timing 
+  /* @} */
+  /** 
+   * @{ 
+   * @name Centrality 
+   */
+  TList* fCentEstimators;          // Centrality estimators
   /* @} */
   /**
    * @{ 
@@ -1472,7 +1930,7 @@ struct FastSim : public TSelector
     return ret;
   }
 		    
-  ClassDef(FastSim,1); 
+  ClassDef(FastSim,2); 
 };
 
 #endif

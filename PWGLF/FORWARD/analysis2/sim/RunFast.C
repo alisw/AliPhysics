@@ -2,11 +2,13 @@ void
 RunFast(const char* url="local:///", 
 	const char* opt="")
 {
-  TString ali = gSystem->ExpandPathName("${ALICE_PHYSICS}");
-  // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
-  TString fwd = ali + "/PWGLF/FORWARD/analysis2";
-  gSystem->AddIncludePath(Form("-I${ALICE_ROOT}/include -I%s/include",
-			       ali.Data()));
+  TString fwd = ""; // gSystem->Getenv("ANA_SRC");
+  if (fwd.IsNull()) 
+    fwd = gSystem->ExpandPathName("${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2");
+  gSystem->AddIncludePath(Form("-I${ALICE_ROOT}/include "
+			       "-I${ALICE_PHYSICS}/include "
+			       "-I%s/include",
+			       fwd.Data()));
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
 
   // Remember to copy changes to FastSim.C(FastSim::ProofLoadLibs)
@@ -37,7 +39,8 @@ RunFast(const char* url="local:///",
 
   // Uncomment next line to use number of diffractive processes for SD
   // detection.
-  gSystem->AddIncludePath("-DNO_DPMJET_TYPE");  
+  gSystem->AddIncludePath("-DNO_DPMJET_TYPE");
+  // gDebug = 7;
   gROOT->LoadMacro(Form("%s/sim/FastSim.C+%s",fwd.Data(),opt));
 
   const char* cleanFiles[] = { "grp.dat",
