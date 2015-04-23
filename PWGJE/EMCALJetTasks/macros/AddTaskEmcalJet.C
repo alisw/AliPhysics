@@ -10,8 +10,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag             = "Jet",
   const Double_t minJetPt     = 0.,
   const Bool_t selectPhysPrim = kFALSE,
-  const Int_t useExchangeCont = 0,
-  const Bool_t lockTask       = kTRUE
+  const Bool_t lockTask       = kTRUE,
+  const Int_t useExchangeCont = 0
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -184,8 +184,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag            = "Jet",
   const Double_t minJetPt    = 0.,
   const Bool_t selectPhysPrim = kFALSE,
-  const Int_t useExchangeCont = 0,
-  const Bool_t lockTask       = kTRUE
+  const Bool_t lockTask       = kTRUE,
+  const Int_t useExchangeCont = 0
 )
 {  
   UInt_t jetType = 0;
@@ -216,5 +216,5 @@ AliEmcalJetTask* AddTaskEmcalJet(
     return NULL;
   }
 
-  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, useExchangeCont, lockTask);
+  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, lockTask, useExchangeCont);
 }
