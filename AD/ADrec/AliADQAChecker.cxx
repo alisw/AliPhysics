@@ -94,7 +94,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       AliWarning("ChargeEoIInt0 histogram is not found");
     }
     else {
-    	if(hChargeEoIInt0->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt0->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	if(hChargeEoIInt0->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt0->GetListOfFunctions()->Add(new TPaveText(0.4,0.53,0.85,0.85,"NDC"));
     	for(Int_t i=0; i<hChargeEoIInt0->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hChargeEoIInt0->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -102,29 +102,63 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			QAbox->Clear();
 
     			TH1D *hChargeSlice;
-			Int_t NbadChannels = 0;
-			TString badChannels = " ";
 			
-    			for(Int_t i=0; i<16; i++){
-      				hChargeSlice = hChargeEoIInt0->ProjectionY("hChargeSlice",i+1,i+1);
+			TString messageText = " "; 
+			TString satTextADA = " A-side = ";
+			TString satTextADC = " C-side = ";
+			Char_t satValue[5];
+			Bool_t	medSat = kFALSE; 
+			Bool_t	highSat = kFALSE;
+			Bool_t	hugeSat = kFALSE;
+			
+    			for(Int_t i=0; i<2; i++){
+      				hChargeSlice = hChargeEoIInt0->ProjectionY("hChargeSlice",8*i+1,8*i+9);
 				Double_t saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
-				if(saturation > 0.1){
-					test = 0.1;
-					if(NbadChannels == 0){
-						QAbox->SetFillColor(kRed);
-						QAbox->AddText("Saturation on channel ");
-						}
-					badChannels += i;
-					badChannels += ", ";
-					NbadChannels++;
+				sprintf(satValue, "%1.3f", saturation);
+				if(i == 0) satTextADC +=satValue; 
+				if(i == 1) satTextADA +=satValue;
+				if(saturation > 0.1 && saturation < 0.3){
+					test = 0.7;
+					medSat = kTRUE;
 					}
-				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+				if(saturation > 0.3 && saturation < 0.5){
+					test = 0.3;
+					highSat = kTRUE;
+					}
+				if(saturation > 0.5){
+					test = 0.1;
+					hugeSat = kTRUE;
+					}
 				}
-			if(NbadChannels == 0){
+			if(!medSat && !highSat && !hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("OK");
+        			QAbox->AddText("Saturation OK");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(medSat && !highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kYellow);
+        			QAbox->AddText("Medium Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kOrange);
+        			QAbox->AddText("High Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kRed);
+        			QAbox->AddText("Very High Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
 				}		
+							
     			}
 		}
     	}
@@ -133,7 +167,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       AliWarning("ChargeEoIInt1 histogram is not found");
     }
     else {
-    	if(hChargeEoIInt1->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt1->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	if(hChargeEoIInt1->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt1->GetListOfFunctions()->Add(new TPaveText(0.4,0.53,0.85,0.85,"NDC"));
     	for(Int_t i=0; i<hChargeEoIInt1->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hChargeEoIInt1->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -141,28 +175,61 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			QAbox->Clear();
 
     			TH1D *hChargeSlice;
-			Int_t NbadChannels = 0;
-			TString badChannels = " ";
 			
-    			for(Int_t i=0; i<16; i++){
-      				hChargeSlice = hChargeEoIInt1->ProjectionY("hChargeSlice",i+1,i+1);
+			TString messageText = " "; 
+			TString satTextADA = " A-side = ";
+			TString satTextADC = " C-side = ";
+			Char_t satValue[5];
+			Bool_t	medSat = kFALSE; 
+			Bool_t	highSat = kFALSE;
+			Bool_t	hugeSat = kFALSE;
+			
+    			for(Int_t i=0; i<2; i++){
+      				hChargeSlice = hChargeEoIInt1->ProjectionY("hChargeSlice",8*i+1,8*i+9);
 				Double_t saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
-				if(saturation > 0.1){
-					test = 0.1;
-					if(NbadChannels == 0){
-						QAbox->SetFillColor(kRed);
-						QAbox->AddText("Saturation on channel ");
-						}
-					badChannels += i;
-					badChannels += ", ";
-					NbadChannels++;
+				sprintf(satValue, "%1.3f", saturation);
+				if(i == 0) satTextADC +=satValue; 
+				if(i == 1) satTextADA +=satValue;
+				if(saturation > 0.1 && saturation < 0.3){
+					test = 0.7;
+					medSat = kTRUE;
 					}
-				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+				if(saturation > 0.3 && saturation < 0.5){
+					test = 0.3;
+					highSat = kTRUE;
+					}
+				if(saturation > 0.5){
+					test = 0.1;
+					hugeSat = kTRUE;
+					}
 				}
-			if(NbadChannels == 0){
+			if(!medSat && !highSat && !hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("OK");
+        			QAbox->AddText("Saturation OK");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(medSat && !highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kYellow);
+        			QAbox->AddText("Medium Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kOrange);
+        			QAbox->AddText("High Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kRed);
+        			QAbox->AddText("Very High Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
 				}		
     			}
 		}
@@ -259,7 +326,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       AliWarning("PedestalInt0 histogram is not found");
     }
     else {
-    	if(hPedestalDiffInt0->GetListOfFunctions()->GetEntries()<1) hPedestalDiffInt0->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	if(hPedestalDiffInt0->GetListOfFunctions()->GetEntries()<1) hPedestalDiffInt0->GetListOfFunctions()->Add(new TPaveText(0.15,0.63,0.85,0.85,"NDC"));
     	for(Int_t i=0; i<hPedestalDiffInt0->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hPedestalDiffInt0->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -273,9 +340,9 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       				hPedestalSlice = hPedestalDiffInt0->ProjectionY("hPedestalSlice",i+1,i+1);
 				Double_t mean = hPedestalSlice->GetMean();
 				if(TMath::Abs(mean)>1) {
-					test = 0.1;
+					test = 0.3;
 					if(NbadChannels == 0){
-						QAbox->SetFillColor(kRed);
+						QAbox->SetFillColor(kOrange);
 						QAbox->AddText("Bad pedestal for channel ");
 						}
 					badChannels += i;
@@ -297,7 +364,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       AliWarning("PedestalInt1 histogram is not found");
     }
     else {
-    	if(hPedestalDiffInt1->GetListOfFunctions()->GetEntries()<1) hPedestalDiffInt1->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	if(hPedestalDiffInt1->GetListOfFunctions()->GetEntries()<1) hPedestalDiffInt1->GetListOfFunctions()->Add(new TPaveText(0.15,0.63,0.85,0.85,"NDC"));
     	for(Int_t i=0; i<hPedestalDiffInt1->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hPedestalDiffInt1->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -311,9 +378,9 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       				hPedestalSlice = hPedestalDiffInt1->ProjectionY("hPedestalSlice",i+1,i+1);
 				Double_t mean = hPedestalSlice->GetMean();
 				if(TMath::Abs(mean)>1) {
-					test = 0.1;
+					test = 0.3;
 					if(NbadChannels == 0){
-						QAbox->SetFillColor(kRed);
+						QAbox->SetFillColor(kOrange);
 						QAbox->AddText("Bad pedestal for channel ");
 						}
 					badChannels += i;
@@ -424,7 +491,10 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     //        
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
     //
-    if ( !fImage[esIndex] ) fImage[esIndex] = new TCanvas(title, title,1000,1500);
+    if ( !fImage[esIndex] ) {
+    	if(esIndex != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2000,2820);
+	else fImage[esIndex] = new TCanvas(title, title,400,600);
+	}
     //
     fImage[esIndex]->Clear(); 
     fImage[esIndex]->SetTitle(title); 
@@ -567,7 +637,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	}
     }
     
-
+    //fImage[esIndex]->SaveAs(Form("QAcanvas%d.png",esIndex));
     fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
   }
 }
