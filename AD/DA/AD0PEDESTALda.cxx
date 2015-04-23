@@ -3,8 +3,8 @@
 - Link:       http
 - Raw data test file :          
 - Reference run number : 	      
-- Run Type:   PEDESTAL
-- DA Type:    LDC
+- Run Type:   PEDESTAL/PHYSICS
+- DA Type:    LDC/MON
 - Number of events needed: >=1000
 - Input Files:  argument list
 - Output Files: local files  AD0_Histos.root, AD0_Pedestals_On.dat (Online mapping)
