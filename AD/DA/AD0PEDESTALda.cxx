@@ -41,6 +41,8 @@
 // standard
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream>
+#include <string>
 
 //ROOT
 #include "TROOT.h"
@@ -86,29 +88,41 @@ int main(int argc, char **argv) {
   Int_t    kClockMinRef;   // = 16;   LHC Clock Min for Flag checking
   Int_t    kClockMaxRef;   // = 20;   LHC Clock Max for Flag checking
   Float_t  kChi2Max; 		// = 1.  Maximum chi2 
+  std::string runType;
+  std::string configFile;
 
-  status = daqDA_DB_getFile("AD0_Pedestal_DA.config","./AD0_Pedestal_DA.config");
+  status = daqDA_DB_getFile("AD0_Runtypes.config","AD0_Runtypes.config");
+  
+  if (status) printf("Failed to get Config file (AD0_Runtypes.config) from DAQ DB, status=%d\n", status);
+  else{
+  	ifstream infile("AD0_Runtypes.config");
+  	while(infile>>runType>>configFile){ 
+  		if(runType == getenv("DATE_RUN_TYPE")) break;
+		}
+	}
+  
+  status = daqDA_DB_getFile(configFile.c_str(),configFile.c_str());
   if (status) {
-      printf("Failed to get Config file (AD0_Pedestal_DA.config) from DAQ DB, status=%d\n", status);
+      printf("Failed to get Config file (%s) from DAQ DB, status=%d\n", configFile.c_str() , status);
       printf("Take default values of parameters for pedestal calculation \n");
-      kClockMin  =  0; 
+      kClockMin  =  15; 
       kClockMax  =  20; 
       kLowCut    =  60;   
       kHighCut   =  50;  
-      kClockMinRef  =  0; 
+      kClockMinRef  =  15; 
       kClockMaxRef  =  20; 
       kChi2Max		=  100.;
   } else {
       /* open the config file and retrieve cuts */
-      FILE *fpConfig = fopen("AD0_Pedestal_DA.config","r");
+      FILE *fpConfig = fopen(configFile.c_str(),"r");
       int res = fscanf(fpConfig,"%d %d %d %d %d %d %f",&kClockMin,&kClockMax,&kLowCut,&kHighCut,&kClockMinRef,&kClockMaxRef,&kChi2Max);
       if(res!=7) {
-	    printf("Failed to get values from Config file (AD0_Pedestal_DA.config): wrong file format - 7 integers are expected - \n");
-	    kClockMin  =  0; 
+	    printf("Failed to get values from Config file (%s): wrong file format - 7 integers are expected - \n",configFile.c_str());
+	    kClockMin  =  15; 
         kClockMax  =  20; 
     	kLowCut    =  60;   
         kHighCut   =  50; 
-      	kClockMinRef  =  0; 
+      	kClockMinRef  =  15; 
       	kClockMaxRef  =  20; 
       	kChi2Max	  =  100.;
       }
