@@ -448,9 +448,16 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   if (fParticleCollArray.GetEntriesFast()>0) {
     title[dim] = "No. of tracks";
-    nbins[dim] = 3000;
-    min[dim] = -0.5;
-    max[dim] = 6000-0.5;
+    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+      nbins[dim] = 6000;
+      min[dim] = 0;
+      max[dim] = 3000;
+    }
+    else {
+      nbins[dim] = 200;
+      min[dim] = 0;
+      max[dim] = 200;
+    }
     dim++;
 
     title[dim] = "p_{T,track}^{leading} (GeV/c)";

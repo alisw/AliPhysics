@@ -21,7 +21,8 @@ fUseAliPPVsMultUtils(0),
 fcentvalue(0),
 fncharged05value(0),
 fncharged08value(0),
-fFirstEvent(kFALSE)		
+fFirstEvent(kFALSE),
+fDonotusetrackelts(kFALSE)		
 {
 	 DefineInput(0, TChain::Class());
 	//DefineOutput(1, TList::Class());
@@ -63,7 +64,11 @@ void AliMultiplictyLoaderTask::UserExec(Option_t *)
 		cent=fESD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());	
 	
 	AliESDtrackCuts::MultEstTrackType estType = fESD->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
-        Int_t ncharged05=-10;
+	if(fDonotusetrackelts)
+	{
+		estType = AliESDtrackCuts::kTrackletsITSTPC;
+	}
+	Int_t ncharged05=-10;
 	Int_t ncharged08=-10;
 	if(fUseAliPPVsMultUtils)
 	{

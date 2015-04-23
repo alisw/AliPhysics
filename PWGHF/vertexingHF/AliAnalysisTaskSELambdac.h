@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSELAMBDAC_H
-#define ALIANALYSISTASKSELAMBDAC_H
+#ifndef AliAnalysisTaskSELambdac_H
+#define AliAnalysisTaskSELambdac_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -134,6 +134,9 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TH1F *fMassHistDkTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHist3Pr[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHist3PrTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH2F *fhMassLcPt; //!hist Mass x pt
+  TH2F *fhMassLcplusPt; //!hist Mass x pt Lcplus
+  TH2F *fhMassLcminusPt; //!hist Mass x pt Lcminu
   TH2F *fhEta3Prong;    //!hist. for 3-prong Eta
   TH2F *fhEta3ProngAcc; //!hist. for 3-prong Eta fiducial acc
   TH2F *fhEta3ProngProd; //!hist. for 3-prong Eta fiducial  Prod Cuts
@@ -199,7 +202,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 7
 
-  ClassDef(AliAnalysisTaskSELambdac,7); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdac,8); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif

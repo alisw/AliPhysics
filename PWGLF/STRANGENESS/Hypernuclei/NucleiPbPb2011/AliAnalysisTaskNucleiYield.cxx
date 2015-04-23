@@ -41,6 +41,28 @@ using TMath::TwoPi;
 ClassImp(AliAnalysisTaskNucleiYield);
 ///\endcond
 
+/// Method for the correct logarithmic binning of histograms.
+///
+/// \param h Histogram that has to be correctly binned
+///
+static void BinLogAxis(const TH1 *h) {
+  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
+  const Int_t bins = axis->GetNbins();
+  
+  const Double_t from = axis->GetXmin();
+  const Double_t to = axis->GetXmax();
+  Double_t *newBins = new Double_t[bins + 1];
+  
+  newBins[0] = from;
+  Double_t factor = pow(to / from, 1. / bins);
+  
+  for (Int_t i = 1; i <= bins; i++) {
+    newBins[i] = factor * newBins[i - 1];
+  }
+  axis->Set(bins, newBins);
+  delete [] newBins;
+}
+
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -108,12 +130,15 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fMDCASecondaryTOF(0x0)
 ,fATOFsignal(0x0)
 ,fATPCcounts(0x0)
+,fATPCeLoss(0x0)
 ,fMDCAxyTPC(0x0)
 ,fMDCAzTPC(0x0)
 ,fMDCAxyTOF(0x0)
 ,fMDCAzTOF(0x0)
 ,fMTOFsignal(0x0)
-,fMTPCcounts(0x0) {
+,fMTPCcounts(0x0)
+,fMTPCeLoss(0x0)
+ {
   gRandom->SetSeed(0);
   Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
   Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -243,6 +268,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                               64,0.,TMath::TwoPi(),36,0.2,2.,
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
+    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,800,0,3200);
+    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,800,0,3200);
+    BinLogAxis(fMTPCeLoss);
+    BinLogAxis(fATPCeLoss);
+
     fList->Add(fATOFsignal);
     fList->Add(fATPCcounts);
     fList->Add(fMDCAxyTPC);
@@ -255,6 +285,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fList->Add(fMTOFphiSignal);
     fList->Add(fATPCphiCounts);
     fList->Add(fATOFphiSignal);
+    fList->Add(fATPCeLoss);
+    fList->Add(fMTPCeLoss);
   }
   
   PostData(1,fList);
@@ -384,6 +416,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
     } else {
+      if (track->Charge() > 0) {
+        fMTPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      } else {
+        fATPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      }
       if (!PassesPIDSelection(track)) continue;
       if (track->Charge() > 0) {
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
