@@ -84,7 +84,8 @@ fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
 fOCDBPath(""),
 fSplitMaxInputFileNumber(20),
-fCompactMode(1),
+fLogOutToKeep(""),
+fRootOutToKeep(""),
 fExternalConfig(""),
 fUseOCDBSnapshots(kFALSE),
 fSnapshotDir(""),
@@ -101,6 +102,8 @@ fUseAODMerging(kFALSE)
   // X.YY part of libpythia6.X.YY.so
   //
   
+  SetCompactMode(1);
+
   AddIncludePath("-I$ALICE_ROOT/include");
   
   TString ocdbPath("raw://");
@@ -184,7 +187,7 @@ fUseAODMerging(kFALSE)
   {
     fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
     
-    fCompactMode = 2; // keep AOD as for the time being the filtering driven from AODtrain.C cannot
+    SetCompactMode(2); // keep AOD as for the time being the filtering driven from AODtrain.C cannot
     // add SPD tracklets to muon AODs.
     
     SetVar("VAR_USE_ITS_RECO","1");
@@ -208,7 +211,7 @@ fUseAODMerging(kFALSE)
   {
     fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia6 (and ITS+MUON...)
 
-    fCompactMode = 2; // keep AOD as for the time being the filtering driven from AODtrain.C cannot
+    SetCompactMode(2); // keep AOD as for the time being the filtering driven from AODtrain.C cannot
     // add SPD tracklets to muon AODs.
 
     TString p6env;
@@ -395,29 +398,13 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   
   OutputToJDL(*os,"InputFile",files);
   
-  if ( CompactMode() == 0 )
-  {
-    // store everything
-    OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,sim.log@disk=1",
-           "root_archive.zip:galice*.root,Kinematics*.root,TrackRefs*.root,AliESDs.root,AliAOD.root,AliAOD.Muons.root,Merged.QA.Data.root,Run*.root@disk=2");
-  }
-  else if ( CompactMode() == 1 )
-  {
-    // keep only muon AODs and QA
-    OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,*.log@disk=1",
-           "root_archive.zip:AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
-  }
-  else if ( CompactMode() == 2 )
-  {
-    // keep only AODs and QA
-    OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,sim.log@disk=1",
-                "root_archive.zip:galice*.root,AliAOD.root,Merged.QA.Data.root@disk=2");
-  }
-  else
-  {
-    AliError(Form("Unknown CompactMode %d",CompactMode()));
+  if ( fLogOutToKeep.IsNull() || fRootOutToKeep.IsNull() ) {
+    AliError(Form("Output files not correctly set. Log: %s   Root: %s",fLogOutToKeep.Data(),fRootOutToKeep.Data()));
     delete os;
     return kFALSE;
+  }
+  else {
+    OutputToJDL(*os,"OutputArchive",fLogOutToKeep.Data(),fRootOutToKeep.Data());
   }
   
   OutputToJDL(*os,"splitarguments","--run $1 --event #alien_counter# --eventsPerJob $4");
@@ -697,7 +684,7 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if (!IsValid()) return kFALSE;
   
-  if ( fCompactMode == 1 ) SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.Muons.root\"");
+  if ( fRootOutToKeep.Contains("AliAOD.Muons.root") && ! fRootOutToKeep.Contains("AliAOD.root") ) SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.Muons.root\"");
 
   TString smode(mode);
   smode.ToUpper();
@@ -922,6 +909,66 @@ namespace  {
     {
       out << runlist[j] << std::endl;
     }
+  }
+}
+
+//______________________________________________________________________________
+void AliMuonAccEffSubmitter::SetCompactMode ( Int_t mode )
+{
+  /// Set the compact mode:
+  /// 0 -> keep all root files + all logs
+  /// 1 -> keep only AOD.Muons + all logs
+  /// 2 -> keep only AODs and AOD.Muons + all logs
+  /// 10 -> keep all root files + stout,stderr
+  /// 11 -> keep only AOD.Muons + stout,stderr
+  /// 12 -> keep only AODs and AOD.Muons + stout,stderr
+
+  const char* allLogs = "stderr,stdout,*.log";
+  const char* minLogs = "stderr,stdout";
+  const char* allRoot = "galice*.root,Kinematics*.root,TrackRefs*.root,AliESDs.root,AliAOD.root,AliAOD.Muons.root,Merged.QA.Data.root,Run*.root";
+  const char* muonAodRoot = "AliAOD.Muons.root,Merged.QA.Data.root";
+  const char* aodRoot = "AliAOD.root,Merged.QA.Data.root";
+
+  fLogOutToKeep = "";
+  fRootOutToKeep = "";
+
+  switch (mode) {
+    case 0:
+      fLogOutToKeep = allLogs;
+      fRootOutToKeep = allRoot;
+      break;
+    case 1:
+      fLogOutToKeep = allLogs;
+      fRootOutToKeep = muonAodRoot;
+      break;
+    case 2:
+      fLogOutToKeep = allLogs;
+      fRootOutToKeep = aodRoot;
+      break;
+    case 10:
+      fLogOutToKeep = minLogs;
+      fRootOutToKeep = allRoot;
+      break;
+    case 11:
+      fLogOutToKeep = minLogs;
+      fRootOutToKeep = muonAodRoot;
+      break;
+    case 12:
+      fLogOutToKeep = minLogs;
+      fRootOutToKeep = aodRoot;
+      break;
+    default:
+      AliError(Form("Unknown CompactMode %i",mode));
+      break;
+  }
+
+  if ( ! fLogOutToKeep.IsNull() ) {
+    fLogOutToKeep.Prepend("log_archive.zip:");
+    fLogOutToKeep.Append("@disk=1");
+  }
+  if ( ! fRootOutToKeep.IsNull() ) {
+    fRootOutToKeep.Prepend("root_archive.zip:");
+    fRootOutToKeep.Append("@disk=2");
   }
 }
 
