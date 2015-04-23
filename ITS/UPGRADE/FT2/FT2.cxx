@@ -24,11 +24,30 @@
 #include "AliDetectorPID.h"
 #include "TH2F.h"
 
+ClassImp(FTProbe)
+ClassImp(FT2)
+
 TH2F* hfake = 0;
 
 using namespace AliITSUAux;
 
 float FT2::fgMaxStepTGeo = 1.0;
+
+
+//________________________________________________
+FTProbe::FTProbe() 
+  :fProbeMass(0.14)
+  ,fTPCmomentum(0)
+  ,fTPCSignal(0)
+  ,fTPCSignalN(0)
+  ,fAbsPdgCode(0)
+  ,fPdgCode(0)
+  ,fAbsPdgCodeForTracking(211)
+  ,fTrueMass(0)
+{
+  // def. c-tor
+  
+}
 
 //________________________________________________
 FT2::FT2() :
@@ -50,7 +69,6 @@ fITSRec(0)
 ,fProbeIni()
 ,fKalmanOutward(0)
 ,fUseKalmanOut(kTRUE)
-//,fProbeMass(0.14)
 ,fBz(0.5)
 ,fSimMat(kFALSE)
 ,fAllowDecay(kFALSE)
@@ -405,6 +423,7 @@ Bool_t FT2::InitProbe(TParticle* part)
 	fProbe.fProbeMass = pdgp->Mass();
 	fProbe.fAbsPdgCode = TMath::Abs(pdgCode);
 	fProbe.fPdgCode = pdgCode;
+	fProbe.fTrueMass = fProbe.fProbeMass;
 	//
 	param[0] = ver.Y();
 	param[1] = ver.Z();
@@ -575,7 +594,7 @@ Bool_t FT2::PrepareProbe()
 	}
 	// RS: temporary fix: the errors assigned in clusterizer is sqrt(pixel_extent/12)
 	double eta = fProbe.Eta();
-	fITSerrSclZ = 20e-4*(2.4+0.61*eta*eta)*TMath::Sqrt(1./12.)/fSigZITS;
+	fITSerrSclZ = 20e-4*(1.4+0.61*eta*eta)*TMath::Sqrt(1./12.)/fSigZITS;
 	//
 	return kTRUE;
 }
@@ -596,6 +615,8 @@ Bool_t FT2::ReconstructProbe()
 	fITSPattern = 0;
 	fNClTPC = 0;
 	fCurrITSLr = -1;
+	fProbe.fAbsPdgCodeForTracking = 211; // default assumption is pion
+	fProbe.fProbeMass = TDatabasePDG::Instance()->GetParticle(fProbe.fAbsPdgCodeForTracking)->Mass();
 	//
 	if (fNTPCHits) {
 		// TPC tracking
@@ -1443,7 +1464,7 @@ Double_t FT2::ParticleDecayProbability(Double_t step){
 	
 	TParticlePDG* pdgp = TDatabasePDG::Instance()->GetParticle(fProbe.fAbsPdgCode);
 	
-	Double_t mass		= fProbe.fProbeMass;
+	Double_t mass		= fProbe.fTrueMass;
 	Double_t energy		= TMath::Sqrt(mass*mass+fProbe.GetP()*fProbe.GetP());
 	Double_t lifetime	= pdgp->Lifetime();
 	Double_t sol		= 3.E10; // cm/s
@@ -1470,14 +1491,14 @@ Double_t FT2::ParticleAbsorptionProbability(Double_t length,Double_t rho, Double
 	else if(pdg==+2212){sigma0 = fXSectionHp[4]->GetBinContent(fXSectionHp[4]->FindBin(mom));}
 	else if(pdg==-2212){sigma0 = fXSectionHp[5]->GetBinContent(fXSectionHp[5]->FindBin(mom));}
 	else if(pdg==+11){
-		Double_t mass		= fProbe.fProbeMass;
+		Double_t mass		= fProbe.fTrueMass;
 		Double_t energy		= TMath::Sqrt(mass*mass+mom*mom);
 		Double_t gamma		= energy/mass;
 		Double_t radLength	= (1432.8*A)/(Z*(Z+1)*(11.319-TMath::Log(Z))); // g/cm2
 		return (1.-TMath::Exp(-length*rho/radLength));
 	}
 	else if(pdg==-11){
-		Double_t mass		= fProbe.fProbeMass;
+		Double_t mass		= fProbe.fTrueMass;
 		Double_t energy		= TMath::Sqrt(mass*mass+mom*mom);
 		Double_t gamma		= energy/mass;
 		Double_t radLength	= (1432.8*A)/(Z*(Z+1)*(11.319-TMath::Log(Z))); // g/cm2
