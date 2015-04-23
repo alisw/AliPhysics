@@ -110,7 +110,6 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   fPIDResponse->SetCachePID(fCachePID);
   if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 
-  if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
   if(fTunedOnDataMask != 0) fPIDResponse->SetTunedOnDataMask(fTunedOnDataMask);
 
   if (!fSpecialDetResponse.IsNull()){
@@ -143,6 +142,8 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 
   if (fRun!=fOldRun){
     SetRecoInfo();
+    if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
+
     fOldRun=fRun;
 
     fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
@@ -201,19 +202,19 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     } else {
       fRecoPass = prodInfo.GetRecoPass();
       if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
-	TString fileName(file->GetName());
-	if (fileName.Contains("pass1") ) {
-	  fRecoPass=1;
-	} else if (fileName.Contains("pass2") ) {
-	  fRecoPass=2;
-	} else if (fileName.Contains("pass3") ) {
-	  fRecoPass=3;
-	} else if (fileName.Contains("pass4") ) {
-	  fRecoPass=4;
-	} else if (fileName.Contains("pass5") ) {
-	  fRecoPass=5;
-	}
-    }
+        TString fileName(file->GetName());
+        if (fileName.Contains("pass1") ) {
+          fRecoPass=1;
+        } else if (fileName.Contains("pass2") ) {
+          fRecoPass=2;
+        } else if (fileName.Contains("pass3") ) {
+          fRecoPass=3;
+        } else if (fileName.Contains("pass4") ) {
+          fRecoPass=4;
+        } else if (fileName.Contains("pass5") ) {
+          fRecoPass=5;
+        }
+      }
     }
     if (fRecoPass <= 0) {
       AliError(" ******** Failed to find reconstruction pass number *********");
@@ -222,7 +223,20 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
       AliError("      --> If these are real data: ");
       AliError("          (a) please insert pass number inside the path of your local file  OR");
       AliError("          (b) specify reconstruction pass number when adding PIDResponse task");
-      AliFatal(" no pass number specified for this data file, abort. Asserting AliFatal");
+      AliError("      !!! Note that this will lead to untrustable PID !!!");
+//       AliFatal(" no pass number specified for this data file, abort. Asserting AliFatal");
+    }
+  } else {
+    // we have MC
+    if (fIsTunedOnData) {
+      if (prodInfo.HasLPMPass() && prodInfo.GetRecoPass()!=fRecoPassTuned) {
+        AliWarning ("******* Tuned on data reco pass mismatch *******");
+        AliWarning ("        MC with tune on data is requested,");
+        AliWarningF("        but the anchored reco pass from the 'LPMRawPass=' (%d)",prodInfo.GetRecoPass());
+        AliWarningF("        does not match the reco pass set manually by the user (%d)", fRecoPassTuned);
+        AliWarning ("        falling back to the reco pass from the 'LPMRawPass=' tag");
+        fRecoPassTuned = prodInfo.GetRecoPass();
+      }
     }
   }
 

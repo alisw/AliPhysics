@@ -20,6 +20,7 @@
 class AliProdInfo : public TNamed {
 public:
   enum {kParsedBit=BIT(14)};
+  enum ETagType {kAliroot,kRoot,kOutDir,kPass,kProdType,kProdTag,kPeriod, kNTags};
 
   AliProdInfo();
   AliProdInfo(const TString& name, const TString& title);
@@ -28,6 +29,9 @@ public:
 
   void Init(TList *userInfo);
   void List() const;
+  //
+  const TString& GetTag(ETagType tag) { return fTags[tag]; }
+  //
   TString GetLHCPeriod() const {return fPeriod;}
   TString GetAlirootVersion() const {return fAlirootVersion;}
   Int_t GetAlirootSvnVersion() const {return fAlirootSvnVersion;}
@@ -35,6 +39,8 @@ public:
   Int_t GetRootSvnVersion() const {return fRootSvnVersion;}
   Int_t GetRecoPass() const {return fRecoPass;}
   Bool_t IsMC() const {return fMcFlag;}
+  //
+  Bool_t HasLPMPass() const { return !fTags[kPass].IsNull() && fTags[kPass].IsDigit(); }
   //
   Bool_t IsParsed()                 const {return TestBit(kParsedBit);}
   void   SetParsed(Bool_t v=kTRUE)        {SetBit(kParsedBit);}
@@ -51,13 +57,14 @@ private:
   Int_t   fRootSvnVersion;        // root svn numbering
   Int_t   fRecoPass;              // Reconstruction pass
   //
+  TString fTags[kNTags];          // Array with tag values
   TString fPeriod;                // LHC period
   TString fProductionTag;         // production tag
   TString fAlirootVersion;        // aliroot version used producing data
   TString fRootVersion;           // root version used producing data
 
   //
-  ClassDef(AliProdInfo, 2);     // Combined PID using priors
+  ClassDef(AliProdInfo, 3);     // Combined PID using priors
 };
 
 #endif

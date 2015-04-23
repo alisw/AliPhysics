@@ -43,6 +43,7 @@ AliProdInfo::AliProdInfo()
   // default constructor
   //	
   AliLog::SetClassDebugLevel("AliProdInfo",10);
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
 }
 
 AliProdInfo::AliProdInfo(const TString& name,const TString& title)
@@ -60,6 +61,7 @@ AliProdInfo::AliProdInfo(const TString& name,const TString& title)
   // default constructor
   //	
   AliLog::SetClassDebugLevel("AliProdInfo",10);
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
 }
 
 AliProdInfo::AliProdInfo(TList *userInfoList)
@@ -76,6 +78,7 @@ AliProdInfo::AliProdInfo(TList *userInfoList)
   // default constructor & init
   //	
   AliLog::SetClassDebugLevel("AliProdInfo",10);
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
   Init(userInfoList);
 }
 
@@ -94,6 +97,7 @@ void AliProdInfo::Init(TList *userInfoList)
   fRootSvnVersion=0;
   fMcFlag=kFALSE;
   fRecoPass=-1;
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
   TNamed *prodInfo = (TNamed *)userInfoList->FindObject("alirootVersion");
   if (!prodInfo) {
     AliError("No alirootVersion named object found in user info");
@@ -115,15 +119,7 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData)
     ,"LPMProductionTag="
     ,"LPMAnchorProduction="
   };
-  enum {kAliroot,kRoot,kOutDir,kPass,kProdType,kProdTag,kPeriod};
-  TString aliroot="";
-  TString root="";
-  TString outDir="";
-  TString metadata="";
-  TString lpmRawPass="";
-  TString lpmProdType="";
-  TString lpmProdTag="";
-  TString lpmPeriod="";
+
   TString tmpStr="";
   //
   TString str(prodInfoData->GetTitle());
@@ -133,34 +129,19 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData)
     TObjString *stObj = (TObjString *)tokens->At(i);
     tmpStr = stObj->GetString().Strip(TString::kBoth,' '); // strip irrelevant spaces
     //
-    if (tmpStr.BeginsWith( key[kAliroot] ))
-      aliroot    = tmpStr.ReplaceAll( key[kAliroot] ,"").Strip(TString::kBoth,' ');
-    //
-    else if (tmpStr.BeginsWith( key[kRoot] ))          
-      root       = tmpStr.ReplaceAll( key[kRoot] ,"").Strip(TString::kBoth,' ');
-    //
-    else if (tmpStr.BeginsWith( key[kOutDir] ))
-      outDir     = tmpStr.ReplaceAll( key[kOutDir] ,"").Strip(TString::kBoth,' ');
-    //
-    else if (tmpStr.BeginsWith( key[kPass] ))   
-      lpmRawPass = tmpStr.ReplaceAll( key[kPass] ,"").Strip(TString::kBoth,' ');
-    //
-    else if (tmpStr.BeginsWith( key[kProdType] )) 
-      lpmProdType = tmpStr.ReplaceAll( key[kProdType] ,"").Strip(TString::kBoth,' ');
-    //
-    else if (tmpStr.BeginsWith( key[kProdTag] )) 
-      lpmProdTag = tmpStr.ReplaceAll( key[kProdTag] ,"").Strip(TString::kBoth,' ');
-    //
-    else if (tmpStr.BeginsWith( key[kPeriod] )) 
-      lpmPeriod = tmpStr.ReplaceAll( key[kPeriod] ,"").Strip(TString::kBoth,' ');
-    //
-  }  
+    for (Int_t itag=0; itag<Int_t(kNTags); ++itag) {
+      if (tmpStr.BeginsWith( key[itag] )) {
+        fTags[itag] = tmpStr.ReplaceAll( key[itag] ,"").Strip(TString::kBoth,' ');
+        break;
+      }
+    }
+  }
   delete tokens;
   // now interpret ...
   //
   // extract ALIROOT version
-  if (!aliroot.IsNull()) {
-    TObjArray *tali = (TObjArray *)aliroot.Tokenize(":");
+  if (!fTags[kAliroot].IsNull()) {
+    TObjArray *tali = (TObjArray *)fTags[kAliroot].Tokenize(":");
     TObjString *tos = (TObjString *)tali->At(0);
     fAlirootVersion = "";
     if (tos) {
@@ -189,8 +170,8 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData)
   else AliWarningF("Failed to extract %s version information",key[kAliroot]);
   //
   // extract ROOT version
-  if (!root.IsNull()) { 
-    TObjArray *tali = root.Tokenize(":");
+  if (!fTags[kRoot].IsNull()) {
+    TObjArray *tali = fTags[kRoot].Tokenize(":");
     TObjString *tos = (TObjString *)tali->At(0);
     fRootVersion = "";
     if (tos) {
@@ -220,35 +201,35 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData)
   else AliWarningF("Failed to extract %s version information",key[kRoot]);
   //
   // extract PASS
-  if (!lpmRawPass.IsNull() && lpmRawPass.IsDigit()) fRecoPass = lpmRawPass.Atoi();
+  if (!fTags[kPass].IsNull() && fTags[kPass].IsDigit()) fRecoPass = fTags[kPass].Atoi();
   else {
     AliWarningF("No %s record found, attempting to extract pass from OutputDir",key[kPass]);
     tmpStr = "/pass";
-    if (outDir.IsNull() || !outDir.Contains(tmpStr)
-	|| !sscanf(outDir.Data()+outDir.Index(tmpStr)+tmpStr.Length(),"%d",&fRecoPass)) 
+    if (fTags[kOutDir].IsNull() || !fTags[kOutDir].Contains(tmpStr)
+	|| !sscanf(fTags[kOutDir].Data()+fTags[kOutDir].Index(tmpStr)+tmpStr.Length(),"%d",&fRecoPass))
       AliWarningF("Failed to extract pass number, set to %d",fRecoPass);
   }
   //
   // extract production type (RAW/MC)
-  if (!lpmProdType.IsNull()) fMcFlag = (lpmProdType=="MC") ? kTRUE:kFALSE;
+  if (!fTags[kProdType].IsNull()) fMcFlag = (fTags[kProdType]=="MC") ? kTRUE:kFALSE;
   else {
     AliWarningF("No %s record found, attempting to extract production type from OutputDir",key[kProdType]);
-    if (lpmProdType.Contains("/alice/sim")) fMcFlag = kTRUE;
+    if (fTags[kOutDir].Contains("/alice/sim")) fMcFlag = kTRUE;
   }
   //
   // extract production tag
-  if (!lpmProdTag.IsNull()) fProductionTag = lpmProdTag;
+  if (!fTags[kProdTag].IsNull()) fProductionTag = fTags[kProdTag];
   else {
     AliWarningF("No %s record found, attempting to extract production tag from OutputDir",key[kProdTag]);
     tmpStr = "/LHC";
-    if (!outDir.IsNull() && outDir.Contains(tmpStr)) {
-      fProductionTag = outDir.Data()+outDir.Index(tmpStr)+1;
+    if (!fTags[kOutDir].IsNull() && fTags[kOutDir].Contains(tmpStr)) {
+      fProductionTag = fTags[kOutDir].Data()+fTags[kOutDir].Index(tmpStr)+1;
       if (fProductionTag.Contains("/")) fProductionTag.Resize(tmpStr.Index("/"));
     }
   }
   //
   // extract (anchored) period
-  if (!lpmPeriod.IsNull()) fPeriod = lpmPeriod;
+  if (!fTags[kPeriod].IsNull()) fPeriod = fTags[kPeriod];
   else {
     AliWarningF("No %s record found, for raw data production tag %s will be assigned",key[kPeriod],fProductionTag.Data());
     if (!fMcFlag) fPeriod = fProductionTag;
@@ -268,6 +249,10 @@ void AliProdInfo::List() const {
     AliInfo(Form("  LHC Period: %s",fPeriod.Data()));
     AliInfo(Form("  ProductionTag: %s",fProductionTag.Data()));
     AliInfo(Form("  MC Flag: %d",fMcFlag));
+    AliInfo("  - Buffered production tags:");
+    for (Int_t itag=0; itag<Int_t(kNTags); ++itag) {
+      AliInfo(Form("    %s",fTags[itag].Data()));
+    }
   } else {
     AliInfo("ALICE Production Info not available in UserInfo");
   }
