@@ -515,13 +515,15 @@ int main(int argc, char **argv) {
   	 int index=-1;
 	 int detector = rawStreamZDC->GetSector(0);
 	 int sector = rawStreamZDC->GetSector(1);
-         int sigcode = rawStreamZDC->GetADCSignFromMap(rawStreamZDC->GetADCChannel());
-	 rawStreamZDC->SetCabledSignal(sigcode);
 	 //
 //if(rawStreamZDC->GetADCModule()>=0 && rawStreamZDC->GetADCModule()<=1) printf(" **** ADC mod.%d ch.%d cabled signal %d\n",rawStreamZDC->GetADCModule(),rawStreamZDC->GetADCChannel(),rawStreamZDC->GetCabledSignal());
 	 
   	 if((rawStreamZDC->IsADCDataWord()) && (detector!=-1) &&
             (rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo)){
+          // setting signal code!!!!!!!!!!!!!!!
+	  int sigcode = rawStreamZDC->GetADCSignFromMap(rawStreamZDC->GetADCChannel());
+	  rawStreamZDC->SetCabledSignal(sigcode);
+	  //
 	  if(sector!=5){ // Physics signals
     	    if(detector==1) index = sector; // *** ZNC
 	    else if(detector==2) index = sector+5; // *** ZPC
@@ -700,7 +702,7 @@ int main(int argc, char **argv) {
          corrCoeff0[i] = ffunchg->GetParameter(0);
          corrCoeff1[i] = ffunchg->GetParameter(1);
        }
-       printf("\t corrCoeff0[%d] = %f, corrCoeff1[%d] = %f\n",i, corrCoeff0[i], i, corrCoeff1[i]);
+       //printf("\t corrCoeff0[%d] = %f, corrCoeff1[%d] = %f\n",i, corrCoeff0[i], i, corrCoeff1[i]);
     }
     fprintf(fileShuttle,"\t%f\t%f\n",corrCoeff0[i],corrCoeff1[i]);
   } 
@@ -714,7 +716,7 @@ int main(int argc, char **argv) {
          corrCoeff0[i+24] = ffunclg->GetParameter(0);
          corrCoeff1[i+24] = ffunclg->GetParameter(1);
        }
-       printf("\t corrCoeff0[%d] = %f, corrCoeff1[%d] = %f\n",i+24, corrCoeff0[i+24], i+24, corrCoeff1[i+24]);
+       //printf("\t corrCoeff0[%d] = %f, corrCoeff1[%d] = %f\n",i+24, corrCoeff0[i+24], i+24, corrCoeff1[i+24]);
     }
     fprintf(fileShuttle,"\t%f\t%f\n",corrCoeff0[i+24],corrCoeff1[i+24]);
   }    
