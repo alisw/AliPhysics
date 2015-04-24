@@ -13,7 +13,8 @@ AliAnalysisTaskRhoMassSparse* AddTaskRhoMassSparse(
    TF1           *sfunc       = 0,
    const UInt_t   exclJets    = 2,
    const Bool_t   histo       = kFALSE,
-   const char    *taskname    = "RhoMass"
+   const char    *taskname    = "RhoMass",
+   const Bool_t   fRhoCMS      = kTRUE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
