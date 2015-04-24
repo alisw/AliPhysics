@@ -105,7 +105,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
 
   // set soft track min/max
-  void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
+  void                    SetSoftTrackMinMaxPt_ep(Float_t min, Float_t max)          {fSoftTrackMinPt_ep = min; fSoftTrackMaxPt_ep = max;}
   void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
 
   // set centrality classes up
@@ -170,6 +170,9 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // efficiency correction setter
   void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorr = effcorr; }
 
+  // use local rho to correct jet pt in correlation sparses
+  void                    SetCorrectJetPt(Bool_t cpt)           { fcorrJetPt = cpt; }
+
   // jet container - setters
   void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
   void SetContainerPIDJets(Int_t c)         { fContainerPIDJets      = c;}
@@ -220,8 +223,8 @@ protected:
   detectorType           fDetectorType;          // type of detector
 
   // used for event plane resolution calculation
-  Float_t                fSoftTrackMinPt;        // min pt for soft tracks
-  Float_t                fSoftTrackMaxPt;        // max pt for soft tracks
+  Float_t                fSoftTrackMinPt_ep;        // min pt for soft tracks
+  Float_t                fSoftTrackMaxPt_ep;        // max pt for soft tracks
   Int_t                  fNAcceptedTracks;       //! number of accepted tracks
   AliEmcalJet*           fLeadingJet;            //! leading jet
   Float_t                fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
@@ -241,6 +244,9 @@ protected:
 
   // efficiency correction
   Int_t          fDoEffCorr;
+
+  // correct jet pt
+  Bool_t         fcorrJetPt;
 
   // switches for plots
   Bool_t		 doPlotGlobalRho;

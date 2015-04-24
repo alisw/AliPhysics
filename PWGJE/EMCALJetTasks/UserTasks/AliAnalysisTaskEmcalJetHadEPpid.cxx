@@ -79,13 +79,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
   fDetectorType(kVZEROComb),
-  fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.),
+  fSoftTrackMinPt_ep(0.15), fSoftTrackMaxPt_ep(5.),
   fNAcceptedTracks(0), fLeadingJet(0), fExcludeLeadingJetsFromFit(1.),
   fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fCentBinSize(1),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
-  fDoEffCorr(0),
+  fDoEffCorr(0), fcorrJetPt(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
@@ -198,13 +198,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
   fDetectorType(kVZEROComb),
-  fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), 
+  fSoftTrackMinPt_ep(0.15), fSoftTrackMaxPt_ep(5.), 
   fNAcceptedTracks(0), fLeadingJet(0), fExcludeLeadingJetsFromFit(1.),
   fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fCentBinSize(1),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
-  fDoEffCorr(0),
+  fDoEffCorr(0), fcorrJetPt(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
@@ -1228,10 +1228,15 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
       // does our max track or cluster pass the bias?
       if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-        // set up and fill Jet-Hadron Correction THnSparse
-        Double_t CorrEntries[4] = {fCent, jet->Pt(), dEP, zVtx};
-        fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with Correction entries
-
+        // set up and fill Jet-Hadron trigger jets THnSparse
+        if(fcorrJetPt) { 
+          Double_t CorrEntries[4] = {fCent, jetPtLocal, dEP, zVtx};
+          fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
+        } else { // don't correct jet pt
+          Double_t CorrEntries[4] = {fCent, jet->Pt(), dEP, zVtx};
+          fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
+        }
+ 
         if(GetBeamType() == 1) fHistLocalRhoJetpt->Fill(jetPtLocal);
       }
 
@@ -1283,8 +1288,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // does our max track or cluster pass the bias?
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
           // set up and fill Jet-Hadron THnSparse
-          Double_t triggerEntries[9] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
-          if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+          if(fcorrJetPt){
+            Double_t triggerEntries[9] = {fCent, jetPtLocal, track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
+            if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+          } else { // don't correct jet pt
+            Double_t triggerEntries[9] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
+            if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+          }
 
           // fill histo's
           if(makeQAhistos) fHistSEphieta->Fill(dphijh, deta); // single event distribution
@@ -1448,25 +1458,44 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
           if (nPID == -99) nPID = 14;
  	      fHistPID->Fill(nPID);
 
-          // PID sparse getting filled 
-          if (allpidAXIS) { // FILL ALL axis
-			Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+          // PID sparse getting filled
+          if(fcorrJetPt){
+            if (allpidAXIS) { // FILL ALL axis
+			  Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPtLocal,
                                       nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
   				      				  nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
  									  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
                                       nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
                                       nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
                                       }; //array for PID sparse     
-		    fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
-		  } else {
-            // PID sparse getting filled 
-            Double_t pid_Entries[12] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+		      fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
+		    } else {
+              // PID sparse getting filled 
+              Double_t pid_Entries[12] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPtLocal,
                                       nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
   				      				  nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
                                       }; //array for PID sparse                           
-            fhnPID->Fill(pid_Entries, 1.0/trefficiency);   // fill Sparse histo of PID tracks 
-		  } // minimal pid sparse filling
-
+              fhnPID->Fill(pid_Entries, 1.0/trefficiency);   // fill Sparse histo of PID tracks 
+		    } // minimal pid sparse filling
+          } else { // don't correct jet pt
+            if (allpidAXIS) { // FILL ALL axis
+			  Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+  			        				  nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
+ 			    					  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
+                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
+                                      nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
+                                      }; //array for PID sparse     
+		      fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
+		    } else {
+              // PID sparse getting filled 
+              Double_t pid_Entries[12] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+  				      				  nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
+                                      }; //array for PID sparse                           
+              fhnPID->Fill(pid_Entries, 1.0/trefficiency);   // fill Sparse histo of PID tracks 
+		    } // minimal pid sparse filling
+          } // don't correct jet pet
        	} // end of doPID check
 
   	    // get track pt bin
@@ -1582,6 +1611,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      	if (jet->Pt()<0.1) continue;
     	if (!AcceptMyJet(jet)) continue;
 
+        Double_t jetPtLocalmix = -500; // initialize corr jet pt
+        if(GetBeamType() == 1) {
+          fLocalRhoVal = fLocalRho->GetLocalVal(jet->Phi(), fJetRad); //GetJetRadius(0)); // get local rho value
+          jetPtLocalmix = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
+        }
+
         fHistEventQA->Fill(16); // event mixing jets
 		
         // set cut to do event mixing only if we have a jet meeting our pt threshold (bias applied below)
@@ -1616,8 +1651,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               mixefficiency = EffCorrection(part->Eta(), part->Pt(), fDoEffCorr);                           
 
               // create / fill mixed event sparse
-              Double_t triggerEntries[9] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
-              fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+              if(fcorrJetPt) {
+                Double_t triggerEntries[9] = {fCent,jetPtLocalmix,part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
+                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+              } else { // don't correct jet pt
+                Double_t triggerEntries[9] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
+                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+              }
 
               fHistEventQA->Fill(18); // event mixing - nbgtracks
               if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./(nMix*mixefficiency));
@@ -1909,17 +1949,24 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
       break;
 
    case 1:
-      label = "Jet p_{T}";
-      nbins = 50; // 216
-      xmin = 0.;
-      xmax = 250.; // 216
-      break;
+      if(fcorrJetPt) {
+        label = "Jet p_{T}";
+        nbins = 50;
+        xmin = -50.;
+        xmax = 200.;
+      } else { // don't correct jet pt
+        label = "Jet p_{T}";
+        nbins = 50;
+        xmin = 0.;
+        xmax = 250.;
+      }
+      break;        
 
    case 2:
       label = "Track p_{T}";
-      nbins = 80; //300; // 750 pid
+      nbins = 80;
       xmin = 0.;
-      xmax = 20.; //75.;
+      xmax = 20.;
       break;
 
     case 3:
@@ -2074,9 +2121,9 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 1:
       label = "Track p_{T}";
-      nbins = 80; //300; // 750 
+      nbins = 80; 
       xmin = 0.;
-      xmax = 20.; //75.; 
+      xmax = 20.; 
       break;
 
    case 2:
@@ -2122,10 +2169,17 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       break;
 
    case 8: 
-      label = "Jet p_{T}";
-      nbins = 50; // 216 
-      xmin = 0.;
-      xmax = 250.; // 216
+      if(fcorrJetPt) {
+        label = "Jet p_{T}";
+        nbins = 50;
+        xmin = -50.;
+        xmax = 200.;
+      } else { // don't correct jet pt
+        label = "Jet p_{T}";
+        nbins = 50;
+        xmin = 0.;
+        xmax = 250.;
+      }
       break;
 
    case 9:
@@ -2365,10 +2419,17 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsCorr(Int_t iEntry, TString &la
       break;
 
    case 1:
-      label = "Jet p_{T}";
-      nbins = 50; // 216
-      xmin = 0.;
-      xmax = 250.; // 216
+      if(fcorrJetPt) {
+        label = "Jet p_{T}";
+        nbins = 50;
+        xmin = -50.;
+        xmax = 200.;
+      } else { // don't correct jet pt
+        label = "Jet p_{T}";
+        nbins = 50;
+        xmin = 0.;
+        xmax = 250.;
+      }
       break;
 
    case 2:
@@ -2659,7 +2720,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneTPC(Double_t* tpc)
            // apply general track cuts
            if(TMath::Abs(track->Eta())>0.9) continue;
            if(track->Pt()<0.15) continue;
-           if(track->Pt() < fSoftTrackMinPt || track->Pt() > fSoftTrackMaxPt) continue; // APPLY soft cut
+           if(track->Pt() < fSoftTrackMinPt_ep || track->Pt() > fSoftTrackMaxPt_ep) continue; // APPLY soft cut
            if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < fJetRad*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRad - fEtamax ) > 0 )) continue;
            fNAcceptedTracks++;
 
@@ -2730,7 +2791,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneResolution(Double_t vze
            // apply track cuts
            if(TMath::Abs(track->Eta())>0.9) continue;
            if(track->Pt()<0.15) continue;        
-           if(track->Pt() < fSoftTrackMinPt || track->Pt() > fSoftTrackMaxPt) continue;
+           if(track->Pt() < fSoftTrackMinPt_ep || track->Pt() > fSoftTrackMaxPt_ep) continue;
            if(track->Eta() < 0 ) {
                // negative Eta q-vect calculation
                qx2a+= TMath::Cos(2.*track->Phi());
