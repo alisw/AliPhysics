@@ -361,6 +361,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh2EtaPhiMedCone[i] = 0;
 
     fh1VtxZ[i] = 0;
+    fh1VtxZME[i] = 0;
     fh2VtxXY[i] = 0;
   }
 }
@@ -638,6 +639,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh2EtaPhiMedCone[i] = 0;
 
     fh1VtxZ[i] = 0;
+    fh1VtxZME[i] = 0;
     fh2VtxXY[i] = 0;
   }
   // Define input and output slots here
@@ -958,6 +960,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     // event histograms
     fh1VtxZ[i] = new TH1D(Form("fh1VtxZ_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 150, -1.5 * fdCutVertexZ, 1.5 * fdCutVertexZ);
     fOutputListQA->Add(fh1VtxZ[i]);
+    fh1VtxZME[i] = new TH1D(Form("fh1VtxZME_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 150, -1.5 * fdCutVertexZ, 1.5 * fdCutVertexZ);
+    fOutputListQA->Add(fh1VtxZME[i]);
     fh2VtxXY[i] = new TH2D(Form("fh2VtxXY_%d", i), Form("#it{xy} coordinate of the primary vertex, cent: %s;#it{x} (cm);#it{y} (cm)", GetCentBinLabel(i).Data()), 200, -0.2, 0.2, 500, -0.5, 0.5);
     fOutputListQA->Add(fh2VtxXY[i]);
     // fOutputListStd->Add([i]);
@@ -1465,12 +1469,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh2EventCentTracks->Fill(fdCentrality, iNTracks);
 
   AliEventPool* pool = 0;
+  Bool_t bPoolReady = kFALSE; // status of pool
+  Double_t dZVtxME = -100; // z_vtx for events used in mixed events
   if(fbCorrelations)
   {
     AliAODVertex* vertex = fAODIn->GetPrimaryVertex();
-    pool = fPoolMgr->GetEventPool(fdCentrality, vertex->GetZ());
+    dZVtxME = vertex->GetZ();
+    pool = fPoolMgr->GetEventPool(fdCentrality, dZVtxME);
     if(!pool)
-      AliFatal(Form("No pool found for centrality = %g, z_vtx = %g", fdCentrality, vertex->GetZ()));
+      AliFatal(Form("No pool found for centrality = %g, z_vtx = %g", fdCentrality, dZVtxME));
+    bPoolReady = pool->IsReady();
     if(fDebug > 5) pool->SetDebug(1);
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: events in pool = %d, jets in pool = %d\n", pool->GetCurrentNEvents(), pool->NTracksInPool());
   }
@@ -2353,7 +2361,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
       }
       // Fill azimuthal correlation V0-jet in mixed events
-      if(pool->IsReady())
+      if(bPoolReady)
       {
         for(Int_t iMix = 0; iMix < pool->GetCurrentNEvents(); iMix++)
         {
@@ -2619,7 +2627,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   //===== End of V0 loop =====
 
   if(fbCorrelations && iNJetSel)
+  {
+    if(bPoolReady)
+      fh1VtxZME[iCentIndex]->Fill(dZVtxME); // fill z_vtx if event was used for event mixing
     pool->UpdatePool(arrayMixedEventAdd); // updated the pool with jets from this event
+  }
 
   fh1V0CandPerEvent->Fill(iNV0CandTot);
   fh1V0CandPerEventCentK0s[iCentIndex]->Fill(iNV0CandK0s);
