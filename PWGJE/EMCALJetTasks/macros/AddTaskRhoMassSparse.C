@@ -9,6 +9,7 @@ AliAnalysisTaskRhoMassSparse* AddTaskRhoMassSparse(
    Double_t       jetradius   = 0.2,
    const char    *cutType     = "TPC",
    Double_t       jetareacut  = 0.01,
+   Double_t       jetptcut    = 0.0,
    Double_t       emcareacut  = 0,
    TF1           *sfunc       = 0,
    const UInt_t   exclJets    = 2,
@@ -55,7 +56,7 @@ AliAnalysisTaskRhoMassSparse* AddTaskRhoMassSparse(
   if (bkgJetCont) {
     bkgJetCont->SetJetAreaCut(jetareacut);
     bkgJetCont->SetAreaEmcCut(emcareacut);
-    bkgJetCont->SetJetPtCut(0);
+    bkgJetCont->SetJetPtCut(jetptcut);
     bkgJetCont->ConnectParticleContainer(trackCont);
     bkgJetCont->ConnectClusterContainer(clusterCont);
   }
