@@ -39,15 +39,6 @@ class AliADRecoParam : public AliDetectorRecoParam
   void SetTimeWindowBGCLow(Float_t val) { fTimeWindowBGCLow = val; }
   void SetTimeWindowBGCUp (Float_t val) { fTimeWindowBGCUp  = val; }
   void SetMaxResid (Float_t val) { fMaxResid  = val; }
-  void SetNTdcTimeBins (Int_t val) { fNTdcTimeBins = val; }
-  void SetTdcTimeMin (Float_t val) { fTdcTimeMin = val; }
-  void SetTdcTimeMax (Float_t val) { fTdcTimeMax = val; }
-  void SetNTdcWidthBins (Int_t val) { fNTdcWidthBins = val; }
-  void SetTdcWidthMin (Float_t val) { fTdcWidthMin = val; }
-  void SetTdcWidthMax (Float_t val) { fTdcWidthMax = val; }
-  void SetNChargeChannelBins (Int_t val) { fNChargeChannelBins = val; }
-  void SetNChargeSideBins (Int_t val) { fNChargeSideBins = val; }
-  void SetNChargeCorrBins (Int_t val) { fNChargeCorrBins = val; }
 
   Float_t GetNSigmaPed() const { return fNSigmaPed; }
   Int_t  GetStartClock() const { return fStartClock; }
@@ -64,16 +55,7 @@ class AliADRecoParam : public AliDetectorRecoParam
   Float_t  GetTimeWindowBGCLow() const { return fTimeWindowBGCLow; }
   Float_t  GetTimeWindowBGCUp () const { return fTimeWindowBGCUp ; }
   Float_t  GetMaxResid () const { return fMaxResid; } 
-  Int_t GetNTdcTimeBins() const { return fNTdcTimeBins; }
-  Float_t GetTdcTimeMin() const { return fTdcTimeMin; }
-  Float_t GetTdcTimeMax() const { return fTdcTimeMax; }
-  Int_t GetNTdcWidthBins() const { return fNTdcWidthBins; }
-  Float_t GetTdcWidthMin() const { return fTdcWidthMin; }
-  Float_t GetTdcWidthMax() const { return fTdcWidthMax; }
-  Int_t GetNChargeChannelBins() const { return fNChargeChannelBins; }
-  Int_t GetNChargeSideBins() const { return fNChargeSideBins; }
-  Int_t GetNChargeCorrBins() const { return fNChargeCorrBins; }
-
+  
  private:
 
   Float_t fNSigmaPed;  // Number of pedestal sigmas for adc cut
@@ -94,18 +76,6 @@ class AliADRecoParam : public AliDetectorRecoParam
   Float_t fTimeWindowBGCUp;   // BGC window (upper cut)
   Float_t fMaxResid;   	      // Maximum residual of a single channel time
   
-  //QA histogram bins and limits
-  Int_t fNTdcTimeBins;	//Time bining
-  Float_t fTdcTimeMin;	
-  Float_t fTdcTimeMax;
-  Int_t fNTdcWidthBins; //Width binning
-  Float_t fTdcWidthMin;
-  Float_t fTdcWidthMax;
-  Int_t fNChargeChannelBins;	//Charge binnings
-  Int_t fNChargeSideBins;
-  Int_t fNChargeCorrBins;
-
-
-  ClassDef(AliADRecoParam, 2)
+  ClassDef(AliADRecoParam, 3)
 };
 #endif

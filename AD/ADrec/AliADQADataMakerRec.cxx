@@ -49,6 +49,7 @@
 #include "AliADTrending.h"
 #include "AliADCalibData.h"
 #include "AliADRecoParam.h"
+#include "AliADQAParam.h"
 #include "AliCTPTimeParams.h"
 #include "event.h"
 
@@ -59,6 +60,7 @@ AliADQADataMakerRec::AliADQADataMakerRec() :
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kAD), "AD Quality Assurance Data Maker"),
   fCalibData(0x0),
   fRecoParam(0x0),
+  fQAParam(0x0),
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
@@ -83,6 +85,7 @@ AliADQADataMakerRec::AliADQADataMakerRec(const AliADQADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fCalibData(0x0),
   fRecoParam(0x0),
+  fQAParam(0x0),
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
@@ -130,6 +133,31 @@ AliADCalibData* AliADQADataMakerRec::GetCalibData() const
 
   return calibdata;
 }
+//____________________________________________________________________________
+AliADQAParam* AliADQADataMakerRec::GetQAParam() const
+
+{
+  AliCDBManager *man = AliCDBManager::Instance();
+
+  AliCDBEntry *entry=0;
+
+  entry = man->Get("AD/Calib/QAParam",fRun);
+  if(!entry){
+    AliWarning("Load of QA param from default storage failed!");
+    AliWarning("QA parameters will be loaded from local storage ($ALICE_ROOT)");
+	
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    entry = man->Get("AD/Calib/QAParam",fRun);
+  }
+  // Retrieval of data in directory AD/Calib/QA:
+
+  AliADQAParam *QAParam = 0;
+
+  if (entry) QAParam = (AliADQAParam*) entry->GetObject();
+  if (!QAParam)  AliFatal("No QA param from calibration database !");
+
+  return QAParam;
+}
 //____________________________________________________________________________ 
 void AliADQADataMakerRec::StartOfDetectorCycle()
 {
@@ -138,6 +166,7 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   // Reset of the histogram used - to have the trend versus time -
  
   fCalibData = GetCalibData();
+  fQAParam = GetQAParam();
   fRecoParam = (AliADRecoParam*)GetRecoParam();
  
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
@@ -429,7 +458,7 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
 void AliADQADataMakerRec::InitRaws()
 {
   // Creates RAW histograms in Raws subdir
-  if(!fRecoParam) fRecoParam = (AliADRecoParam*)GetRecoParam();
+  if(!fQAParam) fQAParam = (AliADQAParam*)GetQAParam();
  
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
@@ -437,30 +466,33 @@ void AliADQADataMakerRec::InitRaws()
 
   const Int_t kNintegrator  =    2;
  
-  const Int_t kNTdcTimeBins  = fRecoParam->GetNTdcTimeBins();
-  const Float_t kTdcTimeMin    =  fRecoParam->GetTdcTimeMin();
-  const Float_t kTdcTimeMax    = fRecoParam->GetTdcTimeMax();
-  const Int_t kNTdcWidthBins =  fRecoParam->GetNTdcWidthBins();
-  const Float_t kTdcWidthMin   =    fRecoParam->GetTdcWidthMin();
-  const Float_t kTdcWidthMax   =  fRecoParam->GetTdcWidthMax();
-  const Int_t kNChargeChannelBins   =  fRecoParam->GetNChargeChannelBins();
-  const Int_t kNChargeSideBins   = fRecoParam->GetNChargeSideBins();
-  const Int_t kNChargeCorrBins   = fRecoParam->GetNChargeCorrBins();
+  const Int_t kNTdcTimeBins  = fQAParam->GetNTdcTimeBins();
+  const Float_t kTdcTimeMin    =  fQAParam->GetTdcTimeMin();
+  const Float_t kTdcTimeMax    = fQAParam->GetTdcTimeMax();
+  const Int_t kNTdcWidthBins =  fQAParam->GetNTdcWidthBins();
+  const Float_t kTdcWidthMin   =    fQAParam->GetTdcWidthMin();
+  const Float_t kTdcWidthMax   =  fQAParam->GetTdcWidthMax();
+  const Int_t kNChargeChannelBins   =  fQAParam->GetNChargeChannelBins();
+  const Int_t kChargeChannelMin   =  fQAParam->GetChargeChannelMin();
+  const Int_t kChargeChannelMax   =  fQAParam->GetChargeChannelMax();
+  const Int_t kNChargeSideBins   = fQAParam->GetNChargeSideBins();
+  const Int_t kChargeSideMin   = fQAParam->GetChargeSideMin();
+  const Int_t kChargeSideMax   = fQAParam->GetChargeSideMax();
+  const Int_t kNChargeCorrBins   = fQAParam->GetNChargeCorrBins();
+  const Int_t kChargeCorrMin   = fQAParam->GetChargeCorrMin();
+  const Int_t kChargeCorrMax   = fQAParam->GetChargeCorrMax();
+     
+  const Int_t   kNPairTimeCorrBins = fQAParam->GetNPairTimeCorrBins(); 
+  const Float_t kPairTimeCorrMin =  fQAParam->GetPairTimeCorrMin();
+  const Float_t kPairTimeCorrMax =  fQAParam->GetPairTimeCorrMax(); 
    
-  const Float_t kChargeChannelMin     =    1;
-  const Float_t kChargeChannelMax     = 1+kNChargeChannelBins;
-  const Float_t kChargeSideMin     =    1;
-  const Float_t kChargeSideMax     = 1+kNChargeSideBins;
-  const Float_t kChargeCorrMin     =    0;
-  const Float_t kChargeCorrMax     = kNChargeCorrBins;
+  const Int_t kNPairTimeDiffBins = fQAParam->GetNPairTimeDiffBins();
+  const Float_t kPairTimeDiffMin = fQAParam->GetPairTimeDiffMin();
+  const Float_t kPairTimeDiffMax = fQAParam->GetPairTimeDiffMax(); 
   
-  const Int_t kNTimeCorrBins = 614; 
-  const Float_t kTimeCorrMin = 70.019531;
-  const Float_t kTimeCorrMax =  129.980469; 
-   
-  const Int_t kNTimeDiffBins = 154; 
-  const Float_t kTimeDiffMin = -15.039062;
-  const Float_t kTimeDiffMax =  15.039062;
+  const Int_t   kNMeanTimeCorrBins = fQAParam->GetNMeanTimeCorrBins();
+  const Float_t kMeanTimeCorrMin =   fQAParam->GetMeanTimeCorrMin();
+  const Float_t kMeanTimeCorrMax =   fQAParam->GetMeanTimeCorrMax();    
   
   const Int_t kNChannelBins  =   16;
   const Float_t kChannelMin    =    -0.5;
@@ -557,7 +589,7 @@ void AliADQADataMakerRec::InitRaws()
   h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t{C} [ns];Counts",1024,-150,150);
   Add2RawsList(h1d,kMeanTimeDiff, expert, !image, !saveCorr); iHisto++;
 
-  h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNTdcTimeBins/10, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins/10, kTdcTimeMin,kTdcTimeMax) ;  
+  h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNMeanTimeCorrBins,kMeanTimeCorrMin,kMeanTimeCorrMax,kNMeanTimeCorrBins, kMeanTimeCorrMin,kMeanTimeCorrMax) ;  
   Add2RawsList(h2d,kMeanTimeCorr, expert, !image, !saveCorr);   iHisto++;
  
   h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t{C} [ns];AD Mean time t_{A} + t{C} [ns]", 99, -150.0, 149.707031, 100, 0.0, 400.390625);  
@@ -666,28 +698,28 @@ void AliADQADataMakerRec::InitRaws()
   nCorrelation = 0;
   for(Int_t i=0;i<8;i++){
   	for(Int_t j=7;j>i;j--){
-  		h2d = new TH2F(Form("TimeCorr/H2D_kNTimeCorrADA_%d_%d",i,j),Form("Time Correlation ADA module%d - module%d",i,j),kNTimeCorrBins,kTimeCorrMin,kTimeCorrMax,kNTimeCorrBins,kTimeCorrMin,kTimeCorrMax);
+  		h2d = new TH2F(Form("TimeCorr/H2D_kNTimeCorrADA_%d_%d",i,j),Form("Time Correlation ADA module%d - module%d",i,j),kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax,kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax);
 		Add2RawsList(h2d,kNTimeCorrADA+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
 		}
 	}
   nCorrelation = 0;
   for(Int_t i=0;i<8;i++){
   	for(Int_t j=7;j>i;j--){
-  		h2d = new TH2F(Form("TimeCorr/H2D_kNTimeCorrADC_%d_%d",i,j),Form("Time Correlation ADC module%d - module%d",i,j),kNTimeCorrBins,kTimeCorrMin,kTimeCorrMax,kNTimeCorrBins,kTimeCorrMin,kTimeCorrMax);
+  		h2d = new TH2F(Form("TimeCorr/H2D_kNTimeCorrADC_%d_%d",i,j),Form("Time Correlation ADC module%d - module%d",i,j),kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax,kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax);
 		Add2RawsList(h2d,kNTimeCorrADC+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
 		}
 	}
   nCorrelation = 0;
   for(Int_t i=0;i<8;i++){
   	for(Int_t j=7;j>i;j--){
-  		h1d = new TH1F(Form("TimeDiff/H1D_kNTimeDiffADA_%d_%d",i,j),Form("Time Difference ADA module%d - module%d",i,j),kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
+  		h1d = new TH1F(Form("TimeDiff/H1D_kNTimeDiffADA_%d_%d",i,j),Form("Time Difference ADA module%d - module%d",i,j),kNPairTimeDiffBins,kPairTimeDiffMin,kPairTimeDiffMax);
 		Add2RawsList(h1d,kNTimeDiffADA+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
 		}
 	}
   nCorrelation = 0;
   for(Int_t i=0;i<8;i++){
   	for(Int_t j=7;j>i;j--){
-  		h1d = new TH1F(Form("TimeDiff/H1D_kNTimeDiffADC_%d_%d",i,j),Form("Time Difference ADC module%d - module%d",i,j),kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
+  		h1d = new TH1F(Form("TimeDiff/H1D_kNTimeDiffADC_%d_%d",i,j),Form("Time Difference ADC module%d - module%d",i,j),kNPairTimeDiffBins,kPairTimeDiffMin,kPairTimeDiffMax);
 		Add2RawsList(h1d,kNTimeDiffADC+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
 		}
 	}
