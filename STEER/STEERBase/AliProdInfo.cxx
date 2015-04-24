@@ -43,7 +43,7 @@ AliProdInfo::AliProdInfo()
   // default constructor
   //	
   AliLog::SetClassDebugLevel("AliProdInfo",10);
-  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]="";
 }
 
 AliProdInfo::AliProdInfo(const TString& name,const TString& title)
@@ -61,7 +61,7 @@ AliProdInfo::AliProdInfo(const TString& name,const TString& title)
   // default constructor
   //	
   AliLog::SetClassDebugLevel("AliProdInfo",10);
-  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]="";
 }
 
 AliProdInfo::AliProdInfo(TList *userInfoList)
