@@ -13,40 +13,49 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-#include "AliLog.h"
+#include "AliADQAParam.h"
 
-#include "AliADRecoParam.h"
-
-ClassImp(AliADRecoParam)
+ClassImp(AliADQAParam)
 
 //_____________________________________________________________________________
-AliADRecoParam::AliADRecoParam() : AliDetectorRecoParam(),
-  fNSigmaPed(2.0),
-  fStartClock(8),
-  fEndClock(12),
-  fNPreClocks(2),
-  fNPostClocks(1),
-  fAdcThresHold(1.0),
-  fTimeWindowBBALow(-9.5),
-  fTimeWindowBBAUp(22.5),
-  fTimeWindowBGALow(-2.5),
-  fTimeWindowBGAUp(5.0),
-  fTimeWindowBBCLow(-2.5),
-  fTimeWindowBBCUp(22.5),
-  fTimeWindowBGCLow(-2.5),
-  fTimeWindowBGCUp(2.5),
-  fMaxResid(4.)	
+AliADQAParam::AliADQAParam():
+  fNTdcTimeBins(3062),
+  fTdcTimeMin(0.976562),
+  fTdcTimeMax(300.0),
+  fNTdcWidthBins(153),
+  fTdcWidthMin(2.343750),
+  fTdcWidthMax(121.875000),
+  fNChargeChannelBins(1000),
+  fChargeChannelMin(1),
+  fChargeChannelMax(1001),
+  fNChargeSideBins(500),
+  fChargeSideMin(1),
+  fChargeSideMax(5000),
+  fNChargeCorrBins(101),
+  fChargeCorrMin(1),
+  fChargeCorrMax(1001),
+  fNPairTimeCorrBins(614), 
+  fPairTimeCorrMin(70.019531),
+  fPairTimeCorrMax(129.980469),
+  fNPairTimeDiffBins(154), 
+  fPairTimeDiffMin(-15.039062),
+  fPairTimeDiffMax(15.039062),
+  fNMeanTimeCorrBins(614), 
+  fMeanTimeCorrMin(70.019531),
+  fMeanTimeCorrMax(129.980469),
+  fSatMed(0.1),
+  fSatHigh(0.3),
+  fSatHuge(0.5),
+  fMaxPedDiff(1) 	
 
 {
   //
   // constructor
   //
-  SetName("AD");
-  SetTitle("AD");
 }
 
 //_____________________________________________________________________________
-AliADRecoParam::~AliADRecoParam() 
+AliADQAParam::~AliADQAParam() 
 {
   //
   // destructor

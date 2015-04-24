@@ -23,6 +23,7 @@ class AliCDBManager;
 class AliCDBStorage;
 class AliADCalibData;
 class AliADRecoParam;
+class AliADQAParam;
 
 class AliADQADataMakerRec: public AliQADataMakerRec {
 
@@ -64,11 +65,13 @@ public:
   AliADQADataMakerRec& operator = (const AliADQADataMakerRec& qadm) ;
   virtual ~AliADQADataMakerRec() {;} // destructor
   AliADCalibData *GetCalibData() const;
+  AliADQAParam *GetQAParam() const;
   virtual void   InitRaws() ; 
   
 protected: 
   AliADCalibData *fCalibData;        //! calibration data
   AliADRecoParam *fRecoParam;
+  AliADQAParam *fQAParam;
    
 private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;

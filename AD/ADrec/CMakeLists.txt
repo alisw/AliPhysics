@@ -32,6 +32,7 @@ include_directories(${AliRoot_SOURCE_DIR}/AD/ADbase
 set(SRCS
     AliADDecision.cxx
     AliADQAChecker.cxx
+    AliADQAParam.cxx
     AliADQADataMakerRec.cxx
     AliADReconstructor.cxx
     AliADRecoParam.cxx

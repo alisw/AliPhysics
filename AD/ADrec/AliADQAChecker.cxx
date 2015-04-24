@@ -38,11 +38,15 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliADQAChecker.h"
 #include "AliADQADataMakerRec.h"
+#include "AliADQAParam.h"
 
 
 ClassImp(AliADQAChecker)
@@ -51,12 +55,44 @@ ClassImp(AliADQAChecker)
 AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance Data Checker"),
   fLowEventCut(1000),
   fORvsANDCut(0.2),
-  fBGvsBBCut(0.2)
+  fBGvsBBCut(0.2),
+  fSatMed(0.1),
+  fSatHigh(0.3),
+  fSatHuge(0.5),
+  fMaxPedDiff(1) 
 {
-  // Default constructor
-  // Nothing else here
+  fQAParam = (AliADQAParam*)GetQAParam();
+  fSatMed = fQAParam->GetSatMed();
+  fSatHigh = fQAParam->GetSatHigh();
+  fSatHuge = fQAParam->GetSatHuge();
+  fMaxPedDiff = fQAParam->GetMaxPedDiff();
 }
 
+//____________________________________________________________________________
+AliADQAParam* AliADQAChecker::GetQAParam() const
+
+{
+  AliCDBManager *man = AliCDBManager::Instance();
+
+  AliCDBEntry *entry=0;
+
+  entry = man->Get("AD/Calib/QAParam",AliQAChecker::Instance()->GetRunNumber());
+  if(!entry){
+    AliWarning("Load of QA param from default storage failed!");
+    AliWarning("QA parameters will be loaded from local storage ($ALICE_ROOT)");
+	
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    entry = man->Get("AD/Calib/QAParam",AliQAChecker::Instance()->GetRunNumber());
+  }
+  // Retrieval of data in directory AD/Calib/QA:
+
+  AliADQAParam *QAParam = 0;
+
+  if (entry) QAParam = (AliADQAParam*) entry->GetObject();
+  if (!QAParam)  AliFatal("No QA param from calibration database !");
+
+  return QAParam;
+}
 //__________________________________________________________________
 void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
 {
@@ -119,15 +155,15 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 				sprintf(satValue, "%1.3f", saturation);
 				if(i == 0) satTextADC +=satValue; 
 				if(i == 1) satTextADA +=satValue;
-				if(saturation > 0.1 && saturation < 0.3){
+				if(saturation > fSatMed && saturation < fSatHigh){
 					test = 0.7;
 					medSat = kTRUE;
 					}
-				if(saturation > 0.3 && saturation < 0.5){
+				if(saturation > fSatHigh && saturation < fSatHuge){
 					test = 0.3;
 					highSat = kTRUE;
 					}
-				if(saturation > 0.5){
+				if(saturation > fSatHuge){
 					test = 0.1;
 					hugeSat = kTRUE;
 					}
@@ -192,15 +228,15 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 				sprintf(satValue, "%1.3f", saturation);
 				if(i == 0) satTextADC +=satValue; 
 				if(i == 1) satTextADA +=satValue;
-				if(saturation > 0.1 && saturation < 0.3){
+				if(saturation > fSatMed && saturation < fSatHigh){
 					test = 0.7;
 					medSat = kTRUE;
 					}
-				if(saturation > 0.3 && saturation < 0.5){
+				if(saturation > fSatHigh && saturation < fSatHuge){
 					test = 0.3;
 					highSat = kTRUE;
 					}
-				if(saturation > 0.5){
+				if(saturation > fSatHuge){
 					test = 0.1;
 					hugeSat = kTRUE;
 					}
@@ -341,7 +377,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			for(Int_t i=0; i<16; i++){
       				hPedestalSlice = hPedestalDiffInt0->ProjectionY("hPedestalSlice",i+1,i+1);
 				Double_t mean = hPedestalSlice->GetMean();
-				if(TMath::Abs(mean)>1) {
+				if(TMath::Abs(mean)>fMaxPedDiff) {
 					test = 0.3;
 					if(NbadChannels == 0){
 						QAbox->SetFillColor(kOrange);
@@ -379,7 +415,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			for(Int_t i=0; i<16; i++){
       				hPedestalSlice = hPedestalDiffInt1->ProjectionY("hPedestalSlice",i+1,i+1);
 				Double_t mean = hPedestalSlice->GetMean();
-				if(TMath::Abs(mean)>1) {
+				if(TMath::Abs(mean)>fMaxPedDiff) {
 					test = 0.3;
 					if(NbadChannels == 0){
 						QAbox->SetFillColor(kOrange);
