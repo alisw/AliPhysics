@@ -78,7 +78,7 @@ AliProdInfo::AliProdInfo(TList *userInfoList)
   // default constructor & init
   //	
   AliLog::SetClassDebugLevel("AliProdInfo",10);
-  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]="";
   Init(userInfoList);
 }
 
@@ -97,7 +97,7 @@ void AliProdInfo::Init(TList *userInfoList)
   fRootSvnVersion=0;
   fMcFlag=kFALSE;
   fRecoPass=-1;
-  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]=="";
+  for (Int_t itag=0; itag<Int_t(kNTags); ++itag) fTags[itag]="";
   TNamed *prodInfo = (TNamed *)userInfoList->FindObject("alirootVersion");
   if (!prodInfo) {
     AliError("No alirootVersion named object found in user info");
