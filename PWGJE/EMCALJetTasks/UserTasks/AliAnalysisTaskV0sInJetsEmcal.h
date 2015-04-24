@@ -204,6 +204,7 @@ private:
   TH1D* fh1EventCent2NoJets; //! number of events for different centralities
   TH2D* fh2EventCentTracks; //! number of tracks vs centrality
   TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
+  TH1D* fh1VtxZME[fgkiNBinsCent]; //! z coordinate of the primary vertex for events used in mixed events
   TH2D* fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
   TH1D* fh1V0CandPerEvent; //! number of V0 cand per event
 
