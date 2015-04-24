@@ -40,6 +40,7 @@
 #include "AliHFEemcalPIDqa.h"  //s.s
 #include "AliHFEbayesPIDqa.h"
 #include "AliHFEpidQAmanager.h"
+#include "AliLog.h"
 
 ClassImp(AliHFEpidQAmanager)
 

@@ -29,7 +29,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
-
+#include "AliAODEvent.h"
 
 class iostream;
 
