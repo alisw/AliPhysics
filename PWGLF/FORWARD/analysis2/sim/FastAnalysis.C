@@ -9,6 +9,7 @@
  */
 
 #include <TSelector.h>
+#include <TQObject.h>
 #ifndef __CINT__
 # include <TParticle.h>
 # include <TMath.h>
@@ -31,6 +32,7 @@
 # include <TParameter.h>
 # include <TSystem.h>
 # include <TUrl.h>
+# include <TGraph.h>
 // # include <TProof.h>
 #else
 class TTree;
@@ -47,6 +49,7 @@ class TParticle;
 class TArrayI;
 class TProof;
 class TUrl;
+class TVirtualPad;
 #endif
 
 //====================================================================
@@ -113,6 +116,291 @@ struct Header {
 	   fIpX, fIpY, fIpZ, fB, fC, fPhiR);
   }
 };
+//====================================================================
+struct FastAnaMonitor : public TObject, public TQObject 
+{
+  /** 
+   * Execute a PROOF command. Short hand convinience 
+   * 
+   * @param cmd Command, or empty string. 
+   * 
+   * @return If cmd is empty, test if gProof is defined, other wise
+   * result of command.
+   */
+  static Long_t ProofExec(const char* cmd=0)
+  {
+    Bool_t hasCmd = (cmd && cmd[0] != '\0');
+    TString lne;
+    lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
+    Printf("FastAnaMonitor::ProofExec: %s", lne.Data());
+    return gROOT->ProcessLine(lne);
+  }
+  /** 
+   * Constructor 
+   * 
+   * 
+   * @return 
+   */
+  FastAnaMonitor(TSelector* s=0,
+		 const TString& name="FastAnaMonitor",
+		 TCollection* names=0)
+    : fName(name),
+      fCanvas(0),
+      fSelector(s),
+      fNPads(0)
+  {
+    fCanvas = new TCanvas(fName, Form("Monitor %s", fName.Data()), 1000, 800);
+    fCanvas->SetFillColor(0);
+    fCanvas->SetFillStyle(0);
+    fCanvas->SetTopMargin(0.01);
+    fCanvas->SetRightMargin(0.01);
+
+    Int_t nTotal = names->GetEntries();
+    Int_t nRow   = Int_t(TMath::Sqrt(nTotal)+.5);
+    Int_t nCol   = nRow;
+    if (nCol * nRow < nTotal) nCol++;
+    fNPads = nTotal;
+    fCanvas->Divide(nCol,nRow);
+    Info("FastAnaMonitor", "Create canvas with (%dx%d) [%d] pads",
+	 nCol, nRow, nTotal);
+    TIter next(names);
+    TObject* o = 0;
+    Int_t    i = 1;
+    while ((o = next()))
+      RegisterDraw(i++, o->GetName(), o->GetTitle(), o->GetUniqueID());
+  }
+  /** 
+   * Register a draw of a an object 
+   * 
+   * @param i      Pad number 
+   * @param name   Name of object 
+   * @param option Drawing option
+   * @param flags  Flags 
+   *
+   *  - 0x1   Log(x)
+   *  - 0x2   Log(y)
+   *  - 0x4   Log(z)
+   *  - 0x8   Scale to events and bin width 
+   */
+  void RegisterDraw(Int_t i,
+		    const char* name,
+		    const char* option,
+		    UShort_t    flags=0)
+  {
+    TVirtualPad* p = fCanvas->GetPad(i);
+    if (!p) {
+      Warning("RegisterDraw", "Not enough sub-pads (%d)", i);
+      return;
+    }
+    Info("RegisterDraw", "Adding draw # %d %s [%s] (0x%x)",
+	 i, name, option, flags);
+    p->SetFillColor(0);
+    p->SetFillStyle(0);
+    p->SetTopMargin(0.01);
+    p->SetRightMargin(0.01);
+    p->SetName(Form("p_%s", name));
+    p->SetTitle(option);
+    if (flags & 0x1) p->SetLogx();
+    if (flags & 0x2) p->SetLogy();
+    if (flags & 0x4) p->SetLogz();
+    if (flags & 0x8) p->SetBit(BIT(15));
+
+    fCanvas->Modified();
+  }
+  /** 
+   * Desctructor 
+   */
+  virtual ~FastAnaMonitor() 
+  {
+    if (ProofExec() == 0) return;
+    ProofExec(Form("Disconnect(\"Feedback(TList *objs)\","
+		   "%p,\"Feedback(TList* objs)\"", this));
+  }
+  /** 
+   * Set name of this object 
+   * 
+   * @param name Name 
+   */
+  void SetName(const char* name) { fName = name; }
+  /** 
+   * Get the name of this object 
+   * 
+   * @return Name 
+   */
+  const char* GetName() const { return fName.Data(); }
+  /** 
+   * Find pad corresponding to an object
+   * 
+   * @param name Name of object 
+   * 
+   * @return Pointer to pad or null
+   */
+  TVirtualPad* FindPad(const TString& name)
+  {
+    TVirtualPad* p = 0;
+    Int_t        i = 1;
+    TString      t = Form("p_%s", name.Data());
+    while ((p = fCanvas->GetPad(i))) {
+      if (t.EqualTo(p->GetName())) return p;
+      i++;
+    }
+    return 0;
+  }
+  /** 
+   * Find an object in the list @a l which corresponds to a registered
+   * pad.
+   * 
+   * @param padName Pad's name 
+   * @param l       Input collection 
+   * 
+   * @return The found object, or null
+   */
+  TObject* FindPadObject(const Char_t* padName, TCollection* l)
+  {
+    TString path(padName);
+    path.Remove(0,2);
+    if (path.Index("/") == kNPOS)
+      return l->FindObject(path);
+    TObjArray*   tokens  = path.Tokenize("/");
+    Int_t        nTokens = tokens->GetEntriesFast();
+    TCollection* current = l;
+    TObject*     ret     = 0;
+    for (Int_t i = 0; i < nTokens; i++) {
+      TObject* o = current->FindObject(tokens->At(i)->GetName());
+      if (!o) break;
+      if (i == nTokens - 1) {
+	ret = o;
+	break;
+      }
+      if (!o->IsA()->InheritsFrom(TCollection::Class())) {
+	Warning("FindPadObject", "Path object %s of %s is not a collection "
+		"but a %s", o->GetName(), path.Data(), o->ClassName());
+	break;
+      }
+      current = static_cast<TCollection*>(o);
+    }
+    delete tokens;
+    if (!ret) l->ls();
+    return ret;
+  }
+  /** 
+   * Draw an object.
+   * 
+   * @param o 
+   * @param same 
+   */
+  void DrawObject(TObject* o, Option_t* opt, Bool_t scale, Bool_t same=false)
+  {
+    if (o->IsA()->InheritsFrom(TH1::Class())) {
+      TH1* h = static_cast<TH1*>(o);
+      TH1* c = static_cast<TH1*>(h->Clone(Form("cpy_%s", h->GetName())));
+      c->SetDirectory(0);
+      if (scale) {
+	// Info("Feedback", "Scaling %s by 1./%d and width",
+	//      c->GetName(), nEvents);	
+	Int_t nEvents = c->GetBinContent(0);
+	if (nEvents <= 0) return;
+	c->Scale(1./nEvents, "width");
+	c->SetMinimum(0);
+      }
+      c->Draw(Form("%s %s",opt, (same ? "same" : "")));
+      c->SetBit(TObject::kCanDelete);
+      // Info("DrawObject","Drawing histogram '%s' with \"%s %s\"",
+      //      c->GetName(), opt, (same ? "same" : ""));
+    }
+    else if (o->IsA()->InheritsFrom(TGraph::Class())) {
+      TGraph* g = static_cast<TGraph*>(o);
+      TGraph* c = static_cast<TGraph*>(g->Clone(Form("cpy_%s",g->GetName())));
+      c->Draw(Form("%s %s",opt, (same ? "" : "a")));
+      c->SetBit(TObject::kCanDelete);
+      // Info("DrawObject","Drawing Graph '%s' with \"%s %s\"",
+      //      c->GetName(), opt, (same ? "" : "a"));
+    }
+    else if (o->IsA()->InheritsFrom(TCollection::Class())) {
+      TCollection* c = static_cast<TCollection*>(o);
+      TIter        n(c);
+      TObject*     co = 0;
+      Bool_t       first = true;
+      // Info("DrawObject","Drawing collection '%s' with \"%s\"",
+      //      c->GetName(), opt);
+      while ((co = n())) {
+	DrawObject(co, opt, scale, !first);
+	first = false;
+      }
+    }
+    else {
+      TObject* c = o->DrawClone(opt);
+      c->SetBit(TObject::kCanDelete);
+    }
+  }
+  /** 
+   * Called when we get notified of 
+   * 
+   * @param objs List of monitored objects
+   */
+  void Feedback(TList* objs)
+  {
+    // Info("FeedBack", "List is %p", objs);
+    // if (objs) objs->ls();
+    if (!fCanvas) return;
+
+    if (!objs) {
+      Warning("Feedback", "No list");
+      return;
+    }
+    // objs->ls();
+    // fCanvas->ls();
+
+    // Int_t        iPad = 1;
+    // TVirtualPad* p    = 0;
+    // while ((p = fCanvas->GetPad(iPad))) {
+    // Info("FeedBack", "Looping over %d pads", fNPads);	 
+    for (Int_t iPad = 1; iPad <= fNPads; iPad++) {
+      TVirtualPad* p = fCanvas->cd(iPad);
+      // Info("Feedback", "Drawing in sub-pad # %d: %s", iPad, p->GetName());
+      TObject* o = FindPadObject(p->GetName(), objs);
+      if (!o) {
+	Warning("Feedback", "Object correspondig to pad %s (%d) not found",
+		p->GetName(), iPad);
+	// iPad++;
+	continue; 
+      }
+      DrawObject(o, p->GetTitle(), p->TestBit(BIT(15)), false);
+      p->cd();
+      p->Modified();
+      // iPad++;
+    }
+    fCanvas->Modified();
+    fCanvas->Update();
+    fCanvas->cd();
+  }
+  /** 
+   * Function to handle connect signals 
+   * 
+   */
+  void Handle()
+  {
+    HandleTimer(0);
+  }
+  /**
+   * Function to handle timer events 
+   */
+  Bool_t HandleTimer(TTimer*)
+  {
+    // Info("HandleTimer", "Selector=%p", fSelector);
+    if (!fSelector) return false;
+    Feedback(fSelector->GetOutputList());
+    return true;
+  }
+  /** Our name */
+  TString fName;
+  /** Our canvas */
+  TCanvas* fCanvas;
+  /** Possibly link to selector */
+  TSelector* fSelector;
+  Int_t fNPads;
+  ClassDef(FastAnaMonitor,1);
+};
 
 //====================================================================
 /** 
@@ -140,14 +428,15 @@ struct FastAnalysis : public TSelector
   TH1*          fCentHist; //!
   /** Number of good events */
   ULong_t fOK;
-  
+  /** Monitor frequency in seconds */
+  Int_t fMonitor;
   /** 
    * Constructor.  Opens the file passed and sets internal pointers to
    * tree, header, and particle list.
    * 
    * @param verb     Whether to be verbose 
    */  
-  FastAnalysis(Bool_t verb=false)
+  FastAnalysis(Bool_t verb=false, Int_t monitor=0)
     : fTree(0),
       fHeader(0),
       fParticles(0),
@@ -155,7 +444,8 @@ struct FastAnalysis : public TSelector
       fEventMult(0),
       fCentMethod(""),
       fCentHist(0),
-      fOK(0)
+      fOK(0),
+      fMonitor(monitor)
   {
   }
   /**
@@ -166,7 +456,72 @@ struct FastAnalysis : public TSelector
     if (fHeader)    delete fHeader;
     if (fParticles) delete fParticles;
   }
+  /** 
+   * Set the verbosity flag 
+   * 
+   * @param verb If true, be verbose
+   */
   void SetVerbose(Bool_t verb) { fVerbose = verb; }
+  /** 
+   * Set up a monitor 
+   */
+  void SetupMonitor()
+  {
+    // We disable monitoring in batch mode
+    if (gROOT->IsBatch()) {
+      Warning("SetupMonitor", "Batch processing, no monitoring");
+      return;
+    }
+
+    // If the monitor frequency is 0 or negative, do nothing 
+    if (fMonitor <= 0) {
+      Info("SetupMonitor", "Monitoring frequency too low");
+      return;
+    }
+
+    // Get list of names of monitor objects. 
+    TList* objs = GetMonitorObjects();
+    // If there's no monitored objects defined, do nothing 
+    if (!objs || objs->GetEntries() < 1) {
+      Info("SetupMonitor", "No monitored objects defined");
+      return;
+    }
+
+    TString name("FastAnaMonitor");
+    if (ProofExec() != 0) {
+      Long_t ret = ProofExec("GetSessionTag()");
+      name = reinterpret_cast<const char*>(ret);
+    }
+    
+    // Create our monitor 
+    FastAnaMonitor* monitor = new FastAnaMonitor(this, name, objs);
+    Info("SetupMonitor", "Created monitor %s with objects",
+	 monitor->GetName());
+    objs->Print();
+    if (ProofExec() != 0) {
+      gDirectory->Add(monitor);
+      Long_t ret = ProofExec(Form("Connect(\"Feedback(TList *objs)\","
+				  "\"FastAnaMonitor\", (void*)%p, "
+				  "\"Feedback(TList *objs)\")",monitor));
+      if (!ret) {
+	Warning("FastMonitor", "Failed to connect to Proof");
+	delete monitor;
+	return;
+      }
+      ProofExec(Form("SetParameter(\"PROOF_FeedbackPeriod\",%d)",
+		     fMonitor*1000));
+      TIter    next(objs);
+      TObject* obj = 0;
+      while ((obj = next()))
+	ProofExec(Form("AddFeedback(\"%s\")", obj->GetName()));
+    }
+    else {
+      TTimer* timer = new TTimer(fMonitor*1000);
+      timer->Connect("Timeout()","FastAnaMonitor",monitor, "Handle()");
+      // ::Info("Run", "Turning on monitoring");
+      timer->Start(-1,false);
+    }
+  }
   /** 
    * @{ 
    * @name Selector interface 
@@ -215,7 +570,7 @@ struct FastAnalysis : public TSelector
     //   return false;
     // }
     // TObject* o = l->FindObject(fCentMethod);
-    TObject* o = f->Get(fCentMethod);
+    TObject* o = f->Get(Form("estimators/%s",fCentMethod.Data()));
     if (!o) {
       Warning("SetupEstimator", "Failed to get %s from estimator list:",
 	      fCentMethod.Data());
@@ -253,6 +608,10 @@ struct FastAnalysis : public TSelector
       Fatal("Init", "Failed to set-up branches");
     // if (!SetupEstimator())
     //   Fatal("Init", "Failed to set-up estimator");
+  }
+  virtual void Begin(TTree*)
+  {
+    SetupMonitor();
   }
   /** 
    * Called when the file changes 
@@ -390,6 +749,19 @@ struct FastAnalysis : public TSelector
    * @name overloadable behaviour 
    */
   /** 
+   * Get the list of monitor objects.  Sub-classes should overload
+   * this to return a TList of TNamed objects.  The name of each entry
+   * must corresponding to the path of an object in the output list.
+   * The title encodes the draw option used for the object, and the
+   * unique id sets pad options, such as log scale, and scaling to
+   * number of events.  If scaling to number of events is requested,
+   * then the number of events is assumed to be encode in the
+   * underflow bin.
+   * 
+   * @return A TList of monitor object identifiers, or null
+   */
+  virtual TList* GetMonitorObjects() { return 0; }
+  /** 
    * Clear internal caches.  Called at start of each event.  Can be
    * overloaded to do some more stuff if needed.
    */
@@ -493,6 +865,22 @@ struct FastAnalysis : public TSelector
    * @name Static interface for running 
    */
   /** 
+   * Execute a PROOF command. Short hand convinience 
+   * 
+   * @param cmd Command, or empty string. 
+   * 
+   * @return If cmd is empty, test if gProof is defined, other wise
+   * result of command.
+   */
+  static Long_t ProofExec(const char* cmd=0)
+  {
+    Bool_t hasCmd = (cmd && cmd[0] != '\0');
+    TString lne;
+    lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
+    Printf("FastAnalysis::ProofExec: %s", lne.Data());
+    return gROOT->ProcessLine(lne);
+  }
+  /** 
    * Extract key value pair from string 
    * 
    * @param in  Input string 
@@ -518,10 +906,12 @@ struct FastAnalysis : public TSelector
    * Create a new analysis object
    * 
    * @param type The type 
+   * @param verbose Whether to be verbose 
+   * @param monitor Monitor frequency 
    * 
    * @return newly created object, or null
    */
-  static FastAnalysis* Make(const char* type);
+  static FastAnalysis* Make(const char* type, Bool_t verbose, Int_t monitor);
   /** 
    * Set-up PROOF 
    * 
@@ -537,15 +927,14 @@ struct FastAnalysis : public TSelector
       Printf("Error: FastAnalysis::SetupProof: Failed to connect");
       return false;
     }
-    ret = gROOT->ProcessLine("gProof->ClearCache()");
+    ret = ProofExec("ClearCache()");
 
     TString phy = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
     TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
     TString fwd = phy + "/PWGLF/FORWARD/analysis2";
 
-    TString load(Form("gProof->Load(\"%s/sim/FastAnalysis.C+%s\",true)",
-		      fwd.Data(), opt));
-    ret = gROOT->ProcessLine(load.Data());
+    ret = ProofExec(Form("Load(\"%s/sim/FastAnalysis.C+%s\",true)",
+			 fwd.Data(), opt));
     if (ret != 0) {
       Printf("Error: FastAnalysis::SetupProof: Failed to load");
       return false;
@@ -565,6 +954,7 @@ struct FastAnalysis : public TSelector
     Long64_t     nev     = -1;
     TString      type    = "INEL";
     Int_t        monitor = -1;
+    Bool_t       verbose = false;
     TUrl         u(url);
     TString      uout    = "";
     TObjArray*   opts    = TString(u.GetOptions()).Tokenize("&");
@@ -573,7 +963,11 @@ struct FastAnalysis : public TSelector
     while ((token = static_cast<TObjString*>(nextToken()))) {
       TString& str = token->String();
       if (str.IsNull()) continue;
-      
+
+      if (str.EqualTo("verbose")) {
+	verbose = true;
+	continue;
+      }
       TString  key, val;
       if (!Str2KeyVal(str,key,val)) {
 	if (!uout.IsNull()) uout.Append("&");
@@ -596,7 +990,7 @@ struct FastAnalysis : public TSelector
       return false;
     }
 
-    FastAnalysis* analysis = Make(type);
+    FastAnalysis* analysis = Make(type,verbose,monitor);
     if (!analysis) return false;
     
     TChain*       chain    = new TChain("T", "");
@@ -643,8 +1037,8 @@ struct dNdetaAnalysis : public FastAnalysis
 {
   TH1* fdNdeta; //!
   
-  dNdetaAnalysis(Bool_t verbose=false)
-    : FastAnalysis(verbose), fdNdeta(0)
+  dNdetaAnalysis(Bool_t verbose=false, Int_t monitor=0)
+    : FastAnalysis(verbose,monitor), fdNdeta(0)
   {}
   /** 
    * Static member function to create a histogram 
@@ -717,6 +1111,21 @@ struct dNdetaAnalysis : public FastAnalysis
     fdNdeta->Scale(1. / fOK, "width");
     SetStatus(0);
   }
+  /** 
+   * Get the list of monitored objects 
+   * 
+   * @return The list of monitored objects 
+   */
+  virtual TList* GetMonitorObjects()
+  {
+    TObject* m1 = new TNamed("dNdeta", "");
+    m1->SetUniqueID(0x8); // Scale 
+
+    TList* ret = new TList;
+    ret->Add(m1);
+    
+    return ret;
+  }
   ClassDef(dNdetaAnalysis,1);
 };
 
@@ -733,8 +1142,8 @@ struct NSDAnalysis : public dNdetaAnalysis
    * @param filename File to open 
    * @param verbose  Whether to be verbose 
    */
-  NSDAnalysis(Bool_t verbose=false)
-    : dNdetaAnalysis(verbose)
+  NSDAnalysis(Bool_t verbose=false, Int_t monitor=0)
+    : dNdetaAnalysis(verbose, monitor)
   {}
   /** 
    * Process the header.  Return 
@@ -762,8 +1171,8 @@ struct INELAnalysis : public dNdetaAnalysis
    * 
    * @param verbose  Whether to be verbose 
    */  
-  INELAnalysis(Bool_t verbose=false)
-    : dNdetaAnalysis(verbose)
+  INELAnalysis(Bool_t verbose=false, Int_t monitor=0)
+    : dNdetaAnalysis(verbose,monitor)
   {}
   /** 
    * Process the header.  
@@ -790,8 +1199,8 @@ struct CentAnalysis : public dNdetaAnalysis
    * @param method   Centrality method 
    * @param verbose  Verbosity flag 
    */
-  CentAnalysis(const char* method="V0M", Bool_t verbose=true)
-    : dNdetaAnalysis(verbose),
+  CentAnalysis(const char* method="V0M", Bool_t verbose=true, Int_t monitor=0)
+    : dNdetaAnalysis(verbose,monitor),
       fCentAxis(0),
       fCentList(0),
       fCentBin(0),
@@ -966,6 +1375,8 @@ struct CentAnalysis : public dNdetaAnalysis
       Double_t high = fCentAxis->GetBinUpEdge(i);
       TH1*     hist = CreatedNdeta();
       ModHist(hist, low, high);
+      hist->SetMinimum(0);
+      hist->Sumw2();
       fCentList->Add(hist);
     }
     fOutput->Add(fCentList);
@@ -983,12 +1394,18 @@ struct CentAnalysis : public dNdetaAnalysis
     fCentAll->SetYTitle("Events");
     fCentAll->SetFillColor(kRed+2);
     fCentAll->SetFillStyle(3002);
+    fCentAll->SetMarkerStyle(20);
+    fCentAll->SetMarkerColor(kRed+2);
+    fCentAll->SetLineColor(kRed+2);
     fCentAll->SetDirectory(0);
+    fCentAll->SetMinimum(0);
     fOutput->Add(fCentAll);
 
     fCentAcc = static_cast<TH1*>(fCentAll->Clone("centAcc"));
     fCentAcc->SetTitle("Accepted centralities");
     fCentAcc->SetFillColor(kGreen+2);
+    fCentAcc->SetMarkerColor(kGreen+2);
+    fCentAcc->SetLineColor(kGreen+2);
     fCentAcc->SetDirectory(0);
     fOutput->Add(fCentAcc);
 
@@ -1034,7 +1451,8 @@ struct CentAnalysis : public dNdetaAnalysis
     if (fCentBin < 0) return;
 
     // Find the histogram to update 
-    TH1*     out  = static_cast<TH1*>(fCentList->/*GetHists()->*/At(fCentBin-1));
+    TH1*     out  = static_cast<TH1*>(fCentList->/*GetHists()->*/
+				      At(fCentBin-1));
     // If we still have no histogram, return immediately 
     if (!out) return;
 
@@ -1107,6 +1525,25 @@ struct CentAnalysis : public dNdetaAnalysis
     }
     fOutput->Add(stack);
   }
+  /** 
+   * Get the list of monitored objects 
+   * 
+   * @return The list of monitored objects 
+   */
+  virtual TList* GetMonitorObjects()
+  {
+    TObject* m1 = new TNamed("cent",     "hist text30");
+    TObject* m2 = new TNamed("centAcc",  "hist text30");
+    TObject* m3 = new TNamed("byCent",   "e");
+    
+    m3->SetUniqueID(0x8); // Scale 
+    TList* ret = new TList;
+    ret->Add(m1);
+    ret->Add(m2);
+    ret->Add(m3);
+    
+    return ret;
+  }
   ClassDef(CentAnalysis,1);
 };
   
@@ -1124,8 +1561,10 @@ struct MultAnalysis : public CentAnalysis
    * @param filename File to open
    * @param verbose  Whether to verbose
    */
-  MultAnalysis(const char* method="RefMult00d80", Bool_t verbose=false)
-    : CentAnalysis(method, verbose)
+  MultAnalysis(const char* method="RefMult00d80",
+	       Bool_t verbose=false,
+	       Int_t monitor=0)
+    : CentAnalysis(method, verbose,monitor)
   {
     //              +1 +2 +3 +3  +5, +5, +5, +5,+10,+10,+10,+10,+10,+10,+10
     Double_t bins[]={ 0, 3, 6, 9, 14, 19, 24, 29, 39, 49, 59, 69, 79, 89, 99 };
@@ -1188,11 +1627,11 @@ struct MultAnalysis : public CentAnalysis
  * The function to make our analyser 
  */
 FastAnalysis*
-FastAnalysis::Make(const char* type)
+  FastAnalysis::Make(const char* type, Bool_t verbose, Int_t monitor)
 {
   TString t(type);
-  if      (t.EqualTo("INEL"))    return new INELAnalysis;
-  else if (t.EqualTo("NSD"))     return new NSDAnalysis;
+  if      (t.EqualTo("INEL"))    return new INELAnalysis(verbose,monitor);
+  else if (t.EqualTo("NSD"))     return new NSDAnalysis(verbose,monitor);
   else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
     TString w(t(4, t.Length()-4));
     if (!(w.EqualTo("RefMult00d80") ||
@@ -1205,9 +1644,9 @@ FastAnalysis::Make(const char* type)
     }
       
     if (t.BeginsWith("MULT"))
-      return new MultAnalysis(w);
+      return new MultAnalysis(w, verbose, monitor);
     else
-      return new CentAnalysis(w, true);
+      return new CentAnalysis(w, verbose, monitor);
   }
   Printf("Error: FastAnalysis::Run: Invalid spec: %s", t.Data());
   return 0;

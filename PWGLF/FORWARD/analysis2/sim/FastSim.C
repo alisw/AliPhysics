@@ -114,10 +114,10 @@ struct FastMonitor : public TObject, public TQObject
     fCanvas->SetRightMargin(0.01);
 
     fCanvas->Divide(3,2);
-    RegisterDraw(1, "type",                       "", 0);
-    RegisterDraw(2, "b",                          "", 0);
-    RegisterDraw(3, "cent",                       "", 0);
-    RegisterDraw(4, "dNdeta",                     "", 0x8);
+    RegisterDraw(1, "histograms/type",            "", 0);
+    RegisterDraw(2, "histograms/b",               "", 0);
+    RegisterDraw(3, "histograms/cent",            "", 0);
+    RegisterDraw(4, "histograms/dNdeta",          "", 0x8);
     RegisterDraw(5, "estimators/rawV0M",          "", 0x2);
     RegisterDraw(6, "estimators/rawRefMult00d80", "", 0x2);
   }
@@ -228,6 +228,7 @@ struct FastMonitor : public TObject, public TQObject
       current = static_cast<TCollection*>(o);
     }
     delete tokens;
+    // if (!ret) l->ls();
     return ret;
   }
     
@@ -242,13 +243,15 @@ struct FastMonitor : public TObject, public TQObject
     // if (objs) objs->ls();
     if (!fCanvas) return;
 
-    TList* l = static_cast<TList*>(objs->FindObject("histograms"));
+    // objs->ls();
+    TList* l = static_cast<TList*>(objs->FindObject("list"));
     if (!l) {
-      Warning("Feedback", "No histograms");
+      Warning("Feedback", "No list");
       return;
     }
+    TList* hs = static_cast<TList*>(l->FindObject("histograms"));
     Int_t nEvents = 1;
-    TObject* oIpz = l->FindObject("ipZ");
+    TObject* oIpz = hs->FindObject("ipZ");
     if (oIpz && oIpz->IsA()->InheritsFrom(TH1::Class())) 
       nEvents = static_cast<TH1*>(oIpz)->GetEntries();
     else 
@@ -399,10 +402,13 @@ struct FastCentEstimator : public TObject
    * Set-up this estimator.  Output objects should be stored in @a
    * out, and a branch can be registerd in the TTree.
    * 
-   * @param out  Output list to add stuff to 
-   * @param tree 
+   * @param out   Output list to add stuff to 
+   * @param tree  Output tree
+   * @param tgtA  True if target is a nucleus 
+   * @param projA True if projectile is a nucleus 
    */
-  virtual void Setup(TCollection* out, TTree* tree) = 0;
+  virtual void Setup(TCollection* out, TTree* tree,
+		     Bool_t tgtA, Bool_t projA) = 0;
   /** 
    * Called before the start of an event 
    * 
@@ -450,7 +456,9 @@ struct FastCentEstimator : public TObject
   static Double_t Eta(const TParticle* p)
   {
     Double_t theta = Theta(p);
-    Double_t eta   = -TMath::Log(TMath::Tan(theta/2));
+    Double_t tanth = TMath::Tan(theta/2);
+    if (tanth < 1e-6) return 10000;
+    Double_t eta   = -TMath::Log(tanth);
     return eta;
   }
   /** 
@@ -519,8 +527,11 @@ struct Fast1DCentEstimator : public FastCentEstimator
    * 
    * @param l Output list
    * @param tree Tree to add branch to 
+   * @param tgtA  True if target is a nucleus 
+   * @param projA True if projectile is a nucleus 
    */
-  void Setup(TCollection* l, TTree* tree)
+  void Setup(TCollection* l, TTree* tree,
+	     Bool_t, Bool_t)
   {
     if (fHistogram && l) l->Add(fHistogram);
     if (tree) tree->Branch(GetName(), &fCache, "value/D");
@@ -631,14 +642,20 @@ struct V0CentEstimator : public FastNchCentEstimator
    * 
    * @param l Output list
    * @param tree Tree to add branch to 
+   * @param tgtA  True if target is a nucleus 
+   * @param projA True if projectile is a nucleus 
    */
-  void Setup(TCollection* l, TTree* tree)
+  void Setup(TCollection* l, TTree* tree,
+	     Bool_t tgtA, Bool_t projA)
   {
+    Bool_t  isAA  = (tgtA && projA);
+    Bool_t  isPA  = (tgtA ^ projA); // XOR
+    UInt_t  max   = (isAA ? 13000 : isPA ? 800 : 300);
+    UInt_t  dBin  = (isAA ? 10    : isPA ?   1 :   1);
     Color_t color = (fMode < 0 ? kRed : fMode > 0 ? kBlue : kGreen)+2;
-    UInt_t  max   = 13000;
     fHistogram = new TH1D(Form("raw%s",GetName()),
 			  Form("%s #it{N}_{ch} distribution", GetName()),
-			  max/10, 0, (fMode == 0 ? 2 : 1)*max);
+			  max/dBin, 0, (fMode == 0 ? 2 : 1)*max);
     fHistogram->SetXTitle("#it{N}_{ch}");
     fHistogram->SetYTitle("Raw #it{P}(#it{N}_{ch})");
     fHistogram->SetDirectory(0);
@@ -648,7 +665,7 @@ struct V0CentEstimator : public FastNchCentEstimator
     fHistogram->SetMarkerStyle(20);
     fHistogram->SetFillStyle(3002);
 
-    Fast1DCentEstimator::Setup(l, tree);
+    Fast1DCentEstimator::Setup(l, tree, tgtA, projA);
   }
   /** 
    * Whether we should accept a particle.  We accept a particle if it
@@ -702,13 +719,17 @@ struct RefMultEstimator : public FastNchCentEstimator
    * @param l Output list
    * @param tree Tree to add branch to 
    */
-  void Setup(TCollection* l, TTree* tree)
+  void Setup(TCollection* l, TTree* tree,
+	     Bool_t tgtA, Bool_t projA)
   {
+    Bool_t  isAA  = (tgtA && projA);
+    Bool_t  isPA  = (tgtA ^ projA); // XOR
+    UInt_t  max   = (isAA ? 15000 : isPA ? 900 : 200);
+    UInt_t  dBin  = (isAA ? 10    : isPA ?   1 :   1);
     Color_t color = kMagenta;
-    UInt_t  max   = 15000;
     fHistogram = new TH1D(Form("raw%s",GetName()),
 			  Form("#it{N}_{ch} |#it{#eta}|<%5.2f distribution",
-			       fEtaCut), max/10, 0, max);
+			       fEtaCut), max/dBin, 0, max);
     fHistogram->SetXTitle("#it{N}_{ch}");
     fHistogram->SetYTitle("Raw #it{P}(#it{N}_{ch})");
     fHistogram->SetDirectory(0);
@@ -718,7 +739,7 @@ struct RefMultEstimator : public FastNchCentEstimator
     fHistogram->SetMarkerStyle(20);
     fHistogram->SetFillStyle(3002);
 
-    Fast1DCentEstimator::Setup(l, tree);
+    Fast1DCentEstimator::Setup(l, tree, tgtA, projA);
   }
   /** 
    * Whether we should accept a particle.  We accept a particle if it
@@ -773,6 +794,7 @@ struct FastSim : public TSelector
       fBMin(bMin),
       fBMax(bMax),
       fGRP(0),
+      fOverrides(0),
       fNEvents(nEvents),
       fIsTgtA(false),
       fIsProjA(false),
@@ -949,28 +971,33 @@ struct FastSim : public TSelector
     fHTime->SetDirectory(0);
 				    
     fList = new TList;
-    fList->SetName("histograms");
-    fList->SetOwner(true);
-    fList->Add(fHEta);
-    fList->Add(fHIpz);
-    fList->Add(fHType);
-    fList->Add(fHCent);
-    fList->Add(fHB);
-    fList->Add(fHPhiR);
-    fList->Add(fHTime);
+    fList->SetName("list");
 
+    TList* histos = new TList;
+    histos->SetName("histograms");
+    histos->SetOwner(true);
+    histos->Add(fHEta);
+    histos->Add(fHIpz);
+    histos->Add(fHType);
+    histos->Add(fHCent);
+    histos->Add(fHB);
+    histos->Add(fHPhiR);
+    histos->Add(fHTime);
+    fList->Add(histos);
+    
     TList* estimators = new TList;
     estimators->SetName("estimators");
+    estimators->SetOwner(true);
     fList->Add(estimators);
     
     TIter next(fCentEstimators);
     FastCentEstimator* estimator = 0;
     while ((estimator = static_cast<FastCentEstimator*>(next())))
-      estimator->Setup(estimators, fTree);
-
+      estimator->Setup(estimators, fTree,fIsTgtA,fIsProjA);
+    
     // Info("SetupOutput", "Adding list ot outputs");
     fOutput->Add(fList);
-    fOutput->ls();
+    // fOutput->ls();
     
     return true;
   }
@@ -1016,11 +1043,25 @@ struct FastSim : public TSelector
 	pout->close();
       }
     }
+    Info("SetupGen", "Overrides: %p Input: %p", fOverrides, fInput);
+    if (!fOverrides && fInput) {
+      fOverrides = static_cast<TList*>(fInput->FindObject("overrides"));
+      if (!fOverrides) {
+	Info("SetupGen", "No GRP overrides found in input:");
+	fInput->ls();
+      }
+    }
 
     // --- Load our settings -----------------------------------------
-    // Info("SetupGen", "Loading scripts");
-    gROOT->Macro(Form("GRP.C(%d)", fRunNo));
+    Info("SetupGen", "Loading scripts");
+    // Check if we have the global "grp" already 
+    if (gROOT->ProcessLine("grp") == 0) 
+      gROOT->Macro(Form("GRP.C(%d)", fRunNo));
+    Info("SetupGen", "Perhaps override");
+    OverrideGRP();
+    Info("SetupGen", "Load base config");
     gROOT->Macro("BaseConfig.C");
+    Info("SetupGen", "Load EG config");
     gROOT->Macro("EGConfig.C");
 
     gROOT->ProcessLine(Form("VirtualEGCfg::LoadGen(\"%s\")",fEGName.Data()));
@@ -1115,9 +1156,50 @@ struct FastSim : public TSelector
     }
     
     fGRP = new TNamed("GRP",env.Data());
+    Info("ReadGRPLine", "Read \"%s\"", env.Data());
     return true;
   }
-    
+  /** 
+   * Possibly override settings from GRP. 
+   * 
+   */
+  void OverrideGRP()
+  {
+    Long_t ret = gROOT->ProcessLine("grp");
+    if (ret == 0) {
+      Warning("OverrideGRP", "GRP not set yet, cannot override");
+      return;
+    }
+    if (!fOverrides) {
+      Info("OverrideGRP", "No overrides defined");
+      return;
+    }
+    TIter next(fOverrides);
+    TObject* o = 0;
+    while ((o = next())) {
+      Info("OverrideGRP", "Overriding GRP setting %s with %s",
+	   o->GetName(), o->GetTitle());
+      gROOT->ProcessLine(Form("grp->%s = %s;",
+			      o->GetName(), o->GetTitle()));
+    }
+    Info("OverrideGRP", "After overriding:");
+    gROOT->ProcessLine("grp->Print()");
+  }
+  /** 
+   * Add an item to the list of things from GRP to override
+   * 
+   * @param field Field name of GRPData
+   * @param value Field value of GRPData
+   */
+  void AddOverride(const TString& field, const TString& value)
+  {
+    if (!fOverrides) {
+      fOverrides = new TList;
+      fOverrides->SetName("overrides");
+    }
+    Info("AddOverride", "Adding override %s = %s", field.Data(), value.Data());
+    fOverrides->Add(new TNamed(field, value));
+  }
   /** 
    * Set up job 
    * 
@@ -1134,18 +1216,23 @@ struct FastSim : public TSelector
     // Make a monitor
     // Info("Begin", "gProof=%p Nomonitor=%p",
     //      gProof, (gProof ? gProof->GetParameter("NOMONITOR") : 0));
-
+    Info("Begin", "Called for FastSim");
+       
     if (gProof && !gProof->GetParameter("NOMONITOR")) { 
       new FastMonitor;
-      gProof->AddFeedback("histograms");
+      gProof->AddFeedback("list");
       // Info("Begin", "Adding monitoring");
     }
     gROOT->Macro(Form("GRP.C(%d)", fRunNo));
     if (ReadGRPLine()) {
       if(gProof) {
 	gProof->AddInput(fGRP);
+	if (fOverrides) gProof->AddInput(fOverrides);
       }
     }
+    Info("Begin", "Perhaps override");
+    OverrideGRP();
+    Info("Begin", "Defining centrality estimators");
     fCentEstimators = new TList;
     fCentEstimators->Add(new V0CentEstimator(-1));
     fCentEstimators->Add(new V0CentEstimator( 0));
@@ -1159,6 +1246,7 @@ struct FastSim : public TSelector
    */
   void SlaveBegin(TTree*)
   {
+    Info("SlavesBegin", "Called for FastSim");
     SetupSeed();
     SetupGen();
     SetupOutput();
@@ -1519,6 +1607,31 @@ struct FastSim : public TSelector
     }
   }
   /** 
+   * Write a collection to disk, transforming sub-collections to
+   * directories.
+   * 
+   * @param c 
+   * @param dir 
+   */
+  void FlushList(TCollection* c, TDirectory* dir)
+  {
+    dir->cd();
+    TIter next(c);
+    TObject* o = 0;
+    while ((o = next())) {
+      if (o->IsA()->InheritsFrom(TCollection::Class())) {
+	Info("FlushList", "Got collection: %s", c->GetName());
+	TDirectory* cur = dir->mkdir(o->GetName());
+	FlushList(static_cast<TCollection*>(o), cur);
+	dir->cd();
+	continue;
+      }
+      o->Write();
+    }
+    dir->cd();
+  }
+      
+  /** 
    * Final processing of the data 
    * 
    */
@@ -1545,18 +1658,23 @@ struct FastSim : public TSelector
       fFile = TFile::Open(FileName(),"UPDATE");
 
     TList* estimators = static_cast<TList*>(fList->FindObject("estimators"));
+    TList* histos     = static_cast<TList*>(fList->FindObject("histograms"));
+    if (!histos) {
+      Warning("Terminate", "No histogram list found in output");
+      fList->ls();
+    }
     TIter next(fCentEstimators);
     FastCentEstimator* estimator = 0;
     while ((estimator = static_cast<FastCentEstimator*>(next())))
       estimator->Terminate(estimators);
 	
-    fHEta  = static_cast<TH1*>(fList->FindObject("dNdeta"));
-    fHIpz  = static_cast<TH1*>(fList->FindObject("ipZ"));
-    fHType = static_cast<TH1*>(fList->FindObject("type"));
-    fHCent = static_cast<TH1*>(fList->FindObject("cent"));
-    fHB    = static_cast<TH1*>(fList->FindObject("b"));
-    fHPhiR = static_cast<TH1*>(fList->FindObject("phiR"));
-    fHTime = static_cast<TH1*>(fList->FindObject("timing"));
+    fHEta  = static_cast<TH1*>(histos->FindObject("dNdeta"));
+    fHIpz  = static_cast<TH1*>(histos->FindObject("ipZ"));
+    fHType = static_cast<TH1*>(histos->FindObject("type"));
+    fHCent = static_cast<TH1*>(histos->FindObject("cent"));
+    fHB    = static_cast<TH1*>(histos->FindObject("b"));
+    fHPhiR = static_cast<TH1*>(histos->FindObject("phiR"));
+    fHTime = static_cast<TH1*>(histos->FindObject("timing"));
 
     if (!(fHEta && fHIpz && fHType && fHB && fHPhiR && fHTime)) {
       Warning("Terminate", "Missing histograms (%p,%p,%p,%p,%p,%p)",
@@ -1575,12 +1693,12 @@ struct FastSim : public TSelector
       return;
     }
 
-    // Write content of list 
-    fList->Write();
+    FlushList(fList, fFile); // ->Write();
     
     fTree = static_cast<TTree*>(fFile->Get("T"));
     if (!fTree)  Warning("Terminate", "No tree");
-    
+
+    fFile->ls();
     fFile->Close();
   }
   /** 
@@ -1599,6 +1717,7 @@ struct FastSim : public TSelector
   Double_t fBMin;                 // Least impact parameter 
   Double_t fBMax;                 // Largest impact parameter
   TObject* fGRP;                  //! GRP in one line
+  TList*   fOverrides;            //! GRP setting to override
   Long64_t fNEvents;              //  Number of requested events
   Bool_t   fIsTgtA;               //! True if target beam is nuclei
   Bool_t   fIsProjA;              //! True if projectile beam is nuclei
@@ -1693,9 +1812,12 @@ struct FastSim : public TSelector
 			  const TString& gen,
 			  Double_t       bMin,
 			  Double_t       bMax,
-			  Int_t          monitor)
+			  Int_t          monitor,
+			  const TString& overrides="")
+			  
   {
     FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
+    SetOverrides(sim, overrides);
     sim->Begin(0);
     sim->SlaveBegin(0);
 
@@ -1778,6 +1900,7 @@ struct FastSim : public TSelector
 			 Double_t       bMin,
 			 Double_t       bMax,
 			 Int_t          monitor=-1,
+			 const TString& overrides="",
 			 const char*    opt="")
   {
     TProof::Reset(url.GetUrl());
@@ -1804,6 +1927,7 @@ struct FastSim : public TSelector
 					   monitor*1000/*ms*/);
 
     FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
+    SetOverrides(sim, overrides);
     gProof->Process(sim, nev, "");
 
     return true; // status >= 0;
@@ -1829,6 +1953,49 @@ struct FastSim : public TSelector
     key = in(0,idx);
     val = in(idx+1, in.Length()-idx-1);
     return true;
+  }
+  static void SetOverrides(FastSim* sim, const TString& override)
+  {
+    if (override.IsNull()) return;
+
+    const char* valid[] = { "beamEnergy", // UInt_t [GeV]
+			    "energy",     // UInt_t [GeV]
+			    "period",     // String			     
+			    "run",        // UInt_t
+			    "beam1.a",    // UInt_t
+			    "beam1.z",    // UInt_t
+			    "beam2.a",    // UInt_t
+			    "beam2.z",    // UInt_t
+			    0 };
+    TObjArray*  tokens = override.Tokenize(",");
+    TObjString* token  = 0;
+    TIter       next(tokens);
+    while ((token = static_cast<TObjString*>(next()))) {
+      TString& str = token->String();
+      if (str.IsNull()) continue;
+
+      TString  key, val;
+      if (!Str2KeyVal(str,key,val, ':')) {
+	Printf("Warning: FastSim::Run: incomplete override '%s'",str.Data());
+	continue;
+      }
+      const char** pvalid = valid;
+      while (*pvalid) {
+	if (key.EqualTo(*pvalid, TString::kIgnoreCase)) {
+	  break;
+	}
+	pvalid++;
+      }
+      if (!*pvalid) {
+	Printf("Warning: FastSim::Run: Invalid override '%s'", key.Data());
+	continue;
+      }
+      // Special case for a string 
+      if (key.EqualTo("period",TString::kIgnoreCase))
+	val = Form("\"%s\"", val.Data());
+      sim->AddOverride(*pvalid, val);
+    }
+    // delete tokens;
   }
   /** 
    * Run a simulation. 
@@ -1867,6 +2034,7 @@ struct FastSim : public TSelector
     Long64_t     nev     = 10000;
     UInt_t       run     = 0;
     TString      eg      = "default";
+    TString      override= "";
     Double_t     bMin    = 0;
     Double_t     bMax    = 20;
     Int_t        monitor = -1;
@@ -1886,10 +2054,11 @@ struct FastSim : public TSelector
 	continue;
       }
 
-      if      (key.EqualTo("events")) nev     = val.Atoll();
-      else if (key.EqualTo("run"))    run     = val.Atoi();
-      else if (key.EqualTo("eg"))     eg      = val;
-      else if (key.EqualTo("monitor"))monitor = val.Atoi();
+      if      (key.EqualTo("events"))   nev      = val.Atoll();
+      else if (key.EqualTo("run"))      run      = val.Atoi();
+      else if (key.EqualTo("eg"))       eg       = val;
+      else if (key.EqualTo("override")) override = val;
+      else if (key.EqualTo("monitor"))  monitor  = val.Atoi();
       else if (key.EqualTo("b")) {
 	TString min, max;
 	if (Str2KeyVal(val, min, max, '-')) {
@@ -1917,14 +2086,15 @@ struct FastSim : public TSelector
 	   "  Execution url:          %s",
 	   eg.Data(), nev, run, bMin, bMax, monitor, u.GetUrl());
 
+
     TStopwatch timer;
     timer.Start();
 
     Bool_t ret = false;
     if (isLocal)
-      ret = LocalRun(nev, run, eg, bMin, bMax, monitor);
+      ret = LocalRun(nev, run, eg, bMin, bMax, monitor, override);
     else 
-      ret = ProofRun(u, nev, run, eg, bMin, bMax, monitor, opt);
+      ret = ProofRun(u, nev, run, eg, bMin, bMax, monitor, override, opt);
     timer.Print();
 
     return ret;

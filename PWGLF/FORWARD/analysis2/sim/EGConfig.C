@@ -70,6 +70,8 @@ protected:
     else if (t.BeginsWith("dpmjet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("phojet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("hydjet"))          g=Hydjet(b1, b2);
+    else if (t.BeginsWith("epos"))            g=Epos(b1, b2);
+    else if (t.BeginsWith("therminator"))     g=Therminator(b1, b2);
     else if (t.BeginsWith("lego"))            g=Lego(rt);
     if (!g && !fIsLego)
       Fatal("", "Invalid run type \"%s\" specified", t.Data());
@@ -414,6 +416,39 @@ protected:
     genHi->SetBmax(maxB);
     genHi->SetPyquenPtmin(9);
     return genHi;
+  }
+  /** 
+   * Make an Epos generator for p-p (A-A, or p-A possible?)
+   * 
+   * @return Generator 
+   */
+  AliGenerator* Epos(Float_t,Float_t)
+  {
+    LoadEpos();
+    AliGenEpos* gen = new AliGenEpos();
+    gen->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    gen->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    gen->SetEnergyCMS(grp->energy);
+    return gen;
+  }    
+  AliGenerator* Therminator(Float_t,Float_t)
+  {
+    LoadTherminator();
+    AliGenTherminator* gen = new AliGenTherminator();
+    gen->SetFileName("event.out");
+    gen->SetEventNumberInFile(1);
+    gen->SetTemperature(.145);
+    gen->SetMiuI(-0.0009);
+    gen->SetMiuS(0.000);
+    gen->SetMiuB(0.0008);
+    gen->SetAlfaRange(8.0);
+    gen->SetRapRange(4.0);
+    gen->SetRhoMax(7.74);
+    gen->SetTau(9.74);
+    gen->SetModel("Lhyquid3D");
+    gen->SetLhyquidSet("LHC500C2030");
+    return gen;
+
   }
   // === Lego ========================================================
   /** 
