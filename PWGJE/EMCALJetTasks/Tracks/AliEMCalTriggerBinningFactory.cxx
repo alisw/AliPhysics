@@ -105,8 +105,9 @@ void AliEMCalTriggerBinningFactory::CreateMarkusPtBinning(TArrayD &binning) cons
  * - from 1 to 2 GeV/c: 0.1 GeV/c bins
  * - from 2 to 4 GeV/c: 0.2 GeV/c bins
  * - from 4 to 7 GeV/c: 0.5 GeV/c bins
- * - from 7 to 20 GeV/c: 1 GeV/c bins
- * - from 20 to 40 GeV/c: 2 GeV/c bins
+ * - from 7 to 16 GeV/c: 1 GeV/c bins
+ * - from 16 to 36 GeV/c: 2 GeV/c bins
+ * - from 36 to 40 GeV/c: 4 GeV/c bins
  * - from 40 to 50 GeV/c: 5 GeV/c bins
  * - from 50 to 100 GeV/c: 10 GeV/c bins
  *
@@ -119,8 +120,9 @@ void AliEMCalTriggerBinningFactory::CreateRAAPtBinning(TArrayD& binning) const {
   definitions.insert(std::pair<double, double>(2, 0.1));
   definitions.insert(std::pair<double, double>(4, 0.2));
   definitions.insert(std::pair<double, double>(7, 0.5));
-  definitions.insert(std::pair<double, double>(20, 1));
-  definitions.insert(std::pair<double, double>(40, 2));
+  definitions.insert(std::pair<double, double>(16, 1));
+  definitions.insert(std::pair<double, double>(36, 2));
+  definitions.insert(std::pair<double, double>(40, 4));
   definitions.insert(std::pair<double, double>(50, 5));
   definitions.insert(std::pair<double, double>(100, 10));
   definitions.insert(std::pair<double, double>(200, 20));
