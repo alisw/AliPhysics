@@ -54,6 +54,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliEventplane.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliAnalysisTaskGammaConvV1)
 

@@ -91,7 +91,9 @@ fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
-fQVecList(NULL)
+fQVecList(NULL),
+fCRCRunBinMin(0),
+fCRCRunBinMax(1)
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -228,7 +230,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  AliDebug(2,"AliAnalysisTaskCRC::UserCreateOutputObjects()");
  
  // Analyser:
- fQC = new AliFlowAnalysisCRC();
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fCRCRunBinMin,fCRCRunBinMax);
  
  // Common:
  fQC->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
@@ -330,7 +332,7 @@ void AliAnalysisTaskCRC::UserExec(Option_t *)
 {
  // main loop (called for each event)
  fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
-
+ 
  // Q-cumulants
  if(fEvent) {
   fQC->SetRunNumber(fEvent->GetRun());
@@ -350,7 +352,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
  //accessing the merged output list:
  fListHistos = (TList*)GetOutputData(1);
  
- fQC = new AliFlowAnalysisCRC();
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fCRCRunBinMin,fCRCRunBinMax);
  
  if(fListHistos) {
   fQC->GetOutputHistograms(fListHistos);

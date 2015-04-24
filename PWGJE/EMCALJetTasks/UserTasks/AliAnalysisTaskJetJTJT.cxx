@@ -58,15 +58,20 @@ ClassImp(AliAnalysisTaskJetJTJT)
 		AliAnalysisTaskEmcalJet("AliAnalysisTaskJetJTJT", kTRUE),
 		fHistTracksPt(0),
 		fHistTracksJt(0),
+		fHistTracksEta(0),
 		fHistClustersPt(0),
 		fHistLeadingJetPt(0),
 		fHistJetsPt(0),
+		fHistJetsCorrPt(0),
+		fHistJetsCorrPtVsNonCorr(0),
 		fHistBackgroundDone(0),
 		fHistJTPta(0),
 		fHistLogJTPta(0),
 		fHistJTPta_all(0),
 		fHistJTBg(0),
 		fHistLogJTBg(0),
+		fHistPtaVsJt(0),
+		fHistBgPtaVsJt(0),
 		fHistJTPtaNonInv(0),
 		fHistLogJTPtaNonInv(0),
 		fHistJTPta_allNonInv(0),
@@ -86,7 +91,7 @@ ClassImp(AliAnalysisTaskJetJTJT)
 		//nJetsConts(0),
 		fTracksCont(0),
 		fCaloClustersCont(0),
-	       	fhVertexZ(0),
+		fhVertexZ(0),
 		fHistEvtSelection(0),
 		fPrimaryVertex(0),
 		fTracks(0),
@@ -102,9 +107,12 @@ ClassImp(AliAnalysisTaskJetJTJT)
 
 	fHistTracksPt       = new TH1*[fNcentBins];
 	fHistTracksJt       = new TH1*[fNcentBins];
+	fHistTracksEta       = new TH1*[fNcentBins];
 	fHistClustersPt     = new TH1*[fNcentBins];
 	fHistLeadingJetPt   = new TH1*[fNcentBins];
 	fHistJetsPt         = new TH1**[fNcentBins];
+	fHistJetsCorrPt     = new TH1**[fNcentBins];
+	fHistJetsCorrPtVsNonCorr= new TProfile*[fNcentBins];
 	fHistBackgroundDone = new TH1**[fNcentBins];
 	fHistJTPta          = new TH1***[fNcentBins];
 	fHistLogJTPta       = new TH1***[fNcentBins];
@@ -122,6 +130,8 @@ ClassImp(AliAnalysisTaskJetJTJT)
 	fHistJetMulti       = new TH1**[fNcentBins];
 	fHistJetTracksPt     = new TH1**[fNcentBins];
 	fhTrackingEfficiency = new TProfile*[fNcentBins];
+	fHistPtaVsJt	    = new TProfile**[fNcentBins];
+	fHistBgPtaVsJt	    = new TProfile**[fNcentBins];
 	//CentBinBorders      = new Double_t[10];
 
 
@@ -139,15 +149,20 @@ ClassImp(AliAnalysisTaskJetJTJT)
 		fHistBackgroundDone[i] = 0;
 		fHistTracksPt[i] = 0;
 		fHistTracksJt[i] = 0;
+		fHistTracksEta[i] = 0;
 		fHistClustersPt[i] = 0;
 		fHistLeadingJetPt[i] = 0;
 		fHistJetsPt[i] = 0;
+		fHistJetsCorrPt[i] = 0;
+		fHistJetsCorrPtVsNonCorr[i] = 0;
 		fHistBgMulti[i] = 0;
 		fHistBgPt[i] = 0;  
 		fHistJetEta[i] = 0; 
 		fHistJetMulti[i] = 0;
 		fHistJetTracksPt[i] = 0;
 		fhTrackingEfficiency[i] = 0;
+		fHistPtaVsJt[i]	    = 0;
+		fHistBgPtaVsJt[i]    = 0;
 	}
 
 	/*for(Int_t i = 0; i < nJetsConts; i++){
@@ -161,15 +176,20 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 	AliAnalysisTaskEmcalJet(name, kTRUE),
 	fHistTracksPt(0),
 	fHistTracksJt(0),
+	fHistTracksEta(0),
 	fHistClustersPt(0),
 	fHistLeadingJetPt(0),
 	fHistJetsPt(0),
+	fHistJetsCorrPt(0),
+	fHistJetsCorrPtVsNonCorr(0),
 	fHistBackgroundDone(0),
 	fHistJTPta(0),
 	fHistLogJTPta(0),
 	fHistJTPta_all(0),
 	fHistJTBg(0),
 	fHistLogJTBg(0),
+	fHistPtaVsJt(0),
+	fHistBgPtaVsJt(0),
 	fHistJTPtaNonInv(0),
 	fHistLogJTPtaNonInv(0),
 	fHistJTPta_allNonInv(0),
@@ -202,9 +222,12 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 	// Standard constructor.
 	fHistTracksPt       = new TH1*[fNcentBins];
 	fHistTracksJt       = new TH1*[fNcentBins];
+	fHistTracksEta       = new TH1*[fNcentBins];
 	fHistClustersPt     = new TH1*[fNcentBins];
 	fHistLeadingJetPt   = new TH1*[fNcentBins];
 	fHistJetsPt         = new TH1**[fNcentBins];
+	fHistJetsCorrPt     = new TH1**[fNcentBins];
+	fHistJetsCorrPtVsNonCorr = new TProfile*[fNcentBins];
 	fHistBackgroundDone = new TH1**[fNcentBins];	
 	fHistJTPta	    = new TH1***[fNcentBins];	
 	fHistLogJTPta	    = new TH1***[fNcentBins];	
@@ -222,7 +245,8 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 	fHistJetMulti       = new TH1**[fNcentBins];
 	fHistJetTracksPt     = new TH1**[fNcentBins];
 	fhTrackingEfficiency = new TProfile*[fNcentBins];
-	//CentBinBorders	    = new Double_t[10];
+	fHistPtaVsJt	    = new TProfile**[fNcentBins];
+	fHistBgPtaVsJt	    = new TProfile**[fNcentBins];
 
 
 	for (Int_t i = 0; i < fNcentBins; i++) {
@@ -239,20 +263,22 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 		fHistBackgroundDone[i] = 0;
 		fHistTracksPt[i] = 0;
 		fHistTracksJt[i] = 0;
+		fHistTracksEta[i] = 0;
 		fHistClustersPt[i] = 0;
 		fHistLeadingJetPt[i] = 0;
 		fHistJetsPt[i] = 0;
+		fHistJetsCorrPt[i] = 0;
+		fHistJetsCorrPtVsNonCorr[i] = 0;
 		fHistBgMulti[i] = 0;        
 		fHistBgPt[i] = 0;           
 		fHistJetEta[i] = 0;         
 		fHistJetMulti[i] = 0; 
 		fHistJetTracksPt[i] = 0; 
 		fhTrackingEfficiency[i] = 0;
+		fHistPtaVsJt[i]	    = 0;
+		fHistBgPtaVsJt[i]    = 0;
 	}
 
-	/*for(Int_t i = 0; i < nJetsConts; i++){
-	  fJetsConts[i] = 0;
-	  }*/
 	SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -327,14 +353,20 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 	//Int_t fMinBinJt = 0;
 	//Int_t fMaxBinJt = 5;
 
-	Int_t NBINSJt=150;
-	double LogBinsJt[NBINSJt+1], LimLJt=0.01, LimHJt=10;
+	Int_t NBINSJt=160;
+	double LogBinsJt[NBINSJt+1], LimLJt=0.001, LimHJt=10;
 	double logBWJt = (TMath::Log(LimHJt)-TMath::Log(LimLJt))/(NBINSJt-1);
 	LogBinsJt[0] = 0;
 	for(int ij=1;ij<=NBINSJt;ij++) LogBinsJt[ij]=LimLJt*exp(ij*logBWJt);
+	
+	Int_t NBINSPt = 160;
+	double LogBinsPt[NBINSPt+1], LimLPt=0.1, LimHPt=20;
+	double logBWPt = (TMath::Log(LimHPt)-TMath::Log(LimLPt))/(NBINSPt-1);
+	LogBinsPt[0] = 0;
+	for(int ib=1;ib<=NBINSPt;ib++) LogBinsPt[ib]=LimLPt*exp(ib*logBWJt);
 
-	int NBINSJtW=150;
-	double LimLJtW=TMath::Log(0.01), LimHJtW=TMath::Log(10);
+	int NBINSJtW=160;
+	double LimLJtW=TMath::Log(LimLJt), LimHJtW=TMath::Log(LimHJt);
 
 	//==== Efficiency ====
 	if(debug > 0)
@@ -363,9 +395,9 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 		if (fParticleCollArray.GetEntriesFast()>0) {
 			histname = "fHistTracksPt_";
 			histname += ic;
-			fHistTracksPt[ic] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt / 4);
+			fHistTracksPt[ic] = new TH1F(histname.Data(), histname.Data(), NBINSPt, LogBinsPt);
 			fHistTracksPt[ic]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
-			fHistTracksPt[ic]->GetYaxis()->SetTitle("counts");
+			fHistTracksPt[ic]->GetYaxis()->SetTitle("tracks");
 			fOutput->Add(fHistTracksPt[ic]);
 		}
 
@@ -374,8 +406,17 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 			histname += ic;
 			fHistTracksJt[ic] = new TH1F(histname.Data(), histname.Data(), NBINSJt, LogBinsJt);
 			fHistTracksJt[ic]->GetXaxis()->SetTitle("J_{T,track} (GeV/c)");
-			fHistTracksJt[ic]->GetYaxis()->SetTitle("counts");
+			fHistTracksJt[ic]->GetYaxis()->SetTitle("tracks");
 			fOutput->Add(fHistTracksJt[ic]);
+		}
+
+		if (fParticleCollArray.GetEntriesFast()>0) {
+			histname = "fHistTracksEta_";
+			histname += ic;
+			fHistTracksEta[ic] = new TH1F(histname.Data(), histname.Data(), fNbins, -2, 2);
+			fHistTracksEta[ic]->GetXaxis()->SetTitle("#eta");
+			fHistTracksEta[ic]->GetYaxis()->SetTitle("tracks");
+			fOutput->Add(fHistTracksEta[ic]);
 		}
 
 		if (fParticleCollArray.GetEntriesFast()>0) {
@@ -386,23 +427,26 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 			fhTrackingEfficiency[ic]->GetYaxis()->SetTitle("counts");
 			fOutput->Add(fhTrackingEfficiency[ic]);
 		}
-		fHistJTPta[ic] = new TH1**[fNpttBins];
-		fHistLogJTPta[ic] = new TH1**[fNpttBins];
-		fHistJTPta_all[ic] = new TH1**[fNpttBins];
-		fHistJTBg[ic] = new TH1**[fNpttBins];
-		fHistLogJTBg[ic] = new TH1**[fNpttBins];
+		fHistJTPta[ic]       = new TH1**[fNpttBins];
+		fHistLogJTPta[ic]    = new TH1**[fNpttBins];
+		fHistJTPta_all[ic]   = new TH1**[fNpttBins];
+		fHistJTBg[ic]        = new TH1**[fNpttBins];
+		fHistLogJTBg[ic]     = new TH1**[fNpttBins];
 		fHistJTPtaNonInv[ic] = new TH1**[fNpttBins];
 		fHistLogJTPtaNonInv[ic] = new TH1**[fNpttBins];
 		fHistJTPta_allNonInv[ic] = new TH1**[fNpttBins];
-		fHistJTBgNonInv[ic] = new TH1**[fNpttBins];
+		fHistJTBgNonInv[ic]  = new TH1**[fNpttBins];
 		fHistLogJTBgNonInv[ic] = new TH1**[fNpttBins];
-		fHistJetsPt[ic] = new TH1*[fNpttBins];
+		fHistJetsPt[ic]      = new TH1*[fNpttBins];
+		fHistJetsCorrPt[ic]      = new TH1*[fNpttBins];
 		fHistBackgroundDone[ic] = new TH1*[fNpttBins];
-		fHistBgMulti[ic] = new TH1*[fNpttBins];
-		fHistBgPt[ic] = new TH1*[fNpttBins];
-		fHistJetEta[ic] = new TH1*[fNpttBins];
-		fHistJetMulti[ic] = new TH1*[fNpttBins];
+		fHistBgMulti[ic]     = new TH1*[fNpttBins];
+		fHistBgPt[ic]        = new TH1*[fNpttBins];
+		fHistJetEta[ic]      = new TH1*[fNpttBins];
+		fHistJetMulti[ic]    = new TH1*[fNpttBins];
 		fHistJetTracksPt[ic] = new TH1*[fNpttBins];
+		fHistPtaVsJt[ic]     = new TProfile*[fNpttBins];
+		fHistBgPtaVsJt[ic]   = new TProfile*[fNpttBins];
 		for(Int_t j=0; j < fNpttBins; j++){
 			fHistJTPta[ic][j] = new TH1*[fNptaBins];
 			fHistLogJTPta[ic][j] = new TH1*[fNptaBins];
@@ -428,12 +472,15 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 				fHistLogJTBgNonInv[ic][j][k] = 0;
 			}
 			fHistJetsPt[ic][j] = 0;
+			fHistJetsCorrPt[ic][j] = 0;
 			fHistBackgroundDone[ic][j] = 0;
 			fHistBgMulti[ic][j] = 0;
 			fHistBgPt[ic][j] = 0;
 			fHistJetEta[ic][j] = 0;
 			fHistJetMulti[ic][j] =0;
 			fHistJetTracksPt[ic][j] = 0;
+			fHistPtaVsJt[ic][j]     = 0;
+			fHistBgPtaVsJt[ic][j]   = 0;
 		}
 
 
@@ -562,6 +609,13 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 			fHistLeadingJetPt[ic]->GetYaxis()->SetTitle("counts");
 			fOutput->Add(fHistLeadingJetPt[ic]);
 
+			histname = "fHistJetsCorrPtVsNonCorr_";
+			histname += Form("C%02d", ic);
+			fHistJetsCorrPtVsNonCorr[ic] = new TProfile(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+			fHistJetsCorrPtVsNonCorr[ic]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
+			fHistJetsCorrPtVsNonCorr[ic]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+			fOutput->Add(fHistJetsCorrPtVsNonCorr[ic]);
+
 			for(Int_t iptt = 0 ; iptt <  fNpttBins; iptt++){
 
 				histname = "fHistJetsPt_";
@@ -570,6 +624,13 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 				fHistJetsPt[ic][iptt]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
 				fHistJetsPt[ic][iptt]->GetYaxis()->SetTitle("counts");
 				fOutput->Add(fHistJetsPt[ic][iptt]);
+
+				histname = "fHistJetsCorrPt_";
+				histname += Form("C%02dT%02d", ic, iptt);
+				fHistJetsCorrPt[ic][iptt] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+				fHistJetsCorrPt[ic][iptt]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
+				fHistJetsCorrPt[ic][iptt]->GetYaxis()->SetTitle("counts");
+				fOutput->Add(fHistJetsCorrPt[ic][iptt]);
 
 				histname = "fHistBackgroundDone_";
 				histname += Form("C%02dT%02d", ic, iptt);;
@@ -580,7 +641,7 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 
 				histname = "fHistJetEta_";
 				histname += Form("C%02dT%02d", ic, iptt);
-				fHistJetEta[ic][iptt] = new TH1F(histname.Data(), histname.Data(), fNbins, -5, 5);
+				fHistJetEta[ic][iptt] = new TH1F(histname.Data(), histname.Data(), fNbins, -2, 2);
 				fHistJetEta[ic][iptt]->GetXaxis()->SetTitle("#eta");
 				fHistJetEta[ic][iptt]->GetYaxis()->SetTitle("jets");
 				fOutput->Add(fHistJetEta[ic][iptt]);
@@ -602,8 +663,8 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 				histname = "fHistBgPt_";
 				histname += Form("C%02dT%02d", ic, iptt);
 				fHistBgPt[ic][iptt] = new TH1F(histname.Data(), histname.Data(), fNbins,fMinBinPt, fMaxBinPt/4);
-				fHistBgPt[ic][iptt]->GetXaxis()->SetTitle("Multiplicity");
-				fHistBgPt[ic][iptt]->GetYaxis()->SetTitle("jets");
+				fHistBgPt[ic][iptt]->GetXaxis()->SetTitle("p_{T}");
+				fHistBgPt[ic][iptt]->GetYaxis()->SetTitle("tracks");
 				fOutput->Add(fHistBgPt[ic][iptt]);
 
 				histname = "fHistJetTracksPt_";
@@ -611,10 +672,24 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 				histname += Form("C%02dT%02d", ic, iptt);
 				if(debug > 1)
 					cout << histname << endl;
-				fHistJetTracksPt[ic][iptt] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt/4);
+				fHistJetTracksPt[ic][iptt] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt/10);
 				fHistJetTracksPt[ic][iptt]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
 				fHistJetTracksPt[ic][iptt]->GetYaxis()->SetTitle("counts");
 				fOutput->Add(fHistJetTracksPt[ic][iptt]);
+
+				histname = "fHistPtaVsJt_";
+				histname += Form("C%02dT%02d", ic, iptt);
+				fHistPtaVsJt[ic][iptt] = new TProfile(histname.Data(), histname.Data(),NBINSJt, LogBinsJt);
+				fHistPtaVsJt[ic][iptt]->GetXaxis()->SetTitle("j_{T,track} (GeV/c)");
+				fHistPtaVsJt[ic][iptt]->GetYaxis()->SetTitle("p_{T,track} (GeV/c)");
+				fOutput->Add(fHistPtaVsJt[ic][iptt]);
+
+				histname = "fHistBgPtaVsJt_";
+				histname += Form("C%02dT%02d", ic, iptt);
+				fHistBgPtaVsJt[ic][iptt] = new TProfile(histname.Data(), histname.Data(),NBINSJt, LogBinsJt);
+				fHistBgPtaVsJt[ic][iptt]->GetXaxis()->SetTitle("j_{T,track} (GeV/c)");
+				fHistBgPtaVsJt[ic][iptt]->GetYaxis()->SetTitle("p_{T,track} (GeV/c)");
+				fOutput->Add(fHistBgPtaVsJt[ic][iptt]);
 			}
 
 			/*
@@ -678,7 +753,8 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 			//<<<<<<<<<<<< Efficiency >>>>>>>>>>>
 
 			if(ptt > 0 && 1.0/ptt > 0){
-				fHistTracksPt[fCentBin]->Fill(ptt,1./ptt*effCorr); 
+				fHistTracksPt[fCentBin]->Fill(ptt,1./effCorr); 
+				fHistTracksEta[fCentBin]->Fill(track->Eta(),1./ptt*effCorr); 
 			}
 
 
@@ -708,7 +784,7 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 			cout << "Number of Jets: " << Njets << endl;
 		}
 
-		//Make a array to hold jets to be tested in background jT
+		//Make arrays to hold jets to be tested in background jT
 		Float_t jetPhis[200] = {};
 		Float_t jetEtas[200] = {};
 		AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
@@ -738,13 +814,12 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 		jet = fJetsCont->GetNextAcceptJet(0); 
 		while(jet) {
 			if(jet->Pt() > 5){
-				if(jet->Eta() < -0.4 || jet->Eta() > 0.4){
+				if(jet->Eta() < -0.4 || jet->Eta() > 0.4){ //TODO Fix
 					if(debug > 0)
 						cout << "Jet outside eta range, Eta: " << jet->Eta() << endl;
 					jet = fJetsCont->GetNextAcceptJet();
 					continue;
 				}
-				//cout << "Jet found " << ij << " pt: " << jet->Pt() << endl;
 				//Get the trigger pT bin
 				fPttBin = 0;
 				for(int iptt = 0 ; iptt < fNpttBins; iptt++){
@@ -754,150 +829,127 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 
 				}
 				fHistJetEta[fCentBin][fPttBin]->Fill(jet->Eta());
+				Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
 				if(jet->Pt() > 0 && 1.0/jet->Pt() > 0){
 					fHistJetsPt[fCentBin][fPttBin]->Fill(jet->Pt(),1.0/jet->Pt());  //Fill jet dN/(pT dpT)
-				}
+					fHistJetsCorrPt[fCentBin][fPttBin]->Fill(corrPt,1.0/corrPt);  //Fill jet dN/(pT dpT)
+					fHistJetsCorrPtVsNonCorr[fCentBin]->Fill(jet->Pt(),corrPt);  //Fill jet dN/(pT dpT)
 
-				/*if (fHistJetsCorrPtArea[fCentBin]) {
-				  Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
-				  fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
-				  }*/
-				//Float_t jetp = sqrt(jet->Px()*jet->Px()+jet->Py()*jet->Py()+jet->Pz()*jet->Pz()); //Jet pT norm
-
-
-				Int_t nTrack = jet->GetNumberOfTracks();
-				if (debug > 0)			
-					cout << "Number of tracks " << nTrack << " Jet Pt: " << jet->Pt() << endl;
-				fHistJetMulti[fCentBin][fPttBin]->Fill(nTrack);
-				for(Int_t it = 0; it < nTrack; it++ ){
-					AliVParticle *track = (AliVParticle*)jet->TrackAt( it, fTracks );
-					if( !track ){
-						cout << "No Track found" << endl;
-						continue;
-					}
-					fPtaBin = 0; //Get the associated pT bin
-					for(int ipta = 0 ; ipta < fNptaBins; ipta++){
-						if(track->Pt() > AssocPtBorders[ipta]){
-							fPtaBin = ipta;
+					Int_t nTrack = jet->GetNumberOfTracks();
+					if (debug > 0)			
+						cout << "Number of tracks " << nTrack << " Jet Pt: " << jet->Pt() << endl;
+					fHistJetMulti[fCentBin][fPttBin]->Fill(nTrack);
+					for(Int_t it = 0; it < nTrack; it++ ){
+						AliVParticle *track = (AliVParticle*)jet->TrackAt( it, fTracks );
+						if( !track ){
+							cout << "No Track found" << endl;
+							continue;
 						}
-					}
-					fHistJetTracksPt[fCentBin][fPttBin]->Fill(track->Pt());
-					if(debug > 2)
-						cout << "Filling fHistJetTracksPt C" << fCentBin << " T" << fPttBin << endl;
-					/*Float_t dotproduct = track->Px()*jet->Px()+track->Py()*jet->Py()+track->Pz()*jet->Pz(); // p_track dot p_jet
-					  Float_t constp = sqrt(track->Px()*track->Px()+track->Py()*track->Py()+track->Pz()*track->Pz()); // track pT norm
-					  Float_t normproduct = constp*jetp; // jet pT norm times track pT norm
-					  Float_t costheta2 = dotproduct/normproduct; 
-					//Float_t sintheta = sqrt(1-costheta2*costheta2);
-					Float_t jt = constp*sqrt(1-costheta2*costheta2);*/
-					Float_t jt = getJt(track,jet,0);
-					double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
-					//double effCorr = 1.;
-					if(jt > 0 && 1.0/jt > 0){
-						fHistTracksJt[fCentBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
-						fHistJTPta[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
-						fHistLogJTPta[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/jt*effCorr); //Fill logarithmic dN/(dln(jT) jT)
-
-						fHistJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr); //Fill dN/(djT)
-						fHistLogJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr); //Fill logarithmic dN/(dln(jT))
-					}
-					if(debug > 1)
-						cout << "Filling JT C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
-				}
-
-				//Get Jet azimuth and rapidity of jet
-				Float_t jetAngle = jet->Phi();
-				Float_t jetRap = jet->Eta();
-
-				//Rotate jet angle for background cone
-				Float_t rotatedAngle = jetAngle+TMath::Pi()/2;
-				if(rotatedAngle > TMath::Pi()*2){
-					rotatedAngle = rotatedAngle- TMath::Pi()*2;
-				}
-				Float_t jetArea = jet->Area();
-				Float_t testRadius = TMath::Sqrt(jetArea/TMath::Pi());
-
-				Bool_t doBg = 1;
-
-				//Test if there are jets in the background test cone
-				for(int i_j = 0; i_j < Njets; i_j++){
-					Float_t diffR = TMath::Sqrt(TMath::Power(jetPhis[i_j]-rotatedAngle,2)+TMath::Power(jetEtas[i_j]-jetRap,2));
-					if(debug > 1){
-						cout << "i_j: " << i_j << " JetPhi: " << jetPhis[i_j] << " jetEta: " << jetEtas[i_j] << endl;
-						cout << "DiffR: " << diffR << " doBG: " << doBg <<endl;
-					}
-					if(diffR < testRadius *2){ //Jets muts be at least 2*cone radius away from the background cone axis
-						doBg =0;
-						break;
-					}
-
-				}
-
-				// Do jT for all particles in respect to jet axis
-				if (fTracksCont) {
-					int counter = 0;
-					AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
-					while(track) {
-						/*Float_t dotproduct = track->Px()*jet->Px()+track->Py()*jet->Py()+track->Pz()*jet->Pz();
-						  Float_t constp = sqrt(track->Px()*track->Px()+track->Py()*track->Py()+track->Pz()*track->Pz());
-						  Float_t normproduct = constp*jetp;
-						  Float_t costheta2 = dotproduct/normproduct;
-						//Float_t sintheta = sqrt(1-costheta2*costheta2);
-						Float_t jt = constp*sqrt(1-costheta2*costheta2);*/
-						Double_t jt = getJt(track,jet,0);
-						double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
-						if(jt > 0 && 1.0/jt > 0){
-							fHistJTPta_all[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
-							fHistJTPta_allNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
-						}
+						fPtaBin = 0; //Get the associated pT bin
 						for(int ipta = 0 ; ipta < fNptaBins; ipta++){
 							if(track->Pt() > AssocPtBorders[ipta]){
 								fPtaBin = ipta;
 							}
 						}
-
-						//If background is to be filled
-						if(doBg){
-							Float_t diffR = TMath::Sqrt(TMath::Power(track->Phi()-rotatedAngle,2)+TMath::Power(track->Eta()-jetRap,2));
-							//Particles in the rotated cone
-							if(diffR < testRadius){
-								counter++;
-								fHistBgPt[fCentBin][fPttBin]->Fill(track->Pt());
-								/*dotproduct = -track->Px()*jet->Py()+track->Py()*jet->Px()+track->Pz()*jet->Pz();
-								  constp = sqrt(track->Px()*track->Px()+track->Py()*track->Py()+track->Pz()*track->Pz());
-								  normproduct = constp*jetp;
-								  costheta2 = dotproduct/normproduct;
-								//sintheta = sqrt(1-costheta2*costheta2);
-								jt = constp*sqrt(1-costheta2*costheta2);*/
-								jt = getJt(track,jet,1);
-								if(jt > 0 && 1.0/jt > 0){
-									fHistJTBg[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
-									fHistLogJTBg[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/jt*effCorr);
-
-									fHistJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
-									fHistLogJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr);
-								}
-								if(debug > 1)
-									cout << "Filling Background C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
-								//Fill background jT
-
-							}
+						fHistJetTracksPt[fCentBin][fPttBin]->Fill(track->Pt());
+						if(debug > 2)
+							cout << "Filling fHistJetTracksPt C" << fCentBin << " T" << fPttBin << endl;
+						Float_t jt = getJt(track,jet,0);
+						double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
+						if(jt > 0 && 1.0/jt > 0){
+							fHistTracksJt[fCentBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
+							fHistJTPta[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
+							fHistLogJTPta[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/(jt*jt)*effCorr); //Fill logarithmic dN/(dln(jT) jT^2)
+							fHistPtaVsJt[fCentBin][fPttBin]->Fill(jt,track->Pt(),1.0/effCorr); //Fill j_T vs p_Ta histogram
+							fHistJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr); //Fill dN/(djT)
+							fHistLogJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr); //Fill logarithmic dN/(dln(jT))
 						}
-						track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+						if(debug > 1)
+							cout << "Filling JT C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
+					}
+
+					//Get Jet azimuth and rapidity of jet
+					Float_t jetAngle = jet->Phi();
+					Float_t jetRap = jet->Eta();
+
+					//Rotate jet angle for background cone
+					Float_t rotatedAngle = jetAngle+TMath::Pi()/2;
+					if(rotatedAngle > TMath::Pi()*2){
+						rotatedAngle = rotatedAngle- TMath::Pi()*2;
+					}
+					AliEmcalJet *bgCone = new AliEmcalJet(jet->Pt(), jetRap, rotatedAngle, jet->M());
+
+					Float_t jetArea = jet->Area();
+					Float_t testRadius = TMath::Sqrt(jetArea/TMath::Pi());
+
+					Bool_t doBg = 1;
+
+					//Test if there are jets in the background test cone
+					for(int i_j = 0; i_j < Njets; i_j++){
+						//Float_t diffR = TMath::Sqrt(TMath::Power(jetPhis[i_j]-rotatedAngle,2)+TMath::Power(jetEtas[i_j]-jetRap,2));
+						Float_t diffR = getDiffR(jetPhis[i_j],rotatedAngle,jetEtas[i_j],jetRap);
+						if(debug > 1){
+							cout << "i_j: " << i_j << " JetPhi: " << jetPhis[i_j] << " jetEta: " << jetEtas[i_j] << endl;
+							cout << "DiffR: " << diffR << " doBG: " << doBg <<endl;
+						}
+						if(diffR < testRadius *2){ //Jets muts be at least 2*cone radius away from the background cone axis
+							doBg =0;
+							break;
+						}
+
+					}
+
+					// Do jT for all particles in respect to jet axis
+					if (fTracksCont) {
+						int counter = 0;
+						AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+						while(track) {
+							Double_t jt = getJt(track,bgCone,0);
+							double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
+							if(jt > 0 && 1.0/jt > 0){
+								fHistJTPta_all[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
+								fHistJTPta_allNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
+							}
+							for(int ipta = 0 ; ipta < fNptaBins; ipta++){
+								if(track->Pt() > AssocPtBorders[ipta]){
+									fPtaBin = ipta;
+								}
+							}
+							//If background is to be filled
+							if(doBg){
+								//Float_t diffR = TMath::Sqrt(TMath::Power(track->Phi()-rotatedAngle,2)+TMath::Power(track->Eta()-jetRap,2));
+								Float_t diffR = getDiffR(track->Phi(),rotatedAngle,track->Eta(),jetRap);
+								//Particles in the rotated cone
+								if(diffR < testRadius){
+									counter++;
+									fHistBgPt[fCentBin][fPttBin]->Fill(track->Pt());
+									jt = getJt(track,bgCone,0);
+									if(jt > 0 && 1.0/jt > 0){
+										fHistJTBg[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
+										fHistLogJTBg[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/(jt*jt)*effCorr);
+										fHistJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
+										fHistLogJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr);
+										fHistBgPtaVsJt[fCentBin][fPttBin]->Fill(jt,track->Pt(),1.0/effCorr);
+									}
+									if(debug > 1)
+										cout << "Filling Background C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
+									//Fill background jT
+								}
+							}
+							track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+						}
+						if(doBg){
+							fHistBgMulti[fCentBin][fPttBin]->Fill(counter);
+						}
 					}
 					if(doBg){
-						fHistBgMulti[fCentBin][fPttBin]->Fill(counter);
+						fHistBackgroundDone[fCentBin][fPttBin]->Fill(1);
+					}else{
+						fHistBackgroundDone[fCentBin][fPttBin]->Fill(0);
 					}
 				}
-				if(doBg){
-					fHistBackgroundDone[fCentBin][fPttBin]->Fill(1);
-				}else{
-					fHistBackgroundDone[fCentBin][fPttBin]->Fill(0);
-				}
-
 			}
 			jet = fJetsCont->GetNextAcceptJet(); 
-
 		}
 		jet = fJetsCont->GetLeadingJet();
 		if(jet){
@@ -906,9 +958,7 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 			}
 		}
 	}
-
 	CheckClusTrackMatching();
-
 	return kTRUE;
 }
 
@@ -944,6 +994,15 @@ Double_t AliAnalysisTaskJetJTJT::getJt(AliVParticle *track, AliEmcalJet *jet,int
 	//Float_t sintheta = sqrt(1-costheta2*costheta2);
 	Float_t jt = constp*sqrt(1-costheta2*costheta2);
 	return jt;
+}
+
+//Phi1 and Phi2 between 0 and 2 pi
+Double_t AliAnalysisTaskJetJTJT::getDiffR(double phi1, double phi2, double eta1, double eta2){
+	Double_t diffPhi = TMath::Abs(phi1-phi2);	
+	if(diffPhi > TMath::Pi()){
+		diffPhi = 2*TMath::Pi() - diffPhi;	
+	}
+	return TMath::Sqrt(TMath::Power(diffPhi,2)+TMath::Power(eta1-eta2,2));
 }
 
 //________________________________________________________________________

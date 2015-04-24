@@ -174,6 +174,7 @@ private:
     Float_t fCentrality_V0SB;        //!
     Int_t fRefMultEta5;              //!
     Int_t fRefMultEta8;              //!
+    Int_t fRefMultEtaStandard;       //!
     Int_t fRunNumber;                //!
 
     //Differential reference multiplicity

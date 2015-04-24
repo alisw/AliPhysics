@@ -46,6 +46,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     fTriggerDecisionConfig(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
+    fMinBiasSelection(AliVEvent::kINT7),
     fSwapTriggerThresholds(kFALSE),
     fDoTriggerDebug(kFALSE)
 {
@@ -62,6 +63,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
     fTriggerDecisionConfig(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
+    fMinBiasSelection(AliVEvent::kINT7),
     fSwapTriggerThresholds(kFALSE),
     fDoTriggerDebug(kFALSE)
 {
@@ -119,7 +121,7 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
   if(fDoTriggerDebug) triggerDecision.SetDebugMode();
   if(fTriggerDecisionConfig) triggerDecision.ConfigureTriggerDecision(*fTriggerDecisionConfig);
   triggerDecision.Create(event);
-  triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
+  triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & fMinBiasSelection);
   TIter groupIter(fTaskGroups);
   AliEMCalTriggerTaskGroup *mygroup(NULL);
   while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter()))){
