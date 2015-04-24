@@ -125,6 +125,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fCentrality_V0SB(0),
       fRefMultEta5(0),
       fRefMultEta8(0),
+      fRefMultEtaStandard(0),
       fRunNumber(0),
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
@@ -269,6 +270,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fCentrality_V0SB(0),
       fRefMultEta5(0),
       fRefMultEta8(0),
+      fRefMultEtaStandard(0),
       fRunNumber(0),
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
@@ -490,6 +492,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     //Official GetReferenceMultiplicity
     fTreeEvent->Branch("fRefMultEta5",&fRefMultEta5,"fRefMultEta5/I");
     fTreeEvent->Branch("fRefMultEta8",&fRefMultEta8,"fRefMultEta8/I");
+    fTreeEvent->Branch("fRefMultEtaStandard",&fRefMultEtaStandard,"fRefMultEtaStandard/I");
 
     //Don't do this if not explicitly requested, takes up too much space
     if ( fkSaveExtendedRefMultInfo )
@@ -818,10 +821,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         PostData(4, fTreeCascade);
         return;
     }
-    
+
     */
-    
-    //Selection Via AliPPVsMultUtils 
+
+    //Selection Via AliPPVsMultUtils
     if( fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0M"   ) < -1  && !fkSkipEventSelection ) {
         AliWarning("Pb / | Not accepted by AliPPVsMultUtils criteria! Return ... ");
         PostData(1, fListHist);
@@ -830,20 +833,20 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         PostData(4, fTreeCascade);
         return;
     }
-    
+
     if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ) {
         //Passed selection!
         fEvSel_VtxZCut = kTRUE;
     }
     fEvSel_VtxZ = lBestPrimaryVtxPos[2] ; //Set
-    
+
     //Fill Event selected counter
     fHistEventCounter -> Fill(3.5);
 
     //------------------------------------------------
     // Check if this isn't pileup
     //------------------------------------------------
-    /* MAJOR CHANGE: This is embedded in AliPPVsMultUtils now. 
+    /* MAJOR CHANGE: This is embedded in AliPPVsMultUtils now.
     if(lESDevent->IsPileupFromSPD() && !fkSkipEventSelection ) {
         // minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.
         //-> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
@@ -893,7 +896,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
     fRefMultEta5 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
     fRefMultEta8 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.8);
-
+    
+    //Test Wrapper 
+    fRefMultEtaStandard = AliPPVsMultUtils :: GetStandardReferenceMultiplicity( lESDevent ); 
+    
     //Differential in eta
     //binning definition
     Float_t lEtaBinning[21] = {-1.5,-1.,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,1.0,1.5};
@@ -918,42 +924,42 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Special Ring selection (for eta symmetry)
     /*
      * --- Info table, from GetVZEROEtaMin / GetVZEROEtaMax
-     *     Listed here to be sure we're picking the right channels... 
-     * 
---- V0A partial ---
-channel 32,     min = 2.8,      max = 3.4
-channel 33,     min = 2.8,      max = 3.4
-channel 34,     min = 2.8,      max = 3.4
-channel 35,     min = 2.8,      max = 3.4
-channel 36,     min = 2.8,      max = 3.4
-channel 37,     min = 2.8,      max = 3.4
-channel 38,     min = 2.8,      max = 3.4
-channel 39,     min = 2.8,      max = 3.4
-channel 40,     min = 3.4,      max = 3.9
-channel 41,     min = 3.4,      max = 3.9
-channel 42,     min = 3.4,      max = 3.9
-channel 43,     min = 3.4,      max = 3.9
-channel 44,     min = 3.4,      max = 3.9
-channel 45,     min = 3.4,      max = 3.9
-channel 46,     min = 3.4,      max = 3.9
-channel 47,     min = 3.4,      max = 3.9
---- V0C partial ---
-channel 0,      min = -3.7,     max = -3.2
-channel 1,      min = -3.7,     max = -3.2
-channel 2,      min = -3.7,     max = -3.2
-channel 3,      min = -3.7,     max = -3.2
-channel 4,      min = -3.7,     max = -3.2
-channel 5,      min = -3.7,     max = -3.2
-channel 6,      min = -3.7,     max = -3.2
-channel 7,      min = -3.7,     max = -3.2
-channel 8,      min = -3.2,     max = -2.7
-channel 9,      min = -3.2,     max = -2.7
-channel 10,     min = -3.2,     max = -2.7
-channel 11,     min = -3.2,     max = -2.7
-channel 12,     min = -3.2,     max = -2.7
-channel 13,     min = -3.2,     max = -2.7
-channel 14,     min = -3.2,     max = -2.7
-channel 15,     min = -3.2,     max = -2.7
+     *     Listed here to be sure we're picking the right channels...
+     *
+    --- V0A partial ---
+    channel 32,     min = 2.8,      max = 3.4
+    channel 33,     min = 2.8,      max = 3.4
+    channel 34,     min = 2.8,      max = 3.4
+    channel 35,     min = 2.8,      max = 3.4
+    channel 36,     min = 2.8,      max = 3.4
+    channel 37,     min = 2.8,      max = 3.4
+    channel 38,     min = 2.8,      max = 3.4
+    channel 39,     min = 2.8,      max = 3.4
+    channel 40,     min = 3.4,      max = 3.9
+    channel 41,     min = 3.4,      max = 3.9
+    channel 42,     min = 3.4,      max = 3.9
+    channel 43,     min = 3.4,      max = 3.9
+    channel 44,     min = 3.4,      max = 3.9
+    channel 45,     min = 3.4,      max = 3.9
+    channel 46,     min = 3.4,      max = 3.9
+    channel 47,     min = 3.4,      max = 3.9
+    --- V0C partial ---
+    channel 0,      min = -3.7,     max = -3.2
+    channel 1,      min = -3.7,     max = -3.2
+    channel 2,      min = -3.7,     max = -3.2
+    channel 3,      min = -3.7,     max = -3.2
+    channel 4,      min = -3.7,     max = -3.2
+    channel 5,      min = -3.7,     max = -3.2
+    channel 6,      min = -3.7,     max = -3.2
+    channel 7,      min = -3.7,     max = -3.2
+    channel 8,      min = -3.2,     max = -2.7
+    channel 9,      min = -3.2,     max = -2.7
+    channel 10,     min = -3.2,     max = -2.7
+    channel 11,     min = -3.2,     max = -2.7
+    channel 12,     min = -3.2,     max = -2.7
+    channel 13,     min = -3.2,     max = -2.7
+    channel 14,     min = -3.2,     max = -2.7
+    channel 15,     min = -3.2,     max = -2.7
      */
 
     Float_t multV0Apartial = 0;
@@ -1218,11 +1224,11 @@ channel 15,     min = -3.2,     max = -2.7
         fTreeVariableCentV0MEq = fCentrality_V0MEq;
         fTreeVariableCentV0AEq = fCentrality_V0AEq;
         fTreeVariableCentV0CEq = fCentrality_V0CEq;
-	fTreeVariableCentV0B = fCentrality_V0B;
-	fTreeVariableCentV0Apartial = fCentrality_V0Apartial;
-	fTreeVariableCentV0Cpartial = fCentrality_V0Cpartial;
-	fTreeVariableCentV0S = fCentrality_V0S;
-	fTreeVariableCentV0SB = fCentrality_V0SB;
+        fTreeVariableCentV0B = fCentrality_V0B;
+        fTreeVariableCentV0Apartial = fCentrality_V0Apartial;
+        fTreeVariableCentV0Cpartial = fCentrality_V0Cpartial;
+        fTreeVariableCentV0S = fCentrality_V0S;
+        fTreeVariableCentV0SB = fCentrality_V0SB;
         fTreeVariableRefMultEta8 = fRefMultEta8;
         fTreeVariableRefMultEta5 = fRefMultEta5;
         fTreeVariableRunNumber = fRunNumber;
@@ -1602,11 +1608,11 @@ channel 15,     min = -3.2,     max = -2.7
         fTreeCascVarCentV0MEq = fCentrality_V0MEq;
         fTreeCascVarCentV0AEq = fCentrality_V0AEq;
         fTreeCascVarCentV0CEq = fCentrality_V0CEq;
-	fTreeCascVarCentV0B = fCentrality_V0B;
-	fTreeCascVarCentV0Apartial = fCentrality_V0Apartial;
-	fTreeCascVarCentV0Cpartial = fCentrality_V0Cpartial;
-	fTreeCascVarCentV0S = fCentrality_V0S;
-	fTreeCascVarCentV0SB = fCentrality_V0SB;
+        fTreeCascVarCentV0B = fCentrality_V0B;
+        fTreeCascVarCentV0Apartial = fCentrality_V0Apartial;
+        fTreeCascVarCentV0Cpartial = fCentrality_V0Cpartial;
+        fTreeCascVarCentV0S = fCentrality_V0S;
+        fTreeCascVarCentV0SB = fCentrality_V0SB;
         fTreeCascVarRefMultEta8 = fRefMultEta8;
         fTreeCascVarRefMultEta5 = fRefMultEta5;
         fTreeCascVarRunNumber = fRunNumber;

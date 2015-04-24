@@ -67,6 +67,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b()
   fAlpha(0),
   fBkgSE(kTRUE),
   fHistNEvents(0),
+  fHistCent(0),
   fHistT1CorrTrack(0),
   fHistT2CorrTrack(0),
   fOutputQA(0),
@@ -112,6 +113,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b(c
   fAlpha(0),
   fBkgSE(kTRUE),
   fHistNEvents(0),
+  fHistCent(0),
   fHistT1CorrTrack(0),
   fHistT2CorrTrack(0),
   fOutputQA(0),
@@ -162,6 +164,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b(c
   fAlpha(source.fAlpha),
   fBkgSE(source.fBkgSE),
   fHistNEvents(source.fHistNEvents),
+  fHistCent(source.fHistCent),
   fHistT1CorrTrack(source.fHistT1CorrTrack),
   fHistT2CorrTrack(source.fHistT2CorrTrack),
   fOutputQA(source.fOutputQA),
@@ -188,6 +191,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::~AliAnalysisTaskDiJetCorrelationsAllb2b(
   if(fOutputQA) {delete fOutputQA; fOutputQA = 0;}
   if(fOutputCorr) {delete fOutputCorr; fOutputCorr = 0;}
   if(fHistNEvents) {delete fHistNEvents; fHistNEvents = 0;}
+  if(fHistCent) {delete fHistCent; fHistCent = 0;}
 }
 
 //________________________________________|  Assignment Constructor
@@ -218,6 +222,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b& AliAnalysisTaskDiJetCorrelationsAllb2b::
   fAlpha= orig.fAlpha;
   fBkgSE = orig.fBkgSE;
   fHistNEvents = orig.fHistNEvents;
+  fHistCent = orig.fHistCent;
   fHistT1CorrTrack = orig.fHistT1CorrTrack;
   fHistT2CorrTrack = orig.fHistT2CorrTrack;
   fOutputQA = orig.fOutputQA;
@@ -258,6 +263,11 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutputQA->Add(fHistNEvents);
+    
+    
+  fHistCent = new TH1F("fHistCent", "centrality distribution", 100, 0, 100);
+  fHistCent->Sumw2();
+  fOutputQA->Add(fHistCent);
   
   fHistT1CorrTrack = new TH1F("fHistT1CorrTrack", "T1 nCorr tracks ", 5, -0.5, 4.5);
   fHistT1CorrTrack->GetXaxis()->SetBinLabel(1,"nTrack Total");
@@ -352,7 +362,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     fCentrOrMult = count;
   }
   fHistNEvents->Fill(2); //
-    
+  fHistCent->Fill(fCentrOrMult);
   
   AliAODVertex *vtxPrm = (AliAODVertex*)aod->GetPrimaryVertex();
   Bool_t isGoodVtx=kFALSE;
@@ -498,6 +508,8 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
 	    Double_t TrigDPhi = phiT1-phiT2;
           
 	    Double_t TrigDPhi12 =  AssignCorrectPhiRange(TrigDPhi);
+               
+        //cout<<"TrigDPhi before b2b"<<TrigDPhi12<<endl;
             
     //check if trigger particles have a delta phi = pi +/- alpha
     
@@ -507,13 +519,19 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
       else if(fBkgSE)TrigDPhi12 -= 0.5*TMath::Pi();
             
       fHistTrigDPhi->Fill(TrigDPhi12);
+               
+               //cout<<"TrigDPhi12"<<TrigDPhi12<<endl;
     
       if(TMath::Abs(TrigDPhi12)>(TMath::Pi())/8) continue;
+               
+               
+     Double_t ptTrig1 = fAodTracksT1->Pt();
+     Double_t ptTrig2 = fAodTracksT2->Pt();
            
-      Double_t fCentZvtxpT1[3] = {fCentrOrMult, zVertex, fAodTracksT1->Pt()};
+      Double_t fCentZvtxpT1[3] = {fCentrOrMult, zVertex, ptTrig1};
       if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxpT_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT1);
       
-      Double_t fCentZvtxpT2[3] = {fCentrOrMult, zVertex, fAodTracksT2->Pt()};
+      Double_t fCentZvtxpT2[3] = {fCentrOrMult, zVertex, ptTrig2};
       if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxpT_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT2);
           
           
@@ -559,13 +577,14 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                        Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
                        
-                       Double_t ptTrig1 = fAodTracksT1->Pt();
+                       
+                       
                        Double_t ptTrack1 = fAodTracksAS->Pt();
                       // Double_t ptLim_Sparse1 = 0.0;
                        //ptLim_Sparse1 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
                        //if(ptTrack1 > ptLim_Sparse1)ptTrack1 = ptLim_Sparse1-0.01; //filling all pT
                            
-                           Double_t CentzVtxDEtaDPhiTrg1[6] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1, ptTrig1, ptTrack1};
+                           Double_t CentzVtxDEtaDPhiTrg1[7] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1, ptTrig1, ptTrig2, ptTrack1};
                            Double_t effvalueT1 = 1.0;// GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult, f3DEffCor);
                            ((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->Fill(CentzVtxDEtaDPhiTrg1, 1/effvalueT1);
                            
@@ -590,7 +609,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                      //  ptLim_Sparse2 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
                        //if(ptTrack2 > ptLim_Sparse2) ptTrack2 = ptLim_Sparse2-0.01; //filling all the pT in last bin
                            
-                           Double_t CentzVtxDEtaDPhiTrg2[6] = {fCentrOrMult, zVertex, deltaEta2, deltaPhi2, ptTrig2, ptTrack2};
+                           Double_t CentzVtxDEtaDPhiTrg2[7] = {fCentrOrMult, zVertex, deltaEta2, deltaPhi2, ptTrig1, ptTrig2, ptTrack2};
                            Double_t effvalueT2 =1.0;// GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult,f3DEffCor);
                            
                            ((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->Fill(CentzVtxDEtaDPhiTrg2,1/effvalueT2);
@@ -1002,16 +1021,16 @@ if(ftwoplus1){
   THnTrig2CentZvtxpT = new THnSparseD(nameThnTrg2CentZvtxpT.Data(),"Cent-Zvtx-pTtr2",3, fBinsTrg2, fMinTrg2, fMaxTrg2);
  
         
-  const Int_t pTbinTrigger = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
+  //const Int_t pTbinTrigger = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
     
     
   //Catgry2: Correlations Plots for SE and ME (T1, T2)
  //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t    fBins12[6] = {12,     10,   16,               36, pTbinTrigger,  15};
-  Double_t  fMin12[6] = {0.0,   -10., -1.6, -0.5*TMath::Pi(), fTrigger2pTLowThr, 0.5};
-  Double_t  fMax12[6] = {100.0,  10.,  1.6,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger1pTHighThr};
-  THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-Trk",6, fBins12, fMin12, fMax12);
-  THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-Trk",6, fBins12, fMin12, fMax12);
+  Int_t    fBins12[7] = {12,     10,   18,               36, pTbinTrigger1, pTbinTrigger2, 15};
+  Double_t  fMin12[7] = {0.0,   -10., -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
+  Double_t  fMax12[7] = {100.0,  10.,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, fTrigger1pTHighThr};
+  THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-Trk",7, fBins12, fMin12, fMax12);
+  THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-Trk",7, fBins12, fMin12, fMax12);
         
     }
     
@@ -1029,9 +1048,9 @@ if(ftwoplus1){
   
    
   //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t   fBins121plus1[6] = {12,     10,   16,                36,  pTbinTrigger1plus1,  15};
-  Double_t  fMin121plus1[6] = {0.0,   -10., -1.6, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
-  Double_t  fMax121plus1[6] = {100.0,  10.,  1.6,  1.5*TMath::Pi(), fTrigger1pTHighThr, fTrigger1pTHighThr};
+  Int_t   fBins121plus1[6] = {12,     10,   18,                36,  pTbinTrigger1plus1,  15};
+  Double_t  fMin121plus1[6] = {0.0,   -10., -1.8, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
+  Double_t  fMax121plus1[6] = {100.0,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, fTrigger1pTHighThr};
   THnCentZvtxDEtaDPhipTTpTA1plus1   = new THnSparseD(nameThnCentZvtxDEtaDPhipTTpTA1plus1.Data(),"Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
   
     }
@@ -1070,8 +1089,8 @@ if(fuseVarPtBins){
     const Int_t nvarBinspT = 15;
     Double_t varBinspT[nvarBinspT+1] = {0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0,7.0, 8.0, 9.0, 10.0};
       if(ftwoplus1){
-      THnTrig1CentZvtxDEtaDPhi->GetAxis(5)->Set(nvarBinspT, varBinspT);
-      THnTrig2CentZvtxDEtaDPhi->GetAxis(5)->Set(nvarBinspT, varBinspT);
+      THnTrig1CentZvtxDEtaDPhi->GetAxis(6)->Set(nvarBinspT, varBinspT);
+      THnTrig2CentZvtxDEtaDPhi->GetAxis(6)->Set(nvarBinspT, varBinspT);
        }
       
       else if(!ftwoplus1)

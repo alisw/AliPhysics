@@ -49,6 +49,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
+#include "AliAODEvent.h"
 #include "AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.h"
 
 

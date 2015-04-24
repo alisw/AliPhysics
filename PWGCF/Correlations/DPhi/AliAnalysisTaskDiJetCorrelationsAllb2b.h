@@ -222,6 +222,7 @@ private:
     Bool_t    fBkgSE;
   
     TH1F     *fHistNEvents; //!
+    TH1F     *fHistCent;//!
     TH1F     *fHistT1CorrTrack; //!
     TH1F     *fHistT2CorrTrack; //!
     TList    *fOutputQA; //! Output list

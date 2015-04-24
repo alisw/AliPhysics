@@ -24,7 +24,7 @@ class AliESDEvent;
 class AliMCEvent;
 class AliPIDResponse;
 class AliStack;
-#include "THn.h"
+//#include "THn.h"
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -229,13 +229,14 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistPiPiDecayLengthVsMass;                   // pi+pi- decay lenght vs pt
   TH2F   *fHistPiPiDecayLengthVsCtau;                   // pi+pi- decay lenght vs pt
 
-
+  /*
   TH2F   *fHistPiPiDistDaughtersPos[3];                 // dist of pos daughter tracks for K0s cand. vs mass for 3 pt bins
   TH2F   *fHistPiPiDistDaughtersNeg[3];                 // dist of neg daughter tracks for K0s cand. vs mass for 3 pt bins
   TH2F   *fHistPiPiDCADaughtersPos[3];                  // weighted dca of pos daughter tracks for K0s cand. vs mass for 3 pt bins
   TH2F   *fHistPiPiDCADaughtersNeg[3];                  // weighted dca of neg daughter tracks for K0s cand. vs mass for 3 pt bins
   TH2F   *fHistPiPiRadAtDCA5cmDaughtersPos[3];          // radius in TPC at 5cm track distancd of pos daughter tracks for K0s cand. vs mass for 3 pt bins
   TH2F   *fHistPiPiRadAtDCA5cmDaughtersNeg[3];          // radius in TPC at 5cm track distancd of neg daughter tracks for K0s cand. vs mass for 3 pt bins
+  */
   //TH2F   *fHistPiPiMassVSPtK0L;                       // K0L InvMass vs pt distribution
   TH2F   *fHistPiPiDCADaughters;                        // pi+pi- dca between daughters
   // TH2F   *fHistPiPiPtDaughters;                         // pi+pi- daughters pt pos vs pt neg 
@@ -259,10 +260,10 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistNCRowsTPCNegK0;                          // no of crossed rows for K0s neg daughter
   TH2F   *fHistRatioFoundOverFinableTPCK0Pos;           // ratio of ncls findable over found TPC K0s daughters
   TH2F   *fHistRatioFoundOverFinableTPCK0Neg;           // ratio of ncls findable over found TPC K0s daughters
-  TH2F* fHistPiPiDistDaughtersTPCEntrVsMass;
-  //Lambda Antilambda
-  TH2F* fHistPiPDistDaughtersTPCEntrVsMass;
-  TH2F* fHistPiAPDistDaughtersTPCEntrVsMass;
+  // TH2F   *fHistPiPiDistDaughtersTPCEntrVsMass;
+  //---Lambda Antilambda -----//
+  //  TH2F* fHistPiPDistDaughtersTPCEntrVsMass;
+  // TH2F* fHistPiAPDistDaughtersTPCEntrVsMass;
   //------------------------- MC only histos ---------------------------------------------------//
   TH2F   *fHistPrimVtxZESDVSNContributorsMC;        // count contributors to ESD vertex MC
   TH2F   *fHistPrimVtxZESDTPCVSNContributorsMC;     // count contributors to TPC vertex MC
@@ -334,13 +335,14 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistPiPDecayLengthVsPt[2];               // p+pi- decay lenght vs pt
   TH2F   *fHistPiPDecayLengthVsMass[2];             // p+pi- decay lenght vs pt
   TH2F   *fHistPiPDecayLengthVsCtau[2];             // p+pi- decay lenght vs pt
- 
+  /*
   TH2F   *fHistPiPDistDaughtersPos[3];              // dist of pos daughter tracks for Lambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiPDistDaughtersNeg[3];              // dist of neg daughter tracks for Lambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiPDCADaughtersPos[3];               // weighted dca of pos daughter tracks for Lambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiPDCADaughtersNeg[3];               // weighted dca of neg daughter tracks for Lambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiPRadAtDCA5cmDaughtersPos[3];       // radius in TPC at 5cm track distancd of pos daughter tracks for Lambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiPRadAtDCA5cmDaughtersNeg[3];       // radius in TPC at 5cm track distancd of neg daughter tracks for Lambda cand. vs mass for 3 pt bins
+  */
   TH2F   *fHistPiPDCADaughters[2];                  // p+pi- dca between daughters
   //TH2F   *fHistPiPPtDaughters[2];                   // p+pi- daughters pt pos vs pt neg 
   TH2F   *fHistPiPDCAVSMass[2];                     // p+pi- dca xy to prim vtx vs mass
@@ -376,13 +378,14 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistPiAPDecayLengthVsMass[2];            // pi+p- decay lenght vs pt
   TH2F   *fHistPiAPDecayLengthVsCtau[2];            // pi+p- decay lenght vs pt
  
-
+  /*
   TH2F   *fHistPiAPDistDaughtersPos[3];              // dist of pos daughter tracks for ALambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiAPDistDaughtersNeg[3];              // dist of neg daughter tracks for ALambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiAPDCADaughtersPos[3];               // weighted dca of pos daughter tracks for ALambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiAPDCADaughtersNeg[3];               // weighted dca of neg daughter tracks for aLambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiAPRadAtDCA5cmDaughtersPos[3];       // radius in TPC at 5cm track distancd of pos daughter tracks for ALambda cand. vs mass for 3 pt bins
   TH2F   *fHistPiAPRadAtDCA5cmDaughtersNeg[3];       // radius in TPC at 5cm track distancd of neg daughter tracks for ALambda cand. vs mass for 3 pt bins
+  */
   TH2F   *fHistPiAPDCADaughters[2];                 // pi+p- dca between daughters
   // TH2F   *fHistPiAPPtDaughters[2];                  // pi+p- daughters pt pos vs pt neg 
   TH2F   *fHistPiAPDCAVSMass[2];                    // pi+p- dca xy prim vtx vs mass

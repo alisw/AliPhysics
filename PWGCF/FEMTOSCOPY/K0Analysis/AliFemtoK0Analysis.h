@@ -20,6 +20,7 @@ class AliESDEvent;
 class AliAODEvent;
 class AliESDtrackCuts;
 class AliESDpid;
+class AliAODTrack;
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"

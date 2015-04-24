@@ -77,6 +77,12 @@ public:
    */
   void SetTriggerDecisionConfig(AliEMCalTriggerAnaTriggerDecisionConfig *config) { fTriggerDecisionConfig = config; }
 
+  /**
+   * Set trigger bit for min bias event selection
+   * \param evsel Min. bias trigger bits
+   */
+  void SetMinBiasEventSelection(Long_t evsel){ fMinBiasSelection = evsel; }
+
 protected:
   AliEMCalTriggerEventData *BuildEvent();
   void FixTrackInputEvent(AliVTrack *trk);
@@ -86,6 +92,7 @@ protected:
   AliEMCalTriggerAnaTriggerDecisionConfig *fTriggerDecisionConfig;		    ///< Configuration for the trigger decision handling
   TString                              fMCJetContainer;                   ///< Name of the Monte-Carlo jet container
   TString                              fDataJetContainer;                 ///< Data jet container name
+  Long_t                              fMinBiasSelection;                  ///< Trigger bit selection for Min. Bias events
   Bool_t                               fSwapTriggerThresholds;            ///< Swap thresholds of the low and high threshold trigger
   Bool_t                               fDoTriggerDebug;                   ///< Debug trigger decision creator
 
