@@ -82,6 +82,7 @@
 #include "AliAODv0.h"
 #include "AliAODRecoDecay.h"
 #include "AliCentrality.h"
+#include "AliAODTrack.h"
 
 #include "AliFemtoK0Analysis.h"
 
