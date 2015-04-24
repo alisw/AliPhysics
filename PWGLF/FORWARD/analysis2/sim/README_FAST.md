@@ -49,8 +49,21 @@ The `HOST` part only makes sense for `PROTOCOL=proof`.
 * `monitor=SECONDS`: Specifies that monitor histograms should be
   updated every `SECONDS`.  If 0 or smaller or not specified, then no
   monitoring is done.
-  * `b=RANGE`: Specifies the impact parameter range.
-
+* `b=RANGE`: Specifies the impact parameter range.
+* `override=LIST`: Specifies a comma-separated (,) list of settings
+  that should be used rather than the ones being read from GRP. The
+  can contain.  Each item in the list is a key, value pair separated
+  by a colon (:)
+  * `beamEnergy:BEAMENERGY`: Total beam energy (not collision energy)
+    in GeV
+  * `energy=ENERGY`: Collision energy in GeV
+  * `period=IDENTIFIER`: ALICE running period (e.g., `LHC15a`)
+  * `run=NUMBER`: Run number
+  * `beam1.a=ATOMIC_NUMBER`: Atomic number of particles in beam1
+  * `beam1.z=CHARGE`: Charge of particles in beam1
+  * `beam2.a=ATOMIC_NUMBER`: Atomic number of particles in beam2
+  * `beam2.z=CHARGE`: Charge of particles in beam2
+  
 `OPTIONS` can also contain options for the execution environment, such
 as `workers=N` for ProofLite.
 

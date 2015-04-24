@@ -255,6 +255,14 @@ struct VirtualEGCfg
   {
     LoadLibrary("libTUHKMgen","TUHKMgen");
   }
+  static void LoadEpos()
+  {
+    LoadLibrary("libEPOS","TEpos");
+  }
+  static void LoadTherminator()
+  {
+    LoadLibrary("libTTherminator","TTherminator");
+  }
   /**
    * Load DPMJet libraries
    */
