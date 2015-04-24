@@ -24,6 +24,7 @@
 #include "TFile.h"
 #include "TList.h"
 #include "TH1.h"
+#include "TH1F.h"
 #include "TH2F.h"
 #include "TArrayD.h"
 #include "TProfile.h"
@@ -67,7 +68,13 @@ AliFlowEvent::AliFlowEvent():
             }
         }
     }
-  //ctor
+    for(Int_t i(0); i < 5; i++) {
+       fQxavsV0[i] = 0x0;
+       fQyavsV0[i] = 0x0;  
+       fQxcvsV0[i] = 0x0;
+       fQycvsV0[i] = 0x0;
+    }
+    //ctor
   cout << "AliFlowEvent: Default constructor to be used only by root for io" << endl;
 }
 
@@ -86,6 +93,12 @@ AliFlowEvent::AliFlowEvent(Int_t n):
             }
         }
     }
+    for(Int_t i(0); i < 5; i++) {
+       fQxavsV0[i] = 0x0;
+       fQyavsV0[i] = 0x0;  
+       fQxcvsV0[i] = 0x0;
+       fQycvsV0[i] = 0x0;
+    }
 }
 
 //-----------------------------------------------------------------------
@@ -102,6 +115,12 @@ AliFlowEvent::AliFlowEvent(const AliFlowEvent& event):
               fWidthQv3[i][j][k] = 0.;
           }
       }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
   }
 }
 
@@ -129,6 +148,13 @@ AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
           }
       }
   }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
+
   AliFlowEventSimple::operator=(event);
   return *this;
 }
@@ -204,19 +230,25 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
                             const AliCFManager* poiCFManager):
   AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-  //Fills the event from the MC kinematic information
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
 
+  //Fills the event from the MC kinematic information
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
 
   //loop over tracks
@@ -261,18 +293,23 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliCFManager* poiCFManager ):
   AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
- 
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+   for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
   //set run number
   if(anInput->GetRunNumber()) fRun = anInput->GetRunNumber();
  
@@ -324,18 +361,24 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
                             const AliCFManager* poiCFManager):
   AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
- 
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
+
   //set run number
   if(anInput->GetRunNumber()) fRun = anInput->GetRunNumber();
  
@@ -412,17 +455,23 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliCFManager* poiCFManager ):
   AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
   if (anOption==kNoKine)
   {
@@ -510,17 +559,23 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliCFManager* poiCFManager ):
   AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
 
   //Select the particles of interest from the ESD
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
@@ -586,18 +641,23 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
                             Bool_t hybrid):
   AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
   //Select the particles of interest from the ESD
   Int_t iNumberOfInputTracks = esd->GetNumberOfTracks() ;
 
@@ -691,6 +751,12 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                 fWidthQv3[i][j][k] = 0.;
             }
         }
+    }
+    for(Int_t i(0); i < 5; i++) {
+       fQxavsV0[i] = 0x0;
+       fQyavsV0[i] = 0x0;  
+       fQxcvsV0[i] = 0x0;
+       fQycvsV0[i] = 0x0;
     }
 
   //Select the particles of interest from the ESD
@@ -808,7 +874,22 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
  
   // if the source for rp's or poi's is the VZERO detector, get the calibration 
   // and set the calibration parameters
-  if (sourceRP == AliFlowTrackCuts::kVZERO) {
+  if (sourceRP == AliFlowTrackCuts::kBetaVZERO) {
+      SetBetaVZEROCalibrationForTrackCuts(rpCuts);
+      if(!rpCuts->GetApplyRecentering()) {
+          // if the user does not want to recenter, switch the flag
+          fApplyRecentering = -1;
+      }
+      // note: this flag is used in the overloaded implementation of Get2Qsub()
+      // and tells the function to use as Qsub vectors the recentered Q-vectors
+      // from the VZERO oadb file or from the event header
+  }
+  if (sourcePOI == AliFlowTrackCuts::kBetaVZERO) {
+      // probably no-one will choose vzero tracks as poi's ...
+      SetBetaVZEROCalibrationForTrackCuts(poiCuts); 
+  }
+
+ if (sourceRP == AliFlowTrackCuts::kVZERO) {
       SetVZEROCalibrationForTrackCuts(rpCuts);
       if(!rpCuts->GetApplyRecentering()) {
           // if the user does not want to recenter, switch the flag
@@ -822,7 +903,6 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
       // probably no-one will choose vzero tracks as poi's ...
       SetVZEROCalibrationForTrackCuts(poiCuts); 
   }
-  
 
   if (sourceRP==sourcePOI)
   {
@@ -926,17 +1006,23 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
   AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+    fQxavsV0[i] = 0x0;
+    fQyavsV0[i] = 0x0;  
+    fQxcvsV0[i] = 0x0;
+    fQycvsV0[i] = 0x0;
+  }   
   //Fills the event from a vevent: AliESDEvent,AliAODEvent,AliMCEvent
   //the input data needs to be attached to the cuts
   Fill(rpCuts,poiCuts);
@@ -951,17 +1037,24 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
   AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
+  // constructor
+  for(Int_t i(0); i < 9; i++) {
+      for(Int_t j(0); j < 2; j++) {
+          for(Int_t k(0); k < 2; k++) {
+              fMeanQ[i][j][k] = 0.; 
+              fWidthQ[i][j][k] = 0.;  
+              fMeanQv3[i][j][k] = 0.; 
+              fWidthQv3[i][j][k] = 0.;
+          }
+      }
+  }
+  for(Int_t i(0); i < 5; i++) {
+     fQxavsV0[i] = 0x0;
+     fQyavsV0[i] = 0x0;  
+     fQxcvsV0[i] = 0x0;
+     fQycvsV0[i] = 0x0;
+  }
+  
   Float_t GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos);
   Float_t GetPmdPhi(Float_t xPos, Float_t yPos);
   //Select the particles of interest from the ESD
@@ -1180,6 +1273,47 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
       vB.Set(QxaCor, QyaCor);
     } // if for some reason the info from the event header is not available, the AliFlowTrackCuts object
       // has provided the equalized multiplicity info so this should still be relatively safe
+  } else if (fApplyRecentering = 999) {
+      // experimental VZERO recentering
+    // first retrieve the q-vectors from the AliFlowEventSimple:: routine
+    // extract the information form the current flow vectors
+    Double_t Qxc(vA.X());       // IMPORTANT: user is responsible for the sign of eta
+    Double_t Qyc(vA.Y());       // vzeroC has negative pseudorapidity and is taken as subevent A
+    Double_t Qxa(vB.X());       // vzeroA has positive pseudorapidity and is taken as subevent B
+    Double_t Qya(vB.Y());
+    // init some values for the corrections
+    
+    Int_t c(TMath::Nint(fEvent->GetCentrality()->GetCentralityPercentile("V0M")));
+    // default values for vector a (VZEROA)
+    Double_t Qxamean(fQxavsV0[n]->GetBinContent(c+1));
+    Double_t Qxarms(fQxavsV0[n]->GetBinError(c+1));
+    Double_t Qyamean(fQyavsV0[n]->GetBinContent(c+1));
+    Double_t Qyarms(fQyavsV0[n]->GetBinError(c+1));
+    // default values for vector b (VZEROC)
+    Double_t Qxcmean(fQxcvsV0[n]->GetBinContent(c+1));
+    Double_t Qxcrms(fQxcvsV0[n]->GetBinError(c+1));
+    Double_t Qycmean(fQycvsV0[n]->GetBinContent(c+1));
+    Double_t Qycrms(fQycvsV0[n]->GetBinError(c+1));	
+    
+    // just a precaution ...
+    if(n > 5) {
+        Qxamean = 0;
+        Qxarms = 0;
+        Qyamean = 0;
+        Qyarms = 1;
+        Qxcmean = 0;
+        Qxcrms = 1; 
+        Qycmean = 0;    // this effectively disables the calibration
+        Qycrms = 1;
+    }
+
+    Double_t QxaCor = (Qxa - Qxamean)/Qxarms;
+    Double_t QyaCor = (Qya - Qyamean)/Qyarms;
+    Double_t QxcCor = (Qxc - Qxcmean)/Qxcrms;
+    Double_t QycCor = (Qyc - Qycmean)/Qycrms;
+    // update the vector
+    vA.Set(QxcCor, QycCor);
+    vB.Set(QxaCor, QyaCor);
   }
 }
 //_____________________________________________________________________________
@@ -1255,7 +1389,7 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
         for(Int_t r(0); r < 176; r++) {
             if(run == runs11h[r]) {
                 printf(" > run has been identified as 11h < \n");
- if(cuts->GetVZEROgainEqualizationPerRing()) {
+                 if(cuts->GetVZEROgainEqualizationPerRing()) {
                     // enable or disable rings through the weights, weight 1. is enabled, 0. is disabled
                     // start with the vzero c rings (segments 0 through 31)
                     (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, 1.) : cuts->SetVZEROCpol(0, 0.);
@@ -1383,6 +1517,152 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // set the recentering style (might be switched back to -1 if recentering is disabeled)
     fApplyRecentering = 2010;
 }
+//-----------------------------------------------------------------------
+void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
+    // implementation of beta vzero calibration
+
+    fEvent = cuts->GetEvent();
+    if(!fEvent) return; // coverity. we need to know the event to get the runnumber and centrlaity
+    // get the vzero centrality percentile (cc dependent calibration)
+    
+
+    // if this event is from the same run as the previous event
+    // we can use the cached calibration values, no need to re-open the 
+    // aodb file, else cache the new run
+    Int_t run(fEvent->GetRunNumber());
+    if(fCachedRun == run) return;
+    else fCachedRun = run;
+    
+    // check if the proper chi weights for merging vzero a and vzero c ep are present
+    // if not, use sane defaults. centrality binning is equal to that given in the fVZEROcentralityBin snippet
+    //
+    // chi values can be calculated using the static helper function 
+    // AliAnalysisTaskJetV2::CalculateEventPlaneChi(Double_t res) where res is the event plane
+    // resolution in a given centrality bin
+    //
+    // the resolutions that were used for these defaults are
+    // Double_t R2VZEROA[] = {.35, .40, .48, .50, .48, .45, .38, .26, .16};
+    // Double_t R2VZEROC[] = {.45, .60, .70, .73, .68, .60, .40, .36, .17};
+    //
+    // Double_t R3VZEROA[] = {.22, .23, .22, .19, .15, .12, .08, .00, .00};
+    // Double_t R3VZEROC[] = {.30, .30, .28, .25, .22, .17, .11, .00, .00};
+    Double_t chiC2[] = {0.771423, 1.10236, 1.38116, 1.48077, 1.31964, 1.10236, 0.674622, 0.600403, 0.273865};
+    Double_t chiA2[] = {0.582214, 0.674622, 0.832214, 0.873962, 0.832214, 0.771423, 0.637146, 0.424255, 0.257385};
+    Double_t chiC3[] = {0.493347, 0.493347, 0.458557, 0.407166, 0.356628, 0.273865, 0.176208, 6.10352e-05, 6.10352e-05};
+    Double_t chiA3[] = {0.356628, 0.373474, 0.356628, 0.306702, 0.24115, 0.192322, 0.127869, 6.10352e-05, 6.10352e-05};
+
+    // this may seem redundant but in this way the cuts object is owner of the arrays
+    // even if they're created here (so we won't get into trouble with dtor, assigmnet and copying) 
+    if(!cuts->GetChi2A()) cuts->SetChi2A(new TArrayD(9, chiA2));
+    if(!cuts->GetChi2C()) cuts->SetChi2C(new TArrayD(9, chiC2));
+    if(!cuts->GetChi3A()) cuts->SetChi3A(new TArrayD(9, chiA3));
+    if(!cuts->GetChi3C()) cuts->SetChi3C(new TArrayD(9, chiC3));
+
+    if(!fChi2A) fChi2A = cuts->GetChi2A();
+    if(!fChi2C) fChi2C = cuts->GetChi2C();
+    if(!fChi3A) fChi3A = cuts->GetChi3A();
+    if(!fChi3C) fChi3C = cuts->GetChi3C();
+ 
+
+    TFile *foadb = TFile::Open("$ALICE_PHYSICS/PWGCF/FLOW/database/calibV0_filtered.root");
+    if(!foadb){
+	printf("OADB file $ALICE_PHYSICS/PWGCF/FLOW/database/calibV0_filtered.root cannot be opened, CALIBRATION FAILED !");
+	return;
+    }
+
+    // first get the mutiplicity of the vzero channels before gain equalization
+    AliOADBContainer *cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorr_filtered");
+    if(!cont){
+	printf("OADB object hMultV0BefCorr is not available in the file\n");
+	return;	
+    }
+    if(!(cont->GetObject(run))) {
+        // if the multiplicity correction cannot be found for the specified run, 
+        // loop over the 11h runs to see if it's 11h data
+        Int_t runs11h[] = {170593, 170572, 170556, 170552, 170546, 170390, 170389, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170267, 170264, 170230, 170228, 170208, 170207, 170205, 170204, 170203, 170195, 170193, 170163, 170162, 170159, 170155, 170152, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170038, 170036, 170027, 169981, 169975, 169969, 169965, 169961, 169956, 169926, 169924, 169923, 169922, 169919, 169918, 169914, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169683, 169628, 169591, 169590, 169588, 169587, 169586, 169584, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169236, 169167, 169160, 169156, 169148, 169145, 169144, 169143, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168984, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168461, 168460, 168458, 168362, 168361, 168356, 168342, 168341, 168325, 168322, 168318, 168311, 168310, 168213, 168212, 168208, 168207, 168206, 168205, 168204, 168203, 168181, 168177, 168175, 168173, 168172, 168171, 168115, 168108, 168107, 168105, 168104, 168103, 168076, 168069, 168068, 168066, 167988, 167987, 167986, 167985, 167921, 167920, 167915, 167909, 167903, 167902, 167818, 167814, 167813, 167808, 167807, 167806, 167713, 167712, 167711, 167706, 167693};
+        for(Int_t r(0); r < 176; r++) {
+            if(run == runs11h[r]) {
+                printf(" > run has been identified as 11h < \n");
+                if(cuts->GetVZEROgainEqualizationPerRing()) {
+                    // enable or disable rings through the weights, weight 1. is enabled, 0. is disabled
+                    // start with the vzero c rings (segments 0 through 31)
+                    (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, 1.) : cuts->SetVZEROCpol(0, 0.);
+                    (cuts->GetUseVZERORing(1)) ? cuts->SetVZEROCpol(1, 1.) : cuts->SetVZEROCpol(1, 0.);
+                    (cuts->GetUseVZERORing(2)) ? cuts->SetVZEROCpol(2, 1.) : cuts->SetVZEROCpol(2, 0.);
+                    (cuts->GetUseVZERORing(3)) ? cuts->SetVZEROCpol(3, 1.) : cuts->SetVZEROCpol(3, 0.);
+                    // same for vzero a
+                    (cuts->GetUseVZERORing(4)) ? cuts->SetVZEROApol(0, 1.) : cuts->SetVZEROApol(0, 0.);
+                    (cuts->GetUseVZERORing(5)) ? cuts->SetVZEROApol(1, 1.) : cuts->SetVZEROApol(1, 0.);
+                    (cuts->GetUseVZERORing(6)) ? cuts->SetVZEROApol(2, 1.) : cuts->SetVZEROApol(2, 0.);
+                    (cuts->GetUseVZERORing(7)) ? cuts->SetVZEROApol(3, 1.) : cuts->SetVZEROApol(3, 0.);
+                } else {
+                    // else enable all rings, which is also default
+                    for(Int_t i(0); i < 4; i++) cuts->SetVZEROCpol(i, 1.);
+                    for(Int_t i(0); i < 4; i++) cuts->SetVZEROApol(i, 1.);
+                }
+                // pass a NULL pointer to the track cuts object, the NULL pointer will identify 11h runs
+                cuts->SetVZEROgainEqualisation(NULL);
+                fApplyRecentering = 2011;
+                return; // the rest of the steps are not necessary
+            }
+        }
+        // the run has not been identified as lhc11h data, so we assume a template calibration
+	printf("OADB object hMultVZEROBefCorr is not available for run %i (used default run 138275)\n",run);
+	run = 138275;
+    }
+    printf(" > run has been identified as 10h < \n");
+    // step 0) get the profile which contains average multiplicity per VZERO channel
+    TProfile* fMultVZERO = static_cast<TProfile*>(cont->GetObject(run));
+
+    TF1 *fpol0 = new TF1("fpol0","pol0"); 
+    // step 1) extract the proper weights from the profile. Q-vector recentering relies on 
+    // ring-by-ring gain equalization, so the terms are extracted ring-by-ring here
+
+    // start with the vzero c rings (segments 0 through 31)
+    fMultVZERO->Fit(fpol0, "N0", "", 0, 8);
+    (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(0, 0.);
+    fMultVZERO->Fit(fpol0, "N0", "", 8, 16);
+    (cuts->GetUseVZERORing(1)) ? cuts->SetVZEROCpol(1, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(1, 0.);
+    fMultVZERO->Fit(fpol0, "N0", "", 16, 24);
+    (cuts->GetUseVZERORing(2)) ? cuts->SetVZEROCpol(2, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(2, 0.);
+    fMultVZERO->Fit(fpol0, "N0", "", 24, 32);
+    (cuts->GetUseVZERORing(3)) ? cuts->SetVZEROCpol(3, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(3, 0.);
+    // same thing for vero A
+    fMultVZERO->Fit(fpol0, "N0", "", 32, 40);
+    (cuts->GetUseVZERORing(4)) ? cuts->SetVZEROApol(0, fpol0->GetParameter(0)) : cuts->SetVZEROApol(0, 0.);
+    fMultVZERO->Fit(fpol0, "N0", "", 40, 48);
+    (cuts->GetUseVZERORing(5)) ? cuts->SetVZEROApol(1, fpol0->GetParameter(0)) : cuts->SetVZEROApol(1, 0.);
+    fMultVZERO->Fit(fpol0, "N0", "", 48, 56);
+    (cuts->GetUseVZERORing(6)) ? cuts->SetVZEROApol(2, fpol0->GetParameter(0)) : cuts->SetVZEROApol(2, 0.);
+    fMultVZERO->Fit(fpol0, "N0", "", 56, 64);
+    (cuts->GetUseVZERORing(7)) ? cuts->SetVZEROApol(3, fpol0->GetParameter(0)) : cuts->SetVZEROApol(3, 0.);
+
+    // the parameters to weigh the vzero track cuts have been extracted now, 
+    // so we can pass them to the current track cuts obect
+    cuts->SetVZEROgainEqualisation(fMultVZERO);       // passed as a TH1
+
+    // step 2) extract the calibration histograms from the database and 
+    // pass them to the cuts object
+    //
+    // first index of the oadb array is the harmonic n, the second index is either qax, qay, qcx, qcy
+    AliOADBContainer* h[5][4];
+    for(Int_t i(0); i < 5; i++) {
+        h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%ivsV0_filtered", i+1));
+        if(h[i][0]) fQxavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+        h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%ivsV0_filtered", i+1));
+        if(h[i][1]) fQyavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+        h[i][2] = (AliOADBContainer*)foadb->Get(Form("hQxc%ivsV0_filtered", i+1));
+        if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+        h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%ivsV0_filtered", i+1));
+        if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+    }
+    
+    // set the recentering style (might be switched back to -1 if recentering is disabeled)
+    // FIXME as an ugly hack, for now I mark this as 999 to denote the experimental nature
+    // of this and use it transparently without disrupting the existing calbiration
+    fApplyRecentering = 999;
+}
+
 //_____________________________________________________________________________
 
 void AliFlowEvent::ClearFast()
