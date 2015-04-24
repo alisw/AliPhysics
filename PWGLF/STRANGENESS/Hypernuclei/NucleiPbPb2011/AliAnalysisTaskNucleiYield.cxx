@@ -87,6 +87,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fTOFlowBoundary(-2.4)
 ,fTOFhighBoundary(3.6)
 ,fTOFnBins(75)
+,fEnablePerformance(kFALSE)
 ,fEnablePtCorrection(kTRUE)
 ,fRequireITSrefit(kTRUE)
 ,fRequireTPCrefit(kTRUE)
@@ -176,8 +177,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
   const Float_t *dcaBins = fDCABins.GetArray();
   
   fCentrality = new TH1F("fCentrality",";Centrality (%);Events / 1%;",100,0.,100.);
-  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",nCentBins,centBins);
-  fFlattenedCentrality = new TH1F("fFlattenCentrality","Centrality distribution after the flattening;Centrality (%);Events / 1%;",100,0.,100.);
+  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",
+                                nCentBins,centBins);
+  fFlattenedCentrality = new TH1F("fFlattenCentrality","After the flattening;Centrality (%); \
+                                  Events / 1%;",100,0.,100.);
   fList->Add(fCentrality);
   fList->Add(fCentralityClasses);
   fList->Add(fFlattenedCentrality);
@@ -252,7 +255,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     fATPCphiCounts = new TH2F("fATPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
                               36,0.2,2.);
-    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,800,0,3200);
+    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
+                          800,0,3200);
     fMDCAxyTPC = new TH3F("fMDCAxyTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
                        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
     fMDCAzTPC = new TH3F("fMDCAzTPC",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
@@ -266,7 +270,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
     fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
                            nCentBins,centBins,nPtBins,pTbins);
-    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,800,0,3200);
+    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
+                          800,0,3200);
     fMTOFphiSignal = new TH3F("fMTOFphiSignal",
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                               64,0.,TMath::TwoPi(),36,0.2,2.,
@@ -281,7 +286,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fList->Add(fATPCcounts);
     if (fRequireMinEnergyLoss > 0.) fList->Add(fATOFphiSignal);
     if (fRequireMinEnergyLoss > 0.) fList->Add(fATPCphiCounts);
-    fList->Add(fATPCeLoss);
+    if (fEnablePerformance) fList->Add(fATPCeLoss);
     fList->Add(fMDCAxyTPC);
     fList->Add(fMDCAzTPC);
     fList->Add(fMDCAxyTOF);
@@ -290,7 +295,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fList->Add(fMTPCcounts);
     if (fRequireMinEnergyLoss > 0.) fList->Add(fMTOFphiSignal);
     if (fRequireMinEnergyLoss > 0.) fList->Add(fMTPCphiCounts);
-    fList->Add(fMTPCeLoss);
+    if (fEnablePerformance) fList->Add(fMTPCeLoss);
   }
   
   PostData(1,fList);
