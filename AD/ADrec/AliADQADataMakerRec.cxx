@@ -586,13 +586,13 @@ void AliADQADataMakerRec::InitRaws()
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kRed);
 	
-  h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t{C} [ns];Counts",1024,-150,150);
+  h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t_{C} [ns];Counts",1024,-150,150);
   Add2RawsList(h1d,kMeanTimeDiff, expert, !image, !saveCorr); iHisto++;
 
   h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNMeanTimeCorrBins,kMeanTimeCorrMin,kMeanTimeCorrMax,kNMeanTimeCorrBins, kMeanTimeCorrMin,kMeanTimeCorrMax) ;  
   Add2RawsList(h2d,kMeanTimeCorr, expert, !image, !saveCorr);   iHisto++;
  
-  h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t{C} [ns];AD Mean time t_{A} + t{C} [ns]", 99, -150.0, 149.707031, 100, 0.0, 400.390625);  
+  h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t_{C} [ns];AD Mean time t_{A} + t_{C} [ns]", 99, -150.0, 149.707031, 100, 0.0, 400.390625);  
   Add2RawsList(h2d,kMeanTimeSumDiff, expert, !image, !saveCorr);   iHisto++;
  
   //Slewing histograms
@@ -610,32 +610,40 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1i,kNBBCoincADA, !expert, image, saveCorr);   iHisto++;
   h1i->SetLineWidth(2);
   h1i->SetLineColor(kBlue);
+  h1i->GetXaxis()->SetNdivisions(505);
   h1i = new TH1I("H1I_MultiBBCoincidence_ADC", "Number of BB flag coincidences;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBBCoincADC, !expert, image, saveCorr);   iHisto++;
   h1i->SetLineWidth(2);
   h1i->SetLineColor(kRed);
+  h1i->GetXaxis()->SetNdivisions(505);
   
   h1i = new TH1I("H1I_MultiBGCoincidence_ADA", "Number of BG flag coincidences;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBGCoincADA, !expert, image, saveCorr);   iHisto++;
   h1i->SetLineWidth(2);
   h1i->SetLineColor(kBlue);
+  h1i->GetXaxis()->SetNdivisions(505);
   h1i = new TH1I("H1I_MultiBGCoincidence_ADC", "Number of BG flag coincidences;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
   Add2RawsList(h1i,kNBGCoincADC, !expert, image, saveCorr);   iHisto++;
   h1i->SetLineWidth(2);
   h1i->SetLineColor(kRed);
+  h1i->GetXaxis()->SetNdivisions(505);
   
   h2i = new TH2I("H2I_BBCoincCorr", "Number of BB flag coincidences;# of BB Coincidences ADA;# of BB Coincidences ADC",5, -0.5, 4.5, 5, -0.5, 4.5);
   Add2RawsList(h2i,kNBBCoincCorr, !expert, image, !saveCorr); iHisto++;
+  h2i->GetXaxis()->SetNdivisions(505);
+  h2i->GetYaxis()->SetNdivisions(505);
   
   h2i = new TH2I("H2I_BGCoincCorr", "Number of BG flag coincidences;# of BG Coincidences ADA;# of BG Coincidences ADC",5, -0.5, 4.5, 5, -0.5, 4.5);
   Add2RawsList(h2i,kNBGCoincCorr, !expert, image, !saveCorr); iHisto++;
+  h2i->GetXaxis()->SetNdivisions(505);
+  h2i->GetYaxis()->SetNdivisions(505);
   
   //Creation of trigger histogram
   h1d = new TH1F("H1D_Trigger_Type", "AD0 Trigger Type;;Counts", 11,0 ,11) ;  
   Add2RawsList(h1d,kTriggers, !expert, image, saveCorr);   iHisto++;
   h1d->SetFillColor(kAzure-8);
   h1d->SetLineWidth(2);
-  h1d->GetXaxis()->SetLabelSize(0.045);
+  h1d->GetXaxis()->SetLabelSize(0.04);
   h1d->GetXaxis()->SetNdivisions(808,kFALSE);
   h1d->GetXaxis()->SetBinLabel(1, "UBA");
   h1d->GetXaxis()->SetBinLabel(2, "UBC");
