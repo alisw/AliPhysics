@@ -22,7 +22,7 @@ class AliESDEvent;
 class AliEveADModule : public TEveQuadSet
 {
 public:
-  AliEveADModule(const Text_t* n="AliEveADModule", Bool_t side = kTRUE, Int_t maxCharge = 1023);
+  AliEveADModule(const Text_t* n="AliEveADModule", Bool_t side = kTRUE, Int_t maxCharge = 1023, Bool_t showLegend = kFALSE);
   virtual ~AliEveADModule();
 
   void LoadRaw(AliRawReader *rawReader);
@@ -31,6 +31,7 @@ protected:
 
   AliADRawStream *fStream;      // Raw-stream
   Bool_t          fIsASide;     // A or C side module
+  Bool_t	  fShowLegend;	// Legend
 
 private:
   AliEveADModule(const AliEveADModule&);
