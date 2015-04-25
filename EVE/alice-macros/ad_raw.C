@@ -19,7 +19,7 @@ class AliRawReader;
 class AliEveADModule;
 #endif
 
-void ad_raw(Int_t maxCharge = 1023)
+void ad_raw(Int_t maxCharge = 1023, Bool_t showLegend = kFALSE)
 {
   gStyle->SetPalette(1, 0);
 
@@ -28,11 +28,11 @@ void ad_raw(Int_t maxCharge = 1023)
 
   gEve->DisableRedraw();
 
-  AliEveADModule* rawA = new AliEveADModule("AD_RAW_A", kTRUE, maxCharge);
+  AliEveADModule* rawA = new AliEveADModule("AD_RAW_A", kTRUE, maxCharge, showLegend);
   rawA->LoadRaw(reader);
 
 
-  AliEveADModule* rawC = new AliEveADModule("AD_RAW_C", kFALSE, maxCharge);
+  AliEveADModule* rawC = new AliEveADModule("AD_RAW_C", kFALSE, maxCharge, showLegend);
   rawC->LoadRaw(reader);
   
   

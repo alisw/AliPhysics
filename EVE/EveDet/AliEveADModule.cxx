@@ -40,10 +40,11 @@ static const Float_t ACHole[2] = {6.2,3.7};
 ClassImp(AliEveADModule)
 
 /******************************************************************************/
-AliEveADModule::AliEveADModule(const Text_t* n, Bool_t side, Int_t maxCharge)
+AliEveADModule::AliEveADModule(const Text_t* n, Bool_t side, Int_t maxCharge, Bool_t showLegend)
   : TEveQuadSet(n),
     fStream(NULL),
-    fIsASide(side)
+    fIsASide(side),
+    fShowLegend(showLegend)
     
 {
   //
@@ -96,34 +97,29 @@ void AliEveADModule::LoadRaw(AliRawReader *rawReader)
 
     }
     Float_t v[12];
-    //First part of module
+
     v[ 0] = (rHole + xGap)*xModule[iModule]; v[ 1] = yGap*yModule[iModule]; v[ 2] = zGap*zLayer[iLayer];
     v[ 3] = (rHole + xGap)*xModule[iModule]; v[ 4] = (yGap + ySize)*yModule[iModule]; v[ 5] = zGap*zLayer[iLayer];
     v[ 6] = (xGap + xSize)*xModule[iModule]; v[ 7] = (yGap + ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
     v[ 9] = (xGap + xSize)*xModule[iModule]; v[10] = yGap*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
-    /*/
-    v[ 12] = (rHole + xGap)*xModule[iModule]; v[ 13] = yGap*yModule[iModule]; v[ 14] = (zSize + zGap)*zLayer[iLayer];
-    v[ 15] = (rHole + xGap)*xModule[iModule]; v[ 16] = (yGap + ySize)*yModule[iModule]; v[ 17] = (zSize + zGap)*zLayer[iLayer];
-    v[ 18] = (xGap + xSize)*xModule[iModule]; v[ 19] = (yGap + ySize)*yModule[iModule]; v[ 20] = (zSize + zGap)*zLayer[iLayer];   
-    v[ 21] = (xGap + xSize)*xModule[iModule]; v[22] = yGap*yModule[iModule]; v[23] = (zSize + zGap)*zLayer[iLayer];/*/
-    
+   
     AddQuad(v);
-    //DigitValue(fStream->GetPedestal(iChannel,AliADRawStream::kNEvOfInt/2));
     QuadValue(fStream->GetADC(iChannel));
     
-    //Hole region
     v[ 0] = xGap*xModule[iModule]; v[ 1] = (rHole + yGap)*yModule[iModule]; v[ 2] = zGap*zLayer[iLayer];
     v[ 3] = xGap*xModule[iModule]; v[ 4] = (yGap + ySize)*yModule[iModule]; v[ 5] = zGap*zLayer[iLayer];
-    v[ 6] = (rHole + xGap)*xModule[iModule]; v[ 7] = (yGap+ ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
-    v[ 9] = (rHole + xGap)*xModule[iModule]; v[10] = yGap*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
-    /*/
-    v[ 12] = xGap*xModule[iModule]; v[ 13] = (rHole + yGap)*yModule[iModule]; v[ 14] = (zSize + zGap)*zLayer[iLayer];
-    v[ 15] = xGap*xModule[iModule]; v[ 16] = (yGap + ySize)*yModule[iModule]; v[ 17] = (zSize + zGap)*zLayer[iLayer];
-    v[ 18] = (rHole + xGap)*xModule[iModule]; v[ 19] = (yGap+ ySize)*yModule[iModule]; v[ 20] = (zSize + zGap)*zLayer[iLayer];   
-    v[ 21] = (rHole + xGap)*xModule[iModule]; v[22] = yGap*yModule[iModule]; v[23] = (zSize + zGap)*zLayer[iLayer];/*/
+    v[ 6] = (rHole/2 + xGap)*xModule[iModule]; v[ 7] = (yGap+ ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
+    v[ 9] = (rHole/2 + xGap)*xModule[iModule]; v[10] = (rHole + yGap)*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
     
     AddQuad(v);
-    //DigitValue(fStream->GetPedestal(iChannel,AliADRawStream::kNEvOfInt/2));
+    QuadValue(fStream->GetADC(iChannel));
+    
+    v[ 0] = (rHole/2 + xGap)*xModule[iModule]; v[ 1] = (rHole + yGap)*yModule[iModule]; v[ 2] = zGap*zLayer[iLayer];
+    v[ 3] = (rHole/2 + xGap)*xModule[iModule]; v[ 4] = (yGap+ ySize)*yModule[iModule]; v[ 5] = zGap*zLayer[iLayer];
+    v[ 6] = (rHole + xGap)*xModule[iModule]; v[ 7] = (yGap + ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
+    v[ 9] = (rHole + xGap)*xModule[iModule]; v[10] = (rHole/2 + yGap)*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
+    
+    AddQuad(v);
     QuadValue(fStream->GetADC(iChannel));
   }
 
@@ -133,12 +129,14 @@ void AliEveADModule::LoadRaw(AliRawReader *rawReader)
     RefMainTrans().SetPos(0, 0, -1954.4);
 
   gEve->AddElement(this);
-  TEveRGBAPalette* pal = this->GetPalette();
-  TEveRGBAPaletteOverlay *po = new TEveRGBAPaletteOverlay(pal, 0.69, 0.1, 0.3, 0.05);
-  TGLViewer* v = gEve->GetDefaultGLViewer();
-  v->AddOverlayElement(po);
-  TGLAnnotation *ann = new TGLAnnotation(v,"Amplitude of measured charge [ADC counts]",0.69, 0.2);
-  ann->SetTextSize(0.04);
+  if(fShowLegend){
+  	TEveRGBAPalette* pal = this->GetPalette();
+  	TEveRGBAPaletteOverlay *po = new TEveRGBAPaletteOverlay(pal, 0.69, 0.1, 0.3, 0.05);
+  	TGLViewer* v = gEve->GetDefaultGLViewer();
+  	v->AddOverlayElement(po);
+  	TGLAnnotation *ann = new TGLAnnotation(v,"Amplitude of measured charge [ADC counts]",0.69, 0.2);
+  	ann->SetTextSize(0.04);
+	}
   gEve->Redraw3D();
 }
 
