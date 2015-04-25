@@ -103,7 +103,7 @@ void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     check[specie] = 1.0;
     // no check on calibration events
-    if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)continue;
+    //if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)continue;
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue;
     if (index == AliQAv1::kRAW) {
@@ -285,33 +285,38 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			QAbox->Clear();
 
     			TH1D *hClockSlice;
-			Bool_t notSynch = kFALSE;
+			Bool_t notSynchADA = kFALSE;
+			Bool_t notSynchADC = kFALSE;
 
-    			for(Int_t i=0; i<16; i++){
-      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
+    			for(Int_t i=0; i<2; i++){
+      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",8*i+1,8*i+9);
 				Double_t center = hClockSlice->GetBinContent(11);
 				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
 				if(center == 0){
-					test = 0.1;
-					QAbox->SetFillColor(kRed);
-					QAbox->AddText("AD not synchronized");
-					notSynch = kTRUE;
-					break;
+					if(i==1)notSynchADA = kTRUE;
+					if(i==0)notSynchADC = kTRUE;
+					continue;
 					} 
 				if(around/center > 0.5) {
-					test = 0.1;
-					test = 0.1;
-					QAbox->SetFillColor(kRed);
-					QAbox->AddText("AD not synchronized");
-					notSynch = kTRUE;
-					break;
+					if(i==1)notSynchADA = kTRUE;
+					if(i==0)notSynchADC = kTRUE;
 					}
 				}
-			if(!notSynch){
+			if(notSynchADA || notSynchADC){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kOrange);
+        			if(notSynchADA)QAbox->AddText("ADA not synchronized");
+				if(!notSynchADA)QAbox->AddText("ADA ok");
+				if(notSynchADC)QAbox->AddText("ADC not synchronized");
+				if(!notSynchADC)QAbox->AddText("ADC ok");
+				if(notSynchADA && notSynchADC)QAbox->SetFillColor(kRed);
+				}
+			else {
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("OK");
-				}		
+        			QAbox->AddText("ADA ok");
+				QAbox->AddText("ADC ok");
+				}				
     			}
 		}
     	} 
@@ -328,33 +333,38 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			QAbox->Clear();
 
     			TH1D *hClockSlice;
-			Bool_t notSynch = kFALSE;
+			Bool_t notSynchADA = kFALSE;
+			Bool_t notSynchADC = kFALSE;
 
-    			for(Int_t i=0; i<16; i++){
-      				hClockSlice = hBGFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
+    			for(Int_t i=0; i<2; i++){
+      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",8*i+1,8*i+9);
 				Double_t center = hClockSlice->GetBinContent(11);
 				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
 				if(center == 0){
-					test = 0.1;
-					QAbox->SetFillColor(kRed);
-					QAbox->AddText("AD not synchronized");
-					notSynch = kTRUE;
-					break;
+					if(i==1)notSynchADA = kTRUE;
+					if(i==0)notSynchADC = kTRUE;
+					continue;
 					} 
 				if(around/center > 0.5) {
-					test = 0.1;
-					test = 0.1;
-					QAbox->SetFillColor(kRed);
-					QAbox->AddText("AD not synchronized");
-					notSynch = kTRUE;
-					break;
+					if(i==1)notSynchADA = kTRUE;
+					if(i==0)notSynchADC = kTRUE;
 					}
 				}
-			if(!notSynch){
+			if(notSynchADA || notSynchADC){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kOrange);
+        			if(notSynchADA)QAbox->AddText("ADA not synchronized");
+				if(!notSynchADA)QAbox->AddText("ADA ok");
+				if(notSynchADC)QAbox->AddText("ADC not synchronized");
+				if(!notSynchADC)QAbox->AddText("ADC ok");
+				if(notSynchADA && notSynchADC)QAbox->SetFillColor(kRed);
+				}
+			else {
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("OK");
-				}		
+        			QAbox->AddText("ADA ok");
+				QAbox->AddText("ADC ok");
+				}			
     			}
 		}
     	}  
@@ -380,7 +390,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 				if(TMath::Abs(mean)>fMaxPedDiff) {
 					test = 0.3;
 					if(NbadChannels == 0){
-						QAbox->SetFillColor(kOrange);
+						QAbox->SetFillColor(kYellow);
 						QAbox->AddText("Unstable pedestal for channel ");
 						}
 					badChannels += i;
@@ -418,7 +428,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 				if(TMath::Abs(mean)>fMaxPedDiff) {
 					test = 0.3;
 					if(NbadChannels == 0){
-						QAbox->SetFillColor(kOrange);
+						QAbox->SetFillColor(kYellow);
 						QAbox->AddText("Unstable pedestal for channel ");
 						}
 					badChannels += i;
@@ -756,7 +766,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	histo->DrawCopy("colz");
     }
     
-    fImage[esIndex]->SaveAs(Form("QAcanvas%d.png",esIndex));
+    fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
     fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
   }
 }
