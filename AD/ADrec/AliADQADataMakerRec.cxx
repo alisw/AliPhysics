@@ -167,7 +167,7 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
  
   fCalibData = GetCalibData();
   fQAParam = GetQAParam();
-  fRecoParam = (AliADRecoParam*)GetRecoParam();
+  if(!fRecoParam)fRecoParam = (AliADRecoParam*)GetRecoParam();
  
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
   if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
@@ -458,6 +458,7 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
 void AliADQADataMakerRec::InitRaws()
 {
   // Creates RAW histograms in Raws subdir
+  if(!fRecoParam)fRecoParam = (AliADRecoParam*)GetRecoParam();
   if(!fQAParam) fQAParam = (AliADQAParam*)GetQAParam();
  
   const Bool_t expert   = kTRUE ; 
@@ -520,20 +521,20 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1i,kMultiADC, expert, !image, !saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1F("H1D_Charge_ADA", "Total Charge;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  h1d = new TH1F("H1D_Charge_ADA",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADA, !expert, image, saveCorr);   iHisto++;
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kBlue);
-  h1d = new TH1F("H1D_Charge_ADC", "Total Charge;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  h1d = new TH1F("H1D_Charge_ADC",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADC, !expert, image, saveCorr);   iHisto++;
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kRed);
-  h1d = new TH1F("H1D_Charge_AD", "Total Charge in AD;Charge [ADC counts];Counts", 2*kNChargeSideBins, kChargeSideMin, 1+2*kNChargeSideBins) ;  
+  h1d = new TH1F("H1D_Charge_AD",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks()), 2*kNChargeSideBins, kChargeSideMin, 1+2*kNChargeSideBins) ;  
   Add2RawsList(h1d,kChargeAD, !expert,  !image, !saveCorr);   iHisto++;
    
 
   // Creation of Charge EoI histogram 
-  h2d = new TH2F("H2D_ChargeEoI", "Signal charge per channel(pedestal substracted);Channel Number;Charge [ADC counts]"
+  h2d = new TH2F("H2D_ChargeEoI", Form("Integrated [-%d,+%d] charge per channel(pedestal substracted);Channel Number;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks())
 		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
   Add2RawsList(h2d,kChargeEoI, !expert, image, saveCorr); iHisto++;
 
