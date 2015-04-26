@@ -228,7 +228,53 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
   if (list->GetEntries() == 0){  
     AliWarning("There are no histograms to be checked");
   }
-  else {  
+  else {
+    TH1F *hChargeADA = (TH1F*)list->At(AliADQADataMakerRec::kChargeADA);
+    if (!hChargeADA) {
+      AliWarning("ChargeADA histogram is not found");
+    }
+    else {
+    	if(hChargeADA->GetListOfFunctions()->GetEntries()<1) hChargeADA->GetListOfFunctions()->Add(new TPaveText(0.43,0.70,0.66,0.83,"NDC"));
+    	for(Int_t i=0; i<hChargeADA->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hChargeADA->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hChargeADA->GetListOfFunctions()->At(i);
+      			
+			TString meanChargeADA = " Mean charge ADA = ";
+			Char_t meanValue[6];
+			sprintf(meanValue, "%4.1f", hChargeADA->GetMean());
+			meanChargeADA += meanValue;
+			
+			QAbox->Clear();
+			QAbox->SetFillColor(kWhite);
+        		QAbox->SetTextColor(kBlue);
+			QAbox->AddText(meanChargeADA.Data());				
+    			}
+		}
+    	} 
+    TH1F *hChargeADC = (TH1F*)list->At(AliADQADataMakerRec::kChargeADC);
+    if (!hChargeADC) {
+      AliWarning("ChargeADC histogram is not found");
+    }
+    else {
+    	if(hChargeADC->GetListOfFunctions()->GetEntries()<1) hChargeADC->GetListOfFunctions()->Add(new TPaveText(0.43,0.55,0.66,0.68,"NDC"));
+    	for(Int_t i=0; i<hChargeADC->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hChargeADC->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hChargeADC->GetListOfFunctions()->At(i);
+      			
+			TString meanChargeADC = " Mean charge ADC = ";
+			Char_t meanValue[6];
+			sprintf(meanValue, "%4.1f", hChargeADC->GetMean());
+			meanChargeADC += meanValue;
+			
+			QAbox->Clear();
+			QAbox->SetFillColor(kWhite);
+        		QAbox->SetTextColor(kRed);
+			QAbox->AddText(meanChargeADC.Data());				
+    			}
+		}
+    	}   
     TH2F *hChargeEoIInt0 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt0);
     if (!hChargeEoIInt0) {
       AliWarning("ChargeEoIInt0 histogram is not found");
@@ -776,7 +822,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
   	myLegend1->SetFillStyle(0);
   	myLegend1->SetFillColor(0);
   	myLegend1->SetMargin(0.25);
-  	myLegend1->SetTextSize(0.04);
+  	myLegend1->SetTextSize(0.05);
   	myLegend1->SetEntrySeparation(0.5);
 	myLegend1->AddEntry(histoADA,"ADA","l");
 	myLegend1->AddEntry(histoADC,"ADC","l");
