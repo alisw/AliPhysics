@@ -16,6 +16,7 @@
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
 
+  gSystem->Load("libPWGPPevcharEP.so");
 
 
   //Create and configure the alien handler plugin
@@ -40,7 +41,8 @@
   //AliVEventHandler* esdH = new AliESDInputHandler;
   //mgr->SetInputEventHandler(esdH);
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/EventPlaneCalibration/macros/AddTask_ep.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/EventPlaneCalibration/macros/AddTask_ep.C");
+  gROOT->LoadMacro("AddTask_ep.C");
   AddTask_ep();
   //mgr->AddTask(AddTask_jonderw_ep());
 
