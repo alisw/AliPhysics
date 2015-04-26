@@ -60,6 +60,7 @@ class AliAnalysisTaskEventPlaneCalibration : public AliAnalysisTaskSE {
   void SetEventCuts(AliEventPlaneCuts* cuts)  {fEventCuts = cuts;}
   void SetInputAOD() {fIsAOD=kTRUE;}
   void SetInputESD() {fIsESD=kTRUE;}
+  void SetTrigger(UInt_t triggerbit) {fTriggerMask=triggerbit;}
   void SetInputReduced() {fIsReduced=kTRUE;} // input AliReducedEvent
   void SetQvectorFile(TFile* file) {fQvectorFile=file;} 
   TFile* QvectorFile() {return fQvectorFile;} 
@@ -68,6 +69,7 @@ class AliAnalysisTaskEventPlaneCalibration : public AliAnalysisTaskSE {
   Bool_t fRunLightWeight;
   Bool_t fCalibrateByRun;
   Bool_t fUseFriendEvent;
+  UInt_t fTriggerMask;
   Bool_t fFillTPC;
   Bool_t fFillVZERO;
   Bool_t fFillTZERO;

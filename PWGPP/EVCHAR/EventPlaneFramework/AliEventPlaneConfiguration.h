@@ -36,6 +36,8 @@ class AliEventPlaneConfiguration : public TObject {
 
  public:
   AliEventPlaneConfiguration();
+  AliEventPlaneConfiguration(const AliEventPlaneConfiguration &c);
+  AliEventPlaneConfiguration & operator=(AliEventPlaneConfiguration const &c){return *this; }
   ~AliEventPlaneConfiguration();
     
 
