@@ -16,6 +16,7 @@ void MakeADQAParamEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
 
   AliADQAParam * ADQAParam = new AliADQAParam();
   ADQAParam->SetMaxPedDiff(1);
+  ADQAParam->SetMaxPedWidth(1.5);
   ADQAParam->SetSatMed(0.1);
   ADQAParam->SetSatHigh(0.2);
   ADQAParam->SetSatHuge(0.5);

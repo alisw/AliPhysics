@@ -45,7 +45,8 @@ public:
 
 protected:  
   virtual void Check( Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam);
-  Double_t CheckRaws(TObjArray * list) const ;
+  Double_t CheckRaws(TObjArray * list) const;
+  Double_t CheckPedestals(TObjArray * list) const;
   Double_t CheckEsds(TObjArray * list) const;
   
   virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ;  
@@ -57,14 +58,15 @@ private:
 
   AliADQAParam *fQAParam;
   Int_t    fLowEventCut; // Minimum number of events required by the QA checker
-  Double_t fORvsANDCut; // AD OR vs AD AND counters cut
-  Double_t fBGvsBBCut; // AD beam-gas vs beam-beam counters cut
-  Double_t fSatMed; //Medium saturation cut
-  Double_t fSatHigh; //High saturation cut
-  Double_t fSatHuge; //Very high saturation cut
+  Float_t fORvsANDCut; // AD OR vs AD AND counters cut
+  Float_t fBGvsBBCut; // AD beam-gas vs beam-beam counters cut
+  Float_t fSatMed; //Medium saturation cut
+  Float_t fSatHigh; //High saturation cut
+  Float_t fSatHuge; //Very high saturation cut
   Int_t fMaxPedDiff; //Pedestal difference cut
+  Float_t fMaxPedWidth; //Pedestal width cut
 
-  ClassDef(AliADQAChecker,2)  // description 
+  ClassDef(AliADQAChecker,3)  // description 
 
 };
 

@@ -46,7 +46,8 @@ AliADQAParam::AliADQAParam():
   fSatMed(0.1),
   fSatHigh(0.3),
   fSatHuge(0.5),
-  fMaxPedDiff(1) 	
+  fMaxPedDiff(1),
+  fMaxPedWidth(1.5) 	
 
 {
   //

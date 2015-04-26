@@ -63,6 +63,7 @@ class AliADQAParam : public TNamed
   void SetSatHuge(Float_t val) {fSatHuge = val;} 
   
   void SetMaxPedDiff(Int_t val) {fMaxPedDiff = val;} 
+  void SetMaxPedWidth(Float_t val) {fMaxPedWidth = val;} 
 
   //HPTDC time
   Int_t GetNTdcTimeBins() const { return fNTdcTimeBins; }
@@ -103,6 +104,7 @@ class AliADQAParam : public TNamed
   Float_t GetSatHuge() const {return fSatHuge;} 
   
   Int_t GetMaxPedDiff() const {return fMaxPedDiff;} 
+  Float_t GetMaxPedWidth() const {return fMaxPedWidth;}
 
  private:
  
@@ -141,7 +143,8 @@ class AliADQAParam : public TNamed
   Float_t fSatHuge;
   
   Int_t fMaxPedDiff;
+  Float_t fMaxPedWidth;
 
-  ClassDef(AliADQAParam, 1)
+  ClassDef(AliADQAParam, 2)
 };
 #endif

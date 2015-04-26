@@ -59,13 +59,15 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fSatMed(0.1),
   fSatHigh(0.3),
   fSatHuge(0.5),
-  fMaxPedDiff(1) 
+  fMaxPedDiff(1),
+  fMaxPedWidth(1.5) 
 {
   fQAParam = (AliADQAParam*)GetQAParam();
   fSatMed = fQAParam->GetSatMed();
   fSatHigh = fQAParam->GetSatHigh();
   fSatHuge = fQAParam->GetSatHuge();
   fMaxPedDiff = fQAParam->GetMaxPedDiff();
+  fMaxPedWidth = fQAParam->GetMaxPedWidth();
 }
 
 //____________________________________________________________________________
@@ -101,17 +103,119 @@ void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray
   // Check for missing disk or rings for esd (to be redone)
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    check[specie] = 1.0;
-    // no check on calibration events
-    //if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)continue;
+    check[specie] = 1.0;    
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue;
     if (index == AliQAv1::kRAW) {
-      check[specie] =  CheckRaws(list[specie]);
-    } else if (index == AliQAv1::kESD) {
+      if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib) check[specie] =  CheckPedestals(list[specie]);
+      else check[specie] =  CheckRaws(list[specie]);
+    } 
+    else if (index == AliQAv1::kESD) {
       check[specie] =  CheckEsds(list[specie]);
     } 
   }
+}
+//_________________________________________________________________
+Double_t AliADQAChecker::CheckPedestals(TObjArray * list) const
+{
+  //  Check on the QA histograms on the raw-data input list:
+
+Double_t test = 1.0;
+  if (list->GetEntries() == 0){  
+    AliWarning("There are no histograms to be checked");
+  }
+  else {
+    TH2F *hPedestalInt0  = (TH2F*)list->At(AliADQADataMakerRec::kPedestalInt0);
+    if (!hPedestalInt0) {
+      AliWarning("PedestalInt0 histogram is not found");
+    }
+    else {
+    	if(hPedestalInt0->GetListOfFunctions()->GetEntries()<1) hPedestalInt0->GetListOfFunctions()->Add(new TPaveText(0.15,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hPedestalInt0->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hPedestalInt0->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hPedestalInt0->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+			if(hPedestalInt0->GetEntries() == 0){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kYellow);
+        			QAbox->AddText("Is this AD pedestal run?");
+				}
+			else{
+    				TH1D *hPedestalSlice;
+				Int_t NbadChannels = 0;
+				TString badChannels = " ";
+    				for(Int_t i=0; i<16; i++){
+      					hPedestalSlice = hPedestalInt0->ProjectionY("hPedestalSlice",i+1,i+1);
+					Double_t RMS = hPedestalSlice->GetRMS();
+					if(RMS > fMaxPedWidth) {
+						test = 0.1;
+						if(NbadChannels == 0){
+							QAbox->SetFillColor(kRed);
+							QAbox->AddText("Noisy pedestal for channel ");
+							}
+						badChannels += i;
+						badChannels += ", ";
+						NbadChannels++;
+						}
+					if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+					}
+				if(NbadChannels == 0){
+					QAbox->Clear();
+        				QAbox->SetFillColor(kGreen);
+        				QAbox->AddText("OK");
+					}
+				}		
+    			}
+		}
+    	}
+    TH2F *hPedestalInt1  = (TH2F*)list->At(AliADQADataMakerRec::kPedestalInt1);
+    if (!hPedestalInt1) {
+      AliWarning("PedestalInt1 histogram is not found");
+    }
+    else {
+    	if(hPedestalInt1->GetListOfFunctions()->GetEntries()<1) hPedestalInt1->GetListOfFunctions()->Add(new TPaveText(0.15,0.63,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hPedestalInt1->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hPedestalInt1->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hPedestalInt1->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+			if(hPedestalInt1->GetEntries() == 0){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kYellow);
+        			QAbox->AddText("Is this AD pedestal run?");
+				}
+			else{
+    				TH1D *hPedestalSlice;
+				Int_t NbadChannels = 0;
+				TString badChannels = " ";
+    				for(Int_t i=0; i<16; i++){
+      					hPedestalSlice = hPedestalInt1->ProjectionY("hPedestalSlice",i+1,i+1);
+					Double_t RMS = hPedestalSlice->GetRMS();
+					if(RMS > fMaxPedWidth) {
+						test = 0.1;
+						if(NbadChannels == 0){
+							QAbox->SetFillColor(kRed);
+							QAbox->AddText("Noisy pedestal for channel ");
+							}
+						badChannels += i;
+						badChannels += ", ";
+						NbadChannels++;
+						}
+					if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+					}
+				if(NbadChannels == 0){
+					QAbox->Clear();
+        				QAbox->SetFillColor(kGreen);
+        				QAbox->AddText("OK");
+					}
+				}		
+    			}
+		}
+    	}
+  }
+  
+  return test ; 
 }
 
 //_________________________________________________________________
@@ -119,8 +223,6 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 {
 
   //  Check on the QA histograms on the raw-data input list:
-  //  Two things are checked: the presence of data in all channels and
-  //  the ratio between different trigger types
 
   Double_t test = 1.0;
   if (list->GetEntries() == 0){  
@@ -540,7 +642,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
     //
     if ( !fImage[esIndex] ) {
-    	if(esIndex != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2000,3500);
+    	if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2000,3500);
 	else fImage[esIndex] = new TCanvas(title, title,400,600);
 	}
     //
@@ -577,7 +679,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     gStyle->SetTitleOffset(1.0,"xyz");  
     gStyle->SetTitleSize(1.1,"xyz");  
     
-    if(esIndex != AliRecoParam::kCalib){
+    if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib){
 
     	TVirtualPad* pCharge = 0;
     	TVirtualPad* pTime  = 0;
