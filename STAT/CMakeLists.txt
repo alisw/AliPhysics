@@ -32,6 +32,7 @@ set(SRCS
     TKDPDF.cxx
     TKDSpline.cxx
     TStatToolkit.cxx
+    AliNDLocalRegression.cxx
   )
 
 # Headers from sources
