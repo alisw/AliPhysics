@@ -16,6 +16,7 @@
 
 #pragma link C++ class AliTMinuitToolkit+;
 #pragma link C++ class TStatToolkit+;
+#pragma link C++ class AliNDLocalRegression+;
 
 
 #endif
