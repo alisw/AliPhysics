@@ -357,7 +357,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh1EtaJet[i] = 0;
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
-    fh1PtJetTrackLeading[i] = 0;
+    fh2PtJetPtTrackLeading[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
@@ -637,7 +637,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh1EtaJet[i] = 0;
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
-    fh1PtJetTrackLeading[i] = 0;
+    fh2PtJetPtTrackLeading[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
@@ -963,8 +963,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh2EtaPhiMedCone[i]);
     fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 100, 0., TMath::TwoPi());
     fOutputListStd->Add(fh1PhiJet[i]);
-    fh1PtJetTrackLeading[i] = new TH1D(Form("fh1PtJetTrackLeading_%d", i), Form("Leading track pt spectrum, cent: %s;#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 200, 0., 20);
-    fOutputListStd->Add(fh1PtJetTrackLeading[i]);
+    fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
+    fOutputListStd->Add(fh2PtJetPtTrackLeading[i]);
     fh1NJetPerEvent[i] = new TH1D(Form("fh1NJetPerEvent_%d", i), Form("Number of selected jets per event, cent: %s;# jets;# events", GetCentBinLabel(i).Data()), 100, 0., 100.);
     fOutputListStd->Add(fh1NJetPerEvent[i]);
     // event histograms
@@ -1618,7 +1618,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding jet number %d\n", iNJetSel);
       new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
-      fh1PtJetTrackLeading[iCentIndex]->Fill(fJetsCont->GetLeadingHadronPt(jetSel)); // pt of leading jet track
+      fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSel->Pt(), fJetsCont->GetLeadingHadronPt(jetSel)); // pt_jet vs pt of leading jet track
       if(fbCorrelations)
         arrayMixedEventAdd->Add(new TLorentzVector(vecJetSel)); // copy selected jet to the list of new jets for event mixing
     }
