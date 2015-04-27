@@ -395,7 +395,7 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
 	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
 	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,iBoard,(iChannel-1));
-	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-1040.)/112.,iBoard,(iChannel-1));
+	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,iBoard,(iChannel-1));
 		
 	else if(name.Contains("DelayClk1Win1")) SetDelayClk1Win1((UShort_t) val,iBoard);
 	else if(name.Contains("Clk1Win1")) SetClk1Win1((UShort_t) val,iBoard);
