@@ -213,7 +213,7 @@ private:
   TH1D* fh1EtaJet[fgkiNBinsCent]; //! jet eta
   TH2D* fh2EtaPtJet[fgkiNBinsCent]; //! jet eta-pT
   TH1D* fh1PhiJet[fgkiNBinsCent]; //! jet phi
-  TH1D* fh1PtJetTrackLeading[fgkiNBinsCent]; //! pt spectra of leading jet tracks
+  TH2D* fh2PtJetPtTrackLeading[fgkiNBinsCent]; //! pt_jet; pt of leading jet track
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
@@ -448,7 +448,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 8) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 9) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
