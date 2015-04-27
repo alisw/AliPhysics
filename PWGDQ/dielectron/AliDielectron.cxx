@@ -256,9 +256,6 @@ void AliDielectron::Init()
     fHistoArray->Init();
   }
 
-  if(fPostPIDCntrdCorr) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
-  if(fPostPIDWdthCorr)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
-
   if(!fEventProcess) {
     AliDielectronPairLegCuts *trk2leg = new AliDielectronPairLegCuts("trk2leg","trk2leg");
     // move all track cuts (if any) into pair leg cuts
@@ -329,6 +326,10 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     ev1->SetOrbitNumber(1);
     ev1->SetPeriodNumber(1);
   }
+
+  // set pid correction function to var manager
+  if(fPostPIDCntrdCorr) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+  if(fPostPIDWdthCorr)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
 
   // set event
   AliDielectronVarManager::SetFillMap(fUsedVars);
