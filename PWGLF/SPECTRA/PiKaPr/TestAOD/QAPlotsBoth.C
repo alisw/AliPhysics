@@ -1,11 +1,35 @@
+
+#include "AliSpectraBothHistoManager.h"
+#include "AliSpectraBothEventCuts.h"
+#include "AliSpectraBothTrackCuts.h"
+#include "TFile.h"
+#include "TF1.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TString.h"
+#include "TFormula.h"	
+#include "TMath.h"
+#include "TList.h"
+#include "TCanvas.h"
+#include "TFractionFitter.h"
+#include  <Riostream.h>
+#include "TLegend.h"
+ #include "TStyle.h"
+#include "TSystem.h"
+#include <TROOT.h>
+
+TString Particle[]={"Pion","Kaon","Proton"};
+TCanvas* plot_on_canvas(TString name, TH1* h1,TH1* h2);
+
+
 Float_t QAPlotsBoth( AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,
 	      AliSpectraBothEventCuts* ecuts_data, AliSpectraBothEventCuts* ecuts_mc,
 	      AliSpectraBothTrackCuts* tcuts_data, AliSpectraBothTrackCuts* tcuts_mc,
 	      TList * flistqa,TList * flistcanvas,Bool_t fullicorr=kTRUE)
 {
 TString pidmethods[3]={"TPC","TOF","TPCTOF"};	
-	Double_t neventsdata =  ecutsdata->NumberOfPhysSelEvents();
-	Double_t neventsmc =  ecutsmc->NumberOfPhysSelEvents();
+	Double_t neventsdata =  ecuts_data->NumberOfPhysSelEvents();
+	Double_t neventsmc =  ecuts_mc->NumberOfPhysSelEvents();
 	
 	
 	

@@ -21,6 +21,9 @@ class AliSpectraBothTrackCuts;
 #include "AliSpectraBothTrackCuts.h"
 #include "AliAnalysisUtils.h"	
 #include "AliPPVsMultUtils.h"	
+#include "AliMCEvent.h"
+#include "AliVEvent.h"
+
 
 class AliSpectraBothEventCuts : public TNamed
 {
