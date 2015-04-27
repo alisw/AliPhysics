@@ -279,6 +279,44 @@ file.
 	  first = false;
     }
 ~~~
+
+
+Suppose we have a list `allCuts` of related plots we want to export to
+a single table, we can do
+
+~~~{.cxx}
+    std::ofstream table("table.input");
+    GraphSysErr::Export(allCuts, table);
+	table.close();
+~~~
+
+
+And similarly suppose we have a list `allPlots` of all plots in a
+paper, and where some of them are tables, then we could do
+
+
+~~~{.cxx}
+    std::ofstream output("article.input");
+	TIter next(allData);
+	TObject* o = 0;
+	Bool_t first = true;
+	while ((o = next())) {
+	  if (o->IsA()->InheritsFrom(GraphSysErr::Class())) {
+	    GraphSysErr* g = static_cast<GraphSysError*>(o);
+	    g->Export(first, output);
+	  }
+	  else if if (o->IsA()->InheritsFrom(TSeqCollection::Class())) {
+	    TSeqCollection* c = static_cast<TSeqCollectionor*>(o);
+	    GraphSysErr::Export(c, output, first);
+	  }
+      else
+	    // Ignore other stuff in collection.
+	    continue;
+      first = false;
+	}
+~~~
+
+
 ### Import dataset from Durham database input file
 
 If one has an _input_ formatted file of a Durham database dataset
@@ -304,23 +342,11 @@ To import multiple datasets, one do as done in the example
 TestSample.
 
 ~~~{.cxx}
-    std::ifstream input("datasets.input");
-    TList* datasets = new TList();
-	Int_t i = 1;
-	do {
-	  Int_t j = 1;
-	  do {
-	    Int_t        c = input.tellg();
-		GraphSysErr* g = GraphSysErr::Import(in, j);
-		if (!g) break;
-		g->SetName(Form("dataset_%02d_columnt_%02d", i, j));
-		in.eekg(c, in.beg);
-		datasets->Add(g);
-      } while(true);
-	  i++;
-    } while(!in.eof());
-	~~~
-	
+    TSeqCollection* c = GraphSysErr::Import("datasets.input");
+~~~
+
+Note, all tables are flattened.
+
 ## License
 
 Copyright (c) 2014 Christian Holm Christensen <cholm@nbi.dk>
