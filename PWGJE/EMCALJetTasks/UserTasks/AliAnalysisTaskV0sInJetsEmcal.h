@@ -309,6 +309,9 @@ private:
   THnSparse* fhnV0InMedLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0OutJetLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0NoJetLambda[fgkiNBinsCent]; //!
+  // Lambda correlations
+  THnSparse* fhnV0CorrelSELambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0CorrelMELambda[fgkiNBinsCent]; //!
 
   TH2D* fh2V0PtJetAngleLambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAInLambda[fgkiNBinsCent]; //!
