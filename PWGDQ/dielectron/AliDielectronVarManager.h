@@ -2279,16 +2279,30 @@ inline void AliDielectronVarManager::InitEstimatorObjArrayAvg(const TObjArray* a
 {
   //
   // initialize the profile histograms neccessary for the correction of the multiplicity estimators in pp collisions
-  //
+  // SPDmult05 does not exist yet for Pass4 AODs
+  // ITS correction maps do not exist yet for Pass4 AODs
   
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16", 
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
   const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
-  
+
+  TString key;
+
+  Int_t ieTotal = 9; 
+
   for(Int_t ip=0; ip<4; ++ip) {
-    for(Int_t ie=0; ie<9; ++ie) {
-      fgMultEstimatorAvg[ip][ie] = (TProfile*)(array->FindObject(Form("%s_%s",estimatorNames[ie],periodNames[ip]))->Clone(Form("%s_%s_clone",estimatorNames[ie],periodNames[ip])));
+    for(Int_t ie=0; ie<ieTotal; ++ie) {
+      key = Form("%s_%s",estimatorNames[ie],periodNames[ip]);
+      if(array->FindObject(key.Data())){
+	fgMultEstimatorAvg[ip][ie] = (TProfile*)(array->FindObject(key.Data()))->Clone((key+"_clone").Data());
+	continue;
+      }
+      key += Form("_Pass4_AOD");
+      if(array->FindObject(key.Data())){
+	printf("ip = %d, ie = %d\n estimator = %s, period = %s\n key = %s\n", ip, ie, estimatorNames[ie], periodNames[ip], key.Data());
+        fgMultEstimatorAvg[ip][ie] = (TProfile*)(array->FindObject(key.Data()))->Clone((key+"_clone").Data());      
+      }
     }
   }
 }
