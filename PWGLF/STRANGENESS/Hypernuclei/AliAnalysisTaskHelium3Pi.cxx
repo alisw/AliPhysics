@@ -145,12 +145,34 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi()
   tchi2He(0),
   tchi2Pi(0),
   fNtuple4(0),
-  tHelrunNumber(0),
-  tHelBCNumber(0),
-  tHelOrbitNumber(0),
-  tHelPeriodNumber(0),
+  // tHelrunNumber(0),
+  // tHelBCNumber(0),
+  // tHelOrbitNumber(0),
+  // tHelPeriodNumber(0),
+  // tHeleventtype(0),
+  // tHelisHeITSrefit(0),
+  // tHelpercentile(0),
+  // tHelSign(0),
+  // tHelpinTPC(0),
+  // tHelGetTPCsignal(0),
+  // tHelPx(0),
+  // tHelPy(0),
+  // tHelPz(0),
+  // tHelEta(0),
+  // tHelisTOF(0),
+  // tHelpoutTPC(0),
+  // tHeltimeTOF(0),
+  // tHeltrackLenghtTOF(0),
+  // tHelimpactXY(0),
+  // tHelimpactZ(0),
+  // tHelmapITS(0),
+  // tHelTPCNcls(0),
+  // tHelTRDsignal(0),
+  // tHelxPrimaryVertex(0),
+  // tHelyPrimaryVertex(0),
+  // tHelzPrimaryVertex(0),
+  // tHelchi2PerClusterTPC(0),
   tHeleventtype(0),
-  tHelisHeITSrefit(0),
   tHelpercentile(0),
   tHelSign(0),
   tHelpinTPC(0),
@@ -160,18 +182,11 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi()
   tHelPz(0),
   tHelEta(0),
   tHelisTOF(0),
-  tHelpoutTPC(0),
-  tHeltimeTOF(0),
-  tHeltrackLenghtTOF(0),
+  tHelTOFpull(0),
+  tHeMass(0),
   tHelimpactXY(0),
   tHelimpactZ(0),
   tHelmapITS(0),
-  tHelTPCNcls(0),
-  tHelTRDsignal(0),
-  tHelxPrimaryVertex(0),
-  tHelyPrimaryVertex(0),
-  tHelzPrimaryVertex(0),
-  tHelchi2PerClusterTPC(0),
   fPIDResponse(0)
   
 {
@@ -270,12 +285,34 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi(const char *name)
   tchi2He(0),
   tchi2Pi(0),
   fNtuple4(0),
-  tHelrunNumber(0),
-  tHelBCNumber(0),
-  tHelOrbitNumber(0),
-  tHelPeriodNumber(0),
+  // tHelrunNumber(0),
+  // tHelBCNumber(0),
+  // tHelOrbitNumber(0),
+  // tHelPeriodNumber(0),
+  // tHeleventtype(0),
+  // tHelisHeITSrefit(0),
+  // tHelpercentile(0),
+  // tHelSign(0),
+  // tHelpinTPC(0),
+  // tHelGetTPCsignal(0),
+  // tHelPx(0),
+  // tHelPy(0),
+  // tHelPz(0),
+  // tHelEta(0),
+  // tHelisTOF(0),
+  // tHelpoutTPC(0),
+  // tHeltimeTOF(0),
+  // tHeltrackLenghtTOF(0),
+  // tHelimpactXY(0),
+  // tHelimpactZ(0),
+  // tHelmapITS(0),
+  // tHelTPCNcls(0),
+  // tHelTRDsignal(0),
+  // tHelxPrimaryVertex(0),
+  // tHelyPrimaryVertex(0),
+  // tHelzPrimaryVertex(0),
+  // tHelchi2PerClusterTPC(0),
   tHeleventtype(0),
-  tHelisHeITSrefit(0),
   tHelpercentile(0),
   tHelSign(0),
   tHelpinTPC(0),
@@ -285,18 +322,11 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi(const char *name)
   tHelPz(0),
   tHelEta(0),
   tHelisTOF(0),
-  tHelpoutTPC(0),
-  tHeltimeTOF(0),
-  tHeltrackLenghtTOF(0),
+  tHelTOFpull(0),
+  tHeMass(0),
   tHelimpactXY(0),
   tHelimpactZ(0),
-  tHelmapITS(0),
-  tHelTPCNcls(0),
-  tHelTRDsignal(0),
-  tHelxPrimaryVertex(0),
-  tHelyPrimaryVertex(0),
-  tHelzPrimaryVertex(0),
-  tHelchi2PerClusterTPC(0),
+  tHelmapITS(0),	   
   fPIDResponse(0)
 {					  
 
@@ -479,7 +509,7 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   }
   
   if(! fhBBHe ){
-    fhBBHe = new TH2F( "fhBBHe" , "Bethe-Bloch TPC He" , 120,-6,6,150,0,1500);
+    fhBBHe = new TH2F( "fhBBHe" , "Bethe-Bloch TPC He" , 240,-6,6,300,0,1500);
     fhBBHe->GetXaxis()->SetTitle("p/z (GeV/#it{c})");
     fhBBHe->GetYaxis()->SetTitle("TPC Signal");
     fListHist->Add(fhBBHe);
@@ -577,7 +607,7 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   if(! fNtuple4 ) {
  
     fNtuple4 = new TTree("fNtuple4","fNtuple4");
-    
+    /*
     fNtuple4->Branch("tHelrunNumber"        ,&tHelrunNumber        ,"tHelrunNumber/F");
     fNtuple4->Branch("tHelBCNumber"         ,&tHelBCNumber         ,"tHelBCNumber/F");
     fNtuple4->Branch("tHelOrbitNumber"      ,&tHelOrbitNumber      ,"tHelOrbitNumber/F");
@@ -605,8 +635,24 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
     fNtuple4->Branch("tHelyPrimaryVertex"   ,&tHelyPrimaryVertex   ,"tHelyPrimaryVertex/F");
     fNtuple4->Branch("tHelzPrimaryVertex"   ,&tHelzPrimaryVertex   ,"tHelzPrimaryVertex/F");
     fNtuple4->Branch("tHelchi2PerClusterTPC",&tHelchi2PerClusterTPC,"tHelchi2PerClusterTPC/F");
+    */
     
-
+    fNtuple4->Branch("tHeleventtype"        ,&tHeleventtype        ,"tHeleventtype/F");
+    fNtuple4->Branch("tHelpercentile"       ,&tHelpercentile       ,"tHelpercentile/F");
+    fNtuple4->Branch("tHelSign"             ,&tHelSign             ,"tHelSign/F");
+    fNtuple4->Branch("tHelpinTPC"           ,&tHelpinTPC           ,"tHelpinTPC/F");
+    fNtuple4->Branch("tHelGetTPCsignal"     ,&tHelGetTPCsignal     ,"tHelGetTPCsignal/F");
+    fNtuple4->Branch("tHelPx"               ,&tHelPx               ,"tHelPx/F");
+    fNtuple4->Branch("tHelPy"               ,&tHelPy               ,"tHelPy/F");
+    fNtuple4->Branch("tHelPz"               ,&tHelPz               ,"tHelPz/F");
+    fNtuple4->Branch("tHelEta"              ,&tHelEta              ,"tHelEta/F");
+    fNtuple4->Branch("tHelisTOF"            ,&tHelisTOF            ,"tHelisTOF/F");
+    fNtuple4->Branch("tHelTOFpull"          ,&tHelTOFpull          ,"tHelTOFpull/F");
+    fNtuple4->Branch("tHeMass"              ,&tHelisTOF            ,"tHelisTOF/F");
+    fNtuple4->Branch("tHelimpactXY"         ,&tHelimpactXY         ,"tHelimpactXY/F");
+    fNtuple4->Branch("tHelimpactZ"          ,&tHelimpactZ          ,"tHelimpactZ/F");
+    fNtuple4->Branch("tHelmapITS"           ,&tHelmapITS           ,"tHelmapITS/F");
+    
   } 
 
   PostData(1,  fListHist);
@@ -896,7 +942,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	
 	// Double_t mass2=(poutTPC*poutTPC)*((((speedOfLight*speedOfLight)*(timeTOF*timeTOF))-(trackLenghtTOF*trackLenghtTOF))/(trackLenghtTOF*trackLenghtTOF));
 	// if(mass2>0) massTOF=TMath::Sqrt(mass2);
-	fhMassTOF->Fill(massTOF);
+	//	fhMassTOF->Fill(massTOF);
 	
 	if(esdtrack->GetSign() < 0.)fBetavsTPCsignalNeg->Fill(betaTOF,TPCSignal);
 	if(esdtrack->GetSign() > 0.)fBetavsTPCsignalPos->Fill(betaTOF,TPCSignal);
@@ -945,9 +991,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       // if( bbtheoM < 3.) {
 
       //------ new
-      ptcExp = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
+      ptcExp   = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
       bbtheoM  = (TPCSignal - ptcExp)/(0.07*ptcExp);
-      expbeta = TMath::Sqrt(1-((Helium3Mass*Helium3Mass)/(pinTPC*pinTPC+Helium3Mass*Helium3Mass))); 
+      expbeta  = TMath::Sqrt(1-((Helium3Mass*Helium3Mass)/(pinTPC*pinTPC+Helium3Mass*Helium3Mass))); 
       pullTOF  = (betaTOF - expbeta)/(0.007*expbeta);
       //-------
       
@@ -958,23 +1004,28 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	
 	// if(pinTPC>0.6){ //RAMONA
 	//new
-	if(pinTPC>0.6 && hasTOF && TMath::Abs(pullTOF)<=3){
+	if(pinTPC>0.6 /*&& hasTOF && TMath::Abs(pullTOF)<=3*/){
 	  
 	  if(isHeITSrefit==kFALSE)continue;
-	  if(TMath::Abs(massTOF) > 5.0)continue;
-	  if(TMath::Abs(massTOF) < 1.8 )continue;
-	 
+
+	  if(hasTOF){
+	    if(TMath::Abs(massTOF) > 5.0)continue;
+	    if(TMath::Abs(massTOF) < 1.8 )continue;
+	    fhMassTOF->Fill(massTOF);
+	  }
 	  //------------------------------
+	
 	  fhBBHe->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
 	  HeTPC[nHeTPC++]=j;
 	  
 	  esdtrack->GetImpactParameters(impactXY, impactZ);
-	  
+	  /*  
 	  Int_t  fIdxInt[200]; //dummy array
 	  Int_t nClustersTPC = esdtrack->GetTPCclusters(fIdxInt);
 	  
 	  Float_t chi2PerClusterTPC = esdtrack->GetTPCchi2()/(Float_t)(nClustersTPC);
-	  
+	 
+	   
 	  tHelrunNumber	        =(Float_t)runNumber;
 	  tHelBCNumber	        =(Float_t)BCNumber;
 	  tHelOrbitNumber       =(Float_t)OrbitNumber;
@@ -1002,8 +1053,28 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  tHelyPrimaryVertex    =(Float_t)yPrimaryVertex;
 	  tHelzPrimaryVertex    =(Float_t)zPrimaryVertex;
 	  tHelchi2PerClusterTPC =(Float_t)chi2PerClusterTPC;            
-	  	  
-	  //	  fNtuple4->Fill();
+	  //fNtuple4->Fill();
+	  */
+
+	  tHeleventtype	        =(Float_t)eventtype;
+	  tHelpercentile        =(Float_t)percentile;
+	  tHelSign	        =(Float_t)esdtrack->GetSign();
+	  tHelpinTPC	        =(Float_t)pinTPC;
+	  tHelGetTPCsignal      =(Float_t)esdtrack->GetTPCsignal();
+	  tHelPx	        =(Float_t)esdtrack->Px();
+	  tHelPy	        =(Float_t)esdtrack->Py();
+	  tHelPz	        =(Float_t)esdtrack->Pz();
+	  tHelEta	        =(Float_t)esdtrack->Eta();
+	  tHelisTOF	        =(Float_t)hasTOF;
+	  tHelTOFpull	        =(Float_t)pullTOF;
+	  tHeMass               =(Float_t)massTOF;
+	  tHelimpactXY	        =(Float_t)impactXY;
+	  tHelimpactZ	        =(Float_t)impactZ;
+	  tHelmapITS	        =(Float_t)mapITS;
+
+	  fNtuple4->Fill();
+ 	  
+	  //
 	}
       }
     }  //! track
@@ -1053,7 +1124,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       if (PionTrack) 
 	DcaPionToPrimVertex = TMath::Abs(PionTrack->GetD(xPrimaryVertex, yPrimaryVertex,lMagneticField)); //OK
       
-      if(DcaPionToPrimVertex<0.2)continue; 
+      //      if(DcaPionToPrimVertex<0.2)continue; 
+      if(DcaPionToPrimVertex<0.1)continue; 
+     
       
       AliExternalTrackParam trackInPion(*PionTrack);  
       
@@ -1074,7 +1147,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     
 	if ( DcaPionToPrimVertex < fgDNmin)                //OK
 	  if ( DcaHeToPrimVertex < fgDNmin) continue;    //OK
-	
+  
+	if(DcaHeToPrimVertex<0.1)continue; 
+    	
 	Double_t xn, xp;
 	Double_t dca=0.;
 	
