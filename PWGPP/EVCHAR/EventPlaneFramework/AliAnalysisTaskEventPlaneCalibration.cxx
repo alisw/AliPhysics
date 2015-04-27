@@ -23,9 +23,9 @@
 #include "AliEventPlaneCuts.h"
 #include "AliEventPlaneVarManager.h"
 #include "AliEventPlaneManager.h"
-//#include "AliEventPlaneReducedVarManager.h"
 #include "AliEventPlaneHelper.h"
 #include "AliEventPlaneHistos.h"
+//#include "AliEventPlaneReducedVarManager.h"
 //#include "AliReducedEvent.h"
 //#include "trainsimulator/localHelper.h"
 // make a change
@@ -66,6 +66,7 @@ AliAnalysisTaskEventPlaneCalibration::AliAnalysisTaskEventPlaneCalibration() :
  fRunLightWeight(kFALSE),
  fCalibrateByRun(kTRUE),
  fUseFriendEvent(kFALSE),
+ fTriggerMask(0),
  fFillTPC(kFALSE),
  fFillVZERO(kFALSE),
  fFillTZERO(kFALSE),
@@ -102,6 +103,7 @@ AliAnalysisTaskEventPlaneCalibration::AliAnalysisTaskEventPlaneCalibration(const
  fRunLightWeight(kFALSE),
  fCalibrateByRun(kTRUE),
  fUseFriendEvent(kFALSE),
+ fTriggerMask(0),
  fFillTPC(kFALSE),
  fFillVZERO(kFALSE),
  fFillTZERO(kFALSE),
@@ -214,9 +216,9 @@ void AliAnalysisTaskEventPlaneCalibration::UserExec(Option_t *){
   //AliReducedEvent* event = dynamic_cast<AliReducedEvent*>(localHelper::GetInstance()->GetInputData(0));
   AliVEvent* event = InputEvent();
   //TObject* event = (TObject*) Vevent;
-  ////TObject* event = (TObject*) reducedEvent;
+  //TObject* event = (TObject*) reducedEvent;
 
-  // Was event selected ?
+   //Was event selected ?
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD = (event->IsA()==AliESDEvent::Class());
   Bool_t isAOD = (event->IsA()==AliAODEvent::Class());
@@ -228,13 +230,14 @@ void AliAnalysisTaskEventPlaneCalibration::UserExec(Option_t *){
   AliAODEvent* aodEvent = 0x0;
   if(isAOD) aodEvent = static_cast<AliAODEvent*>(event);
   
+  UInt_t isSelected = AliVEvent::kAny;
+  if(fTriggerMask==0) fTriggerMask=AliVEvent::kAny;
   if(!IsReduced()){
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  UInt_t isSelected = AliVEvent::kAny;
   if(inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
-      //isSelected&=fTriggerMask;
+      isSelected&=fTriggerMask;
     }
   }}
   
@@ -250,6 +253,9 @@ void AliAnalysisTaskEventPlaneCalibration::UserExec(Option_t *){
   
   Int_t currentRunNumber = 0;
   FILL::FillEventInfo(event, values);
+  //values[VAR::kIsPhysicsSelection] = ( isSelected==0 ? 0 : 1 );
+  EPmanager->SetEventStatus( isSelected==0 ? 0 : 1 );
+  //std::cout<<"!!!!  "<<values[VAR::kIsPhysicsSelection]<<std::endl;
   currentRunNumber = values[VAR::kRunNo];
   //if(IsReduced()) currentRunNumber = reducedEvent->RunNo();
   //else currentRunNumber = Vevent->GetRunNumber();
@@ -260,7 +266,7 @@ void AliAnalysisTaskEventPlaneCalibration::UserExec(Option_t *){
   // define histograms -----------------------------------------------
   TString histClasses = "";
 
-  if(!fRunLightWeight) histClasses += "Event_NoCuts;Event_WithCuts;Event_MultCutOuts;";
+  if(!fRunLightWeight) histClasses += "Event_NoCuts;Event_AnalysisEvents;Event_CalibrationEvents;Event_MultCutOuts;";
   if(!fRunLightWeight) histClasses += "OfflineTriggers_NoCuts;OfflineTriggers_WithCuts;";
 
 
@@ -301,7 +307,7 @@ void AliAnalysisTaskEventPlaneCalibration::UserExec(Option_t *){
 
 
 
-  cout<<"RUN  "<<currentRunNumber<<endl;
+  //cout<<"RUN  "<<currentRunNumber<<endl;
   
   InitializeCalibrationHistograms(currentRunNumber, EPmanager);
 
@@ -373,11 +379,12 @@ cout<<"initialized"<<endl;
 
     // use only selected triggers for event plane calibration averages
     if(IsEventSelected(values)){//&&TriggerSelected(event)) {
-        HIST::Instance()->FillHistClass("Event_WithCuts", values);
-        for(UShort_t ibit=0; ibit<64; ++ibit) {
+        HIST::Instance()->FillHistClass("Event_AnalysisEvents", values);
+        if(isSelected) HIST::Instance()->FillHistClass("Event_CalibrationEvents", values);
+        //for(UShort_t ibit=0; ibit<64; ++ibit) {
           //VAR::FillEventOfflineTriggers(ibit, event, values);
           //HIST::Instance()->FillHistClass("OfflineTriggers_WithCuts", values);
-        }
+        //}
 
     //cout<<"crash 6"<<endl;
 
@@ -453,6 +460,7 @@ cout<<"initialized"<<endl;
       //fHistosFile->cd();
     //}
 
+    EPmanager->ClearEvent();
       
   }  // end loop over events
 
@@ -590,9 +598,10 @@ void AliAnalysisTaskEventPlaneCalibration::InitEqualizationHistograms(Int_t runN
   TString path = epConf->EqualizationHistPath();
 
   if(path!="") {
-   cout << "Loading the "<<epConf->EventPlaneDetectorName()<<" channel multiplicities for run " << runNo << " from path " << path << endl;
-   if(fCalibrateByRun) path+=Form("/%d/CalibrationHistogramsMerged.root", runNo);
+   cout << "Loading the "<<epConf->EventPlaneDetectorName()<<" channel multiplicities for run " << runNo << " from path " ;
+   if(fCalibrateByRun) path=Form(path.Data(), runNo);
    else path+="/allCalibrationHistogramsMerged.root";
+   cout << Form(path.Data(),runNo) << endl;
    epConf->ConnectInputMultiplicityHistograms(path);
   }
 }
@@ -606,9 +615,10 @@ void AliAnalysisTaskEventPlaneCalibration::InitQvecCalibrationHistograms(Int_t r
 
   if(path!="") {
    TString det = epConf->EventPlaneDetectorName();
-   cout << "Loading the "<<det<<" calibration for run " << runNo << " from path " << path << endl;
-   if(fCalibrateByRun) path+=Form("/%d/CalibrationHistogramsMerged.root", runNo);
+   cout << "Loading the "<<det<<" calibration for run " << runNo << " from path ";
+   if(fCalibrateByRun) path=Form(path.Data(), runNo);
    else path+="/allCalibrationHistogramsMerged.root";
+   cout << Form(path.Data(),runNo) << endl;
    epConf->ConnectInputCalibrationHistograms(path);
  }
 }
@@ -662,7 +672,6 @@ void AliAnalysisTaskEventPlaneCalibration::DefineHistograms(const Char_t* histCl
     
     // Event wise histograms
     if(classStr.Contains("Event")) {
-      cout << "Event" << endl;
       HIST::Instance()->AddHistClass(classStr.Data());
       HIST::Instance()->AddHistogram(classStr.Data(),"RunNo","Run numbers;Run", kFALSE, kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo);
       HIST::Instance()->AddHistogram(classStr.Data(),"BC","Bunch crossing;BC", kFALSE,3000,0.,3000.,VAR::kBC);
@@ -815,7 +824,6 @@ void AliAnalysisTaskEventPlaneCalibration::DefineHistograms(const Char_t* histCl
     
     // Offline trigger histograms
     if(classStr.Contains("OfflineTriggers")) {
-      cout << "OfflineTriggers" << endl;
       HIST::Instance()->AddHistClass(classStr.Data());
 
       TString triggerNames = "";

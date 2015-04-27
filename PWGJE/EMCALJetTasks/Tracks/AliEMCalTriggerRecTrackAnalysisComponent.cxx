@@ -173,6 +173,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
  *        fill correlation matrix
  *      - Fill histogram at track level (and if an associated particle is available also at MC-truth level)
  *      - Find cluster matched to track. If cluster is available, fill histograms for tracks with clusters
+ *      - Find trigger patches mathced to track. If trigger patch is available, fill histogram for tracks with patches
  * This function is the implementation of the abstract method Process declared
  * in AliEMCalTriggerTracksAnalysisComponent.
  *

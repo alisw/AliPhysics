@@ -171,7 +171,8 @@ void AliEventPlaneHelper::InitFile(const Char_t* filename) {
   TString histfilename="";
   if(fgHistCaliFile) histfilename = fgHistCaliFile->GetName();
   if(!histfilename.Contains(filename)) {
-    fgHistCaliFile = new TFile(filename);    // open file only if not already open
+    fgHistCaliFile = TFile::Open(filename);    // open file only if not already open
+    //fgHistCaliFile = new TFile(filename);    // open file only if not already open
   
     if(!fgHistCaliFile) {
       //cout << "GlobalMacros.C::GetHistogram() : File " << filename << " not opened!!" << endl;
@@ -379,12 +380,13 @@ TObject* AliEventPlaneHelper::GetHistogram(const Char_t* listname, const Char_t*
     //cout << "                   A ROOT file must pe initialized first!!" << endl;
     return 0x0;
   }
-  TKey* listKey = fgHistCali->FindKey(listname);
-  TDirectoryFile* hlist = (TDirectoryFile*)listKey->ReadObj();
-  TKey* key = hlist->FindKey(hname);
-  std::cout<<"key "<<listname<<"  "<<hname<<"  "<<key<<std::endl;
-  if(key==0) {/*cout<<"Histogram does not exist"<<endl;*/ return 0x0;}
-  return key->ReadObj();
+  if(fgHistCali->FindObject(listname)) return fgHistCali->FindObject(listname)->FindObject(hname);
+  else return 0x0;
+  //TKey* listKey = fgHistCali->FindKey(listname);
+  //TDirectoryFile* hlist = (TDirectoryFile*)listKey->ReadObj();
+  //TKey* key = hlist->FindKey(hname);
+  //if(key==0) {/*cout<<"Histogram does not exist"<<endl;*/ return 0x0;}
+  //return key->ReadObj();
 }
 
 

@@ -26,6 +26,8 @@ class AliAnalysisTaskRhoMassBase : public AliAnalysisTaskEmcalJet {
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf   ;                       }
   void                   SetRhoMassFunction(TF1* rf)                           { fRhoMassFunction      = rf   ;                       }
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a    ;                       }
+  void                   SetSmallSystem(Bool_t setter = kTRUE)                 {fIsPbPb = !setter; }
+
 
   const TString&         GetOutRhoMassName() const                             { return fOutRhoMassName;                              }
   const TString&         GetOutRhoMassScaledName() const                       { return fOutRhoMassScaledName;                        } 
@@ -45,7 +47,8 @@ class AliAnalysisTaskRhoMassBase : public AliAnalysisTaskEmcalJet {
   TF1                   *fRhoMassFunction;               // pre-computed rho mass as a function of centrality
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
   Bool_t                 fAttachToEvent;                 // whether or not attach rho mass to the event objects list
-
+  Bool_t                 fIsPbPb;                        // different histogram ranges for pp/pPb and PbPb
+  
   AliRhoParameter       *fOutRhoMass;                    //!output rho object
   AliRhoParameter       *fOutRhoMassScaled;              //!output scaled rho object
   AliRhoParameter       *fCompareRhoMass;                //!rho object to compare

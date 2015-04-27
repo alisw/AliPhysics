@@ -34,6 +34,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		void SetInputList( TClonesArray *inputarray){fInputList = inputarray;};
 		void SetEventCentrality( float cent ){fCent = cent;};
+		void SetEventImpactParameter( float ip ){ fImpactParameter = ip; };
 		void SetEventVertex( double *vtx ){ fVertex = vtx; };
 		void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; };
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
@@ -64,6 +65,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		TClonesArray * fInputList;
 		double * fVertex;
 		Float_t		fCent;
+		Float_t		fImpactParameter;
 		int			fDebugLevel;
 		int fNCent;
 		int fCBin;
@@ -93,6 +95,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJBin fCorrBin;
 
 		AliJTH1D fh_cent; // for cent dist
+		AliJTH1D fh_ImpactParameter; // for impact parameter for mc
 		AliJTH1D fh_vertex;
 		AliJTH1D fh_pt; // for pt dist of tracks 
 		AliJTH1D fh_eta; // for eta dist of tracks

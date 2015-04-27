@@ -40,6 +40,7 @@ set(SRCS
     AliAnalysisTaskRhoFlow.cxx
     AliAnalysisTaskRhoMassBase.cxx
     AliAnalysisTaskRhoMass.cxx
+    AliAnalysisTaskRhoMassSparse.cxx
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx

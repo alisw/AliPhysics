@@ -62,6 +62,8 @@ class AliEventPlaneManager : public TObject {
 
   AliEventPlaneManager();
   ~AliEventPlaneManager();
+
+  void SetEventStatus(Bool_t b) {fUseEvent=b;}
   
   void SetInputFriendFileName(TString name) {fInputFriendFileName = name;}
   void SetOutputFriendFileName(TString name) {fOutputFriendFileName = name;}
@@ -140,6 +142,7 @@ class AliEventPlaneManager : public TObject {
   Double_t TZEROminMult() {return fTZEROminMult;}
   Double_t ZDCminMult() {return fZDCminMult;}
   Double_t FMDminMult() {return fFMDminMult;}
+
   //static AliEventPlaneManager* Instance() { if(!fgAliEventPlaneManager) fgAliEventPlaneManager = new AliEventPlaneManager(); return fgAliEventPlaneManager;}
 
   //static AliEventPlaneManager* fgAliEventPlaneManager;
@@ -158,6 +161,7 @@ class AliEventPlaneManager : public TObject {
   Int_t fEqualizationHists[1000];
 
   Bool_t fRunLightWeight;
+  Bool_t fUseEvent;       // use event for calibration histograms
   TString fInputFriendFileName;
   TString fOutputFriendFileName;
 

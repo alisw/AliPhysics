@@ -22,7 +22,8 @@
 #include <AliESDtrack.h>
 #include <AliESDtrackCuts.h>
 #include "AliEventPlaneESDVarManager.h"
-
+using std::cout;
+using std::endl;
 ClassImp(AliEventPlaneESDVarManager)
 
 #ifdef ALIEVENTPLANEVARMANAGER_H
@@ -105,7 +106,7 @@ void AliEventPlaneESDVarManager::FillTrackInfo(AliESDtrack* particle, Float_t* v
   values[VAR::kDcaXY]     = dcaxy;
   values[VAR::kDcaZ]      = dcaz;
 
-  values[VAR::kITSncls]       = particle->GetNcls(0); 
+  //values[VAR::kITSncls]       = particle->GetNcls(0); 
   values[VAR::kTPCncls]       = particle->GetTPCNcls();
   values[VAR::kTPCnclsIter1]  = particle->GetTPCNclsIter1();
   values[VAR::kTPCchi2]       = particle->GetTPCchi2()/values[VAR::kTPCncls];
@@ -129,6 +130,7 @@ void AliEventPlaneESDVarManager::FillTrackInfo(AliESDtrack* particle, Float_t* v
 //_________________________________
 void AliEventPlaneESDVarManager::FillTPC(AliEventPlaneManager* EPmanager, AliVEvent* event, Float_t* values){
 
+  AliESDtrack* esdTrack;
   Int_t nTrack=-1;
   AliEventPlaneConfiguration* EPconf = 0x0;
   TClonesArray* epConfList = EPmanager->GetEventPlaneConfigurations(AliEventPlaneManager::kTPC);
@@ -139,7 +141,7 @@ void AliEventPlaneESDVarManager::FillTPC(AliEventPlaneManager* EPmanager, AliVEv
 
   for (Int_t iTrack = 0; iTrack < esd.GetNumberOfTracks(); ++iTrack)
   {
-    AliESDtrack* esdTrack = esd.GetTrack(iTrack); //carefull do not modify it othwise  need to work with a copy 
+    esdTrack = esd.GetTrack(iTrack); //carefull do not modify it othwise  need to work with a copy 
     AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(&esd),esdTrack->GetID());
     if (!track) continue;
 
@@ -154,8 +156,6 @@ void AliEventPlaneESDVarManager::FillTPC(AliEventPlaneManager* EPmanager, AliVEv
     reducedDetector->SetWeight(1.);
 
 
-
-    Bool_t once = kTRUE;
     Bool_t trackUsed = kFALSE;
 
     for(Int_t iconf=0; iconf<epConfList->GetEntriesFast(); iconf++){
@@ -171,6 +171,7 @@ void AliEventPlaneESDVarManager::FillTPC(AliEventPlaneManager* EPmanager, AliVEv
     }
 
     if(!trackUsed) nTrack--;
+    delete track;
 
   }
 

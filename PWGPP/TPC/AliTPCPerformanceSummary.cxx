@@ -921,10 +921,14 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
 //_____________________________________________________________________________
 Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
-    //
-    // Analyse number of TPC clusters 
-    //
-    
+  //
+  // Analyse number of TPC clusters 
+  // Standard NCl Ncl/Findable histograms 
+  //   
+  // Functionality for missing chambers detection.
+  //    <NCL>med per phi|sector|TPC
+  //    <Ntr>med per phi|sector|TPC
+
     if (!pcstream) return 1;
     if (!pTPC) return 1;
  
@@ -3086,14 +3090,14 @@ void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
   //
   tree->SetAlias("sectorNclMissing70","Sum$((max(grNclSectorNegA.fY,grNclSectorPosA.fY)/grNclPhiMedian.fElements[0])<0.7)+Sum$((max(grNclSectorNegC.fY,grNclSectorPosC.fY)/grNclPhiMedian.fElements[0])<0.7)");  
   // Missing chambers according StandardQA - using Ncl:phi  histogram.  
-  //   sum( Ncl_sector/<Ncl>_median < 70% ) 
+  //  Counter:  sum( Ncl_sector/<Ncl>_median < 70% ) 
   tree->SetAlias("sectorNtrMissing70","Sum$((18*grNtrSectorPosC.fY/Sum$(grNtrSectorPosC.fY))<0.7)+Sum$((18*grNtrSectorPosA.fY/Sum$(grNtrSectorPosA.fY))<0.7)");
   // Missing chambers according StandardQA - using Ncl:phi  track counter
-  //  sum( Ntr_sector/<Ntr>_median < 70% ) 
+  //  Counter sum( Ntr_sector/<Ntr>_median < 70% ) 
   tree->SetAlias("ocdbStatusCounter","hasRawQA*Sum$(grOCDBStatus.fY<0.75)");               // counter status for the OCDB
   tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
   tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
-  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(grRawQMax.fEY<0.03)");
+  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
   // counter outliers 75 (Qmax or occupancy based)  
   // for laser data Q is not reliable - disable decission for data with big RMS 
   tree->SetAlias("ocdbHVStatusCounter","Sum$(grROCHVStatus.fY<0.5)");                      // chambers not active  - according  HV decission
@@ -3111,7 +3115,9 @@ void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
   //
   //
   tree->SetAlias("disabledGoodChambers","(sectorNclMissing70>0||sectorNtrMissing70>0)&&rawLowCounter75==0&&sectorNtrMissing70<36");
+  //
   // disabled good chambers counter
+  // 
   tree->SetAlias("emptyQA","(sectorNtrMissing70==36)");
   // empty QA counter
 

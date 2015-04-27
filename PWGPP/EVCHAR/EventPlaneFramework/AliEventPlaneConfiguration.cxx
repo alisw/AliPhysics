@@ -137,6 +137,81 @@ AliEventPlaneConfiguration::~AliEventPlaneConfiguration()
 }
 
 
+//_______________________________________________________________________________
+AliEventPlaneConfiguration::AliEventPlaneConfiguration(const AliEventPlaneConfiguration &c) :
+  TObject(),
+  fCalibrationMethod(c.CalibrationMethod()),
+  fEqualizationMethod(c.EqualizationMethod()),
+  fTwistAndScalingMethod(c.TwistAndScalingMethod()),
+  fCalibrationStep(c.CalibrationStep()),
+  fLocalIndex(c.LocalIndex()),
+  fGlobalIndex(c.GlobalIndex()),
+  fDetectorType(c.DetectorType()),
+  fCalibrationDetectorNames(c.CalibrationDetectorName()),
+  fEqualizationDetectorNames(c.EqualizationDetectorName()),
+  fEventPlaneDetectorNames(c.EventPlaneDetectorName()),
+  fChannelEqualization(c.doChannelEqualization()),
+
+  fRecenterQvec(c.doRecentering()),
+  fRotateQvec(c.doRotation()),
+  fTwistQvec(c.doTwist()),
+  fScaleQvec(c.doScaling()),
+  fChannelList(c.ChannelList()),
+  fTrackCuts(c.TrackCuts()),
+  fEqualizationBinning(c.EqualizationBinning()),
+  fCalibrationBinning(c.CalibrationBinning()),
+  fEqualizationHistPath(c.EqualizationHistPath()),
+  fRecenteringHistPath(c.RecenteringHistPath()),
+  fCorrelationHistPath(c.CorrelationHistPath())
+  //fQvectors(c.Qvectors())
+  //fCalibrationBit(0),
+  //fCalibrationIntentBit(0),
+  //fTrackCuts()
+  //fEventPlaneDetectorId(),
+{   
+  //
+  // Constructor
+  //
+  fCorrelationDetectorNames[0] = c.CorrelationDetectorName(0);
+  fCorrelationDetectorNames[1] = c.CorrelationDetectorName(1);
+  fCorrelationDetectorIndices[0] = c.CorrelationDetectorIndex(0);
+  fCorrelationDetectorIndices[1] = c.CorrelationDetectorIndex(1);
+  fEqualizationHistM  = c.EqualizationHistM();
+  fEqualizationHistE = c.EqualizationHistE();
+  fCalibrationHistE = c.CalibrationHistE();
+
+
+
+    for(Int_t is=0; is<6; ++is){
+      for(Int_t ih=fgkEPMinHarmonics; ih<=fgkEPMaxHarmonics; ++ih){
+        for(Int_t ic=0; ic<2; ++ic){
+          fCalibrationHistogramsQ[is][ih-fgkEPMinHarmonics][ic] = c.CalibrationHistogramQ(is,ih, ic);
+        }
+      }
+      fCalibrationHistogramsE[is] = c.CalibrationHistogramE(is);
+    }
+    for(Int_t is=0; is<6; ++is){
+      for(Int_t idet=0; idet<3; ++idet){ 
+        for(Int_t icomp=0; icomp<4; ++icomp){ 
+          for(Int_t ih=fgkEPMinHarmonics; ih<=fgkEPMaxHarmonics; ++ih){ 
+          fCorrelationProfs[is][idet][ih-fgkEPMinHarmonics][icomp] = c.CorrelationProf(is,idet,ih, icomp);
+          fCorrelationEpProfs[is][idet][ih-fgkEPMinHarmonics][icomp] = c.CorrelationEpProf(is,idet,ih, icomp);
+    }}}}
+    for(Int_t is=0; is<3; ++is){
+      fEqualizationHistogramsM[is] = c.EqualizationHistogramM(is);
+      fEqualizationHistogramsE[is] = c.EqualizationHistogramE(is);
+    }
+    
+    for(Int_t ih=fgkEPMinHarmonics; ih<=fgkEPMaxHarmonics; ++ih){
+      for(Int_t ic=0; ic<2; ++ic){
+        fU2nHistograms[ih-fgkEPMinHarmonics][ic] = c.U2nHistogram(ih*2,ic);
+    }}
+    fU2nHistogramsE = c.U2nHistogramE();
+
+}
+
+
+
 
 //_______________________________________________________________________________
 void AliEventPlaneConfiguration::Copy(AliEventPlaneConfiguration* epConf, Int_t localIndex, Int_t globalIndex){   
