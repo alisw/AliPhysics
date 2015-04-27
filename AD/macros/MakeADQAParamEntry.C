@@ -7,7 +7,7 @@ void MakeADQAParamEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
 //
 //========================================================================
 
-  const char* macroname = "MakeADQAParam.C";
+  const char* macroname = "MakeADQAParamEntry.C";
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
@@ -29,8 +29,8 @@ void MakeADQAParamEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Michal Broz");
   md->SetComment("Reconstruction parameters for AD");
-  md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-  md->SetBeamPeriod(0);
+  //md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+  //md->SetBeamPeriod(0);
   AliCDBId id("AD/Calib/QAParam", 0, AliCDBRunRange::Infinity());
   cdb->Put(ADQAParam, id, md);
 
