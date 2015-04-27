@@ -109,6 +109,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		Bool_t IsPi0DalitzDaughter( Int_t label ) const;
 		Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
 		Bool_t IsDalitz(TParticle *fMCMother) const;
+		Int_t FindMotherOfPhoton(Int_t particleLabel );
 
 	
 	protected:
@@ -167,6 +168,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 											// 6: primary gamma
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+		TH1F								**fHistoMotherInvMassOpeningAngleGammaElectron; //! array of histogram with opening angle between gamma and electron
 		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherInvMassPtZM;			//! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherBackInvMassPt;		//! array of histogram with BG for mixed event photon pairs, inv Mass, pt
@@ -216,6 +218,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCEtaPt;				//! array of histos with weighted eta, pT
 		TH1F 								**fHistoMCEtaWOWeightPt;			//! array of histos with unweighted eta, pT
 		TH1F 								**fHistoMCPi0InAccPt;				//! array of histos with weighted pi0 in acceptance, pT
+		TH1F								**fHistoMCPi0InAccOpeningAngleGammaElectron;    //! array of histos with the opening angle between gamma and positron/electron
 		TH1F 								**fHistoMCEtaInAccPt;				//! array of histos with weighted eta in acceptance, pT
 		TH2F 								**fHistoMCPi0PtY;				//! array of histos with weighted pi0, pT, Y
 		TH2F 								**fHistoMCEtaPtY;				//! array of histos with weighted eta, pT, Y
@@ -227,7 +230,11 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		// MC validated reconstructed quantities mesons
 		TH2F 								**fHistoTruePi0InvMassPt;						//! array of histos with validated pi0, invMass, pt
 		TH2F 								**fHistoTrueEtaInvMassPt;						//! array of histos with validated eta, invMass, pt
-		TH2F 								**fHistoTruePi0GGInvMassPt;						//! array of histos with validated pi0 ->GG, invMass, pt
+		TH2F 								**fHistoTruePi0ShowerInvMassPt;						//! array of histos with validated pi0, invMass, pt
+		TH2F 								**fHistoTrueEtaShowerInvMassPt;						//! array of histos with validated eta, invMass, pt
+		TH2F 								**fHistoTruePi0NoShowerInvMassPt;						//! array of histos with validated pi0, invMass, pt
+		TH2F 								**fHistoTrueEtaNoShowerInvMassPt;						//! array of histos with validated eta, invMass, pt
+		TH2F 								**fHistoTruePi0GGInvMassPt;					//! array of histos with validated pi0 ->GG, invMass, pt
 		TH2F 								**fHistoTrueEtaGGInvMassPt;						//! array of histos with validated eta ->GG, invMass, pt
 		TH2F 								**fHistoTruePi0CaloPhotonInvMassPt;				//! array of histos with validated pi0, photon leading, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloPhotonInvMassPt;				//! array of histos with validated eta, photon leading, invMass, pt
@@ -307,6 +314,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary cluster, pt
 		TH2F								**fHistoTruePrimaryClusGammaESDPtMCPt;			//! array of histos with validated primary cluster, rec Pt, MC pt
 		TH1F								**fHistoTruePi0DalitzClusGammaPt;			//! array of histos with validate primary cluster from pi0->dalitz, rec Pt
+		TH1F								**fHistoTruePi0DalitzAllClusGammaPt;                    //! array
 		TH1F								**fHistoTruePi0DalitzClusGammaMCPt;			//! array of histos with validate primary cluster from pi0->dalitz, rec Pt
 		TH2F				 				**fHistoTruePrimaryPi0PhotonPairPtconv;			//! array of histos with validated primary pi0's vs conversion photon pT
 		TH1F				 				**fHistoTruePrimaryPi0DCPtconv;					//! array of histos with validated primary pi0's vs conversion photon pT, double counting
