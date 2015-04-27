@@ -48,8 +48,10 @@ class AliTRDCalROC : public TObject
 
   // statistic
   //
-  Double_t GetMean(AliTRDCalROC * const outlierROC=0) const; 
+  Double_t GetMean(AliTRDCalROC * const outlierROC=0) const;
+  Double_t GetMeanNotNull() const;
   Double_t GetRMS(AliTRDCalROC * const outlierROC=0) const;
+  Double_t GetRMSNotNull() const;
   Double_t GetMedian(AliTRDCalROC * const outlierROC=0) const;
   Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTRDCalROC * const outlierROC=0);
 
