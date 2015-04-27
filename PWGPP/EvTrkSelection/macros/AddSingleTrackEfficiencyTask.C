@@ -86,10 +86,10 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   const Int_t nbinpt_8_16 = 4;  //bins in pt from 8 to 16 GeV
   const Int_t nbinpt_16_24 = 1; //bins in pt from 16 to 24 GeV
   //   A2. Bins variation by hand for other variables
-  const Int_t nbin2 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 3; //bins in eta
+  const Int_t nbin2 = 9; //bins in eta
   const Int_t nbin3 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in phi
   const Int_t nbin4 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in theta
-    const Int_t nbin5 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 5; //bins in zvtx
+  const Int_t nbin5 = 10; //bins in zvtx
   //   A3. Bins for multiplicity
   const Int_t nbinmult = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 24 : 3;  //bins in multiplicity (total number)
   const Int_t nbinmult_0_20 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1; //bins in multiplicity between 0 and 20
