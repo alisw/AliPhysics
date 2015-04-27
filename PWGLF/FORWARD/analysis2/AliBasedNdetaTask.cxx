@@ -16,6 +16,7 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include <TParameter.h>
+#include <TColor.h>
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
@@ -31,9 +32,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fEmpiricalCorrection(0),
     fMeanVsC(0),
     fCentMethod("default"),
-    fPileupMask(0),
     fAnaUtil(),
-    fCheckSPDOutlier(false)
+    fUseUtilPileup(false)
 {
   // 
   // Constructor
@@ -55,9 +55,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fEmpiricalCorrection(0),
     fMeanVsC(0),	
     fCentMethod("default"),
-    fPileupMask(0),
     fAnaUtil(),
-    fCheckSPDOutlier(false)
+    fUseUtilPileup(false)
 {
   // 
   // Constructor
@@ -367,7 +366,6 @@ AliBasedNdetaTask::Book()
   fSums->Add(AliForwardUtil::MakeParameter("scheme", fNormalizationScheme));
   fSums->Add(AliForwardUtil::MakeParameter("centEstimator", 
 					   GetCentMethodID(fCentMethod)));
-  fSums->Add(AliForwardUtil::MakeParameter("spdOutlier", fCheckSPDOutlier));
   // fSums->Add(new TNamed("centEstimator", fCentMethod.Data()));
 
   // Make our centrality bins 
@@ -391,42 +389,12 @@ AliBasedNdetaTask::Book()
 Bool_t
 AliBasedNdetaTask::CheckEvent(const AliAODForwardMult& fwd) 
 {
-
   if (!fCentMethod.BeginsWith("MULT")) 
     AliBaseAODTask::CheckEvent(fwd);
   else
     fwd.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-		   0, 0, fTriggers, fEventStatus);
-  
-  // Check full AOD mask 
-  if (fPileupMask & kPileupFull && 
-      fwd.IsTriggerBits(AliAODForwardMult::kPileUp)) 
-    return false;
+		   0, 0, fTriggers, fEventStatus, fFilterMask);
 
-  // Check for SPD pile-up 
-  if (fPileupMask & kPileupSPD  && 
-      fwd.IsTriggerBits(AliAODForwardMult::kPileupSPD)) 
-    return false;
-
-  // Check for track pile-up 
-  if (fPileupMask & kPileupTrk  && 
-      fwd.IsTriggerBits(AliAODForwardMult::kPileupTrack)) 
-    return false;
-
-  // Check for out of bunc pile-up 
-  if (fPileupMask & kPileupBC   && 
-      fwd.IsTriggerBits(AliAODForwardMult::kPileupBC)) 
-    return false;
-
-  // Check for out of bunc pile-up 
-  if (fPileupMask & kPileupBins   && 
-      fwd.IsTriggerBits(AliAODForwardMult::kPileupBins)) 
-    return false;
-  
-  // Check for SPD outlier (N_cluster > 65 + 4 * N_tracklet)
-  if (fCheckSPDOutlier && fwd.IsTriggerBits(AliAODForwardMult::kSPDOutlier))
-    return false;
-  
   // Here, we always return true, as the centrality bins will do 
   // their own checks on the events - this is needed for event 
   // normalization etc. 
@@ -458,6 +426,9 @@ AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
       }
     }
   }
+  Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
+  if (cent < 0)   cent = -.5;
+  if (cent > max) cent = TMath::Max(max+.1,100.5);
   return cent;
 
 }
@@ -473,7 +444,7 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   //
   // Main loop
   DGUARD(fDebug,1,"Analyse the AOD event");
-  if (fPileupMask & kPileupUtil && fAnaUtil.IsPileUpEvent(&aod)) return false;
+  if (fUseUtilPileup && fAnaUtil.IsPileUpEvent(&aod)) return false;
 
   AliAODForwardMult* forward = GetForward(aod);
   if (!forward) return false;
@@ -493,13 +464,12 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
 
   Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
 		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
-  Bool_t taken       = false;
-  Bool_t checkPileup = fPileupMask == kPileupNormal;
+  Bool_t taken  = false;
   // Loop over centrality bins 
   CentralityBin* allBin = 
     static_cast<CentralityBin*>(fListOfCentralities->At(0));
   if (allBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, fMaxIpZ, 
-			   data, dataMC, checkPileup)) taken = true;
+			   data, dataMC, fFilterMask)) taken = true;
   
   // Find this centrality bin
   if (HasCentrality()) {
@@ -510,7 +480,7 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin)
       if (thisBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, 
-				fMaxIpZ, data, dataMC, checkPileup)) 
+				fMaxIpZ, data, dataMC, fFilterMask)) 
 	taken = true;
   }
   
@@ -711,13 +681,15 @@ AliBasedNdetaTask::Finalize()
   UShort_t sNN;
   UShort_t sys; 
   ULong_t  trig;
+  ULong_t  filter;
   UShort_t scheme;
-  // Int_t    centID;
+  Int_t    centID;
   AliForwardUtil::GetParameter(fSums->FindObject("sNN"), sNN);
   AliForwardUtil::GetParameter(fSums->FindObject("sys"), sys);
   AliForwardUtil::GetParameter(fSums->FindObject("trigger"), trig);
+  AliForwardUtil::GetParameter(fSums->FindObject("filter"), filter);
   AliForwardUtil::GetParameter(fSums->FindObject("scheme"), scheme);
-  //AliForwardUtil::GetParameter(fSums->FindObject("centEstimator"), centID);
+  AliForwardUtil::GetParameter(fSums->FindObject("centEstimator"), centID);
 
   TH1*   cH = static_cast<TH1*>(fSums->FindObject("centAxis"));
   Info("", "centAxis: %p (%s)", cH, (cH ? cH->ClassName() : "null"));
@@ -787,7 +759,7 @@ AliBasedNdetaTask::Finalize()
     TNamed* sNNObj = new TNamed("sNN", 
 				AliForwardUtil::CenterOfMassEnergyString(sNN));
     sNNObj->SetUniqueID(sNN);
-    fResults->Add(sNNObj); // fSNNString->Clone());
+    fResults->Add(sNNObj); 
   }
 
   // Output collision system string 
@@ -795,19 +767,28 @@ AliBasedNdetaTask::Finalize()
     TNamed* sysObj = new TNamed("sys", 
 				AliForwardUtil::CollisionSystemString(sys));
     sysObj->SetUniqueID(sys);
-    fResults->Add(sysObj); // fSysString->Clone());
+    fResults->Add(sysObj); 
   }
 
-  // Output centrality axis 
+  // Output centrality axis
+  TNamed* centEstimator = new TNamed("centEstimator", fCentMethod.Data());
+  centEstimator->SetUniqueID(centID);
   fResults->Add(&fCentAxis);
-  fResults->Add(new TNamed("centEstimator", fCentMethod.Data()));
+  fResults->Add(centEstimator);
 
   // Output trigger string 
   if (trig) { 
     TNamed* maskObj = new TNamed("trigger",
 				 AliAODForwardMult::GetTriggerString(trig));
     maskObj->SetUniqueID(trig);
-    fResults->Add(maskObj); // fTriggerString->Clone());
+    fResults->Add(maskObj); 
+  }
+  // Output filter string 
+  if (filter) { 
+    TNamed* maskObj = new TNamed("filter",
+				 AliAODForwardMult::GetTriggerString(filter, " | "));
+    maskObj->SetUniqueID(filter);
+    fResults->Add(maskObj); 
   }
   
   // Normalization string 
@@ -815,7 +796,7 @@ AliBasedNdetaTask::Finalize()
     TNamed* schemeObj = new TNamed("scheme",
 				   NormalizationSchemeString(scheme));
     schemeObj->SetUniqueID(scheme);
-    fResults->Add(schemeObj); // fSchemeString->Clone());
+    fResults->Add(schemeObj);
   }
 
   // Output vertex axis 
@@ -867,18 +848,8 @@ AliBasedNdetaTask::Print(Option_t* option) const
   AliBaseAODTask::Print(option);
   TString schemeString(NormalizationSchemeString(fNormalizationScheme));
 
-  TString pileUp;
-  if (fPileupMask == kPileupNormal) pileUp = "AOD";
-  else {
-    if (fPileupMask & kPileupSPD)    appendBit(pileUp, "SPD");
-    if (fPileupMask & kPileupTrk)    appendBit(pileUp, "tracks");
-    if (fPileupMask & kPileupBC)     appendBit(pileUp, "bunch-xing");
-    if (fPileupMask & kPileupFull)   appendBit(pileUp, "AOD");
-    if (fPileupMask & kPileupIgnore) appendBit(pileUp, "ignored");
-    if (fPileupMask & kPileupUtil)   appendBit(pileUp, "util");
-  }
-
   gROOT->IncreaseDirLevel();
+  PFB("Use AnaUtil pile-up",     fUseUtilPileup);
   PFB("Use TH2::ProjectionX",    fUseROOTProj);
   PFB("Correct for empty",       fCorrEmpty);
   PFV("Normalization scheme",	 schemeString );
@@ -886,8 +857,6 @@ AliBasedNdetaTask::Print(Option_t* option) const
   PFV("Bin-0 Trigger efficiency", fTriggerEff0);
   PFV("Centrality estimator",    (fCentMethod.IsNull() ? 
 				  "-default-" : fCentMethod.Data()));
-  PFV("Pile-up mask",            pileUp);
-  PFB("Check SPD outlier",       fCheckSPDOutlier);
 
   TString opt(option);
   opt.ToUpper();
@@ -977,6 +946,8 @@ AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
 
   fEvents = new TH1I(GetHistName(2), "Event types", 2, -.5, 1.5);
   fEvents->SetDirectory(0);
+  fEvents->SetFillColor(kRed+1);
+  fEvents->SetFillStyle(3002);
   fEvents->GetXaxis()->SetBinLabel(1, "Non-zero");
   fEvents->GetXaxis()->SetBinLabel(2, "Zero");
   list->Add(fEvents);
@@ -1289,15 +1260,35 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
 
   return *this;
 }
+namespace {
+  Color_t Brighten(Color_t origNum, Int_t nTimes=2)
+  {
+    TColor* col   = gROOT->GetColor(origNum);
+    if (!col) return origNum;
+    Int_t origR  = Int_t(0xFF * col->GetRed());
+    Int_t origG  = Int_t(0xFF * col->GetGreen());
+    Int_t origB  = Int_t(0xFF * col->GetBlue());
+    Int_t off    = nTimes*0x33;
+    Int_t newR   = TMath::Min((origR+off),0xff);
+    Int_t newG   = TMath::Min((origG+off),0xff);
+    Int_t newB   = TMath::Min((origB+off),0xff);
+    Int_t newNum = TColor::GetColor(newR, newG, newB);
+    return newNum;
+  }
+}  
 //____________________________________________________________________
 Int_t
 AliBasedNdetaTask::CentralityBin::GetColor(Int_t fallback) const 
 {
   if (IsAllBin()) return fallback;
-  Float_t  fc       = (fLow+double(fHigh-fLow)/2) / 100;
+  Float_t  fc       = /*(fLow+double(fHigh-fLow)/2)*/ fHigh / 100;
   Int_t    nCol     = gStyle->GetNumberOfColors();
   Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
   Int_t    col      = gStyle->GetColorPalette(icol);
+#if 0
+  Color_t orig = col;
+  col = Brighten(orig);
+#endif
   return col;
 }
 
@@ -1415,10 +1406,10 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
 //____________________________________________________________________
 Bool_t
 AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
-					     Int_t triggerMask,
-					     Double_t vzMin, 
-					     Double_t vzMax,
-					     Bool_t   checkPileup)
+					     Int_t     triggerMask,
+					     Double_t  vzMin, 
+					     Double_t  vzMax,
+					     Int_t     filter)
 {
   // 
   // Check the trigger, vertex, and centrality
@@ -1434,17 +1425,20 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
   DGUARD(fDebug,2,"Check the event");
   // We do not check for centrality here - it's already done 
   return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
-			     fTriggers, fStatus, checkPileup);
+			     fTriggers, fStatus, filter);
 }
   
-  
+
 //____________________________________________________________________
 Bool_t
 AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
-					       Int_t triggerMask, Bool_t isZero,
-					       Double_t vzMin, Double_t vzMax,
-					       const TH2D* data, const TH2D* mc,
-					       Bool_t checkPileup)
+					       Int_t       triggerMask,
+					       Bool_t      isZero,
+					       Double_t    vzMin, 
+					       Double_t    vzMax,
+					       const TH2D* data, 
+					       const TH2D* mc,
+					       Int_t       filter)
 {
   // 
   // Process an event
@@ -1459,7 +1453,7 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //
   DGUARD(fDebug,1,"Process one event for %s a given centrality bin", 
 	 data ? data->GetName() : "(null)");
-  if (!CheckEvent(forward, triggerMask, vzMin, vzMax, checkPileup)) 
+  if (!CheckEvent(forward, triggerMask, vzMin, vzMax, filter)) 
     return false;
   if (!data) return false;
   if (!fSum) CreateSums(data, mc);

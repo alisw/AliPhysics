@@ -15,7 +15,7 @@ void DrawAll(UShort_t which=1)
     fwd = gSystem->Getenv("FWD");
   else 
     fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
-  gROOT->SetMacroPath(Form("%s/dndeta:%s", gROOT->GetMacroPath(), fwd));
+  gROOT->SetMacroPath(Form("%s/dndeta:%s", fwd, gROOT->GetMacroPath()));
 
   if (!gROOT->GetClass("Drawer"))  gROOT->LoadMacro("Drawer.C+g");
 
@@ -52,6 +52,13 @@ void DrawAll(UShort_t which=1)
     const char* s[] = { "pPb", "Pbp", 0 };         
     UShort_t    e[] = { 5023, 0 };                 
     const char* t[] = { "CENTV0M", 0 };
+    Drawer::DrawAll(s, e, t, 0x1);
+  }
+    break;
+  case 6: {
+    const char* s[] = { "pPb", "Pbp", 0 };         
+    UShort_t    e[] = { 5023, 0 };                 
+    const char* t[] = { "CENTV0M", "CENTZNX", "CENTV0C", 0 };
     Drawer::DrawAll(s, e, t, 0x1);
   }
     break;

@@ -9,7 +9,7 @@ runLevelQA()
 {
 qaFile=$1
 MACRODIR=$ALICE_PHYSICS/PWGPP/EMCAL/QA/macros
-SaveImages=0
+SaveImages=1
 
 suffix=".root"
 new_suffix=".root"
@@ -76,7 +76,7 @@ periodLevelQA()
 
 trendingFile=$1
 MACRODIR=$ALICE_PHYSICS/PWGPP/EMCAL/QA/macros
-SaveImages=0
+SaveImages=1
 
 echo
 echo "Producing PeriodLevel QA plots" 

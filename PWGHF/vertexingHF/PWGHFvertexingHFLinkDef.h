@@ -72,8 +72,8 @@
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
 #pragma link C++ class AliAnalysisTaskSELambdacTMVA+;
+#pragma link C++ class AliHFMultiTrials+;
 #pragma link C++ class AliHFMassFitterVAR+;
-
 #endif
 
 

@@ -65,17 +65,22 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
     , fhKNumber() // number of axis rotation
     , fhJetPt() //Jet pt distribution
     , fhJetPtBin() //Jet pt as a fn of jet pt 
+    , fhJetPtWeight() //Jet pt distribution
+    , fhJetPtWeightBin() //Jet pt as a fn of jet pt 
     , fhZ() // z dist
     , fhZBin() // z dist as fn of jet pt
     , fhJt() // jt dist
     , fhJtBin() // jt as fn of jet pt
     , fhJtWeightBin() // jt in P.S as fn of jet pt
     , fhLogJtWeightBin() //log jt in P.S as fn of jet pt
+    , fhLogJtWeight2Bin() //log jt in P.S as fn of jet pt
     , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
     , fhLogJtWithPtCutWeightBinBin()
+    , fhLogJtWithPtCutWeight2BinBin()
     , fhJtBinLimBin() //jt with maximum const pt bin
     , fhJtWeightBinLimBin()
     , fhLogJtWeightBinLimBin()
+    , fhLogJtWeight2BinLimBin()
     , fhJetBgPt()
     , fhJetBgPtBin()
     , fhBgZ() //Bg Z 
@@ -84,23 +89,28 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
     , fhBgJtBin() //Bg jt as fn of jet pt
     , fhBgJtWeightBin() //Bg jt in PS as fn of jet pt
     , fhBgLogJtWeightBin() // log of Bg jt as fn of jet pt
+    , fhBgLogJtWeight2Bin() // log of Bg jt as fn of jet pt
     // Bg jt as fns of jet pt, track pt
     , fhBgJtWithPtCutWeightBinBin() 
     // log of Bg jt in PS as fns of jet pt, track pt
     , fhBgLogJtWithPtCutWeightBinBin() 
+    , fhBgLogJtWithPtCutWeight2BinBin() 
     // Bg jt in PS as fns of jet pt, track pt
     // if R = 0.6, all bg jts are filled for all R<0.6
     , fhBgJtWithPtCutWeightBinBinSmallerR() 
     , fhBgLogJtWithPtCutWeightBinBinSmallerR()
+    , fhBgLogJtWithPtCutWeight2BinBinSmallerR()
     // Bg jt in PS as fns of jet pt, track pt
     // from new jet axis with present tracks
     , fhBgJtWithPtCutWeightBinBinDiffR()
     , fhBgLogJtWithPtCutWeightBinBinDiffR()
+    , fhBgLogJtWithPtCutWeight2BinBinDiffR()
     // Bg jt as a fn of jet pt 
     // with maximum constituent's pT bin in a jet
     , fhBgJtBinLimBin()
     , fhBgJtWeightBinLimBin()
     , fhBgLogJtWeightBinLimBin()
+    , fhBgLogJtWeight2BinLimBin()
     , fhTrkPt()
     , fhTrkPtBin()
     , fhTrkPtWeightBin()
@@ -161,17 +171,22 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
     , fhKNumber()
     , fhJetPt()
     , fhJetPtBin()
+    , fhJetPtWeight() //Jet pt distribution
+    , fhJetPtWeightBin() //Jet pt as a fn of jet pt 
     , fhZ()
     , fhZBin()
     , fhJt()
     , fhJtBin()
     , fhJtWeightBin()
     , fhLogJtWeightBin()
+    , fhLogJtWeight2Bin()
     , fhJtWithPtCutWeightBinBin()
     , fhLogJtWithPtCutWeightBinBin()
+    , fhLogJtWithPtCutWeight2BinBin()
     , fhJtBinLimBin()
     , fhJtWeightBinLimBin()
     , fhLogJtWeightBinLimBin()
+    , fhLogJtWeight2BinLimBin()
     , fhJetBgPt()
     , fhJetBgPtBin()
     , fhBgZ()
@@ -180,15 +195,20 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
     , fhBgJtBin()
     , fhBgJtWeightBin()
     , fhBgLogJtWeightBin()
+    , fhBgLogJtWeight2Bin()
     , fhBgJtWithPtCutWeightBinBin()
     , fhBgLogJtWithPtCutWeightBinBin()
+    , fhBgLogJtWithPtCutWeight2BinBin()
     , fhBgJtWithPtCutWeightBinBinSmallerR()
     , fhBgLogJtWithPtCutWeightBinBinSmallerR()
+    , fhBgLogJtWithPtCutWeight2BinBinSmallerR()
     , fhBgJtWithPtCutWeightBinBinDiffR()
     , fhBgLogJtWithPtCutWeightBinBinDiffR()
+    , fhBgLogJtWithPtCutWeight2BinBinDiffR()
     , fhBgJtBinLimBin()
     , fhBgJtWeightBinLimBin()
     , fhBgLogJtWeightBinLimBin()
+    , fhBgLogJtWeight2BinLimBin()
     , fhTrkPt()
     , fhTrkPtBin()
     , fhTrkPtWeightBin()
@@ -240,17 +260,22 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
     , fhKNumber(ap.fhKNumber)
     , fhJetPt(ap.fhJetPt)
     , fhJetPtBin(ap.fhJetPtBin)
+    , fhJetPtWeight(ap.fhJetPtWeight)
+    , fhJetPtWeightBin(ap.fhJetPtWeightBin)
     , fhZ(ap.fhZ)
     , fhZBin(ap.fhZBin)
     , fhJt(ap.fhJt)
     , fhJtBin(ap.fhJtBin)
     , fhJtWeightBin(ap.fhJtWeightBin)
     , fhLogJtWeightBin(ap.fhLogJtWeightBin)
+    , fhLogJtWeight2Bin(ap.fhLogJtWeight2Bin)
     , fhJtWithPtCutWeightBinBin(ap.fhJtWithPtCutWeightBinBin)
     , fhLogJtWithPtCutWeightBinBin(ap.fhLogJtWithPtCutWeightBinBin)
+    , fhLogJtWithPtCutWeight2BinBin(ap.fhLogJtWithPtCutWeight2BinBin)
     , fhJtBinLimBin(ap.fhJtBinLimBin)
     , fhJtWeightBinLimBin(ap.fhJtWeightBinLimBin)
     , fhLogJtWeightBinLimBin(ap.fhLogJtWeightBinLimBin)
+    , fhLogJtWeight2BinLimBin(ap.fhLogJtWeight2BinLimBin)
     , fhJetBgPt(ap.fhJetBgPt)
     , fhJetBgPtBin(ap.fhJetBgPtBin)
     , fhBgZ(ap.fhBgZ)
@@ -259,15 +284,20 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
     , fhBgJtBin(ap.fhBgJtBin)
     , fhBgJtWeightBin(ap.fhBgJtWeightBin)
     , fhBgLogJtWeightBin(ap.fhBgLogJtWeightBin)
+    , fhBgLogJtWeight2Bin(ap.fhBgLogJtWeight2Bin)
     , fhBgJtWithPtCutWeightBinBin(ap.fhBgJtWithPtCutWeightBinBin)
     , fhBgLogJtWithPtCutWeightBinBin(ap.fhBgLogJtWithPtCutWeightBinBin)
+    , fhBgLogJtWithPtCutWeight2BinBin(ap.fhBgLogJtWithPtCutWeight2BinBin)
     , fhBgJtWithPtCutWeightBinBinSmallerR(ap.fhBgJtWithPtCutWeightBinBinSmallerR)
     , fhBgLogJtWithPtCutWeightBinBinSmallerR(ap.fhBgLogJtWithPtCutWeightBinBinSmallerR)
+    , fhBgLogJtWithPtCutWeight2BinBinSmallerR(ap.fhBgLogJtWithPtCutWeight2BinBinSmallerR)
     , fhBgJtWithPtCutWeightBinBinDiffR(ap.fhBgJtWithPtCutWeightBinBinDiffR)
     , fhBgLogJtWithPtCutWeightBinBinDiffR(ap.fhBgLogJtWithPtCutWeightBinBinDiffR)
+    , fhBgLogJtWithPtCutWeight2BinBinDiffR(ap.fhBgLogJtWithPtCutWeight2BinBinDiffR)
     , fhBgJtBinLimBin(ap.fhBgJtBinLimBin)
     , fhBgJtWeightBinLimBin(ap.fhBgJtWeightBinLimBin)
     , fhBgLogJtWeightBinLimBin(ap.fhBgLogJtWeightBinLimBin)
+    , fhBgLogJtWeight2BinLimBin(ap.fhBgLogJtWeight2BinLimBin)
     , fhTrkPt(ap.fhTrkPt)
     , fhTrkPtBin(ap.fhTrkPtBin)
     , fhTrkPtWeightBin(ap.fhTrkPtWeightBin)
@@ -379,6 +409,16 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << fJetFinderBin << fJetTriggerBin
         <<"END";
 
+
+    fhJetPtWeight 
+        << TH1D("JetPtWeight","",NBINS, LogBinsX ) 
+        << fJetFinderBin
+        <<"END";
+    fhJetPtWeightBin 
+        << TH1D("JetPtWeightBin","",NBINS, LogBinsX ) 
+        << fJetFinderBin << fJetTriggerBin
+        <<"END";
+
     int NBINSZ=150;
     double LogBinsZ[NBINSZ+1], LimLZ=0.001, LimHZ=1.1;
     double logBWZ = (TMath::Log(LimHZ)-TMath::Log(LimLZ))/NBINSZ;
@@ -416,6 +456,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << TH1D("LogJtWeightBin","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fJetFinderBin << fJetTriggerBin
         <<"END";
+    fhLogJtWeight2Bin 
+        << TH1D("LogJtWeight2Bin","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fJetFinderBin << fJetTriggerBin
+        <<"END";
 
     fhJtWithPtCutWeightBinBin 
         << TH1D("JtWithPtCutWeightBinBin","",NBINSJt, LogBinsJt ) 
@@ -423,6 +467,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         <<"END";
     fhLogJtWithPtCutWeightBinBin 
         << TH1D("LogJtWeightBinBin","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fJetFinderBin << fJetTriggerBin << fTrkPtBin
+        <<"END";
+    fhLogJtWithPtCutWeight2BinBin 
+        << TH1D("LogJtWeight2BinBin","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fJetFinderBin << fJetTriggerBin << fTrkPtBin
         <<"END";
 
@@ -436,6 +484,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         <<"END";
     fhLogJtWeightBinLimBin 
         << TH1D("LogJtWeightBinLimBin","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fJetFinderBin << fJetTriggerBin << fTrkLimPtBin
+        <<"END";
+    fhLogJtWeight2BinLimBin 
+        << TH1D("LogJtWeight2BinLimBin","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fJetFinderBin << fJetTriggerBin << fTrkLimPtBin
         <<"END";
 
@@ -473,6 +525,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << TH1D("BgLogJtWeightBin","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fJetFinderBin << fJetTriggerBin
         <<"END";
+    fhBgLogJtWeight2Bin 
+        << TH1D("BgLogJtWeight2Bin","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fJetFinderBin << fJetTriggerBin
+        <<"END";
 
     fhBgJtWithPtCutWeightBinBin 
         << TH1D("BgJtWithPtCutWeightBinBin","",NBINSJt, LogBinsJt ) 
@@ -480,6 +536,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         <<"END";
     fhBgLogJtWithPtCutWeightBinBin 
         << TH1D("BgLogJtWeightBinBin","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fJetFinderBin << fJetTriggerBin << fTrkPtBin
+        <<"END";
+    fhBgLogJtWithPtCutWeight2BinBin 
+        << TH1D("BgLogJtWeight2BinBin","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fJetFinderBin << fJetTriggerBin << fTrkPtBin
         <<"END";
 
@@ -491,6 +551,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << TH1D("BgLogJtWeightBinBinBinSmallerR","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fiHist << fJetTriggerBin << fTrkPtBin 
         <<"END";
+    fhBgLogJtWithPtCutWeight2BinBinSmallerR 
+        << TH1D("BgLogJtWeight2BinBinBinSmallerR","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fiHist << fJetTriggerBin << fTrkPtBin 
+        <<"END";
 
     fhBgJtWithPtCutWeightBinBinDiffR
         << TH1D("BgJtWithPtCutWeightBinBinDiffR","",NBINSJt, LogBinsJt ) 
@@ -498,6 +562,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         <<"END";
     fhBgLogJtWithPtCutWeightBinBinDiffR 
         << TH1D("BgLogJtWeightBinBinBinDiffR","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fiHist << fJetTriggerBin << fTrkPtBin 
+        <<"END";
+    fhBgLogJtWithPtCutWeight2BinBinDiffR 
+        << TH1D("BgLogJtWeight2BinBinBinDiffR","",NBINSJtW, LimLJtW, LimHJtW ) 
         << fiHist << fJetTriggerBin << fTrkPtBin 
         <<"END";
 
@@ -514,6 +582,10 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << fJetFinderBin << fJetTriggerBin << fTrkLimPtBin
         <<"END";
 
+    fhBgLogJtWeight2BinLimBin 
+        << TH1D("BgLogJtWeight2BinLimBin","",NBINSJtW, LimLJtW, LimHJtW ) 
+        << fJetFinderBin << fJetTriggerBin << fTrkLimPtBin
+        <<"END";
 
     int NBINSPt=150;
     double LogBinsPt[NBINSPt+1], LimLPt=0.01, LimHPt=50;
@@ -728,6 +800,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
         if( iBin < 0 ) continue;
         fhJetPt[iContainer]->Fill( pT );
         fhJetPtBin[iContainer][iBin]->Fill( pT );
+        fhJetPtWeight[iContainer]->Fill( pT , 1/pT);
+        fhJetPtWeightBin[iContainer][iBin]->Fill( pT, 1/pT );
 
         for (int icon = 0; icon<jet->GetConstituents()->GetEntries(); icon++){
             AliJBaseTrack *con = jet->GetConstituent(icon);
@@ -765,6 +839,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
             fhJtWeightBin[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
             fhLogJtWeightBin[iContainer][iBin]
                 ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+            fhLogJtWeight2Bin[iContainer][iBin]
+                ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
 
 
 
@@ -772,6 +848,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                 ->Fill( jt, 1.0/jt * effCorrection );
             fhLogJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
                 ->Fill( TMath::Log(jt), 1.0/jt * effCorrection);
+            fhLogJtWithPtCutWeight2BinBin[iContainer][iBin][iptaBin]
+                ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection);
 
             for (int jj = 0; jj <= jBin ; jj++) {
                 fhJtBinLimBin[iContainer][iBin][jj]->Fill( jt, effCorrection );
@@ -779,6 +857,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                     ->Fill( jt, 1.0/jt * effCorrection );
                 fhLogJtWeightBinLimBin[iContainer][iBin][jj]
                     ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+                fhLogJtWeight2BinLimBin[iContainer][iBin][jj]
+                    ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
             }
 
         }
@@ -871,13 +951,18 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                 fhBgJt[iContainer]->Fill( jt , effCorrection);
                 fhBgJtBin[iContainer][iBin]->Fill( jt , effCorrection);
                 fhBgJtWeightBin[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
-                fhBgLogJtWeightBin[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+                fhBgLogJtWeightBin[iContainer][iBin]
+                    ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+                fhBgLogJtWeight2Bin[iContainer][iBin]
+                    ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
 
                 if (iptaBin < 0) continue;
                 fhBgJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
                     ->Fill( jt, 1.0/jt * effCorrection );
                 fhBgLogJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]
                     ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+                fhBgLogJtWithPtCutWeight2BinBin[iContainer][iBin][iptaBin]
+                    ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
             }
             
             for (int ii = fJetConstPtLowLimits->GetNoElements(); ii >= 1 ; ii--)   {     
@@ -900,6 +985,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                         ->Fill( jt, 1.0/jt * effCorrection );
                     fhBgLogJtWeightBinLimBin[iContainer][iBin][jj]
                         ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+                    fhBgLogJtWeight2BinLimBin[iContainer][iBin][jj]
+                        ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
                 }
             }
         }
@@ -937,6 +1024,8 @@ void AliJJetJtAnalysis::FillBgJtWithSmallerR(const TClonesArray &Jets, double nR
                 ->Fill( jt, 1.0/jt * effCorrection );
             fhBgLogJtWithPtCutWeightBinBinSmallerR[iHist][iBin][iptaBin]
                 ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+            fhBgLogJtWithPtCutWeight2BinBinSmallerR[iHist][iBin][iptaBin]
+                ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
         }
 
 
@@ -986,6 +1075,8 @@ void AliJJetJtAnalysis::FillBgJtWithDiffAxes (
                     ->Fill( jt, 1.0/jt * effCorrection );
                 fhBgLogJtWithPtCutWeightBinBinDiffR[iHist][iBin][iptaBin]
                     ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+                fhBgLogJtWithPtCutWeight2BinBinDiffR[iHist][iBin][iptaBin]
+                    ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
             }
         }
     }

@@ -23,7 +23,7 @@
 //-----------------------------------------------------------------------
 
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
 
 class TH2;
 class TString;
@@ -32,7 +32,7 @@ class AliRDHFCuts;
 class AliAODRecoCascadeHF;
 class AliAODRecoDecayHF2Prong;
 
-class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE 
+class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal 
 {
 
  public:
@@ -43,11 +43,10 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   AliAnalysisTaskSEDmesonsFilterCJ(const Char_t* name,AliRDHFCuts* cuts,ECandidateType candtype);
   virtual ~AliAnalysisTaskSEDmesonsFilterCJ();
 
-  virtual void     UserCreateOutputObjects();
-  virtual void     UserExec(Option_t *option);
-  virtual void     Terminate(Option_t *);
-  virtual void     Init();
-  virtual void     LocalInit() { Init(); }
+  void     UserCreateOutputObjects();
+  Bool_t   Run();
+  void     Init();
+  void     LocalInit() { Init(); }
 
   // inizializations
   Bool_t DefineHistoForAnalysis();
@@ -59,6 +58,9 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   // set usage of generated or reconstucted quantities (relevant for MC)
   void SetUseReco(Bool_t useReco=kTRUE) { fUseReco = useReco ; }
   Bool_t GetUseReco() const             { return fUseReco    ; }
+
+  void   SetCombineDmesons(Bool_t c)       { fCombineDmesons = c       ; }
+  Bool_t GetCombineDmesons() const         { return fCombineDmesons    ; }
  
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
@@ -68,6 +70,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
+  static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+
  protected:
   void ExecOnce();
   void ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected);
@@ -75,9 +79,10 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   void FillD0MCTruthKinHistos(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t isD0);
   void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar);
   void FillDstarSideBands(AliAODRecoCascadeHF* dstar);
+  void AddEventTracks(TClonesArray* coll, AliParticleContainer* tracks);
 
   Bool_t          fUseMCInfo;              //  Use MC info
-  Bool_t          fUseReco;                // use reconstructed tracks when running on MC
+  Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
   UInt_t          fCandidateType;          //  Dstar or D0
   TString         fCandidateName;          //  Dstar or D0
   Int_t           fPDGmother;              //  PDG code of D meson
@@ -89,15 +94,15 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   Double_t        fMinMass;                //  mass lower limit histogram
   Double_t        fMaxMass;                //  mass upper limit histogram
   Bool_t          fInhibitTask;            //
-  Bool_t          fInitOk;                 //!
+  Bool_t          fCombineDmesons;         //  create an additional collection with D meson candidates and the rest of the tracks (for jet finding)
   AliAODEvent    *fAodEvent;               //!
   TClonesArray   *fArrayDStartoD0pi;       //!
   TClonesArray   *fMCarray;                //!
   TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts
   TClonesArray   *fSideBandArray;          //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
+  TClonesArray   *fCombinedDmesons;        //! contains candidates selected by AliRDHFCuts and the rest of the event tracks
   Int_t           fNCand;                  //! number of selected D candidates already added to fCandidateArray
   Int_t           fNSBCand;                //! number of selected side-band D candidates already added to fSideBandArray
-  TList          *fOutput;                 //! user output
   TH1            *fHistStat;               //!
   TH1            *fHistNSBCandEv;          //!
   TH1            *fHistNCandEv;            //!
@@ -133,7 +138,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   AliAnalysisTaskSEDmesonsFilterCJ(const AliAnalysisTaskSEDmesonsFilterCJ &source);
   AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
 
-  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 4); // task for selecting D mesons to be used as an input for D-Jet correlations
+  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 5); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif

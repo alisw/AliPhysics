@@ -21,5 +21,6 @@
 #pragma link C++ class AliAnalysisTaskCaloTrackCorrelation+;
 #pragma link C++ class AliAnalysisTaskCaloTrackCorrelationM+;
 #pragma link C++ class AliHistogramRanges+;
+#pragma link C++ class AliAnaWeights+;
 
 #endif

@@ -383,9 +383,11 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
       {
         Double_t val = r->GetValue(name);
         Double_t err = r->GetErrorStat(name);
+
+        if ( !(err>0.0 ) ) continue; // If the error is not correct we skip the subresult
         // weight
         Double_t wstat = 1./val;
-        Double_t w = 1./err/err/wstat;
+        Double_t w = 1.; // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults. Before subresults were weighted with 1./err/err/wstat; wstat was not there before and was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
         sumw += w;
         
         // mean
@@ -508,13 +510,22 @@ Double_t AliAnalysisMuMuResult::GetRMS(const char* name, const char* subResultNa
   {
     if ( IsIncluded(r->Alias()) && r->HasValue(name) )
     {
-      Double_t e2 = r->GetErrorStat(name);
+      Double_t val = r->GetValue(name);
+      Double_t err = r->GetErrorStat(name);
       
-      e2 *= e2;
-      
-      if ( !(e2>0.0) ) e2 = TMath::Sqrt(r->GetValue(name));
-      
-      Double_t wi = 1.0/e2;
+      if ( !(err>0.0 ) ) continue; // If the error is not correct we skip the subresult
+      // weight
+      Double_t wstat = 1./val;
+
+      Double_t wi = 1.; // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults. Before subresults were weighted with 1./err/err/wstat; wstat was not there before and was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
+
+//      Double_t e2 = r->GetErrorStat(name);
+//
+//      e2 *= e2;
+//
+//      if ( !(e2>0.0) ) e2 = TMath::Sqrt(r->GetValue(name));
+//
+//      Double_t wi = 1.0/e2;
       v1 += wi;
       v2 += wi*wi;
       Double_t diff = r->GetValue(name) - xmean;
@@ -606,9 +617,9 @@ Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResult
     {
       if ( IsIncluded(r->Alias()) && r->HasValue(name) )
       {
-        Double_t e = r->GetErrorStat(name)/TMath::Sqrt(r->GetValue(name)); //The Sqrt(r->GetValue(name)) was not here before
+        Double_t e = 1.; // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults. Before subresults were weighted with e = r->GetErrorStat(name)/TMath::Sqrt(r->GetValue(name)); //The Sqrt(r->GetValue(name)) was not there before and was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
         Double_t e2 = e*e;
-        if ( !(e2>0.0 ) ) e2 = TMath::Sqrt(r->GetValue(name));
+        if ( !(r->GetErrorStat(name)>0.0 ) ) continue; /*e2 = TMath::Sqrt(r->GetValue(name));*/ // If the error is not correct (fit not good) we skip the subresult
 
         mean += r->GetValue(name)/e2;
         errorSum += 1.0/e2;

@@ -272,7 +272,7 @@ AliBaseMCTrackDensity::GetMother(Int_t     iTr,
   // should never get here with a null pointer, so we issue a warning
   // in that case.
   if (!candidate) 
-    AliWarningF("GetMother", "No mother found for track # %d", iTr);
+    AliWarningF("No mother found for track # %d", iTr);
   return candidate;
 }  
 

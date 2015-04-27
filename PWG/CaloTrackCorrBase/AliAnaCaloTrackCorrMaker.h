@@ -71,6 +71,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    SwitchOnDataControlHistograms()  { fFillDataControlHisto = kTRUE  ; }
   void    SwitchOffDataControlHistograms() { fFillDataControlHisto = kFALSE ; }
 
+  void    SwitchOnSumw2Histograms()     { fSumw2 = kTRUE      ; }
+  void    SwitchOffSumw2Histograms()    { fSumw2 = kFALSE     ; }
   
   AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
                                                                         return fReader    ; }
@@ -100,17 +102,27 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   // General Data members
   
   AliCaloTrackReader  *  fReader ;                   ///<  Pointer to AliCaloTrackReader.
+    
   AliCalorimeterUtils *  fCaloUtils ;                ///<  Pointer to AliCalorimeterUtils.
   
   TList *  fOutputContainer ;                        //!<! Output histograms container.
+    
   TList *  fAnalysisContainer ;                      ///<  List with analysis pointers.
+    
   Bool_t   fMakeHisto ;                              ///<  If true makes final analysis with histograms as output.
+    
   Bool_t   fMakeAOD ;                                ///<  If true makes analysis generating AODs.
+    
   Int_t    fAnaDebug;                                ///<  Debugging info.
+    
   TList *  fCuts ;	                                 //!<! List with analysis cuts.
+    
   Double_t fScaleFactor ;                            ///<  Scaling factor needed for normalization.
+    
   Bool_t   fFillDataControlHisto;                    ///<  Fill histograms only interesting with data.
-  
+    
+  Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
+    
   // Control histograms
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
@@ -119,6 +131,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhNEventsNoTriggerFound;                  //!<! Number of events where whatever was done, no trigger is found.
   TH1F *   fhNPileUpEvents;                          //!<! N events pasing pile up cut.
   TH1F *   fhNPileUpEventsTriggerBC0;                //!<! N events pasing pile up cut.
+    
   TH1F *   fhXVertex;                                //!<! X Vertex distribution of accepted event.
   TH1F *   fhYVertex;                                //!<! Y Vertex distribution of accepted event.
   TH1F *   fhZVertex;                                //!<! Z Vertex distribution of accepted event.
@@ -128,11 +141,19 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   TH1F *   fhPileUpClusterMult;                      //!<! N clusters with high time.
   TH1F *   fhPileUpClusterMultAndSPDPileUp;          //!<! N clusters with high time in events tagged as pile-up by SPD.
+    
   TH1F *   fhTrackMult;                              //!<! Number of tracks per event histogram.
   TH1F *   fhCentrality;                             //!<! Histogram with centrality bins.
   TH1F *   fhEventPlaneAngle;                        //!<! Histogram with Event plane angle.
+
+  TH1F *   fhNEventsWeighted;                        //!<! Number of acepted events counter histogram. After centrality weight.
+  TH1F *   fhTrackMultWeighted;                      //!<! Number of tracks per event histogram. After centrality weight.
+  TH1F *   fhCentralityWeighted;                     //!<! Histogram with centrality bins. After centrality weight.
+  TH1F *   fhEventPlaneAngleWeighted;                //!<! Histogram with Event plane angle. After centrality weight.
+    
   TH1F *   fhNMergedFiles;                           //!<! Number of files merged.
   TH1F *   fhScaleFactor;                            //!<! Factor to scale histograms.
+    
   TH1F *   fhEMCalBCEvent;                           //!<! N events depending on the existence of a cluster in a given bunch crossing.
   TH1F *   fhEMCalBCEventCut;                        //!<! N events depending on the existence of a cluster above acceptance and E cut in a given bunch crossing.
   TH1F *   fhTrackBCEvent;                           //!<! N events depending on the existence of a track in a given bunch crossing.
@@ -169,7 +190,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,22) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,24) ;
   /// \endcond
 
 } ;

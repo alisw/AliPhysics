@@ -59,7 +59,7 @@ AlidNdPtTask *AddTaskdNdPt()
 	//
 	Int_t cutMode = 200;
 
-	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");  
+	gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");  
 
 	AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
 	if (!esdTrackCuts) {

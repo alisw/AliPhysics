@@ -17,7 +17,7 @@ void runFilteringTask( const char* esdList,
     printf("scalingV0=%d\n",scalingV0);
     printf("nFiles=%d\n",nFiles);
 
-    gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD");
+    gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS -I$ALICE_PHYSICS/TRD");
 
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
@@ -43,7 +43,7 @@ void runFilteringTask( const char* esdList,
     //handler->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(handlerMC);
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AddTaskCDBconnect(ocdb);
 
     if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
@@ -52,7 +52,7 @@ void runFilteringTask( const char* esdList,
     }
 
     // Create input chain
-    //gROOT->LoadMacro("$ALICE_ROOT/PWGUD/macros/CreateESDChain.C");
+    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGUD/macros/CreateESDChain.C");
     //TChain* chain = CreateESDChain(esdList, nFiles,firstFile);
     AliXRDPROOFtoolkit toolkit;
     AliXRDPROOFtoolkit::FilterList(esdList,Form("%s esdTree",esdFileName),0);
@@ -69,7 +69,7 @@ void runFilteringTask( const char* esdList,
     //
 
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskFilteredTree.C");
     AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("FilterEvents_Trees.root");
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);

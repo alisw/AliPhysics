@@ -76,14 +76,24 @@ class AliHFEmcQA: public TObject {
         kB2M=25, 	        // electrons from the meson where the meson originated from the beauty hadrons 
         kD2M=26, 	        // electrons from the meson where the meson originated from the charm hadrons
         kM2M=27, 	        // electrons from the light meson decay where the light meson originated from other light meson 
-        kScdryM=28 	        // secondary mesons (mainly pions but I didn't differentiate the mesons)
+        kK0L=28, 	        // K0L -> e +X
+    	kK0s2P=31,              // electrons from secondary pions from K0s
+        kK0l2P=32,              // electrons from secondary pions from K0l
+        kLamda2P=33,            // electrons from secondary pions from Lamda
+        kSigma2P=34,            // electrons from secondary pions from Sigma
+    	kGammaK0s2P=35,         // electrons from photon conversion where the photon originated from secondary pion from K0s
+        kGammaK0l2P=36,         // electrons from photon conversion where the photon originated from secondary pion from K0l
+        kGammaLamda2P=37,       // electrons from photon conversion where the photon originated from secondary pion from lamda
+        kGammaSigma2P=38,       // electrons from photon conversion where the photon originated from secondary pion from sigma
+        kK2P=39,                // electrons from secondary pions from K  
+        kGammaK2P=40            // electrons from photon conversion where the photon originated from secondary pion from K
     };
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
     enum{
       kBgPtBins = 44,
-	kElecBgSpecies = 6,
+	kElecBgSpecies = 9,
 	kCentBins = 11,
 	kBgLevels = 3
     };
@@ -112,7 +122,9 @@ class AliHFEmcQA: public TObject {
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
     Int_t GetSource(const TParticle * const mcpart) const; // return source id 
     Int_t GetElecSource(const AliVParticle * const mctrack, Bool_t isElec) const;
+    Int_t GetElecSource(const AliVParticle * const mctrack, Bool_t isElec, Double_t &mpt) const;
     Int_t GetElecSource(TParticle * const mcpart, Bool_t isElec) const; // return electron source id 
+    Int_t GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_t &mpt) const; // return electron source id 
     Int_t GetElecSource(const AliAODMCParticle * const mcpart, Bool_t isElec) const;
     Int_t GetSource(const AliVParticle * const mcpart) const; // return electron source id for AOD
     Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
@@ -383,7 +395,7 @@ private:
     Double_t fHfeImpactR;                  //absolute impact parameter R
     Double_t fHfeImpactnsigmaR;            //absolute impact parameter sigma R 
  
-    TTreeSRedirector *fTreeStream;         //! TreeStream
+    TTreeSRedirector *fTreeStream;         // TreeStream
     Bool_t             fGetWeightHist;     // Write histogram to calculate weights
 
   ClassDef(AliHFEmcQA,1);

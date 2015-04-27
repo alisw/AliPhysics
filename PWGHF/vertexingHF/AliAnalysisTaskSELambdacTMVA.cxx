@@ -72,6 +72,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fOutput(0), 
 		fHistNEvents(0),
 		fHistNEventsRejTM(0),
+		fhMassLcPt(0),
+		fhMassLcPtSig(0),
 		fhSelectBit(0),
 		fNtupleLambdac(0),
 		fIsLc(0),
@@ -79,6 +81,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fRDCutsAnalysis(0),
 		fListCuts(0),
 		fFillNtuple(0),
+		fUpmasslimit(2.486),
+		fLowmasslimit(2.086),
 		fReadMC(kFALSE),
 		fMCPid(kFALSE),
 		fRealPid(kFALSE),
@@ -97,7 +101,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 	// Default constructor
 	//
 
-	for(Int_t i=0;i<11;i++) { 
+	for(Int_t i=0;i<12;i++) { 
 		fhNBkgNI[i]=0x0;
 		fhNLc[i]=0x0;
 		fhNLcc[i]=0x0;
@@ -159,12 +163,16 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fOutput(0), 
 	fHistNEvents(0),
 	fHistNEventsRejTM(0),
+	fhMassLcPt(0),
+	fhMassLcPtSig(0),
 	fhSelectBit(0),
 	fNtupleLambdac(0),
 	fIsLc(0),
 	fIsLcResonant(0),
 	fRDCutsAnalysis(lccutsana),
 	fListCuts(0),
+  fUpmasslimit(2.486),
+  fLowmasslimit(2.086),
 	fFillNtuple(fillNtuple),
 	fReadMC(kFALSE),
 	fMCPid(kFALSE),
@@ -183,7 +191,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	// Default constructor
 	// Output slot #1 writes into a TList container
 	//
-	for(Int_t i=0;i<11;i++) { 
+	for(Int_t i=0;i<12;i++) { 
 		fhNBkgNI[i]=0x0;
 		fhNLc[i]=0x0;
 		fhNLcc[i]=0x0;
@@ -344,8 +352,13 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fHistNEvents->SetMinimum(0);
 	fOutput->Add(fHistNEvents);
 
-	TString stepnames[11] = {"GeneratedLimAcc","Generated","GeneratedAcc","Reco3Prong","LcBit","IsSelectedTracks","IsInFidAcc","PtRange","IsSelectedCandidate","IsSelectedPID","IsSelectedNtuple"};
-	for(Int_t i=0;i<11;i++) { // histograms for efficiency cross check
+	fhMassLcPt = new TH2F("hMassLcPt","hMassLcPt;3-Prong p_{T} GeV/c;3-Prong Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhMassLcPtSig = new TH2F("hMassLcPtSig","hMassLcPtSig;3-Prong signal p_{T} GeV/c;3-Prong signal Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fOutput->Add(fhMassLcPt);
+	fOutput->Add(fhMassLcPtSig);
+
+	TString stepnames[12] = {"GeneratedLimAcc","GeneratedAll","Generated","GeneratedAcc","Reco3Prong","LcBit","IsSelectedTracks","IsInFidAcc","PtRange","IsSelectedCandidate","IsSelectedPID","IsSelectedNtuple"};
+	for(Int_t i=0;i<12;i++) { // histograms for efficiency cross check
 		//Lc vs Pt histograms
 		hisname.Form("hNBkgNI%i",i);
 		histitle.Form("N Bkg not injected %s",stepnames[i].Data());
@@ -759,6 +772,7 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 				SetLambdacDaugh(mcPart,arrayMC,isInAcc);
 				if(fIsLcResonant>=1) {
 					AliDebug(2,"Lc has p K pi in final state");
+					FillEffHists(kGeneratedAll);
 					fNentries->Fill(4);
 					if(isInFidAcc){
 						fNentries->Fill(5);
@@ -838,6 +852,32 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		if(!selection) continue;
 		FillEffHists(kIsSelectedCandidate);
 		fNentries->Fill(11);
+
+		//Prod. cuts - fill inv mass histogram
+		//Bkg + signal
+		if(isSelectedPID==1){
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpKpi());
+		}
+		else if(isSelectedPID==2){
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpiKp());
+		}
+		else if(isSelectedPID==3){
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
+			fhMassLcPt->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+		}
+		//signal
+		if(fIsLc>=1) {
+			if(isSelectedPID==1){
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpKpi());
+			}
+			else if(isSelectedPID==2){
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpiKp());
+			}
+			else if(isSelectedPID==3){
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
+				fhMassLcPtSig->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+			}
+		}
 
 		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
@@ -963,9 +1003,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 				(number1==2212 && number2==321 && number3==211) ||
 				(number1==2212 && number2==211 && number3==321)) {
 			numberOfLambdac++;
-			if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
-					|| TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
-					|| TMath::Abs(pdaugh3->Eta() > 0.9) || pdaugh3->Pt() < 0.1) IsInAcc=kFALSE;
+			if(    TMath::Abs(pdaugh1->Eta()) > 0.9 || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaugh2->Eta()) > 0.9 || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaugh3->Eta()) > 0.9 || pdaugh3->Pt() < 0.1) IsInAcc=kFALSE;
 			AliDebug(2,"Lc decays non-resonantly");
 			return 1;
 		} 
@@ -988,9 +1028,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
 				numberOfLambdac++;
-			if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
-					|| TMath::Abs(pdaughK1->Eta() > 0.9) || pdaughK1->Pt() < 0.1
-					|| TMath::Abs(pdaughK2->Eta() > 0.9) || pdaughK2->Pt() < 0.1) IsInAcc=kFALSE;
+			if(    TMath::Abs(pdaugh1->Eta()) > 0.9 || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaughK1->Eta()) > 0.9 || pdaughK1->Pt() < 0.1
+					|| TMath::Abs(pdaughK2->Eta()) > 0.9 || pdaughK2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via K* p");
 				return 3;
 			}
@@ -1005,9 +1045,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
 				numberOfLambdac++;
-			if(    TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
-					|| TMath::Abs(pdaughK1->Eta() > 0.9) || pdaughK1->Pt() < 0.1
-					|| TMath::Abs(pdaughK2->Eta() > 0.9) || pdaughK2->Pt() < 0.1) IsInAcc=kFALSE;
+			if(    TMath::Abs(pdaugh2->Eta()) > 0.9 || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaughK1->Eta()) > 0.9 || pdaughK1->Pt() < 0.1
+					|| TMath::Abs(pdaughK2->Eta()) > 0.9 || pdaughK2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via K* p");
 				return 3;
 			}
@@ -1024,9 +1064,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
 				numberOfLambdac++;
-			if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
-					|| TMath::Abs(pdaughD1->Eta() > 0.9) || pdaughD1->Pt() < 0.1
-					|| TMath::Abs(pdaughD2->Eta() > 0.9) || pdaughD2->Pt() < 0.1) IsInAcc=kFALSE;
+			if(    TMath::Abs(pdaugh1->Eta()) > 0.9 || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaughD1->Eta()) > 0.9 || pdaughD1->Pt() < 0.1
+					|| TMath::Abs(pdaughD2->Eta()) > 0.9 || pdaughD2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Delta++ k");
 				return 4;
 			}
@@ -1040,9 +1080,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
 				numberOfLambdac++;
-			if(    TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
-					|| TMath::Abs(pdaughD1->Eta() > 0.9) || pdaughD1->Pt() < 0.1
-					|| TMath::Abs(pdaughD2->Eta() > 0.9) || pdaughD2->Pt() < 0.1) IsInAcc=kFALSE;
+			if(    TMath::Abs(pdaugh2->Eta()) > 0.9 || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaughD1->Eta()) > 0.9 || pdaughD1->Pt() < 0.1
+					|| TMath::Abs(pdaughD2->Eta()) > 0.9 || pdaughD2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Delta++ k");
 				return 4;
 			}
@@ -1060,9 +1100,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
 				numberOfLambdac++;
-				if(    TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
-					|| TMath::Abs(pdaughL1->Eta() > 0.9) || pdaughL1->Pt() < 0.1
-					|| TMath::Abs(pdaughL2->Eta() > 0.9) || pdaughL2->Pt() < 0.1) IsInAcc=kFALSE;
+				if(    TMath::Abs(pdaugh2->Eta()) > 0.9 || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaughL1->Eta()) > 0.9 || pdaughL1->Pt() < 0.1
+					|| TMath::Abs(pdaughL2->Eta()) > 0.9 || pdaughL2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Lambda(1520) pi");
 				return 2;
 			}
@@ -1076,9 +1116,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
 				numberOfLambdac++;
-				if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
-					|| TMath::Abs(pdaughL1->Eta() > 0.9) || pdaughL1->Pt() < 0.1
-					|| TMath::Abs(pdaughL2->Eta() > 0.9) || pdaughL2->Pt() < 0.1) IsInAcc=kFALSE;
+				if(    TMath::Abs(pdaugh1->Eta()) > 0.9 || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaughL1->Eta()) > 0.9 || pdaughL1->Pt() < 0.1
+					|| TMath::Abs(pdaughL2->Eta()) > 0.9 || pdaughL2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Lambda(1520) pi");
 				return 2;
 			}

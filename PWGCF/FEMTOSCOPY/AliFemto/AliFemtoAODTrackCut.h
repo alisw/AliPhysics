@@ -1,12 +1,11 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoAODTrackCut: A basic track cut that used information from     //
-// ALICE AOD to accept or reject the track.                              //  
-// Enables the selection on charge, transverse momentum, rapidity,       //
-// pid probabilities, number of ITS and TPC clusters                     //
-// Author: Adam Kisiel (WUT, OSU), Adam.Kisiel@cern.ch                   //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoAODTrackCut
+/// \brief AliFemtoAODTrackCut: A basic track cut that used information from
+///
+/// ALICE AOD to accept or reject the track.
+/// Enables the selection on charge, transverse momentum, rapidity,
+/// pid probabilities, number of ITS and TPC clusters
+///
+/// \author Adam Kisiel (WUT, OSU), Adam.Kisiel@cern.ch
 
 #ifndef ALIFEMTOAODTRACKCUT_H
 #define ALIFEMTOAODTRACKCUT_H
@@ -48,20 +47,20 @@ class AliFemtoAODTrackCut : public AliFemtoTrackCut
 
  private:   // here are the quantities I want to cut on...
 
-  int               fCharge;             // particle charge
-  float             fPt[2];              // bounds for transverse momentum
-  float             fRapidity[2];        // bounds for rapidity
-  float             fPidProbElectron[2]; // bounds for electron probability
-  float             fPidProbPion[2];     // bounds for pion probability
-  float             fPidProbKaon[2];     // bounds for kaon probability
-  float             fPidProbProton[2];   // bounds for proton probability
-  float             fPidProbMuon[2];     // bounds for muon probability 
-  bool              fLabel;              // if true label<0 will not pass throught 
-  float             fMaxchiNdof;         // maximum allowed chi2/ndof for TPC clusters
-  float             fMaxSigmaToVertex;   // maximum allowed sigma to primary vertex
-  long              fNTracksPassed;      // passed tracks count
-  long              fNTracksFailed;      // failed tracks count
-  int               fMostProbable;       // this particle type is required to be most probable
+  int               fCharge;             ///< particle charge
+  float             fPt[2];              ///< bounds for transverse momentum
+  float             fRapidity[2];        ///< bounds for rapidity
+  float             fPidProbElectron[2]; ///< bounds for electron probability
+  float             fPidProbPion[2];     ///< bounds for pion probability
+  float             fPidProbKaon[2];     ///< bounds for kaon probability
+  float             fPidProbProton[2];   ///< bounds for proton probability
+  float             fPidProbMuon[2];     ///< bounds for muon probability
+  bool              fLabel;              ///< if true label<0 will not pass throught
+  float             fMaxchiNdof;         ///< maximum allowed chi2/ndof for TPC clusters
+  float             fMaxSigmaToVertex;   ///< maximum allowed sigma to primary vertex
+  long              fNTracksPassed;      ///< passed tracks count
+  long              fNTracksFailed;      ///< failed tracks count
+  int               fMostProbable;       ///< this particle type is required to be most probable
 
   float PidFractionElectron(float mom) const;
   float PidFractionPion(float mom) const;
@@ -69,7 +68,9 @@ class AliFemtoAODTrackCut : public AliFemtoTrackCut
   float PidFractionProton(float mom) const;
 
 #ifdef __ROOT__ 
+  /// \cond CLASSIMP
   ClassDef(AliFemtoAODTrackCut, 1)
+  /// \endcond
 #endif
     };
 

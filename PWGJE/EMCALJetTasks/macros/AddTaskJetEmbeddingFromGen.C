@@ -32,6 +32,9 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenQuench.C");
     genGen = AddMCGenQuench(ecms, ptHardMin, ptHardMax, genType,kQuench,kAnglePyquen,ptWeight);
   }
+  else if(genType==3){ //HERWIG
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenHerwig.C");
+    genGen=AddMCGenHerwig(ecms/2,ecms/2,ptHardMin,ptHardMax,ptWeight);}
   if(!genGen)   {
     ::Error("AddTaskJetEmbeddingFromGenTask", "Generator does not exist");
     return NULL;
@@ -90,7 +93,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   jetEmb->SetPhiRange(minPhi, maxPhi);
   jetEmb->SetPtRange(minPt, maxPt);
   jetEmb->SetCopyArray(copyArray);
-
+  jetEmb->SetGenType(genType)
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

@@ -92,7 +92,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
     virtual void SetStoreRhoLeadingTrackCorr(Bool_t b) {fStoreRhoLeadingTrackCorr=b;}
-
+    virtual void SetCorrectForSemigood(Bool_t b) {fCorrectForSemigood=b;}
+    virtual void SetTpcHolePos(Double_t pos){fTpcHolePos=pos;}
+    virtual void SetTpcHoleWidth(Double_t width){fTpcHoleWidth=width;}
     //Setters for detector level effects
     virtual void SetUseTrResolutionFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Resolution/PtResol_LHCh_Cent0-10_v1.root") {fUseTrPtResolutionFromOADB = b; fPathTrPtResolution=path;}
     virtual void SetUseTrEfficiencyFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Efficiency/Efficiency_LHC11a2aj_Cent0_v1.root") {fUseTrEfficiencyFromOADB = b; fPathTrEfficiency=path;}
@@ -135,7 +137,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     //
 	virtual bool	IsBMeson(int pc);
 	virtual bool	IsDMeson(int pc);
-
+        Double_t            RelativePhi(Double_t phi1,Double_t phi2);
     // we have different cases
     // AOD reading -> MC from AOD
     // ESD reading -> MC from Kinematics
@@ -242,6 +244,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     AliAODJetEventBackground *fAODJetBackgroundOut; //! jet background to be written out
 
     TRandom3*     fRandom;   //! random number generator
+    Bool_t         fCorrectForSemigood;  //if kTRUE, skip kT clusters  that overlap with malfunctioning TPC sectors, to compute rho
+    Double_t     fTpcHolePos; //position of the malfunctioning sector, in radians
+    Double_t     fTpcHoleWidth; // width of the malfunctioning area, in radians
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
     TH1F*         fh1PtHard;  //! Pt har of the event...       
@@ -349,7 +354,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 26) 
+    ClassDef(AliAnalysisTaskJetCluster, 27) 
 };
  
 #endif

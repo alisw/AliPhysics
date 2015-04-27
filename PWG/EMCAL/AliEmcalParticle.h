@@ -11,7 +11,8 @@
 class AliEmcalParticle: public AliVParticle {
  public:
   AliEmcalParticle();
-  AliEmcalParticle(TObject *particle, Int_t id = -1, Double_t vx=0, Double_t vy=0, Double_t vz=0);
+  AliEmcalParticle(AliVTrack* track, Int_t id = -1);
+  AliEmcalParticle(AliVCluster* cluster, Int_t id = -1, Double_t vx=0, Double_t vy=0, Double_t vz=0);
   AliEmcalParticle(const AliEmcalParticle &p); 
   AliEmcalParticle &operator=(const AliEmcalParticle &p);
   virtual ~AliEmcalParticle();

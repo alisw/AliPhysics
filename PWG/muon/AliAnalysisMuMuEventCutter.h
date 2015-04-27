@@ -23,6 +23,7 @@ class AliInputEventHandler;
 class AliAnalysisMuMuEventCutter : public TObject
 {
 public:
+  AliAnalysisMuMuEventCutter(TRootIOCtor* ioCtor);
   AliAnalysisMuMuEventCutter(TList* triggerClassesToConsider=0x0, TList* triggerInputsMap=0x0);
   virtual ~AliAnalysisMuMuEventCutter();
   

@@ -218,7 +218,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
   /// Fill output objects
   //
 
-  Double_t ipVz = AliAnalysisMuonUtility::GetVertexSPD(InputEvent())->GetZ();
+  Double_t ipVz = InputEvent()->GetPrimaryVertexSPD()->GetZ();
   Double_t ipVzMC = MCEvent() ? AliAnalysisMuonUtility::GetMCVertexZ(InputEvent(),MCEvent()) : 0.;
   
   for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {

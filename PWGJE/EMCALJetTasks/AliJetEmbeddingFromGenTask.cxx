@@ -27,8 +27,10 @@
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHerwigEventHeader.h"
 #include "AliPythiaInfo.h"
 #include "AliPythiaRndm.h"
+#include "AliHerwigRndm.h"
 ClassImp(AliJetEmbeddingFromGenTask)
 
 //________________________________________________________________________
@@ -149,8 +151,13 @@ void AliJetEmbeddingFromGenTask::Run()
 
   if (fCopyArray) 
     CopyTracks();
+  if(fGenType<3){
   AliPythiaRndm::SetPythiaRandom(new TRandom3());
-  AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());
+  AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());}
+  if(fGenType==3){
+  AliHerwigRndm::SetHerwigRandom(new TRandom3());
+  AliHerwigRndm::GetHerwigRandom()->SetSeed(clock()+gSystem->GetPid());}
+ 
   AliStack *stack = fGen->GetStack();
   stack->Reset();
   fGen->Generate();
@@ -215,15 +222,31 @@ void AliJetEmbeddingFromGenTask::FillPythiaHistograms() {
     return;
 
   AliRunLoader *rl = AliRunLoader::Instance();
-  AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
-  if(genPH) {
-    Float_t xsec = genPH->GetXsection();
-    Int_t trials = genPH->Trials();
-    Float_t pthard = genPH->GetPtHard();
-    Float_t ptWeight=genPH->EventWeight(); 
+  AliGenPythiaEventHeader *genPP=0x0;
+  AliGenHerwigEventHeader *genPH=0x0;
+  if(fGenType<3)  genPP = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
+  if(fGenType==3)  genPH = dynamic_cast<AliGenHerwigEventHeader*>(rl->GetHeader()->GenEventHeader());
+  if(fGenType<3 && genPP) {
+    Float_t xsec = genPP->GetXsection();
+    Int_t trials = genPP->Trials();
+    Float_t pthard = genPP->GetPtHard();
+    Float_t ptWeight=genPP->EventWeight(); 
+    
     if(fPythiaInfo) fPythiaInfo->SetPythiaEventWeight(ptWeight);
     fHistXsection->Fill(0.5,xsec);
     fHistTrials->Fill(0.5,trials);
     fHistPtHard->Fill(pthard);
   }
+
+   if(fGenType==3 && genPH) {
+    Float_t xsec = genPH->Weight();
+    Int_t trials = genPH->Trials();
+    Float_t ptWeight=genPH->Weight();  
+    if(fPythiaInfo) fPythiaInfo->SetPythiaEventWeight(ptWeight);
+    fHistXsection->Fill(0.5,xsec);
+    fHistTrials->Fill(0.5,trials);
+
+  }
+
+
 }

@@ -91,7 +91,7 @@ AliAnalysisAlien* CreateAlienHandler()
   plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
 
   plugin->AddIncludePath("-I.");
-  plugin->AddIncludePath("-I$ALICE_ROOT/PWGPP/MUON/lite");
+  plugin->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/MUON/lite");
   
   return plugin;
 }
@@ -133,12 +133,12 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, 
 #ifndef COMPILEMACRO
 
   if ( runTrig ) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
     AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(kFALSE);
     trigChEffTask->SetTerminateOptions("PhysSelPass","ANY","-5_105","FORCEBATCH trigChEff_ANY_Apt_allTrig.root?PhysSelPass?ANY?-5_105?NoSelMatchAptFromTrg");
   }
   else {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
     AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
   }
 

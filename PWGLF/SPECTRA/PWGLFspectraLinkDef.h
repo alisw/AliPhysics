@@ -44,6 +44,11 @@
 #pragma link C++ class AliSpectraBothTrackCuts+;
 #pragma link C++ class AliMultiplictyLoaderTask+;
 
+#pragma link C++ class AliAnalysisPIDEvent+;
+#pragma link C++ class AliAnalysisPIDParticle+;
+#pragma link C++ class AliAnalysisPIDTrack+;
+#pragma link C++ class AliAnalysisTaskTPCTOFPID+;
+
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
 #pragma link C++ class AliLnAODtrackCuts+;
@@ -84,6 +89,14 @@
 
 // AntiprotonToProton
 #pragma link C++ class AliProtonAnalysisBase+;
+#pragma link C++ class AliProtonAnalysis+;
 #pragma link C++ class AliProtonQAAnalysis+;
+#pragma link C++ class AliAnalysisTaskProtons+;
+#pragma link C++ class AliAnalysisTaskProtonsQA+;
+#pragma link C++ class AliProtonFeedDownAnalysisTask+;
+#pragma link C++ class AliProtonFeedDownAnalysis+;
+#pragma link C++ class AliProtonAbsorptionCorrection+;
+#pragma link C++ class AliProtonSpectraCorrection+;
+#pragma link C++ class AliProtonCorrectionAnalysisTask+;
 
 #endif

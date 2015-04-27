@@ -32,6 +32,7 @@
 //#include "AliEventplane.h"
 //#include "AliJHistManager.h"
 #include "TClonesArray.h"
+#include "AliJEfficiency.h"
 
 
 ClassImp(AliJFFlucAnalysis)
@@ -44,6 +45,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fCent(0),
 	fNJacek(0),	
 	fHMG(NULL),
+	fEfficiency(0), // pointer to tracking efficiency
+	fEffMode(0),
+	fEffFilterBit(0),
 	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
@@ -51,17 +55,14 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fBin_kk(),
 	fHistCentBin(),
 	fh_cent(),
+	fh_ImpactParameter(),
 	fh_vertex(),
 	fh_eta(),
 	fh_phi(),
 	fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
-	fh_vn_vn(),
-	fh_vn_test1(),
-	fh_vn_test2(),
-	fh_vn_vn_test1(),
-	fh_vn_vn_test2()	
+	fh_vn_vn()
 {
 	const int NCent = 7;
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
@@ -97,6 +98,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fCent(0),
 	fNJacek(0),
 	fHMG(NULL),
+	fEfficiency(0), 
+	fEffMode(0),
+	fEffFilterBit(0),
 	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
@@ -104,17 +108,14 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fBin_kk(),
 	fHistCentBin(),
 	fh_cent(),
+	fh_ImpactParameter(),
 	fh_vertex(),
 	fh_eta(),
 	fh_phi(),
 	fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
-	fh_vn_vn(),
-	fh_vn_test1(),
-	fh_vn_test2(),
-	fh_vn_vn_test1(),
-	fh_vn_vn_test2()
+	fh_vn_vn()
 {
  
 	const int NCent = 7;
@@ -152,6 +153,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fVertex(a.fVertex),
 	fCent(a.fCent),
 	fHMG(a.fHMG),
+	fEfficiency(a.fEfficiency),
+	fEffMode(a.fEffMode),
+	fEffFilterBit(a.fEffFilterBit),
 	fBin_Subset(a.fBin_Subset),
 	fBin_h(a.fBin_h),
 	fBin_k(a.fBin_k),
@@ -159,17 +163,14 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fBin_kk(a.fBin_kk),
 	fHistCentBin(a.fHistCentBin),
 	fh_cent(a.fh_cent),
+	fh_ImpactParameter(a.fh_ImpactParameter),
 	fh_vertex(a.fh_vertex),
 	fh_eta(a.fh_eta),
 	fh_phi(a.fh_phi),
 	fh_Qvector(a.fh_Qvector),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
-	fh_vn_vn(a.fh_vn_vn),
-	fh_vn_test1(a.fh_vn_test1),
-	fh_vn_test2(a.fh_vn_test2),
-	fh_vn_vn_test1(a.fh_vn_vn_test1),
-	fh_vn_vn_test2(a.fh_vn_vn_test2)
+	fh_vn_vn(a.fh_vn_vn)
 {
 	//copy constructor
 //	DefineOutput(1, TList::Class() ); 
@@ -186,14 +187,19 @@ void AliJFFlucAnalysis::Init(){
 }
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserCreateOutputObjects(){
+
+	fEfficiency = new AliJEfficiency();
+	cout << "********" << endl;
+	cout << fEffMode << endl ;
+	cout << "********" << endl;
+	fEfficiency->SetMode( fEffMode ) ; // 0:NoEff 1:Period 2:RunNum 3:Auto
+	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
+
 	// Create histograms
 	// Called once
 	AnaEntry = 0;
 	// need to fill to book a histo
-
 	fHMG = new AliJHistManager("AliJFFlucHistManager","test");
-
-
 	// set AliJBin here // 
 	fBin_Subset .Set("Sub","Sub","Sub:%d", AliJBin::kSingle).SetBin(2);
 	fBin_h .Set("NH","NH","NH:%d", AliJBin::kSingle).SetBin(kNH);
@@ -208,7 +214,11 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	// set AliJTH1D here //
 	fh_cent
-		<< TH1D("h_cent","h_cent", 100, 0, 100) 
+		<< TH1D("h_cent","h_cent", 400, 0, 100) 
+		<< "END" ;
+
+	fh_ImpactParameter
+		<< TH1D("h_IP", "h_IP", 400, -2, 20)
 		<< "END" ;
 
 	fh_vertex
@@ -251,28 +261,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
  	 	<< fBin_hh << fBin_kk
  	 	<< fHistCentBin
  	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
-	fh_vn_test1 
- 		<< TH1D("hvnTEST1","hvn", 5096, -0.5, 0.5) 
- 		<< fBin_h << fBin_k 
- 		<< fHistCentBin
- 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent] 
-	fh_vn_vn_test1
-	  	<< TH1D("hvn_vnTEST1", "hvn_vn", 5096, -0.1, 0.1)
-  		<< fBin_h << fBin_k 
- 	 	<< fBin_hh << fBin_kk
- 	 	<< fHistCentBin
- 	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
-	fh_vn_test2
- 		<< TH1D("hvnTEST2","hvn", 5096, -0.5, 0.5) 
- 		<< fBin_h << fBin_k 
- 		<< fHistCentBin
- 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent] 
-	fh_vn_vn_test2
-	  	<< TH1D("hvn_vnTEST2", "hvn_vn", 5096, -0.1, 0.1)
-  		<< fBin_h << fBin_k 
- 	 	<< fBin_hh << fBin_kk
- 	 	<< fHistCentBin
- 	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
 	fh_correlator 
 		<< TH1D("h_corr", "h_corr", 5096, -1, 1)
 		<< fCorrBin
@@ -290,6 +278,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 	delete fInputList;
 	delete fHMG;
+	delete fEfficiency;
 	delete []fPttJacek;
 	delete []fCentBin;
 }
@@ -309,8 +298,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	if(fCBin == -1){return;};
 	int trk_number = fInputList->GetEntriesFast();
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
-	fh_cent->Fill( inputCent ) ; 
-	Fill_QA_plot( -15, 15 );
+	fh_cent->Fill( inputCent ) ;
+	fh_ImpactParameter->Fill( fImpactParameter); 
+	Fill_QA_plot( fEta_min, fEta_max );
 
 
 	enum{kSubA, kSubB, kNSub};
@@ -350,21 +340,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// use k=0 for check v2, v3 only
 	double vn2[kNH][nKL]; 
 	double vn2_vn2[kNH][nKL][kNH][nKL];
-	double vn2_test1[kNH][nKL]; 
-	double vn2_test2[kNH][nKL]; 
-	double vn2_vn2_test1[kNH][nKL][kNH][nKL];
-	double vn2_vn2_test2[kNH][nKL][kNH][nKL];
 	//initiation
 	for(int ih=0; ih<kNH; ih++){
 		for(int ik=0; ik<nKL ; ik++){
 				vn2[ih][ik] = -999;
-				vn2_test1[ih][ik] = -999;
-				vn2_test2[ih][ik] = -999;
 				for(int ihh=0; ihh<kNH; ihh++){
 						for(int ikk=0; ikk<nKL; ikk++){
 								vn2_vn2[ih][ik][ihh][ikk] = -999;
-								vn2_vn2_test1[ih][ik][ihh][ikk] = -999;
-								vn2_vn2_test2[ih][ik][ihh][ikk] = -999;
 						}
 				}
 		}
@@ -372,15 +354,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// calculate vn^2k	
 	for( int ih=2; ih<kNH; ih++){
 			for(int ik=0; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-					if(ik==0) vn2[ih][ik] = TMath::Sqrt( ( TComplex::Abs( QnA[ih] * QnB_star[ih] )) );
+					if(ik==0) vn2[ih][ik] = TMath::Sqrt( ( ( QnA[ih] * QnB_star[ih] ).Re() ) );
 					if(ik!=0){
 							TComplex QnAk;
 							TComplex QnBstark;
 							QnAk = TComplex::Power( QnA[ih], ik) ;
 							QnBstark = TComplex::Power(QnB_star[ih], ik) ;
-							vn2[ih][ik] = ( QnAk * QnBstark ).Re();  // for k=1 vn2 and vn2_test1 is same.
-							vn2_test1[ih][ik] = (TComplex::Power( QnA[ih] * QnB_star[ih], ik)).Re();
-							vn2_test2[ih][ik] = TMath::Power(  ( QnA[ih] * QnB_star[ih] ).Re() ,ik );
+							vn2[ih][ik] = ( QnAk * QnBstark ).Re();  
 					}		
 			}
 	}
@@ -392,14 +372,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 							for(int ikk=1; ikk<nKL; ikk++){
 									vn2_vn2[ih][ik][ihh][ikk] = (  
 													TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
-									vn2_vn2_test1[ih][ik][ihh][ikk] = 
-											TMath::Power( (QnA[ih] * QnB_star[ih]).Re() , ik ) * 
-											TMath::Power( (QnA[ihh] * QnB_star[ihh] ).Re(), ik ); 
-
-									vn2_vn2_test2[ih][ik][ihh][ikk] = 
-											( TComplex::Power( QnA[ih], ik ) * TComplex::Power( QnB_star[ih], ik ) *
-											  TComplex::Power( QnA[ihh], ikk ) * TComplex::Power( QnB_star[ihh], ikk ) ).Re();
-
 							}
 					}
 			}
@@ -409,13 +381,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//Fill the Histos here
 	for(int ih=2; ih< kNH; ih++){
 		if(vn2[ih][0] != -999)	fh_vn[ih][0][fCBin]->Fill( vn2[ih][0] );
-		if(vn2[ih][0] != -999)  fh_vn_test1[ih][0][fCBin]->Fill( vn2[ih][0] );
-		if(vn2[ih][0] != -999) fh_vn_test2[ih][0][fCBin]->Fill( vn2[ih][0] ); // fill k=0 for just v2, v3.. 
 
 		for(int ik=1; ik<nKL; ik++){
 			if(vn2[ih][ik] != -999)	fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] ); // Fill hvn2
-			if(vn2_test1[ih][ik] != -999 )fh_vn_test1[ih][ik][fCBin]->Fill( vn2_test1[ih][ik] ) ;
-			if(vn2_test2[ih][ik] != -999 )fh_vn_test2[ih][ik][fCBin]->Fill( vn2_test2[ih][ik] ) ;
 		}
 	}
 
@@ -424,8 +392,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			for( int ihh=2; ihh<kNH; ihh++){ 
 				for(int ikk=1; ikk<nKL; ikk++){
 					if(vn2_vn2[ih][ik][ihh][ikk] != -999 ) fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
-					if(vn2_vn2_test1[ih][ik][ihh][ikk] != -999)  fh_vn_vn_test1[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2_test1[ih][ik][ihh][ikk] ) ;
-					if(vn2_vn2_test2[ih][ik][ihh][ikk] != -999)  fh_vn_vn_test2[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2_test2[ih][ik][ihh][ikk] ) ; 
 				}
 			}
 		}
@@ -472,6 +438,7 @@ void AliJFFlucAnalysis::Terminate(Option_t *)
 //________________________________________________________________________
 double AliJFFlucAnalysis::Get_Qn_Real(double eta1, double eta2, int harmonics)
 {
+		if( eta1 > eta2) cout << "ERROR eta1 should be smaller than eta2!!!" << endl;
 		int nh = harmonics;
 		double Qn_real = 0;
 		double Sub_Ntrk =0;
@@ -481,9 +448,11 @@ double AliJFFlucAnalysis::Get_Qn_Real(double eta1, double eta2, int harmonics)
 			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 			double eta = itrack->Eta();
 			if( eta>eta1 &&  eta<eta2 ){ 
-					Sub_Ntrk++;
-					double phi = itrack->GetTwoPiPhi();
-					Qn_real += TMath::Cos( nh * phi);
+					double pt = itrack->Pt();
+					double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+					double phi = itrack->Phi();
+					Qn_real += 1.0 / effCorr * TMath::Cos( nh * phi);
+					Sub_Ntrk = Sub_Ntrk + 1.0 / effCorr;
 			}
 		}
 		Qn_real /= Sub_Ntrk;
@@ -495,11 +464,16 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 		Long64_t ntracks = fInputList->GetEntriesFast();
 		for( Long64_t it=0; it< ntracks; it++){
 			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
-			double eta = itrack->Eta();
 			double pt = itrack->Pt();
-			if( eta > eta1 && eta < eta2 ){ 
-				fh_eta[fCBin]->Fill(eta);
-				fh_pt[fCBin]->Fill(pt);	
+			double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+			double eta = itrack->Eta();
+			double phi = itrack->Phi();
+			fh_eta[fCBin]->Fill(eta , 1./ effCorr );
+			if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){ 
+				fh_eta[fCBin]->Fill(eta , 1./ effCorr );
+				fh_pt[fCBin]->Fill(pt, 1./ effCorr );
+				if( eta < 0 ) fh_phi[fCBin][0]->Fill( phi, 1./effCorr) ;
+				if( eta > 0 ) fh_phi[fCBin][1]->Fill( phi, 1./effCorr) ;
 			}
 		}
 	for(int iaxis=0; iaxis<3; iaxis++){
@@ -518,11 +492,11 @@ double AliJFFlucAnalysis::Get_Qn_Img(double eta1, double eta2, int harmonics)
 			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 			double eta = itrack->Eta();
 			if( eta > eta1 && eta < eta2 ){ 
-					Sub_Ntrk++;
-					double phi = itrack->GetTwoPiPhi();
-					Qn_img += TMath::Sin( nh * phi);
-					if( harmonics==2 && eta <0 ) fh_phi[fCBin][0]->Fill( phi );
-					if( harmonics==2 && eta >0 ) fh_phi[fCBin][1]->Fill( phi );
+					double pt = itrack->Pt();
+					double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+					double phi = itrack->Phi();
+					Qn_img += 1./ effCorr * TMath::Sin( nh * phi);
+					Sub_Ntrk = Sub_Ntrk + 1./ effCorr; 
 			}
 		}
 		Qn_img /= Sub_Ntrk;

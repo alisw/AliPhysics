@@ -68,7 +68,7 @@ using std::endl;
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s() 
   : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fTOFtrig1(0), fTOFtrig2(0),
+    fTOFmask(0),fIsPhysicsSelected(kFALSE),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
@@ -91,7 +91,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name) 
   : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fTOFtrig1(0), fTOFtrig2(0),
+    fTOFmask(0),fIsPhysicsSelected(kFALSE),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
@@ -127,7 +127,6 @@ void AliAnalysisTaskUpcPsi2s::Init()
 	fTriggerInputsMC[i] = kFALSE;
 	}
   for(Int_t i=0; i<4; i++) {
-  	fTOFphi[i] = -666;
 	fPIDTPCMuon[i] = -666;
 	fPIDTPCElectron[i] = -666;
 	fPIDTPCPion[i] = -666;
@@ -210,9 +209,9 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
   fJPsiTree ->Branch("fSpdVtxContrib", &fSpdVtxContrib, "fSpdVtxContrib/I");
   
-  fJPsiTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
-  fJPsiTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
-  fJPsiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[2]/D");
+  fJPsiTree ->Branch("fTOFmask", &fTOFmask);
+  
+  fJPsiTree ->Branch("fIsPhysicsSelected", &fIsPhysicsSelected, "fIsPhysicsSelected/O");
   
   fJPsiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[2]/D");
   fJPsiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[2]/D");
@@ -275,9 +274,9 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
   fPsi2sTree ->Branch("fSpdVtxContrib", &fSpdVtxContrib, "fSpdVtxContrib/I");
   
-  fPsi2sTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
-  fPsi2sTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
-  fPsi2sTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
+  fPsi2sTree ->Branch("fTOFmask", &fTOFmask);
+  
+  fPsi2sTree ->Branch("fIsPhysicsSelected", &fIsPhysicsSelected, "fIsPhysicsSelected/O");
   
   fPsi2sTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[4]/D");
   fPsi2sTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[4]/D");
@@ -846,10 +845,19 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( fTrigger[i] ) isTriggered = kTRUE;
   }
   if(!isMC && !isTriggered ) return;
+  
+  //Physics selection
+  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if((fTrigger[3] || fTrigger[4]) &&((selectionMask & AliVEvent::kMB) == AliVEvent::kMB)) fIsPhysicsSelected = kTRUE;
+  else fIsPhysicsSelected = kFALSE;
 
   //trigger inputs
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
   fL1inputs = aod->GetHeader()->GetL1TriggerInputs();  
+
+  //TOF trigger mask
+  const AliTOFHeader *tofH = aod->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
 
   //Event identification
   fPerNum = aod ->GetPeriodNumber();
@@ -997,18 +1005,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 		KFpart[i] = new AliKFParticle();
     		KFpart[i]->SetField(aod->GetMagneticField());
     		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
-		KFvtx->AddDaughter(*KFpart[i]); 
-		
-		
-		Double_t pos[3]={0,0,0};
-    		AliExternalTrackParam *parTrk = new AliExternalTrackParam();
-		parTrk->CopyFromVTrack((AliVTrack*) trk);
-      		if(!parTrk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     }
-		delete parTrk;		
+		KFvtx->AddDaughter(*KFpart[i]); 		
   		}
   fKfVtxPos[0]= KFvtx->GetX();
   fKfVtxPos[1]= KFvtx->GetY();
@@ -1106,16 +1103,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     		KFpart[i]->SetField(aod->GetMagneticField());
     		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
 		KFvtx->AddDaughter(*KFpart[i]); 
-				
-		Double_t pos[3]={0,0,0};
-    		AliExternalTrackParam *parTrk = new AliExternalTrackParam();
-		parTrk->CopyFromVTrack((AliVTrack*) trk);
-      		if(!parTrk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     }
-		delete parTrk; 		
+					
   		}
   fKfVtxPos[0]= KFvtx->GetX();
   fKfVtxPos[1]= KFvtx->GetY();
@@ -1141,10 +1129,49 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fTriggerInputsMC[0] = kFALSE;//0SM2
-  fTriggerInputsMC[1] = fL0inputs & (1 << 0);//0VBA
-  fTriggerInputsMC[2] = fL0inputs & (1 << 1);//0VBC
-  fTriggerInputsMC[3] = fL0inputs & (1 << 9);//0OMU
+  fTriggerInputsMC[0] = fL0inputs & (1 << 0);   //0VBA VZERO A
+  fTriggerInputsMC[1] = fL0inputs & (1 << 1);   //0VBC VZERO C
+  fTriggerInputsMC[2] = fL0inputs & (1 << 11);  //0OMU TOF two hits with topology
+  fTriggerInputsMC[3] = fL0inputs & (1 << 23);	//0OM2 TOF two hits
+						
+  //SPD inputs
+  const AliAODTracklets *mult = aod->GetMultiplicity();
+  Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
+  Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+
+  Int_t nInner(0), nOuter(0);
+  for (Int_t i(0); i<1200; ++i) {
+    Bool_t isFired(mult->TestFastOrFiredChips(i));
+    if (i<400) {
+      vPhiInner[i/20] += isFired;
+      nInner += isFired;
+    } else {
+      vPhiOuter[(i-400)/20] += isFired;
+      nOuter += isFired;
+    }
+  }
+ 
+  Int_t fired(0);
+  for (Int_t i(0); i<10; ++i) {
+    for (Int_t j(0); j<2; ++j) {
+      const Int_t k(2*i+j);
+      fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
+                    vPhiOuter[k+2]      )
+                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
+                    vPhiOuter[(k+22)%40])
+                && (vPhiInner[i]    || vPhiInner[i+1]       )
+                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+    }
+  }
+  //0SMB - At least one hit in SPD
+  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[4] = kTRUE;
+  //0SM2 - Two hits on outer layer
+  if (nOuter > 1) fTriggerInputsMC[5] = kTRUE;
+  //0STP - Topological SPD trigger (two pairs)
+  if (fired != 0) fTriggerInputsMC[6] = kTRUE;
+  //0SH1 - More then 6 hits on outer layer
+  if (nOuter >= 7) fTriggerInputsMC[7] = kTRUE;
+  
 
   fGenPart->Clear("C");
 
@@ -1450,14 +1477,15 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   }
   if(!isMC && !isTriggered ) return;
   
+  //Physics selection
+  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if((fTrigger[3] || fTrigger[4]) &&((selectionMask & AliVEvent::kMB) == AliVEvent::kMB)) fIsPhysicsSelected = kTRUE;
+  else fIsPhysicsSelected = kFALSE;
+  
   //trigger inputs
   fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
   fL1inputs = esd->GetHeader()->GetL1TriggerInputs();
   
-  //TOF trigger info (0OMU)
-  fTOFtrig1 = esd->GetHeader()->IsTriggerInputFired("0OMU");
-  fTOFtrig2 = esd->GetHeader()->GetActiveTriggerInputs().Contains("0OMU") ? ((esd->GetHeader()) ? esd->GetHeader()->IsTriggerInputFired("0OMU") : kFALSE) : TESTBIT(esd->GetHeader()->GetL0TriggerInputs(), (kFALSE) ? 21 : 9);
-
   //Event identification
   fPerNum = esd->GetPeriodNumber();
   fOrbNum = esd->GetOrbitNumber();
@@ -1600,12 +1628,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
     		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
 		KFvtx->AddDaughter(*KFpart[i]); 
 		
-		Double_t pos[3]={0,0,0};
-    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     } 		
   		}
   fKfVtxPos[0]= KFvtx->GetX();
   fKfVtxPos[1]= KFvtx->GetY();
@@ -1697,13 +1719,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
     		KFpart[i]->SetField(esd->GetMagneticField());
     		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
 		KFvtx->AddDaughter(*KFpart[i]); 		
-		 
-		Double_t pos[3]={0,0,0};
-    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     } 		
   		}
 		
   fKfVtxPos[0]= KFvtx->GetX();
@@ -1729,9 +1744,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
 {
-
-  AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
-  fTrigAna->SetAnalyzeMC(isMC);
   
   fTriggerInputsMC[0] = esd->GetHeader()->IsTriggerInputFired("0VBA"); //VZERO A
   fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0VBC"); //VZERO C

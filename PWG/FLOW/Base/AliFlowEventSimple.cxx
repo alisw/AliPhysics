@@ -21,6 +21,7 @@
           Ante Bilandzic     (anteb@nikhef.nl)         
           Raimond Snellings  (Raimond.Snellings@nikhef.nl)    
   mods:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
+          Redmer A. Bertens  (rbertens@cern.ch)
 *****************************************************************/
 
 #include "Riostream.h"
@@ -33,6 +34,7 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TF1.h"
+#include "TF2.h"
 #include "TProfile.h"
 #include "TParameter.h"
 #include "TBrowser.h"
@@ -74,6 +76,7 @@ AliFlowEventSimple::AliFlowEventSimple():
   fShuffleTracks(kFALSE),
   fMothersCollection(NULL),
   fCentrality(-1.),
+  fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
 {
@@ -113,6 +116,7 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
+  fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -153,6 +157,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fShuffleTracks(anEvent.fShuffleTracks),
   fMothersCollection(new TObjArray()),
   fCentrality(anEvent.fCentrality),
+  fRun(anEvent.fRun),
   fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -219,8 +224,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap;
   fNumberOfRPsWrap = anEvent.fNumberOfRPsWrap;
   fNumberOfPOIsWrap = anEvent.fNumberOfPOIsWrap;
-  fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
-  fShuffleTracks=anEvent.fShuffleTracks;
+  fMCReactionPlaneAngleWrap = anEvent.fMCReactionPlaneAngleWrap;
+  fShuffleTracks = anEvent.fShuffleTracks;
+  fCentrality = anEvent.fCentrality;
+  fRun = anEvent.fRun;
   delete [] fShuffledIndexes;
   return *this;
 }
@@ -743,6 +750,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
+  fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -980,6 +988,20 @@ void AliFlowEventSimple::AddV2( TF1* ptDepV2 )
 }
 
 //_____________________________________________________________________________
+void AliFlowEventSimple::AddV2( TF2* ptEtaDepV2 )
+{
+  //add v2 to all tracks wrt the reaction plane angle
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
+    Double_t v2 = ptEtaDepV2->Eval(track->Pt(), track->Eta());
+    track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+  }
+  SetUserModified();
+}
+
+//_____________________________________________________________________________
 void AliFlowEventSimple::TagRP( const AliFlowTrackSimpleCuts* cuts )
 {
   //tag tracks as reference particles (RPs)
@@ -1078,6 +1100,13 @@ TF1* AliFlowEventSimple::SimplePtDepV2()
 {
   //return a standard pt dependent v2 formula, user has to clean up!
   return new TF1("StandardPtDepV2","((x<1.0)*(0.05/1.0)*x+(x>=1.0)*0.05)");
+}
+
+//_____________________________________________________________________________
+TF2* AliFlowEventSimple::SimplePtEtaDepV2()
+{
+    //returna standard pt and eta dependent v2 formula, user has to clean up!
+    return new TF2 ("f","((x<1)*.1*x+(x>=1)*.1)*(1-0.2*TMath::Abs(y))");
 }
 
 //_____________________________________________________________________________

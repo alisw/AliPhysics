@@ -77,6 +77,7 @@
 
 #include "AliEventPoolManager.h"
 #include "AliAnalysisUtils.h"
+#include "AliPPVsMultUtils.h"
 using namespace AliPIDNameSpace;
 using namespace std;
 
@@ -96,7 +97,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
    fOutputList(0),
   fList(0),
   fCentralityMethod("V0A"),
-  fPPVsMultUtils(kFALSE),
+  fPPVsMult(kFALSE),
+ fPileUp_zvtx_INEL_evsel(kTRUE),//as this is by default true in AlippVsMultUtils class for proper event selection
   fSampleType("pPb"),
  fRequestEventPlane(kFALSE),
  fRequestEventPlanemixing(kFALSE),
@@ -329,8 +331,12 @@ fRemoveDuplicates(kFALSE),
   fElectronRejectionMinPt(0.),
   fElectronRejectionMaxPt(1000.), 
 fAnalysisUtils(0x0),
+ fPPVsMultUtils(0x0),
  fDCAXYCut(0),
  fV0TrigCorr(kFALSE),
+  ffillofflineV0(kFALSE),
+ fkShort(kFALSE),
+ fLambda(kFALSE),
  fUsev0DaughterPID(kFALSE),
   fMinPtDaughter(1.0),// v0 related cut starts here
   fMaxPtDaughter(4.0),
@@ -399,7 +405,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
    fOutputList(0),
    fList(0),
  fCentralityMethod("V0A"),
-  fPPVsMultUtils(kFALSE),
+  fPPVsMult(kFALSE),
+ fPileUp_zvtx_INEL_evsel(kTRUE),//as this is by default true in AlippVsMultUtils class for proper event selection
   fSampleType("pPb"),
  fRequestEventPlane(kFALSE),
  fRequestEventPlanemixing(kFALSE),
@@ -632,8 +639,12 @@ fRemoveDuplicates(kFALSE),
   fElectronRejectionMinPt(0.),
   fElectronRejectionMaxPt(1000.),
    fAnalysisUtils(0x0),
+   fPPVsMultUtils(0x0),
    fDCAXYCut(0),
- fV0TrigCorr(kFALSE),
+   fV0TrigCorr(kFALSE),
+   ffillofflineV0(kFALSE),
+  fkShort(kFALSE),
+ fLambda(kFALSE),
  fUsev0DaughterPID(kFALSE),
   fMinPtDaughter(1.0),// v0 related cut starts here
   fMaxPtDaughter(4.0),
@@ -805,7 +816,7 @@ fOutput->Add(fEtaSpectrasso);
 fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),200,0.0,fmaxPt);
 fOutput->Add(fphiSpectraasso);
 
- if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){
+ if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMult==kTRUE || fCentralityMethod == "MC_b"){
    if  (fAnalysisType =="MCAOD" ||  fAnalysisType =="MC"){
      fCentralityCorrelationMC = new TH2D("fCentralityCorrelationMC", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
      fOutput->Add(fCentralityCorrelationMC);
@@ -831,7 +842,7 @@ if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V
   fOutput->Add(fHistCentStats);
   }
 
-if(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
+if(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMult==kFALSE))
   {
 fhistcentrality=new TH1F("fhistcentrality","referencemultiplicity",3001,-0.5,30000.5);
 fOutput->Add(fhistcentrality);
@@ -1029,19 +1040,24 @@ for(Int_t i = 0; i < 16; i++)
       "multiplicity: 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1\n"
       "multiplicity_mixing: 0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1\n";
 
-
-  if(fV0TrigCorr){
-defaultBinningStr += "InvariantMass:0.200,0.300,0.398,0.399,0.4,0.401,0.402,0.403,0.404,0.405,0.406,0.407,0.408,0.409,0.41,0.411,0.412,0.413,0.414,0.415,0.416,0.417,0.418,0.419,0.42,0.421,0.422,0.423,0.424,0.425,0.426,0.427,0.428,0.429,0.43,0.431,0.432,0.433,0.434,0.435,0.436,0.437,0.438,0.439,0.44,0.441,0.442,0.443,0.444,0.445,0.446,0.447,0.448,0.449,0.45,0.451,0.452,0.453,0.454,0.455,0.456,0.457,0.458,0.459,0.46,0.461,0.462,0.463,0.464,0.465,0.466,0.467,0.468,0.469,0.47,0.471,0.472,0.473,0.474,0.475,0.476,0.477,0.478,0.479,0.48,0.481,0.482,0.483,0.484,0.485,0.486,0.487,0.488,0.489,0.49,0.491,0.492,0.493,0.494,0.495,0.496,0.497,0.498,0.499,0.5,0.501,0.502,0.503,0.504,0.505,0.506,0.507,0.508,0.509,0.51,0.511,0.512,0.513,0.514,0.515,0.516,0.517,0.518,0.519,0.52,0.521,0.522,0.523,0.524,0.525,0.526,0.527,0.528,0.529,0.53,0.531,0.532,0.533,0.534,0.535,0.536,0.537,0.538,0.539,0.54,0.541,0.542,0.543,0.544,0.545,0.546,0.547,0.548,0.549,0.55,0.551,0.552,0.553,0.554,0.555,0.556,0.557,0.558,0.559,0.56,0.561,0.562,0.563,0.564,0.565,0.566,0.567,0.568,0.569,0.57,0.571,0.572,0.573,0.574,0.575,0.576,0.577,0.578,0.579,0.58,0.581,0.582,0.583,0.584,0.585,0.586,0.587,0.588,0.589,0.59,0.591,0.592,0.593,0.594,0.595,0.596,0.597,0.598,0.599,0.600,0.700,0.800,0.900,1.000,1.065,1.066,1.067,1.068,1.069,1.07,1.071,1.072,1.073,1.074,1.075,1.076,1.077,1.078,1.079,1.08,1.081,1.082,1.083,1.084,1.085,1.086,1.087,1.088,1.089,1.09,1.091,1.092,1.093,1.094,1.095,1.096,1.097,1.098,1.099,1.1,1.101,1.102,1.103,1.104,1.105,1.106,1.107,1.108,1.109,1.11,1.111,1.112,1.113,1.114,1.115,1.116,1.117,1.118,1.119,1.12,1.121,1.122,1.123,1.124,1.125,1.126,1.127,1.128,1.129,1.13,1.131,1.132,1.133,1.134,1.135,1.136,1.137,1.138,1.139,1.14,1.141,1.142,1.143,1.144,1.145,1.146,1.147,1.148,1.149,1.15,1.151,1.152,1.153,1.154,1.155,1.156,1.157,1.158,1.159,1.16,1.161,1.162,1.163,1.164,1.165\n";
-  }
  if(fRequestEventPlane){
-   defaultBinningStr += "eventPlane: -0.5,0.5,1.5,2.5,3.5\n"; // Event Plane Bins (Psi: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest))
+  defaultBinningStr += "eventPlane: -0.5,0.5,1.5,2.5,3.5\n"; // Event Plane Bins (Psi: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest))
   }
  if(fRequestEventPlanemixing){
 defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegToRad(), 60.0*TMath::DegToRad(), 90.0*TMath::DegToRad(), 120.0*TMath::DegToRad(),150.0*TMath::DegToRad(),180.1*TMath::DegToRad()\n";
  }
   if(fcontainPIDtrig){
-      defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5\n"; // course
+      if(fV0TrigCorr){
+	
+       	if(fLambda) defaultBinningStr += "InvariantMass:1.065,1.066,1.067,1.068,1.069,1.07,1.071,1.072,1.073,1.074,1.075,1.076,1.077,1.078,1.079,1.08,1.081,1.082,1.083,1.084,1.085,1.086,1.087,1.088,1.089,1.09,1.091,1.092,1.093,1.094,1.095,1.096,1.097,1.098,1.099,1.1,1.101,1.102,1.103,1.104,1.105,1.106,1.107,1.108,1.109,1.11,1.111,1.112,1.113,1.114,1.115,1.116,1.117,1.118,1.119,1.12,1.121,1.122,1.123,1.124,1.125,1.126,1.127,1.128,1.129,1.13,1.131,1.132,1.133,1.134,1.135,1.136,1.137,1.138,1.139,1.14,1.141,1.142,1.143,1.144,1.145,1.146,1.147,1.148,1.149,1.15,1.151,1.152,1.153,1.154,1.155,1.156,1.157,1.158,1.159,1.16,1.161,1.162,1.163,1.164,1.165\n";
+	
+	
+	if(fkShort) defaultBinningStr += "InvariantMass:0.398,0.4,0.402,0.404,0.406,0.408,0.41,0.412,0.414,0.416,0.418,0.42,0.422,0.424,0.426,0.428,0.43,0.432,0.434,0.436,0.438,0.44,0.442,0.444,0.446,0.448,0.45,0.452,0.454,0.456,0.458,0.46,0.462,0.464,0.466,0.468,0.47,0.472,0.474,0.476,0.478,0.48,0.482,0.484,0.486,0.488,0.49,0.492,0.494,0.496,0.498,0.5,0.502,0.504,0.506,0.508,0.51,0.512,0.514,0.516,0.518,0.52,0.522,0.524,0.526,0.528,0.53,0.532,0.534,0.536,0.538,0.54,0.542,0.544,0.546,0.548,0.55,0.552,0.554,0.556,0.558,0.56,0.562,0.564,0.566,0.568,0.57,0.572,0.574,0.576,0.578,0.58,0.582,0.584,0.586,0.588,0.59,0.592,0.594,0.596,0.598\n";
+	
   }
+    else  defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5\n"; // course
+  }
+  
   if(fcontainPIDasso){
       defaultBinningStr += "PIDAsso: -0.5,0.5,1.5,2.5,3.5\n"; // course
   }
@@ -1538,7 +1554,7 @@ fileT->Close();
 	//const Int_t nbinsV0 =sizeof(BinsV0)/sizeof(Double_t)-1;
 
  
-
+   if(ffillofflineV0){
    fHistRawPtCentInvK0s= new TH3F("fHistRawPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvK0s);
 
@@ -1561,7 +1577,7 @@ fOutput->Add(fHistFinalPtCentInvLambda);
 
  fHistFinalPtCentInvAntiLambda= new TH3F("fHistFinalPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvAntiLambda);
-
+   }
  }
 
   //*************************************************************EP plots***********************************************//
@@ -1909,9 +1925,10 @@ if(fAnalysisType == "MC"){
    if(gReactionPlane==999.) return;
  }
 
+   /*   
    TObjArray* tracksMCtruth_t=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
- tracksMCtruth_t->SetOwner(kTRUE);  //***********************************IMPORTANT!
-
+ tracksMCtruth_t->SetOwner(kTRUE);  
+   */
 
 TObjArray* tracksMCtruth=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
  tracksMCtruth->SetOwner(kTRUE);  //***********************************IMPORTANT!
@@ -2052,12 +2069,12 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
     LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,Inv_mass,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth,clustermap,sharemap);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
  copy6->SetUniqueID(eventno * 100000 + (Int_t)nooftrackstruth);
- tracksMCtruth_t->Add(copy6);//************** TObjArray used for truth correlation function calculation
+ tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
   }
  }//track loop ends
 
  if(nooftrackstruth>0.0){
-if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMult==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 /*
 AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
 
@@ -2069,10 +2086,12 @@ fNchNpartCorr->Fill(Npart,nooftrackstruth);//Creating some problem while being w
  }
 */
  }
+/*
 if(fRunShufflingbalance){
     tracksMCtruth = GetShuffledTracks(tracksMCtruth_t);
   }
  else tracksMCtruth=CloneAndReduceTrackList(tracksMCtruth_t);
+*/
  
   if (fRandomizeReactionPlane)//only for TRuth MC??
   {
@@ -2121,7 +2140,7 @@ if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership
   }
  //still in main event loop
 
-if(tracksMCtruth_t) delete tracksMCtruth_t;
+ //if(tracksMCtruth_t) delete tracksMCtruth_t;
 
 if(tracksMCtruth) delete tracksMCtruth;
 
@@ -2195,7 +2214,7 @@ skipParticlesAbove = eventHeader->NProduced();
     AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
   }
 
- if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
+ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMult==kFALSE))
    {
  //make the event selection with reco vertex cut and centrality cut and return the value of the centrality
      Double_t refmultTruth = GetAcceptedEventMultiplicity((AliVEvent*)aod,kTRUE);  //incase of ref multiplicity it will return the truth MC ref mullt value; need to determine the ref mult value separately for reco Mc case; in case of centrality this is final and fine
@@ -2220,11 +2239,11 @@ skipParticlesAbove = eventHeader->NProduced();
      gReactionPlane=GetEventPlane((AliVEvent*)aod,kTRUE,cent_v0);//get the truth event plane
    if(gReactionPlane==999.) return;
  }
-
+   /*
 TObjArray* tracksMCtruth_t=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
- tracksMCtruth_t->SetOwner(kTRUE);  //***********************************IMPORTANT!
+ tracksMCtruth_t->SetOwner(kTRUE);  
+   */
    
-   //TObjArray* tracksMCtruth=0;
 TObjArray* tracksMCtruth=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
  tracksMCtruth->SetOwner(kTRUE);  //***********************************IMPORTANT!
 
@@ -2341,7 +2360,7 @@ if(ffillhistQATruth)
     }
 
  // -- Fill THnSparse for efficiency and contamination calculation
-    if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
+    if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMult==kFALSE)) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
 
  Double_t primmctruth[4] = {effcent, zVtxmc,partMC->Pt(), partMC->Eta()};
  if(ffillefficiency)
@@ -2366,17 +2385,18 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
     LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,Inv_mass,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth,clustermap,sharemap);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
  copy6->SetUniqueID(eventno * 100000 + (Int_t)nooftrackstruth);
- tracksMCtruth_t->Add(copy6);//************** TObjArray used for truth correlation function calculation
+ tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
   }
   }//MC truth track loop ends
 
 //*********************still in event loop
 
+/*
  if(fRunShufflingbalance){
     tracksMCtruth = GetShuffledTracks(tracksMCtruth_t);
   }
  else tracksMCtruth=CloneAndReduceTrackList(tracksMCtruth_t);
-
+*/
  
  
    if (fRandomizeReactionPlane)//only for TRuth MC??
@@ -2390,7 +2410,7 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
 
    
 if(nooftrackstruth>0.0){
-if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMult==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
  
  if(fSampleType=="pPb" || fSampleType=="PbPb"){ //GetCocktailHeader(0) is creating problem for Phojet(AOD60), anyhow for pp it has no use  
    AliGenEventHeader* eventHeader = header->GetCocktailHeader(0);  // get first MC header from either ESD/AOD (including cocktail header if available)
@@ -2441,7 +2461,7 @@ if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership
 
  //still in main event loop
 
-if(tracksMCtruth_t) delete tracksMCtruth_t;
+//if(tracksMCtruth_t) delete tracksMCtruth_t;
 
 if(tracksMCtruth) delete tracksMCtruth;
 
@@ -2453,7 +2473,7 @@ if(tracksMCtruth) delete tracksMCtruth;
 
 
 //detrmine the ref mult in case of Reco(not required if we get centrality info from AliCentrality)
- if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) cent_v0=refmultReco;
+ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMult==kFALSE)) cent_v0=refmultReco;
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
 
  if(fRequestEventPlane){
@@ -2482,16 +2502,14 @@ if(tracksMCtruth) delete tracksMCtruth;
    }
 
 
-  
-   //TObjArray* tracksUNID=0;
-
+ /*
    TObjArray* tracksUNID_t = new TObjArray;
-   tracksUNID_t->SetOwner(kTRUE);
-   
+   tracksUNID_t->SetOwner(kTRUE);   
+ */
+ 
    TObjArray* tracksUNID = new TObjArray;
    tracksUNID->SetOwner(kTRUE);
 
-   //TObjArray* tracksID=0;
    TObjArray* tracksID = new TObjArray;
    tracksID->SetOwner(kTRUE);
 
@@ -2598,7 +2616,7 @@ if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have co
  Float_t effmatrix=1.;
 
 // -- Fill THnSparse for efficiency calculation
- if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
+ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMult==kFALSE)) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
  //NOTE:: this will be used for fillinfg THnSparse of efficiency & also to get the the track by track eff. factor on the fly(only in case of pp)
 
  //Clone & Reduce track list(TObjArray) for unidentified particles
@@ -2612,14 +2630,15 @@ if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtT
    effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletypeMC);
  LRCParticlePID* copy = new LRCParticlePID(particletypeMC,Inv_mass,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
    copy->SetUniqueID(eventno * 100000 +(Int_t)trackscount);
-   tracksUNID_t->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
+   tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
 
+/*
    if(fRunShufflingbalance){
     tracksUNID = GetShuffledTracks(tracksUNID_t);
   }
    else tracksUNID=CloneAndReduceTrackList(tracksUNID_t);
-   
+*/
 
 //get the pdg code of the corresponding truth particle
  Int_t pdgCode = ((AliAODMCParticle*)recomatched)->GetPdgCode();
@@ -2849,7 +2868,7 @@ if(trackscount>0.0)
 //fill the centrality/multiplicity distribution of the selected events
  fhistcentrality->Fill(cent_v0);//*********************************WARNING::binning of cent_v0 is different for pp and pPb/PbPb case
 
- if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+ if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMult==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 //***************************************event no. counting
 Bool_t isbaryontrig=kFALSE;
@@ -2948,7 +2967,7 @@ if(pool1)
 fEventCounter->Fill(15);
   }
 
-if(tracksUNID_t) delete tracksUNID_t;
+//if(tracksUNID_t) delete tracksUNID_t;
 if(tracksUNID)  delete tracksUNID;
 
 if(tracksID) delete tracksID;
@@ -3039,12 +3058,12 @@ TExMap *trackMap = new TExMap();
    trackMap->Add(gid,itrk);
  }//track looop ends
    }
+
+ /*
    TObjArray*  tracksUNID_t= new TObjArray;//track info before doing PID
    tracksUNID_t->SetOwner(kTRUE);  // IMPORTANT!
-
-   //TObjArray* tracksUNID=0;
-
-    
+ */
+ 
    TObjArray*  tracksUNID= new TObjArray;//track info before doing PID(required for reshuffling of charges for balance function calculation)
    tracksUNID->SetOwner(kTRUE);  // IMPORTANT!
   
@@ -3107,7 +3126,7 @@ if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have co
  if(track->Pt()>=fmaxPtTrig) fTrigPtJet=kTRUE;
 
 
-if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) effcent=15.0;//integrated over multiplicity [i.e each track has multiplicity 15.0](so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important for efficiency related issues
+if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMult==kFALSE)) effcent=15.0;//integrated over multiplicity [i.e each track has multiplicity 15.0](so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important for efficiency related issues
 
 
  //to reduce memory consumption in pool
@@ -3122,15 +3141,15 @@ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleT
    effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletype);
  LRCParticlePID* copy = new LRCParticlePID(particletype,Inv_mass,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
   copy->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
-  tracksUNID_t->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
+  tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
   
-  
+  /*
    if(fRunShufflingbalance){
     tracksUNID = GetShuffledTracks(tracksUNID_t);
   }
    else tracksUNID=CloneAndReduceTrackList(tracksUNID_t);
-  
+  */
 //now start the particle identificaion process:) 
 
 //track passing filterbit 768 have proper TPC response,or need to be checked explicitly before doing PID????
@@ -3226,7 +3245,7 @@ if(trackscount<1.0){
 //fill the centrality/multiplicity distribution of the selected events
  fhistcentrality->Fill(cent_v0);//*********************************WARNING::binning of cent_v0 is different for pp and pPb/PbPb case
 
-if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE) fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMult==kTRUE) fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 //count selected events having centrality betn 0-100%
  fEventCounter->Fill(13);
@@ -3331,7 +3350,7 @@ if(pool1)
 fEventCounter->Fill(15);
  
 //still in main event loop
-if(tracksUNID_t) delete tracksUNID_t;
+//if(tracksUNID_t) delete tracksUNID_t;
 
 if(tracksUNID)  delete tracksUNID;
 
@@ -5132,21 +5151,29 @@ Double_t AliTwoParticlePIDCorr::GetRefMultiOrCentrality(AliVEvent *mainevent, Bo
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")//for PbPb, pPb, pp7TeV(still to be introduced)//data or RecoMC and also for TRUTH
     {
                    
- if(fSampleType=="pp_7" && fPPVsMultUtils==kTRUE)
+ if(fSampleType=="pp_7" && fPPVsMult==kTRUE)
    {//for pp 7 TeV case only using Alianalysisutils class
      //AliAnalysisUtils *t1;
      //fAnalysisUtils=t1;
 
-     if(!fAnalysisUtils)
-     fAnalysisUtils=new AliAnalysisUtils();
+      if(!fPPVsMultUtils)
+      fPPVsMultUtils=new AliPPVsMultUtils();
      
-     if(fAnalysisUtils){
+     if(fPPVsMultUtils){
        
-       cent_v0 = fAnalysisUtils->GetMultiplicityPercentile(mainevent,fCentralityMethod.Data());
+       cent_v0 = fPPVsMultUtils->GetMultiplicityPercentile(mainevent,fCentralityMethod.Data(),fPileUp_zvtx_INEL_evsel);
        
-  fHistCentStats->Fill(0.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0A"));
-  fHistCentStats->Fill(1.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0C"));
-  fHistCentStats->Fill(2.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0M"));
+       fHistCentStats->Fill(0.,fPPVsMultUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0A",fPileUp_zvtx_INEL_evsel));
+       fHistCentStats->Fill(1.,fPPVsMultUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0C",fPileUp_zvtx_INEL_evsel));
+       fHistCentStats->Fill(2.,fPPVsMultUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0M",fPileUp_zvtx_INEL_evsel));
+
+ // This getter(GetMultiplicityPercentile) automatically includes event selection by default and will return negative
+ // values for the following types of events:
+ //
+ // --- Events that don't have at least one tracklet
+ // --- Events without reconstructed SPD vertex
+ // --- Events with a PV falling outside |z|<10cm
+ // --- Events that are tagged as pileup with IsPileupFromSPDInMultBins
   /*
   fHistCentStats->Fill(3.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0AEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
@@ -6097,9 +6124,11 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     Float_t v0Phi=v0->Phi();
 
     //This is simply raw v0 without any specialised cut
+    if(ffillofflineV0){
     fHistRawPtCentInvK0s->Fill(InvMassK0s,v0Pt,Centrality);
     fHistRawPtCentInvLambda->Fill(InvMassLambda,v0Pt,Centrality);
     fHistRawPtCentInvAntiLambda->Fill(InvMassAntiLambda,v0Pt,Centrality);
+    }
 
   // Decay vertex
     Double_t xyz[3];   
@@ -6168,7 +6197,7 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 
 	if( IskShortOk || cutK0sPID )
 	{
-	 fHistFinalPtCentInvK0s->Fill(InvMassK0s,v0Pt,Centrality);
+	  if(ffillofflineV0) fHistFinalPtCentInvK0s->Fill(InvMassK0s,v0Pt,Centrality);
 	 particletype=SpKs0;
 
     Short_t chargeval=0;
@@ -6182,7 +6211,7 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 
 	if(IsLambdaOk ||  cutLambdaPID)
 	{
-	 fHistFinalPtCentInvLambda->Fill(InvMassLambda,v0Pt,Centrality);
+	if(ffillofflineV0) fHistFinalPtCentInvLambda->Fill(InvMassLambda,v0Pt,Centrality);
 //Add in the LRCParticle and give Lambda a tag 5
 	 particletype=SpLam;
  
@@ -6195,7 +6224,7 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 
 	if(IsAntiLambdaOk ||  cutAntiLambdaPID)
 	{
-	 fHistFinalPtCentInvLambda->Fill(InvMassAntiLambda,v0Pt,Centrality);
+	if(ffillofflineV0) fHistFinalPtCentInvLambda->Fill(InvMassAntiLambda,v0Pt,Centrality);
 //Add in the LRCParticle and give Lambda a tag 6
 	 particletype=SpALam;
     Short_t chargeval=0;

@@ -103,7 +103,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fVtxMethod(kNormal),
     // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
-    fPileupFlags(kSPD|kOutOfBunch|kSPDBins),
+    fPileupFlags(kSPD|kTracks|kOutOfBunch|kSPDBins),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
     // fUseDisplacedVertices(false),
@@ -157,7 +157,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fVtxMethod(kNormal),
 // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
-    fPileupFlags(0x5),
+    fPileupFlags(kSPD|kTracks|kOutOfBunch|kSPDBins),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
 // fUseDisplacedVertices(false),
@@ -586,7 +586,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(kOther,	        "Other");
   fList->Add(fHTrgStatus);
 
-  fHPileup = new TH1I("pileupStatus", "Pile-up status", 3, 0, 3);
+  fHPileup = new TH1I("pileupStatus", "Pile-up status", 4, 0, 4);
   fHPileup->SetFillColor(kYellow+2);
   fHPileup->SetFillStyle(3001);
   fHPileup->SetStats(0);
@@ -595,6 +595,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(1,	"SPD tracklets");
   xAxis->SetBinLabel(2,	"Tracks"); 
   xAxis->SetBinLabel(3,	"Out-of-bunch");
+  xAxis->SetBinLabel(4,	"SPD tracklets (bins)");
   fList->Add(fHPileup);
 
   if (AllowDisplaced()) fDisplacedVertex.SetupForData(fList, "", false);
@@ -1127,7 +1128,13 @@ AliFMDEventInspector::CheckPileup(const AliESDEvent& esd,
   // check SPD by multiplicity bin
   if ((fPileupFlags & kSPDBins) &&
       (esd.IsPileupFromSPDInMultBins())) {
+    // Int_t nTracklets=GetMultiplicity()->GetNumberOfTracklets();
+    // if      (nTracklets<20) return IsPileupFromSPD(3,0.8);
+    // else if (nTracklets<50) return IsPileupFromSPD(4,0.8);
+    // else                    return IsPileupFromSPD(5,0.8);
+    
     locTrig |= AliAODForwardMult::kPileupBins;
+    fHPileup->Fill(3.5, 1);
   }
     
   

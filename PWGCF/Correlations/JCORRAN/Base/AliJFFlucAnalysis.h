@@ -16,6 +16,7 @@
 
 class TClonesArray;
 class AliJBaseTrack;
+class AliJEfficiency;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
@@ -33,9 +34,13 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		void SetInputList( TClonesArray *inputarray){fInputList = inputarray;};
 		void SetEventCentrality( float cent ){fCent = cent;};
+		void SetEventImpactParameter( float ip ){ fImpactParameter = ip; };
 		void SetEventVertex( double *vtx ){ fVertex = vtx; };
 		void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; };
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
+		void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; 
+									cout << "fEffMode set = " << fEffMode << endl;};
+
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
 
 
@@ -50,9 +55,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		double Complex_abs( double real, double img);
 		double Complex_sqr_real( double real, double img);
 		double Complex_sqr_img( double real, double img);
-
-
 		double Get_ScaledMoments( int k, int harmonics);
+		AliJEfficiency* GetAliJEfficiency() { return fEfficiency;}
 
 
 	private:
@@ -61,18 +65,20 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		TClonesArray * fInputList;
 		double * fVertex;
 		Float_t		fCent;
+		Float_t		fImpactParameter;
 		int			fDebugLevel;
-
 		int fNCent;
 		int fCBin;
 		double *fCentBin;
-
 		int fNJacek;  
 		double *fPttJacek;
+		AliJEfficiency *fEfficiency;
+		int fEffMode;
+		int fEffFilterBit;
  
 
 // Histograms
-		enum{kH0, kH1, kH2, kH3, kH4, kH5, kNH}; //harmonics
+		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kNH}; //harmonics
 		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
 		double fEta_min;
 		double fEta_max;
@@ -89,6 +95,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJBin fCorrBin;
 
 		AliJTH1D fh_cent; // for cent dist
+		AliJTH1D fh_ImpactParameter; // for impact parameter for mc
 		AliJTH1D fh_vertex;
 		AliJTH1D fh_pt; // for pt dist of tracks 
 		AliJTH1D fh_eta; // for eta dist of tracks
@@ -100,11 +107,6 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 
 		AliJTH1D fh_correlator; // some more complex correlator
-
-		AliJTH1D fh_vn_test1;
-		AliJTH1D fh_vn_test2;
-		AliJTH1D fh_vn_vn_test1;
-		AliJTH1D fh_vn_vn_test2;
 
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis

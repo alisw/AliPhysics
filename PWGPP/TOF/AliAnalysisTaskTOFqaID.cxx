@@ -71,7 +71,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fMatchingMomCut(0.0),
   fMatchingEtaCut(1e10),
   fTof(1e10),
-  fOCDBLocation("local://$ALICE_ROOT/OCDB"),
+  fOCDBLocation("local://$ALICE_PHYSICS/OCDB"),
   fChannelArray(0x0),
   fCalib(0x0),
   fHlist(0x0),
@@ -125,7 +125,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fMatchingMomCut(1.0),
   fMatchingEtaCut(0.8),
   fTof(1e10),
-  fOCDBLocation("local://$ALICE_ROOT/OCDB"),
+  fOCDBLocation("local://$ALICE_PHYSICS/OCDB"),
   fChannelArray(0x0),
   fCalib(0x0),
   fHlist(0x0),
@@ -327,7 +327,7 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   //pid response object
   fESDpid=(AliESDpid*)inputHandler->GetPIDResponse();
   if (!fESDpid) AliError("PIDResponse object was not created");
-  //fESDpid->SetOADBPath("$ALICE_ROOT/OADB");
+  //fESDpid->SetOADBPath("$ALICE_PHYSICS/OADB");
 
   Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());
   OpenFile(1);

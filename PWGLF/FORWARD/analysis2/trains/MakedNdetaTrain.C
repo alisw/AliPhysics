@@ -31,12 +31,14 @@ public:
   : TrainSetup(name)
   {
     fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
+    fOptions.Add("filter",   "TYPE", "Filter type", "OUTLIER|PILEUP-BIN");
     fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
     fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
     fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "EVENT,TRIGGER");
-    fOptions.Add("trigEff",  "EFFICENCY", "Trigger effeciency", "1");
-    fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
+    fOptions.Add("trigEff",  "EFFICIENCY", "Trigger efficiency", "1");
+    fOptions.Add("trigEff0", "EFFICIENCY", "0-bin trigger effeciency", "1");
     fOptions.Add("cent",     "ESTIMATOR", "Use centrality", "none");
+    fOptions.Add("centBins", "EDGES", "Centrality bin edges", "");
     fOptions.Add("mc",       "Also make dN/deta for MC truth");
     fOptions.Add("satellite","Restrict analysis to satellite events", false);
     fOptions.Add("forward-config", "FILE", "Forward configuration", 
@@ -47,6 +49,28 @@ public:
 		 "dNdetaConfig.C");
   }
 protected:
+  Bool_t CoupledNdetaCar(const char* which,
+			 const char* cfg)
+  {
+    AliAnalysisTaskSE* tsk = CoupleSECar("AddTaskdNdeta.C",
+					 Form("\"%s\",\"%s\"", which, cfg));
+    if (!tsk) {
+      Printf("Failed to add task via AddTaskdNdeta.C(%s,%s)", cfg);
+      return false;
+    }
+    FromOption(tsk, "TriggerMask",         "trig",     "INEL");
+    FromOption(tsk, "FilterMask",          "filter",   "OUTLIER|PILEUP-BIN");
+    FromOption(tsk, "NormalizationScheme", "scheme",   "EVENT,TRIGGER");
+    FromOption(tsk, "IpZMin",              "vzmin",    -10.);
+    FromOption(tsk, "IpZMax",              "vzmax",    +10.);
+    FromOption(tsk, "TriggerEff",          "trigEff",  1.);
+    FromOption(tsk, "TriggerEff0",         "trigEff0", 1.);
+    FromOption(tsk, "CentralityMethod",    "cent",     "");
+    FromOption(tsk, "CentralityAxis",      "centBins", "default");
+    FromOption(tsk, "SatelliteVertices",   "satellite", false);
+    return true;
+
+  }
   /** 
    * Create the tasks 
    * 
@@ -58,47 +82,25 @@ protected:
 
     // --- Load libraries/pars ---------------------------------------
     fRailway->LoadLibrary("PWGLFforward2");
-    
+    // fRailway->LoadLibrary("AOD");
+    // gSystem->ListLibraries();
+    // gSystem->Load("libAOD");
+
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Get parameters --------------------------------------------
-    TString  trig    = fOptions.Get("trig");
-    TString  scheme  = fOptions.Get("scheme");
-    Double_t vzMin   = fOptions.AsDouble("vzmin", -10);
-    Double_t vzMax   = fOptions.AsDouble("vzmax", +10);
-    Double_t effT    = fOptions.AsDouble("trigEff", 1);
-    Double_t effT0   = fOptions.AsDouble("trigEff0", 1);
-    TString  cent    = fOptions.Get("cent");
     Bool_t   mc      = fOptions.Has("mc");
-    Bool_t   satonly = fOptions.AsBool("satellite");
     TString  fwdCfg  = fOptions.Get("forward-config");
     TString  cenCfg  = fOptions.Get("central-config");
     TString  mcCfg   = fOptions.Get("truth-config");
     if (!mc) mc      = fRailway->IsMC(); 
-    if (!fOptions.Has("cent")) cent="none";
-
-    // Info("", "Centrality option is '%s'", cent.Data());
-    fOptions.Show(std::cout);
-
-    // --- Form arguments --------------------------------------------
-    TString fargs;
-    fargs.Form("\"%s\",\"%s\",%f,%f,\"%s\",\"%s\",%g,%g,%d",
-	       fwdCfg.Data(), trig.Data(), vzMin, vzMax, cent.Data(), 
-	       scheme.Data(), effT, effT0, satonly);
-    TString cargs(fargs);
-    cargs.ReplaceAll(fwdCfg, cenCfg);
-    // Info("", "fargs=\"%s\", cargs=\"%s\"", fargs.Data(), cargs.Data()); 
 
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskForwarddNdeta.C", fargs);
-    CoupleCar("AddTaskCentraldNdeta.C", cargs);
-    if (mc) {
-      TString margs(fargs);
-      margs.ReplaceAll(fwdCfg, mcCfg);
-      CoupleCar("AddTaskMCTruthdNdeta.C", margs);
-    }
+    CoupledNdetaCar("Forward", fwdCfg);
+    CoupledNdetaCar("Central", cenCfg);
+    if (mc) CoupledNdetaCar("MCTruth", mcCfg);
   }
   //__________________________________________________________________
   /** 
@@ -201,10 +203,30 @@ protected:
       << "// \n"
       << "//   root -l Draw.C\\(\\\"help\\\"\\)\n"
       << "// \n";
+    o << "// Options:\n"
+      << "//   0x00001      ShowRatios\n" 
+      << "//   0x00002   ShowLeftRight\n" 
+      << "//   0x00004    ShowSysError\n" 
+      << "//   0x00008       ShowRings\n"
+      << "//   0x00010        CutEdges\n"
+      << "//   0x00020    RemoveOuters\n" 
+      << "//   0x00040      UseFinalMC\n"
+      << "//   0x00080    UseEmpirical\n"
+      << "//   0x00100         ForceMB\n"
+      << "//   0x00200          Mirror\n"
+      << "//   0x00400          Export\n" 
+      << "//   0x00800         AddExec\n"
+      << "//   0x01000       OldFormat\n"
+      << "//   0x02000         Verbose\n"
+      << "//   0x04000           HiRes\n"
+      << "//   0x08000      ExtraWhite\n"
+      << "//   0x10000            Logo\n"
+      << "//   0x20000       NoCentral\n"
+      << "//   0x40000        NoLabels\n";
     o << "void Draw(const TString& title=\"" << fName << "\",\n"
       << "          UShort_t       rebin=5,\n"
       << "          UShort_t       others=0xf,\n"
-      << "          UInt_t         flags=0x1CE07,\n"
+      << "          UInt_t         flags=0x3C487,\n"
       << "          UShort_t       sNN=0,\n"
       << "          UShort_t       sys=0,\n"
       << "          UShort_t       trg=0,\n"

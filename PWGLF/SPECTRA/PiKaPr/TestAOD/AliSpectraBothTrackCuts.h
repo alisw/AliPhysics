@@ -22,6 +22,8 @@ class  AliESDtrackCuts;
 #include "AliSpectraBothHistoManager.h"
 #include "TNamed.h"
 #include "AliESDtrackCuts.h"
+#include "AliVTrack.h"
+
  
 using namespace AliSpectraNameSpaceBoth;
 

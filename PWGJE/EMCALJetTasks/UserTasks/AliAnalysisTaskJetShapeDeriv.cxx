@@ -412,6 +412,9 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   while((jet1 = jetCont->GetNextAcceptJet())) {
     jet2 = NULL;
 
+    if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
+      continue;
+
     Double_t mjet1 = jet1->GetSecondOrderSubtracted();
     Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
     Double_t var = mjet1;

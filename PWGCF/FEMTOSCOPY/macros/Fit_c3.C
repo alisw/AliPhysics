@@ -40,15 +40,15 @@ using namespace std;
 
 // Fit Normalization is fixed to 1.0, explains why Chi2 higher here than in Three-pion radii paper
 //
-int CollisionType_def=0;// PbPb, pPb, pp
+int CollisionType_def=2;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
-bool CumulantFit=kFALSE;// (0) C3, (1) c3
+bool FixNorm=0;// Fix Normalization for Pb-Pb only
 //
 int Mbin=0;// 0-9: centrality bin in widths of 5%
 int CHARGE=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
 //
 int EDbin=0;// 0 or 1: Kt3 bin
-double G_def = 0;// coherent fraction (absolute percentage)
+double G_def = 0;// coherent fraction (percentage)
 double Rcoh_def = 100.;// Radius of Gaussian coherent component in fm, 100 for full sized source
 //
 bool MRC=1;// Momentum Resolution Corrections?
@@ -56,11 +56,11 @@ bool MuonCorrection=1;// correct for Muons?
 //
 float TwoFrac=0.7;// Lambda parameter
 int f_choice=0;// 0(Core/Halo), 1(60fm), 2(80fm), 3(100fm)
-bool FullSize=kFALSE;// Is set to true when Rcoh>=100
 //
 //
 //
 //
+bool CumulantFit=kFALSE;// (0) C3, (1) c3
 bool SaveToFile_def=0;
 int fFSIindex=0;
 float OneFrac;// Lambda^{1/2}
@@ -133,8 +133,9 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   G_def=G;
   Rcoh_def=Rcoh;
 
-  if(Rcoh>=100) FullSize=kTRUE;
+  if(CollisionType!=0) FixNorm=1;
 
+  
   TFile *_file0;
   if(CollisionType==0){// PbPb
     //_file0 = new TFile("Results/PDC_11h_3Dhistos.root","READ");
@@ -144,7 +145,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     //_file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm.root","READ");
     _file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm_HighNorm.root","READ");
   }else{// pp
-    _file0 = new TFile("Results/PDC_10bcde_kMB_3Dhisto_LowNorm_HighNorm.root","READ");
+    _file0 = new TFile("Results/PDC_10bcde_kMB_3Dhisto_LowNorm_HighNorm.root","READ");// used for paper proposal
+    //_file0 = new TFile("Results/PDC_10bcde_kMB_NrecGreater10.root","READ");
   }
 
   TList *MyList;
@@ -178,7 +180,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   float f33 = f33prime;
   float f32 = f32prime/TwoFrac;
   float f31 = f31prime - 3*((1-TwoFrac)*(1-OneFrac) + ThermShift_f32[f_choice]*(1-TwoFrac)/TwoFrac);
-  cout<<f33 + 3*f32 + f31<<endl;
+  //cout<<f33 + 3*f32 + f31<<endl;
 
  
   cout<<"Mbin = "<<Mbin<<"   KT3 = "<<EDbin<<endl;
@@ -199,18 +201,21 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
  
 
   TString *System=new TString("");
-  if(CollisionType==0) System->Append("Pb-Pb #\sqrt{#font[12]{s}_{NN}}=2.76 TeV");
-  else if(CollisionType==1) System->Append("p-Pb #\sqrt{#font[12]{s}_{NN}}=5.02 TeV");
-  else System->Append("pp #\sqrt{#font[12]{s}}=7 TeV");
-  TLatex *ALICEspecif = new TLatex(0.62,.8,System->Data());// ALICE specifications
+  if(CollisionType==0) System->Append("ALICE 0-5% Pb-Pb #\sqrt{#font[12]{s}_{NN}}=2.76 TeV");
+  else if(CollisionType==1) System->Append("ALICE p-Pb #\sqrt{#font[12]{s}_{NN}}=5.02 TeV");
+  else System->Append("ALICE pp #\sqrt{#font[12]{s}}=7 TeV");
+  double XstartALICE=0.43;
+  if(CollisionType==1) XstartALICE=0.54;
+  if(CollisionType==2) XstartALICE=0.65;
+  TLatex *ALICEspecif = new TLatex(XstartALICE,.93,System->Data());// ALICE specifications
   ALICEspecif->SetNDC(1);
   ALICEspecif->SetTextFont(TextFont);
   ALICEspecif->SetTextSize(SizeSpecif);
   //
   TString *KT=new TString("");
-  if(EDbin==0) KT->Append("0.16<#font[12]{K}_{T4}<0.3 GeV/#font[12]{c}");
-  else KT->Append("0.3<#font[12]{K}_{T4}<1.0 GeV/#font[12]{c}");
-  TLatex *KTspecif = new TLatex(0.64,0.93,KT->Data());
+  if(EDbin==0) KT->Append("0.16<#font[12]{K}_{T3}<0.3 GeV/#font[12]{c}");
+  else KT->Append("0.3<#font[12]{K}_{T3}<1.0 GeV/#font[12]{c}");
+  TLatex *KTspecif = new TLatex(0.64,0.8,KT->Data());
   KTspecif->SetNDC(1);
   KTspecif->SetTextFont(TextFont);
   KTspecif->SetTextSize(SizeSpecif);
@@ -501,15 +506,64 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 	B_3[i-1][j-1][k-1] = TERM5;
 	A_3_e[i-1][j-1][k-1] = sqrt(N3_QS_e);
 
-	//if(i==j && i==k && i==4) cout<<A_3[i-1][j-1][k-1]<<"  "<<B_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
+	/*int fst=4, scd=5, trd=6;
+	if(i==fst && j==scd && k==trd) cout<<A_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
+	if(i==scd && j==fst && k==trd) cout<<A_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
+	if(i==trd && j==scd && k==fst) cout<<A_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
+	if(i==fst && j==trd && k==scd) cout<<A_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
+	if(i==trd && j==fst && k==scd) cout<<A_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
+	if(i==scd && j==trd && k==fst) cout<<A_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;*/
 	///////////////////////////////////////////////////////////
 	
       }
     }
   }
-  
-  
- 
+
+  // symmetrize i-j-k
+  /*for(int i=2; i<=ThreeParticle[0][0][0][0]->GetNbinsX(); i++){// bin number
+    for(int j=i; j<=ThreeParticle[0][0][0][0]->GetNbinsY(); j++){// bin number
+      for(int k=j; k<=ThreeParticle[0][0][0][0]->GetNbinsZ(); k++){// bin number
+	a_3[i-1][j-1][k-1] = (a_3[i-1][j-1][k-1] + a_3[i-1][k-1][j-1] + a_3[j-1][i-1][k-1] + a_3[k-1][j-1][i-1]);
+	a_3[i-1][j-1][k-1] += (a_3[k-1][i-1][j-1] + a_3[j-1][k-1][i-1]);
+	a_3[i-1][j-1][k-1] /= 6.;
+	b_3[i-1][j-1][k-1] = (b_3[i-1][j-1][k-1] + b_3[i-1][k-1][j-1] + b_3[j-1][i-1][k-1] + b_3[k-1][j-1][i-1]);
+	b_3[i-1][j-1][k-1] += (b_3[k-1][i-1][j-1] + b_3[j-1][k-1][i-1]);
+	b_3[i-1][j-1][k-1] /= 6.;
+	//
+	int degCount=1;
+	if(i!=j) {a_3_e[i-1][j-1][k-1] += pow(a_3_e[j-1][i-1][k-1],2); degCount++;}
+	if(i!=k) {a_3_e[i-1][j-1][k-1] += pow(a_3_e[k-1][j-1][i-1],2); degCount++;}
+	if(j!=k) {a_3_e[i-1][j-1][k-1] += pow(a_3_e[i-1][k-1][j-1],2); degCount++;}
+	if(i!=j && i!=k && j!=k) {
+	  a_3_e[i-1][j-1][k-1] += pow(a_3_e[k-1][i-1][j-1],2);
+	  a_3_e[i-1][j-1][k-1] += pow(a_3_e[j-1][k-1][i-1],2);
+	  degCount += 2;
+	}
+	a_3_e[i-1][j-1][k-1] = sqrt(a_3_e[i-1][j-1][k-1] / degCount);
+	///////
+	//
+	A_3[i-1][j-1][k-1] = (A_3[i-1][j-1][k-1] + A_3[i-1][k-1][j-1] + A_3[j-1][i-1][k-1] + A_3[k-1][j-1][i-1]);
+	A_3[i-1][j-1][k-1] += (A_3[k-1][i-1][j-1] + A_3[j-1][k-1][i-1]);
+	A_3[i-1][j-1][k-1] /= 6.;
+	B_3[i-1][j-1][k-1] = (B_3[i-1][j-1][k-1] + B_3[i-1][k-1][j-1] + B_3[j-1][i-1][k-1] + B_3[k-1][j-1][i-1]);
+	B_3[i-1][j-1][k-1] += (B_3[k-1][i-1][j-1] + B_3[j-1][k-1][i-1]);
+	B_3[i-1][j-1][k-1] /= 6.;
+	//
+	degCount=1;
+	if(i!=j) {A_3_e[i-1][j-1][k-1] += pow(A_3_e[j-1][i-1][k-1],2); degCount++;}
+	if(i!=k) {A_3_e[i-1][j-1][k-1] += pow(A_3_e[k-1][j-1][i-1],2); degCount++;}
+	if(j!=k) {A_3_e[i-1][j-1][k-1] += pow(A_3_e[i-1][k-1][j-1],2); degCount++;}
+	if(i!=j && i!=k && j!=k) {
+	  A_3_e[i-1][j-1][k-1] += pow(A_3_e[k-1][i-1][j-1],2);
+	  A_3_e[i-1][j-1][k-1] += pow(A_3_e[j-1][k-1][i-1],2);
+	  degCount += 2;
+	}
+	A_3_e[i-1][j-1][k-1] = sqrt(A_3_e[i-1][j-1][k-1] / degCount);
+      }
+    }
+    }*/
+
+
   ////////////////////////////
 
   // Intermediate steps
@@ -559,7 +613,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   //
  
   TGraph *gr_c3Spline[2];// c3/C3
-  TMinuit MyMinuit_fit[2];// c3/C3
+  TMinuit *MyMinuit_fit[2];// c3/C3
   TF1 *c3Fit1D_Expan[2];
   if(FitType==0) {
     c3Fit1D_Expan[0]=new TF1("c3Fit1D_Expan1","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2.,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2.,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)) + [5]/(120.*pow(2.,2.5))*(32.*pow(x/sqrt(3.)*[2]/0.19733,5) - 160.*pow(x/sqrt(3.)*[2]/0.19733,3) + 120*x/sqrt(3.)*[2]/0.19733) ,3))",0,1);
@@ -572,7 +626,12 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-pow([2]*x/0.19733, [3])))",0,1);
   }
   
+  TF1 *testEq;
+  if(FitType==0) testEq = new TF1("testEq","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
+  else testEq = new TF1("testEq","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))",0,1);
   
+  
+
   for(int fitIt=0; fitIt<2; fitIt++){
     if(fitIt==0) CumulantFit=kTRUE;
     else CumulantFit=kFALSE;
@@ -616,9 +675,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   }else{
     if(FitType==0) {par_c3[2] = 2.0; minVal_c3[2] = 1.0;}
     else {
-      par_c3[1] = 4.0; minVal_c3[1] = 1.0;
+      par_c3[1] = 4.0; minVal_c3[1] = .2; maxVal_c3[1] = 3.0;
       //
-      par_c3[2] = 1.3; minVal_c3[2] = .9; maxVal_c3[2] = 10.;
+      par_c3[2] = 1.3; minVal_c3[2] = .9; maxVal_c3[2] = 4.;
+      minVal_c3[3] = -1; minVal_c3[4] = -1;
+      maxVal_c3[3] = 1; maxVal_c3[4] = 1;
     }
   }
   
@@ -637,7 +698,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     MyMinuit_c3.FixParameter(4);
     MyMinuit_c3.FixParameter(5);
   }
-  MyMinuit_c3.FixParameter(0);
+  if(FixNorm) MyMinuit_c3.FixParameter(0);
   //MyMinuit_c3.FixParameter(1);
   //MyMinuit_c3.FixParameter(2);
   //MyMinuit_c3.FixParameter(3);
@@ -675,7 +736,9 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   c3Fit1D_Expan[fitIt]->SetLineStyle(1);
   //c3Fit1D_Expan->Draw("same");
   
- 
+ for(int i=0; i<5; i++) testEq->SetParameter(i,OutputPar_c3[i+1]);
+ cout<<"EA = "<<testEq->Eval(0.035)<<endl;
+
   // project 3D EW fit onto 1D histogram
   for(int i=2; i<=BINLIMIT_3; i++){// bin number
     double Q12 = BinCenters[i-1];// true center
@@ -730,7 +793,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 	double t12_coh = exp(-pow(Rcoh/FmToGeV * Q12,2)/2.);
 	double t23_coh = exp(-pow(Rcoh/FmToGeV * Q23,2)/2.);
 	double t13_coh = exp(-pow(Rcoh/FmToGeV * Q13,2)/2.);
-	if(FullSize){
+	if(Rcoh>=100){
 	  t12_coh = exp(-pow(arg12,OutputPar_c3[6])/2.) * Expan12;
 	  t23_coh = exp(-pow(arg23,OutputPar_c3[6])/2.) * Expan23;
 	  t13_coh = exp(-pow(arg13,OutputPar_c3[6])/2.) * Expan13;
@@ -795,9 +858,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   }else{
     gr_c3Spline[fitIt]->SetLineColor(4);
   }
-  
+  MyMinuit_fit[fitIt] = (TMinuit*)MyMinuit_c3.Clone();
   
   }// fitIt
+
+  
 
   if(CollisionType!=0){
     int binH=4;
@@ -809,14 +874,14 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   }
   C3_hist->Draw();
   c3_hist->Draw("same");
-  legend1->AddEntry(C3_hist,"#font[12]{C}_{3}","p");
-  legend1->AddEntry(c3_hist,"#font[12]{#bf{c}}_{3}","p");
+  legend1->AddEntry(C3_hist,"#font[12]{C}_{3}^{QS}","p");
+  legend1->AddEntry(c3_hist,"#font[12]{#bf{c}}_{3}^{QS}","p");
  
   Unity->Draw("same");
   
   ALICEspecif->Draw("same");
   KTspecif->Draw("same");
-  if(CollisionType==0) Centspecif->Draw("same");
+  
 
   gr_c3Spline[0]->Draw("same");
   gr_c3Spline[1]->Draw("same");
@@ -843,10 +908,10 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   C3QS_Syst->Draw("same");
   C3_hist->Draw("same");
   //
-  legend1->AddEntry(gr_c3Spline[0],"Fit to #font[12]{#bf{c}}_{3}","l");
-  legend1->AddEntry(gr_c3Spline[1],"Fit to #font[12]{C}_{3}","l");
+  legend1->AddEntry(gr_c3Spline[0],"Fit to #font[12]{#bf{c}}_{3}^{QS}","l");
+  legend1->AddEntry(gr_c3Spline[1],"Fit to #font[12]{C}_{3}^{QS}","l");
   legend1->Draw("same");
-  cout<<c3_hist->GetBinContent(3)<<"  "<<C3_hist->GetBinContent(3)<<endl;
+  //cout<<c3_hist->GetBinContent(3)<<"  "<<C3_hist->GetBinContent(3)<<endl;
   // Ratio plot
   pad1_2->cd();
   gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
@@ -866,7 +931,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   int BinKill=1;
   if(CollisionType!=0) BinKill=10;
   for(int bin=1; bin<=C3_hist->GetNbinsX()-BinKill; bin++){
-    double q3 = Ratio_c3->GetXaxis()->GetBinCenter(bin);
+    //double q3 = Ratio_c3->GetXaxis()->GetBinCenter(bin);
     double value = Ratio_c3->GetBinContent(bin);
     double value_e = Ratio_c3->GetBinError(bin);
     if(value < 0.9) continue;
@@ -886,8 +951,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   }
   Ratio_C3->Draw();
   Ratio_c3->Draw("same");
-  legend2->AddEntry(Ratio_C3,"#font[12]{C}_{3}","p");
-  legend2->AddEntry(Ratio_c3,"#font[12]{#bf{c}}_{3}","p");
+  legend2->AddEntry(Ratio_C3,"#font[12]{C}_{3}^{QS}","p");
+  legend2->AddEntry(Ratio_c3,"#font[12]{#bf{c}}_{3}^{QS}","p");
   //legend2->Draw("same");
   Unity->Draw("same");
   /*
@@ -909,14 +974,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   }
   cout<<"1D Chi2/NDF = "<<ChiSqSum_1D / (SumNDF_1D-5.)<<endl;
   */
-  //TF1 *testEq = new TF1("testEq","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
-  //for(int i=0; i<5; i++) testEq->FixParameter(i,OutputPar_c3[i+1]);
-  //cout<<"EA = "<<testEq->Eval(0.02)<<endl;
+
+  
 
   if(SaveToFile){
     TString *savefilename = new TString("FitFiles/");
-    if(CumulantFit) savefilename->Append("c3/");
-    else savefilename->Append("C3/");
     savefilename->Append("FitFile_CT");
     *savefilename += CollisionType;
     savefilename->Append("_FT");
@@ -927,8 +989,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     *savefilename += int((G+0.001)/0.02);
     savefilename->Append(".root");
     TFile *savefile = new TFile(savefilename->Data(),"RECREATE");
-    if(CumulantFit) MyMinuit_fit[0].Write("MyMinuit_c3");
-    else MyMinuit_fit[1].Write("MyMinuit_c3");
+    MyMinuit_fit[0]->Write("MyMinuit_c3");
+    MyMinuit_fit[1]->Write("MyMinuit_C3");
     //
     savefile->Close();
   }
@@ -1097,9 +1159,9 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
   NFitPoints_c3=0;
   //double SumChi2_test=0;
 
-  for(int i=0; i<=BINLIMIT_3; i++){// q12
-    for(int j=0; j<=BINLIMIT_3; j++){// q13
-      for(int k=0; k<=BINLIMIT_3; k++){// q23
+  for(int i=1; i<=BINLIMIT_3; i++){// q12
+    for(int j=1; j<=BINLIMIT_3; j++){// q13
+      for(int k=1; k<=BINLIMIT_3; k++){// q23
 	
 	if(B_3[i][j][k] == 0) continue;
 	if(A_3[i][j][k] == 0) continue;
@@ -1150,7 +1212,7 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
 	double t12_coh = exp(-pow(Rcoh_def/FmToGeV * q12,2)/2.);
 	double t23_coh = exp(-pow(Rcoh_def/FmToGeV * q23,2)/2.);
 	double t13_coh = exp(-pow(Rcoh_def/FmToGeV * q13,2)/2.);
-	if(FullSize){
+	if(Rcoh_def>=100){
 	  t12_coh = exp(-pow(arg12,par[6])/2.) * Expan12;
 	  t23_coh = exp(-pow(arg23,par[6])/2.) * Expan23;
 	  t13_coh = exp(-pow(arg13,par[6])/2.) * Expan13;

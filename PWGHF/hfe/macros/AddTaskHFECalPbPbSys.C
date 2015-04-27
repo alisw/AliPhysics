@@ -37,6 +37,18 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   mgr->ConnectInput(hfetask, 0, cinput);
   mgr->ConnectOutput(hfetask, 1, coutput1);
  
+  // central
+  AliAnalysisTaskHFECal *hfetask1 = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
+  mgr->AddTask(hfetask1);
+  hfetask1->SelectCollisionCandidates(AliVEvent::kCentral);
+  TString containerName1 = mgr->GetCommonFileName();
+  containerName1 += ":PWGHF_hfeCalCentral";
+  containerName1 += ID;
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFE_Results_Central_%s",ID.Data()), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  mgr->ConnectInput(hfetask1, 0, cinput);
+  mgr->ConnectOutput(hfetask1, 1, coutput1);
+
   //trigger
   AliAnalysisTaskHFECal *hfetaskTrig = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetaskTrig);

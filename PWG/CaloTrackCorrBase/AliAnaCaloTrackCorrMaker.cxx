@@ -46,7 +46,7 @@ fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
-fFillDataControlHisto(kTRUE),
+fFillDataControlHisto(kTRUE), fSumw2(0),
 // Control histograms
 fhNEventsIn(0),               fhNEvents(0),
 fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
@@ -56,6 +56,8 @@ fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExoti
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
+fhNEventsWeighted(0),         fhTrackMultWeighted(0),
+fhCentralityWeighted(0),      fhEventPlaneAngleWeighted(0),
 fhNMergedFiles(0),            fhScaleFactor(0),
 fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
 fhTrackBCEvent(0),            fhTrackBCEventCut(0),
@@ -94,6 +96,7 @@ fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
 fFillDataControlHisto(maker.fFillDataControlHisto),
+fSumw2(maker.fSumw2),
 fhNEventsIn(maker.fhNEventsIn),
 fhNEvents(maker.fhNEvents),
 fhNExoticEvents(maker.fhNExoticEvents),
@@ -111,6 +114,10 @@ fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
+fhNEventsWeighted(maker.fhNEventsWeighted),
+fhTrackMultWeighted(maker.fhTrackMultWeighted),
+fhCentralityWeighted(maker.fhCentralityWeighted),
+fhEventPlaneAngleWeighted(maker.fhEventPlaneAngleWeighted),
 fhNMergedFiles(maker.fhNMergedFiles),
 fhScaleFactor(maker.fhScaleFactor),
 fhEMCalBCEvent(maker.fhEMCalBCEvent),
@@ -222,10 +229,20 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhYVertex->Fill(v[1]);
   fhZVertex->Fill(v[2]);
   
-  fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
-  fhCentrality        ->Fill(fReader->GetEventCentrality  ());
-  fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
+  fhTrackMult      ->Fill(fReader->GetTrackMultiplicity());
+  fhCentrality     ->Fill(fReader->GetEventCentrality  ());
+  fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
   
+  if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
+  {
+    Float_t eventWeight = GetReader()->GetEventWeight();
+      
+    fhNEventsWeighted        ->Fill(0.,                             eventWeight);
+    fhTrackMultWeighted      ->Fill(fReader->GetTrackMultiplicity(),eventWeight);
+    fhCentralityWeighted     ->Fill(fReader->GetEventCentrality  (),eventWeight);
+    fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
+  }
+    
   if(fFillDataControlHisto)
   {
     if( fReader->IsPileUpFromSPD())
@@ -437,11 +454,7 @@ TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 //___________________________________________________
 TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 {
-  //Initialize calorimeters  geometry pointers
-  //GetCaloUtils()->InitPHOSGeometry();
-  //GetCaloUtils()->InitEMCALGeometry();
-  
-  //General event histograms
+  // General event histograms
 
   fhNEventsIn      = new TH1F("hNEventsIn",   "Number of input events"     , 1 , 0 , 1  ) ;
   fhNEventsIn->SetYTitle("# events");
@@ -463,18 +476,37 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
 
-  fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin",100,0.,100) ;
+  fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin", 100, 0., 100) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;
   
-  fhEventPlaneAngle=new TH1F("hEventPlaneAngle","Number of events in event plane",100,0.,TMath::Pi()) ;
+  fhEventPlaneAngle = new TH1F("hEventPlaneAngle","Number of events in event plane", 100, 0., TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
 
-  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
+  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events", 2000 , 0 , 2000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
 
+  if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
+  {
+    fhNEventsWeighted         = new TH1F("hNEventsWeighted",   "Number of analyzed events weighted by centrality", 1 , 0 , 1  ) ;
+    fhNEventsWeighted->SetYTitle("# events");
+    fOutputContainer->Add(fhNEventsWeighted);
+      
+    fhCentralityWeighted      = new TH1F("hCentralityWeighted","Number of events in centrality bin weighted by centrality", 100, 0.,100) ;
+    fhCentralityWeighted->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralityWeighted) ;
+      
+    fhEventPlaneAngleWeighted = new TH1F("hEventPlaneAngleWeighted","Number of events in event plane weighted by centrality",100, 0., TMath::Pi()) ;
+    fhEventPlaneAngleWeighted->SetXTitle("EP angle (rad)");
+    fOutputContainer->Add(fhEventPlaneAngleWeighted) ;
+      
+    fhTrackMultWeighted       = new TH1F("hTrackMultWeighted", "Number of tracks per events weighted by centrality", 2000 , 0 , 2000) ;
+    fhTrackMultWeighted->SetXTitle("# tracks");
+    fOutputContainer->Add(fhTrackMultWeighted);
+  }
+    
   if(fFillDataControlHisto)
   {
     fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
@@ -766,6 +798,21 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fOutputContainer->Add(fhScaleFactor);
   }
   
+  // Histograms defined and filled in this class, just get the pointers
+  // and add them to the list.
+  if(GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn())
+  {
+    TList * templist =  GetReader()->GetWeightUtils()->GetCreateOutputHistograms();
+      
+    if ( templist && templist->GetEntries() == 2 )
+    {
+      templist->SetOwner(kFALSE); //Owner is fOutputContainer.
+    
+      fOutputContainer->Add(templist->At(0));
+      fOutputContainer->Add(templist->At(1));
+    }
+  }
+    
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
     AliWarning("Analysis job list not initialized!!!");
@@ -776,30 +823,29 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   char newname[buffersize];
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
-    
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     
     if(fMakeHisto) // Analysis with histograms as output on
     {
-      
       //Fill container with appropriate histograms
-      TList * templist =  ana ->GetCreateOutputObjects();
+      TList * templist =  ana->GetCreateOutputObjects();
       templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       
       for(Int_t i = 0; i < templist->GetEntries(); i++)
       {
-        
         //Add only  to the histogram name the name of the task
         if(   strcmp((templist->At(i))->ClassName(),"TObjString")   )
         {
           snprintf(newname,buffersize, "%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());
           //printf("name %s, new name %s\n",(templist->At(i))->GetName(),newname);
+          
           ((TH1*) templist->At(i))->SetName(newname);
+            
+          if ( fSumw2 ) ((TH1*) templist->At(i))->Sumw2();
         }
         
         //Add histogram to general container
         fOutputContainer->Add(templist->At(i)) ;
-        
       }
       
       delete templist;
@@ -808,6 +854,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     
   }//Loop on analysis defined
   
+  // Initialize calorimeters  geometry pointers
+  //GetCaloUtils()->InitPHOSGeometry();
+  //GetCaloUtils()->InitEMCALGeometry();
+    
   return fOutputContainer;
   
 }

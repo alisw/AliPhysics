@@ -25,8 +25,8 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   if (gSystem->Exec("ls qaConfig.C")==0)
     gROOT->LoadMacro(  "qaConfig.C");
   else {
-    printf("now loading $ALICE_ROOT/PWGPP/TPC/macros/qaConfig.C\n");
-    gROOT->LoadMacro(  "$ALICE_ROOT/PWGPP/TPC/macros/qaConfig.C");
+    printf("now loading $ALICE_PHYSICS/PWGPP/TPC/macros/qaConfig.C\n");
+    gROOT->LoadMacro(  "$ALICE_PHYSICS/PWGPP/TPC/macros/qaConfig.C");
   }
   
   //
@@ -1158,7 +1158,7 @@ Int_t PlotTimestamp(const int nruns=0, const int nentries=0)
 {
   //the function plots a timestamp, the used Aliroot version, and the number of runs
   TString sTimestamp  = gSystem->GetFromPipe("date");
-  TString sAlirootVer = "AliRoot " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT; git describe; cd $wdir;");
+  TString sAlirootVer = "AliRoot " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_PHYSICS; git describe; cd $wdir;");
   TLatex* latTime = new TLatex(0.99,0.95,sTimestamp.Data());
   latTime->SetTextSize(0.03);
   latTime->SetTextAlign(31);

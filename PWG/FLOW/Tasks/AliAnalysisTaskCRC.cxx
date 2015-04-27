@@ -26,6 +26,9 @@ class TList;
 class AliAnalysisTaskSE;
 
 #include "Riostream.h"
+#include "AliAODEvent.h"
+#include "AliAODHeader.h"
+#include "AliCentrality.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCRC.h"
 #include "AliFlowAnalysisCRC.h"
@@ -81,12 +84,17 @@ fnBinsForCorrelations(10000),
 fUseBootstrap(kFALSE),
 fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
-fCalculateCRC(kFALSE),
+fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fCalculateCRCBck(kFALSE),
 fUseNUAforCRC(kFALSE),
+fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
-fCRCEtaMax(0.)
+fCRCEtaMax(0.),
+fnCenBin(7),
+fCenBinWidth(10.),
+fQVecList(NULL),
+fRunSet("2010h")
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -175,12 +183,14 @@ fnBinsForCorrelations(0),
 fUseBootstrap(kFALSE),
 fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
-fCalculateCRC(kFALSE),
+fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fCalculateCRCBck(kFALSE),
 fUseNUAforCRC(kFALSE),
+fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
-fCRCEtaMax(0.)
+fCRCEtaMax(0.),
+fQVecList(NULL)
 {
  // Dummy constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC()");
@@ -221,7 +231,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  AliDebug(2,"AliAnalysisTaskCRC::UserCreateOutputObjects()");
  
  // Analyser:
- fQC = new AliFlowAnalysisCRC();
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
  
  // Common:
  fQC->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
@@ -238,23 +248,22 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateAllCorrelationsVsM(fCalculateAllCorrelationsVsM);
  fQC->SetCalculateMixedHarmonics(fCalculateMixedHarmonics);
  fQC->SetCalculateMixedHarmonicsVsM(fCalculateMixedHarmonicsVsM);
- fQC->SetCalculateCRC(fCalculateCRC);
- fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetStoreControlHistograms(fStoreControlHistograms);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow);
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances);
  fQC->SetExactNoRPs(fExactNoRPs);
+ fQC->SetCalculateCRC(fCalculateCRC);
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetCalculateCRCBck(fCalculateCRCBck);
  fQC->SetNUAforCRC(fUseNUAforCRC);
+ fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);
  fQC->SetMaxMult(fMaxMult);
  // Particle weights:
- if(fUseParticleWeights)
- {
+ if(fUseParticleWeights) {
   // Pass the flags to class:
   if(fUsePhiWeights){fQC->SetUsePhiWeights(fUsePhiWeights);}
   if(fUsePtWeights){fQC->SetUsePtWeights(fUsePtWeights);}
@@ -266,9 +275,12 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fWeightsList) fQC->SetWeightsList(fWeightsList);
  }
  // Event weights:
- if(!fMultiplicityWeight->Contains("combinations")) // default is "combinations"
- {
+ if(!fMultiplicityWeight->Contains("combinations")) {
   fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
+ }
+ // Q Vector weights:
+ if(fUseCRCRecenter) {
+  if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
  
  fQC->SetMultiplicityIs(fMultiplicityIs);
@@ -281,22 +293,19 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetStoreVarious(fStoreVarious);
  
  // Initialize default min and max values of correlations:
- for(Int_t ci=0;ci<4;ci++)
- {
+ for(Int_t ci=0;ci<4;ci++) {
   fQC->SetMinValueOfCorrelation(ci,fMinValueOfCorrelation[ci]);
   fQC->SetMaxValueOfCorrelation(ci,fMaxValueOfCorrelation[ci]);
  }
  
  // Initialize default min and max values of correlation products:
- for(Int_t cpi=0;cpi<1;cpi++) // TBI hardwired 1
- {
+ for(Int_t cpi=0;cpi<1;cpi++) {
   fQC->SetMinValueOfCorrelationProduct(cpi,fMinValueOfCorrelationProduct[cpi]);
   fQC->SetMaxValueOfCorrelationProduct(cpi,fMaxValueOfCorrelationProduct[cpi]);
  }
  
  // Initialize default min and max values of Q-vector terms:
- for(Int_t ci=0;ci<4;ci++)
- {
+ for(Int_t ci=0;ci<4;ci++) {
   fQC->SetMinValueOfQvectorTerms(ci,fMinValueOfQvectorTerms[ci]);
   fQC->SetMaxValueOfQvectorTerms(ci,fMaxValueOfQvectorTerms[ci]);
  }
@@ -308,12 +317,9 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  
  fQC->Init();
  
- if(fQC->GetHistList())
- {
+ if(fQC->GetHistList()) {
   fListHistos = fQC->GetHistList();
-  // fListHistos->Print();
- } else
- {
+ } else {
   Printf("ERROR: Could not retrieve histogram list (QC, Task::UserCreateOutputObjects()) !!!!");
  }
  
@@ -329,11 +335,10 @@ void AliAnalysisTaskCRC::UserExec(Option_t *)
  fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
  
  // Q-cumulants
- if(fEvent)
- {
+ if(fEvent) {
+  fQC->SetRunNumber(fEvent->GetRun());
   fQC->Make(fEvent);
- } else
- {
+ } else {
   cout<<"WARNING: No input data (QC, Task::UserExec()) !!!!"<<endl;
   cout<<endl;
  }
@@ -348,15 +353,13 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
  //accessing the merged output list:
  fListHistos = (TList*)GetOutputData(1);
  
- fQC = new AliFlowAnalysisCRC();
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
  
- if(fListHistos)
- {
+ if(fListHistos) {
   fQC->GetOutputHistograms(fListHistos);
   fQC->Finish();
   PostData(1,fListHistos);
- } else
- {
+ } else {
   cout<<" WARNING: histogram list pointer is empty (QC, Task::Terminate()) !!!!"<<endl;
   cout<<endl;
  }

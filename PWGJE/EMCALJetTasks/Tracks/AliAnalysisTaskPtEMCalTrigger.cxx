@@ -307,7 +307,7 @@ namespace EMCalTriggerPtAnalysis {
       TIter cutIter(fListTrackCuts);
       AliEMCalPtTaskVTrackSelection *cutObject(NULL);
       while((cutObject = dynamic_cast<AliEMCalPtTaskVTrackSelection *>(cutIter()))){
-        AliESDtrackCuts *cuts = dynamic_cast<AliESDtrackCuts *>(cutObject->GetTrackCuts());
+        AliESDtrackCuts *cuts = dynamic_cast<AliESDtrackCuts *>(cutObject->GetTrackCuts(0));
         if(cuts){
           cuts->DefineHistograms();
           fOutput->Add(cuts);

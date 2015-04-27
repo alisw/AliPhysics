@@ -38,6 +38,7 @@ fRightBandMinCut(0.),  fRightBandMaxCut(0.),
 fAngleMaxParam(),      fUseAngleCut(0),       
 fKeepNeutralMesonHistos(0),
 fParticle(""),         fDecayBit(0),
+fDebug(0),
 // histograms
 fhAnglePairNoCut(0),          fhAnglePairOpeningAngleCut(0),   
 fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 

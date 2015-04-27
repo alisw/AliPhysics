@@ -196,11 +196,8 @@ setYear()
   local yearTarget=$(guessYearFast ${2})
   local path=${2}
   [[ ${yearSource} -ne ${yearTarget} && -n ${yearTarget} && -n ${yearSource} ]] \
-    && path=${2/\/"${yearTarget}"/\/"${yearSource}"}
-  path=${path/\/\//\/}
-  # The previous line would transform raw:// in raw:/
-  # The next fixes this
-  echo ${path/%:\//:\/\/}
+    && path=${2/"/${yearTarget}"/"/${yearSource}"}
+  echo ${path}
   return 0
 }
 

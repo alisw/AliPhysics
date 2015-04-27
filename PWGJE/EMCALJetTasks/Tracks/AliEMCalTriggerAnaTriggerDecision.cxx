@@ -67,8 +67,8 @@ void AliEMCalTriggerAnaTriggerDecision::Reset() {
  * \param triggerstring the trigger string stored in the reconstructed event.
  */
 void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromString(const TString& triggerstring) {
-  if(triggerstring.Contains("EJ1")) fDecisionFromString[kTAEMCJHigh]  = kTRUE;
-  if(triggerstring.Contains("EJ2")) fDecisionFromString[kTAEMCJLow]   = kTRUE;
+  if(triggerstring.Contains("EJ1") || triggerstring.Contains("EJE")) fDecisionFromString[kTAEMCJHigh]  = kTRUE;
+  if(triggerstring.Contains("EJ2") || triggerstring.Contains("EGA")) fDecisionFromString[kTAEMCJLow]   = kTRUE;
   if(triggerstring.Contains("EG1")) fDecisionFromString[kTAEMCGHigh]  = kTRUE;
   if(triggerstring.Contains("EG2")) fDecisionFromString[kTAEMCGLow]   = kTRUE;
 }

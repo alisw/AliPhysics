@@ -26,6 +26,7 @@
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
 #include "TFile.h"
 
 class iostream;

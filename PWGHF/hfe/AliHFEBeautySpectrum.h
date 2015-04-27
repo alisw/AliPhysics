@@ -68,7 +68,6 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   void SetEtaSyst(Bool_t etaSyst = kTRUE) { fEtaSyst = etaSyst; };
   
   void SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions);
-  
   void SetNumberOfMCEvents(Int_t nEvents) { fNMCEvents = nEvents; };
   void SetNumberOfMC2Events(Int_t nEvents) { fNMCbgEvents = nEvents; };
   void SetUnSetCorrelatedErrors(Bool_t unsetcorrelatederrors) {fUnSetCorrelatedErrors = unsetcorrelatederrors;};
@@ -83,17 +82,18 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   void SetIPEffCombinedSamples(Bool_t ipEffCombinedSamples) { fIPEffCombinedSamples = ipEffCombinedSamples; }
   void SetHadronEffbyIPcut(THnSparseF* hsHadronEffbyIPcut) { fHadronEffbyIPcut = hsHadronEffbyIPcut;};
   void SetNonHFEsyst(Bool_t syst){ fNonHFEsyst = syst; };
-  
   void SetDumpToFile(Bool_t dumpToFile) { fDumpToFile=dumpToFile; }; 
   
   void SetDebugLevel(Int_t debugLevel, Bool_t writeToFile = kFALSE) { fDebugLevel = debugLevel; fWriteToFile = writeToFile; };
   void SetUnfoldBG() { fUnfoldBG = kTRUE; };
   
-  
+  TH1F* SetProtonContamation(const char *file = "proton_contamination.root",int isTOF = 1,int TOFlevel = 30, int isTPC = 1, int TPClow = -425, int TPChigh = 3180, int iplevel =0,int syslevel = 0);//iplevel, syslevel -> 0:ref.,(-1):lower, (+1):upper variation 
   AliCFDataGrid* GetRawBspectra2ndMethod();
   AliCFDataGrid* GetCharmBackground();
   AliCFDataGrid* GetNonHFEBackground(Int_t decay = 0, Int_t source = 0);
+  AliCFDataGrid *GetProtonBackground(AliCFDataGrid* const bgsubpectrum = 0x0);
   THnSparse* GetCharmWeights(Int_t centBin);
+  THnSparse* GetProtonFraction();
   THnSparse* GetBeautyIPEff(Bool_t isMCpt);
   THnSparse* GetPIDxIPEff(Int_t source);
   void CalculateNonHFEsyst();
@@ -101,6 +101,7 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   void EnableIPanaHadronBgSubtract() { fIPanaHadronBgSubtract = kTRUE; };
   void EnableIPanaCharmBgSubtract() { fIPanaCharmBgSubtract = kTRUE; };
   void EnableIPanaNonHFEBgSubtract() { fIPanaNonHFEBgSubtract = kTRUE; };
+  void EnableIPanaProtonBgSubtract() { fIPanaProtonBgSubtract = kTRUE; }; //minjung 140115
   void EnableIPParameterizedEff() { fIPParameterizedEff = kTRUE; };
   
  protected:
@@ -126,6 +127,8 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   TF1 *fEfficiencyIPNonhfeD;     // IP efficiency parameterized for nonhfe 
   TF1 *fNonHFEbg;     // Efficiency Function
   THnSparseF *fWeightCharm;     // Weight for charm bg
+  THnSparseF *fProtonFraction;
+  Int_t fProtonSyst; //systematics for proton con 
   
   AliCFContainer *fConvSourceContainer[kElecBgSources][kBgLevels]; //container for conversion electrons, divided into different photon sources
   AliCFContainer *fNonHFESourceContainer[kElecBgSources][kBgLevels]; //container for non-HF electrons, divided into different sources
@@ -138,6 +141,7 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   Bool_t fIPanaHadronBgSubtract;     // Hadron background subtraction
   Bool_t fIPanaCharmBgSubtract;      // Charm background subtraction 
   Bool_t fIPanaNonHFEBgSubtract;     // nonHFE background subtraction
+  Bool_t fIPanaProtonBgSubtract;     // Proton background subtraction minjung 140115
   Bool_t fIPParameterizedEff;        // switch to use parameterized efficiency for ip analysis
   Bool_t fNonHFEsyst;            // choose NonHFE background level (upper, lower, central)
   Bool_t fBeauty2ndMethod;      // 2nd method to get beauty spectrum
@@ -170,8 +174,10 @@ class AliHFEBeautySpectrum : public AliHFECorrectSpectrumBase{
   Int_t fDebugLevel;            // Debug Level
   Bool_t fWriteToFile;           // Write plots to eps files
   Bool_t fUnfoldBG;             // flag to unfold backgroud
+
+  TH1F *fProtonhist; //proton fraction histogram
   
-  ClassDef(AliHFEBeautySpectrum, 1) 
-    };
+  ClassDef(AliHFEBeautySpectrum, 2) 
+};
 #endif
 

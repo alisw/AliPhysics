@@ -371,7 +371,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
          
               //cgamma[aniter] = new AliFemtoCorrFctnGammaMonitorAlpha(Form("cgammaM%ikT%i", imult, ikt),200,200);
-              cgamma[aniter] = new AliFemtoCorrFctnGammaMonitorAlpha(Form("cgammaM%ikT%i", imult, ikt),400,200);
+              cgamma[aniter] = new AliFemtoCorrFctnGammaMonitorAlpha(Form("cgammaM%ikT%i", imult, ikt),1000,200);
               anetaphitpc[aniter]->AddCorrFctn(cgamma[aniter]);
 
 

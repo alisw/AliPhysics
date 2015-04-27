@@ -27,6 +27,8 @@ class iostream;
 #include "TString.h"
 #include "TProfile.h"
 #include "TVector2.h"
+#include "TObjArray.h"
+#include "TObjString.h"
 
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
@@ -179,6 +181,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
 	void EnableCrossCheckCorrelationHistos() { fCrossCheckCorrelHisto = kTRUE; }
 	Bool_t AreCrossCheckCorrelationHistosEnabled() { return fCrossCheckCorrelHisto; }
+	
+	void DisableOnlineTriggerStrings(char *c) { fDisabledTriggerString = c; }
+	TString GetDisabledOnlineTrigger() { return fDisabledTriggerString; }
     
   private :
     
@@ -229,6 +234,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F		*fCorrelEventplaneMCDATA; // correlation between data and MC eventplane
     THnSparseF	*fCorrelEventplaneDefaultCorrected; // correlation between default and corrected (== subtraction of current track) eventplane
     TH2F		*fEventplaneSubtractedPercentage; // percentage of subtracted tracks
+    
+    TH2F		*fChargeOverPtRuns; // charge/pT vs run
 
 	// cross check for event plane resolution
 	TH2F		*fEPDistCent; // event plane distribution vs centrality
@@ -246,12 +253,16 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TH1F		*fMCGenTracksMult; // number of generated tracks vs reference multiplcity
 	
 	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
+	
+	TH1F		*fTriggerStringsFired; // distribution of fired trigger strings
+	TH1F		*fTriggerStringComplete; // complete fired trigger string
 
 	// global variables
     Bool_t fIsMonteCarlo;
 	
 	TString fEPselector;
 	TString fCentEstimator;
+	TString fDisabledTriggerString;
     
     // event cut variables
     Double_t fCutMaxZVertex;
@@ -315,7 +326,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,14); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,17); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

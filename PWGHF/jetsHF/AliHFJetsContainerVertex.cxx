@@ -142,7 +142,7 @@ vars.Form("nRecoVtx;Lxy1;mass1;sigvtx1;eLxy1");
       return;
   }
 
-  AliInfo(Form(mage"Container type set to %s: %s"Bee, strContType(contType), stype.Data())); 
+  AliInfo(Form(mage"Container type set to %s: %s" Bee, strContType(contType), stype.Data())); 
   // Get binning for each variable
   TObjArray *arr;
   //arr->SetOwner(kTRUE);
@@ -358,7 +358,7 @@ void AliHFJetsContainerVertex::GetBinningVertex(TString var, Int_t& nBins, Doubl
 void AliHFJetsContainerVertex::FillStepJets(AliHFJetsContainer::CFSteps step,Double_t mult, const AliEmcalJet *jet,Double_t p[3],Double_t contr,Double_t pt[3]){
   
   if (fType != kJets){
-    AliError(Form(RED"This method is available only for container type kJets: you are trying to fill %s!"Bee, strContType(fType)));
+    AliError(Form(RED"This method is available only for container type kJets: you are trying to fill %s!" Bee, strContType(fType)));
   }
 
   // here the number of electrons is not filled (after nTrk)
@@ -371,7 +371,7 @@ void AliHFJetsContainerVertex::FillStepJets(AliHFJetsContainer::CFSteps step,Dou
 void AliHFJetsContainerVertex::FillStepQaVtx(AliHFJetsContainer::CFSteps step, Double_t mult, const AliEmcalJet *jet,const TClonesArray *vertices,Double_t* disp,Int_t nvtx,const AliAODVertex *primVtx,const TClonesArray *mcPart,Double_t p[3]){
   
   if (fType != kQaVtx){
-    AliError(Form(RED"This method is available only for container type kQaVtx: you are trying to fill %s!"Bee, strContType(fType)));
+    AliError(Form(RED"This method is available only for container type kQaVtx: you are trying to fill %s!" Bee, strContType(fType)));
   }
   
     Double_t xyz[3],vtxVect[3],jetP[3];
@@ -463,7 +463,7 @@ void AliHFJetsContainerVertex::FillStepBJets(AliHFJetsContainer::CFSteps step, D
   AliInfo("Filling container kBJets.");
 
   if (fType != kBJets){
-    AliError(Form(RED"This method is available only for container type kBJets: you are trying to fill %s!"Bee, strContType(fType)));
+    AliError(Form(RED"This method is available only for container type kBJets: you are trying to fill %s!" Bee, strContType(fType)));
   }
 
   // Double_t point[13]={mult*1., jet->Pt(),jet->Eta(),jet->Phi()-TMath::Pi(),jet->GetNumberOfTracks()*1.,nvtx*1.,0,partonnat[0],contribution,ptpart,jet->EffectiveAreaCharged(), partonnat[1], partonnat[2]};
@@ -477,7 +477,7 @@ void AliHFJetsContainerVertex::FillStepBJets(AliHFJetsContainer::CFSteps step, D
 void AliHFJetsContainerVertex::FillStepJetVtx(AliHFJetsContainer::CFSteps step, Double_t mult, const AliEmcalJet *jet,const TClonesArray *vertices,Int_t nvtx,const AliAODVertex *primVtx,const TClonesArray *mcPart,Double_t p[3],Double_t* disp){
   
   if (fType != kJetVtx){
-    AliError(Form(RED"This method is available only for container type kJetVtx: you are trying to fill %s!"Bee, strContType(fType)));
+    AliError(Form(RED"This method is available only for container type kJetVtx: you are trying to fill %s!" Bee, strContType(fType)));
   }
   
   Double_t point[18]={mult*1.,jet->Pt(),jet->Eta(),jet->Phi()-TMath::Pi(),nvtx*1.,0.,-1.,-1.,-1,-1,-1,p[0],p[1],p[2],-1,-1,-1,-1};
@@ -639,7 +639,7 @@ void AliHFJetsContainerVertex::FillStepJetVtx(AliHFJetsContainer::CFSteps step, 
 void AliHFJetsContainerVertex::FillStepJetVtxData(AliHFJetsContainer::CFSteps step, Double_t mult, const AliEmcalJet *jet, const TClonesArray *vertices, Int_t nvtx,const AliAODVertex *primVtx, Double_t* disp){
 
   if (fType != kJetVtxData){
-    AliError(Form(RED"This method is available only for container type kJetVtxData: you are trying to fill %s!"Bee, strContType(fType)));
+    AliError(Form(RED"This method is available only for container type kJetVtxData: you are trying to fill %s!" Bee, strContType(fType)));
   }
   
   Double_t point[9]={mult*1.,jet->Pt(),jet->Eta(),jet->Phi()-TMath::Pi(),nvtx*1.,-1.,-1.,-1.,-1};

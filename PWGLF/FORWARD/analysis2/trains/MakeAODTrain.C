@@ -207,8 +207,11 @@ protected:
     opts.Remove("bare-ps");
     opts.Remove("tpc-ep");
     opts.Remove("corr");
+    opts.Remove("max-strips");
+    opts.Add("centBins", "BINS", "Centrality bins", "");
     opts.Add("satellite", "Restrict analysis to satellite events", false);
     opts.Add("trig", "TRIGGER", "Trigger type", "INEL");
+    opts.Add("filter", "FILTER", "Filter type", "OUTLIER|PILEUP-BIN");
     opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", -10.);
     opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", +10.);
     opts.Add("scheme", "FLAGS", "Normalization scheme", "TRIGGER,EVENT");
@@ -225,6 +228,7 @@ protected:
     if (uopts.Find("pattern")) // && outString.EndsWith("AliAOD.root")) 
       uopts.Set("pattern", "*/AliAOD.root");
     if (uopts.Find("concat")) uopts.Set("concat", true);
+    if (uopts.Find("par")) uopts.Set("par", "task");
 
     std::stringstream s;
     uopts.Store(s, "", "&", false, true);
@@ -242,6 +246,7 @@ protected:
       opts.Set("cent", "default");
       opts.Set("trig", "INEL");
       opts.Set("scheme", "default");
+      opts.Set("centBins", "default");
       SaveSetupROOT("dNdeta", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta", cls, name, opts, &uopts);

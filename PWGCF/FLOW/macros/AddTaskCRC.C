@@ -136,6 +136,14 @@ void AddTaskCRC(Double_t centrMin,
  }
  else if (analysisType == "AOD") {
   // Track cuts for RPs
+//  cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);
+//  cutsRP->SetEtaRange(-10.,+10.);
+//  cutsRP->SetEtaGap(-1.,1.);
+//  cutsRP->SetPhiMin(0.);
+//  cutsRP->SetPhiMax(TMath::TwoPi());
+//  // options for the reweighting
+//  cutsRP->SetVZEROgainEqualizationPerRing(kTRUE);
+//  cutsRP->SetApplyRecentering(kFALSE);
   cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsRP->SetAODfilterBit(768);
   cutsRP->SetMinimalTPCdedx(-999999999);
@@ -172,8 +180,7 @@ void AddTaskCRC(Double_t centrMin,
  // and connect the output to the flow event task
  mgr->ConnectOutput(taskFE,1,coutputFE);
  
- // create an additional container for the QA output of the flow event task
- // the QA histograms will be stored in a sub-folder of the output file called 'QA'
+ // QA OUTPUT CONTAINER
  if(bCutsQA) {
   TString taskFEQAname = file;
   taskFEQAname += ":CutsQA";
@@ -206,10 +213,12 @@ void AddTaskCRC(Double_t centrMin,
  // and set the correct harmonic n
  taskQC->SetHarmonic(1);
  // set standard flow settings
- taskQC->SetCalculateDiffFlow(kTRUE);
- taskQC->SetCalculateDiffFlowVsEta(kTRUE);
+ taskQC->SetCalculateDiffFlow(kFALSE);
+ taskQC->SetCalculateDiffFlowVsEta(kFALSE);
+ taskQC->SetCalculateMixedHarmonics(kFALSE); // calculate all multi-partice mixed-harmonics correlators
  taskQC->SetStoreDistributions(kTRUE);
  taskQC->SetFillMultipleControlHistograms(kFALSE);
+ taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);

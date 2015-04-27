@@ -29,8 +29,8 @@
   // Make esd chain
   //
   .x ~/rootlogon.C
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");  
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/TPC/macros");
+  gROOT->LoadMacro("$ALICE_PHYSICS/TPC/macros/AliXRDPROOFtoolkit.cxx+");  
   AliXRDPROOFtoolkit tool;
   TChain * tree = tool.MakeChain("esd.txt","esdTree",0,1000);
   tree->Lookup();
@@ -38,8 +38,8 @@
   // Load macros
   //
   gSystem->Load("libSTAT");
-  .L $ALICE_ROOT/PWGPP/AliESDresolParams.cxx+
-  .L $ALICE_ROOT/PWGPP/AliESDresolMakerFast.cxx+
+  .L $ALICE_PHYSICS/PWGPP/AliESDresolParams.cxx+
+  .L $ALICE_PHYSICS/PWGPP/AliESDresolMakerFast.cxx+
   TCut cutDCA="Tracks[].fCchi2<100&&abs(Tracks[].fP[4])<8&&abs(Tracks[].fP[3])<1&&sqrt(Tracks[].fC[0])/(0.2+abs(Tracks[].fP[4]))<0.02&&abs(Tracks[].fX)<3&&Tracks[].fITSncls>4&&Tracks.fTPCncls>40"
   //
   // Create resolution

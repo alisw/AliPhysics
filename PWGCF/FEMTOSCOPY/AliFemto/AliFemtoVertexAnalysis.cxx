@@ -1,9 +1,8 @@
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliFemtoVertexAnalysis - Femtoscopic analysis which mixes events       //
-// with respect to the z position of the primary vertex                   //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoVertexAnalysis
+/// \brief AliFemtoVertexAnalysis - Femtoscopic analysis which mixes events
+///
+/// with respect to the z position of the primary vertex
+
 /***************************************************************************
  *
  * $Id$
@@ -66,7 +65,9 @@
 
 
 #ifdef __ROOT__ 
+/// \cond CLASSIMP
 ClassImp(AliFemtoVertexAnalysis)
+/// \endcond
 #endif
 
 //____________________________
@@ -75,7 +76,8 @@ AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(unsigned int bins, double min, do
   fOverFlow(0),  
   fUnderFlow(0)
 {
-  //  mControlSwitch     = 0;
+  /// mControlSwitch     = 0;
+
   fEventCut          = 0;
   fFirstParticleCut  = 0;
   fSecondParticleCut = 0;
@@ -98,7 +100,8 @@ AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) 
   fOverFlow(0),  
   fUnderFlow(0)
 {
-  //AliFemtoVertexAnalysis();
+  /// AliFemtoVertexAnalysis();
+
   fEventCut          = 0;
   fFirstParticleCut  = 0;
   fSecondParticleCut = 0;
@@ -219,14 +222,16 @@ AliFemtoVertexAnalysis& AliFemtoVertexAnalysis::operator=(const AliFemtoVertexAn
 
 //____________________________
 AliFemtoVertexAnalysis::~AliFemtoVertexAnalysis(){
-  // now delete every PicoEvent in the EventMixingBuffer and then the Buffer itself
+  /// now delete every PicoEvent in the EventMixingBuffer and then the Buffer itself
+
   delete fPicoEventCollectionVectorHideAway;
 }
 
 //____________________________
 AliFemtoString AliFemtoVertexAnalysis::Report()
 {
-  // prepare report fromt the execution
+  /// prepare report fromt the execution
+
   cout << "AliFemtoVertexAnalysis - constructing Report..."<<endl;
   char ctemp[200];
   AliFemtoString temp = "-----------\nHbt AliFemtoVertexAnalysis Report:\n";
@@ -244,7 +249,8 @@ AliFemtoString AliFemtoVertexAnalysis::Report()
 }
 //_________________________
 void AliFemtoVertexAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
-  // Put the event though the analysis
+  /// Put the event though the analysis
+
   cout << " AliFemtoVertexAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) " << endl;
   // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();

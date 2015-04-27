@@ -1,7 +1,17 @@
-// Configuration of simple task counting events
-// Gets the cross section from file pyxsec if requested
+/// \file AddTaskCounter.C
+/// \brief Counting task configurations.
+///
+/// Example of configuration of AliAnalysisTaskCounter,
+/// simple task counting events
+/// Gets the cross section from file pyxsec if requested.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
-//___________________________________________________________________
+
+///
+/// Main method for the configuration.
+/// It creates a Counter task, configures it and adds it to the analysis manager.
+///
 AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "",
                                         Bool_t xsOn = kFALSE)
 {

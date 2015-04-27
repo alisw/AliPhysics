@@ -27,6 +27,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   void                        SetDoEPQA(Int_t b)                                   { fDoEPQA             = b          ; }
   void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b          ; }
   void                        SetDoLeadingObjectPosition(Int_t b)                  { fDoLeadingObjectPosition = b     ; }
+  void                        SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)         { fAODfilterBits[0]  = b0  ; fAODfilterBits[1] = b1  ; }
 
  protected:
 
@@ -54,6 +55,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   Int_t                       fDoEPQA;                   // Add event plane QA histograms
   Int_t                       fDoLeadingObjectPosition;  // Add axis for leading object position (eta-phi)
   Int_t                       fMaxCellsInCluster;        // Maximum number (approx) of cells in a cluster
+  UInt_t                      fAODfilterBits[2];         // AOD track filter bit map
   Double_t                    fCent2;                    //!Event centrality with method 2
   Double_t                    fCent3;                    //!Event centrality with method 3
   AliVVZERO                  *fVZERO;                    //!Event V0 object
@@ -96,6 +98,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 23) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 24) // Quality task for Emcal analysis
 };
 #endif

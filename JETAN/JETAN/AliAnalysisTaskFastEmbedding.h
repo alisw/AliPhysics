@@ -8,6 +8,9 @@
 
 #include "AliAnalysisTaskSE.h"
 
+class AliAODv0;
+class AliAODVertex;
+class AliPIDResponse;
 class AliESDEvent;
 class AliAODEvent;
 class TTree;
@@ -18,8 +21,11 @@ class TObjString;
 class TRandom3;
 class TH1F;
 class TH2F;
+class TString;
+class TList;
 class TProfile;
 class AliAODMCHeader;
+class AliAODJet;
 
 class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
 
@@ -37,6 +43,12 @@ public:
    virtual Bool_t UserNotify();
    virtual void UserExec(Option_t*);
    virtual void Terminate(Option_t */*option*/);
+
+   //AZ
+
+   enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };  
+   enum { kK0, kLambda, kAntiLambda }; 
+
 
    void SetAODPath(TString path) {fAODPath = path;}
    void SetArrayOfAODPaths(TObjArray* arr) {fAODPathArray = arr;}
@@ -67,7 +79,8 @@ public:
    void SetEvtSelJetPtRange(Float_t minPt, Float_t maxPt) {fEvtSelMinJetPt = minPt; fEvtSelMaxJetPt = maxPt;}
    void SetEvtSelJetEtaRange(Float_t minEta, Float_t maxEta) {fEvtSelMinJetEta = minEta; fEvtSelMaxJetEta = maxEta;}
    void SetEvtSelJetPhiRange(Float_t minPhi, Float_t maxPhi) {fEvtSelMinJetPhi = minPhi; fEvtSelMaxJetPhi = maxPhi;}
-      void SetEffExtra(Float_t effextra) {fExtraEffPb = effextra;}   
+   void SetEvtSelJetMinLConstPt(Float_t minLPt)              {fEvtSelJetMinLConstPt = minLPt;}
+   void SetEffExtra(Float_t effextra) {fExtraEffPb = effextra;}   
    void SetToyNumberOfTrackRange(Int_t minN = 1, Int_t maxN = 1){ fToyMinNbOfTracks = minN, fToyMaxNbOfTracks = maxN; }
    void SetToyTrackRanges(Double_t minPt = 50., Double_t maxPt = 50., Double_t ptDistr=0,
    Double_t minEta = -.5, Double_t maxEta = .5,
@@ -79,10 +92,50 @@ public:
    void SetToyFilterMap(UInt_t f) {fToyFilterMap = f;}
    void SetTrackFilterMap(UInt_t f) {fTrackFilterMap = f;}
 
+   //AZ
+  
+  
+ 
+   virtual void SetK0Type(Int_t i){ fK0Type = i; }
+   Bool_t IsK0InvMass(Double_t mass) const; //La and ALa mass check
+   Bool_t IsLaInvMass(Double_t mass) const; //La and ALa mass check
+   virtual void SetLaType(Int_t i){ fLaType = i; }
+   virtual void SetALaType(Int_t i){ fALaType = i; }
+   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
+
+   Float_t  GetFFRadius() const { return fFFRadius; }
+   Bool_t AcceptBetheBloch(AliAODv0 *v0, AliPIDResponse *PIDResponse, Int_t particletype); //don't use this method for MC Analysis
+   void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
+   Bool_t DaughterTrackCheck(AliAODv0* v0, Int_t& nnum, Int_t& pnum);
+   Bool_t ApplyV0Cuts(AliAODv0* v0, const Int_t type, const Int_t particletype, AliAODVertex* primVertex, AliAODEvent* aod);
+   void GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius, Double_t& sumPt);
+   //cut Setter
+
+  void SetCuttrackPosEta(Double_t posEta){fCutPostrackEta=posEta; Printf("AliAnalysisTaskFastEmbedding:: SetCuttrackPosEta %f",posEta);}
+  void SetCuttrackNegEta(Double_t negEta){fCutNegtrackEta=negEta; Printf("AliAnalysisTaskFastEmbedding:: SetCuttrackNegEta %f",negEta);}
+  void SetCutV0Eta(Double_t v0Eta){fCutEta=v0Eta; Printf("AliAnalysisTaskFastEmbedding:: SetCutV0Eta %f",v0Eta);}
+  void SetCosOfPointingAngle(Double_t cospointAng){fCutV0cosPointAngle=cospointAng; Printf("AliAnalysisTaskFastEmbedding:: SetCosOfPointingAngle %f",cospointAng);}
+  void SetAcceptKinkDaughters(Bool_t isKinkDaughtersAccepted){fKinkDaughters=isKinkDaughtersAccepted; Printf("AliAnalysisTaskFastEmbedding:: SetAcceptKinkDaughters %i", isKinkDaughtersAccepted);}
+  void SetRequireTPCRefit(Bool_t isTPCRefit){fRequireTPCRefit=isTPCRefit; Printf("AliAnalysisTaskFastEmbedding:: SetRequireTPCRefit %i", isTPCRefit);}
+  void SetCutArmenteros(Double_t armenteros){fCutArmenteros=armenteros; Printf("AliAnalysisTaskFastEmbedding:: SetCutArmenteros %f", armenteros);}
+  void SetCutV0DecayMin(Double_t decayMin){fCutV0DecayMin=decayMin; Printf("AliAnalysisTaskFastEmbedding:: SetCutDecayMin %f", decayMin);}
+  void SetCutV0DecayMax(Double_t decayMax){fCutV0DecayMax=decayMax; Printf("AliAnalysisTaskFastEmbedding:: SetCutDecayMax %f", decayMax);}
+  void SetCutV0totMom(Double_t v0totMom){fCutV0totMom=v0totMom; Printf("AliAnalysisTaskFastEmbedding:: SetCutV0totMom %f", v0totMom);}
+  void SetCutDcaV0Daughters(Double_t dcav0daughters){fCutDcaV0Daughters=dcav0daughters; Printf("AliAnalysisTaskFastEmbedding:: SetCutDcaV0Daughters %f", dcav0daughters);}
+  void SetCutDcaPosToPrimVertex(Double_t dcaPosToPrimVertex){fCutDcaPosToPrimVertex=dcaPosToPrimVertex; Printf("AliAnalysisTaskFastEmbedding:: SetCutDcaPosToPrimVertex %f", dcaPosToPrimVertex);}
+  void SetCutDcaNegToPrimVertex(Double_t dcaNegToPrimVertex){fCutDcaNegToPrimVertex=dcaNegToPrimVertex; Printf("AliAnalysisTaskFastEmbedding:: SetCutDcaNegToPrimVertex %f", dcaNegToPrimVertex);}
+  void SetCutV0RadiusMin(Double_t v0RadiusMin){fCutV0RadiusMin=v0RadiusMin; Printf("AliAnalysisTaskFastEmbedding:: SetCutV0RadiusMin %f", v0RadiusMin);}
+  void SetCutV0RadiusMax(Double_t v0RadiusMax){fCutV0RadiusMax=v0RadiusMax; Printf("AliAnalysisTaskFastEmbedding:: SetCutV0RadiusMax %f", v0RadiusMax);}
+  void SetCutBetheBloch(Double_t cutBetheBloch){fCutBetheBloch=cutBetheBloch; Printf("AliAnalysisTaskFastEmbedding:: SetCutBetheBloch %f", cutBetheBloch);}
+
+   //
+
    static Float_t GetPtHard(Bool_t bSet=kFALSE, Float_t newValue = 0.);
    
    virtual Int_t      GetPtHardBin(Double_t ptHard);
    virtual Bool_t     PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);
+   Bool_t             HasMinLConstPt(AliAODJet* jet);
+
 
    // embedding modes
    enum {kAODFull=0, kAODJetTracks, kAODJet4Mom, kToyTracks};
@@ -98,6 +151,39 @@ private:
    TTree          *fAODtree;    //! AODin tree
    TFile          *fAODfile;    //! AODin file
    AliAODMCHeader *mcHeader;    //! mc header
+   Double_t fFFRadius;          // jet cone size
+
+  Double_t fCutPostrackEta;
+  Double_t fCutNegtrackEta;
+  Double_t fCutEta;
+  Double_t fCutV0cosPointAngle;
+  Bool_t   fKinkDaughters;
+  Bool_t   fRequireTPCRefit;
+  Double_t fCutArmenteros; 
+  Double_t fCutV0DecayMin;
+  Double_t fCutV0DecayMax;
+  Double_t fCutV0totMom;
+  Double_t fCutDcaV0Daughters;
+  Double_t fCutDcaPosToPrimVertex;
+  Double_t fCutDcaNegToPrimVertex;
+  Double_t fCutV0RadiusMin;
+  Double_t fCutV0RadiusMax;
+  Double_t fCutBetheBloch;
+  Int_t fK0Type;      
+  Int_t fLaType;      
+  Int_t fALaType;   
+
+
+  TList* fListK0s;
+  TList* fListLa;
+  TList* fListALa;
+  TList* fListK0sCone;
+  TList* fListLaCone;
+  TList* fListALaCone;
+
+
+  AliPIDResponse *fPIDResponse;
+	                           // PID AZ
    TRandom3       *rndm;        //! random nummer generator
    Int_t          fInputEntries; // total nb. of events (for this subjob)
 
@@ -137,6 +223,7 @@ private:
    Float_t fEvtSelMaxJetEta;      // maximum eta of the leading jet
    Float_t fEvtSelMinJetPhi;      // minimum phi of the leading jet
    Float_t fEvtSelMaxJetPhi;      // maximum phi of the leading jet
+   Float_t fEvtSelJetMinLConstPt; // minimum leading constituent pt of the leading jet
    Double_t fExtraEffPb;          //extra efficiency PbPb      
    
    // settings for toy "track generation"
@@ -175,6 +262,22 @@ private:
    TH1F  *fh1TrackPt;         //! track pt
    TH2F  *fh2TrackEtaPhi;     //! track eta-phi
    TH1F  *fh1TrackN;          //! nb. of tracks
+
+   //AZ:
+   TH1F  *fh1V0Pt;         //! track pt
+   TH2F  *fh2V0EtaPhi;     //! track eta-phi
+   //  TH1F  *fh1V0N;          //! nb. of tracks
+   TH1F  *fh1K0Pt;         //! track pt
+   TH2F  *fh2K0EtaPhi;     //! track eta-phi
+   TH2F  *fh2K0sPtJetPtCone;     //! K0s candidate Pt (inside cone) vs Jet Pt
+   TH1F  *fh1LaPt;         //! track pt
+   TH2F  *fh2LaEtaPhi;     //! track eta-phi
+   TH2F  *fh2LaPtJetPtCone;     //! La candidate Pt (inside cone) vs Jet Pt
+   TH1F  *fh1ALaPt;         //! track pt
+   TH2F  *fh2ALaEtaPhi;     //! track eta-phi
+   TH2F  *fh2ALaPtJetPtCone;     //! ALa candidate Pt (inside cone) vs Jet Pt
+   //
+
    TH1F  *fh1JetPt;           //! jet pt
    TH2F  *fh2JetEtaPhi;       //! jet eta-phi
    TH1F  *fh1JetN;            //! nb. of jets
@@ -183,7 +286,24 @@ private:
    TH1F  *fh1MCTrackN;        //! nb. of MC tracks
    TH1I  *fh1AODfile;         //! used AOD files from AODPathArray
    TH2I  *fh2AODevent;        //! selected events in AODs
-   
+
+   //AZ:
+   TH1F* fh1trackPosEta;
+   TH1F* fh1trackNegEta;
+   TH1F* fh1V0Eta;                    
+   // TH1F* fh1V0totMom;                 
+   TH1F* fh1CosPointAngle;            
+   TH1F* fh1DecayLengthV0;            
+   TH2F* fh2ProperLifetimeK0sVsPtBeforeCut;
+   TH2F* fh2ProperLifetimeK0sVsPtAfterCut;
+   TH1F* fh1V0Radius;                 
+   TH1F* fh1DcaV0Daughters;           
+   TH1F* fh1DcaPosToPrimVertex;       
+   TH1F* fh1DcaNegToPrimVertex;        
+   TH2F* fh2ArmenterosBeforeCuts;     
+   TH2F* fh2ArmenterosAfterCuts;      
+   TH2F* fh2BBLaPos;                  
+   TH2F* fh2BBLaNeg;      
 
    Int_t GetJobID();    // get job id (sub-job id on the GRID)
    Int_t SelectAODfile();

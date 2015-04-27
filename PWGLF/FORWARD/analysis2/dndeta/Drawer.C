@@ -221,6 +221,17 @@ struct Drawer {
   {
     return TColor::GetColor(238, 125, 17);
   }
+  static Color_t Brighten(Color_t origNum, Int_t nTimes=2)
+  {
+    Int_t origR, origG, origB;
+    TColor::Pixel2RGB(TColor::Number2Pixel(origNum), origR, origG, origB);
+    Int_t off    = nTimes*0x33;
+    Int_t newR   = TMath::Min((origR+off),0xff);
+    Int_t newG   = TMath::Min((origG+off),0xff);
+    Int_t newB   = TMath::Min((origB+off),0xff);
+    Int_t newNum = TColor::GetColor(newR, newG, newB);
+    return newNum;
+  }
   static TString SNNString(const TString& system, UShort_t sNN)
   {
     TString e(system.EqualTo("pp", TString::kIgnoreCase)
@@ -1580,6 +1591,11 @@ struct Drawer {
 	  
 	TPair* p = GetDataOther(leg, unique, *pSys, *pSNN, trgS, exps,
 				"e5", true, true,  effs);
+	if (!p) {
+	  Warning("", "No data for pad %d", iPad-1);
+	  pSNN++;
+	  continue;
+	}
 	if (!p->Key()) {
 	  Warning("", "No data for pad %d", iPad-1);
 	  pSNN++;
@@ -1630,7 +1646,7 @@ struct Drawer {
     // --- Make legend of unique names -------------------------------
     TParameter<int>* u =
       new TParameter<int>("PWG-LF/GEO - work in progress", 20);
-    u->SetUniqueID(nSNN = 1 ? kBlack : kRed+2);
+    u->SetUniqueID(nSNN == 1 ? kBlack : kRed+2);
     unique.Add(u);
 
     Double_t lx1  = 1-lw-.02;
@@ -1796,6 +1812,15 @@ struct Drawer {
 	TString n(o->GetName());			
 	if (n.Contains("mirror")) continue;
 	TH1* h = static_cast<TH1*>(o->Clone());
+	if (isCent) {
+	  Color_t cOld = h->GetMarkerColor();
+	  Color_t cNew = Brighten(cOld);
+	  h->SetMarkerColor(Brighten(h->GetMarkerColor()));
+	  h->SetFillColor(Brighten(h->GetFillColor()));
+	  h->SetLineColor(Brighten(h->GetLineColor()));
+	  Printf("%s: old=%d new=%d real=%d",n.Data(),
+		 cOld,cNew,h->GetMarkerColor());
+	}	
 	h->SetDirectory(0);
 	h->Scale(eff);
 	if (n.Contains("SysError")) {
@@ -1815,7 +1840,7 @@ struct Drawer {
 	  stack->Add(ha, errOpt);
 	  stack->Add(hc, errOpt);
 	  continue;
-	}
+	} // SysError
 	if (!isCent) h->SetName(*ptrig);
 	h->SetMarkerSize(MarkerSize(h->GetMarkerStyle()));
 	points.Add(h);
@@ -1889,7 +1914,7 @@ struct Drawer {
     
     ptrig                    = trigs;
     marker                   = 20;
-    TParameter<int>* u     = 0;
+    TParameter<int>*   u     = 0;
     TMultiGraph*       other = new TMultiGraph("others","Others");
     TString            allE  = "";
     while ((*ptrig)) { 
@@ -1917,6 +1942,15 @@ struct Drawer {
 	  if (!isCent) {
 	    g->SetMarkerStyle(marker);
 	    g->SetMarkerSize(MarkerSize(marker));
+	  }
+	  if (isCent) {
+	    Color_t cOld = g->GetMarkerColor();
+	    Color_t cNew = Brighten(cOld);
+	    g->SetMarkerColor(Brighten(g->GetMarkerColor()));
+	    g->SetFillColor(Brighten(g->GetFillColor()));
+	    g->SetLineColor(Brighten(g->GetLineColor()));
+	    Printf("%s: old=%d new=%d real=%d",g->GetName(),
+		   cOld,cNew,g->GetMarkerColor());
 	  }
 	  TString ut(g->GetTitle());
 	  if (ut.BeginsWith("PWG-UD/MULT - "))

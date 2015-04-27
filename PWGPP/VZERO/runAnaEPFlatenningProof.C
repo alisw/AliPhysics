@@ -8,7 +8,7 @@ void runAnaEPFlatenningProof(Int_t mode = 0, const char *folder = "/alice/data",
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libOADB");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include ");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include ");
 
   if (mode==0 || mode==2) {
     // Connect to Proof
@@ -52,20 +52,20 @@ void runAnaEPFlatenningProof(Int_t mode = 0, const char *folder = "/alice/data",
 
   // physics and centrality selection
   if (esdData && usePS) {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask *physicsSelectionTask = AddTaskPhysicsSelection(kFALSE);
   }
 
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
   // Create task
   if (mode==0 || mode==2) {
     if (0) {
       gProof->Load(Form("%s/STEER/STEERBase/AliEventplane.cxx++g",
-			gSystem->Getenv("ALICE_ROOT")));
+			gSystem->Getenv("ALICE_PHYSICS")));
       gProof->Load(Form("%s/ANALYSIS/AliVZEROEPSelectionTask.cxx++g",
-			gSystem->Getenv("ALICE_ROOT")));
+			gSystem->Getenv("ALICE_PHYSICS")));
     }
     gProof->Load(Form("%s/AliAnaVZEROEPFlatenning.cxx++g",
 		      gSystem->pwd()));
@@ -75,7 +75,7 @@ void runAnaEPFlatenningProof(Int_t mode = 0, const char *folder = "/alice/data",
 			  gSystem->pwd()));
   }
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
   AliVZEROEPSelectionTask *selTask = AddTaskVZEROEPSelection();
 
   AliAnaVZEROEPFlatenning *task = new AliAnaVZEROEPFlatenning("AliAnaVZEROEPFlatenning");

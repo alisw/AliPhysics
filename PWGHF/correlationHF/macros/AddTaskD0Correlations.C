@@ -215,7 +215,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetLeftSignReg_HighPt(LeftSignReg_HighPt);
   massD0Task->SetRightSignReg_HighPt(RightSignReg_HighPt); 
  
-  if(pporpPb_lims) { //pp limits
+  if(!pporpPb_lims) { //pp limits
     
     Double_t LSBLowLim[15] = {0.,0.,0.,1.76735,1.74798,1.73740,1.70895,1.71803,1.71424,1.70000,1.71017,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
     Double_t LSBUppLim[15] = {0.,0.,0.,1.81749,1.80661,1.80134,1.78774,1.79365,1.79213,1.75326,1.76307,0.,0.,0.,0.};

@@ -5,7 +5,7 @@
   ouput: TimeGain and TimeVdrift calibration objects for TPC and TRD
 
   Example:
-  .L $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeOCDB.C
+  .L $ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/makeOCDB.C
   makeOCDB("105160");
 
 */
@@ -24,8 +24,8 @@ void makeOCDB(const Char_t *filename, TString component, TString runNumberString
   //
   // extract TPC OCDB entries
   //
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
 
   // switch off log info
   AliLog::SetClassDebugLevel("AliESDEvent",0);

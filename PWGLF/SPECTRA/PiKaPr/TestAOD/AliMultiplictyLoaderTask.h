@@ -25,6 +25,7 @@ class AliMultiplictyLoaderTask : public AliAnalysisTaskSE
   		//virtual void   LocalInit();
  		void SetCentEstimator(TString cent = "V0M")    {fCentEstimator = cent; }
  		void SetUseAliPPVsMultUtils(Bool_t flag)	{fUseAliPPVsMultUtils=flag;}
+		void SetDonotusetrackelts(Bool_t flag)        {fDonotusetrackelts=flag;}
  
 	private:
 		AliESDEvent *fESD;    //! ESD object
@@ -35,11 +36,12 @@ class AliMultiplictyLoaderTask : public AliAnalysisTaskSE
 	        TParameter<Int_t>* fncharged05value; // value of Nch for |eta|<0.5
 		TParameter<Int_t>* fncharged08value; // value of Nch for |eta|<0.8
 		Bool_t fFirstEvent; // first Event Flag
+		Bool_t fDonotusetrackelts; // if true the events with only spd veretx will have <0 value oe ref multiplicty 
 		AliMultiplictyLoaderTask(const AliMultiplictyLoaderTask&); // private copy const
  		AliMultiplictyLoaderTask& operator=(const AliMultiplictyLoaderTask&); // private = operator
 
 	
-	 ClassDef(AliMultiplictyLoaderTask, 1); 
+	 ClassDef(AliMultiplictyLoaderTask, 2); 
 };
 
 #endif

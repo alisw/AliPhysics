@@ -1,18 +1,19 @@
-///////////////////////////////////////////
-//
-// Macro to plot few selected histograms
-// to QA data productions at 0th order
-// Analysis performed with the wagon
-// AddTaskPi0IMGammaCorrQA.C
-// It generates 5 eps plots, each containing 2 to 4 canvases
-//
-// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL_default","AnalysisResults.root")'
-// The input list name might change depending on the wagon / data type
-// In case output file is too large, possiblity to dump the list content in a sepate file:  export = kTRUE
-//
-// Author: Gustavo.Conesa.Balbastre@cern.ch
-//
-//
+/// \file DrawAnaCaloTrackQA.C
+/// \brief Plot analysis QA histograms from EMCal PWG-GA wagon
+///
+/// Macro to plot few selected histograms
+/// to QA data productions at 0th order
+/// Analysis performed with the wagon
+/// AddTaskPi0IMGammaCorrQA.C
+/// It generates 5 eps plots, each containing 2 to 4 canvases
+///
+/// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL_default","AnalysisResults.root")'
+/// The input list name might change depending on the wagon / data type
+/// In case output file is too large, possiblity to dump the list content in a sepate file:  export = kTRUE
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
 
 // Some global variables
 TList *list = 0;
@@ -21,11 +22,21 @@ TString histoTag = "";
 Int_t color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray};
 
 //_______________________________________________________________________
+/// Main method, produce the plots for the 5 different types of analysis:
+/// * Calorimeter QA in CaloQA method
+/// * Track QA in TrackQA method
+/// * Invariant mass plots in Pi0QA method
+/// * Cluster-track correlation plots in CorrelationQA method
+/// * Dedicated generated particles QA in MCQA method
+/// Input:
+/// \param listName: Name of list with histograms in file
+/// \param fileName: File name
+/// \param export: export list with histograms to separate file, intereting in case of big output file.
+//_______________________________________________________________________
 void DrawAnaCaloTrackQA(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
                         TString fileName = "AnalysisResults.root",
                         Bool_t export = kFALSE)
 {
-
   printf("Open <%s>; Get List : <%s>; Export list? <%d>\n",fileName.Data(),listName.Data(),export);
   
   histoTag = listName;
@@ -57,11 +68,11 @@ void DrawAnaCaloTrackQA(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
   MCQA();
 }
 
-//___________
+//______________________________________
+// Plot basic calorimeter QA histograms.
+//______________________________________
 void CaloQA()
 {
-  // Basic calorimeter QA histograms
-  
   TCanvas * ccalo = new TCanvas(Form("CaloHisto_%s",histoTag.Data()),"",1000,1000);
   ccalo->Divide(2,2);
   
@@ -258,14 +269,13 @@ void CaloQA()
   hClusterActivity->Draw("colz");
   
   ccalo2->Print(Form("%s_CaloHisto2.eps",histoTag.Data()));
-  
 }
 
-//____________
+//______________________________________
+/// Plot basic hybrid tracks histograms.
+//______________________________________
 void TrackQA()
 {
-  // Basic hybrid tracks histograms
-  
   TCanvas * ctrack = new TCanvas(Form("TrackHisto_%s",histoTag.Data()),"",1000,500);
   ctrack->Divide(2,1);
   
@@ -324,14 +334,13 @@ void TrackQA()
 //  hPtDCAz->Draw("colz");
   
   ctrack->Print(Form("%s_TrackHisto.eps",histoTag.Data()));
-  
 }
 
-//__________
+//______________________________
+// Plot basic invariant mass QA
+//_____________________________
 void Pi0QA()
 {
-  // Basic invariant mass QA
-  
   TCanvas * cpi0 = new TCanvas(Form("Pi0Histo_%s",histoTag.Data()),"",500,500);
   cpi0->Divide(2,2);
   
@@ -502,7 +511,6 @@ void Pi0QA()
     }
     
     if(maxSM < hSM[ism]->GetMaximum()) maxSM = hSM[ism]->GetMaximum();
-
   }
   
   hSM[0]->SetTitle("#pi^{0} peak in Modules, 4 < E_{pair}< 10 GeV");
@@ -564,13 +572,13 @@ void Pi0QA()
   }
 
   cpi0->Print(Form("%s_Pi0Histo.eps",histoTag.Data()));
-  
 }
 
-//__________________
+//__________________________________________________
+/// Plot basic cluster-track correlation histograms.
+//__________________________________________________
 void CorrelationQA()
 {
-
   TCanvas * cCorrelation = new TCanvas(Form("CorrelationHisto_%s",histoTag.Data()),"",1000,500);
   cCorrelation->Divide(2,1);
   
@@ -622,7 +630,6 @@ void CorrelationQA()
     
     l.AddEntry(hDeltaPhi[ibin],Form("%2.1f< p_{T,A}< %2.1f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
   }
-  
   
   hDeltaPhi[2]->SetMaximum(hDeltaPhi[2]->GetMaximum()*10);
   hDeltaPhi[2]->SetMinimum(0.8);
@@ -678,14 +685,13 @@ void CorrelationQA()
 
   
   cCorrelation->Print(Form("%s_CorrelationHisto.eps",histoTag.Data()));
-
 }
 
-//___________
+//________________________________________________________
+/// Plot basic generated particle distribution histograms.
+//________________________________________________________
 void MCQA()
 {
-  // Basic calorimeter QA histograms
-  
   TH2F* h2ClusterPho = (TH2F*) GetHisto("QA_hRecoMCE_Photon_Match0");    // not track-matched
   TH2F* h2ClusterPi0 = (TH2F*) GetHisto("QA_hRecoMCE_Pi0_Match0");       // not track-matched
   TH2F* h2ClusterEta = (TH2F*) GetHisto("QA_hRecoMCE_Eta_Match0");       // not track-matched
@@ -887,11 +893,7 @@ void MCQA()
   hPrimEtaEta->Draw("same");
   
   cmc->Print(Form("%s_MCHisto.eps",histoTag.Data()));
-
-
-
-  
- }
+}
 
 
 //____________________________________________________________________
@@ -913,15 +915,16 @@ void GetFileAndList(TString fileName, TString listName, Bool_t export)
 }
 
 //___________________________________
+/// Check if the list is available,
+/// if not get the histo directly from file
+//___________________________________
 TObject * GetHisto(TString histoName)
 {
-  // Check if the list is available, if not get the histo directly from file
-  
   if(list) return list->FindObject(histoName);
   else     return file->Get       (histoName);
 }
 
-//___________________________________________________
+//______________________________________
 void ScaleAxis(TAxis *a, Double_t scale)
 {
   if (!a) return; // just a precaution
@@ -946,7 +949,7 @@ void ScaleAxis(TAxis *a, Double_t scale)
   return;
 }
 
-//___________________________________________________
+//_____________________________________
 void ScaleXaxis(TH1 *h, Double_t scale)
 {
   if (!h) return; // just a precaution

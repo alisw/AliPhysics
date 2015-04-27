@@ -156,10 +156,13 @@ public:
    * 
    * @param destination Where to write the new file 
    * @param verb        Whether to be verbose 
+   * @param all         If true, copy all entries
    * 
    * @return true on success, false otherwise 
    */
-  virtual Bool_t CleanUp(const TString& destination, Bool_t verb=false) const;
+  virtual Bool_t CleanUp(const TString& destination,
+			 Bool_t         verb=false,
+			 Bool_t         all=false) const;
   /* @} */
 
   /** 
@@ -403,7 +406,17 @@ protected:
      */
     Bool_t IsFolder() const { return true; }
     /**
-     * Massage fields according to settings 
+     * 
+     */
+    /** 
+     * Massage fields for query according to settings 
+     * 
+     * @param run  On return, the run number 
+     * @param sys  On return, the system id 
+     * @param sNN  On return, the collision energy
+     * @param fld  On return, the field strength 
+     * @param mc   On return, the simulation flag 
+     * @param sat  On return, the satellite flag 
      */
     void MassageFields(ULong_t&  run,
 		       UShort_t& sys,
@@ -411,9 +424,45 @@ protected:
 		       Short_t & fld, 
 		       Bool_t&   mc, 
 		       Bool_t&   sat) const;
+    /** 
+     * Massage fields updating according to settings 
+     * 
+     * @param run  On return, the run number 
+     * @param sys  On return, the system id 
+     * @param sNN  On return, the collision energy
+     * @param fld  On return, the field strength 
+     * @param mc   On return, the simulation flag 
+     * @param sat  On return, the satellite flag 
+     */
+    void CorrectFields(ULong_t&  run,
+		       UShort_t& sys,
+		       UShort_t& sNN, 
+		       Short_t & fld, 
+		       Bool_t&   mc, 
+		       Bool_t&   sat) const;
+    /** 
+     * Clean the table of this correction 
+     * 
+     * @param db    Database 
+     * @param dest  Destination 
+     * @param verb  Whether to be verbose or not 
+     * @param all   If true, copy all entries
+     * 
+     * @return true on success 
+     */
     Bool_t CleanIt(AliOADBForward* db, 
 		   const TString& dest, 
-		   Bool_t verb=false) const;
+		   Bool_t verb=false,
+		   Bool_t all=false) const;
+    /** 
+     * Open our data base table 
+     * 
+     * @param db         Database 
+     * @param vrb        Whether to be verbose 
+     * @param fallback   Whether to enable fall-back 
+     * 
+     * @return true on success 
+     */
     Bool_t OpenIt(AliOADBForward* db, 
 		  Bool_t vrb=false, 
 		  Bool_t fallback=false) const;

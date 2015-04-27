@@ -11,6 +11,8 @@ runLevelQA()
   qaFile=$1
 
   cp $ALICE_PHYSICS/PWGPP/T0/MakeTrendT0.C .
+  echo $ocdbStorage
+  export eocdbStorage=$ocdbStorage
   aliroot -b -q -l "MakeTrendT0.C(\"$qaFile\",${runNumber},\"${ocdbStorage}\")" 
 }
 

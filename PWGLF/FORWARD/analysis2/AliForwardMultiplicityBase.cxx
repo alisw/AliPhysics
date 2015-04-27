@@ -148,7 +148,7 @@ AliForwardMultiplicityBase::Book()
     xaxis->SetBinLabel(kTimingTotal, "Total");
     fList->Add(fHTiming);
   }
-  fHStatus = new TH1I("status", "Status of task",15, .5, 15.5);
+  fHStatus = new TH1I("status", "Status of task",16, .5, 16.5);
   fHStatus->SetDirectory(0);
   fHStatus->SetFillColor(kCyan+2);
   fHStatus->SetFillStyle(3001);
@@ -157,21 +157,22 @@ AliForwardMultiplicityBase::Book()
   fHStatus->SetMarkerColor(kBlack);
   fHStatus->SetYTitle("Events");
   TAxis* a = fHStatus->GetXaxis();
-  a->SetBinLabel(1,"No event");
-  a->SetBinLabel(2,"No triggers");
-  a->SetBinLabel(3,"No SPD (not used)");
-  a->SetBinLabel(4,"No FMD");
-  a->SetBinLabel(5,"No Vertex");
-  a->SetBinLabel(6,"Pile-up");
-  a->SetBinLabel(7,"IP_{z} out of range");
-  a->SetBinLabel(8,"Merger failed");
-  a->SetBinLabel(9,"N_{ch} estimator failed");
-  a->SetBinLabel(10,"#Phi_{R} estimator failed");
-  a->SetBinLabel(11,"Too many outliers");
-  a->SetBinLabel(12,"Corrector failed");
-  a->SetBinLabel(13,"Histogram collector failed");
-  a->SetBinLabel(14,"Not added");
-  a->SetBinLabel(15,"All through");
+  a->SetBinLabel(kStatusNoEvent,	"No event");
+  a->SetBinLabel(kStatusNoTrigger,	"No triggers");
+  a->SetBinLabel(kStatusNoSPD,	    	"No SPD (not used)");
+  a->SetBinLabel(kStatusNoFMD,	    	"No FMD");
+  a->SetBinLabel(kStatusNoVertex,	"No Vertex");
+  a->SetBinLabel(kStatusPileup,	    	"Pile-up");
+  a->SetBinLabel(kStatusSPDOutlier,	"SPD-outlier");
+  a->SetBinLabel(kStatusIPzOutOfRange,  "IP_{z} out of range");
+  a->SetBinLabel(kStatusFailSharing,	"Merger failed");
+  a->SetBinLabel(kStatusFailDensity,	"N_{ch} estimator failed");
+  a->SetBinLabel(kStatusFailEventPlane, "#Phi_{R} estimator failed");
+  a->SetBinLabel(kStatusOutlier,	"Too many outliers");
+  a->SetBinLabel(kStatusFailCorrector,  "Corrector failed");
+  a->SetBinLabel(kStatusFailCollector,  "Histogram collector failed");
+  a->SetBinLabel(kStatusNotAdded,	"Not added");
+  a->SetBinLabel(kStatusAllThrough,     "All through");
   fList->Add(fHStatus);
 
   POST(AOD_SLOT);

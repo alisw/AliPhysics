@@ -21,7 +21,7 @@
 
   .x ~/NimStyle.C
   .x ~/UliStyle.C
-  .L $ALICE_ROOT/PWGPP/Macros/tpcPIDResol.C+
+  .L $ALICE_PHYSICS/PWGPP/Macros/tpcPIDResol.C+
   Init();
   //
   // custom draw  GetProjection(THnSparse*his, Int_t i0, Int_t i1, Float_t type0, Float_t type1, Float_t p0, Float_t p1, Float_t eta0, Float_t eta1, Int_t ncl0, Int_t ncl1)

@@ -1,4 +1,37 @@
-// $Id$
+/// \file AddTaskEMCALClusterize.C
+/// \brief Configuration of EMCal re-clusterization analysis task.
+///
+/// This task reclusterizes on the fly EMCal clusters, creates a new
+/// branch with those clusters so that it can be used by another analysis
+/// task accessing this cluster branch.
+///
+/// The parameters for the analysis are:
+/// \param arrayName: TString name of new cluster branch.
+/// \param bFillAOD: Bool, keep the new clusters in output file.
+/// \param bMC: Bool, simulation or data.
+/// \param exotic: Bool, remove exotic clusters.
+/// \param name: TString, name of clusterizer: V1, V2, V1Unfold, NxN.
+/// \param trigger: TString, name of triggered events to be analyzed.
+/// \param tm: Bool, perform track matching recalculation.
+/// \param minEcell: float, minimum cell energy entering the cluster.
+/// \param minEseed: float, minimum cell energy seed of the cluster
+/// \param maxDeltaT: float, maximum difference in time of cells in cluster, keep it rather open.
+/// \param timeWindow: float, maximum/minimum time of the clusters/cells, after time recalibration.
+/// \param minEUnf: minimum energy cut for unfolding (check what it does)
+/// \param minFrac: minimum fraction of energy cut for unfolding (check what it does)
+/// \param bRecalE: Bool, recalibrate EMCal energy
+/// \param bBad: Bool, remove bad channels
+/// \param bRecalT: Bool, recalibrate EMCal time
+/// \param bNonLine: Bool, correct cluster non linearity
+/// \param minCen: Integer, minimum centrality, -1 no selection
+/// \param maxCen: Integer, maximum centrality, -1 no selection
+/// \param clusterEnergyCutEvent: Float, in case of event filtering, select events with at least one EMCal cluster with this energy
+/// \param nRowDiff: Integer, number of rows for NxM clusterizer
+/// \param nColDiff: Integer, number of collumns for NxM clusterizer
+/// \param skipOrReject: Bool, for unfolding (check)
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        TString & arrayName,

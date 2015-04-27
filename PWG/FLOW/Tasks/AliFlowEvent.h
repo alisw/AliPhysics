@@ -22,6 +22,7 @@ class AliAODEvent;
 class AliMultiplicity;
 class AliESDPmdTrack;
 class AliFlowVector;
+class TH1F;
 class TH2F;
 class TArrayD;
 
@@ -87,6 +88,7 @@ public:
   virtual AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
+  void SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
 
   virtual void ClearFast();
   virtual void ClearCachedRun();
@@ -102,6 +104,12 @@ private:
   Float_t       fWidthQ[9][2][2];       //! recentering
   Float_t       fMeanQv3[9][2][2];      //! recentering
   Float_t       fWidthQv3[9][2][2];     //! recentering
+  // BETA testing of new VZERO calibration
+  TH1F*         fQxavsV0[5];            //! recentering
+  TH1F*         fQyavsV0[5];            //! recentering
+  TH1F*         fQxcvsV0[5];            //! recentering
+  TH1F*         fQycvsV0[5];            //! recentering
+  // END OF BETA TESTING
   AliVEvent*    fEvent;                 //! current event
   TArrayD*      fChi2A;                 //! chi vs cent for vzero A ep_2
   TArrayD*      fChi2C;                 //! chi vs cent for vzero C ep_2

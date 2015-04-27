@@ -43,6 +43,7 @@
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 #include "AliAnalysisTaskDmesonJetCorrelations.h"
 
@@ -55,7 +56,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fCandidateType(kDstartoKpipi),
   fMinMass(0.),
   fMaxMass(1.),
-  fNBinsMass(195),
+  fNBinsMass(65),
   fMaxR(0.2),
   fShowPositionD(kTRUE),
   fShowInvMass(kFALSE),
@@ -70,7 +71,8 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fShowLeadingPt(kFALSE),
   fShowJetArea(kFALSE),
   fShowJetConstituents(kFALSE),
-  fShowMatchingLevel(kTRUE),
+  fShowMatchingLevel(kFALSE),
+  fShowDaughterDistance(0),
   fInhibitTask(kFALSE),
   fMatchingType(kGeometricalMatching),
   fOnlyAcceptedJets(kTRUE),
@@ -94,7 +96,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fCandidateType(cand),
   fMinMass(0.),
   fMaxMass(1.),
-  fNBinsMass(195),
+  fNBinsMass(65),
   fMaxR(0.2),
   fShowPositionD(kTRUE),
   fShowInvMass(kFALSE),
@@ -109,7 +111,8 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fShowLeadingPt(kFALSE),
   fShowJetArea(kFALSE),
   fShowJetConstituents(kFALSE),
-  fShowMatchingLevel(kTRUE),
+  fShowMatchingLevel(kFALSE),
+  fShowDaughterDistance(0),
   fInhibitTask(kFALSE),
   fMatchingType(kGeometricalMatching),
   fOnlyAcceptedJets(kTRUE),
@@ -271,6 +274,8 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
     Double_t areaJet = 0;
     Int_t constJet = 0;
 
+    Double_t daughterDist[5] = {0.};
+
     if (fCandidateType == kD0toKpi) {
       AliDebug(2,"Checking if D0 meson is selected");
       Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
@@ -346,11 +351,21 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
         leadPtJet = jet->MaxPartPt();
         areaJet = jet->Area();
         constJet = jet->N();
+
+        if (fShowDaughterDistance > 0) {
+          TObjArray daughters(5);
+          AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(Dcand, daughters);
+          for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
+            AliVTrack* track = static_cast<AliVTrack*>(daughters.At(i));
+            if (!track) continue;
+            daughterDist[i] = jet->DeltaR(track);
+          }
+        }
       }
     }
 
     AliDebug(2,"Filling THnSparse");
-    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel[0]);
+    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel[0], daughterDist);
   }
   
   return kTRUE;
@@ -455,7 +470,7 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
   
   if (prevCand != cand || reset) {
     daughters.Clear();
-    ptTot = AddDaughters(cand, daughters);
+    ptTot = AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(cand, daughters);
     prevCand = cand;
 
     if (fCheckTrackColl) {
@@ -504,44 +519,6 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
   Double_t m = 1 - pt / ptTot;
   
   return m;
-}
-
-//_______________________________________________________________________________
-Double_t AliAnalysisTaskDmesonJetCorrelations::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
-{
-  // Add all the dauthers of cand in an array. Follows all the decay cascades.
-  
-  Int_t n = cand->GetNDaughters();
-
-  //Printf("AddDaughters: the number of dauhters is %d", n);
-  
-  Int_t ntot = 0;
-  Double_t pt = 0;
-  for (Int_t i = 0; i < n; i++) {
-    AliVTrack* track = dynamic_cast<AliVTrack*>(cand->GetDaughter(i));
-    if (!track) continue;
-
-    AliAODRecoDecay* cand2 = dynamic_cast<AliAODRecoDecay*>(track);
-
-    if (cand2) {
-      //Printf("Daughter pT = %.3f --> ", track->Pt());
-      pt += AddDaughters(cand2, daughters);
-    }
-    else {
-      if (!track->InheritsFrom("AliAODTrack")) {
-        Printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.");
-        continue;
-      }
-      //Printf("Daughter pT = %.3f", track->Pt());
-      daughters.AddLast(track);
-      pt += track->Pt();
-      ntot++;
-    }
-  }
-
-  //Printf("Total pt of the daughters = %.3f", pt);
-  
-  return pt;
 }
 
 //_______________________________________________________________________________
@@ -778,6 +755,14 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
     dim++;
   }
 
+  for (Int_t i = 0; i < fShowDaughterDistance; i++) {
+    title[dim] = Form("#Delta R_{d%d-jet}", i);
+    nbins[dim] = 100;
+    min[dim] = 0;
+    max[dim] = 4;
+    dim++;
+  }
+  
   fDmesons = new THnSparseD("fDmesons","fDmesons",dim,nbins,min,max);
   fOutput->Add(fDmesons);
   for (Int_t i = 0; i < dim; i++) {
@@ -787,7 +772,7 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
 //_______________________________________________________________________________
 void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
-                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel)
+                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel, Double_t daughterDist[5])
 {
   // Fill the THnSparse histogram.
 
@@ -830,6 +815,9 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Doubl
     else if (title=="No. of constituents")                           contents[i] = constJet;
     else if (title=="Matching status")                               contents[i] = matchingStatus;
     else if (title=="Matching level")                                contents[i] = matchingLevel;
+    else if (title=="#Delta R_{d0-jet}")                             contents[i] = daughterDist[0];
+    else if (title=="#Delta R_{d1-jet}")                             contents[i] = daughterDist[1];
+    else if (title=="#Delta R_{d2-jet}")                             contents[i] = daughterDist[2];
     else AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
 
