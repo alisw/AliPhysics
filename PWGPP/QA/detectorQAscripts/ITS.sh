@@ -11,7 +11,7 @@ runLevelQA()
   qaFile=$1
 
   cp $ALICE_PHYSICS/PWGPP/ITS/QA/MakeTrendingITSQA.C .
-  aliroot -b -q -l "MakeTrendingITSQA.C(\"$qaFile\",${runNumber},kFALSE,kFALSE,kFALSE,\"${ocdbStorage}\", kTRUE)"
+  aliroot -b -q -l "MakeTrendingITSQA.C(\"$qaFile\",${runNumber},kFALSE,kFALSE,kFALSE,\"${ocdbStorage}\")"
 }
 
 periodLevelQA()
