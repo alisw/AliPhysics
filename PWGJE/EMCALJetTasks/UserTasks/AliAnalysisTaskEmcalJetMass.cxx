@@ -46,6 +46,9 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fh2MassVsNConstJet1All(0),
   fh2MassVsNConstJet1Tagged(0),
   fh2MassVsNConstJet1TaggedMatch(0),
+  fh3PtJet1VsMassVsCentAllSel(0),
+  fh3PtJet1VsMassVsCentTagged(0),
+  fh3PtJet1VsMassVsCentTaggedMatch(0),
   fh3PtJet1VsRatVsLeadPtAllSel(0),
   fh3PtJet1VsRatVsLeadPtTagged(0),
   fh3PtJet1VsRatVsLeadPtTaggedMatch(0),
@@ -150,6 +153,9 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh2MassVsNConstJet1All(0),
   fh2MassVsNConstJet1Tagged(0),
   fh2MassVsNConstJet1TaggedMatch(0),
+  fh3PtJet1VsMassVsCentAllSel(0),
+  fh3PtJet1VsMassVsCentTagged(0),
+  fh3PtJet1VsMassVsCentTaggedMatch(0),
   fh3PtJet1VsRatVsLeadPtAllSel(0),
   fh3PtJet1VsRatVsLeadPtTagged(0),
   fh3PtJet1VsRatVsLeadPtTaggedMatch(0),
@@ -409,6 +415,21 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
     fOutput->Add(fh3JetPtVsMassVsEPRelTaggedMatch[i]);
   }
 
+  histName = TString::Format("fh3PtJet1VsMassVsCentAllSel");
+  histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};centrality",histName.Data());
+  fh3PtJet1VsMassVsCentAllSel = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,101,-1.,100.);
+  fOutput->Add(fh3PtJet1VsMassVsCentAllSel);
+
+  histName = TString::Format("fh3PtJet1VsMassVsCentTagged");
+  histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};centrality",histName.Data());
+  fh3PtJet1VsMassVsCentTagged = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,101,-1.,100.);
+  fOutput->Add(fh3PtJet1VsMassVsCentTagged);
+
+  histName = TString::Format("fh3PtJet1VsMassVsCentTaggedMatch");
+  histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};centrality",histName.Data());
+  fh3PtJet1VsMassVsCentTaggedMatch = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,101,-1.,100.);
+  fOutput->Add(fh3PtJet1VsMassVsCentTaggedMatch);
+
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -492,6 +513,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,mJet1);
       fh2MassVsAreaJet1All[fCentBin]->Fill(mJet1,jet1->Area());
       fh2MassVsNConstJet1All[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+      fh3PtJet1VsMassVsCentAllSel->Fill(ptJet1,mJet1,fCent);
       fh3JetPtVsMassVsEPRelAllSel[fCentBin]->Fill(ptJet1,mJet1,ep);
 
       fh3PtJet1VsRatVsLeadPtAllSel[fCentBin]->Fill(ptJet1,rat,maxTrackPt);
@@ -506,6 +528,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       fpPtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,mJet1);
       fh2MassVsAreaJet1Tagged[fCentBin]->Fill(mJet1,jet1->Area());
       fh2MassVsNConstJet1Tagged[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+      fh3PtJet1VsMassVsCentTagged->Fill(ptJet1,mJet1,fCent);
       fh3JetPtVsMassVsEPRelTagged[fCentBin]->Fill(ptJet1,mJet1,ep);
 
       fh3PtJet1VsRatVsLeadPtTagged[fCentBin]->Fill(ptJet1,rat,maxTrackPt);
@@ -526,6 +549,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 	fpPtVsMassJet1TaggedMatch[fCentBin]->Fill(ptJet1,mJet1);
 	fh2MassVsAreaJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->Area());
 	fh2MassVsNConstJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+        fh3PtJet1VsMassVsCentTaggedMatch->Fill(ptJet1,mJet1,fCent);
 	fh3JetPtVsMassVsEPRelTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,ep);
 
 	fh3PtJet1VsRatVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,rat,maxTrackPt);
