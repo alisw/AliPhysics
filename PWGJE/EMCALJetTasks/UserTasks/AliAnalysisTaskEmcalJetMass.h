@@ -63,6 +63,10 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   TH2F            **fh2MassVsNConstJet1Tagged;             //!mass vs number of constituents of tagged jets
   TH2F            **fh2MassVsNConstJet1TaggedMatch;        //!mass vs number of constituents of tagged jets matched to MC
 
+  TH3F            *fh3PtJet1VsMassVsCentAllSel;            //!all jets after std selection: pt vs mass vs centrality
+  TH3F            *fh3PtJet1VsMassVsCentTagged;            //!tagged jets: pt vs mass vs centrality
+  TH3F            *fh3PtJet1VsMassVsCentTaggedMatch;       //!tagged jets: pt vs mass vs centrality matched to MC
+
   TH3F            **fh3PtJet1VsRatVsLeadPtAllSel;          //!all jets after std selection pt vs mass/pt vs leading track pt
   TH3F            **fh3PtJet1VsRatVsLeadPtTagged;          //!tagged jets pt vs mass/pt vs leading track pt
   TH3F            **fh3PtJet1VsRatVsLeadPtTaggedMatch;     //!tagged jets pt vs mas/pts vs leading track pt matched to MC
@@ -83,7 +87,7 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetMass(const AliAnalysisTaskEmcalJetMass&);            // not implemented
   AliAnalysisTaskEmcalJetMass &operator=(const AliAnalysisTaskEmcalJetMass&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMass, 9)
+  ClassDef(AliAnalysisTaskEmcalJetMass, 10)
 };
 #endif
 
