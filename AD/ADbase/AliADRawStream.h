@@ -56,13 +56,13 @@ class AliADRawStream: public TObject {
 //    { return fADC[channel][kNEvOfInt/2]; }
             
     Short_t           GetPedestal(Int_t channel, Int_t event) const
-      { return fADC[channel][event]; }
+      { return fADC[channel][20-event]; }
     Bool_t            GetIntegratorFlag(Int_t channel, Int_t event) const
-      { return fIsInt[channel][event]; }
+      { return fIsInt[channel][20-event]; }
     Bool_t            GetBBFlag(Int_t channel, Int_t event) const
-      { return fIsBB[channel][event]; } 
+      { return fIsBB[channel][20-event]; } 
     Bool_t            GetBGFlag(Int_t channel, Int_t event) const
-      { return fIsBG[channel][event]; }   
+      { return fIsBG[channel][20-event]; }   
     Short_t           GetTime(Int_t channel) const
       { return fTime[channel]; }
     Short_t           GetWidth(Int_t channel) const

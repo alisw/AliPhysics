@@ -521,20 +521,20 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1i,kMultiADC, expert, !image, !saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1F("H1D_Charge_ADA",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  h1d = new TH1F("H1D_Charge_ADA",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADA, !expert, image, saveCorr);   iHisto++;
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kBlue);
-  h1d = new TH1F("H1D_Charge_ADC",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  h1d = new TH1F("H1D_Charge_ADC",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADC, !expert, image, saveCorr);   iHisto++;
   h1d->SetLineWidth(2);
   h1d->SetLineColor(kRed);
-  h1d = new TH1F("H1D_Charge_AD",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks()), 2*kNChargeSideBins, kChargeSideMin, 1+2*kNChargeSideBins) ;  
+  h1d = new TH1F("H1D_Charge_AD",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks()), 2*kNChargeSideBins, kChargeSideMin, 1+2*kNChargeSideBins) ;  
   Add2RawsList(h1d,kChargeAD, !expert,  !image, !saveCorr);   iHisto++;
    
 
   // Creation of Charge EoI histogram 
-  h2d = new TH2F("H2D_ChargeEoI", Form("Integrated [-%d,+%d] charge per channel(pedestal substracted);Channel Number;Charge [ADC counts]",fRecoParam->GetNPostClocks(),fRecoParam->GetNPreClocks())
+  h2d = new TH2F("H2D_ChargeEoI", Form("Integrated [-%d,+%d] charge per channel(pedestal substracted);Channel Number;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks())
 		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
   Add2RawsList(h2d,kChargeEoI, !expert, image, saveCorr); iHisto++;
 
@@ -790,12 +790,12 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		   
       // Fill Pedestal histograms
 	   
-      for(Int_t j=15; j<21; j++) {
+      for(Int_t j=0; j<6; j++) {
 	if((rawStream->GetBGFlag(iChannel,j) || rawStream->GetBBFlag(iChannel,j))) iFlag++;
       }
 
       if(iFlag == 0){ //No Flag found
-	for(Int_t j=15; j<21; j++){
+	for(Int_t j=0; j<6; j++){
 	  pedestal= (Int_t) rawStream->GetPedestal(iChannel, j);
 	  integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel, j);
 	  OCDBdiff = pedestal - fCalibData->GetPedestal(offlineCh+16*integrator[offlineCh]);
@@ -828,7 +828,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  imax   = iClock;
 	}
       }
-      //printf(Form("Channel %d (online), %d (offline)\n",iChannel,j)); 
+      Int_t iMaxClock;
       if (imax != -1) {
 	Int_t start = imax - fRecoParam->GetNPreClocks();
 	if (start < 0) start = 0;
@@ -837,15 +837,16 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	for(Int_t iClock = start; iClock <= end; iClock++) {
 	  adc[offlineCh] += adcPedSub[iClock];
 	}
+	iMaxClock  = imax;
       }
-	
+      else iMaxClock  = 11; //Put central clock in case of no signal 
+      //else continue;
 		
-      Int_t iClock  = imax;
-      charge = rawStream->GetPedestal(iChannel,iClock); // Charge at the maximum 
+      charge = rawStream->GetPedestal(iChannel,iMaxClock); // Charge at the maximum 
 
-      integrator[offlineCh]    = rawStream->GetIntegratorFlag(iChannel,iClock);
-      flagBB[offlineCh]	 = rawStream->GetBBFlag(iChannel, iClock);
-      flagBG[offlineCh]	 = rawStream->GetBGFlag(iChannel,iClock );
+      integrator[offlineCh]    = rawStream->GetIntegratorFlag(iChannel,iMaxClock);
+      flagBB[offlineCh]	 = rawStream->GetBBFlag(iChannel,iMaxClock);
+      flagBG[offlineCh]	 = rawStream->GetBGFlag(iChannel,iMaxClock);
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
       time[offlineCh] = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
       width[offlineCh] = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
@@ -891,10 +892,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Int_t nbgFlag = 0;
       
       for(Int_t iEvent=0; iEvent<21; iEvent++){
-	charge = rawStream->GetPedestal(iChannel,20-iEvent);
-	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,20-iEvent);
-	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel, 20-iEvent);
-	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,20-iEvent );
+	charge = rawStream->GetPedestal(iChannel,iEvent);
+	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
+	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel,iEvent);
+	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
 	if(bbFlag) nbbFlag++;
 	if(bgFlag) nbgFlag++;
 	
