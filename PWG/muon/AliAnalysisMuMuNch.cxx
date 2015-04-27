@@ -100,6 +100,44 @@ namespace {
 
 }
 
+//______________________________________________________________________________
+AliAnalysisMuMuNch::AliAnalysisMuMuNch(TRootIOCtor* ioCtor)
+: AliAnalysisMuMuBase(),
+fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
+fSPDCorrectionMap(0x0),
+fSPDCorrectionList(0x0),
+fSPDMeanTracklets(0x0),
+fSPDMeanTrackletsCorrToCompare(0x0),
+fV0MeanMult(0x0),
+fEtaAxis(0x0),
+fZAxis(0x0),
+fCurrentEvent(0x0),
+fMeanTrRef(-1.),
+fMeanV0Ref(-1.),
+fEtaMin(0.),
+fEtaMax(0.),
+fEtaMinToCompare(0.),
+fEtaMaxToCompare(0.),
+fetaRange(),
+fZMin(0.),
+fZMax(0.),
+fResolution(kFALSE),
+frand(0x0),
+fGeneratorHeaderClass(0x0),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(0x0)
+{
+  /// default ctor
+}
+
+
 ////_____________________________________________________________________________
 //AliAnalysisMuMuNch::AliAnalysisMuMuNch(TH2* spdCorrection, Double_t etaMin, Double_t etaMax
 //                                      , Double_t zMin, Double_t zMax,Bool_t disableHistos, Bool_t computeResolution)
@@ -134,14 +172,18 @@ AliAnalysisMuMuNch::AliAnalysisMuMuNch(TH2F* spdCorrection, TProfile* spdMeanCor
                                        , Double_t zMin, Double_t zMax, Bool_t disableHistos, Bool_t computeResolution)
 : AliAnalysisMuMuBase(),
 fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
 fSPDCorrectionMap(0x0),
 fSPDCorrectionList(0x0),
 fSPDMeanTracklets(0x0),
 fSPDMeanTrackletsCorrToCompare(0x0),
-fEtaAxis(new TAxis(TMath::Nint(10./0.1),-5.,5.)),
+fV0MeanMult(0x0),
+fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
 fMeanTrRef(meanTrRef),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(0.),
@@ -151,41 +193,124 @@ fZMin(zMin),
 fZMax(zMax),
 fResolution(computeResolution),
 frand(0x0),
-fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader"))
+fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader")),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
   
-  //FIXME: Add fluctuations to the SPD AccxEff correction method
+  /// Constructor for tracklets multiplicity analysis
+  /// With this constructor we can do the raw analysis if the spdCorrection and spdMeanCorrection arguments are null, correct by 2D SPD AccxEff (eta,z) by
+  /// setting spdCorrection, correct with data-driven method by setting spdMeanCorrection and meanTrRef. Both corrections at the same time can be used to fill
+  /// comparison plots and have both multiplicities available at the event, but the 2D SPD AccxEff method will be used for the other plots.
   
   if ( spdCorrection && spdMeanCorrection )
   {
     AliWarning("Two methods used to correct tracklets: Data-driven and SPDAccxEff corrected tracklets will be available in the event list, but the histograms in this class will be filled just with the AccxEff corrected values");
-//    AliFatal("Cannot use 2 different methods for tracklets correction");
   }
-//  else if ( spdCorrection )
+
   if ( spdCorrection )
   {
-    AliWarning("SPD AccxEff correction method not ready to be used, fluctuations are missing. Do not trust the results");
+    AliInfo("SPD AccxEff tracklets correction method used to estimate event multiplicity");
     
-    if ( fMeanTrRef > 0. && !spdMeanCorrection ) AliWarning("Reference mean nof tracklets argument will not be used: SPD AccxEff correction method in use");
+    if ( fMeanTrRef > 0. && !spdMeanCorrection ) AliInfo("Reference mean nof tracklets argument will not be used: SPD AccxEff correction method in use");
     
     fSPDOneOverAccxEff = static_cast<TH2F*>(spdCorrection->Clone());
     fSPDOneOverAccxEff->SetDirectory(0);
+
+    if ( !spdMeanCorrection ) frand = new TRandom3(0);
   }
-//  else if ( spdMeanCorrection )
+
   if ( spdMeanCorrection )
   {
-    if ( fMeanTrRef < 0. ) AliWarning("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
-    else AliWarning(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
+    AliInfo("Data-driven SPD tracklets correction method used to estimate event multiplicity");
+    if ( fMeanTrRef < 0. ) AliInfo("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
+    else AliInfo(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
     
-    frand = new TRandom3();
+    frand = new TRandom3(0);
     fSPDMeanTracklets = static_cast<TProfile*>(spdMeanCorrection->Clone());
     fSPDMeanTracklets->SetDirectory(0);
   }
   
+  if ( !spdCorrection && !spdMeanCorrection ) AliInfo("Raw tracklets analysis");
   DefineSPDAcceptance();
   
-  if ( disableHistos ) // FIXME: Is this really useful? it breaks when setting to ktrue due to non existence of histos in SetEvent(). Answer: It is useful, it will speed up the task when we want to execute only SetEvent and not fill all the multiplicity histos (i.e. doing J/psi vs multiplicity analysis). The problem is that disabling the histos the method CreateHisto() does not create histosm thats why the task breaks in SetEvent, so fix this
+  if ( disableHistos ) // FIXME: Is this really useful? it breaks when setting to ktrue due to non existence of histos in SetEvent(). Answer: It is useful, it will speed up the task when we want to execute only SetEvent and not fill all the multiplicity histos (i.e. doing J/psi vs multiplicity analysis). The problem is that disabling the histos the method CreateHisto() does not create histos thats why the task breaks in SetEvent, so fix this
+  {
+    DisableHistograms("*");
+  }
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuNch::AliAnalysisMuMuNch(TH2F* spdCorrection, TH2F* spdFluctuations, Double_t etaMin, Double_t etaMax
+                                       , Double_t zMin, Double_t zMax, Bool_t disableHistos, Bool_t computeResolution)
+: AliAnalysisMuMuBase(),
+fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
+fSPDCorrectionMap(0x0),
+fSPDCorrectionList(0x0),
+fSPDMeanTracklets(0x0),
+fSPDMeanTrackletsCorrToCompare(0x0),
+fV0MeanMult(0x0),
+fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
+fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
+fCurrentEvent(0x0),
+fMeanTrRef(-1.),
+fMeanV0Ref(-1.),
+fEtaMin(etaMin),
+fEtaMax(etaMax),
+fEtaMinToCompare(0.),
+fEtaMaxToCompare(0.),
+fetaRange(),
+fZMin(zMin),
+fZMax(zMax),
+fResolution(computeResolution),
+frand(0x0),
+fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader")),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(0x0)
+{
+  //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
+
+  /// Constructor for tracklets multiplicity analysis
+  /// With this constructor we can correct the tracklets by 2D SPD AccxEff (eta,z) by setting spdCorrection.
+  /// We can optionally set spdFluctuations, which is a TH2 with the correlation Ntracklets corrected - Nch generated (obtained from MC). This will be used
+  /// to redisperse the measured tracklets with the generated Nch distribution corresponding to the measured tracklets.
+
+  if ( spdCorrection && spdFluctuations )
+  {
+    AliInfo("Using SPD AccxEff correction WITH fluctuations method");
+
+    fSPDOneOverAccxEff = static_cast<TH2F*>(spdCorrection->Clone());
+    fSPDOneOverAccxEff->SetDirectory(0);
+
+    TH2F* fluct = static_cast<TH2F*>(spdFluctuations->Clone());
+    fluct->SetDirectory(0);
+    DefineSPDFluctuationsMap(fluct);
+  }
+  else if ( !spdCorrection ) AliFatal("No 1/AccxEff correction found");
+  else if ( !spdFluctuations )
+  {
+    AliInfo("Using SPD AccxEff correction WITHOUT fluctuations method");
+
+    fSPDOneOverAccxEff = static_cast<TH2F*>(spdCorrection->Clone());
+    fSPDOneOverAccxEff->SetDirectory(0);
+  }
+
+  DefineSPDAcceptance();
+
+  if ( disableHistos ) // FIXME: Is this really useful? it breaks when setting to ktrue due to non existence of histos in SetEvent(). Answer: It is useful, it will speed up the task when we want to execute only SetEvent and not fill all the multiplicity histos (i.e. doing J/psi vs multiplicity analysis). The problem is that disabling the histos the method CreateHisto() does not create histos thats why the task breaks in SetEvent, so fix this
   {
     DisableHistograms("*");
   }
@@ -196,14 +321,18 @@ AliAnalysisMuMuNch::AliAnalysisMuMuNch(TProfile* spdMeanCorrection, TProfile* sp
                                        Double_t etaMax, Double_t zMin, Double_t zMax, Double_t etaMinToCompare, Double_t etaMaxToCompare,Bool_t disableHistos, Bool_t computeResolution)
 : AliAnalysisMuMuBase(),
 fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
 fSPDCorrectionMap(0x0),
 fSPDCorrectionList(0x0),
 fSPDMeanTracklets(0x0),
 fSPDMeanTrackletsCorrToCompare(0x0),
-fEtaAxis(new TAxis(TMath::Nint(10./0.1),-5.,5.)),
+fV0MeanMult(0x0),
+fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
 fMeanTrRef(meanTrRef),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(etaMinToCompare),
@@ -213,12 +342,25 @@ fZMin(zMin),
 fZMax(zMax),
 fResolution(computeResolution),
 frand(0x0),
-fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader"))
+fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader")),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
   
   /// This construction is designed to compute everything in etaMin < eta < etaMax and correct with spdMeanCorrection (main eta tange and correction), but when filling the histos in FillHistosForEvent is able to compute the number of tracklets in etaMinToCompare < eta < etaMaxToCompare and correct them with spdMeanCorrectionToCompare (secondary eta range and correction) in order to compare N_{tr}^{|eta|< etaMax} vs N_{tr}^{|eta|< etaMaxToCompare}
   
+  /// Constructor for tracklets multiplicity analysis
+  /// With this constructor we can correct the tracklets with the data-driven correction in two different eta ranges for comparison
+  /// The eta range for comparison must be withing the main eta range.
+
+  // FIXME: This is an old method, it does not let to set the ref for the
+
   if ( !spdMeanCorrection || !spdMeanCorrectionToCompare )
   {
     AliFatal("Need the two corrections to compare. Maybe you are using the wrong constructor");
@@ -228,10 +370,10 @@ fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader"))
     AliFatal("Cannot select a eta range to compare wider than the main eta range");
   }
   
-  if ( fMeanTrRef < 0. ) AliWarning("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
-  else AliWarning(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
+  if ( fMeanTrRef < 0. ) AliInfo("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
+  else AliInfo(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
   
-  frand = new TRandom3();
+  frand = new TRandom3(0);
   fSPDMeanTracklets = static_cast<TProfile*>(spdMeanCorrection->Clone());
   fSPDMeanTracklets->SetDirectory(0);
   
@@ -247,18 +389,22 @@ fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader"))
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuNch::AliAnalysisMuMuNch(TObjArray* spdCorrectionList, Double_t meanTrRef, Double_t etaMin, Double_t etaMax
+AliAnalysisMuMuNch::AliAnalysisMuMuNch(TObjArray* spdCorrectionList, Double_t meanTrRef, TObjArray* runWeightsList, Double_t etaMin, Double_t etaMax
                                        , Double_t zMin, Double_t zMax,Bool_t disableHistos, Bool_t computeResolution)
 : AliAnalysisMuMuBase(),
 fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
 fSPDCorrectionMap(0x0),
 fSPDCorrectionList(0x0),
 fSPDMeanTracklets(0x0),
 fSPDMeanTrackletsCorrToCompare(0x0),
-fEtaAxis(new TAxis(TMath::Nint(10./0.1),-5.,5.)),
+fV0MeanMult(0x0),
+fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
 fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
 fCurrentEvent(0x0),
 fMeanTrRef(meanTrRef),
+fMeanV0Ref(-1.),
 fEtaMin(etaMin),
 fEtaMax(etaMax),
 fEtaMinToCompare(0.),
@@ -268,19 +414,38 @@ fZMin(zMin),
 fZMax(zMax),
 fResolution(computeResolution),
 frand(0x0),
-fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader"))
+fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader")),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(0x0)
 {
   //FIXME: Add a protection to avoid an etamin or etamax non multiple of the eta bin size
   
   // Uses a different correction for each group of runs (both SPD AccxEff OR mean tracklets are supported)
   
+  /// Constructor for tracklets multiplicity analysis
+  /// With this constructor we can use several corrections for the tracklets. Each correction has a run range for which is valid. This is useful in case the
+  /// SPD efficiency changes withing a data-taking period, or we analize several periods at a time with changing SPD efficiency
+  /// This constructor can be used either with 2D SPD AccxEff (eta,z) or data driven corrections.
+  /// In case is used with simulation we can add a list to weight the runs, to give them the same weigh as in data. (In case we do not analyse the same number of runs as in data or the number of events in each MC run is different from that in data )
+
   if ( spdCorrectionList ) DefineSPDCorrectionMap(spdCorrectionList);
   else AliFatal("No SPD correction list provided");
   
-  if ( fMeanTrRef < 0. ) AliWarning("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
-  else AliWarning(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
+  if ( runWeightsList )
+  {
+    fMCWeightList = static_cast<TObjArray*>(runWeightsList->Clone());
+    AliInfo("Runs willl be weighted, not correct if running on data");
+  }
 
-  frand = new TRandom3();
+  if ( fMeanTrRef < 0. ) AliInfo("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
+  else AliInfo(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
+
+  frand = new TRandom3(0);
   
   DefineSPDAcceptance();
   
@@ -291,13 +456,86 @@ fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader"))
 }
 
 //_____________________________________________________________________________
+AliAnalysisMuMuNch::AliAnalysisMuMuNch(const char* V0side, TProfile* V0MeanCorrection, Double_t meanV0mRef, TProfile* spdMeanCorrection, Double_t meanTrRef,
+                                       Double_t etaMin, Double_t etaMax,Double_t zMin, Double_t zMax, Bool_t disableHistos)
+: AliAnalysisMuMuBase(),
+fSPDOneOverAccxEff(0x0),
+fSPDFluctuationsList(0x0),
+fSPDFluctuationsMap(0x0),
+fSPDCorrectionMap(0x0),
+fSPDCorrectionList(0x0),
+fSPDMeanTracklets(0x0),
+fSPDMeanTrackletsCorrToCompare(0x0),
+fV0MeanMult(0x0),
+fEtaAxis(new TAxis(TMath::Nint(11./0.1),-5.5,5.5)),
+fZAxis(new TAxis(TMath::Nint(80/0.25),-40.,40.)),
+fCurrentEvent(0x0),
+fMeanTrRef(meanTrRef),
+fMeanV0Ref(meanV0mRef),
+fEtaMin(etaMin),
+fEtaMax(etaMax),
+fEtaMinToCompare(0.),
+fEtaMaxToCompare(0.),
+fetaRange(),
+fZMin(zMin),
+fZMax(zMax),
+fResolution(kFALSE),
+frand(0x0),
+fGeneratorHeaderClass(new TString("AliGenDPMjetEventHeader")),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0),
+fMCWeightList(0x0),
+fMCWeight(1.),
+fV0side(new TString(V0side))
+{
+
+  /// Constructor for tracklets multiplicity analysis
+  /// With this constructor we can correct compute the raw V0(A,C,TOT) multiplicity, the corrected V0 multiplicity and also compare with the tracklets
+  /// data-driven corrected multiplicity.
+
+  if ( V0MeanCorrection )
+  {
+    AliInfo(Form("Corrected %s multiplicity used as multiplicity estimator",fV0side->Data()));
+    if ( fMeanV0Ref < 0. ) AliInfo("Reference V0 mean multiplicity argument set to -1: Maximum of the V0MeanCorrection will be used");
+    else AliInfo(Form("Using %f as reference mean V0 multiplicity for correction",fMeanV0Ref));
+
+    frand = new TRandom3(0);
+    fV0MeanMult = static_cast<TProfile*>(V0MeanCorrection->Clone());
+    fV0MeanMult->SetDirectory(0);
+
+    if ( spdMeanCorrection )
+    {
+      AliInfo("Data-driven SPD tracklets correction method used in addition to V0");
+      if ( fMeanTrRef < 0. ) AliInfo("Reference mean nof tracklets argument set to -1: Maximum of the spdMeanCorrection will be used");
+      else AliInfo(Form("Using %f as reference mean nof tracklets for correction",fMeanTrRef));
+
+      fSPDMeanTracklets = static_cast<TProfile*>(spdMeanCorrection->Clone());
+      fSPDMeanTracklets->SetDirectory(0);
+    }
+  }
+  else AliInfo(Form("Raw %s multiplicity used as multiplicity estimator",fV0side->Data()));
+
+  DefineSPDAcceptance();
+
+  if ( disableHistos ) // FIXME: Is this really useful? it breaks when setting to ktrue due to non existence of histos in SetEvent(). Answer: It is useful, it will speed up the task when we want to execute only SetEvent and not fill all the multiplicity histos (i.e. doing J/psi vs multiplicity analysis). The problem is that disabling the histos the method CreateHisto() does not create histosm thats why the task breaks in SetEvent, so fix this
+  {
+    DisableHistograms("*");
+  }
+}
+
+//_____________________________________________________________________________
 AliAnalysisMuMuNch::~AliAnalysisMuMuNch()
 {
   delete fSPDOneOverAccxEff;
+  delete fSPDFluctuationsList;
+  delete fSPDFluctuationsMap;
   delete fSPDCorrectionMap;
   delete fSPDCorrectionList;
   delete fSPDMeanTracklets;
   delete fSPDMeanTrackletsCorrToCompare;
+  delete fV0MeanMult;
   delete fEtaAxis;
   delete fZAxis;
   delete fSPD1LR;
@@ -306,6 +544,8 @@ AliAnalysisMuMuNch::~AliAnalysisMuMuNch()
   delete fSPD2LL;
   delete frand;
   delete fGeneratorHeaderClass;
+  delete fMCWeightList;
+  delete fV0side;
 }
 
 //_____________________________________________________________________________
@@ -394,6 +634,8 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
   AttachSPDAcceptance(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"TrackletsVsZVertexVsEta");
   
   CreateEventHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"Tracklets",Form("Number of tracklets in |#eta| < %1.1f distribution;N_{Tracklets};N_{events}",fEtaMax),nbinsMult,multMin,multMax);
+
+  CreateEventHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"TrackletsCorrection",Form("Correction for tracklets in |#eta| < %1.1f;Correction;N",fEtaMax),201,-100.5,100.5);
     
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"NBkgTrackletsVsZVertexVsEta","Number of background tracklets vs ZVertex vs #eta;ZVertex;#eta",fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),fEtaAxis->GetNbins(),fEtaAxis->GetXmin(),fEtaAxis->GetXmax());
   AttachSPDAcceptance(kHistoForMCInput,eventSelection,triggerClassName,centrality,"NBkgTrackletsVsZVertexVsEta");
@@ -412,20 +654,61 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"Nch",Form("Number of charged particles in |#eta| < %1.1f distribution;N_{ch};N_{events}",fEtaMax),nbinsMult,multMin,multMax);
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"Nch",Form("%s in |#eta| < %1.1f distribution;%s;N_{events}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax);
   
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdEta",Form("<dNchd#eta> in |#eta| < %1.1f distribution;dN_{ch}/d#eta;N_{events}",fEtaMax),nbinsMult,multMin,multMax);
-   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"dNchdEta",Form("<d%sd#eta> in |#eta| < %1.1f distribution;d%s/d#eta;N_{events}",TrackletsCorrectedAxisName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdEta",Form("<dNch/d#eta> in |#eta| < %1.1f distribution;dN_{ch}/d#eta;N_{events}",fEtaMax),nbinsMult,multMin,multMax);
+   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"dNchdEta",Form("<d%s/d#eta> in |#eta| < %1.1f distribution;d%s/d#eta;N_{events}",TrackletsCorrectedAxisName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"dNchdEtaRescaled",Form("<d%s/d#eta> in |#eta| < %1.1f distribution;d%s/d#eta;N_{events}",TrackletsCorrectedAxisName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax);
+
   
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"TrackletsVsNch",Form("Number of tracklets vs number of generated charged particles in |#eta| < %1.1f;N_{ch};N_{tracklets}",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax); //Response matrix
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"TrackletsVsNch",Form("Number of tracklets vs %s in |#eta| < %1.1f;%s;N_{tracklets}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  
+
+  //========== Nch-Ntr dispersion histos===========
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr2",Form("Number of tracklets (2) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr10",Form("Number of tracklets (10) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr40",Form("Number of tracklets (40) - number of generated charged particles in |#eta| < %1.1f in 4.0 < Z_{v} < 5.5;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr60",Form("Number of tracklets (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsNtr80",Form("Number of tracklets (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - N_{tracklets}",fEtaMax),200,-100,100); //Fluctuations before correction
+//
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr2",Form("%s (2)- number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr10",Form("%s (10) - number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr40",Form("%s (40) - number of generated charged particles in |#eta| < %1.1f in -0.5 < Z_{v} < 0.5;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr60",Form("%s (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr80",Form("%s (80) - number of generated charged particles in |#eta| < %1.1f in -2.0 < Z_{v} < 2.0;N_{ch} - %s_{reco}",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),200,-100,100); //Fluctuations after correction
+//
    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaVsMCdNchdeta",Form("Corrected dN_{ch}/d#eta vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{MC};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0AMultVsNch",Form("V0A multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0A Mult",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0AMultVsNch",Form("V0A multiplicity vs %s in |#eta| < %1.1f;%s;V0A Mult",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0CMultVsNch",Form("V0C multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0C Mult",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CMultVsNch",Form("V0C multiplicity vs %s in |#eta| < %1.1f;%s;V0A Mult",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  
+    //====================================
+
+  //__________V0 Histos
+  if ( fV0side )
+  {
+    Double_t multMinV0 = -0.5;  //Tracklets multiplicity range
+    Double_t multMaxV0 = 1000.5;
+    Int_t nbinsMultV0 = GetNbins(multMinV0,multMaxV0,1.);
+
+    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0AMultVsNch",Form("V0A multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0A Mult",fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"V0CMultVsNch",Form("V0C multiplicity vs number of generated charged particles in |#eta| < %1.1f;N_{ch};V0C Mult",fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0MultVsTracklets",Form("Raw %s multiplicity vs raw tracklets in |#eta| < %1.1f;N_{tr};V0A Mult",fV0side->Data(),fEtaMax),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMultVsNch",Form("%s corr. multiplicity vs %s in |#eta| < %1.1f;%s;%s Mult",fV0side->Data(),TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0,nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanV0MultVsZVertex",Form("Mean raw %s mult. vs Z vertex;Z vertex;<%s_{mult}>",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanV0CorrMultVsZVertex",Form("Mean corrected %s mult. vs Z vertex;Z vertex;<%s_{mult}>",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0MultVsZVertex",Form("%s raw multiplicity vs Z vertex;Z vertex;%s mult.",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMultVsZVertex",Form("%s corrected multiplicity vs Z vertex;Z vertex;%s mult.",fV0side->Data(),fV0side->Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0Mult",Form("%s multiplicity distribution;%s mult.;N_{events}",fV0side->Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0);
+
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CorrMult",Form("Corrected %s multiplicity distribution;%s mult.;N_{events}",fV0side->Data(),fV0side->Data()),nbinsMultV0,multMinV0,multMaxV0);
+  }
+  //______________________
+
+
 //  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"NchVsTracklets","Number of generated charged particles vs reco tracklets;N_{tracklets};N_{ch}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
   if ( fSPDMeanTrackletsCorrToCompare )
@@ -444,17 +727,17 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
     CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"CheckNtrCorr","Check for NtrCorr distribution;N^{corr}_{tr};N_{events}",nbinsMult,multMin,multMax);
   }
   
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}) /(dN_{ch}/d#eta)_{gen}",fEtaMax),201,-1.005,1.005);
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}",fEtaMax),402,-100.5,100.5);
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-    
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta) /(dN_{ch}/d#eta)_{gen};N_{events}",fEtaMax),201,-1.005,1.005);
-     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta;N_{events}",fEtaMax),402,-100.5,100.5);
-    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}) /(dN_{ch}/d#eta)_{gen}",fEtaMax),201,-1.005,1.005);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}",fEtaMax),402,-100.5,100.5);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta) /(dN_{ch}/d#eta)_{gen};N_{events}",fEtaMax),201,-1.005,1.005);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta;N_{events}",fEtaMax),402,-100.5,100.5);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
-//   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch","Reco tracklets corrected vs number of generated charged particles;N_{ch};N_{tracklets}^{corr}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch",Form("%s vs number of generated charged particles in |#eta| < %1.1f;N_{ch};%s",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
+
+  //   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch","Reco tracklets corrected vs number of generated charged particles;N_{ch};N_{tracklets}^{corr}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch",Form("%s vs number of generated charged particles in |#eta| < %1.1f;N_{ch};%s",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
   
   // profile histograms
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"MeanTrackletsVsEta","Mean number of tracklets vs #eta;#eta;<N_{Tracklets}>",fEtaAxis->GetNbins(),fEtaAxis->GetXmin(),fEtaAxis->GetXmax(),0);
@@ -481,18 +764,32 @@ CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"C
 
   delete bins;
   
-  TObjArray* binsntr = Binning()->CreateBinObjArray("psi","ntrcorr","");
+  TObjArray* binsntrcorr = Binning()->CreateBinObjArray("psi","ntrcorr","");
+  TIter nextBinNtrCorr(binsntrcorr);
+  AliAnalysisMuMuBinning::Range* rNtrCorr;
+
+  while ( ( rNtrCorr = static_cast<AliAnalysisMuMuBinning::Range*>(nextBinNtrCorr()) ) )
+  {
+    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,Form("MeanNchVsZVertex%s",rNtrCorr->AsString().Data()),Form("Mean %s in |#eta| < %1.1f vs Z vertex in bin %s;Z vertex;<%s>",TrackletsCorrectedName.Data(),fEtaMax,rNtrCorr->AsString().Data(),TrackletsCorrectedAxisName.Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
+    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("GenNchVsZVertex%s",rNtrCorr->AsString().Data()),Form("Mean number of generated charged particles in |#eta| < %1.1f vs Z vertex in bin %s;(Z vertex)_{reco};<N_{ch}>_{MC}",fEtaMax,rNtrCorr->AsString().Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),nbinsMult,multMin,multMax);
+  }
+
+  delete binsntrcorr;
+
+  TObjArray* binsntr = Binning()->CreateBinObjArray("psi","ntr","");
   TIter nextBinNtr(binsntr);
   AliAnalysisMuMuBinning::Range* rNtr;
   
   while ( ( rNtr = static_cast<AliAnalysisMuMuBinning::Range*>(nextBinNtr()) ) )
   {
-    CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,Form("MeanNchVsZVertex%s",rNtr->AsString().Data()),Form("Mean %s in |#eta| < %1.1f vs Z vertex in bin %s;Z vertex;<%s>",TrackletsCorrectedName.Data(),fEtaMax,rNtr->AsString().Data(),TrackletsCorrectedAxisName.Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
-    
     CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,Form("MeanTrackletsVsZVertex%s",rNtr->AsString().Data()),Form("Mean number of tracklets in |#eta| < %1.1f vs Z vertex in bin %s;Z vertex;<N_{Tracklets}>",fEtaMax,rNtr->AsString().Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
+
+    CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("MeanNchVsZVertex%s",rNtr->AsString().Data()),Form("Mean number of generated charged particles in |#eta| < %1.1f vs Z vertex in bin %s;(Z vertex)_{reco};<N_{ch}>_{MC}",fEtaMax,rNtr->AsString().Data()),fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
   }
   
   delete binsntr;
+
+
   
   TObjArray* binsRel = Binning()->CreateBinObjArray("psi","relntrcorr","");
   TIter nextBinRel(binsRel);
@@ -527,11 +824,11 @@ void AliAnalysisMuMuNch::DefineSPDAcceptance()
 //_____________________________________________________________________________
 void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
 {
-  // Defines a TMap of the SPD periods and the corresponding correction
-  // Each SPD correction in the list must contain in the name the 1st run for which is valid and respect the naming convention:
-  // (SPDCorrection_1stValidRunNumber_lastValidRunNumber).
-  // The list must be ordered from smaller to bigger run number
-  // This is usable with both types of corrections
+  /// Defines a TMap of the SPD periods and the corresponding correction
+  /// Each SPD correction in the list must contain in the name of the first and last runs for which is valid and respect the naming convention:
+  ///       - Data: (SPDCorrection_1stValidRunNumber_lastValidRunNumber).
+  /// The list must be ordered from smaller to bigger run number
+  /// This is usable with both types of corrections (data-driven and usual AccxEff)
   
   if ( !fSPDCorrectionMap ) // Creates a TMap for the run->Correction correspondance
   {
@@ -543,6 +840,7 @@ void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
   TH1* SPDCorrection(0x0);
   Int_t runRef(0);
   Int_t i(0); // SPDCorrection index in the list
+
   while ( (SPDCorrection = static_cast<TH1*>(next())) ) // Checks if the correction list format is ok and if it is ordered
   {
     if ( static_cast<TH1*>(SPDCorrection)->IsA() != TH2::Class() && static_cast<TH1*>(SPDCorrection)->IsA() != TProfile::Class() )
@@ -550,16 +848,20 @@ void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
       AliFatal("Unrecognized SPD correction Class");
     }
       
-    TString name = SPDCorrection->GetName();
-    if ( !name.BeginsWith("SPDCorrection_") ) AliFatal(Form("Incorrect SPD correction at %d format: Objects in list must named as 'SPDCorrection_1stValidRunNumber_lastValidRunNumber'",i));
-    
+    TString name = SPDCorrection->GetName(); // This will be the first valid run for the correction
+    if ( !name.BeginsWith("SPDCorrection_") ) AliFatal(Form("Incorrect SPD correction at %d format: Objects in list must be named as 'SPDCorrection_1stValidRunNumber_lastValidRunNumber'",i));
+
     name.Remove(0,name.First("_") + 1);
-    TString nameLast = name;
+    TString nameLast = name; // This will be the last valid run for the correction
+
     name.Remove(name.First("_"),name.Length());
     nameLast.Remove(0,nameLast.First("_") + 1);
+
     if ( !name.IsDigit() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve first valid run number",i));
+
     if ( !nameLast.IsDigit() ) AliFatal(Form("Incorrect SPD correction at %d format: Impossible to retrieve last valid run number",i));
-    
+
+
     Int_t runLow = name.Atoi();
     Int_t runHigh = nameLast.Atoi();
     if ( runHigh < runLow ) AliFatal(Form("SPD correction at %d validity range not valid",i));
@@ -570,11 +872,60 @@ void AliAnalysisMuMuNch::DefineSPDCorrectionMap(TObjArray* spdCorrectionList)
     {
       fSPDCorrectionMap->Add(new TObjString(Form("%d",j)),new TObjString(Form("%d",i))); // The mapping is done between the runs and the index of the correction in the spdCorrection List
     }
-    
+
     i++;
   }
   
   fSPDCorrectionList = static_cast<TObjArray*>(spdCorrectionList->Clone());
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuNch::DefineSPDFluctuationsMap(TH2F* spdFluctuations)
+{
+  // Makes slices of Ntr_Corr and proyect over the Nch axis
+  // Creates a map between reconstructed Ntr corrected by SPD AccxEff and fluctuations distributions
+
+  if ( !spdFluctuations ) AliFatal("Triying to define a fluctuations map without a fluctuations distribution");
+
+  if ( !fSPDFluctuationsMap ) // Creates a TMap for the run->Correction correspondance
+  {
+    AliWarning("Implementation valid for pPb @ 5TeV"); // The chosen slicing in Ntr corrected by SPD AccxEff is optimized for this period
+
+    fSPDFluctuationsMap = new TMap;
+    fSPDFluctuationsMap->SetOwnerKeyValue(kTRUE,kTRUE);
+
+    fSPDFluctuationsList = new TObjArray();
+    fSPDFluctuationsList->SetOwner(kTRUE);
+  }
+
+  // FIXME: Generalize the method. Set an array with the slicing that we can give as input
+
+  for ( Int_t i = 1 ; i <= 50 ; i++ ) // Bins 1 to 50; In steps of 1 bin
+  {
+    TH1D* h = spdFluctuations->ProjectionX(Form("Fluctuations_%d",i),i,i); // Project n bins of Ntr corrected by AccxEff over the Nch axis
+    h->SetDirectory(0);
+    fSPDFluctuationsList->Add(h);
+    fSPDFluctuationsMap->Add(new TObjString(Form("%f.2-%f.2",h->GetXaxis()->GetBinLowEdge(i),h->GetXaxis()->GetBinUpEdge(i))),new TObjString(Form("%d",i-1))); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
+  }
+
+  for ( Int_t i = 0 ; i <= 5 ; i++ ) // Bins 51 to 61; In steps of 2 bin
+  {
+    Int_t bin = 51 + 2*i;
+    TH1D* h = spdFluctuations->ProjectionX(Form("Fluctuations_%d_%d",bin,bin+1),bin,bin + 1); // Project n bins of Ntr corrected by AccxEff over the Nch axis
+    h->SetDirectory(0);
+    fSPDFluctuationsList->Add(h);
+    fSPDFluctuationsMap->Add(new TObjString(Form("%f.2-%f.2",h->GetXaxis()->GetBinLowEdge(bin),h->GetXaxis()->GetBinUpEdge(bin+1))),new TObjString(Form("%d",50+i))); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
+  }
+
+  TH1D* h10 = spdFluctuations->ProjectionX("Fluctuations_62_70",62,70);
+  h10->SetDirectory(0);
+  fSPDFluctuationsList->Add(h10); // Add fluctuations distribution to array
+  fSPDFluctuationsMap->Add(new TObjString("61.5-69.5"),new TObjString("56")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
+
+  TH1D* h11 = spdFluctuations->ProjectionX("Fluctuations_71_150",71,150);
+  h11->SetDirectory(0);
+  fSPDFluctuationsList->Add(h11); // Add fluctuations distribution to array
+  fSPDFluctuationsMap->Add(new TObjString("69.5-149.5"),new TObjString("57")); // Map between Ntr corrected by AccxEff and fluctuations distribution index in fSPDFluctuationsList
 }
 
 //_____________________________________________________________________________
@@ -644,6 +995,51 @@ void AliAnalysisMuMuNch::AttachSPDAcceptance(UInt_t dataType,
   
 }
 
+//_____________________________________________________________________________
+Double_t AliAnalysisMuMuNch::ApplyFluctuations(Double_t dNtrCorrdeta)
+{
+
+  Int_t iSPDFluctuationsIndex(0);
+  Int_t i(0);
+  Bool_t foundRange(kFALSE);
+
+  while ( i <= 50 && !foundRange )
+  {
+    if ( (dNtrCorrdeta >= i - 0.5) && (dNtrCorrdeta < i + 0.5) )
+    {
+      iSPDFluctuationsIndex = i;
+      foundRange = kTRUE;
+    }
+    i++;
+  }
+
+  Int_t j(50);
+  while ( i <= 61 && !foundRange )
+  {
+    if ( (dNtrCorrdeta >= i - 0.5) && (dNtrCorrdeta < i + 1.5) )
+    {
+      iSPDFluctuationsIndex = j;
+      foundRange = kTRUE;
+    }
+    i = i+2;
+    j++;
+  }
+
+  if ( !foundRange )
+  {
+    if ( (dNtrCorrdeta >= 61.5) && (dNtrCorrdeta < 69.5) ) iSPDFluctuationsIndex = 56;
+    else if ( (dNtrCorrdeta >= 69.5) && (dNtrCorrdeta < 149.5) ) iSPDFluctuationsIndex = 57;
+  }
+
+  TH1D* hSPDFluctuations = static_cast<TH1D*>(fSPDFluctuationsList->At(iSPDFluctuationsIndex)); // Gets the SPD correction at key position from the list
+
+  if ( hSPDFluctuations ) return hSPDFluctuations->GetRandom();
+  else
+  {
+    AliWarning(Form("No fluctuations histo distribution found for Ntr %f",dNtrCorrdeta));
+    return 0.;
+  }
+}
 
 //_____________________________________________________________________________
 void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
@@ -655,23 +1051,8 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   if ( IsHistogrammingDisabled() ) return;
   
   if ( fResolution ) return; //When computing resolutions we skip this method
-
-//  if ( !AliAnalysisMuonUtility::IsAODEvent(Event()) )
-//  {
-//    AliError("Don't know how to deal with ESDs...");
-//    return;
-//  }
   
-//  if ( HasMC() && !fSPDOneOverAccxEff && !fSPDMeanTracklets ) // We have MC but no correction (SPD correction computation mode)so we skip the method
-//  {
-//    return;
-//  }
-
-//  AliAODEvent* aod = static_cast<AliAODEvent*>(Event());
-//
-//  AliVVertex* vertex = aod->GetPrimaryVertexSPD();
-  
-  AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(Event());
+  const AliVVertex* vertex = Event()->GetPrimaryVertexSPD();
   
   TList* nchList = static_cast<TList*>(Event()->FindListObject("NCH"));
   
@@ -680,14 +1061,8 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
     AliError("Empty Nch list in event");
     return;
   }
-//  nchList->Print();
-  Double_t SPDZv;
-  
-  if ( !vertex || vertex->GetZ() == 0.0 ) // Running in Simu the spdZ == 0 means no SPD info. In data, avoid breaks in events w/o SPD vertex
-  {
-    SPDZv = -40.;
-  } 
-  else SPDZv = vertex->GetZ();
+
+  Double_t SPDZv = vertex->GetZ();
   
   TH1* hSPDcorrectionVsEta = static_cast<TH1*>(nchList->FindObject("SPDcorrectionVsEta"));
   TH1* hNTrackletVsEta = static_cast<TH1*>(nchList->FindObject("NTrackletVsEta"));
@@ -761,13 +1136,18 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   Histo(eventSelection,triggerClassName,centrality,"Tracklets")->Fill(nTracklets[0]);
   Histo(eventSelection,triggerClassName,centrality,"MeanTrackletsVsZVertex")->Fill(SPDZv,nTracklets[0]);
   
-    
+
+  delete hNchVsEta; // We delete the clone to avoid memory leak
+
+
   if ( fSPDMeanTracklets && !fSPDOneOverAccxEff ) // Just correct by SPDMeanTracklets method if there is no SPD AccxEff correction
   {
     Double_t SPDr = GetTrackletsMeanCorrection(SPDZv,nTracklets[0]); // Get 'mean correction' for the zvtx
     
+    Histo(eventSelection,triggerClassName,centrality,"TrackletsCorrection")->Fill(SPDr);
+
     if ( SPDr < -999.) nch[0] = -1;
-    else nch[0] = nTracklets[0] + SPDr; // In case of 'mean correction' nch has not be filled in the eta bins loop
+    else nch[0] = nTracklets[0] + SPDr; // In case of 'mean correction' nch has not be filled in the eta bins loop //FIXME: Due to the TRamdon the correction for a given event is not the same here and in SetEvent()
     
     if ( fSPDMeanTrackletsCorrToCompare ) // Comparison of corrected tracklets in the primary and secondary eta ranges
     {
@@ -833,34 +1213,57 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   Histo(eventSelection,triggerClassName,centrality,"Nch")->Fill(nch[0]);
   Histo(eventSelection,triggerClassName,centrality,"MeanNchVsZVertex")->Fill(SPDZv,nch[0]);
   
-  
-  Double_t V0AMult = 0.;
-  Double_t V0CMult = 0.;
-  
-//  AliVVZERO* vzero = aod->GetVZEROData();
-  AliVVZERO* vzero = Event()->GetVZEROData();
-  if (vzero)
+  //___V0A multiplicity
+  Int_t i(-1);
+  while ( i < nchList->GetEntries() - 1 )
   {
-    Double_t multV0A = vzero->GetMTotV0A();
-    V0AMult = AliESDUtils::GetCorrV0A(multV0A,SPDZv);
-    Double_t multV0C = vzero->GetMTotV0C();
-    V0CMult = AliESDUtils::GetCorrV0C(multV0C,SPDZv);
+    i++;
+    while ( nchList->At(i)->IsA() != TParameter<Double_t>::Class() && i < nchList->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+    {
+      i++;
+    }
     
-    Histo(eventSelection,triggerClassName,centrality,"V0AMultVsNch")->Fill(V0AMult,nch[0]);
-    Histo(eventSelection,triggerClassName,centrality,"V0CMultVsNch")->Fill(V0CMult,nch[0]);
+    TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(nchList->At(i));
 
+    if (  TString(p->GetName()).Contains("V0ARaw") ||  TString(p->GetName()).Contains("V0CRaw") ||  TString(p->GetName()).Contains("V0MRaw") )
+    {
+      Histo(eventSelection,triggerClassName,centrality,"V0Mult")->Fill(p->GetVal());
+      Histo(eventSelection,triggerClassName,centrality,"V0MultVsTracklets")->Fill(nTracklets[0],p->GetVal());
+      Histo(eventSelection,triggerClassName,centrality,"V0MultVsZVertex")->Fill(SPDZv,p->GetVal());
+      Histo(eventSelection,triggerClassName,centrality,"MeanV0MultVsZVertex")->Fill(SPDZv,p->GetVal());
+    }
+    else if ( TString(p->GetName()).Contains("V0ACorr") || TString(p->GetName()).Contains("V0CCorr") || TString(p->GetName()).Contains("V0MCorr") )
+    {
+      Histo(eventSelection,triggerClassName,centrality,"V0CorrMult")->Fill(p->GetVal());
+      Histo(eventSelection,triggerClassName,centrality,"V0CorrMultVsNch")->Fill(nch[0],p->GetVal());
+      Histo(eventSelection,triggerClassName,centrality,"V0CorrMultVsZVertex")->Fill(SPDZv,p->GetVal());
+      Histo(eventSelection,triggerClassName,centrality,"MeanV0CorrMultVsZVertex")->Fill(SPDZv,p->GetVal());
+    }
   }
+  //__________
 
-  
-  delete hNchVsEta;
   
   // Mean dNch/dEta computation. In case the correction is the 'mean' one, this is not really dNch/deta, we have to multiply it by a factor <Nch>/<Ntrkls_corr> (we get <Nch> from a MC)
   Double_t meandNchdEta(0.);
   
   if ( nBins >  0 )
   {
-    if ( fSPDOneOverAccxEff ) meandNchdEta = nch[0] / (nBins*fEtaAxis->GetBinWidth(5)); // Divide by nBins to get the mean and by the binWidht to get the d/dEta
-    else if ( fSPDMeanTracklets ) meandNchdEta = nch[0] / (2.*fEtaMax); //fEtaAxis->GetBinWidth(5);
+    if ( fSPDOneOverAccxEff )
+    {
+      meandNchdEta = nch[0] / (nBins*fEtaAxis->GetBinWidth(5)); // Divide by nBins to get the mean and by the binWidht to get the d/dEta
+
+      if ( fSPDFluctuationsMap )
+      {
+        meandNchdEta = ApplyFluctuations(meandNchdEta);
+      }
+    }
+    else if ( fSPDMeanTracklets )
+    {
+      meandNchdEta = nch[0] / (2.*fEtaMax); //fEtaAxis->GetBinWidth(5);
+
+      Double_t ctToNch = 1.11; //FIXME: hardcoded (value for Nch vs NtrCorr(eta<0.5) in pPb)
+      Histo(eventSelection,triggerClassName,centrality,"dNchdEtaRescaled")->Fill(ctToNch*meandNchdEta);
+    }
   }
   
   Histo(eventSelection,triggerClassName,centrality,"dNchdEta")->Fill(meandNchdEta);
@@ -889,14 +1292,14 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   delete bins;
   
   
-  TObjArray* binsNtrRaw = Binning()->CreateBinObjArray("psi","ntrraw","");
+  TObjArray* binsNtrRaw = Binning()->CreateBinObjArray("psi","ntr","");
   TIter nextBinNtrRaw(binsNtrRaw);
   AliAnalysisMuMuBinning::Range* rNtrRaw;
   
   while ( ( rNtrRaw = static_cast<AliAnalysisMuMuBinning::Range*>(nextBinNtrRaw()) ) )
   {
     Bool_t ok(kFALSE);
-    if ( rNtrRaw->Quantity() == "NTRRAW" )
+    if ( rNtrRaw->Quantity() == "NTR" )
     {
       ok = rNtrRaw->IsInRange(nTracklets[0]);
     }
@@ -969,21 +1372,16 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
   }
   
   Double_t MCZv = AliAnalysisMuonUtility::GetMCVertexZ(Event(),MCEvent()); // Definition of MC generated z vertex
-//  AliVVertex* vertex = static_cast<AliAODEvent*>(Event())->GetPrimaryVertexSPD();
-  AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(Event());
+  const AliVVertex* vertex = Event()->GetPrimaryVertexSPD();
   
-  Double_t SPDZv(0.);
+  Double_t SPDZv = vertex->GetZ();;
   TParameter<Double_t>* p(0x0);
   
   //____Resolution Histos___
   if ( !fSPDOneOverAccxEff && !fSPDMeanTracklets && fResolution )
   {
-    Int_t nContributors(0);
-    if ( vertex )
-    {
-      nContributors  = vertex->GetNContributors();
-      SPDZv = vertex->GetZ();
-    }
+    Int_t nContributors  = vertex->GetNContributors();
+
     MCHisto(eventSelection,triggerClassName,centrality,"SPDZvResVsnC")->Fill(nContributors,SPDZv - MCZv);
     MCHisto(eventSelection,triggerClassName,centrality,"SPDZvResVsMCz")->Fill(MCZv,SPDZv - MCZv);
     
@@ -1111,29 +1509,25 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     
     nchSum += nch;
     
-    hMeanNchVsEta->Fill(eta,nch); // Fill the number of charged particles of each eta bin in the profile
+    hMeanNchVsEta->Fill(eta,nch,fMCWeight); // Fill the number of charged particles of each eta bin in the profile
     
-    hEventsVsZVertexVsEta->Fill(MCZv,eta,1.0); // Fill 1 count each eta bin where the events contributes
+    hEventsVsZVertexVsEta->Fill(MCZv,eta,fMCWeight); // Fill 1 count (or weight) each eta bin where the events contributes
   }
   
-  MCHisto(eventSelection,triggerClassName,centrality,"Tracklets")->Fill(nTracklets); // Note that these are NOT the same tracklets as in the FillHistosForEvent() since here the SPD "dead" zones (the ones where correction > threshold) are not rejected
-  
-  if ( vertex )
-  {
-    SPDZv = vertex->GetZ();
-  }
+  MCHisto(eventSelection,triggerClassName,centrality,"Tracklets")->Fill(nTracklets,fMCWeight); // Note that these are NOT the same tracklets as in the FillHistosForEvent() since here the SPD "dead" zones (the ones where correction > threshold) are not rejected
 
   Bool_t isMChisto = kTRUE; // Used to get the MC histos in the Add method
   
-  AddHisto(eventSelection,triggerClassName,centrality,"NBkgTrackletsVsZVertexVsEta",SPDZv,hNBkgTrackletsVSEta,isMChisto);
+  AddHisto(eventSelection,triggerClassName,centrality,"NBkgTrackletsVsZVertexVsEta",SPDZv,hNBkgTrackletsVSEta,isMChisto); //These histos are never weighted
   AddHisto(eventSelection,triggerClassName,centrality,"NchVsZVertexVsPhi",MCZv,hNchVsPhi,isMChisto);
   AddHisto(eventSelection,triggerClassName,centrality,"NchVsZVertexVsEta",MCZv,hNchVsEta,isMChisto);
   AddHisto(eventSelection,triggerClassName,centrality,"NchVsRecoZVertexVsEta",SPDZv,hNchVsEta,isMChisto);
   AddHisto(eventSelection,triggerClassName,centrality,"TrackletsVsZVertexVsEta",SPDZv,hNTrackletVsEta,isMChisto);
   AddHisto(eventSelection,triggerClassName,centrality,"TrackletsVsZVertexVsPhi",SPDZv,hNTrackletVsPhi,isMChisto);
   
-  MCHisto(eventSelection,triggerClassName,centrality,"MeanNchVsZVertex")->Fill(MCZv,nchSum);
-  MCHisto(eventSelection,triggerClassName,centrality,"Nch")->Fill(nchSum);
+  static_cast<TProfile*>(MCHisto(eventSelection,triggerClassName,centrality,"MeanNchVsZVertex"))->Fill(MCZv,nchSum,fMCWeight);
+
+  MCHisto(eventSelection,triggerClassName,centrality,"Nch")->Fill(nchSum,fMCWeight);
   
   
   // Mean dNch/dEta computation
@@ -1143,7 +1537,7 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     meandNchdEta = nchSum / (nBins*fEtaAxis->GetBinWidth(5)); // Divide by nBins to get the mean and by the binWidht to get the d/dEta
   }
   
-  MCHisto(eventSelection,triggerClassName,centrality,"dNchdEta")->Fill(meandNchdEta);
+  MCHisto(eventSelection,triggerClassName,centrality,"dNchdEta")->Fill(meandNchdEta,fMCWeight);
   
   
   Int_t i(-1);
@@ -1163,43 +1557,114 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     
     if ( ( TString(p->GetName()).Contains("NtrCorr") || TString(p->GetName()).BeginsWith("Nch") ) && ( (fSPDMeanTracklets && !fSPDOneOverAccxEff) || (!fSPDMeanTracklets && fSPDOneOverAccxEff) ))
     {
-      MCHisto(eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch")->Fill(nchSum,p->GetVal());
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch"))->Fill(nchSum,p->GetVal(),fMCWeight);
+
+//      if (SPDZv > -0.5 && SPDZv < 0.5 )
+//      {
+//        if ( p->GetVal() > 1.5 && p->GetVal() < 2.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr2")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 9.5 && p->GetVal() < 10.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr10")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 39.5 && p->GetVal() < 40.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr40")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
+//      if (SPDZv > -2.0 && SPDZv < 2.0 )
+//      {
+//        if ( p->GetVal() > 59.5 && p->GetVal() < 60.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr60")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 79.5 && p->GetVal() < 80.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsAfterCorrNtrCorr80")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
+
+      TObjArray* binsNtrCorr = Binning()->CreateBinObjArray("psi","ntrcorr","");
+      TIter nextBinNtrCorr(binsNtrCorr);
+      AliAnalysisMuMuBinning::Range* rNtrCorr;
+
+      while ( ( rNtrCorr = static_cast<AliAnalysisMuMuBinning::Range*>(nextBinNtrCorr()) ) )
+      {
+        Bool_t ok(kFALSE);
+        if ( rNtrCorr->Quantity() == "NTRCORR" )
+        {
+          ok = rNtrCorr->IsInRange(p->GetVal());
+        }
+
+        if ( ok )
+        {
+          static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,
+                                                Form("GenNchVsZVertex%s",rNtrCorr->AsString().Data())))->Fill(SPDZv,nchSum,fMCWeight);
+
+        }
+      }
+
+      delete binsNtrCorr;
     }
     else if ( TString(p->GetName()).Contains("NtrCorr") )
     {
       nTrCorr = p->GetVal();
-      MCHisto(eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC")->Fill(meandNchdEta,ctToNch*nTrCorr/(2*fEtaMax));
-      MCHisto(eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC")->Fill((meandNchdEta - ctToNch*nTrCorr/(2*fEtaMax)) / meandNchdEta);
-      MCHisto(eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC")->Fill((meandNchdEta - ctToNch*nTrCorr/(2*fEtaMax)));
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC"))->Fill(meandNchdEta,ctToNch*nTrCorr/(2*fEtaMax),fMCWeight);
+
+      MCHisto(eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC")->Fill((meandNchdEta - ctToNch*nTrCorr/(2*fEtaMax)) / meandNchdEta,fMCWeight);
+      MCHisto(eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC")->Fill((meandNchdEta - ctToNch*nTrCorr/(2*fEtaMax)),fMCWeight);
+
     }
     else if ( TString(p->GetName()).Contains("Ntr") && !TString(p->GetName()).Contains("SPDOk") && !TString(p->GetName()).Contains("Corr"))
     {
-      MCHisto(eventSelection,triggerClassName,centrality,"TrackletsVsNch")->Fill(nchSum,p->GetVal());
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"TrackletsVsNch"))->Fill(nchSum,p->GetVal(),fMCWeight);
+
+//      if (SPDZv > 4. && SPDZv < 5.5 )
+//      {
+//        if ( p->GetVal() > 1.5 && p->GetVal() < 2.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr2")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 9.5 && p->GetVal() < 10.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr10")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 39.5 && p->GetVal() < 40.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr40")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
+//      if (SPDZv > 3.5 && SPDZv < 6.0 )
+//      {
+//        if ( p->GetVal() > 59.5 && p->GetVal() < 60.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr60")->Fill(nchSum - p->GetVal(),fMCWeight);
+//        if ( p->GetVal() > 79.5 && p->GetVal() < 80.5) MCHisto(eventSelection,triggerClassName,centrality,"FluctuationsNtr80")->Fill(nchSum - p->GetVal(),fMCWeight);
+//      }
+
+      TObjArray* binsNtrRaw = Binning()->CreateBinObjArray("psi","ntr","");
+      TIter nextBinNtrRaw(binsNtrRaw);
+      AliAnalysisMuMuBinning::Range* rNtrRaw;
+
+      while ( ( rNtrRaw = static_cast<AliAnalysisMuMuBinning::Range*>(nextBinNtrRaw()) ) )
+      {
+        Bool_t ok(kFALSE);
+        if ( rNtrRaw->Quantity() == "NTR" )
+        {
+          ok = rNtrRaw->IsInRange(p->GetVal());
+        }
+
+        if ( ok )
+        {
+          static_cast<TProfile*>(MCHisto(eventSelection,triggerClassName,centrality,Form("MeanNchVsZVertex%s",rNtrRaw->AsString().Data())))->Fill(SPDZv,nchSum,fMCWeight);
+        }
+      }
+
+      delete binsNtrRaw;
     }
     else if ( TString(p->GetName()).Contains("MeandNchdEta") )
     {
       dNchdetaReco = p->GetVal();
-      MCHisto(eventSelection,triggerClassName,centrality,"dNchdetaVsMCdNchdeta")->Fill(meandNchdEta,dNchdetaReco);
-      MCHisto(eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC")->Fill(meandNchdEta,dNchdetaReco);
-      MCHisto(eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC")->Fill((meandNchdEta - dNchdetaReco) / meandNchdEta);
-      MCHisto(eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC")->Fill((meandNchdEta - dNchdetaReco));
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"dNchdetaVsMCdNchdeta"))->Fill(meandNchdEta,dNchdetaReco,fMCWeight);
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC"))->Fill(meandNchdEta,dNchdetaReco,fMCWeight);
+      MCHisto(eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC")->Fill((meandNchdEta - dNchdetaReco) / meandNchdEta,fMCWeight);
+      MCHisto(eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC")->Fill((meandNchdEta - dNchdetaReco),fMCWeight);
     }
   }
   
-  Double_t V0AMult = 0.;
-  Double_t V0CMult = 0.;
-  
-  AliVVZERO* vzero = Event()->GetVZEROData();
-  if (vzero)
+  if ( fV0side )
   {
-    Double_t multV0A = vzero->GetMTotV0A();
-    V0AMult = AliESDUtils::GetCorrV0A(multV0A,MCZv);
-    Double_t multV0C = vzero->GetMTotV0C();
-    V0CMult = AliESDUtils::GetCorrV0C(multV0C,MCZv);
+    Double_t V0AMult = 0.;
+    Double_t V0CMult = 0.;
     
-    MCHisto(eventSelection,triggerClassName,centrality,"V0AMultVsNch")->Fill(V0AMult,nchSum);
-    MCHisto(eventSelection,triggerClassName,centrality,"V0CMultVsNch")->Fill(V0CMult,nchSum);
-    
+    AliVVZERO* vzero = Event()->GetVZEROData();
+    if (vzero)
+    {
+      Double_t multV0A = vzero->GetMTotV0A();
+//      V0AMult = AliESDUtils::GetCorrV0A(multV0A,MCZv);
+      Double_t multV0C = vzero->GetMTotV0C();
+//      V0CMult = AliESDUtils::GetCorrV0C(multV0C,MCZv);
+
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0AMultVsNch"))->Fill(V0AMult,nchSum,fMCWeight);
+      static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0CMultVsNch"))->Fill(V0CMult,nchSum,fMCWeight);
+
+    }
   }
   //____
 }
@@ -1346,7 +1811,15 @@ Double_t AliAnalysisMuMuNch::GetTrackletsMeanCorrection(Double_t zvert, Int_t nT
     else
     {
       if ( fMeanTrRef > 0. ) mNTtklsZref = fMeanTrRef;
-      else mNTtklsZref = h->GetMaximum();
+      else mNTtklsZref = h->GetMaximum();//*1.11;
+//      {
+//        if ( nTracklets*mNTtklsZref/mNTtklsZ < 9.5 ) mNTtklsZref = h->GetMaximum()*1.18;
+//        else if ( nTracklets*mNTtklsZref/mNTtklsZ < 19.5 ) mNTtklsZref = h->GetMaximum()*1.12;
+//        else if ( nTracklets*mNTtklsZref/mNTtklsZ < 29.5 ) mNTtklsZref = h->GetMaximum()*1.10;
+//        else if ( nTracklets*mNTtklsZref/mNTtklsZ < 49.5 ) mNTtklsZref = h->GetMaximum()*1.07;
+//        else if ( nTracklets*mNTtklsZref/mNTtklsZ < 69.5 ) mNTtklsZref = h->GetMaximum()*1.04;
+//        else if ( nTracklets*mNTtklsZref/mNTtklsZ > 69.5 ) mNTtklsZref = h->GetMaximum()*1.01;
+//      }
     }
 
     Double_t deltaN;
@@ -1357,12 +1830,59 @@ Double_t AliAnalysisMuMuNch::GetTrackletsMeanCorrection(Double_t zvert, Int_t nT
       if ( mNTtklsZref < mNTtklsZ ) coef = -1.;
       
       Double_t meanPoiss = nTracklets*(mNTtklsZref - mNTtklsZ)/mNTtklsZ;
+
+//      if ( nTracklets*mNTtklsZref/mNTtklsZ < 1.5 ) meanPoiss = meanPoiss*1.75;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 4.5 ) meanPoiss = meanPoiss*1.19;
+//      else if( nTracklets*mNTtklsZref/mNTtklsZ < 6.5 ) meanPoiss = meanPoiss*1.10;
+//      else if( nTracklets*mNTtklsZref/mNTtklsZ < 9.5 ) meanPoiss = meanPoiss*1.06;
+//      else if( nTracklets*mNTtklsZref/mNTtklsZ < 11.5 ) meanPoiss = meanPoiss*1.04;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 14.5 ) meanPoiss = meanPoiss*1.03;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 19.5 ) meanPoiss = meanPoiss*1.01;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 29.5 ) meanPoiss = meanPoiss*0.99;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 49.5 ) meanPoiss = meanPoiss*0.96;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 69.5 ) meanPoiss = meanPoiss*0.94;
+//      else if ( nTracklets*mNTtklsZref/mNTtklsZ > 69.5 ) meanPoiss = meanPoiss*0.91;
+
       deltaN = coef*frand->PoissonD(TMath::Abs(meanPoiss));
     }
     return deltaN;
   }
 }
 
+//_____________________________________________________________________________
+Double_t AliAnalysisMuMuNch::GetV0MeanCorrection(Double_t zvert, Int_t mV0) const
+{
+  if ( !fV0MeanMult )
+  {
+    AliFatal("ERROR: No V0 mean correction");
+    return 0;
+  }
+  else
+  {
+    TProfile* h = static_cast<TProfile*>(fV0MeanMult);
+
+    Int_t bin = h->FindBin(zvert);
+    Double_t mV0Z = h->GetBinContent(bin);
+
+    Double_t mV0Zref(0.);
+
+    if ( fMeanV0Ref > 0. ) mV0Zref = fMeanV0Ref;
+    else mV0Zref = h->GetMaximum();
+
+    Double_t deltaN;
+    if ( mV0Z == 0. ) deltaN = -1000.; // If the zvertex is out of the correction range the correction is < -999 (non valid)
+    else
+    {
+      Double_t coef(1.);
+      if ( mV0Zref < mV0Z ) coef = -1.;
+
+      Double_t meanPoiss = mV0*(mV0Zref - mV0Z)/mV0Z;
+
+      deltaN = coef*frand->PoissonD(TMath::Abs(meanPoiss));
+    }
+    return deltaN;
+  }
+}
 
 //_____________________________________________________________________________
 AliAODTracklets* AliAnalysisMuMuNch::GetTracklets(AliVEvent* event)
@@ -1550,12 +2070,6 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
 {
   /// Set the event, compute multiplicities and add them as a list to the event
   
-//  if ( event->IsA() != AliAODEvent::Class() )
-//  {
-//    AliError("Only working for AODs for the moment.");
-//    return;
-//  }
-  
   AliAnalysisMuMuBase::SetEvent(event,mcEvent); // To have Event() and MCEvent() method working
   
   TList* nchList = static_cast<TList*>(event->FindListObject("NCH")); // Define the list with the NCH info for each event
@@ -1568,67 +2082,15 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   }
   
   nchList->Clear(); // We clear the NCH list for this new event
+
   
-  Double_t SPDZv(0.);
-  Bool_t vertexSPDFound(kFALSE);
-//  AliAODTracklets* tracklets(0x0);
-  
-  AliVVertex* vertexSPD = AliAnalysisMuonUtility::GetVertexSPD(event);
-  if ( vertexSPD )
-  {
-    vertexSPDFound = kTRUE;
-    SPDZv = vertexSPD->GetZ();
-    if ( SPDZv == 0. ) SPDZv = -40.; // If SPDZv = 0. means that there is no reconstructed vertex. Setting the vertex to -40 allow us to get an invalid correction
-  }
-  
+  const AliVVertex* vertexSPD = event->GetPrimaryVertexSPD();
+  Double_t SPDZv = vertexSPD->GetZ();
+
   AliAODTracklets* tracklets = GetTracklets(event);
 
-//  if ( event->IsA() == AliAODEvent::Class() )
-//  {
-//    const AliAODVertex* vertexSPD = static_cast<const AliAODEvent*>(Event())->GetPrimaryVertexSPD(); // SPD vertex object
-//    if ( vertexSPD )
-//    {
-//      vertexSPDFound = kTRUE;
-//      SPDZv = vertexSPD->GetZ();
-//      if ( SPDZv == 0. ) SPDZv = -40.; // If SPDZv = 0. means that there is no reconstructed vertex. Setting the vertex to -40 allow us to get an invalid correction
-//    }
-////    else return;
-//    
-//    tracklets = static_cast<const AliAODEvent*>(Event())->GetTracklets(); // Tracklets object
-//  }
-//
-//  else if ( event->IsA() == AliESDEvent::Class() )
-//  {
-//    const AliESDVertex* vertexSPD = static_cast<const AliESDEvent*>(Event())->GetPrimaryVertexSPD(); // SPD vertex object
-//    if ( vertexSPD )
-//    {
-//      vertexSPDFound = kTRUE;
-//      SPDZv = vertexSPD->GetZ();
-//    }
-////    else return;
-//    
-//    tracklets = new AliAODTracklets();
-//    const AliMultiplicity* mult = static_cast<const AliESDEvent*>(Event())->GetMultiplicity();
-//    
-//    if (mult)
-//    {
-//      if (mult->GetNumberOfTracklets()>0)
-//      {
-//        tracklets->CreateContainer(mult->GetNumberOfTracklets());
-//        for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++)
-//        {
-////          if(fMChandler)
-////          {
-////            fMChandler->SelectParticle(mult->GetLabel(n, 0));
-////            fMChandler->SelectParticle(mult->GetLabel(n, 1));
-////          }
-//          tracklets->SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n, 0),mult->GetLabel(n, 1));
-//        }
-//      }
-//    }
-//  }
-//  else AliFatal("Unrecognized Event Type");
-  
+  AliVVZERO* vzero = Event()->GetVZEROData();
+
   TH1* hSPDcorrectionVsEta(0x0); // Pointers for the individual event histos
   TH1* hNchVsEta(0x0);
   TH1* hNTrackletVsEta(0x0);
@@ -1686,7 +2148,7 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
     hNTrackletVsPhi->Reset();
 
     //____Data (or Reco if simu) tracklets computation___
-    if ( tracklets && vertexSPDFound && isEtaRangeValid )
+    if ( tracklets && isEtaRangeValid )
     {
       
       Histo("AliAnalysisMuMuNch","test")->Fill(SPDZv,fetaRange[1]);
@@ -1769,9 +2231,14 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
             meandNchdEta = nch / (nBins*fEtaAxis->GetBinWidth(5));
           }
           
+          if ( fSPDFluctuationsMap )
+          {
+            meandNchdEta = ApplyFluctuations(meandNchdEta);
+          }
+
           nchList->Add(new TParameter<Double_t>("MeandNchdEta",meandNchdEta)); // We add the mean dNch/dEta to the event. It will serve us as a multiplicity estimator.
         }
-//        else if( fSPDMeanTracklets ) // In this case the correction is the 'mean correction'
+
         if( fSPDMeanTracklets ) // In this case the correction is the 'mean correction'
         {
           SPDr = GetTrackletsMeanCorrection(SPDZv,nTrackletsInRange); // Get 'mean correction' for the zvtx
@@ -1781,7 +2248,6 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
           
           nchList->Add(new TParameter<Double_t>("NtrCorr",nch));// We add the corrected number of tracklets to the event. It will serve us as a multiplicity estimator.
         }
-//        else AliFatal("Unknown tracklets correction class");
       }
       
     }
@@ -1804,6 +2270,42 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
       }       
     }
     //_______
+
+
+    //____Data (or reco if simu) V0 multiplicity computation
+    if (vzero)
+    {
+      Double_t multV0(0.);
+      if ( fV0side && fV0side->Contains("V0A") )
+      {
+        multV0 = vzero->GetMTotV0A();
+        nchList->Add(new TParameter<Double_t>("V0ARaw",multV0));
+      }
+      else if ( fV0side && fV0side->Contains("V0C") )
+      {
+        multV0 = vzero->GetMTotV0C();
+        nchList->Add(new TParameter<Double_t>("V0CRaw",multV0));
+      }
+      else if ( fV0side && fV0side->Contains("V0M") )
+      {
+        multV0 = vzero->GetMTotV0A() + vzero->GetMTotV0C();
+        nchList->Add(new TParameter<Double_t>("V0MRaw",multV0));
+      }
+
+
+      if ( fV0MeanMult )
+      {
+        Double_t V0r = GetV0MeanCorrection(SPDZv,multV0); // Get 'mean correction' for the zvtx
+        Double_t V0m(0.);
+        if ( V0r < -999.) V0m = -1;
+        else V0m = multV0 + V0r;
+
+        if ( fV0side && fV0side->Contains("V0A") ) nchList->Add(new TParameter<Double_t>("V0ACorr",V0m));// We add the corrected V0A multiplicity to the event. It will serve us as a multiplicity estimator.
+        else if ( fV0side && fV0side->Contains("V0C") ) nchList->Add(new TParameter<Double_t>("V0CCorr",V0m));
+        else if ( fV0side && fV0side->Contains("V0M") ) nchList->Add(new TParameter<Double_t>("V0MCorr",V0m));
+      }
+    }
+    //_________
 
     //____ We add the tracklets histos to the event
     nchList->Add(hSPDcorrectionVsEta->Clone());
@@ -1856,7 +2358,6 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
       
       for ( Int_t i = 0; i < nMCTracks ; ++i ) //Loop over generated tracks
       {
-//        AliAODMCParticle* AODpart = static_cast<AliAODMCParticle*>(mcEvent->GetTrack(i));
         AliMCParticle* MCpart = static_cast<AliMCParticle*>(mcEvent->GetTrack(i));
         
         Bool_t isPP(kFALSE);
@@ -1867,17 +2368,15 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
         if ( static_cast<const AliVEvent*>(event)->IsA() == AliAODEvent::Class() )
         {
           AliAODMCParticle* AODpart = static_cast<AliAODMCParticle*>(mcEvent->GetTrack(i));
-          isPP = AODpart->IsPhysicalPrimary();
+          isPP = AODpart->IsPhysicalPrimary();// We take only particles produced in the collision (Particles produced in the collision including products of strong and electromagnetic decay and excluding feed-down from weak decays of strange particles)
           nGentorDex = AODpart->GetGeneratorIndex();
         }
         else if ( static_cast<const AliVEvent*>(event)->IsA() == AliESDEvent::Class() )
         {
-          isPP = MCEvent()->IsPhysicalPrimary(i);
+          isPP = MCEvent()->IsPhysicalPrimary(i); // We take only particles produced in the collision (Particles produced in the collision including products of strong and electromagnetic decay and excluding feed-down from weak decays of strange particles)
           nGentorDex = MCpart->GetGeneratorIndex();
         }
         
-        
-//        if ( AODpart->IsPhysicalPrimary() ) // We take only particles produced in the collision (Particles produced in the collision including products of strong and electromagnetic decay and excluding feed-down from weak decays of strange particles)
         if ( isPP && nGentorDex==0 )
         {
 //          if ( !IsMCtrackFromGenerator(i) ) continue; // Select only the particles generated by the desired generator
@@ -1928,7 +2427,6 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
         if ( label1 != label2 && !fResolution ) hNBkgTrackletsVSEta->Fill(etaTracklet); // Tracklets not comming from the same MC particle are Bkg
         else if ( !fSPDOneOverAccxEff && !fSPDMeanTracklets && fResolution ) // Compute the resolutions with the tracklets comming from the same MC particle
         {
-//          AliAODMCParticle* AODpartMC = static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(label1));
           AliMCParticle* partMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(label1));
           Double_t etaTrackletMC = partMC->Eta();
           Double_t phiTrackletMC = partMC->Phi();
@@ -1960,27 +2458,40 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
 //_____________________________________________________________________________
 void AliAnalysisMuMuNch::SetRun(const AliInputEventHandler* eventHandler)
 {
-  // For each new run this method sets the corresponding SPD correction from SPDCorrection list using the SPDCorrection map
+  /// For each new run this method sets the corresponding SPD correction from SPDCorrection list using the SPDCorrection map
+  /// It also sets the correspoinding weight for the run in MC analysis, if a weight is given with the SPD correction
 
-  if ( !fSPDCorrectionList ) return;
+  AliVEvent* event = static_cast<AliVEvent*>(eventHandler->GetEvent());
   
-//  AliAODEvent* event = static_cast<AliAODEvent*>(eventHandler->GetEvent());
-   AliVEvent* event = static_cast<AliVEvent*>(eventHandler->GetEvent());
-
   TString run(Form("%d",event->GetRunNumber())); // Get the run number
-  TObjString*  SPDCorrectionKey = static_cast<TObjString*>(fSPDCorrectionMap->GetValue(run)); // Get the corresponding SPDCorrection map key for the run
   
-  Int_t SPDCorrectionIndex(0);
-  if ( SPDCorrectionKey ) SPDCorrectionIndex = SPDCorrectionKey->String().Atoi(); // Converts the key into Int, if found
-  else AliFatal(Form("No SPD correction found for run %d",run.Atoi()));
+  if ( fSPDCorrectionList )
+  {
+    TObjString*  sSPDCorrectionIndex = static_cast<TObjString*>(fSPDCorrectionMap->GetValue(run)); // Get the corresponding SPDCorrection index from the map for the current run
+
+    Int_t SPDCorrectionIndex(0);
+    if ( sSPDCorrectionIndex ) SPDCorrectionIndex = sSPDCorrectionIndex->String().Atoi(); // Converts the index into Int, if found
+    else AliFatal(Form("No SPD correction found for run %d",run.Atoi()));
+
+    TH1* hSPDCorrection = static_cast<TH1*>(fSPDCorrectionList->At(SPDCorrectionIndex)); // Gets the SPD correction at index position from the list
+
+    if ( static_cast<TH1*>(hSPDCorrection)->IsA() == TH2::Class() ) fSPDOneOverAccxEff = static_cast<TH2F*>(hSPDCorrection); // Sets the corresponding correction data member
+    else if ( static_cast<TH1*>(hSPDCorrection)->IsA() == TProfile::Class() ) fSPDMeanTracklets = static_cast<TProfile*>(hSPDCorrection);
+    else AliFatal("Unrecognized correction class");
+
+    AliInfo(Form("Using correction %s for run %s",hSPDCorrection->GetName(),run.Data()));
+  }
   
-  TH1* hSPDCorrection = static_cast<TH1*>(fSPDCorrectionList->At(SPDCorrectionIndex)); // Gets the SPD correction at key position from the list
-  
-  if ( static_cast<TH1*>(hSPDCorrection)->IsA() == TH2::Class() ) fSPDOneOverAccxEff = static_cast<TH2F*>(hSPDCorrection); // Sets the corresponding correction data member
-  else if ( static_cast<TH1*>(hSPDCorrection)->IsA() == TProfile::Class() ) fSPDMeanTracklets = static_cast<TProfile*>(hSPDCorrection);
-  else AliFatal("Unrecognized correction class");
-  
-  AliInfo(Form("Using correction %s for run %s",hSPDCorrection->GetName(),run.Data()));
+  if ( fMCWeightList )
+  {
+    TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(fMCWeightList->FindObject(run));
+
+    if ( p ) fMCWeight = p->GetVal(); // Set the data member to the value
+    else AliFatal(Form("No MC weight found for run %d",run.Atoi()));
+
+    AliInfo(Form("Using weight %1.2f for run %s",fMCWeight,run.Data()));
+
+  }
   
 }
 

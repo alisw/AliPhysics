@@ -1,10 +1,40 @@
+#if !defined (__CINT__) || (defined(__MAKECINT__))
+
+#include "AliSpectraBothHistoManager.h"
+#include "AliSpectraBothEventCuts.h"
+#include "AliSpectraBothTrackCuts.h"
+#include "TFile.h"
+#include "TF1.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TString.h"
+#include "TFormula.h"	
+#include "TMath.h"
+#include "TList.h"
+#include "TCanvas.h"
+#include "TFractionFitter.h"
+#include  <Riostream.h>
+#include "TLegend.h"
+#include "TStyle.h"
+#include "TSystem.h"
+#include <TROOT.h>
+#include <QAPlotsBoth.C>
+#include <TDatabasePDG.h>
+#include <TDirectoryFile.h>
+#include <TLatex.h>
+#include <TGraph.h>
+#endif
+
+#if defined(__CINT__)
+TString Particle[]={"Pion","Kaon","Proton"};
+#endif
 
 class AliSpectraBothHistoManager;
 class AliSpectraBothEventCuts; 
 class AliSpectraBothTrackCuts;
 TString Charge[]={"Pos","Neg"};
 TString Sign[]={"Plus","Minus"};
-TString Particle[]={"Pion","Kaon","Proton"};
+//TString Particle[]={"Pion","Kaon","Proton"};
 TString symboles[]={"#pi^{+}","K^{+}","p","pi^{-}","K^{-}","#bar{p}"}; 
 AliSpectraBothHistoManager* managerdata=0x0;
 AliSpectraBothEventCuts* ecutsdata=0x0; 
@@ -59,10 +89,45 @@ enum {
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
-void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="" )
+ void GetMCTruth(TH1F** MCTruth);
+void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHistoManager* hman,TH1F** histo,TFormula* dcacutxy);
+void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0);
+void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary);
+void RecomputeErrors(TH1* h);
+void SetBintoOne(TH1* h);
+void GetCorrectedSpectra(TH1F* corr,TH1F* raw,TH1F* eff, TH1F* con);
+void GetCorrectedSpectraLeonardo(TH1F* spectra,TH1F* correction, TH1F* hprimaryData,TH1F* hprimaryMC);
+void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options);
+void MatchingTOFEff(TH1F** Spectra, TList* list=0x0);
+void Divideby2pipt(TH1* hist);
+void SubHistWithFullCorr(TH1F* h1, TH1F* h2, Float_t factor1=1.0, Float_t factor2=1.0);
+void TOFMatchingForNch(TH1* h);
+void TOFPIDsignalmatchingApply(TH1* h, Float_t factor);
+void CalculateDoubleCounts(TH1* doubleconunts,TH1F** rawspectra,Int_t ipar, Bool_t dataflag);
+void CopyCorrectionFromFile(TString filename,TString correctionname,TH1F** corrtab);
+
+TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHistoManager* hman,TFormula* dcacutxy);
+TF1* TrackingEff_geantflukaCorrection(Int_t ipart, Int_t icharge);
+Double_t TrackingPtGeantFlukaCorrectionNull(Double_t pTmc);
+Double_t TrackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc);
+Double_t TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc);
+TF1* TOFmatchMC_geantflukaCorrection(Int_t ipart, Int_t icharge);
+Double_t MatchingPtGeantFlukaCorrectionNull(Double_t pTmc);
+Double_t MatchingPtGeantFlukaCorrectionPrMinus(Double_t pTmc);
+Double_t MatchingPtGeantFlukaCorrectionKaMinus(Double_t pTmc);
+Double_t eta2y(Double_t pt, Double_t mass, Double_t eta);
+TH1* GetSumAllCh(TH1F** spectra, Double_t* mass,Double_t etacut);
+Short_t DCAfitsettings (Float_t pt, Int_t type);
+Float_t Normaliztionwithbin0integrals(UInt_t options);
+Bool_t ReadConfigFile(TString configfile);
+
+
+
+void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="" )
 {
-gStyle->SetOptStat(0);	
+	gStyle->SetOptStat(0);	
 	TH1::AddDirectory(kFALSE);
+	#if defined(__CINT__)
 	gSystem->Load("libCore");
 	gSystem->Load("libPhysics");
 	gSystem->Load("libTree");
@@ -79,6 +144,8 @@ gStyle->SetOptStat(0);
 	gSystem->Load("libPWGLFspectra");
   	
   	gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TestAOD/QAPlotsBoth.C");
+	#endif
+
 	Double_t mass[3];
 	mass[0]   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
 	mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
@@ -252,7 +319,7 @@ gStyle->SetOptStat(0);
 	}
 
 	cout<<"A "<<neventsmc<<endl;
-	TH1F* allgen=((TH1F*)managermc->GetPtHistogram1D("hHistPtGen",1,1))->Clone();
+	TH1F* allgen=(TH1F*)((TH1F*)managermc->GetPtHistogram1D("hHistPtGen",1,1))->Clone();
 	allgen->SetName("AllGen");
 	TH1F* allrecMC=GetOneHistFromPtDCAhisto("hHistPtRec","rawallMC",managermc,dcacutxy);
 	TH1F* alleff=GetOneHistFromPtDCAhisto("hHistPtRecPrimary","effall",managermc,dcacutxy);
@@ -499,7 +566,7 @@ gStyle->SetOptStat(0);
 
 	}
 
-	TH1F* allch=GetSumAllCh(spectra,mass,etacut);
+	TH1F* allch=(TH1F*)GetSumAllCh(spectra,mass,etacut);
 	lout->Add(allch);	
        	if(options&kuseTOFmatchingcorrection)
 	{	
@@ -630,7 +697,7 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 
 TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHistoManager* hman,TFormula* dcacutxy)
 {
-			histo =(TH1F*)((TH1F*) hman->GetPtHistogram1D(name.Data(),-1,-1))->Clone();
+			TH1F* histo =(TH1F*)((TH1F*) hman->GetPtHistogram1D(name.Data(),-1,-1))->Clone();
 			histo->SetName(hnameout.Data());
 			histo->SetTitle(hnameout.Data());
 		  
@@ -687,7 +754,7 @@ void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHi
 		}
 	} 
 }
-void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0)
+void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid)
 {
 	for (int i=0;i<=h->GetNbinsX();i++)
 	{	
@@ -713,7 +780,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
   printf("\n\n-> DCA Correction");  
   
  
-  Printf("\DCACorr");
+  Printf("\n DCACorr");
   TString sample[2]={"data","mc"};
   ofstream debug("debugDCA.txt");
   TList* listofdcafits=new TList();
@@ -749,11 +816,13 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					Leg1->SetLineColor(kWhite);
 					Leg1->SetBorderSize(0);
 
-					
+					TH1F *hToFit =0x0;	
 					if(isample==0)
-						TH1F *hToFit =(TH1F*) ((TH1F*)hman_data->GetDCAHistogram1D(Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
-					if(isample==1)
-						TH1F *hToFit =(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
+						hToFit =(TH1F*) ((TH1F*)hman_data->GetDCAHistogram1D(Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
+					else if(isample==1)
+						hToFit =(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
+					else 
+						return;
 					debug<<Particle[ipart].Data()<<" "<<Sign[icharge].Data()<<" "<<lowedge<<endl;
 					TH1F *hmc1=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					TH1F *hmc2=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryWeakDecay%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
@@ -1092,6 +1161,7 @@ void GetCorrectedSpectraLeonardo(TH1F* spectra,TH1F* correction, TH1F* hprimaryD
 
 void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 {
+	TFile *fGeanFlukaK=0x0;
 	if (options&kgeantflukaKaon)
 	{		
 	 	 //Geant/Fluka Correction
@@ -1104,7 +1174,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  	gGFCorrectionKaonMinus->SetName("gGFCorrectionKaonMinus");
 	  	gGFCorrectionKaonMinus->SetTitle("gGFCorrectionKaonMinus");
 	 	 TString fnameGeanFlukaK="GFCorrection/correctionForCrossSection.321.root";
-  	  	TFile *fGeanFlukaK= TFile::Open(fnameGeanFlukaK.Data());
+  	  	fGeanFlukaK= TFile::Open(fnameGeanFlukaK.Data());
 	  	if (!fGeanFlukaK)
 		{
 			fnameGeanFlukaK="$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.321.root";
@@ -1172,7 +1242,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  TFile* fGFProtons = TFile::Open(fnameGFProtons.Data());
 	  if (!fGFProtons)
 	  { 
-		fnameGFProtons="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.root";
+		fnameGFProtons="$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.root";
 		fGFProtons = TFile::Open(fnameGFProtons.Data());
 		if (!fGFProtons)
 			return;
@@ -1181,7 +1251,6 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 
 
 	  TH2D * hCorrFluka[kNCharge];
-	  TH2D * hCorrFluka[2];
 	  hCorrFluka[kPos] = (TH2D*)fGFProtons->Get("gHistCorrectionForCrossSectionProtons");
 	  hCorrFluka[kNeg] = (TH2D*)fGFProtons->Get("gHistCorrectionForCrossSectionAntiProtons");
 	  //getting GF func for Kaons with TPCTOF
@@ -1247,8 +1316,11 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 				Spectra[5]->SetBinError(ibin,Spectra[5]->GetBinError(ibin)*FlukaCorrpNegMatching);
 			}		
 		}
-	 fGeanFlukaK->Close();
-	 delete fGeanFlukaK;
+	if(fGeanFlukaK)
+	{	
+		 fGeanFlukaK->Close();
+		 delete fGeanFlukaK;
+	}
 }
 
 
@@ -1257,15 +1329,16 @@ TF1 *
 TrackingEff_geantflukaCorrection(Int_t ipart, Int_t icharge)
 {
 
+	TF1 *f = 0x0;
   if (ipart == 3 && icharge == kNegative) {
-    TF1 *f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge]), "TrackingPtGeantFlukaCorrectionKaMinus(x)", 0., 5.);
+    f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge].Data()), "TrackingPtGeantFlukaCorrectionKaMinus(x)", 0., 5.);
     return f;
   }
   else if (ipart == 4 && icharge == kNegative) {
-    TF1 *f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge]), "TrackingPtGeantFlukaCorrectionPrMinus(x)", 0., 5.);
+    f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge].Data()), "TrackingPtGeantFlukaCorrectionPrMinus(x)", 0., 5.);
   }
   else
-    TF1 *f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge]), "TrackingPtGeantFlukaCorrectionNull(x)", 0., 5.);
+    f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge].Data()), "TrackingPtGeantFlukaCorrectionNull(x)", 0., 5.);
 
   return f;
 }
@@ -1291,16 +1364,17 @@ TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc)
 TF1 *
 TOFmatchMC_geantflukaCorrection(Int_t ipart, Int_t icharge)
 {
+ TF1 *f = 0x0;
 
   if (ipart == 3 && icharge == kNegative) {
-    TF1 *f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge]), "MatchingPtGeantFlukaCorrectionKaMinus(x)", 0., 5.);
+    f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge].Data()), "MatchingPtGeantFlukaCorrectionKaMinus(x)", 0., 5.);
     return f;
   }
   else if (ipart == 4 && icharge == kNegative) {
-    TF1 *f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge]), "MatchingPtGeantFlukaCorrectionPrMinus(x)", 0., 5.);
+    f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge].Data()), "MatchingPtGeantFlukaCorrectionPrMinus(x)", 0., 5.);
   }
   else
-    TF1 *f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge]), "MatchingPtGeantFlukaCorrectionNull(x)", 0., 5.);
+    f = new TF1(Form("fGeantFluka_%s_%s", AliPID::ParticleName(ipart), Sign[icharge].Data()), "MatchingPtGeantFlukaCorrectionNull(x)", 0., 5.);
 
   return f;
 }
@@ -1325,7 +1399,7 @@ MatchingPtGeantFlukaCorrectionKaMinus(Double_t pTmc)
   Float_t ptTPCoutK=pTmc*(1- 3.37297e-03/pTmc/pTmc - 3.26544e-03/pTmc);
   return TMath::Min((TMath::Power(0.972865 + 0.0117093*ptTPCoutK,0.07162/0.03471)), 1.);
 }
-void MatchingTOFEff(TH1F** Spectra, TList* list=0x0)
+void MatchingTOFEff(TH1F** Spectra, TList* list)
 {
 	  if(TOFMatchingScalling[0]<0.0&&TOFMatchingScalling[1]<0.0)
 	  {
@@ -1395,7 +1469,7 @@ Double_t eta2y(Double_t pt, Double_t mass, Double_t eta)
 
 TH1* GetSumAllCh(TH1F** spectra, Double_t* mass,Double_t etacut)
 {
-	TH1F* allch=(((TH1F*))spectra[0]->Clone("allCh"));
+	TH1F* allch=(TH1F*)spectra[0]->Clone("allCh");
 	allch->Reset();
 	for (int i=0;i<6;i++)
 	{
@@ -1502,7 +1576,7 @@ Float_t Normaliztionwithbin0integrals(UInt_t options)
 	cout<<histodata->GetBinContent(2)<<" "<<histodata->GetBinContent(4)<<endl;
 	if ((options&knormalizationwithbin0integralsdata)==knormalizationwithbin0integralsdata)
 		return 	dataevents+bin0mcRec->Integral(binmin,binmax);
- 	else if ((options&kknormalizationwithbin0integralsMC)==knormalizationwithbin0integralsMC)   
+ 	else if ((options&knormalizationwithbin0integralsMC)==knormalizationwithbin0integralsMC)   
 		return dataevents+bin0mcMC->Integral(binmin,binmax) ;
 	else
 		return 1;		
@@ -1651,7 +1725,7 @@ Bool_t ReadConfigFile(TString configfile)
 	return true;
 }
 
-void SubHistWithFullCorr(TH1F* h1, TH1F* h2, Float_t factor1=1.0, Float_t factor2=1.0)
+void SubHistWithFullCorr(TH1F* h1, TH1F* h2, Float_t factor1, Float_t factor2)
 {
 	if(h1->GetNbinsX()!=h2->GetNbinsX())
 		return;
@@ -1698,7 +1772,7 @@ void TOFPIDsignalmatchingApply(TH1* h, Float_t factor)
 	}
 
 }
-void CalculateDoubleCounts(TH1* doubleconunts,TH1** rawspectra,Int_t ipar, Bool_t dataflag)
+void CalculateDoubleCounts(TH1* doubleconunts,TH1F** rawspectra,Int_t ipar, Bool_t dataflag)
 {
 	TH2F* tmphist=0x0;	
 	if (dataflag)

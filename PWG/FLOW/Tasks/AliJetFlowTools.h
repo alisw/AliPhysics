@@ -35,7 +35,7 @@ class AliUnfolding;
 #include "TF1.h"
 #include "TH1D.h"
 // define the following variable to build with debug flags
-#define ALIJETFLOWTOOLS_DEBUG_FLAG
+///#define ALIJETFLOWTOOLS_DEBUG_FLAG
 
 //_____________________________________________________________________________
 class AliJetFlowTools {
@@ -73,6 +73,7 @@ class AliJetFlowTools {
         void            SetOffsetStart(Int_t g)         {gOffsetStart           = g;}
         void            SetOffsetStop(Int_t g)          {gOffsetStop            = g;}
         void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
+        void            SetReductionFactorCorr(Float_t g)       {gReductionFactorCorr   =g;}
         void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
@@ -82,13 +83,14 @@ class AliJetFlowTools {
         void            SetOutputFileName(TString name) {fOutputFileName        = name;}
         void            CreateOutputList(TString name) {
             // create a new output list and add it to the full output
+            fListPrefix++;
             if(!fOutputFile) fOutputFile = new TFile(fOutputFileName.Data(), "RECREATE");
             fOutputFile->cd();  // avoid nested dirs
             if(name.EqualTo(fActiveString)) {
                 printf(Form(" > Warning, duplicate output list, renaming %s to %s_2 ! < \n", name.Data(), name.Data()));
                 name+="_2";
             }
-            fActiveString = name;
+            fActiveString = Form("%i__%s", fListPrefix, name.Data());
             fActiveDir = new TDirectoryFile(fActiveString.Data(), fActiveString.Data());
             fActiveDir->cd();
         }
@@ -226,8 +228,6 @@ class AliJetFlowTools {
                 TGraphAsymmErrors*& shapeV2,
                 TArrayI* regularizationIn,
                 TArrayI* regularizationOut,
-                TArrayI* trueBinIn = 0x0,
-                TArrayI* trueBinOut = 0x0,
                 TArrayI* recBinIn = 0x0,
                 TArrayI* recBinOut = 0x0,
                 TArrayI* methodIn = 0x0,
@@ -238,10 +238,8 @@ class AliJetFlowTools {
                 Float_t corr = .0,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ShapeUncertainty.root",
-                Bool_t regularizationOnV2 = kFALSE,     // get uncertainty on yields separately or v2 directly
-                Bool_t trueBinOnV2 = kFALSE,
-                Bool_t recBin = kFALSE,
-                Bool_t method = kFALSE) const;
+                Bool_t regularizationOnV2 = kTRUE     // get uncertainty on yields separately or v2 directly
+                ) const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -261,8 +259,9 @@ class AliJetFlowTools {
         static TH1D*    MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
+        static TH1D*            GetV2Histo(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
         static TH1F*            ConvertGraphToHistogram(TGraphErrors* g);
-        static TGraphAsymmErrors*       AddHistoToGraph(TGraphAsymmErrors* g, TH1D* h);
+        static TGraphAsymmErrors*       AddHistoErrorsToGraphErrors(TGraphAsymmErrors* g, TH1D* h);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
@@ -481,6 +480,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE, TString suffix = "") const;
         TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "") const;
         // members, accessible via setters
+        Int_t                   fListPrefix;            // prefix for list readability
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
         Bool_t                  fRMS;                   // systematic method
         Bool_t                  fSymmRMS;               // symmetric systematic method
@@ -563,6 +563,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         static Int_t            gOffsetStart;           // see initialization below
         static Int_t            gOffsetStop;            // see initialization below
         static Float_t          gReductionFactor;       // multiply shape uncertainty by this factor
+        static Float_t          gReductionFactorCorr;   // multiply corr uncertainty by this factor
         static Float_t          gPwrtTo;                // p-value will be evaluated wrt y = gPwrtTo
 
         // copy and assignment 
@@ -571,13 +572,14 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
 
 };
 // initialize the static members
-TArrayD* AliJetFlowTools::gV2           = new TArrayD(6);       // DO NOT TOUCH - these arrays are filled by the
-TArrayD* AliJetFlowTools::gStat         = new TArrayD(6);       // 'GetSignificance' function and
-TArrayD* AliJetFlowTools::gShape        = new TArrayD(6);       // then used in the chi2 minimization routine
-TArrayD* AliJetFlowTools::gCorr         = new TArrayD(6);       // to calculate the significance of the results
+TArrayD* AliJetFlowTools::gV2           = new TArrayD(7);       // DO NOT TOUCH - these arrays are filled by the
+TArrayD* AliJetFlowTools::gStat         = new TArrayD(7);       // 'GetSignificance' function and
+TArrayD* AliJetFlowTools::gShape        = new TArrayD(7);       // then used in the chi2 minimization routine
+TArrayD* AliJetFlowTools::gCorr         = new TArrayD(7);       // to calculate the significance of the results
 Int_t    AliJetFlowTools::gOffsetStart  =  1;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
-Int_t    AliJetFlowTools::gOffsetStop   = -1;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
+Int_t    AliJetFlowTools::gOffsetStop   = 0;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
+Float_t  AliJetFlowTools::gReductionFactorCorr  = 1.;   // multiply corr uncertainty by this factor
 Float_t  AliJetFlowTools::gPwrtTo               = 0.;   // p-value will be evaluated wrt y = gPwrtTo
 
 #endif

@@ -8,6 +8,7 @@
 
 #include "AliVEvent.h"
 #include "AliLog.h"
+#include "AliAODTrack.h"
 
 #include "AliParticleContainer.h"
 
@@ -29,7 +30,8 @@ AliParticleContainer::AliParticleContainer():
   fMinMCLabelAccept(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
-  fCharge(-1)
+  fCharge(-1),
+  fFilterHybridTracks(kFALSE)
 {
   // Default constructor.
 
@@ -52,11 +54,25 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fMinMCLabelAccept(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
-  fCharge(-1)
+  fCharge(-1),
+  fFilterHybridTracks(kFALSE)
 {
   // Standard constructor.
 
   fClassName = "AliVParticle";
+}
+
+//________________________________________________________________________
+void AliParticleContainer::SetArray(AliVEvent *event)
+{
+  // Get array from event.
+
+  AliEmcalContainer::SetArray(event);
+
+  if (fClassName != "AliAODTrack" && fFilterHybridTracks) {
+    AliWarning("Only class type AliAODTrack can be filtered for hybrid tracks. This functionality will be disabled.");
+    fFilterHybridTracks = kFALSE;
+  }
 }
 
 //________________________________________________________________________
@@ -186,6 +202,14 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
   if (!vp) {
     fRejectionReason |= kNullObject;
     return kFALSE;
+  }
+
+  if (fFilterHybridTracks) {  // the cast is safe because fFilterHybridTracks is reset in DoInit if the object type is not AliAODTrack
+    AliAODTrack* aodTrack = static_cast<AliAODTrack*>(vp);
+    if (!aodTrack->IsHybridGlobalConstrainedGlobal()) {
+      fRejectionReason |= kNotHybridTrack;
+      return kFALSE;
+    }
   }
 
   if (vp->Pt() < fParticlePtCut) {

@@ -199,6 +199,12 @@ public:
   }
 
   /**
+   * Get the trigger decision configuration
+   * \return the trigger decision configuration
+   */
+  const AliEMCalTriggerAnaTriggerDecisionConfig * GetConfiguration() const { return &fConfiguration; }
+
+  /**
    * Flag event as minimum bias event
    * \param isMB If true, the event is also a minimum bias event
    */

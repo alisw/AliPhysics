@@ -213,15 +213,15 @@ AliAODForwardMult::Browse(TBrowser* b)
 }
 
 namespace { 
-  void AppendAnd(TString& trg, const TString& what)
+  void AppendAnd(TString& trg, const char* sep, const TString& what)
   {
-    if (!trg.IsNull()) trg.Append(" & ");
+    if (!trg.IsNull()) trg.Append(Form(" %s ", sep));
     trg.Append(what);
   }
 }
 //____________________________________________________________________
 const Char_t*
-AliAODForwardMult::GetTriggerString(UInt_t mask)
+AliAODForwardMult::GetTriggerString(UInt_t mask, const char* sep)
 {
   // Get a string that describes the triggers 
   // 
@@ -231,18 +231,25 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   //   Character string representation of mask 
   static TString trg;
   trg = "";
-  if ((mask & kInel)        != 0x0) AppendAnd(trg, "MBOR");
-  if ((mask & kInelGt0)     != 0x0) AppendAnd(trg, "INEL>0");
-  if ((mask & kNSD)         != 0x0) AppendAnd(trg, "MBAND");
-  if ((mask & kV0AND)       != 0x0) AppendAnd(trg, "V0AND");
-  if ((mask & kA)           != 0x0) AppendAnd(trg, "A");
-  if ((mask & kB)           != 0x0) AppendAnd(trg, "B");
-  if ((mask & kC)           != 0x0) AppendAnd(trg, "C");
-  if ((mask & kE)           != 0x0) AppendAnd(trg, "E");
-  if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, "MCNSD");
-  if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, "NCluster>0");
-  if ((mask & kSatellite)   != 0x0) AppendAnd(trg, "Satellite");
-  if ((mask & kOffline)     != 0x0) AppendAnd(trg, "Offline");
+  if (mask == 0) return "none";
+  if ((mask & kInel)        != 0x0) AppendAnd(trg, sep, "MBOR");
+  if ((mask & kInelGt0)     != 0x0) AppendAnd(trg, sep, "INEL>0");
+  if ((mask & kNSD)         != 0x0) AppendAnd(trg, sep, "MBAND");
+  if ((mask & kV0AND)       != 0x0) AppendAnd(trg, sep, "V0AND");
+  if ((mask & kA)           != 0x0) AppendAnd(trg, sep, "A");
+  if ((mask & kB)           != 0x0) AppendAnd(trg, sep, "B");
+  if ((mask & kC)           != 0x0) AppendAnd(trg, sep, "C");
+  if ((mask & kE)           != 0x0) AppendAnd(trg, sep, "E");
+  if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, sep, "MCNSD");
+  if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, sep, "NCluster>0");
+  if ((mask & kSatellite)   != 0x0) AppendAnd(trg, sep, "Satellite");
+  if ((mask & kOffline)     != 0x0) AppendAnd(trg, sep, "Offline");
+  if ((mask & kSPDOutlier)  != 0x0) AppendAnd(trg, sep, "Outlier");
+  if ((mask & kPileUp)      != 0x0) AppendAnd(trg, sep, "Pileup");
+  if ((mask & kPileupSPD)   != 0x0) AppendAnd(trg, sep, "Pileup-SPD");
+  if ((mask & kPileupTrack) != 0x0) AppendAnd(trg, sep, "Pileup-TRK");
+  if ((mask & kPileupBC)    != 0x0) AppendAnd(trg, sep, "Pileup-BC");
+  if ((mask & kPileupBins)  != 0x0) AppendAnd(trg, sep, "Pileup-BIN");
   return trg.Data();
 }
   
@@ -273,7 +280,7 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
   TH1I* ret = new TH1I(name, "Triggers", kAccepted+1, -.5, kAccepted+.5);
   ret->SetYTitle("Events");
   ret->SetFillColor(kRed+1);
-  ret->SetFillStyle(3001);
+  ret->SetFillStyle(3002);
   ret->GetXaxis()->SetBinLabel(kBinAll,         "All events");
   ret->GetXaxis()->SetBinLabel(kBinB,           Form("B (Coll.)%s", 
 						     andSel.Data()));
@@ -318,11 +325,12 @@ AliAODForwardMult::MakeStatusHistogram(const char* name)
   TH1I* ret = new TH1I(name, "Event selection status", nBins+1, -.5, nBins+.5);
   ret->SetYTitle("Events");
   ret->SetFillColor(kBlue+1);
-  ret->SetFillStyle(3001);
+  ret->SetFillStyle(3002);
   ret->GetXaxis()->SetBinLabel(kGoodEvent+1,       "Good");
   ret->GetXaxis()->SetBinLabel(kWrongCentrality+1, "Out-of-range centrality");
   ret->GetXaxis()->SetBinLabel(kWrongTrigger+1,    "Wrong trigger");
   ret->GetXaxis()->SetBinLabel(kIsPileup+1,        "Pile-up");
+  ret->GetXaxis()->SetBinLabel(kIsFilterOut+1,     "Filtered out");
   ret->GetXaxis()->SetBinLabel(kNoVertex+1,        "No IP_{z}");
   ret->GetXaxis()->SetBinLabel(kWrongVertex+1,     "Out-or-range IP_{z}");
   ret->GetXaxis()->SetBinLabel(kOutlierEvent+1,    "SPD Outlier");
@@ -333,18 +341,20 @@ AliAODForwardMult::MakeStatusHistogram(const char* name)
 
 //____________________________________________________________________
 UInt_t 
-AliAODForwardMult::MakeTriggerMask(const char* what)
+AliAODForwardMult::MakeTriggerMask(const char* what, const char* sep)
 {
-  UShort_t    trgMask = 0;
+  UInt_t      trgMask = 0;
   TString     trgs(what);
   trgs.ToUpper();
-  TObjArray*  parts = trgs.Tokenize("&");
+  if (trgs.EqualTo("NONE") || trgs.EqualTo("ALL")) return trgMask;
+  TObjArray*  parts = trgs.Tokenize(sep);
   TObjString* trg;
   TIter       next(parts);
   while ((trg = static_cast<TObjString*>(next()))) { 
     TString s(trg->GetString());
     s.Strip(TString::kBoth, ' ');
     s.ToUpper();
+    // Printf("Full: %s, part: %s", what, s.Data());
     if      (s.IsNull()) continue;
     if      (s.CompareTo("INEL")       == 0) trgMask |= kInel;
     else if (s.CompareTo("MBOR")       == 0) trgMask |= kInel;
@@ -363,6 +373,12 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     else if (s.CompareTo("CENT")       == 0) trgMask |= kInel;
     else if (s.CompareTo("MULT")       == 0) trgMask |= kInel;
     else if (s.CompareTo("OFFLINE")    == 0) trgMask |= kOffline;
+    else if (s.CompareTo("OUTLIER")    == 0) trgMask |= kSPDOutlier;
+    else if (s.CompareTo("PILEUP-SPD") == 0) trgMask |= kPileupSPD;
+    else if (s.CompareTo("PILEUP-TRK") == 0) trgMask |= kPileupTrack;
+    else if (s.CompareTo("PILEUP-BIN") == 0) trgMask |= kPileupBins;
+    else if (s.CompareTo("PILEUP-BC")  == 0) trgMask |= kPileupBC;
+    else if (s.CompareTo("PILEUP")     == 0) trgMask |= kPileUp;
     // trgMask &= ~(kInel|kInelGt0|kNSD|kV0AND|kMCNSD);
     else 
       AliWarningGeneral("MakeTriggerMask", 
@@ -376,9 +392,9 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
 Bool_t
 AliAODForwardMult::CheckEvent(Int_t    triggerMask,
 			      Double_t vzMin, Double_t vzMax,
-			      UShort_t cMin,  UShort_t cMax, 
+			      Double_t cMin,  Double_t cMax, 
 			      TH1*     hist,  TH1*     status,
-			      Bool_t   removePileup) const
+			      Int_t    filterMask) const 
 {
   // 
   // Check if event meets the passses requirements.   
@@ -436,15 +452,32 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     return false;
   }
   // Check if event is SPD outlier
-  if (IsTriggerBits(kSPDOutlier)) {
+  if (filterMask & kSPDOutlier && IsTriggerBits(kSPDOutlier)) {
     if (status) status->Fill(kOutlierEvent);
     return false;
   }
   // Check for pileup
-  if (IsTriggerBits(kPileUp)) {
+  UInt_t checkPileup = (filterMask & (kPileUp      |
+				      kPileupSPD   |
+				      kPileupTrack |
+				      kPileupBC    |
+				      kPileupBins));
+  if (checkPileup && IsTriggerOrBits(checkPileup)) {
     if (status) status->Fill(kIsPileup);
-    if (removePileup) return false;
+    return false;
   }
+  UInt_t other = filterMask & ~(kPileUp      |
+				kPileupSPD   |
+				kPileupTrack |
+				kPileupBC    |
+				kPileupBins  | 
+				kSPDOutlier);
+  // Unspecified stuff 
+  if (other && IsTriggerOrBits(other)) {
+    if (status) status->Fill(kIsFilterOut);
+    return false;
+  }
+  
   if (hist) hist->AddBinContent(kWithTrigger);
   
   // Check that we have a valid vertex

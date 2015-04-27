@@ -372,7 +372,7 @@ class AliCalorimeterUtils : public TObject {
 
   Bool_t             fLoadEMCALMatrices;        ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
 
-  TGeoHMatrix *      fEMCALMatrix[12];          ///<  Geometry matrices with alignments.
+  TGeoHMatrix *      fEMCALMatrix[22];          ///<  Geometry matrices with alignments.
 
   Bool_t             fLoadPHOSMatrices;         ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
 
@@ -446,7 +446,7 @@ class AliCalorimeterUtils : public TObject {
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCalorimeterUtils,18) ;
+  ClassDef(AliCalorimeterUtils,19) ;
   /// \endcond
 
 } ;

@@ -402,7 +402,7 @@ struct RefData
 			      UShort_t experiments=0x7,
 			      const char* path=0)
   {
-    UShort_t trg = (triggers & 0x1F7);
+    UShort_t trg = (triggers & 0x3F7);
     if (triggers & 0x2000) trg |= 0x4;
 
     TFile* f = GetFile(path,false);

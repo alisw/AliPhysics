@@ -67,7 +67,7 @@ AliHFJetsContainer::AliHFJetsContainer(const char* name, Bool_t dummy):
 	if (!dummy){
 
 		// Constructor
-		AliInfo(MAG"Creating default container."Bee); 
+		AliInfo(MAG"Creating default container." Bee); 
 
 
 		CreateContainer("fContainerStandard", "Standard container for corrections", fgkCFVars, fNbins, fBinning, fAxisTitle);  
@@ -206,7 +206,7 @@ void AliHFJetsContainer::CreateContainer(TString name, TString title, Int_t nvar
 //----------------------------------------------------------------
 void AliHFJetsContainer::CreateCustomContainer(const Int_t nvars, const char* varnames[], Int_t *nbins, Double_t **binning, const char*  axistitle[]){
 
-	AliInfo(MAG"Creating custom container: standard variables will be added at positions 0,1,2,3!"Bee);
+	AliInfo(MAG"Creating custom container: standard variables will be added at positions 0,1,2,3!" Bee);
 
 	CreateDefaultBinning();
 
@@ -218,7 +218,7 @@ void AliHFJetsContainer::CreateCustomContainer(const Int_t nvars, const char* va
 		totnbins[i]=fNbins[i];
 		totbinning[i]=fBinning[i];
 		totaxistitle[i]=fAxisTitle[i];
-		AliDebug(AliLog::kDebug,Form(mage"Standard vars: ID \"%d\" NAME \"%s\" TITLE \"%s\""Bee, i, GetVarName((CFVars)i), totaxistitle[i])) ;
+		AliDebug(AliLog::kDebug,Form(mage"Standard vars: ID \"%d\" NAME \"%s\" TITLE \"%s\"" Bee, i, GetVarName((CFVars)i), totaxistitle[i])) ;
 	}
 
 	// Write custom variables names in a global list,
@@ -231,7 +231,7 @@ void AliHFJetsContainer::CreateCustomContainer(const Int_t nvars, const char* va
 		totaxistitle[j]=axistitle[j-fgkCFVars];
 		TObjString sobj(varnames[j-fgkCFVars]);
 		fCustomVarNames->Add((TObjString*)sobj.Clone());
-		AliDebug(AliLog::kDebug,Form(cy"Custom vars: ID \"%d\" NAME \"%s\" TITLE \"%s\""Bee, j, GetVarName((CFVars) j), totaxistitle[j]));
+		AliDebug(AliLog::kDebug,Form(cy"Custom vars: ID \"%d\" NAME \"%s\" TITLE \"%s\"" Bee, j, GetVarName((CFVars) j), totaxistitle[j]));
 	}
 	CreateContainer("fContainerCustom", "Custom container for corrections", totnvars, totnbins, totbinning, totaxistitle);  
 	//delete fCustomVarNames;
@@ -263,7 +263,7 @@ void AliHFJetsContainer::GetBinning(TString var, Int_t& nBins,Double_t* bins, co
 		axistitle="#phi_{jet} (rad)";
 		nBins = 20; binmin= -TMath::Pi(); binmax= TMath::Pi();
 	} else {
-		AliError(Form(RED"Variable %s not defined!"Bee, var.Data()));
+		AliError(Form(RED"Variable %s not defined!" Bee, var.Data()));
 	}
 
 
@@ -275,7 +275,7 @@ void AliHFJetsContainer::GetBinning(TString var, Int_t& nBins,Double_t* bins, co
 	for (Int_t j=0; j<nBins+1; j++){
 		if (j==0) bins[j]= binmin;
 		else bins[j] = bins[j-1]+binwidth;
-		//Printf(RED"*** Bin %d value %f"Bee,j, bins[j]);
+		//Printf(RED"*** Bin %d value %f" Bee,j, bins[j]);
 	}
 	//return bins;
 }
@@ -283,13 +283,13 @@ void AliHFJetsContainer::GetBinning(TString var, Int_t& nBins,Double_t* bins, co
 void AliHFJetsContainer::SetAxisRangeStep(const char* axisname, Double_t min, Double_t max, CFSteps step, Bool_t overflow)
 {
 
-	AliInfo(Form(MAG"Setting range for axis: \"%s\" step: \"%s\""Bee, axisname, GetStepName(step)));
+	AliInfo(Form(MAG"Setting range for axis: \"%s\" step: \"%s\"" Bee, axisname, GetStepName(step)));
 	Int_t axis = GetVarAxis(axisname); 
 	//AliInfo(Form("Resetting axis %d", axis));
         Int_t startbin= fContainer->GetAxis(axis, step)->FindBin(min);
         Int_t stopbin= fContainer->GetAxis(axis, step)->FindBin(max);
         Int_t lastbin= fContainer->GetAxis(axis, step)->GetLast();
-	//AliInfo(Form(RED"startbin: %d stopbin: %d lastbin: %d"Bee, startbin, stopbin, lastbin));
+	//AliInfo(Form(RED"startbin: %d stopbin: %d lastbin: %d" Bee, startbin, stopbin, lastbin));
         //if (stopbin < startbin || !stopbin){
         if (max < min || !stopbin){
 		AliInfo("Invalid axis range! Setting maximum to last bin!");
@@ -300,7 +300,7 @@ void AliHFJetsContainer::SetAxisRangeStep(const char* axisname, Double_t min, Do
 	   fContainer->GetAxis(axis, step)->SetRange(startbin,stopbin);
         } else {
            if (stopbin != lastbin) {
-             AliError(RED"You requested overflow, but your max bin is not the last!!! I'm setting it to last bin!"Bee);
+             AliError(RED"You requested overflow, but your max bin is not the last!!! I'm setting it to last bin!" Bee);
              stopbin = lastbin;
              //return;
              }
@@ -325,7 +325,7 @@ void AliHFJetsContainer::PrintVars()
 {
 	Int_t nvars=fContainer->GetNVar();
 	for (Int_t i=0; i<nvars; i++){
-		Printf(cy"Var %d: %s -> %s"Bee,i, GetVarName((CFVars) i), fContainer->GetVarTitle(i));
+		Printf(cy"Var %d: %s -> %s" Bee,i, GetVarName((CFVars) i), fContainer->GetVarTitle(i));
 	}
 }  
 
@@ -333,14 +333,14 @@ void AliHFJetsContainer::PrintSteps()
 {
 	Int_t nstep=fContainer->GetNStep();
 	for (Int_t i=0; i<nstep; i++){
-		Printf(mage"Step %d: %s -> %s"Bee,i, GetStepName((CFSteps) i), GetStepTitle((CFSteps) i));
+		Printf(mage"Step %d: %s -> %s" Bee,i, GetStepName((CFSteps) i), GetStepTitle((CFSteps) i));
 	}
 }
 
 void AliHFJetsContainer::ResetAxisStep(const char* axisname, CFSteps step)
 {
 
-	AliInfo(Form(MAG"Resetting range for axis: \"%s\" step: \"%s\""Bee, axisname, GetStepName(step)));
+	AliInfo(Form(MAG"Resetting range for axis: \"%s\" step: \"%s\"" Bee, axisname, GetStepName(step)));
 	Int_t axis = GetVarAxis(axisname); 
 	fContainer->GetAxis(axis, step)->SetRange(0, -1);
 
@@ -358,7 +358,7 @@ void AliHFJetsContainer::ResetAxisAllSteps(const char* axisname)
 TH1D *AliHFJetsContainer::Project1D(CFSteps step, const char* varname)
 {
 
-	AliInfo(Form(MAG"Projecting axis: \"%s\" step: \"%s\""Bee, varname, GetStepName(step)));
+	AliInfo(Form(MAG"Projecting axis: \"%s\" step: \"%s\"" Bee, varname, GetStepName(step)));
 	Int_t var = GetVarAxis(varname);  
 	TH1D* h1=(TH1D*)fContainer->Project(step, var);
 
@@ -368,7 +368,7 @@ TH1D *AliHFJetsContainer::Project1D(CFSteps step, const char* varname)
 TH2D *AliHFJetsContainer::Project2D(CFSteps step, const char* varname1, const char* varname2)
 {
 
-	AliInfo(Form(MAG"Projecting axis: \"%s\" and \"%s\"  step: \"%s\""Bee, varname1, varname2, GetStepName(step)));
+	AliInfo(Form(MAG"Projecting axis: \"%s\" and \"%s\"  step: \"%s\"" Bee, varname1, varname2, GetStepName(step)));
 
 	Int_t var1 = GetVarAxis(varname1);  
 	Int_t var2 = GetVarAxis(varname2);
@@ -382,7 +382,7 @@ void AliHFJetsContainer::ScaleStep(Double_t factor, CFSteps step)
 {
 	Double_t fact[2] = {factor,0};
 
-	AliInfo(Form(MAG"Scaling container at step %d..."Bee, step));
+	AliInfo(Form(MAG"Scaling container at step %d..." Bee, step));
 	fContainer->GetGrid(step)->Scale(fact);
 
 }
@@ -489,7 +489,7 @@ Int_t AliHFJetsContainer::GetVarAxis(const char* varname){
 		//const char* value=Form("var%d",var);
 		TObjString *obj = (TObjString*)fCustomVarNames->FindObject(varname);
 		if (!obj) {
-			AliError(Form(RED"Variable \"%s\" does not exist!"Bee,varname));
+			AliError(Form(RED"Variable \"%s\" does not exist!" Bee,varname));
 			exit(0);
 		}
 		Int_t value = fCustomVarNames->IndexOf((TObjString*)obj);
@@ -510,7 +510,7 @@ void AliHFJetsContainer::CreateDefaultBinning()
 	arr = vars.Tokenize(";");
 	//static const Int_t nvars = arr->GetEntriesFast();
 	Int_t nvars = arr->GetEntriesFast();
-	if (nvars != fgkCFVars)AliError(RED"Number of initialized variables is not fgkCFVars!"Bee);
+	if (nvars != fgkCFVars)AliError(RED"Number of initialized variables is not fgkCFVars!" Bee);
 	//Int_t nbins[4];       // number of bins for each variable
 	//const char* axistitle[4]; // axis title for each variable
 	//Double_t *binning[4]; // array of bins for each variable
@@ -597,7 +597,7 @@ TH1D* AliHFJetsContainer::GetEfficiencyPt(const char* method, Int_t flavour)
             step_matched = kCFStepMatchedB;		
             break;
 	default:
-            AliError(RED"Wrong flavour!"Bee);
+            AliError(RED"Wrong flavour!" Bee);
             break;
         } 
          
@@ -653,7 +653,7 @@ void AliHFJetsContainer::FillStep(CFSteps step,const TArrayD *point){
 	Int_t givenvars=point->GetSize();
 
 	if (expectedvars!=givenvars){
-		AliError(Form(RED"Wrong number of values: expected %d, provided %d!"Bee, expectedvars, givenvars));
+		AliError(Form(RED"Wrong number of values: expected %d, provided %d!" Bee, expectedvars, givenvars));
 	}
 
 	fContainer->Fill(point->GetArray(), step, 1.);

@@ -3,7 +3,9 @@
 # Test suit for the utilities.sh 
 #--------------------------------------------------------------------------------------------------
 # To run the test: 
+
 # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_guessRunData)
+# ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_OCDBYear)
 
 source $ALICE_PHYSICS/../src/PWGPP/scripts/alilog4bash.sh
 source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh
@@ -51,4 +53,17 @@ test_guessRunData()
     echo ===================================================================================================
 }
 
-
+test_OCDBYear(){
+    #
+    #  we had recently problem with this function in the StandardQA
+    #  some slashes disapeared
+    #  !!!!  In the guessRunData ocdbStorage is overwritten  !!!  
+    #
+    ocdbStorage="local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB/"
+    newYear=2012
+    newocdbStorage=$(setYear ${newYear} ${ocdbStorage})    
+    newYear=2010
+    newocdbStorage=$(setYear ${newYear} ${newocdbStorage})    
+    [[  "${ocdbStorage}"  =   "${newocdbStorage}" ]] && alilog_success      "testOCDBYear: Pass"
+    [[  "${ocdbStorage}"  !=   "${newocdbStorage}" ]] && alilog_error      "testOCDBYear: FAILED $ocdbStorage => $newocdbStorage"
+}

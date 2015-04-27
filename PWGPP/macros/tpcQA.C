@@ -13,7 +13,7 @@
 
   .x ~/NimStyle.C
   .x ~/UliStyle.C
-  .L $ALICE_ROOT/PWGPP/Macros/tpcQA.C+
+  .L $ALICE_PHYSICS/PWGPP/Macros/tpcQA.C+
   Init();
   
   // 0 - chi2

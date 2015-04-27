@@ -301,12 +301,37 @@ protected:
       }
     
       TH1* cent = GetH1(c, "cent");
+      cent->GetXaxis()->SetRangeUser(0,100);
       cent->SetFillColor(kRed+1);
-      cent->SetFillStyle(3001);
+      cent->SetFillStyle(3002);
       cent->SetXTitle("Centrality [%]");
       cent->SetYTitle("Events");
+      cent->SetMaximum(1.3*cent->GetMaximum());
+      TH1* centAcc = GetH1(c, "centAcc");
+      centAcc->SetFillStyle(3002);
+
+      TLatex* overUnder = new TLatex(0.15, .88,
+				     Form("#splitline{<0: %d}{>100: %d}",
+					  int(cent->GetBinContent(1)),
+					  int(cent->GetBinContent(102))));
+      overUnder->SetTextColor(kRed+1);
+      overUnder->SetNDC();
+      overUnder->SetTextAlign(13);
+      overUnder->SetTextFont(42);
+      TLatex* overUnderAcc = new TLatex(0.3, .88,
+					Form("#splitline{<0: %d}{>100: %d}",
+					     int(centAcc->GetBinContent(1)),
+					     int(centAcc->GetBinContent(102))));
+      overUnderAcc->SetTextColor(kGreen+1);
+      overUnderAcc->SetNDC();
+      overUnderAcc->SetTextAlign(13);
+      overUnderAcc->SetTextFont(42);
       
       DrawInPad(fBody, 2, cent);
+      DrawInPad(fBody, 2, centAcc, "same", kLegend);
+      DrawInPad(fBody, 2, overUnder, "same");
+      DrawInPad(fBody, 2, overUnderAcc, "same");
+      
     }
     fBody->cd(txtPad);
     
@@ -361,6 +386,7 @@ protected:
     TH2* bin0 = GetH2(c, "sum0");
     TH1* type = GetH1(c, "events");
     TH1* trig = GetH1(c, "triggers");
+    TH1* stat = GetH1(c, "status");
     if (!bin0 || !bin || !trig || !type) return;
 
     type->SetFillStyle(3001);
@@ -371,15 +397,18 @@ protected:
     DrawInPad(fBody, 1, trig, "HIST TEXT");
     DrawInPad(fBody, 2, type, "HIST TEXT");
     DrawInPad(fBody, 3, bin,  "colz");
-    DrawInPad(fBody, 4, bin0, "colz");
     
     if (bin0->GetEntries() <= 0) {
-      fBody->cd(4);
-      TLatex* l = new TLatex(0.5, 0.5, "No 0-bin events");
-      l->SetNDC();
-      l->SetTextAlign(22);
-      l->Draw();
+      DrawInPad(fBody, 4, stat, "HIST TEXT");
+      // fBody->cd(4);
+      // TLatex* l = new TLatex(0.5, 0.5, "No 0-bin events");
+      // l->SetNDC();
+      // l->SetTextAlign(22);
+      // l->Draw();
     }
+    else
+      DrawInPad(fBody, 4, bin0, "colz");
+      
     PrintCanvas(title);
   }
   //____________________________________________________________________
@@ -401,10 +430,10 @@ protected:
     }
     TObject* oSNN = GetObject(c, "sNN");
     TString  tSNN; SNNString(oSNN->GetUniqueID(), tSNN);
-
+    TObject* oTrg = GetObject(c,"trigger");
     DrawParameter(y, "Collision system", GetObject(c, "sys")->GetTitle(), size);
     DrawParameter(y, "#sqrt{s_{NN}}",tSNN, size);
-    DrawParameter(y, "Trigger",GetObject(c,"trigger")->GetTitle(), size);
+    DrawParameter(y, "Trigger",(oTrg ? oTrg->GetTitle() : "?"), size);
     TObject* oscheme = GetObject(c,"scheme");
     TString  scheme  = oscheme ? oscheme->GetTitle() : "";
     if (scheme.IsNull()) scheme = "1/N_{accepted}";
@@ -445,15 +474,18 @@ protected:
     TAxis*   centAxis = (onlyMB ? 0 : GetCentAxis(c));
     if (centAxis && centAxis->GetNbins() < 1) centAxis = 0;
 
+    THStack* dndeta_  = GetStack(c, "dndeta");
+    if (!dndeta_ || !dndeta_->GetHists() ||
+	dndeta_->GetHists()->GetEntries() < 0) return 0;
+    
     TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, 
 			     onlyMB || !centAxis? "" : "Centralities");
     l->SetNColumns(fLandscape ? 1 : 2);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
-
-    THStack* dndeta_  = GetStack(c, "dndeta");
     THStack* dndeta   = CleanStack(dndeta_, l, centAxis);
 
+    
     if (!onlyMB) {
       Double_t y1 = fLandscape ? 0  : .3;
       Double_t x2 = fLandscape ? .7 : 1;

@@ -50,18 +50,27 @@ public:
    * @param max Maximum (in centermeter)
    */  
   void SetIpZRange(Double_t min, Double_t max) { fMinIpZ=min; fMaxIpZ=max; }
+  void SetIpZMin(Double_t min) { fMinIpZ = min; }
+  void SetIpZMax(Double_t max) { fMaxIpZ = max; }
   /** 
    * Set the trigger maskl 
    * 
    * @param mask Trigger mask
    */
-  void SetTriggerMask(UShort_t mask);
+  void SetTriggerMask(UInt_t mask);
   /** 
    * Set the trigger mask 
    * 
    * @param mask trigger mask 
    */
   void SetTriggerMask(const char* mask);
+  /** 
+   * Set mask of events to filter out 
+   * 
+   * @param mask The fitler mask 
+   */
+  void SetFilterMask(UInt_t mask);
+  void SetFilterMask(const char* mask);
   /** 
    * Set the centrality bins to use. 
    * 
@@ -93,6 +102,13 @@ public:
    * @param high Upper bound
    */
   void SetCentralityAxis(Short_t low, Short_t high);
+  /** 
+   * Set the centrality axis to use based on a string.  The bin edges
+   * are separated by colons.
+   * 
+   * @param bins String of bin edges
+   */
+  void SetCentralityAxis(const char* bins);
   /* @} */
   /** 
    * @{ 
@@ -270,6 +286,7 @@ protected:
    * enable event processing - even if the event is not within cuts.
    * 
    * @param forward Forward object
+   * @param filter  Our negative filter 
    * 
    * @return true if the event is within the cuts. 
    */
@@ -316,6 +333,7 @@ protected:
   virtual const char* DefaultConfig() const { return "dNdetaConfig.C"; }
 
   UInt_t   fTriggerMask;   // Trigger mask 
+  UInt_t   fFilterMask;    // Events to filter out 
   Double_t fMinIpZ;        // Least z--coordiante of interaction point
   Double_t fMaxIpZ;        // Largest z--coordiante of interaction point
   TAxis    fCentAxis;      // Centrality axis 
@@ -330,7 +348,7 @@ protected:
   TList*   fSums;          // Output list of sums
   TList*   fResults;       // Output list of results
 
-  ClassDef(AliBaseAODTask,1)
+  ClassDef(AliBaseAODTask,2)
 };
 #endif
 //

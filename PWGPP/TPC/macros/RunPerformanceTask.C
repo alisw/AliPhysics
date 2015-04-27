@@ -8,27 +8,27 @@
  
   //1. Run locally e.g.
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/LoadMyLibs.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/LoadMyLibs.C");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("esds_test.txt",10, 0);
   chain->Lookup();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/RunPerformanceTask.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTask.C");
   RunPerformanceTask(chain, kFALSE, kTRUE, kFALSE);
 
   //2. Run on PROOF Lite e.g.
 
   TProof::Open(""); 
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/ProofEnableAliRoot.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ProofEnableAliRoot.C");
   ProofEnableAliRoot("/u/jacek/alice/AliRoot/trunk");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("list_flatP_JB.txt",20, 0);
   chain->Lookup();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/RunPerformanceTask.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTask.C");
   RunPerformanceTask(chain, kTRUE, kTRUE, kTRUE);
 
 
@@ -37,14 +37,14 @@
   TProof * proof = proofmgr->CreateSession();
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/ProofEnableAliRoot.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ProofEnableAliRoot.C");
   ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/trunk");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("../input/ffprod_v4-17-Rev-19_900kPythia6D6T.list", 200, 0);
   chain->Lookup();
 
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/RunPerformanceTask.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTask.C");
   gROOT->LoadMacro("/d/alice11/jacek/alice/TPC/macros/RunPerformanceTask.C");
   RunPerformanceTask(chain, kFALSE, kTRUE, kTRUE); 
 
@@ -113,8 +113,8 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfr
   //
   // Add task to AliAnalysisManager
   //
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceTPC.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/AddTaskPerformanceTPCQA.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceTPC.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskPerformanceTPCQA.C");
   AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(bUseMCInfo,bUseESDfriend);
   if(!tpcQA) { 
       Error("runTPCQA","TaskPerformanceTPC not created!");

@@ -236,7 +236,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   //pid response object
   fESDpid=(AliESDpid*)inputHandler->GetPIDResponse();
   if (!fESDpid) AliError("PIDResponse object was not created");
-  //  fESDpid->SetOADBPath("$ALICE_ROOT/OADB");
+  //  fESDpid->SetOADBPath("$ALICE_PHYSICS/OADB");
 
   //Defines output objects and histograms
   Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());

@@ -48,8 +48,8 @@ class AliVCluster;
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
-class AliEMCALRecoUtils;
 class AliCalorimeterUtils;
+#include "AliAnaWeights.h"
 
 // Jets
 class AliAODJetEventBackground;
@@ -554,10 +554,15 @@ public:
   // Other methods
   //-------------------------------------
   
-  AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils                   ; }
-  void             SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils       ; }  
-  
-  virtual Double_t GetBField()                       const { return fInputEvent->GetMagneticField()  ; } 
+  AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils                       ; }
+  void                  SetCaloUtils(AliCalorimeterUtils * caloutils)
+                                                           { fCaloUtils = caloutils                  ; }
+    
+  Double_t              GetEventWeight()             const { return fEventWeight                     ; }
+  AliAnaWeights       * GetWeightUtils()                   { if ( !fWeightUtils ) fWeightUtils = new AliAnaWeights() ;
+                                                             return               fWeightUtils       ; }
+
+  virtual Double_t      GetBField()                  const { return fInputEvent->GetMagneticField()  ; }
   
   //------------------------------------------------
   // MC analysis specific methods
@@ -725,27 +730,27 @@ public:
   Float_t          fTrackMultEtaCut    ;           ///<  Track multiplicity eta cut.
   
   Bool_t           fReadStack          ;           ///<  Access kine information from stack.
-  Bool_t	         fReadAODMCParticles ;           ///<  Access kine information from filtered AOD MC particles.
+  Bool_t           fReadAODMCParticles ;           ///<  Access kine information from filtered AOD MC particles.
 	
   TString          fDeltaAODFileName   ;           ///<  Delta AOD file name.
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
-	// Trigger bit
+  // Trigger bit
   UInt_t           fEventTriggerMask ;             ///<  Select this triggerered event.
   UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kAnyINT.
   Bool_t           fEventTriggerAtSE;              ///<  Select triggered event at SE base task or here.
   
-	Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt.
-	Bool_t           fEventTrigCentral ;             ///<  Event is AliVEvent::kCentral on its name,  it should correspond to PbPb.
-	Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb.
-	Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
-	Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
-	Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.  
-	Bool_t           fEventTrigEMCALL1Jet1 ;         ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
-	Bool_t           fEventTrigEMCALL1Jet2 ;         ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.  
+  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt.
+  Bool_t           fEventTrigCentral ;             ///<  Event is AliVEvent::kCentral on its name,  it should correspond to PbPb.
+  Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb.
+  Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
+  Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigEMCALL1Jet1 ;         ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigEMCALL1Jet2 ;         ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
 	
-	Int_t            fBitEGA;                        ///<  Trigger bit on VCaloTrigger for EGA.
-	Int_t            fBitEJE;                        ///<  Trigger bit on VCaloTrigger for EJE.
+  Int_t            fBitEGA;                        ///<  Trigger bit on VCaloTrigger for EGA.
+  Int_t            fBitEJE;                        ///<  Trigger bit on VCaloTrigger for EJE.
 	
   Bool_t           fAnaLED;                        ///<  Analyze LED data only.
 
@@ -753,14 +758,17 @@ public:
 	
   AliCalorimeterUtils * fCaloUtils ;               ///<  Pointer to AliCalorimeterUtils.
 
+  AliAnaWeights  * fWeightUtils ;                  ///<  Pointer to AliAnaWeights.
+  Double_t         fEventWeight ;                  ///<  Weight assigned to the event when filling histograms.
+    
   AliMixedEvent  * fMixedEvent  ;                  //!<! Mixed event object. This class is not the owner.
-  Int_t            fNMixedEvent ;                  ///<   Number of events in mixed event buffer.
+  Int_t            fNMixedEvent ;                  ///<  Number of events in mixed event buffer.
   Double_t      ** fVertex      ;                  //!<! Vertex array 3 dim for each mixed event buffer.
   
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
-  Int_t            fLastMixedTracksEvent ;         ///<   Temporary container with the last event added to the mixing list for tracks.
-  Int_t            fLastMixedCaloEvent   ;         ///<   Temporary container with the last event added to the mixing list for photons.
+  Int_t            fLastMixedTracksEvent ;         ///<  Temporary container with the last event added to the mixing list for tracks.
+  Int_t            fLastMixedCaloEvent   ;         ///<  Temporary container with the last event added to the mixing list for photons.
    
   Bool_t           fWriteOutputDeltaAOD;           ///<  Write the created delta AOD objects into file.  
   
@@ -808,12 +816,10 @@ public:
   Double_t         fTimeStampRunMin;               ///<  Minimum value of time stamp in run.
   Double_t         fTimeStampRunMax;               ///<  Maximum value of time stamp in run.
   
-  Double_t         fPileUpParamSPD[5];             ///<  Parameters to pass to method IsPileupFromSPD: Int_t minContributors,
-                                                   ///<  Double_t minZdist, 
-                                                   ///<  Double_t nSigmaZdist, 
-                                                   ///<  Double_t nSigmaDiamXY, 
-                                                   ///<  Double_t nSigmaDiamZ).
-  
+  ///< Parameters to pass to method IsPileupFromSPD:
+  ///< Int_t minContributors, Double_t minZdist, Double_t nSigmaZdist,Double_t nSigmaDiamXY,Double_t nSigmaDiamZ
+  Double_t         fPileUpParamSPD[5];
+    
   // Pile-up in EMCal
   
   Int_t            fNPileUpClusters;               ///<  Number of clusters with time avobe 20 ns.
@@ -859,11 +865,10 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,69) ;
+  ClassDef(AliCaloTrackReader,70) ;
   /// \endcond
 
 } ;
-
 
 #endif //ALICALOTRACKREADER_H
 

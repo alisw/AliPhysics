@@ -1,9 +1,13 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,Int_t FilterBit = 768 , double eta_min, double eta_max, int debuglevel){
+AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,
+		Bool_t IsCentFlat=kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, 
+		double pt_min, double pt_max, int effMode,int debuglevel){
     // Load Custom Configuration and parameters
     // override values with parameters
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
 	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
+	cout <<"AddTaskJFFluc:: Force to Cent flatting for LHC11h? = " << IsCentFlat << endl;
+	cout <<"AddTaskJFFluc:: Efficiency Corr Mod? (0:no, 1:period, 2:run#, 3:auto) = " << effMode << endl;
 
 	//==== Get the pointer to the Analyis mgr
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,7 +34,10 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsW
 	FFtask->SetIsWeakDeacyExclude( IsWeakExclude ) ;
 	FFtask->SetTestFilterBit( FilterBit ) ;
 	FFtask->SetEtaRange( eta_min, eta_max);
+	FFtask->SetIsCentFlat( IsCentFlat ) ;
 	FFtask->SetDebugLevel( debuglevel ) ; 
+	FFtask->SetPtRange( pt_min, pt_max);
+	FFtask->SetEffConfig( effMode, FilterBit); 
 	//FFtask->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ; 
 	//FFTask->SelectCollisionCandidates( CollisionCandidates );
 	//FFtask->SelectCollisionCandidates( AliVEvent::kCentral ) ; 

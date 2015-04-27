@@ -37,7 +37,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   };
 
   AliEmcalJetTask();
-  AliEmcalJetTask(const char *name);
+  AliEmcalJetTask(const char *name, Int_t useExchangeCont=0);
   virtual ~AliEmcalJetTask();
 
   void UserCreateOutputObjects();
@@ -114,7 +114,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
  protected:
 
-  void                   FindJets();
+  Int_t                  FindJets();
   void                   FillJetBranch();
   Bool_t                 DoInit();
   void                   InitUtilities();
@@ -152,6 +152,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Short_t                fGeneratorIndex;         // select MC particles with generator index (default = -1 to switch off selection)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
   Bool_t                 fFilterHybridTracks;     // filter hybrid tracks (only works with AOD tracks)
+  Int_t                  fUseExchangeCont;        // use exchange containers as input
   Bool_t                 fLocked;                 // true if lock is set
  
   Bool_t                 fIsInit;                 //!=true if already initialized
@@ -171,6 +172,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 17) // Jet producing task
+  ClassDef(AliEmcalJetTask, 18) // Jet producing task
 };
 #endif

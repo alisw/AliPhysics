@@ -247,12 +247,12 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   
   Bool_t isAccepted = true;
   if (found & AliFMDEventInspector::kNoEvent)    {
-    fHStatus->Fill(1);
+    fHStatus->Fill(kStatusNoEvent);
     isAccepted = false;
     // return;
   }
   if (found & AliFMDEventInspector::kNoTriggers) {
-    fHStatus->Fill(2);
+    fHStatus->Fill(kStatusNoTrigger);
     isAccepted = false; 
     // return;
   }
@@ -275,12 +275,12 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   // Disable this check on SPD - will bias data 
   // if (found & AliFMDEventInspector::kNoSPD)  isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoFMD)     {
-    fHStatus->Fill(4);
+    fHStatus->Fill(kStatusNoFMD);
     isAccepted = false; 
     // return;
   }
   if (found & AliFMDEventInspector::kNoVertex)  {
-    fHStatus->Fill(5);
+    fHStatus->Fill(kStatusNoVertex);
     isAccepted = false; 
     // return;
   }
@@ -306,12 +306,12 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   START_SW(individual);
   if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD,ip.Z())){
     AliWarning("Sharing filter failed!");
-    fHStatus->Fill(8);
+    fHStatus->Fill(kStatusFailSharing);
     return false;
   }
   if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, ip.Z(),fMCESDFMD,fPrimary)){
     AliWarning("MC Sharing filter failed!");
-    fHStatus->Fill(8);
+    fHStatus->Fill(kStatusFailSharing);
     return false;
   }
 
@@ -337,12 +337,12 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   START_SW(individual);
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     AliWarning("Density calculator failed!");
-    fHStatus->Fill(9);
+    fHStatus->Fill(kStatusFailDensity);
     return false;
   }
   if (!fDensityCalculator.CalculateMC(fMCESDFMD, fMCHistos)) { 
     AliWarning("MC Density calculator failed!");
-    fHStatus->Fill(9);
+    fHStatus->Fill(kStatusFailDensity);
     return false;
   }
   fDensityCalculator.CompareResults(fHistos, fMCHistos);
@@ -353,7 +353,7 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
     if (!fEventPlaneFinder.FindEventplane(&esd, fAODEP, 
 					  &(fAODFMD.GetHistogram()), &fHistos)){
       AliWarning("Eventplane finder failed!");
-      fHStatus->Fill(10);
+      fHStatus->Fill(kStatusFailEventPlane);
     } 
     FILL_SW(individual,kTimingEventPlaneFinder);   
   }
@@ -362,12 +362,12 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   START_SW(individual);
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
-    fHStatus->Fill(12);
+    fHStatus->Fill(kStatusFailCorrector);
     return false;
   }
   if (!fCorrections.CorrectMC(fMCHistos, ivz)) { 
     AliWarning("MC Corrections failed");
-    fHStatus->Fill(12);
+    fHStatus->Fill(kStatusFailCorrector);
     return false;
   }
   fCorrections.CompareResults(fHistos, fMCHistos);
@@ -384,7 +384,7 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
 			      false,
 			      add)) {
     AliWarning("Histogram collector failed");
-    fHStatus->Fill(13);
+    fHStatus->Fill(kStatusFailCollector);
     return false;
   }
   if (!fHistCollector.Collect(fMCHistos, 
@@ -395,7 +395,7 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
 			      true,
 			      add)) {
     AliWarning("MC Histogram collector failed");
-    fHStatus->Fill(13);
+    fHStatus->Fill(kStatusFailCollector);
     return false;
   }
   FILL_SW(individual,kTimingHistCollector);
@@ -411,10 +411,10 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
 
   if (add) {
     fHData->Add(&(fAODFMD.GetHistogram()));
-    fHStatus->Fill(15);
+    fHStatus->Fill(kStatusAllThrough);
   }
   else {
-    fHStatus->Fill(14);
+    fHStatus->Fill(kStatusNotAdded);
   }
   FILL_SW(total,kTimingTotal);
 

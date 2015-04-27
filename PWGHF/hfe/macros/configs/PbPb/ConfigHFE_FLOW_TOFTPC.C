@@ -137,7 +137,7 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
 
   
 }
-AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,Int_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t variableMr = 1,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
+AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,Int_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t variableMr = 1,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0, Int_t wei=-1, Int_t selectgenerator=-1)
 {
   //
   // HFE flow task 
@@ -196,28 +196,14 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   hfecuts->SetMaxImpactParam(dcaxy*0.01,dcaz*0.01);
   hfecuts->SetPtRange(0.1,10.);
   hfecuts->SetAcceptKinkMothers();
-      
   hfecuts->SetVertexRange(10.);
   hfecuts->SetUseSPDVertex(kTRUE);
   hfecuts->SetUseCorrelationVertex();
-  
   hfecuts->SetTOFPIDStep(kTRUE);
 
-  // Cut HFE background
-  AliESDtrackCuts *hfeBackgroundCuts = new AliESDtrackCuts();
-  hfeBackgroundCuts->SetName("backgroundcuts");
-  //hfeBackgroundCuts->SetAcceptKinkDaughters(kFALSE);
-  hfeBackgroundCuts->SetRequireTPCRefit(kTRUE);
-  hfeBackgroundCuts->SetRequireITSRefit(kTRUE);
-  if(ITSclustersback>0) hfeBackgroundCuts->SetMinNClustersITS(ITSclustersback);
-  hfeBackgroundCuts->SetEtaRange(-0.8,0.8);
-  hfeBackgroundCuts->SetRequireSigmaToVertex(kTRUE);
-  hfeBackgroundCuts->SetMaxChi2PerClusterTPC(3.5);
-  hfeBackgroundCuts->SetMinNClustersTPC(100);
-  hfeBackgroundCuts->SetPtRange(0.5,1e10);
   
   // Name
-  printf("appendix %s\n", appendix.Data());
+  //printf("appendix %s\n", appendix.Data());
   
   // The task
   AliAnalysisTaskFlowTPCTOFEPSP *task = new AliAnalysisTaskFlowTPCTOFEPSP(Form("HFE_%s", appendix.Data()));
@@ -229,7 +215,6 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   task->GetPIDQAManager()->SetMidResolutionHistos();
   //task->GetPIDQAManager()->SetFillMultiplicity();
   task->SetHFECuts(hfecuts);
-  task->SetHFEBackgroundCuts(hfeBackgroundCuts);
   if(aodfilter > 0) {
     printf("ON AOD filter %d\n",aodfilter);
     task->SetFilter(aodfilter);
@@ -237,12 +222,12 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   else {
     printf("Default AOD filter 1<<4\n");
   }
-  if(useMC) {
-    task->SetMCPID(kTRUE);
+  //if(useMC) {
+    //task->SetMCPID(kTRUE);
     //task->SetUseMCReactionPlane(kTRUE);
-    task->SetAfterBurnerOn(kTRUE);
-    task->SetV1V2V3V4V5(0.0,0.2,0.0,0.0,0.0);
-  }
+    //task->SetAfterBurnerOn(kTRUE);
+    //task->SetV1V2V3V4V5(0.0,0.2,0.0,0.0,0.0);
+  //}
   if(vzero>=1) task->SetVZEROEventPlane(kTRUE);
   if(vzero==2) task->SetVZEROEventPlaneA(kTRUE);
   if(vzero==3) task->SetVZEROEventPlaneC(kTRUE);
@@ -252,10 +237,58 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   task->SetDebugLevel(debuglevel);
   if(debuglevel==1) task->SetMonitorEventPlane(kTRUE);
   if(debuglevel==2) task->SetMonitorContamination(kTRUE);
-  if(debuglevel==3) task->SetMonitorPhotonic(kTRUE);
   if(debuglevel==4) task->SetMonitorWithoutPID(kTRUE);
   if(debuglevel==5) task->SetMonitorTrackCuts(kTRUE);
   if(debuglevel==6) task->SetMonitorQCumulant(kTRUE);
+  if(debuglevel==3) {
+    task->SetMonitorPhotonic(kTRUE);
+    //***************************************//
+    //   Configure NPE plugin        //
+    //***************************************//
+    
+    AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendix.Data()),"Background subtraction");  //appendix
+    //Setting the Cuts for the Associated electron-pool
+    AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
+    //hfeBackgroundCuts->SetEtaRange(assETA);
+    hfeBackgroundCuts->SetEtaRange(-0.8,0.8);
+    hfeBackgroundCuts->SetPtRange(0.1,1e10);
+    hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
+    hfeBackgroundCuts->SetMinNClustersITS(ITSclustersback);
+    hfeBackgroundCuts->SetMinNClustersTPC(100);
+    hfeBackgroundCuts->SetMinNClustersTPCPID(80);
+    hfeBackgroundCuts->SetMaxImpactParam(1.,2.);
+    hfeBackgroundCuts->SetAODFilterBit(0);
+    //hfeBackgroundCuts->SetQAOn();			        // QA break
+    if(useMC) {
+      //printf("test put weights\n");
+      if(wei>=0) backe->SetWithWeights(0);
+      task->SelectGenerator(selectgenerator);
+    }
+
+    
+    AliHFEpid *pidbackground = backe->GetPIDBackground();
+    pidbackground->AddDetector("TPC", 0);
+    pidbackground->ConfigureTPCasymmetric(0.0,9999.,minTPCback,maxTPCback);
+    backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+    backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
+    
+    // Selection of associated tracks for the pool
+    backe->SelectCategory1Tracks(kTRUE);
+    /*
+      if(useCat2Tracks){
+      backe->SelectCategory2Tracks(kTRUE);
+      backe-> SetITSMeanShift(-0.5);
+      }
+    */
+    
+    // apply opening angle cut to reduce file size
+    backe->SetMaxInvMass(0.3);
+    
+    task->SetHFEBackgroundSubtraction(backe);
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
+  }
+ 
 
 
   // Define PID
@@ -288,73 +321,70 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
       TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
       if(etaCorrMean && etaCorrWdth && withetacorrection){
 	tpcpid->SetEtaCorrections(etaCorrMean, etaCorrWdth);
-	printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
+	//printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
       }
       TF1 *centCorrMean = GetCentralityCorrection("LHC11h_multCorrMean");
       TF1 *centCorrWdth = GetCentralityCorrection("LHC11h_multCorrWidth");
       if(centCorrMean && centCorrWdth && withmultcorrection){
 	tpcpid->SetCentralityCorrections(centCorrMean, centCorrWdth);
-	printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
+	//printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
       }
     }
   }
- 
+  
   task->SetPileUpCut(cutPileup);
   task->SetUseSP(scalarProduct);
   
   //pid->AddDetector("BAYES", 0);
   //pid->ConfigureBayesDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF+AliPIDResponse::kDetTRD);
   //pid->ConfigureBayesPIDThreshold(0.9);
-
+  
   
   TString datatype=gSystem->Getenv("CONFIG_FILE");
   
-  if(!useMC) {
-
-    if(withetacorrection || withmultcorrection) {
-      
-      pid->ConfigureTPCasymmetric(0.0,9999.,tpcdedx[0],3.);
-      
-    } else {
-      
-      Double_t params_centr_0_5[1];
-      Double_t params_centr_5_10[1];
-      Double_t params_centr_10_20[1];
-      Double_t params_centr_20_30[1];
-      Double_t params_centr_30_40[1];
-      Double_t params_centr_40_50[1];
-      Double_t params_centr_50_60[1];
-      Double_t params_centr_per[1];
-      
-      params_centr_0_5[0]=tpcdedx[0];  // cut tuned for 0-5%
-      params_centr_5_10[0]=tpcdedx[1]; // cut tuned for 5-10%
-      params_centr_10_20[0]=tpcdedx[2];
-      params_centr_20_30[0]=tpcdedx[3];
-      params_centr_30_40[0]=tpcdedx[4];
-      params_centr_40_50[0]=tpcdedx[5];
-      params_centr_50_60[0]=tpcdedx[6];
-      params_centr_per[0]=tpcdedx[7];
-      
-      char *cutmodel;
-      cutmodel="pol0";
-      
-      for(Int_t a=0;a<11;a++)
-	{
-	  if(a>6)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,3.0);      //  60-80%
-	  if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,3.0);      //  0-5%
-	  if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,3.0);     //  5-10%
-	  if(a==2) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_10_20,3.0);    //  10-20%
-	  if(a==3) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_20_30,3.0);    //  20-30%
-	  if(a==4) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_30_40,3.0);    //  30-40%
-	  if(a==5) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_40_50,3.0);    //  40-50%
-	  if(a==6) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_50_60,3.0);    //  50-60%
-	}
-    }
+  
+  if(withetacorrection || withmultcorrection) {
     
+    pid->ConfigureTPCasymmetric(0.0,9999.,tpcdedx[0],3.);
+    
+  } else {
+    
+    Double_t params_centr_0_5[1];
+    Double_t params_centr_5_10[1];
+    Double_t params_centr_10_20[1];
+    Double_t params_centr_20_30[1];
+    Double_t params_centr_30_40[1];
+    Double_t params_centr_40_50[1];
+    Double_t params_centr_50_60[1];
+    Double_t params_centr_per[1];
+    
+    params_centr_0_5[0]=tpcdedx[0];  // cut tuned for 0-5%
+    params_centr_5_10[0]=tpcdedx[1]; // cut tuned for 5-10%
+    params_centr_10_20[0]=tpcdedx[2];
+    params_centr_20_30[0]=tpcdedx[3];
+    params_centr_30_40[0]=tpcdedx[4];
+    params_centr_40_50[0]=tpcdedx[5];
+    params_centr_50_60[0]=tpcdedx[6];
+    params_centr_per[0]=tpcdedx[7];
+    
+    char *cutmodel;
+    cutmodel="pol0";
+    
+    for(Int_t a=0;a<11;a++)
+      {
+	if(a>6)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,3.0);      //  60-80%
+	if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,3.0);      //  0-5%
+	if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,3.0);     //  5-10%
+	if(a==2) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_10_20,3.0);    //  10-20%
+	if(a==3) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_20_30,3.0);    //  20-30%
+	if(a==4) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_30_40,3.0);    //  30-40%
+	if(a==5) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_40_50,3.0);    //  40-50%
+	if(a==6) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_50_60,3.0);    //  50-60%
+      }
   }
 
   if(tofsig>0.) pid->ConfigureTOF(tofsig*0.1);
-
+  
   AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
   if(tofsig<=0.) {
     Double_t uppercuttof = TMath::Abs(tofsig)*0.1;
@@ -409,19 +439,6 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   pidTOFOnly->AddDetector("TOF", 0);
   pidTOFOnly->ConfigureTOF(tofsig*0.1);
   
-  // Define PID background
-  AliHFEpid *pidbackground = task->GetPIDBackground();
-  if(useMC) pidbackground->SetHasMCData(kTRUE);
-  //pidbackground->AddDetector("TOF", 0);
-  pidbackground->AddDetector("TPC", 0);
-  //pidbackground->ConfigureTOF(3.0);
-  pidbackground->ConfigureTPCasymmetric(0.0,9999.,minTPCback,maxTPCback);
-  task->SetMaxopeningtheta(9999.0);
-  task->SetMaxopeningphi(9999.0);
-  task->SetMaxopening3D(0.1);
-  // Always AliKF and no mass constraint
-  task->SetAlgorithmMA(kFALSE);
-  task->SetMassConstraint(kFALSE);
   
   printf("*************************************\n");
   printf("Configuring standard Task:\n");

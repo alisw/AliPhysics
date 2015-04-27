@@ -32,14 +32,36 @@
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 
-#define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF like
+#define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF likes
 #define EPS 1.e-15
 
 using TMath::TwoPi;
 
-/// \cond CLASSIMP
+///\cond CLASSIMP
 ClassImp(AliAnalysisTaskNucleiYield);
-/// \endcond
+///\endcond
+
+/// Method for the correct logarithmic binning of histograms.
+///
+/// \param h Histogram that has to be correctly binned
+///
+static void BinLogAxis(const TH1 *h) {
+  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
+  const Int_t bins = axis->GetNbins();
+  
+  const Double_t from = axis->GetXmin();
+  const Double_t to = axis->GetXmax();
+  Double_t *newBins = new Double_t[bins + 1];
+  
+  newBins[0] = from;
+  Double_t factor = pow(to / from, 1. / bins);
+  
+  for (Int_t i = 1; i <= bins; i++) {
+    newBins[i] = factor * newBins[i - 1];
+  }
+  axis->Set(bins, newBins);
+  delete [] newBins;
+}
 
 /// Standard and default constructor of the class.
 ///
@@ -65,6 +87,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fTOFlowBoundary(-2.4)
 ,fTOFhighBoundary(3.6)
 ,fTOFnBins(75)
+,fEnablePerformance(kFALSE)
+,fEnablePtCorrection(kTRUE)
 ,fRequireITSrefit(kTRUE)
 ,fRequireTPCrefit(kTRUE)
 ,fRequireNoKinks(kTRUE)
@@ -82,6 +106,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fRequireMaxDCAz(1.f)
 ,fRequireTPCpidSigmas(3.f)
 ,fRequireITSpidSigmas(-1.f)
+,fRequireMinEnergyLoss(0.)
+,fRequireMagneticField(0)
 ,fParticle(AliPID::kUnknown)
 ,fCentBins(0x0)
 ,fDCABins(0x0)
@@ -106,13 +132,19 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fMDCASecondaryTOF(0x0)
 ,fATOFsignal(0x0)
 ,fATPCcounts(0x0)
+,fATOFphiSignal(0x0)
+,fATPCphiCounts(0x0)
+,fATPCeLoss(0x0)
 ,fMDCAxyTPC(0x0)
 ,fMDCAzTPC(0x0)
 ,fMDCAxyTOF(0x0)
 ,fMDCAzTOF(0x0)
 ,fMTOFsignal(0x0)
-,fMTPCcounts(0x0) {
-  gRandom->SetSeed(0);
+,fMTPCcounts(0x0)
+,fMTOFphiSignal(0x0)
+,fMTPCphiCounts(0x0)
+,fMTPCeLoss(0x0) {
+  gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
   Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
   Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
   fPtCorrectionA.Set(3, aCorrection);
@@ -145,8 +177,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
   const Float_t *dcaBins = fDCABins.GetArray();
   
   fCentrality = new TH1F("fCentrality",";Centrality (%);Events / 1%;",100,0.,100.);
-  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",nCentBins,centBins);
-  fFlattenedCentrality = new TH1F("fFlattenCentrality","Centrality distribution after the flattening;Centrality (%);Events / 1%;",100,0.,100.);
+  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",
+                                nCentBins,centBins);
+  fFlattenedCentrality = new TH1F("fFlattenCentrality","After the flattening;Centrality (%); \
+                                  Events / 1%;",100,0.,100.);
   fList->Add(fCentrality);
   fList->Add(fCentralityClasses);
   fList->Add(fFlattenedCentrality);
@@ -215,6 +249,14 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
     fATPCcounts = new TH2F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
                            nCentBins,centBins,nPtBins,pTbins);
+    fATOFphiSignal = new TH3F("fATOFphiSignal",
+                              ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
+                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
+    fATPCphiCounts = new TH2F("fATPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
+                              36,0.2,2.);
+    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
+                          800,0,3200);
     fMDCAxyTPC = new TH3F("fMDCAxyTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
                        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
     fMDCAzTPC = new TH3F("fMDCAzTPC",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
@@ -228,14 +270,32 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
     fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
                            nCentBins,centBins,nPtBins,pTbins);
+    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
+                          800,0,3200);
+    fMTOFphiSignal = new TH3F("fMTOFphiSignal",
+                              ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
+                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
+    fMTPCphiCounts = new TH2F("fMTPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
+                              36,0.2,2.);
+    
+    BinLogAxis(fMTPCeLoss);
+    BinLogAxis(fATPCeLoss);
+
     fList->Add(fATOFsignal);
     fList->Add(fATPCcounts);
+    if (fRequireMinEnergyLoss > 0.) fList->Add(fATOFphiSignal);
+    if (fRequireMinEnergyLoss > 0.) fList->Add(fATPCphiCounts);
+    if (fEnablePerformance) fList->Add(fATPCeLoss);
     fList->Add(fMDCAxyTPC);
     fList->Add(fMDCAzTPC);
     fList->Add(fMDCAxyTOF);
     fList->Add(fMDCAzTOF);
     fList->Add(fMTOFsignal);
     fList->Add(fMTPCcounts);
+    if (fRequireMinEnergyLoss > 0.) fList->Add(fMTOFphiSignal);
+    if (fRequireMinEnergyLoss > 0.) fList->Add(fMTPCphiCounts);
+    if (fEnablePerformance) fList->Add(fMTPCeLoss);
   }
   
   PostData(1,fList);
@@ -247,42 +307,69 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
 /// \return void
 ///
 void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
-  /// What is inside this function:
-  AliVEvent *ev = dynamic_cast<AliVEvent*> (InputEvent());
+  /// The first check performed is on the particle type requested. If this type is AliPID::Unknown -
+  /// the default one - the task does not process the information.
+  if (fParticle == AliPID::kUnknown) {
+    ::Error("AliAnalysisTaskNucleiYield::UserExec", "No particle type set");
+    PostData(1, fList);
+    return;
+  }
   
-  // Check event selection mask
+  /// If the setup is fine the current event is loaded in memory together with the analysis manager
+  /// and the event handler.
+  AliVEvent *ev = dynamic_cast<AliVEvent*> (InputEvent());
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  
+  /// The first check perfomed is on the physics selection output stored in the mask given by the
+  /// handler.
   UInt_t mask = handl->IsEventSelected();
   if (!(mask & 0xffffffff)) {
     PostData(1, fList);
     return;
   }
-  if (!((mask & AliVEvent::kMB) || (mask & AliVEvent::kCentral) || (mask & AliVEvent::kSemiCentral))) {
+  
+  /// This mask contains also the information about the trigger of this events. For this analysis
+  /// central, semi-central and minimum bias events are kept.
+  if (!((mask & AliVEvent::kMB) || (mask & AliVEvent::kCentral) ||
+        (mask & AliVEvent::kSemiCentral))) {
     PostData(1, fList);
     return;
   }
   
+  /// To perform the majority of the analysis - and also this one - the standard PID handler is
+  /// required.
   fPID = handl->GetPIDResponse();
   
+  /// The centrality selection in PbPb uses the percentile determined with V0.
   AliCentrality *centr = ev->GetCentrality();
-  
-  // Centrality selection in PbPb, percentile determined with V0
   float centrality = centr->GetCentralityPercentile("V0M");
-  //select only events with centralities between 0 and 80 %
+  /// In this step only events with centralities between 0% and 80% are kept.
   if (centrality < 0. || centrality > 80.) {
     PostData(1, fList);
     return;
   }
 
-  // Primary vertex displacement cut
+  /// Primary vertex displacement cut. This cut is harcoded and it is equal to 10 cm of max
+  /// displacement in z with respect to the center of the coordinate system.
   fPrimaryVertex = (AliVVertex*)ev->GetPrimaryVertex();
   if(TMath::Abs(fPrimaryVertex->GetZ()) > 10.) {
     PostData(1, fList);
     return;
   }
+
+  /// The magnetic field cut - enabled only if fRequireMagneticField \f$\neq 0\f$ - selects only
+  /// events with magnetic field with the same sign of fRequireMagneticField
   fMagField = ev->GetMagneticField();
+  if (fRequireMagneticField != 0 && fRequireMagneticField * fMagField < 0.) {
+    PostData(1, fList);
+    return;
+  }
   
+  /// At the stage of event selection the Flattening is applied. This technique makes flat the
+  /// centrality distribution using a pseudo-random selection based on prior probabilities.
+  /// A complete description of this technique is present in the documentation of the Flatten
+  /// function.
   fCentrality->Fill(centrality);
   if (Flatten(centrality)) {
     PostData(1, fList);
@@ -290,12 +377,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
   fCentralityClasses->Fill(centrality);
   fFlattenedCentrality->Fill(centrality);
-  
-  if (fParticle == AliPID::kUnknown) {
-    ::Error("AliAnalysisTaskNucleiYield::UserExec", "No particle type set");
-    PostData(1, fList);
-    return;
-  }
   
   TClonesArray *stack = 0x0;
   if (fIsMC) {
@@ -333,7 +414,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track);
     float pT = track->Pt();
-    PtCorrection(pT,track->Charge() > 0);
+    if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
     if (fIsMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
       if (!part) continue;
@@ -359,14 +440,21 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
     } else {
+      if (track->Charge() > 0) {
+        fMTPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      } else {
+        fATPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      }
       if (!PassesPIDSelection(track)) continue;
       if (track->Charge() > 0) {
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
         fMDCAzTPC->Fill(centrality, pT, dca[1]);
         fMTPCcounts->Fill(centrality, pT);
-      } else
+        fMTPCphiCounts->Fill(track->Phi(),pT);
+      } else {
+        fATPCphiCounts->Fill(track->Phi(),pT);
         fATPCcounts->Fill(centrality, pT);
-      
+      }
       if (beta < 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m = track->GetTPCmomentum() * (TMath::Sqrt(1.f - beta * beta) / beta);
@@ -374,8 +462,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMDCAxyTOF->Fill(centrality, pT, dca[0]);
         fMDCAzTOF->Fill(centrality, pT, dca[1]);
         fMTOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
+        fMTOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
       } else {
         fATOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
+        fATOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
       }
     }
     
@@ -418,6 +508,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
       nITS++;
     }
   }
+  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
   if (nITS < fRequireITSrecPoints) return kFALSE;
   if (nSPD < fRequireSPDrecPoints) return kFALSE;
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
@@ -565,10 +656,10 @@ void AliAnalysisTaskNucleiYield::SetParticleType(AliPID::EParticleType part) {
 }
 
 /// This function provides the flattening of the centrality distribution.
-/// Please check hardcoded values! It is better to provide those number by yourself: the probability
-/// is computed as \f[\mathrm{Probability}=\frac{C_{i}}{C_{ref}} \f] where \f$C_{i}\f$ is the
-/// centrality in the bin _i_ and \f$C_{ref}\f$ is the centrality of the reference bin (i.e. the
-/// value around you want the centrality to fluctuate).
+/// Please check the hardcoded values! It is better to provide those number by yourself: the
+/// probability is computed as \f[\mathrm{Probability}=\frac{C_{i}}{C_{ref}} \f] where \f$C_{i}\f$
+/// is the centrality in the bin _i_ and \f$C_{ref}\f$ is the centrality of the reference bin
+/// (namely the value around you want the centrality to fluctuate).
 ///
 /// \param cent Event centrality
 /// \return Boolean value: true means that the event must be skipped

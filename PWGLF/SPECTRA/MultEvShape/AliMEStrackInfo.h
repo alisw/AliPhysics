@@ -112,6 +112,8 @@ public:
   Double_t    Zv() const               { return fPosition[2]; }
   Bool_t    GetDCA(Double_t *dca) const		 { dca[0] = fDCA[0]; dca[1] = fDCA[1]; return kTRUE; }
   Double_t    Y() const                { return fY; }
+  Double_t    GetdEdx() const         {return fdEdx;}
+  Double_t    Getbeta() const          {return fBeta;}
   Double_t    OneOverPt() const        { return Pt()>kAlmost0?1./Pt():0.; }
   Bool_t      IsFilteredOut() const    { return fFilterId>0; }
   Bool_t      IsFilteredOutBy(EMESfilterId id) const     { return TESTBIT(fFilterId, id); }
@@ -129,6 +131,8 @@ public:
   void        SetOrigin(EMESorigin o)     { SETBIT(fOrigin, o); }
   void        SetPhi(Double_t phi)        { fPhi = phi; }
   void        SetP(Double_t p)            { fP = p; }
+  void        SetdEdx(Double_t dEdx)            { fdEdx = dEdx; }
+  void        Setbeta(Double_t beta)            { fBeta = beta; }
   void        SetPt(Double_t pt, Bool_t chg) { fPt = pt*(chg?1:-1); }
   void        SetTOFmisProb(Double_t tm)  { fPID.fTOFmisProb = tm; }
 //   void        SetTOFmisProb(Bool_t tm)  { fPID.fTOFmisProb = tm; }
@@ -148,7 +152,9 @@ private:
   Double_t           fY;                // rapidity
   Double_t           fPosition[3];           // Position x,y and z @ vertex
   Float_t           fDCA[2];           // DCAxy and DCAz
-    AliMESpid          fPID;              // PID info
+  Double_t        fdEdx;              // energy loss in TPC
+  Double_t        fBeta;               // computed beta using TOF
+  AliMESpid          fPID;              // PID info
   AliMESfilterParam *fFilterParam;      // Filtering parameters used for debugging purposes
   ClassDef(AliMEStrackInfo, 1)          // Track summary data for MultiEvShape
 };

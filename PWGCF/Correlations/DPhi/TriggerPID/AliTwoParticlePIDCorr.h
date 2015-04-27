@@ -23,6 +23,7 @@ class AliAODVertex;
 class AliEventPoolManager;
 class TFormula;
 class AliAnalysisUtils;
+class AliPPVsMultUtils;
 class LRCParticlePID;
 class AliVParticle;
 class AliCFContainer;
@@ -132,7 +133,10 @@ fVzMax_MC=VzMax_MC;
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
-  void SetPPVsMultUtils(Bool_t val)  {fPPVsMultUtils = val;}
+  void SetPPVsMult(Bool_t val, Bool_t PileUp_zvtx_INEL_evsel){
+    fPPVsMult = val;
+    fPileUp_zvtx_INEL_evsel=PileUp_zvtx_INEL_evsel;
+  }
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
   void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t RequestEventPlanemixing,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
 fRequestEventPlane=RequestEventPlane;
@@ -299,7 +303,14 @@ fPtTOFPIDmax=PtTOFPIDmax;
 //--------------------------------------------------------------------------//
 //v0 daughters
 
-void SetV0TrigCorr(Bool_t V0TrigCorr){fV0TrigCorr=V0TrigCorr;}
+  void SetV0TrigCorr(Bool_t V0TrigCorr,Bool_t kShort, Bool_t Lambda){
+    fV0TrigCorr=V0TrigCorr;
+    fkShort=kShort;
+    fLambda=Lambda;
+  }
+  void SetfillofflineV0(Bool_t fillofflineV0){
+    ffillofflineV0=fillofflineV0;
+  }
 void SetUsev0DaughterPID(Bool_t Usev0DaughterPID){fUsev0DaughterPID=Usev0DaughterPID;}
 
  void SetCutsForV0AndDaughters(Double_t MinPtDaughter,Double_t MaxPtDaughter ,Double_t DCAtoPrimVtx, Double_t MaxDCADaughter,Double_t MinCPA,Double_t MaxBoundary,Double_t DaughNClsTPC,Float_t FracSharedTPCcls,Bool_t CutDaughterPtV0)
@@ -325,7 +336,8 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
 
 
     TString    fCentralityMethod;     // Method to determine centrality
-    Bool_t fPPVsMultUtils;//switch to ON quantile information for pp 7 TeV case
+    Bool_t fPPVsMult;//switch to ON quantile information for pp 7 TeV case
+    Bool_t fPileUp_zvtx_INEL_evsel;
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Bool_t fRequestEventPlane; //only for PbPb
     Bool_t fRequestEventPlanemixing; //only for PbPb
@@ -643,9 +655,14 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
 
     
    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
+   AliPPVsMultUtils*  fPPVsMultUtils;
+
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
   //*****************************************************************************V0 related objects are here
   Bool_t fV0TrigCorr;
+  Bool_t ffillofflineV0;
+  Bool_t fkShort;
+  Bool_t fLambda;
   Bool_t fUsev0DaughterPID;
  Double_t fMinPtDaughter ;// to be decided to make it compatible with AliHelperPID so far we keep it 1GeV/C
   Double_t fMaxPtDaughter; //same statement as above

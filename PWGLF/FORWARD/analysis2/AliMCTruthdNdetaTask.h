@@ -157,7 +157,7 @@ protected:
 				Double_t                 vzMax, 
 				const TH2D*              data, 
 				const TH2D*              mc,
-				Bool_t                   checkPileup);
+				Int_t                    filter);
     /** 
      * End of processing 
      * 

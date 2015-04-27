@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Do direct photon/decay photon (eta, pi0, other)/pi0/eta isolation
-// and correlation with partons/jets/hadrons analysis at the generator level.
-// For MC kinematics at ESD and AOD level.
-// Jets only considered in the case of Pythia, check what to do with others.
-//
-// -- Author: Gustavo Conesa (LPSC-CNRS-Grenoble) 
-//////////////////////////////////////////////////////////////////////////////
-
 // --- ROOT system ---
 #include "TH2F.h"
 #include "TParticle.h"
@@ -33,11 +24,14 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliAODMCParticle.h"
 
-ClassImp(AliAnaGeneratorKine)
-
+/// \cond CLASSIMP
+ClassImp(AliAnaGeneratorKine) ;
+/// \endcond
 
 //__________________________________________
-AliAnaGeneratorKine::AliAnaGeneratorKine() : 
+/// Default Constructor. Initialize parameters with default values.
+//__________________________________________
+AliAnaGeneratorKine::AliAnaGeneratorKine() :
 AliAnaCaloTrackCorrBaseClass(), 
 fTriggerDetector(),    fTriggerDetectorString(),
 fFidCutTrigger(0),
@@ -56,9 +50,6 @@ fhPtPi0Status(0),      fhPtEtaStatus(0),
 fhPtPi0DecayStatus(0), fhPtEtaDecayStatus(0), fhPtOtherDecayStatus(0),
 fhPtPi0Not2Gamma(0),   fhPtEtaNot2Gamma(0)
 {
-  //Default Ctor
-  
-  //Initialize parameters
   InitParameters();
 
   for(Int_t p = 0; p < fgkNmcPrimTypes; p++)
@@ -101,9 +92,10 @@ fhPtPi0Not2Gamma(0),   fhPtEtaNot2Gamma(0)
       }
     }
   }
-  
 }
 
+//___________________________________________________________________________
+/// Correlate trigger with partons or jets, get z.
 //___________________________________________________________________________
 Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
                                                       Int_t   partType,
@@ -111,8 +103,6 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
                                                       Bool_t  isolated[fgkNIso],
                                                       Int_t & iparton )  
 {
-  // Correlate trigger with partons or jets, get z
-  
   AliDebug(1,"Start");
   
   if( fNPrimaries < 7 )
@@ -241,27 +231,27 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   // conditions loop
   for( Int_t i = 0; i < fgkNIso ; i++ )
   {
-    fhPtPartonTypeNear[partType][leading[i]][i]->Fill(ptTrig,near);
-    fhPtPartonTypeAway[partType][leading[i]][i]->Fill(ptTrig,away);
+    fhPtPartonTypeNear[partType][leading[i]][i]->Fill(ptTrig, near, GetEventWeight());
+    fhPtPartonTypeAway[partType][leading[i]][i]->Fill(ptTrig, away, GetEventWeight());
     
-    fhZHard  [partType][leading[i]][i]->Fill(ptTrig,zHard);
-    fhZParton[partType][leading[i]][i]->Fill(ptTrig,zPart);
-    fhZJet   [partType][leading[i]][i]->Fill(ptTrig,zJet );
+    fhZHard  [partType][leading[i]][i]->Fill(ptTrig, zHard, GetEventWeight());
+    fhZParton[partType][leading[i]][i]->Fill(ptTrig, zPart, GetEventWeight());
+    fhZJet   [partType][leading[i]][i]->Fill(ptTrig, zJet , GetEventWeight());
     
     if(isolated[i])
     {
-      fhPtPartonTypeNearIsolated[partType][leading[i]][i]->Fill(ptTrig,near);
-      fhPtPartonTypeAwayIsolated[partType][leading[i]][i]->Fill(ptTrig,away);
+      fhPtPartonTypeNearIsolated[partType][leading[i]][i]->Fill(ptTrig, near, GetEventWeight());
+      fhPtPartonTypeAwayIsolated[partType][leading[i]][i]->Fill(ptTrig, away, GetEventWeight());
       
-      fhZHardIsolated  [partType][leading[i]][i]->Fill(ptTrig,zHard);
-      fhZPartonIsolated[partType][leading[i]][i]->Fill(ptTrig,zPart);
-      fhZJetIsolated   [partType][leading[i]][i]->Fill(ptTrig,zJet);
+      fhZHardIsolated  [partType][leading[i]][i]->Fill(ptTrig, zHard, GetEventWeight());
+      fhZPartonIsolated[partType][leading[i]][i]->Fill(ptTrig, zPart, GetEventWeight());
+      fhZJetIsolated   [partType][leading[i]][i]->Fill(ptTrig, zJet , GetEventWeight());
     }
     
     if(partType == kmcPrimPhoton && deltaPhi < 220 && deltaPhi > 140 && TMath::Abs(awayJetEta) < 0.6)
     {
       //printf("Accept jet\n");
-      fhPtAcceptedGammaJet[leading[i]][i]->Fill(ptTrig,away);
+      fhPtAcceptedGammaJet[leading[i]][i]->Fill(ptTrig, away, GetEventWeight());
     }
     //else printf("Reject jet!!!\n");
     
@@ -272,12 +262,11 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   return kTRUE;
 }
 
-
+//____________________________________________________
+/// Create histograms to be saved in output file.
 //____________________________________________________
 TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
-{  
-  // Create histograms to be saved in output file 
-  
+{
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("GenKineHistos") ; 
   
@@ -288,7 +277,6 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   Int_t   nptsumbins = GetHistogramRanges()->GetHistoNPtSumBins();
   Float_t ptsummax   = GetHistogramRanges()->GetHistoPtSumMax();
   Float_t ptsummin   = GetHistogramRanges()->GetHistoPtSumMin();
-
   
   fhPtHard  = new TH1F("hPtHard"," pt hard for selected triggers",nptbins,ptmin,ptmax); 
   fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
@@ -614,14 +602,13 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   }
   
   return outputContainer;
-  
 }
 
 //____________________________________________
-void  AliAnaGeneratorKine::GetPartonsAndJets() 
+/// Fill data members with partons,jets and generated pt hard.
+//____________________________________________
+void  AliAnaGeneratorKine::GetPartonsAndJets()
 {
-  // Fill data members with partons,jets and generated pt hard 
-  
   AliDebug(1,"Start");
   
 //  if( nPrimary > 2 ) fParton2 = fStack->Particle(2) ;
@@ -630,6 +617,7 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   Float_t p6phi = -1 ;
   Float_t p6eta = -10;
   Float_t p6pt  =  0 ;
+    
   if( fNPrimaries > 6 )
   {
     p6pt  = fParton6.Pt();
@@ -641,6 +629,7 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   Float_t p7phi = -1 ;
   Float_t p7eta = -10;
   Float_t p7pt  =  0 ;
+    
   if( fNPrimaries > 7 )
   {
     p7pt  = fParton7.Pt();
@@ -694,35 +683,34 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
         jet7R = radius7;
         fJet7 = fLVTmp;
       }
-            
     } // jet loop
     
     //printf("jet6: pt %2.2f, eta %2.2f, phi %2.2f\n",fJet6.Pt(),fJet6.Eta(),fJet6.Phi());
     //printf("jet7: pt %2.2f, eta %2.2f, phi %2.2f\n",fJet7.Pt(),fJet7.Eta(),fJet6.Phi());
-    
   } // pythia header
   
-  fhPtHard   ->Fill(fPtHard);
-  fhPtJet    ->Fill(fJet6.Pt());
-  fhPtJet    ->Fill(fJet7.Pt());
-  fhPtParton ->Fill(p6pt);
-  fhPtParton ->Fill(p7pt);
+  fhPtHard   ->Fill(fPtHard   , GetEventWeight());
+  fhPtJet    ->Fill(fJet6.Pt(), GetEventWeight());
+  fhPtJet    ->Fill(fJet7.Pt(), GetEventWeight());
+  fhPtParton ->Fill(p6pt      , GetEventWeight());
+  fhPtParton ->Fill(p7pt      , GetEventWeight());
 
   if( fPtHard > 0 )
   {
-    fhPtPartonPtHard->Fill(fPtHard, p6pt/fPtHard);
-    fhPtPartonPtHard->Fill(fPtHard, p7pt/fPtHard);
-    fhPtJetPtHard   ->Fill(fPtHard, fJet6.Pt()/fPtHard);
-    fhPtJetPtHard   ->Fill(fPtHard, fJet7.Pt()/fPtHard);
+    fhPtPartonPtHard->Fill(fPtHard, p6pt/fPtHard      , GetEventWeight());
+    fhPtPartonPtHard->Fill(fPtHard, p7pt/fPtHard      , GetEventWeight());
+    fhPtJetPtHard   ->Fill(fPtHard, fJet6.Pt()/fPtHard, GetEventWeight());
+    fhPtJetPtHard   ->Fill(fPtHard, fJet7.Pt()/fPtHard, GetEventWeight());
   }
   
-  if( p6pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/p6pt);
-  if( p7pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/p7pt);
+  if( p6pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/p6pt, GetEventWeight());
+  if( p7pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/p7pt, GetEventWeight());
   
   AliDebug(1,"End");
-
 }
 
+//_____________________________________________________
+/// Calculate the real XE and the UE XE.
 //_____________________________________________________
 void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
                                 Int_t   partType,
@@ -730,8 +718,6 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
                                 Bool_t  isolated[fgkNIso],
                                 Int_t   iparton)
 {
-  // Calculate the real XE and the UE XE
-
   AliDebug(1,"Start");
   
   Float_t ptTrig  = fTrigger.Pt();
@@ -745,7 +731,6 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
   //Loop on primaries, start from position 8, no partons
   for(Int_t ipr = 8; ipr < fNPrimaries; ipr ++ )
   {
-    
     if(ipr==indexTrig) continue;
 
     // Get ESD particle kinematics
@@ -839,11 +824,11 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     {
       for( Int_t i = 0; i < fgkNIso; i++ )
       {
-        fhXE[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+        fhXE[partType][leading[i]][i]  ->Fill(ptTrig, xe, GetEventWeight());
         
         if(isolated[i])
         {
-          fhXEIsolated[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+          fhXEIsolated[partType][leading[i]][i]  ->Fill(ptTrig, xe, GetEventWeight());
         }
       } // conditions loop
     } // Away side
@@ -854,11 +839,11 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     {
       for( Int_t i = 0; i < fgkNIso; i++ )
       {
-        fhXEUE[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+        fhXEUE[partType][leading[i]][i]  ->Fill(ptTrig, xe, GetEventWeight());
         
         if(isolated[i])
         {
-          fhXEUEIsolated[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+          fhXEUEIsolated[partType][leading[i]][i]  ->Fill(ptTrig, xe, GetEventWeight());
         }
       } // conditions loop
     } // Away side
@@ -866,32 +851,30 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
   } // primary loop
   
   AliDebug(1,"End");
-
 }
 
 //________________________________________
+/// Initialize the parameters of the analysis.
+//________________________________________
 void AliAnaGeneratorKine::InitParameters()
 {
-  //Initialize the parameters of the analysis.
-  
   AddToHistogramsName("AnaGenKine_");
   
   fTriggerDetector = kEMCAL;
   
   fMinChargedPt    = 0.2;
   fMinNeutralPt    = 0.3;
-  
 }
 
+//_____________________________________________________________________
+/// Check if the trigger is the leading particle and if it is isolated.
+/// In case of neutral particles check all neutral or neutral in EMCAL acceptance.
 //_____________________________________________________________________
 void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
                                                 Int_t partType,
                                                 Bool_t leading[fgkNIso],
                                                 Bool_t isolated[fgkNIso]) 
 {
-  // Check if the trigger is the leading particle and if it is isolated
-  // In case of neutral particles check all neutral or neutral in EMCAL acceptance
-  
   AliDebug(1,"Start");
 
   Float_t ptMaxCharged       = 0; // all charged
@@ -923,7 +906,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   Float_t rThresIC     = GetIsolationCut()->GetConeSize();
   Float_t isoMethod    = GetIsolationCut()->GetICMethod();
   
-  //Counters
+  // Counters
   Int_t   nICTrack     = 0;
   Int_t   nICNeutral   = 0;
   Int_t   nICNeutEMCAL = 0;
@@ -937,7 +920,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   Float_t sumNePtEMCPhot  = 0;
   Float_t sumChPt         = 0;
   
-  //Loop on primaries, start from position 8, no partons
+  // Loop on primaries, start from position 8, no partons
   
   Int_t imother = -1;
   Int_t pdg     =  0;
@@ -1019,7 +1002,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
         }
       }
       
-      //Calorimeter acceptance
+      // Calorimeter acceptance
       Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(eta,phi,GetCalorimeter()) ;
       if(!inCalo) continue;
       
@@ -1054,9 +1037,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
         sumChPt += pt;
       }
     }
-
   } // particle loop
-  
   
   // Leding decision
   if(ptTrig > ptMaxCharged)
@@ -1092,33 +1073,31 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
     if(sumChPt + sumNePtEMCPhot < sumThresIC ) isolated[3] = kTRUE ;
   }
   
-  
   //----------------------------------------------------
   // Fill histograms if conditions apply for all 4 cases
   for( Int_t i = 0; i < fgkNIso; i++ )
   {
     if(leading[i])
     {
-      fhPtLeading[partType][i]->Fill(ptTrig);
+      fhPtLeading[partType][i]->Fill(ptTrig, GetEventWeight());
       
-      if     (i == 0) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePt);
-      else if(i == 1) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMC);
-      else if(i == 2) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtPhot);
-      else if(i == 3) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
+      if     (i == 0) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePt       , GetEventWeight());
+      else if(i == 1) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMC    , GetEventWeight());
+      else if(i == 2) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtPhot   , GetEventWeight());
+      else if(i == 3) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot, GetEventWeight());
       
-      if(isolated[i]) fhPtLeadingIsolated[partType][i]->Fill(ptTrig);
+      if(isolated[i]) fhPtLeadingIsolated[partType][i]->Fill(ptTrig, GetEventWeight());
     }
   } // conditions loop
  
   AliDebug(1,"End");
-  
 }
   
 //_____________________________________________________
-void  AliAnaGeneratorKine::MakeAnalysisFillHistograms() 
+/// Particle-Parton/Jet/Hadron Correlation Analysis, main method.
+//_____________________________________________________
+void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 {
-  // Particle-Parton/Jet/Hadron Correlation Analysis, main method
-  
   AliDebug(1,"Start");
   
   fParton6.SetPxPyPzE(0,0,0,0);
@@ -1182,7 +1161,6 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       fParton7PDG =  primAOD->GetPdgCode();
     }
   }
-  //
 
   GetPartonsAndJets();
   
@@ -1319,8 +1297,8 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
       if(! in )  continue ;
       
-      if(pdgTrig==111) fhPtPi0Not2Gamma->Fill(ptTrig);
-      if(pdgTrig==221) fhPtEtaNot2Gamma->Fill(ptTrig);
+      if(pdgTrig==111) fhPtPi0Not2Gamma->Fill(ptTrig, GetEventWeight());
+      if(pdgTrig==221) fhPtEtaNot2Gamma->Fill(ptTrig, GetEventWeight());
     }
     
     if(partType < 0 ) continue ;
@@ -1332,19 +1310,19 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     Float_t phi = fTrigger.Phi();
     if(phi < 0) phi+=TMath::TwoPi();
     
-    fhPhi   [partType]->Fill(phi);
-    fhEta   [partType]->Fill(eta);
-    fhEtaPhi[partType]->Fill(eta,phi);
+    fhPhi   [partType]->Fill(phi,      GetEventWeight());
+    fhEta   [partType]->Fill(eta,      GetEventWeight());
+    fhEtaPhi[partType]->Fill(eta, phi, GetEventWeight());
     
     if(partType < 4 &&  partType!=0)
     {
-      fhPhiStatus[partType]->Fill(phi,momStatus);
-      fhEtaStatus[partType]->Fill(eta,momStatus);
+      fhPhiStatus[partType]->Fill(phi, momStatus, GetEventWeight());
+      fhEtaStatus[partType]->Fill(eta, momStatus, GetEventWeight());
     }
     else
     {
-      fhPhiStatus[partType]->Fill(phi,statusTrig);
-      fhEtaStatus[partType]->Fill(eta,statusTrig);
+      fhPhiStatus[partType]->Fill(phi, statusTrig, GetEventWeight());
+      fhEtaStatus[partType]->Fill(eta, statusTrig, GetEventWeight());
     }
     
     //
@@ -1361,41 +1339,43 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     // Fill particle pT histograms, check also status
     //
     
-    fhPt[partType]->Fill(ptTrig);
+    fhPt[partType]->Fill(ptTrig, GetEventWeight());
     
     if     (partType==kmcPrimPi0)
     {
-      fhPtPi0Status->Fill(ptTrig,statusTrig);
+      fhPtPi0Status->Fill(ptTrig, statusTrig, GetEventWeight());
     }
     else if(partType==kmcPrimEta)
     {
-      fhPtEtaStatus->Fill(ptTrig,statusTrig);
+      fhPtEtaStatus->Fill(ptTrig, statusTrig, GetEventWeight());
     }
     else if(partType == kmcPrimPi0Decay )
     {
-      fhPtPi0DecayStatus  ->Fill(ptTrig,momStatus);
+      fhPtPi0DecayStatus  ->Fill(ptTrig, momStatus, GetEventWeight());
       
-      if(momNDaugh!=2) fhPtGammaFromPi0Not2Gamma->Fill(ptTrig);
+      if(momNDaugh!=2) fhPtGammaFromPi0Not2Gamma->Fill(ptTrig, GetEventWeight());
     }
     else if(partType == kmcPrimEtaDecay )
     {
-      fhPtEtaDecayStatus  ->Fill(ptTrig,momStatus);
+      fhPtEtaDecayStatus  ->Fill(ptTrig, momStatus, GetEventWeight());
       
-      if(momNDaugh!=2) fhPtGammaFromEtaNot2Gamma->Fill(ptTrig);
+      if(momNDaugh!=2) fhPtGammaFromEtaNot2Gamma->Fill(ptTrig, GetEventWeight());
     }
     else if(partType == kmcPrimOtherDecay)
     {
-      fhPtOtherDecayStatus->Fill(ptTrig,momStatus);
+      fhPtOtherDecayStatus->Fill(ptTrig, momStatus, GetEventWeight());
       
       //Fill histogram with origin of this kind of photon
-      if     (momPdg     > 2100  && momPdg   < 2210) fhPtOtherDecayMesonId->Fill(ptTrig,0.5);// resonances
-      else if(momPdg    == 221) fhPtOtherDecayMesonId->Fill(ptTrig,5.5);//eta
-      else if(momPdg    == 331) fhPtOtherDecayMesonId->Fill(ptTrig,6.5);//eta prime
-      else if(momPdg    == 213) fhPtOtherDecayMesonId->Fill(ptTrig,1.5);//rho
-      else if(momPdg    == 223) fhPtOtherDecayMesonId->Fill(ptTrig,2.5);//omega
-      else if(momPdg    >= 310   && momPdg    <= 323) fhPtOtherDecayMesonId->Fill(ptTrig,3.5);//k0S, k+-,k*
-      else if(momPdg    == 130) fhPtOtherDecayMesonId->Fill(ptTrig,3.5);//k0L
-      else                      fhPtOtherDecayMesonId->Fill(ptTrig,4.5);//other?
+      if     (momPdg     > 2100  && momPdg   < 2210)
+                                fhPtOtherDecayMesonId->Fill(ptTrig, 0.5, GetEventWeight());// resonances
+      else if(momPdg    == 221) fhPtOtherDecayMesonId->Fill(ptTrig, 5.5, GetEventWeight());//eta
+      else if(momPdg    == 331) fhPtOtherDecayMesonId->Fill(ptTrig, 6.5, GetEventWeight());//eta prime
+      else if(momPdg    == 213) fhPtOtherDecayMesonId->Fill(ptTrig, 1.5, GetEventWeight());//rho
+      else if(momPdg    == 223) fhPtOtherDecayMesonId->Fill(ptTrig, 2.5, GetEventWeight());//omega
+      else if(momPdg    >= 310   && momPdg    <= 323)
+                                fhPtOtherDecayMesonId->Fill(ptTrig, 3.5, GetEventWeight());//k0S, k+-,k*
+      else if(momPdg    == 130) fhPtOtherDecayMesonId->Fill(ptTrig, 3.5, GetEventWeight());//k0L
+      else                      fhPtOtherDecayMesonId->Fill(ptTrig, 4.5, GetEventWeight());//other?
     }
 
     //
@@ -1433,34 +1413,39 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       }
     }
     
-    if     (momOrgStatus  == 21) fhPtOrigin[partType]->Fill(ptTrig,0.5);//parton
-    else if(momOrgPdg     < 22 ) fhPtOrigin[partType]->Fill(ptTrig,1.5);//quark
-    else if(momOrgPdg     > 2100  && momOrgPdg   < 2210) fhPtOrigin[partType]->Fill(ptTrig,2.5);// resonances
-    else if(momOrgPdg    == 221) fhPtOrigin[partType]->Fill(ptTrig,8.5);//eta
-    else if(momOrgPdg    == 331) fhPtOrigin[partType]->Fill(ptTrig,9.5);//eta prime
-    else if(momOrgPdg    == 213) fhPtOrigin[partType]->Fill(ptTrig,4.5);//rho
-    else if(momOrgPdg    == 223) fhPtOrigin[partType]->Fill(ptTrig,5.5);//omega
-    else if(momOrgPdg    >= 310   && momOrgPdg    <= 323) fhPtOrigin[partType]->Fill(ptTrig,6.5);//k0S, k+-,k*
-    else if(momOrgPdg    == 130) fhPtOrigin[partType]->Fill(ptTrig,6.5);//k0L
-    else if(momOrgStatus == 11 || momOrgStatus  == 12 ) fhPtOrigin[partType]->Fill(ptTrig,3.5);//resonances
-    else                         fhPtOrigin[partType]->Fill(ptTrig,7.5);//other?
+    if     (momOrgStatus  == 21) fhPtOrigin[partType]->Fill(ptTrig, 0.5, GetEventWeight());//parton
+    else if(momOrgPdg     < 22 ) fhPtOrigin[partType]->Fill(ptTrig, 1.5, GetEventWeight());//quark
+    else if(momOrgPdg     > 2100  && momOrgPdg   < 2210)
+                                 fhPtOrigin[partType]->Fill(ptTrig, 2.5, GetEventWeight());// resonances
+    else if(momOrgPdg    == 221) fhPtOrigin[partType]->Fill(ptTrig, 8.5, GetEventWeight());//eta
+    else if(momOrgPdg    == 331) fhPtOrigin[partType]->Fill(ptTrig, 9.5, GetEventWeight());//eta prime
+    else if(momOrgPdg    == 213) fhPtOrigin[partType]->Fill(ptTrig, 4.5, GetEventWeight());//rho
+    else if(momOrgPdg    == 223) fhPtOrigin[partType]->Fill(ptTrig, 5.5, GetEventWeight());//omega
+    else if(momOrgPdg    >= 310   && momOrgPdg    <= 323)
+                                 fhPtOrigin[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0S, k+-,k*
+    else if(momOrgPdg    == 130) fhPtOrigin[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0L
+    else if(momOrgStatus == 11 || momOrgStatus  == 12 )
+                                 fhPtOrigin[partType]->Fill(ptTrig, 3.5, GetEventWeight());//resonances
+    else                         fhPtOrigin[partType]->Fill(ptTrig, 7.5, GetEventWeight());//other?
 
-    
    if(statusTrig == 0)
    {
      // Histogram will not be filled for photons, leave it like this for now
      // in case we leave not final photons in the future
-     if     (momOrgStatus  == 21) fhPtOriginNotFinal[partType]->Fill(ptTrig,0.5);//parton
-     else if(momOrgPdg     < 22 ) fhPtOriginNotFinal[partType]->Fill(ptTrig,1.5);//quark
-     else if(momOrgPdg     > 2100  && momOrgPdg   < 2210) fhPtOriginNotFinal[partType]->Fill(ptTrig,2.5);// resonances
-     else if(momOrgPdg    == 221) fhPtOriginNotFinal[partType]->Fill(ptTrig,8.5);//eta
-     else if(momOrgPdg    == 331) fhPtOriginNotFinal[partType]->Fill(ptTrig,9.5);//eta prime
-     else if(momOrgPdg    == 213) fhPtOriginNotFinal[partType]->Fill(ptTrig,4.5);//rho
-     else if(momOrgPdg    == 223) fhPtOriginNotFinal[partType]->Fill(ptTrig,5.5);//omega
-     else if(momOrgPdg    >= 310   && momOrgPdg    <= 323) fhPtOriginNotFinal[partType]->Fill(ptTrig,6.5);//k0S, k+-,k*
-     else if(momOrgPdg    == 130) fhPtOriginNotFinal[partType]->Fill(ptTrig,6.5);//k0L
-     else if(momOrgStatus == 11 || momOrgStatus  == 12 ) fhPtOriginNotFinal[partType]->Fill(ptTrig,3.5);//resonances
-     else                         fhPtOriginNotFinal[partType]->Fill(ptTrig,7.5);//other?
+     if     (momOrgStatus  == 21) fhPtOriginNotFinal[partType]->Fill(ptTrig, 0.5, GetEventWeight());//parton
+     else if(momOrgPdg     < 22 ) fhPtOriginNotFinal[partType]->Fill(ptTrig, 1.5, GetEventWeight());//quark
+     else if(momOrgPdg     > 2100  && momOrgPdg   < 2210)
+                                  fhPtOriginNotFinal[partType]->Fill(ptTrig, 2.5, GetEventWeight());// resonances
+     else if(momOrgPdg    == 221) fhPtOriginNotFinal[partType]->Fill(ptTrig, 8.5, GetEventWeight());//eta
+     else if(momOrgPdg    == 331) fhPtOriginNotFinal[partType]->Fill(ptTrig, 9.5, GetEventWeight());//eta prime
+     else if(momOrgPdg    == 213) fhPtOriginNotFinal[partType]->Fill(ptTrig, 4.5, GetEventWeight());//rho
+     else if(momOrgPdg    == 223) fhPtOriginNotFinal[partType]->Fill(ptTrig, 5.5, GetEventWeight());//omega
+     else if(momOrgPdg    >= 310   && momOrgPdg    <= 323)
+                                  fhPtOriginNotFinal[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0S, k+-,k*
+     else if(momOrgPdg    == 130) fhPtOriginNotFinal[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0L
+     else if(momOrgStatus == 11 || momOrgStatus  == 12 )
+                                  fhPtOriginNotFinal[partType]->Fill(ptTrig, 3.5, GetEventWeight());//resonances
+     else                         fhPtOriginNotFinal[partType]->Fill(ptTrig, 7.5, GetEventWeight());//other?
    }
     
     //
@@ -1486,14 +1471,13 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
   }
   
   AliDebug(1,"End fill histograms");
-  
 }
 
 //_________________________________________________________
+/// Set the calorimeter for the analysis.
+//_________________________________________________________
 void AliAnaGeneratorKine::SetTriggerDetector(TString & det)
 {
-  // Set the detrimeter for the analysis
-  
   fTriggerDetectorString = det;
   
   if     (det=="EMCAL") fTriggerDetector = kEMCAL;
@@ -1502,14 +1486,13 @@ void AliAnaGeneratorKine::SetTriggerDetector(TString & det)
   else if(det=="DCAL")  fTriggerDetector = kDCAL;
   else if(det.Contains("DCAL") && det.Contains("PHOS")) fTriggerDetector = kDCALPHOS;
   else AliFatal(Form("Detector < %s > not known!", det.Data()));
-  
 }
 
 //_____________________________________________________
+/// Set the detrimeter for the analysis.
+//_____________________________________________________
 void AliAnaGeneratorKine::SetTriggerDetector(Int_t det)
 {
-  // Set the detrimeter for the analysis
-  
   fTriggerDetector = det;
   
   if     (det==kEMCAL)    fTriggerDetectorString = "EMCAL";
@@ -1518,6 +1501,5 @@ void AliAnaGeneratorKine::SetTriggerDetector(Int_t det)
   else if(det==kDCAL)     fTriggerDetectorString = "DCAL";
   else if(det==kDCALPHOS) fTriggerDetectorString = "DCAL_PHOS";
   else AliFatal(Form("Detector < %d > not known!", det));
-  
 }
 

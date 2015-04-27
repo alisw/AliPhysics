@@ -18,11 +18,13 @@
 
 #include <TAxis.h>
 #include <TClonesArray.h>
+#include <TList.h>
 #include <TMath.h>
 #include <TString.h>
 
 #include "AliAODMCParticle.h"
 #include "AliLog.h"
+#include "AliEmcalTriggerPatchInfo.h"
 #include "AliMCEvent.h"
 #include "AliPicoTrack.h"
 #include "AliVCluster.h"
@@ -136,9 +138,11 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
   for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
     const std::string name = it->first, &title = it->second;
     fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events  for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
     fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal clusters with MC kinematics", title.c_str()), 5, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hTrackHistPatchMatch%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal patches", title.c_str()), 5, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hMCTrackHistPatchMatch%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal patches with MC kinematics", title.c_str()), 5, trackaxes, "s");
   }
 
   // Correlation Matrix
@@ -169,6 +173,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
  *        fill correlation matrix
  *      - Fill histogram at track level (and if an associated particle is available also at MC-truth level)
  *      - Find cluster matched to track. If cluster is available, fill histograms for tracks with clusters
+ *      - Find trigger patches mathced to track. If trigger patch is available, fill histogram for tracks with patches
  * This function is the implementation of the abstract method Process declared
  * in AliEMCalTriggerTracksAnalysisComponent.
  *
@@ -215,13 +220,20 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
     if(testtrack->GetEMCALcluster() >= 0 && (clust = dynamic_cast<AliVCluster *>(data->GetClusterContainer()->At(testtrack->GetEMCALcluster()))))
       hasCluster = kTRUE;
 
+    // Try to match to EMCAL patches (only in case the event is triggered)
+    TList patches;
+    if(triggernames.size()) MatchTriggerPatches(track, data->GetTriggerPatchContainer(), patches);
+
     // Fill histograms
     for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); name++){
       FillHistogram(Form("hTrackHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       if(hasCluster) FillHistogram(Form("hTrackInAcceptanceHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
+      Bool_t hasPatch = HasMatchedPatchOfType(*name, patches);
+      if(hasPatch) FillHistogram(Form("hTrackHistPatchMatch%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       if(assocMC){
         FillHistogram(Form("hMCTrackHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE, weight);
         if(hasCluster) FillHistogram(Form("hMCTrackInAcceptanceHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE, weight);
+        if(hasPatch) FillHistogram(Form("hMCTrackHistPatchMatch%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       }
     }
   }
@@ -300,6 +312,70 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillCorrelation(
 		const AliVParticle* const recparticle, double weight) {
 	double data[4] = {TMath::Abs(genparticle->Pt()), TMath::Abs(recparticle->Pt()), recparticle->Eta(), recparticle->Phi()};
 	fHistos->FillTHnSparse("hTrackPtCorrelation", data, weight);
+}
+
+/**
+ * Match track to trigger patches. A patch is matched to the track if the track \f$ \eta \f$ and
+ * \f$ phi \f$ are within the maximum and minimum of the EMCAL trigger patches.
+ * \param rectrack Reconstructed track to be matched to EMCAL patches
+ * \param inputpatches Container with reconstructed patches in the event
+ * \param outputpatches Output list where matched patches are stored
+ */
+void AliEMCalTriggerRecTrackAnalysisComponent::MatchTriggerPatches(
+    const AliVTrack* rectrack, const TClonesArray* inputpatches,
+    TList& outputpatches) const {
+  outputpatches.Clear();
+  Double_t etaEMCAL = rectrack->GetTrackEtaOnEMCal(),
+           phiEMCAL = rectrack->GetTrackPhiOnEMCal();
+  for(TIter patchiter = TIter(inputpatches).Begin(); patchiter != TIter::End(); ++patchiter){
+    AliEmcalTriggerPatchInfo *recpatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
+    double etamin = TMath::Min(recpatch->GetEtaMin(), recpatch->GetEtaMax()),
+        etamax = TMath::Max(recpatch->GetEtaMin(), recpatch->GetEtaMax()),
+        phimin = TMath::Min(recpatch->GetPhiMin(), recpatch->GetPhiMax()),
+        phimax = TMath::Max(recpatch->GetPhiMin(), recpatch->GetPhiMax());
+    if(etaEMCAL >= etamin && etaEMCAL <= etamax && phiEMCAL >= phimin && phiEMCAL <= phimax){
+      // Patch accepted
+      outputpatches.Add(recpatch);
+    }
+  }
+}
+
+/**
+ * Check if the track is matched to any patch that fired the given tigger class
+ * \param triggertype Name of the triggertype
+ * \param patches List of matched patches
+ * \return True if a matched patch of the given type is found
+ */
+Bool_t AliEMCalTriggerRecTrackAnalysisComponent::HasMatchedPatchOfType(
+    TString triggertype, const TList& patches) const {
+  Bool_t hasGammaLow = kFALSE,
+      hasGammaHigh = kFALSE,
+      hasJetLow = kFALSE,
+      hasJetHigh = kFALSE;
+  for(TIter patchIter = TIter(&patches).Begin(); patchIter != TIter::End(); ++patchIter){
+    AliEmcalTriggerPatchInfo *matchedpad = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(fTriggerDecision->GetConfiguration()->IsUsingOfflinePatches()){
+      if(!matchedpad->IsOfflineSimple()) continue;
+      if(matchedpad->IsJetHighSimple()) hasJetHigh = kTRUE;
+      if(matchedpad->IsJetLowSimple()) hasJetLow = kTRUE;
+      if(matchedpad->IsGammaHighSimple()) hasGammaHigh = kTRUE;
+      if(matchedpad->IsGammaLowSimple()) hasGammaLow = kTRUE;
+    } else {
+      if(matchedpad->IsOfflineSimple()) continue;
+      if(matchedpad->IsJetHigh()) hasJetHigh = kTRUE;
+      if(matchedpad->IsJetLow()) hasJetLow = kTRUE;
+      if(matchedpad->IsGammaHigh()) hasGammaHigh = kTRUE;
+      if(matchedpad->IsGammaLow()) hasGammaLow = kTRUE;
+    }
+  }
+  // Evaluate status
+  if((triggertype.Contains("EMCJHigh") || triggertype.Contains("EMCHighJetOnly")) && hasJetHigh) return kTRUE;
+  if((triggertype.Contains("EMCJLow") || triggertype.Contains("EMCLowJetOnly")) && hasJetLow) return kTRUE;
+  if((triggertype.Contains("EMCGHigh") || triggertype.Contains("EMCHighGammaOnly")) && hasGammaHigh) return kTRUE;
+  if((triggertype.Contains("EMCGLow") || triggertype.Contains("EMCLowGammaOnly")) && hasGammaLow) return kTRUE;
+  if(triggertype.Contains("EMCHighBoth") && (hasJetHigh || hasGammaHigh)) return kTRUE;
+  if(triggertype.Contains("EMCLowBoth") && (hasJetLow || hasGammaLow)) return kTRUE;
+  return kFALSE;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

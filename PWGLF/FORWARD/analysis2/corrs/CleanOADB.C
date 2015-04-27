@@ -1,4 +1,6 @@
-void CleanOADB(const TString& dest="tmp.root")
+void CleanOADB(const TString& dest="tmp.root",
+	       Bool_t         verb=false,
+	       Bool_t         all=false)
 {
   const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward")) {
@@ -17,6 +19,6 @@ void CleanOADB(const TString& dest="tmp.root")
 
 
   Info("", "Cleaning up");
-  fcm.CleanUp(dest);
+  fcm.CleanUp(dest, verb, all);
   Info("", "done");
 }

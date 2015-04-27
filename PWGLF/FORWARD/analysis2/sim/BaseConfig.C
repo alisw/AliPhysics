@@ -255,6 +255,14 @@ struct VirtualEGCfg
   {
     LoadLibrary("libTUHKMgen","TUHKMgen");
   }
+  static void LoadEpos()
+  {
+    LoadLibrary("libEPOS","TEpos");
+  }
+  static void LoadTherminator()
+  {
+    LoadLibrary("libTTherminator","TTherminator");
+  }
   /**
    * Load DPMJet libraries
    */
@@ -300,7 +308,13 @@ struct VirtualEGCfg
     runType.ToLower();
 
     AliGenerator* g = CreateGenerator(runType,b1,b2);
-    if (g && smear) g->SetVertexSmear(AliGenerator::kPerEvent);
+    if (g && smear) {
+      // Origin and sigmaZ will be supplied from OCDB.
+      // We need to set the XY smearing though
+      // Numbers from Ruben 
+      g->SetSigma(0.0025, 0.0029, 0);
+      g->SetVertexSmear(AliGenerator::kPerEvent);
+    }
 
     return g;
   }

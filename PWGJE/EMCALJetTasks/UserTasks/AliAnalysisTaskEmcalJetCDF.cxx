@@ -9,6 +9,8 @@
 #include <TMath.h>
 #include <TMathBase.h>
 #include <TClonesArray.h>
+#include <TAxis.h>
+#include <TH1.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TProfile.h>
@@ -37,7 +39,7 @@
 
 #include "AliAnalysisTaskEmcalJetCDF.h"
 
-using namespace std;
+//using namespace std;
 
 /// \cond CLASSIMP
 ClassImp ( AliAnalysisTaskEmcalJetCDF );
@@ -55,6 +57,8 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF()
     fH7 ( NULL ),
     fH8 ( NULL ),
     fH8xi ( NULL ),
+    fH8_all ( NULL ),
+    fH8xi_all ( NULL ),
     fH9 ( NULL ),
     fH10 ( NULL ),
     fH9_bin ( NULL ),
@@ -67,45 +71,16 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF()
     fH15_bin ( NULL ),
     fH15_bin_n80 ( NULL ),
     fH15_bin_pt80 ( NULL ),
+    fH15_bin_all ( NULL ),
+    fH15_bin_n80_all ( NULL ),
+    fH15_bin_pt80_all ( NULL ),
     fH20 ( NULL ),
     fH20_n80 ( NULL ),
     fH20_pt80 ( NULL ),
-    fH21 ( NULL ),
-    fH21Toward ( NULL ),
-    fH21Transverse_min ( NULL ),
-    fH21Transverse_max ( NULL ),
-    fH21Away ( NULL ),
-    fH21_bin ( NULL ),
-    fH21Toward_bin ( NULL ),
-    fH21Transverse_min_bin ( NULL ),
-    fH21Transverse_max_bin ( NULL ),
-    fH21Away_bin ( NULL ),
-    fH21_bin_wojet1 ( NULL ),
-    fH21Toward_bin_wojet1 ( NULL ),
-    fH21Transverse_min_bin_wojet1 ( NULL ),
-    fH21Transverse_max_bin_wojet1 ( NULL ),
-    fH21Away_bin_wojet1 ( NULL ),
-    fH22 ( NULL ),
-    fH22Toward ( NULL ),
-    fH22Transverse_min ( NULL ),
-    fH22Transverse_max ( NULL ),
-    fH22Away ( NULL ),
-    fH22_bin ( NULL ),
-    fH22Toward_bin ( NULL ),
-    fH22Transverse_min_bin ( NULL ),
-    fH22Transverse_max_bin ( NULL ),
-    fH22Away_bin ( NULL ),
-    fH22_bin_wojet1 ( NULL ),
-    fH22Toward_bin_wojet1 ( NULL ),
-    fH22Transverse_min_bin_wojet1 ( NULL ),
-    fH22Transverse_max_bin_wojet1 ( NULL ),
-    fH22Away_bin_wojet1 ( NULL ),
-    fH23 ( NULL ),
+    fH20_all ( NULL ),
+    fH20_n80_all ( NULL ),
+    fH20_pt80_all ( NULL ),
     fH23jet1 ( NULL ),
-    fH23Toward ( NULL ),
-    fH23Transverse_min ( NULL ),
-    fH23Transverse_max ( NULL ),
-    fH23Away ( NULL ),
     fH24 ( NULL ),
     fH25 ( NULL ),
     fH26 ( NULL ),
@@ -132,26 +107,6 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF()
     fH27jet1_bin ( NULL ),
     fH27jet1_n80_bin ( NULL ),
     fH27jet1_pt80_bin ( NULL ),
-    fH40 ( NULL ),
-    fH40toward ( NULL ),
-    fH40away ( NULL ),
-    fH40transmin ( NULL ),
-    fH40transmax ( NULL ),
-    fH40_bin ( NULL ),
-    fH40toward_bin ( NULL ),
-    fH40away_bin ( NULL ),
-    fH40transmin_bin ( NULL ),
-    fH40transmax_bin ( NULL ),
-    fH41 ( NULL ),
-    fH41toward ( NULL ),
-    fH41away ( NULL ),
-    fH41transmin ( NULL ),
-    fH41transmax ( NULL ),
-    fH41_bin ( NULL ),
-    fH41toward_bin ( NULL ),
-    fH41away_bin ( NULL ),
-    fH41transmin_bin ( NULL ),
-    fH41transmax_bin ( NULL ),
     fJetsCont ( NULL ),
     fTracksCont ( NULL ),
     fCaloClustersCont ( NULL ),
@@ -180,6 +135,8 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF ( const char *name )
     fH7 ( NULL ),
     fH8 ( NULL ),
     fH8xi ( NULL ),
+    fH8_all ( NULL ),
+    fH8xi_all ( NULL ),
     fH9 ( NULL ),
     fH10 ( NULL ),
     fH9_bin ( NULL ),
@@ -190,35 +147,16 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF ( const char *name )
     fH15_bin ( NULL ),
     fH15_bin_n80 ( NULL ),
     fH15_bin_pt80 ( NULL ),
+    fH15_bin_all ( NULL ),
+    fH15_bin_n80_all ( NULL ),
+    fH15_bin_pt80_all ( NULL ),
     fH20 ( NULL ),
     fH20_n80 ( NULL ),
     fH20_pt80 ( NULL ),
-    fH21 ( NULL ),
-    fH21Toward ( NULL ),
-    fH21Transverse_min ( NULL ),
-    fH21Transverse_max ( NULL ),
-    fH21Away ( NULL ),
-    fH21_bin ( NULL ),
-    fH21Toward_bin ( NULL ),
-    fH21Transverse_min_bin ( NULL ),
-    fH21Transverse_max_bin ( NULL ),
-    fH21Away_bin ( NULL ),
-    fH22 ( NULL ),
-    fH22Toward ( NULL ),
-    fH22Transverse_min ( NULL ),
-    fH22Transverse_max ( NULL ),
-    fH22Away ( NULL ),
-    fH22_bin ( NULL ),
-    fH22Toward_bin ( NULL ),
-    fH22Transverse_min_bin ( NULL ),
-    fH22Transverse_max_bin ( NULL ),
-    fH22Away_bin ( NULL ),
-    fH23 ( NULL ),
+    fH20_all ( NULL ),
+    fH20_n80_all ( NULL ),
+    fH20_pt80_all ( NULL ),
     fH23jet1 ( NULL ),
-    fH23Toward ( NULL ),
-    fH23Transverse_min ( NULL ),
-    fH23Transverse_max ( NULL ),
-    fH23Away ( NULL ),
     fH24 ( NULL ),
     fH25 ( NULL ),
     fH26 ( NULL ),
@@ -245,26 +183,6 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF ( const char *name )
     fH27jet1_bin ( NULL ),
     fH27jet1_n80_bin ( NULL ),
     fH27jet1_pt80_bin ( NULL ),
-    fH40 ( NULL ),
-    fH40toward ( NULL ),
-    fH40away ( NULL ),
-    fH40transmin ( NULL ),
-    fH40transmax ( NULL ),
-    fH40_bin ( NULL ),
-    fH40toward_bin ( NULL ),
-    fH40away_bin ( NULL ),
-    fH40transmin_bin ( NULL ),
-    fH40transmax_bin ( NULL ),
-    fH41 ( NULL ),
-    fH41toward ( NULL ),
-    fH41away ( NULL ),
-    fH41transmin ( NULL ),
-    fH41transmax ( NULL ),
-    fH41_bin ( NULL ),
-    fH41toward_bin ( NULL ),
-    fH41away_bin ( NULL ),
-    fH41transmin_bin ( NULL ),
-    fH41transmax_bin ( NULL ),
     fJetsCont ( NULL ),
     fTracksCont ( NULL ),
     fCaloClustersCont ( NULL ),
@@ -307,12 +225,11 @@ Bool_t AliAnalysisTaskEmcalJetCDF::Run()
   fCaloClustersCont = fJetsCont->GetClusterContainer();
   fCaloClustersCont->SetClassName ( "AliVCluster" );
 
-  fNJets_accepted = fJetsCont->GetNJets();          // Number of Jets found in event -
-  // accepted cuts applied by
-  // JetContainer
-  fNaccPart = fTracksCont->GetNAcceptedParticles(); // Multiplicity in event -
-  // accepted tracks in tracks
-  // container
+  // Number of Jets found in event - accepted cuts applied by JetContainer
+  fNJets_accepted = fJetsCont->GetNJets();
+
+  // Multiplicity in event - accepted tracks in tracks container
+  fNaccPart = fTracksCont->GetNAcceptedParticles();
 
   // protection
   if ( ( fNJets_accepted < 1 ) || ( fNaccPart < 1 ) )
@@ -321,7 +238,6 @@ Bool_t AliAnalysisTaskEmcalJetCDF::Run()
           {
           std::cout << "accepted (fNJets || fNPart) < 1" << std::endl;
           }
-
       return kFALSE;
       }
 
@@ -340,7 +256,6 @@ Bool_t AliAnalysisTaskEmcalJetCDF::Run()
           {
           std::cout << "LEADING JET NOT FOUND " << std::endl;
           }
-
       return kFALSE;
       }
 
@@ -379,29 +294,43 @@ Bool_t AliAnalysisTaskEmcalJetCDF::Run()
       std::cout << "Sum of Pt in event pt_sum_event = " << fEvPt << std::endl;
       }
 
-  // Run analysis code here, if needed. It will be executed before
-  // FillHistograms().
+  // Run analysis code here, if needed. It will be executed before FillHistograms().
   return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
   }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   {
-  // consts used in analysis
-  Double_t const kPI_3 = TMath::Pi() / 3.;
-  Double_t const k2PI_3 = 2 * kPI_3;
+  AliVParticle *track = NULL;
+  AliEmcalJet *jet = NULL;
 
-  AliEmcalJet *jet = fJetsCont->GetNextAcceptJet ( 0 );
+  jet = fJetsCont->GetNextAcceptJet (0);
 
   while ( jet )
-      {
-      fH1->Fill ( jet->Pt() );             // Pt distribution of jets
-      fH2->Fill ( jet->Eta() );            // Eta distribution of jets
-      fH3->Fill ( jet->Phi() );            // Phi distribution of jets
-      fH4->Fill ( jet->GetNumberOfTracks() ); // Multiplicity of jets
+    {
+    UShort_t nrtracks = jet->GetNumberOfTracks();
 
-      jet = fJetsCont->GetNextAcceptJet();
+    fH1->Fill ( jet->Pt() );             // Pt distribution of jets
+    fH2->Fill ( jet->Eta() );            // Eta distribution of jets
+    fH3->Fill ( jet->Phi() );            // Phi distribution of jets
+    fH4->Fill ( jet->GetNumberOfTracks() ); // Multiplicity of jets
+
+    for ( Size_t i = 0; i < nrtracks; i++ )
+      {
+      track = jet->TrackAt ( i, fTracksContArray );
+
+      Double_t dpart = jet->DeltaR ( track );
+      Double_t track_pt = track->Pt();
+
+      fH8_all->Fill ( jet->GetZ ( track ) );     // Momentum distribution for jets (FF)
+      fH8xi_all->Fill ( jet->GetXi ( track ) );  // Momentum distribution for jets (FF) xi
+
+      fH20_all->Fill ( dpart );                    // Distribution of R in leading jet
+      fH15_bin_all->Fill ( dpart, track_pt );      // p_{T} track vs the Distance R from Jet1
       }
+
+    jet = fJetsCont->GetNextAcceptJet();
+    }
 
   jet = NULL;
 
@@ -418,16 +347,16 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   Int_t jet1_n80 = ( Int_t ) ( 0.8 * jet1_npart );
   Double_t jet1_pt80 = 0.8 * jet1_pt;
 
-  Int_t event_n80 = ( Int_t ) ( 0.8 * fNaccPart );
-  Double_t event_pt80 = 0.8 * fEvPt;
+//   Int_t event_n80 = ( Int_t ) ( 0.8 * fNaccPart );
+//   Double_t event_pt80 = 0.8 * fEvPt;
 
-  AliVParticle *jet1_trklead = fJet1->GetLeadingTrack ( fTracks );
-  Double_t jet1_ptmax = jet1_trklead->Pt();
+//   AliVParticle *jet1_trklead = fJet1->GetLeadingTrack ( fTracks );
+//   Double_t jet1_ptmax = jet1_trklead->Pt();
 
-  UInt_t fNaccPart_woJet1 = fNaccPart - jet1_npart;
-  Double_t fEvPt_woJet1 = fEvPt - jet1_pt;
+//   UInt_t fNaccPart_woJet1 = fNaccPart - jet1_npart;
+//   Double_t   fEvPt_woJet1 = fEvPt - jet1_pt;
 
-  fH6->Fill ( jet1_npart );       // Jet1 Multiplicity Distribution ( ->Scale (1/events) )
+  fH6->Fill ( jet1_npart );          // Jet1 Multiplicity Distribution ( ->Scale (1/events) )
   fH7->Fill ( jet1_pt, jet1_npart ); // N(jet1) vs P_{T}(jet1)
 
   Int_t counter_part = 0;
@@ -437,15 +366,14 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
   //___________________________________________________________________________
   // parsing tracks of jet1 (leading jet) in decreasing order of Pt
-  AliVParticle *track = NULL;
 
   for ( Size_t i = 0; i < jet1_npart; i++ )
       {
       track_idx = fJet1_sorted_idxvec.at ( i );
       track = fJet1->TrackAt ( track_idx, fTracksContArray );
 
-      jet1_idx_list.AddAt ( track_idx, i ); // fill the jet1 track index list with
-      // the indexes of tracks
+      // fill the jet1 track index list with the indexes of tracks
+      jet1_idx_list.AddAt ( track_idx, i );
 
       Double_t dpart = fJet1->DeltaR ( track );
       Double_t track_pt = track->Pt();
@@ -453,52 +381,49 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       ++counter_part;
       counter_pt += track_pt;
 
-      fH8->Fill ( fJet1->GetZ ( track ) ); // Momentum distribution for leading jet (FF)
-      fH8xi->Fill ( fJet1->GetXi ( track ) ); // Momentum distribution for leading jet (FF) xi
-      fH23jet1->Fill ( track_pt );      // jet1 pt distribution
+      fH8->Fill ( fJet1->GetZ ( track ) );     // Momentum distribution for leading jet (FF)
+      fH8xi->Fill ( fJet1->GetXi ( track ) );  // Momentum distribution for leading jet (FF) xi
+      fH23jet1->Fill ( track_pt );             // jet1 pt distribution
 
-      // Recomputing of radius of particles in leading jet
-      fH20->Fill ( dpart );            // Distribution of R in leading jet
-      fH15->Fill ( dpart, track_pt );  // <p_{T}> track vs the Distance R from Jet1
-      fH15_bin->Fill ( dpart, track_pt ); // p_{T} track vs the Distance R from Jet1
+      fH20->Fill ( dpart );                    // Distribution of R in leading jet
+      fH15->Fill ( dpart, track_pt );          // <p_{T}> track vs the Distance R from Jet1
+      fH15_bin->Fill ( dpart, track_pt );      // p_{T} track vs the Distance R from Jet1
 
-      fH26jet1->Fill ( dpart, counter_part ); //  N vs the Distance R from Jet1
-      fH27jet1->Fill ( dpart, counter_pt ); //  PT_{sum} vs the Distance R from Jet1
+      fH26jet1->Fill ( dpart, counter_part );  // N vs the Distance R from Jet1
+      fH26jet1_bin->Fill ( dpart );            // N vs the Distance R from Jet1
 
-      fH26jet1_bin->Fill ( dpart );        //  N vs the Distance R from Jet1
-      fH27jet1_bin->Fill ( dpart, track_pt ); //  PT_{sum} vs the Distance R from Jet1
+      fH27jet1->Fill ( dpart, counter_pt );    // PT_{sum} vs the Distance R from Jet1
+      fH27jet1_bin->Fill ( dpart, track_pt );  // PT_{sum} vs the Distance R from Jet1
 
-      if ( counter_part <= jet1_n80 )        // fill histograms for 80% of particles
+      // fill histograms for 80% of particles with highest pt
+      if ( counter_part <= jet1_n80 )
           {
-          fH15_n80->Fill ( dpart, track_pt );  //  <p_{T}> track vs the Distance R from
-          // Jet1 - 80% of particles
-          fH15_bin_n80->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R
-          // from Jet1 - 80% of particles
+          fH15_n80->Fill ( dpart, track_pt );     // <p_{T}> track vs the Distance R from Jet1 - 80% of particles
+          fH15_bin_n80->Fill ( dpart, track_pt ); // p_{T} track vs the Distance R from Jet1 - 80% of particles
 
+          fH20_n80->Fill ( dpart );      //  Distribution of R in leading jet
           fH24->Fill ( jet1_pt, dpart ); //  Jet1 Size vs P_{T}(jet1) - 80% of particles
-          fH20_n80->Fill ( dpart );   //  Distribution of R in leading jet
 
           fH26jet1_n80->Fill ( dpart, counter_part ); //  N vs the Distance R from Jet1
-          fH27jet1_n80->Fill ( dpart, counter_pt ); //  PT_{sum} vs the Distance R from Jet1
+          fH26jet1_n80_bin->Fill ( dpart );           //  N vs the Distance R from Jet1
 
-          fH26jet1_n80_bin->Fill ( dpart );        //  N vs the Distance R from Jet1
+          fH27jet1_n80->Fill ( dpart, counter_pt );   //  PT_{sum} vs the Distance R from Jet1
           fH27jet1_n80_bin->Fill ( dpart, track_pt ); //  PT_{sum} vs the Distance R from Jet1
           }
 
-      if ( counter_pt <= jet1_pt80 )          // fill histograms for 80% of pt
+      // fill histograms for particles that have first 80% of pt
+      if ( counter_pt <= jet1_pt80 )
           {
-          fH15_pt80->Fill ( dpart, track_pt );  //  <p_{T}> track vs the Distance R from
-          // Jet1 - 80% of pt
-          fH15_bin_pt80->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R
-          // from Jet1 - 80% of pt
+          fH15_pt80->Fill ( dpart, track_pt );     //  <p_{T}> track vs the Distance R from Jet1 - 80% of pt
+          fH15_bin_pt80->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R from Jet1 - 80% of pt
 
+          fH20_pt80->Fill ( dpart );     //  Distribution of R in leading jet
           fH25->Fill ( jet1_pt, dpart ); //  Jet1 Size vs P_{T}(jet1) - 80% of Pt
-          fH20_pt80->Fill ( dpart );  //  Distribution of R in leading jet
 
           fH26jet1_pt80->Fill ( dpart, counter_part ); //  N vs the Distance R from Jet1
-          fH27jet1_pt80->Fill ( dpart, counter_pt ); //  PT_{sum} vs the Distance R from Jet1
+          fH26jet1_pt80_bin->Fill ( dpart );           //  N vs the Distance R from Jet1
 
-          fH26jet1_pt80_bin->Fill ( dpart );        //  N vs the Distance R from Jet1
+          fH27jet1_pt80->Fill ( dpart, counter_pt );   //  PT_{sum} vs the Distance R from Jet1
           fH27jet1_pt80_bin->Fill ( dpart, track_pt ); //  PT_{sum} vs the Distance R from Jet1
           }
       }
@@ -511,9 +436,9 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   track_idx = -999;
 
   // parsing accepted tracks in EVENT in decreasing order of Pt //
-  for ( Size_t i = 0; i < fNaccPart; i++ ) // replace the index order by the sorted array
+  for ( Size_t i = 0; i < fNaccPart; i++ )
       {
-      track_idx = fEvent_sorted_idxvec.at ( i );
+      track_idx = fEvent_sorted_idxvec.at ( i ); // replace the index order by the sorted array
       track = fTracksCont->GetNextAcceptParticle ( track_idx );
 
       if ( !track )
@@ -525,16 +450,12 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       // pt of the current track
       Double_t track_pt = track->Pt();
 
-      // dphi between leading track (max pt track from leading jet) and current
-      // track
-      Double_t dphi_part =
-        TVector2::Phi_mpi_pi ( track->Phi() - jet1_trklead->Phi() ); // restrict the delta phi to (-pi,pi) interval
-      Double_t dphi_part_absdeg = TMath::RadToDeg() * TMath::Abs ( dphi_part );
+      // dphi between leading track (max pt track from leading jet) and current track - dphi to (-pi,pi) interval
+//       Double_t dphi_part = TVector2::Phi_mpi_pi ( track->Phi() - jet1_trklead->Phi() );
+//       Double_t dphi_part_absdeg = TMath::RadToDeg() * TMath::Abs ( dphi_part );
 
-      // dphi between leading jet and current track
-      Double_t dphi_part_jet1 = TVector2::Phi_mpi_pi ( track->Phi() - fJet1->Phi() ); // restrict the delta
-      // phi to (-pi,pi)
-      // interval
+      // dphi between leading jet and current track - dphi to (-pi,pi) interval
+      Double_t dphi_part_jet1 = TVector2::Phi_mpi_pi ( track->Phi() - fJet1->Phi() );
       Double_t dphi_part_jet1_absdeg = TMath::RadToDeg() * TMath::Abs ( dphi_part_jet1 );
 
       // dR of track from leading jet (jet1)
@@ -543,178 +464,43 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       ++counter_part;         // next particle
       counter_pt += track_pt; // next particle pt
 
-      fH23->Fill ( track_pt ); //  Pt Distribution of particles in event
+      fH9->Fill ( dphi_part_jet1_absdeg, counter_part );  //  N vs the Azimuthal Angle from Jet1
+      fH9_bin->Fill ( dphi_part_jet1_absdeg );            //  N vs the Azimuthal Angle from Jet1
 
-      fH9->Fill ( dphi_part_jet1_absdeg, counter_part ); //  N vs the Azimuthal Angle from Jet1
-      fH10->Fill ( dphi_part_jet1_absdeg, counter_pt ); //  P_{T} sum vs the Azimuthal Angle from Jet1
-
-      fH9_bin->Fill ( dphi_part_jet1_absdeg );         //  N vs the Azimuthal Angle from Jet1
+      fH10->Fill ( dphi_part_jet1_absdeg, counter_pt );   //  P_{T} sum vs the Azimuthal Angle from Jet1
       fH10_bin->Fill ( dphi_part_jet1_absdeg, track_pt ); //  P_{T} sum vs the Azimuthal Angle from Jet1
 
       fH26->Fill ( dpart, counter_part ); //  N vs the Distance R from Jet1
-      fH27->Fill ( dpart, counter_pt ); //  PT_{sum} vs the Distance R from Jet1
+      fH26_bin->Fill ( dpart );           //  N vs the Distance R from Jet1
 
-      fH26_bin->Fill ( dpart );        //  N vs the Distance R from Jet1
+      fH27->Fill ( dpart, counter_pt );   //  PT_{sum} vs the Distance R from Jet1
       fH27_bin->Fill ( dpart, track_pt ); //  PT_{sum} vs the Distance R from Jet1
 
       if ( counter_part <= jet1_n80 )        // fill histograms for 80% of particles
           {
           fH26_n80->Fill ( dpart, counter_part ); //  N vs the Distance R from Jet1
-          fH27_n80->Fill ( dpart, counter_pt ); //  PT_{sum} vs the Distance R from Jet1
-          fH26_n80_bin->Fill ( dpart );        //  N vs the Distance R from Jet1
+          fH26_n80_bin->Fill ( dpart );           //  N vs the Distance R from Jet1
+
+          fH27_n80->Fill ( dpart, counter_pt );   //  PT_{sum} vs the Distance R from Jet1
           fH27_n80_bin->Fill ( dpart, track_pt ); //  PT_{sum} vs the Distance R from Jet1
           }
 
       if ( counter_pt <= jet1_pt80 )          // fill histograms for 80% of pt
           {
           fH26_pt80->Fill ( dpart, counter_part ); //  N vs the Distance R from Jet1
-          fH27_pt80->Fill ( dpart, counter_pt ); //  PT_{sum} vs the Distance R from Jet1
-          fH26_pt80_bin->Fill ( dpart );        //  N vs the Distance R from Jet1
+          fH26_pt80_bin->Fill ( dpart );           //  N vs the Distance R from Jet1
+
+          fH27_pt80->Fill ( dpart, counter_pt );   //  PT_{sum} vs the Distance R from Jet1
           fH27_pt80_bin->Fill ( dpart, track_pt ); //  PT_{sum} vs the Distance R from Jet1
           }
 
-      // dphi track to jet1 distribution (total and per toward,away,transverse
-      // regions)
-      fH21->Fill ( jet1_pt, counter_part ); // N (in the event - including jet1) vs
-      // P_{T}(jet1)
-      fH22->Fill ( jet1_pt, counter_pt ); // PT_{sum}(in the event - including jet1)
-      // vs P_{T}(jet1)
-
-      fH21_bin->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-      fH22_bin->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event - including
-      // jet1) vs P_{T}(jet1)
-
-      if ( ( dphi_part_jet1 > ( -1 ) * kPI_3 ) && ( dphi_part_jet1 < kPI_3 ) )
+      // Condition if track is NOT in leading jet
+      if ( !IdxInArray ( track_idx, jet1_idx_list ) )
           {
-          fH21Toward->Fill ( jet1_pt, counter_part ); // N (in the event - including
-          // jet1) vs P_{T}(jet1)
-          fH22Toward->Fill ( jet1_pt, counter_pt ); // PT_{sum}(in the event -
-          // including jet1) vs P_{T}(jet1)
-          fH23Toward->Fill ( track_pt );           // Pt Distribution of particles
-
-          fH21Toward_bin->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-          fH22Toward_bin->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event -
-          // including jet1) vs P_{T}(jet1)
-          }
-      else if ( ( dphi_part_jet1 <= ( -1 ) * kPI_3 ) && ( dphi_part_jet1 > ( -1 ) * k2PI_3 ) )
-          {
-          fH21Transverse_min->Fill ( jet1_pt, counter_part ); // N (in the event -
-          // including jet1) vs
-          // P_{T}(jet1)
-          fH22Transverse_min->Fill ( jet1_pt, counter_pt ); // PT_{sum}(in the event -
-          // including jet1) vs
-          // P_{T}(jet1)
-          fH23Transverse_min->Fill ( track_pt );           // Pt Distribution of particles
-
-          fH21Transverse_min_bin->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-          fH22Transverse_min_bin->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event
-          // - including jet1) vs
-          // P_{T}(jet1)
-          }
-      else if ( ( dphi_part_jet1 >= kPI_3 ) && ( dphi_part_jet1 < k2PI_3 ) )
-          {
-          fH21Transverse_max->Fill ( jet1_pt, counter_part ); // N (in the event -
-          // including jet1) vs
-          // P_{T}(jet1)
-          fH22Transverse_max->Fill ( jet1_pt, counter_pt ); // PT_{sum}(in the event -
-          // including jet1) vs
-          // P_{T}(jet1)
-          fH23Transverse_max->Fill ( track_pt );           // Pt Distribution of particles
-
-          fH21Transverse_max_bin->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-          fH22Transverse_max_bin->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event
-          // - including jet1) vs
-          // P_{T}(jet1)
-          }
-      else if ( ( dphi_part_jet1 >= k2PI_3 ) || ( dphi_part_jet1 <= ( -1 ) * k2PI_3 ) )
-          {
-          fH21Away->Fill ( jet1_pt, counter_part ); // N (in the event - including
-          // jet1) vs P_{T}(jet1)
-          fH22Away->Fill ( jet1_pt, counter_pt ); // PT_{sum}(in the event - including
-          // jet1) vs P_{T}(jet1)
-          fH23Away->Fill ( track_pt );           // Pt Distribution of particles
-
-          fH21Away_bin->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-          fH22Away_bin->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event - including jet1) vs P_{T}(jet1)
-          }
-
-      // Condition if track is in leading jet
-      if ( !IdxInArray ( track_idx, jet1_idx_list ) )           // fill histos without tracks
-          {
-          // from leading jet
-          fH9_bin_wojet1->Fill ( dphi_part_jet1_absdeg );         //  N vs the Azimuthal Angle from Jet1
+          fH9_bin_wojet1->Fill ( dphi_part_jet1_absdeg );            //  N vs the Azimuthal Angle from Jet1
           fH10_bin_wojet1->Fill ( dphi_part_jet1_absdeg, track_pt ); //  P_{T} sum vs the Azimuthal Angle from Jet1
-
-          fH21_bin_wojet1->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-          fH22_bin_wojet1->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event - including jet1) vs P_{T}(jet1)
-
-          if ( ( dphi_part_jet1 > ( -1 ) * kPI_3 ) && ( dphi_part_jet1 < kPI_3 ) )
-              {
-              fH21Toward_bin_wojet1->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-              fH22Toward_bin_wojet1->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event - including jet1) vs P_{T}(jet1)
-              }
-          else if ( ( dphi_part_jet1 <= ( -1 ) * kPI_3 ) && ( dphi_part_jet1 > ( -1 ) * k2PI_3 ) )
-              {
-              fH21Transverse_min_bin_wojet1->Fill ( jet1_pt ); // N (in the event - including jet1) vs P_{T}(jet1)
-              fH22Transverse_min_bin_wojet1->Fill ( jet1_pt,
-                                                    track_pt ); // PT_{sum}(in the event - including jet1) vs P_{T}(jet1)
-              }
-          else if ( ( dphi_part_jet1 >= kPI_3 ) && ( dphi_part_jet1 < k2PI_3 ) )
-              {
-              fH21Transverse_max_bin_wojet1->Fill ( jet1_pt ); // N (in the event - including jet1) vs P_{T}(jet1)
-              fH22Transverse_max_bin_wojet1->Fill ( jet1_pt,
-                                                    track_pt ); // PT_{sum}(in the event - including jet1) vs P_{T}(jet1)
-              }
-          else if ( ( dphi_part_jet1 >= k2PI_3 ) || ( dphi_part_jet1 <= ( -1 ) * k2PI_3 ) )
-              {
-              fH21Away_bin_wojet1->Fill ( jet1_pt );        // N (in the event - including jet1) vs P_{T}(jet1)
-              fH22Away_bin_wojet1->Fill ( jet1_pt, track_pt ); // PT_{sum}(in the event - including jet1) vs P_{T}(jet1)
-              }
           }
 
-      // NEW UE histos
-      // dphi track to leading track distribution (total and per toward,away,transverse regions)
-      fH40->Fill ( jet1_ptmax, counter_part ); // total particles fNPart w.r.t PTmax
-      // (pt of leading particle from
-      // leading jet)
-      fH41->Fill ( jet1_ptmax, counter_pt ); // PTsum w.r.t PTmax
-
-      fH40_bin->Fill ( jet1_ptmax );        // total particles fNPart w.r.t PTmax (pt of
-      // leading particle from leading jet)
-      fH41_bin->Fill ( jet1_ptmax, track_pt ); // PTsum w.r.t PTmax
-
-      if ( ( dphi_part > ( -1 ) * kPI_3 ) && ( dphi_part < kPI_3 ) )
-          {
-          fH40toward->Fill ( jet1_ptmax, counter_part );
-          fH41toward->Fill ( jet1_ptmax, counter_pt );
-
-          fH40toward_bin->Fill ( jet1_ptmax );
-          fH41toward_bin->Fill ( jet1_ptmax, track_pt );
-          }
-      else if ( ( dphi_part <= ( -1 ) * kPI_3 ) && ( dphi_part > ( -1 ) * k2PI_3 ) )
-          {
-          fH40transmin->Fill ( jet1_ptmax, counter_part );
-          fH41transmin->Fill ( jet1_ptmax, counter_pt );
-
-          fH40transmin_bin->Fill ( jet1_ptmax );
-          fH41transmin_bin->Fill ( jet1_ptmax, track_pt );
-          }
-      else if ( ( dphi_part >= kPI_3 ) && ( dphi_part < k2PI_3 ) )
-          {
-          fH40transmax->Fill ( jet1_ptmax, counter_part );
-          fH41transmax->Fill ( jet1_ptmax, counter_pt );
-
-          fH40transmax_bin->Fill ( jet1_ptmax );
-          fH41transmax_bin->Fill ( jet1_ptmax, track_pt );
-          }
-      else if ( ( dphi_part >= k2PI_3 ) || ( dphi_part <= ( -1 ) * k2PI_3 ) )
-          {
-          fH40away->Fill ( jet1_ptmax, counter_part );
-          fH41away->Fill ( jet1_ptmax, counter_pt );
-
-          fH40away_bin->Fill ( jet1_ptmax );
-          fH41away_bin->Fill ( jet1_ptmax, track_pt );
-          }
       }
 
   track = NULL;
@@ -835,6 +621,14 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH8->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH8 );
 
+  fH8_all = new TH1D ( "histo8_all", "Momentum distribution for jets (FF)", h8_nbin, h8_low, h8_high );
+  fH8_all->SetStats ( kTRUE );
+  fH8_all->GetXaxis()->SetTitle ( "z = p_{T,track}/p_{T,jet1}" );
+  fH8_all->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets1} dN/dz" );
+  fH8_all->GetXaxis()->SetTitleColor ( 1 );
+  fH8_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8_all );
+
   Int_t h8xi_nbin = 300;
   Double_t h8xi_binwidth = 0.05;
   Double_t h8xi_low = 0;
@@ -846,6 +640,14 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH8xi->GetXaxis()->SetTitleColor ( 1 );
   fH8xi->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH8xi );
+
+  fH8xi_all = new TH1D ( "histo8xi_all", "Momentum distribution for all jets (FF)", h8xi_nbin, h8xi_low, h8xi_high );
+  fH8xi_all->SetStats ( kTRUE );
+  fH8xi_all->GetXaxis()->SetTitle ( "#xi = ln(1/z)" );
+  fH8xi_all->GetYaxis()->SetTitle ( "D(#xi) = 1/N_{jets1} dN/d#xi" );
+  fH8xi_all->GetXaxis()->SetTitleColor ( 1 );
+  fH8xi_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8xi_all );
 
   //____________________________________________________________________________________
   Int_t h9_nbin = 50;
@@ -939,7 +741,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fOutput->Add ( fH15_pt80 );
 
   //____________________________________________________________________________________
-  fH15_bin = new TH1D ( "histo15_bin", "p_{T}*dR (track) vs the Distance R from Jet1", h15_nbin, h15_xlow, h15_xhigh );
+  fH15_bin = new TH1D ( "histo15_bin", "<p_{T}> (track) vs the Distance R from Jet1", h15_nbin, h15_xlow, h15_xhigh );
   fH15_bin->SetStats ( kTRUE );
   fH15_bin->GetXaxis()->SetTitle ( "R" );
   fH15_bin->GetYaxis()->SetTitle ( "p_{T}*dR (track)" );
@@ -947,7 +749,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH15_bin->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH15_bin );
 
-  fH15_bin_n80 = new TH1D ( "histo15_bin_n80", "p_{T}*dR (track) vs the Distance R from Jet1 - 80% of particles",
+  fH15_bin_n80 = new TH1D ( "histo15_bin_n80", "<p_{T}> (track) vs the Distance R from Jet1 - 80% of particles",
                                 h15_nbin, h15_xlow, h15_xhigh );
   fH15_bin_n80->SetStats ( kTRUE );
   fH15_bin_n80->GetXaxis()->SetTitle ( "R" );
@@ -956,7 +758,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH15_bin_n80->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH15_bin_n80 );
 
-  fH15_bin_pt80 = new TH1D ( "histo15_bin_pt80", "pp_{T}*dR (track) vs the Distance R from Jet1 - 80% of Pt",
+  fH15_bin_pt80 = new TH1D ( "histo15_bin_pt80", "p<p_{T}> (track) vs the Distance R from Jet1 - 80% of Pt",
                                  h15_nbin, h15_xlow, h15_xhigh );
   fH15_bin_pt80->SetStats ( kTRUE );
   fH15_bin_pt80->GetXaxis()->SetTitle ( "R" );
@@ -964,6 +766,33 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH15_bin_pt80->GetXaxis()->SetTitleColor ( 1 );
   fH15_bin_pt80->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH15_bin_pt80 );
+
+  //____________________________________________________________________________________
+  fH15_bin_all = new TH1D ( "histo15_bin_all", "<p_{T}> (track) vs the Distance R from jet axis", h15_nbin, h15_xlow, h15_xhigh );
+  fH15_bin_all->SetStats ( kTRUE );
+  fH15_bin_all->GetXaxis()->SetTitle ( "R" );
+  fH15_bin_all->GetYaxis()->SetTitle ( "p_{T}*dR (track)" );
+  fH15_bin_all->GetXaxis()->SetTitleColor ( 1 );
+  fH15_bin_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH15_bin_all );
+
+  fH15_bin_n80_all = new TH1D ( "histo15_bin_n80_all", "<p_{T}> (track) vs the Distance R from Jet1 - 80% of particles",
+                                h15_nbin, h15_xlow, h15_xhigh );
+  fH15_bin_n80_all->SetStats ( kTRUE );
+  fH15_bin_n80_all->GetXaxis()->SetTitle ( "R" );
+  fH15_bin_n80_all->GetYaxis()->SetTitle ( "p_{T}*dR (track)" );
+  fH15_bin_n80_all->GetXaxis()->SetTitleColor ( 1 );
+  fH15_bin_n80_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH15_bin_n80_all );
+
+  fH15_bin_pt80_all = new TH1D ( "histo15_bin_pt80_all", "<p_{T}> (track) vs the Distance R from Jet1 - 80% of Pt",
+                                 h15_nbin, h15_xlow, h15_xhigh );
+  fH15_bin_pt80_all->SetStats ( kTRUE );
+  fH15_bin_pt80_all->GetXaxis()->SetTitle ( "R" );
+  fH15_bin_pt80_all->GetYaxis()->SetTitle ( "p_{T}*dR (track)" );
+  fH15_bin_pt80_all->GetXaxis()->SetTitleColor ( 1 );
+  fH15_bin_pt80_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH15_bin_pt80_all );
 
   //____________________________________________________________________________________
   Int_t h20_nbin = 100;
@@ -996,288 +825,30 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fOutput->Add ( fH20_pt80 );
 
   //____________________________________________________________________________________
-  fH21 = new TProfile ( "histo21", "N(in the event - including jet1) vs P_{T}(jet1)", 200, 0., 200. );
-  fH21->SetStats ( kTRUE );
-  fH21->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21->GetXaxis()->SetTitleColor ( 1 );
-  fH21->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21 );
+  fH20_all = new TH1D ( "histo20_all", "Distribution of R in leading jet", h20_nbin, h20_low, h20_high );
+  fH20_all->SetStats ( kTRUE );
+  fH20_all->GetXaxis()->SetTitle ( "R" );
+  fH20_all->GetYaxis()->SetTitle ( "dN/dR" );
+  fH20_all->GetXaxis()->SetTitleColor ( 1 );
+  fH20_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH20_all );
 
-  fH21Toward =
-    new TProfile ( "histo21_toward", "N(in the event - including jet1) vs P_{T}(jet1) - toward", 200, 0., 200. );
-  fH21Toward->SetStats ( kTRUE );
-  fH21Toward->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Toward->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Toward->GetXaxis()->SetTitleColor ( 1 );
-  fH21Toward->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Toward );
+  fH20_n80_all =
+    new TH1D ( "histo20_n80_all", "Distribution of R in leading jet - 80% of particles", h20_nbin, h20_low, h20_high );
+  fH20_n80_all->SetStats ( kTRUE );
+  fH20_n80_all->GetXaxis()->SetTitle ( "R" );
+  fH20_n80_all->GetYaxis()->SetTitle ( "dN/dR" );
+  fH20_n80_all->GetXaxis()->SetTitleColor ( 1 );
+  fH20_n80_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH20_n80_all );
 
-  fH21Transverse_min = new TProfile ( "histo21_transverse_min",
-                                      "N(in the event - including jet1) vs P_{T}(jet1) - transverse MIN", 200, 0., 200. );
-  fH21Transverse_min->SetStats ( kTRUE );
-  fH21Transverse_min->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Transverse_min->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Transverse_min->GetXaxis()->SetTitleColor ( 1 );
-  fH21Transverse_min->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Transverse_min );
-
-  fH21Transverse_max = new TProfile ( "histo21_transverse_max",
-                                      "N(in the event - including jet1) vs P_{T}(jet1) - transverse MAX", 200, 0., 200. );
-  fH21Transverse_max->SetStats ( kTRUE );
-  fH21Transverse_max->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Transverse_max->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Transverse_max->GetXaxis()->SetTitleColor ( 1 );
-  fH21Transverse_max->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Transverse_max );
-
-  fH21Away = new TProfile ( "histo21_away", "N(in the event - including jet1) vs P_{T}(jet1) - away", 200, 0., 200. );
-  fH21Away->SetStats ( kTRUE );
-  fH21Away->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Away->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Away->GetXaxis()->SetTitleColor ( 1 );
-  fH21Away->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Away );
-
-  //____________________________________________________________________________________
-  fH21_bin = new TH1D ( "histo21_bin", "N(in the event - including jet1) vs P_{T}(jet1)", 200, 0., 200. );
-  fH21_bin->SetStats ( kTRUE );
-  fH21_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21_bin->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH21_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21_bin );
-
-  fH21Toward_bin =
-    new TH1D ( "histo21_toward_bin", "N(in the event - including jet1) vs P_{T}(jet1) - toward", 200, 0., 200. );
-  fH21Toward_bin->SetStats ( kTRUE );
-  fH21Toward_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Toward_bin->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Toward_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH21Toward_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Toward_bin );
-
-  fH21Transverse_min_bin = new TH1D ( "histo21_transverse_min_bin",
-                                      "N(in the event - including jet1) vs P_{T}(jet1) - transverse MIN", 200, 0., 200. );
-  fH21Transverse_min_bin->SetStats ( kTRUE );
-  fH21Transverse_min_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Transverse_min_bin->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Transverse_min_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH21Transverse_min_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Transverse_min_bin );
-
-  fH21Transverse_max_bin = new TH1D ( "histo21_transverse_max_bin",
-                                      "N(in the event - including jet1) vs P_{T}(jet1) - transverse MAX", 200, 0., 200. );
-  fH21Transverse_max_bin->SetStats ( kTRUE );
-  fH21Transverse_max_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Transverse_max_bin->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Transverse_max_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH21Transverse_max_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Transverse_max_bin );
-
-  fH21Away_bin = new TH1D ( "histo21_away_bin", "N(in the event - including jet1) vs P_{T}(jet1) - away", 200, 0., 200. );
-  fH21Away_bin->SetStats ( kTRUE );
-  fH21Away_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Away_bin->GetYaxis()->SetTitle ( "<N(in the event - including jet1)> in 1 GeV/c bin" );
-  fH21Away_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH21Away_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Away_bin );
-
-  //____________________________________________________________________________________
-  fH21_bin_wojet1 = new TH1D ( "histo21_bin_wojet1", "N(in the event - without jet1) vs P_{T}(jet1)", 200, 0., 200. );
-  fH21_bin_wojet1->SetStats ( kTRUE );
-  fH21_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21_bin_wojet1->GetYaxis()->SetTitle ( "<N(in the event - without jet1)> in 1 GeV/c bin" );
-  fH21_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH21_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21_bin_wojet1 );
-
-  fH21Toward_bin_wojet1 =
-    new TH1D ( "histo21_toward_bin_wojet1", "N(in the event - without jet1) vs P_{T}(jet1) - toward", 200, 0., 200. );
-  fH21Toward_bin_wojet1->SetStats ( kTRUE );
-  fH21Toward_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Toward_bin_wojet1->GetYaxis()->SetTitle ( "<N(in the event - without jet1)> in 1 GeV/c bin" );
-  fH21Toward_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH21Toward_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Toward_bin_wojet1 );
-
-  fH21Transverse_min_bin_wojet1 =
-    new TH1D ( "histo21_transverse_min_bin_wojet1", "N(in the event - without jet1) vs P_{T}(jet1) - transverse MIN", 200,
-               0., 200. );
-  fH21Transverse_min_bin_wojet1->SetStats ( kTRUE );
-  fH21Transverse_min_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Transverse_min_bin_wojet1->GetYaxis()->SetTitle ( "<N(in the event - without jet1)> in 1 GeV/c bin" );
-  fH21Transverse_min_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH21Transverse_min_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Transverse_min_bin_wojet1 );
-
-  fH21Transverse_max_bin_wojet1 =
-    new TH1D ( "histo21_transverse_max_bin_wojet1", "N(in the event - without jet1) vs P_{T}(jet1) - transverse MAX", 200,
-               0., 200. );
-  fH21Transverse_max_bin_wojet1->SetStats ( kTRUE );
-  fH21Transverse_max_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Transverse_max_bin_wojet1->GetYaxis()->SetTitle ( "<N(in the event - without jet1)> in 1 GeV/c bin" );
-  fH21Transverse_max_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH21Transverse_max_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Transverse_max_bin_wojet1 );
-
-  fH21Away_bin_wojet1 =
-    new TH1D ( "histo21_away_bin_wojet1", "N(in the event - without jet1) vs P_{T}(jet1) - away", 200, 0., 200. );
-  fH21Away_bin_wojet1->SetStats ( kTRUE );
-  fH21Away_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH21Away_bin_wojet1->GetYaxis()->SetTitle ( "<N(in the event - without jet1)> in 1 GeV/c bin" );
-  fH21Away_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH21Away_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH21Away_bin_wojet1 );
-
-  //__________________________________________________________________
-  fH22 = new TProfile ( "histo22", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1)", 200, 0., 200. );
-  fH22->SetStats ( kTRUE );
-  fH22->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22->GetXaxis()->SetTitleColor ( 1 );
-  fH22->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22 );
-
-  fH22Toward =
-    new TProfile ( "histo22_toward", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - toward", 200, 0., 200. );
-  fH22Toward->SetStats ( kTRUE );
-  fH22Toward->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Toward->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Toward->GetXaxis()->SetTitleColor ( 1 );
-  fH22Toward->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Toward );
-
-  fH22Transverse_min = new TProfile (
-    "histo22_transverse_min", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - transverse MIN", 200, 0., 200. );
-  fH22Transverse_min->SetStats ( kTRUE );
-  fH22Transverse_min->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Transverse_min->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Transverse_min->GetXaxis()->SetTitleColor ( 1 );
-  fH22Transverse_min->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Transverse_min );
-
-  fH22Transverse_max = new TProfile (
-    "histo22_transverse_max", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - transverse MAX", 200, 0., 200. );
-  fH22Transverse_max->SetStats ( kTRUE );
-  fH22Transverse_max->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Transverse_max->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Transverse_max->GetXaxis()->SetTitleColor ( 1 );
-  fH22Transverse_max->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Transverse_max );
-
-  fH22Away =
-    new TProfile ( "histo22_away", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - away", 200, 0., 200. );
-  fH22Away->SetStats ( kTRUE );
-  fH22Away->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Away->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Away->GetXaxis()->SetTitleColor ( 1 );
-  fH22Away->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Away );
-
-  //__________________________________________________________________
-  fH22_bin = new TH1D ( "histo22_bin", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1)", 200, 0., 200. );
-  fH22_bin->SetStats ( kTRUE );
-  fH22_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22_bin->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH22_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22_bin );
-
-  fH22Toward_bin =
-    new TH1D ( "histo22_toward_bin", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - toward", 200, 0., 200. );
-  fH22Toward_bin->SetStats ( kTRUE );
-  fH22Toward_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Toward_bin->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Toward_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH22Toward_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Toward_bin );
-
-  fH22Transverse_min_bin =
-    new TH1D ( "histo22_transverse_min_bin", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - transverse MIN",
-               200, 0., 200. );
-  fH22Transverse_min_bin->SetStats ( kTRUE );
-  fH22Transverse_min_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Transverse_min_bin->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Transverse_min_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH22Transverse_min_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Transverse_min_bin );
-
-  fH22Transverse_max_bin =
-    new TH1D ( "histo22_transverse_max_bin", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - transverse MAX",
-               200, 0., 200. );
-  fH22Transverse_max_bin->SetStats ( kTRUE );
-  fH22Transverse_max_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Transverse_max_bin->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Transverse_max_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH22Transverse_max_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Transverse_max_bin );
-
-  fH22Away_bin =
-    new TH1D ( "histo22_away_bin", "PT_{sum}(in the event - including jet1) vs P_{T}(jet1) - away", 200, 0., 200. );
-  fH22Away_bin->SetStats ( kTRUE );
-  fH22Away_bin->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Away_bin->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin" );
-  fH22Away_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH22Away_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Away_bin );
-
-  //__________________________________________________________________
-  fH22_bin_wojet1 =
-    new TH1D ( "histo22_bin_wojet1", "PT_{sum}(in the event - without jet1) vs P_{T}(jet1)", 200, 0., 200. );
-  fH22_bin_wojet1->SetStats ( kTRUE );
-  fH22_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22_bin_wojet1->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - without jet1)> in 1 GeV/c bin" );
-  fH22_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH22_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22_bin_wojet1 );
-
-  fH22Toward_bin_wojet1 = new TH1D ( "histo22_toward_bin_wojet1",
-                                     "PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - toward", 200, 0., 200. );
-  fH22Toward_bin_wojet1->SetStats ( kTRUE );
-  fH22Toward_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Toward_bin_wojet1->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - without jet1)> in 1 GeV/c bin" );
-  fH22Toward_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH22Toward_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Toward_bin_wojet1 );
-
-  fH22Transverse_min_bin_wojet1 =
-    new TH1D ( "histo22_transverse_min_bin_wojet1",
-               "PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - transverse MIN", 200, 0., 200. );
-  fH22Transverse_min_bin_wojet1->SetStats ( kTRUE );
-  fH22Transverse_min_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Transverse_min_bin_wojet1->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - without jet1)> in 1 GeV/c bin" );
-  fH22Transverse_min_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH22Transverse_min_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Transverse_min_bin_wojet1 );
-
-  fH22Transverse_max_bin_wojet1 =
-    new TH1D ( "histo22_transverse_max_bin_wojet1",
-               "PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - transverse MAX", 200, 0., 200. );
-  fH22Transverse_max_bin_wojet1->SetStats ( kTRUE );
-  fH22Transverse_max_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Transverse_max_bin_wojet1->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - without jet1)> in 1 GeV/c bin" );
-  fH22Transverse_max_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH22Transverse_max_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Transverse_max_bin_wojet1 );
-
-  fH22Away_bin_wojet1 =
-    new TH1D ( "histo22_away_bin_wojet1", "PT_{sum}(in the event - without jet1) vs P_{T}(jet1) - away", 200, 0., 200. );
-  fH22Away_bin_wojet1->SetStats ( kTRUE );
-  fH22Away_bin_wojet1->GetXaxis()->SetTitle ( "p_{T}(jet1) (GeV/c)" );
-  fH22Away_bin_wojet1->GetYaxis()->SetTitle ( "<PT_{sum}(in the event - without jet1)> in 1 GeV/c bin" );
-  fH22Away_bin_wojet1->GetXaxis()->SetTitleColor ( 1 );
-  fH22Away_bin_wojet1->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH22Away_bin_wojet1 );
-
-  //____________________________________________________________________________________
-  fH23 = new TH1D ( "histo23", "Pt Distribution of particles", 1500, 0., 1500. );
-  fH23->SetStats ( kTRUE );
-  fH23->GetXaxis()->SetTitle ( "p_{T} (GeV/c)" );
-  fH23->GetYaxis()->SetTitle ( "dN/dP_{T} (1/GeV/c)" );
-  fH23->GetXaxis()->SetTitleColor ( 1 );
-  fH23->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH23 );
+  fH20_pt80_all = new TH1D ( "histo20_pt80_all", "Distribution of R in leading jet - 80% of Pt", h20_nbin, h20_low, h20_high );
+  fH20_pt80_all->SetStats ( kTRUE );
+  fH20_pt80_all->GetXaxis()->SetTitle ( "R" );
+  fH20_pt80_all->GetYaxis()->SetTitle ( "dN/dR" );
+  fH20_pt80_all->GetXaxis()->SetTitleColor ( 1 );
+  fH20_pt80_all->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH20_pt80_all );
 
   fH23jet1 = new TH1D ( "histo23jet1", "Pt Distribution of particles in jet1", 1000, 0., 1000. );
   fH23jet1->SetStats ( kTRUE );
@@ -1286,40 +857,6 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH23jet1->GetXaxis()->SetTitleColor ( 1 );
   fH23jet1->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH23jet1 );
-
-  fH23Toward = new TH1D ( "histo23_toward", "'Toward' Pt Distribution of particles", 1500, 0., 1500. );
-  fH23Toward->SetStats ( kTRUE );
-  fH23Toward->GetXaxis()->SetTitle ( "p_{T} (GeV/c)" );
-  fH23Toward->GetYaxis()->SetTitle ( "dN/dP_{T} (1/GeV/c)" );
-  fH23Toward->GetXaxis()->SetTitleColor ( 1 );
-  fH23Toward->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH23Toward );
-
-  fH23Transverse_min =
-    new TH1D ( "histo23_transverse_min", "Pt Distribution of particles - Transverse MIN", 1500, 0., 1500. );
-  fH23Transverse_min->SetStats ( kTRUE );
-  fH23Transverse_min->GetXaxis()->SetTitle ( "p_{T} (GeV/c)" );
-  fH23Transverse_min->GetYaxis()->SetTitle ( "dN/dP_{T} (1/GeV/c)" );
-  fH23Transverse_min->GetXaxis()->SetTitleColor ( 1 );
-  fH23Transverse_min->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH23Transverse_min );
-
-  fH23Transverse_max =
-    new TH1D ( "histo23_transverse_max", "Pt Distribution of particles  - Transverse MAX", 1500, 0., 1500. );
-  fH23Transverse_max->SetStats ( kTRUE );
-  fH23Transverse_max->GetXaxis()->SetTitle ( "p_{T} (GeV/c)" );
-  fH23Transverse_max->GetYaxis()->SetTitle ( "dN/dP_{T} (1/GeV/c)" );
-  fH23Transverse_max->GetXaxis()->SetTitleColor ( 1 );
-  fH23Transverse_max->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH23Transverse_max );
-
-  fH23Away = new TH1D ( "histo23_away", "'Away' Pt Distribution of particles", 1500, 0., 1500. );
-  fH23Away->SetStats ( kTRUE );
-  fH23Away->GetXaxis()->SetTitle ( "p_{T} (GeV/c)" );
-  fH23Away->GetYaxis()->SetTitle ( "dN/dP_{T} (1/GeV/c)" );
-  fH23Away->GetXaxis()->SetTitleColor ( 1 );
-  fH23Away->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH23Away );
 
   //____________________________________________________________________________________
   Int_t h24_nbin = 400;
@@ -1565,222 +1102,15 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH27jet1_pt80_bin->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH27jet1_pt80_bin );
 
-  //____________________________________________________________________________________
-  Int_t h40_nbin = 200;
-  Double_t h40_binwidth = 1.;
-  Double_t h40_low = 0.;
-  Double_t h40_high = h40_low + h40_binwidth * h40_nbin;
-  fH40 = new TProfile ( "histo40", "total particles fNPart w.r.t PTmax (pt of leading particle from jet1)", h40_nbin,
-                        h40_low, h40_high );
-  fH40->SetStats ( kTRUE );
-  fH40->GetXaxis()->SetTitle ( "PTmax" );
-  fH40->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40->GetXaxis()->SetTitleColor ( 1 );
-  fH40->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40 );
-
-  fH40toward = new TProfile ( "histo40toward", "total particles fNPart w.r.t PTmax (pt of "
-                              "leading particle from jet1) - TOWARD",
-                              h40_nbin, h40_low, h40_high );
-  fH40toward->SetStats ( kTRUE );
-  fH40toward->GetXaxis()->SetTitle ( "PTmax" );
-  fH40toward->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40toward->GetXaxis()->SetTitleColor ( 1 );
-  fH40toward->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40toward );
-
-  fH40away = new TProfile ( "histo40away", "total particles fNPart w.r.t PTmax (pt of "
-                            "leading particle from jet1) - AWAY",
-                            h40_nbin, h40_low, h40_high );
-  fH40away->SetStats ( kTRUE );
-  fH40away->GetXaxis()->SetTitle ( "PTmax" );
-  fH40away->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40away->GetXaxis()->SetTitleColor ( 1 );
-  fH40away->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40away );
-
-  fH40transmin = new TProfile ( "histo40transmin", "total particles fNPart w.r.t PTmax (pt of "
-                                "leading particle from jet1) - TRANSMIN",
-                                h40_nbin, h40_low, h40_high );
-  fH40transmin->SetStats ( kTRUE );
-  fH40transmin->GetXaxis()->SetTitle ( "PTmax" );
-  fH40transmin->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40transmin->GetXaxis()->SetTitleColor ( 1 );
-  fH40transmin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40transmin );
-
-  fH40transmax = new TProfile ( "histo40transmax", "total particles fNPart w.r.t PTmax (pt of "
-                                "leading particle from jet1) - TRANSMAX",
-                                h40_nbin, h40_low, h40_high );
-  fH40transmax->SetStats ( kTRUE );
-  fH40transmax->GetXaxis()->SetTitle ( "PTmax" );
-  fH40transmax->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40transmax->GetXaxis()->SetTitleColor ( 1 );
-  fH40transmax->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40transmax );
-
-  //____________________________________________________________________________________
-  fH40_bin = new TH1D ( "histo40_bin", "total particles fNPart w.r.t PTmax (pt of leading particle from jet1)", h40_nbin,
-                        h40_low, h40_high );
-  fH40_bin->SetStats ( kTRUE );
-  fH40_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH40_bin->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH40_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40_bin );
-
-  fH40toward_bin = new TH1D ( "histo40toward_bin", "total particles fNPart w.r.t PTmax (pt of "
-                              "leading particle from jet1) - TOWARD",
-                              h40_nbin, h40_low, h40_high );
-  fH40toward_bin->SetStats ( kTRUE );
-  fH40toward_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH40toward_bin->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40toward_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH40toward_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40toward_bin );
-
-  fH40away_bin = new TH1D ( "histo40away_bin", "total particles fNPart w.r.t PTmax (pt of "
-                            "leading particle from jet1) - AWAY",
-                            h40_nbin, h40_low, h40_high );
-  fH40away_bin->SetStats ( kTRUE );
-  fH40away_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH40away_bin->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40away_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH40away_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40away_bin );
-
-  fH40transmin_bin = new TH1D ( "histo40transmin_bin", "total particles fNPart w.r.t PTmax (pt of "
-                                "leading particle from jet1) - TRANSMIN",
-                                h40_nbin, h40_low, h40_high );
-  fH40transmin_bin->SetStats ( kTRUE );
-  fH40transmin_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH40transmin_bin->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40transmin_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH40transmin_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40transmin_bin );
-
-  fH40transmax_bin = new TH1D ( "histo40transmax_bin", "total particles fNPart w.r.t PTmax (pt of "
-                                "leading particle from jet1) - TRANSMAX",
-                                h40_nbin, h40_low, h40_high );
-  fH40transmax_bin->SetStats ( kTRUE );
-  fH40transmax_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH40transmax_bin->GetYaxis()->SetTitle ( "<fNPart> (accepted)" );
-  fH40transmax_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH40transmax_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH40transmax_bin );
-
-  //____________________________________________________________________________________
-  Int_t h41_nbin = 200;
-  Double_t h41_binwidth = 1.;
-  Double_t h41_low = 0.;
-  Double_t h41_high = h41_low + h41_binwidth * h41_nbin;
-  fH41 = new TProfile ( "histo41", "PTsum w.r.t PTmax (pt of leading particle from jet1)", h41_nbin, h41_low, h41_high );
-  fH41->SetStats ( kTRUE );
-  fH41->GetXaxis()->SetTitle ( "PTmax" );
-  fH41->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41->GetXaxis()->SetTitleColor ( 1 );
-  fH41->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41 );
-
-  fH41toward = new TProfile ( "histo41toward", "PTsum w.r.t PTmax (pt of leading particle from jet1) - TOWARD", h41_nbin,
-                              h41_low, h41_high );
-  fH41toward->SetStats ( kTRUE );
-  fH41toward->GetXaxis()->SetTitle ( "PTmax" );
-  fH41toward->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41toward->GetXaxis()->SetTitleColor ( 1 );
-  fH41toward->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41toward );
-
-  fH41away = new TProfile ( "histo41away", "PTsum w.r.t PTmax (pt of leading particle from jet1) - AWAY", h41_nbin,
-                            h41_low, h41_high );
-  fH41away->SetStats ( kTRUE );
-  fH41away->GetXaxis()->SetTitle ( "PTmax" );
-  fH41away->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41away->GetXaxis()->SetTitleColor ( 1 );
-  fH41away->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41away );
-
-  fH41transmin = new TProfile ( "histo41transmin", "PTsum w.r.t PTmax (pt of leading particle from jet1) - TRANSMIN",
-                                h41_nbin, h41_low, h41_high );
-  fH41transmin->SetStats ( kTRUE );
-  fH41transmin->GetXaxis()->SetTitle ( "PTmax" );
-  fH41transmin->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41transmin->GetXaxis()->SetTitleColor ( 1 );
-  fH41transmin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41transmin );
-
-  fH41transmax = new TProfile ( "histo41transmax", "PTsum w.r.t PTmax (pt of leading particle from jet1) - TRANSMAX",
-                                h41_nbin, h41_low, h41_high );
-  fH41transmax->SetStats ( kTRUE );
-  fH41transmax->GetXaxis()->SetTitle ( "PTmax" );
-  fH41transmax->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41transmax->GetXaxis()->SetTitleColor ( 1 );
-  fH41transmax->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41transmax );
-
-  //____________________________________________________________________________________
-  fH41_bin =
-    new TH1D ( "histo41_bin", "PTsum w.r.t PTmax (pt of leading particle from jet1)", h41_nbin, h41_low, h41_high );
-  fH41_bin->SetStats ( kTRUE );
-  fH41_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH41_bin->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH41_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41_bin );
-
-  fH41toward_bin = new TH1D ( "histo41toward_bin", "PTsum w.r.t PTmax (pt of leading particle from jet1) - TOWARD",
-                              h41_nbin, h41_low, h41_high );
-  fH41toward_bin->SetStats ( kTRUE );
-  fH41toward_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH41toward_bin->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41toward_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH41toward_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41toward_bin );
-
-  fH41away_bin = new TH1D ( "histo41away_bin", "PTsum w.r.t PTmax (pt of leading particle from jet1) - AWAY", h41_nbin,
-                            h41_low, h41_high );
-  fH41away_bin->SetStats ( kTRUE );
-  fH41away_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH41away_bin->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41away_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH41away_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41away_bin );
-
-  fH41transmin_bin = new TH1D ( "histo41transmin_bin", "PTsum w.r.t PTmax (pt of leading particle from jet1) - TRANSMIN",
-                                h41_nbin, h41_low, h41_high );
-  fH41transmin_bin->SetStats ( kTRUE );
-  fH41transmin_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH41transmin_bin->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41transmin_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH41transmin_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41transmin_bin );
-
-  fH41transmax_bin = new TH1D ( "histo41transmax_bin", "PTsum w.r.t PTmax (pt of leading particle from jet1) - TRANSMAX",
-                                h41_nbin, h41_low, h41_high );
-  fH41transmax_bin->SetStats ( kTRUE );
-  fH41transmax_bin->GetXaxis()->SetTitle ( "PTmax" );
-  fH41transmax_bin->GetYaxis()->SetTitle ( "PTsum (GeV/c)" );
-  fH41transmax_bin->GetXaxis()->SetTitleColor ( 1 );
-  fH41transmax_bin->SetMarkerStyle ( kFullCircle );
-  fOutput->Add ( fH41transmax_bin );
 
   // =========== Switch on Sumw2 for all histos ===========
   for ( Int_t i = 0; i < fOutput->GetEntries(); ++i )
       {
       TH1 *h1 = dynamic_cast<TH1 *> ( fOutput->At ( i ) );
-
-      if ( h1 )
-          {
-          h1->Sumw2();
-          continue;
-          }
+      if ( h1 ) { h1->Sumw2();continue; }
 
       TProfile *hprof1 = dynamic_cast<TProfile *> ( fOutput->At ( i ) );
-
-      if ( hprof1 )
-          {
-          hprof1->Sumw2();
-          }
+      if ( hprof1 ) { hprof1->Sumw2(); }
       }
 
   PostData ( 1, fOutput ); // Post data for ALL output slots > 0 here.

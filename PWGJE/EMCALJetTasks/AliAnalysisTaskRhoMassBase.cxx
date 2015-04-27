@@ -92,27 +92,36 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  const Int_t nBinsRhom = 200;
-  const Double_t minRhom = 0.;
-  const Double_t maxRhom = 20.;
+  //ranges for PbPb
+  Float_t Ntrackrange[2] = {0, 6000};
 
-  const Int_t nBinsM  = 100;
-  const Double_t minM = -20.;
-  const Double_t maxM = 80.;
+  Int_t nBinsRhom = 200;
+  Double_t minRhom = 0.;
+  Double_t maxRhom = 20.;
+  
+  Int_t nBinsM  = 100;
+  Double_t minM = -20.;
+  Double_t maxM = 80.;
 
+  if(!fIsPbPb){
+     //set multiplicity related axes to a smaller max value
+     Ntrackrange[1] = 200.;
+     maxRhom = 0.25;
+  }
+  
   fHistRhoMassvsCent = new TH2F("fHistRhoMassvsCent", "fHistRhoMassvsCent", 101, -1,  100, nBinsRhom,minRhom,maxRhom);
   fHistRhoMassvsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistRhoMassvsCent->GetYaxis()->SetTitle("#rho_{m} (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhoMassvsCent);
 
   if (fParticleCollArray.GetEntriesFast()>0) {
-    fHistRhoMassvsNtrack = new TH2F("fHistRhoMassvsNtrack", "fHistRhoMassvsNtrack", 150, 0, 6000, nBinsRhom,minRhom,maxRhom);
+    fHistRhoMassvsNtrack = new TH2F("fHistRhoMassvsNtrack", "fHistRhoMassvsNtrack", 150, Ntrackrange[0], Ntrackrange[1], nBinsRhom,minRhom,maxRhom);
     fHistRhoMassvsNtrack->GetXaxis()->SetTitle("No. of tracks");
     fHistRhoMassvsNtrack->GetYaxis()->SetTitle("#rho_{m} (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhoMassvsNtrack);
 
     //fHistGammaVsNtrack
-    fHistGammaVsNtrack = new TH2F("fHistGammaVsNtrack", "fHistGammaVsNtrack", 150, 0, 6000, 100,0.,10.);
+    fHistGammaVsNtrack = new TH2F("fHistGammaVsNtrack", "fHistGammaVsNtrack", 150, Ntrackrange[0], Ntrackrange[1], 100,0.,10.);
     fHistGammaVsNtrack->GetXaxis()->SetTitle("No. of tracks");
     fHistGammaVsNtrack->GetYaxis()->SetTitle("#gamma = #LT E #GT / #LT M #GT");
     fOutput->Add(fHistGammaVsNtrack);
@@ -139,7 +148,7 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
     fOutput->Add(fHistDeltaRhoMassvsCent);
 
     if (fParticleCollArray.GetEntriesFast()>0) {
-      fHistDeltaRhoMassvsNtrack = new TH2F("fHistDeltaRhoMassvsNtrack", "fHistDeltaRhoMassvsNtrack", 150, 0, 6000, fNbins, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaRhoMassvsNtrack = new TH2F("fHistDeltaRhoMassvsNtrack", "fHistDeltaRhoMassvsNtrack", 150, Ntrackrange[0], Ntrackrange[1], fNbins, -fMaxBinPt, fMaxBinPt);
       fHistDeltaRhoMassvsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistDeltaRhoMassvsNtrack->GetYaxis()->SetTitle("#Delta#rho (GeV/c * rad^{-1})");
       fOutput->Add(fHistDeltaRhoMassvsNtrack);
@@ -153,7 +162,7 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
     fOutput->Add(fHistRhoMassScaledvsCent);
 
     if (fParticleCollArray.GetEntriesFast()>0) {
-      fHistRhoMassScaledvsNtrack = new TH2F("fHistRhoMassScaledvsNtrack", "fHistRhoMassScaledvsNtrack", 150, 0, 6000, nBinsRhom,minRhom,maxRhom);
+      fHistRhoMassScaledvsNtrack = new TH2F("fHistRhoMassScaledvsNtrack", "fHistRhoMassScaledvsNtrack", 150, Ntrackrange[0], Ntrackrange[1], nBinsRhom,minRhom,maxRhom);
       fHistRhoMassScaledvsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistRhoMassScaledvsNtrack->GetYaxis()->SetTitle("#rho_{m,scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistRhoMassScaledvsNtrack);
@@ -173,7 +182,7 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
       fOutput->Add(fHistDeltaRhoMassScalevsCent);
       
       if (fParticleCollArray.GetEntriesFast()>0) {
-	fHistDeltaRhoMassScalevsNtrack = new TH2F("fHistDeltaRhoMassScalevsNtrack", "fHistDeltaRhoMassScalevsNtrack", 150, 0, 6000, fNbins, -fMaxBinPt, fMaxBinPt);
+	fHistDeltaRhoMassScalevsNtrack = new TH2F("fHistDeltaRhoMassScalevsNtrack", "fHistDeltaRhoMassScalevsNtrack", 150, Ntrackrange[0], Ntrackrange[1], fNbins, -fMaxBinPt, fMaxBinPt);
 	fHistDeltaRhoMassScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
 	fHistDeltaRhoMassScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{m,scaled} (GeV/c * rad^{-1})");
 	fOutput->Add(fHistDeltaRhoMassScalevsNtrack);

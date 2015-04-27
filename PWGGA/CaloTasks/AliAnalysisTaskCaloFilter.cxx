@@ -13,24 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////
-// Filter the ESDCaloClusters and ESDCaloCells of EMCAL,
-// PHOS or both, creating the corresponing AODCaloClusters
-// and AODCaloCells.
-// Keep also the AODHeader information and the vertex.
-// Keep tracks, v0s, VZERO if requested
-// Select events containing a cluster or track avobe a given threshold
-// Copy of AliAnalysisTaskESDfilter.
-// Author: Gustavo Conesa Balbastre (INFN - Frascati)
-//////////////////////////////////////////////////////////
-
-//Root
+// Root
 #include "TGeoManager.h"
 #include "TFile.h"
 #include "TROOT.h"
 #include "TInterpreter.h"
 
-//STEER
+// STEER
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliLog.h"
@@ -41,16 +30,19 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
-//EMCAL
+// EMCAL
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 
 #include "AliAnalysisTaskCaloFilter.h"
 
-ClassImp(AliAnalysisTaskCaloFilter)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskCaloFilter) ;
+/// \endcond
 
-////////////////////////////////////////////////////////////////////////
-
+//_____________________________________________________
+/// Default constructor.
+//_____________________________________________________
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
 AliAnalysisTaskSE("CaloFilterTask"), 
 fCaloFilter(0),           fEventSelection(), 
@@ -72,18 +64,17 @@ fVzCut(100.),             fCheckEventVertex(kTRUE),
 fEvent(0x0),              
 fESDEvent(0x0),           fAODEvent(0x0)
 {
-  // Default constructor
-  
   fEventSelection[0] = kFALSE;
   fEventSelection[1] = kFALSE;
   fEventSelection[2] = kFALSE;
   
-  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 22; i++) fEMCALMatrix[i] = 0 ;
   //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
-  
 }
 
-//__________________________________________________
+//_____________________________________________________________________
+/// Constructor.
+//_____________________________________________________________________
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
 AliAnalysisTaskSE(name), 
 fCaloFilter(0),           fEventSelection(), 
@@ -105,32 +96,35 @@ fVzCut(100.),             fCheckEventVertex(kTRUE),
 fEvent(0x0),              
 fESDEvent(0x0),           fAODEvent(0x0)
 {
-  // Constructor
-  
   fEventSelection[0] = kFALSE;
   fEventSelection[1] = kFALSE;
   fEventSelection[2] = kFALSE;  
   
-  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 22; i++) fEMCALMatrix[i] = 0 ;
   //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
-  
 }
 
-//__________________________________________________
+//_____________________________________________________
+/// Destructor.
+//_____________________________________________________
 AliAnalysisTaskCaloFilter::~AliAnalysisTaskCaloFilter()
 {
-  //Destructor.
-	
   if(fEMCALGeo)        delete fEMCALGeo;	
+ 
   if(fEMCALRecoUtils)  delete fEMCALRecoUtils;
-  
 }
 
 //_____________________________________________
+/// \return True if the event is accepted
+///  Criteria to accept the event:
+///  * Vertex selection
+///  * If all Min Bias events are selected
+///  * Events with activity in EMCal
+///  * Events with activity in PHOS
+///  * Events with tracks
+//_____________________________________________
 Bool_t AliAnalysisTaskCaloFilter::AcceptEvent()
 {
-  // Define conditions to accept the event to be filtered
-  
   if(!AcceptEventVertex()) return kFALSE;
   
   Bool_t eventSel = kFALSE;
@@ -150,13 +144,15 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEvent()
 }
 
 //__________________________________________________
+/// \return True if there is signal in EMCal
+/// Accept event given there is a EMCAL cluster with
+/// enough energy, cells and not noisy, exotic.
+//__________________________________________________
 Bool_t AliAnalysisTaskCaloFilter::AcceptEventEMCAL()
 {
-  // Accept event given there is a EMCAL cluster with enough energy, and not noisy, exotic
+  if( fCaloFilter == kPHOS ) return kTRUE; // accept
   
-  if(fCaloFilter==kPHOS)   return kTRUE; // accept 
-  
-  if(fEMCALEnergyCut <= 0) return kTRUE; // accept
+  if( fEMCALEnergyCut <= 0 ) return kTRUE; // accept
   
   Int_t           nCluster = InputEvent() -> GetNumberOfCaloClusters();
   AliVCaloCells * caloCell = InputEvent() -> GetEMCALCells();
@@ -175,7 +171,6 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventEMCAL()
       
       return kTRUE;
     }
-    
   }// loop
   
   AliDebug(1,"Reject");
@@ -183,17 +178,18 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventEMCAL()
   //printf("Fired %s\n",((AliESDEvent*)InputEvent())->GetFiredTriggerClasses().Data());
 
   return kFALSE;
-  
 }  
 
-//_________________________________________________
+//__________________________________________________
+/// \return True if there is signal in PHOS
+/// Accept event given there is a PHOS cluster with
+/// enough energy and cells.
+//__________________________________________________
 Bool_t AliAnalysisTaskCaloFilter::AcceptEventPHOS()
 {
-  // Accept event given there is a PHOS cluster with enough energy and not noisy/exotic
+  if( fCaloFilter == kEMCAL ) return kTRUE; // accept
   
-  if(fCaloFilter==kEMCAL) return kTRUE; // accept 
-  
-  if(fPHOSEnergyCut <= 0) return kTRUE; // accept
+  if( fPHOSEnergyCut <= 0   ) return kTRUE; // accept
   
   Int_t nCluster = InputEvent() -> GetNumberOfCaloClusters();
   
@@ -209,21 +205,23 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventPHOS()
       
       return kTRUE;
     }
-    
   }// loop
   
   AliDebug(1,"Reject");
   
   return kFALSE;
-  
 }  
 
+//__________________________________________________
+/// \return True if there is signal in TPC
+/// Accept event given there is a track with
+/// enough pT. If requested, select only hybrid tracks.
 //__________________________________________________
 Bool_t AliAnalysisTaskCaloFilter::AcceptEventTrack()
 {
   // Accept event if there is a track avobe a certain pT
   
-  if(fTrackPtCut <= 0) return kTRUE; // accept
+  if( fTrackPtCut <= 0 ) return kTRUE; // accept
   
   Double_t pTrack[3] = {0,0,0};
   
@@ -232,32 +230,31 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventTrack()
     AliVTrack *track = (AliVTrack*) fEvent->GetTrack(nTrack);
     
     // Select only hybrid tracks?
-    if(fAODEvent && fFillHybridTracks && !((AliAODTrack*)track)->IsHybridGlobalConstrainedGlobal()) continue;
+    if(fAODEvent && fFillHybridTracks && !((AliAODTrack*)track)->IsHybridGlobalConstrainedGlobal()) continue ;
     
-    track->GetPxPyPz(pTrack) ;
+    //track->GetPxPyPz(pTrack) ;
     
-    TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
+    //TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
-    if(momentum.Pt() > fTrackPtCut) 
+    //if( momentum.Pt() > fTrackPtCut )
+    if( track->Pt() > fTrackPtCut )
     {
-      AliDebug(1,Form("Accept :  pT %2.2f > %2.2f",momentum.Pt(), fTrackPtCut));
+      AliDebug(1,Form("Accept :  pT %2.2f > %2.2f",track->Pt(), fTrackPtCut));
 
       return kTRUE;
     }
-    
-  } 
+  } // loop
   
   AliDebug(1,"Reject");
   
   return kFALSE;
-  
 }  
 
 //___________________________________________________
+/// \return True if event with good vertex
+//___________________________________________________
 Bool_t AliAnalysisTaskCaloFilter::AcceptEventVertex()
 {
-  // Accept event with good vertex
-  
   Double_t v[3];
   InputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   
@@ -272,70 +269,100 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventVertex()
 }  
 
 //_______________________________________________________
+/// Check if the vertex was well reconstructed, copy from
+/// v0Reader of conversion group. Call corresponding selection
+/// for ESDs and AODs.
+//_______________________________________________________
 Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy from v0Reader of conversion group
-  //It only works for ESDs
-  
   if(!fCheckEventVertex) return kTRUE;
 
-  // AODs
-  if(!fESDEvent) 
-  {
-    // Check that the vertex is not (0,0,0)
-    Double_t v[3];
-    InputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
+//  // Check that the vertex is not (0,0,0)
+//  Double_t v[3];
+//  InputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
+//    
+//  if(TMath::Abs(v[2]) < 1e-6 &&
+//     TMath::Abs(v[1]) < 1e-6 &&
+//     TMath::Abs(v[0]) < 1e-6 )
+//  {
+//    AliDebug(1,"Reject v(0,0,0)");
+//        
+//    return kFALSE ;
+//  }
     
-    if(TMath::Abs(v[2]) < 1e-6 && 
-       TMath::Abs(v[1]) < 1e-6 && 
-       TMath::Abs(v[0]) < 1e-6 ) 
-    {
-      AliDebug(1,"Reject v(0,0,0)");
-      
-      return kFALSE ;
-    }
-    
-    return kTRUE;
-  }
-  
-  // ESDs
+  if ( fESDEvent ) return CheckForPrimaryVertexInESDs();
+  else             return CheckForPrimaryVertexInAODs();
+}
+
+//_____________________________________________________________
+/// Check if the ESDs vertex was well reconstructed,
+/// copy from v0Reader of conversion group.
+//_____________________________________________________________
+Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertexInESDs()
+{
   if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() > 0)
-  {
     return kTRUE;
-  }
-  
-  if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() < 1) 
+
+  if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() < 1)
   {
     // SPD vertex
-    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors() > 0) 
+    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors() > 0)
     {
       //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return kTRUE;
-      
     }
-    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors() < 1)
     {
       //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       AliDebug(1,"Reject, GetPrimaryVertexSPD()->GetNContributors() < 1");
-      
+
       return kFALSE;
     }
   }
-  
+    
   AliDebug(1,"Reject, GetPrimaryVertexTracks()->GetNContributors() > 1");
-  
+    
   return kFALSE;
-  
+}
+
+//_____________________________________________________________
+/// Check if the AODs vertex was well reconstructed,
+/// copy from v0Reader of conversion group.
+//_____________________________________________________________
+Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertexInAODs()
+{
+  if (fAODEvent->GetPrimaryVertex() != NULL)
+  {
+    if(fAODEvent->GetPrimaryVertex()->GetNContributors() > 0) return kTRUE;
+  }
+    
+  if(fAODEvent->GetPrimaryVertexSPD() != NULL)
+  {
+    if(fAODEvent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    {
+      return kTRUE;
+    }
+    else
+    {
+      AliWarning(Form("Number of contributors from bad vertex type:: %s",
+                      fAODEvent->GetPrimaryVertex()->GetName()));
+      return kFALSE;
+    }
+  }
+    
+  AliDebug(1,"Reject, GetPrimaryVertexTracks()->GetNContributors() > 1");
+    
+  return kFALSE;
 }
 
 //__________________________________________________
+/// If filtering EMCal, correct energy, position ...
+/// Need to do this in a separate loop before filling
+/// the output CaloClusters because of the track-matching recalculations
+//__________________________________________________
 void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
 {
-  //If EMCAL, and requested, correct energy, position ...
-  
-  //Need to do this in a separate loop before filling the ESDs because of the track matching recalculations
-  
-  if(fCorrect && (fCaloFilter==kEMCAL || fCaloFilter==kBoth) ) 
+  if(fCorrect && (fCaloFilter==kEMCAL || fCaloFilter==kBoth) )
   {
     if(!fGeoMatrixSet)
     {
@@ -382,7 +409,7 @@ void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
       
     }//first event
     
-    //Cluster Loop
+    // Cluster Loop
     Int_t nCaloClus = InputEvent()->GetNumberOfCaloClusters();
     
     for (Int_t iClust=0; iClust<nCaloClus; ++iClust) 
@@ -430,10 +457,10 @@ void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
 }
 
 //________________________________________________
+/// Fill EMCAL/PHOS cell info
+//________________________________________________
 void AliAnalysisTaskCaloFilter::FillAODCaloCells()
-{  
-  // Fill EMCAL/PHOS cell info
-  
+{
   // EMCAL
   if ((fCaloFilter==kBoth ||  fCaloFilter==kEMCAL) && fEvent->GetEMCALCells()) 
   { // protection against missing ESD information
@@ -490,14 +517,12 @@ void AliAnalysisTaskCaloFilter::FillAODCaloCells()
   }
 }
 
-
+//___________________________________________________
+/// Fill the output AOD with input CaloClusters (ESD or AOD)
+/// Access to the output AOD container of clusters.
 //___________________________________________________
 void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
 {
-  // Fill the AOD with caloclusters
-  
-  // Access to the AOD container of clusters
-  
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
   Int_t jClusters=0;
   Float_t  posF[3]  ;
@@ -505,10 +530,9 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
   Int_t nCaloClus = fEvent->GetNumberOfCaloClusters();
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) 
   {
-    
     AliVCluster * cluster = fEvent->GetCaloCluster(iClust);
     
-    //Check which calorimeter information we want to keep.
+    // Check which calorimeter information we want to keep.
     
     if(fCaloFilter!=kBoth)
     {
@@ -523,7 +547,7 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
     AliDebug(2,Form("Original residuals : dZ %f, dR %f",dZ, dR));
     
     //--------------------------------------------------------------
-    //If EMCAL and corrections done, get the new matching parameters, do not copy noisy clusters
+    // If EMCAL and corrections done, get the new matching parameters, do not copy noisy clusters
     if(cluster->IsEMCAL() && fCorrect)
     {
       AliDebug(2,Form("Check cluster %d for bad channels and close to border",cluster->GetID()));
@@ -540,7 +564,7 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
     
     //--------------------------------------------------------------
     
-    //Now fill AODs
+    // Now fill AODs
     
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
@@ -581,14 +605,13 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
   }
   
   caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots  
-  
 }
 
 //__________________________________________________
+/// AliAODCaloTrigger direct copy.
+//__________________________________________________
 void AliAnalysisTaskCaloFilter::FillAODCaloTrigger()
 {
-  // AOD CaloTrigger copy
-  
   if( !AODEvent() || !fAODEvent ) return;
   
   AliAODCaloTrigger* triggerEM   = AODEvent()->GetCaloTrigger("EMCAL");
@@ -605,10 +628,10 @@ void AliAnalysisTaskCaloFilter::FillAODCaloTrigger()
 }  
 
 //______________________________________________
+/// AOD Header copy.
+//______________________________________________
 void AliAnalysisTaskCaloFilter::FillAODHeader()
 {
-  // AOD header copy
-  
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
   if(!header)
   {
@@ -674,29 +697,26 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
   fEvent->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
   header->SetDiamondZ(fESDEvent->GetDiamondZ(),fESDEvent->GetSigma2DiamondZ());
-  
 }
 
-
+//__________________________________________________
+/// Copy AOD MC particles.
 //__________________________________________________
 void AliAnalysisTaskCaloFilter::FillAODMCParticles()
 {
-  // Copy MC particles
-  
   if(!fFillMCParticles) return;
   
   TClonesArray* inMCParticles = (TClonesArray*) (fAODEvent  ->FindListObject("mcparticles"));
   TClonesArray* ouMCParticles = (TClonesArray*) ( AODEvent()->FindListObject("mcparticles"));
   
   if( inMCParticles &&  ouMCParticles ) new (ouMCParticles) TClonesArray(*inMCParticles);
-    
-}  
+}
 
+//_____________________________________________
+/// Copy AOD track.
 //_____________________________________________
 void AliAnalysisTaskCaloFilter::FillAODTracks()
 {
-  // AOD track copy
-  
   if(!fFillTracks) return;
   
   AliAODTrack* aodTrack(0x0);
@@ -785,14 +805,14 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
     
     return;
   }
-  
-}  
+}
 
+//_________________________________________
+/// Copy v0s (use if you know what you do,
+/// it consumes quite a lot of memory).
 //_________________________________________
 void AliAnalysisTaskCaloFilter::FillAODv0s()
 {
-  // Copy v0s (use if you know what you do, use quite a lot of memory)
-  
   if(!fFillv0s) return;
   
   // Copy from AODs
@@ -814,28 +834,26 @@ void AliAnalysisTaskCaloFilter::FillAODv0s()
     
     return;
   }
-  
 }  
 
 //____________________________________________
+/// Copy VZERO.
+//____________________________________________
 void AliAnalysisTaskCaloFilter::FillAODVZERO()
 {
-  // Copy VZERO
-  
   if(!fFillVZERO) return;
   
   AliAODVZERO* vzeroData = AODEvent()->GetVZEROData();
   
   if(fESDEvent) *vzeroData = *(fESDEvent->GetVZEROData());
   else          *vzeroData = *(fAODEvent->GetVZEROData());
-  
 }  
 
 //_______________________________________________
+/// Copy vertices.
+//_______________________________________________
 void AliAnalysisTaskCaloFilter::FillAODVertices()
 {
-  // Copy vertices
-  
   // set arrays and pointers
   Double_t pos[3]   ;
   Double_t covVtx[6];
@@ -889,14 +907,16 @@ void AliAnalysisTaskCaloFilter::FillAODVertices()
   AliAODVertex(pos, covVtx, chi, NULL, -1, AliAODVertex::kPrimary);
   primary->SetName(fEvent->GetPrimaryVertex()->GetName());
   primary->SetTitle(fEvent->GetPrimaryVertex()->GetTitle());
-  
 }
 
 //____________________________________
+/// Init analysis with configuration macro, if available.
+/// Example of configuration macro in: macros/ConfigCaloFilter.C
+/// But it is a legacy from first configuration macros,
+/// the suggested macro is: macros/AddTaskCaloFilter.C
+//____________________________________
 void AliAnalysisTaskCaloFilter::Init()
 {
-  //Init analysis with configuration macro if available
-  
   if(gROOT->LoadMacro(fConfigName) >=0)
   {
     AliInfo(Form("Configure analysis with %s",fConfigName.Data()));
@@ -928,15 +948,15 @@ void AliAnalysisTaskCaloFilter::Init()
     fVzCut             = filter->fVzCut;
     fCheckEventVertex  = filter->fCheckEventVertex;
 
-    for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = filter->fEMCALMatrix[i] ;
+    for(Int_t i = 0; i < 22; i++) fEMCALMatrix[i] = filter->fEMCALMatrix[i] ;
   }
 } 
 
 //_________________________________________
+/// Print settings.
+//_________________________________________
 void AliAnalysisTaskCaloFilter::PrintInfo()
 {
-  //Print settings
-  
   printf("AnalysisCaloFilter::PrintInfo() \n");
   
   printf("\t Not only filter, correct Clusters? %d\n",fCorrect);
@@ -956,10 +976,10 @@ void AliAnalysisTaskCaloFilter::PrintInfo()
 }
 
 //_______________________________________________________
+/// Init EMCal geometry and create the AOD MC particles branch.
+//_______________________________________________________
 void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
 {
-  // Init geometry 
-	
   fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
   
   if(fFillMCParticles)
@@ -968,15 +988,15 @@ void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
 		aodMCParticles->SetName("mcparticles");
 		((AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler())->AddBranch("TClonesArray", &aodMCParticles);
   }
-  
 }  
 
 //____________________________________________________________
+/// Execute analysis for current event.
+/// Copy input ESD or AOD header, vertex, CaloClusters, CaloCells,
+/// Tracks, vertex, V0 and MC Particles to output AOD.
+//____________________________________________________________
 void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event
-  // Copy input ESD or AOD header, vertex, CaloClusters and CaloCells to output AOD
-  
   AliDebug(1,Form("Analysing event # %d", (Int_t)Entry()));
   
   fEvent    = InputEvent();
@@ -1040,6 +1060,5 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   FillAODMCParticles();
   
   //printf("Filtered event, end processing : %s\n",fAODEvent->GetFiredTriggerClasses().Data());
-  
 }
 

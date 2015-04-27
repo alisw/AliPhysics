@@ -59,6 +59,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts();
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2010();
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2011();
+  // beta test, don't use for results
+  static AliFlowTrackCuts* GetBetaVZEROOnlyTrackCuts();
+  // end of beta test
   static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE, Int_t passN=2);  // XZhang 20120604
 
   Int_t Count(AliVEvent* event=NULL);
@@ -74,7 +77,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kKink,
                             kAODFilterBit,
                             kUserA, // reserved for custom cuts
-                            kUserB  // reserved for custom cuts
+                            kUserB, // reserved for custom cuts
+                            kBetaVZERO // temporary enum for beta testing of new vzero calibration
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
@@ -320,6 +324,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetNumberOfSigmas(Float_t val) {fNsigmaCut2 = val*val;};
   Float_t GetNumberOfSigmas() const {return TMath::Sqrt(fNsigmaCut2);};
+ 
+  void SetRun(Int_t const run) {this->fRun = run;};
+  Int_t GetRun() const {return this->fRun;};
 
  protected:
   //AliFlowTrack* MakeFlowTrackSPDtracklet() const;
@@ -460,7 +467,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
   Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
-    
+ 
+  Int_t         fRun;                   // run number
+ 
     
   //TPC TOF nsigma Purity based cut contours
   TFile                 *fContoursFile;       //! contours file
@@ -479,7 +488,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
     
     
 
-  ClassDef(AliFlowTrackCuts,15)
+  ClassDef(AliFlowTrackCuts,16)
 };
 
 #endif

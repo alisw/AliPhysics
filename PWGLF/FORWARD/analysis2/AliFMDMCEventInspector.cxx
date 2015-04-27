@@ -15,6 +15,7 @@
 //   - None
 //
 #include "AliFMDMCEventInspector.h"
+#include "AliCollisionGeometry.h"
 #include "AliLog.h"
 #include "AliAODForwardMult.h"
 #include "AliForwardUtil.h"

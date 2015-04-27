@@ -26,11 +26,17 @@ public:
     //Called internally (automatically)
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
 
-    //EvSel Snippets
-    Bool_t IsINELgtZERO             (AliVEvent *event);
-    Bool_t IsAcceptedVertexPosition (AliVEvent *event);
-    Bool_t IsNotPileupSPDInMultBins (AliVEvent *event);
-    Bool_t IsEventSelected(AliVEvent *event);
+    //static EvSel Snippets
+    static Bool_t IsMinimumBias                    (AliVEvent *event);
+    static Bool_t IsINELgtZERO                     (AliVEvent *event);
+    static Bool_t IsAcceptedVertexPosition         (AliVEvent *event);
+    static Bool_t IsNotPileupSPDInMultBins         (AliVEvent *event);
+    static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
+    static Bool_t IsEventSelected(AliVEvent *event);
+    
+    //Wrapper with fallback to tracklets
+    static Int_t GetStandardReferenceMultiplicity (AliVEvent *event, Bool_t lEmbedEventSelection = kTRUE);
+    
     Float_t MinVal( Float_t A, Float_t B ); 
 
 private:
@@ -54,7 +60,7 @@ private:
     //To Store <V0A>, <V0C>, <V0Apartial> and <V0Cpartial> on a run-per-run basis
     TH1D *fAverageAmplitudes; 
     
-    ClassDef(AliPPVsMultUtils,2) // base helper class
+    ClassDef(AliPPVsMultUtils,3) // base helper class
 };
 #endif
 

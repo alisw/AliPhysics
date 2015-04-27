@@ -102,7 +102,11 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
   //-------------------- READ OCDB TIME DELAYS ---------------------------
   // Arguments:
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage(ocdbStorage);
+  if (gSystem->Getenv("eocdbStorage")!=NULL){
+    man->SetDefaultStorage(ocdbStorage);
+  }else{
+    man->SetDefaultStorage(gSystem->Getenv("ocdbStorage"));
+  }
   man->SetRun(run);
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("T0/Calib/TimeDelay");
   AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entry->GetObject(); 
@@ -116,7 +120,7 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
  
   //--------------- write walues to the output ------------ 
   TTreeSRedirector* pcstream = NULL;
-  pcstream = new TTreeSRedirector(outfile);
+  pcstream = new TTreeSRedirector(outfile,"recreate");
   if (!pcstream) return;
 
 
@@ -131,98 +135,98 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
 
   time     = (startTimeGRP+stopTimeGRP)/2;
   duration = (stopTimeGRP-startTimeGRP);
+  TVectorD vecAmp(24,meanAmplitude);
+  TVectorD vecTime(24,meanTime);
+  TVectorD vecDelay(24,timeDelayOCDB);
 
-  (*pcstream)<<"t0QA"<<
-                  "run="<<run;//<<
-                 //"time="<<time<<
-            // "startTimeGRP="<<startTimeGRP<<
-            //  "stopTimeGRP="<<stopTimeGRP<<
-              ///    "duration="<<duration<<
-               //   "runType.="<<&runType;
-               
+  (*pcstream)<<"trending"<<
+    "run="<<run<<
+    "vecAmp.="<<&vecAmp<<
+    "vecTime.="<<&vecTime<<
+    "vecDelay.="<<&vecDelay;
 
- (*pcstream)<<"t0QA"<<
-             "resolution="<< resolutionSigma<<
-             "tzeroOrAPlusOrC="<< tzeroOrAPlusOrC<<
-             "tzeroOrA="<< tzeroOrA<<
-             "tzeroOrC="<< tzeroOrC<<
-             "amplPMT1="<<meanAmplitude[0]<<
-             "amplPMT2="<<meanAmplitude[1]<<
-             "amplPMT3="<<meanAmplitude[2]<<
-             "amplPMT4="<<meanAmplitude[3]<<
-             "amplPMT5="<<meanAmplitude[4]<<
-             "amplPMT6="<<meanAmplitude[5]<<
-             "amplPMT7="<<meanAmplitude[6]<<
-             "amplPMT8="<<meanAmplitude[7]<<
-             "amplPMT9="<<meanAmplitude[8]<<
-             "amplPMT10="<<meanAmplitude[9]<<
-             "amplPMT11="<<meanAmplitude[10]<<
-             "amplPMT12="<<meanAmplitude[11]<<
-             "amplPMT13="<<meanAmplitude[12]<<
-             "amplPMT14="<<meanAmplitude[13]<<
-             "amplPMT15="<<meanAmplitude[14]<<
-             "amplPMT16="<<meanAmplitude[15]<<
-             "amplPMT17="<<meanAmplitude[16]<<
-             "amplPMT18="<<meanAmplitude[17]<<
-             "amplPMT19="<<meanAmplitude[18]<<
-             "amplPMT20="<<meanAmplitude[19]<<
-             "amplPMT21="<<meanAmplitude[20]<<
-             "amplPMT22="<<meanAmplitude[21]<<
-             "amplPMT23="<<meanAmplitude[22]<<
-             "amplPMT24="<<meanAmplitude[23]<<
-             "timePMT1="<<meanTime[0]<<
-             "timePMT2="<<meanTime[1]<<
-             "timePMT3="<<meanTime[2]<<
-             "timePMT4="<<meanTime[3]<<
-             "timePMT5="<<meanTime[4]<<
-             "timePMT6="<<meanTime[5]<<
-             "timePMT7="<<meanTime[6]<<
-             "timePMT8="<<meanTime[7]<<
-             "timePMT9="<<meanTime[8]<<
-             "timePMT10="<<meanTime[9]<<
-             "timePMT11="<<meanTime[10]<<
-             "timePMT12="<<meanTime[11]<<
-             "timePMT13="<<meanTime[12]<<
-             "timePMT14="<<meanTime[13]<<
-             "timePMT15="<<meanTime[14]<<
-             "timePMT16="<<meanTime[15]<<
-             "timePMT17="<<meanTime[16]<<
-             "timePMT18="<<meanTime[17]<<
-             "timePMT19="<<meanTime[18]<<
-             "timePMT20="<<meanTime[19]<<
-             "timePMT21="<<meanTime[20]<<
-             "timePMT22="<<meanTime[21]<<
-             "timePMT23="<<meanTime[22]<<
-             "timePMT24="<<meanTime[23];
-(*pcstream)<<"t0QA"<<
-             "timeDelayPMT1="<<timeDelayOCDB[0]<<
-             "timeDelayPMT2="<<timeDelayOCDB[1]<<
-             "timeDelayPMT3="<<timeDelayOCDB[2]<<
-             "timeDelayPMT4="<<timeDelayOCDB[3]<<
-             "timeDelayPMT5="<<timeDelayOCDB[4]<<
-             "timeDelayPMT6="<<timeDelayOCDB[5]<<
-             "timeDelayPMT7="<<timeDelayOCDB[6]<<
-             "timeDelayPMT8="<<timeDelayOCDB[7]<<
-             "timeDelayPMT9="<<timeDelayOCDB[8]<<
-             "timeDelayPMT10="<<timeDelayOCDB[9]<<
-             "timeDelayPMT11="<<timeDelayOCDB[10]<<
-             "timeDelayPMT12="<<timeDelayOCDB[11]<<
-             "timeDelayPMT13="<<timeDelayOCDB[12]<<
-             "timeDelayPMT14="<<timeDelayOCDB[13]<<
-             "timeDelayPMT15="<<timeDelayOCDB[14]<<
-             "timeDelayPMT16="<<timeDelayOCDB[15]<<
-             "timeDelayPMT17="<<timeDelayOCDB[16]<<
-             "timeDelayPMT18="<<timeDelayOCDB[17]<<
-             "timeDelayPMT19="<<timeDelayOCDB[18]<<
-             "timeDelayPMT20="<<timeDelayOCDB[19]<<
-             "timeDelayPMT21="<<timeDelayOCDB[20]<<
-             "timeDelayPMT22="<<timeDelayOCDB[21]<<
-             "timeDelayPMT23="<<timeDelayOCDB[22]<<
-             "timeDelayPMT24="<<timeDelayOCDB[23];
-
-            //-----> add the mean/sigma of the new histogram here      
+    (*pcstream)<<"trending"<<
+      "resolution="<< resolutionSigma<<
+      "tzeroOrAPlusOrC="<< tzeroOrAPlusOrC<<
+      "tzeroOrA="<< tzeroOrA<<
+      "tzeroOrC="<< tzeroOrC<<      
+      "amplPMT1="<<meanAmplitude[0]<<
+      "amplPMT2="<<meanAmplitude[1]<<
+      "amplPMT3="<<meanAmplitude[2]<<
+      "amplPMT4="<<meanAmplitude[3]<<
+      "amplPMT5="<<meanAmplitude[4]<<
+      "amplPMT6="<<meanAmplitude[5]<<
+      "amplPMT7="<<meanAmplitude[6]<<
+      "amplPMT8="<<meanAmplitude[7]<<
+      "amplPMT9="<<meanAmplitude[8]<<
+      "amplPMT10="<<meanAmplitude[9]<<
+      "amplPMT11="<<meanAmplitude[10]<<
+      "amplPMT12="<<meanAmplitude[11]<<
+      "amplPMT13="<<meanAmplitude[12]<<
+      "amplPMT14="<<meanAmplitude[13]<<
+      "amplPMT15="<<meanAmplitude[14]<<
+      "amplPMT16="<<meanAmplitude[15]<<
+      "amplPMT17="<<meanAmplitude[16]<<
+      "amplPMT18="<<meanAmplitude[17]<<
+      "amplPMT19="<<meanAmplitude[18]<<
+      "amplPMT20="<<meanAmplitude[19]<<
+      "amplPMT21="<<meanAmplitude[20]<<
+      "amplPMT22="<<meanAmplitude[21]<<
+      "amplPMT23="<<meanAmplitude[22]<<
+      "amplPMT24="<<meanAmplitude[23]<<
+      "timePMT1="<<meanTime[0]<<
+      "timePMT2="<<meanTime[1]<<
+      "timePMT3="<<meanTime[2]<<
+      "timePMT4="<<meanTime[3]<<
+      "timePMT5="<<meanTime[4]<<
+      "timePMT6="<<meanTime[5]<<
+      "timePMT7="<<meanTime[6]<<
+      "timePMT8="<<meanTime[7]<<
+      "timePMT9="<<meanTime[8]<<
+      "timePMT10="<<meanTime[9]<<
+      "timePMT11="<<meanTime[10]<<
+      "timePMT12="<<meanTime[11]<<
+      "timePMT13="<<meanTime[12]<<
+      "timePMT14="<<meanTime[13]<<
+      "timePMT15="<<meanTime[14]<<
+      "timePMT16="<<meanTime[15]<<
+      "timePMT17="<<meanTime[16]<<
+      "timePMT18="<<meanTime[17]<<
+      "timePMT19="<<meanTime[18]<<
+      "timePMT20="<<meanTime[19]<<
+      "timePMT21="<<meanTime[20]<<
+      "timePMT22="<<meanTime[21]<<
+      "timePMT23="<<meanTime[22]<<
+      "timePMT24="<<meanTime[23];
+    (*pcstream)<<"trending"<<
+      "timeDelayPMT1="<<timeDelayOCDB[0]<<
+      "timeDelayPMT2="<<timeDelayOCDB[1]<<
+      "timeDelayPMT3="<<timeDelayOCDB[2]<<
+      "timeDelayPMT4="<<timeDelayOCDB[3]<<
+      "timeDelayPMT5="<<timeDelayOCDB[4]<<
+      "timeDelayPMT6="<<timeDelayOCDB[5]<<
+      "timeDelayPMT7="<<timeDelayOCDB[6]<<
+      "timeDelayPMT8="<<timeDelayOCDB[7]<<
+      "timeDelayPMT9="<<timeDelayOCDB[8]<<
+      "timeDelayPMT10="<<timeDelayOCDB[9]<<
+      "timeDelayPMT11="<<timeDelayOCDB[10]<<
+      "timeDelayPMT12="<<timeDelayOCDB[11]<<
+      "timeDelayPMT13="<<timeDelayOCDB[12]<<
+      "timeDelayPMT14="<<timeDelayOCDB[13]<<
+      "timeDelayPMT15="<<timeDelayOCDB[14]<<
+      "timeDelayPMT16="<<timeDelayOCDB[15]<<
+      "timeDelayPMT17="<<timeDelayOCDB[16]<<
+      "timeDelayPMT18="<<timeDelayOCDB[17]<<
+      "timeDelayPMT19="<<timeDelayOCDB[18]<<
+      "timeDelayPMT20="<<timeDelayOCDB[19]<<
+      "timeDelayPMT21="<<timeDelayOCDB[20]<<
+      "timeDelayPMT22="<<timeDelayOCDB[21]<<
+      "timeDelayPMT23="<<timeDelayOCDB[22]<<
+      "timeDelayPMT24="<<timeDelayOCDB[23];
+    
+    //-----> add the mean/sigma of the new histogram here      
  
- (*pcstream)<<"t0QA"<<"\n";
+ (*pcstream)<<"trending"<<"\n";
   
   pcstream->Close(); 
  

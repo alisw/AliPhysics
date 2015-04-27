@@ -14,6 +14,7 @@
 #include "AliVParticle.h"
 #include <TF1.h>
 #include <TList.h>
+#include <THnSparse.h>
 
 #include "AliEmcalJetByJetCorrection.h"
 
@@ -38,7 +39,6 @@ TNamed(),
   fNMissedTracks(-1),
   fpAppliedEfficiency(0),
   fhNmissing(0),
-  fhCmpNmissStrategy(0),
   fListOfOutput(0)
 {
   // Dummy constructor.
@@ -64,7 +64,6 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fRndm(0),
   fpAppliedEfficiency(0),
   fhNmissing(0),
-  fhCmpNmissStrategy(0),
   fListOfOutput(0)
 {
   // Default constructor.
@@ -85,15 +84,22 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
 
   fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
   
-  fhNmissing = new TH3F("fhNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added; N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 21,0,20, 21,0,20);
-  fhCmpNmissStrategy = new TH2F("fhCmpNmissStrategy", "Compare different way of obtaining N missing; N = (1./eff -1.) #times N_{constituents}; N from truth", 21,0,20, 21,0,20);
+  const Int_t nvars = 5;
+  Int_t nbins[nvars]  = {nBinsPtJ, 21 , 21 , 21 , 21};
+  Double_t minbin[nvars] = {minPtJ  , 0. , 0. , 0. , 0.};
+  Double_t maxbin[nvars] = {maxPtJ  , 20., 20., 20., 20.};
+  TString title = "fhNmissing", nameh = title;
+  TString axtitles[nvars] = {"#it{p}_{T,jet}", "N constituents added", "N_{constituents} #times (1/eff - 1)", "N_{truth}"};
+  for(Int_t i = 0; i<nvars; i++){
+     title+=axtitles[i];
+  }
+  fhNmissing = new THnSparseF(nameh.Data(), title.Data(), nvars, nbins, minbin, maxbin);
   
   fListOfOutput = new TList();
   fListOfOutput->SetName("JetByJetCorrectionOutput");
   fListOfOutput->SetOwner();
   fListOfOutput->Add(fpAppliedEfficiency);
   fListOfOutput->Add(fhNmissing);
-  fListOfOutput->Add(fhCmpNmissStrategy);
  
 
 }
@@ -113,7 +119,6 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fCorrectpTtrack(other.fCorrectpTtrack),
   fpAppliedEfficiency(other.fpAppliedEfficiency),
   fhNmissing(other.fhNmissing),
-  fhCmpNmissStrategy(other.fhCmpNmissStrategy),
   fRndm(other.fRndm)
 {
   // Copy constructor.
@@ -158,24 +163,29 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   Double_t eff = GetEfficiency(meanPt);
   fpAppliedEfficiency->Fill(meanPt,eff);
 
+  Double_t fillarray[5]; //"#it{p}_{T,jet}", "N constituents added", "N_{constituents} #times (1/eff - 1)", "N_{truth}"
+  fillarray[0] = jet->Pt();
+  
+  //np is the estimation of missed tracks
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
-  
-  
+  fillarray[2] = np;
   
   if(fExternalNmissed) {
-     fhCmpNmissStrategy->Fill(np, fNMissedTracks);
      np = fNMissedTracks; //if the number of missed tracks was calculated from external sources
+     fillarray[3] = fNMissedTracks;
   }
+  //npc is the number of added tracks
   Int_t npc=np; //take the particle missed as particle added
   if(fNpPoisson){
      npc=fRndm->Poisson(np); // smear the particle missed with a poissonian to get the number of added
   }
-  
-  fhNmissing->Fill(jet->Pt(), npc, np);
+  fillarray[1] = npc;
+  fhNmissing->Fill(fillarray);
+
   TLorentzVector corrVec; corrVec.SetPtEtaPhiM(jet->Pt(),jet->Eta(),jet->Phi(),jet->M());
 
   Double_t mass = 0.13957; //pion mass
-
+  fArrayTrackCorr->Clear();
   for(Int_t i = 0; i<npc; i++) {
     Double_t r;
     Double_t pt;
@@ -185,9 +195,9 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
     Double_t dphi = r*TMath::Sin(t);
     TLorentzVector curVec; 
     curVec.SetPtEtaPhiM(pt,deta+jet->Eta(),dphi+jet->Phi(),mass);
+    new ((*fArrayTrackCorr)[i]) TLorentzVector(curVec);
     corrVec+=curVec;
   }
-
   AliEmcalJet *jetCorr = new AliEmcalJet(corrVec.Pt(),corrVec.Eta(),corrVec.Phi(),corrVec.M());
 
   return jetCorr;
@@ -256,7 +266,6 @@ void AliEmcalJetByJetCorrection::Init() {
    for(Double_t ptmin = fJetPtMin; ptmin<fJetPtMax; ptmin+=fBinWidthJetPt) {
       Int_t binMin = fh3JetPtDRTrackPt->GetXaxis()->FindBin(ptmin+eps);
       Int_t binMax = fh3JetPtDRTrackPt->GetXaxis()->FindBin(ptmin+fBinWidthJetPt-eps);
-      //    Printf("%d bins: %d - %d -> %f - %f",counter,binMin,binMax,fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax));
       
       fh3JetPtDRTrackPt->GetXaxis()->SetRange(binMin,binMax);
       Int_t nBinspTtr = fh3JetPtDRTrackPt->GetZaxis()->GetNbins();
@@ -264,7 +273,6 @@ void AliEmcalJetByJetCorrection::Init() {
       TH2D *h2 = dynamic_cast<TH2D*>(fh3JetPtDRTrackPt->Project3D("zy"));
       if(h2){
       	 h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
-      	 //Printf("Check what it X axis: %s and Y axis: %s", h2->GetXaxis()->GetTitle(), h2->GetYaxis()->GetTitle());
       	 if(fCorrectpTtrack) {
       	    //apply efficiency correction to pTtrack
       	    for(Int_t ipTtr=0;ipTtr<nBinspTtr;ipTtr++){
@@ -283,7 +291,8 @@ void AliEmcalJetByJetCorrection::Init() {
    }
    //  Int_t nt = TMath::FloorNint((fJetPtMax-fJetPtMin)/fBinWidthJetPt);
    //  Printf("nt: %d entries fCollTemplates: %d",nt,fCollTemplates.GetEntriesFast());
-   
+
+   fArrayTrackCorr = new TClonesArray("TLorentzVector", 20);
    fInitialized = kTRUE;
 
 }

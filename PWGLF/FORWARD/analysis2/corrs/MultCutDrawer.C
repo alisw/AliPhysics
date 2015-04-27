@@ -7,6 +7,8 @@
 # include "AliForwardUtil.h"
 # include "AliForwardCorrectionManager.h"
 # include "AliLog.h"
+# include <TGraphErrors.h>
+# include <TMultiGraph.h>
 # include <TString.h>
 # include <TError.h>
 #else
@@ -15,6 +17,8 @@ class TObject;
 class AliFMDMultCuts;
 class THStack;
 class TH1;
+class TMultiGraph;
+class TGraphErrors;
 #include <TString.h>
 #endif
 
@@ -23,6 +27,7 @@ struct MultCutDrawer : public SummaryDrawer
   UShort_t fMinQuality;
   TList    fCuts;
   TList    fStacks;
+  TList    fMultiGraphs;
   Bool_t   fMC;
   //__________________________________________________________________
   /** 
@@ -32,6 +37,7 @@ struct MultCutDrawer : public SummaryDrawer
     : fMinQuality(8),
       fCuts(),
       fStacks(),
+      fMultiGraphs(),
       fMC(false)
   {
     // Rough equvilance: 
@@ -52,8 +58,8 @@ struct MultCutDrawer : public SummaryDrawer
     // 
     fCuts.Add(new TNamed("mpv",  "0.85  0.7    0.4  0.15"));
     fCuts.Add(new TNamed("xi",   "1     2.5    4.5  6.8"));
-    fCuts.Add(new TNamed("sig",  ".5    1      2    2.9"));
-    fCuts.Add(new TNamed("prob", "1e-1  2.5e-2 5e-4 2.5e-6"));
+    fCuts.Add(new TNamed("sig",  ".8    .9     1    1.5"));
+    fCuts.Add(new TNamed("prob", "0.01  0.025  0.04 0.06"));
     // fCuts.Add(new TNamed("prob", "1e-2 1e-3 1e-5 1e-7"));
   }
   //__________________________________________________________________
@@ -66,6 +72,7 @@ struct MultCutDrawer : public SummaryDrawer
     : fMinQuality(o.fMinQuality),
       fCuts(),
       fStacks(),
+      fMultiGraphs(),
       fMC(false)
   {}
   //__________________________________________________________________
@@ -122,21 +129,22 @@ struct MultCutDrawer : public SummaryDrawer
     TIter    iCut(&fCuts);
     TObject* pCut = 0;
     while ((pCut = iCut())) { 
-      TString                 method(pCut->GetName());
-      TString                 sP(pCut->GetTitle());
-      TObjArray*              aP = sP.Tokenize(" ");
-      TIter                   iP(aP);
-      TObjString*             pP = 0;
-      TString                 tM;
+      TString      method(pCut->GetName());
+      TString      sP(pCut->GetTitle());
+      TObjArray*   aP = sP.Tokenize(" ");
+      TIter        iP(aP);
+      TObjString*  pP = 0;
+      TString      tM;
+      TMultiGraph* sum = AllSummary(method, sP);
       fBody->SetBottomMargin(0.20);
       fBody->SetLeftMargin(0.06);
       fBody->Divide(1, aP->GetEntries(), 0, 0);
       Int_t iPad = 1;
       while ((pP = static_cast<TObjString*>(iP()))) {
-	THStack* all   = AllStack(iPad-1);
-	Double_t p     = pP->String().Atof();
-	Double_t vP[]  = { p, p, p, p, p };
-	THStack* stack = CutStack(method, vP, all);
+	THStack*     all   = AllStack(iPad-1);
+	Double_t     p     = pP->String().Atof();
+	Double_t     vP[]  = { p, p, p, p, p };
+	THStack*     stack = CutStack(method, vP, all, sum);
 	if (tM.IsNull()) tM = stack->GetTitle();
 	// Kill title on all but first sub-panel
 	stack->SetTitle("");
@@ -150,8 +158,6 @@ struct MultCutDrawer : public SummaryDrawer
 	stack->GetXaxis()->SetTitleOffset(0.6);
 	stack->GetXaxis()->SetTitleColor(kBlack);
 	stack->GetXaxis()->SetLabelSize(0.07);
-	stack->GetXaxis()->Dump();
-
 
 	if (iPad == 1) {
 	  Color_t    col   = kBlack;
@@ -212,6 +218,28 @@ struct MultCutDrawer : public SummaryDrawer
 
     fParVal->SetX(savX);
     fParVal->SetY(savY);
+
+    Int_t nSum = fMultiGraphs.GetEntries();
+    fBody->Divide(1,nSum);
+    for (Int_t i = 1; i <= nSum; i++) {
+      DrawInPad(fBody, i, fMultiGraphs.At(i-1), "apl");
+    }
+    PrintCanvas("Trends");
+    
+    
+    TFile* out = TFile::Open("cutMethods.root", "RECREATE");
+    fStacks.Write("stacks", TObject::kSingleKey);
+    fMultiGraphs.Write("trends", TObject::kSingleKey);
+    TIter nextMG(&fMultiGraphs);
+    TMultiGraph* mg = 0;
+    while ((mg = static_cast<TMultiGraph*>(nextMG()))) {
+      TDirectory* dir = out->mkdir(mg->GetName());
+      dir->cd();
+      mg->GetListOfGraphs()->Write();
+      out->cd();
+    }
+    out->Write();
+    // out->Close();
     
     CloseCanvas();
   }
@@ -303,6 +331,45 @@ struct MultCutDrawer : public SummaryDrawer
   }
   //__________________________________________________________________
   /** 
+   * Get multigraph at @a i.  If the stack doesn't exist, make it
+   * 
+   * @param i Location (0-based)
+   * 
+   * @return Stack 
+   */
+  TMultiGraph* AllSummary(const TString& method, const TString& title)
+  {
+    TObject* o = fMultiGraphs.FindObject(method);
+    if (o) return static_cast<TMultiGraph*>(o);
+    TMultiGraph* mg = new TMultiGraph(method, title);
+    fMultiGraphs.Add(mg);
+    return mg;
+  }
+  TGraphErrors* FindSummary(TMultiGraph* summaries,
+			    const TString& n,
+			    const TString& method,
+			    Color_t        col,
+			    Style_t        style)
+  {
+    
+    TObject* o = (summaries->GetListOfGraphs() ?
+		  summaries->GetListOfGraphs()->FindObject(n) : 0);
+    if (o) return static_cast<TGraphErrors*>(o);
+    TGraphErrors* summary = new TGraphErrors;
+    summary->SetName(n);
+    summary->SetTitle(method);
+    summary->SetLineColor(col);
+    summary->SetMarkerColor(col);
+    summary->SetFillColor(col);
+    summary->SetMarkerStyle(style);
+    summary->SetFillStyle(0);
+    summaries->Add(summary);
+    
+    return summary;
+  }
+
+  //__________________________________________________________________
+  /** 
    * Get the marker styoe associated with a cut
    * 
    * @param m Cut identifier 
@@ -387,7 +454,8 @@ struct MultCutDrawer : public SummaryDrawer
    * 
    * @return Newly created stack 
    */    
-  THStack* CutStack(const TString& method, Double_t* param, THStack* all)
+  THStack* CutStack(const TString& method, Double_t* param,
+		    THStack* all, TMultiGraph* summaries)
   {
     AliFMDMultCuts::EMethod m = AliFMDMultCuts::String2Method(method);
     Info("CutStack", "Method %s -> %d", method.Data(), m);
@@ -458,6 +526,11 @@ struct MultCutDrawer : public SummaryDrawer
       lines->Add(nLtx);lines->Add(pLtx);lines->Add(vLtx);
       h->GetListOfFunctions()->Add(lines);
       printf("%5.3f+/-%6.4f ", avg, var);
+
+      TGraphErrors* summary = FindSummary(summaries, n, method, col, style);
+      Int_t nSum = summary->GetN();
+      summary->SetPoint(nSum, param[i-1], avg);
+      summary->SetPointError(nSum, 0, var);
     }
     TLatex* rLtx = new TLatex(6, fMC ? 0.65 : 0.55, 
 			      Form("All: %5.3f#pm%6.4f_{%6.4f}^{%6.4f}",
@@ -472,6 +545,12 @@ struct MultCutDrawer : public SummaryDrawer
     all->SetMinimum(0);
     all->SetMaximum(fMC ? 0.7 : 0.6);
 
+    summaries->SetTitle(cut->GetMethodString(true));
+    TGraphErrors* summary = FindSummary(summaries, "all", method,kBlack,style);
+    Int_t nSum = summary->GetN();
+    summary->SetPoint(nSum, param[0], rAvg);
+    summary->SetPointError(nSum, 0, rVar);
+    
     delete hist;
     return stack;
   }

@@ -38,6 +38,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    UInt_t mixevent            = AliVEvent::kAny,
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
+   //Bool_t   doEventPlaneRes   = 0,
    const char *tag			  = ""
 )
 {  
@@ -116,6 +117,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetMixedEventType(mixevent);
   correlationtask->SetCentBinSize(centbinsize);
   correlationtask->SetDoEffCorr(doEffcorrSW);
+  //correlationtask->SetdoEventPlaneRes(doEventPlaneRes);
 
   // =================== set up containers ================================================
   // Cluster Container

@@ -56,6 +56,7 @@ const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any s
 const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
 
 const Bool_t    CutInjectedSignals = kFALSE;
+const UInt_t    NminEleInEventForRej = 2;
 // ^^^^^^^^^^ [/end common settings] ^^^^^^^^^^
 
 //________________________________________________________________
@@ -73,6 +74,23 @@ const Bool_t    CutInjectedSignals = kFALSE;
 //noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
 //die->GetTrackFilter().AddCuts(noconv);
 
+//________________________________________________________________
+AliAnalysisCuts* SetupEventCuts()
+{
+  // event cuts are identical for all analysis 'cutInstance's that run together!
+  //
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  eventCuts->SetVertexZ(-10.,10.);
+  //not sure if this can be used, probably not:
+  // Patrick:
+  //  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
+  // Mahmut:
+  //  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTracksOrSPD);
+  //  eventCuts->SetRequireV0and();
+  return eventCuts;
+}
 
 //________________________________________________________________
 AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)

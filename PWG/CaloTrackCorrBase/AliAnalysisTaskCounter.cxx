@@ -100,7 +100,7 @@ AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
 
 
 //____________________________________________________
-// Init histogram pointers and add them to container.
+/// Init histogram pointers and add them to container.
 //____________________________________________________
 void AliAnalysisTaskCounter::UserCreateOutputObjects()
 {  
@@ -181,7 +181,6 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   PostData(1,fOutputContainer);
   
 }
-
 
 //_______________________________________________
 /// Main event loop
@@ -472,7 +471,6 @@ void AliAnalysisTaskCounter::FinishTaskOutput()
 }
 
 //_____________________________________
-//
 /// Implemented Notify() to read the cross sections
 /// and number of trials from pyxsec.root, values stored
 /// in specific histograms.
@@ -511,7 +509,7 @@ Bool_t AliAnalysisTaskCounter::Notify()
   
   fh1Xsec->Fill("<#sigma>",xsection);
   
-  // construct a poor man average trials
+  // average trials per event
   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
   
   if(trials >= nEntries && nEntries > 0.) fAvgTrials = trials/nEntries;

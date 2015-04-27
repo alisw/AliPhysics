@@ -7,7 +7,7 @@ void CalibSummary(Int_t irun, const char* ocdbStorage){
   //
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");  
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/ConfigOCDB.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ConfigOCDB.C");
   ConfigOCDB(irun,ocdbStorage);  
   AliTPCcalibSummary *calibSummary = new AliTPCcalibSummary;
   calibSummary->ProcessRun(irun);

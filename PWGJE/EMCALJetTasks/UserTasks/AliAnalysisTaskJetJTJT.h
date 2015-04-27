@@ -46,14 +46,18 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
   void                        CheckClusTrackMatching();
   Double_t	     	      getJt(AliVTrack *track, AliEmcalJet *jet, int reverse);
   Double_t	     	      getJt(AliVParticle *track, AliEmcalJet *jet, int reverse);
+  Double_t                    getDiffR(double phi1, double phi2, double eta1, double eta2);
 
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
   TH1                       **fHistTracksJt;            //!Track jt spectrum
+  TH1			    **fHistTracksEta;           //!Track eta spectrum
   TH1                       **fHistClustersPt;          //!Cluster pt spectrum
   TH1                       **fHistLeadingJetPt;        //!Leading jet pt spectrum
   TH1                       ***fHistJetsPt;          	//!Jet pt spectrum
+  TH1                       ***fHistJetsCorrPt;        	//!Rho corrected Jet pt spectrum
+  TProfile                  **fHistJetsCorrPtVsNonCorr; //!Corrected versus raw jet pt
   TH1			    ***fHistBackgroundDone;	//!Background test
 
   //Jt histograms
@@ -62,6 +66,9 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
   TH1                       ****fHistJTPta_all;			//!All particles Jt spectrum
   TH1                       ****fHistJTBg;			//!Jt background
   TH1                       ****fHistLogJTBg;			//!Logarithmic Jt background
+
+  TProfile		    ***fHistPtaVsJt;             //!Associated pT vs. Jt in jet
+  TProfile		    ***fHistBgPtaVsJt;           //!Associated pT vs. Jt in background
 
   //non-invariant
   TH1                       ****fHistJTPtaNonInv;			//!Jet Jt spectrum

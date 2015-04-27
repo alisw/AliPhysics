@@ -186,8 +186,8 @@ struct dNdetaDrawer
       fShowOthers(0),        // Show other data
       // Settings 
       fRebin(0),             // Rebinning factor 
-      fFwdSysErr(0.076),     // Systematic error in forward range
-      fCenSysErr(0),         // Systematic error in central range 
+      fFwdSysErr(0.07),      // Systematic error in forward range
+      fCenSysErr(0.02),      // Systematic error in central range 
       fTitle(""),            // Title on plot
       fBase(""),             // Optional base name of output files
       fClusterScale(""),     // Scaling of clusters to tracklets      
@@ -528,7 +528,7 @@ struct dNdetaDrawer
     fCentSeen         = 0;
     fOptions          = flags;
     fFormats          = formats;
-    SetForwardSysError(flags & kShowSysError ? 0.076 : 0);
+    SetForwardSysError(flags & kShowSysError ? 0.07 : 0);
     SetFinalMC        (flags & kUseFinalMC ? "forward_dndetamc.root" : "");
     // "EmpiricalCorrection.root"
     SetEmpirical      (flags & kUseEmpirical ? fEmpirical.Data() : "");
@@ -765,7 +765,7 @@ struct dNdetaDrawer
 	CorrectCentral(cen);
 	Double_t low, high;
 	TH1* tmp = Merge(cen, fwd, low, high);
-	TF1* f   = FitMerged(tmp, low, high);
+	TF1* f   = 0; // FitMerged(tmp, low, high);
 	MakeSysError(tmp, cen, fwd, f);
 	delete f;
 
@@ -780,12 +780,12 @@ struct dNdetaDrawer
 	    tmppp->SetBinError(k, 0);
 	    tmppp->SetBinContent(k, 0);
 	  }
-	  fResults->GetHists()->AddFirst(tmpp, "e5");
+	  fResults->GetHists()->AddFirst(tmpp, (f ? "e5" : "e2"));
 	}
 
 	if (fOptions & kVerbose) 
 	  Info("", "Adding systematic error histogram %s", tmp->GetName());
-	fResults->GetHists()->AddFirst(tmp, "e5");
+	fResults->GetHists()->AddFirst(tmp, (f ? "e5" : "e2"));
 
 	if (!(fOptions & kMirror)) continue;
 
@@ -843,8 +843,10 @@ struct dNdetaDrawer
     }
     if (!fCentMeth) 
       fCentMeth = results->FindObject("centEstimator");
-    if (!fCentMeth && HasCent())
-      fCentMeth = new TNamed("centEstimator", "V0M");
+    if (!fCentMeth && HasCent()) {
+      fCentMeth = new TNamed("centEstimator", "default");
+      fCentMeth->SetUniqueID(1);
+    }
 
     if (fTriggerEff < 0) { 
       // Allow complete overwrite by passing negative number 
@@ -927,13 +929,12 @@ struct dNdetaDrawer
 	   fNormString->GetTitle(), fNormString->GetUniqueID(),
 	   centTxt.Data(), (options ? options->GetTitle() : "none"));
     }
-    if (fSysString->GetUniqueID() == 3) {
-      Info("FetchInformation", "Left/Right assymmetry, mirror, and systematic "
-	   "errors explicitly disabled for pPb");
+    if (fSysString->GetUniqueID() == 3 ||
+	fSysString->GetUniqueID() == 4) {
+      Info("FetchInformation", "Left/Right asymmetry, and mirroring "
+	   "explicitly disabled for pPb/Pbp");
       fOptions   &= ~kShowLeftRight;
       fOptions   &= ~kMirror;
-      fFwdSysErr =  0;
-      fCenSysErr =  0;
     }
   }
   //__________________________________________________________________
@@ -945,13 +946,56 @@ struct dNdetaDrawer
     UShort_t sys   = (fSysString  ? fSysString->GetUniqueID() : 0);
     UShort_t trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
     UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
+    UShort_t cen   = (fCentMeth   ? fCentMeth->GetUniqueID() : 0);
     if (centLow < centHigh) {
-      // Possibly modify trg according to method 
+      // Possibly modify trg according to method
+      // Printf("We have centrality cen=%d meth=%s", cen,
+      //        (fCentMeth ? fCentMeth->GetTitle() : "?"));
+      UShort_t msk = 0x01; // Default to V0M comparison
+      if (cen == 0 && fCentMeth) {
+	TString cm(fCentMeth->GetTitle());
+	if      (cm.EqualTo("V0M", TString::kIgnoreCase))    msk = 0x01;
+	else if (cm.EqualTo("V0A", TString::kIgnoreCase))    msk = 0x02;
+	else if (cm.EqualTo("ZNA", TString::kIgnoreCase))    msk = 0x04;
+	else if (cm.EqualTo("ZNC", TString::kIgnoreCase))    msk = 0x08;
+	else if (cm.EqualTo("V0C", TString::kIgnoreCase))    msk = 0x10;
+	else if (cm.EqualTo("Cl1", TString::kIgnoreCase))    msk = 0x20;
+      }
+      else {
+	switch (cen) {
+	case 1:   msk = 0x01; break; // default V0M
+	case 2:   msk = 0x01; break; // V0M
+	case 3:   msk = 0x02; break; // V0A
+	case 4:               break; // V0A123
+	case 5:   msk = 0x10; break; // V0C
+	case 6:               break; // FMD
+	case 7:               break; // Tracks
+	case 8:               break; // Tracklets
+	case 9:               break; // CL0
+	case 10:  msk = 0x20; break; // CL1
+	case 11:              break; // CND
+	case 12:  msk = 0x04; break; // ZNA
+	case 13:  msk = 0x08; break; // ZNC
+	case 14:              break; // ZPA
+	case 15:              break; // ZPC
+	case 16:              break; // NPA
+	case 17:              break; // V0MvsFMD
+	case 18:              break; // V0MvsTracklets
+	case 19:              break; // ZEMvsZDC
+	case 20:              break; // RefMult
+	case 21:              break; // HMTF V0A
+	case 22:              break; // HMTF V0M
+	case 23:              break; // HMTF V0C
+	default:              break;
+	}
+      }
+      trg = (trg & 0x200f) | (msk << 4);
     }
     Long_t   ret   = 
       gROOT->ProcessLine(Form("RefData::GetData(%d,%d,%d,%d,%d,%d);",
 			      sys,snn,trg,centLow,centHigh,fShowOthers));
     if (!ret) {
+#if 0
       Warning("", "RefData::GetData(%d,%d,0x%x,%d,%d,0x%x);",
 	      sys,snn,trg,centLow,centHigh,fShowOthers);
       Warning("FetchOthers", 
@@ -960,6 +1004,7 @@ struct dNdetaDrawer
 	      fTrigString ? fTrigString->GetTitle() : "unknown", 
 	      fSNNString  ? fSNNString->GetTitle()  : "unknown", 
 	      centLow, centHigh, fShowOthers);
+#endif
       return 0;
     }
 
@@ -1710,6 +1755,8 @@ struct dNdetaDrawer
 	tS = "by N_{#lower[-.2]{ch}} |#it{#eta}|<0.8";
       else 
 	tS  = "by centrality";
+      if (fCentMeth) tS.Append(Form(" (%s)", fCentMeth->GetTitle()));
+#if 0
       UShort_t trg = fTrigString->GetUniqueID();
       switch (trg) { 
       case 0x10: tS.Append(" (V0M)"); break;
@@ -1717,6 +1764,7 @@ struct dNdetaDrawer
       case 0x40: tS.Append(" (ZNA)"); break;
       case 0x80: tS.Append(" (ZNC)"); break;
       }
+#endif
     }
     
     TLatex* tt = new TLatex(xR, yR, Form("%s #sqrt{s%s}=%s, %s", 
@@ -1989,6 +2037,21 @@ struct dNdetaDrawer
    * @{ 
    * @name Data utility functions 
    */
+  Color_t Brighten(Color_t origNum, Int_t nTimes=2) const
+  {
+    TColor* col   = gROOT->GetColor(origNum);
+    if (!col) return origNum;
+    Int_t   origR = Int_t(0xFF * col->GetRed());
+    Int_t   origG = Int_t(0xFF * col->GetGreen());
+    Int_t   origB = Int_t(0xFF * col->GetBlue());
+    // TColor::Pixel2RGB(TColor::Number2Pixel(origNum), origR, origG, origB);
+    Int_t off    = nTimes*0x33;
+    Int_t newR   = TMath::Min((origR+off),0xff);
+    Int_t newG   = TMath::Min((origG+off),0xff);
+    Int_t newB   = TMath::Min((origB+off),0xff);
+    Int_t newNum = TColor::GetColor(newR, newG, newB);
+    return newNum;
+  }
   //__________________________________________________________________
   /** 
    * Get the color for a centrality bin
@@ -2016,7 +2079,7 @@ struct dNdetaDrawer
     Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
     Int_t    col      = gStyle->GetColorPalette(icol);
     //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
-    return col;
+    return Brighten(col);
   }
   //__________________________________________________________________
   /** 
@@ -2375,6 +2438,54 @@ struct dNdetaDrawer
     }
     return ret;
   }
+  /** 
+   * Get error bands from vanilla graph
+   *
+   * @param g 
+   * @param low
+   * @param up
+   */
+  static void ErrorGraphs(const TGraph* g, TGraph*& low, TGraph*& up)
+  {
+    Warning("ErrorGraphs", "Called with vanila TGraph (%s)",
+	    g->IsA()->GetName());
+    Int_t n = g->GetN();
+    low = new TGraph(n);
+    up  = new TGraph(n);
+    for (Int_t i = 0; i < n; i++) {
+      low->SetPoint(i, 0, 0);
+      up->SetPoint(i, 0, 0);
+    }
+  }
+  /** 
+   * Get error bands 
+   */
+  static void ErrorGraphs(const TGraphErrors* g, TGraph*& low, TGraph*& up)
+  {
+    // Info("ErrorGraphs", "Called with TGraphErrors");
+    Int_t n = g->GetN();
+    low = new TGraph(n);
+    up  = new TGraph(n);
+    for (Int_t i = 0; i < n; i++) {
+      low->SetPoint(i, g->GetX()[i], g->GetY()[i] - g->GetEY()[i]);
+      up->SetPoint(i, g->GetX()[i], g->GetY()[i] + g->GetEY()[i]);
+    }
+  }
+  /** 
+   * Get error bands 
+   */
+  static void ErrorGraphs(const TGraphAsymmErrors* g, TGraph*& low, TGraph*& up)
+  {
+    // Info("ErrorGraphs", "Called with TGraphAsymmErrors");
+    Int_t n = g->GetN();
+    low = new TGraph(n);
+    up  = new TGraph(n);
+    for (Int_t i = 0; i < n; i++) {
+      low->SetPoint(i, g->GetX()[i], g->GetY()[i] - g->GetEYlow()[i]);
+      up->SetPoint(i, g->GetX()[i], g->GetY()[i] + g->GetEYhigh()[i]);
+    }
+  }
+
   //__________________________________________________________________
   /** 
    * Make the ratio of h1 to h2 
@@ -2470,15 +2581,19 @@ struct dNdetaDrawer
     Int_t    n     = g->GetN();
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[n-1];
+    TGraph*  glow  = 0;
+    TGraph*  ghigh = 0;
     if (g->IsA()->InheritsFrom(TGraphErrors::Class())) { 
       const TGraphErrors* ge = static_cast<const TGraphErrors*>(g);
       xlow  -= ge->GetErrorXlow(0);
       xhigh += ge->GetErrorXhigh(n-1);
+      ErrorGraphs(ge, glow, ghigh);
     }
     if (g->IsA()->InheritsFrom(TGraphAsymmErrors::Class())) { 
       const TGraphAsymmErrors* ge = static_cast<const TGraphAsymmErrors*>(g);
       xlow  -= ge->GetErrorXlow(0);
       xhigh += ge->GetErrorXhigh(n-1);
+      ErrorGraphs(ge, glow, ghigh);
     }
     if (xlow > xhigh) { Double_t t = xhigh; xhigh = xlow; xlow = t; }
 
@@ -2490,10 +2605,15 @@ struct dNdetaDrawer
       if (x < xlow || x > xhigh) continue; 
 
       Double_t f = g->Eval(x);
-      if (f <= 0) continue; 
+      if (f <= 0) continue;
+
+      Double_t efl = f - glow->Eval(x);
+      Double_t efh = ghigh->Eval(x) - f;
+      Double_t ec  = h->GetBinError(i);
+      Double_t e   = TMath::Max(ec, TMath::Max(efl, efh));
 
       ret->SetBinContent(i, c / f);
-      ret->SetBinError(i, h->GetBinError(i) / f);
+      ret->SetBinError(i, e / f);
     }
     return ret;
   }
@@ -2765,19 +2885,24 @@ struct dNdetaDrawer
   void
   MakeSysError(TH1* tmp, TH1* cen, TH1* fwd, TF1* fit)
   {
-    if (!tmp || !fwd || !fit) return;
+    if (!tmp || !fwd) return;
     for (Int_t i = 1; i <= tmp->GetNbinsX(); i++) {
       Double_t tc = tmp->GetBinContent(i);
       if (tc < 0.01) continue;
-      Double_t fc = fwd->GetBinContent(i);
-      Double_t cc = cen ? cen->GetBinContent(i) : 0;
+      Double_t fc     = fwd->GetBinContent(i);
+      Double_t cc     = cen ? cen->GetBinContent(i) : 0;
       Double_t sysErr = fFwdSysErr;
-      if (cc > .01 && fc > 0.01) 
+      Double_t mc     = fc;
+      if (cc > .01 && fc > 0.01) {
 	sysErr = (fFwdSysErr+fCenSysErr) / 2;
-      else if (cc > .01) 
+	mc     = (fc+cc) / 2;
+      }
+      else if (cc > .01) {
 	sysErr = fCenSysErr;
+	mc     = cc;
+      }
       Double_t x = tmp->GetXaxis()->GetBinCenter(i);
-      Double_t y = fit->Eval(x);
+      Double_t y = (fit ? fit->Eval(x) : mc);
       tmp->SetBinContent(i, y);
       tmp->SetBinError(i,sysErr*y);
     }
@@ -2893,11 +3018,16 @@ struct dNdetaDrawer
     TString clean(Form("sed -e 's/\\(_[0-9]\\{3\\}d[0-9]\\{2\\}\\)"
 		       "\\(_[ac]\\|\\)"
 		       "_[0-9a-f]\\{4\\}"
-		       "\\(__[0-9]\\{2,3\\}\\|\\)/\\1\\2/g' "
+		       "\\(__[0-9]\\{1,3\\}\\|\\)/\\1\\2/g' "
 		       "-e 's/%s/%s/g' < %s > %s.C",
 		       bname.Data(), tgt.Data(), fname.Data(), tgt.Data()));
-    Printf("Execute \"%s\"", clean.Data());
+    // Printf("Execute \"%s\"", clean.Data());
     gSystem->Exec(clean);
+    Printf("Copy %s.C to %s/%s/%05d/%s%s/%s.C",tgt.Data(),
+	   (fEmpirical.IsNull() ? "normal" : "nosec"),
+	   fSysString->GetTitle(), snn, (fCentMeth ? "CENT" : ""),
+	   (fCentMeth ? fCentMeth->GetTitle() : fTrigString->GetTitle()),
+	   tgt.Data());
   }
   /* @} */ 
   /** 

@@ -27,7 +27,7 @@ void runLocal() {
   AliMCEventHandler *mc = new AliMCEventHandler();
   mgr->SetMCtruthEventHandler(mc);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   chain=CreateESDChain("list.txt",1);
 
   // Create containers for input/output
@@ -65,11 +65,11 @@ void runProof() {
     gProof->UploadPackage("ANALYSISalice");
     gProof->EnablePackage("ANALYSISalice");
 
-    gROOT->ProcessLine(".include $ALICE_ROOT/include");
+    gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
 
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
 
-  gProof->Load("$ALICE_ROOT/PWGPP/global/AliAnalysisTaskGlobalQA.cxx++g");
+  gProof->Load("$ALICE_PHYSICS/PWGPP/global/AliAnalysisTaskGlobalQA.cxx++g");
   AliAnalysisTask *task = new AliAnalysisTaskGlobalQA();
   mgr->AddTask(task);
   

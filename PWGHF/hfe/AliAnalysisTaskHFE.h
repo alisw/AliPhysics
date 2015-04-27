@@ -84,7 +84,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     };
     enum{
       kBgPtBins = 44,
-      kElecBgSpecies = 6,
+      kElecBgSpecies = 9,
       kCentBins = 11,
       kBgLevels = 3
     };
@@ -166,6 +166,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr) {fCentralityLimits[icentr] = valuecentr;};
     void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
     void SetNonHFEsystematics(Bool_t isSystematics) {fisNonHFEsystematics = isSystematics; };
+    void SetCalcContamBeauty(Bool_t isCalcContamBeauty) { fCalcContamBeauty = isCalcContamBeauty;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SetRejectMCFakeTracks(Bool_t rejectFakes = kTRUE) { fRejectMCFakeTracks = rejectFakes; };
     void SetBackGroundFactorsFunction(const TF1 * const backGroundFactorsFunction, Int_t centralitybin=0){  
@@ -192,7 +193,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kAODanalysis = BIT(20),
       kBackgroundInitialized = BIT(21),
       kTreeStream = BIT(22),
-      kWeightHist = BIT(23)
+      kWeightHist = BIT(23) // be careful to use the numbers > 23
     };
 
     Bool_t FillProductionVertex(const AliVParticle * const track) const;
@@ -228,6 +229,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fPbPbUserCentralityBinning;    // PbPb user centrality binning
     Bool_t fRemoveFirstEvent;             // Remove first event from chunk
     Bool_t fisNonHFEsystematics;          // Non-HFE background systematics analysis
+    Bool_t fCalcContamBeauty;             // Apply ip cut right before the PIDQA to sotre pidqa histos
     AliOADBContainer *fSpecialTrigger;    // Special trigger selection
     Int_t   fCentralityF;                 // Centrality bin
     Float_t fCentralityPercent;           // Centrality percentile
@@ -275,7 +277,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
 
-    ClassDef(AliAnalysisTaskHFE, 2)       // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFE, 3)       // The electron Analysis Task
 };
 #endif
 

@@ -16,8 +16,8 @@
 // Flow task class for the ALICE HFE group
 //
 //
-#ifndef ALIANALYSISTASKFLOWTPCTOFEPSP_H
-#define ALIANALYSISTASKFLOWTPCTOFEPSP_H
+#ifndef ALIANALYSISTASKFLOWTPCTOFEPSPTEST_H
+#define ALIANALYSISTASKFLOWTPCTOFEPSPTEST_H
 
 #ifndef ROOT_TArrayD
 #include <TArrayD.h>
@@ -51,6 +51,7 @@ class AliAODMCHeader;
 class TClonesArray;
 class AliHFENonPhotonicElectron;
 class TTreeSRedirector;
+class AliHFEmcQA;
 
 class AliAnalysisTaskFlowTPCTOFEPSP: public AliAnalysisTaskSE {
 public:
@@ -73,8 +74,12 @@ public:
     kOp = 1
   } FlowSign_t;
 
-
-
+  enum{
+    kBgPtBins = 44,
+    kElecBgSpecies = 9,
+    kCentBins = 11,
+    kBgLevels = 3
+  };
 
   AliAnalysisTaskFlowTPCTOFEPSP();
   AliAnalysisTaskFlowTPCTOFEPSP(const char *name);
@@ -92,8 +97,6 @@ public:
   AliHFEpid *GetPID() const { return fPID; }
   AliHFEpid *GetPIDTOFOnly() const { return fPIDTOFOnly; }
   AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
-  AliHFEpid *GetPIDBackground() const { return fPIDBackground; }
-  AliHFEpidQAmanager *GetPIDBackgroundQAManager() const { return fPIDBackgroundqa; }
   AliHFENonPhotonicElectron *GetHFEBackgroundSubtraction() const { return fBackgroundSubtraction; }
 
   void SetPtBinning(const TArrayD &binning) { fPtBinning = binning; }
@@ -103,7 +106,8 @@ public:
   void SetAsFunctionOfP(Bool_t asFunctionOfP) { fAsFunctionOfP = asFunctionOfP; };
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
   void SetHFEBackgroundSubtraction(AliHFENonPhotonicElectron * const backgroundSubtraction) { fBackgroundSubtraction = backgroundSubtraction; };
-  void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
+  void SetElecBackGroundFactors(Int_t iPt, Int_t iType, Int_t iCent, Int_t iError, Double_t elecBackGroundFactor) {fElecBackgroundFactor[iError][iCent][iType][iPt] = elecBackGroundFactor; };
+  void SetBinLimits(Int_t iPt, Double_t momentum){fBinLimit[iPt] = momentum;};
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
   void SetEtaGap(Double_t  etaGap) { fEtaGap = etaGap; };
   void SetVZEROEventPlane(Bool_t vzeroEventPlane) { fVZEROEventPlane = vzeroEventPlane; };
@@ -142,23 +146,26 @@ public:
   AliFlowCandidateTrack *MakeTrack( Double_t mass, Double_t pt, Double_t phi, Double_t eta) ;
   Double_t GetPhiAfterAddV2(Double_t phi,Double_t reactionPlaneAngle) const;
 
-  void  SetMaxInvmass(Double_t maxInvmass) { fMaxInvmass = maxInvmass; };
-  void  SetMaxopening3D(Double_t maxOpening3D) { fMaxopening3D = maxOpening3D; };
-  void  SetMaxopeningtheta(Double_t maxOpeningtheta) { fMaxopeningtheta = maxOpeningtheta; };
-  void  SetMaxopeningphi(Double_t maxOpeningphi) { fMaxopeningphi = maxOpeningphi; };
-  void  SetAlgorithmMA(Bool_t algorithmMA) { fAlgorithmMA = algorithmMA; };
-  void  SetMassConstraint(Bool_t massConstraint) { fSetMassConstraint = massConstraint; };
   void  SetPileUpCut(Bool_t cut=kTRUE) { fPileUpCut=cut; }
 
-  Int_t    LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *fESD, AliMCEvent *mcEvent,Int_t binct,Double_t deltaphi,Int_t source,Int_t indexmother);
+  Bool_t IsFromHijing(Int_t Index);
+  Int_t  GetPrimary(Int_t id);
+  void   GetMesonKine(Int_t centrality);
+  void   SelectGenerator(Int_t selectGenerator) { fSelectGenerator = selectGenerator; };
+
   
 private:
   TList     *fListHist;         //! TH list
+  TList     *fHistMCQA;         //! Output container for MC QA histograms 
   Bool_t    fAODAnalysis;       // AOD analysis
   ULong_t   fFilter;             // reconstruction AOD status flags 
   AliAODMCHeader *fAODMCHeader;         // ! MC info AOD
   TClonesArray *fAODArrayMCInfo;        // ! MC info particle AOD
   AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
+  Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
+  Double_t fBinLimit[kBgPtBins+1];      // Electron pt bin edges
+  AliHFEmcQA *fMCQA;                    //! MC QA
+  Int_t     fSelectGenerator;           // For photonic background, select type of generators -1 no selection, 0 Hijing, 1 the rest
   
   Bool_t    fVZEROEventPlane;  // Use Event Planes from VZERO
   Bool_t    fVZEROEventPlaneA; // Use Event Planes from VZERO A
@@ -190,15 +197,6 @@ private:
   Bool_t    fMCPID; // MC PID for electrons
   Bool_t    fNoPID; // No PID for checks
 
-  Double_t  fChi2OverNDFCut;   // Limit chi2
-  Double_t  fMaxdca;           // Limit dca
-  Double_t  fMaxopeningtheta;  // Limit opening angle in theta
-  Double_t  fMaxopeningphi;    // Limit opening angle in phi
-  Double_t  fMaxopening3D;     // Limit opening 3D
-  Double_t  fMaxInvmass;       // Limit invariant mass
-  Bool_t    fSetMassConstraint; // Set mass constraint
-  
-
   Bool_t    fMonitorEventPlane; // Monitor event plane
   Bool_t    fMonitorContamination; // Monitor contamination
   Bool_t    fMonitorPhotonic;// Monitor photonic
@@ -221,16 +219,6 @@ private:
   Bool_t fAsFunctionOfP;          // contamination parametrization as function of p or pt
   TF1 *fContamination[11];        // Parametrization of the contamination (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
   TF1 *fv2contamination[11];      // Parametrization of the v2 of charged pions (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
-
-  // Cuts for background study
-  AliESDtrackCuts *fHFEBackgroundCuts;    // HFE background cuts
-  AliHFEpid  *fPIDBackground;             // PID background cuts 
-  AliHFEpidQAmanager *fPIDBackgroundqa;   // QA Manager Background  
-  Bool_t fAlgorithmMA;                    // algorithm MA
-
-  // List of tracks
-  TArrayI *fArraytrack;                    //! list of tracks
-  Int_t fCounterPoolBackground;            // number of tracks
 
   // VZERO Event plane after calibration 2010
   AliHFEVZEROEventPlane *fHFEVZEROEventPlane; // VZERO event plane calibrated
@@ -291,35 +279,10 @@ private:
   THnSparseF *fCosPhiMaps;         //! Cos
   TProfile2D *fProfileCosPhiMaps;  //! Profile Cos
 
-  // Background study: not statistic but tagged 
-  THnSparseF *fDeltaPhiMapsTaggedPhotonic; //! Delta phi
-  //THnSparseF *fCosPhiMapsTaggedPhotonic; //! Cos
-  THnSparseF *fDeltaPhiMapsTaggedNonPhotonic; //! Delta phi
-  //THnSparseF *fCosPhiMapsTaggedNonPhotonic; //! Cos
-  THnSparseF *fDeltaPhiMapsTaggedPhotonicLS; //! Delta phi
-  //THnSparseF *fCosPhiMapsTaggedPhotonicLS; //! Cos
-
-  // Background study: centrality, pt, source
-  THnSparseF *fMCSourceDeltaPhiMaps; //! Source MC
-  // Background study: deltaphi, centrality, pt, minv, source
-  THnSparseF *fOppSignDeltaPhiMaps;  //! Delta phi
-  THnSparseF *fSameSignDeltaPhiMaps; //! Delta phi
-  // Background study: angle, centrality, source
-  THnSparseF *fOppSignAngle;         // ! Opening Angles
-  THnSparseF *fSameSignAngle;        // ! Opening Angles
-
   TTreeSRedirector  *fDebugStreamer;               //!Debug streamer
-
-  Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
-  Int_t CheckPdg(Int_t tr, AliMCEvent* mcEvent);
-  Int_t IsMotherGamma(Int_t tr, AliMCEvent* mcEvent);
-  Int_t IsMotherPi0(Int_t tr, AliMCEvent* mcEvent);
-  Int_t IsMotherC(Int_t tr, AliMCEvent* mcEvent);
-  Int_t IsMotherB(Int_t tr, AliMCEvent* mcEvent);
-  Int_t IsMotherEta(Int_t tr, AliMCEvent* mcEvent);
     
   
-  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 3); // analysisclass
+  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 6); // analysisclass
 };
 
 #endif

@@ -29,10 +29,9 @@
 #include "TGraph.h"
 #include "TChain.h"
 #include <math.h>
-#include "TObject.h"
 #include "TObjArray.h"
 #include "TList.h"
-#include "AliAnalysisTask.h"
+#include <TLorentzVector.h>
 
 #include "AliAnalysisManager.h"
 #include "AliRunLoader.h"
@@ -43,15 +42,12 @@
 #include "AliKFParticle.h"
 #include "AliESDVertex.h"
 #include "AliStack.h"
-#include <TLorentzVector.h>
 #include "AliVertex.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrackCuts.h"
 #include "AliCentrality.h"
-#include "AliAnalysisFilter.h"
-#include "AliAnalysisCuts.h"
 #include "AliDielectron.h"
 #include "AliDielectronVarManager.h"
 #include "AliDielectronPID.h"
@@ -59,16 +55,17 @@
 #include "AliDielectronTrackCuts.h"
 #include "AliDielectronCutGroup.h"
 #include "AliDielectronHelper.h"
+
 // todo: clean up includes...
 
 #include "AliAnalysisTaskElectronEfficiency.h"
-
-
+#include <bitset>
 
 ClassImp(AliAnalysisTaskElectronEfficiency)
 
 using std::cout;
 using std::endl;
+
 
 //________________________________________________________________________
 AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency(const char *name) : 
@@ -76,10 +73,15 @@ AliAnalysisTaskSE(name),
 fESD(0x0),
 mcEvent(0x0),
 fPIDResponse(0x0),
-fIsMC(kFALSE),
+fSelectPhysics(kFALSE),
+fTriggerMask(AliVEvent::kAny),
+fEventFilter(0x0),
 fRequireVtx(kFALSE),
 fCheckV0daughterElectron(kFALSE),
 fCutInjectedSignal(kFALSE),
+fNminEleInEventForRej(2),
+fSupportedCutInstance(0),
+//fEventcount(0),
 fMaxVtxZ(0.),
 fCentMin( -1.),
 fCentMax(101.),
@@ -87,8 +89,6 @@ fEtaMinGEN(-10.),
 fEtaMaxGEN( 10.),
 fPtMinGEN( -1.),
 fPtMaxGEN(100.),
-fSupportedCutInstance(0),
-//fEventcount(0),
 fNptBins(0),
 fNetaBins(0),
 fNphiBins(0),
@@ -97,6 +97,7 @@ fEtaBins(0x0),
 fPhiBins(0x0),
 fsRunBins(""),
 fvTrackCuts(),
+fvExtraTrackCuts(),
 fvDoPrefilterEff(),
 fvRejCutMee(),
 fvRejCutTheta(),
@@ -104,11 +105,12 @@ fvRejCutPhiV(),
 fNgen(0x0),
 fvReco_Ele(),
 fvReco_Ele_poslabel(),
-fAllPions(0x0),
+fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
 fOutputList(0x0),
 fOutputListSupportHistos(0x0),
+fEventStat(0x0),
 tracksT(0x0),
 fWriteTree(kFALSE),
 pxESD(-1.), // tree variables
@@ -150,17 +152,20 @@ labelgrandmotherT(-1),
 pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
-selectedByCut(0)
+selectedByCut(0),
+selectedByExtraCut(0)
 {
   // Constructor
   
   fvTrackCuts.clear();
+  fvExtraTrackCuts.clear();
   fvDoPrefilterEff.clear();
   fvRejCutMee.clear();
   fvRejCutTheta.clear();
   fvRejCutPhiV.clear();
   fvReco_Ele.clear();
   fvReco_Ele_poslabel.clear();
+  fvAllPionsForRej.clear();
   fvPionsRejByAllSigns.clear();
   fvPionsRejByUnlike.clear();
   
@@ -168,7 +173,9 @@ selectedByCut(0)
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TTree::Class());
+  DefineOutput(4, TH1D::Class());
 }
+
 
 //________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
@@ -187,10 +194,10 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   fOutputList->SetName(GetName());
   fOutputList->SetOwner();
   fOutputList->Add(fNgen);
-  fOutputList->Add(fAllPions);
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) {
     fOutputList->Add(fvReco_Ele.at(iCut));
     fOutputList->Add(fvReco_Ele_poslabel.at(iCut));
+    fOutputList->Add(fvAllPionsForRej.at(iCut));
     fOutputList->Add(fvPionsRejByAllSigns.at(iCut));
     fOutputList->Add(fvPionsRejByUnlike.at(iCut));
     // be really careful if you need to implement this (see comments in UserExec):
@@ -200,11 +207,9 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   }
   PostData(1, fOutputList);
   
-  
   OpenFile(2, "RECREATE");
   CreateSupportHistos();
   PostData(2, fOutputListSupportHistos);  
-  
   
   OpenFile(3, "RECREATE");
   //Define Tree for Track Values
@@ -253,20 +258,31 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   tracksT->Branch("pyMC",               &pyMC);
   tracksT->Branch("pzMC",               &pzMC);
   tracksT->Branch("selectedByCut",      &selectedByCut);
+  tracksT->Branch("selectedByExtraCut", &selectedByExtraCut);
   PostData(3, tracksT);
+  
+  OpenFile(4, "RECREATE");
+  if (!fEventStat){
+    fEventStat=new TH1D("hEventStat","Event statistics",kEventStatBins,0,kEventStatBins);
+    fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
+    fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel. (data only)");
+    fEventStat->GetXaxis()->SetBinLabel(3,"After event filter");
+  }
+  PostData(4, fEventStat);
 }
-    
+
+
 //________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 {
   /// Strategy:  Process one cutInstance (or multiple ones) for analysis tracking&PID efficiency (as usual).
   ///            Process optional, separate cutInstance for prefilter efficiencies: it also produces the usual tracking&PID efficiency
   ///            (but of course for the specified prefilter track sample, so mainly for convenience and curiosity),
-  ///            and then computes the pair rejection efficiency, using random rejection of pions with the selected electrons.
+  ///            and then computes the pair rejection efficiency, using random rejection of "testparticles" with the selected electrons. (further info in 'CalcPrefilterEff()')
   
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if (!esdH) { Printf("ERROR: Could not get ESDInputHandler\n"); }
-  else fESD = esdH->GetEvent();
+  AliESDInputHandler *inputHandlerESD = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!inputHandlerESD) { Printf("ERROR: Could not get ESDInputHandler\n"); }
+  else fESD = inputHandlerESD->GetEvent();
   if (!fESD) { Printf("ERROR: fESD not available"); return; }
 
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
@@ -278,40 +294,79 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   
   AliStack *fStack = mcEvent->Stack();
   
+  Bool_t isESD=kTRUE;
+  Bool_t isAOD=kFALSE; //currently not supported!
+  // taken from AliAnalysisTaskMultiDielectron::UserExec():
+  // -----
+  // Was event selected ?
+  ULong64_t isSelected = AliVEvent::kAny;
+  //Bool_t isRejected = kFALSE;
+  if( fSelectPhysics && inputHandlerESD){
+    if((isESD && inputHandlerESD->GetEventSelection()) || isAOD){
+      isSelected = inputHandlerESD->IsEventSelected();
+      //if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
+      //if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
+      //else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+      //cout << " isSelected = " << (bitset<32>)isSelected << " \t fTriggerMask = " << (bitset<32>)fTriggerMask << endl;
+      isSelected&=fTriggerMask;
+      //TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
+      //if(!fFiredTrigger.IsNull()) isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+    }
+  }
+  // -----
+  // Before physics selection
+  fEventStat->Fill(kAllEvents);
+  if (isSelected==0) {
+    PostData(4,fEventStat);
+    return;
+  }
+  // After physics selection
+  fEventStat->Fill(kPhysicsSelectionEvents);
+  
+  // Event filter
+  if (fEventFilter) {
+    if (!fEventFilter->IsSelected(fESD)) return; // fESD instead of 'InputEvent()'
+  }
+  // centrality
   Double_t centralityF=-1;
   AliCentrality *esdCentrality = fESD->GetCentrality();
   if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
   if (centralityF<fCentMin || centralityF>=fCentMax) return;
- 
+  // vertex, just for monitoring
   const AliESDVertex* vtxESD = fESD->GetPrimaryVertexTracks();
   Double_t vtxZGlobal = -99.;
   Int_t nCtrb = -1;
-  if(fRequireVtx&&!vtxESD) return;
-  if(vtxESD){
+  if (vtxESD) {
     vtxZGlobal = vtxESD->GetZ(); // was GetZv(); until Jan 2015
-    if(TMath::Abs(vtxZGlobal)>fMaxVtxZ) return;
     nCtrb = vtxESD->GetNContributors();
-    if(nCtrb < 1) return;
   }
   
-  Int_t kRunNumber = fESD->GetRunNumber();
+  // After event filter
+  fEventStat->Fill(kFilteredEvents);
+  PostData(4,fEventStat);
+  
   
 //  ++fEventcount;
 //  Printf("__________ next Event selected ( %i ) __________", fEventcount);
+  Int_t kRunNumber = fESD->GetRunNumber();
   
   // for selected events, fill some histos:
   (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(0)))->Fill(0.);
   (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(1)))->Fill(centralityF);
-  (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(4)))->Fill(vtxZGlobal);//fVertexZ
-  (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(5)))->Fill(nCtrb);//fNvertexCtrb
-  //fNumESD_cent->Fill(fESD->GetNumberOfTracks(),centralityF);
+  (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(4)))->Fill(vtxZGlobal);//hVertexZ
+  (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(5)))->Fill(nCtrb);//hNvertexCtrb
+  //hNTrksEvent_cent->Fill(fESD->GetNumberOfTracks(),centralityF);
   
   //
-  // store if there is at least one setting to be used for Prefilter efficiency determination.
+  // store if there is at least one cutset to be used for Prefilter efficiency determination.
+  // store for each cutset if there is at least one electron selected by 'fvExtraTrackCuts'.
   //
-  Bool_t atleastOnePrefilterSetting=kFALSE;
+  Bool_t              atleastOnePrefilterSetting=kFALSE;
+  Bool_t              atleastOneEleExtraSelected=kFALSE;
+  std::vector<Bool_t> fvAtleastOneEleExtra_perCut;
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) {
     if (fvDoPrefilterEff.at(iCut) == kTRUE) atleastOnePrefilterSetting=kTRUE;
+    fvAtleastOneEleExtra_perCut.push_back(kFALSE); // initialize vector contents
   }
   
   //
@@ -322,7 +377,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   std::vector< std::vector<Int_t> > vecEleCand_perCut; // one vector per cut setting
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) { vecEleCand_perCut.push_back(vecTrkID); }
   
-  Int_t NaccTrks = 0;
+  Int_t NEleSelected = 0;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) 
   {
     AliESDtrack* track = fESD->GetTrack(iTracks);
@@ -369,6 +424,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     mcPt = mctrack->Pt(); mcEta = mctrack->Eta(); mcPhi = mctrack->Phi();
     
     selectedByCut = 0;
+    selectedByExtraCut = 0;
     
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) // loop over all specified cutInstances
     {
@@ -405,7 +461,21 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 //      else continue;
       
       selectedByCut|=1<<(iCut); // store bitwise which cut settings the track survived.
-    }
+      
+      // store infos related to prefilter efficiency
+      if (fvDoPrefilterEff.at(iCut) == kTRUE) {
+        // check if one of the prefilter electrons also survives the analysis cuts of this cutset.
+        //cout << "fvExtraTrackCuts.at("<<iCut<<") --- .size() = "<<fvExtraTrackCuts.size() << endl;
+        UInt_t selectedMaskExtra = (1<<fvExtraTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
+        UInt_t cutmaskExtra      = fvExtraTrackCuts.at(iCut)->IsSelected(track);
+        if (cutmaskExtra==selectedMaskExtra) {
+          selectedByExtraCut|=1<<(iCut); // this is just for the tree.
+          atleastOneEleExtraSelected = kTRUE;
+          fvAtleastOneEleExtra_perCut.at(iCut) = kTRUE;
+        }
+      }
+      
+    } //loop over cutInstances
     //cout << "selectedByCut = " << selectedByCut << endl;
     
     //________________________________________________________________
@@ -454,7 +524,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     
     if (selectedByCut & 1<<fSupportedCutInstance) // only go on if the track survived in the cut setting for which you want to fill the support histograms.
     { 
-      NaccTrks++;
+      NEleSelected++;
       Float_t pESD = track->P();
       
       // for selected tracks, fill some histos:
@@ -503,21 +573,21 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     
   } //track loop
   
-  (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(3)))->Fill(centralityF,NaccTrks);//fNAcc_cent
+  //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(2)))->Fill(centralityF,0);//hNTrksEvent_cent
+  (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(3)))->Fill(centralityF,NEleSelected);//hNEleEvent_cent
   
-  
-  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) {
-    //cout << " iCut=" << iCut << ", ele candidate IDs: " << flush;
-    for (UInt_t iele=1; iele<vecEleCand_perCut.at(iCut).size(); iele++) { // iele=0 is the default entry which is filled evertime, but not used (see init of 'vecEleCand_perCut').
-      //cout << "  " << vecEleCand_perCut.at(iCut).at(iele) << flush;
-    }
-  } //cout << " " << endl;
-  
+//  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) {
+//    cout << " iCut=" << iCut << ", ele candidate IDs: " << flush;
+//    for (UInt_t iele=1; iele<vecEleCand_perCut.at(iCut).size(); iele++) { // iele=0 is the default entry which is filled evertime, but not used (see init of 'vecEleCand_perCut').
+//      cout << "  " << vecEleCand_perCut.at(iCut).at(iele) << flush;
+//    }
+//  } //cout << " " << endl;
   
   //
   // call the Prefilter efficiency calculation
+  // please see comments above the function declaration for further info.
   //
-  if (atleastOnePrefilterSetting) CalcPrefilterEff(mcEvent, vecEleCand_perCut);
+  if (atleastOnePrefilterSetting && atleastOneEleExtraSelected) CalcPrefilterEff(mcEvent, vecEleCand_perCut, fvAtleastOneEleExtra_perCut);
   
   
   if(mcEvent){
@@ -572,11 +642,17 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand) 
+void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra) 
 {
   /// Determination of random electron rejection efficiency due to pair-prefiltering (used for photon conversion + Dalitz rejection).
-  /// It is estimated by pairing primary, non-injected, charged pions with the selected electrons (so the pair has no real correlation)
-  /// and applying the prefilter pair cuts to these random pairs. All and rejected pions are stored in 3D histograms. (by Patrick)
+  /// It is estimated by pairing a sample of "testparticles" (using primary, non-injected, charged pions) with the electrons of the prefilter sample (stored in 'vvEleCand').
+  /// With this method the pair has no real correlation, just like in the case of random rejection of a signal electron.
+  /// The pairing is only done for cut settings for which in the current event at least one final analysis electron was found (stored in 'vbEleExtra').
+  /// Probably a second electron of any type should be in the event, otherwise the chance of rejecting an electron-electron pair is zero. Controlled by variable 'fNminEleInEventForRej' (=2 by default).
+  //  @TODO: question: how to treat ULS and LS pairing in this context?
+  /// The prefilter pair cuts are applied to these random pairs. All and rejected testparticles are stored in 3D histograms.
+  /// The advantage of this method is a huge number of random pairs, the disadvantage may be a systematic difference in the implicitly available number of pairs...
+  /// (by Patrick)
   
   Int_t nMCtracks  = mcEventLocal->GetNumberOfTracks();
   AliStack *fStack = mcEventLocal->Stack();
@@ -595,9 +671,6 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
     if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
     if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
     
-    //fill reference histogram (denominator) to determine rejection efficiency
-    fAllPions->Fill(mcPt,mcEta,mcPhi);
-    
     // need TLorentzVectors for the pairing
 		Double_t vMomPi[3]; mcPion->PxPyPz(vMomPi);
     Double_t momPi    = mcPion->P();
@@ -607,18 +680,18 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
     Int_t chargePion = mcPion->Charge();
     
     // loop over all cut settings
-    for (UInt_t iCut=0; iCut<vvEleCand.size(); ++iCut)
+    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     {
-      if (fvDoPrefilterEff.at(iCut) == kFALSE) continue;
+      if (vbEleExtra.at(iCut) == kFALSE) continue; // if there is no global electron in the event, no prefilter pairing should be done.
+      if (vvEleCand.at(iCut).size()-1 < fNminEleInEventForRej) continue; // size-1 because vec[0] is not used (always filled with '0').
+      if (fvDoPrefilterEff.at(iCut) == kFALSE) continue; // may not even be needed anymore...
       // flags for the pion
       Bool_t rejByAllSigns = kFALSE;
       Bool_t rejByUnlike   = kFALSE;
       
-      // pair the pion with all selected electron candidates and check for close pairs. pairing starts at vec[2] because:
-      //  - vec[0] is always set to 0, since this is needed to initialize the 2D vector (see UserExec).
-      //  - in reality the electrons are paired with each other, so in case of only 1 electron the rejection effi must be 0.
-      //    (similar argument holds for more than 1 electron. @TODO: question: how to treat ULS and LS pairing in this context?)
-      for (UInt_t iEle=2; iEle<vvEleCand.at(iCut).size(); iEle++) 
+      // pair the testparticle with all selected electron candidates and check for close pairs. 
+      // pairing starts at vec[1] because vec[0] is always set to 0, since this is needed to initialize the 2D vector (see UserExec).
+      for (UInt_t iEle=1; iEle<vvEleCand.at(iCut).size(); iEle++) 
       {
         AliMCParticle *mcEle = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(vvEleCand.at(iCut).at(iEle)));
         Double_t vMomEle[3]; mcEle->PxPyPz(vMomEle);
@@ -657,7 +730,8 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
         }
       } //electron loop
       
-      //fill histogram per cut setting to determine rejection efficiency
+      //fill histograms per cut setting to determine rejection efficiency
+      fvAllPionsForRej.at(iCut)->Fill(mcPt,mcEta,mcPhi); //reference histogram (denominator)
       if (rejByAllSigns) fvPionsRejByAllSigns.at(iCut)->Fill(mcPt,mcEta,mcPhi);
       if (rejByUnlike)   fvPionsRejByUnlike.at(iCut)->Fill(mcPt,mcEta,mcPhi);
     } //cut loop
@@ -850,8 +924,11 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   fvReco_Ele.push_back(hNreco_Ele);
   fvReco_Ele_poslabel.push_back(hNreco_Ele_poslabel);
   
+  // one needs the histogram 'hAllPionsForRej' for each cutInstance independently, because empty events may differ between the cutsets which run together.
+  TH3F *hAllPionsForRej = new TH3F(Form("AllPionsForRej_%s",name.Data()),Form("AllPionsForRej_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   TH3F *hNPionsRejByAllSigns = new TH3F(Form("NPionsRejByAllSigns_%s",name.Data()),Form("NPionsRejByAllSigns_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   TH3F *hNPionsRejByUnlike = new TH3F(Form("NPionsRejByUnlike_%s",name.Data()),Form("NPionsRejByUnlike_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fvAllPionsForRej.push_back(hAllPionsForRej);
   fvPionsRejByAllSigns.push_back(hNPionsRejByAllSigns);
   fvPionsRejByUnlike.push_back(hNPionsRejByUnlike);
   
@@ -871,7 +948,6 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
   
   Printf("fNptBins=%i\t fPtBins[1]=%f\t fNetaBins=%i\t fEtaBins[1]=%f\t fNphiBins=%i\t fPhiBins[1]=%f\t ",fNptBins,fPtBins[1],fNetaBins,fEtaBins[1],fNphiBins,fPhiBins[1]);
   fNgen               = new TH3F("fNgen","fNgen",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-  fAllPions           = new TH3F("fAllPions","fAllPions",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
 }
 
 //________________________________________________________________________
@@ -884,20 +960,20 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->SetOwner();
   
   // Event variables
-  TH1F* hnEvents     = new TH1F("nEvents","Number of processed events after cuts;#events",1,0.,1.);//,AliDielectronVarManager::kNevents);
-  TH1F* hCent        = new TH1F("centrality","N events vs centrality;centrality [%];#events",100,0,100);//,AliDielectronVarManager::kCentrality);
-  TH2F* fNumESD_cent = new TH2F("fNumESD_cent", "N. ESD tracks vs. centrality;centrality;N_{Tracks}", 50,0.,100., 50,-0.5,49.5);
-  TH2F* fNAcc_cent   = new TH2F("fNAcc_cent"  , "N. Acc tracks vs. centrality;centrality;N_{Tracks}", 50,0.,100., 50,-0.5,49.5);
-  TH1F* fVertexZ     = new TH1F("fVertexZ","fVertexZ",300,-15.,15.);
-  TH1F* fNvertexCtrb = new TH1F("fNvertexCtrb","fNvertecCtrb",5000,-0.5,4999.5);
+  TH1F* hnEvents         = new TH1F("nEvents","Number of processed events after cuts;;N_{events}",1,0.,1.);//,AliDielectronVarManager::kNevents);
+  TH1F* hCent            = new TH1F("centrality","N. events vs. centrality;centrality [%];N_{events}",100,0,100);//,AliDielectronVarManager::kCentrality);
+  TH2F* hNTrksEvent_cent = new TH2F("hNTrksEvent_cent", "N. tracks vs. centrality (not used);centrality [%];N_{Tracks}", 50,0.,100., 50,-0.5,49.5);
+  TH2F* hNEleEvent_cent  = new TH2F("hNEleEvent_cent", "N. selected electrons per event vs. centrality;centrality [%];N_{Tracks}", 50,0.,100., 50,-0.5,49.5);
+  TH1F* hVertexZ         = new TH1F("hVertexZ","hVertexZ",300,-15.,15.);
+  TH1F* hNvertexCtrb     = new TH1F("hNvertexCtrb","hNvertexCtrb",5000,-0.5,4999.5);
   fOutputListSupportHistos->AddAt(hnEvents, 0);
   fOutputListSupportHistos->AddAt(hCent, 1);
-  fOutputListSupportHistos->AddAt(fNumESD_cent, 2);
-  fOutputListSupportHistos->AddAt(fNAcc_cent, 3);
-  fOutputListSupportHistos->AddAt(fVertexZ, 4);
-  fOutputListSupportHistos->AddAt(fNvertexCtrb, 5);
+  fOutputListSupportHistos->AddAt(hNTrksEvent_cent, 2);
+  fOutputListSupportHistos->AddAt(hNEleEvent_cent, 3);
+  fOutputListSupportHistos->AddAt(hVertexZ, 4);
+  fOutputListSupportHistos->AddAt(hNvertexCtrb, 5);
   
-  TH1F* hUseless06 = new TH1F("hUseless","hUseless",1,0,1);
+  TH1F* hUseless06 = new TH1F("hUseless06","hUseless06", 1,0.,1.);
   fOutputListSupportHistos->AddAt(hUseless06, 6);
   
   // Track variables

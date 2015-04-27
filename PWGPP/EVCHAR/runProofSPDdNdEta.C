@@ -40,7 +40,7 @@ void runProofSPDdNdEta_CorrRef4(
   TString extraLibs;
   TList *list = new TList();
   if (recotracklets) {
-    alirootMode="REC";     // $ALICE_ROOT/macros/loadlibsrec.C
+    alirootMode="REC";     // $ALICE_PHYSICS/macros/loadlibsrec.C
     extraLibs= "ITSrec:CDB:Geom:"; // not needed in default aliroot mode
   } else alirootMode="ALIROOT";
   extraLibs+= "ANALYSIS:ANALYSISalice";
@@ -126,7 +126,7 @@ void Analysis(TString dataset, TString outFileCorr, TString outFileData, TString
   task->SetPhiWindowAna(phiWindowAna);
 
   // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask=AddTaskPhysicsSelection(useMC,kFALSE);
   if (!useMC) {
     AliPhysicsSelection * physSel = physSelTask->GetPhysicsSelection();

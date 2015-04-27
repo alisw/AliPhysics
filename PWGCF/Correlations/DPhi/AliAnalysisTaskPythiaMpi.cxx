@@ -22,6 +22,7 @@
 #include "TChain.h"
 #include "TH3.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
@@ -35,8 +36,8 @@
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliVParticle.h"
-#include "AliPythia.h"
-#include "AliPythia8.h"
+//#include "AliPythia.h"
+//#include "AliPythia8.h"
 //#include "AliAnalysisHelperJetTasks.h"
 #include <typeinfo>
 
@@ -151,13 +152,15 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fHistPtMpi->GetXaxis()->SetTitle("#MPIs");
   fHistPtMpi->GetYaxis()->SetTitle("p_{T} (GeV/c)");
 
-  TProfile* fProfileMpiPt = new TProfile("fProfileMpiPt","fProfileMpiPt",100,-0.5,99.5,0.15,10.);
+  TProfile2D* fProfileMpiPt = new TProfile2D("fProfileMpiPt","fProfileMpiPt",100,-0.5,99.5,20,-1.,1.,0.15,10.);
   fProfileMpiPt->GetXaxis()->SetTitle("#MPIs");
-  fProfileMpiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fProfileMpiPt->GetYaxis()->SetTitle("#eta");
+  fProfileMpiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
 
-  TProfile* fProfilePtMpi = new TProfile("fProfilePtMpi","fProfilePtMpi",39,0.15,10.,-0.5,99.5);
+  TProfile2D* fProfilePtMpi = new TProfile2D("fProfilePtMpi","fProfilePtMpi",39,0.15,10.,20,-1.,1.,-0.5,99.5);
   fProfilePtMpi->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  fProfilePtMpi->GetYaxis()->SetTitle("#MPIs");
+  fProfilePtMpi->GetYaxis()->SetTitle("#eta");
+  fProfilePtMpi->GetZaxis()->SetTitle("#MPIs");
 
   TH3F *fHistTracks = new TH3F("fHistTracks","fHistTracks",20,-1.,1.,39,0.15,10.0,100,-0.5,99.5);
   fHistTracks->GetXaxis()->SetTitle("#eta");
@@ -219,7 +222,8 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
    TH1I* fHistEvents = (TH1I*) fOutputList->FindObject("fHistNEvents");
    fHistEvents->Fill(0.5);
 
-  
+   Int_t Nmpi = 0;
+   Int_t particle_id = 0;
 
    if(fMcHandler){
       fMcEvent = fMcHandler->MCEvent(); 
@@ -230,6 +234,9 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
       AliGenPythiaEventHeader *fMcPythiaHeader = dynamic_cast <AliGenPythiaEventHeader*> (fMcHeader);
       if(!fMcPythiaHeader) Printf("fMcPythiaHeader NULL!");
       //Printf("PROCESS: %d",(fMcPythiaHeader->ProcessType()));
+
+      //cout<<"TEST: "<<fMcPythiaHeader->GetXJet()<<endl;
+   Nmpi = fMcPythiaHeader->GetNMPI();
 
    }else{
       if(fDebug > 1) printf("AnalysisTaskPythiaMpi::Handler() fMcHandler=NULL\n");
@@ -242,10 +249,10 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
 
 
    Printf("MC particles: %d",fMCEvent->GetNumberOfTracks());
+   Printf("MC primary particles: %d",fMCEvent->GetNumberOfPrimaries());
 
    //MPIs
    TH1F* fHistMpi = (TH1F*) fOutputList->FindObject("fHistMpi");
-   Double_t Nmpi = (AliPythia8::Instance())->GetNMPI();
    fHistMpi->Fill(Nmpi);
 
    TH2F* fHistMultMpi = (TH2F*) fOutputList->FindObject("fHistMultMpi");
@@ -253,12 +260,14 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
 
    //loop over the tracks 
 
+   Int_t n_phys_prim_charged = 0;
+
    TH1F* fHistPt = (TH1F*) fOutputList->FindObject("fHistPt");
    TH1F* fHistEta = (TH1F*) fOutputList->FindObject("fHistEta");
    TH2F* fHistdNdetaMpi = (TH2F*) fOutputList->FindObject("fHistdNdetaMpi");
    TH2F* fHistPtMpi = (TH2F*) fOutputList->FindObject("fHistPtMpi");
-   TProfile* fProfileMpiPt = (TProfile*) fOutputList->FindObject("fProfileMpiPt");
-   TProfile* fProfilePtMpi = (TProfile*) fOutputList->FindObject("fProfilePtMpi");
+   TProfile2D* fProfileMpiPt = (TProfile2D*) fOutputList->FindObject("fProfileMpiPt");
+   TProfile2D* fProfilePtMpi = (TProfile2D*) fOutputList->FindObject("fProfilePtMpi");
    TH3F* fHistTracks = (TH3F*) fOutputList->FindObject("fHistTracks");
 
    for(Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++){
@@ -268,17 +277,27 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
        continue;
      }
      
-     fHistPt->Fill(track->Pt());
-     fHistEta->Fill(track->Eta());
+     if(fMCEvent->IsPhysicalPrimary(iTracks) && track->Charge()!=0){
 
-     fHistdNdetaMpi->Fill(Nmpi,track->Eta());
-     fHistPtMpi->Fill(Nmpi,track->Pt());
-     fProfileMpiPt->Fill(Nmpi,track->Pt());
-     fProfilePtMpi->Fill(track->Pt(),Nmpi);
+       fHistPt ->Fill(track->Pt());
+       fHistEta->Fill(track->Eta());
 
-     fHistTracks->Fill(track->Eta(),track->Pt(),Nmpi);
+       fHistdNdetaMpi->Fill(Nmpi,track->Eta());
+       fHistPtMpi    ->Fill(Nmpi,track->Pt());
+       fProfileMpiPt ->Fill(Nmpi,track->Eta(),track->Pt());
+       fProfilePtMpi ->Fill(track->Pt(),track->Eta(),Nmpi);
+
+       fHistTracks->Fill(track->Eta(),track->Pt(),Nmpi);
+       n_phys_prim_charged++;
+
+       particle_id = track->PdgCode();
+       if(particle_id == 2101 || particle_id == 2103 || particle_id == 2201 || particle_id == 2203) cout<<"pID: "<<particle_id<<endl;
+
+     }
    }
    
+   Printf("MC charged physical primaries: %d",n_phys_prim_charged);
+
    PostData(1, fOutputList);
    return; 
    

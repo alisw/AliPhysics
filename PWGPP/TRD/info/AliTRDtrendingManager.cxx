@@ -333,7 +333,7 @@ void AliTRDtrendingManager::Print(Option_t *o) const
 //____________________________________________
 void AliTRDtrendingManager::Load(const char *fn)
 {
-// Load TRD trending DB from $ALICE_ROOT/PWGPP/TRD/data.
+// Load TRD trending DB from $ALICE_PHYSICS/PWGPP/TRD/data.
 
   AliDebug(1, "Loading TRD trending ...");
   if(!TFile::Open(fn)) return;

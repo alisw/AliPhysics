@@ -386,13 +386,15 @@ Bool_t AliEmcalTriggerMaker::Run()
         }
       }
 
-      // level 0 triggers
-      if(fRunTriggerType[kTMEMCalLevel0]){
-        trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
-        // save main level0 trigger in the event
-        if (trigger) {
-          if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-            triggerMainLevel0 = trigger;
+      // level 0 triggers (only in case of online patches)
+      if(!isOfflineSimple){
+        if(fRunTriggerType[kTMEMCalLevel0]){
+          trigger = ProcessPatch(kTMEMCalLevel0, kFALSE);
+          // save main level0 trigger in the event
+          if (trigger) {
+            if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+              triggerMainLevel0 = trigger;
+          }
         }
       }
 
@@ -864,37 +866,38 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
 }
 
 /**
- * Accept trigger patch as Level0 patch. Different handlings are needed for Data and
- * Monte Carlo:
- *  - In Monte-Carlo the patch is accepted if the Level0 bit is set
- *  - In Data the Level0 bit is not set. Therefor patches are accepted if this FASTOR
- *    and the neighboring FASTORS have proper Level0 times set
+ * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
+ * in the same TRU
  * \param trg Triggers object with the pointer set to the patch to inspect
  * \return True if the patch is accepted, false otherwise.
  */
 Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
-  // Check whether the patch is a level0 patch
-  if(MCEvent()){
-    // For Monte-Carlo select
-    Int_t tbits(-1);
-    trg.GetTriggerBits(tbits);
-    return tbits & (1 << fTriggerBitConfig->GetLevel0Bit());
-  } else {
-    // For Data check from the level0 times if the trigger has fired at level0,
-    // accept the patch only if all 4 TRUs have level0 times either 8 or 9
-    Int_t row, col;trg.GetPosition(col, row);
-    int nvalid(0);
-    for(int ipos = 0; ipos < 2; ipos++){
-      if(row + ipos >= kPatchRows) continue;    // boundary check
-      for(int jpos = 0; jpos < 2; jpos++){
-        if(col + jpos >= kPatchCols) continue;  // boundary check
-        Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
-        if(l0times > 7 && l0times < 10) nvalid++;
-      }
-    }
-    if (nvalid != 4) return false;
-    return true;
+  Int_t row(-1), col(-1); trg.GetPosition(col, row);
+  if(col < 0 || row < 0){
+    AliError(Form("Patch outside range [col %d, row %d]", col, row));
+    return kFALSE;
   }
+  Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
+  fGeom->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
+  fGeom->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
+  int nvalid(0);
+  for(int ipos = 0; ipos < 2; ipos++){
+    if(row + ipos >= kPatchRows) continue;    // boundary check
+    for(int jpos = 0; jpos < 2; jpos++){
+      if(col + jpos >= kPatchCols) continue;  // boundary check
+      // Check whether we are in the same TRU
+      trumod = -1;
+      fGeom->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
+      fGeom->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
+      if(trumod != truref) continue;
+      if(col + jpos >= kPatchCols) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
+      if(row + ipos >= kPatchRows) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
+      Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
+      if(l0times > 7 && l0times < 10) nvalid++;
+    }
+  }
+  if (nvalid != 4) return false;
+  return true;
 }
 
 /**

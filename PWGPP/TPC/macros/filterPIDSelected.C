@@ -3,7 +3,7 @@
   As an input the   
 
   .x $HOME/rootlogon.C   
-  .L $ALICE_ROOT/PWGPP/TPC/macros/filterPIDSelected.C+
+  .L $ALICE_PHYSICS/PWGPP/TPC/macros/filterPIDSelected.C+
 
  */
 

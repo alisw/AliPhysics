@@ -58,13 +58,13 @@ void runLocal(TString inputFile = "fileList", TString options="")
   gSystem->Load("libTenderSupplies");
   gSystem->Load("libPWGPP");
 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
   //gROOT->LoadMacro("AliRelAlignerKalman.cxx++");
   //gROOT->LoadMacro("AliRelAlignerKalmanArray.cxx++g");
   //gROOT->LoadMacro("AliAnalysisTaskITSTPCalignment.cxx++g");
   gROOT->LoadMacro("AddTaskITSTPCalignment.C");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain(inputFile,100000);
 
   // analysis manager
@@ -182,7 +182,7 @@ void runAlienPlugin(const char* pluginmode="full")
   gSystem->Load("libPWGPP");
 
   // Use AliRoot includes to compile our task
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
 
   /////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////

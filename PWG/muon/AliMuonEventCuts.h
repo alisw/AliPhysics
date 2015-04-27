@@ -5,6 +5,8 @@
 
 class AliVEvent;
 class AliVVertex;
+class AliInputEventHandler;
+class THashList;
 class TList;
 class TAxis;
 class TArrayI;
@@ -50,10 +52,13 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetTrigClassLevels (TString pattern = "MSL:Lpt,MUSL:Lpt,MSH:Hpt,MUSH:Hpt,MUL:LptLpt,MUU:LptLpt,MLL:LptLpt" );
   TArrayI GetTrigClassPtCutLevel (TString trigClassName ) const;
   /// Get trigger classes found in run
-  TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
+  THashList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
+  const TObjArray* GetSelectedTrigClassesInEvent ( const TString& firedTriggerClasses,
+                                                  UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs, UInt_t physicsSelection );
+  const TObjArray* GetSelectedTrigClassesInEvent ( const TString& firedTriggerClasses,
+                                                  UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
   const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
-  const TObjArray* GetSelectedTrigClassesInEvent(const TString& firedTriggerClasses,
-                                                 UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs);
+  const TObjArray* GetSelectedTrigClassesInEvent ( const AliInputEventHandler* eventHandler );
 
   UInt_t GetTriggerInputBitMaskFromInputName(const char* inputName) const;
 
@@ -70,6 +75,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   /// Set Physics selection mask
   void SetPhysicsSelectionMask (UInt_t physicsSelectionMask ) { fPhysicsSelectionMask = physicsSelectionMask; }
   
+  void SetPhysSelBits();
   
   /// Set minimum number of vertex contributors
   void SetVertexMinNContributors (Int_t vertexMinNContributors ) { fVertexMinNContributors = vertexMinNContributors; }
@@ -89,11 +95,20 @@ class AliMuonEventCuts : public AliAnalysisCuts
 
  protected:
   
-  void BuildTriggerClasses (TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
+  enum {
+    kL0Input,     /// L0input index
+    kL1Input,     /// L1input index
+    kL2Input,     /// L2input index
+    kPhysSelBit,  /// Physcs selection bit index
+    kTrigClass,   /// Trigger class index
+    kNtypes
+  };
+
+  void BuildTriggerClasses ( TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs, UInt_t physicsSelection );
   Bool_t CheckTriggerClassPattern ( const TString& toCheck ) const;
-  Bool_t CheckTriggerClassCombination ( const TObjArray* combo, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const;
+  Bool_t CheckTriggerClassCombination ( const TObjArray* combo, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs, UInt_t physicsSelection ) const;
   void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, const UInt_t comboType = 0 );
-  Bool_t UpdateEvent( const AliVEvent* event );
+  Bool_t UpdateEvent ( const AliVEvent* event, UInt_t physicsSelection );
   void SetDefaultTrigClassPatterns();
   void SetTrigInputsMap ( TString trigInputsMap );
     
@@ -109,17 +124,21 @@ class AliMuonEventCuts : public AliAnalysisCuts
   TObjArray* fRejectedTrigPattern; ///< List of triggers to be rejected
   TObjArray* fSelectedTrigLevel;   ///< Track-trigger pt cut for selected trigger class
   TObjArray* fSelectedTrigCombination; ///< Selected trigger combinations
-  TList* fTrigInputsMap;       ///< Trigger inputs map
-  TList* fAllSelectedTrigClasses;  ///< List of all selected trigger classes found
+  THashList* fTrigInputsMap;       ///< Trigger inputs map
+  THashList* fPhysSelBits;       ///< Physics selection bits
+  THashList* fAllSelectedTrigClasses;  ///< List of all selected trigger classes found
   TAxis* fCentralityClasses;   ///< Centrality classes
   AliAnalysisUtils* fAnalysisUtils;    ///< Analysis utility
   
   private:
   ULong64_t fEventTriggerMask; //!< Fired trigger mask in the event
+  UInt_t fEventL0Inputs; //!< L0 trigger inputs in the event
+  UInt_t fEventL1Inputs; //!< L1 trigger inputs in the event
+  UInt_t fEventL2Inputs; //!< L2 trigger inputs in the event
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
   enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
-  ClassDef(AliMuonEventCuts, 6); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 8); // Class for muon event filters
 };
 
 #endif

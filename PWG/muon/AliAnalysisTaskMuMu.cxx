@@ -78,6 +78,9 @@ fBeamYear(""),
 fHistogramToDisable(0x0),
 fSubAnalysisVector(0x0),
 fCountInBins(kFALSE),
+fbinWhat(""),
+fbinQuantity(""),
+fbinFlavor(""),
 fDisableHistoLoop(kFALSE)
 {
   /// Constructor with a predefined list of triggers to consider
@@ -175,6 +178,20 @@ AliAnalysisTaskMuMu::Event() const
 }
 
 //_____________________________________________________________________________
+void AliAnalysisTaskMuMu::SetCountInBins( const char* binWhat, const char* binQuantity, const char* binFlavor, Bool_t disableHistoLoop )
+{
+  // fCountInBins serve to add a rubric for bins in the Event counter collection
+  // Bin to count, can be set like in AliAnalysisMuMuBinning class, and has to be the same as one of the binnings we give to the task through this class
+  // Only one kind of binning can be used in the counters, since otherwise the bin integrated counts will not be correct (events counted several times)
+
+  fCountInBins = kTRUE;
+  fbinWhat = binWhat;
+  fbinQuantity = binQuantity;
+  fbinFlavor = binFlavor;
+  fDisableHistoLoop = disableHistoLoop;
+}
+
+//_____________________________________________________________________________
 void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerClassName)
 {
   // Fill one set of histograms (only called for events which pass the eventSelection cut)
@@ -183,10 +200,7 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
   seventSelection.ToLower();
   
   FillCounters(seventSelection.Data(), triggerClassName, "ALL", fCurrentRunNumber);
-//  fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", seventSelection.Data(), triggerClassName, "ALL", fCurrentRunNumber));
 
-//  if ( !IsHistogrammingDisabled() )
-//  {
   TObjArray* centralities = fBinning->CreateBinObjArray("centrality");
   
   TIter next(centralities);
@@ -206,7 +220,7 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
     }
   }
   delete centralities;
-//  }
+
 }
 
 //_____________________________________________________________________________
@@ -224,8 +238,6 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
   Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
   
   FillCounters( eventSelection, triggerClassName, centrality, fCurrentRunNumber);
-// fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", eventSelection, triggerClassName, centrality, fCurrentRunNumber));
-  
 
   TIter nextTrackCut(fCutRegistry->GetCutCombinations(AliAnalysisMuMuCutElement::kTrack));
   TIter nextPairCut(fCutRegistry->GetCutCombinations(AliAnalysisMuMuCutElement::kTrackPair));
@@ -292,19 +304,28 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* triggerClassName, const char* centrality, Int_t currentRun, const char* binningName)
+void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* triggerClassName, const char* centrality, Int_t currentRun)
 {
   // The binning has to be an already existing event property or one (like i.e. <dNch/dEta>) which we can compute in the SetEvent() method and attach it to the event list
-  // We can generalize this method (if needed), now it is only valid for dNchdEta
-  
-  TString sbinningName(binningName);
-  sbinningName.ToUpper();
+  // We can generalize this method (if needed), now it is only valid for multiplicity
   
   if( fCountInBins )
   {
     TParameter<Double_t>* p(0x0);
-    TObjArray* bin = fBinning->CreateBinObjArray("psi",sbinningName.Data(),"JAVI"); // FIXME: Dependence on binning name
-    if ( !bin ) AliError(Form("%s binning does not exist",binningName));
+    TObjArray* bin = fBinning->CreateBinObjArray(fbinWhat.Data(),fbinQuantity.Data(),fbinFlavor.Data());
+
+    TString sfbinQuantity(fbinQuantity);
+    TString parToFind("");
+    if ( !sfbinQuantity.CompareTo("ntrcorr") ) parToFind = "NtrCorr";
+    else if ( !sfbinQuantity.CompareTo("ntr") ) parToFind = "Ntr";
+    else if ( !sfbinQuantity.CompareTo("nch") ) parToFind = "Nch";
+    else if ( !sfbinQuantity.CompareTo("v0a") ) parToFind = "V0ARaw";
+    else if ( !sfbinQuantity.CompareTo("v0acorr") ) parToFind = "V0ACorr";
+    else if ( !sfbinQuantity.CompareTo("v0ccorr") ) parToFind = "V0CCorr";
+    else if ( !sfbinQuantity.CompareTo("v0mcorr") ) parToFind = "V0MCorr";
+    else AliError(Form("%s bin quantity not found in event",sfbinQuantity.Data())); //FIXME: Not all the possible binnings are implemented here
+
+    if ( !bin ) AliError(Form("%s,%s,%s binning does not exist",fbinWhat.Data(),fbinQuantity.Data(),fbinFlavor.Data()));
     else
     {
       TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
@@ -322,17 +343,16 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
           
           p = static_cast<TParameter<Double_t>*>(list->At(i));
           
-          if ( TString(p->GetName()).Contains("NtrCorr") ) // FIXME: make this valid for dnch/deta also
+          if ( TString(p->GetName()).Contains(parToFind.Data()) )
           {
             parFound = kTRUE;
           }
         }
       }
-      else AliFatal("No dNchdEta info on Event");
+      else AliFatal("No multiplicity info on Event");
 
       TIter next(bin);
       AliAnalysisMuMuBinning::Range* r;
-      
       while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
       {
         
@@ -376,9 +396,9 @@ void AliAnalysisTaskMuMu::GetSelectedTrigClassesInEvent(const AliVEvent* event, 
   }
   
   TString firedTriggerClasses = event->GetFiredTriggerClasses();
-  UInt_t l0 = AliAnalysisMuonUtility::GetL0TriggerInputs(event);
-  UInt_t l1 = AliAnalysisMuonUtility::GetL1TriggerInputs(event);
-  UInt_t l2 = AliAnalysisMuonUtility::GetL2TriggerInputs(event);
+  UInt_t l0 = event->GetHeader()->GetL0TriggerInputs();
+  UInt_t l1 = event->GetHeader()->GetL1TriggerInputs();
+  UInt_t l2 = event->GetHeader()->GetL2TriggerInputs();
 
   std::set<std::string> tmpArray;
   
@@ -587,8 +607,6 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   
   Binning(); // insure we have a binning...
   
-  //  if ( MCEvent() )
-  //  {
   TIter nextAnalysis(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;  
   while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
@@ -601,9 +619,9 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
     }
     analysis->SetEvent(Event(),MCEvent()); // Set the new event properties derived in the analysis
   }
-  //  }
 
-  TString firedTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(Event()));
+
+  TString firedTriggerClasses(Event()->GetFiredTriggerClasses());
     
   // first loop to count things not associated to a specific trigger
   TIter nextEventCutCombination(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kEvent));
@@ -614,12 +632,10 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
     if ( cutCombination->Pass(*fInputHandler) )
     {
       FillCounters(cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber);
-//      fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber));
       
       if ( firedTriggerClasses == "" )
       {
         FillCounters(cutCombination->GetName(),"EMPTY","ALL",fCurrentRunNumber);
-//        fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", cutCombination->GetName(), "EMPTY", "ALL", fCurrentRunNumber));
       }
     }
   }
@@ -631,7 +647,6 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   
   TIter next(&selectedTriggerClasses);
   TObjString* tname;
-//  Bool_t hasSetEventBeenCalled(kFALSE);
 
   while ( ( tname = static_cast<TObjString*>(next()) ) )
   {
@@ -641,17 +656,6 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
     {
       if ( cutCombination->Pass(*fInputHandler) )
       {
-//        if (!hasSetEventBeenCalled)
-//        {
-//          TIter nextAnalysis(fSubAnalysisVector);
-//          AliAnalysisMuMuBase* analysis;
-//          
-//          while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
-//          {
-//            analysis->SetEvent(Event(),MCEvent());
-//          }
-//          hasSetEventBeenCalled = kTRUE;
-//        }
         Fill(cutCombination->GetName(),tname->String().Data());
       }
     }

@@ -27,6 +27,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetEtaRange(Float_t min, Float_t max) { fEtaMin       = min;  fEtaMax = max; }
   void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
   void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max; }
+  void                   SetGenType(Int_t gentype)            {fGenType      = gentype;}
   void                   SetPtSpectrum(TH1F *f)                { fPtSpectrum   = f;    }
   void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fPtSpectrum->Add(f); }
@@ -95,7 +96,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Float_t                fPhiMax;                 // phi maximum value
   Float_t                fPtMin;                  // pt minimum value
   Float_t                fPtMax;                  // pt maximum value
-  Bool_t                 fCopyArray;              // whether or not the array will be copied to a new one before modelling
+  Int_t                   fGenType;              //generator type. 0=pythia, 1=qpythia,2=pyquen, 3=herwig6.5 
+ Bool_t                 fCopyArray;              // whether or not the array will be copied to a new one before modelling
   Int_t                  fNClusters;              // how many clusters are being processed
   Int_t                  fNCells;                 // how many cells are being processed
   Int_t                  fNTracks;                // how many tracks are being processed

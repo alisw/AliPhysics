@@ -40,6 +40,7 @@ set(SRCS
     AliAnalysisTaskRhoFlow.cxx
     AliAnalysisTaskRhoMassBase.cxx
     AliAnalysisTaskRhoMass.cxx
+    AliAnalysisTaskRhoMassSparse.cxx
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
@@ -67,6 +68,7 @@ set(SRCS
     Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
     Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
     Tracks/AliEMCalPtTaskVTrackSelection.cxx
+    Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
     Tracks/AliEMCalTriggerBinningFactory.cxx
@@ -83,6 +85,15 @@ set(SRCS
     Tracks/AliEMCalTriggerTaskGroup.cxx
     Tracks/AliEMCalTriggerTracksAnalysisComponent.cxx
     Tracks/AliEMCalTriggerWeightHandler.cxx
+    Tracks/AliParticleMap.cxx
+    Tracks/AliReducedEmcalCluster.cxx
+    Tracks/AliReducedPatchInfo.cxx
+    Tracks/AliReducedPatchContainer.cxx
+    Tracks/AliReducedMCHeader.cxx
+    Tracks/AliReducedGeneratedParticle.cxx
+    Tracks/AliReducedReconstructedTrack.cxx
+    Tracks/AliReducedHighPtEvent.cxx
+    Tracks/AliReducedHighPtEventCreator.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
@@ -95,6 +106,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+    UserTasks/AliAnalysisTaskEmcalJetCDFUE.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
     UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
@@ -142,7 +154,6 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
-        Tracks/AliParticleMap.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliReducedJetEvent.cxx
         Tracks/AliReducedJetInfo.cxx

@@ -12,12 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Create default binning and initalise the binning component with this. In case
- * users already defined a binning, do not overwrite this.
- *
- *   Author: Markus Fasel
- */
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
 #include <map>
@@ -27,24 +21,21 @@
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Default constructor, nothing to do
+ */
 AliEMCalTriggerBinningFactory::AliEMCalTriggerBinningFactory() {
-  /*
-   * Default constructor, nothing to do
-   */
 }
 
-
-//______________________________________________________________________________
+/**
+ * Initialise binning component with default binning
+ *
+ * \param data the binning component to be initialised
+ */
 void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* const data) {
-  /*
-   * Initialise binning component with default binning
-   *
-   * @param data: the binning component to be initialised
-   */
   TArrayD binLimits;
   if(!data->GetBinning("pt")){
-    CreateDefaultPtBinning(binLimits);
+    CreateRAAPtBinning(binLimits);
     data->SetBinning("pt", binLimits);
   }
   if(!data->GetBinning("eta")){
@@ -65,24 +56,34 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
   }
 }
 
-//______________________________________________________________________________
-void AliEMCalTriggerBinningFactory::CreateDefaultPtBinning(TArrayD &binning) const{
-  /*
-   * Creating the default pt binning.
-   *
-   * @param binning: Array where to store the results.
-   */
+/**
+ * Creating the default \f$ p_{t} \f$ binning.
+ *
+ * Definition used:
+ * - from 0 to 2.5 GeV/c: 0.1 GeV/c bins
+ * - from 2.5 to 7 GeV/c: 0.25 GeV/c bins
+ * - from 7 to 10 GeV/c: 0.5 GeV/c bins
+ * - from 10 to 15 GeV/c: 1 GeV/c bins
+ * - from 15 to 20 GeV/c: 2.5 GeV/c bins
+ * - from 20 to 30 GeV/c: 5 GeV/c bins
+ * - from 30 to 100 GeV/c: 10 GeV/c bins
+ * - from 100 to 200 GeV/c: 20 GeV/c bins
+ *
+ * \param binning Array where to store the results.
+ */
+void AliEMCalTriggerBinningFactory::CreateMarkusPtBinning(TArrayD &binning) const{
   std::vector<double> mybinning;
   std::map<double,double> definitions;
   definitions.insert(std::pair<double,double>(2.5, 0.1));
   definitions.insert(std::pair<double,double>(7., 0.25));
-  definitions.insert(std::pair<double,double>(15., 0.5));
-  definitions.insert(std::pair<double,double>(25., 1.));
-  definitions.insert(std::pair<double,double>(40., 2.5));
-  definitions.insert(std::pair<double,double>(50., 5.));
+  definitions.insert(std::pair<double,double>(10., 0.5));
+  definitions.insert(std::pair<double,double>(15., 1.));
+  definitions.insert(std::pair<double,double>(20., 2.5));
+  definitions.insert(std::pair<double,double>(30., 5.));
   definitions.insert(std::pair<double,double>(100., 10.));
   definitions.insert(std::pair<double, double>(200., 20.));
   double currentval = 0;
+  mybinning.push_back(currentval);
   for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
     double limit = id->first, binwidth = id->second;
     while(currentval < limit){
@@ -96,13 +97,57 @@ void AliEMCalTriggerBinningFactory::CreateDefaultPtBinning(TArrayD &binning) con
     binning[ib++] = *it;
 }
 
-//______________________________________________________________________________
+/**
+ * Create \f$ p_{t} \f$ binning used in the \f$ R_{AA} \f$ analysis:
+ *
+ * Definitions are:
+ * - from 0.15 to 1 GeV/c: 0.05 GeV/c bins
+ * - from 1 to 2 GeV/c: 0.1 GeV/c bins
+ * - from 2 to 4 GeV/c: 0.2 GeV/c bins
+ * - from 4 to 7 GeV/c: 0.5 GeV/c bins
+ * - from 7 to 16 GeV/c: 1 GeV/c bins
+ * - from 16 to 36 GeV/c: 2 GeV/c bins
+ * - from 36 to 40 GeV/c: 4 GeV/c bins
+ * - from 40 to 50 GeV/c: 5 GeV/c bins
+ * - from 50 to 100 GeV/c: 10 GeV/c bins
+ *
+ * \param binning: Array where to store the results
+ */
+void AliEMCalTriggerBinningFactory::CreateRAAPtBinning(TArrayD& binning) const {
+  std::vector<double> mybinning;
+  std::map<double,double> definitions;
+  definitions.insert(std::pair<double, double>(1, 0.05));
+  definitions.insert(std::pair<double, double>(2, 0.1));
+  definitions.insert(std::pair<double, double>(4, 0.2));
+  definitions.insert(std::pair<double, double>(7, 0.5));
+  definitions.insert(std::pair<double, double>(16, 1));
+  definitions.insert(std::pair<double, double>(36, 2));
+  definitions.insert(std::pair<double, double>(40, 4));
+  definitions.insert(std::pair<double, double>(50, 5));
+  definitions.insert(std::pair<double, double>(100, 10));
+  definitions.insert(std::pair<double, double>(200, 20));
+  double currentval = 0.;
+  mybinning.push_back(currentval);
+  for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
+    double limit = id->first, binwidth = id->second;
+    while(currentval < limit){
+      currentval += binwidth;
+      mybinning.push_back(currentval);
+    }
+  }
+  binning.Set(mybinning.size());
+  int ib = 0;
+  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
+    binning[ib++] = *it;
+}
+
+
+/**
+ * Creating default z-Vertex binning. Bin size 5 cm.
+ *
+ * \param binning Array where to store the results.
+ */
 void AliEMCalTriggerBinningFactory::CreateDefaultZVertexBinning(TArrayD &binning) const {
-  /*
-   * Creating default z-Vertex binning.
-   *
-   * @param binning: Array where to store the results.
-   */
   std::vector<double> mybinning;
   double currentval = -10;
   mybinning.push_back(currentval);
@@ -116,13 +161,12 @@ void AliEMCalTriggerBinningFactory::CreateDefaultZVertexBinning(TArrayD &binning
     binning[ib++] = *it;
 }
 
-//______________________________________________________________________________
+/**
+ * Creating default \f$ \eta \$f  binning. Bin size fixed at 0.1 units of rapidity.
+ *
+ * \param binning Array where to store the results.
+ */
 void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) const {
-  /*
-   * Creating default z-Vertex binning.
-   *
-   * @param binning: Array where to store the results.
-   */
   std::vector<double> mybinning;
   double currentval = -0.8;
   mybinning.push_back(currentval);
@@ -136,16 +180,15 @@ void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) co
     binning[ib++] = *it;
 }
 
-//______________________________________________________________________________
+/**
+ * Create any kind of linear binning from given ranges and stores it in the binning array.
+ *
+ * \param binning output array
+ * \param nbins Number of bins
+ * \param min lower range
+ * \param max upper range
+ */
 void AliEMCalTriggerBinningFactory::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const {
-  /*
-   * Create any kind of linear binning from given ranges and stores it in the binning array.
-   *
-   * @param binning: output array
-   * @param nbins: Number of bins
-   * @param min: lower range
-   * @param max: upper range
-   */
   double binwidth = (max-min)/static_cast<double>(nbins);
   binning.Set(nbins+1);
   binning[0] = min;

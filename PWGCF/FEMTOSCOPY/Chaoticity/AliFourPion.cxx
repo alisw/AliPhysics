@@ -934,7 +934,7 @@ void AliFourPion::ParInit()
     fQupperBoundQinv3D = 0.6;
   }
   
-  //fQLowerCut = 0.005;
+  
   fKupperBound = 1.0;
   //
   fKstepY[0] = 1.6;
@@ -1026,8 +1026,8 @@ void AliFourPion::ParInit()
 
 
   // Pair-Exchange amplitudes from c3 fits
-  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
-  TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))");
+  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8.*pow(x*[1]/0.19733,3) - 12.*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16.*pow(x*[1]/0.19733,4) -48.*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120.*x*[1]/0.19733) + [5]/(720.*pow(2.,3.))*(64.*pow(x*[1]/0.19733,6) - 480.*pow(x*[1]/0.19733,4) + 720.*pow(x*[1]/0.19733,2) - 120.))");
+  TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(-x*[1]/0.19733 + 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4.*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9.*pow(x*[1]/0.19733,2) - 18.*x*[1]/0.19733 + 6) + [5]/24.*(pow(x*[1]/0.19733,4) - 16.*pow(x*[1]/0.19733,3) + 72.*pow(x*[1]/0.19733,2) - 96.*x*[1]/0.19733 +24.))");
   
   if(!fMCcase && !fTabulatePairs){
     for(Int_t FT=0; FT<2; FT++){// c3 or C3
@@ -1045,40 +1045,44 @@ void AliFourPion::ParInit()
 	    ExchangeAmp[i][j][FT]->FixParameter(1, fPbPbc3FitEA[FT]->GetBinContent(i+1, 2, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(2, fPbPbc3FitEA[FT]->GetBinContent(i+1, 3, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(3, fPbPbc3FitEA[FT]->GetBinContent(i+1, 4, j+1));
-	    ExchangeAmp[i][j][FT]->FixParameter(4, 0);
+	    ExchangeAmp[i][j][FT]->FixParameter(4, fPbPbc3FitEA[FT]->GetBinContent(i+1, 5, j+1));
+	    ExchangeAmp[i][j][FT]->FixParameter(5, fPbPbc3FitEA[FT]->GetBinContent(i+1, 6, j+1));
 	  }else if(fCollisionType==1){
 	    ExchangeAmp[i][j][FT]->FixParameter(0, fpPbc3FitEA[FT]->GetBinContent(i+1, 1, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(1, fpPbc3FitEA[FT]->GetBinContent(i+1, 2, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(2, fpPbc3FitEA[FT]->GetBinContent(i+1, 3, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(3, fpPbc3FitEA[FT]->GetBinContent(i+1, 4, j+1));
-	    ExchangeAmp[i][j][FT]->FixParameter(4, 0);
+	    ExchangeAmp[i][j][FT]->FixParameter(4, fpPbc3FitEA[FT]->GetBinContent(i+1, 5, j+1));
+	    ExchangeAmp[i][j][FT]->FixParameter(5, fpPbc3FitEA[FT]->GetBinContent(i+1, 6, j+1));
 	  }else{
 	    ExchangeAmp[i][j][FT]->FixParameter(0, fppc3FitEA[FT]->GetBinContent(i+1, 1, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(1, fppc3FitEA[FT]->GetBinContent(i+1, 2, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(2, fppc3FitEA[FT]->GetBinContent(i+1, 3, j+1));
 	    ExchangeAmp[i][j][FT]->FixParameter(3, fppc3FitEA[FT]->GetBinContent(i+1, 4, j+1));
-	    ExchangeAmp[i][j][FT]->FixParameter(4, 0);
+	    ExchangeAmp[i][j][FT]->FixParameter(4, fppc3FitEA[FT]->GetBinContent(i+1, 5, j+1));
+	    ExchangeAmp[i][j][FT]->FixParameter(5, fppc3FitEA[FT]->GetBinContent(i+1, 6, j+1));
 	  }
 	}
       }
     }
   }
 
+ 
   
   // mean +- RMS
-  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x - ([2] + [3]*x)",0,1.0);
+  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x + ([2] + [3]*x)",0,1.0);
   fqOutFcn->FixParameter(0, 5.25711e-03);// mean
   fqOutFcn->FixParameter(1, 2.07835);// mean
   fqOutFcn->FixParameter(2, -1.82312e-03);// rms
   fqOutFcn->FixParameter(3, 8.74446e-01);// rms
-  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) - ([4] + [5]*x)",0,1.0);
+  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) + ([4] + [5]*x)",0,1.0);
   fqSideFcn->FixParameter(0, 1.47222e-02);// mean
   fqSideFcn->FixParameter(1, 8.42044e-01);// mean
   fqSideFcn->FixParameter(2, 2.82436);// mean
   fqSideFcn->FixParameter(3, -5.47032);// mean
   fqSideFcn->FixParameter(4, 1.92920e-03);// rms
   fqSideFcn->FixParameter(5, 3.91368e-01);// rms
-  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) - ([4] + [5]*x)",0,1.0);
+  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) + ([4] + [5]*x)",0,1.0);
   fqLongFcn->FixParameter(0, 1.94838e-02);// mean 
   fqLongFcn->FixParameter(1, 9.22609e-01);// mean
   fqLongFcn->FixParameter(2, 1.32699);// mean
@@ -1086,7 +1090,7 @@ void AliFourPion::ParInit()
   fqLongFcn->FixParameter(4, -2.23316e-04);// rms
   fqLongFcn->FixParameter(5, 3.98127e-01);// rms
   
-
+  
   /////////////////////////////////////////////
   /////////////////////////////////////////////
  
@@ -1836,6 +1840,7 @@ void AliFourPion::UserCreateOutputObjects()
   ///////////////////////////////////  
   
   PostData(1, fOutputList);
+  
 }
 
 //________________________________________________________________________
@@ -1869,7 +1874,7 @@ void AliFourPion::UserExec(Option_t *)
     isSelected[3] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMult);
     if(!isSelected[fTriggerType] && !fMCcase) return;
   }
-
+  
   
   AliCentrality *centrality;// for AODs and ESDs
   
@@ -2831,7 +2836,7 @@ void AliFourPion::UserExec(Option_t *)
     
 
   
- 
+  
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////
@@ -3076,7 +3081,7 @@ void AliFourPion::UserExec(Option_t *)
 		}// MC array check
 	      }// MC case
 	      
-		
+	     
 	      
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
@@ -3512,7 +3517,7 @@ void AliFourPion::UserExec(Option_t *)
 		  Int_t chGroup4[4]={ch1,ch2,ch3,ch4};
 		  Float_t QinvMCGroup4[6]={0};
 		  Float_t kTGroup4[6]={0};
-		  
+		 
 		  if(fMCcase){// for momentum resolution and muon correction
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en3)->fTracks[k].fLabel) continue;
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en2)->fTracks[j].fLabel) continue;
@@ -3540,7 +3545,7 @@ void AliFourPion::UserExec(Option_t *)
 		  Float_t QoutSum = fabs(qout12) + fabs(qout13) + fabs(qout14) + fabs(qout23) + fabs(qout24) + fabs(qout34);
 		  Float_t QsideSum = fabs(qside12) + fabs(qside13) + fabs(qside14) + fabs(qside23) + fabs(qside24) + fabs(qside34);
 		  Float_t QlongSum = fabs(qlong12) + fabs(qlong13) + fabs(qlong14) + fabs(qlong23) + fabs(qlong24) + fabs(qlong34);
-		  
+		
 		  if(!fq2Binning && !fLowMultBinning && fQdirectionBinning==0){
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
@@ -3708,11 +3713,13 @@ void AliFourPion::UserExec(Option_t *)
 		    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[EDindex4].FourPT[12].fPrimeBuildFromFits->Fill(2, 4, q4, 1);
 		    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[EDindex4].FourPT[12].fPrimePrimeBuildFromFits->Fill(2, 4, q4, 1);
 		    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[EDindex4].FourPT[12].fCumulantBuildFromFits->Fill(2, 4, q4, 1);
+		    
 		    // Full Weight reconstruction
 		    for(Int_t type=0; type<3; type++){// C2 interpolation, c3 fit, C3 fit
 		      if(type==0 && fCollisionType!=0) continue;
 		      for(Int_t RcohIndex=0; RcohIndex<7; RcohIndex++){// Rcoh=0,1,2,3,4,5 fm, then Rcoh=Rch
 			if(RcohIndex>1 && RcohIndex<6) continue;// save cpu time
+			if(fCollisionType!=0 && RcohIndex!=6) continue;// save cpu time
 			t12 = exp(-pow(RcohIndex/FmToGeV * qinv12,2)/2.);
 			t13 = exp(-pow(RcohIndex/FmToGeV * qinv13,2)/2.);
 			t14 = exp(-pow(RcohIndex/FmToGeV * qinv14,2)/2.);
@@ -3825,7 +3832,7 @@ void AliFourPion::UserExec(Option_t *)
 		    //Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[EDindex4].FourPT[12].fBuildErr->Fill(4, q4, weightTotalErr);
 		    
 		    // Radius estimations for c4
-		    if(fMbin==0 && EDindex4==0){
+		    if(fMbin==0 && EDindex4==0 && fCollisionType==0){
 		      for(Int_t Rindex=0; Rindex<7; Rindex++){
 			Float_t R = (6. + Rindex)/FmToGeV;
 			Float_t arg12=qinv12*R;

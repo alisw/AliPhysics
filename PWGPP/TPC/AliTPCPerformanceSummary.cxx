@@ -9,6 +9,9 @@
 // and writes the output (tree and histograms) to another rootfile.
 //
 // by M.Knichel 15/10/2010
+//
+// Modifications:
+//    by Marian Ivanov, m.ivanov@cern.ch;
 //------------------------------------------------------------------------------
 
 #include <fstream>
@@ -30,6 +33,7 @@
 #include "TGraph.h"
 #include "TPad.h"
 #include "TCanvas.h"
+#include "TStyle.h"
 
 #include "AliGRPObject.h"
 #include "AliTPCcalibDB.h"
@@ -40,7 +44,19 @@
 #include "AliPerformanceDCA.h"
 #include "AliPerformanceMatch.h"
 #include "TGraphErrors.h"
-
+#include "TLegend.h"
+#include "TLine.h"
+#include "TLatex.h"
+//
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliGRPManager.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCdataQA.h"
+#include "AliTPCCalROC.h"
+#include "TGeoGlobalMagField.h"
+#include "AliMathBase.h"
 #include "AliTPCPerformanceSummary.h"
 
 using std::ifstream;
@@ -53,69 +69,68 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 //_____________________________________________________________________________
 void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch,const AliPerformanceMatch* pTPCPull, const AliPerformanceMatch* pConstrain, TTreeSRedirector* const pcstream, Int_t run)
 {
-   // 
-    // Extracts performance parameters from pTPC and pTPCgain.
-    // Output is written to pcstream.
-    // The run number must be provided since it is not stored in 
-    // AliPerformanceTPC or AliPerformanceDEdx.
-    //
-    if (run <= 0 ) {
-        if (pTPCMatch) {run = pTPCMatch->GetRunNumber(); }
-        if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
-        if (pTPC) { run = pTPC->GetRunNumber(); }
-    }
-    TObjString runType;
-
-    //AliTPCcalibDB     *calibDB=0;
-
-//     AliTPCcalibDButil *dbutil =0;
-    Int_t startTimeGRP=0;
-    Int_t stopTimeGRP=0;   
-    Int_t time=0;
-    Int_t duration=0;
-
-    //Float_t currentL3 =0;
-    //Int_t polarityL3 = 0;
-    //Float_t bz = 0;
-
-    //calibDB = AliTPCcalibDB::Instance();
-
-//     dbutil= new AliTPCcalibDButil;   
-        
-    //printf("Processing run %d ...\n",run);
-    //if (calibDB) { 
-    //AliTPCcalibDB::Instance()->SetRun(run); 
-
-//     dbutil->UpdateFromCalibDB();
-//     dbutil->SetReferenceRun(run);
-//     dbutil->UpdateRefDataFromOCDB();     
-     
-    //if (calibDB->GetGRP(run)){
-    //startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
-    //stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
-    //currentL3 = AliTPCcalibDB::GetL3Current(run);
-    //polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
-    //bz = AliTPCcalibDB::GetBz(run);
-    
-    //}    
-    //runType = AliTPCcalibDB::GetRunType(run).Data();  
-    //}  
-  time = (startTimeGRP+stopTimeGRP)/2;
+  // 
+  // Extracts performance parameters from pTPC and pTPCgain.
+  // Output is written to pcstream.
+  // The run number must be provided since it is not stored in 
+  // AliPerformanceTPC or AliPerformanceDEdx.
+  // Here we assume that 
+  //
+  if (run <= 0 ) {
+    if (pTPCMatch) {run = pTPCMatch->GetRunNumber(); }
+    if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
+    if (pTPC) { run = pTPC->GetRunNumber(); }
+  }
+  TObjString runType;
+  
+  Int_t startTimeGRP=0;
+  Int_t stopTimeGRP=0;   
+  Int_t time=0;
+  Int_t duration=0;
+  Float_t currentL3 =0;
+  Int_t polarityL3 = 0;
+  Float_t bz = 0;
+  if (AliCDBManager::Instance()->GetRun()==run){
+    AliTPCcalibDB     *calibDB=0;
+    calibDB = AliTPCcalibDB::Instance();         
+    if (calibDB->GetGRP(run)){
+      startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
+      stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
+      currentL3 = AliTPCcalibDB::GetL3Current(run);
+      polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
+      bz = AliTPCcalibDB::GetBz(run);
+      if (polarityL3>0) bz*=-1; 
+      runType = AliTPCcalibDB::GetRunType(run).Data();  
+    }    
+  }
+  
+  time = startTimeGRP;
   duration = (stopTimeGRP-startTimeGRP);
-    
+  TObjString period(gSystem->Getenv("eperiod"));
+  TObjString pass(gSystem->Getenv("epass"));
+  TObjString dataType(gSystem->Getenv("edataType"));
+  ::Info(" AliTPCPerformanceSummary::WriteToTTreeSRedirector",TString::Format("%s/%s/%s",dataType.GetName(), period.GetName(),pass.GetName()).Data());
+  Int_t year=0;
+  if (gSystem->Getenv("eyear")) year=atoi(gSystem->Getenv("eyear"));
     if (!pcstream) return;
     (*pcstream)<<"tpcQA"<<      
       "run="<<run<<
       "time="<<time<<
+      "year="<<year<<
+      "period.="<<&period<<
+      "pass.="<<&pass<<
+      "dataType.="<<&dataType<<
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
       "duration="<<duration<<
+      "bz="<<bz<<
       "runType.="<<&runType;
     if (pTPC) {
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
         pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
         pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
         AnalyzeNCL(pTPC, pcstream);    
+	MakeRawOCDBQAPlot(pcstream);
         AnalyzeDrift(pTPC, pcstream);
         AnalyzeDriftPos(pTPC, pcstream);
         AnalyzeDriftNeg(pTPC, pcstream);    
@@ -140,6 +155,9 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     AnalyzeConstrain(pConstrain, pcstream);
    
     (*pcstream)<<"tpcQA"<<"\n";
+    TTree * tree = ((*pcstream)<<"tpcQA").GetTree();
+    tree->SetAlias("nEvents","entriesMult");
+    
 }
 
 //_____________________________________________________________________________
@@ -903,10 +921,14 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
 //_____________________________________________________________________________
 Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
-    //
-    // Analyse number of TPC clusters 
-    //
-    
+  //
+  // Analyse number of TPC clusters 
+  // Standard NCl Ncl/Findable histograms 
+  //   
+  // Functionality for missing chambers detection.
+  //    <NCL>med per phi|sector|TPC
+  //    <Ntr>med per phi|sector|TPC
+
     if (!pcstream) return 1;
     if (!pTPC) return 1;
  
@@ -1060,90 +1082,103 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       "slopeCTPCnclErr="<< slopeCTPCnclErr;
     //
     // Get ncl:sector map estimator without having ncl map
+    Double_t bz = 0;
+    if (TGeoGlobalMagField::Instance()->GetField()) {
+      Int_t polarityL3 = AliTPCcalibDB::GetL3Polarity(pTPC->GetRunNumber());
+      bz = AliTPCcalibDB::GetBz(pTPC->GetRunNumber());
+      if (polarityL3>0) bz*=-1; 
+    }
+    
     TH3D * hisNclpos = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
     TH3D * hisNclneg = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
+    Int_t nbins= hisNclpos->GetZaxis()->GetNbins();
+    TAxis* paxisPhi=hisNclpos->GetZaxis();
     TH3D * hisNcl= 0;
-    //new TH3F(*hisNclpos);
+    //
+    // 0.) As an estimator most probable value of the ncl/nclfindable used
+    //
+    static TGraphErrors * graphNclMostProbPhi[8]={0};
+    static TGraphErrors * graphNclMostProbPhiSector[8]={0};
+    TVectorD vecMP(nbins);
+    TVectorD vecPhi(nbins);
+    TVectorD vecMostProb(nbins);
+    TVectorD vecSector(nbins);
+    TVectorD vecNclSector(nbins);
+    TVectorD vecNcl(nbins);
     //
     //
-    // 1.) Profile estimator
+    for (Int_t jgr=0; jgr<8; jgr++){
+      Int_t igr=jgr%4;
+      hisNcl= ((igr%2==0)) ?  new TH3D(*hisNclpos) : new TH3D(*hisNclneg);   // track sign
+      if (igr<2) {
+	hisNcl->GetYaxis()->SetRangeUser(0.3,0.9);   // A side
+      }else{
+	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.3); // C side
+      }
+      Int_t sign=((igr%2==0)) ? 1:-1;
+      if (bz>0) sign*=-1;  // sign of the Bz
+      TH2* his2=  (TH2*)hisNcl->Project3D("xz");
+      for (Int_t ibin=1; ibin<=nbins; ibin++){
+	TH1 * his1D = (TH1*)his2->ProjectionY("his1D",ibin,ibin);
+	if (jgr<4) vecMP[ibin-1]=his1D->GetBinCenter(his1D->GetMaximumBin());
+	if (jgr>=4) vecMP[ibin-1]=his1D->GetEntries();
+	vecPhi[ibin-1]=9.*paxisPhi->GetBinCenter((ibin+sign*4+nbins)%nbins)/TMath::Pi();
+	delete his1D;
+      }
+      graphNclMostProbPhi[jgr]=new TGraphErrors(nbins,vecPhi.GetMatrixArray(), vecMP.GetMatrixArray());          
+      graphNclMostProbPhi[jgr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhi[jgr]->SetMarkerColor(1+igr);
+      graphNclMostProbPhi[jgr]->SetLineColor(1+igr);
+      delete his2;
+      delete hisNcl;
+      hisNcl=0;
+    }    
     //
-    static TGraphErrors * graphNclPhiProfile[5]={0};
-    static TGraphErrors * graphNclPhiProfileSector[6]={0};
-    Double_t vecNcl[144];
-    Double_t vecNclSector[18];
-    Double_t vecSector[18];
-
-    hisNcl=new TH3D(*hisNclpos);
-    hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
-    graphNclPhiProfile[0]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
-    graphNclPhiProfile[2]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl=new TH3D(*hisNclneg);
-    hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
-    graphNclPhiProfile[1]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
-    graphNclPhiProfile[3]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    graphNclPhiProfile[4]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-      //
-    Int_t nbins=graphNclPhiProfile[0]->GetN();
-    for (Int_t igr=0;igr<nbins; igr++){      
-      graphNclPhiProfile[0]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4)%nbins]/TMath::Pi();   // correct phi for the mean curvature and express it in the sector coordinates
-      graphNclPhiProfile[1]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4)%nbins]/TMath::Pi();
-      graphNclPhiProfile[2]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4+nbins)%nbins]/TMath::Pi();
-      graphNclPhiProfile[3]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4+nbins)%nbins]/TMath::Pi();
-    }
-    for (Int_t igr=0;igr<4; igr++){
+    //
+    for (Int_t igr=0;igr<8; igr++){
       for (Int_t isec=0; isec<18; isec++){
 	Int_t bins=0;
 	for (Int_t ibin=0;ibin<nbins; ibin++){    
-	  if (TMath::Abs(graphNclPhiProfile[igr]->GetX()[ibin]-isec-0.5)>0.4) continue;
-	  vecNcl[bins]=graphNclPhiProfile[igr]->GetY()[ibin];
+	  if (TMath::Abs(graphNclMostProbPhi[igr]->GetX()[ibin]-isec-0.5)>0.4) continue;
+	  vecNcl[bins]=graphNclMostProbPhi[igr]->GetY()[ibin];
 	  bins++;
 	}
 	vecSector[isec]=isec;
-	vecNclSector[isec]=TMath::MinElement(bins, vecNcl);
+	vecNclSector[isec]=TMath::Median(bins, vecNcl.GetMatrixArray());
       }
-      graphNclPhiProfileSector[igr]=new TGraphErrors(18, vecSector, vecNclSector);      
-      graphNclPhiProfileSector[igr+2]=new TGraphErrors(18, vecSector, vecNclSector);      
+      graphNclMostProbPhiSector[igr]=new TGraphErrors(18, vecSector.GetMatrixArray(), vecNclSector.GetMatrixArray());      
     }
-    for (Int_t igr=4;igr<6; igr++){
-      for (Int_t isec=0; isec<18; isec++){
-	graphNclPhiProfileSector[igr]->GetY()[isec]=TMath::Max(graphNclPhiProfileSector[(igr%2)*2]->GetY()[isec], graphNclPhiProfileSector[(igr%2)*2+1]->GetY()[isec]);
-      }
-    }    
-    for (Int_t igr=0;igr<4; igr++){
-      graphNclPhiProfile[igr]->SetMarkerStyle(21+igr);
-      graphNclPhiProfile[igr]->SetMarkerColor(1+igr);
-      graphNclPhiProfileSector[igr]->SetMarkerStyle(21+igr);
-      graphNclPhiProfileSector[igr]->SetMarkerColor(1+igr);
+    static TVectorD normMedian(8);
+    for (Int_t jgr=0;jgr<8; jgr++){
+      Int_t igr=jgr%4;
+      normMedian[igr] = TMath::Median(nbins, graphNclMostProbPhi[igr]->GetY());
+      graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
+      graphNclMostProbPhiSector[igr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhiSector[igr]->SetMarkerColor(1+igr);
     } 
+
     (*pcstream)<<"tpcQA"<<
-      "grNclSectorC.="<<graphNclPhiProfileSector[4]<<
-      "grNclSectorA.="<<graphNclPhiProfileSector[5];
-    //
-    // 2.) As an estimator most probable value of the ncl/nclfindable used
-    //
-    static TGraphErrors * graphNclMostProbPhiProfile[5]={0};
-    static TGraphErrors * graphNclMostProbPhiProfileSector[5]={0};
+      "grNclPhiMedian.="<<&normMedian<<            //  median value (144 phi bins)  of the number of clusters 
+      "grNclPhiPosA.="<< graphNclMostProbPhi[0]<<  //  phi NCL/findable profile per phi bin - positive tracks A side
+      "grNclPhiNegA.="<< graphNclMostProbPhi[1]<<  //  phi NCL/findable profile per phi bin - negative tracks A side
+      "grNclPhiPosC.="<< graphNclMostProbPhi[2]<<  //  phi NCL/findable profile per phi bin - positive tracks C side
+      "grNclPhiNegC.="<< graphNclMostProbPhi[3]<<  //  phi NCL/findable profile per phi bin - negative tracks C side
+      "grNtrPhiPosA.="<< graphNclMostProbPhi[4]<<  //  phi entries per phi bin - positive tracks A side
+      "grNtrPhiNegA.="<< graphNclMostProbPhi[5]<<  //  phi entries per phi bin - negative tracks A side
+      "grNtrPhiPosC.="<< graphNclMostProbPhi[6]<<  //  phi entries per phi bin - positive tracks C side
+      "grNtrPhiNegC.="<< graphNclMostProbPhi[7];   //  phi entries per phi bin - negative tracks C side
 
-    for (Int_t igr=0; igr<4; igr++){
-      TVectorD vecPhi(nbins);
-      TVectorD vecMostProb(nbins);
-      hisNcl= ((igr%2==0)) ?  new TH3D(*hisNclpos) : new TH3D(*hisNclneg);   // track sign
-      if (igr<2) {
-	hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);   // A side
-      }else{
-	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2); // C side
-      }
-      for (Int_t ibin=1; ibin<=nbins; ibin++){
-	
-      }
-      delete hisNcl;
-      hisNcl=0;
-    }
-
-
+    (*pcstream)<<"tpcQA"<<
+      "grNclSectorPosA.="<< graphNclMostProbPhiSector[0]<<  //  sector NCL/findable profile
+      "grNclSectorNegA.="<< graphNclMostProbPhiSector[1]<<  // 
+      "grNclSectorPosC.="<< graphNclMostProbPhiSector[2]<<  // 
+      "grNclSectorNegC.="<< graphNclMostProbPhiSector[3]<<  // 
+      "grNtrSectorPosA.="<< graphNclMostProbPhiSector[4]<<  //  sector entries per sector
+      "grNtrSectorNegA.="<< graphNclMostProbPhiSector[5]<<  // 
+      "grNtrSectorPosC.="<< graphNclMostProbPhiSector[6]<<  // 
+      "grNtrSectorNegC.="<< graphNclMostProbPhiSector[7];   // 
+ 
 
     return 0;
 }
@@ -1623,13 +1658,17 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     //
     // 
     //
+    static Double_t entriesVertX=0;
     static Double_t meanVertX=0;
     static Double_t rmsVertX=0;
+    static Double_t entriesVertY=0;
     static Double_t meanVertY=0;
     static Double_t rmsVertY=0;
+    static Double_t entriesVertZ=0;
     static Double_t meanVertZ=0;
     static Double_t rmsVertZ=0;
     static Double_t vertStatus=0;
+    static Double_t entriesMult=0;
     static Double_t meanMult=0;
     static Double_t rmsMult=0;
     static Double_t meanMultPos=0;
@@ -1664,7 +1703,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
        his1D = pTPC->GetTPCEventHisto()->Projection(0);
     }
     if(!his1D) return 1;
-
+    entriesVertX = his1D->GetEntries(); 
     meanVertX = his1D->GetMean();    
     rmsVertX    = his1D->GetRMS();
     delete his1D;
@@ -1679,6 +1718,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     }
     if(!his1D) return 1;
 
+    entriesVertY = his1D->GetEntries();
     meanVertY = his1D->GetMean();
     rmsVertY    = his1D->GetRMS();
     delete his1D;
@@ -1694,6 +1734,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     }    
     if(!his1D) return 1;
 
+    entriesVertZ = his1D->GetEntries();
     meanVertZ = his1D->GetMean();
     rmsVertZ    = his1D->GetRMS();
     delete his1D;
@@ -1709,6 +1750,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     }
     if(!his1D) return 1;
 
+    entriesMult = his1D->GetEntries();
     meanMult    = his1D->GetMean();
     rmsMult     = his1D->GetRMS();
     delete his1D;
@@ -1739,15 +1781,19 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
     //
     (*pcstream)<<"tpcQA"<<
+        "entriesVertX="<<entriesVertX<<
         "meanVertX="<<meanVertX<<
         "rmsVertX="<<rmsVertX<<
+        "entriesVertY="<<entriesVertY<<
         "meanVertY="<<meanVertY<<
         "rmsVertY="<<rmsVertY<<
+        "entriesVertZ="<<entriesVertZ<<
         "meanVertZ="<<meanVertZ<<
         "rmsVertZ="<<rmsVertZ<<
         "vertStatus="<<vertStatus<<
         "vertAll="<<vertAll<<
         "vertOK="<<vertOK<<
+        "entriesMult="<<entriesMult<<
         "meanMult="<<meanMult<<
         "rmsMult="<<rmsMult<<
         "meanMultPos="<<meanMultPos<<
@@ -2640,7 +2686,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // normalization
-  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A side
+  h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A side
   h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
   his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_norm"));
   if(!his2D) return 4;
@@ -2652,7 +2698,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // A_side IROC
-  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A_side
+  h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A_side
   h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_side_IROC"));
@@ -2696,7 +2742,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   minOcc=0.;
   ////////////////////////////////////////////
   // A_side OROC
-  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A_side
+  h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A_side
   h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_side_OROC"));
@@ -2744,7 +2790,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   //////////////////////////////////////////
   
   // normalization
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C side
+  h3D_1->GetZaxis()->SetRangeUser(1.1,2.1); //C side
   h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
   his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_norm"));
   if(!his2D) return 4;
@@ -2756,7 +2802,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   
   //////////////////////////////////////////
   // C_side IROC
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C_side
+  h3D_1->GetZaxis()->SetRangeUser(1.1,2.1); //C_side
   h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_IROC"));
@@ -2801,7 +2847,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
 
   ////////////////////////////////////////////
   // C_side OROC
-  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C_side
+  h3D_1->GetZaxis()->SetRangeUser(1.1,2.1); //C_side
   h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
 
   his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_OROC"));
@@ -2854,6 +2900,225 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
    //A/C side OROC
    "TPC_Occ_OROC.="<< &meanOccArray_oroc;   
 
- return 0;
+  return 0;
+}
+
+
+
+
+
+
+
+void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
+  //
+  //  Draw RAW OCDB QA plot and store the summary graphs in the trending tree
+  //    1.) Occupancy and cluster charge maps
+  //    2.) HV information
+  //
+  gStyle->SetLabelSize(0.08,"XYZ");
+  gStyle->SetTitleSize(0.08,"XYZ");
+  gStyle->SetTitleOffset(0.5,"XYZ");
+  AliTPCcalibDB *calibDB = AliTPCcalibDB::Instance();
+  TVectorD   value(72), valueNorm(72),valueRMS(72), roc(72);  
+  AliTPCdataQA*  dataQA= calibDB->GetDataQA();
+  for (Int_t isec=0; isec<72; isec++) roc[isec]=isec;
+  //
+  //
+  AliTPCCalPad * padActive=calibDB->GetPadGainFactor();
+  AliTPCCalPad * padLocalMax=dataQA->GetNLocalMaxima();
+  AliTPCCalPad * padNoThreshold=dataQA->GetNoThreshold();
+  AliTPCCalPad * padMaxCharge=dataQA->GetMaxCharge();
+  AliTPCCalPad * padMeanCharge=dataQA->GetMeanCharge();
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry * entry=  man->Get("TPC/Calib/QA");
+  static Bool_t hasRawQA = entry->GetId().GetFirstRun()== man->GetRun();
+
+
+  AliTPCCalPad * padInput[5]={padActive, padLocalMax, padNoThreshold, padMaxCharge};
+  TGraphErrors *grRaw[8]={0};
+  TGraphErrors *grStatus[8]={0};
+  const char * side[2]={"A","C"};
+  Int_t kcolors[5]={1,2,4,3,6};
+  Int_t kmarkers[5]={21,25,20,24,26};
+   
+  for (Int_t itype=0; itype<4; itype++){    
+    for (Int_t isec=0; isec<72; isec++) {
+      value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian() ; 
+      if (itype==0) value[isec]=padInput[itype]->GetCalROC(isec)->GetMean(); 
+      if (itype==2) value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian(); 
+      valueRMS[isec]=padInput[itype]->GetCalROC(isec)->GetRMS();
+      if (value[isec]>0)valueRMS[isec]/=value[isec];
+      valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
+    }
+    for (Int_t isec=0; isec<72; isec++) {
+      Int_t offset=36*(isec/36);
+      Double_t norm,rms;
+      AliMathBase::EvaluateUni(36, &(value.GetMatrixArray()[offset]),norm,rms,33);
+      valueNorm[isec]=value[isec]/norm;
+    }
+    grRaw[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,valueRMS.GetMatrixArray());
+    grRaw[itype]->SetMarkerColor(kcolors[itype]);
+    grRaw[itype]->SetMarkerStyle(kmarkers[itype]);
+    grRaw[itype]->GetXaxis()->SetTitle("sector");
+    grRaw[itype]->GetYaxis()->SetTitle("Norm. value");
+    grRaw[itype]->SetMinimum(0); 
+    grRaw[itype]->SetMaximum(2); 
   }
 
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(1);
+  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0","canvasRawQA0",1400,700);
+  for (Int_t itype=0; itype<4; itype++){
+    for (Int_t iplot=0; iplot<2; iplot++){
+      canvasRawQA0->cd()->SetLogz();
+      TPad *pad = new TPad("xxx","xxx",(itype+0)*0.25+0.005,(iplot+1)*0.33+0.005, (itype+1)*0.25-0.005,(iplot+2)*0.33-0.005);
+      pad->Draw();
+      pad->cd()->SetLogz();
+      TH1* histo = 0;
+      if (padInput[itype]->GetMedian()>0){	
+        padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
+	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
+	if (histo->GetMaximum()>2) histo->SetMaximum(2.); 
+	histo->SetName(TString::Format("%s  %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
+	histo->SetTitle(TString::Format("%s %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
+	histo->Draw("colz");
+      }
+    }
+  }
+  canvasRawQA0->cd(); 
+  gStyle->SetOptTitle(1);
+  TPad *pad = new TPad("graph","graph",0,0,1,0.33);
+  pad->SetRightMargin(0.01);
+  pad->Draw();
+  pad->cd();
+  TLegend * legend = new TLegend(0.2,0.70,0.5,0.89,"Raw data QA (normalized to median))");
+  legend->SetBorderSize(0);
+  legend->SetNColumns(2);
+  for (Int_t itype=0; itype<4; itype++){
+    if (itype==0) grRaw[itype]->Draw("ap");
+    grRaw[itype]->Draw("p");
+    legend->AddEntry(grRaw[itype], padInput[itype]->GetTitle(),"p");
+  }
+  legend->Draw();
+  TLine *line = new TLine(0,0.70,72,0.70);
+  line->SetLineStyle(2);
+  line->SetLineColor(2);
+  line->SetLineWidth(3);
+  line->Draw();
+  TLatex latex;
+  latex.DrawLatex(73,0.70,"Threshold");
+  canvasRawQA0->SaveAs("rawQAInformation.png");
+  static Int_t clusterCounter= dataQA->GetClusterCounter();
+  static Int_t signalCounter= dataQA->GetSignalCounter();
+  //
+  // add aso HV status
+  //
+  for (Int_t itype=0; itype<5; itype++){
+    for (Int_t isec=0; isec<72; isec++){
+      if (itype==0) valueNorm[isec]=calibDB->GetChamberHVStatus(isec);
+      if (itype==1) valueNorm[isec]=calibDB->GetChamberGoodHighVoltageFraction(isec);
+      if (itype==2) valueNorm[isec]=calibDB->GetChamberHighVoltageMedian(isec);
+      if (itype==3) valueNorm[isec]=calibDB->GetChamberCurrentNominalHighVoltage(isec);  
+      if (itype==4) valueNorm[isec]=calibDB->GetChamberCurrentNominalHighVoltage(isec)-50.;  
+    }    
+    grStatus[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,0);
+    grStatus[itype]->SetMarkerColor(kcolors[itype]);
+    grStatus[itype]->SetMarkerStyle(kmarkers[itype]);
+    grStatus[itype]->GetXaxis()->SetTitle("sector");
+    grStatus[itype]->GetYaxis()->SetTitle("Norm. value");
+    grStatus[itype]->SetMinimum(0); 
+  }
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(1);
+  TCanvas *canvasROCStatusOCDB = new TCanvas("canvasROCStatusOCDB","canvasROCStatusOCDB",1000,500);
+  canvasROCStatusOCDB->Divide(1,2);
+  canvasROCStatusOCDB->SetRightMargin(0.02);
+  TLegend * legendStatus = new TLegend(0.2,0.20,0.5,0.4,"Chamber status");
+  TLegend * legendVoltage = new TLegend(0.2,0.20,0.5,0.4,"Chamber voltage");
+  legendStatus->SetBorderSize(0);
+  legendVoltage->SetBorderSize(0);
+  {
+    canvasROCStatusOCDB->cd(1)->SetRightMargin(0.02); 
+    grStatus[0]->SetMinimum(0);
+    grStatus[0]->Draw("ap");
+    grStatus[1]->Draw("p");
+    legendStatus->AddEntry(grStatus[0],"Chamber status","p");
+    legendStatus->AddEntry(grStatus[1],"Time fraction in nominal condition","p");
+    legendStatus->Draw();
+    //
+    canvasROCStatusOCDB->cd(2)->SetRightMargin(0.02);
+    grStatus[3]->SetMinimum(0);
+    grStatus[3]->Draw("ap");
+    grStatus[2]->Draw("p");
+    grStatus[4]->SetMarkerColor(2);
+    grStatus[4]->SetMarkerStyle(kmarkers[2]);
+    grStatus[4]->SetMarkerSize(0.75);
+    grStatus[4]->SetLineColor(2);
+    grStatus[4]->SetLineWidth(3);
+    grStatus[4]->Draw("lp");
+    legendVoltage->AddEntry(grStatus[2],"Chamber voltage","p");
+    legendVoltage->AddEntry(grStatus[3],"Chamber nominal voltage (-TPC median)","p");
+    legendVoltage->AddEntry(grStatus[4],"Chamber voltage Threshold","p");
+    legendVoltage->Draw();
+  }
+  canvasROCStatusOCDB->SaveAs("canvasROCStatusOCDB.png");
+
+  if (pcstream){
+    (*pcstream)<<"tpcQA"<<
+      "hasRawQA="<<hasRawQA<<                   // flag - Raw QA present
+      "rawClusterCounter="<<clusterCounter<<    // absolute number of cluster  in Raw QA          -  calibDB->GetDataQA()->GetClusterCounter();
+      "rawSignalCounter="<<signalCounter<<      // absolute number of signal above Thr  in Raw QA -  calibDB->GetDataQA()->GetSignalCounter()
+      "grOCDBStatus.="<<grRaw[0]<<              // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
+      //
+      "grRawLocalMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
+      "grRawAboveThr.="<<grRaw[2]<<             // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
+      "grRawQMax.="<<grRaw[3]<<                 // RAQ QA OCDB max charge              - LTM:calibDB->GetDataQA()->GetMaxCharge();
+      //
+      "grROCHVStatus.="<<grStatus[0]<<          // ROC HV status - enable/disable chambers beacus of LOW HV
+      "grROCHVTimeFraction.="<<grStatus[1]<<    // ROC HV fraction of time disabled
+      "grROCHVMedian.="<<grStatus[2]<<          // ROC median voltage
+      "grROCHVNominal.="<<grStatus[3];          // ROC Nominal voltage corrected for common median shift
+  }
+}
+
+
+
+void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
+  //
+  // Make default aliases for the "missing chamber selection"
+  //
+  tree->SetAlias("sectorNclMissing70","Sum$((max(grNclSectorNegA.fY,grNclSectorPosA.fY)/grNclPhiMedian.fElements[0])<0.7)+Sum$((max(grNclSectorNegC.fY,grNclSectorPosC.fY)/grNclPhiMedian.fElements[0])<0.7)");  
+  // Missing chambers according StandardQA - using Ncl:phi  histogram.  
+  //  Counter:  sum( Ncl_sector/<Ncl>_median < 70% ) 
+  tree->SetAlias("sectorNtrMissing70","Sum$((18*grNtrSectorPosC.fY/Sum$(grNtrSectorPosC.fY))<0.7)+Sum$((18*grNtrSectorPosA.fY/Sum$(grNtrSectorPosA.fY))<0.7)");
+  // Missing chambers according StandardQA - using Ncl:phi  track counter
+  //  Counter sum( Ntr_sector/<Ntr>_median < 70% ) 
+  tree->SetAlias("ocdbStatusCounter","hasRawQA*Sum$(grOCDBStatus.fY<0.75)");               // counter status for the OCDB
+  tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
+  tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
+  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
+  // counter outliers 75 (Qmax or occupancy based)  
+  // for laser data Q is not reliable - disable decission for data with big RMS 
+  tree->SetAlias("ocdbHVStatusCounter","Sum$(grROCHVStatus.fY<0.5)");                      // chambers not active  - according  HV decission
+  tree->SetAlias("ocdbLowerHVCounter50","Sum$(grROCHVMedian.fY<(grROCHVNominal.fY-50))");    // chambers not active  - according  maximal diff of HV
+  tree->SetAlias("qaClOccupancyCounter60","(Sum$((36*TPC_Occ_IROC.fElements)<0.60)+Sum$((36*TPC_Occ_OROC.fElements)<0.60))");   // missing chambers according cluster occupancy
+
+  //
+  // dEdx outlier alaiases
+  //
+  tree->SetAlias("normdEdxSector","(36*meanMIPvsSector.fElements/Sum$(meanMIPvsSector.fElements))");  
+  // dEdx_{sector}/<dEdx>
+  tree->SetAlias("wrongdEdxSectorCounter5","Sum$(abs(normdEdxSector-1)>0.05)&&rawLowCounter75==0&&sectorNtrMissing70<36");  
+  tree->SetAlias("wrongdEdxSectorCounter2","Sum$(abs(normdEdxSector-1)>0.02)&&rawLowCounter75==0&&sectorNtrMissing70<36");  
+  // dEdx_{sector}/<dEdx>
+  //
+  //
+  tree->SetAlias("disabledGoodChambers","(sectorNclMissing70>0||sectorNtrMissing70>0)&&rawLowCounter75==0&&sectorNtrMissing70<36");
+  //
+  // disabled good chambers counter
+  // 
+  tree->SetAlias("emptyQA","(sectorNtrMissing70==36)");
+  // empty QA counter
+
+}

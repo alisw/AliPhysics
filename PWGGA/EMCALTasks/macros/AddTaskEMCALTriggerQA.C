@@ -1,4 +1,12 @@
-// $Id$
+/// \file AddTaskEMCALTriggerQA.C
+/// \brief Configuration analysis task for EMCal trigger QA.
+///
+/// Configuration analysis task for EMCal trigger QA. The only parameter is the check on
+/// MC or real data.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
 AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(Bool_t kSimulation = kFALSE, TString outputFile = "", )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -16,21 +24,28 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(Bool_t kSimulation = kFALS
     return NULL;
   }
   
+  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QAEMCALTrigger");
+    
+  // Configuration
+  
   Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
-
+    
   if(kUseKinematics) kSimulation = kTRUE;
-  
-  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  
-  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QAEMCALTrigger");  
+    
   if(kSimulation) qatrigger->SwitchOnMCData();
   else            qatrigger->SwitchOffMCData();
-  if(outputFile.Length()==0)outputFile = AliAnalysisManager::GetCommonFileName(); 
-
+  
+  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+    
   if(inputDataType.Contains("AOD")) qatrigger->SwitchOffV0SignalHistograms();
   else                              qatrigger->SwitchOnV0SignalHistograms();
   
+  // Define the input/output containers
+    
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    
+  if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName();
+ 
   AliAnalysisDataContainer *coutput = 0;
   if(outputFile.Length()==0)
     coutput = mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:EMCALQATrigger",outputFile.Data()));

@@ -13,55 +13,45 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////
-// Calls derived from AliAnalysisTaskESDfilter
-// Filter the ESD Events to AODs, only those events with
-// some signal in EMCAL, righ now at least a 
-// cluster of high energy
-//
-// Author: Gustavo Conesa Balbastre (LPSC - Grenoble)
-//
-// $Id$
-//
-//////////////////////////////////////////////////////////
-
 #include "AliESDCaloCluster.h"
 
 #include "AliAnalysisTaskESDfilterEMCALEventSelect.h"
 
-ClassImp(AliAnalysisTaskESDfilterEMCALEventSelect)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskESDfilterEMCALEventSelect) ;
+/// \endcond
 
 //____________________________________________________________________________________
-AliAnalysisTaskESDfilterEMCALEventSelect::AliAnalysisTaskESDfilterEMCALEventSelect() : 
+/// Default constructor.
+//____________________________________________________________________________________
+AliAnalysisTaskESDfilterEMCALEventSelect::AliAnalysisTaskESDfilterEMCALEventSelect() :
 AliAnalysisTaskESDfilter("ESD Filte : EMCAL selected events"), 
 fEnergyCut(10),            fNcellsCut (2),
 fRecoUtils(0x0),           
 fGeometry(0),              fGeoName("EMCAL_COMPLETE12SMV1")        
 {
-  // Default constructor
-  
   fRecoUtils = new AliEMCALRecoUtils;
-
 }		      
 
 //____________________________________________________________________________________________________
-AliAnalysisTaskESDfilterEMCALEventSelect::AliAnalysisTaskESDfilterEMCALEventSelect(const char *name) : 
+/// Constructor.
+//____________________________________________________________________________________________________
+AliAnalysisTaskESDfilterEMCALEventSelect::AliAnalysisTaskESDfilterEMCALEventSelect(const char *name) :
 AliAnalysisTaskESDfilter(name), 
 fEnergyCut(10),            fNcellsCut (2),
 fRecoUtils(0x0),           
 fGeometry(0),              fGeoName("EMCAL_COMPLETE12SMV1")
 {
-  // Constructor
-  
   fRecoUtils = new AliEMCALRecoUtils;
-
 }
 
 //_________________________________________________________________
+/// \return True if there is signal in EMCal
+/// Accept event given there is a EMCAL cluster with
+/// enough energy and cells.
+//_________________________________________________________________
 Bool_t AliAnalysisTaskESDfilterEMCALEventSelect::AcceptEventEMCAL()
 {
-  // Accept event given there is a cluster with enough energy
-    
   if(!fGeometry)  fGeometry  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1");
 
   Int_t           nCluster = InputEvent() -> GetNumberOfCaloClusters();
@@ -85,21 +75,16 @@ Bool_t AliAnalysisTaskESDfilterEMCALEventSelect::AcceptEventEMCAL()
   }// loop
   
   return kFALSE;
-  
-}  
+}
 
 //_________________________________________________________________
-void AliAnalysisTaskESDfilterEMCALEventSelect::UserExec(Option_t *) 
+/// Main method, execute per event:
+/// * Check if the events contains what we want in EMCAL, if not, do not copy the ESD into AOD
+/// * Continue the processing in the same way as in the ESD filter.
+//_________________________________________________________________
+void AliAnalysisTaskESDfilterEMCALEventSelect::UserExec(Option_t *)
 {
-  // Main loop
-
-  // Check if the events contains what we want in EMCAL, if not, 
-  // do not copy the ESD into AOD
-  
   if(!AcceptEventEMCAL()) return ;
-  
-  // Continue the processing in the same way as in the ESD filter
-  
+    
   AliAnalysisTaskESDfilter::UserExec("");
-  
 }

@@ -1,9 +1,11 @@
 #ifndef AliAnalysisTaskV0sInJetsEmcal_cxx
 #define AliAnalysisTaskV0sInJetsEmcal_cxx
 
-// task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
-// fork of AliAnalysisTaskV0sInJets for the EMCal framework
-// Author: Vit Kucera (vit.kucera@cern.ch)
+//-------------------------------------------------------------------------
+//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+//     fork of AliAnalysisTaskV0sInJets for the EMCal framework
+//     Author: Vit Kucera (vit.kucera@cern.ch)
+//-------------------------------------------------------------------------
 
 class TH1D;
 class TH2D;
@@ -31,14 +33,21 @@ public:
   void UserCreateOutputObjects();
   void Terminate(Option_t*) {}
 
+  // data selection
   void SetIsPbPb(Bool_t val = 1) {fbIsPbPb = val;}
-  void SetCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH;}
-  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
-  void SetPtTrackMin(Double_t ptMin = 0) {fdCutPtTrackMin = ptMin;}
-  void SetJetRadius(Double_t r = 0.4) {fdRadiusJet = r;}
-  void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
   void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
-  void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda);
+
+  // event selection
+  void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ;}
+
+  // jet selection
+  void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
+  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
+  void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
+  void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
+  void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
+
+  void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsCandALambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda, Bool_t IsInPeakALambda);
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent);
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
   Bool_t OverlapWithJets(const TClonesArray* array, const AliVParticle* cone, Double_t dDistance) const; // decides whether a cone overlaps with other jets
@@ -46,13 +55,32 @@ public:
   AliEmcalJet* GetMedianCluster(AliJetContainer* cont, Double_t dEtaConeMax) const; // get median kt cluster
   Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const; // area of circular segment
 
+  // V0 selection
+  void SetCutTPCRefit(Bool_t val = kTRUE) {fbTPCRefit = val;}
+  void SetCutRejectKinks(Bool_t val = kTRUE) {fbRejectKinks = val;}
+  void SetCutFindableClusters(Bool_t val = kTRUE) {fbFindableClusters = val;}
+  void SetCutNCrossedRowsTPCMin(Double_t val = 70.) {fdCutNCrossedRowsTPCMin = val;}
+  void SetCutCrossedRowsOverFindMin(Double_t val = 0.8) {fdCutCrossedRowsOverFindMin = val;}
+  void SetCutCrossedRowsOverFindMax(Double_t val = 1e3) {fdCutCrossedRowsOverFindMax = val;}
+  void SetCutPtDaughterMin(Double_t val = 0.150) {fdCutPtDaughterMin = val;}
   void SetCutDCAToPrimVtxMin(Double_t val = 0.1) {fdCutDCAToPrimVtxMin = val;}
   void SetCutDCADaughtersMax(Double_t val = 1.) {fdCutDCADaughtersMax = val;}
+  void SetCutEtaDaughterMax(Double_t val = 0.8) {fdCutEtaDaughterMax = val;}
   void SetCutNSigmadEdxMax(Double_t val = 3.) {fdCutNSigmadEdxMax = val;}
-  void SetCutCPAMin(Double_t val = 0.998) {fdCutCPAMin = val;}
-  void SetCutNTauMax(Double_t val = 5.) {fdCutNTauMax = val;}
+  void SetPtProtonPIDMax(Double_t val = 1.) {fdPtProtonPIDMax = val;}
+  void SetOnFly(Bool_t val = 0) {fbOnFly = val;}
+  void SetCutCPAKMin(Double_t val = 0.998) {fdCutCPAKMin = val;}
+  void SetCutCPALMin(Double_t val = 0.998) {fdCutCPALMin = val;}
+  void SetCutRadiusDecayMin(Double_t val = 5.) {fdCutRadiusDecayMin = val;}
+  void SetCutRadiusDecayMax(Double_t val = 100.) {fdCutRadiusDecayMax = val;}
+  void SetCutEtaV0Max(Double_t val = 0.7) {fdCutEtaV0Max = val;}
+  void SetCutRapV0Max(Double_t val = 0.75) {fdCutRapV0Max = val;}
+  void SetCutNTauKMax(Double_t val = 5.0) {fdCutNTauKMax = val;}
+  void SetCutNTauLMax(Double_t val = 5.0) {fdCutNTauLMax = val;}
+  void SetCutArmPod(Bool_t val = kTRUE) {fbCutArmPod = val;}
+  void SetCutCross(Bool_t val = kTRUE) {fbCutCross = val;}
 
-  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ = kFALSE, Double_t dDeltaZMax = 100.);
+  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax = -1);
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
@@ -72,12 +100,12 @@ public:
   static const Int_t fgkiNBinsPtJetInit; // initial number of bins (uniform binning)
   // axis: K0S invariant mass
   static const Int_t fgkiNBinsMassK0s; // number of bins (uniform binning)
-  static const Double_t fgkdMassK0sMin; // minimum
-  static const Double_t fgkdMassK0sMax; // maximum
+  static const Double_t fgkdMassK0sMin; // minimum K0S mass
+  static const Double_t fgkdMassK0sMax; // maximum K0S mass
   // axis: Lambda invariant mass
   static const Int_t fgkiNBinsMassLambda; // number of bins (uniform binning)
-  static const Double_t fgkdMassLambdaMin; // minimum
-  static const Double_t fgkdMassLambdaMax; // maximum
+  static const Double_t fgkdMassLambdaMin; // minimum Lambda mass
+  static const Double_t fgkdMassLambdaMax; // maximum Lambda mass
 
 protected:
   void ExecOnce();
@@ -87,39 +115,61 @@ protected:
 private:
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
+  TRandom* fRandom; //! random-number generator
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListQA; //! Output list for quality assurance
   TList* fOutputListCuts; //! Output list for checking cuts
   TList* fOutputListMC; //! Output list for MC related results
-  Bool_t fbIsPbPb; // switch Pb-Pb / p-p collisions
 
-  // V0 selection
-  Double_t fdCutDCAToPrimVtxMin; // [cm] min DCA of daughters to the prim vtx
-  Double_t fdCutDCADaughtersMax; // [sigma of TPC tracking] max DCA between daughters
-  Double_t fdCutNSigmadEdxMax; // [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
-  Double_t fdCutCPAMin; // min cosine of the pointing angle
-  Double_t fdCutNTauMax; // [tau] max proper lifetime in multiples of the mean lifetime
-  // jet selection
-  Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
-  Double_t fdCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
-  Double_t fdRadiusJet; // R of jet finder used for finding V0s in the jet cone
-  Bool_t fbJetSelection; // switch for the analysis of V0s in jets
+  // Data selection
+  Bool_t fbIsPbPb; // switch: Pb+Pb / p+p collisions
+  Bool_t fbMCAnalysis; // switch: simulated / real data
 
-  Bool_t fbMCAnalysis; // switch for the analysis of simulated data
-  TRandom* fRandom; //! random-number generator
-
-  // EMCal containers
-  AliJetContainer* fJetsCont; //! Signal Jets
-  AliJetContainer* fJetsBgCont; //! Background Jets
-//  AliParticleContainer* fTracksCont; //! Tracks
-//  AliClusterContainer* fCaloClustersCont; //! Clusters
-
-  // event cuts
+  // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
   Double_t fdCutCentLow; // [%] minimum centrality
   Double_t fdCutCentHigh; // [%] maximum centrality
-  Double_t fdCentrality; //!
+  Double_t fdCutDeltaZMax; // [cm] maximum |Delta z| between nominal prim vtx and SPD vtx
+  Double_t fdCentrality; //! [%] centrality
+
+  // V0 selection
+  // Daughter tracks
+  Bool_t fbTPCRefit; // (yes) TPC refit for daughter tracks
+  Bool_t fbRejectKinks; // (no) reject kink-like production vertices of daughter tracks
+  Bool_t fbFindableClusters; // (no) require positive number of findable clusters
+  Double_t fdCutNCrossedRowsTPCMin; // (70.) min number of crossed TPC rows
+  Double_t fdCutCrossedRowsOverFindMin; // (0.8) min ratio crossed rows / findable clusters
+  Double_t fdCutCrossedRowsOverFindMax; // (1e3) max ratio crossed rows / findable clusters
+  Double_t fdCutPtDaughterMin; // (0.150) [GeV/c] min transverse momentum of daughter tracks
+  Double_t fdCutDCAToPrimVtxMin; // (0.1) [cm] min DCA of daughters to the prim vtx
+  Double_t fdCutDCADaughtersMax; // (1.) [sigma of TPC tracking] max DCA between daughters
+  Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks
+  Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
+  Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut
+  // V0 candidate
+  Bool_t fbOnFly; // (0) on-the-fly (yes) or offline (no) reconstructed
+  Double_t fdCutCPAKMin; // (0.998) min cosine of the pointing angle, K0S
+  Double_t fdCutCPALMin; // (0.998) min cosine of the pointing angle, Lambda
+  Double_t fdCutRadiusDecayMin; // (5.) [cm] min radial distance of the decay vertex
+  Double_t fdCutRadiusDecayMax; // (100.) [cm] max radial distance of the decay vertex
+  Double_t fdCutEtaV0Max; // (0.7) max |pseudorapidity| of V0
+  Double_t fdCutRapV0Max; // (0.75) max |rapidity| of V0 (turned off)
+  Double_t fdCutNTauKMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, K0S
+  Double_t fdCutNTauLMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Lambda
+  Bool_t fbCutArmPod; // (yes) Armenteros-Podolanski for K0S
+  Bool_t fbCutCross; // (no) cross contamination
+
+  // Jet selection
+  Bool_t fbJetSelection; // (yes) switch for the analysis of V0s in jets
+  Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
+  Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
+  Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the jet cone
+
+  // EMCal containers
+  AliJetContainer* fJetsCont; //! Signal Jets
+  AliJetContainer* fJetsBgCont; //! Background Jets
 
   // event histograms
   TH1D* fh1EventCounterCut; //! number of events for different selection steps
@@ -367,7 +417,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 4) // example of analysis
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 6) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

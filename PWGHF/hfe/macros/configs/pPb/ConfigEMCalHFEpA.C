@@ -1,6 +1,6 @@
 ///*******************************************************
 ///Config Description
-/// 14 July 2014
+/// April 22, 2015
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -14,7 +14,8 @@ Int_t centralityIndex=0,
 Bool_t isAOD = kFALSE,
 Bool_t isEMCal = kFALSE,
 Bool_t isTrigger = kFALSE,
-Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
+Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
+Bool_t isTender = kFALSE
 )
 
 {
@@ -77,7 +78,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//hfecuts->SetUseCorrelationVertex();
 	//hfecuts->SetSPDVtxResolutionCut();
-	//hfecuts->SetpApileupCut();
+	hfecuts->SetpApileupCut();
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
@@ -94,10 +95,17 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	if(isEMCal) task->SetUseEMCal();
 		//Bool_t isTrigger = kFALSE;
-	if(isTrigger) task->SetUseTrigger();
 	
-		//task->SetUseTender();
-
+	if(isTrigger){
+		task->SetUseTrigger();
+		task->SetUseShowerShapeCut(kTRUE);
+		//task->SetM02Cut(0.0,0.3);
+		task->SetM20Cut(0.0,0.3);
+		
+	}
+	
+	if(isTender) task->SetUseTender();
+		
 	
 	if(configIndex==104)  task->SetdcaCut(2,3);//r,z
 	else if(configIndex==105)  task->SetdcaCut(1.5,2.5);//r,z
@@ -106,12 +114,14 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if(configIndex==108)  task->SetdcaCut(0.1,0.2);//r,z
 	//else task->SetdcaCut(1,2);//r,z
 	
-		
+	/*	
 	if(configIndex==100){
 		task->SetUseShowerShapeCut(kTRUE);
 		//task->SetM02Cut(0.0,0.3);
 		task->SetM20Cut(0.0,0.3);
 	}
+	*/
+	
 	task->SetBackground(kTRUE);
 	
 	//nonHFE cuts
@@ -129,15 +139,18 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//partner cuts
 	
-	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
-	
-	else if(configIndex==85) task->SetAdditionalCuts(0.2,80);
+	if(configIndex==29) task->SetAdditionalCuts(0.1,80);
+    else if(configIndex==30) task->SetAdditionalCuts(0.15,80);
+    else if(configIndex==31) task->SetAdditionalCuts(0.2,80);
+    else if(configIndex==32) task->SetAdditionalCuts(0.25,80);
+	else if(configIndex==84) task->SetAdditionalCuts(0.3,80);
+	else if(configIndex==85) task->SetAdditionalCuts(0.35,80);
 	else if(configIndex==86) task->SetAdditionalCuts(0.4,80);
-	else if(configIndex==87) task->SetAdditionalCuts(0.6,80);	
-	else if(configIndex==30) task->SetAdditionalCuts(0.5,80);
-	else if(configIndex==31) task->SetAdditionalCuts(0.7,80);
-	else if(configIndex==32) task->SetAdditionalCuts(0.9,80);
-	else if(configIndex==84) task->SetAdditionalCuts(0.1,80);
+	else if(configIndex==87) task->SetAdditionalCuts(0.45,80);
+    
+	
+	
+    
 	else if(configIndex==33) task->SetAdditionalCuts(0,60);
 	else if(configIndex==34) task->SetAdditionalCuts(0,70);
 	else if(configIndex==35) task->SetAdditionalCuts(0,90);
@@ -188,7 +201,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 		
 	//this line is to set the change on the E/p cut used in the efficiency calculations.
-    task->SetEoverPnsigma(kTRUE);
+    //task->SetEoverPnsigma(kTRUE);
 	
 	
 	if(centralityIndex==0) task->SetCentrality(0,20);

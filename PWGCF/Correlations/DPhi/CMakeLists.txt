@@ -86,7 +86,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS AliPythia8 ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGLFspectra)
+set(LIBDEPS ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGLFspectra)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note: the extra path has a variable that is NOT

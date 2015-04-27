@@ -226,7 +226,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  else if (ichg == 1)
 	    dtc1etaphitpc[aniter]->SetCharge(-1.0);
 	    
-	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
+	  //dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(0.14,4.0);
 	  //	  dtc1etaphitpc[aniter]->SetEta(-1.2,1.2);
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8); //0.5
 	  // 	//    dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);

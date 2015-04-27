@@ -21,7 +21,7 @@
 
 
   Example usage:
-  export mcProd=$ALICE_ROOT/PWGPP/CalibMacros/
+  export mcProd=$ALICE_PHYSICS/PWGPP/CalibMacros/
   .L  $mcProd/AliOCDBToolkit.cxx+
   MakeDiffExampleUseCase();
 

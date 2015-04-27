@@ -69,7 +69,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   //
   AliCDBManager *cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2009/OCDB");
-  //cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  //cdbManager->SetDefaultStorage("local://$ALICE_PHYSICS/OCDB");
   //cdbManager->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   cdbManager->SetRun(runNumber);
   //cdbManager->SetCacheFlag(kFALSE);
@@ -99,7 +99,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // Create input ESD chain
   //
   /*
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain(list,nFiles,fistFile);
   if(!chain) { 
     Error("RunPerformanceTrain","ESD chain not created!");
@@ -169,7 +169,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // TPC performance
   //
   if(iPWGPPperfTPC) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceTPC.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceTPC.C");
     AliPerformanceTask *tpcQA = AddTaskPerformanceTPC(bUseMCInfo,bUseESDfriend,triggerClass);
     if(!tpcQA) { 
       Error("RunPerformanceTrain","AliPerformanceTask not created!");
@@ -183,7 +183,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // TRD perormance
   //
   if(iPWGPPperfTRD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
     if(!AddTrainPerformanceTRD(bUseMCInfo,bUseESDfriend)) { 
       Error("RunPerformanceTrain","TrainPerformanceTRD not created!");
       return;
@@ -195,7 +195,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // ITS performance
   //
   if(iPWGPPperfITS) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceITS.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceITS.C");
     AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(bUseMCInfo);
     if(!itsQA) { 
       Error("RunPerformanceTrain","AliAnalysisTaskITSTrackingCheck not created!");
@@ -209,7 +209,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // Calorimeter Performance
   //
   if(iPWGPPperfCalo) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCalorimeterQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG4/macros/AddTaskCalorimeterQA.C");
     AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD",bUseMCInfo,kFALSE);
     if(!taskCaloQA) { 
       Error("RunPerformanceTrain","AliAnalysisTaskParticleCorrelation not created!");
@@ -224,7 +224,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // Muon Trigger
   //
   if(iPWGPPperfMuonTrig) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
     AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
     if(!taskMuonTrig) { 
       Error("RunPerformanceTrain","AliAnalysisTaskTrigChEff not created!");
@@ -239,7 +239,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // Muon Efficiency
   //
   if(iPWGPPperfMuonEff) {
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/muondep/AddTaskMUONTrackingEfficiency.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG3/muondep/AddTaskMUONTrackingEfficiency.C");
   AliAnalysisTaskMuonTrackingEff *taskMuonTrackEff = AliAnalysisTaskMuonTrackingEff();
   if(!taskMuonTrackEff) { 
      Error("RunPerformanceTrain","AliAnalysisTaskMuonTrackingEff not created!");
@@ -263,7 +263,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // PWGPP Primary Vertex
   //
   if(iPWGPPperfPrimVertex) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskVertexESD.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskVertexESD.C");
     AliAnalysisTaskVertexESD *taskPrimVertex = AddTaskVertexESD();
     if(!taskPrimVertex) { 
       Error("RunPerformanceTrain","AliAnalysisTaskVertexESD not created!");
@@ -277,7 +277,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // PWGPP V0 QA
   //
   if (iPWGPPv0QA) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskV0QA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskV0QA.C");
     AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(bUseMCInfo);
     if(!taskv0QA) {
       Error("RunPerformanceTrain","AliAnalysisTaskV0QA not created!");

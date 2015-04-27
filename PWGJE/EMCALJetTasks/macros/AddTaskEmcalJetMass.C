@@ -1,6 +1,6 @@
 AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
 						 const Double_t R,
-						 const char * nrhoBase, 
+						 const char * nrhoBase,
 						 const char * ntracks, 
 						 const char * nclusters,
 						 const char *type,					     
@@ -8,9 +8,8 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
 						 Int_t       pSel,
 						 TString     trigClass      = "",
 						 TString     kEmcalTriggers = "",
-						 TString     tag            = "",
-						 TString     nJetsUnsub    = "",
-						 TString optionName="") {
+						 TString     nJetsUnsub     = "",
+						 TString     optionName     = "") {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -29,7 +28,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
       return NULL;
     }
 
-  TString wagonName = Form("JetMass_%s_TC%s%s%s",njetsBase,trigClass.Data(),tag.Data(),optionName.Data());
+  TString wagonName = Form("JetMass_%s_TC%s%s%s",njetsBase,trigClass.Data(),optionName.Data());
 
   //Configure jet tagger task
   AliAnalysisTaskEmcalJetMass *task = new AliAnalysisTaskEmcalJetMass(wagonName.Data());

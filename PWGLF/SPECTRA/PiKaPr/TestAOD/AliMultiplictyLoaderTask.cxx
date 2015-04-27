@@ -21,7 +21,8 @@ fUseAliPPVsMultUtils(0),
 fcentvalue(0),
 fncharged05value(0),
 fncharged08value(0),
-fFirstEvent(kFALSE)		
+fFirstEvent(kFALSE),
+fDonotusetrackelts(kFALSE)		
 {
 	 DefineInput(0, TChain::Class());
 	//DefineOutput(1, TList::Class());
@@ -57,26 +58,39 @@ void AliMultiplictyLoaderTask::UserExec(Option_t *)
 		return;
 	}
 	Double_t cent=-1.0;
-	if(fUseAliPPVsMultUtils)
-        	cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fESD,fCentEstimator.Data());	
-	else
-		cent=fESD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());	
-	
-	AliESDtrackCuts::MultEstTrackType estType = fESD->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
-        Int_t ncharged05=-10;
+	Int_t ncharged05=-10;
 	Int_t ncharged08=-10;
+
 	if(fUseAliPPVsMultUtils)
 	{
-		if(fAliPPVsMultUtils->IsEventSelected(fESD))
+        	cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fESD,fCentEstimator.Data());
+		ncharged08=AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD);
+		if(ncharged08<1)
 		{
-			ncharged05=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.5);
-			ncharged08=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8);
+			ncharged05=ncharged08;	
 		}
-	}
+		else
+		{
+			AliESDtrackCuts::MultEstTrackType estType = fESD->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
+			if(fDonotusetrackelts)
+			{
+				estType = AliESDtrackCuts::kTrackletsITSTPC;
+			}
+			ncharged05=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.5);
+		}
+				
+
+	}	
 	else
 	{
+		cent=fESD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());		
+		AliESDtrackCuts::MultEstTrackType estType = fESD->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
+		if(fDonotusetrackelts)
+		{
+			estType = AliESDtrackCuts::kTrackletsITSTPC;
+		}
 		ncharged05=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.5);
-		ncharged08=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8);
+		ncharged08=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8);	
 	}
 
 	fcentvalue->SetVal(cent);

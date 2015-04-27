@@ -540,13 +540,13 @@ struct ChainBuilder
 			  TChain* chain,
 			  UShort_t flags=0)
   {
-    // Info("", "Checking %s", path.Data());
+    if (flags & kVerbose) Info("", "Checking %s", path.Data());
     TString fn   = path;
     if (!anchor.IsNull()) fn.Append(TString::Format("#%s", anchor.Data()));
 
-    gSystem->RedirectOutput("/dev/null", "w");
+    if (!(flags & kVerbose)) gSystem->RedirectOutput("/dev/null", "w");
     TFile*  test = TFile::Open(fn, "READ");
-    gSystem->RedirectOutput(0);
+    if (!(flags & kVerbose)) gSystem->RedirectOutput(0);
     if (!test) { 
       Warning("ChainBuilder::CheckFile", "Failed to open %s", fn.Data());
       if (flags & kClean) RemoveFile(path);

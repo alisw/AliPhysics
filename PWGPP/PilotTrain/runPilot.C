@@ -1,7 +1,7 @@
 void runPilot() {
   TStopwatch timer;
   timer.Start();
-  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD");
+  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS -I$ALICE_PHYSICS/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTender");
@@ -77,7 +77,7 @@ void runPilot() {
   // Vertexing (A. Dainese)
   // 
   if (doVertex) {
-      gROOT->LoadMacro("$(ALICE_ROOT)/PWGPP/macros/AddTaskVertexESD.C");
+      gROOT->LoadMacro("$(ALICE_PHYSICS)/PWGPP/macros/AddTaskVertexESD.C");
       AliAnalysisTaskVertexESD* task3 =  AddTaskVertexESD();
       task3->SelectCollisionCandidates();
   }
@@ -86,7 +86,7 @@ void runPilot() {
   // ITS
   // 
   if (doITS) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceITS.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceITS.C");
       AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(kFALSE);
   }
   
@@ -129,7 +129,7 @@ void runPilot() {
   if (doTPC) {
       // 
       // Optionally MC information can be used by setting the 1st argument to true
-      gROOT->LoadMacro("$(ALICE_ROOT)/PWGPP/TPC/macros/AddTaskPerformanceTPCQA.C");
+      gROOT->LoadMacro("$(ALICE_PHYSICS)/PWGPP/TPC/macros/AddTaskPerformanceTPCQA.C");
       AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
   }
   
@@ -137,7 +137,7 @@ void runPilot() {
   // TRD (Alex Bercuci, M. Fasel) 
   //
   if(doTRD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
     AddTrainPerformanceTRD("ALL");
   }
 
@@ -152,23 +152,23 @@ void runPilot() {
   }
 
   if(doCALO) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG4/macros/QA/AddTaskCalorimeterQA.C");
       AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", kTRUE, kFALSE);
       taskCaloQA->SetDebugLevel(0);
   }
 
   if(doMUONTrig) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
       AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
   }
 
   if(doMUONEff) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG3/muondep/AddTaskMUONTrackingEfficiency.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG3/muondep/AddTaskMUONTrackingEfficiency.C");
       AliAnalysisTaskMuonTrackingEff *taskMuonTrackEff = AddTaskMUONTrackingEfficiency();
   }
   
   if (doV0) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskV0QA.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
 

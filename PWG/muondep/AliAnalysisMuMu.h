@@ -10,7 +10,7 @@
 /// AliAnalysisMuMu : helper class to digest/plot/massage results from
 /// AliAnalysisTaskMuMu
 ///
-/// author : Laurent Aphecetche (Subatech)
+/// author : Laurent Aphecetche (Subatech) and Javier Martin Blanco
 
 #include "AliAnalysisMuMuBinning.h"
 #include "TNamed.h"
@@ -76,25 +76,43 @@ public:
   
   TH1* ComputeDiffFnormFromHistos(const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI",Bool_t printout=kFALSE);
   
-  void ComputeDiffFnormFromInt(const char* triggerCluster="MUON", const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", AliMergeableCollection* mc=0x0, const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI",Bool_t printout=kTRUE);
+  void ComputeDiffFnormFromInt(const char* triggerCluster="MUON", const char* eventSelection="PSALL", AliMergeableCollection* mc=0x0, const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI",Bool_t printout=kTRUE);
   
-  void ComputeDiffFnormFromCounters(const char* triggerCluster="MUON",const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", const char* filePileUpCorr="", const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI",Bool_t printout=kTRUE);
+  void ComputeDiffFnormFromCounters(const char* filePileUpCorr="", const char* what="psi", const char* quantity="ntrcorr",
+                                    const char* flavour="D2H",const char* triggerCluster="MUON",
+                                    const char* eventSelectionFNorm="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
+                                    const char* eventSelectionYield="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", Bool_t printout=kTRUE);
+
+  void ComputeDiffFnormFromGlobal(const char* what="psi",const char* quantity="ntrcorr",const char* flavour="D2H",const char* triggerCluster="MUON",
+                                  const char* eventSelectionFnorm="PSALL",
+                                  const char* eventSelectionYield="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", Bool_t printout=kTRUE);
   
-  void ComputeDiffFnormFromGlobal(const char* triggerCluster="MUON",const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI",Bool_t printout=kTRUE);
-  
-  void ComputeMeanFnorm(const char* triggerCluster="MUON", const char* eventSelection="PSALL", const char* what="psi",const char* quantity="ntrcorr",const char* flavour="JAVI", Bool_t printout=kTRUE);
-  
-  void ComputeIntFnormFromCounters(const char* triggerCluster="MUON", const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00", const char* filePileUpCorr="", Bool_t printout=kTRUE);
-  
+  void ComputeMeanFnorm(const char* triggerCluster="MUON", const char* eventSelection="PSALL", const char* what="psi",const char* quantity="ntrcorr",
+                        const char* flavour="D2H");
+
+  void ComputeIntFnormFromCounters(const char* filePileUpCorr="", const char* triggerCluster="MUON", const char* eventSelectionFNorm="PSALL",
+                                   const char* eventSelectionYield="PSALL", Bool_t printout=kTRUE);
+
   void PlotYiedWSyst(const char* triggerCluster="MUON");
-  
-  void ComputeJpsiYield(AliMergeableCollection* oc=0x0, Bool_t relative=kFALSE, const char* fNormType="mean",const char* triggerCluster="MUON",const char* whatever="PSI-DNCHDETA-AccEffCorr",const char* sResName="",AliMergeableCollection* ocMBTrigger=0x0, Double_t mNTrCorrection=0.);
-  
-  void ComputeJpsiMPt(Bool_t relative=kFALSE, const char* whatever="PSI-DNCHDETA-AccEffCorr-MeanPtVsMinvUS",const char* sResName="",AliMergeableCollection* ocMBTrigger=0x0, Double_t mNTrCorrection=0.);
-  
-  Double_t ErrorPropagationAxBoverCxD(Double_t a,Double_t b,Double_t c,Double_t d);
-  
+
+  void ComputeRelativeValueAndSESystematics(const char* quantity,const char* flavour,const char* value2Test, const char* binListToExclude,
+                                            const char* fNormType="mean", const char* evSelInt="PSALL",
+                                            const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
+                                            const char* triggerCluster="MUON");
+
+  void ComputeJpsiYield( Bool_t relative=kTRUE, const char* fNormType="mean", const char* evSelInt="PSALL",
+                        const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
+                        const char* triggerCluster="MUON", const char* whatever="PSI-NTRCORR-AccEffCorr", const char* sResName="");
+
+  void ComputeJpsiMPt(Bool_t relative=kTRUE, const char* evSelInt="PSALL", const char* evSelDiff="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00"
+                      ,const char* spectra="PSI-NTRCORR-AccEffCorr-MeanPtVsMinvUS",const char* sResName="");
+
+  void ComputeMBXSectionFractionInBins(const char* filePileUpCorr="", const char* eventSelection="PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",
+                                       const char* what="psi",const char* quantity="ntrcorr", const char* flavour="D2H");
+
   TH1* ComputeEquNofMB(const char* what="psi",const char* quantity="dnchdeta",const char* flavour="JAVI",Bool_t printout=kFALSE);
+
+  Double_t ErrorPropagationAxBoverCxD(Double_t a,Double_t b,Double_t c,Double_t d);
 
   void TwikiOutputFnorm(const char* series="FnormOffline2PUPS,FnormScalersPUPS,FnormBest2,RelDifFnormScalersPUPSvsFnormOffline2PUPS,FnormScalersPUVDM,RelDifFnormScalersPUPSvsFnormScalersPUVDM") const;
 
@@ -145,13 +163,11 @@ public:
   
   TH1* PlotJpsiYield(const char* whatever="PSI-DNCHDETA-AccEffCorr");
   
-  TH1* PlotSystematicsTestsRelative(const char* quantity,const char* flavour,const char* value2Test);
-  
   UInt_t GetSum(AliCounterCollection& cc, const char* triggerList, const char* eventSelection, Int_t runNumber=-1);
   
   ULong64_t GetTriggerScalerCount(const char* triggerList, Int_t runNumber);
   
-  Int_t Jpsi(const char* what="integrated", const char* binningFlavour="", Bool_t fitmPt=kFALSE);
+  Int_t Jpsi(const char* what="integrated", const char* binningFlavour="", Bool_t fitmPt=kTRUE, Bool_t onlyCorrected=kTRUE);
   
   Bool_t IsSimulation() const;
   
@@ -180,7 +196,7 @@ public:
   
   void ExecuteCanvasEvent(Int_t event, Int_t px, Int_t py, TObject *sel);
 
-  //  std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const; // Not implemented
+  std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const;
   
   AliAnalysisMuMu* SIM() const { return fAssociatedSimulation; }
   

@@ -1,7 +1,18 @@
+/// \file AddTaskCaloTrackCorrM.C
+/// \brief Example of configuration of CaloTrackCorrelation within the mixing frame.
+///
+/// Example of configuration of different analysis combinations
+/// of the package CaloTrackCorrelations when executed in the mixing frame.
+/// Quite old, not used for years.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
 AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE)
-{
-  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
-  
+{  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

@@ -1300,44 +1300,41 @@ void AliHFSystErr::InitDstoKKpi2011PbPb07half() {
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2011PbPb010() {
   // 
-  // D+s->Kpipi syst errors. Responsible: 
+  // D+s->Kpipi syst errors. Responsible: A.Barbano
   //  2011 PbPb sample, 0-10% CC
   //
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
-  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.047); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.053); // 0.12/2.28 PDG2012
+  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.045); // PDG2015
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.15); // 5% per track
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
-  for(Int_t i=1;i<=12;i++) fRawYield->SetBinContent(i,0.10); // 10% 
+  for(Int_t i=1;i<=6;i++) fRawYield->SetBinContent(i,0.15); // 15% 
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); // 10% 
 
 
-  // Cuts efficiency (from cuts variation)
+  // Cuts efficiency (from cuts variation + phi mass selection cuts)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",12,0,12);
-  for(Int_t i=1;i<=6;i++) fCutsEff->SetBinContent(i,0.25); // 25%
-  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.20); // 20%
-  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.30); // 30%
+  for(Int_t i=1;i<=12;i++) fCutsEff->SetBinContent(i,0.20); // 20%  
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.05); // 5%
+  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.10); // 10%
 
    // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
-  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,1.);
-  for(Int_t i=3; i<=4; i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=5; i<=6; i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=1; i<=6; i++) fMCPtShape->SetBinContent(i,0.02);  //2%
+  for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.01);  //1%
+  for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.01); //1%
 
   return;
 }
@@ -1345,42 +1342,38 @@ void AliHFSystErr::InitDstoKKpi2011PbPb010() {
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2011PbPb2050() {
   // 
-  // D+s->Kpipi syst errors. Responsible: 
+  // D+s->Kpipi syst errors. Responsible: A.Barbano
   //  2011 PbPb sample, 20-50% CC
   //
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
-  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.053); // 0.12/2.28 PDG2012
+  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.045); // PDG2015
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.15); // 5% per track
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
   for(Int_t i=1;i<=12;i++) fRawYield->SetBinContent(i,.15); //15%  
 
 
-  // Cuts efficiency (from cuts variation)
+  // Cuts efficiency (from cuts variation + phi selection cuts)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fCutsEff->SetBinContent(i,0.25); // 25%
+  for(Int_t i=1;i<=12;i++) fCutsEff->SetBinContent(i,0.20); // 20%
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.05); // 10%
+  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.10); // 10%
 
    // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
-  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,1.);
-  for(Int_t i=3; i<=4; i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=5; i<=6; i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=1; i<=12; i++) fMCPtShape->SetBinContent(i,0.01); //1%
 
   return;
 }

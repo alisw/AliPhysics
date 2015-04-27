@@ -4,9 +4,7 @@ public:
 
   static  enum LMMECutSet {
     kpp2010All_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, all multiplicties, PID like QM2014 preliminaries)
-    kpp2010Low_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, low multiplicties, PID like QM2014 preliminaries)
-    kpp2010Mid_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, mid multiplicties, PID like QM2014 preliminaries)
-    kpp2010High_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, high multiplicties, PID like QM2014 preliminaries)
+    kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1, // Cut set for testing (pp 2010, all multiplicties, PID like QM2014 preliminaries, tight DCA)
     kpp2010All,                              
     kpp2010Low,                              
     kpp2010Mid,                              
@@ -156,6 +154,7 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
   AliDielectronMixingHandler* mixingHandler = 0x0;
   switch (cutSet) {
   case kpp2010All_pidITSTPCTOFif_trkSPDfirst_1:
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
     mixingHandler = new AliDielectronMixingHandler;
     mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
     mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
@@ -179,6 +178,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet, Int_t togglePC)  {
   AliAnalysisCuts* pairCuts=0x0;
   switch (cutSet) {
   case kpp2010All_pidITSTPCTOFif_trkSPDfirst_1:
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
     cout << "No Pair Cuts used - ok " << endl; 
     break;
   default: cout << "No Pair Cuts defined " << endl;
@@ -194,6 +194,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {
   AliAnalysisCuts* pairCuts=0x0;
   switch (cutSet) {
   case kpp2010All_pidITSTPCTOFif_trkSPDfirst_1:
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
     AliDielectronVarCuts *pairCutsPhiV = new AliDielectronVarCuts("pairCutsPhiV","pairCutsPhiV");//mass and Phiv together
     pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0 , 0.05);
     pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.5 , 3.2 );
@@ -311,6 +312,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(Int_t cutSet) {
   switch (cutSet) {
       
   case kpp2010All_pidITSTPCTOFif_trkSPDfirst_1:
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
     AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
     cgPIDCutsAna->AddCut(etaRange080);
     cgPIDCutsAna->AddCut(ptRange400to3500);
@@ -346,7 +348,25 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet) {
     trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
     trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
     AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-    trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+    trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
+    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    
+    cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+    cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+    cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+    trackCuts = cgTrackCutsAnaSPDfirst;
+    break;
+
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
+    AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+    trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+    trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+    trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,     4.0, 100.0); // means at least 2 with PID
+    trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+    trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
+    trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+    AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+    trackCutsDiel->SetAODFilterBit(1<<5); // (=32) filterbit 5! //GetStandardITSTPCTrackCuts2010(kFALSE); 
     trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     
     cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
@@ -368,6 +388,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsPre(Int_t cutSet) {
   AliAnalysisCuts* pidCuts=0x0;
   switch (cutSet) {
   case kpp2010All_pidITSTPCTOFif_trkSPDfirst_1:
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
 
     // eta range:
     AliDielectronVarCuts *etaRangePre1 = new AliDielectronVarCuts("etaRangePre1","etaRangePre1");
@@ -410,6 +431,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsPre(Int_t cutSet) {
   AliDielectronCutGroup* trackCuts=0x0;
   switch (cutSet) {
   case kpp2010All_pidITSTPCTOFif_trkSPDfirst_1:
+  case kpp2010All_pidITSTPCTOFif_trkSPDfirsttight_1:
     AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
     trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
     trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);

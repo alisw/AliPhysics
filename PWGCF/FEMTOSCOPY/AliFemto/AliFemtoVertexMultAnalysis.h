@@ -1,26 +1,25 @@
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliFemtoVertexMultAnalysis - Femtoscopic analysis which mixes event    //
-// with respect to the z position of the primary vertex and event total   //
-// multiplicity                                                           //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoVertexMultAnalysis
+/// \brief Femtoscopic analysis which mixes events bined by z position and multiplicity
+///
+/// Femtoscopic analysis which mixes event with respect to the z position of
+/// the primary vertex and event total  multiplicity
+///
 
 #ifndef ALIFEMTOVERTEXMULTANALYSIS_H
 #define ALIFEMTOVERTEXMULTANALYSIS_H
 
-#include "AliFemtoSimpleAnalysis.h"        // base analysis class
+#include "AliFemtoSimpleAnalysis.h"
 
 class AliFemtoVertexMultAnalysis : public AliFemtoSimpleAnalysis {
 
 public:
 
   AliFemtoVertexMultAnalysis(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9);
-  AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);  // copy constructor
-  AliFemtoVertexMultAnalysis& operator=(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);    
+  AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);  ///< copy constructor
+  AliFemtoVertexMultAnalysis& operator=(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoVertexMultAnalysis();
-  virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
+  virtual AliFemtoString Report();       //!< returns reports of all cuts applied and correlation functions being done
   virtual unsigned int OverflowVertexZ() const { return fOverFlowVertexZ;}
   virtual unsigned int UnderflowVertexZ() const { return fUnderFlowVertexZ;}
   virtual unsigned int OverflowMult() const { return fOverFlowMult;}
@@ -34,11 +33,13 @@ protected:
   unsigned int fMultBins;             /* number of MULTIPLICITY mixing bins in z-vertex in EventMixing Buffer */
   unsigned int fOverFlowMult;         /* number of events encountered which had too large multiplicity */
   unsigned int fUnderFlowMult;        /* number of events encountered which had too small multiplicity */
-  
+
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoVertexMultAnalysis, 0)
+  /// \endcond
 #endif
-    
+
 };
 
 #endif

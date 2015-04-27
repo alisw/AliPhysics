@@ -8,7 +8,7 @@
   //    fname : name of the input file or input list
 
 
-  .L $ALICE_ROOT/PWGPP/PWGPPmacros/runPWGPPTrain.C
+  .L $ALICE_PHYSICS/PWGPP/PWGPPmacros/runPWGPPTrain.C
 
 
 */
@@ -17,7 +17,7 @@ void LoadTrainLibs(){
   //
   // load libraries needed for train
   //
-  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP/TRD/macros/ ");
+  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/PWGPP/TRD/macros/ ");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTender");

@@ -85,6 +85,9 @@ AliAnalysisTaskSE(),
   fhMassPtGreater2DkTC(0),
   fhMassPtGreater23Pr(0),
   fhMassPtGreater23PrTC(0),
+  fhMassLcPt(0),
+  fhMassLcplusPt(0),
+  fhMassLcminusPt(0),
   fhEta3Prong(0),
   fhEta3ProngAcc(0),
   fhEta3ProngProd(0),
@@ -192,6 +195,9 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac(const char *name,Bool_t fillN
   fhMassPtGreater2DkTC(0),
   fhMassPtGreater23Pr(0),
   fhMassPtGreater23PrTC(0),
+  fhMassLcPt(0),
+  fhMassLcplusPt(0),
+  fhMassLcminusPt(0),
   fhEta3Prong(0),
   fhEta3ProngAcc(0),
   fhEta3ProngProd(0),
@@ -571,6 +577,14 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
     fOutput->Add(fMassHist3Pr[i]);
     fOutput->Add(fMassHist3PrTC[i]);
   }
+  
+  fhMassLcPt        = new TH2F("hMassLcPt","hMassLcPt;3-Prong p_{T} GeV/c;3-Prong Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+  fhMassLcplusPt    = new TH2F("hMassLcplusPt","hMassLcplusPt;3-Prong p_{T} GeV/c;3-Prong Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+  fhMassLcminusPt   = new TH2F("hMassLcminusPt","hMassLcminusPt;3-Prong p_{T} GeV/c;3-Prong Mass GeV/c^2",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+  fOutput->Add(fhMassLcPt);  
+  fOutput->Add(fhMassLcplusPt);  
+  fOutput->Add(fhMassLcminusPt);  
+  
   fhEta3Prong		= new TH2F("hEta3Prong","hEta3Prong;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
   fhEta3ProngAcc	= new TH2F("hEta3ProngAcc","hEta3ProngAcc;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
   fhEta3ProngProd	= new TH2F("hEta3ProngProd","hEta3ProngProd;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
@@ -1995,6 +2009,29 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
     if(passTightCuts>0){
       fhEta3ProngAn->Fill(part->Pt(),part->Eta());
       fhRap3ProngAn->Fill(part->Pt(),part->Y(4122));
+      if(invMasspiKp>0. && invMasspKpi>0.){
+        fhMassLcPt->Fill(part->Pt(),invMasspKpi,0.5);
+        fhMassLcPt->Fill(part->Pt(),invMasspiKp,0.5);
+		if(part->Charge()==1){
+		  fhMassLcplusPt->Fill(part->Pt(),invMasspKpi,0.5);
+          fhMassLcplusPt->Fill(part->Pt(),invMasspiKp,0.5);
+		}
+		else if(part->Charge()==-1){
+		  fhMassLcminusPt->Fill(part->Pt(),invMasspKpi,0.5);
+          fhMassLcminusPt->Fill(part->Pt(),invMasspiKp,0.5);
+		}
+      }
+      else if(invMasspiKp>0.){
+        fhMassLcPt->Fill(part->Pt(),invMasspiKp);
+        if(part->Charge()==1)       fhMassLcplusPt->Fill(part->Pt(),invMasspiKp);
+	    else if(part->Charge()==-1) fhMassLcminusPt->Fill(part->Pt(),invMasspiKp);
+	  }
+	  else if(invMasspKpi>0.){
+	    fhMassLcPt->Fill(part->Pt(),invMasspKpi);
+        if(part->Charge()==1)       fhMassLcplusPt->Fill(part->Pt(),invMasspKpi);
+	    else if(part->Charge()==-1) fhMassLcminusPt->Fill(part->Pt(),invMasspKpi);
+	  } 
+      
     }
     Float_t tmp[24];
     if (fFillNtuple) {
@@ -2027,6 +2064,8 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       fNtupleLambdac->Fill(tmp);
       PostData(7,fNtupleLambdac);
     }
+    
+    
     
     if(part->Pt()>3.&& part->Pt()<=6.){
       if(invMasspiKp>0. && invMasspKpi>0.){

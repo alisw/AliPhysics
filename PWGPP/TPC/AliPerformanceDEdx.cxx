@@ -14,7 +14,7 @@
 /*AliPerformanceDEdx.cxx
  
   // after running comparison task, read the file, and get component
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/Macros/LoadMyLibs.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/Macros/LoadMyLibs.C");
   LoadMyLibs();cd /hera/alice/atarant/train/trunk/atarant_spectra/qa/
 
   TFile f("Output.root");

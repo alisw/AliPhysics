@@ -373,6 +373,10 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
   if(isAOD){
 	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
 	  aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
+	  EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+	  extraCuts->SetMinTPCCrossedRows(120);
+	  //extraCuts->SetMinTPCTrackLengthCut();
+	  aodsel->AddTrackCuts(extraCuts);
 	  trackSelection = aodsel;
   } else {
 	  AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
@@ -380,6 +384,9 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
 	  standardTrackCuts->SetMinNCrossedRowsTPC(120);
 	  standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+	  //EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+	  //extraCuts->SetMinTPCTrackLengthCut();
+	  //trackSelection->AddTrackCuts(extraCuts);
   }
   return trackSelection;
 }
@@ -399,7 +406,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
   EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
   if(isAOD){
 	  // Purely use filter bits
-	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD(NULL);
+	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
 	  aodsel->AddFilterBit(256);
 	  aodsel->AddFilterBit(512);
 	  trackSelection = aodsel;
