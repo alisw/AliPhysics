@@ -158,10 +158,12 @@ public:
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
  void SetQVecList(TList* const kList) {this->fQVecList = kList;};
  TList* GetQVecList() const {return this->fQVecList;};
- void SetRunBinMin(Int_t const n) {this->fCRCRunBinMin = n;};
- Int_t GetRunBinMin() const {return this->fCRCRunBinMin;}
- void SetRunBinMax(Int_t const n) {this->fCRCRunBinMax = n;};
- Int_t GetRunBinMax() const {return this->fCRCRunBinMax;}
+ void SetnCenBin(Int_t const n) {this->fnCenBin = n;};
+ Int_t GetnCenBin() const {return this->fnCenBin;};
+ void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
+ Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
+ void SetRunSet(TString const n) {this->fRunSet = n;};
+ TString GetRunSet() const {return this->fRunSet;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -228,8 +230,9 @@ private:
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
- Int_t fCRCRunBinMin;
- Int_t fCRCRunBinMax;
+ Int_t fnCenBin;
+ Double_t fCenBinWidth;
+ TString fRunSet;
  TList *fQVecList;           // list with weights
  
  ClassDef(AliAnalysisTaskCRC, 2);

@@ -91,9 +91,10 @@ fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
+fnCenBin(7),
+fCenBinWidth(10.),
 fQVecList(NULL),
-fCRCRunBinMin(0),
-fCRCRunBinMax(1)
+fRunSet("2010h")
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -230,7 +231,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  AliDebug(2,"AliAnalysisTaskCRC::UserCreateOutputObjects()");
  
  // Analyser:
- fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fCRCRunBinMin,fCRCRunBinMax);
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
  
  // Common:
  fQC->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
@@ -352,7 +353,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
  //accessing the merged output list:
  fListHistos = (TList*)GetOutputData(1);
  
- fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fCRCRunBinMin,fCRCRunBinMax);
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
  
  if(fListHistos) {
   fQC->GetOutputHistograms(fListHistos);

@@ -12,8 +12,6 @@ void AddTaskCRC(Double_t centrMin,
                 Bool_t bCalculateCRCBck,
                 Bool_t bEventCutsQA=kTRUE,
                 Bool_t bTrackCutsQA=kTRUE,
-                Int_t RunBinMin=0,
-                Int_t RunBinMax=1,
                 const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -219,16 +217,14 @@ void AddTaskCRC(Double_t centrMin,
  taskQC->SetCalculateDiffFlowVsEta(kFALSE);
  taskQC->SetCalculateMixedHarmonics(kFALSE); // calculate all multi-partice mixed-harmonics correlators
  taskQC->SetStoreDistributions(kTRUE);
- taskQC->SetFillMultipleControlHistograms(kTRUE);
- taskQC->SetBookOnlyBasicCCH(kFALSE); // book only basic common control histograms
+ taskQC->SetFillMultipleControlHistograms(kFALSE);
+ taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
  taskQC->SetCalculateCRCBck(bCalculateCRCBck);
  taskQC->SetNUAforCRC(kTRUE);
- taskQC->SetRunBinMin(RunBinMin);
- taskQC->SetRunBinMax(RunBinMax);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  
  // connect the task to the analysis manager
