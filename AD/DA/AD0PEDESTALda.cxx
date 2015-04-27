@@ -120,12 +120,12 @@ int main(int argc, char **argv) {
   if (status) {
       printf("Failed to get Config file (%s) from DAQ DB, status=%d\n", configFile.c_str() , status);
       printf("Take default values of parameters for pedestal calculation \n");
-      kClockMin  =  15; 
-      kClockMax  =  20; 
+      kClockMin  =  0; 
+      kClockMax  =  6; 
       kLowCut    =  60;   
       kHighCut   =  50;  
-      kClockMinRef  =  15; 
-      kClockMaxRef  =  20; 
+      kClockMinRef  =  0; 
+      kClockMaxRef  =  6; 
       kChi2Max		=  100.;
   } else {
       /* open the config file and retrieve cuts */
@@ -133,12 +133,12 @@ int main(int argc, char **argv) {
       int res = fscanf(fpConfig,"%d %d %d %d %d %d %f",&kClockMin,&kClockMax,&kLowCut,&kHighCut,&kClockMinRef,&kClockMaxRef,&kChi2Max);
       if(res!=7) {
 	    printf("Failed to get values from Config file (%s): wrong file format - 7 integers are expected - \n",configFile.c_str());
-	    kClockMin  =  15; 
-        kClockMax  =  20; 
+	    kClockMin  =  0; 
+        kClockMax  =  6; 
     	kLowCut    =  60;   
         kHighCut   =  50; 
-      	kClockMinRef  =  15; 
-      	kClockMaxRef  =  20; 
+      	kClockMinRef  =  0; 
+      	kClockMaxRef  =  6; 
       	kChi2Max	  =  100.;
       }
       fclose(fpConfig);

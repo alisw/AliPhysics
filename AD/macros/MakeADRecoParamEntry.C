@@ -1,4 +1,4 @@
-void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliRecoParam::kLowMult, const char *outputCDB = "local://$ALICE_ROOT/../AliRoot/OCDB") {
+void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliRecoParam::kLowMult, const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
 //========================================================================
 //
 // Steering macro for AD reconstruction parameters
@@ -21,16 +21,16 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
     ADRecoParam->SetStartClock(0);
     ADRecoParam->SetEndClock(20);
-    ADRecoParam->SetNPreClocks(3);
-    ADRecoParam->SetNPostClocks(1);
+    ADRecoParam->SetNPreClocks(1);
+    ADRecoParam->SetNPostClocks(3);
     recoParamArray->AddLast(ADRecoParam);
   }
   {
     AliADRecoParam * ADRecoParam = new AliADRecoParam;
     ADRecoParam->SetStartClock(0);
     ADRecoParam->SetEndClock(20);
-    ADRecoParam->SetNPreClocks(3);
-    ADRecoParam->SetNPostClocks(1);
+    ADRecoParam->SetNPreClocks(1);
+    ADRecoParam->SetNPostClocks(3);
     ADRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     recoParamArray->AddLast(ADRecoParam);
   }
@@ -38,7 +38,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     AliADRecoParam * ADRecoParam = new AliADRecoParam;
     ADRecoParam->SetStartClock(9);
     ADRecoParam->SetEndClock(11);
-    ADRecoParam->SetNPreClocks(6);
+    ADRecoParam->SetNPostClocks(6);
     ADRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     recoParamArray->AddLast(ADRecoParam);
   }
