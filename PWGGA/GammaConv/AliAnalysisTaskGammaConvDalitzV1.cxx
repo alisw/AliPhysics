@@ -1278,6 +1278,12 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
 			if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
 				fOutputContainer->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
+			
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+                if (fV0Reader->GetV0FindingEfficiencyHistograms())
+                        fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+
 	
 	
 	
