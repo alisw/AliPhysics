@@ -256,6 +256,28 @@ Double_t AliTRDCalROC::GetMean(AliTRDCalROC* const outlierROC) const
    delete [] ddata;
    return mean;
 }
+//___________________________________________________________________________________
+Double_t AliTRDCalROC::GetMeanNotNull() const
+{
+  //
+  // Calculate the mean rejecting null value
+  //
+
+   Double_t *ddata = new Double_t[fNchannels];
+   Int_t nPoints = 0;
+   for (Int_t i=0;i<fNchannels;i++) {
+     
+     if(fData[i] > 0.000000000000001){
+       ddata[nPoints]= (Double_t) fData[i]/10000;
+       nPoints++;
+     }
+     
+   }
+   if(nPoints<1) return -1.;
+   Double_t mean = TMath::Mean(nPoints,ddata);
+   delete [] ddata;
+   return mean;
+}
 
 //_______________________________________________________________________________________
 Double_t AliTRDCalROC::GetMedian(AliTRDCalROC* const outlierROC) const
@@ -300,7 +322,26 @@ Double_t AliTRDCalROC::GetRMS(AliTRDCalROC* const outlierROC) const
   delete [] ddata;
   return mean;
 }
+//____________________________________________________________________________________________
+Double_t AliTRDCalROC::GetRMSNotNull() const
+{
+  //
+  // Calculate the RMS
+  //
 
+  Double_t *ddata = new Double_t[fNchannels];
+  Int_t nPoints = 0;
+  for (Int_t i=0;i<fNchannels;i++) {
+    if(fData[i] > 0.000000000000001){
+      ddata[nPoints]= (Double_t)fData[i]/10000;
+      nPoints++;
+    }
+  }
+  if(nPoints<1) return -1.;
+  Double_t mean = TMath::RMS(nPoints,ddata);
+  delete [] ddata;
+  return mean;
+}
 //______________________________________________________________________________________________
 Double_t AliTRDCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalROC* const outlierROC)
 {
@@ -436,6 +477,12 @@ Bool_t AliTRDCalROC::Unfold()
 
   Bool_t result = kTRUE;
   Float_t kEpsilon=0.00000000000000001;
+  Double_t mmeannotnull = GetMeanNotNull();
+  Double_t rmsnotnull = GetRMSNotNull();
+  //printf("mmeannotnull %f and rmsnotnull %f\n",mmeannotnull,rmsnotnull);
+  if((mmeannotnull<0.) || (rmsnotnull<0.)) return kFALSE;
+ 
+
   
   // calcul the mean value per col
   for(Int_t icol = 0; icol < fNcols; icol++){
@@ -444,7 +491,7 @@ Bool_t AliTRDCalROC::Unfold()
     Float_t nb   = 0.0;
 
     for(Int_t irow = 0; irow < fNrows; irow++){
-      if((GetValue(icol,irow) > 0.06) && (GetValue(icol,irow) < 0.15)){
+      if(TMath::Abs(GetValue(icol,irow)-mmeannotnull) < 5*rmsnotnull){
 	mean += GetValue(icol,irow);
 	nb += 1.0;
       }
@@ -472,7 +519,6 @@ Bool_t AliTRDCalROC::Unfold()
 
   return result;
 }
-
 //__________________________________________________________________________________
 TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type,  Float_t mu)
 {
