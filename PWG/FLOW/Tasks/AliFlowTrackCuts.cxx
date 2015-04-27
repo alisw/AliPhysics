@@ -194,7 +194,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
     
-  for(int i=0;i<50;i++){
+  for(Int_t i(0) ; i < 50; i++) {
     fCutContour[i]= NULL;
     fCutGraph[i]=NULL;
   }
@@ -455,12 +455,10 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
   
-    for(int i=0;i<50;i++){
-        fCutContour[i]= that.fCutContour[i];
-        fCutGraph[i]=that.fCutGraph[i];
-    }
-
-
+  for(Int_t i(0); i < 50; i++) {
+    fCutContour[i]= that.fCutContour[i];
+    fCutGraph[i]=that.fCutGraph[i];
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -1607,6 +1605,24 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
  return cuts;
 }
 //-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetBetaVZEROOnlyTrackCuts()
+{
+  // test patch for VZERO track cuts
+  // april 20 2015. 
+  // DISCLAIMER: BETA TEST OF CODE, DO NOT USE FOR PHYSICS RESULTS !!!
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("beta version of vzero ");
+  cuts->SetParamType(AliFlowTrackCuts::kBetaVZERO);
+  cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
+  cuts->SetPhiMin( 0 );
+  cuts->SetPhiMax( TMath::TwoPi() );
+  // idea of the cuts is that calibration is done per ring 
+  // and that it is transparent for different data taking periods
+  return cuts;
+}
+
+
+//-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
 {
   //get standard cuts
@@ -2060,6 +2076,8 @@ AliFlowTrack* AliFlowTrackCuts::FillFlowTrack(TObjArray* trackCollection, Int_t 
       return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kVZERO:
       return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kBetaVZERO:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kKink:
       return FillFlowTrackKink(trackCollection, trackIndex);
     //case kV0:
@@ -2081,6 +2099,8 @@ Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
     case kPMD:
       return FillFlowTrackGeneric(track);
     case kVZERO:
+      return FillFlowTrackGeneric(track);
+    case kBetaVZERO:
       return FillFlowTrackGeneric(track);
     default:
       return FillFlowTrackVParticle(track);
@@ -2583,6 +2603,8 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
       return esd->GetNumberOfPmdTracks();
     case kVZERO:
       return fgkNumberOfVZEROtracks;
+    case kBetaVZERO:
+      return fgkNumberOfVZEROtracks;
     case kMUON:                                      // XZhang 20120604
       if (!fEvent) return 0;                         // XZhang 20120604
       esd = dynamic_cast<AliESDEvent*>(fEvent);      // XZhang 20120604
@@ -2628,6 +2650,15 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       if (!esd) return NULL;
       return esd->GetPmdTrack(i);
     case kVZERO:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) //contributed by G.Ortona
+      {
+        aod = dynamic_cast<AliAODEvent*>(fEvent);
+        if(!aod)return NULL;
+        return aod->GetVZEROData();
+      }
+      return esd->GetVZEROData();
+    case kBetaVZERO:
       esd = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esd) //contributed by G.Ortona
       {
@@ -4866,6 +4897,8 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "PMD";
     case kVZERO:
       return "VZERO";
+    case kBetaVZERO:
+      return "BetaVZERO";
     case kMUON:       // XZhang 20120604
       return "MUON";  // XZhang 20120604
     case kKink:

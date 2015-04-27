@@ -36,6 +36,7 @@ AliEventPlaneManager::AliEventPlaneManager() :
  //fNMasterDetectors(0),
  fQvectors(0x0),
  fRunLightWeight(kFALSE),
+ fUseEvent(kTRUE),
  fCorrelationHists(),
  fEqualizationHists(),
  fVZEROminMult(0.5),
@@ -247,7 +248,7 @@ void AliEventPlaneManager::GetQvector(Bool_t useFriendChain, Bool_t useEqualized
         Qvec[epdet][bin][5][1] += weight*(x*y*(32.0*y*y*y*y-32.0*y*y+6.0)); 
         
 
-        if(EPconf->TwistAndScalingMethod()==0){
+        if(EPconf->TwistAndScalingMethod()==0&&fUseEvent){
           for(Int_t ih=fgkEPMinHarmonics; ih<=fgkEPMaxHarmonics; ++ih) {
             EPconf->U2nHistogram(ih,0)->Fill(fillValues,TMath::Cos(reducedDetector->Phi()*ih*2));
             EPconf->U2nHistogram(ih,1)->Fill(fillValues,TMath::Sin(reducedDetector->Phi()*ih*2));
@@ -311,15 +312,19 @@ void AliEventPlaneManager::GetQvector(Bool_t useFriendChain, Bool_t useEqualized
           Qvector->SetQy(ih, Qvec[epdet][iBin][ih-1][1]/div);
           if(useEqualizedWeights) {
             Qvector->SetEventPlaneStatus(ih, AliEventPlaneQvector::kEqualized);
+            if(fUseEvent){
             EPconf->CalibrationHistogramQ(1,ih,0)->Fill(fillValues,Qvector->Qx(ih));
             EPconf->CalibrationHistogramQ(1,ih,1)->Fill(fillValues,Qvector->Qy(ih));
             if(once) EPconf->CalibrationHistogramE(AliEventPlaneQvector::kEqualized)->Fill(fillValues); once=kFALSE;
+            }
           }
           else { 
             Qvector->SetEventPlaneStatus(ih, AliEventPlaneQvector::kRaw);
+            if(fUseEvent){
             EPconf->CalibrationHistogramQ(AliEventPlaneQvector::kRaw,ih,0)->Fill(fillValues,Qvector->Qx(ih));
             EPconf->CalibrationHistogramQ(AliEventPlaneQvector::kRaw,ih,1)->Fill(fillValues,Qvector->Qy(ih));
             if(once) EPconf->CalibrationHistogramE(AliEventPlaneQvector::kRaw)->Fill(fillValues); once=kFALSE;
+            }
             //std::cout<<EPconf->EventPlaneDetectorName()<<"   "<<Qvector<<"  "<<Qvector->Qx(ih)<<endl;
           }
         }
@@ -379,7 +384,7 @@ void AliEventPlaneManager::CalibrateChannels(Float_t* values, Bool_t useFriendCh
 
        //cout<<fillValues[dim]<<"  "<<dim<<endl;
        mult = reducedDetector->Weight();
-       if(mult>1E-2){
+       if(mult>1E-4&&fUseEvent){
          EPconf->EqualizationHistogramM(0)->Fill(fillValues,mult);
          EPconf->EqualizationHistogramE(0)->Fill(fillValues);
        }
@@ -412,16 +417,20 @@ void AliEventPlaneManager::CalibrateChannels(Float_t* values, Bool_t useFriendCh
          chanMult = mult/average;
        }
        reducedDetector->SetAverageEqualizedWeight(EPconf->LocalIndex(), chanMult);
+       if(fUseEvent){
        EPconf->EqualizationHistogramM(1)->Fill(fillValues,chanMult);
        EPconf->EqualizationHistogramE(1)->Fill(fillValues);
+       }
 
        if(average > 1.0e-6){
          chanMult = 1.+(mult-average)/width*0.1;
        }
        //cout<<EPconf->EventPlaneDetectorName()<<"  "<<mult<<"  "<<chanMult<<endl;
        reducedDetector->SetWidthEqualizedWeight(EPconf->LocalIndex(), chanMult);
+       if(fUseEvent){
        EPconf->EqualizationHistogramM(2)->Fill(fillValues,chanMult);
        EPconf->EqualizationHistogramE(2)->Fill(fillValues);
+       }
 
      }
 
@@ -436,6 +445,7 @@ void AliEventPlaneManager::CalibrateChannels(Float_t* values, Bool_t useFriendCh
 
 //______________________________________
 void AliEventPlaneManager::FillCorrelationHistograms(Float_t value, Int_t step){
+  if(!fUseEvent) return;
 
   TString detA,detB,detC;
 
@@ -553,9 +563,11 @@ void AliEventPlaneManager::RecenterQvec(Float_t* values, Bool_t useFriendChain) 
 	        qVector->SetEventPlaneStatus(ih, AliEventPlaneQvector::kRecentered);
 
         }
+        if(fUseEvent){
         EPconf->CalibrationHistogramQ(2,ih,0)->Fill(fillValues,qVector->Qx(ih));
         EPconf->CalibrationHistogramQ(2,ih,1)->Fill(fillValues,qVector->Qy(ih));
         if(ih==fgkEPMinHarmonics) EPconf->CalibrationHistogramE(2)->Fill(fillValues);
+        }
       }
 
       // Perform u2n twist correction (TPC)
@@ -1227,9 +1239,11 @@ void AliEventPlaneManager::U2nTwistQvec(Float_t* values, Int_t u2npar) {
         //cout<<"Twist "<<EPconf->EventPlaneDetectorName()<<endl;
         //cout<<Qx<<"  "<<Qy<<"   "<<Lp<<"  "<<Ln<<"  "<<Ap<<"  "<<An<<endl;
 	      qVector->SetEventPlaneStatus(ih, AliEventPlaneQvector::kDiagonalized);
+        if(fUseEvent){
         EPconf->CalibrationHistogramQ(4,ih,0)->Fill(fillValues,qVector->Qx(ih));
         EPconf->CalibrationHistogramQ(4,ih,1)->Fill(fillValues,qVector->Qy(ih));
         if(ih==fgkEPMinHarmonics) EPconf->CalibrationHistogramE(4)->Fill(fillValues);
+        }
       }
     }
   }

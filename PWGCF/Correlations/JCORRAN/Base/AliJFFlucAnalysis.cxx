@@ -55,6 +55,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fBin_kk(),
 	fHistCentBin(),
 	fh_cent(),
+	fh_ImpactParameter(),
 	fh_vertex(),
 	fh_eta(),
 	fh_phi(),
@@ -107,6 +108,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fBin_kk(),
 	fHistCentBin(),
 	fh_cent(),
+	fh_ImpactParameter(),
 	fh_vertex(),
 	fh_eta(),
 	fh_phi(),
@@ -161,6 +163,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fBin_kk(a.fBin_kk),
 	fHistCentBin(a.fHistCentBin),
 	fh_cent(a.fh_cent),
+	fh_ImpactParameter(a.fh_ImpactParameter),
 	fh_vertex(a.fh_vertex),
 	fh_eta(a.fh_eta),
 	fh_phi(a.fh_phi),
@@ -212,6 +215,10 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	// set AliJTH1D here //
 	fh_cent
 		<< TH1D("h_cent","h_cent", 400, 0, 100) 
+		<< "END" ;
+
+	fh_ImpactParameter
+		<< TH1D("h_IP", "h_IP", 400, -2, 20)
 		<< "END" ;
 
 	fh_vertex
@@ -291,8 +298,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	if(fCBin == -1){return;};
 	int trk_number = fInputList->GetEntriesFast();
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
-	fh_cent->Fill( inputCent ) ; 
-	Fill_QA_plot( -15, 15 );
+	fh_cent->Fill( inputCent ) ;
+	fh_ImpactParameter->Fill( fImpactParameter); 
+	Fill_QA_plot( fEta_min, fEta_max );
 
 
 	enum{kSubA, kSubB, kNSub};
@@ -346,13 +354,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// calculate vn^2k	
 	for( int ih=2; ih<kNH; ih++){
 			for(int ik=0; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-					if(ik==0) vn2[ih][ik] = TMath::Sqrt( ( TComplex::Abs( QnA[ih] * QnB_star[ih] )) );
+					if(ik==0) vn2[ih][ik] = TMath::Sqrt( ( ( QnA[ih] * QnB_star[ih] ).Re() ) );
 					if(ik!=0){
 							TComplex QnAk;
 							TComplex QnBstark;
 							QnAk = TComplex::Power( QnA[ih], ik) ;
 							QnBstark = TComplex::Power(QnB_star[ih], ik) ;
-							vn2[ih][ik] = ( QnAk * QnBstark ).Re();  // for k=1 vn2 and vn2_test1 is same.
+							vn2[ih][ik] = ( QnAk * QnBstark ).Re();  
 					}		
 			}
 	}
@@ -430,6 +438,7 @@ void AliJFFlucAnalysis::Terminate(Option_t *)
 //________________________________________________________________________
 double AliJFFlucAnalysis::Get_Qn_Real(double eta1, double eta2, int harmonics)
 {
+		if( eta1 > eta2) cout << "ERROR eta1 should be smaller than eta2!!!" << endl;
 		int nh = harmonics;
 		double Qn_real = 0;
 		double Sub_Ntrk =0;
@@ -459,7 +468,8 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 			double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
 			double eta = itrack->Eta();
 			double phi = itrack->Phi();
-			if( eta > eta1 && eta < eta2 ){ 
+			fh_eta[fCBin]->Fill(eta , 1./ effCorr );
+			if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){ 
 				fh_eta[fCBin]->Fill(eta , 1./ effCorr );
 				fh_pt[fCBin]->Fill(pt, 1./ effCorr );
 				if( eta < 0 ) fh_phi[fCBin][0]->Fill( phi, 1./effCorr) ;

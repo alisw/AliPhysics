@@ -76,6 +76,7 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
+  rhotask->SetSmallSystem(fRhoCMS);
   mgr->AddTask(rhotask);
 
   // Create containers for input/output

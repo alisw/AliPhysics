@@ -1,5 +1,5 @@
 // event plane calibration task
-// author: Jaap Onderaater, jacobus.onderwaater@cern.ch
+// author: Jaap Onderwaater, jacobus.onderwaater@cern.ch
 //         2014/Dec/06
 
   
@@ -41,7 +41,7 @@
 //#include<iostream>
 //#include<TSystem.h>
 //#include<TROOT.h>
-//#include<AliAnalysisManager.h>
+//#include"AliAnalysisManager.h"
 //#include<AliEventPlaneManager.h>
 //#include<AliEventPlaneCuts.h>
 //#include<AliEventPlaneVarManager.h>
@@ -87,10 +87,12 @@ void AddTask_ep() {
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  //if (!mgr) {
-    //Error("AddTask_jonderw_ep", "No analysis manager found.");
-    //return 0;
-  //}
+  if (!mgr) {
+    //mgr = new AliAnalysisManager("EventPlaneCorrections");
+
+  //Error("AddTask_jonderw_ep", "No analysis manager found.");
+  //return 0;
+  }
   //AliVEventHandler* esdH = new AliESDInputHandler;
   //mgr->SetInputEventHandler(esdH);
 
@@ -142,9 +144,12 @@ void AddTask_ep() {
   AliEventPlaneCuts *eventCuts = new AliEventPlaneCuts();
   eventCuts->AddCut(AliEventPlaneVarManager::kVtxZ,-7.0,7.0);
   eventCuts->AddCut(AliEventPlaneVarManager::kCentVZERO,0.0,90.0);
+  //eventCuts->AddCut(AliEventPlaneVarManager::kIsPhysicsSelection,0.5,1.5);
 
+  
   taskEP->SetEventCuts(eventCuts);
-  //taskEP->SelectCollisionCandidates(AliVEvent::kMB);
+  taskEP->SetTrigger(AliVEvent::kMB);  // Trigger stream to be used for calibration and QA histograms
+  taskEP->SelectCollisionCandidates(AliVEvent::kMB|AliVEvent::kCentral);  // Events passing trigger and physics selection for analysis
 
   AddVZERO(EPmanager);
   AddTPC(EPmanager);
@@ -197,7 +202,8 @@ void AddTask_ep() {
 
 void AddVZERO(AliEventPlaneManager* EPmanager){
 
-  const Char_t* gkVzeroEqualizationPath = "";
+  //const Char_t* gkVzeroEqualizationPath = "";
+  const Char_t* gkVzeroEqualizationPath = "/alien/alice/cern.ch/user/j/jonderwa/CalibrationFiles/000%d/CalibrationHistograms.root";
   const Char_t* gkVzeroRecenteringPath  = "";
   const Char_t* gkVzeroDiagonalizationPath = "";
   //const Char_t* gkVzeroEqualizationPath = "/hera/alice/jonderw/PbPb2010/EventPlane_20141210_000-1-1/";
@@ -286,7 +292,8 @@ void AddVZERO(AliEventPlaneManager* EPmanager){
      /////////////// Add TPC subdetectors ///////////////////
         
 const Int_t gkTPCstep=0;
-const Char_t* gkTpcRecenteringPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20141210_000-1-1/";
+//const Char_t* gkTpcRecenteringPath   = "";
+const Char_t* gkTpcRecenteringPath   = "/alien/alice/cern.ch/user/j/jonderwa/CalibrationFiles/000%d/CalibrationHistograms.root";
 //const Char_t* gkTpcRecenteringPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20131120_00000/";
 const Char_t* gkTpcDiagonalizationPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20141207_00-1-1-1/";
 

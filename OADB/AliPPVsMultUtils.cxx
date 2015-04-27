@@ -232,11 +232,11 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliVEvent *event, TString lM
             fBoundaryHisto_V0SB -> GetBinContent( fBoundaryHisto_V0SB->FindBin( MinVal( multV0Apartial / fAverageAmplitudes->GetBinContent(3) , multV0Cpartial / fAverageAmplitudes->GetBinContent(4) ) ) );
 
     if ( lEmbedEventSelection ) {
-        if(IsMinimumBias                    ( event ) == kFALSE ) lreturnval = -201;
-        if(IsINELgtZERO                     ( event ) == kFALSE ) lreturnval = -200;
-        if(IsAcceptedVertexPosition         ( event ) == kFALSE ) lreturnval = -199;
-        if(IsNotPileupSPDInMultBins         ( event ) == kFALSE ) lreturnval = -198;
-        if(HasConsistentSPDandTrackVertices ( event ) == kFALSE ) lreturnval = -197;
+        if(IsMinimumBias                        ( event ) == kFALSE ) lreturnval = -201;
+        if(IsINELgtZERO                         ( event ) == kFALSE ) lreturnval = -200;
+        if(IsAcceptedVertexPosition             ( event ) == kFALSE ) lreturnval = -199;
+        if(IsNotPileupSPDInMultBins             ( event ) == kFALSE ) lreturnval = -198;
+        if(HasNoInconsistentSPDandTrackVertices ( event ) == kFALSE ) lreturnval = -197;
     }
 
     return lreturnval;
@@ -504,6 +504,7 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
 
 //______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsMinimumBias(AliVEvent* event)
+// Function to check for minimum-bias trigger (AliVEvent::kMB)
 {
     //Code to reject events that aren't kMB
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -514,7 +515,8 @@ Bool_t AliPPVsMultUtils::IsMinimumBias(AliVEvent* event)
 
 //______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsINELgtZERO(AliVEvent *event)
-//Event selection snippet
+// Function to check for INEL > 0 condition
+// Makes use of tracklets and requires at least and SPD vertex
 {
     Bool_t lReturnValue = kFALSE;
     //Use Ref.Mult. code...
@@ -546,7 +548,8 @@ Bool_t AliPPVsMultUtils::IsINELgtZERO(AliVEvent *event)
 
 //______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsAcceptedVertexPosition(AliVEvent *event)
-//Event selection snippet
+// Simple check for the best primary vertex Z position:
+// Will accept events only if |z| < 10cm
 {
     Bool_t lReturnValue = kFALSE;
     //Getting around to the best vertex -> typecast to ESD/AOD
@@ -568,36 +571,43 @@ Bool_t AliPPVsMultUtils::IsAcceptedVertexPosition(AliVEvent *event)
 }
 
 //______________________________________________________________________
-Bool_t AliPPVsMultUtils::HasConsistentSPDandTrackVertices(AliVEvent *event)
-//Event selection snippet
+Bool_t AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(AliVEvent *event)
+// This function checks if track and SPD vertices are consistent.
+// N.B.: It is rigorously a "Not Inconsistent" function which will
+// let events with only SPD vertex go through without troubles.
 {
     //It's consistent until proven otherwise...
     Bool_t lReturnValue = kTRUE;
 
     //Getting around to the best vertex -> typecast to ESD/AOD
-    const AliVVertex *lPrimaryVtxSPD    = NULL;
-    const AliVVertex *lPrimaryVtxTracks = NULL;
+
 
     /* get ESD vertex */
     if (event->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
         if (!esdevent) return kFALSE;
+        const AliESDVertex *lPrimaryVtxSPD    = NULL;
+        const AliESDVertex *lPrimaryVtxTracks = NULL;
+        
         lPrimaryVtxSPD    = esdevent->GetPrimaryVertexSPD   ();
         lPrimaryVtxTracks = esdevent->GetPrimaryVertexTracks();
 
-        //Copy-paste from refmult estimator
-        // TODO value of displacement to be studied
-        const Float_t maxDisplacement = 0.5;
-        //check for displaced vertices
-        Double_t displacement = TMath::Abs(lPrimaryVtxSPD->GetZ() - lPrimaryVtxTracks->GetZ());
-        if (displacement > maxDisplacement) lReturnValue = kFALSE;
+        //Only continue if track vertex defined
+        if( lPrimaryVtxTracks->GetStatus() && lPrimaryVtxSPD->GetStatus() ){
+            //Copy-paste from refmult estimator
+            // TODO value of displacement to be studied
+            const Float_t maxDisplacement = 0.5;
+            //check for displaced vertices
+            Double_t displacement = TMath::Abs(lPrimaryVtxSPD->GetZ() - lPrimaryVtxTracks->GetZ());
+            if (displacement > maxDisplacement) lReturnValue = kFALSE;
+        }
     }
     /* get AOD vertex */
     else if (event->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
         if (!aodevent) return kFALSE;
 
-        //FIXME - Hack to deal with fact that no
+        //FIXME - Hack to deal with the fact that no
         //        AliAODEvent::GetPrimaryVertexTracks() exists...
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
         Int_t lStoredRefMult = header->GetRefMultiplicityComb08();
@@ -607,8 +617,11 @@ Bool_t AliPPVsMultUtils::HasConsistentSPDandTrackVertices(AliVEvent *event)
 }
 
 //______________________________________________________________________
-Long_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool_t lEmbedEventSelection)
-//Event selection snippet
+Int_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool_t lEmbedEventSelection)
+// Wrapper for AliESDtrackCuts::GetReferenceMultiplicity
+//
+// By default, uses kTrackletsITSTPC if tracking vertex exists
+// but will fall back to kTracklets if only SPD vertex exists
 {
     //It's consistent until proven otherwise...
     Long_t lReturnValue = -10; //Kill this event, please
@@ -662,7 +675,7 @@ Long_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool
 
 //______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsNotPileupSPDInMultBins(AliVEvent *event)
-//Event selection snippet
+// Checks if not pileup from SPD (via IsPileupFromSPDInMultBins)
 {
     Bool_t lReturnValue = kTRUE;
     //Getting around to the SPD vertex -> typecast to ESD/AOD
@@ -681,14 +694,19 @@ Bool_t AliPPVsMultUtils::IsNotPileupSPDInMultBins(AliVEvent *event)
 
 //______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event)
-//Event selection snippet
+// Single function which does a series of selections:
+//  1) kMB trigger selection
+//  2) INEL > 0 (with tracklets)
+//  3) Checks for accepted vertex position (|eta|<10cm)
+//  4) Checks for consistent SPD and track vertex (if track vertex exists)
+//  5) Rejects events tagged with IsPileupFromSPDInMultBins()
 {
     Bool_t lReturnValue = kFALSE;
-    if ( IsNotPileupSPDInMultBins           ( event ) == kTRUE &&
-            IsINELgtZERO                    ( event ) == kTRUE &&
-            IsAcceptedVertexPosition        ( event ) == kTRUE &&
-            HasConsistentSPDandTrackVertices( event ) == kTRUE &&
-            IsMinimumBias                   ( event ) == kTRUE
+    if ( IsNotPileupSPDInMultBins               ( event ) == kTRUE &&
+            IsINELgtZERO                        ( event ) == kTRUE &&
+            IsAcceptedVertexPosition            ( event ) == kTRUE &&
+            HasNoInconsistentSPDandTrackVertices( event ) == kTRUE &&
+            IsMinimumBias                       ( event ) == kTRUE
        ) lReturnValue = kTRUE;
     return lReturnValue;
 }

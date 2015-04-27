@@ -1,9 +1,18 @@
+/**
+ * \file AliEMCalHistoContainer.h
+ * \brief Declarartion of class AliEMCalHistoContainer
+ *
+ * In this file the class AliEMCalHistoContainer and the corresponding exception class,
+ * HistoContainerContentException, are declared. The histogram container is a tool storing
+ * histograms of different types and providing easy access via their names.
+ *
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Labortatory
+ * \date Aug 5, 2014
+ */
 #ifndef ALIEMCALHISTOCONTAINER_H
 #define ALIEMCALHISTOCONTAINER_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-// Author: Markus Fasel
 
 #include <cstring>
 #include <exception>
@@ -25,18 +34,41 @@ class THashList;
  */
 namespace EMCalTriggerPtAnalysis {
 
+/**
+ * \class HistoContainerContentException
+ * \brief Exception thrown by the histogram container in case of problems
+ *
+ * HistoContainerContentException is thrown by the histogram container in case
+ * of problems appearing when accessing or filling histograms. Problems handled by
+ * this class are:
+ * - Required histogram not defined
+ * - Histogram types not matching
+ * - Histogram would be duplicated
+ * - Group not existing or duplicated when creating
+ *
+ * Error handling class for the histogram container
+ */
 class HistoContainerContentException : public std::exception {
-  /*
-   * Error handling class for the histogram container
-   */
 public:
+  /**
+   * \enum ExceptionType_t
+   * \brief Definition of exception types thrown by the histogram container
+   *
+   * This enumeration defines possible exeption types handled by the exception class
+   */
   enum ExceptionType_t {
-    kHistNotFoundException = 0,
-    kTypeException = 1,
-    kHistDuplicationException = 2,
-    kGroupException = 3
+    kHistNotFoundException = 0,   //!< Histogram with name not found in the container
+    kTypeException = 1,           //!< Histogram type mismatch
+    kHistDuplicationException = 2,//!< Histogram with name duplicated
+    kGroupException = 3           //!< Group error (not existing or duplicated)
   };
 
+  /**
+   * Constuctor, defining the exception. Called when a HistoContainerContentException is thrown
+   * \param histname Name of the histogram throwing the exception
+   * \param hgroup Group throwing the exception
+   * \param etype
+   */
   HistoContainerContentException(const char *histname, const char *hgroup, ExceptionType_t etype):
     fHistname(),
     fGroup(),
@@ -48,20 +80,36 @@ public:
 
     CreateErrorMessage();
   }
+
+  /**
+   * Destructor
+   */
   virtual ~HistoContainerContentException() throw() {}
 
+  /**
+   * Get error message associated with the histogram
+   * \return
+   */
   virtual const char *what() const throw() {
     return fErrorMessage.c_str();
   }
 
+  /**
+   * Get the name of the histogram raising the exception
+   * \return Name of the histogram
+   */
   const char * GetErrorHistogramName() const { return fHistname.c_str(); }
+  /**
+   * Get the type of the exception
+   * \return Type of the exception
+   */
   ExceptionType_t GetExceptionType() const { return fExceptionType; }
 
 private:
+  /**
+   * Create error message with the histogram name, the histogram group, and the error type
+   */
   void CreateErrorMessage(){
-    /*
-     * Create error message with the histogram name, the histogram group, and the error type
-     */
     std::stringstream msgbuilder;
     switch(fExceptionType) {
     case kHistNotFoundException:
@@ -84,13 +132,27 @@ private:
     fErrorMessage = msgbuilder.str();
   }
 
-  std::string           fHistname;            // Name of the histogram producing the exception
-  std::string           fGroup;               // Group of objects producing the exception
-  std::string			  fErrorMessage;		// container for the error message produced in the what function
-  ExceptionType_t       fExceptionType;       // type of the exception
+  std::string           fHistname;            ///< Name of the histogram producing the exception
+  std::string           fGroup;               ///< Group of objects producing the exception
+  std::string			      fErrorMessage;		    ///< container for the error message produced in the what function
+  ExceptionType_t       fExceptionType;       ///< type of the exception
 
 };
 
+/**
+ * \class AliEMCalHistoContainer
+ * \brief Container class for histograms for the high-\f$ p_{t} \f$ charged particle analysis
+ *
+ * Container class for histogram objects. Currenly can handle
+ *   TH1
+ *   TH2
+ *   TH3
+ *   THnSparse
+ * Histograms can be stored in groups. For this the parent group is
+ * included inside the histogram name, i.e. /base/inheriting/histogram.
+ * In case just the histogram name is given, it is assumed that the
+ * histogram is stored at the top level.
+ */
 class AliEMCalHistoContainer : public TNamed {
 public:
   AliEMCalHistoContainer();
@@ -119,6 +181,10 @@ public:
   void FillTH3(const char *hname, const double *point, double weight = 1.) throw(HistoContainerContentException);
   void FillTHnSparse(const char *name, const double *x, double weight = 1.) throw(HistoContainerContentException);
 
+  /**
+   * Get the list of histograms
+   * \return The list of histograms
+   */
   THashList *GetListOfHistograms() { return fHistos; }
   virtual TObject *FindObject(const char *name) const;
   virtual TObject *FindObject(const TObject *obj) const;
@@ -131,10 +197,12 @@ private:
   const char *basename(const char *path) const;
   const char *histname(const char *path) const;
 
-  THashList *fHistos;                   // List of histograms
-  bool fIsOwner;                        // Set the ownership
+  THashList *fHistos;                   ///< List of histograms
+  bool fIsOwner;                        ///< Set the ownership
 
+  /// \cond CLASSIMP
   ClassDef(AliEMCalHistoContainer, 1);  // Container for histograms
+  /// \endcond
 };
 
 }

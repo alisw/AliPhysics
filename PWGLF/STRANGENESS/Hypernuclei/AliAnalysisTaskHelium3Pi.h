@@ -125,7 +125,7 @@ class AliAnalysisTaskHelium3Pi : public AliAnalysisTaskSE {
   Float_t tchi2Pi;
   
   TTree *fNtuple4;                  //! Tree He 
-
+  /*
   Float_t tHelrunNumber;
   Float_t tHelBCNumber;
   Float_t tHelOrbitNumber;
@@ -153,7 +153,22 @@ class AliAnalysisTaskHelium3Pi : public AliAnalysisTaskSE {
   Float_t tHelyPrimaryVertex;
   Float_t tHelzPrimaryVertex;
   Float_t tHelchi2PerClusterTPC;
-  
+  */
+  Float_t  tHeleventtype   ;
+  Float_t  tHelpercentile  ;
+  Float_t  tHelSign	   ;
+  Float_t  tHelpinTPC	   ;
+  Float_t  tHelGetTPCsignal;
+  Float_t  tHelPx	   ;
+  Float_t  tHelPy	   ;
+  Float_t  tHelPz	   ;
+  Float_t  tHelEta	   ;
+  Float_t  tHelisTOF	   ;
+  Float_t  tHelTOFpull	   ;
+  Float_t  tHeMass         ;
+  Float_t  tHelimpactXY	   ;
+  Float_t  tHelimpactZ	   ;
+  Float_t  tHelmapITS;
   static const Int_t fgNrot;
  
   AliPIDResponse *fPIDResponse;     //! pointer to PID response

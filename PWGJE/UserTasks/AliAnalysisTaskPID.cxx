@@ -1107,13 +1107,8 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if (fStoreCentralityPercentile) {
     if (fCentralityEstimator.Contains("ITSTPCtracklets", TString::kIgnoreCase)) {
       // Special pp centrality estimator
-      AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
-      if (!esdEvent) {
-        AliError("Not esd event -> Cannot use tracklet multiplicity estimator!");
-        centralityPercentile = -1;
-      }
-      else
-        centralityPercentile = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, fEtaAbsCutUp);
+      centralityPercentile = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fEvent);
+      //centralityPercentile = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, fEtaAbsCutUp);// NOTE: Needs esd event!
     }
     else if (fCentralityEstimator.Contains("ppMult", TString::kIgnoreCase)) {
       // Another special pp centrality estimator
@@ -1137,11 +1132,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   
   // Mult (check only needed for non-negative centrality percentile, otherwise, event is not used anyway
   // Check if is INEL > 0 (slight abuse of notation with "vertex selection"....)
-  const Bool_t passedVertexSelectionMult = nonNegativeCentralityPercentile ? fPPVsMultUtils->IsINELgtZERO(fEvent) : kFALSE;
+  const Bool_t passedVertexSelectionMult = nonNegativeCentralityPercentile ? AliPPVsMultUtils::IsINELgtZERO(fEvent) : kFALSE;
   // Check z position of vertex
-  const Bool_t passedVertexZSelectionMult = nonNegativeCentralityPercentile ? fPPVsMultUtils->IsAcceptedVertexPosition(fEvent) : kFALSE;
-  // Check pile-up
-  const Bool_t isPileUpMult = nonNegativeCentralityPercentile ? !fPPVsMultUtils->IsNotPileupSPDInMultBins(fEvent) : kTRUE;
+  const Bool_t passedVertexZSelectionMult = nonNegativeCentralityPercentile ? AliPPVsMultUtils::IsAcceptedVertexPosition(fEvent) : kFALSE;
+  // Check pile-up  (and also consistency between SPD and track vertex, which is again a z cut, but is a check for pile-up!)
+  const Bool_t isPileUpMult = nonNegativeCentralityPercentile ? (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvent)  ||
+                                                                 !AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fEvent)) : kTRUE;
+  
+  
   
   if (fDoBinZeroStudy && fMC) {
     for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
