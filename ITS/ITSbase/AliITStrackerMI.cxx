@@ -2576,7 +2576,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      const AliITSRecPoint *clAcc=0;
      Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
 
-     Int_t idx=index[ilayer]={0};
+     Int_t idx=index[ilayer];
      if (idx>=0) { // cluster in this layer
        modstatus = 6; // no refit
        const AliITSRecPoint *cl=(AliITSRecPoint *)GetCluster(idx); 
