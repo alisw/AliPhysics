@@ -98,7 +98,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   
   
   // Produce MC particles
-  if(particleColName != "") {
+  if(!particleColName.IsNull()) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName, kFALSE, kFALSE);
     mcPartTask->SelectCollisionCandidates(pSel);
@@ -111,7 +111,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
     //    pTrackTask->SetTrackEfficiency(trackeff); //now done in Esd/AodFilter
     pTrackTask->SelectCollisionCandidates(pSel);
-    pTrackTask->SetCopyMCFlag(kTRUE, usedMCParticles);
+    if(!particleColName.IsNull()) pTrackTask->SetCopyMCFlag(kTRUE, usedMCParticles);
   }
 
   //----------------------- Hadronic Correction -----------------------------------------------------
