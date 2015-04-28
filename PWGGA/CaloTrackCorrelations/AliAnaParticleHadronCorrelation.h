@@ -106,10 +106,10 @@ public:
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   
   /// For histograms in arrays, index in the array, corresponding to any particle origin.
-  enum mcTypes     { kmcPhoton   = 0, kmcPi0      = 1, kmcPi0Decay   = 2, kmcEta      = 3, kmcEtaDecay   = 4, kmcOtherDecay=5, kmcElectron =6, kmcHadron =7 , kmcPi0DecayLostPair = 8, kmcEtaDecayLostPair = 9} ;
+  enum mcTypes     { kmcPhoton     = 0, kmcPi0      = 1, kmcPi0Decay = 2, kmcEta              = 3, kmcEtaDecay         = 4,
+                     kmcOtherDecay = 5, kmcElectron = 6, kmcHadron   = 7, kmcPi0DecayLostPair = 8, kmcEtaDecayLostPair = 9} ;
   
   static const Int_t fgkNmcTypes = 10;    ///< Number of MC trigger particles checked when filling MC histograms
-  
   
   
   Bool_t       IsTriggerTheEventLeadingParticle();
@@ -119,29 +119,29 @@ public:
   Float_t      GetMinimumTriggerPt()       const { return GetMinPt()             ; }
   Float_t      GetMaximumTriggerPt()       const { return GetMaxPt()             ; }
   void         SetTriggerPtRange(Float_t min, Float_t max)
-  { SetMinPt(min), SetMaxPt(max)                                    ; }
+               { SetMinPt(min), SetMaxPt(max)                                    ; }
   
   
   Float_t      GetMaximumAssociatedPt()    const { return fMaxAssocPt            ; }
   Float_t      GetMinimumAssociatedPt()    const { return fMinAssocPt            ; }
   void         SetAssociatedPtRange(Float_t min, Float_t max)
-  { fMaxAssocPt   = max ;           fMinAssocPt  = min              ; }
+               { fMaxAssocPt   = max ;           fMinAssocPt  = min              ; }
   
   Double_t     GetDeltaPhiMaxCut()         const { return fDeltaPhiMaxCut        ; }
   Double_t     GetDeltaPhiMinCut()         const { return fDeltaPhiMinCut        ; }
   void         SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
-  { fDeltaPhiMaxCut   = phimax ;    fDeltaPhiMinCut   = phimin      ; }
+               { fDeltaPhiMaxCut   = phimax ;    fDeltaPhiMinCut   = phimin      ; }
   
   // Leading Hadron
   Double_t     GetLeadHadronPhiMaxCut()    const { return fMaxLeadHadPhi         ; }
   Double_t     GetLeadHadronPhiMinCut()    const { return fMinLeadHadPhi         ; }
   void         SetLeadHadronPhiCut(Float_t min, Float_t max)
-  { fMaxLeadHadPhi = max ;          fMinLeadHadPhi  = min           ; }
+               { fMaxLeadHadPhi = max ;          fMinLeadHadPhi  = min           ; }
   
   Double_t     GetLeadHadronPtMinCut()     const { return fMinLeadHadPt          ; }
   Double_t     GetLeadHadronPtMaxCut()     const { return fMaxLeadHadPt          ; }
   void         SetLeadHadronPtCut(Float_t min, Float_t max)
-  { fMaxLeadHadPt  = max ;           fMinLeadHadPt  = min           ; }
+               { fMaxLeadHadPt  = max ;           fMinLeadHadPt  = min           ; }
   
   Bool_t       IsLeadHadronCutOn()        const { return fSelectLeadingHadronAngle   ; }
   void         SwitchOnLeadHadronSelection()    { fSelectLeadingHadronAngle = kTRUE  ; }
@@ -150,11 +150,11 @@ public:
   void         SwitchOnFillLeadHadronHistograms() { fFillLeadHadOppositeHisto = kTRUE  ; }
   void         SwitchOffFillLeadHadronHistograms(){ fFillLeadHadOppositeHisto = kFALSE ; }
   
-  void         SwitchOnInvariantMassHistograms() { fFillInvMassHisto = kTRUE     ; }
+  void         SwitchOnInvariantMassHistograms() { fFillInvMassHisto = kTRUE      ; }
   void         SwitchOffInvariantMassHistograms(){ fFillInvMassHisto = kFALSE     ; }
   
-  void         SwitchOnBackgroundBinsPtInConeHistograms() { fFillBkgBinsHisto = kTRUE     ; }
-  void         SwitchOffBackgroundBinsPtInConeHistograms(){ fFillBkgBinsHisto = kFALSE     ; }
+  void         SwitchOnBackgroundBinsPtInConeHistograms() { fFillBkgBinsHisto = kTRUE  ; }
+  void         SwitchOffBackgroundBinsPtInConeHistograms(){ fFillBkgBinsHisto = kFALSE ; }
   
   // Background bins
   void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
@@ -166,7 +166,7 @@ public:
   Double_t     GetUeDeltaPhiMinCut()       const { return fUeDeltaPhiMinCut      ; }
   
   void         SetUeDeltaPhiCutRange(Double_t uephimin, Double_t uephimax)
-  { fUeDeltaPhiMaxCut = uephimax ;  fUeDeltaPhiMinCut = uephimin ; }
+                  { fUeDeltaPhiMaxCut = uephimax ;  fUeDeltaPhiMinCut = uephimin ; }
   
   Bool_t       IsSeveralUEOn()             const { return fMakeSeveralUE         ; }
   void         SwitchOnSeveralUECalculation()    { fMakeSeveralUE      = kTRUE   ; }
@@ -196,8 +196,8 @@ public:
   void         SwitchOnDecayTriggerDecayCorr()   { fDecayTrigger        = kTRUE  ; }
   void         SwitchOffDecayTriggerDecayCorr()  { fDecayTrigger        = kFALSE ; }
   void         SetNDecayBits(Int_t n)            { fNDecayBits = n               ; }
-  void         SetDecayBits(Int_t i, UInt_t bit) { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits)
-    fDecayBits[i] = bit           ; }
+  void         SetDecayBits(Int_t i, UInt_t bit)
+    { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits) fDecayBits[i] = bit     ; }
   
   Bool_t       IsHMPIDCorrelation()        const { return fHMPIDCorrelation      ; }
   void         SwitchOnHMPIDCorrelation()        { fHMPIDCorrelation    = kTRUE  ; }
@@ -239,7 +239,7 @@ public:
   void         SwitchOffFillPtImbalancePerPtABinHistograms() { fFillMomImbalancePtAssocBinsHisto = kFALSE ; }
   
   void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
-    if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
+                                                            if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
   
 private:
   
@@ -619,12 +619,24 @@ private:
   TH2F *       fhMCMassPtTrigger[fgkNmcTypes];           //!<! Invariant mass of the trigger vs MC origin.
   
   // pT in isolation cone bins histograms
-  TH1F *       fhPtLeadInConeBin[20];                       //!<! [fNBkgBin] pT trig distribution for each pT lead in cone bin
-  TH1F *       fhPtSumInConeBin[20];                        //!<! [fNBkgBin] pT trig distribution for each pT sum in cone bin
-  TH1F *       fhPtLeadConeBinDecay[20*4];                    //!<! [fNBkgBin] pT trig distribution for each pT lead in cone bin for decay particles
-  TH1F *       fhSumPtConeBinDecay[20*4];                     //!<! [fNBkgBin] pT trig distribution for each pT sum in cone bin for decay particles
-  TH1F *       fhPtLeadConeBinMC[100];                       //!<! [fNBkgBin] pT trig distribution for each pT lead in cone bin for MC tag
-  TH1F *       fhSumPtConeBinMC[100];                        //!<! [fNBkgBin] pT trig distribution for each pT sum in cone bin for MC tag
+    
+  ///  pT trig distribution for each pT lead in cone bin
+  TH1F **       fhPtLeadInConeBin;                       //![fNBkgBin]
+    
+  ///  pT trig distribution for each pT sum in cone bin
+  TH1F **       fhPtSumInConeBin ;                       //![fNBkgBin]
+    
+  /// pT trig distribution for each pT lead in cone bin for decay particles
+  TH1F **       fhPtLeadConeBinDecay;                    //![fNBkgBin*fNDecayBits]
+    
+  /// pT trig distribution for each pT sum in cone bin for decay particles
+  TH1F **       fhSumPtConeBinDecay;                     //![fNBkgBin*fNDecayBits]
+    
+  /// pT trig distribution for each pT lead in cone bin for MC tag
+  TH1F **       fhPtLeadConeBinMC;                       //![fNBkgBin*fgkNmcTypes]
+    
+  /// pT trig distribution for each pT sum in cone bin for MC tag
+  TH1F **       fhSumPtConeBinMC;                        //![fNBkgBin*fgkNmcTypes]
   
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
