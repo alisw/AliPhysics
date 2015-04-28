@@ -83,6 +83,7 @@ int AliHLTDumpTask::SetChains(const char* chains)
   if (fpDummyConfiguration) {
     fpDummyTask=new AliHLTTask(fpDummyConfiguration);
     SetTarget(fpDummyTask);
+    fpDummyTask->SetDependency(this);
   }
   return 0;
 }
