@@ -148,7 +148,7 @@ private:
     AliAnalysisTaskPIDconfig(const AliAnalysisTaskPIDconfig &other);
     AliAnalysisTaskPIDconfig& operator=(const AliAnalysisTaskPIDconfig &other);
     
-    ClassDef(AliAnalysisTaskPIDconfig,3)  // Task to properly set the PID response functions of all detectors
+    ClassDef(AliAnalysisTaskPIDconfig,4)  // Task to properly set the PID response functions of all detectors
 };
 
 #endif
