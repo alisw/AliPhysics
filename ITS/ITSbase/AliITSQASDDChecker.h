@@ -30,6 +30,8 @@ class TSystem;
 class AliQAManager;
 class AliLog;
 class TF1;
+class TH1;
+class TH2;
 class TCanvas;
 class TPaveText;
 class AliQAv1;
@@ -49,12 +51,19 @@ public:
   Int_t GetEventSpecieForCheck() const {return  fESforCheck;}
 
   virtual Bool_t   MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
-  Bool_t MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode );//{AliInfo("The method for raw image has been called\n");}
-  Bool_t MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode);//{AliInfo("The method for recpoint image has been called\n");}
+  Bool_t DrawHistos(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode );
 
+  enum {kActiveMod,kFilledMod,kActiveWing,kFilledWing,
+	kExcludedMod,kEmptyMod,kExcludedWing,kEmptyWing,
+	kExcludedButFilledMod,kActiveButEmptyMod,
+	kExcludedButFilledWing,kActiveButEmptyWing,
+	kNumOfSDDCheckerCounters};
 
  private:
   
+  void FillCounters(Int_t counters[kNumOfSDDCheckerCounters][3], TH1* hmodule, TH2* hlay3, TH2* hlay4);
+  Int_t CheckCounters(Int_t counters[kNumOfSDDCheckerCounters][3], Int_t jl, Int_t neventsraw, TPaveText *ptext);
+
   AliITSQASDDChecker(const AliITSQASDDChecker& qac); 
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; 
     Int_t fSubDetOffset;            // checking operation starting point
