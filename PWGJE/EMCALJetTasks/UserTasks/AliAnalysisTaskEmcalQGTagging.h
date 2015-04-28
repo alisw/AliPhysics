@@ -23,7 +23,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
     kTrue = 0,   // generated jets only 
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
-    kDetEmb = 3  //detector embedded jets 
+    kDetEmb = 3,  //detector embedded jets
+    kPythiaDef = 4
   };
   enum JetShapeSub {
     kNoSub = 0, 
