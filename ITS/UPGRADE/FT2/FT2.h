@@ -16,6 +16,7 @@ class AliITSURecoDet;
 class AliITSURecoSens;
 class TParticle;
 class AliVertex;
+class TF3;
 
 const float kRidiculous = 999999;
 const float kMaxZTPC = 220; // 250
@@ -30,7 +31,11 @@ public:
 	virtual Double_t GetTPCsignal() const {return fTPCSignal;}
 	virtual UShort_t GetTPCsignalN() const {return fTPCSignalN;}
 	virtual Int_t GetTPCTrackingPID() const {return fAbsPdgCodeForTracking;}
-	
+	virtual void GetInnerTrackParam(Double_t iTP[7]) const {
+		for(Int_t i=0;i<7;i++){
+			iTP[i]=fInnerTrackParameters[i];
+		}
+	}
 protected:
 	Double_t fProbeMass;	// true mass
 	Double_t fTPCmomentum;	// momentum after TPC reconstruction
@@ -39,7 +44,8 @@ protected:
 	Double_t fAbsPdgCode;	// |pdg code| of particle
 	Double_t fPdgCode;		// pdg code of particle
 	Int_t fAbsPdgCodeForTracking;
-	Double_t fTrueMass;    // true mass of the particle
+	Double_t fTrueMass;     // true mass of the particle
+	Double_t fInnerTrackParameters[7]; // (fAlpha,fX,fP[5]) at inner TPC radius
 	ClassDef(FTProbe,1)
 };
 
@@ -199,7 +205,9 @@ protected:
 	Double_t fITSHitYZ[kMaxITSLr][kMaxHitPerLr][2]; //! tracking Y,Z of each hit
 	//
 	Double_t fdNdY;             // if positive, use it for fakes simulation
-	TF1 *fTPCClsLossProb;
+	TF1 *fTPCClsLossProb;		// parameterization of the TPC cluster pick up probability
+	TF3 *fTPCDistortionRPhi;	// parameterization of the TPC field distortions in rphi
+	TF3 *fTPCDistortionR;		// parameterization of the TPC field distortions in r
 	Bool_t   fAllocCorrelatedITSFakes; // simulate noise hits accompanying the probe
 	Double_t fNCorrelITSFakes[kMaxITSLr]; // av.number of accompanying hits
 	Double_t fCorrelITSFakesSigY[kMaxITSLr]; // their width in Y

@@ -23,6 +23,7 @@
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
 #include "TH2F.h"
+#include "TF3.h"
 
 ClassImp(FTProbe)
 ClassImp(FT2)
@@ -33,20 +34,19 @@ using namespace AliITSUAux;
 
 float FT2::fgMaxStepTGeo = 1.0;
 
-
 //________________________________________________
-FTProbe::FTProbe() 
-  :fProbeMass(0.14)
-  ,fTPCmomentum(0)
-  ,fTPCSignal(0)
-  ,fTPCSignalN(0)
-  ,fAbsPdgCode(0)
-  ,fPdgCode(0)
-  ,fAbsPdgCodeForTracking(211)
-  ,fTrueMass(0)
+FTProbe::FTProbe()
+:fProbeMass(0.14)
+,fTPCmomentum(0)
+,fTPCSignal(0)
+,fTPCSignalN(0)
+,fAbsPdgCode(0)
+,fPdgCode(0)
+,fAbsPdgCodeForTracking(211)
+,fTrueMass(0)
 {
-  // def. c-tor
-  
+	  // def. c-tor
+	
 }
 
 //________________________________________________
@@ -88,6 +88,8 @@ fITSRec(0)
 ,fNITSLrHit(0)
 ,fdNdY(-1)
 ,fTPCClsLossProb(0)
+,fTPCDistortionRPhi(0)
+,fTPCDistortionR(0)
 ,fAllocCorrelatedITSFakes(kTRUE)
 {
 	//
@@ -124,6 +126,10 @@ void FT2::InitTPCParaFile(const char *TPCParaFile)
 	if(fTPCParaFile->IsZombie()) AliFatal("Problem with opening TPC Parameterization File - File not available!");
 	
 	fTPCClsLossProb = (TF1*)fTPCParaFile->Get("TPCClsLossProbability");
+	
+	fTPCDistortionRPhi = new TF3("fTPCDistortionRPhi","0.286651+(1)*(1)*sin(1*x)*(0.155583)+(1)*(1)*cos(1*x)*(0.367392)+(1)*(1*y/250.)*1*(0.449366)+(1)*(1*y/250.)*sin(1*x)*(-0.002699)+(1)*(1*y/250.)*cos(1*x)*(-0.200238)+(1*z/250.)*(1)*1*(-0.274208)+(1*z/250.)*(1)*sin(1*x)*(-0.161730)+(1*z/250.)*(1)*cos(1*x)*(-0.280524)+(1*z/250.)*(1*y/250.)*1*(-0.354690)+(1*z/250.)*(1*y/250.)*sin(1*x)*(-0.003133)+(1*z/250.)*(1*y/250.)*cos(1*x)*(0.163138)",-TMath::Pi(),TMath::Pi(),0.,250.,0.,250.); // needs (phi,r,z)
+	
+//	fTPCDistortionR = new TF3("fTPCDistortionR","-0.097561+(1)*(1)*sin(1*x)*(-0.172315)+(1)*(1)*cos(1*x)*(0.180637)+(1)*(1*y/250.)*1*(-1.667580)+(1)*(1*y/250.)*sin(1*x)*(-0.106444)+(1)*(1*y/250.)*cos(1*x)*(-0.021607)+(1*z/250.)*(1)*1*(0.037540)+(1*z/250.)*(1)*sin(1*x)*(0.138789)+(1*z/250.)*(1)*cos(1*x)*(-0.173668)+(1*z/250.)*(1*y/250.)*1*(1.350926)+(1*z/250.)*(1*y/250.)*sin(1*x)*(0.066125)+(1*z/250.)*(1*y/250.)*cos(1*x)*(0.006674)",-TMath::Pi(),TMath::Pi(),0.,250.,0.,250.); // needs (phi,r,z)
 }
 //________________________________________________
 void FT2::InitXSectionFile(const char *XSectionFile)
@@ -465,9 +471,9 @@ Bool_t FT2::PrepareProbe()
 #if DEBUG>5
 			cout << ilr << " New Step Length in ITS is: " << dits << endl;
 #endif
-		//	if(gRandom->Rndm()<ParticleDecayProbability(dits)) {
-		//		return kFALSE;
-		//	}
+			if(gRandom->Rndm()<ParticleDecayProbability(dits)) {
+				return kFALSE;
+			}
 //			cout << "Computing Absorption Probability ITS " << ilr << endl;
 			AliTrackerBase::MeanMaterialBudget(xyzTmp,xyzAft,params);
 			if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
@@ -498,26 +504,6 @@ Bool_t FT2::PrepareProbe()
 			
 			FT2TPCLayer_t &tpcLr = fTPCLayers[ilr];
 			
-			if(fAllowDecay){
-				if(ilr!=(int)fTPCLayers.size()-1){
-					FT2TPCLayer_t &tpcLrNext = fTPCLayers[ilr+1];
-					Float_t positionNow[3];
-					Float_t positionNext[3];
-					tpcLr.GetXYZLab(positionNow);
-					tpcLrNext.GetXYZLab(positionNext);
-					
-					Double_t step = TMath::Sqrt(( positionNow[0]-positionNext[0])*(positionNow[0]-positionNext[0])
-												+(positionNow[1]-positionNext[1])*(positionNow[1]-positionNext[1])
-												+(positionNow[2]-positionNext[2])*(positionNow[2]-positionNext[2]));
-				
-				//	cout << ilr << " Old Step Length in TPC is: " << step << endl;
-
-					if(gRandom->Rndm()<ParticleDecayProbability(step)) {
-						return kFALSE;
-					}
-				}
-			}
-			
 			tpcLr.hitSect = -1;
 			fProbe.GetXYZ(xyzTmp);
 			double phi = TMath::ATan2(xyzTmp[1],xyzTmp[0]);
@@ -545,7 +531,11 @@ Bool_t FT2::PrepareProbe()
 			}
 			if (TMath::Abs(fProbe.GetZ())>kMaxZTPC) break; // exit from the TPC
 			double maxY = kTanSectH*tpcLr.x - fTPCSectorEdge; // max allowed Y in the sector
-			if (TMath::Abs(fProbe.GetY())>maxY) {
+	
+			Double_t z = fProbe.GetZ();
+			if(z>245.) z=245.;
+				Double_t TPCdistortionRPhi = fTPCDistortionRPhi->Eval(fProbe.Phi(),TMath::Sqrt(fProbe.GetX()*fProbe.GetX()+fProbe.GetY()*fProbe.GetY()),z); // include tpc field distortion in rphi, assuming rphi==Y
+			if (TMath::Abs(fProbe.GetY())+TPCdistortionRPhi>maxY) {
 #if DEBUG>3
 				printf("TPC: No hit in dead zone: %f\n",maxY);
 				fProbe.Print();
@@ -569,9 +559,9 @@ Bool_t FT2::PrepareProbe()
 #if DEBUG>5
 				cout << ilr << " New Step Length in TPC is: " << d << endl;
 #endif
-			//	if(gRandom->Rndm()<ParticleDecayProbability(d)) {
-			//		return kFALSE;
-			//	}
+				if(gRandom->Rndm()<ParticleDecayProbability(d)) {
+					return kFALSE;
+				}
 	//			cout << "Computing Absorption Probability TPC " << ilr << endl;
 				AliTrackerBase::MeanMaterialBudget(xyzTmp,xyzAft,params);
 				if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
@@ -746,6 +736,17 @@ Bool_t FT2::ReconstructProbe()
 			if (chi<0) return kFALSE;
 			fChi2TPC += chi;
 			fNClTPC++;
+		
+			if(ih==0){ // set inner track parameters
+				fProbe.fInnerTrackParameters[0] = fProbe.GetAlpha();
+				fProbe.fInnerTrackParameters[1] = fProbe.GetX();
+				fProbe.fInnerTrackParameters[2] = fProbe.GetY();
+				fProbe.fInnerTrackParameters[3] = fProbe.GetZ();
+				fProbe.fInnerTrackParameters[4] = fProbe.GetSnp();
+				fProbe.fInnerTrackParameters[5] = fProbe.GetTgl();
+				fProbe.fInnerTrackParameters[6] = fProbe.GetSigned1Pt();
+			}
+		
 		}
 		// go to ITS/TPC matching R, accounting for TGeo materials
 		if (!PropagateToR(fITS->GetRITSTPCRef(),-1,kTRUE, kFALSE, kTRUE)) return kFALSE;
@@ -1507,7 +1508,7 @@ Double_t FT2::ParticleAbsorptionProbability(Double_t length,Double_t rho, Double
 		
 		Double_t lambdaAni = A/(rho*Navo*sigmaAni);
 
-		return (2.-TMath::Exp(-length*rho/radLength)-TMath::Exp(-length*rho/lambdaAni));
+		return (1.-TMath::Exp(-length*rho/radLength))*(1-TMath::Exp(-length*rho/lambdaAni));
 	}
 	else return -1;
 	sigma0*=1E-27; // X-Section from mb to cm2
@@ -1517,4 +1518,5 @@ Double_t FT2::ParticleAbsorptionProbability(Double_t length,Double_t rho, Double
 	AliInfo(Form("\n### %i with p = %f\n### Rho: %f\n### A: %f\n### Z: %f\n### Navo: %E\n### sigma0: %E\n### x: %E\n### Lambda: %f\n### xrho/La: %f\n",pdg,mom,rho,A,Z,Navo,sigma0,length,lambda,length*rho/lambda));
 #endif
 	return (1.-TMath::Exp(-length*rho/lambda));
+	
 }
