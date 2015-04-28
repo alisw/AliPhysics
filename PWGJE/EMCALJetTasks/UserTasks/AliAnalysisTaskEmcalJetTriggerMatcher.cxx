@@ -536,7 +536,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerMatcher::Run()
           if(fFillHists>0) fHistClusEvPatchE->Fill(mClusterE,fMaxPatch->GetPatchE());
           if(fFillHists>0) fHistdEtaPatchvdPhiPatch->Fill(dEtaPatch,dPhiPatch);
           if(fFillHists>0) fHistRawJetPtvPatchE->Fill(jetptraw,fMaxPatch->GetPatchE());
-          Double_t JetTrig[18] = {jetptraw, jetPt, jeteta, jetphi, jet->E(), fMaxPatch->GetPatchE(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo(), fMaxPatch->GetADCAmp(), mClusterE, mcp.PseudoRapidity(), mcp.Phi() };
+          Double_t JetTrig[18] = {jetptraw, jetPt, jeteta, jetphi, jet->E(), fMaxPatch->GetPatchE(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo(), (Double_t)fMaxPatch->GetADCAmp(), mClusterE, mcp.PseudoRapidity(), mcp.Phi() };
           fhnJetTrigger->Fill(JetTrig);
         } // matching cluster of a jet to trigger patch
       } // cluster for
