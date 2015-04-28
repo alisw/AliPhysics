@@ -593,7 +593,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
   fGenSubtractorInfoJetMass.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo info;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapeMass, fInclusiveJets[i], info);
     fGenSubtractorInfoJetMass.push_back(info);
   }
@@ -625,7 +625,7 @@ Int_t AliFJWrapper::DoGenericSubtractionGR(Int_t ijet) {
     fGenSubtractorInfoGRDen.clear();
     fj::contrib::GenericSubtractorInfo infoNum;
     fj::contrib::GenericSubtractorInfo infoDen;
-    if(fInclusiveJets[ijet].perp()>0.) {
+    if(fInclusiveJets[ijet].perp()>1.e-4) {
       double sub_num = (*fGenSubtractor)(shapeGRNum, fInclusiveJets[ijet], infoNum);
       double sub_den = (*fGenSubtractor)(shapeGRDen, fInclusiveJets[ijet], infoDen);
     }
@@ -653,7 +653,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetAngularity() {
   fGenSubtractorInfoJetAngularity.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo infoAng;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapeAngularity, fInclusiveJets[i], infoAng);
     fGenSubtractorInfoJetAngularity.push_back(infoAng);
   }
@@ -674,7 +674,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetpTD() {
   fGenSubtractorInfoJetpTD.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo infopTD;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapepTD, fInclusiveJets[i], infopTD);
     fGenSubtractorInfoJetpTD.push_back(infopTD);
   }
@@ -695,7 +695,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetCircularity() {
   fGenSubtractorInfoJetCircularity.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo infoCirc;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapecircularity, fInclusiveJets[i], infoCirc);
     fGenSubtractorInfoJetCircularity.push_back(infoCirc);
   }
@@ -716,7 +716,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetSigma2() {
   fGenSubtractorInfoJetSigma2.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo infoSigma;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapesigma2, fInclusiveJets[i], infoSigma);
     fGenSubtractorInfoJetSigma2.push_back(infoSigma);
   }
@@ -737,7 +737,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetConstituent() {
    fGenSubtractorInfoJetConstituent.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo infoConst;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapeconst, fInclusiveJets[i], infoConst);
     fGenSubtractorInfoJetConstituent.push_back(infoConst);
   }
@@ -759,7 +759,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetLeSub() {
   fGenSubtractorInfoJetLeSub.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::contrib::GenericSubtractorInfo infoLeSub;
-    if(fInclusiveJets[i].perp()>0.)
+    if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapeLeSub, fInclusiveJets[i], infoLeSub);
     fGenSubtractorInfoJetLeSub.push_back(infoLeSub);
   }
