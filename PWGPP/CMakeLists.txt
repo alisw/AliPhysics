@@ -270,6 +270,8 @@ install(DIRECTORY PilotTrain DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSIONS)
 install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
+install(FILES HMPID/macros/copyHMPQAfiles.C
+ 	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)
 install(FILES T0/AddTaskT0QA.C
 	      T0/MakeTrendT0.C
 	      T0/drawPerformanceT0QATrends.C 
