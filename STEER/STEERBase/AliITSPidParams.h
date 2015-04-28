@@ -9,6 +9,8 @@
 //                                                               //
 // Class to store parameters of ITS response functions           //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
+// Modified by: Y. Corrales Morales                              //
+//              Torino, corrales@to.infn.it                      //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
@@ -22,18 +24,16 @@ class AliITSPidParams : public TNamed {
   AliITSPidParams(Bool_t isMC = kFALSE);
   AliITSPidParams(Char_t * name, Bool_t isMC = kFALSE);
   ~AliITSPidParams();
-  
+
   void InitMC();
   void InitData();
   Double_t GetLandauGausNormPdgCode(Double_t dedx, Int_t pdgCode, Double_t mom, Int_t lay) const;
   Double_t GetLandauGausNorm(Double_t dedx, Int_t partType, Double_t mom, Int_t lay) const;
-  
-  // electron setters
-  void SetSDDElecMPVparams(const Double_t* params){
-    for(Int_t ipar=0; ipar<5; ipar++) fSDDElecMPVBetheParams[ipar]=params[ipar];
-  }  
-  void SetSSDElecMPVparams(const Double_t* params){
-    for(Int_t ipar=0; ipar<5; ipar++) fSSDElecMPVBetheParams[ipar]=params[ipar];
+
+  // electron setters SDD
+  void SetSDDElecMPV(const TFormula* form){
+    if(fSDDElecMPV) delete fSDDElecMPV;
+    fSDDElecMPV=new TFormula(*form);
   }
   void SetSDDElecLandauWidth(const TFormula* form){
     if(fSDDElecLandauWidth) delete fSDDElecLandauWidth;
@@ -42,7 +42,12 @@ class AliITSPidParams : public TNamed {
   void SetSDDElecGaussWidth(const TFormula* form){
     if(fSDDElecGaussWidth) delete fSDDElecGaussWidth;
     fSDDElecGaussWidth=new TFormula(*form);
-  } 
+  }
+  // electron setters SSD
+  void SetSSDElecMPV(const TFormula* form){
+    if(fSSDElecMPV) delete fSSDElecMPV;
+    fSSDElecMPV=new TFormula(*form);
+  }
   void SetSSDElecLandauWidth(const TFormula* form){
     if(fSSDElecLandauWidth) delete fSSDElecLandauWidth;
     fSSDElecLandauWidth=new TFormula(*form);
@@ -52,15 +57,11 @@ class AliITSPidParams : public TNamed {
     fSSDElecGaussWidth=new TFormula(*form);
   }
 
-  //Hadron setters
-  void SetSDDHadronMPVparams(const Double_t* params){
-    for(Int_t ipar=0; ipar<5; ipar++) fSDDHadronMPVBetheParams[ipar]=params[ipar];
-  }  
-  void SetSSDHadronMPVparams(const Double_t* params){
-    for(Int_t ipar=0; ipar<5; ipar++) fSSDHadronMPVBetheParams[ipar]=params[ipar];
+  //Pion setters SDD
+  void SetSDDPionMPV(const TFormula* form){
+    if(fSDDPionMPV) delete fSDDPionMPV;
+    fSDDPionMPV=new TFormula(*form);
   }
-  
-  //Pion setters
   void SetSDDPionLandauWidth(const TFormula* form){
     if(fSDDPionLandauWidth) delete fSDDPionLandauWidth;
     fSDDPionLandauWidth=new TFormula(*form);
@@ -68,7 +69,12 @@ class AliITSPidParams : public TNamed {
   void SetSDDPionGaussWidth(const TFormula* form){
     if(fSDDPionGaussWidth) delete fSDDPionGaussWidth;
     fSDDPionGaussWidth=new TFormula(*form);
-  } 
+  }
+  //Pion setters SSD
+  void SetSSDPionMPV(const TFormula* form){
+    if(fSSDPionMPV) delete fSSDPionMPV;
+    fSSDPionMPV=new TFormula(*form);
+  }
   void SetSSDPionLandauWidth(const TFormula* form){
     if(fSSDPionLandauWidth) delete fSSDPionLandauWidth;
     fSSDPionLandauWidth=new TFormula(*form);
@@ -78,7 +84,11 @@ class AliITSPidParams : public TNamed {
     fSSDPionGaussWidth=new TFormula(*form);
   }
 
-  // kaon setters
+  // kaon setters SDD
+  void SetSDDKaonMPV(const TFormula* form){
+    if(fSDDKaonMPV) delete fSDDKaonMPV;
+    fSDDKaonMPV=new TFormula(*form);
+  }
   void SetSDDKaonLandauWidth(const TFormula* form){
     if(fSDDKaonLandauWidth) delete fSDDKaonLandauWidth;
     fSDDKaonLandauWidth=new TFormula(*form);
@@ -86,6 +96,11 @@ class AliITSPidParams : public TNamed {
   void SetSDDKaonGaussWidth(const TFormula* form){
     if(fSDDKaonGaussWidth) delete fSDDKaonGaussWidth;
     fSDDKaonGaussWidth=new TFormula(*form);
+  }
+  // kaon setters SSD
+  void SetSSDKaonMPV(const TFormula* form){
+    if(fSSDKaonMPV) delete fSSDKaonMPV;
+    fSSDKaonMPV=new TFormula(*form);
   }
   void SetSSDKaonLandauWidth(const TFormula* form){
     if(fSSDKaonLandauWidth) delete fSSDKaonLandauWidth;
@@ -96,7 +111,11 @@ class AliITSPidParams : public TNamed {
     fSSDKaonGaussWidth=new TFormula(*form);
   }
 
-  // proton setters
+  // proton setters SDD
+  void SetSDDProtMPV(const TFormula* form){
+    if(fSDDProtMPV) delete fSDDProtMPV;
+    fSDDProtMPV=new TFormula(*form);
+  }
   void SetSDDProtLandauWidth(const TFormula* form){
     if(fSDDProtLandauWidth) delete fSDDProtLandauWidth;
     fSDDProtLandauWidth=new TFormula(*form);
@@ -104,6 +123,11 @@ class AliITSPidParams : public TNamed {
   void SetSDDProtGaussWidth(const TFormula* form){
     if(fSDDProtGaussWidth) delete fSDDProtGaussWidth;
     fSDDProtGaussWidth=new TFormula(*form);
+  }
+  // proton setters SSD
+  void SetSSDProtMPV(const TFormula* form){
+    if(fSSDProtMPV) delete fSSDProtMPV;
+    fSSDProtMPV=new TFormula(*form);
   }
   void SetSSDProtLandauWidth(const TFormula* form){
     if(fSSDProtLandauWidth) delete fSSDProtLandauWidth;
@@ -116,8 +140,7 @@ class AliITSPidParams : public TNamed {
 
   // electron getters
   Double_t GetSDDElecMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kElectron);
-    return BetheBloch(mom,mass,fSDDElecMPVBetheParams);
+    return  fSDDElecMPV->Eval(mom);
   }
   Double_t GetSDDElecLandauWidth(Double_t mom) const {
     return fSDDElecLandauWidth->Eval(mom);
@@ -126,8 +149,7 @@ class AliITSPidParams : public TNamed {
     return fSDDElecGaussWidth->Eval(mom);
   }
   Double_t GetSSDElecMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kElectron);
-    return BetheBloch(mom,mass,fSSDElecMPVBetheParams);
+    return  fSSDElecMPV->Eval(mom);
   }
   Double_t GetSSDElecLandauWidth(Double_t mom) const {
     return fSSDElecLandauWidth->Eval(mom);
@@ -138,8 +160,7 @@ class AliITSPidParams : public TNamed {
 
   // pion getters
   Double_t GetSDDPionMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kPion);
-    return BetheBloch(mom,mass,fSDDHadronMPVBetheParams);
+    return  fSDDPionMPV->Eval(mom);
   }
   Double_t GetSDDPionLandauWidth(Double_t mom) const {
     return fSDDPionLandauWidth->Eval(mom);
@@ -148,8 +169,7 @@ class AliITSPidParams : public TNamed {
     return fSDDPionGaussWidth->Eval(mom);
   }
   Double_t GetSSDPionMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kPion);
-    return BetheBloch(mom,mass,fSSDHadronMPVBetheParams);
+    return  fSSDPionMPV->Eval(mom);
   }
   Double_t GetSSDPionLandauWidth(Double_t mom) const {
     return fSSDPionLandauWidth->Eval(mom);
@@ -160,107 +180,85 @@ class AliITSPidParams : public TNamed {
 
   // kaon getters
   Double_t GetSDDKaonMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kKaon);
-    return BetheBloch(mom,mass,fSDDHadronMPVBetheParams);
+    return fSDDKaonMPV->Eval(mom);
   }
   Double_t GetSDDKaonLandauWidth(Double_t mom) const {
-    Double_t xmin = 0.2;
-    mom = (mom > xmin) ? mom : xmin;
     return fSDDKaonLandauWidth->Eval(mom);
   }
   Double_t GetSDDKaonGaussWidth(Double_t mom) const {
-    Double_t xmin = 0.2;
-    mom = (mom > xmin) ? mom : xmin;
     return fSDDKaonGaussWidth->Eval(mom);
   }
   Double_t GetSSDKaonMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kKaon);
-    return BetheBloch(mom,mass,fSSDHadronMPVBetheParams);
+    return fSSDKaonMPV->Eval(mom);
   }
   Double_t GetSSDKaonLandauWidth(Double_t mom) const {
-    Double_t xmin = 0.2;
-    mom = (mom > xmin) ? mom : xmin;
     return fSSDKaonLandauWidth->Eval(mom);
   }
   Double_t GetSSDKaonGaussWidth(Double_t mom) const {
-    Double_t xmin = 0.2;
-    mom = (mom > xmin) ? mom : xmin;
     return fSSDKaonGaussWidth->Eval(mom);
   }
 
   // proton getters
   Double_t GetSDDProtMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kProton);
-    return BetheBloch(mom,mass,fSDDHadronMPVBetheParams);
+    return fSDDProtMPV->Eval(mom);
   }
   Double_t GetSDDProtLandauWidth(Double_t mom) const {
-    Double_t xmin = 0.4;
-    mom = (mom > xmin) ? mom : xmin;
     return fSDDProtLandauWidth->Eval(mom);
   }
   Double_t GetSDDProtGaussWidth(Double_t mom) const {
-    Double_t xmin = 0.4;
-    mom = (mom > xmin) ? mom : xmin;
     return fSDDProtGaussWidth->Eval(mom);
   }
   Double_t GetSSDProtMPV(Double_t mom) const {
-    Double_t mass = AliPID::ParticleMass(AliPID::kProton);
-    return BetheBloch(mom,mass,fSSDHadronMPVBetheParams);
+    return fSSDProtMPV->Eval(mom);
   }
   Double_t GetSSDProtLandauWidth(Double_t mom) const {
-    Double_t xmin = 0.4;
-    mom = (mom > xmin) ? mom : xmin;
     return fSSDProtLandauWidth->Eval(mom);
   }
   Double_t GetSSDProtGaussWidth(Double_t mom) const {
-    Double_t xmin = 0.4;
-    mom = (mom > xmin) ? mom : xmin;
     return fSSDProtGaussWidth->Eval(mom);
   }
 
  private:
-  
+
   AliITSPidParams(const AliITSPidParams& rec);
   AliITSPidParams& operator=(const AliITSPidParams &source);
 
-  Double_t BetheBloch(Double_t mom, Double_t mass, const Double_t* p) const;
-  Double_t ExtrapolateWidth(Double_t mom, Double_t x1, Double_t y1, Double_t x2, Double_t y2) const;
-  
   // Electron parameterizations
-  Double_t fSDDElecMPVBetheParams[5];         // Electron bethe block parameters in SDD
-  Double_t fSSDElecMPVBetheParams[5];         // Electron bethe block parameters in SSD
- 
-  TFormula* fSDDElecLandauWidth; // Electron dE/dx Landau width vs. p in SDD
-  TFormula* fSDDElecGaussWidth;  // Electron dE/dx Gaussian width vs. p in SDD
+  TFormula* fSDDElecMPV;          // Electron dE/dx Most Probable vs. p in SDD
+  TFormula* fSDDElecLandauWidth;  // Electron dE/dx Landau width vs. p in SDD
+  TFormula* fSDDElecGaussWidth;   // Electron dE/dx Gaussian width vs. p in SDD
 
-  TFormula* fSSDElecLandauWidth; // Electron dE/dx Landau width vs. p in SSD
-  TFormula* fSSDElecGaussWidth;  // Electron dE/dx Gaussian width vs. p in SSD
-  
-  // Hadron parameterizations
-  Double_t fSDDHadronMPVBetheParams[5];         // hadrons bethe block parameters in SDD
-  Double_t fSSDHadronMPVBetheParams[5];         // hadrons bethe block parameters in SSD
- 
-  TFormula* fSDDPionLandauWidth; // pion dE/dx Landau width vs. p in SDD
-  TFormula* fSDDPionGaussWidth;  // pion dE/dx Gaussian width vs. p in SDD
+  TFormula* fSSDElecMPV;          // Electron dE/dx Most Probable vs. p in SSD
+  TFormula* fSSDElecLandauWidth;  // Electron dE/dx Landau width vs. p in SSD
+  TFormula* fSSDElecGaussWidth;   // Electron dE/dx Gaussian width vs. p in SSD
 
-  TFormula* fSSDPionLandauWidth; // pion dE/dx Landau width vs. p in SSD
-  TFormula* fSSDPionGaussWidth;  // pion dE/dx Gaussian width vs. p in SSD
+  // Pion parameterizations
+  TFormula* fSDDPionMPV;          // Pion dE/dx Most Probable vs. p in SDD
+  TFormula* fSDDPionLandauWidth;  // pion dE/dx Landau width vs. p in SDD
+  TFormula* fSDDPionGaussWidth;   // pion dE/dx Gaussian width vs. p in SDD
 
-  TFormula* fSDDKaonLandauWidth; // kaon dE/dx Landau width vs. p in SDD
-  TFormula* fSDDKaonGaussWidth;  // kaon dE/dx Gaussian width vs. p in SDD
+  TFormula* fSSDPionMPV;          // Pion dE/dx Most Probable vs. p in SSD
+  TFormula* fSSDPionLandauWidth;  // pion dE/dx Landau width vs. p in SSD
+  TFormula* fSSDPionGaussWidth;   // pion dE/dx Gaussian width vs. p in SSD
 
-  TFormula* fSSDKaonLandauWidth; // kaon dE/dx Landau width vs. p in SSD
-  TFormula* fSSDKaonGaussWidth;  // kaon dE/dx Gaussian width vs. p in SSD
+  // Kaon parameterizations
+  TFormula* fSDDKaonMPV;          // Kaon dE/dx Most Probable vs. p in SDD
+  TFormula* fSDDKaonLandauWidth;  // kaon dE/dx Landau width vs. p in SDD
+  TFormula* fSDDKaonGaussWidth;   // kaon dE/dx Gaussian width vs. p in SDD
 
-  TFormula* fSDDProtLandauWidth; // Proton dE/dx Landau width vs. p in SDD
-  TFormula* fSDDProtGaussWidth;  // Proton dE/dx Gaussian width vs. p in SDD
+  TFormula* fSSDKaonMPV;          // Kaon dE/dx Most Probable vs. p in SSD
+  TFormula* fSSDKaonLandauWidth;  // kaon dE/dx Landau width vs. p in SSD
+  TFormula* fSSDKaonGaussWidth;   // kaon dE/dx Gaussian width vs. p in SSD
 
-  TFormula* fSSDProtLandauWidth; // Proton dE/dx Landau width vs. p in SSD
-  TFormula* fSSDProtGaussWidth;  // Proton dE/dx Gaussian width vs. p in SSD
+  // Proton parameterizations
+  TFormula* fSDDProtMPV;          // Proton dE/dx Most Probable vs. p in SSD
+  TFormula* fSDDProtLandauWidth;  // Proton dE/dx Landau width vs. p in SDD
+  TFormula* fSDDProtGaussWidth;   // Proton dE/dx Gaussian width vs. p in SDD
 
+  TFormula* fSSDProtMPV;          // Proton dE/dx Most Probable vs. p in SSD
+  TFormula* fSSDProtLandauWidth;  // Proton dE/dx Landau width vs. p in SSD
+  TFormula* fSSDProtGaussWidth;   // Proton dE/dx Gaussian width vs. p in SSD
 
-  
-  ClassDef(AliITSPidParams,2);
+  ClassDef(AliITSPidParams, 3);
 };
 #endif
-
