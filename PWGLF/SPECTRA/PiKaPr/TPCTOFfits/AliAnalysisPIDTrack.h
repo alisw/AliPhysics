@@ -4,8 +4,8 @@
 #include "TObject.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFcalibHisto.h"
+//#include "AliTOFGeometry.h"
+//#include "AliTOFcalibHisto.h"
 #include "AliTPCPIDResponse.h"
 #include "AliTOFPIDResponse.h"
 #include "AliAnalysisPIDEvent.h"
@@ -72,7 +72,7 @@ public TObject
 
   Bool_t IsInTOFPad() const {return ((TMath::Abs(fTOFDeltaX) < 1.25) && (TMath::Abs(fTOFDeltaZ) < 1.75));}; // is in TOF pad
 
-  Int_t GetTOFVolumeIndex(Int_t i); // get TOF volume index
+  //Int_t GetTOFVolumeIndex(Int_t i); // get TOF volume index
   Float_t GetTOFBeta() const {return HasTOFPID() ? fTOFLength / (2.99792457999999984e-02 * (fTOFTime - fgTOFResponse->GetStartTime(fP))) : 0.;}; // get TOF beta
   Float_t GetTOFBetaSigma() const; // get TOF beta sigma
   Float_t GetTOFExpBeta(Int_t ipart) const {return HasTOFPID() ? fTOFLength / (2.99792457999999984e-02 * fTOFExpTime[ipart]) : 0.;}; // get TOF beta
@@ -124,7 +124,7 @@ public TObject
 
   static Bool_t LoadTuningExpTimeTh(const Char_t *filename); // load tuning exp time th
 
-  Int_t GetTOFCalibIndex(Int_t imap) {return (Int_t)fgTOFcalibHisto.GetCalibMap(imap, fTOFIndex);}; // get TOF calib index
+  //  Int_t GetTOFCalibIndex(Int_t imap) {return (Int_t)fgTOFcalibHisto.GetCalibMap(imap, fTOFIndex);}; // get TOF calib index
 
   static AliTOFPIDResponse *GetTOFResponse() {return fgTOFResponse;}; // getter
   static AliTPCPIDResponse *GetTPCResponse() {return fgTPCResponse;}; // getter
@@ -220,9 +220,9 @@ public TObject
 
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
-  static AliTOFGeometry fgTOFGeometry;
-  static AliTOFcalibHisto fgTOFcalibHisto;
-  static Bool_t fgTOFcalibHistoFlag;
+  //static AliTOFGeometry fgTOFGeometry;
+  //  static AliTOFcalibHisto fgTOFcalibHisto;
+  //  static Bool_t fgTOFcalibHistoFlag;
   static AliTPCPIDResponse *fgTPCResponse;
   static AliTOFPIDResponse *fgTOFResponse;
   static TH2F *hTOFtuned_th[AliPID::kSPECIES];

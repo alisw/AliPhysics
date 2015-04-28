@@ -36,9 +36,9 @@ Float_t AliAnalysisPIDTrack::fgMatchTrackDeltaZ = 10.;
 //___________________________________________________________
 
 TLorentzVector AliAnalysisPIDTrack::fgLorentzVector;
-AliTOFGeometry AliAnalysisPIDTrack::fgTOFGeometry;
-AliTOFcalibHisto AliAnalysisPIDTrack::fgTOFcalibHisto;
-Bool_t AliAnalysisPIDTrack::fgTOFcalibHistoFlag = kFALSE;
+//AliTOFGeometry AliAnalysisPIDTrack::fgTOFGeometry;
+//AliTOFcalibHisto AliAnalysisPIDTrack::fgTOFcalibHisto;
+//Bool_t AliAnalysisPIDTrack::fgTOFcalibHistoFlag = kFALSE;
 AliTPCPIDResponse *AliAnalysisPIDTrack::fgTPCResponse = NULL;
 AliTOFPIDResponse *AliAnalysisPIDTrack::fgTOFResponse = NULL;
 TH2F *AliAnalysisPIDTrack::hTOFtuned_th[AliPID::kSPECIES] = {
@@ -110,10 +110,10 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
    */
 
   /* load calib histo */
-  if (!fgTOFcalibHistoFlag) {
-    fgTOFcalibHisto.LoadCalibHisto();
-    fgTOFcalibHistoFlag = kTRUE;
-  }
+  //  if (!fgTOFcalibHistoFlag) {
+  //    fgTOFcalibHisto.LoadCalibHisto();
+  //    fgTOFcalibHistoFlag = kTRUE;
+  //  }
 
   Double_t bbParam[6] = { /* R+ fit on minimum-bias PbPb (run 138275, pass2) */
     5.22879e+01,
@@ -784,19 +784,17 @@ AliAnalysisPIDTrack::GetTuningExpTimeTh(Int_t ipart) const
 
 //___________________________________________________________
 
-Int_t
+/*Int_t
 AliAnalysisPIDTrack::GetTOFVolumeIndex(Int_t i)
 {
-  /*
-   * get TOF volume index
-   */
+
 
   if (i < 0 || i > 4) return -1;
   Int_t det[5];
   fgTOFGeometry.GetVolumeIndices(fTOFIndex, det);
   return det[i];
 
-}
+}*/
 
 //___________________________________________________________
 
