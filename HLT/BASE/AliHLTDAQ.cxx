@@ -64,6 +64,7 @@ const char* AliHLTDAQ::fgkOriginMapping[] = {
   kAliHLTDataOriginACORDE,
   kAliHLTDataOriginTRG,
   kAliHLTDataOriginEMCAL,
+  kAliHLTDataOriginAD,
   NULL
 };
 

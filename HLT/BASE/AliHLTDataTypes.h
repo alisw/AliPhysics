@@ -72,8 +72,9 @@
  *           list information.
  *  17       New CDH v3 (10 32bit words, 100 trigger classes, etc.)
  *  18       Added AD detector in AliHLTEventDDLV2
+ *  19       Added AD Component Data Types
  */
-#define ALIHLT_DATA_TYPES_VERSION 18
+#define ALIHLT_DATA_TYPES_VERSION 19
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -233,6 +234,11 @@ extern const char kAliHLTDataOriginACORDE[kAliHLTComponentDataTypefOriginSize];
  * @ingroup alihlt_component_datatypes
  */
 extern const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin AD
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize];
 
 //////////////////////////////////////////////////////////////////////////
 //
