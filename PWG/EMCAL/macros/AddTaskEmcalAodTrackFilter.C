@@ -75,7 +75,11 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
     isMC = kTRUE;
     includeNoITS = kTRUE;
-  } else if (runPeriod.Contains(":")) {
+  } else if (runPeriod.Contains("lhc11a1")){
+    aodTask->SetAODfilterBits(256, 16);
+    isMC = kTRUE;
+    includeNoITS=kTRUE;
+  }  else if (runPeriod.Contains(":")) {
     TString runPeriodToken(runperiod);
     TObjArray *arr = runPeriodToken.Tokenize(":");
     TString arg1(arr->At(0)->GetName());
