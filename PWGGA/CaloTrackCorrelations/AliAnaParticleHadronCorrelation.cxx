@@ -76,7 +76,7 @@ fSelectLeadingHadronAngle(0),   fFillLeadHadOppositeHisto(0),
 fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
 fMinLeadHadPt(0),               fMaxLeadHadPt(0),
 fFillEtaGapsHisto(1),           fFillMomImbalancePtAssocBinsHisto(0),
-fFillInvMassHisto(0),
+fFillInvMassHisto(0),           fFillBkgBinsHisto(0),
 fMCGenTypeMin(0),               fMCGenTypeMax(0),
 fTrackVector(),                 fMomentum(),           fMomentumIM(),
 fDecayMom1(),                   fDecayMom2(),
@@ -3227,8 +3227,8 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(Int_t indexPhoton
 Int_t AliAnaParticleHadronCorrelation::GetMCTagHistogramIndex(Int_t mcTag)
 {
   if     ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||
-          GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation) ||
-          GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCISR)          ) return 0;
+           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation) ||
+           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCISR)          ) return 0;
   else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)          ) return 1;
   else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay)     ) return 2;
   else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)          ) return 3;
@@ -3720,8 +3720,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       Float_t pTLeadClusterInCone  = 0;
       Float_t pTSumClusterInCone   = 0;
       
-      CalculateChargedActivityInCone(particle,pTLeadTrackInCone,pTSumTrackInCone);
-      CalculateNeutralActivityInCone(particle,pTLeadClusterInCone,pTSumClusterInCone);
+      CalculateChargedActivityInCone(particle, pTLeadTrackInCone  , pTSumTrackInCone  );
+      CalculateNeutralActivityInCone(particle, pTLeadClusterInCone, pTSumClusterInCone);
       
       Float_t pTLeadInCone = pTLeadTrackInCone;
       if(pTLeadClusterInCone > pTLeadInCone) pTLeadInCone = pTLeadClusterInCone;
@@ -3824,7 +3824,6 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         
       }
     }
-    
     
     // Invariant mass of trigger particle
     if(fFillInvMassHisto) InvMassHisto(particle,mcIndex);
@@ -4888,14 +4887,14 @@ void AliAnaParticleHadronCorrelation::CalculateChargedActivityInCone(AliAODPWG4P
   {
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
     
-    Float_t pTtrack = track->Pt();
-    Float_t etaAssoc = track->Eta();
-    Float_t phiAssoc = track->Phi();
-    Float_t etaTrig = particle->Eta();
-    Float_t phiTrig = particle->Phi();
-    Float_t dEta = etaTrig - etaAssoc;
-    Float_t dPhi = phiTrig - phiAssoc;
-    Float_t R = GetIsolationCut()->GetConeSize();
+    Float_t pTtrack  = track->Pt();
+//    Float_t etaAssoc = track->Eta();
+//    Float_t phiAssoc = track->Phi();
+//    Float_t etaTrig  = particle->Eta();
+//    Float_t phiTrig  = particle->Phi();
+//    Float_t dEta     = etaTrig - etaAssoc;
+//    Float_t dPhi     = phiTrig - phiAssoc;
+//    Float_t coneSize = GetIsolationCut()->GetConeSize();
     
     pTSumTrackInCone+=pTtrack;
     if(pTtrack > pTLeadTrackInCone) pTLeadTrackInCone = pTtrack;
@@ -4928,16 +4927,17 @@ void AliAnaParticleHadronCorrelation::CalculateNeutralActivityInCone(AliAODPWG4P
     calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
     
     Float_t pTCluster = fMomentum.Pt();
-    Float_t etaAssoc = fMomentum.Eta();
-    Float_t phiAssoc = fMomentum.Phi();
-    Float_t etaTrig = particle->Eta();
-    Float_t phiTrig = particle->Phi();
-    Float_t dEta = etaTrig - etaAssoc;
-    Float_t dPhi = phiTrig - phiAssoc;
-    Float_t R = GetIsolationCut()->GetConeSize();
+//    Float_t etaAssoc  = fMomentum.Eta();
+//    Float_t phiAssoc  = fMomentum.Phi();
+//    Float_t etaTrig   = particle->Eta();
+//    Float_t phiTrig   = particle->Phi();
+//    Float_t dEta      = etaTrig - etaAssoc;
+//    Float_t dPhi      = phiTrig - phiAssoc;
+//    Float_t coneSize  = GetIsolationCut()->GetConeSize();
     
-    pTSumClusterInCone+=pTCluster;
+    pTSumClusterInCone += pTCluster;
     if(pTCluster > pTLeadClusterInCone) pTLeadClusterInCone = pTCluster;
   }
   
 }
+
