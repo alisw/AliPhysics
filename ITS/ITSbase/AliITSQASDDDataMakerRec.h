@@ -47,8 +47,38 @@ public:
   Int_t GetNumberOfEvents(AliQAv1::TASKINDEX_t task, Int_t trigCl=-1);
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
   AliITSDDLModuleMapSDD* GetDDLSDDModuleMap()const{return fDDLModuleMap; };
+  void SetTimeBinGrouping(Int_t n){fTimeBinSize=n;}
+
+  enum RAWHISTOS {kSDDRawModPattern,kSDDRawLadModLay3,kSDDRawLadModLay4,
+		  kSDDRawModPatternNorm,
+		  kSDDRawLadModLay3Norm,kSDDRawLadModLay4Norm,
+		  kSDDRawRelOccLay3,kSDDRawRelOccLay4,
+		  kActiveModLay3,kActiveModLay4,kSDDRawDataCheck,
+		  kSDDOnlineDDLPattern,kSDDDataSize,kChargeMapFirstMod};
+
+  enum DIGITHISTOS {kSDDDigModPattern,kSDDDigAnode,
+		    kSDDDigTimeBin,kSDDDigADC, kNumOfSDDDigitHistos};
+
+  enum RECPHISTOS {kSDDRecpChargeLay3,kSDDRecpChargeLay4,
+		   kSDDRecpGloXY,kSDDRecpGloRZ,
+		   kSDDRecpPhiZLay3,kSDDRecpPhiZLay4,
+		   kSDDRecpModPattern,kSDDRecpLadModLay3,kSDDRecpLadModLay4,
+		   kSDDRecpModPatternNorm,
+		   kSDDRecpLadModLay3Norm,kSDDRecpLadModLay4Norm,
+		   kSDDRecpLocalCoord,kSDDRecpRLay3,kSDDRecpRLay4,
+		   kSDDRecpPhiLay3,kSDDRecpPhiLay4,
+		   kSDDRecpDriftTimeLay3,kSDDRecpDriftTimeLay4,
+		   kSDDRecpRelOccLay3,kSDDRecpRelOccLay4,
+		   kSDDRecpToRawLay3,kSDDRecpToRawLay4,
+		   kSDDRecpCluSizAnLay3,kSDDRecpCluSizAnLay4,
+		   kSDDRecpCluSizTbLay3,kSDDRecpCluSizTbLay4,
+		   kSDDRecpDataCheck,
+		   kSDDRecpOnlineGloXYSingEv,kSDDRecpOnlineGloRZSingEv,
+		   kNumOfSDDRecpHistos};
 
 private:
+  void FillRelativeOccupancyHistos(TH2* hnormc, TH1* hrelocc) const;
+  void FillRecToRaw(TH2* hrpLay,TH2* hrwLay,TH2* hratioLay) const;
 
   static const Int_t fgknSDDmodules = 260; // number of SDD modules
   static const Int_t fgkmodoffset = 240;   // number of SPD modules
