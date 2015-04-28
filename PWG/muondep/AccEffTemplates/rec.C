@@ -35,6 +35,8 @@ void rec()
 
     // ITS
     reco.SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+    reco.SetSpecificStorage("ITS/Calib/SPDSparseDead", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+
   }
 
   reco.Run();
