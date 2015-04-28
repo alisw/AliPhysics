@@ -164,7 +164,7 @@ fITSPid(0) {
     Int_t nlad=AliITSgeomTGeo::GetNLadders(i);
     Int_t ndet=AliITSgeomTGeo::GetNDetectors(i);
 
-    Double_t xyz[3], &x=xyz[0], &y=xyz[1], &z=xyz[2];
+    Double_t xyz[3]={0}, &x=xyz[0], &y=xyz[1], &z=xyz[2];
     AliITSgeomTGeo::GetTranslation(i,1,1,xyz); 
     Double_t poff=TMath::ATan2(y,x);
     Double_t zoff=z;
@@ -232,7 +232,7 @@ fITSPid(0) {
 
   // store positions of centre of SPD modules (in z)
   //  The convetion is that fSPDdetzcentre is ordered from -z to +z
-  Double_t tr[3];
+  Double_t tr[3]={0};
   AliITSgeomTGeo::GetTranslation(1,1,1,tr);
   if (tr[2]<0) { // old geom (up to v5asymmPPR)
     AliITSgeomTGeo::GetTranslation(1,1,1,tr);
@@ -625,7 +625,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
        if (t==0) continue;              //this track has been already tracked
        //cout<<"========== "<<fPass<<"    "<<fCurrentEsdTrack<<" =========\n";
        if (t->GetReconstructed()&&(t->GetNUsed()<1.5)) continue;  //this track was  already  "succesfully" reconstructed
-       Float_t dz[2]; t->GetDZ(GetX(),GetY(),GetZ(),dz);              //I.B.
+       Float_t dz[2]={0}; t->GetDZ(GetX(),GetY(),GetZ(),dz);              //I.B.
        if (fConstraint[fPass]) { 
 	 if (TMath::Abs(dz[0])>AliITSReconstructor::GetRecoParam()->GetMaxDZToUseConstraint() ||
 	     TMath::Abs(dz[1])>AliITSReconstructor::GetRecoParam()->GetMaxDZToUseConstraint()) continue;
@@ -714,7 +714,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      // Start time integral and add distance from current position to vertex 
      if (esd->GetStatus()&AliESDtrack::kITSout) continue;
      AliITStrackMI t(*esd);
-     Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
+     Double_t xyzTrk[3]={0},xyzVtx[3]={GetX(),GetY(),GetZ()};
      t.GetXYZ(xyzTrk); 
      Double_t dst2 = 0.;
      {
@@ -738,7 +738,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      //
      // transfer the time integral to ESD track
      esd->SetStatus(AliESDtrack::kTIME);
-     Double_t times[AliPID::kSPECIESC];
+     Double_t times[AliPID::kSPECIESC]={0};
      t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
      esd->SetIntegratedTimes(times);
      esd->SetIntegratedLength(t.GetIntegratedLength());
@@ -875,8 +875,8 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   AliITSRecPoint *cl = fgLayers[l].GetCluster(c);
   Int_t idet = cl->GetDetectorIndex();
 
-  Float_t xyz[3];
-  Float_t cov[6];
+  Float_t xyz[3]={0};
+  Float_t cov[6]={0};
   cl->GetGlobalXYZ(xyz);
   cl->GetGlobalCov(cov);
   p.SetXYZ(xyz, cov);
@@ -928,7 +928,7 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   const AliITSdetector &det=fgLayers[l].GetDetector(idet);
 
   // tgphi and tglambda of the track in tracking frame with alpha=det.GetPhi
-  Float_t detxy[2];
+  Float_t detxy[2]={0};
   detxy[0] = det.GetR()*TMath::Cos(det.GetPhi());
   detxy[1] = det.GetR()*TMath::Sin(det.GetPhi());
   Double_t alpha = t->GetAlpha();
@@ -944,8 +944,8 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   Bool_t addMisalErr=kFALSE;
   AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errtrky,errtrkz,covyz,addMisalErr);
 
-  Float_t xyz[3];
-  Float_t cov[6];
+  Float_t xyz[3]={0};
+  Float_t cov[6]={0};
   cl->GetGlobalXYZ(xyz);
   //  cl->GetGlobalCov(cov);
   Float_t pos[3] = {0.,0.,0.};
@@ -1033,9 +1033,9 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   static AliITStrackMI currenttrack1;
   static AliITStrackMI currenttrack2;  
   static AliITStrackMI backuptrack;
-  Int_t ntracks[7];
+  Int_t ntracks[7]={0};
   Int_t nindexes[7][kMaxTr];
-  Float_t normalizedchi2[kMaxTr];
+  Float_t normalizedchi2[kMaxTr]={0};
   for (Int_t ilayer=0;ilayer<6;ilayer++) ntracks[ilayer]=0;
   otrack->SetNSkipped(0);
   new (&(tracks[6][0])) AliITStrackMI(*otrack);
@@ -1081,12 +1081,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       if (!currenttrack1.GetPhiZat(r,phi,z)) continue;
       Int_t idet=layer.FindDetectorIndex(phi,z);
 
-      Double_t trackGlobXYZ1[3];
+      Double_t trackGlobXYZ1[3]={0};
       if (!currenttrack1.GetXYZ(trackGlobXYZ1)) continue;
 
       // Get the budget to the primary vertex for the current track being prolonged
       Double_t budgetToPrimVertex = 0;
-      double xMSLrs[9],x2X0MSLrs[9]; // needed for ImproveKalman
+      double xMSLrs[9]={0},x2X0MSLrs[9]={0}; // needed for ImproveKalman
       int nMSLrs = 0;
       //
       if (fUseImproveKalman) nMSLrs = GetEffectiveThicknessLbyL(xMSLrs,x2X0MSLrs);
@@ -1461,7 +1461,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	vertex->SetIndex(1,esdindex);
       }
       //find nearest layer with track info
-      Double_t xrp[3]; vertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
+      Double_t xrp[3]={0}; vertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
       Int_t nearestold  = GetNearestLayer(xrp);               //I.B.
       Int_t nearest     = nearestold; 
       for (Int_t ilayer =nearest;ilayer<7;ilayer++){
@@ -2113,7 +2113,7 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   // this correction is OK only from AliITSv11Hybrid onwards
   if (GetR()>12. && GetR()<20.) { // SDD inner
     if(np==2) { // 3rd ladder
-      Double_t posMod252[3];
+      Double_t posMod252[3]={0};
       AliITSgeomTGeo::GetTranslation(252,posMod252);
       // check the Z coordinate of Mod 252: if negative 
       // (old SDD geometry in AliITSv11Hybrid)
@@ -2447,7 +2447,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
   //    special approach for plane efficiency evaluation is applyed
   //--------------------------------------------------------------------
 
-  Int_t index[AliITSgeomTGeo::kNLayers];
+  Int_t index[AliITSgeomTGeo::kNLayers]={0};
   Int_t k;
   for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   Int_t nc=clusters->GetNumberOfClusters();
@@ -2471,7 +2471,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
   // If "planeff"==kTRUE,
   //    special approach for plane efficiency evaluation is applyed
   //--------------------------------------------------------------------
-  Int_t index[AliITSgeomTGeo::kNLayers];
+  Int_t index[AliITSgeomTGeo::kNLayers]={0};
   Int_t k;
   for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   //
@@ -2532,7 +2532,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
        if(!CorrectForShieldMaterial(track,"SPD",dir)) return kFALSE;
 
 
-     Double_t oldGlobXYZ[3];
+     Double_t oldGlobXYZ[3]={0};
      if (!track->GetXYZ(oldGlobXYZ)) return kFALSE;
 
      // continue if we are already beyond this layer
@@ -2576,7 +2576,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      const AliITSRecPoint *clAcc=0;
      Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
 
-     Int_t idx=index[ilayer];
+     Int_t idx=index[ilayer]={0};
      if (idx>=0) { // cluster in this layer
        modstatus = 6; // no refit
        const AliITSRecPoint *cl=(AliITSRecPoint *)GetCluster(idx); 
@@ -2884,7 +2884,7 @@ Double_t AliITStrackerMI::GetTruncatedChi2(const AliITStrackMI * track, Float_t 
 {
   //
   // calculate normalized chi2
-  Float_t chi2[6];
+  Float_t chi2[6]={0};
   Float_t *erry = GetErrY(fCurrentEsdTrack), *errz = GetErrZ(fCurrentEsdTrack);
   Float_t ncl = 0;
   for (Int_t i = 0;i<6;i++){
@@ -2895,7 +2895,7 @@ Double_t AliITStrackerMI::GetTruncatedChi2(const AliITStrackMI * track, Float_t 
     }
     else{chi2[i]=10000;}
   }
-  Int_t index[6];
+  Int_t index[6]={0};
   TMath::Sort(6,chi2,index,kFALSE);
   Float_t max = float(ncl)*fac-1.;
   Float_t sumchi=0, sumweight=0; 
@@ -3047,7 +3047,7 @@ Int_t AliITStrackerMI::GetOverlapTrack(const AliITStrackMI *track, Int_t trackID
   //
   for (Int_t i=0;i<6;i++) overlist[i]=-1;
   Int_t sharedtrack=100000;
-  Int_t tracks[24],trackindex=0;
+  Int_t tracks[24]={0},trackindex=0;
   for (Int_t i=0;i<24;i++) {tracks[i]=-1;}
   //
   for (Int_t icluster=0;icluster<6;icluster++){
@@ -3089,7 +3089,7 @@ Int_t AliITStrackerMI::GetOverlapTrack(const AliITStrackMI *track, Int_t trackID
     if (trackindex==2) sharedtrack =TMath::Min(tracks[0],tracks[1]);
     else{
       //
-      Int_t tracks2[24], cluster[24];
+      Int_t tracks2[24]={0}, cluster[24]={0};
       for (Int_t i=0;i<24;i++){ tracks2[i]=-1; cluster[i]=0;}
       Int_t index =0;
       //
@@ -3179,8 +3179,8 @@ AliITStrackMI *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   // get weight of hypothesys - using best hypothesy
   Double_t w1,w2;
  
-  Int_t list1[6],list2[6];
-  AliITSRecPoint *clist1[6], *clist2[6] ;
+  Int_t list1[6]={0},list2[6]={0};
+  AliITSRecPoint *clist1[6]={0}, *clist2[6]={0} ;
   RegisterClusterTracks(track10,trackID1);
   RegisterClusterTracks(track20,trackID2);
   Float_t conflict1 = GetNumberOfSharedClusters(track10,trackID1,list1,clist1);
@@ -3190,7 +3190,7 @@ AliITStrackMI *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   //
   // normalized chi2
   Float_t chi21 =0,chi22=0,ncl1=0,ncl2=0;
-  Float_t nerry[6],nerrz[6];
+  Float_t nerry[6]={0},nerrz[6]={0};
   Float_t *erry1=GetErrY(trackID1),*errz1 = GetErrZ(trackID1);
   Float_t *erry2=GetErrY(trackID2),*errz2 = GetErrZ(trackID2);
   for (Int_t i=0;i<6;i++){
@@ -3679,8 +3679,8 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
     forwardtrack->SetD(0,track->GetD(0));
     forwardtrack->SetD(1,track->GetD(1));    
     {
-      Int_t list[6];
-      AliITSRecPoint* clist[6];
+      Int_t list[6]={0};
+      AliITSRecPoint* clist[6]={0};
       track->SetChi2MIP(4,GetNumberOfSharedClusters(track,esdindex,list,clist));      
       if ( (!track->GetConstrain()) && track->GetChi2MIP(4)>1.0) continue;
     }
@@ -3762,8 +3762,8 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
   // RS do shared cluster analysis here only if the new sharing analysis is not requested
   //RRR if (fFlagFakes) return besttrack;
 
-  Int_t list[6];
-  AliITSRecPoint * clist[6];
+  Int_t list[6]={0};
+  AliITSRecPoint * clist[6]={0};
   Float_t shared = GetNumberOfSharedClusters(besttrack,esdindex,list,clist);
   if (besttrack->GetConstrain()&&besttrack->GetChi2MIP(0)<AliITSReconstructor::GetRecoParam()->GetMaxChi2PerCluster(0)&&besttrack->GetChi2MIP(1)<AliITSReconstructor::GetRecoParam()->GetMaxChi2PerCluster(1)
       &&besttrack->GetChi2MIP(2)<AliITSReconstructor::GetRecoParam()->GetMaxChi2PerCluster(2)&&besttrack->GetChi2MIP(3)<AliITSReconstructor::GetRecoParam()->GetMaxChi2PerCluster(3)){ 
@@ -3773,7 +3773,7 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
   //
   if (shared>0.0){
     Int_t nshared;
-    Int_t overlist[6];
+    Int_t overlist[6]={0};
     Int_t sharedtrack = GetOverlapTrack(besttrack, esdindex, nshared, list, overlist);
     if (sharedtrack>=0){
       //
@@ -3878,8 +3878,8 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
     else besttrack= longtrack;
     //
     if (besttrack) {
-      Int_t list[6];
-      AliITSRecPoint * clist[6];
+      Int_t list[6]={0};
+      AliITSRecPoint * clist[6]={0};
       Float_t shared = GetNumberOfSharedClusters(longtrack,i,list,clist);
       //
       track->SetNUsed(shared);      
@@ -3888,7 +3888,7 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
       if (shared>0) {
 	if(!AliITSReconstructor::GetRecoParam()->GetAllowSharedClusters()) continue;
 	Int_t nshared;
-	Int_t overlist[6]; 
+	Int_t overlist[6]={0}; 
 	//
 	Int_t sharedtrack = GetOverlapTrack(longtrack, i, nshared, list, overlist);
 	//if (sharedtrack==-1) sharedtrack=0;
@@ -3921,7 +3921,7 @@ void AliITStrackerMI::FlagFakes(const TObjArray &itsTracks)
   // RS: flag those tracks which are suxpected to have fake clusters
   //
   const double kThreshPt = 0.5;
-  AliRefArray *refArr[6];
+  AliRefArray *refArr[6]={0};
   //
   for (int i=0;i<6;i++) {
     int ncl = fgLayers[i].GetNumberOfClusters();
@@ -3944,7 +3944,7 @@ void AliITStrackerMI::FlagFakes(const TObjArray &itsTracks)
   }
   //
   const UInt_t kMaxRef = 100;
-  UInt_t crefs[kMaxRef];
+  UInt_t crefs[kMaxRef]={0};
   Int_t ncrefs=0;
   // process tracks with shared clusters
   for (int itr=0;itr<nentries;itr++){
@@ -3993,7 +3993,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------
   const int kMaxLbPerCl = 3;
-  int lbID[36],lbStat[36];
+  int lbID[36]={0},lbStat[36]={0};
   Int_t nLab=0, nCl = track->GetNumberOfClusters();
   //
   //  track->SetLabel(-1);
@@ -4169,7 +4169,7 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
 
   // Take into account the mis-alignment (bring track to cluster plane)
   Double_t xTrOrig=track->GetX();
-  Float_t clxyz[3]; cl->GetGlobalXYZ(clxyz);Double_t trxyz[3]; track->GetXYZ(trxyz);
+  Float_t clxyz[3]={0}; cl->GetGlobalXYZ(clxyz);Double_t trxyz[3]={0}; track->GetXYZ(trxyz);
   AliDebug(2,Form("gtr %f %f %f",trxyz[0],trxyz[1],trxyz[2]));
   AliDebug(2,Form("gcl %f %f %f",clxyz[0],clxyz[1],clxyz[2]));
   AliDebug(2,Form(" xtr %f  xcl %f",track->GetX(),cl->GetX()));
@@ -4213,7 +4213,7 @@ void AliITStrackerMI::SignDeltas(const TObjArray *clusterArray, Float_t vz)
   AliITSRecPoint* cluster = (AliITSRecPoint*)clusterArray->At(0);
   Int_t layer = cluster->GetLayer();
   if (layer>1) return;
-  Int_t index[10000];
+  Int_t index[10000]={0};
   Int_t ncandidates=0;
   Float_t r = (layer>0)? 7:4;
   // 
@@ -4235,7 +4235,7 @@ void AliITStrackerMI::SignDeltas(const TObjArray *clusterArray, Float_t vz)
     if (cl0->GetDeltaProbability()>0.8) continue;
     // 
     Int_t ncl = 0;
-    Float_t y[100],z[100],sumy,sumz,sumy2, sumyz, sumw;
+    Float_t y[100]={0},z[100]={0},sumy,sumz,sumy2, sumyz, sumw;
     sumy=sumz=sumy2=sumyz=sumw=0.0;
     for (Int_t j=0;j<ncandidates;j++){
       if (i==j) continue;
@@ -4310,8 +4310,8 @@ void AliITStrackerMI::BuildMaterialLUT(TString material) {
   //--------------------------------------------------------------------
 
   Int_t n=1000;
-  Double_t mparam[7];
-  Double_t point1[3],point2[3];
+  Double_t mparam[7]={0};
+  Double_t point1[3]={0},point2[3]={0};
   Double_t phi,cosphi,sinphi,z;
   // 0-5 layers, 6 pipe, 7-8 shields 
   Double_t rmin[9]={ 3.5, 5.5,13.0,22.0,35.0,41.0, 2.0, 8.0,25.0};
@@ -4842,7 +4842,7 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
   Float_t zlocmax = zloc+dz;
   Float_t xlocmin = xloc-dy;
   Float_t xlocmax = xloc+dy;
-  Int_t chipsInRoad[100];
+  Int_t chipsInRoad[100]={0};
 
   // check if road goes out of detector
   Bool_t touchNeighbourDet=kFALSE; 
@@ -4929,7 +4929,7 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
 
   Int_t det = idet - (lad-1)*ndet + 1;
 
-  Double_t xyzGlob[3],xyzLoc[3];
+  Double_t xyzGlob[3]={0},xyzLoc[3]={0};
 
   AliITSdetector &detector = fgLayers[ilayer].GetDetector(idet);
   // take into account the misalignment: xyz at real detector plane
@@ -4965,7 +4965,7 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
 // input: AliITStrackMI* track, ilayer= layer number [0,5]
 // return: Bool_t   -> kTRUE if usable track, kFALSE if not usable. 
 //
-  Int_t index[AliITSgeomTGeo::kNLayers];
+  Int_t index[AliITSgeomTGeo::kNLayers]={0};
   Int_t k;
   for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   //
@@ -5067,7 +5067,7 @@ if(index[lay]>=0)nclout++;
        if (CorrectForPipeMaterial(&tmp,"inward")) {
           const AliESDVertex* vtx = myesd->GetVertex();
           if(!vtx) return kFALSE;
-          Double_t ddz[2],cov[3];
+          Double_t ddz[2]={0},cov[3]={0};
           Double_t maxD=3.;
           if(!tmp.PropagateToDCA(vtx,AliTracker::GetBz(),maxD,ddz,cov)) return kFALSE;
           if(TMath::Abs(ddz[0])>=AliITSReconstructor::GetRecoParam()->GetDCACutPlaneEff()) return kFALSE;
@@ -5301,12 +5301,12 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
     phitr = TMath::ASin(phitr);
     Int_t volId = AliGeomManager::LayerToVolUIDSafe(ilayer+1 ,idet );
 
-    Double_t tra[3]; AliGeomManager::GetOrigTranslation(volId,tra);
-    Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+    Double_t tra[3]={0}; AliGeomManager::GetOrigTranslation(volId,tra);
+    Double_t rot[9]={0}; AliGeomManager::GetOrigRotation(volId,rot);
    Double_t alpha =0.;
     alpha = tmp.GetAlpha();
     Double_t phiglob = alpha+phitr;
-    Double_t p[3];
+    Double_t p[3]={0};
     p[0] = TMath::Cos(phiglob);
     p[1] = TMath::Sin(phiglob);
     p[2] = tgl;
