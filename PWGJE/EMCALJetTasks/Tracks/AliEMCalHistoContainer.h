@@ -173,6 +173,9 @@ public:
   void CreateTH3(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, const TArrayD &zbins, Option_t *opt = "") throw(HistoContainerContentException);
   void CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max, Option_t *opt = "") throw(HistoContainerContentException);
   void CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTProfile(const char *name, const char *title, int nbinsX, double xmin, double xmax, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTProfile(const char *name, const char *title, int nbinsX, const double *xbins, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTProfile(const char *name, const char *title, const TArrayD &xbins, Option_t *opt = "") throw(HistoContainerContentException);
   void SetObject(TObject * const o, const char *group = "/") throw(HistoContainerContentException);
   void FillTH1(const char *hname, double x, double weight = 1.) throw(HistoContainerContentException);
   void FillTH2(const char *hname, double x, double y, double weight = 1.) throw(HistoContainerContentException);
@@ -180,6 +183,7 @@ public:
   void FillTH3(const char *hname, double x, double y, double z, double weight = 1.) throw(HistoContainerContentException);
   void FillTH3(const char *hname, const double *point, double weight = 1.) throw(HistoContainerContentException);
   void FillTHnSparse(const char *name, const double *x, double weight = 1.) throw(HistoContainerContentException);
+  void FillProfile(const char *name, double x, double y, double weight = 1.) throw(HistoContainerContentException);
 
   /**
    * Get the list of histograms
