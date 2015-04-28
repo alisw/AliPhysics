@@ -74,9 +74,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
 /// <b>Create task</b>
-/// \code  
-  AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask_TPCITS"); 
-  task->SetUseMCInfo(hasMC); \endcode
+/// \code AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask_TPCITS"); task->SetUseMCInfo(hasMC); \endcode
   
   AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask_TPCITS");  
   task->SetUseMCInfo(hasMC);
@@ -122,7 +120,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
 //     fdNdPtAnalysis->SetPhysicsTriggerSelection(physTrigSel); 
   }
   
-    // change binning
+/// \li Change binning
     Int_t multNbins = 252;  
     Double_t binsMult[253];
     for (int i=0; i<=multNbins; i++) { binsMult[i] = -0.5 + i; }
@@ -138,9 +136,9 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
     
     // for mean pt use tpc tracks as mult. estimator
     AlidNdPtAcceptanceCuts *multAccCuts = new AlidNdPtAcceptanceCuts("MultaccCuts","Geom. acceptance cuts");
-     multAccCuts->SetEtaRange(-0.3,0.3);
-     multAccCuts->SetPtRange(0.0,1.e10); 
-   AliESDtrackCuts* multTrackCuts = CreatedNdPtTrackCuts(222);
+    multAccCuts->SetEtaRange(-0.3,0.3);
+    multAccCuts->SetPtRange(0.0,1.e10); 
+    AliESDtrackCuts* multTrackCuts = CreatedNdPtTrackCuts(222);
     fdNdPtAnalysis->SetMultAcceptanceCuts(multAccCuts);
     fdNdPtAnalysis->SetMultTrackCuts(multTrackCuts);  
   
@@ -158,10 +156,9 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
 //   AliAnalysisDataContainer *coutput = mgr->CreateContainer("jgronef_dNdPtpp_TPCITS", TList::Class(), AliAnalysisManager::kOutputContainer, "jgronef_dNdPtpp_TPCITS.root");
   
   /// <b> Adjust the Data Container to the Grid:</b>
-  /// \code 
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp", TList::Class() AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));\endcode
+  /// \code   AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp", TList::Class() AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));\endcode
   
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp", TList::Class() AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp", TList::Class() AliAnalysisManager::kOutputContainer Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid  
   
   mgr->ConnectOutput(task, 1, coutput);
 
