@@ -59,12 +59,13 @@ Bool_t ConfigLStar
     trkQualityCut->SetCheckOnlyFilterBit(kFALSE);//tells the cut object to check all other cuts individually,
     trkQualityCut->SetDCARPtFormula(DCAxyFormula);
     trkQualityCut->SetDCAZmax(dcazmax);
-
+    
     if(useCrossedRows) {
       trkQualityCut->SetMinNCrossedRowsTPC(minCrossedRows, kTRUE);
-      trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(maxClsCrossedRows, kTRUE); }
-    else trkQualityCut->SetTPCminNClusters(minNcls);
-
+      trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(maxClsCrossedRows, kTRUE); 
+    } else {
+      trkQualityCut->SetTPCminNClusters(minNcls);
+    }
     trkQualityCut->SetTPCmaxChi2(maxX2cls);
     trkQualityCut->SetRejectKinkDaughters(kTRUE);
     //trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
@@ -77,33 +78,32 @@ Bool_t ConfigLStar
     trkQualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in defaults 2011
     trkQualityCut->SetPtRange(0.15, 20.0);
     trkQualityCut->SetEtaRange(-0.8, 0.8);
-    
     trkQualityCut->Print();
-
-    if(isPP) cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
-    else     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0);
-    cutSetP           = new AliRsnCutSetDaughterParticle(Form("cutP%i_%2.1fsigma",cutPrCandidate, nsigmaPr), trkQualityCut, cutPrCandidate, AliPID::kProton, nsigmaPr);
-    cutSetK           = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
-
-  }
-
-  else
-    {
-      //default cuts 2010 for pp and 2011 for p-Pb
-      if(isPP) {
-	cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
-	cutSetP  = new AliRsnCutSetDaughterParticle(Form("cutProton_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
-	cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaon_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
-      }
-      else {
-	cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit);
-	cutSetQ->SetUse2011StdQualityCuts(kTRUE);
-	cutSetP = new AliRsnCutSetDaughterParticle(Form("cutProton2011_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
-	cutSetP->SetUse2011StdQualityCuts(kTRUE);
-	cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaon2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
-	cutSetK->SetUse2011StdQualityCuts(kTRUE);
-      }
+    
+    if(isPP) 
+      cutSetQ = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
+    else     
+      cutSetQ = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0);
+    
+    cutSetP = new AliRsnCutSetDaughterParticle(Form("cutP%i_%2.1fsigma",cutPrCandidate, nsigmaPr), trkQualityCut, cutPrCandidate, AliPID::kProton, nsigmaPr);
+    cutSetQ->SetUse2011StdQualityCuts(kTRUE);
+    cutSetK = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
+    cutSetK->SetUse2011StdQualityCuts(kTRUE);
+  } else {
+    //default cuts 2010 for pp and 2011 for p-Pb
+    if(isPP) {
+      cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
+      cutSetP  = new AliRsnCutSetDaughterParticle(Form("cutProton_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
+      cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaon_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+    } else {
+      cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit);
+      cutSetQ->SetUse2011StdQualityCuts(kTRUE);
+      cutSetP = new AliRsnCutSetDaughterParticle(Form("cutProton2011_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
+      cutSetP->SetUse2011StdQualityCuts(kTRUE);
+      cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaon2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+      cutSetK->SetUse2011StdQualityCuts(kTRUE);
     }
+  }
   
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutP = task->AddTrackCuts(cutSetP);
