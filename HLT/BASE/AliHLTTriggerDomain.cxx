@@ -163,20 +163,12 @@ void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
 {
   // Adds the readout list to the trigger domain.
   // See header file for more details.
-  
-  Int_t detId[] = {
-      AliHLTReadoutList::kITSSPD, AliHLTReadoutList::kITSSDD, AliHLTReadoutList::kITSSSD,
-      AliHLTReadoutList::kTPC, AliHLTReadoutList::kTRD, AliHLTReadoutList::kTOF,
-      AliHLTReadoutList::kHMPID, AliHLTReadoutList::kPHOS, AliHLTReadoutList::kCPV,
-      AliHLTReadoutList::kPMD, AliHLTReadoutList::kMUONTRK, AliHLTReadoutList::kMUONTRG,
-      AliHLTReadoutList::kFMD, AliHLTReadoutList::kT0, AliHLTReadoutList::kV0,
-      AliHLTReadoutList::kZDC, AliHLTReadoutList::kACORDE, AliHLTReadoutList::kTRG,
-      AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
-    };
-  
-  for (Int_t deti = 0; deti < (Int_t)AliHLTDAQ::NumberOfDetectors() && deti < (Int_t)(sizeof(detId)/sizeof(Int_t)); deti++)
+  for (Int_t deti = 0; deti < (Int_t)AliHLTDAQ::NumberOfDetectors() ; deti++)
   {
-    if (list.DetectorEnabled(detId[deti]))
+    if (deti == AliHLTDAQ::NumberOfDetectors()-1){
+      deti==30; // HLT
+    }
+    if (list.DetectorEnabled(0x1<<deti))
     {
       Add(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti));
     }
@@ -292,21 +284,13 @@ void AliHLTTriggerDomain::Add(const char* blocktype, const char* origin, UInt_t 
 void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
 {
   // Removes the entries in the readout list from the trigger domain that are enabled.
-  // See header file for more details.
-  
-  Int_t detId[] = {
-      AliHLTReadoutList::kITSSPD, AliHLTReadoutList::kITSSDD, AliHLTReadoutList::kITSSSD,
-      AliHLTReadoutList::kTPC, AliHLTReadoutList::kTRD, AliHLTReadoutList::kTOF,
-      AliHLTReadoutList::kHMPID, AliHLTReadoutList::kPHOS, AliHLTReadoutList::kCPV,
-      AliHLTReadoutList::kPMD, AliHLTReadoutList::kMUONTRK, AliHLTReadoutList::kMUONTRG,
-      AliHLTReadoutList::kFMD, AliHLTReadoutList::kT0, AliHLTReadoutList::kV0,
-      AliHLTReadoutList::kZDC, AliHLTReadoutList::kACORDE, AliHLTReadoutList::kTRG,
-      AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
-    };
-  
-  for (Int_t deti = 0; deti < (Int_t)AliHLTDAQ::NumberOfDetectors() && deti < (Int_t)(sizeof(detId)/sizeof(Int_t)); deti++)
+  // See header file for more details.  
+  for (Int_t deti = 0; deti < (Int_t)AliHLTDAQ::NumberOfDetectors() ; deti++)
   {
-    if (list.DetectorEnabled(detId[deti]))
+    if (deti == AliHLTDAQ::NumberOfDetectors()-1){
+      deti==30; // HLT
+    }
+    if (list.DetectorEnabled(0x1 << deti))
     {
       Remove(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti));
     }

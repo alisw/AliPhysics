@@ -344,3 +344,6 @@ const char kAliHLTDataOriginACORDE[kAliHLTComponentDataTypefOriginSize]   = {'A'
 
 /** TRG */
 const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize]   = {'T','R','G',' '};
+
+/** AD */
+const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize]   = {'A','D',' ',' '};
