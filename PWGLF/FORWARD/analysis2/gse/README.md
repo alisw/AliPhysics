@@ -258,24 +258,28 @@ exported, we can simply iterate over that list and write to an output
 file.
 
 ~~~{.cxx}
+	TList* allData = new TList;
+    GraphSysErr* first = new GraphSysErr;
+    first->SetKey("author", "Last name of first author");
+    first->SetKey("reference", "Journal/archive reference");
+    first->SetKey("doi", "DOI Id");
+    first->SetKey("laboratory", "e.g., CERN");
+    first->SetKey("accelerator", e.g., Tevatron");
+    first->SetKey("experiment", "e.g., STAR");
+    first->SetKey("inspireId", "Reference to inSpire");
+    first->SetKey("cdsId", "CERN Document Server Id");
+    first->SetKey("title", "Article title");
+    first->SetKey("abstract", "Short summery of data");
+    allData->Add(first);
+
+    // Add more graphs to allData
+
     std::ofstream output("article.input");
 	TIter next(allData);
 	GraphSysErr* g = 0;
 	Bool_t first = true;
 	while ((g = static_cast<GraphSysError*>(next()))) {
-	  if (first) {
-	    g->SetKey("author", "Last name of first author");
-		g->SetKey("reference", "Journal/archive reference");
-		g->SetKey("doi", "DOI Id");
-		g->SetKey("laboratory", "e.g., CERN");
-		g->SetKey("accelerator", e.g., Tevatron");
-		g->SetKey("experiment", "e.g., STAR");
-		g->SetKey("inspireId", "Reference to inSpire");
-		g->SetKey("cdsId", "CERN Document Server Id");
-		g->SetKey("title", "Article title");
-		g->SetKey("abstract", "Short summery of data");
-      }
-	  g->Export(first, output);
+	  g->Export(output, (first ? "HC" : ""));
 	  first = false;
     }
 ~~~
@@ -296,24 +300,24 @@ paper, and where some of them are tables, then we could do
 
 
 ~~~{.cxx}
-    std::ofstream output("article.input");
-	TIter next(allData);
-	TObject* o = 0;
-	Bool_t first = true;
-	while ((o = next())) {
-	  if (o->IsA()->InheritsFrom(GraphSysErr::Class())) {
-	    GraphSysErr* g = static_cast<GraphSysError*>(o);
-	    g->Export(first, output);
-	  }
-	  else if if (o->IsA()->InheritsFrom(TSeqCollection::Class())) {
-	    TSeqCollection* c = static_cast<TSeqCollectionor*>(o);
-	    GraphSysErr::Export(c, output, first);
-	  }
+  	TIter next(allPlots);
+  	TObject* o = 0;
+  	Bool_t first = true;
+  	while ((o = next())) {
+  	  if (o->IsA()->InheritsFrom(GraphSysErr::Class())) {
+  	    GraphSysErr* g = static_cast<GraphSysError*>(o);
+  	    g->Export(output, option);
+  	  }
+  	  else if if (o->IsA()->InheritsFrom(TSeqCollection::Class())) {
+  	    TSeqCollection* c = static_cast<TSeqCollectionor*>(o);
+  	    GraphSysErr::Export(c, output, option);
+  	  }
       else
-	    // Ignore other stuff in collection.
-	    continue;
-      first = false;
-	}
+  	    // Ignore other stuff in collection.
+  	  continue;
+        first = false;
+    }
+		
 ~~~
 
 

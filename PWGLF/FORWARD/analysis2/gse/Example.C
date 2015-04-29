@@ -27,7 +27,8 @@ Example(Bool_t fit=true)
   gse->SetKey("location", "In the paper");
   gse->SetKey("reackey", "graviton -> tachyons");
   gse->SetKey("obskey", "GUT");
-  gse->SetKey("qual", "Life, universe, and everything");
+  // Adding qualifiers 
+  gse->AddQualifier("question", "Life, universe, and everything");
   
   // Two sources of common errors one relative, one absolue
   UInt_t cm1 = gse->DefineCommon("Common 0.05", false, .05);
@@ -85,7 +86,7 @@ Example(Bool_t fit=true)
     gse->SetSysError(pp2, i, 0., 0., 
 		     gRandom->Uniform(0.05, 0.1),
 		     gRandom->Uniform(0.05, 0.1));
-  }
+  } 
   // Remove temporary histogram
   delete h;
 
