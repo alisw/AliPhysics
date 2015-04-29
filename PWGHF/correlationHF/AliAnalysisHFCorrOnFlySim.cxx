@@ -908,7 +908,7 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
     //3a. Quark-AntiQuark Correlations
     if(fIsCorrOfQQbar){
         
-        Int_t    fBinsCorr[2] = {20,     36}; //DEta, DPhi
+        Int_t    fBinsCorr[2] = {20,     32}; //DEta, DPhi
         Double_t  fMinCorr[2] = {-2.0, -0.5*TMath::Pi()};
         Double_t  fMaxCorr[2] = {+2.0,  1.5*TMath::Pi()};
         
@@ -938,7 +938,7 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
         Double_t binlowTrigHF[3] = {-7.5, 0., -2.};
         Double_t  binupTrigHF[3] = { 7.5, 20., 2.};
         
-        Int_t     nbinsCorrHF[8] = {  15, 20,  20,  6,   30,               36,   20,    11};
+        Int_t     nbinsCorrHF[8] = {  15, 20,  20,  6,   30,               32,   20,    11};
         Double_t binlowCorrHF[8] = {-7.5, 0., -2., 0., -15., -0.5*TMath::Pi(),  -5.,  -1.5};
         Double_t  binupCorrHF[8] = { 7.5, 20., 2., 3.,  15.,  1.5*TMath::Pi(),   5.,   9.5};
         
