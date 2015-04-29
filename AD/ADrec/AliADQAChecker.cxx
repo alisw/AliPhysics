@@ -60,7 +60,9 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fSatHigh(0.3),
   fSatHuge(0.5),
   fMaxPedDiff(1),
-  fMaxPedWidth(1.5) 
+  fMaxPedWidth(1.5),
+  fChargeChannelZoomMin(0),
+  fChargeChannelZoomMax(50)
 {
   fQAParam = (AliADQAParam*)GetQAParam();
   fSatMed = fQAParam->GetSatMed();
@@ -68,6 +70,8 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fSatHuge = fQAParam->GetSatHuge();
   fMaxPedDiff = fQAParam->GetMaxPedDiff();
   fMaxPedWidth = fQAParam->GetMaxPedWidth();
+  fChargeChannelZoomMin = fQAParam->GetChargeChannelZoomMin();
+  fChargeChannelZoomMax = fQAParam->GetChargeChannelZoomMax();
 }
 
 //____________________________________________________________________________
@@ -274,7 +278,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			QAbox->AddText(meanChargeADC.Data());				
     			}
 		}
-    	}   
+    	}
     TH2F *hChargeEoIInt0 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt0);
     if (!hChargeEoIInt0) {
       AliWarning("ChargeEoIInt0 histogram is not found");
@@ -688,7 +692,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
     //
     if ( !fImage[esIndex] ) {
-    	if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2000,3500);
+    	if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2500,4000);
 	else fImage[esIndex] = new TCanvas(title, title,400,600);
 	}
     //
@@ -735,11 +739,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	TVirtualPad* pMaxCh  = 0;
 	TVirtualPad* pMeanTime  = 0;
     	TVirtualPad* pTrigger  = 0;
+	TVirtualPad* pChargeZoom = 0;
 	
 	const UInt_t nRows = 7;
 	const UInt_t nLargeRows = 1;
 	Bool_t isLarge[] = {0,1,0,0,0,0,0};
-	const Double_t timesLarger = 2.0;
+	const Double_t timesLarger = 1.5;
 	Double_t xRow[nRows];
 	xRow[0] = 0.95;
 	Double_t xStep = 0.95/((nRows-nLargeRows)+ timesLarger*nLargeRows);
@@ -750,10 +755,15 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	
 	UInt_t iRow = 0;	
 
-    	TPad* pCh = new TPad("Charge", "Charge Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
+    	TPad* pCh = new TPad("Charge", "Charge Pad", 0, xRow[iRow+1], 0.6, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pCh->Draw();
     	pCharge = pCh;
+	
+	TPad* pChZ = new TPad("ChargeZoom", "Charge Zoom Pad", 0.6, xRow[iRow+1], 1.0, xRow[iRow]);
+    	fImage[esIndex]->cd();
+    	pChZ->Draw();
+    	pChargeZoom = pChZ;
 	iRow++;
 
     	TPad* pT = new TPad("Time", "Time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
@@ -797,6 +807,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pTrigger = pTr;
 
     	pCharge->Divide(2, 1);
+	pChargeZoom->Divide(3, 1);
     	pTime->Divide(4, 1);
     	pClock->Divide(4, 1);
     	pCoinc->Divide(4, 1);
@@ -807,6 +818,9 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	TH1* histo = 0;
 	TH1* histoADA = 0;
 	TH1* histoADC = 0;
+	TH1* histoNumerator = 0;
+	TH1* histoDenominator = 0;
+	TH1* histoRatio = 0;
       	TVirtualPad* pad = 0;
        		
 	//Charge pad
@@ -829,8 +843,25 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	myLegend1->Draw();
 	pad = pCharge->cd(2);
 	gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoI);
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoIBB);
 	histo->DrawCopy("COLZ");
+	//Zoommed charge pad
+	pad = pChargeZoom->cd(2);
+	gPad->SetLogz();
+	histoRatio = (TH1*)histo->Clone("histoRatio");
+	histoRatio->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
+	histoRatio->DrawCopy("COLZ");
+	pad = pChargeZoom->cd(1);
+	gPad->SetLogz();
+	histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoI);
+	histoDenominator->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
+	histoDenominator->DrawCopy("COLZ");
+	pad = pChargeZoom->cd(3);
+	gPad->SetLogz();
+	histoRatio->Divide(histoDenominator);
+	histoRatio->SetTitle("Ratio: w_BB_Flag/All");
+	histoRatio->DrawCopy("COLZ");
+	
 	//Time pad
 	for(Int_t iHist = 0; iHist<4; iHist++){
 		pad = pTime->cd(iHist+1);
@@ -876,7 +907,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	pad = pTrigger->cd();
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTriggers);
 	gPad->SetLogy();
-	histo->DrawCopy();
+	histo->DrawCopy("HIST");
+	histo->DrawCopy("TEXT0SAME");
 	//Mean time pad
 	pad = pMeanTime->cd(1);
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);

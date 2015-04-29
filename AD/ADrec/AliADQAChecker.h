@@ -65,8 +65,10 @@ private:
   Float_t fSatHuge; //Very high saturation cut
   Int_t fMaxPedDiff; //Pedestal difference cut
   Float_t fMaxPedWidth; //Pedestal width cut
+  Int_t fChargeChannelZoomMin; //Min for Zoom on charge
+  Int_t fChargeChannelZoomMax; //Max for Zoom on charge
 
-  ClassDef(AliADQAChecker,3)  // description 
+  ClassDef(AliADQAChecker,4)  // description 
 
 };
 
