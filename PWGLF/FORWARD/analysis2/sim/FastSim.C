@@ -33,6 +33,8 @@
 # include <TRandom.h>
 # include <TUrl.h>
 # include <TMacro.h>
+# include <TSystemDirectory.h>
+# include <TPRegexp.h>
 # include <fstream>
 #else
 class AliGenerator;
@@ -814,8 +816,11 @@ struct FastSim : public TSelector
       fHTime(0),
       fCentEstimators(0),
       fProofFile(0),
+      fAliceFile(0),
+      fKineFile(0),
       fFile(0),
-      fFileName("")
+      fFileName(""),
+      fVerbose(true)
   {}
   const char* FileName() const
   {
@@ -849,16 +854,21 @@ struct FastSim : public TSelector
       }
     }
     return fn.Data();
-    /*
-      if (fFileName.IsNull())
-      fFileName = Form("%s_%09d.root", fEGName.Data(), fRunNo);
-      return fFileName.Data();*/
   }
+  /** 
+   * Get the name of the selector 
+   * 
+   * @return Name of selector 
+   */
   const char* GetName() const { return "FastSim"; }
+  /** 
+   * Get the title of the selector 
+   * 
+   * @return The title 
+   */
   const char* GetTitle() const { return "ALICE Event Generator simulation"; }
   /** 
    * Create our outputs 
-   * 
    * 
    * @return true on success 
    */
@@ -868,7 +878,7 @@ struct FastSim : public TSelector
 	   " File name: %s\n"
 	   "========================================", FileName());
 
-    // Info("SetupOutput", "First the file");
+    if (fVerbose) Info("SetupOutput", "First the file");
     Bool_t isProof = false;
     if (fInput && fInput->FindObject("PROOF_Ordinal"))
       isProof = true;
@@ -882,7 +892,7 @@ struct FastSim : public TSelector
     else
       fFile = TFile::Open(FileName(), "RECREATE");
 
-    // Info("SetupOutput", "Making our tree");
+    if (fVerbose) Info("SetupOutput", "Making our tree");
     fTree      = new TTree("T", "T");
     fParticles = new TClonesArray("TParticle");
     fTree->Branch("header", &fShortHead,
@@ -909,7 +919,7 @@ struct FastSim : public TSelector
     fTree->SetAlias("gamma",   "(1./sqrt(1-beta*beta))");
     fTree->SetAlias("npart",   "(header.ntgt+header.nproj)");
 
-    // Info("SetupOutput", "Making histograms");
+    if (fVerbose) Info("SetupOutput", "Making histograms");
     Double_t maxEta = 10;
     Double_t dEta   = 10./200;
     fHEta = new TH1D("dNdeta", "Charged particle pseudo-rapidity density",
@@ -995,7 +1005,7 @@ struct FastSim : public TSelector
     while ((estimator = static_cast<FastCentEstimator*>(next())))
       estimator->Setup(estimators, fTree,fIsTgtA,fIsProjA);
     
-    // Info("SetupOutput", "Adding list ot outputs");
+    if (fVerbose) Info("SetupOutput", "Adding list ot outputs");
     fOutput->Add(fList);
     // fOutput->ls();
     
@@ -1036,32 +1046,32 @@ struct FastSim : public TSelector
       fGRP = fInput->FindObject("GRP");
       std::ofstream* pout = new std::ofstream("grp.dat");
       if (pout) {
-	Info("SetupGen", "Writing GRP line '%s' to \"grp.dat\"",
-	     fGRP->GetTitle());
+	if (fVerbose) 
+	  Info("SetupGen", "Writing GRP line '%s' to \"grp.dat\"",
+	       fGRP->GetTitle());
 	std::ostream& out = *pout;
 	out << fGRP->GetTitle() << std::endl;
 	pout->close();
       }
     }
-    Info("SetupGen", "Overrides: %p Input: %p", fOverrides, fInput);
+    if (fVerbose) 
+      Info("SetupGen", "Overrides: %p Input: %p", fOverrides, fInput);
     if (!fOverrides && fInput) {
       fOverrides = static_cast<TList*>(fInput->FindObject("overrides"));
-      if (!fOverrides) {
+      if (!fOverrides && fVerbose)
 	Info("SetupGen", "No GRP overrides found in input:");
-	fInput->ls();
-      }
     }
-
+    
     // --- Load our settings -----------------------------------------
-    Info("SetupGen", "Loading scripts");
+    if (fVerbose) Info("SetupGen", "Loading scripts");
     // Check if we have the global "grp" already 
     if (gROOT->ProcessLine("grp") == 0) 
       gROOT->Macro(Form("GRP.C(%d)", fRunNo));
-    Info("SetupGen", "Perhaps override");
+    if (fVerbose) Info("SetupGen", "Perhaps override");
     OverrideGRP();
-    Info("SetupGen", "Load base config");
+    if (fVerbose) Info("SetupGen", "Load base config");
     gROOT->Macro("BaseConfig.C");
-    Info("SetupGen", "Load EG config");
+    if (fVerbose) Info("SetupGen", "Load EG config");
     gROOT->Macro("EGConfig.C");
 
     gROOT->ProcessLine(Form("VirtualEGCfg::LoadGen(\"%s\")",fEGName.Data()));
@@ -1082,15 +1092,15 @@ struct FastSim : public TSelector
     fGenerator->GetProjectile(proj, projA, projZ);
     fIsTgtA  = !(tgtA  == tgtZ  && tgtA == 1);
     fIsProjA = !(projA == projZ && projZ == 1);
-    // Info("SetupGen", "tgt=%s (%3d,%2d) proj=%s (%3d,%2d) CMS=%fGeV",
-    //      tgt.Data(), tgtA, tgtZ, proj.Data(), projA, projZ,
-    //      fGenerator->GetEnergyCMS());
+    if (fVerbose) 
+      Info("SetupGen", "tgt=%s (%3d,%2d) proj=%s (%3d,%2d) CMS=%fGeV",
+	   tgt.Data(), tgtA, tgtZ, proj.Data(), projA, projZ,
+	   fGenerator->GetEnergyCMS());
       
     if (fFileName.IsNull()) FileName();
-    // Info("SetupRun", "File name is '%s'", fFileName.Data());
 
     return true;
-  }    
+  }
   /** 
    * Setup the generator etc. of the job 
    * 
@@ -1108,9 +1118,33 @@ struct FastSim : public TSelector
     Printf("=== Run ================================\n"
 	   " Number of events: %lld\n"
 	   "========================================", nev);
+    TObject* ord      = (fInput ? fInput->FindObject("PROOF_Ordinal") : 0);
+    UShort_t saveMode = 0;
+    TString  post     = "";
+    TString  dir      = "";
+    if (ord) {
+      TObject* save = fInput->FindObject("PROOF_SaveGALICE");
+      if (save && fVerbose) {
+	Info("SetupRun", "Got save option:");
+	save->Print();
+      }
+      TString optSave(save ? save->GetTitle() : "split");
+      optSave.ToLower();
+      if       (optSave.EqualTo("none"))   saveMode = 0;
+      else if  (optSave.EqualTo("merge"))  saveMode = 1;
+      else if  (optSave.EqualTo("split"))  saveMode = 2;
+      if (fProofFile && saveMode > 0) 
+	dir  = fProofFile->GetDir(true);
+      if (saveMode > 1)
+	post = Form("_%s", ord->GetTitle());	
+    }
+    TString  galiceName(Form("%sgalice.root",dir.Data()));
+    TString  kineName(Form("%sKinematics.root",dir.Data()));
+    
     // --- Run-loader, stack, etc  -----------------------------------
     // Info("SetupRun", "Set-up run Loader");    
-    fRunLoader = AliRunLoader::Open("galice.root", "FASTRUN", "RECREATE");
+    fRunLoader = AliRunLoader::Open(galiceName, "FASTRUN", "RECREATE");
+    fRunLoader->SetKineFileName(kineName);
     fRunLoader->SetCompressionLevel(2);
     fRunLoader->SetNumberOfEventsPerFile(nev);
     fRunLoader->LoadKinematics("RECREATE");
@@ -1125,6 +1159,18 @@ struct FastSim : public TSelector
     fGenerator->Init();
     fGenerator->SetStack(fStack);
 
+    if (saveMode < 1) {
+      if (ord) 
+	Info("SetupRun", "Not saving galice.root and Kinematics.root");
+      return true;
+    }
+    
+    TString aliceOut = Form("galice%s.root", post.Data());
+    fAliceFile = new TProofOutputFile(aliceOut, "M");
+
+    TString kineOut = Form("Kinematics%s.root", post.Data());
+    fKineFile = new TProofOutputFile(kineOut, "M");
+    
     return true;
   }
   /** 
@@ -1156,7 +1202,7 @@ struct FastSim : public TSelector
     }
     
     fGRP = new TNamed("GRP",env.Data());
-    Info("ReadGRPLine", "Read \"%s\"", env.Data());
+    if (fVerbose) Info("ReadGRPLine", "Read \"%s\"", env.Data());
     return true;
   }
   /** 
@@ -1171,14 +1217,15 @@ struct FastSim : public TSelector
       return;
     }
     if (!fOverrides) {
-      Info("OverrideGRP", "No overrides defined");
+      if (fVerbose) Info("OverrideGRP", "No overrides defined");
       return;
     }
     TIter next(fOverrides);
     TObject* o = 0;
     while ((o = next())) {
-      Info("OverrideGRP", "Overriding GRP setting %s with %s",
-	   o->GetName(), o->GetTitle());
+      if (fVerbose)
+	Info("OverrideGRP", "Overriding GRP setting %s with %s",
+	     o->GetName(), o->GetTitle());
       gROOT->ProcessLine(Form("grp->%s = %s;",
 			      o->GetName(), o->GetTitle()));
     }
@@ -1197,7 +1244,6 @@ struct FastSim : public TSelector
       fOverrides = new TList;
       fOverrides->SetName("overrides");
     }
-    Info("AddOverride", "Adding override %s = %s", field.Data(), value.Data());
     fOverrides->Add(new TNamed(field, value));
   }
   /** 
@@ -1216,7 +1262,7 @@ struct FastSim : public TSelector
     // Make a monitor
     // Info("Begin", "gProof=%p Nomonitor=%p",
     //      gProof, (gProof ? gProof->GetParameter("NOMONITOR") : 0));
-    Info("Begin", "Called for FastSim");
+    if (fVerbose) Info("Begin", "Called for FastSim");
        
     if (gProof && !gProof->GetParameter("NOMONITOR")) { 
       new FastMonitor;
@@ -1230,9 +1276,9 @@ struct FastSim : public TSelector
 	if (fOverrides) gProof->AddInput(fOverrides);
       }
     }
-    Info("Begin", "Perhaps override");
+    if (fVerbose) Info("Begin", "Perhaps override");
     OverrideGRP();
-    Info("Begin", "Defining centrality estimators");
+     if (fVerbose) Info("Begin", "Defining centrality estimators");
     fCentEstimators = new TList;
     fCentEstimators->Add(new V0CentEstimator(-1));
     fCentEstimators->Add(new V0CentEstimator( 0));
@@ -1246,7 +1292,7 @@ struct FastSim : public TSelector
    */
   void SlaveBegin(TTree*)
   {
-    Info("SlavesBegin", "Called for FastSim");
+     if (fVerbose) Info("SlavesBegin", "Called for FastSim");
     SetupSeed();
     SetupGen();
     SetupOutput();
@@ -1592,9 +1638,9 @@ struct FastSim : public TSelector
     fGenerator->Write();
     fRunLoader->Write();
 
-    fOutput->ls();
     if (fFile) {
       if (fProofFile) {
+	if (fVerbose) fProofFile->Print();
 	fOutput->Add(fProofFile);
 	fOutput->Add(new TH1F("filename", fFileName.Data(),1,0,1));
       }
@@ -1604,6 +1650,36 @@ struct FastSim : public TSelector
       fFile->Close();
       fFile->Delete();
       fFile = 0;
+    }
+    if (fAliceFile) {
+      TFile* galice = GetGAlice();
+      if (galice) {
+	if (fVerbose) fAliceFile->Print();
+	fAliceFile->AdoptFile(galice);
+	fAliceFile->SetOutputFileName(fAliceFile->GetName());
+	fOutput->Add(fAliceFile);
+	galice->Write();
+      }
+    }
+    if (fKineFile) {
+      TFile* kine = GetKine();
+      if (kine) {
+	if (fVerbose) fKineFile->Print();
+	fKineFile->AdoptFile(kine);
+	fKineFile->SetOutputFileName(fKineFile->GetName());
+	fOutput->Add(fKineFile);
+	kine->Write();
+      }
+    }
+
+    if (fVerbose) {
+      Info("SlaveTerminate", "Content of output list");
+      gROOT->IncreaseDirLevel();
+      fOutput->ls();
+      gROOT->DecreaseDirLevel();
+
+      gSystem->Exec("echo \"Content of working directory\"");
+      gSystem->Exec("ls -l1 | sed 's/^/  /'");
     }
   }
   /** 
@@ -1620,7 +1696,7 @@ struct FastSim : public TSelector
     TObject* o = 0;
     while ((o = next())) {
       if (o->IsA()->InheritsFrom(TCollection::Class())) {
-	Info("FlushList", "Got collection: %s", c->GetName());
+	if (fVerbose) Info("FlushList", "Got collection: %s", c->GetName());
 	TDirectory* cur = dir->mkdir(o->GetName());
 	FlushList(static_cast<TCollection*>(o), cur);
 	dir->cd();
@@ -1698,13 +1774,119 @@ struct FastSim : public TSelector
     fTree = static_cast<TTree*>(fFile->Get("T"));
     if (!fTree)  Warning("Terminate", "No tree");
 
-    fFile->ls();
+    if (fVerbose) fFile->ls();
     fFile->Close();
+
+    MoveAliceFiles();
+  }
+  /** 
+   * Retrieve the galice.root file from ROOT 
+   * 
+   * @return Pointer to file or null
+   */
+  TFile* GetGAlice()
+  {
+    if (!fRunLoader) return 0;
+    TString galiceName = fRunLoader->GetFileName();
+    TFile*  file       = gROOT->GetFile(galiceName);
+    if (!file) {
+      Warning("GetGAlice", "Didn't find galice file \"%s\"", galiceName.Data());
+      gROOT->GetListOfFiles()->ls();
+      return 0;
+    }
+    return file;
+  }
+  /** 
+   * Retrieve the Kinematics.root file from ROOT 
+   * 
+   * @return Pointer to file or null
+   */
+  TFile* GetKine()
+  {
+    if (!fRunLoader) return 0;
+    TString kineName   = "Kinematics.root";
+    TString galiceName = fRunLoader->GetFileName();
+    TString dir        = gSystem->DirName(galiceName);
+    if (dir.EqualTo(".")) dir = "";
+    if (!dir.IsNull() && dir[dir.Length()-1] != '/') dir.Append("/");
+    kineName.Prepend(dir);
+
+    TFile*  file = gROOT->GetFile(kineName);
+    if (!file) {
+      Warning("GetKine", "Didn't find kinematics file \"%s\"", kineName.Data());
+      gROOT->GetListOfFiles()->ls();
+      return 0;
+    }
+    return file;
+  }
+  /** 
+   * Move retrieved ALICE files (galice.root and Kinematics.root) to
+   * separate su-directories, and create a collection of the TE tree
+   * stored in the galice.root files.
+   * 
+   */
+  void MoveAliceFiles()
+  {
+    if (!fInput) return;
+
+    TObject* save  = fInput->FindObject("PROOF_SaveGALICE");
+    if (!save) return;
+    
+    TString  sMode = save->GetTitle();
+    if (!sMode.EqualTo("split", TString::kIgnoreCase)) return;
+
+    TList*            lst   = new TList;
+    TSystemDirectory* dir   = new TSystemDirectory(".",
+						   gSystem->WorkingDirectory());
+    TList*            files = dir->GetListOfFiles();
+    TSystemFile*      file  = 0;
+    TIter             next(files);
+    while ((file = static_cast<TSystemFile*>(next()))) {
+      if (file->IsDirectory()) continue;
+      TString fn(file->GetName());
+      if (!fn.BeginsWith("galice") && !fn.BeginsWith("Kinematics"))
+	continue;
+
+      TPRegexp regex("(.*)_([^_]+)\\.root");
+      TObjArray* matches = regex.MatchS(fn);
+      if (matches->GetEntriesFast() < 3) {
+	delete matches;
+	continue;
+      }
+      TString ord = matches->At(2)->GetName();
+      TString bse = matches->At(1)->GetName();
+
+      if (gSystem->AccessPathName(ord,kFileExists))
+	gSystem->MakeDirectory(ord);
+
+      if (fVerbose) 
+	Info("MoveAliceFiles", "Moving %s to %s/%s.root",
+	     fn.Data(), ord.Data(), bse.Data());
+      file->Move(Form("%s/%s.root", ord.Data(), bse.Data()));
+
+      if (!bse.EqualTo("galice")) continue;
+      TObjString* url = new TObjString(Form("file://%s/%s/%s.root?#TE",
+					    file->GetTitle(),
+					    ord.Data(),
+					    bse.Data()));
+      if (fVerbose) 
+	Info("MoveAliceFiles", "Adding \"%s\" to file list",
+	     url->GetName());
+      lst->Add(url);
+    }
+    if (lst->GetEntries() <= 0) return;
+    if (fVerbose) lst->ls();
+    
+    TFile* out   = TFile::Open("index.root","RECREATE");
+    lst->Write("TE",TObject::kSingleKey);
+    out->Write();
+    out->Close();
+    
   }
   /** 
    * Interface version used 
    * 
-   * @return 1
+   * @return 1y
    */
   Int_t Version() const { return 1; }
 
@@ -1760,11 +1942,14 @@ struct FastSim : public TSelector
    * @{ 
    * @name Output files 
    */
-  TProofOutputFile* fProofFile;   //! Proof output file 
+  TProofOutputFile* fProofFile;   //! Proof output file
+  TProofOutputFile* fAliceFile;   //! 
+  TProofOutputFile* fKineFile;    //! 
   TFile*            fFile;        //! Output file
   mutable TString   fFileName;    //! Output file name 
   /* @} */
-
+  Bool_t fVerbose; // Verbosity 
+  
   // Hide from CINT 
 #ifndef __CINT__
   struct ShortHeader {
@@ -1813,11 +1998,13 @@ struct FastSim : public TSelector
 			  Double_t       bMin,
 			  Double_t       bMax,
 			  Int_t          monitor,
+			  Bool_t         verbose,
 			  const TString& overrides="")
 			  
   {
     FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
     SetOverrides(sim, overrides);
+    sim->fVerbose = verbose;
     sim->Begin(0);
     sim->SlaveBegin(0);
 
@@ -1900,7 +2087,9 @@ struct FastSim : public TSelector
 			 Double_t       bMin,
 			 Double_t       bMax,
 			 Int_t          monitor=-1,
+			 Bool_t         verbose=false,
 			 const TString& overrides="",
+			 const TString& save="none",
 			 const char*    opt="")
   {
     TProof::Reset(url.GetUrl());
@@ -1925,9 +2114,11 @@ struct FastSim : public TSelector
     if (monitor <= 0) gProof->SetParameter("NOMONITOR", true/*ignored*/);
     else              gProof->SetParameter("PROOF_FeedbackPeriod",
 					   monitor*1000/*ms*/);
+    gProof->SetParameter("PROOF_SaveGALICE", save);
 
     FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
     SetOverrides(sim, overrides);
+    sim->fVerbose = verbose;
     gProof->Process(sim, nev, "");
 
     return true; // status >= 0;
@@ -2035,9 +2226,11 @@ struct FastSim : public TSelector
     UInt_t       run     = 0;
     TString      eg      = "default";
     TString      override= "";
+    TString      save    = "none";
     Double_t     bMin    = 0;
     Double_t     bMax    = 20;
     Int_t        monitor = -1;
+    Bool_t       verbose = false;
     TUrl         u(url);
     TString      out;
     TObjArray*   opts    = TString(u.GetOptions()).Tokenize("&");
@@ -2045,6 +2238,10 @@ struct FastSim : public TSelector
     TIter        nextToken(opts);
     while ((token = static_cast<TObjString*>(nextToken()))) {
       TString& str = token->String();
+      if (str.IsNull()) continue;
+
+      if (str.EqualTo("verbose")) { verbose = true; str = ""; }
+
       if (str.IsNull()) continue;
       
       TString  key, val;
@@ -2058,6 +2255,7 @@ struct FastSim : public TSelector
       else if (key.EqualTo("run"))      run      = val.Atoi();
       else if (key.EqualTo("eg"))       eg       = val;
       else if (key.EqualTo("override")) override = val;
+      else if (key.EqualTo("save"))     save     = val;
       else if (key.EqualTo("monitor"))  monitor  = val.Atoi();
       else if (key.EqualTo("b")) {
 	TString min, max;
@@ -2092,15 +2290,16 @@ struct FastSim : public TSelector
 
     Bool_t ret = false;
     if (isLocal)
-      ret = LocalRun(nev, run, eg, bMin, bMax, monitor, override);
+      ret = LocalRun(nev, run, eg, bMin, bMax, monitor, verbose, override);
     else 
-      ret = ProofRun(u, nev, run, eg, bMin, bMax, monitor, override, opt);
+      ret = ProofRun(u, nev, run, eg, bMin, bMax,
+		     monitor, verbose, override, save, opt);
     timer.Print();
 
     return ret;
   }
 		    
-  ClassDef(FastSim,2); 
+  ClassDef(FastSim,3); 
 };
 
 #endif
