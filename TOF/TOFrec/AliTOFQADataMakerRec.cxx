@@ -17,8 +17,8 @@
 //                                                                   //
 //  Produces the data needed to calculate the TOF quality assurance. //
 //  QA objects are 1 & 2 Dimensional histograms.                     //
-//  author: S.Arcelli                                                //
-//                                                                   //
+//  first author: S.Arcelli                                          //
+//  mantained by: F. Bellini                                         //
 ///////////////////////////////////////////////////////////////////////
 
 /*
@@ -425,9 +425,11 @@ void AliTOFQADataMakerRec::InitRaws()
   phosHoleBox->SetLineColor(kMagenta);
   phosHoleBox->SetLineWidth(2);
   phosHoleBox->AddText("PHOS");	
+  TPaveText *phosHoleBox2=dynamic_cast<TPaveText*>(phosHoleBox->Clone()); //new TPaveText(13,38,16,53,"b");
+  //TPaveText *phosHoleBox3=dynamic_cast<TPaveText*>(phosHoleBox->Clone()); //new TPaveText(13,38,16,53,"b");
   h16->GetListOfFunctions()->Add(phosHoleBox);
-  h17->GetListOfFunctions()->Add(phosHoleBox);
-  h30->GetListOfFunctions()->Add(phosHoleBox);
+  h17->GetListOfFunctions()->Add(phosHoleBox2);
+  //h30->GetListOfFunctions()->Add(phosHoleBox3);
 
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
   Add2RawsList(h1,   1,  expert, !image, !saveCorr) ;
@@ -985,7 +987,7 @@ void AliTOFQADataMakerRec::StartOfDetectorCycle()
   fIsSOC=kTRUE;
   for (int itc=-1;itc<GetNTrigClasses();itc++) {
     TH1* hist = (TH1*) GetRawsData(30, itc);
-      if (hist) hist->Reset("ICESM");
+    if (hist) hist->Reset("ICESM");
   }    
   return;
 }  
@@ -1064,8 +1066,9 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  TString title26 = Form("Map of hit macropads according to CTTM numbering (Max Fired Macropad = %i)",fgCutNmaxFiredMacropad);
 	  TString title27 = Form("#Deltat vs #Delta#Phi of hit macropads (Max Fired Macropad = %i)",fgCutNmaxFiredMacropad);
 	  
+	  TPaveText * pavetmp = 0x0;
 	  if ( (htmp=(TH1*)arrRW[16]) ) htmp->SetOption("colz");
-	  if ( (htmp=(TH1*)arrRW[17]) ) htmp->SetOption("colz");
+	  if ( (htmp=(TH1*)arrRW[17]) )	htmp->SetOption("colz");
 	  if ( (htmp=(TH1*)arrRW[18]) ) htmp->SetOption("colz"); 
 	  if ( (htmp=(TH1*)arrRW[22]) ) htmp->SetOption("colz"); 
 	  if ( (htmp=(TH1*)arrRW[23]) ) htmp->SetOption("colz"); 
@@ -1088,6 +1091,13 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	}
 	if (GetRawsData(30, itc)) {
 	  GetRawsData(30, itc)->Scale(1./24.);
+	  TPaveText *phosHoleBox=new TPaveText(13,38,16,53,"b");
+          phosHoleBox->SetFillStyle(0);
+          phosHoleBox->SetFillColor(kWhite);
+          phosHoleBox->SetLineColor(kMagenta);
+          phosHoleBox->SetLineWidth(2);
+          phosHoleBox->AddText("PHOS");      
+          GetRawsData(30, itc)->GetListOfFunctions()->Add(phosHoleBox);
 	} 
       }//END ENABLE DQM SHIFTER OPT
     } // RS: loop over trigger classes
@@ -1503,3 +1513,4 @@ void AliTOFQADataMakerRec::SetDefaultCutNmaxFiredMacropad()
   // AliInfo(Form("Setting cut on fired macropad to default values: NfiredMacropad = %i", fgCutNmaxFiredMacropad));
   return;
 }
+
