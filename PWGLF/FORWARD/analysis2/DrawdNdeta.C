@@ -2072,14 +2072,18 @@ struct dNdetaDrawer
       case 6: return kYellow+2;
       }
     }
-    Double_t centLow  = fCentAxis->GetBinLowEdge(bin);
+    // Double_t centLow  = fCentAxis->GetBinLowEdge(bin);
+    Double_t max      = fCentAxis->GetXmax();
+    Double_t min      = fCentAxis->GetXmin();
     Double_t centHigh = fCentAxis->GetBinUpEdge(bin);
-    Float_t  fc       = (centLow+(centHigh-centLow)/2) / 100;
+    Double_t centLow  = fCentAxis->GetBinUpEdge(bin);
+    Float_t  fc       = ((centHigh+centLow)/2-min) / (max-min);
     Int_t    nCol     = gStyle->GetNumberOfColors();
     Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
     Int_t    col      = gStyle->GetColorPalette(icol);
     //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
-    return Brighten(col);
+    return col;
+    // return Brighten(col);
   }
   //__________________________________________________________________
   /** 
