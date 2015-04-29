@@ -129,6 +129,9 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fEvtSelMaxJetPhi(TMath::Pi()*2.)
   ,fEvtSelJetMinLConstPt(0)
   ,fExtraEffPb(1)
+  ,fDiceMapEff(0)
+  ,fPathDiceTrackMap("")
+  ,fhEffH1(0)
   ,fToyMinNbOfTracks(1)
   ,fToyMaxNbOfTracks(1)
   ,fToyMinTrackPt(50.)
@@ -268,6 +271,9 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fEvtSelMaxJetPhi(TMath::Pi()*2.)
 ,fEvtSelJetMinLConstPt(0)
 ,fExtraEffPb(1)
+,fDiceMapEff(0)
+,fPathDiceTrackMap("")
+,fhEffH1(0)
 ,fToyMinNbOfTracks(1)
 ,fToyMaxNbOfTracks(1)
 ,fToyMinTrackPt(50.)
@@ -407,6 +413,9 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fEvtSelMaxJetPhi(copy.fEvtSelMaxJetPhi)
 ,fEvtSelJetMinLConstPt(copy.fEvtSelJetMinLConstPt)
 ,fExtraEffPb(copy.fExtraEffPb)
+,fDiceMapEff(copy.fDiceMapEff)
+,fPathDiceTrackMap(copy.fPathDiceTrackMap)
+,fhEffH1(copy.fhEffH1)
 ,fToyMinNbOfTracks(copy.fToyMinNbOfTracks)
 ,fToyMaxNbOfTracks(copy.fToyMaxNbOfTracks)
 ,fToyMinTrackPt(copy.fToyMinTrackPt)
@@ -550,6 +559,9 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fEvtSelMaxJetPhi   = o.fEvtSelMaxJetPhi;
       fEvtSelJetMinLConstPt = o.fEvtSelJetMinLConstPt;
       fExtraEffPb        = o.fExtraEffPb;
+      fDiceMapEff          = o.fDiceMapEff;
+      fPathDiceTrackMap       =o.fPathDiceTrackMap;
+      fhEffH1                   = o.fhEffH1;
       fToyMinNbOfTracks  = o.fToyMinNbOfTracks;
       fToyMaxNbOfTracks  = o.fToyMaxNbOfTracks;
       fToyMinTrackPt     = o.fToyMinTrackPt;
@@ -874,7 +886,7 @@ void AliAnalysisTaskFastEmbedding::Init()
 {
    // Initialization
    if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::Init()");
-
+   if(fDiceMapEff==kTRUE) LoadDiceTrackMapRootFile();
 }
 
 //__________________________________________________________________________
@@ -1934,6 +1946,13 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 	   if(!tmpTr) continue;
             Double_t rd=rndm->Uniform(0.,1.);
             if(rd>fExtraEffPb) continue; 
+             if(fDiceMapEff==kTRUE){
+	      Double_t pTtmp=tmpTr->Pt();
+	      if(pTtmp>100) pTtmp=100;
+              Double_t efffrac=fhEffH1->GetBinContent(fhEffH1->FindBin(pTtmp));
+              if(rd>efffrac) continue;}
+
+
             tmpTr->SetStatus(AliESDtrack::kEmbedded);
 
             new ((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr); 
@@ -2367,4 +2386,21 @@ Bool_t AliAnalysisTaskFastEmbedding::HasMinLConstPt(AliAODJet* jet){
   return kFALSE;
 }
 
+void AliAnalysisTaskFastEmbedding::LoadDiceTrackMapRootFile() {
 
+   if (!gGrid) {
+     AliInfo("Trying to connect to AliEn ...");
+     TGrid::Connect("alien://");
+   }
+
+  TFile *f = TFile::Open(fPathDiceTrackMap.Data());
+  if(!f)return;
+   TH1D *hEffMap = (TH1D*)f->Get("hEffPosGlobSt");
+
+   SetEfficiencyMap(hEffMap);
+
+}
+
+void AliAnalysisTaskFastEmbedding:: SetEfficiencyMap(TH1 *h1) {
+  fhEffH1 = (TH1*)h1->Clone("fhEffH1");
+}
