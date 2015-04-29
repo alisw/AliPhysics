@@ -269,10 +269,10 @@ Double_t AliAnalysisUtils::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 }
 
 //______________________________________________________________________
-Float_t AliAnalysisUtils::GetMultiplicityPercentile(AliVEvent *event, TString lMethod ){
+Float_t AliAnalysisUtils::GetMultiplicityPercentile(AliVEvent *event, TString lMethod, Bool_t lEmbedEventSelection){
   if(!fPPVsMultUtils)
     fPPVsMultUtils=new AliPPVsMultUtils();
-  if( (event->InheritsFrom("AliAODEvent")) || (event->InheritsFrom("AliESDEvent")) ) return fPPVsMultUtils->GetMultiplicityPercentile(event,lMethod);
+  if( (event->InheritsFrom("AliAODEvent")) || (event->InheritsFrom("AliESDEvent")) ) return fPPVsMultUtils->GetMultiplicityPercentile(event,lMethod,lEmbedEventSelection);
   else {
     AliFatal("Event is neither of AOD nor ESD type"); 
     return -999.;
