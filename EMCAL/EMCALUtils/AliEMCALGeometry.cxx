@@ -181,7 +181,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
                     MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);
 
   } else { 
-    fTriggerMapping = new AliEMCALTriggerMappingV1(32, this);
+    fTriggerMapping = new AliEMCALTriggerMappingV1(30, this);
     AliLog::Message(AliLog::kInfo, "EMCAL Trigger Mapping Version V1 Enabled",
                     MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);
   }
