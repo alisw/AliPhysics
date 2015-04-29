@@ -66,6 +66,8 @@ AliZDCReco::AliZDCReco() :
     fZDCScaler[i] = 0;
     for(Int_t ij=0; ij<4; ij++) fZDCTDCData[i][ij] = 0;
   }
+  
+  for(int k=0; k<7; k++) fTDCchCabling[k] = 0;
 }
   
 
@@ -80,7 +82,7 @@ AliZDCReco::AliZDCReco(
      Int_t npart, Int_t npartSideA, Int_t npartSideC, 
      Float_t b, Float_t bSideA, Float_t bSideC,
      UInt_t recoFlag, Bool_t energyFlag, Bool_t scalerOn, 
-     UInt_t* scaler, Int_t tdcData[32][4]) :
+     UInt_t* scaler, Int_t tdcData[32][4], Int_t tdcCabling[7]) :
 	
   TObject(),
   //
@@ -124,6 +126,7 @@ AliZDCReco::AliZDCReco(
     fZDCScaler[j] = scaler[j];
     for(Int_t y=0; y<4; y++) fZDCTDCData[j][y] = tdcData[j][y];
   }
+  for(int k=0; k<7; k++) fTDCchCabling[k] = tdcCabling[k];
 }
 
 //______________________________________________________________________________
@@ -180,6 +183,7 @@ fIsScalerOn(oldreco.IsScalerOn())
     fZDCScaler[j] = oldreco.GetZDCScaler(j);
     for(Int_t y=0; y<4; y++) fZDCTDCData[j][y] = oldreco.GetZDCTDCData(j, y);
   }
+  for(int k=0; k<7; k++) fTDCchCabling[k] = oldreco.GetTDCchCabling(k);
 }
 
 
@@ -238,8 +242,8 @@ AliZDCReco &AliZDCReco::operator= (const AliZDCReco &reco)
     fZDCScaler[j] = reco.GetZDCScaler(j);
     for(Int_t y=0; y<4; y++) fZDCTDCData[j][y] = reco.GetZDCTDCData(j, y);
   }
-  
-  
+  for(int k=0; k<7; k++) fTDCchCabling[k] = reco.GetTDCchCabling(k);
+   
   return *this;
 }
 

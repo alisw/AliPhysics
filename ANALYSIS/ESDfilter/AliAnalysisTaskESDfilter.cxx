@@ -1965,6 +1965,8 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   const Double_t *towZPA = esdZDC->GetZPATowerEnergy();
   const Double_t *towZNCLG = esdZDC->GetZNCTowerEnergyLR();
   const Double_t *towZNALG = esdZDC->GetZNATowerEnergyLR();
+  const Double_t *towZPCLG = esdZDC->GetZPCTowerEnergyLR();
+  const Double_t *towZPALG = esdZDC->GetZPATowerEnergyLR();
   
   AliAODZDC* zdcAOD = AODEvent()->GetZDCData();
 
@@ -1972,15 +1974,41 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   zdcAOD->SetZEM2Energy(zem2Energy);
   zdcAOD->SetZNCTowers(towZNC, towZNCLG);
   zdcAOD->SetZNATowers(towZNA, towZNALG);
-  zdcAOD->SetZPCTowers(towZPC);
-  zdcAOD->SetZPATowers(towZPA);
+  zdcAOD->SetZPCTowers(towZPC, towZPCLG);
+  zdcAOD->SetZPATowers(towZPA, towZPALG);
   
   zdcAOD->SetZDCParticipants(esdZDC->GetZDCParticipants(), esdZDC->GetZDCPartSideA(), esdZDC->GetZDCPartSideC());
   zdcAOD->SetZDCImpactParameter(esdZDC->GetImpactParameter(), esdZDC->GetImpactParamSideA(), esdZDC->GetImpactParamSideC());
   zdcAOD->SetZDCTDCSum(esdZDC->GetZNTDCSum(0));	
   zdcAOD->SetZDCTDCDiff(esdZDC->GetZNTDCDiff(0));	
-  if(esdZDC->IsZNChit()) zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(10,0));
-  if(esdZDC->IsZNAhit()) zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(12,0));
+  if(esdZDC->IsZNChit()){
+    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+      if(esdZDC->GetZNCTDCChannel()>0) zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(), 0));
+      else zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(16, 0));
+    }
+    else zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(10, 0)); //RUN1
+  }
+  if(esdZDC->IsZNAhit()){
+    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+      if(esdZDC->GetZNATDCChannel()>0)  zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(), 0));
+      else zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(18, 0));
+    }
+    else zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(12, 0));
+  }
+  if(esdZDC->IsZPChit()){
+    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+      if(esdZDC->GetZPCTDCChannel()>0)   zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZPCTDCChannel(), 0));
+      else zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(17, 0));
+    }
+    else zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(11, 0));
+  }
+  if(esdZDC->IsZPAhit()){
+    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+      if(esdZDC->GetZPATDCChannel()>0) zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZPATDCChannel(), 0));
+      else zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(19, 0));
+    }
+    else zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(13, 0));
+  }
 }
 
 //_____________________________________________________________________________

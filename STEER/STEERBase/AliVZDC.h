@@ -20,7 +20,8 @@ public:
  
   enum {
     kCorrectedTDCFilled = BIT(14),
-    kEnergyCalibratedSignal = BIT(15)
+    kEnergyCalibratedSignal = BIT(15),
+    kTDCcablingSet = BIT(16)
   };
 
   virtual Short_t  GetZDCParticipants() const = 0; 

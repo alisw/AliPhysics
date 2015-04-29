@@ -67,6 +67,7 @@ AliESDZDC::AliESDZDC() :
       fZDCTDCCorrected[i][y]=0.;
     }
   }
+  for(int it=0; it<6; it++) fZDCTDCChannels[it]=-1;
 }
 
 //______________________________________________________________________________
@@ -115,6 +116,7 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
        fZDCTDCCorrected[i][y] = zdc.fZDCTDCCorrected[i][y];
     }
   }
+  for(int it=0; it<6; it++) fZDCTDCChannels[it]=zdc.fZDCTDCChannels[it];
 }
 
 //______________________________________________________________________________
@@ -167,6 +169,8 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
   fZPATDChit = zdc.fZPATDChit;
   fZEM1TDChit = zdc.fZEM1TDChit;
   fZEM2TDChit = zdc.fZEM2TDChit;
+  
+  for(int it=0; it<6; it++) fZDCTDCChannels[it]=zdc.fZDCTDCChannels[it];
  
   return *this;
 }
@@ -226,6 +230,8 @@ void AliESDZDC::Reset()
   fZEM1TDChit = kFALSE;
   fZEM2TDChit = kFALSE;
 
+  for(int it=0; it<6; it++) fZDCTDCChannels[it]=-1;
+
 }
 
 //______________________________________________________________________________
@@ -235,20 +241,18 @@ void AliESDZDC::Print(const Option_t *) const
   printf(" ### ZDC energies: \n");
   printf("\n \t E_ZNC = %1.2f (%1.2f+%1.2f+%1.2f+%1.2f+%1.2f) GeV \n \t E_ZNA = %1.2f (%1.2f+%1.2f+%1.2f+%1.2f+%1.2f) GeV\n"
   " \t E_ZPC = %1.2f GeV E_ZPA = %1.2f GeV"
-  "\n E_ZEM1 = %1.2f GeV,   E_ZEM2 = %1.2f GeV\n \t Npart = %d, b = %1.2f fm\n",
-  fZDCN1Energy, fZN1TowerEnergy[0], fZN1TowerEnergy[1], 
-  fZN1TowerEnergy[2], fZN1TowerEnergy[3], fZN1TowerEnergy[4], 
-  fZDCN2Energy,fZN2TowerEnergy[0], fZN2TowerEnergy[1], 
-  fZN2TowerEnergy[2], fZN2TowerEnergy[3], fZN2TowerEnergy[4], 
-  fZDCP1Energy,fZDCP2Energy, fZDCEMEnergy, fZDCEMEnergy1, 
-  fZDCParticipants,fImpactParameter);
+  "\n E_ZEM1 = %1.2f GeV,   E_ZEM2 = %1.2f GeV\n \n",
+  fZDCN1Energy, fZN1TowerEnergy[0], fZN1TowerEnergy[1], fZN1TowerEnergy[2], fZN1TowerEnergy[3], fZN1TowerEnergy[4], 
+  fZDCN2Energy, fZN2TowerEnergy[0], fZN2TowerEnergy[1], fZN2TowerEnergy[2], fZN2TowerEnergy[3], fZN2TowerEnergy[4], 
+  fZDCP1Energy,fZDCP2Energy, fZDCEMEnergy, fZDCEMEnergy1);
   //
   /*printf(" ### VMEScaler (!=0): \n");
   for(Int_t i=0; i<32; i++) if(fVMEScaler[i]!=0) printf("\t %d \n",fVMEScaler[i]);
-  printf("\n");
+  printf("\n");*/
   //
-  printf(" ### TDCData (!=0): \n");
-  for(Int_t i=0; i<32; i++){
+  if(AliESDZDC::kTDCcablingSet) printf(" ### TDC channels: ZNA %d  ZPA %d  ZEM1 %d  ZEM2 %d  ZNC %d  ZPC%d\n\n",
+  fZDCTDCChannels[0],fZDCTDCChannels[1],fZDCTDCChannels[2],fZDCTDCChannels[3],fZDCTDCChannels[4],fZDCTDCChannels[5]);
+  /*for(Int_t i=0; i<32; i++){
     for(Int_t j=0; j<4; j++)
       if(TMath::Abs(fZDCTDCCorrected[i][j])>1e-4) printf("\t %1.0f \n",fZDCTDCCorrected[i][j]);
   }*/
@@ -359,4 +363,52 @@ Bool_t AliESDZDC::GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2])
   }
   
   return kTRUE;
+}
+
+//______________________________________________________________________________
+Float_t AliESDZDC::GetZNTDCSum(Int_t ihit) const
+{
+    if(ihit>4 || !(AliESDZDC::kCorrectedTDCFilled)){
+      return 1000.; // only up to 4 hits are stored && return sum only for calibrated TDCs
+    }
+    else{
+      if(!(AliESDZDC::kTDCcablingSet)){ // RUN1: data cabled ch. hardwired in the code
+         if((fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
+	 else return 999.;
+      }
+      else{ // RUN2: everything done from mapping
+         if(fZDCTDCChannels[4]<0 ||  fZDCTDCChannels[0]<0){// RUN2 data but without signal code!!! 
+           if((fZDCTDCData[16][ihit]!=0) && (fZDCTDCData[18][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[16][ihit]+fZDCTDCCorrected[18][ihit]);
+           else return 998.;
+	 }
+	 else{
+	   if((fZDCTDCData[fZDCTDCChannels[4]][ihit]!=0) && (fZDCTDCData[fZDCTDCChannels[0]][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[fZDCTDCChannels[4]][ihit]+fZDCTDCCorrected[fZDCTDCChannels[0]][ihit]);
+           else return 997.;
+	 }
+      }
+   }
+}
+
+//______________________________________________________________________________
+Float_t AliESDZDC::GetZNTDCDiff(Int_t ihit) const
+{
+    if(ihit>4 || !(AliESDZDC::kCorrectedTDCFilled)){
+      return 1000.; // only up to 4 hits are stored && return sum only for calibrated TDCs
+    }
+    else{
+      if(!(AliESDZDC::kTDCcablingSet)){ // RUN1: data cabled ch. hardwired in the code
+         if((fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
+	 else return 999.;
+      }
+      else{ // RUN2: everything done from mapping
+         if(fZDCTDCChannels[4]<0 ||  fZDCTDCChannels[0]<0){// RUN2 data but without signal code!!! 
+           if((fZDCTDCData[16][ihit]!=0) && (fZDCTDCData[18][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[18][ihit]-fZDCTDCCorrected[16][ihit]);
+           else return 998.;
+	 }
+	 else{
+	   if((fZDCTDCData[fZDCTDCChannels[4]][ihit]!=0) && (fZDCTDCData[fZDCTDCChannels[0]][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[fZDCTDCChannels[0]][ihit]-fZDCTDCCorrected[fZDCTDCChannels[4]][ihit]);
+           else return 997.;
+	 }
+      }
+   }
 }

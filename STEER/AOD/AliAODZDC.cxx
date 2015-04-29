@@ -41,13 +41,16 @@ AliAODZDC::AliAODZDC() :
   fZDCTDCSum(0),	 
   fZDCTDCDifference(0),
   fZNCTDC(-999.),
-  fZNATDC(-999.)
+  fZNATDC(-999.),
+  fZPCTDC(-999.),
+  fZPATDC(-999.)
 {
 // Default constructor
   for(Int_t i=0; i<5; i++){
     fZNCTowerEnergy[i] = fZNATowerEnergy[i] = 0.;
     fZPCTowerEnergy[i] = fZPATowerEnergy[i] = 0.;
     fZNCTowerEnergyLR[i] = fZNATowerEnergyLR[i] = 0.;
+    fZPCTowerEnergyLR[i] = fZPATowerEnergyLR[i] = 0.;
   }
 }
 
@@ -69,7 +72,9 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
   fZDCTDCSum(zdcAOD.fZDCTDCSum),	 
   fZDCTDCDifference(zdcAOD.fZDCTDCDifference),
   fZNCTDC(zdcAOD.fZNCTDC),
-  fZNATDC(zdcAOD.fZNATDC)
+  fZNATDC(zdcAOD.fZNATDC),
+  fZPCTDC(zdcAOD.fZPCTDC),
+  fZPATDC(zdcAOD.fZPATDC)
 {
 // Constructor
   for(Int_t i=0; i<5; i++){
@@ -79,6 +84,8 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
     fZPATowerEnergy[i] = zdcAOD.fZPATowerEnergy[i];
     fZNCTowerEnergyLR[i] = zdcAOD.fZNCTowerEnergyLR[i];
     fZNATowerEnergyLR[i] = zdcAOD.fZNATowerEnergyLR[i];
+    fZPCTowerEnergyLR[i] = zdcAOD.fZPCTowerEnergyLR[i];
+    fZPATowerEnergyLR[i] = zdcAOD.fZPATowerEnergyLR[i];
   }
 }
 
@@ -102,6 +109,8 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
        fZPATowerEnergy[i] = zdcAOD.fZPATowerEnergy[i];
        fZNCTowerEnergyLR[i] = zdcAOD.fZNCTowerEnergyLR[i];
        fZNATowerEnergyLR[i] = zdcAOD.fZNATowerEnergyLR[i];
+       fZPCTowerEnergyLR[i] = zdcAOD.fZPCTowerEnergyLR[i];
+       fZPATowerEnergyLR[i] = zdcAOD.fZPATowerEnergyLR[i];
     }
     //
     fZDCParticipants = zdcAOD.fZDCParticipants;
@@ -111,62 +120,15 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
     fImpactParamSideA = zdcAOD.fImpactParamSideA;
     fImpactParamSideC = zdcAOD.fImpactParamSideC;
     //
-    //for(Int_t i=0; i<2; i++){
-    //     fZNACentrCoord[i] = zdcAOD.fZNACentrCoord[i];
-    //     fZNCCentrCoord[i] = zdcAOD.fZNCCentrCoord[i];
-    //}
-    //
     fZDCTDCSum = zdcAOD.fZDCTDCSum;    
     fZDCTDCDifference = zdcAOD.fZDCTDCDifference;
     fZNCTDC = zdcAOD.fZNCTDC;
     fZNATDC = zdcAOD.fZNATDC;
+    fZPCTDC = zdcAOD.fZPCTDC;
+    fZPATDC = zdcAOD.fZPATDC;
 
   } 
   return *this;
-}
-
-//______________________________________________________________________________
-Double_t  AliAODZDC::GetZNCEnergy() const
-{
-// Return ZNC energy
-    if (fZNCEnergy < 0.) {
-	fZNCEnergy = 0.;
-	for(Int_t i=0; i<5; i++) fZNCEnergy += fZNCTowerEnergy[i];
-    }
-    return fZNCEnergy;
-}
-
-//______________________________________________________________________________
-Double_t  AliAODZDC::GetZNAEnergy() const
-{
-// Return ZNA Energy
-    if (fZNAEnergy < 0.) {
-	fZNAEnergy = 0.;
-	for(Int_t i=0; i<5; i++) fZNAEnergy += fZNATowerEnergy[i];
-    }
-    return fZNAEnergy;
-}
-
-//______________________________________________________________________________
-Double_t  AliAODZDC::GetZPCEnergy() const
-{
-// Return ZPC Energy
-    if (fZPCEnergy < 0.) {
-	fZPCEnergy = 0.;
-	for(Int_t i=0; i<5; i++) fZPCEnergy += fZPCTowerEnergy[i];
-    }
-    return fZPCEnergy;
-}
-
-//______________________________________________________________________________
-Double_t  AliAODZDC::GetZPAEnergy() const
-{
-// Return ZPA Energy
-    if (fZPAEnergy < 0.) {
-	fZPAEnergy = 0.;
-	for(Int_t i=0; i<5; i++) fZPAEnergy += fZPATowerEnergy[i];
-    }
-    return fZPAEnergy;
 }
 
 //______________________________________________________________________________
@@ -186,6 +148,26 @@ void  AliAODZDC::SetZNATowers(const Double_t value[5], const Double_t valueLR[5]
   for(Int_t i=0; i<5; i++){
     fZNATowerEnergy[i] = value[i];
     fZNATowerEnergyLR[i] = valueLR[i];
+  }
+}
+
+//______________________________________________________________________________
+void  AliAODZDC::SetZPCTowers(const Double_t value[5], const Double_t valueLR[5])
+{
+  // Sets ZPC towers
+  for(Int_t i=0; i<5; i++){
+    fZPCTowerEnergy[i] = value[i];
+    fZPCTowerEnergyLR[i] = valueLR[i];
+  }
+}
+
+//______________________________________________________________________________
+void  AliAODZDC::SetZPATowers(const Double_t value[5], const Double_t valueLR[5])
+{
+  // Sets ZPA towers
+  for(Int_t i=0; i<5; i++){
+    fZPATowerEnergy[i] = value[i];
+    fZPATowerEnergyLR[i] = valueLR[i];
   }
 }
 
