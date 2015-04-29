@@ -29,8 +29,8 @@ void StoreRespSDD(Int_t firstRun=0, Int_t lastRun=AliCDBRunRange::Infinity()){
 
   AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRun);
   AliITSresponseSDD* rd = new AliITSresponseSDD();
-  rd->SetSideATimeZero(54.3);
-  rd->SetSideCTimeZero(54.3);
+  rd->SetSideATimeZero(485);
+  rd->SetSideCTimeZero(485);
 //   rd->SetLayer3ATimeZero(235);
 //   rd->SetLayer3CTimeZero(287);
 //   rd->SetLayer4ATimeZero(202);
