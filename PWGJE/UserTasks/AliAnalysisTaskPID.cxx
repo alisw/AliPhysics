@@ -1104,22 +1104,27 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     return;
   
   Double_t centralityPercentile = -1;
+  Double_t centralityPercentileNoEventSelection = -1;
   if (fStoreCentralityPercentile) {
     if (fCentralityEstimator.Contains("ITSTPCtracklets", TString::kIgnoreCase)) {
       // Special pp centrality estimator
-      centralityPercentile = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fEvent);
+      centralityPercentile = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fEvent, kTRUE);
+      centralityPercentileNoEventSelection = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fEvent, kFALSE);
       //centralityPercentile = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, fEtaAbsCutUp);// NOTE: Needs esd event!
     }
     else if (fCentralityEstimator.Contains("ppMult", TString::kIgnoreCase)) {
       // Another special pp centrality estimator
       centralityPercentile = fAnaUtils->GetMultiplicityPercentile(fEvent, GetPPCentralityEstimator().Data());
+      centralityPercentileNoEventSelection = fPPVsMultUtils->GetMultiplicityPercentile(fEvent, GetPPCentralityEstimator().Data(), kFALSE);
     }
     else {
       // Ordinary centrality estimator
       centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+      centralityPercentileNoEventSelection = centralityPercentile; // Event selection not really implemented for this....
     }
   }
   
+  const Bool_t nonNegativeCentralityPercentileNoEventSelection = centralityPercentileNoEventSelection >= 0;
   const Bool_t nonNegativeCentralityPercentile = centralityPercentile >= 0;
   
   // MB
@@ -1132,12 +1137,12 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   
   // Mult (check only needed for non-negative centrality percentile, otherwise, event is not used anyway
   // Check if is INEL > 0 (slight abuse of notation with "vertex selection"....)
-  const Bool_t passedVertexSelectionMult = nonNegativeCentralityPercentile ? AliPPVsMultUtils::IsINELgtZERO(fEvent) : kFALSE;
+  const Bool_t passedVertexSelectionMult = nonNegativeCentralityPercentileNoEventSelection ? AliPPVsMultUtils::IsINELgtZERO(fEvent) : kFALSE;
   // Check z position of vertex
-  const Bool_t passedVertexZSelectionMult = nonNegativeCentralityPercentile ? AliPPVsMultUtils::IsAcceptedVertexPosition(fEvent) : kFALSE;
+  const Bool_t passedVertexZSelectionMult = nonNegativeCentralityPercentileNoEventSelection ? AliPPVsMultUtils::IsAcceptedVertexPosition(fEvent) : kFALSE;
   // Check pile-up  (and also consistency between SPD and track vertex, which is again a z cut, but is a check for pile-up!)
-  const Bool_t isPileUpMult = nonNegativeCentralityPercentile ? (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvent)  ||
-                                                                 !AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fEvent)) : kTRUE;
+  const Bool_t isPileUpMult = nonNegativeCentralityPercentileNoEventSelection ? (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvent)  ||
+                                                                                 !AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fEvent)) : kTRUE;
   
   
   
@@ -1159,14 +1164,17 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
       values[kBinZeroStudyGenEta] = etaGen;
       
       // For multiplicity selection:
-      if (nonNegativeCentralityPercentile) {
-        values[kBinZeroStudyCentrality] = centralityPercentile;
+      if (nonNegativeCentralityPercentileNoEventSelection) {
+        values[kBinZeroStudyCentrality] = centralityPercentileNoEventSelection;
         fChargedGenPrimariesTriggerSel->Fill(values);
         if (passedVertexSelectionMult) {
             fChargedGenPrimariesTriggerSelVtxCut->Fill(values);
           if (passedVertexZSelectionMult) {
               fChargedGenPrimariesTriggerSelVtxCutZ->Fill(values);
-            if (!isPileUpMult) {
+            if (!isPileUpMult && nonNegativeCentralityPercentile) {
+              // If nonNegativeCentralityPercentile is kFALSE, but nonNegativeCentralityPercentileNoEventSelection was true,
+              // then this should only be due to pile-up
+              values[kBinZeroStudyCentrality] = centralityPercentile;
               fChargedGenPrimariesTriggerSelVtxCutZPileUpRej->Fill(values);
             }
           }
@@ -1216,15 +1224,17 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   }
   
   // Mult (again, only centrality percentile >= 0 considered)
-  if (nonNegativeCentralityPercentile) {
-    IncrementEventCounter(centralityPercentile, kTriggerSel);
+  if (nonNegativeCentralityPercentileNoEventSelection) {
+    IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSel);
     if (passedVertexSelectionMult) {
-      IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
+      IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSelAndVtxCut);
       
       if (passedVertexZSelectionMult) {
-        IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
-        if (!isPileUpMult) {
+        IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+        if (!isPileUpMult && nonNegativeCentralityPercentile) {
           // NOTE: Same comment as for MB
+          // If nonNegativeCentralityPercentile is kFALSE, but nonNegativeCentralityPercentileNoEventSelection was true,
+          // then this should only be due to pile-up
           IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
           isMultSelected = kTRUE;
         }

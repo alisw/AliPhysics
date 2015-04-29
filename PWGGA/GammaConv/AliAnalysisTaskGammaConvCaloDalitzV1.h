@@ -209,6 +209,10 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F								**fHistoMCDecayPositronPi0Pt;                   //! array of histos with positrons from Pi0->Dalitz, pT
 		TH1F								**fHistoMCAllElectronsPt;			//! array of histos with electrons, pT
 		TH1F								**fHistoMCDecayElectronPi0Pt;                   //! arrau of histos with positrons form Pi0->Dalitz, pT
+		TH1F								**fHistoMCDecayNoPrimElectronPi0DalitzR;	//! array of histos with no prim electron from pi0->Dalitz, radius
+		TH1F								**fHistoMCDecayNoPrimPositronPi0DalitzR;	//! array of histos with no prim positron from pi0->Dalitz, ID
+		TH1F								**fHistoMCDecayNoPrimElectronPi0DalitzID;	//! array of histos with no prim positron from pi0->Dalitz, radius
+		TH1F								**fHistoMCDecayNoPrimPositronPi0DalitzID;	//! array of histos with no prim electron from pi0->Dalitz, ID
 		TH1F 								**fHistoMCPi0GGPt;				//! array of histos with weighted pi0, pT
 		TH1F 								**fHistoMCPi0GGWOWeightPt;			//! array of histos with unweighted pi0, pT
 		TH1F 								**fHistoMCPi0Pt;				//! array of histos with weighted pi0, pT

@@ -143,6 +143,10 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
 	fHistoMCDecayPositronPi0Pt(NULL),
 	fHistoMCAllElectronsPt(NULL),
 	fHistoMCDecayElectronPi0Pt(NULL),
+	fHistoMCDecayNoPrimElectronPi0DalitzR(NULL),
+	fHistoMCDecayNoPrimPositronPi0DalitzR(NULL),
+	fHistoMCDecayNoPrimElectronPi0DalitzID(NULL),
+	fHistoMCDecayNoPrimPositronPi0DalitzID(NULL),
 	fHistoMCPi0GGPt(NULL),
 	fHistoMCPi0GGWOWeightPt(NULL),
 	fHistoMCPi0Pt(NULL),
@@ -376,6 +380,10 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
 	fHistoMCDecayPositronPi0Pt(NULL),
 	fHistoMCAllElectronsPt(NULL),
 	fHistoMCDecayElectronPi0Pt(NULL),
+	fHistoMCDecayNoPrimElectronPi0DalitzR(NULL),
+	fHistoMCDecayNoPrimPositronPi0DalitzR(NULL),
+	fHistoMCDecayNoPrimElectronPi0DalitzID(NULL),
+	fHistoMCDecayNoPrimPositronPi0DalitzID(NULL),
 	fHistoMCPi0GGPt(NULL),
 	fHistoMCPi0GGWOWeightPt(NULL),
 	fHistoMCPi0Pt(NULL),
@@ -872,6 +880,11 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoMCDecayPositronPi0Pt                      = new TH1F*[fnCuts];
 		fHistoMCAllElectronsPt                          = new TH1F*[fnCuts];
 		fHistoMCDecayElectronPi0Pt                      = new TH1F*[fnCuts];
+		fHistoMCDecayNoPrimElectronPi0DalitzR		= new TH1F*[fnCuts];
+		fHistoMCDecayNoPrimPositronPi0DalitzR		= new TH1F*[fnCuts];
+		fHistoMCDecayNoPrimElectronPi0DalitzID		= new TH1F*[fnCuts];
+		fHistoMCDecayNoPrimPositronPi0DalitzID		= new TH1F*[fnCuts];
+	
 		
 		fHistoTrueConvGammaPt 				= new TH1F*[fnCuts];
 		fHistoTrueConvPi0GammaPt 			= new TH1F*[fnCuts];
@@ -1076,8 +1089,18 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 			fHistoMCDecayElectronPi0Pt[iCut] = new TH1F("MC_DecayElectronPi0_Pt","MC_DecayElectronPi0_Pt",1000,0,25);
 			fMCList[iCut]->Add(fHistoMCDecayElectronPi0Pt[iCut]);
 			
+			fHistoMCDecayNoPrimElectronPi0DalitzR[iCut] = new TH1F("MC_DecayNoPrimElectronPi0Dalitz_R","MC_DecayNoPrimElectronPi0Dalitz_R",200,0,200);
+			fMCList[iCut]->Add(fHistoMCDecayNoPrimElectronPi0DalitzR[iCut]);
 			
+			fHistoMCDecayNoPrimPositronPi0DalitzR[iCut]  = new TH1F("MC_DecayNoPrimPositronPi0Dalitz_R","MC_DecayNoPrimPositronPi0Dalitz_R",200,0,200);
+			fMCList[iCut]->Add(fHistoMCDecayNoPrimPositronPi0DalitzR[iCut]);
 			
+			fHistoMCDecayNoPrimElectronPi0DalitzID[iCut] = new TH1F("MC_DecayNoPrimElectronPi0Dalitz_ID","MC_DecayNoPrimElectronPi0Dalitz_ID",51,-1,50);
+			fMCList[iCut]->Add(fHistoMCDecayNoPrimElectronPi0DalitzID[iCut]);
+			
+			fHistoMCDecayNoPrimPositronPi0DalitzID[iCut] = new TH1F("MC_DecayNoPrimPositronPi0Dalitz_ID","MC_DecayNoPrimPositronPi0Dalitz_ID",51,-1,50);
+			fMCList[iCut]->Add(fHistoMCDecayNoPrimPositronPi0DalitzID[iCut]);
+					
 			
       
 			if (fDoPhotonQA > 0){
@@ -2310,6 +2333,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 		if (!particle) continue;
 		
 		
+		
 		Int_t isMCFromMBHeader = -1;
 		if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
 		  
@@ -2319,7 +2343,8 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 		}
 		
 		
-		
+			
+				
 		if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
 		
 		
@@ -2335,15 +2360,33 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 		  
 		}
 		
+		
 		if(((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(i,fMCStack) == kTRUE){
+		  
+		Double_t deltaX = particle->Vx() - mcProdVtxX;
+		Double_t deltaY = particle->Vy() - mcProdVtxY;
+		Double_t deltaZ = particle->Vz() - mcProdVtxZ;
+
+		Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
+		  
+		  
 		  	if( particle->GetPdgCode() == -11) {
 				fHistoMCAllPositronsPt[fiCut]->Fill(particle->Pt()); // All positrons
 				
+								  
 				
 				if ( particle->GetMother(0) > -1 ) {
 				    
 				      if( IsPi0DalitzDaughter( i ) == kTRUE ){
 					fHistoMCDecayPositronPi0Pt[fiCut]->Fill(particle->Pt()); //Positrons from Pi0->Dalitz
+					
+					  if( i >= fMCStack->GetNprimary() ){
+				  
+						fHistoMCDecayNoPrimPositronPi0DalitzR[fiCut]->Fill(realRadius3D);
+						fHistoMCDecayNoPrimPositronPi0DalitzID[fiCut]->Fill( particle->GetUniqueID());
+				      
+					  }
+					
 				      }
 				  
 				}
@@ -2357,6 +2400,13 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 				      if( IsPi0DalitzDaughter( i ) == kTRUE ){
 					fHistoMCDecayElectronPi0Pt[fiCut]->Fill(particle->Pt()); //Electrons from Pi0->Dalitz
 				      }
+				      
+					  if( i >= fMCStack->GetNprimary() ){
+				  
+						fHistoMCDecayNoPrimElectronPi0DalitzR[fiCut]->Fill(realRadius3D);
+						fHistoMCDecayNoPrimElectronPi0DalitzID[fiCut]->Fill( particle->GetUniqueID());
+				  
+					  }
 				  
 				}
 

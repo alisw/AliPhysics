@@ -5,7 +5,8 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
 				       TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                        Bool_t doWeighting = kFALSE,  //enable Weighting
                                        TString generatorName = "DPMJET",				
-                                       TString cutnumberAODBranch = "0000000060084001001500000"
+                                       TString cutnumberAODBranch = "0000000060084001001500000",
+				       Bool_t enableV0findingEffi = kFALSE
                                   ) {
 
 
@@ -64,6 +65,7 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
    TString cutnumberEvent = "8000000";
    
    TString cutnumberPhoton="06000008400100001500000000";   //Online  V0 finder
+			    
    
    TString ElecCuts      = "90005400000002000000";            //Electron Cuts
    
@@ -80,6 +82,7 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");

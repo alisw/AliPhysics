@@ -23,6 +23,7 @@
 #include <THashList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TProfile.h>
 #include "AliEMCalHistoContainer.h"
 #include <TString.h>
 
@@ -91,6 +92,7 @@ void AliEMCalHistoContainer::CreateHistoGroup(const char *groupname, const char 
  * \param nbins number of bins
  * \param xmin min. value of the range
  * \param xmax max. value of the range
+ * \param opt Additonal options (s for sumw2)
  * \throw HistoContainerContentException
  */
 void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax, Option_t *opt) throw(HistoContainerContentException){
@@ -116,6 +118,7 @@ void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int 
  * \param title Title of the histogram
  * \param nbins number of bins
  * \param xbins array of bin limits
+ * \param opt Additonal options (s for sumw2)
  * \throw HistoContainerContentException
  */
 void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int nbins, const double *xbins, Option_t *opt) throw(HistoContainerContentException){
@@ -140,6 +143,7 @@ void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int 
  * \param name Name of the histogram
  * \param title Title of the histogram
  * \param xbins array of bin limits (contains also number of bins)
+ * \param opt Additonal options (s for sumw2)
  * \throw HistoContainerContentException
  */
 void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, const TArrayD &xbins, Option_t *opt) throw(HistoContainerContentException){
@@ -154,6 +158,77 @@ void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, cons
   optionstring.ToLower();
   if(optionstring.Contains("s"))
     hist->Sumw2();
+  parent->Add(hist);
+}
+
+/**
+ * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param title Title of the profile histogram
+ * \param nbinsX Number of bins in x-direction
+ * \param xmin min. value in x-direction
+ * \param xmax max. value in x-direction
+ * \param opt Further options
+ * \throw HistoContainerContentException
+ */
+void AliEMCalHistoContainer::CreateTProfile(const char* name, const char* title, int nbinsX, double xmin, double xmax, Option_t *opt) throw (HistoContainerContentException) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent)
+    throw HistoContainerContentException(NULL, dirname.Data(), HistoContainerContentException::kGroupException);
+  if(parent->FindObject(hname.Data()))
+    throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
+  TProfile *hist = new TProfile(hname.Data(), title, nbinsX, xmin, xmax, opt);
+  TString optionstring(opt);
+  parent->Add(hist);
+}
+
+/**
+ * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param title Title of the profile histogram
+ * \param nbinsX Number of bins in x-direction
+ * \param xmbins binning in x-direction
+ * \param opt Further options
+ * \throw HistoContainerContentException
+ */
+void EMCalTriggerPtAnalysis::AliEMCalHistoContainer::CreateTProfile(const char* name, const char* title, int nbinsX, const double* xbins, Option_t *opt)
+        throw (HistoContainerContentException) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent)
+    throw HistoContainerContentException(NULL, dirname.Data(), HistoContainerContentException::kGroupException);
+  if(parent->FindObject(hname.Data()))
+    throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
+  TProfile *hist = new TProfile(hname.Data(), title, nbinsX, xbins, opt);
+  TString optionstring(opt);
+  parent->Add(hist);
+}
+
+/**
+ * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param title Title of the profile histogram
+ * \param nbinsX Number of bins in x-direction
+ * \param xmbins binning in x-direction
+ * \param opt Further options
+ * \throw HistoContainerContentException
+ */
+void EMCalTriggerPtAnalysis::AliEMCalHistoContainer::CreateTProfile(const char* name, const char* title, const TArrayD& xbins, Option_t *opt)
+        throw (HistoContainerContentException) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent)
+    throw HistoContainerContentException(NULL, dirname.Data(), HistoContainerContentException::kGroupException);
+  if(parent->FindObject(hname.Data()))
+    throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
+  TProfile *hist = new TProfile(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), opt);
   parent->Add(hist);
 }
 
@@ -428,6 +503,27 @@ void AliEMCalHistoContainer::FillTH1(const char *name, double x, double weight) 
 }
 
 /**
+ * Fill a profile histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param x x-coordinate
+ * \param y y-coordinate
+ * \param weight optional weight of the entry (default 1)
+ * \throw HistoContainerContentException
+ */
+void AliEMCalHistoContainer::FillProfile(const char* name, double x, double y, double weight) throw(HistoContainerContentException){
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname.Data()));
+  if(!parent)
+    throw HistoContainerContentException(NULL, dirname.Data(), HistoContainerContentException::kGroupException);
+  TProfile *hist = dynamic_cast<TProfile *>(parent->FindObject(hname.Data()));
+  if(!hist)
+    throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistNotFoundException);
+  hist->Fill(x, y, weight);
+}
+
+/**
  * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
  * group notation.
  *
@@ -620,3 +716,4 @@ const char *AliEMCalHistoContainer::histname(const char *path) const {
 }
 
 }
+

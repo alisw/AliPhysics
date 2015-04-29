@@ -95,18 +95,29 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
   TString emcclusters = Form("EmcalClusters_%s",clusterColName.Data());
   Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data());
+  
+  
+  // Produce MC particles
+  if(!particleColName.IsNull()) {
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
+    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName, kFALSE, kFALSE);
+    mcPartTask->SelectCollisionCandidates(pSel);
+  }
+
+  
   if(makePicoTracks) {
     //----------------------- Produce PicoTracks -----------------------------------------------------
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
     //    pTrackTask->SetTrackEfficiency(trackeff); //now done in Esd/AodFilter
     pTrackTask->SelectCollisionCandidates(pSel);
+    if(!particleColName.IsNull()) pTrackTask->SetCopyMCFlag(kTRUE, usedMCParticles);
   }
 
   //----------------------- Hadronic Correction -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C");
   AliHadCorrTask *hCorr = AddTaskHadCorr(emctracks,emcclusters,outClusName,hadcorr,
-					 minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
+                                         minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
   hCorr->SetNCentBins(nCentBins);
   if (isEmcalTrain) {
@@ -114,13 +125,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
       RequestMemory(hCorr,500*1024);
   }
 
-  // Produce MC particles
-  if(particleColName != "") {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
-    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName, kFALSE, kFALSE);
-    mcPartTask->SelectCollisionCandidates(pSel);
-  }
-
+  
   // Return one task that represents the jet preparation on LEGO trains
   return hCorr;
 }

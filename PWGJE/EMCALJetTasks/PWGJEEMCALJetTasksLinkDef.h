@@ -64,6 +64,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
 #pragma link C++ class AliAnalysisTaskEmcalJetTagger+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTriggerMatcher+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;

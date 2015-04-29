@@ -53,14 +53,17 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   //task->SetVzRange(-10.,10.);
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
-   AliParticleContainer *trackContUS  = task->AddParticleContainer(ntracksUS);
+  //Printf("tracks() = %s, trackCont =%p", ntracks, trackCont);
+  AliParticleContainer *trackContUS  = task->AddParticleContainer(ntracksUS);
+  //Printf("tracksUS() = %s", ntracksUS);
   AliParticleContainer *trackContTrue  = task->AddParticleContainer(ntracksTrue);
+  //Printf("ntracksTrue() = %s, trackContTrue=%p ", ntracksTrue, trackContTrue);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
-
+  
   AliJetContainer *jetContBase=0x0;
-   AliJetContainer *jetContUS=0x0;
+  AliJetContainer *jetContUS=0x0;
   AliJetContainer *jetContTrue=0x0;
-
+  
   TString strType(type);
 
   if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kTrue) {
@@ -75,7 +78,6 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   }
   
   if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kTrueDet){
-    
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
@@ -92,8 +94,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->SetPercAreaCut(0.6); 
       jetContTrue->SetPythiaInfoName("PythiaInfo");
     }
-  }  
-
+  }
+  
   if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kData){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
@@ -123,8 +125,9 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->SetPercAreaCut(0.6); 
       jetContTrue->SetPythiaInfoName("PythiaInfo");
     }
+    
     if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
-     jetContUS=task->AddJetContainer(njetsUS,strType,R);
+      jetContUS=task->AddJetContainer(njetsUS,strType,R);
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
         jetContUS->ConnectParticleContainer(trackContUS);
@@ -132,8 +135,36 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
         jetContUS->SetPythiaInfoName("PythiaInfo");
       }
     }
-    
   }
+
+  if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kPythiaDef){
+    jetContBase = task->AddJetContainer(njetsBase,strType,R);
+    if(jetContBase) {
+      //jetContBase->SetRhoName(nrhoBase);
+      jetContBase->ConnectParticleContainer(trackCont);
+      jetContBase->ConnectClusterContainer(clusterCont);
+      jetContBase->SetPercAreaCut(0.6);
+    }
+    
+    jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
+    if(jetContTrue) {
+      //  jetContTrue->SetRhoName(nrhoBase);
+      jetContTrue->ConnectParticleContainer(trackContTrue);
+      jetContTrue->SetPercAreaCut(0.6);
+     
+    }
+    
+    if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
+      jetContUS=task->AddJetContainer(njetsUS,strType,R);
+      if(jetContUS) {
+       // jetContUS->SetRhoName(nrhoBase);
+        jetContUS->ConnectParticleContainer(trackContUS);
+        jetContUS->SetPercAreaCut(0.6);
+       
+      }
+    }
+  }
+  
   
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
   task->SetCentralityEstimator(CentEst);
@@ -152,13 +183,14 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrueDet) contName1 += "_TrueDet"; 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kData) contName1 += "_Data"; 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kDetEmb) contName1 += "_DetEmb"; 
- 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kPythiaDef) contName1 +="_PythiaDef";
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kNoSub) contName1 += "_NoSub"; 
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kConstSub) contName1 += "_ConstSub"; 
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kDerivSub) contName1 += "_DerivSub";
   
   if (jetSelection == AliAnalysisTaskEmcalQGTagging::kInclusive) contName1 += "_Incl";
   if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) {
+
   TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
   contName1 += recoilTriggerString;
   }

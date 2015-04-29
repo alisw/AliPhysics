@@ -11,19 +11,17 @@
 
 //this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, 
-				   const char *containerName="femtolist", 
-				   const char *configMacroParameters="V0AKKC")
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
-  
+
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskFemto", "No analysis manager to connect to.");
     return NULL;
-  }  
+  }
 
   // B. Check the analysis type using the event handlers connected to the analysis
   //    manager. The availability of MC handler cann also be checked here.
@@ -31,7 +29,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName,
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskFemto", "This task requires an input event handler");
     return NULL;
-  }  
+  }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   cout << "Found " <<type << " event handler" << endl;
 
@@ -47,7 +45,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName,
 //     }
 //     else
     gProof->Load(configMacroName);
-  }  
+  }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   //was befere aliroot 5.04.33: AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName);
@@ -60,7 +58,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName,
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   //10-90% only two triggers: SemiCentral and MB
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
-  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
+  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMult);
   //0-10 % all three triggers
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
@@ -68,13 +66,13 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName,
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
   //===========================================================================
-  
+
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  TString outputfile = AliAnalysisManager::GetCommonFileName();  
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("ER_KpKm_exp_de",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 

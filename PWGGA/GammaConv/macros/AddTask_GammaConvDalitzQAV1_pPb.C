@@ -6,7 +6,8 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
 				       TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                        Bool_t doWeighting = kFALSE,  //enable Weighting
                                        TString generatorName = "DPMJET",				
-                                       TString cutnumberAODBranch = "0000000060084001001500000"
+                                       TString cutnumberAODBranch = "0000000060084001001500000",
+				       Bool_t enableV0findingEffi = kFALSE				      
                                   ) {
 
 
@@ -71,11 +72,15 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    TString cutnumberPhoton="";
    
    if(trainConfig == 9 || trainConfig == 10 ){
-   cutnumberPhoton = "16000008400100000500000000";   //Offline  V0 finder 
+     
+   cutnumberPhoton = "16000008400100001500000000";   //Offline  V0 finder 
+ 
    } else if ( trainConfig >= 54 && trainConfig <= 60  ){   // Warning!!!   Those trains must run in stand-alone mode
    cutnumberPhoton = "00000070004000000500000000";  
    } else {
-   cutnumberPhoton = "06000078400100000500000000";   //Online  V0 finder //change	      
+     
+   cutnumberPhoton = "06000008400100007500000000";   //Online  V0 finder //change
+		      
    }
    
    TString ElecCuts      = "90005400000002000000";            //Electron Cuts
@@ -93,6 +98,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");

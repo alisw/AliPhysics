@@ -118,6 +118,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
     UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
+    UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx

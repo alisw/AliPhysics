@@ -19,12 +19,16 @@
 //     Author: Vit Kucera (vit.kucera@cern.ch)
 //-------------------------------------------------------------------------
 
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "THnSparse.h"
-#include "TCanvas.h"
+#include <TChain.h>
+#include <TTree.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <THnSparse.h>
+#include <TCanvas.h>
+#include <TDatabasePDG.h>
+#include <TPDGCode.h>
+#include <TClonesArray.h>
+#include <TRandom3.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -32,14 +36,11 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
-#include "TDatabasePDG.h"
-#include "TPDGCode.h"
 #include "AliPIDResponse.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
-#include "TClonesArray.h"
-#include "TRandom3.h"
+#include "AliEventPoolManager.h"
 
 #include "AliVCluster.h"
 #include "AliAODCaloCluster.h"
@@ -58,17 +59,20 @@
 ClassImp(AliAnalysisTaskV0sInJetsEmcal)
 
 // upper edges of centrality bins
-//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {10, 30, 50, 80}; // Alice Zimmermann
-//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {10, 20, 40, 60, 80}; // Vit Kucera, initial binning
-//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {5, 10, 20, 40, 60, 80}; // Iouri Belikov, LF analysis
-const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {10}; // only central
-
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10, 30, 50, 80}; // Alice Zimmermann
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10, 20, 40, 60, 80}; // Vit Kucera, initial binning
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {5, 10, 20, 40, 60, 80}; // Iouri Belikov, LF analysis
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10}; // only central
+// edges of centrality bins for event mixing
+Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentMixBinRanges[] = {0, 5, 10}; // only central
+// edges of z_vtx bins for event mixing
+Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiZVtxMixBinRanges[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
 // axis: pT of V0
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[2] = {0, 12};
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[] = {0, 12};
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) - 1;
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) / 0.1); // bin width 0.1 GeV/c
 // axis: pT of jets
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[2] = {0, 100};
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[] = {0, 100};
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet) / sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[0]) - 1;
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[0]) / 5.); // bin width 5 GeV/c
 // axis: K0S invariant mass
@@ -79,6 +83,9 @@ const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMax = 0.65; // [GeV/c^2
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsMassLambda = 200;
 const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMin = 1.05; // [GeV/c^2]
 const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMax = 1.25; // [GeV/c^2]
+// delta phi range
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdDeltaPhiMin = -TMath::PiOver2(); // minimum delta-phi_V0-jet
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdDeltaPhiMax = 3.*TMath::PiOver2(); // maximum delta-phi_V0-jet
 
 
 // Default constructor
@@ -87,6 +94,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fAODIn(0),
   fAODOut(0),
   fRandom(0),
+  fPoolMgr(0),
   fOutputListStd(0),
   fOutputListQA(0),
   fOutputListCuts(0),
@@ -101,6 +109,12 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
   fdCentrality(0),
+
+  fbCorrelations(0),
+  fiSizePool(0),
+  fiNJetsPerPool(0),
+  ffFractionMin(0),
+  fiNEventsMin(0),
 
   fbTPCRefit(0),
   fbRejectKinks(0),
@@ -323,6 +337,11 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fhnV0InMedALambda[i] = 0;
     fhnV0OutJetALambda[i] = 0;
     fhnV0NoJetALambda[i] = 0;
+    // correlations
+    fhnV0CorrelSEK0s[i] = 0;
+    fhnV0CorrelMEK0s[i] = 0;
+    fhnV0CorrelSELambda[i] = 0;
+    fhnV0CorrelMELambda[i] = 0;
 
     fh2V0PtJetAngleK0s[i] = 0;
     fh2V0PtJetAngleLambda[i] = 0;
@@ -338,12 +357,13 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh1EtaJet[i] = 0;
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
-    fh1PtJetTrackLeading[i] = 0;
+    fh2PtJetPtTrackLeading[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
 
     fh1VtxZ[i] = 0;
+    fh1VtxZME[i] = 0;
     fh2VtxXY[i] = 0;
   }
 }
@@ -354,6 +374,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fAODIn(0),
   fAODOut(0),
   fRandom(0),
+  fPoolMgr(0),
   fOutputListStd(0),
   fOutputListQA(0),
   fOutputListCuts(0),
@@ -368,6 +389,12 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
   fdCentrality(0),
+
+  fbCorrelations(0),
+  fiSizePool(0),
+  fiNJetsPerPool(0),
+  ffFractionMin(0),
+  fiNEventsMin(0),
 
   fbTPCRefit(0),
   fbRejectKinks(0),
@@ -590,6 +617,11 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fhnV0InMedALambda[i] = 0;
     fhnV0OutJetALambda[i] = 0;
     fhnV0NoJetALambda[i] = 0;
+    // correlations
+    fhnV0CorrelSEK0s[i] = 0;
+    fhnV0CorrelMEK0s[i] = 0;
+    fhnV0CorrelSELambda[i] = 0;
+    fhnV0CorrelMELambda[i] = 0;
 
     fh2V0PtJetAngleK0s[i] = 0;
     fh2V0PtJetAngleLambda[i] = 0;
@@ -605,12 +637,13 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh1EtaJet[i] = 0;
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
-    fh1PtJetTrackLeading[i] = 0;
+    fh2PtJetPtTrackLeading[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
 
     fh1VtxZ[i] = 0;
+    fh1VtxZME[i] = 0;
     fh2VtxXY[i] = 0;
   }
   // Define input and output slots here
@@ -645,6 +678,13 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
 
   // Initialise random-number generator
   fRandom = new TRandom3(0);
+
+  // Create event pool manager
+  if(fbCorrelations)
+  {
+    fPoolMgr = new AliEventPoolManager(fiSizePool, fiNJetsPerPool, fgkiNBinsCentMix, fgkiCentMixBinRanges, fgkiNBinsZVtxMix, fgkiZVtxMixBinRanges);
+    fPoolMgr->SetTargetValues(fiNJetsPerPool, ffFractionMin, fiNEventsMin);
+  }
 
   // Create histograms
 
@@ -759,9 +799,6 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   Int_t binsCorrel[3] = {fgkiNBinsMassK0s, fgkiNBinsMassLambda, iNBinsPtV0};
   Double_t xminCorrel[3] = {fgkdMassK0sMin, fgkdMassLambdaMin, dPtV0Min};
   Double_t xmaxCorrel[3] = {fgkdMassK0sMax, fgkdMassLambdaMax, dPtV0Max};
-//  Int_t binsCorrel[3] = {200, 200, iNBinsPtV0};
-//  Double_t xminCorrel[3] = {0, 0, dPtV0Min};
-//  Double_t xmaxCorrel[3] = {2, 2, dPtV0Max};
   fh3CCMassCorrelBoth = new THnSparseD("fh3CCMassCorrelBoth", "Mass correlation: K0S && Lambda;m K0S;m Lambda;pT", 3, binsCorrel, xminCorrel, xmaxCorrel);
   fh3CCMassCorrelKNotL = new THnSparseD("fh3CCMassCorrelKNotL", "Mass correlation: K0S, not Lambda;m K0S;m Lambda;pT", 3, binsCorrel, xminCorrel, xmaxCorrel);
   fh3CCMassCorrelLNotK = new THnSparseD("fh3CCMassCorrelLNotK", "Mass correlation: Lambda, not K0S;m K0S;m Lambda;pT", 3, binsCorrel, xminCorrel, xmaxCorrel);
@@ -790,6 +827,17 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   Int_t binsLInJC[iNDimInJC] = {fgkiNBinsMassLambda, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins};
   Double_t xminLInJC[iNDimInJC] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin};
   Double_t xmaxLInJC[iNDimInJC] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax};
+  // binning in V0-jet correlations
+  Int_t iNBinsDeltaPhi = 72;
+  const Int_t iNDimCorrel = 6;
+  Float_t fDeltaEtaMax = 2*0.8; // >= 2*eta_V0^max
+  Int_t iNBinsDeltaEtaCorrel = Int_t(2*fDeltaEtaMax/0.1);
+  Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
+  Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
+  Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
+  Int_t binsLCorrel[iNDimCorrel] = {fgkiNBinsMassLambda, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
+  Double_t xminLCorrel[iNDimCorrel] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
+  Double_t xmaxLCorrel[iNDimCorrel] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
 
   // binning eff inclusive vs eta-pT
   Double_t dStepDeltaEta = 0.1;
@@ -828,49 +876,58 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh1V0InvMassLambdaCent[i]);
     fOutputListStd->Add(fh1V0InvMassALambdaCent[i]);
     // Inclusive
-    fhnV0InclusiveK0s[i] = new THnSparseD(Form("fhnV0InclusiveK0s_C%d", i), "K0s: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});pt (GeV/#it{c});counts", iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
-    fhnV0InclusiveLambda[i] = new THnSparseD(Form("fhnV0InclusiveLambda_C%d", i), "Lambda: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});pt (GeV/#it{c});counts", iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
-    fhnV0InclusiveALambda[i] = new THnSparseD(Form("fhnV0InclusiveALambda_C%d", i), "ALambda: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});pt (GeV/#it{c});counts", iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InclusiveK0s[i] = new THnSparseD(Form("fhnV0InclusiveK0s_C%d", i), "K0s: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};counts", iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
+    fhnV0InclusiveLambda[i] = new THnSparseD(Form("fhnV0InclusiveLambda_C%d", i), "Lambda: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};counts", iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InclusiveALambda[i] = new THnSparseD(Form("fhnV0InclusiveALambda_C%d", i), "ALambda: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};counts", iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0InclusiveK0s[i]);
     fOutputListStd->Add(fhnV0InclusiveLambda[i]);
     fOutputListStd->Add(fhnV0InclusiveALambda[i]);
     // In cones
-    fhnV0InJetK0s[i] = new THnSparseD(Form("fhnV0InJetK0s_%d", i), Form("K0s: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
+    fhnV0InJetK0s[i] = new THnSparseD(Form("fhnV0InJetK0s_%d", i), Form("K0s: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
     fOutputListStd->Add(fhnV0InJetK0s[i]);
-    fhnV0InPerpK0s[i] = new THnSparseD(Form("fhnV0InPerpK0s_%d", i), Form("K0s: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
+    fhnV0InPerpK0s[i] = new THnSparseD(Form("fhnV0InPerpK0s_%d", i), Form("K0s: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
     fOutputListStd->Add(fhnV0InPerpK0s[i]);
-    fhnV0InRndK0s[i] = new THnSparseD(Form("fhnV0InRndK0s_%d", i), Form("K0s: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
+    fhnV0InRndK0s[i] = new THnSparseD(Form("fhnV0InRndK0s_%d", i), Form("K0s: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
     fOutputListStd->Add(fhnV0InRndK0s[i]);
-    fhnV0InMedK0s[i] = new THnSparseD(Form("fhnV0InMedK0s_%d", i), Form("K0s: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
+    fhnV0InMedK0s[i] = new THnSparseD(Form("fhnV0InMedK0s_%d", i), Form("K0s: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
     fOutputListStd->Add(fhnV0InMedK0s[i]);
-    fhnV0OutJetK0s[i] = new THnSparseD(Form("fhnV0OutJetK0s_%d", i), Form("K0s: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
+    fhnV0OutJetK0s[i] = new THnSparseD(Form("fhnV0OutJetK0s_%d", i), Form("K0s: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
     fOutputListStd->Add(fhnV0OutJetK0s[i]);
-    fhnV0NoJetK0s[i] = new THnSparseD(Form("fhnV0NoJetK0s_%d", i), Form("K0s: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
+    fhnV0NoJetK0s[i] = new THnSparseD(Form("fhnV0NoJetK0s_%d", i), Form("K0s: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
     fOutputListStd->Add(fhnV0NoJetK0s[i]);
-    fhnV0InJetLambda[i] = new THnSparseD(Form("fhnV0InJetLambda_%d", i), Form("Lambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+    fhnV0InJetLambda[i] = new THnSparseD(Form("fhnV0InJetLambda_%d", i), Form("Lambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
     fOutputListStd->Add(fhnV0InJetLambda[i]);
-    fhnV0InPerpLambda[i] = new THnSparseD(Form("fhnV0InPerpLambda_%d", i), Form("Lambda: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+    fhnV0InPerpLambda[i] = new THnSparseD(Form("fhnV0InPerpLambda_%d", i), Form("Lambda: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
     fOutputListStd->Add(fhnV0InPerpLambda[i]);
-    fhnV0InRndLambda[i] = new THnSparseD(Form("fhnV0InRndLambda_%d", i), Form("Lambda: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InRndLambda[i] = new THnSparseD(Form("fhnV0InRndLambda_%d", i), Form("Lambda: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0InRndLambda[i]);
-    fhnV0InMedLambda[i] = new THnSparseD(Form("fhnV0InMedLambda_%d", i), Form("Lambda: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InMedLambda[i] = new THnSparseD(Form("fhnV0InMedLambda_%d", i), Form("Lambda: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0InMedLambda[i]);
-    fhnV0OutJetLambda[i] = new THnSparseD(Form("fhnV0OutJetLambda_%d", i), Form("Lambda: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0OutJetLambda[i] = new THnSparseD(Form("fhnV0OutJetLambda_%d", i), Form("Lambda: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0OutJetLambda[i]);
-    fhnV0NoJetLambda[i] = new THnSparseD(Form("fhnV0NoJetLambda_%d", i), Form("Lambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0NoJetLambda[i] = new THnSparseD(Form("fhnV0NoJetLambda_%d", i), Form("Lambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0NoJetLambda[i]);
-    fhnV0InJetALambda[i] = new THnSparseD(Form("fhnV0InJetALambda_%d", i), Form("ALambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+    fhnV0InJetALambda[i] = new THnSparseD(Form("fhnV0InJetALambda_%d", i), Form("ALambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
     fOutputListStd->Add(fhnV0InJetALambda[i]);
-    fhnV0InPerpALambda[i] = new THnSparseD(Form("fhnV0InPerpALambda_%d", i), Form("ALambda: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+    fhnV0InPerpALambda[i] = new THnSparseD(Form("fhnV0InPerpALambda_%d", i), Form("ALambda: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
     fOutputListStd->Add(fhnV0InPerpALambda[i]);
-    fhnV0InRndALambda[i] = new THnSparseD(Form("fhnV0InRndALambda_%d", i), Form("ALambda: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InRndALambda[i] = new THnSparseD(Form("fhnV0InRndALambda_%d", i), Form("ALambda: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0InRndALambda[i]);
-    fhnV0InMedALambda[i] = new THnSparseD(Form("fhnV0InMedALambda_%d", i), Form("ALambda: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InMedALambda[i] = new THnSparseD(Form("fhnV0InMedALambda_%d", i), Form("ALambda: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0InMedALambda[i]);
-    fhnV0OutJetALambda[i] = new THnSparseD(Form("fhnV0OutJetALambda_%d", i), Form("ALambda: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0OutJetALambda[i] = new THnSparseD(Form("fhnV0OutJetALambda_%d", i), Form("ALambda: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0OutJetALambda[i]);
-    fhnV0NoJetALambda[i] = new THnSparseD(Form("fhnV0NoJetALambda_%d", i), Form("ALambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0NoJetALambda[i] = new THnSparseD(Form("fhnV0NoJetALambda_%d", i), Form("ALambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListStd->Add(fhnV0NoJetALambda[i]);
+    // correlations
+    fhnV0CorrelSEK0s[i] = new THnSparseD(Form("fhnV0CorrelSEK0s_%d", i), Form("K0s: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}", GetCentBinLabel(i).Data()), iNDimCorrel, binsKCorrel, xminKCorrel, xmaxKCorrel);
+    fOutputListStd->Add(fhnV0CorrelSEK0s[i]);
+    fhnV0CorrelMEK0s[i] = new THnSparseD(Form("fhnV0CorrelMEK0s_%d", i), Form("K0s: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}", GetCentBinLabel(i).Data()), iNDimCorrel, binsKCorrel, xminKCorrel, xmaxKCorrel);
+    fOutputListStd->Add(fhnV0CorrelMEK0s[i]);
+    fhnV0CorrelSELambda[i] = new THnSparseD(Form("fhnV0CorrelSELambda_%d", i), Form("Lambda: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
+    fOutputListStd->Add(fhnV0CorrelSELambda[i]);
+    fhnV0CorrelMELambda[i] = new THnSparseD(Form("fhnV0CorrelMELambda_%d", i), Form("Lambda: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
+    fOutputListStd->Add(fhnV0CorrelMELambda[i]);
 
     fh2V0PtJetAngleK0s[i] = new TH2D(Form("fh2V0PtJetAngleK0s_%d", i), Form("K0s: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
     fOutputListStd->Add(fh2V0PtJetAngleK0s[i]);
@@ -906,13 +963,15 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh2EtaPhiMedCone[i]);
     fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 100, 0., TMath::TwoPi());
     fOutputListStd->Add(fh1PhiJet[i]);
-    fh1PtJetTrackLeading[i] = new TH1D(Form("fh1PtJetTrackLeading_%d", i), Form("Leading track pt spectrum, cent: %s;#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 200, 0., 20);
-    fOutputListStd->Add(fh1PtJetTrackLeading[i]);
+    fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
+    fOutputListStd->Add(fh2PtJetPtTrackLeading[i]);
     fh1NJetPerEvent[i] = new TH1D(Form("fh1NJetPerEvent_%d", i), Form("Number of selected jets per event, cent: %s;# jets;# events", GetCentBinLabel(i).Data()), 100, 0., 100.);
     fOutputListStd->Add(fh1NJetPerEvent[i]);
     // event histograms
     fh1VtxZ[i] = new TH1D(Form("fh1VtxZ_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 150, -1.5 * fdCutVertexZ, 1.5 * fdCutVertexZ);
     fOutputListQA->Add(fh1VtxZ[i]);
+    fh1VtxZME[i] = new TH1D(Form("fh1VtxZME_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 150, -1.5 * fdCutVertexZ, 1.5 * fdCutVertexZ);
+    fOutputListQA->Add(fh1VtxZME[i]);
     fh2VtxXY[i] = new TH2D(Form("fh2VtxXY_%d", i), Form("#it{xy} coordinate of the primary vertex, cent: %s;#it{x} (cm);#it{y} (cm)", GetCentBinLabel(i).Data()), 200, -0.2, 0.2, 500, -0.5, 0.5);
     fOutputListQA->Add(fh2VtxXY[i]);
     // fOutputListStd->Add([i]);
@@ -1419,6 +1478,21 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1EventCent2->Fill(fdCentrality);
   fh2EventCentTracks->Fill(fdCentrality, iNTracks);
 
+  AliEventPool* pool = 0;
+  Bool_t bPoolReady = kFALSE; // status of pool
+  Double_t dZVtxME = -100; // z_vtx for events used in mixed events
+  if(fbCorrelations)
+  {
+    AliAODVertex* vertex = fAODIn->GetPrimaryVertex();
+    dZVtxME = vertex->GetZ();
+    pool = fPoolMgr->GetEventPool(fdCentrality, dZVtxME);
+    if(!pool)
+      AliFatal(Form("No pool found for centrality = %g, z_vtx = %g", fdCentrality, dZVtxME));
+    bPoolReady = pool->IsReady();
+    if(fDebug > 5) pool->SetDebug(1);
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: events in pool = %d, jets in pool = %d\n", pool->GetCurrentNEvents(), pool->NTracksInPool());
+  }
+
   if(iNV0s)
   {
     fh1EventCounterCut->Fill(3); // events with V0s
@@ -1465,6 +1539,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Int_t iNJetSel = 0; // number of selected reconstructed jets
   TClonesArray* jetArrayPerp = new TClonesArray("AliAODJet", 0); // object where the perp. cones are stored
   Int_t iNJetPerp = 0; // number of perpendicular cones
+  TObjArray* arrayMixedEventAdd = new TObjArray; // array of jets from this event to be added to the pool
+  arrayMixedEventAdd->SetOwner(kTRUE);
 
   AliAODJet* jet = 0; // pointer to a jet
   AliAODJet* jetPerp = 0; // pointer to a perp. cone
@@ -1530,7 +1606,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       if(bPrintJetSelection)
         if(fDebug > 7) printf("accepted\n");
-      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Jet %d with pt %.2f passed selection\n", iJet, dPtJetCorr);
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Jet %d with pt %g passed selection\n", iJet, dPtJetCorr);
 
       vecJetSel.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
       vecPerpPlus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
@@ -1542,7 +1618,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding jet number %d\n", iNJetSel);
       new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
-      fh1PtJetTrackLeading[iCentIndex]->Fill(fJetsCont->GetLeadingHadronPt(jetSel)); // pt of leading jet track
+      fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSel->Pt(), fJetsCont->GetLeadingHadronPt(jetSel)); // pt_jet vs pt of leading jet track
+      if(fbCorrelations)
+        arrayMixedEventAdd->Add(new TLorentzVector(vecJetSel)); // copy selected jet to the list of new jets for event mixing
     }
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: Added jets: %d\n", iNJetSel);
     iNJetSel = jetArraySel->GetEntriesFast();
@@ -1687,7 +1765,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dRapK0s = v0->RapK0Short(); // rapidity calculated for K0s assumption
     Double_t dRapLambda = v0->RapLambda(); // rapidity calculated for Lambda assumption
     Double_t dEtaV0 = v0->Eta(); // V0 pseudorapidity
-//      Double_t dPhiV0 = v0->Phi(); // V0 azimuth
+    Double_t dPhiV0 = v0->Phi(); // V0 azimuth
     Double_t dDecayPath[3];
     for(Int_t iPos = 0; iPos < 3; iPos++)
       dDecayPath[iPos] = dSecVtxPos[iPos] - dPrimVtxPos[iPos]; // vector of the V0 path
@@ -2026,7 +2104,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       continue;
 
     // Selection of V0s in jet cones, perpendicular cones, random cones, outside cones
-    if(bJetEventGood && iNJetSel && (bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda))
+    if(iNJetSel && (bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda))
     {
       // Selection of V0s in jet cones
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for V0 %d %d in %d jet cones\n", bIsCandidateK0s, bIsCandidateLambda, iNJetSel);
@@ -2279,6 +2357,51 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       iNV0CandALambda++;
     }
+    // V0-jet correlations
+    if(fbCorrelations && iNJetSel)
+    {
+      // Fill azimuthal correlation V0-jet in same events
+      for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
+      {
+        AliAODJet* jetCorrel = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+        if(bIsCandidateK0s)
+        {
+          Double_t valueKCorrel[6] = {dMassV0K0s, dPtV0, dEtaV0, jetCorrel->Pt(), GetNormalPhi(dPhiV0 - jetCorrel->Phi()), dEtaV0 - jetCorrel->Eta()};
+          fhnV0CorrelSEK0s[iCentIndex]->Fill(valueKCorrel);
+        }
+        if(bIsCandidateLambda)
+        {
+          Double_t valueLCorrel[6] = {dMassV0Lambda, dPtV0, dEtaV0, jetCorrel->Pt(), GetNormalPhi(dPhiV0 - jetCorrel->Phi()), dEtaV0 - jetCorrel->Eta()};
+          fhnV0CorrelSELambda[iCentIndex]->Fill(valueLCorrel);
+        }
+      }
+      // Fill azimuthal correlation V0-jet in mixed events
+      if(bPoolReady)
+      {
+        for(Int_t iMix = 0; iMix < pool->GetCurrentNEvents(); iMix++)
+        {
+          TObjArray* arrayMixedEvent = pool->GetEvent(iMix);
+          if(!arrayMixedEvent)
+            continue;
+          for(Int_t iJet = 0; iJet < arrayMixedEvent->GetEntriesFast(); iJet++)
+          {
+            TLorentzVector* jetMixed = (TLorentzVector*)arrayMixedEvent->At(iJet);
+            if(!jetMixed)
+              continue;
+            if(bIsCandidateK0s)
+            {
+              Double_t valueKCorrel[6] = {dMassV0K0s, dPtV0, dEtaV0, jetMixed->Pt(), GetNormalPhi(dPhiV0 - jetMixed->Phi()), dEtaV0 - jetMixed->Eta()};
+              fhnV0CorrelMEK0s[iCentIndex]->Fill(valueKCorrel);
+            }
+            if(bIsCandidateLambda)
+            {
+              Double_t valueLCorrel[6] = {dMassV0Lambda, dPtV0, dEtaV0, jetMixed->Pt(), GetNormalPhi(dPhiV0 - jetMixed->Phi()), dEtaV0 - jetMixed->Eta()};
+              fhnV0CorrelMELambda[iCentIndex]->Fill(valueLCorrel);
+            }
+          }
+        }
+      }
+    }
     //===== End of filling V0 spectra =====
 
 
@@ -2287,7 +2410,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     {
       // Associate selected candidates only
 //          if ( !(bIsCandidateK0s && bIsInPeakK0s) && !(bIsCandidateLambda && bIsInPeakLambda) ) // signal candidates
-      if(!(bIsCandidateK0s) && !(bIsCandidateLambda)  && !(bIsCandidateALambda))    // chosen candidates with any mass
+      if(!(bIsCandidateK0s) && !(bIsCandidateLambda)  && !(bIsCandidateALambda)) // chosen candidates with any mass
         continue;
 
       // Get MC labels of reconstructed daughter tracks
@@ -2522,6 +2645,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     //===== End Association of reconstructed V0 candidates with MC particles =====
   }
   //===== End of V0 loop =====
+
+  if(fbCorrelations && iNJetSel)
+  {
+    if(bPoolReady)
+      fh1VtxZME[iCentIndex]->Fill(dZVtxME); // fill z_vtx if event was used for event mixing
+    pool->UpdatePool(arrayMixedEventAdd); // updated the pool with jets from this event
+  }
 
   fh1V0CandPerEvent->Fill(iNV0CandTot);
   fh1V0CandPerEventCentK0s[iCentIndex]->Fill(iNV0CandK0s);
