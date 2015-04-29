@@ -232,11 +232,11 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliVEvent *event, TString lM
             fBoundaryHisto_V0SB -> GetBinContent( fBoundaryHisto_V0SB->FindBin( MinVal( multV0Apartial / fAverageAmplitudes->GetBinContent(3) , multV0Cpartial / fAverageAmplitudes->GetBinContent(4) ) ) );
 
     if ( lEmbedEventSelection ) {
-        if(IsMinimumBias                        ( event ) == kFALSE ) lreturnval = -201;
-        if(IsINELgtZERO                         ( event ) == kFALSE ) lreturnval = -200;
-        if(IsAcceptedVertexPosition             ( event ) == kFALSE ) lreturnval = -199;
-        if(IsNotPileupSPDInMultBins             ( event ) == kFALSE ) lreturnval = -198;
-        if(HasNoInconsistentSPDandTrackVertices ( event ) == kFALSE ) lreturnval = -197;
+        if(IsMinimumBias                        ( event ) == kFALSE ) lreturnval = -200;
+        if(IsINELgtZERO                         ( event ) == kFALSE ) lreturnval = -201;
+        if(IsAcceptedVertexPosition             ( event ) == kFALSE ) lreturnval = -202;
+        if(IsNotPileupSPDInMultBins             ( event ) == kFALSE ) lreturnval = -203;
+        if(HasNoInconsistentSPDandTrackVertices ( event ) == kFALSE ) lreturnval = -204;
     }
 
     return lreturnval;
@@ -626,8 +626,6 @@ Int_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool_
     //It's consistent until proven otherwise...
     Long_t lReturnValue = -10; //Kill this event, please
     
-    if( !IsEventSelected(event) && lEmbedEventSelection ) return lReturnValue; 
-
     /* get ESD vertex */
     if (event->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
@@ -669,6 +667,15 @@ Int_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool_
             lReturnValue = lStoredRefMult;
         }
     }
+
+    if ( lEmbedEventSelection ) {
+        if(IsMinimumBias                        ( event ) == kFALSE ) lReturnValue = -200;
+        if(IsINELgtZERO                         ( event ) == kFALSE ) lReturnValue = -201;
+        if(IsAcceptedVertexPosition             ( event ) == kFALSE ) lReturnValue = -202;
+        if(IsNotPileupSPDInMultBins             ( event ) == kFALSE ) lReturnValue = -203;
+        if(HasNoInconsistentSPDandTrackVertices ( event ) == kFALSE ) lReturnValue = -204;
+    }
+    
     return lReturnValue;
 }
 
