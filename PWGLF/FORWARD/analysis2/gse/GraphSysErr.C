@@ -31,6 +31,7 @@
 #  include <TDatime.h>
 #  include <TList.h>
 #  include <TBrowser.h>
+#  include <TPRegexp.h>
 #  include <iostream>
 #  include <iomanip>
 #  include <fstream>
@@ -48,14 +49,104 @@ class TBrowser;
 # endif
 
 
+/** 
+ * @page an_example Example 
+ *
+ * @dontinclude Example.C 
+ *
+ * We define a function in a script.  It takes one argument - whether
+ * to fit the data or not.
+ * 
+ * @skip void
+ * @until {
+ *
+ * The first thing we do, is to check if we have the class
+ * GraphSysErr, and if not, we compile the script.
+ *
+ * @until LoadMacro
+ *
+ * Then, we adjust some sizes - the default error along X, how large
+ * the end bars should be.
+ *
+ * @until SetEndErrorSize 
+ *
+ * Now we're ready to declare our object.
+ *
+ * @until GraphSysErr
+ *
+ * The first we do, is set some parameters on the object: That we
+ * shouldn't put tick marks ('ends') on the error, and the name of the
+ * X and Y axis.
+ *
+ * @until SetYTitle
+ *
+ * Next, we set some key values.  These are mainly for exporting to a
+ * Durham database input file. In principle one can define any key,
+ * but only a sub-set is written when exporting.
+ *
+ * @until "obskey"
+ *
+ * Next, we can add as many qualifiers to the data set we want.  If
+ * one is to export multiple graphs to a table, one should set a @b RE
+ * qualifier to distinguish the columns, or give each graph a distinct
+ * title.
+ *
+ * @until AddQualifier 
+ *
+ * Now we can define common errors. That is, errors that are
+ * correlated over all points.  Common errors only have one negative
+ * and one positive value (which may be identical).  Common errors can
+ * be relative.  The member function GraphSysErr:DefineCommon returns
+ * a unique identifier.  This identifier should be stored for later
+ * manipulation of the error.
+ *
+ * @until cm2 
+ *
+ * Next is the point-to-point (uncorrelated) systematic errors.  Here,
+ * we simple give a name and whether the error is relative.  The
+ * member function GraphSysErr:DeclarePoint2Point returns a unique
+ * identifier.  This identifier should be stored for later
+ * manipulation of the error.
+ *
+ * @until pp2 
+ *
+ * Now we customize the graphical output of each error 
+ *
+ * @until pp2, GraphSysErr::kHat
+ *
+ * In this example, we take the data points to from a Gaussian
+ * deviate.  Technically, we make a histogram of the probability of a
+ * given number.
+ *
+ * @until Scale
+ *
+ * Now we can set all our points.  We remove our temporary histogram
+ * after we're done with it.
+ * 
+ * @until delete 
+ *
+ * Finally, we can build a canvas 
+ *
+ * @until SetRightMargin
+ *
+ * Depending on the single parameter, we either draw or fit a Gaussian
+ * distribtion to the data.
+ * 
+ * @until gaus
+ *
+ * And then we draw nad finish
+ *
+ * @until }
+ * 
+ */
 /**
  * This class defines an (X,Y) with any number of error sources.  
  * 
  * Sources that can be specified are 
  *
- *   1 set Statistical errors 
- *   N sets of common systematic errors 
- *   M sets of point-to-point systematic errors. 
+ *   - 1 set Statistical errors 
+ *   - N sets of common systematic errors 
+ *   - M sets of point-to-point systematic errors. 
  *
  * Systematic errors can be defined to relative to the point value or
  * absolute numbers.
@@ -66,6 +157,8 @@ class TBrowser;
  * to a format more or less acceptable by the Durham database (see
  * Export), and one can import data sets from Durham database input
  * formatted files (see Import)
+ *
+ * @see @link an_example Example @endlink
  *
  */
 class GraphSysErr : public TNamed, public TAttMarker, 
@@ -120,6 +213,7 @@ public:
       fXTitle(""),
       fYTitle(""),
       fMap(0),
+      fQualifiers(0),
       fStatRelative(false)
   {
     
@@ -147,6 +241,7 @@ public:
       fXTitle(""),
       fYTitle(""),
       fMap(0),
+      fQualifiers(0),
       fStatRelative(false)
   {
     fPoint2Point.SetName("point2point");
@@ -180,6 +275,7 @@ public:
       fXTitle(""),
       fYTitle(""),
       fMap(0),
+      fQualifiers(0),
       fStatRelative(false)
   {
     fPoint2Point.SetOwner();
@@ -211,6 +307,7 @@ public:
       fXTitle(other.fXTitle),
       fYTitle(other.fYTitle),
       fMap(0),
+      fQualifiers(0),
       fStatRelative(false)
   {
     if (other.fData) 
@@ -231,7 +328,10 @@ public:
     while ((p2p = static_cast<HolderP2P*>(nextP()))) 
       fPoint2Point.Add(new HolderP2P(*p2p));    
 
-    if (other.fMap) fMap = static_cast<TList*>(other.fMap->Clone());
+    if (other.fMap)
+      fMap = static_cast<TList*>(other.fMap->Clone());
+    if (other.fQualifiers)
+      fQualifiers = static_cast<TList*>(other.fQualifiers->Clone());
   }
   /**
    * DTOR
@@ -240,14 +340,10 @@ public:
   {
     fPoint2Point.Delete();
     fCommon.Delete();
-    if (fData)  delete fData;
-    if (fDrawn) delete fDrawn;
-    if (fMap)   delete fMap;
-  }
-  void SetTitle(const char* name)
-  {
-    TNamed::SetTitle(name);
-    if (fData) fData->SetTitle(name);
+    if (fData)         delete fData;
+    if (fDrawn)        delete fDrawn;
+    if (fMap)          delete fMap;
+    if (fQualifiers)   delete fQualifiers;
   }
   /** 
    * Assignment operator
@@ -295,8 +391,14 @@ public:
 
     if (fMap) delete fMap;
     fMap = 0;
-    if (other.fMap) fMap = static_cast<TList*>(other.fMap->Clone());
+    if (other.fMap)
+      fMap = static_cast<TList*>(other.fMap->Clone());
 
+    if (fQualifiers) delete fQualifiers;
+    fQualifiers = 0;
+    if (other.fQualifiers)
+      fQualifiers = static_cast<TList*>(other.fQualifiers->Clone());
+    
     return *this;
   }
   /* @} */
@@ -310,9 +412,22 @@ public:
    * 
    * @param option option (not used)
    */
-  virtual void ls(Option_t* option) const
+  virtual void ls(Option_t* option="") const
   {
+    Print(option);
+  }
+  /** 
+   * Print this. 
+   * 
+   * @param option not used
+   */
+  virtual void Print(Option_t* option="R") const //*MENU*
+  {
+    gROOT->IndentLevel();
     std::cout << GetName() << ": " << GetTitle() << std::endl;
+    TString opt(option);
+    opt.ToUpper();
+    if (!opt.Contains("R")) return;
     gROOT->IncreaseDirLevel();
 
     if (fMap) {
@@ -320,6 +435,13 @@ public:
       std::cout << "Key/value pairs: " << std::endl;
       gROOT->IncreaseDirLevel();
       fMap->ls(option);
+      gROOT->DecreaseDirLevel();
+    }
+    if (fQualifiers) {
+      gROOT->IndentLevel();
+      std::cout << "Qualifier pairs: " << std::endl;
+      gROOT->IncreaseDirLevel();
+      fQualifiers->ls(option);
       gROOT->DecreaseDirLevel();
     }
 
@@ -338,15 +460,6 @@ public:
     gROOT->DecreaseDirLevel();
   }
   /** 
-   * Print this. 
-   * 
-   * @param option not used
-   */
-  virtual void Print(Option_t* option) const //*MENU*
-  {
-    ls(option);
-  }
-  /** 
    * Say that this should be shown as a folder
    * 
    * @return true
@@ -359,7 +472,8 @@ public:
    */
   virtual void Browse(TBrowser* b)
   {
-    if (fMap) b->Add(fMap);
+    if (fMap)        b->Add(fMap);
+    if (fQualifiers) b->Add(fQualifiers);
     b->Add(&fCommon);
     b->Add(&fPoint2Point);
     if (fData)  b->Add(fData);
@@ -393,7 +507,71 @@ public:
    *
    * @image html DrawStyles.png
    *
-   * @include tests/DrawStyles.C 
+   * @dontinclude tests/DrawStyles.C 
+   * @skip Drawer
+   * @until }
+   *
+   * A function to set-up an object
+   *
+   * @skip Test1 
+   * @until EndTest1
+   *
+   * A function to make a canvs 
+   *
+   * @skip MakeCanvas
+   * @until EndMakeCanvas
+   *
+   * Function to draw the stuff 
+   *
+   * @skip DrawIt
+   * @until EndDrawIt
+   *
+   * Some utilies 
+   *
+   * @skip Sizes 
+   * @until EndSizes
+   *
+   * Steering function to do all tests 
+   *
+   * @skip DrawAll
+   * @until EndDrawAll
+   *
+   * The various ways we can draw the data 
+   * 
+   * First, combining all systematic errors 
+   * 
+   * @skip DrawCombined
+   * @until EndDrawCombined
+   * 
+   * Then, stacking all systematics.
+   * 
+   * @skip DrawStack
+   * @until EndDrawStack
+   * 
+   * We can also combine all errors 
+   * 
+   * @skip DrawCombinedCommonStat
+   * @until EndDrawCombinedCommonStat
+   * 
+   * We can also stack the errors 
+   * 
+   * @skip DrawStackCommonStat
+   * @until EndDrawStackCommonStat
+   * 
+   * First, combining all errors 
+   * 
+   * @skip DrawStackStat
+   * @until EndDrawStackStat
+   *
+   * End of the tester class 
+   *
+   * @skip GraphSysErr
+   * @until };
+   *
+   * The entry point for the script 
+   *
+   * @skip void
+   * @until EndDrawStyles
    *
    */
   void Draw(Option_t* option="")
@@ -539,6 +717,119 @@ public:
    * @{
    * @name Import/export 
    */
+  void SavePrimitive(std::ostream& out, Option_t* option="")
+  {
+    TString opt(option);
+    opt.ToLower();
+    Bool_t load = opt.Contains("load"); opt.ReplaceAll("load", "");
+    TString funcName;
+    TPRegexp regex("func=([a-zA-z][a-zA-Z0-9_]*)");
+    TObjArray* toks = regex.MatchS(opt);
+    if (toks) {
+      if (toks->GetEntriesFast() > 1) 
+	funcName = toks->At(1)->GetName();
+      if (toks->GetEntriesFast() > 0) 
+	opt.ReplaceAll(toks->At(0)->GetName(), "");
+      delete toks;
+    }
+      
+    
+    // Save initialization 
+    if (!funcName.IsNull()) 
+      out << "TObject* " << funcName << "(Option_t* o=\"\")\n";
+    out << "{\n";
+    if (load)
+      out << " // Load class\n"
+	  << "  if (!gROOT->GetClass(\"GraphSysErr\"))\n"
+	  << "    gROOT->LoadMacro(\"GraphSysErr.C+\");\n";
+    out << "  GraphSysErr* g = new GraphSysErr(\""
+	<< GetName() << "\",\"" << GetTitle() << "\","
+	<< GetN() << ");\n";
+    // Save attributes 
+    out << "  // Point options\n"
+	<< "  g->SetMarkerStyle("  << GetMarkerStyle() << ");\n"
+	<< "  g->SetMarkerColor("  << GetMarkerColor() << ");\n"
+	<< "  g->SetMarkerSize("   << GetMarkerSize() << ");\n"
+	<< "  g->SetLineStyle("    << GetLineStyle() << ");\n"
+	<< "  g->SetLineColor("    << GetLineColor() << ");\n"
+	<< "  g->SetLineWidth("    << GetLineWidth() << ");\n"      
+	<< "  g->SetFillStyle("    << GetFillStyle() << ");\n"
+	<< "  g->SetFillColor("    << GetFillColor() << ");\n"
+	<< "  g->SetXTitle(\""     << fXTitle << "\");\n"
+	<< "  g->SetYTitle(\""     << fYTitle << "\");\n"
+	<< "  g->SetDataOption("   << fDataOption << ");\n"
+	<< "  // Sum options\n"
+	<< "  g->SetSumOption("    << fSumOption << ");\n"
+	<< "  g->SetSumTitle(\""   << fSumTitle << "\");\n"
+	<< "  g->SetSumLineStyle(" << fSumLine.GetLineStyle() << ");\n"
+	<< "  g->SetSumLineColor(" << fSumLine.GetLineColor() << ");\n"
+	<< "  g->SetSumLineWidth(" << fSumLine.GetLineWidth() << ");\n"      
+	<< "  g->SetSumFillStyle(" << fSumFill.GetFillStyle() << ");\n"
+	<< "  g->SetSumFillColor(" << fSumFill.GetFillColor() << ");\n"
+	<< "  // Stat options\n"
+	<< "  g->SetStatRelative(" << fStatRelative << ");\n";
+    TIter nextC(&fCommon);
+    HolderCommon* cmn = 0;
+    while ((cmn = static_cast<HolderCommon*>(nextC())))
+      cmn->SavePrimitive(out, "d");
+    TIter nextP(&fPoint2Point);
+    HolderP2P* p2p = 0;
+    while ((p2p = static_cast<HolderP2P*>(nextP())))
+      p2p->SavePrimitive(out, "d");
+    Int_t n = GetN();
+    out << " // " << n << " points\n";
+    Bool_t statRel = IsStatRelative();
+    for (Int_t i = 0; i < n; i++) {
+      Double_t y = GetY(i);
+      out << "  g->SetPoint(" << i << ',' << GetX(i) << ',' << y << ");\n"
+	  << "  g->SetPointError(" << i << ',' << GetErrorXLeft(i) << ','
+	  << GetErrorXRight(i) << ");\n"
+	  << "  g->SetStatError(" << i << ','
+	  << (statRel ? 1/y : 1)*GetStatErrorDown(i) << ','
+	  << (statRel ? 1/y : 1)*GetStatErrorUp(i) << ");\n";
+      nextP.Reset();
+      while ((p2p = static_cast<HolderP2P*>(nextP()))) {
+	Int_t  id  = p2p->GetUniqueID();
+	Bool_t rel = p2p->IsRelative();
+	out << "  g->SetSysError(" << id << ',' << i << ','
+	    << GetSysErrorXLeft(id, i) << ','
+	    << GetSysErrorXRight(id, i) << ','
+	    << (rel ? 1/y : 1) * GetSysErrorYDown(id, i) << ','
+	    << (rel ? 1/y : 1) * GetSysErrorYUp(id, i) << ");\n";
+      } // while(p2p)
+    } // for (i)
+    out << "  if (o && o[0] != '\\0') {\n"
+	<< "    g->Draw(o);\n";
+    if (fDrawn && fDrawn->GetHistogram())
+      out << "    if (g->GetMulti() && g->GetMulti()->GetHistogram()) {\n"
+	  << "      g->GetMulti()->GetHistogram()->SetMinimum("
+	  << fDrawn->GetHistogram()->GetMinimum() << ");\n"
+	  << "      g->GetMulti()->GetHistogram()->SetMaximum("
+	  << fDrawn->GetHistogram()->GetMaximum() << ");"
+	  << "    }\n";
+   
+    out << "  }\n";
+    if (!funcName.IsNull()) out << "  return g;\n";
+    out << "};\n";
+  }
+  /** 
+   * Save to a ROOT script
+   * 
+   * @param fileName Script to write to 
+   */
+  void Save(const char* fileName)
+  {
+    std::ofstream out(fileName);
+    TString funcName(fileName);
+    funcName.ReplaceAll(".C","");
+    out << "// \n"
+	<< "// Generated by GraphSysErr.C\n"
+	<< "// \n"
+      // << "class GraphSysErr;\n\n";
+	<< "\n";
+    SavePrimitive(out, Form("load func=%s", funcName.Data()));
+    out.close();
+  }
   /** 
    * Dump on stream a table suitable (After some editing) for
    * uploading to the Durham database.
@@ -556,26 +847,54 @@ public:
    GraphSysErr* g = 0;
    Bool_t first = true;
    while ((g = static_cast<GraphSysErr*>(next()))) {
-     g->Export(first, out);
+     g->Export(out, (first ? "h" : ""));
      first = false;
    }
    out.close();
    * @endcode 
    * 
-   * @param header If true, also generate header 
    * @param out    Output stream to write to. 
+   * @param option Options
+   *
+   * - H Export file header 
+   * - C Export file comment 
+   * - S Export Point-to-point systematic names
    */
-  void Export(Bool_t header=true, std::ostream& out=std::cout)
+  void Export(std::ostream& out=std::cout, Option_t* option="")
   {
-    ExportHeader(out, header, header);
-    ExportKey(out, "qual", true);
-    // out << FormatKey("qual") << GetTitle() << std::endl;
+    TString opt(option);
+    opt.ToLower();
+    Bool_t header   = opt.Contains("h");
+    Bool_t sysNames = opt.Contains("s");
+    Bool_t comment  = opt.Contains("c");
+    
+    ExportHeader(out, header, comment);
+    
+    // --- Export qualifiers -----------------------------------------
+    Bool_t hasTitle = false;
+    if (fQualifiers) {
+      TIter nextQ(fQualifiers);
+      TObject* q = 0;
+      while ((q = nextQ())) {
+	TString k(q->GetName());
+	if (k.EqualTo("RE") || k.EqualTo("title", TString::kIgnoreCase))
+	  hasTitle = true;
+	out << FormatKey("qual") << q->GetName() << " : "
+	    << q->GetTitle() << std::endl;
+      }
+    }
+    if (!hasTitle)
+      out << FormatKey("qual") << "RE : " << GetTitle() << std::endl;
+    
+    // --- Export X/Y titles ----------------------------------------
     const char* fill = "<please fill in>";    
     out << FormatKey("xheader")
 	<< (fXTitle.IsNull() ? fill : fXTitle.Data())  << "\n"
 	<< FormatKey("yheader")
 	<< (fYTitle.IsNull() ? fill : fYTitle.Data())  
 	<< std::endl;
+
+    // --- Export common errors --------------------------------------
     TIter nextC(&fCommon);
     HolderCommon* holderCommon = 0;
     while ((holderCommon = static_cast<HolderCommon*>(nextC()))) { 
@@ -586,10 +905,12 @@ public:
       ExportError(out, down, up, true, rel);
       out << ":" << holderCommon->GetTitle() << std::endl;
     }
+
+    // --- Export data points ----------------------------------------
     out  << FormatKey("data") << " x : y" << std::endl;
     Int_t n = GetN();
     for (Int_t i = 0; i < n; i++) {
-      ExportPoint(out, i, true);
+      ExportPoint(out, i, true, sysNames);
       out << std::endl;
     }
     out << "*dataend:\n" 
@@ -602,22 +923,39 @@ public:
    * 
    * @param col       Collection of GraphSysErr objets 
    * @param out       Output stream 
-   * @param alsoTop   If true, also output file header 
+   * @param option Options
+   *
+   * - H Export file header 
+   * - C Export file comment 
+   * - S Export Point-to-point systematic names
    */
   static void Export(const TSeqCollection* col,
 		     std::ostream& out,
-		     Bool_t alsoTop=true)
+		     Option_t* option="H")
   {
-    const Double_t tol = 1e-10;
     if (col->GetEntries() < 1) return;
-    GraphSysErr* first = 0;
-    GraphSysErr* gse = 0;
-    TList        toExport;
-    TList        commons;
-    TString      data("x ");
-    TIter        nextCheck(col);
-    TObject*     o = 0;
-    Int_t        nPoints = -1;
+
+    // --- Deduce options --------------------------------------------
+    TString opt(option);
+    opt.ToLower();
+    Bool_t alsoTop = opt.Contains("h");
+    Bool_t alsoCmt = opt.Contains("c");
+    Bool_t alsoNme = opt.Contains("s");
+
+    // --- some variables to use -------------------------------------
+    const Double_t tol = 1e-10;
+    GraphSysErr*   first = 0;
+    GraphSysErr*   gse = 0;
+    TList          toExport;
+    TList          commons;
+    TList          quals;
+    TString        data("x ");
+    Int_t          nPoints = -1;
+    Int_t          idx     = 0;
+
+    // --- Check the passed graphs for compatiblity ------------------
+    TIter          nextCheck(col);
+    TObject*       o       = 0;
     while ((o = nextCheck())) {
       if (!o->IsA()->InheritsFrom(GraphSysErr::Class())) continue;
       gse = static_cast<GraphSysErr*>(o);
@@ -626,6 +964,7 @@ public:
 	nPoints = first->GetN();
       }
       else {
+	// --- Check number of points --------------------------------
 	if (gse->GetN() != nPoints) {
 	  Int_t nTmp = TMath::Min(gse->GetN(), nPoints);
 	  ::Warning("Export", "Incompatible number of points %d in %s"
@@ -633,6 +972,7 @@ public:
 		    gse->GetN(), gse->GetName(), nTmp);
 	  nPoints = nTmp;
 	}
+	// --- check X values ----------------------------------------
 	Bool_t ok = true;
 	for (Int_t i = 0; i < nPoints; i++) {
 	  Double_t x1    = first->GetX(i);
@@ -652,48 +992,100 @@ public:
 	  }
 	} // for i      
 	if (!ok) continue;
+      } // !first
 
-	// Check list of common errors
-	TIter    nextGseCmn(&(gse->fCommon));
-	TObject* oGseCmn = 0;
-	Int_t nFound = 0;
-	while ((oGseCmn = nextGseCmn())) {
-	  Int_t gseId = gse->FindId(oGseCmn->GetTitle());
-	  Int_t fstId = first->FindId(oGseCmn->GetTitle());
-	  if (fstId <= 0) {
-	    ::Warning("Export", "%s has additional common error: %s",
-		      gse->GetTitle(), oGseCmn->GetTitle());
-	    ok = false;
-	    break;
-	  }
-	  nFound++;
-	  // Check values
-	  Double_t ecl1  = first->GetCommonErrorYDown(fstId);
-	  Double_t ech1  = first->GetCommonErrorYUp(fstId);
-	  Double_t eclT  = gse->GetCommonErrorYDown(gseId);
-	  Double_t echT  = gse->GetCommonErrorYUp(gseId);
-	  if ((ecl1 > tol && TMath::Abs(ecl1-eclT) > tol) ||
-	      (ech1 > tol && TMath::Abs(ech1-echT) > tol)) {
-	    ::Warning("Export", "Common error %s (+%f,-%f) of %s is "
-		      "incompatbile (+%f,-%f)", 
-		      oGseCmn->GetTitle(), echT, eclT, gse->GetTitle(),
-		      ecl1, ech1);
-	    ok = false;
-	    break;
-	  }
-	}
-	if (nFound != first->fCommon.GetEntries()) {
-	  ::Warning("Export", "%s is missing common errors",
-		    gse->GetTitle());
-	  ok = false;
-	}
-	  
-	if (!ok) continue;
-
-      }
+      // --- Get all possible qualifiers -----------------------------
       toExport.Add(gse);
+      TIter    nextQ(gse->fQualifiers);
+      TObject* q = 0;
+      while ((q = nextQ())) {
+	// ::Info("", "qualifier %s=%s", q->GetName(), q->GetTitle());
+	StoreQual(quals, idx, q);
+      }
+
+      // --- Get all common systematics ------------------------------
+      TIter    nextCmn(&(gse->fCommon));
+      TObject* oCmn = 0;
+      while ((oCmn = nextCmn())) {
+	if (commons.FindObject(oCmn->GetTitle())) continue;
+	TObjString* cmn = new TObjString(oCmn->GetTitle());
+	if (gse == first) cmn->SetUniqueID(gse->FindId(oCmn->GetTitle()));
+	commons.Add(cmn);
+      }
+      
+      idx++;
       data += ": y ";
     }
+    // --- Now deduce the common common errors -----------------------
+    TIter    nextCmn(&(commons));
+    TObject* oCmn = 0;
+    while ((oCmn = nextCmn())) {
+      TString  oNme(oCmn->GetName());
+      Bool_t   found = true;
+      Double_t ecl1  = -1; 
+      Double_t ech1  = -1;
+      
+      // --- Loop over data ------------------------------------------
+      TIter  nextG(&toExport);
+      while ((gse = static_cast<GraphSysErr*>(nextG()))) {
+	/// chekc if we have this error 
+	Int_t gseId = first->FindId(oNme);
+
+	if (gseId > 0) {
+	  // If we do, check compatibility  
+	  if (ecl1 < 0) {
+	    // First time we get this error 
+	    ecl1 = gse->GetCommonErrorYDown(gseId);
+	    ech1 = gse->GetCommonErrorYUp(gseId);
+	    continue;
+	  }
+	  else {
+	    // Now check values within tolerance 
+	    Double_t eclT  = gse->GetCommonErrorYDown(gseId);
+	    Double_t echT  = gse->GetCommonErrorYUp(gseId);
+	    if ((ecl1 > tol && TMath::Abs(ecl1-eclT) > tol) ||
+		(ech1 > tol && TMath::Abs(ech1-echT) > tol)) {
+	      found = false;
+	    } // incompatible
+	  } // ecl1 >= 0
+	} // gseId > 0
+	else 
+	  // This graph does not have this common, flag it 
+	  found = false;
+      } // while(gse)
+      oCmn->SetBit(BIT(14), found);
+
+      // If we found the error in all graphs and they are all
+      // compatible, then all is good,
+      if (found) continue;
+
+      // If not, we represent the common systematic as a qualifier 
+      idx   = 0;      
+      nextG.Reset();
+      while ((gse = static_cast<GraphSysErr*>(nextG()))) {
+	Int_t gseId = first->FindId(oNme);
+	TString val;
+	if (gseId > 0) {
+	  // This graph has the value, store as qual
+	  Bool_t   rel = gse->IsRelative(gseId);
+	  Double_t ecl = gse->GetCommonErrorYDown(gseId);
+	  Double_t ech = gse->GetCommonErrorYUp(gseId);
+	  if (TMath::Abs(ech-ecl) < tol)
+	    val = Form("+- %f%s", ecl, (rel ? " PCT" : ""));
+	  else
+	    val = Form("+%f,-%f%s", ech, ecl, (rel ? " PCT" : ""));
+	}
+	else {
+	  // This does not have the error, store empty string
+	  val = "";
+	}
+	// Now store this in our qualifier table 
+	StoreQual(quals, idx, oNme, val);
+	idx++;
+      } // while(gse)
+    } // while common
+
+    // --- Sanity checks ---------------------------------------------
     if (nPoints <= 0) {
       ::Error("Export", "No points to write");
       return;
@@ -706,10 +1098,39 @@ public:
       ::Error("Export", "Didn't get the first graph");
       return;
     }
-    first->ExportHeader(out, alsoTop, alsoTop);
 
+    // --- Export header --------------------------------------------
+    first->ExportHeader(out, alsoTop, alsoCmt);
+
+    // --- Export qualifiers -----------------------------------------
+    // quals.ls();
+    Bool_t hasTitle = false;
+    TIter nextQ(&quals);
+    TList* ql = 0;
+    while ((ql = static_cast<TList*>(nextQ()))) {
+      TString k(ql->GetName());
+      if (k.EqualTo("RE") || k.EqualTo("title", TString::kIgnoreCase))
+	hasTitle = true;
+      out << FormatKey("qual") << ql->GetName();
+      for (Int_t i = 0; i < toExport.GetEntries(); i++) {
+	TObject* qv = ql->At(i);
+	TString  v  = "";
+	if (qv)  v  = qv->GetName();
+	out << " : " << v;
+      }
+      out << std::endl;
+    }
+    if (!hasTitle) {
+      out << FormatKey("qual") << "RE ";
+      for (Int_t i = 0; i < toExport.GetEntries(); i++) 
+	out << ": " << toExport.At(i)->GetTitle();
+      out << std::endl;
+    }
+
+    
+    // --- Export axis titles ----------------------------------------
     const char*  fill     = "<please fill in>";
-    const char*  fields[] = { "qual", "xheader", "yheader", 0 };
+    const char*  fields[] = { "xheader", "yheader", 0 };
     const char** pfld     = fields;
     while (*pfld) { 
       out << FormatKey(*pfld);
@@ -717,10 +1138,12 @@ public:
       Bool_t one = true;
       while ((gse = static_cast<GraphSysErr*>(nextSpec()))) {
 	TString val;
-	if ((*pfld)[0] == 'q' && one) out << ": ";
-	if      ((*pfld)[0] == 'q') val = gse->GetKey("qual"); // Title();
-	else if ((*pfld)[0] == 'x') val = gse->fXTitle;
+	if      ((*pfld)[0] == 'x') val = gse->fXTitle;
 	else if ((*pfld)[0] == 'y') val = gse->fYTitle;
+	if (val.Contains("#")) {
+	  val.Prepend("$");
+	  val.Append("$");
+	}
 	if (!val.IsNull()) val.ReplaceAll("#", "\\");
 	else               val = fill;
 	out << (one ? "" : ":") << val;
@@ -730,23 +1153,38 @@ public:
       pfld++;
       out << std::endl;
     }
-    TIter    nextCmn(&first->fCommon);
-    TObject* oCmn;
-    while ((oCmn = nextCmn())) {
+      
+    // --- Export common systematics ---------------------------------
+    TIter    nextC(&commons);
+    while ((oCmn = nextC())) {
+      if (!oCmn->TestBit(BIT(14))) {
+	::Warning("Export",
+		  "Common systematic error \"%s\" represented by qual",
+		  oCmn->GetName());
+	continue;
+      }
       out << FormatKey("dserror");
-      UInt_t   id  = first->FindId(oCmn->GetTitle());
+      UInt_t   id  = first->FindId(oCmn->GetName());
       Bool_t   rel = first->IsRelative(id);
       Double_t ecl = first->GetCommonErrorYDown(id);
       Double_t ech = first->GetCommonErrorYUp(id);
       ExportError(out, ecl, ech, true, rel);
-      out << " : "<< oCmn->GetTitle() << std::endl;
+      TString tit(oCmn->GetName());
+      if (tit.Contains("#")) {
+	tit.Prepend("$");
+	tit.Append("$");
+      }
+      tit.ReplaceAll("#", "\\");
+      out << " : "<< tit << std::endl;
     }
+
+    // --- Export points ---------------------------------------------
     out << FormatKey("data") << data << std::endl;
     for (Int_t i = 0; i < nPoints; i++) {
       TIter  next(&toExport);
       Bool_t one = true;
       while ((gse = static_cast<GraphSysErr*>(next()))) {
-	gse->ExportPoint(out, i, one);
+	gse->ExportPoint(out, i, one, alsoNme);
 	one = false;
       }
       out << std::endl;
@@ -784,15 +1222,18 @@ public:
     GraphSysErr* g = 0;
     Int_t id = 0;
     do {
-      Int_t sub = 1;
+      Int_t    sub  = 1;
+      UShort_t nIdx = 256;
+      int      cur  = in.tellg();
       do {
-	int cur = in.tellg();
-	if (!(g = Import(in, sub))) break;
 	in.seekg(cur, in.beg);
+	if (!(g = Import(in, sub, &nIdx))) break;
+	if (kVerbose & kImport)
+	  ::Info("Import", "Imported %d of %d", sub, nIdx);
 	g->SetName(Form("ds_%d_%d", id, sub-1));
 	ret->Add(g);
 	sub++;
-      } while(true);
+      } while(sub < nIdx);
       id++;
     } while (!in.eof());
     return ret;
@@ -809,23 +1250,25 @@ public:
    * typical inputs. it can fail for particular inputs.
    *
    * To read multiple graphs, use GraphSysErr::Import(const TString&)
-   * @param in  Input stream
-   * @param idx Column of data set to import. 
+   * @param in   Input stream
+   * @param idx  Column of data set to import. 
+   * @param nIdx If non-null, holds the number of available columns on return. 
    * 
    * @return Newly allocated object or null
    *
    */
-  static GraphSysErr* Import(std::istream& in, UShort_t idx=0)
+  static GraphSysErr* Import(std::istream& in, UShort_t idx=0,
+			     UShort_t* nIdx=0)
   {
     GraphSysErr* ret    = 0;
     Int_t        n      = 0;
     Bool_t       inSet  = false;
     Bool_t       inData = false;
-    TString      tit    = "";
     TString      xtit   = "";
     TString      ytit   = "";
     TString      tmp    = "";
     TString      last   = "";
+    TList        quals;
     TList        keys;
     Int_t        isty   = 0;
     do {
@@ -855,15 +1298,19 @@ public:
 	  // Always terminate on the end of a data set
 	  break;
 	}
-	else if (last.BeginsWith("dscomment",TString::kIgnoreCase)) {
-	  tit = value;
+	// else if (last.BeginsWith("dscomment",TString::kIgnoreCase)) {
+	// tit = value;
+	// }
+	else if (last.BeginsWith("qual", TString::kIgnoreCase)) {
+	  // ::Info("", "Got qual: %s", value.Data());
+	  // if (!qual.IsNull()) {
+	  //   ::Info("", "Adding seen qual: %s", qual.Data());
+	  quals.Add(new TObjString(value));
 	}
-	else if (last.BeginsWith("xheader", TString::kIgnoreCase)) {
+	else if (last.BeginsWith("xheader", TString::kIgnoreCase))
 	  xtit = value;
-	}
-	else if (last.BeginsWith("yheader", TString::kIgnoreCase)) {
+	else if (last.BeginsWith("yheader", TString::kIgnoreCase))
 	  ytit = value;
-	}
 	else if (last.BeginsWith("dserror", TString::kIgnoreCase)) {
 	  // Common systematic error 
 	  if (kVerbose & kImport) 
@@ -874,7 +1321,7 @@ public:
 	  if (ImportError(Token(tokens, 0), el, eh, rel)) { 
 	    if (rel) { el /= 100.; eh /= 100.; }
 	    TString& nam = Token(tokens, 1);
-	    if (!ret) ret = new GraphSysErr("imported", tit);
+	    if (!ret) ret = new GraphSysErr("imported", "");
 	    Int_t id = ret->DefineCommon(nam, rel, el, eh, kRect);
 	    ret->SetSysLineColor(id, (isty % 6) + 2);
 	    ret->SetSysFillColor(id, (isty % 6) + 2);
@@ -888,6 +1335,10 @@ public:
 	  // These are the field we can deal with 
 	  // Let's get the header field value 
 	  TObjArray* tokens = value.Tokenize(":");
+	  if (nIdx) {
+	    *nIdx = tokens->GetEntriesFast();
+	    // ::Info("Import", "Max index is %d", *nIdx);
+	  }
 	  if (tokens->GetEntriesFast() > 2 && idx < 1) { 
 	    idx = 1;
 	    ::Warning("Import", "Can only import one data set at a time, "
@@ -995,7 +1446,7 @@ public:
 	tokens->Delete();
 	continue;
       }
-      if (!ret) ret = new GraphSysErr("imported", tit);
+      if (!ret) ret = new GraphSysErr("imported", "");
       if (rel) ret->SetStatRelative(true);
       ret->SetPoint(n, x, y);
       ret->SetPointError(n, exl, exh);
@@ -1052,13 +1503,28 @@ public:
       n++;      
     } while (!in.eof());
     if (ret) {
-      if (!xtit.IsNull()) ret->SetXTitle(xtit);
-      if (!ytit.IsNull()) ret->SetYTitle(ytit);
-      if (!tit.IsNull())  ret->SetTitle(tit);
+      TString rxtit = ExtractField(xtit, idx-1);
+      TString rytit = ExtractField(ytit, idx-1);
+      if (!rxtit.IsNull()) ret->SetXTitle(rxtit);
+      if (!rytit.IsNull()) ret->SetYTitle(rytit);
 
-      TIter next(&keys);
+      TIter nextQ(&quals);
+      TObject* qual = 0;
+      while ((qual = nextQ())) {
+	TString k = ExtractField(qual->GetName(), 0);
+	TString q = ExtractField(qual->GetName(), idx);
+	/*
+	::Info("LoopQ", "Qualifier string: %s -> %s,%s",
+	       qual->GetName(), k.Data(), q.Data());
+	*/
+	ret->AddQualifier(k, q);
+	if (k.EqualTo("RE") ||
+	    k.EqualTo("title", TString::kIgnoreCase))
+	  ret->SetTitle(q);
+      }
+      TIter nextK(&keys);
       TObject* pair = 0;
-      while ((pair = next())) {
+      while ((pair = nextK())) {
 	ret->SetKey(pair->GetName(),pair->GetTitle());
       }
     }
@@ -1071,7 +1537,7 @@ public:
   /** 
    * @{ 
    * @name Declaring systematic errors
-   */
+   */ 
   /** 
    * Define a common systematic error 
    * 
@@ -1081,6 +1547,11 @@ public:
    * @param option    Options
    * 
    * @return Indentifier of systematic error
+   *
+   * Example of how make define common errors
+   * @dontinclude Example.C
+   * @skip cm1
+   * @until cm2
    */
   UInt_t DefineCommon(const char* title, Bool_t relative, 
 		     Double_t ey, EDrawOption_t option=kFill)
@@ -1119,6 +1590,11 @@ public:
    * @param option    Options
    * 
    * @return Indentifier of systematic error
+   *
+   * Example of how make declare point-to-point errors
+   * @dontinclude Example.C
+   * @skip pp1
+   * @until pp2
    */
   UInt_t DeclarePoint2Point(const char* title, Bool_t relative, 
 			    EDrawOption_t option=kBar)
@@ -1269,6 +1745,40 @@ public:
     h->Set(i, fData, exl, exh, eyl, eyh);
   }
   /* @} */
+  //__________________________________________________________________
+  /**
+   * @{ 
+   * @name Setting drawing options 
+   */
+  /** 
+   * Set the title of the data 
+   * 
+   * @param name Title 
+   */
+  void SetTitle(const char* name)
+  {
+    TNamed::SetTitle(name);
+    if (fData) fData->SetTitle(name);
+  }
+  /** 
+   * Set the draw option for the data and statistical errors
+   * 
+   * @param opt Draw option 
+   */
+  void SetDataOption(EDrawOption_t opt) { fDataOption = opt; } //*MENU*
+  /** 
+   * Set title on X axis
+   * 
+   * @param title 
+   */
+  void SetXTitle(const char* title) { fXTitle = title; } //*MENU*
+  /** 
+   * Set title on y axis
+   * 
+   * @param title 
+   */
+  void SetYTitle(const char* title) { fYTitle = title; } //*MENU*
+  /* @} */
 
   //__________________________________________________________________
   /** 
@@ -1280,11 +1790,23 @@ public:
    */  
   Int_t    GetN() const { return fData ? fData->GetN() : 0; }
   /** 
-   * @param point Point
+   * @param p Point
    * 
    * @return X at point
    */
-  Double_t GetX(Int_t point) const { return fData->GetX()[point]; }
+  Double_t GetX(Int_t p) const { return fData->GetX()[p]; }
+  /** 
+   * @param p Point 
+   *
+   * @return Left error on X at point
+   */
+  Double_t GetErrorXLeft(Int_t p) const { return fData->GetErrorXlow(p); }
+  /** 
+   * @param p Point 
+   *
+   * @return Right error on X at point
+   */
+  Double_t GetErrorXRight(Int_t p) const { return fData->GetErrorXhigh(p); }
   /** 
    * @param point Point
    * 
@@ -1403,6 +1925,19 @@ public:
     return 0;
   }
   /** 
+   * Get title of systematic error 
+   * 
+   * @param id Identifier 
+   * 
+   * @return Name 
+   */
+  const char* GetSysTitle(Int_t id) const
+  {
+    Holder* h = Find(id);
+    if (!h) return "";
+    return h->GetTitle();
+  }
+  /** 
    * Get the common systematic error 
    *
    * @return Common systematic error 
@@ -1426,6 +1961,18 @@ public:
     Bool_t rel = c->IsRelative();
     return c->GetYDown(rel ? 100 : 1);
   }
+  /** 
+   * Get name of X axis 
+   * 
+   * @return X-axis name
+   */
+  const char* GetXTitle() const { return fXTitle.Data(); }
+  /** 
+   * Get name of Y axis 
+   * 
+   * @return Y-axis name
+   */
+  const char* GetYTitle() const { return fYTitle.Data(); }
   /* @} */
 
   //__________________________________________________________________
@@ -1504,7 +2051,7 @@ public:
     Holder* h = Find(id);
     if (!h) return;
     h->SetTitle(name);
-  }    
+  }
   /** 
    * Set the draw option for a specific systematic error 
    * 
@@ -1520,28 +2067,57 @@ public:
   /* @} */
 
   //__________________________________________________________________
-  /**
+  /** 
    * @{ 
-   * @name Set drawing options 
+   * @name Setting attributes on summed errors 
    */
   /** 
-   * Set the draw option for the data and statistical errors
+   * Set the draw option for summed errors
    * 
    * @param opt Draw option 
    */
-  void SetDataOption(EDrawOption_t opt) { fDataOption = opt; } //*MENU*
+  void SetSumOption(EDrawOption_t opt) { fSumOption = opt; } //*MENU*
   /** 
-   * Set title on X axis
+   * Set the title uses for summed errors
    * 
-   * @param title 
+   * @param title Title
    */
-  void SetXTitle(const char* title) { fXTitle = title; } //*MENU*
+  void SetSumTitle(const char* title) { fSumTitle = title; } //*MENU*
   /** 
-   * Set title on y axis
+   * Set the line color of the sumtematice error identified by ID
    * 
-   * @param title 
+   * @param color Line Color 
    */
-  void SetYTitle(const char* title) { fYTitle = title; } //*MENU*
+  void SetSumLineColor(Color_t color) { fSumLine.SetLineColor(color); } //*MENU*
+  /** 
+   * Set the line style of the sumtematice error identified by ID
+   * 
+   * @param style Line style 
+   */
+  void SetSumLineStyle(Style_t style){ fSumLine.SetLineStyle(style); } //*MENU*
+  /** 
+   * Set the line width of the sumtematice error identified by ID
+   * 
+   * @param width Line width in pixels
+   */
+  void SetSumLineWidth(Width_t width){ fSumLine.SetLineWidth(width); }//*MENU*
+  /** 
+   * Set the fill color of the sumtematice error identified by ID
+   * 
+   * @param color Fill color 
+   */
+  void SetSumFillColor(Color_t color){ fSumFill.SetFillColor(color); }//*MENU*
+  /** 
+   * Set the fill style of the sumtematice error identified by ID
+   * 
+   * @param style Fill style  
+   */
+  void SetSumFillStyle(Style_t style){ fSumFill.SetFillStyle(style); }//*MENU*
+  /* @} */
+  /**
+   * @{
+   * @name Key interface 
+   */
   /** 
    * Set a key/value pair.  This can be used to fill out fields in a
    * Durham input file for uploading. 
@@ -1592,10 +2168,11 @@ public:
    g.Export();
    * @endcode
    *
-   * @param key   Key.
-   * @param value Value.
+   * @param key     Key.
+   * @param value   Value.
+   * @param replace If true, remove all values of @a key and set new value
    */
-  void SetKey(const char* key, const char* value) //*MENU*
+  void SetKey(const char* key, const char* value, Bool_t replace=false) //*MENU*
   {
     if (!fMap) { 
       fMap = new TList();
@@ -1624,10 +2201,31 @@ public:
 	v.Remove(0, l.Length()+1+a.Length()+1);
       t = v.Strip(TString::kBoth);
       fMap->Add(new TNamed("abstract", t.Data()));
-    }      
-    else 
+    }
+    else {
+      if (replace) {
+	TObjLink* cur   = fMap->FirstLink();
+	TObjLink* last  = fMap->LastLink();
+	while (cur != last) {
+	  if (!k.EqualTo(cur->GetObject()->GetName())) {
+	    cur = cur->fNext;
+	    continue;
+	  }
+	  TObjLink* tmp = cur->fNext;
+	  fMap->Remove(cur);
+	  cur = tmp;
+	}
+      }
       fMap->Add(new TNamed(k, v));
+    }
   }
+  /** 
+   * Get (first) value of a key 
+   * 
+   * @param key Key 
+   * 
+   * @return Value or null
+   */
   const char* GetKey(const char* key) const 
   {
     if (!fMap) return 0;
@@ -1635,56 +2233,70 @@ public:
     if (!o) return 0;
     return o->GetTitle();
   }
-  /** 
-   * Set the draw option for summed errors
-   * 
-   * @param opt Draw option 
-   */
-  void SetSumOption(EDrawOption_t opt) { fSumOption = opt; } //*MENU*
   /* @} */
-
   //__________________________________________________________________
   /** 
    * @{ 
-   * @name Setting attributes on summed errors 
-   */
+   * @name Qualifiers
+   */ 
   /** 
-   * Set the title uses for summed errors
-   * 
-   * @param title Title
+   * Adds a qualifier 
+   *
+   * @param key     The key 
+   * @param value   he value 
+   * @param replace If true, replace exsiting value 
    */
-  void SetSumTitle(const char* title) { fSumTitle = title; } //*MENU*
+  void AddQualifier(const TString& key, const TString& value,
+		    Bool_t replace=false)
+  {
+    if (!fQualifiers) { 
+      fQualifiers = new TList();
+      fQualifiers->SetOwner();
+      fQualifiers->SetName("qualifiers");
+    }
+    TString val(value);
+    if (key.EqualTo(value)) val = "";
+
+    TString k = key.Strip(TString::kBoth, ' ');
+    TObject* o = fQualifiers->FindObject(k);
+    if (o) {
+      Warning("AddQualifier", "Dataset already has qualifier \"%s\"",
+	      k.Data());
+      if (replace) static_cast<TNamed*>(o)->SetTitle(value);
+      return;
+    }
+    
+    fQualifiers->Add(new TNamed(k, value));
+  }
   /** 
-   * Set the line color of the sumtematice error identified by ID
+   * Remove a qualifier 
    * 
-   * @param color Line Color 
+   * @param key Which to remove 
    */
-  void SetSumLineColor(Color_t color) { fSumLine.SetLineColor(color); } //*MENU*
+  void RemoveQualifier(const TString& key)
+  {
+    if (!fQualifiers) return;
+    TObject* o = fQualifiers->FindObject(key);
+    if (!o) return;
+    fQualifiers->Remove(o);
+    delete o;
+  }
   /** 
-   * Set the line style of the sumtematice error identified by ID
+   * Get qualifier 
    * 
-   * @param style Line style 
-   */
-  void SetSumLineStyle(Style_t style){ fSumLine.SetLineStyle(style); } //*MENU*
-  /** 
-   * Set the line width of the sumtematice error identified by ID
+   * @param name Key of qualifier 
    * 
-   * @param width Line width in pixels
+   * @return Value of qualifier 
    */
-  void SetSumLineWidth(Width_t width){ fSumLine.SetLineWidth(width); }//*MENU*
-  /** 
-   * Set the fill color of the sumtematice error identified by ID
-   * 
-   * @param color Fill color 
-   */
-  void SetSumFillColor(Color_t color){ fSumFill.SetFillColor(color); }//*MENU*
-  /** 
-   * Set the fill style of the sumtematice error identified by ID
-   * 
-   * @param style Fill style  
-   */
-  void SetSumFillStyle(Style_t style){ fSumFill.SetFillStyle(style); }//*MENU*
+  const char* GetQualifier(const char* name) const
+  {
+    if (!fQualifiers) return "";
+    TObject* o = fQualifiers->FindObject(name);
+    if (!o) return "";
+    return o->GetTitle();
+  }
   /* @} */
+
 
   //__________________________________________________________________
   /** 
@@ -2204,6 +2816,20 @@ public:
       fOption = save;
     }
     /* @} */
+    void SavePrimitive(std::ostream& out, Option_t* option="")
+    {
+      if (option[0] == 'd' || option[0] == 'D')
+	out << " // Point-2-Point systematic " << GetTitle() << "\n"
+	    << "  {\n"
+	    << "    Int_t id = g->DeclarePoint2Point(\"" << GetTitle() << "\","
+	    << IsRelative() <<  ',' << fOption << ");\n"
+	    << "    g->SetSysLineColor(id," << GetLineColor() << ");\n"
+	    << "    g->SetSysLineStyle(id," << GetLineStyle() << ");\n"
+	    << "    g->SetSysLineWidth(id," << GetLineWidth() << ");\n"
+	    << "    g->SetSysFillColor(id," << GetFillColor() << ");\n"
+	    << "    g->SetSysFillStyle(id," << GetFillStyle() << ");\n"
+	    << "  }\n";
+    }
     /** Our data */
     Graph* fGraph;
 
@@ -2423,6 +3049,21 @@ public:
       fOption = save;
     }
     /* @} */
+    void SavePrimitive(std::ostream& out, Option_t* option="")
+    {
+      if (option[0] == 'd' || option[0] == 'D')
+	out << " // Common systematic " << GetTitle() << "\n"
+	    << "  {\n"
+	  << "    Int_t id = g->DefineCommon(\"" << GetTitle() << "\","
+	    << fRelative << ',' << fEyl << ',' << fEyh << ','
+	    << fOption << ");\n"
+	    << "    g->SetSysLineColor(id," << GetLineColor() << ")\n;"
+	    << "    g->SetSysLineStyle(id," << GetLineStyle() << ")\n;"
+	    << "    g->SetSysLineWidth(id," << GetLineWidth() << ")\n;"
+	    << "    g->SetSysFillColor(id," << GetFillColor() << ")\n;"
+	    << "    g->SetSysFillStyle(id," << GetFillStyle() << ")\n;"
+	    << "  }\n";
+    }
     /** Down errors */
     Double_t fEyl;
     /** Up errors */
@@ -2439,6 +3080,62 @@ protected:
   {
     TString tmp(Form("*%s:", key));
     return Form("%-12s", tmp.Data());
+  }
+  /** 
+   * Extract a field from a string 
+   * 
+   * @param value The string 
+   * @param idx   Which index 
+   * 
+   * @return String at index, or last value 
+   */
+  static const char* ExtractField(const TString& value, Int_t idx)
+  {
+    static TString val;
+    val = "";
+    TObjArray* tokens = value.Tokenize(":");
+    Int_t      iVal   = TMath::Min(Int_t(idx),tokens->GetEntriesFast()-1);
+    TString    tmp    = tokens->At(iVal)->GetName();
+    val               = tmp.Strip(TString::kBoth, ' ');
+    // tokens->ls();
+    // ::Info("", "Selecting %d: %s", iVal, val.Data());
+    delete tokens;
+    return val.Data();
+  }
+  /** 
+   * Store a qualifier in a table 
+   * 
+   * @param quals Table. 
+   * @param idx   Column number
+   * @param name  Row name 
+   * @param val   The cell content
+   */
+  static void StoreQual(TList& quals, Int_t idx,
+			const char* name, const char* val)
+  {
+    TObject* oqv = quals.FindObject(name);
+    TList*   qv  = 0;
+    if (!oqv) {
+      // ::Info("StoreQual", "Creating list for qualifier %s", name);
+      qv = new TList;
+      qv->SetOwner();
+      qv->SetName(name);
+      quals.Add(qv);
+    }
+    else qv = static_cast<TList*>(oqv);
+    // ::Info("StoreQual", "Storing %d value %s=%s", idx, name, val);
+    qv->AddAt(new TObjString(val), idx);
+  }
+  /** 
+   * Store a qualifier in a table 
+   * 
+   * @param quals Table. 
+   * @param idx   Column number
+   * @param q     Key, value pair. The key is the row name
+   */
+  static void StoreQual(TList& quals, Int_t idx, TObject* q)
+  {
+    StoreQual(quals, idx, q->GetName(), q->GetTitle());
   }
   /** 
    * Export all values of a key 
@@ -2533,11 +3230,11 @@ protected:
     }
     out << "# Start of dataset\n"
 	<< FormatKey("dataset") << std::endl;
-    out << FormatKey("dscomment") << GetTitle() << std::endl;
+    // out << FormatKey("dscomment") << GetTitle() << std::endl;
     const char* fields[] = { "location",
 			     "reackey", 
 			     "obskey",
-			     // "dscomment",
+			     "dscomment",
 			     // "qual", 			     
 			     0 };
     const char** pfld = fields;
@@ -2569,15 +3266,16 @@ protected:
   /** 
    * Export a single point 
    * 
-   * @param out   Output stream 
-   * @param i     Point number
-   * @param alsoX If true, also export X coordinate 
+   * @param out     Output stream 
+   * @param i       Point number
+   * @param alsoX   If true, also export X coordinate 
+   * @param sysName If true, export P2P names
    * 
    * @return output stream 
    */
-  std::ostream& ExportPoint(std::ostream& out, Int_t i, Bool_t alsoX=true) const
+  std::ostream& ExportPoint(std::ostream& out, Int_t i,
+			    Bool_t alsoX=true, Bool_t sysName=true) const
   {
-    out << std::setprecision(4);
     if (alsoX) {
       Double_t x       = GetX(i);
       Double_t exl     = fData->GetErrorXlow(i);
@@ -2588,7 +3286,7 @@ protected:
       else if (TMath::Abs(exh-exl) < 1e-10)
 	out << ' ' << x-exl << " TO " << x+exh;
       else 
-	out << ' ' << std::setprecision(4) << x << ' '
+	out << ' ' << x << ' '
 	    << '+' << exh << ",-" << exl;
       // ExportError(out, exl, exh, false, false);
       out << "; ";
@@ -2615,7 +3313,8 @@ protected:
 	Double_t esl = holderP2P->GetYDown(i)*fy;
 	out << "DSYS=";
 	ExportError(out, esl, esh, true, rel);
-	out << ':'  << holderP2P->GetTitle() << std::flush;
+	if (sysName) 
+	  out << ':'  << holderP2P->GetTitle() << std::flush;
 	first = false;
       }
       out << ')';
@@ -3119,8 +3818,10 @@ protected:
   TString fXTitle;
   /** Y title */
   TString fYTitle;
-  /** Map */
+  /** Map of keys */
   TList* fMap;
+  /** List of qualifiers */
+  TList* fQualifiers;
   /** Whether statistical errors are relative */
   Bool_t fStatRelative;
   ClassDef(GraphSysErr,1);
