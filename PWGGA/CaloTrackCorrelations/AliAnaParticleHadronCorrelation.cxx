@@ -1536,6 +1536,19 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   if(fFillBkgBinsHisto)
   {
+      
+    fhPtLeadInConeBin    = new TH1F*[fNBkgBin] ;
+      
+    fhPtSumInConeBin     = new TH1F*[fNBkgBin] ;
+      
+    fhPtLeadConeBinDecay = new TH1F*[fNBkgBin*fNDecayBits] ;
+      
+    fhSumPtConeBinDecay  = new TH1F*[fNBkgBin*fNDecayBits] ;
+      
+    fhPtLeadConeBinMC    = new TH1F*[fNBkgBin*fgkNmcTypes] ;
+      
+    fhSumPtConeBinMC     = new TH1F*[fNBkgBin*fgkNmcTypes] ;
+
     for(Int_t ibin = 0; ibin < fNBkgBin; ibin++)
     {
       fhPtLeadInConeBin[ibin]  = new TH1F
