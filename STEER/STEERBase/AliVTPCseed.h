@@ -5,7 +5,6 @@
  * See cxx source for full Copyright notice                               *
  * Primary Author: Mikolaj Krzewicki, mkrzewic@cern.ch
  */
-#include "Rtypes.h"
 class AliTPCseed;
 
 class AliVTPCseed {
