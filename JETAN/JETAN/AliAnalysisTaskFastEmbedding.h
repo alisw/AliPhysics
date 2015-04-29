@@ -81,6 +81,8 @@ public:
    void SetEvtSelJetPhiRange(Float_t minPhi, Float_t maxPhi) {fEvtSelMinJetPhi = minPhi; fEvtSelMaxJetPhi = maxPhi;}
    void SetEvtSelJetMinLConstPt(Float_t minLPt)              {fEvtSelJetMinLConstPt = minLPt;}
    void SetEffExtra(Float_t effextra) {fExtraEffPb = effextra;}   
+   void SetDiceMapEff(Bool_t dice) {fDiceMapEff = dice;}
+   void SetLoadDiceTrackMapRootFile(TString path="$ALICE_ROOT/OADB/PWGJE/Efficiency/Efficiency_LHC11a2aj_Cent0_v1.root") {fPathDiceTrackMap=path;}
    void SetToyNumberOfTrackRange(Int_t minN = 1, Int_t maxN = 1){ fToyMinNbOfTracks = minN, fToyMaxNbOfTracks = maxN; }
    void SetToyTrackRanges(Double_t minPt = 50., Double_t maxPt = 50., Double_t ptDistr=0,
    Double_t minEta = -.5, Double_t maxEta = .5,
@@ -129,14 +131,15 @@ public:
   void SetCutBetheBloch(Double_t cutBetheBloch){fCutBetheBloch=cutBetheBloch; Printf("AliAnalysisTaskFastEmbedding:: SetCutBetheBloch %f", cutBetheBloch);}
 
    //
-
-   static Float_t GetPtHard(Bool_t bSet=kFALSE, Float_t newValue = 0.);
+ 
+ 
+  static Float_t GetPtHard(Bool_t bSet=kFALSE, Float_t newValue = 0.);
    
    virtual Int_t      GetPtHardBin(Double_t ptHard);
    virtual Bool_t     PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);
    Bool_t             HasMinLConstPt(AliAODJet* jet);
-
-
+   virtual void  LoadDiceTrackMapRootFile();
+   virtual void SetEfficiencyMap(TH1 *h1);
    // embedding modes
    enum {kAODFull=0, kAODJetTracks, kAODJet4Mom, kToyTracks};
    // event selection from AOD
@@ -225,7 +228,7 @@ private:
    Float_t fEvtSelMaxJetPhi;      // maximum phi of the leading jet
    Float_t fEvtSelJetMinLConstPt; // minimum leading constituent pt of the leading jet
    Double_t fExtraEffPb;          //extra efficiency PbPb      
-   
+   Bool_t   fDiceMapEff;           //if kTRUE,dice tracks according to a map in a user histogram
    // settings for toy "track generation"
    Int_t    fToyMinNbOfTracks;             // minimum nb. of tracks per event
    Int_t    fToyMaxNbOfTracks;             // maximum nb. of tracks per event
@@ -262,7 +265,8 @@ private:
    TH1F  *fh1TrackPt;         //! track pt
    TH2F  *fh2TrackEtaPhi;     //! track eta-phi
    TH1F  *fh1TrackN;          //! nb. of tracks
-
+   TString fPathDiceTrackMap;             // path to root file containing eff. maps
+   TH1    *fhEffH1;               //histogram containing the efficiency map 
    //AZ:
    TH1F  *fh1V0Pt;         //! track pt
    TH2F  *fh2V0EtaPhi;     //! track eta-phi
