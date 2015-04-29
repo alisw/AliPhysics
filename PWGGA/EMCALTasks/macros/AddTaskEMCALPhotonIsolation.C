@@ -1,8 +1,18 @@
+///\file AddTaskEMCALPhotonIsolation.C
+///\brief Configuration of the PhotonIsolation Task
+///
+/// \author Lucile Ronflette <lucile.ronflette@cern.ch>, SUBATECH, Nantes
+/// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
+/// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+
+
+
 AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
  const char *ntracks            = "EmcalTracks",
-  const char *nclusters          = "EmcalClusters",
+ const char *nclusters          = "EmcalClusters",
+ const char *nhybtracks         = "EmcalTracksAna",
 Bool_t		bHisto		= kTRUE,
-Int_t		iOutput		= 1,
+ Int_t		iOutput		= 0,
 Bool_t		bIsMC		= kFALSE
 )
 {
@@ -28,7 +38,7 @@ Bool_t		bIsMC		= kFALSE
   // #### Define manager and data container names
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager) {
-    ::Error("AddTaskNeutralCluster", "No analysis manager to connect to.");
+    ::Error("AddTaskEMCALPhotonIsolation", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -43,7 +53,6 @@ Bool_t		bIsMC		= kFALSE
     myContName = Form("Analysis_Neutrals_MC");
   else
     myContName = Form("Analysis_Neutrals");
-    //myContName = Form("AnalysisR0%2.0f_%s%s%s", jetRadius*100, triggerName.Data(), stringPtHard.Data(), containerNameSuffix.Data());
 
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
@@ -51,31 +60,35 @@ Bool_t		bIsMC		= kFALSE
   // #### Task preferences
   task->SetOutputFormat(iOutput);
  task->SetLCAnalysis(kFALSE);
+ task->SetIsoConeRadius(0.4);
+ task->SetEtIsoThreshold(2.);
+task->SetCTMdeltaEta(0.02);
+task->SetCTMdeltaPhi(0.03);
   task->SetQA(kTRUE);
   task->SetIsoMethod(1);
+  task->SetEtIsoMethod(0);
   task->SetUEMethod(1);
   task->SetUSEofTPC(kFALSE);
+   task->SetMC(bIsMC);
 
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
+  //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
   // #### Add analysis task
   manager->AddTask(task);
 
-  // AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:NeutralCluster", AliAnalysisManager::GetCommonFileName()));
+
   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralCluster",AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
 
-  /*if(isEMCalTrain)
-    RequestMemory(task,200*1024);
+  //if(isEMCalTrain)
+    //    RequestMemory(task,200*1024);
 
-  // #### Do some nasty piggybacking on demand
-  if (externalMacro)
-    gROOT->Macro(externalMacro);
-*/
+
   return task;
 }
