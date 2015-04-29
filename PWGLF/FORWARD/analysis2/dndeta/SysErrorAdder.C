@@ -83,7 +83,7 @@ struct SysErrorAdder
     // case kEmpiricalFill:  off = 48; break;
     // case kHadronFill:     off = 64; break;
     // }
-    Color_t c = ModColor(gse->GetMarkerColor(), off);
+    Color_t c = gse->GetMarkerColor(); // ModColor(gse->GetMarkerColor(), off);
 	
     gse->SetSysFillColor(id, c);
     gse->SetSysLineColor(id, c);
