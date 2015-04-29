@@ -71,6 +71,7 @@ AliNDLocalRegression::AliNDLocalRegression():
   TObject(),           
   fHistPoints(0),            // ND histogram defining regression granularity
   fInputTree(0),             // input tree - object is not owner
+  fStreamer(0),              // optional streamer 
   fFormulaVal(0),            // value:err  definition formula
   fSelection(0),             // point selector formula
   fFormulaVar(0),            //: separated variable   definition formula
