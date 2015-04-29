@@ -31,6 +31,6 @@ void StoreDDLMapSDD(Int_t firstRun=0, Int_t lastRun=AliCDBRunRange::Infinity()){
 
   AliCDBId idDDLSDD("ITS/Calib/DDLMapSDD",firstRun, lastRun);
   AliITSDDLModuleMapSDD *ddlmap=new AliITSDDLModuleMapSDD();
-  ddlmap->SetDefaultMap();
+  ddlmap->SetJun09Map();
   AliCDBManager::Instance()->GetDefaultStorage()->Put(ddlmap, idDDLSDD, md1);  
 }
