@@ -195,7 +195,7 @@ protected:
     return pythia;
   }
   /** 
-   * Create a Pythia6 generator for high-flavor physics 
+   * Create a Pythia6 generator for heavy-flavor physics 
    * 
    * @param type    Which kind 
    * @param harder  If true, make harder processes 

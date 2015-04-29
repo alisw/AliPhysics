@@ -63,6 +63,15 @@ The `HOST` part only makes sense for `PROTOCOL=proof`.
   * `beam1.z=CHARGE`: Charge of particles in beam1
   * `beam2.a=ATOMIC_NUMBER`: Atomic number of particles in beam2
   * `beam2.z=CHARGE`: Charge of particles in beam2
+* `save=MODE`: Only relevant for Proof(Lite). Values can be
+  * `none`: Do not retrieve the final `galice.root` and
+    `Kinematics.root` files.
+  * `split`: Return the final `galice.root` and `Kinematics.root`
+    files - one for each worker.  The files are moved to a
+    sub-directory on the client machine, and an collection of `TUrl`
+    objects is written to `index.root`.  One can easily define a chain
+    using this information. 
+  * `merge`: Does not work
   
 `OPTIONS` can also contain options for the execution environment, such
 as `workers=N` for ProofLite.
