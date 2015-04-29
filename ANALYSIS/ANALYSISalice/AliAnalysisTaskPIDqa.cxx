@@ -1624,51 +1624,36 @@ void AliAnalysisTaskPIDqa::FillQAinfo()
 
   //TPC QA info
   TObjArray *arrTPC=static_cast<TObjArray*>(fListQAinfo->At(0));
+
   if (fPIDResponse && arrTPC){
     AliTPCPIDResponse &tpcResp=fPIDResponse->GetTPCResponse();
-    // fill spline names
+
+    // ===| spline names |======================================================
     if (!arrTPC->UncheckedAt(0)){
-      
-      TObjArray *arrTPCsplineNames=new TObjArray(AliPID::kSPECIESC);
-      arrTPCsplineNames->SetOwner();
-      arrTPCsplineNames->SetName("TPC_spline_names");
-      arrTPC->AddAt(arrTPCsplineNames,0);
+      TH1F *hTPCsplineNames = new TH1F("TPCsplineNames","TPCsplineNames",Int_t(AliPID::kSPECIESC),0.,Double_t(AliPID::kSPECIESC));
+      arrTPC->AddAt(hTPCsplineNames,0);
       
       for (Int_t iresp=0; iresp<AliPID::kSPECIESC; ++iresp){
         const TObject *o=tpcResp.GetResponseFunction((AliPID::EParticleType)iresp);
         if (!o) continue;
-        arrTPCsplineNames->Add(new TObjString(Form("%02d: %s",iresp, o->GetName())));
+        hTPCsplineNames->GetXaxis()->SetBinLabel(iresp+1, Form("%02d: %s",iresp, o->GetName()));
       }
     }
 
-    // tpc response config
+    // ===| tpc response config |===============================================
     if (!arrTPC->UncheckedAt(1)){
-      
-      TObjArray *arrTPCconfigInfo=new TObjArray;
-      arrTPCconfigInfo->SetOwner();
-      arrTPCconfigInfo->SetName("TPC_config_info");
-      arrTPC->AddAt(arrTPCconfigInfo,1);
+      TH1F *hTPCconfigInfo = new TH1F("TPCconfigInfo","TPCconfigInfo", 4,0., 4.);
+      arrTPC->AddAt(hTPCconfigInfo,1);
 
-      TObjString *ostr=0x0;
-      ostr=new TObjString;
-      ostr->String().Form("Eta Corr map: %s", tpcResp.GetEtaCorrMap()?tpcResp.GetEtaCorrMap()->GetName():"none");
-      arrTPCconfigInfo->Add(ostr);
-
-      ostr=new TObjString;
-      ostr->String().Form("Sigma Par map: %s", tpcResp.GetSigmaPar1Map()?tpcResp.GetSigmaPar1Map()->GetName():"none");
-      arrTPCconfigInfo->Add(ostr);
-
-      ostr=new TObjString;
-      ostr->String().Form("MIP: %.2f", tpcResp.GetMIP());
-      arrTPCconfigInfo->Add(ostr);
-      
-      ostr=new TObjString;
-      ostr->String().Form("Res: Def %.3g (%.3g) : AllHigh %.3g (%.3g) : OROC high %.3g (%.3g)",
+      Int_t ibin=1;
+      hTPCconfigInfo->GetXaxis()->SetBinLabel(ibin++,Form("Eta Corr map: %s", tpcResp.GetEtaCorrMap()?tpcResp.GetEtaCorrMap()->GetName():"none"));
+      hTPCconfigInfo->GetXaxis()->SetBinLabel(ibin++,Form("Sigma Par map: %s", tpcResp.GetSigmaPar1Map()?tpcResp.GetSigmaPar1Map()->GetName():"none"));
+      hTPCconfigInfo->GetXaxis()->SetBinLabel(ibin++,Form("MIP: %.2f", tpcResp.GetMIP()));
+      hTPCconfigInfo->GetXaxis()->SetBinLabel(ibin++,Form("Res: Def %.3g (%.3g) : AllHigh %.3g (%.3g) : OROC high %.3g (%.3g)",
                           tpcResp.GetRes0(AliTPCPIDResponse::kDefault), tpcResp.GetResN2(AliTPCPIDResponse::kDefault),
                           tpcResp.GetRes0(AliTPCPIDResponse::kALLhigh), tpcResp.GetResN2(AliTPCPIDResponse::kALLhigh),
                           tpcResp.GetRes0(AliTPCPIDResponse::kOROChigh), tpcResp.GetResN2(AliTPCPIDResponse::kOROChigh)
-                         );
-      arrTPCconfigInfo->Add(ostr);
+                         ));
     }
   }
 }
@@ -2269,6 +2254,7 @@ void AliAnalysisTaskPIDqa::SetupQAinfo(){
 
   TObjArray *arr=new TObjArray;
   arr->SetName("TPC_info");
+  arr->SetOwner();
   fListQAinfo->Add(arr);
 }
 
