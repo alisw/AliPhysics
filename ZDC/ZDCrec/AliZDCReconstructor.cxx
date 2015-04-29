@@ -153,7 +153,6 @@ void AliZDCReconstructor::Init()
   AliInfo(Form("  ZDC reconstruction mode %d (1 -> p-p/p-A, 2-> A-A)\n\n",fRecoMode));
   
   fESDZDC = new AliESDZDC();
-
 }
 
 
@@ -228,6 +227,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
         adcInTime[ich][ig] = adcOutOfTime[ich][ig] = adcCorr[ich][ig] = -1;
      }
   }
+  int tdcCabling[7]={-1,-1,-1,-1,-1,-1,-1};
 
   // get digits
   AliZDCDigit digit;
@@ -352,10 +352,13 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
 	}
       }
   }
+  // Ch. debug
+  //printf("\n  TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n",
+  //tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
    // Ch. debug
-//   printf("\n ---- AliZDCReconstructor: rec from digits\n");
-//   for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], adcCorr[ich][0]);
+   //printf("\n ---- AliZDCReconstructor: rec from digits\n");
+   //for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], adcCorr[ich][0]);
    
   UInt_t counts[32];
   Int_t  tdc[32][4];
@@ -371,10 +374,10 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   
   // reconstruct the event
   if(fRecoMode==1)
-    ReconstructEventpp(clustersTree, adcCorr, signalCode, kFALSE, counts, tdc,
+    ReconstructEventpp(clustersTree, adcCorr, signalCode, tdcCabling, kFALSE, counts, tdc,
       evQualityBlock,  triggerBlock,  chBlock, puBits);
   else if(fRecoMode==2)
-    ReconstructEventPbPb(clustersTree, adcCorr, signalCode, kFALSE, counts, tdc,
+    ReconstructEventPbPb(clustersTree, adcCorr, signalCode, tdcCabling, kFALSE, counts, tdc,
       evQualityBlock,  triggerBlock,  chBlock, puBits);    
 }
 
@@ -399,14 +402,18 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   Bool_t testPedSubBit = fPedData->TestPedModeBit();
 //printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
   
-  // Reading mapping from OCDB ******* implemented only for ADC ch. !!!
-  //  !!!! NB !!!! The mapping was NOT correctly set in 2013 data !!!!
-  //  Therefore I should set again the cabled signals and NOT read them from OCDB!!!!
-  //Int_t adcSignalCode[2*kNch] = {0,};
-  //for(int i=0; i<2*kNch; i++) adcSignalCode[i] = fMapping->GetADCSignalCode(i);
+  // Reading mapping from OCDB 
+  //
+  Int_t adcSignalCode[2*kNch] = {0};
+  for(int i=0; i<2*kNch; i++) adcSignalCode[i] = fMapping->GetADCSignalCode(i);
   //fMapping->Print("");
-  //for(int i=0; i<2*kNch; i++) printf("ch.%d signalCode %d\n",i, adcSignalCode[i]);
-
+  //for(int i=0; i<2*kNch; i++) printf(" ADC ch.%d adcSignalCode %d\n",i, adcSignalCode[i]);
+  //
+  Int_t tdcSignalCode[32] = {0};
+  for(int i=0; i<32; i++) tdcSignalCode[i] = fMapping->GetTDCSignalCode(i);
+  // Ch. debug
+  //for(int i=0; i<32; i++) printf(" TDC ch.%d  signal %d \n",i, tdcSignalCode[i]);
+  
   Bool_t isScalerOn=kFALSE;
   Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
   UInt_t scalerData[32]={0,};
@@ -421,12 +428,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   Int_t  chBlock[3] = {0,0,0};
   UInt_t puBits=0;
 
-  Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=16, kZDCTDCGeo=4, kPUGeo=29;
-  //Int_t kTrigScales=30, kTrigHistory=31;
-  
   int adcInTime[kNch][2], adcOutOfTime[kNch][2];
   float adcCorr[kNch][2];
-  Int_t signalCode[2*kNch]={0,};
   for(int ich=0; ich<kNch; ich++){
     for(int ig=0; ig<=1; ig++) adcInTime[ich][ig] = adcOutOfTime[ich][ig] = adcCorr[ich][ig] = -1;
   }
@@ -435,6 +438,9 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   if(testPedSubBit){
     for(int i=0; i<kNch; i++) chPedSubMode[i] = fPedData->GetUseCorrFit(i);
   }
+  
+  int tdcCabling[7]={-1,-1,-1,-1,-1,-1,-1};
+
   
   // loop over raw data
   //rawReader->Reset();
@@ -459,34 +465,32 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       Int_t quad = rawData.GetSector(1);
       Int_t gain = rawData.GetADCGain();
       
-      //signalCode[adcCh] = adcSignalCode[adcCh];
-            
       if(adcMod==0 || adcMod==1){
          adcInTime[adcCh][gain] = rawData.GetADCValue(); // in time signals
       
         //  !!!! NB !!!! The mapping was NOT correctly set in 2013 data !!!!
         //  Therefore I should set again the cabled signals and NOT read them from OCDB!!!!
-        if(quad!=5){
+        /*if(quad!=5){
           if(det==1)	  signalCode[quad]    = 12+quad;
           else if(det==2) signalCode[quad+5]  = 17+quad;
           else if(det==3) signalCode[quad+9]  = 21+quad; // giusto 21!!!!
           else if(det==4) signalCode[quad+12] = 2+quad;
           else if(det==5) signalCode[quad+17] = 7+quad;
         }
-        else signalCode[22+(det-1)/3] = (det-1)/3+24;	
+        else signalCode[22+(det-1)/3] = (det-1)/3+24;	*/
       }
       else if(adcMod==2 || adcMod==3){
 	adcOutOfTime[adcCh][gain] = rawData.GetADCValue(); // out of time signals
         //  !!!! NB !!!! The mapping was NOT correctly set in 2013 data !!!!
         //  Therefore I should set again the cabled signals and NOT read them from OCDB!!!!
-        if(quad!=5){
+        /*if(quad!=5){
           if(det==1)	  signalCode[kNch+quad]    = 26+quad;
           else if(det==2) signalCode[kNch+quad+5]  = 31+quad;
           else if(det==3) signalCode[kNch+quad+9]  = 45+quad; // giusto 45!!!!
           else if(det==4) signalCode[kNch+quad+12] = 36+quad;
           else if(det==5) signalCode[kNch+quad+17] = 41+quad;
         }
-        else signalCode[kNch+22+(det-1)/3] = (det-1)/3+48;	
+        else signalCode[kNch+22+(det-1)/3] = (det-1)/3+48;  */	
 	
       }
       
@@ -506,12 +510,25 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    // ***************************** Reading ZDC TDC
    else if(rawData.GetADCModule()==kZDCTDCGeo && rawData.IsZDCTDCDatum()==kTRUE){
        itdc = rawData.GetChannel(); 
+       // Setting signal code read from OCDB
+       rawData.SetCabledSignal(tdcSignalCode[itdc]);
+       // setting TDC channels from raw data (=0 if reconstructing from digits!!!!)
+       // NB -> I want to store the ch. in tdcCabling variable ONLY if it is not yet stored!!!
+       if(tdcSignalCode[itdc]==kZNAD && tdcCabling[0]<0) tdcCabling[0] = itdc;
+       else if(tdcSignalCode[itdc]==kZPAD && tdcCabling[1]<0)  tdcCabling[1] = itdc;
+       else if(tdcSignalCode[itdc]==kZEM1D && tdcCabling[2]<0) tdcCabling[2] = itdc;
+       else if(tdcSignalCode[itdc]==kZEM2D && tdcCabling[3]<0) tdcCabling[3] = itdc;
+       else if(tdcSignalCode[itdc]==kZNCD && tdcCabling[4]<0)  tdcCabling[4] = itdc;
+       else if(tdcSignalCode[itdc]==kZPCD && tdcCabling[5]<0)  tdcCabling[5] = itdc;
+       else if(tdcSignalCode[itdc]==kL0 && tdcCabling[6]<0)    tdcCabling[6] = itdc;
+       //
        if(itdc==iprevtdc) ihittdc++;
        else ihittdc=0;
-       iprevtdc=itdc;
        if(ihittdc<4) tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
+       iprevtdc=itdc;
        // Ch. debug
        //if(ihittdc==0) printf("   TDC%d %d  ",itdc, tdcData[itdc][ihittdc]);
+       //printf("   TDCch.%d signal %d \n",itdc, rawData.GetCabledSignal());
    }// ZDC TDC DATA
    // ***************************** Reading PU
    else if(rawData.GetADCModule()==kPUGeo){
@@ -526,6 +543,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    }
   
   }//loop on raw data
+  // Ch. debug
+  //printf("\n  TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
   // PEDESTAL subtraction
   for(int ich=0; ich<24; ich++){
@@ -542,36 +561,34 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       }
   }
    // Ch. debug
-//   printf("\n  **** AliZDCReconstructor: rec from RAW DATA\n");
-//   for(int ich=0; ich<kNch; ich++) if(adcInTime[ich][0]>0.) printf(" ch.%d signalcode %d rawADC HR %d subMode %d meanPed %f  corrADC HR %f \n", ich, signalCode[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], adcCorr[ich][0]);
+   //printf("\n  **** AliZDCReconstructor: rec from RAW DATA\n");
+   //for(int ich=0; ich<kNch; ich++) printf(" ch.%d signalcode %d rawADC HR %d subMode %d meanPed %f  corrADC HR %f \n", ich, adcSignalCode[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], adcCorr[ich][0]);
   
     
   if(fRecoMode==1) // p-p data
-    ReconstructEventpp(clustersTree, adcCorr, signalCode, isScalerOn, scalerData, tdcData,
+    ReconstructEventpp(clustersTree, adcCorr, adcSignalCode, tdcCabling, isScalerOn, scalerData, tdcData,
       evQualityBlock, triggerBlock, chBlock, puBits);
   else if(fRecoMode==2) // Pb-Pb data
-      ReconstructEventPbPb(clustersTree, adcCorr, signalCode, isScalerOn, scalerData,  tdcData,
+      ReconstructEventPbPb(clustersTree, adcCorr, adcSignalCode, tdcCabling, isScalerOn, scalerData,  tdcData,
       evQualityBlock, triggerBlock, chBlock, puBits);
 }
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, 
-	Float_t adc[24][2], Int_t signalCodeADC[48], Bool_t isScalerOn, UInt_t* scaler, 
+	Float_t adc[24][2], Int_t signalCodeADC[48], Int_t tdcCabling[7], Bool_t isScalerOn, UInt_t* scaler, 
 	Int_t tdc[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
 
   int const kNch = 24;
-  Int_t channels[6] = {0};
   Float_t corrADCZNC[10] = {0,}, corrADCZPC[10] = {0,};
   Float_t corrADCZNA[10] = {0,}, corrADCZPA[10] = {0,};
   Float_t corrADCZEM1[2] = {0,0}, corrADCZEM2[2] = {0,0};
   Float_t sPMRef1[2] = {0,0}, sPMRef2[2] = {0,0};
-   
+  
   for(int i=0; i<kNch; i++){
     if(signalCodeADC[i]==kZNAC){
-      channels[0] = i;
       for(int igain=0; igain<=1; igain++) corrADCZNA[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZNA1){
@@ -587,7 +604,6 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
       for(int igain=0; igain<=1; igain++) corrADCZNA[4+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPAC){
-      channels[1] = i;
       for(int igain=0; igain<=1; igain++) corrADCZPA[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPA1){
@@ -603,15 +619,12 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
       for(int igain=0; igain<=1; igain++) corrADCZPA[4+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZEM1){
-      channels[2] = i;
       for(int igain=0; igain<=1; igain++) corrADCZEM1[igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZEM2){  
-      channels[3] = i;
       for(int igain=0; igain<=1; igain++) corrADCZEM2[igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZNCC){ 
-      channels[4] = i;
       for(int igain=0; igain<=1; igain++) corrADCZNC[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZNC1){
@@ -627,7 +640,6 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
       for(int igain=0; igain<=1; igain++) corrADCZNC[4+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPCC){ 
-      channels[5] = i;
       for(int igain=0; igain<=1; igain++) corrADCZPC[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPC1){
@@ -652,9 +664,6 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
     // Ch. Debug
     //printf("  ADC ch. %d  cabled signal %d\n",i, signalCodeADC[i]);
   }
-  // Ch. Debug
-  //printf("  Common PMT are in channels: (ZNA, ZPA, ZEM1, ZEM2, ZNC, ZPC)\n");
-  //for(int i=0; i<6; i++) printf("  %d \n", channels[i]);
   
   // CH. debug
   /*printf("\n*************************************************\n");
@@ -701,10 +710,12 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   rFlags[9]  = puBits & 0x00000020;
   rFlags[8]  = puBits & 0x00000010;
   
-  for(int ich=0; ich<6; ich++){  
-    int entry = channels[ich];
-    if(adc[entry][0]>fSignalThreshold)  rFlags[ich] = 0x1;
-  }
+  if(corrADCZPC[0]>fSignalThreshold)  rFlags[5] = 0x1;
+  if(corrADCZNC[0]>fSignalThreshold)  rFlags[4] = 0x1;
+  if(corrADCZEM2[0]>fSignalThreshold) rFlags[3] = 0x1;
+  if(corrADCZEM1[0]>fSignalThreshold) rFlags[2] = 0x1;
+  if(corrADCZPA[0]>fSignalThreshold)  rFlags[1] = 0x1;
+  if(corrADCZNA[0]>fSignalThreshold)  rFlags[0] = 0x1;
   
   UInt_t recoFlag = rFlags[31] << 31 | rFlags[30] << 30 | rFlags[29] << 29 | rFlags[28] << 28 |
              rFlags[27] << 27 | rFlags[26] << 26 | rFlags[25] << 25 | rFlags[24] << 24 |
@@ -855,7 +866,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 		   	nGenSpec, nGenSpecLeft, nGenSpecRight, 
 		   	nPart, nPartTotLeft, nPartTotRight, 
 		   	impPar, impPar1, impPar2,
-		   	recoFlag, energyFlag, isScalerOn, scaler, tdc);
+		   	recoFlag, energyFlag, isScalerOn, scaler, tdc, tdcCabling);
 		  
   const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
@@ -866,14 +877,13 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, 
-	Float_t adc[24][2], Int_t signalCodeADC[48], Bool_t isScalerOn, UInt_t* scaler, 
+	Float_t adc[24][2], Int_t signalCodeADC[48], Int_t tdcCabling[7], Bool_t isScalerOn, UInt_t* scaler, 
 	Int_t tdc[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
   // ****************** Reconstruct one event ******************
 
   int const kNch = 24;
-  Int_t channels[6] ={0};
   Float_t corrADCZNC[10] = {0,}, corrADCZPC[10] = {0,};
   Float_t corrADCZNA[10] = {0,}, corrADCZPA[10] = {0,};
   Float_t corrADCZEM1[2] = {0,0}, corrADCZEM2[2] = {0,0};
@@ -881,7 +891,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 
   for(int i=0; i<kNch; i++){
      if(signalCodeADC[i]==kZNAC){
-      channels[0] = i;
       for(int igain=0; igain<=1; igain++) corrADCZNA[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZNA1){
@@ -897,7 +906,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
       for(int igain=0; igain<=1; igain++) corrADCZNA[4+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPAC){
-      channels[1] = i;
       for(int igain=0; igain<=1; igain++) corrADCZPA[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPA1){
@@ -913,16 +921,13 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
       for(int igain=0; igain<=1; igain++) corrADCZPA[4+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZEM1){
-      channels[2] = i;
       for(int igain=0; igain<=1; igain++) corrADCZEM1[igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZEM2){  
-      channels[3] = i;
       for(int igain=0; igain<=1; igain++) corrADCZEM2[igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZNCC){ 
-      channels[4] = i;
-       for(int igain=0; igain<=1; igain++) corrADCZNC[0+5*igain] = adc[i][igain];
+      for(int igain=0; igain<=1; igain++) corrADCZNC[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZNC1){
       for(int igain=0; igain<=1; igain++) corrADCZNC[1+5*igain] = adc[i][igain];
@@ -937,7 +942,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
       for(int igain=0; igain<=1; igain++) corrADCZNC[4+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPCC){ 
-      channels[5] = i;
       for(int igain=0; igain<=1; igain++) corrADCZPC[0+5*igain] = adc[i][igain];
     }
     else if(signalCodeADC[i]==kZPC1){
@@ -962,9 +966,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     // Ch. Debug
     //printf("  ADC ch. %d  cabled signal %d\n",i, signalCodeADC[i]);
   }
-  // Ch. Debug
-//  printf("  Common PMT are in channels: (ZNA, ZPA, ZEM1, ZEM2, ZNC, ZPC)\n");
-//  for(int ich=0; ich<6; ich++) printf("  %d \n",channels[ich]);
   
   // CH. debug
   /*printf("\n*************************************************\n");
@@ -1011,7 +1012,12 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   rFlags[9]  = puBits & 0x00000020;
   rFlags[8]  = puBits & 0x00000010;  
   
-  for(int ich=0; ich<6; ich++) if(adc[channels[ich]][0]>fSignalThreshold)  rFlags[ich] = 0x1;
+  if(corrADCZPC[0]>fSignalThreshold)  rFlags[5] = 0x1;
+  if(corrADCZNC[0]>fSignalThreshold)  rFlags[4] = 0x1;
+  if(corrADCZEM2[0]>fSignalThreshold) rFlags[3] = 0x1;
+  if(corrADCZEM1[0]>fSignalThreshold) rFlags[2] = 0x1;
+  if(corrADCZPA[0]>fSignalThreshold)  rFlags[1] = 0x1;
+  if(corrADCZNA[0]>fSignalThreshold)  rFlags[0] = 0x1;
 
   UInt_t recoFlag = rFlags[31] << 31 | rFlags[30] << 30 | rFlags[29] << 29 | rFlags[28] << 28 |
              rFlags[27] << 27 | rFlags[26] << 26 | rFlags[25] << 25 | rFlags[24] << 24 |
@@ -1391,7 +1397,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpec, nGenSpecA, nGenSpecC, 
 		  nPart, nPartA, nPartC, b, bA, bC,
-		  recoFlag, energyFlag, isScalerOn, scaler, tdc);
+		  recoFlag, energyFlag, isScalerOn, scaler, tdc, tdcCabling);
 		    
   const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
@@ -1418,7 +1424,14 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   AliZDCReco* preco = &reco;
   clustersTree->SetBranchAddress("ZDC", &preco);
   clustersTree->GetEntry(0);
-  //
+
+  fESDZDC->SetZDC(reco.GetZN1HREnergy(), reco.GetZP1HREnergy(), 
+  		reco.GetZEM1HRsignal(), reco.GetZEM2HRsignal(), 
+		reco.GetZN2HREnergy(), reco.GetZP2HREnergy(), 
+		reco.GetNParticipants(), reco.GetNPartSideA(), reco.GetNPartSideC(),
+		reco.GetImpParameter(), reco.GetImpParSideA(), reco.GetImpParSideC(),
+		reco.GetRecoFlag());
+
   Float_t tZNCEne[5], tZNAEne[5], tZPCEne[5], tZPAEne[5];
   Float_t tZNCEneLR[5], tZNAEneLR[5], tZPCEneLR[5], tZPAEneLR[5];
   for(Int_t i=0; i<5; i++){
@@ -1443,19 +1456,6 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   fESDZDC->SetZP1TowerEnergyLR(tZPCEneLR);
   fESDZDC->SetZP2TowerEnergyLR(tZPAEneLR);
   // 
-  Int_t nPart  = reco.GetNParticipants();
-  Int_t nPartA = reco.GetNPartSideA();
-  Int_t nPartC = reco.GetNPartSideC();
-  Double_t b  = reco.GetImpParameter();
-  Double_t bA = reco.GetImpParSideA();
-  Double_t bC = reco.GetImpParSideC();
-  UInt_t recoFlag = reco.GetRecoFlag();
-  
-  fESDZDC->SetZDC(reco.GetZN1HREnergy(), reco.GetZP1HREnergy(), 
-  	reco.GetZEM1HRsignal(), reco.GetZEM2HRsignal(), 
-	reco.GetZN2HREnergy(), reco.GetZP2HREnergy(), 
-	nPart, nPartA, nPartC, b, bA, bC, recoFlag);
-  
   // Writing ZDC scaler for cross section calculation
   // ONLY IF the scaler has been read during the event
   if(reco.IsScalerOn()==kTRUE){
@@ -1464,20 +1464,23 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
     fESDZDC->SetZDCScaler(counts);
   }    
   
+  Int_t *tdcCabling = reco.GetTDCchCabling();
+  //
+  // Ch. debug
+  printf("\n  FillZDCintoESD: TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n",  tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  
   Int_t tdcValues[32][4] = {{0,}}; 
-  Float_t tdcCorrected[32][4] = {{9999.,}};
+  Float_t tdcCorrected[32][4] = {{999.,}};
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
       tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
       //
-      if(jk==8 && TMath::Abs(tdcValues[jk][lk])>1e-09)      fESDZDC->SetZEM1TDChit(kTRUE);
-      else if(jk==9 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM2TDChit(kTRUE);
-      else if(jk==10 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNCTDChit(kTRUE);
-      else if(jk==11 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPCTDChit(kTRUE);
-      else if(jk==12 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNATDChit(kTRUE);
-      else if(jk==13 && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPATDChit(kTRUE);
-      //Ch debug
-      //if((jk>=8 && jk<=13 && lk==0) || jk==15) printf(" *** ZDC: tdc%d =  %d = %f ns \n",jk,tdcValues[jk][lk],0.025*tdcValues[jk][lk]);
+      if(lk==0 && tdcCabling[0]>0. && jk==tdcCabling[0] && TMath::Abs(tdcValues[jk][lk])>1e-09)      fESDZDC->SetZNATDChit(kTRUE);
+      else if(lk==0 && tdcCabling[1]>0. && jk==tdcCabling[1] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPATDChit(kTRUE);
+      else if(lk==0 && tdcCabling[2]>0. && jk==tdcCabling[2] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM1TDChit(kTRUE);
+      else if(lk==0 && tdcCabling[3]>0. && jk==tdcCabling[3] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM2TDChit(kTRUE);
+      else if(lk==0 && tdcCabling[4]>0. && jk==tdcCabling[4] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNCTDChit(kTRUE);
+      else if(lk==0 && tdcCabling[5]>0. && jk==tdcCabling[5] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPCTDChit(kTRUE);
     }
   }
   
@@ -1487,22 +1490,31 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
       if(tdcValues[jk][lk]!=0.){
-        // Feb2013 _-> TDC correct entry is there ONLY IF tdc has a hit!
-        if(TMath::Abs(tdcValues[jk][lk])>1e-09){
-	   tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
-           // Sep 2011: TDC ch. from 8 to 13 centered around 0 using OCDB 
-	   if(jk>=8 && jk<=13) tdcCorrected[jk][lk] =  tdcCorrected[jk][lk] - tdcOffset[jk-8];
-	   //Ch. debug
-	   //if(jk>=8 && jk<=13) printf(" *** tdcOffset%d %f  tdcCorr%d %f \n",jk,tdcOffset[jk-8],tdcCorrected[jk][lk]);
-        }
+        // Feb2013 -> TDC corrected entry filled ONLY IF tdc has a hit && L0 TDC ch. is defined
+        if(TMath::Abs(tdcValues[jk][lk])>1e-09 && tdcCabling[6]>0.){
+	   tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[tdcCabling[6]][0])+fMeanPhase;
+           // Detector channels are centered around zero using the OCDB object
+	   for(int idch=0; idch<6; idch++){
+	      if(jk==tdcCabling[idch]){
+	        tdcCorrected[jk][lk] -= tdcOffset[idch];
+              }
+	   }
+	}
       }
     }
   }
+  
+  for(int idch=0; idch<6; idch++){
+     if(tdcCabling[idch]>0.) fESDZDC->SetZDCTDCChannel(idch, tdcCabling[idch]);
+  }
+  
 
   fESDZDC->SetZDCTDCData(tdcValues);
   fESDZDC->SetZDCTDCCorrected(tdcCorrected);
-  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, reco.GetEnergyFlag());
-  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kEnergyCalibratedSignal, kTRUE);
+  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kTDCcablingSet, kTRUE);
+  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, kTRUE);
+  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kEnergyCalibratedSignal, reco.GetEnergyFlag());
+  fESDZDC->Print("");
   
   if(esd) esd->SetZDCData(fESDZDC);
 }

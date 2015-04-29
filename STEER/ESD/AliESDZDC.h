@@ -77,26 +77,25 @@ public:
   Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const 
   {
     if(AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[i][j]!=0)) return fZDCTDCCorrected[i][j];
-	   else return 999.;
-  }
-  
-  Float_t GetZNTDCSum(Int_t ihit) const 
-  {
-    if(ihit<4 && AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
-    else return 999.;
-  }
-  Float_t GetZNTDCDiff(Int_t ihit) const 
-  {
-    if(ihit<4 && AliESDZDC::kCorrectedTDCFilled &&  (fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
     else return 999.;
   }
   
-  virtual Float_t GetZDCTimeSum() const 
-          {if(AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[10][0]!=0) && (fZDCTDCData[12][0]!=0)) return (Float_t) (fZDCTDCCorrected[10][0]+fZDCTDCCorrected[12][0]);
-           else return 0.;}
-  virtual Float_t GetZDCTimeDiff() const 
-          {if(AliESDZDC::kCorrectedTDCFilled &&  (fZDCTDCData[10][0]!=0) && (fZDCTDCData[12][0]!=0)) return (Float_t) (fZDCTDCCorrected[12][0]-fZDCTDCCorrected[10][0]);
-           else return 0.;}
+  Int_t GetZDCTDCChannel(int ich) {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[ich]; else return -1;}
+  Int_t GetZNATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[0]; else return -1;}
+  Int_t GetZPATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[1]; else return -1;}
+  Int_t GetZEM1TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[2]; else return -1;}
+  Int_t GetZEM2TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[3]; else return -1;}
+  Int_t GetZNCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[4]; else return -1;}
+  Int_t GetZPCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[5]; else return -1;}
+
+  Float_t GetZNTDCSum(Int_t ihit) const;
+  Float_t GetZNTDCDiff(Int_t ihit) const;
+  
+  virtual Float_t GetZDCTimeSum()  const {return GetZNTDCSum(0);}
+  virtual Float_t GetZDCTimeDiff() const {return GetZNTDCDiff(0);}
+  
+  Bool_t  IsZDCTDCcablingSet() const {if(AliESDZDC::kTDCcablingSet) return kTRUE; 
+  				      else return kFALSE;}
   
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
   	       Double_t emEnergy0, Double_t emEnergy1,
@@ -155,6 +154,8 @@ public:
   void SetZPATDChit(Bool_t isf)  {fZPATDChit = isf;} 
   void SetZEM1TDChit(Bool_t isf) {fZEM1TDChit = isf;} 
   void SetZEM2TDChit(Bool_t isf) {fZEM2TDChit = isf;} 
+  
+  void SetZDCTDCChannel(int ich, int ival) {if(ich<6) fZDCTDCChannels[ich] = ival;}
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
@@ -194,8 +195,10 @@ private:
   Bool_t       fZPATDChit;    // true if ZPA TDC has at least 1 hit
   Bool_t       fZEM1TDChit;   // true if ZEM1 TDC has at least 1 hit
   Bool_t       fZEM2TDChit;   // true if ZEM2 TDC has at least 1 hit
+  //
+  Int_t        fZDCTDCChannels[6];
   
-  ClassDef(AliESDZDC,18)
+  ClassDef(AliESDZDC,19)
 };
 
 #endif

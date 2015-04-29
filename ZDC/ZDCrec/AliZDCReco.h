@@ -13,8 +13,8 @@ class AliZDCReco : public TObject {
 
 public:
   AliZDCReco();
-  AliZDCReco(Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp2,  
-	     Float_t* ezn1tow, Float_t* ezp1tow, Float_t* ezn2tow, Float_t* ezp2tow, 
+  AliZDCReco(Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp2, //[HR, LR] energies 
+	     Float_t* ezn1tow, Float_t* ezp1tow, Float_t* ezn2tow, Float_t* ezp2tow,  // 5 towers
 	     Float_t* ezem1, Float_t* ezem2, Float_t* ref1, Float_t* ref2, 
 	     //	   
 	     Int_t detspnSideA,  Int_t detsppSideA, 
@@ -23,17 +23,27 @@ public:
 	     Int_t npart, Int_t npartSideA, Int_t npartSideC, 
 	     Float_t b, Float_t bSideA, Float_t bSideC,
 	     UInt_t recoFlag, Bool_t energyFlag, Bool_t scalerOn, 
-	     UInt_t* scaler, Int_t tdcData[32][4]);
+	     UInt_t* scaler, Int_t tdcData[32][4], Int_t tdcCabling[7]);
 
   AliZDCReco(const AliZDCReco &oldreco);
   AliZDCReco& operator= (const AliZDCReco &reco);
   virtual ~AliZDCReco() {}
 
   // Getters 
+  virtual Float_t GetZNCHREnergy()   const  {return fZN1Energy[0];}
+  virtual Float_t GetZPCHREnergy()   const  {return fZP1Energy[0];}
+  virtual Float_t GetZNAHREnergy()   const  {return fZN2Energy[0];}
+  virtual Float_t GetZPAHREnergy()   const  {return fZP2Energy[0];}
+  //
   virtual Float_t GetZN1HREnergy()   const  {return fZN1Energy[0];}
   virtual Float_t GetZP1HREnergy()   const  {return fZP1Energy[0];}
   virtual Float_t GetZN2HREnergy()   const  {return fZN2Energy[0];}
   virtual Float_t GetZP2HREnergy()   const  {return fZP2Energy[0];}
+  //
+  virtual Float_t GetZNCLREnergy()   const  {return fZN1Energy[1];}
+  virtual Float_t GetZPCLREnergy()   const  {return fZP1Energy[1];}
+  virtual Float_t GetZNALREnergy()   const  {return fZN2Energy[1];}
+  virtual Float_t GetZPALREnergy()   const  {return fZP2Energy[1];}
   //
   virtual Float_t GetZN1LREnergy()   const  {return fZN1Energy[1];}
   virtual Float_t GetZP1LREnergy()   const  {return fZP1Energy[1];}
@@ -44,6 +54,11 @@ public:
   virtual Float_t GetZP1HREnTow(Int_t tow)  const {return fZP1EnTow[tow];}
   virtual Float_t GetZN2HREnTow(Int_t tow)  const {return fZN2EnTow[tow];}
   virtual Float_t GetZP2HREnTow(Int_t tow)  const {return fZP2EnTow[tow];}
+  //
+  virtual Float_t GetZNCHREnTow(Int_t tow)  const {return fZN1EnTow[tow];}
+  virtual Float_t GetZPCHREnTow(Int_t tow)  const {return fZP1EnTow[tow];}
+  virtual Float_t GetZNAHREnTow(Int_t tow)  const {return fZN2EnTow[tow];}
+  virtual Float_t GetZPAHREnTow(Int_t tow)  const {return fZP2EnTow[tow];}
   //
   virtual Float_t GetZN1LREnTow(Int_t tow)  const {return fZN1EnTow[tow+5];}
   virtual Float_t GetZP1LREnTow(Int_t tow)  const {return fZP1EnTow[tow+5];}
@@ -85,21 +100,24 @@ public:
   virtual UInt_t  GetZDCScaler(Int_t k) const {return fZDCScaler[k];}
   //
   virtual Int_t   GetZDCTDCData(Int_t j, Int_t k) const {return fZDCTDCData[j][k];}
+  //
+  virtual Int_t*  GetTDCchCabling()  const {return (int*)fTDCchCabling;}
+  virtual Int_t   GetTDCchCabling(int i)  const {return fTDCchCabling[i];}
 
   // Print method
   virtual void Print(Option_t *) const;
 
 private:
   // Data members
-  Float_t fZN1Energy[2]; // Energy detected in ZN1 (sum of 5 tower signals)
-  Float_t fZP1Energy[2]; // Energy detected in ZP1 (sum of 5 tower signals)
-  Float_t fZN2Energy[2]; // Energy detected in ZN2 (sum of 5 tower signals)
-  Float_t fZP2Energy[2]; // Energy detected in ZP2 (sum of 5 tower signals)
+  Float_t fZN1Energy[2]; // Energy detected in ZNC (sum of 5 tower signals)
+  Float_t fZP1Energy[2]; // Energy detected in ZPC (sum of 5 tower signals)
+  Float_t fZN2Energy[2]; // Energy detected in ZNA (sum of 5 tower signals)
+  Float_t fZP2Energy[2]; // Energy detected in ZPA (sum of 5 tower signals)
   //
-  Float_t fZN1EnTow[10]; // Energy in ZN1 towers
-  Float_t fZP1EnTow[10]; // Energy in ZP1 towers
-  Float_t fZN2EnTow[10]; // Energy in ZN2 towers
-  Float_t fZP2EnTow[10]; // Energy in ZP2 towers
+  Float_t fZN1EnTow[10]; // Energy in ZNC towers
+  Float_t fZP1EnTow[10]; // Energy in ZPC towers
+  Float_t fZN2EnTow[10]; // Energy in ZNA towers
+  Float_t fZP2EnTow[10]; // Energy in ZPA towers
   //
   Float_t fZEM1signal[2];// Signal in EM1 ZDC
   Float_t fZEM2signal[2];// Signal in EM2 ZDC
@@ -126,9 +144,11 @@ private:
   Bool_t  fIsScalerOn;     // True if scaler has been read in the event
   UInt_t  fZDCScaler[32];  // Counts from ZDC VME scaler
   //
-  Int_t fZDCTDCData[32][4];      // TDC data raw
+  Int_t   fZDCTDCData[32][4];// TDC data raw
+  //
+  Int_t   fTDCchCabling[7];  // Caling of 6 ZDC TDC ch. (order: ZNA,ZPA,ZEM1,ZEM2,ZNC,ZPC) + L0 TDC ch.	
 
-  ClassDef(AliZDCReco,14)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,15)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif
