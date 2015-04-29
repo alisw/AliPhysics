@@ -68,12 +68,25 @@ AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t I
 	fOutput(),
 	h_ratio(0)
 {
+	fTaskName = name;
 	DefineOutput(1, TDirectory::Class());
+
 	fEvtNum=0;
 	fFilterBit = 0;
 	fEta_min = 0;
 	fEta_max = 0;
-	fTaskName = name;
+	fDebugLevel = 0;
+	fEffMode =0;
+	fEffFilterBit=0;	
+	fPt_min=0;
+	fPt_max=0;
+	fInFileName="";
+	IsMC = kFALSE;
+	IsKineOnly = kFALSE;
+	IsExcludeWeakDecay = kFALSE;
+	IsCentFlat = kFALSE;
+	IsPhiModule = kFALSE;	
+
 }
 
 //____________________________________________________________________________
@@ -111,6 +124,8 @@ void AliJFFlucTask::UserCreateOutputObjects()
 { 
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
 	fFFlucAna->SetDebugLevel(fDebugLevel); 
+	fFFlucAna->SetIsPhiModule( IsPhiModule); 
+	fFFlucAna->SetInFileName( fInFileName );
 	//=== create the jcorran outputs objects
 
 	//=== Get AnalysisManager
@@ -130,7 +145,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fOutput->cd();
 	fFFlucAna->SetEffConfig( fEffMode, fEffFilterBit );
 	fFFlucAna->UserCreateOutputObjects(); 
-
+	
 	PostData(1, fOutput);
 }
 
@@ -143,7 +158,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 	fInputList->Clear();
 
 	float fCent = -1;
-	float fImpactParameter = -999;
+	float fImpactParameter = -1;
 	double fvertex[3] = {-999,-999,-999};	
 
 	fEvtNum++;
@@ -334,6 +349,9 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 		}
 
 	}
+	//test in local mode // 
+	//if(IsMC == kTRUE) Event_status = kTRUE;
+	//
 
 	return Event_status;
 	/*
@@ -400,15 +418,16 @@ void AliJFFlucTask::SetEffConfig( int effMode, int FilterBit)
 	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::SetIsCentFlat( Bool_t isCentFlat )
-{
-	cout << "Setting to flatting Centrality with LHC11h data.. " << endl;
-	if( IsMC == kTRUE ) Printf("this is not LHC11h data");
+void AliJFFlucTask::SetIsCentFlat( Bool_t isCentFlat ){
+
+
+	cout << "Setting to flatting Centrality with LHC11h data : " << isCentFlat  << endl;
 	IsCentFlat = isCentFlat;
 
 	if(IsCentFlat == kTRUE){
+		if( IsMC == kTRUE ) Printf("this is not LHC11h data!!!!");
 		// ratio from ExtractCentRatio.C // do not change this manually	
-			TH1D *h_ratio = new TH1D("h_ratio","",240,0,60);
+			h_ratio = new TH1D("h_ratio","",240,0,60);
 			h_ratio->SetBinContent(1,1.04895);
 			h_ratio->SetBinContent(2,1);
 			h_ratio->SetBinContent(3,1.04325);
@@ -672,12 +691,12 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 				Bool_t kExcludeParticle = kFALSE;
 				Int_t gMotherIndex = particle->GetFirstMother(); //
 				if(gMotherIndex != -1){ // -1 means don't have mother. 
-					cout << "this particle has monther  : " << gMotherIndex << endl; 
+					DEBUG( 4,  "this particle has monther " ); 
 					AliMCParticle* motherParticle= dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(gMotherIndex));
 					if(motherParticle){
 						if(IsThisAWeakDecayingParticle( motherParticle)){
 							kExcludeParticle = kTRUE;
-							cout << "this particle will be removed because it comes from : "<< motherParticle->PdgCode() << endl;
+							DEBUG ( 4, Form("this particle will be removed because it comes from : %d", motherParticle->PdgCode() ));
 						}
 					}
 				}

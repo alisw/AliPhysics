@@ -41,6 +41,7 @@ ClassImp(AliJFFlucAnalysis)
 AliJFFlucAnalysis::AliJFFlucAnalysis() 
 	: AliAnalysisTaskSE(), 
 	fInputList(0),
+	//h_phi_module(),
 	fVertex(0),
 	fCent(0),
 	fNJacek(0),	
@@ -94,6 +95,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name) 
 	: AliAnalysisTaskSE(name), 
 	fInputList(0),
+	//h_phi_module(),
 	fVertex(0),
 	fCent(0),
 	fNJacek(0),
@@ -121,6 +123,18 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	const int NCent = 7;
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
+	fDebugLevel = 0;
+	AnaEntry = 0;
+	fCent = -1;
+	fCBin = -1;
+	fEffMode = 0;
+	fEffFilterBit =0;
+	fInFileName ="";
+	Bool_t IsPhiModule = kFALSE; 
+	fEta_min = 0;
+	fEta_max = 0;
+	fImpactParameter = -1;	
+
 	fCentBin = new double[fNCent+1];
 	for(int ic=0; ic<=NCent; ic++){
 		fCentBin[ic] = CentBin[ic];
@@ -150,6 +164,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
+	//h_phi_module(a.h_phi_module),
 	fVertex(a.fVertex),
 	fCent(a.fCent),
 	fHMG(a.fHMG),
@@ -194,7 +209,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	cout << "********" << endl;
 	fEfficiency->SetMode( fEffMode ) ; // 0:NoEff 1:Period 2:RunNum 3:Auto
 	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
-
 	// Create histograms
 	// Called once
 	AnaEntry = 0;
@@ -287,8 +301,21 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// Main loop
 	// Called for each event
+	//
+	// GUESS We load Phi Modulation info root file Here!!!
+	if (AnaEntry == 0){
+	if (IsPhiModule == kTRUE){
+		TGrid::Connect("alien:");
+		inclusFile = TFile::Open( fInFileName.Data() , "read" );
+		for(int icent=0; icent<fNCent; icent++){
+			for(int isub=0; isub<2; isub++){	
+				h_phi_module[icent][isub] = (TH1D*)inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub));
+			}
+		}
+	}
+	}
+	//
 	// DO ANALYSIS WORK HERE // 
-
 	// find Centrality
 	double inputCent = fCent;
 	fCBin = -1;
@@ -302,7 +329,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_ImpactParameter->Fill( fImpactParameter); 
 	Fill_QA_plot( fEta_min, fEta_max );
 
-
 	enum{kSubA, kSubB, kNSub};
 	enum{kReal, kImg, kNPhase};
 	double Eta_config[kNSub][2];
@@ -311,7 +337,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	Eta_config[kSubB][0] = -1*fEta_max;
 	Eta_config[kSubB][1] = -1*fEta_min; 
 	
-
 	// use complex variable instead of doulbe Qn // 
 	TComplex QnA[kNH];
 	TComplex QnB[kNH];
@@ -335,6 +360,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 					fh_Qvector[fCBin][1][ih]->Fill( QnB[ih].Theta() );	
 					QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
 	}
+
 	//-------------- Fill histos with below Values ----
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
 	// use k=0 for check v2, v3 only
@@ -422,9 +448,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//
 
 	AnaEntry++;
-	//higher debug level = detail information
-	//---------------------------------------------------------------
-	// check if the event was triggered or not and vertex   
 }
 
 //________________________________________________________________________
@@ -432,6 +455,9 @@ void AliJFFlucAnalysis::Terminate(Option_t *)
 {
 //	fList = dynamic_cast<TList*> (GetOutputData(1));
 //	if(!fList) { Printf("ERROR: fList not availabe"); return;};
+//
+	inclusFile->Close();
+//
 	cout<<"Sucessfully Finished"<<endl;
 }
 //________________________________________________________________________
@@ -448,11 +474,19 @@ double AliJFFlucAnalysis::Get_Qn_Real(double eta1, double eta2, int harmonics)
 			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 			double eta = itrack->Eta();
 			if( eta>eta1 &&  eta<eta2 ){ 
+					int isub = -1;
+					if( eta < 0 ) isub = 0;
+					if( eta > 0 ) isub = 1;
+					double phi = itrack->Phi();
+					double phi_module_corr =1; 
+					if( IsPhiModule == kTRUE){
+							phi_module_corr=
+									h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+					}
 					double pt = itrack->Pt();
 					double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-					double phi = itrack->Phi();
-					Qn_real += 1.0 / effCorr * TMath::Cos( nh * phi);
-					Sub_Ntrk = Sub_Ntrk + 1.0 / effCorr;
+					Qn_real += 1.0 / effCorr * phi_module_corr * TMath::Cos( nh * phi);
+					Sub_Ntrk = Sub_Ntrk + 1.0 / effCorr * phi_module_corr;
 			}
 		}
 		Qn_real /= Sub_Ntrk;
@@ -467,13 +501,22 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 			double pt = itrack->Pt();
 			double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
 			double eta = itrack->Eta();
+			int isub = -1;
+			if( eta < 0 ) isub = 0;
+			if( eta > 0 ) isub = 1;
 			double phi = itrack->Phi();
-			fh_eta[fCBin]->Fill(eta , 1./ effCorr );
+			double phi_module_corr =1; 
+
+			if( IsPhiModule == kTRUE){
+				phi_module_corr=
+						h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+			}
+			//
 			if( TMath::Abs(eta) > eta1 && TMath::Abs(eta) < eta2 ){ 
 				fh_eta[fCBin]->Fill(eta , 1./ effCorr );
 				fh_pt[fCBin]->Fill(pt, 1./ effCorr );
-				if( eta < 0 ) fh_phi[fCBin][0]->Fill( phi, 1./effCorr) ;
-				if( eta > 0 ) fh_phi[fCBin][1]->Fill( phi, 1./effCorr) ;
+				if( eta < 0 ) fh_phi[fCBin][0]->Fill( phi_module_corr * phi, 1./effCorr) ;
+				if( eta > 0 ) fh_phi[fCBin][1]->Fill( phi_module_corr * phi, 1./effCorr) ;
 			}
 		}
 	for(int iaxis=0; iaxis<3; iaxis++){
@@ -492,11 +535,19 @@ double AliJFFlucAnalysis::Get_Qn_Img(double eta1, double eta2, int harmonics)
 			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 			double eta = itrack->Eta();
 			if( eta > eta1 && eta < eta2 ){ 
+					int isub = -1;
+					if( eta < 0 ) isub = 0;
+					if( eta > 0 ) isub = 1;
+					double phi = itrack->Phi();
+					double phi_module_corr =1; 
+					if( IsPhiModule == kTRUE){
+							phi_module_corr=
+									h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+					}
 					double pt = itrack->Pt();
 					double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-					double phi = itrack->Phi();
-					Qn_img += 1./ effCorr * TMath::Sin( nh * phi);
-					Sub_Ntrk = Sub_Ntrk + 1./ effCorr; 
+					Qn_img += 1./ effCorr * phi_module_corr * TMath::Sin( nh * phi);
+					Sub_Ntrk = Sub_Ntrk + 1./ effCorr * phi_module_corr; 
 			}
 		}
 		Qn_img /= Sub_Ntrk;

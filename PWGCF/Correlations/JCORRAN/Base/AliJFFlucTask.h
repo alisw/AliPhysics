@@ -85,6 +85,10 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
   void SetIsCentFlat( Bool_t isCentFlat);
   void SetEffConfig( int effMode, int FilterBit );
+  void SetInFileName( TString inName){ fInFileName = inName; 
+					cout << "setting fInfile = " << fInFileName.Data() << endl ; };
+  void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ; 
+					cout << "setting phi modulation = " << isphi << endl; };
 
 
  private:
@@ -98,10 +102,12 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   double fEta_max;
   double fPt_min;
   double fPt_max;
+  TString fInFileName;
   Bool_t IsMC;
   Bool_t IsKineOnly;
   Bool_t IsExcludeWeakDecay;
   Bool_t IsCentFlat;
+  Bool_t IsPhiModule;
   TClonesArray * fInputList;  // tracklist 
   TH1D *h_ratio; 
   AliJFFlucAnalysis *fFFlucAna; // analysis code

@@ -7,12 +7,12 @@
 #include <TString.h>
 #include <TPRegexp.h>
 #include <TObjArray.h>
+#include <TGrid.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliGenEventHeader.h"
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include "AliVVertex.h"
-
 
 class TClonesArray;
 class AliJBaseTrack;
@@ -36,6 +36,9 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		void SetEventCentrality( float cent ){fCent = cent;};
 		void SetEventImpactParameter( float ip ){ fImpactParameter = ip; };
 		void SetEventVertex( double *vtx ){ fVertex = vtx; };
+		void SetInFileName( TString inName){ fInFileName = inName ; };
+		void SetIsPhiModule( Bool_t isphi ){ IsPhiModule = isphi ; } ;
+
 		void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; };
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
 		void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; 
@@ -75,7 +78,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJEfficiency *fEfficiency;
 		int fEffMode;
 		int fEffFilterBit;
- 
+		TString fInFileName;
+		Bool_t IsPhiModule;  
 
 // Histograms
 		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kNH}; //harmonics
@@ -83,7 +87,11 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		double fEta_min;
 		double fEta_max;
 
+		TH1D *h_phi_module[7][2]; // cent, isub 
+		TFile *inclusFile; // pointer for root file  
+
 		AliJHistManager * fHMG;
+	
 
 		AliJBin fBin_Subset;
 		AliJBin fBin_h; 
