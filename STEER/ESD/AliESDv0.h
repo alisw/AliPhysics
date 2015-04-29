@@ -113,7 +113,7 @@ public:
   void SetParamP(const AliExternalTrackParam & paramP) {fParamP = paramP;}
   void SetParamN(const AliExternalTrackParam & paramN) {fParamN = paramN;}
   void SetStatus(Int_t status){fStatus=status;}
-  ULong_t GetStatus() const {return ULong_t(fStatus);}
+  Int_t GetStatus() const {return Int_t(fStatus);}
   Int_t GetIndex(Int_t i) const {return (i==0) ? fNidx : fPidx;}
   void SetIndex(Int_t i, Int_t ind);
   const Double_t *GetAnglep() const {return fAngle;}
