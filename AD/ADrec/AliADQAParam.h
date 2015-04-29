@@ -36,6 +36,8 @@ class AliADQAParam : public TNamed
   void SetNChargeChannelBins (Int_t val) { fNChargeChannelBins = val; }
   void SetChargeChannelMin (Int_t val) { fChargeChannelMin = val; }
   void SetChargeChannelMax (Int_t val) { fChargeChannelMax = val; }
+  void SetChargeChannelZoomMin (Int_t val) { fChargeChannelZoomMin = val; }
+  void SetChargeChannelZoomMax (Int_t val) { fChargeChannelZoomMax = val; }
   //Charge per side
   void SetNChargeSideBins (Int_t val) { fNChargeSideBins = val; }
   void SetChargeSideMin (Int_t val) { fChargeSideMin = val; }
@@ -77,6 +79,8 @@ class AliADQAParam : public TNamed
   Int_t GetNChargeChannelBins() const { return fNChargeChannelBins; }
   Int_t GetChargeChannelMin() const { return fChargeChannelMin; }
   Int_t GetChargeChannelMax() const { return fChargeChannelMax; }
+  Int_t GetChargeChannelZoomMin() const { return fChargeChannelZoomMin; }
+  Int_t GetChargeChannelZoomMax() const { return fChargeChannelZoomMax; }
   //Charge per side
   Int_t GetNChargeSideBins() const { return fNChargeSideBins; }
   Int_t GetChargeSideMin() const { return fChargeSideMin; }
@@ -118,6 +122,8 @@ class AliADQAParam : public TNamed
   Int_t fNChargeChannelBins;	//Charge binnings
   Int_t fChargeChannelMin;
   Int_t fChargeChannelMax;
+  Int_t fChargeChannelZoomMin;
+  Int_t fChargeChannelZoomMax;
   Int_t fNChargeSideBins;
   Int_t fChargeSideMin;
   Int_t fChargeSideMax;

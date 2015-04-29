@@ -30,6 +30,7 @@
 #include <TGraph.h> 
 #include <TParameter.h>
 #include <TTimeStamp.h>
+#include <TPaveText.h>
 
 // --- Standard library ---
 
@@ -247,9 +248,8 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
 			}
 		 nCorrelation++;
 		}
-	}		
-    
-  }
+	}
+   
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (! IsValidEventSpecie(specie, list)) continue ;
@@ -258,6 +258,8 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     } else if (task == AliQAv1::kESDS) {
     }
   }
+  
+    }
   AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
 }
 
@@ -473,12 +475,15 @@ void AliADQADataMakerRec::InitRaws()
   const Int_t kNTdcWidthBins =  fQAParam->GetNTdcWidthBins();
   const Float_t kTdcWidthMin   =    fQAParam->GetTdcWidthMin();
   const Float_t kTdcWidthMax   =  fQAParam->GetTdcWidthMax();
+  
   const Int_t kNChargeChannelBins   =  fQAParam->GetNChargeChannelBins();
   const Int_t kChargeChannelMin   =  fQAParam->GetChargeChannelMin();
   const Int_t kChargeChannelMax   =  fQAParam->GetChargeChannelMax();
+  
   const Int_t kNChargeSideBins   = fQAParam->GetNChargeSideBins();
   const Int_t kChargeSideMin   = fQAParam->GetChargeSideMin();
   const Int_t kChargeSideMax   = fQAParam->GetChargeSideMax();
+  
   const Int_t kNChargeCorrBins   = fQAParam->GetNChargeCorrBins();
   const Int_t kChargeCorrMin   = fQAParam->GetChargeCorrMin();
   const Int_t kChargeCorrMax   = fQAParam->GetChargeCorrMax();
@@ -534,9 +539,18 @@ void AliADQADataMakerRec::InitRaws()
    
 
   // Creation of Charge EoI histogram 
-  h2d = new TH2F("H2D_ChargeEoI", Form("Integrated [-%d,+%d] charge per channel(pedestal substracted);Channel Number;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks())
+  h2d = new TH2F("H2D_ChargeEoI", Form("Integrated [-%d,+%d] charge;Channel Number;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks())
 		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
   Add2RawsList(h2d,kChargeEoI, !expert, image, saveCorr); iHisto++;
+  
+  h2d = new TH2F("H2D_ChargeEoIBB", Form("Integrated [-%d,+%d] charge w/ BB Flag condition;Channel Number;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks())
+		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
+  Add2RawsList(h2d,kChargeEoIBB, !expert, image, saveCorr); iHisto++;
+  
+  h2d = new TH2F("H2D_ChargeEoIBG", Form("Integrated [-%d,+%d] charge w/ BG Flag condition;Channel Number;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks())
+		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
+  Add2RawsList(h2d,kChargeEoIBG, !expert, image, saveCorr); iHisto++;
+
 
   for(Int_t iInt=0;iInt<kNintegrator;iInt++){
     // Creation of Pedestal histograms 
@@ -845,13 +859,13 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       charge = rawStream->GetPedestal(iChannel,iMaxClock); // Charge at the maximum 
 
       integrator[offlineCh]    = rawStream->GetIntegratorFlag(iChannel,iMaxClock);
-      flagBB[offlineCh]	 = rawStream->GetBBFlag(iChannel,iMaxClock);
-      flagBG[offlineCh]	 = rawStream->GetBGFlag(iChannel,iMaxClock);
+      //flagBB[offlineCh]	 = rawStream->GetBBFlag(iChannel,iMaxClock);
+      //flagBG[offlineCh]	 = rawStream->GetBGFlag(iChannel,iMaxClock);
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
       time[offlineCh] = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
       width[offlineCh] = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
 
-      if (time[offlineCh] >= 1e-6) FillRawsData(kChargeEoI,offlineCh,adc[offlineCh]);
+      FillRawsData(kChargeEoI,offlineCh,adc[offlineCh]);
 
       FillRawsData((integrator[offlineCh] == 0 ? kChargeEoIInt0 : kChargeEoIInt1),offlineCh,charge);
 
@@ -890,14 +904,16 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       // Fill Flag and Charge Versus LHC-Clock histograms
       Int_t nbbFlag = 0;
       Int_t nbgFlag = 0;
+      flagBB[offlineCh] = kFALSE;
+      flagBG[offlineCh] = kFALSE;
       
       for(Int_t iEvent=0; iEvent<21; iEvent++){
 	charge = rawStream->GetPedestal(iChannel,iEvent);
 	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
 	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel,iEvent);
-	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
-	if(bbFlag) nbbFlag++;
-	if(bgFlag) nbgFlag++;
+	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent);
+	if(bbFlag){nbbFlag++;flagBB[offlineCh]=kTRUE;}
+	if(bgFlag){nbgFlag++;flagBG[offlineCh]=kTRUE;}
 	
 	FillRawsData((intgr == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), offlineCh,(float)iEvent-10,(float)charge);
 	FillRawsData(kBBFlagVsClock, offlineCh,(float)iEvent-10,(float)bbFlag);
@@ -919,11 +935,13 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       if(nbbFlag > 0){
 	FillRawsData(kHPTDCTimeBB,offlineCh,time[offlineCh]);
 	FillRawsData(kWidthBB,offlineCh,width[offlineCh]);
+	FillRawsData(kChargeEoIBB,offlineCh,adc[offlineCh]);
       }
       //if(flagBG[offlineCh]) {
       if(nbgFlag > 0){
 	FillRawsData(kHPTDCTimeBG,offlineCh,time[offlineCh]);
 	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);
+	FillRawsData(kChargeEoIBG,offlineCh,adc[offlineCh]);
       }
       
 
@@ -950,12 +968,26 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		}
     	}
 	
-    for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs
+    for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
+    	//Enable time is used to turn of the coincidence 
+    	if(fCalibData->GetEnableTiming(iChannel) && fCalibData->GetEnableTiming(iChannel+4)){
     		if(flagBB[iChannel] && flagBB[iChannel+4]) pBBmulADC++;
-		if(flagBB[iChannel+8] && flagBB[iChannel+12]) pBBmulADA++;
 		if(flagBG[iChannel] && flagBG[iChannel+4]) pBGmulADC++;
+		}
+	else{
+		if(flagBB[iChannel] || flagBB[iChannel+4]) pBBmulADC++;
+		if(flagBG[iChannel] || flagBG[iChannel+4]) pBGmulADC++;
+		}
+	if(fCalibData->GetEnableTiming(iChannel+8) && fCalibData->GetEnableTiming(iChannel+12)){	
+		if(flagBB[iChannel+8] && flagBB[iChannel+12]) pBBmulADA++;
 		if(flagBG[iChannel+8] && flagBG[iChannel+12]) pBGmulADA++;
-		}	
+		}
+	else{
+		if(flagBB[iChannel+8] || flagBB[iChannel+12]) pBBmulADA++;
+		if(flagBG[iChannel+8] || flagBG[iChannel+12]) pBGmulADA++;
+		}
+	}
+					
     FillRawsData(kNBBCoincADA,pBBmulADA);
     FillRawsData(kNBBCoincADC,pBBmulADC);
     FillRawsData(kNBGCoincADA,pBGmulADA);
@@ -969,10 +1001,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Bool_t UGA = kFALSE;
     Bool_t UGC = kFALSE;
     
-    if(pBBmulADA>1) UBA = kTRUE;
-    if(pBBmulADC>1) UBC = kTRUE;
-    if(pBGmulADA>1) UGA = kTRUE;
-    if(pBGmulADC>1) UGC = kTRUE;
+    if(pBBmulADA>=fCalibData->GetBBAThreshold()) UBA = kTRUE;
+    if(pBBmulADC>=fCalibData->GetBBCThreshold()) UBC = kTRUE;
+    if(pBGmulADA>=fCalibData->GetBGAThreshold()) UGA = kTRUE;
+    if(pBGmulADC>=fCalibData->GetBGCThreshold()) UGC = kTRUE;
 
     if(UBA) FillRawsData(kTriggers,0);
     if(UBC) FillRawsData(kTriggers,1);

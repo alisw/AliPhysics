@@ -30,7 +30,7 @@ class AliADQADataMakerRec: public AliQADataMakerRec {
 public:
   // Histograms for Raw data control
   enum HRawType_t {
-  		   kChargeADA,kChargeADC,kChargeEoI,
+  		   kChargeADA,kChargeADC,kChargeEoI,kChargeEoIBB,kChargeEoIBG,
 		   kHPTDCTime,kHPTDCTimeBB,kHPTDCTimeBG,kWidth,
 		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
