@@ -1278,6 +1278,12 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
 			if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
 				fOutputContainer->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
+			
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+                if (fV0Reader->GetV0FindingEfficiencyHistograms())
+                        fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+
 	
 	
 	
@@ -2081,10 +2087,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 							hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());	
 							Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
 							sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
-							
-								
-							
-							
+														
 							
 							if(fMCEvent){
 							  ProcessTrueMesonCandidates(pi0cand,gamma,Vgamma);
@@ -2111,15 +2114,18 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 								hESDMotherInvMassOpeningAngleGammaElectron[fiCut]->Fill( vGamma.Angle(vPositron) );
 								hESDMotherInvMassOpeningAngleGammaElectron[fiCut]->Fill( vGamma.Angle(vElectron) );
 								
-								
+			
 								
 								
 								if( lGoodVirtualGamma[virtualGammaIndex] == kFALSE ) {
-							
+						
+								       
+								        if( pi0cand->M() > 0.1 && pi0cand->M() < 0.145 ){
 									FillElectronQAHistos(Vgamma);
 									
 									lGoodVirtualGamma[virtualGammaIndex] = kTRUE;
 									fNVirtualGammas++;
+									}
 								}
 							}
 						}
@@ -2135,9 +2141,14 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 						if ( fDoMesonQA ) {
 							hESDMotherPhi[fiCut]->Fill(pi0cand->Phi());
 							if( lGoodVirtualGamma[virtualGammaIndex] == kFALSE ) {
-								FillElectronQAHistos(Vgamma);
-								lGoodVirtualGamma[virtualGammaIndex] = kTRUE;
-								fNVirtualGammas++;
+							  
+								if( pi0cand->M() > 0.1 && pi0cand->M() < 0.145 ){
+									
+								  FillElectronQAHistos(Vgamma);
+								  lGoodVirtualGamma[virtualGammaIndex] = kTRUE;
+								  fNVirtualGammas++;
+								
+								}
 							}
 						}
 					}

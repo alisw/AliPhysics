@@ -10,8 +10,8 @@
 class TH1D;
 class TH2D;
 class THnSparse;
-class TRandom;
 class TClonesArray;
+class TRandom;
 
 class AliAODv0;
 class AliAODVertex;
@@ -20,6 +20,8 @@ class AliAODJet;
 class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
+
+class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THnSparse.h"
@@ -39,6 +41,10 @@ public:
 
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ;}
+
+  // mixed events
+  void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
+  void SetPoolParam(Int_t sizepool = 1000, Int_t jetsperpool = 1, Float_t fractionmin = 1., Int_t neventsmin = 0) {fiSizePool = sizepool; fiNJetsPerPool = jetsperpool; ffFractionMin = fractionmin; fiNEventsMin = neventsmin;}
 
   // jet selection
   void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
@@ -86,10 +92,17 @@ public:
   TString GetCentBinLabel(Int_t index);
   Double_t MassPeakSigmaOld(Double_t pt, Int_t particle);
   static bool CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2); // compare clusters by their pt/area
+  Double_t GetNormalPhi(Double_t phi) {while(phi >= fgkdDeltaPhiMax) phi -= TMath::TwoPi(); while(phi < fgkdDeltaPhiMin) phi += TMath::TwoPi(); return phi;} // restrict azimuth to desired range
 
   // upper edges of centrality bins
   static const Int_t fgkiNBinsCent = 1; // number of centrality bins
   static const Int_t fgkiCentBinRanges[fgkiNBinsCent]; // upper edges of centrality bins
+  // centrality bins for event mixing
+  static const Int_t fgkiNBinsCentMix = 2; // number of centrality bins for event mixing
+  static Double_t fgkiCentMixBinRanges[fgkiNBinsCentMix+1]; // edges of centrality bins for event mixing
+  // z_vtx bins for event mixing
+  static const Int_t fgkiNBinsZVtxMix = 10; // number of z_vtx bins for event mixing
+  static Double_t fgkiZVtxMixBinRanges[fgkiNBinsZVtxMix+1]; // edges of z_vtx bins for event mixing
   // axis: pT of V0
   static const Double_t fgkdBinsPtV0[2]; // [GeV/c] minimum and maximum or desired binning of the axis (intended for the rebinned axis)
   static const Int_t fgkiNBinsPtV0; // number of bins (intended for the rebinned axis)
@@ -106,6 +119,9 @@ public:
   static const Int_t fgkiNBinsMassLambda; // number of bins (uniform binning)
   static const Double_t fgkdMassLambdaMin; // minimum Lambda mass
   static const Double_t fgkdMassLambdaMax; // maximum Lambda mass
+  // delta phi range
+  static const Double_t fgkdDeltaPhiMin; // minimum delta-phi_V0-jet
+  static const Double_t fgkdDeltaPhiMax; // maximum delta-phi_V0-jet
 
 protected:
   void ExecOnce();
@@ -116,6 +132,7 @@ private:
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
   TRandom* fRandom; //! random-number generator
+  AliEventPoolManager* fPoolMgr; //! event pool manager
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListQA; //! Output list for quality assurance
   TList* fOutputListCuts; //! Output list for checking cuts
@@ -132,6 +149,13 @@ private:
   Double_t fdCutCentHigh; // [%] maximum centrality
   Double_t fdCutDeltaZMax; // [cm] maximum |Delta z| between nominal prim vtx and SPD vtx
   Double_t fdCentrality; //! [%] centrality
+
+  // Mixed events parameters
+  Bool_t fbCorrelations; // switch for delta-phi correlations
+  Int_t fiSizePool; // available number of events per pool
+  Int_t fiNJetsPerPool; // required number of jets available in each pool
+  Float_t ffFractionMin; // minimum fraction of fiNJetsPerPool at which pool is ready (default: 1.0)
+  Int_t fiNEventsMin; // if non-zero: number of filled events after which pool is ready regardless of fiNJetsPerPool (default: 0)
 
   // V0 selection
   // Daughter tracks
@@ -180,6 +204,7 @@ private:
   TH1D* fh1EventCent2NoJets; //! number of events for different centralities
   TH2D* fh2EventCentTracks; //! number of tracks vs centrality
   TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
+  TH1D* fh1VtxZME[fgkiNBinsCent]; //! z coordinate of the primary vertex for events used in mixed events
   TH2D* fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
   TH1D* fh1V0CandPerEvent; //! number of V0 cand per event
 
@@ -188,7 +213,7 @@ private:
   TH1D* fh1EtaJet[fgkiNBinsCent]; //! jet eta
   TH2D* fh2EtaPtJet[fgkiNBinsCent]; //! jet eta-pT
   TH1D* fh1PhiJet[fgkiNBinsCent]; //! jet phi
-  TH1D* fh1PtJetTrackLeading[fgkiNBinsCent]; //! pt spectra of leading jet tracks
+  TH2D* fh2PtJetPtTrackLeading[fgkiNBinsCent]; //! pt_jet; pt of leading jet track
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
@@ -214,7 +239,7 @@ private:
 
   // K0s
   TH1D* fh1V0CounterCentK0s[fgkiNBinsCent]; //! number of K0s candidates after various cuts
-  TH1D* fh1V0InvMassK0sAll[fgkiNCategV0]; //! V0 invariant mass, selection steps
+  TH1D* fh1V0InvMassK0sAll[fgkiNCategV0]; //! V0 invariant mass for each selection steps
   TH2D* fh2QAV0EtaPtK0sPeak[fgkiNQAIndeces]; //! daughters pseudorapidity vs V0 pt, in mass peak
   TH2D* fh2QAV0EtaEtaK0s[fgkiNQAIndeces]; //! daughters pseudorapidity vs pseudorapidity
   TH2D* fh2QAV0PhiPhiK0s[fgkiNQAIndeces]; //! daughters azimuth vs azimuth
@@ -224,14 +249,17 @@ private:
   TH1D* fh1V0CandPerEventCentK0s[fgkiNBinsCent]; //! number of K0s candidates per event, in centrality bins
   TH1D* fh1V0InvMassK0sCent[fgkiNBinsCent]; //! V0 invariant mass, in centrality bins
   // K0s Inclusive
-  THnSparse* fhnV0InclusiveK0s[fgkiNBinsCent]; //! V0 inv mass vs pt before and after cuts, in centrality bins
+  THnSparse* fhnV0InclusiveK0s[fgkiNBinsCent]; //! V0 inclusive, in a centrality bin, m_V0; pt_V0; eta_V0
   // K0s Cones
-  THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0InPerpK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0InRndK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0InMedK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt vs jet pt, in centrality bins
-  THnSparse* fhnV0OutJetK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt, in centrality bins
-  THnSparse* fhnV0NoJetK0s[fgkiNBinsCent]; //! V0 invariant mass vs V0 pt, in centrality bins
+  THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
+  THnSparse* fhnV0InPerpK0s[fgkiNBinsCent]; //! V0 in perpendicular cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
+  THnSparse* fhnV0InRndK0s[fgkiNBinsCent]; //! V0 in random cones, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0InMedK0s[fgkiNBinsCent]; //! V0 in medium cones, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0OutJetK0s[fgkiNBinsCent]; //! V0 outside jet cones, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0NoJetK0s[fgkiNBinsCent]; //! V0 in no-jet events, in a centrality bin, m_V0; pt_V0; eta_V0
+  // K0S correlations
+  THnSparse* fhnV0CorrelSEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in same events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
+  THnSparse* fhnV0CorrelMEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in mixed events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
 
   TH2D* fh2V0PtJetAngleK0s[fgkiNBinsCent]; //! pt jet vs angle V0-jet, in centrality bins
   TH1D* fh1DCAInK0s[fgkiNBinsCent]; //! DCA between daughters of V0 inside jets, in centrality bins
@@ -281,6 +309,9 @@ private:
   THnSparse* fhnV0InMedLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0OutJetLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0NoJetLambda[fgkiNBinsCent]; //!
+  // Lambda correlations
+  THnSparse* fhnV0CorrelSELambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0CorrelMELambda[fgkiNBinsCent]; //!
 
   TH2D* fh2V0PtJetAngleLambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAInLambda[fgkiNBinsCent]; //!
@@ -417,7 +448,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 6) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 9) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

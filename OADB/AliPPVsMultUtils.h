@@ -27,10 +27,10 @@ public:
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
 
     //static EvSel Snippets
-    static Bool_t IsMinimumBias                    (AliVEvent *event);
-    static Bool_t IsINELgtZERO                     (AliVEvent *event);
-    static Bool_t IsAcceptedVertexPosition         (AliVEvent *event);
-    static Bool_t IsNotPileupSPDInMultBins         (AliVEvent *event);
+    static Bool_t IsMinimumBias                        (AliVEvent *event);
+    static Bool_t IsINELgtZERO                         (AliVEvent *event);
+    static Bool_t IsAcceptedVertexPosition             (AliVEvent *event);
+    static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);
     static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
     static Bool_t IsEventSelected(AliVEvent *event);
     

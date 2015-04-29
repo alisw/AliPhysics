@@ -18,7 +18,6 @@
 #include "TParticle.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
-#include "AliTOFRunParams.h"
 #include "AliAnalysisPIDTrack.h"
 #include "AliAnalysisPIDParticle.h"
 #include "AliAnalysisPIDEvent.h"

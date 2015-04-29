@@ -62,7 +62,7 @@ class AliAnalysisUtils : public TObject {
   void SetBSPDCvsTCut(Float_t b) { fBSPDCvsTCut = b; }
   
   //multiplicity selection in pp
-  Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M");
+  Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M", Bool_t lEmbedEventSelection = kTRUE);
     
  private:
   

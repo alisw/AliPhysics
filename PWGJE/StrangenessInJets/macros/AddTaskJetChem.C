@@ -1,4 +1,4 @@
-AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", TString cutVar = "noCutVar", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1)
+AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", TString cutVar = "noCutVar", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1, Bool_t useExtraOnlyTracks = 0, Bool_t useExtraTracks = 0)
 {
   // Creates a JetChem task,
   // configures it and adds it to the analysis manager.
@@ -30,14 +30,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   Int_t debug = fdebug; // debug level
   if(debug>=0) task->SetDebugLevel(debug);
   
-  // Double_t V0EtaCut, Double_t jetEtaCut, Bool_t IsMC, Double_t DeltaVtxZCut can be set externally
-
-  //task->SetBranchRecJets("clustersAOD_ANTIKT02_B2_Filter00272_Cut00150_Skip00");//to be set in wagon configuration
-  task->SetBranchRecJets("clustersAODextra_ANTIKT02_B2_Filter00272_Cut00150_Skip00");//proper filter mask for 2.76TeV PYTHIA?
-  //task->SetBranchRecJets("clustersAODextraonly_ANTIKT02_B2_Filter00272_Cut00150_Skip00");
-
   TString branchRecJets(recJetsBranch);
-  if(!branchRecJets.Contains("noRecJets")) task->SetBranchecJets(branchRecJets);
+  if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
 
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx

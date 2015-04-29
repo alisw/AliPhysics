@@ -28,7 +28,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
       return NULL;
     }
 
-  TString wagonName = Form("JetMass_%s_TC%s%s%s",njetsBase,trigClass.Data(),optionName.Data());
+  TString wagonName = Form("JetMass_%s_TC%s%s",njetsBase,trigClass.Data(),optionName.Data());
 
   //Configure jet tagger task
   AliAnalysisTaskEmcalJetMass *task = new AliAnalysisTaskEmcalJetMass(wagonName.Data());

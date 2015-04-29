@@ -19,6 +19,9 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    const Int_t type            =1
    )
 {  
+
+  //cout << "used tracks: " << usedTracks <<endl;
+
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -45,8 +48,14 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   const Int_t cCHARGEDJETS        = 1;
   const Int_t cNEUTRALJETS        = 2;
 
-  char *typeEMC = "EMC";
-  char *typeTPC = "TPC";
+  //UInt_t typeTPC                = 0;
+  //UInt_t typeEMC                = AliAnalysisTaskEmcal::kEMCAL;
+  //UInt_t typeTPC                = 0;
+  //UInt_t typeEMC                = 1;
+
+  char *typeTPC                = "TPC";
+  char *typeEMC                = "EMC";
+
     
   float AreaCut = 0.6*radius*radius*TMath::Pi();
 
@@ -56,8 +65,8 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   sfunc->SetParameter(2,scale);
 
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
 
   //const char *nJets;
   TString nJets("");
@@ -67,27 +76,27 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   TString newrhoname(Form("%s_All", nRhosCh));
   //TString scaledname(Form("%s_Scaled", newrhoname));
 
-  
+
   if(!(usedTracks=="")){
     //cout << "USEDTRACKS EXISTS" << usedTracks <<endl;
-    AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
+    AliEmcalJetTask* jetFinderTaskChBack = AddTaskEmcalJet(AliEmcalJetTask::kAKT | AliEmcalJetTask::kChargedJet, usedTracks,"",minTrackPt, minClusterPt, 0.005, radius, 1, "Jet", 0.1);
+  
+    AliEmcalJetTask* jetFinderTaskChBackall = AddTaskEmcalJet(AliEmcalJetTask::kAKT | AliEmcalJetTask::kChargedJet, usedTracks,"",minTrackPt, minClusterPt, 0.005, radius, 1, "Jets_allpt", 0.0);
+    //jetFinderTaskChBackall->SetMinJetPt(0);
 
-    AliEmcalJetTask* jetFinderTaskChBackall = AddTaskEmcalJet(usedTracks,"",cKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt,0.01,"Jets_allpt");
-    jetFinderTaskChBackall->SetMinJetPt(0);
+    AliEmcalJetTask* jetFinderTaskChSig = AddTaskEmcalJet(AliEmcalJetTask::kAKT | AliEmcalJetTask::kChargedJet, usedTracks,"",minTrackPt, minClusterPt, 0.005, radius, 1, "Jet", 0.1);
 
-    AliEmcalJetTask* jetFinderTaskChSig = AddTaskEmcalJet(usedTracks,"",cANTIKT,radius,cCHARGEDJETS,minTrackPt, minClusterPt);
+    AliEmcalJetTask* jetFinderTaskChEmBack = AddTaskEmcalJet(AliEmcalJetTask::kKT | AliEmcalJetTask::kChargedJet, usedTracks,outClusName,minTrackPt, minClusterPt, 0.005, radius, 1, "Jet", 0.0);
+    //jetFinderTaskChEmBack->SetMinJetPt(0);
 
-    AliEmcalJetTask* jetFinderTaskChEmBack = AddTaskEmcalJet(usedTracks,outClusName,cKT,radius,cFULLJETS,minTrackPt, minClusterPt);
-    jetFinderTaskChEmBack->SetMinJetPt(0);
-
-  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,radius, cFULLJETS,minTrackPt,minClusterPt);
+  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet, usedTracks,outClusName,minTrackPt,minClusterPt, 0.005, radius, 1, "Jet", 0.1);
 
   AliAnalysisTaskRhoSparse *rhochtask = AddTaskRhoSparse(jetFinderTaskChBack->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,nRhosCh,radius,typeTPC,0.01,0,0,sfunc,0,kTRUE,nRhosCh);
   rhochtask->SetCentralityEstimator(CentEst);
 
   AliAnalysisTaskRhoSparse *rhochalltask = AddTaskRhoSparse(jetFinderTaskChBackall->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,newrhoname,radius,0,0.0,0,0,sfunc,0,kTRUE,newrhoname);
   rhochtask->SetCentralityEstimator(CentEst);
-
+						   
 
   AliAnalysisTaskRhoSparse *rhochemtask = AddTaskRhoSparse(jetFinderTaskChEmBack->GetName(),jetFinderTask->GetName(),usedTracks,outClusName,nRhosChEm,radius,typeEMC,0.01,0,0,0,0,kTRUE,nRhosChEm);
   rhochemtask->SetCentralityEstimator(CentEst);
@@ -96,21 +105,21 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   nJets+=jetFinderTask->GetName();
   nJetsCh+=jetFinderTaskChSig->GetName();
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
 
   TString deltaname(Form("DeltaPt_%s_Scaled", nRhosCh));
-  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",scaledname,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kEMCAL,deltaname);
+  AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",scaledname,radius,AreaCut,minTrackPt,minClusterPt,typeEMC,deltaname);
   deltapt->SetCentralityEstimator(CentEst);
 
   TString chdeltaname(Form("DeltaPt_%s", nRhosCh));
-  AliAnalysisTaskDeltaPt* deltaptch = AddTaskDeltaPt(usedTracks,"",nJetsCh,"","","","","",nRhosCh,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kTPC,chdeltaname);
+  AliAnalysisTaskDeltaPt* deltaptch = AddTaskDeltaPt(usedTracks,"",nJetsCh,"","","","","",nRhosCh,radius,AreaCut,minTrackPt,minClusterPt,typeTPC,chdeltaname);
   deltaptch->SetCentralityEstimator(CentEst);
 
   TString emcdeltaname(Form("DeltaPt_%s", nRhosChEm));
-  AliAnalysisTaskDeltaPt* deltaptEMC = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosChEm,radius,1,AreaCut,minTrackPt,minClusterPt,AliAnalysisTaskEmcal::kEMCAL,emcdeltaname);
+  AliAnalysisTaskDeltaPt* deltaptEMC = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosChEm,radius,AreaCut,minTrackPt,minClusterPt,typeEMC,emcdeltaname);
   deltaptEMC->SetCentralityEstimator(CentEst);
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
 
 
   Int_t radlabel=(Int_t)floor(radius*100+0.5);
@@ -125,12 +134,12 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   
   }
 
-  cout << "Running non charged jet finders..." <<endl;
-  AliEmcalJetTask* jetFinderTaskEm = AddTaskEmcalJet("",outClusName,cANTIKT,radius,cNEUTRALJETS,minTrackPt,minClusterPt);
+  //cout << "Running non charged jet finders..." <<endl;
+  AliEmcalJetTask* jetFinderTaskEm = AddTaskEmcalJet(AliEmcalJetTask::kAKT | AliEmcalJetTask::kChargedJet,"",outClusName,minTrackPt,minClusterPt, 0.005, radius, 1, "Jet", 0.1);
 
-  AliEmcalJetTask* jetFinderTaskEmBack = AddTaskEmcalJet("",outClusName,cKT,radius,cNEUTRALJETS,minTrackPt, minClusterPt);
+  AliEmcalJetTask* jetFinderTaskEmBack = AddTaskEmcalJet(AliEmcalJetTask::kKT | AliEmcalJetTask::kNeutralJet,"",outClusName,minTrackPt, minClusterPt, 0.005, radius, 1, "Jet", 0.1);
 
-  cout << "Running non charged rho task..." <<endl;
+  //cout << "Running non charged rho task..." <<endl;
 
   AliAnalysisTaskRhoSparse *rhoemtask = AddTaskRhoSparse(jetFinderTaskEmBack->GetName(),jetFinderTaskEm->GetName(),usedTracks,outClusName,nRhosEm,radius,0,0.01,0,0,0,1,kTRUE,nRhosEm);
   rhoemtask->SetCentralityEstimator(CentEst);
@@ -146,7 +155,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   //-------------------------------------------------------
 
 
-  cout << "Ready to run my task..." << nJets <<endl;
+  //cout << "Ready to run my task..." << nJets <<endl;
   
   TString name(Form("SpectraMECpA_%s", nJets.Data()));
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
@@ -154,10 +163,12 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   spectratask->SetCentralityEstimator(CentEst);
 
   if(type==0){
-    spectratask->SetAnaType(typeTPC);
+    //spectratask->SetAnaType(typeTPC);
+    spectratask->SetAnaType(0);
     spectratask->SetRhoName(nRhosCh);
   }else{
-    spectratask->SetAnaType(typeEMC);
+    //spectratask->SetAnaType(typeEMC);
+    spectratask->SetAnaType(1);
     if(!(usedTracks=="")) spectratask->SetRhoName(scaledname);
     else spectratask->SetRhoName(nRhosEm);
   }
@@ -182,6 +193,6 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   mgr->ConnectOutput(spectratask,1,cospectra);
 
 
-
+							 
   return spectratask;
 }
