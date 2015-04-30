@@ -86,7 +86,7 @@ Bool_t ConfigLStar
       cutSetQ = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0);
     
     cutSetP = new AliRsnCutSetDaughterParticle(Form("cutP%i_%2.1fsigma",cutPrCandidate, nsigmaPr), trkQualityCut, cutPrCandidate, AliPID::kProton, nsigmaPr);
-    cutSetQ->SetUse2011StdQualityCuts(kTRUE);
+    cutSetP->SetUse2011StdQualityCuts(kTRUE);
     cutSetK = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
     cutSetK->SetUse2011StdQualityCuts(kTRUE);
   } else {
