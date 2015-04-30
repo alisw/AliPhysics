@@ -548,7 +548,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SetCentralityClass("V0M");
     reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
     reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
-    
+    reader->SwitchOnAcceptOnlyHIJINGLabels();
     // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
     reader->SetEventPlaneMethod("V0");
   }
@@ -1235,6 +1235,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaGammaHadronCorr.Data()));
   ana->SetAODObjArrayName(Form("%sHadronCorrIso%dTrigger_%s",particle.Data(),bIsolated,kAnaGammaHadronCorr.Data()));
+  ana->SetAODNamepTInConeHisto(Form("IC%s_%s_R%1.1f_ThMin%1.1f"           ,particle.Data(),kAnaGammaHadronCorr.Data(),cone,pth));
   
   //Set Histograms name tag, bins and ranges
   
