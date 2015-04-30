@@ -140,9 +140,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Int_t * 	GetAcceptedHeaderStart()							{ return fNotRejectedStart								; }
 		Int_t * 	GetAcceptedHeaderEnd()								{ return fNotRejectedEnd								; }
 		Int_t  		GetAcceptedHeaderStart(Int_t headernumber)			{ if (headernumber < fnHeaders) 
-																			return fNotRejectedStart[headernumber]				; }
+																			return fNotRejectedStart[headernumber]				;
+																		  else 
+																			return -1;
+																																  }
 		Int_t  		GetAcceptedHeaderEnd(Int_t headernumber)			{ if (headernumber < fnHeaders) 
-																			return fNotRejectedEnd[headernumber]				; }
+																			return fNotRejectedEnd[headernumber]				; 
+																		  else 
+																			return -1;  	
+																																  }
 		TList* 		GetAcceptedHeader()									{ return fHeaderList									; }
 		Int_t 		GetNumberOfContributorsVtx(AliVEvent *event);
 		Double_t 	GetEtaShift() 										{ return fEtaShift										; }
