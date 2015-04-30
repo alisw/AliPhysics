@@ -8,10 +8,11 @@ void AddTaskCRC(Double_t centrMin,
                 Int_t AODfilterBit=768,
                 TString TPCMultOut="2010",
                 TString EvTrigger="MB",
-                Bool_t bCalculateCRCPt,
-                Bool_t bCalculateCRCBck,
-                Bool_t bEventCutsQA=kTRUE,
-                Bool_t bTrackCutsQA=kTRUE,
+                Bool_t bCalculateCRCPt=kFALSE,
+                Bool_t bCalculateCRCBck=kFALSE,
+                Bool_t bUseCRCRecentering=kFALSE,
+                Bool_t bEventCutsQA=kFALSE,
+                Bool_t bTrackCutsQA=kFALSE,
                 const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -136,14 +137,15 @@ void AddTaskCRC(Double_t centrMin,
  }
  else if (analysisType == "AOD") {
   // Track cuts for RPs
+  //AliFlowTrackCuts* cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // GetBetaVZEROOnlyTrackCuts();
 //  cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);
 //  cutsRP->SetEtaRange(-10.,+10.);
 //  cutsRP->SetEtaGap(-1.,1.);
 //  cutsRP->SetPhiMin(0.);
 //  cutsRP->SetPhiMax(TMath::TwoPi());
 //  // options for the reweighting
-//  cutsRP->SetVZEROgainEqualizationPerRing(kTRUE);
-//  cutsRP->SetApplyRecentering(kFALSE);
+//  cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
+//  cutsRP->SetApplyRecentering(kTRUE);
   cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsRP->SetAODfilterBit(768);
   cutsRP->SetMinimalTPCdedx(-999999999);
@@ -161,6 +163,8 @@ void AddTaskCRC(Double_t centrMin,
  
  taskFE->SetCutsRP(cutsRP);
  taskFE->SetCutsPOI(cutsPOI);
+ 
+ taskFE->SetSubeventEtaRange(-10.,-1.,1.,10.);
  
  // get the default name of the output file ("AnalysisResults.root")
  TString file = "AnalysisResults.root";
@@ -203,6 +207,8 @@ void AddTaskCRC(Double_t centrMin,
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
  AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
+// AliAnalysisTaskScalarProduct *taskQC = new AliAnalysisTaskScalarProduct(taskCRCname, UseParticleWeights);
+ TString QVecWeightsFileName = "$ALICE_PHYSICS/PWGCF/FLOW/database/CRCQVecCalib.root";
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -226,7 +232,24 @@ void AddTaskCRC(Double_t centrMin,
  taskQC->SetCalculateCRCBck(bCalculateCRCBck);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
- 
+ taskQC->SetUseCRCRecenter(bUseCRCRecentering);
+ if(bUseCRCRecentering) {
+  TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
+  if(!QVecWeightsFile) {
+   cout << "ERROR: QVecWeightsFile not found!" << endl;
+   exit(1);
+  }
+  TList* QVecWeightsList = dynamic_cast<TList*>(QVecWeightsFile->FindObjectAny("Q Vectors"));
+  if(QVecWeightsList) {
+   taskQC->SetQVecList(QVecWeightsList);
+   cout << "Q Vector weights set (from " <<  QVecWeightsFileName.Data() << ")" << endl;
+  }
+  else {
+   cout << "ERROR: QVecWeightsList not found!" << endl;
+   exit(1);
+  }
+ } // end of if(bUseCRCRecentering)
+
  // connect the task to the analysis manager
  mgr->AddTask(taskQC);
  

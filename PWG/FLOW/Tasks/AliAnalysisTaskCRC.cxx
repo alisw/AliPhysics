@@ -29,11 +29,15 @@ class AliAnalysisTaskSE;
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
+#include "AliFlowVector.h"
+#include "AliFlowEvent.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCRC.h"
 #include "AliFlowAnalysisCRC.h"
-
 #include "AliLog.h"
+
+class AliFlowVector;
+class TVector;
 
 using std::cout;
 using std::endl;
@@ -332,7 +336,29 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
 void AliAnalysisTaskCRC::UserExec(Option_t *)
 {
  // main loop (called for each event)
- fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
+ fEvent = dynamic_cast<AliFlowEvent*>(GetInputData(0));
+ 
+// // Get Q vectors for the subevents
+// AliFlowVector* vQarray = new AliFlowVector[2];
+// fEvent->Get2Qsub(vQarray,2);
+// if(vQarray) {
+//  // Subevent a
+//  AliFlowVector vQa = vQarray[0];
+//  // Subevent b
+//  AliFlowVector vQb = vQarray[1];
+//  
+//  cout << vQa.X() << " " << vQa.Y() << endl;
+//  cout << vQb.X() << " " << vQb.Y() << endl;
+//  
+//  Double_t dMa = vQa.GetMult();
+//  if( dMa < 2 ) return;
+//  Double_t dMb = vQb.GetMult();
+//  if( dMb < 2 ) return;
+// } else {
+//  cout << "cannot find 2Qsub !!!" << endl;
+// }
+// AliFlowVector vQ = fEvent->GetQ(2);
+// cout << vQ.X() << " " << vQ.Y() << endl;
  
  // Q-cumulants
  if(fEvent) {
