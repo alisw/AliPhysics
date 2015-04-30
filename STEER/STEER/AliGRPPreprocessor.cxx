@@ -800,7 +800,9 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 
 		// BeamMode
 		Log("*************BeamMode (LHCState) ");
-		TObjArray* beamModeArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[2]);
+		Bool_t forceStableBeam = (Bool_t)(((TString)GetRunParameter("forceLHCReco")).Atoi());
+		AliInfoF("Query forceLHCReco logbook flag: %s",forceStableBeam ? "ON":"OFF");
+		TObjArray* beamModeArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[2]);		
 		Int_t nBeamMode = -1;
 		if (beamModeArray){	
 			nBeamMode = beamModeArray->GetEntries();	
@@ -828,8 +830,15 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				else {
 					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(indexBeamMode);
 					TObjString* beamModeString = beamMode->GetStringArray(0);
-					AliInfo(Form("LHC State (corresponding to BeamMode) = %s (set at %f)",(beamModeString->String()).Data(),beamMode->GetTimeStamp()));
-					grpobj->SetLHCState(beamModeString->String());
+					TString lhcStateS = beamModeString->String();					
+					AliInfo(Form("LHC State (corresponding to BeamMode) = %s (set at %f)",lhcStateS.Data(),beamMode->GetTimeStamp()));
+					if (forceStableBeam) {
+					  TPRegexp reStable("^STABLE[_ ]BEAMS$");
+					  if (!lhcStateS.Index(reStable)) {
+					    AliInfoF("Overriding LHC beam state from \"%s\" to \"%s\"",lhcStateS.Data(),"STABLE BEAMS");
+					  }
+					}
+					grpobj->SetLHCState(lhcStateS);
 					if (indexBeamMode < nBeamMode-1){
 						AliDCSArray* beamMode1 = (AliDCSArray*)beamModeArray->At(indexBeamMode+1);
 						if (beamMode1){
