@@ -42,7 +42,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 namespace
 {
-	const Int_t kNTRU = 32; // TODO: kNTRU should be set to / replaced by  fGeometry->GetNTotalTRU() (total number of TRU for a given geom)  after adding 1 STU for DCAL
+	const Int_t kNTRU = 30; // TODO: kNTRU should be set to / replaced by  fGeometry->GetNTotalTRU() (total number of TRU for a given geom)  after adding 1 STU for DCAL
 }
 
 ClassImp(AliEMCALTriggerElectronics)
@@ -129,7 +129,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		
 		Bool_t isOK1 = fGeometry->GetTRUFromAbsFastORIndex(id, iTRU, iADC);
 		
-		if (!isOK1) continue;
+		if (!isOK1 || iTRU > kNTRU-1) continue;
 
 		for (Int_t j = 0; j < digit->GetNSamples(); j++)
 		{
@@ -138,7 +138,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			
 			if (isOK1 && isOK2 && amp) {
 				AliDebug(999, Form("=== TRU# %2d ADC# %2d time# %2d signal %d ===", iTRU, iADC, time, amp));
-  				if(iTRU>32) continue; // kNTRU < iTRU < 62. Prevents fTRU to go out of bonds with DCAL TODO: add STU for DCAL and fix the logic 
+
 				AliEMCALTriggerTRU * etr = (static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)));
 				if (etr) {
 				  if (data->GetMode())
