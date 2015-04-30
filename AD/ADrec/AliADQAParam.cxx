@@ -49,7 +49,13 @@ AliADQAParam::AliADQAParam():
   fSatHigh(0.3),
   fSatHuge(0.5),
   fMaxPedDiff(1),
-  fMaxPedWidth(1.5) 	
+  fMaxPedWidth(1.5),
+  fMaxNoTimeRate(10e-4),
+  fMaxNoFlagRate(10e-3),
+  fMaxBBVariation(5),
+  fMaxBGVariation(5)
+  
+   	
 
 {
   //

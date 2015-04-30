@@ -62,7 +62,11 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxPedDiff(1),
   fMaxPedWidth(1.5),
   fChargeChannelZoomMin(0),
-  fChargeChannelZoomMax(50)
+  fChargeChannelZoomMax(50),
+  fMaxNoTimeRate(10e-3),
+  fMaxNoFlagRate(10e-2),
+  fMaxBBVariation(5),
+  fMaxBGVariation(5)
 {
   fQAParam = (AliADQAParam*)GetQAParam();
   fSatMed = fQAParam->GetSatMed();
@@ -72,6 +76,10 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxPedWidth = fQAParam->GetMaxPedWidth();
   fChargeChannelZoomMin = fQAParam->GetChargeChannelZoomMin();
   fChargeChannelZoomMax = fQAParam->GetChargeChannelZoomMax();
+  fMaxNoTimeRate = fQAParam->GetMaxNoTimeRate();
+  fMaxNoFlagRate = fQAParam->GetMaxNoFlagRate();
+  fMaxBBVariation = fQAParam->GetMaxBBVariation();
+  fMaxBGVariation = fQAParam->GetMaxBGVariation();
 }
 
 //____________________________________________________________________________
@@ -233,11 +241,13 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     AliWarning("There are no histograms to be checked");
   }
   else {
+    Float_t nEvents;
     TH1F *hChargeADA = (TH1F*)list->At(AliADQADataMakerRec::kChargeADA);
     if (!hChargeADA) {
       AliWarning("ChargeADA histogram is not found");
     }
     else {
+    	nEvents = hChargeADA->Integral(-1,-1);
     	if(hChargeADA->GetListOfFunctions()->GetEntries()<1) hChargeADA->GetListOfFunctions()->Add(new TPaveText(0.43,0.70,0.66,0.83,"NDC"));
     	for(Int_t i=0; i<hChargeADA->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hChargeADA->GetListOfFunctions()->At(i)->ClassName();
@@ -279,6 +289,175 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			}
 		}
     	}
+    TH1F *hTriggers = (TH1F*)list->At(AliADQADataMakerRec::kTriggers);
+    if (!hTriggers) {
+      AliWarning("Triggers histogram is not found");
+    }
+    else {
+    	if(hTriggers->GetListOfFunctions()->GetEntries()<1) hTriggers->GetListOfFunctions()->Add(new TPaveText(0.56,0.73,0.72,0.85,"NDC"));
+    	for(Int_t i=0; i<hTriggers->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hTriggers->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hTriggers->GetListOfFunctions()->At(i);
+      			
+			TString nEventsText = " Number of events = ";
+			Char_t eventsValue[10];
+			sprintf(eventsValue, "%.0f", nEvents);
+			nEventsText += eventsValue;
+			
+			QAbox->Clear();
+			QAbox->SetFillColor(kWhite);
+        		QAbox->SetTextColor(kAzure-8);
+			QAbox->AddText(nEventsText.Data());				
+    			}
+		}
+    	}
+    TH1F *hFlagNoTime = (TH1F*)list->At(AliADQADataMakerRec::kFlagNoTime);
+    if (!hFlagNoTime) {
+      AliWarning("FlagNoTime histogram is not found");
+    }
+    else {
+    	if(hFlagNoTime->GetListOfFunctions()->GetEntries()<1) hFlagNoTime->GetListOfFunctions()->Add(new TPaveText(0.15,0.67,0.85,0.76,"NDC"));
+    	for(Int_t i=0; i<hFlagNoTime->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hFlagNoTime->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hFlagNoTime->GetListOfFunctions()->At(i);
+      			
+			TH1F *histoRate = (TH1F*)hFlagNoTime->Clone("histoRate");
+			histoRate->Sumw2();
+			histoRate->Scale(1/nEvents);
+			Int_t NbadChannels = 0;
+			TString badChannels = "No time rate too high, ch:";
+			
+			for(Int_t i=0; i<16; i++){
+				if(histoRate->GetBinContent(i+1)>fMaxNoTimeRate) {
+					test = 0.3;
+					badChannels += i;
+					badChannels += ", ";
+					NbadChannels++;
+					}
+				}
+			if(NbadChannels != 0){
+				QAbox->Clear();
+				QAbox->SetFillColor(kRed); 
+				QAbox->AddText(badChannels.Data());
+				}
+			else{
+				QAbox->Clear();
+				QAbox->SetFillColor(kGreen);
+				QAbox->AddText("No time rate OK");				
+    				}
+			}
+    		}
+    	}
+    TH1F *hTimeNoFlag = (TH1F*)list->At(AliADQADataMakerRec::kTimeNoFlag);
+    if (!hTimeNoFlag) {
+      AliWarning("TimeNoFlag histogram is not found");
+    }
+    else {
+    	if(hTimeNoFlag->GetListOfFunctions()->GetEntries()<1) hTimeNoFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.56,0.85,0.65,"NDC"));
+    	for(Int_t i=0; i<hTimeNoFlag->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hTimeNoFlag->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hTimeNoFlag->GetListOfFunctions()->At(i);
+      			
+			TH1F *histoRate = (TH1F*)hTimeNoFlag->Clone("histoRate");
+			histoRate->Sumw2();
+			histoRate->Scale(1/nEvents);
+			Int_t NbadChannels = 0;
+			TString badChannels = "No flag rate too high, ch: ";
+			
+			for(Int_t i=0; i<16; i++){
+				if(histoRate->GetBinContent(i+1)>fMaxNoFlagRate) {
+					test = 0.3;
+					badChannels += i;
+					badChannels += ", ";
+					NbadChannels++;
+					}
+				}
+			if(NbadChannels != 0){
+				QAbox->Clear();
+				QAbox->SetFillColor(kRed); 
+				QAbox->AddText(badChannels.Data());
+				}
+			else{
+				QAbox->Clear();
+				QAbox->SetFillColor(kGreen);
+				QAbox->AddText("No flag rate OK");				
+    				}
+			}
+    		}
+    	}
+    TH1F *hNEventsBBFlag = (TH1F*)list->At(AliADQADataMakerRec::kNEventsBBFlag);
+    if (!hNEventsBBFlag) {
+      AliWarning("NEventsBBFlag histogram is not found");
+    }
+    else {
+    	if(hNEventsBBFlag->GetListOfFunctions()->GetEntries()<1) hNEventsBBFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.67,0.85,0.76,"NDC"));
+    	for(Int_t i=0; i<hNEventsBBFlag->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hNEventsBBFlag->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hNEventsBBFlag->GetListOfFunctions()->At(i);
+      			
+			Float_t meanRate  = 0;
+			for(Int_t i=0; i<16; i++)meanRate += hNEventsBBFlag->GetBinContent(i+1);
+			meanRate = meanRate/16;
+			Bool_t highVar = kFALSE;
+			
+			for(Int_t i=0; i<16; i++){
+				if((TMath::Abs(hNEventsBBFlag->GetBinContent(i+1)-meanRate)/hNEventsBBFlag->GetBinError(i+1))>fMaxBBVariation) {
+					test = 0.7;
+					highVar = kTRUE;
+					}
+				}
+			if(highVar){
+				QAbox->Clear();
+				QAbox->SetFillColor(kYellow); 
+				QAbox->AddText("BB rate variation too high");
+				}
+			else{
+				QAbox->Clear();
+				QAbox->SetFillColor(kGreen);
+				QAbox->AddText("BB rate variation OK");				
+    				}
+			}
+    		}
+    	}                                 
+    TH1F *hNEventsBGFlag = (TH1F*)list->At(AliADQADataMakerRec::kNEventsBGFlag);
+    if (!hNEventsBGFlag) {
+      AliWarning("NEventsBGFlag histogram is not found");
+    }
+    else {
+    	if(hNEventsBGFlag->GetListOfFunctions()->GetEntries()<1) hNEventsBGFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.56,0.85,0.65,"NDC"));
+    	for(Int_t i=0; i<hNEventsBGFlag->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hNEventsBGFlag->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hNEventsBGFlag->GetListOfFunctions()->At(i);
+      			
+			Float_t meanRate  = 0;
+			for(Int_t i=0; i<16; i++)meanRate += hNEventsBGFlag->GetBinContent(i+1);
+			meanRate = meanRate/16;
+			Bool_t highVar = kFALSE;
+			
+			for(Int_t i=0; i<16; i++){
+				if((TMath::Abs(hNEventsBGFlag->GetBinContent(i+1)-meanRate)/hNEventsBGFlag->GetBinError(i+1))>fMaxBGVariation) {
+					test = 0.7;
+					highVar = kTRUE;
+					}
+				}
+			if(highVar){
+				QAbox->Clear();
+				QAbox->SetFillColor(kYellow); 
+				QAbox->AddText("BG rate variation too high");
+				}
+			else{
+				QAbox->Clear();
+				QAbox->SetFillColor(kGreen);
+				QAbox->AddText("BG rate variation OK");				
+    				}
+			}
+    		}
+    	}                                                      
     TH2F *hChargeEoIInt0 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt0);
     if (!hChargeEoIInt0) {
       AliWarning("ChargeEoIInt0 histogram is not found");
@@ -692,7 +871,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
     //
     if ( !fImage[esIndex] ) {
-    	if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2500,4000);
+    	if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2500,4500);
 	else fImage[esIndex] = new TCanvas(title, title,400,600);
 	}
     //
@@ -740,10 +919,11 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	TVirtualPad* pMeanTime  = 0;
     	TVirtualPad* pTrigger  = 0;
 	TVirtualPad* pChargeZoom = 0;
+	TVirtualPad* pTimeRatio = 0;
 	
-	const UInt_t nRows = 7;
+	const UInt_t nRows = 8;
 	const UInt_t nLargeRows = 1;
-	Bool_t isLarge[] = {0,1,0,0,0,0,0};
+	Bool_t isLarge[] = {0,1,0,0,0,0,0,0};
 	const Double_t timesLarger = 1.5;
 	Double_t xRow[nRows];
 	xRow[0] = 0.95;
@@ -772,6 +952,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pTime = pT;
 	iRow++;
 	
+	TPad* pTR = new TPad("TimeRatio", "Time Ratio Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
+    	fImage[esIndex]->cd();
+    	pTR->Draw();
+    	pTimeRatio = pTR;
+	iRow++;
+	
 	TPad* pMT = new TPad("Mean time", "Mean time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pMT->Draw();
@@ -789,7 +975,13 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pCo->Draw();
     	pCoinc = pCo;
 	iRow++;
-    
+	
+        TPad* pTr = new TPad("Triggers", "Triggers Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
+    	fImage[esIndex]->cd();
+    	pTr->Draw();
+    	pTrigger = pTr;
+	iRow++;
+	
     	TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0, xRow[iRow+1], 0.5, xRow[iRow]);
     	fImage[esIndex]->cd();
     	pP->Draw();
@@ -799,25 +991,21 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	fImage[esIndex]->cd();
     	pM->Draw();
     	pMaxCh = pM;
-	iRow++;
-	
-	TPad* pTr = new TPad("Triggers", "Triggers Pad", 0, 0.0, 1.0, xRow[iRow]);
-    	fImage[esIndex]->cd();
-    	pTr->Draw();
-    	pTrigger = pTr;
 
     	pCharge->Divide(2, 1);
 	pChargeZoom->Divide(3, 1);
     	pTime->Divide(4, 1);
+	pTimeRatio->Divide(4, 1);
     	pClock->Divide(4, 1);
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
     	pMaxCh->Divide(2, 1);
 	pMeanTime->Divide(4, 1);
 	
+	Float_t nEvents = 0;
     	TH1* histo = 0;
-	TH1* histoADA = 0;
-	TH1* histoADC = 0;
+	TH1* histoBlue = 0;
+	TH1* histoRed = 0;
 	TH1* histoNumerator = 0;
 	TH1* histoDenominator = 0;
 	TH1* histoRatio = 0;
@@ -826,10 +1014,11 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	//Charge pad
       	pad = pCharge->cd(1);
 	gPad->SetLogy();
-	histoADA=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADA);
-	histoADA->DrawCopy();
-	histoADC=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADC);
-	histoADC->DrawCopy("same");
+	histoBlue=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADA);
+	nEvents = histoBlue->Integral(-1,-1);
+	histoBlue->DrawCopy();
+	histoRed=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADC);
+	histoRed->DrawCopy("same");
 	TLegend *myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
 	myLegend1->SetTextFont(42);
   	myLegend1->SetBorderSize(0);
@@ -838,8 +1027,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
   	myLegend1->SetMargin(0.25);
   	myLegend1->SetTextSize(0.05);
   	myLegend1->SetEntrySeparation(0.5);
-	myLegend1->AddEntry(histoADA,"ADA","l");
-	myLegend1->AddEntry(histoADC,"ADC","l");
+	myLegend1->AddEntry(histoBlue,"ADA","l");
+	myLegend1->AddEntry(histoRed,"ADC","l");
 	myLegend1->Draw();
 	pad = pCharge->cd(2);
 	gPad->SetLogz();
@@ -868,6 +1057,75 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTime+iHist);
 		histo->DrawCopy("COLZ");
 		}
+	//Time ratio pad
+	pad = pTimeRatio->cd(1);
+	//gPad->SetLogy();
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kFlagNoTime);
+	histoBlue = (TH1*)histo->Clone("histoBlue");
+	histoBlue->Scale(1/nEvents);
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTimeNoFlag);
+	histoRed = (TH1*)histo->Clone("histoRed");
+	histoRed->Scale(1/nEvents);
+	Float_t max[2];
+	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+	histoBlue->GetYaxis()->SetRangeUser(0,2*TMath::MaxElement(2,max));
+	histoBlue->DrawCopy();
+	histoRed->DrawCopy("same");
+	TLegend *myLegend2 = new TLegend(0.15,0.78,0.85,0.88);
+	myLegend2->SetTextFont(42);
+  	myLegend2->SetBorderSize(0);
+  	myLegend2->SetFillStyle(0);
+  	myLegend2->SetFillColor(0);
+  	myLegend2->SetMargin(0.25);
+  	myLegend2->SetTextSize(0.04);
+  	myLegend2->SetEntrySeparation(0.5);
+	myLegend2->AddEntry(histoBlue,"Events with BB/BG flag but no time","l");
+	myLegend2->AddEntry(histoRed,"Events with time but no BB/BG flag","l");
+	myLegend2->Draw();
+
+	histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin);
+	for(Int_t iHist = 1; iHist<3; iHist++){
+		pad = pTimeRatio->cd(1+iHist);
+		gPad->SetLogz();
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin+iHist);
+		histoRatio = (TH1*)histo->Clone("histoRatio");
+		histoRatio->Divide(histoDenominator);
+		histoRatio->DrawCopy("COLZ");
+		}
+	pad = pTimeRatio->cd(4);
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBBFlag);
+	histoBlue = (TH1*)histo->Clone("histoBlue");
+	histoBlue->Sumw2();
+	histoBlue->Scale(1/nEvents);
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBGFlag);
+	histoRed = (TH1*)histo->Clone("histoRed");
+	histoRed->Sumw2();
+	histoRed->Scale(1/nEvents);
+	
+	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+	Float_t min[2];
+	min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
+	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
+	
+	histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.5*TMath::MaxElement(2,max));
+	histoBlue->DrawCopy("e");
+	//histoBlue->DrawCopy("esame");
+	//histoRed->DrawCopy("samehist");
+	histoRed->DrawCopy("esame");
+	TLegend *myLegend3 = new TLegend(0.15,0.78,0.85,0.88);
+	myLegend3->SetTextFont(42);
+  	myLegend3->SetBorderSize(0);
+  	myLegend3->SetFillStyle(0);
+  	myLegend3->SetFillColor(0);
+  	myLegend3->SetMargin(0.25);
+  	myLegend3->SetTextSize(0.04);
+  	myLegend3->SetEntrySeparation(0.5);
+	myLegend3->AddEntry(histoBlue,"Events with BB flag","l");
+	myLegend3->AddEntry(histoRed,"Events with BG flag","l");
+	myLegend3->Draw();
+		
 	//Clock pad
 	for(Int_t iHist = 0; iHist<4; iHist++){
 		pad = pClock->cd(iHist+1);

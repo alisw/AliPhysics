@@ -67,6 +67,10 @@ private:
   Float_t fMaxPedWidth; //Pedestal width cut
   Int_t fChargeChannelZoomMin; //Min for Zoom on charge
   Int_t fChargeChannelZoomMax; //Max for Zoom on charge
+  Float_t fMaxNoTimeRate; 
+  Float_t fMaxNoFlagRate;
+  Float_t fMaxBBVariation;
+  Float_t fMaxBGVariation;
 
   ClassDef(AliADQAChecker,4)  // description 
 
