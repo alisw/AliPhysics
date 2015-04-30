@@ -25,7 +25,8 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
-#include "AliFemtoPairCutAntiGammaAlpha.h"
+//#include "AliFemtoPairCutAntiGammaAlpha.h"
+#include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
@@ -128,8 +129,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[20];
-  //AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
-  AliFemtoPairCutAntiGammaAlpha      *sqpcetaphitpc[20];
+  AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
+  //AliFemtoPairCutAntiGammaAlpha      *sqpcetaphitpc[20];
   //AliFemtoShareQualityPairCut      *sqpcetaphitpc[20];
   //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];
   AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
@@ -147,8 +148,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
-  //AliFemtoCorrFctnGammaMonitor  *cgamma[20*10];
-  AliFemtoCorrFctnGammaMonitorAlpha  *cgamma[20*10];
+  AliFemtoCorrFctnGammaMonitor  *cgamma[20*10];
+  //AliFemtoCorrFctnGammaMonitorAlpha  *cgamma[20*10];
 
   // *** Begin pion-pion analysis ***
   int aniter = 0;
@@ -278,8 +279,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[ichg], imult),1);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
 	  
-	  //sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
-	  sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGammaAlpha();
+	  sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
+	  //sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGammaAlpha();
 	  //sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 	  //sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
 	  //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
@@ -290,18 +291,17 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.02);
 	  //runtype==0
 
-	  //sqpcetaphitpc[aniter]->SetMaxEEMinv(0.01);
-	  //sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.1);
-	  //sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.99);
-	  //sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.00001);
+	  sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);
+	  sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.0);
+	  sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
 
 	  ////sqpcetaphitpc[aniter]->SetMaxEEMinv(0.025);
 	  ////sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.998);
 	  ////sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
 
-	  sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);
-	  sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.0);
-	  sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
+	  //sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);
+	  //sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.0);
+	  //sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
 
 	  // sqpcetaphitpc[aniter]->SetPhiStarDistanceMinimum(0.03);
 	  // sqpcetaphitpc[aniter]->SetRadialDistanceMinimum(0.12, 0.03);
@@ -370,8 +370,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      cqinvinnertpc[ktm]->SetRadius(1.6);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
          
+              cgamma[aniter] = new AliFemtoCorrFctnGammaMonitor(Form("cgammaM%ikT%i", imult, ikt),200,200);
               //cgamma[aniter] = new AliFemtoCorrFctnGammaMonitorAlpha(Form("cgammaM%ikT%i", imult, ikt),200,200);
-              cgamma[aniter] = new AliFemtoCorrFctnGammaMonitorAlpha(Form("cgammaM%ikT%i", imult, ikt),1000,200);
+              //cgamma[aniter] = new AliFemtoCorrFctnGammaMonitorAlpha(Form("cgammaM%ikT%i", imult, ikt),1000,200);
               anetaphitpc[aniter]->AddCorrFctn(cgamma[aniter]);
 
 
