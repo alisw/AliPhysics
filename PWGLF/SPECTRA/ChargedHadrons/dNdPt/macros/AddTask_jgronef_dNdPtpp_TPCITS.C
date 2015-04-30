@@ -3,7 +3,10 @@
 ///
 /// Copied from Michaels train directory on Feb 18, 2015do. To test running over pp-pass4.
 ///
-/// The object can be opend with: `AlidNdPtAnalysis *obj = jgronef_dNdPtpp_TPCITS->FindObject("dNdPtAnalysis")`
+/// The object can be opend with: 
+/// \code AlidNdPtAnalysis *obj = jgronef_dNdPtpp_TPCITS->FindObject("dNdPtAnalysis")
+/// THnSparse* fRecTrackHist2 = obj->GetRecTrackHist();
+/// fRecTrackHist2->GetNdimensions() \endcode
 ///
 /// Functions often used are:
 /// \li GetRecTrackHist() - For pT, Eta and Phi distribution
@@ -58,16 +61,12 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
 /// <b> Create standard esd track cuts:</b> \li Call ".../PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C" \li Cut mode: 222 \li TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS
 
   Int_t cutMode = 222;
-//  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-//  gROOT->LoadMacro("$ALICE_ROOT/PWG0/dNdPt/macros/CreatedNdPtTrackCuts.C");
-//  gROOT->LoadMacro("./CreatedNdPtTrackCuts.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"); //To run on Grid
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
     return;
   } else {
-    //esdTrackCuts->SetHistogramsOn(kTRUE);
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
@@ -90,7 +89,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
 
   //AliTriggerAnalysis::Trigger trigger = AliTriggerAnalysis::kMB1;
   AlidNdPtHelper::AnalysisMode analysisMode = AlidNdPtHelper::kTPCITS;
-  AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kAllPart ;
+  AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kAllPart;
 
 
 /// <b>Create analysis object</b>
@@ -142,25 +141,32 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
     fdNdPtAnalysis->SetMultAcceptanceCuts(multAccCuts);
     fdNdPtAnalysis->SetMultTrackCuts(multTrackCuts);  
   
-
+cout<<"Debug     1"<<endl;
   // Add analysis object
   task->AddAnalysisObject( fdNdPtAnalysis );
-	
+cout<<"Debug     2"<<endl;
   // Add task
   mgr->AddTask(task);
-
-  // Create containers for input
+cout<<"Debug     3"<<endl;
+/// <b>Create containers for input and output </b>
+/// \code AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); \endcode
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(task, 0, cinput);
-
+cout<<"Debug     4"<<endl;
 //   AliAnalysisDataContainer *coutput = mgr->CreateContainer("jgronef_dNdPtpp_TPCITS", TList::Class(), AliAnalysisManager::kOutputContainer, "jgronef_dNdPtpp_TPCITS.root");
-  
-  /// <b> Adjust the Data Container to the Grid:</b>
-  /// \code   AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp", TList::Class() AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));\endcode
-  
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp", TList::Class() AliAnalysisManager::kOutputContainer Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid  
-  
+cout<<"Debug     5"<<endl;  
+///  Adjust the Data Container to the Grid:
+/// \code  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:dNdPtHistos", mgr->GetCommonFileName()));\endcode
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpPb",
+							   TList::Class(),
+							   AliAnalysisManager::kOutputContainer,
+							   Form("%s:dNdPtHistos", mgr->GetCommonFileName())); 
+cout<<"Debug     6"<<endl;
+  mgr->ConnectInput(task, 0, cinput);
+cout<<"Debug     7"<<endl;
   mgr->ConnectOutput(task, 1, coutput);
+cout<<"Debug     8"<<endl;
+  
+//   return task; 
 
 }
 
