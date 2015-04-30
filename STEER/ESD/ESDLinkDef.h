@@ -21,8 +21,14 @@
 #pragma link C++ class  AliESDZDC+;
 #pragma link C++ class  AliESDCaloTrigger+;
 
-#pragma read sourceClass="AliESDCaloTrigger" targetClass="AliESDCaloTrigger" source="Int_t fNEntries; Int_t * fColumn; Int_t * fRow; Char_t fTriggerBits[48][64]" version="[2]" \
-  target="fTriggerBits" targetType="Int_t*" code="{fTriggerBits = new Int_t[onfile.fNEntries]; for (Int_t i=0; i<onfile.fNEntries; ++i) fTriggerBits[i]=onfile.fTriggerBits[onfile.fColumn[i]][onfile.fRow[i]];}"
+#pragma read \
+  sourceClass="AliESDCaloTrigger" \
+  targetClass="AliESDCaloTrigger" \
+  source="Int_t fNEntries; Int_t * fColumn; Int_t * fRow; Char_t fTriggerBits[48][64]" \
+  version="[2]"	\
+  target="fTriggerBits" \
+  targetType="Int_t*" \
+  code="{fTriggerBits = new Int_t[onfile.fNEntries]; for (Int_t i=0; i<onfile.fNEntries; ++i) fTriggerBits[i]=(onfile.fColumn && onfile.fRow)?onfile.fTriggerBits[onfile.fColumn[i]][onfile.fRow[i]]:0;}"
 
 #pragma link C++ class  AliESDfriend+;                                                                                                           
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-47]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets=onfile.fTRDpidQuality;}"
