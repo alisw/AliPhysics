@@ -32,6 +32,7 @@ public:
   enum HRawType_t {
   		   kChargeADA,kChargeADC,kChargeEoI,kChargeEoIBB,kChargeEoIBG,
 		   kHPTDCTime,kHPTDCTimeBB,kHPTDCTimeBG,kWidth,
+		   kHPTDCTimeRebin,kHPTDCTimeRebinBB,kHPTDCTimeRebinBG,
 		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
 		   kPedestalDiffInt0,kPedestalDiffInt1,
@@ -40,6 +41,7 @@ public:
 		   kTriggers,
 		   kMeanTimeADA,kMeanTimeADC,kMeanTimeDiff,kMeanTimeCorr,kMeanTimeSumDiff,
 		   kPedestalInt0,kPedestalInt1,
+		   kNEventsBBFlag,kNEventsBGFlag,
 		   kFlagNoTime,kTimeNoFlag,
 		   kWidthBB,kWidthBG,
 		   kBBFlagsPerChannel,kBGFlagsPerChannel,

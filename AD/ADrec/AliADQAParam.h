@@ -66,6 +66,11 @@ class AliADQAParam : public TNamed
   
   void SetMaxPedDiff(Int_t val) {fMaxPedDiff = val;} 
   void SetMaxPedWidth(Float_t val) {fMaxPedWidth = val;} 
+  
+  void SetMaxNoTimeRate(Float_t val) {fMaxNoTimeRate = val;}
+  void SetMaxNoFlagRate(Float_t val) {fMaxNoFlagRate = val;}
+  void SetMaxBBVariation(Float_t val) {fMaxBBVariation = val;}
+  void SetMaxBGVariation(Float_t val) {fMaxBGVariation = val;}
 
   //HPTDC time
   Int_t GetNTdcTimeBins() const { return fNTdcTimeBins; }
@@ -109,6 +114,11 @@ class AliADQAParam : public TNamed
   
   Int_t GetMaxPedDiff() const {return fMaxPedDiff;} 
   Float_t GetMaxPedWidth() const {return fMaxPedWidth;}
+  
+  Float_t GetMaxNoTimeRate() const {return fMaxNoTimeRate;}
+  Float_t GetMaxNoFlagRate() const {return fMaxNoFlagRate;}
+  Float_t GetMaxBBVariation() const {return fMaxBBVariation;}
+  Float_t GetMaxBGVariation() const {return fMaxBGVariation;}
 
  private:
  
@@ -150,7 +160,13 @@ class AliADQAParam : public TNamed
   
   Int_t fMaxPedDiff;
   Float_t fMaxPedWidth;
+  
+  Float_t fMaxNoTimeRate;
+  Float_t fMaxNoFlagRate;
+  Float_t fMaxBBVariation;
+  Float_t fMaxBGVariation;
+  
 
-  ClassDef(AliADQAParam, 2)
+  ClassDef(AliADQAParam,3)
 };
 #endif
