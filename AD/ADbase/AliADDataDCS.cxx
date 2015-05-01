@@ -151,26 +151,24 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 
     	while((aValue = (AliDCSValue*) iterarray.Next())) {
 			UInt_t currentTime = aValue->GetTimeStamp();
-			//if(currentTime>fCtpEndTime) break; //What is this for?
 
    			values[iValue] = aValue->GetFloat();
    			times[iValue] = (Double_t) (currentTime);
 			
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
-				if(variation > 0.01) fDeadChannel[kOfflineChannel[iAlias]] = kTRUE;
+				if(variation > 0.01) fDeadChannel[iAlias] = kTRUE;
 			}
 			fHv[iAlias]->Fill(values[iValue]);
-			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[kOfflineChannel[iAlias]]);
+			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[iAlias]);
    			iValue++;
     	}      
     	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
 
   	// calculate mean and rms of the first two histos
-	// and convert index to aliroot channel
-	Int_t iChannel	   = kOfflineChannel[iAlias];	
-	fMeanHV[iChannel]  = fHv[iAlias]->GetMean();
-	fWidthHV[iChannel] = fHv[iAlias]->GetRMS();
+	Int_t iChannel	   = iAlias;	
+	fMeanHV[iAlias]  = fHv[iAlias]->GetMean();
+	fWidthHV[iAlias] = fHv[iAlias]->GetRMS();
 
     	delete[] values;
     	delete[] times;	
