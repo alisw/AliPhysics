@@ -20,39 +20,29 @@
 //-------------------------------------------------------------------------
 
 #include <TChain.h>
-#include <TTree.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <THnSparse.h>
-#include <TCanvas.h>
-#include <TDatabasePDG.h>
-#include <TPDGCode.h>
 #include <TClonesArray.h>
 #include <TRandom3.h>
+#include <TDatabasePDG.h>
+#include <TPDGCode.h>
 
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
-#include "AliPIDResponse.h"
 #include "AliInputEventHandler.h"
+#include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
-#include "AliAODMCParticle.h"
-#include "AliEventPoolManager.h"
-
-#include "AliVCluster.h"
-#include "AliAODCaloCluster.h"
-#include "AliESDCaloCluster.h"
-#include "AliVTrack.h"
-#include "AliEmcalJet.h"
-#include "AliRhoParameter.h"
 #include "AliLog.h"
+#include "AliEventPoolManager.h"
+#include "AliPIDResponse.h"
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
+
+#include "AliEmcalJet.h"
 #include "AliJetContainer.h"
-#include "AliParticleContainer.h"
-#include "AliClusterContainer.h"
-#include "AliPicoTrack.h"
+//#include "AliParticleContainer.h"
+//#include "AliClusterContainer.h"
+//#include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskV0sInJetsEmcal.h"
 
@@ -655,7 +645,6 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
-//  DefineOutput(5, TTree::Class());
 }
 
 AliAnalysisTaskV0sInJetsEmcal::~AliAnalysisTaskV0sInJetsEmcal()
