@@ -34,6 +34,7 @@ class AliUnfolding;
 #include "TLatex.h"
 #include "TF1.h"
 #include "TH1D.h"
+#include "TMath.h"
 // define the following variable to build with debug flags
 ///#define ALIJETFLOWTOOLS_DEBUG_FLAG
 
@@ -166,7 +167,7 @@ class AliJetFlowTools {
         void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
         void            SetRMS(Bool_t r)                        {fRMS                   = r;}
-        void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
+        void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r;}
         void            SetRho0(Bool_t r)                       {fRho0                  = r;}
         void            SetBootstrap(Bool_t b, Bool_t r = kTRUE) {
             // note that setting this option will not lead to true resampling
@@ -248,6 +249,7 @@ class AliJetFlowTools {
                 TH1D* dptOut,           // out of plane delta pt distribution
                 Int_t eventCount = 0);  // event count (optional)
         // static const helper functions, mainly histogram manipulation
+        static void     RemoveSign(Double_t& d)         {d = TMath::Abs(d);}
         static TH1D*    ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix = "");
         static TH2D*    ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TString suffix = "");
         static TH2D*    NormalizeTH2D(TH2D* histo, Bool_t noError = kTRUE);
@@ -262,6 +264,9 @@ class AliJetFlowTools {
         static TH1D*            GetV2Histo(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
         static TH1F*            ConvertGraphToHistogram(TGraphErrors* g);
         static TGraphAsymmErrors*       AddHistoErrorsToGraphErrors(TGraphAsymmErrors* g, TH1D* h);
+        static Double_t         GetRMSOfTH1(TH1* h, Double_t a, Double_t b);
+        static TF1*             GetErrorFromFit(TH1* h, Double_t a, Double_t b, 
+                Bool_t setContent = kTRUE, Bool_t excludeSubZero = kFALSE, Int_t pivot = 40);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
@@ -572,11 +577,11 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
 
 };
 // initialize the static members
-TArrayD* AliJetFlowTools::gV2           = new TArrayD(7);       // DO NOT TOUCH - these arrays are filled by the
-TArrayD* AliJetFlowTools::gStat         = new TArrayD(7);       // 'GetSignificance' function and
-TArrayD* AliJetFlowTools::gShape        = new TArrayD(7);       // then used in the chi2 minimization routine
-TArrayD* AliJetFlowTools::gCorr         = new TArrayD(7);       // to calculate the significance of the results
-Int_t    AliJetFlowTools::gOffsetStart  =  1;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
+TArrayD* AliJetFlowTools::gV2           = new TArrayD(6);       // DO NOT TOUCH - these arrays are filled by the
+TArrayD* AliJetFlowTools::gStat         = new TArrayD(6);       // 'GetSignificance' function and
+TArrayD* AliJetFlowTools::gShape        = new TArrayD(6);       // then used in the chi2 minimization routine
+TArrayD* AliJetFlowTools::gCorr         = new TArrayD(6);       // to calculate the significance of the results
+Int_t    AliJetFlowTools::gOffsetStart  =  0;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Int_t    AliJetFlowTools::gOffsetStop   = 0;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
 Float_t  AliJetFlowTools::gReductionFactorCorr  = 1.;   // multiply corr uncertainty by this factor
