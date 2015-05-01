@@ -147,6 +147,8 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fDeriv1st(0),
   fDeriv2nd(0),
   fMatch(0),
+  fMinLabelEmb(-kMaxInt),
+  fMaxLabelEmb(kMaxInt),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
