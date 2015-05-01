@@ -1307,7 +1307,6 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
   if(fbJetSelection && fJetsCont)
   {
-//    fJetsCont->SetJetPtCut(fdCutPtJetMin); // needs to be applied on the pt after bg subtraction
     if(fdCutPtTrackJetMin > 0.) fJetsCont->SetPtBiasJetTrack(fdCutPtTrackJetMin);
     if(fdCutAreaPercJetMin > 0.) fJetsCont->SetPercAreaCut(fdCutAreaPercJetMin);
     if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) fJetsCont->SetJetEtaLimits(-dCutEtaJetMax, dCutEtaJetMax);
@@ -1357,10 +1356,10 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) printf("max |eta| of jet: %g\n", dCutEtaJetMax);
     printf("max distance between V0 and jet axis: %g\n", fdDistanceV0JetMax);
     printf("-------------------------------------------------------\n");
-    printf("Jet container cuts\n");
-    fJetsCont->PrintCuts();
-    printf("Bg jet container cuts\n");
-    fJetsBgCont->PrintCuts();
+    printf("Signal jet container cuts\n");
+    if(fJetsCont) fJetsCont->PrintCuts();
+    printf("Background jet container cuts\n");
+    if(fJetsBgCont) fJetsBgCont->PrintCuts();
   }
   printf("=======================================================\n");
 }
@@ -1384,7 +1383,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
   if(!fAODIn)
   {
-    if(fDebug > 0) printf("TaskV0sInJetsEmcal: No input AOD found\n");
+    AliError("No input AOD found!");
     return kFALSE;
   }
   if(fDebug > 5) printf("TaskV0sInJetsEmcal: FillHistograms: Loading AOD OK\n");
@@ -1400,7 +1399,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC)
     {
-      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No MC array found\n");
+      AliError("No MC array found!");
       return kFALSE;
     }
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: MC array found\n");
@@ -1409,7 +1408,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
     if(!headerMC)
     {
-      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No MC header found\n");
+      AliError("No MC header found!");
       return kFALSE;
     }
     // get position of the MC primary vertex
@@ -1427,7 +1426,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     fPIDResponse = inputHandler->GetPIDResponse();
     if(!fPIDResponse)
     {
-      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No PID response object found\n");
+      AliError("No PID response object found!");
       return kFALSE;
     }
   }
@@ -1447,7 +1446,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
   if(iCentIndex < 0)
   {
-    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event is out of histogram range: cent: %g\n", fdCentrality);
+    AliError(Form("TaskV0sInJetsEmcal: Event is out of histogram range: cent: %g!", fdCentrality));
     return kFALSE;
   }
   fh1EventCounterCut->Fill(2); // selected events (vertex, centrality)
@@ -1476,7 +1475,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     dZVtxME = vertex->GetZ();
     pool = fPoolMgr->GetEventPool(fdCentrality, dZVtxME);
     if(!pool)
-      AliFatal(Form("No pool found for centrality = %g, z_vtx = %g", fdCentrality, dZVtxME));
+    {
+      AliError(Form("No pool found for centrality = %g, z_vtx = %g!", fdCentrality, dZVtxME));
+      return kFALSE;
+    }
     bPoolReady = pool->IsReady();
     if(fDebug > 5) pool->SetDebug(1);
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: events in pool = %d, jets in pool = %d\n", pool->GetCurrentNEvents(), pool->NTracksInPool());
@@ -1546,7 +1548,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   {
     if(!fJetsCont)
     {
-      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No jet container\n");
+      AliError("No signal jet container!");
       bJetEventGood = kFALSE;
     }
     if(bJetEventGood)
@@ -1558,8 +1560,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
     if(bJetEventGood && !fJetsBgCont)
     {
-      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No bg jet container\n");
-//        bJetEventGood = kFALSE;
+      AliError("No bg jet container!");
+//      bJetEventGood = kFALSE;
     }
   }
   else // no in-jet analysis
@@ -2965,12 +2967,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets(const TClonesArray* array,
 // decides whether a cone overlaps with other jets
   if(!part)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Error: No part\n");
+    AliError("No particle!");
     return kFALSE;
   }
   if(!array)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Error: No array\n");
+    AliError("No jet array!");
     return kFALSE;
   }
   Int_t iNJets = array->GetEntriesFast();
@@ -2985,7 +2987,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets(const TClonesArray* array,
     jet = (AliVParticle*)array->At(iJet);
     if(!jet)
     {
-      if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Error: Failed to load jet %d/%d\n", iJet, iNJets);
+      AliError(Form("Failed to load jet %d/%d!", iJet, iNJets));
       continue;
     }
     if(IsParticleInCone(part, jet, dDistance))
@@ -3030,7 +3032,7 @@ AliEmcalJet* AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster(AliJetContainer* co
 // sort kt clusters by pT/area and return the middle one, based on code in AliAnalysisTaskJetChem
   if(!cont)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Error: No container\n");
+    AliError("No jet container!");
     return NULL;
   }
   Int_t iNClTot = cont->GetNJets(); // number of all clusters in the array
@@ -3108,7 +3110,7 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::AreaCircSegment(Double_t dRadius, Double
   Double_t dD = dDistance;
   if(TMath::Abs(dR) < dEpsilon)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::AreaCircSegment: Error: Too small radius: %g < %g\n", dR, dEpsilon);
+    AliError(Form("Too small radius: %g < %g!", dR, dEpsilon));
     return 0.;
   }
   if(dD >= dR)
