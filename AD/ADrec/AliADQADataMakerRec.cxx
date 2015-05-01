@@ -1089,6 +1089,7 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float
   // for slewing effect and
   // misalignment of the channels
   if (time < 1e-6) return -1024;
+  if (adc < 1)return time;
 
   // Channel alignment and general offset subtraction
   //  time -= fTimeOffset[i];
@@ -1101,6 +1102,7 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float
   //Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
   //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
   time -= fTimeSlewing->Eval(adc);
+  
 
   return time;
 }
