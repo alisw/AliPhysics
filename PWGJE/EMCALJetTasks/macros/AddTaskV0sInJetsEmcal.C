@@ -5,11 +5,11 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   Double_t dRadiusBg = 0.2,
   TString outputFile = "output.root",
   Bool_t bIsMC = kFALSE,
-  TString label = "",
   TString tracksName = "PicoTracks",
   TString clustersCorrName = "CaloClustersCorr",
   TString rhoName = "Rho",
-  TString sType = "TPC"
+  TString sType = "TPC",
+  TString label = ""
 )
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -61,7 +61,6 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
 
   // Create containers for input/output
   AliAnalysisDataContainer* cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer* coutput0 = mgr->GetCommonOutputContainer();
   AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "Std"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
   AliAnalysisDataContainer* coutput2 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "QA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
   AliAnalysisDataContainer* coutput3 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "Cuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
