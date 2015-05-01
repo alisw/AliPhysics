@@ -1616,6 +1616,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetBetaVZEROOnlyTrackCuts()
   cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
+  cuts->SetApplyRecentering(kTRUE);
   // idea of the cuts is that calibration is done per ring 
   // and that it is transparent for different data taking periods
   return cuts;
