@@ -61,6 +61,8 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fDeriv1st(0),
   fDeriv2nd(0),
   fMatch(0),
+  fMinLabelEmb(-kMaxInt),
+  fMaxLabelEmb(kMaxInt),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -398,6 +400,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   AliEmcalJet *jet1  = NULL; //AA jet
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
   AliEmcalJet *jetR  = NULL; //true jet for response matrix
+  AliVParticle *vpe  = NULL; //embedded particle
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   fRho  = (Float_t)jetCont->GetRhoVal();
@@ -436,9 +439,9 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     fMatch = 0;
     fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
     if(fSingleTrackEmb) {
-      AliVParticle *vp = GetEmbeddedConstituent(jet1);
-      if(vp) {
-        fJet2Vec->SetPxPyPzE(vp->Px(),vp->Py(),vp->Pz(),vp->E());
+      vpe = GetEmbeddedConstituent(jet1);
+      if(vpe) {
+        fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
         fMatch = 1;
       }
     } else {
@@ -465,21 +468,33 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     if(fMatch==1) {
       Double_t drToLJ = -1.;
       if(jetL) drToLJ = jet1->DeltaR(jetL);
+      if(fSingleTrackEmb && vpe)
+        drToLJ = jet1->DeltaR(vpe);
       fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
+      Double_t var2 = 0.;
+      Double_t mJetR = 0.;
+      Double_t ptJetR = 0.;
       if(jetR) {
-        Double_t var2 = jetR->M();
-        if(fJetMassVarType==kRatMPt) {
-          if(jetR->Pt()>0. || jetR->Pt()<0.) var2 = jetR->M()/jetR->Pt();
-        }
-        fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,jetR->Pt(),jet1->MaxTrackPt());
-        fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,jetR->Pt(),jet1->MaxTrackPt());
-        fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(jetR->Pt(),var-var2,jet1->MaxTrackPt());
-        if(jetR->M()>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(jetR->Pt(),(var-var2)/var2,jet1->MaxTrackPt());
-        Double_t varsp[5] = {var,var2,ptjet1,jetR->Pt(),jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
-        fhnMassResponse[fCentBin]->Fill(varsp);
+        mJetR  = jetR->M();
+        var2   = jetR->M();
+        ptJetR = jetR->Pt();
       }
+      if(fSingleTrackEmb && vpe) {
+        mJetR  = vpe->M();
+        var2   = vpe->M();
+        ptJetR = vpe->Pt();
+      }
+      if(fJetMassVarType==kRatMPt) {
+        if(ptJetR>0. || ptJetR<0.) var2 /= ptJetR;
+      }
+      fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,ptJetR,jet1->MaxTrackPt());
+      fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,ptJetR,jet1->MaxTrackPt());
+      fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
+      if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
+      Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
+      fhnMassResponse[fCentBin]->Fill(varsp);
     }
-
+    
     if(fCreateTree) {      
       fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
       fArea = (Float_t)jet1->Area();
@@ -505,8 +520,12 @@ AliVParticle* AliAnalysisTaskJetShapeDeriv::GetEmbeddedConstituent(AliEmcalJet *
   AliVParticle *vpe = 0x0; //embedded particle
   Int_t nc = 0;
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
-    vp = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray())); //check if fTracks is the correct track branch
-    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+    vp = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+    //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+    Int_t lab = TMath::Abs(vp->GetLabel());
+    if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
+      continue;
+
     if(!vpe) vpe = vp;
     else if(vp->Pt()>vpe->Pt()) vpe = vp;
     nc++;

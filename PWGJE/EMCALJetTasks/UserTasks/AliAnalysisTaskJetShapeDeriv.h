@@ -39,7 +39,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   void SetJetContainerBase(Int_t c)                             { fContainerBase     = c   ; }
   void SetJetContainerNoEmb(Int_t c)                            { fContainerNoEmb    = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
-  void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
+  void SetSingleTrackEmbedding(Bool_t b, Int_t min = 99999, Int_t max = 999999) { fSingleTrackEmb = b; fMinLabelEmb = min; fMaxLabelEmb = max; }
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
 
@@ -76,6 +76,8 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   Float_t         fDeriv1st;                                       // 1st derivative
   Float_t         fDeriv2nd;                                       // 2nd derivative
   Int_t           fMatch;                                          // 1: matched to MC jet; 0: no match
+  Int_t           fMinLabelEmb;                                    // min label of embedded particles
+  Int_t           fMaxLabelEmb;                                    // max label of embedded particles
 
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
   TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
@@ -98,7 +100,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 7)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 8)
 };
 #endif
 
