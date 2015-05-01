@@ -1618,7 +1618,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding jet number %d\n", iNJetSel);
       new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
-      fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSel->Pt(), fJetsCont->GetLeadingHadronPt(jetSel)); // pt_jet vs pt of leading jet track
+      fh2PtJetPtTrackLeading[iCentIndex]->Fill(dPtJetCorr, fJetsCont->GetLeadingHadronPt(jetSel)); // pt_jet vs pt of leading jet track
       if(fbCorrelations)
         arrayMixedEventAdd->Add(new TLorentzVector(vecJetSel)); // copy selected jet to the list of new jets for event mixing
     }
@@ -2111,6 +2111,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
         jet = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+        if(!jet)
+          continue;
         vecJetMomentum.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
         if(fDebug > 5) printf("TaskV0sInJetsEmcal: Checking if V0 %d %d in jet cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
         if(IsParticleInCone(v0, jet, fdDistanceV0JetMax)) // If good jet in event, find out whether V0 is in that jet
@@ -2360,7 +2362,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // V0-jet correlations
     if(fbCorrelations && iNJetSel)
     {
-      // Fill azimuthal correlation V0-jet in same events
+      // Fill V0-jet correlations in same events
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
         AliAODJet* jetCorrel = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
@@ -2375,7 +2377,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           fhnV0CorrelSELambda[iCentIndex]->Fill(valueLCorrel);
         }
       }
-      // Fill azimuthal correlation V0-jet in mixed events
+      // Fill V0-jet correlations in mixed events
       if(bPoolReady)
       {
         for(Int_t iMix = 0; iMix < pool->GetCurrentNEvents(); iMix++)
