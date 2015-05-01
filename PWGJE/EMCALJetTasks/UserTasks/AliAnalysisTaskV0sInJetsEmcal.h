@@ -24,7 +24,6 @@ class AliClusterContainer;
 class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcalJet.h"
-#include "THnSparse.h"
 
 class AliAnalysisTaskV0sInJetsEmcal : public AliAnalysisTaskEmcalJet
 {
@@ -341,9 +340,9 @@ private:
   TH2D* fh2V0LambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0LambdaMCPtGenPtRec[fgkiNBinsCent]; //!
   // feed-down
-  THnSparseD* fhnV0LambdaInclMCFD[fgkiNBinsCent]; //!
-  THnSparseD* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
-  THnSparseD* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInclMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
   TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
 
   // ALambda
@@ -398,9 +397,9 @@ private:
   TH2D* fh2V0ALambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaMCPtGenPtRec[fgkiNBinsCent]; //!
   // feed-down
-  THnSparseD* fhnV0ALambdaInclMCFD[fgkiNBinsCent]; //!
-  THnSparseD* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
-  THnSparseD* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInclMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
   TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
 
   TH1D* fh1QAV0Pt[fgkiNQAIndeces]; //! pt
