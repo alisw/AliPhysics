@@ -1273,7 +1273,7 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
       vB.Set(QxaCor, QyaCor);
     } // if for some reason the info from the event header is not available, the AliFlowTrackCuts object
       // has provided the equalized multiplicity info so this should still be relatively safe
-  } else if (fApplyRecentering = 999) {
+  } else if (fApplyRecentering == 999) {
       // experimental VZERO recentering
     // first retrieve the q-vectors from the AliFlowEventSimple:: routine
     // extract the information form the current flow vectors
@@ -1298,7 +1298,7 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     // just a precaution ...
     if(n > 5) {
         Qxamean = 0;
-        Qxarms = 0;
+        Qxarms = 1;
         Qyamean = 0;
         Qyarms = 1;
         Qxcmean = 0;
@@ -1315,6 +1315,8 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     vA.Set(QxcCor, QycCor);
     vB.Set(QxaCor, QyaCor);
   }
+ Qarray[0] = vA;
+ Qarray[1] = vB;
 }
 //_____________________________________________________________________________
 void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
@@ -1647,13 +1649,13 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // first index of the oadb array is the harmonic n, the second index is either qax, qay, qcx, qcy
     AliOADBContainer* h[5][4];
     for(Int_t i(0); i < 5; i++) {
-        h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%ivsV0_filtered", i+1));
+        h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%i_filtered", i+1));
         if(h[i][0]) fQxavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-        h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%ivsV0_filtered", i+1));
+        h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%i_filtered", i+1));
         if(h[i][1]) fQyavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-        h[i][2] = (AliOADBContainer*)foadb->Get(Form("hQxc%ivsV0_filtered", i+1));
+        h[i][2] = (AliOADBContainer*)foadb->Get(Form("hQxc%i_filtered", i+1));
         if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-        h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%ivsV0_filtered", i+1));
+        h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%i_filtered", i+1));
         if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
     }
     
