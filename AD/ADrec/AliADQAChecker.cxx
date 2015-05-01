@@ -90,14 +90,9 @@ AliADQAParam* AliADQAChecker::GetQAParam() const
 
   AliCDBEntry *entry=0;
 
-  entry = man->Get("AD/Calib/QAParam",AliQAChecker::Instance()->GetRunNumber());
-  if(!entry){
-    AliWarning("Load of QA param from default storage failed!");
-    AliWarning("QA parameters will be loaded from local storage ($ALICE_ROOT)");
-	
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    entry = man->Get("AD/Calib/QAParam",AliQAChecker::Instance()->GetRunNumber());
-  }
+  entry = man->Get("AD/Calib/QAParam");
+  if(!entry)AliWarning("Load of QA param from default storage failed!");
+ 
   // Retrieval of data in directory AD/Calib/QA:
 
   AliADQAParam *QAParam = 0;
