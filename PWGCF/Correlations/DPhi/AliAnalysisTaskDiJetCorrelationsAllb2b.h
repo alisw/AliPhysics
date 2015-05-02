@@ -1,3 +1,5 @@
+//THnSparse binning changed to accommodate wider pT range at a time.
+
 #ifndef AliAnalysisTaskDiJetCorrelationsAllb2b_H
 #define AliAnalysisTaskDiJetCorrelationsAllb2b_H
 
@@ -172,12 +174,12 @@ private:
     
     //______________________________| Mixed Event Pool
     Bool_t DefineMixedEventPool(){
-        Int_t  NofCentBins  = 12;
-        Double_t MBins[]={0., 1., 2., 3., 4., 5., 7.5, 10., 20., 30., 40., 50., 100.1};
+        Int_t  NofCentBins  = 7;
+        Double_t MBins[]={0.,7.5, 10., 20., 30., 40., 50., 100.1};
         Double_t * CentrORMultBins = MBins;
         
-        Int_t NofZVrtxBins  = 10;
-        Double_t ZBins[]={-10.0, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
+        Int_t NofZVrtxBins  = 5;
+        Double_t ZBins[]={-10.0, -6, -2, 2, 6, 10};
         Double_t *ZVrtxBins = ZBins;
         
         fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
