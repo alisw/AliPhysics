@@ -73,6 +73,22 @@ AliTriggerScalers::AliTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LO
 {
   // Default constructor for L0,L1,L2 levels 
 }
+//_____________________________________________________________________________
+AliTriggerScalers::AliTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LOCA,        
+                                      UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA, UInt_t LMCB,UInt_t LMCA ):   
+  TObject(),
+  fClassIndex( classIndex ),
+  fLOCB(LOCB),     
+  fLOCA(LOCA),     
+  fL1CB(L1CB),     
+  fL1CA(L1CA),     
+  fL2CB(L2CB),     
+  fL2CA(L2CA),      
+  fLMCB(LMCB),     
+  fLMCA(LMCA)      
+{
+  // Constructor for L0,L1,L2,LM levels 
+}
 
 //_____________________________________________________________________________
 Int_t  AliTriggerScalers::Compare( const TObject* obj ) const
@@ -91,6 +107,18 @@ void AliTriggerScalers::GetAllScalers(UInt_t *scalers) const
  scalers[3]=fL1CA;
  scalers[4]=fL2CB;
  scalers[5]=fL2CA;
+}
+//____________________________________________________________________________
+void AliTriggerScalers::GetAllScalersM012(UInt_t *scalers) const
+{
+ scalers[0]=fLOCB;
+ scalers[1]=fLOCA;
+ scalers[2]=fL1CB;
+ scalers[3]=fL1CA;
+ scalers[4]=fL2CB;
+ scalers[5]=fL2CA;
+ scalers[6]=fLMCB;
+ scalers[7]=fLMCA;
 }
 //_____________________________________________________________________________
 void AliTriggerScalers::Print( const Option_t* ) const
