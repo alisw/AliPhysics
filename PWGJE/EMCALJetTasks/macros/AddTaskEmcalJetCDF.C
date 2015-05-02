@@ -49,24 +49,19 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
 
   TString name ( taskname ); TString tracks ( ntracks );
   TString clusters ( nclusters ); TString jets ( njets );  TString rho ( nrho );
-  TString acctype = type;
-  acctype.ToUpper();
+
+  TString acctype = type; acctype.ToUpper();
+  if ( acctype.Contains ("TPC") )   { acctype = "TPC"; }
+  if ( acctype.Contains ("EMCAL") ) { acctype = "EMCAL"; }
+  if ( acctype.Contains ("USER") )  { acctype = "USER"; }
 
   if ( jetptcut < 1. ) { jetptcut = 1.; }
 
   TString jetstr = "jpt";
   jetstr += ( ULong_t ) ( jetptcut * 1000 );
 
-  if ( !jets.IsNull() )  { name += "_" + jets; }
-
-  name += "_" + jetstr;
-
-  if ( !rho.IsNull() )  { name += "_" + rho; }
-
-  if ( acctype.CompareTo ( "TPC" )   ) { acctype = "TPC"; }
-  if ( acctype.CompareTo ( "EMCAL" ) ) { acctype = "EMCAL"; }
-  if ( acctype.CompareTo ( "KUSER" ) ) { acctype = "kUser"; }
-
+  if ( !jets.IsNull() )    { name += "_" + jets + "_" + jetstr; }
+  if ( !rho.IsNull() )     { name += "_" + rho; }
   if ( !acctype.IsNull() ) { name += "_" + acctype; }
 
   AliAnalysisTaskEmcalJetCDF *jetTask = new AliAnalysisTaskEmcalJetCDF ( name );
@@ -79,11 +74,11 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer ( nclusters );
 //     clusterCont->SetClassName("AliVCluster");
 
-  AliJetContainer *jetCont = jetTask->AddJetContainer ( njets, acctype.Data(), jetradius );
+  AliJetContainer *jetCont = jetTask->AddJetContainer ( njets, acctype, jetradius );
 
   if ( jetCont )
       {
-      jetCont->SetRhoName ( nrho );
+      if ( !rho.IsNull() ) { jetCont->SetRhoName ( nrho ); }
       jetCont->ConnectParticleContainer ( trackCont );
       jetCont->ConnectClusterContainer ( clusterCont );
       jetCont->SetPercAreaCut ( jetareacut );
