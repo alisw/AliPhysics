@@ -65,6 +65,14 @@ void AliTriggerScalersRecord::AddTriggerScalers( UChar_t classIndex, UInt_t LOCB
     AddTriggerScalers( new AliTriggerScalers( classIndex, LOCB, LOCA, L1CB, L1CA, L2CB, L2CA ) );
     fScalers.Sort();
 } 
+//_____________________________________________________________________________
+void AliTriggerScalersRecord::AddTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LOCA,        
+                                         UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA,
+					 UInt_t LMCB, UInt_t LMCA)
+{
+    AddTriggerScalers( new AliTriggerScalers( classIndex, LOCB, LOCA, L1CB, L1CA, L2CB, L2CA, LMCB, LMCA ) );
+    fScalers.Sort();
+} 
 
 //_____________________________________________________________________________
 Int_t AliTriggerScalersRecord::Compare( const TObject* obj ) const

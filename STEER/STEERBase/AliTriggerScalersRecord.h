@@ -30,6 +30,9 @@ public:
                     void    AddTriggerScalers( AliTriggerScalers* scaler );
                     void    AddTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LOCA,        
                                               UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA );
+                    void    AddTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LOCA,        
+                                              UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA,
+					      UInt_t LMCB, UInt_t LMCA);
                             
       const AliTimeStamp*   GetTimeStamp() const { return &fTimestamp; }
          const TObjArray*   GetTriggerScalers()  const { return  &fScalers; }

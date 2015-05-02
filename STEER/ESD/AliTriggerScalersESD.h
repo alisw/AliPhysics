@@ -28,13 +28,18 @@ public:
                          AliTriggerScalersESD();
                          AliTriggerScalersESD(
                                  UChar_t    classIndex,                                 
-                               ULong64_t    LOCB,        
-                               ULong64_t    LOCA,        
-                               ULong64_t    L1CB,        
-                               ULong64_t    L1CA,        
-                               ULong64_t    L2CB,        
-                               ULong64_t    L2CA     
+                               ULong64_t    LOCB, ULong64_t    LOCA,        
+                               ULong64_t    L1CB, ULong64_t    L1CA,        
+                               ULong64_t    L2CB, ULong64_t    L2CA     
+                         ); 
+			 AliTriggerScalersESD(
+                               UChar_t    classIndex,                                 
+                               ULong64_t    LOCB, ULong64_t    LOCA,        
+                               ULong64_t    L1CB, ULong64_t    L1CA,        
+                               ULong64_t    L2CB, ULong64_t    L2CA,     
+                               ULong64_t    LMCB, ULong64_t    LMCA     
                          );   
+
 			 AliTriggerScalersESD(UChar_t xlassIndex,ULong64_t* s64);
               virtual   ~AliTriggerScalersESD() {}
          virtual void    Print( const Option_t* opt ="" ) const;
@@ -48,7 +53,10 @@ public:
                ULong64_t    GetL1CA() const { return fL1CA; }
                ULong64_t    GetL2CB() const { return fL2CB; }
                ULong64_t    GetL2CA() const { return fL2CA; }
+               ULong64_t    GetLMCB() const { return fLMCB; }
+               ULong64_t    GetLMCA() const { return fLMCA; }
  	            void    GetAllScalers(ULong64_t *scalers) const;
+ 	            void    GetAllScalersM012(ULong64_t *scalers) const;
 
                  UChar_t    GetClassIndex() const { return fClassIndex; }
     
