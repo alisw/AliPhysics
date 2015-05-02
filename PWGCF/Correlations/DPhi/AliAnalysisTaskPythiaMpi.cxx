@@ -21,6 +21,7 @@
 
 #include "TChain.h"
 #include "TH3.h"
+#include "THnSparse.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
 
@@ -36,6 +37,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliVParticle.h"
+#include "AliStack.h"
 //#include "AliPythia.h"
 //#include "AliPythia8.h"
 //#include "AliAnalysisHelperJetTasks.h"
@@ -167,6 +169,17 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fHistTracks->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   fHistTracks->GetZaxis()->SetTitle("#MPIs");
 
+    //4 dim matrix
+  Int_t nbins[4]   = {20, 39, 100, 4};
+  Double_t minbin[4] = {-1.,           0.15,        -0.5,         1 };
+  Double_t maxbin[4] = {1.,            10.0,        99.5,         4 };
+
+  THnSparseD *fHistTracksPID = new THnSparseD("fHistTracksPID","eta:pt:mpi:pid",4,nbins,minbin,maxbin);
+  fHistTracksPID->GetAxis(0)->SetTitle("#eta");
+  fHistTracksPID->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
+  fHistTracksPID->GetAxis(2)->SetTitle("#MPI");
+  fHistTracksPID->GetAxis(3)->SetTitle("PID");
+  fHistTracksPID->Sumw2();
 
   fOutputList->Add(fHistEvents);
   fOutputList->Add(fHistPt);
@@ -178,6 +191,7 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fOutputList->Add(fProfileMpiPt);
   fOutputList->Add(fProfilePtMpi);
   fOutputList->Add(fHistTracks);
+  fOutputList->Add(fHistTracksPID);
 
   PostData(1,fOutputList);
 
@@ -269,6 +283,7 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
    TProfile2D* fProfileMpiPt = (TProfile2D*) fOutputList->FindObject("fProfileMpiPt");
    TProfile2D* fProfilePtMpi = (TProfile2D*) fOutputList->FindObject("fProfilePtMpi");
    TH3F* fHistTracks = (TH3F*) fOutputList->FindObject("fHistTracks");
+   THnSparseD* fHistTracksPID = (THnSparseD*) fOutputList->FindObject("fHistTracksPID");
 
    for(Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++){
      AliVParticle* track = fMCEvent->GetTrack(iTracks);
@@ -288,10 +303,21 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
        fProfilePtMpi ->Fill(track->Pt(),track->Eta(),Nmpi);
 
        fHistTracks->Fill(track->Eta(),track->Pt(),Nmpi);
-       n_phys_prim_charged++;
+       Double_t pid = 0, weight = 1.;
 
        particle_id = track->PdgCode();
-       if(particle_id == 2101 || particle_id == 2103 || particle_id == 2201 || particle_id == 2203) cout<<"pID: "<<particle_id<<endl;
+       if(particle_id == 111 || particle_id == 211)
+	 pid = 1; //pions
+       if(particle_id == 311 || particle_id == 321)
+	 pid = 2; //kaons
+       if(particle_id == 2212)
+	 pid = 3; //protons
+       if(particle_id == 3322 || particle_id == 3312)
+	 pid = 4; //csis
+
+       Double_t prop[4] = {track->Eta(),track->Pt(),Nmpi,pid};
+       fHistTracksPID->Fill(prop, weight);
+       n_phys_prim_charged++;
 
      }
    }
