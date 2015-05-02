@@ -79,10 +79,14 @@ namespace AliMUONCDB
   void WriteToCDB(TObject* object, const char* calibpath, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity(),
                   const char* comment="", const char* responsible="AliMUONCDB tester class");
 
+  void WriteMapping(Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
+  
   void WriteTrigger(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   
   void WriteHV(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteHV(const char* inputFile, Int_t runNumber);
+
   void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
