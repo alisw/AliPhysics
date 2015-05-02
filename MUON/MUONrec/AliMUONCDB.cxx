@@ -1168,6 +1168,24 @@ AliMUONCDB::WriteTriggerEfficiency(Int_t startRun, Int_t endRun)
 }
 
 //_____________________________________________________________________________
+void
+AliMUONCDB::WriteHV(const char* inputFile, Int_t runNumber)
+{
+  /// Read HV values from an external file containing a TMap of the DCS values
+  /// store them into CDB located at cdbpath, with a validity period
+  /// of exactly one run
+  
+  TFile* f = TFile::Open(gSystem->ExpandPathName(inputFile));
+  
+  if (!f->IsOpen()) return;
+  
+  TMap* hvStore = static_cast<TMap*>(f->Get("map"));
+  
+  WriteToCDB("MUON/Calib/HV",hvStore,runNumber,runNumber,kFALSE);
+
+  delete hvStore;
+}
+//_____________________________________________________________________________
 void 
 AliMUONCDB::WriteHV(Bool_t defaultValues,
                     Int_t startRun, Int_t endRun)
@@ -1308,6 +1326,14 @@ AliMUONCDB::WriteCapacitances(Bool_t defaultValues,
   AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   WriteToCDB("MUON/Calib/Capacitances",capaStore,startRun,endRun,defaultValues);
   delete capaStore;
+}
+
+//_____________________________________________________________________________
+void AliMUONCDB::WriteMapping(Int_t startRun, Int_t endRun)
+{
+  gSystem->Setenv("MINSTALL",gSystem->ExpandPathName("$ALICE_ROOT/../src/MUON/mapping"));
+  AliMpCDB::WriteMpData(startRun,endRun);
+  AliMpCDB::WriteMpRunData(startRun,endRun);
 }
 
 //_____________________________________________________________________________
