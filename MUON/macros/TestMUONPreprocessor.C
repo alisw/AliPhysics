@@ -24,27 +24,14 @@
 /// This macro runs the test preprocessor for MUON.
 /// It uses AliTestShuttle to simulate a full Shuttle process
 ///
-/// You must load relevant libraries (besides normal MUON ones -which is done
-/// easily by executing root from the $ALICE_ROOT/MUON directory to use
-/// the rootlogon.C there) before compiling this macro :
-/// <pre>
-/// gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
-/// gSystem->Load("libMUONshuttle");
-/// </pre>
-/// Last line above assume you have $ALICE_ROOT/MUON/lib/tgt_[arch] (where
-/// libMUONshuttle is located) in your LD_LIBRARY_PATH
-///
-/// Having $ALICE_ROOT/SHUTTLE/TestShuttle directory in your LD_LIBRARY_PATH
-/// (or DYLD_LIBRARY_PATH on Mac OS X) won't hurt either...
-///
-/// You must also make a link of some OCDB entries to have the mapping loaded 
+/// You must make a link of some OCDB entries to have the mapping loaded
 /// correctly :
 ///
 /// <pre>
 /// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
-/// mkdir -p MUON/Calib
-/// cd MUON/Calib
-/// ln -si $ALICE_ROOT/OCDB/MUON/Calib/MappingData .
+/// mkdir -p MUON/Calib/MappingData
+/// cd MUON/Calib/MappingData/
+/// ln -si $ALICE_ROOT/OCDB/MUON/Calib/MappingData/* .
 /// </pre>
 ///
 /// and Align/Baseline if you'd like to test GMS subprocessor :
@@ -101,6 +88,11 @@
 ///    MtgRegionalCrate-1.dat
 /// </pre>
 ///
+///
+/// An example set of input files can be found at https://cernbox.cern.ch/public.php?service=files&t=c9363b0a1f92daf4963dd4f8b2a8f72a
+///
+/// (just get the zip file and unpack it into a directory that will be sourceDirectory)
+///
 /// IMPORTANT:
 /// The trigger files have to be present in order for the algorithm to work correctly.
 /// If you want to test the Trigger DCS maps only, but you don't have the .dat trigger files,
@@ -149,7 +141,7 @@
 //______________________________________________________________________________
 void TestMUONPreprocessor(Int_t runNumber=80, 
                           const char* runType="CALIBRATION",
-                          const char* sourceDirectory="/afs/cern.ch/user/l/laphecet/public")
+                          const char* sourceDirectory="$HOME/Downloads/muontestshuttle")
 {
   // runType can be :
   //
@@ -161,8 +153,6 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   
-  gSystem->Load("libTestShuttle.so");
-
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   
   const char* inputCDB = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
