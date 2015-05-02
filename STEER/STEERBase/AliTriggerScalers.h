@@ -18,6 +18,8 @@
 //    L1CA       L1 triggers after all vetos 
 //    L2CB       L2 triggers before any vetos 
 //    L2CA       L2 triggers after all vetos 
+//    LMCB       LM triggers before any vetos 
+//    LMCA       LM triggers after all vetos 
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -56,12 +58,14 @@ private:
                UInt_t    fL1CA;            //  L1 triggers after all vetos   (32 bits)
                UInt_t    fL2CB;            //  L2 triggers before any vetos  (32 bits)
                UInt_t    fL2CA;            //  L2 triggers after all vetos   (32 bits)
+               UInt_t    fLMCB;            //  LM triggers before any vetos  (32 bits)
+               UInt_t    fLMCA;            //  LM triggers after all vetos   (32 bits)
 
 
                          AliTriggerScalers( const AliTriggerScalers &run );
     AliTriggerScalers&   operator=(const AliTriggerScalers& clus);
 
-   ClassDef( AliTriggerScalers, 1 )  // Define a Run Trigger Scalers (Scalers)
+   ClassDef( AliTriggerScalers, 2 )  // Define a Run Trigger Scalers (Scalers)
 };
 
 #endif
