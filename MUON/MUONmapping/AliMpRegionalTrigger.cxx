@@ -215,12 +215,11 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
     
     AliDebugStream(2) << "Read data from file " << fileName.Data() << endl;
     
-    TString inFileName(fileName);
-    inFileName = gSystem->ExpandPathName(inFileName.Data());
+    TString inFileName(gSystem->ExpandPathName(fileName.Data()));
     ifstream inFile(inFileName.Data(), ios::in);
     if ( ! inFile.good() ) {
       AliErrorStream()
-         << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
+         << "Local Trigger Board Mapping File " << inFileName.Data() << " not found bordel de merde" << endl;
       return kFALSE;
     }
     
