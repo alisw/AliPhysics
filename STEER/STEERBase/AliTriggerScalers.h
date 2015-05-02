@@ -29,12 +29,16 @@ public:
                          AliTriggerScalers();
                          AliTriggerScalers(
                               UChar_t    classIndex, 
-                               UInt_t    LOCB,        
-                               UInt_t    LOCA,        
-                               UInt_t    L1CB,        
-                               UInt_t    L1CA,        
-                               UInt_t    L2CB,        
-                               UInt_t    L2CA       
+                               UInt_t    LOCB, UInt_t    LOCA,        
+                               UInt_t    L1CB, UInt_t    L1CA,        
+                               UInt_t    L2CB, UInt_t    L2CA       
+                         );   
+                         AliTriggerScalers(
+                              UChar_t    classIndex, 
+                               UInt_t    LOCB, UInt_t    LOCA,        
+                               UInt_t    L1CB, UInt_t    L1CA,        
+                               UInt_t    L2CB, UInt_t    L2CA,        
+                               UInt_t    LMCB, UInt_t    LMCA       
                          );   
               virtual   ~AliTriggerScalers() {}
               
@@ -47,7 +51,10 @@ public:
                UInt_t    GetL1CA() const { return fL1CA; }
                UInt_t    GetL2CB() const { return fL2CB; }
                UInt_t    GetL2CA() const { return fL2CA; }
+               UInt_t    GetLMCB() const { return fLMCB; }
+               UInt_t    GetLMCA() const { return fLMCA; }
 	         void    GetAllScalers(UInt_t *scalers) const;
+	         void    GetAllScalersM012(UInt_t *scalers) const;
               UChar_t    GetClassIndex() const { return fClassIndex; }
 private: 
    
