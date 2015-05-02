@@ -40,7 +40,7 @@
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
-//#include "AliParticleContainer.h"
+#include "AliParticleContainer.h"
 //#include "AliClusterContainer.h"
 //#include "AliPicoTrack.h"
 
@@ -56,7 +56,7 @@ const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10}; // only c
 // edges of centrality bins for event mixing
 Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentMixBinRanges[] = {0, 5, 10}; // only central
 // edges of z_vtx bins for event mixing
-Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiZVtxMixBinRanges[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
+Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiZVtxMixBinRanges[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
 // axis: pT of V0
 const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[] = {0, 12};
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) - 1;
@@ -136,8 +136,11 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutAreaPercJetMin(0),
   fdDistanceV0JetMax(0.4),
 
+  fbCompareTriggers(0),
+
   fJetsCont(0),
   fJetsBgCont(0),
+  fTracksCont(0),
 
   fh1EventCounterCut(0),
   fh1EventCent(0),
@@ -348,6 +351,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
     fh2PtJetPtTrackLeading[i] = 0;
+    fh2PtJetPtTrigger[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
@@ -416,8 +420,11 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutAreaPercJetMin(0),
   fdDistanceV0JetMax(0.4),
 
+  fbCompareTriggers(0),
+
   fJetsCont(0),
   fJetsBgCont(0),
+  fTracksCont(0),
 
   fh1EventCounterCut(0),
   fh1EventCent(0),
@@ -628,6 +635,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
     fh2PtJetPtTrackLeading[i] = 0;
+    fh2PtJetPtTrigger[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
@@ -663,6 +671,10 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   {
     fJetsCont = GetJetContainer(0);
     fJetsBgCont = GetJetContainer(1);
+    if(fbCompareTriggers)
+    {
+      fTracksCont = GetParticleContainer(0);
+    }
   }
 
   // Initialise random-number generator
@@ -819,8 +831,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   // binning in V0-jet correlations
   Int_t iNBinsDeltaPhi = 72;
   const Int_t iNDimCorrel = 6;
-  Float_t fDeltaEtaMax = 2*0.8; // >= 2*eta_V0^max
-  Int_t iNBinsDeltaEtaCorrel = Int_t(2*fDeltaEtaMax/0.1);
+  Float_t fDeltaEtaMax = 2 * 0.8; // >= 2*eta_V0^max
+  Int_t iNBinsDeltaEtaCorrel = Int_t(2 * fDeltaEtaMax / 0.1);
   Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
   Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
   Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
@@ -954,6 +966,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh1PhiJet[i]);
     fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
     fOutputListStd->Add(fh2PtJetPtTrackLeading[i]);
+    fh2PtJetPtTrigger[i] = new TH2D(Form("fh2PtJetPtTrigger_%d", i), Form("jet pt vs trigger track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} trigger track (GeV/#it{c})", GetCentBinLabel(i).Data()), 2 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
+    fOutputListStd->Add(fh2PtJetPtTrigger[i]);
     fh1NJetPerEvent[i] = new TH1D(Form("fh1NJetPerEvent_%d", i), Form("Number of selected jets per event, cent: %s;# jets;# events", GetCentBinLabel(i).Data()), 100, 0., 100.);
     fOutputListStd->Add(fh1NJetPerEvent[i]);
     // event histograms
@@ -1301,6 +1315,11 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
       fJetsCont = 0;
     if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
       fJetsBgCont = 0;
+    if(fbCompareTriggers)
+    {
+      if(fTracksCont && fTracksCont->GetArray() == 0)
+        fTracksCont = 0;
+    }
   }
 
   // Jet selection
@@ -1310,6 +1329,13 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     if(fdCutPtTrackJetMin > 0.) fJetsCont->SetPtBiasJetTrack(fdCutPtTrackJetMin);
     if(fdCutAreaPercJetMin > 0.) fJetsCont->SetPercAreaCut(fdCutAreaPercJetMin);
     if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) fJetsCont->SetJetEtaLimits(-dCutEtaJetMax, dCutEtaJetMax);
+    // Trigger selection
+    if(fbCompareTriggers && fTracksCont)
+    {
+      fTracksCont->SetFilterHybridTracks(kTRUE);
+      fTracksCont->SetParticlePtCut(5.);
+      fTracksCont->SetParticleEtaLimits(-0.8, 0.8);
+    }
   }
 
   printf("=======================================================\n");
@@ -1355,6 +1381,8 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     if(fdCutAreaPercJetMin > 0.) printf("min area of jet [pi*R^2]: %g\n", fdCutAreaPercJetMin);
     if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) printf("max |eta| of jet: %g\n", dCutEtaJetMax);
     printf("max distance between V0 and jet axis: %g\n", fdDistanceV0JetMax);
+    printf("angular correlations of V0s with jets: %s\n", fbCorrelations ? "yes" : "no");
+    printf("pt correlations of jets with trigger tracks: %s\n", fbCompareTriggers ? "yes" : "no");
     printf("-------------------------------------------------------\n");
     printf("Signal jet container cuts\n");
     if(fJetsCont) fJetsCont->PrintCuts();
@@ -1661,6 +1689,49 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     {
       fh1NMedConeCent->Fill(iCentIndex);
       fh2EtaPhiMedCone[iCentIndex]->Fill(jetMed->Eta(), jetMed->Phi());
+    }
+  }
+
+  if(fbJetSelection && fbCompareTriggers)
+  {
+    if(!fTracksCont)
+      AliError("No track container!");
+    else
+    {
+      AliAODJet* jetTrig = 0;
+      AliVTrack* track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+      if(track) // there are some accepted trigger tracks
+      {
+        while(track) // loop over selected tracks
+        {
+          if(iNJetSel) // there are some accepted jets
+          {
+            for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
+            {
+              jetTrig = (AliAODJet*)jetArraySel->At(iJet);
+              fh2PtJetPtTrigger[iCentIndex]->Fill(jetTrig->Pt(), track->Pt());
+            }
+          }
+          else // there are no accepted jets
+          {
+            fh2PtJetPtTrigger[iCentIndex]->Fill(0., track->Pt());
+          }
+          track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); // load next accepted trigger track
+        }
+      }
+      else // there are no accepted trigger tracks
+      {
+        if(iNJetSel) // there are some accepted jets
+        {
+          for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
+          {
+            jetTrig = (AliAODJet*)jetArraySel->At(iJet);
+            fh2PtJetPtTrigger[iCentIndex]->Fill(jetTrig->Pt(), 0.);
+          }
+        }
+        else // there are no accepted jets
+          fh2PtJetPtTrigger[iCentIndex]->Fill(0., 0.);
+      }
     }
   }
 
