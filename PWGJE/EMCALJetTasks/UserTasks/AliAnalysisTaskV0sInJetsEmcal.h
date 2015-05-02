@@ -52,6 +52,9 @@ public:
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
 
+  // pt correlations of jets with trigger tracks
+  void SetCompareTriggerTracks(Bool_t val = kTRUE) {fbCompareTriggers = val;}
+
   void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsCandALambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda, Bool_t IsInPeakALambda);
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent);
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
@@ -98,10 +101,10 @@ public:
   static const Int_t fgkiCentBinRanges[fgkiNBinsCent]; // upper edges of centrality bins
   // centrality bins for event mixing
   static const Int_t fgkiNBinsCentMix = 2; // number of centrality bins for event mixing
-  static Double_t fgkiCentMixBinRanges[fgkiNBinsCentMix+1]; // edges of centrality bins for event mixing
+  static Double_t fgkiCentMixBinRanges[fgkiNBinsCentMix + 1]; // edges of centrality bins for event mixing
   // z_vtx bins for event mixing
   static const Int_t fgkiNBinsZVtxMix = 10; // number of z_vtx bins for event mixing
-  static Double_t fgkiZVtxMixBinRanges[fgkiNBinsZVtxMix+1]; // edges of z_vtx bins for event mixing
+  static Double_t fgkiZVtxMixBinRanges[fgkiNBinsZVtxMix + 1]; // edges of z_vtx bins for event mixing
   // axis: pT of V0
   static const Double_t fgkdBinsPtV0[2]; // [GeV/c] minimum and maximum or desired binning of the axis (intended for the rebinned axis)
   static const Int_t fgkiNBinsPtV0; // number of bins (intended for the rebinned axis)
@@ -150,7 +153,7 @@ private:
   Double_t fdCentrality; //! [%] centrality
 
   // Mixed events parameters
-  Bool_t fbCorrelations; // switch for delta-phi correlations
+  Bool_t fbCorrelations; // switch for V0-jet correlations
   Int_t fiSizePool; // available number of events per pool
   Int_t fiNJetsPerPool; // required number of jets available in each pool
   Float_t ffFractionMin; // minimum fraction of fiNJetsPerPool at which pool is ready (default: 1.0)
@@ -190,9 +193,13 @@ private:
   Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the jet cone
 
+  // Correlations of pt_jet with pt_trigger-track
+  Bool_t fbCompareTriggers; // switch for pt correlations of jets with trigger tracks
+
   // EMCal containers
   AliJetContainer* fJetsCont; //! Signal Jets
   AliJetContainer* fJetsBgCont; //! Background Jets
+  AliParticleContainer* fTracksCont; //! Tracks
 
   // event histograms
   TH1D* fh1EventCounterCut; //! number of events for different selection steps
@@ -213,6 +220,7 @@ private:
   TH2D* fh2EtaPtJet[fgkiNBinsCent]; //! jet eta-pT
   TH1D* fh1PhiJet[fgkiNBinsCent]; //! jet phi
   TH2D* fh2PtJetPtTrackLeading[fgkiNBinsCent]; //! pt_jet; pt of leading jet track
+  TH2D* fh2PtJetPtTrigger[fgkiNBinsCent]; //! pt_jet; pt of trigger track
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
@@ -447,7 +455,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 9) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 10) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
