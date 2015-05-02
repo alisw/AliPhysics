@@ -123,7 +123,7 @@ Int_t AliMUONRegionalTriggerConfig::ReadData(const TString& fileName)
 
     // Read remaining calibration data from file
     //
-    ifstream in(fileName.Data(), ios::in);
+    ifstream in(gSystem->ExpandPathName(fileName.Data()), ios::in);
     if ( ! in.good() ) {
         AliErrorStream()
            << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
