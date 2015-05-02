@@ -363,6 +363,18 @@ Bool_t AliMpCDB::LoadManuStore2(const char* cdbpath, Int_t runNumber,
 //______________________________________________________________________________
 Bool_t AliMpCDB::WriteMpData()
 {
+  return WriteMpData(0,AliCDBRunRange::Infinity());
+}
+
+//______________________________________________________________________________
+Bool_t AliMpCDB::WriteMpRunData()
+{
+  return WriteMpRunData(0,AliCDBRunRange::Infinity());
+}
+
+//______________________________________________________________________________
+Bool_t AliMpCDB::WriteMpData(Int_t startRun, Int_t endRun)
+{
 /// Write mapping data in OCDB
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
@@ -373,7 +385,7 @@ Bool_t AliMpCDB::WriteMpData()
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON mapping");
   cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-  AliCDBId id("MUON/Calib/MappingData", 0, AliCDBRunRange::Infinity()); 
+  AliCDBId id("MUON/Calib/MappingData", startRun, endRun);
 
   AliMpDataProcessor mp;
   AliMpDataMap* map = mp.CreateDataMap("data");
@@ -381,7 +393,7 @@ Bool_t AliMpCDB::WriteMpData()
 }
 
 //______________________________________________________________________________
-Bool_t AliMpCDB::WriteMpRunData()
+Bool_t AliMpCDB::WriteMpRunData(Int_t startRun, Int_t endRun)
 {
 /// Write mapping data in OCDB
 
@@ -393,7 +405,7 @@ Bool_t AliMpCDB::WriteMpRunData()
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON run-dependent mapping");
   cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-  AliCDBId id("MUON/Calib/MappingRunData", 0, AliCDBRunRange::Infinity()); 
+  AliCDBId id("MUON/Calib/MappingRunData", startRun, endRun);
 
   AliMpDataProcessor mp;
   AliMpDataMap* map = mp.CreateDataMap("data_run");
