@@ -17,6 +17,8 @@
 //    L1CA       L1 triggers after all vetos 
 //    L2CB       L2 triggers before any vetos 
 //    L2CA       L2 triggers after all vetos 
+//    LMCB       L2 triggers before any vetos 
+//    LMCA       L2 triggers after all vetos 
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -58,8 +60,10 @@ private:
                ULong64_t    fL1CA;            //  L1 triggers after all vetos   (64 bits)
                ULong64_t    fL2CB;            //  L2 triggers before any vetos  (64 bits)
                ULong64_t    fL2CA;            //  L2 triggers after all vetos   (64 bits)
+               ULong64_t    fLMCB;            //  L2 triggers before any vetos  (64 bits)
+               ULong64_t    fLMCA;            //  L2 triggers after all vetos   (64 bits)
                         
-   ClassDef( AliTriggerScalersESD, 1 )  // Define a Run Trigger Scalers (Scalers)
+   ClassDef( AliTriggerScalersESD, 2 )  // Define a Run Trigger Scalers (Scalers)
 };
 
 #endif
