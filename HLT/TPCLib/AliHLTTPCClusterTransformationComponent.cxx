@@ -122,7 +122,11 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   calib->UpdateRunInformations(GetRunNo());
   
   if( !fgTransform.IsInitialised() ){
+    TStopwatch timer;
+    timer.Start();
     int err = fgTransform.Init( GetBz(), GetTimeStamp() );
+    timer.Stop();
+    cout<<"\n\n Initialisation: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
     if( err!=0 ){
       HLTError(Form("Cannot retrieve offline transform from AliTPCcalibDB, AliHLTTPCClusterTransformation returns %d",err));
       return -ENOENT;

@@ -156,6 +156,8 @@ set(SRCS
     tracking-ca/AliTPCtrackerCA.cxx
     transform/AliHLTTPCFastTransform.cxx
     transform/AliHLTTPCSpline2D3D.cxx
+    transform/AliHLTTPCSpline2D3DObject.cxx
+    transform/AliHLTTPCFastTransformObject.cxx
    )
 
 # Headers from sources
