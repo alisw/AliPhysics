@@ -1,7 +1,7 @@
 
 // Di-Jet angular correlations class
 // Author: Greeshma Koyithatta Meethaleveedu and Ragahva Varma
-
+//THnSparse binning changed to accommodate wider pT range at a time.
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -880,15 +880,15 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
   
   Double_t Pi = TMath::Pi();
   //QA histograms
-  fHistQA[0] = new TH1F("fHistZVtx", "Z vertex distribution", 100, -15., 15.);
-  fHistQA[1] = new TH1F("fHistnTPCCluster", "n TPC Cluster", 100, 0., 200.);
-  fHistQA[2] = new TH1F("fHistnTPCClusterF", "n TPC Cluster findable", 100, 0., 200.);
-  fHistQA[3] = new TH1F("fHistDCAXY", "dca-XY", 100, -5., 5.);
-  fHistQA[4] = new TH1F("fHistDCAZ", "dca-Z", 100, -5., 5.);
-  fHistQA[5] = new TH1F("fHistChi2TPC", "Chi2 TPC", 100, 0., 10.);
-  fHistQA[6] = new TH1F("fHistpT", "pT distribution",1000,0.,20.);
-  fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 100, -0.5, 2*Pi+0.5);
-  fHistQA[8] = new TH1F("fHistEta", "Eta distribution" , 100, -2, 2);
+  fHistQA[0] = new TH1F("fHistZVtx", "Z vertex distribution", 10, -10., 10.);
+  fHistQA[1] = new TH1F("fHistnTPCCluster", "n TPC Cluster", 10, 0., 200.);
+  fHistQA[2] = new TH1F("fHistnTPCClusterF", "n TPC Cluster findable", 10, 0., 200.);
+  fHistQA[3] = new TH1F("fHistDCAXY", "dca-XY", 10, -5., 5.);
+  fHistQA[4] = new TH1F("fHistDCAZ", "dca-Z", 10, -5., 5.);
+  fHistQA[5] = new TH1F("fHistChi2TPC", "Chi2 TPC", 10, 0., 10.);
+  fHistQA[6] = new TH1F("fHistpT", "pT distribution",100,0.,20.);
+  fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 10, -0.5, 2*Pi+0.5);
+  fHistQA[8] = new TH1F("fHistEta", "Eta distribution" , 10, -2, 2);
   
   for( Int_t i = 0; i < 9; i++)
     {
@@ -897,12 +897,12 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
     }
   
   //1 SE Distributuons Phi, Eta for Trg1 and Trg2
-  fHistTrigDPhi = new TH1F("fHistTrigDPhi", " Trig Phi Difference Same",100, 0, 0.5);
+  fHistTrigDPhi = new TH1F("fHistTrigDPhi", " Trig Phi Difference Same",10, 0, 0.5);
   fHistTrigDPhi->Sumw2();
   fOutputQA->Add(fHistTrigDPhi);
   
-  fControlConvResT1 = new TH2F("fControlConvResT1", ";id;delta mass;T1", 3, -0.5, 2.5, 100, -0.1, 0.1);
-  fControlConvResT2 = new TH2F("fControlConvResT2", ";id;delta mass;T2", 3, -0.5, 2.5, 100, -0.1, 0.1);
+  fControlConvResT1 = new TH2F("fControlConvResT1", ";id;delta mass;T1", 3, -0.5, 2.5, 10, -0.1, 0.1);
+  fControlConvResT2 = new TH2F("fControlConvResT2", ";id;delta mass;T2", 3, -0.5, 2.5, 10, -0.1, 0.1);
   fControlConvResT1->Sumw2();
   fControlConvResT2->Sumw2();
   fOutputQA->Add(fControlConvResT1);
@@ -1006,8 +1006,8 @@ if(ftwoplus1){
     
   //Catgry :1 Trigger Particles --> Cent, Zvtx, Trigger_pT
   //_____________________________________________Trigger-1
-  const Int_t pTbinTrigger1 = Int_t(fTrigger1pTHighThr - fTrigger1pTLowThr);
-  Int_t   fBinsTrg1[3]   = {12,       10,        pTbinTrigger1};
+  const Int_t pTbinTrigger1 = Int_t(fTrigger1pTHighThr - fTrigger1pTLowThr)/2;
+  Int_t   fBinsTrg1[3]   = {12,       5,        pTbinTrigger1};
   Double_t fMinTrg1[3]   = {0.0,   -10.0,    fTrigger1pTLowThr};
   Double_t fMaxTrg1[3]   = {100.0,  10.0,   fTrigger1pTHighThr};
   THnTrig1CentZvtxpT = new THnSparseD(nameThnTrg1CentZvtxpT.Data(),"Cent-Zvtx-pTtr1",3, fBinsTrg1, fMinTrg1, fMaxTrg1);
@@ -1015,7 +1015,7 @@ if(ftwoplus1){
 
   //_____________________________________________Trigger-2
   const Int_t pTbinTrigger2 = Int_t(fTrigger2pTHighThr - fTrigger2pTLowThr);
-  Int_t   fBinsTrg2[3]   = {12,       10,        pTbinTrigger2};
+  Int_t   fBinsTrg2[3]   = {12,       5,        pTbinTrigger2};
   Double_t fMinTrg2[3]   = {0.0,   -10.0,    fTrigger2pTLowThr};
   Double_t fMaxTrg2[3]   = {100.0,  10.0,   fTrigger2pTHighThr};
   THnTrig2CentZvtxpT = new THnSparseD(nameThnTrg2CentZvtxpT.Data(),"Cent-Zvtx-pTtr2",3, fBinsTrg2, fMinTrg2, fMaxTrg2);
@@ -1026,9 +1026,9 @@ if(ftwoplus1){
     
   //Catgry2: Correlations Plots for SE and ME (T1, T2)
  //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t    fBins12[7] = {12,     10,   18,               36, pTbinTrigger1, pTbinTrigger2, 15};
-  Double_t  fMin12[7] = {0.0,   -10., -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
-  Double_t  fMax12[7] = {100.0,  10.,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, fTrigger1pTHighThr};
+  Int_t    fBins12[7] = {12,     5,   18,               36, pTbinTrigger1, pTbinTrigger2, 8};
+  Double_t  fMin12[7] = {0.0,   -10.0, -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
+  Double_t  fMax12[7] = {100.0,  10.0,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, 6};
   THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-Trk",7, fBins12, fMin12, fMax12);
   THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-Trk",7, fBins12, fMin12, fMax12);
         
@@ -1040,17 +1040,17 @@ if(ftwoplus1){
     
  //1plus1 correlation
  //----------------------------
-       const Int_t pTbinTrigger1plus1 = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
-  Int_t   fBinsTrg1plus1[3]   = {12,       10,   pTbinTrigger1plus1};
+  const Int_t pTbinTrigger1plus1 = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
+  Int_t   fBinsTrg1plus1[3]   = {12,       5,   pTbinTrigger1plus1};
   Double_t fMinTrg1plus1[3]   = {0.0,   -10.0,   fTrigger2pTLowThr};
   Double_t fMaxTrg1plus1[3]   = {100.0,  10.0,   fTrigger1pTHighThr};
   THnCentZvtxpTT1plus1 = new THnSparseD(nameThnCentZvtxpTT1plus1.Data(),"Cent-Zvtx-pTtr1",3, fBinsTrg1plus1, fMinTrg1plus1, fMaxTrg1plus1);
   
    
   //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t   fBins121plus1[6] = {12,     10,   18,                36,  pTbinTrigger1plus1,  15};
+  Int_t   fBins121plus1[6] = {12,     5,   18,                36,  pTbinTrigger1plus1,  8};
   Double_t  fMin121plus1[6] = {0.0,   -10., -1.8, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
-  Double_t  fMax121plus1[6] = {100.0,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, fTrigger1pTHighThr};
+  Double_t  fMax121plus1[6] = {100.0,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, 6};
   THnCentZvtxDEtaDPhipTTpTA1plus1   = new THnSparseD(nameThnCentZvtxDEtaDPhipTTpTA1plus1.Data(),"Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
   
     }
@@ -1086,8 +1086,8 @@ if(ftwoplus1){
 
   //Munual pT tracks Values
 if(fuseVarPtBins){
-    const Int_t nvarBinspT = 15;
-    Double_t varBinspT[nvarBinspT+1] = {0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0,7.0, 8.0, 9.0, 10.0};
+    const Int_t nvarBinspT = 8;
+    Double_t varBinspT[nvarBinspT+1] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0};
       if(ftwoplus1){
       THnTrig1CentZvtxDEtaDPhi->GetAxis(6)->Set(nvarBinspT, varBinspT);
       THnTrig2CentZvtxDEtaDPhi->GetAxis(6)->Set(nvarBinspT, varBinspT);
