@@ -28,6 +28,7 @@
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTErrorGuard.h"
+#include "AliHLTTPCFastTransformObject.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -50,6 +51,7 @@ Bool_t AliHLTTPCClusterTransformationComponent::fgTimeInitialisedFromEvent = 0;
 
 AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent()
 :
+fOfflineMode(0),
 fDataId(kFALSE),
 fBenchmark("ClusterTransformation")
 {
@@ -113,6 +115,12 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 { 
   // see header file for class documentation
   
+  int iResult=0;
+  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
+
+  if (iResult>=0 && argc>0)
+    iResult=ConfigureFromArgumentString(argc, argv);
+
   AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
   if(!calib){
     HLTError("AliTPCcalibDB does not exist");
@@ -124,7 +132,31 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   if( !fgTransform.IsInitialised() ){
     TStopwatch timer;
     timer.Start();
-    int err = fgTransform.Init( GetBz(), GetTimeStamp() );
+    int err = 0;
+    if( fOfflineMode ) {
+      err = fgTransform.Init( GetBz(), GetTimeStamp() );
+    } else {
+       const char* defaultNotify = "";
+       const char* cdbEntry = "HLT/ConfigTPC/TPCFastTransform";
+       defaultNotify = " (default)";
+       const char* chainId = 0;
+       
+       HLTInfo( "configure from entry \"%s\"%s, chain id %s", cdbEntry, defaultNotify, ( chainId != NULL && chainId[0] != 0 ) ? chainId : "<none>" );
+       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get( cdbEntry );//,GetRunNo());
+       if ( !pEntry ) {
+	 HLTError( "cannot fetch object \"%s\" from CDB", cdbEntry );
+	 return -EINVAL;
+       }
+       const AliHLTTPCFastTransformObject *configObj = dynamic_cast<const AliHLTTPCFastTransformObject *>( pEntry->GetObject() );
+
+       if ( !configObj ) {
+	 HLTError( "configuration object \"%s\" has wrong type, required TObjString", cdbEntry );
+	 return -EINVAL;
+       }
+
+       HLTInfo( "received configuration object." );
+       fgTransform.Init( *configObj );
+    }
     timer.Stop();
     cout<<"\n\n Initialisation: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
     if( err!=0 ){
@@ -134,12 +166,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   }
 
   fDataId = kFALSE;
+  fOfflineMode = 0;
 
-  int iResult=0;
-  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
-
-  if (iResult>=0 && argc>0)
-    iResult=ConfigureFromArgumentString(argc, argv);
 
   return iResult;
 } // end DoInit()
@@ -161,19 +189,23 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
   // see header file for class documentation
 
   if (argc<=0) return 0;
-  int i=0;
-  TString argument=argv[i];
-
-  if (argument.CompareTo("-change-dataId")==0){
-    HLTDebug("Change data ID received.");
-    fDataId = kTRUE;
-    return 1;
-  }
-  
-  HLTInfo("Unknown argument %s",argv[i]);
-
-  // unknown argument
-  return -EINVAL;
+  int iRet = 0;
+  for( int i=0; i<argc; i++ ){
+    TString argument=argv[i];  
+    if (argument.CompareTo("-change-dataId")==0){
+      HLTDebug("Change data ID received.");
+      fDataId = kTRUE;
+      iRet = 1;
+    } else if (argument.CompareTo("-offline-mode")==0){
+      fOfflineMode = 1;
+      HLTDebug("Offline mode set.");
+      iRet = 1;
+    } else {
+      iRet = -EINVAL;
+      HLTInfo("Unknown argument %s",argv[i]);     
+    }
+  } 
+  return iRet;
 }
 
 

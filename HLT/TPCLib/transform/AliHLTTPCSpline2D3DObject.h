@@ -37,7 +37,7 @@ class AliHLTTPCSpline2D3DObject: public TObject{
   AliHLTTPCSpline2D3DObject( Float_t minA, Int_t  nBinsA, Float_t  stepA, Float_t  minB, Int_t  nBinsB, Float_t  stepB );
 
   /** destructor */
-  ~AliHLTTPCSpline2D3DObject();
+  ~AliHLTTPCSpline2D3DObject(){}
  
   /** initialisation */
   void Init( Float_t minA, Int_t  nBinsA, Float_t  stepA, Float_t  minB, Int_t  nBinsB, Float_t  stepB );

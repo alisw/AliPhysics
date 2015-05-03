@@ -48,6 +48,9 @@ class AliHLTTPCClusterTransformation{
 
   /** Initialisation  */
   Int_t  Init( double FieldBz, Long_t TimeStamp );
+ 
+  /** Initialisation  */
+  Int_t  Init( const AliHLTTPCFastTransformObject &obj );
 
   /** Initialised flag */
    Bool_t IsInitialised() const;
@@ -75,6 +78,10 @@ class AliHLTTPCClusterTransformation{
 
   /** total size of the object*/
   Int_t GetSize() const ;
+
+  const AliHLTTPCFastTransform& GetFastTransform(){ return fFastTransform; }
+  
+  AliHLTTPCFastTransform& GetFastTransformNonConst(){ return fFastTransform; }
 
  private:
 

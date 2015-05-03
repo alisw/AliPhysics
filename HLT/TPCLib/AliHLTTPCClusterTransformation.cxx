@@ -157,6 +157,26 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
   return 0;
 }
 
+
+Int_t  AliHLTTPCClusterTransformation::Init( const AliHLTTPCFastTransformObject &obj )
+{
+  // Initialisation
+
+  if(!AliGeomManager::GetGeometry()){
+    AliGeomManager::LoadGeometry();
+  }
+
+  if(!AliGeomManager::GetGeometry()) return Error(-1,"AliHLTTPCClusterTransformation::Init: Can not initialise geometry");
+  
+  // set current time stamp and initialize the fast transformation
+  int err = fFastTransform.ReadFromObject( obj );
+
+  if( err!=0 ){
+    return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
+  }
+}
+
+
 Bool_t AliHLTTPCClusterTransformation::IsInitialised() const 
 {
   // Is the transformation initialised

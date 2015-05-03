@@ -86,6 +86,7 @@ private:
   static const char* fgkOCDBEntryClusterTransformation; //!transient
   static AliHLTTPCClusterTransformation fgTransform; //!transient
   static Bool_t fgTimeInitialisedFromEvent; //!transient
+  bool fOfflineMode;
 
   Bool_t fDataId; // change output data description
 
