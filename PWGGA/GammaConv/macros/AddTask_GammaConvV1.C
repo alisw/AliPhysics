@@ -121,7 +121,7 @@ void AddTask_GammaConvV1(TString mode){
    cout<<"Successfully connected to Alien"<<endl;
    cout<<"==============================="<<endl;
 
-   AliAnalysisTask *taskA = AddTask_GammaConvV1_PbPb(110,  //change different set of cuts
+   AliAnalysisTask *taskA = AddTask_GammaConvV1_PbPb(190,  //change different set of cuts
                                                      isMC,
                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
                                                      kTRUE, // enable additional QA task
@@ -131,10 +131,10 @@ void AddTask_GammaConvV1(TString mode){
                                                      "LHC11h_2",  //name of the period for added signals and weighting
                                                      kFALSE,  //enable Weighting
                                                      kFALSE,  //use THnSparse
-													 kFALSE,
+													 0,
 													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
 													 0); 
-   AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(138,  //change different set of cuts
+   AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(194,  //change different set of cuts
                                                      isMC,
                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
                                                      kTRUE, // enable additional QA task
@@ -144,20 +144,22 @@ void AddTask_GammaConvV1(TString mode){
                                                      "LHC11h_2",  //name of the period for added signals and weighting
                                                      kFALSE,  //enable Weighting
                                                      kFALSE,  //use THnSparse
-													 kFALSE,
+													 0,
 													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
+													 0); 
+   AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(182,  //change different set of cuts
+                                                     isMC,
+                                                     kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
+                                                     kTRUE, // enable additional QA task
+                                                     "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
+                                                     0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+                                                     "1000000060084000001500000",
+                                                     "LHC11h_2",  //name of the period for added signals and weighting
+                                                     kFALSE,  //enable Weighting
+                                                     kFALSE,  //use THnSparse
+													 0,
+													 "alien:///alice/cern.ch/user/l/lleardin/CentralityFlatFile20April.root",
 													 1); 
-
-//    AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(124,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE);  //use THnSparse
 //    AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(125,  //change different set of cuts
 //                                                      isMC,
 //                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
