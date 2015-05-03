@@ -278,13 +278,13 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
      fListOfOutputFromClass->ls();
      fOutput->Add(fListOfOutputFromClass);
      if(fEJetByJetCorr->GetExternalDefinitionOfNmissed()){
-     	fhAllpTRec = new TH2F("fhAllpTRec", "Jet constituent p_{T} distribution RECO; #it{p}_{T,track}", 50, 0.,100., 20,0.,100.);
+     	fhAllpTRec = new TH2F("fhAllpTRec", "Jet constituent p_{T} distribution RECO; #it{p}_{T,track}", 500, 0.,100., 20,0.,100.);
      	fhAllpTRec->Sumw2();
      	fhAllpTGen = (TH2F*)fhAllpTRec->Clone("fhAllpTGen");
      	fhAllpTGen->SetTitle("Jet constituent p_{T} distribution GENE; #it{p}_{T,track}; #it{p}_{T,jet}");
-     	fhAllpTCor = new TH2F("fhAllpTCor", "Jet constituent p_{T} distribution CORR; #it{p}_{T,track}; #it{p}_{T,jet}", 50,0.,100., 20,0.,20.); 
-     	//(TH2F*)fhAllpTRec->Clone("fhAllpTCor");
-     	//fhAllpTCor->SetTitle("Jet constituent p_{T} distribution CORR; #it{p}_{T,track}; #it{p}_{T,jet}");
+     	//fhAllpTCor = new TH2F("fhAllpTCor", "Jet constituent p_{T} distribution CORR; #it{p}_{T,track}; #it{p}_{T,jet}", 500,0.,100., 20,0.,20.); 
+     	fhAllpTCor = (TH2F*)fhAllpTRec->Clone("fhAllpTCor");
+     	fhAllpTCor->SetTitle("Jet constituent p_{T} distribution CORR; #it{p}_{T,track}; #it{p}_{T,jet}");
      	
      	fOutput->Add(fhAllpTRec);
      	fOutput->Add(fhAllpTGen);
