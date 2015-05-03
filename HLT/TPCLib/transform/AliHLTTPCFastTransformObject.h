@@ -18,10 +18,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "Rtypes.h"
-#include "TString.h"
 #include "AliHLTTPCSpline2D3DObject.h"
 
-class AliTPCTransform;
 
 /**
  * The class to store transformation map for AliHLTTPCFastTransform
@@ -84,6 +82,7 @@ class AliHLTTPCFastTransformObject{
  
   static const Int_t fkNSec = 72; //! transient
   static const Int_t fkNRows = 100; //! transient
+
   Int_t fVersion;
   Int_t fLastTimeBin; // last calibrated time bin
   Float_t fTimeSplit1; // split of splines in time direction
