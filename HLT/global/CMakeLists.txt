@@ -97,6 +97,14 @@ set(SRCS
     physics/AliHLTTPCCalibProcessor.cxx
    )
 
+if(ZEROMQ_FOUND)
+  include_directories(${ZEROMQ_INCLUDE_DIR})
+  set(SRCS 
+      ${SRCS}
+      AliHLTZMQsink.cxx
+     )
+endif(ZEROMQ_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
