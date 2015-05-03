@@ -1377,6 +1377,7 @@ void
 AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 {
   /// Writes all Tracker related calibration to CDB
+  WriteMapping(startRun,endRun);
   WriteHV(defaultValues,startRun,endRun);
   WritePedestals(defaultValues,startRun,endRun);
   WriteGains(defaultValues,startRun,endRun);
