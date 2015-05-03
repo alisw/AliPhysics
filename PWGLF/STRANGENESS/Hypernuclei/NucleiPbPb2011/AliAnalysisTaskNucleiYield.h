@@ -50,6 +50,7 @@ public:
   void SetRequireITSsignal (int sig = 3) { fRequireITSsignal = sig; }
   void SetRequireTPCrecPoints (int rec = 70) { fRequireITSrecPoints = rec; }
   void SetRequireTPCsignal (int sig = 70) { fRequireITSsignal = sig; }
+  void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
   void SetRequireSPDrecPoints (int rec = 1) { fRequireSPDrecPoints = rec; }
   void SetEtaRange (float emin, float emax) { fRequireEtaMin = emin; fRequireEtaMax = emax; }
   void SetYRange (float ymin, float ymax) { fRequireYmin = ymin; fRequireYmax = ymax; }
@@ -60,6 +61,7 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
   void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
+  void SetRequireVetoSPD(bool veto) { fRequireVetoSPD = veto; }
   void SetEnablePerformancePlot(bool cut) { fEnablePerformance = cut; }
   void SetEnablePtCorrection(bool cut) { fEnablePtCorrection = cut; }
   
@@ -117,6 +119,7 @@ private:
   Bool_t                fRequireNoKinks;        ///<  Cut on tracks: set true to exclude tracks from kink vertices
   UShort_t              fRequireITSrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
+  UShort_t              fRequireSDDrecPoints;   ///<  Cut on tracks: minimum number of required SDD recpoints
   UShort_t              fRequireSPDrecPoints;   ///<  Cut on tracks: minimum number of required SPD recpoints
   UShort_t              fRequireTPCrecPoints;   ///<  Cut on tracks: minimum number of required TPC recpoints
   UShort_t              fRequireTPCsignal;      ///<  Cut on tracks: minimum number of required TPC PID recpoints
@@ -131,6 +134,8 @@ private:
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
   Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
+  Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
+
   
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
