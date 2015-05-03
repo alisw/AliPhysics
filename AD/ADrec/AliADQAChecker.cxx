@@ -394,13 +394,19 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
      		if(funcName.Contains("TPaveText")){
       			TPaveText *QAbox = (TPaveText*)hNEventsBBFlag->GetListOfFunctions()->At(i);
       			
-			Float_t meanRate  = 0;
-			for(Int_t i=0; i<16; i++)meanRate += hNEventsBBFlag->GetBinContent(i+1);
-			meanRate = meanRate/16;
+			Float_t meanRateADA  = 0;
+			Float_t meanRateADC  = 0;
+			for(Int_t i=1; i<=8; i++){
+				meanRateADC += hNEventsBBFlag->GetBinContent(i);
+				meanRateADA += hNEventsBBFlag->GetBinContent(i+8);
+				}
+			meanRateADA = meanRateADA/8;
+			meanRateADC = meanRateADC/8;
 			Bool_t highVar = kFALSE;
 			
-			for(Int_t i=0; i<16; i++){
-				if((TMath::Abs(hNEventsBBFlag->GetBinContent(i+1)-meanRate)/hNEventsBBFlag->GetBinError(i+1))>fMaxBBVariation) {
+			for(Int_t i=1; i<=8; i++){
+				if(((TMath::Abs(hNEventsBBFlag->GetBinContent(i)-meanRateADC)/hNEventsBBFlag->GetBinError(i))>fMaxBBVariation) || 
+				   ((TMath::Abs(hNEventsBBFlag->GetBinContent(i+8)-meanRateADA)/hNEventsBBFlag->GetBinError(i+8))>fMaxBBVariation)){
 					test = 0.7;
 					highVar = kTRUE;
 					}
@@ -429,13 +435,19 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
      		if(funcName.Contains("TPaveText")){
       			TPaveText *QAbox = (TPaveText*)hNEventsBGFlag->GetListOfFunctions()->At(i);
       			
-			Float_t meanRate  = 0;
-			for(Int_t i=0; i<16; i++)meanRate += hNEventsBGFlag->GetBinContent(i+1);
-			meanRate = meanRate/16;
+			Float_t meanRateADA  = 0;
+			Float_t meanRateADC  = 0;
+			for(Int_t i=1; i<=8; i++){
+				meanRateADC += hNEventsBGFlag->GetBinContent(i);
+				meanRateADA += hNEventsBGFlag->GetBinContent(i+8);
+				}
+			meanRateADA = meanRateADA/8;
+			meanRateADC = meanRateADC/8;
 			Bool_t highVar = kFALSE;
 			
-			for(Int_t i=0; i<16; i++){
-				if((TMath::Abs(hNEventsBGFlag->GetBinContent(i+1)-meanRate)/hNEventsBGFlag->GetBinError(i+1))>fMaxBGVariation) {
+			for(Int_t i=1; i<=8; i++){
+				if(((TMath::Abs(hNEventsBGFlag->GetBinContent(i)-meanRateADC)/hNEventsBGFlag->GetBinError(i))>fMaxBGVariation) || 
+				   ((TMath::Abs(hNEventsBGFlag->GetBinContent(i+8)-meanRateADA)/hNEventsBGFlag->GetBinError(i+8))>fMaxBGVariation)){
 					test = 0.7;
 					highVar = kTRUE;
 					}
@@ -623,7 +635,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i==0)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > 0.5) {
+				if(around/center > 0.12) {
 					if(i==1)notSynchADA = kTRUE;
 					if(i==0)notSynchADC = kTRUE;
 					}
@@ -671,7 +683,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i==0)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > 0.5) {
+				if(around/center > 0.12) {
 					if(i==1)notSynchADA = kTRUE;
 					if(i==0)notSynchADC = kTRUE;
 					}
@@ -1080,10 +1092,11 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	myLegend2->Draw();
 
 	histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin);
+		
 	for(Int_t iHist = 1; iHist<3; iHist++){
 		pad = pTimeRatio->cd(1+iHist);
 		gPad->SetLogz();
-		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin+iHist);
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin + iHist);
 		histoRatio = (TH1*)histo->Clone("histoRatio");
 		histoRatio->Divide(histoDenominator);
 		histoRatio->DrawCopy("COLZ");
@@ -1104,7 +1117,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
 	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
 	
-	histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.5*TMath::MaxElement(2,max));
+	histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.8*TMath::MaxElement(2,max));
 	histoBlue->DrawCopy("e");
 	//histoBlue->DrawCopy("esame");
 	//histoRed->DrawCopy("samehist");

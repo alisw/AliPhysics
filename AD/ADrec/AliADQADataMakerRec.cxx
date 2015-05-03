@@ -591,14 +591,14 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
   
   //With wide binning for ratio
-  h2i = new TH2I("H2I_HPTDCTimeRebin", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
-  Add2RawsList(h2i,kHPTDCTimeRebin, !expert, image, saveCorr); iHisto++;
+  h2d = new TH2F("H2D_HPTDCTimeRebin", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
+  Add2RawsList(h2d,kHPTDCTimeRebin, !expert, image, saveCorr); iHisto++;
   
-  h2i = new TH2I("H2I_HPTDCTimeRebin_BB", "Ratio Time w_BB_Flag/All ;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
-  Add2RawsList(h2i,kHPTDCTimeRebinBB, !expert, image, !saveCorr); iHisto++;
+  h2d = new TH2F("H2D_HPTDCTimeRebin_BB", "Ratio Time w_BB_Flag/All ;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
+  Add2RawsList(h2d,kHPTDCTimeRebinBB, !expert, image, !saveCorr); iHisto++;
 
-  h2i = new TH2I("H2I_HPTDCTimeRebin_BG", "Ratio Time w_BG_Flag/All;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
-  Add2RawsList(h2i,kHPTDCTimeRebinBG, !expert, image, !saveCorr); iHisto++;
+  h2d = new TH2F("H2D_HPTDCTimeRebin_BG", "Ratio Time w_BG_Flag/All;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
+  Add2RawsList(h2d,kHPTDCTimeRebinBG, !expert, image, !saveCorr); iHisto++;
 
   //Mean time histograms	
   h1d = new TH1F("H1D_MeanTimeADA", "Mean Time;Mean time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
