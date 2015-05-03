@@ -154,7 +154,7 @@ private:
 
   // Mixed events parameters
   Bool_t fbCorrelations; // switch for V0-jet correlations
-  Int_t fiSizePool; // available number of events per pool
+  Int_t fiSizePool; // available number of events per pool, currently ignored in AliEventPoolManager
   Int_t fiNJetsPerPool; // required number of jets available in each pool
   Float_t ffFractionMin; // minimum fraction of fiNJetsPerPool at which pool is ready (default: 1.0)
   Int_t fiNEventsMin; // if non-zero: number of filled events after which pool is ready regardless of fiNJetsPerPool (default: 0)
@@ -221,6 +221,7 @@ private:
   TH1D* fh1PhiJet[fgkiNBinsCent]; //! jet phi
   TH2D* fh2PtJetPtTrackLeading[fgkiNBinsCent]; //! pt_jet; pt of leading jet track
   TH2D* fh2PtJetPtTrigger[fgkiNBinsCent]; //! pt_jet; pt of trigger track
+  TH1D* fh1PtTrigger[fgkiNBinsCent]; //! pt of trigger track
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
@@ -281,7 +282,7 @@ private:
   THnSparse* fh3V0K0sEtaPtMassMCRec[fgkiNBinsCent]; //! eta-pt-mass spectrum of successfully reconstructed K0s in event
   // MC daughter eta inclusive
 //  THnSparse* fhnV0K0sInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
-  THnSparse* fhnV0K0sInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  THnSparse* fhnV0K0sInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0K0sInJetPtMCGen[fgkiNBinsCent]; //! pt spectrum of generated K0s in jet
   THnSparse* fh3V0K0sInJetPtMassMCRec[fgkiNBinsCent]; //! mass-pt spectrum of successfully reconstructed K0s in jet
@@ -290,7 +291,7 @@ private:
   THnSparse* fh4V0K0sInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed K0s in jet
   // MC daughter eta in JC
 //  THnSparse* fhnV0K0sInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
-  THnSparse* fhnV0K0sInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  THnSparse* fhnV0K0sInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
 
   // resolution
   TH2D* fh2V0K0sMCResolMPt[fgkiNBinsCent]; //! K0s mass resolution vs pt
@@ -333,7 +334,7 @@ private:
   THnSparse* fh3V0LambdaEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta inclusive
 //  THnSparse* fhnV0LambdaInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
-  THnSparse* fhnV0LambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  THnSparse* fhnV0LambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0LambdaInJetPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh3V0LambdaInJetPtMassMCRec[fgkiNBinsCent]; //!
@@ -342,7 +343,7 @@ private:
   THnSparse* fh4V0LambdaInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta in JC
 //  THnSparse* fhnV0LambdaInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
-  THnSparse* fhnV0LambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  THnSparse* fhnV0LambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
 
   // resolution
   TH2D* fh2V0LambdaMCResolMPt[fgkiNBinsCent]; //!
@@ -389,7 +390,7 @@ private:
   THnSparse* fh3V0ALambdaEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta inclusive
 //  THnSparse* fhnV0ALambdaInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
-  THnSparse* fhnV0ALambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  THnSparse* fhnV0ALambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0ALambdaInJetPtMCGen[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaInJetPtMCRec[fgkiNBinsCent]; //!
@@ -399,7 +400,7 @@ private:
   THnSparse* fh4V0ALambdaInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta in JC
 //  THnSparse* fhnV0ALambdaInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
-  THnSparse* fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  THnSparse* fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
 
   // resolution
   TH2D* fh2V0ALambdaMCResolMPt[fgkiNBinsCent]; //!
@@ -455,7 +456,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 10) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 11) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
