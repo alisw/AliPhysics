@@ -156,6 +156,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDEposEnegInvMassPt;
 		TH2F 									**hESDEposEnegAfterMassCutInvMassPi0Pt;
 		TH2F 									**hESDEposEnegInvMassPi0Pt;
+		TH2F									**hESDTruePi0EposEnegInvMassPi0Pt;
 		TH2F 									**hESDEposEnegLikeSignBackInvMassPt;
 		TH2F 									**hESDMotherInvMassPt;
 		TH2F 									**hESDPi0MotherInvMassPt;
