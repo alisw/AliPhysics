@@ -114,6 +114,21 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Extra headers
+list(APPEND HDRS
+ XtAnalysis/AliJConst.h
+)
+
+# Extra files to include in the PARfile
+set(PAR_EXTRAFILES
+  PiKaPr/TestAOD/HistogramNamesBoth.cxx
+  PiKaPr/TestAOD/HistogramNamesBoth.h
+  PiKaPr/TestAOD/HistogramNames.cxx
+  PiKaPr/TestAOD/HistogramNames.h
+  PiKaPr/TestAOD/HistogramsBoth.h
+  PiKaPr/TestAOD/Histograms.h
+)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -128,7 +143,7 @@ set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
-add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "PiKaPr/TestAOD PiKaPr/TPCTOFfits XtAnalysis")
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "PiKaPr/TestAOD PiKaPr/TPCTOFfits XtAnalysis" "${PAR_EXTRAFILES}")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
