@@ -51,8 +51,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent() :
   fHasVertex(kFALSE),
   fVertexZ(0.),
   fCentralityQuality(0),
-  fCentralityPercentile(),
-  fReferenceMultiplicity(),
+  fReferenceMultiplicity(0),
   fV0Mmultiplicity(0.),
   fMCMultiplicity(0),
   fTimeZeroTOF(),
@@ -90,8 +89,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
   fHasVertex(source.fHasVertex),
   fVertexZ(source.fVertexZ),
   fCentralityQuality(source.fCentralityQuality),
-  fCentralityPercentile(),
-  fReferenceMultiplicity(),
+  fReferenceMultiplicity(0),
   fV0Mmultiplicity(source.fV0Mmultiplicity),
   fMCMultiplicity(source.fMCMultiplicity),
   fTimeZeroTOF(),
@@ -103,16 +101,14 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
    * copy constructor
    */
 
-  for (Int_t i = 0; i < kNCentralityEstimators; i++)
-    fCentralityPercentile[i] = source.fCentralityPercentile[i];
   for (Int_t i = 0; i < 10; i++) {
     fTimeZeroTOF[i] = source.fTimeZeroTOF[i];
     fTimeZeroTOFSigma[i] = source.fTimeZeroTOFSigma[i];
   }
   for (Int_t i = 0; i < 3; i++) 
     fTimeZeroT0[i] = source.fTimeZeroT0[i];
-  for (Int_t i=0;i<6;i++) 
-    fReferenceMultiplicity[i] = source.fReferenceMultiplicity[i];
+
+    fReferenceMultiplicity = source.fReferenceMultiplicity;
 }
 
 //___________________________________________________________
@@ -133,10 +129,8 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   fHasVertex = source.fHasVertex;
   fVertexZ = source.fVertexZ;
   fCentralityQuality = source.fCentralityQuality;
-  for(Int_t i=0;i<6;i++) fReferenceMultiplicity[i] = source.fReferenceMultiplicity[i];
+  fReferenceMultiplicity = source.fReferenceMultiplicity;
   fMCMultiplicity = source.fMCMultiplicity;
-  for (Int_t i = 0; i < kNCentralityEstimators; i++)
-    fCentralityPercentile[i] = source.fCentralityPercentile[i];
   for (Int_t i = 0; i < 10; i++) {
     fTimeZeroTOF[i] = source.fTimeZeroTOF[i];
     fTimeZeroTOFSigma[i] = source.fTimeZeroTOFSigma[i];
@@ -160,13 +154,6 @@ AliAnalysisPIDEvent::~AliAnalysisPIDEvent()
 
 //___________________________________________________________
 
-void AliAnalysisPIDEvent::SetReferenceMultiplicity(Int_t *value) {
-  for(Int_t i=0;i<6;i++) {
-    fReferenceMultiplicity[i] = value[i];
-  };
-};
-
-
 
 void
 AliAnalysisPIDEvent::Reset()
@@ -181,11 +168,9 @@ AliAnalysisPIDEvent::Reset()
   fHasVertex = 0.;
   fVertexZ = 0.;
   fCentralityQuality = 0;
-  for(Int_t i=0;i<6;i++) fReferenceMultiplicity[i] = 0;
+  fReferenceMultiplicity = 0;
   fMCMultiplicity = 0;
   fV0Mmultiplicity = 0;
-  for (Int_t i = 0; i < kNCentralityEstimators; i++)
-    fCentralityPercentile[i] = 0.;
   for (Int_t i = 0; i < 10; i++) {
     fTimeZeroTOF[i] = 0.;
     fTimeZeroTOFSigma[i] = 0.;
@@ -507,14 +492,3 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 
 //___________________________________________________________
 
-void
-AliAnalysisPIDEvent::ApplyTimeZeroTOFCorrection()
-{
-  /*
-   * apply timezero TOF correction
-   */
-
-  for (Int_t imom = 0; imom < 10; imom++)
-    fTimeZeroTOF[imom] += GetTimeZeroTOFCorrection();
-  
-}

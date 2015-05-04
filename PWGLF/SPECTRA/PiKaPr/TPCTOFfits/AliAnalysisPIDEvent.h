@@ -20,8 +20,7 @@ public TObject
   Bool_t HasVertex() const {return fHasVertex;}; // getter
   Float_t GetVertexZ() const {return fVertexZ;}; // getter
   UChar_t GetCentralityQuality() const {return fCentralityQuality;}; // getter
-  Float_t GetCentralityPercentile(Int_t i) const {return i < kNCentralityEstimators ? fCentralityPercentile[i] : (Float_t)GetReferenceMultiplicity(3);}; // getter
-  Int_t GetReferenceMultiplicity(Int_t i) const {return fReferenceMultiplicity[i];}; // getter
+  Int_t GetReferenceMultiplicity()  {return fReferenceMultiplicity;}; // getter
   Float_t *GetTimeZeroTOF() {return fTimeZeroTOF;}; // getter
   Float_t *GetTimeZeroTOFSigma() {return fTimeZeroTOFSigma;}; // getter
   Float_t *GetTimeZeroT0() {return fTimeZeroT0;}; // getter
@@ -36,8 +35,7 @@ public TObject
   void SetHasVertex(Bool_t value) {fHasVertex = value;}; // setter
   void SetVertexZ(Float_t value) {fVertexZ = value;}; // setter
   void SetCentralityQuality(UChar_t value) {fCentralityQuality = value;}; // setter
-  void SetCentralityPercentile(Int_t icent, Float_t value) {if (icent < kNCentralityEstimators) fCentralityPercentile[icent] = value;}; // setter
-  void SetReferenceMultiplicity(Int_t *value);// {fReferenceMultiplicity = value;}; // setter
+  void SetReferenceMultiplicity(Int_t value) {fReferenceMultiplicity = value; };// setter
   void SetMCMultiplicity(Int_t value) {fMCMultiplicity = value;}; // setter
   void SetTimeZeroTOF(Int_t i, Float_t value) {fTimeZeroTOF[i] = value;}; // setter
   void SetTimeZeroTOFSigma(Int_t i, Float_t value) {fTimeZeroTOFSigma[i] = value;}; // setter
@@ -87,8 +85,6 @@ public TObject
 
   static void SetVertexZCuts(Float_t min, Float_t max) {fgVertexZ_cuts[0] = min; fgVertexZ_cuts[1] = max;}; // setter
 
-  void ApplyTimeZeroTOFCorrection();
-  Double_t GetTimeZeroTOFCorrection() {return fgTimeZeroTOFCentCorrFunc->Eval(fCentralityPercentile[kCentEst_V0M]);};
 
  private:
 
@@ -99,8 +95,7 @@ public TObject
   Bool_t fHasVertex; // has vertex
   Float_t fVertexZ; // vertex z
   UChar_t fCentralityQuality; // centrality quality
-  Float_t fCentralityPercentile[kNCentralityEstimators]; // centrality percentile
-  Int_t fReferenceMultiplicity[6]; // reference multiplicity, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8
+  Int_t fReferenceMultiplicity; // reference multiplicity in eta 0.8
   Float_t fV0Mmultiplicity;
   Int_t fMCMultiplicity; // MC multiplicity
   /*** TPC event info ***/
@@ -135,7 +130,7 @@ public TObject
   static Double_t fgTimeZeroTOFCentCorrParams[3];
   static TF1 *fgTimeZeroTOFCentCorrFunc;
 
-  ClassDef(AliAnalysisPIDEvent, 1);
+  ClassDef(AliAnalysisPIDEvent, 2);
 };
 
 #endif /* ALIANALYSISPIDEVENT_H */

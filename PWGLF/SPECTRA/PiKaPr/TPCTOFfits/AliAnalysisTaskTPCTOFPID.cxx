@@ -84,8 +84,6 @@ AliAnalysisTaskTPCTOFPID::AliAnalysisTaskTPCTOFPID() :
   fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); //If not running, set to kFALSE;
   fTrackCuts->SetEtaRange(-0.9,0.9);
-  //V0MBinCount = new TH1F("V0MBinCount","V0MBinCount",12,V0MBinsDefault);
-  //printf("Jegele!\n\n\n\n\n\n");
 
 }
 
@@ -356,30 +354,16 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   if (!InitRun()) return;
   /* init event */
   if (!InitEvent()) return;
-  //TRandom *rn = new TRandom(0);
-  //Float_t ScaleFactor[] = {0.,0.,1.000000, 1.474651, 1.886733, 2.249043, 2.592145, 3.144156, 3.997966, 5.010369, 6.822343, 12.020458};//{0.,0.,1.000000, 1.279444, 1.525135, 1.757802, 2.132135, 2.711126, 3.397664, 4.626411, 8.151391};
+  if(!(fMultiUtils->IsEventSelected(fESDEvent))) return;
+
   Float_t V0MPercentile = fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M");
-  /*if(V0MPercentile<1) V0MBinCount->Fill(V0MPercentile); else {
-    if(rn->Rndm()<ScaleFactor[V0MBinCount->GetXaxis()->FindBin(V0MPercentile)]/V0MBinCount->GetXaxis()->GetBinWidth(V0MBinCount->GetXaxis()->FindBin(V0MPercentile))) V0MBinCount->Fill(V0MPercentile); else
-      return;
-      };*/
-  //if(!(V0MPercentile>0)) return;
 
-
-  /*if(fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M")>5) {
-    TRandom *rn = new TRandom(0);
-    if(rn->Rndm()>0.05) return;
-    };*/
   /* set fill AOD */
   ((AliAODHandler*)(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()))->SetFillAOD(kTRUE);
 
   /*** MC PRIMARY PARTICLES ***/
 
   Int_t mcmulti = 0;
-  // if(fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M")>1) {
-  //   TRandom *rn = new TRandom(0);
-  //   if(rn->Rndm()>0.01) return;
-  // };
   if (fMCFlag) {
 
     /* reset track array */
@@ -432,14 +416,9 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   for (Int_t i = 0; i < 3; i++)
     fAnalysisEvent->SetTimeZeroT0(i, fESDEvent->GetT0TOF(i));
 
-  /* update centrality info in PbPb */
-  if (fPbPbFlag) {
-    fAnalysisEvent->SetCentralityQuality(fCentrality->GetQuality());
-    for (Int_t icent = 0; icent < AliAnalysisPIDEvent::kNCentralityEstimators; icent++) 
-      fAnalysisEvent->SetCentralityPercentile(icent, fCentrality->GetCentralityPercentileUnchecked(AliAnalysisPIDEvent::fgkCentralityEstimatorName[icent]));
-  }
-  Int_t refmulti[6];
-  for(Int_t i=0;i<6;i++) refmulti[i] = AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC,(i+3)*0.1); 
+
+  Int_t refmulti;
+  refmulti = AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.8);  
   fAnalysisEvent->SetReferenceMultiplicity(refmulti);
   fAnalysisEvent->SetMCMultiplicity(mcmulti);
   fAnalysisEvent->SetV0Mmultiplicity(fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M"));
@@ -456,7 +435,6 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     track = fESDEvent->GetTrack(itrk);
     if (!track) continue;
     /* check accept track */
-    //if (!fTrackCuts->AcceptTrack(track)) continue;
     
     /* update and add analysis track */
     fAnalysisTrack->Update(track, fMCStack, fMCEvent,fPIDResponse, fTrackCuts->AcceptTrack(track));
