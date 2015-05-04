@@ -335,8 +335,6 @@ fAnalysisUtils(0x0),
  fDCAXYCut(0),
  fV0TrigCorr(kFALSE),
   ffillofflineV0(kFALSE),
- fkShort(kFALSE),
- fLambda(kFALSE),
  fUsev0DaughterPID(kFALSE),
   fMinPtDaughter(1.0),// v0 related cut starts here
   fMaxPtDaughter(4.0),
@@ -643,8 +641,6 @@ fRemoveDuplicates(kFALSE),
    fDCAXYCut(0),
    fV0TrigCorr(kFALSE),
    ffillofflineV0(kFALSE),
-  fkShort(kFALSE),
- fLambda(kFALSE),
  fUsev0DaughterPID(kFALSE),
   fMinPtDaughter(1.0),// v0 related cut starts here
   fMaxPtDaughter(4.0),
@@ -1047,6 +1043,7 @@ for(Int_t i = 0; i < 16; i++)
 defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegToRad(), 60.0*TMath::DegToRad(), 90.0*TMath::DegToRad(), 120.0*TMath::DegToRad(),150.0*TMath::DegToRad(),180.1*TMath::DegToRad()\n";
  }
   if(fcontainPIDtrig){
+    /*
       if(fV0TrigCorr){
 	
        	if(fLambda) defaultBinningStr += "InvariantMass:1.065,1.066,1.067,1.068,1.069,1.07,1.071,1.072,1.073,1.074,1.075,1.076,1.077,1.078,1.079,1.08,1.081,1.082,1.083,1.084,1.085,1.086,1.087,1.088,1.089,1.09,1.091,1.092,1.093,1.094,1.095,1.096,1.097,1.098,1.099,1.1,1.101,1.102,1.103,1.104,1.105,1.106,1.107,1.108,1.109,1.11,1.111,1.112,1.113,1.114,1.115,1.116,1.117,1.118,1.119,1.12,1.121,1.122,1.123,1.124,1.125,1.126,1.127,1.128,1.129,1.13,1.131,1.132,1.133,1.134,1.135,1.136,1.137,1.138,1.139,1.14,1.141,1.142,1.143,1.144,1.145,1.146,1.147,1.148,1.149,1.15,1.151,1.152,1.153,1.154,1.155,1.156,1.157,1.158,1.159,1.16,1.161,1.162,1.163,1.164,1.165\n";
@@ -1055,7 +1052,8 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
 	if(fkShort) defaultBinningStr += "InvariantMass:0.398,0.4,0.402,0.404,0.406,0.408,0.41,0.412,0.414,0.416,0.418,0.42,0.422,0.424,0.426,0.428,0.43,0.432,0.434,0.436,0.438,0.44,0.442,0.444,0.446,0.448,0.45,0.452,0.454,0.456,0.458,0.46,0.462,0.464,0.466,0.468,0.47,0.472,0.474,0.476,0.478,0.48,0.482,0.484,0.486,0.488,0.49,0.492,0.494,0.496,0.498,0.5,0.502,0.504,0.506,0.508,0.51,0.512,0.514,0.516,0.518,0.52,0.522,0.524,0.526,0.528,0.53,0.532,0.534,0.536,0.538,0.54,0.542,0.544,0.546,0.548,0.55,0.552,0.554,0.556,0.558,0.56,0.562,0.564,0.566,0.568,0.57,0.572,0.574,0.576,0.578,0.58,0.582,0.584,0.586,0.588,0.59,0.592,0.594,0.596,0.598\n";
 	
   }
-    else  defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5\n"; // course
+    */
+    defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5\n"; // course
   }
   
   if(fcontainPIDasso){
@@ -1124,6 +1122,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
     }
 
  if(fcontainPIDtrig && !fcontainPIDasso){
+   /*
    if(fV0TrigCorr){
     dBinsPair[dim_val]       = GetBinning(fBinningString, "InvariantMass", iBinPair[dim_val]);
     axisTitlePair[dim_val]   = "InvariantMass"; 
@@ -1132,6 +1131,10 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
     dBinsPair[dim_val]       = GetBinning(fBinningString, "PIDTrig", iBinPair[dim_val]);
     axisTitlePair[dim_val]   = "PIDTrig"; 
    }
+   */
+    dBinsPair[dim_val]       = GetBinning(fBinningString, "PIDTrig", iBinPair[dim_val]);
+    axisTitlePair[dim_val]   = "PIDTrig";
+    
     if(SetChargeAxis==2){
     dBinsPair[dim_val+1]       = GetBinning(fBinningString, "TrigCharge", iBinPair[dim_val+1]);
     axisTitlePair[dim_val+1]   = "TrigCharge";
@@ -1155,7 +1158,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
  }
 
 if(fcontainPIDtrig && fcontainPIDasso){
-
+  /*
    if(fV0TrigCorr){
     dBinsPair[dim_val]       = GetBinning(fBinningString, "InvariantMass", iBinPair[dim_val]);
     axisTitlePair[dim_val]   = "InvariantMass"; 
@@ -1164,7 +1167,11 @@ if(fcontainPIDtrig && fcontainPIDasso){
     dBinsPair[dim_val]       = GetBinning(fBinningString, "PIDTrig", iBinPair[dim_val]);
     axisTitlePair[dim_val]   = "PIDTrig"; 
    }
+*/
 
+    dBinsPair[dim_val]       = GetBinning(fBinningString, "PIDTrig", iBinPair[dim_val]);
+    axisTitlePair[dim_val]   = "PIDTrig";
+    
     dBinsPair[dim_val+1]       = GetBinning(fBinningString, "PIDAsso", iBinPair[dim_val+1]);
     axisTitlePair[dim_val+1]   = "PIDAsso";
 
@@ -3511,6 +3518,7 @@ for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
     //to avoid overflow qnd underflow
       if(trigpt<fminPtTrig || trigpt>fmaxPtTrig) continue;
       Int_t particlepidtrig=trig->getparticle();
+      if(particlepidtrig==999) continue;
       if(fTriggerSpeciesSelection){ if (particlepidtrig!=fTriggerSpecies) continue;}
 
       Float_t trigeta=trig->Eta();
@@ -3554,14 +3562,22 @@ for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
       Float_t trigpt=trig->Pt();
     //to avoid overflow qnd underflow
       if(trigpt<fminPtTrig || trigpt>fmaxPtTrig) continue;
+      /*
       Double_t ParticlePID_InvMass=0.0;
       if(fV0TrigCorr) ParticlePID_InvMass=trig->GetInvMass();
       else{
       Int_t particlepidtrig=trig->getparticle();
       ParticlePID_InvMass=(Double_t) particlepidtrig;
-      if(fTriggerSpeciesSelection){ if (particlepidtrig!=fTriggerSpecies) continue;}//***********************************forks,lam.Alam their PID numbers have no meaning, only their Inv_mass will be stored
+      if(fTriggerSpeciesSelection){ if (particlepidtrig!=fTriggerSpecies) continue;}
       }
+*/
 
+      Int_t particlepidtrig=trig->getparticle();
+      if(particlepidtrig==999) continue;
+       if(fTriggerSpeciesSelection){ if (particlepidtrig!=fTriggerSpecies) continue;}//***********************************forks,lam.Alam their PID numbers have no meaning, only their Inv_mass will be stored
+      
+      Double_t ParticlePID_InvMass=(Double_t) particlepidtrig;
+     
       Float_t trigeta=trig->Eta();
 
       // some optimization
@@ -6192,13 +6208,17 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 
 //Difference on Lambda and Anti-Lambda can be made through daughter PID
 
-
     Int_t particletype=999;
 
 	if( IskShortOk || cutK0sPID )
 	{
 	  if(ffillofflineV0) fHistFinalPtCentInvK0s->Fill(InvMassK0s,v0Pt,Centrality);
-	 particletype=SpKs0;
+	 
+        Bool_t K0Signal = (InvMassK0s>0.48)&&(InvMassK0s<0.52);
+        Bool_t K0Bckg = ((InvMassK0s>0.40)&&(InvMassK0s<0.44)) || ((InvMassK0s>0.56)&&(InvMassK0s<0.60));
+
+	if(K0Signal) particletype=SpKs0;
+	if(K0Bckg)   particletype=SpKs0Bckg;
 
     Short_t chargeval=0;
     Float_t effmatrix=1.0;
@@ -6213,8 +6233,15 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 	{
 	if(ffillofflineV0) fHistFinalPtCentInvLambda->Fill(InvMassLambda,v0Pt,Centrality);
 //Add in the LRCParticle and give Lambda a tag 5
-	 particletype=SpLam;
- 
+	 
+	Bool_t LamSignal = (InvMassLambda>1.108)&&(InvMassLambda<1.125);
+        Bool_t LamBckg = ((InvMassLambda>1.090)&&(InvMassLambda<1.100)) || ((InvMassLambda>1.135)&&(InvMassLambda<1.145));
+
+       
+	if(LamSignal) particletype=SpLam;
+	if(LamBckg)   particletype=SpLamBckg;
+
+	
     Short_t chargeval=0;
     Float_t effmatrix=1.0;
     LRCParticlePID* copy1 = new LRCParticlePID(particletype,InvMassLambda,chargeval,v0Pt,v0Eta, v0Phi,effmatrix,ptrack->GetTPCSharedMapPtr(),ntrack->GetTPCSharedMapPtr());
@@ -6226,8 +6253,14 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 	{
 	if(ffillofflineV0) fHistFinalPtCentInvLambda->Fill(InvMassAntiLambda,v0Pt,Centrality);
 //Add in the LRCParticle and give Lambda a tag 6
-	 particletype=SpALam;
-    Short_t chargeval=0;
+
+        Bool_t ALamSignal = (InvMassAntiLambda>1.108)&&(InvMassAntiLambda<1.125);
+        Bool_t ALamBckg = ((InvMassAntiLambda>1.090)&&(InvMassAntiLambda<1.100)) || ((InvMassAntiLambda>1.135)&&(InvMassAntiLambda<1.145));
+
+	if(ALamSignal) particletype=SpLam;
+	if(ALamBckg)   particletype=SpLamBckg;
+	
+	Short_t chargeval=0;
     Float_t effmatrix=1.0;
     LRCParticlePID* copy1 = new LRCParticlePID(particletype,InvMassAntiLambda,chargeval,v0Pt,v0Eta, v0Phi,effmatrix,ptrack->GetTPCSharedMapPtr(),ntrack->GetTPCSharedMapPtr());
     copy1->SetUniqueID(eventno * 200000 + (Int_t)iV0);

@@ -78,11 +78,9 @@ namespace AliPIDNameSpace {
     SpProton,
     unidentified,
     SpKs0,
+    SpKs0Bckg,
     SpLam,
-    SpALam,
-    SpKsBckg,
     SpLamBckg,
-    SpALamBckg,
     NSpecies=unidentified,//for pion, kaon and proton part only not for v0s
     SpUndefined=999
   }; // Particle species used in plotting
@@ -303,10 +301,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
 //--------------------------------------------------------------------------//
 //v0 daughters
 
-  void SetV0TrigCorr(Bool_t V0TrigCorr,Bool_t kShort, Bool_t Lambda){
+  void SetV0TrigCorr(Bool_t V0TrigCorr){
     fV0TrigCorr=V0TrigCorr;
-    fkShort=kShort;
-    fLambda=Lambda;
   }
   void SetfillofflineV0(Bool_t fillofflineV0){
     ffillofflineV0=fillofflineV0;
@@ -661,8 +657,6 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
   //*****************************************************************************V0 related objects are here
   Bool_t fV0TrigCorr;
   Bool_t ffillofflineV0;
-  Bool_t fkShort;
-  Bool_t fLambda;
   Bool_t fUsev0DaughterPID;
  Double_t fMinPtDaughter ;// to be decided to make it compatible with AliHelperPID so far we keep it 1GeV/C
   Double_t fMaxPtDaughter; //same statement as above
