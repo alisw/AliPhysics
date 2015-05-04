@@ -53,7 +53,7 @@ public:
  AliFlowAnalysisCRC(const char* name="AliFlowAnalysisCRC",
                     Int_t nCen=7,
                     Double_t CenWidth=10.,
-                    TString RunSet="2010h");
+                    TString RunSet="2010");
  virtual ~AliFlowAnalysisCRC();
  
  // 0.) methods called in the constructor:
@@ -70,7 +70,6 @@ public:
  virtual void InitializeArraysForCRC();
  virtual void InitializeArraysForCRCVZ();
  virtual void InitializeArraysForCRCPt();
- virtual void InitializeArraysForCRCBck();
  
  // 1.) method Init() and methods called within Init():
  virtual void Init();
@@ -93,7 +92,6 @@ public:
  virtual void BookEverythingForCRC();
  virtual void BookEverythingForCRCVZ();
  virtual void BookEverythingForCRCPt();
- virtual void BookEverythingForCRCBck();
  virtual void StoreIntFlowFlags();
  virtual void StoreDiffFlowFlags();
  virtual void StoreFlagsForDistributions();
@@ -160,10 +158,9 @@ public:
  virtual void CalculateCRCCorr();
  virtual void CalculateCRCVZERO();
  virtual void CalculateCRCPtCorr();
- virtual void CalculateCRCBckCorr();
  virtual void CalculateCRCQVec();
  // 2h.) Various
- virtual void CalculateVarious();
+ virtual void FillVarious();
  
  // 3.) method Finish() and methods called within Finish():
  virtual void Finish();
@@ -208,7 +205,6 @@ public:
  virtual void FinalizeCRCCorr();
  virtual void FinalizeCRCVZERO();
  virtual void FinalizeCRCPtCorr();
- virtual void FinalizeCRCBckCorr();
  // 3h.) Various:
  virtual void FinalizeVarious();
  
@@ -227,7 +223,6 @@ public:
  virtual void GetPointersForCRC();
  virtual void GetPointersForCRCVZ();
  virtual void GetPointersForCRCPt();
- virtual void GetPointersForCRCBck();
  virtual void GetPointersForVarious();
  
  // 5.) other methods:
@@ -237,7 +232,6 @@ public:
  virtual void WriteHistograms(TDirectoryFile *outputFileName);
  virtual Int_t GetCRCBin(Int_t c, Int_t y, Int_t c2, Int_t y2);
  virtual Int_t GetCRCVZBin(Int_t c, Int_t c2);
- virtual Int_t GetCRCBckBin(Int_t c, Int_t c2);
  virtual Int_t GetCRCQVecBin(Int_t c, Int_t y);
  virtual Int_t GetCRCRunBin(Int_t RunNum);
  virtual Int_t GetCRCCenBin(Double_t Centrality);
@@ -612,15 +606,14 @@ public:
  void SetCRCPtList(TList* const CRCL) {this->fCRCPtList = CRCL;};
  void SetCRCQVecList(TList* const CRCL) {this->fCRCQVecList = CRCL;};
  void SetCRCQVecListRun(TList* const CRCL, Int_t r) {this->fCRCQVecListRun[r] = CRCL;};
- //void SetCRCBckList(TList* const CRCL) {this->fCRCBckList = CRCL;};
  void SetCRCFlags(TProfile* const CRCF) {this->fCRCFlags = CRCF;};
  TProfile* GetCRCFlags() const {return this->fCRCFlags;};
  void SetCalculateCRC(Bool_t const cCRC) {this->fCalculateCRC = cCRC;};
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
  void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
- void SetCalculateCRCBck(Bool_t const cCRC) {this->fCalculateCRCBck = cCRC;};
- Bool_t GetCalculateCRCBck() const {return this->fCalculateCRCBck;};
+ void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
+ Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -659,10 +652,14 @@ public:
  TProfile* GetCRCQVecReHist(Int_t const r, Int_t const c) const {return this->fCRCQVecRe[r][c];};
  void SetCRCQVecImHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecIm[r][c] = TH;};
  TProfile* GetCRCQVecImHist(Int_t const r, Int_t const c) const {return this->fCRCQVecIm[r][c];};
- void SetCRCVZEvPlA(TH1D* const TH, Int_t const r, Int_t const c) {this->fCRCVZEvPlA[r][c] = TH;};
- TH1D* GetCRCVZEvPlA(Int_t const r, Int_t const c) const {return this->fCRCVZEvPlA[r][c];};
- void SetCRCVZEvPlC(TH1D* const TH, Int_t const r, Int_t const c) {this->fCRCVZEvPlC[r][c] = TH;};
- TH1D* GetCRCVZEvPlC(Int_t const r, Int_t const c) const {return this->fCRCVZEvPlC[r][c];};
+ void SetCRCQVecReCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecReCorr[r][c] = TH;};
+ TProfile* GetCRCQVecReCorrHist(Int_t const r, Int_t const c) const {return this->fCRCQVecReCorr[r][c];};
+ void SetCRCQVecImCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecImCorr[r][c] = TH;};
+ TProfile* GetCRCQVecImCorrHist(Int_t const r, Int_t const c) const {return this->fCRCQVecImCorr[r][c];};
+ void SetCRCVZEvPlA(TH1D* const TH, Int_t const r, Int_t const c, Int_t const h) {this->fCRCVZEvPlA[r][c][h] = TH;};
+ TH1D* GetCRCVZEvPlA(Int_t const r, Int_t const c, Int_t const h) const {return this->fCRCVZEvPlA[r][c][h];};
+ void SetCRCVZEvPlC(TH1D* const TH, Int_t const r, Int_t const c, Int_t const h) {this->fCRCVZEvPlC[r][c][h] = TH;};
+ TH1D* GetCRCVZEvPlC(Int_t const r, Int_t const c, Int_t const h) const {return this->fCRCVZEvPlC[r][c][h];};
 // void SetRunBinMin(Int_t const n) {this->fCRCRunBinMin = n;};
 // Int_t GetRunBinMin() const {return this->fCRCRunBinMin;}
 // void SetRunBinMax(Int_t const n) {this->fCRCRunBinMax = n;};
@@ -729,33 +726,14 @@ public:
  void SetCRCPtNUATermsHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) {this->fCRCPtNUATermsHist[c][eg][h][NUA] = TH;};
  TH1D* GetCRCPtNUATermsHist(Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) const {return this->fCRCPtNUATermsHist[c][eg][h][NUA];};
  
- //14.) CRC Bck
-// void SetCRCBckCorrHist(TH1D* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckCorrHist[c][eb][h][eg] = CF;};
-// TH1D* GetCRCBckCorrHist(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckCorrHist[c][eb][h][eg];};
-// void SetCRCBckCorrPro(TProfile* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckCorrPro[c][eb][h][eg] = CF;};
-// TProfile* GetCRCBckCorrPro(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckCorrPro[c][eb][h][eg];};
-// void SetCRCBckCorrSqPro(TProfile* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckCorrSqPro[c][eb][h][eg] = CF;};
-// TProfile* GetCRCBckCorrSqPro(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckCorrSqPro[c][eb][h][eg];};
-// void SetCRCBckSumWeigHist(TH1D* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckSumWeigHist[c][eb][h][eg] = CF;};
-// TH1D* GetCRCBckSumWeigHist(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckSumWeigHist[c][eb][h][eg];};
-// void SetCRCBckSumWeigSqHist(TH1D* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckSumWeigSqHist[c][eb][h][eg] = CF;};
-// TH1D* GetCRCBckSumWeigSqHist(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckSumWeigSqHist[c][eb][h][eg];};
- 
  // 15.) Various
  void SetVariousList(TList* const Various) {this->fVariousList = Various;};
- void SetPhiHist(TH1F* const PhiHist, Int_t const c, Int_t const h) {this->fPhiHist[c][h] = PhiHist;};
- TH1F* GetPhiHist(Int_t const c, Int_t const h) const {return this->fPhiHist[c][h];}
- void SetPtHist(TH1D* const PtHist, Int_t const c, Int_t const h) {this->fPtHist[c][h] = PtHist;};
- TH1D* GetPtHist(Int_t const c, Int_t const h) const {return this->fPtHist[c][h];}
- void SetEtaHist(TH1D* const EtaHist, Int_t const c, Int_t const h) {this->fEtaHist[c][h] = EtaHist;};
- TH1D* GetEtaHist(Int_t const c, Int_t const h) const {return this->fEtaHist[c][h];}
- void SetPhiEtaHist(TH2D* const PhiEtaHist, Int_t const c, Int_t const h) {this->fPhiEtaHist[c][h] = PhiEtaHist;};
- TH2D* GetPhiEtaHist(Int_t const c, Int_t const h) const {return this->fPhiEtaHist[c][h];}
-// void SetEvPlaneAng(TH1D* const TH) {this->fEvPlaneAng = TH;};
-// TH1D* GetEvPlaneAng() const {return this->fEvPlaneAng;}
+ void SetMultHist(TH1D* const TH) {this->fMultHist = TH;};
+ TH1D* GetMultHist() const {return this->fMultHist;}
+ void SetCenHist(TH1D* const TH) {this->fCenHist = TH;};
+ TH1D* GetCenHist() const {return this->fCenHist;}
  void SetRunNumber(Int_t const n) {this->fRunNum = n;};
  Int_t GetRunNumber() const {return this->fRunNum;}
- 
  
 private:
  
@@ -1069,7 +1047,7 @@ private:
  TProfile *fCRCFlags; //! profile to hold all flags for CRC
  Bool_t fCalculateCRC; // calculate CRC
  Bool_t fCalculateCRCPt;
- Bool_t fCalculateCRCBck;
+ Bool_t fUseVZERO;
  Bool_t fNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
@@ -1083,7 +1061,7 @@ private:
  const static Int_t fCRCMaxnCen = 10;
  Int_t fCRCnCen;
  Int_t fCRCCenBinWidth;
- const static Int_t fCRCnHar = 1;
+ const static Int_t fCRCnHar = 5;
  
  TH1D *fCRCQRe[2][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCRCQIm[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
@@ -1112,14 +1090,16 @@ private:
  TList *fCRCQVecWeightsList; //! Weights for Q Vectors
  TProfile *fCRCQVecRe[fCRCMaxnRun][fCRCMaxnCen]; //! Q Vectors Re
  TProfile *fCRCQVecIm[fCRCMaxnRun][fCRCMaxnCen]; //! Q Vectors Im
- TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane VZEROA
- TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane VZEROC
+ TProfile *fCRCQVecReCorr[fCRCMaxnRun][fCRCMaxnCen]; //! Q Vectors Re
+ TProfile *fCRCQVecImCorr[fCRCMaxnRun][fCRCMaxnCen]; //! Q Vectors Im
+ TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA
+ TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
  
  //TH1D *fEvPlaneAng[fCRCQVecnCR][fCRCnEtaGap][fCRCMaxnCen]; //! Event plane angle distribution
  
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
- const static Int_t fCRCVZnCR = 4;
+ const static Int_t fCRCVZnCR = 5;
  TMatrixD *fCRCQVZRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
  TMatrixD *fCRCQVZIm; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
  TMatrixD *fCRCVZMult; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
@@ -1136,7 +1116,6 @@ private:
  TH1D *fCRCVZNUATermsHist[4][fCRCMaxnCen]; //! NUA terms final histo
  
  // CRC Pt differential
- 
  TList *fCRCPtList; //! list to hold CRC histograms
  const static Int_t fCRCPtnBins = 3;
  Double_t fCRCPtMin;
@@ -1162,26 +1141,10 @@ private:
  TProfile *fCRCPtNUATermsPro[fCRCPtnBins][fCRCnEtaGap][fCRCMaxnCen][4]; //! NUA terms profile
  TH1D *fCRCPtNUATermsHist[fCRCPtnBins][fCRCnEtaGap][fCRCMaxnCen][4]; //! NUA terms final histo
  
- // CRC Background
- 
-// TList *fCRCBckList; //! list to hold CRC histograms
-// const static Int_t fCRCBcknCR = 4;
-// const static Int_t fCRCBcknEBWidth = 3; // etabin width goes from 0.1 to 0.1*fCRCBcknEBWidth
-// const static Int_t fCRCBcknEtaGap = 6; // etagap width goes from 0 to 0.1*(fCRCBcknEtaGap-1)
-// 
-// TProfile *fCRCBckCorrPro[fCRCBcknCR][fCRCBcknEBWidth][fCRCMaxnCen][fCRCBcknEtaGap]; //!
-// TProfile *fCRCBckCorrSqPro[fCRCBcknCR][fCRCBcknEBWidth][fCRCMaxnCen][fCRCBcknEtaGap]; //!
-// TH1D *fCRCBckSumWeigHist[fCRCBcknCR][fCRCBcknEBWidth][fCRCMaxnCen][fCRCBcknEtaGap]; //!
-// TH1D *fCRCBckSumWeigSqHist[fCRCBcknCR][fCRCBcknEBWidth][fCRCMaxnCen][fCRCBcknEtaGap]; //!
-// TH1D *fCRCBckCorrHist[fCRCBcknCR][fCRCBcknEBWidth][fCRCMaxnCen][fCRCBcknEtaGap]; //!
- 
  // Various:
- 
  TList *fVariousList; //! list to hold various unclassified objects
- TH1F *fPhiHist[2][fCRCMaxnCen]; //! store phi distribution for POIs
- TH1D *fPtHist[2][fCRCMaxnCen]; //! store Pt distribution for POIs
- TH1D *fEtaHist[2][fCRCMaxnCen]; //! store eta distribution for POIs
- TH2D *fPhiEtaHist[2][fCRCMaxnCen]; //! store phi&eta distribution for POIs
+ TH1D *fMultHist; //! Multiplicity distribution
+ TH1D *fCenHist; //! Centrality distribution
  
  ClassDef(AliFlowAnalysisCRC, 4);
  

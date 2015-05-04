@@ -9,7 +9,7 @@ void AddTaskCRC(Double_t centrMin,
                 TString TPCMultOut="2010",
                 TString EvTrigger="MB",
                 Bool_t bCalculateCRCPt=kFALSE,
-                Bool_t bCalculateCRCBck=kFALSE,
+                Bool_t bUseVZERO=kFALSE,
                 Bool_t bUseCRCRecentering=kFALSE,
                 Bool_t bEventCutsQA=kFALSE,
                 Bool_t bTrackCutsQA=kFALSE,
@@ -137,21 +137,23 @@ void AddTaskCRC(Double_t centrMin,
  }
  else if (analysisType == "AOD") {
   // Track cuts for RPs
-  //AliFlowTrackCuts* cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // GetBetaVZEROOnlyTrackCuts();
-//  cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);
-//  cutsRP->SetEtaRange(-10.,+10.);
-//  cutsRP->SetEtaGap(-1.,1.);
-//  cutsRP->SetPhiMin(0.);
-//  cutsRP->SetPhiMax(TMath::TwoPi());
-//  // options for the reweighting
-//  cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
-//  cutsRP->SetApplyRecentering(kTRUE);
-  cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
-  cutsRP->SetAODfilterBit(768);
-  cutsRP->SetMinimalTPCdedx(-999999999);
-  cutsRP->SetPtRange(ptMin,ptMax);
-  cutsRP->SetEtaRange(etaMin,etaMax);
-  cutsRP->SetQA(bTrackCutsQA);
+  if(bUseVZERO) {
+   cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
+   cutsRP->SetEtaRange(-10.,+10.);
+   cutsRP->SetEtaGap(-1.,1.);
+   cutsRP->SetPhiMin(0.);
+   cutsRP->SetPhiMax(TMath::TwoPi());
+   // options for the reweighting
+   cutsRP->SetVZEROgainEqualizationPerRing(kTRUE);
+   cutsRP->SetApplyRecentering(kTRUE);
+  } else {
+   cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+   cutsRP->SetAODfilterBit(768);
+   cutsRP->SetMinimalTPCdedx(-999999999);
+   cutsRP->SetPtRange(ptMin,ptMax);
+   cutsRP->SetEtaRange(etaMin,etaMax);
+   cutsRP->SetQA(bTrackCutsQA);
+  }
   // Track cuts for POIs
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsPOI->SetAODfilterBit(768);
@@ -207,7 +209,6 @@ void AddTaskCRC(Double_t centrMin,
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
  AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
-// AliAnalysisTaskScalarProduct *taskQC = new AliAnalysisTaskScalarProduct(taskCRCname, UseParticleWeights);
  TString QVecWeightsFileName = "$ALICE_PHYSICS/PWGCF/FLOW/database/CRCQVecCalib.root";
  // set thei triggers
  if (EvTrigger == "Cen")
@@ -222,16 +223,17 @@ void AddTaskCRC(Double_t centrMin,
  taskQC->SetCalculateDiffFlow(kFALSE);
  taskQC->SetCalculateDiffFlowVsEta(kFALSE);
  taskQC->SetCalculateMixedHarmonics(kFALSE); // calculate all multi-partice mixed-harmonics correlators
- taskQC->SetStoreDistributions(kTRUE);
+ taskQC->SetStoreDistributions(kFALSE);
  taskQC->SetFillMultipleControlHistograms(kFALSE);
  taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
- taskQC->SetCalculateCRCBck(bCalculateCRCBck);
+ taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
+ taskQC->SetRunSet(TPCMultOut);
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  if(bUseCRCRecentering) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
