@@ -60,13 +60,27 @@ set(SRCS
     AliHLTVertexFinderBase.cxx
     AliHLTGlobalCompareFlatComponent.cxx
     AliHLTGlobalFlatEsdConverterComponent.cxx
-    AliFlatESDFriendTrack.cxx
-    AliFlatTPCseed.cxx
-    AliFlatESDEvent.cxx
     AliHLTGlobalEsdToFlatConverterComponent.cxx
-    AliFlatESDFriend.cxx
-    AliFlatESDTrack.cxx
     AliHLTGlobalFlatEsdTestComponent.cxx
+    AliFlatESDEvent.cxx
+    AliFlatESDEvent.h
+    AliFlatESDFriend.cxx
+    AliFlatESDFriend.h
+    AliFlatESDFriendTrack.cxx
+    AliFlatESDFriendTrack.h
+    AliFlatESDTrack.cxx
+    AliFlatESDTrack.h
+    AliFlatESDTrigger.cxx
+    AliFlatESDTrigger.h
+    AliFlatESDV0.cxx
+    AliFlatESDV0.h
+    AliFlatESDVertex.cxx
+    AliFlatESDVertex.h
+    AliFlatExternalTrackParam.cxx
+    AliFlatExternalTrackParam.h
+    AliFlatTPCCluster.h
+    AliFlatTPCseed.cxx
+    AliFlatTPCseed.h
     physics/AliHLTCaloHistoCellEnergy.cxx
     physics/AliHLTCaloHistoClusterEnergy.cxx
     physics/AliHLTCaloHistoComponent.cxx
