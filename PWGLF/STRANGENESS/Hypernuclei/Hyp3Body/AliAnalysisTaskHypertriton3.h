@@ -70,15 +70,26 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   AliESDtrackCuts   *fESDtrackCuts; // track cuts
   AliESDtrackCuts   *fESDtrackCutsV0; // cut variables for V0's
   AliESDVertex      *fPrimaryVertex;
-
   AliPIDResponse    *fPIDResponse;  
+  AliVertexerTracks *fVertexer;
 
+  TObjArray         *fTrkArray;
+  
   //Variables
   Bool_t             fMC; // variables for MC selection
   Bool_t             fFillTree;
   Float_t            fCentrality; // Centrality class
   Float_t            fCentralityPercentile; // Centrality percentile
 
+  Double_t           fDCAPiPVmin;
+  Double_t           fCosPointingAngle;
+  Double_t           fDecayLength;
+  Double_t           fPtMother;
+  Double_t           fDCAPiSVxymax;
+  Double_t           fDCAPiSVzmax;
+  Double_t           fDCAProSVmax;
+  Double_t           fDCADeuSVmax;
+  
   //Output list
   TList             *fOutput;
 
