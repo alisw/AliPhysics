@@ -27,16 +27,17 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
    Double_t    dcazmax = 2,
    Double_t    minNcls = 70,
    Double_t    maxX2cls = 4.0,
+   Double_t    globalX2cls = 36.0,
    Double_t    minCrossedRows = 70.0,
    Double_t    maxClsCrossedRows = 0.8,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
    UInt_t      triggerMask = AliVEvent::kMB,
-   Int_t                  signedPdg = 3124,
-   TString                monitorOpt = "NoSIGN",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
-   Bool_t                 useCrossedRows = kFALSE,
-   AliRsnMiniValue::EType yaxisVar = AliRsnMiniValue::kPt,
-   Bool_t                 useMixLS = 0,
+   Int_t       signedPdg = 3124,
+   TString     monitorOpt = "NoSIGN",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
+   Bool_t      useCrossedRows = kFALSE,
+   const char *yaxisVar = "PtDaughter_PDaughter_cent_hello",  //yaxisVar = "PtDaughter_PDaughter_cent"
+   Bool_t      useMixLS = 0,
 
    Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
@@ -51,7 +52,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddAnalysisTaskTPCKStarSyst", "No analysis manager to connect to.");
+      ::Error("AddAnalysisTaskPhi", "No analysis manager to connect to.");
       return NULL;
    } 
 
@@ -143,8 +144,10 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
    
    //for systematic checks
      {
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiMassStudy.C");
-   if (!ConfigPhiMassStudy(task, isMC, isPP, "", cutsPair, aodFilterBit, cutKaCandidate, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, signedPdg,monitorOpt,useCrossedRows,yaxisVar ,useMixLS)) 
+       gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiMassStudy.C");
+
+   if (!ConfigPhiMassStudy(task, isMC, isPP, "", cutsPair, aodFilterBit, cutKaCandidate, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, globalX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, signedPdg,monitorOpt,useCrossedRows,yaxisVar ,useMixLS)) 
+
 
 return 0x0;  
      }
@@ -155,7 +158,7 @@ return 0x0;
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddAnalysisTaskTPCKStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddAnalysisTaskPhi - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
 							   TList::Class(), 

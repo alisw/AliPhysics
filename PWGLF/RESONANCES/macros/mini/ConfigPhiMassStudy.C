@@ -26,6 +26,7 @@ Bool_t ConfigPhiMassStudy
     Double_t               dcazmax = 3.2,
     Double_t               minNcls = 70,
     Double_t               maxX2cls = 4.0,
+    Double_t               globalX2cls = 36.0,
     Double_t               minCrossedRows = 50.0,
     Double_t               maxClsCrossedRows = 0.8,
 
@@ -35,10 +36,21 @@ Bool_t ConfigPhiMassStudy
 
     TString                monitorOpt = "",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
     Bool_t                 useCrossedRows = kFALSE,
-    AliRsnMiniValue::EType yaxisVar = AliRsnMiniValue::kPt,
+    const char*            yaxisVar = "PtDaughter_PDaughter_cent",  //yaxisVar = "PtDaughter_PDaughter_cent"
     Bool_t                 useMixLS = 0
 )
 {
+  TString opt(yaxisVar);
+  opt.ToUpper();
+
+  Bool_t isPtDaughter  = opt.Contains("PTDAUGHTER") ;
+  Bool_t isPDaughter   = opt.Contains("PDAUGHTER") ;
+  Bool_t iscent        = opt.Contains("CENT") ;
+  Bool_t iseta         = opt.Contains("ETA") ;
+  Bool_t israpidity    = opt.Contains("RAPIDITY") ;
+
+
+
   // manage suffix
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
   
@@ -51,35 +63,36 @@ Bool_t ConfigPhiMassStudy
   if(enableTrkSyst){
     AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality("QualityCut");
     
-    //trkQualityCut->DisableAll();//disable all cuts, filter bit, pT, eta, and DCAxy cuts will be reset later
     trkQualityCut->SetAODTestFilterBit(aodFilterBit);//reset the filter bit cut 
     trkQualityCut->SetCheckOnlyFilterBit(kFALSE);//tells the cut object to check all other cuts individually,
-    //trkQualityCut->SetDCARPtFormula(DCAxyFormula);
-    //trkQualityCut->SetDCAZmax(dcazmax);
+    trkQualityCut->SetDCARPtFormula(DCAxyFormula);
+    trkQualityCut->SetDCAZmax(dcazmax);
 
-    if(useCrossedRows) {       // RAMA
+    if(useCrossedRows) {       
       trkQualityCut->SetMinNCrossedRowsTPC(minCrossedRows, kTRUE);
       trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(maxClsCrossedRows, kTRUE); }
     else trkQualityCut->SetTPCminNClusters(minNcls);
 
-    //trkQualityCut->SetTPCmaxChi2(maxX2cls);
-    //trkQualityCut->SetRejectKinkDaughters(kTRUE);
-    ////trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
-    //trkQualityCut->SetITSmaxChi2(36);    // RAMA NOW 
-    //trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);  // RAMA In the Filterbit
-    //trkQualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);//already in defaults 2011
-    //trkQualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in defaults 2011
-    //trkQualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in defaults 2011
-    //trkQualityCut->SetTPCminNClusters(70);
-    trkQualityCut->SetPtRange(0.15, 200.0);
+    trkQualityCut->SetTPCmaxChi2(maxX2cls);
+    trkQualityCut->SetITSmaxChi2(36);    // In Filter bit 
+    trkQualityCut->SetMaxChi2TPCConstrainedGlobal(globalX2cls);  //  In the Filterbit
+
+    trkQualityCut->SetPtRange(0.15, 20.0);
     trkQualityCut->SetEtaRange(-0.8, 0.8);
     
     trkQualityCut->Print();
 
-    if(isPP) cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
-    else     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0);
-    cutSetK           = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
-
+    if(isPP) {
+      cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
+      cutSetK           = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa); 
+    }
+    else    {
+      cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0);
+      cutSetK           = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
+      cutSetK->SetUse2011StdQualityCuts(kTRUE);
+    }
+    
+    
   }
 
   else
@@ -87,7 +100,7 @@ Bool_t ConfigPhiMassStudy
       //default cuts 2010 for pp and 2011 for p-Pb
       if(isPP) {
 	cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit, kFALSE);
-	cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaon_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBi, kFALSEt);
+	cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaon_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit, kFALSE);
       }
       else {
 	cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit, kFALSE);
@@ -102,7 +115,7 @@ Bool_t ConfigPhiMassStudy
   
   if (enableMonitor){
     Printf("======== Cut monitoring enabled");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
   }
@@ -164,26 +177,24 @@ Bool_t ConfigPhiMassStudy
       out->AddAxis(resID, 200, -0.02, 0.02);
     
     // axis Y: transverse momentum of pair as default - else chosen value
-    if (yaxisVar==AliRsnMiniValue::kFirstDaughterPt) {
+    out->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
+
+    if(isPtDaughter) {
       out->AddAxis(fdpt, 100, 0.0, 10.0);
       out->AddAxis(sdpt, 100, 0.0, 10.0);  }
-    else
-      if (yaxisVar==AliRsnMiniValue::kFirstDaughterP) {
+    if(isPDaughter) {
 	out->AddAxis(fdp, 100, 0.0, 10.0);
 	out->AddAxis(sdp, 100, 0.0, 10.0);  }
-      else 
-	out->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
-
+      
     // axis Z: centrality-multiplicity
-    if (!isPP)
-      out->AddAxis(centID, 100, 0.0, 100.0);
-    else 
-      out->AddAxis(centID, 400, 0.0, 400.0);
-    
+    if(iscent) {
+      if (!isPP)	out->AddAxis(centID, 100, 0.0, 100.0);
+      else       	out->AddAxis(centID, 400, 0.0, 400.0);      }
     // axis W: pseudorapidity
-    // out->AddAxis(etaID, 20, -1.0, 1.0);
+
+    if(iseta)       out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
-    // out->AddAxis(yID, 10, -0.5, 0.5);
+    if(israpidity)  out->AddAxis(yID, 12, -0.6, 0.6);
     
     }   
  
@@ -200,22 +211,32 @@ Bool_t ConfigPhiMassStudy
     outm->AddAxis(imID, 800, 0.8, 1.6);
 
     // axis Y: transverse momentum of pair as default - else chosen value
-    if (yaxisVar==AliRsnMiniValue::kFirstDaughterPt) {
+
+    outm->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
+
+    if(isPtDaughter) {
       outm->AddAxis(fdpt, 100, 0.0, 10.0);
-      outm->AddAxis(sdpt, 100, 0.0, 10.0);  }
-    else
-      if (yaxisVar==AliRsnMiniValue::kFirstDaughterP) {
+      outm->AddAxis(sdpt, 100, 0.0, 10.0);     }
+    
+    if(isPDaughter) {
 	outm->AddAxis(fdp, 100, 0.0, 10.0);
-	outm->AddAxis(sdp, 100, 0.0, 10.0);  }
-      else 
-      outm->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt 
+	outm->AddAxis(sdp, 100, 0.0, 10.0);    }
 
 
-    if (!isPP){
-      outm->AddAxis(centID, 100, 0.0, 100.0);
-    }   else    { 
-      outm->AddAxis(centID, 400, 0.0, 400.0);
-    }
-    }
+
+    if(iscent) {
+      if (!isPP)	outm->AddAxis(centID, 100, 0.0, 100.0);
+      else       	outm->AddAxis(centID, 400, 0.0, 400.0);      }
+    // axis W: pseudorapidity
+
+    if(iseta)       outm->AddAxis(etaID, 20, -1.0, 1.0);
+    // axis J: rapidity
+    if(israpidity)  outm->AddAxis(yID, 12, -0.6, 0.6);
+
+
+
+
+    
+  }
   return kTRUE;
 }
