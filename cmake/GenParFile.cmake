@@ -12,6 +12,7 @@
 #  - the LinkDef used by ROOT
 #  - dependent libraries: used to generate the rootmap
 #  - extra include paths (optional): passed during compilation
+#  - extra files not considered during build (optional)
 #
 # To generate a PARfile, if enabled in its CMakeLists.txt, go to the build directory and run:
 #   make BLAHBLAH.par
@@ -41,6 +42,13 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
     # Optional: extra includes, space-separated
     set(PAREXTRAINCLUDES "${ARGV5}")
     #message(STATUS "[add_target_parfile] Extra Includes (space-separated): ${PAREXTRAINCLUDES}")
+  endif()
+
+  if(NOT "${ARGV6}" STREQUAL "")
+    # Optional: extra files (not part of the build process), space-separated
+    set(PAREXTRAFILES "${ARGV6}")
+    string(REPLACE ";" " " PAREXTRAFILES_FLAT "${PAREXTRAFILES}")
+    #message(STATUS "[add_target_parfile] Extra Files (space-separated): ${PAREXTRAFILES_FLAT}")
   endif()
 
   # PARfile temporary directory
@@ -97,7 +105,7 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PARDIR}
 
     # TODO: cmake -E copy unfortunately does not handle multiple files
-    COMMAND rsync --relative ${PARSOURCES} ${PARHEADERS} ${PARLINKDEF} ${PARDIR}/
+    COMMAND rsync --relative ${PARSOURCES} ${PARHEADERS} ${PAREXTRAFILES} ${PARLINKDEF} ${PARDIR}/
 
     COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/Makefile ${PARDIR}/Makefile
     COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/SETUP.C ${PARMETADIR}/SETUP.C
