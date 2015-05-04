@@ -1,3 +1,5 @@
+#ifndef HISTOGRAMNAMES_CXX
+#define HISTOGRAMNAMES_CXX
 
 const char * AliSpectraNameSpace::kHistName[kNHist] =
    {
@@ -85,3 +87,5 @@ const char * AliSpectraNameSpace::kHistName[kNHist] =
      "hHistNSigKaonPtTPCTOF",
      "hHistNSigProtonPtTPCTOF",
    };
+
+#endif // HISTOGRAMNAMES_CXX
