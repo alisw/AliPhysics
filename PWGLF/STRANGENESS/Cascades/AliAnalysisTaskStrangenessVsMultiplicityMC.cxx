@@ -100,6 +100,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
     : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
       fkSaveV0Tree      ( kFALSE ),
       fkSaveCascadeTree ( kTRUE  ),
+      fkMCAssociation   ( kTRUE  ),
+      fkSaveLambda( kTRUE ),
+      fkSaveAntiLambda( kTRUE ),
+      fkSaveK0Short( kTRUE ),
       fkSaveExtendedRefMultInfo( kFALSE ),
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
@@ -130,7 +134,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fTrueMultVZEROA(0),
       fTrueMultVZEROC(0),
       fRunNumber(0),
-      fEvSel_nTrackletsEta10(0), 
+      fEvSel_nTrackletsEta10(0),
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -343,6 +347,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
       fkSaveV0Tree      ( kFALSE ),
       fkSaveCascadeTree ( kTRUE  ),
+      fkMCAssociation   ( kTRUE  ),
+      fkSaveLambda( kTRUE ),
+      fkSaveAntiLambda( kTRUE ),
+      fkSaveK0Short( kTRUE ),
       fkSaveExtendedRefMultInfo( kFALSE ),
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
@@ -373,7 +381,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fTrueMultVZEROA(0),
       fTrueMultVZEROC(0),
       fRunNumber(0),
-      fEvSel_nTrackletsEta10(0), 
+      fEvSel_nTrackletsEta10(0),
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -1457,7 +1465,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
-	if( TMath::Abs(geta) < 0.8 ) lNchEta10++;
+        if( TMath::Abs(geta) < 0.8 ) lNchEta10++;
         if( TMath::Abs(geta) < 1.0 ) fEvSel_INELgtZEROStackPrimaries = kTRUE;
         if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
         if( 2.8 < geta && geta < 5.1 ) lPtOfParticleInsideVZEROA = particleOne->Pt();
@@ -1953,11 +1961,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
             Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt);
             Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
             //Do Selection
-            if( (fTreeVariableInvMassLambda    < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda     ) ||
-                    (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) ||
-                    (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ) {
+            if(     (fTreeVariableInvMassLambda    < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda && fkSaveLambda ) ||
+                    (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda && fkSaveAntiLambda ) ||
+                    (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short && fkSaveK0Short    ) ) {
                 //Pre-selection in case this is AA...
-                if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree ) fTreeV0->Fill();
+                if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree ) {
+                    if( !fkMCAssociation || (fkMCAssociation&&(TMath::Abs(fTreeVariablePID)==310||TMath::Abs(fTreeVariablePID)==3122)) ) {
+                        fTreeV0->Fill();
+                    }
+                }
             }
         }
     }// This is the end of the V0 loop
