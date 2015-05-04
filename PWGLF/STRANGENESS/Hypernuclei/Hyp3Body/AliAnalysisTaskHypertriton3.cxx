@@ -870,11 +870,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   fVertexer->SetFieldkG(bz);
   Double_t xthiss(0.0);
   Double_t xpp(0.0);
-
-  
   
   AliESDVertex *decayVtx = 0x0;
 
+  TLorentzVector Hypertriton;
+  TVector3 h1;
 
   //========Set of Starting Cut========//
 
@@ -985,9 +985,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	pTmom = TMath::Sqrt((trackD->Pt()*trackD->Pt())+(trackP->Pt()*trackP->Pt())+(trackNPi->Pt()*trackNPi->Pt()));
 	if(pTmom > fPtMother) continue;
 	
-	TLorentzVector Hypertriton;
-	TVector3 h1;
-
 	Hypertriton=posD+posP+negPi;
 	rapidity = Hypertriton.Rapidity();
 	h1.SetXYZ(-dlh[0],-dlh[1],-dlh[2]);
@@ -1102,6 +1099,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    fHistMassHypertritonMCt->Fill(Hypertriton.M());
 	  }
 	} // end of Pure MC part	
+	Hypertriton.Clear();
+	h1.Clear();
       } // end of candidate pion loop
     } // end of candidate proton loop
   }// end of candidate deuteron loop
