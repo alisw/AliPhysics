@@ -2538,9 +2538,24 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Bool_t bV0MCIsALambda = ((iPdgCodeMother == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
 
       Double_t dPtV0Gen = particleMCMother->Pt();
-//          Double_t dRapV0MC = particleMCMother->Y();
+      Double_t dRapV0Gen = particleMCMother->Y();
       Double_t dEtaV0Gen = particleMCMother->Eta();
-//          Double_t dPhiV0Gen = particleMCMother->Phi();
+//      Double_t dPhiV0Gen = particleMCMother->Phi();
+
+      // V0 pseudorapidity cut applied on generated particles
+      if(fdCutEtaV0Max > 0.)
+      {
+        if(bPrintCuts) printf("Rec->Gen: Applying cut: V0 |eta|: < %g\n", fdCutEtaV0Max);
+        if((TMath::Abs(dEtaV0Gen) > fdCutEtaV0Max))
+          continue;
+      }
+      // V0 rapidity cut applied on generated particles
+      if(fdCutRapV0Max > 0.)
+      {
+        if(bPrintCuts) printf("Rec->Gen: Applying cut: V0 |y|: < %g\n", fdCutRapV0Max);
+        if((TMath::Abs(dRapV0Gen) > fdCutRapV0Max))
+          continue;
+      }
 
       // Is MC mother particle physical primary? Attention!! Definition of IsPhysicalPrimary may change!!
 //          Bool_t bV0MCIsPrimary = particleMCMother->IsPhysicalPrimary();
