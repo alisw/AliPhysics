@@ -49,6 +49,8 @@
 #pragma link C++ class AliAnalysisPIDTrack+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
 
+#pragma link C++ class AliAnalysisTaskSEITSsaSpectraMultiplicity+;
+
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
 #pragma link C++ class AliLnAODtrackCuts+;
