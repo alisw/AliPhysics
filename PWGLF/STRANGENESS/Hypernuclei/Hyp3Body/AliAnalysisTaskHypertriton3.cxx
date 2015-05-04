@@ -1133,7 +1133,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(pstack->GetPdgCode() == 3122 && pstack->GetNDaughters() == 2) fHistParticle->Fill(20); // Lambda
     } //end of MC content truth check
   }
-  
+
+  cdeuteron.clear();
+  cproton.clear();
+  cpion.clear();
+
+  cmassd.clear();
+  cmassp.clear();
   // Post output data.
   PostData(1,fOutput);
   if(fFillTree) PostData(2,fTTree);
