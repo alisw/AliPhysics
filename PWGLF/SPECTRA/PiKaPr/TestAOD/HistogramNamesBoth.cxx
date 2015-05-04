@@ -1,3 +1,6 @@
+#ifndef HISTOGRAMNAMESBOTH_CXX
+#define HISTOGRAMNAMESBOTH_CXX
+
 //#include "Histograms.h"
 
 const char * AliSpectraNameSpaceBoth::kHistNameBoth[kNHist] =
@@ -88,3 +91,5 @@ const char * AliSpectraNameSpaceBoth::kHistNameBoth[kNHist] =
      "hHistGenMulvsRawMul",
      "hHistDoubleCounts"	
    };
+
+#endif // HISTOGRAMNAMESBOTH_CXX
