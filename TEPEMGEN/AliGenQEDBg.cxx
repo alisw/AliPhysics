@@ -152,8 +152,10 @@ void AliGenQEDBg::Generate()
   Float_t time = 0.;
   Float_t p[3];
   //
-  int npairs,nt,id;;
-  if (fPairsInt<=0 || (npairs=gRandom->Poisson(fPairsInt))<1) return;
+  int npairs=0,nt,id;;
+  if (fPairsInt>0) npairs=gRandom->Poisson(fPairsInt);
+  AliInfoF("<nQED>=%e -> %d pairs will be generated",fPairsInt,npairs);
+  if (npairs<1) return;
   //
   Double_t ptElectron,ptPositron, phiElectron,phiPositron, mt, ms2 = fMass*fMass;
   Double_t phi12=0,xElectron=0,xPositron=0,yElectron=0,yPositron=0,weight=0;
