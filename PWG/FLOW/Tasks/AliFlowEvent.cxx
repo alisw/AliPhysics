@@ -1285,16 +1285,16 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     
     Int_t c(TMath::Nint(fEvent->GetCentrality()->GetCentralityPercentile("V0M")));
     // default values for vector a (VZEROA)
-    Double_t Qxamean(fQxavsV0[n]->GetBinContent(c+1));
-    Double_t Qxarms(fQxavsV0[n]->GetBinError(c+1));
-    Double_t Qyamean(fQyavsV0[n]->GetBinContent(c+1));
-    Double_t Qyarms(fQyavsV0[n]->GetBinError(c+1));
+    Double_t Qxamean(fQxavsV0[n-1]->GetBinContent(c+1));
+    Double_t Qxarms(fQxavsV0[n-1]->GetBinError(c+1));
+    Double_t Qyamean(fQyavsV0[n-1]->GetBinContent(c+1));
+    Double_t Qyarms(fQyavsV0[n-1]->GetBinError(c+1));
     // default values for vector b (VZEROC)
-    Double_t Qxcmean(fQxcvsV0[n]->GetBinContent(c+1));
-    Double_t Qxcrms(fQxcvsV0[n]->GetBinError(c+1));
-    Double_t Qycmean(fQycvsV0[n]->GetBinContent(c+1));
-    Double_t Qycrms(fQycvsV0[n]->GetBinError(c+1));	
-    
+    Double_t Qxcmean(fQxcvsV0[n-1]->GetBinContent(c+1));
+    Double_t Qxcrms(fQxcvsV0[n-1]->GetBinError(c+1));
+    Double_t Qycmean(fQycvsV0[n-1]->GetBinContent(c+1));
+    Double_t Qycrms(fQycvsV0[n-1]->GetBinError(c+1));
+   
     // just a precaution ...
     if(n > 5) {
         Qxamean = 0;
@@ -1642,21 +1642,25 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // the parameters to weigh the vzero track cuts have been extracted now, 
     // so we can pass them to the current track cuts obect
     cuts->SetVZEROgainEqualisation(fMultVZERO);       // passed as a TH1
+ 
+ Int_t c(TMath::Nint(fEvent->GetCentrality()->GetCentralityPercentile("V0M")));
 
-    // step 2) extract the calibration histograms from the database and 
+    // step 2) extract the calibration histograms from the database and
     // pass them to the cuts object
     //
     // first index of the oadb array is the harmonic n, the second index is either qax, qay, qcx, qcy
     AliOADBContainer* h[5][4];
     for(Int_t i(0); i < 5; i++) {
-        h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%i_filtered", i+1));
-        if(h[i][0]) fQxavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-        h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%i_filtered", i+1));
-        if(h[i][1]) fQyavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-        h[i][2] = (AliOADBContainer*)foadb->Get(Form("hQxc%i_filtered", i+1));
-        if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-        h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%i_filtered", i+1));
-        if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+      h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%i_filtered", i+1));
+      if(h[i][0]) fQxavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+     Double_t Qxamean(fQxavsV0[i]->GetBinContent(c+1));
+      h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%i_filtered", i+1));
+      if(h[i][1]) fQyavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+     Double_t Qyamean(fQyavsV0[i]->GetBinContent(c+1));
+      h[i][2] = (AliOADBContainer*)foadb->Get(Form("hQxc%i_filtered", i+1));
+      if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+      h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%i_filtered", i+1));
+      if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
     }
     
     // set the recentering style (might be switched back to -1 if recentering is disabeled)

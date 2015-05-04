@@ -90,7 +90,7 @@ fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
-fCalculateCRCBck(kFALSE),
+fUseVZERO(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -98,7 +98,7 @@ fCRCEtaMax(0.),
 fnCenBin(7),
 fCenBinWidth(10.),
 fQVecList(NULL),
-fRunSet("2010h")
+fRunSet("2010")
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -189,7 +189,7 @@ fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
-fCalculateCRCBck(kFALSE),
+fUseVZERO(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -258,7 +258,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetExactNoRPs(fExactNoRPs);
  fQC->SetCalculateCRC(fCalculateCRC);
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
- fQC->SetCalculateCRCBck(fCalculateCRCBck);
+ fQC->SetUseVZERO(fUseVZERO);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
@@ -337,28 +337,6 @@ void AliAnalysisTaskCRC::UserExec(Option_t *)
 {
  // main loop (called for each event)
  fEvent = dynamic_cast<AliFlowEvent*>(GetInputData(0));
- 
-// // Get Q vectors for the subevents
-// AliFlowVector* vQarray = new AliFlowVector[2];
-// fEvent->Get2Qsub(vQarray,2);
-// if(vQarray) {
-//  // Subevent a
-//  AliFlowVector vQa = vQarray[0];
-//  // Subevent b
-//  AliFlowVector vQb = vQarray[1];
-//  
-//  cout << vQa.X() << " " << vQa.Y() << endl;
-//  cout << vQb.X() << " " << vQb.Y() << endl;
-//  
-//  Double_t dMa = vQa.GetMult();
-//  if( dMa < 2 ) return;
-//  Double_t dMb = vQb.GetMult();
-//  if( dMb < 2 ) return;
-// } else {
-//  cout << "cannot find 2Qsub !!!" << endl;
-// }
-// AliFlowVector vQ = fEvent->GetQ(2);
-// cout << vQ.X() << " " << vQ.Y() << endl;
  
  // Q-cumulants
  if(fEvent) {
