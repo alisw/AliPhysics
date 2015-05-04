@@ -210,6 +210,23 @@ AliAnalysisTaskSE("taskHypertriton"),
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
+
+  //ESD Track cuts
+  if(!fESDtrackCuts) fESDtrackCuts = new AliESDtrackCuts();
+  fESDtrackCuts->SetMinNClustersTPC(80);
+  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fESDtrackCuts->SetMaxChi2PerClusterTPC(5);
+  fESDtrackCuts->SetRequireTPCRefit(kTRUE);
+  fESDtrackCuts->SetEtaRange(-0.9,0.9);
+  
+  //ESD Track cuts V0
+  if(!fESDtrackCutsV0) fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
+  fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
+  fESDtrackCutsV0->SetMinNClustersTPC(100);
+  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
+  fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
+  fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
+  fESDtrackCutsV0->SetPtRange(0.2,1.2);
   
 }
 
@@ -261,25 +278,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
   fVertexer = new AliVertexerTracks();
   fTrkArray = new TObjArray(3);
-  
-  //ESD Track cuts
-  if(!fESDtrackCuts) fESDtrackCuts = new AliESDtrackCuts();
-  fESDtrackCuts->SetMinNClustersTPC(80);
-  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCuts->SetMaxChi2PerClusterTPC(5);
-  fESDtrackCuts->SetRequireTPCRefit(kTRUE);
-  fESDtrackCuts->SetEtaRange(-0.9,0.9);
-
-  //ESD Track cuts V0
-  if(!fESDtrackCutsV0) fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
-  fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCutsV0->SetMinNClustersTPC(100);
-  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
-  fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
-  fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
-  fESDtrackCutsV0->SetPtRange(0.2,1.2);
-
-  
+    
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("clistHypertriton");
