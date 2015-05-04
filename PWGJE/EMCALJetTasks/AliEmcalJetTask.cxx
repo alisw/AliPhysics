@@ -72,6 +72,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fIsPSelSet(0),
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
+  fFillGhost(kFALSE),
   fGeom(0),
   fJets(0),
   fEvent(0),
@@ -124,6 +125,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fIsPSelSet(0),
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
+  fFillGhost(kFALSE),
   fGeom(0),
   fJets(0),
   fEvent(0),
@@ -630,6 +632,11 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
             (geta > fGeom->GetArm1EtaMin()) && (geta < fGeom->GetArm1EtaMax()))
           ++gemc;
       }
+
+      if (fFillGhost) jet->AddGhost(constituents[ic].px(),
+                                    constituents[ic].py(),
+                                    constituents[ic].pz(),
+                                    constituents[ic].e());
     }	
     else if ((uid >= 100) && tracks) { // track constituent
       Int_t tid = uid - 100;

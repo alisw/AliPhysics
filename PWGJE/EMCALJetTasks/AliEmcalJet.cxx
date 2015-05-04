@@ -73,7 +73,9 @@ AliEmcalJet::AliEmcalJet() :
   fJetShapeLeSubFirstDer(0),
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
-  fJetShapeLeSubSecondSub(0)
+  fJetShapeLeSubSecondSub(0),
+  fHasGhost(kFALSE),
+  fGhosts()
 {
   // Constructor.
   fClosestJets[0] = 0;
@@ -145,7 +147,9 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fJetShapeLeSubFirstDer(0),
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
-  fJetShapeLeSubSecondSub(0)
+  fJetShapeLeSubSecondSub(0),
+  fHasGhost(kFALSE),
+  fGhosts()
 {
   // Constructor.
 
@@ -222,7 +226,9 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fJetShapeLeSubFirstDer(0),
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
-  fJetShapeLeSubSecondSub(0)
+  fJetShapeLeSubSecondSub(0),
+  fHasGhost(kFALSE),
+  fGhosts()
 
 {
   // Constructor.
@@ -298,7 +304,9 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fJetShapeLeSubFirstDer(jet.fJetShapeLeSubFirstDer),
   fJetShapeLeSubSecondDer(jet.fJetShapeLeSubSecondDer),
   fJetShapeLeSubFirstSub(jet.fJetShapeLeSubFirstSub),
-  fJetShapeLeSubSecondSub(jet.fJetShapeLeSubSecondSub)
+  fJetShapeLeSubSecondSub(jet.fJetShapeLeSubSecondSub),
+  fHasGhost(jet.fHasGhost),
+  fGhosts(jet.fGhosts)
 {
   // Copy constructor.
   fClosestJets[0]     = jet.fClosestJets[0];
@@ -378,6 +386,8 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     fJetShapeLeSubSecondDer = jet.fJetShapeLeSubSecondDer;
     fJetShapeLeSubFirstSub  = jet.fJetShapeLeSubFirstSub;
     fJetShapeLeSubSecondSub = jet.fJetShapeLeSubSecondSub;
+    fHasGhost = jet.fHasGhost;
+    fGhosts   = jet.fGhosts;
   }
 
   return *this;

@@ -28,6 +28,13 @@ class AliEmcalJet : public AliVParticle
        //.....
     };
 
+  struct Ghost {
+    Double_t fPx;
+    Double_t fPy;
+    Double_t fPz;
+    Double_t fE;
+  } ghost;
+
   AliEmcalJet();
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
@@ -107,7 +114,8 @@ class AliEmcalJet : public AliVParticle
   void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag; }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0;
-                                                         fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
+                                                         fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0;
+                                                         fGhosts.clear(); fHasGhost = kFALSE; }
   Double_t          DeltaR(const AliVParticle* part) const;
   Double_t          GetZ ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const; // Get Z of constituent trk
   Double_t          GetZ ( const AliVParticle* trk )       const; // Get Z of constituent trk
@@ -249,6 +257,19 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetFirstOrderSubtractedLeSub()            const { return fJetShapeLeSubFirstSub                   ; }
   Double_t          GetSecondOrderSubtractedLeSub()           const { return fJetShapeLeSubSecondSub                  ; }
 
+  void AddGhost(const Double_t dPx, const Double_t dPy, const Double_t dPz, const Double_t dE) {
+    ghost.fPx = dPx;
+    ghost.fPy = dPy;
+    ghost.fPz = dPz;
+    ghost.fE  = dE;
+    fGhosts.push_back(ghost);
+    if (!fHasGhost) fHasGhost = kTRUE;
+    return;
+  }
+
+  Bool_t HasGhost() const { return fHasGhost; }
+  const std::vector<AliEmcalJet::Ghost> GetGhosts() const { return fGhosts; }
+
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt
   Double32_t        fEta;                 //[-1,1,12]  eta
@@ -322,6 +343,9 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapeLeSubFirstSub;        //!   result from shape derivatives for jet LeSub: 1st order subtracted
   Double_t          fJetShapeLeSubSecondSub;       //!   result from shape derivatives for jet LeSub: 2nd order subtracted
 
+  Bool_t fHasGhost;
+  std::vector<AliEmcalJet::Ghost> fGhosts;
+
   private:
     struct sort_descend
         { // sort in decreasing order
@@ -329,6 +353,6 @@ class AliEmcalJet : public AliVParticle
         bool operator () (const std::pair<Double_t, Int_t>& p1, const std::pair<Double_t, Int_t>& p2)  { return p1.first > p2.first ; }
         };
 
-  ClassDef(AliEmcalJet,16) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,17) // Emcal jet class in cylindrical coordinates
 };
 #endif

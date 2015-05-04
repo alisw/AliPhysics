@@ -8,6 +8,7 @@ namespace fastjet {
 }
 
 class AliEmcalJet;
+class AliJetContainer;
 class AliFJWrapper;
 class TNamed;
 class TH1;
@@ -20,8 +21,12 @@ class AliEmcalJetFinder : public TNamed
     ~AliEmcalJetFinder();
     
     Bool_t                        FindJets();
+    Bool_t                        Filter(AliEmcalJet *pJet, AliJetContainer *pContJets, Double_t dVtx[3]);
     void                          AddInputVector(Double_t px, Double_t py, Double_t pz);
     void                          AddInputVector(Double_t px, Double_t py, Double_t pz, Double_t E);
+    void                          AddInputVector(Double_t px, Double_t py, Double_t pz, Int_t index);
+    void                          AddInputVector(Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index);
+    void                          AddInputGhost (Double_t px, Double_t py, Double_t pz, Double_t E);
     void                          FillPtHistogram(TH1* histogram);
     void                          FillEtaHistogram(TH1* histogram);
     void                          FillPhiHistogram(TH1* histogram);
@@ -59,7 +64,7 @@ class AliEmcalJetFinder : public TNamed
     AliEmcalJetFinder(const AliEmcalJetFinder& obj); // copy constructor
     AliEmcalJetFinder& operator=(const AliEmcalJetFinder& other); // assignment
 
-    ClassDef(AliEmcalJetFinder, 1); // Lightweight fastjet implementation outside analysis tasks
+    ClassDef(AliEmcalJetFinder, 2); // Lightweight fastjet implementation outside analysis tasks
 };
 
 #endif

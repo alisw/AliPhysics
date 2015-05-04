@@ -69,6 +69,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SelectHIJING(Bool_t s)                     { if (IsLocked()) return; if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
   void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex     = i     ; }
   void                   SetFilterHybridTracks(Bool_t f)            { if (IsLocked()) return; fFilterHybridTracks = f     ; }
+  void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost = b; }
 
   AliEmcalJetUtility*    AddUtility(AliEmcalJetUtility* utility);
 
@@ -159,6 +160,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //!=true to enable FJ 2.x behavior
+  Bool_t                 fFillGhost;              //!=true ghost particles will be filled in AliEmcalJet obj
 
   Double_t               fVertex[3];              //!vertex of the current event
   AliEMCALGeometry      *fGeom;                   //!emcal geometry object
@@ -172,6 +174,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 18) // Jet producing task
+  ClassDef(AliEmcalJetTask, 19) // Jet producing task
 };
 #endif

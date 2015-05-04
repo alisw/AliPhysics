@@ -6,11 +6,18 @@
 //
 // Authors: R.Haake
 
-#include "AliFJWrapper.h"
-#include "AliEmcalJet.h"
-#include "AliEmcalJetFinder.h"
-#include "AliLog.h"
 #include <vector>
+#include <TLorentzVector.h>
+
+#include "AliLog.h"
+#include "AliVTrack.h"
+#include "AliVCluster.h"
+#include "AliEmcalJet.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
+#include "AliJetContainer.h"
+#include "AliFJWrapper.h"
+#include "AliEmcalJetFinder.h"
 #include "TH1.h"
 
 //________________________________________________________________________
@@ -101,7 +108,111 @@ Bool_t AliEmcalJetFinder::FindJets()
   fInputVectorIndex = 0;
   return kTRUE;
 }
-    
+
+//________________________________________________________________________
+Bool_t AliEmcalJetFinder::Filter(AliEmcalJet *pJet, AliJetContainer *pContJets, Double_t dVtx[3])
+{
+//
+//  AliEmcalJetFinder::Filter
+//
+
+  fJetCount = 0;
+  for (UInt_t j=0; j<fJetArray.size(); j++) {
+    if (fJetArray[j]) { delete fJetArray[j]; fJetArray[j] = 0; }
+  } fJetArray.clear();
+//=============================================================================
+
+  if ((!pJet) || (!pContJets)) return kFALSE;
+//=============================================================================
+
+  AliParticleContainer *pContTrks = pContJets->GetParticleContainer();
+  if (pContTrks) for (Int_t i=0; i<pJet->GetNumberOfTracks(); i++) {
+    AliVParticle *pTrk = pJet->TrackAt(i, pContTrks->GetArray()); if (!pTrk) continue;
+    AddInputVector(pTrk->Px(), pTrk->Py(), pTrk->Pz(), pTrk->E(), pJet->TrackAt(i)+100);
+  }
+
+  AliClusterContainer *pContClus = pContJets->GetClusterContainer();
+  if (pContClus) for (Int_t i=0; i<pJet->GetNumberOfClusters(); i++) {
+    AliVCluster *pClu = pJet->ClusterAt(i, pContClus->GetArray()); if (!pClu) continue;
+
+    TLorentzVector vClu; pClu->GetMomentum(vClu, dVtx);
+    AddInputVector(vClu.Px(), vClu.Py(), vClu.Pz(), vClu.P(), -1*pJet->ClusterAt(i)-100);
+  }
+//=============================================================================
+
+  if(!fInputVectorIndex) {
+    AliError("No input vectors added to jet finder!");
+    return kFALSE;
+  }
+//=============================================================================
+
+  if (pJet->HasGhost()) {
+    const std::vector<AliEmcalJet::Ghost> aGhosts = pJet->GetGhosts();
+    for (UInt_t i=0; i<aGhosts.size(); i++) AddInputGhost(aGhosts[i].fPx,
+                                                          aGhosts[i].fPy,
+                                                          aGhosts[i].fPz,
+                                                          aGhosts[i].fE);
+  }
+//=============================================================================
+
+  fFastjetWrapper->SetR(fRadius);
+  fFastjetWrapper->SetMaxRap(fTrackMaxEta);
+  fFastjetWrapper->SetGhostArea(fGhostArea);
+  if(fJetAlgorithm==0) fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  
+  if(fJetAlgorithm==1) fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
+  if(fRecombScheme>=0) fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
+//=============================================================================
+
+  fFastjetWrapper->Filter();
+  std::vector<fastjet::PseudoJet> aFilteredJets = fFastjetWrapper->GetFilteredJets();
+
+  fJetArray.resize(aFilteredJets.size());
+  for (UInt_t j=0; j<aFilteredJets.size(); j++) {
+    if (aFilteredJets[j].perp()<fJetMinPt) continue;
+    if (TMath::Abs(aFilteredJets[j].eta())>fJetMaxEta) continue;
+    if (fFastjetWrapper->GetDoFilterArea()) if (fFastjetWrapper->GetFilteredJetArea(j)<fJetMinArea) continue;
+
+    AliEmcalJet *piece = new AliEmcalJet(aFilteredJets[j].perp(),
+                                         aFilteredJets[j].eta(),
+                                         aFilteredJets[j].phi(),
+                                         aFilteredJets[j].m());
+
+    piece->SetLabel(j);
+    if (fFastjetWrapper->GetDoFilterArea()) {
+      fastjet::PseudoJet area(fFastjetWrapper->GetFilteredJetAreaVector(j));
+      piece->SetArea(area.perp());
+      piece->SetAreaEta(area.eta());
+      piece->SetAreaPhi(area.phi());
+      piece->SetAreaE(area.E());
+    }
+
+    std::vector<fastjet::PseudoJet> aConstis(fFastjetWrapper->GetFilteredJetConstituents(j));
+
+    UInt_t nConstis = aConstis.size();
+    piece->SetNumberOfTracks(nConstis);
+    piece->SetNumberOfClusters(nConstis);
+
+    Int_t nt = 0;
+    Int_t nc = 0;
+    for (UInt_t i=0; i<nConstis; i++) {
+      Int_t uid = aConstis[i].user_index();
+      if (uid>= 100) { piece->AddTrackAt(   1*uid-100, nt); ++nt; }
+      if (uid<=-100) { piece->AddClusterAt(-1*uid-100, nc); ++nc; }
+    }
+
+    piece->SetNumberOfTracks(nt);
+    piece->SetNumberOfClusters(nc);
+
+    fJetArray[fJetCount] = piece;
+    fJetCount++;
+  }
+
+  fJetArray.resize(fJetCount);
+  fFastjetWrapper->Clear();
+  fInputVectorIndex = 0;
+  return kTRUE;
+}
+
 //________________________________________________________________________
 void AliEmcalJetFinder::AddInputVector(Double_t px, Double_t py, Double_t pz)
 {
@@ -114,6 +225,26 @@ void AliEmcalJetFinder::AddInputVector(Double_t px, Double_t py, Double_t pz, Do
 {
   fFastjetWrapper->AddInputVector(px, py, pz, E, fInputVectorIndex + 100);
   fInputVectorIndex++;
+}
+
+//________________________________________________________________________
+void AliEmcalJetFinder::AddInputVector(Double_t px, Double_t py, Double_t pz, Int_t index)
+{
+  fFastjetWrapper->AddInputVector(px, py, pz, TMath::Sqrt(px*px + py*py + pz*pz), index);
+  fInputVectorIndex++;
+}
+
+//________________________________________________________________________
+void AliEmcalJetFinder::AddInputVector(Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index)
+{
+  fFastjetWrapper->AddInputVector(px, py, pz, E, index);
+  fInputVectorIndex++;
+}
+
+//________________________________________________________________________
+void AliEmcalJetFinder::AddInputGhost(Double_t px, Double_t py, Double_t pz, Double_t E)
+{
+  fFastjetWrapper->AddInputGhost(px, py, pz, E, -1);
 }
 
 //________________________________________________________________________
