@@ -134,13 +134,9 @@ Int_t AliRDHFJetsCutsVertex::IsVertexSelected(AliAODVertex* vert, AliAODEvent* a
   Double_t declen=vert->DistanceToVertex(vtx1);
 
   if(declen<fDistPrimSec)return 0; //minimum distance primary-secondary required
-  cout<<"passed declen cut"<<endl;
   if(dispersion>fSigvert)return 0; //maximum dispersion of tracks around sec vertex required
-  cout<<"passed sigvert cut"<<endl;
   if(chi2>fChi2)return 0; //maximum value of vertex chi2 required
-  cout<<"passed chi2 cut"<<endl;
   Double_t maxpt=0;
-  //Int_t d0cut=0,cospcut=0;
   Int_t d0cut=0;
   Double_t pxyz[3];
   Double_t pxyzSum[4]={0.,0.,0.,0.};
@@ -148,10 +144,8 @@ Int_t AliRDHFJetsCutsVertex::IsVertexSelected(AliAODVertex* vert, AliAODEvent* a
   Double_t pos[3];
   vtx1->GetPosition(pos);
   Double_t cosp=CosPointingAngle(vert,pos);
-  cout<<"now cos -->"<<cosp<<"  "<<fCosp<<endl;
 
   if(cosp<fCosp)return 0; //cut on cos theta point required on sec vertex
-  cout<<"passed cosp cut"<<endl;
   for(Int_t jp=0;jp<vert->GetNDaughters();jp++){
     AliAODTrack *tr=(AliAODTrack*)vert->GetDaughter(jp);
 
@@ -176,9 +170,9 @@ Int_t AliRDHFJetsCutsVertex::IsVertexSelected(AliAODVertex* vert, AliAODEvent* a
   if (TMath::Abs(sumCh) > 2) return 0;
   
   Double_t invmass=TMath::Sqrt(pxyzSum[0]*pxyzSum[0]-pxyzSum[1]*pxyzSum[1]-pxyzSum[2]*pxyzSum[2]-pxyzSum[3]*pxyzSum[3]);
-  cout<<"************now d0cut "<<d0cut<<"  fImpPar"<<endl;
+ 
   if(d0cut<vert->GetNDaughters()-1)return 0;   //cut on d0xy required on *all tracks* in the vertex
-  cout<<"************************* qui *************************"<<endl;
+ 
   if(invmass<fInvMassCut) return 0; //minimum value on inv mass of the vertex required
 
   if(maxpt<fMinPtHardestTrack) return 0; //minimum pt of the hardest track required
@@ -210,8 +204,6 @@ void AliRDHFJetsCutsVertex::IsElecInVert(AliAODEvent *aod, AliAODVertex *jvert, 
     // Track extrapolation to EMCAL
     Int_t fClsId = esdTrack->GetEMCALcluster();
     p = esdTrack->P();
-    //pt = esdTrack->Pt();
-    //charge = esdTrack->Charge();
 
     if(fClsId >0) {
       AliVCluster *cluster = aod->GetCaloCluster(fClsId);
@@ -236,7 +228,6 @@ Double_t AliRDHFJetsCutsVertex::CosPointingAngle(AliAODVertex* vtx1, Double_t po
   // Cosine of pointing angle in space assuming it is produced at "point"
   //
   Double_t px=0.,py=0.,pz=0.; 
-  cout<<"in AliRDHFJetsCutsVertex::CosPointingAngle  "<<vtx1->GetNDaughters()<<endl;
   for(Int_t i=0;i<vtx1->GetNDaughters();i++) {
     AliAODTrack *tr=(AliAODTrack*)vtx1->GetDaughter(i);
     px+=tr->Px(); 
@@ -244,7 +235,7 @@ Double_t AliRDHFJetsCutsVertex::CosPointingAngle(AliAODVertex* vtx1, Double_t po
     pz+=tr->Pz(); 
     
   }
-  cout<<px<<" "<<py<<"  "<<pz<<endl;
+
   TVector3 mom(px,py,pz);
   TVector3 fline(vtx1->GetX()-point[0],
 		 vtx1->GetY()-point[1],
@@ -255,7 +246,6 @@ Double_t AliRDHFJetsCutsVertex::CosPointingAngle(AliAODVertex* vtx1, Double_t po
     return 0.0;
   } else {
     Double_t cos = mom.Dot(fline)/TMath::Sqrt(ptot2);
-    cout<<"in AliRDHFJetsCutsVertex::CosPointingAngle --> cos ="<<cos<<endl;
     if(cos >  1.0) cos =  1.0;
     if(cos < -1.0) cos = -1.0;
     return cos;

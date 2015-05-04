@@ -36,10 +36,6 @@ class AliRDHFJetsCuts : public AliAnalysisCuts
   AliRDHFJetsCuts(const AliRDHFJetsCuts& source);
   AliRDHFJetsCuts& operator=(const AliRDHFJetsCuts& source);
   
-  /*   virtual void SetStandardCutsPP2010() {return;} */
-  /*   virtual void SetStandardCutsPbPb2010() {return;} */
-  /*   virtual void SetStandardCutsPbPb2011() {return;} */
-  
   void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;}
   void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;} 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
@@ -109,20 +105,17 @@ class AliRDHFJetsCuts : public AliAnalysisCuts
   }
   void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;} 
   void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
- void ApplySPDMisalignedCutPP2012(){fApplySPDMisalignedPP2012=kTRUE;}
+  void ApplySPDMisalignedCutPP2012(){fApplySPDMisalignedPP2012=kTRUE;}
   
   void AddTrackCuts(const AliESDtrackCuts *cuts) 
   {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*cuts); return;}
-  // void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
+
   void SetUseAOD049(Bool_t flag=kTRUE) {fUseAOD049=flag; return;}
   void SetKinkRejection(Bool_t flag=kTRUE) {fKinkReject=flag; return;}
   void SetUseTrackSelectionWithFilterBits(Bool_t flag=kTRUE){ 
     fUseTrackSelectionWithFilterBits=flag; return;}
   void SetUseCentrality(Int_t flag=1);    // see enum below
-/*   void SetPidHF(AliAODPidHF* pidObj) { */
-/*     if(fPidHF) delete fPidHF; */
-/*     fPidHF=new AliAODPidHF(*pidObj); */
-/*   } */
+  
   void SetRemoveDaughtersFromPrim(Bool_t removeDaughtersPrim) {fRemoveDaughtersFromPrimary=removeDaughtersPrim;}
 
   void SetRecomputePrimaryVertex(Bool_t opt) {fRecomputePrimVertex=opt;}
@@ -142,9 +135,6 @@ class AliRDHFJetsCuts : public AliAnalysisCuts
     fMinContrPileup=minContrib;
     fMinDzPileup=minDz;
   }
-  
-  
-  //  AliAODPidHF* GetPidHF() const {return fPidHF;}
 
   Double_t GetMaxVtxZ() const {return fMaxVtxZ;}  
   Float_t GetCentrality(AliAODEvent* aodEvent){return GetCentrality(aodEvent,(AliRDHFJetsCuts::ECentrality)fUseCentrality);}
@@ -286,7 +276,7 @@ class AliRDHFJetsCuts : public AliAnalysisCuts
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
 
   Bool_t fApplySPDDeadPbPb2011;  // flag to apply SPD dead module map of PbPb2011
- Bool_t fApplySPDMisalignedPP2012; // flag to apply cut on tracks crossing SPD misaligned modules for PP2012 data
+  Bool_t fApplySPDMisalignedPP2012; // flag to apply cut on tracks crossing SPD misaligned modules for PP2012 data
   Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
   Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
   Bool_t fKinkReject; // flag to reject kink daughters

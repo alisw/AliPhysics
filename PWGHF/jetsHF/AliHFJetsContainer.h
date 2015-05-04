@@ -4,21 +4,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *  * See cxx source for full Copyright notice                               */
 
-/* mailto: svallero@to.infn.it */
+/* mailto: svallero@to.infn.it, s.lapointe@cern.ch */
 
 /* Class defining containers for the HF b-jets analysis */
 
 #include "TObject.h"
 #include "TNamed.h"
 #include "TArrayD.h"
-#include "AliCFContainer.h"
 
-#define RED  "\033[22;31;1m"
-#define MAG  "\033[22;35;1m"
-#define mage  "\033[22;35m"
-#define cy  "\033[22;36m"
-#define Bee  "\033[22;30m"
+#include "AliHFjetsUtils.h"
 
+class AliCFContainer;
 class TCollection;
 class TH1;
 class TH1D;
@@ -28,8 +24,8 @@ class AliHFJetsContainer : public TNamed
 {
  public:
   // Analysis steps
-  static const Int_t fgkCFSteps = 9;
-  enum CFSteps { kCFStepAll = 0, kCFStepTriggered, kCFStepVertex, kCFStepMatchedB, kCFStepMatchedAny, kCFStepRecoB, kCFStepMatchedC, kCFStepMatchedLight, kCFStepMatchedGluon };
+  static const Int_t fgkCFSteps = 3;
+  enum CFSteps { kCFStepEventSelected = 0, kCFStepMatchedAny, kCFStepReco };
 
   // Variables relevant for corrections
   static const Int_t fgkCFVars = 4;
@@ -41,7 +37,6 @@ class AliHFJetsContainer : public TNamed
   // standard container for spectrum corrections
   AliHFJetsContainer(const char* name="", Bool_t dummy = kTRUE);
   // add custom variables to standard, in this way the correction procedure is preserved
-  //AliHFJetsContainer(const char* name, const Int_t nvars, const char* varnames[], Int_t *nbins, Double_t *binning[], const char* axistitle[]);
   AliHFJetsContainer(const char* name, const Int_t nvars, const char* varnames[], Int_t *nbins, Double_t **binning, const char* axistitle[]);
   AliHFJetsContainer(const AliHFJetsContainer &c);
   // Destructor
@@ -55,7 +50,7 @@ class AliHFJetsContainer : public TNamed
   // Useful tools
   virtual void Copy(TObject& c) const;
 
-  void ScaleStep(Double_t factor=1., CFSteps step=kCFStepAll);
+  void ScaleStep(Double_t factor=1., CFSteps step=kCFStepEventSelected);
   void ScaleAllSteps(Double_t factor=1.);
  
 
@@ -80,41 +75,28 @@ class AliHFJetsContainer : public TNamed
   TH2D *Project2D(CFSteps step, const char* varname1, const char* varname2);
 
   // Get efficiency
-  TH1D *GetMatchingEfficiencyPt(const char* method);
-  TH1D *GetBEfficiencyPt(const char* method);
-  TH1D *GetCEfficiencyPt(const char* method);
-  TH1D *GetLightEfficiencyPt(const char* method);
-  TH1D *GetGluonEfficiencyPt(const char* method);
-  TH1D *GetEfficiencyEta();
-  TH2D *GetEfficiency2D();
-  
-  // Get purity
-  TH1D *GetPurityPt();
-  TH1D *GetPurityEta();
-  TH2D *GetPurity2D();
-  
+  TH1D *GetMatchingEfficiencyPt(const char* method, Int_t flavour1, Int_t flavour2);
+  /* TH2D *GetPurity2D(); */
+  TH1D *GetPurityVariable(const char* method, Int_t flavour, Int_t variable);
   // Fill container
-  virtual void FillStep(CFSteps step=kCFStepAll,const TArrayD *point=0x0);
+  virtual void FillStep(CFSteps step=kCFStepEventSelected,const TArrayD *point=0x0);
 
  protected:
-  TH1D *GetEfficiencyPt(const char* method, Int_t flavour);
+  /* TH1D *GetEfficiencyPt(const char* method, Int_t flavour); */
   // for custom container
   TList *fCustomVarNames;        // names of custom variables
   // for standard container
   AliCFContainer* fContainer;    // correction framework for B-jets 
   Int_t fNbins[fgkCFVars];           // number of bins for each variable
   Double_t **fBinning;     // set of bins for each variable
-  //Double_t *fBinning[100];     // set of bins for each variable
   const char **fAxisTitle; // axis title for each variable
-  //void CreateContainer(TString name, TString title, Int_t nvars, Int_t *nbins, Double_t *binning[], const char *axistitle[]); // create containers belonging to this class
   void CreateContainer(TString name, TString title, Int_t nvars, Int_t *nbins, Double_t **binning, const char *axistitle[]); // create containers belonging to this class
-  //void CreateCustomContainer(const Int_t nvars, const char* varnames[], Int_t *nbins, Double_t *binning[], const char*  axistitle[]);
+ 
   void CreateCustomContainer(const Int_t nvars, const char* varnames[], Int_t *nbins, Double_t **binning, const char*  axistitle[]);
   void CreateDefaultBinning();       // sets default axis binning
   const char* GetStepName(CFSteps step); // returns name of enum
   const char* GetVarName(CFVars var);    // returns name of enum
   Int_t GetVarAxis(const char* varname); // returns axis ID given the variable name
-  //Double_t *GetBinning(TString var, Int_t& nBins, const char*& axistitle); // returns array of bin limts for relevant vars
   void GetBinning(TString var, Int_t& nBins, Double_t* bins, const char*& axistitle); // returns array of bin limts for relevant vars
   void SetStepNames(AliCFContainer* container); // sets analysis step names
   const char* GetStepTitle(CFSteps step); // gets analysis step names

@@ -37,6 +37,8 @@ class TVector2;
 #include <TNamed.h>
 #include <vector>
 
+#include "AliHFjetsUtils.h"
+
 class AliHFJetsTagging : public TNamed {
 public:
   AliHFJetsTagging();
