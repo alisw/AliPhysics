@@ -162,10 +162,10 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
   AliAlignObjParams a;
   Double_t dx=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // Vertical table position in mm from DCS
-  Double_t dyZN1 = (Double_t) (fData->GetAlignData(0)/10.);
-  Double_t dyZP1 = (Double_t) (fData->GetAlignData(1)/10.);
-  Double_t dyZN2 = (Double_t) (fData->GetAlignData(2)/10.);
-  Double_t dyZP2 = (Double_t) (fData->GetAlignData(3)/10.);
+  Double_t dyZN1 = (Double_t) ((fData->GetAlignData(0)-184.0)/10.);
+  Double_t dyZP1 = (Double_t) ((fData->GetAlignData(1)-198.1)/10.);
+  Double_t dyZN2 = (Double_t) ((fData->GetAlignData(2)-186.5)/10.);
+  Double_t dyZP2 = (Double_t) ((fData->GetAlignData(3)-202.9)/10.);
   //
   const char *n1ZDC="ZDC/NeutronZDC_C";  
   const char *p1ZDC="ZDC/ProtonZDC_C";
