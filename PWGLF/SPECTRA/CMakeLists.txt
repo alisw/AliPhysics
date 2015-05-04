@@ -50,6 +50,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
+  PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -153,6 +154,7 @@ install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY Nuclei/B2/macros DESTINATION PWGLF/SPECTRA/Nuclei/B2)
 install(DIRECTORY Nuclei/masses  DESTINATION PWGLF/SPECTRA/Nuclei)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
 install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
