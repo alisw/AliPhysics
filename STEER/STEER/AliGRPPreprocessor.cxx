@@ -834,8 +834,9 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 					AliInfo(Form("LHC State (corresponding to BeamMode) = %s (set at %f)",lhcStateS.Data(),beamMode->GetTimeStamp()));
 					if (forceStableBeam) {
 					  TPRegexp reStable("^STABLE[_ ]BEAMS$");
-					  if (!lhcStateS.Index(reStable)) {
+					  if (lhcStateS.Index(reStable)) {
 					    AliInfoF("Overriding LHC beam state from \"%s\" to \"%s\"",lhcStateS.Data(),"STABLE BEAMS");
+					    lhcStateS = "STABLE BEAMS";
 					  }
 					}
 					grpobj->SetLHCState(lhcStateS);
