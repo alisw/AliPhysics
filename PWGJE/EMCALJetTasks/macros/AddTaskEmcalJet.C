@@ -10,6 +10,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag             = "Jet",
   const Double_t minJetPt     = 0.,
   const Bool_t selectPhysPrim = kFALSE,
+  const Bool_t bFillGhosts    = kFALSE,
   const Bool_t lockTask       = kTRUE,
   const Int_t useExchangeCont = 0
 )
@@ -129,6 +130,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   jetTask->SetGhostArea(ghostArea);
   jetTask->SetRecombScheme(recombScheme);
   jetTask->SelectPhysicalPrimaries(selectPhysPrim);
+  if (bFillGhosts) jetTask->SetFillGhost();
   if (lockTask) jetTask->SetLocked();
 
   //-------------------------------------------------------
@@ -184,6 +186,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag            = "Jet",
   const Double_t minJetPt    = 0.,
   const Bool_t selectPhysPrim = kFALSE,
+  const Bool_t bFillGhosts    = kFALSE,
   const Bool_t lockTask       = kTRUE,
   const Int_t useExchangeCont = 0
 )
@@ -216,5 +219,5 @@ AliEmcalJetTask* AddTaskEmcalJet(
     return NULL;
   }
 
-  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, lockTask, useExchangeCont);
+  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, bFillGhosts, lockTask, useExchangeCont);
 }

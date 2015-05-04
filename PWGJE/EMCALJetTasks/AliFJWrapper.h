@@ -18,22 +18,31 @@ class AliFJWrapper
   virtual void  AddInputVector (Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index = -99999);
   virtual void  AddInputVector (const fastjet::PseudoJet& vec,                Int_t index = -99999);
   virtual void  AddInputVectors(const std::vector<fastjet::PseudoJet>& vecs,  Int_t offsetIndex = -99999);
+  virtual void  AddInputGhost  (Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index = -99999);
   virtual const char *ClassName()                            const { return "AliFJWrapper";              }
   virtual void  Clear(const Option_t* /*opt*/ = "");
   virtual void  CopySettingsFrom (const AliFJWrapper& wrapper);
   virtual void  GetMedianAndSigma(Double_t& median, Double_t& sigma, Int_t remove = 0) const;
   fastjet::ClusterSequenceArea*           GetClusterSequence() const { return fClustSeq;                   }
+  fastjet::ClusterSequence*               GetClusterSequenceSA() const { return fClustSeqSA;               }
+  fastjet::ClusterSequenceActiveAreaExplicitGhosts* GetClusterSequenceGhosts() const { fClustSeqActGhosts; }
   const std::vector<fastjet::PseudoJet>&  GetInputVectors()    const { return fInputVectors;               }
+  const std::vector<fastjet::PseudoJet>&  GetInputGhosts()     const { return fInputGhosts;                }
   const std::vector<fastjet::PseudoJet>&  GetInclusiveJets()   const { return fInclusiveJets;              }
+  const std::vector<fastjet::PseudoJet>&  GetFilteredJets()    const { return fFilteredJets;               }
   std::vector<fastjet::PseudoJet>         GetJetConstituents(UInt_t idx) const;
+  std::vector<fastjet::PseudoJet>         GetFilteredJetConstituents(UInt_t idx) const;
   Double_t                                GetMedianUsedForBgSubtraction() const { return fMedUsedForBgSub; }
   const char*                             GetName()            const { return fName;                       }
   const char*                             GetTitle()           const { return fTitle;                      }
   Double_t                                GetJetArea         (UInt_t idx) const;
   fastjet::PseudoJet                      GetJetAreaVector   (UInt_t idx) const;
+  Double_t                                GetFilteredJetArea (UInt_t idx) const;
+  fastjet::PseudoJet                      GetFilteredJetAreaVector(UInt_t idx) const;
   Double_t                                GetJetSubtractedPt (UInt_t idx) const;
   virtual std::vector<double>             GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
   Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
+  Bool_t                                  GetDoFilterArea()          { return fDoFilterArea; }
 #ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass()        const {return fGenSubtractorInfoJetMass        ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; } 
@@ -50,6 +59,7 @@ class AliFJWrapper
   virtual std::vector<double>                                GetGRDenominatorSub()                const { return fGRDenominatorSub               ; }
 
   virtual Int_t Run();
+  virtual Int_t Filter();
   virtual Int_t DoGenericSubtractionJetMass();
   virtual Int_t DoGenericSubtractionGR(Int_t ijet);
   virtual Int_t DoGenericSubtractionJetAngularity();
@@ -88,7 +98,9 @@ class AliFJWrapper
   TString                                fName;               //!
   TString                                fTitle;              //!
   std::vector<fastjet::PseudoJet>        fInputVectors;       //!
+  std::vector<fastjet::PseudoJet>        fInputGhosts;        //!
   std::vector<fastjet::PseudoJet>        fInclusiveJets;      //!
+  std::vector<fastjet::PseudoJet>        fFilteredJets;       //!
   std::vector<double>                    fSubtractedJetsPt;   //!
   std::vector<fastjet::PseudoJet>        fConstituentSubtrJets; //!
   fastjet::AreaDefinition               *fAreaDef;            //!
@@ -102,6 +114,8 @@ class AliFJWrapper
   fastjet::Selector                     *fRange;              //!
 #endif
   fastjet::ClusterSequenceArea          *fClustSeq;           //!
+  fastjet::ClusterSequence              *fClustSeqSA;                //!
+  fastjet::ClusterSequenceActiveAreaExplicitGhosts *fClustSeqActGhosts; //!
   fastjet::Strategy                      fStrategy;           //!
   fastjet::JetAlgorithm                  fAlgor;              //!
   fastjet::RecombinationScheme           fScheme;             //!
@@ -132,6 +146,7 @@ class AliFJWrapper
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetConstituent; //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetLeSub;       //!
 #endif
+  Bool_t                                   fDoFilterArea;         //!
   Bool_t                                   fLegacyMode;           //!
   Bool_t                                   fUseExternalBkg;       //!
   Double_t                                 fRho;                  //  pT background density
@@ -168,7 +183,9 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
     fName              (name)
   , fTitle             (title)
   , fInputVectors      ( )
+  , fInputGhosts       ( )
   , fInclusiveJets     ( )
+  , fFilteredJets      ( )
   , fSubtractedJetsPt  ( )
   , fConstituentSubtrJets ( )
   , fAreaDef           (0)
@@ -178,6 +195,8 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fPlugin            (0)
   , fRange             (0)
   , fClustSeq          (0)
+  , fClustSeqSA        (0)
+  , fClustSeqActGhosts (0)
   , fStrategy          (fj::Best)
   , fAlgor             (fj::kt_algorithm)
   , fScheme            (fj::BIpt_scheme)
@@ -205,6 +224,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGenSubtractorInfoJetConstituent ( )
   , fGenSubtractorInfoJetLeSub ( )
 #endif
+  , fDoFilterArea      (false)
   , fLegacyMode        (false)
   , fUseExternalBkg    (false)
   , fRho               (0)
@@ -231,6 +251,8 @@ AliFJWrapper::~AliFJWrapper()
   delete fPlugin;
   delete fRange;
   delete fClustSeq;
+  if (fClustSeqSA)        { delete fClustSeqSA;        fClustSeqSA        = 0; }
+  if (fClustSeqActGhosts) { delete fClustSeqActGhosts; fClustSeqActGhosts = 0; }
 #ifdef FASTJET_VERSION
   if (fBkrdEstimator)     delete fBkrdEstimator;
   if (fGenSubtractor)     delete fGenSubtractor;
@@ -271,6 +293,7 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   // Reset the median to zero.
 
   fInputVectors.clear();
+  fInputGhosts.clear();
   fMedUsedForBgSub = 0;
 
   // for the moment brute force delete everything
@@ -281,6 +304,8 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   delete fPlugin;          fPlugin          = 0;
   delete fRange;           fRange           = 0;
   delete fClustSeq;        fClustSeq        = 0;
+  if (fClustSeqSA)        { delete fClustSeqSA;        fClustSeqSA        = 0; }
+  if (fClustSeqActGhosts) { delete fClustSeqActGhosts; fClustSeqActGhosts = 0; }
 #ifdef FASTJET_VERSION
   if (fBkrdEstimator)     delete fBkrdEstimator     ;  fBkrdEstimator     = 0;
   if (fGenSubtractor)     delete fGenSubtractor     ;  fGenSubtractor     = 0;
@@ -336,6 +361,24 @@ void AliFJWrapper::AddInputVectors(const std::vector<fj::PseudoJet>& vecs, Int_t
 }
 
 //_________________________________________________________________________________________________
+void AliFJWrapper::AddInputGhost(Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index)
+{
+  // Make the input pseudojet.
+
+  fastjet::PseudoJet inVec(px, py, pz, E);
+  
+  if (index > -99999) {
+    inVec.set_user_index(index);
+  } else {
+    inVec.set_user_index(fInputGhosts.size());
+  }
+
+  // add to the fj container of input vectors
+  fInputGhosts.push_back(inVec);
+  if (!fDoFilterArea) fDoFilterArea = kTRUE;
+}
+
+//_________________________________________________________________________________________________
 Double_t AliFJWrapper::GetJetArea(UInt_t idx) const
 {
   // Get the jet area.
@@ -350,6 +393,20 @@ Double_t AliFJWrapper::GetJetArea(UInt_t idx) const
 }
 
 //_________________________________________________________________________________________________
+Double_t AliFJWrapper::GetFilteredJetArea(UInt_t idx) const
+{
+  // Get the filtered jet area.
+
+  Double_t retval = -1; // really wrong area..
+  if (fDoFilterArea && fClustSeqActGhosts && (idx<fFilteredJets.size())) {
+    retval = fClustSeqActGhosts->area(fFilteredJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetFilteredJetArea wrong index: %d",idx));
+  }
+  return retval;
+}
+
+//_________________________________________________________________________________________________
 fastjet::PseudoJet AliFJWrapper::GetJetAreaVector(UInt_t idx) const
 {
   // Get the jet area as vector.
@@ -358,6 +415,19 @@ fastjet::PseudoJet AliFJWrapper::GetJetAreaVector(UInt_t idx) const
     retval = fClustSeq->area_4vector(fInclusiveJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
+  }
+  return retval;
+}
+
+//_________________________________________________________________________________________________
+fastjet::PseudoJet AliFJWrapper::GetFilteredJetAreaVector(UInt_t idx) const
+{
+  // Get the jet area as vector.
+  fastjet::PseudoJet retval;
+  if (fDoFilterArea && fClustSeqActGhosts && (idx<fFilteredJets.size())) {
+    retval = fClustSeqActGhosts->area_4vector(fFilteredJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetFilteredJetArea wrong index: %d",idx));
   }
   return retval;
 }
@@ -399,6 +469,24 @@ AliFJWrapper::GetJetConstituents(UInt_t idx) const
     retval = fClustSeq->constituents(fInclusiveJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetConstituents wrong index: %d",idx));
+  }
+  
+  return retval;
+}
+
+//_________________________________________________________________________________________________
+std::vector<fastjet::PseudoJet>
+AliFJWrapper::GetFilteredJetConstituents(UInt_t idx) const
+{
+  // Get jets constituents.
+
+  std::vector<fastjet::PseudoJet> retval;
+  
+  if ( idx < fFilteredJets.size() ) {
+    if (fClustSeqSA)        retval = fClustSeqSA->constituents(fFilteredJets[idx]);
+    if (fClustSeqActGhosts) retval = fClustSeqActGhosts->constituents(fFilteredJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetFilteredJetConstituents wrong index: %d",idx));
   }
   
   return retval;
@@ -503,6 +591,47 @@ Int_t AliFJWrapper::Run()
   // inclusive jets:
   fInclusiveJets.clear();
   fInclusiveJets = fClustSeq->inclusive_jets(0.0); 
+
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::Filter()
+{
+//
+//  AliFJWrapper::Filter
+//
+
+  fJetDef = new fj::JetDefinition(fAlgor, fR, fScheme, fStrategy);
+
+  if (fDoFilterArea) {
+    if (fInputGhosts.size()>0) {
+      try {
+        fClustSeqActGhosts = new fj::ClusterSequenceActiveAreaExplicitGhosts(fInputVectors,
+                                                                           *fJetDef,
+                                                                            fInputGhosts,
+                                                                            fGhostArea);
+      } catch (fj::Error) {
+        AliError(" [w] FJ Exception caught.");
+        return -1;
+      }
+
+      fFilteredJets.clear();
+      fFilteredJets =  fClustSeqActGhosts->inclusive_jets(0.0); 
+    } else {
+      return -1;
+    }
+  } else {
+    try {
+      fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
+    } catch (fj::Error) {
+      AliError(" [w] FJ Exception caught.");
+      return -1;
+    }
+
+    fFilteredJets.clear();
+    fFilteredJets = fClustSeqSA->inclusive_jets(0.0);
+  }
 
   return 0;
 }
