@@ -79,6 +79,8 @@ AliAnalysisTaskSE("taskHypertriton"),
   fESDtrackCutsV0(0x0),
   fPrimaryVertex(0x0),
   fPIDResponse(0),
+  fVertexer(0x0),
+  fTrkArray(0),
   fMC(kFALSE),
   fFillTree(kFALSE),
   fCentrality(),
@@ -87,6 +89,14 @@ AliAnalysisTaskSE("taskHypertriton"),
   fHistCount(0),
   fHistCentralityClass(0),
   fHistCentralityPercentile(0),
+  fDCAPiPVmin(0.1),
+  fCosPointingAngle(0.998),
+  fDecayLength(15.),
+  fPtMother(10.),
+  fDCAPiSVxymax(0.6),
+  fDCAPiSVzmax(0.8),
+  fDCAProSVmax(0.7),
+  fDCADeuSVmax(0.6),
   fHistTrigger(0),
   fHistMultiplicity(0),
   fHistZPrimaryVtx(0),
@@ -220,6 +230,8 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3(){
 
     if(fESDtrackCuts) delete fESDtrackCuts;
     if(fESDtrackCutsV0) delete fESDtrackCutsV0;
+    if(fVertexer) delete fVertexer;
+    if(fTrkArray) delete fTrkArray;
 
 
 } // end of Destructor
@@ -247,6 +259,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   printf("AliAnalysisTaskHypertriton3::CreateOutputObjects()\n");
   printf("**************************************************\n");
 
+  fVertexer = new AliVertexerTracks();
+  fTrkArray = new TObjArray(3);
+  
   //ESD Track cuts
   if(!fESDtrackCuts) fESDtrackCuts = new AliESDtrackCuts();
   fESDtrackCuts->SetMinNClustersTPC(80);
@@ -852,25 +867,18 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   // -------------------------------------------------------
 
   Double_t bz = fESDevent->GetMagneticField();
+  fVertexer->SetFieldkG(bz);
   Double_t xthiss(0.0);
   Double_t xpp(0.0);
 
-  AliESDVertex *esdV1 = new AliESDVertex(*fPrimaryVertex);
-  AliVertexerTracks *vertexer = new AliVertexerTracks(fESDevent->GetMagneticField());
-  TObjArray *trkarray = new TObjArray(3);
+  
+  
   AliESDVertex *decayVtx = 0x0;
 
 
   //========Set of Starting Cut========//
 
-  Double_t fgDCAPiPVmin = 0.1;
-  Double_t fgCosPointingAngle = 0.998;
-  Double_t fgDecayLength = 15.;
-  Double_t fgPtMother = 10.;
-  Double_t fgDCAPiSVxymax = 0.6;
-  Double_t fgDCAPiSVzmax = 0.8;
-  Double_t fgDCAProSVmax = 0.7;
-  Double_t fgDCADeuSVmax = 0.6;
+
   
   for(UInt_t j=0; j<cdeuteron.size(); j++){ // candidate deuteron loop
     trackD = cdeuteron.at(j);
@@ -915,7 +923,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDCApiprimary->Fill(dcapiprim);
 	fHistCorrDCApiprimary->Fill(piprim[0],piprim[1]);
 	
-	if(dcapiprim < fgDCAPiPVmin) continue;
+	if(dcapiprim < fDCAPiPVmin) continue;
 	
 	dca_dpi = trackNPi->GetDCA(trackD,bz,xthiss,xpp);
 	dca_ppi = trackNPi->GetDCA(trackP,bz,xthiss,xpp);
@@ -926,12 +934,12 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDCApiondeu->Fill(dca_dpi);
 	fHistDCApionpro->Fill(dca_ppi);
 	
-	trkarray->AddAt(trackD,0);
-	trkarray->AddAt(trackP,1);
-	trkarray->AddAt(trackNPi,2);
+	fTrkArray->AddAt(trackD,0);
+	fTrkArray->AddAt(trackP,1);
+	fTrkArray->AddAt(trackNPi,2);
 
-	vertexer->SetVtxStart(esdV1);
-	decayVtx = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkarray);
+	fVertexer->SetVtxStart(fPrimaryVertex);
+	decayVtx = (AliESDVertex*)fVertexer->VertexForSelectedESDTracks(fTrkArray);
 
 	fHistZDecayVtx->Fill(decayVtx->GetZ());
 	fHistXDecayVtx->Fill(decayVtx->GetX());
@@ -946,24 +954,24 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	decayLengthH3L = TMath::Sqrt((dlh[0]*dlh[0]) + (dlh[1]*dlh[1]) + (dlh[2]*dlh[2]));
 	
-	if(decayLengthH3L > fgDecayLength) continue;
+	if(decayLengthH3L > fDecayLength) continue;
 	fHistDecayLengthH3L->Fill(decayLengthH3L);
 	
 	trackD->PropagateToDCA(decayVtx, bz, 10,dcad);
 	fHistDCAXYdeuvtx->Fill(dcad[0]);
 	fHistDCAZdeuvtx->Fill(dcad[1]);
 
-	if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fgDCADeuSVmax) continue;
+	if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) continue;
 	
 	trackP->PropagateToDCA(decayVtx, bz, 10,dcap);
 	fHistDCAXYprovtx->Fill(dcap[0]);
 	fHistDCAZprovtx->Fill(dcap[1]);
 
-	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fgDCAProSVmax) continue;
+	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
 	
 	trackNPi->PropagateToDCA(decayVtx, bz, 10,dcapi);
-	if(TMath::Abs(dcapi[0]) > fgDCAPiSVxymax) continue;
-	if(TMath::Abs(dcapi[1]) > fgDCAPiSVzmax) continue;
+	if(TMath::Abs(dcapi[0]) > fDCAPiSVxymax) continue;
+	if(TMath::Abs(dcapi[1]) > fDCAPiSVzmax) continue;
 	
 	fHistDCAXYpionvtx->Fill(dcapi[0]);
 	fHistDCAZpionvtx->Fill(dcapi[1]);
@@ -975,7 +983,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),pionMass);
 
 	pTmom = TMath::Sqrt((trackD->Pt()*trackD->Pt())+(trackP->Pt()*trackP->Pt())+(trackNPi->Pt()*trackNPi->Pt()));
-	if(pTmom > fgPtMother) continue;
+	if(pTmom > fPtMother) continue;
 	
 	TLorentzVector Hypertriton;
 	TVector3 h1;
@@ -985,7 +993,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	h1.SetXYZ(-dlh[0],-dlh[1],-dlh[2]);
 	pointingAngleH = Hypertriton.Angle(h1);
 
-	if (TMath::Cos(pointingAngleH) < fgCosPointingAngle) continue;
+	if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 	fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
 
 	
@@ -1131,9 +1139,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   PostData(1,fOutput);
   if(fFillTree) PostData(2,fTTree);
   
-  if(vertexer) delete vertexer;
-  if(trkarray) delete trkarray;
-  if(esdV1) delete esdV1; 
+  
   
 } // end of UserExec
 
