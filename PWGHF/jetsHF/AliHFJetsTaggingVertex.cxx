@@ -83,12 +83,13 @@ AliHFJetsTaggingVertex &AliHFJetsTaggingVertex::operator=(const AliHFJetsTagging
 //___________________________________________________________________________
 Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet, AliAODTrack **fAODTrackInfoP, AliAODTrack **fAODTrackInfoN, TClonesArray *fTrackArrayIn, AliAODEvent* aod, AliESDVertex* v1, Double_t magzkG , TClonesArray *arrVertices, Double_t *arrDispersion){
 
-
+  AliInfo(MSGINFO("+++ Executing FindVertices +++"));
+  
   Int_t nprong=fCutsHFjets->GetNprongs();
 
   Int_t nvert=0;
-  if(!fCutsHFjets->IsJetSelected(jet)){
-    AliDebug(AliLog::kDebug,Form("--> Jet not selected in FindVertices, pt=%f, eta=%f", jet->Pt(),jet->Eta()));
+  if (!fCutsHFjets->IsJetSelected(jet)) {
+    AliDebug(AliLog::kDebug,Form(MSGDEBUG("--> Jet not selected in FindVertices, pt=%f, eta=%f"), jet->Pt(),jet->Eta()));
     return -1;
   }
 
@@ -104,17 +105,19 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet, AliAODTrack *
   AliESDtrackCuts *esdtrcuts=fCutsHFjets->GetTrackCuts();
   // Int_t ntrks=reftracks->GetEntriesFast();
   Int_t ntrks=jet->GetNumberOfTracks();
+  cout<<"ntrks="<<ntrks<<endl;
   if(ntrks<2){
     return 0;
   }
-  Int_t up,up2;
-  if(nprong==2) {
-    up=ntrks-1;
-    up2=ntrks;
+  Int_t up  = 0;
+  Int_t up2 = 0;
+  if (nprong == 2) {
+    up  = ntrks-1;
+    up2 = ntrks;
   }
-  if(nprong==3) {
-    up=ntrks-2;
-    up2=ntrks-1;
+  else if (nprong == 3) {
+    up  = ntrks-2;
+    up2 = ntrks-1;
   }
   // Int_t reftracks= jet->GetNumberOfTracks();
   //make array of ESD tracks, then needed for fTrackArray
@@ -131,12 +134,21 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet, AliAODTrack *
     // const AliAODTrack *nTrack=fGTI[v0->GetNegID()];
     AliESDtrack *esdt = new AliESDtrack(tmpTr);
 
-
+    Double_t point[16]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,999.,-999.,-999.,-999.,-999.,-999.};
+    for(Int_t jj=0;jj<10;jj++){
+      if(tmpTr->TestFilterBit(TMath::Power(2,jj))){
+    	point[jj]=1;      
+      }
+    }
+    Printf(MSGINFO("\n \n %d **** filterbit =  %d"), j, tmpTr->GetFilterMap());
+    for (Int_t ii = 0; ii<10; ii++)
+      Printf("%d       bit = %.1f", ii, point[ii]);
+    
     tarresd->Add(esdt);
   }
 
-  for(Int_t it=0;it<up;it++){
-    AliVTrack* trkjet=((AliPicoTrack*)jet->TrackAt(it,fTrackArrayIn))->GetTrack();
+  for (Int_t it=0; it < up; it++) {
+    AliVTrack   *trkjet = ((AliPicoTrack *) jet->TrackAt(it,fTrackArrayIn))->GetTrack();
     AliAODTrack *tmpTr;
     if (trkjet->GetID()>-1) tmpTr=fAODTrackInfoP[trkjet->GetID()];
     else tmpTr=fAODTrackInfoN[TMath::Abs(trkjet->GetID())];
@@ -186,15 +198,15 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet, AliAODTrack *
             fTrackArray->Clear();
           }
         }
-        if(nprong>=3) {
+        if (nprong >= 3) {
           for(Int_t it3=it2+1;it3<ntrks;it3++){
-	    AliVTrack* trkjet3=((AliPicoTrack*)jet->TrackAt(it3,fTrackArrayIn))->GetTrack();
+            AliVTrack* trkjet3=((AliPicoTrack*)jet->TrackAt(it3,fTrackArrayIn))->GetTrack();
             AliAODTrack* tmpTr3;
-	    if (trkjet3->GetID()>-1) tmpTr3=fAODTrackInfoP[trkjet3->GetID()];
-	    else tmpTr3=fAODTrackInfoN[TMath::Abs(trkjet3->GetID())];
+            if (trkjet3->GetID()>-1) tmpTr3=fAODTrackInfoP[trkjet3->GetID()];
+            else tmpTr3=fAODTrackInfoN[TMath::Abs(trkjet3->GetID())];
             if(!fCutsHFjets->IsDaughterSelected(tmpTr3,v1,esdtrcuts)) continue;
-            AliESDtrack *esdt3 =(AliESDtrack*)tarresd->At(it3);	  
-
+            AliESDtrack *esdt3 =(AliESDtrack*)tarresd->At(it3);
+            
             fTrackArray->AddAt(esdt3,2);
             AliAODVertex* vert = ReconstructSecondaryVertex(fTrackArray,v1,magzkG,dispersion);
             if(vert){
@@ -208,17 +220,17 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet, AliAODTrack *
               arrDispersion[iVerticesHF]=dispersion;
               // cout<<"================================ vertex 3 prong -> "<<vert->GetX()<<"  "<<vert->GetY()<<"  "<<vert->GetZ()<<"  "<<endl;
               iVerticesHF++;
-
+              
             }	    
 
           }
 
         }
 
-	if(nprong>3){
+	if (nprong > 3) {
 
           //only 2- and 3- track vertices at the moment
-
+    
         }
 
       }

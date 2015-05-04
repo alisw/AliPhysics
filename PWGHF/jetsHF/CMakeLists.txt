@@ -48,12 +48,12 @@ set(SRCS
     AliHFJetsTagging.cxx
     AliHFJetTaggingIP.cxx		
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
+    AliAnalysisTaskEmcalJetBtagSV.cxx        
     AliRDHFJetsCuts.cxx
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
     AliHFJetsContainerVertex.cxx
-    AliAnalysisTaskSEHFJets.cxx
 )
 
 if(FASTJET_FOUND)

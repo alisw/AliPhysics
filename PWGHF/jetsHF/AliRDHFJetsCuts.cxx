@@ -146,7 +146,6 @@ AliRDHFJetsCuts::AliRDHFJetsCuts(const AliRDHFJetsCuts &source) :
   //
   // Copy constructor
   //
-  cout<<"Copy constructor"<<endl;
   fTriggerClass[0] = source.fTriggerClass[0]; 
   fTriggerClass[1] = source.fTriggerClass[1];
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
@@ -396,7 +395,6 @@ Bool_t AliRDHFJetsCuts::IsEventSelected(AliVEvent *event) {
   TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
 
-  // SetupPID(event);
 
   // trigger class
   TString firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();

@@ -18,7 +18,7 @@
 
 // ******************************************
 // Manager class for HF jet analysis   
-// Author: andrea.rossi@cern.ch, elena.bruna@cern.ch,min.jung.kweon@cern.ch,linus.feldkamp@cern.ch
+// Author: andrea.rossi@cern.ch, elena.bruna@cern.ch,min.jung.kweon@cern.ch,linus.feldkamp@cern.ch, s.lapointe@cern.ch
 // *******************************************
 
 #include "TClonesArray.h"
@@ -49,7 +49,6 @@ class AliHFJetsTaggingVertex : public AliHFJetsTagging {
 
   void SetCuts(AliRDHFJetsCutsVertex *cuts){delete fCutsHFjets;fCutsHFjets=(AliRDHFJetsCutsVertex*)cuts->Clone("fCutsHFjets");}
   
-  // Methods imported form task SEHFJets (A. Rossi)
   Double_t GetVertexInvariantMass(AliAODVertex *vtx,Double_t massParticle=0.138);
   void GetVtxPxy(AliAODVertex *vtx,Double_t *pxyzSum);
   Int_t GetNTracksFromCommonVertex(AliAODVertex *vtx,const TClonesArray *mcPart,Int_t &mcVert,Double_t &xVtxMC,Double_t &yVtxMC,Int_t &nfromBandD,Int_t &nfromD,Int_t &nfromPromptD);
