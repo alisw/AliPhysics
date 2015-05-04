@@ -64,7 +64,20 @@ public:
     void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
         fkSaveCascadeTree   = lSaveCascades;
     }
-
+    void SetMonteCarloAssociation  (Bool_t lMCAssociation   = kTRUE ) {
+        fkMCAssociation   = lMCAssociation;
+    }
+    //Output reduction measures
+    void SetSaveLambda (Bool_t lSaveLambda = kTRUE ) {
+        fkSaveLambda   = lSaveLambda;
+    }
+    void SetSaveAntiLambda (Bool_t lSaveAntiLambda = kTRUE ) {
+        fkSaveAntiLambda   = lSaveAntiLambda;
+    }
+    void SetSaveK0Short (Bool_t lSaveK0Short = kTRUE ) {
+        fkSaveK0Short   = lSaveK0Short;
+    }
+    
 //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
     void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) {
@@ -144,6 +157,10 @@ private:
     //Objects Controlling Task Behaviour
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkSaveCascadeTree;         //if true, save TTree
+    Bool_t fkMCAssociation;           //if true, save only MC associated particles
+    Bool_t fkSaveLambda;            //if true, removes tree fill confirmation for lambda mass window
+    Bool_t fkSaveAntiLambda;        //if true, removes tree fill confirmation for antilambda mass window
+    Bool_t fkSaveK0Short;           //if true, removes tree fill confirmation for k0short mass window 
     Bool_t fkSaveExtendedRefMultInfo; //if true, save 20 integers per event extra for eta-dependence of refmult
 
     //Objects Controlling Task Behaviour: has to be streamed!

@@ -62,6 +62,16 @@ public:
     void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
         fkSaveCascadeTree   = lSaveCascades;
     }
+    //Output reduction measures
+    void SetSaveLambda (Bool_t lSaveLambda = kTRUE ) {
+        fkSaveLambda   = lSaveLambda;
+    }
+    void SetSaveAntiLambda (Bool_t lSaveAntiLambda = kTRUE ) {
+        fkSaveAntiLambda   = lSaveAntiLambda;
+    }
+    void SetSaveK0Short (Bool_t lSaveK0Short = kTRUE ) {
+        fkSaveK0Short   = lSaveK0Short;
+    }
 
 //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
@@ -141,6 +151,9 @@ private:
     //Objects Controlling Task Behaviour
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkSaveCascadeTree;         //if true, save TTree
+    Bool_t fkSaveLambda;            //if true, removes tree fill confirmation for lambda mass window
+    Bool_t fkSaveAntiLambda;        //if true, removes tree fill confirmation for antilambda mass window
+    Bool_t fkSaveK0Short;           //if true, removes tree fill confirmation for k0short mass window
     Bool_t fkSaveExtendedRefMultInfo; //if true, save 20 integers per event extra for eta-dependence of refmult
 
     //Objects Controlling Task Behaviour: has to be streamed!
@@ -178,11 +191,11 @@ private:
 
     //Differential reference multiplicity
     Int_t  fRefMultDiffEta[20]; //!
-    
-    //Not to be filled completely: tracklet eta 
+
+    //Not to be filled completely: tracklet eta
     Float_t fEvent_TrackletEta[500]; //!
-    
-    
+
+
 
     //Event Characterization Variables - optional
     Bool_t fEvSel_HasAtLeastSPDVertex;      //!
@@ -218,7 +231,7 @@ private:
     Float_t fTreeVariableV0CosineOfPointingAngle; //!
     Float_t fTreeVariableV0Radius; //!
     Float_t fTreeVariablePt; //!
-    
+
     Float_t fTreeVariableRapK0Short; //!
     Float_t fTreeVariableRapLambda; //!
     Float_t fTreeVariableInvMassK0s; //!
@@ -310,8 +323,8 @@ private:
 
     //Differential reference multiplicity
     Int_t  fTreeCascVarRefMultDiffEta[20]; //!
-    
-    
+
+
 
 //===========================================================================================
 //   Histograms
