@@ -10,9 +10,9 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag             = "Jet",
   const Double_t minJetPt     = 0.,
   const Bool_t selectPhysPrim = kFALSE,
-  const Bool_t bFillGhosts    = kFALSE,
   const Bool_t lockTask       = kTRUE,
-  const Int_t useExchangeCont = 0
+  const Int_t useExchangeCont = 0,
+  const Bool_t bFillGhosts    = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
