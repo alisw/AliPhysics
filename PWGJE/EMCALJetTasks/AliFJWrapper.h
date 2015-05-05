@@ -23,9 +23,9 @@ class AliFJWrapper
   virtual void  Clear(const Option_t* /*opt*/ = "");
   virtual void  CopySettingsFrom (const AliFJWrapper& wrapper);
   virtual void  GetMedianAndSigma(Double_t& median, Double_t& sigma, Int_t remove = 0) const;
-  fastjet::ClusterSequenceArea*           GetClusterSequence() const { return fClustSeq;                   }
+  fastjet::ClusterSequenceArea*           GetClusterSequence() const   { return fClustSeq;                 }
   fastjet::ClusterSequence*               GetClusterSequenceSA() const { return fClustSeqSA;               }
-  fastjet::ClusterSequenceActiveAreaExplicitGhosts* GetClusterSequenceGhosts() const { fClustSeqActGhosts; }
+  fastjet::ClusterSequenceActiveAreaExplicitGhosts* GetClusterSequenceGhosts() const { return fClustSeqActGhosts; }
   const std::vector<fastjet::PseudoJet>&  GetInputVectors()    const { return fInputVectors;               }
   const std::vector<fastjet::PseudoJet>&  GetInputGhosts()     const { return fInputGhosts;                }
   const std::vector<fastjet::PseudoJet>&  GetInclusiveJets()   const { return fInclusiveJets;              }
