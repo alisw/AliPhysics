@@ -274,11 +274,15 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   fOutput->Add(fhnMassResponseCorr);
 
   if(fEJetByJetCorr) {
+     const Int_t    nBinsPtMeanTr = 500;
+     const Double_t minPtMeanTr = 0.;
+     const Double_t maxPtMeanTr = 100.;
+     	
      fListOfOutputFromClass = fEJetByJetCorr->GetListOfOutput();
      fListOfOutputFromClass->ls();
      fOutput->Add(fListOfOutputFromClass);
      if(fEJetByJetCorr->GetExternalDefinitionOfNmissed()){
-     	fhAllpTRec = new TH2F("fhAllpTRec", "Jet constituent p_{T} distribution RECO; #it{p}_{T,track}", 500, 0.,100., 20,0.,100.);
+     	fhAllpTRec = new TH2F("fhAllpTRec", "Jet constituent p_{T} distribution RECO; #it{p}_{T,track}; #it{p}_{T,jet}", nBinsPtMeanTr, minPtMeanTr, maxPtMeanTr, 20,0.,100.);
      	fhAllpTRec->Sumw2();
      	fhAllpTGen = (TH2F*)fhAllpTRec->Clone("fhAllpTGen");
      	fhAllpTGen->SetTitle("Jet constituent p_{T} distribution GENE; #it{p}_{T,track}; #it{p}_{T,jet}");
@@ -295,10 +299,10 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
      	fhtmppTGen = (TH1F*)fhtmppTRec->Clone("fhtmppTGen");
      	
      	const Int_t nvars = 7;
-     	Int_t nbins[nvars]      = {11, 50,   50,   20,   20,   50,  50};
-     	Double_t limslow[nvars] = {0,  0.,   0.,   0.,   0.,   0.,  0.};
-     	Double_t limshig[nvars] = {10, 100., 100., 100., 100., 1.1, 1.1};
-     	TString varnames[nvars] = {"diffNconst", "pTtmeanRec", "pTtmeanGen", "pTjmeanRec", "pTjmeanGen", "efficiencyNconst"};
+     	Int_t nbins[nvars]      = {20 , nBinsPtMeanTr, nBinsPtMeanTr, 20,   20,   50,  50};
+     	Double_t limslow[nvars] = {-10, minPtMeanTr, minPtMeanTr,   0.,   0.,   0.,  0.};
+     	Double_t limshig[nvars] = {10,  maxPtMeanTr, maxPtMeanTr, 100., 100., 1.1, 1.1};
+     	TString varnames[nvars] = {"NconstRec-Gen", "pTtmeanRec", "pTtmeanGen", "pTjmeanRec", "pTjmeanGen", "efficiencyNconst", "ConstMatchNormRec"};
      	histName = "fhConstRecGen";
      	histTitle = "Constituents QA; "; for(Int_t i=0;i<nvars; i++) histTitle += Form("%s; ", varnames[i].Data());
      	fhConstRecGen = new THnSparseF(histName, histTitle, nvars,  nbins, limslow, limshig);

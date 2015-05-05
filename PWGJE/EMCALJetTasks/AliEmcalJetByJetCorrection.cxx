@@ -287,11 +287,12 @@ void AliEmcalJetByJetCorrection::Init() {
       	 }
       }
       fCollTemplates.Add(h2);
+      fListOfOutput->Add(h2);
       counter++;
    }
    //  Int_t nt = TMath::FloorNint((fJetPtMax-fJetPtMin)/fBinWidthJetPt);
    //  Printf("nt: %d entries fCollTemplates: %d",nt,fCollTemplates.GetEntriesFast());
-
+   
    fArrayTrackCorr = new TClonesArray("TLorentzVector", 20);
    fInitialized = kTRUE;
 
