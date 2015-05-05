@@ -54,6 +54,8 @@ protected:
 	Int_t		fProbeITSPattern;		// pattern for ITS clusters
 	Double_t	fProbeChi2TPC;			// total chi2 in TPC
 	Double_t	fProbeChi2ITS;			// total chi2 in ITS
+	Bool_t fIsDecayed;					// is particle decayed?
+	Bool_t fIsAbsorbed;					// is particle absorbed?
 
 	
 	ClassDef(FTProbe,1)
