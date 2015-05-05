@@ -58,6 +58,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
   void                        SetNLeadingJets(Int_t t)                             { fNLeadingJets   = t                ; }
+  void                        SetMinNConstituents(Int_t n)                         { fMinNConstituents = n              ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
@@ -144,6 +145,7 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     fNEFMaxCut;            //  maximum NEF in a jet
   Int_t                       fLeadingHadronType;    //  0 = charged, 1 = neutral, 2 = both
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
+  Int_t                       fMinNConstituents;     //  minimum number of constituents in jet
   UInt_t                      fJetBitMap;            //  bit map of accepted jets
   UInt_t                      fJetTrigger;           //  jet trigger
   Int_t                       fTagStatus;            //  jet tag status
@@ -160,7 +162,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,11);
+  ClassDef(AliJetContainer,12);
 };
 
 #endif
