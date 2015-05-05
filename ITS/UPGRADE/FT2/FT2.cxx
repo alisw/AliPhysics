@@ -51,6 +51,8 @@ FTProbe::FTProbe()
 ,fProbeITSPattern(0)
 ,fProbeChi2TPC(0)
 ,fProbeChi2ITS(0)
+,fIsDecayed(0)
+,fIsAbsorbed(0)
 {
 	  // def. c-tor
 }
@@ -484,10 +486,12 @@ Int_t FT2::ProbeDecayAbsorb(double* posIni)
 #endif
       //
   if(gRandom->Rndm()<ParticleDecayProbability(dist)) {
+	  fProbe.fIsDecayed=kTRUE;
     return 1;
   }
   if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
-    return -1;
+	  fProbe.fIsAbsorbed=kTRUE;
+	  return -1;
   }
   for (int j=3;j--;) posIni[j] = posCurr[j];
   return 0;
