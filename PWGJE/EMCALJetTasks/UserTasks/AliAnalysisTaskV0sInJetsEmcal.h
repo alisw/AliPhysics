@@ -109,6 +109,7 @@ public:
   static const Double_t fgkdBinsPtV0[2]; // [GeV/c] minimum and maximum or desired binning of the axis (intended for the rebinned axis)
   static const Int_t fgkiNBinsPtV0; // number of bins (intended for the rebinned axis)
   static const Int_t fgkiNBinsPtV0Init; // initial number of bins (uniform binning)
+  static const Int_t fgkiNBinsPtV0InitInJet; // initial number of bins for V0s in jets (uniform binning)
   // axis: pT of jets
   static const Double_t fgkdBinsPtJet[2]; // [GeV/c] minimum and maximum or desired binning of the axis (intended for the rebinned axis)
   static const Int_t fgkiNBinsPtJet; // number of bins (intended for the rebinned axis)
@@ -281,7 +282,6 @@ private:
   TH2D* fh2V0K0sEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of all generated K0s in event
   THnSparse* fh3V0K0sEtaPtMassMCRec[fgkiNBinsCent]; //! eta-pt-mass spectrum of successfully reconstructed K0s in event
   // MC daughter eta inclusive
-//  THnSparse* fhnV0K0sInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
   THnSparse* fhnV0K0sInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0K0sInJetPtMCGen[fgkiNBinsCent]; //! pt spectrum of generated K0s in jet
@@ -290,7 +290,6 @@ private:
   THnSparse* fh3V0K0sInJetEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of generated K0s in jet
   THnSparse* fh4V0K0sInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed K0s in jet
   // MC daughter eta in JC
-//  THnSparse* fhnV0K0sInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
   THnSparse* fhnV0K0sInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
 
   // resolution
@@ -333,7 +332,6 @@ private:
   TH2D* fh2V0LambdaEtaPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh3V0LambdaEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta inclusive
-//  THnSparse* fhnV0LambdaInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
   THnSparse* fhnV0LambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0LambdaInJetPtMCGen[fgkiNBinsCent]; //!
@@ -342,7 +340,6 @@ private:
   THnSparse* fh3V0LambdaInJetEtaPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh4V0LambdaInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta in JC
-//  THnSparse* fhnV0LambdaInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
   THnSparse* fhnV0LambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
 
   // resolution
@@ -389,7 +386,6 @@ private:
   TH2D* fh2V0ALambdaEtaPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh3V0ALambdaEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta inclusive
-//  THnSparse* fhnV0ALambdaInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
   THnSparse* fhnV0ALambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0ALambdaInJetPtMCGen[fgkiNBinsCent]; //!
@@ -399,7 +395,6 @@ private:
   THnSparse* fh3V0ALambdaInJetEtaPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh4V0ALambdaInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
   // MC daughter eta in JC
-//  THnSparse* fhnV0ALambdaInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
   THnSparse* fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
 
   // resolution
