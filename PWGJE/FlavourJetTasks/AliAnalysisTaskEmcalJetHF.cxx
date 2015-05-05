@@ -1,12 +1,30 @@
-//
-// Author: A Castro (UTK)
-// Last Modified: August 11, 2014
-
+// $Id$
+/****************************************************************************
+*   Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
+*                                                                          *
+*   Author: The ALICE Off-line Project.                                    *
+*   Contributors are mentioned in the code where appropriate.              *
+*                                                                          *
+*   Permission to use, copy, modify and distribute this software and its   *
+*   documentation strictly for non-commercial purposes is hereby granted   *
+*   without fee, provided that the above copyright notice appears in all   *
+*   copies and that both the copyright notice and this permission notice   *
+*   appear in the supporting documentation. The authors make no claims     *
+*   about the suitability of this software for any purpose. It is          *
+*   provided "as is" without express or implied warranty.                  *
+****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////////////////
+//  Task to tag HFE Jets using the EMCal
+//          Andrew Castro (UTK)
+//      andrew.john.castro@cern.ch
+///////////////////////////////////////////////////////////////////////////////////////////
 #include "AliAnalysisTaskEmcalJetHF.h"
-
 // general ROOT includes                                                                                                                                                  
 #include <TCanvas.h>
 #include <TChain.h>
+#include <TMath.h>
+#include <TProfile.h>
+#include <TAxis.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -19,7 +37,6 @@
 #include <TTree.h>
 #include <TVector3.h>
 #include <TObjArray.h>
-
 // AliROOT includes                                                                                                                         
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -42,10 +59,10 @@
 #include <AliESDtrackCuts.h>
 #include "AliPID.h"
 #include "AliTPCdEdxInfo.h"
-//#include "AliCaloTrackESDReader.h"
-//#include "AliCaloTrackAODReader.h"
-//#include "AliCaloTrackReader.h"
-
+#include "AliEmcalTriggerPatchInfo.h"
+#include "AliVVZERO.h"
+#include "AliAnalysisTaskEmcal.h"
+#include "AliEmcalTriggerSetupInfo.h"
 // event handler (and pico's) includes                                                                                                      
 #include <AliInputEventHandler.h>
 #include <AliVEventHandler.h>
@@ -54,15 +71,10 @@
 #include "AliEventPoolManager.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-
 // PID includes                                                                                                                             
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 #include "AliESDpid.h"
-
-#include <AliInputEventHandler.h>
-#include <AliVEventHandler.h>
-
 // magnetic field includes
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
@@ -76,10 +88,11 @@ ClassImp(AliAnalysisTaskEmcalJetHF)
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() : 
   AliAnalysisTaskEmcalJet("heavyF",kFALSE), 
   event(0),
-  fillHist(0),
+  fFillHists(0),
   fEventTrigEMCALL1Gamma1(0),
   fEventTrigEMCALL1Gamma2(0),
   fGlobalQA(0),
+  fJetPID(0),
   fInputEvent(0x0),
   fCuts(0),
   fPhimin(-10), fPhimax(10),
@@ -96,38 +109,39 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() :
   fEsdtrackCutsITS(),
   fJetsCont(0), fTracksCont(0), fCaloClustersCont(0), fTracksJetCont(0), fCaloClustersJetCont(0),
   fESD(0), fAOD(0),
-  fHistRhovsCent(0),
-  fHistJetPhi(0),
-  fHistCorJetPt(0), fHistJetPt(0),
-  fHistHighJetPt(0),
-  fHistnSigElecPt(0),
-  fHistnJetTrackvnJetClusters(0),
-  fHistPtDEtaDPhiTrackClus(0),
-  fHistPtDEtaDPhiClusTrack(0),
-  fhnPIDHF(0x0), fhnJetQA(0x0), fhnClusterTrackQA(0x0), fhnTrackClusterQA(0x0), fhnPIDHFTtoC(0x0)
+  fMaxPatch(0),
+  fhnTriggerInfo(0),
+  fMainPatchType(kManual),
+  //fMainPatchType(kEmcalJet),
+  fMainTrigCat(kTriggerLevel0),
+  //fMainTrigCat(kTriggerLevel1Gamma),
+  //fMainTrigCat(kTriggerRecalcJet),  // Recalculated max trigger patch; does not need to be above trigger threshold
+  //fMainTrigCat(kTriggerRecalcGamma),
+  fMainTrigSimple(kTRUE),
+  fHistTriggerBitInfo(0),
+  fHistMaxTriggerBitInfo(0),
+  fHistEventSelection(0),
+  fHistRecalcGASize(0),
+  fHistRecalcGAEnergy(0),
+  fHistCorrJetEvsPatchE(0),
+  fHistClusEvPatchE(0),
+  fHistdEtaPatchvdPhiPatch(0),
+  fHistRawJetEvPatchE(0),
+  fHistMatchedClusJet(0),
+  fhnTrackClusterQA(0x0), fhnPIDHFTtoC(0x0), fhnJetTrigger(0x0)
 {
-  // Default constructor.
-  for (Int_t i = 0;i<6;++i){
-    fHistJetPtvsTrackPt[i]      = 0;
-    fHistTrackPt[i]             = 0;
-    fHistEP0[i]                 = 0;
-    fHistEP0A[i]                = 0;
-    fHistEP0C[i]                = 0;
-    fHistEPAvsC[i]              = 0;
-  }
-
   SetMakeGeneralHistograms(kTRUE);
-
 }
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
   event(0),
-  fillHist(0),
+  fFillHists(0),
   fEventTrigEMCALL1Gamma1(0),
   fEventTrigEMCALL1Gamma2(0),
   fGlobalQA(0),
+  fJetPID(0),
   fInputEvent(0x0),
   fCuts(0),
   fPhimin(-10), fPhimax(10),
@@ -144,126 +158,150 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
   fEsdtrackCutsITS(),
   fJetsCont(0), fTracksCont(0), fCaloClustersCont(0), fTracksJetCont(0), fCaloClustersJetCont(0),
   fESD(0), fAOD(0),
-  fHistRhovsCent(0),
-  fHistJetPhi(0),
-  fHistCorJetPt(0), fHistJetPt(0),
-  fHistHighJetPt(0),
-  fHistnSigElecPt(0),
-  fHistnJetTrackvnJetClusters(0),
-  fHistPtDEtaDPhiTrackClus(0),
-  fHistPtDEtaDPhiClusTrack(0),
-  fhnPIDHF(0x0), fhnJetQA(0x0), fhnClusterTrackQA(0x0), fhnTrackClusterQA(0x0), fhnPIDHFTtoC(0x0)
+  fMaxPatch(0),
+  fhnTriggerInfo(0),
+  fMainPatchType(kManual),
+  //fMainPatchType(kEmcalJet),
+  fMainTrigCat(kTriggerLevel0),
+  //fMainTrigCat(kTriggerLevel1Gamma),
+  //fMainTrigCat(kTriggerRecalcJet),  // Recalculated max trigger patch; does not need to be above trigger threshold
+  //fMainTrigCat(kTriggerRecalcGamma),
+  fMainTrigSimple(kTRUE),
+  fHistTriggerBitInfo(0),
+  fHistMaxTriggerBitInfo(0),
+  fHistEventSelection(0),
+  fHistCorrJetEvsPatchE(0),
+  fHistClusEvPatchE(0),
+  fHistdEtaPatchvdPhiPatch(0),
+  fHistRawJetEvPatchE(0),
+  fHistMatchedClusJet(0),
+  fhnTrackClusterQA(0x0), fhnPIDHFTtoC(0x0), fhnJetTrigger(0x0)
 { 
-  for (Int_t i = 0;i<6;++i){
-    fHistJetPtvsTrackPt[i]      = 0;
-    fHistTrackPt[i]             = 0;
-    fHistEP0[i]                 = 0;
-    fHistEP0A[i]                = 0;
-    fHistEP0C[i]                = 0;
-    fHistEPAvsC[i]              = 0;
-   }
    SetMakeGeneralHistograms(kTRUE);
- 
    DefineInput(0,TChain::Class());
    DefineOutput(1, TList::Class());
 }
-
 //_______________________________________________________________________
 AliAnalysisTaskEmcalJetHF::~AliAnalysisTaskEmcalJetHF()
 {
   // destructor
-  //
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
   }
 }
-
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetHF::UserCreateOutputObjects()
 {
-  if (! fCreateHisto)
-    return;
+  if (! fCreateHisto) return;
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-
   //fJetsCont           = GetJetContainer(0);
-  if(fJetsCont) { //get particles and clusters connected to jets
-    fTracksJetCont       = fJetsCont->GetParticleContainer();
-    fCaloClustersJetCont = fJetsCont->GetClusterContainer();
-  }
- else {        //no jets, just analysis tracks and clusters
+  //if(fJetsCont) { //get particles and clusters connected to jets
+  //  fTracksJetCont       = fJetsCont->GetParticleContainer();
+  //  fCaloClustersJetCont = fJetsCont->GetClusterContainer();
+  //}
+ //else {        //no jets, just analysis tracks and clusters
   fTracksCont       = GetParticleContainer(0);
   fCaloClustersCont = GetClusterContainer(0);
-}
-fTracksCont->SetClassName("AliVTrack");
-fCaloClustersCont->SetClassName("AliVCluster");
-
-  fHistJetPhi                = new TH1F("NjetvsPhi", "NjetvsPhi", 288,-2*TMath::Pi(),2*TMath::Pi());
-  fHistJetPt                 = new TH1F("NjetvsJetPt", "NjetvsJetPt", 300, 0, 300);
-  fOutput->Add(fHistJetPhi);
-  fOutput->Add(fHistJetPt);
-
-  fillHist = 1;
+//}
+  fTracksCont->SetClassName("AliVTrack");
+  fCaloClustersCont->SetClassName("AliVCluster");
   TString histname;
-
-  if(fillHist>0){
-  fHistRhovsCent              = new TH2F("RhovsCent", "RhovsCent", 100, 0.0, 100.0, 400, 0, 400);
-  fHistCorJetPt		            = new TH1F("NjetvsCorrJetPt", "NjetvsCorrJetPt", 300, -100, 200);
-  fHistnSigElecPt             = new TH2F("nsig_v_pt(TPC)","nsig_v_pt(TPC)",200,0,100,100,-10,10);
-  fHistnJetTrackvnJetClusters = new TH2F("NumbJetTracksvJetClusters","NumbJetTracksvJetClusters",21,0,20,21,0,20);
-  fHistHighJetPt              = new TH1F("HighestPtJetPerEvent","HighJetPt",300,0,150);
-    
-  histname = "fHistPtDEtaDPhiTrackClus";
-  fHistPtDEtaDPhiTrackClus = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{track};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
-  fOutput->Add(fHistPtDEtaDPhiTrackClus);
-    
-  histname = "fHistPtDEtaDPhiClusTrack";
-  fHistPtDEtaDPhiClusTrack = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{clus};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
-  fOutput->Add(fHistPtDEtaDPhiClusTrack);
-    
-  // PT bins used to be (2000, -100, 300) 
   TString name;
   TString title;
-
-  // creating centrality dependent histos that don't involve Global Rho
-  for (Int_t i = 0;i<6;++i){
-    name = TString(Form("JetPtvsTrackPt_%i",i));
-    title = TString(Form("Jet pT vs Leading Track pT cent bin %i",i));
-    fHistJetPtvsTrackPt[i] = new TH2F(name,title, 500, -100, 400, 100,0,100);
-    fOutput->Add(fHistJetPtvsTrackPt[i]);
-
-    name = TString(Form("TrackPt_%i",i));
-    title = TString(Form("Track pT cent bin %i",i));
-    fHistTrackPt[i] = new TH1F(name,title,400,0,200);
-    fOutput->Add(fHistTrackPt[i]);   
-
-    name = TString(Form("EP0_%i",i));
-    title = TString(Form("EP VZero cent bin %i",i));
-    fHistEP0[i] = new TH1F(name,title,144,-TMath::Pi(),TMath::Pi());
-    fOutput->Add(fHistEP0[i]);
-
-    name = TString(Form("EP0A_%i",i));
-    title = TString(Form("EP VZero cent bin %i",i));
-    fHistEP0A[i] = new TH1F(name,title,144,-TMath::Pi(),TMath::Pi());
-    fOutput->Add(fHistEP0A[i]);
-
-    name = TString(Form("EP0C_%i",i));
-    title = TString(Form("EP VZero cent bin %i",i));
-    fHistEP0C[i] = new TH1F(name,title,144,-TMath::Pi(),TMath::Pi());
-    fOutput->Add(fHistEP0C[i]);
-
-    name = TString(Form("EPAvsC_%i",i));
-    title = TString(Form("EP VZero cent bin %i",i));
-    fHistEPAvsC[i] = new TH2F(name,title,144,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi());
-    fOutput->Add(fHistEPAvsC[i]);
-
-  }
-
-  fOutput->Add(fHistRhovsCent);
-  fOutput->Add(fHistCorJetPt);
-  fOutput->Add(fHistnSigElecPt);
-  fOutput->Add(fHistnJetTrackvnJetClusters);
-  fOutput->Add(fHistHighJetPt);
+    
+  if(fFillHists>0){
+  fHistMatchedClusJet          = new TH1F("MatchedGAClusterEE","ClusterEE; Energy (GeV)",100,0,100);
+  fHistCorrJetEvsPatchE        = new TH2F("Corr Jet E vs Trigger Patch E","CorrJetEvTriggerE; Corrected Jet Energy (GeV); Patch Energy (GeV)",100,0,100,100,0,100);
+  fHistClusEvPatchE            = new TH2F("ClusterEvPatchE","Cluster Energy v Patch E; Cluster Energy (GeV); Patch Energy (GeV)",100,0,100,100,0,100);
+  fHistdEtaPatchvdPhiPatch     = new TH2F("dEtaPatchdPhiPatch; #eta; #phi","dEtaPatchdPhiPatch; #Delta#eta; #Delta#phi ",100,-0.1,0.1,100,-0.1,0.1);
+  fHistRawJetEvPatchE          = new TH2F("RaeJetEvTriggerE","RawJetEvTriggerE; Jet Energy (GeV); Patch Energy (GeV)",100,0,100,100,0,100);
+  fHistTriggerBitInfo          = new TH1F("TriggerBitInfo","TriggerBitInfo; ; Counts",15,0.5,15.5);
+  fHistMaxTriggerBitInfo       = new TH1F("MaxPatchTriggerInfo","MaxPatchTriggerInfo; ;Counts",15,0.5,15.5);
+  fHistEventSelection          = new TH1F("EventSelectionQA","EventSelectionQA",17,0.5,17.5);
+  fHistRecalcGASize            = new TH2F("RecalcGAPatchSize","Patch_Size; #eta(Towers); #phi(Towers)",40,0,40,40,0,40);
+  fHistRecalcGAEnergy          = new TH1F("ReclacGAEnergy","RecalcGAEnergy; Energy(GeV); Counts",150,0,150);
+      
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(1,"IsLevel0");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(2,"IsJetlow");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(3,"IsJetHigh");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(4,"IsGammalow");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(5,"IsGammaHigh");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(6,"IsMainTrigger");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(7,"IsJetLowSimple");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(8,"IsJetHighSimple");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(9,"IsGammaLowSimple");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(10,"IsGammaHighSimple");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(11,"IsMainTriggerSimple");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(12,"IsOfflineSimple");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(13,"IsRecalcJet");
+  fHistTriggerBitInfo->GetXaxis()->SetBinLabel(14,"IsRecalcGamma");
+    
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(1,"IsLevel0");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(2,"IsJetlow");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(3,"IsJetHigh");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(4,"IsGammalow");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(5,"IsGammaHigh");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(6,"IsMainTrigger");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(7,"IsJetLowSimple");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(8,"IsJetHighSimple");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(9,"IsGammaLowSimple");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(10,"IsGammaHighSimple");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(11,"IsMainTriggerSimple");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(12,"IsOfflineSimple");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(13,"IsRecalcJet");
+  fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(14,"IsRecalcGamma");
+      
+  fHistEventSelection->GetXaxis()->SetBinLabel(1,"AliVEvent::kMB");
+  fHistEventSelection->GetXaxis()->SetBinLabel(2,"AliVEvent::kINT7");
+  fHistEventSelection->GetXaxis()->SetBinLabel(3,"AliVEvent::kHighMult");
+  fHistEventSelection->GetXaxis()->SetBinLabel(4,"AliVEvent::kEMC1");
+  fHistEventSelection->GetXaxis()->SetBinLabel(5,"AliVEvent::kCINT5");
+  fHistEventSelection->GetXaxis()->SetBinLabel(6,"AliVEvent::kEMC7");
+  fHistEventSelection->GetXaxis()->SetBinLabel(7,"AliVEvent::kEMC8");
+  fHistEventSelection->GetXaxis()->SetBinLabel(8,"AliVEvent::kEMCEJE");
+  fHistEventSelection->GetXaxis()->SetBinLabel(9,"AliVEvent::kEMCEGA");
+  fHistEventSelection->GetXaxis()->SetBinLabel(10,"AliVEvent::kCentral");
+  fHistEventSelection->GetXaxis()->SetBinLabel(11,"AliVEvent::kSemiCentral");
+  fHistEventSelection->GetXaxis()->SetBinLabel(12,"AliVEvent::kZED");
+  fHistEventSelection->GetXaxis()->SetBinLabel(13,"AliVEvent::kINT8");
+  fHistEventSelection->GetXaxis()->SetBinLabel(14,"AliVEvent::kFastOnly");
+  fHistEventSelection->GetXaxis()->SetBinLabel(15,"AliVEvent::kAnyINT");
+  fHistEventSelection->GetXaxis()->SetBinLabel(16,"AliVEvent::kAny");
+    
+  const Int_t fgkNCentBins = 21;
+  Float_t kMinCent   = 0.;
+  Float_t kMaxCent   = 105.;
+  const Int_t fgkNVZEROBins = 100;
+  Float_t kMinVZERO   = 0.;
+  Float_t kMaxVZERO   = 25000;
+  const Int_t fgkNEPatch = 100;
+  Float_t kMinEPatch = 0.;
+  Float_t kMaxEPatch = 200.;
+  const Int_t fgkNADC = 100;
+  Float_t kMinADC = 0.;
+  Float_t kMaxADC = 1500.;
+  const Int_t fgkNEta = 10;
+  const Int_t fgkNPhi = 10;
+  const Int_t nDim = 8;//cent;V0mult;ptjet1;ptjet2;Epatch;ADCpatch;EtaPatch;PhiPatch
+  const Int_t nBins[nDim] = {fgkNCentBins,fgkNVZEROBins,fgkNEta,fgkNPhi,fgkNEPatch,fgkNADC,fgkNEta,fgkNPhi};
+  const Double_t xmin0[nDim]  = {kMinCent,kMinVZERO,-0.7,1.4,kMinEPatch,kMinADC,-0.7,1.4};
+  const Double_t xmax0[nDim]  = {kMaxCent,kMaxVZERO,0.7,3.14,kMaxEPatch,kMaxADC, 0.7,3.14};
+  //Trigger QA sparse in here for debugging purposes
+  fhnTriggerInfo = new THnSparseF("fhnTriggerInfo", "hnTriggerInfo;cent;V0mult;EtaPatchCM;PhiPatchCM;Epatch;ADCpatch;EtaPatchGeo;PhiPatchGEo",nDim,nBins,xmin0,xmax0);
+      
+  fOutput->Add(fhnTriggerInfo);
+  fOutput->Add(fHistMatchedClusJet);
+  fOutput->Add(fHistCorrJetEvsPatchE);
+  fOutput->Add(fHistClusEvPatchE);
+  fOutput->Add(fHistdEtaPatchvdPhiPatch);
+  fOutput->Add(fHistRawJetEvPatchE);
+  fOutput->Add(fHistTriggerBitInfo);
+  fOutput->Add(fHistMaxTriggerBitInfo);
+  fOutput->Add(fHistEventSelection);
+  fOutput->Add(fHistRecalcGASize);
+  fOutput->Add(fHistRecalcGAEnergy);
+      
   }//Fill Histograms
 
   // ****************************** PID *****************************************************                                               
@@ -284,18 +322,6 @@ fCaloClustersCont->SetClassName("AliVCluster");
     return;
   }
   // ****************************************************************************************
-  UInt_t bitcoded = 0;  // bit coded, see GetDimParamsPID() below
-  bitcoded = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12 | 1<<13| 1<<14 | 1<<15 | 1<<16 | 1<<17;
-  fhnPIDHF = NewTHnSparseDHF("fhnPIDHFCtoT", bitcoded);
-  
-  UInt_t bitcoded1 = 0;  // bit coded, see GetDimParamsPID() below
-  bitcoded1 = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4;
-  fhnJetQA = NewTHnSparseDJetQA("fhnJetQA", bitcoded1);
-  
-  UInt_t bitcoded2 = 0;  // bit coded, see GetDimParamsPID() below
-  bitcoded2 = 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<8 | 1<<9 | 1<<10 | 1<<15 | 1<<16 | 1<<17;
-  fhnClusterTrackQA = NewTHnSparseDHF("fhnClusterTrackQA", bitcoded2);
-  
   UInt_t bitcoded3 = 0;  // bit coded, see GetDimParamsPID() below
   bitcoded3 = 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<8 | 1<<9 | 1<<10 | 1<<15 | 1<<16 | 1<<17;
   fhnTrackClusterQA = NewTHnSparseDHF("fhnTrackClusterQA", bitcoded3);
@@ -303,19 +329,16 @@ fCaloClustersCont->SetClassName("AliVCluster");
   UInt_t bitcoded7 = 0;  // bit coded, see GetDimParamsPID() below
   bitcoded7 = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12 | 1<<13| 1<<14 | 1<<15 | 1<<16 | 1<<17;
   fhnPIDHFTtoC = NewTHnSparseDHF("fhnPIDHFTtoC", bitcoded7);
-  
-  cout << "_______________Created Sparse__________________" << endl;
-  
-  fOutput->Add(fhnPIDHF);
-  fOutput->Add(fhnJetQA);
-  fOutput->Add(fhnClusterTrackQA);
-  fOutput->Add(fhnTrackClusterQA);
-  fOutput->Add(fhnPIDHFTtoC);
+    
+  UInt_t bitcoded8 = 0;
+  bitcoded8 = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16 | 1<<17;
+  fhnJetTrigger = NewTHnSparseDJetTrigger("fhnJetTrigger", bitcoded8);
 
+  if(fJetPID>0) fOutput->Add(fhnPIDHFTtoC);
+  if(fJetPID>0) fOutput->Add(fhnJetTrigger);
+  if(fGlobalQA>0)  fOutput->Add(fhnTrackClusterQA);
   PostData(1, fOutput);
-
 }
-
 //________________________________________________________
 void AliAnalysisTaskEmcalJetHF::ExecOnce()
 {
@@ -334,16 +357,34 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
 {
   // check to see if we have any tracks
   if (!fTracks)  return kTRUE;
-  if (!fJets)  return kTRUE;
+  if (!fJets)    return kTRUE;
 
+  UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(fFillHists>0)     if(trig & AliVEvent::kMB)          fHistEventSelection->Fill(1);
+  if(fFillHists>0)     if(trig & AliVEvent::kINT7)        fHistEventSelection->Fill(2);
+  if(fFillHists>0)     if(trig & AliVEvent::kHighMult)    fHistEventSelection->Fill(3);
+  if(fFillHists>0)     if(trig & AliVEvent::kEMC1)        fHistEventSelection->Fill(4);
+  if(fFillHists>0)     if(trig & AliVEvent::kCINT5)       fHistEventSelection->Fill(5);
+  if(fFillHists>0)     if(trig & AliVEvent::kEMC7)        fHistEventSelection->Fill(6);
+  if(fFillHists>0)     if(trig & AliVEvent::kEMC8)        fHistEventSelection->Fill(7);
+  if(fFillHists>0)     if(trig & AliVEvent::kEMCEJE)      fHistEventSelection->Fill(8);
+  if(fFillHists>0)     if(trig & AliVEvent::kEMCEGA)      fHistEventSelection->Fill(9);
+  if(fFillHists>0)     if(trig & AliVEvent::kCentral)     fHistEventSelection->Fill(10);
+  if(fFillHists>0)     if(trig & AliVEvent::kSemiCentral) fHistEventSelection->Fill(11);
+  if(fFillHists>0)     if(trig & AliVEvent::kZED)         fHistEventSelection->Fill(12);
+  if(fFillHists>0)     if(trig & AliVEvent::kINT8)        fHistEventSelection->Fill(13);
+  if(fFillHists>0)     if(trig & AliVEvent::kFastOnly)    fHistEventSelection->Fill(14);
+  if(fFillHists>0)     if(trig & AliVEvent::kAnyINT)      fHistEventSelection->Fill(15);
+  if(fFillHists>0)     if(trig & AliVEvent::kAny)         fHistEventSelection->Fill(16);
+    
   // what kind of event do we have: AOD or ESD?
   Bool_t useAOD;
   if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = kTRUE;
   else useAOD = kFALSE;
-  
+    
   fEventTrigEMCALL1Gamma1 = kFALSE;
   fEventTrigEMCALL1Gamma2 = kFALSE;
-  
+    
   // if we have ESD event, set up ESD object
   if(!useAOD){
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -361,15 +402,32 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
       return kTRUE;
     }
   }
-  
-  // get magnetic field info for DCA
-  Double_t  MagF = fESD->GetMagneticField();
-  Double_t MagSign = 1.0;
-  if(MagF<0)MagSign = -1.0;
-  // set magnetic field
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    AliMagF* field = new AliMagF("Maps","Maps", MagSign, MagSign, AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
+    
+  Double_t MagSign;
+  Double_t MagF;
+    
+  if(!useAOD){
+    // get magnetic field info for DCA
+    MagF = fESD->GetMagneticField();
+    MagSign = 1.0;
+    if(MagF<0)MagSign = -1.0;
+    // set magnetic field
+    if (!TGeoGlobalMagField::Instance()->GetField()) {
+        AliMagF* field = new AliMagF("Maps","Maps", MagSign, MagSign, AliMagF::k5kG);
+        TGeoGlobalMagField::Instance()->SetField(field);
+    }
+  }
+    
+  if(useAOD){
+    // get magnetic field info for DCA
+    MagF = fAOD->GetMagneticField();
+    MagSign = 1.0;
+    if(MagF<0)MagSign = -1.0;
+    // set magnetic field
+    if (!TGeoGlobalMagField::Instance()->GetField()) {
+        AliMagF* field = new AliMagF("Maps","Maps", MagSign, MagSign, AliMagF::k5kG);
+        TGeoGlobalMagField::Instance()->SetField(field);
+    }
   }
 
   // get centrality bin
@@ -405,20 +463,15 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
     return kTRUE;
   } // verify existence of jets
   
-  event++;
-  //cout<<"Event #: "<<event<<"  Number of Clusters: "<<fCaloClustersCont->GetNClusters()<<"  Number of Tracks: "<<fTracksCont->GetNParticles()<<endl;
-  
- // Int_t   nclusters   = fInputEvent->GetNumberOfCaloClusters();
-  
-  
   // get number of jets and tracks                                                                                                          
   const Int_t Njets = jets->GetEntries();
   if(Njets<1)     return kTRUE;
   
+  event++;
   if (fTracksCont) {
     AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
     while(track) {
-      track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+    track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     }
   }
   if (fCaloClustersCont) {
@@ -429,189 +482,85 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
       cluster = fCaloClustersCont->GetNextAcceptCluster();
     }
   }
-  
-    //  Start Jet Analysis
-    // initialize jet parameters
-    Int_t ijethi=-1;
-    Double_t highestjetpt=0.0;
-  
-  // loop over jets in an event - to find highest jet pT and apply some cuts && JetQA Sparse
-  for (Int_t ijet = 0; ijet < Njets; ijet++){
-    // get our jets
-    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
-    if (!jet) continue;
+  //  Start Jet Analysis
+  // initialize jet parameters
+  Double_t GAeta = 0.0;
+  Double_t GAphi = 0.0;
+  Double_t PatchEE = 0.0;
+  Double_t VZEROAmp = (Double_t)(InputEvent()->GetVZEROData()->GetTriggerChargeA() + InputEvent()->GetVZEROData()->GetTriggerChargeC());
+  Double_t PatchEtaMax, PatchEtaMin, PatchPhiMax, PatchPhiMin, PatchAreaE, PatchAreaP;
     
+  // Get GA Trigger Info
+  if(fTriggerPatchInfo) {
+    if(fMainPatchType==kManual) ExtractMainPatch();
+    else if(fMainPatchType==kEmcalJet) fMaxPatch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
+
+    PatchEE = fMaxPatch->GetPatchE();
+    GAphi = fMaxPatch->GetPhiGeo();
+    GAeta = fMaxPatch->GetEtaGeo();
+    PatchEtaMax = fMaxPatch->GetEtaMax();
+    PatchEtaMin = fMaxPatch->GetEtaMin();
+    PatchPhiMax = fMaxPatch->GetPhiMax();
+    PatchPhiMin = fMaxPatch->GetPhiMin();
+    PatchAreaE = PatchEtaMax - PatchEtaMin;
+    PatchAreaP = PatchPhiMax - PatchPhiMin;
+    Double_t var[8] = {fCent, VZEROAmp, fMaxPatch->GetEtaCM(), fMaxPatch->GetPhiCM(), fMaxPatch->GetPatchE(), (Double_t)fMaxPatch->GetADCAmp(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo() };
+    
+    if(fFillHists>0){
+      if (fMaxPatch->IsLevel0() == 1 )            fHistMaxTriggerBitInfo->Fill(1);
+      if (fMaxPatch->IsJetLow() == 1 )            fHistMaxTriggerBitInfo->Fill(2);
+      if (fMaxPatch->IsJetHigh() == 1 )           fHistMaxTriggerBitInfo->Fill(3);
+      if (fMaxPatch->IsGammaLow() == 1 )          fHistMaxTriggerBitInfo->Fill(4);
+      if (fMaxPatch->IsGammaHigh() == 1 )         fHistMaxTriggerBitInfo->Fill(5);
+      if (fMaxPatch->IsMainTrigger() == 1 )       fHistMaxTriggerBitInfo->Fill(6);
+      if (fMaxPatch->IsJetLowSimple() == 1 )      fHistMaxTriggerBitInfo->Fill(7);
+      if (fMaxPatch->IsJetHighSimple() == 1 )     fHistMaxTriggerBitInfo->Fill(8);
+      if (fMaxPatch->IsGammaLowSimple() == 1 )    fHistMaxTriggerBitInfo->Fill(9);
+      if (fMaxPatch->IsGammaHighSimple() == 1 )   fHistMaxTriggerBitInfo->Fill(10);
+      if (fMaxPatch->IsMainTriggerSimple() == 1 ) fHistMaxTriggerBitInfo->Fill(11);
+      if (fMaxPatch->IsOfflineSimple() == 1 )     fHistMaxTriggerBitInfo->Fill(12);
+      if (fMaxPatch->IsRecalcJet() == 1 )         fHistMaxTriggerBitInfo->Fill(13);
+      if (fMaxPatch->IsRecalcGamma() == 1 )       fHistMaxTriggerBitInfo->Fill(14);
+      fHistRecalcGASize->Fill(PatchAreaE/0.014, PatchAreaP/0.014);
+      fhnTriggerInfo->Fill(var);
+      fHistRecalcGAEnergy->Fill(PatchEE);
+    }//Fill Patch Histograms and Trigger QA sparse
+  }//Max Energy Patch info
+    
+  // **********************************************************************
+  //                JET LOOP
+  // **********************************************************************
+  // loop over jets in the event and make appropriate cuts
+  for (Int_t iJets = 0; iJets < Njets; ++iJets) {
+    AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(iJets));
+    if (!jet) continue;
+      
+    // phi of jet, constrained to 1.6 < Phi < 2.94
+    Double_t jetphi = jet->Phi();                              // phi of jet
     // apply jet cuts
     if(!AcceptMyJet(jet)) continue;
-    
-
-    
-    if(highestjetpt<jet->Pt()){
-      ijethi=ijet;
-      highestjetpt=jet->Pt();
-    }
-  } // end of looping over jets
-  
-    fHistHighJetPt->Fill(ijethi);
- // **********************************************************************
- //                JET LOOP
- // **********************************************************************
-  
-    // loop over jets in the event and make appropriate cuts
-    for (Int_t iJets = 0; iJets < Njets; ++iJets) {
-      AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(iJets));
-      if (!jet)  // see if we have a jet
-        continue;
       
-      // phi of jet, constrained to 1.6 < Phi < 2.94
-      float jetphi = jet->Phi();      // phi of jet
-      // apply jet cuts
-      if(!AcceptMyJet(jet)) continue;
-      
-      //AliEmcalJet::EFlavourTag tag=AliEmcalJet::kDStar;
-      //jet->AddFlavourTag(tag);
- 
-      //MV: removed to avoid compiler warnings
-      //      Bool_t bkgrnd1  = kFALSE;
-      // Bool_t sig1     = kFALSE;
- 
-      Int_t JetClusters = jet->GetNumberOfClusters();
-      Int_t JetTracks = jet -> GetNumberOfTracks();
-      fHistnJetTrackvnJetClusters->Fill(JetClusters,JetTracks);
-     // Initializations and Calculations
-     Double_t jetptraw = jet->Pt();    				// raw pT of jet
-     Double_t jetPt = -500;                                     // initialize corr jet pt LOCAL
-     Double_t jetarea = -500;					// initialize jet area
-     jetarea = jet->Area();		           		// jet area
-     jetPt = jet->Pt() - jetarea*fRhoVal;                 // semi-corrected pT of jet from GLOBAL rho value
-      fHistCorJetPt->Fill(jetPt);
-      
-      if(jet->Pt() > fJetHIpt) {
-        if(!fTracksCont || !fCaloClustersCont) return kTRUE;
-        
-        Double_t dEdx = -99;
-        Double_t EovP = -99;
-        Float_t DCAxy = -999;
-        Float_t DCAz = -999;
-        
-        Double_t deta = 999;
-        Double_t dphi = 999;
-        Int_t NumbCluster = -999;
-        NumbCluster = fCaloClustersCont->GetNClusters();
-        Double_t JetQA[5] = {static_cast<Double_t>(Njets), static_cast<Double_t>(jet->GetNumberOfTracks()), static_cast<Double_t>(jet->GetNumberOfClusters()),jet->Eta(), jet->Phi()};
-        fhnJetQA->Fill(JetQA);
-        
-      //***********************************************
-      //****************Track Matched to Closest Cluster
-        
-        
-       for(int iCluster = 0; iCluster <= NumbCluster; iCluster++){
-          //Get closest track to cluster to track matching!!!!!
-          //AliVCluster *cluster = fCaloClustersCont->GetNextAcceptedCluster(iCluster);
-          AliVCluster *cluster = fCaloClustersCont->GetCluster(iCluster);
-          
-          if(! IsJetCluster(jet, iCluster, kFALSE)) continue;
-         
-          // while(cluster) {
-          TLorentzVector nPart;
-          cluster->GetMomentum(nPart, fVertex);
-          //fHistClustersPt[fCentBin]->Fill(nPart.Pt());
-          Double_t fclusE = -999;
-          fclusE = cluster->E();
-          
-          Float_t pos[3];
-          cluster->GetPosition(pos);  // Get cluster position
-          TVector3 cp(pos);
-          
-          //Get matched track
-          AliVTrack *mt = NULL;
-          //AliESDtrack *mt = NULL;
-          AliESDtrack *ESDmt = NULL;
-          AliAODCaloCluster *acl = dynamic_cast<AliAODCaloCluster*>(cluster);
-          if(acl) {
-            
-            //mt = static_cast<AliVTrack*>(acl->GetTrackMatched(0));
-          }
-          else {
-            
-            AliESDCaloCluster *ecl = dynamic_cast<AliESDCaloCluster*>(cluster);
-            Int_t im = ecl->GetTrackMatchedIndex();
-            
-            if(fTracksCont && im>=0) {
-              //mt = static_cast<AliVTrack*>(fTracksCont->GetParticle(im));
-              mt = static_cast<AliVTrack*>(fTracksCont->GetParticle(im));
-              if(!mt) continue;
-              
-              ESDmt = static_cast<AliESDtrack*>(mt);
-              if(!ESDmt) continue;
-              
-              Double_t pcluster = mt->P();
-              //Double_t esdp = ESDmt->P();
-              //Int_t LabelNumb, IDNumb;
-              //LabelNumb = ESDmt->GetLabel();
-              //IDNumb= ESDmt -> GetID();
-
-              dEdx = mt->GetTPCsignal();
-              Double_t p = mt->P();
-               //TPC nSigma's
-              //nsigpion = fPIDResponse->NumberOfSigmasTPC(mt,AliPID::kPion);
-              Double_t nSigmaElectron_TPC = fPIDResponse->NumberOfSigmasTPC(mt,AliPID::kElectron);
-              Double_t nSigmaElectron_TOF = fPIDResponse->NumberOfSigmasTOF(mt,AliPID::kElectron);
-              dEdx = mt->GetTPCsignal();
-              ESDmt->GetImpactParameters(DCAxy, DCAz);
-              EovP        = fclusE/p;
-                Double_t HF_tracks[18] = {fCent, mt->Pt(), pcluster ,mt->Eta(), mt->Phi(), EovP, DCAxy, DCAz, dEdx,nSigmaElectron_TPC, nSigmaElectron_TOF,0 /*nSigmaElectron_EMCAL*/, jetptraw, jetphi, jet->Eta(),fclusE,cp.PseudoRapidity(),cp.Phi()};
-                fhnPIDHF->Fill(HF_tracks);    // fill Sparse Histo with trigger entries
-
-       
-              
-            }
-          }
-          
-          if(mt) {
-            AliPicoTrack::GetEtaPhiDiff(mt, cluster, dphi, deta);
-            fHistPtDEtaDPhiClusTrack->Fill(nPart.Pt(),deta,dphi);
-            
-            
-            
-          }
-
-          //cluster = fCaloClustersCont->GetNextAcceptCluster();
-          //if(! IsJetCluster(jet, cluster, kFALSE)) continue;
-        //}
-          
-          /*
-           Double_t p = mt->P();
-           Float_t pos[3];
-           cluster->GetPosition(pos);  // Get cluster position
-           //AliESDtrack *trackESD = fESD->GetTrack(Ntracks);
-           
-           //  nSigmaElectron_TPC = fPIDResponse->NumberOfSigmasTPC(mt,AliPID::kElectron);
-           //  nSigmaElectron_TOF= fPIDResponse->NumberOfSigmasTOF(mt,AliPID::kElectron);
-           EovP        = fclusE/p;
-           TVector3 cp(pos);
-
-           //if(!fesdTrackCuts->AcceptTrack(mt)) continue;
-           //dEdx = mt->GetTPCsignal();
-           //mt->GetImpactParameters(DCAxy, DCAz);
-           //nSigmaElectron_TPC = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kElectron);
-           //nSigmaElectron_TOF = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kElectron);
-           
-           
-           //Double_t HF_tracks[18] = {fCent, mt->Pt(), mt->P() ,mt->Eta(), mt->Phi(), EovP, DCAxy, DCAz, dEdx, nSigmaElectron_TPC, nSigmaElectron_TOF, nSigmaElectron_EMCAL, jet->Pt(), jet->Phi(), jet->Eta(),fclusE,cp.PseudoRapidity(),cp.Phi()};
-           //fhnPIDHF->Fill(HF_tracks);    // fill Sparse Histo with trigger entries
-           */
-          //cluster = fCaloClustersCont->GetNextAcceptCluster();
-          //if(! IsJetCluster(jet, cluster, kFALSE)) continue;
-
-          
-          //AliESDtrack *ESDacceptedTrack = NULL;
-        }//loop over cluster
-
+    Int_t JetClusters = jet->GetNumberOfClusters();
+    Int_t JetTracks = jet -> GetNumberOfTracks();
+    Int_t tag = -999;
+    // Initializations and Calculations
+    Double_t jetptraw = jet->Pt();    				           // raw pT of jet
+    Double_t jetPt = -500;                                     // initialize corr jet pt LOCAL
+    Double_t jetarea = -500;					               // initialize jet area
+    jetarea = jet->Area();		           		               // jet area
+    jetPt = jet->Pt() - jetarea*fRhoVal;                       // semi-corrected pT of jet from GLOBAL rho value
+     
+    if(jet->Pt() > fJetHIpt) {
+      if(!fTracksCont || !fCaloClustersCont) continue;
+      Double_t dEdx = -99;
+      Double_t EovP = -99;
+      Double_t DCAxy = -999;
+      Double_t DCAz = -999;
+      Double_t jeteta = -999.;
+      jeteta = jet->Eta();
+      jetphi = jet->Phi();
       //******************************Cluster Matched To Closest Track
       //**************************************************************
-    
-   
       Int_t NumbTrackContainer = -999;
       NumbTrackContainer = fTracksCont->GetNParticles();
       for(int iTracks = 0; iTracks <= NumbTrackContainer; iTracks++){
@@ -623,249 +572,200 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         if(!IsJetTrack(jet,iTracks,kFALSE))continue;
         //Get matched cluster
         Int_t emc1 = AcceptedTrack->GetEMCALcluster();
-        
         Double_t acceptTrackP = AcceptedTrack->P();
         Double_t acceptTrackPt = AcceptedTrack->Pt();
         Double_t acceptTrackEta = AcceptedTrack->Eta();
         Double_t acceptTrackPhi = AcceptedTrack->Phi();
         Double_t nSigmaElectron_TPC_at = fPIDResponse->NumberOfSigmasTPC(AcceptedTrack,AliPID::kElectron);
         Double_t nSigmaElectron_TOF_at = fPIDResponse->NumberOfSigmasTOF(AcceptedTrack,AliPID::kElectron);
-
-        
-        AliESDtrack *ESDacceptedTrack = static_cast<AliESDtrack*>(AcceptedTrack);
-       
-        if(!ESDacceptedTrack){
-          AliError(Form("Couldn't get AliESDTrack %d\n", iTracks));
-          continue;
-        }
-        //Double_t DCAxy_at, DCAz_at;
         Double_t dEdxat = AcceptedTrack->GetTPCsignal();
+
+        if(!useAOD){
+          AliESDtrack *ESDacceptedTrack = static_cast<AliESDtrack*>(AcceptedTrack);
+       
+          if(!ESDacceptedTrack){
+            AliError(Form("Couldn't get AliESDTrack %d\n", iTracks));
+            continue;
+          }
         //ESDacceptedTrack->GetImpactParameters(DCAxy_at, DCAz_at);
-        
-        
+        }
+        if(useAOD){
+          AliAODTrack *AODacceptedTrack = static_cast<AliAODTrack*>(AcceptedTrack);
+          if(!AODacceptedTrack) continue;
+          if(!fPIDResponse) continue;
+          // AODacceptedTrack->GetImpactParameters(DCAxy_at, DCAz_at);
+        }
+          
         if(fCaloClustersCont && emc1>=0) {
           AliVCluster *clusMatch = fCaloClustersCont->GetCluster(emc1);
           if(!clusMatch){
             AliError(Form("Couldn't get matched AliVCluster %d\n", emc1));
             continue;
           }
- 
-          
-          
           Double_t mClusterE = clusMatch->E();
           Float_t pos_mc[3];
           clusMatch->GetPosition(pos_mc);  // Get cluster position
           TVector3 mcp(pos_mc);
           Double_t EovP_mc = -999;
-          EovP_mc = mClusterE/acceptTrackP;
-	  //MV: removed to avoid compiler warnings
-          // if(EovP_mc < 0.2){
-          //   bkgrnd1 = kTRUE;      //Hadron Background
-          // }
-
-	  //Code without meaning:
-          //if(0.8 < EovP_mc < 1.2){
-	  //            if(-1.5<nSigmaElectron_TPC_at<5.0){
-	  //              if(4.0<acceptTrackPt<10.0){
-
-	  //Corrected code:
-	  // if(EovP_mc >0.8 && EovP_mc<1.2){ 
-          //   if(nSigmaElectron_TPC_at>-1.5 && nSigmaElectron_TPC_at<5.0){
-          //     if(acceptTrackPt>4.0 && acceptTrackPt<10.0){
-          //       sig1 = kTRUE;                    //Electron Candidate
-          //     }
-          //   }
-          // }
-          
+          EovP_mc = mClusterE/acceptTrackP;            
+        if(fJetPID>0){ 
           Double_t HF_tracks2[18] = {fCent, acceptTrackPt, acceptTrackP ,acceptTrackEta, acceptTrackPhi, EovP_mc, 0, 0, dEdxat,nSigmaElectron_TPC_at, nSigmaElectron_TOF_at,0 , jetPt, jet->Phi(), jet->Eta(),mClusterE,mcp.PseudoRapidity(),mcp.Phi()};
           fhnPIDHFTtoC->Fill(HF_tracks2);    // fill Sparse Histo with trigger entries
         }
+        //Double_t minMatchedPatchEta = mcp.PseudoRapidity() - (6.0 * 0.014);
+        Double_t maxMatchedPatchEta = (7.0 * 0.014);
+        //Double_t minMatchedPatchPhi = mcp.Phi() - (6.0 * 0.014);
+        Double_t maxMatchedPatchPhi = (7.0 * 0.014);
+        Double_t mtchPosition = maxMatchedPatchPhi * maxMatchedPatchPhi + maxMatchedPatchEta * maxMatchedPatchEta;
+        Double_t rGApatch = TMath::Sqrt(mtchPosition);
+        Double_t rJetCluster = -999.;
+        Double_t PatchClusterdiff = (mcp.Phi() - fMaxPatch->GetPhiGeo())*(mcp.Phi() - fMaxPatch->GetPhiGeo()) + (mcp.PseudoRapidity() - fMaxPatch->GetEtaGeo())*(mcp.PseudoRapidity() - fMaxPatch->GetEtaGeo());
+        rJetCluster = TMath::Sqrt(PatchClusterdiff);
+
+        //Matched Trigger Jet
+        if ( rJetCluster <= rGApatch ){
+    
+          Double_t dEtaPatch = 0.0;
+          Double_t dPhiPatch = 0.0;
+          dEtaPatch = fMaxPatch->GetEtaGeo() - mcp.PseudoRapidity();
+          dPhiPatch = fMaxPatch->GetPhiGeo() - mcp.Phi();
+          Double_t EovPJetGA = mClusterE / acceptTrackP;
+          Double_t nSigmaElectron_TPC_GA = fPIDResponse->NumberOfSigmasTPC(AcceptedTrack,AliPID::kElectron);
+                
+          if(fFillHists>0){
+            fHistCorrJetEvsPatchE->Fill(jetPt,fMaxPatch->GetPatchE());
+            fHistClusEvPatchE->Fill(mClusterE,fMaxPatch->GetPatchE());
+            fHistdEtaPatchvdPhiPatch->Fill(dEtaPatch,dPhiPatch);
+            fHistRawJetEvPatchE->Fill(jetptraw,fMaxPatch->GetPatchE());
+          }//Fill Histos
+          Double_t JetTrig[18] = {jetptraw, jetPt, jeteta, jetphi, jet->E(), fMaxPatch->GetPatchE(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo(), fMaxPatch->GetADCAmp(), mClusterE, mcp.PseudoRapidity(), mcp.Phi(),acceptTrackP, acceptTrackPt, acceptTrackEta, acceptTrackPhi, EovPJetGA, nSigmaElectron_TPC_GA};
+          if(fJetPID>0) fhnJetTrigger->Fill(JetTrig);
+        }//Trigger Patch Matching 'if'
+        
+        //Start HFE Tagging for seprerate analysis tasks
+        if(AcceptJetforTag(clusMatch, AcceptedTrack)){
+            AliEmcalJet::EFlavourTag tag=AliEmcalJet::kSig1;
+            jet->AddFlavourTag(tag);
+        }
+            
+        }  //Cluster Matched to Track loop
         //AcceptedTrack = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
-        
-      } //loop over tracks for matching to closest cluster
-
-     
-
-        
+      } //loop over tracks from Jet
     } // highest pt jet cut
-      /*
-      Int_t tag = -999;
-      if(bkgrnd1 == kTRUE) {
-        AliEmcalJet::EFlavourTag tag=AliEmcalJet::kBckgrd1;
-        jet->AddFlavourTag(tag);
-      }
-      if(sig1 == kTRUE && !bkgrnd1){
-        AliEmcalJet::EFlavourTag tag=AliEmcalJet::kSig1;
-        jet->AddFlavourTag(tag);
-      }
-       */
   } // LOOP over JETS in event
-
-  
-  
-  if(fGlobalQA == 1) CheckClusTrackMatchingQA();
-
+  if(fGlobalQA>0) CheckClusTrackMatchingQA();
   return kTRUE;
-  
-}
-//________________________________________________________________________
+}//________________________________________________________________________End of Main Task
+//_________________________________________________________________________________________
 void AliAnalysisTaskEmcalJetHF::Terminate(Option_t *)
 {
-  cout<<"###########################"<<endl;
-  cout<<"####   Task Finished   ####"<<endl;
-  cout<<"###########################"<<endl;
-  cout<<"###########################"<<endl;
-} // end of terminate
-
-
-//________________________________________________________________________
+  cout<<"#######################"<<endl;
+  cout<<"#### Task Finished ####"<<endl;
+  cout<<"#######################"<<endl;
+}//________________________________________________________________________End of Terminate
+//_________________________________________________________________________________________
+void AliAnalysisTaskEmcalJetHF::ExtractMainPatch() {
+  //Find main trigger
+  if(!fTriggerPatchInfo) return;
+  //number of patches in event
+  Int_t nPatch = fTriggerPatchInfo->GetEntriesFast();
+  //extract main trigger patch
+  Double_t emax = -1.;
+  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+    AliEmcalTriggerPatchInfo *patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    if (!patch) continue;
+    if(fFillHists>0){
+      if (patch->IsLevel0() == 1 )            fHistTriggerBitInfo->Fill(1);
+      if (patch->IsJetLow() == 1 )            fHistTriggerBitInfo->Fill(2);
+      if (patch->IsJetHigh() == 1 )           fHistTriggerBitInfo->Fill(3);
+      if (patch->IsGammaLow() == 1 )          fHistTriggerBitInfo->Fill(4);
+      if (patch->IsGammaHigh() == 1 )         fHistTriggerBitInfo->Fill(5);
+      if (patch->IsMainTrigger() == 1 )       fHistTriggerBitInfo->Fill(6);
+      if (patch->IsJetLowSimple() == 1 )      fHistTriggerBitInfo->Fill(7);
+      if (patch->IsJetHighSimple() == 1 )     fHistTriggerBitInfo->Fill(8);
+      if (patch->IsGammaLowSimple() == 1 )    fHistTriggerBitInfo->Fill(9);
+      if (patch->IsGammaHighSimple() == 1 )   fHistTriggerBitInfo->Fill(10);
+      if (patch->IsMainTriggerSimple() == 1 ) fHistTriggerBitInfo->Fill(11);
+      if (patch->IsOfflineSimple() == 1 )     fHistTriggerBitInfo->Fill(12);
+      if (patch->IsRecalcGamma() == 1 )       fHistTriggerBitInfo->Fill(13);
+    }
+    if (patch->IsRecalcGamma() == 1 ){
+      if(patch->GetPatchE()>emax) {
+        fMaxPatch = patch;
+        emax = patch->GetPatchE();
+      }
+    }
+  }
+}//___________________________________________End of Extrating Highest Energy Trigger Patch
+//_________________________________________________________________________________________
 void AliAnalysisTaskEmcalJetHF::CheckClusTrackMatchingQA()
 {
-  
   if(!fTracksCont || !fCaloClustersCont) return;
-  
-  Int_t trkcounter = 0;
-  Int_t cluscounter = 0;
+  Int_t useAOD = 1;
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = 1;
+  else useAOD = 0;
+    
+  // if we have ESD event, set up ESD object
+  if(useAOD == 0){
+    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    if (!fESD) {
+        AliError(Form("ERROR: fESD not available\n"));
+    }
+  }
+  // if we have AOD event, set up AOD object
+  if(useAOD == 1){
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fAOD) {
+        AliError(Form("ERROR: fAOD not available\n"));
+    }
+  }
+  Double_t pQA1 = -999.;
+  Double_t nSigmaElectron_TPC_QA1 = -999.;
+  Double_t nSigmaElectron_TOF_QA1 = -999.;
+  Double_t dEdxQA1 = -999.;
   Double_t deta = 999;
   Double_t dphi = 999;
-  
   //Get closest cluster to track
   AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
   while(track) {
     //if(!track) continue;
-    AliESDtrack *ESDtrackQA1 = static_cast<AliESDtrack*>(track);
-    if(!ESDtrackQA1) continue;
-    if(!fPIDResponse) continue;
-    Double_t pQA1 = track->P();
-    Double_t nSigmaElectron_TPC_QA1 = fPIDResponse->NumberOfSigmasTPC(ESDtrackQA1,AliPID::kElectron);
-    Double_t nSigmaElectron_TOF_QA1 = fPIDResponse->NumberOfSigmasTOF(ESDtrackQA1,AliPID::kElectron);
-    Double_t dEdxQA1 = ESDtrackQA1->GetTPCsignal();
+    if(!useAOD){
+      AliESDtrack *ESDtrackQA1 = static_cast<AliESDtrack*>(track);
+      if(!ESDtrackQA1) continue;
+      if(!fPIDResponse) continue;
+      pQA1 = track->P();
+      nSigmaElectron_TPC_QA1 = fPIDResponse->NumberOfSigmasTPC(ESDtrackQA1,AliPID::kElectron);
+      nSigmaElectron_TOF_QA1 = fPIDResponse->NumberOfSigmasTOF(ESDtrackQA1,AliPID::kElectron);
+      dEdxQA1 = ESDtrackQA1->GetTPCsignal();
+    }
+    if(useAOD){
+      AliAODTrack *AODtrackQA1 = static_cast<AliAODTrack*>(track);
+      if(!AODtrackQA1) continue;
+      if(!fPIDResponse) continue;
+      pQA1 = track->P();
+      nSigmaElectron_TPC_QA1 = fPIDResponse->NumberOfSigmasTPC(AODtrackQA1,AliPID::kElectron);
+      nSigmaElectron_TOF_QA1 = fPIDResponse->NumberOfSigmasTOF(AODtrackQA1,AliPID::kElectron);
+      dEdxQA1 = AODtrackQA1->GetTPCsignal();
+    }
     //Get matched cluster
     Int_t emc1 = track->GetEMCALcluster();
     if(fCaloClustersCont && emc1>=0) {
       AliVCluster *clusMatch = fCaloClustersCont->GetCluster(emc1);
-      //if(!clusMatch) continue;
+      if(!clusMatch) continue;
       if(clusMatch) {
         Double_t ClusterE_QA1 = clusMatch->E();
         Double_t EovPQA1 = ClusterE_QA1/pQA1;
         Float_t pos_mc1[3];
         clusMatch->GetPosition(pos_mc1);  // Get cluster position
         TVector3 mc1(pos_mc1);
-        fHistnSigElecPt->Fill(nSigmaElectron_TPC_QA1,track->Pt());
         Double_t HF_tracks3[11] = {track->Pt(), track->P() , track->Eta(), track->Phi(), EovPQA1, dEdxQA1 ,nSigmaElectron_TPC_QA1, nSigmaElectron_TOF_QA1, clusMatch->E(), mc1.PseudoRapidity(),mc1.Phi()};
         fhnTrackClusterQA->Fill(HF_tracks3);
-        AliPicoTrack::GetEtaPhiDiff(track, clusMatch, dphi, deta);
-        fHistPtDEtaDPhiTrackClus->Fill(track->Pt(),deta,dphi);
-        cluscounter++;
       }//clus matching
-
-     }//matched cluster
-
-    track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
-    trkcounter++;
+    }//matched cluster
+  track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
   }//track loop
- /*
-  //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0);
-  while(cluster) {
-    if(!cluster) continue;
-    
-    Double_t ClusterE_QA2 = cluster->E();
-    //Double_t EovPQA1 = ClusterE_QA1/pQA1;
-    Float_t pos_mc2[3];
-    cluster->GetPosition(pos_mc2);  // Get cluster position
-    TVector3 mc2(pos_mc2);
-
-    TLorentzVector nPart;
-    cluster->GetMomentum(nPart, fVertex);
-    
-    //Get matched track
-    AliVTrack *mt = NULL;
-    AliAODCaloCluster *acl = dynamic_cast<AliAODCaloCluster*>(cluster);
-    if(!acl) continue;
-    if(acl) {
-      if(acl->GetNTracksMatched()>1)
-      mt = static_cast<AliVTrack*>(acl->GetTrackMatched(0));
-      if(!mt) continue;
-      AliESDtrack *ESDtrackQA2 = static_cast<AliESDtrack*>(mt);
-      if(!ESDtrackQA2) continue;
-      Double_t nSigmaElectron_TPC_QA2 = fPIDResponse->NumberOfSigmasTPC(ESDtrackQA1,AliPID::kElectron);
-      Double_t nSigmaElectron_TOF_QA2 = fPIDResponse->NumberOfSigmasTOF(ESDtrackQA1,AliPID::kElectron);
-      Double_t dEdxQA1 = ESDtrackQA2->GetTPCsignal();
-      Double_t EovPQA2 = -999;
-      Double_t pQA2 = mt->P();
-      EovPQA2 = ClusterE_QA2/pQA2;
-  
-      //Double_t HF_tracks4[11] = {mt->Pt(), mt->P() , mt->Eta(), mt->Phi(), EovPQA2, dEdxQA2 ,nSigmaElectron_TPC_QA2, nSigmaElectron_TOF_QA2, mc2.PseudoRapidity(),mc2.Phi()};
-      //fhnClusterTrackQA->Fill(HF_tracks4);
-    }
-    else {
-      AliESDCaloCluster *ecl = dynamic_cast<AliESDCaloCluster*>(cluster);
-      if(!ecl) continue;
-      Int_t im = ecl->GetTrackMatchedIndex();
-      if(fTracksCont && im>=0) {
-        mt = static_cast<AliVTrack*>(fTracksCont->GetParticle(im));
-        if(!mt) continue
-      }
-    }
-    AliPicoTrack::GetEtaPhiDiff(mt, cluster, dphi, deta);
-    fHistPtDEtaDPhiClusTrack->Fill(nPart.Pt(),deta,dphi);
-    cluster = fCaloClustersCont->GetNextAcceptCluster();
-  }
-  }
-*/
-/*
-  //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0);
-  while(cluster) {
-    if(!cluster){
-      AliError(Form("Couldn't get CtoT AliCluster Container"));
-      continue;
-    }
-    Double_t ClusterE_QA2 = cluster->E();
-    Float_t pos_mc2[3];
-    cluster->GetPosition(pos_mc2);  // Get cluster position
-    TVector3 mc2(pos_mc2);
-    TLorentzVector nPart;
-    cluster->GetMomentum(nPart, fVertex);
-    //Get matched track
-    AliVTrack *mt = NULL;
-    AliESDCaloCluster *ecl = dynamic_cast<AliESDCaloCluster*>(cluster);
-    if(!ecl){
-      AliError(Form("Couldn't get CtoT AliESDCluster Container %d\n"));
-      continue;
-    }
-    Int_t im = ecl->GetTrackMatchedIndex();
-    if(fTracksCont && im>=0) {
-      //mt = static_cast<AliVTrack*>(fTracksCont->GetParticle(im));
-      //if(!mt){
-        //AliError(Form("Couldn't get CT AliVTrack Container %d\n",im));
-        //continue;
-     // }
-      //AliPicoTrack::GetEtaPhiDiff(mt, cluster, dphi, deta);
-      fHistPtDEtaDPhiClusTrack->Fill(nPart.Pt(),deta,dphi);
-      AliESDtrack *ESDtrackQA2 = static_cast<AliESDtrack*>(mt);
-      if(!ESDtrackQA2){
-        AliError(Form("Couldn't get CT AliESDTrack Container %d\n"));
-        continue;
-      }
-      Double_t nSigmaElectron_TPC_QA2 = fPIDResponse->NumberOfSigmasTPC(ESDtrackQA2,AliPID::kElectron);
-      Double_t nSigmaElectron_TOF_QA2 = fPIDResponse->NumberOfSigmasTOF(ESDtrackQA2,AliPID::kElectron);
-      Double_t dEdxQA1 = ESDtrackQA2->GetTPCsignal();
-      Double_t EovPQA2 = -999;
-      Double_t pQA2 = mt->P();
-      EovPQA2 = ClusterE_QA2/pQA2;
-
-
-    }
-    //cluster = fCaloClustersCont->GetNextAcceptCluster();
-    cluster = static_cast<AliVCluster*>(fCaloClustersCont->GetNextAcceptCluster());
-  }
-*/
-}
-
-
-//________________________________________________________________________
+}//________________________________________________________________________End Event QA PID
+//_________________________________________________________________________________________
 Int_t AliAnalysisTaskEmcalJetHF::AcceptMyJet(AliEmcalJet *jet) {
   //applies all jet cuts except pt
   if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax)) return 0;
@@ -876,11 +776,20 @@ Int_t AliAnalysisTaskEmcalJetHF::AcceptMyJet(AliEmcalJet *jet) {
   //exclude jets with extremely high pt tracks which are likely misreconstructed
   if(jet->MaxTrackPt()>100) return 0;
   
-  //passed all above cuts
+  //passed all above cuts for jet acceptance
   return 1;
-}
-
-//________________________________________________________________________
+}//____________________________________________________________________End of Jet QA checks
+//_________________________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetHF::AcceptJetforTag(AliVCluster *clusMatch, AliVTrack *AcceptedTrack) {
+  Double_t EovP_tag;
+  if (AcceptedTrack->Pt() < 5) return 0;
+  EovP_tag = clusMatch->E() / AcceptedTrack->P();
+  if(EovP_tag < 0.8) return 0;
+  if(EovP_tag > 1.2) return 0;
+  // passed rough cuts for HFE stats
+  return 1;
+}//__________________________________________________________________End of Jet HFE tagging
+//_________________________________________________________________________________________
 Int_t AliAnalysisTaskEmcalJetHF::GetCentBin(Double_t cent) const
 {  // Get centrality bin.
 
@@ -898,21 +807,8 @@ Int_t AliAnalysisTaskEmcalJetHF::GetCentBin(Double_t cent) const
   else if (cent>=50 && cent<90)
     centbin = 5;
   return centbin;
-}
-
-//________________________________________________________________________________
-/*
-void AliAnalysisTaskEmcalJetHF::FlagFlavour(AliEmcalJet *jet){
-  
-  AliEmcalJet::EFlavourTag tag=AliEmcalJet::kDStar;
-  if (fCandidateType==kD0toKpi) tag=AliEmcalJet::kD0;
-  if (fIsDInJet) jet->AddFlavourTag(tag);
-  
-  return;
-  
-}
-*/
-//____________________________________________________________________________________________
+}//________________________________________End of Centrality Binning for Histos and pp Runs
+//_________________________________________________________________________________________
 THnSparse* AliAnalysisTaskEmcalJetHF::NewTHnSparseDHF(const char* name, UInt_t entries)
 {
   // generate new THnSparseD PID, axes are defined in GetDimParams()                                                                                                     
@@ -922,71 +818,59 @@ THnSparse* AliAnalysisTaskEmcalJetHF::NewTHnSparseDHF(const char* name, UInt_t e
     count++;
     tmp = tmp &~ -tmp;  // clear lowest bit                                                                                                                             
   }
-
   TString hnTitle(name);
   const Int_t dim = count;
   Int_t nbins[dim];
   Double_t xmin[dim];
   Double_t xmax[dim];
-
   Int_t i=0;
   Int_t c=0;
   while(c<dim && i<32){
     if(entries&(1<<i)){
-
       TString label("");
       GetDimParamsHF(i, label, nbins[c], xmin[c], xmax[c]);
       hnTitle += Form(";%s",label.Data());
       c++;
     }
-
     i++;
   }
   hnTitle += ";";
-
   return new THnSparseD(name, hnTitle.Data(), dim, nbins, xmin, xmax);
-} // end of NewTHnSparseF PID
-
-THnSparse* AliAnalysisTaskEmcalJetHF::NewTHnSparseDJetQA(const char* name, UInt_t entries)
+}//________________________________________________________________end of NewTHnSparseF PID
+//_________________________________________________________________________________________
+THnSparse* AliAnalysisTaskEmcalJetHF::NewTHnSparseDJetTrigger(const char* name, UInt_t entries)
 {
-  // generate new THnSparseD JetQA, axes are defined in GetDimParamsJetQA()
   Int_t count = 0;
   UInt_t tmp = entries;
   while(tmp!=0){
     count++;
     tmp = tmp &~ -tmp;  // clear lowest bit
   }
-  
+    
   TString hnTitle(name);
   const Int_t dim = count;
   Int_t nbins[dim];
   Double_t xmin[dim];
   Double_t xmax[dim];
-  
   Int_t i=0;
   Int_t c=0;
   while(c<dim && i<32){
     if(entries&(1<<i)){
-      
       TString label("");
-      GetDimParamsJetQA(i, label, nbins[c], xmin[c], xmax[c]);
+      GetDimParamsJetTrigger(i, label, nbins[c], xmin[c], xmax[c]);
       hnTitle += Form(";%s",label.Data());
       c++;
     }
-    
     i++;
   }
   hnTitle += ";";
-  
   return new THnSparseD(name, hnTitle.Data(), dim, nbins, xmin, xmax);
-} // end of NewTHnSparseF JetQA
-
-
+}//_________________________________________________________end of NewTHnSparseF JetTrigger
+//_________________________________________________________________________________________
 void AliAnalysisTaskEmcalJetHF::GetDimParamsHF(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
 {
   // stores label and binning of axis for THnSparse                                                                                                                      
   const Double_t pi = TMath::Pi();
-
   switch(iEntry){
 
   case 0:
@@ -1115,134 +999,143 @@ void AliAnalysisTaskEmcalJetHF::GetDimParamsHF(Int_t iEntry, TString &label, Int
     xmax = 2*pi;
     break;
 
-
-
   } // end of switch
-} // end of getting dim-params
-
-void AliAnalysisTaskEmcalJetHF::GetDimParamsJetQA(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
+} //______________________________________________________________end of getting dim-params
+//_________________________________________________________________________________________
+void AliAnalysisTaskEmcalJetHF::GetDimParamsJetTrigger(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
 {
-  // stores label and binning of axis for THnSparse
+    // stores label and binning of axis for THnSparse
   const Double_t pi = TMath::Pi();
-  
   switch(iEntry){
-      
-    case 0:
-      label = "number of Jets in Event";
-      nbins = 100;
-      xmin = 0.;
-      xmax = 100.;
-      break;
-      
-    case 1:
-      label = "number of Clusters in a Jet";
-      nbins = 100;
-      xmin = 0.;
-      xmax = 100.;
-      break;
-      
-    case 2:
-      label = "number of Tracks in a Jet";
-      nbins = 100;
-      xmin = 0.;
-      xmax = 100.;
-      break;
-      
-    case 3:
-      label = "Jet Eta";
-      nbins = 24;
-      xmin = -1.2;
-      xmax = 1.2;
-      break;
-      
-    case 4:
-      label = "Jet Phi";
-      nbins = 72;
-      xmin = 0;
-      xmax = 2*pi;
-      break;
-      
-    case 5:
-      label = "Cluster Energy";
-      nbins = 150;
-      xmin = 0;
-      xmax = 15;
-      break;
-      
-    case 6:
-      label = "Cluster Eta";
-      nbins = 24;
-      xmin = -1.2;
-      xmax =  1.2;
-      break;
-      
-    case 7:
-      label = "Cluster Phi";
-      nbins = 72;
-      xmin = 0;
-      xmax = 2*pi;
-      break;
-      
-    case 8:
-      label = "Is EMCalCluster";
-      nbins = 2;
-      xmin = 0;
-      xmax = 2;
-      break;
-      
-    case 9:
-      label = "Number of Matched Tracks to Cluster";
-      nbins = 60;
-      xmin = 0;
-      xmax = 60;
-      break;
-      
-    case 10:
-      label = "Track Pt";
-      nbins = 300;
-      xmin = 0;
-      xmax = 75;
-      break;
-      
-    case 11:
-      label = "Track Eta";
-      nbins = 24;
-      xmin = -1.2;
-      xmax = 1.2;
-      break;
-      
-    case 12:
-      label= "Track Phi";
-      nbins = 72;
-      xmin = 0;
-      xmax = 2*pi;
-      break;
-      
-    case 13:
-      label="Is Track EMCal";
-      nbins = 2;
-      xmin = 0;
-      xmax = 2;
-      break;
-      
-    case 14:
-      label = "Get Track EMCal Cluster";
-      nbins = 100;
-      xmin = 0;
-      xmax = 100;
-      break;
-      
-    case 15:
-      label = "Track Matched Phi";
-      nbins = 72;
-      xmin = 0;
-      xmax = 2*pi;
-      
-      
-      
-      
+            
+  case 0:
+    label = "Jet Pt";
+    nbins = 50;
+    xmin = 0.;
+    xmax = 250.;
+    break;
+            
+  case 1:
+    label = "Jet Corr Pt";
+    nbins = 50;
+    xmin = -50.;
+    xmax = 200.;
+    break;
+            
+  case 2:
+    label = "Jet Eta";
+    nbins = 24;
+    xmin = -1.2;
+    xmax =  1.2;
+    break;
+            
+  case 3:
+    label = "Jet Phi";
+    nbins = 72;
+    xmin = 0;
+    xmax = 2*pi;
+    break;
+            
+  case 4:
+    label = "Jet E";
+    nbins = 50;
+    xmin = 0.;
+    xmax = 250.;
+    break;
+            
+  case 5:
+    label = "Trigger E";
+    nbins = 100;
+    xmin = 0.;
+    xmax = 100.;
+    break;
+            
+  case 6:
+    label = "Trigger Eta";
+    nbins = 24;
+    xmin = -1.2;
+    xmax =  1.2;
+    break;
+            
+  case 7:
+    label = "Trigger Phi";
+    nbins = 72;
+    xmin = 0;
+    xmax = 2*pi;
+    break;
+            
+  case 8:
+    label = "Trigger ADC";
+    nbins = 100;
+    xmin = 0;
+    xmax = 1500;
+    break;
+            
+  case 9:
+    label = "Cluster E";
+    nbins = 15;
+    xmin = 0.;
+    xmax = 100.;
+    break;
+            
+  case 10:
+    label = "Cluster Eta";
+    nbins = 24;
+    xmin = -1.2;
+    xmax =  1.2;
+    break;
+            
+  case 11:
+    label = "Cluster Phi";
+    nbins = 72;
+    xmin = 0;
+    xmax = 2*pi;
+    break;
+            
+  case 12:
+    label = "Track P";
+    nbins = 100;
+    xmin = 0.;
+    xmax = 100.;
+  break;
+            
+  case 13:
+    label= "Track Pt";
+    nbins = 100;
+    xmin = 0.;
+    xmax = 100.;
+    break;
+            
+  case 14:
+    label="Track Eta";
+    nbins = 24;
+    xmin = -1.2;
+    xmax =  1.2;
+    break;
+            
+  case 15:
+    label = "Track Phi";
+    nbins = 72;
+    xmin = 0;
+    xmax = 2*pi;
+    break;
+            
+  case 16:
+    label = "EovP_Trigger";
+    nbins = 160;
+    xmin = 0;
+    xmax = 1.6;
+    break;
+            
+  case 17:
+    label = "nSigma electron TPC";
+    nbins = 50;
+    xmin = -5;
+    xmax = 5;
+          
   } // end of switch
-} // end of getting dim-params
+} //______________________________________________________________end of getting dim-params
+
 
 
 
