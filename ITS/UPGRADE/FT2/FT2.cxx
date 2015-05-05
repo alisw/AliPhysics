@@ -44,9 +44,15 @@ FTProbe::FTProbe()
 ,fPdgCode(0)
 ,fAbsPdgCodeForTracking(211)
 ,fTrueMass(0)
+,fProbeNClTPC(0)
+,fProbeNClITS(0)
+,fProbeNClITSFakes(0)
+,fProbeITSPatternFake(0)
+,fProbeITSPattern(0)
+,fProbeChi2TPC(0)
+,fProbeChi2ITS(0)
 {
 	  // def. c-tor
-	
 }
 
 //________________________________________________
@@ -63,8 +69,8 @@ fITSRec(0)
 ,fTPCLayers()
 ,fTPCHitLr()
 ,fNTPCHits(0)
-,fMinTPCHits(70)
-,fMinITSLrHit(4)
+,fMinTPCHits(0)
+,fMinITSLrHit(0)
 ,fProbe()
 ,fProbeIni()
 ,fKalmanOutward(0)
@@ -372,6 +378,14 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 		fProbe.Print();
 	}
 #endif
+	
+	fProbe.fProbeNClTPC			= fNClTPC;
+	fProbe.fProbeNClITS			= fNClITS;
+	fProbe.fProbeNClITSFakes	= fNClITSFakes;
+	fProbe.fProbeITSPatternFake	= fITSPatternFake;
+	fProbe.fProbeITSPattern		= fITSPattern;
+	fProbe.fProbeChi2TPC		= fChi2TPC;
+	fProbe.fProbeChi2ITS		= fChi2ITS;
 	//
 	/*
 	 printf("Tracking done: NclITS: %d (chi2ITS=%.3f) NclTPC: %3d (chi2TPC=%.3f)\n",fNClITS,fChi2ITS,fNClTPC,fChi2TPC);
@@ -430,6 +444,14 @@ Bool_t FT2::InitProbe(TParticle* part)
 	fProbe.fAbsPdgCode = TMath::Abs(pdgCode);
 	fProbe.fPdgCode = pdgCode;
 	fProbe.fTrueMass = fProbe.fProbeMass;
+	
+	fProbe.fProbeNClTPC			= fNClTPC;
+	fProbe.fProbeNClITS			= fNClITS;
+	fProbe.fProbeNClITSFakes	= fNClITSFakes;
+	fProbe.fProbeITSPatternFake	= fITSPatternFake;
+	fProbe.fProbeITSPattern		= fITSPattern;
+	fProbe.fProbeChi2TPC		= fChi2TPC;
+	fProbe.fProbeChi2ITS		= fChi2ITS;
 	//
 	param[0] = ver.Y();
 	param[1] = ver.Z();
@@ -446,147 +468,142 @@ Bool_t FT2::InitProbe(TParticle* part)
 }
 
 //____________________________________________________
+Int_t FT2::ProbeDecayAbsorb(double* posIni)
+{
+  // check if the probe has decayed (return 1) or absorbed (return -1).
+  // if survived, return 0
+  // Before returning, assign to posIni current position
+  double posCurr[3];
+  fProbe.GetXYZ(posCurr);
+  double params[8];
+  AliTrackerBase::MeanMaterialBudget(posIni,posCurr,params);
+  Double_t dist=params[4]; 
+  //
+#if DEBUG>5
+  printf("New step length %.2f from XYZ= %+.2f %+.2f %+.2f\n",dist,posIni[0],posIni[1],posIni[2]);
+#endif
+      //
+  if(gRandom->Rndm()<ParticleDecayProbability(dist)) {
+    return 1;
+  }
+  if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
+    return -1;
+  }
+  for (int j=3;j--;) posIni[j] = posCurr[j];
+  return 0;
+  //
+}
+
+//____________________________________________________
 Bool_t FT2::PrepareProbe()
 {
-	// propagate the probe to max allowed R of the setup
-	int nlrITS = fITS->GetNLayers(); // including passive layers
-	//
-	double xyzTmp[3];
-	double xyzAft[3];
-	double params[8];
-	//
-	for (int ilr=0;ilr<nlrITS;ilr++) {
-		AliITSURecoLayer* lr = fITS->GetLayer(ilr);
-		if(fAllowDecay){fProbe.GetXYZ(xyzTmp);}
-		if (lr->IsPassive()) { // cylindric passive layer, just go to this layer
-			if (!PropagateToR(lr->GetRMax(),1,kFALSE,fSimMat,fSimMat)) return kFALSE;
-		}
-		else { // active layer, need to simulate the hit positions
-			if (!PassActiveITSLayer(lr)) return kFALSE;
-		}
-		if(fAllowDecay){
-			fProbe.GetXYZ(xyzAft);
-			Double_t dXits=xyzAft[0]-xyzTmp[0],dYits=xyzAft[1]-xyzTmp[1],dZits=xyzAft[2]-xyzTmp[2];
-			Double_t dits=TMath::Sqrt(dXits*dXits + dYits*dYits + dZits*dZits);
+  // propagate the probe to max allowed R of the setup
+  int nlrITS = fITS->GetNLayers(); // including passive layers
+  //
+  double xyzIni[3];
+  if(fAllowDecay){fProbe.GetXYZ(xyzIni);}
+  //
+  for (int ilr=0;ilr<nlrITS;ilr++) {
+    AliITSURecoLayer* lr = fITS->GetLayer(ilr);
+    //
+    if (lr->IsPassive()) { // cylindric passive layer, just go to this layer
+      if (!PropagateToR(lr->GetRMax(),1,kFALSE,fSimMat,fSimMat)) return kFALSE;
+    }
+    else { // active layer, need to simulate the hit positions
+      if (!PassActiveITSLayer(lr)) return kFALSE;
+    }
+    if(fAllowDecay && ProbeDecayAbsorb(xyzIni)) return kFALSE;
+  }
+  //
+  fNTPCHits = 0;
+  if (fIsTPC) {
+    const double kTanSectH = 1.76326980708464975e-01; // tangent of  10 degree (sector half opening)
+    if (!fProbe.RotateParamOnly( fProbe.PhiPos() )) {
+      return kFALSE; // start in the frame with X pointing to track position
+    }
+    if (!PropagateToR(fTPCLayers[0].x-0.1,1,kFALSE,fSimMat,fSimMat)) {
+      return kFALSE; // reach inner layer
+    }
+    if(fAllowDecay && ProbeDecayAbsorb(xyzIni)) return kFALSE;
+    
+    //
+    int sector = -1;
+    for (int ilr=0;ilr<(int)fTPCLayers.size();ilr++) {
 #if DEBUG>5
-			cout << ilr << " New Step Length in ITS is: " << dits << endl;
+      printf("At TPC lr %d\n",ilr);
+      fProbe.Print();
 #endif
-			if(gRandom->Rndm()<ParticleDecayProbability(dits)) {
-				return kFALSE;
-			}
-//			cout << "Computing Absorption Probability ITS " << ilr << endl;
-			AliTrackerBase::MeanMaterialBudget(xyzTmp,xyzAft,params);
-			if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
-				return kFALSE;
-			}
-		}
+      
+      FT2TPCLayer_t &tpcLr = fTPCLayers[ilr];
+      
+      tpcLr.hitSect = -1;
+      double phi = fProbe.PhiPos();
+      BringTo02Pi(phi);
+      Int_t sectNew = (Int_t)(phi*TMath::RadToDeg()/20.);
+      if (sector!=sectNew) {
+	sector = sectNew;
+	phi = 10. + 20.*sector;
+	phi /= 180;
+	phi *= TMath::Pi();
+	if (!fProbe.RotateParamOnly(phi)) {
+#if DEBUG
+	  printf("TPC:Failed to rotate to alpha %.4f (sc %d)\n",phi,sector);
+	  fProbe.Print();
+#endif
+	  return kFALSE; // go to sector frame
 	}
-	//
-	fNTPCHits = 0;
-	if (fIsTPC) {
-		const double kTanSectH = 1.76326980708464975e-01; // tangent of  10 degree (sector half opening)
-		double xyz[3];
-		fProbe.GetXYZ(xyz);
-		Double_t alphan = TMath::ATan2(xyz[1], xyz[0]);
-		if (!fProbe.RotateParamOnly(alphan)) {
-			return kFALSE; // start in the frame with X pointing to track position
-		}
-		if (!PropagateToR(fTPCLayers[0].x-0.1,1,kFALSE,fSimMat,fSimMat)) {
-			return kFALSE; // reach inner layer
-		}
-		//
-		int sector = -1;
-		for (int ilr=0;ilr<(int)fTPCLayers.size();ilr++) {
-#if DEBUG>5
-			printf("At TPC lr %d\n",ilr);
-			fProbe.Print();
-#endif
-			
-			FT2TPCLayer_t &tpcLr = fTPCLayers[ilr];
-			
-			tpcLr.hitSect = -1;
-			fProbe.GetXYZ(xyzTmp);
-			double phi = TMath::ATan2(xyzTmp[1],xyzTmp[0]);
-			BringTo02Pi(phi);
-			Int_t sectNew = (Int_t)(phi*TMath::RadToDeg()/20.);
-			if (sector!=sectNew) {
-				sector = sectNew;
-				phi = 10. + 20.*sector;
-				phi /= 180;
-				phi *= TMath::Pi();
-				if (!fProbe.RotateParamOnly(phi)) {
+      }
+      if (!fProbe.PropagateParamOnlyTo(tpcLr.x, fBz)) {
 #if DEBUG
-					printf("TPC:Failed to rotate to alpha %.4f (sc %d)\n",phi,sector);
-					fProbe.Print();
+	printf("TPC:Failed to go to X: %.4f\n",tpcLr.x);
+	fProbe.Print();
 #endif
-					return kFALSE; // go to sector frame
-				}
-			}
-			if (!fProbe.PropagateParamOnlyTo(tpcLr.x, fBz)) {
-#if DEBUG
-				printf("TPC:Failed to go to X: %.4f\n",tpcLr.x);
-				fProbe.Print();
-#endif
-				return kFALSE; // no materials inside TPC
-			}
-			if (TMath::Abs(fProbe.GetZ())>kMaxZTPC) break; // exit from the TPC
-			double maxY = kTanSectH*tpcLr.x - fTPCSectorEdge; // max allowed Y in the sector
-	
-			Double_t z = fProbe.GetZ();
-			if(z>245.) z=245.;
-				Double_t TPCdistortionRPhi = fTPCDistortionRPhi->Eval(fProbe.Phi(),TMath::Sqrt(fProbe.GetX()*fProbe.GetX()+fProbe.GetY()*fProbe.GetY()),z); // include tpc field distortion in rphi, assuming rphi==Y
-			if (TMath::Abs(fProbe.GetY())+TPCdistortionRPhi>maxY) {
+	return kFALSE; // no materials inside TPC
+      }
+      if (TMath::Abs(fProbe.GetZ())>kMaxZTPC) break; // exit from the TPC
+
+      if(fAllowDecay && ProbeDecayAbsorb(xyzIni)) return kFALSE;
+
+      double maxY = kTanSectH*tpcLr.x - fTPCSectorEdge; // max allowed Y in the sector
+      
+      Double_t z = fProbe.GetZ();
+      if(z>245.) z=245.;
+      Double_t TPCdistortionRPhi = fTPCDistortionRPhi->Eval(fProbe.Phi(),TMath::Sqrt(fProbe.GetX()*fProbe.GetX()+fProbe.GetY()*fProbe.GetY()),z); // include tpc field distortion in rphi, assuming rphi==Y
+      if (TMath::Abs(fProbe.GetY())+TPCdistortionRPhi>maxY) {
 #if DEBUG>3
-				printf("TPC: No hit in dead zone: %f\n",maxY);
-				fProbe.Print();
+	printf("TPC: No hit in dead zone: %f\n",maxY);
+	fProbe.Print();
 #endif
-				continue; // in dead zone
-			}
-			//
-			// if track Snp > limit, stop propagation
-			if (TMath::Abs(fProbe.GetSnp())>fMaxSnpTPC) {
+	continue; // in dead zone
+      }
+      //
+      // if track Snp > limit, stop propagation
+      if (TMath::Abs(fProbe.GetSnp())>fMaxSnpTPC) {
 #if DEBUG>2
-				printf("TPC: Max snp %f reached\n",fMaxSnpTPC);
-				fProbe.Print();
+	printf("TPC: Max snp %f reached\n",fMaxSnpTPC);
+	fProbe.Print();
 #endif
-				return kFALSE;
-			}
-			
-			if(fAllowDecay){
-				fProbe.GetXYZ(xyzAft);
-				Double_t dX=xyzAft[0]-xyzTmp[0],dY=xyzAft[1]-xyzTmp[1],dZ=xyzAft[2]-xyzTmp[2];
-				Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
+	return kFALSE;
+      }
+      // register hit
 #if DEBUG>5
-				cout << ilr << " New Step Length in TPC is: " << d << endl;
+      printf("Register TPC hit at sect:%d, Y:%.4f Z:%.4f\n",sector,fProbe.GetY(),fProbe.GetZ());
+      fProbe.Print();
 #endif
-				if(gRandom->Rndm()<ParticleDecayProbability(d)) {
-					return kFALSE;
-				}
-	//			cout << "Computing Absorption Probability TPC " << ilr << endl;
-				AliTrackerBase::MeanMaterialBudget(xyzTmp,xyzAft,params);
-				if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
-					return kFALSE;
-				}
-			}
-			// register hit
-#if DEBUG>5
-			printf("Register TPC hit at sect:%d, Y:%.4f Z:%.4f\n",sector,fProbe.GetY(),fProbe.GetZ());
-			fProbe.Print();
-#endif
-			if (tpcLr.isDead || (tpcLr.eff<1 && gRandom->Rndm()>tpcLr.eff)) continue;
-			//
-			tpcLr.hitSect = sector;
-			tpcLr.hitY = fProbe.GetY();
-			tpcLr.hitZ = fProbe.GetZ();
-			fTPCHitLr[fNTPCHits++] = ilr;
-			//
-		}
-	}
-	// RS: temporary fix: the errors assigned in clusterizer is sqrt(pixel_extent/12)
-	double eta = fProbe.Eta();
-	fITSerrSclZ = 20e-4*(1.4+0.61*eta*eta)*TMath::Sqrt(1./12.)/fSigZITS;
-	//
-	return kTRUE;
+      if (tpcLr.isDead || (tpcLr.eff<1 && gRandom->Rndm()>tpcLr.eff)) continue;
+      //
+      tpcLr.hitSect = sector;
+      tpcLr.hitY = fProbe.GetY();
+      tpcLr.hitZ = fProbe.GetZ();
+      fTPCHitLr[fNTPCHits++] = ilr;
+      //
+    }
+  }
+  // RS: temporary fix: the errors assigned in clusterizer is sqrt(pixel_extent/12)
+  double eta = fProbe.Eta();
+  fITSerrSclZ = 20e-4*(1.4+0.61*eta*eta)*TMath::Sqrt(1./12.)/fSigZITS;
+  //
+  return kTRUE;
 }
 
 

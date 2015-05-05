@@ -37,15 +37,25 @@ public:
 		}
 	}
 protected:
-	Double_t fProbeMass;	// true mass
-	Double_t fTPCmomentum;	// momentum after TPC reconstruction
-	Double_t fTPCSignal;	// TPC signal
+	Double_t fProbeMass;				// true mass
+	Double_t fTPCmomentum;				// momentum after TPC reconstruction
+	Double_t fTPCSignal;				// TPC signal
 	UShort_t fTPCSignalN;
-	Double_t fAbsPdgCode;	// |pdg code| of particle
-	Double_t fPdgCode;		// pdg code of particle
-	Int_t fAbsPdgCodeForTracking;
-	Double_t fTrueMass;     // true mass of the particle
-	Double_t fInnerTrackParameters[7]; // (fAlpha,fX,fP[5]) at inner TPC radius
+	Double_t fAbsPdgCode;				// |pdg code| of particle
+	Double_t fPdgCode;					// pdg code of particle
+	Int_t fAbsPdgCodeForTracking;		// |pdg code| used for tracking of particle
+	Double_t fTrueMass;					// true mass of the particle
+	Double_t fInnerTrackParameters[7];	// (fAlpha,fX,fP[5]) at inner TPC radius
+	
+	Int_t		fProbeNClTPC;			// N used TPC clusters
+	Int_t		fProbeNClITS;			// N used ITS clusters
+	Int_t		fProbeNClITSFakes;		// N used ITS Fake clusters
+	Int_t		fProbeITSPatternFake;	// fakes pattern for ITS
+	Int_t		fProbeITSPattern;		// pattern for ITS clusters
+	Double_t	fProbeChi2TPC;			// total chi2 in TPC
+	Double_t	fProbeChi2ITS;			// total chi2 in ITS
+
+	
 	ClassDef(FTProbe,1)
 };
 
@@ -94,9 +104,10 @@ public:
 	Bool_t ProcessTrack(TParticle* trc, AliVertex* vtx);
 	void   SetSimMat(Bool_t v=kTRUE) {fSimMat = v;}
 	void   SetAllowDecay(Bool_t d=kTRUE) {fAllowDecay = d;}
-	void   SetMinTPCHits(int v=70)  {fMinTPCHits=v;} // 60
-	void   SetMinITSLrHit(int v=4)  {fMinITSLrHit=v;}
+	void   SetMinTPCHits(int v=0)  {fMinTPCHits=v;} // 60
+	void   SetMinITSLrHit(int v=0)  {fMinITSLrHit=v;}
 	void   SetUsePIDForTracking(Bool_t usePID) {fUsePIDForTracking=usePID;}
+	Int_t  ProbeDecayAbsorb(double* posIni);
 	//
 	Int_t    GetNClITSFakes()  const {return fNClITSFakes;}
 	Int_t    GetNClITS()  const {return fNClITS;}
@@ -183,7 +194,7 @@ protected:
 	//Double_t              fProbeMass; // probe mass
 	Double_t              fBz;        // bz
 	Bool_t                fSimMat;    // simulate material effects in probe preparation
-	Bool_t				fAllowDecay; // necessary for standlone FT2 mode
+	Bool_t				  fAllowDecay; // necessary for standlone FT2 mode
 	Int_t                 fCurrITSLr; //! current ITS layer under tracking
 	Int_t                 fNClTPC;    //! N used TPC clusters
 	Int_t                 fNClITS;    //! N used ITS clusters
