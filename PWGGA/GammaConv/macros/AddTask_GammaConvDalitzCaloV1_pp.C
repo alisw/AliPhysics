@@ -1,14 +1,14 @@
-void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change different set of cuts
+void AddTask_GammaConvDalitzCaloV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Int_t doWeightingPart = 0,  //enable Weighting
-                              TString generatorName = "DPMJET",
                               TString cutnumberAODBranch = "8000000060084000001500000", // cutnumber for AOD branch
-                              Bool_t enableExtendedMatching = kFALSE, //enable or disable extended matching histograms for conversion electrons <-> cluster
-                              Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
-							) {
+			      Bool_t  enableExtendedMatching = kFALSE, 							//enable or disable extended matching histograms for conversion electrons <-> cluster
+			      TString periodname = "LHC12f1x", 						// period name
+			      Bool_t 	doWeighting = kFALSE,							// enables weighting
+			      Bool_t 	enableV0findingEffi = kFALSE
+			     			) {
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore");  
@@ -31,7 +31,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	gSystem->Load("libPWGflowTasks");
 	gSystem->Load("libPWGGAGammaConv");
 
-	Int_t isHeavyIon = 2;
+	Int_t isHeavyIon = 0;
 	
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -53,9 +53,11 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	
 	//=========  Set Cutnumber for V0Reader ================================
 					   //06000078400100001500000000
-	TString cutnumberPhoton 	= "06000078400100001500000000";
-	TString cutnumberEvent 		= "8000000";
+	TString cutnumberPhoton 	= "00000008400100001500000000";
+	TString cutnumberEvent 		= "0000000";
 	TString cutnumberElectron     	= "90005400000002000000";            //Electron Cuts
+	
+	
 	
 	
 	
@@ -70,6 +72,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
@@ -116,7 +119,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
     //========= Add Electron Selector ================
 
 
-    if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
+   if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
 
     AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
 
@@ -165,9 +168,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	
-	if ( trainConfig == 1 || trainConfig == 2 )
-	numberOfCuts = 4;
-
+	
    	
 	TString *eventCutArray   	= new TString[numberOfCuts];
 	TString *photonCutArray  	= new TString[numberOfCuts];
@@ -181,53 +182,32 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	//************************************************ EMCAL clusters **********************************************************
-	if ( trainConfig == 1){ // min energy = 0.3 GeV/c
-        
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8005201"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
-	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043022030000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[3] = "8005201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043022030000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kEMC7
-	      
 	
-	} else if ( trainConfig == 2 ){
-	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8006201"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
-	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[3] = "8006201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "20000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
-	  
-	  
-	} else if ( trainConfig == 3){ // min energy = 0.3 GeV/c																	
-							       							  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "11111053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
+	if ( trainConfig == 1){ // min energy = 0.3 GeV/c																
+																								        
+	    eventCutArray[0] = "0000011"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[1] = "0000011"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "11111053032230000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
 	     
 	
-	} else if ( trainConfig == 4){
+	} else if ( trainConfig == 2){     /****PHOS******/
 	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
+	    eventCutArray[0] = "0000011"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[1] = "0000011"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033200000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
 	   
 	  
-	} else if ( trainConfig == 5 ){
+	} else if ( trainConfig == 3 ){  /*****EMCAL*****/
 	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10023053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7 with TRD
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10013053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7 No TRD
+	    eventCutArray[0] = "0000011"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10012053032230000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7 with TRD
+	    eventCutArray[1] = "0000011"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10031053032230000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7 No TRD
 	      
 	  
-	} else if ( trainConfig == 6 ) {
+	} else if ( trainConfig == 4 ) {  /****PHOS******/
 	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033300000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033300000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7
+	    eventCutArray[0] = "0000011"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033300000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[1] = "0000011"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033300000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7
 	 
 	  
-	} else if ( trainConfig == 7 ){ // min energy = 0.3 GeV/c																	
-							       							  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "12200053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "13300053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
-	     
-	
-	} else {
+	}  else {
 	  
 		Error(Form("GammaConvDalitzCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -239,21 +219,52 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	TList *ElectronCutList  = new TList();
 	TList *MesonCutList     = new TList();
 
+	
+
 	TList *HeaderList = new TList();
-	if (doWeightingPart==1) {
-		TObjString *Header1 = new TObjString("pi0_1");
-		HeaderList->Add(Header1);
-	}
-	if (doWeightingPart==2){
+	if (periodname.Contains("LHC12i3")){	
+		TObjString *Header2 = new TObjString("BOX");
+		HeaderList->Add(Header2);
+	} else if (periodname.CompareTo("LHC14e2b")==0){
+		TObjString *Header2 = new TObjString("pi0_1");
+		HeaderList->Add(Header2);
 		TObjString *Header3 = new TObjString("eta_2");
 		HeaderList->Add(Header3);
-	}
-	if (doWeightingPart==3) {
-		TObjString *Header1 = new TObjString("pi0_1");
-		HeaderList->Add(Header1);
-		TObjString *Header3 = new TObjString("eta_2");
-		HeaderList->Add(Header3);
-	}
+	}	
+	
+	
+	
+	TString energy = "";
+	TString mcName = "";
+	TString mcNameAdd = "";
+	if (periodname.Contains("WOSDD")){
+		mcNameAdd = "_WOSDD";
+	} else if (periodname.Contains("WSDD")){
+		mcNameAdd = "_WSDD";
+	} 	
+	if (periodname.Contains("LHC12i3")){
+		energy = "2760GeV";
+		mcName = "Pythia8_LHC12i3";
+	} else if (periodname.Contains("LHC12f1a")){	
+		energy = "2760GeV";
+		mcName = "Pythia8_LHC12f1a";	
+	} else if (periodname.Contains("LHC12f1b")){	
+		energy = "2760GeV";
+		mcName = "Phojet_LHC12f1b";			
+	} else if (periodname.Contains("LHC14e2a")){	
+		energy = "8TeV";
+		mcName = "Pythia8_LHC14e2a";			
+	} else if (periodname.Contains("LHC14e2b")){	
+		energy = "8TeV";
+		mcName = "Pythia8_LHC14e2b";				
+	} else if (periodname.Contains("LHC14e2c")){		
+		energy = "8TeV";
+		mcName = "Phojet_LHC14e2c";					
+	}	
+	
+	
+		
+	
 
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
@@ -272,7 +283,29 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 	  
-		analysisEventCuts[i] = new AliConvEventCuts();   
+	  
+	  
+	        analysisEventCuts[i] = new AliConvEventCuts();  
+		
+	      // definition of weighting input
+		TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
+		TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
+		Bool_t fAddedSignal = eventCutArray[i].EndsWith("2");
+		TString mcInputNamePi0 = "";
+		TString mcInputNameEta = "";
+		
+		if (fAddedSignal && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
+			mcInputNamePi0 = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		} else {
+			mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		}	
+		
+		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+
+	  
+	  	 
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -317,7 +350,10 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
-        task->SetUseTHnSparse(isUsingTHnSparse);
+        //task->SetUseTHnSparse(isUsingTHnSparse);
+	
+	
+	
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
