@@ -61,10 +61,12 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiZVtxMixBinRanges[] = { -10, -8, -6, 
 const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[] = {0, 12};
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) - 1;
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) / 0.1); // bin width 0.1 GeV/c
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0InitInJet = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) / 0.5); // bin width 0.5 GeV/c
 // axis: pT of jets
 const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[] = {0, 100};
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet) / sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[0]) - 1;
-const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[0]) / 5.); // bin width 5 GeV/c
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[0]) / 5.); // bin width 5 GeV/c
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[0]) / 10.); // bin width 10 GeV/c
 // axis: K0S invariant mass
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsMassK0s = 300;
 const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMin = 0.35; // [GeV/c^2]
@@ -294,17 +296,11 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh1V0AXiPtMCGen[i] = 0;
 
     // eta daughters
-//      fhnV0K0sInclDaughterEtaPtPtMCGen[i] = 0;
     fhnV0K0sInclDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0K0sInJetsDaughterEtaPtPtMCGen[i] = 0;
     fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0LambdaInclDaughterEtaPtPtMCGen[i] = 0;
     fhnV0LambdaInclDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0LambdaInJetsDaughterEtaPtPtMCGen[i] = 0;
     fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0ALambdaInclDaughterEtaPtPtMCGen[i] = 0;
     fhnV0ALambdaInclDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0ALambdaInJetsDaughterEtaPtPtMCGen[i] = 0;
     fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[i] = 0;
 
     // Inclusive
@@ -579,17 +575,11 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh1V0AXiPtMCGen[i] = 0;
 
     // eta daughters
-//      fhnV0K0sInclDaughterEtaPtPtMCGen[i] = 0;
     fhnV0K0sInclDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0K0sInJetsDaughterEtaPtPtMCGen[i] = 0;
     fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0LambdaInclDaughterEtaPtPtMCGen[i] = 0;
     fhnV0LambdaInclDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0LambdaInJetsDaughterEtaPtPtMCGen[i] = 0;
     fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0ALambdaInclDaughterEtaPtPtMCGen[i] = 0;
     fhnV0ALambdaInclDaughterEtaPtPtMCRec[i] = 0;
-//      fhnV0ALambdaInJetsDaughterEtaPtPtMCGen[i] = 0;
     fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[i] = 0;
 
     // Inclusive
@@ -791,6 +781,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   }
   // pt binning for V0 and jets
   Int_t iNBinsPtV0 = fgkiNBinsPtV0Init;
+  Int_t iNBinsPtV0InJet = fgkiNBinsPtV0InitInJet;
   Double_t dPtV0Min = fgkdBinsPtV0[0];
   Double_t dPtV0Max = fgkdBinsPtV0[fgkiNBinsPtV0];
   Int_t iNJetPtBins = fgkiNBinsPtJetInit;
@@ -811,9 +802,10 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   fOutputListQA->Add(fh3CCMassCorrelKNotL);
   fOutputListQA->Add(fh3CCMassCorrelLNotK);
 
-  Double_t dStepEtaV0 = 0.025;
+  Double_t dStepEtaV0 = 0.05;
   Double_t dRangeEtaV0Max = 0.8;
   const Int_t iNBinsEtaV0 = 2 * Int_t(dRangeEtaV0Max / dStepEtaV0);
+//  printf("%s: %d\n", "iNBinsEtaV0", iNBinsEtaV0);
   // inclusive
   const Int_t iNDimIncl = 3;
   Int_t binsKIncl[iNDimIncl] = {fgkiNBinsMassK0s, iNBinsPtV0, iNBinsEtaV0};
@@ -824,28 +816,33 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   Double_t xmaxLIncl[iNDimIncl] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max};
   // binning in jets
   const Int_t iNDimInJC = 4;
-  Int_t binsKInJC[iNDimInJC] = {fgkiNBinsMassK0s, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins};
+  Int_t binsKInJC[iNDimInJC] = {fgkiNBinsMassK0s, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins};
   Double_t xminKInJC[iNDimInJC] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin};
   Double_t xmaxKInJC[iNDimInJC] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax};
-  Int_t binsLInJC[iNDimInJC] = {fgkiNBinsMassLambda, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins};
+  Int_t binsLInJC[iNDimInJC] = {fgkiNBinsMassLambda, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins};
   Double_t xminLInJC[iNDimInJC] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin};
   Double_t xmaxLInJC[iNDimInJC] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax};
   // binning in V0-jet correlations
-  Int_t iNBinsDeltaPhi = 72;
+  Int_t iNBinsDeltaPhi = 60;
   const Int_t iNDimCorrel = 6;
-  Float_t fDeltaEtaMax = 2 * 0.8; // >= 2*eta_V0^max
-  Int_t iNBinsDeltaEtaCorrel = Int_t(2 * fDeltaEtaMax / 0.1);
-  Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
+  Double_t fDeltaEtaMax = 2. * 0.7; // >= 2*eta_V0^max
+//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fDeltaEtaMax / 0.1); // does not work if fDeltaEtaMax is Float_t
+//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fDeltaEtaMax / 0.7); // does not work if fDeltaEtaMax is Float_t
+  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fDeltaEtaMax / fDeltaEtaMax); // does not work if fDeltaEtaMax is Float_t
+//  printf("%s: %d\n", "iNBinsDeltaEtaCorrel", iNBinsDeltaEtaCorrel);
+  Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
   Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
   Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
-  Int_t binsLCorrel[iNDimCorrel] = {fgkiNBinsMassLambda, iNBinsPtV0, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
+  Int_t binsLCorrel[iNDimCorrel] = {fgkiNBinsMassLambda / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
   Double_t xminLCorrel[iNDimCorrel] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
   Double_t xmaxLCorrel[iNDimCorrel] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
+//  printf("binsKCorrel: %d %d %d %d %d %d\n", fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel);
 
   // binning eff inclusive vs eta-pT
   Double_t dStepDeltaEta = 0.1;
   Double_t dRangeDeltaEtaMax = 0.5;
   const Int_t iNBinsDeltaEta = 2 * Int_t(dRangeDeltaEtaMax / dStepDeltaEta);
+//  printf("%s: %d\n", "iNBinsDeltaEta", iNBinsDeltaEta);
   Int_t binsEtaK[3] = {fgkiNBinsMassK0s, iNBinsPtV0, iNBinsEtaV0};
   Double_t xminEtaK[3] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max};
   Double_t xmaxEtaK[3] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max};
@@ -932,11 +929,11 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fhnV0CorrelMELambda[i] = new THnSparseD(Form("fhnV0CorrelMELambda_%d", i), Form("Lambda: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
     fOutputListStd->Add(fhnV0CorrelMELambda[i]);
 
-    fh2V0PtJetAngleK0s[i] = new TH2D(Form("fh2V0PtJetAngleK0s_%d", i), Form("K0s: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
+    fh2V0PtJetAngleK0s[i] = new TH2D(Form("fh2V0PtJetAngleK0s_%d", i), Form("K0s: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), 2*iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
     fOutputListStd->Add(fh2V0PtJetAngleK0s[i]);
-    fh2V0PtJetAngleLambda[i] = new TH2D(Form("fh2V0PtJetAngleLambda_%d", i), Form("Lambda: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
+    fh2V0PtJetAngleLambda[i] = new TH2D(Form("fh2V0PtJetAngleLambda_%d", i), Form("Lambda: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), 2*iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
     fOutputListStd->Add(fh2V0PtJetAngleLambda[i]);
-    fh2V0PtJetAngleALambda[i] = new TH2D(Form("fh2V0PtJetAngleALambda_%d", i), Form("ALambda: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
+    fh2V0PtJetAngleALambda[i] = new TH2D(Form("fh2V0PtJetAngleALambda_%d", i), Form("ALambda: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), 2*iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
     fOutputListStd->Add(fh2V0PtJetAngleALambda[i]);
 
     fh1DCAInK0s[i] = new TH1D(Form("fh1DCAInK0s_%d", i), Form("K0s in jets: DCA daughters, cent %s;DCA (#sigma)", GetCentBinLabel(i).Data()), 50, 0, 1);
@@ -954,11 +951,11 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListQA->Add(fh1DCAOutALambda[i]);
 
     // jet histograms
-    fh1PtJet[i] = new TH1D(Form("fh1PtJet_%d", i), Form("Jet pt spectrum, cent: %s;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax);
+    fh1PtJet[i] = new TH1D(Form("fh1PtJet_%d", i), Form("Jet pt spectrum, cent: %s;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), 2*iNJetPtBins, dJetPtMin, dJetPtMax);
     fOutputListStd->Add(fh1PtJet[i]);
     fh1EtaJet[i] = new TH1D(Form("fh1EtaJet_%d", i), Form("Jet eta spectrum, cent: %s;#it{#eta} jet", GetCentBinLabel(i).Data()), 80, -1., 1.);
     fOutputListStd->Add(fh1EtaJet[i]);
-    fh2EtaPtJet[i] = new TH2D(Form("fh2EtaPtJet_%d", i), Form("Jet eta vs pT spectrum, cent: %s;#it{#eta} jet;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), 80, -1., 1., iNJetPtBins, dJetPtMin, dJetPtMax);
+    fh2EtaPtJet[i] = new TH2D(Form("fh2EtaPtJet_%d", i), Form("Jet eta vs pT spectrum, cent: %s;#it{#eta} jet;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), 80, -1., 1., 2*iNJetPtBins, dJetPtMin, dJetPtMax);
     fOutputListStd->Add(fh2EtaPtJet[i]);
     fh2EtaPhiRndCone[i] = new TH2D(Form("fh2EtaPhiRndCone_%d", i), Form("Rnd. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 100, 0., TMath::TwoPi());
     fOutputListStd->Add(fh2EtaPhiRndCone[i]);
@@ -966,9 +963,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh2EtaPhiMedCone[i]);
     fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 100, 0., TMath::TwoPi());
     fOutputListStd->Add(fh1PhiJet[i]);
-    fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 2 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
+    fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 4 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
     fOutputListStd->Add(fh2PtJetPtTrackLeading[i]);
-    fh2PtJetPtTrigger[i] = new TH2D(Form("fh2PtJetPtTrigger_%d", i), Form("jet pt vs trigger track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} trigger track (GeV/#it{c})", GetCentBinLabel(i).Data()), 2 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
+    fh2PtJetPtTrigger[i] = new TH2D(Form("fh2PtJetPtTrigger_%d", i), Form("jet pt vs trigger track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} trigger track (GeV/#it{c})", GetCentBinLabel(i).Data()), 4 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
     fOutputListStd->Add(fh2PtJetPtTrigger[i]);
     fh1PtTrigger[i] = new TH1D(Form("fh1PtTrigger_%d", i), Form("trigger track pt, cent: %s;#it{p}_{T} trigger track (GeV/#it{c})", GetCentBinLabel(i).Data()), 200, 0., 20);
     fOutputListStd->Add(fh1PtTrigger[i]);
@@ -1093,30 +1090,18 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fOutputListMC->Add(fh1V0AXiPtMCGen[i]);
 
       // daughter eta
-//          fhnV0K0sInclDaughterEtaPtPtMCGen[i] = new THnSparseD(Form("fhnV0K0sInclDaughterEtaPtPtMCGen_%d",i),Form("MC K0S, inclusive, gen., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet",GetCentBinLabel(i).Data()),iNDimEtaD,binsEtaDaughter,xminEtaDaughter,xmaxEtaDaughter);
       fhnV0K0sInclDaughterEtaPtPtMCRec[i] = new THnSparseD(Form("fhnV0K0sInclDaughterEtaPtPtMCRec_%d", i), Form("MC K0S, inclusive, assoc., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet", GetCentBinLabel(i).Data()), iNDimEtaD, binsEtaDaughter, xminEtaDaughter, xmaxEtaDaughter);
-//          fhnV0K0sInJetsDaughterEtaPtPtMCGen[i] = new THnSparseD(Form("fhnV0K0sInJetsDaughterEtaPtPtMCGen_%d",i),Form("MC K0S, in JC, gen., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet",GetCentBinLabel(i).Data()),iNDimEtaD,binsEtaDaughter,xminEtaDaughter,xmaxEtaDaughter);
       fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = new THnSparseD(Form("fhnV0K0sInJetsDaughterEtaPtPtMCRec_%d", i), Form("MC K0S, in JC, assoc., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet", GetCentBinLabel(i).Data()), iNDimEtaD, binsEtaDaughter, xminEtaDaughter, xmaxEtaDaughter);
-//          fhnV0LambdaInclDaughterEtaPtPtMCGen[i] = new THnSparseD(Form("fhnV0LambdaInclDaughterEtaPtPtMCGen_%d",i),Form("MC Lambda, inclusive, gen., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet",GetCentBinLabel(i).Data()),iNDimEtaD,binsEtaDaughter,xminEtaDaughter,xmaxEtaDaughter);
       fhnV0LambdaInclDaughterEtaPtPtMCRec[i] = new THnSparseD(Form("fhnV0LambdaInclDaughterEtaPtPtMCRec_%d", i), Form("MC Lambda, inclusive, assoc., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet", GetCentBinLabel(i).Data()), iNDimEtaD, binsEtaDaughter, xminEtaDaughter, xmaxEtaDaughter);
-//          fhnV0LambdaInJetsDaughterEtaPtPtMCGen[i] = new THnSparseD(Form("fhnV0LambdaInJetsDaughterEtaPtPtMCGen_%d",i),Form("MC Lambda, in JC, gen., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet",GetCentBinLabel(i).Data()),iNDimEtaD,binsEtaDaughter,xminEtaDaughter,xmaxEtaDaughter);
       fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i] = new THnSparseD(Form("fhnV0LambdaInJetsDaughterEtaPtPtMCRec_%d", i), Form("MC Lambda, in JC, assoc., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet", GetCentBinLabel(i).Data()), iNDimEtaD, binsEtaDaughter, xminEtaDaughter, xmaxEtaDaughter);
-//          fhnV0ALambdaInclDaughterEtaPtPtMCGen[i] = new THnSparseD(Form("fhnV0ALambdaInclDaughterEtaPtPtMCGen_%d",i),Form("MC ALambda, inclusive, gen., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet",GetCentBinLabel(i).Data()),iNDimEtaD,binsEtaDaughter,xminEtaDaughter,xmaxEtaDaughter);
       fhnV0ALambdaInclDaughterEtaPtPtMCRec[i] = new THnSparseD(Form("fhnV0ALambdaInclDaughterEtaPtPtMCRec_%d", i), Form("MC ALambda, inclusive, assoc., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet", GetCentBinLabel(i).Data()), iNDimEtaD, binsEtaDaughter, xminEtaDaughter, xmaxEtaDaughter);
-//          fhnV0ALambdaInJetsDaughterEtaPtPtMCGen[i] = new THnSparseD(Form("fhnV0ALambdaInJetsDaughterEtaPtPtMCGen_%d",i),Form("MC ALambda, in JC, gen., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet",GetCentBinLabel(i).Data()),iNDimEtaD,binsEtaDaughter,xminEtaDaughter,xmaxEtaDaughter);
       fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[i] = new THnSparseD(Form("fhnV0ALambdaInJetsDaughterEtaPtPtMCRec_%d", i), Form("MC ALambda, in JC, assoc., daughters: charge-etaD-ptD-etaV0-ptV0-ptJet, cent: %s;charge;eta gen daughter;pT gen daughter;eta gen V0;pT gen V0;pT rec jet", GetCentBinLabel(i).Data()), iNDimEtaD, binsEtaDaughter, xminEtaDaughter, xmaxEtaDaughter);
 
-//          fOutputListMC->Add(fhnV0K0sInclDaughterEtaPtPtMCGen[i]);
       fOutputListMC->Add(fhnV0K0sInclDaughterEtaPtPtMCRec[i]);
-//          fOutputListMC->Add(fhnV0K0sInJetsDaughterEtaPtPtMCGen[i]);
       fOutputListMC->Add(fhnV0K0sInJetsDaughterEtaPtPtMCRec[i]);
-//          fOutputListMC->Add(fhnV0LambdaInclDaughterEtaPtPtMCGen[i]);
       fOutputListMC->Add(fhnV0LambdaInclDaughterEtaPtPtMCRec[i]);
-//          fOutputListMC->Add(fhnV0LambdaInJetsDaughterEtaPtPtMCGen[i]);
       fOutputListMC->Add(fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i]);
-//          fOutputListMC->Add(fhnV0ALambdaInclDaughterEtaPtPtMCGen[i]);
       fOutputListMC->Add(fhnV0ALambdaInclDaughterEtaPtPtMCRec[i]);
-//          fOutputListMC->Add(fhnV0ALambdaInJetsDaughterEtaPtPtMCGen[i]);
       fOutputListMC->Add(fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[i]);
     }
   }
