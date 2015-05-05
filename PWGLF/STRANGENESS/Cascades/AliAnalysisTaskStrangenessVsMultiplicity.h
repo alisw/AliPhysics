@@ -72,7 +72,10 @@ public:
     void SetSaveK0Short (Bool_t lSaveK0Short = kTRUE ) {
         fkSaveK0Short   = lSaveK0Short;
     }
-
+    void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
+        fkPreselectDedx   = lPreselectDedx;
+    }
+    
 //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
     void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) {
@@ -154,6 +157,7 @@ private:
     Bool_t fkSaveLambda;            //if true, removes tree fill confirmation for lambda mass window
     Bool_t fkSaveAntiLambda;        //if true, removes tree fill confirmation for antilambda mass window
     Bool_t fkSaveK0Short;           //if true, removes tree fill confirmation for k0short mass window
+    Bool_t fkPreselectDedx;         //if true, applies a 7-sigma TPC dEdx band 
     Bool_t fkSaveExtendedRefMultInfo; //if true, save 20 integers per event extra for eta-dependence of refmult
 
     //Objects Controlling Task Behaviour: has to be streamed!

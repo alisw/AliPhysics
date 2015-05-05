@@ -102,6 +102,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fkSaveLambda( kTRUE ),
       fkSaveAntiLambda( kTRUE ),
       fkSaveK0Short( kTRUE ),
+      fkPreselectDedx( kTRUE ), 
       fkSaveExtendedRefMultInfo ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
@@ -249,6 +250,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fkSaveLambda( kTRUE ),
       fkSaveAntiLambda( kTRUE ),
       fkSaveK0Short( kTRUE ),
+      fkPreselectDedx( kTRUE ), 
       fkSaveExtendedRefMultInfo ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
@@ -1231,9 +1233,21 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
             Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt);
             Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
             //Do Selection
-            if(     (fTreeVariableInvMassLambda    < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda && fkSaveLambda ) ||
-                    (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda && fkSaveAntiLambda ) ||
-                    (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short && fkSaveK0Short    ) ) {
+            if(
+                //Case 1: Lambda Selection
+                (fTreeVariableInvMassLambda    < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda && fkSaveLambda &&
+                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasPosProton) < 7.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 7.0) )
+                )
+                ||
+                //Case 2: AntiLambda Selection
+                (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda && fkSaveAntiLambda &&
+                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegProton) < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) )
+                )
+                ||
+                //Case 3: K0Short Selection
+                (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short && fkSaveK0Short &&
+                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegPion)   < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) )
+                ) ) {
                 //Pre-selection in case this is AA...
                 if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree ) fTreeV0->Fill();
             }
