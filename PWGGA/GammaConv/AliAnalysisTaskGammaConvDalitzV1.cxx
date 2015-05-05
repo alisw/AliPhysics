@@ -2096,12 +2096,12 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 							    
 							    TParticle * negativeMC = (TParticle*)Vgamma->GetNegativeMCDaughter(fMCStack);
 							    TParticle * positiveMC = (TParticle*)Vgamma->GetPositiveMCDaughter(fMCStack);
-							    TParticle * virtualGammaMotherMC = (TParticle*)fMCStack->Particle(virtualGammaMCLabel);
+							   // TParticle * virtualGammaMotherMC = (TParticle*)fMCStack->Particle(virtualGammaMCLabel);
 							    
 							    if( negativeMC->GetPdgCode() == 11 && positiveMC->GetPdgCode() == -11) {  // Electrons ...
 
 								  
-								if( IsPi0DalitzDaughter( Vgamma->GetTrackLabelPositive() ) ){
+								if( IsPi0DalitzDaughter( Vgamma->GetMCLabelPositive() ) ){
 								  
 								  hESDTruePi0EposEnegInvMassPi0Pt[fiCut]->Fill( Vgamma->M(), pi0cand->Pt() );
 								
