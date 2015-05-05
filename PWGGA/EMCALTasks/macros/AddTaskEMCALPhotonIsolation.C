@@ -1,4 +1,15 @@
-AliAnalysisTaskEMCALPhotonIsolationmd* AddTaskEMCALPhotonIsolation(
+///////////////////////////////////////////////////////////////////////////
+///\file AddTaskEMCALPhotonIsolation.C
+///\brief Configuration of AliAnalysisTaskEMCALPhotonIsolation
+///
+/// Version to be used in lego train for testing on pp@7TeV
+///
+/// \author Lucile Ronflette <lucile.ronflette@cern.ch>, SUBATECH, Nantes
+/// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
+/// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+///////////////////////////////////////////////////////////////////////////
+
+AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
  const char*    periodstr          = "LHC11c",
  const char *ntracks            = "EmcalTracks",
  const char *nclusters          = "EmcalClusters",
@@ -174,7 +185,7 @@ const Double_t edist = 440;
     myContName = Form("Analysis_Neutrals");
    
     // #### Define analysis task
-  AliAnalysisTaskEMCALPhotonIsolationmd* task = new AliAnalysisTaskEMCALPhotonIsolationmd("Analysis",bHisto);
+  AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
 
   // #### Task preferences
   task->SetOutputFormat(iOutput);

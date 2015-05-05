@@ -42,7 +42,7 @@
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEMCALPhotonIsolation)
+ClassImp(AliAnalysisTaskEMCALPhotonIsolation);
 /// \endcond
 
   //________________________________________________________________________
