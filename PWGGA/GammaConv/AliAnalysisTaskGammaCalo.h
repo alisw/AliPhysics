@@ -50,7 +50,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
-        	void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
+        void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		
 	    // Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
