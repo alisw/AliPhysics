@@ -227,7 +227,7 @@ void AddTask_GammaCalo_pPb(
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-    task->SetUseTHnSparse(isUsingTHnSparse);
+    task->SetDoTHnSparse(isUsingTHnSparse);
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
