@@ -23,7 +23,7 @@
 
 #include <AliRawReader.h>
 #include <AliADRawStream.h>
-#include <AliESDEvent.h>
+#include <AliESDAD.h>
 
 static const Float_t xSize = 18.1;
 static const Float_t ySize = 21.6;
@@ -63,6 +63,72 @@ AliEveADModule::~AliEveADModule()
   // Destructor
   //
   delete fStream;
+}
+/******************************************************************************/
+void AliEveADModule::LoadEsd(AliESDAD *adESD)
+{
+  //
+  // Load AD ESD
+  //
+
+  for (Int_t iChannel=0; iChannel < 16; ++iChannel) {
+    Int_t iLayer; Int_t iModule; Float_t rHole;
+    if (fIsASide) {
+      if (iChannel < 8) continue;
+      iLayer = (iChannel-8)/4;
+      iModule = (iChannel-8)%4;
+      rHole = ACHole[0];
+      
+    }
+    else {
+      if (iChannel >= 8) continue;
+      iLayer = iChannel/4;
+      iModule = iChannel%4;
+      rHole = ACHole[1];
+
+    }
+    Float_t v[12];
+
+    v[ 0] = (rHole + xGap)*xModule[iModule]; v[ 1] = yGap*yModule[iModule]; v[ 2] = zGap*zLayer[iLayer];
+    v[ 3] = (rHole + xGap)*xModule[iModule]; v[ 4] = (yGap + ySize)*yModule[iModule]; v[ 5] = zGap*zLayer[iLayer];
+    v[ 6] = (xGap + xSize)*xModule[iModule]; v[ 7] = (yGap + ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
+    v[ 9] = (xGap + xSize)*xModule[iModule]; v[10] = yGap*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
+   
+    AddQuad(v);
+    QuadValue(adESD->GetAdc(iChannel));
+    
+    v[ 0] = xGap*xModule[iModule]; v[ 1] = (rHole + yGap)*yModule[iModule]; v[ 2] = zGap*zLayer[iLayer];
+    v[ 3] = xGap*xModule[iModule]; v[ 4] = (yGap + ySize)*yModule[iModule]; v[ 5] = zGap*zLayer[iLayer];
+    v[ 6] = (rHole/2 + xGap)*xModule[iModule]; v[ 7] = (yGap+ ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
+    v[ 9] = (rHole/2 + xGap)*xModule[iModule]; v[10] = (rHole + yGap)*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
+    
+    AddQuad(v);
+    QuadValue(adESD->GetAdc(iChannel));
+    
+    v[ 0] = (rHole/2 + xGap)*xModule[iModule]; v[ 1] = (rHole + yGap)*yModule[iModule]; v[ 2] = zGap*zLayer[iLayer];
+    v[ 3] = (rHole/2 + xGap)*xModule[iModule]; v[ 4] = (yGap+ ySize)*yModule[iModule]; v[ 5] = zGap*zLayer[iLayer];
+    v[ 6] = (rHole + xGap)*xModule[iModule]; v[ 7] = (yGap + ySize)*yModule[iModule]; v[ 8] = zGap*zLayer[iLayer];   
+    v[ 9] = (rHole + xGap)*xModule[iModule]; v[10] = (rHole/2 + yGap)*yModule[iModule]; v[11] = zGap*zLayer[iLayer];
+    
+    AddQuad(v);
+    QuadValue(adESD->GetAdc(iChannel));
+  }
+
+  if (fIsASide) 
+    RefMainTrans().SetPos(0, 0, 1699.7);
+  else
+    RefMainTrans().SetPos(0, 0, -1954.4);
+
+  gEve->AddElement(this);
+  if(fShowLegend){
+  	TEveRGBAPalette* pal = this->GetPalette();
+  	TEveRGBAPaletteOverlay *po = new TEveRGBAPaletteOverlay(pal, 0.69, 0.1, 0.3, 0.05);
+  	TGLViewer* v = gEve->GetDefaultGLViewer();
+  	v->AddOverlayElement(po);
+  	TGLAnnotation *ann = new TGLAnnotation(v,"Integrated charge [ADC counts]",0.69, 0.2);
+  	ann->SetTextSize(0.04);
+	}
+  gEve->Redraw3D();
 }
 
 /******************************************************************************/
