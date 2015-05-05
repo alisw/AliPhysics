@@ -46,7 +46,8 @@ class AliEmcalContainer : public TNamed {
     kMaxTrackPtCut = 1<<24,
     kMaxClusterPtCut = 1<<25,
     kFlavourCut = 1<<26,
-    kTagStatus = 1<<27
+    kTagStatus = 1<<27,
+    kMinNConstituents = 1<<28
   };
 
   AliEmcalContainer();
@@ -84,6 +85,6 @@ class AliEmcalContainer : public TNamed {
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
-  ClassDef(AliEmcalContainer,4);
+  ClassDef(AliEmcalContainer,5);
 };
 #endif

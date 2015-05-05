@@ -47,6 +47,7 @@ AliJetContainer::AliJetContainer():
   fNEFMaxCut(10.),
   fLeadingHadronType(0),
   fNLeadingJets(1),
+  fMinNConstituents(-1),
   fJetBitMap(0),
   fJetTrigger(0),
   fTagStatus(-1),
@@ -92,6 +93,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fNEFMaxCut(10.),
   fLeadingHadronType(0),
   fNLeadingJets(1),
+  fMinNConstituents(-1),
   fJetBitMap(0),
   fJetTrigger(0),
   fTagStatus(-1),
@@ -412,6 +414,12 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   if (!AcceptBiasJet(jet)) {
     AliDebug(11,"Cut rejecting jet: Bias");
     fRejectionReason |= kMinLeadPtCut;
+    return kFALSE;
+  }
+
+  if(fMinNConstituents>0 && jet->GetNumberOfConstituents()<fMinNConstituents) {
+    AliDebug(11,"Cut rejecting jet: minimum number of constituents");
+    fRejectionReason |= kMinNConstituents;
     return kFALSE;
   }
 

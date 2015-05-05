@@ -1390,7 +1390,7 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(26, "MaxClusterPt");
   axis->SetBinLabel(27, "Flavour");
   axis->SetBinLabel(28, "TagStatus");
-  axis->SetBinLabel(29, "Bit28");
+  axis->SetBinLabel(29, "MinNConstituents");
   axis->SetBinLabel(30, "Bit29");
   axis->SetBinLabel(31, "Bit30");
   axis->SetBinLabel(32, "Bit31");
