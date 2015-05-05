@@ -13,9 +13,13 @@
   
 
   To be added:
-   1.) Cacha also as a root file - chaining is possible
+   1.) Cache also as a root file - chaining is possible - GetRCT should use this root interface
    2.) Make chache all with parameters
    3.) Put here description how to get password free certificate
+   4.) Make unit test - nightly checkes of the tree consitency in $ALICE_PHYSICS/../src/PWGPP/scripts/test
+       a.) We can read it - GetEntries()>0
+       b.) Check that branches are the same  
+      
 
 */
 
