@@ -17,7 +17,7 @@
 
 class AliRawReader;
 class AliADRawStream;
-class AliESDEvent;
+class AliESDAD;
 
 class AliEveADModule : public TEveQuadSet
 {
@@ -26,6 +26,7 @@ public:
   virtual ~AliEveADModule();
 
   void LoadRaw(AliRawReader *rawReader);
+  void LoadEsd(AliESDAD *adESD);
 
 protected:
 
@@ -37,7 +38,7 @@ private:
   AliEveADModule(const AliEveADModule&);
   AliEveADModule& operator=(const AliEveADModule&);
 
-  ClassDef(AliEveADModule,0) // Representation of a AD module
+  ClassDef(AliEveADModule,1) // Representation of a AD module
 };
 
 #endif
