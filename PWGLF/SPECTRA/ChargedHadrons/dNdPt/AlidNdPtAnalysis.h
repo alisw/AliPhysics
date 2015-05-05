@@ -293,11 +293,11 @@ private:
   Int_t fPtCorrNbins;
   Int_t fEtaNbins;
   Int_t fZvNbins;
-  Double_t* fBinsMult;
-  Double_t* fBinsPt;
-  Double_t* fBinsPtCorr;
-  Double_t* fBinsEta;
-  Double_t* fBinsZv;
+  Double_t* fBinsMult;//[fMultNbins]
+  Double_t* fBinsPt;//[fPtNbins]
+  Double_t* fBinsPtCorr;//[fPtCorrNbins]
+  Double_t* fBinsEta;//[fEtaNbins]
+  Double_t* fBinsZv;//[fZvNbins]
   
   Bool_t fIsInit;
 
