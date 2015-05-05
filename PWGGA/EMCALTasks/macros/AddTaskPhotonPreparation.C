@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////
+///\file AddTaskPhotonPreparation.C
+///\brief Configuration of base classes to run isolated photon analysis via AliAnalysisTaskEMCALPhotonIsolation
+///
+/// Version to be used in lego train for testing on pp@7TeV
+///
+/// \author Lucile Ronflette <lucile.ronflette@cern.ch>, SUBATECH, Nantes
+/// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
+/// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+///////////////////////////////////////////////////////////////////////////
+
 AliAnalysisTaskSE* AddTaskPhotonPreparation(
   const char*    periodstr          = "LHC11c",
   const char*    pTracksName        = "PicoTracks",
@@ -89,58 +100,295 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 
-  //----------------------- Track Matching tasks -----------------------------------------------------
-  gROOT->LoadMacro("./AddTaskMatchingChain.C");
-  // gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMatchingChain.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
-  								  clusterColName,
- 								  trackeff,doAODTrackProp,
-  								  0.5,modifyMatchObjs,doHistos);
+  //----------------------- Track Matching tasks ----------------------------------------------------
 
-  cout<<"AddTaskMatchingChain"<<endl;
-  //hard coded names of AliEmcalParticle strings to coincide with AddTaskClusTrackMatching
-  TString inputTracks = "AODFilterTracks";
-  if (dType == "ESD") {inputTracks = "ESDFilterTracks";
-  }
 
-  //------------------------------- Tracks used for analysis -------------------------------------------
-const Double_t edist = 440;
+  // Set trackcuts according to period. 
   TString period(periodstr);
-  TString inputTracksAna = "FilterTracksAna";
-    // tracks to be used in analysis
-  if(dType == "ESD") {
 
-   //     inputTracksAna = "ESDFilterTracksAna";
+  // Here are defined all the name of branches used in analysis
+  TString inputClus   = clusterColName;
+  TString inputTracks = "AODFilterTracks";
+  TString inputTracksAna = "AODFilterTracksAna";
 
-    TString trackCutsAna(Form("Hybrid_%s", period.Data()));
-    gROOT->LoadMacro("./AddTaskEmcalEsdTrackFilter.C");
-    AliEmcalEsdTrackFilterTask *esdfilterAna = AddTaskEmcalEsdTrackFilter(inputTracksAna.Data(),trackCutsAna.Data());
-    cout<<"trakc cuts for analysis " << trackCutsAna.Data()<<endl;
-    esdfilterAna->SetDoPropagation(kTRUE);
+  //----------------------- Filter Tracks -----------------------------------------------------
+  const Double_t edist = 440;
+  if (dType == "ESD") {
+
+    //tracks to be used in track matching
+    inputTracks = "ESDFilterTracks";
+    //    const char *name=inputTracks.Data();
+    TString trackCuts(Form("tpconly_%s", period.Data()));
+    AliEmcalEsdTrackFilterTask *esdfilter = new AliEmcalEsdTrackFilterTask("AliEmcalEsdTrackFilterTask");
+    // only designed for LHC11c/d (MC anchored) studies
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
+
+    /* TPC-only constrained track cuts*/
+     AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(2001);       //TPC-only loose track cuts
+     esdfilter->SetTrackCuts(cutsp);
+     esdfilter->SetHybridTrackCuts(0);
+     //    cout << "on passe bien dans le cut normalement"<<endl;
+ 
+  esdfilter->SetTracksName(inputTracks.Data());
+
+    esdfilter->SetDoPropagation(kTRUE);
     //   esdfilter->SetDoSpdVtxConstrain(kTRUE);
-    esdfilterAna->SetDist(edist);
-    esdfilterAna->SelectCollisionCandidates(pSel);
-    esdfilterAna->SetTrackEfficiency(trackeff);
-  }
-  else if (dType=="AOD"){
-    TString trackCutsAna(Form("Hybrid_%s", period.Data()));
-    gROOT->LoadMacro("./AddTaskEmcalAodTrackFilter.C");
-    AliEmcalAodTrackFilterTask *aodfilterAna = AddTaskEmcalAodTrackFilter(inputTracksAna.Data(),"tracks",period,trackCutsAna.Data());
-    if (doAODTrackProp) {
-      aodfilterAna->SetDist(edist);
-   aodfilterAna->SetAttemptPropMatch(kTRUE);
-    }
-     aodfilterAna->SetDoPropagation(kTRUE);
-    aodfilterAna->SelectCollisionCandidates(pSel);
-    aodfilterAna->SetTrackEfficiency(trackeff);
+    esdfilter->SetDist(edist);
+    esdfilter->SelectCollisionCandidates(pSel);
+    esdfilter->SetTrackEfficiency(trackeff);
+
+    mgr->AddTask(esdfilter);
+  // Create containers for input/output
+      AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+     mgr->ConnectInput(esdfilter, 0, cinput1);
 
 
   }
+//  else if (dType == "AOD") {
+ //   TString trackCuts(Form("tpconly_%s", period.Data()));
+ //    gROOT->LoadMacro("./AddTaskEmcalAodTrackFilter.C");
+ //    AliEmcalAodTrackFilterTask *aodfilter = new AliEmcalAodTrackFilterTask("AliEmcalAodTrackFilterTask");
+ //    aodfilter->SetTracksOutName(inputTracks.Data());
+ //  aodfilter->SetTracksInName("tracks");
+ //  aodfilter->SetMC(isMC);
+
+ // Bool_t includeNoITS  = kFALSE;
+ //  Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
+ //  Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
+ //  Bool_t isMC          = kFALSE;
+
+ //  TString strTrackCuts(trackCuts.Data());
+ //   strTrackCuts.ToLower();
+
+
+ //   TString runPeriod(period.Data());
+ //  runPeriod.ToLower();
+
+ //  if(strTrackCuts.Contains("hybrid")){
+ //  if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" ||
+ //      runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
+ //      runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
+ //      runPeriod == "lhc12f" || runPeriod == "lhc12g" || runPeriod == "lhc12h" ||
+ //      runPeriod == "lhc12i" || runPeriod == "lhc13b" || runPeriod == "lhc13c" ||
+ //      runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" ||
+ //      runPeriod == "lhc13g"
+ //      ) {
+ //    aodfilter->SetAODfilterBits(256,512); // hybrid tracks
+ //    if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
+ //      includeNoITS = kTRUE;
+ //  } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
+ // 	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b")
+ // 	     ) {
+ //    aodfilter->SetAODfilterBits(256,512); // hybrid tracks
+ //    isMC = kTRUE;
+ //  } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
+ //    aodfilter->SetAODfilterBits(256,16); // hybrid tracks
+ //    includeNoITS = kTRUE;
+ //  }
+ //  else if (runPeriod.Contains("lhc12a15a") || runPeriod == "lhc12a15f" || runPeriod == "lhc12a15g") {
+ //    aodfilter->SetAODfilterBits(256,16); // hybrid tracks
+ //    isMC = kTRUE;
+ //    includeNoITS = kTRUE;
+ //  } 
+ // else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
+ //  aodfilter->SetFilterBits(256,512);
+ //  includeNoITS=kFALSE;
+ //  }
+ //  else {
+ //    if (!runPeriod.IsNull())
+ //      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
+ //  }
+ //  }
+
+ //  if(strTrackCuts.Contains("tpconly")){
+ //  if (runPeriod.Contains("lh11c") || runPeriod.Contains("lhc11d")){
+ //            aodfilter->SetAODfilterBits(128);
+ //            includeNoITS = kTRUE;
+
+ //            }
+ //  if(runPeriod.Contains("lhc13e4") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b") || runPeriod.Contains("lhc12a15g")){
+
+ //                aodfilter->SetAODfilterBits(128);
+ //                isMC=kTRUE;
+ //                includeNoITS=kTRUE;
+ //            }
+
+ //  }
+ //  aodfilter->SetIncludeNoITS(includeNoITS);
+ //  aodfilter->SetAttemptProp(doAttemptProp);
+ //  aodfilter->SetMC(isMC);
+ //    if (doAODTrackProp) {
+ //      aodfilter->SetDist(edist);
+ //   aodfilter->SetAttemptPropMatch(kTRUE);
+ //    }
+ //     aodfilter->SetDoPropagation(kTRUE);
+ //    aodfilter->SelectCollisionCandidates(pSel);
+ //    aodfilter->SetTrackEfficiency(trackeff);
+ //  }
+
+  //----------------------- Produce EmcalParticles -----------------------------------------------------
+  // Produce objects (AliEmcalParticle) for tracks and clusters 
+  // used for cluster-track matching
   TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
-    TString emctracksAna = Form("EmcalTracks_%s",inputTracksAna.Data());
+  // TString emctracksAna = Form("EmcalTracks_%s",inputTracksAna.Data());
+  TString emcclusters = Form("EmcalClusters_%s",inputClus.Data());
+  cout<<"
+
+
+
+"<<endl;
+  Printf("emctracks: %s  inputTracks: %s",emctracks.Data(),inputTracks.Data());
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
+  AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(inputTracks,inputClus,emctracks,emcclusters);
+  emcalParts->SelectCollisionCandidates(pSel);
+
+  //----------------------- Cluster-Track matching -----------------------------------------------------
+
+//   //gROOT->LoadMacro("./AddTaskEmcalClusTrackMatcher.C");
+gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,0.5,modifyMatchObjs,kTRUE);
+  emcalClus->SelectCollisionCandidates(pSel);
+
+//   Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s emctracks Ana: %s",inputTracks.Data(),emctracks.Data(),emcclusters.Data());
+
+
+  
+// ------------------------------- end of trackk matching tasks ------------------------------
+
+//   //------------------------------- Tracks used for analysis -------------------------------------------
+// const Double_t edist = 440;
+//   TString period(periodstr);
+//    TString inputTracksAna = "FilterTracksAna";
+//   //   // tracks to be used in analysis
+//    if(dType == "ESD") {
+
+//      TString trackCutsAna(Form("Hybrid_%s", period.Data()));
+//   //   gROOT->LoadMacro("./AddTaskEmcalEsdTrackFilter.C");
+//     AliEmcalEsdTrackFilterTask *esdfilterAna =new AliEmcalEsdTrackFilterTask("AliEmcalEsdTrackFilterTaskAna"); 
+
+//   //-------------------------------------------------------
+//   // Init the task and do settings
+//   //-------------------------------------------------------
+
+//   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
+//     /* hybrid track cuts*/
+//     AliESDtrackCuts *cutsp2 = CreateTrackCutsPWGJE(10001008);       //1000 adds SPD any requirement
+//       esdfilterAna->SetTrackCuts(cutsp2);
+//     //    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041008);       //1004 removes ITSrefit requirement from standard set   
+//     AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10011008); 
+//     //   hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+//       esdfilterAna->SetHybridTrackCuts(hybsp);
+//     esdfilterAna->SetIncludeNoITS(kFALSE);
+
+//   esdfilterAna->SetTracksName(inputTracksAna.Data());
+
+//     cout<<"track cuts for analysis " << trackCutsAna.Data()<<endl;
+//     esdfilterAna->SetDoPropagation(kTRUE);
+//     esdfilterAna->SetDist(edist);
+//     esdfilterAna->SelectCollisionCandidates(pSel);
+//     esdfilterAna->SetTrackEfficiency(trackeff);
+
+//         mgr->AddTask(esdfilterAna);
+//       //     AliAnalysisDataContainer *coutput2 = mgr->GetCommonInputContainer();
+//       mgr->ConnectInput(esdfilterAna, 0, cinput1);
+
+//     ///    delete DataSet;
+//     //  delete CutsType;
+//   }
+
+//   else if (dType=="AOD"){
+//     TString trackCutsAna(Form("Hybrid_%s", period.Data()));
+//     gROOT->LoadMacro("./AddTaskEmcalAodTrackFilter.C");
+
+//     AliEmcalAodTrackFilterTask *aodfilterAnaAna = new AliEmcalAodTrackFilterTask("AliEmcalAodTrackFilterTask");
+//     aodfilterAna->SetTracksOutName(inputTracks.Data());
+//   aodfilterAna->SetTracksInName("tracks");
+//   aodfilterAna->SetMC(isMC);
+
+//  Bool_t includeNoITS  = kFALSE;
+//   Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
+//   Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
+//   Bool_t isMC          = kFALSE;
+
+//   TString strTrackCuts(trackCutsAna);
+//    strTrackCuts.ToLower();
+
+
+//    TString runPeriod(period.Data());
+//   runPeriod.ToLower();
+
+//   if(strTrackCuts.Contains("hybrid")){
+//   if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" ||
+//       runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
+//       runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
+//       runPeriod == "lhc12f" || runPeriod == "lhc12g" || runPeriod == "lhc12h" ||
+//       runPeriod == "lhc12i" || runPeriod == "lhc13b" || runPeriod == "lhc13c" ||
+//       runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" ||
+//       runPeriod == "lhc13g"
+//       ) {
+//     aodfilterAna->SetAodfilterAnaBits(256,512); // hybrid tracks
+//     if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
+//       includeNoITS = kTRUE;
+//   } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
+// 	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b")
+// 	     ) {
+//     aodfilterAna->SetAodfilterAnaBits(256,512); // hybrid tracks
+//     isMC = kTRUE;
+//   } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
+//     aodfilterAna->SetAodfilterAnaBits(256,16); // hybrid tracks
+//     includeNoITS = kTRUE;
+//   }
+//   else if (runPeriod.Contains("lhc12a15a") || runPeriod == "lhc12a15f" || runPeriod == "lhc12a15g") {
+//     aodfilterAna->SetAodfilterAnaBits(256,16); // hybrid tracks
+//     isMC = kTRUE;
+//     includeNoITS = kTRUE;
+//   } 
+//  else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
+//   aodfilterAna->SetFilterBits(256,512);
+//   includeNoITS=kFALSE;
+//   }
+//   else {
+//     if (!runPeriod.IsNull())
+//       ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
+//   }
+//   }
+
+//   if(strTrackCuts.Contains("tpconly")){
+//   if (runPeriod.Contains("lh11c") || runPeriod.Contains("lhc11d")){
+//             aodfilterAna->SetAodfilterAnaBits(128);
+//             includeNoITS = kTRUE;
+
+//             }
+//   if(runPeriod.Contains("lhc13e4") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b") || runPeriod.Contains("lhc12a15g")){
+
+//                 aodfilterAna->SetAodfilterAnaBits(128);
+//                 isMC=kTRUE;
+//                 includeNoITS=kTRUE;
+//             }
+
+//   }
+//   aodfilterAna->SetIncludeNoITS(includeNoITS);
+//   aodfilterAna->SetAttemptProp(doAttemptProp);
+//   aodfilterAna->SetMC(isMC);
+//     if (doAODTrackProp) {
+//       aodfilterAna->SetDist(edist);
+//    aodfilterAna->SetAttemptPropMatch(kTRUE);
+//     }
+//      aodfilterAna->SetDoPropagation(kTRUE);
+//     aodfilterAna->SelectCollisionCandidates(pSel);
+//     aodfilterAna->SetTrackEfficiency(trackeff);
+
+
+//   }
+  TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
+  //    TString emctracksAna = Form("EmcalTracks_%s",inputTracksAna.Data());
     //TString emctracksAna = Form("EmcalTracks_");
   TString emcclusters = Form("EmcalClusters_%s",clusterColName.Data());
-   Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s, emctracks analysis: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data(),emctracksAna.Data());
+   Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data());
   if(makePicoTracks) {
     //    ----------------------- Produce PicoTracks -----------------------------------------------------
        gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
@@ -155,10 +403,9 @@ const Double_t edist = 440;
     myContName = Form("Photon_Preparation");
 
 
-    gROOT->LoadMacro("./AddTaskEMCALPhotonIsolation.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macro/AddTaskEMCALPhotonIsolation.C");
 
-           AliAnalysisTaskEMCALPhotonIsolationmd *task =AddTaskEMCALPhotonIsolation(emctracks,emcclusters,inputTracksAna,kTRUE, iOutput,isMC);
- // AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation("AODFilterTracks","EmcCaloClusters",kTRUE, iOutput,kFALSE);
+    AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(periodstr,emctracks,emcclusters,pSel,dType,kTRUE, iOutput,isMC);
       task->SelectCollisionCandidates(pSel);
    if(isEmcalTrain)
     RequestMemory(task,500*1024);
@@ -166,3 +413,5 @@ const Double_t edist = 440;
 
     return task;
 }
+
+

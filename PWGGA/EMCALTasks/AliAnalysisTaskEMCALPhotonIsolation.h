@@ -248,7 +248,7 @@ private:
    AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
 
    /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 1)    //EMCAL Neutrals base analysis task
+   ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 1);    //EMCAL Neutrals base analysis task
       /// \endcond
 };
 #endif
