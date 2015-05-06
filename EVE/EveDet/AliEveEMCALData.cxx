@@ -49,10 +49,6 @@ AliEveEMCALData::AliEveEMCALData():
   fTree(0x0),
   fESD(0x0),
   fNsm(20),
-  fNsmfull(10),
-  fNsmhalf(2),  
-  fNsmfullD(6),
-  fNsmhalfD(2),
   fSM(20),
   fSMfull(10),
   fSMhalf(2),
@@ -60,7 +56,8 @@ AliEveEMCALData::AliEveEMCALData():
   fSMhalfD(2),
   fRunLoader(0),
   fDebug(0),
-  fPoint(0)
+  fPoint(0),
+  fClusterMom()
 {
   CreateAllSModules();
 }
@@ -79,10 +76,6 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* 
   fTree(0x0),
   fESD(0x0),
   fNsm(20),
-  fNsmfull(10),
-  fNsmhalf(2),  
-  fNsmfullD(6),
-  fNsmhalfD(2),
   fSM(20),
   fSMfull(10),
   fSMhalf(2),
@@ -90,7 +83,8 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* 
   fSMhalfD(2),
   fRunLoader(rl),
   fDebug(0),
-  fPoint(0)
+  fPoint(0),
+  fClusterMom()
 {
   InitEMCALGeom(rl);
   CreateAllSModules();
@@ -124,11 +118,7 @@ AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
   fHMatrix(edata.fHMatrix),
   fTree(edata.fTree),
   fESD(edata.fESD),
-  fNsm     (edata.fNsm     ),
-  fNsmfull (edata.fNsmfull ),
-  fNsmhalf (edata.fNsmhalf ),
-  fNsmfullD(edata.fNsmfullD),
-  fNsmhalfD(edata.fNsmhalfD),
+  fNsm    (edata.fNsm),
   fSM     (edata.fSM),
   fSMfull (edata.fSMfull ),
   fSMhalf (edata.fSMhalf ),  
@@ -136,7 +126,8 @@ AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
   fSMhalfD(edata.fSMhalfD),
   fRunLoader(edata.fRunLoader),
   fDebug(edata.fDebug),
-  fPoint(edata.fPoint)
+  fPoint(edata.fPoint),
+  fClusterMom(edata.fClusterMom)
 {
   InitEMCALGeom(edata.fRunLoader);
   CreateAllSModules();
@@ -208,10 +199,10 @@ void AliEveEMCALData::GetGeomInfo(Int_t id, Int_t &iSupMod, Double_t& x, Double_
   Int_t iIphi   =  0 ;
   Int_t iIeta   =  0 ;
 
-  //Geometry methods
+  // Geometry methods
   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
 
-  //Gives SuperModule and Tower numbers
+  // Gives SuperModule and Tower numbers
   fGeom->RelPosCellInSModule(id, x, y, z);
 }
 
@@ -257,31 +248,31 @@ void AliEveEMCALData::DropAllSModules()
 //______________________________________________________________________________
 void AliEveEMCALData::DeleteSuperModules()
 {
-  for (Int_t sm = 0; sm < fNsm; sm++)
+  for (Int_t sm = 0; sm < 20; sm++)
   {
     fSM[sm] = 0;
     delete fSM[sm];
   }
   
-  for(Int_t smf = 0; smf < fNsmfull; smf++) 
+  for(Int_t smf = 0; smf < 10; smf++) 
   {
     fSMfull[smf] = 0;
     delete fSMfull[smf];
   }
   
-  for(Int_t smh = 0; smh < fNsmhalf; smh++)
+  for(Int_t smh = 0; smh < 2; smh++)
   {
     fSMhalf[smh] = 0;
     delete fSMhalf[smh];
   }
 
-  for(Int_t smd = 0; smd < fNsmfullD; smd++) 
+  for(Int_t smd = 0; smd < 6; smd++) 
   {
     fSMfullD[smd] = 0;
     delete fSMfullD[smd];
   }
   
-  for(Int_t smh = 0; smh < fNsmhalfD; smh++)
+  for(Int_t smh = 0; smh < 2; smh++)
   {
     fSMhalfD[smh] = 0;
     delete fSMhalfD[smh];
@@ -614,12 +605,12 @@ void AliEveEMCALData::LoadRecPointsFromESD()
 {
   Int_t iSupMod =  0 ;
   Double_t x, y, z;
-  Int_t iSM =  0 ;
-  Int_t iT  =  0 ;
-  Int_t iIp =  0 ;
-  Int_t iIe =  0 ;
-  Double_t xd, yd, zd;
-  Float_t pos[3] ; 
+  //  Int_t iSM =  0 ;
+  //  Int_t iT  =  0 ;
+  //  Int_t iIp =  0 ;
+  //  Int_t iIe =  0 ;
+  //  Double_t xd, yd, zd;
+  //  Float_t pos[3] ; 
   
   // Get reconstructed vertex position
   AliESDVertex* primVertex =(AliESDVertex*) fESD->GetVertex();
@@ -643,28 +634,19 @@ void AliEveEMCALData::LoadRecPointsFromESD()
     Double_t energy = clus->E() ;  
     Double_t disp   = clus->GetDispersion() ;
     
-    clus->GetPosition(pos) ; // Global position
-    TVector3 vpos(pos[0],pos[1],pos[2]) ;
+    //clus->GetPosition(pos) ; // Global position
     
-    TLorentzVector p4 ;
-    clus->GetMomentum(p4,vertexPosition);
-    
-    TVector3 p3;
-    p3.SetXYZ(p4[0],p4[1],p4[2]);
-    
-    Double_t eta = p3.Eta();
-    Double_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
+    clus->GetMomentum(fClusterMom,vertexPosition);
+
+    Double_t eta = fClusterMom.Eta();
+    Double_t phi = ( (fClusterMom.Phi()) < 0) ? (fClusterMom.Phi()) + 2. * TMath::Pi() : (fClusterMom.Phi());
     
     Int_t mult = clus->GetNCells() ;
     
     AliDebug(2,Form("In cluster %d, ncells %d, energy %2.2f, disp %2.2f, eta %2.2f, phi %2.2f",
                     iclus,mult,energy,disp,eta,phi));
     
-    Int_t clusId = 0;
-    fGeom->GetAbsCellIdFromEtaPhi(eta,phi,clusId);
-    
-    AliDebug(2,Form("Cluster AbsId %d, x %2.2f, y %2.2f, z %2.2f",
-                    clusId,pos[0],pos[1],pos[2]));
+    Int_t clusId = clus->GetCellsAbsId()[0];
     
     GetGeomInfo(clusId,iSupMod,x,y,z);
     
@@ -679,8 +661,12 @@ void AliEveEMCALData::LoadRecPointsFromESD()
 //    } // end digit loop
 //      //*********************************************
   
-    fSM[iSupMod]->RegisterCluster(iSM,energy,x,y,z);
+    fSM[iSupMod]->RegisterCluster(iSupMod,energy,x,y,z);
     
+    //      if     ( iSupMod < 10 ) fSMfull [iSupMod]   ->RegisterCluster(iSupMod,energy,x,y,z);
+    //      else if( iSupMod < 12 ) fSMhalf [iSupMod-10]->RegisterCluster(iSupMod,energy,x,y,z);
+    //      else if( iSupMod < 18 ) fSMfullD[iSupMod-12]->RegisterCluster(iSupMod,energy,x,y,z);
+    //      else if( iSupMod < 20 ) fSMhalfD[iSupMod-18]->RegisterCluster(iSupMod,energy,x,y,z);
   } // end cluster loop
 }
 
