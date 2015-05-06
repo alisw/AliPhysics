@@ -271,8 +271,6 @@ private:
   THnSparse* fhnV0CorrelMEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in mixed events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
 
   TH2D* fh2V0PtJetAngleK0s[fgkiNBinsCent]; //! pt jet vs angle V0-jet, in centrality bins
-  TH1D* fh1DCAInK0s[fgkiNBinsCent]; //! DCA between daughters of V0 inside jets, in centrality bins
-  TH1D* fh1DCAOutK0s[fgkiNBinsCent]; //! DCA between daughters of V0 outside jets, in centrality bins
   // MC histograms
   // inclusive
   TH1D* fh1V0K0sPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated K0s in event
@@ -321,8 +319,6 @@ private:
   THnSparse* fhnV0CorrelMELambda[fgkiNBinsCent]; //!
 
   TH2D* fh2V0PtJetAngleLambda[fgkiNBinsCent]; //!
-  TH1D* fh1DCAInLambda[fgkiNBinsCent]; //!
-  TH1D* fh1DCAOutLambda[fgkiNBinsCent]; //!
   // MC histograms
   // inclusive
   TH1D* fh1V0LambdaPtMCGen[fgkiNBinsCent]; //!
@@ -354,15 +350,14 @@ private:
   // ALambda
   TH1D* fh1V0CounterCentALambda[fgkiNBinsCent]; //! number of ALambda candidates after various cuts
   TH1D* fh1V0InvMassALambdaAll[fgkiNCategV0]; //!
-  TH2D* fh2QAV0EtaPtALambdaPeak[fgkiNQAIndeces]; //!
-  TH2D* fh2QAV0EtaEtaALambda[fgkiNQAIndeces]; //!
-  TH2D* fh2QAV0PhiPhiALambda[fgkiNQAIndeces]; //!
-  TH1D* fh1QAV0RapALambda[fgkiNQAIndeces]; //!
-  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
+//  TH2D* fh2QAV0EtaPtALambdaPeak[fgkiNQAIndeces]; //!
+//  TH2D* fh2QAV0EtaEtaALambda[fgkiNQAIndeces]; //!
+//  TH2D* fh2QAV0PhiPhiALambda[fgkiNQAIndeces]; //!
+//  TH1D* fh1QAV0RapALambda[fgkiNQAIndeces]; //!
+//  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
   TH2D* fh2ArmPodALambda[fgkiNQAIndeces]; //!
   TH1D* fh1V0CandPerEventCentALambda[fgkiNBinsCent]; //!
   TH1D* fh1V0InvMassALambdaCent[fgkiNBinsCent]; //!
-  TH1D* fh1V0ALambdaPt[fgkiNBinsCent]; //!
   // ALambda Inclusive
   THnSparse* fhnV0InclusiveALambda[fgkiNBinsCent]; //!
   // ALambda Cones
@@ -374,12 +369,9 @@ private:
   THnSparse* fhnV0NoJetALambda[fgkiNBinsCent]; //!
 
   TH2D* fh2V0PtJetAngleALambda[fgkiNBinsCent]; //!
-  TH1D* fh1DCAInALambda[fgkiNBinsCent]; //!
-  TH1D* fh1DCAOutALambda[fgkiNBinsCent]; //!
   // MC histograms
   // inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
-  TH1D* fh1V0ALambdaPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1V0ALambdaPtMCRecFalse[fgkiNBinsCent]; //!
   // inclusive eta-pT efficiency
@@ -389,7 +381,6 @@ private:
   THnSparse* fhnV0ALambdaInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 inclusive, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
   // in jets
   TH2D* fh2V0ALambdaInJetPtMCGen[fgkiNBinsCent]; //!
-  TH2D* fh2V0ALambdaInJetPtMCRec[fgkiNBinsCent]; //!
   THnSparse* fh3V0ALambdaInJetPtMassMCRec[fgkiNBinsCent]; //!
   // in jets eta-pT efficiency
   THnSparse* fh3V0ALambdaInJetEtaPtMCGen[fgkiNBinsCent]; //!
