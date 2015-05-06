@@ -37,7 +37,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              const Bool_t   hadronan      = kFALSE,
                                                              const Int_t    minCen        = -1,
                                                              const Int_t    maxCen        = -1,
-                                                             const Int_t    debugLevel    = -1
+                                                             const Int_t    debugLevel    = -1,
+                                                             const Int_t    year          = 2015
                                                           )
 {
   if(simulation && !suffix.Contains("default"))
@@ -81,24 +82,24 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
 
   // General frame setting and configuration
-  maker->SetReader   ( ConfigureReader   (inputDataType,collision,minCen,maxCen,simulation,debugLevel) );
-  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,simulation,debugLevel) );
+  maker->SetReader   ( ConfigureReader   (inputDataType,collision,minCen,maxCen,simulation,year,debugLevel) );
+  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,simulation,year,debugLevel) );
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
   
   // Photon analysis
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,collision,containerName,simulation     ,debugLevel), n++); // Photon cluster selection
-  maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,collision,containerName,simulation,qaan,debugLevel) ,n++); // Previous photon invariant mass
+  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,collision,containerName,simulation,year,    ,debugLevel), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,collision,containerName,simulation,year,qaan,debugLevel) ,n++); // Previous photon invariant mass
 
   if(hadronan)
   {
     maker->GetReader()->SwitchOnCTS();
-    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,debugLevel), n++); // charged tracks plots
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,collision,containerName,simulation,debugLevel), n++); // Gamma hadron correlation
+    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); // charged tracks plots
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,collision,containerName,simulation,year,debugLevel), n++); // Gamma hadron correlation
   }
   
-  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,simulation,debugLevel),n++);
+  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,simulation,year,debugLevel),n++);
   
   maker->SetAnaDebug(debugLevel)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -146,9 +147,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
 ///
 /// Configure the class handling the events and cluster/tracks filtering.
 ///
-AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
+AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, 
                                      Int_t   minCen,        Int_t maxCen,
-                                     Bool_t  simulation,    Int_t debugLevel)
+                                     Bool_t  simulation,    Int_t year,        Int_t debugLevel)
 {
   AliCaloTrackReader * reader = 0;
   if     (inputDataType=="AOD")
@@ -210,22 +211,22 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   if(inputDataType=="ESD")
   {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-//    if(year > 2010)
-//    {
+    if(year > 2010)
+    {
       //Hybrids 2011
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
       AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
       reader->SetTrackComplementaryCuts(esdTrackCuts2);
-//    }
-//    else
-//    {
-//      //Hybrids 2010
-//      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001006);
-//      reader->SetTrackCuts(esdTrackCuts);
-//      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10041006);
-//      reader->SetTrackComplementaryCuts(esdTrackCuts2);
-//    }
+    }
+    else
+    {
+      //Hybrids 2010
+      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001006);
+      reader->SetTrackCuts(esdTrackCuts);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10041006);
+      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+    }
   }
   else if(inputDataType=="AOD")
   {
@@ -269,7 +270,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
 ///
 /// Configure the class handling the calorimeter clusters specific methods
 ///
-AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, Int_t debugLevel)
+AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, Int_t year, Int_t debugLevel)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debugLevel);
@@ -309,10 +310,16 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   cu->SwitchOnCorrectClusterLinearity();
 
   if(calorimeter=="PHOS")
+  {
     cu->SetNumberOfSuperModulesUsed(3);
+  }
   else
-    cu->SetNumberOfSuperModulesUsed(10);
-  
+  {
+    if      (year == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+    else if (year <  2014) cu->SetNumberOfSuperModulesUsed(10);
+    else                   cu->SetNumberOfSuperModulesUsed(20);
+  }
+
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     
@@ -325,9 +332,9 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
 /// Configure the task doing the first photon cluster selections
 /// Basically the track matching, minor shower shape cut, NLM selection ...
 ///
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString collision,
-                                      TString containerName,
-                                      Bool_t simulation, Int_t debugLevel)
+AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter,   TString collision,
+                                      TString containerName, Bool_t simulation, 
+                                      Int_t year,            Int_t debugLevel)
 {
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(debugLevel); //10 for lots of messages
@@ -388,7 +395,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString collision,
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaPhoton_");
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,collision); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,collision,year); // see method below
   
   // Number of particle type MC histograms
   ana->FillNOriginHistograms(7);
@@ -399,14 +406,13 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString collision,
   if(debugLevel > 0 ) ana->Print("");
   
   return ana;
-  
 }
 
 ///
 /// Configure the task doing the 2 cluster invariant mass analysis
 ///
 AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
-                                TString containerName, Bool_t simulation,
+                                TString containerName, Bool_t simulation, Int_t year,
                                 Bool_t qaan, Int_t debugLevel)
 {
   AliAnaPi0 *ana = new AliAnaPi0();
@@ -462,7 +468,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaPi0_");
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,collision); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,collision,year); // see method below
 
   if(simulation) ana->SwitchOnDataMC();
 
@@ -475,7 +481,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
 /// Configure the task doing charged track selection
 ///
 AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString containerName,
-                                                 Bool_t simulation, Int_t debugLevel)
+                                                 Bool_t simulation, Int_t year, Int_t debugLevel)
 {
   AliAnaChargedParticles *ana = new AliAnaChargedParticles();
   ana->SetDebug(debugLevel); //10 for lots of messages
@@ -498,7 +504,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaHadrons_");
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),"",collision); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),"",collision,year); // see method below
   
   ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
   ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
@@ -506,7 +512,6 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
   if(debugLevel > 0) ana->Print("");
   
   return ana;
-  
 }
 
 ///
@@ -514,9 +519,8 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
 ///
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle,  TString calorimeter,
                                                                     TString collision, TString containerName,
-                                                                    Bool_t simulation, Int_t debugLevel)
+                                                                    Bool_t simulation, Int_t year, Int_t debugLevel)
 {
-  
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
   ana->SetDebug(debugLevel);
   
@@ -586,21 +590,20 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName(Form("Ana%sHadronCorr_",particle.Data()));
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, collision); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, collision,year); // see method below
   
   if(simulation) ana->SwitchOnDataMC();
   
   if(debugLevel > 0) ana->Print("");
  
   return ana;
-  
 }
 
 ///
 /// Configure the task doing standard calorimeter QA
 ///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  TString collision,
-                                         Bool_t simulation,    Int_t debugLevel)
+                                         Bool_t simulation,    Int_t year,    Int_t debugLevel)
 {
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   ana->SetDebug(debugLevel); //10 for lots of messages
@@ -620,7 +623,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  TString collision
   ana->SwitchOnFillAllCellTimeHisto() ;
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, collision); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, collision,year); // see method below
   
   if(simulation) ana->SwitchOnDataMC();
   
@@ -633,30 +636,30 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  TString collision
 ///
 /// Configure the selection of MC events
 ///
-void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,
-                            TString calorimeter, TString collision)
+void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter, 
+                            TString collision,               Int_t year)
 {
   histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
   {
-//    if(year==2010)
-//    {
-//      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
-//      histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
-//      histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
-//    }
-//    else if(year==2011)
-//    {           
-//      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
-//      histoRanges->SetHistoXRangeAndNBins(-600,90,200); // QA
-//      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA
-//    }
-//    else
+    if ( year == 2010 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 190*TMath::DegToRad(), 122) ;
-      histoRanges->SetHistoXRangeAndNBins(-100,90,200); // QA
-      histoRanges->SetHistoYRangeAndNBins(50,450,100);  // QA
+      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 42) ;
+      histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
+      histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
+    }
+    else if ( year < 2014)
+    {           
+      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 102) ;
+      histoRanges->SetHistoXRangeAndNBins(-600,90,200); // QA
+      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA
+    }
+    else // Run2
+    {
+      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 328*TMath::DegToRad(), 249) ;
+      emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-1000,1000,500); // revise
+      emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(0,1000,200);     // revise     
     }
 
     histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
