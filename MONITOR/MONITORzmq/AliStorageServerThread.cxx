@@ -1,10 +1,17 @@
 #include "AliStorageServerThread.h"
 #include "AliStorageTypes.h"
 #include "AliESDEvent.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
+#include "AliOnlineReconstructionUtil.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
 
 #include <iostream>
 #include <fstream>
 
+#include <TEnv.h>
 #include <TFile.h>
 #include <TThread.h>
 
@@ -128,6 +135,14 @@ void AliStorageServerThread::StartCommunication()
                 sendStatus = eventManager->Send(MarkEvent(*markData),socket);
                 break;
             }
+            case REQUEST_GET_TRIGGER_LIST:
+            {
+                cout<<"Get trigger list request"<<endl;
+                vector<string100> classes = GetTriggerClasses();
+                cout<<"SERVER -- got set from database"<<endl;
+                sendStatus = eventManager->Send(classes,socket);
+                break;
+            }
             default:
             {
                 cout<<"SERVER -- unknown request message"<<endl;
@@ -207,4 +222,66 @@ bool AliStorageServerThread::MarkEvent(struct eventStruct event)
     //	if(currentRun)delete currentRun;//this line crashes if there is no permanent file yet
     return true;
 }
+
+vector<string100> AliStorageServerThread::GetTriggerClasses()
+{
+    set<string> setResult;
+    
+    // craete CDB manager:
+    TEnv settings;
+    settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+    const char *cdbPath = settings.GetValue("cdb.defaultStorage", "");
+    AliCDBManager *man = AliCDBManager::Instance();
+    man->SetDefaultStorage(cdbPath);
+    
+    // get list of runs stored in Storage's database:
+    vector<int> runs = fDatabase->GetListOfRuns();
+    
+    // get trigger classes for all runs:
+    AliCDBEntry *cdbEntry;
+    AliTriggerConfiguration *cfg;
+    TObjArray trarr;
+    AliCDBPath path("GRP/CTP/Config");
+
+    AliTriggerClass* trgclass;
+    
+    for(int i=0;i<runs.size();i++)
+    {
+        man->SetRun(runs[i]);
+        cdbEntry = man->Get(path);
+        cfg = (AliTriggerConfiguration*)cdbEntry->GetObject();
+        trarr = cfg->GetClasses();
+        
+        for (int j=0;j<trarr.GetEntriesFast();j++)
+        {
+            trgclass = (AliTriggerClass*)trarr.At(j);
+            if(strcmp(trgclass->GetName(),"NONE")!=0)
+            {
+                setResult.insert(trgclass->GetName());
+            }
+            else
+            {
+                cout<<"Trigger classes not defined for run "<<runs[i]<<endl;
+                cout<<"This may indicate problems with OCDB"<<endl;
+            }
+        }
+    }
+    
+    vector<string100> result;
+    set<string>::iterator it;
+    
+    for (it = setResult.begin(); it != setResult.end(); ++it)
+    {
+        string str = *it;
+        string100 cls(str.c_str());
+        result.push_back(cls);
+    }
+    return result;
+}
+
+
+
+
+
+
 

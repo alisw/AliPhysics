@@ -25,7 +25,7 @@ private:
 	virtual ~AliStorageAdministratorPanelListEvents();
 	
 	static AliStorageAdministratorPanelListEvents *fInstance;
-    void TriggerClassesFromLogbook();
+    void TriggerClassesFromCDB();
     
 	//gui components and methods
 	TGLabel *fStatusLabel;
@@ -45,6 +45,7 @@ private:
 	TGTextButton *fGetListButton;
 	TGTextButton *fMarkButton;
 	TGTextButton *fLoadButton;
+    TGTextButton *fUpdateTriggersButton;
     
     TGComboBox *fTriggerBox;
 

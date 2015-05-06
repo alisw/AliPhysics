@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <set>
 
 #include <TG3DLine.h>
 #include <TGButton.h>
@@ -32,6 +33,7 @@ enum BUTTON{
     BUTTON_CHECK_PERM,
     BUTTON_MARK_EVENT,
     BUTTON_LOAD_EVENT,
+    BUTTON_UPDATE_TC,
     TRIGGER_BOX
 };
 
@@ -74,7 +76,8 @@ fOnlineMode(0)
     SetLayoutBroken(kTRUE);
     
     InitWindow();
-    TriggerClassesFromLogbook();
+    TriggerClassesFromCDB();
+    fTriggerBox->Select(-1);
 }
 
 AliStorageAdministratorPanelListEvents::~AliStorageAdministratorPanelListEvents()
@@ -237,7 +240,7 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
     
     fTriggerBox = new TGComboBox(fTriggerGroupFrame,TRIGGER_BOX);
     fTriggerBox->AddEntry("No trigger selection",-1);
-    fTriggerBox->Select(-1,kFALSE);
+    fTriggerBox->Select(-1,kTRUE);
 //    fTriggerBox->EnableTextInput(true);
     fTriggerGroupFrame->AddFrame(fTriggerBox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
     fTriggerBox->MoveResize(8,22,200,19);
@@ -287,6 +290,14 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
     AddFrame(fGetListButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
     fGetListButton->MoveResize(8,468,100,24);
     
+    fUpdateTriggersButton = new TGTextButton(this,"Update TCs",BUTTON_UPDATE_TC);
+    fUpdateTriggersButton->SetTextJustify(36);
+    fUpdateTriggersButton->SetMargins(0,0,0,0);
+    fUpdateTriggersButton->SetWrapLength(-1);
+    fUpdateTriggersButton->Resize(130,24);
+    AddFrame(fUpdateTriggersButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+    fUpdateTriggersButton->MoveResize(108,468,130,24);
+    
     // list box
     fListBox = new TGListBox(this);
     fListBox->SetName("fListBox");
@@ -299,44 +310,36 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
     Resize(252,809);
 }
 
-void AliStorageAdministratorPanelListEvents::TriggerClassesFromLogbook()
+void AliStorageAdministratorPanelListEvents::TriggerClassesFromCDB()
 {
-    // read crededentials to logbook from config file:
-    TEnv settings;
-    settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
-    const char *dbHost = settings.GetValue("logbook.host", "");
-    Int_t   dbPort =  settings.GetValue("logbook.port", 0);
-    const char *dbName =  settings.GetValue("logbook.db", "");
-    const char *user =  settings.GetValue("logbook.user", "");
-    const char *password = settings.GetValue("logbook.pass", "");
+    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+    requestMessage->messageType = REQUEST_GET_TRIGGER_LIST;
     
-    // get entry from logbook:
-    cout<<"creating sql server...";
-    TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
-    cout<<"created"<<endl;
-    
-    TString sqlQuery = "SELECT * FROM TRIGGER_CLASSES";
-    
-    TSQLResult* result = server->Query(sqlQuery);
-    if (!result){
-        Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
-        return;
-    }
-    
-    if (result->GetRowCount() == 0){
-        Printf("ERROR: No entries");
-        delete result;
-        return;
-    }
-    
-    // read values from logbook entry:
-    TSQLRow* row;
-    int i=0;
-    while((row=result->Next()))
+    if(!fEventManager->Send(requestMessage,fServerSocket))
     {
-        fTriggerClasses.push_back(row->GetField(0));
-        fTriggerBox->AddEntry(row->GetField(0),i++);
+        cout<<"ADMIN PANEL -- couldn't send request for set of trigger classes"<<endl;
+        return;
     }
+    
+    vector<string100> *tmpSet;
+    if(!fEventManager->Get(tmpSet,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- problems getting server's response"<<endl;
+        fEventManager->RecreateSocket(fServerSocket);
+        return;
+    }
+    vector<string100> &receivedSet = *tmpSet;
+    
+    cout<<"ADMIN PANEL -- received set of size:"<<receivedSet.size()<<endl;
+    
+    vector<string100>::iterator it;
+    int i=0;
+    for (it = receivedSet.begin(); it != receivedSet.end(); ++it)
+    {
+        string100 cls = *it;
+        fTriggerClasses.push_back(cls.data);
+        fTriggerBox->AddEntry(cls.data,i++);
+    }    
 }
 
 
@@ -362,35 +365,16 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
     if(fPbPbcheckbox->GetState()==1){strcpy(list.system[1],"A-A");}
     else{strcpy(list.system[1],"");}
     
-    int triggerNumber = fTriggerBox->GetSelected();
-    cout<<"LIST EVENTS -- selected trigger class number:"<<triggerNumber<<endl;
-    ULong64_t triggerMask = 0;
-    ULong64_t triggerMaskNext50 = 0;
-    
-    if(triggerNumber<50 && triggerNumber>0)
+    if(fTriggerBox->GetSelected()>=0)
     {
-        triggerMask=1;
-        for(int i=0;i<triggerNumber;i++)
-        {
-            triggerMask = triggerMask<<1;
-        }
-        triggerMaskNext50=0;
+        const char* triggerClassName = fTriggerClasses[fTriggerBox->GetSelected()];
+        cout<<"SELECTED TRIGGER CLASS:"<<triggerClassName<<endl;
+        strcpy(list.triggerClass,triggerClassName);
     }
-    else if(triggerNumber>50)
+    else
     {
-        triggerMaskNext50=1;
-        for(int i=0;i<triggerNumber-50;i++)
-        {
-            triggerMaskNext50 = triggerMaskNext50<<1;
-        }
-        triggerMask=0;
+        strcpy(list.triggerClass,"No trigger selection");
     }
-
-    cout<<"LIST EVENTS -- resulting trigger mask:"<<triggerMask<<"\t"<<triggerMaskNext50<<endl;
-    
-    list.triggerMask = triggerMask;
-    list.triggerMaskNext50 = triggerMaskNext50;
-    
     requestMessage->messageType = REQUEST_LIST_EVENTS;
     requestMessage->list = list;
     
@@ -548,6 +532,7 @@ Bool_t AliStorageAdministratorPanelListEvents::ProcessMessage(Long_t msg, Long_t
                 case BUTTON_GET_LIST:onGetListButton();break;
                 case BUTTON_MARK_EVENT:onMarkButton();break;
                 case BUTTON_LOAD_EVENT:onLoadButton();break;
+                case BUTTON_UPDATE_TC:TriggerClassesFromCDB();break;
                 default:break;
             }
                 break;

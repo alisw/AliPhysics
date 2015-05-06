@@ -262,7 +262,7 @@ void AliEveEventManager::GetNextEvent()
     {
         cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
         receivedList = *tmpVector;
-    
+        
         for(int i=0;i<tmpVector->size();i++)
         {
             cout<<"ev:"<<receivedList[i].eventNumber<<endl;
@@ -377,7 +377,7 @@ void AliEveEventManager::CheckStorageStatus()
     
     struct clientRequestStruct *request = new struct clientRequestStruct;
     request->messageType = REQUEST_CONNECTION;
-
+    
     long response;
     bool receiveStatus = false;
     bool sendStatus = false;
@@ -394,7 +394,7 @@ void AliEveEventManager::CheckStorageStatus()
         if(receiveStatus == false) // if failed (or timeouted)
         {
             eventManager->RecreateSocket(socket); // destroy and open socket again, to be able to send message (currently, as receive failed, socket is still in RECV state
-
+            
             if(!fStorageDown) // if requires change
             {
                 cout<<"EVENT DISPLAY -- storage DOWN"<<endl;
@@ -590,7 +590,7 @@ void AliEveEventManager::Open()
     if(fOnlineMode)
     {
         InitOCDB(runNo);
-        fIsOpen = kTRUE;
+        fIsOpen = kFALSE;
         return;
     }
     
@@ -692,9 +692,9 @@ void AliEveEventManager::Open()
             if (fRunLoader->LoadgAlice() != 0){Warning(kEH, "failed loading gAlice via run-loader.");}
             
             if (fRunLoader->LoadHeader() == 0){
-	      if(runNo < 0){
+                if(runNo < 0){
                     runNo = fRunLoader->GetHeader()->GetRun();
-	      }
+                }
             }
             else{
                 Warning(kEH, "failed loading run-loader's header.");
@@ -866,24 +866,24 @@ void AliEveEventManager::InitOCDB(int runNo)
             if (cdb->IsDefaultStorageSet() == kFALSE){throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";}
         }
         /*
-        if (fgCdbUri.BeginsWith("local://"))
-        {
-            TString curPath = gSystem->WorkingDirectory();
-            TString grp     = "GRP/GRP/Data";
-            TString grppath = curPath + "/" + grp;
-            if (gSystem->AccessPathName(grppath, kReadPermission) == kFALSE)
-            {
-                if (cdb->GetSpecificStorage(grp)){
-                    Warning(kEH, "Local GRP exists, but the specific storage is already set.");
-                }
-                else{
-                    Info(kEH, "Setting CDB specific-storage for GRP from event directory.");
-                    TString lpath("local://");
-                    lpath += curPath;
-                    cdb->SetSpecificStorage(grp, lpath);
-                }
-            }
-        }
+         if (fgCdbUri.BeginsWith("local://"))
+         {
+         TString curPath = gSystem->WorkingDirectory();
+         TString grp     = "GRP/GRP/Data";
+         TString grppath = curPath + "/" + grp;
+         if (gSystem->AccessPathName(grppath, kReadPermission) == kFALSE)
+         {
+         if (cdb->GetSpecificStorage(grp)){
+         Warning(kEH, "Local GRP exists, but the specific storage is already set.");
+         }
+         else{
+         Info(kEH, "Setting CDB specific-storage for GRP from event directory.");
+         TString lpath("local://");
+         lpath += curPath;
+         cdb->SetSpecificStorage(grp, lpath);
+         }
+         }
+         }
          */
     }
 }
@@ -1069,7 +1069,6 @@ void AliEveEventManager::GotoEvent(Int_t event)
             
             if(resultEvent)
             {
-                fESD=resultEvent;
                 DestroyElements();
                 InitOCDB(resultEvent->GetRunNumber());
                 SetEvent(0,0,resultEvent,0);
@@ -1265,10 +1264,10 @@ void AliEveEventManager::NextEvent()
     if(fOnlineMode)
     {
 #ifdef ZMQ
-        
+        fMutex->Lock();
         if(fIsNewEventAvaliable)
         {
-            fMutex->Lock();
+
             if(fWritingToEventIndex == 0) fEventInUse = 0;
             else if(fWritingToEventIndex == 1) fEventInUse = 1;
             
@@ -1285,25 +1284,25 @@ void AliEveEventManager::NextEvent()
                 }
             }
             fIsNewEventAvaliable = false;
-            fMutex->UnLock();
         }
         else
         {
             cout<<"No new event is avaliable."<<endl;
             NoEventLoaded();
         }
+        fMutex->UnLock();
 #endif
     }/*
-    else if ((fESDTree!=0) || (fHLTESDTree!=0))
-    {
-        cout<<"There is ESD or HLTESD tree"<<endl;
-        Int_t nextevent=0;
-        if (fPEventSelector->FindNext(nextevent))
-        {
-            cout<<"GotoEvent:"<<nextevent<<endl;
-            GotoEvent(nextevent);
-        }
-    }*/
+      else if ((fESDTree!=0) || (fHLTESDTree!=0))
+      {
+      cout<<"There is ESD or HLTESD tree"<<endl;
+      Int_t nextevent=0;
+      if (fPEventSelector->FindNext(nextevent))
+      {
+      cout<<"GotoEvent:"<<nextevent<<endl;
+      GotoEvent(nextevent);
+      }
+      }*/
     else if (fEventId < GetMaxEventId(kTRUE))
     {
         cout<<"GotoEvent:"<<fEventId+1<<endl;
@@ -2011,7 +2010,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         fViewsSaver->Save();
         fViewsSaver->SendToAmore();
     }
-        
+    
     if (this == fgMaster && fSubManagers != 0)
     {
         TIter next(fSubManagers);
@@ -2324,7 +2323,7 @@ Bool_t AliEveEventManager::InitGRP()
      */
     
     return kTRUE;
-} 
+}
 
 //------------------------------------
 // Global variables management

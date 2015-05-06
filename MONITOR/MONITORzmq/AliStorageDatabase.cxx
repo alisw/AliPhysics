@@ -1,5 +1,12 @@
 #include "AliStorageDatabase.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
+#include "AliOnlineReconstructionUtil.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -8,6 +15,7 @@
 #include <TThread.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TEnv.h>
 
 using namespace std;
 
@@ -145,47 +153,114 @@ bool AliStorageDatabase::UpdateEventPath(struct eventStruct event,const char *ne
 
 vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct list)
 {
-    cout<<"LIST:"<< list.runNumber[0]<<"\t"<<list.runNumber[1]<<"\t"<<list.eventNumber[0]<<"\t"<<list.eventNumber[1]<<"\t"<< list.multiplicity[0]<<"\t"<< list.multiplicity[1]<<"\t"<<list.marked[0]<<"\t"<< list.marked[1]<<"\t"<<list.system[0]<<"\t"<<list.system[1]<<"\t"<<list.triggerMask<<"\t"<<list.triggerMaskNext50<<endl;
+    cout<<"LIST:"<< list.runNumber[0]<<"\t"<<list.runNumber[1]<<"\t"<<list.eventNumber[0]<<"\t"<<list.eventNumber[1]<<"\t"<< list.multiplicity[0]<<"\t"<< list.multiplicity[1]<<"\t"<<list.marked[0]<<"\t"<< list.marked[1]<<"\t"<<list.system[0]<<"\t"<<list.system[1]<<"\t"<<list.triggerClass<<endl;
     
+    ULong64_t triggerMask;
+    ULong64_t triggerMaskNext50;
     
-    TThread::Lock();
-    TSQLResult *result = NULL;
+    vector<serverListStruct> eventsVector;
     
-    if(list.triggerMask!=0 || list.triggerMaskNext50!=0)
+    if(strcmp(list.triggerClass,"No trigger selection")!=0 && strcmp(list.triggerClass,"")!=0)
     {
-        result =  fServer->Query(Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND ((trigger_mask & %llu) > 0 OR (trigger_mask_next & %llu) > 0) ORDER BY run_number,event_number;",
-                                      fTable.c_str(),
-                                      list.runNumber[0],
-                                      list.runNumber[1],
-                                      list.eventNumber[0],
-                                      list.eventNumber[1],
-                                      list.multiplicity[0],
-                                      list.multiplicity[1],
-                                      list.marked[0],
-                                      list.marked[1],
-                                      list.system[0],
-                                      list.system[1],
-                                      list.triggerMask,
-                                      list.triggerMaskNext50));
         
-        cout<<"Query:"<<Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND ((trigger_mask & %llu) > 0 OR (trigger_mask_next & %llu) > 0) ORDER BY run_number,event_number;",
-                             fTable.c_str(),
-                             list.runNumber[0],
-                             list.runNumber[1],
-                             list.eventNumber[0],
-                             list.eventNumber[1],
-                             list.multiplicity[0],
-                             list.multiplicity[1],
-                             list.marked[0],
-                             list.marked[1],
-                             list.system[0],
-                             list.system[1],
-                             list.triggerMask,
-                             list.triggerMaskNext50)<<endl;
+        // craete CDB manager:
+        TEnv settings;
+        settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+        const char *cdbPath = settings.GetValue("cdb.defaultStorage", "");
+        AliCDBManager *man = AliCDBManager::Instance();
+        man->SetDefaultStorage(cdbPath);
         
+        // get list of runs stored in Storage's database:
+        vector<int> runs = GetListOfRuns();
+        
+        // get trigger classes for all runs:
+        AliCDBEntry *cdbEntry;
+        AliTriggerConfiguration *cfg;
+        TObjArray trarr;
+        AliCDBPath path("GRP/CTP/Config");
+        
+        AliTriggerClass* trgclass;
+        
+        for(int i=0;i<runs.size();i++)
+        {
+            if(runs[i] > list.runNumber[0] && runs[i] < list.runNumber[1])
+            {
+                man->SetRun(runs[i]);
+                cdbEntry = man->Get(path);
+                cfg = (AliTriggerConfiguration*)cdbEntry->GetObject();
+                trarr = cfg->GetClasses();
+                
+                triggerMask = 0;
+                triggerMaskNext50 = 0;
+                
+                for (int j=0;j<trarr.GetEntriesFast();j++)
+                {
+                    trgclass = (AliTriggerClass*)trarr.At(j);
+                    if(strcmp(trgclass->GetName(),list.triggerClass)==0)
+                    {
+                        triggerMask = trgclass->GetMask();
+                        triggerMaskNext50 = trgclass->GetMaskNext50();
+                    }
+                }
+                
+                TThread::Lock();
+                TSQLResult *result = NULL;
+                
+                result =  fServer->Query(Form("SELECT * FROM %s WHERE run_number = %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND ((trigger_mask & %llu) > 0 OR (trigger_mask_next & %llu) > 0) ORDER BY run_number,event_number;",
+                                              fTable.c_str(),
+                                              runs[i],
+                                              list.eventNumber[0],
+                                              list.eventNumber[1],
+                                              list.multiplicity[0],
+                                              list.multiplicity[1],
+                                              list.marked[0],
+                                              list.marked[1],
+                                              list.system[0],
+                                              list.system[1],
+                                              triggerMask,
+                                              triggerMaskNext50));
+                
+                cout<<"Query:"<<Form("SELECT * FROM %s WHERE run_number = %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') AND ((trigger_mask & %llu) > 0 OR (trigger_mask_next & %llu) > 0) ORDER BY run_number,event_number;",
+                                     fTable.c_str(),
+                                     runs[i],
+                                     list.eventNumber[0],
+                                     list.eventNumber[1],
+                                     list.multiplicity[0],
+                                     list.multiplicity[1],
+                                     list.marked[0],
+                                     list.marked[1],
+                                     list.system[0],
+                                     list.system[1],
+                                     triggerMask,
+                                     triggerMaskNext50)<<endl;
+                
+                TThread::UnLock();
+                TSQLRow *row;
+                
+                while((row = result->Next()))
+                {
+                    serverListStruct resultList;
+                    
+                    resultList.runNumber = atoi(row->GetField(0));
+                    resultList.eventNumber = atoi(row->GetField(1));
+                    strcpy(resultList.system, row->GetField(2));
+                    resultList.multiplicity = atoi(row->GetField(3));
+                    resultList.marked = atoi(row->GetField(4));
+                    strcpy(resultList.triggerClass,list.triggerClass);
+                    
+                    eventsVector.push_back(resultList);
+                    delete row;
+                }
+                delete result;
+                
+            }
+        }
     }
     else
     {
+        TThread::Lock();
+        TSQLResult *result = NULL;
+        
         result =  fServer->Query(Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') ORDER BY run_number,event_number;",
                                       fTable.c_str(),
                                       list.runNumber[0],
@@ -211,31 +286,28 @@ vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct li
                              list.marked[1],
                              list.system[0],
                              list.system[1])<<endl;
-    }
-    
-    TThread::UnLock();
-    TSQLRow *row;
-    vector<serverListStruct> eventsVector;
-    
-    while((row = result->Next()))
-    {
-        serverListStruct resultList;
         
-        resultList.runNumber = atoi(row->GetField(0));
-        resultList.eventNumber = atoi(row->GetField(1));
-        strcpy(resultList.system, row->GetField(2));
-        resultList.multiplicity = atoi(row->GetField(3));
-        resultList.marked = atoi(row->GetField(4));
-        if(list.triggerMask!=0)
+        TThread::UnLock();
+        TSQLRow *row;
+        
+        while((row = result->Next()))
         {
-            resultList.triggerMask = atol(row->GetField(6));
-            resultList.triggerMaskNext50 = atol(row->GetField(7));
+            serverListStruct resultList;
+            
+            resultList.runNumber = atoi(row->GetField(0));
+            resultList.eventNumber = atoi(row->GetField(1));
+            strcpy(resultList.system, row->GetField(2));
+            resultList.multiplicity = atoi(row->GetField(3));
+            resultList.marked = atoi(row->GetField(4));
+            strcpy(resultList.triggerClass,list.triggerClass);
+            
+            eventsVector.push_back(resultList);
+            delete row;
         }
+        delete result;
         
-        eventsVector.push_back(resultList);
-        delete row;
     }
-    delete result;
+    
     return eventsVector;
 }
 
@@ -303,6 +375,28 @@ string AliStorageDatabase::GetFilePath(struct eventStruct event)
     {
         return "";
     }
+}
+
+vector<int> AliStorageDatabase::GetListOfRuns()
+{
+    vector<int> resultingVector;
+    
+    TSQLResult *result = fServer->Query(Form("SELECT run_number FROM %s ORDER BY run_number;",fTable.c_str()));
+    TSQLRow *row;
+    
+    int currentRun,prevRun=-1;
+    
+    while((row=result->Next()))
+    {
+        currentRun = atoi(row->GetField(0));
+        if(currentRun!=prevRun)
+        {
+            resultingVector.push_back(currentRun);
+            prevRun=currentRun;
+        }
+    }
+    delete row;
+    return resultingVector;
 }
 
 AliESDEvent* AliStorageDatabase::GetNextEvent(struct eventStruct event)

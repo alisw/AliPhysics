@@ -41,7 +41,8 @@ enum requestType{
 	REQUEST_GET_FIRST_EVENT,
 	REQUEST_MARK_EVENT,
 	REQUEST_SET_PARAMS,
-	REQUEST_GET_PARAMS
+	REQUEST_GET_PARAMS,
+    REQUEST_GET_TRIGGER_LIST
 };
 
 struct clientRequestStruct
@@ -73,8 +74,7 @@ struct listRequestStruct{
 	int marked[2];
 	int multiplicity[2];
 	char system[2][20];
-    ULong64_t triggerMask;
-    ULong64_t triggerMaskNext50;
+    char triggerClass[100];
 };
 
 struct serverRequestStruct
@@ -100,8 +100,12 @@ typedef struct serverListStruct{
 	char system[20];
 	int multiplicity;
 	int marked;
-    ULong64_t triggerMask;
-    ULong64_t triggerMaskNext50;
+    char triggerClass[100];
 }serverListStruct;
+
+struct string100 {
+    char data[100];
+    string100(const char* init){strcpy(data,init);}
+};
 
 #endif

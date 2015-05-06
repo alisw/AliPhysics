@@ -62,6 +62,8 @@ AliStorageAdministratorPanel::AliStorageAdministratorPanel() :
     
 	//create event manager
 	fEventManager = AliZMQManager::GetInstance();
+    fEventManager->CreateSocket(CLIENT_COMMUNICATION_REQ);
+    fEventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
 
 	// start communication with client thread
 	fCommunicationThread = new TThread("fCommunicationThread",

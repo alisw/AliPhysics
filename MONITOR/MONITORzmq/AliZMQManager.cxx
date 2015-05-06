@@ -23,6 +23,10 @@ using namespace std;
 
 AliZMQManager *AliZMQManager::fManagerInstance = 0;
 
+/// Defaul counstructor of AliZMQManager
+///
+/// In constructor, config files with hostnames and port number are being read.
+/// Contexts for all sockets are being created.
 AliZMQManager::AliZMQManager()
 {
     //read config file
@@ -61,23 +65,17 @@ AliZMQManager::AliZMQManager()
             {
                 fXmlServerPort=atoi(line.substr(from,to-from).c_str());
             }
-            else if(line.find("ITS_POINTS_SERVER_PORT=")==0)
-            {
-                fItsPointsServerPort=atoi(line.substr(from,to-from).c_str());
-                cout<<"ITS port is:"<<fItsPointsServerPort<<endl;
-            }
         }
         if(configFile.eof()){configFile.clear();}
         configFile.close();
     }
     else{cout<<"EVENT MANAGER -- Unable to open config file"<<endl;}
-    
-    for(int i=0;i<NUMBER_OF_SOCKETS;i++)
-    {
-        fContexts[i] = zmq_ctx_new();
-//        CreateSocket((storageSockets)i);
-    }
+    for(int i=0;i<NUMBER_OF_SOCKETS;i++){fContexts[i] = zmq_ctx_new();}
 }
+
+/// Default destructor of AliZMQManager.
+///
+/// All contexts and sockets will be closed/destroyed.
 AliZMQManager::~AliZMQManager()
 {
     // close sockets and destroy contexts
@@ -88,6 +86,9 @@ AliZMQManager::~AliZMQManager()
     }
 }
 
+/// Method to get instance of AliZMQManager.
+///
+/// Only one instance of AliZMQManager will be created (thread-safe).
 AliZMQManager* AliZMQManager::GetInstance()
 {
     TThread::Lock();
@@ -100,6 +101,12 @@ AliZMQManager* AliZMQManager::GetInstance()
     return fManagerInstance;
 }
 
+/// Method to create socket with given name.
+///
+/// Names of sockets are defined in AliStorageTypes.h
+/// This method should be extended in case of need for additional sockets.
+///
+/// \param socket Name of socket (of type storageSockets) to be created.
 void AliZMQManager::CreateSocket(storageSockets socket)
 {
     int timeout = 5000;
@@ -191,27 +198,16 @@ void AliZMQManager::CreateSocket(storageSockets socket)
             {cout<<"MANAGER -- create socket 7 -- "<<zmq_strerror(zmq_errno())<<endl;}
             break;
         }
-        case ITS_POINTS_PUB:
-        {
-            // ITS recpoints publisher
-            fSockets[ITS_POINTS_PUB] = zmq_socket(fContexts[ITS_POINTS_PUB],ZMQ_PUB);
-            if(0 != zmq_bind(fSockets[ITS_POINTS_PUB],Form("tcp://*:%d",fItsPointsServerPort)))
-            {cout<<"MANAGER -- create socket 8 -- "<<zmq_strerror(zmq_errno())<<endl;}
-            break;
-        }
-        case ITS_POINTS_SUB:
-        {// ITS recpoints subscriber
-            fSockets[ITS_POINTS_SUB] = zmq_socket(fContexts[ITS_POINTS_SUB],ZMQ_SUB);
-            if(zmq_setsockopt(fSockets[ITS_POINTS_SUB],ZMQ_SUBSCRIBE,"",0)!=0)
-            {cout<<"MANAGER -- create socket 9 -- "<<zmq_strerror(zmq_errno())<<endl;}
-            if(0 != zmq_connect(fSockets[ITS_POINTS_SUB],Form("tcp://%s:%d",fEventServer.c_str(),fItsPointsServerPort)))
-            {cout<<"MANAGER -- create socket 9a -- "<<zmq_strerror(zmq_errno())<<endl;}
-            break;
-        }
         default:break;
     }
 }
 
+/// Method sends vector of structs of type serverListStruct to given socket.
+///
+/// \param list Vector to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(vector<serverListStruct> list,storageSockets socket)
 {
     //send size of the struct first
@@ -254,6 +250,79 @@ bool AliZMQManager::Send(vector<serverListStruct> list,storageSockets socket)
     return true;
 }
 
+/// Method sends vector of structs of type string100 to given socket.
+/// string100 is a fixed length string defined in AliStorageTypes.h
+/// Use member called "data" to access string stored in it.
+///
+/// \param list Vector to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
+bool AliZMQManager::Send(vector<string100> list,storageSockets socket)
+{
+    cout<<"MANAGER -- sending vector of string100:"<<endl;
+    vector<string100>::iterator it;
+    for (it = list.begin(); it != list.end(); ++it)
+    {
+        cout<<(*it).data<<endl;
+    }
+    
+    //send size of the set first
+    int numberOfRecords = list.size();
+    cout<<"MANAGER -- sending set with "<<numberOfRecords<<" records"<<endl;
+    zmq_msg_t buffer;
+    
+    if(!zmqInit(&buffer,sizeof(int))){return false;}
+    memcpy(zmq_msg_data(&buffer),&numberOfRecords,sizeof(int));
+    
+    if(!zmqSend(&buffer,fSockets[socket],0))
+    {
+        cout<<"MANAGER -- couldn't send list's size"<<endl;
+        zmq_msg_close(&buffer);
+        return false;
+    }
+    if(!zmqRecv(&buffer,fSockets[socket],0))
+    {
+        cout<<"MANAGER -- couldn't receive message inside Send set call. This may cause serious problems!"<<endl;
+        zmq_msg_close(&buffer);
+        return false;
+    }
+    if(numberOfRecords==0)
+    {
+        cout<<"MANAGER -- list size = 0"<<endl;
+        //        return false;
+    }
+    zmq_msg_close(&buffer);
+    
+    zmq_msg_t message;
+    if(!zmqInit(&message,sizeof(string100)*numberOfRecords)){return false;}
+//    void* tmpVector = (void*)malloc(sizeof(string30)*myVector.size());
+    memcpy(zmq_msg_data(&message),reinterpret_cast<void*> (&list[0]), sizeof(string100)*numberOfRecords);
+
+    
+    if(!zmqSend(&message,fSockets[socket],0))
+    {
+        zmq_msg_close(&message);
+        return false;
+    }
+    zmq_msg_close(&message);
+    return true;
+}
+
+/// Method sends structs of type serverRequestStruct to given socket.
+///
+/// Define your request as:
+///
+///     struct serverRequestStruct *request = new struct serverRequestStruct;
+///
+/// and call this method as:
+///
+///     manager->Send(request,socket);
+///
+/// \param request Struct to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(struct serverRequestStruct *request,storageSockets socket)
 {
     size_t sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
@@ -272,6 +341,20 @@ bool AliZMQManager::Send(struct serverRequestStruct *request,storageSockets sock
     return true;
 }
 
+/// Method sends structs of type clientRequestStruct to given socket.
+///
+/// Define your request as:
+///
+///     struct clientRequestStruct *request = new struct clientRequestStruct;
+///
+/// and call this method as:
+///
+///     manager->Send(request,socket);
+///
+/// \param request Struct to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(struct clientRequestStruct *request,storageSockets socket)
 {
     cout<<"MANAGER -- sending clientRequestStruct:"<<request->messageType<<"\t"<<endl;
@@ -290,6 +373,13 @@ bool AliZMQManager::Send(struct clientRequestStruct *request,storageSockets sock
     zmq_msg_close(&buffer);
     return true;
 }
+
+/// Method sends message of type long to given socket.
+///
+/// \param message Long message to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(long message,storageSockets socket)
 {
     zmq_msg_t buffer;
@@ -304,6 +394,13 @@ bool AliZMQManager::Send(long message,storageSockets socket)
     zmq_msg_close(&buffer);
     return true;
 }
+
+/// Method sends message of type bool to given socket.
+///
+/// \param message Bool message to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(bool message,storageSockets socket)
 {
     zmq_msg_t buffer;
@@ -317,6 +414,13 @@ bool AliZMQManager::Send(bool message,storageSockets socket)
     zmq_msg_close(&buffer);
     return true;
 }
+
+/// Method sends message of type AliESDEvent to given socket.
+///
+/// \param event Pointer to AliESDEvent object which is to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(AliESDEvent *event, storageSockets socket)
 {
     if(!event){cout<<"MANAGER -- no event"<<endl;return false;}
@@ -339,6 +443,16 @@ bool AliZMQManager::Send(AliESDEvent *event, storageSockets socket)
     return true;
 }
 
+/// Method sends AliESDEvent as an xml to given socket.
+///
+/// This method extracts some information from AliESDEvent, puts it in a string
+/// formatted as an xml and sends it to a given socket.
+///
+///
+/// \param event Pointer to AliESDEvent object which is to be sent
+/// \param socket Name of socket to which list shold be sent
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::SendAsXml(AliESDEvent *event,storageSockets socket)
 {
     // to be tested from online reconstruction !!
@@ -398,7 +512,19 @@ bool AliZMQManager::SendAsXml(AliESDEvent *event,storageSockets socket)
     return true;
 }
 
-bool AliZMQManager::Get(std::vector<serverListStruct>* &result,storageSockets socket)
+/// Method to get vector of serverListStructs from given socket.
+///
+/// On of the possible ways to use this method is:
+///
+/// vector<serverListStruct> *tmpVector;
+/// manager->Get(tmpVector,socket);
+/// vector<serverListStruct> &receivedList = *tmpVector;
+///
+/// \param result Adres of pointer to which resulting vector should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
+bool AliZMQManager::Get(vector<serverListStruct>* &result,storageSockets socket)
 {
     //get size of the incomming message
     zmq_msg_t buffer;
@@ -449,11 +575,98 @@ bool AliZMQManager::Get(std::vector<serverListStruct>* &result,storageSockets so
         
         cout<<"MANAGER -- size of vector (from pointer:)"<<result->size()<<endl;
         
+        //delete tmpVector; ?
         zmq_msg_close(&buffer);
         return true;
     }
 }
 
+/// Method to get vector of string100 structs from given socket.
+///
+/// On of the possible ways to use this method is:
+///
+/// vector<string100> *tmpVector;
+/// manager->Get(tmpVector,socket);
+/// vector<string100> &receivedList = *tmpVector;
+///
+/// \param result Adres of pointer to which resulting vector should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
+bool AliZMQManager::Get(vector<string100>* &result,storageSockets socket)
+{
+    //get size of the incomming message
+    zmq_msg_t buffer;
+    zmqInit(&buffer);
+    if(!zmqRecv(&buffer,fSockets[socket],0))
+    {
+        cout<<"MANAGER -- couldn't receive number of records inside Get set<string>."<<endl;
+        zmq_msg_close(&buffer);
+        return false;
+    }
+    int numberOfRecords;
+    memcpy(&numberOfRecords,&buffer,sizeof(int));
+    cout<<"MANAGER -- number of records:"<<numberOfRecords<<endl;
+    //send empty message just to keep req-rep order:
+    if(!zmqSend(&buffer,fSockets[socket],0))
+    {
+        cout<<"MANAGER -- couldn't send message inside Get set<string>. This may cause seriouse problems!"<<endl;
+        zmq_msg_close(&buffer);
+        return false;
+    }
+    
+    //get list of events
+    if(!zmqRecv(&buffer,fSockets[socket],0))
+    {
+        zmq_msg_close(&buffer);
+        return false;
+    }
+    
+    if(numberOfRecords==0){
+        cout<<"MANAGER -- list is empty"<<endl;
+        result = nullptr;
+        zmq_msg_close(&buffer);
+        return false;
+    }
+    else
+    {
+        // read data from buffer:
+        void* tmp = zmq_msg_data(&buffer);
+        
+        // vector's range constructor rebuilding vector from void*
+        vector<string100> newVector(static_cast<string100*>(tmp),
+                                    static_cast<string100*>(tmp)+numberOfRecords);
+        
+        cout<<"MANAGER -- size of vector:"<<newVector.size()<<endl;
+        
+        cout<<"MANAGER -- received vector:"<<endl;
+        vector<string100>::iterator it;
+        for (it = newVector.begin(); it != newVector.end(); ++it)
+        {
+            cout<<(*it).data<<endl;
+        }
+        
+        // create pointer to this vector:
+        result = new vector<string100>(newVector);
+        cout<<"MANAGER -- size of vector (from pointer:)"<<result->size()<<endl;
+        
+        //delete tmpSet; ?
+        zmq_msg_close(&buffer);
+        return true;
+    }
+}
+
+/// Method to get AliESDEvent from given socket.
+///
+/// Usage:
+///
+/// AliESDEvent *event;
+/// manager->Get(event,socket);
+///
+/// \param result Adres of pointer to which resulting event should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Get(AliESDEvent* &result, storageSockets socket)
 {
     //reveive buffer
@@ -492,6 +705,17 @@ bool AliZMQManager::Get(AliESDEvent* &result, storageSockets socket)
     }
 }
 
+/// Method to get serverRequestStruct from given socket.
+///
+/// Usage:
+///
+/// struct serverRequestStruct *request;
+/// manager->Get(request,socket);
+///
+/// \param result Adres of pointer to which resulting struct should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Get(struct serverRequestStruct* &result, storageSockets socket)
 {
     zmq_msg_t buffer;
@@ -511,6 +735,17 @@ bool AliZMQManager::Get(struct serverRequestStruct* &result, storageSockets sock
     }
 }
 
+/// Method to get clientRequestStruct from given socket.
+///
+/// Usage:
+///
+/// struct clientRequestStruct *request;
+/// manager->Get(request,socket);
+///
+/// \param result Adres of pointer to which resulting struct should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Get(struct clientRequestStruct* &result, storageSockets socket)
 {
     zmq_msg_t buffer;
@@ -529,6 +764,12 @@ bool AliZMQManager::Get(struct clientRequestStruct* &result, storageSockets sock
     }
 }
 
+/// Method to get message of type long from given socket.
+///
+/// \param result Pointer to which resulting message should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Get(long *result, storageSockets socket)
 {
     zmq_msg_t buffer;
@@ -546,6 +787,12 @@ bool AliZMQManager::Get(long *result, storageSockets socket)
     }
 }
 
+/// Method to get message of type bool from given socket.
+///
+/// \param result Pointer to which resulting message should be written
+/// \param socket Name of socket from which message should be received
+///
+/// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Get(bool *result, storageSockets socket)
 {
     zmq_msg_t buffer;
@@ -564,12 +811,17 @@ bool AliZMQManager::Get(bool *result, storageSockets socket)
     }
 }
 
+/// Method to close and create from scratch given socket.
+///
+/// This must be used if socket is expecting to receive a message, but you need to send one
+/// and vice versa. Use only when you are sure what you are doing, you should design communication
+/// pattern yourself depending on what you need.
+///
+/// \param socket Name of socket to be recreated
 void AliZMQManager::RecreateSocket(storageSockets socket)
 {
     cout<<"MANAGER -- recreating socket:"<<socket<<endl;
-    cout<<"zmq_close:"<<zmq_close(fSockets[socket])<<endl;
-//    cout<<"zmq_term:"<<zmq_ctx_destroy(fContexts[socket])<<endl;
-//    fContexts[socket] = zmq_ctx_new();
+    zmq_close(fSockets[socket]);
     CreateSocket(socket);
 }
 
