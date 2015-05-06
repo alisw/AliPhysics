@@ -29,7 +29,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   AliHLTDataSink()
   , fZMQcontext(zmq_ctx_new())
   , fZMQout(NULL)
-  , fZMQsocketMode("REQ")
+  , fZMQsocketMode("REP")
   , fZMQconnectMode("bind")
   , fZMQendpoint("tcp://localhost:60100")
   , fZMQpollIn(kTRUE)
