@@ -25,7 +25,7 @@
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="default",
                                                           Bool_t simulation = kFALSE,
                                                           TString outputFile = "",
-                                                          Int_t year = 2012, 
+                                                          Int_t year = 2015, 
                                                           Bool_t printSettings = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -153,24 +153,24 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->GetHistogramRanges()->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
   emcalQA->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.70, 0.70, 140) ;
   
-  if     (year==2010)
+  if     ( year==2010 )
   {  
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 120*TMath::DegToRad(), 48) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-230,90,120);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(370,450,40);
   }
-  else //if(year==2011 || year==2012)
+  else if ( year==2011 || year==2012 )
   {            
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 180*TMath::DegToRad(), 120) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-600,90,200);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(100,450,100);
   }
-//  else 
-//  {
-//    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 320*TMath::DegToRad(), 400) ; // revise
-//    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-700,90,200); // revise
-//    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(50,450,100);  // revise     
-//  }
+  else // Run2
+  {
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 327*TMath::DegToRad(), 400) ; 
+    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-1000,1000,500); // revise
+    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(0,1000,200);     // revise     
+  }
   
   emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 0.65, 325) ;
   emcalQA->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
