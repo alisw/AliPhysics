@@ -24,7 +24,9 @@ class TGeoMatrix;
 class TVector2;
 class AliEveEventManager;
 
-ClassImp(AliEveEMCALSModuleData)
+/// \cond CLASSIMP
+ClassImp(AliEveEMCALSModuleData) ;
+/// \endcond
 
 Float_t AliEveEMCALSModuleData::fgSModuleBigBox0 = 0.;
 Float_t AliEveEMCALSModuleData::fgSModuleBigBox1 = 0.;
