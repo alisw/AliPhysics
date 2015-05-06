@@ -1,0 +1,358 @@
+//
+// Make event list
+// Purpose: prepare  event list for the raw data filtering from the filtered trees
+//  
+// Input: 
+//       root file or list of root files  with  filtered data trees (highPt,V0s,Laser, CosmicPairs, high dEdx )
+// Output:
+//       event list  to the terminal; input for the  makeEventList.sh script
+// Usage:
+// 
+// Authors:
+//    modifications:
+//       mesut.arslandok@cern.ch
+//       marian.ivanov@cern.ch
+//
+
+/*
+   Example usage:
+
+   //1.) define env varaibles - sourcing config file e.g:
+   source $ALICE_PHYSICS/../src/PWGPP/rawmerge/makeEventList.config
+   //2.) run aliroot
+   .L $ALICE_PHYSICS/../src/PWGPP/rawmerge/makeEventList.C+
+   makeEventList("alien:///alice/data/2012/LHC12h/000189406/pass1/PWGPP/AdHocCalibration/239_20150413-1059/FilterEvents_Trees.root",8.0,4.0)
+   // makeEventList("/hera/alice/local/filtered/alice/data/2012/LHC12h/000189406/pass1/155/root_archive.zip#FilterEvents_Trees.root",8.0,4.0)
+   
+*/
+
+#include <TFile.h>
+#include "TSystem.h"
+#include "TBranch.h"
+#include "TGrid.h"
+#include "TH1.h"
+#include "TFrame.h"
+#include "TROOT.h"
+#include "TKey.h"
+#include "TClass.h"
+#include "TTree.h"
+#include "TTreePlayer.h"
+#include "TCut.h"
+#include "AliXRDPROOFtoolkit.h"
+#include "AliSysInfo.h"
+#include "TChain.h"
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+using namespace std;
+using std::cout;
+using std::setw;
+
+
+TFile  *fInput;
+TString fName;
+Long_t  nEvents=0;
+Int_t   runNo=0;
+Int_t   nEventsPerFile=500;
+
+TTree *treeHighPt=NULL;
+TTree *treeV0s=NULL;
+TTree *treeLaser=NULL;
+TTree *treeCosmicPairs=NULL;
+TTree *treedEdx=NULL;
+
+
+TString treeNameHighPt      = "highPt";
+TString treeNameV0s         = "V0s";
+TString treeNameLaser       = "Laser";
+TString treeNameCosmicPairs = "CosmicPairs";
+TString treeNamedEdx        = "dEdx";
+
+
+TString scanOutputHighPt;      
+TString scanOutputV0s;         
+TString scanOutputLaser;      
+TString scanOutputCosmicPairs;
+TString scanOutputdEdx;
+
+
+// Helper Functions
+void    ReadTrees();
+Int_t   GuessRunNumber();
+void    SetDumpOutputFile(Int_t run);
+void    MakeRawList(const char *scanOutput);
+TString rawDataPrefix;
+TString commonPrefix;
+TString alienPrefix="alien://";
+
+
+
+// Main Function
+void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt = 8., Double_t ptMinV0s = 3.)
+{
+  // 
+  // Reads the filtered trees and creates the raw data list 
+  // 
+
+  rawDataPrefix  = gSystem->GetFromPipe("echo $rawDataPrefix");
+  commonPrefix   = gSystem->GetFromPipe("echo $commonPrefix");
+  TString strnEventsPerFile=gSystem->GetFromPipe("echo $nEventsPerFile");
+  nEventsPerFile = strnEventsPerFile.Atoi();
+  
+  cout << " rawDataPrefix   = " << rawDataPrefix << endl;
+  cout << " commonPrefix    = " << commonPrefix << endl;
+  cout << " nEventsPerFile  = " << nEventsPerFile << endl;
+  cout << " gridRunning     = " << atoi(gSystem->GetFromPipe("echo $gridRunning")) << endl;
+
+  if (fFileName.Contains("alien://")!=0) {
+    TGrid * grid = TGrid::Connect("alien://");
+    if (!grid){
+      //::Error("makeEventList","Alien not available");
+      return;
+    }
+  }
+  
+  // Read input:  Filtered tree file and get the trees to be used for "Scan()"
+  fName = fFileName; 
+  ReadTrees();
+  runNo = GuessRunNumber();
+  SetDumpOutputFile(runNo);
+
+  // Analyse Hight pt tree
+  if (treeHighPt)
+  {
+    if (treeHighPt->GetEntries()>0)
+    { 
+      // Dump the tree scan in to file
+      printf("offlineTrigger: highPt\n");
+      treeHighPt->GetUserInfo()->AddFirst(new TNamed("highPt","highPt"));
+      treeHighPt->SetScanField(nEvents);
+      //      tree->Scan("fileName.GetString():evtNumberInFile:triggerName:gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=.2f:8.d:8.d:130.s:15.lu:12.d");
+      AliSysInfo::AddStamp("highPtFilterScanBegin",1,1);
+      treeHighPt->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=130.s:14.d:30.s:20.lu:20.lu");
+      AliSysInfo::AddStamp("highPtFilterScanEnd",1,2);
+    }
+  } 
+  MakeRawList(scanOutputHighPt.Data()); // Process the Scan output further to prepare the raw data list
+  AliSysInfo::AddStamp("highPtFilterListEnd",1,3);
+  
+  // Analyse V0s tree
+  if (treeV0s)
+  {
+    if (treeV0s->GetEntries()>0)
+    { 
+      // Dump the tree scan in to file
+      printf("offlineTrigger: V0s\n");
+      treeV0s->GetUserInfo()->AddFirst(new TNamed("V0s","V0s"));
+      treeV0s->SetScanField(nEvents);
+      AliSysInfo::AddStamp("highV0sFilterScanBegin",2,1);
+      treeV0s->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp",Form("v0.Pt()>%lf",ptMinV0s),"col=130.s:14.d:30.s:20.lu:20.lu"); 
+      AliSysInfo::AddStamp("highV0sFilterScanEnd",2,2);
+    }
+  }
+  MakeRawList(scanOutputV0s.Data());       // Process the Scan output further to prepare the raw data list
+
+  // Analyse Laser tree
+  if (treeLaser)
+  {
+    if (treeLaser->GetEntries()>0)
+    { 
+      // Dump the tree scan in to file
+      printf("offlineTrigger: Laser\n");
+      treeLaser->GetUserInfo()->AddFirst(new TNamed("Laser","Laser"));
+      treeLaser->SetScanField(nEvents);
+      AliSysInfo::AddStamp("laserFilterBegin",3,1);
+      treeLaser->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp","","col=130.s:14.d:30.s:20.lu:20.lu"); 
+      AliSysInfo::AddStamp("laserFilterEnd",3,2);
+    }
+  }
+  MakeRawList(scanOutputLaser.Data());      // Process the Scan output further to prepare the raw data list
+
+
+  // Analyse Laser tree
+  if (treeCosmicPairs)
+  {
+    if (treeCosmicPairs->GetEntries()>0)
+    { 
+      // Additional cuts for cosmics
+      TCut ptCut="abs(t0.fP[4])<0.33"; //cut on 1/pt < 0.33
+      TCut cutDCA="abs(0.5*(t0.fD-t1.fD))>5&&abs(0.5*(t0.fD-t1.fD))<80"; //tracks crossing the inner field cage (80cm)
+      TCut cutCross="t0.fOp.fP[1]*t1.fOp.fP[1]<0"; //tracks crossing central electrode
+      
+      // Dump the tree scan in to file
+      printf("offlineTrigger: CosmicPairs\n");
+      treeCosmicPairs->GetUserInfo()->AddFirst(new TNamed("CosmicPairs","CosmicPairs"));
+      treeCosmicPairs->SetScanField(nEvents);
+      AliSysInfo::AddStamp("cosmicFilterBegin",4,1);
+      treeCosmicPairs->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp", ptCut && cutDCA && cutCross, "col=130.s:14.d:30.s:20.lu:20.lu"); 
+      AliSysInfo::AddStamp("cosmicFilterEnd",4,2);
+    }
+  }
+  MakeRawList(scanOutputCosmicPairs.Data()); // Process the Scan output further to prepare the raw data list
+
+  // Analyse Laser tree
+  if (treedEdx)
+  {
+    if (treedEdx->GetEntries()>0)
+    { 
+      // Dump the tree scan in to file
+      printf("offlineTrigger: dEdx\n");
+      treedEdx->GetUserInfo()->AddFirst(new TNamed("dEdx","dEdx"));
+      treedEdx->SetScanField(nEvents);
+      AliSysInfo::AddStamp("highdEdxFilterBegin",5,1);
+      treedEdx->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp","","col=130.s:14.d:30.s:20.lu:20.lu"); 
+      AliSysInfo::AddStamp("highdEdxFilterBegin",5,2);
+
+    }
+  }
+  MakeRawList(scanOutputdEdx.Data());        // Process the Scan output further to prepare the raw data list
+
+}
+// -----------------------------------------------------------------------------------------------------
+void ReadTrees(){
+  
+  //
+  // Read the trees from the .root file if the file is a list of root files then make the chain of files 
+  //
+  
+  if (fName.Contains(".root")){
+    fInput = TFile::Open(fName);
+    cout << " make the tree " << endl;
+    treeHighPt      = (TTree*)fInput->Get(treeNameHighPt);
+    treeV0s         = (TTree*)fInput->Get(treeNameV0s);
+    treeLaser       = (TTree*)fInput->Get(treeNameLaser);
+    treeCosmicPairs = (TTree*)fInput->Get(treeNameCosmicPairs);  
+    treedEdx        = (TTree*)fInput->Get(treeNamedEdx);      
+  } else {
+    cout << " make the chain " << endl;
+    treeHighPt      = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameHighPt     ,0,500000,0);  
+    treeV0s         = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameV0s        ,0,500000,0);  
+    treeLaser       = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameLaser      ,0,500000,0);  
+    treeCosmicPairs = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameCosmicPairs,0,500000,0); 
+    treedEdx        = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNamedEdx       ,0,500000,0);   
+  }
+  
+   treeHighPt->SetCacheSize(100000000);
+   treeV0s->SetCacheSize(100000000);
+   treeLaser->SetCacheSize(100000000);
+   treeCosmicPairs->SetCacheSize(100000000);
+   treedEdx->SetCacheSize(100000000);
+}
+// -----------------------------------------------------------------------------------------------------
+Int_t GuessRunNumber(){
+
+  //
+  // read run number from file
+  //
+  
+  TTree * tree;
+  if (treeHighPt) tree=treeHighPt;
+  else if (treeV0s) tree=treeV0s;
+  else if (treeCosmicPairs) tree=treeCosmicPairs;
+  else if (treeLaser) tree=treeLaser;
+  else if (treedEdx) tree=treedEdx;
+  else return 0;
+  
+  tree->Draw("runNumber>>htmp","","goff",100);
+  TH1D * htmp = (TH1D*)tree->GetHistogram();
+  return (Int_t)htmp->GetMean();
+
+}
+// -----------------------------------------------------------------------------------------------------
+void SetDumpOutputFile(Int_t run){
+
+  //
+  // Prepare the dump of output file
+  //
+  
+  scanOutputHighPt.Form("%d",run);      scanOutputHighPt.Append("_HighPt.list");
+  scanOutputV0s.Form("%d",run);         scanOutputV0s.Append("_V0s.list"); 
+  scanOutputLaser.Form("%d",run);       scanOutputLaser.Append("_Laser.list");
+  scanOutputCosmicPairs.Form("%d",run); scanOutputCosmicPairs.Append("_CosmicPairs.list"); 
+  scanOutputdEdx.Form("%d",run);        scanOutputdEdx.Append("_dEdx.list"); 
+
+ 
+  ((TTreePlayer*)(treeHighPt     ->GetPlayer()))->SetScanRedirect(true);
+  ((TTreePlayer*)(treeV0s        ->GetPlayer()))->SetScanRedirect(true);
+  ((TTreePlayer*)(treeLaser      ->GetPlayer()))->SetScanRedirect(true);
+  ((TTreePlayer*)(treeCosmicPairs->GetPlayer()))->SetScanRedirect(true);
+  ((TTreePlayer*)(treedEdx       ->GetPlayer()))->SetScanRedirect(true);
+
+  ((TTreePlayer*)(treeHighPt     ->GetPlayer()))->SetScanFileName(scanOutputHighPt);
+  ((TTreePlayer*)(treeV0s        ->GetPlayer()))->SetScanFileName(scanOutputV0s);
+  ((TTreePlayer*)(treeLaser      ->GetPlayer()))->SetScanFileName(scanOutputLaser);
+  ((TTreePlayer*)(treeCosmicPairs->GetPlayer()))->SetScanFileName(scanOutputCosmicPairs);
+  ((TTreePlayer*)(treedEdx       ->GetPlayer()))->SetScanFileName(scanOutputdEdx);
+
+
+}
+// -----------------------------------------------------------------------------------------------------
+void MakeRawList(const char *scanOutput){
+  
+  //
+  // Create a new list replacing the esd path with raw path of the chunk
+  //
+
+  // Create the rawlist output file
+  ofstream rawlist;
+  TString rawListName = Form("rawEvents_%s",scanOutput);
+  rawlist.open(rawListName);   // raw_<runNumber>_<TriggerName>.list
+
+  // open Tree::Scan output  
+  std::ifstream file(scanOutput);
+  std::string line;
+  
+  // Loop over all lines of the Tree::Scan output
+  Int_t ncount=0;
+  while (std::getline(file, line)) {
+    
+    TString sline = (line);
+    if (!sline.Contains(".root")) continue;
+    ncount++;
+    
+    // tokenize each line wrt "*" to get read of "*"
+    TObjArray *objArr1  = sline.Tokenize("*");
+    TString esdFilePath = (objArr1->At(1)->GetName());
+        
+    // Tokenize the esd file path wrt "/" to read run number and root file name
+    TObjArray *objArr2  = esdFilePath.Tokenize("/");
+    Int_t nElements = objArr2->GetLast();
+    TString rootFile;
+    Int_t rootFileIndex = 0;
+    Int_t runNumberIndex = 0;
+    for (Int_t i=0;i<(Int_t)objArr2->GetLast();i++){
+      TString tmp = TString((objArr2->At(i))->GetName());
+      if ( tmp.Contains("000") && tmp.Contains(".") ) {
+        rootFile = tmp.Append(".root");
+        rootFileIndex = i;
+      }
+      if ( tmp.Contains("000") && !(tmp.Contains(".")) ) {
+        runNumberIndex = i;
+      }
+    }
+         
+    // Retrieve runNumber, period, and year from the esdfilePath
+    TString runNumber = TString((objArr2->At(runNumberIndex))->GetName());
+    TString period    = TString((objArr2->At(runNumberIndex-1))->GetName());
+    TString year      = TString((objArr2->At(runNumberIndex-2))->GetName());
+    
+    // prepare the raw file path
+    rootFile.Prepend(Form("%s%s/%s/%s/%s/raw/",rawDataPrefix.Data(),commonPrefix.Data(),year.Data(),period.Data(),runNumber.Data()));
+    
+    // Other variables needed for raw list
+    Int_t   eventNumber = atoi(objArr1->At(2)->GetName());
+    TString trigName    = (TString)(objArr1->At(3)->GetName());
+    TString gid         = (objArr1->At(4)->GetName());
+    TString timeStamp   = (objArr1->At(5)->GetName());
+     
+    // Dump info into final raw list
+    rawlist  << rootFile << setw(15) << eventNumber << setw(1) << trigName << setw(1) << gid << setw(1) << timeStamp << endl;
+  } 
+  
+  rawlist.close();
+  
+  // Avoid duplicated event numbers in file
+  gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",rawListName.Data(),rawListName.Data(),rawListName.Data()));
+  // gSystem->Exec(Form("csplit -f %d_%s. -n 4 -k %s %d {10000}", nEventsPerFile,rawListName.Data(),rawListName.Data(),nEventsPerFile )); 
+   
+}
