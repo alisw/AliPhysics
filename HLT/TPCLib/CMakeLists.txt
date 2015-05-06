@@ -172,6 +172,8 @@ set(HDRS ${HDRS}
     AliHLTTPCClusterDataFormat.h
     AliHLTTPCClusterMCData.h
     HWCFemulator/AliHLTTPCHWCFDataTypes.h
+    tracking-ca/AliHLTTPCCADef.h
+    tracking-ca/AliHLTTPCCAMath.h
 )
 
 # Generate the dictionary
