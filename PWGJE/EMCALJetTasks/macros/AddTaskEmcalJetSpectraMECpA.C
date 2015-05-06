@@ -65,8 +65,8 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   sfunc->SetParameter(2,scale);
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
 
   //const char *nJets;
   TString nJets("");
@@ -105,7 +105,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   nJets+=jetFinderTask->GetName();
   nJetsCh+=jetFinderTaskChSig->GetName();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskDeltaPt.C");
 
   TString deltaname(Form("DeltaPt_%s_Scaled", nRhosCh));
   AliAnalysisTaskDeltaPt* deltapt = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",scaledname,radius,AreaCut,minTrackPt,minClusterPt,typeEMC,deltaname);
@@ -119,7 +119,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   AliAnalysisTaskDeltaPt* deltaptEMC = AddTaskDeltaPt(usedTracks,outClusName,nJets,"","","","","",nRhosChEm,radius,AreaCut,minTrackPt,minClusterPt,typeEMC,emcdeltaname);
   deltaptEMC->SetCentralityEstimator(CentEst);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
 
 
   Int_t radlabel=(Int_t)floor(radius*100+0.5);
