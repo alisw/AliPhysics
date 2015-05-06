@@ -484,7 +484,7 @@ Int_t FT2::ProbeDecayAbsorb(double* posIni)
 #if DEBUG>5
   printf("New step length %.2f from XYZ= %+.2f %+.2f %+.2f\n",dist,posIni[0],posIni[1],posIni[2]);
 #endif
-      //
+  //
   if(gRandom->Rndm()<ParticleDecayProbability(dist)) {
 	  fProbe.fIsDecayed=kTRUE;
     return 1;
@@ -1527,14 +1527,14 @@ Double_t FT2::ParticleAbsorptionProbability(Double_t length,Double_t rho, Double
 		Double_t radiusEl	= 2.8179403267E-13; // cm
 		Double_t sigmaAni	= Z*TMath::Pi()*radiusEl*radiusEl/(gamma+1)*((gamma*gamma+4.*gamma+1)/(gamma*gamma-1)*TMath::Log(gamma+TMath::Sqrt(gamma*gamma-1))-(gamma+3)/TMath::Sqrt(gamma*gamma-1));
 		
-		Double_t lambdaAni = A/(rho*Navo*sigmaAni);
+		Double_t lambdaAni = A/(Navo*sigmaAni);
 
 		return (1.-TMath::Exp(-length*rho/radLength))*(1-TMath::Exp(-length*rho/lambdaAni));
 	}
 	else return -1;
 	sigma0*=1E-27; // X-Section from mb to cm2
 	
-	Double_t lambda = TMath::Power(A,1./3.)/(rho*Navo*sigma0);
+	Double_t lambda = TMath::Power(A,1./3.)/(Navo*sigma0);
 #if DEBUG>5
 	AliInfo(Form("\n### %i with p = %f\n### Rho: %f\n### A: %f\n### Z: %f\n### Navo: %E\n### sigma0: %E\n### x: %E\n### Lambda: %f\n### xrho/La: %f\n",pdg,mom,rho,A,Z,Navo,sigma0,length,lambda,length*rho/lambda));
 #endif
