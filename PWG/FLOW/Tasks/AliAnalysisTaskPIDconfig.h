@@ -78,11 +78,6 @@ private:
     Int_t                  fTriggerSelection;   // trigger selection
     Int_t                  fCentralityPercentileMin;    // min centrality
     Int_t                  fCentralityPercentileMax;    // max cen
-    Double_t               fRawEvents;                  //raw events
-    Double_t               fAfterCentralityCut;         // after centrality cut
-    Double_t               fAfterVTXZCut;               // after vertex z cut
-    Double_t               fAfterTPCGlobalOutliersCut2010;     //after TPC global outlier cut 2010
-    Double_t               fAfterTPCGlobalOutliersCut2011;     //after TPC global outlier cut 2011
     Double_t               fFilterBit;                  // filterbit
     Double_t               fDCAxyCut;           // dca cut
     Double_t               fDCAzCut;            // dcz z
@@ -91,8 +86,6 @@ private:
     Double_t               fLowPtPIDTPCnsigLow_Kaon[6]; //nsig low cut Kaon
     Double_t               fLowPtPIDTPCnsigHigh_Kaon[6]; //nsig high cut Kaon
     Bool_t                 fData2011;           // 2011 data
-    Bool_t                 fTriggerMB;          // minB trigger
-    Bool_t                 fTriggerCentral;     // cen trigger
     Bool_t                 fUseCentrality;      // use centrality
     Bool_t                 fCutTPCmultiplicityOutliersAOD;      // do outlier cut
     Bool_t                 fPIDcuts;            // pid cuts
@@ -119,6 +112,7 @@ private:
     TH2F                  *fHistdEdxvsPTPCbeforePID;    //! another hist
     TH3F                  *fhistNsigmaP;        //! another hist
     TH2F                  *fhistTPCnSigmavsP;   //! another hist
+    TH2F		  *fhistTOFnSigmavsP;   //! another hist
     TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
     TH2F                  *fHistBetavsPTOFafterPID_2;     //! another hist

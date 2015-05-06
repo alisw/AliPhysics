@@ -82,11 +82,6 @@ ClassImp(AliAnalysisTaskPIDconfig)
 AliAnalysisTaskPIDconfig::AliAnalysisTaskPIDconfig():
 AliAnalysisTaskSE(),
 fVevent(0),
-fRawEvents(0),
-fAfterCentralityCut(0),
-fAfterVTXZCut(0),
-fAfterTPCGlobalOutliersCut2010(0),
-fAfterTPCGlobalOutliersCut2011(0),
 fESD(0),
 fAOD(0),
 fPIDResponse(0),
@@ -97,8 +92,6 @@ fFilterBit(1),
 fDCAxyCut(-1),
 fDCAzCut(-1),
 fData2011(kFALSE),
-fTriggerMB(kTRUE),
-fTriggerCentral(kFALSE),
 fUseCentrality(kTRUE),
 fCutTPCmultiplicityOutliersAOD(kFALSE),
 fPIDcuts(kFALSE),
@@ -125,6 +118,7 @@ fHistBetavsPTOFbeforePID(0),
 fHistdEdxvsPTPCbeforePID(0),
 fhistNsigmaP(0),
 fhistTPCnSigmavsP(0),
+fhistTOFnSigmavsP(0),
 fHistBetavsPTOFafterPID(0),
 fHistdEdxvsPTPCafterPID(0),
 fHistBetavsPTOFafterPID_2(0),
@@ -167,11 +161,6 @@ fhistProtonEtaDistAfter(0)
 AliAnalysisTaskPIDconfig::AliAnalysisTaskPIDconfig(const char *name):
 AliAnalysisTaskSE(name),
 fVevent(0),
-fRawEvents(0),
-fAfterCentralityCut(0),
-fAfterVTXZCut(0),
-fAfterTPCGlobalOutliersCut2010(0),
-fAfterTPCGlobalOutliersCut2011(0),
 fESD(0),
 fAOD(0),
 fPIDResponse(0),
@@ -182,8 +171,6 @@ fFilterBit(1),
 fDCAxyCut(-1),
 fDCAzCut(-1),
 fData2011(kFALSE),
-fTriggerMB(kTRUE),
-fTriggerCentral(kFALSE),
 fUseCentrality(kTRUE),
 fCutTPCmultiplicityOutliersAOD(kFALSE),
 fPIDcuts(kFALSE),
@@ -210,6 +197,7 @@ fHistBetavsPTOFbeforePID(0),
 fHistdEdxvsPTPCbeforePID(0),
 fhistNsigmaP(0),
 fhistTPCnSigmavsP(0),
+fhistTOFnSigmavsP(0),
 fHistBetavsPTOFafterPID(0),
 fHistdEdxvsPTPCafterPID(0),
 fHistBetavsPTOFafterPID_2(0),
@@ -327,7 +315,9 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         printf("ERROR: fVevent not available\n");
         return;
     }
-    fRawEvents=fRawEvents+1;  //Total number of events
+   
+    TH1F *hNoEvents = (TH1F*)fListQAInfo->At(0);
+    hNoEvents->Fill(1);
 
     Double_t centrality = fVevent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator);
     TH1F *hCentralityPassBefore = (TH1F*)fListQAInfo->At(1);
@@ -338,8 +328,8 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     CheckCentrality(fVevent,centrality,pass);
     
     if(!pass){ return;}
-    
-    fAfterCentralityCut=fAfterCentralityCut+1; //# events after centrality cut
+
+    hNoEvents->Fill(2);
 
     const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
     
@@ -350,8 +340,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     
     TH1F *histpVtxZ = (TH1F*)fListQAInfo->At(3);
     
-    fAfterVTXZCut = fAfterVTXZCut+1; //# of events after z vertex cut
-
+    hNoEvents->Fill(3);
     if(histpVtxZ) histpVtxZ->Fill(pVtxZ);
     
     if(ntracks<2) return;
@@ -395,8 +384,8 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         
         if(!pass) return;
         HistTPCvsGlobalMultAfterOutliers->Fill(multGlobal,multTPC);  
-        
-	fAfterTPCGlobalOutliersCut2010=fAfterTPCGlobalOutliersCut2010+1; //# of events after TPC Global outlier cut in case it is 2010 data
+
+        hNoEvents->Fill(4);     
     }
     
     
@@ -431,7 +420,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         if(!pass) return;
         HistTPCvsGlobalMultAfterOutliers->Fill(multGlobal,multTPC);
  
-	fAfterTPCGlobalOutliersCut2011=fAfterTPCGlobalOutliersCut2011+1; //# of events after TPC Global outlier cut in case it is 2011 data
+        hNoEvents->Fill(5);
 
     }
     
@@ -651,8 +640,11 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                     
                     TH2F *hTPCnSigmavsP = (TH2F*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
                     if (hTPCnSigmavsP){
-                        hTPCnSigmavsP->Fill(track->P()*track->Charge(),nSigmaTPC);}
-                    
+                        hTPCnSigmavsP->Fill(track->P(),nSigmaTPC);}
+ 
+  		    TH2F *hTOFnSigmavsP = (TH2F*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC+AliPID::kSPECIESC);
+                    if (hTOFnSigmavsP){
+                        hTOFnSigmavsP->Fill(track->P(),nSigmaTOF);}
                 }
             }
         }//probMis
@@ -661,14 +653,6 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     
     TH2F *HistTPCvsGlobalMultAfter = (TH2F*) fListQAInfo->At(31);
     HistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
-    
-    TProfile *hNoEvents = (TProfile*)fListQAInfo->At(0);
-    hNoEvents->Fill(1,fRawEvents);
-    hNoEvents->Fill(2,fAfterCentralityCut); //# events after centrality cut
-    hNoEvents->Fill(3,fAfterVTXZCut);
-    hNoEvents->Fill(4,fAfterTPCGlobalOutliersCut2010);
-    hNoEvents->Fill(5,fAfterTPCGlobalOutliersCut2011);
-
 }
 //_________________________________________
 void AliAnalysisTaskPIDconfig::CheckCentrality(AliVEvent* event,Double_t centvalue, Bool_t &centralitypass)
@@ -734,18 +718,22 @@ void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
         fhistTPCnSigmavsP = new TH2F(Form("NsigmaP_TPC_%s",AliPID::ParticleName(ispecie)),Form("TPC n#sigma %s vs. p ;p [GeV];TPC n#sigma",AliPID::ParticleName(ispecie)),60,0,6,125,-5,20);
         fListQAtpctof->Add(fhistTPCnSigmavsP);
     }
-    
+
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+        fhistTOFnSigmavsP = new TH2F(Form("NsigmaP_TOF_%s",AliPID::ParticleName(ispecie)),Form("TOF n#sigma %s vs. p ;p [GeV];TOF n#sigma",AliPID::ParticleName(ispecie)),60,0,6,150,-10,20);
+        fListQAtpctof->Add(fhistTOFnSigmavsP);
+    }
 }
 //______________________________________________________________________________
 void AliAnalysisTaskPIDconfig::SetupEventInfo()
 {
     //event and track info
-    fNoEvents = new TProfile("number of events","no. of events",5,0.5,5.5,"s");
+    fNoEvents = new TH1F("number of events","no. of events",5,0.5,5.5);
     fNoEvents->GetXaxis()->SetBinLabel(1,"RawEvents");
     fNoEvents->GetXaxis()->SetBinLabel(2,"AfterCentralityCut");
     fNoEvents->GetXaxis()->SetBinLabel(3,"AfterVTXZCut");
-    fNoEvents->GetXaxis()->SetBinLabel(4,"AfterTPCGlobalOutliersCut2010");
-    fNoEvents->GetXaxis()->SetBinLabel(5,"AfterTPCGlobalOutliersCut2011");    
+    fNoEvents->GetXaxis()->SetBinLabel(4,"AfterTPCGlbOutlierCut2010");
+    fNoEvents->GetXaxis()->SetBinLabel(5,"AfterTPCGlbOutlierCut2011");    
     fListQAInfo->Add(fNoEvents);
 
     fhistCentralityPassBefore = new TH1F("fcentralityPassBefore","centralityPassBefore", 100,0,100);
