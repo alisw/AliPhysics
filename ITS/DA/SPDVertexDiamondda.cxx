@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
 
  gSystem->Exec(Form("rm %s",OUTPUT_FILE));
 
- TTimeStamp *timeStamp;
+ TTimeStamp *timeStamp = new TTimeStamp();
  timeStamp->Set();
  Int_t t1 = timeStamp->GetSec(); 
  Int_t t2=0; 
@@ -375,6 +375,7 @@ int main(int argc, char **argv) {
 #endif
        
  delete mv;
+ delete timeStamp;
 
  /* write report */
  printf("Run #%s, received %d events with vertex, out of %d physics and out of %d total events\n",getenv("DATE_RUN_NUMBER"),nevents_with_vertex,nevents_physics,nevents_total);
