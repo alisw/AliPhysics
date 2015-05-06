@@ -26,9 +26,9 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   // Reconstruction settings
   AliReconstruction rec;
   if (gSystem->Getenv("disableOuter")!=NULL){
-    rec.SetRunLocalReconstruction("ITS TPC TRD TOF T0");
-    rec.SetRunReconstruction("ITS TPC TRD TOF T0");
-    rec.SetRunTracking("ITS TPC TRD TOF T0");
+    rec.SetRunLocalReconstruction((gSystem->Getenv("disableOuter")));
+    rec.SetRunReconstruction((gSystem->Getenv("disableOuter")));
+    rec.SetRunTracking((gSystem->Getenv("disableOuter")));
   } else {
     rec.SetRunReconstruction("ALL");
   }
