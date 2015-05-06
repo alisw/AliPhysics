@@ -1,0 +1,96 @@
+
+
+                 HOW TO RUN RAW DATA FILTERING --> Full filtering of a period on the GRID
+
+#########################################################################################################################################
+
+--> JIRA:    https://alice.its.cern.ch/jira/browse/PWGPP-7
+             https://alice.its.cern.ch/jira/browse/PWGPP-126
+--> WIKI:    https://twiki.cern.ch/twiki/bin/view/ALICE/TPC_Offline_Benchmark
+--> git :    $NOTES/JIRA/PWGPP-7 
+             $NOTES/JIRA/PWGPP-126
+--> aliroot: $ALICE_PHYSICS/PWGPP/rawmerge
+
+Basic steps:
+
+1) AliAnalysisTaskFilteredTree.[h,cxx] --> Using the ESDs for a given period provides TTrees with the filtered event information
+                                           (triggers: tracks, V0, calibration triggers)
+2) makeEventList.[C,sh,config]         --> Using the ttree output creates the raw event list  |chunk|event id|trigerid|globalid| timestamp|
+
+3) rawmerge.[C,jdl,sh]                 --> Merges the raw events in the provided list
+
+4) benchmark.sh                        --> Reconstructs the merged filtered raw events and produces new ESDs
+                                            
+
+#########################################################################################################################################
+
+
+
+0.) Prepare a working directory preferably following git directory convention
+
+   workdir=$NOTES/JIRA/PWGPP-7/rawFiltering/<year>/<period>
+   cd $workdir 
+   mkdir data/  filteredTrees/  lists/  test/ code/
+   cd code
+   cp $NOTES/JIRA/PWGPP-7/code/{*.config,*.sh,*.C,*.jdl} .
+
+
+
+1.a) Ask for the filtering of a period on LEGO train which runs the analysis task AliAnalysisTaskFilteredTree.[h,cxx]
+
+1.b) Prepare the list of the "FilterEvents_Trees.root" created by lego train in the "$workdir/Lists"
+       $workdir/Lists/FilteredTrees_OnAlien.list
+       File content 
+         -->  alien:///alice/data/2012/LHC12h/000189347/pass1/PWGPP/AdHocCalibration/239_20150413-1059/FilterEvents_Trees.root
+     !!! files will be registered in the central directories !!!
+
+      /alice/data/2012/LHC12h/000189347/pass1/PWGPP/AdHocCalibration/239_20150413-1059/FilterEvents_Trees.root
+      In case data not possible to merge per run (because of limits 4GBy file size for the merging)	
+      <prefix>/filtered/<year>/<period>/<run>/<pass>/<id>/FilterEvents_Trees.root
+      
+      Prefix options to fix this week:   !!! TO FIX !!!
+         /alice/cern.ch/user/t/tpcdrop/
+         /alice/cern.ch/user/p/pwgpp/
+
+
+   
+2.a) Modify "makeEventList.config" - parameters to control raw  (see details in example config file  makeEventList.config.Example)
+     parameters:
+       trigger thresholds: ptMinHighPt, ptMinV0
+       raw data prefix: 
+       ...       
+
+
+2.b) Run the sctipt to create trigerred raw event list:
+   
+   source $ALICE_PHYSICS/../src/PWGPP/rawmerge/makeEventList.sh
+     --> for a single file 
+   makeEventListPerRun  alien:///alice/data/2012/LHC12h/000189406/pass1/PWGPP/AdHocCalibration/239_20150413-1059/FilterEvents_Trees.root
+     --> for all runs
+   makeEventListAllRuns $workdir/Lists/FilteredTrees_OnHera.list
+   
+   **) Output will be: rawEvents_<run number>_<trigger type>.list for each run
+    E.g:
+      rawEvents_189147_V0s.list
+      rawEvents_189147_HighPt.list
+      rawEvents_189147_Laser.list
+      rawEvents_189147_CosmicPairs.list
+      rawEvents_189147_dEdx.list
+    
+   **) Each file has the structure like: <raw data file path>   <eventNumber in file>   <trigger>  <globalID>  <timeStamp>
+    E.g. 
+      /hera/alice/alien/raw/alice/data/2012/LHC12g/000188362/raw/12000188362001.12.root   104   V0s   90816064459   1289262255
+        
+7) Ask Latchezar for staging of the raw data for given runs 
+
+8) Merge raw events using the jdl file
+   
+   alien-token-init
+   submit rawmerge.jdl $run $period $year $eventlist
+   E.g. : submit rawmerge.jdl 000189147 LHC12h 2012 <path>/rawEvents_189147_HighPt.list
+
+   
+
+
+
+   

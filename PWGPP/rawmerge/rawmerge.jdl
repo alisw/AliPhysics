@@ -1,0 +1,45 @@
+Executable="rawmerge.sh";
+
+Packages={
+    "VO_ALICE@ROOT::v5-34-05",
+    "VO_ALICE@APISCONFIG::V1.1x"
+};
+
+Jobtag={
+    "Raw Filtering"
+};
+
+TTL="40000";
+Price="100";
+
+Validationcommand="/alice/validation/validation.sh";
+
+Requirements=member(other.GridPartitions,"ultrapower");
+
+Split="se";
+SplitMaxInputFileNumber="50";
+InputDataListFormat="xml-single";
+InputDataList="wn.xml";
+
+SplitArguments={"$1"};
+
+JDLVariables={
+    "Packages", 
+    "OutputDir"
+};
+
+Workdirectorysize={"6000MB"};
+
+InputFile={
+    "LF:/alice/cern.ch/user/m/mkrzewic/rawmerge/rawmerge.C",
+    "LF:/alice/cern.ch/user/m/mkrzewic/rawmerge/eventLists/$1.list"
+};
+
+InputDataCollection="LF:/alice/data/$3/$2/000$1/fullrun.xml,nodownload";
+
+OutputDir="/alice/cern.ch/user/m/mkrzewic/alice/data/$3/$2/000$1/raw_filtered/#alien_counter_04i#";
+
+Output={
+    "log_archive.zip:*.log@disk=2",
+    "filtered*.root@disk=3"
+};
