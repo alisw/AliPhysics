@@ -71,6 +71,12 @@ public:
   
   void        GetSModuleSmallBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
   const { bbox0 = fgSModuleSmallBox0; bbox1 = fgSModuleSmallBox1; bbox2 = fgSModuleSmallBox2;}
+
+  void        GetSModuleDCalBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
+  const { bbox0 = fgSModuleDCalBox0; bbox1 = fgSModuleDCalBox1; bbox2 = fgSModuleDCalBox2;}
+  
+  void        GetSModuleSmallDBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
+  const { bbox0 = fgSModuleSmallDBox0; bbox1 = fgSModuleSmallDBox1; bbox2 = fgSModuleSmallDBox2;}
   
 //  void        GetSModuleCenter(Float_t& bboxCenter0, Float_t& bboxCenter1, Float_t& bboxCenter2) 
 //  const { bboxCenter0 = fgSModuleCenter0; bboxCenter1 = fgSModuleCenter1; bboxCenter2 = fgSModuleCenter2;}
