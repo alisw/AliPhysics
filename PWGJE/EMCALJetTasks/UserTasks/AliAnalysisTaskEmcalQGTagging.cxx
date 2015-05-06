@@ -369,7 +369,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         ptSubtracted = jet1->Pt();
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
       
-      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef))
+      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef)|| (fJetShapeType==kTrue))
         if (ptSubtracted < fPtThreshold) continue;
      
      
