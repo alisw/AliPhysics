@@ -4,6 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/// \class AliEveEMCALData
+/// \brief EMCal event display data handling
 ///
 /// Fill containers for visualisation of EMCAL data structures
 /// * read and store MC Hits    - read and store digits from esds or runloader
@@ -95,7 +97,6 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
 
  private:
   
-  /// Copy constructor not implemented.
   AliEveEMCALData           (const AliEveEMCALData &edata);  
   
   /// Assignment operator not implemented.
