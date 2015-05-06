@@ -179,6 +179,7 @@ void emcal_all
   l->SetTitle("Tooltip");
   l->SetMainColor(Color_t(2));
   gEve->AddElement(l);
+<<<<<<< HEAD
 
   for (Int_t sm=0; sm<20; sm++)
     {
