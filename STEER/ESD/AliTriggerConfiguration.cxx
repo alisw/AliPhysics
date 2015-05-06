@@ -909,8 +909,7 @@ Int_t AliTriggerConfiguration::GetClassIndexFromName(const char* className) cons
    for (Int_t i=0;i<nclasses;i++) {
        AliTriggerClass* trgclass = (AliTriggerClass*)fClasses.At(i);
        if (TString(trgclass->GetName()).CompareTo(className) == 0) { 
-          ULong64_t classmask = (ULong64_t)trgclass->GetMask();
-          return TMath::Nint(TMath::Log2(classmask))+1;
+          return trgclass->GetIndex();
        }
    }
    return -1;
@@ -921,8 +920,7 @@ const char* AliTriggerConfiguration::GetClassNameFromIndex(Int_t classIndex) con
    Int_t nclasses = (Int_t)fClasses.GetEntriesFast();
    for (Int_t i=0;i<nclasses;i++) {
        AliTriggerClass* trgclass = (AliTriggerClass*)fClasses.At(i);
-       ULong64_t classmask = (ULong64_t)trgclass->GetMask();
-       if (TMath::Nint(TMath::Log2(classmask))+1 == classIndex) return trgclass->GetName();
+       if (trgclass->GetIndex() == classIndex) return trgclass->GetName();
    }
    return 0;
 }
