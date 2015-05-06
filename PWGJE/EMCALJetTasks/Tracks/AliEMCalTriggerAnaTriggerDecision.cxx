@@ -69,7 +69,7 @@ void AliEMCalTriggerAnaTriggerDecision::Reset() {
 void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromString(const TString& triggerstring) {
   if(triggerstring.Contains("EJ1") || triggerstring.Contains("EJE")) fDecisionFromString[kTAEMCJHigh]  = kTRUE;
   if(triggerstring.Contains("EJ2")) fDecisionFromString[kTAEMCJLow]   = kTRUE;
-  if(triggerstring.Contains("EG1" || triggerstring.Contains("EGA"))) fDecisionFromString[kTAEMCGHigh]  = kTRUE;
+  if(triggerstring.Contains("EG1") || triggerstring.Contains("EGA")) fDecisionFromString[kTAEMCGHigh]  = kTRUE;
   if(triggerstring.Contains("EG2")) fDecisionFromString[kTAEMCGLow]   = kTRUE;
 }
 
