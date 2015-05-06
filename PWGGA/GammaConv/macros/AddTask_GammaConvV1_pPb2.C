@@ -3,7 +3,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 								Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
 								Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
 								TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-								Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
+								Bool_t 		doWeightingPart 				= kFALSE,  							// enable Weighting
 								TString 	generatorName 				= "DPMJET",							// generator Name	
 								TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
 								Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
@@ -135,7 +135,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	} else if (trainConfig == 7) {   
 		eventCutArray[ 0] = "8600011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";         
 	} else if (trainConfig == 8) {   
-	    eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00900009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
+	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00900009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
 	} else if (trainConfig == 9) {   
 		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00500009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 10cm     
 	} else if (trainConfig == 10) {   
@@ -144,20 +144,38 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00600009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 20cm    
 	} else if (trainConfig == 12) {   
 		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00700009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 35cm    
+	} else if (trainConfig == 13) {   
+	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //standard, opening angle =0.0   
+	} else if (trainConfig == 14) {   
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";   //standard, opening angle =0.0  
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
-	
+
 	TList *EventCutList = new TList();
 	TList *ConvCutList = new TList();
 	TList *MesonCutList = new TList();
 	
 	TList *HeaderList = new TList();
-	TObjString *Header1 = new TObjString("pi0_1");
-	HeaderList->Add(Header1);
-	TObjString *Header3 = new TObjString("eta_2");
-	HeaderList->Add(Header3);
+	if (doWeightingPart==1) {
+		TObjString *Header1 = new TObjString("pi0_1");
+		HeaderList->Add(Header1);
+	}
+	if (doWeightingPart==2){
+		TObjString *Header3 = new TObjString("eta_2");
+		HeaderList->Add(Header3);
+	}
+	if (doWeightingPart==3) {
+		TObjString *Header1 = new TObjString("pi0_1");
+		HeaderList->Add(Header1);
+		TObjString *Header3 = new TObjString("eta_2");
+		HeaderList->Add(Header3);
+	}
+	
+	
+	Bool_t doWeighting = kFALSE;
+	if (doWeightingPart == 1 || doWeightingPart == 2 || doWeightingPart == 3) doWeighting = kTRUE;
 	
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
@@ -166,14 +184,36 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 	
+	if (doWeighting) Printf("weighting has been switched on");
 	
-	for(Int_t i = 0; i<numberOfCuts; i++){	
-		analysisEventCuts[i] = new AliConvEventCuts();   
+	for(Int_t i = 0; i<numberOfCuts; i++){
+		
+		analysisEventCuts[i] = new AliConvEventCuts();
+		if ( trainConfig == 13){
+			if (doWeighting){
+				if (generatorName.CompareTo("DPMJET")==0){
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+				} else if (generatorName.CompareTo("HIJING")==0){
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+				}
+			}
+		}   
+		if ( trainConfig == 14){
+			if (doWeighting){
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
+																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+			}
+			
+		}   
+ 
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisEventCuts[i]->SetEtaShift(stringShift);
 		}
+		
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 		
@@ -182,8 +222,11 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-
+		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
+		if (trainConfig ==13 || trainConfig ==14){
+		  analysisMesonCuts[i]->SetOpeningAngleCut(0.000);		  
+		}
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
@@ -196,7 +239,10 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	task->SetMoveParticleAccordingToVertex(kTRUE);
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA 
+	if (trainConfig ==13 || trainConfig ==14){
+	        task->SetDoTHnSparse(0);
+	}
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
@@ -208,5 +254,4 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	mgr->ConnectOutput(task,1,coutput);
 	
 	return;
- 
 }

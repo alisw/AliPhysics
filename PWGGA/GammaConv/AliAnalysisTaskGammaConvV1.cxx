@@ -56,6 +56,7 @@
 #include "AliEventplane.h"
 #include "AliAODEvent.h"
 
+
 ClassImp(AliAnalysisTaskGammaConvV1)
 
 //________________________________________________________________________
@@ -106,6 +107,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hESDMotherEtaPtAlpha(NULL),
 	hESDMotherPi0PtOpenAngle(NULL),
 	hESDMotherEtaPtOpenAngle(NULL),
+        sPtRDeltaROpenAngle(NULL),
 	hMCHeaders(NULL),
 	hMCAllGammaPt(NULL),
 	hMCDecayGammaPi0Pt(NULL),
@@ -271,7 +273,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hESDMotherPi0PtAlpha(NULL),
 	hESDMotherEtaPtAlpha(NULL),
 	hESDMotherPi0PtOpenAngle(NULL),
-	hESDMotherEtaPtOpenAngle(NULL),
+	hESDMotherEtaPtOpenAngle(NULL),	
+        sPtRDeltaROpenAngle(NULL),
 	hMCHeaders(NULL),
 	hMCAllGammaPt(NULL),
 	hMCDecayGammaPi0Pt(NULL),
@@ -528,7 +531,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hESDConvGammaEta = new TH1F*[fnCuts];
 		hESDConvGammaPhi = new TH1F*[fnCuts];
 	} 
-	
+	const Int_t nDim2 = 4;
+	Int_t nBins2[nDim2] = {250,180,100,100};
+	Double_t xMin2[nDim2] = {0,0, 0,0};
+	Double_t xMax2[nDim2] = {25,180,10,0.1};
 	if(fDoMesonAnalysis){
 		hESDMotherInvMassPt = new TH2F*[fnCuts];
 		hESDMotherBackInvMassPt = new TH2F*[fnCuts];
@@ -537,14 +543,20 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			fMesonDCAList = new TList*[fnCuts];
 			tESDMesonsInvMassPtDcazMinDcazMaxFlag = new TTree*[fnCuts];
 		}
-		if (fDoMesonQA > 0){
+		if (fDoMesonQA > 0 ){
 			hESDMotherPi0PtY =  new TH2F*[fnCuts];
 			hESDMotherEtaPtY =  new TH2F*[fnCuts];
 			hESDMotherPi0PtAlpha =  new TH2F*[fnCuts];
 			hESDMotherEtaPtAlpha =  new TH2F*[fnCuts];
 			hESDMotherPi0PtOpenAngle =  new TH2F*[fnCuts];
 			hESDMotherEtaPtOpenAngle =  new TH2F*[fnCuts];
+		
 		}   
+		if(fDoMesonQA ==3){
+	
+		  sPtRDeltaROpenAngle = new THnSparseF*[fnCuts];
+		}
+
 	}
 
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -752,8 +764,12 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
                 hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
 				SetLogBinningXTH2(hESDMotherEtaPtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtOpenAngle[iCut]);
+		       
 			}
-			
+			if  (fDoMesonQA ==3 ){
+				sPtRDeltaROpenAngle[iCut] = new THnSparseF("PhotonPair_Pt_R_DeltaR_OpenAngle","PhotonPair_Pt_R_DeltaR_OpenAngle",nDim2,nBins2,xMin2,xMax2);
+				fESDList[iCut]->Add(sPtRDeltaROpenAngle[iCut]);
+			}
 				
 		}
 
@@ -2156,11 +2172,18 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 					}
 					
 					if (fDoMesonQA > 0){
+
+					  if(fDoMesonQA ==3){
+					    Double_t sparesFill[4] = {gamma0->GetPhotonPt(),gamma0->GetConversionRadius(),abs(gamma0->GetConversionRadius()-gamma1->GetConversionRadius()),pi0cand->GetOpeningAngle()};
+					    sPtRDeltaROpenAngle[fiCut]->Fill(sparesFill, 1);
+					  }
+
 						if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
 							hESDMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());  
 							hESDMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetAlpha());  
 							hESDMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle()); 
-							
+						
+	
 						} 
 						if ( pi0cand->M() > 0.45 && pi0cand->M() < 0.65){
 							hESDMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());  

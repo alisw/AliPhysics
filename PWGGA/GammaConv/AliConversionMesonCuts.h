@@ -110,6 +110,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t SetDCAGammaGammaCut(Int_t DCAGammaGamma);
 		Bool_t SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx);
 		Bool_t SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx);
+		void SetOpeningAngleCut(Float_t OpeningAngle){fOpeningAngle = OpeningAngle;} 
 
 		// Request Flags
 		Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
