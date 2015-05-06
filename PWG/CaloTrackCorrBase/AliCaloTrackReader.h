@@ -405,7 +405,7 @@ public:
   void             SwitchOnSelectEventTimeStamp()          { fTimeStampEventSelect = kTRUE   ; }
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
-  Bool_t           IsSelectEventTimeStampOn()              {return  fTimeStampEventSelect    ; }
+  Bool_t           IsSelectEventTimeStampOn()              { return  fTimeStampEventSelect   ; }
   
   // Event tagging as pile-up
   
@@ -453,7 +453,7 @@ public:
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta       ; }		
   
-  // Virtual for AODReader
+  // Virtual for AliCaloTrackAODReader
   
   virtual ULong_t  GetTrackFilterMask()               const { return 0 ; }
   virtual void     SetTrackFilterMask(ULong_t)              { ; }
@@ -473,7 +473,7 @@ public:
   virtual void     SetTPCSharedClusterFraction(Float_t)     { ; }
   virtual Float_t  GetTPCSharedClusterFraction() const      { return 0 ; }
 
-  // virtual for ESDReader
+  // Virtual for AliCaloTrackESDReader
   
   virtual AliESDtrackCuts* GetTrackCuts()              const { return 0 ; }
   virtual AliESDtrackCuts* GetTrackComplementaryCuts() const { return 0 ; }
@@ -481,12 +481,14 @@ public:
   virtual void     SetTrackCuts(AliESDtrackCuts *)               { ; }
   virtual void     SetTrackComplementaryCuts(AliESDtrackCuts *)  { ; }
   
-  virtual void     SwitchOnConstrainTrackToVertex()  { ; }
-  virtual void     SwitchOffConstrainTrackToVertex() { ; }
+  virtual void     SwitchOnConstrainTrackToVertex()        { ; }
+  virtual void     SwitchOffConstrainTrackToVertex()       { ; }
 
-  // Calorimeter pure LED events selection
-  void             AnalyzeOnlyLED()                        { fAnaLED             = kTRUE  ; }
-  void             AnalyzeOnlyPhysics()                    { fAnaLED             = kFALSE ; }
+  // Events species selection
+  
+  void             AnalyzeOnlyLEDEvents()                  { fEventType  = 8      ; }
+  void             AnalyzeOnlyPhysicsEvents()              { fEventType  = 7      ; }
+  void             AnalyzeOnlyEventsOfType(Int_t specie)   { fEventType  = specie ; }
   
   //-------------------------------
   // Vertex methods
@@ -752,7 +754,7 @@ public:
   Int_t            fBitEGA;                        ///<  Trigger bit on VCaloTrigger for EGA.
   Int_t            fBitEJE;                        ///<  Trigger bit on VCaloTrigger for EJE.
 	
-  Bool_t           fAnaLED;                        ///<  Analyze LED data only.
+  Int_t            fEventType;                     ///<  Set the event species: 7 physics, 0 MC, 8 LED (not useful now)
 
   TString          fTaskName;                      ///<  Name of task that executes the analysis.
 	
@@ -865,7 +867,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,70) ;
+  ClassDef(AliCaloTrackReader,71) ;
   /// \endcond
 
 } ;

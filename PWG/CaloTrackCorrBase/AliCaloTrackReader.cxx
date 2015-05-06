@@ -95,7 +95,7 @@ fEventTrigEMCALL1Gamma1(0),  fEventTrigEMCALL1Gamma2(0),
 fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
 fBitEGA(0),                  fBitEJE(0),
 
-fAnaLED(kFALSE),
+fEventType(-1),
 fTaskName(""),               fCaloUtils(0x0),
 fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
@@ -103,7 +103,7 @@ fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
-fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
+fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kFALSE),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(1),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
@@ -293,53 +293,63 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
 Bool_t AliCaloTrackReader::CheckEventTriggers()
 {  
   //-----------------------------------------------------------
-  // Reject events depending on the trigger name and event type
+  // Reject events depending on the trigger name 
   //-----------------------------------------------------------
   
+  AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
+                  GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
+                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
+  
+  if ( fFiredTriggerClassName != "" )
+  {
+    if ( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) 
+      return kFALSE;
+    else 
+      AliDebug(1,"Accepted triggered event");
+  }
+  
+  //-----------------------------------------------------------
+  // Reject events depending on the event species type
+  //-----------------------------------------------------------
+  
+  // Event types:
+  //	  kStartOfRun =       1,    // START_OF_RUN
+  //	  kEndOfRun =         2,    // END_OF_RUN
+  //	  kStartOfRunFiles =  3,    // START_OF_RUN_FILES
+  //	  kEndOfRunFiles =    4,    // END_OF_RUN_FILES
+  //	  kStartOfBurst =     5,    // START_OF_BURST
+  //	  kEndOfBurst =       6,    // END_OF_BURST
+  //	  kPhysicsEvent =     7,    // PHYSICS_EVENT
+  //	  kCalibrationEvent = 8,    // CALIBRATION_EVENT
+  //	  kFormatError =      9,    // EVENT_FORMAT_ERROR
+  //	  kStartOfData =      10,   // START_OF_DATA
+  //	  kEndOfData =        11,   // END_OF_DATA
+  //	  kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
+  //	  kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
+
   Int_t eventType = 0;
   if(fInputEvent->GetHeader())
-  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
+    eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
   
-  if( fFiredTriggerClassName  !="" && !fAnaLED)
-  {
-    //printf("Event type %d\n",eventType);
-    if(eventType!=7)
-    return kFALSE; //Only physics event, do not use for simulated events!!!
-    
-   AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
-                   GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
-                   GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
-    
-    if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
-    else AliDebug(1,"Accepted triggered event");
-  }
-  else if(fAnaLED)
-  {
-    //	  kStartOfRun =       1,    // START_OF_RUN
-    //	  kEndOfRun =         2,    // END_OF_RUN
-    //	  kStartOfRunFiles =  3,    // START_OF_RUN_FILES
-    //	  kEndOfRunFiles =    4,    // END_OF_RUN_FILES
-    //	  kStartOfBurst =     5,    // START_OF_BURST
-    //	  kEndOfBurst =       6,    // END_OF_BURST
-    //	  kPhysicsEvent =     7,    // PHYSICS_EVENT
-    //	  kCalibrationEvent = 8,    // CALIBRATION_EVENT
-    //	  kFormatError =      9,    // EVENT_FORMAT_ERROR
-    //	  kStartOfData =      10,   // START_OF_DATA
-    //	  kEndOfData =        11,   // END_OF_DATA
-    //	  kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
-    //	  kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
-    
-	  //if(eventType!=7 && fDebug > 1 )printf("AliCaloTrackReader::CheckEventTriggers() - DO LED, Event Type <%d>, 8 Calibration \n",  eventType);
-	  if(eventType!=8) return kFALSE;
-  }
+  AliDebug(3,Form("Event type %d",eventType));
   
-  AliDebug(1,"Pass Trigger name rejection");
+  // Select only Physics events in data, eventType = 7, 
+  // usually done by physics selection
+  // MC not set, eventType =0, I think, so do not apply a value to fEventType by default
+  // LED events have eventType = 8, implemented a selection cut in the past
+  // but not really useful for EMCal data since LED are not reconstructed (unless wrongly assumed as physics)
+  
+  if ( fEventType >= 0 && eventType != fEventType ) return kFALSE ;
+  
+  AliDebug(1,"Pass event species selection");
 
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
   //-----------------------------------------------------------------
+  
   UInt_t isTrigger = kFALSE;
   UInt_t isMB      = kFALSE;
+  
   if(!fEventTriggerAtSE)
   {
     // In case of mixing analysis, accept MB events, not only Trigger
@@ -417,8 +427,9 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   }
   
   //-------------------------------------------------------------------------------------
-  //Select events only fired by a certain trigger configuration if it is provided
+  // Select events only fired by a certain trigger configuration if it is provided
   //-------------------------------------------------------------------------------------
+  
   if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster)
   {
     AliDebug(1,Form("Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data()));
@@ -430,18 +441,20 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
   // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
+  
   Int_t run = fInputEvent->GetRunNumber();
-  if( fRemoveLEDEvents && run > 146857  && run < 146861 )
+  
+  if ( fRemoveLEDEvents )
   {
     Bool_t reject = RejectLEDEvents();
 
     if(reject) return kFALSE;
     
     AliDebug(1,"Pass LED event rejection");
-
-  }// Remove LED events
+  } // Remove LED events
   
-  return kTRUE;
+  // All selection criteria passed, accept the event
+  return kTRUE ;
 }
 
 //________________________________________________
@@ -807,7 +820,7 @@ void AliCaloTrackReader::InitParameters()
   fEventTriggerAtSE      = kTRUE; // Use only events that pass event selection at SE base class
   
   fAcceptFastCluster = kTRUE;
-  fAnaLED            = kFALSE;
+  fEventType         = -1;
   
   //We want tracks fitted in the detectors:
   //fTrackStatus=AliESDtrack::kTPCrefit;
