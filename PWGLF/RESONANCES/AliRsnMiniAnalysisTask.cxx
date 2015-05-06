@@ -1000,7 +1000,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
 void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 {
 //
-// Fills the histograms with true mother (ESD version)
+// Fills the histograms with generated mother (ESD version)
 //
 
    Bool_t okMatch;
@@ -1092,7 +1092,10 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
-         // do computations
+	 miniPair.P1(1) = p1;
+	 miniPair.P2(1) = p2;
+
+         // do computations and fill output
          def->FillMother(&miniPair, miniEvent, &fValues);
 	 if(fKeepMotherInAcceptance){
 	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
@@ -1108,7 +1111,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 {
 //
-// Fills the histograms with true mother (AOD version)
+// Fills the histograms with generated mother (AOD version)
 //
 
    Bool_t okMatch;
@@ -1199,6 +1202,9 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
+	 miniPair.P1(1) = p1;
+	 miniPair.P2(1) = p2;
+
          // do computations
          def->FillMother(&miniPair, miniEvent, &fValues);
 	 if(fKeepMotherInAcceptance){
