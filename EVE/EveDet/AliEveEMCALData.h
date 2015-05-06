@@ -35,10 +35,10 @@ class TClonesArray;
 class TGedFrame; 
 class TEveBoxSet; 
 class TEveUtil; 
+class TLorentzVector;
 
 class AliEveEMCALData : public TObject, public TEveRefCnt
 {
-  
  public:
   
   AliEveEMCALData();
@@ -79,10 +79,6 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
   AliESDEvent*      fESD;       ///< ESD event.
   
   Int_t             fNsm;       ///< Total number of Super Modules, EMCal+DCal.
-  Int_t             fNsmfull;   ///< Number of full size EMCal Super-Modules.
-  Int_t             fNsmhalf;   ///< Number of half size EMCal Super-Modules.
-  Int_t             fNsmfullD;  ///< Number of full size DCal Super-Modules
-  Int_t             fNsmhalfD;  ///< Number of half size DCal Super-Modules
 
   std::vector<AliEveEMCALSModuleData*>   fSM;       ///< Vector of fNsm SModules.
   std::vector<AliEveEMCALSModuleData*>   fSMfull;   ///< Vector of fNsmfull SModules.
@@ -93,6 +89,9 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
   AliRunLoader*     fRunLoader; ///< Run Loader.
   Int_t             fDebug;     ///< Debug option.
   TEvePointSet*     fPoint;     ///< TEvePointSet for hits.
+
+  // Temporary data members
+  TLorentzVector    fClusterMom ; ///< Cluster momentum
 
  private:
   
