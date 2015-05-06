@@ -1,19 +1,8 @@
-//
-// EMCAL event display
-// Store the data related to each Super Module (SM)
-// Possible storage of hits, digits and clusters per SM
-//
-//  Author: Magali Estienne (magali.estienne@cern.ch)
-//  June 30 2008
-//
-
 #include <TGeoBBox.h>
-
 
 #include "AliEMCALGeometry.h"
 #include "AliEveEMCALSModuleData.h"
 
-class Riostream;
 class TClonesArray;
 class TGeoNode;
 class TGeoMatrix;
@@ -25,13 +14,26 @@ ClassImp(AliEveEMCALSModuleData)
 Float_t AliEveEMCALSModuleData::fgSModuleBigBox0 = 0.;
 Float_t AliEveEMCALSModuleData::fgSModuleBigBox1 = 0.;
 Float_t AliEveEMCALSModuleData::fgSModuleBigBox2 = 0.;
+
 Float_t AliEveEMCALSModuleData::fgSModuleSmallBox0 = 0.;
 Float_t AliEveEMCALSModuleData::fgSModuleSmallBox1 = 0.;
 Float_t AliEveEMCALSModuleData::fgSModuleSmallBox2 = 0.;
-Float_t AliEveEMCALSModuleData::fgSModuleCenter0 = 0.;
-Float_t AliEveEMCALSModuleData::fgSModuleCenter1 = 0.;
-Float_t AliEveEMCALSModuleData::fgSModuleCenter2 = 0.;
 
+Float_t AliEveEMCALSModuleData::fgSModuleDCalBox0 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleDCalBox1 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleDCalBox2 = 0.;
+
+Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox0 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox1 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox2 = 0.;
+
+//Float_t AliEveEMCALSModuleData::fgSModuleCenter0 = 0.;
+//Float_t AliEveEMCALSModuleData::fgSModuleCenter1 = 0.;
+//Float_t AliEveEMCALSModuleData::fgSModuleCenter2 = 0.;
+
+//
+// Constructor
+//
 //______________________________________________________________________________
 AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, TGeoNode* node, TGeoHMatrix* m) :
   TObject(),
@@ -39,8 +41,6 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
   fNode(node),
   fSmId(sm),
   fNsm(0),
-  fNsmfull(0),
-  fNsmhalf(0),
   fNDigits(0),
   fNClusters(0),
   fNHits(0),
@@ -51,14 +51,12 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
   fMatrix(0),
   fHMatrix(m)
 {
-  //
-  // Constructor
-  //
-
   Init(sm);
-
 }
 
+///
+/// Copy constructor
+///
 //______________________________________________________________________________
   AliEveEMCALSModuleData::AliEveEMCALSModuleData(const AliEveEMCALSModuleData &esmdata) :
   TObject(),
@@ -66,8 +64,6 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
   fNode(esmdata.fNode),
   fSmId(esmdata.fSmId),
   fNsm(esmdata.fNsm),
-  fNsmfull(esmdata.fNsmfull),
-  fNsmhalf(esmdata.fNsmhalf),
   fNDigits(esmdata.fNDigits),
   fNClusters(esmdata.fNClusters),
   fNHits(esmdata.fNHits),
@@ -78,40 +74,31 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
   fMatrix(esmdata.fMatrix),
   fHMatrix(esmdata.fHMatrix)
 {
-  //
-  // Copy constructor
-  //
-
   Init(esmdata.fNsm);
-
 }
 
+///
+/// Destructor
+///
 //______________________________________________________________________________
 AliEveEMCALSModuleData::~AliEveEMCALSModuleData()
 {
-  //
-  // Destructor
-  //
-
-  if(!fHitArray.empty()){
+  if(!fHitArray.empty())
     fHitArray.clear();
-  }
-  if(!fDigitArray.empty()){
+  
+  if(!fDigitArray.empty())
     fDigitArray.clear();
-  }
-  if(!fClusterArray.empty()){
+  
+  if(!fClusterArray.empty())
     fClusterArray.clear();
-  }
-
 }
 
+///
+/// Release the SM data
+///
 //______________________________________________________________________________
 void AliEveEMCALSModuleData::DropData()
 {
-  //
-  // Release the SM data
-  //
-
   fNDigits   = 0;
   fNClusters = 0;
   fNHits     = 0;
@@ -126,51 +113,57 @@ void AliEveEMCALSModuleData::DropData()
     fClusterArray.clear();
 
   return;
-
 }
 
+///
+/// Initialize parameters
+///
 // ______________________________________________________________________________
 void AliEveEMCALSModuleData::Init(Int_t sm)
 {
-
-  //
-  // Initialize parameters
-  //
-
-  fNsm = 12;
-  fNsmfull = 10;
-  fNsmhalf = 2;
-
+  fNsm         = fGeom->GetNumberOfSuperModules();
   fPhiTileSize = fGeom->GetPhiTileSize();
   fEtaTileSize = fGeom->GetPhiTileSize();
 
-  TGeoBBox* bbbox = (TGeoBBox*) fNode->GetDaughter(0) ->GetVolume()->GetShape();
-  TGeoBBox* sbbox = (TGeoBBox*) fNode->GetDaughter(10)->GetVolume()->GetShape();
+  TGeoBBox* bbbox  = (TGeoBBox*) fNode->GetDaughter(0) ->GetVolume()->GetShape();
+  TGeoBBox* sbbox  = (TGeoBBox*) fNode->GetDaughter(10)->GetVolume()->GetShape();
+  TGeoBBox* dbbox  = (TGeoBBox*) fNode->GetDaughter(12)->GetVolume()->GetShape();
+  TGeoBBox* dsbbox = (TGeoBBox*) fNode->GetDaughter(18)->GetVolume()->GetShape();
 
   fMatrix = (TGeoMatrix*) fNode->GetDaughter(sm)->GetMatrix();
 
-  if(sm<fNsmfull)
-    {
-      fgSModuleBigBox0 = bbbox->GetDX();
-      fgSModuleBigBox1 = bbbox->GetDY();
-      fgSModuleBigBox2 = bbbox->GetDZ();
-    }
-  else 
-    {
-      fgSModuleSmallBox0 = sbbox->GetDX();
-      fgSModuleSmallBox1 = sbbox->GetDY();
-      fgSModuleSmallBox2 = sbbox->GetDZ();
-    }
+  if(sm < 10)
+  {
+    fgSModuleBigBox0 = bbbox->GetDX();
+    fgSModuleBigBox1 = bbbox->GetDY();
+    fgSModuleBigBox2 = bbbox->GetDZ();
+  }
+  else if(sm < 12) 
+  {
+    fgSModuleSmallBox0 = sbbox->GetDX();
+    fgSModuleSmallBox1 = sbbox->GetDY();
+    fgSModuleSmallBox2 = sbbox->GetDZ();
+  }  
+  else if(sm < 18) 
+  {
+    fgSModuleDCalBox0 = dbbox->GetDX();
+    fgSModuleDCalBox1 = dbbox->GetDY();
+    fgSModuleDCalBox2 = dbbox->GetDZ();
+  }  
+  else if(sm < 20) 
+  {
+    fgSModuleSmallDBox0 = dsbbox->GetDX();
+    fgSModuleSmallDBox1 = dsbbox->GetDY();
+    fgSModuleSmallDBox2 = dsbbox->GetDZ();
+  }
 }
 
-
+///
+/// Add a digit to this SM
+///
 // ______________________________________________________________________________
 void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
 {
-  //
-  // Add a digit to this SM
-  //
-
   std::vector<Double_t> bufDig(6);
   bufDig[0] = AbsId;
   bufDig[1] = isupMod;
@@ -182,16 +175,14 @@ void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t 
   fDigitArray.push_back(bufDig);
 
   fNDigits++;
-
 }
 
+///
+/// Add a hit to this SM
+///
 // ______________________________________________________________________________
 void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
 {
-  //
-  // Add a hit to this SM
-  //
-
   std::vector<Float_t> bufHit(6);
   bufHit[0] = AbsId;
   bufHit[1] = isupMod;
@@ -203,16 +194,14 @@ void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Double_t ia
   fHitArray.push_back(bufHit);
 
   fNHits++;
-
 }
 
+///
+/// Add a cluster to this SM
+///
 // ______________________________________________________________________________
 void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
 {
-  //
-  // Add a cluster to this SM
-  //
-
   std::vector<Double_t> bufClu(5);
   bufClu[0] = isupMod;
   bufClu[1] = iamp;
@@ -223,5 +212,4 @@ void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Double_t iamp, Doubl
   fClusterArray.push_back(bufClu);
 
   fNClusters++;
-
 }
