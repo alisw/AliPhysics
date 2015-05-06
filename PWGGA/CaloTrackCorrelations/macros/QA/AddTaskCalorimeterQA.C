@@ -101,6 +101,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
     //reader->SetEventTriggerL0Threshold(2.);
   }
   
+  if(!simulation) reader->AnalyzeOnlyPhysicsEvents(); // in case physics selection was not on
+  
   if(printSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -138,6 +140,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
     emcalQA->SwitchOffStudyBadClusters();
     emcalQA->SwitchOnFillAllCellTimeHisto();
   }
+  
   emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOnCorrelation();
