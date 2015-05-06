@@ -1642,8 +1642,6 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // the parameters to weigh the vzero track cuts have been extracted now, 
     // so we can pass them to the current track cuts obect
     cuts->SetVZEROgainEqualisation(fMultVZERO);       // passed as a TH1
- 
- Int_t c(TMath::Nint(fEvent->GetCentrality()->GetCentralityPercentile("V0M")));
 
     // step 2) extract the calibration histograms from the database and
     // pass them to the cuts object
@@ -1653,14 +1651,12 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     for(Int_t i(0); i < 5; i++) {
       h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%i_filtered", i+1));
       if(h[i][0]) fQxavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-     Double_t Qxamean(fQxavsV0[i]->GetBinContent(c+1));
       h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%i_filtered", i+1));
-      if(h[i][1]) fQyavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
-     Double_t Qyamean(fQyavsV0[i]->GetBinContent(c+1));
+      if(h[i][1]) fQyavsV0[i] = static_cast<TH1F*>(h[i][1]->GetObject(run));
       h[i][2] = (AliOADBContainer*)foadb->Get(Form("hQxc%i_filtered", i+1));
-      if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+      if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][2]->GetObject(run));
       h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%i_filtered", i+1));
-      if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
+      if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][3]->GetObject(run));
     }
     
     // set the recentering style (might be switched back to -1 if recentering is disabeled)
