@@ -160,6 +160,11 @@ ClassImp(AlidNdPtAnalysis)
   fPtCorrNbins(0),
   fEtaNbins(0),
   fZvNbins(0),
+  fMultNedges(0),
+  fPtNedges(0),
+  fPtCorrNedges(0),
+  fEtaNedges(0),
+  fZvNedges(0),
   fBinsMult(0),
   fBinsPt(0),
   fBinsPtCorr(0),
@@ -275,6 +280,11 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fPtCorrNbins(0),
   fEtaNbins(0),
   fZvNbins(0),
+  fMultNedges(0),
+  fPtNedges(0),
+  fPtCorrNedges(0),
+  fEtaNedges(0),
+  fZvNedges(0),
   fBinsMult(0),
   fBinsPt(0),
   fBinsPtCorr(0),
@@ -1067,6 +1077,18 @@ void AlidNdPtAnalysis::Init()
   
   // set init flag
   fIsInit = kTRUE;
+}
+
+//_____________________________________________________________________________
+//(Copied from pPb Task - to make pp run on grid)
+Bool_t AlidNdPtAnalysis::CanChangeBins()
+{
+  cout<<"     -----Bool_t AlidNdPtAnalysis::CanChangeBins()"<<endl;
+  if (fIsInit) {
+      AliDebug(AliLog::kError, "Object AlidNdPtAnalysis already initialized. Cannot change."); 
+      return kFALSE;
+  } 
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

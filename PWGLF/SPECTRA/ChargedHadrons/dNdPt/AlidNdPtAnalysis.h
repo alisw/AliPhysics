@@ -64,12 +64,19 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Set binning for Histograms (if not set default binning is used)
-  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(nbins+1,edges); }
-  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(nbins+1,edges); }
-  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins+1,edges); }
-  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(nbins+1,edges); }
-  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = CloneArray(nbins+1,edges); }
+//   void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(nbins+1,edges); }
+//   void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(nbins+1,edges); }
+//   void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins+1,edges); }
+//   void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(nbins+1,edges); }
+//   void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = CloneArray(nbins+1,edges); }
 
+    // Set binning for Histograms (if not set default binning is used)
+      void SetBinsMult(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); } }
+      void SetBinsPt(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtNbins = nbins; fBinsPt = CloneArray(fPtNedges = nbins+1,edges); } }
+      void SetBinsPtCorr(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(fPtCorrNedges = nbins+1,edges); } }
+      void SetBinsEta(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); } }
+      void SetBinsZv(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fZvNbins = nbins; fBinsZv = CloneArray(fZvNedges = nbins+1,edges); } }
+  
 
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj, Int_t multMB);
@@ -293,18 +300,28 @@ private:
   Int_t fPtCorrNbins;
   Int_t fEtaNbins;
   Int_t fZvNbins;
-  Double_t* fBinsMult;//[fMultNbins]
-  Double_t* fBinsPt;//[fPtNbins]
-  Double_t* fBinsPtCorr;//[fPtCorrNbins]
-  Double_t* fBinsEta;//[fEtaNbins]
-  Double_t* fBinsZv;//[fZvNbins]
+  
+  Int_t fMultNedges;   // fMultNbins+1 uses for streaming dynamic array
+  Int_t fPtNedges;     // fPtNbins+1 uses for streaming dynamic array  
+  Int_t fPtCorrNedges; // fCentralityNbins+1 uses for streaming dynamic array  
+  Int_t fEtaNedges;    // fEtaNbins+1 uses for streaming dynamic array
+  Int_t fZvNedges;     // fZvNbins+1 uses for streaming dynamic array    
+  
+  Double_t* fBinsMult;//[fMultNedges]
+  Double_t* fBinsPt;//[fPtNedges]
+  Double_t* fBinsPtCorr;//[fPtCorrNedges]
+  Double_t* fBinsEta;//[fEtaNedges]
+  Double_t* fBinsZv;//[fZvNedges]
   
   Bool_t fIsInit;
+  
+  // generic function to change binning
+  Bool_t CanChangeBins();
 
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,7);
+  ClassDef(AlidNdPtAnalysis,8);
 };
 
 #endif
