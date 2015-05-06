@@ -33,7 +33,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
    UInt_t      triggerMask = AliVEvent::kMB,
-   Int_t       signedPdg = 3124,
+   Int_t       signedPdg = 333,
    TString     monitorOpt = "NoSIGN",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
    Bool_t      useCrossedRows = kFALSE,
    const char *yaxisVar = "PtDaughter_PDaughter_cent_hello",  //yaxisVar = "PtDaughter_PDaughter_cent"

@@ -84,11 +84,10 @@ Bool_t ConfigPhiMassStudy
 
     if(isPP) {
       cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
-      cutSetK           = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa); 
-    }
-    else    {
+      cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa); 
+    } else {
       cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0);
-      cutSetK           = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
+      cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
       cutSetK->SetUse2011StdQualityCuts(kTRUE);
     }
     
@@ -123,7 +122,7 @@ Bool_t ConfigPhiMassStudy
   Int_t         pdg  = signedPdg;
   TDatabasePDG *db   = TDatabasePDG::Instance();
   TParticlePDG *part = db->GetParticle(pdg);
-  Double_t mass      = part->Mass();
+  Double_t      mass = part->Mass();
   
   
   // -- Values ------------------------------------------------------------------------------------
@@ -137,6 +136,10 @@ Bool_t ConfigPhiMassStudy
   /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt, kFALSE);
   /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP, kFALSE);
   /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP, kFALSE);
+
+  /* transv. momentum */ Int_t ptIDmc  = task->CreateValue(AliRsnMiniValue::kPt, kTRUE);
+  /* 1st daughter pt  */ Int_t fdptmc  = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt, kTRUE);
+  /* 2nd daughter pt  */ Int_t sdptmc  = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt, kTRUE);
 
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -181,22 +184,26 @@ Bool_t ConfigPhiMassStudy
 
     if(isPtDaughter) {
       out->AddAxis(fdpt, 100, 0.0, 10.0);
-      out->AddAxis(sdpt, 100, 0.0, 10.0);  }
+      out->AddAxis(sdpt, 100, 0.0, 10.0);  
+    }
     if(isPDaughter) {
-	out->AddAxis(fdp, 100, 0.0, 10.0);
-	out->AddAxis(sdp, 100, 0.0, 10.0);  }
+      out->AddAxis(fdp, 100, 0.0, 10.0);
+      out->AddAxis(sdp, 100, 0.0, 10.0);  
+    }
       
     // axis Z: centrality-multiplicity
     if(iscent) {
       if (!isPP)	out->AddAxis(centID, 100, 0.0, 100.0);
-      else       	out->AddAxis(centID, 400, 0.0, 400.0);      }
-    // axis W: pseudorapidity
+      else       	out->AddAxis(centID, 400, 0.0, 400.0);      
+    }
 
+    // axis W: pseudorapidity
     if(iseta)       out->AddAxis(etaID, 20, -1.0, 1.0);
+    
     // axis J: rapidity
     if(israpidity)  out->AddAxis(yID, 12, -0.6, 0.6);
     
-    }   
+  }   
  
   if (isMC){   
     // create output
@@ -209,34 +216,75 @@ Bool_t ConfigPhiMassStudy
     outm->SetPairCuts(cutsPair);
     // binnings
     outm->AddAxis(imID, 800, 0.8, 1.6);
-
     // axis Y: transverse momentum of pair as default - else chosen value
-
     outm->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
 
     if(isPtDaughter) {
       outm->AddAxis(fdpt, 100, 0.0, 10.0);
-      outm->AddAxis(sdpt, 100, 0.0, 10.0);     }
+      outm->AddAxis(sdpt, 100, 0.0, 10.0);
+    }
     
     if(isPDaughter) {
 	outm->AddAxis(fdp, 100, 0.0, 10.0);
-	outm->AddAxis(sdp, 100, 0.0, 10.0);    }
-
-
+	outm->AddAxis(sdp, 100, 0.0, 10.0);
+    }
 
     if(iscent) {
       if (!isPP)	outm->AddAxis(centID, 100, 0.0, 100.0);
-      else       	outm->AddAxis(centID, 400, 0.0, 400.0);      }
+      else       	outm->AddAxis(centID, 400, 0.0, 400.0);
+    }
     // axis W: pseudorapidity
 
     if(iseta)       outm->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     if(israpidity)  outm->AddAxis(yID, 12, -0.6, 0.6);
 
+    //create plot for generated Pt of mother vs generated Pt of daughters
+    AliRsnMiniOutput *outPtGen = task->CreateOutput(Form("Phi_Mother_GenPt_%s", suffix), "SPARSE", "MOTHER");
+    outPtGen->SetDaughter(0, AliRsnDaughter::kKaon);
+    outPtGen->SetDaughter(1, AliRsnDaughter::kKaon);
+    outPtGen->SetMotherPDG(pdg);
+    outPtGen->SetMotherMass(mass);
+    // pair cuts
+    outPtGen->SetPairCuts(cutsPair);
+    // binnings
+    outPtGen->AddAxis(ptIDmc, 100, 0.0, 10.0); //mother pt - generated
+    outPtGen->AddAxis(fdptmc, 100, 0.0, 10.0); //first daughter pt - generated
+    outPtGen->AddAxis(sdptmc, 100, 0.0, 10.0); //second daughter pt - generated
 
+    //create plot for reconstructed Pt of true mother vs generated Pt of daughters
+    AliRsnMiniOutput *outPtTrueGen = task->CreateOutput(Form("Phi_True_GenPt_%s", suffix), "SPARSE", "TRUE");
+    outPtTrueGen->SetDaughter(0, AliRsnDaughter::kKaon);
+    outPtTrueGen->SetDaughter(1, AliRsnDaughter::kKaon);
+    outPtTrueGen->SetCutID(0, iCutK);
+    outPtTrueGen->SetCutID(1, iCutK);
+    outPtTrueGen->SetCharge(0, '+');
+    outPtTrueGen->SetCharge(1, '-');    
+    outPtTrueGen->SetMotherPDG(pdg);
+    outPtTrueGen->SetMotherMass(mass);
+    // pair cuts
+    outPtTrueGen->SetPairCuts(cutsPair);
+    // binnings
+    outPtTrueGen->AddAxis(ptID, 100, 0.0, 10.0); //true pt - generated
+    outPtTrueGen->AddAxis(fdptmc, 100, 0.0, 10.0); //first daughter pt - generated
+    outPtTrueGen->AddAxis(sdptmc, 100, 0.0, 10.0); //second daughter pt - generated
 
-
-    
+   //create plot for reconstructed Pt of true mother vs reconstructed Pt of daughters
+    AliRsnMiniOutput *outPtTrueRec = task->CreateOutput(Form("Phi_True_RecPt_%s", suffix), "SPARSE", "TRUE");
+    outPtTrueRec->SetDaughter(0, AliRsnDaughter::kKaon);
+    outPtTrueRec->SetDaughter(1, AliRsnDaughter::kKaon);
+    outPtTrueRec->SetCutID(0, iCutK);
+    outPtTrueRec->SetCutID(1, iCutK);
+    outPtTrueRec->SetCharge(0, '+');
+    outPtTrueRec->SetCharge(1, '-');    
+    outPtTrueRec->SetMotherPDG(pdg);
+    outPtTrueRec->SetMotherMass(mass);
+    // pair cuts
+    outPtTrueRec->SetPairCuts(cutsPair);
+    // binnings
+    outPtTrueRec->AddAxis(ptID, 100, 0.0, 10.0); //mother pt - reconstructed
+    outPtTrueRec->AddAxis(fdpt, 100, 0.0, 10.0); //first daughter pt - reconstructed
+    outPtTrueRec->AddAxis(sdpt, 100, 0.0, 10.0); //second daughter pt - reconstructed
   }
   return kTRUE;
 }
