@@ -34,7 +34,7 @@ void runEMCalJetAnalysis(
          const char*    pattern             = "*ESDs/pass2/AOD145/*AOD.root",    // file pattern (here one can specify subdirs like passX etc.) (used on grid)
          const char*    gridDir             = "/alice/data/2011/LHC11h_2",   // dir on alien, where the files live (used on grid)
          const char*    runNumbers          = "167903 167915",             // considered run numbers (used on grid)
-         UInt_t         numLocalFiles       = 50,                          // number of files analyzed locally  
+         UInt_t         numLocalFiles       = 50,                          // number of files analyzed locally
          const char*    runPeriod           = "LHC11h",                    // set the run period (used on grid)
          const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the train on the grid
          UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task
@@ -150,7 +150,7 @@ void runEMCalJetAnalysis(
   if (useTender) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
     //adjust pass when running locally. On grid give empty string, will be picked up automatically from path to ESD/AOD file
-    AliAnalysisTaskSE *clusm = AddTaskEmcalPreparation(runPeriod,"pass1"); 
+    AliAnalysisTaskSE *clusm = AddTaskEmcalPreparation(runPeriod);
   }
 
   // Names of the different objects passed around; these are the default names; added here mostly for documentation purposes
