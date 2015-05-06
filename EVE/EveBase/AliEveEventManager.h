@@ -19,9 +19,9 @@
 #include <AliESDEvent.h>
 #include <AliEveSaveViews.h>
 
-#ifdef ZMQ
+//#ifdef ZMQ
 #include <AliStorageTypes.h>
-#endif
+//#endif
 
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
