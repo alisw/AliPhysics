@@ -170,6 +170,8 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
   fHistTriggerBitInfo(0),
   fHistMaxTriggerBitInfo(0),
   fHistEventSelection(0),
+  fHistRecalcGASize(0),
+  fHistRecalcGAEnergy(0),
   fHistCorrJetEvsPatchE(0),
   fHistClusEvPatchE(0),
   fHistdEtaPatchvdPhiPatch(0),
