@@ -35,6 +35,6 @@ if(DA)
 endif(DA)
 
 # Install data folder
-install(DIRECTORY data macros DESTINATION MUON)
+install(DIRECTORY data macros mapping DESTINATION MUON)
 
 message(STATUS "MUON enabled")

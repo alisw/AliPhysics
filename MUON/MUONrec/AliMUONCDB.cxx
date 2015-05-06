@@ -1331,7 +1331,7 @@ AliMUONCDB::WriteCapacitances(Bool_t defaultValues,
 //_____________________________________________________________________________
 void AliMUONCDB::WriteMapping(Int_t startRun, Int_t endRun)
 {
-  gSystem->Setenv("MINSTALL",gSystem->ExpandPathName("$ALICE_ROOT/../src/MUON/mapping"));
+  gSystem->Setenv("MINSTALL",gSystem->ExpandPathName("$ALICE_ROOT/MUON/mapping"));
   AliMpCDB::WriteMpData(startRun,endRun);
   AliMpCDB::WriteMpRunData(startRun,endRun);
 }
