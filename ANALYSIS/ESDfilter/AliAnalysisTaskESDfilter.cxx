@@ -439,6 +439,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   AliESDtrackCuts::MultEstTrackType estType = esd.GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
   header->SetRefMultiplicityComb05(AliESDtrackCuts::GetReferenceMultiplicity(&esd,estType,0.5));
   header->SetRefMultiplicityComb08(AliESDtrackCuts::GetReferenceMultiplicity(&esd,estType,0.8));
+  header->SetRefMultiplicityComb10(AliESDtrackCuts::GetReferenceMultiplicity(&esd,estType,1.0));
   //
   Float_t diamxy[2]={(Float_t)esd.GetDiamondX(),(Float_t)esd.GetDiamondY()};
   Float_t diamcov[3]; 
