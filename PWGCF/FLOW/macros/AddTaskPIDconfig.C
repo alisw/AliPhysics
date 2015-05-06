@@ -1,5 +1,5 @@
 
-void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_t centralityMin=0, Double_t centralityMax=5 ,Double_t FilterBit=1, Bool_t PIDcuts=kFALSE,TString useroutputfile="output"){
+void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_t centralityMinlimit=0, Double_t centralityMaxlimit=5 ,Double_t FilterBit=1, Bool_t PIDcuts=kFALSE,Bool_t isLHC11h=kFALSE, TString useroutputfile="output"){
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -12,43 +12,24 @@ void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_
     printf("PID: Initialising AliAnalysisTaskPIDconfig\n");
     printf("========================================================================================\n");
     
-    Double_t centrMin[9] = {0,5,10,20,30,40,50,60,70};
-    Double_t centrMax[9] = {5,10,20,30,40,50,60,70,80};
-    Bool_t Pass_Min = kFALSE;
-    Bool_t Pass_Max = kFALSE;
+    Double_t centrMin[8] = {0,0,10,20,30,40,60,60};
+    Double_t centrMax[8] = {1,2,20,30,40,50,70,80};
 
-    for(int i=0;i<9;i++)
-    {
-        if(centralityMin == centrMin[i]){
-            const int iMin = i;
-            Pass_Min = kTRUE;
-        }
-        if(centralityMax == centrMax[i]){
-            const int iMax = i;
-            Pass_Max = kTRUE;
-        }
-    }
-    if(!Pass_Min || !Pass_Max){
-        ::Error("centrality Min and Max don't match the defined ranges");
-        return 0x0;
-    }
-    
-    const int ncentr = iMax - iMin +1;
+      
+    const int ncentr = centralityMaxlimit - centralityMinlimit ;
     TString outputfile[ncentr];
     AliAnalysisDataContainer *coutput1[ncentr];
     AliAnalysisTaskPIDconfig *pidTask[ncentr];
     int icentr = 0;
     
-    
-    
-    for(int i=0;i<iMax-iMin+1;i++){
-        icentr = i + iMin;
+    for(int i=0;i<ncentr;i++){
+        icentr = i + centralityMinlimit;
         outputfile[i] = useroutputfile;
         outputfile[i].Append(".root");
         pidTask[i] = new AliAnalysisTaskPIDconfig(Form("pidTask_%.f-%.f",centrMin[icentr],centrMax[icentr]));
         pidTask[i]->SelectCollisionCandidates(CentralityTriggerSelection);
         pidTask[i]->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-        pidTask[i]->SetData2011(kFALSE);
+        pidTask[i]->SetData2011(isLHC11h);
         pidTask[i]->SetFilterBit(FilterBit);
         pidTask[i]->SetUseCentrality(kTRUE);
         pidTask[i]->SetCentralityPercentileMin(centrMin[icentr]);
