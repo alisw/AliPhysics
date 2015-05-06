@@ -403,7 +403,7 @@ gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C
     myContName = Form("Photon_Preparation");
 
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macro/AddTaskEMCALPhotonIsolation.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALPhotonIsolation.C");
 
     AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(periodstr,emctracks,emcclusters,pSel,dType,kTRUE, iOutput,isMC);
       task->SelectCollisionCandidates(pSel);
