@@ -823,6 +823,15 @@ void AliHFSystErr::InitD0toKpi2010ppLowPtAn() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.2);
+  fRawYield->SetBinContent(1,0.14);
+  fRawYield->SetBinContent(2,0.14);
+  fRawYield->SetBinContent(3,0.10);
+  fRawYield->SetBinContent(4,0.12);
+  fRawYield->SetBinContent(5,0.12);
+  fRawYield->SetBinContent(6,0.16);
+  fRawYield->SetBinContent(7,0.18);
+  fRawYield->SetBinContent(8,0.18);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.2);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
@@ -830,7 +839,9 @@ void AliHFSystErr::InitD0toKpi2010ppLowPtAn() {
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05); 
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.03); // 3%
+  fPIDEff->SetBinContent(1,0.05); // 5%
+  fPIDEff->SetBinContent(2,0.05); // 5%
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
@@ -912,11 +923,20 @@ void AliHFSystErr::InitD0toKpi2013pPb0100LowPtAn(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.08); // 8% (4% per track)
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.06); // 3% per track
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.2);
+  fRawYield->SetBinContent(1,0.15);
+  fRawYield->SetBinContent(2,0.15);
+  fRawYield->SetBinContent(3,0.10);
+  fRawYield->SetBinContent(4,0.10);
+  fRawYield->SetBinContent(5,0.10);
+  fRawYield->SetBinContent(6,0.105);
+  fRawYield->SetBinContent(7,0.11);
+  fRawYield->SetBinContent(8,0.11);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.11);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
@@ -924,7 +944,7 @@ void AliHFSystErr::InitD0toKpi2013pPb0100LowPtAn(){
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05); 
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.); 
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
