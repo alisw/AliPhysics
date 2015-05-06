@@ -61,12 +61,11 @@ void emcal_digits()
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
   pal->SetLimits(0, 1024);
 
-  TEveQuadSet* smodules[12];
+  TEveQuadSet* smodules[20];
   memset(smodules,0,12*sizeof(TEveQuadSet*));
 
 
-  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance();  
-  if (!geom) geom = AliEMCALGeometry::GetInstance("","");
+  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
 
   for (Int_t sm=0; sm<nModules; ++sm)
   {

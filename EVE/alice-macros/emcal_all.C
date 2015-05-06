@@ -54,12 +54,14 @@ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0,
 	       const UInt_t eventsToProcess = 5, TString dirName = "./", 
 	       const TString esdTreeName = "esdTree", const char *  pattern = ".")*/
 {
-
+  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+    
+    
   Int_t iLoader             = 1;
   Int_t iESD                = 1;
-  Int_t iHits               = 1;
-  Int_t iDigits             = 1;
-  Int_t iClusters           = 1;
+  Int_t iHits               = 0;
+  Int_t iDigits             = 0;
+  Int_t iClusters           = 0;
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   // runloader check already in AssertRunLoader function 
@@ -133,7 +135,7 @@ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0,
   l->SetMainColor(Color_t(2));
   gEve->AddElement(l);
 
-  for (Int_t sm=0; sm<12; sm++)
+  for (Int_t sm=0; sm<20; sm++)
     {
       AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
       //      esm->SetSModuleID(sm);
