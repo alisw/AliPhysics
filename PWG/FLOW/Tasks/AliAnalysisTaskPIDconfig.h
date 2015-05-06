@@ -97,7 +97,7 @@ private:
     TList                 *fListQAInfo;         //! list q ainfo
     TH1F                  *fhistCentralityPassBefore; //! cen histo before
     TH1F                  *fhistCentralityPassAfter; //! cen histo after
-    TProfile              *fNoEvents;           //! event no    
+    TH1F                  *fNoEvents;           //! event no
     TH1F                  *fpVtxZ;              //! v vertex no
     TH2F                  *fhistDCABefore;      //! dca after hist
     TH2F                  *fhistDCAAfter;       //! another hist
