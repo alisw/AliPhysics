@@ -54,6 +54,7 @@ public:
                 Bool_t    GetStatus() const { return fStatus; }
                ULong64_t  GetMask() const { return fClassMask; }
                ULong64_t  GetMaskNext50() const { return fClassMaskNext50; }
+	       	   Int_t  GetIndex() const {return (Int_t)fIndex;}
     AliTriggerDescriptor* GetDescriptor() const { return fDescriptor; }
        AliTriggerCluster* GetCluster() const { return fCluster; }
         AliTriggerBCMask* GetBCMask() const { return fMask[0]; }
