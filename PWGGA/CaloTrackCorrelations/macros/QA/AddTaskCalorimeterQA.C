@@ -159,7 +159,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-230,90,120);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(370,450,40);
   }
-  else if ( year==2011 || year==2012 )
+  else if ( year < 2014 )
   {            
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 180*TMath::DegToRad(), 120) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-600,90,200);
@@ -167,7 +167,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   }
   else // Run2
   {
-    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 327*TMath::DegToRad(), 400) ; 
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 327*TMath::DegToRad(), 250) ; 
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-1000,1000,500); // revise
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(0,1000,200);     // revise     
   }
