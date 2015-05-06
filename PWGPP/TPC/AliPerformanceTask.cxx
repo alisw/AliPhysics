@@ -302,19 +302,19 @@ void AliPerformanceTask::Terminate(Option_t *)
       return;
     }
   
-    if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
-    TUUID uuid;
-    TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
-    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, pConstrain, tmpFile.Data());
-    TChain* chain = new TChain("tpcQA");
-    if(!chain) return;
-    chain->Add(tmpFile.Data());
-    TTree *tree = chain->CopyTree("1");
-    if (chain) { delete chain; chain=0; }
-    fOutputSummary = tree;
+//    if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
+//     TUUID uuid;
+//     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
+//     AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, pConstrain, tmpFile.Data());
+//     TChain* chain = new TChain("tpcQA");
+//     if(!chain) return;
+//     chain->Add(tmpFile.Data());
+//     TTree *tree = chain->CopyTree("1");
+//     if (chain) { delete chain; chain=0; }
+//     fOutputSummary = tree;
       
-     // Post output data.
-     PostData(0, fOutputSummary);
+//      // Post output data.
+//      PostData(0, fOutputSummary);
 
 }
 
