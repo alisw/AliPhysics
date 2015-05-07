@@ -27,27 +27,22 @@
 // S. Trogolo, trogolo@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TROOT.h>
+
+#include "AliAnalysisTaskSE.h"
+
 class TChain;
-class TF1;
 class TH1F;
 class TH2F;
 class TList;
-class TLegend;
-class TParticle;
-class TRandom3;
-class TString;
+class TObjArray;
 class TTree;
 
 class AliESDEvent;
 class AliESDtrackCuts;
-class AliESDv0Cuts;
 class AliESDVertex;
-class AliMCEvent;
-class AliMCEventHandler;
 class AliPIDResponse;
-class AliVertexerTracks;
-
-#include "AliAnalysisTaskSE.h" 
+class AliVertexerTracks; 
 
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
