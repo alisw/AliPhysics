@@ -16,12 +16,10 @@ void MakeVZEROTimeDelaysEntry()
   md->SetComment("Time delays channel by channel for year >= 2012");
   md->PrintMetaData();
 
-  AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("VZERO/Calib/TimeDelays",0,AliCDBRunRange::Infinity());
 
-  storLoc->Put(delays, id, md);
+  man->Put(delays, id, md);
 
-  storLoc->Delete();
   delete md;
 
 }

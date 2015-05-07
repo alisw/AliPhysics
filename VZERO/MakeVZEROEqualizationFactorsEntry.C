@@ -41,12 +41,10 @@ void MakeVZEROEqualizationFactorsEntry(Bool_t default = kTRUE, const char *infil
   md->SetComment("Default entry for VZERO Equalization Factors object");
   md->PrintMetaData();
 
-  AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("VZERO/Calib/EqualizationFactors",0,AliCDBRunRange::Infinity());
 
-  storLoc->Put(eqFactors, id, md);
+  man->Put(eqFactors, id, md);
 
-  storLoc->Delete();
   delete md;
 
 }

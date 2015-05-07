@@ -45,12 +45,10 @@ void MakeVZEROTimeSlewingEntry()
   md->SetComment("Time-slewing correction used in reconstruction and MC simulation");
   md->PrintMetaData();
 
-  AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("VZERO/Calib/TimeSlewing",0,AliCDBRunRange::Infinity());
 
-  storLoc->Put(slew, id, md);
+  man->Put(slew, id, md);
 
-  storLoc->Delete();
   delete md;
 
 }

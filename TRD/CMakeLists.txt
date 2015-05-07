@@ -25,7 +25,7 @@ if(DA)
 endif(DA)
 
 # Install macros
-install(DIRECTORY Macros DESTINATION TRD)
+install(DIRECTORY macros Macros DESTINATION TRD)
 
 # Install doc
 install(DIRECTORY doc DESTINATION TRD)

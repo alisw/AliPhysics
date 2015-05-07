@@ -21,4 +21,6 @@ if(DA)
     add_subdirectory(DA)
 endif(DA)
 
+install(DIRECTORY macros DESTINATION VZERO)
+
 message(STATUS "VZERO enabled")
