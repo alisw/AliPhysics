@@ -2016,28 +2016,37 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidates(AliAODCo
 			         
 			       TParticle* motherGamma = fMCStack->Particle( gammaMotherLabel );
 			       
-			       if( IsDalitz ( motherGamma ) == kTRUE ){
+			       //if( IsDalitz ( motherGamma ) == kTRUE ){
+				 if( motherGamma->GetPdgCode() == 111 ) {
+				    
+				    if( IsDalitz( motherGamma ) == kTRUE ){
 				 
-				  fHistoTruePi0DalitzClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-				  fHistoTruePi0DalitzClusGammaMCPt[fiCut]->Fill(Photon->Pt());
+				      fHistoTruePi0DalitzClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+				      fHistoTruePi0DalitzClusGammaMCPt[fiCut]->Fill(Photon->Pt());
+				    }
 				  
 				 
-			       } else if ( ( motherFromShower = FindMotherOfPhoton( TruePhotonCandidate->GetCaloPhotonMCLabel(0) ) ) > -1 ){
+			       } else if ( ( motherFromShower = FindMotherOfPhoton( gammaMotherLabel ) ) > -1 ){
+				 
+				 
 				 
 				 
 				   TParticle* motherGammaShower = fMCStack->Particle( motherFromShower );
 				   
 				   
-				        if( IsDalitz ( motherGammaShower ) ) {
+				   	   
+				   
+				       if( motherGammaShower->GetPdgCode() == 111 ) {
+					    if( IsDalitz ( motherGammaShower ) ) {
 					  					  
 					    fHistoTruePi0DalitzClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 					    fHistoTruePi0DalitzAllClusGammaPt[fiCut]->Fill( TruePhotonCandidate->Pt() );
 					    fHistoTruePi0DalitzClusGammaMCPt[fiCut]->Fill(Photon->Pt());
 				  
 					  
-					}
+					  }
 				 
-					    
+				       }	    
 			       }
 			}
 			
@@ -2808,7 +2817,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConv
 				 
 				    if( pdgCodeMother != 111 && pdgCodeMother != 221 ){ //The mother is not and eta and MC
 				
-					  gamma1MotherLabel = FindMotherOfPhoton( gamma1MCLabel );
+					  gamma1MotherLabel = FindMotherOfPhoton( gamma1MotherLabel );
 					  motherFromShower = kTRUE;
 									      
 				    }
