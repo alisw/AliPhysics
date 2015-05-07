@@ -55,6 +55,9 @@ enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
+enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
+enum particularity{ kTopological, kLowPt };
+
 
 Bool_t printout = false;
 Double_t ptprintout = 1.5;
@@ -105,7 +108,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Bool_t isRbHypo=false, Double_t CentralHypo = 1.0,
 		     Int_t ccestimator = kV0M,
 		     Bool_t isUseTaaForRaa=true, const char *shadRbcFile="", Int_t nSigmaShad=3.0,
-		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
+		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE,
+		     Int_t rapiditySlice=kdefault, Int_t analysisSpeciality=kTopological)
 {
 
   gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -217,9 +221,14 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     hSigmaPP = (TH1D*)ppf->Get("fhScaledData");
     gSigmaPPSyst = (TGraphAsymmErrors*)ppf->Get("gScaledData");
   }
+  Double_t scalePPRefToMatchRapidityBin = 1.0;
+
   
   // Call the systematics uncertainty class for a given decay
   AliHFSystErr *systematicsPP = new AliHFSystErr();
+  if(analysisSpeciality==kLowPt){
+     systematicsPP->SetIsLowPtAnalysis(true);
+  }
   systematicsPP->Init(decay);
 
   //
@@ -278,6 +287,23 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematicsAB->SetCollisionType(2);
+    // Rapidity slices
+    if(rapiditySlice!=kdefault){
+      systematicsAB->SetIspPb2011RapidityScan(true);
+      TString rapidity="";
+      switch(rapiditySlice) {
+           case k08to04: rapidity="0804"; scalePPRefToMatchRapidityBin=(0.093+0.280)/1.0; break;
+           case k07to04: rapidity="0804"; scalePPRefToMatchRapidityBin=0.280/1.0; break;
+           case k04to01: rapidity="0401"; scalePPRefToMatchRapidityBin=0.284/1.0; break;
+           case k01to01: rapidity="0101"; scalePPRefToMatchRapidityBin=0.191/1.0; break;
+           case k01to04: rapidity="0104"; scalePPRefToMatchRapidityBin=0.288/1.0; break;
+           case k04to07: rapidity="0408"; scalePPRefToMatchRapidityBin=0.288/1.0; break;
+           case k04to08: rapidity="0408"; scalePPRefToMatchRapidityBin=(0.288+0.096)/1.0; break;
+           case k01to05: rapidity="0401"; scalePPRefToMatchRapidityBin=0.4; break;
+      }
+      systematicsAB->SetRapidity(rapidity);
+    }
+    // Centrality slices
     if(ccestimator==kV0A) {
       if(cc == kpPb020) systematicsAB->SetCentrality("020V0A");
       else if(cc == kpPb2040) systematicsAB->SetCentrality("2040V0A");
@@ -303,6 +329,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   else { 
     cout << " Systematics not yet implemented " << endl;
     return;
+  }
+  if(analysisSpeciality==kLowPt){
+     systematicsAB->SetIsLowPtAnalysis(true);
   }
   //
   systematicsAB->Init(decay);
@@ -475,6 +504,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Int_t hppbin = hSigmaPP->FindBin( pt );
     Int_t hABbin = hSigmaAB->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
+    sigmapp *= scalePPRefToMatchRapidityBin; // scale to the proper rapidity bin width
     //    cout << " pt="<< pt<<", sigma-pp="<< sigmapp<<endl;
     if (isRaavsEP>0.) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
@@ -525,6 +555,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Int_t hppbin = hSigmaPP->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
     if (isRaavsEP>0.) sigmapp = 0.5*sigmapp;
+    sigmapp *= scalePPRefToMatchRapidityBin; // scale to the proper rapidity bin width
     if ( !(sigmapp>0.) ) continue;
 
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 );
@@ -559,6 +590,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       yPPh = yPPh*0.5;
       yPPl = yPPl*0.5;
     }
+    yPPh *= scalePPRefToMatchRapidityBin; // scale to the proper rapidity bin width
+    yPPl *= scalePPRefToMatchRapidityBin; // scale to the proper rapidity bin width
 
     yABh = gSigmaABSystFeedDown->GetErrorYhigh(istartABfd);
     yABl = gSigmaABSystFeedDown->GetErrorYlow(istartABfd);
@@ -676,6 +709,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       //
       Double_t sigmappStat = hSigmaPP->GetBinError( hppbin );
       if (isRaavsEP>0.) sigmappStat = sigmappStat*0.5;
+      sigmappStat *= scalePPRefToMatchRapidityBin; // scale to the proper rapidity bin width
       Int_t hRABbin = hRABvsPt->FindBin( pt );
       Double_t stat = RaaCharm * TMath::Sqrt( (statUncSigmaAB/sigmaAB)*(statUncSigmaAB/sigmaAB) + 
 					      (sigmappStat/sigmapp)*(sigmappStat/sigmapp) ) ;
@@ -738,13 +772,15 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	  systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
 	}
       }
+      systPPUp *= scalePPRefToMatchRapidityBin;  // scale to the proper rapidity bin width
+      systPPLow *= scalePPRefToMatchRapidityBin; // scale to the proper rapidity bin width
 
 
       if(printout && TMath::Abs(ptprintout-pt)<0.1) {
 	cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, ";
 	if(!isExtrapolatedBin){
 	  if (isRaavsEP>0.) cout <<" extr unc + "<< 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %";
-	  else cout <<" extr unc + "<< gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %";
+	  else cout <<" extr unc + "<< (gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*scalePPRefToMatchRapidityBin)/sigmapp <<" - "<< (gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*scalePPRefToMatchRapidityBin)/sigmapp <<" %";
 	}
 	cout << endl;
       }
