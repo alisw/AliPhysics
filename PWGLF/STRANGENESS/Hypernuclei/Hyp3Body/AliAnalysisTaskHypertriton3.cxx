@@ -973,7 +973,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDCAXYpionvtx->Fill(dcapi[0]);
 	fHistDCAZpionvtx->Fill(dcapi[1]);
 	
-	//if (decayVtx) delete decayVtx;
 
 	posD.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),deuteronMass);
 	posP.SetXYZM(trackP->Px(),trackP->Py(),trackP->Pz(),protonMass);
