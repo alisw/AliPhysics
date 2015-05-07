@@ -2,6 +2,12 @@
 
 # Automatically generated BUILD.sh for @PARMODULE@
 
+makeopts=''
+if test "x$ALICE_PARFILES_NOFORCEDEBUG" != "x1" ; then
+  # By default PARfiles are built with debug symbols. Set variable to 1 to use ROOT's build options
+  makeopts='ROOTBUILD=debug'
+fi
+
 npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null || echo 0`
 if test $npar -eq 0 2> /dev/null ; then
   # Assume we are on OS X
@@ -10,8 +16,8 @@ fi
 if test "$npar" -gt 0 2> /dev/null ; then
   npar=$(( $npar + 1 ))
   echo "Building PARfile @PARMODULE@ using $npar parallel thread(s)"
-  exec make -j$npar
+  exec make -j$npar $makeopts
 else
   echo "Building PARfile @PARMODULE@"
-  exec make
+  exec make $makeopts
 fi
