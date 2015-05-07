@@ -1,5 +1,8 @@
 # Makefile for @PARMODULE@ -- automatically generated
 
+# Override ROOT's build configuration: force "debug" mode (PARfiles are used for testing)
+ROOTBUILD := debug
+
 # Include this file from the ROOT installed on the system where we are using the PARfile
 include $(shell root-config --etcdir)/Makefile.arch
 
