@@ -34,6 +34,7 @@
 #pragma link C++ class AliHLTDimServer+;
 #pragma link C++ class AliHLTHOMERLibManager+;
 #pragma link C++ class AliHLTHOMERManager+;
+#pragma link C++ class AliHLTDirectHOMERManager+;
 #pragma link C++ class AliHLTHOMERProxyHandler+;
 #pragma link C++ class AliHLTHOMERBlockDesc+;
 #pragma link C++ class AliHLTHOMERSourceDesc+;

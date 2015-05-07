@@ -86,6 +86,7 @@ set(SRCS
     AliHLTHOMERBlockDesc.cxx
     AliHLTHOMERLibManager.cxx
     AliHLTHOMERManager.cxx
+    AliHLTDirectHOMERManager.cxx
     AliHLTHOMERProxyHandler.cxx
     AliHLTHOMERSourceDesc.cxx
     AliHLTHuffman.cxx
