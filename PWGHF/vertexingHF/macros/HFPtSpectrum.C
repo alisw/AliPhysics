@@ -42,7 +42,7 @@ enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k203
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
-enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
+enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
 enum particularity{ kTopological, kLowPt };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
@@ -276,6 +276,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     case k01to04: scaleFONLL = 0.288/1.0; break;
     case k04to07: scaleFONLL = 0.288/1.0; break;
     case k04to08: scaleFONLL = (0.288+0.096)/1.0; break;
+    case k01to05: scaleFONLL = (0.4)/1.0; break;
     }
     hDirectMCpt->Scale(scaleFONLL);
     hDirectMCptMax->Scale(scaleFONLL);
@@ -288,6 +289,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     case k01to04: scaleFONLL = 0.290/1.0; break;
     case k04to07: scaleFONLL = 0.291/1.0; break;
     case k04to08: scaleFONLL = (0.291+0.097)/1.0; break;
+    case k01to05: scaleFONLL = (0.4)/1.0; break;
     }
     hFeedDownMCpt->Scale(scaleFONLL);
     hFeedDownMCptMax->Scale(scaleFONLL);
@@ -434,6 +436,23 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   }
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
+    // Rapidity slices
+    if(rapiditySlice!=kdefault){
+      systematics->SetIspPb2011RapidityScan(true);
+      TString rapidity="";
+      switch(rapiditySlice) {
+          case k08to04: rapidity="0804"; break;
+          case k07to04: rapidity="0804"; break;
+          case k04to01: rapidity="0401"; break;
+          case k01to01: rapidity="0101"; break;
+          case k01to04: rapidity="0104"; break;
+          case k04to07: rapidity="0408"; break;
+          case k04to08: rapidity="0408"; break;
+          case k01to05: rapidity="0401"; break;
+      }
+      systematics->SetRapidity(rapidity);
+    }
+    // Centrality slices
     if(ccestimator==kV0A) {
       if(cc == kpPb020) systematics->SetCentrality("020V0A");
       else if(cc == kpPb2040) systematics->SetCentrality("2040V0A");
