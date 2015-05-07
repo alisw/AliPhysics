@@ -1095,9 +1095,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    fHistYDecayVtxMCt->Fill(decVt[1]);
 	    fHistMassHypertritonMCt->Fill(Hypertriton.M());
 	  }
-	} // end of Pure MC part	
+	} // end of Pure MC part
+	fTrkArray->Clear();
 	Hypertriton.Clear();
 	h1.Clear();
+	posD.Clear();
+	posP.Clear();
+	negPi.Clear();
       } // end of candidate pion loop
     } // end of candidate proton loop
   }// end of candidate deuteron loop
