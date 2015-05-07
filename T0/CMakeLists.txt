@@ -25,5 +25,6 @@ endif(DA)
 
 # Install macros
 install(FILES AddTaskT0Analysis.C DESTINATION T0)
+install(DIRECTORY macros data DESTINATION T0)
 
 message(STATUS "T0 enabled")
