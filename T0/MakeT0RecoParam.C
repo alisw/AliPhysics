@@ -4,8 +4,7 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
   // Create T0 Calibration Object for Ideal calibration and
   // write it on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  //  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetDefaultStorage("local:///scratch/alla/alice/Oct11/TestCDBf");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(startRun);
   
   TObjArray *recoParamArray = new TObjArray();
