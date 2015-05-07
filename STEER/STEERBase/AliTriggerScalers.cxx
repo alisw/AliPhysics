@@ -111,14 +111,14 @@ void AliTriggerScalers::GetAllScalers(UInt_t *scalers) const
 //____________________________________________________________________________
 void AliTriggerScalers::GetAllScalersM012(UInt_t *scalers) const
 {
- scalers[0]=fLOCB;
- scalers[1]=fLOCA;
- scalers[2]=fL1CB;
- scalers[3]=fL1CA;
- scalers[4]=fL2CB;
- scalers[5]=fL2CA;
- scalers[6]=fLMCB;
- scalers[7]=fLMCA;
+ scalers[2]=fLOCB;
+ scalers[3]=fLOCA;
+ scalers[4]=fL1CB;
+ scalers[5]=fL1CA;
+ scalers[6]=fL2CB;
+ scalers[7]=fL2CA;
+ scalers[0]=fLMCB;
+ scalers[1]=fLMCA;
 }
 //_____________________________________________________________________________
 void AliTriggerScalers::Print( const Option_t* ) const

@@ -47,6 +47,8 @@ public:
           AliTriggerScalersESD( const AliTriggerScalersESD &scal );
           AliTriggerScalersESD&   operator=(const AliTriggerScalersESD& scal);
 
+                    void    SetLMCB(ULong64_t count) { fLMCB=count; }
+                    void    SetLMCA(ULong64_t count) { fLMCA=count; }
                ULong64_t    GetLOCB() const { return fLOCB; }
                ULong64_t    GetLOCA() const { return fLOCA; }
                ULong64_t    GetL1CB() const { return fL1CB; }

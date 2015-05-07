@@ -66,7 +66,7 @@ AliTriggerScalersESD::AliTriggerScalersESD( UChar_t classIndex, ULong64_t LOCB, 
   fL1CA(L1CA),     
   fL2CB(L2CB),     
   fL2CA(L2CA),      
-  fLMCB(0),     
+  fLMCB(0), 
   fLMCA(0)      
 {
   // Default constructor for L0,L1,L2 levels
@@ -96,7 +96,9 @@ fLOCA(s64[1]),
 fL1CB(s64[2]),     
 fL1CA(s64[3]),     
 fL2CB(s64[4]),     
-fL2CA(s64[5])      
+fL2CA(s64[5]),
+fLMCB(0),
+fLMCA(0)
 {
  // Construct from array
 }
@@ -145,14 +147,14 @@ void AliTriggerScalersESD::GetAllScalers(ULong64_t *scalers) const
 }
 void AliTriggerScalersESD::GetAllScalersM012(ULong64_t *scalers) const
 {
- scalers[0]=fLOCB;
- scalers[1]=fLOCA;
- scalers[2]=fL1CB;
- scalers[3]=fL1CA;
- scalers[4]=fL2CB;
- scalers[5]=fL2CA;
- scalers[6]=fLMCB;
- scalers[7]=fLMCA;
+ scalers[2]=fLOCB;
+ scalers[3]=fLOCA;
+ scalers[4]=fL1CB;
+ scalers[5]=fL1CA;
+ scalers[6]=fL2CB;
+ scalers[7]=fL2CA;
+ scalers[0]=fLMCB;
+ scalers[1]=fLMCA;
 }
 //_____________________________________________________________________________
 void AliTriggerScalersESD::Print( const Option_t* ) const
