@@ -240,7 +240,8 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity(), Bo
     printf("Added module %d\n",mod);
   }
     
-  FILE* out = fopen("deadchannels.dat","w");
+  TString fName("deadchannels.dat");
+  FILE* out = fopen(fName.Data(), "w");
   for(Int_t i=0;i<260;i++){
     fprintf(out,"MODULE=%d\n",i);
     AliITSCalibrationSDD* cl = (AliITSCalibrationSDD*)calSDD.At(i);
@@ -251,5 +252,8 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity(), Bo
     }   
   }
   fclose(out);
+  TString rmCommand("rm ");
+  rmCommand += fName;
+  gSystem->Exec(rmCommand.Data());
   AliCDBManager::Instance()->GetDefaultStorage()->Put(&calSDD, idCalSDD, md);   
 }

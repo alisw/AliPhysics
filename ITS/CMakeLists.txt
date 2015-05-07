@@ -24,7 +24,7 @@ endif(DA)
 
 # Macros
 install(DIRECTORY oldmacros DESTINATION ITS)
-install(DIRECTORY macrosSDD DESTINATION ITS)
+install(DIRECTORY macrosSDD macros DESTINATION ITS)
 
 
 message(STATUS "ITS enabled")
