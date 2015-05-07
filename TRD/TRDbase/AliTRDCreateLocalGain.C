@@ -61,7 +61,7 @@ void AliTRDCreateLocalGain(Bool_t residual)
 
   
   AliCDBManager *man = AliCDBManager::Instance();
-  gStorLoc = man->GetStorage("local://.");
+  gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
   if (!gStorLoc)
     return;
 

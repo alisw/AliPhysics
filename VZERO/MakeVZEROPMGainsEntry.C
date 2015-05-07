@@ -35,12 +35,10 @@ void MakeVZEROPMGainsEntry()
   md->SetComment("PM gain factors channel by channel");
   md->PrintMetaData();
 
-  AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("VZERO/Calib/PMGains",0,AliCDBRunRange::Infinity());
 
-  storLoc->Put(gains, id, md);
+  man->Put(gains, id, md);
 
-  storLoc->Delete();
   delete md;
 
 }

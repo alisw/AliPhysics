@@ -38,11 +38,9 @@ Double_t beta[64] = { 1.40e+03 , 1.38e+03 , 1.42e+03 , 1.38e+03 , 1.40e+03 , 1.4
   md->SetComment("Signal saturation correction used in reconstruction of data");
   md->PrintMetaData();
 
-  AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("VZERO/Calib/Saturation",firstRun,lastRun);
 
-  storLoc->Put(arr, id, md);
+  man->Put(arr, id, md);
 
-  storLoc->Delete();
   delete md;
 }

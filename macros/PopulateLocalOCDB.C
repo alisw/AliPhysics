@@ -29,12 +29,13 @@ void PopulateLocalOCDB(const char* storageUri, const char* dets="ALL", Int_t run
   TString macroPath = gROOT->GetMacroPath();
   TIter iter(detsArray);
   TObjString *oStringDet = 0;
+  TString sDetMacro("");
   while ((oStringDet = (TObjString*) iter.Next()))
   {
     TString stringDet(oStringDet->String());
     stringDet.ReplaceAll(" ","");
     Printf("\n   ----  Making conditions'objects for \"%s\"  ----", stringDet.Data());
-    TString sDetMacro("Make");
+    sDetMacro = "Make";
     sDetMacro += stringDet;
     sDetMacro += "CDBObjects.C";
     if (! macroPath.EndsWith(":")) {

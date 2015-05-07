@@ -26,12 +26,10 @@ void MakeVZEROLightYieldsEntry()
   md->SetComment("Light Yields channel by channel");
   md->PrintMetaData();
 
-  AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("VZERO/Calib/LightYields",0,AliCDBRunRange::Infinity());
 
-  storLoc->Put(yields, id, md);
+  man->Put(yields, id, md);
 
-  storLoc->Delete();
   delete md;
 
 }

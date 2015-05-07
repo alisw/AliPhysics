@@ -11,7 +11,7 @@ void MakeVZERORecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMu
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://OCDB");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   
   TObjArray *recoParamArray = new TObjArray();
 
@@ -62,7 +62,7 @@ void MakeVZERORecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMu
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
   AliCDBId id("VZERO/Calib/RecoParam",0,AliCDBRunRange::Infinity());
-  cdb->GetDefaultStorage()->Put(recoParamArray,id, md);
+  cdb->Put(recoParamArray,id, md);
 
   return;
 }
