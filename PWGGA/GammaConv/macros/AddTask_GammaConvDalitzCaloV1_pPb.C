@@ -211,7 +211,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	  
 	} else if ( trainConfig == 5 ){
 	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10023053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7 with TRD
+	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10021053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7 with TRD
 	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10013053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7 No TRD
 	      
 	  
@@ -232,6 +232,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 		Error(Form("GammaConvDalitzCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
+	
 
 	TList *EventCutList     = new TList();
 	TList *ConvCutList      = new TList();
