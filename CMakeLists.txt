@@ -91,13 +91,24 @@ else()
   if(ROOTSYS)
       find_package(ROOT REQUIRED)
 
-      # ROOT must be build with XML2 support
+      # ROOT must be built with XML2 support
       if(NOT ROOT_HASXML)
-          message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+          message(FATAL_ERROR "ROOT was not built with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
       endif(NOT ROOT_HASXML)
+
+      # ROOT must be built with AliEn support
+      if(NOT ROOT_HASALIEN)
+          message(FATAL_ERROR "ROOT has been built without AliEn support! AliPhysics requires both ROOT and AliRoot Core to have AliEn support.")
+      endif(NOT ROOT_HASALIEN)
+
   else()
       message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
   endif(ROOTSYS)
+
+  # AliRoot Core must have AliEn support
+  if(NOT AliRoot_HASALIEN)
+      message(FATAL_ERROR "AliRoot Core has been built without with AliEn support! AliPhysics requires both ROOT and AliRoot Core to have AliEn support.")
+  endif()
 
   # ROOT dictionaries and maps
   include(CMakeALICE)

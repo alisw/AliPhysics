@@ -23,7 +23,13 @@ if(ALIROOT)
     include(${ALIROOT}/etc/AliRoot-config.cmake)
     message(STATUS "Found AliRoot version : \"${AliRoot_VERSION}\", git hash : \"${AliRoot_REVISION}\"")
     set(AliRoot_FOUND TRUE)
-    
+
+    if(EXISTS ${ALIROOT}/include/AliAnalysisAlien.h)
+      set(AliRoot_HASALIEN TRUE)
+    else()
+      set(AliRoot_HASALIEN FALSE)
+    endif()
+
   endif()
 endif(ALIROOT)
 
