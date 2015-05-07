@@ -92,18 +92,19 @@ const Double_t AliGenEMlib::fgkRawPtOfV2Param[kCentralities][10] = {
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 40-80
 };
 
+//based on: arXiv:1401.1250 [nucl-ex], https://twiki.cern.ch/twiki/bin/view/ALICE/PWGLFPAGSPECTRALowToHighPt
 const Double_t AliGenEMlib::fgkPtParam[kCentralities][10] = {
   {  0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // pp no V2
-  ,{ 7.641493e+01, 7.203468e-01, 3.651383e-01, 1.047542e+01, 3.494331e+00, 5.129019e+00, 3.081716e+00, 5.154525e+00, 3.065719e+01, 5.823718e+00 } // 0-5  
-  ,{ 1.704676e+02, 7.852682e-01, 4.177172e-01, 1.014652e+01, 3.324409e+00, 4.825894e+00, 2.889738e+00, 4.772249e+00, 3.502627e+01, 5.938773e+00 } // 5-10 
-  ,{ 1.823377e+02, 8.144309e-01, 4.291562e-01, 1.022767e+01, 3.585469e+00, 5.275078e+00, 3.144351e+00, 5.259097e+00, 2.675708e+01, 5.892506e+00 } // 10-20
-  ,{ 4.851407e+02, 9.341151e-01, 4.716673e-01, 1.058090e+01, 4.681218e+00, 7.261284e+00, 3.883227e+00, 6.638627e+00, 1.562806e+01, 5.772127e+00 } // 20-30
-  ,{ 3.157060e+01, 6.849451e-01, 4.868669e-01, 8.394558e+00, 3.539142e+00, 5.495280e+00, 4.102638e+00, 3.722991e+00, 1.638622e+01, 5.935963e+00 } // 30-40
-  ,{ 1.857919e+01, 6.185989e-01, 5.878869e-01, 7.035064e+00, 2.892415e+00, 4.339383e+00, 3.549679e+00, 2.821061e+00, 1.529318e+01, 6.091388e+00 } // 40-50
-  ,{ 1.069397e+01, 5.816587e-01, 6.542961e-01, 6.472858e+00, 2.643870e+00, 3.929020e+00, 3.339224e+00, 2.410371e+00, 9.606748e+00, 6.116685e+00 } // 50-60
+  ,{ 1.240475e+02, 7.238972e-01, 4.297020e-01, 9.315793e+00, 3.304777e+00, 4.821807e+00, 3.729274e+00, 2.400991e+00, 2.487974e+01, 5.728662e+00 } // 0-5
+  ,{ 7.912895e+01, 7.185643e-01, 3.995308e-01, 9.887192e+00, 3.191115e+00, 4.495417e+00, 2.724148e+00, 4.382795e+00, 3.024189e+01, 5.860432e+00 } // 5-10
+  ,{ 6.956488e+01, 6.911720e-01, 4.646870e-01, 8.550547e+00, 3.172843e+00, 4.624597e+00, 3.679825e+00, 2.529246e+00, 2.454819e+01, 5.846622e+00 } // 10-20
+  ,{ 4.851407e+02, 9.341151e-01, 4.716673e-01, 1.058090e+01, 4.681218e+00, 7.261284e+00, 3.883227e+00, 6.638627e+00, 1.562806e+01, 5.772127e+00 } // 20-30 (based on older unpublished)
+  ,{ 3.157060e+01, 6.849451e-01, 4.868669e-01, 8.394558e+00, 3.539142e+00, 5.495280e+00, 4.102638e+00, 3.722991e+00, 1.638622e+01, 5.935963e+00 } // 30-40 (based on older unpublished)
+  ,{ 1.857919e+01, 6.185989e-01, 5.878869e-01, 7.035064e+00, 2.892415e+00, 4.339383e+00, 3.549679e+00, 2.821061e+00, 1.529318e+01, 6.091388e+00 } // 40-50 (based on older unpublished)
+  ,{ 1.069397e+01, 5.816587e-01, 6.542961e-01, 6.472858e+00, 2.643870e+00, 3.929020e+00, 3.339224e+00, 2.410371e+00, 9.606748e+00, 6.116685e+00 } // 50-60 (based on older unpublished)
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 0-10 
-  ,{ 1.271594e+02, 7.790165e-01, 5.793214e-01, 8.050008e+00, 3.211312e+00, 4.825258e+00, 3.840509e+00, 3.046231e+00, 2.172177e+01, 5.983496e+00 } // 20-40
-  ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 40-60
+  ,{ 3.936495e+01, 7.043984e-01, 4.552076e-01, 9.142929e+00, 3.036362e+00, 4.248826e+00, 2.477718e+00, 3.911314e+00, 2.045442e+01, 5.946635e+00 } // 20-40
+  ,{ 1.944300e+01, 6.102861e-01, 6.715858e-01, 6.491069e+00, 2.578329e+00, 3.671677e+00, 3.162338e+00, 2.317503e+00, 1.224814e+01, 6.089513e+00 } // 40-60
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 60-80
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 0-20 
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 0-40 
@@ -112,20 +113,21 @@ const Double_t AliGenEMlib::fgkPtParam[kCentralities][10] = {
 };
 
 const Double_t AliGenEMlib::fgkThermPtParam[kCentralities][2] = {
+  // might also be interesting: https://aliceinfo.cern.ch/Notes/node/226
   {  0.0000000000, 0.0000000000 } // pp no V2
   ,{ 0.0000000000, 0.0000000000 } // 0-5
   ,{ 0.0000000000, 0.0000000000 } // 5-10
-  ,{ 3.335661e+01, 3.400585e+00 } // 10-20 //based on: https://aliceinfo.cern.ch/Notes/node/249
+  ,{ 3.323592e+01, 3.402977e+00 } // 10-20 //based on: https://aliceinfo.cern.ch/Notes/node/87
   ,{ 0.0000000000, 0.0000000000 } // 20-30
   ,{ 0.0000000000, 0.0000000000 } // 30-40
   ,{ 0.0000000000, 0.0000000000 } // 40-50
   ,{ 0.0000000000, 0.0000000000 } // 50-60
-  ,{ 3.648327e+02, 4.477749e+00 } // 0-10  //based on: https://aliceinfo.cern.ch/Notes/node/249
-  ,{ 1.696223e+00, 2.429660e+00 } // 20-40 //based on: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
+  ,{ 3.636959e+02, 4.478938e+00 } // 0-10  //based on: https://aliceinfo.cern.ch/Notes/node/87
+  ,{ 1.699417e+00, 2.440944e+00 } // 20-40 //based on: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
   ,{ 0.0000000000, 0.0000000000 } // 40-60
   ,{ 0.0000000000, 0.0000000000 } // 60-80
-  ,{ 1.492160e+01, 2.805213e+00 } // 0-20  //based on: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
-  ,{ 4.215110e+01, 3.242719e+00 } // 0-40  //based on: https://aliceinfo.cern.ch/Figure/node/2866
+  ,{ 1.508580e+01, 2.817432e+00 } // 0-20  //based on: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
+  ,{ 4.185173e+01, 3.241764e+00 } // 0-40  //based on: https://aliceinfo.cern.ch/Figure/node/2866
   ,{ 0.0000000000, 0.0000000000 } // 20-80
   ,{ 0.0000000000, 0.0000000000 } // 40-80
 };
@@ -384,7 +386,7 @@ Double_t AliGenEMlib::PtModifiedHagedornPowerlaw(const Double_t *px, const Doubl
   const double &pt=px[0];
   Double_t invYield = c[0]*pow(c[1]+pt*c[2],-c[3])*CrossOverLc(c[5],c[4],pt)+CrossOverRc(c[7],c[6],pt)*c[8]*pow(pt+0.001,-c[9]); //pt+0.001: prevent powerlaw from exploding for pt->0
  
-  return invYield*(2*TMath::Pi()*pt+0.001); //pt+0.001: be sure to be > 0
+  return invYield*(2*TMath::Pi()*pt+0.001); //+0.001: be sure to be > 0
 }
 
 // double powerlaw for J/Psi yield
@@ -409,7 +411,7 @@ Double_t AliGenEMlib::IntegratedKrollWada(const Double_t *mh, const Double_t *){
 //--------------------------------------------------------------------------
 Double_t AliGenEMlib::PtPromptRealGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
-  const static Double_t promptGammaPtParam[10] = { 8.715017e-02, 4.439243e-01, 1.011650e+00, 5.193789e+00, 2.194442e+01, 1.062124e+01, 2.469876e+01, 6.052479e-02, 5.611410e-02, 5.169743e+00 };
+  const static Double_t promptGammaPtParam[10] = { 2.146541e-02, 5.540414e-01, 6.664706e-01, 5.739829e+00, 1.816496e+01, 2.561591e+01, 1.121881e+01, 3.569223e+01, 6.624561e-02, 5.234547e+00 };
  
   return PtModifiedHagedornPowerlaw(px,promptGammaPtParam)*GetTAA(fgSelectedCentrality);
 }
@@ -426,7 +428,7 @@ Double_t AliGenEMlib::PtDirectRealGamma( const Double_t *px, const Double_t */*d
 
 Int_t AliGenEMlib::IpDirectRealGamma(TRandom *)
 {
-  return 22;
+  return 220000;
 }
 
 Double_t AliGenEMlib::YDirectRealGamma( const Double_t *px, const Double_t */*dummy*/ )
@@ -476,7 +478,7 @@ Double_t AliGenEMlib::PtDirectVirtGamma( const Double_t *px, const Double_t */*d
 
 Int_t AliGenEMlib::IpDirectVirtGamma(TRandom *)
 {
-  return 220000;
+  return 220001;
 }
 
 Double_t AliGenEMlib::YDirectVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
@@ -539,6 +541,7 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
       case k4050:
       case k5060:
       case k2040:
+      case k4060:	
 	return PtModifiedHagedornPowerlaw(px,fgkPtParam[fgSelectedCentrality]);
 	break;
       case k0010:
@@ -558,11 +561,6 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
 	n3=PtModifiedHagedornPowerlaw(px,fgkPtParam[k1020]);
 	n4=PtModifiedHagedornPowerlaw(px,fgkPtParam[k2040]);
 	return (n1+n2+2*n3+4*n4)/8;
-	break;
-      case k4060:
-	n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k4050]);
-	n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k5060]);
-	return (n1+n2)/2;
 	break;
       default:
 	return 0; 
@@ -868,7 +866,8 @@ Double_t AliGenEMlib::V2Pizero( const Double_t *px, const Double_t */*dummy*/ )
     v2=V2Param(px,fgkV2param[k0510]);
     n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
     v3=V2Param(px,fgkV2param[k1020]);
-    return (n1*v1+n2*v2+2*n3*v3)/(n1+n2+2*n3);
+    // raw yeilds are not normalized per event
+    return (n1*v1+n2*v2+n3*v3)/(n1+n2+n3);
     break;
   case kPbPb|k2040:
     n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
@@ -888,7 +887,8 @@ Double_t AliGenEMlib::V2Pizero( const Double_t *px, const Double_t */*dummy*/ )
     v4=V2Param(px,fgkV2param[k2030]);
     n5=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
     v5=V2Param(px,fgkV2param[k3040]);
-    return (n1*v1+n2*v2+2*n3*v3+2*n4*v4+2*n5*v5)/(n1+n2+2*n3+2*n4+2*n5);
+    // raw yeilds are not normalized per event
+    return (n1*v1+n2*v2+n3*v3+n4*v4+n5*v5)/(n1+n2+n3+n4+n5);
     break;
 
   default:
@@ -1166,6 +1166,7 @@ Double_t AliGenEMlib::PtPhi( const Double_t *px, const Double_t */*dummy*/ )
     //        km = 0.78265; kc = 0.340051/(2*TMath::Pi()); kT = 0.206; kn = 6.31422;
     //        return PtTsallis(*px,km,kc,kT,kn);
     //        break;
+    //     case kPhiMtScal:
     //       default:
     //        return MtScal(*px,kPhi);
     //      } 
@@ -1216,7 +1217,7 @@ Int_t AliGenEMlib::IpJpsi(TRandom *)
 Double_t AliGenEMlib::PtJpsi( const Double_t *px, const Double_t */*dummy*/ )
 {
   // Jpsi pT
-  // based on: //https://aliceinfo.cern.ch/Notes/node/242, https://aliceinfo.cern.ch/Figure/node/3457, www.sciencedirect.com/science/article/pii/S0370269312011446
+  // based on: //https://aliceinfo.cern.ch/Notes/node/242, https://aliceinfo.cern.ch/Figure/node/3457, http://arxiv.org/abs/1203.3641
   const static Double_t jpsiPtParam[2][3] = {
     {  9.686337e-03, 2.629441e-01, 4.552044e+00 }
     ,{ 3.403549e-03, 2.897061e-01, 3.644278e+00 }

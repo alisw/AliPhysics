@@ -52,9 +52,9 @@ public:
 
   static void SelectParams( Int_t collisionSystem,
 			    Int_t ptSelectPi0, 
-			    Int_t ptSelectEta, 
-			    Int_t ptSelectOmega,
-			    Int_t ptSelectPhi, 
+			    Int_t ptSelectEta=kEtaMtScal, 
+			    Int_t ptSelectOmega=kOmegaMtScal,
+			    Int_t ptSelectPhi=kPhiMtScal, 
 			    Int_t centSelect=kpp, 
 			    Int_t v2sys=kNoV2Sys) {  
     fgSelectedCollisionsSystem = collisionSystem;
