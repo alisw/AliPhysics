@@ -9,10 +9,12 @@ void AddTaskCRC(Double_t centrMin,
                 TString TPCMultOut="2010",
                 TString EvTrigger="MB",
                 Bool_t bCalculateCRCPt=kFALSE,
-                Bool_t bUseVZERO=kFALSE,
                 Bool_t bUseCRCRecentering=kFALSE,
+                Bool_t bUseVZERO=kFALSE,
+                Bool_t bUseVZEROCalib=kFALSE,
                 Bool_t bEventCutsQA=kFALSE,
                 Bool_t bTrackCutsQA=kFALSE,
+                TString Label="",
                 const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -73,6 +75,12 @@ void AddTaskCRC(Double_t centrMin,
  r = (Int_t)(ptMax);
  pTName += ( ptMax < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
  CRCsuffix += pTName;
+ 
+ if(!Label.EqualTo("")) {
+  TString Appendix = "_";
+  Appendix += Label;
+  CRCsuffix += Appendix;
+ }
  
  // create instance of the class: because possible qa plots are added in a second output slot,
  // the flow analysis task must know if you want to save qa plots at the time of class construction
@@ -144,8 +152,8 @@ void AddTaskCRC(Double_t centrMin,
    cutsRP->SetPhiMin(0.);
    cutsRP->SetPhiMax(TMath::TwoPi());
    // options for the reweighting
-   cutsRP->SetVZEROgainEqualizationPerRing(kTRUE);
-   cutsRP->SetApplyRecentering(kTRUE);
+   cutsRP->SetVZEROgainEqualizationPerRing(bUseVZEROCalib);
+   cutsRP->SetApplyRecentering(bUseVZEROCalib);
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
    cutsRP->SetAODfilterBit(768);
