@@ -196,8 +196,19 @@ void AliEveEMCALData::SetNode(TGeoNode* const node)
 //______________________________________________________________________________
 void AliEveEMCALData::InitEMCALGeom(AliRunLoader* const rl)
 {
-  fEmcal = (AliEMCAL*) rl->GetAliRun()->GetDetector("EMCAL");
-  fGeom  = (AliEMCALGeometry*) fEmcal->GetGeometry();
+  
+  if(rl)
+  {
+    fEmcal = (AliEMCAL*) rl->GetAliRun()->GetDetector("EMCAL");
+    fGeom  = (AliEMCALGeometry*) fEmcal->GetGeometry();
+  }
+  else
+  {
+    // Use default geometry, Run2. In case of running Run1, explicitely create
+    // the instance for the corresponding Run1 geometry in the macro executing the
+    // display or before.
+    fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+  }
   
   if(!fGeom) AliFatal("EMCAL geometry pointer is NULL");
   
