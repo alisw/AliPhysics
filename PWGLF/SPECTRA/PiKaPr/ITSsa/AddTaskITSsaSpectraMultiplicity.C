@@ -1,4 +1,4 @@
-AliAnalysisTaskSEITSsaSpectraMultiplicity *AddTaskITSsaSpectra(Int_t optTree=0,Bool_t readMC=0,Bool_t useV0=0,Double_t lowmult=-1, Double_t upmult=-1,Int_t hi=0, TString prefix = ""){
+AliAnalysisTaskSEITSsaSpectraMultiplicity *AddTaskITSsaSpectraMultiplicity(Int_t optTree=0,Bool_t readMC=0,Bool_t useV0=0,Double_t lowmult=-1, Double_t upmult=-1,Int_t hi=0, TString prefix = ""){
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // with ITS standalone tracks
   // Get the pointer to the existing analysis manager via the static access method.
@@ -21,24 +21,24 @@ AliAnalysisTaskSEITSsaSpectraMultiplicity *AddTaskITSsaSpectra(Int_t optTree=0,B
   Int_t estindex = 0;
   if(useV0) estindex = 1;
   
-  ::Info("AddTaskITSsaSpectra","Adding a new task with this settings optTree = %i, readMC = %i, useV0 = %i Multiplicity Interval = %s hi = %i",optTree,readMC,useV0,multinter.Data(),hi);  
+  ::Info("AddTaskITSsaSpectraMultiplicity","Adding a new task with this settings optTree = %i, readMC = %i, useV0 = %i Multiplicity Interval = %s hi = %i",optTree,readMC,useV0,multinter.Data(),hi);  
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskITSsaSpectra", "No analysis manager to connect to.");
+    ::Error("AddTaskITSsaSpectraMultiplicity", "No analysis manager to connect to.");
     return NULL;
   }   
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskITSsaSpectra", "This task requires an input event handler");
+    ::Error("AddTaskITSsaSpectraMultiplicity", "This task requires an input event handler");
     return NULL;
   }   
   
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if(type.Contains("AOD")){
-    ::Error("AddTaskITSsaSpectra", "This task requires to run on ESD");
+    ::Error("AddTaskITSsaSpectraMultiplicity", "This task requires to run on ESD");
     return NULL;
   }
   
@@ -77,7 +77,7 @@ AliAnalysisTaskSEITSsaSpectraMultiplicity *AddTaskITSsaSpectra(Int_t optTree=0,B
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWG2SpectraITSsa";
-  ::Info("AddTaskITSsaSpectra","The results of this task will be found in: %s",outputFileName.Data());  
+  ::Info("AddTaskITSsaSpectraMultiplicity","The results of this task will be found in: %s",outputFileName.Data());  
   
   AliAnalysisDataContainer *coutput = 0x0;
   AliAnalysisDataContainer *coutputCuts = 0x0;
