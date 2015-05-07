@@ -637,13 +637,16 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     printf("AliAnalysisTaskHypertriton3::Exec(): bad ESD\n");
     return;
   }
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+
   fHistCount->Fill(0);
 
  //==========MC info==========
   AliStack *stack=0x0;
   AliMCEvent *mcEvent = 0x0;
   if(fMC){//MC info and sample selection
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (mgr->GetMCtruthEventHandler());
     if (!eventHandler) {
       printf("ERROR: Could not retrieve MC event handler");
       return;
@@ -663,7 +666,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   
   
   //==========Trigger class==========
-  UInt_t maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  UInt_t maskPhysSel = handl->IsEventSelected();
   Bool_t isSelectedCentral = (maskPhysSel & AliVEvent::kCentral);
   Bool_t isSelectedSemiCentral = (maskPhysSel & AliVEvent::kSemiCentral);
   Bool_t isSelectedMB = (maskPhysSel & AliVEvent::kMB);
@@ -718,7 +721,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   // Loop for PID on ESD tracks
   // -------------------------------------------------------
 
-  fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+  fPIDResponse = handl->GetPIDResponse();
   
   vector <AliESDtrack*> cdeuteron;
   vector <AliESDtrack*> cproton;
