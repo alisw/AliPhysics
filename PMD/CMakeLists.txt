@@ -22,4 +22,6 @@ if(DA)
     add_subdirectory(DA)
 endif(DA)
 
+install(DIRECTORY macros data DESTINATION PMD)
+
 message(STATUS "PMD enabled")

@@ -19,7 +19,7 @@ void MakePMDDDLinfoCDB()
 
   ifstream infile;
   infile.open("PMD_ddl_info.dat"); // ascii file
-  if(!infile) AliError("Could not open the DDL info file");
+  if(!infile) Error("Could not open the DDL info file");
 
 
   for(Int_t iddl = 0; iddl < 6; iddl++)
@@ -44,7 +44,7 @@ void MakePMDDDLinfoCDB()
   infile.close();
   
   infile.open("PMD_removed_chains.dat"); // ascii file
-  if(!infile) AliError("Could not open the DDL info file");
+  if(!infile) Error("Could not open the DDL info file");
 
   Int_t det, smn;
   Int_t rows1, rowe1, cols1, cole1;

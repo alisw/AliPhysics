@@ -31,7 +31,7 @@ void MakePMDMappingCDB(){
       if(iddl == 5) infile.open("PMD_Mapping_ddl5.dat"); // ascii file
       
       if(!infile)
-	AliError("Could not read the mapping file for DDL No = 0");
+	Error("Could not read the mapping file for DDL No = 0");
 
       Int_t modulePerDDL = moduleDDL[iddl];
 
