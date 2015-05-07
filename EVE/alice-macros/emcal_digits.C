@@ -41,23 +41,34 @@
 #endif
 
 void emcal_digits()
-{
+{  
   AliEveEventManager::AssertGeometry();
-
+  
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   if (!node) return;
-
+  
+  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance();  
+  if (!geom) 
+  {
+    printf("xxx Set default geo as Run2 xxx\n");
+    geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  }
+    
   Int_t nModules = node->GetNdaughters();
 
+  if(nModules != geom->GetNumberOfSuperModules())
+    printf("*** === EMCAL DIGITS - N Daughter Nodes %d - N super mod %d === ***\n", 
+           node->GetNdaughters(), geom->GetNumberOfSuperModules());
+  
   TEveElementList* l = new TEveElementList("EMCAL");
   l->SetTitle("Tooltip");
   gEve->AddElement(l);
-
+  
   TGeoBBox* bbbox = (TGeoBBox*) node->GetDaughter(0) ->GetVolume()->GetShape();
   TEveFrameBox* frame_big = new TEveFrameBox();
   frame_big->SetFrameColorRGBA(200,200,0,50);
   frame_big->SetAABoxCenterHalfSize(0, 0, 0, bbbox->GetDX(), bbbox->GetDY(), bbbox->GetDZ());
-
+  
   TEveFrameBox* frame_sml  = 0x0;
   TEveFrameBox* frame_dcl  = 0x0;
   TEveFrameBox* frame_smld = 0x0;
@@ -76,7 +87,7 @@ void emcal_digits()
     frame_dcl = new TEveFrameBox();
     frame_dcl->SetFrameColorRGBA(200,200,0,50);
     frame_dcl->SetAABoxCenterHalfSize(0, 0, 0, dbbox->GetDX(), dbbox->GetDY(), dbbox->GetDZ());
-
+    
     TGeoBBox* sdbbox = (TGeoBBox*) node->GetDaughter(18)->GetVolume()->GetShape();
     frame_smld = new TEveFrameBox();
     frame_smld->SetFrameColorRGBA(200,200,0,50);
@@ -88,14 +99,11 @@ void emcal_digits()
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
   pal->SetLimits(0, 1024);
 
-  TEveQuadSet* smodules[20];
-  memset(smodules,0,20*sizeof(TEveQuadSet*));
-
-  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance();  
-  if (!geom) geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
-
-
-  for (Int_t sm =0; sm < nModules; ++sm)
+  const Int_t nSM = nModules;
+  TEveQuadSet* smodules[nSM];
+  memset(smodules,0,nModules*sizeof(TEveQuadSet*));
+  
+  for (Int_t sm = 0; sm < nModules; ++sm)
   {
     TEveQuadSet* q = new TEveQuadSet(Form("SM %d", sm+1));
     q->SetOwnIds(kTRUE);
@@ -117,11 +125,11 @@ void emcal_digits()
   }
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
-
+  
   rl->LoadDigits("EMCAL");
   TTree* dt = rl->GetTreeD("EMCAL", kFALSE);
   if (!dt) return;
-
+  
   TClonesArray *digits = 0;
   dt->SetBranchAddress("EMCAL", &digits);
   dt->GetEntry(0);
@@ -138,59 +146,52 @@ void emcal_digits()
   Int_t iphi    =  0 ;
   Int_t ieta    =  0 ;
   Double_t x, y, z;
-
+  
   for (Int_t idig = 0; idig < nEnt; ++idig)
   {
     dig = static_cast<AliEMCALDigit *>(digits->At(idig));
 
-    if(dig != 0) 
+    if (!dig ) continue ;
+    
+    id   = dig->GetId() ; //cell (digit) label
+    amp  = dig->GetAmplitude(); //amplitude in cell (digit)
+    time = dig->GetTime();//time of creation of digit after collision
+    
+    // Do not add too low ADC values (3 times pedestal)
+    if(amp < 3) continue;
+    
+    //printf("\t Digit %d/%d: Cell ID %d; Amp %f; time %2.3e\n",idig+1,nEnt,id,amp,time);
+    
+    //Geometry methods
+    geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
+    //Gives SuperModule and Tower numbers
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
+    //Gives label of cell in eta-phi position per each supermodule
+         
+    //if ( iSupMod == 13 || iSupMod == 15 || iSupMod == 17 ) 
+    //  printf("\t \t amp %2.2f iSM %d, iphi %d, ieta %d\n",amp,iSupMod,iphi,ieta);
+    
+    geom->RelPosCellInSModule(id, x, y, z);
+    
+    // It should not happen, but in case the OCDB file is not the
+    // correct one.
+    if(iSupMod >= nModules) continue;
+    
+    TEveQuadSet* q = smodules[iSupMod];
+    if (q) 
     {
-      id   = dig->GetId() ; //cell (digit) label
-      amp  = dig->GetAmp(); //amplitude in cell (digit)
-      time = dig->GetTime();//time of creation of digit after collision
-
-//      AliDebugGeneral("emcal_digits", 5, Form("Cell ID %3d, Amplitude: %f", id, amp));
-      // cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
-
-      //Geometry methods
-      geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
-      //Gives SuperModule and Tower numbers
-      geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-					iIphi, iIeta,iphi,ieta);
-      //Gives label of cell in eta-phi position per each supermodule
-
-//      AliDebugGeneral("emcal_digits", 5, Form("SModule %3d; Tover %3d; Eta %3d; Phi %3d; Cell Eta %3d; Cell Phi %3d",
-//		       iSupMod, iTower, iIeta, iIphi, ieta, iphi));
-      // cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
-      //     <<"; Eta "<<iIeta<<"; Phi "<<iIphi
-      //     <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
-
-      geom->RelPosCellInSModule(id, x, y, z);
-      // cout << x <<" "<< y <<" "<< z <<endl;
-//      AliDebugGeneral("emcal_digits", 5, Form("(x,y,z)=(%8.3f,%8.3f,%8.3f)", x, y, z));
-
-      TEveQuadSet* q = smodules[iSupMod];
-      if (q) 
-      {
-        q->AddQuad(y, z);
-        q->QuadValue(TMath::Nint(amp));
-        q->QuadId(new AliEMCALDigit(*dig));
-      }
-    } 
-//    else 
-//    {
-//      AliDebugGeneral("emcal_digits", 1, Form("Digit pointer 0x0"));
-//      cout<<"Digit pointer 0x0"<<endl;
-//    }
+      q->AddQuad(y, z);
+      q->QuadValue(TMath::Nint(amp));
+      q->QuadId(new AliEMCALDigit(*dig));
+    }
   }
 
   rl->UnloadDigits("EMCAL");
-
-
+  
   for (Int_t sm = 0; sm < nModules; ++sm)
   {
-    smodules[iSupMod]->RefitPlex();
+    smodules[sm]->RefitPlex();
   }
-
+  
   gEve->Redraw3D();
 }
