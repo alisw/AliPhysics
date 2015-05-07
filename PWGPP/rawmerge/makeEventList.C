@@ -117,7 +117,14 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
   ReadTrees();
   runNo = GuessRunNumber();
   SetDumpOutputFile(runNo);
-
+  // Base cut for the high pt tracks:
+  // 1.) rough pointing to the primary vertex 
+  // 2.) reasonable q/pt resolution
+  // 3.) at minimum one of the outer detectors - to clean pile-up
+  //
+  TCut cutHighPt="abs(esdTrack.fdTPC)<4&&abs(esdTrack.fzTPC)<4&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.1&&((esdTrack.fFlags&0x4401)>0)";
+  TCut cutV0="abs(track0.fzTPC)<20&&abs(track1.fzTPC)<20&&sqrt(track0.fC[14])<0.1&&sqrt(track1.fC[14])<0.1&&((track0.fFlags&0x4401)+(track1.fFlags&0x4401)>0)";
+  
   // Analyse Hight pt tree
   if (treeHighPt)
   {
@@ -129,7 +136,7 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
       treeHighPt->SetScanField(nEvents);
       //      tree->Scan("fileName.GetString():evtNumberInFile:triggerName:gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=.2f:8.d:8.d:130.s:15.lu:12.d");
       AliSysInfo::AddStamp("highPtFilterScanBegin",1,1);
-      treeHighPt->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=130.s:14.d:30.s:20.lu:20.lu");
+      treeHighPt->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt)+cutHighPt,"col=130.s:14.d:30.s:20.lu:20.lu");
       AliSysInfo::AddStamp("highPtFilterScanEnd",1,2);
     }
   } 
@@ -146,7 +153,7 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
       treeV0s->GetUserInfo()->AddFirst(new TNamed("V0s","V0s"));
       treeV0s->SetScanField(nEvents);
       AliSysInfo::AddStamp("highV0sFilterScanBegin",2,1);
-      treeV0s->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp",Form("v0.Pt()>%lf",ptMinV0s),"col=130.s:14.d:30.s:20.lu:20.lu"); 
+      treeV0s->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp",Form("v0.Pt()>%lf",ptMinV0s)+cutV0,"col=130.s:14.d:30.s:20.lu:20.lu"); 
       AliSysInfo::AddStamp("highV0sFilterScanEnd",2,2);
     }
   }
