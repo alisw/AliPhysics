@@ -18,8 +18,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Class to define the ALICE Trigger Scalers Record per Run.
-// ReadScalers(): read the txt file (rXXXX.cnt) provided by CTP and creates array of records.
-// ConsistencyCheck(): checks if the last scaler added to record is consistent, 
+// ReadScalers(): 
+// read the txt file (rXXXX.cnt) provided by CTP and creates array of records.
+// Saves resuly without any corrections as 32 bit words in AliTriggerScaler.
+// ReadScalers called by AliGRPPreprocessor , result saved in OCDB.
+// CorrectScalersOverflow():
+// correct 32 bit counter words for overflow and saves them as 64 bit words AliTriggerRecordESD
+// Called in AliReconstruction/
+// ConsistencyCheck(): 
+// checks if the last scaler added to record is consistent, 
 // i.e. time increases and valued are not decreasing in time.
 // 
 //
@@ -80,8 +87,8 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
 { 
   // Add scaler and check consistency
   fScalersRecord.AddLast( scaler );
-  UInt_t* overflow[6];
-  for(Int_t i=0; i<6; i++) {
+  UInt_t* overflow[8];
+  for(Int_t i=0; i<8; i++) {
      overflow[i] = new UInt_t[fnClasses];
      for(Int_t j=0; j<fnClasses; j++) overflow[i][j] = 0;
   }
@@ -160,6 +167,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
   TString strLine;
   Bool_t verflag = kFALSE;
   Bool_t classflag = kFALSE;
+  Bool_t run2=kFALSE;
   UChar_t nclass = 0;
   while (strLine.ReadLine(*file)) {
     if (strLine.BeginsWith("#")) continue;
@@ -175,8 +183,10 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
         return NULL;
       }
   //    cout << "Version "<< ((TObjString*)tokens->At(0))->String().Atoi() << endl;
-      rScaler->SetVersion( ((TObjString*)tokens->At(0))->String().Atoi() );
+      Short_t version= ((TObjString*)tokens->At(0))->String().Atoi();
+      rScaler->SetVersion( version );
       verflag = kTRUE;
+      if(version > 2) run2=kTRUE;
       delete tokens;
       continue;
     }
@@ -193,7 +203,8 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
   //    cout << "Number of classes " << nclass << endl;
       rScaler->SetNumClasses( nclass );
       if ( nclass != ntokens - 2 ) {
-        AliErrorClass( Form( "Error reading number of classes from (%s)\n", filename.Data() )); 
+        AliErrorClass( Form( "Error reading number of classes from (%s)\n", filename.Data() ));
+	return NULL;
       }
       for (UChar_t i=0; i<nclass; ++i) {
         rScaler->SetClass( i, (Char_t)((TObjString*)tokens->At(2+i))->String().Atoi() );
@@ -234,12 +245,16 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
       if (strLine1.BeginsWith("#")) continue;
       TObjArray *tokens1 = strLine1.Tokenize(" \t");
       Int_t ntokens1 = tokens1->GetEntriesFast();
-      if( ntokens1 != 6 ) {
-        AliErrorClass( Form( "Error reading scalers from (%s): line (%s)", 
-			     filename.Data(), strLine1.Data() ));
+      // Wrong number of classes
+      Bool_t err = run2 || (ntokens1 !=6);
+      err = err && (!run2 || (ntokens1 != 8));
+      if(err) {
+        AliErrorClass( Form( "Error reading scalers from (%s): line (%s): ntokens=%i", 
+			     filename.Data(), strLine1.Data(),ntokens1 ));
 	delete rec;
 	delete tokens1;
-	return rScaler;
+	//return rScaler;
+	return 0;
       }
 
       UInt_t lOCB = strtoul(((TObjString*)tokens1->At(0))->String(), NULL, 10);
@@ -248,12 +263,17 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
       UInt_t l1CA = strtoul(((TObjString*)tokens1->At(3))->String(), NULL, 10);
       UInt_t l2CB = strtoul(((TObjString*)tokens1->At(4))->String(), NULL, 10);
       UInt_t l2CA = strtoul(((TObjString*)tokens1->At(5))->String(), NULL, 10);
-
-      rScaler->GetClass(i);
-      rec->AddTriggerScalers( rScaler->GetClass(i),
-                              lOCB, lOCA, l1CB,
-                              l1CA, l2CB, l2CA );
-
+      if(run2){
+      	UInt_t lMCB = strtoul(((TObjString*)tokens1->At(6))->String(), NULL, 10);
+        UInt_t lMCA = strtoul(((TObjString*)tokens1->At(7))->String(), NULL, 10);
+        rec->AddTriggerScalers( rScaler->GetClass(i),
+                                lOCB, lOCA, l1CB,
+                                l1CA, l2CB, l2CA, lMCB, lMCA );
+      }else{
+        rec->AddTriggerScalers( rScaler->GetClass(i),
+                                lOCB, lOCA, l1CB,
+                                l1CA, l2CB, l2CA );
+      }
       delete tokens1;
     } 
     rScaler->AddTriggerScalers( rec );
@@ -311,75 +331,96 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    //         3 = (level+1) > (level)
    if (position == 0){
       if(correctOverflow){
-        AliErrorClass("position=0\n");
+        AliErrorClass("Position=0 not alowed as conmparison with previous record not possible");
         return 1;
       }else return 0; // to work correctly in AddScalers
    };
-   UInt_t c2[6], c1[6];
+   Int_t nlevels=6;
+   if(fVersion>2) nlevels=8;
+   UInt_t c2[8], c1[8];
    ULong64_t c64[6]; 
-   Bool_t increase[6];  
-   for(Int_t i=0;i<6;i++){increase[i]=0;}
+   Bool_t increase[8];  
+   for(Int_t i=0;i<8;i++){increase[i]=0;}
    ULong64_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
    ULong64_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
    AliTriggerScalersRecord* scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
    AliTriggerScalersRecord* scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
-   if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 1;
+   if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1){
+    cout << "Records time decreases." << endl;
+    return 1;
+   }
 
    AliTriggerScalersRecordESD* recESD = 0;
+   // Create overflow corrected record
    if(correctOverflow){
      recESD = new AliTriggerScalersRecordESD();
      recESD->SetTimeStamp(scalers2->GetTimeStamp());
      recESD->SetTimeGroup(scalers2->GetTimeGroup());
    }
+   // Consistency check
    for( Int_t ic=0; ic<fnClasses; ++ic ){
       TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
       AliTriggerScalers* counters2 = (AliTriggerScalers*)scalersArray2->At(ic);
       UChar_t iclass = counters2->GetClassIndex();
-      counters2->GetAllScalers(c2);
+      if(fVersion>2)counters2->GetAllScalersM012(c2); else counters2->GetAllScalers(c2);
       TObjArray* scalersArray1 = (TObjArray*)scalers1->GetTriggerScalers();
       AliTriggerScalers* counters1 = (AliTriggerScalers*)scalersArray1->At(ic);
-      counters1->GetAllScalers(c1);
-      for(Int_t i=0;i<5;i++){
+      if(fVersion>2)counters1->GetAllScalersM012(c1); else counters1->GetAllScalers(c1);
+      for(Int_t i=0;i<(nlevels);i++){
          if ( c2[i] >= c1[i] ) increase[i]=1;
          else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i][ic]++;
-         else return 2;
+         else{
+	  cout << "Decreasing count with time." << endl;
+	  return 2;
+	 }
       }
-      for(Int_t i=0;i<5;i++){
+      //  Checking reletaive increase between 2 subsequent records
+      //  Counters in one record can decrease versus level
+      for(Int_t i=0;i<(nlevels-1);i++){
+         //printf("%i %ull %ull %ull %ull \n",i,c1[i],c1[i+1],c2[i],c2[i+1]);
          if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) {
-                 if ( ((c2[i+1] - c1[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 if ( ((c2[i+1] - c1[i+1]) - (c2[i] - c1[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else {
-  		    cout << " 1 pos= " << position << "i= "<< i << endl;
+  		    cout << "(level+1)>level 1 pos= " << position << " i= "<< i << endl;
 		    return 3; 
 		 }
 	 }
          else if ( (max1 - c1[i]+c2[i]) < (c2[i+1] - c1[i+1]) && overflow[i][ic] && increase[i+1] ) {
-                 if ( ((c2[i+1] - c1[i+1]) - (max1 - c1[i]+c2[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 if ( ((c2[i+1] - c1[i+1]) - (max1 - c1[i]+c2[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else{
-  		    cout << " 2 pos= " << position << "i= "<< i << endl;
+  		    cout << "(level+1)> level 2 pos= " << position << " i= "<< i << endl;
 		    return 3; 
 		 }
 	 }
          else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1][ic] ) {
-                 if ( ((max1 - c1[i+1] + c2[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 if ( ((max1 - c1[i+1] + c2[i+1]) - (c2[i] - c1[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else{
-  		    cout << " 3 pos= " << position << "i= "<< i << endl;
+  		    cout << "(level+1)>level 3 pos= " << position << " i= "<< i << endl;
 		    return 3; 
 		    }
 	 }
          else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i][ic] && overflow[i+1][ic] ) {
-                 if ( ((max1 - c1[i+1] + c2[i+1]) - (max1 - c1[i] + c2[i] )) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 if ( ((max1 - c1[i+1] + c2[i+1]) - (max1 - c1[i] + c2[i] )) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else{
   		    cout << " 4 pos= " << position << "i= "<< i << endl;
 		    return 3;
 		    }
        }
       }
+      // Correct for overflow
       if(correctOverflow){ 
-        for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i][ic]; }
+        if(fVersion>2){for(Int_t i=0;i<6;i++){ c64[i]=c2[i+2]+max1*overflow[i+2][ic]; }}
+	else{for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i][ic]; }}
         AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
+	if(fVersion>2){
+	  ULong64_t cLMB = c2[0]+max1*overflow[0][ic];
+	  ULong64_t cLMA = c2[1]+max1*overflow[1][ic];
+	  s->SetLMCB(cLMB);
+	  s->SetLMCA(cLMA);
+	}
         recESD->AddTriggerScalers(s);
-         }
+      }
 
  }
  if(correctOverflow)fScalersRecordESD.AddLast(recESD);
@@ -399,8 +440,10 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
  AliTriggerScalersRecordESD* recESD = new AliTriggerScalersRecordESD();
  // add 0
  AliTriggerScalersRecord* scalers = (AliTriggerScalersRecord*)fScalersRecord.At(0);
+
  recESD->SetTimeStamp(scalers->GetTimeStamp());
  recESD->SetTimeGroup(scalers->GetTimeGroup());
+ // Create ESD scalers, i.e. ULong64_t, next correct for overflow
  for( Int_t ic=0; ic<fnClasses; ++ic ){
     TObjArray* scalersArray = (TObjArray*)scalers->GetTriggerScalers();
     AliTriggerScalers* counters = (AliTriggerScalers*)scalersArray->At(ic);
@@ -408,12 +451,16 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     UChar_t iclass = counters->GetClassIndex();
     for(Int_t i=0; i<6; i++)c64[i]=c1[i];
     AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
+    if(fVersion>2){
+      s->SetLMCB(counters->GetLMCB());
+      s->SetLMCA(counters->GetLMCA());
+    }
     recESD->AddTriggerScalers(s);
  }
  fScalersRecordESD.AddLast(recESD);
-
- UInt_t* overflow[6];
- for(Int_t i=0; i<6; i++) {
+ // Correct for overflow
+ UInt_t* overflow[8];
+ for(Int_t i=0; i<8; i++) {
     overflow[i] = new UInt_t[fnClasses];
     for(Int_t j=0; j<fnClasses; j++) overflow[i][j] = 0;
  }
@@ -914,8 +961,7 @@ void AliTriggerRunScalers::Print( const Option_t* ) const
   cout << "  Run Number :" <<  fRunNumber << endl;          
   cout << "  Number of Classes :" <<  (Int_t)fnClasses << endl;          
   cout << "    Classes ID:";
-  for( Int_t i=0; i<fnClasses; ++i ) 
-    cout << "  " << (Int_t)fClassIndex[i];       
+  for( Int_t i=0; i<fnClasses; ++i ){cout << "  " << (Int_t)fClassIndex[i]; }      
   cout << endl; 
     
   for( Int_t i=0; i<fScalersRecord.GetEntriesFast(); ++i ) 
