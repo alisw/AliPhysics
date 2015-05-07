@@ -19,7 +19,7 @@ class AliESDAD;
 class AliEveADModule;
 #endif
 
-void ad_esd(Int_t maxCharge = 3000, Bool_t showLegend = kFALSE)
+void ad_esd(Int_t maxCharge = 300, Bool_t showLegend = kFALSE)
 {
   gStyle->SetPalette(1, 0);
 
