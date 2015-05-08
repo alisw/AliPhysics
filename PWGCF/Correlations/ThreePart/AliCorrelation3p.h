@@ -109,6 +109,8 @@ class AliCorrelation3p : public TNamed {
   void HistFill(Int_t Histn,Double_t Val1,Double_t Val2, Double_t Val_3);
   void HistFill(Int_t Histn,Double_t Val1,Double_t Val2, Double_t Val_3, Double_t weight);
   TH2D * slice(TH3F* hist,const char* option, Int_t firstbin, Int_t lastbin, const char* name="slice", Bool_t baverage = kFALSE) const;
+  void AddSlice(TH3F* hist,TH2D* AddTo,const char* option, Int_t firstbin, Int_t lastbin, const char* name="slice", Bool_t baverage = kFALSE) const;
+
   TH2D * DetaDphiAss(TH3F * hist,const char * name = "detadphiAss");
   TH2D * DeltaEtaCut(TH3F* hist, const char* option, const char* name="deltaetacut", Bool_t baverage = kFALSE) const ;
   TCanvas * Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* histtopr,TH1D* histmidl,TH1D* histmidm, TH1D* histmidr,TH1D* histbotl,TH1D* histbotm, TH1D* histbotr, const char* name, Bool_t Stats);
@@ -117,6 +119,9 @@ class AliCorrelation3p : public TNamed {
   Double_t FindScalingfactor(const char* scalingmethod,TH2D* sighist, TH2D* mixhist);
   Double_t GetPoint(TH1* hist,Double_t xpoint,Double_t ypoint = 0, Double_t zpoint=0);
   void AddHists(Bool_t isAverage,TH1* hist1, TH1* hist2);
+  TH1* PrepareHist(int HistLocation,const char* HistName,const char* title, const char* xaxis, const char* yaxis,const char* zaxis = "",bool mixed = false);
+  TH1* PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis = "",bool scale = false);
+
   //Actual members
   TObjArray* fHistograms; // the histograms
   float fMinTriggerPt; // trigger pt threshold
@@ -140,6 +145,6 @@ class AliCorrelation3p : public TNamed {
   TriggerType fTriggerType;
 
   //Class definition.
-  ClassDef(AliCorrelation3p, 2)
+  ClassDef(AliCorrelation3p, 3)
 };
 #endif

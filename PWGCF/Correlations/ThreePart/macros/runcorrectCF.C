@@ -24,9 +24,11 @@ void runcorrectCF(const char* options = "")
   TString delimiter(" ");
   TStringToken token(options, delimiter);
   bool madeachoice = false;
+  cout << options<<endl;
   while (token.NextToken()&&!madeachoice) {
     const char* key=0;
     TString argument=token;
+    cout << argument.Data()<<endl;    
     key="pp";
     if (argument.CompareTo(key)==0) {
       option.Clear();
@@ -53,6 +55,16 @@ void runcorrectCF(const char* options = "")
       option.Clear();
       option.Append("PbPb");
       cout << "Using 'PbPb' as option."<<endl;      
+      continue;
+    }
+    key="48";
+    if (argument.CompareTo(key)==0) {
+      option.Append(" 48");
+      continue;
+    }
+    key="816";
+    if (argument.CompareTo(key)==0) {
+      option.Append(" 816");
       continue;
     }
     key="gen";
@@ -244,15 +256,12 @@ void runcorrectCF(const char* options = "")
       cout << "Cleaning the directory for compiled objects and result files. You will have to rerun all commands."<<endl;
       continue;
     }    
-    
   }
   TString basedir=TString("/home/paulbatzing/alice/paul/ThreeParticle/correlation3p/");
-  if(collectMVbins||collectMVbinsfirst||correctforME||makeyield||result||correctforMEscan||checkmixed||periods||centralities) gROOT->LoadMacro("correctCF.cxx+g");
+  if(collectMVbins||collectMVbinsfirst||correctforME||makeyield||result||correctforMEscan||checkmixed||periods||centralities) gROOT->LoadMacro(Form("%scorrectCF.cxx+g",basedir.Data()));
   if(Merge||Draw){	gROOT->LoadMacro(Form("%srunan.C",basedir.Data()));runan("compile");}
-
-  if(Merge)		gROOT->LoadMacro("MergeSet.C+g");
+  if(Merge)		gROOT->LoadMacro(Form("%sMergeSet.C+g",basedir.Data()));
   if(Draw) 		gROOT->LoadMacro(Form("%sDrawThreeParticleCorrelations.C",basedir.Data()));
-
   if(!madeachoice) cout << "Please choose an action to perform. This macro can:                  "<<endl
 			<< "    option: 	task performed:		                         "<<endl
 			<< "    clean     -     cleans the directory                             "<<endl
@@ -270,7 +279,7 @@ void runcorrectCF(const char* options = "")
 			<< "                    Must be run with Aliroot.                        "<<endl<<endl
 			<< "To choose the collision type, please use pp or PbPb.                 "<<endl<<endl;
   if(option.CompareTo("")==0){ cout<< "Defaulting to option 'pp'." <<endl; option.Append("pp");}
- 
+  if(Draw && option.CompareTo("pp")==0){option.Append(" 48 816");}
   if(clean){
     cout << "Cleaning builds, removing local libraries. If you want to clean builds, please answer yes. ";
     gROOT->ProcessLine(".rm *.so *.d");
@@ -280,7 +289,7 @@ void runcorrectCF(const char* options = "")
     gROOT->ProcessLine(".rm AnalysisResults.root ");    
   }
   if(Merge){MergeSets();return;}
-  if(Draw&&!drawgen&&drawint==1){gROOT->ProcessLine(".rm results.root"); DrawThreeParticleCorrelations(Form("%s makefile",option.Data())); }//DrawThreeParticleCorrelations(Form("%s makefilemixedall",option.Data()));}
+  if(Draw&&!drawgen&&drawint==1){DrawThreeParticleCorrelations(Form("%s makefile",option.Data())); }//DrawThreeParticleCorrelations(Form("%s makefilemixedall",option.Data()));}
   if(Draw&&!drawgen&&drawint==2){DrawThreeParticleCorrelations(Form("%s makefilemixed",option.Data()));}//DrawThreeParticleCorrelations(Form("%s makefilemixedall",option.Data()));}
   if(Draw&&!drawgen&&drawint==3){DrawThreeParticleCorrelations(Form("%s makefiletriggermixed",option.Data()));}
 

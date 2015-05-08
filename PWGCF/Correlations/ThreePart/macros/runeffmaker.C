@@ -6,5 +6,6 @@ void runeffmaker(const char* options = "")
 {
   TString basedir=TString("/home/paulbatzing/alice/paul/ThreeParticle/correlation3p/");
   gROOT->LoadMacro(Form("%seffmaker.cxx+g",basedir.Data()));
-  MakeEffHistspp();
+//   MakeTestHists();
+  MakeEffHistsPbPb();
 }
