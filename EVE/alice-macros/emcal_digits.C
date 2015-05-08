@@ -99,6 +99,7 @@ void emcal_digits()
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
   pal->SetLimits(0, 1024);
 
+
   const Int_t nSM = nModules;
   TEveQuadSet* smodules[nSM];
   memset(smodules,0,nModules*sizeof(TEveQuadSet*));
