@@ -97,6 +97,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fMinAssociatedPt(1.0)
   , fMaxAssociatedPt(3.0)
   , fMinNClustersTPC(70)
+  , fCutMask(0)
   , fMinClusterEnergy(0.3)
   , fMinBCDistance(0.0)
   , fMinNCells(3)
@@ -162,6 +163,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fMinAssociatedPt(1.0)
   , fMaxAssociatedPt(3.0)
   , fMinNClustersTPC(70)
+  , fCutMask(0)
   , fMinClusterEnergy(0.3)
   , fMinBCDistance(0.0)
   , fMinNCells(3)
@@ -361,10 +363,9 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
     if(fWeights){
-      Int_t phibin = fWeights->GetAxis(2)->FindBin(t->Phi());
       Int_t etabin = fWeights->GetAxis(2)->FindBin(t->Eta());
-      Int_t pTbin  = fWeights->GetAxis(2)->FindBin(t->Pt());
-      Int_t x[5] = {MultBin,VZbin,phibin,etabin,pTbin};
+      Int_t pTbin  = fWeights->GetAxis(3)->FindBin(t->Pt());
+      Int_t x[4] = {MultBin,VZbin,etabin,pTbin};
       Weight *= fWeights->GetBinContent(x);
     }
 //     FillHistogram("TracksperRun",fRunFillValue);
@@ -384,6 +385,11 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     
 //     FillHistogram("selectedTracksperRun",fRunFillValue);
     FillHistogram("trackPt",t->Pt(),Weight);
+    if(dynamic_cast<AliAODTrack*>(t)){
+      if(dynamic_cast<AliAODTrack*>(t)->IsGlobalConstrained())FillHistogram("trackPtconstrained",t->Pt(),Weight);
+      if(!dynamic_cast<AliAODTrack*>(t)->IsGlobalConstrained())FillHistogram("trackPtnotconstrained",t->Pt(),Weight);
+
+    }
     FillHistogram("trackPhi",t->Phi(),Weight);
     FillHistogram("trackTheta",t->Theta(),Weight);
     if(IsSelectedTrigger(t)){
@@ -580,7 +586,11 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackAOD(AliVParticle* t)
 //   isselected = isselected&&(abs(DCAlong)<3);//cm. DCA less then 3 cm in the longitudinal direction.
 // //   if(isselected) cout << "DCA long passed"<<endl;
   //Hybrid tracks give flat distributions
-  isselected = AODt->IsHybridGlobalConstrainedGlobal();
+  if(fCutMask == 0) isselected = AODt->IsHybridGlobalConstrainedGlobal();
+  else if(fCutMask == 1) isselected = AODt->TestFilterBit(BIT(4));
+  else if(fCutMask == 2) isselected = AODt->TestFilterBit(BIT(5));
+  else if(fCutMask == 3) isselected = AODt->TestFilterBit(BIT(6));
+  else isselected = AODt->IsHybridGlobalConstrainedGlobal(); // defaults to global hybrid.
 //   if( (AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,1);
 //   if(!(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,0);
   return isselected; 
@@ -711,7 +721,9 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
 //   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
   fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 4000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 1000,  0, 20));
+  fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 20));
+  fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 20));
+  fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 20));
   fOutput->Add(new TH1D("trackAssociatedPt" , "Pt of associated Tracks", 1000, fMinAssociatedPt, fMaxAssociatedPt));
   fOutput->Add(new TH1D("trackTriggerPt" , "Pt of Trigger Tracks", 1000, fMinTriggerPt, fMaxTriggerPt));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
