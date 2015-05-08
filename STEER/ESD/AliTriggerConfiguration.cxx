@@ -930,8 +930,7 @@ AliTriggerClass* AliTriggerConfiguration::GetTriggerClass(Int_t classIndex) cons
    Int_t nclasses = (Int_t)fClasses.GetEntriesFast();
    for (Int_t i=0;i<nclasses;i++) {
        AliTriggerClass* trgclass = (AliTriggerClass*)fClasses.At(i);
-       ULong64_t classmask = (ULong64_t)trgclass->GetMask();
-       if (TMath::Nint(TMath::Log2(classmask))+1 == classIndex) return trgclass;
+       if ( trgclass->GetIndex() == classIndex) return trgclass;
    }
    return 0;
 }
