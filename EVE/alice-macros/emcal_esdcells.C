@@ -72,9 +72,10 @@ void emcal_esdcells()
   // Get the EMCAL bounding boxes for the super modules.
   // 4 kind of SM: 10 Full EMCal, 2 1/3 EMCal, 6 DCal (2/3 EMCal) and 2 1/3 EMCal in DCal region.
   //
+    
   TGeoBBox* bbbox = (TGeoBBox*) node->GetDaughter(0) ->GetVolume()->GetShape();
   TEveFrameBox* frame_big = new TEveFrameBox();
-  frame_big->SetFrameColorRGBA(200,200,0,50);
+  frame_big->SetFrameColorRGBA(200,200,0,0);
   frame_big->SetAABoxCenterHalfSize(0, 0, 0, bbbox->GetDX(), bbbox->GetDY(), bbbox->GetDZ());
 
   TEveFrameBox* frame_sml  = 0x0;
@@ -85,7 +86,7 @@ void emcal_esdcells()
   {
     TGeoBBox* sbbox = (TGeoBBox*) node->GetDaughter(10)->GetVolume()->GetShape();
     frame_sml = new TEveFrameBox();
-    frame_sml->SetFrameColorRGBA(200,200,0,50);
+    frame_sml->SetFrameColorRGBA(200,200,0,0);
     frame_sml->SetAABoxCenterHalfSize(0, 0, 0, sbbox->GetDX(), sbbox->GetDY(), sbbox->GetDZ());
   }
 
@@ -93,12 +94,12 @@ void emcal_esdcells()
   {
     TGeoBBox* dbbox = (TGeoBBox*) node->GetDaughter(12)->GetVolume()->GetShape();
     frame_dcl = new TEveFrameBox();
-    frame_dcl->SetFrameColorRGBA(200,200,0,50);
+    frame_dcl->SetFrameColorRGBA(200,200,0,0);
     frame_dcl->SetAABoxCenterHalfSize(0, 0, 0, dbbox->GetDX(), dbbox->GetDY(), dbbox->GetDZ());
 
     TGeoBBox* sdbbox = (TGeoBBox*) node->GetDaughter(18)->GetVolume()->GetShape();
     frame_smld = new TEveFrameBox();
-    frame_smld->SetFrameColorRGBA(200,200,0,50);
+    frame_smld->SetFrameColorRGBA(200,200,0,0);
     frame_smld->SetAABoxCenterHalfSize(0, 0, 0, sdbbox->GetDX(), sdbbox->GetDY(), sdbbox->GetDZ());
   }
 
@@ -132,10 +133,10 @@ void emcal_esdcells()
 
     q->RefMainTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
 
-    if     (sm < 10) q->SetFrame(frame_big );
-    else if(sm < 12) q->SetFrame(frame_sml );
-    else if(sm < 18) q->SetFrame(frame_dcl );
-    else if(sm < 20) q->SetFrame(frame_smld);
+//    if     (sm < 10) q->SetFrame(frame_big );
+//    else if(sm < 12) q->SetFrame(frame_sml );
+//    else if(sm < 18) q->SetFrame(frame_dcl );
+//    else if(sm < 20) q->SetFrame(frame_smld);
 
     q->SetPalette(pal);
 
