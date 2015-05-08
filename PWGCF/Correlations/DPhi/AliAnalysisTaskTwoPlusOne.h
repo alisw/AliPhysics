@@ -72,6 +72,8 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetUseBackgroundSameOneSide(Bool_t flag) { fUseBackgroundSameOneSide = flag; }
   void   SetUseBackgroundSameFromMixedComb(Bool_t flag) { fUseBackgroundSameFromMixedComb  = flag; }
 
+  void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
+
  private:
   void            AddSettingsTree();                                  // add list of settings to output list
 
@@ -126,11 +128,13 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t fUseBackgroundSameOneSide;            //decides if background Same is searched on one side or on both with half the alpha
     Bool_t fUseBackgroundSameFromMixedComb; //decides if the background same method is filled with the same event or with the mixed combinatorics events
     
+    THnF* fEfficiencyCorrection;     // if non-0 this efficiency correction is applied on the fly to the filling for all particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+
     AliAnalysisTaskTwoPlusOne(const AliAnalysisTaskTwoPlusOne&); // not implemented
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-  ClassDef(AliAnalysisTaskTwoPlusOne, 6); // two plus one analysis with two trigger particles and particle correlations to these triggers
+    ClassDef(AliAnalysisTaskTwoPlusOne, 7); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif

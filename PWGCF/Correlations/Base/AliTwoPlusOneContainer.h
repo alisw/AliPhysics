@@ -8,6 +8,7 @@
 
 #include "TNamed.h"
 #include "AliUEHist.h"
+#include "THn.h"
 // #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
 class AliVParticle;
@@ -28,7 +29,7 @@ class AliTwoPlusOneContainer : public TNamed
   
   enum PlotKind {kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS, k1plus1, kBackgroundSameNS, kBackgroundSameAS, kMixed1plus1};
 
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency);
   
   AliUEHist* GetData() {return fTwoPlusOne;}
   TH1F* GetAsymmetry() {return fAsymmetry;}
@@ -46,6 +47,7 @@ class AliTwoPlusOneContainer : public TNamed
   void SetUseLeadingPt(Bool_t flag) { fUseLeadingPt = flag; }
   void SetUseAllT1(Bool_t flag) { fUseAllT1 = flag; }
   void SetUseBackgroundSameOneSide(Bool_t flag) { fUseBackgroundSameOneSide = flag; }
+  void SetEfficiencyCorrection(THnF* hist)   { fEfficiencyCorrection = hist;   }
 
   AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c);
   AliTwoPlusOneContainer& operator=(const AliTwoPlusOneContainer& c);
@@ -54,6 +56,7 @@ class AliTwoPlusOneContainer : public TNamed
  
 protected:
   void DeleteContainers();
+  Double_t getEfficiency(Double_t pt, Double_t eta, Double_t centrality, Double_t zVtx);
   
   AliUEHist* fTwoPlusOne;	     //a 7 dim histogram which actually contains all the data
 
@@ -72,9 +75,10 @@ protected:
   Bool_t fUseLeadingPt;        //decides if all particles of a cone are used as trigger particles or only the leading particles within alpha (apply this on near and away side)
   Bool_t fUseAllT1;                  //use all possible T1 combinations
   Bool_t fUseBackgroundSameOneSide;  //uses only one side for background same
+  THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency
   Int_t fMergeCount;	             // counts how many objects have been merged together
   
-  ClassDef(AliTwoPlusOneContainer, 7)  // underlying event histogram container
+  ClassDef(AliTwoPlusOneContainer, 8)  // underlying event histogram container
 };
 
 
