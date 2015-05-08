@@ -62,7 +62,7 @@ private:
   AliTPCExBBShape(const AliTPCExBBShape&); //dummy copy contructor
 
   /// \cond CLASSIMP
-  ClassDef(AliTPCExBBShape,2);
+  ClassDef(AliTPCExBBShape,3);
   /// \endcond
 };
 
