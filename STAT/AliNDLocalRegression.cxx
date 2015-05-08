@@ -68,7 +68,7 @@ TObjArray *AliNDLocalRegression::fgVisualCorrection=0;
 
 
 AliNDLocalRegression::AliNDLocalRegression():
-  TObject(),           
+  TNamed(),           
   fHistPoints(0),            // ND histogram defining regression granularity
   fInputTree(0),             // input tree - object is not owner
   fStreamer(0),              // optional streamer 

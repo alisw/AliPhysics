@@ -13,7 +13,7 @@
 #include "TMatrixDSparse.h"
 #include "TF1.h"
 #include "TH1F.h"
-#include "TObject.h"
+#include "TNamed.h"
 #include "TClonesArray.h"
 #include "TMath.h"
 
@@ -23,7 +23,7 @@ class TTreeSRedirector;
 class THn;
 class TObjString; 
 
-class AliNDLocalRegression : public TObject {
+class AliNDLocalRegression : public TNamed {
  public:
   AliNDLocalRegression();
   ~AliNDLocalRegression();
