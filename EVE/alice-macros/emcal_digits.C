@@ -1,11 +1,22 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+//************************************************************************
+///
+/// \file emcal_digits.C
+/// \brief Visualize EMCAL digits
+///
+/// A macro to read and visualize EMCAL digits
+///
+/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
+//************************************************************************
+
+
 #ifndef __CINT__
 
 #include <TEveManager.h>
@@ -27,7 +38,6 @@
 #include <AliEMCALDigit.h>
 #include <AliLog.h>
 
-// #include <Riostream.h>
 #endif
 
 void emcal_digits()
@@ -48,26 +58,44 @@ void emcal_digits()
   frame_big->SetFrameColorRGBA(200,200,0,50);
   frame_big->SetAABoxCenterHalfSize(0, 0, 0, bbbox->GetDX(), bbbox->GetDY(), bbbox->GetDZ());
 
-  TEveFrameBox* frame_sml = 0x0;
+  TEveFrameBox* frame_sml  = 0x0;
+  TEveFrameBox* frame_dcl  = 0x0;
+  TEveFrameBox* frame_smld = 0x0;
 
-  if (nModules==12) {
+  if (nModules > 10) 
+  {
     TGeoBBox* sbbox = (TGeoBBox*) node->GetDaughter(10)->GetVolume()->GetShape();
     frame_sml = new TEveFrameBox();
     frame_sml->SetFrameColorRGBA(200,200,0,50);
     frame_sml->SetAABoxCenterHalfSize(0, 0, 0, sbbox->GetDX(), sbbox->GetDY(), sbbox->GetDZ());
   }
 
+  if (nModules > 12) 
+  {
+    TGeoBBox* dbbox = (TGeoBBox*) node->GetDaughter(12)->GetVolume()->GetShape();
+    frame_dcl = new TEveFrameBox();
+    frame_dcl->SetFrameColorRGBA(200,200,0,50);
+    frame_dcl->SetAABoxCenterHalfSize(0, 0, 0, dbbox->GetDX(), dbbox->GetDY(), dbbox->GetDZ());
+
+    TGeoBBox* sdbbox = (TGeoBBox*) node->GetDaughter(18)->GetVolume()->GetShape();
+    frame_smld = new TEveFrameBox();
+    frame_smld->SetFrameColorRGBA(200,200,0,50);
+    frame_smld->SetAABoxCenterHalfSize(0, 0, 0, sdbbox->GetDX(), sdbbox->GetDY(), sdbbox->GetDZ());
+  }
+
+  
   gStyle->SetPalette(1, 0);
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
   pal->SetLimits(0, 1024);
 
   TEveQuadSet* smodules[20];
-  memset(smodules,0,12*sizeof(TEveQuadSet*));
+  memset(smodules,0,20*sizeof(TEveQuadSet*));
+
+  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance();  
+  if (!geom) geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
 
 
-  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
-
-  for (Int_t sm=0; sm<nModules; ++sm)
+  for (Int_t sm =0; sm < nModules; ++sm)
   {
     TEveQuadSet* q = new TEveQuadSet(Form("SM %d", sm+1));
     q->SetOwnIds(kTRUE);
@@ -77,7 +105,11 @@ void emcal_digits()
 
     q->RefMainTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
 
-    q->SetFrame(sm < 10 ? frame_big : frame_sml);
+    if     (sm < 10) q->SetFrame(frame_big );
+    else if(sm < 12) q->SetFrame(frame_sml );
+    else if(sm < 18) q->SetFrame(frame_dcl );
+    else if(sm < 20) q->SetFrame(frame_smld);
+    
     q->SetPalette(pal);
 
     gEve->AddElement(q, l);
@@ -111,7 +143,8 @@ void emcal_digits()
   {
     dig = static_cast<AliEMCALDigit *>(digits->At(idig));
 
-    if(dig != 0) {
+    if(dig != 0) 
+    {
       id   = dig->GetId() ; //cell (digit) label
       amp  = dig->GetAmp(); //amplitude in cell (digit)
       time = dig->GetTime();//time of creation of digit after collision
@@ -137,15 +170,18 @@ void emcal_digits()
 //      AliDebugGeneral("emcal_digits", 5, Form("(x,y,z)=(%8.3f,%8.3f,%8.3f)", x, y, z));
 
       TEveQuadSet* q = smodules[iSupMod];
-      if (q) {
-	q->AddQuad(y, z);
-	q->QuadValue(TMath::Nint(amp));
-	q->QuadId(new AliEMCALDigit(*dig));
+      if (q) 
+      {
+        q->AddQuad(y, z);
+        q->QuadValue(TMath::Nint(amp));
+        q->QuadId(new AliEMCALDigit(*dig));
       }
-    } else {
+    } 
+//    else 
+//    {
 //      AliDebugGeneral("emcal_digits", 1, Form("Digit pointer 0x0"));
-      // cout<<"Digit pointer 0x0"<<endl;
-    }
+//      cout<<"Digit pointer 0x0"<<endl;
+//    }
   }
 
   rl->UnloadDigits("EMCAL");

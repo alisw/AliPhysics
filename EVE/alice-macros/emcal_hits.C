@@ -1,11 +1,21 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+//************************************************************************
+///
+/// \file emcal_hits.C
+/// \brief Visualize EMCAL digits
+///
+/// A macro to read and visualize EMCAL digits
+///
+/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
+//************************************************************************
+
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TTree.h>
 #include <TString.h>
@@ -33,7 +43,8 @@ emcal_hits(const char *varexp    = "fX:fY:fZ",
   TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
-  if (points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
+  if (points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) 
+  {
     Warning("emcal_hits", "No hits match '%s'",selection);
     delete points;
     return 0;
