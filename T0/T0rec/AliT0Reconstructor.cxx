@@ -433,7 +433,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
                 if (allData[2*in+26][iHit] > fTime0vertex[0]+2000 &&  
-		    allData[2*in+26][iHit] <fTime0vertex[0]+3000 ) {
+		    allData[2*in+26][iHit] <fTime0vertex[0]+4000 ) {
 		    chargeQT1[in]=allData[2*in+26][0];
 		    break;
 		}
@@ -456,7 +456,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
      	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
 		if (allData[2*in+58][iHit] > fTime0vertex[0]+2000 &&  
-		    allData[2*in+58][iHit] <fTime0vertex[0]+3000 )
+		    allData[2*in+58][iHit] <fTime0vertex[0]+4000 )
 		  {
 		    chargeQT1[in]=allData[2*in+58][0];
 		    break;
@@ -594,7 +594,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
  	for (Int_t iHit=0; iHit<1; iHit++) 
 	  {
 	    Int_t trr=trchan[itr];
-	    if( allData[trr][iHit] > lowtr[itr] && allData[trr][iHit] < hightr[itr])  tr[itr]=true;
+	    if( allData[trr][iHit] > 0)  tr[itr]=true;
 	    
 	    AliDebug(15,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
 	  }	  
