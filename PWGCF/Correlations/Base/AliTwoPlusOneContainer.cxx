@@ -56,6 +56,7 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fUseLeadingPt(1),
   fUseAllT1(1),
   fUseBackgroundSameOneSide(0),
+  fEfficiencyCorrection(0),
   fMergeCount(0)
 {
   // Constructor
@@ -110,6 +111,8 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c) 
   fAlpha(0.2),
   fUseLeadingPt(1),
   fUseAllT1(1),
+  fUseBackgroundSameOneSide(0),
+  fEfficiencyCorrection(0),
   fMergeCount(0)
 {
   //
@@ -161,11 +164,17 @@ void AliTwoPlusOneContainer::DeleteContainers()
     delete fTriggerPt;
     fTriggerPt = 0;
   }
+
+  if (fEfficiencyCorrection)
+  {
+    delete fEfficiencyCorrection;
+    fEfficiencyCorrection = 0;
+  }
 }
 
 
 //____________________________________________________________________
-void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame)
+void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency)
 {
   //Fill Correlations fills the UEHist fTwoPlusOne with the 2+1 correlation
   //the input variables centrality and zVtx are the centrality and the z vertex of the event
@@ -181,6 +190,10 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   //both positions are used so the results could only be weighted with 0.5*weight
   if(isBackgroundSame && !fUseBackgroundSameOneSide)
      fAlpha*= 0.5;
+
+  //efficiency value which is multiplied with the weight
+  //this value is always adjusted to the correct value just before the usage
+  Double_t efficiency = 1.;
 
   for (Int_t i=0; i<triggerNear->GetEntriesFast(); i++){
     AliVParticle* part = (AliVParticle*) triggerNear->UncheckedAt(i);
@@ -199,6 +212,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     Int_t ind_max_found_pt = -1;
     Int_t triggerAway_entries = triggerAway->GetEntriesFast();
     AliVParticle* found_particle[triggerAway_entries];
+    Double_t found_particle_efficiency[triggerAway_entries];
 
     Bool_t do_not_use_T1 = false;
 
@@ -231,6 +245,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     //have to fake the away side triggers for the 1+1 analysis
     if(is1plus1){
       found_particle[ind_found] = part;//in 1plus1 use first trigger particle also as pseudo second trigger particle
+      found_particle_efficiency[ind_found] = 1.0;
       ind_max_found_pt = ind_found;
       ind_found = 1;
     }else{
@@ -284,6 +299,8 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	}
 
 	found_particle[ind_found] = part2;
+	if(applyEfficiency)
+	  found_particle_efficiency[ind_found] = getEfficiency(part2_pt, part2->Eta(), centrality, zVtx);
 	if(ind_max_found_pt==-1 || part2_pt>found_particle[ind_max_found_pt]->Pt()) ind_max_found_pt = ind_found;
 	ind_found++;
       }//end loop to search for the second trigger particle
@@ -300,10 +317,16 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     //use only the highest energetic particle on the away side, if there is only 1 away side trigger this is already the case
     if(fUseLeadingPt && ind_found>1){
       found_particle[0] = found_particle[ind_max_found_pt];
+      found_particle_efficiency[0] = found_particle_efficiency[ind_max_found_pt];
       ind_found=1;
       ind_max_found_pt = 0;
     }
 
+    //define efficiency for the found trigger 1 particle
+    Double_t part_efficiency = 1.0;
+    if(applyEfficiency)
+      part_efficiency = getEfficiency(part_pt, part_eta, centrality, zVtx);
+  
     //the energy of the second trigger particle is set for the near side to the maximum energy of all trigger 2 particles on the away side
     // this leads to the fact that the number of accepted trigger combinations can be artificial smaller than the real number if there is a cut on the pT 2 energy from the top; cutting away the smallest energy of pT 2 is still save; this is the reason why it is not allowed to use a cut on the top pt of trigger particle 2
     //fill trigger particles
@@ -316,17 +339,30 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       if(is1plus1)
 	vars[3] = (fTriggerPt2Max+fTriggerPt2Min)/2;
 
-      if(is1plus1||!fUseAllT1)
-	event_hist->Fill(vars, stepUEHist, weight);//near side (one times)
+      if(is1plus1){
+	if(applyEfficiency)
+	  efficiency = part_efficiency;
+	event_hist->Fill(vars, stepUEHist, weight*efficiency);//near side (one times)
 
-      if(!is1plus1)
+      }else if(!is1plus1){
+	if(!fUseAllT1){
+	  if(applyEfficiency)
+	    efficiency = part_efficiency*found_particle_efficiency[ind_max_found_pt];
+	  event_hist->Fill(vars, stepUEHist, weight*efficiency);//near side (one times)
+	}
+
 	for(Int_t k=0; k< ind_found; k++){
 	  vars[3] = found_particle[k]->Pt();
-	  event_hist->Fill(vars, stepUEHist+1, weight);//away side
+	  if(applyEfficiency)
+	    efficiency = part_efficiency*found_particle_efficiency[k];
+
+	  event_hist->Fill(vars, stepUEHist+1, weight*efficiency);//away side
 
 	  if(fUseAllT1)
-	    event_hist->Fill(vars, stepUEHist, weight);//near side (for every away side)
+	    event_hist->Fill(vars, stepUEHist, weight*efficiency);//near side (for every away side)
+	    
 	}
+      }
 
       //fill fTriggerPt only once, choosed kSameNS
       if(step==AliTwoPlusOneContainer::kSameNS)
@@ -375,21 +411,38 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       if(is1plus1)
 	vars[6] = (fTriggerPt2Max+fTriggerPt2Min)/2;
 
-      if(is1plus1||!fUseAllT1){
-	//do not add the trigger 2 particle with the highest pT
-	if(found_particle[ind_max_found_pt]==part3)
-	  continue;
+      Double_t part3_efficiency = 1.;
+      if(applyEfficiency)
+	part3_efficiency = getEfficiency(part3_pt, part3->Eta(), centrality, zVtx);
 
-	track_hist->Fill(vars, stepUEHist, weight);
-      }else
-	for(int l=0; l<ind_found; l++){
-	  //do not add the trigger 2 particle
-	  if(found_particle[l]==part3)
+      if(is1plus1){
+	if(applyEfficiency)
+	  efficiency = part_efficiency*part3_efficiency;
+
+	track_hist->Fill(vars, stepUEHist, weight*efficiency);
+      }else if(!is1plus1){
+	if(!fUseAllT1){
+	  //do not add the trigger 2 particle with the highest pT
+	  if(found_particle[ind_max_found_pt]==part3)
 	    continue;
+
+	  if(applyEfficiency)
+	    efficiency = part_efficiency*found_particle_efficiency[ind_max_found_pt]*part3_efficiency;
 	  
-	  vars[6] = found_particle[l]->Pt();
-	  track_hist->Fill(vars, stepUEHist, weight);//fill NS for all AS triggers
-	}
+	  track_hist->Fill(vars, stepUEHist, weight*efficiency);
+	}else
+	  for(int l=0; l<ind_found; l++){
+	    //do not add the trigger 2 particle
+	    if(found_particle[l]==part3)
+	      continue;
+	    
+	    vars[6] = found_particle[l]->Pt();
+	    if(applyEfficiency)
+	      efficiency = part_efficiency*found_particle_efficiency[l]*part3_efficiency;
+
+	    track_hist->Fill(vars, stepUEHist, weight*efficiency);//fill NS for all AS triggers
+	  }
+      }
     }
 
     //search only for the distribution of the 2nd trigger particle
@@ -407,6 +460,10 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       //do not add the trigger 1 particle
       if(part==part3)
 	continue;
+
+      Double_t part3_efficiency = 1.;
+      if(applyEfficiency)
+	part3_efficiency = getEfficiency(part3_pt, part3->Eta(), centrality, zVtx);
 
       for(int l=0; l<ind_found; l++){
 	//do not add the trigger 2 particle
@@ -427,8 +484,11 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	vars[4] = dphi_away;
 	vars[5] = zVtx;
 	vars[6] = found_particle[l]->Pt();
-	
-	track_hist->Fill(vars, stepUEHist+1, weight);//step +1 is the AS to the NS plot of step
+
+	if(applyEfficiency)
+	  efficiency = part_efficiency*found_particle_efficiency[l]*part3_efficiency;
+
+	track_hist->Fill(vars, stepUEHist+1, weight*efficiency);//step +1 is the AS to the NS plot of step
       }
     }
   }//end loop to search for the first trigger particle
@@ -469,6 +529,9 @@ void AliTwoPlusOneContainer::Copy(TObject& c) const
 
   if (fTriggerPt)
     target.fTriggerPt = dynamic_cast<TH2F*> (fTriggerPt->Clone());
+  
+  if (fEfficiencyCorrection)
+    target.fEfficiencyCorrection = dynamic_cast<THnF*> (fEfficiencyCorrection->Clone());
   
 }
 
@@ -521,4 +584,19 @@ Long64_t AliTwoPlusOneContainer::Merge(TCollection* list)
   //  delete lists;
   return count+1;
 
+}
+
+//____________________________________________________________________
+Double_t AliTwoPlusOneContainer::getEfficiency(Double_t pt, Double_t eta, Double_t centrality, Double_t zVtx){
+  //returns the efficency correction for this particle
+  
+    Int_t effVars[4];
+    effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(eta);
+    effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(pt); //pt
+    effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(centrality); //centrality
+    effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(zVtx); //zVtx
+
+    return fEfficiencyCorrection->GetBinContent(effVars);
+  
+  return 1.;
 }
