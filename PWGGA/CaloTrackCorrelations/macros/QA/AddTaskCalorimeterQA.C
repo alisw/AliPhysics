@@ -162,14 +162,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   else if ( year < 2014 )
   {            
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 180*TMath::DegToRad(), 120) ;
-    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-600,90,200);
+    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-460,90,200);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(100,450,100);
   }
   else // Run2
   {
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 327*TMath::DegToRad(), 250) ; 
-    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-1000,1000,500); // revise
-    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(0,1000,200);     // revise     
+    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-460,460,230);
+    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(-450,450,225);          
   }
   
   emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 0.65, 325) ;
@@ -181,8 +181,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->GetHistogramRanges()->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->GetHistogramRanges()->SetHistoVertexDistRangeAndNBins(0.,500.,500);
   emcalQA->GetHistogramRanges()->SetHistoNClusterCellRangeAndNBins(0,50,50);
-  emcalQA->GetHistogramRanges()->SetHistoZRangeAndNBins(-400,400,200);
-  emcalQA->GetHistogramRanges()->SetHistoRRangeAndNBins(400,450,25);
+  emcalQA->GetHistogramRanges()->SetHistoZRangeAndNBins(-350,350,175);
+  emcalQA->GetHistogramRanges()->SetHistoRRangeAndNBins(430,460,30);
   emcalQA->GetHistogramRanges()->SetHistoV0SignalRangeAndNBins(0,5000,100);
   emcalQA->GetHistogramRanges()->SetHistoV0MultiplicityRangeAndNBins(0,5000,100);
   emcalQA->GetHistogramRanges()->SetHistoTrackMultiplicityRangeAndNBins(0,2500,100);
