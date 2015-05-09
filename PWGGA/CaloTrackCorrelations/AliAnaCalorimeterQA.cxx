@@ -173,12 +173,12 @@ fhEMVxyz(0),                           fhEMR(0),
 fhHaVxyz(0),                           fhHaR(0),
 fh1EOverP(0),                          fh2dR(0),                   
 fh2EledEdx(0),                         fh2MatchdEdx(0),
+fh1EOverPR02(0),                       fh1EleEOverP(0),
 fhMCEle1EOverP(0),                     fhMCEle1dR(0),                          fhMCEle2MatchdEdx(0),
 fhMCChHad1EOverP(0),                   fhMCChHad1dR(0),                        fhMCChHad2MatchdEdx(0),
-fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1EOverPR02(0),       
+fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0),        
 fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0),
-fh1EleEOverP(0),                       fhMCEle1EleEOverP(0),
-fhMCChHad1EleEOverP(0),                fhMCNeutral1EleEOverP(0),
+fhMCEle1EleEOverP(0),                  fhMCChHad1EleEOverP(0),                 fhMCNeutral1EleEOverP(0),
 fhTrackMatchedDEtaNeg(0),              fhTrackMatchedDPhiNeg(0),               fhTrackMatchedDEtaDPhiNeg(0),
 fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               fhTrackMatchedDEtaDPhiPos(0),
 fhTrackMatchedDEtaNegMod(0),           fhTrackMatchedDPhiNegMod(0),             
@@ -1511,15 +1511,35 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, B
   
   Double_t eOverP = e/tmom;
   fh1EOverP->Fill(tpt, eOverP, GetEventWeight());
+  if(e > 0.5 && tpt > 0.5)  fh1EOverPMod->Fill(eOverP, nModule, GetEventWeight());
     
   if(dR < 0.02)
   {
     fh1EOverPR02->Fill(tpt, eOverP, GetEventWeight());
-    if(dedx > 60 && dedx < 100) fh1EleEOverP->Fill(tpt, eOverP, GetEventWeight());
+    if(e > 0.5 && tpt > 0.5) fh1EOverPR02Mod->Fill(eOverP, nModule, GetEventWeight());
+    
+    if(dedx > 60 && dedx < 100) 
+    {
+      fh1EleEOverP->Fill(tpt, eOverP, GetEventWeight());
+      if(e > 0.5 && tpt > 0.5)  fh1EleEOverPMod->Fill(eOverP, nModule, GetEventWeight());
+    }
   }
   
   fh2dR->Fill(e, dR, GetEventWeight());
   fh2MatchdEdx->Fill(tmom, dedx, GetEventWeight());
+  
+  if(e > 0.5 && tmom > 0.5) 
+  {
+    fh2dRMod->Fill(dR, nModule, GetEventWeight());
+    fh2MatchdEdxMod->Fill(dedx, nModule, GetEventWeight());
+  }
+
+  if(dR < 0.02 && eOverP > 0.6 && eOverP < 1.2
+     && clus->GetNCells() > 1 && nITS > 3 && nTPC > 20) 
+  {
+    fh2EledEdx->Fill(tmom, dedx, GetEventWeight());
+    if(e > 0.5 && tmom > 0.5) fh2EledEdxMod->Fill(dedx, nModule, GetEventWeight());
+  }
   
   if(IsDataMC() && okPrimary)
   { 
@@ -1562,12 +1582,6 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, B
       }
     }
   } // DataMC
-  
-  if(dR < 0.02 && eOverP > 0.6 && eOverP < 1.2
-     && clus->GetNCells() > 1 && nITS > 3 && nTPC > 20) 
-  {
-    fh2EledEdx->Fill(tmom, dedx, GetEventWeight());
-  }
 }
 
 //___________________________________
@@ -2435,7 +2449,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTrackMatchedDEtaPosMod->SetYTitle("Module");
     
     fhTrackMatchedDPhiPosMod  = new TH2F("hTrackMatchedDPhiPosPerModule","d#phi of cluster-positive track vs module, E > 0.5 GeV",
-                                         nresetabins,resetamin,resetamax,fNModules,0,fNModules);
+                                         nresetabins,resetamin,resetamax,nptbins,ptmin,ptmax);
     fhTrackMatchedDPhiPosMod->SetXTitle("d#phi (rad)");
     fhTrackMatchedDPhiPosMod->SetYTitle("Module");
   
@@ -2491,13 +2505,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fh1EOverP);
     
     fh2dR = new TH2F("h2dR","TRACK matches #Delta #it{R}",nptbins,ptmin,ptmax,ndRbins,dRmin,dRmax);
-    fh2dR->SetXTitle("#Delta #it{R} (rad)");
+    fh2dR->SetYTitle("#Delta #it{R} (rad)");
     fh2dR->SetXTitle("#it{E} cluster (GeV)");
     outputContainer->Add(fh2dR) ;
     
     fh2MatchdEdx = new TH2F("h2MatchdEdx","#it{dE/dx} vs. #it{p} for all matches",nptbins,ptmin,ptmax,ndedxbins,dedxmin,dedxmax);
     fh2MatchdEdx->SetXTitle("p (GeV/#it{c})");
-    fh2MatchdEdx->SetYTitle("#it{dE/dx}>");
+    fh2MatchdEdx->SetYTitle("<#it{dE/dx}>");
     outputContainer->Add(fh2MatchdEdx);
     
     fh2EledEdx = new TH2F("h2EledEdx","#it{dE/dx} vs. #it{p} for electrons",nptbins,ptmin,ptmax,ndedxbins,dedxmin,dedxmax);
@@ -2514,6 +2528,39 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fh1EleEOverP->SetYTitle("#it{E}/#it{p}");
     fh1EleEOverP->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fh1EleEOverP);
+    
+    
+    // Projections per SM
+    
+    fh1EOverPMod = new TH2F("h1EOverP_PerModule","TRACK matches #it{E}/#it{p}, #it{E}_{cl}&#it{p}_{tr}>0.5 Gev/#it{c}",nPoverEbins,eOverPmin,eOverPmax,fNModules,0,fNModules);
+    fh1EOverPMod->SetXTitle("#it{E}/#it{p}");
+    fh1EOverPMod->SetYTitle("Module");
+    outputContainer->Add(fh1EOverPMod);
+    
+    fh2dRMod = new TH2F("h2dR_PerModule","TRACK matches #Delta #it{R}, #it{E}_{cl}&#it{p}_{tr}>0.5 Gev/#it{c}",ndRbins,dRmin,dRmax,fNModules,0,fNModules);
+    fh2dRMod->SetXTitle("#Delta #it{R} (rad)");
+    fh2dRMod->SetYTitle("Module");
+    outputContainer->Add(fh2dRMod) ;
+    
+    fh2MatchdEdxMod = new TH2F("h2MatchdEdx_PerModule","#it{dE/dx} vs. #it{p} for all matches, #it{E}_{cl}&#it{p}_{tr}>0.5 Gev/#it{c}",ndedxbins,dedxmin,dedxmax,fNModules,0,fNModules);
+    fh2MatchdEdxMod->SetYTitle("Module");
+    fh2MatchdEdxMod->SetXTitle("<#it{dE/dx}>");
+    outputContainer->Add(fh2MatchdEdxMod);
+    
+    fh2EledEdxMod = new TH2F("h2EledEdx_PerModule","#it{dE/dx} vs. #it{p} for electrons, #it{E}_{cl}&#it{p}_{tr}>0.5 Gev/#it{c}",ndedxbins,dedxmin,dedxmax,fNModules,0,fNModules);
+    fh2EledEdxMod->SetYTitle("Module");
+    fh2EledEdxMod->SetXTitle("<#it{dE/dx}>");
+    outputContainer->Add(fh2EledEdxMod) ;
+    
+    fh1EOverPR02Mod = new TH2F("h1EOverPR02_PerModule","TRACK matches #it{E}/#it{p}, all, #it{E}_{cl}&#it{p}_{tr}>0.5 Gev/#it{c}",nPoverEbins,eOverPmin,eOverPmax,fNModules,0,fNModules);
+    fh1EOverPR02Mod->SetXTitle("#it{E}/#it{p}");
+    fh1EOverPR02Mod->SetYTitle("Module");
+    outputContainer->Add(fh1EOverPR02Mod);	
+    
+    fh1EleEOverPMod = new TH2F("h1EleEOverP_PerModule","Electron candidates #it{E}/#it{p} (60<#it{dE/dx}<100), #it{E}_{cl}&#it{p}_{tr}>0.5 Gev/#it{c}",nPoverEbins,eOverPmin,eOverPmax,fNModules,0,fNModules);
+    fh1EleEOverPMod->SetXTitle("#it{E}/#it{p}");
+    fh1EleEOverPMod->SetYTitle("Module");
+    outputContainer->Add(fh1EleEOverPMod);
   }
   
   if(fFillAllPi0Histo)

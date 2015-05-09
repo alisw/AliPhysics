@@ -453,7 +453,16 @@ public:
   TH2F *   fh2dR;                               //!<! distance between projected track and cluster (eta-phi units)
   TH2F *   fh2EledEdx;                          //!<! dE/dx vs. momentum for electron candidates
   TH2F *   fh2MatchdEdx;                        //!<! dE/dx vs. momentum for all matches
-	
+  TH2F *   fh1EOverPR02;                        //!<! p/E for track-cluster matches, dR < 0.2
+  TH2F *   fh1EleEOverP;                        //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100
+
+  TH2F *   fh1EOverPMod;                        //!<! p/E for track-cluster matches, per SM
+  TH2F *   fh2dRMod;                            //!<! distance between projected track and cluster (eta-phi units), per SM
+  TH2F *   fh2EledEdxMod;                       //!<! dE/dx for electron candidates, per SM
+  TH2F *   fh2MatchdEdxMod;                     //!<! dE/dx for all matches, per SM
+  TH2F *   fh1EOverPR02Mod;                     //!<! p/E for track-cluster matches, dR < 0.2, per SM
+  TH2F *   fh1EleEOverPMod;                     //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, per SM
+
   TH2F *   fhMCEle1EOverP;                      //!<! p/E for track-cluster matches, MC electrons
   TH1F *   fhMCEle1dR;                          //!<! distance between projected track and cluster, MC electrons
   TH2F *   fhMCEle2MatchdEdx;                   //!<! dE/dx vs. momentum for all matches, MC electrons
@@ -466,12 +475,10 @@ public:
   TH1F *   fhMCNeutral1dR;                      //!<! Distance between projected track and cluster, MC neutral
   TH2F *   fhMCNeutral2MatchdEdx;               //!<! dE/dx vs. momentum for all matches, MC neutral
 	
-  TH2F *   fh1EOverPR02;                        //!<! p/E for track-cluster matches, dR < 0.2
   TH2F *   fhMCEle1EOverPR02;                   //!<! p/E for track-cluster matches, dR < 0.2, MC electrons
   TH2F *   fhMCChHad1EOverPR02;                 //!<! p/E for track-cluster matches, dR < 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1EOverPR02;               //!<! p/E for track-cluster matches, dR < 0.2, MC neutral
 
-  TH2F *   fh1EleEOverP;                        //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100
   TH2F *   fhMCEle1EleEOverP;                   //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC electrons
   TH2F *   fhMCChHad1EleEOverP;                 //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC charged hadrons
   TH2F *   fhMCNeutral1EleEOverP;               //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC neutral
