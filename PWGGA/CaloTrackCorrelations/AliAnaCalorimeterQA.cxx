@@ -49,7 +49,7 @@ AliAnaCaloTrackCorrBaseClass(),
 
 // Switches
 fFillAllCellTimeHisto(kTRUE),
-fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kTRUE),
+fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kFALSE),
 fFillAllTH3(kFALSE),
 fFillAllTMHisto(kTRUE),                fFillAllPi0Histo(kTRUE),                 
 fCorrelate(kTRUE),                     fStudyBadClusters(kFALSE),               
@@ -561,6 +561,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           Float_t celleta = 0.;
           Float_t cellphi = 0.;
           GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
+
+          if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
           
           fhEtaPhiAmp->Fill(celleta, cellphi, amp);
             
@@ -2612,46 +2614,45 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhXYZ);  
     }
     
-    fhXNCells  = new TH2F ("hXNCells","Cluster X position vs N Cells per Cluster",xbins,xmin,xmax,nceclbins,nceclmin,nceclmax); 
-    fhXNCells->SetXTitle("#it{x} (cm)");
-    fhXNCells->SetYTitle("N cells per cluster");
-    outputContainer->Add(fhXNCells);
-    
-    fhZNCells  = new TH2F ("hZNCells","Cluster Z position vs N Cells per Cluster",zbins,zmin,zmax,nceclbins,nceclmin,nceclmax); 
-    fhZNCells->SetXTitle("#it{z} (cm)");
-    fhZNCells->SetYTitle("N cells per cluster");
-    outputContainer->Add(fhZNCells);
-    
     fhXE  = new TH2F ("hXE","Cluster X position vs cluster energy",xbins,xmin,xmax,nptbins,ptmin,ptmax); 
     fhXE->SetXTitle("#it{x} (cm)");
     fhXE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhXE);
+    
+    fhYE  = new TH2F ("hYE","Cluster Y position vs cluster energy",ybins,ymin,ymax,nptbins,ptmin,ptmax); 
+    fhYE->SetXTitle("#it{y} (cm)");
+    fhYE->SetYTitle("#it{E} (GeV)");
+    outputContainer->Add(fhYE);
     
     fhZE  = new TH2F ("hZE","Cluster Z position vs cluster energy",zbins,zmin,zmax,nptbins,ptmin,ptmax); 
     fhZE->SetXTitle("#it{z} (cm)");
     fhZE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhZE);    
     
-    fhRNCells  = new TH2F ("hRNCells","Cluster R position vs N Cells per Cluster",rbins,rmin,rmax,nceclbins,nceclmin,nceclmax); 
-    fhRNCells->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
-    fhRNCells->SetYTitle("N cells per cluster");
-    outputContainer->Add(fhRNCells);
-    
-    
-    fhYNCells  = new TH2F ("hYNCells","Cluster Y position vs N Cells per Cluster",ybins,ymin,ymax,nceclbins,nceclmin,nceclmax); 
-    fhYNCells->SetXTitle("#it{y} (cm)");
-    fhYNCells->SetYTitle("N cells per cluster");
-    outputContainer->Add(fhYNCells);
-    
     fhRE  = new TH2F ("hRE","Cluster R position vs cluster energy",rbins,rmin,rmax,nptbins,ptmin,ptmax); 
     fhRE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
     fhRE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhRE);
     
-    fhYE  = new TH2F ("hYE","Cluster Y position vs cluster energy",ybins,ymin,ymax,nptbins,ptmin,ptmax); 
-    fhYE->SetXTitle("#it{y} (cm)");
-    fhYE->SetYTitle("#it{E} (GeV)");
-    outputContainer->Add(fhYE);
+    fhXNCells  = new TH2F ("hXNCells","Cluster X position vs N Cells per Cluster",xbins,xmin,xmax,nceclbins,nceclmin,nceclmax); 
+    fhXNCells->SetXTitle("#it{x} (cm)");
+    fhXNCells->SetYTitle("N cells per cluster");
+    outputContainer->Add(fhXNCells);
+    
+    fhYNCells  = new TH2F ("hYNCells","Cluster Y position vs N Cells per Cluster",ybins,ymin,ymax,nceclbins,nceclmin,nceclmax); 
+    fhYNCells->SetXTitle("#it{y} (cm)");
+    fhYNCells->SetYTitle("N cells per cluster");
+    outputContainer->Add(fhYNCells);
+
+    fhZNCells  = new TH2F ("hZNCells","Cluster Z position vs N Cells per Cluster",zbins,zmin,zmax,nceclbins,nceclmin,nceclmax); 
+    fhZNCells->SetXTitle("#it{z} (cm)");
+    fhZNCells->SetYTitle("N cells per cluster");
+    outputContainer->Add(fhZNCells);
+        
+    fhRNCells  = new TH2F ("hRNCells","Cluster R position vs N Cells per Cluster",rbins,rmin,rmax,nceclbins,nceclmin,nceclmax); 
+    fhRNCells->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
+    fhRNCells->SetYTitle("N cells per cluster");
+    outputContainer->Add(fhRNCells);
   }
   
   if(fFillAllPosHisto)
@@ -2688,42 +2689,42 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     Float_t dr = TMath::Abs(rmin)+TMath::Abs(rmax);
     
     fhDeltaCellClusterRNCells  = new TH2F ("hDeltaCellClusterRNCells","Cluster-Cell R position vs N Cells per Cluster",rbins*2,-dr,dr,nceclbins,nceclmin,nceclmax); 
-    fhDeltaCellClusterRNCells->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
+    fhDeltaCellClusterRNCells->SetXTitle("#it{r} = #sqrt{x^{2}+y^{2}}, #it{r}_{clus}-#it{r}_{cell}  (cm)");
     fhDeltaCellClusterRNCells->SetYTitle("#it{n}_{cells per cluster}");
     outputContainer->Add(fhDeltaCellClusterRNCells);
     
     fhDeltaCellClusterXNCells  = new TH2F ("hDeltaCellClusterXNCells","Cluster-Cell X position vs N Cells per Cluster",xbins*2,-dx,dx,nceclbins,nceclmin,nceclmax); 
-    fhDeltaCellClusterXNCells->SetXTitle("#it{x} (cm)");
+    fhDeltaCellClusterXNCells->SetXTitle("#it{x}_{clus}-#it{x}_{cell} (cm)");
     fhDeltaCellClusterXNCells->SetYTitle("#it{n}_{cells per cluster}");
     outputContainer->Add(fhDeltaCellClusterXNCells);
     
     fhDeltaCellClusterYNCells  = new TH2F ("hDeltaCellClusterYNCells","Cluster-Cell Y position vs N Cells per Cluster",ybins*2,-dy,dy,nceclbins,nceclmin,nceclmax); 
-    fhDeltaCellClusterYNCells->SetXTitle("#it{y} (cm)");
+    fhDeltaCellClusterYNCells->SetXTitle("#it{y}_{clus}-#it{y}_{cell} (cm)");
     fhDeltaCellClusterYNCells->SetYTitle("N cells per cluster");
     outputContainer->Add(fhDeltaCellClusterYNCells);
     
     fhDeltaCellClusterZNCells  = new TH2F ("hDeltaCellClusterZNCells","Cluster-Cell Z position vs N Cells per Cluster",zbins*2,-dz,dz,nceclbins,nceclmin,nceclmax); 
-    fhDeltaCellClusterZNCells->SetXTitle("#it{z} (cm)");
+    fhDeltaCellClusterZNCells->SetXTitle("#it{z}_{clus}-#it{z}_{cell} (cm)");
     fhDeltaCellClusterZNCells->SetYTitle("#it{n}_{cells per cluster}");
     outputContainer->Add(fhDeltaCellClusterZNCells);
     
     fhDeltaCellClusterRE  = new TH2F ("hDeltaCellClusterRE","Cluster-Cell R position vs cluster energy",rbins*2,-dr,dr,nptbins,ptmin,ptmax); 
-    fhDeltaCellClusterRE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
+    fhDeltaCellClusterRE->SetXTitle("#it{r} = #sqrt{x^{2}+y^{2}}, #it{r}_{clus}-#it{r}_{cell} (cm)");
     fhDeltaCellClusterRE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhDeltaCellClusterRE);		
     
     fhDeltaCellClusterXE  = new TH2F ("hDeltaCellClusterXE","Cluster-Cell X position vs cluster energy",xbins*2,-dx,dx,nptbins,ptmin,ptmax); 
-    fhDeltaCellClusterXE->SetXTitle("#it{x} (cm)");
+    fhDeltaCellClusterXE->SetXTitle("#it{x}_{clus}-#it{x}_{cell} (cm)");
     fhDeltaCellClusterXE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhDeltaCellClusterXE);
     
     fhDeltaCellClusterYE  = new TH2F ("hDeltaCellClusterYE","Cluster-Cell Y position vs cluster energy",ybins*2,-dy,dy,nptbins,ptmin,ptmax); 
-    fhDeltaCellClusterYE->SetXTitle("#it{y} (cm)");
+    fhDeltaCellClusterYE->SetXTitle("#it{y}_{clus}-#it{y}_{cell} (cm)");
     fhDeltaCellClusterYE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhDeltaCellClusterYE);
     
     fhDeltaCellClusterZE  = new TH2F ("hDeltaCellClusterZE","Cluster-Cell Z position vs cluster energy",zbins*2,-dz,dz,nptbins,ptmin,ptmax); 
-    fhDeltaCellClusterZE->SetXTitle("#it{z} (cm)");
+    fhDeltaCellClusterZE->SetXTitle("#it{z}_{clus}-#it{z}_{cell} (cm)");
     fhDeltaCellClusterZE->SetYTitle("#it{E} (GeV)");
     outputContainer->Add(fhDeltaCellClusterZE);
     
