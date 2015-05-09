@@ -1206,7 +1206,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	pad = pPed->cd(1);
       	histo->DrawCopy("colz");
 	
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt0);
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt1);
       	histo->SetStats(kFALSE); 
 	pad = pPed->cd(2);
 	histo->DrawCopy("colz");
