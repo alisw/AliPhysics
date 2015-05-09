@@ -79,9 +79,9 @@ fhPhiCharged(0),                       fhEtaCharged(0),
 fhEtaPhiCharged(0),                    fhEtaPhiECharged(0), 
 
 // Invariant mass
-fhIM(0 ),                              fhAsym(0), 
+fhIM(0 ),                              fhIMDCAL(0),
+fhIMDCALPHOS(0),                       fhAsym(0), 
 fhOpAngle(0),                          fhIMvsOpAngle(0),
-
 fhNCellsPerCluster(0),                 fhNCellsPerClusterNoCut(0),             fhNClusters(0),
 
 // Timing
@@ -2518,22 +2518,37 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   if(fFillAllPi0Histo)
   {
-    fhIM  = new TH2F ("hIM","Cluster pairs Invariant mass vs reconstructed pair energy, ncell > 1",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+    fhIM  = new TH2F ("hIM","Cluster pairs (EMCAL or PHOS) Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
     fhIM->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
     fhIM->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
     outputContainer->Add(fhIM);
+
+    if(fNModules > 12)
+    {
+      fhIMDCAL  = new TH2F ("hIMDCAL","Cluster pairs in DCAL Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+      fhIMDCAL->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
+      fhIMDCAL->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhIMDCAL);
+    
+      fhIMDCALPHOS  = new TH2F ("hIMDCALPHOS","Cluster pairs in DCAL-PHOS Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+      fhIMDCALPHOS->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
+      fhIMDCALPHOS->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhIMDCALPHOS);
+    }
     
     fhAsym  = new TH2F ("hAssym","Cluster pairs Asymmetry vs reconstructed pair energy",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax); 
     fhAsym->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
     fhAsym->SetYTitle("#it{Asymmetry}");
     outputContainer->Add(fhAsym);	
     
-    fhOpAngle  = new TH2F ("hOpeningAngle","Cluster pairs opening angle vs reconstructed pair energy, ncell > 1",nptbins,ptmin,ptmax,314,0,TMath::Pi()); 
+    fhOpAngle  = new TH2F ("hOpeningAngle","Cluster pairs opening angle vs reconstructed pair #it{p}_{T}, ncell > 1",
+                           nptbins,ptmin,ptmax, 180,0,TMath::Pi()); 
     fhOpAngle->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
     fhOpAngle->SetYTitle("Opening angle (degrees)");
     outputContainer->Add(fhOpAngle);
-
-    fhIMvsOpAngle  = new TH2F ("hIMvsOpAngle","Cluster pairs Invariant mass vs reconstructed pair energy, ncell > 1",314,0,TMath::Pi(),nmassbins,massmin,massmax); 
+    
+    fhIMvsOpAngle  = new TH2F ("hIMvsOpAngle","Cluster pairs Invariant mass vs reconstructed pair opening angle, ncell > 1",
+                               fMaxInvMassOpenAngle*TMath::RadToDeg(),0,fMaxInvMassOpenAngle,nmassbins,massmin,massmax); 
     fhIMvsOpAngle->SetXTitle("Opening angle (degrees)");
     fhIMvsOpAngle->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
     outputContainer->Add(fhIMvsOpAngle);    
@@ -3405,13 +3420,13 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
   
   for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) 
   {
-    AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
+    AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(jclus);
 
     Float_t maxCellFraction = 0.;
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
     
-    // Try to rediuce background with a mild shower shape cut and no more than 1 maxima 
-    // in cluster and remove low energy clusters
+    // Try to reduce background with a mild shower shape cut and no more 
+    // than 1 local maximum in cluster and remove low energy clusters
     if(   clus2->GetNCells() <= 1 
        || !IsGoodCluster(absIdMax,cells) 
        || GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 
@@ -3419,32 +3434,39 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
        || clus2->E() < fMinInvMassECut 
        ) continue;
     
+    
     // Get cluster kinematics
     clus2->GetMomentum(fClusterMomentum2,v);
-    
-    // Opening angle cut, avoid combination of DCal and EMCal clusters
-    Double_t angle   = fClusterMomentum.Angle(fClusterMomentum2.Vect());
-    if(angle > fMaxInvMassOpenAngle) continue;
     
     // Check only certain regions
     Bool_t in2 = kTRUE;
     if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum2.Eta(),fClusterMomentum2.Phi(),GetCalorimeter()) ;
     if(!in2) continue;	
+
+    Float_t  pairPt = (fClusterMomentum+fClusterMomentum2).Pt();
     
+    // Opening angle cut, avoid combination of DCal and EMCal clusters
+    Double_t angle  = fClusterMomentum.Angle(fClusterMomentum2.Vect());
+     
+    if( angle > fMaxInvMassOpenAngle ) continue;
+        
     // Get module of cluster
     nModule2 = GetModuleNumber(clus2);
     
     // Fill histograms
-    
     Float_t mass   = (fClusterMomentum+fClusterMomentum2).M ();
-    Float_t pairPt = (fClusterMomentum+fClusterMomentum2).Pt();
     Float_t asym   = TMath::Abs( fClusterMomentum.E() - fClusterMomentum2.E() ) /
                                ( fClusterMomentum.E() + fClusterMomentum2.E() );
                                 
     // All modules
-    fhIM         ->Fill(pairPt, mass , GetEventWeight());
-    fhOpAngle    ->Fill(pairPt, angle, GetEventWeight());
-    fhIMvsOpAngle->Fill(mass  , angle, GetEventWeight());
+    // Combine EMCal or PHOS clusters
+    if     (nModule < 12 && nModule2 < 12 ) 
+      fhIM    ->Fill(pairPt, mass, GetEventWeight());
+    // Combine DCal clusters
+    else if(nModule > 11 && nModule2 > 11  && fNModules > 12) 
+      fhIMDCAL->Fill(pairPt, mass, GetEventWeight());
+      
+    fhIMvsOpAngle->Fill(mass, angle, GetEventWeight());
 
     // Single module
     if(nModule == nModule2 && nModule >= 0 && nModule < fNModules)
@@ -3453,6 +3475,34 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
     // Asymetry histograms
     fhAsym->Fill(pairPt, asym, GetEventWeight());
   } // 2nd cluster loop
+  
+  //
+  // Combine PHOS and DCal
+  //
+  if(fNModules > 12 && nModule > 11)
+  {
+    for(Int_t jclus = 0 ; jclus < GetPHOSClusters()->GetEntriesFast() ; jclus++) 
+    {
+      AliVCluster* clus2 =  (AliVCluster*) GetPHOSClusters()->At(jclus);
+            
+      // Try to reduce background, remove low energy clusters
+      if(   clus2->GetNCells() <= 3 
+         || clus2->E() < fMinInvMassECut 
+         ) continue;
+      
+      // Get cluster kinematics
+      clus2->GetMomentum(fClusterMomentum2,v);
+      
+      // Fill histograms
+      
+      Float_t mass   = (fClusterMomentum+fClusterMomentum2).M ();
+      Float_t pairPt = (fClusterMomentum+fClusterMomentum2).Pt();
+      //Float_t asym   = TMath::Abs( fClusterMomentum.E() - fClusterMomentum2.E() ) /
+      //( fClusterMomentum.E() + fClusterMomentum2.E() );
+     
+      fhIMDCALPHOS->Fill(pairPt, mass, GetEventWeight());
+    } // PHOS cluster loop
+  } // DCal-PHOS combination
 }
 
 //______________________________
