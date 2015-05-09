@@ -61,7 +61,8 @@ fNModules(12),                         fNRCU(2),
 fNMaxCols(48),                         fNMaxRows(24),  
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fCellAmpMin(0),                        fEMCALCellAmpMin(0),
-fPHOSCellAmpMin(0),                    fMinInvMassECut(0),
+fPHOSCellAmpMin(0),                    
+fMinInvMassECut(0),                    fMaxInvMassOpenAngle(0),
 
 // Exotic
 fExoNECrossCuts(0),                    fExoECrossCuts(),
@@ -79,6 +80,7 @@ fhEtaPhiCharged(0),                    fhEtaPhiECharged(0),
 
 // Invariant mass
 fhIM(0 ),                              fhAsym(0), 
+fhOpAngle(0),                          fhIMvsOpAngle(0),
 
 fhNCellsPerCluster(0),                 fhNCellsPerClusterNoCut(0),             fhNClusters(0),
 
@@ -1107,9 +1109,13 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // Invariant mass
     // Try to reduce background with a mild shower shape cut and no more than 1 maxima 
     // in cluster and remove low energy clusters
-    if(fFillAllPi0Histo && nCaloClusters > 1 && nCaloCellsPerCluster > 1 && 
-       GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells) == 1 && 
-       clus->GetM02() < 0.5 && clus->E() > fMinInvMassECut)
+    if (   fFillAllPi0Histo 
+        && nCaloClusters > 1 
+        && nCaloCellsPerCluster > 1 
+        && GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells) == 1 
+        && clus->GetM02() < 0.5 
+        && clus->E() > fMinInvMassECut 
+        )
       InvariantMassHistograms(iclus, nModule, caloClusters,cells);
     
   } // Cluster loop
@@ -2521,6 +2527,16 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhAsym->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
     fhAsym->SetYTitle("#it{Asymmetry}");
     outputContainer->Add(fhAsym);	
+    
+    fhOpAngle  = new TH2F ("hOpeningAngle","Cluster pairs opening angle vs reconstructed pair energy, ncell > 1",nptbins,ptmin,ptmax,314,0,TMath::Pi()); 
+    fhOpAngle->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
+    fhOpAngle->SetYTitle("Opening angle (degrees)");
+    outputContainer->Add(fhOpAngle);
+
+    fhIMvsOpAngle  = new TH2F ("hIMvsOpAngle","Cluster pairs Invariant mass vs reconstructed pair energy, ncell > 1",314,0,TMath::Pi(),nmassbins,massmin,massmax); 
+    fhIMvsOpAngle->SetXTitle("Opening angle (degrees)");
+    fhIMvsOpAngle->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhIMvsOpAngle);    
   }
   
   if(fFillAllPosHisto2)
@@ -3396,12 +3412,19 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
     
     // Try to rediuce background with a mild shower shape cut and no more than 1 maxima 
     // in cluster and remove low energy clusters
-    if( clus2->GetNCells() <= 1 || !IsGoodCluster(absIdMax,cells) || 
-       GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 || 
-       clus2->GetM02() > 0.5 || clus2->E() < fMinInvMassECut ) continue;
+    if(   clus2->GetNCells() <= 1 
+       || !IsGoodCluster(absIdMax,cells) 
+       || GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 
+       || clus2->GetM02() > 0.5 
+       || clus2->E() < fMinInvMassECut 
+       ) continue;
     
     // Get cluster kinematics
     clus2->GetMomentum(fClusterMomentum2,v);
+    
+    // Opening angle cut, avoid combination of DCal and EMCal clusters
+    Double_t angle   = fClusterMomentum.Angle(fClusterMomentum2.Vect());
+    if(angle > fMaxInvMassOpenAngle) continue;
     
     // Check only certain regions
     Bool_t in2 = kTRUE;
@@ -3419,7 +3442,9 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
                                ( fClusterMomentum.E() + fClusterMomentum2.E() );
                                 
     // All modules
-    fhIM->Fill(pairPt, mass, GetEventWeight());
+    fhIM         ->Fill(pairPt, mass , GetEventWeight());
+    fhOpAngle    ->Fill(pairPt, angle, GetEventWeight());
+    fhIMvsOpAngle->Fill(mass  , angle, GetEventWeight());
 
     // Single module
     if(nModule == nModule2 && nModule >= 0 && nModule < fNModules)
@@ -3458,7 +3483,9 @@ void AliAnaCalorimeterQA::InitParameters()
   fEMCALCellAmpMin = 0.2; // 200 MeV
   fPHOSCellAmpMin  = 0.2; // 200 MeV
   fCellAmpMin      = 0.2; // 200 MeV
+  
   fMinInvMassECut  = 0.5; // 500 MeV
+  fMaxInvMassOpenAngle = 100*TMath::DegToRad(); // 100 degrees
   
   // Exotic studies
   fExoNECrossCuts  = 10 ;
@@ -3511,10 +3538,11 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("Select Calorimeter %s \n",GetCalorimeterString().Data());
-  printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
+  printf("Time Cut: %3.1f < TOF  < %3.1f\n"     , fTimeCutMin, fTimeCutMax);
   printf("EMCAL Min Amplitude   : %2.1f GeV/c\n", fEMCALCellAmpMin) ;
   printf("PHOS Min Amplitude    : %2.1f GeV/c\n", fPHOSCellAmpMin) ;
   printf("Inv. Mass min. E clus : %2.1f GeV/c\n", fMinInvMassECut) ;
+  printf("Inv. Mass open angle  : %2.1f deg\n"  , fMaxInvMassOpenAngle) ;
 }
 
 //_____________________________________________________

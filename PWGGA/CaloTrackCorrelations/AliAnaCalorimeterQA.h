@@ -112,6 +112,9 @@ public:
   
   Float_t      GetInvMassMinECut()       const  { return fMinInvMassECut     ; }
   void         SetInvMassMinECut(Float_t cut)   { fMinInvMassECut = cut      ; }
+ 
+  Float_t      GetInvMassMaxOpenAngle()  const  { return fMaxInvMassOpenAngle; }
+  void         SetInvMassMaxOpenAngle(Float_t c){ fMaxInvMassOpenAngle = c   ; }
   
   Double_t     GetTimeCutMin()           const  { return fTimeCutMin         ; }
   Double_t     GetTimeCutMax()           const  { return fTimeCutMax         ; }
@@ -190,6 +193,7 @@ public:
   Float_t  fPHOSCellAmpMin ;                    ///<  amplitude Threshold on phos cells
   
   Float_t  fMinInvMassECut;                     ///<  Minimum energy cut value for clusters entering the invariant mass calculation
+  Float_t  fMaxInvMassOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them.
   
   // Exotic studies
     
@@ -217,8 +221,11 @@ public:
   TH2F *   fhEtaPhiCharged;                     //!<! eta distribution, Reco, matched with track
   TH3F *   fhEtaPhiECharged;                    //!<! eta vs phi vs E, Reco, matched with track
     
-  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass
-  TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass
+  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass vs pair pT
+  TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass vs pair pT
+  
+  TH2F*    fhOpAngle;                           //!<! Cluster pairs opening angle vs pair pT
+  TH2F*    fhIMvsOpAngle;                       //!<! Cluster pairs opening angle vs mass  
   
   TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
   TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy vs eta of cluster
@@ -487,7 +494,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,30) ;
+  ClassDef(AliAnaCalorimeterQA,31) ;
   /// \endcond
 
 } ;
