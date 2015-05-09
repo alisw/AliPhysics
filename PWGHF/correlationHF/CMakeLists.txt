@@ -52,6 +52,7 @@ set(SRCS
     AliHFDmesonCorrAverage.cxx
     AliHFCorrelationUtils.cxx
     AliAnalysisHFCorrOnFlySim.cxx	
+    AliHFCorrFitter.cxx			
   )
 
 # Headers from sources
