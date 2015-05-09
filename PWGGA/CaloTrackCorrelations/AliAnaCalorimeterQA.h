@@ -221,7 +221,9 @@ public:
   TH2F *   fhEtaPhiCharged;                     //!<! eta distribution, Reco, matched with track
   TH3F *   fhEtaPhiECharged;                    //!<! eta vs phi vs E, Reco, matched with track
     
-  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass vs pair pT
+  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass vs pair pT, for EMCAL or PHOS pairs
+  TH2F *   fhIMDCAL;                            //!<! Cluster pairs invariant mass vs pair pT, for DCal pairs
+  TH2F *   fhIMDCALPHOS;                        //!<! Cluster pairs invariant mass vs pair pT, for DCal-PHOS pairs
   TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass vs pair pT
   
   TH2F*    fhOpAngle;                           //!<! Cluster pairs opening angle vs pair pT
