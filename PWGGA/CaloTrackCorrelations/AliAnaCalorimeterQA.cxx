@@ -3495,6 +3495,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
     // Opening angle cut, avoid combination of DCal and EMCal clusters
     Double_t angle  = fClusterMomentum.Angle(fClusterMomentum2.Vect());
      
+    fhOpAngle->Fill(pairPt, angle, GetEventWeight()) ;
+    
     if( angle > fMaxInvMassOpenAngle ) continue;
         
     // Get module of cluster
