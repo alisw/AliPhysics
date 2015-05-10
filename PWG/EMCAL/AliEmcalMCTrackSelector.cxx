@@ -27,6 +27,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fChargedMC(kFALSE),
   fOnlyHIJING(kFALSE),
   fEtaMax(1),
+  fSpecialPDG(0),
   fParticlesMapName(""),
   fInit(kFALSE),
   fParticlesIn(0),
@@ -49,6 +50,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fChargedMC(kFALSE),
   fOnlyHIJING(kFALSE),
   fEtaMax(1),
+  fSpecialPDG(0),
   fParticlesMapName(""),
   fInit(kFALSE),
   fParticlesIn(0),
@@ -173,16 +175,30 @@ void AliEmcalMCTrackSelector::ConvertMCParticles()
     if (!part) continue;
 
     if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
+
+    Int_t partPdgCode = TMath::Abs(part->PdgCode());
+    Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG);
     
-    if (fRejectNK && (part->PdgCode() == 130 || part->PdgCode() == 2112)) continue;
+    if (fRejectNK && (partPdgCode == 130 || partPdgCode == 2112)) continue;
     
-    if (fChargedMC && part->Charge() == 0) continue;
+    if (fChargedMC && part->Charge() == 0 && !isSpecialPdg) continue;
 
     Int_t genIndex = part->GetGeneratorIndex();
     if (fOnlyHIJING && genIndex != 0) continue;
 
     Bool_t isPhysPrim = fMC->IsPhysicalPrimary(iPart);
-    if (fOnlyPhysPrim && !isPhysPrim) continue;
+    if (fOnlyPhysPrim && !isPhysPrim && !isSpecialPdg) continue;
+
+    if (fSpecialPDG != 0) { // skip particle if it's a daughter of a "special" PDG particle
+      AliStack* stack = fMC->Stack();
+      TParticle* pm = stack->Particle(iPart);
+      Int_t imo = -1;
+      do {
+        imo = pm->GetFirstMother();
+        pm  = stack->Particle(imo);
+      } while (imo >= stack->GetNprimary());
+      if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) continue;
+    }
 
     fParticlesMap->AddAt(nacc, iPart);
 
@@ -228,14 +244,22 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
     if (!part) continue;
 
     if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
+
+    Int_t partPdgCode = TMath::Abs(part->PdgCode());
+    Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG);
     
-    if (fRejectNK && (part->PdgCode() == 130 || part->PdgCode() == 2112)) continue;
+    if (fRejectNK && (partPdgCode == 130 || partPdgCode == 2112)) continue;
     
-    if (fChargedMC && part->Charge() == 0) continue;
+    if (fChargedMC && part->Charge() == 0 && !isSpecialPdg) continue;
 
     if (fOnlyHIJING && (part->GetGeneratorIndex() != 0)) continue;
 
-    if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) continue;
+    if (fOnlyPhysPrim && !part->IsPhysicalPrimary() && !isSpecialPdg) continue;
+
+    if (fSpecialPDG != 0) { // skip particle if it's a daughter of a "special" PDG particle
+      AliAODMCParticle* pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(part->GetMother()));
+      if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) continue;
+    }
 
     fParticlesMap->AddAt(nacc, iPart);
 
