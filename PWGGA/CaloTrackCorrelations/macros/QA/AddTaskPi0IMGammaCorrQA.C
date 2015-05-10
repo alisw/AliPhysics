@@ -649,24 +649,24 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
       histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
       histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
     }
-    else if ( year < 2014)
+    else if ( year < 2014 )
     {           
-      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 102) ;
-      histoRanges->SetHistoXRangeAndNBins(-600,90,200); // QA
-      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
+      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    
     }
     else // Run2
     {
-      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 328*TMath::DegToRad(), 249) ;
-      emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-1000,1000,500); // revise
-      emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(0,1000,200);     // revise     
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 329*TMath::DegToRad(), 250) ;
+      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
+      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
     }
 
     histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
   }
   else
   {
-    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 320*TMath::DegToRad(), 60) ;
+    histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
     histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
   }
   
@@ -693,8 +693,8 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  histoRanges->SetHistoZRangeAndNBins(-400,400,200);
-  histoRanges->SetHistoRRangeAndNBins(400,450,25);
+  histoRanges->SetHistoZRangeAndNBins(-350,350,175);
+  histoRanges->SetHistoRRangeAndNBins(430,460,30);
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   

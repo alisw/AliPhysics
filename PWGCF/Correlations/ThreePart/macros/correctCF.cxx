@@ -22,7 +22,7 @@
 #include "TLegend.h"
 #include "TPaveLabel.h"
 #include "TObjString.h"
-
+#include "TPaletteAxis.h"
 
 using namespace std;
 //global pointers for the histograms:
@@ -135,26 +135,26 @@ public:
     }
   }
   BinDirs(TDirectory* samed, TDirectory * METAd, TDirectory * METriggerd, bool empty = false){
-    if(samed&&METAd&&METriggerd){
+    if(samed&&METriggerd&&METAd){
       Bin = TString(samed->GetName());
       samed->cd();
       Samedir = samed;
       if(!Samedir->GetDirectory("bin_stats")) Samedir->mkdir("bin_stats");      
-      if(!Samedir->GetDirectory("divided")) Samedir->mkdir("divided");
-      if(empty) ::resultsdirectory(Samedir,"bin_stats");
-      if(empty) ::resultsdirectory(Samedir,"divided");
-      METAd->cd();
-      METAdir = METAd;
-      if(!METAdir->GetDirectory("bin_stats")) METAdir->mkdir("bin_stats");      
-      if(!METAdir->GetDirectory("divided")) METAdir->mkdir("divided");
-      if(empty) ::resultsdirectory(METAdir,"bin_stats");
-      if(empty) ::resultsdirectory(METAdir,"divided");
+      else if(empty){::resultsdirectory(Samedir,"bin_stats");}
+      if(!Samedir->GetDirectory("divided")){Samedir->mkdir("divided");}
+      else if(empty){::resultsdirectory(Samedir,"divided");}
       METriggerd->cd();
       METriggerdir = METriggerd;
       if(!METriggerdir->GetDirectory("bin_stats")) METriggerdir->mkdir("bin_stats");
+      else if(empty) ::resultsdirectory(METriggerdir,"bin_stats");
       if(!METriggerdir->GetDirectory("divided")) METriggerdir->mkdir("divided");
-      if(empty) ::resultsdirectory(METriggerdir,"bin_stats");
-      if(empty) ::resultsdirectory(METriggerdir,"divided");
+      else if(empty) ::resultsdirectory(METriggerdir,"divided");
+      METAd->cd();
+      METAdir = METAd;
+      if(!METAdir->GetDirectory("bin_stats")) METAdir->mkdir("bin_stats");      
+      else if(empty) ::resultsdirectory(METAdir,"bin_stats");
+      if(!METAdir->GetDirectory("divided")) METAdir->mkdir("divided");
+      else if(empty) ::resultsdirectory(METAdir,"divided");
       ready = true;
     }
     else{
@@ -503,15 +503,15 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
 //   const char* lable;
   TH1D* yield = hist->ProjectionY("dphiyield");
   yield->Reset();
-  yield->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12}} (rad)^{-1}");
+  yield->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
   TH1D* yieldbc = hist->ProjectionY("dphiyieldbc");
   yieldbc->Reset();
   yield->SetTitle("Yield from bin counting vs #Delta#Phi_1");
-  yieldbc->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12}} (rad)^{-1}");
+  yieldbc->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
   
   TH1D* background = dynamic_cast<TH1D*>(yield->Clone("dphibackground"));
   background->SetTitle("Height of the background as a function of #Delta#Phi#.");
-  background->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12}} (rad)^{-1}");
+  background->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
   TH1D* width = dynamic_cast<TH1D*>(yield->Clone("dphiwidth")); 
   width->SetTitle("Width of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
   width->GetYaxis()->SetTitle("width of the peak (rad)");
@@ -528,9 +528,10 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
   TH1D* prob = dynamic_cast<TH1D*>(yield->Clone("dphiprob"));
   prob->SetTitle("Probability of the fit as a function of #Delta#Phi");
   prob->SetYTitle("Probability ");
-      
+
+  Double_t AvWidth = 1.0;
   if(dynamic_cast<TObjString*>(types->At(0))->GetString().CompareTo("fgauspol0")==0){
-    typedir = resultsdirectory(dir,"GP0");
+    typedir = resultsdirectory(dir,"GP0");    
     bindir = resultsdirectory(typedir,"bins");
     //flat background and a gaussian:
     color = 2;
@@ -541,7 +542,7 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     width->SetLineColor(color);
     peakpos->SetLineColor(color);  
     chisq->SetLineColor(color);  
-    prob->SetLineColor(color);
+    prob->SetLineColor(color);    
     //Initialize the fit function:
     fitsig = new TF1("fgs",CGausPol0,-gkEtaFitRange,gkEtaFitRange,4) ;
     fitsig->SetParNames("peakhight", "peakpos", "peakwidth", "B") ;
@@ -550,7 +551,7 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     fitsig->SetParameters(0.0,0.0,0.1,0.0);
     fitsig->SetParLimits(0,0.0,0.3);
     fitsig->SetParLimits(1,-0.1,0.1);
-    fitsig->SetParLimits(2,0.1,0.8);  
+    fitsig->SetParLimits(2,0.01,0.8);  
     //Initialize the fit function for BKG:
     fitbg = new TF1("fgs",CBKGPol0,-gkEtaFitRange,gkEtaFitRange,2) ;
     fitbg->SetParNames("B", "peakpos" ) ;
@@ -565,6 +566,30 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     rembg->SetLineColor(color);
     rembg->SetLineWidth(1);
     rembg->SetParameters(0.0,0.0);    
+    
+    //find the width at 0:
+    int bin1 = yield->GetXaxis()->FindBin(-0.001);
+    int bin2 = yield->GetXaxis()->FindBin(0.001);
+    
+    fillwithbinnr(hist,deta12ss,bin1);
+    fitsig->FixParameter(1,0.0);
+    TFitResultPtr fitresultwidth1 = deta12ss->Fit(fitsig,"SQ","",-gkEtaFitRange,gkEtaFitRange);
+    Double_t width1 = fitsig->GetParameter(2);
+    fillwithbinnr(hist,deta12ss,bin2);
+    TFitResultPtr fitresultwidth2 = deta12ss->Fit(fitsig,"SQ","",-gkEtaFitRange,gkEtaFitRange);
+    Double_t width2 = fitsig->GetParameter(2);  
+    deta12ss->Reset();
+    fitsig->ReleaseParameter(1);
+    
+    fitsig->FixParameter(2,width1+width2/2.0);
+    AvWidth = 3.0*fitsig->GetParameter(2);
+    cout << AvWidth<<endl;
+    if(3.0*fitsig->GetParameter(2)<etalimit){AvWidth = 3.0*fitsig->GetParameter(2);}//set the range to 3*/sigma
+    else {AvWidth = etalimit;}
+    cout << AvWidth<<endl;
+    fitsig->ReleaseParameter(2);
+    fitsig->SetParLimits(2,0.01,0.8);  
+
   }
   if(dynamic_cast<TObjString*>(types->At(0))->GetString().CompareTo("fgauspol1")==0){
     typedir = resultsdirectory(dir,"GP1");
@@ -650,10 +675,10 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     rembg->SetParLimits(1,-0.1,0.1);
     rembg->SetParLimits(2,0.0,1.0);    
   }
-  
-  double deltaphi = yield->GetXaxis()->GetBinCenter(2)-yield->GetXaxis()->GetBinCenter(1);
+  double deltaphi = (yield->GetXaxis()->GetBinCenter(2)-yield->GetXaxis()->GetBinCenter(1));//Width of the bin in phi
   bindir->cd();
   for(int dphi=1;dphi<=hist->GetNbinsY();dphi++){
+    gEtasigRange = AvWidth;
     deta12ss->SetTitle(Form("%s %4.2f #pi < #Delta#Phi < %4.2f #pi",title.Data(),hist->GetYaxis()->GetBinLowEdge(dphi)/TMath::Pi(),hist->GetYaxis()->GetBinUpEdge(dphi)/TMath::Pi()));
     fillwithbinnr(hist,deta12ss,dphi);
     deta12ss->SetStats(false);
@@ -664,10 +689,12 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     deta12ss->Write(Form("%sflatg_%i_first",deta12ss->GetName(),dphi));
     fitbg->FixParameter(1,0.0);
 //     if(3.0*fitsig->GetParameter(2)<1.0) cout << fitsig->GetParameter(2);
-    if(3.0*fitsig->GetParameter(2)<etalimit)gEtasigRange = 3.0*fitsig->GetParameter(2);//set the range to 3*/sigma
-    else gEtasigRange = etalimit;
     
-    if(fitsig->GetParameter(0)<1.0E-6) gEtasigRange = 0.5;//if there is no peak, most of it.
+    
+//     if(3.0*fitsig->GetParameter(2)<etalimit)gEtasigRange = 3.0*fitsig->GetParameter(2);//set the range to 3*/sigma
+//     else gEtasigRange = etalimit;
+    if(fitsig->GetParameter(0)<1.0E-6) gEtasigRange = 0.3;//if there is no peak, most of it.
+
     TFitResultPtr bkgresult = deta12ss->Fit(fitbg,"SQ","",-gkEtaFitRange,gkEtaFitRange);
     if(int(bkgresult)!=4000)//if "error", try again with more:
       bkgresult = deta12ss->Fit(fitbg,"MSQ","",-gkEtaFitRange,gkEtaFitRange);    
@@ -684,7 +711,7 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     removeconstant(deta12ssbinc,-1.0*fitbg->GetParameter(0),ErrBg);
     
     Double_t binerr;
-    Double_t binc = deta12ssbinc->IntegralAndError(deta12ssbinc->FindBin(-gEtasigRange),deta12ssbinc->FindBin(gEtasigRange),binerr,"width");
+    Double_t binc = deta12ssbinc->IntegralAndError(deta12ssbinc->FindBin(-gEtasigRange),deta12ssbinc->FindBin(gEtasigRange),binerr);
     Double_t rmsv = deta12ssbinc->GetRMS();
     yieldbc->SetBinContent(dphi,binc/deltaphi);
     yieldbc->SetBinError(dphi,binerr/deltaphi);
@@ -704,11 +731,13 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     deta12ssdraw->Reset();
     fillwithbinnr(hist,deta12ssdraw,dphi);
     deta12ssdraw->SetStats(false);    
+    removeconstant(deta12ssdraw,-1.0*fitbg->GetParameter(0),ErrBg);
     deta12ssdraw->Draw("ESAME");
     fitsig->Draw("LSAME");
     bincanvas->Update();
     bincanvas->Write();
     delete bincanvas;
+
     yield->SetBinContent(dphi,fitsig->GetParameter(0)/deltaphi);
     yield->SetBinError(dphi,fitsig->GetParError(0)/deltaphi);
     width->SetBinContent(dphi,fitsig->GetParameter(2)/deltaphi);
@@ -717,9 +746,10 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     peakpos->SetBinError(dphi,fitsig->GetParError(1)/deltaphi);
     background->SetBinContent(dphi,fitbg->GetParameter(0)/deltaphi);
     background->SetBinError(dphi,fitbg->GetParError(0)/deltaphi);
-    chisq->SetBinContent(dphi,fitsig->GetChisquare()/fitsig->GetNDF());
+    if(fitsig->GetNDF()>=1.0)chisq->SetBinContent(dphi,fitsig->GetChisquare()/fitsig->GetNDF());
     prob->SetBinContent(dphi,fitsig->GetProb());
     deta12ss->Reset();
+    
     
 //     fitresult.~TFitResultPtr();fitresult2.~TFitResultPtr();bkgresult.~TFitResultPtr();
   }
@@ -755,7 +785,6 @@ void extractbinyield(TDirectory* dir, TDirectory* yielddir, Double_t etalimit){
   if(dynamic_cast<TH2D*>(dir->Get("DPhi_1_DEta_12_SameSide"))) dphideta12ss = dynamic_cast<TH2D*>(dir->Get("DPhi_1_DEta_12_SameSide")->Clone("DPhi_1_DEta_12_SameSidec"));
   else return;
   yielddir->cd();
-
   fitwith(bindir,"fgauspol0/1",dphideta12ss,etalimit);
   fitwith(binrebindir,"fgauspol0/3",dphideta12ss,etalimit);
 //   fitwith(bindir,"fgauspol1/1",dphideta12ss);
@@ -764,355 +793,6 @@ void extractbinyield(TDirectory* dir, TDirectory* yielddir, Double_t etalimit){
 //   fitwith(bindir,"fgauspol2/1",dphideta12ss);
 //   fitwith(binrebindir,"fgauspol2/3",dphideta12ss);
   
-  /*
-  TH1D* deta12ss = dphideta12ss->ProjectionX("DEta12");
-  TH1D* deta12ssdraw = dphideta12ss->ProjectionX("DEta12d");
-  deta12ss->Reset();
-  
-  
-  TString title = TString("#Delta#eta_{12} distribution in bin");
-  //flat background and a gaussian:
-  int flatcolor = 2;
-  const char* flatlable = "flat bg + gaussian";
-  TH1D* yieldfg = dphideta12ss->ProjectionY("dphiyieldfg");
-  yieldfg->Reset();
-  yieldfg->SetTitle("Number of pairs per trigger as a function of #Delta#Phi extracted using a flat background and a gaussian.");
-  yieldfg->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  yieldfg->SetLineColor(flatcolor);
-  TH1D* backgroundfg = dynamic_cast<TH1D*>(yieldfg->Clone("dphibackgroundfg"));
-  backgroundfg->SetTitle("Height of the background as a function of #Delta#Phi#.");
-  backgroundfg->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  backgroundfg->SetLineColor(flatcolor);
-  TH1D* widthfg = dynamic_cast<TH1D*>(yieldfg->Clone("dphiwidthfg")); 
-  widthfg->SetTitle("Width of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
-  widthfg->GetYaxis()->SetTitle("width of the peak (rad)");
-  widthfg->SetLineColor(flatcolor);
-  TH1D* peakposfg = dynamic_cast<TH1D*>(yieldfg->Clone("dphiposfg")); 
-  peakposfg->SetTitle("Position of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
-  peakposfg->SetYTitle("Position of the peak (rad)");
-  peakposfg->SetLineColor(flatcolor);
-  TH1D* chisqfg = dynamic_cast<TH1D*>(yieldfg->Clone("dphichisqfg"));
-  chisqfg->SetTitle("#Chi^2/NDF of the fit as a function of #Delta#Phi");
-  chisqfg->SetYTitle("#Chi^2/NDF ");
-  chisqfg->SetLineColor(flatcolor);
-  TH1D* probfg = dynamic_cast<TH1D*>(yieldfg->Clone("dphiprobfg"));
-  probfg->SetTitle("Probability of the fit as a function of #Delta#Phi");
-  probfg->SetYTitle("Probability ");
-  probfg->SetLineColor(flatcolor);
-  //flat + gaussian:
-  TF1 * fgs = new TF1("fgs",CGausPol0,-gkEtaFitRange,gkEtaFitRange,4) ;
-  fgs->SetParNames("peakhight", "peakpos", "peakwidth", "B") ;
-  fgs->SetLineColor(flatcolor);
-  fgs->SetLineWidth(1);
-  fgs->SetParameters(0.0,0.0,0.1,0.0);
-  fgs->SetParLimits(0,0.0,0.3);
-  fgs->SetParLimits(1,-0.1,0.1);
-  fgs->SetParLimits(2,0.1,0.8);  
-  //extract near and away width:
-  fillwithbinnr(dphideta12ss,deta12ss,dphideta12ss->FindBin(0.0));
-  TFitResultPtr fitresultfgn = deta12ss->Fit(fgs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-  if(int(fitresultfgn)!=4000)//if "error", try again with more:
-    fitresultfgn = deta12ss->Fit(fgs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-  double widthnearfg = fgs->GetParameter(2);  
-  deta12ss->Reset();
-  fillwithbinnr(dphideta12ss,deta12ss,dphideta12ss->FindBin(TMath::Pi()));
-  TFitResultPtr fitresultfga = deta12ss->Fit(fgs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-  if(int(fitresultfga)!=4000)//if "error", try again with more:
-    fitresultfga = deta12ss->Fit(fgs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-  double widthawayfg = fgs->GetParameter(2);
-  deta12ss->Reset();      
-  //pol1 background and a gaussian:
-  int p1color = 3;
-  const char* p1lable = "pol1 bg + gaussian";
-  TH1D* yieldp1g = dphideta12ss->ProjectionY("dphiyieldp1g");
-  yieldp1g->Reset();
-  yieldp1g->SetTitle("Number of pairs per trigger as a function of #Delta#Phi extracted using a pol1 background and a gaussian.");
-  yieldp1g->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  yieldp1g->SetLineColor(p1color);
-  TH1D* backgroundp1g = dynamic_cast<TH1D*>(yieldfg->Clone("dphibackgroundp1g"));
-  backgroundp1g->SetTitle("Height of the background as a function of #Delta#Phi#.");
-  backgroundp1g->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  backgroundp1g->SetLineColor(p1color);
-  TH1D* backgroundlp1g = dynamic_cast<TH1D*>(yieldfg->Clone("dphibackgroundlp1g"));
-  backgroundlp1g->SetTitle("Slope of the background as a function of #Delta#Phi#.");
-  backgroundlp1g->GetYaxis()->SetTitle("??#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  backgroundlp1g->SetLineColor(p1color);
-  TH1D* widthp1g = dynamic_cast<TH1D*>(yieldfg->Clone("dphiwidthp1g")); 
-  widthp1g->SetTitle("Width of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
-  widthp1g->GetYaxis()->SetTitle("width of the peak (rad)");
-  widthp1g->SetLineColor(p1color);
-  TH1D* peakposp1g = dynamic_cast<TH1D*>(yieldfg->Clone("dphiposp1g")); 
-  peakposp1g->SetTitle("Position of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
-  peakposp1g->SetYTitle("Position of the peak (rad)");
-  peakposp1g->SetLineColor(p1color);  
-  TH1D* chisqp1g = dynamic_cast<TH1D*>(yieldfg->Clone("dphichisqp1g"));
-  chisqp1g->SetTitle("#Chi^2/NDF of the fit as a function of #Delta#Phi");
-  chisqp1g->SetYTitle("#Chi^2/NDF ");
-  chisqp1g->SetLineColor(p1color);  
-  TH1D* probp1g = dynamic_cast<TH1D*>(yieldfg->Clone("dphiprobp1g"));
-  probp1g->SetTitle("Probability of the fit as a function of #Delta#Phi");
-  probp1g->SetYTitle("Probability ");
-  probp1g->SetLineColor(p1color);
-  //pol1 + gaussian:
-  TF1 * p1gs = new TF1("p1gs",CGausAPol1,-gkEtaFitRange,gkEtaFitRange,5) ;
-  p1gs->SetParNames("peakhight", "peakpos", "peakwidth", "B", "C") ;
-  p1gs->SetLineColor(p1color);
-  p1gs->SetLineWidth(1);
-  p1gs->SetParameters(0.0,0.0,0.1,0.0,0.0);
-  p1gs->SetParLimits(0,0.0,0.3);
-  p1gs->SetParLimits(1,-0.1,0.1);
-  p1gs->SetParLimits(2,0.1,0.8);  
-  p1gs->SetParLimits(4,0.0,1.0);
-  //extract near and away width:
-  fillwithbinnr(dphideta12ss,deta12ss,dphideta12ss->FindBin(0.0));
-  TFitResultPtr fitresultp1gn = deta12ss->Fit(p1gs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-  if(int(fitresultp1gn)!=4000)//if "error", try again with more:
-    fitresultp1gn = deta12ss->Fit(p1gs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-  double widthnearp1g = p1gs->GetParameter(2);  
-  deta12ss->Reset();
-  fillwithbinnr(dphideta12ss,deta12ss,dphideta12ss->FindBin(TMath::Pi()));
-  TFitResultPtr fitresultp1ga = deta12ss->Fit(p1gs,"SQ","",-1.5,1.5);
-  if(int(fitresultp1ga)!=4000)//if "error", try again with more:
-    fitresultp1ga = deta12ss->Fit(p1gs,"MSQ","",-1.5,1.5);
-  double widthawayp1g = p1gs->GetParameter(2);
-  deta12ss->Reset();      
-  //pol2 background and a gaussian:
-  int p2color = 4;
-  const char* p2lable = "pol2 bg + gaussian";
-  TH1D* yieldp2g = dphideta12ss->ProjectionY("dphiyieldp2g");
-  yieldp2g->Reset();
-  yieldp2g->SetTitle("Number of pairs per trigger as a function of #Delta#Phi extracted using a pol1 background and a gaussian.");
-  yieldp2g->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  yieldp2g->SetLineColor(p2color);
-  TH1D* backgroundp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphibackgroundp2g"));
-  backgroundp2g->SetTitle("Height of the background as a function of #Delta#Phi#.");
-  backgroundp2g->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  backgroundp2g->SetLineColor(p2color);
-  TH1D* backgroundlp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphibackgroundlp2g"));
-  backgroundlp2g->SetTitle("Slope of the background as a function of #Delta#Phi#.");
-  backgroundlp2g->GetYaxis()->SetTitle("??#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  backgroundlp2g->SetLineColor(p2color);  
-  TH1D* backgroundcp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphibackgroundcp2g"));
-  backgroundcp2g->SetTitle("Curvature of the background as a function of #Delta#Phi#.");
-  backgroundcp2g->GetYaxis()->SetTitle("??#frac{dN_{pairs}}{N_{trig}d#Phi_{1}} (rad)^{-1}");
-  backgroundcp2g->SetLineColor(p2color);  
-  TH1D* widthp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphiwidthp2g")); 
-  widthp2g->SetTitle("Width of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
-  widthp2g->GetYaxis()->SetTitle("width of the peak (rad)");
-  widthp2g->SetLineColor(p2color);
-  TH1D* peakposp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphiposp2g")); 
-  peakposp2g->SetTitle("Position of the peak in #Delta#eta_{12} as a function of #Delta#Phi");
-  peakposp2g->SetYTitle("Position of the peak (rad)");
-  peakposp2g->SetLineColor(p2color);
-  TH1D* chisqp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphichisqp2g"));
-  chisqp2g->SetTitle("#Chi^2/NDF of the fit as a function of #Delta#Phi");
-  chisqp2g->SetYTitle("#Chi^2/NDF ");
-  chisqp2g->SetLineColor(p2color);
-  TH1D* probp2g = dynamic_cast<TH1D*>(yieldfg->Clone("dphiprobp2g"));
-  probp2g->SetTitle("Probability of the fit as a function of #Delta#Phi");
-  probp2g->SetYTitle("Probability ");
-  probp2g->SetLineColor(p2color);
-  //pol2 + gaussian:
-  TF1 * p2gs = new TF1("p2gs",CGausAPol2,-gkEtaFitRange,gkEtaFitRange,6) ;
-  p2gs->SetParNames("peakhight", "peakpos", "peakwidth", "B", "C", "D") ;
-  p2gs->SetLineColor(p2color);
-  p2gs->SetLineWidth(1);
-  p2gs->SetParameters(0.0,0.0,0.1,0.0,0.0);
-  p2gs->SetParLimits(0,0.0,0.3);
-  p2gs->SetParLimits(1,-0.1,0.1);
-  p2gs->SetParLimits(2,0.1,0.8);  
-  p2gs->SetParLimits(4,0.0,1.0);
-//   p2gs->SetParLimits(5,0.0,1.0);
-  //extract near and away width:
-  fillwithbinnr(dphideta12ss,deta12ss,dphideta12ss->FindBin(0.0));
-  TFitResultPtr fitresultp2gn = deta12ss->Fit(p2gs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-  if(int(fitresultp2gn)!=4000)//if "error", try again with more:
-    fitresultp2gn = deta12ss->Fit(p2gs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-  double widthnearp2g = p2gs->GetParameter(2);  
-  deta12ss->Reset();
-  fillwithbinnr(dphideta12ss,deta12ss,dphideta12ss->FindBin(TMath::Pi()));
-  TFitResultPtr fitresultp2ga = deta12ss->Fit(p2gs,"SQ","",-1.5,1.5);
-  if(int(fitresultp2ga)!=4000)//if "error", try again with more:
-    fitresultp2ga = deta12ss->Fit(p2gs,"MSQ","",-1.5,1.5);
-  double widthawayp2g = p2gs->GetParameter(2);
-  deta12ss->Reset();   
-
-  double deltaphi = yieldfg->GetXaxis()->GetBinCenter(2)-yieldfg->GetXaxis()->GetBinCenter(1);
-  bindir->cd();
-  for(int dphi=1;dphi<=dphideta12ss->GetNbinsY();dphi++){
-    deta12ss->SetTitle(Form("%s %4.2f #pi < #Delta#Phi < %4.2f #pi",title.Data(),dphideta12ss->GetYaxis()->GetBinLowEdge(dphi)/TMath::Pi(),dphideta12ss->GetYaxis()->GetBinUpEdge(dphi)/TMath::Pi()));
-    fillwithbinnr(dphideta12ss,deta12ss,dphi);
-    deta12ss->SetStats(false);
-    
-//     if(dphi<TMath::Pi()/2.0) fgs->FixParameter(2,widthnearfg);
-//     if(dphi>=TMath::Pi()/2.0) fgs->FixParameter(2,widthawayfg);
-    fgs->FixParameter(1,0.0);
-    TFitResultPtr fitresult = deta12ss->Fit(fgs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-    if(int(fitresult)!=4000)//if "error", try again with more:
-      fitresult = deta12ss->Fit(fgs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-    deta12ss->Write(Form("%sflatg_%i",deta12ss->GetName(),dphi));
-//     fgs->Draw("same");
-    if(dphi<TMath::Pi()/2.0) p1gs->FixParameter(2,widthnearp1g);
-    if(dphi>=TMath::Pi()/2.0) p1gs->FixParameter(2,widthawayp1g);
-    p1gs->FixParameter(1,0.0);
-    TFitResultPtr fitresultp1 = deta12ss->Fit(p1gs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-    if(int(fitresultp1)!=4000)//if "error", try again with more:
-      fitresultp1 = deta12ss->Fit(p1gs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-//     p1gs->Draw("same");
-    deta12ss->Write(Form("%sp1g_%i",deta12ss->GetName(),dphi));
-    if(dphi<TMath::Pi()/2.0) p2gs->FixParameter(2,widthnearp2g);
-    if(dphi>=TMath::Pi()/2.0) p2gs->FixParameter(2,widthawayp2g);
-    p2gs->FixParameter(1,0.0);
-    TFitResultPtr fitresultp2 = deta12ss->Fit(p2gs,"SQ","",-gkEtaFitRange,gkEtaFitRange);
-    if(int(fitresultp2)!=4000)//if "error", try again with more:
-      fitresultp2 = deta12ss->Fit(p2gs,"MSQ","",-gkEtaFitRange,gkEtaFitRange);
-//     p2gs->Draw("same");    
-    deta12ss->Write(Form("%sp2g_%i",deta12ss->GetName(),dphi));
-    
-    TCanvas * bincanvas = new TCanvas(Form("%sCanvas_%i",deta12ss->GetName(),dphi));
-    deta12ssdraw->SetTitle(Form("%s %4.2f #pi < #Delta#Phi < %4.2f #pi",title.Data(),dphideta12ss->GetYaxis()->GetBinLowEdge(dphi)/TMath::Pi(),dphideta12ss->GetYaxis()->GetBinUpEdge(dphi)/TMath::Pi()));
-    deta12ssdraw->Reset();
-    fillwithbinnr(dphideta12ss,deta12ssdraw,dphi);
-    deta12ssdraw->SetStats(false);    
-    deta12ssdraw->Draw("ESAME");
-
-    TF1 * plfgs = new TF1("plfgs",CGausPol0,-gkEtaFitRange,gkEtaFitRange,4) ;
-    plfgs->SetParNames("peakhight", "peakpos", "peakwidth", "B") ;
-    plfgs->SetLineColor(flatcolor);
-    plfgs->SetLineWidth(1);
-    plfgs->SetParameters(fgs->GetParameter(0),fgs->GetParameter(1),fgs->GetParameter(2),fgs->GetParameter(3));
-    plfgs->Draw("LSAME");
-    TF1 * plp1gs = new TF1("plp1gs",CGausAPol1,-gkEtaFitRange,gkEtaFitRange,5) ;
-    plp1gs->SetParNames("peakhight", "peakpos", "peakwidth", "B", "C") ;
-    plp1gs->SetLineColor(p1color);
-    plp1gs->SetLineWidth(1);
-    plp1gs->SetParameters(p1gs->GetParameter(0),p1gs->GetParameter(1),p1gs->GetParameter(2),p1gs->GetParameter(3),p1gs->GetParameter(4));
-    plp1gs->Draw("LSAME");
-    TF1 * plp2gs = new TF1("plp2gs",CGausAPol2,-gkEtaFitRange,gkEtaFitRange,6) ;
-    plp2gs->SetParNames("peakhight", "peakpos", "peakwidth", "B", "C","D") ;
-    plp2gs->SetLineColor(p2color);
-    plp2gs->SetLineWidth(1);
-    plp2gs->SetParameters(p2gs->GetParameter(0),p2gs->GetParameter(1),p2gs->GetParameter(2),p2gs->GetParameter(3),p2gs->GetParameter(4),p2gs->GetParameter(5));
-    plp2gs->Draw("LSAME");    
-//     double diffmaxmin =  deta12ssdraw->GetBinContent(deta12ssdraw->FindBin(0.0)) - deta12ssdraw->GetBinContent(deta12ssdraw->FindBin(-1.0));
-//     deta12ssdraw->SetMinimum(deta12ssdraw->GetBinContent(deta12ssdraw->GetXaxis()->FindBin(-1.5)) - 1.5*deta12ssdraw->GetBinError(deta12ssdraw->GetXaxis()->FindBin(-1.5)));//deta12ssdraw->GetBinContent(deta12ssdraw->GetMinimumBin())-10*diffmaxmin);
-//     deta12ssdraw->SetMaximum(deta12ssdraw->GetBinContent(deta12ssdraw->GetXaxis()->FindBin(0.0)) + 1.5*deta12ssdraw->GetBinError(deta12ssdraw->GetXaxis()->FindBin(0.0)));
-//    deta12ssdraw->SetMaximum();//deta12ssdraw->GetBinContent(deta12ssdraw->GetMaximumBin())-10*diffmaxmin);
-
-   TLegend * leg = new TLegend(0.1,0.7,0.48,0.9);
-   leg->SetHeader("Different fits:");
-   leg->AddEntry(plfgs,flatlable);
-   leg->AddEntry(plp1gs,p1lable);
-   leg->AddEntry(plp2gs,p2lable);
-   leg->Draw("SAME");    
-    bincanvas->Update();
-    bincanvas->Write();
-    delete bincanvas;
-//     deta12ss->Write(Form("%s_%i",deta12ss->GetName(),dphi));
-//     if(!(int(fitresult)%4000)){
-    yieldfg->SetBinContent(dphi,fgs->GetParameter(0)/deltaphi);
-    yieldfg->SetBinError(dphi,fgs->GetParError(0)/deltaphi);
-    widthfg->SetBinContent(dphi,fgs->GetParameter(2)/deltaphi);
-    widthfg->SetBinError(dphi,fgs->GetParError(2)/deltaphi);
-    peakposfg->SetBinContent(dphi,fgs->GetParameter(1)/deltaphi);
-    peakposfg->SetBinError(dphi,fgs->GetParError(1)/deltaphi);
-    backgroundfg->SetBinContent(dphi,fgs->GetParameter(3)/deltaphi);
-    backgroundfg->SetBinError(dphi,fgs->GetParError(3)/deltaphi);
-    chisqfg->SetBinContent(dphi,fgs->GetChisquare()/fgs->GetNDF());
-    probfg->SetBinContent(dphi,fgs->GetProb());
-//     }
-//     if(!int(fitresultp1)%4000){
-    yieldp1g->SetBinContent(dphi,p1gs->GetParameter(0)/deltaphi);
-    yieldp1g->SetBinError(dphi,p1gs->GetParError(0)/deltaphi);
-    widthp1g->SetBinContent(dphi,p1gs->GetParameter(2)/deltaphi);
-    widthp1g->SetBinError(dphi,p1gs->GetParError(2)/deltaphi);
-    peakposp1g->SetBinContent(dphi,p1gs->GetParameter(1)/deltaphi);
-    peakposp1g->SetBinError(dphi,p1gs->GetParError(1)/deltaphi);
-    backgroundp1g->SetBinContent(dphi,p1gs->GetParameter(3)/deltaphi);
-    backgroundp1g->SetBinError(dphi,p1gs->GetParError(3)/deltaphi);
-    backgroundlp1g->SetBinContent(dphi,p1gs->GetParameter(4)/deltaphi);
-    backgroundlp1g->SetBinError(dphi,p1gs->GetParError(4)/deltaphi);
-    chisqp1g->SetBinContent(dphi,p1gs->GetChisquare()/p1gs->GetNDF());
-    probp1g->SetBinContent(dphi,p1gs->GetProb());
-//     }    
-//     if(!int(fitresultp2)%4000){
-    yieldp2g->SetBinContent(dphi,p2gs->GetParameter(0)/deltaphi);
-    yieldp2g->SetBinError(dphi,p2gs->GetParError(0)/deltaphi);
-    widthp2g->SetBinContent(dphi,p2gs->GetParameter(2)/deltaphi);
-    widthp2g->SetBinError(dphi,p2gs->GetParError(2)/deltaphi);
-    peakposp2g->SetBinContent(dphi,p2gs->GetParameter(1)/deltaphi);
-    peakposp2g->SetBinError(dphi,p2gs->GetParError(1)/deltaphi);
-    backgroundp2g->SetBinContent(dphi,p2gs->GetParameter(3)/deltaphi);
-    backgroundp2g->SetBinError(dphi,p2gs->GetParError(3)/deltaphi);
-    backgroundlp2g->SetBinContent(dphi,p2gs->GetParameter(4)/deltaphi);
-    backgroundlp2g->SetBinError(dphi,p2gs->GetParError(4)/deltaphi);
-    backgroundcp2g->SetBinContent(dphi,p2gs->GetParameter(5)/deltaphi);
-    backgroundcp2g->SetBinError(dphi,p2gs->GetParError(5)/deltaphi);
-    chisqp2g->SetBinContent(dphi,p2gs->GetChisquare()/p2gs->GetNDF());
-    probp2g->SetBinContent(dphi,p2gs->GetProb());
-//     }        
-    deta12ss->Reset();
-  }
-  
-  yielddir->cd();
-  yieldfg->Write();
-  backgroundfg->Write();
-  widthfg->Write();
-  peakposfg->Write();
-  chisqfg->Write();
-  probfg->Write();
-  yieldp1g->Write();
-  backgroundp1g->Write();
-  widthp1g->Write();
-  peakposp1g->Write();
-  backgroundlp1g->Write();
-  chisqp1g->Write();
-  probp1g->Write();
-  yieldp2g->Write();
-  backgroundp2g->Write();
-  widthp2g->Write();
-  peakposp2g->Write();
-  backgroundlp2g->Write();
-  chisqp2g->Write();
-  probp2g->Write();
-  
-  TCanvas * totcanvas = new TCanvas("YieldCanvas");
-  totcanvas->cd();
-  TPad * histpad = new TPad("histpad","yields in different fits",0.05,0.3,0.95,0.95);
-  histpad->SetFillColor(16);
-  histpad->cd();
-  TLegend * histleg = new TLegend(0.62,0.7,0.9,0.9);
-  histleg->SetHeader("Different fits:");
-  histleg->AddEntry(yieldfg,flatlable);
-  histleg->AddEntry(yieldp1g,p1lable);
-  histleg->AddEntry(yieldp2g,p2lable);
-  yieldfg->SetStats(false);
-  yieldfg->Draw("E");
-  yieldp1g->SetStats(false);
-  yieldp1g->Draw("ESAME");
-  yieldp2g->SetStats(false);
-  yieldp2g->Draw("ESAME");
-  histleg->Draw("SAME");    
-  totcanvas->cd();
-  TPad* chipad = new TPad("chisqpad","#Chi^2/NDF in different fits.",0.05,0.05,0.95,0.3);
-  chipad->SetFillColor(16);
-  chipad->cd();
-  gPad->SetLogy();
-  chisqfg->SetStats(false);
-  chisqfg->Draw("E");
-  chisqp1g->SetStats(false);
-  chisqp1g->Draw("ESAME");
-  chisqp2g->SetStats(false);
-  chisqp2g->Draw("ESAME");
-  totcanvas->cd();
-  histpad->Draw();
-  chipad->Draw();
-  totcanvas->Update();
-  totcanvas->Write();
-  
-//   delete yielddir;
-//   delete dphideta12ss; delete fgs;
-//   delete p1gs; delete p2gs;*/
 }
 
 
@@ -1542,6 +1222,7 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
     histMETriggerbin7	= dynamic_cast<TH1D*>( histo->Clone(Form("%sdivbin7METrigger"	,histo->GetName())));
   }  
   //Doubles to hold the values until they are put into the hists.
+
   Double_t bincontl   = 0.0;Double_t binerrorl  = 0.0;Double_t bincontlMETA   = 0.0;Double_t binerrorlMETA  = 0.0;
   Double_t BinContent = 0.0;Double_t BinError   = 0.0; Double_t BinContentMETA = 0.0;Double_t BinErrorMETA   = 0.0;
   Double_t BinContentMETrigger = 0.0;Double_t BinErrorMEtrigger   = 0.0; Double_t bincontlMEtrigger   = 0.0;Double_t binerrorlMETrigger  = 0.0;
@@ -1571,7 +1252,7 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
       bincontlMETA 		= dynamic_cast<TH1D*>(All->META()->GetDirectory(Form("%s/divided",directories->At(i)->GetName()))->Get(histo->GetName()))->GetBinContent(x);
       binerrorlMETA 		= dynamic_cast<TH1D*>(All->META()->GetDirectory(Form("%s/divided",directories->At(i)->GetName()))->Get(histo->GetName()))->GetBinError(x);	      
       bincontlMEtrigger 	= dynamic_cast<TH1D*>(All->METrigger()->GetDirectory(Form("%s/divided",directories->At(i)->GetName()))->Get(histo->GetName()))->GetBinContent(x);
-      binerrorlMETrigger 	= dynamic_cast<TH1D*>(All->METrigger()->GetDirectory(Form("%s/divided",directories->At(i)->GetName()))->Get(histo->GetName()))->GetBinError(x);      
+      binerrorlMETrigger 	= dynamic_cast<TH1D*>(All->METrigger()->GetDirectory(Form("%s/divided",directories->At(i)->GetName()))->Get(histo->GetName()))->GetBinError(x);  
       if(bincontl>1.0e-10){//if not, there were no fills in the bin and the error is ill defined
 	BinContent += bincontl/(binerrorl*binerrorl);
 	BinError   += 1.0/(binerrorl*binerrorl);
@@ -1592,7 +1273,7 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
 	else if(Mbin == 6)	BinErrorbin6   += 1.0;
 	else if(Mbin == 7)	BinErrorbin7   += 1.0;
       }
-                  if(bincontlMETA>1.0e-10){//if not, there were no fills in the bin and the error is ill defined
+        if(bincontlMETA>1.0e-10){//if not, there were no fills in the bin and the error is ill defined
 	BinContentMETA += bincontlMETA/(binerrorlMETA*binerrorlMETA);
 	BinErrorMETA   += 1.0/(binerrorlMETA*binerrorlMETA);
 	if(Mbin == 1){		BinContentMETAbin1 += bincontlMETA/(binerrorlMETA*binerrorlMETA); BinErrorMETAbin1   += 1.0/(binerrorlMETA*binerrorlMETA);}
@@ -1639,7 +1320,7 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
       bincontlMETA =0.0;	binerrorlMETA=0.0;
       bincontlMEtrigger=0.0;	binerrorlMETrigger=0.0;
     }//end loop over M-V bins
-    //normalize the bin and the error for same:
+    //normalize the bin and the error for same:    
     if(BinError>1.0e-10){		BinContent = BinContent/BinError;						BinError = 1.0/TMath::Sqrt(BinError);				}
     else{				BinContent=0.0;									BinError=0.0;							}
     if(BinErrorbin1>1.0e-10){		BinContentbin1 = BinContentbin1/BinErrorbin1;					BinErrorbin1 = 1.0/TMath::Sqrt(BinErrorbin1);			}
@@ -1684,13 +1365,14 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
     else{				BinContentMETriggerbin3=0.0;							BinErrorMEtriggerbin3=0.0;					}
     if(BinErrorMEtriggerbin4>1.0e-10){	BinContentMETriggerbin4 = BinContentMETriggerbin4/BinErrorMEtriggerbin4;	BinErrorMEtriggerbin4 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin4);	}
     else{				BinContentMETriggerbin4=0.0;							BinErrorMEtriggerbin4=0.0;					}
-    if(!BinErrorMEtriggerbin5>1.0e-10){	BinContentMETriggerbin5 = BinContentMETriggerbin5/BinErrorMEtriggerbin5;	BinErrorMEtriggerbin5 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin5);	}
+    if(BinErrorMEtriggerbin5>1.0e-10){	BinContentMETriggerbin5 = BinContentMETriggerbin5/BinErrorMEtriggerbin5;	BinErrorMEtriggerbin5 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin5);	}
     else{				BinContentMETriggerbin5=0.0;							BinErrorMEtriggerbin5=0.0;					}
-    if(!BinErrorMEtriggerbin6>1.0e-10){	BinContentMETriggerbin6 = BinContentMETriggerbin6/BinErrorMEtriggerbin6;	BinErrorMEtriggerbin6 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin6);	}
+    if(BinErrorMEtriggerbin6>1.0e-10){	BinContentMETriggerbin6 = BinContentMETriggerbin6/BinErrorMEtriggerbin6;	BinErrorMEtriggerbin6 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin6);	}
     else{				BinContentMETriggerbin6=0.0;							BinErrorMEtriggerbin6=0.0;					}
-    if(!BinErrorMEtriggerbin7>1.0e-10){	BinContentMETriggerbin7 = BinContentMETriggerbin7/BinErrorMEtriggerbin7;	BinErrorMEtriggerbin7 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin7);	}
+    if(BinErrorMEtriggerbin7>1.0e-10){	BinContentMETriggerbin7 = BinContentMETriggerbin7/BinErrorMEtriggerbin7;	BinErrorMEtriggerbin7 = 1.0/TMath::Sqrt(BinErrorMEtriggerbin7);	}
     else{				BinContentMETriggerbin7=0.0;							BinErrorMEtriggerbin7=0.0;					}
     //Set the bin content and error in every histogram.
+
   if(BinContent>1.0e-10){
       hist->SetBinContent(x,BinContent);
       hist->SetBinError(x,BinError);
@@ -3425,14 +3107,14 @@ void CorrectScan(BinDirs* BinDir)
 
 void CollectMVbins(bool CDivfirst = false){
   //take the histograms from the bins and average over them.
-  TFile * outfile = new TFile("results.root","UPDATE");
+  TFile * outfile =  TFile::Open("results.root","UPDATE");
   TList * folderlist = outfile->GetListOfKeys();
   for(int j = 0;j<folderlist->GetEntries();j++){
     const char* folder = folderlist->At(j)->GetName();
     if(!TString(folder).Contains("ThreePartTracks"))continue;
-
     TObjArray * multdirlist = new TObjArray(6);
     BinDirs * divsame = new BinDirs(outfile->GetDirectory(Form("%s/",folder)),outfile->GetDirectory(Form("%s/META",folder)),outfile->GetDirectory(Form("%s/METrigger",folder)),true);
+
     multdirlist->Add(divsame);
     //List of directories for multiplicity bins:
     TList * directories = GetMZDirectories(divsame);
@@ -3712,13 +3394,11 @@ void yield(const char* options){
     if(!TString(folder).Contains("ThreePart"))continue;
     TDirectory * folderdir = rfile->GetDirectory(folder);
     TList * dirs = folderdir->GetListOfKeys();
-
-  
     for(int i = 0;i<dirs->GetEntries();i++){
       if(TString(dirs->At(i)->GetName()).BeginsWith("BinM")&&!TString(dirs->At(i)->GetName()).Contains("Z")){
 	unsigned int j=1;
 	cout << dirs->At(i)->GetName()<<endl;
-	while(j<10){
+	while(j<2){
 	  TDirectory * tmp1 = dynamic_cast<TDirectory*>(folderdir->Get(Form("%s/iteration%u",dirs->At(i)->GetName(),j)));
 	  if(!tmp1){j = 11;continue;}
 	  TDirectory * tmp2 = dynamic_cast<TDirectory*>(folderdir->Get(Form("%s/iteration%u",dirs->At(i)->GetName(),j+1)));
@@ -3732,15 +3412,15 @@ void yield(const char* options){
 	}
       }
     }
-    
     unsigned int k = 1;
-    while(k<10){
+    while(k<2){
       TDirectory * tmp1 = dynamic_cast<TDirectory*>(folderdir->Get(Form("iteration%u",k)));
       if(!tmp1){k = 11;continue;}
       TDirectory * tmp2 = dynamic_cast<TDirectory*>(folderdir->Get(Form("iteration%u",k+1)));
       if(tmp1&&!tmp2){
 	dirarray->Add(folderdir->GetDirectory(Form("iteration%u",k)));
 	yieldarray->Add(resultsdirectory(folderdir->GetDirectory(""),"yield"));
+	
 	k = 11;
       }
       if(tmp1&&tmp2){k +=1;}
@@ -3749,17 +3429,19 @@ void yield(const char* options){
 //     if(tmp){ dirarray->Add(tmp);
 // 	     yieldarray->Add(resultsdirectory(folderdir->GetDirectory("Collected"),"yield"));
 //     }
-    Double_t etalimit = 0.0;
-    if(ispp) etalimit = 1.4;
-    if(isPbPb) etalimit = 1.0;
-    TDirectory * dir;
-    TDirectory * yielddir;
-    for(int i=0;i<dirarray->GetEntriesFast();i++){
-      dir = dynamic_cast<TDirectory*>(dirarray->At(i));
-      yielddir = dynamic_cast<TDirectory*>(yieldarray->At(i));
-      extractbinyield(dir,yielddir,etalimit);
-    }
   }
+  Double_t etalimit = 0.0;
+  if(ispp) etalimit = 1.4;
+  if(isPbPb) etalimit = 1.0;
+  TDirectory * dir;
+  TDirectory * yielddir;
+  for(int i=0;i<dirarray->GetEntriesFast();i++){
+    dir = dynamic_cast<TDirectory*>(dirarray->At(i));
+    dir->pwd();
+    yielddir = dynamic_cast<TDirectory*>(yieldarray->At(i));
+    extractbinyield(dir,yielddir,etalimit);
+  }
+  rfile->Close();
 }
 void draw(const char* option = ""){
   cout << option << endl;
@@ -3831,13 +3513,13 @@ void draw(const char* option = ""){
 	hist->Draw("E");
       }
       Double_t errn=0.0;
-      Double_t neary = hist->IntegralAndError(1,hist->FindBin(TMath::Pi()*0.5),errn);
+      Double_t neary = hist->IntegralAndError(1,hist->FindBin(TMath::Pi()*0.5),errn,"width");
       Double_t erra=0.0;
-      Double_t awayy = hist->IntegralAndError(hist->FindBin(TMath::Pi()*0.5),hist->GetNbinsX(),erra);
+      Double_t awayy = hist->IntegralAndError(hist->FindBin(TMath::Pi()*0.5),hist->GetNbinsX(),erra,"width");
       Double_t errnfit=0.0;
-      Double_t nearyfit = histfit->IntegralAndError(1,histfit->FindBin(TMath::Pi()*0.5),errnfit);
+      Double_t nearyfit = histfit->IntegralAndError(1,histfit->FindBin(TMath::Pi()*0.5),errnfit,"width");
       Double_t errafit=0.0;
-      Double_t awayyfit = histfit->IntegralAndError(histfit->FindBin(TMath::Pi()*0.5),histfit->GetNbinsX(),errafit);
+      Double_t awayyfit = histfit->IntegralAndError(histfit->FindBin(TMath::Pi()*0.5),histfit->GetNbinsX(),errafit,"width");
       if(now->GetMinTpT()==4.0){
 	if(now->GetMinApT()==0.5){near48->SetBinContent(1,neary);near48->SetBinError(1,errn);away48->SetBinContent(1,awayy);away48->SetBinError(1,erra);near48fit->SetBinContent(1,nearyfit);near48fit->SetBinError(1,errnfit);away48fit->SetBinContent(1,awayyfit);away48fit->SetBinError(1,errafit);}
 	if(now->GetMinApT()==1.0){near48->SetBinContent(2,neary);near48->SetBinError(2,errn);away48->SetBinContent(2,awayy);away48->SetBinError(2,erra);near48fit->SetBinContent(2,nearyfit);near48fit->SetBinError(2,errnfit);away48fit->SetBinContent(2,awayyfit);away48fit->SetBinError(2,errafit);}
@@ -4106,42 +3788,135 @@ void Periods(){
   TString * path10c = new TString("LHC10c/Train");
   TString * path10d = new TString("LHC10d/Train");
   TString * path10e = new TString("LHC10e/Train");
+  TString * path11a = new TString("LHC11a/Train");
+  TString * path10h = new TString("LHC10h/Train");
+  TString * path10h2 = new TString("LHC10h/Train/highpt");
   
   TDirectory * basedir = resultsdirectory(rfile->GetDirectory("/"),"Periods");
   TObjArray * filearray = new TObjArray();
-  filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10b->Data()),"READ"));
-  filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10c->Data()),"READ"));
+//   filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10b->Data()),"READ"));
+//   filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10c->Data()),"READ"));
   filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10d->Data()),"READ"));
-  filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10e->Data()),"READ"));
+//   filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10e->Data()),"READ"));
+  filearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path11a->Data()),"READ"));
+
+  TObjArray * PbPbfilearray = new TObjArray();
+  PbPbfilearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10h->Data()),"READ"));
+  PbPbfilearray->Add(TFile::Open(Form("%s%s/results.root",path->Data(),path10h2->Data()),"READ"));
+
   
   TCanvas *  testcanvas = new TCanvas("YieldsinPeriods");
-  TCanvas * corryields10b = new TCanvas("10bCorrYields");
-  TCanvas * corryields10c = new TCanvas("10cCorrYields");
+//   TCanvas * corryields10b = new TCanvas("10bCorrYields");
+//   TCanvas * corryields10c = new TCanvas("10cCorrYields");
   TCanvas * corryields10d = new TCanvas("10dCorrYields");
-  TCanvas * corryields10e = new TCanvas("10eCorrYields");
-  TCanvas * corryieldsphi10b = new TCanvas("10bCorrYieldsphi");
-  TCanvas * corryieldsphi10c = new TCanvas("10cCorrYieldsphi");
+//   TCanvas * corryields10e = new TCanvas("10eCorrYields");
+  TCanvas * corryields11a = new TCanvas("11aCorrYields");
+//   TCanvas * corryields10h = new TCanvas("10hCorrYields");
+
+  //For PbPb: in centrality bins:
+  TCanvas * corryields10h05 = new TCanvas("10h05CorrYields");
+  TCanvas * corryields10h510 = new TCanvas("10h510CorrYields");
+  TCanvas * corryields10h1020 = new TCanvas("10h1020CorrYields");
+  TCanvas * corryields10h2040 = new TCanvas("10h2040CorrYields");
+  TCanvas * corryields10h4060 = new TCanvas("10h4060CorrYields");
+  TCanvas * corryields10h6080 = new TCanvas("10h6080CorrYields");
+
+//   TCanvas * corryieldsphi10b = new TCanvas("10bCorrYieldsphi");
+//   TCanvas * corryieldsphi10c = new TCanvas("10cCorrYieldsphi");
   TCanvas * corryieldsphi10d = new TCanvas("10dCorrYieldsphi");
-  TCanvas * corryieldsphi10e = new TCanvas("10eCorrYieldsphi");
+//   TCanvas * corryieldsphi10e = new TCanvas("10eCorrYieldsphi");
+  TCanvas * corryieldsphi11a = new TCanvas("11aCorrYieldsphi");
+//   TCanvas * corryieldsphi10h = new TCanvas("10hCorrYieldsphi");
+
+  //For PbPb: in centrality bins:
+  TCanvas * corryieldsphi10h05 = new TCanvas("10h05CorrYieldsphi");
+  TCanvas * corryieldsphi10h510 = new TCanvas("10h510CorrYieldsphi");
+  TCanvas * corryieldsphi10h1020 = new TCanvas("10h1020CorrYieldsphi");
+  TCanvas * corryieldsphi10h2040 = new TCanvas("10h2040CorrYieldsphi");
+  TCanvas * corryieldsphi10h4060 = new TCanvas("10h4060CorrYieldsphi");
+  TCanvas * corryieldsphi10h6080 = new TCanvas("10h6080CorrYieldsphi");
+  
+//   TCanvas * yieldsphi10b = new TCanvas("10bCorrYieldsphi");
+//   TCanvas * yieldsphi10c = new TCanvas("10cCorrYieldsphi");
+  TCanvas * yieldsphi10d = new TCanvas("10dYieldsphi");
+//   TCanvas * yieldsphi10e = new TCanvas("10eCorrYieldsphi");
+  TCanvas * yieldsphi11a = new TCanvas("11aYieldsphi");
+//   TCanvas * corryieldsphi10h = new TCanvas("10hCorrYieldsphi");
+
+  //For PbPb: in centrality bins:
+  TCanvas * yieldsphi10h05 = new TCanvas("10h05Yieldsphi");
+  TCanvas * yieldsphi10h510 = new TCanvas("10h510Yieldsphi");
+  TCanvas * yieldsphi10h1020 = new TCanvas("10h1020Yieldsphi");
+  TCanvas * yieldsphi10h2040 = new TCanvas("10h2040Yieldsphi");
+  TCanvas * yieldsphi10h4060 = new TCanvas("10h4060Yieldsphi");
+  TCanvas * yieldsphi10h6080 = new TCanvas("10h6080Yieldsphi");
+  
+  //For PbPb: Yields for a given pT bin:
+  TCanvas* yields816_816_10h = new TCanvas("10hYields816816");
+  TLegend* leg816_816 = new TLegend(0.1,0.7,0.48,0.9);
+  TCanvas* yields816_68_10h = new TCanvas("10hYields81668");
+  TLegend* leg816_68 = new TLegend(0.1,0.7,0.48,0.9);
+  TCanvas* yields48_68_10h = new TCanvas("10hYields4868");
+  TLegend* leg48_68 = new TLegend(0.1,0.7,0.48,0.9);
   
   TObjArray * trigarray = new TObjArray();
-  trigarray->Add(new TObjString("4 GeV/c <= p_{T}^{trigger}<=8 GeV//c"));
-  trigarray->Add(new TObjString("8 GeV/c <= p_{T}^{trigger}<=16 GeV//c"));
+  trigarray->Add(new TObjString("4 GeV/c <= p_{T}^{trigger}<=8 GeV/c"));
+  trigarray->Add(new TObjString("8 GeV/c <= p_{T}^{trigger}<=16 GeV/c"));
   TObjArray * assarray  = new TObjArray();
-  assarray->Add(new TObjString("0.5-1.0 GeV//c"));
-  assarray->Add(new TObjString("1.0-2.0 GeV//c"));
-  assarray->Add(new TObjString("2.0-4.0 GeV//c"));
-  assarray->Add(new TObjString("4.0-8.0 GeV//c"));
+  assarray->Add(new TObjString("0.5-1.0 GeV/c"));
+  assarray->Add(new TObjString("1.0-2.0 GeV/c"));
+  assarray->Add(new TObjString("2.0-3.0 GeV/c"));
+  assarray->Add(new TObjString("3.0-4.0 GeV/c"));
+  assarray->Add(new TObjString("4.0-6.0 GeV/c"));
+  assarray->Add(new TObjString("6.0-8.0 GeV/c"));
+  assarray->Add(new TObjString("8.0-16.0 GeV/c"));
   
-  TObjArray* arrayofpads = PadArray(testcanvas,2,4,trigarray,assarray,"Yields from bin counting in different pT ranges");
-  TObjArray* arrayofpadscor10b = PadArray(corryields10b,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10b in different pT ranges");
-  TObjArray* arrayofpadscor10c = PadArray(corryields10c,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10c in different pT ranges");
-  TObjArray* arrayofpadscor10d = PadArray(corryields10d,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10d in different pT ranges");
-  TObjArray* arrayofpadscor10e = PadArray(corryields10e,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10e in different pT ranges");  
-  TObjArray* arrayofpadscorphi10b = PadArray(corryieldsphi10b,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10b in different pT ranges");
-  TObjArray* arrayofpadscorphi10c = PadArray(corryieldsphi10c,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10c in different pT ranges");
-  TObjArray* arrayofpadscorphi10d = PadArray(corryieldsphi10d,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10d in different pT ranges");
-  TObjArray* arrayofpadscorphi10e = PadArray(corryieldsphi10e,2,4,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10e in different pT ranges"); 
+  TObjArray* arrayofpads = PadArray(testcanvas,2,7,trigarray,assarray,"Yields from bin counting in different pT ranges");
+//   TObjArray* arrayofpadscor10b = PadArray(corryields10b,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10b in different pT ranges");
+//   TObjArray* arrayofpadscor10c = PadArray(corryields10c,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10c in different pT ranges");
+  TObjArray* arrayofpadscor10d = PadArray(corryields10d,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10d in different pT ranges");
+//   TObjArray* arrayofpadscor10e = PadArray(corryields10e,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10e in different pT ranges");  
+  TObjArray* arrayofpadscor11a = PadArray(corryields11a,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 11a in different pT ranges");  
+//   TObjArray* arrayofpadscor10h = PadArray(corryields10h,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h in different pT ranges");  
+
+  TObjArray* arrayofpadscor10h05 = PadArray(corryields10h05,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h 0%-5% events in different pT ranges");
+  TObjArray* arrayofpadscor10h510 = PadArray(corryields10h510,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h 5%-10% events in different pT ranges");
+  TObjArray* arrayofpadscor10h1020 = PadArray(corryields10h1020,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h 10%-20% events in different pT ranges");
+  TObjArray* arrayofpadscor10h2040 = PadArray(corryields10h2040,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h 20%-40% events in different pT ranges");
+  TObjArray* arrayofpadscor10h4060 = PadArray(corryields10h4060,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h 40%-60% events in different pT ranges");
+  TObjArray* arrayofpadscor10h6080 = PadArray(corryields10h6080,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#eta_{12} in 10h 60%-80% events in different pT ranges");
+
+  
+//   TObjArray* arrayofpadscorphi10b = PadArray(corryieldsphi10b,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10b in different pT ranges");
+//   TObjArray* arrayofpadscorphi10c = PadArray(corryieldsphi10c,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10c in different pT ranges");
+  TObjArray* arrayofpadscorphi10d = PadArray(corryieldsphi10d,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10d in different pT ranges");
+//   TObjArray* arrayofpadscorphi10e = PadArray(corryieldsphi10e,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10e in different pT ranges"); 
+  TObjArray* arrayofpadscorphi11a = PadArray(corryieldsphi11a,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 11a in different pT ranges"); 
+//   TObjArray* arrayofpadscorphi10h = PadArray(corryieldsphi10h,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h in different pT ranges"); 
+
+  TObjArray* arrayofpadscorphi10h05 = PadArray(corryieldsphi10h05,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h 0%-5% events in different pT ranges");
+  TObjArray* arrayofpadscorphi10h510 = PadArray(corryieldsphi10h510,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h 5%-10% events in different pT ranges");
+  TObjArray* arrayofpadscorphi10h1020 = PadArray(corryieldsphi10h1020,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h 10%-20% events in different pT ranges");
+  TObjArray* arrayofpadscorphi10h2040 = PadArray(corryieldsphi10h2040,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h 20%-40% events in different pT ranges");
+  TObjArray* arrayofpadscorphi10h4060 = PadArray(corryieldsphi10h4060,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h 40%-60% events in different pT ranges");
+  TObjArray* arrayofpadscorphi10h6080 = PadArray(corryieldsphi10h6080,2,7,trigarray,assarray,"Corrected correlation function #Delta#Phi_{1} vs #Delta#Phi_{2} in 10h 60%-80% events in different pT ranges");
+
+
+  
+//   TObjArray* arrayofpadsyield10b = PadArray(corryieldsphi10b,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10b in different pT ranges");
+//   TObjArray* arrayofpadsyield10c = PadArray(corryieldsphi10c,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10c in different pT ranges");
+  TObjArray* arrayofpadsyield10d = PadArray(yieldsphi10d,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10d in different pT ranges");
+//   TObjArray* arrayofpadsyield10e = PadArray(corryieldsphi10e,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10e in different pT ranges"); 
+  TObjArray* arrayofpadsyield11a = PadArray(yieldsphi11a,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1}  in 11a in different pT ranges"); 
+//   TObjArray* arrayofpadsyield10h = PadArray(corryieldsphi10h,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h in different pT ranges"); 
+
+  TObjArray* arrayofpadsyield10h05 = PadArray(yieldsphi10h05,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h 0%-5% events in different pT ranges");
+  TObjArray* arrayofpadsyield10h510 = PadArray(yieldsphi10h510,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h 5%-10% events in different pT ranges");
+  TObjArray* arrayofpadsyield10h1020 = PadArray(yieldsphi10h1020,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h 10%-20% events in different pT ranges");
+  TObjArray* arrayofpadsyield10h2040 = PadArray(yieldsphi10h2040,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h 20%-40% events in different pT ranges");
+  TObjArray* arrayofpadsyield10h4060 = PadArray(yieldsphi10h4060,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h 40%-60% events in different pT ranges");
+  TObjArray* arrayofpadsyield10h6080 = PadArray(yieldsphi10h6080,2,7,trigarray,assarray,"Yield vs #Delta#Phi_{1} in 10h 60%-80% events in different pT ranges");
+
   
   
   //get the relevant bins:
@@ -4157,6 +3932,25 @@ void Periods(){
     else delete bin;
   }
 
+  //get the relevant bins:
+  TObjArray * PbPbbinarray= new TObjArray();
+  TList * PbPbbinlist = dynamic_cast<TDirectory*>(PbPbfilearray->At(0))->GetListOfKeys();
+  for(int i = 0;i<PbPbbinlist->GetEntries();i++){
+    TObjString * bin = new TObjString(PbPbbinlist->At(i)->GetName());
+    if(bin->GetString().Contains("ThreePartTracks")){
+      PbPbbinarray->Add(bin);
+    }
+    else delete bin;
+  }
+  TList * PbPbbinlist2 = dynamic_cast<TDirectory*>(PbPbfilearray->At(1))->GetListOfKeys();
+  for(int i = 0;i<PbPbbinlist2->GetEntries();i++){
+    TObjString * bin = new TObjString(PbPbbinlist2->At(i)->GetName());
+    if(bin->GetString().Contains("ThreePartTracks")){
+      PbPbbinarray->Add(bin);
+    }
+    else delete bin;
+  }
+  
   //get the relevant histograms:
   TObjArray * histlist= new TObjArray();
   TObjArray * histposlist= new TObjArray();
@@ -4174,20 +3968,73 @@ void Periods(){
     histposlist->Add(yield);
   }
   
+  //get to the relevant centrality bin:
+  TObjArray * cbinarray= new TObjArray();
+  TList * cbinlist = dynamic_cast<TDirectory*>(PbPbfilearray->At(0))->GetDirectory(PbPbbinarray->At(0)->GetName())->GetListOfKeys();
+  for(int i = 0;i<cbinlist->GetEntries();i++){
+    TObjString * bin = new TObjString(cbinlist->At(i)->GetName());
+    if(bin->GetString().Contains("BinM")&&!(bin->GetString().Contains("Z"))){
+      cbinarray->Add(bin);
+    }
+    else delete bin;
+  }
+  
+  
   TH1D * yieldbcperiodcollected = dynamic_cast<TH1D*>(dynamic_cast<TFile*>(filearray->At(0))->GetDirectory(dynamic_cast<TObjString*>(binarray->At(0))->GetString().Data())->GetDirectory("yield/original_binning/GP0")->Get("dphiyieldbc"));
   yieldbcperiodcollected->Reset();
   
-  Double_t bins[4] = {0.5,1.0,2.0,4.0};
-  TH1D * near48 = new TH1D("nearsidey48","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c.",3,bins);
+  Double_t bins[7] = {0.5,1.0,2.0,3.0,4.0,6.0,8.0};
+  TH1D * near48 = new TH1D("nearsidey48","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c.",6,bins);
   near48->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
-  TH1D * away48 = new TH1D("awaysidey48","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c.",3,bins);
+  TH1D * away48 = new TH1D("awaysidey48","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c.",6,bins);
   away48->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
-  Double_t bins816[5] = {0.5,1.0,2.0,4.0,8.0};
-  TH1D * near816 = new TH1D("nearsidey816","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c.",4,bins816);
+  Double_t bins816[8] = {0.5,1.0,2.0,3.0,4.0,6.0,8.0,16.0};
+  TH1D * near816 = new TH1D("nearsidey816","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c.",7,bins816);
   near816->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
-  TH1D * away816 = new TH1D("awaysidey816","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c.",4,bins816);
+  TH1D * away816 = new TH1D("awaysidey816","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c.",7,bins816);
   away816->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
   
+  TH1D * near48_10h_05 = new TH1D("nearsidey48_10h_05","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c in 0% - 5% PbPb events.",6,bins);
+  near48_10h_05->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away48_10h_05 = new TH1D("awaysidey48_10h_05","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c in 0% - 5% PbPb events.",6,bins);
+  away48_10h_05->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near816_10h_05 = new TH1D("nearsidey816_10h_05","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c in 0% - 5% PbPb events.",7,bins816);
+  near816_10h_05->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away816_10h_05 = new TH1D("awaysidey816_10h_05","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c in 0% - 5% PbPb events.",7,bins816);
+  away816_10h_05->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near48_10h_510 = new TH1D("nearsidey48_10h_510","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c in 5% - 10% PbPb events.",6,bins);
+  near48_10h_510->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away48_10h_510 = new TH1D("awaysidey48_10h_510","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c in 5% - 10% PbPb events.",6,bins);
+  away48_10h_510->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near816_10h_510 = new TH1D("nearsidey816_10h_510","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c in 5% - 10% PbPb events.",7,bins816);
+  near816_10h_510->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away816_10h_510 = new TH1D("awaysidey816_10h_510","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c in 5% - 10% PbPb events.",7,bins816);
+  away816_10h_510->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+   
+  TH1D * near48_10h_1020 = new TH1D("nearsidey48_10h_1020","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c in 10% - 20% PbPb events.",6,bins);
+  near48_10h_1020->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away48_10h_1020 = new TH1D("awaysidey48_10h_1020","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c in 10% - 20% PbPb events.",6,bins);
+  away48_10h_1020->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near816_10h_1020 = new TH1D("nearsidey816_10h_1020","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c in 10% - 20% PbPb events.",7,bins816);
+  near816_10h_1020->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away816_10h_1020 = new TH1D("awaysidey816_10h_1020","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c in 10% - 20% PbPb events.",7,bins816);
+  away816_10h_1020->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near48_10h_2040 = new TH1D("nearsidey48_10h_2040","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c in 20% - 40% PbPb events.",6,bins);
+  near48_10h_2040->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away48_10h_2040 = new TH1D("awaysidey48_10h_2040","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c in 20% - 40% PbPb events.",6,bins);
+  away48_10h_2040->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near816_10h_2040 = new TH1D("nearsidey816_10h_2040","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c in 20% - 40% PbPb events.",7,bins816);
+  near816_10h_2040->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away816_10h_2040 = new TH1D("awaysidey816_10h_2040","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c in 20% - 40% PbPb events.",7,bins816);
+  away816_10h_2040->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near48_10h_4060 = new TH1D("nearsidey48_10h_4060","Yield on the near side with Trigger pT= 4.0-8.0 GeV/c in 40% - 60% PbPb events.",6,bins);
+  near48_10h_4060->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away48_10h_4060 = new TH1D("awaysidey48_10h_4060","Yield on the away side with Trigger pT= 4.0-8.0 GeV/c in 40% - 60% PbPb events.",6,bins);
+  away48_10h_4060->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * near816_10h_4060 = new TH1D("nearsidey816_10h_4060","Yield on the near side with Trigger pT= 8.0-16.0 GeV/c in 40% - 60% PbPb events.",7,bins816);
+  near816_10h_4060->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
+  TH1D * away816_10h_4060 = new TH1D("awaysidey816_10h_4060","Yield on the away side with Trigger pT= 8.0-16.0 GeV/c in 40% - 60% PbPb events.",7,bins816);
+  away816_10h_4060->GetYaxis()->SetTitle("#frac{dN_{pairs}}{N_{trig}d#Phi_{1}d#eta_{12} dpT_{A}} (rad)^{-1}");
   
 //   TCanvas * yieldp = new TCanvas("YieldsinPeriods");
 //   yieldp->Divide(2,4);
@@ -4205,8 +4052,11 @@ void Periods(){
       Double_t S = 0.0;
       Double_t error = 0.0;
       for(int k = 0;k<filearray->GetEntries();k++){
-	Double_t loccont = dynamic_cast<TH1D*>(dynamic_cast<TFile*>(filearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Data())->GetDirectory("yield/original_binning/GP0")->Get("dphiyieldbc"))->GetBinContent(x);
-	Double_t locerror = dynamic_cast<TH1D*>(dynamic_cast<TFile*>(filearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Data())->GetDirectory("yield/original_binning/GP0")->Get("dphiyieldbc"))->GetBinError(x);
+	TH1D * hist = dynamic_cast<TH1D*>(dynamic_cast<TFile*>(filearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Data())->GetDirectory("yield/original_binning/GP0")->Get("dphiyieldbc"));
+
+	  
+	Double_t loccont = hist->GetBinContent(x);
+	Double_t locerror = hist->GetBinError(x);
 	if(abs(locerror)>1.0E-12){
 	  S += loccont/(locerror*locerror);
 	  error += 1.0/(locerror*locerror);
@@ -4221,18 +4071,57 @@ void Periods(){
     yieldbcperiodcollected->SetTitle(Form("Yield for %s",binarray->At(i)->GetName()));
     yieldbcperiodcollected->Write();
     Double_t near = 0.0; Double_t neare=0.0;Double_t away = 0.0; Double_t awaye=0.0;
-    near = yieldbcperiodcollected->IntegralAndError(1,yieldbcperiodcollected->FindBin(TMath::Pi()/2.0),neare);
-    away = yieldbcperiodcollected->IntegralAndError(yieldbcperiodcollected->FindBin(TMath::Pi()/2.0),yieldbcperiodcollected->GetNbinsX(),awaye);
+    near = yieldbcperiodcollected->IntegralAndError(1,yieldbcperiodcollected->FindBin(TMath::Pi()/2.0),neare,"width");
+    away = yieldbcperiodcollected->IntegralAndError(yieldbcperiodcollected->FindBin(TMath::Pi()/2.0),yieldbcperiodcollected->GetNbinsX(),awaye,"width");
 
     if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_0_1")){near48->SetBinContent(1,near/0.5);near48->SetBinError(1,neare/0.5);away48->SetBinContent(1,away/0.5);away48->SetBinError(1,awaye/0.5);}
     else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_1_2")){near48->SetBinContent(2,near);near48->SetBinError(2,neare);away48->SetBinContent(2,away);away48->SetBinError(2,awaye);}
-    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_4")){near48->SetBinContent(3,near/2.0);near48->SetBinError(3,neare/2.0);away48->SetBinContent(3,away/2.0);away48->SetBinError(3,awaye/2.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_3")){near48->SetBinContent(3,near/1.0);near48->SetBinError(3,neare/1.0);away48->SetBinContent(3,away/1.0);away48->SetBinError(3,awaye/1.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_3_4")){near48->SetBinContent(4,near/1.0);near48->SetBinError(4,neare/1.0);away48->SetBinContent(4,away/1.0);away48->SetBinError(4,awaye/1.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_4_6")){near48->SetBinContent(5,near/2.0);near48->SetBinError(5,neare/2.0);away48->SetBinContent(5,away/2.0);away48->SetBinError(5,awaye/2.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_6_8")){near48->SetBinContent(6,near/2.0);near48->SetBinError(6,neare/2.0);away48->SetBinContent(6,away/2.0);away48->SetBinError(6,awaye/2.0);}
+
     else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_0_1")){near816->SetBinContent(1,near/0.5);near816->SetBinError(1,neare/0.5);away816->SetBinContent(1,away/0.5);away816->SetBinError(1,awaye/0.5);}
     else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_1_2")){near816->SetBinContent(2,near);near816->SetBinError(2,neare);away816->SetBinContent(2,away);away816->SetBinError(2,awaye);}
-    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_4")){near816->SetBinContent(3,near/2.0);near816->SetBinError(3,neare/2.0);away816->SetBinContent(3,away/2.0);away816->SetBinError(3,awaye/2.0);}
-    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_8")){near816->SetBinContent(4,near/2.0);near816->SetBinError(4,neare/2.0);away816->SetBinContent(4,away/2.0);away816->SetBinError(4,awaye/2.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_3")){near816->SetBinContent(3,near/1.0);near816->SetBinError(3,neare/1.0);away816->SetBinContent(3,away/1.0);away816->SetBinError(3,awaye/1.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_3_4")){near816->SetBinContent(4,near/1.0);near816->SetBinError(4,neare/1.0);away816->SetBinContent(4,away/1.0);away816->SetBinError(4,awaye/1.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_6")){near816->SetBinContent(5,near/2.0);near816->SetBinError(5,neare/2.0);away816->SetBinContent(5,away/2.0);away816->SetBinError(5,awaye/2.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_6_8")){near816->SetBinContent(6,near/2.0);near816->SetBinError(6,neare/2.0);away816->SetBinContent(6,away/2.0);away816->SetBinError(6,awaye/2.0);}
+    else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_8_16")){near816->SetBinContent(7,near/8.0);near816->SetBinError(7,neare/8.0);away816->SetBinContent(7,away/8.0);away816->SetBinError(7,awaye/8.0);}
 
 
+    for(int k = 0;k<filearray->GetEntries();k++){
+      TObjArray* arr;
+      TH1D * hist = dynamic_cast<TH1D*>(dynamic_cast<TFile*>(filearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Data())->GetDirectory("yield/original_binning/GP0")->Get("dphiyieldbc"));
+      if(k==1) arr = arrayofpadsyield11a;
+// 	if(k==1) arr = arrayofpadscor10c;
+      if(k==0) arr = arrayofpadsyield10d;
+// 	if(k==3) arr = arrayofpadscor10e;
+      if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_0_1")){dynamic_cast<TPad*>(arr->At(0))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_1_2")){dynamic_cast<TPad*>(arr->At(1))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_3")){dynamic_cast<TPad*>(arr->At(2))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_3_4")){dynamic_cast<TPad*>(arr->At(3))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_4_6")){dynamic_cast<TPad*>(arr->At(4))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_6_8")){dynamic_cast<TPad*>(arr->At(5))->cd();}
+
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(7))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(8))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_3")){dynamic_cast<TPad*>(arr->At(9))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_3_4")){dynamic_cast<TPad*>(arr->At(10))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_6")){dynamic_cast<TPad*>(arr->At(11))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_6_8")){dynamic_cast<TPad*>(arr->At(12))->cd();}
+      else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();}
+      hist->SetStats(false);
+      hist->GetXaxis()->SetLabelSize(0.08);
+      hist->GetXaxis()->SetTitleSize(0.08);
+      hist->GetXaxis()->SetTitleOffset(0.5);
+      hist->GetYaxis()->SetLabelSize(0.08);
+      hist->GetYaxis()->SetTitleSize(0.065);
+      hist->GetYaxis()->SetTitleOffset(0.5);
+      hist->SetTitle("");
+      hist->Draw("E");
+      
+    }
     
     
     for(int j = 0;j<histlist->GetEntries();j++){
@@ -4248,45 +4137,79 @@ void Periods(){
 	
 	if(TString(hist->GetName()).Contains("DPhi_1_DEta_12_SameSide")){
 	  TObjArray* arr;
-	  if(k==0) arr = arrayofpadscor10b;
-	  if(k==1) arr = arrayofpadscor10c;
-	  if(k==2) arr = arrayofpadscor10d;
-	  if(k==3) arr = arrayofpadscor10e;
+	  if(k==1) arr = arrayofpadscor11a;
+// 	  if(k==1) arr = arrayofpadscor10c;
+	  if(k==0) arr = arrayofpadscor10d;
+// 	  if(k==3) arr = arrayofpadscor10e;
 	  if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_0_1")){dynamic_cast<TPad*>(arr->At(0))->cd();}
 	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_1_2")){dynamic_cast<TPad*>(arr->At(1))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_4")){dynamic_cast<TPad*>(arr->At(2))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(4))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(5))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_4")){dynamic_cast<TPad*>(arr->At(6))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_8")){dynamic_cast<TPad*>(arr->At(7))->cd();}
-	  hist2d->SetTitle("");
-	  hist2d->Draw("colz");
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_3")){dynamic_cast<TPad*>(arr->At(2))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_3_4")){dynamic_cast<TPad*>(arr->At(3))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_4_6")){dynamic_cast<TPad*>(arr->At(4))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_6_8")){dynamic_cast<TPad*>(arr->At(5))->cd();}
 
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(7))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(8))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_3")){dynamic_cast<TPad*>(arr->At(9))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_3_4")){dynamic_cast<TPad*>(arr->At(10))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_6")){dynamic_cast<TPad*>(arr->At(11))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_6_8")){dynamic_cast<TPad*>(arr->At(12))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();}
+	  gStyle->SetPalette(1);
+	  hist2d->SetStats(false);
+	  hist2d->GetXaxis()->SetLabelSize(0.08);
+	  hist2d->GetXaxis()->SetTitleSize(0.09);
+	  hist2d->GetXaxis()->SetTitleOffset(0.3);
+	  hist2d->GetYaxis()->SetLabelSize(0.08);
+	  hist2d->GetYaxis()->SetTitleSize(0.09);
+	  hist2d->GetYaxis()->SetTitleOffset(0.2);
+	  hist2d->SetTitle("");
+	  hist2d->Draw("COLZ");
+	  gPad->Update();
+	  TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+	  if(palette) palette->SetLabelSize(0.08);
 	}
 	if(TString(hist->GetName()).Contains("DPhi_1_DPHI_2")){
 	  TObjArray* arr;
-	  if(k==0) arr = arrayofpadscorphi10b;
-	  if(k==1) arr = arrayofpadscorphi10c;
-	  if(k==2) arr = arrayofpadscorphi10d;
-	  if(k==3) arr = arrayofpadscorphi10e;
+	  if(k==1) arr = arrayofpadscorphi11a;
+// 	  if(k==1) arr = arrayofpadscorphi10c;
+	  if(k==0) arr = arrayofpadscorphi10d;
+// 	  if(k==3) arr = arrayofpadscorphi10e;
 	  if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_0_1")){dynamic_cast<TPad*>(arr->At(0))->cd();}
 	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_1_2")){dynamic_cast<TPad*>(arr->At(1))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_4")){dynamic_cast<TPad*>(arr->At(2))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(4))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(5))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_4")){dynamic_cast<TPad*>(arr->At(6))->cd();}
-	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_8")){dynamic_cast<TPad*>(arr->At(7))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_2_3")){dynamic_cast<TPad*>(arr->At(2))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_3_4")){dynamic_cast<TPad*>(arr->At(3))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_4_6")){dynamic_cast<TPad*>(arr->At(4))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("4_8_6_8")){dynamic_cast<TPad*>(arr->At(5))->cd();}
+
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(7))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(8))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_2_3")){dynamic_cast<TPad*>(arr->At(9))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_3_4")){dynamic_cast<TPad*>(arr->At(10))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_4_6")){dynamic_cast<TPad*>(arr->At(11))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_6_8")){dynamic_cast<TPad*>(arr->At(12))->cd();}
+	  else if(dynamic_cast<TObjString*>(binarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();}
+	  hist2d->SetStats(false);
+	  hist2d->GetXaxis()->SetLabelSize(0.08);
+	  hist2d->GetXaxis()->SetTitleSize(0.09);
+	  hist2d->GetXaxis()->SetTitleOffset(0.3);
+	  hist2d->GetYaxis()->SetLabelSize(0.08);
+	  hist2d->GetYaxis()->SetTitleSize(0.09);
+	  hist2d->GetYaxis()->SetTitleOffset(0.2);
 	  hist2d->SetTitle("");
 	  hist2d->Draw("colz");
-
+	  gPad->Update();
+	  TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+	  if(palette) palette->SetLabelSize(0.08);
 	}
 	
 	cdppcanvas(canvnow,k+1)->cd();
 	
-	if(k==0) hist->SetTitle("LHC10b");
-	if(k==1) hist->SetTitle("LHC10c");
-	if(k==2) hist->SetTitle("LHC10d");
-	if(k==3) hist->SetTitle("LHC10e");
+// 	if(k==1) hist->SetTitle("LHC11a");
+// 	if(k==1) hist->SetTitle("LHC10c");
+// 	if(k==0) hist->SetTitle("LHC10d");
+// 	if(k==3) hist->SetTitle("LHC10e");
 	
 	if(hist1d) hist1d->Draw("E");
 	if(hist2d) hist2d->Draw("colz");
@@ -4304,40 +4227,278 @@ void Periods(){
     TH1D * hist = dynamic_cast<TH1D*>(savedir->Get("dphiyieldbc")->Clone(Form("dphiyieldbcclonenr%i",i)));
     if(TString(binarray->At(i)->GetName()).Contains("4_8_0_1"))dynamic_cast<TPad*>(arrayofpads->At(0))->cd();//yieldp->cd(1);
     if(TString(binarray->At(i)->GetName()).Contains("4_8_1_2"))dynamic_cast<TPad*>(arrayofpads->At(1))->cd();//yieldp->cd(3);
-    if(TString(binarray->At(i)->GetName()).Contains("4_8_2_4"))dynamic_cast<TPad*>(arrayofpads->At(2))->cd();//yieldp->cd(5);
-    if(TString(binarray->At(i)->GetName()).Contains("8_16_0_1"))dynamic_cast<TPad*>(arrayofpads->At(4))->cd();//yieldp->cd(2);
-    if(TString(binarray->At(i)->GetName()).Contains("8_16_1_2"))dynamic_cast<TPad*>(arrayofpads->At(5))->cd();//yieldp->cd(4);
-    if(TString(binarray->At(i)->GetName()).Contains("8_16_2_4"))dynamic_cast<TPad*>(arrayofpads->At(6))->cd();//yieldp->cd(6);
-    if(TString(binarray->At(i)->GetName()).Contains("8_16_4_8"))dynamic_cast<TPad*>(arrayofpads->At(7))->cd();//yieldp->cd(8);
+    if(TString(binarray->At(i)->GetName()).Contains("4_8_2_3"))dynamic_cast<TPad*>(arrayofpads->At(2))->cd();//yieldp->cd(5);
+    if(TString(binarray->At(i)->GetName()).Contains("4_8_3_4"))dynamic_cast<TPad*>(arrayofpads->At(3))->cd();//yieldp->cd(5);
+    if(TString(binarray->At(i)->GetName()).Contains("4_8_4_6"))dynamic_cast<TPad*>(arrayofpads->At(4))->cd();//yieldp->cd(5);
+    if(TString(binarray->At(i)->GetName()).Contains("4_8_6_8"))dynamic_cast<TPad*>(arrayofpads->At(5))->cd();//yieldp->cd(5);   
+    
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_0_1"))dynamic_cast<TPad*>(arrayofpads->At(7))->cd();//yieldp->cd(2);
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_1_2"))dynamic_cast<TPad*>(arrayofpads->At(8))->cd();//yieldp->cd(4);
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_2_3"))dynamic_cast<TPad*>(arrayofpads->At(9))->cd();//yieldp->cd(6);
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_3_4"))dynamic_cast<TPad*>(arrayofpads->At(10))->cd();//yieldp->cd(8);
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_4_6"))dynamic_cast<TPad*>(arrayofpads->At(11))->cd();//yieldp->cd(8);
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_6_8"))dynamic_cast<TPad*>(arrayofpads->At(12))->cd();//yieldp->cd(8);
+    if(TString(binarray->At(i)->GetName()).Contains("8_16_8_16"))dynamic_cast<TPad*>(arrayofpads->At(13))->cd();//yieldp->cd(8);
+
     hist->SetStats(false);
+    hist->GetXaxis()->SetLabelSize(0.08);
+    hist->GetXaxis()->SetTitleSize(0.08);
+    hist->GetXaxis()->SetTitleOffset(0.5);
+    hist->GetYaxis()->SetLabelSize(0.08);
+    hist->GetYaxis()->SetTitleSize(0.065);
+    hist->GetYaxis()->SetTitleOffset(0.5);
+    
     hist->SetTitle("");
     hist->Draw("E");
   }
-//   basedir->cd();
-//   yieldp->Write();
+
+  
+  for(int i = 0;i<PbPbbinarray->GetEntries();i++){
+    for(int l = 0;l<cbinarray->GetEntries();l++){
+      int centindex = 0;
+      if(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Contains("(0.00)->(5.00)")) centindex = 1;
+      else if(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Contains("(5.00)->(10.00)")) centindex = 2;
+      else if(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Contains("(10.00)->(20.00)")) centindex = 3;
+      else if(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Contains("(20.00)->(40.00)")) centindex = 4;
+      else if(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Contains("(40.00)->(60.00)")) centindex = 5;
+      else if(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Contains("(60.00)->(80.00)")) centindex = 6;
+      for(int k = 0;k<PbPbfilearray->GetEntries();k++){
+	if(!dynamic_cast<TFile*>(PbPbfilearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Data())) continue;
+	TH1D * hist = dynamic_cast<TH1D*>(dynamic_cast<TFile*>(PbPbfilearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Data())->GetDirectory(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Data())->GetDirectory("yield/original_binning/GP0")->Get("dphiyieldbc"));
+	TObjArray* arr;
+	TH1D * near48tmp = NULL;
+	TH1D * away48tmp = NULL;
+	TH1D * near816tmp = NULL;
+	TH1D * away816tmp = NULL;
+	if(k==0||k==1){ 
+
+	  if(centindex ==1){ arr = arrayofpadsyield10h05;near48tmp = near48_10h_05;away48tmp=away48_10h_05;near816tmp=near816_10h_05;away816tmp=away816_10h_05;}
+	  else if(centindex ==2){ arr = arrayofpadsyield10h510;near48tmp = near48_10h_510;away48tmp=away48_10h_510;near816tmp=near816_10h_510;away816tmp=away816_10h_510;}
+	  else if(centindex ==3){ arr = arrayofpadsyield10h1020;near48tmp = near48_10h_1020;away48tmp=away48_10h_1020;near816tmp=near816_10h_1020;away816tmp=away816_10h_1020;}
+	  else if(centindex ==4){ arr = arrayofpadsyield10h2040;near48tmp = near48_10h_2040;away48tmp=away48_10h_2040;near816tmp=near816_10h_2040;away816tmp=away816_10h_2040;}
+	  else if(centindex ==5){ arr = arrayofpadsyield10h4060;near48tmp = near48_10h_4060;away48tmp=away48_10h_4060;near816tmp=near816_10h_4060;away816tmp=away816_10h_4060;}
+	  else if(centindex ==6) arr = arrayofpadsyield10h6080;	    
+	}
+	Double_t near = 0.0; Double_t neare=0.0;Double_t away = 0.0; Double_t awaye=0.0;
+	near = hist->IntegralAndError(1,hist->FindBin(TMath::Pi()/2.0),neare,"width");
+	away = hist->IntegralAndError(hist->FindBin(TMath::Pi()/2.0),hist->GetNbinsX(),awaye,"width");
+	
+	if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_0_1")){dynamic_cast<TPad*>(arr->At(0))->cd();if(near48tmp&&away48tmp){near48tmp->SetBinContent(1,near/0.5);away48tmp->SetBinContent(1,away/0.5);near48tmp->SetBinError(1,neare/0.5);away48tmp->SetBinError(1,awaye/0.5);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_1_2")){dynamic_cast<TPad*>(arr->At(1))->cd();if(near48tmp&&away48tmp){near48tmp->SetBinContent(2,near/1.0);away48tmp->SetBinContent(2,away/1.0);near48tmp->SetBinError(2,neare/1.0);away48tmp->SetBinError(2,awaye/1.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_2_3")){dynamic_cast<TPad*>(arr->At(2))->cd();if(near48tmp&&away48tmp){near48tmp->SetBinContent(3,near/1.0);away48tmp->SetBinContent(3,away/1.0);near48tmp->SetBinError(3,neare/1.0);away48tmp->SetBinError(3,awaye/1.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_3_4")){dynamic_cast<TPad*>(arr->At(3))->cd();if(near48tmp&&away48tmp){near48tmp->SetBinContent(4,near/1.0);away48tmp->SetBinContent(4,away/1.0);near48tmp->SetBinError(4,neare/1.0);away48tmp->SetBinError(4,awaye/1.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_4_6")){dynamic_cast<TPad*>(arr->At(4))->cd();if(near48tmp&&away48tmp){near48tmp->SetBinContent(5,near/2.0);away48tmp->SetBinContent(5,away/2.0);near48tmp->SetBinError(5,neare/2.0);away48tmp->SetBinError(5,awaye/2.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_6_8")){dynamic_cast<TPad*>(arr->At(5))->cd();if(near48tmp&&away48tmp){near48tmp->SetBinContent(6,near/2.0);away48tmp->SetBinContent(6,away/2.0);near48tmp->SetBinError(6,neare/2.0);away48tmp->SetBinError(6,awaye/2.0);}}
+
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(7))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(1,near/0.5);away816tmp->SetBinContent(1,away/0.5);near816tmp->SetBinError(1,neare/0.5);away816tmp->SetBinError(1,awaye/0.5);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(8))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(2,near/1.0);away816tmp->SetBinContent(2,away/1.0);near816tmp->SetBinError(2,neare/1.0);away816tmp->SetBinError(2,awaye/1.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_2_3")){dynamic_cast<TPad*>(arr->At(9))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(3,near/1.0);away816tmp->SetBinContent(3,away/1.0);near816tmp->SetBinError(3,neare/1.0);away816tmp->SetBinError(3,awaye/1.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_3_4")){dynamic_cast<TPad*>(arr->At(10))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(4,near/1.0);away816tmp->SetBinContent(4,away/1.0);near816tmp->SetBinError(4,neare/1.0);away816tmp->SetBinError(4,awaye/1.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_4_6")){dynamic_cast<TPad*>(arr->At(11))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(5,near/2.0);away816tmp->SetBinContent(5,away/2.0);near816tmp->SetBinError(5,neare/2.0);away816tmp->SetBinError(5,awaye/2.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_6_8")){dynamic_cast<TPad*>(arr->At(12))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(6,near/2.0);away816tmp->SetBinContent(6,away/2.0);near816tmp->SetBinError(6,neare/2.0);away816tmp->SetBinError(6,awaye/2.0);}}
+	else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();if(near816tmp&&away816tmp){near816tmp->SetBinContent(7,near/8.0);away816tmp->SetBinContent(7,away/8.0);near816tmp->SetBinError(7,neare/8.0);away816tmp->SetBinError(7,awaye/8.0);}}
+	hist->SetStats(false);
+	hist->GetXaxis()->SetLabelSize(0.08);
+	hist->GetXaxis()->SetTitleSize(0.08);
+	hist->GetXaxis()->SetTitleOffset(0.5);
+	hist->GetYaxis()->SetLabelSize(0.08);
+	hist->GetYaxis()->SetTitleSize(0.065);
+	hist->GetYaxis()->SetTitleOffset(0.5);
+	hist->SetTitle("");
+	hist->Draw("E");
+	
+	TCanvas* can=NULL;
+	TLegend* leg=NULL;
+	if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_6_8")){
+	  can = yields48_68_10h;
+	  leg = leg48_68;
+	}
+	if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_6_8")){
+	  can = yields816_68_10h;
+	  leg = leg816_68;
+	}
+	if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_8_16")){
+	  can = yields816_816_10h;
+	  leg = leg816_816;
+	}
+	if(can&&leg){
+	  can->cd();
+// 	  if(centindex==1){hist->SetLineColor(kGreen);leg->AddEntry(hist, "C = (0.00) % ->(5.00) %");}
+// 	  if(centindex==2){hist->SetLineColor(kRed);leg->AddEntry(hist,   "C = (5.00) % ->(10.00) %");}
+// 	  if(centindex==3){hist->SetLineColor(kBlue);leg->AddEntry(hist,  "C = (10.00) % ->(20.00) %");}
+// 	  if(centindex==4){hist->SetLineColor(kBlack);leg->AddEntry(hist, "C = (20.00) % ->(40.00) %");}
+// 	  if(centindex==5){hist->SetLineColor(kViolet);leg->AddEntry(hist,"C = (40.00) % ->(60.00) %");}
+	  hist->Draw("SAMEE");
+	}
+	
+	for(int j = 0;j<histlist->GetEntries();j++){
+	  TH1 * hist = dynamic_cast<TH1*>(dynamic_cast<TFile*>(PbPbfilearray->At(k))->GetDirectory(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Data())->GetDirectory(dynamic_cast<TObjString*>(cbinarray->At(l))->GetString().Data())->GetDirectory(dynamic_cast<TObjString*>(histposlist->At(j))->GetString().Data())->Get(histlist->At(j)->GetName()));
+
+
+	  TH1D * hist1d = dynamic_cast<TH1D*>(hist);
+	  TH2D * hist2d = dynamic_cast<TH2D*>(hist);
+	
+	  if(TString(hist->GetName()).Contains("DPhi_1_DEta_12_SameSide")&&centindex!=0){
+	    TObjArray* arr;
+	    if(k==0||k==1){ 
+	      if(centindex ==1) arr = arrayofpadscor10h05;
+	      else if(centindex ==2) arr = arrayofpadscor10h510;
+	      else if(centindex ==3) arr = arrayofpadscor10h1020;
+	      else if(centindex ==4) arr = arrayofpadscor10h2040;
+	      else if(centindex ==5) arr = arrayofpadscor10h4060;
+	      else if(centindex ==6) arr = arrayofpadscor10h6080;	    
+	    }
+	    
+	    if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_0_1")){dynamic_cast<TPad*>(arr->At(0))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_1_2")){dynamic_cast<TPad*>(arr->At(1))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_2_3")){dynamic_cast<TPad*>(arr->At(2))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_3_4")){dynamic_cast<TPad*>(arr->At(3))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_4_6")){dynamic_cast<TPad*>(arr->At(4))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_6_8")){dynamic_cast<TPad*>(arr->At(5))->cd();}
+
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(7))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(8))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_2_3")){dynamic_cast<TPad*>(arr->At(9))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_3_4")){dynamic_cast<TPad*>(arr->At(10))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_4_6")){dynamic_cast<TPad*>(arr->At(11))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_6_8")){dynamic_cast<TPad*>(arr->At(12))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();}
+	    hist2d->SetStats(false);
+	    hist2d->GetXaxis()->SetLabelSize(0.08);
+	    hist2d->GetXaxis()->SetTitleSize(0.09);
+	    hist2d->GetXaxis()->SetTitleOffset(0.3);
+	    hist2d->GetYaxis()->SetLabelSize(0.08);
+	    hist2d->GetYaxis()->SetTitleSize(0.09);
+	    hist2d->GetYaxis()->SetTitleOffset(0.2);
+	    hist2d->SetTitle("");
+	    hist2d->Draw("colz");
+	    gPad->Update();
+	    TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+	    if(palette) palette->SetLabelSize(0.08);
+	  }
+	  if(TString(hist->GetName()).Contains("DPhi_1_DPHI_2")){
+	    TObjArray* arr;
+	    if(k==0||k==1){ 
+	      if(centindex ==1) arr = arrayofpadscorphi10h05;
+	      else if(centindex ==2) arr = arrayofpadscorphi10h510;
+	      else if(centindex ==3) arr = arrayofpadscorphi10h1020;
+	      else if(centindex ==4) arr = arrayofpadscorphi10h2040;
+	      else if(centindex ==5) arr = arrayofpadscorphi10h4060;
+	      else if(centindex ==6) arr = arrayofpadscorphi10h6080;	    
+	    }
+	    if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_0_1")){dynamic_cast<TPad*>(arr->At(0))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_1_2")){dynamic_cast<TPad*>(arr->At(1))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_2_3")){dynamic_cast<TPad*>(arr->At(2))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_3_4")){dynamic_cast<TPad*>(arr->At(3))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_4_6")){dynamic_cast<TPad*>(arr->At(4))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("4_8_6_8")){dynamic_cast<TPad*>(arr->At(5))->cd();}
+
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_0_1")){dynamic_cast<TPad*>(arr->At(7))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_1_2")){dynamic_cast<TPad*>(arr->At(8))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_2_3")){dynamic_cast<TPad*>(arr->At(9))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_3_4")){dynamic_cast<TPad*>(arr->At(10))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_4_6")){dynamic_cast<TPad*>(arr->At(11))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_6_8")){dynamic_cast<TPad*>(arr->At(12))->cd();}
+	    else if(dynamic_cast<TObjString*>(PbPbbinarray->At(i))->GetString().Contains("8_16_8_16")){dynamic_cast<TPad*>(arr->At(13))->cd();}
+	    hist2d->SetStats(false);
+	    hist2d->GetXaxis()->SetLabelSize(0.08);
+	    hist2d->GetXaxis()->SetTitleSize(0.09);
+	    hist2d->GetXaxis()->SetTitleOffset(0.3);
+	    hist2d->GetYaxis()->SetLabelSize(0.08);
+	    hist2d->GetYaxis()->SetTitleSize(0.09);
+	    hist2d->GetYaxis()->SetTitleOffset(0.2);
+	    hist2d->SetTitle("");
+	    hist2d->Draw("colz");
+	    gPad->Update();
+	    TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+	    if(palette) palette->SetLabelSize(0.08);
+	  }
+	}
+      }
+    }
+  }
+  
+  
+  
   
   basedir->cd();
   testcanvas->Update();
   testcanvas->Write();
-
-  corryields10b->Update();
-  corryields10b->Write();
-  corryields10c->Update();
-  corryields10c->Write();
+// 
+//   corryields10b->Update();
+//   corryields10b->Write();
+//   corryields10c->Update();
+//   corryields10c->Write();
   corryields10d->Update();
   corryields10d->Write();
-  corryields10e->Update();
-  corryields10e->Write();
-  corryieldsphi10b->Update();
-  corryieldsphi10b->Write();
-  corryieldsphi10c->Update();
-  corryieldsphi10c->Write();
+//   corryields10e->Update();
+//   corryields10e->Write();
+  corryields11a->Update();
+  corryields11a->Write();  
+  corryields10h05->Update();
+  corryields10h05->Write();
+  corryields10h510->Update();
+  corryields10h510->Write();
+  corryields10h1020->Update();
+  corryields10h1020->Write();
+  corryields10h2040->Update();
+  corryields10h2040->Write();
+  corryields10h4060->Update();
+  corryields10h4060->Write();
+  corryields10h6080->Update();
+  corryields10h6080->Write();
+
+//   corryieldsphi10b->Update();
+//   corryieldsphi10b->Write();
+//   corryieldsphi10c->Update();
+//   corryieldsphi10c->Write();
   corryieldsphi10d->Update();
   corryieldsphi10d->Write();
-  corryieldsphi10e->Update();
-  corryieldsphi10e->Write();
+//   corryieldsphi10e->Update();
+//   corryieldsphi10e->Write();
+  corryieldsphi11a->Update();
+  corryieldsphi11a->Write();
+  corryieldsphi10h05->Update();
+  corryieldsphi10h05->Write();
+  corryieldsphi10h510->Update();
+  corryieldsphi10h510->Write();
+  corryieldsphi10h1020->Update();
+  corryieldsphi10h1020->Write();
+  corryieldsphi10h2040->Update();
+  corryieldsphi10h2040->Write();
+  corryieldsphi10h4060->Update();
+  corryieldsphi10h4060->Write();
+  corryieldsphi10h6080->Update();
+  corryieldsphi10h6080->Write();
   
-  delete testcanvas;delete corryields10b;delete corryields10c;delete corryields10d;delete corryields10e;delete corryieldsphi10b;delete corryieldsphi10c;delete corryieldsphi10d;delete corryieldsphi10e;
+  yieldsphi10d->Update();
+  yieldsphi10d->Write();
+  yieldsphi11a->Update();
+  yieldsphi11a->Write();
+  yieldsphi10h05->Update();
+  yieldsphi10h05->Write();
+  yieldsphi10h510->Update();
+  yieldsphi10h510->Write();
+  yieldsphi10h1020->Update();
+  yieldsphi10h1020->Write();
+  yieldsphi10h2040->Update();
+  yieldsphi10h2040->Write();
+  yieldsphi10h4060->Update();
+  yieldsphi10h4060->Write();
+  yieldsphi10h6080->Update();
+  yieldsphi10h6080->Write();
+  
+  delete testcanvas;delete corryields10d;delete corryieldsphi10d;delete corryields11a;delete corryieldsphi11a;delete corryields10h05;delete corryieldsphi10h05;delete corryields10h1020;delete corryieldsphi10h1020;delete corryields10h2040;delete corryieldsphi10h2040;delete corryields10h4060;delete corryieldsphi10h4060;delete corryields10h510;delete corryieldsphi10h510;delete corryields10h6080;delete corryieldsphi10h6080;
+  delete yieldsphi10d;  delete yieldsphi11a;  delete yieldsphi10h05; delete yieldsphi10h510;delete yieldsphi10h1020;delete yieldsphi10h2040;delete yieldsphi10h4060;delete yieldsphi10h6080;
+  yields48_68_10h->cd();
+  leg48_68->Draw("SAME");
+  yields48_68_10h->Update();
+  yields48_68_10h->Write();
+  yields816_68_10h->cd();
+  leg816_68->Draw("SAME");
+  yields816_68_10h->Update();
+  yields816_68_10h->Write();
+  
   near48->Write();
   away48->Write();
   near816->Write();
@@ -4350,10 +4511,83 @@ void Periods(){
   away816->SetTitle("Away side yield divided by near side yield for 8.0GeV/c <pT_{trig}<16.0GeV/c.");
   away816->GetYaxis()->SetTitle("#frac{dN_{pairs-away}}{dN_{pairs - near}}");
   away816->Write("awaydivnear816");
+  
+  near48_10h_05->Write();
+  away48_10h_05->Write();
+//   away48_10h_05->Divide(near48_10h_05);
+//   away48_10h_05->SetTitle("Away side yield divided by near side yield for 4.0GeV/c <pT_{trig}< 8.0GeV/c in 0% - 5% PbPb events.");
+//   away48_10h_05->Write("awaydivnear48_05");
+  near816_10h_05->Write();
+  away816_10h_05->Write();
+//   away816_10h_05->Divide(near816_10h_05);
+//   away816_10h_05->SetTitle("Away side yield divided by near side yield for 8.0GeV/c <pT_{trig}<16.0GeV/c in 0% - 5% PbPb events.");
+//   away816_10h_05->Write("awaydivnear816_05");
+  near48_10h_510->Write();
+  away48_10h_510->Write();
+//   away48_10h_510->Divide(near48_10h_510);
+//   away48_10h_510->SetTitle("Away side yield divided by near side yield for 4.0GeV/c <pT_{trig}< 8.0GeV/c in 5% - 10% PbPb events.");
+//   away48_10h_510->Write("awaydivnear48_510");
+  near816_10h_510->Write();
+  away816_10h_510->Write();
+//   away816_10h_510->Divide(near816_10h_510);
+//   away816_10h_510->SetTitle("Away side yield divided by near side yield for 8.0GeV/c <pT_{trig}<16.0GeV/c in 5% - 10% PbPb events.");
+//   away816_10h_510->Write("awaydivnear816_510");
+  near48_10h_1020->Write();
+  away48_10h_1020->Write();
+//   away48_10h_1020->Divide(near48_10h_1020);
+//   away48_10h_1020->SetTitle("Away side yield divided by near side yield for 4.0GeV/c <pT_{trig}< 8.0GeV/c in 5% - 10% PbPb events.");
+//   away48_10h_1020->Write("awaydivnear48_1020");
+  near816_10h_1020->Write();
+  away816_10h_1020->Write();
+//   away816_10h_1020->Divide(near816_10h_1020);
+//   away816_10h_1020->SetTitle("Away side yield divided by near side yield for 8.0GeV/c <pT_{trig}<16.0GeV/c in 5% - 10% PbPb events.");
+//   away816_10h_1020->Write("awaydivnear816_1020");
+  near48_10h_2040->Write();
+  away48_10h_2040->Write();
+//   away48_10h_2040->Divide(near48_10h_2040);
+//   away48_10h_2040->SetTitle("Away side yield divided by near side yield for 4.0GeV/c <pT_{trig}< 8.0GeV/c in 5% - 10% PbPb events.");
+//   away48_10h_2040->Write("awaydivnear48_2040");
+  near816_10h_2040->Write();
+  away816_10h_2040->Write();
+//   away816_10h_2040->Divide(near816_10h_2040);
+//   away816_10h_2040->SetTitle("Away side yield divided by near side yield for 8.0GeV/c <pT_{trig}<16.0GeV/c in 5% - 10% PbPb events.");
+//   away816_10h_2040->Write("awaydivnear816_2040");
+  near48_10h_4060->Write();
+  away48_10h_4060->Write();
+//   away48_10h_4060->Divide(near48_10h_4060);
+//   away48_10h_4060->SetTitle("Away side yield divided by near side yield for 4.0GeV/c <pT_{trig}< 8.0GeV/c in 5% - 10% PbPb events.");
+//   away48_10h_4060->Write("awaydivnear48_4060");
+  near816_10h_4060->Write();
+  away816_10h_4060->Write();
+//   away816_10h_4060->Divide(near816_10h_4060);
+//   away816_10h_4060->SetTitle("Away side yield divided by near side yield for 8.0GeV/c <pT_{trig}<16.0GeV/c in 5% - 10% PbPb events.");
+//   away816_10h_4060->Write("awaydivnear816_4060");
+  near48_10h_05->Divide(near48_10h_4060);
+  near48_10h_05->SetTitle("Near side yield in 0% - 5% divided by near side yield in 40% - 60 % in PbPb collisions with 4.0GeV/c <pT_{trig}< 8.0GeV/c ");
+  near48_10h_05->GetYaxis()->SetTitle("I_CP");
+  near48_10h_05->Write("ICP_48_near");
+  away48_10h_05->Divide(away48_10h_4060);
+  away48_10h_05->SetTitle("Away side yield in 0% - 5% divided by away side yield in 40% - 60 % in PbPb collisions with 4.0GeV/c <pT_{trig}< 8.0GeV/c ");  
+  away48_10h_05->GetYaxis()->SetTitle("I_CP");
+  away48_10h_05->Write("ICP_48_away");
+
+  near816_10h_05->Divide(near816_10h_4060);
+  near816_10h_05->SetTitle("Near side yield in 0% - 5% divided by near side yield in 40% - 60 % in PbPb collisions with 8.0GeV/c <pT_{trig}< 16.0GeV/c ");
+  near816_10h_05->GetYaxis()->SetTitle("I_CP");
+  near816_10h_05->Write("ICP_816_near");
+  away816_10h_05->Divide(away816_10h_4060);
+  away816_10h_05->SetTitle("Away side yield in 0% - 5% divided by away side yield in 40% - 60 % in PbPb collisions with 8.0GeV/c <pT_{trig}< 16.0GeV/c ");  
+  away816_10h_05->GetYaxis()->SetTitle("I_CP");
+  away816_10h_05->Write("ICP_816_away");
+
   for(int i=0;i<filearray->GetEntries();i++){
     dynamic_cast<TFile*>(filearray->At(i))->Close();
   }
   delete filearray;
+  for(int i=0;i<PbPbfilearray->GetEntries();i++){
+    dynamic_cast<TFile*>(PbPbfilearray->At(i))->Close();
+  }
+  delete PbPbfilearray;
   rfile->Close();
   CanvasList->SetOwner(true); CanvasList->Clear();delete CanvasList;
   binarray->SetOwner(true);binarray->Clear();delete binarray;

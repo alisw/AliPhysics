@@ -45,6 +45,8 @@
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 #include "AliEmcalParticle.h"
 #include "AliParticleContainer.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
 
@@ -305,14 +307,17 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    }
    
    fCandidateArray->SetOwner();
-   fCandidateArray->SetName(Form("Dcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   fCandidateArray->SetName(GetOutputSlot(3)->GetContainer()->GetName());
+   //fCandidateArray->SetName(Form("Dcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
    
    //this is used for the DStar side bands and MC!
    fSideBandArray->SetOwner();
-   fSideBandArray->SetName(Form("DSBcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   fSideBandArray->SetName(GetOutputSlot(4)->GetContainer()->GetName());
+   //fSideBandArray->SetName(Form("DSBcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
 
    fCombinedDmesons->SetOwner();
-   fCombinedDmesons->SetName(Form("DcandidatesAndTracks%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   fCombinedDmesons->SetName(GetOutputSlot(5)->GetContainer()->GetName());
+   //fCombinedDmesons->SetName(Form("DcandidatesAndTracks%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
   
    PostData(1, fOutput);
    PostData(3, fCandidateArray);

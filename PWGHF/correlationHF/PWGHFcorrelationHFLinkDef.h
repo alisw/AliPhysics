@@ -27,5 +27,5 @@
 #pragma link C++ class AliHFDmesonCorrAverage+;
 #pragma link C++ class AliHFCorrelationUtils+;
 #pragma link C++ class AliAnalysisHFCorrOnFlySim+;
-
+#pragma link C++ class AliHFCorrFitter+;
 #endif

@@ -399,18 +399,14 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 			fHistTracksPt[ic]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
 			fHistTracksPt[ic]->GetYaxis()->SetTitle("tracks");
 			fOutput->Add(fHistTracksPt[ic]);
-		}
 
-		if (fParticleCollArray.GetEntriesFast()>0) {
 			histname = "fHistTracksJt_";
 			histname += ic;
 			fHistTracksJt[ic] = new TH1F(histname.Data(), histname.Data(), NBINSJt, LogBinsJt);
 			fHistTracksJt[ic]->GetXaxis()->SetTitle("J_{T,track} (GeV/c)");
 			fHistTracksJt[ic]->GetYaxis()->SetTitle("tracks");
 			fOutput->Add(fHistTracksJt[ic]);
-		}
 
-		if (fParticleCollArray.GetEntriesFast()>0) {
 			histname = "fHistTracksEta_";
 			histname += ic;
 			fHistTracksEta[ic] = new TH1F(histname.Data(), histname.Data(), fNbins, -2, 2);
@@ -419,14 +415,12 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 			fOutput->Add(fHistTracksEta[ic]);
 		}
 
-		if (fParticleCollArray.GetEntriesFast()>0) {
-			histname = "fhTrackingEfficiency_";
-			histname += ic;
-			fhTrackingEfficiency[ic] = new TProfile(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
-			fhTrackingEfficiency[ic]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
-			fhTrackingEfficiency[ic]->GetYaxis()->SetTitle("counts");
-			fOutput->Add(fhTrackingEfficiency[ic]);
-		}
+		histname = "fhTrackingEfficiency_";
+		histname += ic;
+		fhTrackingEfficiency[ic] = new TProfile(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+		fhTrackingEfficiency[ic]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
+		fhTrackingEfficiency[ic]->GetYaxis()->SetTitle("counts");
+		fOutput->Add(fhTrackingEfficiency[ic]);
 		fHistJTPta[ic]       = new TH1**[fNpttBins];
 		fHistLogJTPta[ic]    = new TH1**[fNpttBins];
 		fHistJTPta_all[ic]   = new TH1**[fNpttBins];
@@ -464,7 +458,6 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 				fHistJTPta_all[ic][j][k] = 0;
 				fHistJTBg[ic][j][k] = 0;
 				fHistLogJTBg[ic][j][k] = 0;
-
 				fHistJTPtaNonInv[ic][j][k] = 0;
 				fHistLogJTPtaNonInv[ic][j][k] = 0;
 				fHistJTPta_allNonInv[ic][j][k] = 0;
@@ -744,17 +737,20 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 			double ptt = track->Pt();
 
 			//<<<<<<<<<<<< Efficiency >>>>>>>>>>>
-			//AliJBaseTrack *triggTr = (AliJBaseTrack*)fchargedHadronList->At(i);
-
-			double effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
+			//double effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
+			if(debug > 0)
+				cout << "Getting efficiency correction for ptt " << ptt << " with centrality " << fCent << endl;
+			double effCorr = fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
 			//double effCorr = 1.;
-			fhTrackingEfficiency[fCentBin]->Fill( ptt, 1./effCorr );
+			if(debug > 0)
+				cout << "Filling fhTrackingEfficiency fCentBin: " << fCentBin << " ptt: " << ptt << " with efficiency: " << effCorr << endl;
+			fhTrackingEfficiency[fCentBin]->Fill( ptt, effCorr );
 			//triggTr->SetTrackEff( 1./effCorr );
 			//<<<<<<<<<<<< Efficiency >>>>>>>>>>>
 
 			if(ptt > 0 && 1.0/ptt > 0){
-				fHistTracksPt[fCentBin]->Fill(ptt,1./effCorr); 
-				fHistTracksEta[fCentBin]->Fill(track->Eta(),1./ptt*effCorr); 
+				fHistTracksPt[fCentBin]->Fill(ptt,effCorr); 
+				fHistTracksEta[fCentBin]->Fill(track->Eta(),effCorr); 
 			}
 
 
@@ -855,17 +851,17 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 						if(debug > 2)
 							cout << "Filling fHistJetTracksPt C" << fCentBin << " T" << fPttBin << endl;
 						Float_t jt = getJt(track,jet,0);
-						double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
+						double effCorr = fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
 						if(jt > 0 && 1.0/jt > 0){
-							fHistTracksJt[fCentBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
-							fHistJTPta[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
-							fHistLogJTPta[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/(jt*jt)*effCorr); //Fill logarithmic dN/(dln(jT) jT^2)
-							fHistPtaVsJt[fCentBin][fPttBin]->Fill(jt,track->Pt(),1.0/effCorr); //Fill j_T vs p_Ta histogram
-							fHistJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr); //Fill dN/(djT)
+							fHistTracksJt[fCentBin]->Fill(jt,effCorr/jt); //Fill dN/(djT jT)
+							fHistJTPta[fCentBin][fPttBin][fPtaBin]->Fill(jt,effCorr/jt); //Fill dN/(djT jT)
+							fHistLogJTPta[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),effCorr/(jt*jt)); //Fill logarithmic dN/(dln(jT) jT^2)
+							fHistPtaVsJt[fCentBin][fPttBin]->Fill(jt,track->Pt(),effCorr); //Fill j_T vs p_Ta histogram
+							fHistJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,effCorr); //Fill dN/(djT)
 							fHistLogJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr); //Fill logarithmic dN/(dln(jT))
 						}
 						if(debug > 1)
-							cout << "Filling JT C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
+							cout << "Filling JT C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << effCorr/jt<< endl;
 					}
 
 					//Get Jet azimuth and rapidity of jet
@@ -905,10 +901,10 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 						AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
 						while(track) {
 							Double_t jt = getJt(track,bgCone,0);
-							double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
+							double effCorr = fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
 							if(jt > 0 && 1.0/jt > 0){
-								fHistJTPta_all[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
-								fHistJTPta_allNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
+								fHistJTPta_all[fCentBin][fPttBin][fPtaBin]->Fill(jt,effCorr/jt);
+								fHistJTPta_allNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,effCorr);
 							}
 							for(int ipta = 0 ; ipta < fNptaBins; ipta++){
 								if(track->Pt() > AssocPtBorders[ipta]){
@@ -922,17 +918,17 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 								//Particles in the rotated cone
 								if(diffR < testRadius){
 									counter++;
-									fHistBgPt[fCentBin][fPttBin]->Fill(track->Pt());
+									fHistBgPt[fCentBin][fPttBin]->Fill(track->Pt(),effCorr);
 									jt = getJt(track,bgCone,0);
 									if(jt > 0 && 1.0/jt > 0){
-										fHistJTBg[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
-										fHistLogJTBg[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/(jt*jt)*effCorr);
+										fHistJTBg[fCentBin][fPttBin][fPtaBin]->Fill(jt,effCorr/jt);
+										fHistLogJTBg[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),effCorr/(jt*jt));
 										fHistJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
 										fHistLogJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr);
-										fHistBgPtaVsJt[fCentBin][fPttBin]->Fill(jt,track->Pt(),1.0/effCorr);
+										fHistBgPtaVsJt[fCentBin][fPttBin]->Fill(jt,track->Pt(),effCorr);
 									}
 									if(debug > 1)
-										cout << "Filling Background C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
+										cout << "Filling Background C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << effCorr/jt<< endl;
 									//Fill background jT
 								}
 							}

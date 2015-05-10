@@ -30,7 +30,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
 						      const Double_t Zbin3 = 2.0.,
 						      const Double_t Zbin4 = 5.,
 						      const Double_t Zbin5 = 10.,
-						      const char * file = ""
+						      const char * file = "",
+						      const char * cutmask = "GlobalHybrid"
  						    )
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for pp data 
@@ -58,6 +59,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
   task->SetMaxAssociatedPt(MaxAssociatedPt);
   task->SetAcceptanceCut(Acceptancecut);
   task->SetMaxNumberOfTracks(MaxNumberOfTracks);
+  task->SetTrackCut(cutmask);
   if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];

@@ -41,7 +41,7 @@ class AliHFCorrelationUtils : public TObject {
 
  public:
   
-  enum ETypeOfMeson{kDzero=0,kDstar=1,kDplus=2};
+  enum ETypeOfMeson{kDzero=0,kDstar=1,kDplus=2,kDaverage=4};
   enum ETypeOfSystem{kpp=0,kpPb=1};
 
   static TH1D* ReflectHisto(TH1D *h,Double_t scale);
