@@ -3,6 +3,7 @@
 #include "AliTrackReference.h"
 #include <TMath.h>
 #include "AliFMDStripIndex.h"
+#include "AliFMDEncodedEdx.h"	
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TH1D.h>
@@ -48,7 +49,8 @@ AliFMDMCTrackDensity::State::operator=(const State& o)
 AliFMDMCTrackDensity::AliFMDMCTrackDensity()
   : AliBaseMCTrackDensity(), 
     fState(),
-    fMaxConsequtiveStrips(3), 
+    fMaxConsequtiveStrips(3),
+    fLowCutvalue(0),	 
     fNr(0), 
     fNt(0), 
     fNc(0),
@@ -62,7 +64,8 @@ AliFMDMCTrackDensity::AliFMDMCTrackDensity()
 AliFMDMCTrackDensity::AliFMDMCTrackDensity(const char*)
   : AliBaseMCTrackDensity("fmdMCTrackDensity"), 
     fState(),
-    fMaxConsequtiveStrips(3), 
+    fMaxConsequtiveStrips(3),
+    fLowCutvalue(0),		 
     fNr(0), 
     fNt(0), 
     fNc(0),
@@ -76,7 +79,8 @@ AliFMDMCTrackDensity::AliFMDMCTrackDensity(const char*)
 AliFMDMCTrackDensity::AliFMDMCTrackDensity(const AliFMDMCTrackDensity& o)
   : AliBaseMCTrackDensity(o),
     fState(o.fState),
-    fMaxConsequtiveStrips(o.fMaxConsequtiveStrips), 
+    fMaxConsequtiveStrips(o.fMaxConsequtiveStrips),
+    fLowCutvalue(o.fLowCutvalue),	 
     fNr(o.fNr), 
     fNt(o.fNt), 
     fNc(o.fNc),
@@ -94,6 +98,7 @@ AliFMDMCTrackDensity::operator=(const AliFMDMCTrackDensity& o)
   if (&o == this) return *this; 
   AliBaseMCTrackDensity::operator=(o);
   fMaxConsequtiveStrips = o.fMaxConsequtiveStrips;
+  fLowCutvalue		= o.fLowCutvalue;
   fNr                   = o.fNr;
   fNt                   = o.fNt;
   fNc                   = o.fNc;
@@ -183,7 +188,13 @@ AliFMDMCTrackDensity::ProcessRef(AliMCParticle*       particle,
   UShort_t d, s, t;
   Char_t r;
   AliFMDStripIndex::Unpack(ref->UserId(), d, r, s, t);
-    
+  Double_t edep, length, dEdep, dLength;
+  AliFMDEncodedEdx::Decode((ref->UserId() >> 19), edep, length, dEdep, dLength);
+  
+  Double_t normaldEdx=0.0;
+   if(length>0.0)			
+	normaldEdx=(edep/length)/4.406; // 4.406 mip in Si per 1 cm 	
+ 
   // Calculate distance of previous reference to base of cluster 
   UShort_t nT = TMath::Abs(t - fState.startStrip) + 1;
 
@@ -223,6 +234,8 @@ AliFMDMCTrackDensity::ProcessRef(AliMCParticle*       particle,
     fState.Clear(false);
   }
 
+  if(normaldEdx<fLowCutvalue)
+	return 0x0;	
   // If base of cluster not set, set it here. 
   if (fState.startStrip == 1024) fState.startStrip = t;
   
@@ -242,7 +255,7 @@ AliFMDMCTrackDensity::ProcessRef(AliMCParticle*       particle,
     if (t == fState.startStrip) 
       Info("Process", "New cluster starting at FMD%d%c[%2d,%3d]", 
 	   d, r, s, t);
-    else 
+    else
       Info("Process", "Adding to cluster starting at FMD%d%c[%2d,%3d], "
 	   "length=%3d (now in %3d, previous %3d)", 
 	   d, r, s, fState.startStrip, fState.nStrips, t, fState.oldStrip);
