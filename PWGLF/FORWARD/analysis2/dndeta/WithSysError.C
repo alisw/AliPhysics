@@ -13,7 +13,8 @@ WithSysError(const TString&  system,
 	     UShort_t        sNN, 
 	     TString&        trigger, 
 	     const Option_t* option="e5",
-	     Bool_t          rebinned=true, 
+	     Bool_t          rebinned=true,
+	     Bool_t          export=true,
 	     Bool_t          empirical=true,
 	     Bool_t          alsoLog=true)
 {
@@ -35,6 +36,12 @@ WithSysError(const TString&  system,
   if (!gROOT->GetClass("SysErrorAdder"))gROOT->LoadMacro("SysErrorAdder.C+g");
 
 
+  // --- Reaction key ------------------------------------------------
+  TString reac = system;
+  reac.ToUpper();
+  reac.Insert(reac.Index("P", 1, 1), " ");
+  reac.Append(" --> CHARGED X");
+  
   // --- Fix up trigger and efficiency -------------------------------
   const char* trigs[] = { trigger.Data(), 0 };
   const char* exps[]  = { "ALICE", "WIP", 0 };
@@ -134,6 +141,35 @@ WithSysError(const TString&  system,
     GraphSysErr* gse = adder->Make(h, (first ? el : 0));
     gse->SetTitle(""); 
     gse->Draw(Form("%s %s", (first ? "axis" : ""), opt));
+    gse->SetKey("laboratory", "CERN");
+    gse->SetKey("accelerator", "LHC");
+    gse->SetKey("detector", Form("FORWARD%s", rebinned ? "" : "_full"));
+    gse->SetKey("reackey", reac);
+    gse->SetKey("obskey", "DN/DETARAP");
+    gse->SetKey("title", "Systematic study of 1/N dNch/deta over widest possible eta region at the LHC");
+    gse->SetKey("author", "CHRISTENSEN");
+    gse->SetKey("comment", "We present 1/N dNch/deta over widest possible eta region at the LHC");
+    gse->SetKey("dscomment", "The pseudo-rapidity density of charged particle");
+
+
+    if (export) {
+      TString trg = adder->GetTriggerString();
+      if (trg.EqualTo("INEL>0")) trg = "INELGt0";
+      TString dir(Form("out/%s/%05d/%s", system.Data(),
+		       sNN, trg.Data()));
+      gSystem->Exec(Form("mkdir -p %s", dir.Data()));
+      
+      TFile* file = TFile::Open(Form("%s/%s.root",
+				     dir.Data(),
+				     gse->GetKey("detector")),
+				"RECREATE");
+      Info("", "Writing to %s", file->GetPath());
+      gse->Write("data");
+      file->Write();
+      file->Close();
+    }
+	
+    
     outList->Add(gse);
     if (first) { 
       TMultiGraph* axis = gse->GetMulti();
