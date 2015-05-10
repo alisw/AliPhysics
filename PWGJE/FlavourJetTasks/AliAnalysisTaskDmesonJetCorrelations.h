@@ -27,6 +27,9 @@ class TLorentzVector;
 class AliRDHFCuts;
 class AliAODEvent;
 class AliAODRecoDecay;
+class AliAODRecoDecayHF2Prong;
+class AliVParticle;
+class AliAODMCParticle;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -64,9 +67,10 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetPlotOnlySingleMatches(Bool_t b)       { fOnlySingleMatches   = b   ; }
   void SetCheckTrackColl(Bool_t b)              { fCheckTrackColl      = b   ; }
   void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
+  void SetParticleLevel(Bool_t s)               { fParticleLevel       = s   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
-   
+
   virtual void     UserCreateOutputObjects();
   virtual void     ExecOnce();
   virtual Bool_t   IsEventSelected();
@@ -77,14 +81,18 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   virtual void     Terminate(Option_t *);
 
  protected:
-  
+
   void                 AllocateTHnSparse();
   void                 FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
                                      TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel, Double_t daughterDist[5]);
-  Int_t                FindMatchedJet(EMatchingType matchType, AliAODRecoDecay* cand, TArrayD& matchingLevel, TList& matchedJets);
-  Double_t             CalculateMatchingLevel(EMatchingType matchType, AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
-  Double_t             CalculateGeometricalMatchingLevel(AliVTrack* cand, AliEmcalJet* jet);
+  Int_t                FindMatchedJet(EMatchingType matchType, AliVParticle* cand, TArrayD& matchingLevel, TList& matchedJets);
+  Double_t             CalculateMatchingLevel(EMatchingType matchType, AliVParticle* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
+  Double_t             CalculateGeometricalMatchingLevel(AliVParticle* cand, AliEmcalJet* jet);
   Double_t             CalculateConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
+
+  void                 ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
+  void                 ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
+  void                 ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
 
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
@@ -114,6 +122,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t           fOnlyAcceptedJets      ; //  Only matched accepted jets are plotted (in any case jets are rejected AFTER matching)
   Bool_t           fOnlySingleMatches     ; //  Only unambiguosly matched jets are plotted
   Bool_t           fCheckTrackColl        ; //  if true, makes histograms with tracks found in D meson candidates, that are NOT found in the track collection used for jet finding
+  Bool_t           fParticleLevel         ; //  set particle level analysis
 
   AliAODEvent     *fAodEvent                  ; //! AOD event
   TClonesArray    *fCandidateArray            ; //! D meson candidate array
@@ -127,7 +136,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskDmesonJetCorrelations(const AliAnalysisTaskDmesonJetCorrelations &source);
   AliAnalysisTaskDmesonJetCorrelations& operator=(const AliAnalysisTaskDmesonJetCorrelations& source); 
 
-  ClassDef(AliAnalysisTaskDmesonJetCorrelations, 2); // class for D meson - jet correlations
+  ClassDef(AliAnalysisTaskDmesonJetCorrelations, 3); // class for D meson - jet correlations
 };
 
 #endif

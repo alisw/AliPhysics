@@ -78,6 +78,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fOnlyAcceptedJets(kTRUE),
   fOnlySingleMatches(kFALSE),
   fCheckTrackColl(kTRUE),
+  fParticleLevel(kFALSE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
@@ -118,6 +119,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fOnlyAcceptedJets(kTRUE),
   fOnlySingleMatches(kFALSE),
   fCheckTrackColl(kTRUE),
+  fParticleLevel(kFALSE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
@@ -190,6 +192,17 @@ void AliAnalysisTaskDmesonJetCorrelations::UserCreateOutputObjects()
   // define histograms
   // the TList fOutput is already defined in  AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
+  if (fParticleLevel) {
+    if (fMatchingType == kConstituentMatching) {
+      AliWarning("Constituent matching not available at particle level. Switching to geometrical matching.");
+      fMatchingType = kGeometricalMatching;
+    }
+    if (fShowDaughterDistance) {
+      AliWarning("Daughter distance not implemented for particle level. Switching it off.");
+      fShowDaughterDistance = kFALSE;
+    }
+  }
+
   TString histname;
   
   histname = "fHistRejectionReason";
@@ -246,6 +259,71 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::Run()
 }
 
 //_______________________________________________________________________________
+void AliAnalysisTaskDmesonJetCorrelations::ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong)
+{
+  if (fParticleLevel) {
+    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(HFcand);
+    ExtractParticleLevelHFAttributes(part, Dvector, invMassD, softPionPtD, invMass2prong);
+  }
+  else {
+    AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(HFcand);
+    ExtractRecoDecayAttributes(Dcand, Dvector, invMassD, softPionPtD, invMass2prong);
+  }
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskDmesonJetCorrelations::ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& /*softPionPtD*/, Double_t& /*invMass2prong*/)
+{
+  Dvector.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), part->M());
+  invMassD = part->M();
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong)
+{
+  if (fCandidateType == kD0toKpi) {
+    AliDebug(2,"Checking if D0 meson is selected");
+    Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
+    if (isSelected == 1) {  // selected as a D0
+      AliDebug(2,"Selected as D0");
+      invMassD = Dcand->InvMassD0();
+    }
+    else if (isSelected == 2) { // selected as a D0bar
+      AliDebug(2,"Selected as D0bar");
+      invMassD = Dcand->InvMassD0bar();
+    }
+    else if (isSelected == 3) { // selected as a D0bar/D0 (PID on K and pi undecisive)
+      AliDebug(2,"Selected as either D0 or D0bar");
+      Double_t massD0 = Dcand->InvMassD0();
+      Double_t massD0bar = Dcand->InvMassD0bar();
+
+      TParticlePDG* D0part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421));
+      Float_t pdgMass = D0part->Mass();
+
+      AliDebug(2,Form("D0 inv mass = %.3f, D0bar inv mass = %.3f, PDG mass = %.3f", massD0, massD0bar, pdgMass));
+        
+      // Select D0 or D0bar depending on which one gives a mass closest to the PDG value
+      if (TMath::Abs(massD0 - pdgMass) < TMath::Abs(massD0bar - pdgMass)) {
+        AliDebug(2, "Mass closer to D0");
+        invMassD = massD0;
+      }
+      else {
+        AliDebug(2, "Mass closer to D0bar");
+        invMassD = massD0bar;
+      }
+    }
+  }
+  else if (fCandidateType == kDstartoKpipi) {
+    AliAODRecoCascadeHF* DstarCand = static_cast<AliAODRecoCascadeHF*>(Dcand);
+    invMassD = DstarCand->InvMassDstarKpipi();
+    softPionPtD = DstarCand->GetBachelor()->Pt();
+    invMass2prong = DstarCand->InvMassD0();
+  }
+
+  Dvector.SetPtEtaPhiM(Dcand->Pt(), Dcand->Eta(), Dcand->Phi(), invMassD);
+}
+
+//_______________________________________________________________________________
 Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 {
   // Fill the histograms.
@@ -261,68 +339,11 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
   AliDebug(2,"Starting D meson candidate loop");
   for (Int_t icand = 0; icand < nDcand; icand++) {
     AliDebug(2,Form("D meson candidate %d", icand));
-    AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icand));
-    if (!Dcand) continue;
-
-    TLorentzVector Dvector;
-    Double_t invMassD = 0;
-    Double_t softPionPtD = 0;
-    Double_t invMass2prong = 0;
-
-    TLorentzVector jetVector;
-    Double_t leadPtJet = 0;
-    Double_t areaJet = 0;
-    Int_t constJet = 0;
-
-    Double_t daughterDist[5] = {0.};
-
-    if (fCandidateType == kD0toKpi) {
-      AliDebug(2,"Checking if D0 meson is selected");
-      Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
-      if (isSelected == 0) {  // Not selected as D0/D0bar
-        AliDebug(2,"Not selected");
-        continue;
-      }
-      else if (isSelected == 1) {  // selected as a D0
-        AliDebug(2,"Selected as D0");
-        invMassD = Dcand->InvMassD0();
-      }
-      else if (isSelected == 2) { // selected as a D0bar
-        AliDebug(2,"Selected as D0bar");
-        invMassD = Dcand->InvMassD0bar();
-      }
-      else if (isSelected == 3) { // selected as a D0bar/D0 (PID on K and pi undecisive)
-        AliDebug(2,"Selected as either D0 or D0bar");
-        Double_t massD0 = Dcand->InvMassD0();
-        Double_t massD0bar = Dcand->InvMassD0bar();
-
-        TParticlePDG* D0part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421));
-        Float_t pdgMass = D0part->Mass();
-
-        AliDebug(2,Form("D0 inv mass = %.3f, D0bar inv mass = %.3f, PDG mass = %.3f", massD0, massD0bar, pdgMass));
-        
-        // Select D0 or D0bar depending on which one gives a mass closest to the PDG value
-        if (TMath::Abs(massD0 - pdgMass) < TMath::Abs(massD0bar - pdgMass)) {
-          AliDebug(2, "Mass closer to D0");
-          invMassD = massD0;
-        }
-        else {
-          AliDebug(2, "Mass closer to D0bar");
-          invMassD = massD0bar;
-        }
-      }
-    }
-    else if (fCandidateType == kDstartoKpipi) {
-      AliAODRecoCascadeHF* DstarCand = static_cast<AliAODRecoCascadeHF*>(Dcand);
-      invMassD = DstarCand->InvMassDstarKpipi();
-      softPionPtD = DstarCand->GetBachelor()->Pt();
-      invMass2prong = DstarCand->InvMassD0();
-    }
-
-    Dvector.SetPtEtaPhiM(Dcand->Pt(), Dcand->Eta(), Dcand->Phi(), invMassD);
+    AliVParticle* HFcand = static_cast<AliVParticle*>(fCandidateArray->At(icand));
+    if (!HFcand) continue;
 
     // Look for D-jet correlation
-    Int_t n = FindMatchedJet(fMatchingType, Dcand, matchingLevel, matchedJets);
+    Int_t n = FindMatchedJet(fMatchingType, HFcand, matchingLevel, matchedJets);
 
     AliEmcalJet* jet = 0;
     Int_t matchingStatus = kNotMatched;
@@ -336,8 +357,33 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 
     if (matchingStatus == kSingleMatch || (matchingStatus == kMultipleMatches && !fOnlySingleMatches)) {
       jet = static_cast<AliEmcalJet*>(matchedJets.At(0));
+      jet->SetFlavourTrack(HFcand);
+      if (fCandidateType == kDstartoKpipi) {
+        jet->AddFlavourTag(AliEmcalJet::kDStar);
+      }
+      else {
+        jet->AddFlavourTag(AliEmcalJet::kD0);
+      }
     }
-    
+
+    // Now filling histograms
+
+    // Extracting D meson attributes
+    TLorentzVector Dvector;
+    Double_t invMassD = 0;
+    Double_t softPionPtD = 0;
+    Double_t invMass2prong = 0;
+ 
+    ExtractHFcandAttributes(HFcand, Dvector, invMassD, softPionPtD, invMass2prong);
+
+    TLorentzVector jetVector;
+    Double_t leadPtJet = 0;
+    Double_t areaJet = 0;
+    Int_t constJet = 0;
+
+    Double_t daughterDist[5] = {0.};
+
+    // Extracting jet attributes (if a jet was found)
     if (jet) {
       // Check if the jet passes the cuts
       Bool_t acceptedJet = jets->AcceptJet(jet);
@@ -352,7 +398,8 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
         areaJet = jet->Area();
         constJet = jet->N();
 
-        if (fShowDaughterDistance > 0) {
+        if (fShowDaughterDistance > 0 && !fParticleLevel) {
+          AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(HFcand);
           TObjArray daughters(5);
           AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(Dcand, daughters);
           for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
@@ -372,7 +419,7 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 }
 
 //_______________________________________________________________________________
-Int_t AliAnalysisTaskDmesonJetCorrelations::FindMatchedJet(EMatchingType matchType, AliAODRecoDecay* cand, TArrayD& matchingLevel, TList& matchedJets)
+Int_t AliAnalysisTaskDmesonJetCorrelations::FindMatchedJet(EMatchingType matchType, AliVParticle* cand, TArrayD& matchingLevel, TList& matchedJets)
 {
   // Find jet matched to a reconstructed decay candidate, using a constituent-based algorithm.
   // The returned value is the number of jets found that share the decay products.
@@ -423,7 +470,7 @@ Int_t AliAnalysisTaskDmesonJetCorrelations::FindMatchedJet(EMatchingType matchTy
 }
 
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateMatchingLevel(EMatchingType matchType, AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset)
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateMatchingLevel(EMatchingType matchType, AliVParticle* cand, AliEmcalJet* jet, Bool_t reset)
 {
   // Calculate the matchin level between cand and jet.
   
@@ -433,7 +480,8 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateMatchingLevel(EMatchingT
     m = CalculateGeometricalMatchingLevel(cand, jet);
   }
   else if (matchType == kConstituentMatching) {
-    m = CalculateConstituentMatchingLevel(cand, jet, reset);
+    AliAODRecoDecay* recoDecay = static_cast<AliAODRecoDecay*>(cand);
+    m = CalculateConstituentMatchingLevel(recoDecay, jet, reset);
   }
   else {
     AliWarning(Form("Matching algorithm type %d not implemented!", matchType));  
@@ -443,7 +491,7 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateMatchingLevel(EMatchingT
 }
 
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateGeometricalMatchingLevel(AliVTrack* cand, AliEmcalJet* jet)
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateGeometricalMatchingLevel(AliVParticle* cand, AliEmcalJet* jet)
 {
   // Calculate the matching level using a geometrical algorithm.
   // The matching level is the inverse of the distance.
@@ -558,18 +606,23 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
     TString objname(fCandidateArray->GetClass()->GetName());
     TClass cls(objname);
     TString className;
-    if (fCandidateType == kD0toKpi) {
-      className = "AliAODRecoDecayHF2Prong";
-    }
-    else if (fCandidateType == kDstartoKpipi) {
-      className = "AliAODRecoCascadeHF";
+    if (fParticleLevel) {
+      className = "AliAODMCParticle";
     }
     else {
-      AliError(Form("%s: Candidate type %d not recognized!", 
-                    GetName(), (Int_t)fCandidateType)); 
-      fCandidateArray = 0;
-      fInhibitTask = kTRUE;
-      return;
+      if (fCandidateType == kD0toKpi) {
+        className = "AliAODRecoDecayHF2Prong";
+      }
+      else if (fCandidateType == kDstartoKpipi) {
+        className = "AliAODRecoCascadeHF";
+      }
+      else {
+        AliError(Form("%s: Candidate type %d not recognized!", 
+                      GetName(), (Int_t)fCandidateType)); 
+        fCandidateArray = 0;
+        fInhibitTask = kTRUE;
+        return;
+      }
     }
     if (!cls.InheritsFrom(className)) {
       AliError(Form("%s: Objects of type %s in %s are not inherited from %s! Task will not run.", 
