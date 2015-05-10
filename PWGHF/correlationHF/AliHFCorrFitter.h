@@ -75,7 +75,8 @@ class AliHFCorrFitter{
     if(!fFit) {printf("AliHFCorrFitter::GetFitFunction NoFitFunc - error"); return NULL;}
     return fFit;
   }
-    
+
+  Double_t FindBaseline();
   void Fitting(Bool_t drawSplitTerm=kTRUE);
   void YieldErrAboveBaseline();
   TH1F* SubtractBaseline();

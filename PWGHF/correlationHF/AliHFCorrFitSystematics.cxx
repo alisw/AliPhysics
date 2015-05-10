@@ -679,7 +679,7 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         inputhisto[iPtBin]->SetLineColor(4);
         
         
-        v2 = new TF1(Form("v2Modulation_%d",iPtBin),"[0]*(1+2*[1]*[2]*(1+TMath::Cos(2*x[0])))",fMinFitRange,fMaxFitRange);
+        v2 = new TF1(Form("v2Modulation_%d",iPtBin),"[0]*(1+2*[1]*[2]*TMath::Cos(2*x[0]))",fMinFitRange,fMaxFitRange);
 
         v2->SetParameter(0,baseline);
         v2->SetParameter(1,fv2had);
