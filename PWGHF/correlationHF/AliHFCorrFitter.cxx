@@ -14,10 +14,11 @@
  **************************************************************************/
 
 /*____________________________________________________________
-| AliHFCorrFitter for the fitting of Correlation plots
-| of charmed mesons
+| Class for performing the fit of azimuthal correlations           |      
+| Example of its usage in the macro PWGHF/correlationHF/FitPlots.C | 
 |
-|  Author: Somnath Kar (somnath.kar@cern.ch), Andrea Rossi (andrea.rossi@cern.ch)
+|  Author: Somnath Kar (somnath.kar@cern.ch), 
+|          Andrea Rossi (andrea.rossi@cern.ch)
 |_____________________________________________________________*/
 
 

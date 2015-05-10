@@ -4,11 +4,12 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /*____________________________________________________________
-| AliHFCorrFitter for the fitting of Correlation plots            |
-| of charmed mesons                                           |
-|                                                             |
-|  Author:                                                    |
-|                                                             |
+| Class for performing the fit of azimuthal correlations           |      
+| Example of its usage in the macro PWGHF/correlationHF/FitPlots.C |
+|                                                                  |
+|  Author: S. Kar (somnath.kar@cern.ch),                           |
+|          A. Rossi (andrea.rossi@cern.ch)                         |
+|                                                                  |
 |_____________________________________________________________*/
 
 
