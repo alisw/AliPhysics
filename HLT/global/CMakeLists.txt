@@ -58,6 +58,8 @@ set(SRCS
     AliHLTPrimaryVertexFinderComponent.cxx
     AliHLTV0FinderComponent.cxx
     AliHLTVertexFinderBase.cxx
+    AliHLTAsyncTestComponent.cxx
+    AliHLTAsyncProcessor.cxx
     AliHLTGlobalCompareFlatComponent.cxx
     AliHLTGlobalFlatEsdConverterComponent.cxx
     AliHLTGlobalEsdToFlatConverterComponent.cxx
