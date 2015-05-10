@@ -138,6 +138,11 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
+# Add header files to include directory here, so that they are not processed by CINT, because CINT cannot process these
+set(HDRS ${HDRS}
+    AliHLTAsyncMemberProcessor.h
+    AliHLTAsyncProcessorBackend.h
+)
 install(FILES ${HDRS} DESTINATION include)
 
 #install macros
