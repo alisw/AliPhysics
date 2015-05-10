@@ -38,7 +38,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
  public:
 
   enum ECandidateType  { kD0toKpi, kDstartoKpipi };
-  enum EMatchingType   { kGeometricalMatching, kConstituentMatching };
+  enum EMatchingType   { kGeometricalMatching, kConstituentMatching, kJetLoop };
   enum EMatchingStatus { kSingleMatch = 0, kMultipleMatches = 1, kJetNotAccepted = 2, kNotMatched = 3 };
    
   AliAnalysisTaskDmesonJetCorrelations();
@@ -84,7 +84,8 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
 
   void                 AllocateTHnSparse();
   void                 FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
-                                     TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel, Double_t daughterDist[5]);
+                                     TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet,
+                                     Int_t matchingStatus, Double_t matchingLevel, Double_t daughterDist[5]);
   Int_t                FindMatchedJet(EMatchingType matchType, AliVParticle* cand, TArrayD& matchingLevel, TList& matchedJets);
   Double_t             CalculateMatchingLevel(EMatchingType matchType, AliVParticle* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
   Double_t             CalculateGeometricalMatchingLevel(AliVParticle* cand, AliEmcalJet* jet);
@@ -94,6 +95,10 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void                 ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
   void                 ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
 
+  void                 DoJetLoop();
+  void                 DoDmesonLoop();
+  void                 FillHistograms(AliVParticle* HFcand, AliEmcalJet* jet, Int_t matchingStatus, Double_t matchingLevel);
+  
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
   AliRDHFCuts     *fCuts                  ; //  Analysis cuts
