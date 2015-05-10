@@ -1,7 +1,23 @@
 #ifndef ALIJETRESPONSEMAKER_H
 #define ALIJETRESPONSEMAKER_H
+/**************************************************************************
+* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
-// $Id$
+//-----------------------------------------------------------------------
+// Author : Salvatore Aiola, Yale University, salvatore.aiola@cern.ch
+//-----------------------------------------------------------------------
 
 class TClonesArray;
 class TH2;
@@ -35,6 +51,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetDeltaEtaDeltaPhiAxis(Int_t b)                                { fDeltaEtaDeltaPhiAxis= b       ; }
   void                        SetNEFAxis(Int_t b)                                             { fNEFAxis           = b         ; }
   void                        SetZAxis(Int_t b)                                               { fZAxis             = b         ; }
+  void                        SetFlavourZAxis(Int_t b)                                        { fFlavourZAxis      = b         ; }
 
  protected:
   void                        ExecOnce();
@@ -47,9 +64,13 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
   void                        GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
   void                        FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
-					     Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
-					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2);
-  void                        FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt, Int_t Set);
+                                                 Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
+                                                 Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2,
+                                                 Double_t FlavourZ1, Double_t FlavourZ2);
+  void                        FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A,
+                                           Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt,
+                                           Double_t FlavourZ,
+                                           Int_t Set);
   void                        AllocateTH2();
   void                        AllocateTHnSparse();
 
@@ -63,6 +84,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Int_t                       fDeltaEtaDeltaPhiAxis;                   // add delta eta and delta phi axes in THnSparse (default=0)
   Int_t                       fNEFAxis;                                // add NEF axis in matching THnSparse (default=0)
   Int_t                       fZAxis;                                  // add Z axis in matching THnSparse (default=0)
+  Int_t                       fFlavourZAxis;                           // add flavour Z axis in matching THnSparse (default=0)
 
   Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
   Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
@@ -143,6 +165,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 24) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 25) // Jet response matrix producing task
 };
 #endif
