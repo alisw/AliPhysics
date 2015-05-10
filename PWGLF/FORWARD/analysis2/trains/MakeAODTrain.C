@@ -128,33 +128,6 @@ protected:
   }
   //__________________________________________________________________
   /** 
-   * Create physics selection , and add to manager
-   * 
-   * @param mc Whether this is for MC 
-   * @param mgr Manager 
-   */
-  void CreatePhysicsSelection(Bool_t mc, AliAnalysisManager* mgr)
-  {
-    TrainSetup::CreatePhysicsSelection(mc, mgr);
-
-    // --- Get input event handler -----------------------------------
-    AliInputEventHandler* ih =
-      dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
-    if (!ih) 
-      Fatal("CreatePhysicsSelection", "Couldn't get input handler (%p)", ih);
-    
-    // --- Get Physics selection -------------------------------------
-    AliPhysicsSelection* ps = 
-      dynamic_cast<AliPhysicsSelection*>(ih->GetEventSelection());
-    if (!ps) 
-      Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)",ps);
-
-    // --- Ignore trigger class when selecting events.  This means ---
-    // --- that we get offline+(A,C,E) events too --------------------
-    // ps->SetSkipTriggerClassSelection(true);
-  }
-  //__________________________________________________________________
-  /** 
    * Create the centrality selection only if requested
    * 
    * @param mc  Monte-Carlo truth flag 

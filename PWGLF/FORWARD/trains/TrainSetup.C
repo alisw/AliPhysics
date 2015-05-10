@@ -77,7 +77,7 @@ struct TrainSetup
   {
     fOptions.Add("help", "Show help", false);
     fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
-    fOptions.Add("bare-ps", "Use bare physics selection w/o task", false);
+    fOptions.Add("ps", "MODE", "Physics selection mode", "");
     fOptions.Add("verbose", "LEVEL", "Set verbosity level", 0);
     fOptions.Add("url", "URL", "Job location & input URL", "");
     fOptions.Add("overwrite", "Allow overwrite", false);
@@ -86,6 +86,7 @@ struct TrainSetup
     fOptions.Add("setup", "Only do the setup", false);
     fOptions.Add("branches", "Load only requested branches", false);
     fOptions.Add("version", "Print version and exit", false);
+    fOptions.Add("tender","WHICH","Specify tender supplies", "");
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -211,6 +212,9 @@ struct TrainSetup
 			     "$ALICE_PHYSICS/OADB/macros",
 			     cwd.Data(), gROOT->GetMacroPath()));
 
+    // --- Tender ----------------------------------------------------
+    if (type == Railway::kESD) AddTender();
+    
     // --- Physics selction - only for ESD ---------------------------
     if (type == Railway::kESD) CreatePhysicsSelection(mc, mgr);
     
@@ -563,21 +567,46 @@ protected:
    */
   virtual void CreatePhysicsSelection(Bool_t mc, AliAnalysisManager* mgr)
   {
-    if (fOptions.Has("bare-ps")) {
-      AliInputEventHandler* input = 
-	dynamic_cast<AliInputEventHandler*> (mgr->GetInputEventHandler());
-      if (!input) return;
+    TString opt = fOptions.Get("ps");
+    opt.ToUpper();
 
-      AliPhysicsSelection* ps = new AliPhysicsSelection();
+    if (opt.EqualTo("NONE")) return;
+
+    AliPhysicsSelection* ps = 0;
+    AliInputEventHandler* input = 
+      dynamic_cast<AliInputEventHandler*> (mgr->GetInputEventHandler());
+    if (!input) return;
+
+    // --- Create object, either directory or via task ---------------
+    if (opt.Contains("BARE")) {
+      // --- Just create object and set on input handler -------------
+      ps = new AliPhysicsSelection();
       if (mc) ps->SetAnalyzeMC();
 
       input->SetEventSelection(ps);
-
-      return;
     }
-    CoupleCar("AddTaskPhysicsSelection.C", Form("%d", mc));
-    mgr->RegisterExtraFile("event_stat.root");
-    mgr->AddStatisticsTask(AliVEvent::kAny);
+    else {
+      // --- Create and add the task ---------------------------------
+      CoupleCar("AddTaskPhysicsSelection.C", Form("%d", mc));
+      mgr->RegisterExtraFile("event_stat.root");
+      mgr->AddStatisticsTask(AliVEvent::kAny);
+      
+      // --- Retrive object from input handler -----------------------
+      ps = dynamic_cast<AliPhysicsSelection*>(input->GetEventSelection());
+    }
+    if (opt.Contains("CUSTOM")) {
+      // --- Load custom trigger definitions -------------------------
+      Info("CreatePhysicsSelection", "Loading custom PS from ../CustomPS.C");
+      gROOT->Macro(Form("../CustomPS.C((AliPhysicsSelection*)%p)", ps));
+    }
+
+    if (opt.Contains("ALL")) {
+      // --- Ignore trigger class when selecting events.  This means -
+      // --- that we get offline+(A,C,E) events too ------------------
+      Info("CreatePhysicsSelection", "Skipping trigger selection");
+      ps->SetSkipTriggerClassSelection(true);
+    }
+      
   }
   /** 
    * Create centrality selection, and add to manager
@@ -693,6 +722,91 @@ protected:
       ::Warning("FindCar", "Task \"%s\" not found in train", 
 		name.Data());
     return task;
+  }
+  virtual void* AddTenderSupply(void* tender,
+				const Char_t* cls,
+				const Char_t* nme)
+  {
+    Long_t ret =
+      gROOT->ProcessLine(Form("{ AliTenderSupply* s = new %s(\"%s\");"
+			      "((AliTender*)%p)->AddSupply(supply);} s;",
+			      cls, nme, tender));
+    return reinterpret_cast<void*>(ret);
+  }
+  virtual void AddTender()
+  {
+    TString supplies = fOptions.Get("tender");
+    if (supplies.IsNull()) return;
+
+    UShort_t which = 0;
+    supplies.ToUpper();
+    if (supplies.Contains("V0"))    which |= 0x0001;
+    if (supplies.Contains("TPC"))   which |= 0x0002;
+    if (supplies.Contains("PTFIX")) which |= 0x0004;
+    if (supplies.Contains("T0"))    which |= 0x0008;
+    if (supplies.Contains("TOF"))   which |= 0x0010;
+    if (supplies.Contains("TRD"))   which |= 0x0020;
+    if (supplies.Contains("VTX"))   which |= 0x0040;
+    if (supplies.Contains("EMCAL")) which |= 0x0080;
+    if (supplies.Contains("PID"))   which |= 0x0100;
+
+    AddTender(which);
+  }
+    
+  /** 
+   * Add a tender 
+   *
+   *
+   */
+  virtual void AddTender(UShort_t which)
+  {
+    if (which == 0) return;
+    
+    Bool_t useV0    = which & 0x0001;
+    Bool_t useTPC   = which & 0x0002;
+    Bool_t usePtFix = which & 0x0004;
+    Bool_t useT0    = which & 0x0008;
+    Bool_t useTOF   = which & 0x0010;
+    Bool_t useTRD   = which & 0x0020;
+    Bool_t useVTX   = which & 0x0040;
+    Bool_t useEMCAL = which & 0x0080;
+    Bool_t usePID   = which & 0x0100;
+
+    fRailway->LoadLibrary("Tender");
+    fRailway->LoadLibrary("TenderSupplies");
+    
+    Long_t ret = gROOT->ProcessLine("new AliTender(\"Tender\")");
+    if (!ret) {
+      Warning("AddTender", "Failed to make tender");
+      return;
+    }
+    void* tender = reinterpret_cast<void*>(ret);
+    gROOT->ProcessLine(Form("((AliTender*)%p)->SetCheckEventSelection(%d)",
+			    tender, useV0));
+    gROOT->ProcessLine(Form("((AliTender*)%p)->SetDefaultCDBStorage(\"raw://\")",
+			    tender));
+
+    if (useV0)    AddTenderSupply(tender,"AliVZEROTenderSupply",   "VZERO");
+    if (useTPC)   AddTenderSupply(tender,"AliTPCTenderSupply",     "TPC");
+    if (usePtFix) AddTenderSupply(tender,"AliTrackFixTenderSupply","PtInvFix");
+    if (useT0)    AddTenderSupply(tender,"AliT0TenderSupply",      "TZERO");
+    if (useTOF)   AddTenderSupply(tender,"AliTOFTenderSupply",     "TOF");
+    if (useTRD)   AddTenderSupply(tender,"AliTRDTenderSupply",     "TRD");
+    if (useVTX)   AddTenderSupply(tender,"AliVtxTenderSupply",     "IP");
+    if (useEMCAL) AddTenderSupply(tender,"AliEMCALTenderSupply",   "EMCAL");
+    if (usePID)   AddTenderSupply(tender,"AliPIDTenderSupply",     "PID");
+
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    AliAnalysisTask*    tsk = reinterpret_cast<AliAnalysisTask*>(tender);
+    mgr->AddTask(tsk);
+    AliAnalysisDataContainer* cnt =
+      mgr->CreateContainer("tender_event",
+			   AliESDEvent::Class(),
+			   AliAnalysisManager::kExchangeContainer,
+			   "default_tender");
+    mgr->ConnectInput (tsk, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(tsk, 1, cnt);
+    
   }
   /* @} */
   //------------------------------------------------------------------

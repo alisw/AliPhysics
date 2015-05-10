@@ -28,6 +28,7 @@
 #include "AliAODForwardMult.h"
 #include "AliForwardUtil.h"
 #include "AliCentrality.h"
+#include "AliVVZERO.h"
 #include <TH1.h>
 #include <TList.h>
 #include <TDirectory.h>
@@ -184,12 +185,12 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   //
   DGUARD(fDebug,1,"Named CTOR of AliFMDEventInspector: %s", name);
   if (!GetPhysicsSelection()) {
-    AliFatal("No physics selection defined in manager\n"
-	     "=======================================================\n"
-	     " The use of AliFMDEventInspector _requires_ a valid\n"
-	     " AliPhysicsSelection registered with the input handler.\n\n"
-	     " Please check our train setup\n"
-	     "=======================================================\n");
+    AliWarning("No physics selection defined in manager\n"
+	       "=======================================================\n"
+	       " The use of AliFMDEventInspector _suggests_ a valid\n"
+	       " AliPhysicsSelection registered with the input handler.\n\n"
+	       " Please check our train setup\n"
+	       "=======================================================\n");
   }
 }
 
@@ -347,31 +348,31 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   AliPhysicsSelection* ps = GetPhysicsSelection();
   if (!ps) {
     AliWarning("No physics selection");
-    return;
   }
-  // Get the configured triggers
-  AliOADBPhysicsSelection* oadb = 
-    const_cast<AliOADBPhysicsSelection*>(ps->GetOADBPhysicsSelection());
-  if (!oadb) {
-    AliWarning("No OADB physics selection object");
-    return;
+  else {
+    // Get the configured triggers
+    AliOADBPhysicsSelection* oadb = 
+      const_cast<AliOADBPhysicsSelection*>(ps->GetOADBPhysicsSelection());
+    if (!oadb) {
+      AliWarning("No OADB physics selection object");
+      return;
+    }
+    // Get the configured trigger words from the physics selection 
+    const TList* collTriggClasses = ps->GetCollisionTriggerClasses();
+    const TList* bgTriggClasses   = ps->GetBGTriggerClasses();
+    if (!collTriggClasses) { 
+      AliWarning("No configured collision trigger classes");
+      return;
+    }
+    if (!bgTriggClasses) { 
+      AliWarning("No configured background trigger classes");
+      return;
+    }
+    CacheConfiguredTriggerClasses(fCollWords, collTriggClasses, oadb);
+    CacheConfiguredTriggerClasses(fBgWords,   bgTriggClasses,   oadb);
+    // fCollWords.ls();
+    // fBgWords.ls();
   }
-  // Get the configured trigger words from the physics selection 
-  const TList* collTriggClasses = ps->GetCollisionTriggerClasses();
-  const TList* bgTriggClasses   = ps->GetBGTriggerClasses();
-  if (!collTriggClasses) { 
-    AliWarning("No configured collision trigger classes");
-    return;
-  }
-  if (!bgTriggClasses) { 
-    AliWarning("No configured background trigger classes");
-    return;
-  }
-  CacheConfiguredTriggerClasses(fCollWords, collTriggClasses, oadb);
-  CacheConfiguredTriggerClasses(fBgWords,   bgTriggClasses,   oadb);
-  // fCollWords.ls();
-  // fBgWords.ls();
-  
   
   TArrayD limits;
   if ((fMinCent < 0 && fMaxCent < 0) || fMaxCent <= fMinCent) {
@@ -903,7 +904,30 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     AliWarning("No input handler");
     return kFALSE;
   }
-
+  AliPhysicsSelection* ps = 
+    dynamic_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+  UInt_t trgMask = 0;
+  AliTriggerAnalysis ta; 
+  if (ps) {
+    trgMask = ih->IsEventSelected();
+  }
+  else {
+    // Replay HW triggers 
+    Int_t v0A = ta.V0Trigger(&esd, AliTriggerAnalysis::kASide, true, false);
+    Int_t v0C = ta.V0Trigger(&esd, AliTriggerAnalysis::kCSide, true, false);
+    Int_t fso = ta.SPDFiredChips(&esd, 1, false, 0);
+    Bool_t v0Abg = (v0A == 2);
+    Bool_t v0Cbg = (v0C == 2);
+    Bool_t v0Abb = (v0A == 1 || v0A == 3); // Include fake 
+    Bool_t v0Cbb = (v0A == 1 || v0A == 3); // Include fake
+    Bool_t isBg  = (v0Abg  || v0Cbg);
+    if (!isBg && v0Abb || v0Cbb || fso > 0) trgMask |= AliVEvent::kMB;
+    if (!isBg && v0Abb || v0Cbb)            trgMask |= AliVEvent::kCINT5; 
+    if (!isBg && v0Abb && v0Cbb)            trgMask |= AliVEvent::kINT7;
+    DMSG(fDebug, 1, "HW replay: v0A=%d v0C=%d gfo=%d mask=0x%x",
+	 v0A, v0C, fso, trgMask);
+  }
+    
   // Check if this is a collision candidate (MB)
   ///
   // Historic remark: Note, that we should use the value cached in the
@@ -911,7 +935,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   //   on the AliPhysicsSelection obejct.  If we called the latter
   //   then the AliPhysicsSelection object would overcount by a factor
   //   of 2! :-(
-  UInt_t  trgMask  = ih->IsEventSelected();
+    // UInt_t  trgMask  = ih->IsEventSelected();
   Bool_t  offline  = trgMask;
   Bool_t  fastonly = (trgMask & AliVEvent::kFastOnly);
   TString trigStr  = esd.GetFiredTriggerClasses();
@@ -958,12 +982,15 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     CheckINELGT0(esd, nClusters, triggers);
   }
   
-  AliTriggerAnalysis ta;
+  //   AliTriggerAnalysis ta; 
   if (ta.IsSPDClusterVsTrackletBG(&esd, false)) 
     // SPD outlier 
     triggers |= AliAODForwardMult::kSPDOutlier;
 
   CheckNSD(esd,triggers);
+  if (!ps) {
+    if (trgMask & AliVEvent::kINT7) triggers |= AliAODForwardMult::kV0AND;
+  }
   CheckPileup(esd, triggers);
   CheckEmpty(trigStr, triggers);
   // if (CheckPileup(esd, triggers)) fHTriggers->Fill(kPileUp+.5);
@@ -1086,10 +1113,12 @@ AliFMDEventInspector::CheckNSD(const AliESDEvent& esd, UInt_t& triggers) const
 {
   // Analyse some trigger stuff 
   AliTriggerAnalysis ta;
-  if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kV0AND)) {
-    triggers |= AliAODForwardMult::kV0AND;
-    if (fUseV0AND) 
-      triggers |= AliAODForwardMult::kNSD;
+  if (GetPhysicsSelection()) {
+    if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kV0AND)) {
+      triggers |= AliAODForwardMult::kV0AND;
+      if (fUseV0AND) 
+	triggers |= AliAODForwardMult::kNSD;
+    }
   }
   if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kNSD1)) 
     triggers |= AliAODForwardMult::kNSD;
