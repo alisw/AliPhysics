@@ -53,6 +53,7 @@ struct SysErrorAdder
    * @return The trigger name 
    */
   virtual const char* GetTriggerName() const { return "Trigger"; }
+  virtual const char* GetTriggerString() const { return fTrig; }
   Int_t ModColor(Color_t n, UShort_t off) const
   {
     ULong_t max   = 0xff;
@@ -121,7 +122,7 @@ struct SysErrorAdder
    * 
    * @return Id of systmatic error or -1
    */
-  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  virtual Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
   {
     Double_t low = 0,high = 0;
     GetTrigger(low,high);
@@ -228,6 +229,13 @@ struct SysErrorAdder
    */  
   virtual GraphSysErr* Make(TH1* h, TLegend* l)
   {
+    // --- Reaction key ------------------------------------------------
+    Info("", "Making graph from %s %p", h->GetName(), l);
+    TString reac = fSys;
+    reac.ToUpper();
+    reac.Insert(reac.Index("P", 1, 1, TString::kIgnoreCase), " ");
+    reac.Append(" --> CHARGED X");
+    
     GraphSysErr* gse = new GraphSysErr(10);
     gse->SetSumLineColor(kRed+2);
     gse->SetSumLineWidth(2);
@@ -240,8 +248,18 @@ struct SysErrorAdder
     gse->SetFillStyle(h->GetFillStyle());
     gse->SetXTitle("#it{#eta}");
     gse->SetYTitle("1/#it{N} d#it{N}_{ch}/d#it{#eta}");
-		      
-
+    gse->SetKey("laboratory", "CERN");
+    gse->SetKey("accelerator", "LHC");
+    gse->SetKey("detector", "FORWARD");
+    gse->SetKey("reackey", reac);
+    gse->SetKey("obskey", "DN/DETARAP");
+    gse->SetKey("title", "Systematic study of 1/N dNch/deta over widest "
+		"possible eta region at the LHC");
+    gse->SetKey("author", "CHRISTENSEN");
+    gse->SetKey("comment", "We present 1/N dNch/deta over widest "
+		"possible eta region at the LHC");
+    gse->SetKey("dscomment", "The pseudo-rapidity density of charged particle");
+    
     MakeTrigger(gse, l);
     Int_t idMerge = MakeMerging(gse, l); 
     Int_t idDens  = MakeDensity(gse, l); 
@@ -249,6 +267,7 @@ struct SysErrorAdder
     Int_t idHad   = MakeHadron(gse, l);
 
     Int_t cnt = 0;
+    Info("", "Looping over histogram w/%d bins", h->GetNbinsX());
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
       Double_t y  = h->GetBinContent(i);
       if (y < 1e-6) continue;
@@ -312,6 +331,12 @@ struct INELAdder : public SysErrorAdder
     low  = fLow;
     high = fHigh;
   }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    gse->AddQualifier("TRIGGER", "INEL");
+    return
+      SysErrorAdder::MakeTrigger(gse, l);
+  }
 };
 /**
  * For pp INEL results
@@ -337,6 +362,12 @@ struct INELGt0Adder : public SysErrorAdder
   virtual void GetTrigger(Double_t& low, Double_t& high) const
   {
     low = high = 0;
+  }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    gse->AddQualifier("TRIGGER", "INEL>0");
+    gse->AddQualifier("N", ">0");
+    return SysErrorAdder::MakeTrigger(gse, l);
   }
 };
 /**
@@ -376,6 +407,12 @@ struct NSDAdder : public SysErrorAdder
   {
     low = high = fValue;
   }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    gse->AddQualifier("TRIGGER", "NSD");
+    return SysErrorAdder::MakeTrigger(gse, l);
+  }
+  
 };
 /**
  * For centrality 
@@ -387,6 +424,8 @@ struct CENTAdder : public SysErrorAdder
   Double_t fValue;
   Double_t fMin;
   Double_t fMax;
+  Double_t fCMin;
+  Double_t fCMax;
   /** 
    * Constructor 
    * 
@@ -395,7 +434,7 @@ struct CENTAdder : public SysErrorAdder
    * @param Method 
    */
   CENTAdder(const TString& sys, UShort_t sNN, const TString& method)
-    : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0)
+    : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0), fCMin(0), fCMax(0)
   {
     if (fSys.EqualTo("pPb", TString::kIgnoreCase)) {
       fMin = 0.02; fMax = 0.04;
@@ -415,6 +454,13 @@ struct CENTAdder : public SysErrorAdder
     n.Append(")");
     return n.Data();
   }
+  virtual const char* GetTriggerString() const
+  {
+    return Form("%s_%03dd%02d_%03dd%02d",
+		fTrig.Data(),
+		Int_t(fCMin), Int_t(fCMin*100)%100,
+		Int_t(fCMax), Int_t(fCMax*100)%100);
+  }
   /** 
    * Get trigger systematic error 
    * 
@@ -427,6 +473,12 @@ struct CENTAdder : public SysErrorAdder
     // Double_t e = ((fCent-2.5)/100) * (fMax-fMin) + fMin;
     low = high = e;
     // Printf("Trigger error for centrality = %f -> %f", fCent, low);
+  }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    gse->AddQualifier("TRIGGER", fTrig);
+    gse->AddQualifier("CENTRALITY IN PCT", Form("%6.2f TO %6.2f", fCMin, fCMax));
+    return SysErrorAdder::MakeTrigger(gse, l);
   }
   /** 
    * Get centrality 
@@ -445,9 +497,9 @@ struct CENTAdder : public SysErrorAdder
     TObjArray* tokens  = name.Tokenize(" ");
     TObjString* first  = static_cast<TObjString*>(tokens->At(0));
     TObjString* second = static_cast<TObjString*>(tokens->At(1));
-    Double_t    low    = first->String().Atof();
-    Double_t    high   = second->String().Atof();
-    fCent              = (low+high)/2;
+    fCMin              = first->String().Atof();
+    fCMax              = second->String().Atof();
+    fCent              = (fCMin+fCMax)/2;
     return fCent;
   }
   /** 
