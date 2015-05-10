@@ -1,8 +1,21 @@
-// $Id$
+/*************************************************************************
+* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 //
 // Emcal jet response matrix maker task.
 //
-// Author: S. Aiola
+// Author: Salvatore Aiola, Yale University, salvatore.aiola@cern.ch
 
 #include "AliJetResponseMaker.h"
 
@@ -37,6 +50,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
+  fFlavourZAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -118,6 +132,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
+  fFlavourZAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -642,6 +657,14 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fFlavourZAxis) {
+    title[dim] = "z_{flavour}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+  }
+
   title[dim] = "p_{T,particle}^{leading} (GeV/c)";
   nbins[dim] = 120;
   min[dim] = 0;
@@ -832,6 +855,20 @@ void AliJetResponseMaker::AllocateTHnSparse()
     max[dim] = 1.2;
     dim++;
   }
+
+  if (fFlavourZAxis) {
+    title[dim] = "z_{flavour,1}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+
+    title[dim] = "z_{flavour,2}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+  }
       
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
     
@@ -881,7 +918,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt, Int_t Set)
+void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt, Double_t FlavourZ, Int_t Set)
 {
   if (fHistoType==1) {
     THnSparse *histo = 0;
@@ -915,6 +952,8 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
 	contents[i] = MCPt;
       else if (title=="p_{T,particle}^{leading} (GeV/c)")
 	contents[i] = LeadingPt;
+      else if (title=="z_{flavour}")
+	contents[i] = FlavourZ;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -946,7 +985,8 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
 //________________________________________________________________________
 void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
 					     Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
-					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2)
+					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2,
+                                             Double_t FlavourZ1, Double_t FlavourZ2)
 {
   if (fHistoType==1) {
     Double_t contents[20]={0};
@@ -997,6 +1037,10 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
 	contents[i] = LeadingPt1;
       else if (title=="p_{T,particle,2}^{leading} (GeV/c)")
 	contents[i] = LeadingPt2;
+      else if (title=="z_{flavour,1}")
+        contents[i] = FlavourZ1;
+      else if (title=="z_{flavour,2}")
+	contents[i] = FlavourZ2;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1639,10 +1683,14 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     Double_t ptLeading2 = jets2->GetLeadingHadronPt(jet2);
     Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
+    Double_t zflavour2 = 0;
+
+    AliVParticle* hftrack2 = jet2->GetFlavourTrack();
+    if (hftrack2) zflavour2 = hftrack2->P() / jet2->P();
 
     if (jets2->AcceptJet(jet2))
       FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), ptLeading2, 
-		   corrpt2, jet2->MCPt(), 2);
+		   corrpt2, jet2->MCPt(), zflavour2, 2);
     else
       fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(), jet2->Pt());
 
@@ -1670,10 +1718,14 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
     Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
+    Double_t zflavour1 = 0;
+    
+    AliVParticle* hftrack1 = jet1->GetFlavourTrack();
+    if (hftrack1) zflavour1 = hftrack1->P() / jet1->P();
 
     FillMatchingHistos(jet1->Pt(), jet2->Pt(), jet1->Eta(), jet2->Eta(), jet1->Phi(), jet2->Phi(), 
 		       jet1->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet1->MCPt(), 
-		       jet1->NEF(), jet2->NEF(), ptLeading1, ptLeading2);
+		       jet1->NEF(), jet2->NEF(), ptLeading1, ptLeading2, zflavour1, zflavour2);
   }
 
   jets1->ResetCurrentID();
@@ -1687,9 +1739,13 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
     Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
-
+    Double_t zflavour1 = 0;
+    
+    AliVParticle* hftrack1 = jet1->GetFlavourTrack();
+    if (hftrack1) zflavour1 = hftrack1->P() / jet1->P();
+    
     FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), ptLeading1, 
-		 corrpt1, jet1->MCPt(), 1);
+		 corrpt1, jet1->MCPt(), zflavour1, 1);
   }
   return kTRUE;
 }
