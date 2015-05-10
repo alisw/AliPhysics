@@ -387,8 +387,8 @@ case 4:
     break;
           
     case 5: // v2 modulation
-      fFit=new TF1("v2Modulation","[0]*(1+2*[1]*[2](1+TMath::TMath::Cos(2*x)))",fMin,fMax);
-      fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2](1+TMath::TMath::Cos(2*x))",fMin,fMax); 
+      fFit=new TF1("v2Modulation","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax);
+      fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax); 
 
       fFit->SetParLimits(0,0.,999.);
       fFit->SetParLimits(1,-1,1);
@@ -400,12 +400,12 @@ case 4:
       break;
       
       case 6: // case 2 + v2 modulation
-	fFit=new TF1("TwoGausPeriodicityPlusV2modulation","[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[0]*(1+2*[7]*[8](1+TMath::TMath::Cos(2*x)))",fMin,fMax);
+	fFit=new TF1("TwoGausPeriodicityPlusV2modulation","[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[0]*(1+2*[7]*[8]*TMath::TMath::Cos(2*x))",fMin,fMax);
         
     fGausNS=new TF1("fGausNSper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
     fGausNS2=new TF1("fGausNS2per","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
     fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
-    fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2](1+TMath::TMath::Cos(2*x))",fMin,fMax); 
+    fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax); 
     
     fFit->SetParLimits(0,0.,999.);
     fFit->SetParLimits(1,0,999.);
@@ -442,31 +442,15 @@ case 4:
   }
   
 }
-
-
 //_______________________________________________________________________________
+Double_t AliHFCorrFitter::FindBaseline(){
 
-void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
-{
-/*|________________________________________________________________________|
-| -> fFixBase=0 : baseline free
-|           =1 : fix the baseline to the minimum of the histogram
-|           <0 : fix the baseline to the weighted average of the abs(fFixBaseline) lower points
-|           =2 : zyam at pi/2. Fix the baseline averaging the 2 points around +-pi/2 value
-|           =4 : zyam at pi/2. Fix the baseline averaging the 4 points around +-pi/2 value
-|           =5 : pedestal fixed at avarage of the points in the transverse region |(pi/4 - pi2)
-|           =6 : pedestal fixed to an external value (assumed to be already set before calling this method!!)
-| -> fFixMean=0 : NS & AS mean free
-|           =1 : NS mean fixed to 0, AS mean free
-|           =2 : AS mean fixed to pi, NS mean free
-|           =3 : NS mean fixed to 0, AS mean to pi
-|___________________________________________________________________________|*/
-    
-  //_________________________________________ fFixBase 0
-  if(fFixBase==6){
-    fFit->FixParameter(0,fBaseline);
+  if(fFixBase==0){
+    Printf("AliHFCorrFitter::FindBasline:  The baseline option is set to free baselie: now the full fit will be done. Beware!");
+    Fitting();
+    return fBaseline;
   }
-    
+
   //_________________________________________ fFixBase 1
   if(fFixBase==1){
     Double_t min=1.e10;
@@ -477,9 +461,9 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
 	k=j;
       }
     }
-    fFit->FixParameter(0,min);
     fBaseline=min;
     fErrbaseline=fHist->GetBinError(k);      
+    return fBaseline;
   }
     
   //_________________________________________ fFixBase <0
@@ -499,9 +483,9 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
     av/=errAv;
     errAv=TMath::Sqrt(1./errAv);
     printf("Average fBaseline: %f +- %f \n",av,errAv);
-    fFit->FixParameter(0,av);      
     fBaseline=av;
     fErrbaseline=errAv;
+    return fBaseline;
   }
     
   //_________________________________________ fFixBase 2
@@ -522,10 +506,9 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
     av/=errAv;
     errAv=TMath::Sqrt(1./errAv);
     printf("Average fBaseline: %f +- %f \n",av,errAv);
-    fFit->FixParameter(0,av);      
     fBaseline=av;
     fErrbaseline=errAv;
-    
+    return fBaseline;
   }
   
     //_________________________________________ fFixBase 4
@@ -580,89 +563,85 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
     av/=errAv;
     errAv=TMath::Sqrt(1./errAv);
     printf("Average fBaseline: %f +- %f \n",av,errAv);
-    fFit->FixParameter(0,av);      
     fBaseline=av;
     fErrbaseline=errAv;
+    return fBaseline;
  }
     
-    //_________________________________________ fFixBase 5
- /*if(fFixBase==5){// use fit range
-      Double_t errAv=0.,av=0.;
-      
-      
-        for(Int_t binPhi =0; binPhi<fHist->GetNbinsX();binPhi++){
-	  
-	  if(fHist->GetBinLowEdge(binPhi)>=-0.5*TMath::Pi() && fHist->GetBinLowEdge(binPhi+1)<=-0.25*TMath::Pi()){
-	      cout << "iBin = " << binPhi << endl;
-	      av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-	      errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-	  }
-	  
-	  if(fHist->GetBinLowEdge(binPhi)>=0.25*TMath::Pi() && fHist->GetBinLowEdge(binPhi+1)<=0.5*TMath::Pi()){
-	    cout << "iBin = " << binPhi << endl;
-            av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-            errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-	  }
-        }
-        
-        av/=errAv;
-        errAv=TMath::Sqrt(1./errAv);
-	//  av/=2;
-	//  errAv/=2;
-        printf("Average fBaseline: %f +- %f \n",av,errAv);
-        fFit->FixParameter(0,av);
-        fBaseline=av;
-        fErrbaseline=errAv;
-	
-    }*/
-    if(fFixBase==5){// use fit range
-        Double_t errAv=0.,av=0.;
-        
-        
-        for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
-            
-            if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
-                cout << "iBin = " << binPhi << endl;
-                av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-                errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-            }
-            
-            if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
-                cout << "iBin = " << binPhi << endl;
-                av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-                errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-            }
-        }
-        
-        av/=errAv;
-        errAv=TMath::Sqrt(1./errAv);
-        //  av/=2;
-        //  errAv/=2;
-        printf("Average fBaseline: %f +- %f \n",av,errAv);
-        fFit->FixParameter(0,av);
-        fBaseline=av;
-        fErrbaseline=errAv;
-        
-    }
-  
-    
- if(fFixMean==1||fFixMean==3){
-   fFit->FixParameter(2,0.);
+ if(fFixBase==5){// use fit range
+   Double_t errAv=0.,av=0.;     
+   for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
+     
+     if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+     
+     if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+   }
+   
+   av/=errAv;
+   errAv=TMath::Sqrt(1./errAv);
+   //  av/=2;
+   //  errAv/=2;
+   printf("Average fBaseline: %f +- %f \n",av,errAv);
+   fBaseline=av;
+   fErrbaseline=errAv;
+   return fBaseline;     
  }
- if(fFixMean==2||fFixMean==3){
-   if(fTypeOfFitfunc!=0)fFit->FixParameter(5,TMath::Pi());
- }
-
- SetFunction();
- fHist->Fit(fFit,"REMI","",fMin,fMax);
- if(fFixBase==0){
-   fBaseline=fFit->GetParameter(0);
-   fErrbaseline=fFit->GetParError(0);
- }
- fHist->SetTitle(";#Delta#varphi (rad); #frac{1}{N_{D}}#frac{dN^{assoc}}{d#Delta#varphi} (rad^{-1}");
- SetSingleTermsForDrawing(drawSplitTerm);
-}
  
+ Printf("AliHFCorrFitter::FindBaseline   WRONG BASELINE OPTION SET, RETURNING -999");
+ return -999.;
+    
+}
+//_______________________________________________________________________________
+
+void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
+{
+/*|________________________________________________________________________|
+| -> fFixBase=0 : baseline free
+|           =1 : fix the baseline to the minimum of the histogram
+|           <0 : fix the baseline to the weighted average of the abs(fFixBaseline) lower points
+|           =2 : zyam at pi/2. Fix the baseline averaging the 2 points around +-pi/2 value
+|           =4 : zyam at pi/2. Fix the baseline averaging the 4 points around +-pi/2 value
+|           =5 : pedestal fixed at avarage of the points in the transverse region |(pi/4 - pi2)
+|           =6 : pedestal fixed to an external value (assumed to be already set before calling this method!!)
+| -> fFixMean=0 : NS & AS mean free
+|           =1 : NS mean fixed to 0, AS mean free
+|           =2 : AS mean fixed to pi, NS mean free
+|           =3 : NS mean fixed to 0, AS mean to pi
+|___________________________________________________________________________|*/
+    
+  //_________________________________________ fFixBase 0
+  if(fFixBase!=0){
+    if(fFixBase==6){
+      fFit->FixParameter(0,fBaseline);
+    }
+    else FindBaseline();
+    fFit->FixParameter(0,fBaseline);
+  }    
+  if(fFixMean==1||fFixMean==3){
+    fFit->FixParameter(2,0.);
+  }
+  if(fFixMean==2||fFixMean==3){
+    if(fTypeOfFitfunc!=0)fFit->FixParameter(5,TMath::Pi());
+  }
+
+  SetFunction();
+  fHist->Fit(fFit,"REMI","",fMin,fMax);
+  if(fFixBase==0){
+    fBaseline=fFit->GetParameter(0);
+    fErrbaseline=fFit->GetParError(0);
+  }
+  fHist->SetTitle(";#Delta#varphi (rad); #frac{1}{N_{D}}#frac{dN^{assoc}}{d#Delta#varphi} (rad^{-1}");
+  SetSingleTermsForDrawing(drawSplitTerm);
+}
+
 //________________________________________________________________
 void AliHFCorrFitter::YieldErrAboveBaseline()
 {
