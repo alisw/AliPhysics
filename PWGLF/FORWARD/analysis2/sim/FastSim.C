@@ -382,13 +382,14 @@ struct FastCentAxis
 struct FastCentEstimator : public TObject
 {
   TString fName;
+  Bool_t fVerbose;
   /** 
    * Constructor 
    * 
    * @param name Name of the estimator 
    */
   FastCentEstimator(const char* name="")
-    : TObject(), fName(name)
+    : TObject(), fName(name), fVerbose(false)
   {}
   /** 
    * Destructor 
@@ -400,6 +401,7 @@ struct FastCentEstimator : public TObject
    * @return The name 
    */
   const char* GetName() const { return fName.Data(); }
+  void SetVerbose(Bool_t verb) { fVerbose = verb; }
   /** 
    * Set-up this estimator.  Output objects should be stored in @a
    * out, and a branch can be registerd in the TTree.
@@ -550,6 +552,7 @@ struct Fast1DCentEstimator : public FastCentEstimator
    */
   virtual void PostEvent()
   {
+    if (fVerbose) Info("PostEvent", " Got %f %s particles", fCache, GetName());
     fHistogram->Fill(fCache);
   }
   virtual TH1* GetHistogram(TCollection* l) = 0;
@@ -571,14 +574,20 @@ struct Fast1DCentEstimator : public FastCentEstimator
     cent->SetTitle(Form("%s mapping", GetName()));
     cent->Reset();
     out->Add(cent);
-    
+
     Int_t    nX         = h->GetNbinsX();
     Double_t total      = h->Integral(1,nX);
+    if (fVerbose)
+      Info("Teminate", "Integrating %s from bin %d to 1",
+	   h->GetName(), nX);
     for (Int_t i = h->GetNbinsX(); i > 0; i--) {
       Double_t curInt  = h->Integral(i, nX);
-      if (curInt <= 0) continue;
+      if (curInt < 0) continue;
       Double_t curCent = curInt / total * 100;
       cent->SetBinContent(i, curCent);
+      if (fVerbose)
+	Info("Terminate", "Bin %3d -> %9f/%9f -> %5.1f%%",
+	     i, curInt, total, curCent);
     }    
   }
   ClassDef(Fast1DCentEstimator,1);
@@ -1002,8 +1011,10 @@ struct FastSim : public TSelector
     
     TIter next(fCentEstimators);
     FastCentEstimator* estimator = 0;
-    while ((estimator = static_cast<FastCentEstimator*>(next())))
+    while ((estimator = static_cast<FastCentEstimator*>(next()))) {
       estimator->Setup(estimators, fTree,fIsTgtA,fIsProjA);
+      estimator->SetVerbose(fVerbose);
+    }
     
     if (fVerbose) Info("SetupOutput", "Adding list ot outputs");
     fOutput->Add(fList);
