@@ -22,6 +22,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "THn.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TCanvas.h"
@@ -73,16 +74,16 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fhPhiEtaDeltaPhi12Cut1(other.fhPhiEtaDeltaPhi12Cut1)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
   , fAcceptanceCut(other.fAcceptanceCut)  
-  , fWeights(other.fWeights)
-  , fMultWeightIndex(other.fMultWeightIndex)
-  , fVZWeightIndex(other.fVZWeightIndex)
+  , fWeights(NULL)
+  , fMultWeightIndex(0)
+  , fVZWeightIndex(0)
   , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p(*other.fMixedEvent)):NULL))
   , fMBinEdges(other.fMBinEdges)
   , fZBinEdges(other.fZBinEdges)
-  , fMultiplicity(other.fMultiplicity)
-  , fVZ(other.fVZ)
-  , fMBin(other.fMBin)
-  , fVzBin(other.fVzBin)
+  , fMultiplicity(0)
+  , fVZ(0)
+  , fMBin(0)
+  , fVzBin(0)
   , fCollisionType(other.fCollisionType)
   , fTriggerType(other.fTriggerType)
 {
@@ -260,10 +261,9 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   if (doHistogram) {
     Double_t Weight = 1.0;
     if(fWeights){
-      Int_t indexphi1 = fWeights->GetAxis(2)->FindBin(ptrigger->Phi());
-      Int_t indexeta1 = fWeights->GetAxis(3)->FindBin(ptrigger->Eta());
-      Int_t indexpT1 = fWeights->GetAxis(4)->FindBin(ptrigger->Pt());
-      Int_t x[5] = {fMultWeightIndex,fVZWeightIndex,indexphi1,indexeta1,indexpT1};
+      Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
+      Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());
+      Int_t x[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
       Weight *= fWeights->GetBinContent(x);
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
@@ -290,10 +290,9 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   if (doHistogram) {
     Double_t Weight = 1.0;
     if(fWeights){
-      Int_t indexphi1 = fWeights->GetAxis(2)->FindBin(p->Phi());
-      Int_t indexeta1 = fWeights->GetAxis(3)->FindBin(p->Eta());
-      Int_t indexpT1 = fWeights->GetAxis(4)->FindBin(p->Pt());
-      Int_t x[5] = {fMultWeightIndex,fVZWeightIndex,indexphi1,indexeta1,indexpT1};
+      Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p->Eta());
+      Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p->Pt());
+      Int_t x[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
       Weight *= fWeights->GetBinContent(x);
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),p->Pt(),Weight);
@@ -355,21 +354,18 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
   }//Track duplicate, reject.
   if(fWeights){
     //t:
-    Int_t indexphit = fWeights->GetAxis(2)->FindBin(ptrigger->Phi());
-    Int_t indexetat = fWeights->GetAxis(3)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(4)->FindBin(ptrigger->Pt());
+    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
+    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());
 
     //a1:
-    Int_t indexphi1 = fWeights->GetAxis(2)->FindBin(p1->Phi());
-    Int_t indexeta1 = fWeights->GetAxis(3)->FindBin(p1->Eta());
-    Int_t indexpT1 = fWeights->GetAxis(4)->FindBin(p1->Pt());
+    Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p1->Eta());
+    Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p1->Pt());
     //a2
-    Int_t indexphi2 = fWeights->GetAxis(2)->FindBin(p2->Phi());
-    Int_t indexeta2 = fWeights->GetAxis(3)->FindBin(p2->Eta());
-    Int_t indexpT2 = fWeights->GetAxis(4)->FindBin(p2->Pt());
-    Int_t x1[5] = {fMultWeightIndex,fVZWeightIndex,indexphi1,indexeta1,indexpT1};
-    Int_t x2[5] = {fMultWeightIndex,fVZWeightIndex,indexphi2,indexeta2,indexpT2};
-    Int_t xtrigger[5] = {fMultWeightIndex,fVZWeightIndex,indexphit,indexetat,indexpTt};
+    Int_t indexeta2 = fWeights->GetAxis(2)->FindBin(p2->Eta());
+    Int_t indexpT2 = fWeights->GetAxis(3)->FindBin(p2->Pt());
+    Int_t x1[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
+    Int_t x2[4] = {fMultWeightIndex,fVZWeightIndex,indexeta2,indexpT2};
+    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
     fillweight *= fWeights->GetBinContent(x1);
     fillweight *= fWeights->GetBinContent(x2);
     fillweight *= fWeights->GetBinContent(xtrigger);    
@@ -396,15 +392,13 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
   if(fWeights){
     //t:
-    Int_t indexphit = fWeights->GetAxis(2)->FindBin(ptrigger->Phi());
-    Int_t indexetat = fWeights->GetAxis(3)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(4)->FindBin(ptrigger->Pt());    
+    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
+    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());    
     //a1:
-    Int_t indexphi1 = fWeights->GetAxis(2)->FindBin(p1->Phi());
-    Int_t indexeta1 = fWeights->GetAxis(3)->FindBin(p1->Eta());
-    Int_t indexpT1 = fWeights->GetAxis(4)->FindBin(p1->Pt());
-    Int_t xtrigger[5] = {fMultWeightIndex,fVZWeightIndex,indexphit,indexetat,indexpTt};
-    Int_t x1[5] = {fMultWeightIndex,fVZWeightIndex,indexphi1,indexeta1,indexpT1};
+    Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p1->Eta());
+    Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p1->Pt());
+    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
+    Int_t x1[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
     fillweight *= fWeights->GetBinContent(x1);
     fillweight *= fWeights->GetBinContent(xtrigger);
   }
@@ -418,10 +412,9 @@ int AliCorrelation3p::FillTrigger(const AliVParticle* ptrigger)
   Double_t fillweight = 1.0;
   if(fWeights){
     //t:
-    Int_t indexphit = fWeights->GetAxis(2)->FindBin(ptrigger->Phi());
-    Int_t indexetat = fWeights->GetAxis(3)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(4)->FindBin(ptrigger->Pt());    
-    Int_t xtrigger[5] = {fMultWeightIndex,fVZWeightIndex,indexphit,indexetat,indexpTt};
+    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
+    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());    
+    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
     fillweight *= fWeights->GetBinContent(xtrigger);
   }
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
@@ -598,8 +591,8 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
   TString namestring = TString(name);
   TH2D* Slice;
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
-    if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D("xy")->Clone(name);Slice->Reset("m");}
-    if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D("yx")->Clone(name);Slice->Reset("m");}
+    if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
+    if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
     for(int x=0; x<=hist->GetNbinsX()+1;x++){
       for(int y=0;y<=hist->GetNbinsY()+1;y++){
 	Double_t Content=0;
@@ -634,8 +627,8 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
     Slice->SetEntries(Slice->GetEffectiveEntries());
   }
   if(o.CompareTo("xz")==0||o.CompareTo("zx")==0){
-    if(o.CompareTo("xz")==0){Slice = (TH2D*)hist->Project3D("xz")->Clone(name);Slice->Reset("m");}
-    if(o.CompareTo("zx")==0){Slice = (TH2D*)hist->Project3D("zx")->Clone(name);Slice->Reset("m");}
+    if(o.CompareTo("xz")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xz",name));Slice->Reset("m");}
+    if(o.CompareTo("zx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_zx",name));Slice->Reset("m");}
     for(int x=0; x<=hist->GetNbinsX()+1;x++){
       for(int z=0;z<=hist->GetNbinsZ()+1;z++){
 	Double_t Content=0;
@@ -673,8 +666,8 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
     Slice->PutStats(stats);
   }
   if(o.CompareTo("yz")==0||o.CompareTo("zy")==0){
-    if(o.CompareTo("yz")==0){Slice = (TH2D*)hist->Project3D("yz")->Clone(name);Slice->Reset("m");}
-    if(o.CompareTo("zy")==0){Slice = (TH2D*)hist->Project3D("zy")->Clone(name);Slice->Reset("m");}
+    if(o.CompareTo("yz")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yz",name));Slice->Reset("m");}
+    if(o.CompareTo("zy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_zy",name));Slice->Reset("m");}
 
     for(int y=0; y<=hist->GetNbinsY()+1;y++){
       for(int z=0;z<=hist->GetNbinsZ()+1;z++){
@@ -715,10 +708,134 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
   return Slice;
 }
 
+void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
+{//option should be xy,zy,yx,zx,xz or yz.
+  TString o = TString(option);
+  TString namestring = TString(name);
+  TH2D* Slice;
+  if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
+    if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
+    if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
+    for(int x=0; x<=hist->GetNbinsX()+1;x++){
+      for(int y=0;y<=hist->GetNbinsY()+1;y++){
+	Double_t Content=0;
+	Double_t locerr=0;
+	for(int z=firstbin;z<=lastbin;z++){
+	  if(!baverage){
+	  Content += hist->GetBinContent(x,y,z);
+	  locerr  += hist->GetBinError(x,y,z)*hist->GetBinError(x,y,z);
+	  }
+	  if(baverage){//Get the average
+	    Double_t binerr = hist->GetBinError(x,y,z);
+	    if(binerr !=0){
+	      Content += hist->GetBinContent(x,y,z)/(binerr*binerr);
+	      locerr += 1.0/(binerr*binerr);	
+	    }
+	    if(binerr ==0){
+	     locerr +=1.0; 
+	    }
+	  }  
+	}
+	if(baverage&&locerr!=0){
+	  Content = Content/locerr;//normalize
+	  locerr = 1.0/locerr;
+	}
+	if(o.CompareTo("xy")==0) Slice->SetBinContent(y,x,Content);
+	if(o.CompareTo("yx")==0) Slice->SetBinContent(x,y,Content);
+	if(o.CompareTo("xy")==0) Slice->SetBinError(y,x,TMath::Sqrt(locerr));
+	if(o.CompareTo("yx")==0) Slice->SetBinError(x,y,TMath::Sqrt(locerr));
+	
+      }
+    }
+    Slice->SetEntries(Slice->GetEffectiveEntries());
+  }
+  if(o.CompareTo("xz")==0||o.CompareTo("zx")==0){
+    if(o.CompareTo("xz")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xz",name));Slice->Reset("m");}
+    if(o.CompareTo("zx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_zx",name));Slice->Reset("m");}
+    for(int x=0; x<=hist->GetNbinsX()+1;x++){
+      for(int z=0;z<=hist->GetNbinsZ()+1;z++){
+	Double_t Content=0;
+	Double_t locerr = 0;
+	for(int y=firstbin;y<lastbin;y++){
+	  if(!baverage){
+	  Content += hist->GetBinContent(x,y,z);
+	  locerr   += hist->GetBinError(x,y,z)*hist->GetBinError(x,y,z);
+	  }
+	  if(baverage){//Get the average
+	    Double_t binerr = hist->GetBinError(x,y,z);
+	    if(binerr!=0){
+	      Content += hist->GetBinContent(x,y,z)/(binerr*binerr);
+	      locerr += 1.0/(binerr*binerr);
+	    }
+	  }
+	}
+	if(baverage&&locerr!=0){
+	  Content = Content/locerr;//normalize
+	  locerr = 1.0/locerr;
+	}
+	if(baverage&&locerr==0){
+	  Content = 0;
+	  locerr = 0;
+	}
+	if(o.CompareTo("xz")==0) Slice->SetBinContent(z,x,Content);
+	if(o.CompareTo("zx")==0) Slice->SetBinContent(x,z,Content);
+	if(o.CompareTo("xz")==0) Slice->SetBinError(z,x,TMath::Sqrt(locerr));
+	if(o.CompareTo("zx")==0) Slice->SetBinError(x,z,TMath::Sqrt(locerr));
+      }
+    }
+    Slice->SetEntries(Slice->GetEffectiveEntries());
+    Double_t stats[6];
+    Slice->GetStats(stats);
+    Slice->PutStats(stats);
+  }
+  if(o.CompareTo("yz")==0||o.CompareTo("zy")==0){
+    if(o.CompareTo("yz")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yz",name));Slice->Reset("m");}
+    if(o.CompareTo("zy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_zy",name));Slice->Reset("m");}
+
+    for(int y=0; y<=hist->GetNbinsY()+1;y++){
+      for(int z=0;z<=hist->GetNbinsZ()+1;z++){
+	Double_t Content=0;
+	Double_t locerr  =0;
+	for(int x=firstbin;x<=lastbin;x++){
+	  if(!baverage){
+	    Content += hist->GetBinContent(x,y,z);
+	    locerr  += hist->GetBinError(x,y,z)*hist->GetBinError(x,y,z);
+	  }
+	  if(baverage){//Get the average
+	    Double_t binerr = hist->GetBinError(x,y,z);
+	    if(binerr !=0){
+	      Content += hist->GetBinContent(x,y,z)/(binerr*binerr);
+	      locerr  += 1.0/(binerr*binerr);
+	    }
+	  }
+	}
+	if(baverage&&locerr !=0){
+	  Content = Content/locerr;//normalize
+	  locerr = 1.0/locerr;
+	}
+	if(baverage&&locerr==0){
+	  Content = 0;
+	  locerr = 1.0;
+	}
+	if((o.CompareTo("yz")==0)&&!(Content==0)) Slice->SetBinContent(z,y,Content);
+	if((o.CompareTo("zy")==0)&&!(Content==0)) Slice->SetBinContent(y,z,Content);
+	if((o.CompareTo("yz")==0)&&!(Content==0)) Slice->SetBinError(z,y,TMath::Sqrt(locerr));
+	if((o.CompareTo("zy")==0)&&!(Content==0)) Slice->SetBinError(y,z,TMath::Sqrt(locerr));
+      }
+    }
+    Slice->SetEntries(Slice->GetEffectiveEntries());
+    Double_t stats[6];
+    Slice->GetStats(stats);
+    Slice->PutStats(stats);
+  }  
+  AddTo->Add(Slice);
+  delete Slice;
+}
+
 TH2D* AliCorrelation3p::DetaDphiAss(TH3F* hist, const char* name)
 {
   Double_t Pii = TMath::Pi();
-  TH2D * DetaDphiAss = (TH2D*)hist->Project3D("yx")->Clone(name);DetaDphiAss->Reset("m");
+  TH2D * DetaDphiAss = (TH2D*)hist->Project3D(Form("%s_yx",name));DetaDphiAss->Reset("m");
   for(int x = 1;x<hist->GetNbinsX();x++){for(int y=1;y<hist->GetNbinsY();y++){for(int z=1;z<hist->GetNbinsZ();z++){
     Double_t content = hist->GetBinContent(x,y,z);
     Double_t DPhi1 = hist->GetYaxis()->GetBinCenter(y);
@@ -750,7 +867,7 @@ TH2D* AliCorrelation3p::DeltaEtaCut(TH3F* hist, const char* option, const char* 
   TString o = TString(option); 
   TAxis* dphi1axis=hist->GetYaxis();
   TAxis* dphi2axis=hist->GetZaxis();
-  TH2D* Result = (TH2D*)hist->Project3D("yx")->Clone(name);
+  TH2D* Result = (TH2D*)hist->Project3D(Form("%s_yx",name));
   Result->Reset("m");
   for(int deta12 = 0;deta12<=hist->GetNbinsX()+1;deta12++){
     for(int dPhi1 = 0;dPhi1<=hist->GetNbinsY()+1;dPhi1++){
@@ -1158,6 +1275,57 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
   }
 }
 
+TH1 * AliCorrelation3p::PrepareHist(int HistLocation,const char* HistName,const char* title, const char* xaxis, const char* yaxis,const char* zaxis,bool mixed){
+  TH1* Hist;
+  if(!mixed)Hist= dynamic_cast<TH1*>(fHistograms->At(HistLocation)->Clone(HistName));
+  if(mixed) Hist= dynamic_cast<TH1*>(fMixedEvent->fHistograms->At(HistLocation)->Clone(HistName));
+  Hist->SetTitle(title);
+  Hist->GetXaxis()->SetTitle(xaxis);
+  Hist->GetYaxis()->SetTitle(yaxis);
+  if(TString(zaxis).CompareTo("")!=0) Hist->GetZaxis()->SetTitle(zaxis);
+  if(dynamic_cast<TH1D*>(Hist)){	  
+    Hist->SetTitleSize(0.045,"xy");
+    Hist->SetTitleOffset(1.2,"y");
+  }
+  if(dynamic_cast<TH2D*>(Hist)){
+    Hist->SetTitleSize(0.045,"xyz");
+    Hist->SetTitleOffset(1.2,"xy");
+    Hist->SetTitleOffset(0.9,"z");
+  }
+  if(dynamic_cast<TH3F*>(Hist)){
+    Hist->SetTitleSize(0.045,"xyz");
+    Hist->SetTitleOffset(1.2,"xy");
+    Hist->SetTitleOffset(0.9,"z");
+  }  
+  return Hist;
+}
+
+TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis, bool scale){
+  Double_t LeastContent = 1.0;//Least amount in mixed to scale.
+  Hist->SetTitle(title);
+  Hist->GetXaxis()->SetTitle(xaxis);
+  Hist->GetYaxis()->SetTitle(yaxis);
+  if(TString(zaxis).CompareTo("")!=0) Hist->GetZaxis()->SetTitle(zaxis);
+  if(dynamic_cast<TH1D*>(Hist)){	  
+    Hist->SetTitleSize(0.045,"xy");
+    Hist->SetTitleOffset(1.2,"y");
+  }
+  if(dynamic_cast<TH2D*>(Hist)){
+    Hist->SetTitleSize(0.045,"xyz");
+    Hist->SetTitleOffset(1.2,"xy");
+    Hist->SetTitleOffset(0.9,"z");
+    if(scale){
+      if(GetPoint(Hist,0.0,0.0)>LeastContent){Hist->Scale(1.0/GetPoint(Hist,0.0,0.0));}
+      else Hist->Scale(0.0);
+    }
+  }
+  if(dynamic_cast<TH3F*>(Hist)){
+    Hist->SetTitleSize(0.045,"xyz");
+    Hist->SetTitleOffset(1.2,"xy");
+    Hist->SetTitleOffset(0.9,"z");
+  }  
+  return Hist;
+}
 
 int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,bool all)
 {//This function makes a new file that contains all the histograms in all versions possible.
@@ -1167,16 +1335,18 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   if(recreate){ outfile = new TFile("results.root","RECREATE");outfile->cd();cout << "Recreate"<<endl;}
   else{
     outfile = new TFile("results.root","UPDATE");
-    mixeddir = outfile->mkdir(dir.Data());
-    dir.Append("/");
-    mixeddir->cd();
   }
+  
   if(TString("").CompareTo(scalingmethod)!=0){
     if(dir.Contains("/")){
       TObjArray *dirs=dir.Tokenize("/");
-      if(dirs->GetEntries()>0){
+//       cout << dir.Data()<<endl;
+      if(dirs->GetEntries()>1){
+// 	cout << dirs->At(0)->GetName()<<endl;
+// 	cout << dirs->At(1)->GetName()<<endl;
 	TDirectory * processdir;
 	processdir = outfile->GetDirectory((dirs->At(0))->GetName());
+	if(!processdir)processdir = outfile->mkdir((dirs->At(0))->GetName());
 	processdir->cd();
 	mixeddir = processdir->GetDirectory((dirs->At(1))->GetName());
 	if(mixeddir){processdir->rmdir((dirs->At(1))->GetName());}
@@ -1192,7 +1362,12 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       mixeddir->cd();
     }
   }
-  
+  else{
+    mixeddir = outfile->GetDirectory("");
+    dir.Append("/");
+    mixeddir->cd();
+  }
+
   TDirectory * dirmzbin = NULL;
   TDirectory * binstats = NULL;
   TDirectory * dirmzbinsig=NULL;
@@ -1201,7 +1376,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   TCanvas    * tempcanvas=NULL;
   //Hists and directories for the total stuff:
   TDirectory * totbinstats = gDirectory->mkdir("bin_stats");
-//   TDirectory * divided = gDirectory->mkdir("divided");
   TH1D * HistpT, * HistPhi,* HistEta, * HistTriggerpT, * HistTriggerPhi, * HistTriggerEta, * HistAssociatedpT, * HistAssociatedPhi,* HistAssociatedEta;
   TH3F * hPhiPhiDEtadiv=NULL;TH3F * hPhiPhiDEtadivscaled=NULL;
   TH2D * hDeltaPhidiv=NULL;TH2D* hDeltaPhidivscaled=NULL;TH2D * hDeltaPhineardiv=NULL;TH2D * hDeltaPhineardivscaled=NULL;TH2D * hDeltaPhimiddiv=NULL;TH2D * hDeltaPhimiddivscaled=NULL;TH2D * hDeltaPhifardiv=NULL;TH2D * hDeltaPhifardivscaled = NULL;
@@ -1209,79 +1383,51 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   Double_t navm, nav;
   Long_t NTriggers=0;
   Bool_t setAverage = kTRUE;  
-  
   for(int mb =0;mb<fMBinEdges.GetSize()-1;mb++){
     for(int zb=0;zb<fZBinEdges.GetSize()-1;zb++){
       if(mixeddir) mixeddir->cd();
       else outfile->cd();
       dirmzbin = gDirectory->mkdir(GetNameHist("Bin",mb,zb));
+//       cout <<GetNameHist("Bin",mb,zb)<<endl;
       binstats = dirmzbin->mkdir("bin_stats");
       dirmzbinsig = dirmzbin->mkdir("same_event");
       dirmzbinmixed = dirmzbin->mkdir("mixed_event");
       dirmzbindiv = dirmzbin->mkdir("divided");
       {//for bin statistics
 	binstats->cd();
-	TH1D* savehist1 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistpT,mb,zb))->Clone("total_pT"));
-	savehist1->SetTitle("pT of triggers and associated combined");
-	savehist1->GetXaxis()->SetTitle("pT [GeV/c]");
-	savehist1->GetYaxis()->SetTitle("# particles");
+	TH1D* savehist1 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistpT,mb,zb),"total_pT","pT of triggers and associated combined","pT [GeV/c]","# particles"));
 	savehist1->Write();
-
 	if(mb == 0&&zb == 0)HistpT = savehist1;
 	else HistpT->Add(savehist1);
-	TH1D* savehist2 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistPhi,mb,zb))->Clone("total_Phi"));
-	savehist2->SetTitle("Phi of triggers and associated combined");
-	savehist2->GetXaxis()->SetTitle("#Phi [rad]");
-	savehist2->GetYaxis()->SetTitle("# particles");
+	TH1D* savehist2 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistPhi,mb,zb),"total_Phi","Phi of triggers and associated combined","#Phi [rad]","# particles"));
 	savehist2->Write();
 	if(mb == 0&&zb == 0)HistPhi = savehist2;
 	else HistPhi->Add(savehist2);
-	TH1D*  savehist3 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistEta,mb,zb))->Clone("total_Eta"));
-	savehist3->SetTitle("Eta of triggers and associated combined");
-	savehist3->GetXaxis()->SetTitle("#eta []");
-	savehist3->GetYaxis()->SetTitle("# particles");
+	TH1D*  savehist3 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistEta,mb,zb),"total_Eta","Eta of triggers and associated combined","#eta []","# particles"));
 	savehist3->Write();
 	if(mb == 0&&zb == 0)HistEta = savehist3;
 	else HistEta->Add(savehist3);
-	TH1D* savehist4 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistTriggerpT,mb,zb))->Clone("trigger_pT"));
-	savehist4->SetTitle("pT of triggers");
-	savehist4->GetXaxis()->SetTitle("pT [GeV/c]");
-	savehist4->GetYaxis()->SetTitle("# triggers");
+	TH1D* savehist4 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerpT,mb,zb),"trigger_pT","pT of triggers","pT [GeV/c]","# triggers"));
 	savehist4->Write();
 	if(mb == 0&&zb == 0)HistTriggerpT = savehist4;
 	else HistTriggerpT->Add(savehist4);
-	TH1D* savehist5 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistTriggerPhi,mb,zb))->Clone("trigger_Phi"));	
-	savehist5->SetTitle("Phi of triggers");
-	savehist5->GetXaxis()->SetTitle("#Phi [rad]");
-	savehist5->GetYaxis()->SetTitle("# triggers");
+	TH1D* savehist5 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerPhi,mb,zb),"trigger_Phi","Phi of triggers","#Phi [rad]","# triggers"));
 	savehist5->Write();
 	if(mb == 0&&zb == 0)HistTriggerPhi = savehist5;
 	else HistTriggerPhi->Add(savehist5);
-	TH1D* savehist6 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistTriggerEta,mb,zb))->Clone("trigger_Eta"));      
-	savehist6->SetTitle("Eta of triggers");
-	savehist6->GetXaxis()->SetTitle("#eta []");
-	savehist6->GetYaxis()->SetTitle("# triggers");
+	TH1D* savehist6 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerEta,mb,zb),"trigger_Eta","Eta of triggers","#eta []","# triggers"));
 	savehist6->Write();
 	if(mb == 0&&zb == 0)HistTriggerEta = savehist6;
 	else HistTriggerEta->Add(savehist6);
-	TH1D* savehist7 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistAssociatedpT,mb,zb))->Clone("associated_pT"));
-	savehist7->SetTitle("pT of associated");
-	savehist7->GetXaxis()->SetTitle("pT [GeV/c]");
-	savehist7->GetYaxis()->SetTitle("# associated");
+	TH1D* savehist7 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedpT,mb,zb),"associated_pT","pT of associated","pT [GeV/c]","# associated"));
 	savehist7->Write();
 	if(mb == 0&&zb == 0)HistAssociatedpT = savehist7;
 	else HistAssociatedpT->Add(savehist7);
-	TH1D* savehist8 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistAssociatedPhi,mb,zb))->Clone("associated_Phi"));
-	savehist8->SetTitle("Phi of associated");
-	savehist8->GetXaxis()->SetTitle("#Phi [rad]");
-	savehist8->GetYaxis()->SetTitle("# associated");
+	TH1D* savehist8 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedPhi,mb,zb),"associated_Phi","Phi of associated","#Phi [rad]","# associated"));
 	savehist8->Write();
 	if(mb == 0&&zb == 0)HistAssociatedPhi = savehist8;
 	else HistAssociatedPhi->Add(savehist8);
-	TH1D* savehist9 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistAssociatedEta,mb,zb))->Clone("associated_Eta"));
-	savehist9->SetTitle("Eta of associated");
-	savehist9->GetXaxis()->SetTitle("#eta []");
-	savehist9->GetYaxis()->SetTitle("# associated");	
+	TH1D* savehist9 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedEta,mb,zb),"associated_Eta","Eta of associated","#eta []","# associated"));	
 	savehist9->Write();
 	if(mb == 0&&zb == 0)HistAssociatedEta = savehist9;
 	else HistAssociatedEta->Add(savehist9);
@@ -1290,498 +1436,136 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	delete tempcanvas;
 	tempcanvas=NULL;
 	if(!(mb==0&&zb==0)){delete savehist1;delete savehist2;delete savehist3;delete savehist4;delete savehist5;delete savehist6;delete savehist7;delete savehist8;delete savehist9;}
-	
-	TH1D* savehist = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistNassoc,mb,zb))->Clone("number_of_associated"));
-	savehist->SetTitle("Number of associated per trigger");
-	savehist->GetXaxis()->SetTitle("# associated in a given fill");
-	savehist->GetYaxis()->SetTitle("# fills");		
+	TH1D* savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNassoc,mb,zb),"number_of_associated","Number of associated per trigger","# associated in a given fill","# fills"));		
 	savehist->Write();
 	nav = 0;
 	Double_t norm = 0;
-	for(int i=1;i<savehist->GetNbinsX();i++){
-	  nav += savehist->GetBinCenter(i)*savehist->GetBinContent(i);
-	  norm += savehist->GetBinContent(i);
-	}
+	for(int i=1;i<savehist->GetNbinsX();i++){nav += savehist->GetBinCenter(i)*savehist->GetBinContent(i);norm += savehist->GetBinContent(i);}
 	if(norm !=0)nav = nav/norm;
 	else nav = 0;
-	savehist = dynamic_cast<TH1D*>(fMixedEvent->fHistograms->At(GetNumberHist(kHistNassoc,mb,zb))->Clone("number_of_associated_mixed"));
-	savehist->SetTitle("Number of associated per trigger in mixed");
-	savehist->GetXaxis()->SetTitle("# associated in a given fill");
-	savehist->GetYaxis()->SetTitle("# fills");		
+	savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNassoc,mb,zb),"number_of_associated_mixed","Number of associated per trigger in mixed","# associated in a given fill","# fills","",true));		
 	savehist->Write();
 	navm = 0;
 	Double_t normm = 0;
-	for(int i=1;i<savehist->GetNbinsX();i++){
-	  navm += savehist->GetBinCenter(i)*savehist->GetBinContent(i);
-	  normm += savehist->GetBinContent(i);
-	}
+	for(int i=1;i<savehist->GetNbinsX();i++){navm += savehist->GetBinCenter(i)*savehist->GetBinContent(i);normm += savehist->GetBinContent(i);}
 	if(normm !=0)navm = navm/normm;
 	else nav = 0;
-	savehist = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistNTriggers,mb,zb))->Clone("number_of_triggers"));
-	savehist->SetTitle("Total number of triggers filled");
-	savehist->GetXaxis()->SetTitle("");
-	savehist->GetYaxis()->SetTitle("# triggers");
+	savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of triggers filled","","# triggers"));
 	savehist->Write();
 	delete savehist;
       }
 /////////same event histograms
 	dirmzbinsig->cd();
-	TH1D* scalinghist= dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistNTriggers,mb,zb))->Clone("number_of_triggers"));
-	scalinghist->SetTitle("Total number of triggers filled");
-	scalinghist->GetXaxis()->SetTitle("");
-	scalinghist->GetYaxis()->SetTitle("# triggers");
+	TH1D* scalinghist= dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of triggers filled","","# triggers"));
 	scalinghist->Write();
-	TH3F* DPHIDPHIDETA = dynamic_cast<TH3F*>(fHistograms->At(GetNumberHist(khPhiPhiDEta,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12"));
-	DPHIDPHIDETA->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
-	DPHIDPHIDETA->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	DPHIDPHIDETA->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	DPHIDPHIDETA->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	DPHIDPHIDETA->SetTitleSize(0.045,"xyz");
-	DPHIDPHIDETA->SetTitleOffset(1.2,"xy");
-	DPHIDPHIDETA->SetTitleOffset(0.9,"z");
+	TH3F* DPHIDPHIDETA = dynamic_cast<TH3F*>(PrepareHist(GetNumberHist(khPhiPhiDEta,mb,zb),"DPhi_1_DPhi_2_DEta_12","#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]"));
 	DPHIDPHIDETA->Write();
-	
-	TH2D* DPhi12DEta12 = DetaDphiAss(DPHIDPHIDETA,"DPhi_12_DEta_12");
-	DPhi12DEta12->SetTitle("#Delta#Phi_{12} vs #Delta#eta_{12}");
-	DPhi12DEta12->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	DPhi12DEta12->GetYaxis()->SetTitle("#Delta#Phi_{12} [rad]");
-	DPhi12DEta12->SetTitleSize(0.045,"xyz");
-	DPhi12DEta12->SetTitleOffset(1.2,"xy");
-	DPhi12DEta12->SetTitleOffset(0.9,"z");
+	TH2D* DPhi12DEta12 = dynamic_cast<TH2D*>(PrepareHist(DetaDphiAss(DPHIDPHIDETA,"DPhi_12_DEta_12"),"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]"));
 	DPhi12DEta12->Write();
-	
-// 	TH3D* DPHIDPHIDETAscaled;
-// 	if(all){
-// 	  DPHIDPHIDETAscaled= dynamic_cast<TH3D*>(fHistograms->At(GetNumberHist(khPhiPhiDEtaScaled,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12scaled"));
-// 	  DPHIDPHIDETAscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
-// 	  DPHIDPHIDETAscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-// 	  DPHIDPHIDETAscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	  DPHIDPHIDETAscaled->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	  DPHIDPHIDETAscaled->SetTitleSize(0.045,"xyz");
-// 	  DPHIDPHIDETAscaled->SetTitleOffset(1.2,"xy");
-// 	  DPHIDPHIDETAscaled->SetTitleOffset(0.9,"z");
-// 	  DPHIDPHIDETAscaled->Write();
-// 	}
 /////////DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3 = slice(DPHIDPHIDETA,"yz",1,DPHIDPHIDETA->GetNbinsX(),"DPhi_1_DPHI_2",kFALSE);
-	  DPHIDPHI3->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
-	  DPHIDPHI3->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDPHI3->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3->Write();
-// 	  TH2D* DPHIDPHI3scaled;
-// 	  if(all){
-// 	    DPHIDPHI3scaled = slice(DPHIDPHIDETAscaled,"yz",1,DPHIDPHIDETA->GetNbinsX(),"DPhi_1_DPHI_2_scaled",kFALSE);
-// 	    DPHIDPHI3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
-// 	    DPHIDPHI3scaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3scaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3scaled->GetZaxis()->SetTitle("# Associated");
-// 	    DPHIDPHI3scaled->SetTitleSize(0.045,"xyz");
-// 	    DPHIDPHI3scaled->SetTitleOffset(1.2,"xyz");
-// 	    DPHIDPHI3scaled->Write();
-// 	  }
-	  TH2D* DPHIDPHI3near = slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-0.4),DPHIDPHIDETA->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near",kFALSE);
-	  DPHIDPHI3near->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
-	  DPHIDPHI3near->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3near->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3near->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDPHI3near->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3near->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3near->Write();
-// 	  TH2D* DPHIDPHI3nearscaled;
-// 	  if(all){
-// 	    DPHIDPHI3nearscaled = slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-0.4),DPHIDPHIDETA->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near_scaled",kFALSE);
-// 	    DPHIDPHI3nearscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
-// 	    DPHIDPHI3nearscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3nearscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3nearscaled->GetZaxis()->SetTitle("# Associated");
-// 	    DPHIDPHI3nearscaled->SetTitleSize(0.045,"xyz");
-// 	    DPHIDPHI3nearscaled->SetTitleOffset(1.2,"xyz");
-// 	    DPHIDPHI3nearscaled->Write();
-// 	  }
+	  PrepareHist(DPHIDPHI3,"#Delta#Phi_{1} vs #Delta#Phi_{2}","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","# Pairs");
+	  DPHIDPHI3->Write("DPhi_1_DPHI_2");
+	  TH2D* DPHIDPHI3near =slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-0.4),DPHIDPHIDETA->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near",kFALSE);
+	  PrepareHist(DPHIDPHI3near,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","# Pairs");
+	  DPHIDPHI3near->Write("DPhi_1_DPHI_2_near");
 	  TH2D* DPHIDPHI3mid = slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-1),DPHIDPHIDETA->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid",kFALSE);
-	  DPHIDPHI3mid->Add(slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETA->GetXaxis()->FindBin(1),"temphist1",kFALSE));
-	  DPHIDPHI3mid->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
-	  DPHIDPHI3mid->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3mid->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3mid->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDPHI3mid->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3mid->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3mid->Write();
-// 	  TH2D* DPHIDPHI3midscaled;
-// 	  if(all){
-// 	    DPHIDPHI3midscaled = slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-1),DPHIDPHIDETA->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid_scaled",kFALSE);
-// 	    DPHIDPHI3midscaled->Add(slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETA->GetXaxis()->FindBin(1),"temphist3",kFALSE));
-// 	    DPHIDPHI3midscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
-// 	    DPHIDPHI3midscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3midscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3midscaled->GetZaxis()->SetTitle("# Associated");
-// 	    DPHIDPHI3midscaled->SetTitleSize(0.045,"xyz");
-// 	    DPHIDPHI3midscaled->SetTitleOffset(1.2,"xyz");
-// 	    DPHIDPHI3midscaled->Write();
-// 	  }
+	  AddSlice(DPHIDPHIDETA,DPHIDPHI3mid,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETA->GetXaxis()->FindBin(1),"temphist1",kFALSE);
+	  PrepareHist(DPHIDPHI3mid,"#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","# Pairs");
+	  DPHIDPHI3mid->Write("DPhi_1_DPHI_2_mid");
 	  TH2D* DPHIDPHI3far = slice(DPHIDPHIDETA,"yz",1,DPHIDPHIDETA->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
-	  DPHIDPHI3far->Add(slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist2",kFALSE));
-	  DPHIDPHI3far->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
-	  DPHIDPHI3far->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3far->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3far->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDPHI3far->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3far->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3far->Write();      
-// 	  TH2D* DPHIDPHI3farscaled;
-// 	  if(all){
-// 	    DPHIDPHI3farscaled = slice(DPHIDPHIDETAscaled,"yz",1,DPHIDPHIDETA->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far_scaled",kFALSE);
-// 	    DPHIDPHI3farscaled->Add(slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist4",kFALSE));
-// 	    DPHIDPHI3farscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
-// 	    DPHIDPHI3farscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3farscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3farscaled->GetZaxis()->SetTitle("# Associated");
-// 	    DPHIDPHI3farscaled->SetTitleSize(0.045,"xyz");
-// 	    DPHIDPHI3farscaled->SetTitleOffset(1.2,"xyz");
-// 	    DPHIDPHI3farscaled->Write();      
-// 	  }
+	  AddSlice(DPHIDPHIDETA,DPHIDPHI3far,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist2",kFALSE);
+	  PrepareHist(DPHIDPHI3far,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","# Pairs");
+	  DPHIDPHI3far->Write("DPhi_1_DPHI_2_far");      
 	  tempcanvas= Makecanvas(DPHIDPHI3,DPHIDPHI3near,DPHIDPHI3mid,DPHIDPHI3far,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  if(all){
-// 	    tempcanvas= Makecanvas(DPHIDPHI3scaled,DPHIDPHI3nearscaled,DPHIDPHI3midscaled,DPHIDPHI3farscaled,"DPHIDPHIscaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;	  
-// 	  }
 /////////DPHI DETA HISTOGRAMS:
-	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-	  DPHIDETA12_3->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
-	  DPHIDETA12_3->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12_3->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12_3->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDETA12_3->SetTitleSize(0.045,"xyz");
-	  DPHIDETA12_3->SetTitleOffset(1.2,"xyz");
-	  DPHIDETA12_3->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12_3scaled;
-// 	  if(all){
-// 	    DPHIDETA12_3scaled= slice(DPHIDPHIDETAscaled,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12_scaled",kFALSE);
-// 	    DPHIDETA12_3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
-// 	    DPHIDETA12_3scaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-// 	    DPHIDETA12_3scaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDETA12_3scaled->GetZaxis()->SetTitle("# Associated");
-// 	    DPHIDETA12_3scaled->SetTitleSize(0.045,"xyz");
-// 	    DPHIDETA12_3scaled->SetTitleOffset(1.2,"xyz");
-// 	    DPHIDETA12_3scaled->Write();
-// 	    tempcanvas= Makecanvas(DPHIDETA12_3scaled,"DPHIDEta12_scaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;
-// 	  }
-	  TH2D* DPHIDETA12DPHI12L2PI_3 = DeltaEtaCut(DPHIDPHIDETA,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-	  DPHIDETA12DPHI12L2PI_3->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi");
-	  DPHIDETA12DPHI12L2PI_3->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12DPHI12L2PI_3->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12DPHI12L2PI_3->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDETA12DPHI12L2PI_3->SetTitleSize(0.045,"xyz");
-	  DPHIDETA12DPHI12L2PI_3->SetTitleOffset(1.2,"xyz");
-	  DPHIDETA12DPHI12L2PI_3->Write();     
-	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
-	  TH2D* DPHIDETA12DPHI12L4PI_3 = DeltaEtaCut(DPHIDPHIDETA,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-	  DPHIDETA12DPHI12L4PI_3->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi");
-	  DPHIDETA12DPHI12L4PI_3->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12DPHI12L4PI_3->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12DPHI12L4PI_3->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDETA12DPHI12L4PI_3->SetTitleSize(0.045,"xyz");
-	  DPHIDETA12DPHI12L4PI_3->SetTitleOffset(1.2,"xyz");
-	  DPHIDETA12DPHI12L4PI_3->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3,"DPHIDEta12_DPHI12less4Pi_3d",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+// 	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
+// 	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+// 	  DPHIDETA12_3->Write("DPhi_1_DEta_12");
+// 	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
+// 	  TH2D* DPHIDETA12DPHI12L2PI_3 = DeltaEtaCut(DPHIDPHIDETA,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
+// 	  PrepareHist(DPHIDETA12DPHI12L2PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+// 	  DPHIDETA12DPHI12L2PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");     
+// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3,"DPHIDEta12_DPHI12less2Pi",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
+// 	  TH2D* DPHIDETA12DPHI12L4PI_3 = DeltaEtaCut(DPHIDPHIDETA,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
+// 	  PrepareHist(DPHIDETA12DPHI12L4PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+// 	  DPHIDETA12DPHI12L4PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_4PI");
+// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3,"DPHIDEta12_DPHI12less4Pi_3d",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3 =DeltaEtaCut(DPHIDPHIDETA,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  DPHIDETA12SameSide_3->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
-	  DPHIDETA12SameSide_3->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12SameSide_3->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12SameSide_3->GetZaxis()->SetTitle("# Pairs");
-	  DPHIDETA12SameSide_3->SetTitleSize(0.045,"xyz");
-	  DPHIDETA12SameSide_3->SetTitleOffset(1.2,"xyz");
-	  DPHIDETA12SameSide_3->Write();
+	  PrepareHist(DPHIDETA12SameSide_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+	  DPHIDETA12SameSide_3->Write("DPhi_1_DEta_12_SameSide");
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3,"DPHIDEta12_SameSide_3d",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12SameSide_3scaled;	  
-// 	  if(all){
-// 	    DPHIDETA12SameSide_3scaled =DeltaEtaCut(DPHIDPHIDETAscaled,"sameside","DPhi_1_DEta_12_SameSide_scaled",kFALSE);
-// 	    DPHIDETA12SameSide_3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
-// 	    DPHIDETA12SameSide_3scaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-// 	    DPHIDETA12SameSide_3scaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDETA12SameSide_3scaled->GetZaxis()->SetTitle("# Associated");
-// 	    DPHIDETA12SameSide_3scaled->SetTitleSize(0.045,"xyz");
-// 	    DPHIDETA12SameSide_3scaled->SetTitleOffset(1.2,"xyz");
-// 	    DPHIDETA12SameSide_3scaled->Write();
-// 	    tempcanvas= Makecanvas(DPHIDETA12SameSide_3scaled,"DPHIDEta12_SameSide_scaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;
-// 	  }
 	  TH2D* DPHIDETA = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  DPHIDETA->SetTitle("#Delta#Phi vs #Delta#eta");
-	  DPHIDETA->GetXaxis()->SetTitle("#Delta#eta []");
-	  DPHIDETA->GetYaxis()->SetTitle("#Delta#Phi [rad]");
-	  DPHIDETA->GetZaxis()->SetTitle("# Associated");
-	  DPHIDETA->SetTitleSize(0.045,"xyz");
-	  DPHIDETA->SetTitleOffset(1.2,"xyz");
+	  PrepareHist(DPHIDETA,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","# Associated");
 	  DPHIDETA->Write();
 	  tempcanvas= Makecanvas(DPHIDETA,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
       
-	Double_t LeastContent = 1.0;
 /////////mixed event histograms
 	dirmzbinmixed->cd();
-	TH1D* scalinghistm= dynamic_cast<TH1D*>(fMixedEvent->fHistograms->At(GetNumberHist(kHistNTriggers,mb,zb))->Clone("number_of_triggers"));
-	scalinghistm->SetTitle("Total number of times the mixed histogram was filled with a trigger");
-	scalinghistm->GetXaxis()->SetTitle("");
-	scalinghistm->GetYaxis()->SetTitle("# triggers");
+	TH1D* scalinghistm= dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of times the mixed histogram was filled with a trigger","","# triggers","",true));
 	scalinghistm->Write();
-	TH3F* DPHIDPHIDETAm = dynamic_cast<TH3F*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiPhiDEta,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12"));
-	DPHIDPHIDETAm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
-	DPHIDPHIDETAm->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	DPHIDPHIDETAm->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	DPHIDPHIDETAm->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	DPHIDPHIDETAm->SetTitleSize(0.045,"xyz");
-	DPHIDPHIDETAm->SetTitleOffset(1.2,"xy");
-	DPHIDPHIDETAm->SetTitleOffset(0.9,"z");
-	DPHIDPHIDETAm->Write();
-	
+	TH3F* DPHIDPHIDETAm = dynamic_cast<TH3F*>(PrepareHist(GetNumberHist(khPhiPhiDEta,mb,zb),"DPhi_1_DPhi_2_DEta_12","#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]",true));
+	DPHIDPHIDETAm->Write();	
 	TH2D* DPhi12DEta12m = DetaDphiAss(DPHIDPHIDETAm,"DPhi_12_DEta_12");
-	DPhi12DEta12m->SetTitle("#Delta#Phi_{12} vs #Delta#eta_{12}");
-	DPhi12DEta12m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	DPhi12DEta12m->GetYaxis()->SetTitle("#Delta#Phi_{12} [rad]");
-	DPhi12DEta12m->SetTitleSize(0.045,"xyz");
-	DPhi12DEta12m->SetTitleOffset(1.2,"xy");
-	DPhi12DEta12m->SetTitleOffset(0.9,"z");
-	if(GetPoint(DPhi12DEta12m,0.0,0.0)>LeastContent){DPhi12DEta12m->Scale(1.0/GetPoint(DPhi12DEta12m,0.0,0.0));}
-	DPhi12DEta12m->Write();
-	
-// 	TH3D* DPHIDPHIDETAmscaled;
-// 	if(all){
-// 	  DPHIDPHIDETAmscaled = dynamic_cast<TH3D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiPhiDEtaScaled,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12scaled"));
-// 	  DPHIDPHIDETAmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
-// 	  DPHIDPHIDETAmscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-// 	  DPHIDPHIDETAmscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	  DPHIDPHIDETAmscaled->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	  DPHIDPHIDETAmscaled->SetTitleSize(0.045,"xyz");
-// 	  DPHIDPHIDETAmscaled->SetTitleOffset(1.2,"xy");
-// 	  DPHIDPHIDETAmscaled->SetTitleOffset(0.9,"z");
-// 	  DPHIDPHIDETAmscaled->Write();
-// 	}
+	PrepareHist(DPhi12DEta12m,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","",true);
+	DPhi12DEta12m->Write("DPhi_12_DEta_12");
 //////////DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3m = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetNbinsX(),"DPhi_1_DPHI_2",kFALSE);
-	  DPHIDPHI3m->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
-	  DPHIDPHI3m->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3m->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3m->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3m->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3m,0.0,0.0)>LeastContent){DPHIDPHI3m->Scale(1.0/GetPoint(DPHIDPHI3m,0.0,0.0));}
-	  else DPHIDPHI3m->Scale(0.0);
-	  DPHIDPHI3m->Write();
-// 	  TH2D* DPHIDPHI3mscaled;
-// 	  if(all){
-// 	    DPHIDPHI3mscaled = slice(DPHIDPHIDETAmscaled,"yz",1,DPHIDPHIDETAmscaled->GetNbinsX(),"DPhi_1_DPHI_2_scaled",kFALSE);
-// 	    DPHIDPHI3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
-// 	    DPHIDPHI3mscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3mscaled->SetTitleSize(0.045,"xy");
-// 	    DPHIDPHI3mscaled->SetTitleOffset(1.2,"xy");
-// 	    //Scaling
-// 	    if(GetPoint(DPHIDPHI3mscaled,0.0,0.0)>LeastContent){DPHIDPHI3mscaled->Scale(1.0/GetPoint(DPHIDPHI3mscaled,0.0,0.0));}
-// 	    else DPHIDPHI3mscaled->Scale(0.0);
-// 	    DPHIDPHI3mscaled->Write();
-// 	  }
+	  PrepareHist(DPHIDPHI3m,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  DPHIDPHI3m->Write("DPhi_1_DPHI_2");
 	  TH2D* DPHIDPHI3nearm = slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4),DPHIDPHIDETAm->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near",kFALSE);
-	  DPHIDPHI3nearm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
-	  DPHIDPHI3nearm->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3nearm->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3nearm->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3nearm->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3nearm,0.0,0.0)>LeastContent){DPHIDPHI3nearm->Scale(1.0/GetPoint(DPHIDPHI3nearm,0.0,0.0));}
-	  else DPHIDPHI3nearm->Scale(0.0);	  
-	  DPHIDPHI3nearm->Write();
-// 	  TH2D* DPHIDPHI3nearmscaled;
-// 	  if(all){
-// 	    DPHIDPHI3nearmscaled = slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4),DPHIDPHIDETAm->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near_scaled",kFALSE);
-// 	    DPHIDPHI3nearmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
-// 	    DPHIDPHI3nearmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3nearmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3nearmscaled->SetTitleSize(0.045,"xy");
-// 	    DPHIDPHI3nearmscaled->SetTitleOffset(1.2,"xy");
-// 	    //Scaling
-// 	    if(GetPoint(DPHIDPHI3nearmscaled,0.0,0.0)>LeastContent){DPHIDPHI3nearmscaled->Scale(1.0/GetPoint(DPHIDPHI3nearmscaled,0.0,0.0));}
-// 	    else DPHIDPHI3nearmscaled->Scale(0.0);
-// 	    DPHIDPHI3nearmscaled->Write();
-// 	  }
+	  PrepareHist(DPHIDPHI3nearm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  DPHIDPHI3nearm->Write("DPhi_1_DPHI_2_near");
 	  TH2D* DPHIDPHI3midm = slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-1),DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid",kFALSE);
-	  DPHIDPHI3midm->Add(slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist1",kFALSE));
-	  DPHIDPHI3midm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
-	  DPHIDPHI3midm->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3midm->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3midm->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3midm->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3midm,0.0,0.0)>LeastContent){DPHIDPHI3midm->Scale(1.0/GetPoint(DPHIDPHI3midm,0.0,0.0));}
-	  else DPHIDPHI3midm->Scale(0.0);
-	  DPHIDPHI3midm->Write();
-// 	  TH2D* DPHIDPHI3midmscaled;
-// 	  if(all){
-// 	    DPHIDPHI3midmscaled = slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-1),DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid_scaled",kFALSE);
-// 	    DPHIDPHI3midmscaled->Add(slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist3",kFALSE));
-// 	    DPHIDPHI3midmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
-// 	    DPHIDPHI3midmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3midmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3midmscaled->SetTitleSize(0.045,"xy");
-// 	    DPHIDPHI3midmscaled->SetTitleOffset(1.2,"xy");
-// 	    //Scaling
-// 	    if(GetPoint(DPHIDPHI3midmscaled,0.0,0.0)>LeastContent){DPHIDPHI3midmscaled->Scale(1.0/GetPoint(DPHIDPHI3midmscaled,0.0,0.0));}
-// 	    else DPHIDPHI3midmscaled->Scale(0.0);	  
-// 	    DPHIDPHI3midmscaled->Write();
-// 	  }
+	  AddSlice(DPHIDPHIDETAm,DPHIDPHI3midm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist1",kFALSE);
+	  PrepareHist(DPHIDPHI3midm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  DPHIDPHI3midm->Write("DPhi_1_DPHI_2_mid");
 	  TH2D* DPHIDPHI3farm = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
-	  DPHIDPHI3farm->Add(slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist2",kFALSE));
-	  DPHIDPHI3farm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
-	  DPHIDPHI3farm->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3farm->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3farm->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3farm->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3farm,0.0,0.0)>LeastContent){DPHIDPHI3farm->Scale(1.0/GetPoint(DPHIDPHI3farm,0.0,0.0));}
-	  else DPHIDPHI3farm->Scale(0.0);	  
-	  DPHIDPHI3farm->Write();      
-// 	  TH2D* DPHIDPHI3farmscaled;
-// 	  if(all){
-// 	    DPHIDPHI3farmscaled = slice(DPHIDPHIDETAmscaled,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far_scaled",kFALSE);
-// 	    DPHIDPHI3farmscaled->Add(slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist4",kFALSE));
-// 	    DPHIDPHI3farmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
-// 	    DPHIDPHI3farmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDPHI3farmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-// 	    DPHIDPHI3farmscaled->SetTitleSize(0.045,"xy");
-// 	    DPHIDPHI3farmscaled->SetTitleOffset(1.2,"xy");
-// 	    //Scaling
-// 	    if(GetPoint(DPHIDPHI3farmscaled,0.0,0.0)>LeastContent){DPHIDPHI3farmscaled->Scale(1.0/GetPoint(DPHIDPHI3farmscaled,0.0,0.0));}
-// 	    else DPHIDPHI3farmscaled->Scale(0.0);	
-// 	    DPHIDPHI3farmscaled->Write();      
-// 	  }
+	  AddSlice(DPHIDPHIDETAm,DPHIDPHI3farm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist2",kFALSE);
+	  PrepareHist(DPHIDPHI3farm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  DPHIDPHI3farm->Write("DPhi_1_DPHI_2_far");      
 	  tempcanvas= Makecanvas(DPHIDPHI3m,DPHIDPHI3nearm,DPHIDPHI3midm,DPHIDPHI3farm,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  if(all){
-// 	    tempcanvas= Makecanvas(DPHIDPHI3mscaled,DPHIDPHI3nearmscaled,DPHIDPHI3midmscaled,DPHIDPHI3farmscaled,"DPHIDPHIscaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;	  
-// 	  }
 /////////DPHI DETA HISTOGRAMS:
-	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-// 	  DPHIDETA12_3m->Sumw2();
-	  DPHIDETA12_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
-	  DPHIDETA12_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12_3m->SetTitleSize(0.045,"xy");
-	  DPHIDETA12_3m->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETA12_3m,0.0,0.0)>LeastContent){DPHIDETA12_3m->Scale(1.0/GetPoint(DPHIDETA12_3m,0.0,0.0));}
-	  else DPHIDETA12_3m->Scale(0.0);	  
-	  DPHIDETA12_3m->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12_3mscaled;
-// 	  if(all){
-// 	    DPHIDETA12_3mscaled = slice(DPHIDPHIDETAmscaled,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12_scaled",kFALSE);
-// // 	    DPHIDETA12_3mscaled->Sumw2();
-// 	    DPHIDETA12_3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
-// 	    DPHIDETA12_3mscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-// 	    DPHIDETA12_3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-// 	    DPHIDETA12_3mscaled->SetTitleSize(0.045,"xy");
-// 	    DPHIDETA12_3mscaled->SetTitleOffset(1.2,"xy");
-// 	    //Scaling
-// 	    if(GetPoint(DPHIDETA12_3mscaled,0.0,0.0)>LeastContent){DPHIDETA12_3mscaled->Scale(1.0/GetPoint(DPHIDETA12_3mscaled,0.0,0.0));}
-// 	    else DPHIDETA12_3mscaled->Scale(0.0);	  
-// 	    DPHIDETA12_3mscaled->Write();
-// 	    tempcanvas= Makecanvas(DPHIDETA12_3mscaled,"DPHIDEta12_scaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;
-// 	  }
-	  TH2D* DPHIDETA12DPHI12L2PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-// 	  DPHIDETA12DPHI12L2PI_3m->Sumw2();
-	  DPHIDETA12DPHI12L2PI_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi");
-	  DPHIDETA12DPHI12L2PI_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12DPHI12L2PI_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12DPHI12L2PI_3m->SetTitleSize(0.045,"xy");
-	  DPHIDETA12DPHI12L2PI_3m->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETA12DPHI12L2PI_3m,0.0,0.0)>LeastContent){DPHIDETA12DPHI12L2PI_3m->Scale(1.0/GetPoint(DPHIDETA12DPHI12L2PI_3m,0.0,0.0));}
-	  else DPHIDETA12DPHI12L2PI_3m->Scale(0.0);
-	  DPHIDETA12DPHI12L2PI_3m->Write();      
-	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3m,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
-	  TH2D* DPHIDETA12DPHI12L4PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-// 	  DPHIDETA12DPHI12L4PI_3m->Sumw2();
-	  DPHIDETA12DPHI12L4PI_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi");
-	  DPHIDETA12DPHI12L4PI_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12DPHI12L4PI_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12DPHI12L4PI_3m->SetTitleSize(0.045,"xy");
-	  DPHIDETA12DPHI12L4PI_3m->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETA12DPHI12L4PI_3m,0.0,0.0)>LeastContent){DPHIDETA12DPHI12L4PI_3m->Scale(1.0/GetPoint(DPHIDETA12DPHI12L4PI_3m,0.0,0.0));}
-	  else DPHIDETA12DPHI12L4PI_3m->Scale(0.0);
-	  DPHIDETA12DPHI12L4PI_3m->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3m,"DPHIDEta12_DPHI12less4Pi",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+// 	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
+// 	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
+// 	  DPHIDETA12_3m->Write("DPhi_1_DEta_12");
+// 	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
+// 	  TH2D* DPHIDETA12DPHI12L2PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
+// 	  PrepareHist(DPHIDETA12DPHI12L2PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
+// 	  DPHIDETA12DPHI12L2PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");      
+// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3m,"DPHIDEta12_DPHI12less2Pi",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
+// 	  TH2D* DPHIDETA12DPHI12L4PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
+// 	  PrepareHist(DPHIDETA12DPHI12L4PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
+// 	  DPHIDETA12DPHI12L4PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_4PI");
+// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3m,"DPHIDEta12_DPHI12less4Pi",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3m =DeltaEtaCut(DPHIDPHIDETAm,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-// 	  DPHIDETA12SameSide_3m->Sumw2();
-	  DPHIDETA12SameSide_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
-	  DPHIDETA12SameSide_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12SameSide_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12SameSide_3m->SetTitleSize(0.045,"xy");
-	  DPHIDETA12SameSide_3m->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETA12SameSide_3m,0.0,0.0)>LeastContent){DPHIDETA12SameSide_3m->Scale(1.0/GetPoint(DPHIDETA12SameSide_3m,0.0,0.0));}
-	  else DPHIDETA12SameSide_3m->Scale(0.0);	  
-	  DPHIDETA12SameSide_3m->Write();
+	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
+	  DPHIDETA12SameSide_3m->Write("DPhi_1_DEta_12_SameSide");
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3m,"DPHIDEta12_SameSide",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-/*	  TH2D* DPHIDETA12SameSide_3mscaled;
-	  if(all){
-	    DPHIDETA12SameSide_3mscaled=DeltaEtaCut(DPHIDPHIDETAmscaled,"sameside","DPhi_1_DEta_12_SameSide_scaled",kFALSE);
-// 	    DPHIDETA12SameSide_3mscaled->Sumw2();
-	    DPHIDETA12SameSide_3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
-	    DPHIDETA12SameSide_3mscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	    DPHIDETA12SameSide_3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	    DPHIDETA12SameSide_3mscaled->SetTitleSize(0.045,"xy");
-	    DPHIDETA12SameSide_3mscaled->SetTitleOffset(1.2,"xy");
-	    //Scaling
-	    if(GetPoint(DPHIDETA12SameSide_3mscaled,0.0,0.0)>LeastContent){DPHIDETA12SameSide_3mscaled->Scale(1.0/GetPoint(DPHIDETA12SameSide_3mscaled,0.0,0.0));}
-	    else DPHIDETA12SameSide_3mscaled->Scale(0.0);	  
-	    DPHIDETA12SameSide_3mscaled->Write();
-	    tempcanvas= Makecanvas(DPHIDETA12SameSide_3mscaled,"DPHIDEta12_SameSide_scaled",kFALSE);
-	    tempcanvas->Write();
-	    delete tempcanvas;
-	  }*/	  
 	  TH2D* DPHIDETAm = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-// 	  DPHIDETAm->Sumw2();
-	  DPHIDETAm->SetTitle("#Delta#Phi vs #Delta#eta");
-	  DPHIDETAm->GetXaxis()->SetTitle("#Delta#eta []");
-	  DPHIDETAm->GetYaxis()->SetTitle("#Delta#Phi [rad]");
-	  DPHIDETAm->SetTitleSize(0.045,"xy");
-	  DPHIDETAm->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETAm,0.0,0.0)>10){DPHIDETAm->Scale(1.0/GetPoint(DPHIDETAm,0.0,0.0));}
-	  else DPHIDETAm->Scale(0.0);	 	  
+	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","",true);
 	  DPHIDETAm->Write();
 	  tempcanvas= Makecanvas(DPHIDETAm,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
@@ -1790,249 +1574,118 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       Double_t resultscalingfactor = 1.0;//Scale the result with 1/ntriggers
       if(scalinghist->Integral()!=0)resultscalingfactor=1.0/scalinghist->Integral();
       else resultscalingfactor=0.0;
-      
-      if(GetPoint(DPHIDPHI3m,0.0,0.0)!=0){//signal divided by mixed if there was enough in mixed
+      bool empty = false;
+      if(GetPoint(DPHIDPHI3m,0.0,0.0)==0){empty = true;}
 	NTriggers+=scalinghist->Integral();
 	dirmzbindiv->cd();
 	//the same hists as in same and mixed.
 	TH1D* scalinghistdiv = (TH1D*)scalinghist->Clone("number_of_triggers");
-	scalinghistdiv->Divide(scalinghistm);
+	if(!empty)scalinghistdiv->Divide(scalinghistm);
+	else scalinghistdiv->Scale(0.0);
 	scalinghistdiv->Write();
 	delete scalinghistdiv;
  	TH3F* DPHIDPHIDETAdiv = (TH3F*)DPHIDPHIDETA->Clone("DPhi_1_DPhi_2_DEta_12");
-	DPHIDPHIDETAdiv->Divide(DPHIDPHIDETAm);
+	if(!empty&&GetPoint(DPHIDPHIDETAm,0.0,0.0,0.0)!=0){DPHIDPHIDETAm->Scale(1.0/GetPoint(DPHIDPHIDETAm,0.0,0.0,0.0));DPHIDPHIDETAdiv->Divide(DPHIDPHIDETAm);}
+	else DPHIDPHIDETAdiv->Scale(0.0);
 	if(setAverage)DPHIDPHIDETAdiv->Scale(resultscalingfactor);
 	DPHIDPHIDETAdiv->Write();
 	delete DPHIDPHIDETAdiv;
-// 	DPHIDPHIDETAdiv->SetBit(TH3D::kIsAverage,setAverage);
-// 	if(!hPhiPhiDEtadiv) hPhiPhiDEtadiv=DPHIDPHIDETAdiv;
-// 	else AddHists(setAverage,hPhiPhiDEtadiv,DPHIDPHIDETAdiv);
-// 	DPHIDPHIDETAdiv->SetBit(TH3D::kIsAverage,kFALSE);
 	TH2D* DPhi12DEta12div = (TH2D*)DPhi12DEta12->Clone("DPhi_12_DEta_12");
-	DPhi12DEta12div->Divide(DPhi12DEta12m);
+	if(!empty)DPhi12DEta12div->Divide(DPhi12DEta12m);
+	else DPhi12DEta12div->Scale(0.0);
+	if(setAverage)DPhi12DEta12div->Scale(resultscalingfactor);
 	DPhi12DEta12div->Write();
 	delete DPhi12DEta12div;
-// 	TH3D* DPHIDPHIDETAdivscaled;
-// 	if(all){
-// 	  DPHIDPHIDETAdivscaled= (TH3D*)DPHIDPHIDETAscaled->Clone("DPhi_1_DPhi_2_DEta_12scaled");
-// 	  DPHIDPHIDETAdivscaled->Divide(DPHIDPHIDETAm);
-// 	  if(setAverage)DPHIDPHIDETAdivscaled->Scale(resultscalingfactor);
-// 	  DPHIDPHIDETAdivscaled->Write();
-// 	  delete DPHIDPHIDETAdivscaled;
-// // 	  DPHIDPHIDETAdivscaled->SetBit(TH3D::kIsAverage,setAverage);
-// // 	  if(!hPhiPhiDEtadivscaled) hPhiPhiDEtadivscaled=DPHIDPHIDETAdivscaled;
-// // 	  else AddHists(setAverage,hPhiPhiDEtadivscaled,DPHIDPHIDETAdivscaled);
-// // 	  DPHIDPHIDETAdivscaled->SetBit(TH3D::kIsAverage,kFALSE);
-// 	}
 	//DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3div = (TH2D*)DPHIDPHI3->Clone("DPhi_1_DPHI_2");
-	  DPHIDPHI3div->Divide(DPHIDPHI3m);
+	  if(!empty)DPHIDPHI3div->Divide(DPHIDPHI3m);
+	  else DPHIDPHI3div->Scale(0.0);
 	  if(setAverage) DPHIDPHI3div->Scale(resultscalingfactor);
-// 	  DPHIDPHI3div->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hDeltaPhidiv) hDeltaPhidiv=DPHIDPHI3div;
-// 	  else AddHists(setAverage,hDeltaPhidiv,DPHIDPHI3div);
-// 	  DPHIDPHI3div->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDPHI3div->Scale(resultscalingfactor);
 	  DPHIDPHI3div->Write();
-// 	  TH2D* DPHIDPHI3divscaled;
-// 	  if(all){
-// 	    DPHIDPHI3divscaled = (TH2D*)DPHIDPHI3scaled->Clone("DPhi_1_DPHI_2_scaled");
-// 	    DPHIDPHI3divscaled->Divide(DPHIDPHI3mscaled);
-// 	    if(setAverage)DPHIDPHI3divscaled->Scale(resultscalingfactor);
-// // 	    DPHIDPHI3divscaled->SetBit(TH2D::kIsAverage,setAverage);
-// // 	    if(!hDeltaPhidivscaled) hDeltaPhidivscaled=DPHIDPHI3divscaled;
-// // 	    else AddHists(setAverage,hDeltaPhidivscaled,DPHIDPHI3divscaled);
-// // 	    DPHIDPHI3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
-// 	    if(!setAverage)DPHIDPHI3divscaled->Scale(resultscalingfactor);
-// 	    DPHIDPHI3divscaled->Write();
-// 	  }
 	  TH2D* DPHIDPHI3neardiv = (TH2D*)DPHIDPHI3near->Clone("DPhi_1_DPHI_2_near");
-	  DPHIDPHI3neardiv->Divide(DPHIDPHI3nearm);
-	  if(setAverage)DPHIDPHI3neardiv->Scale(resultscalingfactor);
-// 	  DPHIDPHI3neardiv->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hDeltaPhineardiv) hDeltaPhineardiv=DPHIDPHI3neardiv;
-// 	  else AddHists(setAverage,hDeltaPhineardiv,DPHIDPHI3neardiv);
-// 	  DPHIDPHI3neardiv->SetBit(TH2D::kIsAverage,kFALSE);
+	  if(!empty)DPHIDPHI3neardiv->Divide(DPHIDPHI3nearm);
+	  else DPHIDPHI3neardiv->Scale(0.0);
+	  if(setAverage) DPHIDPHI3neardiv->Scale(resultscalingfactor);
 	  if(!setAverage)DPHIDPHI3neardiv->Scale(resultscalingfactor);
 	  DPHIDPHI3neardiv->Write();
-// 	  TH2D* DPHIDPHI3neardivscaled;
-// 	  if(all){
-// 	    DPHIDPHI3neardivscaled = (TH2D*)DPHIDPHI3nearscaled->Clone("DPhi_1_DPHI_2_near_scaled");
-// 	    DPHIDPHI3neardivscaled->Divide(DPHIDPHI3nearmscaled);
-// 	    if(setAverage)DPHIDPHI3neardivscaled->Scale(resultscalingfactor);
-// // 	    DPHIDPHI3neardivscaled->SetBit(TH2D::kIsAverage,setAverage);
-// // 	    if(!hDeltaPhineardivscaled) hDeltaPhineardivscaled=DPHIDPHI3neardivscaled;
-// // 	    else AddHists(setAverage,hDeltaPhineardivscaled,DPHIDPHI3neardivscaled);
-// // 	    DPHIDPHI3neardivscaled->SetBit(TH2D::kIsAverage,kFALSE);
-// 	    if(!setAverage)DPHIDPHI3neardivscaled->Scale(resultscalingfactor);
-// 	    DPHIDPHI3neardivscaled->Write();
-// 	  }
 	  TH2D* DPHIDPHI3middiv = (TH2D*)DPHIDPHI3mid->Clone("DPhi_1_DPHI_2_mid");
-	  DPHIDPHI3middiv->Divide(DPHIDPHI3midm);
-	  if(setAverage)DPHIDPHI3middiv->Scale(resultscalingfactor);
-// 	  DPHIDPHI3middiv->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hDeltaPhimiddiv) hDeltaPhimiddiv=DPHIDPHI3middiv;
-// 	  else AddHists(setAverage,hDeltaPhimiddiv,DPHIDPHI3middiv);
-// 	  DPHIDPHI3middiv->SetBit(TH2D::kIsAverage,kFALSE);
+	  if(!empty)DPHIDPHI3middiv->Divide(DPHIDPHI3midm);
+	  else DPHIDPHI3middiv->Scale(0.0);
+	  if(setAverage) DPHIDPHI3middiv->Scale(resultscalingfactor);
 	  if(!setAverage)DPHIDPHI3middiv->Scale(resultscalingfactor);
 	  DPHIDPHI3middiv->Write();
-// 	  TH2D* DPHIDPHI3middivscaled;
-// 	  if(all){
-// 	    DPHIDPHI3middivscaled = (TH2D*)DPHIDPHI3mid->Clone("DPhi_1_DPHI_2_mid_scaled");
-// 	    DPHIDPHI3middivscaled->Divide(DPHIDPHI3midmscaled);
-// 	    if(setAverage)DPHIDPHI3middivscaled->Scale(resultscalingfactor);
-// // 	    DPHIDPHI3middivscaled->SetBit(TH2D::kIsAverage,setAverage);
-// // 	    if(!hDeltaPhimiddivscaled) hDeltaPhimiddivscaled=DPHIDPHI3middivscaled;
-// // 	    else AddHists(setAverage,hDeltaPhimiddivscaled,DPHIDPHI3middivscaled);
-// // 	    DPHIDPHI3middivscaled->SetBit(TH2D::kIsAverage,kFALSE);
-// 	    if(!setAverage)DPHIDPHI3middivscaled->Scale(resultscalingfactor);
-// 	    DPHIDPHI3middivscaled->Write();
-// 	  }
 	  TH2D* DPHIDPHI3fardiv = (TH2D*)DPHIDPHI3far->Clone("DPhi_1_DPHI_2_far");
-	  DPHIDPHI3fardiv->Divide(DPHIDPHI3farm);
-	  if(setAverage)DPHIDPHI3fardiv->Scale(resultscalingfactor);
-// 	  DPHIDPHI3fardiv->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hDeltaPhifardiv) hDeltaPhifardiv=DPHIDPHI3fardiv;
-// 	  else AddHists(setAverage,hDeltaPhifardiv,DPHIDPHI3fardiv);
-// 	  DPHIDPHI3fardiv->SetBit(TH2D::kIsAverage,kFALSE);
+	  if(!empty)DPHIDPHI3fardiv->Divide(DPHIDPHI3farm);
+	  else DPHIDPHI3fardiv->Scale(0.0);
+	  if(setAverage) DPHIDPHI3fardiv->Scale(resultscalingfactor);
 	  if(!setAverage)DPHIDPHI3fardiv->Scale(resultscalingfactor);
 	  DPHIDPHI3fardiv->Write();      
-// 	  TH2D* DPHIDPHI3fardivscaled;
-// 	  if(all){
-// 	    DPHIDPHI3fardivscaled = (TH2D*)DPHIDPHI3farscaled->Clone("DPhi_1_DPHI_2_far_scaled");
-// 	    DPHIDPHI3fardivscaled->Divide(DPHIDPHI3farmscaled);
-// 	    if(setAverage)DPHIDPHI3fardivscaled->Scale(resultscalingfactor);
-// // 	    DPHIDPHI3fardivscaled->SetBit(TH2D::kIsAverage,setAverage);
-// // 	    if(!hDeltaPhifardivscaled) hDeltaPhifardivscaled=DPHIDPHI3fardivscaled;
-// // 	    else AddHists(setAverage,hDeltaPhifardivscaled,DPHIDPHI3fardivscaled);
-// // 	    DPHIDPHI3fardivscaled->SetBit(TH2D::kIsAverage,kFALSE);
-// 	    if(!setAverage)DPHIDPHI3fardivscaled->Scale(resultscalingfactor);
-// 	    DPHIDPHI3fardivscaled->Write();
-// 	  }
 	  tempcanvas= Makecanvas(DPHIDPHI3div,DPHIDPHI3neardiv,DPHIDPHI3middiv,DPHIDPHI3fardiv,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  delete DPHIDPHI3div;delete DPHIDPHI3neardiv;delete DPHIDPHI3middiv;delete DPHIDPHI3fardiv;
-
-	  
-// 	  if(all){
-// 	    tempcanvas= Makecanvas(DPHIDPHI3divscaled,DPHIDPHI3neardivscaled,DPHIDPHI3middivscaled,DPHIDPHI3fardivscaled,"DPHIDPHIscaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;
-// 	    delete DPHIDPHI3divscaled;delete DPHIDPHI3neardivscaled;delete DPHIDPHI3middivscaled;delete DPHIDPHI3fardivscaled;
-// 	  }
-
-
-	  
 //////////DPHI DETA HISTOGRAMS:
-	  TH2D* DPHIDETA12_3div = (TH2D*) DPHIDETA12_3->Clone("DPhi_1_DEta_12");
-	  DPHIDETA12_3div->Divide(DPHIDETA12_3m);
-	  if(setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
-// 	  if(!hPhiEta12div) hPhiEta12div=DPHIDETA12_3div;
-// 	  else AddHists(setAverage,hPhiEta12div,DPHIDETA12_3div);
-	  if(!setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
-	  DPHIDETA12_3div->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12_3div,"DPHIDEta12",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;	 
-	  delete DPHIDETA12_3div;
-// 	  TH2D* DPHIDETA12_3divscaled;
-// 	  if(all){
-// 	    DPHIDETA12_3divscaled = (TH2D*) DPHIDETA12_3scaled->Clone("DPhi_1_DEta_12_scaled");
-// 	    DPHIDETA12_3divscaled->Divide(DPHIDETA12_3mscaled);
-// 	    if(setAverage)DPHIDETA12_3divscaled->Scale(resultscalingfactor);
-// // 	    DPHIDETA12_3divscaled->SetBit(TH2D::kIsAverage,setAverage);
-// // 	    if(!hPhiEta12_divscaled) hPhiEta12_divscaled=DPHIDETA12_3divscaled;
-// // 	    else AddHists(setAverage,hPhiEta12_divscaled,DPHIDETA12_3divscaled);
-// // 	    DPHIDETA12_3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
-// 	    if(!setAverage)DPHIDETA12_3divscaled->Scale(resultscalingfactor);
-// 	    DPHIDETA12_3divscaled->Write();
-// 	    tempcanvas= Makecanvas(DPHIDETA12_3divscaled,"DPHIDEta12_scaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;
-// 	    delete DPHIDETA12_3divscaled;
-// 	  }
-	  TH2D* DPHIDETA12DPHI12L2PI_3div = (TH2D*)DPHIDETA12DPHI12L2PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_2PI");
-	  DPHIDETA12DPHI12L2PI_3div->Divide(DPHIDETA12DPHI12L2PI_3m);
-	  if(setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
-	  DPHIDETA12DPHI12L2PI_3div->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hPhiEta12_cut1div) hPhiEta12_cut1div=DPHIDETA12DPHI12L2PI_3div;
-// 	  else AddHists(setAverage,hPhiEta12_cut1div,DPHIDETA12DPHI12L2PI_3div);
-// 	  DPHIDETA12DPHI12L2PI_3div->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
-	  DPHIDETA12DPHI12L2PI_3div->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3div,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
-	  delete DPHIDETA12DPHI12L2PI_3div;
-	  TH2D* DPHIDETA12DPHI12L4PI_3div = (TH2D*)DPHIDETA12DPHI12L4PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-	  DPHIDETA12DPHI12L4PI_3div->Divide(DPHIDETA12DPHI12L4PI_3m);
-	  if(setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
-	  DPHIDETA12DPHI12L4PI_3div->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hPhiEta12_cut2div) hPhiEta12_cut2div=DPHIDETA12DPHI12L4PI_3div;
-// 	  else AddHists(setAverage,hPhiEta12_cut2div,DPHIDETA12DPHI12L4PI_3div);
-// 	  DPHIDETA12DPHI12L4PI_3div->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
-	  DPHIDETA12DPHI12L4PI_3div->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3div,"DPHIDEta12_DPHI12less4Pi",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
-	  delete DPHIDETA12DPHI12L4PI_3div;
+// 	  TH2D* DPHIDETA12_3div = (TH2D*) DPHIDETA12_3->Clone("DPhi_1_DEta_12");
+// 	  if(!empty)DPHIDETA12_3div->Divide(DPHIDETA12_3m);
+// 	  else DPHIDETA12_3div->Scale(0.0);
+// 	  if(setAverage) DPHIDETA12_3div->Scale(resultscalingfactor);
+// 	  if(!setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
+// 	  DPHIDETA12_3div->Write();
+// 	  tempcanvas= Makecanvas(DPHIDETA12_3div,"DPHIDEta12",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;	 
+// 	  delete DPHIDETA12_3div;
+// 	  TH2D* DPHIDETA12DPHI12L2PI_3div = (TH2D*)DPHIDETA12DPHI12L2PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_2PI");
+// 	  if(!empty)DPHIDETA12DPHI12L2PI_3div->Divide(DPHIDETA12DPHI12L2PI_3m);
+// 	  else DPHIDETA12DPHI12L2PI_3div->Scale(0.0);
+// 	  if(setAverage) DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
+// 	  if(!setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
+// 	  DPHIDETA12DPHI12L2PI_3div->Write();
+// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3div,"DPHIDEta12_DPHI12less2Pi",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
+// 	  delete DPHIDETA12DPHI12L2PI_3div;
+// 	  TH2D* DPHIDETA12DPHI12L4PI_3div = (TH2D*)DPHIDETA12DPHI12L4PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_4PI");
+// 	  if(!empty)DPHIDETA12DPHI12L4PI_3div->Divide(DPHIDETA12DPHI12L4PI_3m);
+// 	  else DPHIDETA12DPHI12L4PI_3div->Scale(0.0);
+// 	  if(setAverage) DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
+// 	  if(!setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
+// 	  DPHIDETA12DPHI12L4PI_3div->Write();
+// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3div,"DPHIDEta12_DPHI12less4Pi",kFALSE);
+// 	  tempcanvas->Write();
+// 	  delete tempcanvas;
+// 	  delete DPHIDETA12DPHI12L4PI_3div;
 	  TH2D* DPHIDETA12SameSide_3div = (TH2D*)DPHIDETA12SameSide_3->Clone("DPhi_1_DEta_12_SameSide");
-	  DPHIDETA12SameSide_3div->Divide(DPHIDETA12SameSide_3m);
-	  if(setAverage)DPHIDETA12SameSide_3div->Scale(resultscalingfactor);
-// 	  DPHIDETA12SameSide_3div->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hPhiEta12_samesidediv) hPhiEta12_samesidediv=DPHIDETA12SameSide_3div;
-// 	  else AddHists(setAverage,hPhiEta12_samesidediv,DPHIDETA12SameSide_3div);
-// 	  DPHIDETA12SameSide_3div->SetBit(TH2D::kIsAverage,kFALSE);
+	  if(!empty)DPHIDETA12SameSide_3div->Divide(DPHIDETA12SameSide_3m);
+	  else DPHIDETA12SameSide_3div->Scale(0.0);
+	  if(setAverage) DPHIDETA12SameSide_3div->Scale(resultscalingfactor);
 	  if(!setAverage)DPHIDETA12SameSide_3div->Scale(resultscalingfactor);
 	  DPHIDETA12SameSide_3div->Write();
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3div,"DPHIDEta12_SameSide",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  delete DPHIDETA12SameSide_3div;
-// 	  TH2D* DPHIDETA12SameSide_3divscaled;
-// 	  if(all){
-// 	    DPHIDETA12SameSide_3divscaled = (TH2D*)DPHIDETA12SameSide_3scaled->Clone("DPhi_1_DEta_12_SameSide_scaled");
-// 	    DPHIDETA12SameSide_3divscaled->Divide(DPHIDETA12SameSide_3mscaled);
-// 	    if(setAverage)DPHIDETA12SameSide_3divscaled->Scale(resultscalingfactor);
-// // 	    DPHIDETA12SameSide_3divscaled->SetBit(TH2D::kIsAverage,setAverage);
-// // 	    if(!hPhiEta12_sameside_divscaled) hPhiEta12_sameside_divscaled=DPHIDETA12SameSide_3divscaled;
-// // 	    else AddHists(setAverage,hPhiEta12_sameside_divscaled,DPHIDETA12SameSide_3divscaled);
-// // 	    DPHIDETA12SameSide_3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
-// 	    if(!setAverage)DPHIDETA12SameSide_3divscaled->Scale(resultscalingfactor);
-// 	    DPHIDETA12SameSide_3divscaled->Write();
-// 	    tempcanvas= Makecanvas(DPHIDETA12SameSide_3divscaled,"DPHIDEta12_SameSide_scaled",kFALSE);
-// 	    tempcanvas->Write();
-// 	    delete tempcanvas;
-// 	    delete DPHIDETA12SameSide_3divscaled;
-// 	  }
 	  TH2D* DPHIDETAdiv = (TH2D*)DPHIDETA->Clone("DPhi_DEta");
-	  DPHIDETAdiv->Divide(DPHIDETAm);
-	  if(setAverage)DPHIDETAdiv->Scale(resultscalingfactor);
-// 	  DPHIDETAdiv->SetBit(TH2D::kIsAverage,setAverage);
-// 	  if(!hPhiEtadiv) hPhiEtadiv=DPHIDETAdiv;
-// 	  else AddHists(setAverage,hPhiEtadiv,DPHIDETAdiv);
-// 	  DPHIDETAdiv->SetBit(TH2D::kIsAverage,kFALSE);
+	  if(!empty)DPHIDETAdiv->Divide(DPHIDETAm);
+	  else DPHIDETAdiv->Scale(0.0);
+	  if(setAverage) DPHIDETAdiv->Scale(resultscalingfactor);
 	  if(!setAverage)DPHIDETAdiv->Scale(resultscalingfactor);
 	  DPHIDETAdiv->Write();
 	  tempcanvas= Makecanvas(DPHIDETAdiv,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  delete DPHIDETAdiv;
-      }
+      
       delete scalinghist;delete scalinghistm;
       delete DPHIDPHIDETA;delete DPHIDPHIDETAm;
       delete DPhi12DEta12;delete DPhi12DEta12m;
       delete DPHIDPHI3;delete DPHIDPHI3near;delete DPHIDPHI3mid;delete DPHIDPHI3far;delete DPHIDPHI3m;delete DPHIDPHI3nearm;delete DPHIDPHI3midm;delete DPHIDPHI3farm;
-      delete DPHIDETA12_3;delete DPHIDETA12DPHI12L2PI_3;delete DPHIDETA12DPHI12L4PI_3;delete DPHIDETA12SameSide_3;delete DPHIDETA12_3m;delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;delete DPHIDETA12SameSide_3m;
+//       delete DPHIDETA12_3;delete DPHIDETA12DPHI12L2PI_3;delete DPHIDETA12DPHI12L4PI_3;
+      delete DPHIDETA12SameSide_3;
+//       delete DPHIDETA12_3m;delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;
+      delete DPHIDETA12SameSide_3m;
       delete DPHIDETA;delete DPHIDETAm;
-//       if(all){
-// // 	delete DPHIDPHIDETAscaled;delete DPHIDPHIDETAmscaled;
-// 	delete DPHIDPHI3scaled;delete DPHIDPHI3nearscaled;delete DPHIDPHI3scaled;delete DPHIDPHI3farscaled;delete DPHIDPHI3mscaled;delete DPHIDPHI3nearmscaled;delete DPHIDPHI3midmscaled;delete DPHIDPHI3farmscaled;
-// 	delete DPHIDETA12_3scaled;delete DPHIDETA12SameSide_3scaled;delete DPHIDETA12_3mscaled;delete DPHIDETA12SameSide_3mscaled;
-//       }
-      
     }
   }
   {//Binstats

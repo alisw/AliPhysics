@@ -77,6 +77,18 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
     else{fWeights = NULL;}
     wfile->Close();
   }
+  void SetTrackCut(const char* cutmask){
+    fCutMask = 0;//Defaults to GlobalHybrid tracks.
+    //GlobalHybrid - 0
+    if(TString(cutmask).CompareTo("GlobalHybrid")==0) fCutMask = 0;
+    //Filter Bit 4 - 1
+    if(TString(cutmask).CompareTo("BIT4")==0) fCutMask = 1;
+    //Filter Bit 5 - 2
+    if(TString(cutmask).CompareTo("BIT5")==0) fCutMask = 2;
+    //Filter Bit 6 - 3
+    if(TString(cutmask).CompareTo("BIT6")==0) fCutMask = 3;
+  }
+  
 //   void SetEfficiencies(){fefficiencies=kTRUE;}
   void Askforgensettings();
   TF1* pTdistribution(TH1D* hist, const char* name);
@@ -126,7 +138,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
-  THnF *            fWeights;//!THnF to hold the correction weights.
+  THnF *            fWeights;//!THnF to hold the correction weights Axis: 0 = centrality, 1 = vertex, 2 = eta, 3 = pT.
   TRandom3 *	    fRandom;//
   TClonesArray*     fMcArray;//
   //Objects that contain needed/used objects for the task:
@@ -157,6 +169,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Double_t 	    fMinAssociatedPt;
   Double_t 	    fMaxAssociatedPt;
   Int_t 	    fMinNClustersTPC;
+  Int_t 	    fCutMask; // To correspond to different cut masks.
   ////clusters:
   Double_t 	    fMinClusterEnergy;
   Double_t 	    fMinBCDistance;  //distance to nearest bad channel

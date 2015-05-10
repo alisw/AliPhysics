@@ -112,6 +112,9 @@ public:
   
   Float_t      GetInvMassMinECut()       const  { return fMinInvMassECut     ; }
   void         SetInvMassMinECut(Float_t cut)   { fMinInvMassECut = cut      ; }
+ 
+  Float_t      GetInvMassMaxOpenAngle()  const  { return fMaxInvMassOpenAngle; }
+  void         SetInvMassMaxOpenAngle(Float_t c){ fMaxInvMassOpenAngle = c   ; }
   
   Double_t     GetTimeCutMin()           const  { return fTimeCutMin         ; }
   Double_t     GetTimeCutMax()           const  { return fTimeCutMax         ; }
@@ -190,6 +193,7 @@ public:
   Float_t  fPHOSCellAmpMin ;                    ///<  amplitude Threshold on phos cells
   
   Float_t  fMinInvMassECut;                     ///<  Minimum energy cut value for clusters entering the invariant mass calculation
+  Float_t  fMaxInvMassOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them.
   
   // Exotic studies
     
@@ -217,8 +221,13 @@ public:
   TH2F *   fhEtaPhiCharged;                     //!<! eta distribution, Reco, matched with track
   TH3F *   fhEtaPhiECharged;                    //!<! eta vs phi vs E, Reco, matched with track
     
-  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass
-  TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass
+  TH2F *   fhIM;                                //!<! Cluster pairs invariant mass vs pair pT, for EMCAL or PHOS pairs
+  TH2F *   fhIMDCAL;                            //!<! Cluster pairs invariant mass vs pair pT, for DCal pairs
+  TH2F *   fhIMDCALPHOS;                        //!<! Cluster pairs invariant mass vs pair pT, for DCal-PHOS pairs
+  TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass vs pair pT
+  
+  TH2F*    fhOpAngle;                           //!<! Cluster pairs opening angle vs pair pT
+  TH2F*    fhIMvsOpAngle;                       //!<! Cluster pairs opening angle vs mass  
   
   TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
   TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy vs eta of cluster
@@ -444,7 +453,16 @@ public:
   TH2F *   fh2dR;                               //!<! distance between projected track and cluster (eta-phi units)
   TH2F *   fh2EledEdx;                          //!<! dE/dx vs. momentum for electron candidates
   TH2F *   fh2MatchdEdx;                        //!<! dE/dx vs. momentum for all matches
-	
+  TH2F *   fh1EOverPR02;                        //!<! p/E for track-cluster matches, dR < 0.2
+  TH2F *   fh1EleEOverP;                        //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100
+
+  TH2F *   fh1EOverPMod;                        //!<! p/E for track-cluster matches, per SM
+  TH2F *   fh2dRMod;                            //!<! distance between projected track and cluster (eta-phi units), per SM
+  TH2F *   fh2EledEdxMod;                       //!<! dE/dx for electron candidates, per SM
+  TH2F *   fh2MatchdEdxMod;                     //!<! dE/dx for all matches, per SM
+  TH2F *   fh1EOverPR02Mod;                     //!<! p/E for track-cluster matches, dR < 0.2, per SM
+  TH2F *   fh1EleEOverPMod;                     //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, per SM
+
   TH2F *   fhMCEle1EOverP;                      //!<! p/E for track-cluster matches, MC electrons
   TH1F *   fhMCEle1dR;                          //!<! distance between projected track and cluster, MC electrons
   TH2F *   fhMCEle2MatchdEdx;                   //!<! dE/dx vs. momentum for all matches, MC electrons
@@ -457,12 +475,10 @@ public:
   TH1F *   fhMCNeutral1dR;                      //!<! Distance between projected track and cluster, MC neutral
   TH2F *   fhMCNeutral2MatchdEdx;               //!<! dE/dx vs. momentum for all matches, MC neutral
 	
-  TH2F *   fh1EOverPR02;                        //!<! p/E for track-cluster matches, dR < 0.2
   TH2F *   fhMCEle1EOverPR02;                   //!<! p/E for track-cluster matches, dR < 0.2, MC electrons
   TH2F *   fhMCChHad1EOverPR02;                 //!<! p/E for track-cluster matches, dR < 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1EOverPR02;               //!<! p/E for track-cluster matches, dR < 0.2, MC neutral
 
-  TH2F *   fh1EleEOverP;                        //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100
   TH2F *   fhMCEle1EleEOverP;                   //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC electrons
   TH2F *   fhMCChHad1EleEOverP;                 //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC charged hadrons
   TH2F *   fhMCNeutral1EleEOverP;               //!<! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC neutral
@@ -487,7 +503,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,30) ;
+  ClassDef(AliAnaCalorimeterQA,31) ;
   /// \endcond
 
 } ;
