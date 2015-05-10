@@ -44,6 +44,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
+#include "AliEmcalParticle.h"
 
 #include "AliAnalysisTaskDmesonJetCorrelations.h"
 
@@ -251,9 +252,25 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::IsEventSelected()
 }
 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskDmesonJetCorrelations::Run()
+Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 {
-  // Run the analysis.
+  // Fill the histograms.
+
+  if (fMatchingType != kJetLoop) return kTRUE;
+
+  AliJetContainer* jets = GetJetContainer(0);
+  
+  Int_t ftag = AliEmcalJet::kD0;
+  if (fCandidateType == kDstartoKpipi) ftag = AliEmcalJet::kDStar;
+  
+  jets->ResetCurrentID();
+  AliEmcalJet* jet = 0;
+  while ((jet = jets->GetNextJet())) {
+    if (!jet->TestFlavourTag(ftag)) continue;
+    AliVParticle* HFcand = jet->GetFlavourTrack();
+    if (!HFcand) continue;
+    FillHistograms(HFcand, jet, kSingleMatch, 0.);
+  }
 
   return kTRUE;
 }
@@ -324,10 +341,72 @@ void AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODReco
 }
 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
+Bool_t AliAnalysisTaskDmesonJetCorrelations::Run()
 {
-  // Fill the histograms.
+  // Run the analysis.
+  
+  if (fMatchingType == kJetLoop) {
+    DoJetLoop();
+  }
+  else {
+    DoDmesonLoop();
+  }
 
+  return kTRUE;
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskDmesonJetCorrelations::DoJetLoop()
+{
+  // Run the loop over the jets.
+
+  AliJetContainer* jets = GetJetContainer(0);
+  AliParticleContainer* particles = jets->GetParticleContainer();
+  
+  Int_t ftag = AliEmcalJet::kD0;
+  Int_t pdgCode = 421;
+  TString recoDecayClassName("AliAODRecoDecayHF2Prong");
+  if (fCandidateType == kDstartoKpipi) {
+    ftag = AliEmcalJet::kDStar;
+    pdgCode = 413;
+    recoDecayClassName = "AliAODRecoCascadeHF";
+  }
+
+  TClass* recoDecayClass = TClass::GetClass(recoDecayClassName);
+  
+  jets->ResetCurrentID();
+  AliEmcalJet* jet = 0;
+  while ((jet = jets->GetNextJet())) {
+    Int_t ntrk = jet->GetNumberOfTracks();
+    for (Int_t itrk = 0; itrk < ntrk; itrk++) {
+      AliVParticle* part = jet->TrackAt(itrk, particles->GetArray());
+      if (!part) continue;
+      Bool_t matched = kFALSE;
+      
+      if (fParticleLevel) {
+        Int_t partPdg = TMath::Abs(part->PdgCode());
+        if (partPdg == pdgCode) matched = kTRUE;
+      }
+      else {
+        AliEmcalParticle* emcpart = dynamic_cast<AliEmcalParticle*>(part);
+        if (emcpart) part = emcpart->GetTrack();
+        if (part->InheritsFrom(recoDecayClass)) matched = kTRUE;
+      }
+      
+      if (matched) {
+        jet->AddFlavourTag(ftag);
+        jet->SetFlavourTrack(part);
+        break;
+      }
+    }
+  }
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskDmesonJetCorrelations::DoDmesonLoop()
+{
+  // Run the loop over the D meson candidates.
+  
   const Int_t nDcand = fCandidateArray->GetEntriesFast();
 
   TArrayD matchingLevel(5);
@@ -365,57 +444,63 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
         jet->AddFlavourTag(AliEmcalJet::kD0);
       }
     }
+    
+    FillHistograms(HFcand, jet, matchingStatus, matchingLevel[0]);
+  }
+}
 
-    // Now filling histograms
+//_______________________________________________________________________________
+void AliAnalysisTaskDmesonJetCorrelations::FillHistograms(AliVParticle* HFcand, AliEmcalJet* jet, Int_t matchingStatus, Double_t matchingLevel)
+{
+  // Fill the histograms.
 
-    // Extracting D meson attributes
-    TLorentzVector Dvector;
-    Double_t invMassD = 0;
-    Double_t softPionPtD = 0;
-    Double_t invMass2prong = 0;
+  // Extracting D meson attributes
+  TLorentzVector Dvector;
+  Double_t invMassD = 0;
+  Double_t softPionPtD = 0;
+  Double_t invMass2prong = 0;
  
-    ExtractHFcandAttributes(HFcand, Dvector, invMassD, softPionPtD, invMass2prong);
+  ExtractHFcandAttributes(HFcand, Dvector, invMassD, softPionPtD, invMass2prong);
 
-    TLorentzVector jetVector;
-    Double_t leadPtJet = 0;
-    Double_t areaJet = 0;
-    Int_t constJet = 0;
+  TLorentzVector jetVector;
+  Double_t leadPtJet = 0;
+  Double_t areaJet = 0;
+  Int_t constJet = 0;
 
-    Double_t daughterDist[5] = {0.};
+  Double_t daughterDist[5] = {0.};
 
-    // Extracting jet attributes (if a jet was found)
-    if (jet) {
-      // Check if the jet passes the cuts
-      Bool_t acceptedJet = jets->AcceptJet(jet);
-      if (!acceptedJet) {
-        fHistRejectionReason->Fill(jets->GetRejectionReasonBitPosition(), jet->Pt());
-        matchingStatus = kJetNotAccepted;
-      }
-      if (acceptedJet || !fOnlyAcceptedJets) {
-        jetVector.SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), 0);
+  // Extracting jet attributes (if a jet was found)
+  if (jet) {
+    AliJetContainer* jets = GetJetContainer(0);
+    
+    // Check if the jet passes the cuts
+    Bool_t acceptedJet = jets->AcceptJet(jet);
+    if (!acceptedJet) {
+      fHistRejectionReason->Fill(jets->GetRejectionReasonBitPosition(), jet->Pt());
+      matchingStatus = kJetNotAccepted;
+    }
+    if (acceptedJet || !fOnlyAcceptedJets) {
+      jetVector.SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), 0);
         
-        leadPtJet = jet->MaxPartPt();
-        areaJet = jet->Area();
-        constJet = jet->N();
+      leadPtJet = jet->MaxPartPt();
+      areaJet = jet->Area();
+      constJet = jet->N();
 
-        if (fShowDaughterDistance > 0 && !fParticleLevel) {
-          AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(HFcand);
-          TObjArray daughters(5);
-          AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(Dcand, daughters);
-          for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
-            AliVTrack* track = static_cast<AliVTrack*>(daughters.At(i));
-            if (!track) continue;
-            daughterDist[i] = jet->DeltaR(track);
-          }
+      if (fShowDaughterDistance > 0 && !fParticleLevel) {
+        AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(HFcand);
+        TObjArray daughters(5);
+        AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(Dcand, daughters);
+        for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
+          AliVTrack* track = static_cast<AliVTrack*>(daughters.At(i));
+          if (!track) continue;
+          daughterDist[i] = jet->DeltaR(track);
         }
       }
     }
-
-    AliDebug(2,"Filling THnSparse");
-    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel[0], daughterDist);
   }
-  
-  return kTRUE;
+
+  AliDebug(2,"Filling THnSparse");
+  FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel, daughterDist);
 }
 
 //_______________________________________________________________________________
