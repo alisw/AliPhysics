@@ -108,10 +108,9 @@ class AliEmcalJet : public AliVParticle
   Int_t             ContainsTrack(AliVParticle* track, TClonesArray* tracks) const { return tracks==NULL||track==NULL ? 0 : ContainsTrack(tracks->IndexOf(track)); }
   Int_t             ContainsTrack(Int_t it)      const;
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
-  Int_t             GetFlavour()                 const { return fFlavourTagging;           }
+
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
-  void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag; }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0;
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0;
@@ -129,7 +128,6 @@ class AliEmcalJet : public AliVParticle
   void              SetAreaE(Double_t a)               { fAreaE = a;                       }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
-  void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;        }
   void              SetMaxNeutralPt(Double32_t t)      { fMaxNPt  = t;                     }
   void              SetMaxChargedPt(Double32_t t)      { fMaxCPt  = t;                     }
   void              SetNEF(Double_t nef)               { fNEF     = nef;                   }
@@ -144,7 +142,6 @@ class AliEmcalJet : public AliVParticle
   void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
   void              SetPtSub(Double_t ps)              { fPtSub          = ps;             }
   void              SetPtSubVect(Double_t ps)          { fPtSubVect      = ps;             }
-  Bool_t            TestFlavourTag(Int_t tag)    const { return (Bool_t)((tag & fFlavourTagging) !=0); }
 
   // Trigger
   Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
@@ -257,6 +254,15 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetFirstOrderSubtractedLeSub()            const { return fJetShapeLeSubFirstSub                   ; }
   Double_t          GetSecondOrderSubtractedLeSub()           const { return fJetShapeLeSubSecondSub                  ; }
 
+  //heavy-flavor jets
+  Int_t             GetFlavour()                 const { return fFlavourTagging;                       }
+  void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag;                       }
+  void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;                    }
+  Bool_t            TestFlavourTag(Int_t tag)    const { return (Bool_t)((tag & fFlavourTagging) !=0); }
+  void              SetFlavourTrack(AliVParticle* hftrack){ fFlavourTrack = hftrack;                      }
+  AliVParticle     *GetFlavourTrack()            const { return fFlavourTrack;                         }
+  Double_t          GetFlavourTrackZ()           const { return fFlavourTrack != 0 && P() > 1e-6 ? fFlavourTrack->P() / P() : 0.; }
+
   void AddGhost(const Double_t dPx, const Double_t dPy, const Double_t dPz, const Double_t dE) {
     ghost.fPx = dPx;
     ghost.fPy = dPy;
@@ -282,7 +288,8 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fAreaE;               //[0,0,12]   temporal area component
   Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
   Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
-  Int_t             fFlavourTagging;      // tag jet with a falvour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
+  Int_t             fFlavourTagging;      //           tag jet with a flavour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
+  AliVParticle     *fFlavourTrack;        //!          heavy flavour candidate track matched to the jet
   Double32_t        fMaxCPt;              //[0,0,12]   pt of maximum charged constituent
   Double32_t        fMaxNPt;              //[0,0,12]   pt of maximum neutral constituent
   Double32_t        fMCPt;                //           pt from MC particles contributing to the jet
