@@ -548,7 +548,7 @@ struct FastAnalysis : public TSelector
    * 
    * @return true on success, false otherwise 
    */
-  Bool_t SetupEstimator()
+  virtual Bool_t SetupEstimator()
   {
     if (fCentMethod.IsNull()) return true;
 
@@ -717,7 +717,7 @@ struct FastAnalysis : public TSelector
     Param_t* p = static_cast<Param_t*>(GetOutputObject("count",
 						       Param_t::Class()));
     if (!p) return 0;
-    return p->GetVal();
+    return fOK = p->GetVal();
   }
   /** 
    * Get an object from the output list, possibly checking the type 
@@ -790,7 +790,7 @@ struct FastAnalysis : public TSelector
     for (Int_t iPart = 0; iPart < nParticles; iPart++) {
       TObject*  oPart = fParticles->At(iPart);
       if (!oPart) continue;      
-      if (!oPart->TestBit((1<<14))) {
+      if (!oPart->TestBit((1<<14)) || oPart->TestBit(1<<15)) {
 	// If this is a secondary, increment counter 
 	nSec++;
 	if (!AcceptSecondaries()) continue;
@@ -1108,7 +1108,11 @@ struct dNdetaAnalysis : public FastAnalysis
       return;
     }
     Printf("A total of %ld events", fOK);
+    TH1* copy = static_cast<TH1*>(fdNdeta->Clone("before"));
+    fOutput->Add(copy);
+						
     fdNdeta->Scale(1. / fOK, "width");
+    fdNdeta->Draw();
     SetStatus(0);
   }
   /** 
@@ -1153,7 +1157,7 @@ struct NSDAnalysis : public dNdetaAnalysis
    */
   virtual Bool_t ProcessHeader()
   {
-    if (fHeader->fType == 0x1) return false;
+    if (fHeader->fType & 0x1) return false;
     return true;
   }
   ClassDef(NSDAnalysis,1);
@@ -1184,6 +1188,34 @@ struct INELAnalysis : public dNdetaAnalysis
 };
 
 //====================================================================
+/**
+ * Processes INEL events and build the @f$ 1/N dN_{ch}/d\eta@f$ 
+ * 
+ */
+struct INELGt0Analysis : public dNdetaAnalysis
+{
+  /** 
+   * Constructor 
+   * 
+   * @param verbose  Whether to be verbose 
+   */  
+  INELGt0Analysis(Bool_t verbose=false, Int_t monitor=0)
+    : dNdetaAnalysis(verbose,monitor)
+  {}
+  /** 
+   * Process the header.  
+   * 
+   * @return Always true - by definition INEL is all events. 
+   */
+  virtual Bool_t ProcessHeader()
+  {
+    if (fHeader->fType & 0x4) return true;
+    return false;
+  }
+  ClassDef(INELGt0Analysis,1);
+};
+
+//====================================================================
 struct CentAnalysis : public dNdetaAnalysis
 {
   TAxis*       fCentAxis;
@@ -1193,6 +1225,7 @@ struct CentAnalysis : public dNdetaAnalysis
   const Long_t fMinEvents;
   TH1*         fCentAll; //!
   TH1*         fCentAcc; //!
+  TH2*         fCentMult; //!
   /** 
    * Constructor 
    * 
@@ -1206,7 +1239,8 @@ struct CentAnalysis : public dNdetaAnalysis
       fCentBin(0),
       fMinEvents(100),
       fCentAll(0),
-      fCentAcc(0)
+      fCentAcc(0),
+      fCentMult(0)
   {
     fCentMethod = method;
     if (fCentMethod.Contains("RefMult")) SetCentAxis("mult");
@@ -1409,8 +1443,30 @@ struct CentAnalysis : public dNdetaAnalysis
     fCentAcc->SetDirectory(0);
     fOutput->Add(fCentAcc);
 
+
     fOutput->ls();
   }
+  virtual Bool_t SetupEstimator()
+  {
+    if (!dNdetaAnalysis::SetupEstimator()) return false;
+    
+    if (!fCentHist) return true;
+    if (fCentMult) return true;
+
+    fCentMult = new TH2D("centMult","Event multiplicity vs. centrality",
+			 fCentHist->GetXaxis()->GetNbins(),
+			 fCentHist->GetXaxis()->GetXmin(),
+			 fCentHist->GetXaxis()->GetXmax(),
+			 fCentAxis->GetNbins(),
+			 fCentAxis->GetXbins()->GetArray());
+    fCentMult->SetXTitle(Form("Event multiplicity (%s)", fCentMethod.Data()));
+    fCentMult->SetYTitle(Form("Centrality (%s) %%", fCentMethod.Data()));
+    fCentMult->SetDirectory(0);
+    fOutput->Add(fCentMult);
+
+    return true;
+  }    
+		     
   /** 
    * Clear our internal caches
    */
@@ -1428,6 +1484,7 @@ struct CentAnalysis : public dNdetaAnalysis
   {
     Double_t cent = GetCentrality();
     fCentAll->Fill(cent);
+    fCentMult->Fill(fEventMult, cent);
     if (cent < 0 || cent > 999) return false;
     fCentBin = fCentAxis->FindBin(cent);
     if (fCentBin < 1 || fCentBin > fCentAxis->GetNbins()) {
@@ -1458,6 +1515,19 @@ struct CentAnalysis : public dNdetaAnalysis
 
     // Use parent function to fill cache 
     dNdetaAnalysis::ProcessParticles();
+    if (fVerbose) {
+      Double_t n0   = fdNdeta->GetBinContent(fdNdeta->GetNbinsX()/2);
+      Double_t d0   = fdNdeta->GetXaxis()->GetBinWidth(fdNdeta->GetNbinsX()/2);
+      Double_t eta0 = (n0 / d0);
+      Printf("Centrality %6.2f-%6.2f (bin %4d) "
+	     "Nch=%8.1f/%4.2f=%8.1f out=%s (%d)",
+	     fCentAxis->GetBinLowEdge(fCentBin),
+	     fCentAxis->GetBinUpEdge(fCentBin),
+	     fCentBin,
+	     n0, d0, eta0,
+	     out->GetName(),
+	     Int_t(out->GetBinContent(0)));
+    }
 
     // Make sure we have nothing in the underflow bin. 
     fdNdeta->SetBinContent(0,0);
@@ -1493,21 +1563,25 @@ struct CentAnalysis : public dNdetaAnalysis
       SetStatus(-1);
       return;
     }
-    fCentAll->Scale(1./fOK, "width");
-    fCentAcc->Scale(1./fOK, "width");
+    // fCentAll->Scale(1./fOK, "width");
+    // fCentAcc->Scale(1./fOK, "width");
 
     THStack*  stack = new THStack("all", "All");
     TList*    hists = fCentList; // ->GetHists();
     TObjLink* link  = hists->FirstLink();
+    Int_t     bin   = 1;
     while (link) {
       TObject* o = link->GetObject();
       if (!o) {
 	link = link->Next();
+	bin++;
 	continue;
       }
       TH1*  h = static_cast<TH1*>(o);
       Int_t n = h->GetBinContent(0);
-      printf("%9d events in bin %s ...", n, o->GetTitle());
+      Int_t m = fCentAcc->GetBinContent(bin);
+      h->SetBinContent(0,0);
+      printf("%9d (%9d) events in bin %s ...", n, m, o->GetTitle());
       if (n < fMinEvents) {
 	// Too few event, remove this
 	TObjLink* tmp = link->Next();
@@ -1515,6 +1589,7 @@ struct CentAnalysis : public dNdetaAnalysis
 	link = tmp;
 	delete o;
 	Printf(" removed");
+	bin++;
 	continue;
       }
       // Scale
@@ -1522,6 +1597,7 @@ struct CentAnalysis : public dNdetaAnalysis
       stack->Add(h);
       Printf(" scaled");
       link = link->Next();
+      bin++;
     }
     fOutput->Add(stack);
   }
@@ -1632,6 +1708,7 @@ FastAnalysis*
   TString t(type);
   if      (t.EqualTo("INEL"))    return new INELAnalysis(verbose,monitor);
   else if (t.EqualTo("NSD"))     return new NSDAnalysis(verbose,monitor);
+  else if (t.EqualTo("INELGt0")) return new INELGt0Analysis(verbose,monitor);
   else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
     TString w(t(4, t.Length()-4));
     if (!(w.EqualTo("RefMult00d80") ||
