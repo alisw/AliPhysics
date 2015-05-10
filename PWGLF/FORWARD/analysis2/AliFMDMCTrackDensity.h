@@ -67,7 +67,15 @@ public:
    * @param n  Maximum number of strips per 'cluster' 
    */
   void SetMaxConsequtiveStrips(UShort_t n) { fMaxConsequtiveStrips = n; }
-  /** 
+   /** 
+   * Set minimum dE for strip to be part of 'cluster' 
+   * 
+   * @param v  Set minimum dE for strip to be part of 'cluster' 
+   */
+
+
+ void SetLowCutvalue(Double_t v) { fLowCutvalue = v; }
+ /** 
    * Loops over all the particles in the passed event.  If @a primary
    * is not null, then that histogram is filled with the primary
    * particle information - irrespective of whether the particle
@@ -177,13 +185,14 @@ protected:
   
     
   UShort_t   fMaxConsequtiveStrips; // Max 'cluster' size
+  Double_t   fLowCutvalue; 	    // cut on minimal value of the dE to be part of cluster 
   TH1D*      fNr;                   // Number of track-refs per cluster
   TH1D*      fNt;                   // Size of cluster in strips 
   TH1D*      fNc;                   // Number of clusters per track
   TH2D*      fNcr;                  // Number of clusters per track
   AliESDFMD* fOutput;               //! Output ESD object
 
-  ClassDef(AliFMDMCTrackDensity,5); // Calculate track-ref density
+  ClassDef(AliFMDMCTrackDensity,6); // Calculate track-ref density
 };
 
 #endif
