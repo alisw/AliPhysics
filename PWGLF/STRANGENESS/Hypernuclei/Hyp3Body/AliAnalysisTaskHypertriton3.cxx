@@ -62,10 +62,6 @@
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 
-#define dcaDP 0.2
-#define dcaPIP 0.5
-#define dcaDPI 0.5
-
 
 ClassImp(AliAnalysisTaskHypertriton3)
 /* $Id$ */
@@ -91,6 +87,9 @@ AliAnalysisTaskSE("taskHypertriton"),
   fDCAPiSVzmax(0.8),
   fDCAProSVmax(0.7),
   fDCADeuSVmax(0.6),
+  fDCAdp(0.2),
+  fDCApip(0.5),
+  fDCAdpi(0.5),
   fOutput(0x0),
   fHistCount(0x0),
   fHistCentralityClass(0x0),
@@ -255,11 +254,11 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3(){
 Double_t AliAnalysisTaskHypertriton3::GetDCAcut(Int_t part, Double_t dca)const{
   Double_t cut;
   if(part == 5){ // p-d vs pi-d
-    cut = dcaDPI*(1-(dca/dcaDP));
+    cut = fDCAdpi*(1-(dca/fDCAdp));
     return cut;
   }
   else if(part == 4){ // p-d vs p-pi 
-    cut = dcaPIP*(1-(dca/dcaDP));
+    cut = fDCApip*(1-(dca/fDCAdp));
     return cut;
   }
   return -1;
@@ -916,7 +915,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       
       dca_dp = trackD->GetDCA(trackP,bz,xthiss,xpp);
 
-      if(dca_dp>dcaDP) continue;
+      if(dca_dp>fDCAdp) continue;
       fHistDCAdeupro->Fill(dca_dp);
       
       for(UInt_t s=0; s<cpion.size(); s++ ){ // candidate pion loop
