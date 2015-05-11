@@ -673,6 +673,15 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 
 
 //-----------------------------------------------------------------------
+void AliFlowEventSimple::GetZDC2Qsub(AliFlowVector* Qarray) {
+ 
+}
+//-----------------------------------------------------------------------
+void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t* QVA) {
+ 
+}
+//-----------------------------------------------------------------------
+
 void AliFlowEventSimple::Print(Option_t *option) const
 {
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*

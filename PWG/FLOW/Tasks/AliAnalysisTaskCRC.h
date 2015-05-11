@@ -29,6 +29,7 @@
 class TString;
 class TList;
 class AliFlowEventSimple;
+class AliFlowEvent;
 class AliFlowAnalysisCRC;
 
 //==============================================================================================================
@@ -169,7 +170,7 @@ private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
  AliAnalysisTaskCRC& operator=(const AliAnalysisTaskCRC& aatqc);
  
- AliFlowEventSimple *fEvent;         // the input event
+ AliFlowEvent *fEvent;         // the input event
  AliFlowAnalysisCRC *fQC;            // CRC object
  TList *fListHistos;                 // collection of output
  // Common:

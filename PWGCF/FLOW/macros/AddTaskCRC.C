@@ -12,6 +12,7 @@ void AddTaskCRC(Double_t centrMin,
                 Bool_t bUseCRCRecentering=kFALSE,
                 Bool_t bUseVZERO=kFALSE,
                 Bool_t bUseVZEROCalib=kFALSE,
+                Bool_t bUseVZEROTwist=kFALSE,
                 Bool_t bEventCutsQA=kFALSE,
                 Bool_t bTrackCutsQA=kFALSE,
                 TString Label="",
@@ -154,6 +155,7 @@ void AddTaskCRC(Double_t centrMin,
    // options for the reweighting
    cutsRP->SetVZEROgainEqualizationPerRing(bUseVZEROCalib);
    cutsRP->SetApplyRecentering(bUseVZEROCalib);
+   cutsRP->SetApplyTwisting(bUseVZEROTwist);
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
    cutsRP->SetAODfilterBit(768);
@@ -217,7 +219,9 @@ void AddTaskCRC(Double_t centrMin,
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
  AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
- TString QVecWeightsFileName = "$ALICE_PHYSICS/PWGCF/FLOW/database/CRCQVecCalib.root";
+ TString QVecWeightsFileName = "$ALICE_PHYSICS/PWGCF/FLOW/database/";
+ if (TPCMultOut == "2011") QVecWeightsFileName += "CRCTPCQVecCalib11h.root";
+ else if (TPCMultOut == "2010") QVecWeightsFileName += "CRCTPCQVecCalib10h.root";
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
