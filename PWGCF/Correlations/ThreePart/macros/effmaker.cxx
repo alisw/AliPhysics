@@ -33,19 +33,31 @@ using namespace std;
 
 THnF * Rebin(Int_t Nmult,const Double_t * MultAxis,Int_t nvz, const Double_t * VZAxis,Int_t nphi, Double_t phimin, Double_t phimax,Int_t neta, Double_t etamin,Double_t etamax,Int_t npt, const Double_t * pTAxis,THnF * input, const char* name){
   //Function that takes a THnF, and rebins it to the given axes.
-  Int_t    nbins[5] 	= {Nmult,nvz,nphi,neta,npt};
-  Double_t xmin[5] 	= {MultAxis[0],VZAxis[0],phimin,etamin,pTAxis[0]};
-  Double_t xmax[5] 	= {MultAxis[Nmult],VZAxis[nvz],phimax,etamax,pTAxis[npt]};
-  
-  THnF * Resulthist = new THnF(name,input->GetTitle(), 5,nbins,xmin,xmax);
+  THnF * Resulthist;
+  if(nphi>1){
+    Int_t    nbins[5] 	= {Nmult,nvz,nphi,neta,npt};
+    Double_t xmin[5] 	= {MultAxis[0],VZAxis[0],phimin,etamin,pTAxis[0]};
+    Double_t xmax[5] 	= {MultAxis[Nmult],VZAxis[nvz],phimax,etamax,pTAxis[npt]};
+    Resulthist = new THnF(name,input->GetTitle(), 5,nbins,xmin,xmax);
+    Resulthist->GetAxis(2)->SetTitle(input->GetAxis(2)->GetTitle());
+    Resulthist->GetAxis(3)->SetTitle(input->GetAxis(3)->GetTitle());
+    Resulthist->GetAxis(4)->SetTitle(input->GetAxis(4)->GetTitle());
+    Resulthist->GetAxis(4)->Set(npt,pTAxis);
+  }
+  else{
+    Int_t    nbins[4] 	= {Nmult,nvz,neta,npt};
+    Double_t xmin[4] 	= {MultAxis[0],VZAxis[0],etamin,pTAxis[0]};
+    Double_t xmax[4] 	= {MultAxis[Nmult],VZAxis[nvz],etamax,pTAxis[npt]};
+    Resulthist = new THnF(name,input->GetTitle(), 4,nbins,xmin,xmax);
+    Resulthist->GetAxis(2)->SetTitle(input->GetAxis(3)->GetTitle());
+    Resulthist->GetAxis(3)->SetTitle(input->GetAxis(4)->GetTitle());
+    Resulthist->GetAxis(3)->Set(npt,pTAxis);    
+  }
   Resulthist->GetAxis(0)->SetTitle(input->GetAxis(0)->GetTitle());
   Resulthist->GetAxis(0)->Set(Nmult,MultAxis);
   Resulthist->GetAxis(1)->SetTitle(input->GetAxis(1)->GetTitle());
   Resulthist->GetAxis(1)->Set(nvz,VZAxis);
-  Resulthist->GetAxis(2)->SetTitle(input->GetAxis(2)->GetTitle());
-  Resulthist->GetAxis(3)->SetTitle(input->GetAxis(3)->GetTitle());
-  Resulthist->GetAxis(4)->SetTitle(input->GetAxis(4)->GetTitle());
-  Resulthist->GetAxis(4)->Set(npt,pTAxis);
+
   Resulthist->Sumw2();
 
   for(int mult = 0;mult<=input->GetAxis(0)->GetNbins();mult++){
@@ -54,21 +66,29 @@ THnF * Rebin(Int_t Nmult,const Double_t * MultAxis,Int_t nvz, const Double_t * V
     for(int vz = 0;vz<=input->GetAxis(1)->GetNbins();vz++){
       //find the corresponding bin:
       double vzval = input->GetAxis(1)->GetBinCenter(vz);
-      for(int phi = 0;phi<=input->GetAxis(2)->GetNbins();phi++){
-	//find the corresponding bin:
-	double phival = input->GetAxis(2)->GetBinCenter(phi);
 	for(int eta = 0;eta<=input->GetAxis(3)->GetNbins();eta++){
 	  //find the corresponding bin:
 	  double etaval = input->GetAxis(3)->GetBinCenter(eta);
 	  for(int pT = 0;pT<=input->GetAxis(4)->GetNbins();pT++){
 	    //find the corresponding bin:
 	    double pTval = input->GetAxis(4)->GetBinCenter(pT);
+	    for(int phi = 0;phi<=input->GetAxis(2)->GetNbins();phi++){
+	    //find the corresponding bin:
+	    double phival = input->GetAxis(2)->GetBinCenter(phi);
 	    int bin[5] = {mult,vz,phi,eta,pT};
-	    Double_t value[5] = {multval,vzval,phival,etaval,pTval};
-	    for(int i=1;i<=input->GetBinContent(bin);i++){
-	      Resulthist->Fill(value);
+	    if(nphi>1){
+	      Double_t value[5] = {multval,vzval,phival,etaval,pTval};
+	      for(int i=1;i<=input->GetBinContent(bin);i++){
+		Resulthist->Fill(value);
+	      }
 	    }
-	  }	
+	    else{
+	      Double_t value[4] = {multval,vzval,etaval,pTval};
+	      for(int i=1;i<=input->GetBinContent(bin);i++){
+		Resulthist->Fill(value);
+	      }
+	    }
+	  }	      
 	}
       }
     }
@@ -531,9 +551,9 @@ void MakeEffHistspp(){
   
   
   
-  THnF * RebinRec = Rebin(5,multaxisArray,7,vzaxisArray,hnTracksInBins->GetAxis(2)->GetNbins(),hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins()),hnTracksInBins->GetAxis(3)->GetNbins(),hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBins,"hnRebinRec");
+  THnF * RebinRec = Rebin(5,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins())/3.0,hnTracksInBins->GetAxis(3)->GetNbins(),hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBins,"hnRebinRec");
   RebinRec->Write();
-  THnF * RebinMC = Rebin(5,multaxisArray,7,vzaxisArray,hnTracksInBins->GetAxis(2)->GetNbins(),hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins()),hnTracksInBins->GetAxis(3)->GetNbins(),hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBinsMC,"hnRebinMC");
+  THnF * RebinMC = Rebin(5,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins())/3.0,hnTracksInBins->GetAxis(3)->GetNbins(),hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBinsMC,"hnRebinMC");
   RebinMC->Write();  
   
   THnF * weights = dynamic_cast<THnF*>(RebinRec->Clone("hnWeights"));
@@ -545,10 +565,10 @@ void MakeEffHistspp(){
   int nnoerr = 0;
   for(int mult = 1;   mult<=weights->GetAxis(0)->GetNbins();mult++){
     for(int vz = 1;   vz<=weights->GetAxis(1)->GetNbins();vz++){
-      for(int phi = 1;phi<=weights->GetAxis(2)->GetNbins();phi++){
+//       for(int phi = 1;phi<=weights->GetAxis(2)->GetNbins();phi++){
 	for(int eta=1;eta<=weights->GetAxis(3)->GetNbins();eta++){
 	  for(int pT=1;pT<=weights->GetAxis(4)->GetNbins();pT++){
-	    Int_t index[5] = {mult,vz,phi,eta,pT};
+	    Int_t index[5] = {mult,vz,eta,pT};
 	    Double_t BinContentRec = RebinRec->GetBinContent(index) ;
 	    Double_t BinContentMC = RebinMC->GetBinContent(index) ;
 	    Double_t BinContent = 0.0;
@@ -566,12 +586,12 @@ void MakeEffHistspp(){
 	    
 	  }
 	}
-      }
+//       }
     }
   }
   cout << nerr<<" "<<nnoerr<<endl;
   weights->Write("hnWeights");
-  
+/*  
   
   //Canvases to compare efficiencies in different binnings:
   TCanvas * plotcanvas = new TCanvas("plotcanvas");
@@ -607,9 +627,9 @@ void MakeEffHistspp(){
   TH2D * vzetaweight = weights->Projection(3,1);
   vzetaweight->Write("Weights_Eta_VZ");
   TH2D * multptweight = weights->Projection(4,0);
-  multptweight->Write("weights_pT_All_Reconstructed");
+  multptweight->Write("weights_pT_All_Reconstructed");*/
   outfile->Close();
-  TFile* outfile2 = TFile::Open("LHC11aWeight.root","RECREATE");
+  TFile* outfile2 = TFile::Open("LHC10dWeight.root","RECREATE");
   weightsnoerr->Write("hnWeight");
   outfile2->Close();
   
@@ -928,7 +948,7 @@ void MakeEffHistsPbPb(){
   Double_t  pTaxisArray[31] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0,5.0,8.0,16.0};
   
   
-  
+  cout << "beefopre"<<endl;
   THnF * RebinRec = Rebin(7,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins()),hnTracksInBins->GetAxis(3)->GetNbins()/3.0,hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBins,"hnRebinRec");
   RebinRec->Write();
   THnF * RebinMC = Rebin(7,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins()),hnTracksInBins->GetAxis(3)->GetNbins()/3.0,hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBinsMC,"hnRebinMC");
@@ -938,15 +958,16 @@ void MakeEffHistsPbPb(){
   THnF * weightsnoerr = dynamic_cast<THnF*>(RebinRec->Clone("hnWeight"));
   weights->Clear();
   weightsnoerr->Clear();
+  cout << "beefopreas"<<endl;
 
   int nerr = 0;
   int nnoerr = 0;
   for(int mult = 1;   mult<=weights->GetAxis(0)->GetNbins();mult++){
     for(int vz = 1;   vz<=weights->GetAxis(1)->GetNbins();vz++){
-      for(int phi = 1;phi<=weights->GetAxis(2)->GetNbins();phi++){
-	for(int eta=1;eta<=weights->GetAxis(3)->GetNbins();eta++){
-	  for(int pT=1;pT<=weights->GetAxis(4)->GetNbins();pT++){
-	    Int_t index[5] = {mult,vz,phi,eta,pT};
+//       for(int phi = 1;phi<=weights->GetAxis(2)->GetNbins();phi++){
+	for(int eta=1;eta<=weights->GetAxis(2)->GetNbins();eta++){
+	  for(int pT=1;pT<=weights->GetAxis(3)->GetNbins();pT++){
+	    Int_t index[5] = {mult,vz,eta,pT};
 	    Double_t BinContentRec = RebinRec->GetBinContent(index) ;
 	    Double_t BinContentMC = RebinMC->GetBinContent(index) ;
 	    Double_t BinContent = 0.0;
@@ -967,13 +988,13 @@ void MakeEffHistsPbPb(){
 	    
 	  }
 	}
-      }
+//       }
     }
   }
   cout << nerr<<" "<<nnoerr<<endl;
   weights->Write("hnWeights");
-  Errors(weights, "errorsweights",true)->Write();
-  
+//   Errors(weights, "errorsweights",true)->Write();
+  /*
   //Canvases to compare efficiencies in different binnings:
   TCanvas * plotcanvas = new TCanvas("plotcanvas");
   multEffRec->Draw("E");
@@ -1055,9 +1076,10 @@ void MakeEffHistsPbPb(){
   //Centnorm:
   multEffRecrb->Scale(1.0/multEffRecrb->GetMaximum());
   multEffRecrb->Write("Weights_Cent_norm");
-/*  
-  TH2D * multptweight = weights->Projection(4,0);
-  multptweight->Write("weights_pT_All_Reconstructed");*/
+
+  
+ // TH2D * multptweight = weights->Projection(4,0);
+ // multptweight->Write("weights_pT_All_Reconstructed");
   
   TH1D* differences = new TH1D("differencesinbins","Differences between N-dim and factorized",100,0.0,1.0);
   for(int mult = 1;mult<=weightsnoerr->GetAxis(0)->GetNbins();mult++){
@@ -1072,7 +1094,7 @@ void MakeEffHistsPbPb(){
       }
     }	
   }
-  differences->Write();
+  differences->Write();*/
   
   outfile->Close();
   TFile* outfile2 = TFile::Open("LHC10hWeight.root","RECREATE");

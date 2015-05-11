@@ -89,7 +89,6 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   if( TString(period).Contains("11h") )
     task->SetPeriod(AliAnalysisTaskCorrelation3p::P11h);
   task->SelectCollisionCandidates(offlineTriggerMask);
-
   
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
@@ -98,6 +97,5 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), fname));
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectOutput(task, 1, coutput1);
-  
-    return task;
+  return task;
 };
