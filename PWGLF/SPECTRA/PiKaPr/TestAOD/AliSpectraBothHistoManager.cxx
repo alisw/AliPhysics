@@ -180,10 +180,10 @@ TH2F* AliSpectraBothHistoManager::BookPIDHistogram(const char * name)
   AliInfo(Form("Booking PID histogram %s, rebin:%d", name, fNRebin));
 TString tmp(name);	
   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 50, 0, 2.5, 200, -1000, 1000);
-  if(fNRebin!=0){
+  /*if(fNRebin!=0){
     hist->RebinY(fNRebin);
   //  hist->RebinX(fNRebin);
-  }
+  }*/
  if(tmp.Contains("Pt"))
 	hist->GetXaxis()->SetTitle("P_{t} (GeV / c)");
   else		

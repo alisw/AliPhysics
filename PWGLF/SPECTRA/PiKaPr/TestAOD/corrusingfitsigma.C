@@ -183,7 +183,7 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
                 	nsig_mc_Proj1->Sumw2();
                 	nsig_mc_Proj1->GetXaxis()->SetRangeUser(-6,6);
 			nsig_mc_Proj1->SetLineColor(kRed);
-
+			cout<<"data"<<endl;
 			TF1* gfundata=new TF1("fun_for_fitdata",Gaus_on_background,-5,5,7);
 			gfundata->SetParameter(0,0.0);
 			gfundata->SetParameter(1,1.0);
@@ -199,7 +199,7 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 			sigmadata->SetBinContent(ibin-firstbin+1,gfundata->GetParameter(1));	
 			sigmadata->SetBinError(ibin-firstbin+1,gfundata->GetParError(1));
 
-
+			cout<<"MC"<<endl;
 			TF1* gfunmc=new TF1("fun_for_fitmc",Gaus_on_background,-5,5,7);
 			gfunmc->SetParameter(0,0.0);
 			gfunmc->SetParameter(1,1.0);
@@ -213,7 +213,7 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 			sigmamc->SetBinContent(ibin-firstbin+1,gfunmc->GetParameter(1));	
 			sigmamc->SetBinError(ibin-firstbin+1,gfunmc->GetParError(1));
 			Float_t sigmamcv=gfunmc->GetParameter(1);
-			Float_t meanmcv=gfundata->GetParameter(0);
+			Float_t meanmcv=gfunmc->GetParameter(0);
 
 
 			hist1data->SetBinContent(ibin-firstbin+1,nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut-0.0001)));			
@@ -223,22 +223,25 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 			Float_t lowbinpartd=TMath::Abs(nsig_data_Proj1->GetXaxis()->GetBinLowEdge(lowbind)+1.0*nsigmacut*sigmadatav-meandatav);
 			Float_t upbinpartd=TMath::Abs(nsigmacut*sigmadatav+meandatav-nsig_data_Proj1->GetXaxis()->GetBinUpEdge(upbind));
 			
-
+//nsig_data_Proj1->Print("all");
+//	nsig_mc_Proj1->Print("all");
 
 			Float_t corrd=(lowbinpartd*nsig_data_Proj1->GetBinContent(lowbind)+upbinpartd*nsig_data_Proj1->GetBinContent(upbind))/width;
 
 			hist2data->SetBinContent(ibin-firstbin+1,nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmadatav+meandatav),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut*sigmadatav+meandatav))-corrd);
 			cout<<corrd/nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmadatav+meandatav),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut*sigmadatav+meandatav))<<endl;
 
-			hist1mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut-0.0001)));
+			hist1mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_mc_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut-0.0001)));
+			width=nsig_mc_Proj1->GetXaxis()->GetBinWidth(-1.0*nsigmacut);
 			Int_t lowbinmc=nsig_mc_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv);
 			Int_t upbinmc=nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv);
 			Float_t lowbinpartmc=TMath::Abs(nsig_mc_Proj1->GetXaxis()->GetBinLowEdge(lowbinmc)+1.0*nsigmacut*sigmamcv-meanmcv);
-			Float_t upbinpartmc=TMath::Abs(nsigmacut*sigmamcv+meanmcv-nsig_data_Proj1->GetXaxis()->GetBinUpEdge(upbinmc));
+			Float_t upbinpartmc=TMath::Abs(nsigmacut*sigmamcv+meanmcv-nsig_mc_Proj1->GetXaxis()->GetBinUpEdge(upbinmc));
+			cout<<lowbinpartmc<<" "<<upbinpartmc<<endl;
 			Float_t corrmc=(lowbinpartmc*nsig_mc_Proj1->GetBinContent(lowbinmc)+upbinpartmc*nsig_mc_Proj1->GetBinContent(upbinmc))/width;
-			cout<<corrmc/nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv))<<" aaa "<<endl;
+			cout<<corrmc/nsig_mc_Proj1->Integral(nsig_mc_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv))<<" aaa "<<endl;
 
-			hist2mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv))-corrmc);
+			hist2mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_mc_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv))-corrmc);
 			TCanvas* ctmp=new TCanvas(Form("c%d%s",ibin,Particle[ipart].Data()),Form("c%d%s",ibin,Particle[ipart].Data()),800,800);
 			ctmp->cd()->SetLogy();
 
@@ -265,6 +268,11 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 
 		hist2data->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 		hist2data->GetYaxis()->SetTitle("N(-3fit,3fit)/N(-3,3)");
+		/*hist1data->Print("all");
+		hist2data->Print("all");
+		hist1mc->Print("all");
+		hist2mc->Print("all");
+*/
 		hist2mc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 		hist2mc->GetYaxis()->SetTitle("N(-3fit,3fit)/N(-3,3)");
 		hist2data->Divide(hist2data,hist1data,1,1,"B");
