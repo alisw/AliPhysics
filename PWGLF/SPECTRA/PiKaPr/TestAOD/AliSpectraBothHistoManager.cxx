@@ -211,10 +211,10 @@ TH2F* AliSpectraBothHistoManager::BookNSigHistogram(const char * name)
 	miny=0.0;
   }				
   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 50, 0, 2.5,nbins,miny, 20);
-  if(fNRebin!=0){
-    hist->RebinY(fNRebin);
+  //if(fNRebin!=0){
+   // hist->RebinY(fNRebin);
     //hist->RebinX(fNRebin);
-  }
+  //}
   if(tmp.Contains("Pt"))
 	hist->GetXaxis()->SetTitle("P_{t} (GeV / c)");
   else		
