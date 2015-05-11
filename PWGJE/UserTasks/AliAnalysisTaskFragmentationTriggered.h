@@ -93,6 +93,9 @@ protected:
   TH1   *fHistMCTruthTrackPt;
   TH1   *fHistMCTruthTrackPhi;
   TH1   *fHistMCTruthTrackEta;
+  TH1   *fMCTruthRecTrackPtGen;
+  TH1   *fMCTruthRecTrackSecPtGen;
+  TH1   *fMCTruthRecTrackSecPtRec;
   TH2   *fHistMCTruthTrackPtRatio;
   TH2   *fHistMCTruthTrackPtRatiowSPD;
   TH2   *fHistMCTruthTrackPtRationoSPD;
@@ -124,8 +127,23 @@ protected:
   TH2   *fMCTruthHistRCxipt;
   TH2   *fMCTruthHistRCxiptLeading;
   TH2   *fMCTruthHistRCxiptLeadingDiscarded;
+  //rho histos
+  TH1   *fMCTruthHistRho;
+  TH2   *fMCTruthHistRhovsLJPt;
+  TH1   *fMCTruthHistRhoSubPt;
+  TH2   *fMCTruthHistRhoSubAreaOverCirclevsPt;
+  TH2   *fMCTruthHistRhoSubPhiTracksJetvsPt;
+  TH2   *fMCTruthHistRhoSubEtaTracksJetvsPt;
+  TH2   *fMCTruthHistRhoSubPhiTracksPCvsPt;
+  TH2   *fMCTruthHistRhoSubEtaTracksPCvsPt;
+  TH2   *fMCTruthHistRhoSubXiPt;
+  TH2   *fMCTruthHistRhoSubXiPCPt;
+
+
 
   //track histos
+  TH1   *fHistSumw2Debug;
+  TH1   *fHistEventDebug;
   TH1   *fHistCuts;
   TH1   *fHistTrackCuts;
   TH1   *fHistTrackCutsDep;
@@ -197,6 +215,7 @@ protected:
   TH2   *fAntiktHistxipt_pcp;
   TH2   *fAntiktHistxipt_pcm;
   TH2   *fAntiktHistxipt_pc;
+  TH2   *fAntiktHistxipt_RC;
   TH2   *fAntiktHistxiptwTRD;
   TH2   *fAntiktHistxiptwoTRD;
 
@@ -207,6 +226,7 @@ protected:
   TH1   *fHistRCnTracksOverlap;
   TH1   *fHistRCPt;
   TH1   *fHistRCnTracks;
+  TH2   *fHistRCnTracksvsLJPt;
   TH2   *fHistRCPtvsLJPt;
 
   //leading jet histos
@@ -286,6 +306,39 @@ protected:
   TH2   *fAntiktHistxiptLeading_LTC;
   TH2   *fAntiktHistxiptLeading_LTC_pcp;
   TH1   *fAntiktHistPtLeading_LTC;
+ 
+ // Event by event UE pT subtraction
+
+  TH1   *fHistRho;
+  TH2   *fHistRhovsLJPt;
+  TH1   *fHistRhoSubPt;
+  TH2   *fHistRhoSubAreaOverCirclevsPt;
+  TH2   *fHistRhoSubPhiTracksJetvsPt;
+  TH2   *fHistRhoSubEtaTracksJetvsPt;
+  TH2   *fHistRhoSubPhiTracksPCvsPt;
+  TH2   *fHistRhoSubEtaTracksPCvsPt;
+  TH2   *fHistRhoSubXiPt;
+  TH2   *fHistRhoSubXiPCPt;
+
+
+  // Event by event RC UE pT subtraction                                                                                                                                               
+
+  TH1   *fHistRhoRC;
+  TH2   *fHistRhoRCvsLJPt;
+  TH1   *fHistRhoRCSubPt;
+  TH2   *fHistRhoRCSubAreaOverCirclevsPt;
+  TH2   *fHistRhoRCSubPhiTracksJetvsPt;
+  TH2   *fHistRhoRCSubEtaTracksJetvsPt;
+  TH2   *fHistRhoRCSubPhiTracksPCvsPt;
+  TH2   *fHistRhoRCSubEtaTracksPCvsPt;
+  TH2   *fHistRhoRCSubXiPt;
+  TH2   *fHistRhoRCSubXiPCPt;
+
+
+  //delta pt Histos
+  TH1   *fHistDeltaPt;
+  TH2   *fHistDeltaPtvsLJPt;
+
 
   ClassDef(AliAnalysisTaskFragmentationTriggered, 1);
 };
