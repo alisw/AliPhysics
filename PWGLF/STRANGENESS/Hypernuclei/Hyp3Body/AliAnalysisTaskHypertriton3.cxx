@@ -636,6 +636,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   fESDevent=(AliESDEvent*)InputEvent();
   if(!fESDevent){
     printf("AliAnalysisTaskHypertriton3::Exec(): bad ESD\n");
+    PostData(1,fOutput);
     return;
   }
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -650,16 +651,19 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (mgr->GetMCtruthEventHandler());
     if (!eventHandler) {
       printf("ERROR: Could not retrieve MC event handler");
+      PostData(1,fOutput);
       return;
     }
     mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       printf("ERROR: Could not retrieve MC event");
+      PostData(1,fOutput);
       return;
     }
     stack = mcEvent->Stack();
     if (!stack) {
       printf("ERROR: stack not available\n");
+      PostData(1,fOutput);
       return;
     }
   } // end of MC info
@@ -684,8 +688,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     fHistTrigger->Fill(2);
   }
 
-  if(!isSelectedMB && !isSelectedCentral && !isSelectedSemiCentral) return;
-
+  if(!isSelectedMB && !isSelectedCentral && !isSelectedSemiCentral){
+    PostData(1,fOutput);
+    return;
+  }
+  
   //==========Centrality==========
   if(fESDevent->GetEventSpecie() == 4){ // Event Specie == 4 == PbPb
     AliCentrality *centr=fESDevent->GetCentrality();
@@ -696,7 +703,10 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   fHistCentralityClass->Fill(fCentrality);
   fHistCentralityPercentile->Fill(fCentralityPercentile);
 
-  if (fCentrality < 0. || fCentrality > 8.) return; //0 bis 80 %
+  if (fCentrality < 0. || fCentrality > 8.) {
+    PostData(1,fOutput);
+    return; //0 bis 80 %
+  }
   
   //==========Multiplicity==========
   Int_t refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
@@ -708,10 +718,16 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   if (fPrimaryVertex->GetNContributors()<1) {
       // SPD vertex
     fPrimaryVertex = (AliESDVertex*)fESDevent->GetPrimaryVertexSPD();
-      if(fPrimaryVertex->GetNContributors()<1) return;  
+    if(fPrimaryVertex->GetNContributors()<1) {
+      PostData(1,fOutput);
+      return;
+    }  
   }
   
-  if (TMath::Abs(fPrimaryVertex->GetZ()) > 10) return;
+  if (TMath::Abs(fPrimaryVertex->GetZ()) > 10) {
+    PostData(1,fOutput);
+    return;
+  }
 
   fHistZPrimaryVtx->Fill(fPrimaryVertex->GetZ());
   fHistXPrimaryVtx->Fill(fPrimaryVertex->GetX());
