@@ -9,6 +9,7 @@
 #include "TArrayD.h"
 #include "TFile.h"
 #include "THn.h"
+#include<iostream>
 
 class AliCorrelation3p;
 class AliESDtrackCuts;
@@ -21,7 +22,7 @@ class TList;
 class TTree;
 class TRandom3;
 class TF1;
-
+using namespace std;
 class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   public:
   /// default constructor
@@ -138,7 +139,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
-  THnF *            fWeights;//!THnF to hold the correction weights Axis: 0 = centrality, 1 = vertex, 2 = eta, 3 = pT.
+  THnF *            fWeights;//THnF to hold the correction weights Axis: 0 = centrality, 1 = vertex, 2 = eta, 3 = pT.
   TRandom3 *	    fRandom;//
   TClonesArray*     fMcArray;//
   //Objects that contain needed/used objects for the task:

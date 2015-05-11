@@ -273,7 +273,6 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
   // all tasks must post data once for all outputs
     if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights);
     
-    
   PostData(1, fOutput);
 }
 
