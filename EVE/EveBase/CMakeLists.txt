@@ -55,6 +55,7 @@ set(SRCS
     AliEveEventSelectorWindow.cxx
     AliEveFileDialog.cxx
     AliEveGedEditor.cxx
+    AliEveGeomGentle.cxx
     AliEveHF.cxx
     AliEveHFEditor.cxx
     AliEveHFListEditor.cxx
@@ -72,6 +73,7 @@ set(SRCS
     AliEveMagField.cxx
     AliEveMainWindow.cxx
     AliEveMultiView.cxx
+    AliEveOnline.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx

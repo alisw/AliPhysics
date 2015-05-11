@@ -81,7 +81,20 @@ void AliStorageServerThread::StartCommunication()
             case REQUEST_LIST_EVENTS:
             {
                 cout<<"SERVER -- received request for list of events"<<endl;
-                vector<serverListStruct> result = fDatabase->GetList(request->list);
+                struct listRequestStruct list;
+                list.runNumber[0] = request->runNumber[0];
+                list.runNumber[1] = request->runNumber[1];
+                list.eventNumber[0] = request->eventNumber[0];
+                list.eventNumber[1] = request->eventNumber[1];
+                list.marked[0] = request->marked[0];
+                list.marked[1] = request->marked[1];
+                list.multiplicity[0] = request->multiplicity[0];
+                list.multiplicity[1] = request->multiplicity[1];
+                strcpy(list.system[0],request->system[0]);
+                strcpy(list.system[1],request->system[1]);
+                strcpy(list.triggerClass,request->triggerClass);
+                
+                vector<serverListStruct> result = fDatabase->GetList(list);
                 cout<<"SERVER -- got list from database"<<endl;
                 sendStatus = eventManager->Send(result,socket);
                 if(sendStatus){cout<<"SERVER -- list was sent"<<endl;}
@@ -91,7 +104,11 @@ void AliStorageServerThread::StartCommunication()
             case REQUEST_GET_EVENT:
             {
                 cout<<"get event"<<endl;
-                AliESDEvent *event = fDatabase->GetEvent(request->event);
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                AliESDEvent *event = fDatabase->GetEvent(ev);
                 sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
@@ -99,7 +116,12 @@ void AliStorageServerThread::StartCommunication()
             case REQUEST_GET_NEXT_EVENT:
             {
                 cout<<"NEXT EVENT request received"<<endl;
-                AliESDEvent *event = fDatabase->GetNextEvent(request->event);
+                
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                AliESDEvent *event = fDatabase->GetNextEvent(ev);
                 sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
@@ -107,7 +129,12 @@ void AliStorageServerThread::StartCommunication()
             case REQUEST_GET_PREV_EVENT:
             {
                 cout<<"PREV request"<<endl;
-                AliESDEvent *event = fDatabase->GetPrevEvent(request->event);
+                
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                AliESDEvent *event = fDatabase->GetPrevEvent(ev);
                 sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
@@ -131,7 +158,11 @@ void AliStorageServerThread::StartCommunication()
             case REQUEST_MARK_EVENT:
             {
                 cout<<"MARK request"<<endl;
-                struct eventStruct *markData  = &(request->event);
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                struct eventStruct *markData  = &(ev);
                 sendStatus = eventManager->Send(MarkEvent(*markData),socket);
                 break;
             }

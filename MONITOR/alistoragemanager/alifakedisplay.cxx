@@ -165,21 +165,23 @@ int main(int argc, char **argv)
     else if(atoi(argv[1])==3)
     {
         socket = SERVER_COMMUNICATION_REQ;
-        
-        struct listRequestStruct list;
-        list.runNumber[0]=0;
-        list.runNumber[1]=999999;
-        list.eventNumber[0]=0;
-        list.eventNumber[1]=999999;
-        list.marked[0]=1;
-        list.marked[1]=1;
-        list.multiplicity[0]=1;
-        list.multiplicity[1]=999999;
-        strcpy(list.system[0],"p-p");
-        strcpy(list.system[1],"A-A");
+
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
         requestMessage->messageType = REQUEST_LIST_EVENTS;
-        requestMessage->list = list;
+//        requestMessage->list = list;
+        
+//        struct listRequestStruct list;
+        requestMessage->runNumber[0]=0;
+        requestMessage->runNumber[1]=999999;
+        requestMessage->eventNumber[0]=0;
+        requestMessage->eventNumber[1]=999999;
+        requestMessage->marked[0]=1;
+        requestMessage->marked[1]=1;
+        requestMessage->multiplicity[0]=1;
+        requestMessage->multiplicity[1]=999999;
+        strcpy(requestMessage->system[0],"p-p");
+        strcpy(requestMessage->system[1],"A-A");
+
         
         manager->Send(requestMessage,socket);
         vector<serverListStruct> *tmpVector;
@@ -197,12 +199,12 @@ int main(int argc, char **argv)
         {
             if(iter<receivedList.size())
             {
-                struct eventStruct mark;
-                mark.runNumber = receivedList[iter].runNumber;
-                mark.eventNumber = receivedList[iter].eventNumber;
+//                struct eventStruct mark;
+                requestMessage->eventsRunNumber = receivedList[iter].runNumber;
+                requestMessage->eventsEventNumber = receivedList[iter].eventNumber;
                 
                 requestMessage->messageType = REQUEST_GET_EVENT;
-                requestMessage->event = mark;
+//                requestMessage->event = mark;
                 
                 manager->Send(requestMessage,socket);
                 manager->Get(event,socket);
@@ -261,10 +263,10 @@ int main(int argc, char **argv)
         struct serverRequestStruct *srs = new struct serverRequestStruct;
        
         srs->messageType = REQUEST_GET_EVENT;
-        struct eventStruct es;
-        es.runNumber = 197669;
-        es.eventNumber = 123;
-        srs->event = es;
+//        struct eventStruct es;
+        srs->eventsRunNumber = 197669;
+        srs->eventsEventNumber = 123;
+//        srs->event = es;
         
         manager->Send(srs,socket);
         cout<<"server request struct sent"<<endl;
@@ -315,7 +317,7 @@ int main(int argc, char **argv)
         struct serverRequestStruct *srs;
         manager->Get(srs,socket);
         
-        cout<<"received server request struct:"<<srs->messageType<<"\trun:"<<srs->event.runNumber<<"\tevent:"<<srs->event.eventNumber<<endl;
+        cout<<"received server request struct:"<<srs->messageType<<"\trun:"<<srs->eventsRunNumber<<"\tevent:"<<srs->eventsEventNumber<<endl;
         
         cout<<"sending client request struct"<<endl;
         struct clientRequestStruct *crs = new struct clientRequestStruct;

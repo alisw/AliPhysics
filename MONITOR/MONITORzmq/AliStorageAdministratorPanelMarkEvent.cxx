@@ -104,11 +104,11 @@ void AliStorageAdministratorPanelMarkEvent::onMarkButton()
 	eventNumber=fEventNumberEntry->GetIntNumber();
 	
 	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-	struct eventStruct mark;
-	mark.runNumber = runNumber;
-	mark.eventNumber = eventNumber;
+//	struct eventStruct mark;
+	requestMessage->eventsRunNumber = runNumber;
+	requestMessage->eventsEventNumber = eventNumber;
 	requestMessage->messageType = REQUEST_MARK_EVENT;
-	requestMessage->event = mark;
+//	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
     bool response;

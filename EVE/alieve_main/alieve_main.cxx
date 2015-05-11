@@ -30,6 +30,7 @@
 #include <AliEveApplication.h>
 #include <AliEveMainWindow.h>
 
+#include "AliEveOnline.h"
 
 #include <iostream>
 using namespace std;
@@ -65,6 +66,18 @@ int main(int argc, char **argv)
 
     gROOT->SetMacroPath(macPath);
 
+    bool onlineMode=false;
+    
+    if(argc==2)
+    {
+        if(strcmp(argv[1],"online")==0)
+        {
+            onlineMode = true;
+            argc--;
+            strcpy(argv[1],"");
+        }
+    }
+    
     // make sure logger is instantiated
     AliLog::GetRootLogger();
     TRint *app = new TRint("App", &argc, argv);
@@ -83,6 +96,12 @@ int main(int argc, char **argv)
         AliErrorGeneral("alieve_main",exc.Data());
     }
 
+    
+    if(onlineMode)
+    {
+        AliEveOnline *online = new AliEveOnline();
+    }
+    
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
     app->Run(kTRUE);
 

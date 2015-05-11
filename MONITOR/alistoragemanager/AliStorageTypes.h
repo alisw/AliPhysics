@@ -82,12 +82,34 @@ struct serverRequestStruct
     serverRequestStruct(){};
     serverRequestStruct(const serverRequestStruct& src){
         messageType = src.messageType;
-        event = src.event;
-        list = src.list;
+        eventsRunNumber = src.eventsRunNumber;
+        eventsEventNumber = src.eventsEventNumber;
+        runNumber[0] = src.runNumber[0];
+        runNumber[1] = src.runNumber[1];
+        eventNumber[0] = src.eventNumber[0];
+        eventNumber[1] = src.eventNumber[1];
+        marked[0] = src.marked[0];
+        marked[1] = src.marked[1];
+        multiplicity[0] = src.multiplicity[0];
+        multiplicity[1] = src.multiplicity[1];
+        strcpy(system[0],src.system[0]);
+        strcpy(system[1],src.system[1]);
+        strcpy(triggerClass,src.triggerClass);
     }
 	int messageType;
-	struct eventStruct event;
-	struct listRequestStruct list;
+    
+    int eventsRunNumber;
+    int eventsEventNumber;
+
+    int runNumber[2];
+    int eventNumber[2];
+    int marked[2];
+    int multiplicity[2];
+    char system[2][20];
+    char triggerClass[100];
+    
+//	struct eventStruct event;
+//	struct listRequestStruct list;
 };
 
 struct recPointsStruct{

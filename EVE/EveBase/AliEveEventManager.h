@@ -261,6 +261,9 @@ private:
     AliEveSaveViews *fViewsSaver;
     bool fSaveViews;
     
+    bool fFirstEvent;
+    bool fCenterProjectionsAtPrimaryVertex;
+    
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
     

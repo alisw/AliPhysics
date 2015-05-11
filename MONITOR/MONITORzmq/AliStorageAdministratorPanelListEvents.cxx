@@ -347,36 +347,36 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 {
     //prepare and send request message
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    struct listRequestStruct list;
+//    struct listRequestStruct list;
     
     //build query
-    list.runNumber[0]=fRunMinEntry->GetIntNumber();
-    list.runNumber[1]=fRunMaxEntry->GetIntNumber();
-    list.eventNumber[0]=fEventMinEntry->GetIntNumber();
-    list.eventNumber[1]=fEventMaxEntry->GetIntNumber();
-    if(fTemporaryCheckbox->GetState()==1){list.marked[0]=0;}
-    else{list.marked[0]=-1;}
-    if(fPermanentCheckbox->GetState()==1){list.marked[1]=1;}
-    else{list.marked[1]=-1;}
-    list.multiplicity[0]=fMultiplicityMinEntry->GetIntNumber();
-    list.multiplicity[1]=fMultiplicityMaxEntry->GetIntNumber();
-    if(fPPcheckbox->GetState()==1){strcpy(list.system[0],"p-p");}
-    else{strcpy(list.system[0],"");}
-    if(fPbPbcheckbox->GetState()==1){strcpy(list.system[1],"A-A");}
-    else{strcpy(list.system[1],"");}
+    requestMessage->runNumber[0]=fRunMinEntry->GetIntNumber();
+    requestMessage->runNumber[1]=fRunMaxEntry->GetIntNumber();
+    requestMessage->eventNumber[0]=fEventMinEntry->GetIntNumber();
+    requestMessage->eventNumber[1]=fEventMaxEntry->GetIntNumber();
+    if(fTemporaryCheckbox->GetState()==1){requestMessage->marked[0]=0;}
+    else{requestMessage->marked[0]=-1;}
+    if(fPermanentCheckbox->GetState()==1){requestMessage->marked[1]=1;}
+    else{requestMessage->marked[1]=-1;}
+    requestMessage->multiplicity[0]=fMultiplicityMinEntry->GetIntNumber();
+    requestMessage->multiplicity[1]=fMultiplicityMaxEntry->GetIntNumber();
+    if(fPPcheckbox->GetState()==1){strcpy(requestMessage->system[0],"p-p");}
+    else{strcpy(requestMessage->system[0],"");}
+    if(fPbPbcheckbox->GetState()==1){strcpy(requestMessage->system[1],"A-A");}
+    else{strcpy(requestMessage->system[1],"");}
     
     if(fTriggerBox->GetSelected()>=0)
     {
         const char* triggerClassName = fTriggerClasses[fTriggerBox->GetSelected()];
         cout<<"SELECTED TRIGGER CLASS:"<<triggerClassName<<endl;
-        strcpy(list.triggerClass,triggerClassName);
+        strcpy(requestMessage->triggerClass,triggerClassName);
     }
     else
     {
-        strcpy(list.triggerClass,"No trigger selection");
+        strcpy(requestMessage->triggerClass,"No trigger selection");
     }
     requestMessage->messageType = REQUEST_LIST_EVENTS;
-    requestMessage->list = list;
+//    requestMessage->list = list;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {
@@ -437,11 +437,11 @@ void AliStorageAdministratorPanelListEvents::onMarkButton()
     eventNumber=fEventsListVector[selectedEventNumber].eventNumber;
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    struct eventStruct mark;
-    mark.runNumber = runNumber;
-    mark.eventNumber = eventNumber;
+//    struct eventStruct mark;
+    requestMessage->eventsRunNumber = runNumber;
+    requestMessage->eventsEventNumber = eventNumber;
     requestMessage->messageType = REQUEST_MARK_EVENT;
-    requestMessage->event = mark;
+//    requestMessage->event = mark;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {
@@ -477,11 +477,11 @@ void AliStorageAdministratorPanelListEvents::onLoadButton()
     
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    struct eventStruct eventToLoad;
-    eventToLoad.runNumber = runNumber;
-    eventToLoad.eventNumber = eventNumber;
+//    struct eventStruct eventToLoad;
+    requestMessage->eventsRunNumber = runNumber;
+    requestMessage->eventsEventNumber = eventNumber;
     requestMessage->messageType = REQUEST_GET_EVENT;
-    requestMessage->event = eventToLoad;
+//    requestMessage->event = eventToLoad;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {

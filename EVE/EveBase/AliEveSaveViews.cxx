@@ -241,20 +241,20 @@ void AliEveSaveViews::Save()
     // put event's info in blue bar on the bottom:
     fCompositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0,fHeight-1.33*fHeightInfoBar, fWidth, fHeightInfoBar);
     fCompositeImg->BeginPaint();
-    fCompositeImg->DrawText(10, fHeight-1.33*fHeightInfoBar+15, fEventInfo, 28, "#FFFFFF", "FreeSansBold.otf");
+    //fCompositeImg->DrawText(10, fHeight-1.33*fHeightInfoBar+15, fEventInfo, 28, "#FFFFFF", "FreeSansBold.otf");
     // put trigger classes in blue bar on the bottom:
-    fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+4 ,fTriggerClasses[0], 16, "#FFFFFF", "FreeSansBold.otf");
-    fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+24,fTriggerClasses[1], 16, "#FFFFFF", "FreeSansBold.otf");
-    fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+44,fTriggerClasses[2], 16, "#FFFFFF", "FreeSansBold.otf");
+    //fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+4 ,fTriggerClasses[0], 16, "#FFFFFF", "FreeSansBold.otf");
+    //fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+24,fTriggerClasses[1], 16, "#FFFFFF", "FreeSansBold.otf");
+    //fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+44,fTriggerClasses[2], 16, "#FFFFFF", "FreeSansBold.otf");
     fCompositeImg->EndPaint();
     // put clusters description in green bar on the bottom:
     fCompositeImg->Gradient( 90, "#1BDD1B #1DDD1D #01DD01", 0, 0, fHeight-0.33*fHeightInfoBar, fWidth, 0.33*fHeightInfoBar);
     fCompositeImg->BeginPaint();
-    fCompositeImg->DrawText(10,fHeight-0.33*fHeightInfoBar+2,fClustersInfo, 16, "#000000", "FreeSansBold.otf");
+    //fCompositeImg->DrawText(10,fHeight-0.33*fHeightInfoBar+2,fClustersInfo, 16, "#000000", "FreeSansBold.otf");
     fCompositeImg->EndPaint();
     
     // write composite image to disk
-    fCompositeImg->CopyArea(fCompositeImg, 0,0, fWidth, fHeight);
+    //fCompositeImg->CopyArea(fCompositeImg, 0,0, fWidth, fHeight);
     fCompositeImgFileName = Form("online-viz-%03d", fCurrentFileNumber);
     fCompositeImg->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
     
@@ -371,8 +371,5 @@ int AliEveSaveViews::SendToAmore()
 {
     return gSystem->Exec(Form("SendImageToAmore %s %s.png %d",fCompositeImgFileName.Data(),fCompositeImgFileName.Data(),fRunNumber));
 }
-
-
-
 
 

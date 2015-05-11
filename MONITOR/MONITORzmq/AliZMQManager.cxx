@@ -325,9 +325,7 @@ bool AliZMQManager::Send(vector<string100> list,storageSockets socket)
 /// \return Returns true in case of success, false in case of failure
 bool AliZMQManager::Send(struct serverRequestStruct *request,storageSockets socket)
 {
-    size_t sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
-    
-    cout<<"MANAGER -- sending serverRequestStruct:"<<request->messageType<<"\t"<<request->list.runNumber[0]<<endl;
+    size_t sizeOfRequest = sizeof(struct serverRequestStruct);/*+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);*/
     
     zmq_msg_t buffer;
     if(!zmqInit(&buffer,sizeOfRequest)){return false;}
@@ -729,7 +727,7 @@ bool AliZMQManager::Get(struct serverRequestStruct* &result, storageSockets sock
     {
         result = new struct serverRequestStruct(*(static_cast<struct serverRequestStruct*>(zmq_msg_data(&buffer))));
         
-        cout<<"MANAGER -- received server request:"<<result->messageType<<"\t"<<result->list.runNumber[0]<<endl;
+        cout<<"MANAGER -- received server request:"<<result->messageType<<"\t"<<result->runNumber[0]<<endl;
         zmq_msg_close(&buffer);
         return true;
     }

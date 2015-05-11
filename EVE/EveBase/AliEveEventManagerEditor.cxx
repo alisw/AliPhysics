@@ -473,24 +473,25 @@ void AliEveEventManagerWindow::Update(int state)
     fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
 
     // Loop over active trigger classes
-    if (fM->GetESD()) {
-      for(Int_t iTrig = 0; iTrig < AliESDRun::kNTriggerClasses; iTrig++) {
-	TString trigName = fM->GetESD()->GetESDRun()->GetTriggerClass(iTrig);
-	if (trigName.IsNull()) {
-	  if (fTrigSel->GetListBox()->GetEntry(iTrig)) {
-	    if (fTrigSel->GetSelected() == iTrig) fTrigSel->Select(-1);
-	    fTrigSel->RemoveEntry(iTrig);
-	  }
-	  continue;
-	}
-	if (!fTrigSel->FindEntry(trigName.Data()))
-	  fTrigSel->AddEntry(trigName.Data(),iTrig);
-      }
+    if (fM->GetESD() && !fM->IsOnlineMode())
+    {
+        for(Int_t iTrig = 0; iTrig < AliESDRun::kNTriggerClasses; iTrig++)
+        {
+            TString trigName = fM->GetESD()->GetESDRun()->GetTriggerClass(iTrig);
+            if (trigName.IsNull())
+            {
+                if (fTrigSel->GetListBox()->GetEntry(iTrig)) {
+                    if (fTrigSel->GetSelected() == iTrig) fTrigSel->Select(-1);
+                    fTrigSel->RemoveEntry(iTrig);
+                }
+                continue;
+            }
+            if (!fTrigSel->FindEntry(trigName.Data())){
+                fTrigSel->AddEntry(trigName.Data(),iTrig);
+            }
+        }
     }
-    fTrigSel->SetEnabled(!evNavOn);
-
-//    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
-
+      fTrigSel->SetEnabled(!evNavOn);
     Layout();
   }
 }

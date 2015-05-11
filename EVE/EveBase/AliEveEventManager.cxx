@@ -12,6 +12,7 @@
 #include "AliEveMacroExecutor.h"
 #include "AliEveConfigManager.h"
 #include "AliEveVSDCreator.h"
+#include "AliEveMultiView.h"
 
 #include <THashList.h>
 #include <TEveElement.h>
@@ -60,6 +61,8 @@
 #include <TString.h>
 #include <TMap.h>
 #include <TROOT.h>
+#include <TEveManager.h>
+#include <TEveBrowser.h>
 
 #ifdef ZMQ
 #include "AliZMQManager.h"
@@ -154,7 +157,9 @@ fOnlineMode(kFALSE),
 fStorageDown(true),
 fFinished(false),
 fViewsSaver(0),
-fSaveViews(false)
+fSaveViews(false),
+fFirstEvent(true),
+fCenterProjectionsAtPrimaryVertex(false)
 {
     // Constructor with event-id.
     if (0 == name.CompareTo("online")) {fOnlineMode = kTRUE;}
@@ -234,23 +239,25 @@ void AliEveEventManager::GetNextEvent()
     AliESDEvent *tmpEvent;
     
     // get list of marked events:
-    struct listRequestStruct list;
-    
-    list.runNumber[0]=0;
-    list.runNumber[1]=999999;
-    list.eventNumber[0]=0;
-    list.eventNumber[1]=999999;
-    list.marked[0]=1;
-    list.marked[1]=1;
-    list.multiplicity[0]=0;
-    list.multiplicity[1]=999999;
-    strcpy(list.system[0],"p-p");
-    strcpy(list.system[1],"");
-    
-    
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
     requestMessage->messageType = REQUEST_LIST_EVENTS;
-    requestMessage->list = list;
+//    requestMessage->list = list;
+    
+//    struct listRequestStruct list;
+    
+    requestMessage->runNumber[0]=0;
+    requestMessage->runNumber[1]=999999;
+    requestMessage->eventNumber[0]=0;
+    requestMessage->eventNumber[1]=999999;
+    requestMessage->marked[0]=1;
+    requestMessage->marked[1]=1;
+    requestMessage->multiplicity[0]=0;
+    requestMessage->multiplicity[1]=999999;
+    strcpy(requestMessage->system[0],"p-p");
+    strcpy(requestMessage->system[1],"");
+    
+    
+
     
     cout<<"Sending request for marked events list"<<endl;
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
@@ -290,12 +297,11 @@ void AliEveEventManager::GetNextEvent()
             if(iter<receivedList.size())
             {
                 cout<<"i:"<<iter<<endl;
-                struct eventStruct mark;
-                mark.runNumber = receivedList[iter].runNumber;
-                mark.eventNumber = receivedList[iter].eventNumber;
+//                struct eventStruct mark;
                 
                 requestMessage->messageType = REQUEST_GET_EVENT;
-                requestMessage->event = mark;
+                requestMessage->eventsRunNumber = receivedList[iter].runNumber;
+                requestMessage->eventsEventNumber = receivedList[iter].eventNumber;
                 cout<<"Waiting for event from Storage Manager...";
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
                 eventManager->Get(tmpEvent,SERVER_COMMUNICATION_REQ);
@@ -1022,10 +1028,10 @@ void AliEveEventManager::GotoEvent(Int_t event)
             else  if (event == 2) {requestMessage->messageType = REQUEST_GET_NEXT_EVENT;}
             
             // set event struct:
-            struct eventStruct eventToLoad;
-            eventToLoad.runNumber = fESD->GetRunNumber();
-            eventToLoad.eventNumber = fESD->GetEventNumberInFile();
-            requestMessage->event = eventToLoad;
+//            struct eventStruct eventToLoad;
+            requestMessage->eventsRunNumber = fESD->GetRunNumber();
+            requestMessage->eventsEventNumber = fESD->GetEventNumberInFile();
+//            requestMessage->event = eventToLoad;
             
             // create event manager:
             AliZMQManager *eventManager = AliZMQManager::GetInstance();
@@ -1350,11 +1356,11 @@ void AliEveEventManager::MarkCurrentEvent()
     if(!fOnlineMode){return;}
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    struct eventStruct mark;
-    mark.runNumber = fESD->GetRunNumber();
-    mark.eventNumber = fESD->GetEventNumberInFile();
+//    struct eventStruct mark;
+    requestMessage->eventsRunNumber = fESD->GetRunNumber();
+    requestMessage->eventsEventNumber = fESD->GetEventNumberInFile();
     requestMessage->messageType = REQUEST_MARK_EVENT;
-    requestMessage->event = mark;
+//    requestMessage->event = mark;
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
@@ -2004,6 +2010,52 @@ void AliEveEventManager::AfterNewEventLoaded()
     
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
+    
+    if (HasESD() && fOnlineMode)
+    {
+        Double_t x[3] = { 0, 0, 0 };
+        
+//        AliESDEvent* esd = AliEveEventManager::AssertESD();
+        fESD->GetPrimaryVertex()->GetXYZ(x);
+        
+        TTimeStamp ts(fESD->GetTimeStamp());
+        TString win_title("Eve Main Window -- Timestamp: ");
+        win_title += ts.AsString("s");
+        win_title += "; Event # in ESD file: ";
+        win_title += fESD->GetEventNumberInFile();
+        gEve->GetBrowser()->SetWindowName(win_title);
+        
+        TEveElement* top = gEve->GetCurrentEvent();
+        
+        AliEveMultiView *mv = AliEveMultiView::Instance();
+        
+        mv->DestroyEventRPhi();
+        if (fCenterProjectionsAtPrimaryVertex){
+            mv->SetCenterRPhi(x[0], x[1], x[2]);
+        }
+        mv->ImportEventRPhi(top);
+        
+        mv->DestroyEventRhoZ();
+        if (fCenterProjectionsAtPrimaryVertex){
+            mv->SetCenterRhoZ(x[0], x[1], x[2]);
+        }
+        mv->ImportEventRhoZ(top);
+        
+        if (fCenterProjectionsAtPrimaryVertex)
+            mv->SetCenterMuon(x[0], x[1], x[2]);
+        mv->ImportEventMuon(top);
+        
+        
+        gEve->GetBrowser()->RaiseWindow();
+        gEve->FullRedraw3D();
+        gSystem->ProcessEvents();
+        
+        if(fFirstEvent)
+        {
+            gROOT->ProcessLine(".x geom_emcal.C");
+            fFirstEvent=false;
+        }
+    }
     
     if(fSaveViews)
     {
