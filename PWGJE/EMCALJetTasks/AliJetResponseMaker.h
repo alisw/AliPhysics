@@ -52,6 +52,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetNEFAxis(Int_t b)                                             { fNEFAxis           = b         ; }
   void                        SetZAxis(Int_t b)                                               { fZAxis             = b         ; }
   void                        SetFlavourZAxis(Int_t b)                                        { fFlavourZAxis      = b         ; }
+  void                        SetFlavourPtAxis(Int_t b)                                       { fFlavourPtAxis     = b         ; }
 
  protected:
   void                        ExecOnce();
@@ -63,14 +64,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
   void                        GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
   void                        GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
-  void                        FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
-                                                 Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
-                                                 Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2,
-                                                 Double_t FlavourZ1, Double_t FlavourZ2);
-  void                        FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A,
-                                           Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt,
-                                           Double_t FlavourZ,
-                                           Int_t Set);
+  void                        FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet2, Double_t d, Double_t CE1, Double_t CE2);
+  void                        FillJetHisto(AliEmcalJet* jet, Int_t Set);
   void                        AllocateTH2();
   void                        AllocateTHnSparse();
 
@@ -85,6 +80,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Int_t                       fNEFAxis;                                // add NEF axis in matching THnSparse (default=0)
   Int_t                       fZAxis;                                  // add Z axis in matching THnSparse (default=0)
   Int_t                       fFlavourZAxis;                           // add flavour Z axis in matching THnSparse (default=0)
+  Int_t                       fFlavourPtAxis;                          // add flavour pt axis in matching THnSparse (default=0)
 
   Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
   Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
@@ -165,6 +161,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 25) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 26) // Jet response matrix producing task
 };
 #endif
