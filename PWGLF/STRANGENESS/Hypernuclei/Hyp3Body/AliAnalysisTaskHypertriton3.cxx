@@ -109,10 +109,10 @@ AliAnalysisTaskSE("taskHypertriton"),
   fHistTPCantiprosignal(0x0),
   fHistTPCpionplussignal(0x0),
   fHistTOFsignal(0x0),
-  fHistTOFdeusignal(0x0),
-  fHistTOFprosignal(0x0),
-  fHistTOFantideusignal(0x0),
-  fHistTOFantiprosignal(0x0),
+//fHistTOFdeusignal(0x0),
+//fHistTOFprosignal(0x0),
+//fHistTOFantideusignal(0x0),
+//fHistTOFantiprosignal(0x0),
   fHistTOFdeumass(0x0),
   fHistTOFpromass(0x0),
   fHistpionTPCcls(0x0),
@@ -127,13 +127,13 @@ AliAnalysisTaskSE("taskHypertriton"),
   fHistZDecayVtx(0x0),
   fHistXDecayVtx(0x0),
   fHistYDecayVtx(0x0),
-  fHistDecayLengthH3L(0x0),
   fHistDCAXYdeuvtx(0x0),
   fHistDCAZdeuvtx(0x0),
   fHistDCAXYprovtx(0x0),
   fHistDCAZprovtx(0x0),
   fHistDCAXYpionvtx(0x0),
   fHistDCAZpionvtx(0x0),
+  fHistDecayLengthH3L(0x0),
   fHistCosPointingAngle(0x0),
   fHistMassHypertriton(0x0),
   fHistParticle(0x0),
@@ -141,24 +141,24 @@ AliAnalysisTaskSE("taskHypertriton"),
   fHistpTpionMCt(0x0),
   fHistpTproMCt(0x0),
   fHistpTdeuMCt(0x0),
-  fHistDCAdeuproMCt(0x0),
-  fHistDCApiondeuMCt(0x0),
-  fHistDCApionproMCt(0x0),
   fHistCorrDCAdprimaryMCt(0x0),
   fHistCorrDCApprimaryMCt(0x0),
   fHistCorrDCApiprimaryMCt(0x0),
   fHistDCApiprimaryMCt(0x0),
   fHistDCApprimaryMCt(0x0),
   fHistDCAdprimaryMCt(0x0),
+  fHistDCAdeuproMCt(0x0),
+  fHistDCApiondeuMCt(0x0),
+  fHistDCApionproMCt(0x0),
+  fHistZDecayVtxMCt(0x0),
+  fHistXDecayVtxMCt(0x0),
+  fHistYDecayVtxMCt(0x0),
   fHistDCAXYdeuvtxMCt(0x0),
   fHistDCAZdeuvtxMCt(0x0),
   fHistDCAXYprovtxMCt(0x0),
   fHistDCAZprovtxMCt(0x0),
   fHistDCAXYpionvtxMCt(0x0),
   fHistDCAZpionvtxMCt(0x0),
-  fHistZDecayVtxMCt(0x0),
-  fHistXDecayVtxMCt(0x0),
-  fHistYDecayVtxMCt(0x0),
   fHistMassHypertritonMCt(0x0),
   fTTree(0x0),
   fTchi2NDFdeu(0x0),
@@ -338,13 +338,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   
   fHistTOFsignal = new TH2F("fHistTOFsignal","TOF signal; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs TPCmom - deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  //fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs TPCmom - deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs TPCmom - proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  //fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs TPCmom - proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  fHistTOFantideusignal = new TH2F("fHistTOFantideusignal","#beta vs TPCmom - anti-deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  //fHistTOFantideusignal = new TH2F("fHistTOFantideusignal","#beta vs TPCmom - anti-deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  fHistTOFantiprosignal = new TH2F("fHistTOFantiprosignal","#beta vs TPCmom - anti-proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  //fHistTOFantiprosignal = new TH2F("fHistTOFantiprosignal","#beta vs TPCmom - anti-proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
   
   fHistTOFdeumass = new TH1F("fHistTOFdeumass","deuteron mass distribution - TOF; mass (GeV/c^{2}); entries",400,0.8,2.8);
   
@@ -369,14 +369,15 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistZDecayVtx = new TH1F("fHistZDecayVtx","decay vertex - z coordinate; z_{decay vtx} (cm); entries",800,-20.f,20.f);
   fHistXDecayVtx = new TH1F("fHistXDecayVtx","decay vertex - x coordinate; x_{decay vtx} (cm); entries",8000,-20.f,20.f);
   fHistYDecayVtx = new TH1F("fHistYDecayVtx","decay vertex - y coordinate; y_{decay vtx} (cm); entries",8000,-20.f,20.f);
-  fHistDecayLengthH3L = new TH1F("fHistDecayLengthH3L","decay length ^{3}H_{#Lambda}; decay length (cm); entries",400,0.,100.);
-
   fHistDCAXYdeuvtx = new TH1F("fHistDCAXYdeuvtx","DCA candidate d-decay vertex - xy coordinate; DCA_{xy} (cm); entries",200,-5.,5.);
   fHistDCAZdeuvtx = new TH1F("fHistDCAZdeuvtx","DCA candidate d-decay vertex - z coordinate; DCA_{z} (cm); entries",200,-10.,10.);
   fHistDCAXYprovtx = new TH1F("fHistDCAXYprovtx","DCA candidate p-decay vertex - xy coordinate; DCA_{xy} (cm); entries",200,-5.,5.);
   fHistDCAZprovtx = new TH1F("fHistDCAZprovtx","DCA candidate p-decay vertex - z coordinate; DCA_{z} (cm); entries",200,-10.,10.);
   fHistDCAXYpionvtx = new TH1F("fHistDCAXYpionvtx","DCA candidate #pi^{-}-decay vertex - xy coordinate; DCA_{xy} (cm); entries",200,-5.,5.);
   fHistDCAZpionvtx = new TH1F("fHistDCAZpionvtx","DCA candidate #pi^{-}-decay vertex - z coordinate; DCA_{z} (cm); entries",200,-10.,10.);
+  fHistDecayLengthH3L = new TH1F("fHistDecayLengthH3L","decay length ^{3}H_{#Lambda}; decay length (cm); entries",400,0.,100.);
+
+  
   fHistCosPointingAngle= new TH1F("fHistCosPointingAngle", "Cos pointing angle distribution; cos point angle; entries", 220, -1.1, 1.1);
   fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
   if(fMC){
@@ -407,10 +408,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistpTpionMCt = new TH1F("fHistpTpionMCt","pion p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTproMCt = new TH1F("fHistpTproMCt","proton p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTdeuMCt = new TH1F("fHistpTdeuMCt","deuteron p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
-    fHistDCAdeuproMCt = new TH1F("fHistDCAdeuproMCt","DCA d-p tracks - MCtruth;d-p DCA (cm);entries",250,-1.0,1.0);
-    fHistDCApiondeuMCt = new TH1F("fHistDCApiondeuMCt","DCA #pi^{-}-d tracks - MCtruth;#pi^{-}-d DCA (cm);entries",250,-1.0,1.0);
-    fHistDCApionproMCt = new TH1F("fHistDCApionproMCt","DCA #pi^{-}-p tracks - MCtruth;#pi^{-}-p DCA (cm);entries",250,-1.0,1.0);
-    
     fHistCorrDCAdprimaryMCt = new TH2F("fHistCorrDCAdprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - deuteron MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
     fHistCorrDCApprimaryMCt = new TH2F("fHistCorrDCApprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - proton MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
     fHistCorrDCApiprimaryMCt = new TH2F("fHistCorrDCApiprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - pion MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
@@ -418,6 +415,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistDCApprimaryMCt = new TH1F("fHistDCApprimaryMCt","DCA proton-primary vertex; DCA (cm); entries",3200,0.f,80.f);
     fHistDCAdprimaryMCt = new TH1F("fHistDCAdprimaryMCt","DCA deuteron-primary vertex; DCA (cm); entries",3200,0.f,80.f);
     
+    fHistDCAdeuproMCt = new TH1F("fHistDCAdeuproMCt","DCA d-p tracks - MCtruth;d-p DCA (cm);entries",250,-1.0,1.0);
+    fHistDCApiondeuMCt = new TH1F("fHistDCApiondeuMCt","DCA #pi^{-}-d tracks - MCtruth;#pi^{-}-d DCA (cm);entries",250,-1.0,1.0);
+    fHistDCApionproMCt = new TH1F("fHistDCApionproMCt","DCA #pi^{-}-p tracks - MCtruth;#pi^{-}-p DCA (cm);entries",250,-1.0,1.0);
+    
+    fHistZDecayVtxMCt = new TH1F("fHistZDecayVtxMCt","decay vertex - z coordinate - MCtruth; z_{decay vtx} (cm); entries",800,-20.f,20.f);
+    fHistXDecayVtxMCt = new TH1F("fHistXDecayVtxMCt","decay vertex - x coordinate - MCtruth; x_{decay vtx} (cm); entries",8000,-20.f,20.f);
+    fHistYDecayVtxMCt = new TH1F("fHistYDecayVtxMCt","decay vertex - y coordinate - MCtruth; y_{decay vtx} (cm); entries",8000,-20.f,20.f);
     fHistDCAXYdeuvtxMCt = new TH1F("fHistDCAXYdeuvtxMCt","DCA candidate d-decay vertex - xy coordinate - MCtruth; DCA_{xy} (cm); entries",200,-5.,5.);
     fHistDCAZdeuvtxMCt = new TH1F("fHistDCAZdeuvtxMCt","DCA candidate d-decay vertex - z coordinate - MCtruth; DCA_{z} (cm); entries",200,-10.,10.);
     fHistDCAXYprovtxMCt = new TH1F("fHistDCAXYprovtxMCt","DCA candidate p-decay vertex - xy coordinate - MCtruth; DCA_{xy} (cm); entries",200,-5.,5.);
@@ -425,9 +429,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistDCAXYpionvtxMCt = new TH1F("fHistDCAXYpionvtxMCt","DCA candidate #pi^{-}-decay vertex - xy coordinate - MCtruth; DCA_{xy} (cm); entries",200,-5.,5.);
     fHistDCAZpionvtxMCt = new TH1F("fHistDCAZpionvtxMCt","DCA candidate #pi^{-}-decay vertex - z coordinate - MCtruth; DCA_{z} (cm); entries",200,-10.,10.);
     
-    fHistZDecayVtxMCt = new TH1F("fHistZDecayVtxMCt","decay vertex - z coordinate - MCtruth; z_{decay vtx} (cm); entries",800,-20.f,20.f);
-    fHistXDecayVtxMCt = new TH1F("fHistXDecayVtxMCt","decay vertex - x coordinate - MCtruth; x_{decay vtx} (cm); entries",8000,-20.f,20.f);
-    fHistYDecayVtxMCt = new TH1F("fHistYDecayVtxMCt","decay vertex - y coordinate - MCtruth; y_{decay vtx} (cm); entries",8000,-20.f,20.f);
     
     fHistMassHypertritonMCt = new TH1F("fHistMassHypertritonMCt","^{3}H_{#Lambda} invariant mass - MCtruth; invariant mass d+p+#pi^{-} (GeV/c^{2}); entries", 400,2.9,3.1);
   }
@@ -449,10 +450,10 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistTPCantiprosignal);
   fOutput->Add(fHistTPCpionplussignal);
   fOutput->Add(fHistTOFsignal);
-  fOutput->Add(fHistTOFdeusignal);
-  fOutput->Add(fHistTOFprosignal);
-  fOutput->Add(fHistTOFantideusignal);
-  fOutput->Add(fHistTOFantiprosignal);
+  //fOutput->Add(fHistTOFdeusignal);
+  //fOutput->Add(fHistTOFprosignal);
+  //fOutput->Add(fHistTOFantideusignal);
+  //fOutput->Add(fHistTOFantiprosignal);
   fOutput->Add(fHistTOFdeumass);
   fOutput->Add(fHistTOFpromass);
   fOutput->Add(fHistpionTPCcls);
@@ -467,13 +468,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistZDecayVtx);
   fOutput->Add(fHistXDecayVtx);
   fOutput->Add(fHistYDecayVtx);
-  fOutput->Add(fHistDecayLengthH3L);
   fOutput->Add(fHistDCAXYdeuvtx);
   fOutput->Add(fHistDCAZdeuvtx);
   fOutput->Add(fHistDCAXYprovtx);
   fOutput->Add(fHistDCAZprovtx);
   fOutput->Add(fHistDCAXYpionvtx);
   fOutput->Add(fHistDCAZpionvtx);
+  fOutput->Add(fHistDecayLengthH3L);
   fOutput->Add(fHistCosPointingAngle);
   fOutput->Add(fHistMassHypertriton);
 
@@ -483,24 +484,24 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fOutput->Add(fHistpTpionMCt);
     fOutput->Add(fHistpTproMCt);
     fOutput->Add(fHistpTdeuMCt);
-    fOutput->Add(fHistDCAdeuproMCt);
-    fOutput->Add(fHistDCApiondeuMCt);
-    fOutput->Add(fHistDCApionproMCt);
     fOutput->Add(fHistCorrDCAdprimaryMCt);
     fOutput->Add(fHistCorrDCApprimaryMCt);
     fOutput->Add(fHistCorrDCApiprimaryMCt);
     fOutput->Add(fHistDCApiprimaryMCt);
     fOutput->Add(fHistDCApprimaryMCt);
     fOutput->Add(fHistDCAdprimaryMCt);
+    fOutput->Add(fHistDCAdeuproMCt);
+    fOutput->Add(fHistDCApiondeuMCt);
+    fOutput->Add(fHistDCApionproMCt);
+    fOutput->Add(fHistZDecayVtxMCt);
+    fOutput->Add(fHistXDecayVtxMCt);
+    fOutput->Add(fHistYDecayVtxMCt);
     fOutput->Add(fHistDCAXYdeuvtxMCt);
     fOutput->Add(fHistDCAZdeuvtxMCt);
     fOutput->Add(fHistDCAXYprovtxMCt);
     fOutput->Add(fHistDCAZprovtxMCt);
     fOutput->Add(fHistDCAXYpionvtxMCt);
     fOutput->Add(fHistDCAZpionvtxMCt);
-    fOutput->Add(fHistZDecayVtxMCt);
-    fOutput->Add(fHistXDecayVtxMCt);
-    fOutput->Add(fHistYDecayVtxMCt);
     fOutput->Add(fHistMassHypertritonMCt);
   }
   
@@ -784,7 +785,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 4 && tparticleDaughter->GetPdgCode() == 1000010020){ //d
 	  fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
-	    fHistTOFdeusignal->Fill(p,beta);
+	    //fHistTOFdeusignal->Fill(p,beta);
 	    fHistTOFdeumass->Fill(mass);
 	  }
 	  cdeuteron.push_back(track);
@@ -793,7 +794,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && tparticleDaughter->GetPdgCode() == 2212) { // p
 	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
-	    fHistTOFprosignal->Fill(p,beta);
+	    //fHistTOFprosignal->Fill(p,beta);
 	    fHistTOFpromass->Fill(mass);
 	  }
 	  cproton.push_back(track);
@@ -804,11 +805,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       else if(track->GetSign()<0){ // track sign -
 	if (tparticleDaughter->GetPdgCode() == -1000010020) { //anti-d
 	  fHistTPCantideusignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.) fHistTOFantideusignal->Fill(p,beta);
+	  //if(track->GetIntegratedLength() > 350.) fHistTOFantideusignal->Fill(p,beta);
 	}
 	else if (tparticleDaughter->GetPdgCode() == -2212) { //anti-p
 	  fHistTPCantiprosignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.) fHistTOFantiprosignal->Fill(p,beta);
+	  //if(track->GetIntegratedLength() > 350.) fHistTOFantiprosignal->Fill(p,beta);
 	}
 	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && tparticleDaughter->GetPdgCode() == -211) { // pi-
 	  fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
@@ -834,7 +835,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(partID == 2) { //deuteron
 	  fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
-	    fHistTOFdeusignal->Fill(p,beta);
+	    //fHistTOFdeusignal->Fill(p,beta);
 	    fHistTOFdeumass->Fill(mass);
 	    cmassd.push_back(mass);
 	  }
@@ -843,7 +844,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(partID == 1) { // proton
 	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
-	    fHistTOFprosignal->Fill(p,beta);
+	    //fHistTOFprosignal->Fill(p,beta);
 	    fHistTOFpromass->Fill(mass);
 	    cmassp.push_back(mass);
 	  }
