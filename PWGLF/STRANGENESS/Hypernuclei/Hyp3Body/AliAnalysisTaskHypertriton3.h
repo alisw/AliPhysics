@@ -85,6 +85,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAPiSVzmax;                 ///< Cut on \f$\pi DCA_{z}\f$ from reconstructed secondary vertex
   Double_t           fDCAProSVmax;                 ///< Cut on proton DCA from reconstructed secondary vertex
   Double_t           fDCADeuSVmax;                 ///< Cut on deuteron DCA from reconstructed secondary vertex
+  Double_t           fDCAdp;                       ///< Cut DCA deuteron-proton
+  Double_t           fDCApip;                      ///< Cut DCA pion-proton
+  Double_t           fDCAdpi;                      ///< Cut DCA deuteron-pion
   
   //Output list
   TList              *fOutput;                     ///< Output list
