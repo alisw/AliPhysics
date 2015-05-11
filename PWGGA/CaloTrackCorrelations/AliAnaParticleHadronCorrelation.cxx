@@ -62,6 +62,7 @@ fMaxAssocPt(1000.),             fMinAssocPt(0.),
 fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),
 fSelectIsolated(0),             fMakeSeveralUE(0),
 fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.),
+fAODNamepTInConeHisto(""),
 fPi0AODBranchName(""),          fNeutralCorr(0),
 fPi0Trigger(0),                 fDecayTrigger(0),
 fNDecayBits(0),                 fDecayBits(),
@@ -106,7 +107,7 @@ fhZTCharged(0),                 fhZTUeCharged(0),
 fhZTPosCharged(0),              fhZTNegCharged(0),
 fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
 fhXEChargedMC(),                fhDeltaPhiChargedMC(),
-fhXEUeChargedLeftMC(),          fhXEUeChargedRightMC(),
+fhXEUeChargedRightMC(),         fhXEUeChargedLeftMC(),          
 fhDeltaPhiDeltaEtaChargedPtA3GeV(0),
 fhDeltaPhiChargedPtA3GeV(0),    fhDeltaEtaChargedPtA3GeV(0),
 // Pile-Up
@@ -186,8 +187,7 @@ fhMixDeltaPhiChargedAssocPtBinDEta0(),
 fhMixDeltaPhiDeltaEtaChargedAssocPtBin(),
 fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0),
 fhMassPtTrigger(0),             fhMCMassPtTrigger(),
-fhPtLeadInConeBin(),            fhPtSumInConeBin(),
-fAODNamepTInConeHisto("")
+fhPtLeadInConeBin(),            fhPtSumInConeBin()
 
 {
   InitParameters();
@@ -3388,8 +3388,8 @@ void AliAnaParticleHadronCorrelation::InvMassHisto(AliAODPWG4ParticleCorrelation
     fMomentumIM += fMomentum;
     
     Double_t mass  = fMomentumIM.M();
-    Double_t epair = fMomentumIM.E();
-    Float_t ptpair = fMomentumIM.Pt();
+    //    Double_t epair = fMomentumIM.E();
+    //    Float_t ptpair = fMomentumIM.Pt();
     
     // Mass of all pairs
     fhMassPtTrigger->Fill(ptTrig, mass, GetEventWeight());
