@@ -167,6 +167,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(kFALSE),
+  fApplyTwisting(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
   fChi2A(0x0),
   fChi2C(0x0),
@@ -290,6 +291,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(kFALSE),
+  fApplyTwisting(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
   fChi2A(0x0),
   fChi2C(0x0),
@@ -415,6 +417,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(that.fApplyRecentering),
+  fApplyTwisting(that.fApplyTwisting),
   fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing),
   fChi2A(0x0),
   fChi2C(0x0),
@@ -568,6 +571,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCurrCentr = that.fCurrCentr;
     
   fApplyRecentering = that.fApplyRecentering;
+  fApplyTwisting = that.fApplyTwisting;
   fVZEROgainEqualizationPerRing = that.fVZEROgainEqualizationPerRing;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
   if (that.fVZEROgainEqualization) fVZEROgainEqualization = new TH1(*(that.fVZEROgainEqualization));
@@ -1617,7 +1621,8 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetBetaVZEROOnlyTrackCuts()
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   cuts->SetApplyRecentering(kTRUE);
-  // idea of the cuts is that calibration is done per ring 
+  cuts->SetApplyTwisting(kFALSE);
+  // idea of the cuts is that calibration is done per ring
   // and that it is transparent for different data taking periods
   return cuts;
 }

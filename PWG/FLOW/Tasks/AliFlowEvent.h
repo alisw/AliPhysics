@@ -86,6 +86,8 @@ public:
   void InsertTrack(AliFlowTrack*);
 
   virtual AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
+  virtual void GetZDC2Qsub(AliFlowVector* Qarray);
+  virtual void SetZDC2Qsub(Double_t* QVC, Double_t* QVA);
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
   void SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
@@ -98,6 +100,7 @@ protected:
 
 private:
   Int_t         fApplyRecentering;      // apply recentering of q-vectors? 2010 is 10h style, 2011 is 11h style
+  Bool_t        fApplyTwisting;         // apply twisting of q-vectors
   Int_t         fCachedRun;             //! cached calibration info for vzero
   Int_t         fVZEROcentralityBin;    //! centrality bin for the current event 
   Float_t       fMeanQ[9][2][2];        //! recentering
@@ -110,12 +113,13 @@ private:
   TH1F*         fQxcvsV0[5];            //! recentering
   TH1F*         fQycvsV0[5];            //! recentering
   // END OF BETA TESTING
+  Double_t      fZNCQ[2];                  //! Q_1 vector from ZDCN-C
+  Double_t      fZNAQ[2];                  //! Q_1 vector from ZDCN-A
   AliVEvent*    fEvent;                 //! current event
   TArrayD*      fChi2A;                 //! chi vs cent for vzero A ep_2
   TArrayD*      fChi2C;                 //! chi vs cent for vzero C ep_2
   TArrayD*      fChi3A;                 //! chi vs cent for vzero A ep_3
   TArrayD*      fChi3C;                 //! chi vs cent for vzero C ep_3
-
 
   ClassDef(AliFlowEvent,4)
 };

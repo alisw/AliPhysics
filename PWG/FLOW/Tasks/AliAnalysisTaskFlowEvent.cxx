@@ -74,6 +74,8 @@
 
 #include "AliLog.h"
 
+#include "AliAODZDC.h"
+
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskFlowEvent)
@@ -300,6 +302,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
+
 void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 {
   // Main loop
@@ -309,7 +312,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
   AliMultiplicity* myTracklets = NULL;
-  AliESDPmdTrack* pmdtracks = NULL;//pmd      
+  AliESDPmdTrack* pmdtracks = NULL;//pmd
 
   int availableINslot=1;
 
@@ -566,6 +569,19 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
   // associate the mother particles to their daughters in the flow event (if any)
   fFlowEvent->FindDaughters();
+ 
+  // Q vectors from ZDC
+  if (myAOD) {
+   AliAODZDC* ZDCData = myAOD->GetZDCData();
+   Double_t centrZNC[2] = {0.,0.};
+   Double_t centrZNA[2] = {0.,0.};
+   Double_t energyZNA = ZDCData->GetZNAEnergy();
+   Double_t energyZNC = ZDCData->GetZNCEnergy();
+   if(energyZNA>0 && energyZNC>0) {
+    ZDCData->GetZNCentroidInPbPb(1.,centrZNC,centrZNA);
+    fFlowEvent->SetZDC2Qsub(centrZNC,centrZNA);
+   }
+  }
 
   //fListHistos->Print();
   //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
