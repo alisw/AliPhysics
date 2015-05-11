@@ -122,8 +122,8 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
   // 2.) reasonable q/pt resolution
   // 3.) at minimum one of the outer detectors - to clean pile-up
   //
-  TCut cutHighPt="abs(esdTrack.fdTPC)<4&&abs(esdTrack.fzTPC)<4&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.1&&((esdTrack.fFlags&0x4401)>0)";
-  TCut cutV0="abs(track0.fzTPC)<20&&abs(track1.fzTPC)<20&&sqrt(track0.fC[14])<0.1&&sqrt(track1.fC[14])<0.1&&((track0.fFlags&0x4401)+(track1.fFlags&0x4401)>0)";
+  TCut cutHighPt="abs(esdTrack.fdTPC)<4&&abs(esdTrack.fzTPC)<4&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.03&&((esdTrack.fFlags&0x4401)>0)";
+  TCut cutV0="abs(track0.fzTPC)<20&&abs(track1.fzTPC)<20&&sqrt(track0.fC[14])<0.1&&sqrt(track1.fC[14])<0.03&&((track0.fFlags&0x4401)+(track1.fFlags&0x4401)>0)";
   
   // Analyse Hight pt tree
   if (treeHighPt)
