@@ -269,7 +269,7 @@ TF1 *FitPlots(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Double_t &
   Double_t min=0,max=TMath::Pi();
   if(!refl){
     min=-0.5*TMath::Pi();
-    max=-1.5*TMath::Pi();
+    max=1.5*TMath::Pi();
   }
   AliHFCorrFitter *corrfitter=new AliHFCorrFitter((TH1F*)h,min,max,kTRUE);
   corrfitter->SetHistoIsReflected(refl);
