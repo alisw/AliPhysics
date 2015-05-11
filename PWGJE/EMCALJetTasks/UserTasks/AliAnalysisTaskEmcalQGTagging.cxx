@@ -267,7 +267,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       Int_t ifound=0;
       Int_t ilab=-1;
       
-      if(fSemigoodCorrect & (fJetSelection != kRecoil)){
+      if(fSemigoodCorrect && (fJetSelection != kRecoil)){
       Double_t disthole=RelativePhi(jet1->Phi(),fHolePos);
       if(TMath::Abs(disthole)<fHoleWidth){
       continue;}
