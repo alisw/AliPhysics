@@ -369,7 +369,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         ptSubtracted = jet1->Pt();
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
       
-      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef)|| (fJetShapeType==kTrue))
+      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef))
         if (ptSubtracted < fPtThreshold) continue;
      
      
@@ -754,7 +754,7 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
   
   for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
     
-    if (fJetShapeSub == kNoSub) {
+    if ((fJetShapeSub == kNoSub) || (fJetShapeSub == kDerivSub)) {
       picoTrack = static_cast<AliPicoTrack*>(tracksArray->At(iTrack));
       if (!picoTrack) continue;
       
