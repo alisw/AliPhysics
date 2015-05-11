@@ -234,6 +234,8 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
 
   if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
 
+  AliDebug(2, Form("Total number of particles = %d", Nparticles));
+  
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
@@ -252,13 +254,40 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
     
     if (fChargedMC && part->Charge() == 0 && !isSpecialPdg) continue;
 
+    AliDebug(10, Form("Particle %d: generator index %d", iPart, part->GetGeneratorIndex()));
+    
     if (fOnlyHIJING && (part->GetGeneratorIndex() != 0)) continue;
 
-    if (fOnlyPhysPrim && !part->IsPhysicalPrimary() && !isSpecialPdg) continue;
+    if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) {
+      if (isSpecialPdg) {
+        if (AliLog::GetDebugLevel("AliEmcalMCTrackSelector","AliEmcalMCTrackSelector") >= 2) {
+          Int_t ndaugh = part->GetNDaughters();
+          AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f, n daughters = %d)",
+                           iPart, part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), ndaugh));
+
+          for (Int_t idaugh = 0; idaugh < ndaugh; idaugh++) {
+            Int_t posDaugh = part->GetDaughter(idaugh);
+            AliAODMCParticle *daugh = static_cast<AliAODMCParticle*>(fParticlesIn->At(posDaugh));
+            if (daugh) {
+              AliDebug(2, Form("Daughter %d: i = %d, PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f",
+                               idaugh, posDaugh, daugh->PdgCode(), daugh->Pt(), daugh->Eta(), daugh->Phi()));
+            }
+          } 
+        }
+      }
+      else {
+        continue;
+      }
+    }
 
     if (fSpecialPDG != 0) { // skip particle if it's a daughter of a "special" PDG particle
-      AliAODMCParticle* pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(part->GetMother()));
-      if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) continue;
+      Int_t imo = part->GetMother();
+      AliAODMCParticle* pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(imo));
+      if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) {
+        AliDebug(2, Form("Rejecting particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
+                         iPart, part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->PdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
+        continue;
+      }
     }
 
     fParticlesMap->AddAt(nacc, iPart);
