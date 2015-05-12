@@ -11,15 +11,21 @@ runLevelQA()
   #full path of QAresults.root is provided
   local qaFile=$1
   local isMC=0
+  local usePhysicsSelection=1
   if [ "$dataType" = "sim" ]; then
     isMC=1
+    usePhysicsSelection=0
+  fi
+
+  if [ ! -z $ignorePhysicsSelection ]; then
+    usePhysicsSelection=0
   fi
 
   # This is used only to extract the muon information
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/MakeTrend.C
   aliroot -b -l <<EOF
 gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
-.x MakeTrend.C("${qaFile}",${runNumber},$isMC)
+.x MakeTrend.C("${qaFile}",${runNumber},$isMC,$usePhysicsSelection)
 .q
 EOF
   rm MakeTrend.C
@@ -94,6 +100,9 @@ periodLevelQA()
 
   local usePhysicsSelection=1
   if [ "$dataType" = "sim" ]; then
+    usePhysicsSelection=0
+  fi
+  if [ ! -z $ignorePhysicsSelection ]; then
     usePhysicsSelection=0
   fi
 
