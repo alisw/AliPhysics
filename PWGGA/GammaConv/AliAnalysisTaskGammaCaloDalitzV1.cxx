@@ -40,7 +40,7 @@
 #include "AliCentrality.h"
 #include "AliESDVZERO.h"
 #include "AliESDpid.h"
-#include "AliAnalysisTaskGammaConvCaloDalitzV1.h"
+#include "AliAnalysisTaskGammaCaloDalitzV1.h"
 #include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -58,10 +58,10 @@
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
 
-ClassImp(AliAnalysisTaskGammaConvCaloDalitzV1)
+ClassImp(AliAnalysisTaskGammaCaloDalitzV1)
 
 //________________________________________________________________________
-AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): AliAnalysisTaskSE(),
+AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(): AliAnalysisTaskSE(),
 	fV0Reader(NULL),
 	fElecSelector(NULL),
 	fBGClusHandler(NULL),
@@ -171,6 +171,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
 	fHistoTrueEtaShowerInvMassPt(NULL),
 	fHistoTruePi0NoShowerInvMassPt(NULL),
 	fHistoTrueEtaNoShowerInvMassPt(NULL),
+	fHistoTruePi0OpeningAngleGammaElectron(NULL),
 	fHistoTruePi0GGInvMassPt(NULL),
 	fHistoTrueEtaGGInvMassPt(NULL),
 	fHistoTruePi0CaloPhotonInvMassPt(NULL),
@@ -297,7 +298,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
 }
 
 //________________________________________________________________________
-AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const char *name):
+AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(const char *name):
 	AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
 	fElecSelector(NULL),
@@ -408,6 +409,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
 	fHistoTrueEtaShowerInvMassPt(NULL),
 	fHistoTruePi0NoShowerInvMassPt(NULL),
 	fHistoTrueEtaNoShowerInvMassPt(NULL),
+	fHistoTruePi0OpeningAngleGammaElectron(NULL),
 	fHistoTruePi0GGInvMassPt(NULL),
 	fHistoTrueEtaGGInvMassPt(NULL),
 	fHistoTruePi0CaloPhotonInvMassPt(NULL),
@@ -534,7 +536,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
   DefineOutput(1, TList::Class());
 }
 
-AliAnalysisTaskGammaConvCaloDalitzV1::~AliAnalysisTaskGammaConvCaloDalitzV1()
+AliAnalysisTaskGammaCaloDalitzV1::~AliAnalysisTaskGammaCaloDalitzV1()
 {
 	if(fGammaCandidates){
 		delete fGammaCandidates;
@@ -556,7 +558,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::~AliAnalysisTaskGammaConvCaloDalitzV1()
 	
 }
 //___________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::InitBack(){
+void AliAnalysisTaskGammaCaloDalitzV1::InitBack(){
 	
 	const Int_t nDim = 4;
 	Int_t nBins[nDim] = {800,250,7,4};
@@ -634,7 +636,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::InitBack(){
 	}
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
+void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
   
 	// Create histograms
 	if(fOutputContainer != NULL){
@@ -1032,6 +1034,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 				fHistoTrueEtaShowerInvMassPt				= new TH2F*[fnCuts];
 				fHistoTruePi0NoShowerInvMassPt				= new TH2F*[fnCuts];
 				fHistoTrueEtaNoShowerInvMassPt				= new TH2F*[fnCuts];
+				fHistoTruePi0OpeningAngleGammaElectron                  = new TH1F*[fnCuts];
 				
 			}
 		}
@@ -1386,7 +1389,6 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 				
 				
 				
-				
 
 				fHistoTrueSecondaryPi0FromK0sInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryPi0FromK0s_InvMass_Pt","ESD_TrueSecondaryPi0FromK0s_InvMass_Pt",800,0,0.8,250,0,25);
 				fHistoTrueSecondaryPi0FromK0sInvMassPt[iCut]->SetXTitle("M_{inv,#pi^{0} from K^{0}_{S}} (GeV/c^{2})");
@@ -1607,8 +1609,8 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 					fHistoTrueEtaNoShowerInvMassPt[iCut]->SetYTitle("#eta p_{T} (GeV/c)");
 					fTrueList[iCut]->Add(fHistoTrueEtaNoShowerInvMassPt[iCut]);
 				
-					
-					
+					fHistoTruePi0OpeningAngleGammaElectron[iCut] = new TH1F("ESD_TruePi0_OpeningAngle_GammaElectron", "ESD_TruePi0_OpeningAngle_GammaElectron",100,0.,TMath::Pi());
+					fTrueList[iCut]->Add(fHistoTruePi0OpeningAngleGammaElectron[iCut]);
 					
 					
 
@@ -1670,7 +1672,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 	PostData(1, fOutputContainer);
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::Notify()
+Bool_t AliAnalysisTaskGammaCaloDalitzV1::Notify()
 {
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		if(!((AliConvEventCuts*)fEventCutArray->At(iCut))->GetDoEtaShift()){
@@ -1694,7 +1696,7 @@ Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::Notify()
 	return kTRUE;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::UserExec(Option_t *)
+void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 {
 	//
 	// Called for each event
@@ -1863,7 +1865,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessClusters()
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 {
 	
 	Int_t nclus = 0;
@@ -1953,7 +1955,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessClusters()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidates(AliAODConversionPhoton *TruePhotonCandidate)
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
 		
 	TParticle *Photon = NULL;
@@ -2093,7 +2095,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidates(AliAODCo
 
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
 {
 	AliAODMCParticle *Photon = NULL;
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -2170,7 +2172,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidatesAOD(AliAO
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessAODMCParticles()
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessAODMCParticles()
 {
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 	Double_t mcProdVtxX 	= primVtxMC->GetX();
@@ -2321,7 +2323,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessAODMCParticles()
 	
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessMCParticles()
 {
 	
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
@@ -2592,7 +2594,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::CalculatePi0DalitzCandidates(){
+void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 
 	// Conversion Gammas
 	
@@ -2749,7 +2751,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculatePi0DalitzCandidates(){
 }
 
 //______________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueVirtualGammaCandidate, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueVirtualGammaCandidate, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
 {
 	// Process True Mesons
 	
@@ -2769,8 +2771,33 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConv
 		
 		Bool_t motherFromShower  = kFALSE;
 		
-
-
+		Double_t angleGammaPositron = -999;
+		Double_t angleGammaElectron = -999;
+		
+		
+	       if( fDoMesonQA > 0 ) {
+		
+		AliESDtrack* positronVgamma = (AliESDtrack*)fInputEvent->GetTrack( TrueVirtualGammaCandidate->GetTrackLabelPositive() );
+		Double_t momPositron[3];
+		positronVgamma->GetConstrainedPxPyPz(momPositron);
+					
+							
+		AliESDtrack* electronVgamma = (AliESDtrack*)fInputEvent->GetTrack( TrueVirtualGammaCandidate->GetTrackLabelNegative() );
+		Double_t momElectron[3];
+		electronVgamma->GetConstrainedPxPyPz(momElectron);
+					
+							
+		TVector3 vGamma(TrueGammaCandidate1->GetPx(),TrueGammaCandidate1->GetPy(),TrueGammaCandidate1->GetPz());;
+		TVector3 vPositron(momPositron[0],momPositron[1],momPositron[2]);
+		TVector3 vElectron(momElectron[0],momElectron[1],momElectron[2]);
+		
+		angleGammaPositron = vGamma.Angle(vPositron);
+		angleGammaElectron = vGamma.Angle(vElectron);
+		
+		}
+		
+		
+	
 		if( virtualGammaMCLabel != -1 ){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 			// Daughters Gamma 1
 			TParticle * negativeMC = (TParticle*)TrueVirtualGammaCandidate->GetNegativeMCDaughter(fMCStack);
@@ -2849,7 +2876,14 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConv
 			  			  
 				if( !matched ) {
 			    
-				    if (isTruePi0)fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				    if( isTruePi0 ) {
+				      
+					    fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					    if( fDoMesonQA > 0 ) {
+					      fHistoTruePi0OpeningAngleGammaElectron[fiCut]->Fill(angleGammaPositron);
+					      fHistoTruePi0OpeningAngleGammaElectron[fiCut]->Fill(angleGammaElectron);
+					    }
+				    }
 				    if (isTrueEta)fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 				
 				}
@@ -3033,7 +3067,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConv
 
 }
 //______________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
 {
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 	Double_t mcProdVtxX 	= primVtxMC->GetX();
@@ -3231,7 +3265,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidatesAOD(AliAODC
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessPhotonCandidates()
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessPhotonCandidates()
 {
 	Int_t nV0 = 0;
 	TList *GammaCandidatesStepOne = new TList();
@@ -3351,7 +3385,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessPhotonCandidates()
   
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
 {
 	
 	Double_t magField = fInputEvent->GetMagneticField();
@@ -3450,7 +3484,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTruePhotonCandidatesAOD(AliAOD
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 	Double_t mcProdVtxX 	= primVtxMC->GetX();
@@ -3533,7 +3567,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTruePhotonCandidates(AliAODCon
 	return;
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::CalculateBackground(){
+void AliAnalysisTaskGammaCaloDalitzV1::CalculateBackground(){
 	
 	Int_t zbin= fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
 	Int_t mbin = 0;
@@ -3652,7 +3686,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculateBackground(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::RotateParticle(AliAODConversionPhoton *gamma){
+void AliAnalysisTaskGammaCaloDalitzV1::RotateParticle(AliAODConversionPhoton *gamma){
 	Int_t fNDegreesPMBackground= ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->NDegreesRotation();
 	Double_t nRadiansPM = fNDegreesPMBackground*TMath::Pi()/180;
 	Double_t rotationValue = fRandom.Rndm()*2*nRadiansPM + TMath::Pi()-nRadiansPM;
@@ -3660,7 +3694,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::RotateParticle(AliAODConversionPhoton
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP){
+void AliAnalysisTaskGammaCaloDalitzV1::RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP){
 	
 	previousEventEP=previousEventEP+TMath::Pi();
 	thisEventEP=thisEventEP+TMath::Pi();
@@ -3669,7 +3703,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::RotateParticleAccordingToEP(AliAODCon
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex){
+void AliAnalysisTaskGammaCaloDalitzV1::MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex){
 	//see header file for documentation
 	
 	Double_t dx = vertex->fX - fInputEvent->GetPrimaryVertex()->GetX();
@@ -3680,7 +3714,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::MoveParticleAccordingToVertex(AliAODC
 	particle->SetConversionPoint(movedPlace);
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::UpdateEventByEventData(){
+void AliAnalysisTaskGammaCaloDalitzV1::UpdateEventByEventData(){
 	//see header file for documentation
 	if( fClusterCandidates->GetEntries() > 0  ){
 		if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
@@ -3692,7 +3726,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UpdateEventByEventData(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::RelabelAODPhotonCandidates(Bool_t mode){
+void AliAnalysisTaskGammaCaloDalitzV1::RelabelAODPhotonCandidates(Bool_t mode){
 	
 	// Relabeling For AOD Event
 	// ESDiD -> AODiD
@@ -3757,7 +3791,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::RelabelAODPhotonCandidates(Bool_t mod
 	}
 }
 
-void AliAnalysisTaskGammaConvCaloDalitzV1::SetLogBinningXTH2(TH2* histoRebin){
+void AliAnalysisTaskGammaCaloDalitzV1::SetLogBinningXTH2(TH2* histoRebin){
 	TAxis *axisafter = histoRebin->GetXaxis();
 	Int_t bins = axisafter->GetNbins();
 	Double_t from = axisafter->GetXmin();
@@ -3771,14 +3805,14 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::SetLogBinningXTH2(TH2* histoRebin){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::Terminate(const Option_t *)
+void AliAnalysisTaskGammaCaloDalitzV1::Terminate(const Option_t *)
 {
   
   //fOutputContainer->Print(); // Will crash on GRID
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskGammaConvCaloDalitzV1::GetSourceClassification(Int_t daughter, Int_t pdgCode){
+Int_t AliAnalysisTaskGammaCaloDalitzV1::GetSourceClassification(Int_t daughter, Int_t pdgCode){
   
 	if (daughter == 111) {
 		if (abs(pdgCode) == 310) return 1; // k0s
@@ -3799,7 +3833,7 @@ Int_t AliAnalysisTaskGammaConvCaloDalitzV1::GetSourceClassification(Int_t daught
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::CheckIfContainedInString(TString input, Int_t tobechecked){
+Bool_t AliAnalysisTaskGammaCaloDalitzV1::CheckIfContainedInString(TString input, Int_t tobechecked){
 	TObjArray *arr = input.Tokenize(",");
 	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
 		TString tempStr = ((TObjString*)arr->At(i))->GetString();
@@ -3809,7 +3843,7 @@ Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::CheckIfContainedInString(TString in
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked){
+Bool_t AliAnalysisTaskGammaCaloDalitzV1::CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked){
 	TObjArray *arr = input.Tokenize(",");
 	Bool_t isContained = kFALSE;
 	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
@@ -3821,7 +3855,7 @@ Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::CheckIfContainedInStringAndAppend(T
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTags (){
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessConversionPhotonsForMissingTags (){
 
 	if (!fMCStack) return;
 	
@@ -3882,7 +3916,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTag
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTagsAOD (){
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessConversionPhotonsForMissingTagsAOD (){
 
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 	Double_t mcProdVtxX 	= primVtxMC->GetX();
@@ -3949,7 +3983,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTag
 }	
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
+void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 
 	 const AliVVertex* primVtxMC 	= 0;
 	 Double_t mcProdVtxX 	= 0;
@@ -4194,7 +4228,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
 }
 
 //_____________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::IsPi0DalitzDaughter( Int_t label ) const
+Bool_t AliAnalysisTaskGammaCaloDalitzV1::IsPi0DalitzDaughter( Int_t label ) const
 {
 //
 // Returns true if the particle comes from Pi0 -> e+ e- gamma
@@ -4213,7 +4247,7 @@ Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::IsPi0DalitzDaughter( Int_t label ) 
    
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskGammaConvCaloDalitzV1::GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const
+Double_t AliAnalysisTaskGammaCaloDalitzV1::GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const
 {
 	//
 	// This angle is a measure for the contribution of the opening in polar
@@ -4244,7 +4278,7 @@ Double_t AliAnalysisTaskGammaConvCaloDalitzV1::GetPsiPair( const AliESDtrack *tr
 	return psiAngle;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::IsDalitz(TParticle *fMCMother) const
+Bool_t AliAnalysisTaskGammaCaloDalitzV1::IsDalitz(TParticle *fMCMother) const
 {
 
 	if( fMCMother->GetNDaughters() != 3 ) return kFALSE;
@@ -4276,7 +4310,7 @@ Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::IsDalitz(TParticle *fMCMother) cons
 }
 
 //_________________________________________________________________
-Int_t AliAnalysisTaskGammaConvCaloDalitzV1::FindMotherOfPhoton(Int_t particleLabel ){
+Int_t AliAnalysisTaskGammaCaloDalitzV1::FindMotherOfPhoton(Int_t particleLabel ){
   
     
   

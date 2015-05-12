@@ -1,4 +1,4 @@
-void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change different set of cuts
+void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
@@ -7,7 +7,8 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
                               TString generatorName = "DPMJET",
                               TString cutnumberAODBranch = "8000000060084000001500000", // cutnumber for AOD branch
                               Bool_t enableExtendedMatching = kFALSE, //enable or disable extended matching histograms for conversion electrons <-> cluster
-                              Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
+                              Bool_t isUsingTHnSparse = kTRUE, //enable or disable usage of THnSparses for background estimation
+                              Bool_t enableV0findingEffi = kFALSE
 							) {
 
 	// ================= Load Librariers =================================
@@ -53,7 +54,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	
 	//=========  Set Cutnumber for V0Reader ================================
 					   //06000078400100001500000000
-	TString cutnumberPhoton 	= "06000078400100001500000000";
+	TString cutnumberPhoton 	= "06000078400100007500000000";
 	TString cutnumberEvent 		= "8000000";
 	TString cutnumberElectron     	= "90005400000002000000";            //Electron Cuts
 	
@@ -70,6 +71,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
@@ -157,8 +159,8 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	//================================================
 	//========= Add task to the ANALYSIS manager =====
 	//================================================
-	AliAnalysisTaskGammaConvCaloDalitzV1 *task=NULL;
-	task= new AliAnalysisTaskGammaConvCaloDalitzV1(Form("GammaConvDalitzCalo_%i",trainConfig));
+	AliAnalysisTaskGammaCaloDalitzV1 *task=NULL;
+	task= new AliAnalysisTaskGammaCaloDalitzV1(Form("GammaCaloDalitz_%i",trainConfig));
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 
@@ -200,7 +202,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	} else if ( trainConfig == 3){ // min energy = 0.3 GeV/c																	
 							       							  
 	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "11111053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
+	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "13300053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
 	     
 	
 	} else if ( trainConfig == 4){
@@ -322,8 +324,8 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
-		mgr->CreateContainer(Form("GammaConvDalitzCalo_%i",trainConfig), TList::Class(),
-							AliAnalysisManager::kOutputContainer,Form("GammaConvDalitzCalo_%i.root",trainConfig));
+		mgr->CreateContainer(Form("GammaCaloDalitz_%i",trainConfig), TList::Class(),
+							AliAnalysisManager::kOutputContainer,Form("GammaCaloDalitz_%i.root",trainConfig));
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task,0,cinput);
