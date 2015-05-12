@@ -16,5 +16,6 @@
 add_subdirectory(FITbase)
 add_subdirectory(FITrec)
 add_subdirectory(FITsim)
+add_subdirectory(FITcalib)
 
 message(STATUS "FIT enabled")
