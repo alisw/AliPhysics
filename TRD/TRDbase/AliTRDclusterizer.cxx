@@ -835,6 +835,13 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     AliFatal("No AliTRDcalibDB instance available\n");
     return kFALSE;  
   }
+  
+  if (fTimeBinsDCS==-999 || fRun!=(int)calibration->GetRun()) {
+    fRun = calibration->GetRun();
+    fTimeBinsDCS = calibration->GetNumberOfTimeBinsDCS();
+    AliInfoF("Set number of DCS time bins to %d for run %d",fTimeBinsDCS,fRun);
+  }
+
 
   if (!fReconstructor){
     AliError("Reconstructor not set\n");
