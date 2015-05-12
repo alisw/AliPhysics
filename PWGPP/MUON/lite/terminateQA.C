@@ -98,7 +98,7 @@ AliAnalysisAlien* CreateAlienHandler()
 
 
 //_____________________________________________________________________________
-void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, Bool_t runTrig = kFALSE )
+void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, Bool_t runTrig = kFALSE, Bool_t usePhysicsSelection = kTRUE )
 {
   //
   // Load common libraries
@@ -132,14 +132,17 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, 
 
 #ifndef COMPILEMACRO
 
+  TString physSelPattern = "PhysSelPass";
+  if ( ! usePhysicsSelection ) physSelPattern.Append(",PhysSelReject");
+
   if ( runTrig ) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
     AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(kFALSE);
-    trigChEffTask->SetTerminateOptions("PhysSelPass","ANY","-5_105","FORCEBATCH trigChEff_ANY_Apt_allTrig.root?PhysSelPass?ANY?-5_105?NoSelMatchAptFromTrg");
+    trigChEffTask->SetTerminateOptions(physSelPattern.Data(),"ANY","-5_105",Form("FORCEBATCH trigChEff_ANY_Apt_allTrig.root?%s?ANY?-5_105?NoSelMatchAptFromTrg",physSelPattern.Data()));
   }
   else {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
-    AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
+    AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA(usePhysicsSelection);
   }
 
 #endif
