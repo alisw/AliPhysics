@@ -61,7 +61,7 @@ void AliAnalysisTaskMeanPtRaw::UserCreateOutputObjects()
   
   Int_t binsMultPtCuts[3] =   {  3500,   81, fNTrackCuts};
   Double_t minMultPtCuts[3] = {  -0.5,    0,           0};
-  Double_t maxMultPtCuts[3] = {3499.5,  200, fNTrackCuts};
+  Double_t maxMultPtCuts[3] = {3499.5,  200, (Double_t)fNTrackCuts};
   
   fPtVsMultRaw = new THnSparseF("fPtVsMultRaw", "raw <pT> vs mult",3, binsMultPtCuts, minMultPtCuts, maxMultPtCuts);
   fPtVsMultRaw->SetBinEdges(1, binsPtDefault);
@@ -158,7 +158,7 @@ void AliAnalysisTaskMeanPtRaw::UserExec(Option_t *)
 	Double_t pt = track->Pt();
 	for(Int_t iTrackCuts = 0; iTrackCuts < fNTrackCuts; iTrackCuts++)
 	{
-	  Double_t dNaccPtCut[3] = {nacc[iTrackCuts], pt, iTrackCuts};
+	  Double_t dNaccPtCut[3] = {(Double_t)nacc[iTrackCuts], pt, (Double_t)iTrackCuts};
 	  if( fESDTrackCuts.at(iTrackCuts)->AcceptTrack(track) ) fPtVsMultRaw->Fill(dNaccPtCut);
 	}
   } //track reconstruced loop
