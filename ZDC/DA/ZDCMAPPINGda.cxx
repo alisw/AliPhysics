@@ -94,6 +94,7 @@ int main(int argc, char **argv) {
   int itdc=0, iprevtdc=-1, ihittdc=0;
   float tdcData[6], tdcL0=-999.;	
   for(int ij=0; ij<6; ij++) tdcData[ij]=-999.;
+  bool hasL0arrived=kFALSE;
   
   Int_t iMod=-1;
   Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
@@ -160,10 +161,10 @@ int main(int argc, char **argv) {
        kZNAD=85, kZPAD=86, kZNCD=87, kZPCD=88, kZEMD=89,
        kZNA0D=90, kZPA0D=91, kZNC0D=92, kZPC0D=93, k1kHzD=94, kGate=95, kAD=96, kCD=97, 
        kAorCD=98, kAandCD=99, kZEMORD=100, kAorCorZEMORD=101, kAorCorZEMD=102, kAD0=103, kAD1=104, kAD2=105, 
-	 kAD3=106, kAD4=107, kAD5=108, kAD6=109, kAD7=110, kAD8=111, kAD9=112, kAD10=113, 
-	 kAD11=114, kAD12=115, kAD13=116, kAD14=117, kAD15=118, kAD0D=119, kAD1D=120, kAD2D=121,
-	 kAD3D=122, kAD4D=123, kAD5D=124, kAD6D=125, kAD7D=126, kAD8D=127, kAD9D=128, kAD10D=129,
-	 kAD11D=130, kAD12D=131, kAD13D=132, kAD14D=133, kAD15D=134, kL0=135};
+       kAD3=106, kAD4=107, kAD5=108, kAD6=109, kAD7=110, kAD8=111, kAD9=112, kAD10=113, 
+       kAD11=114, kAD12=115, kAD13=116, kAD14=117, kAD15=118, kAD0D=119, kAD1D=120, kAD2D=121,
+       kAD3D=122, kAD4D=123, kAD5D=124, kAD6D=125, kAD7D=126, kAD8D=127, kAD9D=128, kAD10D=129,
+       kAD11D=130, kAD12D=131, kAD13D=132, kAD14D=133, kAD15D=134, kL0=135};
   
   // *** read histo limits from data file ***************************
   float hlimit[2][6];
@@ -333,7 +334,7 @@ int main(int argc, char **argv) {
 	  }
 	  for(Int_t is=0; is<kNScChannels; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\n",is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
- 	     if(tdcMod[is]!=-1) printf("  Mapping DA -> %d TDC: mod %d ch %d, code %d\n", is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
+ 	     //if(tdcMod[is]!=-1) printf("  Mapping DA -> %d TDC: mod %d ch %d, code %d\n", is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
 	  }
 	  for(Int_t is=0; is<kNModules; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",
@@ -346,7 +347,6 @@ int main(int argc, char **argv) {
       /*  READING PHYSICS EVENTS*/ 
       else if(eventT==PHYSICS_EVENT){ 
 
-        for(int ij=0; ij<6; ij++) tdcData[ij]=-999.;
 	rawStreamZDC->SetSODReading(kTRUE);
 
   	// ----- Setting ch. mapping read from SOD -----
@@ -382,34 +382,40 @@ int main(int argc, char **argv) {
 	     int lastintch=23;
 	     int tdcmapch=-1;
 	     if((itdc>=firstintch && itdc<=lastintch) && ihittdc==0){
-//printf(" **** TDC ch. %d cabled signal: from raw data %d, from map %d\n",itdc,rawStreamZDC->GetCabledSignal(), rawStreamZDC->GetTDCSignFromMap(itdc));
+//printf(" **** TDC ch. %d cabled signal: %d\n",itdc, rawStreamZDC->GetTDCSignFromMap(itdc));
                int sigcode = rawStreamZDC->GetTDCSignFromMap(itdc);
-               if(itdc!=20 && itdc!=21){
-	         if(sigcode==kZEM1D) tdcmapch=0;
-	         else if(sigcode==kZEM2D) tdcmapch=1;
-		 else if(sigcode==kZNCD) tdcmapch=2;
-		 else if(sigcode==kZPCD) tdcmapch=3;
-		 else if(sigcode==kZNAD) tdcmapch=4;
-		 else if(sigcode==kZPAD) tdcmapch=5;
-	         if(tdcmapch>=0 && tdcmapch<6) tdcData[tdcmapch] = 0.025*rawStreamZDC->GetZDCTDCDatum();
-	         //
-//printf("   \t -> TDC %d goes in tdcData[%d]  \n",itdc,  tdcmapch);
-	       }
+	       //
+	       if(sigcode==kZEM1D) tdcmapch=0;
+	       else if(sigcode==kZEM2D) tdcmapch=1;
+	       else if(sigcode==kZNCD) tdcmapch=2;
+	       else if(sigcode==kZPCD) tdcmapch=3;
+	       else if(sigcode==kZNAD) tdcmapch=4;
+	       else if(sigcode==kZPAD) tdcmapch=5;
+	       if(tdcmapch>=0) tdcData[tdcmapch] = 0.025*rawStreamZDC->GetZDCTDCDatum();
+	       //
+//if(tdcmapch>=0) printf("   *** TDC %d -> tdcData[%d] = %f  \n",itdc,  tdcmapch, tdcData[tdcmapch]);
 	       //
 	       else if(sigcode==kL0){
+		  hasL0arrived=kTRUE;
 	          tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
 	          //
-//printf("   \t -> L0  goes in tdcData[%d]  \n",tdcmapch);
+//printf("    -> L0 = %f \n",tdcL0);
 		  for(int ic=0; ic<6; ic++){
-		    if(tdcData[ic]!=-999. && tdcL0!=-999.){
+		    if(tdcData[ic]!=-999.){
+//printf("   \t    reading tdcData[%d] = %f  \n",ic, tdcData[ic]);
 		      hTDC[ic]->Fill(tdcData[ic]-tdcL0);
-		      //printf(" ev.%d -> Filling histo%d: %f ns\n",nphys,ic, tdcData[ic]-tdcL0);
+		      //printf(" ev.%d -> Filling histo%d:  %f ns\n",nphys,ic, tdcData[ic]-tdcL0);
 		    }
+	            // Resetting TDC values after L0 reading
+  	            tdcData[ic]=-999.;
 		  }
-               }
-	     }
+               }//L0
+	     }//Loop on TDC
 	  }
         }
+	
+        // Resetting TDC values after event reading
+        if(hasL0arrived==kFALSE) for(int ic=0; ic<6; ic++) tdcData[ic]=-999.;
 	
  	nphys++;
       
@@ -424,6 +430,7 @@ int main(int argc, char **argv) {
       }
       
       iev++; 
+      hasL0arrived==kFALSE;
 
       /* free resources */
       free(event);
