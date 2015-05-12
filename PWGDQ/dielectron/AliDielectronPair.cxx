@@ -32,6 +32,8 @@
 ClassImp(AliDielectronPair)
 
 Double_t AliDielectronPair::fBeamEnergy=-1.;
+Bool_t   AliDielectronPair::fRandomizeDaughters=kFALSE;
+TRandom3 AliDielectronPair::fRandom3=TRandom3(4357);//default seed 4357
 
 AliDielectronPair::AliDielectronPair() :
   fType(-1),
@@ -104,7 +106,7 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
                                   AliVTrack * const particle2, Int_t pid2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
+  // Sort particles by pt, first particle larger Pt (if fRandomizeDaughters=kFALSE)
   // set AliKF daughters and pair
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
@@ -119,16 +121,31 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
   fPair.AddDaughter(kf1);
   fPair.AddDaughter(kf2);
 
-  if (particle1->Pt()>particle2->Pt()){
-    fRefD1 = particle1;
-    fRefD2 = particle2;
-    fD1+=kf1;
-    fD2+=kf2;
-  } else {
-    fRefD1 = particle2;
-    fRefD2 = particle1;
-    fD1+=kf2;
-    fD2+=kf1;
+  if (fRandomizeDaughters) {
+    if (fRandom3.Rndm()>0.5){
+      fRefD1 = particle1;
+      fRefD2 = particle2;
+      fD1+=kf1;
+      fD2+=kf2;
+    } else {
+      fRefD1 = particle2;
+      fRefD2 = particle1;
+      fD1+=kf2;
+      fD2+=kf1;
+    }
+  }
+  else { // usual behaviour, sort by pt
+    if (particle1->Pt()>particle2->Pt()){
+      fRefD1 = particle1;
+      fRefD2 = particle2;
+      fD1+=kf1;
+      fD2+=kf2;
+    } else {
+      fRefD1 = particle2;
+      fRefD2 = particle1;
+      fD1+=kf2;
+      fD2+=kf1;
+    }
   }
 }
 //______________________________________________
@@ -136,7 +153,7 @@ void AliDielectronPair::SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
 				       AliVTrack * const particle2, Int_t pid2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
+  // Sort particles by pt, first particle larger Pt (if fRandomizeDaughters=kFALSE)
   // set AliKF daughters and a GAMMA pair
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
@@ -148,16 +165,31 @@ void AliDielectronPair::SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
   AliKFParticle kf2(*particle2,pid2);
   fPair.ConstructGamma(kf1,kf2);
 
-  if (particle1->Pt()>particle2->Pt()){
-    fRefD1 = particle1;
-    fRefD2 = particle2;
-    fD1+=kf1;
-    fD2+=kf2;
-  } else {
-    fRefD1 = particle2;
-    fRefD2 = particle1;
-    fD1+=kf2;
-    fD2+=kf1;
+  if (fRandomizeDaughters) {
+    if (fRandom3.Rndm()>0.5){
+      fRefD1 = particle1;
+      fRefD2 = particle2;
+      fD1+=kf1;
+      fD2+=kf2;
+    } else {
+      fRefD1 = particle2;
+      fRefD2 = particle1;
+      fD1+=kf2;
+      fD2+=kf1;
+    }
+  }
+  else { // usual behaviour, sort by pt
+    if (particle1->Pt()>particle2->Pt()){
+      fRefD1 = particle1;
+      fRefD2 = particle2;
+      fD1+=kf1;
+      fD2+=kf2;
+    } else {
+      fRefD1 = particle2;
+      fRefD2 = particle1;
+      fD1+=kf2;
+      fD2+=kf1;
+    }
   }
 }
 
@@ -168,7 +200,7 @@ void AliDielectronPair::SetTracks(const AliKFParticle * const particle1,
                                   AliVTrack * const refParticle2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
+  // Sort particles by pt, first particle larger Pt (if fRandomizeDaughters=kFALSE)
   // set AliKF daughters and pair
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
@@ -183,16 +215,31 @@ void AliDielectronPair::SetTracks(const AliKFParticle * const particle1,
   fPair.AddDaughter(kf1);
   fPair.AddDaughter(kf2);
   
-  if (kf1.GetPt()>kf2.GetPt()){
-    fRefD1 = refParticle1;
-    fRefD2 = refParticle2;
-    fD1+=kf1;
-    fD2+=kf2;
-  } else {
-    fRefD1 = refParticle2;
-    fRefD2 = refParticle1;
-    fD1+=kf2;
-    fD2+=kf1;
+  if (fRandomizeDaughters) {
+    if (fRandom3.Rndm()>0.5){
+      fRefD1 = refParticle1;
+      fRefD2 = refParticle2;
+      fD1+=kf1;
+      fD2+=kf2;
+    } else {
+      fRefD1 = refParticle2;
+      fRefD2 = refParticle1;
+      fD1+=kf2;
+      fD2+=kf1;
+    }
+  }
+  else { // usual behaviour, sort by pt
+    if (kf1.GetPt()>kf2.GetPt()){
+      fRefD1 = refParticle1;
+      fRefD2 = refParticle2;
+      fD1+=kf1;
+      fD2+=kf2;
+    } else {
+      fRefD1 = refParticle2;
+      fRefD2 = refParticle1;
+      fD1+=kf2;
+      fD2+=kf1;
+    }
   }
 }
 
@@ -531,14 +578,41 @@ void AliDielectronPair::GetDCA(const AliVVertex *primVtx, Double_t d0z0[2]) cons
 //______________________________________________
 Double_t AliDielectronPair::PhivPair(Double_t MagField) const
 {
-  //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
-  //to ID conversions. Angle between ee plane and magnetic field is calculated.
+  /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
+  /// to identify conversions. Angle between ee plane and magnetic field is calculated (0 to pi).
+  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle 
+  /// always end up as pair in "cowboy" configuration. The function as defined here then 
+  /// returns values close to pi.
+  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up 
+  /// at pi or at 0 depending on which leg has the higher momentum. (not checked yet)
+  /// This expected ambiguity is not seen due to sorting of track arrays in this framework. 
+  /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
 
-  //Define local buffer variables for leg properties                                                                                                               
+  //Define local buffer variables for leg properties
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
 
-  if(MagField>0){
+  if (fD1.GetQ()*fD2.GetQ() > 0.) { // Like Sign
+    if(MagField<0){ // inverted behaviour
+      if(fD1.GetQ()>0){
+        px1 = fD1.GetPx();   py1 = fD1.GetPy();   pz1 = fD1.GetPz();
+        px2 = fD2.GetPx();   py2 = fD2.GetPy();   pz2 = fD2.GetPz();
+      }else{
+        px1 = fD2.GetPx();   py1 = fD2.GetPy();   pz1 = fD2.GetPz();
+        px2 = fD1.GetPx();   py2 = fD1.GetPy();   pz2 = fD1.GetPz();
+      }
+    }else{
+      if(fD1.GetQ()>0){
+        px1 = fD2.GetPx();   py1 = fD2.GetPy();   pz1 = fD2.GetPz();
+        px2 = fD1.GetPx();   py2 = fD1.GetPy();   pz2 = fD1.GetPz();
+      }else{
+        px1 = fD1.GetPx();   py1 = fD1.GetPy();   pz1 = fD1.GetPz();
+        px2 = fD2.GetPx();   py2 = fD2.GetPy();   pz2 = fD2.GetPz();
+      }
+    }
+  }
+  else { // Unlike Sign
+  if(MagField>0){ // regular behaviour
     if(fD1.GetQ()>0){
       px1 = fD1.GetPx();
       py1 = fD1.GetPy();
@@ -574,7 +648,8 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
       py2 = fD2.GetPy();
       pz2 = fD2.GetPz();
     }
-  }    
+   }
+  }
 
   Double_t px = px1+px2;
   Double_t py = py1+py2;
@@ -589,8 +664,7 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
   Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
   Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy); 
   
-  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by 
-  //definition. 
+  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition.
   //Double_t ptep = iep->Px()*ax + iep->Py()*ay; 
   //Double_t ptem = iem->Px()*ax + iem->Py()*ay; 
   
@@ -621,7 +695,7 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
   // by construction, (wx,wy,wz) must be a unit vector. 
   // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them 
   // should be small if the pair is conversion 
-  //
+  // this function then returns values close to pi!
   Double_t cosPhiV = wx*ax + wy*ay; 
   Double_t phiv = TMath::ACos(cosPhiV); 
 

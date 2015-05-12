@@ -38,6 +38,7 @@ set(SRCS
       AliAnalysisTaskDielectronSE.cxx
       AliAnalysisTaskMultiDielectron.cxx
       AliAnalysisTaskMultiDielectronTG.cxx
+      AliAnalysisTaskRandomRejection.cxx
       AliAnalysisTaskReducedTree.cxx
       AliAnalysisTaskSingleParticle.cxx
       AliAnalysisTaskElectronEfficiency.cxx

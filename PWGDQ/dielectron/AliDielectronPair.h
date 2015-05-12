@@ -23,6 +23,7 @@
 #include <TMath.h>
 #include <TRef.h>
 #include <TLorentzVector.h>
+#include <TRandom3.h>
 
 #include <AliKFParticle.h>
 #include <AliVParticle.h>
@@ -56,12 +57,14 @@ public:
   void SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
 		      AliVTrack * const particle2, Int_t pid2);
 
-
   void SetTracks(const AliKFParticle * const particle1,
                  const AliKFParticle * const particle2,
                  AliVTrack * const refParticle1,
                  AliVTrack * const refParticle2);
-    
+
+  static void SetRandomizeDaughters(Bool_t random=kTRUE) { fRandomizeDaughters=random; }
+  //static Bool_t GetRandomizeDaughters() { return fRandomizeDaughters; }
+
   //AliVParticle interface
   // kinematics
   virtual Double_t Px() const { return fPair.GetPx(); }
@@ -176,8 +179,11 @@ private:
   
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
-
+  
   Bool_t fKFUsage;       // Use KF for vertexing
+  
+  static Bool_t   fRandomizeDaughters;
+  static TRandom3 fRandom3;
   
   ClassDef(AliDielectronPair,5)
 };
