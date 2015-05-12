@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE){
+AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString cFileName = "Config_lowmasspPb.C",Char_t* outputFileName="LMEEoutput.root"){
 
 
   //get the current analysis manager
@@ -11,37 +11,17 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE){
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
-  //Get the current train configuration
-  
-  //Directories for GSI train: 
-//        TString configBasePath("$TRAIN_ROOT/tbroeker_dca_broken/");
-
-  TString configBasePath("$TRAIN_ROOT/tbroeker_dca/");
-  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-
   //Base Directory for GRID / LEGO Train
-  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+  TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 
-
-
-  if (getFromAlien &&
-      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/Config_lowmasspPb.C .")) 
-     ) {
-        configBasePath=Form("%s/",gSystem->pwd());
+  if(getFromAlien && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/Config_lowmasspPb.C .")) ){
+    TString configBasePath=Form("%s/",gSystem->pwd());
   }
 
+  TString configFilePath(configBasePath+cFileName);
 
-
-
-  TString configFile("Config_lowmasspPb.C");
-//  TString configFile("CutHistConf_lowmasspPb.C");
-
-  TString configFilePath(configBasePath+configFile);
-
-
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
 	  gROOT->LoadMacro(configFilePath.Data());
-
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
@@ -76,25 +56,25 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE){
     mgr->CreateContainer("tree_lowmass",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "default");
+                         outputFileName);
   
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer("Histos_diel_lowmass",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEEoutput.root");
+                         outputFileName);
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("CF_diel_lowmass",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEEoutput.root");
+                         outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("tbroeker_lowmass_EventStat",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEEoutput.root");
+                         outputFileName);
 
   mgr->ConnectInput(taskMB,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskMB, 0, coutput1 );
