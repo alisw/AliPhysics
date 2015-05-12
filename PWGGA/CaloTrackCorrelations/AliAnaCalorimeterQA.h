@@ -96,8 +96,8 @@ public:
   
   void         InvariantMassHistograms(Int_t iclus, Int_t nModule, const TObjArray* caloClusters, AliVCaloCells * cells);
 
-  Bool_t       IsGoodCluster(Int_t absIdMax, AliVCaloCells *cells);
-  
+  Bool_t       IsGoodCluster(Int_t absIdMax, Float_t m02, Int_t nCellsPerCluster, AliVCaloCells *cells);
+
   void         MCHistograms();  
   
   void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
@@ -109,12 +109,30 @@ public:
   
   Float_t      GetPHOSCellAmpMin()       const  { return fPHOSCellAmpMin     ; }
   void         SetPHOSCellAmpMin (Float_t amp)  { fPHOSCellAmpMin  = amp     ; }
+
+  Int_t        GetEMCALNCellsPerClusterMin() const  { return fEMCALClusterNCellMin ; }
+  void         SetEMCALNCellsPerClusterMin(Int_t n) { fEMCALClusterNCellMin = n    ; }
   
-  Float_t      GetInvMassMinECut()       const  { return fMinInvMassECut     ; }
-  void         SetInvMassMinECut(Float_t cut)   { fMinInvMassECut = cut      ; }
- 
-  Float_t      GetInvMassMaxOpenAngle()  const  { return fMaxInvMassOpenAngle; }
-  void         SetInvMassMaxOpenAngle(Float_t c){ fMaxInvMassOpenAngle = c   ; }
+  Int_t        GetPHOSNCellsPerClusterMin()  const  { return fPHOSClusterNCellMin  ; }
+  void         SetPHOSNCellsPerClusterMin (Int_t n) { fPHOSClusterNCellMin  = n    ; }
+  
+  Float_t      GetInvMassMinECut()       const  { return fInvMassMinECut     ; }
+  void         SetInvMassMinECut(Float_t cut)   { fInvMassMinECut = cut      ; }
+
+  Float_t      GetInvMassMaxECut()       const  { return fInvMassMaxECut     ; }
+  void         SetInvMassMaxECut(Float_t cut)   { fInvMassMaxECut = cut      ; }
+
+  Float_t      GetInvMassMinM02Cut()     const  { return fInvMassMinM02Cut   ; }
+  void         SetInvMassMinM02Cut(Float_t cut) { fInvMassMinM02Cut = cut    ; }
+  
+  Float_t      GetInvMassMaxM02Cut()     const  { return fInvMassMaxM02Cut   ; }
+  void         SetInvMassMaxM02Cut(Float_t cut) { fInvMassMaxM02Cut = cut    ; }
+  
+  Float_t      GetInvMassMaxOpenAngle()  const  { return fInvMassMaxOpenAngle; }
+  void         SetInvMassMaxOpenAngle(Float_t c){ fInvMassMaxOpenAngle = c   ; }
+  
+  Float_t      GetInvMassMaxTimeDifference()  const   { return fInvMassMaxTimeDifference; }
+  void         SetInvMassMaxTimeDifference(Float_t c) { fInvMassMaxTimeDifference = c   ; }  
   
   Double_t     GetTimeCutMin()           const  { return fTimeCutMin         ; }
   Double_t     GetTimeCutMax()           const  { return fTimeCutMax         ; }
@@ -141,11 +159,22 @@ public:
   void SwitchOnFillAllPi0Histogram()            { fFillAllPi0Histo  = kTRUE  ; }
   void SwitchOffFillAllPi0Histogram()           { fFillAllPi0Histo  = kFALSE ; }
 
+  void SwitchOnFillInvMassOpAngleHistogram()    { fFillInvMassOpenAngle = kTRUE  ; }
+  void SwitchOffFillInvMassOpAngleHistogram()   { fFillInvMassOpenAngle = kFALSE ; }  
+
+  void SwitchOnFillPi0PairDiffTimeHistogram()   { fFillPi0PairDiffTime = kTRUE  ; }
+  void SwitchOffFillPi0PairDiffTimeHistogram()  { fFillPi0PairDiffTime = kFALSE ; }
+
+  void SwitchOnFillInvMassReducedEMCALHistogram()  { fFillInvMassInEMCALWithPHOSDCalAcc = kTRUE  ; }
+  void SwitchOffFillInvMassReducedEMCALHistogram() { fFillInvMassInEMCALWithPHOSDCalAcc = kFALSE ; }
+
   void SwitchOnCorrelation()                    { fCorrelate        = kTRUE  ; }
   void SwitchOffCorrelation()                   { fCorrelate        = kFALSE ; }
 
   void SwitchOnStudyBadClusters()               { fStudyBadClusters = kTRUE  ; }
   void SwitchOffStudyBadClusters()              { fStudyBadClusters = kFALSE ; }
+  
+  // Analysis not to be used in QA
   
   void SwitchOnStudyClustersAsymmetry()         { fStudyClustersAsymmetry = kTRUE  ; }
   void SwitchOffStudyClustersAsymmetry()        { fStudyClustersAsymmetry = kFALSE ; }
@@ -171,12 +200,20 @@ public:
   Bool_t   fFillAllPosHisto2;                   ///<  Fill all the position related histograms 2
   Bool_t   fFillAllTH3 ;                        ///<  Fill TH3 histograms
   Bool_t   fFillAllTMHisto ;                    ///<  Fill track matching histograms
+  
   Bool_t   fFillAllPi0Histo ;                   ///<  Fill invariant mass histograms
+  Bool_t   fFillInvMassOpenAngle;               ///<  Fill opening angle histograms of cluster pairs, only if  fFillAllPi0Histo=kTRUE
+  Bool_t   fFillPi0PairDiffTime;                ///<  Fill time difference histograms of cluster pairs in pi0 mass window, only if  fFillAllPi0Histo=kTRUE
+  Bool_t   fFillInvMassInEMCALWithPHOSDCalAcc;  ///<  Fill invariant mass histograms of EMCal clusters in DCal and PHOS eta acceptance each, only if  fFillAllPi0Histo=kTRUE
+  
   Bool_t   fCorrelate   ;                       ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
-  Bool_t   fStudyBadClusters;                   ///<  Study bad clusters
-  Bool_t   fStudyClustersAsymmetry;             ///<  Study asymmetry of clusters
-  Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts
-  Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations
+  Bool_t   fStudyBadClusters;                   ///<  Study bad clusters not passing selection criteria (exotic, shower shape, n cells). 
+  
+  // Analysis not to be used in QA
+  
+  Bool_t   fStudyClustersAsymmetry;             ///<  Study asymmetry of clusters, not QA related
+  Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, not QA related
+  Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
   
   // Parameters
     
@@ -186,15 +223,23 @@ public:
   Int_t    fNMaxRows    ;                       ///<  Number of EMCAL/PHOS columns
   
   // Cuts
+  
   Double_t fTimeCutMin  ;                       ///<  Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                       ///<  Remove clusters/cells with time larger than this value, in ns
-  Float_t  fCellAmpMin;                         ///<  amplitude Threshold on calorimeter cells, set at execution time
-  Float_t  fEMCALCellAmpMin;                    ///<  amplitude Threshold on emcal cells
-  Float_t  fPHOSCellAmpMin ;                    ///<  amplitude Threshold on phos cells
+  Float_t  fCellAmpMin;                         ///<  Amplitude Threshold on calorimeter cells, set at execution time
+  Float_t  fEMCALCellAmpMin;                    ///<  Amplitude Threshold on EMCal cells
+  Float_t  fPHOSCellAmpMin ;                    ///<  Amplitude Threshold on PHOS cells
+  Int_t    fEMCALClusterNCellMin;               ///<  Minimum number of cells on EMCal clusters
+  Int_t    fPHOSClusterNCellMin ;               ///<  Minimum number of cells on PHOS clusters
+
+  // Invariant mass analysis
   
-  Float_t  fMinInvMassECut;                     ///<  Minimum energy cut value for clusters entering the invariant mass calculation
-  Float_t  fMaxInvMassOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them.
-  
+  Float_t  fInvMassMinECut;                     ///<  Minimum energy cut value for clusters entering the invariant mass calculation
+  Float_t  fInvMassMaxECut;                     ///<  Maximum energy cut value for clusters entering the invariant mass calculation
+  Float_t  fInvMassMinM02Cut;                   ///<  Minimum M02 shower shape cut value for clusters entering the invariant mass calculation
+  Float_t  fInvMassMaxM02Cut;                   ///<  Maximum M02 shower shape cut value for clusters entering the invariant mass calculation
+  Float_t  fInvMassMaxOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them. In radians.
+  Float_t  fInvMassMaxTimeDifference;           ///<  Maximum difference between the time of the 2 clusters to be considered in invariant mass. In ns.
   // Exotic studies
     
   Float_t  fExoNECrossCuts   ;                  ///<  Number of ecross cuts
@@ -222,12 +267,26 @@ public:
   TH3F *   fhEtaPhiECharged;                    //!<! eta vs phi vs E, Reco, matched with track
     
   TH2F *   fhIM;                                //!<! Cluster pairs invariant mass vs pair pT, for EMCAL or PHOS pairs
+  TH2F *   fhIMSame;                            //!<! Cluster pairs invariant mass vs pair pT, for EMCAL or PHOS pairs
+  TH2F *   fhIMDiff;                            //!<! Cluster pairs invariant mass vs pair pT, for EMCAL or PHOS pairs
   TH2F *   fhIMDCAL;                            //!<! Cluster pairs invariant mass vs pair pT, for DCal pairs
+  TH2F *   fhIMDCALSame;                        //!<! Cluster pairs invariant mass vs pair pT, for DCal pairs
+  TH2F *   fhIMDCALDiff;                        //!<! Cluster pairs invariant mass vs pair pT, for DCal pairs
   TH2F *   fhIMDCALPHOS;                        //!<! Cluster pairs invariant mass vs pair pT, for DCal-PHOS pairs
+  TH2F *   fhIMDCALPHOSSame;                    //!<! Cluster pairs invariant mass vs pair pT, for DCal-PHOS pairs
+  TH2F *   fhIMEMCALPHOS;                       //!<! Cluster pairs invariant mass vs pair pT, for EMCAL(DCal eta acceptance)-EMCAL (PHOS eta acceptance) pairs
+  TH2F *   fhIMEMCALPHOSSame;                   //!<! Cluster pairs invariant mass vs pair pT, for EMCAL(DCal eta acceptance)-EMCAL (PHOS eta acceptance) pairs
+  
   TH2F *   fhAsym;                              //!<! Cluster pairs invariant mass vs pair pT
   
   TH2F*    fhOpAngle;                           //!<! Cluster pairs opening angle vs pair pT
   TH2F*    fhIMvsOpAngle;                       //!<! Cluster pairs opening angle vs mass  
+  
+  TH2F *   fhClusterPairDiffTimeEPi0Mass;       //!<! EMCal/PHOS Cluster time TOF difference, for pairs in 0.1 < mass < 0.18
+  TH2F *   fhClusterPairDiffTimeEPi0MassSame;   //!<! EMCal/PHOS Cluster time TOF difference, for pairs in 0.1 < mass < 0.18, pairs in same Module
+  
+  TH2F *   fhClusterPairDiffTimeEPi0MassDCal;     //!<! DCal Cluster time TOF difference, for pairs in 0.1 < mass < 0.18
+  TH2F *   fhClusterPairDiffTimeEPi0MassDCalSame; //!<! DCal Cluster time TOF difference, for pairs in 0.1 < mass < 0.18, pairs in same Module
   
   TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
   TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy vs eta of cluster
@@ -238,6 +297,7 @@ public:
   TH2F *   fhCellTimeSpreadRespectToCellMax;    //!<! Difference of the time of cell with maximum dep energy and the rest of cells
   TH1F *   fhCellIdCellLargeTimeSpread;         //!<! Cells with large time respect to max (diff > 100 ns)
   TH2F *   fhClusterPairDiffTimeE;              //!<! Pair of clusters time difference vs E
+  TH2F *   fhClusterPairDiffTimeESameMod;       //!<! Pair of clusters time difference vs E, in same Mod
   
   TH2F *   fhClusterMaxCellCloseCellRatio;      //!<! Ratio between max cell energy and cell energy of the same cluster
   TH2F *   fhClusterMaxCellCloseCellDiff;       //!<! Difference between max cell energy and cell energy of the same cluster
@@ -250,11 +310,13 @@ public:
   
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0    vs Energy
   TH2F *   fhLambda1;                           //!<! Cluster Lambda1    vs Energy
-  TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
+//  TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   
   // Bad clusters histograms
+  
   TH1F *   fhBadClusterEnergy;                  //!<! Energy of bad cluster
   TH2F *   fhBadClusterTimeEnergy;              //!<! Time Max cell of bad cluster
+  TH2F *   fhBadClusterEtaPhi;                  //!<! Time Max cell of bad cluster
   TH2F *   fhBadClusterPairDiffTimeE;           //!<! Pair of clusters time difference vs E, bad cluster
   TH2F *   fhBadCellTimeSpreadRespectToCellMax; //!<! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
   
@@ -265,6 +327,9 @@ public:
   TH2F *   fhBadClusterMaxCellDiffAverageTime;  //!<! Difference between cluster average time and time of cell with more energy
   TH2F *   fhBadClusterMaxCellDiffWeightedTime; //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhBadClusterMaxCellECross;           //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, bad clusters
+
+  TH2F *   fhBadClusterLambda0;                 //!<! Cluster Lambda0 vs Energy, clusters declared bad
+  TH2F *   fhBadClusterLambda1;                 //!<! Cluster Lambda1 vs Energy, clusters declared bad
 
   // Cluster cell size
     
@@ -316,7 +381,8 @@ public:
   TH1F *   fhNCellsCutAmpMin;                   //!<! Number of towers/crystals with signal, with min amplitude
   TH1F *   fhAmplitude;                         //!<! Amplitude measured in towers/crystals
   TH2F *   fhAmpId;                             //!<! Amplitude measured in towers/crystals vs id of tower.
-  TH3F *   fhEtaPhiAmp;                         //!<! eta vs phi vs amplitude, cells
+  TH3F *   fhEtaPhiAmpCell;                     //!<! eta vs phi vs amplitude, cells
+  TH2F *   fhEtaPhiCell;                        //!<! eta vs phi, cells
    
   TH1F *   fhTime;                              //!<! Time measured in towers/crystals
   TH2F *   fhTimeVz;                            //!<! Time measured in towers/crystals vs vertex z component, for E > 0.5
@@ -329,7 +395,8 @@ public:
 
   TH2F *   fhCellECross;                        //!<! 1 - Energy in cross around cell /  cell energy
   
-  //Calorimeters Correlation
+  // Calorimeters Correlation
+  
   TH2F *   fhEMCALPHOSCorrNClusters;            //!<! EMCAL vs PHOS, number of clusters
   TH2F *   fhEMCALPHOSCorrEClusters;            //!<! EMCAL vs PHOS, total measured cluster energy
   TH2F *   fhEMCALPHOSCorrNCells;               //!<! EMCAL vs PHOS, number of cells
@@ -345,7 +412,8 @@ public:
   TH2F *   fhDCALPHOSCorrNCells;                //!<! DCAL vs PHOS, number of cells
   TH2F *   fhDCALPHOSCorrECells;                //!<! DCAL vs PHOS, total measured cell energy
   
-  //V0 Correlation
+  // V0 Correlation
+  
   TH2F *   fhCaloV0SCorrNClusters;              //!<! Calo vs V0 signal , number of clusters
   TH2F *   fhCaloV0SCorrEClusters;              //!<! Calo vs V0 signal, total measured cluster energy
   TH2F *   fhCaloV0SCorrNCells;                 //!<! Calo vs V0 signal, number of cells
@@ -355,32 +423,44 @@ public:
   TH2F *   fhCaloV0MCorrNCells;                 //!<! Calo vs V0 multiplicity, number of cells
   TH2F *   fhCaloV0MCorrECells;                 //!<! Calo vs V0 multiplicity,  total measured cell energy
   
-  //Track Correlation
+  // Track Correlation
+  
   TH2F *   fhCaloTrackMCorrNClusters;           //!<! Calo vs Track Multiplicity, number of clusters
   TH2F *   fhCaloTrackMCorrEClusters;           //!<! Calo vs Track Multiplicity, total measured cluster energy
   TH2F *   fhCaloTrackMCorrNCells;              //!<! Calo vs V0 Track Multiplicity, number of cells
   TH2F *   fhCaloTrackMCorrECells;              //!<! Calo vs V0 Track Multipliticy,  total measured cell energy
   
   // Centrality
+  
   TH2F *   fhCaloCenNClusters;                  //!<! Calo vs centrality, number of clusters
   TH2F *   fhCaloCenEClusters;                  //!<! Calo vs centrality, total measured cluster energy
   TH2F *   fhCaloCenNCells;                     //!<! Calo vs centrality, number of cells
   TH2F *   fhCaloCenECells;                     //!<! Calo vs centrality,  total measured cell energy
 
   // Event plane
+  
   TH2F *   fhCaloEvPNClusters;                  //!<! Calo vs event plane angle, number of clusters
   TH2F *   fhCaloEvPEClusters;                  //!<! Calo vs event plane angle, total measured cluster energy
   TH2F *   fhCaloEvPNCells;                     //!<! Calo vs event plane angle, number of cells
   TH2F *   fhCaloEvPECells;                     //!<! Calo vs event plane angle,  total measured cell energy
   
-  //Module histograms
+  // Module histograms
+  
   TH2F *   fhEMod  ;                            //!<! Cluster E distribution for different module, Reco
   TH2F *   fhAmpMod ;                           //!<! Cell amplitude distribution for different module, Reco
+  TH2F *   fhEWeirdMod  ;                       //!<! Cluster E distribution for different module, very large E, Reco
+  TH2F *   fhAmpWeirdMod ;                      //!<! Cell amplitude distribution for different module, very large Amp, Reco
   TH2F *   fhTimeMod ;                          //!<! Cell time distribution for different module, Reco
   TH2F *   fhNClustersMod ;                     //!<! Number of clusters for different module, Reco
-  TH2F *   fhNCellsMod ;                        //!<! Number of towers/crystals with signal different module, Reco
+  TH2F *   fhNCellsMod ;                        //!<! Number of towers/crystals with signal for different module, Reco  
+  TH2F *   fhSumClustersEnergyMod ;             //!<! Sum of clusters  energy for different module, Reco
+  TH2F *   fhSumCellsAmpMod ;                   //!<! Sum of towers/crystals signal for different module, Reco
+  TH2F **  fhNCellsSumAmpPerMod ;               //!<! N cells vs sum of amplitude in different modules, Reco
+  TH2F **  fhNClustersSumEnergyPerMod ;         //!<! N clusters vs sum of energies in different module, Reco
   TH2F **  fhNCellsPerClusterMod ;              //!<! N cells per clusters different module, Reco
   TH2F **  fhNCellsPerClusterModNoCut ;         //!<! N cells per clusters different module, Reco, No cut
+  TH2F *   fhNCellsPerClusterWeirdMod ;         //!<! N cells per clusters different module, Reco, ridiculously large energy
+  TH2F *   fhNCellsPerClusterWeirdModNoCut ;    //!<! N cells per clusters different module, Reco, No cut, ridiculously large energy
   TH2F *   fhGridCells ;                        //!<! Cells ordered in column/row for different module, Reco
   TH2F *   fhGridCellsE ;                       //!<! Cells ordered in column/row for different module, weighted with energy, Reco
   TH2F *   fhGridCellsTime ;                    //!<! Cells ordered in column/row for different module, weighted with time, Reco
@@ -448,7 +528,8 @@ public:
   TH2F *   fhHaVxyz    ;                        //!<! Hadron production vertex
   TH2F *   fhHaR       ;                        //!<! Hadron distance to vertex vs rec energy
 	
-  //Histograms for MC track-matching
+  // Histograms for MC track-matching
+  
   TH2F *   fh1EOverP;                           //!<! p/E for track-cluster matches
   TH2F *   fh2dR;                               //!<! distance between projected track and cluster (eta-phi units)
   TH2F *   fh2EledEdx;                          //!<! dE/dx vs. momentum for electron candidates
@@ -503,7 +584,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,31) ;
+  ClassDef(AliAnaCalorimeterQA,32) ;
   /// \endcond
 
 } ;
