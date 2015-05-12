@@ -413,7 +413,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 {
   // Fill histograms.
 
-  AliJetContainer *jets = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets = GetJetContainer(0);
 
   if (!jets) return kFALSE;
   
@@ -431,8 +431,12 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
       continue;
     }
 
-    Float_t ptLeading = GetLeadingHadronPt(jet);
+    Float_t ptLeading = jets->GetLeadingHadronPt(jet);
     Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
+
+    TLorentzVector leadPart;
+
+    jets->GetLeadingHadronMomentum(leadPart, jet);
 
     // Fill THnSparse
     Double_t ep = jet->Phi() - fEPV0;
@@ -440,7 +444,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     while (ep >= TMath::Pi()) ep -= TMath::Pi();
 
     FillJetHisto(fCent, ep, jet->Eta(), jet->Phi(), jet->Pt(), jet->MCPt(), corrPt, jet->Area(), 
-		 jet->NEF(), ptLeading/jet->Pt(), jet->GetNumberOfConstituents(), ptLeading);
+		 jet->NEF(), leadPart.P()/jet->P(), jet->GetNumberOfConstituents(), ptLeading);
 
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
