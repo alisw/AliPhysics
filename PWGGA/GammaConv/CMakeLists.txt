@@ -47,7 +47,7 @@ set(SRCS
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
     AliAnalysisTaskPi0v2.cxx
     AliAnalysisTaskResolution.cxx
-    AliAnalysisTaskGammaConvCaloDalitzV1.cxx
+    AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAODConversionMother.cxx
     AliAODConversionParticle.cxx
     AliAODConversionPhoton.cxx

@@ -766,16 +766,16 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 			hESDDalitzPositronAfterPhi[iCut] = new TH1F("ESD_DalitzPositron_After_Phi","ESD_DalitzPositron_After_Phi",360,0,2*TMath::Pi());
 			fQAFolder[iCut]->Add(hESDDalitzPositronAfterPhi[iCut]);
 			
-			hESDDalitzElectronAfterNClsITS[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsITS","ESD_DalitzElectron_After_NClsITS",7,0.,7.);
+			hESDDalitzElectronAfterNClsITS[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsITS","ESD_DalitzElectron_After_NClsITS",7,-0.5,6.5);
 			fQAFolder[iCut]->Add(hESDDalitzElectronAfterNClsITS[iCut]);
 			
-			hESDDalitzElectronAfterNClsITSPCut[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsITS_PCut","ESD_DalitzElectron_After_NClsITS_PCut",7,0.,7.);
+			hESDDalitzElectronAfterNClsITSPCut[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsITS_PCut","ESD_DalitzElectron_After_NClsITS_PCut",7,-0.5,6.5);
 			fQAFolder[iCut]->Add(hESDDalitzElectronAfterNClsITSPCut[iCut]);
 			
-			hESDDalitzPositronAfterNClsITS[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsITS","ESD_DalitzPositron_After_NClsITS",7,0.,7.);
+			hESDDalitzPositronAfterNClsITS[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsITS","ESD_DalitzPositron_After_NClsITS",7,-0.5,6.5);
 			fQAFolder[iCut]->Add(hESDDalitzPositronAfterNClsITS[iCut]);
 			
-			hESDDalitzPositronAfterNClsITSPCut[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsITS_PCut","ESD_DalitzPositron_After_NClsITS_PCut",7,0.,7.);
+			hESDDalitzPositronAfterNClsITSPCut[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsITS_PCut","ESD_DalitzPositron_After_NClsITS_PCut",7,-0.5,6.5);
 			fQAFolder[iCut]->Add(hESDDalitzPositronAfterNClsITSPCut[iCut]);
 						
 			hESDDalitzElectronAfterNFindClsTPC[iCut]  = new TH2F("ESD_DalitzElectron_After_NFindClsTPC","ESD_DalitzElectron_After_NFindClsTPC",60,0,1.5,kPtBins,binsPtDummy);
@@ -792,16 +792,16 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 			fQAFolder[iCut]->Add(hESDDalitzPositronAfterNFindClsTPCPCut[iCut]);
 			
 			
-			hESDDalitzElectronAfterNClsTPC[iCut]  = new TH2F("ESD_DalitzElectron_After_NClsTPC","ESD_DalitzElectron_After_NClsTPC",200,0,200,kPtBins,binsPtDummy);
+			hESDDalitzElectronAfterNClsTPC[iCut]  = new TH2F("ESD_DalitzElectron_After_NClsTPC","ESD_DalitzElectron_After_NClsTPC",200,-0.5,199.5,kPtBins,binsPtDummy);
 			fQAFolder[iCut]->Add(hESDDalitzElectronAfterNClsTPC[iCut]);
 			
-			hESDDalitzElectronAfterNClsTPCPCut[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsTPC_PCut","ESD_DalitzElectron_After_NClsTPC_PCut",200,0,200);
+			hESDDalitzElectronAfterNClsTPCPCut[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsTPC_PCut","ESD_DalitzElectron_After_NClsTPC_PCut",200,-0.5,199.5);
 			fQAFolder[iCut]->Add(hESDDalitzElectronAfterNClsTPCPCut[iCut]);
 			
-			hESDDalitzPositronAfterNClsTPC[iCut]  = new TH2F("ESD_DalitzPositron_After_NClsTPC","ESD_DalitzPositron_After_NClsTPC",200,0,200,kPtBins,binsPtDummy);
+			hESDDalitzPositronAfterNClsTPC[iCut]  = new TH2F("ESD_DalitzPositron_After_NClsTPC","ESD_DalitzPositron_After_NClsTPC",200,-0.5,199.5,kPtBins,binsPtDummy);
 			fQAFolder[iCut]->Add(hESDDalitzPositronAfterNClsTPC[iCut]);
 			
-			hESDDalitzPositronAfterNClsTPCPCut[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsTPC_PCut","ESD_DalitzPositron_After_NClsTPC_PCut",200,0,200);
+			hESDDalitzPositronAfterNClsTPCPCut[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsTPC_PCut","ESD_DalitzPositron_After_NClsTPC_PCut",200,-0.5,199.5);
 			fQAFolder[iCut]->Add(hESDDalitzPositronAfterNClsTPCPCut[iCut]);
 					
 			hESDDalitzPositronAfterNCrossedRowsTPC[iCut] =  new TH2F("ESD_DalitzPositron_After_NCrossedRowsTPC","ESD_DalitzPositron_After_NCrossedRowsTPC",165,-0.5,164.5,kPtBins,binsPtDummy);

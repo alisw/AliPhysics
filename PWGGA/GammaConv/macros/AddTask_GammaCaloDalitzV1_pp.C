@@ -1,4 +1,4 @@
-void AddTask_GammaConvDalitzCaloV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
+void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
@@ -160,8 +160,8 @@ void AddTask_GammaConvDalitzCaloV1_pp(  Int_t trainConfig = 1,  //change differe
 	//================================================
 	//========= Add task to the ANALYSIS manager =====
 	//================================================
-	AliAnalysisTaskGammaConvCaloDalitzV1 *task=NULL;
-	task= new AliAnalysisTaskGammaConvCaloDalitzV1(Form("GammaConvDalitzCalo_%i",trainConfig));
+	AliAnalysisTaskGammaCaloDalitzV1 *task=NULL;
+	task= new AliAnalysisTaskGammaCaloDalitzV1(Form("GammaCaloDalitz_%i",trainConfig));
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 
@@ -366,8 +366,8 @@ void AddTask_GammaConvDalitzCaloV1_pp(  Int_t trainConfig = 1,  //change differe
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
-		mgr->CreateContainer(Form("GammaConvDalitzCalo_%i",trainConfig), TList::Class(),
-							AliAnalysisManager::kOutputContainer,Form("GammaConvDalitzCalo_%i.root",trainConfig));
+		mgr->CreateContainer(Form("GammaCaloDalitz_%i",trainConfig), TList::Class(),
+							AliAnalysisManager::kOutputContainer,Form("GammaCaloDalitz_%i.root",trainConfig));
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task,0,cinput);

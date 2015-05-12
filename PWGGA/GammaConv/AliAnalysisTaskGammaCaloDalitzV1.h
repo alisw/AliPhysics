@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKGAMMACONVCALODALITZV1_cxx 
-#define ALIANALYSISTASKGAMMACONVCALODALITZV1_cxx
+#ifndef ALIANALYSISTASKGAMMACALODALITZV1_cxx 
+#define ALIANALYSISTASKGAMMACALODALITZV1_cxx
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrack.h"
@@ -18,12 +18,12 @@
 #include "TH3.h"
 #include "TH3F.h"
 
-class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
+class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 	public:
 
-		AliAnalysisTaskGammaConvCaloDalitzV1();
-		AliAnalysisTaskGammaConvCaloDalitzV1(const char *name);
-		virtual ~AliAnalysisTaskGammaConvCaloDalitzV1();
+		AliAnalysisTaskGammaCaloDalitzV1();
+		AliAnalysisTaskGammaCaloDalitzV1(const char *name);
+		virtual ~AliAnalysisTaskGammaCaloDalitzV1();
 
 		virtual void   UserCreateOutputObjects();
 		virtual Bool_t Notify();
@@ -238,6 +238,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueEtaShowerInvMassPt;						//! array of histos with validated eta, invMass, pt
 		TH2F 								**fHistoTruePi0NoShowerInvMassPt;						//! array of histos with validated pi0, invMass, pt
 		TH2F 								**fHistoTrueEtaNoShowerInvMassPt;						//! array of histos with validated eta, invMass, pt
+		TH1F								**fHistoTruePi0OpeningAngleGammaElectron;                                       //! array of histos with validated pi0, opening angle
 		TH2F 								**fHistoTruePi0GGInvMassPt;					//! array of histos with validated pi0 ->GG, invMass, pt
 		TH2F 								**fHistoTrueEtaGGInvMassPt;						//! array of histos with validated eta ->GG, invMass, pt
 		TH2F 								**fHistoTruePi0CaloPhotonInvMassPt;				//! array of histos with validated pi0, photon leading, invMass, pt
@@ -366,10 +367,10 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 
 		
 	private:
-		AliAnalysisTaskGammaConvCaloDalitzV1(const AliAnalysisTaskGammaConvCaloDalitzV1&); // Prevent copy-construction
-		AliAnalysisTaskGammaConvCaloDalitzV1 &operator=(const AliAnalysisTaskGammaConvCaloDalitzV1&); // Prevent assignment
+		AliAnalysisTaskGammaCaloDalitzV1(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent copy-construction
+		AliAnalysisTaskGammaCaloDalitzV1 &operator=(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCaloDalitzV1, 1);
+		ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 1);
 };
 
 #endif
