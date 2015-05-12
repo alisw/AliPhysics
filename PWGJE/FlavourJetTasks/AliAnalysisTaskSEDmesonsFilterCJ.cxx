@@ -1078,6 +1078,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
   AliEmcalParticle* emcpart = 0;
   while ((emcpart = static_cast<AliEmcalParticle*>(next()))) {
     AliAODRecoDecay* reco = dynamic_cast<AliAODRecoDecay*>(emcpart->GetTrack());
+    AliDebug(2, Form("Found a D meson candidtate with pT = %.3f, eta = %.3f, phi = %.3f", reco->Pt(), reco->Eta(), reco->Phi()));
     if (reco) AddDaughters(reco, allDaughters);
   }
 
@@ -1088,6 +1089,10 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
     if (allDaughters.Remove(track) == 0) {
       new ((*coll)[n]) AliEmcalParticle(track);
       n++;
+      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+    }
+    else {
+      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
   }
 }
