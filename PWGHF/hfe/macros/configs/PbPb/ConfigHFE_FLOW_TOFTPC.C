@@ -316,7 +316,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     }
     // Theo
     if(variableMr==1 || variableMr==2) {
-      task->GetPIDQAManager()->SetFillMultiplicity();
+      //task->GetPIDQAManager()->SetFillMultiplicity();
       TF1 *etaCorrMean = GetEtaCorrection("LHC11h_etaCorrMean");
       TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
       if(etaCorrMean && etaCorrWdth && withetacorrection){
