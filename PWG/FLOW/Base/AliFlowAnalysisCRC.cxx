@@ -246,6 +246,7 @@ fCRCPtList(NULL),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fUseVZERO(kFALSE),
+fUseZDC(kFALSE),
 fNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -494,7 +495,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
  
  // ZDC *********************************************************************************************************
  
- if(fUseVZERO) {
+ if(fUseZDC) {
   // Get Q vectors for the subevents
   AliFlowVector* vQZarray = new AliFlowVector[2];
   anEvent->GetZDC2Qsub(vQZarray);
@@ -514,7 +515,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   }
   
   delete[] vQZarray;
- } // end of if(fUseVZERO)
+ } // end of if(fUseZDC)
  
  for(Int_t i=0;i<nPrim;i++) {
   if(fExactNoRPs > 0 && nCounterNoRPs>fExactNoRPs){continue;}
@@ -17379,7 +17380,7 @@ void AliFlowAnalysisCRC::CalculateCRCQVec()
  } // end of if(fUseVZERO)
  
  // ZDC
- if(fUseVZERO) {
+ if(fUseZDC) {
   // ZDCN-C
   Double_t QReC = (*fCRCQZDCRe)(0,0);
   Double_t QImC = (*fCRCQZDCIm)(0,0);
@@ -17429,83 +17430,105 @@ void AliFlowAnalysisCRC::CalculateCRCVZERO()
  
  Double_t dM2VZ = QNM*QPM;
  Double_t twoVZ = (QNRe*QPRe+QNIm*QPIm) / dM2VZ ;
- fCRCVZCorrPro[0][0][CenBin]->Fill(4.5,twoVZ,dM2VZ);
- fCRCVZCorrPro[1][0][CenBin]->Fill(4.5,pow(twoVZ,2.),dM2VZ);
- fCRCVZSumWeigHist[0][0][CenBin]->Fill(4.5,dM2VZ);
- fCRCVZSumWeigHist[1][0][CenBin]->Fill(4.5,pow(dM2VZ,2.));
+ fCRCVZCorrPro[0][0][CenBin]->Fill(0.5,twoVZ,dM2VZ);
+ fCRCVZCorrPro[1][0][CenBin]->Fill(0.5,pow(twoVZ,2.),dM2VZ);
+ fCRCVZSumWeigHist[0][0][CenBin]->Fill(0.5,dM2VZ);
+ fCRCVZSumWeigHist[1][0][CenBin]->Fill(0.5,pow(dM2VZ,2.));
  
- for(Int_t eg=0; eg<fCRCnEtaGap; eg++) {
+ Double_t QRe=0., QIm=0., QM=0.;
+ for(Int_t EBin=1; EBin<=fCRCnEtaBins; EBin++) {
+  QRe += fCRCQRe[0][h]->GetBinContent(EBin);
+  QRe += fCRCQRe[1][h]->GetBinContent(EBin);
+  QIm += fCRCQIm[0][h]->GetBinContent(EBin);
+  QIm += fCRCQIm[1][h]->GetBinContent(EBin);
+  QM  += fCRCMult[0][h]->GetBinContent(EBin);
+  QM  += fCRCMult[1][h]->GetBinContent(EBin);
+ }
+ 
+ dM2VZ = QNM*QM;
+ twoVZ = (QNRe*QRe+QNIm*QIm) / dM2VZ ;
+ fCRCVZCorrPro[0][0][CenBin]->Fill(1.5,twoVZ,dM2VZ);
+ fCRCVZCorrPro[1][0][CenBin]->Fill(1.5,pow(twoVZ,2.),dM2VZ);
+ fCRCVZSumWeigHist[0][0][CenBin]->Fill(1.5,dM2VZ);
+ fCRCVZSumWeigHist[1][0][CenBin]->Fill(1.5,pow(dM2VZ,2.));
+ 
+ dM2VZ = QPM*QM;
+ twoVZ = (QPRe*QRe+QPIm*QIm) / dM2VZ ;
+ fCRCVZCorrPro[0][0][CenBin]->Fill(2.5,twoVZ,dM2VZ);
+ fCRCVZCorrPro[1][0][CenBin]->Fill(2.5,pow(twoVZ,2.),dM2VZ);
+ fCRCVZSumWeigHist[0][0][CenBin]->Fill(2.5,dM2VZ);
+ fCRCVZSumWeigHist[1][0][CenBin]->Fill(2.5,pow(dM2VZ,2.));
+ 
+ //for(Int_t eg=0; eg<fCRCnEtaGap; eg++) {
   
-  for(Int_t c=0;c<2;c++) {
+ for(Int_t c=0;c<2;c++) {
+  
+  // POIS eta < 0
+  EBinMin = fCRCQRe[c][h]->FindBin(fCRCEtaMin);
+  EBinMax = fCRCQRe[c][h]->FindBin(0-e); // 0-e-eg*0.1
+  Double_t uNRe=0.;
+  Double_t uNIm=0.;
+  Double_t uNM=0.;
+  for(Int_t EBin=EBinMin; EBin<=EBinMax; EBin++) {
+   uNRe += fCRCQRe[c][h]->GetBinContent(EBin);
+   uNIm += fCRCQIm[c][h]->GetBinContent(EBin);
+   uNM  += fCRCMult[c][h]->GetBinContent(EBin);
+  }
+  
+  // POIS eta > 0
+  EBinMin = fCRCQRe[c][h]->FindBin(0); // 0+eg*0.1
+  EBinMax = fCRCQRe[c][h]->FindBin(fCRCEtaMax-e);
+  Double_t uPRe=0.;
+  Double_t uPIm=0.;
+  Double_t uPM=0.;
+  for(Int_t EBin=EBinMin; EBin<=EBinMax; EBin++) {
+   uPRe += fCRCQRe[c][h]->GetBinContent(EBin);
+   uPIm += fCRCQIm[c][h]->GetBinContent(EBin);
+   uPM  += fCRCMult[c][h]->GetBinContent(EBin);
+  }
+  
+  if(QNM>1 && QPM>1 && uNM>1 && uPM>1) {
    
-   // POIS eta < 0
-   EBinMin = fCRCQRe[c][h]->FindBin(fCRCEtaMin);
-   EBinMax = fCRCQRe[c][h]->FindBin(0-e-eg*0.1);
-   Double_t uNRe=0.;
-   Double_t uNIm=0.;
-   Double_t uNM=0.;
-   for(Int_t EBin=EBinMin; EBin<=EBinMax; EBin++) {
-    uNRe += fCRCQRe[c][h]->GetBinContent(EBin);
-    uNIm += fCRCQIm[c][h]->GetBinContent(EBin);
-    uNM  += fCRCMult[c][h]->GetBinContent(EBin);
-   }
+   Double_t dM2AB = uPM*QNM;
+   Double_t twoAB = (uPRe*QNRe+uPIm*QNIm) / dM2AB ;
    
-   for(Int_t c2=0;c2<2;c2++) {
-    
-    Int_t CRCVZBin = GetCRCVZBin(c,c2);
-    
-    // POIS eta > 0
-    EBinMin = fCRCQRe[c2][h]->FindBin(0+eg*0.1);
-    EBinMax = fCRCQRe[c2][h]->FindBin(fCRCEtaMax-e);
-    Double_t uPRe=0.;
-    Double_t uPIm=0.;
-    Double_t uPM=0.;
-    for(Int_t EBin=EBinMin; EBin<=EBinMax; EBin++) {
-     uPRe += fCRCQRe[c2][h]->GetBinContent(EBin);
-     uPIm += fCRCQIm[c2][h]->GetBinContent(EBin);
-     uPM  += fCRCMult[c2][h]->GetBinContent(EBin);
-    }
-    
-    if(QNM>1 && QPM>1 && uNM>1 && uPM>1) {
-     Double_t dM2AB = uNM*uPM*dM2VZ;
-     Double_t twoAB = ((uNRe*QPRe+uNIm*QPIm)*(uPRe*QNRe+uPIm*QNIm)) / dM2AB ;
-     //    Double_t dM2AB = (uNM+uPM)*(QPM+QNM);
-     //    Double_t uRe = uPRe + uNRe;
-     //    Double_t uIm = uPIm + uNIm;
-     //    Double_t QRe = QPRe + QNRe;
-     //    Double_t QIm = QPIm + QNIm;
-     //    Double_t twoAB = (uRe*QRe+uIm*QIm) / dM2AB ;
-     
-     fCRCVZCorrPro[0][eg][CenBin]->Fill(CRCVZBin-e,twoAB,dM2AB);
-     fCRCVZCorrPro[1][eg][CenBin]->Fill(CRCVZBin-e,pow(twoAB,2.),dM2AB);
-     fCRCVZSumWeigHist[0][eg][CenBin]->Fill(CRCVZBin-e,dM2AB);
-     fCRCVZSumWeigHist[1][eg][CenBin]->Fill(CRCVZBin-e,pow(dM2AB,2.));
-     
-     fCRCVZCorrProdTempHist[0][eg][CenBin]->SetBinContent(CRCVZBin,twoAB);
-     fCRCVZCorrProdTempHist[1][eg][CenBin]->SetBinContent(CRCVZBin,dM2AB);
-    }
-    
-   } // end of for(Int_t c2=0;c2<2;c2++)
-  } // end of for(Int_t c=0;c<2;c++)
+   fCRCVZCorrPro[0][1][CenBin]->Fill(c+e,twoAB,dM2AB);
+   fCRCVZCorrPro[1][1][CenBin]->Fill(c+e,pow(twoAB,2.),dM2AB);
+   fCRCVZSumWeigHist[0][1][CenBin]->Fill(c+e,dM2AB);
+   fCRCVZSumWeigHist[1][1][CenBin]->Fill(c+e,pow(dM2AB,2.));
+   
+   dM2AB = uNM*QPM;
+   twoAB = (uNRe*QPRe+uNIm*QPIm) / dM2AB ;
+   
+   fCRCVZCorrPro[0][2][CenBin]->Fill(c+e,twoAB,dM2AB);
+   fCRCVZCorrPro[1][2][CenBin]->Fill(c+e,pow(twoAB,2.),dM2AB);
+   fCRCVZSumWeigHist[0][2][CenBin]->Fill(c+e,dM2AB);
+   fCRCVZSumWeigHist[1][2][CenBin]->Fill(c+e,pow(dM2AB,2.));
+   
+   //     fCRCVZCorrProdTempHist[0][1][CenBin]->SetBinContent(c+1,twoAB);
+   //     fCRCVZCorrProdTempHist[1][1][CenBin]->SetBinContent(c+1,dM2AB);
+  }
   
-  for(Int_t c=0;c<2;c++) {
-   for(Int_t c2=0;c2<2;c2++) {
-    for(Int_t c3=0;c3<2;c3++) {
-     for(Int_t c4=0;c4<2;c4++) {
-      Int_t CRCBinA = GetCRCVZBin(c,c2);
-      Double_t CorrA = fCRCVZCorrProdTempHist[0][eg][CenBin]->GetBinContent(CRCBinA);
-      Double_t WeigA = fCRCVZCorrProdTempHist[1][eg][CenBin]->GetBinContent(CRCBinA);
-      Int_t CRCBinB = GetCRCVZBin(c3,c4);
-      Double_t CorrB = fCRCVZCorrProdTempHist[0][eg][CenBin]->GetBinContent(CRCBinB);
-      Double_t WeigB = fCRCVZCorrProdTempHist[1][eg][CenBin]->GetBinContent(CRCBinB);
-      fCRCVZCorrProd2p2pHist[eg][CenBin]->Fill(CRCBinA-e,CRCBinB-e,CorrA*CorrB*WeigA*WeigB);
-      fCRCVZWeigProd2p2pHist[eg][CenBin]->Fill(CRCBinA-e,CRCBinB-e,WeigA*WeigB);
-     }
-    }
-   } // end of for(Int_t c2=0;c2<2;c2++)
-  } // end of for(Int_t c=0;c<2;c++)
-  
- } // end of for(Int_t eg=0; eg<fCRCnEtaGap; eg++)
+ } // end of for(Int_t c=0;c<2;c++)
+ 
+//  for(Int_t c=0;c<2;c++) {
+//   for(Int_t c2=0;c2<2;c2++) {
+//    for(Int_t c3=0;c3<2;c3++) {
+//     for(Int_t c4=0;c4<2;c4++) {
+//      Int_t CRCBinA = GetCRCVZBin(c,c2);
+//      Double_t CorrA = fCRCVZCorrProdTempHist[0][1][CenBin]->GetBinContent(CRCBinA);
+//      Double_t WeigA = fCRCVZCorrProdTempHist[1][1][CenBin]->GetBinContent(CRCBinA);
+//      Int_t CRCBinB = GetCRCVZBin(c3,c4);
+//      Double_t CorrB = fCRCVZCorrProdTempHist[0][1][CenBin]->GetBinContent(CRCBinB);
+//      Double_t WeigB = fCRCVZCorrProdTempHist[1][1][CenBin]->GetBinContent(CRCBinB);
+//      fCRCVZCorrProd2p2pHist[1][CenBin]->Fill(CRCBinA-e,CRCBinB-e,CorrA*CorrB*WeigA*WeigB);
+//      fCRCVZWeigProd2p2pHist[1][CenBin]->Fill(CRCBinA-e,CRCBinB-e,WeigA*WeigB);
+//     }
+//    }
+//   } // end of for(Int_t c2=0;c2<2;c2++)
+//  } // end of for(Int_t c=0;c<2;c++)
+ 
+ //} // end of for(Int_t eg=0; eg<fCRCnEtaGap; eg++)
  
 } // end of AliFlowAnalysisCRC::CalculateCRCVZERO();
 
@@ -18529,85 +18552,141 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
    
    // calculate covariances
    
-   for(Int_t c=1;c<=fCRCVZnCR;c++) {
-    for(Int_t c2=1;c2<=fCRCVZnCR;c2++) {
-     
-     Double_t Weig1 = fCRCVZSumWeigHist[0][eg][h]->GetBinContent(c);
-     Double_t Weig2 = fCRCVZSumWeigHist[0][eg][h]->GetBinContent(c2);
-     Double_t WeigProd = fCRCVZWeigProd2p2pHist[eg][h]->GetBinContent(c,c2);
-     Double_t Corr1 = fCRCVZCorrPro[0][eg][h]->GetBinContent(c);
-     Double_t Corr2 = fCRCVZCorrPro[0][eg][h]->GetBinContent(c2);
-     Double_t CorrProd = fCRCVZCorrProd2p2pHist[eg][h]->GetBinContent(c,c2);
-     if(WeigProd>0.) { CorrProd = CorrProd/WeigProd; }
-     else { CorrProd = 0.; }
-     Double_t spread=0., termA=0., termB=0.;
-     spread = CorrProd-Corr1*Corr2;
-     if((Weig1*Weig2)>0.) { termA = WeigProd/(Weig1*Weig2); }
-     if((1.-termA)>0.) { termB = 1./(1.-termA); }
-     Double_t Cov = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-     fCRCVZCovHist[eg][h]->SetBinContent(c,c2,Cov);
-     
-    } // end of for(Int_t c2=0;c2<fCRCVZnCR;c2++)
-   } // end of for(Int_t c=1;c<=fCRCVZnCR;c++)
-   
-   // calculate correlation functions
-   
-   Int_t CRCVZBin1 = GetCRCVZBin(1,1);
-   Int_t CRCVZBin2 = GetCRCVZBin(0,1);
-   Int_t CRCVZBin3 = GetCRCVZBin(1,0);
-   Int_t CRCVZBin4 = GetCRCVZBin(0,0);
-   Int_t NUABin = 0; //(fNUAforCRC ? 1 : 0);
-   
-   Double_t Corr1    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin1);
-   Double_t Corr1Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin1);
-   Double_t Corr2    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin2);
-   Double_t Corr2Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin2);
-   Double_t Corr3    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin3);
-   Double_t Corr3Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin3);
-   Double_t Corr4    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin4);
-   Double_t Corr4Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin4);
-   
-   Double_t CorrVZ   = fCRCVZCorrHist[0][0][h]->GetBinContent(5);
-   Double_t CorrVZErr = fCRCVZCorrHist[0][0][h]->GetBinError(5);
-   
-   Double_t Cov12 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin1,CRCVZBin2);
-   Double_t Cov13 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin1,CRCVZBin3);
-   Double_t Cov14 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin1,CRCVZBin4);
-   Double_t Cov23 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin2,CRCVZBin3);
-   Double_t Cov24 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin2,CRCVZBin4);
-   Double_t Cov34 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin3,CRCVZBin4);
-   
-   //cout << "corr: " << Corr1/CorrVZ << " " << Corr2/CorrVZ << " " << Corr3/CorrVZ << " " << Corr4/CorrVZ << " " << endl;
-   
-   Double_t CFun = (- Corr1 + Corr2 + Corr3 - Corr4)/CorrVZ;
-   Double_t CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.)
-   + 2*(-Cov12-Cov13+Cov14+Cov23-Cov24-Cov34) ;
-   
-   CFunErr = pow(CFun,2.) * ( pow(CFunErr/(- Corr1 + Corr2 + Corr3 - Corr4),2.) + pow(CorrVZErr/CorrVZ,2.) );
-   
-   if(CFunErr >= 0.) { CFunErr = pow(CFunErr,0.5); }
-   else {
-    cout<<" WARNING: Negative CFunErr !!! " <<endl;
-    CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.);
-    if(CFunErr >= 0.) { CFunErr = pow(CFunErr,0.5); }
-    else { CFunErr=0.;}
-   }
-   //      cout << Cov12 << " " << pow(Corr1Err,2.) << " " << pow(Corr2Err,2.) << endl;
-   //      cout << Cov13 << " " << pow(Corr1Err,2.) << " " << pow(Corr3Err,2.) << endl;
-   //      cout << Cov14 << " " << pow(Corr1Err,2.) << " " << pow(Corr4Err,2.) << endl;
-   //      cout << Cov23 << " " << pow(Corr2Err,2.) << " " << pow(Corr3Err,2.) << endl;
-   //      cout << Cov24 << " " << pow(Corr2Err,2.) << " " << pow(Corr4Err,2.) << endl;
-   //      cout << Cov34 << " " << pow(Corr3Err,2.) << " " << pow(Corr4Err,2.) << endl;
-   //      CFunErr=0.;
-   
-   cout << "cfun["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
-   
-   fCRCVZCFunHist[eg][h]->SetBinContent(1,CFun);
-   fCRCVZCFunHist[eg][h]->SetBinError(1,CFunErr);
+//   for(Int_t c=1;c<=fCRCVZnCR;c++) {
+//    for(Int_t c2=1;c2<=fCRCVZnCR;c2++) {
+//     
+//     Double_t Weig1 = fCRCVZSumWeigHist[0][eg][h]->GetBinContent(c);
+//     Double_t Weig2 = fCRCVZSumWeigHist[0][eg][h]->GetBinContent(c2);
+//     Double_t WeigProd = fCRCVZWeigProd2p2pHist[eg][h]->GetBinContent(c,c2);
+//     Double_t Corr1 = fCRCVZCorrPro[0][eg][h]->GetBinContent(c);
+//     Double_t Corr2 = fCRCVZCorrPro[0][eg][h]->GetBinContent(c2);
+//     Double_t CorrProd = fCRCVZCorrProd2p2pHist[eg][h]->GetBinContent(c,c2);
+//     if(WeigProd>0.) { CorrProd = CorrProd/WeigProd; }
+//     else { CorrProd = 0.; }
+//     Double_t spread=0., termA=0., termB=0.;
+//     spread = CorrProd-Corr1*Corr2;
+//     if((Weig1*Weig2)>0.) { termA = WeigProd/(Weig1*Weig2); }
+//     if((1.-termA)>0.) { termB = 1./(1.-termA); }
+//     Double_t Cov = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+//     fCRCVZCovHist[eg][h]->SetBinContent(c,c2,Cov);
+//     
+//    } // end of for(Int_t c2=0;c2<fCRCVZnCR;c2++)
+//   } // end of for(Int_t c=1;c<=fCRCVZnCR;c++)
    
   } // end of for (Int_t h=0;h<fCRCVZnCen;h++)
   
  } // end of for(Int_t eg=0; eg<fCRCnEtaGap; eg++)
+   
+   // calculate correlation functions
+ 
+ for (Int_t h=0;h<fCRCnCen;h++) {
+  
+  Int_t CRCVZBin1 = GetCRCVZBin(1,1);
+  Int_t CRCVZBin2 = GetCRCVZBin(0,1);
+  Int_t CRCVZBin3 = GetCRCVZBin(1,0);
+  Int_t CRCVZBin4 = GetCRCVZBin(0,0);
+  Int_t NUABin = 0; //(fNUAforCRC ? 1 : 0);
+  
+  Double_t QCQA    = fCRCVZCorrHist[NUABin][0][h]->GetBinContent(1);
+  Double_t QCQAErr = fCRCVZCorrHist[NUABin][0][h]->GetBinError(1);
+  Double_t QCQT    = fCRCVZCorrHist[NUABin][0][h]->GetBinContent(2);
+  Double_t QCQTErr = fCRCVZCorrHist[NUABin][0][h]->GetBinError(2);
+  Double_t QAQT    = fCRCVZCorrHist[NUABin][0][h]->GetBinContent(3);
+  Double_t QAQTErr = fCRCVZCorrHist[NUABin][0][h]->GetBinError(3);
+  
+  for (Int_t c=0; c<2; c++) {
+   
+   Double_t uPQC    = fCRCVZCorrHist[NUABin][1][h]->GetBinContent(c+1);
+   Double_t uPQCErr = fCRCVZCorrHist[NUABin][1][h]->GetBinError(c+1);
+   Double_t uNQA    = fCRCVZCorrHist[NUABin][2][h]->GetBinContent(c+1);
+   Double_t uNQAErr = fCRCVZCorrHist[NUABin][2][h]->GetBinError(c+1);
+   
+   if((QCQT*QCQA)/QAQT > 0) {
+    Double_t SPuPQC = uPQC / TMath::Sqrt((QCQT*QCQA)/QAQT);
+    
+    Double_t D = (QCQT*QCQA)/QAQT;
+    Double_t DErr = TMath::Sqrt( pow(QCQTErr*QCQA/QAQT,2.) + pow(QCQAErr*QCQT/QAQT,2.) + pow(QAQTErr*QCQA*QCQT/pow(QAQT,2.),2.) );
+    Double_t SqD = TMath::Sqrt(D);
+    Double_t SqDErr = DErr*0.5*pow(D,-0.5);
+    Double_t SPuPQCErr = SPuPQC * TMath::Sqrt(pow(uPQCErr/uPQC,2.) + pow(SqDErr/SqD,2.));
+    
+    fCRCVZCFunHist[0][h]->SetBinContent(c+1,SPuPQC);
+    fCRCVZCFunHist[0][h]->SetBinError(c+1,SPuPQCErr);
+    
+    Double_t SPuNQA = uNQA / TMath::Sqrt((QAQT*QCQA)/QCQT);
+    
+    D = (QAQT*QCQA)/QCQT;
+    DErr = TMath::Sqrt( pow(QAQTErr*QCQA/QCQT,2.) + pow(QCQAErr*QAQT/QCQT,2.) + pow(QCQTErr*QCQA*QAQT/pow(QCQT,2.),2.) );
+    SqD = TMath::Sqrt(D);
+    SqDErr = DErr*0.5*pow(D,-0.5);
+    Double_t SPuNQAErr = SPuPQC * TMath::Sqrt(pow(uNQAErr/uNQA,2.) + pow(SqDErr/SqD,2.));
+    
+    fCRCVZCFunHist[1][h]->SetBinContent(c+1,SPuNQA);
+    fCRCVZCFunHist[1][h]->SetBinError(c+1,SPuNQAErr);
+    
+    cout << "cen " << h << " SPuPQC: " << SPuPQC << " " << SPuPQCErr << endl;
+    cout << "cen " << h << " SPuNQA: " << SPuNQA << " " << SPuNQAErr << endl;
+    
+   } else { cout << " WARNING: negative correlations !!!" << endl; }
+   
+  }
+  
+ } // end of for (Int_t h=0;h<fCRCVZnCen;h++)
+ 
+//   // calculate correlation functions
+//   
+//   Int_t CRCVZBin1 = GetCRCVZBin(1,1);
+//   Int_t CRCVZBin2 = GetCRCVZBin(0,1);
+//   Int_t CRCVZBin3 = GetCRCVZBin(1,0);
+//   Int_t CRCVZBin4 = GetCRCVZBin(0,0);
+//   Int_t NUABin = 0; //(fNUAforCRC ? 1 : 0);
+//   
+//   Double_t Corr1    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin1);
+//   Double_t Corr1Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin1);
+//   Double_t Corr2    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin2);
+//   Double_t Corr2Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin2);
+//   Double_t Corr3    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin3);
+//   Double_t Corr3Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin3);
+//   Double_t Corr4    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(CRCVZBin4);
+//   Double_t Corr4Err = fCRCVZCorrHist[NUABin][eg][h]->GetBinError(CRCVZBin4);
+//   
+//   Double_t CorrVZ   = fCRCVZCorrHist[0][0][h]->GetBinContent(5);
+//   Double_t CorrVZErr = fCRCVZCorrHist[0][0][h]->GetBinError(5);
+//   
+//   Double_t Cov12 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin1,CRCVZBin2);
+//   Double_t Cov13 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin1,CRCVZBin3);
+//   Double_t Cov14 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin1,CRCVZBin4);
+//   Double_t Cov23 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin2,CRCVZBin3);
+//   Double_t Cov24 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin2,CRCVZBin4);
+//   Double_t Cov34 = fCRCVZCovHist[eg][h]->GetBinContent(CRCVZBin3,CRCVZBin4);
+//   
+//   //cout << "corr: " << Corr1/CorrVZ << " " << Corr2/CorrVZ << " " << Corr3/CorrVZ << " " << Corr4/CorrVZ << " " << endl;
+//   
+//   Double_t CFun = (- Corr1 + Corr2 + Corr3 - Corr4)/CorrVZ;
+//   Double_t CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.)
+//   + 2*(-Cov12-Cov13+Cov14+Cov23-Cov24-Cov34) ;
+//   
+//   CFunErr = pow(CFun,2.) * ( pow(CFunErr/(- Corr1 + Corr2 + Corr3 - Corr4),2.) + pow(CorrVZErr/CorrVZ,2.) );
+//   
+//   if(CFunErr >= 0.) { CFunErr = pow(CFunErr,0.5); }
+//   else {
+//    cout<<" WARNING: Negative CFunErr !!! " <<endl;
+//    CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.);
+//    if(CFunErr >= 0.) { CFunErr = pow(CFunErr,0.5); }
+//    else { CFunErr=0.;}
+//   }
+//   //      cout << Cov12 << " " << pow(Corr1Err,2.) << " " << pow(Corr2Err,2.) << endl;
+//   //      cout << Cov13 << " " << pow(Corr1Err,2.) << " " << pow(Corr3Err,2.) << endl;
+//   //      cout << Cov14 << " " << pow(Corr1Err,2.) << " " << pow(Corr4Err,2.) << endl;
+//   //      cout << Cov23 << " " << pow(Corr2Err,2.) << " " << pow(Corr3Err,2.) << endl;
+//   //      cout << Cov24 << " " << pow(Corr2Err,2.) << " " << pow(Corr4Err,2.) << endl;
+//   //      cout << Cov34 << " " << pow(Corr3Err,2.) << " " << pow(Corr4Err,2.) << endl;
+//   //      CFunErr=0.;
+//   
+//   cout << "cfun["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
+//   
+//   fCRCVZCFunHist[eg][h]->SetBinContent(1,CFun);
+//   fCRCVZCFunHist[eg][h]->SetBinError(1,CFunErr);
  
  cout << "*************************************" << endl;
  cout << endl;

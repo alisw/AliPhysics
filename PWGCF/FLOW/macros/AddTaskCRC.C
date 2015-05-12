@@ -10,9 +10,11 @@ void AddTaskCRC(Double_t centrMin,
                 TString EvTrigger="MB",
                 Bool_t bCalculateCRCPt=kFALSE,
                 Bool_t bUseCRCRecentering=kFALSE,
+                TString QVecWeightsFileName,
                 Bool_t bUseVZERO=kFALSE,
                 Bool_t bUseVZEROCalib=kFALSE,
                 Bool_t bUseVZEROTwist=kFALSE,
+                Bool_t bUseZDC=kFALSE,
                 Bool_t bEventCutsQA=kFALSE,
                 Bool_t bTrackCutsQA=kFALSE,
                 TString Label="",
@@ -219,9 +221,9 @@ void AddTaskCRC(Double_t centrMin,
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
  AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
- TString QVecWeightsFileName = "$ALICE_PHYSICS/PWGCF/FLOW/database/";
- if (TPCMultOut == "2011") QVecWeightsFileName += "CRCTPCQVecCalib11h.root";
- else if (TPCMultOut == "2010") QVecWeightsFileName += "CRCTPCQVecCalib10h.root";
+// TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+// if (TPCMultOut == "2011") QVecWeightsFileName += "CRCTPCQVecCalib11h.root";
+// else if (TPCMultOut == "2010") QVecWeightsFileName += "CRCTPCQVecCalib10h.root";
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -243,6 +245,7 @@ void AddTaskCRC(Double_t centrMin,
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
  taskQC->SetUseVZERO(bUseVZERO);
+ taskQC->SetUseZDC(bUseZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  taskQC->SetRunSet(TPCMultOut);

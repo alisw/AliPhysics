@@ -614,6 +614,8 @@ public:
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
+ void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
+ Bool_t GetUseZDC() const {return this->fUseZDC;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -1060,6 +1062,7 @@ private:
  Bool_t fCalculateCRC; // calculate CRC
  Bool_t fCalculateCRCPt;
  Bool_t fUseVZERO;
+ Bool_t fUseZDC;
  Bool_t fNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
