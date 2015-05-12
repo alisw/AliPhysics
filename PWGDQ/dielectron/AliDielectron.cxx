@@ -388,8 +388,8 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     // create pairs and fill pair candidate arrays
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
       for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
-	if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
-	FillPairArrays(itrackArr1, itrackArr2);
+        if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
+        FillPairArrays(itrackArr1, itrackArr2);
       }
     }
 
@@ -430,7 +430,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if(GetHasMC()) { // only for MC needed
     for (Int_t iCut=0; iCut<fTrackFilter.GetCuts()->GetEntries();++iCut) {
       if ( fTrackFilter.GetCuts()->At(iCut)->IsA() == AliDielectronV0Cuts::Class() )
-	((AliDielectronV0Cuts*)fTrackFilter.GetCuts()->At(iCut))->ResetUniqueEventNumbers();
+        ((AliDielectronV0Cuts*)fTrackFilter.GetCuts()->At(iCut))->ResetUniqueEventNumbers();
     }
   }
 
@@ -516,18 +516,18 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
       // particles satisfying both branches are treated separately to avoid double counting during pairing
       if(truth1 && truth2) {
-	labels12[isig][indexes12[isig]] = ipart;
-	++indexes12[isig];
+        labels12[isig][indexes12[isig]] = ipart;
+        ++indexes12[isig];
       }
       else {
-	if(truth1) {
-	  labels1[isig][indexes1[isig]] = ipart;
-	  ++indexes1[isig];
-	}
-	if(truth2) {
-	  labels2[isig][indexes2[isig]] = ipart;
-	  ++indexes2[isig];
-	}
+        if(truth1) {
+          labels1[isig][indexes1[isig]] = ipart;
+          ++indexes1[isig];
+        }
+        if(truth2) {
+          labels2[isig][indexes2[isig]] = ipart;
+          ++indexes2[isig];
+        }
       }
     }
   }  // end loop over MC particles
@@ -539,19 +539,19 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
       if(!indexes2[isig]) FillMCHistograms(labels1[isig][i1], -1, isig); // (e.g. single electrons only, no pairs)
       for(Int_t i2=0;i2<indexes2[isig];++i2) {
-	// add pair cuts on mc truth level
-	if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
-	if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
-	FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
+        // add pair cuts on mc truth level
+        if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
+        if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
+        FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
       }
     }
     // mix the particles which satisfy both branches
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
-	// add pair cuts on mc truth level
-	if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
-	if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
-	FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
+        // add pair cuts on mc truth level
+        if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
+        if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
+        FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
       }
     }
   }    // end loop over signals
@@ -643,9 +643,9 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
         AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
         if(trkClass)
-	  fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+          fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
         if(mergedtrkClass && i<2)
-	  fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values); //only ev1
+          fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values); //only ev1
       }
     }
   }
@@ -688,6 +688,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
   }
   
 }
+
 //________________________________________________________________
 void AliDielectron::FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter/*=kFALSE*/)
 {
@@ -799,17 +800,17 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
       Int_t ntracks=ev->GetNumberOfTracks();
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
-	AliVParticle *particle=ev->GetTrack(itrack);
-	AliVTrack *track= static_cast<AliVTrack*>(particle);
-	if (!track) continue;
-	//event plane cuts
-	UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
-	//apply cut
-	if (cutMask==selectedMask) continue;
-
-	mapRemovedTracks.Add(track,track);
-	cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
-	cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+        AliVParticle *particle=ev->GetTrack(itrack);
+        AliVTrack *track= static_cast<AliVTrack*>(particle);
+        if (!track) continue;
+        //event plane cuts
+        UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
+        //apply cut
+        if (cutMask==selectedMask) continue;
+        
+        mapRemovedTracks.Add(track,track);
+        cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+        cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
       }
     }
 
@@ -827,23 +828,23 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       if (arr1==arr2) end=itrack1;
       Bool_t accepted=kFALSE;
       for (Int_t itrack2=0; itrack2<end; ++itrack2){
-	TObject *track1=arrTracks1.UncheckedAt(itrack1);
-	TObject *track2=arrTracks2.UncheckedAt(itrack2);
-	if (!track1 || !track2) continue;
-	//create the pair
-	candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-			    static_cast<AliVTrack*>(track2), fPdgLeg2);
-	candidate.SetType(pairIndex);
-	candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+        TObject *track1=arrTracks1.UncheckedAt(itrack1);
+        TObject *track2=arrTracks2.UncheckedAt(itrack2);
+        if (!track1 || !track2) continue;
+        //create the pair
+        candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                            static_cast<AliVTrack*>(track2), fPdgLeg2);
+        candidate.SetType(pairIndex);
+        candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
 
-	//event plane pair cuts
-	UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
-	//apply cut
-	if (cutMask==selectedMask) continue;
+        //event plane pair cuts
+        UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
+        //apply cut
+        if (cutMask==selectedMask) continue;
 
-	accepted=kTRUE;
-	//remove the tracks from the Track arrays
-	arrTracks2.AddAt(0x0,itrack2);
+        accepted=kTRUE;
+        //remove the tracks from the Track arrays
+        arrTracks2.AddAt(0x0,itrack2);
       }
       if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
     }
@@ -919,37 +920,37 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       Int_t ntracks=ev->GetNumberOfTracks();
       // track removals
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
-	AliVParticle *particle=ev->GetTrack(itrack);
-	AliVTrack *track= static_cast<AliVTrack*>(particle);
-	if (!track) continue;
-	if (track->GetID()>=0 && !isESD) continue;
-	Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
+        AliVParticle *particle=ev->GetTrack(itrack);
+        AliVTrack *track= static_cast<AliVTrack*>(particle);
+        if (!track) continue;
+        if (track->GetID()>=0 && !isESD) continue;
+        Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
 
-	// set contributions to zero
-	// charge sub1+ sub2-
-	if(fLikeSignSubEvents) {
-	  Short_t charge=track->Charge();
-	  if (charge<0) {
-	    cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-	    cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-	  }
-	  if (charge>0) {
-	    cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-	    cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-	  }
-	}
-	// eta sub1+ sub2-
-	if(etagap) {
-	  Double_t eta=track->Eta();
-	  if (eta<0.0) {
-	    cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-	    cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-	  }
-	  if (eta>0.0) {
-	    cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-	    cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
-	  }
-	}
+        // set contributions to zero
+        // charge sub1+ sub2-
+        if(fLikeSignSubEvents) {
+          Short_t charge=track->Charge();
+          if (charge<0) {
+            cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+            cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+          }
+          if (charge>0) {
+            cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+            cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+          }
+        }
+        // eta sub1+ sub2-
+        if(etagap) {
+          Double_t eta=track->Eta();
+          if (eta<0.0) {
+            cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+            cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+          }
+          if (eta>0.0) {
+            cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+            cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+          }
+        }
       } // end: loop over tracks
     } // end: sub event configuration
 
@@ -958,24 +959,24 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
       Int_t ntracks=ev->GetNumberOfTracks();
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
-	AliVParticle *particle=ev->GetTrack(itrack);
-	AliVTrack *track= static_cast<AliVTrack*>(particle);
-	if (!track) continue;
-	if (track->GetID()>=0 && !isESD) continue;
-	Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
+        AliVParticle *particle=ev->GetTrack(itrack);
+        AliVTrack *track= static_cast<AliVTrack*>(particle);
+        if (!track) continue;
+        if (track->GetID()>=0 && !isESD) continue;
+        Int_t tmpID = isESD ? track->GetID() : track->GetID()*-1 - 1;
 
-	//event plane cuts
-	UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
-	//apply cut
-	if (cutMask==selectedMask) continue;
+        //event plane cuts
+        UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
+        //apply cut
+        if (cutMask==selectedMask) continue;
 
-	// set contributions to zero
-	cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
-	cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
-	cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
-	cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
-	cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
-	cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
+        // set contributions to zero
+        cevplane.GetQContributionXArray()->SetAt(0.0, tmpID);
+        cevplane.GetQContributionYArray()->SetAt(0.0, tmpID);
+        cevplane.GetQContributionXArraysub1()->SetAt(0.0, tmpID);
+        cevplane.GetQContributionYArraysub1()->SetAt(0.0, tmpID);
+        cevplane.GetQContributionXArraysub2()->SetAt(0.0, tmpID);
+        cevplane.GetQContributionYArraysub2()->SetAt(0.0, tmpID);
       }
     } // end: track cuts
 
@@ -992,24 +993,24 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       if (arr1==arr2) end=itrack1;
       Bool_t accepted=kFALSE;
       for (Int_t itrack2=0; itrack2<end; ++itrack2){
-	TObject *track1=arrTracks1.UncheckedAt(itrack1);
-	TObject *track2=arrTracks2.UncheckedAt(itrack2);
-	if (!track1 || !track2) continue;
-	//create the pair
-	candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-			    static_cast<AliVTrack*>(track2), fPdgLeg2);
+        TObject *track1=arrTracks1.UncheckedAt(itrack1);
+        TObject *track2=arrTracks2.UncheckedAt(itrack2);
+        if (!track1 || !track2) continue;
+        //create the pair
+        candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                            static_cast<AliVTrack*>(track2), fPdgLeg2);
 
-	candidate.SetType(pairIndex);
-	candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+        candidate.SetType(pairIndex);
+        candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
 
-	//event plane cuts
-	UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
-	//apply cut
-	if (cutMask==selectedMask) continue;
+        //event plane cuts
+        UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
+        //apply cut
+        if (cutMask==selectedMask) continue;
 
-	accepted=kTRUE;
-	//remove the tracks from the Track arrays
-	arrTracks2.AddAt(0x0,itrack2);
+        accepted=kTRUE;
+        //remove the tracks from the Track arrays
+        arrTracks2.AddAt(0x0,itrack2);
       }
       if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
     }
@@ -1056,12 +1057,13 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
   } // end: ESD or AOD case
 
 }
+
 //________________________________________________________________
 void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2)
 {
   //
   // Prefilter tracks from pairs
-  // Needed for datlitz rejections
+  // Needed for Dalitz rejections
   // remove all tracks from the Single track arrays that pass the cuts in this filter
   //
 
@@ -1082,59 +1084,59 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
   if (fPreFilterAllSigns) nRejPasses = 3;
 
   for (Int_t iRP=0; iRP < nRejPasses; ++iRP) {
-	Int_t arr1RP=arr1, arr2RP=arr2;
-	TObjArray *arrTracks1RP=&arrTracks1;
-	TObjArray *arrTracks2RP=&arrTracks2;
-	Bool_t *bTracks1RP = bTracks1;
-	Bool_t *bTracks2RP = bTracks2;
-	switch (iRP) {
-		case 1: arr1RP=arr1;arr2RP=arr1;
+    Int_t arr1RP=arr1, arr2RP=arr2;
+    TObjArray *arrTracks1RP=&arrTracks1;
+    TObjArray *arrTracks2RP=&arrTracks2;
+    Bool_t *bTracks1RP = bTracks1;
+    Bool_t *bTracks2RP = bTracks2;
+    switch (iRP) {
+      case 1: arr1RP=arr1;arr2RP=arr1;
 				arrTracks1RP=&arrTracks1;
 				arrTracks2RP=&arrTracks1;
 				bTracks1RP = bTracks1;
 				bTracks2RP = bTracks1;
 				break;
-		case 2: arr1RP=arr2;arr2RP=arr2;
+      case 2: arr1RP=arr2;arr2RP=arr2;
 				arrTracks1RP=&arrTracks2;
 				arrTracks2RP=&arrTracks2;
 				bTracks1RP = bTracks2;
 				bTracks2RP = bTracks2;
 				break;
-		default: ;//nothing to do
-	}
-	Int_t ntrack1RP=(*arrTracks1RP).GetEntriesFast();
-	Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
+      default: ;//nothing to do
+    }
+    Int_t ntrack1RP=(*arrTracks1RP).GetEntriesFast();
+    Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
 
-	Int_t pairIndex=GetPairIndex(arr1RP,arr2RP);
+    Int_t pairIndex=GetPairIndex(arr1RP,arr2RP);
 
-	for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
-	  Int_t end=ntrack2RP;
-	  if (arr1RP==arr2RP) end=itrack1;
-	  for (Int_t itrack2=0; itrack2<end; ++itrack2){
-		TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
-		TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
-		if (!track1 || !track2) continue;
-		//create the pair
-		candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-			static_cast<AliVTrack*>(track2), fPdgLeg2);
+    for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
+      Int_t end=ntrack2RP;
+      if (arr1RP==arr2RP) end=itrack1;
+      for (Int_t itrack2=0; itrack2<end; ++itrack2){
+        TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
+        TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
+        if (!track1 || !track2) continue;
+        //create the pair
+        candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                            static_cast<AliVTrack*>(track2), fPdgLeg2);
 
-		candidate.SetType(pairIndex);
-		candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
-		//relate to the production vertex
-		//       if (AliDielectronVarManager::GetKFVertex()) candidate.SetProductionVertex(*AliDielectronVarManager::GetKFVertex());
+        candidate.SetType(pairIndex);
+        candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+        //relate to the production vertex
+        //       if (AliDielectronVarManager::GetKFVertex()) candidate.SetProductionVertex(*AliDielectronVarManager::GetKFVertex());
 
-		//pair cuts
-		UInt_t cutMask=fPairPreFilter.IsSelected(&candidate);
+        //pair cuts
+        UInt_t cutMask=fPairPreFilter.IsSelected(&candidate);
 
-		//apply cut
-		if (cutMask!=selectedMask) continue;
-		if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
-		if (fHistos) FillHistogramsPair(&candidate,kTRUE);
-		//set flags for track removal
-		bTracks1RP[itrack1]=kTRUE;
-		bTracks2RP[itrack2]=kTRUE;
-	  }
-	}
+        //apply cut
+        if (cutMask!=selectedMask) continue;
+        if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
+        if (fHistos) FillHistogramsPair(&candidate,kTRUE);
+        //set flags for track removal
+        bTracks1RP[itrack1]=kTRUE;
+        bTracks2RP[itrack2]=kTRUE;
+      }
+    }
   }
 
   //remove the tracks from the Track arrays
@@ -1218,7 +1220,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
       //create the pair (direct pointer to the memory by this daughter reference are kept also for ME)
       candidate->SetTracks(&(*static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1))), fPdgLeg1,
-			   &(*static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2))), fPdgLeg2);
+                           &(*static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2))), fPdgLeg2);
       candidate->SetType(pairIndex);
 
       Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother);
@@ -1229,8 +1231,8 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       // check for gamma kf particle
       label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,22);
       if (label>-1) {
-	candidate->SetGammaTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
-				  static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
+        candidate->SetGammaTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
+                                  static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       // should we set the pdgmothercode and the label
       }
 
@@ -1242,8 +1244,8 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       // cut qa
       if(pairIndex==kEv1PM && fCutQA) {
-	fQAmonitor->FillAll(candidate);
-	fQAmonitor->Fill(cutMask,candidate);
+        fQAmonitor->FillAll(candidate);
+        fQAmonitor->Fill(cutMask,candidate);
       }
 
       //apply cut
@@ -1422,23 +1424,23 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
     if(pairClass || legClass) {
       Int_t npairs=PairArray(AliDielectron::kEv1PM)->GetEntriesFast(); // only SE +-
       for (Int_t ipair=0; ipair<npairs; ++ipair){
-	AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PM)->UncheckedAt(ipair));
+        AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PM)->UncheckedAt(ipair));
 
-	Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
-	if(isMCtruth) {
-	  //fill pair information
-	  if (pairClass){
-	    AliDielectronVarManager::Fill(pair, values);
-	    fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
-	  }
-	  //fill leg information, both + and - in the same histo
-	  if (legClass){
-	    AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
-	    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-	    AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
-	    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-	  }
-	} //is signal
+        Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+        if(isMCtruth) {
+          //fill pair information
+          if (pairClass){
+            AliDielectronVarManager::Fill(pair, values);
+            fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+          }
+          //fill leg information, both + and - in the same histo
+          if (legClass){
+            AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
+            fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+            AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
+            fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+          }
+        } //is signal
       } //loop: pairs
     }
 
@@ -1448,13 +1450,13 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
     for (Int_t i=0; i<2; ++i){
       Int_t ntracks=fTracks[i].GetEntriesFast();
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
-	Int_t label=((AliVParticle*)fTracks[i].UncheckedAt(itrack))->GetLabel();
-	Bool_t isMCtruth1 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 1);
-	Bool_t isMCtruth2 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 2);
-	// skip if track does not correspond to the signal
-	if(!isMCtruth1 && !isMCtruth2) continue;
-	AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
-	fHistos->FillClass(className3, AliDielectronVarManager::kNMaxValues, values);
+        Int_t label=((AliVParticle*)fTracks[i].UncheckedAt(itrack))->GetLabel();
+        Bool_t isMCtruth1 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 1);
+        Bool_t isMCtruth2 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 2);
+        // skip if track does not correspond to the signal
+        if(!isMCtruth1 && !isMCtruth2) continue;
+        AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
+        fHistos->FillClass(className3, AliDielectronVarManager::kNMaxValues, values);
       } //loop: tracks
     } //loop: arrays
 
@@ -1485,7 +1487,6 @@ void AliDielectron::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, 
     fUsedVars->SetBitNumber(vary, kTRUE);
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
-
 }
 //______________________________________________
 void AliDielectron::SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
@@ -1509,7 +1510,6 @@ void AliDielectron::SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, 
     fUsedVars->SetBitNumber(vary, kTRUE);
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
-
 }
 //______________________________________________
 void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
@@ -1542,7 +1542,7 @@ void AliDielectron::SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, UIn
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
   AliDielectronHistos::StoreVariables(fun, valType);
   // clone temporare histogram, otherwise it will not be streamed to file!
-  TString key = Form("cntrd%d%d%d",varx,vary,varz);
+  TString key = Form("wdth%d%d%d",varx,vary,varz);
   fPostPIDWdthCorr = (TH1*)fun->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDWdthCorr)  {
@@ -1557,7 +1557,6 @@ void AliDielectron::SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, UIn
     fUsedVars->SetBitNumber(vary, kTRUE);
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
-
 }
 
 //______________________________________________
@@ -1626,8 +1625,8 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 
       // cut qa
       if(i==kEv1PM && fCutQA) {
-	fQAmonitor->FillAll(pair);
-	fQAmonitor->Fill(cutMask,pair);
+        fQAmonitor->FillAll(pair);
+        fQAmonitor->Fill(cutMask,pair);
       }
 
       //CF manager for the pair (TODO: check steps and if they are properly filled)
