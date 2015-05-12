@@ -1341,40 +1341,37 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     QxcR = Qxc - Qxcmean;
     QycR = Qyc - Qycmean;
     
-    cout << endl;
-    cout << "recentering: " << Qxa << " --> " << QxaR << ", " << Qya << " --> " << QyaR << endl;
-    
-    // Twist
-    // default values for vector a (VZEROA)
-    Double_t Q2xamean(fQxavsV0[1]->GetBinContent(c+1));
-    Double_t Q2yamean(fQyavsV0[1]->GetBinContent(c+1));
-    // default values for vector b (VZEROC)
-    Double_t Q2xcmean(fQxcvsV0[1]->GetBinContent(c+1));
-    Double_t Q2ycmean(fQycvsV0[1]->GetBinContent(c+1));
-    
-    Double_t lam = Q2yamean/(1-Q2xamean);
-    Double_t lap = Q2yamean/(1+Q2xamean);
-    Double_t lcm = Q2ycmean/(1-Q2xcmean);
-    Double_t lcp = Q2ycmean/(1+Q2xcmean);
-    
-    Double_t QxaRT = (QxaR-lam*QyaR)/(1-lam*lap);
-    Double_t QyaRT = (QyaR-lap*QxaR)/(1-lam*lap);
-    Double_t QxcRT = (QxcR-lcm*QycR)/(1-lcm*lcp);
-    Double_t QycRT = (QycR-lcp*QxcR)/(1-lcm*lcp);
-    
-    cout << "twist: " << QxaR << " --> " << QxaRT << ", " << QyaR << " --> " << QyaRT << endl;
-    
-    // Rescale
-    Double_t QxaRTR = QxaRT/(1+Q2xamean);
-    Double_t QyaRTR = QyaRT/(1-Q2xamean);
-    Double_t QxcRTR = QxcRT/(1+Q2xcmean);
-    Double_t QycRTR = QycRT/(1-Q2xcmean);
-    
-    cout << "rescale: " << QxaRT << " --> " << QxaRTR << ", " << QyaRT << " --> " << QyaRTR << endl;
-    
     // update the vector
-    vA.Set(QxcRTR, QycRTR);
-    vB.Set(QxaRTR, QyaRTR);
+    vA.Set(QxcR, QycR);
+    vB.Set(QxaR, QyaR);
+    
+//    // Twist
+//    // default values for vector a (VZEROA)
+//    Double_t Q2xamean(fQxavsV0[1]->GetBinContent(c+1));
+//    Double_t Q2yamean(fQyavsV0[1]->GetBinContent(c+1));
+//    // default values for vector b (VZEROC)
+//    Double_t Q2xcmean(fQxcvsV0[1]->GetBinContent(c+1));
+//    Double_t Q2ycmean(fQycvsV0[1]->GetBinContent(c+1));
+//    
+//    Double_t lam = Q2yamean/(1-Q2xamean);
+//    Double_t lap = Q2yamean/(1+Q2xamean);
+//    Double_t lcm = Q2ycmean/(1-Q2xcmean);
+//    Double_t lcp = Q2ycmean/(1+Q2xcmean);
+//    
+//    Double_t QxaRT = (QxaR-lam*QyaR)/(1-lam*lap);
+//    Double_t QyaRT = (QyaR-lap*QxaR)/(1-lam*lap);
+//    Double_t QxcRT = (QxcR-lcm*QycR)/(1-lcm*lcp);
+//    Double_t QycRT = (QycR-lcp*QxcR)/(1-lcm*lcp);
+//    
+//    // Rescale
+//    Double_t QxaRTR = QxaRT/(1+Q2xamean);
+//    Double_t QyaRTR = QyaRT/(1-Q2xamean);
+//    Double_t QxcRTR = QxcRT/(1+Q2xcmean);
+//    Double_t QycRTR = QycRT/(1-Q2xcmean);
+//    
+//    // update the vector
+//    vA.Set(QxcRTR, QycRTR);
+//    vB.Set(QxaRTR, QyaRTR);
    }
    
   }
@@ -1705,40 +1702,13 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // the parameters to weigh the vzero track cuts have been extracted now, 
     // so we can pass them to the current track cuts obect
     cuts->SetVZEROgainEqualisation(fMultVZERO);       // passed as a TH1
-
- TFile *foadbt = TFile::Open("$ALICE_PHYSICS/PWGCF/FLOW/database/calibV0_138275.root");
- if(!foadbt){
-  printf("OADB file $ALICE_PHYSICS/PWGCF/FLOW/database/calibV0_filtered.root cannot be opened, CALIBRATION FAILED !");
-  return;
- }
+ 
     // step 2) extract the calibration histograms from the database and
     // pass them to the cuts object
     //
     // first index of the oadb array is the harmonic n, the second index is either qax, qay, qcx, qcy
     AliOADBContainer* h[5][4];
     for(Int_t i(0); i < 5; i++) {
-     if(i==0) {
-      TH2F *figa = static_cast<TH2F*>(foadbt->Get("hQxa1vsV0"));
-      h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%i_filtered", i+1));
-      TH1F* ostia = static_cast<TH1F*>(h[i][0]->GetObject(run));
-      fQxavsV0[i] = ostia;
-      for(Int_t c=0; c<100; c++) {
-       TH1D* tre = static_cast<TH1D*>(figa->ProjectionY("tre",c,c+1));
-       fQxavsV0[i]->SetBinContent(c+1,tre->GetMean());
-      }
-      TH2F *figay = static_cast<TH2F*>(foadbt->Get("hQya1vsV0"));
-      h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%i_filtered", i+1));
-      TH1F* ostiay = static_cast<TH1F*>(h[i][0]->GetObject(run));
-      fQyavsV0[i] = ostiay;
-      cout << fQyavsV0[i]->GetBinContent(1);
-      for(Int_t c=0; c<100; c++) {
-       TH1D* tre = static_cast<TH1D*>(figay->ProjectionY("tre",c,c+1));
-       fQyavsV0[i]->SetBinContent(c+1,tre->GetMean());
-      }
-      cout << " != " << fQyavsV0[i]->GetBinContent(1) << endl;
-      fQxcvsV0[i] = static_cast<TH1F*>(foadbt->Get("hQxc1vsV0"));
-      fQycvsV0[i] = static_cast<TH1F*>(foadbt->Get("hQyc1vsV0"));
-     } else {
       h[i][0] = (AliOADBContainer*)foadb->Get(Form("hQxa%i_filtered", i+1));
       if(h[i][0]) fQxavsV0[i] = static_cast<TH1F*>(h[i][0]->GetObject(run));
       h[i][1] = (AliOADBContainer*)foadb->Get(Form("hQya%i_filtered", i+1));
@@ -1747,7 +1717,6 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
       if(h[i][2]) fQxcvsV0[i] = static_cast<TH1F*>(h[i][2]->GetObject(run));
       h[i][3] = (AliOADBContainer*)foadb->Get(Form("hQyc%i_filtered", i+1));
       if(h[i][3]) fQycvsV0[i] = static_cast<TH1F*>(h[i][3]->GetObject(run));
-     }
     }
     
     // set the recentering style (might be switched back to -1 if recentering is disabeled)
