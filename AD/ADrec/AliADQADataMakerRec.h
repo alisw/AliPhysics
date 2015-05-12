@@ -33,7 +33,7 @@ public:
   		   kChargeADA,kChargeADC,kChargeEoI,kChargeEoIBB,kChargeEoIBG,
 		   kHPTDCTime,kHPTDCTimeBB,kHPTDCTimeBG,kWidth,
 		   kHPTDCTimeRebin,kHPTDCTimeRebinBB,kHPTDCTimeRebinBG,
-		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,
+		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
 		   kPedestalDiffInt0,kPedestalDiffInt1,
 		   kChargeEoIInt0,kChargeEoIInt1,
@@ -44,7 +44,6 @@ public:
 		   kNEventsBBFlag,kNEventsBGFlag,
 		   kFlagNoTime,kTimeNoFlag,
 		   kWidthBB,kWidthBG,
-		   kBBFlagsPerChannel,kBGFlagsPerChannel,
 		   kTimeSlewingOff,kTimeSlewingOn,kWidthSlewing,
 		   kMultiADA,kMultiADC,kChargeAD, 
 		   

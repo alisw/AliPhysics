@@ -615,7 +615,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       AliWarning("BBFlagVsClock histogram is not found");
     }
     else {
-    	if(hBBFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBBFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	if(hBBFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBBFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.30,0.15,0.70,0.37,"NDC"));
     	for(Int_t i=0; i<hBBFlagVsClock->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hBBFlagVsClock->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -626,18 +626,18 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			Bool_t notSynchADA = kFALSE;
 			Bool_t notSynchADC = kFALSE;
 
-    			for(Int_t i=0; i<2; i++){
-      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",8*i+1,8*i+9);
+    			for(Int_t i=0; i<16; i++){
+      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
 				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
 				if(center == 0){
-					if(i==1)notSynchADA = kTRUE;
-					if(i==0)notSynchADC = kTRUE;
+					if(i>7)notSynchADA = kTRUE;
+					if(i<8)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > 0.12) {
-					if(i==1)notSynchADA = kTRUE;
-					if(i==0)notSynchADC = kTRUE;
+				if(around/center > 0.5) {
+					if(i>7)notSynchADA = kTRUE;
+					if(i<8)notSynchADC = kTRUE;
 					}
 				}
 			if(notSynchADA || notSynchADC){
@@ -663,7 +663,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       AliWarning("BGFlagVsClock histogram is not found");
     }
     else {
-    	if(hBGFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBGFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.5,0.63,0.85,0.85,"NDC"));
+    	if(hBGFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBGFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.30,0.15,0.70,0.37,"NDC"));
     	for(Int_t i=0; i<hBGFlagVsClock->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hBGFlagVsClock->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -674,18 +674,18 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			Bool_t notSynchADA = kFALSE;
 			Bool_t notSynchADC = kFALSE;
 
-    			for(Int_t i=0; i<2; i++){
-      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",8*i+1,8*i+9);
+    			for(Int_t i=0; i<16; i++){
+      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
 				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
 				if(center == 0){
-					if(i==1)notSynchADA = kTRUE;
-					if(i==0)notSynchADC = kTRUE;
+					if(i>7)notSynchADA = kTRUE;
+					if(i<8)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > 0.12) {
-					if(i==1)notSynchADA = kTRUE;
-					if(i==0)notSynchADC = kTRUE;
+				if(around/center > 0.5) {
+					if(i>7)notSynchADA = kTRUE;
+					if(i<8)notSynchADC = kTRUE;
 					}
 				}
 			if(notSynchADA || notSynchADC){
@@ -1003,7 +1003,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	pChargeZoom->Divide(3, 1);
     	pTime->Divide(4, 1);
 	pTimeRatio->Divide(4, 1);
-    	pClock->Divide(4, 1);
+    	pClock->Divide(6, 1);
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
     	pMaxCh->Divide(2, 1);
@@ -1061,6 +1061,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	//Time pad
 	for(Int_t iHist = 0; iHist<4; iHist++){
 		pad = pTime->cd(iHist+1);
+		if(iHist==3)gPad->SetLogz();
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTime+iHist);
 		histo->DrawCopy("COLZ");
 		}
@@ -1135,8 +1136,9 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	myLegend3->Draw();
 		
 	//Clock pad
-	for(Int_t iHist = 0; iHist<4; iHist++){
+	for(Int_t iHist = 0; iHist<6; iHist++){
 		pad = pClock->cd(iHist+1);
+		if(iHist>3)gPad->SetLogz();
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist);
 		histo->DrawCopy("COLZ");
 		}
@@ -1178,9 +1180,15 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	//Mean time pad
 	pad = pMeanTime->cd(1);
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
-	histo->DrawCopy();
+	histoBlue = (TH1*)histo->Clone("histoBlue");
+	
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
-	histo->DrawCopy("same");
+	histoRed = (TH1*)histo->Clone("histoRed");
+	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+	histoBlue->GetYaxis()->SetRangeUser(0,1.1*TMath::MaxElement(2,max));
+	histoBlue->DrawCopy();
+	histoRed->DrawCopy("same");
 	myLegend1->Draw();
 	for(Int_t iHist = 0; iHist<3; iHist++){
 		pad = pMeanTime->cd(iHist+2);
