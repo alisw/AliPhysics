@@ -2807,7 +2807,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhOpAngle->SetYTitle("Opening angle (degrees)");
       outputContainer->Add(fhOpAngle);
       
-      Int_t nBinOpAngle = ((Int_t)fInvMassMaxOpenAngle*TMath::RadToDeg());
+      Int_t nBinOpAngle = TMath::Nint(fInvMassMaxOpenAngle*TMath::RadToDeg()); // bin of 1 degree size
       fhIMvsOpAngle  = new TH2F ("hIMvsOpAngle","Cluster pairs Invariant mass vs reconstructed pair opening angle, ncell > 1",
                                  nBinOpAngle,0.,fInvMassMaxOpenAngle,nmassbins,massmin,massmax); 
       fhIMvsOpAngle->SetXTitle("Opening angle (degrees)");
