@@ -53,6 +53,9 @@ FTProbe::FTProbe()
 ,fProbeChi2ITS(0)
 ,fIsDecayed(0)
 ,fIsAbsorbed(0)
+,fDecayRadius(0)
+,fAbsorbtionRadius(0)
+,fTrackToClusterChi2CutITS(0)
 {
 	  // def. c-tor
 }
@@ -108,12 +111,20 @@ fITSRec(0)
 	const double accAmp[kMaxITSLr]  = {0.017,0.013,0.013,0.014,0.016,0.015,0.015};
 	const double accSigY[kMaxITSLr] = { 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2};
 	const double accSigZ[kMaxITSLr] = { 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2};
-	for (int i=0;i<kMaxITSLr;i++) {
-		fNCorrelITSFakes[i] = accAmp[i];    // integral of accompanying hits
-		fCorrelITSFakesSigY[i] = accSigY[i]; // width in rphi
-		fCorrelITSFakesSigZ[i] = accSigZ[i]; // width in z
-	}
 	//
+	float c0tr2clChi2[7]	= {20,25,30,40,45,45,70};	// cut on cluster to track chi2
+	float c0gloChi2[7]		= {6,10,20,30,60,60,70};	// cut on seed global norm chi2
+	float c0missPen[7]		= {2.,2.,2.,2.,2.,2.,2.};	// missing cluster penalty
+	
+	for (int i=0;i<kMaxITSLr;i++) {
+		fNCorrelITSFakes[i] = accAmp[i];		// integral of accompanying hits
+		fCorrelITSFakesSigY[i] = accSigY[i];	// width in rphi
+		fCorrelITSFakesSigZ[i] = accSigZ[i];	// width in z
+		fC0tr2clChi2[i] = c0tr2clChi2[i];		// cut on cluster to track chi2
+		fC0gloChi2[i]	= c0gloChi2[i];		// cut on seed global norm chi2
+		fC0missPen[i]	= c0missPen[i];		// missing cluster penalty
+		
+	}
 }
 
 //________________________________________________
@@ -358,6 +369,10 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 #endif
 		return kFALSE;
 	}
+	
+	// check if tracks are rejected by ITS chi2 per layer
+	fProbe.fTrackToClusterChi2CutITS = CutOnTrackToClusterChi2ITS();
+	
 	//
 	// go to innermost radius of ITS (including beam pipe)
 	if (!PropagateToR(fITS->GetRMin(),-1, kTRUE, kFALSE, kTRUE)) {
@@ -381,13 +396,13 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 	}
 #endif
 	
-	fProbe.fProbeNClTPC			= fNClTPC;
-	fProbe.fProbeNClITS			= fNClITS;
-	fProbe.fProbeNClITSFakes	= fNClITSFakes;
+	fProbe.fProbeNClTPC					= fNClTPC;
+	fProbe.fProbeNClITS					= fNClITS;
+	fProbe.fProbeNClITSFakes		= fNClITSFakes;
 	fProbe.fProbeITSPatternFake	= fITSPatternFake;
-	fProbe.fProbeITSPattern		= fITSPattern;
-	fProbe.fProbeChi2TPC		= fChi2TPC;
-	fProbe.fProbeChi2ITS		= fChi2ITS;
+	fProbe.fProbeITSPattern			= fITSPattern;
+	fProbe.fProbeChi2TPC				= fChi2TPC;
+	fProbe.fProbeChi2ITS				= fChi2ITS;
 	//
 	/*
 	 printf("Tracking done: NclITS: %d (chi2ITS=%.3f) NclTPC: %3d (chi2TPC=%.3f)\n",fNClITS,fChi2ITS,fNClTPC,fChi2TPC);
@@ -418,6 +433,24 @@ Bool_t FT2::InitProbe(TParticle* part)
 	fChi2TPC = fChi2ITS = 0;
 	fDCA[0] = fDCA[1] = fDCACov[0] = fDCACov[1] = fDCACov[2] = 0.;
 	//
+	Int_t pdgCode				= part->GetPdgCode();
+	TParticlePDG* pdgp	= TDatabasePDG::Instance()->GetParticle(pdgCode);
+	Double_t charge			= pdgp->Charge();
+	fProbe.fProbeMass		= pdgp->Mass();
+	fProbe.fAbsPdgCode	= TMath::Abs(pdgCode);
+	fProbe.fPdgCode			= pdgCode;
+	fProbe.fTrueMass		= fProbe.fProbeMass;
+	//
+	fProbe.fProbeNClTPC					= fNClTPC;
+	fProbe.fProbeNClITS					= fNClITS;
+	fProbe.fProbeNClITSFakes		= fNClITSFakes;
+	fProbe.fProbeITSPatternFake	= fITSPatternFake;
+	fProbe.fProbeITSPattern			= fITSPattern;
+	fProbe.fProbeChi2TPC				= fChi2TPC;
+	fProbe.fProbeChi2ITS				= fChi2ITS;
+	fProbe.fIsDecayed = fProbe.fIsAbsorbed = 0;
+	fProbe.fTrackToClusterChi2CutITS = 0;
+	//
 	// Calculate alpha: the rotation angle of the corresponding local system (TPC sector)
 	alpha = part->Phi()*180./TMath::Pi();
 	if (alpha<0) alpha+= 360.;
@@ -439,21 +472,6 @@ Bool_t FT2::InitProbe(TParticle* part)
 	// X of the referense plane
 	xref = ver.X();
 	
-	Int_t pdgCode = part->GetPdgCode();
-	TParticlePDG* pdgp = TDatabasePDG::Instance()->GetParticle(pdgCode);
-	Double_t charge = pdgp->Charge();
-	fProbe.fProbeMass = pdgp->Mass();
-	fProbe.fAbsPdgCode = TMath::Abs(pdgCode);
-	fProbe.fPdgCode = pdgCode;
-	fProbe.fTrueMass = fProbe.fProbeMass;
-	
-	fProbe.fProbeNClTPC			= fNClTPC;
-	fProbe.fProbeNClITS			= fNClITS;
-	fProbe.fProbeNClITSFakes	= fNClITSFakes;
-	fProbe.fProbeITSPatternFake	= fITSPatternFake;
-	fProbe.fProbeITSPattern		= fITSPattern;
-	fProbe.fProbeChi2TPC		= fChi2TPC;
-	fProbe.fProbeChi2ITS		= fChi2ITS;
 	//
 	param[0] = ver.Y();
 	param[1] = ver.Z();
@@ -484,16 +502,22 @@ Int_t FT2::ProbeDecayAbsorb(double* posIni)
 #if DEBUG>5
   printf("New step length %.2f from XYZ= %+.2f %+.2f %+.2f\n",dist,posIni[0],posIni[1],posIni[2]);
 #endif
-  //
+      //
   if(gRandom->Rndm()<ParticleDecayProbability(dist)) {
 	  fProbe.fIsDecayed=kTRUE;
-    return 1;
+	  fProbe.fIsAbsorbed=kFALSE;
+		fProbe.fDecayRadius=TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
+  return 1;
   }
   if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
+	  fProbe.fIsDecayed=kFALSE;
 	  fProbe.fIsAbsorbed=kTRUE;
+		fProbe.fAbsorbtionRadius=TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
 	  return -1;
   }
   for (int j=3;j--;) posIni[j] = posCurr[j];
+	fProbe.fIsAbsorbed = fProbe.fIsDecayed = 0;
+	fProbe.fAbsorbtionRadius = fProbe.fDecayRadius = 0;
   return 0;
   //
 }
@@ -1359,6 +1383,7 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 	//
 	if (winOK<0) return 0; // no update on this layer
 	double chiw = UpdateKalman(&fProbe,yzw[0],yzw[1],fSigYITS,fSigZITS,kTRUE,fITSerrSclY,fITSerrSclZ);
+	fProbe.chiwITS[ilr]=chiw;
 #if DEBUG>5
 	AliInfoF("Updated at ITS Lr%d, chi2:%f NclITS:%d Fakes: %d",ilr,chiw,fNClITS,fNClITSFakes);
 #endif
@@ -1540,4 +1565,24 @@ Double_t FT2::ParticleAbsorptionProbability(Double_t length,Double_t rho, Double
 #endif
 	return (1.-TMath::Exp(-length*rho/lambda));
 	
+}
+//_________________________________________________________
+Int_t FT2::CutOnTrackToClusterChi2ITS(){
+	
+	float gloChi2 = 0, penalty=0;
+	int ncl=0;
+	
+	Int_t accept = 8;
+	for (int ilr=7;ilr--;) {
+		if (fProbe.chiwITS[ilr]<0){penalty+=fC0missPen[ilr];}
+		else {
+			if (fProbe.chiwITS[ilr]>fC0tr2clChi2[ilr]) {accept = ilr; break;}
+			gloChi2 += fProbe.chiwITS[ilr];
+			ncl++;
+		}
+		int ndf = TMath::Max(2*ncl-5,1);
+		float gloChi2norm = gloChi2/ndf + penalty;
+		if (gloChi2norm>fC0gloChi2[ilr]) {accept = ilr; break;}
+	}
+	return accept;
 }

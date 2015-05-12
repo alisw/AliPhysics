@@ -31,6 +31,9 @@ public:
 	virtual Double_t GetTPCsignal() const {return fTPCSignal;}
 	virtual UShort_t GetTPCsignalN() const {return fTPCSignalN;}
 	virtual Int_t GetTPCTrackingPID() const {return fAbsPdgCodeForTracking;}
+	virtual Double_t GetDecayInfo() const {return fIsDecayed;}
+	virtual Double_t GetAbsorbtionInfo() const {return fIsAbsorbed;}
+
 	virtual void GetInnerTrackParam(Double_t iTP[7]) const {
 		for(Int_t i=0;i<7;i++){
 			iTP[i]=fInnerTrackParameters[i];
@@ -53,10 +56,13 @@ protected:
 	Int_t		fProbeITSPatternFake;	// fakes pattern for ITS
 	Int_t		fProbeITSPattern;		// pattern for ITS clusters
 	Double_t	fProbeChi2TPC;			// total chi2 in TPC
-	Double_t	fProbeChi2ITS;			// total chi2 in ITS
-	Bool_t fIsDecayed;					// is particle decayed?
-	Bool_t fIsAbsorbed;					// is particle absorbed?
-
+	Double_t	fProbeChi2ITS;						// total chi2 in ITS
+	Bool_t fIsDecayed;									// is particle decayed?
+	Bool_t fIsAbsorbed;									// is particle absorbed?
+	Double_t fDecayRadius;								// radius when particle decayed
+	Double_t fAbsorbtionRadius;						// radius when particle was absorbed
+	Int_t fTrackToClusterChi2CutITS;		// is particle rejected by ITS track to cluster chi2?
+	Double_t chiwITS[7];								// chi2 for each layer of the ITS
 	
 	ClassDef(FTProbe,1)
 };
@@ -150,6 +156,7 @@ public:
 	Double_t ParticleDecayProbability(Double_t step);
 	Double_t ParticleAbsorptionProbability(Double_t length,Double_t rho, Double_t A, Double_t Z);
 	//
+	Int_t CutOnTrackToClusterChi2ITS();
 protected:
 	void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=1.00, Float_t scEdge=2.6); // eff=0.99
 	void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
@@ -196,7 +203,7 @@ protected:
 	//Double_t              fProbeMass; // probe mass
 	Double_t              fBz;        // bz
 	Bool_t                fSimMat;    // simulate material effects in probe preparation
-	Bool_t				  fAllowDecay; // necessary for standlone FT2 mode
+	Bool_t								fAllowDecay; // necessary for standlone FT2 mode
 	Int_t                 fCurrITSLr; //! current ITS layer under tracking
 	Int_t                 fNClTPC;    //! N used TPC clusters
 	Int_t                 fNClITS;    //! N used ITS clusters
@@ -225,6 +232,10 @@ protected:
 	Double_t fNCorrelITSFakes[kMaxITSLr]; // av.number of accompanying hits
 	Double_t fCorrelITSFakesSigY[kMaxITSLr]; // their width in Y
 	Double_t fCorrelITSFakesSigZ[kMaxITSLr]; // their width in Z
+	//
+	Float_t fC0tr2clChi2[kMaxITSLr];	// cut on cluster to track chi2
+	Float_t fC0gloChi2[kMaxITSLr];		// cut on seed global norm chi2
+	Float_t fC0missPen[kMaxITSLr];		// missing cluster penalty
 	//
 	static float fgMaxStepTGeo; // max step for tracking accounting for TGeo materials
 	
