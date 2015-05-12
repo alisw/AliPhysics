@@ -289,8 +289,6 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
   }
   
   // normal case, invariant mass selection around pi0/eta peak
-  Int_t decayBit = -1;
-
   if( !fParticle.Contains("SideBand") )
   {
     if( invmass > fInvMassMinCut && invmass < invmassmaxcut )
