@@ -1923,3 +1923,132 @@ void AliHFMassFitterVAR::ComputeNFinalPars() {
 
   Printf("Total number of par: %d, Back:%d, Sign:%d, Refl: %d",fNFinalPars,fNparBack,fNparSignal,fNparRefl);
 }
+
+
+TPaveText* AliHFMassFitterVAR::GetFitParametersBox(Double_t nsigma,Int_t mode){
+  TPaveText *pinfom=new TPaveText(0.6,0.7,1.,.87,"NDC");
+  pinfom->SetBorderSize(0);
+  pinfom->SetFillStyle(0);
+  TF1* ff=fhistoInvMass->GetFunction("funcmass");
+  
+
+  for (Int_t i=fNparBack;i<fNparBack+fNparSignal;i++){
+    pinfom->SetTextColor(kBlue);
+    TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+    if(!(mode==1 && i==fNparBack)) pinfom->AddText(str);
+  }
+  for (Int_t i=fNparBack+fNparSignal;i<fNparBack+fNparSignal+fNparRefl;i++){
+    pinfom->SetTextColor(kBlue+3);
+    TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+    pinfom->AddText(str);
+  }
+  
+  if(mode>1){
+    pinfom->SetTextColor(kBlue+5);
+    for (Int_t i=0;i<fNparBack;i++){      
+      TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+      pinfom->AddText(str);
+    }
+  }
+  pinfom->AddText(Form("#chi^{2}/NDF=%.2f/%d",ff->GetChisquare(),ff->GetNDF()));
+
+  return pinfom;
+} 
+
+
+TPaveText* AliHFMassFitterVAR::GetYieldBox(Double_t nsigma){
+    TPaveText *pinfo2=new TPaveText(0.1,0.1,0.6,0.4,"NDC");
+    pinfo2->SetBorderSize(0);
+    pinfo2->SetFillStyle(0);
+
+    Double_t signif, signal, bkg, errsignif, errsignal, errbkg;
+
+    Signal(nsigma,signal,errsignal);
+    Background(nsigma,bkg, errbkg);
+    AliVertexingHFUtils::ComputeSignificance(signal,errsignal,bkg,errbkg,signif,errsignif);
+
+
+    TString str=Form("Significance (%.0f#sigma) %.1f #pm %.1f ",nsigma,signif,errsignif);
+    pinfo2->AddText(str);
+    str=Form("S (%.0f#sigma) %.0f #pm %.0f ",nsigma,signal,errsignal);
+    pinfo2->AddText(str);
+    str=Form("B (%.0f#sigma) %.0f #pm %.0f",nsigma,bkg,errbkg);
+    pinfo2->AddText(str);
+    if(bkg>0) str=Form("S/B (%.0f#sigma) %.4f ",nsigma,signal/bkg); 
+    pinfo2->AddText(str);
+    
+    return pinfo2;
+
+}
+
+
+
+TH1F* AliHFMassFitterVAR::GetOverBackgroundResidualsAndPulls(Double_t minrange,Double_t maxrange,TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend){
+  
+
+  if(!fhistoInvMass){
+    Printf("AliHFMassFitter::GetOverBackgroundResidualsAndPulls, invariant mass histogram not avaialble!");
+    return 0x0;
+  }
+  
+  TF1 *fback=fhistoInvMass->GetFunction("funcbkgRecalc"); 
+  if(!fback){
+    Printf("AliHFMassFitter::GetOverBackgroundResidualsAndPulls, funcbkgRecalc not available!");
+    return 0x0;
+  }
+
+  // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
+  TF1 *fbackCp;
+  if(ftypeOfFit4Sgn<2)fbackCp=new TF1("ftmpback",this,&AliHFMassFitterVAR::FitFunction4Bkg,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
+  else fbackCp=new TF1("ftmpback",this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1),fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4BkgAndReflDraw");
+  
+  for(Int_t i=0;i<fback->GetNpar();i++){
+    fbackCp->SetParameter(i,fback->GetParameter(i));
+  }
+
+
+  TH1F *h=GetResidualsAndPulls(fhistoInvMass,fbackCp,minrange,maxrange,hPulls,hResidualTrend,hPullsTrend);
+  delete fbackCp;
+  
+  if(fSigmaSgn<0){
+    Printf("AliHFMassFitter::GetOverBackgroundResidualsAndPulls, negative sigma: fit not performed or something went wrong, cannto draw gaussian term on top of residuals");    
+    return h;
+  }
+
+  if(hResidualTrend){  
+    TF1 *fgauss=new TF1("signalTermForRes","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])",fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1));
+    fgauss->SetParameter(0,fRawYield*fhistoInvMass->GetBinWidth(1));
+    fgauss->SetParameter(1,fMass);
+    fgauss->SetParameter(2,fSigmaSgn);
+    fgauss->SetLineColor(kBlue);  
+    hResidualTrend->GetListOfFunctions()->Add(fgauss); 
+  }
+  return h;
+}
+
+
+TH1F* AliHFMassFitterVAR::GetAllRangeResidualsAndPulls(Double_t minrange,Double_t maxrange,TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend){
+  
+
+  if(!fhistoInvMass){
+    Printf("AliHFMassFitter::GetAllRangeResidualsAndPulls, invariant mass histogram not avaialble!");
+    return 0x0;
+  }
+  
+  TF1 *f=fhistoInvMass->GetFunction("funcmass"); 
+  if(!f){
+    Printf("AliHFMassFitter::GetAllRangeResidualsAndPulls, funcmass not available!");
+    return 0x0;
+  }
+
+  // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
+  TF1 *fmassCp=new TF1("fmassCp",this,&AliHFMassFitterVAR::FitFunction4MassDistr,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars,"AliHFMassFitterVAR","FitFunction4MassDistr");
+  for(Int_t i=0;i< f->GetNpar();i++){
+    fmassCp->SetParameter(i,f->GetParameter(i));
+  }
+
+  TH1F *h=GetResidualsAndPulls(fhistoInvMass,fmassCp,minrange,maxrange,hPulls,hResidualTrend,hPullsTrend);
+  delete fmassCp;
+  return h;
+
+}
