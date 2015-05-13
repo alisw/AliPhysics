@@ -109,15 +109,16 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Int_t			fWhichDecay;		//! which decay
   Double_t 		fPi0EtaWeight;		//! weight for pi0/eta in MC with enhanced signal
 
+  TH1F		        *fTrigger;		//! check trigger
   TH1F		        *fNoEvents;		//! no of events
   TH1F		        *fTrkpt;		//! track pt
   TH2F		        *fTrkEovPBef;		//! track E/p before HFE pid
   TH2F		        *fTrkEovPAft;		//! track E/p after HFE pid
   TH2F		        *fdEdxBef;		//! track dEdx vs p before HFE pid
   TH2F		        *fdEdxAft;		//! track dEdx vs p after HFE pid
-  TH1F		        *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
-  TH1F		        *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
-  TH1F		        *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
+  TH2F		        *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
+  TH2F		        *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
+  TH2F		        *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
   TH1F		        *fInclElec[3];   	 //! inclusive electron pt
   
   TH2F                  *fInvmassLS[3];	//! Inv mass of LS (e,e)
