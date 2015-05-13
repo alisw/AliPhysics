@@ -53,6 +53,7 @@
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisTaskGammaConvDalitzV1.h"
+#include <vector>
 
 
 ClassImp( AliAnalysisTaskGammaConvDalitzV1 )
@@ -221,6 +222,12 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	hNGoodESDTracksVsNGoodVGammas(NULL),
 	hNV0Tracks(NULL),
 	hEtaShift(NULL),
+	fHistoDoubleCountTruePi0InvMassPt(NULL),
+	fHistoDoubleCountTrueEtaInvMassPt(NULL),
+	fHistoDoubleCountTrueGammaRPt(NULL),
+	fVectorDoubleCountTruePi0s(0),
+	fVectorDoubleCountTrueEtas(0),
+	fVectorDoubleCountTrueGammas(0),
 	fRandom(0),
 	fUnsmearedPx(NULL),
 	fUnsmearedPy(NULL),
@@ -412,6 +419,12 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	hNGoodESDTracksVsNGoodVGammas(NULL),
 	hNV0Tracks(NULL),
 	hEtaShift(NULL),
+	fHistoDoubleCountTruePi0InvMassPt(NULL),
+	fHistoDoubleCountTrueEtaInvMassPt(NULL),
+	fHistoDoubleCountTrueGammaRPt(NULL),
+	fVectorDoubleCountTruePi0s(0),
+	fVectorDoubleCountTrueEtas(0),
+	fVectorDoubleCountTrueGammas(0),
 	fRandom(0),
 	fUnsmearedPx(NULL),
 	fUnsmearedPy(NULL),
@@ -924,12 +937,15 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		// True Histogramms
 		fTrueList = new TList*[fnCuts];
 		hESDTrueConvGammaPt = new TH1F*[fnCuts];
+		fHistoDoubleCountTrueGammaRPt = new TH2F*[fnCuts];
 		hESDTruePositronPt  = new TH1F*[fnCuts];
 		hESDTrueElectronPt  = new TH1F*[fnCuts];
 		hESDTrueSecConvGammaPt = new TH1F*[fnCuts];
 		hESDTrueSecPositronPt  = new TH1F*[fnCuts];
 		hESDTrueSecElectronPt  = new TH1F*[fnCuts];
 		hESDTruePi0DalitzConvGammaPt = new TH1F*[fnCuts];
+		fHistoDoubleCountTruePi0InvMassPt = new TH2F*[fnCuts];
+		fHistoDoubleCountTrueEtaInvMassPt = new TH2F*[fnCuts];
 		hESDTruePi0DalitzPositronPt  = new TH1F*[fnCuts];
 		hESDTruePi0DalitzPositronPtMB = new TH1F*[fnCuts];
 		hESDTruePi0DalitzElectronPt  = new TH1F*[fnCuts];
@@ -1189,12 +1205,20 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
 			hESDTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(hESDTrueConvGammaPt[iCut]);
+
+			fHistoDoubleCountTrueGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountGamma_R_Pt","ESD_TrueDoubleCountGamma_R_Pt",800,0,200,300,0,30);
+			fTrueList[iCut]->Add(fHistoDoubleCountTrueGammaRPt[iCut]);
 		
 			hESDTrueSecConvGammaPt[iCut] = new TH1F("ESD_TrueSecConvGamma_Pt","ESD_TrueSecConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(hESDTrueSecConvGammaPt[iCut]);
 
 			hESDTruePi0DalitzConvGammaPt[iCut] = new TH1F("ESD_TruePi0DalitzConvGamma_Pt","ESD_TruePi0DalitzConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(hESDTruePi0DalitzConvGammaPt[iCut]);
+
+			fHistoDoubleCountTruePi0InvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountPi0_InvMass_Pt","ESD_TrueDoubleCountPi0_InvMass_Pt",800,0,0.8,300,0,30);
+			fTrueList[iCut]->Add(fHistoDoubleCountTruePi0InvMassPt[iCut]);
+			fHistoDoubleCountTrueEtaInvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountEta_InvMass_Pt","ESD_TrueDoubleCountEta_InvMass_Pt",800,0,0.8,300,0,30);
+			fTrueList[iCut]->Add(fHistoDoubleCountTrueEtaInvMassPt[iCut]);
 
 			hESDTruePi0DalitzElectronPt[iCut] = new TH1F("ESD_TruePi0DalitzElectron_Pt","ESD_TruePi0DalitzElectron_Pt",1000,0,25);
 			fTrueList[iCut]->Add(hESDTruePi0DalitzElectronPt[iCut]);
@@ -1276,6 +1300,10 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
 		}
 	}
+
+	fVectorDoubleCountTruePi0s.clear();
+	fVectorDoubleCountTrueEtas.clear();
+	fVectorDoubleCountTrueGammas.clear();
 
 	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
@@ -1479,6 +1507,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 			delete[] fUnsmearedVPz; fUnsmearedVPz = 0x0;
 			delete[] fUnsmearedVE;  fUnsmearedVE  = 0x0;
 		}
+		fVectorDoubleCountTruePi0s.clear();
+		fVectorDoubleCountTrueEtas.clear();
+		fVectorDoubleCountTrueGammas.clear();
 		fGoodGammas->Clear(); // delete this cuts good gammas
 		fGoodVirtualGammas->Clear(); // delete this cuts good gammas
 	}
@@ -1653,6 +1684,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 	if( labelGamma < MCStack->GetNprimary() ){
 		if( fIsFromMBHeader ){
 			hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+			if (CheckVectorForDoubleCount(fVectorDoubleCountTrueGammas,posDaughter->GetMother(0))) fHistoDoubleCountTrueGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
 			if(fDoMesonQA){
 			  hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());			 
 			  hESDTrueConvGammaRMC[fiCut]->Fill( posDaughter->R() );
@@ -2446,9 +2478,11 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 		if( gammaMotherLabel >= 0 && ( gammaMotherLabel == virtualGammaMotherLabel) ){
 			if(((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->GetPdgCode() == 111){
 				isTruePi0=kTRUE;
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gammaMotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}
 			if(((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->GetPdgCode() == 221){
 				isTrueEta=kTRUE;
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,gammaMotherLabel)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}
 		}
 
@@ -3032,4 +3066,20 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair( const AliESDtrack *trackP
 	Double_t psiAngle = TMath::ASin( deltaTheta/openingAngle );
 
 	return psiAngle;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskGammaConvDalitzV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked)
+{
+	if(tobechecked > -1)
+	{
+		vector<Int_t>::iterator it;
+		it = find (vec.begin(), vec.end(), tobechecked);
+		if (it != vec.end()) return true;
+		else{
+			vec.push_back(tobechecked);
+			return false;
+		}
+	}
+	return false;
 }
