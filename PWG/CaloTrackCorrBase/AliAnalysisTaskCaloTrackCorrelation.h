@@ -63,6 +63,9 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   void         SetConfigFileName(TString & name ) { fConfigName = name   ; }
   TString      GetConfigFileName()          const { return fConfigName   ; }
 
+  void         SetFirstEvent(Int_t event )        { fFirstEvent = event  ; }
+  Int_t        GetFirstEvent()              const { return fFirstEvent   ; }
+  
   void         SetLastEvent(Int_t event )         { fLastEvent = event   ; }
   Int_t        GetLastEvent()               const { return fLastEvent    ; }
 
@@ -83,10 +86,11 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   
   TList * fCuts ;                  //!<! List with analysis cuts.
   
+  Int_t   fFirstEvent;             //!<! Analyze all the events from this one, for testing.    
   Int_t   fLastEvent;              //!<! Analyze all the events until this one, for testing.    
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCaloTrackCorrelation, 4) ; 
+  ClassDef(AliAnalysisTaskCaloTrackCorrelation, 5) ; 
   /// \endcond
 
 };
