@@ -300,10 +300,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TString 							*fStringRecTrueEtas;							//! array of strings containing the stack position of the reconstructed validated eta
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
-		TH2F				 				**fHistoDoubleCountTruePhotonRPt;				//! array of histos with double counted photons, R, pT
+		TH2F				 				**fHistoDoubleCountTrueGammaRPt;				//! array of histos with double counted photons, R, pT
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
-		vector<Int_t>						fVectorDoubleCountTruePhotons;					//! vector containing labels of validated photons
+		vector<Int_t>						fVectorDoubleCountTrueGammas;					//! vector containing labels of validated photons
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
