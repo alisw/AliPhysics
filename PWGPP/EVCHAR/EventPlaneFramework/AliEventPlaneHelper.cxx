@@ -380,6 +380,7 @@ TObject* AliEventPlaneHelper::GetHistogram(const Char_t* listname, const Char_t*
     //cout << "                   A ROOT file must pe initialized first!!" << endl;
     return 0x0;
   }
+  std::cout<<"!!!!!!!!  "<<fgHistCali->IsA()->GetName()<<std::endl;
   if(fgHistCali->FindObject(listname)) return fgHistCali->FindObject(listname)->FindObject(hname);
   else return 0x0;
   //TKey* listKey = fgHistCali->FindKey(listname);

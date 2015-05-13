@@ -39,10 +39,6 @@ AliEventPlaneManager::AliEventPlaneManager() :
  fUseEvent(kTRUE),
  fCorrelationHists(),
  fEqualizationHists(),
- fVZEROminMult(0.5),
- fTZEROminMult(1.e-2),
- fZDCminMult(0.01),
- fFMDminMult(1.e-6),
  fInputFriendFileName(""),
  fOutputFriendFileName("")
 {

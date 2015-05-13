@@ -368,7 +368,7 @@ cout<<"initialized"<<endl;
     //  
     ////cout<<"crash 3"<<endl;
     //ZDC  
-    //if(fFillZDC) FILL::FillZDC(EPmanager,event);
+    if(fFillZDC) FILL::FillZDC(EPmanager,event);
     //  
     ////cout<<"crash 4"<<endl;
     ////FMD  
@@ -678,7 +678,8 @@ void AliAnalysisTaskEventPlaneCalibration::DefineHistograms(const Char_t* histCl
       HIST::Instance()->AddHistogram(classStr.Data(),"IsPhysicsSelection","Physics selection flag;;", kFALSE,
 		   2,-0.5,1.5,VAR::kIsPhysicsSelection, 0,0.0,0.0,VAR::kNothing, 0,0.0,0.0,VAR::kNothing, "off;on");
       
-      HIST::Instance()->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-15.,15.,VAR::kVtxZ);
+      HIST::Instance()->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,0.0,0.0,VAR::kVtxZ);
+      //HIST::Instance()->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-15.,15.,VAR::kVtxZ);
       HIST::Instance()->AddHistogram(classStr.Data(),"VtxX","Vtx X;vtx X (cm)", kFALSE,300,-1.,1.,VAR::kVtxX);
       HIST::Instance()->AddHistogram(classStr.Data(),"VtxY","Vtx Y;vtx Y (cm)", kFALSE,300,-1.,1.,VAR::kVtxY);
 

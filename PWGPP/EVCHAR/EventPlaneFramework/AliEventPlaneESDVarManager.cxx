@@ -193,7 +193,7 @@ void AliEventPlaneESDVarManager::FillVZERO(AliEventPlaneManager* EPmanager,AliVE
 
   for(Int_t ich=0; ich<64; ich++){
     weight=vzero->GetMultiplicity(ich);
-    if(weight<EPmanager->VZEROminMult()) weight=0.;
+    if(weight<0.01) weight=0.;
 
     TClonesArray& detector = *(EPmanager->GetReducedDetector(AliEventPlaneManager::kVZERO));
     AliEventPlaneDetector *reducedDetector=new(detector[ich]) AliEventPlaneDetector();
@@ -233,7 +233,7 @@ void AliEventPlaneESDVarManager::FillTZERO(AliEventPlaneManager* EPmanager,AliVE
 
   for(Int_t ich=0; ich<24; ich++){
     weight=tzero->GetT0amplitude()[ich];
-    if(weight<EPmanager->TZEROminMult()) weight=0.;
+    if(weight<0.01) weight=0.;
 
     TClonesArray& detector = *(EPmanager->GetReducedDetector(AliEventPlaneManager::kTZERO));
     AliEventPlaneDetector *reducedDetector=new(detector[ich]) AliEventPlaneDetector();
@@ -255,5 +255,46 @@ void AliEventPlaneESDVarManager::FillTZERO(AliEventPlaneManager* EPmanager,AliVE
   }
 }
 
+
+
+
+//_________________________________
+void AliEventPlaneESDVarManager::FillZDC(AliEventPlaneManager* EPmanager,AliVEvent* event){
+
+  const Double_t kX[10] = { /* Cside */ 0.0,  -1.75,  1.75, -1.75, 1.75, /* Aside */  0.0,  1.75, -1.75, 1.75, -1.75  };
+  const Double_t kY[10] = { /* Cside */ 0.0,  -1.75, -1.75,  1.75, 1.75, /* Aside */  0.0, -1.75, -1.75, 1.75,  1.75  };
+
+
+  AliEventPlaneConfiguration* EPconf = 0x0;
+
+  AliESDEvent* esdEvent = static_cast<AliESDEvent*>(event);
+
+  AliESDZDC* zdc = esdEvent->GetESDZDC();
+  Double_t ZDCenergy[10];
+  for(Int_t i=0; i<5; ++i)    ZDCenergy[i]  = zdc->GetZN1TowerEnergy()[i];
+  for(Int_t i=5; i<10; ++i)   ZDCenergy[i]  = zdc->GetZN2TowerEnergy()[i-5];
+
+  Int_t tower=-1;
+  for(Int_t ich=1; ich<10; ich++){
+    if(ich==5) continue;
+    tower++;
+
+    TClonesArray& detector = *(EPmanager->GetReducedDetector(AliEventPlaneManager::kZDC));
+    AliEventPlaneDetector *reducedDetector=new(detector[tower]) AliEventPlaneDetector();
+    // copy tzero data and set respective coordinates
+    reducedDetector->SetX(kX[ich]);
+    reducedDetector->SetY(kY[ich]);
+    reducedDetector->SetWeight(((ZDCenergy[ich]>100) ? ZDCenergy[ich] : 0.0));
+    reducedDetector->SetId(tower);
+    reducedDetector->SetBin(0);
+
+    // set event plane subdetectors
+    TIter nextEPconf(EPmanager->GetEventPlaneConfigurations(AliEventPlaneManager::kZDC));
+    while((EPconf=static_cast<AliEventPlaneConfiguration*>(nextEPconf()))) {
+      if(!EPconf) continue;
+      if(EPconf->UseChannel(ich)) reducedDetector->SetEventPlaneDetector(EPconf->LocalIndex());
+      }
+    }
+}
 
 
