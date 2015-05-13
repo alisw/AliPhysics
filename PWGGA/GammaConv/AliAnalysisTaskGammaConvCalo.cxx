@@ -231,8 +231,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoTrueSecondaryPi0PhotonPairPtconv(NULL),
 	fHistoTrueSecondaryPi0DCPtconv(NULL),
 	fHistoTrueSecondaryPi0MissingPtconv(NULL),
-	fStringRecTruePi0s(NULL),
-	fStringRecTrueEtas(NULL),
+	fVectorRecTruePi0s(0),
+	fVectorRecTrueEtas(0),
 	fHistoDoubleCountTruePi0InvMassPt(NULL),
 	fHistoDoubleCountTrueEtaInvMassPt(NULL),
 	fHistoDoubleCountTrueConvGammaRPt(NULL),
@@ -445,8 +445,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoTrueSecondaryPi0PhotonPairPtconv(NULL),
 	fHistoTrueSecondaryPi0DCPtconv(NULL),
 	fHistoTrueSecondaryPi0MissingPtconv(NULL),
-	fStringRecTruePi0s(NULL),
-	fStringRecTrueEtas(NULL),
+	fVectorRecTruePi0s(0),
+	fVectorRecTrueEtas(0),
 	fHistoDoubleCountTruePi0InvMassPt(NULL),
 	fHistoDoubleCountTrueEtaInvMassPt(NULL),
 	fHistoDoubleCountTrueConvGammaRPt(NULL),
@@ -959,8 +959,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoTruePrimaryPi0MissingPtconv 			= new TH1F*[fnCuts];
 			fHistoTrueSecondaryPi0MissingPtconv 		= new TH1F*[fnCuts];
 			fHistoTruePrimaryEtaMissingPtconv 			= new TH1F*[fnCuts];
-			fStringRecTruePi0s							= new TString[fnCuts];
-			fStringRecTrueEtas							= new TString[fnCuts];
 			
 			if (fDoMesonQA > 0){
 				fHistoMCPi0PtY 								= new TH2F*[fnCuts];
@@ -1464,6 +1462,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	fVectorDoubleCountTruePi0s.clear();
 	fVectorDoubleCountTrueEtas.clear();
 	fVectorDoubleCountTrueConvGammas.clear();
+
+	fVectorRecTruePi0s.clear();
+	fVectorRecTrueEtas.clear();
     
 	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
@@ -1603,8 +1604,6 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 
 		if(fIsMC){
 			// Process MC Particle
-			fStringRecTruePi0s[iCut] = "";
-			fStringRecTrueEtas[iCut] = "";
 			if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection() != 0){
 				if(fInputEvent->IsA()==AliESDEvent::Class()){
 				((AliConvEventCuts*)fEventCutArray->At(iCut))->GetNotRejectedParticles(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection(),
@@ -1690,11 +1689,16 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 				delete[] fUnsmearedPz; fUnsmearedPz = 0x0;
 				delete[] fUnsmearedE;  fUnsmearedE  = 0x0;
 			}
-			fVectorDoubleCountTruePi0s.clear();
-			fVectorDoubleCountTrueEtas.clear();
+
+			if(fIsMC){
+				fVectorRecTruePi0s.clear();
+				fVectorRecTrueEtas.clear();
+				fVectorDoubleCountTruePi0s.clear();
+				fVectorDoubleCountTrueEtas.clear();
+			}
 		}
 
-		fVectorDoubleCountTrueConvGammas.clear();
+		if(fIsMC) fVectorDoubleCountTrueConvGammas.clear();
 
 		fGammaCandidates->Clear(); // delete this cuts good gammas
 		fClusterCandidates->Clear(); // delete cluster candidates
@@ -2846,7 +2850,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 					if (isTruePi0){
 						fHistoTrueSecondaryPi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec);
 						fHistoTrueSecondaryPi0PhotonPairPtconv[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->Pt(),weightedSec);
-						if(CheckIfContainedInString(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){
+						if(CheckVectorOnly(fVectorRecTruePi0s,gamma0MotherLabel)){
 							fHistoTrueSecondaryPi0DCPtconv[fiCut]->Fill(TrueGammaCandidate0->Pt(),weightedSec);
 						}	
 					}	
@@ -2877,7 +2881,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 						fHistoTruePrimaryPi0PhotonPairPtconv[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->Pt(),weighted);
 						fHistoTruePrimaryPi0W0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 						fProfileTruePrimaryPi0WeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
-						if(CheckIfContainedInString(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){
+						if(CheckVectorOnly(fVectorRecTruePi0s,gamma0MotherLabel)){
 							fHistoTruePrimaryPi0DCPtconv[fiCut]->Fill(TrueGammaCandidate0->Pt(),weighted);
 						}	
 
@@ -2886,7 +2890,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 						fHistoTruePrimaryEtaPhotonPairPtconv[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->Pt(),weighted);
 						fHistoTruePrimaryEtaW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 						fProfileTruePrimaryEtaWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
-						if(CheckIfContainedInString(fStringRecTrueEtas[fiCut],gamma0MotherLabel)){
+						if(CheckVectorOnly(fVectorRecTrueEtas,gamma0MotherLabel)){
 							fHistoTruePrimaryEtaDCPtconv[fiCut]->Fill(TrueGammaCandidate0->Pt(),weighted);
 						}							
 					}	
@@ -2911,10 +2915,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 			}
 		}
 		if (isTrueEta && !matched){
-			fStringRecTrueEtas[fiCut].Append(Form("%i,",gamma0MotherLabel));
+			fVectorRecTrueEtas.push_back(gamma0MotherLabel);
 		}
 		if (isTruePi0 && !matched){
-			fStringRecTruePi0s[fiCut].Append(Form("%i,",gamma0MotherLabel));
+			fVectorRecTruePi0s.push_back(gamma0MotherLabel);
 		}	
 
 	}
@@ -3046,7 +3050,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 				if (isTruePi0){
 					fHistoTrueSecondaryPi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec);
 					fHistoTrueSecondaryPi0PhotonPairPtconv[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->Pt(),weightedSec);
-					if(CheckIfContainedInString(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){
+					if(CheckVectorOnly(fVectorRecTruePi0s,gamma0MotherLabel)){
 						fHistoTrueSecondaryPi0DCPtconv[fiCut]->Fill(TrueGammaCandidate0->Pt(),weightedSec);
 					}						
 				}	
@@ -3077,7 +3081,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 					fHistoTruePrimaryPi0W0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 					fHistoTruePrimaryPi0PhotonPairPtconv[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->Pt(),weighted);
 					fProfileTruePrimaryPi0WeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
-					if(CheckIfContainedInString(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){
+					if(CheckVectorOnly(fVectorRecTruePi0s,gamma0MotherLabel)){
 						fHistoTruePrimaryPi0DCPtconv[fiCut]->Fill(TrueGammaCandidate0->Pt(),weighted);
 					}						
 				} else if (isTrueEta){
@@ -3085,7 +3089,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 					fHistoTruePrimaryEtaW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 					fHistoTruePrimaryEtaPhotonPairPtconv[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->Pt(),weighted);
 					fProfileTruePrimaryEtaWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);					
-					if(CheckIfContainedInString(fStringRecTrueEtas[fiCut],gamma0MotherLabel)){
+					if(CheckVectorOnly(fVectorRecTrueEtas,gamma0MotherLabel)){
 						fHistoTruePrimaryEtaDCPtconv[fiCut]->Fill(TrueGammaCandidate0->Pt(),weighted);
 					}												
 				}	
@@ -3113,10 +3117,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 	}
 	
 	if (isTrueEta && !matched){
-		fStringRecTrueEtas[fiCut].Append(Form("%i,",gamma0MotherLabel));
+		fVectorRecTrueEtas.push_back(gamma0MotherLabel);
 	}
 	if (isTruePi0 && !matched){
-		fStringRecTruePi0s[fiCut].Append(Form("%i,",gamma0MotherLabel));
+		fVectorRecTruePi0s.push_back(gamma0MotherLabel);
 	}	
 
 
@@ -3484,28 +3488,6 @@ Int_t AliAnalysisTaskGammaConvCalo::GetSourceClassification(Int_t daughter, Int_
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCalo::CheckIfContainedInString(TString input, Int_t tobechecked){
-	TObjArray *arr = input.Tokenize(",");
-	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
-		TString tempStr = ((TObjString*)arr->At(i))->GetString();
-		if (tempStr.Atoi() == tobechecked) return kTRUE;
-	}	
-	return kFALSE;
-}
-
-//_________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCalo::CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked){
-	TObjArray *arr = input.Tokenize(",");
-	Bool_t isContained = kFALSE;
-	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
-		TString tempStr = ((TObjString*)arr->At(i))->GetString();
-		if (tempStr.Atoi() == tobechecked) isContained= kTRUE;
-	}	
-	if (!isContained)input.Append(Form("%i,",tobechecked));	
-	return isContained;
-}
-
-//_________________________________________________________________________________
 Bool_t AliAnalysisTaskGammaConvCalo::CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked)
 {
 	if(tobechecked > -1)
@@ -3553,7 +3535,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
 				gamma0MotherLabel=gammaMC0->GetFirstMother();
 				if (gamma0MotherLabel>-1){
 					if(((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 111){
-						if (!CheckIfContainedInStringAndAppend(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){ 
+						if (!CheckVectorForDoubleCount(fVectorRecTruePi0s,gamma0MotherLabel)){
 							Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 							if (!isPrimary){
 								Int_t secMotherLabel = ((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetMother(0);
@@ -3573,7 +3555,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
 							}	
 						}
 					} else if(((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 221){
-						if (!CheckIfContainedInStringAndAppend(fStringRecTrueEtas[fiCut],gamma0MotherLabel)){
+						if (!CheckVectorForDoubleCount(fVectorRecTrueEtas,gamma0MotherLabel)){
 							Float_t weighted= 1;
 							if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0MotherLabel, fMCStack, fInputEvent)){
 								if (((TParticle*)fMCStack->Particle(gamma0MotherLabel))->Pt()>0.005){
@@ -3619,7 +3601,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
 
 				if (gamma0MotherLabel>-1){
 					if(((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 111){
-						if (!CheckIfContainedInStringAndAppend(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){ 
+						if (!CheckVectorForDoubleCount(fVectorRecTruePi0s,gamma0MotherLabel)){
 							Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 							if (!isPrimary){
 								Int_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->GetMother();
@@ -3639,7 +3621,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
 							}	
 						}
 					} else if(((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 221){
-						if (!CheckIfContainedInStringAndAppend(fStringRecTrueEtas[fiCut],gamma0MotherLabel)){
+						if (!CheckVectorForDoubleCount(fVectorRecTrueEtas,gamma0MotherLabel)){
 							Float_t weighted= 1;
 							if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0MotherLabel, 0x0, fInputEvent)){
 								if (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->Pt()>0.005){

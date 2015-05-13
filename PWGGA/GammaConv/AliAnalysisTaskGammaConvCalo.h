@@ -15,6 +15,7 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "THnSparse.h"
 #include <vector>
 
 class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
@@ -97,9 +98,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		// Additional functions for convenience
 		void SetLogBinningXTH2(TH2* histoRebin);
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
-		Bool_t CheckIfContainedInString(TString input, Int_t tobechecked);
-		Bool_t CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked);
-
 		Bool_t CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked);
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 	
@@ -296,14 +294,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoTrueSecondaryPi0PhotonPairPtconv;		//! array of histos with validated secondary pi0's vs conversion photon pT
 		TH1F				 				**fHistoTrueSecondaryPi0DCPtconv;				//! array of histos with validated secondary pi0's vs conversion photon pT, double counting
 		TH1F				 				**fHistoTrueSecondaryPi0MissingPtconv;			//! array of histos with validated secondary pi0's vs conversion photon pT, missing
-		TString 							*fStringRecTruePi0s;							//! array of strings containing the stack position of the reconstructed validated pi0
-		TString 							*fStringRecTrueEtas;							//! array of strings containing the stack position of the reconstructed validated eta
+		vector<Int_t> 						fVectorRecTruePi0s;								//! array of strings containing the stack position of the reconstructed validated pi0
+		vector<Int_t> 						fVectorRecTrueEtas;								//! array of strings containing the stack position of the reconstructed validated eta
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
-		TH2F				 				**fHistoDoubleCountTrueConvGammaRPt;				//! array of histos with double counted photons, R, pT
+		TH2F				 				**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
-		vector<Int_t>						fVectorDoubleCountTrueConvGammas;					//! vector containing labels of validated photons
+		vector<Int_t>						fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
