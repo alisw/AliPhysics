@@ -569,19 +569,6 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
   // associate the mother particles to their daughters in the flow event (if any)
   fFlowEvent->FindDaughters();
- 
-  // Q vectors from ZDC
-  if (myAOD) {
-   AliAODZDC* ZDCData = myAOD->GetZDCData();
-   Double_t centrZNC[2] = {0.,0.};
-   Double_t centrZNA[2] = {0.,0.};
-   Double_t energyZNA = ZDCData->GetZNAEnergy();
-   Double_t energyZNC = ZDCData->GetZNCEnergy();
-   if(energyZNA>0 && energyZNC>0) {
-    ZDCData->GetZNCentroidInPbPb(1.,centrZNC,centrZNA);
-    fFlowEvent->SetZDC2Qsub(centrZNC,centrZNA);
-   }
-  }
 
   //fListHistos->Print();
   //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");

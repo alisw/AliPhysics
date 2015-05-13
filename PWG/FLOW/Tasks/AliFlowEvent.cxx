@@ -902,6 +902,17 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
     // from the VZERO oadb file or from the event header
     // if the user does not want to recenter, switch the flag
     fApplyTwisting = rpCuts->GetApplyTwisting();
+   // Q vectors from ZDC
+    AliVEvent* event = rpCuts->GetEvent();
+    AliVZDC* ZDCData = event->GetZDCData();
+    Double_t centrZNC[2] = {0.,0.};
+    Double_t centrZNA[2] = {0.,0.};
+    Double_t energyZNA = ZDCData->GetZNAEnergy();
+    Double_t energyZNC = ZDCData->GetZNCEnergy();
+    if(energyZNA>0 && energyZNC>0) {
+     ZDCData->GetZNCentroidInPbPb(1.,centrZNC,centrZNA);
+     this->SetZDC2Qsub(centrZNC,centrZNA);
+    }
   }
   if (sourcePOI == AliFlowTrackCuts::kBetaVZERO) {
       // probably no-one will choose vzero tracks as poi's ...
