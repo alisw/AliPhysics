@@ -436,7 +436,7 @@ alien_find()
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
 
-  [[ -z maxCollectionLength ]] && local maxCollectionLength=10000
+  [[ -z $maxCollectionLength ]] && local maxCollectionLength=10000
 
   export GCLIENT_COMMAND_MAXWAIT=600
   export GCLIENT_COMMAND_RETRY=20
