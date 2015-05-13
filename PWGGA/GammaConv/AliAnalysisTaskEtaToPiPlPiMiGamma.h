@@ -181,7 +181,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 2 );
+		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 3 );
 };
 
 #endif // ALIANALYSISTASKETATOPIPLPIMIGAMMA_H
