@@ -44,29 +44,13 @@ ClassImp(AliAnalysisTaskRandomRejection)
 
 //_________________________________________________________________________________
 AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection() :
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskMultiDielectron(),
   fPtFunc(0x0),
   fRndmEtaMax(0.9),
   fNRndmPt(8),
   fNRndmEta(8),
   fNRndmPhi(8),
-  fPairArray(0x0),
-  fListDielectron(),
-  fListHistos(),
-  fListCF(),
-  fTestparticles(0x0),
-  fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
-  fExcludeTriggerMask(0),
-  fTriggerOnV0AND(kFALSE),
-  fFiredTrigger(""),
-  fFiredExclude(kFALSE),
-  fRejectPileup(kFALSE),
-  fBeamEnergy(-1.),
-  fTriggerLogic(kAny),
-  fTriggerAnalysis(0x0),
-  fEventFilter(0x0),
-  fEventStat(0x0)
+  fTestparticles(0x0)//,
 {
   //
   // Constructor
@@ -75,29 +59,13 @@ AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection() :
 
 //_________________________________________________________________________________
 AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection(const char *name) :
-  AliAnalysisTaskSE(name),
+  AliAnalysisTaskMultiDielectron(name),
   fPtFunc(0x0),
   fRndmEtaMax(0.9),
   fNRndmPt(8),
   fNRndmEta(8),
   fNRndmPhi(8),
-  fPairArray(0x0),
-  fListDielectron(),
-  fListHistos(),
-  fListCF(),
-  fTestparticles(0x0),
-  fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
-  fExcludeTriggerMask(0),
-  fTriggerOnV0AND(kFALSE),
-  fFiredTrigger(""),
-  fFiredExclude(kFALSE),
-  fRejectPileup(kFALSE),
-  fBeamEnergy(-1.),
-  fTriggerLogic(kAny),
-  fTriggerAnalysis(0x0),
-  fEventFilter(0x0),
-  fEventStat(0x0)
+  fTestparticles(0x0)//,
 {
   //
   // Constructor
