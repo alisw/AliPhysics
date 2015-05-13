@@ -205,10 +205,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH2F 								**hESDTrueGammaPsiPairDeltaPhi;						//!
 		TH2F				 				**hDoubleCountTruePi0InvMassPt;						//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**hDoubleCountTrueEtaInvMassPt;						//! array of histos with double counted etas, invMass, pT
-		TH2F				 				**hDoubleCountTrueGammaRPt;							//! array of histos with double counted photons, R, pT
+		TH2F				 				**hDoubleCountTrueConvGammaRPt;							//! array of histos with double counted photons, R, pT
 		vector<Int_t>						vecDoubleCountTruePi0s;								//! vector containing labels of validated pi0
 		vector<Int_t>						vecDoubleCountTrueEtas;								//! vector containing labels of validated eta
-		vector<Int_t>						vecDoubleCountTrueGammas;							//! vector containing labels of validated photons
+		vector<Int_t>						vecDoubleCountTrueConvGammas;							//! vector containing labels of validated photons
 		TH1I 								**hNEvents;											//!
 		TH1I 								**hNGoodESDTracks;									//!
 		TH1I 								**hNEventsWeighted;									//!
