@@ -44,6 +44,7 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation() :
   fOutputContainer(0x0),
   fConfigName(""), 
   fCuts(0x0),
+  fFirstEvent(0),
   fLastEvent(0)
 {
 }
@@ -57,6 +58,7 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const c
   fOutputContainer(0x0),
   fConfigName(""), 
   fCuts(0x0),
+  fFirstEvent(0),
   fLastEvent(0)
 {  
   DefineOutput(1, TList::Class());
@@ -177,10 +179,11 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
 //______________________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 {  
-  if ( fLastEvent > 0 && Entry() > fLastEvent ) return ;
+  if ( (fLastEvent  > 0 && Entry() > fLastEvent )  || 
+       (fFirstEvent > 0 && Entry() < fFirstEvent)     ) return ;
   
-  AliDebug(1,"Begin");
-  
+  AliDebug(1,Form("Begin event %d", (Int_t) Entry()));
+    
   //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
