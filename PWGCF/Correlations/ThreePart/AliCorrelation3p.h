@@ -19,7 +19,9 @@ class TH1F;
 class TH2F;
 class TH1D;
 class TH2D;
+class TH3D;
 class TH3F;
+
 class AliVParticle;
 class AliVEvent;
 class TCanvas;
@@ -63,7 +65,7 @@ class AliCorrelation3p : public TNamed {
   AliCorrelation3p& operator+=(const AliCorrelation3p& other);
   void SetMixedEvent(AliCorrelation3p* pME) {fMixedEvent=pME;}
   void SetAcceptanceCut(float AccCut){fAcceptanceCut = AccCut;}
-  void SetWeight(THnT<Float_t>*weight){fWeights = weight;}
+  void SetWeight(TH3D*weight){fWeights = weight;}
   enum {
     kHistpT,  // TH1F
     kHistPhi, // TH1F
@@ -131,7 +133,7 @@ class AliCorrelation3p : public TNamed {
   float fhPhiEtaDeltaPhi12Cut1; // phi vs. eta plots: cut on phi between associated particles 
   float fhPhiEtaDeltaPhi12Cut2; // phi vs. eta plots: cut on phi between associated particles 
   float fAcceptanceCut;
-  THnF * fWeights;//!
+  TH3D * fWeights;//!
   Int_t fMultWeightIndex;//
   Int_t fVZWeightIndex;//
   AliCorrelation3p* fMixedEvent; // mixed event analysis
