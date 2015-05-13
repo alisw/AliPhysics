@@ -158,9 +158,9 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		TH2F 							**fHistoTruePionPionInvMassPt;				//
 		TH2F 							**fHistoTruePionPionFromEtaInvMassPt;		//
 		TH2F				 			**fHistoDoubleCountTrueEtaInvMassPt;		//! array of histos with double counted etas, invMass, pT
-		TH2F				 			**fHistoDoubleCountTrueGammaRPt;			//! array of histos with double counted photons, R, pT
+		TH2F				 			**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
 		vector<Int_t>					fVectorDoubleCountTrueEtas;					//! vector containing labels of validated eta
-		vector<Int_t>					fVectorDoubleCountTrueGammas;				//! vector containing labels of validated photons
+		vector<Int_t>					fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
 		// Event properties
 		TH1I 							**fHistoNEvents;							//
 		TH1I 							**fHistoNGoodESDTracks;						//

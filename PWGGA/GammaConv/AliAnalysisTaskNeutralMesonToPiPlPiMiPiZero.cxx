@@ -139,11 +139,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoDoubleCountTruePi0InvMassPt(NULL),
 	fHistoDoubleCountTrueEtaInvMassPt(NULL),
 	fHistoDoubleCountTrueOmegaInvMassPt(NULL),
-	fHistoDoubleCountTrueGammaRPt(NULL),
+	fHistoDoubleCountTrueConvGammaRPt(NULL),
 	fVectorDoubleCountTruePi0s(0),
 	fVectorDoubleCountTrueEtas(0),
 	fVectorDoubleCountTrueOmegas(0),
-	fVectorDoubleCountTrueGammas(0),
+	fVectorDoubleCountTrueConvGammas(0),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fProfileEtaShift(NULL),
@@ -246,11 +246,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoDoubleCountTruePi0InvMassPt(NULL),
 	fHistoDoubleCountTrueEtaInvMassPt(NULL),
 	fHistoDoubleCountTrueOmegaInvMassPt(NULL),
-	fHistoDoubleCountTrueGammaRPt(NULL),
+	fHistoDoubleCountTrueConvGammaRPt(NULL),
 	fVectorDoubleCountTruePi0s(0),
 	fVectorDoubleCountTrueEtas(0),
 	fVectorDoubleCountTrueOmegas(0),
-	fVectorDoubleCountTrueGammas(0),
+	fVectorDoubleCountTrueConvGammas(0),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fProfileEtaShift(NULL),
@@ -555,7 +555,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fTrueList = new TList*[fnCuts];
 		if (fNeutralPionMode < 2){
 			fHistoTrueConvGammaPt = new TH1F*[fnCuts];
-			fHistoDoubleCountTrueGammaRPt = new TH2F*[fnCuts];
+			fHistoDoubleCountTrueConvGammaRPt = new TH2F*[fnCuts];
 			fHistoTrueConvGammaFromNeutralMesonPt = new TH1F*[fnCuts];
 		}	
 		if (fNeutralPionMode > 0){
@@ -665,8 +665,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 			if (fNeutralPionMode < 2){
 				fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 				fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
-				fHistoDoubleCountTrueGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountGamma_R_Pt","ESD_TrueDoubleCountGamma_R_Pt",800,0,200,300,0,30);
-				fTrueList[iCut]->Add(fHistoDoubleCountTrueGammaRPt[iCut]);
+				fHistoDoubleCountTrueConvGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt","ESD_TrueDoubleCountConvGamma_R_Pt",800,0,200,300,0,30);
+				fTrueList[iCut]->Add(fHistoDoubleCountTrueConvGammaRPt[iCut]);
 				fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt",250,0,25);
 				fTrueList[iCut]->Add(fHistoTrueConvGammaFromNeutralMesonPt[iCut]);
 			}
@@ -722,7 +722,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 	fVectorDoubleCountTruePi0s.clear();
 	fVectorDoubleCountTrueEtas.clear();
 	fVectorDoubleCountTrueOmegas.clear();
-	fVectorDoubleCountTrueGammas.clear();
+	fVectorDoubleCountTrueConvGammas.clear();
 
 	InitBack(); // Init Background Handler
 
@@ -873,7 +873,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 		fVectorDoubleCountTruePi0s.clear();
 		fVectorDoubleCountTrueEtas.clear();
 		fVectorDoubleCountTrueOmegas.clear();
-		fVectorDoubleCountTrueGammas.clear();
+		fVectorDoubleCountTrueConvGammas.clear();
 		
 		if (fGoodConvGammas->GetEntries()>0) fGoodConvGammas->Clear(); 
 		if (fClusterCandidates->GetEntries()>0) fClusterCandidates->Clear();
@@ -1175,7 +1175,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueConversionPhotonCan
 
 	// True Photon
 	
-	if (CheckVectorForDoubleCount(fVectorDoubleCountTrueGammas,posDaughter->GetMother(0))) fHistoDoubleCountTrueGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+	if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother(0))) fHistoDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
 
 	Int_t labelGamma = TruePhotonCandidate->GetMCParticleLabel(MCStack);
 	Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelGamma, mcProdVtxX, mcProdVtxY, mcProdVtxZ);

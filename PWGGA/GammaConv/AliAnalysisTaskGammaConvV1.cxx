@@ -183,10 +183,10 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hESDTrueGammaPsiPairDeltaPhi(NULL),
 	hDoubleCountTruePi0InvMassPt(NULL),
 	hDoubleCountTrueEtaInvMassPt(NULL),
-	hDoubleCountTrueGammaRPt(NULL),
+	hDoubleCountTrueConvGammaRPt(NULL),
 	vecDoubleCountTruePi0s(0),
 	vecDoubleCountTrueEtas(0),
-	vecDoubleCountTrueGammas(0),
+	vecDoubleCountTrueConvGammas(0),
 	hNEvents(NULL),
 	hNEventsWeighted(NULL),
 	hNGoodESDTracks(NULL),
@@ -356,10 +356,10 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hESDTrueGammaPsiPairDeltaPhi(NULL),
 	hDoubleCountTruePi0InvMassPt(NULL),
 	hDoubleCountTrueEtaInvMassPt(NULL),
-	hDoubleCountTrueGammaRPt(NULL),
+	hDoubleCountTrueConvGammaRPt(NULL),
 	vecDoubleCountTruePi0s(0),
 	vecDoubleCountTrueEtas(0),
-	vecDoubleCountTrueGammas(0),
+	vecDoubleCountTrueConvGammas(0),
 	hNEvents(NULL),
 	hNEventsWeighted(NULL),
 	hNGoodESDTracks(NULL),
@@ -810,7 +810,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hMCDecayGammaSigmaPt = new TH1F*[fnCuts];
 		hMCConvGammaPt = new TH1F*[fnCuts];
 		hESDTrueConvGammaPt = new TH1F*[fnCuts];
-		hDoubleCountTrueGammaRPt = new TH2F*[fnCuts];
+		hDoubleCountTrueConvGammaRPt = new TH2F*[fnCuts];
 
 		hESDCombinatorialPt = new TH2F*[fnCuts];
 		if (fDoPhotonQA > 0){
@@ -1006,8 +1006,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hESDTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(hESDTrueConvGammaPt[iCut]);
 
-			hDoubleCountTrueGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountGamma_R_Pt","ESD_TrueDoubleCountGamma_R_Pt",800,0,200,300,0,30);
-			fTrueList[iCut]->Add(hDoubleCountTrueGammaRPt[iCut]);
+			hDoubleCountTrueConvGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt","ESD_TrueDoubleConvCountGamma_R_Pt",800,0,200,300,0,30);
+			fTrueList[iCut]->Add(hDoubleCountTrueConvGammaRPt[iCut]);
 
 			hESDCombinatorialPt[iCut] = new TH2F("ESD_TrueCombinatorial_Pt","ESD_TrueCombinatorial_Pt",250,0,25,16,-0.5,15.5);
 			hESDCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 1,"Elec+Elec");
@@ -1157,7 +1157,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 	vecDoubleCountTruePi0s.clear();
 	vecDoubleCountTrueEtas.clear();
-	vecDoubleCountTrueGammas.clear();
+	vecDoubleCountTrueConvGammas.clear();
 
 	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
@@ -1390,7 +1390,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 			vecDoubleCountTruePi0s.clear();
 			vecDoubleCountTrueEtas.clear();
 		}
-		vecDoubleCountTrueGammas.clear();
+		vecDoubleCountTrueConvGammas.clear();
 		fGammaCandidates->Clear(); // delete this cuts good gammas
 	}
 
@@ -1682,7 +1682,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 		// True Photon
 		if(fIsFromMBHeader){
                    hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-				   if (CheckVectorForDoubleCount(vecDoubleCountTrueGammas,posDaughter->GetMother())) hDoubleCountTrueGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+				   if (CheckVectorForDoubleCount(vecDoubleCountTrueConvGammas,posDaughter->GetMother())) hDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
                    if (fDoPhotonQA > 0){
                       hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta()); 
                       hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
@@ -1782,7 +1782,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 	// True Photon
 	if(fIsFromMBHeader){
 		hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-		if (CheckVectorForDoubleCount(vecDoubleCountTrueGammas,posDaughter->GetMother(0))) hDoubleCountTrueGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+		if (CheckVectorForDoubleCount(vecDoubleCountTrueConvGammas,posDaughter->GetMother(0))) hDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
 		if (fDoPhotonQA > 0){
 			hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
 			hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());

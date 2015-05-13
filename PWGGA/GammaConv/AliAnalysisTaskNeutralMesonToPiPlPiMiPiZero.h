@@ -189,11 +189,11 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F				 			**fHistoDoubleCountTruePi0InvMassPt;		//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 			**fHistoDoubleCountTrueEtaInvMassPt;		//! array of histos with double counted etas, invMass, pT
 		TH2F				 			**fHistoDoubleCountTrueOmegaInvMassPt;		//! array of histos with double counted omegas, invMass, pT
-		TH2F				 			**fHistoDoubleCountTrueGammaRPt;			//! array of histos with double counted photons, R, pT
+		TH2F				 			**fHistoDoubleCountTrueConvGammaRPt;		//! array of histos with double counted photons, R, pT
 		vector<Int_t>					fVectorDoubleCountTruePi0s;					//! vector containing labels of validated pi0
 		vector<Int_t>					fVectorDoubleCountTrueEtas;					//! vector containing labels of validated eta
-		vector<Int_t>					fVectorDoubleCountTrueOmegas;					//! vector containing labels of validated omega
-		vector<Int_t>					fVectorDoubleCountTrueGammas;				//! vector containing labels of validated photons
+		vector<Int_t>					fVectorDoubleCountTrueOmegas;				//! vector containing labels of validated omega
+		vector<Int_t>					fVectorDoubleCountTrueConvGammas;			//! vector containing labels of validated photons
 		// Event properties
 		TH1I 							**fHistoNEvents;							// histo for event counting
 		TH1I 							**fHistoNGoodESDTracks;						// histo number of reconstructed primary tracks
