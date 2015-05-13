@@ -378,7 +378,7 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCaloDalitzV1(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloDalitzV1 &operator=(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 1);
+		ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 2);
 };
 
 #endif

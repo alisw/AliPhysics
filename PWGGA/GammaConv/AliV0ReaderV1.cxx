@@ -298,6 +298,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		fHistoRecMCGammaMultiPhi->SetXTitle("#phi_{MC} (rad)");
 		fHistograms->Add(fHistoRecMCGammaMultiPhi);
 		
+		fVectorFoundGammas.clear();
 	}	
 
 }
