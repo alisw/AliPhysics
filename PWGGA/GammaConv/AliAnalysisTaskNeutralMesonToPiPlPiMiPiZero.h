@@ -14,6 +14,7 @@
 #include "AliCaloPhotonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include <vector>
 
 class AliESDInputHandler;
 class AliMCEventHandler;
@@ -99,6 +100,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
 		Bool_t GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const;
 
+		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
+
 		AliV0ReaderV1 					*fV0Reader;									// V0Reader for basic conversion photon selection
 		AliPrimaryPionSelector			*fPionSelector;								// primary charged pion selector, basic selection of pi+,pi-
 		AliGammaConversionAODBGHandler 	**fBGHandler;								// BG handler
@@ -183,6 +186,14 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F 							**fHistoTruePionPionFromSameMotherInvMassPt;// histos with reconstructed validated two pion from same mother, invariant mass, pT
 		TH2F 							**fHistoTruePionPionFromEtaInvMassPt;		// histos with reconstructed validated two pion from eta , invariant mass, pT
 		TH2F 							**fHistoTruePionPionFromOmegaInvMassPt;		// histos with reconstructed validated two pion from omega, invariant mass, pT
+		TH2F				 			**fHistoDoubleCountTruePi0InvMassPt;		//! array of histos with double counted pi0s, invMass, pT
+		TH2F				 			**fHistoDoubleCountTrueEtaInvMassPt;		//! array of histos with double counted etas, invMass, pT
+		TH2F				 			**fHistoDoubleCountTrueOmegaInvMassPt;		//! array of histos with double counted omegas, invMass, pT
+		TH2F				 			**fHistoDoubleCountTrueGammaRPt;			//! array of histos with double counted photons, R, pT
+		vector<Int_t>					fVectorDoubleCountTruePi0s;					//! vector containing labels of validated pi0
+		vector<Int_t>					fVectorDoubleCountTrueEtas;					//! vector containing labels of validated eta
+		vector<Int_t>					fVectorDoubleCountTrueOmegas;					//! vector containing labels of validated omega
+		vector<Int_t>					fVectorDoubleCountTrueGammas;				//! vector containing labels of validated photons
 		// Event properties
 		TH1I 							**fHistoNEvents;							// histo for event counting
 		TH1I 							**fHistoNGoodESDTracks;						// histo number of reconstructed primary tracks

@@ -51,6 +51,7 @@
 #include "AliMultiplicity.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.h"
+#include <vector>
 
 
 ClassImp( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero )
@@ -135,6 +136,14 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoTruePionPionFromSameMotherInvMassPt(NULL),
 	fHistoTruePionPionFromEtaInvMassPt(NULL),
 	fHistoTruePionPionFromOmegaInvMassPt(NULL),
+	fHistoDoubleCountTruePi0InvMassPt(NULL),
+	fHistoDoubleCountTrueEtaInvMassPt(NULL),
+	fHistoDoubleCountTrueOmegaInvMassPt(NULL),
+	fHistoDoubleCountTrueGammaRPt(NULL),
+	fVectorDoubleCountTruePi0s(0),
+	fVectorDoubleCountTrueEtas(0),
+	fVectorDoubleCountTrueOmegas(0),
+	fVectorDoubleCountTrueGammas(0),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fProfileEtaShift(NULL),
@@ -234,6 +243,14 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoTruePionPionFromSameMotherInvMassPt(NULL),
 	fHistoTruePionPionFromEtaInvMassPt(NULL),
 	fHistoTruePionPionFromOmegaInvMassPt(NULL),
+	fHistoDoubleCountTruePi0InvMassPt(NULL),
+	fHistoDoubleCountTrueEtaInvMassPt(NULL),
+	fHistoDoubleCountTrueOmegaInvMassPt(NULL),
+	fHistoDoubleCountTrueGammaRPt(NULL),
+	fVectorDoubleCountTruePi0s(0),
+	fVectorDoubleCountTrueEtas(0),
+	fVectorDoubleCountTrueOmegas(0),
+	fVectorDoubleCountTrueGammas(0),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fProfileEtaShift(NULL),
@@ -538,6 +555,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fTrueList = new TList*[fnCuts];
 		if (fNeutralPionMode < 2){
 			fHistoTrueConvGammaPt = new TH1F*[fnCuts];
+			fHistoDoubleCountTrueGammaRPt = new TH2F*[fnCuts];
 			fHistoTrueConvGammaFromNeutralMesonPt = new TH1F*[fnCuts];
 		}	
 		if (fNeutralPionMode > 0){
@@ -569,6 +587,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fHistoMCOmegaPiPlPiMiPiZeroPt = new TH1F*[fnCuts];
 		fHistoMCOmegaPiPlPiMiPiZeroInAccPt = new TH1F*[fnCuts];
 
+		fHistoDoubleCountTruePi0InvMassPt = new TH2F*[fnCuts];
+		fHistoDoubleCountTrueEtaInvMassPt = new TH2F*[fnCuts];
+		fHistoDoubleCountTrueOmegaInvMassPt = new TH2F*[fnCuts];
 		fHistoTrueMotherPiPlPiMiPiZeroInvMassPt = new TH2F*[fnCuts];
 		fHistoTrueMotherGammaGammaInvMassPt = new TH2F*[fnCuts];
 		fHistoTrueMotherGammaGammaFromEtaInvMassPt = new TH2F*[fnCuts];
@@ -644,6 +665,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 			if (fNeutralPionMode < 2){
 				fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 				fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
+				fHistoDoubleCountTrueGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountGamma_R_Pt","ESD_TrueDoubleCountGamma_R_Pt",800,0,200,300,0,30);
+				fTrueList[iCut]->Add(fHistoDoubleCountTrueGammaRPt[iCut]);
 				fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt",250,0,25);
 				fTrueList[iCut]->Add(fHistoTrueConvGammaFromNeutralMesonPt[iCut]);
 			}
@@ -662,6 +685,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 			fTrueList[iCut]->Add(fHistoTrueNegPionFromNeutralMesonPt[iCut]);
 			fHistoTruePosPionFromNeutralMesonPt[iCut] = new TH1F("ESD_TruePosPionFromNeutralMeson_Pt","ESD_TruePosPionFromNeutralMeson_Pt",1000,0,25);
 			fTrueList[iCut]->Add(fHistoTruePosPionFromNeutralMesonPt[iCut]);
+
+			fHistoDoubleCountTruePi0InvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountPi0_InvMass_Pt","ESD_TrueDoubleCountPi0_InvMass_Pt",800,0,0.8,300,0,30);
+			fTrueList[iCut]->Add(fHistoDoubleCountTruePi0InvMassPt[iCut]);
+			fHistoDoubleCountTrueEtaInvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountEta_InvMass_Pt","ESD_TrueDoubleCountEta_InvMass_Pt",800,0,0.8,300,0,30);
+			fTrueList[iCut]->Add(fHistoDoubleCountTrueEtaInvMassPt[iCut]);
+			fHistoDoubleCountTrueOmegaInvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountOmega_InvMass_Pt","ESD_TrueDoubleCountOmega_InvMass_Pt",800,0,0.8,300,0,30);
+			fTrueList[iCut]->Add(fHistoDoubleCountTrueOmegaInvMassPt[iCut]);
 
 			fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut] = new TH2F("ESD_TrueMotherPiPlPiMiPiZero_InvMass_Pt","ESD_TrueMotherPiPlPiMiPiZero_InvMass_Pt",500,0.4,0.9,250,0,25);
 			fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut]->Sumw2();
@@ -689,7 +719,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		}
 	}
 
-	
+	fVectorDoubleCountTruePi0s.clear();
+	fVectorDoubleCountTrueEtas.clear();
+	fVectorDoubleCountTrueOmegas.clear();
+	fVectorDoubleCountTrueGammas.clear();
 
 	InitBack(); // Init Background Handler
 
@@ -836,7 +869,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 		CalculateMesonCandidates();
 		CalculateBackground();
 		UpdateEventByEventData();
-				
+
+		fVectorDoubleCountTruePi0s.clear();
+		fVectorDoubleCountTrueEtas.clear();
+		fVectorDoubleCountTrueOmegas.clear();
+		fVectorDoubleCountTrueGammas.clear();
 		
 		if (fGoodConvGammas->GetEntries()>0) fGoodConvGammas->Clear(); 
 		if (fClusterCandidates->GetEntries()>0) fClusterCandidates->Clear();
@@ -1138,6 +1175,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueConversionPhotonCan
 
 	// True Photon
 	
+	if (CheckVectorForDoubleCount(fVectorDoubleCountTrueGammas,posDaughter->GetMother(0))) fHistoDoubleCountTrueGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+
 	Int_t labelGamma = TruePhotonCandidate->GetMCParticleLabel(MCStack);
 	Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelGamma, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 	if( gammaIsPrimary ){
@@ -1285,6 +1324,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 	if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
 		if(((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
 			isTruePi0=kTRUE;
+			if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 		}
 	}
 	
@@ -1358,6 +1398,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 			if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
 				if(((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
 					isTruePi0=kTRUE;
+					if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 				}
 			}
 			
@@ -1458,6 +1499,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 		if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
 			if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
 				isTruePi0=kTRUE;
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}
 		}
 		
@@ -1591,6 +1633,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 		if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
 			if(((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
 				isTruePi0=kTRUE;
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}
 		}
 		
@@ -2150,10 +2193,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
 			if(((TParticle*)MCStack->Particle(virtualParticleMotherLabel))->GetPdgCode() == 221){
 // 				cout << "found eta" << endl;
 				isTrueEta=kTRUE;
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,pi0MotherMCLabel)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
 			}
 			if(((TParticle*)MCStack->Particle(virtualParticleMotherLabel))->GetPdgCode() == 223){
 // 				cout << "found omega" << endl;
 				isTrueOmega=kTRUE;
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueOmegas,pi0MotherMCLabel)) fHistoDoubleCountTrueOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
 			}
 		}
 	}
@@ -2298,3 +2343,20 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::GammaIsNeutralMesonPiPlPiMiP
 	if( IsPiPlPiMiPiZeroDecay( grandmother ) ) return kTRUE;	
 	return kFALSE;       
 }
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked)
+{
+	if(tobechecked > -1)
+	{
+		vector<Int_t>::iterator it;
+		it = find (vec.begin(), vec.end(), tobechecked);
+		if (it != vec.end()) return true;
+		else{
+			vec.push_back(tobechecked);
+			return false;
+		}
+	}
+	return false;
+}
+
