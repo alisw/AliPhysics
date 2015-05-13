@@ -114,9 +114,10 @@ fJetArray(0x0),
 fMcJetArray(0x0),
 fJetContName(""),
 fTrackContName(""),
-fMcJetContName(""),
 fRhoTaskName(""),
+fMcJetContName(""),
 fMcTrackContName(""),
+fMcRhoTaskName(""),
 fGTIp(0),fGTIn(0), fTrackBuffSize(19000),
 fHistTrials(0),
 fHistXsection(0),
@@ -156,9 +157,10 @@ fJetArray(0x0),
 fMcJetArray(0x0),
 fJetContName(""),
 fTrackContName(""),
-fMcJetContName(""),
 fRhoTaskName(""),
+fMcJetContName(""),
 fMcTrackContName(""),
+fMcRhoTaskName(""),
 fGTIp(0),fGTIn(0),fTrackBuffSize(19000),
 fHistTrials(0),
 fHistXsection(0),
@@ -381,20 +383,20 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode(){
       continue;
     }
     
-    Double_t pTJet = jet->Pt();
+    Double_t ptJet = jet->Pt();
     if (fDoBkgRej) {
       Double_t rho, areaJet;
       rho  = GetExternalRho();
       //loop over jets:
       
       areaJet = jet->Area();
-      pTJet -= areaJet * rho;
+      ptJet -= areaJet * rho;
     }
     step = AliHFJetsContainer::kCFStepReco;
     // // Run b-tagger
     nvtx = fTagger->FindVertices(jet, fGTIp, fGTIn, fTrackArray, aod, v1, magzkG, fbJetArray, arrDispersion);
  
-    fhJetVtxData->FillStepJetVtxData(step, mult, jet, fbJetArray, nvtx, vtx1, arrDispersion, pTJet);
+    fhJetVtxData->FillStepJetVtxData(step, mult, jet, fbJetArray, nvtx, vtx1, arrDispersion, ptJet);
     fbJetArray->Clear();
   }
 }
@@ -550,16 +552,27 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
     Double_t ptpart[2] = {-1, -1};
     GetFlavour2Methods(jet, partonnat, ptpart, fTaggingRadius);
     
+    //GE
+    Double_t ptJet = jet->Pt();
+    if (fDoBkgRej) {
+      Double_t rho, areaJet;
+      rho  = GetExternalRho();
+      //loop over jets:
+      
+      areaJet = jet->Area();
+      ptJet -= areaJet * rho;
+    }
+    
     step = AliHFJetsContainer::kCFStepReco;
     // // Run vertex tagging
-    nvtx=fTagger->FindVertices(jet,fGTIp,fGTIn,fTrackArrayRec,aod,v1,magzkG,fbJetArray,arrDispersion);
+    nvtx = fTagger->FindVertices(jet, fGTIp, fGTIn, fTrackArrayRec, aod, v1, magzkG, fbJetArray, arrDispersion);
    
     // fhJets->FillStepBJets(step,multMC,jet,nvtx,partonnat,ptpart[0]);
     if ( fDoQAVtx ) {
-      fhQaVtx->FillStepQaVtx(step, multMC, jet, fbJetArray, arrDispersion, nvtx, vtx1, arrayMC, partonnat);
+      fhQaVtx->FillStepQaVtx(step, multMC, jet, fbJetArray, arrDispersion, nvtx, vtx1, arrayMC, partonnat, ptJet);
     }
     // Fill jet-with-vertex container
-    fhJetVtx->FillStepJetVtx(step, multMC, jet, fbJetArray, nvtx, vtx1, arrayMC, partonnat, ptpart, arrDispersion);
+    fhJetVtx->FillStepJetVtx(step, multMC, jet, fbJetArray, nvtx, vtx1, arrayMC, partonnat, ptpart, arrDispersion, ptJet);
     
     AliEmcalJet *matchedjet = NULL;
     
@@ -567,12 +580,25 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
     if(!matchedjet) continue;
     
     GetFlavour2Methods(matchedjet, partonnat, ptpart, fTaggingRadius);
+
+    Double_t ptJetMC = matchedjet->Pt();
+    if (fDoBkgRej) {
+      Double_t rhoMC, areaJetMC;
+      rhoMC  = GetMcExternalRho();
+      //loop over jets:
+      
+      areaJetMC = matchedjet->Area();
+      ptJetMC -= areaJetMC * rhoMC;
+    }
     
     // for purity
     step = AliHFJetsContainer::kCFStepMatchedAny;
-    // //fhJets->FillStepJets(step,multMC,matchedJet,partonnat,ptpart);
-    fhJetVtx->FillStepJetVtx(step,multMC,matchedjet,fbJetArray,nvtx,vtx1,arrayMC,partonnat,ptpart,arrDispersion);
-    if (fDoQAVtx) { fhQaVtx->FillStepQaVtx(step,multMC,jet,fbJetArray,arrDispersion,nvtx,vtx1,arrayMC,partonnat);}
+    
+    //fhJets->FillStepJets(step,multMC,matchedJet,partonnat,ptpart);
+    if (fDoQAVtx) {
+      fhQaVtx->FillStepQaVtx(step, multMC, jet, fbJetArray, arrDispersion, nvtx, vtx1, arrayMC, partonnat, ptJetMC);
+    }
+    fhJetVtx->FillStepJetVtx(step, multMC, matchedjet, fbJetArray, nvtx, vtx1, arrayMC, partonnat, ptpart, arrDispersion, ptJetMC);
     
     fbJetArray->Clear();
   }
@@ -656,8 +682,7 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::GetArrays()
   if (!fMcJetContName.IsNull() && fCorrMode) {
     AliInfo(Form(MSGINFO("Retrieve jets %s!"), fMcJetContName.Data()));
     fMcJetArray = dynamic_cast<TClonesArray *> (fEvent->FindListObject(fMcJetContName));
-    if (!fMcJetArray)
-    {
+    if (!fMcJetArray) {
       AliError(Form(MSGERROR("%s: Could not retrieve MC jets %s!"), GetName(), fMcJetContName.Data()));
       return kFALSE;
     }
@@ -912,3 +937,22 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetExternalRho()
   return rho->GetVal();
 }
 
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetBtagSV::GetMcExternalRho()
+{
+  // Get rho from event using CMS approach
+  AliRhoParameter *rho = NULL;
+  if (!fMcRhoTaskName.IsNull()) {
+    rho = dynamic_cast<AliRhoParameter *> (InputEvent()->FindListObject(fMcRhoTaskName.Data()));
+    if (!rho) {
+      AliWarning(Form(MSGWARNING("%s: Could not retrieve rho with name %s!"), GetName(), fMcRhoTaskName.Data()));
+      return 0.;
+    }
+  }
+  else {
+    AliWarning(MSGWARNING("No Rho task name provided"));
+    return 0.;
+  }
+  
+  return rho->GetVal();
+}

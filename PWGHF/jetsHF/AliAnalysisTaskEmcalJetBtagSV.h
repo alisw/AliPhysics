@@ -41,7 +41,7 @@ class AliClusterContainer;
 class AliAnalysisTaskEmcalJetBtagSV : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskEmcalJetBtagSV();
-  AliAnalysisTaskEmcalJetBtagSV(const char* name);
+  AliAnalysisTaskEmcalJetBtagSV(const char *name);
   virtual ~AliAnalysisTaskEmcalJetBtagSV();
 
   // Implementation of interface methods
@@ -60,23 +60,32 @@ class AliAnalysisTaskEmcalJetBtagSV : public AliAnalysisTaskEmcalJet {
   void SetDoBkgRejection(Bool_t rej) {fDoBkgRej = rej;}
   void SetRecoJetsBranch(const char* branch) {fRecoJetsBranch = branch;}
   void SetMcJetsBranch(const char* branch) {fMcJetsBranch = branch;}
-  void SetPtHardSelection(Bool_t ispthard, TString pthardmin, TString flavor) {fSelectPtHard = ispthard; fPtHardMin = pthardmin; fFlavor = flavor;}
+  void SetPtHardSelection(Bool_t ispthard, TString pthardmin, TString flavor) { fSelectPtHard = ispthard; fPtHardMin = pthardmin; fFlavor = flavor; }
   void SetJetTaggingRadius(Double_t tagradius) {fTaggingRadius = tagradius;};
 
   void DoSecondaryVertexQA(Bool_t doqa) {fDoQAVtx = doqa;}
 
-  void SetTagger(AliHFJetsTaggingVertex *tagger){fTagger=(AliHFJetsTaggingVertex*)tagger->Clone("fTagger");}
-  void SetCuts(AliRDHFJetsCuts *cuts){delete fCutsHFjets; fCutsHFjets=(AliRDHFJetsCuts*)cuts->Clone("fCutsHFjets");}
-
-  void SetJetContName(char *j) {fJetContName=j;}
-  void SetTrackContName(char *t) {fTrackContName=t;}
-  void SetExternalRhoTaskName(char *t) {fRhoTaskName=t;}
-  void SetMcJetContName(char *mcj) {fMcJetContName=mcj;}
-  void SetMcTrackContName(char *mct) {fMcTrackContName=mct;}
+  void SetTagger(AliHFJetsTaggingVertex *tagger)
+  {
+    if (fTagger) delete fTagger;
+    fTagger = (AliHFJetsTaggingVertex *) tagger->Clone("fTagger");
+  }
   
+  void SetCuts(AliRDHFJetsCuts *cuts)
+  {
+    if (fCutsHFjets) delete fCutsHFjets;
+    fCutsHFjets = (AliRDHFJetsCuts *)cuts->Clone("fCutsHFjets");
+  }
 
-  AliAnalysisUtils* GetAnalysisUtils() { return fAnalysisUtils; }
-  void   SetAnalysisUtils(AliAnalysisUtils* utils){ fAnalysisUtils = utils; }
+  void SetJetContName(char *name)           { fJetContName     = name; }
+  void SetTrackContName(char *name)         { fTrackContName   = name; }
+  void SetExternalRhoTaskName(char *name)   { fRhoTaskName     = name; }
+  void SetMcJetContName(char *name)         { fMcJetContName   = name; }
+  void SetMcTrackContName(char *name)       { fMcTrackContName = name; }
+  void SetMcExternalRhoTaskName(char *name) { fMcRhoTaskName   = name; } 
+  
+  AliAnalysisUtils *GetAnalysisUtils() { return fAnalysisUtils; }
+  void   SetAnalysisUtils(AliAnalysisUtils* utils) { fAnalysisUtils = utils; }
 
  protected:
   Bool_t                      GetArrays();
@@ -93,7 +102,8 @@ class AliAnalysisTaskEmcalJetBtagSV : public AliAnalysisTaskEmcalJet {
   void GetFlavour2Methods(AliEmcalJet *jet, Double_t (&partonnat)[2], Double_t (&ptpart)[2], Double_t radius);
   Bool_t PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials);
 
-  Double_t GetExternalRho(); // rho
+  Double_t GetExternalRho();   // rho
+  Double_t GetMcExternalRho(); // rho  
 
   void StoreTrackReference(AliAODTrack *track);      // Store pointer to global track
   void ResetTrackReference();                        // Reset all pointers to global tracks
@@ -104,7 +114,6 @@ class AliAnalysisTaskEmcalJetBtagSV : public AliAnalysisTaskEmcalJet {
   AliHFJetsContainerVertex *fhJetVtxData;  // properties of vertices within the jet 
  
   AliVEvent                         *fEvent;                     //! Input event 
-
 
   Bool_t fCorrMode;                    // enable correction or data modes
   Bool_t fDoBkgRej;
@@ -142,6 +151,7 @@ class AliAnalysisTaskEmcalJetBtagSV : public AliAnalysisTaskEmcalJet {
   TString                           fRhoTaskName;      //  Name of the rho task
   TString                           fMcJetContName;    //  Name of the found jet array
   TString                           fMcTrackContName;  //  Name of the found track array
+  TString                           fMcRhoTaskName;    //  Name of the rho task
   
   TList                            *fOutputList;                  // list of output objects
   ClassDef(AliAnalysisTaskEmcalJetBtagSV, 1); // analysis task for MC study
