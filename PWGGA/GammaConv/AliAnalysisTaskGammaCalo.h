@@ -15,6 +15,7 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include <vector>
 
 class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 	public:
@@ -82,6 +83,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		// Additional functions for convenience
 		void SetLogBinningXTH2(TH2* histoRebin);
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
+
+		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 		
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
@@ -237,7 +240,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoTrueSecondaryClusConvGammaFromXFromLambdaPt;//! array of histos with validated secondary cluster conversion photon from Lambda, pt  
 		TH1F 								**fHistoTrueSecondaryClusGammaFromXFromEtasPt;	//! array of histos with validated secondary Cluster photon from Eta, pt  
 		TH1F 								**fHistoTrueSecondaryClusConvGammaFromXFromEtasPt;//! array of histos with validated secondary cluster conversion photon from Eta, pt  
-
+		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
+		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
+		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
+		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
