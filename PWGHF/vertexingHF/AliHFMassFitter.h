@@ -22,6 +22,7 @@ class TFile;
 class TList;
 class TH1F;
 class TVirtualPad;
+class TPaveText;
 
 class AliHFMassFitter : public TNamed {
 
@@ -76,6 +77,11 @@ class AliHFMassFitter : public TNamed {
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
   Bool_t*  GetFixParam()const {return fFixPar;}
   Bool_t   GetFixThisParam(Int_t thispar)const;
+  virtual TH1F* GetAllRangeResidualsAndPulls(Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0);
+  virtual  TH1F* GetOverBackgroundResidualsAndPulls(Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0);
+  TH1F* GetResidualsAndPulls(TH1 *h,TF1 *f,Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0);
+  virtual TPaveText* GetYieldBox(Double_t nsigma=3.);
+  virtual TPaveText* GetFitParametersBox(Double_t nsigma=3.,Int_t mode=0);
   TVirtualPad* GetPad(Double_t nsigma=3,Int_t writeFitInfo=1)const;
 
   void     PrintParTitles() const;
