@@ -2,9 +2,11 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
                                                      Bool_t getFromAlien=kFALSE,
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
                                                      Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
-                                                     Int_t collCands=AliVEvent::kAny
+                                                     Int_t collCands=AliVEvent::kAny,
+                                                     Bool_t forcePhysSelAndTrigMask=kFALSE // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
                                                      )
 {
+  //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_reichelt_ElectronEfficiency", "No analysis manager found.");
@@ -49,9 +51,21 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
 
   const Int_t nBinsPt =  ( sizeof(PtBins) / sizeof(PtBins[0]) )-1;
   
+  Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
+  if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+    ::Info("AddTaskElectronEfficiency","running on AODs.");
+  }
+  else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+    ::Info("AddTaskElectronEfficiency","switching on ESD specific code, make sure ESD cuts are used.");
+    bESDANA=kTRUE;
+  }
+  
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
+  std::cout << "_________________________________________________________________" << std::endl;
   std::cout << "hasMC = " << hasMC << std::endl;
+  std::cout << "WARNING: check if this is correct! may be detected wrong for AOD!" << std::endl;
+  std::cout << "_________________________________________________________________" << std::endl;
 
   // Electron efficiency task
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("reichelt_ElectronEfficiency");
@@ -60,13 +74,13 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   // Note: event cuts are identical for all analysis 'cutInstance's that run together!
   if (!hasMC) task->UsePhysicsSelection();
   if (!hasMC) task->SetTriggerMask(triggerNames);
-  if (forcePhysSelAndTrigInMC) { // should be kFALSE by default! (may be needed for new MC productions according to Mahmut)
+  if (forcePhysSelAndTrigMask) { // should be kFALSE by default! (may be needed for new MC productions according to Mahmut)
     task->UsePhysicsSelection();
     task->SetTriggerMask(triggerNames);
   }
   task->SelectCollisionCandidates(collCands); // didnt check its meaning and effect...!
   //---
-  task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
+  task->SetEventFilter(SetupEventCuts(bESDANA)); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
   task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
@@ -84,7 +98,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   task->CreateHistoGen();
   
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i); // main function in config file
+    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, bESDANA); // main function in config file
     if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     if (isPrefilterCutset) {
       Int_t success = SetupPrefilterPairCuts(i);
