@@ -43,7 +43,7 @@ double fV1[3];
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fNumberofEvent(0),
   fCurEvent(0),
-  fEvent(0x0),
+  fEvent(NULL),
   fAllTrue(160),
   fAllFalse(160),
   fFilterBit(0),
@@ -53,11 +53,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fReadV0(0),
   fUsePreCent(0),
   fEstEventMult(kCentrality),
-  fAODpidUtil(0),
-  fAODheader(0),
+  fAODpidUtil(NULL),
+  fAODheader(NULL),
   fInputFile(""),
-  fTree(0x0),
-  fAodFile(0x0),
+  fTree(NULL),
+  fAodFile(NULL),
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
@@ -76,62 +76,44 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fCentRange[1] = 1000;
 }
 
-AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader) :
+AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader):
   AliFemtoEventReader(),
-  fNumberofEvent(0),
-  fCurEvent(0),
-  fEvent(0x0),
+  fNumberofEvent(aReader.fNumberofEvent),
+  fCurEvent(aReader.fCurEvent),
+  fEvent(new AliAODEvent()),
   fAllTrue(160),
   fAllFalse(160),
-  fFilterBit(0),
-  fFilterMask(0),
+  fFilterBit(aReader.fFilterBit),
+  fFilterMask(aReader.fFilterMask),
   //  fPWG2AODTracks(0x0),
-  fReadMC(0),
-  fReadV0(0),
-  fUsePreCent(0),
-  fEstEventMult(kCentrality),
-  fAODpidUtil(0),
-  fAODheader(0),
-  fInputFile(""),
-  fTree(0x0),
-  fAodFile(0x0),
-  fMagFieldSign(1),
-  fisEPVZ(kTRUE),
-  fpA2013(kFALSE),
-  fisPileUp(kFALSE),
-  fMVPlp(kFALSE),
-  fMinVtxContr(0),
-  fMinPlpContribMV(0),
-  fMinPlpContribSPD(0),
-  fDCAglobalTrack(kFALSE),
-  fFlatCent(kFALSE)
+  fReadMC(aReader.fReadMC),
+  fReadV0(aReader.fReadV0),
+  fUsePreCent(aReader.fUsePreCent),
+  fEstEventMult(aReader.fEstEventMult),
+  fAODpidUtil(aReader.fAODpidUtil),
+  fAODheader(aReader.fAODheader),
+  fInputFile(aReader.fInputFile),
+  fTree(NULL),
+  fAodFile(new TFile(aReader.fAodFile->GetName())),
+  fMagFieldSign(aReader.fMagFieldSign),
+  fisEPVZ(aReader.fisEPVZ),
+  fpA2013(aReader.fpA2013),
+  fisPileUp(aReader.fisPileUp),
+  fMVPlp(aReader.fMVPlp),
+  fMinVtxContr(aReader.fMinVtxContr),
+  fMinPlpContribMV(aReader.fMinPlpContribMV),
+  fMinPlpContribSPD(aReader.fMinPlpContribSPD),
+  fDCAglobalTrack(aReader.fDCAglobalTrack),
+  fFlatCent(aReader.fFlatCent)
 {
   // copy constructor
-  fReadMC = aReader.fReadMC;
-  fReadV0 = aReader.fReadV0;
-  fInputFile = aReader.fInputFile;
-  fNumberofEvent = aReader.fNumberofEvent;
-  fCurEvent = aReader.fCurEvent;
-  fEvent = new AliAODEvent();
-  fAodFile = new TFile(aReader.fAodFile->GetName());
   fAllTrue.ResetAllBits(kTRUE);
   fAllFalse.ResetAllBits(kFALSE);
-  fFilterBit = aReader.fFilterBit;
+
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
-  fAODpidUtil = aReader.fAODpidUtil;
-  fAODheader = aReader.fAODheader;
+
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
-  fEstEventMult = aReader.fEstEventMult;
-  fUsePreCent = aReader.fUsePreCent;
-  fpA2013 = aReader.fpA2013;
-  fisPileUp = aReader.fisPileUp;
-  fMVPlp = aReader.fMVPlp;
-  fMinVtxContr = aReader.fMinVtxContr;
-  fMinPlpContribMV = aReader.fMinPlpContribMV;
-  fMinPlpContribSPD = aReader.fMinPlpContribSPD;
-  fDCAglobalTrack = aReader.fDCAglobalTrack;
-
 }
 //__________________
 //Destructor
@@ -173,6 +155,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
   fEstEventMult = aReader.fEstEventMult;
+  fMagFieldSign = aReader.fMagFieldSign;
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
@@ -204,7 +187,7 @@ void AliFemtoEventReaderAOD::SetInputFile(const char *inputFile)
   fTree = new TChain("aodTree");
 
   if (infile.good() == true) {
-    //checking if all give files have good tree inside
+    // check if all given files have good tree inside
     while (infile.eof() == false) {
       infile.getline(buffer, 256);
       TFile *aodFile = TFile::Open(buffer, "READ");
