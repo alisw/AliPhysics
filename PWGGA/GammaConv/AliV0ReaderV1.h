@@ -122,8 +122,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 																  Double_t zMax);
 		void 							CreatePureMCHistosForV0FinderEffiESD();	
 		void 							FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0);
-		Bool_t 							CheckIfContainedInString(TString input, Int_t tobechecked);
-		Bool_t 							CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked);
+		Bool_t							CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked);
+		Bool_t							CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
 		
 	protected:
@@ -140,9 +140,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 															  Int_t &tracklabel, 
 															  Int_t charge);
 		const AliExternalTrackParam* 	GetExternalTrackParamP(AliESDv0 *fCurrentV0,
-															   Int_t &tracklabel)			{return GetExternalTrackParam(fCurrentV0,tracklabel,1);};
+															   Int_t &tracklabel)			{return GetExternalTrackParam(fCurrentV0,tracklabel,1);}
 		const AliExternalTrackParam* 	GetExternalTrackParamN(AliESDv0 *fCurrentV0,
-															   Int_t &tracklabel)			{return GetExternalTrackParam(fCurrentV0,tracklabel,-1);};
+															   Int_t &tracklabel)			{return GetExternalTrackParam(fCurrentV0,tracklabel,-1);}
 		AliKFParticle*  				GetPositiveKFParticle(AliAODv0 *fCurrentV0,
 															  Int_t fTrackLabel[2]);
 		AliKFParticle* 					GetNegativeKFParticle(AliAODv0 *fCurrentV0,
@@ -197,13 +197,13 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		TH2F				*fHistoRecMCGammaMultiPtvsEta;	// histogram with all at least double counted photons vs Pt vs Eta
 		TH1F				*fHistoRecMCGammaMultiR;	// histogram with all at least double counted photons vs R (eta < 0.9)
 		TH1F				*fHistoRecMCGammaMultiPhi;	// histogram with all at least double counted photons vs Phi (eta < 0.9)
-		TString 			fStrFoundGammas;			// string with found MC labels of gammas
+		vector<Int_t>		fVectorFoundGammas;			// vector with found MC labels of gammas
 	private:
 		AliV0ReaderV1(AliV0ReaderV1 &original);
 		AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 6)
+	ClassDef(AliV0ReaderV1, 7)
 
 };
 
