@@ -14,6 +14,7 @@
 #include "AliConversionMesonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include <vector>
 
 class AliESDInputHandler;
 class AliMCEventHandler;
@@ -81,6 +82,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
 		Bool_t IsDalitz(TParticle *fMCMother) const;
 		Bool_t IsPi0DalitzDaughter( Int_t label ) const;
+		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 		
 		AliV0ReaderV1 							*fV0Reader;
 		AliDalitzElectronSelector				*fElecSelector;
@@ -244,6 +246,12 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hNGoodESDTracksVsNGoodVGammas;
 		TH1I  									**hNV0Tracks;
 		TProfile 								**hEtaShift;
+		TH2F									**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
+		TH2F									**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
+		TH2F									**fHistoDoubleCountTrueGammaRPt;				//! array of histos with double counted photons, R, pT
+		vector<Int_t>							fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
+		vector<Int_t>							fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
+		vector<Int_t>							fVectorDoubleCountTrueGammas;					//! vector containing labels of validated photons
 			
 		TRandom3 								fRandom;
 		Double_t 								*fUnsmearedPx;
