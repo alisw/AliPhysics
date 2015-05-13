@@ -4364,7 +4364,7 @@ Int_t AliAnalysisTaskGammaCaloDalitzV1::FindMotherOfPhoton(Int_t particleLabel )
 }
   
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked)
+Bool_t AliAnalysisTaskGammaCaloDalitzV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked)
 {
 	if(tobechecked > -1)
 	{
