@@ -231,7 +231,6 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 
     //Initialize QA histograms and add them to fOutput
     InitializeQAhistograms();
-
     //Intitialize the Multiplicity and ZVertex bins.
     const Int_t    MaxNofEvents=fMaxNEventMix;
     const Int_t    MinNofTracks=fMinNofTracksMix;
@@ -352,8 +351,8 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
   Int_t nofTracks = 0;
   Int_t MultBin; Int_t VZbin;
   if(fWeights){
-    MultBin = fWeights->GetAxis(0)->FindBin(fMultiplicity);
-    VZbin   = fWeights->GetAxis(1)->FindBin(fVertex[2]);
+    MultBin = fWeights->GetXaxis()->FindBin(fMultiplicity);
+    VZbin   = fWeights->GetYaxis()->FindBin(fVertex[2]);
   }
   nofTracks=pEvent->GetNumberOfTracks();
   FillHistogram("trackCount",nofTracks);
@@ -362,10 +361,8 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
     if(fWeights){
-      Int_t etabin = fWeights->GetAxis(2)->FindBin(t->Eta());
-      Int_t pTbin  = fWeights->GetAxis(3)->FindBin(t->Pt());
-      Int_t x[4] = {MultBin,VZbin,etabin,pTbin};
-      Weight *= fWeights->GetBinContent(x);
+      Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
+      Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
     }
 //     FillHistogram("TracksperRun",fRunFillValue);
     FillHistogram("trackUnselectedPt",t->Pt(),Weight);
@@ -736,6 +733,7 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",50,-0.5,49.5));
   fOutput->Add(new TH1D("NAssociated","Number of Associated per event",200,-0.5,199.5));
   fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",200,-0.5,199.5));
+  if(fWeights)fOutput->Add(fWeights);
 //   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
 //     fOutput->Add(new TH1D("clusterCount", "clusterCount", 1000,  0, 2000));
 //     fOutput->Add(new TH1D("clusterCountphos", "clusterCountphos", 1000,  0, 2000));

@@ -243,8 +243,8 @@ int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
   if (fMBin<0||fVzBin<0) return -1;
   HistFill(GetNumberHist(khQAtocheckadressing,fMBin,fVzBin),1.0);
   if(fWeights){
-    fMultWeightIndex = fWeights->GetAxis(0)->FindBin(fMultiplicity);
-    fVZWeightIndex   = fWeights->GetAxis(1)->FindBin(fVZ);
+    fMultWeightIndex = fWeights->GetXaxis()->FindBin(fMultiplicity);
+    fVZWeightIndex   = fWeights->GetYaxis()->FindBin(fVZ);
   }
   return 1;
 }
@@ -261,10 +261,8 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   if (doHistogram) {
     Double_t Weight = 1.0;
     if(fWeights){
-      Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-      Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());
-      Int_t x[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-      Weight *= fWeights->GetBinContent(x);
+      Int_t indexpT1 = fWeights->GetZaxis()->FindBin(ptrigger->Pt());
+      Weight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),ptrigger->Phi(),Weight);
@@ -290,10 +288,8 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   if (doHistogram) {
     Double_t Weight = 1.0;
     if(fWeights){
-      Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p->Eta());
-      Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p->Pt());
-      Int_t x[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-      Weight *= fWeights->GetBinContent(x);
+      Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p->Pt());
+      Weight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),p->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),p->Phi(),Weight);
@@ -354,21 +350,15 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
   }//Track duplicate, reject.
   if(fWeights){
     //t:
-    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());
+    Int_t indexpTt = fWeights->GetZaxis()->FindBin(ptrigger->Pt());
 
     //a1:
-    Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p1->Eta());
-    Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p1->Pt());
+    Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
     //a2
-    Int_t indexeta2 = fWeights->GetAxis(2)->FindBin(p2->Eta());
-    Int_t indexpT2 = fWeights->GetAxis(3)->FindBin(p2->Pt());
-    Int_t x1[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-    Int_t x2[4] = {fMultWeightIndex,fVZWeightIndex,indexeta2,indexpT2};
-    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
-    fillweight *= fWeights->GetBinContent(x1);
-    fillweight *= fWeights->GetBinContent(x2);
-    fillweight *= fWeights->GetBinContent(xtrigger);    
+    Int_t indexpT2 = fWeights->GetZaxis()->FindBin(p2->Pt());
+    fillweight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
+    fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT2);
+    fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpTt);    
   }
   HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, fillweight);
 //   if(weight>1)  HistFill(GetNumberHist(khPhiPhiDEtaScaled,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2,1.0/(weight-1));
@@ -392,15 +382,11 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
   if(fWeights){
     //t:
-    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());    
+    Int_t indexpTt = fWeights->GetZaxis()->FindBin(ptrigger->Pt());    
     //a1:
-    Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p1->Eta());
-    Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p1->Pt());
-    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
-    Int_t x1[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-    fillweight *= fWeights->GetBinContent(x1);
-    fillweight *= fWeights->GetBinContent(xtrigger);
+    Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
+    fillweight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
+    fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpTt);
   }
   
   HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, fillweight);//2p correlation
@@ -412,10 +398,8 @@ int AliCorrelation3p::FillTrigger(const AliVParticle* ptrigger)
   Double_t fillweight = 1.0;
   if(fWeights){
     //t:
-    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());    
-    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
-    fillweight *= fWeights->GetBinContent(xtrigger);
+    Int_t indexpTt = fWeights->GetZaxis()->FindBin(ptrigger->Pt());    
+    fillweight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpTt);
   }
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;

@@ -200,7 +200,7 @@ class AliThreeParticleCorrelator : public TNamed {
   }
   
   /// Set the efficiency weights.
-  void SetWeights(THnT<Float_t>* weights){
+  void SetWeights(TH3D* weights){
     for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
       (*o)->SetWeight(weights);
       //And for all ME workers.

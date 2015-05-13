@@ -9,6 +9,7 @@
 #include "TArrayD.h"
 #include "TFile.h"
 #include "THn.h"
+#include "TH3D.h"
 #include<iostream>
 
 class AliCorrelation3p;
@@ -17,6 +18,7 @@ class AliAODTrack;
 class AliCentrality;
 class TH1;
 class TH2;
+class TH3;
 class TText;
 class TList;
 class TTree;
@@ -72,11 +74,13 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
   void SetWeights(const char* file){
-    TFile* wfile = TFile::Open(file,"READ");
+    TFile* wfile = TFile::Open(file,"OLD");
     if(wfile){
-      fWeights = dynamic_cast<THnF*>(wfile->Get("hnWeight")->Clone("hnWeight"));}
+      fWeights = dynamic_cast<TH3D*>(wfile->Get("hnWeight")->Clone("hnWeight_task"));
+      fWeights->SetDirectory(0x0);
+    }
     else{fWeights = NULL;}
-    wfile->Close();
+    wfile->Close();  
   }
   void SetTrackCut(const char* cutmask){
     fCutMask = 0;//Defaults to GlobalHybrid tracks.
@@ -139,7 +143,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
-  THnF *            fWeights;//THnF to hold the correction weights Axis: 0 = centrality, 1 = vertex, 2 = eta, 3 = pT.
+  TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT.
   TRandom3 *	    fRandom;//
   TClonesArray*     fMcArray;//
   //Objects that contain needed/used objects for the task:
