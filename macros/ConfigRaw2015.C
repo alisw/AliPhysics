@@ -396,7 +396,7 @@ void Config()
     {
         //=================== PHOS parameters ===========================
 
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Modules1234");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run2");
     }
 
 
