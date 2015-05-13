@@ -25,8 +25,10 @@
 
 #include "AliAODpidUtil.h"
 #include "AliAnalysisUtils.h"
-#include "assert.h"
 #include "AliGenHijingEventHeader.h"
+
+#include <algorithm>
+#include <cassert>
 
 ClassImp(AliFemtoEventReaderAOD)
 
@@ -178,72 +180,57 @@ AliFemtoString AliFemtoEventReaderAOD::Report()
 //__________________
 void AliFemtoEventReaderAOD::SetInputFile(const char *inputFile)
 {
-  //setting the name of file where names of AOD file are written
-  //it takes only this files which have good trees
-  char buffer[256];
-  fInputFile = string(inputFile);
+  /// Reads a list of filenames from the file 'inputFile'. Each filename is
+  /// checked for a AOD TTree, if present it is added to the fTree chain.
+  fInputFile = inputFile;
   ifstream infile(inputFile);
 
+  delete fTree;
   fTree = new TChain("aodTree");
 
-  if (infile.good() == true) {
-    // check if all given files have good tree inside
-    while (infile.eof() == false) {
-      infile.getline(buffer, 256);
-      TFile *aodFile = TFile::Open(buffer, "READ");
-      if (aodFile != 0x0) {
-        TTree *tree = (TTree *) aodFile->Get("aodTree");
-        if (tree != 0x0) {
-          //      cout<<"putting file  "<<string(buffer)<<" into analysis"<<endl;
-          fTree->AddFile(buffer);
-          delete tree;
-        }
-        aodFile->Close();
+  for (std::string line; std::getline(infile, line);) {
+    const char *filename = line.c_str();
+    TFile *aodFile = TFile::Open(filename, "READ");
+    if (aodFile) {
+      TTree *tree = (TTree *) aodFile->Get("aodTree");
+      if (tree) {
+        fTree->AddFile(filename);
+        delete tree;
       }
-      delete aodFile;
+      aodFile->Close();
     }
+    delete aodFile;
   }
 }
 
 AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 {
-  // read in a next hbt event from the chain
-  // convert it to AliFemtoEvent and return
-  // for further analysis
-  AliFemtoEvent *hbtEvent = 0;
-  // cout<<"reader"<<endl;
-  if (fCurEvent == fNumberofEvent) { //open next file
+  /// Reads in the next event from the chain and converts it to an AliFemtoEvent
+  AliFemtoEvent *hbtEvent = NULL;
+
+  // We have hit the end of our range -> open the next file
+  if (fCurEvent == fNumberofEvent) {
+    // We haven't loaded anything yet - open
     if (fNumberofEvent == 0) {
+      // cout << "fEvent: " << fEvent << "\n";
       fEvent = new AliAODEvent();
       fEvent->ReadFromTree(fTree);
 
-      // Check for the existence of the additional information
-//    fPWG2AODTracks = (TClonesArray *) fEvent->GetList()->FindObject("pwg2aodtracks");
-
-//    if (fPWG2AODTracks) {
-//      cout << "Found additional PWG2 specific information in the AOD!" << endl;
-//      cout << "Reading only tracks with the additional information" << endl;
-//    }
-
       fNumberofEvent = fTree->GetEntries();
-      //    cout<<"Number of Entries in file "<<fNumberofEvent<<endl;
+      // cout << "Number of entries in file " << fNumberofEvent << endl;
       fCurEvent = 0;
     } else { //no more data to read
-      // cout<<"no more files "<<hbtEvent<<endl;
       fReaderStatus = 1;
-      return hbtEvent;
+      return NULL;
     }
   }
 
-  // cout<<"starting to read event "<<fCurEvent<<endl;
-  fTree->GetEvent(fCurEvent);//getting next event
-  //  cout << "Read event " << fEvent << " from file " << fTree << endl;
-
-  //hbtEvent = new AliFemtoEvent;
+  // cout << "starting to read event " << fCurEvent << endl;
+  fTree->GetEvent(fCurEvent);
+  // cout << "Read event " << fEvent << " from file " << fTree << endl;
 
   hbtEvent = CopyAODtoFemtoEvent();
   fCurEvent++;
-
 
   return hbtEvent;
 }
@@ -270,8 +257,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   tEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
 
   // Attempt to access MC header
-  AliAODMCHeader *mcH;
-  TClonesArray *mcP = 0;
+  AliAODMCHeader *mcH = NULL;
+  TClonesArray *mcP = NULL;
+
   if (fReadMC) {
     mcH = (AliAODMCHeader *) fEvent->FindListObject(AliAODMCHeader::StdBranchName());
     if (!mcH) {
@@ -305,32 +293,33 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   //   }
   // }
 
-  //AliAnalysisUtils
+  // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     AliAnalysisUtils *anaUtil = new AliAnalysisUtils();
-    if (fMinVtxContr)
+    if (fMinVtxContr) {
       anaUtil->SetMinVtxContr(fMinVtxContr);
-    if (fpA2013)
-      if (anaUtil->IsVertexSelected2013pA(fEvent) == kFALSE) {
-        delete tEvent;
-        return NULL; //Vertex rejection for pA analysis.
-      }
-    if (fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
-    else anaUtil->SetUseMVPlpSelection(kFALSE);
+    }
+    if (fpA2013 && anaUtil->IsVertexSelected2013pA(fEvent) == kFALSE) {
+      delete anaUtil;
+      delete tEvent;
+      return NULL;  // Vertex rejection for pA analysis.
+    }
+    anaUtil->SetUseMVPlpSelection(fMVPlp);
+
     if (fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
     if (fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
-    if (fisPileUp)
-      if (anaUtil->IsPileUpEvent(fEvent)) {
-        delete tEvent;  //Pile-up rejection.
-        return NULL;
-      }
+    if (fisPileUp && anaUtil->IsPileUpEvent(fEvent)) {
+      delete anaUtil;
+      delete tEvent;
+      return NULL;  // Pile-up rejection.
+    }
     delete anaUtil;
   }
 
   // Primary Vertex position
   const AliAODVertex *aodvertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
-    delete tEvent;  //Bad vertex, skip event.
+    delete tEvent;  // Bad vertex, skip event.
     return NULL;
   }
 
@@ -357,28 +346,27 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   if (!fEstEventMult && cent && fUsePreCent) {
     if ((cent->GetCentralityPercentile("V0M") * 10 < fCentRange[0]) ||
         (cent->GetCentralityPercentile("V0M") * 10 > fCentRange[1])) {
-      // cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
       delete tEvent;
       return NULL;
     }
   }
 
-  float percent = cent->GetCentralityPercentile("V0M");
-//flatten centrality dist.
-  if (percent < 9) {
-    if (fFlatCent) {
-      if (RejectEventCentFlat(fEvent->GetMagneticField(), percent)) {
-        delete tEvent;
-        return NULL;
-      }
+  Float_t percent = cent->GetCentralityPercentile("V0M");
+
+  // Flatten centrality distribution
+  if (percent < 9 && fFlatCent) {
+    bool reject_event = RejectEventCentFlat(fEvent->GetMagneticField(), percent);
+    if (reject_event) {
+      delete tEvent;
+      return NULL;
     }
   }
 
   int realnofTracks = 0; // number of track which we use in a analysis
   int tracksPrim = 0;
 
-  int labels[20000];
-  for (int il = 0; il < 20000; il++) labels[il] = -1;
+  std::vector<int> labels;
+  labels.assign(20000, -1);
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i = 0; i < nofTracks; i++) {
@@ -392,198 +380,56 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   int tNormMult = 0;
   for (int i = 0; i < nofTracks; i++) {
-    AliFemtoTrack *trackCopy;// = new AliFemtoTrack();
-
-//       if (fPWG2AODTracks) {
-//  // Read tracks from the additional pwg2 specific AOD part
-//  // if they exist
-//  // Note that in that case all the AOD tracks without the
-//  // additional information will be ignored !
-//  AliPWG2AODTrack *pwg2aodtrack = (AliPWG2AODTrack *) fPWG2AODTracks->At(i);
-
-//  // Getting the AOD track through the ref of the additional info
-//  AliAODTrack *aodtrack = pwg2aodtrack->GetRefAODTrack();
-//  if (!aodtrack->TestFilterBit(fFilterBit)) {
-//    delete trackCopy;
-//    continue;
-//  }
-
-
-//  if (aodtrack->IsOn(AliESDtrack::kTPCrefit))
-//    if (aodtrack->Chi2perNDF() < 6.0)
-//      if (aodtrack->Eta() < 0.9)
-//        tNormMult++;
-
-
-//  CopyAODtoFemtoTrack(aodtrack, trackCopy, pwg2aodtrack);
-
-//  if (mcP) {
-//    // Fill the hidden information with the simulated data
-//    //    Int_t pLabel = aodtrack->GetLabel();
-//    AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
-
-//    // Check the mother information
-
-//    // Using the new way of storing the freeze-out information
-//    // Final state particle is stored twice on the stack
-//    // one copy (mother) is stored with original freeze-out information
-//    //   and is not tracked
-//    // the other one (daughter) is stored with primary vertex position
-//    //   and is tracked
-
-//    // Freeze-out coordinates
-//    double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
-//    fpx = tPart->Xv() - fV1[0];
-//    fpy = tPart->Yv() - fV1[1];
-//    fpz = tPart->Zv() - fV1[2];
-//    fpt = tPart->T();
-
-//    AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
-//    tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
-
-//    fpx *= 1e13;
-//    fpy *= 1e13;
-//    fpz *= 1e13;
-//    fpt *= 1e13;
-
-//    //      cout << "Looking for mother ids " << endl;
-//    if (motherids[TMath::Abs(aodtrack->GetLabel())]>0) {
-//      //  cout << "Got mother id" << endl;
-//      AliAODMCParticle *mother = GetParticleWithLabel(mcP, motherids[TMath::Abs(aodtrack->GetLabel())]);
-//      // Check if this is the same particle stored twice on the stack
-//      if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
-//        // It is the same particle
-//        // Read in the original freeze-out information
-//        // and convert it from to [fm]
-
-//        // EPOS style
-//        //    fpx = mother->Xv()*1e13*0.197327;
-//        //    fpy = mother->Yv()*1e13*0.197327;
-//        //    fpz = mother->Zv()*1e13*0.197327;
-//        //    fpt = mother->T() *1e13*0.197327*0.5;
-
-
-//        // Therminator style
-//        fpx = mother->Xv()*1e13;
-//        fpy = mother->Yv()*1e13;
-//        fpz = mother->Zv()*1e13;
-//        fpt = mother->T() *1e13*3e10;
-
-//      }
-//    }
-
-//    //       if (fRotateToEventPlane) {
-//    //  double tPhi = TMath::ATan2(fpy, fpx);
-//    //  double tRad = TMath::Hypot(fpx, fpy);
-
-//    //  fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
-//    //  fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
-//    //       }
-
-//    tInfo->SetPDGPid(tPart->GetPdgCode());
-
-//    //    if (fRotateToEventPlane) {
-//    //      double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
-//    //      double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
-
-//    //      tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
-//    //           tRad*TMath::Sin(tPhi - tReactionPlane),
-//    //           tPart->Pz());
-//    //    }
-//    //       else
-//    tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
-//    Double_t mass2 = (tPart->E() *tPart->E() -
-//          tPart->Px()*tPart->Px() -
-//          tPart->Py()*tPart->Py() -
-//          tPart->Pz()*tPart->Pz());
-//    if (mass2>0.0)
-//      tInfo->SetMass(TMath::Sqrt(mass2));
-//    else
-//      tInfo->SetMass(0.0);
-
-//    tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
-//    trackCopy->SetHiddenInfo(tInfo);
-
-//  }
-
-//  double pxyz[3];
-//  aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
-//  const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
-//  // Check the sanity of the tracks - reject zero momentum tracks
-//  if (ktP.Mag() == 0) {
-//    delete trackCopy;
-//    continue;
-//  }
-//       }
-//       else {
-    // No additional information exists
-    // Read in the normal AliAODTracks
 
     //  const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
-    assert(aodtrack && "Not a standard AOD"); // getting the AODtrack directly
-
-
+    assert(aodtrack && "Not a standard AOD"); // Getting the AODtrack directly
 
     if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 
     if (fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) {
-      //delete trackCopy;
       continue;
     }
 
     if (fFilterMask && !aodtrack->TestFilterBit(fFilterMask)) {
-      //delete trackCopy;
       continue;
     }
 
-    // cout << "Muon? " << aodtrack->IsMuonTrack() << endl;
-    // cout << "Type? " << aodtrack->GetType() << endl;
+    // Check the sanity of the tracks - reject zero momentum tracks
+    if (aodtrack->P() == 0.0) {
+      continue;
+    }
 
-    // if (aodtrack->IsMuonTrack()) {
-    //   cout << "muon" << endl;
-    //   delete trackCopy;
-    //   continue;
-    // }
-
-    //counting particles to set multiplicity
+    // Counting particles to set multiplicity
     if (fEstEventMult == kGlobalCount) {
-      AliAODTrack *trk_clone = (AliAODTrack *)aodtrack->Clone("trk_clone"); //no DCA cut for global count
       //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
       if (aodtrack->Chi2perNDF() < 4.0)
         if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
           if (aodtrack->GetTPCNcls() > 70)
             if (aodtrack->Eta() < 0.8)
               tNormMult++;
-      delete trk_clone;
     }
 
-    trackCopy = CopyAODtoFemtoTrack(aodtrack);
+    AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
 
     // copying PID information from the correspondent track
     //  const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 
 
-    AliAODTrack *aodtrackpid;
-    if ((fFilterBit == (1 << (7))) || fFilterMask == 128) {//for TPC Only tracks we have to copy PID information from corresponding global tracks
-      aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(labels[-1 - fEvent->GetTrack(i)->GetID()]));
-    } else {
-      aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
-    }
+    // For TPC Only tracks we have to copy PID information from corresponding global tracks
+    AliAODTrack *aodtrackpid = ((fFilterBit == (1 << (7))) || fFilterMask == 128)
+                             ? dynamic_cast<AliAODTrack *>(fEvent->GetTrack(labels[-1 - fEvent->GetTrack(i)->GetID()]))
+                             : dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
     assert(aodtrackpid && "Not a standard AOD");
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 
     if (mcP) {
       // Fill the hidden information with the simulated data
-      //    Int_t pLabel = aodtrack->GetLabel();
-      //      AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
-      AliAODMCParticle *tPart;
-      if (aodtrack->GetLabel() > -1) {
-        tPart = (AliAODMCParticle *)mcP->At(aodtrack->GetLabel());
-      } else {
-        tPart = NULL;
-      }
+      Int_t track_label = aodtrack->GetLabel();
+      AliAODMCParticle *tPart = (track_label > -1)
+                              ? (AliAODMCParticle *)mcP->At(track_label)
+                              : NULL;
       AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
       double fpx = 0.0, fpy = 0.0, fpz = 0.0, fpt = 0.0;
       if (!tPart) {
@@ -612,7 +458,6 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         //    fpt = tPart->T();
 
         tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
-
 
         fpx *= 1e13;
         fpy *= 1e13;
@@ -708,26 +553,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       trackCopy->SetHiddenInfo(tInfo);
     }
 
-    double pxyz[3];
-
     //AliExternalTrackParam *param = new AliExternalTrackParam(*aodtrack->GetInnerParam());
     trackCopy->SetInnerMomentum(aodtrack->GetTPCmomentum());
 
-    aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
-    const AliFmThreeVectorD ktP(pxyz[0], pxyz[1], pxyz[2]);
-    // Check the sanity of the tracks - reject zero momentum tracks
-    if (ktP.Mag() == 0) {
-      delete trackCopy;
-      continue;
-    }
-    //    }
-
-    tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
-    realnofTracks++;//real number of tracks
+    tEvent->TrackCollection()->push_back(trackCopy);  // Adding track to analysis
+    realnofTracks++; // Real number of tracks
   }
 
-  tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
-  tEvent->SetNormalizedMult(tracksPrim);
+  tEvent->SetNumberOfTracks(realnofTracks); // Setting number of track which we read in event
 
   if (cent) {
     tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
@@ -745,49 +578,67 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     tEvent->SetCentralityCND(cent->GetCentralityPercentile("CND"));
   }
 
-  if (fEstEventMult == kCentrality) {
-    //AliCentrality *cent = fEvent->GetCentrality();
-    //cout<<"AliFemtoEventReaderAOD:"<<lrint(10*cent->GetCentralityPercentile("V0M"))<<endl;
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("V0M")));
-    //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
-  } else if (fEstEventMult == kCentralityV0A) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("V0A")));
-  } else if (fEstEventMult == kCentralityV0C) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("V0C")));
-  } else if (fEstEventMult == kCentralityZNA) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("ZNA")));
-  } else if (fEstEventMult == kCentralityZNC) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("ZNC")));
-  } else if (fEstEventMult == kCentralityCL1) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("CL1")));
-  } else if (fEstEventMult == kCentralityCL0) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("CL0")));
-  } else if (fEstEventMult == kCentralityTRK) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("TRK")));
-  } else if (fEstEventMult == kCentralityTKL) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("TKL")));
-  } else if (fEstEventMult == kCentralityCND) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("CND")));
-  } else if (fEstEventMult == kCentralityNPA) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("NPA")));
-  } else if (fEstEventMult == kCentralityFMD) {
-    if (cent) tEvent->SetNormalizedMult(lrint(10 * cent->GetCentralityPercentile("FMD")));
-  } else if (fEstEventMult == kGlobalCount) {
-    tEvent->SetNormalizedMult(tNormMult); //particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
-  } else if (fEstEventMult == kReference) {
-    tEvent->SetNormalizedMult(fAODheader->GetRefMultiplicity());
-  } else if (fEstEventMult == kTPCOnlyRef) {
-    tEvent->SetNormalizedMult(fAODheader->GetTPConlyRefMultiplicity());
-  } else if (fEstEventMult == kVZERO) {
-    Float_t multV0 = 0;
-    for (Int_t i = 0; i < 64; i++)
-      multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
-    tEvent->SetNormalizedMult(multV0);
+
+  Int_t norm_mult = tracksPrim;
+
+  if (cent) {
+    switch (fEstEventMult) {
+      case kCentrality:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("V0M"));
+	break;
+      case kCentralityV0A:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("V0A"));
+	break;
+      case kCentralityV0C:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("V0C"));
+	break;
+      case kCentralityZNA:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNA"));
+	break;
+      case kCentralityZNC:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNC"));
+	break;
+      case kCentralityCL1:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("CL1"));
+	break;
+      case kCentralityCL0:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("CL0"));
+	break;
+      case kCentralityTRK:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("TRK"));
+	break;
+      case kCentralityTKL:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("TKL"));
+	break;
+      case kCentralityCND:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("CND"));
+	break;
+      case kCentralityNPA:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("NPA"));
+	break;
+      case kCentralityFMD:
+	norm_mult = lrint(10 * cent->GetCentralityPercentile("FMD"));
+    }
+  } else {
+    switch (fEstEventMult) {
+      case kGlobalCount:
+	norm_mult = tNormMult; // Particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
+	break;
+      case kReference:
+	norm_mult = fAODheader->GetRefMultiplicity();
+	break;
+      case kTPCOnlyRef:
+	norm_mult = fAODheader->GetTPConlyRefMultiplicity();
+	break;
+      case kVZERO:
+	Float_t multV0 = 0.0;
+	for (Int_t i = 0; i < 64; i++)
+	  multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
+	norm_mult = lrint(multV0);
+    }
   }
 
-  // if (mcP) delete [] motherids;
-
-  // cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
+  tEvent->SetNormalizedMult(norm_mult);
 
   if (fReadV0) {
     int count_pass = 0;
@@ -816,9 +667,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
             int motherOfPosID = mcParticlePos->GetMother();
             int motherOfNegID = mcParticleNeg->GetMother();
+            // Both daughter tracks refer to the same mother, we can continue
             if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
               AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-              // Both daughter tracks refer to the same mother, we can continue
               AliAODMCParticle *v0 = (AliAODMCParticle *)mcP->At(motherOfPosID); //our V0 particle
 
               tInfo->SetPDGPid(v0->GetPdgCode());
@@ -882,54 +733,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
 
     tFemtoTrack->SetImpactD(tAodTrack->DCA());
     tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
-
-
-    // double impact[2];
-    // double covimpact[3];
-
-    // AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
-    // // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    // if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    //   //cout << "sth went wrong with dca propagation" << endl;
-    //   tFemtoTrack->SetImpactD(-1000.0);
-    //   tFemtoTrack->SetImpactZ(-1000.0);
-
-    // }
-    // else {
-    //   tFemtoTrack->SetImpactD(impact[0]);
-    //   tFemtoTrack->SetImpactZ(impact[1]);
-    // }
-    // delete trk_clone;
-
   }
-
-  //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
-  //     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
-  //   else
-  //     tFemtoTrack->SetImpactD(0.0);
-  //   tFemtoTrack->SetImpactD(tAodTrack->DCA());
-
-  //   tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
-
-
-  //   tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv() - fV1[0], tAodTrack->Yv() - fV1[1]));
-  //   tFemtoTrack->SetImpactZ(tAodTrack->Zv() - fV1[2]);
-
-
-  //   cout
-  //    << "dca" << TMath::Hypot(tAodTrack->Xv() - fV1[0], tAodTrack->Yv() - fV1[1])
-  //    << "xv - fv10 = "<< tAodTrack->Xv() - fV1[0]
-  //    << tAodTrack->Yv() - fV1[1]
-//     << "xv = " << tAodTrack->Xv() << endl
-//     << "fv1[0] = " << fV1[0]  << endl
-//     << "yv = " << tAodTrack->Yv()  << endl
-//     << "fv1[1] = " << fV1[1]  << endl
-//     << "zv = " << tAodTrack->Zv()  << endl
-//     << "fv1[2] = " << fV1[2]  << endl
-//     << "impact[0] = " << impact[0]  << endl
-//     << "impact[1] = " << impact[1]  << endl
-//     << endl << endl ;
 
   tFemtoTrack->SetCdd(covmat[0]);
   tFemtoTrack->SetCdz(covmat[1]);
@@ -942,20 +746,6 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   tFemtoTrack->SetTPCsignalN(1);
   tFemtoTrack->SetTPCsignalS(1);
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
-
-//   if (tPWG2AODTrack) {
-//     // Copy the PWG2 specific information if it exists
-//     tFemtoTrack->SetTPCClusterMap(tPWG2AODTrack->GetTPCClusterMap());
-//     tFemtoTrack->SetTPCSharedMap(tPWG2AODTrack->GetTPCSharedMap());
-
-//     double xtpc[3] = {0,0,0};
-//     tPWG2AODTrack->GetTPCNominalEntrancePoint(xtpc);
-//     tFemtoTrack->SetNominalTPCEntrancePoint(xtpc);
-//     tPWG2AODTrack->GetTPCNominalExitPoint(xtpc);
-//     tFemtoTrack->SetNominalTPCExitPoint(xtpc);
-//   }
-//   else {
-  // If not use dummy values
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 
@@ -981,10 +771,6 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   for (int i = 0; i < 9; i++)
     delete [] tpcPositions[i];
   delete [] tpcPositions;
-  //   }
-
-  //   //  cout << "Track has " << TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv()) << "  " << tAodTrack->Zv() << "  " << tAodTrack->GetTPCNcls() << endl;
-
 
   int indexes[3];
   for (int ik = 0; ik < 3; ik++) {
@@ -1276,13 +1062,11 @@ void AliFemtoEventReaderAOD::SetUseMultiplicity(EstEventMult aType)
 
 AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel)
 {
-  if (aLabel < 0) return 0;
+  if (aLabel < 0) return NULL;
   AliAODMCParticle *aodP;
-  Int_t posstack = 0;
-  if (aLabel > mcP->GetEntries())
-    posstack = mcP->GetEntries();
-  else
-    posstack = aLabel;
+  Int_t posstack = (aLabel > mcP->GetEntries())
+                 ? mcP->GetEntries()
+                 : aLabel;
 
   aodP = (AliAODMCParticle *) mcP->At(posstack);
   if (aodP->GetLabel() > posstack) {
@@ -1299,7 +1083,7 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
     } while (posstack < mcP->GetEntries());
   }
 
-  return 0;
+  return NULL;
 }
 
 void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
@@ -1322,7 +1106,6 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
           vertexX = vertex->GetX();
           vertexY = vertex->GetY();
           vertexZ = vertex->GetZ();
-
         }
       }
     }
@@ -1405,8 +1188,6 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTPCP = -1000.;
   float nsigmaTPCE = -1000.;
 
-  //   cout<<"in reader fESDpid"<<fESDpid<<endl;
-
   nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kKaon);
   nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kPion);
   nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kProton);
@@ -1425,7 +1206,8 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetTPCsignalS(1);
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
 
-  ///////TOF//////////////////////
+
+  //////  TOF ////////////////////////////////////////////
 
   float vp = -1000.;
   float nsigmaTOFPi = -1000.;
@@ -1433,7 +1215,9 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTOFP = -1000.;
   float nsigmaTOFE = -1000.;
 
-  if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout) && ((status & AliVTrack::kTIME) == AliVTrack::kTIME) && probMis < 0.01) {
+  if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout)
+      && ((status & AliVTrack::kTIME) == AliVTrack::kTIME)
+      && probMis < 0.01) {
 
     nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kPion);
     nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kKaon);
@@ -1451,9 +1235,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
   tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE);
 
-
   //////////////////////////////////////
-
 }
 
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
