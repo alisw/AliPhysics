@@ -1,16 +1,10 @@
-/***************************************************************************
- *
- * $Id: AliFemtoAODTrackCut.cxx 23733 2008-02-05 16:51:41Z akisiel $ 
- *
- * 
- ***************************************************************************
- *
- * 
- *              
- *
- ***************************************************************************
- *
+///
+/// \file AliFemtoAODTrackCut.cxx
+///
+
+/**
  * $Log$
+ *
  * Revision 1.3  2007/05/22 09:01:42  akisiel
  * Add the possibiloity to save cut settings in the ROOT file
  *
@@ -41,29 +35,28 @@
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
- **************************************************************************/
+ */
 
 #include "AliFemtoAODTrackCut.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 /// \cond CLASSIMP
 ClassImp(AliFemtoAODTrackCut)
 /// \endcond
 #endif
 
 
-/// \class AliFemtoAODTrackCut
-/// \brief electron
-///
-/// 0.13 - 1.8
-/// 0       7.594129e-02    8.256141e-03
-/// 1       -5.535827e-01   8.170825e-02
-/// 2       1.728591e+00    3.104210e-01
-/// 3       -2.827893e+00   5.827802e-01
-/// 4       2.503553e+00    5.736207e-01
-/// 5       -1.125965e+00   2.821170e-01
-/// 6       2.009036e-01    5.438876e-02
+
+// electron
+// 0.13 - 1.8
+// 0       7.594129e-02    8.256141e-03
+// 1       -5.535827e-01   8.170825e-02
+// 2       1.728591e+00    3.104210e-01
+// 3       -2.827893e+00   5.827802e-01
+// 4       2.503553e+00    5.736207e-01
+// 5       -1.125965e+00   2.821170e-01
+// 6       2.009036e-01    5.438876e-02
 
 // pion
 // 0.13 - 2.0
@@ -86,141 +79,128 @@ ClassImp(AliFemtoAODTrackCut)
 // 3       -4.608098e-02   8.336400e-03
 
 
-AliFemtoAODTrackCut::AliFemtoAODTrackCut() :
-    fCharge(0),
-    fLabel(0),
-    fMaxchiNdof(1000.0),
-    fMaxSigmaToVertex(1000.0),
-    fNTracksPassed(0),
-    fNTracksFailed(0),
-    fMostProbable(0)
+AliFemtoAODTrackCut::AliFemtoAODTrackCut():
+  fCharge(0),
+  fLabel(false),
+  fMaxchiNdof(1000.0f),
+  fMaxSigmaToVertex(1000.0f),
+  fNTracksPassed(0),
+  fNTracksFailed(0),
+  fMostProbable(0)
 {
   /// Default constructor
+  fPt[0] = 0.0;
+  fPt[1] = 100.0;  //100
 
-  fNTracksPassed = fNTracksFailed = 0;
-  fCharge = 0;  // takes both charges 0
-  fPt[0]=0.0;              fPt[1] = 100.0;//100
-  fRapidity[0]=-2;       fRapidity[1]=2;//-2 2
-  fPidProbElectron[0]=-1;fPidProbElectron[1]=2;
-  fPidProbPion[0]=-1;    fPidProbPion[1]=2;
-  fPidProbKaon[0]=-1;fPidProbKaon[1]=2;
-  fPidProbProton[0]=-1;fPidProbProton[1]=2;
-  fPidProbMuon[0]=-1;fPidProbMuon[1]=2;
-  fLabel=false;
+  fRapidity[0] = -2.0;
+  fRapidity[1] = 2.0;
+
+  fPidProbElectron[0] = -1.0;
+  fPidProbElectron[1] = 2.0;
+
+  fPidProbPion[0] = -1.0;
+  fPidProbPion[1] = 2.0;
+
+  fPidProbKaon[0] = -1.0;
+  fPidProbKaon[1] = 2.0;
+
+  fPidProbProton[0] = -1.0;
+  fPidProbProton[1] = 2.0;
+
+  fPidProbMuon[0] = -1.0;
+  fPidProbMuon[1] = 2.0;
 }
 //------------------------------
-AliFemtoAODTrackCut::~AliFemtoAODTrackCut(){
+AliFemtoAODTrackCut::~AliFemtoAODTrackCut()
+{
   /// noop
 
 }
 //------------------------------
-bool AliFemtoAODTrackCut::Pass(const AliFemtoTrack* track)
+bool AliFemtoAODTrackCut::Pass(const AliFemtoTrack *track)
 {
   /// test the particle and return
   /// true if it meets all the criteria
   /// false if it doesn't meet at least one of the criteria
 
   float tMost[5];
-  
-  if (((track->ITSchi2() + track->TPCchi2())/(track->ITSncls() + track->TPCncls())) > fMaxchiNdof) {
+
+  if (((track->ITSchi2() + track->TPCchi2()) / (track->ITSncls() + track->TPCncls())) > fMaxchiNdof) {
     return false;
   }
 
   if (fMaxSigmaToVertex < track->SigmaToVertex()) {
     return false;
   }
-  
-  if (fLabel)
-    {
-      //cout<<"labels"<<endl;
-      if(track->Label()<0)
-	{
-	  fNTracksFailed++;
-	  //   cout<<"No Go Through the cut"<<endl;
-	  //  cout<<fLabel<<" Label="<<track->Label()<<endl;
-	  return false;
-	}    
-    }
-  if (fCharge!=0)
-    {              
-      //cout<<"AliFemtoESD  cut ch "<<endl;
-      //cout<<fCharge<<" Charge="<<track->Charge()<<endl;
-      if (track->Charge()!= fCharge)	
-	{
-	  fNTracksFailed++;
-	  //  cout<<"No Go Through the cut"<<endl;
-	  // cout<<fCharge<<" Charge="<<track->Charge()<<endl;
-	  return false;
-	}
-    }
-  float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
-  float tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
-  float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
-  if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;   
-      //cout<<fRapidity[0]<<" < Rapidity ="<<tRapidity<<" <"<<fRapidity[1]<<endl;
-      return false;
-    }
-  if ((tPt<fPt[0])||(tPt>fPt[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;
-      //cout<<fPt[0]<<" < Pt ="<<Pt<<" <"<<fPt[1]<<endl;
-      return false;
-    }
 
-    
-  if ((track->PidProbElectron()<fPidProbElectron[0])||(track->PidProbElectron()>fPidProbElectron[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;
-      //cout<<fPidProbElectron[0]<<" < e ="<<track->PidProbElectron()<<" <"<<fPidProbElectron[1]<<endl;
-      return false;
-    }
-  if ((track->PidProbPion()<fPidProbPion[0])||(track->PidProbPion()>fPidProbPion[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;
-      //cout<<fPidProbPion[0]<<" < pi ="<<track->PidProbPion()<<" <"<<fPidProbPion[1]<<endl;
-      return false;
-    }
-  if ((track->PidProbKaon()<fPidProbKaon[0])||(track->PidProbKaon()>fPidProbKaon[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;
-      //cout<<fPidProbKaon[0]<<" < k ="<<track->PidProbKaon()<<" <"<<fPidProbKaon[1]<<endl;
-      return false;
-    }
-  if ((track->PidProbProton()<fPidProbProton[0])||(track->PidProbProton()>fPidProbProton[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;
-      //cout<<fPidProbProton[0]<<" < p  ="<<track->PidProbProton()<<" <"<<fPidProbProton[1]<<endl;
-      return false;
-    }
-  if ((track->PidProbMuon()<fPidProbMuon[0])||(track->PidProbMuon()>fPidProbMuon[1]))
-    {
-      fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;
-      //cout<<fPidProbMuon[0]<<" <  mi="<<track->PidProbMuon()<<" <"<<fPidProbMuon[1]<<endl;
-      return false;
-    }
+  if (fLabel && track->Label() < 0) {
+    fNTracksFailed++;
+    return false;
+  }
+  if (fCharge != 0 && track->Charge() != fCharge) {
+    fNTracksFailed++;
+    return false;
+  }
+
+  float tEnergy = ::sqrt(track->P().Mag2() + fMass * fMass);
+  float tRapidity = 0.5 *::log((tEnergy + track->P().z()) / (tEnergy - track->P().z()));
+  float tPt = ::sqrt((track->P().x()) * (track->P().x()) + (track->P().y()) * (track->P().y()));
+
+  if ((tRapidity < fRapidity[0]) || (tRapidity > fRapidity[1])) {
+    fNTracksFailed++;
+    return false;
+  }
+  if ((tPt < fPt[0]) || (tPt > fPt[1])) {
+    fNTracksFailed++;
+    return false;
+  }
+
+
+  if ((track->PidProbElectron() < fPidProbElectron[0]) || (track->PidProbElectron() > fPidProbElectron[1])) {
+    fNTracksFailed++;
+    return false;
+  }
+  if ((track->PidProbPion() < fPidProbPion[0]) || (track->PidProbPion() > fPidProbPion[1])) {
+    fNTracksFailed++;
+    //cout<<"No Go Through the cut"<<endl;
+    //cout<<fPidProbPion[0]<<" < pi ="<<track->PidProbPion()<<" <"<<fPidProbPion[1]<<endl;
+    return false;
+  }
+  if ((track->PidProbKaon() < fPidProbKaon[0]) || (track->PidProbKaon() > fPidProbKaon[1])) {
+    fNTracksFailed++;
+    //cout<<"No Go Through the cut"<<endl;
+    //cout<<fPidProbKaon[0]<<" < k ="<<track->PidProbKaon()<<" <"<<fPidProbKaon[1]<<endl;
+    return false;
+  }
+  if ((track->PidProbProton() < fPidProbProton[0]) || (track->PidProbProton() > fPidProbProton[1])) {
+    fNTracksFailed++;
+    //cout<<"No Go Through the cut"<<endl;
+    //cout<<fPidProbProton[0]<<" < p  ="<<track->PidProbProton()<<" <"<<fPidProbProton[1]<<endl;
+    return false;
+  }
+  if ((track->PidProbMuon() < fPidProbMuon[0]) || (track->PidProbMuon() > fPidProbMuon[1])) {
+    fNTracksFailed++;
+    //cout<<"No Go Through the cut"<<endl;
+    //cout<<fPidProbMuon[0]<<" <  mi="<<track->PidProbMuon()<<" <"<<fPidProbMuon[1]<<endl;
+    return false;
+  }
 
   if (fMostProbable) {
-    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
+    tMost[0] = track->PidProbElectron() * PidFractionElectron(track->P().Mag());
     tMost[1] = 0.0;
-    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
-    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
-    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
-    int imost=0;
+    tMost[2] = track->PidProbPion() * PidFractionPion(track->P().Mag());
+    tMost[3] = track->PidProbKaon() * PidFractionKaon(track->P().Mag());
+    tMost[4] = track->PidProbProton() * PidFractionProton(track->P().Mag());
+    int imost = 0;
     float ipidmax = 0.0;
-    for (int ip=0; ip<5; ip++)
-      if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+    for (int ip = 0; ip < 5; ip++)
+      if (tMost[ip] > ipidmax) {
+        ipidmax = tMost[ip];
+        imost = ip;
+      };
     if (imost != fMostProbable) return false;
   }
-  
+
   // cout<<"Go Through the cut"<<endl;
   // cout<<fLabel<<" Label="<<track->Label()<<endl;
   // cout<<fCharge<<" Charge="<<track->Charge()<<endl;
@@ -231,10 +211,8 @@ bool AliFemtoAODTrackCut::Pass(const AliFemtoTrack* track)
   //cout<<fPidProbKaon[0]<<" <  k="<<track->PidProbKaon()<<" <"<<fPidProbKaon[1]<<endl;
   //cout<<fPidProbProton[0]<<" <  p="<<track->PidProbProton()<<" <"<<fPidProbProton[1]<<endl;
   //cout<<fPidProbMuon[0]<<" <  mi="<<track->PidProbMuon()<<" <"<<fPidProbMuon[1]<<endl;
-  fNTracksPassed++ ;
+  fNTracksPassed++;
   return true;
-    
-    
 }
 //------------------------------
 AliFemtoString AliFemtoAODTrackCut::Report()
@@ -243,15 +221,15 @@ AliFemtoString AliFemtoAODTrackCut::Report()
 
   string tStemp;
   char tCtemp[100];
-  snprintf(tCtemp , 100, "Particle mass:\t%E\n",this->Mass());
-  tStemp=tCtemp;
-  snprintf(tCtemp , 100, "Particle charge:\t%d\n",fCharge);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
+  snprintf(tCtemp, 100, "Particle mass:\t%E\n", this->Mass());
+  tStemp = tCtemp;
+  snprintf(tCtemp, 100, "Particle charge:\t%d\n", fCharge);
+  tStemp += tCtemp;
+  snprintf(tCtemp, 100, "Particle pT:\t%E - %E\n", fPt[0], fPt[1]);
+  tStemp += tCtemp;
+  snprintf(tCtemp, 100, "Particle rapidity:\t%E - %E\n", fRapidity[0], fRapidity[1]);
+  tStemp += tCtemp;
+  snprintf(tCtemp, 100, "Number of tracks which passed:\t%ld  Number which failed:\t%ld\n", fNTracksPassed, fNTracksFailed);
   tStemp += tCtemp;
   AliFemtoString returnThis = tStemp;
   return returnThis;
@@ -310,7 +288,7 @@ TList *AliFemtoAODTrackCut::ListSettings()
   }
   return tListSetttings;
 }
-			    // electron
+// electron
 // 0.13 - 1.8
 // 0       7.594129e-02    8.256141e-03
 // 1       -5.535827e-01   8.170825e-02
@@ -323,15 +301,14 @@ float AliFemtoAODTrackCut::PidFractionElectron(float mom) const
 {
   /// Provide a parameterized fraction of electrons dependent on momentum
 
-  if (mom<0.13) return 0.0;
-  if (mom>1.8) return 0.0;
-  return (7.594129e-02 
-	  -5.535827e-01*mom	   
-	  +1.728591e+00*mom*mom    
-	  -2.827893e+00*mom*mom*mom 
-	  +2.503553e+00*mom*mom*mom*mom	   
-	  -1.125965e+00*mom*mom*mom*mom*mom      
-	  +2.009036e-01*mom*mom*mom*mom*mom*mom);   
+  if (mom < 0.13 || 1.8 < mom) return 0.0;
+  return (7.594129e-02
+          - 5.535827e-01 * mom
+          + 1.728591e+00 * mom * mom
+          - 2.827893e+00 * mom * mom * mom
+          + 2.503553e+00 * mom * mom * mom * mom
+          - 1.125965e+00 * mom * mom * mom * mom * mom
+          + 2.009036e-01 * mom * mom * mom * mom * mom * mom);
 }
 
 // pion
@@ -343,11 +320,10 @@ float AliFemtoAODTrackCut::PidFractionPion(float mom) const
 {
   /// Provide a parameterized fraction of pions dependent on momentum
 
-  if (mom<0.13) return 0.0;
-  if (mom>2.0) return 0.0;
-  return ( 1.063457e+00
-	   -4.222208e-01*mom
-	   +1.042004e-01*mom*mom);
+  if (mom < 0.13 || 2.0 < mom) return 0.0;
+  return (1.063457e+00
+          - 4.222208e-01 * mom
+          + 1.042004e-01 * mom * mom);
 }
 
 // kaon
@@ -360,12 +336,11 @@ float AliFemtoAODTrackCut::PidFractionKaon(float mom) const
 {
   /// Provide a parameterized fraction of kaons dependent on momentum
 
-  if (mom<0.18) return 0.0;
-  if (mom>2.0) return 0.0;
+  if (mom < 0.18 || 2.0 < mom) return 0.0;
   return (-7.289406e-02
-	  +4.415666e-01*mom	   
-	  -2.996790e-01*mom*mom    
-	  +6.704652e-02*mom*mom*mom);
+          + 4.415666e-01 * mom
+          - 2.996790e-01 * mom * mom
+          + 6.704652e-02 * mom * mom * mom);
 }
 
 // proton
@@ -378,10 +353,9 @@ float AliFemtoAODTrackCut::PidFractionProton(float mom) const
 {
   /// Provide a parameterized fraction of protons dependent on momentum
 
-  if (mom<0.26) return  0.0;
-  if (mom>2.0) return 0.0;
-  return (-3.730200e-02  
-	  +1.163684e-01*mom	      
-	  +8.354116e-02*mom*mom       
-	  -4.608098e-02*mom*mom*mom);  
+  if (mom < 0.26 || 2.0 < mom) return 0.0;
+  return (-3.730200e-02
+          + 1.163684e-01 * mom
+          + 8.354116e-02 * mom * mom
+          - 4.608098e-02 * mom * mom * mom);
 }
