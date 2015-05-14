@@ -691,6 +691,8 @@ public:
  // 12.a) EbE Corr:
  void SetCRCVZCorrPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCVZCorrPro[c][eg][h] = TP;};
  TProfile* GetCRCVZCorrPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCVZCorrPro[c][eg][h];};
+ void SetCRCVZNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCVZNUAPro[c][eg][h] = TP;};
+ TProfile* GetCRCVZNUAPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCVZNUAPro[c][eg][h];};
  void SetCRCVZSumWeigHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCVZSumWeigHist[c][eg][h] = TH;};
  TH1D* GetCRCVZSumWeigHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCVZSumWeigHist[c][eg][h];};
  void SetCRCVZCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCVZCorrProdTempHist[c][eg][h] = TH;};
@@ -1121,11 +1123,9 @@ private:
  TProfile *fCRCZDCQVecA[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  
- //TH1D *fEvPlaneAng[fCRCQVecnCR][fCRCnEtaGap][fCRCMaxnCen]; //! Event plane angle distribution
- 
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
- const static Int_t fCRCVZnCR = 5;
+ const static Int_t fCRCVZnCR = 10;
  TMatrixD *fCRCQVZRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
  TMatrixD *fCRCQVZIm; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
  TMatrixD *fCRCVZMult; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
@@ -1137,6 +1137,7 @@ private:
  TH2D *fCRCVZCorrProd2p2pHist[fCRCnEtaGap][fCRCMaxnCen]; //! correlation products
  TH2D *fCRCVZWeigProd2p2pHist[fCRCnEtaGap][fCRCMaxnCen]; //! weights of correlation products
  TH2D *fCRCVZCovHist[fCRCnEtaGap][fCRCMaxnCen]; //! covariances final histo
+ TProfile *fCRCVZNUAPro[2][fCRCnEtaGap][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  
  // CRCZDC
  //TList *fCRCZDC; //! VZERO CRC List
