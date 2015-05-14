@@ -1426,7 +1426,8 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 		if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
 		if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
 		if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
-			!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
+			!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut() && 
+		   !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseDoublyCountedV0sCut()){
 			fGammaCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 		
 			Double_t weightCentrality = 1.;
@@ -1476,8 +1477,10 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 			((AliConversionPhotonCuts*)fCutArray->At(fiCut))->FillElectonLabelArray(PhotonCandidate,nV0);
 			nV0++;
 			GammaCandidatesStepOne->Add(PhotonCandidate);
-		} else if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
-				((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // shared electron is disabled, step one not needed -> step two
+		} else if(( !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
+			   ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut() ) ||
+			  ( !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
+			   ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseDoublyCountedV0sCut() )){ // shared electron is disabled, step one not needed -> step two
 			GammaCandidatesStepTwo->Add(PhotonCandidate);
 		}
 	}
@@ -1602,6 +1605,65 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 				tESDConvGammaPtDcazCat[fiCut]->Fill();
 				}
 			}
+		}
+	}
+
+	if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseDoublyCountedV0sCut()){
+		for(Int_t i = 0;i<GammaCandidatesStepTwo->GetEntries();i++){
+			AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) GammaCandidatesStepTwo->At(i);
+			if(!PhotonCandidate) continue;
+                        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectDoublyCountedV0s(PhotonCandidate,GammaCandidatesStepTwo,i)){
+
+			   GammaCandidatesStepTwo->Remove(PhotonCandidate); //Remove one of the doubly counted photons from list
+			   i=i-1;
+
+                           continue; // one of the doubly counted photons will not be written to the faGammaCandidates list 
+                        }
+			fGammaCandidates->Add(PhotonCandidate); 
+		
+			Double_t weightCentrality = 1.;
+			if((fDoCentralityFlat > 0)){
+                           weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForCentralityFlattening(fInputEvent);
+			} else weightCentrality = 1.;
+			
+			if(fIsFromMBHeader){
+				if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), weightCentrality); 
+				else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt()); 
+				if (fDoPhotonQA > 0){
+					if(fDoCentralityFlat > 0){
+						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightCentrality);
+						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), weightCentrality);
+						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), weightCentrality);
+					} else { 
+						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
+						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
+						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+					}
+				}   
+			}
+			if(fIsMC){
+				if(fInputEvent->IsA()==AliESDEvent::Class())
+				ProcessTruePhotonCandidates(PhotonCandidate);
+				if(fInputEvent->IsA()==AliAODEvent::Class())
+				ProcessTruePhotonCandidatesAOD(PhotonCandidate);
+			}
+			if (fIsFromMBHeader && fDoPhotonQA == 2){
+				if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
+				fPtGamma = PhotonCandidate->Pt();
+				fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+				fRConvPhoton = PhotonCandidate->GetConversionRadius();
+				fEtaPhoton = PhotonCandidate->GetPhotonEta();
+				iCatPhoton = PhotonCandidate->GetPhotonQuality();
+				tESDConvGammaPtDcazCat[fiCut]->Fill();
+				} else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
+				fPtGamma = PhotonCandidate->Pt();
+				fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+				fRConvPhoton = PhotonCandidate->GetConversionRadius();
+				fEtaPhoton = PhotonCandidate->GetPhotonEta();
+				iCatPhoton = PhotonCandidate->GetPhotonQuality();
+				tESDConvGammaPtDcazCat[fiCut]->Fill();
+				}   
+			}   
 		}
 	}
 
