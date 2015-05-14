@@ -1,6 +1,8 @@
 //
 // Macro to create the "raw" data file with selected events
-
+// source is 
+//     $ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C
+// 
 // Original code: 
 //    marian.ivanov@cern.ch
 //    modifications:
