@@ -68,14 +68,10 @@ AliMUONTriggerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   
   TString runType = GetRunType();
   
-  if ( runType == "PHYSICS" ) 
+  if ( runType == "PHYSICS" || runType == "CALIBRATION" )
   {
     Add(fTriggerSubprocessor);
     Add(fTriggerDCSSubprocessor,kTRUE); // uses DCS
-  }
-  else if (runType == "CALIBRATION")
-  {
-    Add(fTriggerSubprocessor);
   }
   else
   {
