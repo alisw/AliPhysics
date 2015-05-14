@@ -155,9 +155,15 @@ public:
 
   // Common analysis switchs 
   
-  enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
-                  kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
-                  kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
+  /// Set the tag identifing the main detector used in the analysis 
+  enum detector 
+  { 
+    kEMCAL    = AliFiducialCut::kEMCAL,   /// EMCAL (+DCAL) 
+    kPHOS     = AliFiducialCut::kPHOS,    /// PHOS 
+    kCTS      = AliFiducialCut::kCTS,     /// Tracking
+    kDCAL     = AliFiducialCut::kDCAL,    /// DCal, not used so far, just in case
+    kDCALPHOS = AliFiducialCut::kDCALPHOS /// DCal+PHOS, not used so far, just in case
+  } ;
 
   virtual Int_t          GetCalorimeter()                 const  { return fCalorimeter          ; }
   virtual TString        GetCalorimeterString()           const  { return fCalorimeterString    ; }
@@ -211,8 +217,8 @@ public:
   
   // Cluster Pairs Time cut  
   
-  virtual void           SetPairTimeCut(Float_t t)               { fPairTimeCut  = t   ; } //ns
-  virtual Float_t        GetPairTimeCut()                  const { return fPairTimeCut ; } //ns
+  virtual void           SetPairTimeCut(Float_t t)               { fPairTimeCut  = t   ; } /// Time cut in ns
+  virtual Float_t        GetPairTimeCut()                  const { return fPairTimeCut ; } /// Time cut in ns
   
   // Number of TRD modules in front of EMCAL (year <=2012)
   
@@ -221,12 +227,12 @@ public:
   
   // Getters / Setters for parameters of event buffers
   
-  virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } // number of bins in vertex
-  virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } // number of bins in reaction plain
-  virtual Int_t          GetNCentrBin()                    const { return fNCentrBin ; } // number of bins in centrality
-  virtual Int_t          GetNTrackMultBin()                const { return GetNCentrBin(); } // number of bins in track multiplicity
-  virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; } // maximal number of events for mixin
-  virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} // cut on vertex position
+  virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; }    /// Number of bins in vertex
+  virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; }    /// Number of bins in reaction plain
+  virtual Int_t          GetNCentrBin()                    const { return fNCentrBin ; }    /// Number of bins in centrality
+  virtual Int_t          GetNTrackMultBin()                const { return GetNCentrBin(); } /// Number of bins in track multiplicity
+  virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; }    /// Maximal number of events for mixin
+  virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} /// Cut on vertex position
   virtual Int_t          GetTrackMultiplicityBin()         const ;
   virtual Int_t          GetEventCentralityBin()           const ;
   virtual Int_t          GetEventRPBin()                   const ;
@@ -236,11 +242,11 @@ public:
   
   virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
     
-  virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } // number of bins for vertex position
-  virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } // number of bins in reaction plain
-  virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } // number of bins in centrality
-  virtual void           SetNTrackMultBin(Int_t n = 1 )          { SetNCentrBin(n); } // number of bins in track multiplicity
-  virtual void           SetNMaxEvMix(Int_t n = 20)              { fNmaxMixEv = n ; if(n < 1) fNmaxMixEv = 1 ; } // maximal number of events for mixing
+  virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } /// Number of bins for vertex position
+  virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } /// Number of bins in reaction plain
+  virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } /// Number of bins in centrality
+  virtual void           SetNTrackMultBin(Int_t n = 1 )          { SetNCentrBin(n); }                            /// Number of bins in track multiplicity
+  virtual void           SetNMaxEvMix(Int_t n = 20)              { fNmaxMixEv = n ; if(n < 1) fNmaxMixEv = 1 ; } /// Maximal number of events for mixing
   virtual void           SetTrackMultiplicityBin(Int_t bin, Int_t mult) { if(bin < 20) fTrackMultBins[bin] = mult ; }
   
   virtual void           SwitchOnTrackMultBins()                 { fUseTrackMultBins = kTRUE  ; }
@@ -256,13 +262,13 @@ public:
   
   virtual Int_t           CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel) ;
   
-  virtual AliMixedEvent * GetMixedEvent()                  const { return GetReader()->GetMixedEvent()  ; }
+  virtual AliMixedEvent * GetMixedEvent()                  const { return GetReader()->GetMixedEvent()     ; }
   
-  virtual Int_t           GetNMixedEvent()                 const { return GetReader()->GetNMixedEvent() ; } 
+  virtual Int_t           GetNMixedEvent()                 const { return GetReader()->GetNMixedEvent()    ; } 
   
   // Vertex methods
   
-  virtual void           GetVertex(Double_t vertex[3])     const { GetReader()->GetVertex(vertex)       ; } 
+  virtual void           GetVertex(Double_t vertex[3])     const { GetReader()->GetVertex(vertex)          ; } 
   
   virtual Double_t*      GetVertex(Int_t evtIndex)         const { return GetReader()->GetVertex(evtIndex) ; }
   
@@ -270,10 +276,36 @@ public:
                                    Int_t evtIndex)         const { GetReader()->GetVertex(vertex,evtIndex) ; }
   // VZERO
   
-  virtual Int_t GetV0Signal(Int_t i )                      const { return fReader->GetV0Signal(i)         ; }
+  virtual Int_t          GetV0Signal(Int_t i )             const { return fReader->GetV0Signal(i)          ; }
   
-  virtual Int_t GetV0Multiplicity(Int_t i )                const { return fReader->GetV0Multiplicity(i)   ; }
+  virtual Int_t          GetV0Multiplicity(Int_t i )       const { return fReader->GetV0Multiplicity(i)    ; }
   
+  
+  // Some utilities dealing with cluster angles
+  
+  /// Shift phi angle in case of negative value 360 degrees. Example TLorenzVector::Phi defined in -pi to pi
+  Float_t                GetPhi  (Float_t phi)                   { if ( phi < 0 ) phi += TMath::TwoPi() ; return phi ; }
+  
+  Float_t                DegToRad(Float_t deg)                   { deg *= TMath::DegToRad(); return deg ; }
+  
+  Float_t                RadToDeg(Float_t rad)                   { rad *= TMath::RadToDeg(); return rad ; }
+  
+  // Calorimeter specific access methods and calculations
+  
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
+  { return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event)             ; } 
+  
+  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const 
+  { return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
+  
+  virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const 
+  { return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent())          ; }
+  
+  virtual Int_t          GetModuleNumber(AliVCluster * cluster)     const 
+  { return fCaloUtils->GetModuleNumber(cluster)                                 ; }
+  
+  virtual AliVCluster*   FindCluster(TObjArray* clusters, Int_t clId, Int_t & iclus, Int_t first = 0 ) ;
+
   
   // MC event acces methods
   
@@ -321,22 +353,7 @@ public:
   
   virtual void                       SetReader(AliCaloTrackReader * reader)                         { fReader = reader                    ; }
   
-  // Calorimeter specific access methods and calculations
-    
-  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) {
-   return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event) ; } 
   
-  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
-	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
-  
-  virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const {
-	  return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent()) ; }
-  
-  virtual Int_t          GetModuleNumber(AliVCluster * cluster)     const {
-	  return fCaloUtils->GetModuleNumber(cluster) ; }
-  
-  virtual AliVCluster*   FindCluster(TObjArray* clusters, const Int_t id, Int_t & iclus, const Int_t first=0) ;
-
 private:    
   
   Bool_t                     fDataMC ;             ///< Flag to access MC data when using ESD or AOD.    

@@ -218,17 +218,17 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
 /// \param first: Integer with the first index to consider in the array of clusters.
 /// \return pointer to cluster.
 //_____________________________________________________________________________________
-AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int_t id,
+AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int_t clId,
                                                         Int_t & iclus, Int_t first)
 {  
-  if(!clusters) return 0x0;
+  if ( !clusters ) return 0x0;
   
   for(iclus = first; iclus < clusters->GetEntriesFast(); iclus++)
   {
     AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-    if(cluster)
+    if ( cluster )
     {
-      if(cluster->GetID()==id)
+      if ( cluster->GetID() == clId )
       {
         return cluster;
       }
