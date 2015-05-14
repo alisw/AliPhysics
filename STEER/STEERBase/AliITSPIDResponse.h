@@ -15,6 +15,7 @@
 #include "AliPID.h"
 
 class AliVTrack;
+class AliITSPidParams;
 
 class AliITSPIDResponse : public TObject {
 
@@ -47,24 +48,25 @@ public:
  Double_t Bethe(Double_t p, AliPID::EParticleType species, Bool_t isSA=kFALSE) const;
  Double_t BetheITSsaHybrid(Double_t p, Double_t mass) const;
  Double_t GetResolution(Double_t bethe, Int_t nPtsForPid=4, Bool_t isSA=kFALSE,Double_t p=0., AliPID::EParticleType type=AliPID::kPion) const;
- void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES],Bool_t isMC=kFALSE) const;
-
- Double_t GetNumberOfSigmas( const AliVTrack* track, AliPID::EParticleType species) const;
-
- Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType species, Bool_t ratio=kFALSE) const;
- 
- Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
-   if(type==AliPID::kDeuteron && mom<0.4) return -999.;
-   if(type==AliPID::kTriton && mom<0.55) return -999.;
-   const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
-   Float_t bethe = Bethe(mom,type,isSA)*chargeFactor;
-   return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA,mom,type);
- }
- Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;
-
+  void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES], Bool_t isMC = kFALSE) const;
+  void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES], AliITSPidParams *pars) const;
+  
+  Double_t GetNumberOfSigmas( const AliVTrack* track, AliPID::EParticleType species) const;
+  
+  Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType species, Bool_t ratio=kFALSE) const;
+  
+  Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
+    if(type==AliPID::kDeuteron && mom<0.4) return -999.;
+    if(type==AliPID::kTriton && mom<0.55) return -999.;
+    const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
+    Float_t bethe = Bethe(mom,type,isSA)*chargeFactor;
+    return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA,mom,type);
+  }
+  Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;
+  
 private:
-
-
+  
+  
   // Data members for truncated mean method
   Float_t  fRes;             // relative dEdx resolution
   Double_t fKp1;             // ALEPH BB param 1
