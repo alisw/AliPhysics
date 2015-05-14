@@ -1060,6 +1060,16 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
             eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "00100009217000008260400000"; mesonCutArray[ 1] = "01621035009000";  // min R =2.8 cm
             eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "00200009217000008260400000"; mesonCutArray[ 2] = "01621035009000";  // min R =5 cm
             eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "00900009217000008260400000"; mesonCutArray[ 3] = "01621035009000";  // min R =7.5 cm
+      } else if (trainConfig == 189) {
+            eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "01621035009000";  // cut to reject double Counting 
+            eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "00200009217000008260405000"; mesonCutArray[ 1] = "01621035009000";  //  cut to reject double Counting
+            eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "00200009217000008260406000"; mesonCutArray[ 2] = "01621035009000";  //  cut to reject double Counting
+            eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "00200009217000008260407000"; mesonCutArray[ 3] = "01621035009000";  //  cut to reject double Counting
+       } else if (trainConfig == 190) {
+            eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "01621035009000";  //  cut to reject double Counting
+            eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "00200009217000008260405000"; mesonCutArray[ 1] = "01621035009000";  //  cut to reject double Counting
+            eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "00200009217000008260406000"; mesonCutArray[ 2] = "01621035009000";  //  cut to reject double Counting
+            eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "00200009217000008260407000"; mesonCutArray[ 3] = "01621035009000";  //  cut to reject double Counting
         } else {
             Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
             return;
@@ -1104,7 +1114,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
 		     trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
 		     trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
-		     trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187){
+		     trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -1118,7 +1128,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18||
 		     trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || 
 		     trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178 || trainConfig == 180 ||
-		     trainConfig == 182 || trainConfig == 184 || trainConfig == 186 || trainConfig == 188){
+		     trainConfig == 182 || trainConfig == 184 || trainConfig == 186 || trainConfig == 188 || trainConfig == 190){
 			if (doWeighting){
 				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
 																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -1251,6 +1261,9 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
+		if (trainConfig ==189 || trainConfig ==190){
+		  analysisMesonCuts[i]->SetOpeningAngleCut(0.000);		  
+		}
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
@@ -1264,6 +1277,10 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+	if (trainConfig ==189 || trainConfig ==190){
+	        task->SetDoTHnSparse(0);
+	}
+	
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
