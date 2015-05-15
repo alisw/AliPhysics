@@ -13,7 +13,6 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-add_subdirectory(CaloTasks)
 add_subdirectory(CaloTrackCorrelations)
 add_subdirectory(EMCALTasks)
 add_subdirectory(GammaConv)
