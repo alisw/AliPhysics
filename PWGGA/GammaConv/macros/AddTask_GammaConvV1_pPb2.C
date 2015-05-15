@@ -145,9 +145,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	} else if (trainConfig == 12) {   
 		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00700009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 35cm    
 	} else if (trainConfig == 13) {   
-	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "01621035009000";    //standard, opening angle =0.0   
+	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";    //standard, opening angle =0.0   
 	} else if (trainConfig == 14) {   
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "01621035009000";   //standard, opening angle =0.0  
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";   //standard, opening angle =0.0  
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
