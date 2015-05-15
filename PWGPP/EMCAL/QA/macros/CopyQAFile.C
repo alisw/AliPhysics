@@ -15,7 +15,7 @@
 ///
 /// copy a QAresult.root file from alien to a local directory and check it. 
 ///
-/// \author Marie Germain, <Marie.Germain@subatech.in2p3.fr>
+/// \author Marie Germain, <Marie.Germain@subatech.in2p3.fr>, SUBATECH
 ///
 
 //_____________________________________________________________________________
