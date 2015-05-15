@@ -424,7 +424,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   cu->SwitchOffRecalibration();
   cu->SwitchOffRunDepCorrection();
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simu,
                           exotic,

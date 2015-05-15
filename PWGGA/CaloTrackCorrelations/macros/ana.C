@@ -309,12 +309,12 @@ void ana(Int_t mode=mGRID)
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
   gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); // $ALICE_PHYSICS/PWGGA/EMCALTasks/macros  
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"); 
   
   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
   //AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
   
-  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");  
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALTriggerQA.C");  
   //AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
   
   // Calibration, bad map ...
@@ -524,7 +524,7 @@ void  LoadLibraries(Int_t mode)
   {
     //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
     gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
-    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGEMCAL:PWGGAEMCALTasks");
+    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGPPEMCAL");
     
     //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
     
@@ -541,8 +541,7 @@ void  LoadLibraries(Int_t mode)
     //     proof->UploadPackage("EMCALUtils");
     //     proof->UploadPackage("PWGCaloTrackCorrBase");
     //     proof->UploadPackage("PWGGACaloTrackCorrelations");
-    //     proof->UploadPackage("PWGEMCAL");
-    //     proof->UploadPackage("PWGGAEMCALTasks");
+    //     proof->UploadPackage("PWGPPEMCAL");
     
     //     proof->EnablePackage("STEERBase");
     //     proof->EnablePackage("ESD");
@@ -556,8 +555,7 @@ void  LoadLibraries(Int_t mode)
     //     proof->EnablePackage("EMCALUtils");
     //     proof->EnablePackage("PWGCaloTrackCorrBase");
     //     proof->EnablePackage("PWGGACaloTrackCorrelations");
-    //     proof->EnablePackage("PWGEMCAL");
-    //     proof->EnablePackage("PWGGAEMCALTasks");
+    //     proof->EnablePackage("PWGPPEMCAL");
     return;
   }  
   
@@ -610,10 +608,8 @@ void  LoadLibraries(Int_t mode)
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
 
-  gSystem->Load("libPWGEMCAL");
-  gSystem->Load("libPWGGAEMCALTasks");
-  //SetupPar("PWGEMCAL");
-  //SetupPar("PWGGAEMCALTasks");
+  gSystem->Load("libPWGPPEMCAL");
+  //SetupPar("PWGPPEMCAL");
   
   gSystem->Load("libPWGCaloTrackCorrBase");
   gSystem->Load("libPWGGACaloTrackCorrelations");
