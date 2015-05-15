@@ -8,6 +8,7 @@ class TH1F;
 class AliESDEvent;
 class AliStack;
 class AliESDCaloCells;
+class AliEMCALGeometry;
 
 #include "TString.h"
 #include "AliAnalysisTaskSE.h"
