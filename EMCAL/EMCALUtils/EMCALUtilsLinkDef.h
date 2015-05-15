@@ -11,7 +11,6 @@
 #pragma link C++ class AliEMCALTriggerMappingV2+;
 #pragma link C++ class AliEMCALShishKebabTrd1Module+;
 #pragma link C++ class AliEMCALPIDUtils+;
-#pragma link C++ class AliEMCALHistoUtilities+;
 #pragma link C++ class AliEMCALRecoUtils+;
 #pragma link C++ class AliEMCALTrack+;
 #pragma link C++ class AliEMCALCalibTimeDepCorrection+;

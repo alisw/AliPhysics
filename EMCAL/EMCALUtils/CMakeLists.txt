@@ -35,7 +35,6 @@ set(SRCS
     AliEMCALTriggerMappingV2.cxx
     AliEMCALGeometry.cxx
     AliEMCALGeoParams.cxx
-    AliEMCALHistoUtilities.cxx
     AliEMCALPIDUtils.cxx
     AliEMCALRecoUtils.cxx
     AliEMCALShishKebabTrd1Module.cxx

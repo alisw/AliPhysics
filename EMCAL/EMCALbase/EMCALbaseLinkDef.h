@@ -6,7 +6,6 @@
 
 #pragma link C++ class AliEMCALHit+;
 #pragma link C++ class AliEMCALLoader+;	
-#pragma link C++ class AliEMCALWsuCosmicRaySetUp+;
 #pragma link C++ class AliEMCALRecPoint+;
 #pragma link C++ class AliEMCALSDigitizer+;
 #pragma link C++ class AliEMCALDigitizer+;
