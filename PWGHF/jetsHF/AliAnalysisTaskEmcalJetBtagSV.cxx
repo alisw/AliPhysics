@@ -468,6 +468,12 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
   // Loop on MC jets
   Int_t nMCJets = fMcJetArray->GetEntries();
 
+  Double_t rhoMC=0, rho=0;
+  if (fDoBkgRej) {
+    rhoMC  = GetMcExternalRho();
+    rho  = GetExternalRho();
+  }
+      
   AliEmcalJet *jetMC;
   for (Int_t jetcand = 0; jetcand < nMCJets; jetcand++) {
     jetMC = (AliEmcalJet *)fMcJetArray->UncheckedAt(jetcand);
@@ -491,9 +497,12 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
     step = AliHFJetsContainer::kCFStepEventSelected;
     
     // At this point we do not need to fill the secondary vertex QA container 
-    // fhJets->FillStepJets(step,multMC,jetMC,0,partonnatMC,ptpartMC);
-
-    fhJetVtx->FillStepJetVtx(step, multMC, jetMC, 0, 0, 0, 0, partonnatMC, ptpartMC, arrDispersion);
+    
+    Double_t areaJetMC;
+    areaJetMC = jetMC->Area();
+    Double_t ptJetMC = jetMC->Pt() - areaJetMC * rhoMC;
+  
+    fhJetVtx->FillStepJetVtx(step, multMC, jetMC, 0, 0, 0, 0, partonnatMC, ptpartMC, arrDispersion, ptJetMC);
 
   } // end loop on jets
   
@@ -552,22 +561,16 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
     Double_t ptpart[2] = {-1, -1};
     GetFlavour2Methods(jet, partonnat, ptpart, fTaggingRadius);
     
-    //GE
     Double_t ptJet = jet->Pt();
-    if (fDoBkgRej) {
-      Double_t rho, areaJet;
-      rho  = GetExternalRho();
-      //loop over jets:
-      
-      areaJet = jet->Area();
-      ptJet -= areaJet * rho;
-    }
+    Double_t areaJet;
+    areaJet = jet->Area();
+    ptJet -= areaJet * rho;
+    
     
     step = AliHFJetsContainer::kCFStepReco;
     // // Run vertex tagging
     nvtx = fTagger->FindVertices(jet, fGTIp, fGTIn, fTrackArrayRec, aod, v1, magzkG, fbJetArray, arrDispersion);
    
-    // fhJets->FillStepBJets(step,multMC,jet,nvtx,partonnat,ptpart[0]);
     if ( fDoQAVtx ) {
       fhQaVtx->FillStepQaVtx(step, multMC, jet, fbJetArray, arrDispersion, nvtx, vtx1, arrayMC, partonnat, ptJet);
     }
@@ -582,19 +585,13 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
     GetFlavour2Methods(matchedjet, partonnat, ptpart, fTaggingRadius);
 
     Double_t ptJetMC = matchedjet->Pt();
-    if (fDoBkgRej) {
-      Double_t rhoMC, areaJetMC;
-      rhoMC  = GetMcExternalRho();
-      //loop over jets:
+    Double_t areaJetMC;
+    areaJetMC = matchedjet->Area();
+    ptJetMC -= areaJetMC * rhoMC;
       
-      areaJetMC = matchedjet->Area();
-      ptJetMC -= areaJetMC * rhoMC;
-    }
-    
-    // for purity
+    // step kCFStepMatchedAny
     step = AliHFJetsContainer::kCFStepMatchedAny;
     
-    //fhJets->FillStepJets(step,multMC,matchedJet,partonnat,ptpart);
     if (fDoQAVtx) {
       fhQaVtx->FillStepQaVtx(step, multMC, jet, fbJetArray, arrDispersion, nvtx, vtx1, arrayMC, partonnat, ptJetMC);
     }
