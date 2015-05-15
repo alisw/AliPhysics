@@ -18,6 +18,7 @@ add_subdirectory(pid)
 add_subdirectory(EVCHAR)
 add_subdirectory(EVCHAR/EventPlaneFramework)
 add_subdirectory(MUON)
+add_subdirectory(EMCAL)
 
 #Module
 set (MODULE PWGPP)
@@ -270,6 +271,8 @@ install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY PilotTrain DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSIONS)
+install(DIRECTORY EMCAL/macros DESTINATION PWGPP/EMCAL)
+
 install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
 install(FILES HMPID/macros/copyHMPQAfiles.C
  	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)
