@@ -75,7 +75,7 @@ const char* AliConversionPhotonCuts::fgkCutNames[AliConversionPhotonCuts::kNCuts
     "LowPRejectionSigmaCut",	// 12
     "TOFelectronPID",			// 13
     "ITSelectronPID",			// 14 -- new ITS PID
-    "TRDelectronPID",			// 15 -- new TRD PID
+	"TRDelectronPID",			// 15 -- new TRD PID
     "QtMaxCut",					// 16
     "Chi2GammaCut", 			// 17
     "PsiPair", 					// 18
@@ -195,11 +195,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 	fUseITSpid(kFALSE),
 	fITSPIDnSigmaAboveElectronLine(100),
 	fITSPIDnSigmaBelowElectronLine(-100),
-        fMaxPtPIDITS(1.5),
-        fMinRDC(0.),
-        fDeltaR(0.),
-        fOpenAngle(0.),
-        fDoDoublyCountedV0sCut(kFALSE)
+    fMaxPtPIDITS(1.5)
 	
 {
 	InitPIDResponse();
@@ -315,12 +311,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
 	fUseITSpid(ref.fUseITSpid),
 	fITSPIDnSigmaAboveElectronLine(ref.fITSPIDnSigmaAboveElectronLine),
 	fITSPIDnSigmaBelowElectronLine(ref.fITSPIDnSigmaBelowElectronLine),
-        fMaxPtPIDITS(ref.fMaxPtPIDITS),
-        fMinRDC(ref.fMinRDC),
-        fDeltaR(ref.fDeltaR),
-        fOpenAngle(ref.fOpenAngle),
-        fDoDoublyCountedV0sCut(ref.fDoDoublyCountedV0sCut)
-
+    fMaxPtPIDITS(ref.fMaxPtPIDITS)
 {
 	// Copy Constructor
 	for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -1763,7 +1754,6 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
 	printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
 	printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
 	if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
-        if (fDoDoublyCountedV0sCut) printf("\t Reject Doubly Counted V0s with R > %3.2f, deltaR < %3.2f and opening angle < %3.3f \n", fMinRDC, fDeltaR, fOpenAngle );
 }
 
 ///________________________________________________________________________
@@ -2771,42 +2761,6 @@ Bool_t AliConversionPhotonCuts::SetToCloseV0sCut(Int_t toClose) {
 		fDoToCloseV0sCut = kTRUE;
 		fminV0Dist = 3;
 		break;
-        case 4:
-                fDoDoublyCountedV0sCut = kTRUE;
-                fMinRDC=60.;
-                fDeltaR=6.;
-                fOpenAngle=0.02;
-                break; 
-       case 5:
-                fDoDoublyCountedV0sCut = kTRUE;
-                fMinRDC=0.;
-                fDeltaR=6.;
-                fOpenAngle=0.02;
-                break;
-       case 6:
-                fDoDoublyCountedV0sCut = kTRUE;
-                fMinRDC=20.;
-                fDeltaR=6.;
-                fOpenAngle=0.02;
-                break;
-       case 7:
-                fDoDoublyCountedV0sCut = kTRUE;
-                fMinRDC=40.;
-                fDeltaR=6.;
-                fOpenAngle=0.02;
-                break;
-       case 8:
-                fDoDoublyCountedV0sCut = kTRUE;
-                fMinRDC=80.;
-                fDeltaR=6.;
-                fOpenAngle=0.02;
-                break;  
-       case 9:
-                fDoDoublyCountedV0sCut = kTRUE;
-                fMinRDC=60.;
-                fDeltaR=10.;
-                fOpenAngle=0.02;
-                break;
 	default:
 		AliError(Form("Shared Electron Cut not defined %d",toClose));
 		return kFALSE;
@@ -3097,23 +3051,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
 	return kTRUE;
 }
 
-///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::RejectDoublyCountedV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0){
 
-   if(photon->GetConversionRadius() < fMinRDC) return kTRUE;
-   for(Int_t i = 0;i<photons->GetEntries();i++){
-      if(nV0 == i) continue;
-
-      AliAODConversionPhoton *photonComp = (AliAODConversionPhoton*) photons->At(i);
-      AliAODConversionMother *pi0cand = new AliAODConversionMother(photon,photonComp);
-      if (abs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR && pi0cand->GetOpeningAngle() < fOpenAngle){
-
-         return kFALSE;
-      }
-      
-   }
-   return kTRUE;
-}
 ///________________________________________________________________________
 AliConversionPhotonCuts* AliConversionPhotonCuts::GetStandardCuts2010PbPb(){
 	//Create and return standard 2010 PbPb cuts

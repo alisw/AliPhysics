@@ -156,7 +156,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
 		Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
 		Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
-                Bool_t RejectDoublyCountedV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
 
 		UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
 		Bool_t InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t eventPlaneAngle = -100, Bool_t fill = kTRUE);
@@ -198,8 +197,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
 		Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
 		Double_t GetEtaCut(){return fEtaCut;}
-                Bool_t UseDoublyCountedV0sCut(){return fDoDoublyCountedV0sCut;}
-                
+			
 	protected:
 		TList 			*fHistograms;							//
 		AliPIDResponse 	*fPIDResponse;							//
@@ -279,18 +277,16 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		TObjString 		*fCutString; 							// cut number used for analysis
 		Int_t			fIsHeavyIon;							// flag for pp (0), PbPb (1), pPb (2)
 		Bool_t 			fUseITSpid; 							// flag to use tof pid		
-                Double_t 		fITSPIDnSigmaAboveElectronLine;			// sigma cut RRnewTOF
+	    Double_t 		fITSPIDnSigmaAboveElectronLine;			// sigma cut RRnewTOF
 		Double_t 		fITSPIDnSigmaBelowElectronLine;			// sigma cut RRnewTOF
-                Double_t                fMaxPtPIDITS;                           //max pt for ITS PID
+	    Double_t        fMaxPtPIDITS;                           //max pt for ITS PID
 
 		
-                Double_t 		fTRDPIDBelowCut;						// TRD cut range
+	    Double_t 		fTRDPIDBelowCut;						// TRD cut range
 		Double_t 		fTRDPIDAboveCut;						// TRD cut range
-                Double_t                fMinRDC;                                                        // R cut to reject double counting for V0s 
-                Double_t                fDeltaR;                                                        // Delta R cut to reject double counting for V0s  
-                Double_t                fOpenAngle;                                                     // opening angle cut to reject double counting for V0s  
-                Bool_t                  fDoDoublyCountedV0sCut;                                         //flag to reject double counting for V0s
 
+
+		
 		// Histograms
 		TH1F			*hEtaDistV0s; 							// eta-distribution of all V0s after Finder selection
 		TH1F			*hEtaDistV0sAfterdEdxCuts; 				// eta-distribution of all V0s after Finder selection after dEdx cuts
