@@ -68,7 +68,6 @@ set(SRCS
     AliEMCALTriggerSTUDCSConfig.cxx
     AliEMCALTriggerSTURawStream.cxx
     AliEMCALTriggerTRUDCSConfig.cxx
-    AliEMCALWsuCosmicRaySetUp.cxx
    )
 
 # Headers from sources
