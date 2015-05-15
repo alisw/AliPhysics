@@ -525,7 +525,7 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
     
     cu->SwitchOnEMCALOADB();//FIX ME!!!
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
     ConfigureEMCALRecoUtils(recou,
 			    simulation,                             
 			    exotic,
