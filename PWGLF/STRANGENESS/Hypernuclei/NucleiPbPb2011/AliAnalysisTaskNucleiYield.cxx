@@ -87,7 +87,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fTOFlowBoundary(-2.4)
 ,fTOFhighBoundary(3.6)
 ,fTOFnBins(75)
-,fDisableITSatHighPt(100)
+,fDisableITSatHighPt(100.f)
+,fDisableTPCpidAtHighPt(100.f)
 ,fEnablePerformance(kFALSE)
 ,fEnablePtCorrection(kTRUE)
 ,fRequireITSrefit(kTRUE)
@@ -615,23 +616,26 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
 /// \return Boolean value: true means that the track passes the PID selection
 ///
 Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
-  bool itsPID = kTRUE;
+  bool itsPID = kTRUE, tpcPID = kTRUE;
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
     AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
     itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
   }
   
-  if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
-    AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
-    return itsPID && TMath::Abs(tpcPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
-  } else {
-    const float p = t->GetTPCmomentum() / fPDGMassOverZ;
-    const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
-                                                           fCustomTPCpid[2], fCustomTPCpid[3],
-                                                           fCustomTPCpid[4]);
-    return itsPID && TMath::Abs(t->GetTPCsignal() - r) < fRequireTPCpidSigmas * fCustomTPCpid[5] * r;
+  if (t->Pt() < fDisableTPCpidAtHighPt) {
+    if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
+      AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
+      tpcPID = TMath::Abs(tpcPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
+    } else {
+      const float p = t->GetTPCmomentum() / fPDGMassOverZ;
+      const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
+                                                             fCustomTPCpid[2], fCustomTPCpid[3],
+                                                             fCustomTPCpid[4]);
+      tpcPID = TMath::Abs(t->GetTPCsignal() - r) < fRequireTPCpidSigmas * fCustomTPCpid[5] * r;
+    }
   }
   
+  return itsPID && tpcPID;
 }
 
 /// This function sets the number of TOF bins and the boundaries of the histograms

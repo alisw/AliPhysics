@@ -61,10 +61,11 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
   void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
-  void SetRequireVetoSPD(bool veto) { fRequireVetoSPD = veto; }
-  void SetEnablePerformancePlot(bool cut) { fEnablePerformance = cut; }
-  void SetEnablePtCorrection(bool cut) { fEnablePtCorrection = cut; }
-  void SetDisableITSatHighPt(float pt) { fDisableITSatHighPt = pt; }
+  void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
+  void SetEnablePerformancePlot (bool cut) { fEnablePerformance = cut; }
+  void SetEnablePtCorrection (bool cut) { fEnablePtCorrection = cut; }
+  void SetDisableITSatHighPt (float pt) { fDisableITSatHighPt = pt; }
+  void SetDisableTPCpidAtHighPt (float pt) { fDisableTPCpidAtHighPt = pt; }
   
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -113,6 +114,7 @@ private:
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
   Int_t                 fTOFnBins;              ///<  Number of bins used for the TOF mass spectra
   Float_t               fDisableITSatHighPt;    ///<  \f$p_{T}\f$ threshold for ITS cuts
+  Float_t               fDisableTPCpidAtHighPt; ///<  \f$p_{T}\f$ threshold for TPC pid cut
   Bool_t                fEnablePerformance;     ///<  If true enables the task saves in the output the performance plots
   Bool_t                fEnablePtCorrection;    ///<  If true enables the MC based \f$p_{T}\f$ correction
   Bool_t                fRequireITSrefit;       ///<  Cut on tracks: set true to require ITS refit
