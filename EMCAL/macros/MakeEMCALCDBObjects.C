@@ -1,5 +1,5 @@
 #include "EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C"
-#include "EMCAL/MakeEMCALAltroMapping.C"
+#include "EMCAL/macros/mapping/MakeEMCALAltroMapping.C"
 #include "EMCAL/macros/PeakFinder/MakeEMCALPF.C"
 #include "EMCAL/macros/PedestalDB/AliEMCALPedestalCDB.C"
 #include "EMCAL/macros/RecParamDB/AliEMCALSetRecParamCDB.C"
