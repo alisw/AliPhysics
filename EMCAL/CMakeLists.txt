@@ -27,6 +27,6 @@ endif(DA)
 # Install the macros, docs
 install(DIRECTORY macros DESTINATION EMCAL)
 install(DIRECTORY doc DESTINATION EMCAL)
-install(DIRECTORY mapping DESTINATION EMCAL)
+install(DIRECTORY macros/mapping DESTINATION EMCAL)
 
 message(STATUS "EMCAL enabled")
