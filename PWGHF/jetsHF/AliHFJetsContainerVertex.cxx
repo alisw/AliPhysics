@@ -629,14 +629,14 @@ void AliHFJetsContainerVertex::FillStepJetVtxData(AliHFJetsContainer::CFSteps st
     AliError(Form(MSGERROR("This method is available only for container type kJetVtxData: you are trying to fill %s!"), strContType(fType)));
   }
   
-  const Int_t kNvar = 13;
+  const Int_t kNvar = 12;
   Double_t point[kNvar] = {
     mult*1.,                            /* 1 */
     jetpt_sub,                          /* 2 */
     jet->Eta(),                         /* 3 */
     jet->Phi()-TMath::Pi(),             /* 4 */
     nvtx*1.,                            /* 5 */
-    -1., -1., -1., -1, -1, -1, -1, -1  /* 6-13 */
+    -1., -1., -1., -1, -1, -1, -1       /* 6-12 */
   };
   
   if (vertices && primVtx) {
@@ -761,7 +761,7 @@ void AliHFJetsContainerVertex::FillStepJetVtxData(AliHFJetsContainer::CFSteps st
       delete invMasses;
     } // end if (vertices && primVtx)
   
-  TArrayD *apoint = new TArrayD(13, point);
+  TArrayD *apoint = new TArrayD(kNvar, point);
   AliHFJetsContainer::FillStep(step, apoint);
   
   return;
