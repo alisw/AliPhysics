@@ -1,3 +1,4 @@
+
 //############################################################################
 // 
 //  Macros to perform and draw the comparison of D-haron correlation results
@@ -16,9 +17,13 @@ TString *pedestalfilenames;
 Bool_t reflTempl=kFALSE;
 Bool_t skip3to5=kTRUE;
 TH1D ** histo;
-TGraphAsymmErrors ** err;
+TGraphAsymmErrors **err;
 TLatex** ltscale;
 TString fitplotmacrodir=gSystem->ExpandPathName("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/");
+Bool_t isReflectedData=kFALSE;
+void SetIsDataReflected(Bool_t isrefl){
+  isReflectedData=isrefl;
+}
 void SetFitPlotMacroPath(TString strdir){
   fitplotmacrodir=strdir;
 }
@@ -43,6 +48,21 @@ void SetAverageMode(Int_t avmode){
   else if(avmode==1)avType="Arithmetic";
   else Printf("DO COMPARISON WITH MC: WRONGE AVERAGE METHOD SET");
 }
+Int_t GetBinGraph(Double_t xbincenter, TGraph *gr,Double_t tolerance=0.1){// works only if the bin center is passed (or a value within tolerance). In other cases might not giving back what is expected
+  Int_t size=gr->GetN();
+  Double_t xg,yg;
+  for(Int_t j=0;j<size;j++){
+    gr->GetPoint(j,xg,yg);
+    if(j==0){
+      if(xbincenter<xg&&TMath::Abs(xg-xbincenter)>tolerance)return -1;      
+    }
+
+    if(TMath::Abs(xg-xbincenter)<tolerance)return j;
+    
+  }
+  return -1;
+}
+
 void Init(){
   if(filenames)delete [] filenames;
   if(pedestalfilenames)delete [] pedestalfilenames;
@@ -107,7 +127,7 @@ TH1D * GetHisto(Int_t i){
     
 }
 //_______________________________________________________________________
-TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErrors** gr2, TLatex** lt){
+TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErrors *&gr, TLatex *&tUncertainty){
     
    
   //load the histogram with
@@ -129,14 +149,12 @@ TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErro
   TH1D *hUncCorrMin=syst->GetHistoTotFlatMin();
   TH1D *hUncCorrMax=syst->GetHistoTotFlatMax();
 
-  TGraphAsymmErrors *gr=syst->GetTotNonFlatUncGraph();
+  gr=syst->GetTotNonFlatUncGraph();
   gr->SetLineColor(kBlack);
   gr->SetMarkerColor(kBlack);
   gr->SetFillStyle(0);
 
-  (*gr2)=gr;
 
-  TLatex *tUncertainty;
   if(i<3){
 
     if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.2,0.6,Form("#bf{%.0f#% scale uncertainty p-Pb}",hUncCorrMin->GetBinContent(1)*100.));
@@ -150,7 +168,6 @@ TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErro
   tUncertainty->SetNDC();
   tUncertainty->SetTextSize(0.0255);
   //tUncertainty->Draw();
-  (*lt)=tUncertainty;
   
 
   // TString histoname = "DeltaPhi_";
@@ -189,6 +206,7 @@ TH1D * GetPedestalHisto(Int_t i, TString canvasname, TString hname){
   return outputhisto;
     
 }
+
 //_______________________________________________________________________
 TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(Int_t i,TH1D *histo, TGraphAsymmErrors* gr,TGraphAsymmErrors** grout, TString canvasname,TBox** bsyst, TBox** bsyst2){
   //i=D pt bin
@@ -453,16 +471,12 @@ void DoComparison_pPbVsMCTEST(TString pthad = "0.3_1.0"){
   for(Int_t k=0; k<nhistos; k++){ //GetHisto has to get graph/syst uncer===========================
           
     if(k<3) { 
-      TGraphAsymmErrors* gr;
-      TLatex* lt;
       if(skip3to5){
 	if(k%3==0)continue;
       }
 
-      histo[k] = GetHistoAndSyst(k,"fhDaverage","AverageSystematicUncertainty",&gr,&lt); 
+      histo[k] = GetHistoAndSyst(k,"fhDaverage","AverageSystematicUncertainty",err[k], ltscale[k]); 
 	
-      err[k]=gr;
-      ltscale[k]=lt;  
       histo[k]->SetMarkerColor(1); 
       histo[k]->SetLineColor(1); 
       histo[k]->SetMarkerStyle(20); 
@@ -520,33 +534,28 @@ void DoComparison_pPbVsMCTEST(TString pthad = "0.3_1.0"){
   
   TH1D ** subtractedhisto = new TH1D *[nhistos];
   TGraphAsymmErrors ** suberr = new TGraphAsymmErrors *[nhistos];
-  TBox** box1=new TBox*[nhistos];
-  TBox** box2=new TBox*[nhistos];
+  TGraphAsymmErrors **grbase=new TGraphAsymmErrors*[nhistos];
+  TGraphAsymmErrors **grv2=new TGraphAsymmErrors*[nhistos]; 
+
  
   for(Int_t k=0; k<nhistos; k++){
     if(skip3to5){
       if(k%3==0)continue;
     }
-
     if(k<3) {
-      TGraphAsymmErrors* gr;
-      TBox* b1;
-      TBox* b2;
-      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb(k,histo[k],err[k],&gr,"finalCanvas",&b1,&b2);
-      suberr[k]=gr;
-      box1[k]=b1;
-      box2[k]=b2;
-      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
-      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
+      Printf("Checking pointers, bin %d %p, %p",k,histo[k],err[k]);
+      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],suberr[k],"CanvasFinalTrendPedestal",grbase[k],grv2[k]);
+      grbase[k]->SetFillStyle(3002);
+      grbase[k]->SetFillColor(kBlue-7);
+      grbase[k]->SetLineColor(kBlue-7);
+      
+      if(grv2[k]){
+	grv2[k]->SetFillStyle(3002);
+	grv2[k]->SetFillColor(kMagenta);  
+      }
+      suberr[k]->SetLineColor(kBlue);
       cout<<"sub -> "<<subtractedhisto[k]->GetBinContent(5)<<endl;
       //subtractedhisto[k]->GetYaxis()->SetRangeUser(-0.7,2*subtractedhisto[k]->GetBinContent(subtractedhisto[k]->GetMaximumBin()));    
-      box1[k]->SetFillStyle(3002);
-      box1[k]->SetFillColor(kGray+2);
-      box1[k]->SetLineColor(kGray+2);
-
-      box2[k]->SetFillStyle(3002);
-      box2[k]->SetFillColor(kMagenta);  
-      suberr[k]->SetLineColor(kBlack);
     }
     if(k>=3 && k <6) {
       GetBaselne(BaselinepPb_Per0000,BaselineErrpPb_Per0000, histo[k]);
@@ -623,7 +632,7 @@ void DoComparison_pPbVsMCTEST(TString pthad = "0.3_1.0"){
   legend2->SetBorderSize(0);
   legend2->SetTextSize(0.02555);
   //legend2->AddEntry(box1[1],"correlated syst. pp","f");
-  legend2->AddEntry(box1[1],"baseline uncertainty","f");
+  legend2->AddEntry(grbase[1],"baseline uncertainty","f");
   // legend2->AddEntry(box2[4],"v2 subtr p-Pb","f");
 
   // TPaveText *alice = new TPaveText(0.62,0.84,0.82,0.89,"NDC");
@@ -743,7 +752,7 @@ void DoComparison_pPbVsMCTEST(TString pthad = "0.3_1.0"){
   h->Draw();
   subtractedhisto[1]->Draw("epsame");
   //box2[1]->Draw("same");
-  box1[1]->Draw("lsame");
+  grbase[1]->Draw("E2");
   line->Draw(); 
   subtractedhisto[4]->Draw("sameep");
   subtractedhisto[7]->Draw("sameep");
@@ -784,7 +793,7 @@ void DoComparison_pPbVsMCTEST(TString pthad = "0.3_1.0"){
   h->Draw();
   subtractedhisto[2]->Draw("epsame");
   //box2[2]->Draw("same");
-  box1[2]->Draw("lsame");
+  grbase[2]->Draw("E2");
   line->Draw(); 
   subtractedhisto[5]->Draw("sameep");
   subtractedhisto[8]->Draw("sameep");
@@ -1073,34 +1082,31 @@ void DoComparison_pPbVsMC(Double_t pthad = 0.3){
 
 void LoadFileNamespPbVsMCtemplates(TString pthadron){
   filenames[0] = Form("%s/%sAveragepPbDzeroDstarDplus3to5_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
-    filenames[1] = Form("%s/%sAveragepPbDzeroDstarDplus5to8_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
-    filenames[2] = Form("%s/%sAveragepPbDzeroDstarDplus8to16_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
-    
-    
-    //load MC Templates
-    filenames[3] = Form("%s/pPbCorrelationPlotsPerugia0PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
-    filenames[4] = Form("%s/pPbCorrelationPlotsPerugia0PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    filenames[5] = Form("%s/pPbCorrelationPlotsPerugia0PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    
-    
-    filenames[6] = Form("%s/pPbCorrelationPlotsPerugia2010PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
-    filenames[7] = Form("%s/pPbCorrelationPlotsPerugia2010PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    filenames[8] = Form("%s/pPbCorrelationPlotsPerugia2010PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-
-
-    filenames[9] = Form("%s/pPbCorrelationPlotsPerugia2011PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
-    filenames[10] = Form("%s/pPbCorrelationPlotsPerugia2011PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    filenames[11] = Form("%s/pPbCorrelationPlotsPerugia2011PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-        
-        
-        
-    //load pedestals from fit (STILL TEMPORARY)
-    for(Int_t k = 0; k<2; k++){
-      pedestalfilenames[k] = baselinedirectory;
-    }
-    pedestalfilenames[0] += Form("/finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pp
-    pedestalfilenames[1] += Form("/p_Pb_finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pPb
+  filenames[1] = Form("%s/%sAveragepPbDzeroDstarDplus5to8_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
+  filenames[2] = Form("%s/%sAveragepPbDzeroDstarDplus8to16_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
   
+  
+  //load MC Templates
+  filenames[3] = Form("%s/pPbCorrelationPlotsPerugia0PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
+  filenames[4] = Form("%s/pPbCorrelationPlotsPerugia0PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+  filenames[5] = Form("%s/pPbCorrelationPlotsPerugia0PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+  
+  
+  filenames[6] = Form("%s/pPbCorrelationPlotsPerugia2010PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
+  filenames[7] = Form("%s/pPbCorrelationPlotsPerugia2010PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+  filenames[8] = Form("%s/pPbCorrelationPlotsPerugia2010PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+  
+  
+  filenames[9] = Form("%s/pPbCorrelationPlotsPerugia2011PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
+  filenames[10] = Form("%s/pPbCorrelationPlotsPerugia2011PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+  filenames[11] = Form("%s/pPbCorrelationPlotsPerugia2011PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+  
+  //load pedestals from fit (STILL TEMPORARY)
+  for(Int_t k = 0; k<2; k++){
+    pedestalfilenames[k] = baselinedirectory;
+  }
+  pedestalfilenames[0] += Form("/Trends_pp/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pp
+  pedestalfilenames[1] += Form("/Trends_pPb/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pPb
 }
 
 
@@ -1144,6 +1150,121 @@ void DoAllComparison(){
   cout << "Done ! Check yours plots in folder ...  " << endl;
     
     
+    
+}
+
+//_______________________________________________________________________
+TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system,Int_t i,TH1D *histo, TGraphAsymmErrors* gr,TGraphAsymmErrors *&grout, TString canvasname,TGraphAsymmErrors *&grbaseOut,TGraphAsymmErrors *&grv2Out){
+  //i=D pt bin
+  //Double_t* arrbox1, Double_t* arrbox2
+  Double_t value = 0, pedestal=0;
+  TGraphAsymmErrors *grBase,*grV2;
+  grbaseOut=new TGraphAsymmErrors();
+  grbaseOut->SetName(Form("grbaselineUncFull_%sBin%d",system.Data(),i));
+  grv2Out=new TGraphAsymmErrors();
+  grv2Out->SetName(Form("grbaselineUncV2_%sBin%d",system.Data(),i));
+  TH1D* h;  
+  Double_t xuncFull,errxuncFull;
+  Double_t xuncv2,errxuncv2;
+  Int_t bin,bingr;
+
+  if(system.Contains("pPb")){
+    // get pedestal from fit outputs
+    TString path = pedestalfilenames[1];//pPb ----------------
+    cout << "pPb -->  Reading File from path: " << path << endl;
+    
+    TFile * file = TFile::Open(path.Data(),"READ");
+    TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
+    h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+    grV2=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fv2SystematicsPedestal");    
+  }
+  else if(system.Contains("pp")){
+    // get pedestal from fit outputs
+    TString path = pedestalfilenames[0];//pp ----------------
+    grV2=0x0;
+    cout << "pp -->  Reading File from path: " << path << endl;
+    TFile * file = TFile::Open(path.Data(),"READ");
+    TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
+    TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+  }
+    
+  if(isReflectedData){
+    xuncFull=3.25;
+    errxuncFull=0.075;
+    xuncv2=-0.15; 
+    errxuncv2=0.075;
+  }
+  else{
+    xuncFull=4.83;
+    errxuncFull=0.075;
+    xuncv2=-1.7;
+    errxuncv2=0.075;
+  }
+  if(i==0){
+    bin=h->FindBin(4.);
+    bingr=GetBinGraph(4.,grBase);
+  }
+  else if(i==1){
+    bin=h->FindBin(6.5);
+    bingr=GetBinGraph(6.5,grBase);
+  }
+  else if(i==2){
+    bin=h->FindBin(12.);
+    bingr=GetBinGraph(12.,grBase);
+  }
+  
+  pedestal=h->GetBinContent(bin);
+  Double_t x,y,erryl,erryh;
+  grBase->GetPoint(bingr,x,y);
+  Printf("histo: x=%f, graph: %f",h->GetBinCenter(bin),x);
+  erryl=grBase->GetErrorYlow(bingr);
+  erryh=grBase->GetErrorYhigh(bingr);
+  
+  grbaseOut->SetPoint(0,xuncFull,0);
+  grbaseOut->SetPointError(0,errxuncFull,errxuncFull,erryl,erryh);
+  Printf("Point set to grbaseOut");
+  if(grV2){
+    Printf("Setting ve gr prop");
+    grV2->GetPoint(bingr,x,y);
+    erryl=grV2->GetErrorYlow(bingr);
+    erryh=grV2->GetErrorYhigh(bingr);	
+    grv2Out->SetPoint(0,xuncFull,0);
+    grv2Out->SetPointError(0,errxuncFull,errxuncFull,erryl,erryh);
+  }
+  grout=(TGraphAsymmErrors*)gr->Clone(Form("grSub_%sBin%d",system.Data(),i));
+  
+  Printf("gr out clone");
+  TString nameoutput = histo->GetName();
+  nameoutput += "_subtr_";
+  nameoutput += "pedestal";
+  nameoutput += Form("%d",i);
+  
+  TH1D *outputhisto = (TH1D*)histo->Clone(nameoutput.Data());
+  outputhisto->Reset();
+  outputhisto->SetStats(kFALSE);
+  
+  for(Int_t iBin = 1; iBin <= histo->GetNbinsX();iBin++){      
+    value = histo->GetBinContent(iBin);
+    value -= pedestal;
+    outputhisto->SetBinContent(iBin,value);
+    outputhisto->SetBinError(iBin,histo->GetBinError(iBin));
+    Double_t x,y,eyl,eyh;
+    gr->GetPoint(iBin-1,x,y);
+    eyl=gr->GetErrorYlow(iBin-1);
+    eyh=gr->GetErrorYhigh(iBin-1);
+    //cout<<x<<"  "<<y<<"  "<<eyl<<"  "<<eyh<<endl;
+    grout->SetPoint(iBin-1,x,y-pedestal);
+    
+  }
+  cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
+  cout<<"now return histogram"<<endl;
+  
+  outputhisto->SetXTitle("#Delta#varphi (rad)");
+  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
+  outputhisto->GetYaxis()->SetTitleOffset(1.5);
+  return outputhisto;
     
 }
 

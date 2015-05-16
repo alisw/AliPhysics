@@ -18,6 +18,7 @@
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TGraphAsymmErrors.h>
+#include <TGraphAsymmErrors.h>
 
 class TH1F;
 class TCanvas;
@@ -118,9 +119,9 @@ public:
     };
     Bool_t DrawFinalCorrelationPlot(Bool_t drawNSy, Bool_t drawNSsigma,Bool_t drawASy, Bool_t drawASsigma,Bool_t drawPed);
     void DefinePaveText();
-    void SetHisto(TH1D * &outputhist, TH1D * inputhist);
+    void SetHisto(TH1D *&outputhist, TH1D * inputhist);
     //Bool_t ComputeSystematics();// main function that will compute all the systematics
-    Bool_t ComputeRatios(TH1D * &historef, TH1D * &histosys, TH1D * &outputhisto);
+    Bool_t ComputeRatios(TH1D *&historef, TH1D *&histosys, TH1D *&outputhisto);
     
     
     void SetOutputDirectory(TString outputdirectory){fOutputDirectory = outputdirectory;}
@@ -193,48 +194,48 @@ private:
     Double_t fMinReferenceBaselineEstimationRange;
     Double_t fMaxReferenceBaselineEstimationRange;
     
-    Double_t * fValueNSYield;
-    Double_t * fRatioNSYield;
-    Double_t * fValueNSSigma;
-    Double_t * fRatioNSSigma;
-    Double_t * fValueASYield;
-    Double_t * fRatioASYield;
-    Double_t * fValueASSigma;
-    Double_t * fRatioASSigma;
-    Double_t * fValuePedestal;
-    Double_t * fRatioPedestal;
+    Double_t *fValueNSYield;
+    Double_t *fRatioNSYield;
+    Double_t *fValueNSSigma;
+    Double_t *fRatioNSSigma;
+    Double_t *fValueASYield;
+    Double_t *fRatioASYield;
+    Double_t *fValueASSigma;
+    Double_t *fRatioASSigma;
+    Double_t *fValuePedestal;
+    Double_t *fRatioPedestal;
     
     
-    Double_t * fValuev2NSYield;
-    Double_t * fValuev2NSSigma;
-    Double_t * fValuev2ASYield;
-    Double_t * fValuev2ASSigma;
-    Double_t * fValuev2Pedestal;
+    Double_t *fValuev2NSYield;
+    Double_t *fValuev2NSSigma;
+    Double_t *fValuev2ASYield;
+    Double_t *fValuev2ASSigma;
+    Double_t *fValuev2Pedestal;
     
-    Double_t * fSystValuev2NSYield;
-    Double_t * fSystValuev2NSSigma;
-    Double_t * fSystValuev2ASYield;
-    Double_t * fSystValuev2ASSigma;
-    Double_t * fSystValuev2Pedestal;
+    Double_t *fSystValuev2NSYield;
+    Double_t *fSystValuev2NSSigma;
+    Double_t *fSystValuev2ASYield;
+    Double_t *fSystValuev2ASSigma;
+    Double_t *fSystValuev2Pedestal;
     
-    Double_t * fValueSystematicBaselineNSYield;
-    Double_t * fValueSystematicBaselineNSSigma;
-    Double_t * fValueSystematicBaselineASYield;
-    Double_t * fValueSystematicBaselineASSigma;
-    Double_t * fValueSystematicBaselinePedestal;
+    Double_t *fValueSystematicBaselineNSYield;
+    Double_t *fValueSystematicBaselineNSSigma;
+    Double_t *fValueSystematicBaselineASYield;
+    Double_t *fValueSystematicBaselineASSigma;
+    Double_t *fValueSystematicBaselinePedestal;
     
     
-    Double_t * fValueSystematicNSYieldUp;
-    Double_t * fValueSystematicNSSigmaUp;
-    Double_t * fValueSystematicASYieldUp;
-    Double_t * fValueSystematicASSigmaUp;
-    Double_t * fValueSystematicPedestalUp;
+    Double_t *fValueSystematicNSYieldUp;
+    Double_t *fValueSystematicNSSigmaUp;
+    Double_t *fValueSystematicASYieldUp;
+    Double_t *fValueSystematicASSigmaUp;
+    Double_t *fValueSystematicPedestalUp;
     
-    Double_t * fValueSystematicNSYieldLow;
-    Double_t * fValueSystematicNSSigmaLow;
-    Double_t * fValueSystematicASYieldLow;
-    Double_t * fValueSystematicASSigmaLow;
-    Double_t * fValueSystematicPedestalLow;
+    Double_t *fValueSystematicNSYieldLow;
+    Double_t *fValueSystematicNSSigmaLow;
+    Double_t *fValueSystematicASYieldLow;
+    Double_t *fValueSystematicASSigmaLow;
+    Double_t *fValueSystematicPedestalLow;
     
     TString fOutputFileName;
     TString fOutputDirectory;
@@ -245,78 +246,78 @@ private:
     Int_t fDmeson;
     
     //(ali)root objects
-    AliHFCorrFitter * fFitter;
+    AliHFCorrFitter *fFitter;
     
-    TFile * fOutputFile;
-    TH1D * fReferenceHistoNSYield;
-    TH1D * fReferenceHistoNSSigma;
-    TH1D * fReferenceHistoASYield;
-    TH1D * fReferenceHistoASSigma;
-    TH1D * fReferenceHistoPedestal;
-    
-    
-    TH1D * fValueHistoNSYield;
-    TH1D * fRatioHistoNSYield;
-    TH1D * fValueHistoNSSigma;
-    TH1D * fRatioHistoNSSigma;
-    TH1D * fValueHistoASYield;
-    TH1D * fRatioHistoASYield;
-    TH1D * fValueHistoASSigma;
-    TH1D * fRatioHistoASSigma;
-    TH1D * fValueHistoPedestal;
-    TH1D * fRatioHistoPedestal;
+    TFile *fOutputFile;
+    TH1D *fReferenceHistoNSYield;
+    TH1D *fReferenceHistoNSSigma;
+    TH1D *fReferenceHistoASYield;
+    TH1D *fReferenceHistoASSigma;
+    TH1D *fReferenceHistoPedestal;
     
     
-    TH1D ** fRMSHistoNSYield;
-    TH1D ** fRMSHistoNSSigma;
-    TH1D ** fRMSHistoASYield;
-    TH1D ** fRMSHistoASSigma;
-    TH1D ** fRMSHistoPedestal;
+    TH1D *fValueHistoNSYield;
+    TH1D *fRatioHistoNSYield;
+    TH1D *fValueHistoNSSigma;
+    TH1D *fRatioHistoNSSigma;
+    TH1D *fValueHistoASYield;
+    TH1D *fRatioHistoASYield;
+    TH1D *fValueHistoASSigma;
+    TH1D *fRatioHistoASSigma;
+    TH1D *fValueHistoPedestal;
+    TH1D *fRatioHistoPedestal;
     
     
-    TH1D * fSystematicSourcesNSYield;
-    TH1D * fSystematicSourcesNSSigma;
-    TH1D * fSystematicSourcesASYield;
-    TH1D * fSystematicSourcesASSigma;
-    TH1D * fSystematicSourcesPedestal;
-    
-    TCanvas * fCanvasSystematicSourcesNSYield;
-    TCanvas * fCanvasSystematicSourcesNSSigma;
-    TCanvas * fCanvasSystematicSourcesASYield;
-    TCanvas * fCanvasSystematicSourcesASSigma;
-    TCanvas * fCanvasSystematicSourcesPedestal;
-    
-    TCanvas * fCanvasTotalSystematicSourcesNSYield;
-    TCanvas * fCanvasTotalSystematicSourcesNSSigma;
-    TCanvas * fCanvasTotalSystematicSourcesASYield;
-    TCanvas * fCanvasTotalSystematicSourcesASSigma;
-    TCanvas * fCanvasTotalSystematicSourcesPedestal;
+    TH1D **fRMSHistoNSYield;
+    TH1D **fRMSHistoNSSigma;
+    TH1D **fRMSHistoASYield;
+    TH1D **fRMSHistoASSigma;
+    TH1D **fRMSHistoPedestal;
     
     
-    TCanvas * fCanvasFinalTrendNSYield;
-    TCanvas * fCanvasFinalTrendNSSigma;
-    TCanvas * fCanvasFinalTrendASYield;
-    TCanvas * fCanvasFinalTrendASSigma;
-    TCanvas * fCanvasFinalTrendPedestal;
+    TH1D *fSystematicSourcesNSYield;
+    TH1D *fSystematicSourcesNSSigma;
+    TH1D *fSystematicSourcesASYield;
+    TH1D *fSystematicSourcesASSigma;
+    TH1D *fSystematicSourcesPedestal;
     
-    TH1D * fFinalTrendNSYield;
-    TH1D * fFinalTrendNSSigma;
-    TH1D * fFinalTrendASYield;
-    TH1D * fFinalTrendASSigma;
-    TH1D * fFinalTrendPedestal;
+    TCanvas *fCanvasSystematicSourcesNSYield;
+    TCanvas *fCanvasSystematicSourcesNSSigma;
+    TCanvas *fCanvasSystematicSourcesASYield;
+    TCanvas *fCanvasSystematicSourcesASSigma;
+    TCanvas *fCanvasSystematicSourcesPedestal;
     
-    TBox ** fFullSystematicsNSYield;
-    TBox ** fv2SystematicsNSYield;
-    TBox ** fFullSystematicsNSSigma;
-    TBox ** fv2SystematicsNSSigma;
-    TBox ** fFullSystematicsASYield;
-    TBox ** fv2SystematicsASYield;
-    TBox ** fFullSystematicsASSigma;
-    TBox ** fv2SystematicsASSigma;
-    TBox ** fFullSystematicsPedestal;
-    TBox ** fv2SystematicsPedestal;
-    TCanvas * fCanvasRefernce;
-    TCanvas ** fCanvasFitting;
+    TCanvas *fCanvasTotalSystematicSourcesNSYield;
+    TCanvas *fCanvasTotalSystematicSourcesNSSigma;
+    TCanvas *fCanvasTotalSystematicSourcesASYield;
+    TCanvas *fCanvasTotalSystematicSourcesASSigma;
+    TCanvas *fCanvasTotalSystematicSourcesPedestal;
+    
+    
+    TCanvas *fCanvasFinalTrendNSYield;
+    TCanvas *fCanvasFinalTrendNSSigma;
+    TCanvas *fCanvasFinalTrendASYield;
+    TCanvas *fCanvasFinalTrendASSigma;
+    TCanvas *fCanvasFinalTrendPedestal;
+    
+    TH1D *fFinalTrendNSYield;
+    TH1D *fFinalTrendNSSigma;
+    TH1D *fFinalTrendASYield;
+    TH1D *fFinalTrendASSigma;
+    TH1D *fFinalTrendPedestal;
+    
+    TGraphAsymmErrors *fFullSystematicsNSYield;
+    TGraphAsymmErrors *fv2SystematicsNSYield;
+    TGraphAsymmErrors *fFullSystematicsNSSigma;
+    TGraphAsymmErrors *fv2SystematicsNSSigma;
+    TGraphAsymmErrors *fFullSystematicsASYield;
+    TGraphAsymmErrors *fv2SystematicsASYield;
+    TGraphAsymmErrors *fFullSystematicsASSigma;
+    TGraphAsymmErrors *fv2SystematicsASSigma;
+    TGraphAsymmErrors *fFullSystematicsPedestal;
+    TGraphAsymmErrors *fv2SystematicsPedestal;
+    TCanvas *fCanvasRefernce;
+    TCanvas **fCanvasFitting;
 
     ClassDef(AliHFCorrFitSystematics,1);    
     
