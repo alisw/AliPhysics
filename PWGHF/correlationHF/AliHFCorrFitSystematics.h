@@ -319,7 +319,7 @@ private:
     TCanvas *fCanvasRefernce;
     TCanvas **fCanvasFitting;
 
-    ClassDef(AliHFCorrFitSystematics,1);    
+    ClassDef(AliHFCorrFitSystematics,2);    
     
 };
 
