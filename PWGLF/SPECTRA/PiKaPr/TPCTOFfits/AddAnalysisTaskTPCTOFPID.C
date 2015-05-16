@@ -39,6 +39,10 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
   
   /* setup output event handler */
   AliAODHandler *outputh = (AliAODHandler *)mgr->GetOutputEventHandler();
+  if (!outputh) {
+    outputh = new AliAODHandler();
+    mgr->SetOutputEventHandler(outputh);
+  }
   outputh->SetCreateNonStandardAOD();
   outputh->SetOutputFileName("AnalysisResults.root");
 
