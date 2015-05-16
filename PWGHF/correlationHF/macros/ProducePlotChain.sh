@@ -150,6 +150,7 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_pPbVsMC.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_ppVsMC.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_ppVspPb.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitPlots.C .
 fi
 
 #############  CREATE BASIC DIRECTORY TREE #############
@@ -327,7 +328,15 @@ if [ ${doAverage} = 1 ]; then
     done	       
 fi
 
+collsyst=${firstcollsyst}
+imeson=${firstmeson}
+itrigbin=${firsttrigbin}
+iassocbin=${firstassocbin}
+
+
 ###### NOW PRODUCE CANVASES WITH NICE STYLE AND THOSE COMPARING MESONS ###########
+#### NOTE THAT THE POSSIBILITY TO SKIP CASES (e.g. pp collisions or p-Pb collisions) it is not yet implemented
+
 if [ ${doNicePlot} = 1 ]; then
     cd ${baseDir}/AllPlots
     mkdir NiceStylePlots
@@ -376,9 +385,13 @@ fi
 
 ######## NOW FIT DISTRIBUTIONS ############
 if [ ${dofit} = 1 ]; then
-    cd ${baseDir}/AllPlots/Averages/FitResults
-    
+    cd ${baseDir}/AllPlots/Averages/FitResults    
+    while [ ${collsyst} -le ${lastcollsyst} ]; do
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults
+	collsyst=${collsyst}+1
+    done
 fi
+collsyst=${firstcollsyst}
 
 ######## NOW COMPARE DATA AND MC ################# 
 if [ $doCompareWithMC = 1 ]; then
@@ -392,8 +405,10 @@ if [ $doCompareWithMC = 1 ]; then
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetInputTemplateDirectory("${templateDir[0]}")
-SetFitPlotMacroPath(${HFCJlocalCodeDir})
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
+SetSkip3to5pPb(kFALSE)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
@@ -405,8 +420,10 @@ EOF
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetInputTemplateDirectory("${templateDir[0]}")
-SetFitPlotMacroPath(${HFCJlocalCodeDir})
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
+SetSkip3to5pPb(kFALSE)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
@@ -418,8 +435,10 @@ EOF
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetInputTemplateDirectory("${templateDir[0]}")
-SetFitPlotMacroPath(${HFCJlocalCodeDir})
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
+SetSkip3to5pPb(kFALSE)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
@@ -434,8 +453,9 @@ Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetSkip3to5pPb(kTRUE)
 SetInputTemplateDirectory("${templateDir[1]}")
-SetFitPlotMacroPath(${HFCJlocalCodeDir})
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
@@ -450,8 +470,9 @@ SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetSkip3to5pPb(kTRUE)
 SetInputTemplateDirectory("${templateDir[1]}")
 SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
-SetFitPlotMacroPath(${HFCJlocalCodeDir})
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("0.3to99.0")
@@ -465,8 +486,9 @@ SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetSkip3to5pPb(kTRUE)
 SetInputTemplateDirectory("${templateDir[1]}")
 SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
-SetFitPlotMacroPath(${HFCJlocalCodeDir})
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("1.0to99.0")
@@ -486,6 +508,7 @@ Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetSkip3to5pPb(kTRUE)
+SetIsReflected($reflect)
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_ppVspPbTEST("1.0to99.0")
@@ -499,6 +522,7 @@ Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetSkip3to5pPb(kTRUE)
+SetIsReflected($reflect)
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_ppVspPbTEST("0.3to1.0")
@@ -511,6 +535,7 @@ Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetSkip3to5pPb(kTRUE)
+SetIsReflected($reflect)
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_ppVspPbTEST("0.3to99.0")

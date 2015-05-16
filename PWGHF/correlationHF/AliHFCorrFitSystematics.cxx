@@ -26,6 +26,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TF1.h>
+#include <TGraphAsymmErrors.h>
 #include "AliHFCorrelationUtils.h"
 #include "AliHFCorrFitter.h"
 #include "AliHFCorrFitSystematics.h"
@@ -1863,16 +1864,36 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
     Legend->SetBorderSize(0);
    
 
-    fFullSystematicsNSYield = new TBox*[fVecSize];
-   if(fPlotV2SystSeparately) fv2SystematicsNSYield= new TBox*[fVecSize];
-    fFullSystematicsNSSigma = new TBox*[fVecSize];
-    if(fPlotV2SystSeparately)fv2SystematicsNSSigma = new TBox*[fVecSize];
-    fFullSystematicsASYield = new TBox*[fVecSize];
-   if(fPlotV2SystSeparately) fv2SystematicsASYield = new TBox*[fVecSize];
-    fFullSystematicsASSigma = new TBox*[fVecSize];
-   if(fPlotV2SystSeparately) fv2SystematicsASSigma = new TBox*[fVecSize];
-    fFullSystematicsPedestal = new TBox*[fVecSize];
-   if(fPlotV2SystSeparately) fv2SystematicsPedestal = new TBox*[fVecSize];
+    fFullSystematicsNSYield = new TGraphAsymmErrors();
+    fFullSystematicsNSYield->SetName("fFullSystematicsNSYield");
+    if(fPlotV2SystSeparately){
+      fv2SystematicsNSYield= new TGraphAsymmErrors();
+      fv2SystematicsNSYield->SetName("fv2SystematicsNSYield");
+    }
+    fFullSystematicsNSSigma = new TGraphAsymmErrors();
+    fFullSystematicsNSSigma->SetName("fFullSystematicsNSSigma");
+    if(fPlotV2SystSeparately){
+      fv2SystematicsNSSigma = new TGraphAsymmErrors();
+      fv2SystematicsNSSigma->SetName("fv2SystematicsNSSigma");
+    }
+    fFullSystematicsASYield = new TGraphAsymmErrors();
+    fFullSystematicsASYield->SetName("fFullSystematicsASYield");
+    if(fPlotV2SystSeparately){
+      fv2SystematicsASYield = new TGraphAsymmErrors();
+      fv2SystematicsASYield->SetName("fv2SystematicsASYield");
+    }
+    fFullSystematicsASSigma = new TGraphAsymmErrors();
+    fFullSystematicsASSigma->SetName("fFullSystematicsASSigma");
+    if(fPlotV2SystSeparately) {
+      fv2SystematicsASSigma = new TGraphAsymmErrors();
+      fv2SystematicsASSigma->SetName("fv2SystematicsASSigma");
+    }
+    fFullSystematicsPedestal = new TGraphAsymmErrors();
+    fFullSystematicsPedestal->SetName("fFullSystematicsPedestal");
+    if(fPlotV2SystSeparately){
+      fv2SystematicsPedestal = new TGraphAsymmErrors();
+      fv2SystematicsPedestal->SetName("fv2SystematicsPedestal");
+    }
     
     Double_t Avpt = 0;
     Color_t sysboxcolor;
@@ -1887,38 +1908,42 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
         fCanvasFinalTrendNSYield->cd();
         fFinalTrendNSYield->Draw("ep");
         DefinePaveText();
-        
+	fFullSystematicsNSYield->SetFillColor(sysboxcolor);
+	fFullSystematicsNSYield->SetFillStyle(0);
+	fFullSystematicsNSYield->SetLineColor(2);
+
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsNSYield->SetFillColor(kGreen-2);
+	  fv2SystematicsNSYield->SetFillStyle(3001);
+	  fv2SystematicsNSYield->SetLineColor(kGreen-2);
+	}
         for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
             
             Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
-            fFullSystematicsNSYield[iPtBin] = new TBox(Avpt-0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2)-fValueSystematicNSYieldLow[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2),
-                                                Avpt+0.9,
-                                                fFinalTrendNSYield->GetBinContent(iPtBin+2)+fValueSystematicNSYieldUp[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2));
+            fFullSystematicsNSYield->SetPoint(iPtBin, Avpt,fFinalTrendNSYield->GetBinContent(iPtBin+2)); 
+            fFullSystematicsNSYield->SetPointError(iPtBin,0.9,0.9,fValueSystematicNSYieldLow[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2),fValueSystematicNSYieldUp[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2));
             
-            fFullSystematicsNSYield[iPtBin]->SetFillColor(sysboxcolor);
-            fFullSystematicsNSYield[iPtBin]->SetFillStyle(0);
-            fFullSystematicsNSYield[iPtBin]->SetLineColor(2);
-            fFullSystematicsNSYield[iPtBin]->Draw("same");
             
                 if(fPlotV2SystSeparately){
-                    fv2SystematicsNSYield[iPtBin] =new TBox(Avpt-0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2)+fSystValuev2NSYield[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2));
+		  fv2SystematicsNSYield->SetPoint(iPtBin,Avpt,fFinalTrendNSYield->GetBinContent(iPtBin+2));
+		  if(fSystValuev2NSYield[iPtBin]>0.){
+		    fv2SystematicsNSYield->SetPointError(iPtBin,0.9,0.9,0,fSystValuev2NSYield[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2));
+		  }
+		  else{
+		    fv2SystematicsNSYield->SetPointError(iPtBin,0.9,0.9,TMath::Abs(fSystValuev2NSYield[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2)),0);
+		  }
                    // if(fSystValuev2NSYield[iPtBin]>=0) fv2SystematicsNSYield[iPtBin] =new TBox(Avpt-0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2)+fSystValuev2NSYield[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2));
                    // else fv2SystematicsNSYield[iPtBin] =new TBox(Avpt-0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2)-fSystValuev2NSYield[iPtBin]*fFinalTrendNSYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendNSYield->GetBinContent(iPtBin+2));
-                    if(!isDrawn){
-                      Legend->AddEntry(fFullSystematicsNSYield[iPtBin],"Total Systematic Uncert.","l");
-                      Legend->AddEntry(fv2SystematicsNSYield[iPtBin],"v_{2} Systematic Uncert.","f");
-                        isDrawn = kTRUE;
-                    }
-                
-                    fv2SystematicsNSYield[iPtBin]->SetFillColor(kGreen-2);
-                    fv2SystematicsNSYield[iPtBin]->SetFillStyle(3001);
-                    fv2SystematicsNSYield[iPtBin]->SetLineColor(kGreen-2);
-                    fv2SystematicsNSYield[iPtBin]->Draw("same");
-                    Legend->Draw("same");
                 }
         
-            }
-            
+	}
+	fFullSystematicsNSYield->Draw("E2");
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsNSYield->Draw("E2");
+	  Legend->AddEntry(fFullSystematicsNSYield,"Total Systematic Uncert.","l");
+	  Legend->AddEntry(fv2SystematicsNSYield,"v_{2} Systematic Uncert.","f");
+	  Legend->Draw("same");
+	}
         fCanvasFinalTrendNSYield->Write();
         
     }
@@ -1927,88 +1952,93 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
         fCanvasFinalTrendNSSigma = new TCanvas("CanvasFinalTrendNSSigma","CanvasFinalTrendNSSigma",0,0,1000,800);
         fCanvasFinalTrendNSSigma->SetTickx();
         fCanvasFinalTrendNSSigma->SetTicky();
-         fFinalTrendNSSigma = new TH1D("FinalTrendNSSigma","; p_{T}(D) GeV/c; NS#sigma",fVecSize+2,ptbinspointerout);
-         SetHisto(fFinalTrendNSSigma,fReferenceHistoNSSigma);
+	fFinalTrendNSSigma = new TH1D("FinalTrendNSSigma","; p_{T}(D) GeV/c; NS#sigma",fVecSize+2,ptbinspointerout);
+	SetHisto(fFinalTrendNSSigma,fReferenceHistoNSSigma);
         fCanvasFinalTrendNSSigma->cd();
         fFinalTrendNSSigma->Draw("ep");
         DefinePaveText();
-        
+	fFullSystematicsNSSigma->SetFillColor(sysboxcolor);
+	fFullSystematicsNSSigma->SetFillStyle(0);
+	fFullSystematicsNSSigma->SetLineColor(2);
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsNSSigma->SetFillColor(kGreen-2);
+	  fv2SystematicsNSSigma->SetFillStyle(3001);
+	  fv2SystematicsNSSigma->SetLineColor(kGreen-2);
+        }
         for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
             
             Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
-            fFullSystematicsNSSigma[iPtBin] = new TBox(Avpt-0.9,
-                                                       fFinalTrendNSSigma->GetBinContent(iPtBin+2)-fValueSystematicNSSigmaLow[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2),
-                                                       Avpt+0.9,
-                                                       fFinalTrendNSSigma->GetBinContent(iPtBin+2)+fValueSystematicNSSigmaUp[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2));
-            fFullSystematicsNSSigma[iPtBin]->SetFillColor(sysboxcolor);
-            fFullSystematicsNSSigma[iPtBin]->SetFillStyle(0);
-            fFullSystematicsNSSigma[iPtBin]->SetLineColor(2);
-            fFullSystematicsNSSigma[iPtBin]->Draw("same");
-            
+            fFullSystematicsNSSigma->SetPoint(iPtBin,Avpt,fFinalTrendNSSigma->GetBinContent(iPtBin+2));
+            fFullSystematicsNSSigma->SetPointError(iPtBin,0.9,0.9,fValueSystematicNSSigmaLow[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2),fValueSystematicNSSigmaUp[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2));
+  
             if(fPlotV2SystSeparately){
-                fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendNSSigma->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendNSSigma->GetBinContent(iPtBin+2)+fSystValuev2NSSigma[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2));
+	      fv2SystematicsNSSigma->SetPoint(iPtBin,Avpt,fFinalTrendNSSigma->GetBinContent(iPtBin+2));
+	      if(fSystValuev2NSSigma[iPtBin]>0.){
+		fv2SystematicsNSSigma->SetPointError(iPtBin,0.9,0.9,0,fSystValuev2NSSigma[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2));	      
+	      }
+	      else{
+		fv2SystematicsNSSigma->SetPointError(iPtBin,0.9,0.9,TMath::Abs(fSystValuev2NSSigma[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2)),0.);
+	      }
                // if(fSystValuev2NSSigma[iPtBin]>=0) fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendNSSigma->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendNSSigma->GetBinContent(iPtBin+2)+fSystValuev2NSSigma[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2));
                 //    else fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendNSSigma->GetBinContent(iPtBin+2)-fSystValuev2NSSigma[iPtBin]*fFinalTrendNSSigma->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendNSSigma->GetBinContent(iPtBin+2));
-                if(!isDrawn){
-                    Legend->AddEntry(fFullSystematicsNSSigma[iPtBin],"Total Systematic Uncert.","l");
-                    Legend->AddEntry(fv2SystematicsNSSigma[iPtBin],"v_{2} Systematic Uncert.","f");
-                    isDrawn = kTRUE;
-                }
-                
-                        fv2SystematicsNSSigma[iPtBin]->SetFillColor(kGreen-2);
-                        fv2SystematicsNSSigma[iPtBin]->SetFillStyle(3001);
-                        fv2SystematicsNSSigma[iPtBin]->SetLineColor(kGreen-2);
-                        fv2SystematicsNSSigma[iPtBin]->Draw("same");
-                Legend->Draw("same");
             }
             
         }
-        
+	fFullSystematicsNSSigma->Draw("E2");
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsNSSigma->Draw("E2");
+	  Legend->AddEntry(fFullSystematicsNSSigma,"Total Systematic Uncert.","l");
+	  Legend->AddEntry(fv2SystematicsNSSigma,"v_{2} Systematic Uncert.","f");
+	  Legend->Draw("same");
+	}
         fCanvasFinalTrendNSSigma->Write();
     }
     if(drawASy){
-        sysboxcolor = kGreen-2;
-        fCanvasFinalTrendASYield = new TCanvas("CanvasFinalTrendASYield","CanvasFinalTrendASYield",0,0,1000,800);
-        fCanvasFinalTrendASYield->SetTickx();
-        fCanvasFinalTrendASYield->SetTicky();
-         fFinalTrendASYield = new TH1D("FinalTrendASYield"," p_{T}(D) GeV/c; AS Yield",fVecSize+2,ptbinspointerout);
-         SetHisto(fFinalTrendASYield,fReferenceHistoASYield);
-        fCanvasFinalTrendASYield->cd();
-        fFinalTrendASYield->Draw("ep");
-        DefinePaveText();
-        for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
-            
-            Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
-            fFullSystematicsASYield[iPtBin] = new TBox(Avpt-0.9,
-                                                       fFinalTrendASYield->GetBinContent(iPtBin+2)-fValueSystematicASYieldLow[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2),
-                                                       Avpt+0.9,
-                                                       fFinalTrendASYield->GetBinContent(iPtBin+2)+fValueSystematicASYieldUp[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2));
-            fFullSystematicsASYield[iPtBin]->SetFillColor(sysboxcolor);
-            fFullSystematicsASYield[iPtBin]->SetFillStyle(0);
-            fFullSystematicsASYield[iPtBin]->SetLineColor(2);
-            fFullSystematicsASYield[iPtBin]->Draw("same");
-            
-            if(fPlotV2SystSeparately){
-                
-                fv2SystematicsASYield[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASYield->GetBinContent(iPtBin+2)+fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2));
-               // if(fSystValuev2ASYield[iPtBin]>=0) fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASYield->GetBinContent(iPtBin+2)+fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2));
-               //     else fv2SystematicsASYield[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASYield->GetBinContent(iPtBin+2)-fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASYield->GetBinContent(iPtBin+2));
-                if(!isDrawn){
-                    Legend->AddEntry(fFullSystematicsASYield[iPtBin],"Total Systematic Uncert.","l");
-                    Legend->AddEntry(fv2SystematicsASYield[iPtBin],"v_{2} Systematic Uncert.","f");
-                    isDrawn = kTRUE;
-                }
-                
-                        fv2SystematicsASYield[iPtBin]->SetFillColor(kGreen-2);
-                        fv2SystematicsASYield[iPtBin]->SetFillStyle(3001);
-                        fv2SystematicsASYield[iPtBin]->SetLineColor(kGreen-2);
-                        fv2SystematicsASYield[iPtBin]->Draw("same");
-                Legend->Draw("same");
-            }
-            
-        }
+      sysboxcolor = kGreen-2;
+      fCanvasFinalTrendASYield = new TCanvas("CanvasFinalTrendASYield","CanvasFinalTrendASYield",0,0,1000,800);
+      fCanvasFinalTrendASYield->SetTickx();
+      fCanvasFinalTrendASYield->SetTicky();
+      fFinalTrendASYield = new TH1D("FinalTrendASYield"," p_{T}(D) GeV/c; AS Yield",fVecSize+2,ptbinspointerout);
+      SetHisto(fFinalTrendASYield,fReferenceHistoASYield);
+      fCanvasFinalTrendASYield->cd();
+      fFinalTrendASYield->Draw("ep");
+      DefinePaveText();
+      fFullSystematicsASYield->SetFillColor(sysboxcolor);
+      fFullSystematicsASYield->SetFillStyle(0);
+      fFullSystematicsASYield->SetLineColor(2);
+      if(fPlotV2SystSeparately){
+	fv2SystematicsASYield->SetFillColor(kGreen-2);
+	fv2SystematicsASYield->SetFillStyle(3001);
+	fv2SystematicsASYield->SetLineColor(kGreen-2);
+      }
+      for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
+	
+	Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
+	fFullSystematicsASYield->SetPoint(iPtBin,Avpt,fFinalTrendASYield->GetBinContent(iPtBin+2));
+	fFullSystematicsASYield->SetPointError(iPtBin,0.9,0.9,fValueSystematicASYieldLow[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2),fValueSystematicASYieldUp[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2)); 
         
-        fCanvasFinalTrendASYield->Write();
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsASYield->SetPoint(iPtBin,Avpt,fFinalTrendASYield->GetBinContent(iPtBin+2));
+	  if(fSystValuev2ASYield[iPtBin]>0){
+	      fv2SystematicsASYield->SetPointError(iPtBin,0.9,0.9,0.,fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2));	  
+	  }
+	  else{
+	    fv2SystematicsASYield->SetPointError(iPtBin,0.9,0.9,TMath::Abs(fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2)),0.);  
+	  }
+	  
+	  
+	}
+	  // if(fSystValuev2ASYield[iPtBin]>=0) fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASYield->GetBinContent(iPtBin+2)+fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2));
+	  //     else fv2SystematicsASYield[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASYield->GetBinContent(iPtBin+2)-fSystValuev2ASYield[iPtBin]*fFinalTrendASYield->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASYield->GetBinContent(iPtBin+2));
+      }
+      fFullSystematicsASYield->Draw("E2");
+      if(fPlotV2SystSeparately){
+	fv2SystematicsASYield->Draw("E2");
+	Legend->AddEntry(fFullSystematicsASYield,"Total Systematic Uncert.","l");
+	Legend->AddEntry(fv2SystematicsASYield,"v_{2} Systematic Uncert.","f");
+	Legend->Draw("same");
+      }
+      fCanvasFinalTrendASYield->Write();
     }
     if(drawASsigma){
         sysboxcolor = kBlue-4;
@@ -2020,37 +2050,42 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
         fCanvasFinalTrendASSigma->cd();
         fFinalTrendASSigma->Draw("ep");
         DefinePaveText();
+	fFullSystematicsASSigma->SetFillColor(sysboxcolor);
+	fFullSystematicsASSigma->SetFillStyle(0);
+	fFullSystematicsASSigma->SetLineColor(2);
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsASSigma->SetFillColor(kGreen-2);
+	  fv2SystematicsASSigma->SetFillStyle(3001);
+	  fv2SystematicsASSigma->SetLineColor(kGreen-2);
+	}	
         for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
             
             Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
-            fFullSystematicsASSigma[iPtBin] = new TBox(Avpt-0.9,
-                                                       fFinalTrendASSigma->GetBinContent(iPtBin+2)-fValueSystematicASSigmaLow[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2),
-                                                       Avpt+0.9,
-                                                       fFinalTrendASSigma->GetBinContent(iPtBin+2)+fValueSystematicASSigmaUp[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2));
-            fFullSystematicsASSigma[iPtBin]->SetFillColor(sysboxcolor);
-            fFullSystematicsASSigma[iPtBin]->SetFillStyle(0);
-            fFullSystematicsASSigma[iPtBin]->SetLineColor(2);
-            fFullSystematicsASSigma[iPtBin]->Draw("same");
+	    fFullSystematicsASSigma->SetPoint(iPtBin,Avpt,fFinalTrendASSigma->GetBinContent(iPtBin+2));
+	    fFullSystematicsASSigma->SetPointError(iPtBin,0.9,0.9,fValueSystematicASSigmaLow[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2),fValueSystematicASSigmaUp[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2));        
             
             if(fPlotV2SystSeparately){
-                fv2SystematicsASSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASSigma->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASSigma->GetBinContent(iPtBin+2)+fSystValuev2ASSigma[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2));
+	      fv2SystematicsASSigma->SetPoint(iPtBin,Avpt,fFinalTrendASSigma->GetBinContent(iPtBin+2));
+	      if(fSystValuev2ASSigma[iPtBin]>0.){
+		fv2SystematicsASSigma->SetPointError(iPtBin,0.9,0.9,0.,fSystValuev2ASSigma[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2));
+	      }
+	      else{
+		fv2SystematicsASSigma->SetPointError(iPtBin,0.9,0.9,TMath::Abs(fSystValuev2ASSigma[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2)),0);
+	      }
                // if(fSystValuev2ASSigma[iPtBin]>=0) fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASSigma->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASSigma->GetBinContent(iPtBin+2)+fSystValuev2ASSigma[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2));
                  //   else fv2SystematicsASSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendASSigma->GetBinContent(iPtBin+2)-fSystValuev2ASSigma[iPtBin]*fFinalTrendASSigma->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendASSigma->GetBinContent(iPtBin+2));
-                if(!isDrawn){
-                    Legend->AddEntry(fFullSystematicsASSigma[iPtBin],"Total Systematic Uncert.","l");
-                    Legend->AddEntry(fv2SystematicsASSigma[iPtBin],"v_{2} Systematic Uncert.","f");
-                    isDrawn = kTRUE;
-                }
                 
-                        fv2SystematicsASSigma[iPtBin]->SetFillColor(kGreen-2);
-                        fv2SystematicsASSigma[iPtBin]->SetFillStyle(3001);
-                        fv2SystematicsASSigma[iPtBin]->SetLineColor(kGreen-2);
-                        fv2SystematicsASSigma[iPtBin]->Draw("same");
-                        Legend->Draw("same");
+                        
             }
             
         }
-        
+	fFullSystematicsASSigma->Draw("E2");
+	if(fPlotV2SystSeparately){
+	  Legend->AddEntry(fFullSystematicsASSigma,"Total Systematic Uncert.","l");
+	  Legend->AddEntry(fv2SystematicsASSigma,"v_{2} Systematic Uncert.","f");
+	  fv2SystematicsASSigma->Draw("E2");
+	  Legend->Draw("same");
+	}
         fCanvasFinalTrendASSigma->Write();
     }
     if(drawPed){fCanvasFinalTrendPedestal = new TCanvas("CanvasFinalTrendPedestal","CanvasFinalTrendPedestal",0,0,1000,800);
@@ -2061,36 +2096,38 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
         fCanvasFinalTrendPedestal->cd();
         fFinalTrendPedestal->Draw("ep");
         DefinePaveText();
+	fFullSystematicsPedestal->SetFillColor(sysboxcolor);
+	fFullSystematicsPedestal->SetFillStyle(0);
+	fFullSystematicsPedestal->SetLineColor(2);
+	if(fPlotV2SystSeparately){
+	  fv2SystematicsPedestal->SetFillColor(kGreen-2);
+	  fv2SystematicsPedestal->SetFillStyle(3001);
+	  fv2SystematicsPedestal->SetLineColor(kGreen-2);
+	}	
         for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
             
             Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
-            fFullSystematicsPedestal[iPtBin] = new TBox(Avpt-0.9,
-                                                       fFinalTrendPedestal->GetBinContent(iPtBin+2)-fValueSystematicPedestalLow[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2),
-                                                       Avpt+0.9,
-                                                       fFinalTrendPedestal->GetBinContent(iPtBin+2)+fValueSystematicPedestalUp[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
-            fFullSystematicsPedestal[iPtBin]->SetFillColor(sysboxcolor);
-            fFullSystematicsPedestal[iPtBin]->SetFillStyle(0);
-            fFullSystematicsPedestal[iPtBin]->SetLineColor(2);
-            fFullSystematicsPedestal[iPtBin]->Draw("same");
-            
+	    fFullSystematicsPedestal->SetPoint(iPtBin,Avpt,fFinalTrendPedestal->GetBinContent(iPtBin+2));
+	    fFullSystematicsPedestal->SetPointError(iPtBin,0.9,0.9,fValueSystematicPedestalLow[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2),fValueSystematicPedestalUp[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
             if(fPlotV2SystSeparately){
-                fv2SystematicsPedestal[iPtBin] =new TBox(Avpt-0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2)+fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
+	      fv2SystematicsPedestal->SetPoint(iPtBin,Avpt,fFinalTrendPedestal->GetBinContent(iPtBin+2));
+	      if(fSystValuev2Pedestal[iPtBin]>0.){
+		fv2SystematicsPedestal->SetPointError(iPtBin,0.9,0.9,0,fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
+	      }
+	      else{
+		fv2SystematicsPedestal->SetPointError(iPtBin,0.9,0.9,TMath::Abs(fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2)),0.);
+	      }
                // if(fSystValuev2Pedestal[iPtBin]>=0) fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2)+fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
                 //    else fv2SystematicsPedestal[iPtBin] =new TBox(Avpt-0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2)-fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2));
-                if(!isDrawn){
-                    Legend->AddEntry(fFullSystematicsPedestal[iPtBin],"Total Systematic Uncert.","l");
-                    Legend->AddEntry(fv2SystematicsPedestal[iPtBin],"v_{2} Systematic Uncert.","f");
-                    isDrawn = kTRUE;
-                }
-                
-                        fv2SystematicsPedestal[iPtBin]->SetFillColor(kGreen-2);
-                        fv2SystematicsPedestal[iPtBin]->SetFillStyle(3001);
-                        fv2SystematicsPedestal[iPtBin]->SetLineColor(kGreen-2);
-                        fv2SystematicsPedestal[iPtBin]->Draw("same");
-                        Legend->Draw("same");
             }
-            
         }
+	fFullSystematicsPedestal->Draw("E2");
+	if(fPlotV2SystSeparately){
+	  Legend->AddEntry(fFullSystematicsPedestal,"Total Systematic Uncert.","l");
+	  Legend->AddEntry(fv2SystematicsPedestal,"v_{2} Systematic Uncert.","f");
+	  fv2SystematicsPedestal->Draw("E2");
+	  Legend->Draw("same");
+	}
         fCanvasFinalTrendPedestal->Write();
     }
     

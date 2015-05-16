@@ -7,6 +7,8 @@
 //############################################################################
 Int_t nhistos=6;
 Int_t rebin =1;
+Double_t **ptbinsD;
+Int_t ndesiredbins=3;
 TString inputdatadirectory = "./";
 TString baselinedirectory="./";
 TString avType="Weighted";
@@ -18,6 +20,17 @@ TLatex** ltscale;
 Bool_t skip3to5=kTRUE;
 Int_t ihskip=0;
 TString fitplotmacrodir=gSystem->ExpandPathName("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/");
+Bool_t isReflected=kFALSE;
+void SetIsReflected(Bool_t isrefl){
+  isReflected=isrefl;
+}
+void SetDesiredPtBins(Int_t nbins,Double_t **bins){// maybe useful in future to replace hard-coded values, not used right now
+  ndesiredbins=nbins;
+  ptbinsD=new Double_t[ndesiredbins];
+  for(Int_t j=0;j<nbins;j++){
+    ptbinsD[j]=bins[j];
+  }
+}
 void SetFitPlotMacroPath(TString strdir){
   fitplotmacrodir=strdir;
 }
@@ -71,6 +84,20 @@ void Init(){
 }
 
 Int_t rebin =1;
+Int_t GetBinGraph(Double_t xbincenter, TGraph *gr,Double_t tolerance=0.1){// works only if the bin center is passed (or a value within tolerance). In other cases might not giving back what is expected
+  Int_t size=gr->GetN();
+  Double_t xg,yg;
+  for(Int_t j=0;j<size;j++){
+    gr->GetPoint(j,xg,yg);
+    if(j==0){
+      if(xbincenter<xg&&TMath::Abs(xg-xbincenter)>tolerance)return -1;      
+    }
+
+    if(TMath::Abs(xg-xbincenter)<tolerance)return j;
+    
+  }
+  return -1;
+}
 
 void test(){
   TH1D* h1;
@@ -234,8 +261,9 @@ TH1D * GetPedestalHisto(Int_t i, TString canvasname, TString hname){
     
 }
 //_______________________________________________________________________
-TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1D *histo, TGraphAsymmErrors* gr,TGraphAsymmErrors** grout, TString canvasname,TBox** bsyst, TBox** bsyst2){
-  //i=D pt bin
+TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1D *histo, TGraphAsymmErrors* gr,TGraphAsymmErrors** grout, TString canvasname,TBox** bsyst, TBox** bsyst2){// OBSOLETE METHOD
+
+  //i=D pt bin/
   //Double_t* arrbox1, Double_t* arrbox2
   TBox* bout1;
   TBox* bout2;
@@ -249,7 +277,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1
     
     TFile * file = TFile::Open(path.Data(),"READ");
     TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
-    TH1D* h = (TH1D*)c->GetListOfPrimitives()->At(1);
+    TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
     TBox* b1=(TBox*)c->GetListOfPrimitives()->At(2);
     TBox* b2=(TBox*)c->GetListOfPrimitives()->At(3);
     TBox* b3=(TBox*)c->GetListOfPrimitives()->At(4);
@@ -323,7 +351,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1
       
     TFile * file = TFile::Open(path.Data(),"READ");
     TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
-    TH1D* h = (TH1D*)c->GetListOfPrimitives()->At(1);
+    TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
     TBox* b1=(TBox*)c->GetListOfPrimitives()->At(2);//3-5
     TBox* b2=(TBox*)c->GetListOfPrimitives()->At(3);//5-8
     TBox* b3=(TBox*)c->GetListOfPrimitives()->At(4);//8-16
@@ -454,7 +482,7 @@ TH1D * GetHisto(Int_t i, TString canvasname, TString hname){
 }
 
 //_______________________________________________________________________
-TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErrors** gr2, TLatex** lt){
+TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErrors *&gr2, TLatex *&tUncertainty){
     
    
   //load the histogram with
@@ -477,14 +505,13 @@ TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErro
   TH1D *hUncCorrMin=syst->GetHistoTotFlatMin();
   TH1D *hUncCorrMax=syst->GetHistoTotFlatMax();
 
-  TGraphAsymmErrors *gr=syst->GetTotNonFlatUncGraph();
-  gr->SetLineColor(kBlack);
-  gr->SetMarkerColor(kBlack);
-  gr->SetFillStyle(0);
+  gr2=syst->GetTotNonFlatUncGraph();
+  gr2->SetLineColor(kBlack);
+  gr2->SetMarkerColor(kBlack);
+  gr2->SetFillStyle(0);
 
-  (*gr2)=gr;
+  //  (*gr2)=gr;
 
-  TLatex *tUncertainty;
   if(i<3){
     if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.2,0.6,Form("#bf{%.0f#% scale uncertainty pp}",hUncCorrMin->GetBinContent(1)*100.));
     else tUncertainty=new TLatex(0.55,0.59,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty pp}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
@@ -498,7 +525,7 @@ if(i>=3){
   tUncertainty->SetNDC();
   tUncertainty->SetTextSize(0.025);
   //tUncertainty->Draw();
-  (*lt)=tUncertainty;
+
   
 
   // TString histoname = "DeltaPhi_";
@@ -611,16 +638,12 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
         
   // loop on histos
   for(Int_t k=0; k<nhistos; k++){ //GetHisto has to get graph/syst uncer===========================
-    TGraphAsymmErrors* gr;
     TLatex* lt;
     if(skip3to5){
       if(k%3==0)continue;
     }
-    histo[k] = GetHistoAndSyst(k,"fhDaverage","AverageSystematicUncertainty",&gr,&lt); 
-       
-    err[k]=gr;
-    ltscale[k]=lt;      
-      
+    histo[k] = GetHistoAndSyst(k,"fhDaverage","AverageSystematicUncertainty",err[k],ltscale[k]); 
+             
     if(k<3) { 
       histo[k]->SetMarkerColor(4); 
       histo[k]->SetMarkerStyle(21); 
@@ -645,63 +668,54 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   Double_t BaselinepPb, BaselineErrpPb;// = 0;
 
   TH1D ** subtractedhisto = new TH1D *[nhistos];
-  TGraphAsymmErrors ** suberr = new TGraphAsymmErrors *[nhistos];
-  TBox** box1=new TBox*[nhistos];
-  TBox** box2=new TBox*[nhistos];
- 
+  TGraphAsymmErrors **suberr = new TGraphAsymmErrors *[nhistos];
+  TGraphAsymmErrors **grbase=new TGraphAsymmErrors*[nhistos];
+  TGraphAsymmErrors **grv2=new TGraphAsymmErrors*[nhistos]; 
 
   for(Int_t k=0; k<nhistos; k++){
     if(skip3to5){
       if(k%3==0)continue;
     }
     if(k<3) {
-      TGraphAsymmErrors* gr;
-      TBox* b1;
-      TBox* b2;
-      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"finalCanvas",&b1,&b2);
-      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"finalCanvas",&b1,&b2);
-      suberr[k]=gr;
-      box1[k]=b1;
-      box2[k]=b2;
-      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
-      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
+      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],suberr[k],"CanvasFinalTrendPedestal",grbase[k],grv2[k]);
+      //      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
+      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
+      //      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
+      //      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
       cout<<"sub -> "<<subtractedhisto[k]->GetBinContent(5)<<endl;
       subtractedhisto[k]->GetYaxis()->SetRangeUser(-0.7,2*subtractedhisto[k]->GetBinContent(subtractedhisto[k]->GetMaximumBin()));    
-      box1[k]->SetFillStyle(3002);
-      box1[k]->SetFillColor(kBlue-7);
-      box1[k]->SetLineColor(kBlue-7);
+      grbase[k]->SetFillStyle(3002);
+      grbase[k]->SetFillColor(kBlue-7);
+      grbase[k]->SetLineColor(kBlue-7);
 
-      box2[k]->SetFillStyle(3002);
-      box2[k]->SetFillColor(kMagenta);  
+      if(grv2[k]){
+	grv2[k]->SetFillStyle(3002);
+	grv2[k]->SetFillColor(kMagenta);  
+      }
       suberr[k]->SetLineColor(kBlue);
     }
 
-    if(k>3) { //removed k=3 (corresponding to pPb 3-5)
-      //if(k>=3) {
-      TGraphAsymmErrors* gr;
-      TBox* b1;
-      TBox* b2;
-      //subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"finalCanvas",&b1,&b2);
-      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"finalCanvas",&b1,&b2);
-      suberr[k]=gr;
-      box1[k]=b1;
-      box2[k]=b2;
-      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
-      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
+    if(k>=3) { 
+      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],suberr[k],"CanvasFinalTrendPedestal",grbase[k],grv2[k]);
+      //      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
+      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
+      //      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
+      //      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
       cout<<"sub -> "<<subtractedhisto[k]->GetBinContent(5)<<endl;
       subtractedhisto[k]->GetYaxis()->SetRangeUser(-0.8,2*subtractedhisto[k]->GetBinContent(subtractedhisto[k]->GetMaximumBin()));    
-      box1[k]->SetFillStyle(3002);
-      box1[k]->SetFillColor(kRed-7);
-      box1[k]->SetLineColor(kRed-7);
-  
-      box2[k]->SetFillStyle(3002);
-      box2[k]->SetFillColor(kMagenta); 
-      suberr[k]->SetLineColor(kRed); 
-    }
-    
+      grbase[k]->SetFillStyle(3002);
+      grbase[k]->SetFillColor(kRed-7);
+      grbase[k]->SetLineColor(kRed-7);
+
+      if(grv2[k]){
+	grv2[k]->SetFillStyle(3002);
+	grv2[k]->SetFillColor(kMagenta);  
+      }
+      suberr[k]->SetLineColor(kRed);
+    } 
   }
   subtractedhisto[5]->SetMaximum(3.7);
- 
+
   if(pthad.Contains("0.3")){
     subtractedhisto[1]->SetMinimum(-0.9);
     subtractedhisto[2]->SetMinimum(-0.9);
@@ -730,8 +744,8 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   legend2->SetFillColor(0);
   legend2->SetBorderSize(0);
   legend2->SetTextSize(0.025);
-  legend2->AddEntry(box1[1],"baseline uncertainty pp","f");
-  legend2->AddEntry(box1[4],"baseline uncertainty p-Pb","f");
+  legend2->AddEntry(grbase[1],"baseline uncertainty pp","f");
+  legend2->AddEntry(grbase[4],"baseline uncertainty p-Pb","f");
   // legend2->AddEntry(box2[4],"v2 subtr p-Pb","f");
   
 
@@ -816,8 +830,8 @@ TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
   h->Draw();
   
   //  box2[4]->Draw("same");
-  box1[4]->Draw("lsame");
-  box1[1]->Draw("lsame"); 
+  grbase[4]->Draw("E2");
+  grbase[1]->Draw("E2"); 
   line->Draw(); 
   subtractedhisto[4]->Draw("same");
   suberr[4]->Draw("E2");
@@ -852,8 +866,8 @@ TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
 
   subtractedhisto[5]->Draw("epsame");
   //box2[5]->Draw("same");
-  box1[5]->Draw("lsame");
-  box1[2]->Draw("lsame"); 
+  grbase[5]->Draw("E2");
+  grbase[2]->Draw("E2"); 
   line->Draw(); 
   subtractedhisto[5]->Draw("same");
   suberr[5]->Draw("E2");
@@ -920,13 +934,13 @@ void DoComparison_ppVspPb(Double_t pthad=0.3){
   TH1D ** subtractedhisto = new TH1D *[nhistos];
   for(Int_t k=0; k<nhistos; k++){
     if(k<3) {//baseline with syst uncert?===========================
-      GetBaselne(BaselinePP,BaselineErrPP, histo[k]);
+      GetBaseline(BaselinePP,BaselineErrPP, histo[k]);
       cout <<"------pp-------> " <<BaselinePP << " +/- " <<BaselineErrPP<<endl;
       subtractedhisto[k] = subtractpedestal(k,histo[k],BaselinePP);
         
     } // get p-Pb
     if(k>=3) {
-      GetBaselne(BaselinepPb,BaselineErrpPb, histo[k]);
+      GetBaseline(BaselinepPb,BaselineErrpPb, histo[k]);
       cout <<"------pPb-------> " <<BaselinepPb << " +/- " <<BaselineErrpPb<<endl;
       subtractedhisto[k] = subtractpedestal(k,histo[k],BaselinepPb);
         
@@ -1023,16 +1037,11 @@ void DoComparison_ppVspPb(Double_t pthad=0.3){
   legend->Draw("same");
   fitvalueshigh->Draw("same");
     
-    
-    
-    
   // saving the canvases in .root and .png
   TString ptoutput="",ptoutputRef="", direcname="", direcnameRef="";
   ptoutput += Form("%sAverage_ppVspPb",avType.Data());
   direcname += "Output_Plots/ppVspPbPlots";
-    
-    
-    
+  
   // changes name of final canvas/histo
   if(pthad == 0.3) ptoutput += "_pt03";
   if(pthad == 0.5) ptoutput += "_pt05";
@@ -1085,12 +1094,14 @@ void LoadFileNamesppVspPb(TString pthadron){
     for(Int_t k = 0; k<2; k++){
       pedestalfilenames[k] = baselinedirectory;
     }
-    pedestalfilenames[0] += Form("/finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pp
-    pedestalfilenames[1] += Form("/p_Pb_finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pPb
+    //    pedestalfilenames[0] += Form("/finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pp
+    //    pedestalfilenames[1] += Form("/p_Pb_finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pPb
+    pedestalfilenames[0] += Form("/Trends_pp/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pp
+    pedestalfilenames[1] += Form("/Trends_pPb/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pPb
 
 }
 
-void GetBaselne(Double_t &av=0.,Double_t &errAv=0.,TH1D * h){
+void GetBaseline(Double_t &av=0.,Double_t &errAv=0.,TH1D * h){
     
   Int_t nbins = 0;
   Double_t sum = 0;
@@ -1133,3 +1144,189 @@ void DoAllComparison(){
 }
 
 
+
+
+
+//_______________________________________________________________________
+TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1D *histo, TGraphAsymmErrors* gr,TGraphAsymmErrors *&grout, TString canvasname,TGraphAsymmErrors *&grbaseOut,TGraphAsymmErrors *&grv2Out){
+  //i=D pt bin
+  //Double_t* arrbox1, Double_t* arrbox2
+  Double_t value = 0, pedestal=0;
+  TGraphAsymmErrors *grBase,*grV2;
+  grbaseOut=new TGraphAsymmErrors();
+  grbaseOut->SetName(Form("grbaselineUncFull_%sBin%d",system.Data(),i));
+  grv2Out=new TGraphAsymmErrors();
+  grv2Out->SetName(Form("grbaselineUncV2_%sBin%d",system.Data(),i));
+
+  Double_t xuncFull,errxuncFull;
+  Double_t xuncv2,errxuncv2;
+  Int_t bin,bingr;
+  if(system.Contains("pPb")){
+    // get pedestal from fit outputs
+    TString path = pedestalfilenames[1];//pPb ----------------
+    cout << "pPb -->  Reading File from path: " << path << endl;
+    
+    TFile * file = TFile::Open(path.Data(),"READ");
+    TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
+    TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+    grV2=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fv2SystematicsPedestal");    
+    //example:
+    //    TBox  X1= 5.600000 Y1=6.724682 X2=7.400000 Y2=6.802155     bin 5-8 : v2
+    //    TBox  X1= 11.100000 Y1=6.563838 X2=12.900000 Y2=6.638230   bin 8-16 :v2
+    //    TBox  X1= 5.800000 Y1=6.146429 X2=7.200000 Y2=7.380408     bin 5-8 : Total (no v2 modulation)
+    //    TBox  X1= 11.300000 Y1=5.990975 X2=12.700000 Y2=7.211093   bin 8-16 : Total (no v2 modulation)
+    if(isReflected){
+      xuncFull=3.4;
+      errxuncFull=0.075;
+      xuncv2=-0.3;
+      errxuncv2=0.075;
+    }
+    else{
+      xuncFull=4.98;
+      errxuncFull=0.075;
+      xuncv2=-1.85;
+      errxuncv2=0.075;
+    }
+    if(i==3){
+      bin=h->FindBin(4.);
+      bingr=GetBinGraph(4.,grBase);
+    }
+    else if(i==4){
+      bin=h->FindBin(6.5);
+      bingr=GetBinGraph(6.5,grBase);
+    }
+    else if(i==5){
+      bin=h->FindBin(12.);
+      bingr=GetBinGraph(12.,grBase);
+    }
+      
+    pedestal=h->GetBinContent(bin);
+    Double_t x,y,erryl,erryh;
+    grBase->GetPoint(bingr,x,y);
+    Printf("histo: x=%f, graph: %f",h->GetBinCenter(bin),x);
+    erryl=grBase->GetErrorYlow(bingr);
+    erryh=grBase->GetErrorYhigh(bingr);
+    
+    grbaseOut->SetPoint(0,xuncFull,0);
+    grbaseOut->SetPointError(0,errxuncFull,errxuncFull,erryl,erryh);
+    if(grV2){
+      grV2->GetPoint(bingr,x,y);
+      erryl=grV2->GetErrorYlow(bingr);
+      erryh=grV2->GetErrorYhigh(bingr);	
+      grv2Out->SetPoint(0,xuncFull,0);
+      grv2Out->SetPointError(0,errxuncFull,errxuncFull,erryl,erryh);
+    }
+    
+    cout<<i<<"  pedestal pPb="<<pedestal<<endl;
+
+   
+   
+    cout << "pPb --> subtracting pedestal for histo " << i << " = " << pedestal << endl;
+    //    cout<<"GR1 = "<<bout1->GetX1()<<"  "<<bout1->GetX2()<<"  "<<bout1->GetY1()<<"  "<<bout1->GetY2()<<"  "<<endl;
+    //    if(grv2){
+    //      cout<<"GR2 = "<<bout2->GetX1()<<"  "<<bout2->GetX2()<<"  "<<bout2->GetY1()<<"  "<<bout2->GetY2()<<"  "<<endl;
+    //    }
+    //    else{
+    //      Printf("v2 uncertainty on baseline graph not present, won't be used");
+    //    }
+  }
+    
+  if(system.Contains("pp")){
+    // get pedestal from fit outputs
+    TString path = pedestalfilenames[0];//pp ----------------
+    grV2=0x0;
+    cout << "pp -->  Reading File from path: " << path << endl;
+    
+    TFile * file = TFile::Open(path.Data(),"READ");
+    TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
+    TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+
+    if(isReflected){
+      xuncFull=3.25;
+      errxuncFull=0.075;
+      xuncv2=-0.15; 
+      errxuncv2=0.075;
+    }
+    else{
+      xuncFull=4.83;
+      errxuncFull=0.075;
+      xuncv2=-1.7;
+      errxuncv2=0.075;
+    }
+
+    if(i==0){
+      bin=h->FindBin(4.);
+      bingr=GetBinGraph(4.,grBase);
+    }
+    else if(i==1){
+      bin=h->FindBin(6.5);
+      bingr=GetBinGraph(6.5,grBase);
+    }
+    else if(i==2){
+      bin=h->FindBin(12.);
+      bingr=GetBinGraph(12.,grBase);
+    }
+    pedestal=h->GetBinContent(bin);
+    Double_t x,y,erryl,erryh;
+    Printf("histo: x=%f, graph: %f",h->GetBinCenter(bin),x);
+    grBase->GetPoint(bingr,x,y);
+    erryl=grBase->GetErrorYlow(bingr);
+    erryh=grBase->GetErrorYhigh(bingr);
+    
+    grbaseOut->SetPoint(0,xuncFull,0);
+    grbaseOut->SetPointError(0,errxuncFull,errxuncFull,erryl,erryh);
+    if(grV2){
+      grV2->GetPoint(bingr,x,y);
+      erryl=grV2->GetErrorYlow(bingr);
+      erryh=grV2->GetErrorYhigh(bingr);	
+      grv2Out->SetPoint(0,xuncFull,0);
+      grv2Out->SetPointError(0,errxuncFull,errxuncFull,erryl,erryh);
+    }
+    cout<<i<<"  pedestal pp="<<pedestal<<endl;
+
+
+    cout << "pp --> subtracting pedestal for histo " << i << " = " << pedestal << endl;
+    //    cout<<"BOX1 = "<<bout1->GetX1()<<"  "<<bout1->GetX2()<<"  "<<bout1->GetY1()<<"  "<<bout1->GetY2()<<"  "<<endl;
+    //    cout<<"BOX2 = "<<bout2->GetX1()<<"  "<<bout2->GetX2()<<"  "<<bout2->GetY1()<<"  "<<bout2->GetY2()<<"  "<<endl;
+  }
+  
+  grout=(TGraphAsymmErrors*)gr->Clone(Form("grSub_%sBin%d",system.Data(),i));
+  
+  TString nameoutput = histo->GetName();
+  nameoutput += "_subtr_";
+  nameoutput += "pedestal";
+  nameoutput += Form("%d",i);
+   
+  TH1D * outputhisto = (TH1D*)histo->Clone(nameoutput.Data());
+  outputhisto->Reset();
+  outputhisto->SetStats(kFALSE);
+    
+
+  for(Int_t iBin = 1; iBin <= histo->GetNbinsX();iBin++){
+        
+        
+    value = histo->GetBinContent(iBin);
+    value -= pedestal;
+      
+    outputhisto->SetBinContent(iBin,value);
+      
+    outputhisto->SetBinError(iBin,histo->GetBinError(iBin));
+    Double_t x,y,eyl,eyh;
+    gr->GetPoint(iBin-1,x,y);
+    eyl=gr->GetErrorYlow(iBin-1);
+    eyh=gr->GetErrorYhigh(iBin-1);
+    //cout<<x<<"  "<<y<<"  "<<eyl<<"  "<<eyh<<endl;
+    grout->SetPoint(iBin-1,x,y-pedestal);
+
+  }
+  cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
+  cout<<"now return histogram"<<endl;
+  
+  outputhisto->SetXTitle("#Delta#varphi (rad)");
+  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
+  outputhisto->GetYaxis()->SetTitleOffset(1.5);
+  return outputhisto;
+    
+}
