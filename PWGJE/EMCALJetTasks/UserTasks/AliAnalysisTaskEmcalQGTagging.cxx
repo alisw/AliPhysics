@@ -262,6 +262,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
     while((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1) continue;
       AliEmcalJet* jet2 = 0x0;
+      AliEmcalJet* jet3=0x0;
       fPtJet->Fill(jet1->Pt());
       AliEmcalJet *jetUS = NULL;
       Int_t ifound=0;
@@ -275,10 +276,11 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
  
       if (!(fJetShapeType == kData)) {
         AliPythiaInfo *partonsInfo = 0x0;
-        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) ){
+        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ){
           AliJetContainer *jetContTrue = GetJetContainer(1);
           AliJetContainer *jetContUS = GetJetContainer(2);
-          
+       
+ 
           if(fJetShapeSub==kConstSub){
             for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
               jetUS = jetContUS->GetJet(i);
@@ -294,12 +296,18 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           }
           if(!(fJetShapeSub==kConstSub)) jet2 = jet1->ClosestJet();
           if (!jet2) {
-            Printf("jet2 not exists, returning");
+            Printf("jet2 does not exist, returning");
             continue;
           }
           
-         // AliVParticle *vp1 = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-         // AliVParticle *vp2 = static_cast<AliVParticle*>(jet2->TrackAt(i, jetContTrue->GetParticleContainer()->GetArray()));
+          if(fJetShapeType==kDetEmbPart){
+            AliJetContainer *jetContPart=GetJetContainer(3);
+            jet3=jet2->ClosestJet();
+	    if(!jet3){
+	      Printf("jet3 does not exist, returning");
+              continue;}
+}
+            
           
           fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());
           
@@ -405,6 +413,20 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
+       if (fJetShapeType == kDetEmbPart) {
+        kMatched = 3;
+        ptMatch=jet2->Pt();
+        ptDMatch=GetJetpTD(jet2, kMatched);
+        massMatch=GetJetMass(jet2,kMatched);
+        constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
+        angulMatch=GetJetAngularity(jet2, kMatched);
+        circMatch=GetJetCircularity(jet2, kMatched);
+        lesubMatch=GetJetLeSub(jet2, kMatched);
+        sigma2Match = GetSigma2(jet2, kMatched);
+        
+      }
+
+
 
       if (fJetShapeType == kTrue || fJetShapeType == kData) {
         kMatched = 0;
