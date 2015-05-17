@@ -405,6 +405,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			Bool_t highVar = kFALSE;
 			
 			for(Int_t i=1; i<=8; i++){
+				if(hNEventsBBFlag->GetBinError(i) == 0 || hNEventsBBFlag->GetBinError(i+8) == 0) continue;
 				if(((TMath::Abs(hNEventsBBFlag->GetBinContent(i)-meanRateADC)/hNEventsBBFlag->GetBinError(i))>fMaxBBVariation) || 
 				   ((TMath::Abs(hNEventsBBFlag->GetBinContent(i+8)-meanRateADA)/hNEventsBBFlag->GetBinError(i+8))>fMaxBBVariation)){
 					test = 0.7;
@@ -446,6 +447,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			Bool_t highVar = kFALSE;
 			
 			for(Int_t i=1; i<=8; i++){
+				if(hNEventsBGFlag->GetBinError(i) == 0 || hNEventsBGFlag->GetBinError(i+8) == 0) continue;
 				if(((TMath::Abs(hNEventsBGFlag->GetBinContent(i)-meanRateADC)/hNEventsBGFlag->GetBinError(i))>fMaxBGVariation) || 
 				   ((TMath::Abs(hNEventsBGFlag->GetBinContent(i+8)-meanRateADA)/hNEventsBGFlag->GetBinError(i+8))>fMaxBGVariation)){
 					test = 0.7;
