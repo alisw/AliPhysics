@@ -3046,6 +3046,7 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
         volPath += vpApp3a;
       };
       if (!gGeoManager->CheckPath(volPath)) {
+        AliInfo(Form("Path not found in geometry: %s",volPath));
 	continue;
       }
 
@@ -3067,7 +3068,7 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
         AliErrorClass(Form("Cannot go to path: %s\n",path));
         continue;
       }
-      TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
+      TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
       
       TGeoRotation mchange; 
       mchange.RotateY(90); 
