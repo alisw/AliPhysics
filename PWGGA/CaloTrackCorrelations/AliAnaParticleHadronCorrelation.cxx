@@ -65,6 +65,7 @@ fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.),
 fPi0AODBranchName(""),          fAODNamepTInConeHisto(""), fNeutralCorr(0),
 fPi0Trigger(0),                 fDecayTrigger(0),
 fNDecayBits(0),                 fDecayBits(),
+fNBkgBin(0),
 fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),
 fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
 fNAssocPtBins(0),               fAssocPtBinLimit(),
@@ -77,6 +78,7 @@ fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
 fMinLeadHadPt(0),               fMaxLeadHadPt(0),
 fFillEtaGapsHisto(1),           fFillMomImbalancePtAssocBinsHisto(0),
 fFillInvMassHisto(0),           fFillBkgBinsHisto(0),
+fFillTaggedDecayHistograms(0),  fDecayTagsM02Cut(0),
 fMCGenTypeMin(0),               fMCGenTypeMax(0),
 fTrackVector(),                 fMomentum(),           fMomentumIM(),
 fDecayMom1(),                   fDecayMom2(),
@@ -186,8 +188,9 @@ fhMixDeltaPhiChargedAssocPtBinDEta0(),
 fhMixDeltaPhiDeltaEtaChargedAssocPtBin(),
 fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0),
 fhMassPtTrigger(0),             fhMCMassPtTrigger(),
-fhPtLeadInConeBin(),            fhPtSumInConeBin()
-
+fhPtLeadInConeBin(),            fhPtSumInConeBin(),
+fhPtLeadConeBinDecay(),         fhSumPtConeBinDecay(),
+fhPtLeadConeBinMC(),            fhSumPtConeBinMC()
 {
   InitParameters();
   
