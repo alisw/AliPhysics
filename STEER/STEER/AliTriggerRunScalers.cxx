@@ -339,8 +339,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    if(fVersion>2) nlevels=8;
    UInt_t c2[8], c1[8];
    ULong64_t c64[6]; 
-   Bool_t increase[8];  
-   for(Int_t i=0;i<8;i++){increase[i]=0;}
+   ULong64_t c1_64[6],c2_64[8]; 
    ULong64_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
    ULong64_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
@@ -368,45 +367,30 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       AliTriggerScalers* counters1 = (AliTriggerScalers*)scalersArray1->At(ic);
       if(fVersion>2)counters1->GetAllScalersM012(c1); else counters1->GetAllScalers(c1);
       for(Int_t i=0;i<(nlevels);i++){
-         if ( c2[i] >= c1[i] ) increase[i]=1;
+         if ( c2[i] >= c1[i] ) continue;
          else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i][ic]++;
          else{
 	  cout << "Decreasing count with time." << endl;
+	  cout << i << " c2: " << c2[i] << " c1[i] " << c1[i] << endl;
 	  return 2;
 	 }
+	 //printf("i %i c2 %ul c1 %ul increase %i overflow %i \n",i,c2[i],c1[i],increase[i],overflow[i][ic]);
       }
       //  Checking reletaive increase between 2 subsequent records
       //  Counters in one record can decrease versus level
+      for(Int_t i=0;i<nlevels;i++){
+       c2_64[i]=c2[i]+max1*overflow[i][ic];
+       c1_64[i]=c1[i]+max1*overflow[i][ic-1];
+      }
       for(Int_t i=0;i<(nlevels-1);i++){
-         //printf("%i %ull %ull %ull %ull \n",i,c1[i],c1[i+1],c2[i],c2[i+1]);
-         if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) {
-                 if ( ((c2[i+1] - c1[i+1]) - (c2[i] - c1[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+        if ((c2_64[i] - c1_64[i]) < (c2_64[i+1] - c1_64[i+1]) ) {
+                 if ( ((c2_64[i+1] - c1_64[i+1]) - (c2_64[i] - c1_64[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else {
-  		    cout << "(level+1)>level 1 pos= " << position << " i= "<< i << endl;
-		    return 3; 
+  		    cout << "(level+1)>level pos= " << position << " i= "<< i << " ";
+		    cout << c1_64[i] << " " << c1_64[i+1] << " "<< c2_64[i] << " " << c2_64[i+1] << endl;
+		    return 1; 
 		 }
 	 }
-         else if ( (max1 - c1[i]+c2[i]) < (c2[i+1] - c1[i+1]) && overflow[i][ic] && increase[i+1] ) {
-                 if ( ((c2[i+1] - c1[i+1]) - (max1 - c1[i]+c2[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else{
-  		    cout << "(level+1)> level 2 pos= " << position << " i= "<< i << endl;
-		    return 3; 
-		 }
-	 }
-         else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1][ic] ) {
-                 if ( ((max1 - c1[i+1] + c2[i+1]) - (c2[i] - c1[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else{
-  		    cout << "(level+1)>level 3 pos= " << position << " i= "<< i << endl;
-		    return 3; 
-		    }
-	 }
-         else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i][ic] && overflow[i+1][ic] ) {
-                 if ( ((max1 - c1[i+1] + c2[i+1]) - (max1 - c1[i] + c2[i] )) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else{
-  		    cout << " 4 pos= " << position << "i= "<< i << endl;
-		    return 3;
-		    }
-       }
       }
       // Correct for overflow
       if(correctOverflow){ 
