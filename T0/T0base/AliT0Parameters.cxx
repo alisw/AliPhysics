@@ -229,6 +229,36 @@ AliT0Parameters::GetCFD(Int_t ipmt)
    
     return fgCalibData->GetCFDvalue(ipmt,0);
 }
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetQT1(Int_t ipmt) 
+  {
+  // return  CFD channel
+   
+    return fgCalibData->GetCFDvalue(ipmt,1);
+}
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetMeanOrA() 
+  {
+  // return  CFD channel
+   
+    return fgCalibData->GetCFDvalue(0,2);
+}
+Float_t
+AliT0Parameters::GetMeanOrC() 
+  {
+  // return  CFD channel
+   
+    return fgCalibData->GetCFDvalue(1,2);
+}
+Float_t
+AliT0Parameters::GetMeanTVDC() 
+  {
+  // return  CFD channel
+   
+    return fgCalibData->GetMeanVertex();
+}
 
 //__________________________________________________________________
 Float_t

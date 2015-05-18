@@ -43,7 +43,12 @@ class AliT0CalibTimeEq: public TNamed {
   void SetRmsVertex(Float_t rms=0) { fRmsVertex = rms; };
   Float_t GetRmsVertex () {return fRmsVertex;};
 
+  void SetOrA(Float_t mean=0) { fCFDvalue[0][2] = mean; };
+  Float_t GetOrA () {return fCFDvalue[0][2];};
+  void SetOrC(Float_t mean=0) {  fCFDvalue[1][2] = mean; };
+  Float_t GetOrC () {return fCFDvalue[1][2];};
 
+ 
  protected:
 
   void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma); 
