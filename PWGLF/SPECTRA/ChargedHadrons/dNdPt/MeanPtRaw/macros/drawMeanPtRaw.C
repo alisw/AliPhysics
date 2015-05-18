@@ -1,9 +1,13 @@
-//
-// Macro written by Philipp Luettig, philipp.luettig@cern.ch
-//
-// This macros uses the output of AliAnalysisTaskMeanPtRaw
-// and plots the THnSparse
-//
+/// \file drawMeanPtRaw.C
+/// \brief Macro to draw the Output of AliAnalysisTaskMeanPtRaw
+///
+/// This macro draws the output of AliAnalysisTaskMeanPtRaw. The first argument is the file, which should be used to plot, 
+/// the second argument contains additional information, which are put on the plot.
+/// This second argument can contain pT cuts in the form lowerPt<pT<higherPt
+/// All different information need to be seperated by ; and are then parsed in this macro.
+///
+/// \author Philipp Luettig <philipp.luettig@cern.ch>, University of Frankfurt, Germany
+/// \date May 12th, 2015
 
 #include "TFile.h"
 #include "TList.h"
