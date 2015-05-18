@@ -7,6 +7,7 @@ TString inputfc = "./Dzero/HFPtSpectrum_pp.root"; // input fprompt
 TString templatedir = "./Templates_pp/"; // template path
 TString inputcorrelationDir = "./Input_Plots_pp/";// directory where input files are stored
 TString inputfileroot="1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated";
+TString strSystemFDtempl="none";
 TString fdsubtrmacrodir="";
 void SetFDmacroDirectory(TString macrodir){
   fdsubtrmacrodir=macrodir;
@@ -27,6 +28,9 @@ void RunFeedown_pp_Dzero(){
     GetEnvelopeForEachV2();
 }
 
+void SetFDtemplateSystemString(TString str){
+  strSystemFDtempl=str;
+}
 
 //_____________________________________________________________
 void GetEnvelopeForEachV2(){
@@ -38,7 +42,7 @@ void GetEnvelopeForEachV2(){
 
     Int_t collsyst = 0; // 0 is pp, 1 is p-Pb (note that if you run on pp, it will perform only the v2=0 feeddown
     gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
-    
+    SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     TString inputcorrelation;
 
 

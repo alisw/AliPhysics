@@ -8,6 +8,7 @@ TString templatedir = "./Templates_pp/"; // template path
 TString inputcorrelationDir = "./Input_Plots_pp/";// directory where input files are stored
 TString inputfileroot="1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated";
 TString fdsubtrmacrodir="";
+TString strSystemFDtempl="none";
 void SetFDmacroDirectory(TString macrodir){
   fdsubtrmacrodir=macrodir;
 }
@@ -29,6 +30,9 @@ void RunFeedown_pPb_Dstar(){
     GetEnvelopeForEachV2();
     GetTotalEnvelopeFromV2();
 }
+void SetFDtemplateSystemString(TString str){
+  strSystemFDtempl=str;
+}
 
 //_____________________________________________________________
 void GetEnvelopeForEachV2(){
@@ -40,7 +44,8 @@ void GetEnvelopeForEachV2(){
 
     Int_t collsyst = 1; // 0 is pp, 1 is p-Pb (note that if you run on pp, it will perform only the v2=0 feeddown
     gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
-    
+    SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
+
     Double_t v2hadmin, v2hadmax, v2Dmin, v2Dmax;
     v2Dmin = 0.05; v2Dmax = 0.13;
     

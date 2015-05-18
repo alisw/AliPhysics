@@ -25,33 +25,34 @@
 ######## THE FOLLOWING LINES ARE THE ONLY VARIABLES TO BE CHANGED ACCORDING TO YOUR LOCAL PATHS #####
 
 
-declare baseStartingDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May11attemptUseFinalScript"
+declare baseStartingDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF"
 #declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
-export HFCJlocalCodeDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May11attemptUseFinalScript"
+export HFCJlocalCodeDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
-declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23Templates/Templates_pp"
-declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23Templates/Templates_pPb"
+declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pp_12May15"
+declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
+declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
-declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23finalInputs/pp/Dzero"
-declare dirpPbDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23finalInputs/pPb/Dzero"
+declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
+declare dirpPbDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pPb"
 declare -a dirDzeroNotFDsubt=( "$dirppDzeroNotFDsubt" "$dirpPbDzeroNotFDsubt" )
 declare -a fpromptfileDzero=( "HFPtSpectrum_pp.root" "HFPtSpectrum_DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDzero=( "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" )
 
-declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23finalInputs/pp/Dstar"
-declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23finalInputs/pPb/Dstar"
+declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pp"
+declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pPb"
 declare -a dirDstarNotFDsubt=( "$dirppDstarNotFDsubt" "$dirpPbDstarNotFDsubt" )
 declare -a fpromptfileDstar=( "outputkfcB6_23mb.root" "fPromptWithBeautyRpA.root" )
 declare -a filerootDstar=( "FinalDphiCorrelationsCanvas_" "FinalDphiCorrelationsCanvas_" )
 
-declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23finalInputs/pp/Dplus"
-declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros/2015Apr23finalInputs/pPb/Dplus"
+declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pp"
+declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pPb"
 declare -a dirDplusNotFDsubt=( "$dirppDplusNotFDsubt" "$dirpPbDplusNotFDsubt" )
-declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
-declare -a filerootDplus=( "1D_pp_DplusCorr_" "1D_pPb_DplusCorr_" )
+declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_pp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
+declare -a filerootDplus=( "1D_pp_DplusHCorr_" "1D_pPb_DplusHCorr_" )
 
 
 ###### THE FOLLOWING DIRECTORIES WILL BE USED ONLY IN CASE THE FD IS NOT DONE WITH THIS SCRIPT FOR A GIVEN MESON
@@ -135,6 +136,7 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoAverages.sh .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoSubtractFD.sh .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DrawPlotInSubtractFD.sh .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoFit.sh .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/RunFeedown_pPb_Dplus.C .	
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/RunFeedown_pPb_Dstar.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/RunFeedown_pPb_Dzero.C .
@@ -150,7 +152,10 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_pPbVsMC.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_ppVsMC.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_ppVspPb.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitSystematicsAverage_pp.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitSystematicsAverage_pPb.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitPlots.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/SubtractFD.C .
 fi
 
 #############  CREATE BASIC DIRECTORY TREE #############
@@ -223,6 +228,7 @@ iassocbin=${firstassocbin}
 
 
 ####### Feed Down subtraction ####
+### IF YOU WANT TO USE LOCAL CODE, CHECK THE DoSubtractFD.sh script (you have 3 possibilities)
 if [ $doFeedDownGlob = 1 ]; then
     while [ ${collsyst} -le ${lastcollsyst} ]; do
 	imeson=${firstmeson}
@@ -235,11 +241,11 @@ if [ $doFeedDownGlob = 1 ]; then
 	    mkdir -p ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    cd ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    if [ ${imeson} = 0 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 0
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 0 ${templateDirSystemSuffix[${collsyst}]}
 	    elif [ ${imeson} = 1 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 0
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 0 ${templateDirSystemSuffix[${collsyst}]}
 	    elif [ ${imeson} = 2 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 0
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 0 ${templateDirSystemSuffix[${collsyst}]}
 	    fi
 	    imeson=${imeson}+1
 	done
@@ -409,6 +415,7 @@ SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
 SetIsDataReflected($reflect)
 SetSkip3to5pPb(kFALSE)
+SetFDtemplateSystemString("${templateDirSystemSuffix[${collsyst}]}");
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
@@ -424,6 +431,7 @@ SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
 SetIsDataReflected($reflect)
 SetSkip3to5pPb(kFALSE)
+SetFDtemplateSystemString("${templateDirSystemSuffix[${collsyst}]}");
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
@@ -457,6 +465,7 @@ SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 SetReflectTemplate($reflect)
 SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
+SetFDtemplateSystemString("${templateDirSystemSuffix[${collsyst}]}");
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("0.3to1.0")
@@ -473,6 +482,7 @@ SetReflectTemplate($reflect)
 SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetFitPlotMacroPath("${HFCJlocalCodeDir}")
+SetFDtemplateSystemString("${templateDirSystemSuffix[${collsyst}]}");
 Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("0.3to99.0")
@@ -487,6 +497,7 @@ SetSkip3to5pPb(kTRUE)
 SetInputTemplateDirectory("${templateDir[1]}")
 SetReflectTemplate($reflect)
 SetIsDataReflected($reflect)
+SetFDtemplateSystemString("${templateDirSystemSuffix[${collsyst}]}");
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetFitPlotMacroPath("${HFCJlocalCodeDir}")
 Printf("READY TO GO")
