@@ -1,4 +1,8 @@
 TString localcode="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros";
+TString strsystem="none";
+void SetSystemStringForTemplateFDnames(TString str){
+  strsystem=str;
+}
 void SetLocalCodeDir(TString dirloc){
   localcode=dirloc;
 }
@@ -348,28 +352,41 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     TString templPromptPerugia0="", templPromptPerugia2010="", templPromptPerugia2011="";
     TString templPerugia0="", templPerugia2010="",templPerugia2011="";
     
+    TString strsystnametempl;
     if(system ==0){
+      if(strsystem.EqualTo("none")){
+	strsystnametempl="pp";
+      }
+      else {
+	strsystnametempl=strsystem;
+      }
         cout << "Templates for on pp... Loading Perugia0, Perugia2010, Perugia2011" << endl;
-        templPromptPerugia0=Form("%s/pp_CorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia0=Form("%s/pp_CorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
-        templPromptPerugia2010=Form("%s/pp_CorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia2010=Form("%s/pp_CorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
-        templPromptPerugia2011=Form("%s/pp_CorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia2011=Form("%s/pp_CorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
     }
     
     else if(system ==1){
+      if(strsystem.EqualTo("none")){
+	strsystnametempl="pPb";
+      }
+      else {
+	strsystnametempl=strsystem;
+      }
         cout << "Templates for pPb... Loading Perugia0, Perugia2010, Perugia2011" << endl;
-        templPromptPerugia0=Form("%s/pPbCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia0=Form("%s/pPbCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
-        templPromptPerugia2010=Form("%s/pPbCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia2010=Form("%s/pPbCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
-        templPromptPerugia2011=Form("%s/pPbCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia2011=Form("%s/pPbCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
     }
     
     TH1D **hFDtempl=new TH1D*[3];
@@ -584,15 +601,22 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
 
     TString templPromptPerugia0="", templPromptPerugia2010="", templPromptPerugia2011="";
     TString templPerugia0="", templPerugia2010="", templPerugia2011="";
+    TString strsystnametempl;
 
     if(system ==1){
         cout << "Templates for pPb... Loading Perugia0, Perugia2010, Perugia2011" << endl;
-        templPromptPerugia0=Form("%s/pPbCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPromptPerugia2010=Form("%s/pPbCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPromptPerugia2011=Form("%s/pPbCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia0=Form("%s/pPbCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia2010=Form("%s/pPbCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia2011=Form("%s/pPbCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+      if(strsystem.EqualTo("none")){
+	strsystnametempl="pPb";
+      }
+      else {
+	strsystnametempl=strsystem;
+      }
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
     }
     else cout<< "Not pPb - Where is your files ?? " << endl;
 
@@ -1070,14 +1094,14 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
   else if(system==AliHFCorrelationUtils::kpPb)strfileout.Append("pPb");
 
   if(ptmaxAss<0){
-    if(strMeson.Contains("D^{0}"))strfileout.Append(Form("DzeroPt%.0fto%.0fassocPt%.1fTo99.0.root",ptminD,ptmaxD,ptminAss));
-    else if(strMeson.Contains("D^{*+}"))strfileout.Append(Form("DstarPt%.0fto%.0fassocPt%.1fTo99.0.root",ptminD,ptmaxD,ptminAss));
-    else if(strMeson.Contains("D^{+}"))strfileout.Append(Form("DplusPt%.0fto%.0fassocPt%.1fTo99.0.root",ptminD,ptmaxD,ptminAss));
+    if(strMeson.Contains("D^{0}"))strfileout.Append(Form("DzeroPt%.0fto%.0fassocPt%.1fto99.0.root",ptminD,ptmaxD,ptminAss));
+    else if(strMeson.Contains("D^{*+}"))strfileout.Append(Form("DstarPt%.0fto%.0fassocPt%.1fto99.0.root",ptminD,ptmaxD,ptminAss));
+    else if(strMeson.Contains("D^{+}"))strfileout.Append(Form("DplusPt%.0fto%.0fassocPt%.1fto99.0.root",ptminD,ptmaxD,ptminAss));
   }
   else{
-    if(strMeson.Contains("D^{0}"))strfileout.Append(Form("DzeroPt%.0fto%.0fassocPt%.1fTo%.1f.root",ptminD,ptmaxD,ptminAss,ptmaxAss));
-    else if(strMeson.Contains("D^{*+}"))strfileout.Append(Form("DstarPt%.0fto%.0fassocPt%.1fTo%.1f.root",ptminD,ptmaxD,ptminAss,ptmaxAss));
-    else if(strMeson.Contains("D^{+}"))strfileout.Append(Form("DplusPt%.0fto%.0fassocPt%.1fTo%.1f.root",ptminD,ptmaxD,ptminAss,ptmaxAss));
+    if(strMeson.Contains("D^{0}"))strfileout.Append(Form("DzeroPt%.0fto%.0fassocPt%.1fto%.1f.root",ptminD,ptmaxD,ptminAss,ptmaxAss));
+    else if(strMeson.Contains("D^{*+}"))strfileout.Append(Form("DstarPt%.0fto%.0fassocPt%.1fto%.1f.root",ptminD,ptmaxD,ptminAss,ptmaxAss));
+    else if(strMeson.Contains("D^{+}"))strfileout.Append(Form("DplusPt%.0fto%.0fassocPt%.1fto%.1f.root",ptminD,ptmaxD,ptminAss,ptmaxAss));
   }
 
   cDraw->Update();

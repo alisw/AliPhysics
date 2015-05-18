@@ -20,9 +20,15 @@ TH1D ** histo;
 TGraphAsymmErrors ** err;
 TLatex** ltscale;
 TString fitplotmacrodir=gSystem->ExpandPathName("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/");
+TString strSystemFDtempl="none";
+void SetFDtemplateSystemString(TString str){
+  strSystemFDtempl=str;
+}
+
 void SetFitPlotMacroPath(TString strdir){
   fitplotmacrodir=strdir;
 }
+
 Bool_t isReflectedData=kFALSE;
 void SetSkip3to5pPb(Bool_t skip){
   skip3to5=skip;
@@ -315,13 +321,17 @@ TH1D * GetHisto(Int_t i, TString canvasname, TString hname){
   cout << "Reading File from path: " << path << endl;
     
   TFile * file = TFile::Open(path.Data(),"READ");
+  TH1D * histo=0x0;
+  histo=(TH1D*)file->Get(hname.Data());
+  
   //if(i ==2){cout << "file content = " << endl; file->ls();}
-  TCanvas * c = (TCanvas*)file->Get(canvasname.Data());
-  c->cd();
-  //if(i ==2) {
-  //cout << "canvas content = " << endl; c->ls(); }
-  TH1D * histo = (TH1D*)c->FindObject(hname.Data());
-    
+  if(!histo){
+    TCanvas * c = (TCanvas*)file->Get(canvasname.Data());
+    c->cd();
+    //if(i ==2) {
+    //cout << "canvas content = " << endl; c->ls(); }
+    histo = (TH1D*)c->FindObject(hname.Data());
+  }
   TString histoname = "DeltaPhi_";
   histoname += Form("%d",i);
   TH1D * outputhisto = (TH1D*)histo->Clone("blabla");
@@ -1052,22 +1062,24 @@ void LoadFileNamesppVsMCtemplates(TString  pthadron){
     filenames[0] = Form("%s/%sAverageppDzeroDstarDplus3to5_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
     filenames[1] = Form("%s/%sAverageppDzeroDstarDplus5to8_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
     filenames[2] = Form("%s/%sAverageppDzeroDstarDplus8to16_assoc%s.root",inputdatadirectory.Data(),avType.Data(),pthadron.Data());
-    
-    
+    TString strsystHelp=strSystemFDtempl;
+    if(strSystemFDtempl.EqualTo("none")){
+      strsystHelp="pp";
+    }
     //load MC Templates
-    filenames[3] = Form("%s/pp_CorrelationPlotsPerugia0PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
-    filenames[4] = Form("%s/pp_CorrelationPlotsPerugia0PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    filenames[5] = Form("%s/pp_CorrelationPlotsPerugia0PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+    filenames[3] = Form("%s/%sCorrelationPlotsPerugia0PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());//in the preliminary it was Puthia8
+    filenames[4] = Form("%s/%sCorrelationPlotsPerugia0PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());
+    filenames[5] = Form("%s/%sCorrelationPlotsPerugia0PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());
     
     
-    filenames[6] = Form("%s/pp_CorrelationPlotsPerugia2010PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
-    filenames[7] = Form("%s/pp_CorrelationPlotsPerugia2010PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    filenames[8] = Form("%s/pp_CorrelationPlotsPerugia2010PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+    filenames[6] = Form("%s/%sCorrelationPlotsPerugia2010PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());//in the preliminary it was Puthia8
+    filenames[7] = Form("%s/%sCorrelationPlotsPerugia2010PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());
+    filenames[8] = Form("%s/%sCorrelationPlotsPerugia2010PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());
 
 
-    filenames[9] = Form("%s/pp_CorrelationPlotsPerugia2011PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());//in the preliminary it was Puthia8
-    filenames[10] = Form("%s/pp_CorrelationPlotsPerugia2011PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
-    filenames[11] = Form("%s/pp_CorrelationPlotsPerugia2011PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),pthadron.Data());
+    filenames[9] = Form("%s/%sCorrelationPlotsPerugia2011PtDzerofromC3To5_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());//in the preliminary it was Puthia8
+    filenames[10] = Form("%s/%sCorrelationPlotsPerugia2011PtDzerofromC5To8_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());
+    filenames[11] = Form("%s/%sCorrelationPlotsPerugia2011PtDzerofromC8To16_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsystHelp.Data(),pthadron.Data());
         
         
 

@@ -10,8 +10,9 @@ declare templatedir=$4
 declare inputfiledir=$5
 declare inputfileroot=$6
 declare -i localcode=$7
-declare dirmacroRun="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
-declare dirmacroFD="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
+declare suffixTemplSystm=$8
+declare dirmacroRun="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
+declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 if [ ${localcode} = 1 ]; then
     dirmacroRun=${HFCJlocalCodeDir}
 fi
@@ -28,16 +29,17 @@ if [ $collsyst = 0 ]; then
     root -b <<EOF &> out.log
 Printf("inside root");
 .L ${dirmacroRun}/${macrosPP[$mesonIndex]}.C
-SetFDmacroDirectory("${dirmacroFD}");
-SetFpromptInputFile("$fpromptfile");
-SetTemplateDir("${templatedir}");
-SetDirectoryInputFiles("${inputfiledir}");
-SetInputFileNameRoot("$inputfileroot");
+SetFDmacroDirectory("${dirmacroFD}")
+SetFpromptInputFile("$fpromptfile")
+SetTemplateDir("${templatedir}")
+SetDirectoryInputFiles("${inputfiledir}")
+SetInputFileNameRoot("$inputfileroot")
+SetFDtemplateSystemString("${suffixTemplSystm}")
 //cout<<"file: "<<$file<<endl
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
-Printf("Meson: %d",$mesonIndex);
-${macrosPP[$mesonIndex]}();
+Printf("Meson: %d",$mesonIndex)
+${macrosPP[$mesonIndex]}()
 .q
 EOF
     
@@ -47,16 +49,17 @@ elif [ $collsyst = 1 ]; then
     root -b <<EOF &> out.log
 Printf("inside root");
 .L ${dirmacroRun}/${macrosPPb[$mesonIndex]}.C
-SetFDmacroDirectory("${dirmacroFD}");
-SetFpromptInputFile("$fpromptfile");
-SetTemplateDir("${templatedir}");
-SetDirectoryInputFiles("${inputfiledir}");
-SetInputFileNameRoot("$inputfileroot");
+SetFDmacroDirectory("${dirmacroFD}")
+SetFpromptInputFile("$fpromptfile")
+SetTemplateDir("${templatedir}")
+SetDirectoryInputFiles("${inputfiledir}")
+SetInputFileNameRoot("$inputfileroot")
+SetSystemStringForTemplateFDnames("${suffixTemplSystm}")
 //cout<<"file: "<<$file<<endl
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
-Printf("Meson: %d",$mesonIndex);
-${macrosPPb[$mesonIndex]}();
+Printf("Meson: %d",$mesonIndex)
+${macrosPPb[$mesonIndex]}()
 .q
 EOF
 echo "DoSubtractFD: done"    
