@@ -56,8 +56,13 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t fLatencyL1A;    // latency for T0A
   Float_t fLatencyL1C;    //latency for T0C
   Float_t fGRPdelays;    //latency for T0C
-  Float_t *fTimeMeanShift;
-  Float_t *fTimeSigmaShift;
+  Float_t *fTimeMeanShift; //time adjust
+  Float_t *fTimeSigmaShift;  // time adjust
+
+  Float_t fMeanOrA;
+  Float_t fMeanOrC;
+  Float_t fMeanTVDC;
+  Float_t fQT1mean[24];
 
   AliESDTZEROfriend*  fESDTZEROfriend; // ESD friend object 
   AliESDTZERO*        fESDTZERO;       // ESD output object 
@@ -67,7 +72,7 @@ class AliT0Reconstructor: public AliReconstructor {
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
   AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
-  ClassDef(AliT0Reconstructor, 9)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 10)   // class for the T0 reconstruction
 
 };
 

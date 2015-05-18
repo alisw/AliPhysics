@@ -37,7 +37,7 @@ ClassImp(AliT0CalibTimeEq)
 //________________________________________________________________
   AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed(),
 				       fMeanVertex(0),        
-				       fRmsVertex(0)      
+  fRmsVertex(0)     
 {
   //
   for(Int_t i=0; i<24; i++) {
@@ -50,7 +50,7 @@ ClassImp(AliT0CalibTimeEq)
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
 				       fMeanVertex(0),        
-				       fRmsVertex(0)      
+				       fRmsVertex(0)
 {
   //constructor
 
@@ -68,7 +68,7 @@ AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq(const AliT0CalibTimeEq& calibda):TNamed(calibda),		
 				       fMeanVertex(0),        
-				       fRmsVertex(0)      
+				       fRmsVertex(0)
 {
 // copy constructor
   SetName(calibda.GetName());
@@ -121,8 +121,11 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
-  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
-  Double_t rmsver=0;
+  Float_t ora,orc, meanqt, sigmaor,sigmaver, meanEstimate;
+;
+  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime = ora = orc = meanqt =0;
+  meanEstimate=sigmaver=sigmaor = 0;
+  Int_t maxBin=0;
   Int_t nent=0;
   Int_t okdiff=0;
   Int_t oktime=0;
@@ -138,9 +141,10 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
       for (Int_t i=0; i<24; i++)
 	{
 	  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
-	  TH1F *cfd     = (TH1F*) gFile->Get(Form("CFD1minCFD%d",i+1));
-	  TH1F *cfdtime = (TH1F*) gFile->Get(Form("CFD%d",i+1));
-	  if(!cfd) {
+	  TH1F *hcfd     = (TH1F*) gFile->Get(Form("CFD1minCFD%d",i+1));
+	  TH1F *hcfdtime = (TH1F*) gFile->Get(Form("CFD%d",i+1));
+	  TH1F *hqt1 = (TH1F*) gFile->Get(Form("QT1%d",i+1));
+	  if(!hcfd) {
 	    AliWarning(Form("no Diff histograms collected by PHYS DA for channel %i", i));
 	    okdiff++;
 	    if(okdiff<4) {
@@ -150,7 +154,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    else
 	      ok = false; 
 	  }
-	  if(!cfdtime) {
+	  if(!hcfdtime) {
 	    AliWarning(Form("no CFD histograms collected by PHYS DA for channel %i", i));
 	    oktime++;
 	    if(oktime<4) {
@@ -159,12 +163,12 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    else
 	      ok = false; 
 	  }
-	  if(cfd) {
-	    nent = Int_t(cfd->GetEntries());
+	  if(hcfd) {
+	    nent = Int_t(hcfd->GetEntries());
 	    if( nent<=50) {
 	      okdiff++;
-	      //	      printf(" pmt %i nent %i cfd->GetRMS() %f cfd->GetMean() %f \n",
-	      //     i, nent, cfd->GetRMS(), cfd->GetMean() );
+	      //  printf(" pmt %i nent %i cfd->GetRMS() %f cfd->GetMean() %f \n",
+	      //     i, nent, hcfd->GetRMS(), hcfd->GetMean() );
 	      if(okdiff<4) {
 		meandiff = 0;
 		sigmadiff = 0;
@@ -178,21 +182,21 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		}
 	    }
 	    if(nent>50)  { 
-	      if(cfd->GetRMS()>1.5 )
-		GetMeanAndSigma(cfd, meandiff, sigmadiff);
-	      if(cfd->GetRMS()<=1.5) 
+	      if(hcfd->GetRMS()>1.5 )
+		GetMeanAndSigma(hcfd, meandiff, sigmadiff);
+	      if(hcfd->GetRMS()<=1.5) 
 		{
-		  meandiff = cfd->GetMean();
-		  sigmadiff=cfd->GetRMS();
+		  meandiff = hcfd->GetMean();
+		  sigmadiff=hcfd->GetRMS();
 		}
-	      Int_t   maxBin = cfd->GetMaximumBin(); 
-	      Double_t  meanEstimate = cfd->GetBinCenter( maxBin); 
+	      maxBin = hcfd->GetMaximumBin(); 
+	      meanEstimate = hcfd->GetBinCenter( maxBin); 
 	      if(TMath::Abs(meanEstimate - meandiff) > 20 ) meandiff = meanEstimate; 
 	    }
 	  }
 	  
-	  if(cfdtime) {
-	    nent = Int_t(cfdtime->GetEntries());
+	  if(hcfdtime) {
+	    nent = Int_t(hcfdtime->GetEntries());
 	    if( nent<=50  ) {
 	      oktime++;
 	      if(oktime<4) {
@@ -205,34 +209,39 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		}
 	    }
 	    if(nent > 50  )  { //!!!!!!!!!!
-	      if(cfdtime->GetRMS()>1.5 )
-		GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
-	      if(cfdtime->GetRMS()<=1.5) 
+	      if(hcfdtime->GetRMS()>1.5 )
+		GetMeanAndSigma(hcfdtime,meancfdtime, sigmacfdtime);
+	      if(hcfdtime->GetRMS()<=1.5) 
 		{
-		  if(cfdtime->GetRMS()==0 ||cfdtime->GetMean()==0 ) {
+		  if(hcfdtime->GetRMS()==0 ||hcfdtime->GetMean()==0 ) {
 		    ok = false;
 		  }
-		  meancfdtime = cfdtime->GetMean();
-		  sigmacfdtime = cfdtime->GetRMS();
+		  meancfdtime = hcfdtime->GetMean();
+		  sigmacfdtime = hcfdtime->GetRMS();
 		}
-	      Int_t   maxBin = cfdtime->GetMaximumBin(); 
-	      Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
-	      if(TMath::Abs(meanEstimate - meancfdtime) > 20 ) meancfdtime = meanEstimate; 
 	    }
-	  }
+	    if(hqt1) 	GetMeanAndSigma(hqt1,meanqt, sigmaor);
+	      
+
+	  } //cycle 24 PMT
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0,meancfdtime);
-	  if (cfd) delete cfd;
-	  if (cfdtime) delete cfdtime;
+	  SetCFDvalue(i,1,meanqt);
+	  if (hcfd) delete hcfd;
+	  if (hcfdtime) delete hcfdtime;
+	  if(hqt1) delete hqt1;
 	}
-      TH1F *ver = (TH1F*) gFile->Get("hVertex") ;
-      if(ver) {
-	meanver = ver->GetMean();
-	rmsver = ver->GetRMS();
-      }
+      TH1F *hver = (TH1F*) gFile->Get("hVertex") ;
+      TH1F *hora = (TH1F*) gFile->Get("hOrA") ;
+      TH1F *horc = (TH1F*) gFile->Get("hOrC") ;
+      if(hver) 	GetMeanAndSigma(hver,meanver, sigmaver);
+      if(hora) 	GetMeanAndSigma(hora,ora, sigmaor);
+      if(horc)  GetMeanAndSigma(horc,orc, sigmaor);
       SetMeanVertex(meanver);
-      SetRmsVertex(rmsver);
+      SetRmsVertex(sigmaver);
+      SetOrA(ora);
+      SetOrC(orc);
       gFile->Close();
       delete gFile;
     }
@@ -401,6 +410,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 //________________________________________________________________________
 void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
   
+  printf(" @@histo %s \n",hist->GetName() );
   const double window = 5.;  //fit window 
   double meanEstimate, sigmaEstimate; 
   int maxBin;
@@ -410,12 +420,14 @@ void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigm
   // sigmaEstimate = 10;
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","QR","");
+  hist->Fit("fit","R","");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
 
+ if(TMath::Abs(meanEstimate - mean) > 20 ) mean = meanEstimate; 
+
+
   delete fit;
 }
-
 
