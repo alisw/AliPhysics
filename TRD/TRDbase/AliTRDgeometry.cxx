@@ -3046,7 +3046,7 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
         volPath += vpApp3a;
       };
       if (!gGeoManager->CheckPath(volPath)) {
-        AliInfo(Form("Path not found in geometry: %s",volPath));
+        //AliInfo(Form("Path not found in geometry: %s",volPath.Data()));
 	continue;
       }
 
