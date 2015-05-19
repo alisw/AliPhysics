@@ -11,6 +11,7 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "AliPIDResponse.h"
+#include "AliLog.h"
 
 ClassImp(AliAnalysisPIDTrack)
 
@@ -383,6 +384,10 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
     TClonesArray *arrayTR;
     AliTrackReference *trackRef;
     mcevent->GetParticleAndTR(fTOFLabel[0], particle, arrayTR);
+    if(!arrayTR) {
+      AliFatal("AddAnalysisTaskTPCTOFPID needs AliTrackReference!");
+      return;
+    };
     for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
       trackRef = (AliTrackReference *)arrayTR->At(itr);
       if (!trackRef || trackRef->DetectorId() != AliTrackReference::kTOF) continue;
