@@ -67,8 +67,8 @@ int main(int argc, char **argv) {
     printf("Input file >>inPhys.dat<< not found !!!\n");
     return -1;
   }
-  int  kcbx, kt0bx, knpmtA, knpmtC;
-  float kclx,kcmx, kt0lx, kt0hx;
+  int  kcbx, kt0bx, knpmtA, knpmtC,kcfdbx;
+  float kclx,kcmx, kt0lx, kt0hx, kcfdlx, kcfdhx;
   
   while((c=getc(inp))!=EOF) {
     switch(c) {
@@ -77,9 +77,12 @@ int main(int argc, char **argv) {
     case 'c': {fscanf(inp, "%f", &kcmx ); break;} //High x hCFD1minCFD
     case 'd': {fscanf(inp, "%d", &knpmtC ); break;} //number of reference PMTC
     case 'e': {fscanf(inp, "%d", &knpmtA ); break;} //number of reference PMTA
-    case 'f': {fscanf(inp, "%d", &kcfdbx ); break;} //N of X bins hCFD&TVDC&OR
-    case 'g': {fscanf(inp, "%f", &kcfdlx ); break;} //Low x  hCFD&TVDC&OR
-    case 'k': {fscanf(inp, "%f", &kcfdhx ); break;} //High x  hCFD&TVDC&OR
+    case 'f': {fscanf(inp, "%d", &kcfdbx ); break;} //N of X bins hCFD&OR
+    case 'g': {fscanf(inp, "%f", &kcfdlx ); break;} //Low x  hCFD&OR
+    case 'k': {fscanf(inp, "%f", &kcfdhx ); break;} //High x  hCFD&OR
+    case 'm': {fscanf(inp, "%d", &kt0bx ); break;} //N of X bins TVDC
+    case 'n': {fscanf(inp, "%f", &kt0lx ); break;} //Low x  TVDC
+    case 'q': {fscanf(inp, "%f", &kt0hx ); break;} //High x  TVDC
     }
   }
   fclose(inp);
@@ -153,16 +156,16 @@ int main(int argc, char **argv) {
   // Allocation of histograms - start
 
   TH1F *hCFD1minCFD[24];  
-  TH1F *hCFD[24];  
+  TH1F *hCFD[24], *hQT1[24];  
    
   for(Int_t ic=0; ic<24; ic++) {
     hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",kcbx,kclx,kcmx);
-    hCFD[ic] = new TH1F(Form("CFD%d",ic+1),"CFD",kt0bx,kt0lx,kt0hx);
+    hCFD[ic] = new TH1F(Form("CFD%d",ic+1),"CFD",kcfdbx,kcfdlx,kcfdhx);
     hQT1[ic] = new TH1F(Form("QT1%d",ic+1),"QT1",kt0bx,kt0lx,kt0hx);
   }
   TH1F *hVertex = new TH1F("hVertex","TVDC",kt0bx,kt0lx,kt0hx);
-  TH1F *hOrA = new TH1F("hOrA","OrA",kt0bx,kt0lx,kt0hx);
-  TH1F *hOrC = new TH1F("hOrC","OrC",kt0bx,kt0lx,kt0hx);
+  TH1F *hOrA = new TH1F("hOrA","OrA",kcfdbx,kcfdlx,kcfdhx);
+  TH1F *hOrC = new TH1F("hOrC","OrC",kcfdbx,kcfdlx,kcfdhx);
   
    // Allocation of histograms - end
 
@@ -251,32 +254,32 @@ int main(int argc, char **argv) {
 	  chargeQT0[in]=allData[2*in+57][0];
 	  chargeQT1[in]=allData[2*in+58][0];
 	}
-       Float_t time[24]; 
-       Float_t meanShift[24];
-       for (Int_t ik = 0; ik<24; ik++)
-	 { 	 
-	   if( ( chargeQT0[ik] - chargeQT1[ik])>0)  {
-	     adc = chargeQT0[ik] - chargeQT1[ik];
-	     //	cout<<ik <<"  "<<adc<<endl;
-	   }
-	   if(gr[ik]) 
-	     walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
-	   
-	   if(ik<12 && allData[ik+1][0]>0  ){
-	     if( walk >-100) hCFD[ik]->Fill(allData[ik+1][0] - walk);
-	     hQT1[ik]->Fill(chargeQT1[ik]);
-	     if ( allData[knpmtC][0]>0 )
-	       hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
-	   }
-	   
-	   if(ik>11 && allData[ik+45][0]>0 )
-	     {
-	       if( walk >-100) hCFD[ik]->Fill(allData[ik+45][0] - walk);
-	       hQT1[ik]->Fill(chargeQT1[ik]);
+      Float_t time[24]; 
+      Float_t meanShift[24];
+      for (Int_t ik = 0; ik<24; ik++)
+	{ 	 
+	  if( ( chargeQT0[ik] - chargeQT1[ik])>0)  {
+	    adc = chargeQT0[ik] - chargeQT1[ik];
+	    //	cout<<ik <<"  "<<adc<<endl;
+	  }
+	  if(gr[ik]) 
+	    walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
+	  
+	  if(ik<12 && allData[ik+1][0]>0  ){
+	    if( walk >-100) hCFD[ik]->Fill(allData[ik+1][0] - walk);
+	    hQT1[ik]->Fill(chargeQT1[ik]);
+	    if ( allData[knpmtC][0]>0 )
+	      hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
+	  }
+	  
+	  if(ik>11 && allData[ik+45][0]>0 )
+	    {
+	      if( walk >-100) hCFD[ik]->Fill(allData[ik+45][0] - walk);
+	      hQT1[ik]->Fill(chargeQT1[ik]);
 	       if (allData[56+knpmtA][0]>0)
 		 hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
-	     }
-
+	    }
+	}
 	   
      delete start;
      start = 0x0;
