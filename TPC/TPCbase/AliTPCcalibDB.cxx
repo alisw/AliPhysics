@@ -124,7 +124,7 @@ class AliTPCCalDet;
 #include "AliTriggerRunScalers.h"
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
-
+#include "AliDAQ.h"
 /// \cond CLASSIMP
 ClassImp(AliTPCcalibDB)
 /// \endcond
@@ -360,6 +360,22 @@ void AliTPCcalibDB::Update(){
   fDButil = new AliTPCcalibDButil;
   //
   fRun = AliCDBManager::Instance()->GetRun();
+  
+  //
+  // check the presence of the detectors
+  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject()); 
+  if (!grpData) {printf("Failed to get GRP data for run",fRun); return;}
+  Int_t activeDetectors = grpData->GetDetectorMask(); 
+  TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+  //printf("Detectors in the data:\n%s\n",detStr.Data());
+  if ( detStr.Contains("TPC")==0){
+    AliInfo("TPC not present in the run");
+    return;
+  }
+
+ 
+
 
   entry          = GetCDBEntry("TPC/Calib/PadGainFactor");
   if (entry){
