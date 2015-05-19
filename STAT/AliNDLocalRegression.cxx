@@ -123,7 +123,7 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
 }
 
 
-Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel, const char * dimensionFormula, Double_t weightCut){
+Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel, const char * dimensionFormula, Double_t weightCut, Int_t entries){
   //
   //  Make a local fit in grid as specified by the input THn histogram
   //  Histogram has to be set before invocation of method
@@ -188,7 +188,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   // 2.) Load input data
   //
   //
-  Int_t entriesVal = tree->Draw(formulaVal,selection,"goffpara");
+  Int_t entriesVal = tree->Draw(formulaVal,selection,"goffpara",entries);
   if (entriesVal==0) {
     AliError("Empty point list");
     return kFALSE; 
