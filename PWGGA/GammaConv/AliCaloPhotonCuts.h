@@ -10,6 +10,7 @@
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
 #include "AliVCluster.h"
+#include "AliVCaloCells.h"
 #include "AliAODTrack.h"
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
@@ -17,6 +18,8 @@
 #include "TF1.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
+#include "AliEMCALGeometry.h"
+#include "AliPHOSGeometry.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -37,7 +40,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		
 	public: 
 		enum cutIds {
-			kClusterType,                  
+			kClusterType,
 			kEtaMin,
 			kEtaMax,
 			kPhiMin,
@@ -46,10 +49,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			kTiming,
 			kTrackMatching,
 			kExoticCell,
-			kMinEnery,               
-			kNMinCells, 
-			kMinM02,    
-			kMaxM02,    
+			kMinEnergy,
+			kNMinCells,
+			kMinM02,
+			kMaxM02,
 			kMinM20,
 			kMaxM20,
 			kDispersion,
@@ -76,7 +79,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		
 		Bool_t 			InitializeCutsFromCutString(const TString analysisCutSelection);
 		TString 		GetCutNumber();
-        Int_t 			GetClusterType() {return fClusterType; }
+		Int_t 			GetClusterType() {return fClusterType;}
 		
 		//Constructors
 		AliCaloPhotonCuts(const char *name="ClusterCuts", const char * title="Cluster Cuts");
@@ -94,17 +97,19 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
 		void 			InitCutHistograms(TString name="");
-        void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);}}
+		void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);} return;}
 		TList*			GetCutHistograms()												{return fHistograms;}
-		void 			FillClusterCutIndex(Int_t photoncut)							{if(fHistCutIndex)fHistCutIndex->Fill(photoncut);}
+		void 			FillClusterCutIndex(Int_t photoncut)							{if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
 
-        void 			SetExtendedMatching(Bool_t extendedMatching)					{fExtendedMatching = extendedMatching;}
-			
-		///Cut functions
+		void 			SetExtendedMatchAndQA(Int_t extendedMatchAndQA)					{fExtendedMatchAndQA = extendedMatchAndQA; return;}
+		void			SetExtendedQA(Int_t extendedQA)									{if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
+		void			FillHistogramsExtendedQA(AliVEvent *event);
+
+		// Cut functions
 		Bool_t 			AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
 		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Bool_t isMC);
 
-		Bool_t 			MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event );
+		Bool_t 			MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event);
 
 		// Set Individual Cuts
 		Bool_t 			SetClusterTypeCut(Int_t);
@@ -127,6 +132,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		
 	protected:
         TList       *fHistograms;
+
+		AliEMCALGeometry	*geomEMCAL;					// pointer to EMCAL geometry
+		AliPHOSGeometry		*geomPHOS;					// pointer to PHOS geometry
+		Int_t				nMaxEMCalModules;			// max number of EMCal Modules
+		Int_t				nMaxPHOSModules;			// max number of PHOS Modules
 		
 		//cuts
 		Int_t		fClusterType;						// which cluster do we have
@@ -144,7 +154,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         Double_t 	fMinDistTrackToClusterPhi; 			// minimum distance between track and cluster in phi
         Double_t    fMaxDistTrackToClusterPhi;          // maximum distance between track and cluster in phi
 		Bool_t 		fUseDistTrackToCluster;				// flag for switching on distance between track and cluster cut
-		Bool_t 		fExtendedMatching;					// flag for switching on extended matching histograms
+		Int_t 		fExtendedMatchAndQA;				// switching on extended matching histograms (1) + extended QA (2) / only extended QA (3) or both off (0)
 		Double_t 	fExoticCell;						// exotic cell cut
 		Bool_t 		fUseExoticCell;						// flag for switching on exotic cell cut
 		Double_t 	fMinEnergy;							// minium energy per cluster
@@ -153,15 +163,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 		fUseNCells;							// flag for switching on minimum N Cells cut
 		Double_t 	fMaxM02;							// maximum M02
 		Double_t 	fMinM02;							// minimum M02
-		Bool_t 		fUseM02;								// flag for switching on M02 cut
+		Bool_t 		fUseM02;							// flag for switching on M02 cut
 		Double_t 	fMaxM20;							// maximum M20
 		Double_t 	fMinM20;							// minimum M20
-		Bool_t 		fUseM20;								// flag for switching on M20 cut
-		Double_t 	fMaxDispersion;					// maximum dispersion
+		Bool_t 		fUseM20;							// flag for switching on M20 cut
+		Double_t 	fMaxDispersion;						// maximum dispersion
 		Bool_t 		fUseDispersion;						// flag for switching on dispersion cut
-		Int_t 		fMinNLM;								// minimum number of local maxima in cluster
-		Int_t 		fMaxNLM;								// maximum number of local maxima in cluster
-		Bool_t 		fUseNLM;								// flag for switching on NLM cut
+		Int_t 		fMinNLM;							// minimum number of local maxima in cluster
+		Int_t 		fMaxNLM;							// maximum number of local maxima in cluster
+		Bool_t 		fUseNLM;							// flag for switching on NLM cut
 		
 		// CutString
 		TObjString* fCutString; 							// cut number used for analysis
@@ -194,6 +204,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 // 		TH1F* 		fHistNLMBeforeQA;						// number of local maxima in cluster before acceptance cuts
 // 		TH1F* 		fHistNLMAfterQA;						// number of local maxima in cluster after cluster quality cuts
 
+		//More histograms
+		TH2F*		fHistClusterEnergyvsMod;				// Cluster Energy vs Module Number
+		TH2F*		fHistNCellsBigger100MeVvsMod;			// NCells with >0.1 GeV vs Module Number
+		TH2F*		fHistNCellsBigger1500MeVvsMod;			// NCells with >1.5 GeV vs Module Number
+		TH2F*		fHistEnergyOfModvsMod;					// Deposited Energy vs Module Number
+		TH2F*		fHistClusterEnergyvsNCells;				// Cluster Energy vs NCells
+		TH2F*		fHistCellEnergyvsCellID;				// Cell Energy vs CellID
+		TH2F*		fHistCellTimevsCellID;					// Cell Time vs CellID
+
         //Track matching histograms
 		TH1F* 		fHistClusterRBeforeQA;					// cluster position in R=SQRT(x^2+y^2) (before QA)
 		TH1F* 		fHistClusterRAfterQA;					// cluster position in R=SQRT(x^2+y^2) for matched tracks (After QA)
@@ -215,14 +234,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         TH2F*       fHistClusterdEtadPhiNegTracksP_125_999BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P > 1.25
         TH2F* 		fHistClusterdEtadPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterdPhidPtBeforeQA;			// 2-dim plot dEta vs. Pt
-        TH2F* 		fHistClusterM20Pt_dPhiBeforeQA;			// 2-dim plot M20 vs. Pt for given dPhi>0.05
-        TH2F* 		fHistClusterM02Pt_dPhiBeforeQA;			// 2-dim plot M02 vs. Pt for given dPhi>0.05
+		TH2F* 		fHistClusterM20PtBeforeQA;				// 2-dim plot M20 vs. Pt
+		TH2F* 		fHistClusterM02PtBeforeQA;				// 2-dim plot M02 vs. Pt
         TH2F* 		fHistClusterM20M02BeforeQA;				// 2-dim plot M20 vs. M02
         TH2F* 		fHistClusterM20M02AfterQA;				// 2-dim plot M20 vs. M20
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,2)
+		ClassDef(AliCaloPhotonCuts,3)
 };
 
 #endif

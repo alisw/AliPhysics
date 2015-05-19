@@ -1722,6 +1722,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 // 	cout << nclus << endl;
 	
 	if(nclus == 0)	return;
+
+	// plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
+	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent);
 	
 	// vertex
 	Double_t vertex[3] = {0,0,0};
@@ -1764,7 +1767,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 		
 		fIsFromMBHeader 				= kTRUE; 
 		fIsOverlappingWithOtherHeader 	= kFALSE;
-		TString periodName 				= fV0Reader->GetPeriodName();
+		//TString periodName 				= fV0Reader->GetPeriodName();
 		// test whether largest contribution to cluster orginates in added signals
 		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
 			if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0){
