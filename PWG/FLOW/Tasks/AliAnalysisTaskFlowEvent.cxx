@@ -297,6 +297,8 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());  //1
     if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA()); //2
     fQAList->Add(new TH1F("event plane angle","event plane angle;angle [rad];",100,0.,TMath::TwoPi())); //3
+    fQAList->Add(new TH1F("ZNA EP","ZNA EP",100,-TMath::Pi(),TMath::Pi())); //4
+    fQAList->Add(new TH1F("ZNC EP","ZNC EP",100,-TMath::Pi(),TMath::Pi())); //4
     PostData(2,fQAList);
   }
 }
@@ -341,6 +343,26 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),mcEvent));
     fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),mcEvent));
     if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
+   
+   // Q vectors from ZDC
+   if(myAOD) {
+    AliAODZDC* ZDCData = myAOD->GetZDCData();
+    Double_t centrZNC[2] = {0.,0.};
+    Double_t centrZNA[2] = {0.,0.};
+    Double_t energyZNA = ZDCData->GetZNAEnergy();
+    Double_t energyZNC = ZDCData->GetZNCEnergy();
+    if(energyZNA>0 && energyZNC>0) {
+     ZDCData->GetZNCentroidInPbPb(1.,centrZNC,centrZNA);
+     fFlowEvent->SetZDC2Qsub(centrZNC,centrZNA);
+    }
+    if (fQAon) {
+     TH1* ZNC = static_cast<TH1*>(fQAList->FindObject("ZNC EP"));
+     ZNC->Fill(TMath::ATan2(centrZNC[1],centrZNC[0]));
+     TH1* ZNA = static_cast<TH1*>(fQAList->FindObject("ZNA EP"));
+     ZNA->Fill(TMath::ATan2(centrZNA[1],centrZNA[0]));
+    }
+   }
+   
   }
 
   // Make the FlowEvent for MC input
