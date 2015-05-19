@@ -16,7 +16,7 @@ Bool_t ConfigLambdaStarPbPb
     Bool_t                 isPP ,
     const char             *suffix,
     AliRsnCutSet           *cutsPair,
-    Int_t                  aodFilterBit = 10,
+    Int_t                  aodFilterBit = 5,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011,
     Float_t                nsigmaPrTPC = 3.0,
@@ -24,9 +24,7 @@ Bool_t ConfigLambdaStarPbPb
     Float_t                nsigmaPrTOF = 3.0,
     Float_t                nsigmaKaTOF = 3.0,
     Bool_t                 enableMonitor = kTRUE,
-    Bool_t                 IsMcTrueOnly = kFALSE,
-    Int_t                  aodN = 0
-)
+    Bool_t                 IsMcTrueOnly = kFALSE)
 {
   // manage suffix
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
@@ -37,10 +35,16 @@ Bool_t ConfigLambdaStarPbPb
   AliRsnCutSetDaughterParticle * cutSetK;
 
   cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kKaon, -1.0, -1.0, aodFilterBit, kTRUE);
+  cutSetQ->SetPtRange(0.2, 1.e3);
   cutSetPr = new AliRsnCutSetDaughterParticle(Form("cutPro_%2.1fsTPC_%2.1fsTOF",nsigmaPrTPC, nsigmaPrTOF), cutPrCandidate, AliPID::kProton, nsigmaPrTPC, nsigmaPrTOF, aodFilterBit, kTRUE); 
   cutSetPr->SetUse2011StdQualityCuts(kTRUE); 
+  cutSetPr->SetPtRange(0.2, 1.e3);
+
   cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKa_%2.1fsTPC_%2.1fsTOF",nsigmaKaTPC, nsigmaKaTOF), cutKaCandidate, AliPID::kKaon, nsigmaKaTPC, nsigmaKaTOF, aodFilterBit, kTRUE);
   cutSetK->SetUse2011StdQualityCuts(kTRUE); 
+  cutSetK->SetPtRange(0.2, 1.e3);
+
+
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPr = task->AddTrackCuts(cutSetPr);
