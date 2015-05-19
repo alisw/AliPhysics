@@ -761,7 +761,6 @@ WARN_LOGFILE           =
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC \
                          @CMAKE_SOURCE_DIR@/TPC/Attic \
-                         @CMAKE_SOURCE_DIR@/TPC/Util \
                          @CMAKE_SOURCE_DIR@/TPC/Base/test \
                          @CMAKE_SOURCE_DIR@/TPC/Cal \
                          @CMAKE_SOURCE_DIR@/TPC/CalibMacros \
@@ -776,6 +775,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC/stressTest/testSparse \
                          @CMAKE_SOURCE_DIR@/TPC/testMC \
                          @CMAKE_SOURCE_DIR@/TPC/TPCbase \
+                         @CMAKE_SOURCE_DIR@/TPC/TPCutil \
                          @CMAKE_SOURCE_DIR@/MUON \
                          @CMAKE_SOURCE_DIR@/MUON/DA \
                          @CMAKE_SOURCE_DIR@/MUON/MUONgeometry \
