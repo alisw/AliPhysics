@@ -983,15 +983,24 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
       fAlphaCutMeson	 = 0.7;
       fAlphaPtDepCut = kFALSE;
       break;
-   case 1:	// Updated 31 October 2013 before 0.0 - 0.5
+   case 1:	// Updated 15 May 2015
       if( fFAlphaCut ) delete fFAlphaCut;
       fFAlphaCut= new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
-      fFAlphaCut->SetParameter(0,0.7);
-      fFAlphaCut->SetParameter(1,1.2);
+      fFAlphaCut->SetParameter(0,0.65);
+      fFAlphaCut->SetParameter(1,1.8);
       fAlphaMinCutMeson	 =  0.0;
       fAlphaCutMeson	 = -1.0;
       fAlphaPtDepCut = kTRUE;
       break;
+//    case 1:	// Updated 31 October 2013 before 0.0 - 0.5
+//       if( fFAlphaCut ) delete fFAlphaCut;
+//       fFAlphaCut= new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+//       fFAlphaCut->SetParameter(0,0.7);
+//       fFAlphaCut->SetParameter(1,1.2);
+//       fAlphaMinCutMeson	 =  0.0;
+//       fAlphaCutMeson	 = -1.0;
+//       fAlphaPtDepCut = kTRUE;
+//       break;
    case 2:	// Updated 31 October 2013 before 0.5-1  
       if( fFAlphaCut ) delete fFAlphaCut;
       fFAlphaCut= new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);

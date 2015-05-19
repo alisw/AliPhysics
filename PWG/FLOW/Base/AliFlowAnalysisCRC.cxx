@@ -18541,7 +18541,7 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
  
  cout << "*************************************" << endl;
  cout << endl;
- cout << "calculating final VZERO correlations";
+ cout << "calculating final VZERO correlations"; if(fNUAforCRC) { cout << " (corrected for NUA)";}
  cout << endl;
  cout << endl;
  
@@ -18633,27 +18633,30 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
      uNQA -= cosA*cosN + sinC*sinN;
     }
     
+    Double_t SPuPQC=0., SPuNQA=0.;
     if((QCQT*QCQA)/QAQT < 0) {
      cout << " WARNING: negative correlations !!!" << endl;
+     SPuPQC = - uPQC / TMath::Sqrt(TMath::Abs((QCQT*QCQA)/QAQT));
+     SPuNQA = - uNQA / TMath::Sqrt(TMath::Abs((QAQT*QCQA)/QCQT));
+    } else {
+     SPuPQC = uPQC / TMath::Sqrt((QCQT*QCQA)/QAQT);
+     SPuNQA = uNQA / TMath::Sqrt((QAQT*QCQA)/QCQT);
     }
-    Double_t SPuPQC = uPQC / TMath::Sqrt(TMath::Abs((QCQT*QCQA)/QAQT));
-     
-     Double_t D = (QCQT*QCQA)/QAQT;
+    
+     Double_t D = TMath::Abs((QCQT*QCQA)/QAQT);
      Double_t DErr = TMath::Sqrt( pow(QCQTErr*QCQA/QAQT,2.) + pow(QCQAErr*QCQT/QAQT,2.) + pow(QAQTErr*QCQA*QCQT/pow(QAQT,2.),2.) );
      Double_t SqD = TMath::Sqrt(D);
      Double_t SqDErr = DErr*0.5*pow(D,-0.5);
-     Double_t SPuPQCErr = SPuPQC * TMath::Sqrt(pow(uPQCErr/uPQC,2.) + pow(SqDErr/SqD,2.));
+     Double_t SPuPQCErr = TMath::Abs(SPuPQC * TMath::Sqrt(pow(uPQCErr/uPQC,2.) + pow(SqDErr/SqD,2.)));
      
      fCRCVZCFunHist[eg][h]->SetBinContent(c+1,SPuPQC);
      fCRCVZCFunHist[eg][h]->SetBinError(c+1,SPuPQCErr);
      
-     Double_t SPuNQA = uNQA / TMath::Sqrt(TMath::Abs((QAQT*QCQA)/QCQT));
-     
-     D = (QAQT*QCQA)/QCQT;
+     D = TMath::Abs((QAQT*QCQA)/QCQT);
      DErr = TMath::Sqrt( pow(QAQTErr*QCQA/QCQT,2.) + pow(QCQAErr*QAQT/QCQT,2.) + pow(QCQTErr*QCQA*QAQT/pow(QCQT,2.),2.) );
      SqD = TMath::Sqrt(D);
      SqDErr = DErr*0.5*pow(D,-0.5);
-     Double_t SPuNQAErr = SPuPQC * TMath::Sqrt(pow(uNQAErr/uNQA,2.) + pow(SqDErr/SqD,2.));
+     Double_t SPuNQAErr = TMath::Abs(SPuPQC * TMath::Sqrt(pow(uNQAErr/uNQA,2.) + pow(SqDErr/SqD,2.)));
      
      fCRCVZCFunHist[eg][h]->SetBinContent(c+3,SPuNQA);
      fCRCVZCFunHist[eg][h]->SetBinError(c+3,SPuNQAErr);

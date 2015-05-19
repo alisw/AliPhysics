@@ -163,6 +163,8 @@ class AliFlowEventSimple: public TObject {
   TObjArray*              fMothersCollection;         //!cache the particles with daughters
   Double_t                fCentrality;                // centrality
   Int_t                   fRun;                       // run number
+  Double_t                fZNCQ[2];                   //! Q_1 vector from ZDCN-C
+  Double_t                fZNAQ[2];                   //! Q_1 vector from ZDCN-A
  
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
