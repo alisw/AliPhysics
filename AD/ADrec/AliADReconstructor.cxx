@@ -52,9 +52,39 @@ AliADReconstructor:: AliADReconstructor():
   fBeamEnergy(0.)
 
 {
-  fCalibData = GetCalibData();
   // Default constructor  
   // Get calibration data
+  fCalibData = GetCalibData();
+  
+  // Now get the CTP L0->L1 delay
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
+  if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
+  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
+  l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
+  if (!entry2) AliFatal("AD time delays are not found in OCDB !");
+  TH1F *TimeDelays = (TH1F*)entry2->GetObject();
+
+  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
+  if (!entry3) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry3->GetObject();
+
+  for(Int_t i = 0 ; i < 16; ++i) {
+    Int_t board = AliADCalibData::GetBoardNumber(i); 
+    fHptdcOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
+			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0
+		       +fCalibData->GetTimeOffset(i)
+		       -l1Delay
+		       -phase->GetMeanPhase()
+		       -TimeDelays->GetBinContent(i+1)
+		       -kADOffset);
+   }
 
 }
 
@@ -217,8 +247,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 
 	// HPTDC leading time and width
 	// Correction for slewing and various time delays
-        //time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
-	time[pmNumber]  =  digit->Time();
+        time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
+	//time[pmNumber]  =  digit->Time();
 	width[pmNumber] =  digit->Width();
 	aBBflag[pmNumber] = digit->GetBBflag();
 	aBGflag[pmNumber] = digit->GetBGflag();
@@ -250,7 +280,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     } // end of loop over digits
   } // end of loop over events in digits tree
          
-  //fESDAD->SetBit(AliESDAD::kCorrectedLeadingTime,kTRUE);
+  fESDAD->SetBit(AliESDAD::kCorrectedLeadingTime,kTRUE);
   //fESDAD->SetMultiplicity(mult);
   fESDAD->SetADC(adc);
   fESDAD->SetTime(time);
@@ -260,13 +290,11 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetBGFlag(aBGflag);
   //fESDAD->SetBit(AliESDAD::kCorrectedForSaturation,kTRUE);
 
-  // now fill the AD decision (only average times for the moment)
-  {
-    AliADDecision offlineDecision;
-    offlineDecision.SetRecoParam(GetRecoParam());
-    offlineDecision.FillDecisions(fESDAD);
-  }
-
+  // now fill the AD decision
+  AliADDecision offlineDecision;
+  offlineDecision.SetRecoParam(GetRecoParam());
+  offlineDecision.FillDecisions(fESDAD);
+  
   if (esd) { 
      AliDebug(1, Form("Writing AD data to ESD tree"));
      esd->SetADData(fESDAD);
@@ -360,4 +388,24 @@ void AliADReconstructor::GetCollisionMode()
   
   AliDebug(1,Form("\n ++++++ Beam type and collision mode retrieved as %s %d @ %1.3f GeV ++++++\n\n",beamType.Data(), fCollisionMode, fBeamEnergy));
 
+}
+//____________________________________________________________________________
+Float_t AliADReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+{
+  // Correct the leading time
+  // for slewing effect and
+  // misalignment of the channels
+  if (time < 1e-6) return kInvalidTime;
+
+  // In case of pathological signals
+  if (adc < 1) return time;
+
+  /*/ Slewing correction
+  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
+  time -= fTimeSlewing->Eval(adc);/*/
+  
+  // Channel alignment and general offset subtraction
+  time -= fHptdcOffset[i];
+
+  return time;
 }

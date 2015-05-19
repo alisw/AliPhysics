@@ -48,7 +48,7 @@ TObject(),fCalibData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(
 	
 	for(int i=0;i<16;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
-		fCharges[i] = 0.;
+		fCharges[i] = 0;
 	}
 	GenerateBBWindows();
 	GenerateBGWindows();
@@ -131,14 +131,6 @@ void AliADTriggerSimulator::GenerateBGWindows()
 		AliADLogicalSignal clk1BG(fCalibData->GetClk1Win2(i),fCalibData->GetDelayClk1Win2(i));
 		AliADLogicalSignal clk2BG(fCalibData->GetClk2Win2(i),fCalibData->GetDelayClk2Win2(i));
 		fBGGate[i] = new AliADLogicalSignal(clk1BG & clk2BG);
-		// In AD-A we have a shift by -25ns which is controlled by
-		// 'Delay Win2' = 7 instead of default 6.
-		// The flag is not stored in OCDB so we have manually shift the
-		// trigger windows
-		if (i < 4) {
-		  fBGGate[i]->SetStartTime(fBGGate[i]->GetStartTime()-25.0);
-		  fBGGate[i]->SetStopTime(fBGGate[i]->GetStopTime()-25.0);
-		}
 	}
   }
 }
@@ -197,14 +189,13 @@ void AliADTriggerSimulator::LoadClockOffset()
   }
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
-
+  //Start of the central clock in HPTDC time
   for(Int_t board = 0; board < kNCIUBoards; ++board) {
-    fClockOffset[board] = (((Float_t)calibdata->GetRollOver(board)-
+    fWindowOffset[board] = (((Float_t)calibdata->GetRollOver(board)-
 			    (Float_t)calibdata->GetTriggerCountOffset(board))*25.0
-			      );
-		             //-l1Delay+
-		             //+kADOffset);
-    AliDebug(1,Form("Board %d Offset %f",board,fClockOffset[board]));
+		             -l1Delay
+		             -kADOffset);
+    AliDebug(1,Form("Board %d Offset %f",board,fWindowOffset[board]));
   }
 }
 //_____________________________________________________________________________
@@ -212,9 +203,11 @@ void AliADTriggerSimulator::FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t ti
 
   for(Int_t i = 0; i<16; i++){
   	Int_t board   = AliADCalibData::GetBoardNumber(i);
-  	Float_t temptime = time[i] - fClockOffset[board];
+  	Float_t temptime = time[i] - fWindowOffset[board];
   	bbFlag[i] = fCalibData->GetEnableTiming(i) && fBBGate[board]->IsInCoincidence(temptime);
 	bgFlag[i] = fCalibData->GetEnableTiming(i) && fBGGate[board]->IsInCoincidence(temptime);
+	//std::cout<<std::endl;
+	//std::cout<<"Time - Offset = "<<temptime<<std::endl;
 	//AliInfo(Form("Ch %d BB=%d BG=%d",i,bbFlag[i],bgFlag[i] ));
   	}
 }
@@ -252,21 +245,20 @@ void AliADTriggerSimulator::Run() {
 			}
 			
 			Float_t time = digit->Time();
-			time -= fClockOffset[board];
+			time -= fWindowOffset[board];
 
 			AliDebug(10,Form(" Digit: %f %d %d %d %d %d %d %d %d",digit->Time(),
 					 digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
 					 digit->ChargeADC(11),digit->ChargeADC(12),digit->ChargeADC(13),
 					 digit->ChargeADC(14),digit->ChargeADC(15)));
-			//for(Int_t i=0; i<21; i++) std::cout<<digit->ChargeADC(i)<<" ";
 			//std::cout<<std::endl;
 			//std::cout<<"Time - Offset = "<<time<<std::endl;
 			AliDebug(10,Form(" PM nb : %d ; TDC= %f(%f)  Enable Time %d charge %d inCoin %d charge %f",
 					 pmNumber,time,digit->Time(),
 					 fCalibData->GetEnableTiming(pmNumber),fCalibData->GetEnableCharge(pmNumber),
 					 fBBGate[board]->IsInCoincidence(time),fCharges[pmNumber]));
-			fBBFlags[pmNumber] = fCalibData->GetEnableTiming(pmNumber) && fBBGate[board]->IsInCoincidence(time);
-			fBGFlags[pmNumber] = fCalibData->GetEnableTiming(pmNumber) && fBGGate[board]->IsInCoincidence(time);
+			fBBFlags[pmNumber] = fBBGate[board]->IsInCoincidence(time);
+			fBGFlags[pmNumber] = fBGGate[board]->IsInCoincidence(time);
 			
 		} // end of loop over digits
 	} // end of loop over events in digits tree
@@ -279,18 +271,30 @@ void AliADTriggerSimulator::Run() {
 	Float_t chargeADC   = 0.;
 
 	for(int i=0;i<16;i++) {
-		if(i<8) {
-			nBBflagsADC += fBBFlags[i]; 
-			nBGflagsADC += fBGFlags[i];
-			chargeADC += fCharges[i];
-		} else {
-			nBBflagsADA += fBBFlags[i]; 
-			nBGflagsADA += fBGFlags[i];
-			chargeADA += fCharges[i];
-		}
-		//AliInfo(Form("Ch %d BB=%d BG=%d",i,fBBFlags[i],fBGFlags[i] )); 
+		if(i<8) chargeADC += fCharges[i];
+		else chargeADA += fCharges[i];	
 	}
 	
+	for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
+    	//Enable time is used to turn off the coincidence 
+    	if(fCalibData->GetEnableTiming(iChannel) && fCalibData->GetEnableTiming(iChannel+4)){
+    		if(fBBFlags[iChannel] && fBBFlags[iChannel+4]) nBBflagsADC++;
+		if(fBGFlags[iChannel] && fBGFlags[iChannel+4]) nBGflagsADC++;
+		}
+	else{
+		if(fBBFlags[iChannel] || fBBFlags[iChannel+4]) nBBflagsADC++;
+		if(fBGFlags[iChannel] || fBGFlags[iChannel+4]) nBGflagsADC++;
+		}
+	if(fCalibData->GetEnableTiming(iChannel+8) && fCalibData->GetEnableTiming(iChannel+12)){	
+		if(fBBFlags[iChannel+8] && fBBFlags[iChannel+12]) nBBflagsADA++;
+		if(fBGFlags[iChannel+8] && fBGFlags[iChannel+12]) nBGflagsADA++;
+		}
+	else{
+		if(fBBFlags[iChannel+8] || fBBFlags[iChannel+12]) nBBflagsADA++;
+		if(fBGFlags[iChannel+8] || fBGFlags[iChannel+12]) nBGflagsADA++;
+		}
+	}
+
 	// BBA
 	if(nBBflagsADA>=fCalibData->GetBBAThreshold())  SetBBA();
 	
@@ -332,9 +336,9 @@ void AliADTriggerSimulator::Run() {
 	// (BGA and BBC) or (BGC and BBA) (Beam Gas from one of the two sides)
 	if(GetBGAandBBC() || GetBGCandBBA()) SetBeamGas();
 
-//	AliInfo(Form("BB Flags : ADA = %d  ADC = %d ",nBBflagsADA, nBBflagsADC )); 
-//	AliInfo(Form("BG Flags : ADA = %d  ADC = %d ",nBGflagsADA, nBGflagsADC )); 
-//	AliInfo(Form("Charges  : ADA = %d  ADC = %d ",chargeADA, chargeADC )); 
+	//AliInfo(Form("BB Flags : ADA = %d  ADC = %d ",nBBflagsADA, nBBflagsADC )); 
+	//AliInfo(Form("BG Flags : ADA = %d  ADC = %d ",nBGflagsADA, nBGflagsADC )); 
+	//AliInfo(Form("Charges  : ADA = %d  ADC = %d ",chargeADA, chargeADC )); 
 	
 }
 

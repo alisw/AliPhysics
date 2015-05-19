@@ -54,12 +54,11 @@ public:
 						
    AliADCalibData *GetCalibData() const;
 
-   TF1*   GetSignalShape() const { return fSignalShape; }
-   TF1*   GetPMResponse() const { return fPMResponse; }
-   TF1*   GetSinglePhESpectrum() const { return fSinglePhESpectrum; }
-   double SignalShape(double *x, double *par);
-   double PMResponse(double *x, double *par);
-   double SinglePhESpectrum(double *x, double *par);
+   TF1*   GetChargeSignalShape() const { return fChargeSignalShape; }
+   TF1*   GetTimeSignalShape() const { return fTimeSignalShape; }
+   
+   double ChargeSignalShape(double *x, double *par);
+   double TimeSignalShape(double *x, double *par);
 
  protected:
  
@@ -74,9 +73,12 @@ public:
    Int_t    fNdigits;                //! Number of digits
    TClonesArray *fDigits;            //! List of digits
    
-   TF1*     fSignalShape;            // function which describes the PMT signal shape
-   TF1*     fPMResponse;             // function which describes the PM time response
-   TF1*     fSinglePhESpectrum;      // function which describes the single ph.e. PM response
+   TF1*     fChargeSignalShape;            // function which describes the charge signal shape
+   Float_t  fCssTau[16];
+   Float_t  fCssSigma[16];
+   Float_t  fCssOffset[16];
+   
+   TF1*     fTimeSignalShape;             // function which describes the time response
 
    Float_t  fAdc[16][kNClocks];      //! Container for ADC samples
    Float_t  fLeadingTime[16];        //! Leading time container
@@ -98,7 +100,7 @@ public:
 
    DigiTask_t fTask;                 //! The task (to be) executed by the digitizer
    AliAD  *fAD;                //! Pointer to AliDetector object
-   ClassDef(AliADDigitizer,1)     // digitizer for AD
+   ClassDef(AliADDigitizer,2)     // digitizer for AD
 
 };
 

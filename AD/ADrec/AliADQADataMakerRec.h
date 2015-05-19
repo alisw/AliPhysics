@@ -33,12 +33,13 @@ public:
   		   kChargeADA,kChargeADC,kChargeEoI,kChargeEoIBB,kChargeEoIBG,
 		   kHPTDCTime,kHPTDCTimeBB,kHPTDCTimeBG,kWidth,
 		   kHPTDCTimeRebin,kHPTDCTimeRebinBB,kHPTDCTimeRebinBG,
-		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
+		   kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
+		   kChargeVsClockInt0,kChargeVsClockInt1,kMaxChargeClock,
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
 		   kPedestalDiffInt0,kPedestalDiffInt1,
 		   kChargeEoIInt0,kChargeEoIInt1,
 		   kNBBCoincCorr,kNBGCoincCorr,
-		   kTriggers,
+		   kTriggers,kDecisions,
 		   kMeanTimeADA,kMeanTimeADC,kMeanTimeDiff,kMeanTimeCorr,kMeanTimeSumDiff,
 		   kPedestalInt0,kPedestalInt1,
 		   kNEventsBBFlag,kNEventsBGFlag,
@@ -87,14 +88,16 @@ private:
   
   Int_t   fEven[16];                  // even charge integrators
   Int_t   fOdd[16];                   // odd charge intergators
-  Float_t fADCmean[32];              // mean adc per integrator
+  Float_t fADCmean[32];               // mean adc per integrator
   size_t fTrendingUpdateTime;         // trending histos update time
   UInt_t fCycleStartTime;             // timestamp of QA start-of-cycle
   UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle
-  Float_t            fTimeOffset[16]; //! HPTDC time offsets channel by channel
-  TF1*               fTimeSlewing;    //! Function for time slewing correction
+  Float_t fHptdcOffset[16]; 	      //! HPTDC time offsets channel by channel
+  TF1* fTimeSlewing;                  //! Function for time slewing correction
+  Float_t fADADist;     	      // Z position of ADA
+  Float_t fADCDist;     	      // Z position of ADC
 
-  ClassDef(AliADQADataMakerRec,1)  // description 
+  ClassDef(AliADQADataMakerRec,2)  // description 
 
 };
 

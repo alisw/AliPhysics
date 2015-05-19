@@ -87,7 +87,7 @@ private:
 	AliADLogicalSignal * fBGReset[kNCIUBoards]; // BG Reset Window
 
 	AliADCalibData *fCalibData; // Object holding the trigger configuration parameters
-	Float_t fClockOffset[kNCIUBoards]; // TDC clock offset including roll-over, trig count and L0->L1 delay
+	Float_t fWindowOffset[kNCIUBoards]; // TDC clock offset including roll-over, trig count and L0->L1 delay
 	
 	TTree* fDigitsTree; //Pointer to AD digit tree
 	TClonesArray* fDigits; //Pointer to AD digit array
