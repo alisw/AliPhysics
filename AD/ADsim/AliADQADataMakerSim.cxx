@@ -74,7 +74,7 @@ void AliADQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
   //Detector specific actions at end of cycle
   // do the QA checking
   ResetEventTrigClasses();
-  AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
+ // AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
 }
 
  
@@ -104,8 +104,8 @@ void AliADQADataMakerSim::InitHits()
   
   TH2D * h4 = new TH2D("hCellTof", "Time of flight per cell in AD;Cell;Time of Flight [ns]", 16, 0, 16, 6000,40,100) ; 
   h2->Sumw2() ;
-  Add2HitsList(h4, 4, !expert, image) ;  
- 
+  Add2HitsList(h4, 4, !expert, image) ; 
+   
   //
   ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line    
 }
@@ -147,11 +147,11 @@ void AliADQADataMakerSim::InitDigits()
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
      
-  TH2D * h1 = new TH2D("hDigitLeadingTimePerPM", "Leading time distribution per PM in AD;PM number;Leading Time [ns]",16,0,16, 1000, 200, 300); 
+  TH2D * h1 = new TH2D("hDigitLeadingTimePerPM", "Leading time distribution per PM in AD;PM number;Leading Time [ns]",16,0,16, 3062, 0.976562, 300); 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ; 
   
-  TH2D * h2 = new TH2D("hDigitTimeWidthPerPM", "Time width distribution per PM in AD;PM number;Time width [ns]",16,0,16, 1000, 0, 100); 
+  TH2D * h2 = new TH2D("hDigitTimeWidthPerPM", "Time width distribution per PM in AD;PM number;Time width [ns]",16,0,16, 153, 2.343750, 121.875000); 
   h2->Sumw2() ;
   Add2DigitsList(h2, 2, !expert, image) ;
   

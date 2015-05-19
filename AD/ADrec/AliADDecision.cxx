@@ -47,13 +47,16 @@ AliADDecision::AliADDecision()
    fRecoParam(NULL)
 {
   // Default constructor
-  /*/AD has two layers, filling average 
+  //AD has two layers, filling average 
   Float_t zADA = (TMath::Abs(GetZPosition("AD/ADA1")) + TMath::Abs(GetZPosition("AD/ADA2")))/2; 
   Float_t zADC = (TMath::Abs(GetZPosition("AD/ADC1")) + TMath::Abs(GetZPosition("AD/ADC2")))/2;
 
-  // distance in time units from nominal vertex to V0
-  fADADist = zADA/TMath::Ccgs()*1e9;
-  fADCDist = zADC/TMath::Ccgs()*1e9;/*/
+  // distance in time units from nominal vertex to AD
+  fADADist = zADA/TMath::Ccgs()*1e9; 
+  fADCDist = zADC/TMath::Ccgs()*1e9;
+  
+  //fADADist = 56.6958892608299081;
+  //fADCDist = 65.1917667655268360;
 }
 
 //________________________________________________________________________________
@@ -87,14 +90,21 @@ Double_t AliADDecision::GetZPosition(const char* symname)
 //________________________________________________________________________________
 void AliADDecision::FillDecisions(AliESDAD *esdAD)
 {
-  // Fill up the trigger mask word
+  // Fill up offline trigger decisions
   // using the TDC data (already corrected for
   // slewing and misalignment between channels)
 
   // loop over AD channels
   Double_t timeADA =0., timeADC = 0.;
   Double_t weightADA =0., weightADC = 0.;
-  UInt_t   itimeADA=0, itimeADC=0;
+  UInt_t   ntimeADA=0, ntimeADC=0;
+  UInt_t   itimeADA[8], itimeADC[8];
+  
+  //Compute average time with basic method(charge weighted average)
+  Double_t timeBasicADA=0, timeBasicADC=0;
+  Double_t weightBasicADA =0., weightBasicADC = 0.;
+  UInt_t   ntimeBasicADA=0, ntimeBasicADC=0;
+  UInt_t   itimeBasicADA[8], itimeBasicADC[8];
   
   for (Int_t i = 0; i < 16; ++i) {
     Float_t adc = esdAD->GetAdc(i);
@@ -105,28 +115,82 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
 		if (adc>1) timeErr = 1/adc;
 
 		if (i<8) {
-	    		itimeADC++;
-	    		timeADC += time/(timeErr*timeErr);
-	    		weightADC += 1./(timeErr*timeErr);
+			itimeBasicADC[ntimeBasicADC] = i;
+	    		ntimeBasicADC++;
+	    		timeBasicADC += time/(timeErr*timeErr);
+	    		weightBasicADC += 1./(timeErr*timeErr);
 	  		}
 		else{
-	    		itimeADA++;
-	    		timeADA += time/(timeErr*timeErr);
-	    		weightADA += 1./(timeErr*timeErr);
+			itimeBasicADA[ntimeBasicADA] = i-8;
+	    		ntimeBasicADA++;
+	    		timeBasicADA += time/(timeErr*timeErr);
+	    		weightBasicADA += 1./(timeErr*timeErr);
 	  		}
 	
       		}
     	}
   } // end of loop over channels
   
-  if(weightADA > 1) timeADA /= weightADA; 
-  else timeADA = -1024.;
-  if(weightADC > 1) timeADC /= weightADC;
-  else timeADC = -1024.;
+  if(weightBasicADA > 1) timeBasicADA /= weightBasicADA; 
+  else timeBasicADA = -1024.;
+  if(weightBasicADC > 1) timeBasicADC /= weightBasicADC;
+  else timeBasicADC = -1024.;
+  
+  //Use basic time for decisions
+  timeADA = timeBasicADA; timeADC = timeBasicADC;
+  weightADA = weightBasicADA; weightADC = weightBasicADC;
+  ntimeADA = ntimeBasicADA; ntimeADC = ntimeBasicADC;
+  for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeBasicADA[i]; itimeADC[i] = itimeBasicADC[i];} 
 
   esdAD->SetADATime(timeADA);
   esdAD->SetADCTime(timeADC);
   esdAD->SetADATimeError((weightADA > 1) ? (1./TMath::Sqrt(weightADA)) : 666);
   esdAD->SetADCTimeError((weightADC > 1) ? (1./TMath::Sqrt(weightADC)) : 666);
+  
+  esdAD->SetADADecision(AliESDAD::kADEmpty);
+  esdAD->SetADCDecision(AliESDAD::kADEmpty);
+
+  if (timeADA > (fADADist + GetRecoParam()->GetTimeWindowBBALow()) &&
+      timeADA < (fADADist + GetRecoParam()->GetTimeWindowBBAUp())) 
+    esdAD->SetADADecision(AliESDAD::kADBB);
+  else if (timeADA > (fADADist + GetRecoParam()->GetTimeWindowBGALow()) &&
+	   timeADA < (fADADist + GetRecoParam()->GetTimeWindowBGAUp()))
+    esdAD->SetADADecision(AliESDAD::kADBG);
+  else if (timeADA > (AliADReconstructor::kInvalidTime + 1e-6))
+    esdAD->SetADADecision(AliESDAD::kADFake);
+
+  if (timeADC > (fADCDist + GetRecoParam()->GetTimeWindowBBCLow()) &&
+      timeADC < (fADCDist + GetRecoParam()->GetTimeWindowBBCUp())) 
+    esdAD->SetADCDecision(AliESDAD::kADBB);
+  else if (timeADC > (fADCDist + GetRecoParam()->GetTimeWindowBGCLow()) &&
+	   timeADC < (fADCDist + GetRecoParam()->GetTimeWindowBGCUp()))
+    esdAD->SetADCDecision(AliESDAD::kADBG);
+  else if (timeADC > (AliADReconstructor::kInvalidTime + 1e-6))
+    esdAD->SetADCDecision(AliESDAD::kADFake);
+
+  UInt_t aBBtriggerADA = 0; // bit mask for Beam-Beam trigger in ADA
+  UInt_t aBGtriggerADA = 0; // bit mask for Beam-Gas trigger in ADA
+  UInt_t aBBtriggerADC = 0; // bit mask for Beam-Beam trigger in ADC
+  UInt_t aBGtriggerADC = 0; // bit mask for Beam-Gas trigger in ADC
+
+  for(Int_t i = 0; i < ntimeADA; ++i) {
+    if (esdAD->GetADADecision() == AliESDAD::kADBB)
+      aBBtriggerADA |= (1 << (itimeADA[i]));
+    else if (esdAD->GetADADecision() == AliESDAD::kADBG)
+      aBGtriggerADA |= (1 << (itimeADA[i]));
+  }
+
+  for(Int_t i = 0; i < ntimeADC; ++i) {
+    if (esdAD->GetADCDecision() == AliESDAD::kADBB)
+      aBBtriggerADC |= (1 << (itimeADC[i]));
+    else if (esdAD->GetADCDecision() == AliESDAD::kADBG)
+      aBGtriggerADC |= (1 << (itimeADC[i]));
+  }
+
+  esdAD->SetBBtriggerADA(aBBtriggerADA);
+  esdAD->SetBGtriggerADA(aBGtriggerADA);
+  esdAD->SetBBtriggerADC(aBBtriggerADC);
+  esdAD->SetBGtriggerADC(aBGtriggerADC);
+
  
 }

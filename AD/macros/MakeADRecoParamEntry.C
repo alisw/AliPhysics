@@ -22,7 +22,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetStartClock(0);
     ADRecoParam->SetEndClock(20);
     ADRecoParam->SetNPreClocks(1);
-    ADRecoParam->SetNPostClocks(3);
+    ADRecoParam->SetNPostClocks(10);
     recoParamArray->AddLast(ADRecoParam);
   }
   {
@@ -30,7 +30,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetStartClock(0);
     ADRecoParam->SetEndClock(20);
     ADRecoParam->SetNPreClocks(1);
-    ADRecoParam->SetNPostClocks(3);
+    ADRecoParam->SetNPostClocks(10);
     ADRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     recoParamArray->AddLast(ADRecoParam);
   }

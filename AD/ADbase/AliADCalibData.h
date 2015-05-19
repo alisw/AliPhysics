@@ -61,7 +61,7 @@ class AliADCalibData: public TNamed {
 
   Float_t  GetDiscriThr(Int_t channel)	const {return fDiscriThr[channel];}
   Float_t* GetDiscriThr()   const {return (Float_t*)fDiscriThr;}
-  Float_t  GetCalibDiscriThr(Int_t channel, Bool_t scaled);
+  Float_t  GetCalibDiscriThr(Int_t channel);
   
   UShort_t * GetClk1Win1() const {return (UShort_t*)fClk1Win1;};
   UShort_t GetClk1Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fClk1Win1[board]:0);};

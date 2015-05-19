@@ -311,17 +311,10 @@ Float_t AliADCalibData::GetGain(Int_t channel)
 }
 
 //________________________________________________________________
-Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
+Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel)
 {
   // The method returns actual TDC discri threshold
   // extracted from the data.
-  //
-  // In case scaled flag is set the threshold is scaled
-  // so that to get 4.0 for a FEE threshold of 4.0.
-  // In this way we avoid a change in the slewing correction
-  // for the entire 2010 p-p data.
-  //
-  // The method is to be moved to OCDB object.
 
   Float_t thr = GetDiscriThr(channel);
 
@@ -332,8 +325,6 @@ Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
     calThr = (3.1+1.15*thr-1.7);
   else
     calThr = (3.1-0.3*thr+0.3*thr*thr);
-
-  if (scaled) calThr *= 4./(3.1+1.15*4.-1.7);
 
   return calThr;
 }
@@ -1114,7 +1105,7 @@ Int_t AliADCalibData::GetFEEChannelNumber(Int_t channel)
 {
   // Get FEE channel number
   // from offline channel index
-  if (channel >= 0 && channel < 16) return ((kOfflineChannel[channel] % 8));
+  if (channel >= 0 && channel < 16) return ((kOnlineChannel[channel] % 8));
 
   AliErrorClass(Form("Wrong channel index: %d",channel));
   return -1;
@@ -1124,7 +1115,7 @@ Int_t AliADCalibData::GetBoardNumber(Int_t channel)
 {
   // Get FEE board number
   // from offline channel index
-  Int_t OnChannel = kOfflineChannel[channel];
+  Int_t OnChannel = kOnlineChannel[channel];
   if (OnChannel >= 0 && OnChannel < 8) return (0);
   if (OnChannel >= 8 && OnChannel < 16) return (1);
 
@@ -1201,7 +1192,7 @@ printf("\n");
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
     printf("ChOff = %d, ChOn = %d, HV = %.1f, Dead = %s, Threshold = %.1f, DelayHit = %.2f\n",
 	   pmNumber,
-	   kOfflineChannel[pmNumber],
+	   kOnlineChannel[pmNumber],
 	   GetMeanHV(pmNumber),
 	   IsChannelDead(pmNumber)?"yes":"no",
 	   GetDiscriThr(pmNumber),

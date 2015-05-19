@@ -50,6 +50,7 @@ public:
   void GetCollisionMode();
 
   AliADCalibData *GetCalibData() const; 
+  Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
 
   enum {kInvalidADC   =  -1024,
         kInvalidTime  =  -1024};
@@ -71,8 +72,9 @@ private:
   
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
+  Float_t            fHptdcOffset[16];  //! HPTDC time offsets channel by channel
 
-  ClassDef(AliADReconstructor, 1)  // class for the AD reconstruction
+  ClassDef(AliADReconstructor, 2)  // class for the AD reconstruction
 };
 
 #endif

@@ -52,6 +52,7 @@
 #include "AliADRecoParam.h"
 #include "AliADQAParam.h"
 #include "AliCTPTimeParams.h"
+#include "AliLHCClockPhase.h"
 #include "event.h"
 
 ClassImp(AliADQADataMakerRec)
@@ -65,7 +66,9 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kAD), "AD Quality Assurance Data 
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
-  fTimeSlewing(0)
+  fTimeSlewing(0),
+  fADADist(56.7),
+  fADCDist(65.19)
     
 {
   // Constructor
@@ -90,7 +93,9 @@ AliADQADataMakerRec::AliADQADataMakerRec(const AliADQADataMakerRec& qadm) :
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
-  fTimeSlewing(0)
+  fTimeSlewing(0),
+  fADADist(56.7),
+  fADCDist(65.19)
   
 {
   // Copy constructor 
@@ -179,34 +184,30 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
-  /*/
+  
   AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
   if (!entry2) AliFatal("AD time delays are not found in OCDB !");
-  TH1F *delays = (TH1F*)entry2->GetObject();
-  /*/
-  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("AD/Calib/TimeSlewing");
-  if (!entry3) AliFatal("AD time slewing function is not found in OCDB !");
-  fTimeSlewing = (TF1*)entry3->GetObject();
- 
+  TH1F *TimeDelays = (TH1F*)entry2->GetObject();
 
-  for(Int_t i = 0 ; i < 16; ++i) {
-    //Int_t board = AliADCalibData::GetBoardNumber(i);
-    fTimeOffset[i] = (
-		      //	((Float_t)fCalibData->GetTriggerCountOffset(board) -
-		      //	(Float_t)fCalibData->GetRollOver(board))*25.0 +
-		      //     fCalibData->GetTimeOffset(i) -
-		      //     l1Delay+
-		      //delays->GetBinContent(i+1)//+
-		      //      kADOffset
-		      0
-		      );
-    //		      AliInfo(Form(" fTimeOffset[%d] = %f  kADoffset %f",i,fTimeOffset[i],kADOffset));
-  }
+  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
+  if (!entry3) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry3->GetObject();
 
- 
- 
+  AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("AD/Calib/TimeSlewing");
+  if (!entry4) AliFatal("AD time slewing function is not found in OCDB !");
+  fTimeSlewing = (TF1*)entry4->GetObject();
   
- 	
+  for(Int_t i = 0 ; i < 16; ++i) {
+    Int_t board = AliADCalibData::GetBoardNumber(i); 
+    fHptdcOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
+			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0
+		       +fCalibData->GetTimeOffset(i)
+		       -l1Delay
+		       -phase->GetMeanPhase()
+		       -TimeDelays->GetBinContent(i+1)
+		       -kADOffset);
+   }
+	
   TTimeStamp currentTime;
   fCycleStartTime = currentTime.GetSec();
  
@@ -255,12 +256,13 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     if (! IsValidEventSpecie(specie, list)) continue ;
     SetEventSpecie(AliRecoParam::ConvertIndex(specie));
     if(task == AliQAv1::kRAWS) {
+    	AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
     } else if (task == AliQAv1::kESDS) {
     }
   }
   
     }
-  AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
+  
 }
 
 //____________________________________________________________________________ 
@@ -284,7 +286,7 @@ void AliADQADataMakerRec::InitESDs()
   TH2F * h4 = new TH2F("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",16, 0, 16, 1024, 0, 1024) ;  
   Add2ESDsList(h4, kChargeChannel, !expert, image)  ;  
   
-  TH2F * h5 = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",16, 0, 16, 400, -100, 100) ;  
+  TH2F * h5 = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",16,0,16, 3062, 0.976562, 300) ;  
   Add2ESDsList(h5, kTimeChannel, !expert, image)  ;  
   
   TH1F * h6 = new TH1F("H1D_ADA_Time", "Mean ADA Time;Time (ns);Counts",1000, -100., 100.);
@@ -311,7 +313,7 @@ void AliADQADataMakerRec::InitDigits()
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
      
-  TH2D * h1 = new TH2D("hDigitLeadingTimePerPM", "Leading time distribution per PM in AD;PM number;Leading Time [ns]",16,0,16, 1000, 200, 300); 
+  TH2D * h1 = new TH2D("hDigitLeadingTimePerPM", "Leading time distribution per PM in AD;PM number;Leading Time [ns]",16,0,16, 3062, 0.976562, 300); 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ; 
   
@@ -342,6 +344,7 @@ void AliADQADataMakerRec::InitDigits()
   TH2I * h8 = new TH2I("hDigitMaxChargeClockPerPM", "Clock with maximum charge per PM in AD;PM number; Clock ",16,0,16,21, -10.5, 10.5);
   h8->Sumw2();
   Add2DigitsList(h8, 8, !expert, image) ;
+  
    
   //
   ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
@@ -405,7 +408,6 @@ void AliADQADataMakerRec::MakeDigits(TTree* digitTree)
     IncEvCountTotalDigits();
     //    
 }
-
 
 //____________________________________________________________________________
 void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
@@ -692,6 +694,22 @@ void AliADQADataMakerRec::InitRaws()
   h1d->GetXaxis()->SetBinLabel(10, "UGA || UGC");
   h1d->GetXaxis()->SetBinLabel(11, "(UGA & UBC) || (UGC & UBA)");
   
+  h2d = new TH2F("H2D_Decision", "AD Decision; ADA; ADC", 4,0 ,4,4,0,4) ;  
+  Add2RawsList(h2d,kDecisions, !expert, image, saveCorr);   iHisto++;
+  h2d->SetOption("coltext");
+  h2d->GetXaxis()->SetLabelSize(0.06);
+  h2d->GetYaxis()->SetLabelSize(0.06);
+  h2d->GetXaxis()->SetNdivisions(808,kFALSE);
+  h2d->GetYaxis()->SetNdivisions(808,kFALSE);
+  h2d->GetXaxis()->SetBinLabel(1, "Empty");
+  h2d->GetXaxis()->SetBinLabel(2, "Fake");
+  h2d->GetXaxis()->SetBinLabel(3, "BB");
+  h2d->GetXaxis()->SetBinLabel(4, "BG");
+  h2d->GetYaxis()->SetBinLabel(1, "Empty");
+  h2d->GetYaxis()->SetBinLabel(2, "Fake");
+  h2d->GetYaxis()->SetBinLabel(3, "BB");
+  h2d->GetYaxis()->SetBinLabel(4, "BG");
+
   //Creation of debug histograms
   h1d = new TH1F("H1D_Pair_TimeDiffMean","Time difference mean for coincidence pair [ns];Pair number;Time mean [ns]",kNPairBins, kPairMin, kPairMax);
   Add2RawsList(h1d,kPairTimeDiffMean, expert, !image, !saveCorr); iHisto++;
@@ -710,6 +728,9 @@ void AliADQADataMakerRec::InitRaws()
   	h2d = new TH2F(Form("H2D_ChargeVsClock_Int%d",iInt), Form("Charge Versus LHC-Clock (Int%d);Channel;LHCClock;Charge [ADC counts]",iInt),kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
   	Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, image, saveCorr); iHisto++;
 	}
+	
+  h2d = new TH2F("H2D_MaxChargeVsClock", "Maximum Charge Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  Add2RawsList(h2d,kMaxChargeClock, !expert, image, saveCorr); iHisto++;
   
   h2d = new TH2F("H2D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax,22,-0.5,21.5);
   Add2RawsList(h2d,kBBFlagsPerChannel, expert, !image, saveCorr); iHisto++;
@@ -866,7 +887,6 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  imax   = iClock;
 	}
       }
-      Int_t iMaxClock;
       if (imax != -1) {
 	Int_t start = imax - fRecoParam->GetNPreClocks();
 	if (start < 0) start = 0;
@@ -875,14 +895,14 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	for(Int_t iClock = start; iClock <= end; iClock++) {
 	  adc[offlineCh] += adcPedSub[iClock];
 	}
-	iMaxClock  = imax;
+	charge = rawStream->GetPedestal(iChannel,imax); // Charge at the maximum
       }
-      else iMaxClock  = 11; //Put central clock in case of no signal 
-      //else continue;
-		
-      charge = rawStream->GetPedestal(iChannel,iMaxClock); // Charge at the maximum 
-
-      integrator[offlineCh]    = rawStream->GetIntegratorFlag(iChannel,iMaxClock);
+      else charge = -1024;		
+      
+      FillRawsData(kMaxChargeClock,offlineCh,imax-10);
+       
+      integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel,imax);
+      
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
       time[offlineCh] = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
       width[offlineCh] = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
@@ -996,7 +1016,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     	}
 	
     for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
-    	//Enable time is used to turn of the coincidence 
+    	//Enable time is used to turn off the coincidence 
     	if(fCalibData->GetEnableTiming(iChannel) && fCalibData->GetEnableTiming(iChannel+4)){
     		if(flagBB[iChannel] && flagBB[iChannel+4]) pBBmulADC++;
 		if(flagBG[iChannel] && flagBG[iChannel+4]) pBGmulADC++;
@@ -1071,7 +1091,23 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     FillRawsData(kChargeADA,chargeADA);
     FillRawsData(kChargeADC,chargeADC);
     FillRawsData(kChargeAD,chargeADA + chargeADC);
-	    
+    
+    //Decisions
+    Int_t ADADecision=0;
+    Int_t ADCDecision=0; 
+
+    if(timeADA > (fADADist + fRecoParam->GetTimeWindowBBALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBBAUp())) ADADecision=2;
+    else if(timeADA > (fADADist + fRecoParam->GetTimeWindowBGALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBGAUp())) ADADecision=3;
+    else if(timeADA>-1024.+1.e-6) ADADecision=1;
+    else ADADecision=0;
+    
+    if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBBCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBBCUp())) ADCDecision=2;
+    else if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBGCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBGCUp())) ADCDecision=3;
+    else if(timeADC>-1024.+1.e-6) ADCDecision=1;
+    else ADCDecision=0;
+
+    FillRawsData(kDecisions,ADADecision,ADCDecision);
+    
     break;
   } // END of SWITCH : EVENT TYPE 
 	 
@@ -1089,19 +1125,15 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float
   // for slewing effect and
   // misalignment of the channels
   if (time < 1e-6) return -1024;
+  // In case of pathological signals
   if (adc < 1)return time;
 
-  // Channel alignment and general offset subtraction
-  //  time -= fTimeOffset[i];
-  //AliInfo(Form("time-offset %f", time));
-
-  // In case of pathological signals
-  //if (adc < 1e-6) return time;
-
   // Slewing correction
-  //Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
-  //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
   time -= fTimeSlewing->Eval(adc);
+  
+   // Channel alignment and general offset subtraction
+  //  time -= fHptdcOffset[i];
+  //AliInfo(Form("time-offset %f", time));
   
 
   return time;
