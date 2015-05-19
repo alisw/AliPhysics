@@ -699,6 +699,7 @@ bool AliZMQManager::Get(AliESDEvent* &result, storageSockets socket)
     else
     {
         zmq_msg_close(&buffer);
+        result=0;
         return false;
     }
 }

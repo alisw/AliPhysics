@@ -472,6 +472,7 @@ void AliStorageAdministratorPanelListEvents::onMarkButton()
 void AliStorageAdministratorPanelListEvents::onLoadButton()
 {
     int selectedEventNumber = fListBox->GetSelected()-1;
+    if(selectedEventNumber<0)return;
     int runNumber=fEventsListVector[selectedEventNumber].runNumber;
     int eventNumber=fEventsListVector[selectedEventNumber].eventNumber;
     

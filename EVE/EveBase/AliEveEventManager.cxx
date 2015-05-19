@@ -63,6 +63,8 @@
 #include <TROOT.h>
 #include <TEveManager.h>
 #include <TEveBrowser.h>
+#include <TEveText.h>
+#include <TEveTrans.h>
 
 #ifdef ZMQ
 #include "AliZMQManager.h"
@@ -157,6 +159,7 @@ fOnlineMode(kFALSE),
 fStorageDown(true),
 fFinished(false),
 fViewsSaver(0),
+fESDdrawer(0),
 fSaveViews(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
@@ -289,16 +292,18 @@ void AliEveEventManager::GetNextEvent()
         if(!fLoopMarked || !isVectorOk)
         {
             cout<<"Waiting for event from online reconstruction...";
-            if(!eventManager->Get(tmpEvent,EVENTS_SERVER_SUB)){sleep(1);}
-            cout<<"received.";
+            if(!eventManager->Get(tmpEvent,EVENTS_SERVER_SUB)){
+//                tmpEvent=0;
+                sleep(1);
+                cout<<"couldn't receive.";
+            }
+            else{cout<<"received.";}
         }
         else
         {
             if(iter<receivedList.size())
             {
                 cout<<"i:"<<iter<<endl;
-//                struct eventStruct mark;
-                
                 requestMessage->messageType = REQUEST_GET_EVENT;
                 requestMessage->eventsRunNumber = receivedList[iter].runNumber;
                 requestMessage->eventsEventNumber = receivedList[iter].eventNumber;
@@ -323,35 +328,7 @@ void AliEveEventManager::GetNextEvent()
                 cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
                 if(fCurrentEvent[fWritingToEventIndex])
                 {
-                    TList *tmpList = fCurrentEvent[fWritingToEventIndex]->GetList();
-                    if(tmpList){
-                        cout<<"EVENT DISPLAY -- there is a list"<<endl;
-                    }
-                    else
-                    {
-                        cout<<"EVENT DISPLAY -- no list"<<endl;
-                    }
-                    AliESDHeader *tmpHeader = fCurrentEvent[fWritingToEventIndex]->GetHeader();
-                    if(tmpHeader){
-                        cout<<"EVENT DISPLAY -- there is a header"<<endl;
-                    }
-                    else
-                    {
-                        cout<<"EVENT DISPLAY -- no header"<<endl;
-                    }
-                    
-                    
-                    
-                    const AliTriggerScalersRecordESD *tmpScalers = tmpHeader->GetTriggerScalersRecord();
-                    if(tmpScalers){
-                        cout<<"EVENT DISPLAY -- there are scalers"<<endl;
-                    }
-                    else
-                    {
-                        cout<<"EVENT DISPLAY -- no scalers"<<endl;
-                    }
-                    
-                    cout<<"EVENT DISPLAY -- deleting old event...";
+                    cout<<"EVENT DISPLAY -- deleting old event..."<<fCurrentEvent[fWritingToEventIndex]<<"...";
                     delete fCurrentEvent[fWritingToEventIndex];
                     fCurrentEvent[fWritingToEventIndex]=0;
                     cout<<"deleted"<<endl;
@@ -392,13 +369,21 @@ void AliEveEventManager::CheckStorageStatus()
     
     while (!fFinished)
     {
-        do {// send request message until success
+        while(sendStatus==false)// send request message until success
+        {
             sendStatus = eventManager->Send(request,socket);
-        } while (sendStatus == false);
+            if(sendStatus==false)
+            {
+                //eventManager->RecreateSocket(socket);
+                sleep(1);
+            }
+        }
+        cout<<"EVENT DISPLAY -- message sent to SM"<<endl;
         
         receiveStatus = eventManager->Get(&response,socket); // try to reveive response
         if(receiveStatus == false) // if failed (or timeouted)
         {
+            cout<<"EVENT DISPLAY -- failed to receive message from SM"<<endl;
             eventManager->RecreateSocket(socket); // destroy and open socket again, to be able to send message (currently, as receive failed, socket is still in RECV state
             
             if(!fStorageDown) // if requires change
@@ -413,6 +398,7 @@ void AliEveEventManager::CheckStorageStatus()
             StorageManagerOk();
         }
         sleep(1);
+        sendStatus=false;
     }
     
     AliEveEventManager *manager = AliEveEventManager::GetCurrent();
@@ -454,6 +440,7 @@ void AliEveEventManager::InitInternals()
     fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
     
     fViewsSaver = new AliEveSaveViews();
+    fESDdrawer = new AliEveESDTracks();
 }
 
 /******************************************************************************/
@@ -2011,11 +1998,43 @@ void AliEveEventManager::AfterNewEventLoaded()
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
     
-    if (HasESD() && fOnlineMode)
+    // tests of embedded text
+    
+//    AliESDRun *run = fESD->GetESDRun();
+    
+    TTimeStamp ts(fESD->GetTimeStamp());
+    
+    TEveText *txt = new TEveText(Form("Run:%d",fESD->GetRunNumber()));
+    TEveText *txt2 = new TEveText(Form("Timestamp:%s",ts.AsString("s")));
+    txt->SetMainColor(kWhite);
+    txt->SetFontSize(20);
+    txt->SetMainTransparency('1');
+    
+    txt2->SetMainColor(kWhite);
+    txt2->SetFontSize(20);
+    txt2->SetMainTransparency('1');
+    
+    TEveTrans trans = txt->RefMainTrans();
+    double *arr = trans.Array();
+    arr[12]=0;
+    arr[13]=-1200;
+    arr[14]=0;
+    txt->SetTransMatrix(arr);
+
+    arr[13]+=100;
+    txt2->SetTransMatrix(arr);
+    
+    gEve->AddElement(txt);
+    gEve->AddElement(txt2);
+    //
+    
+    
+    if(HasESD() && fOnlineMode)
     {
+        fESDdrawer->ByCategory();
+        
         Double_t x[3] = { 0, 0, 0 };
         
-//        AliESDEvent* esd = AliEveEventManager::AssertESD();
         fESD->GetPrimaryVertex()->GetXYZ(x);
         
         TTimeStamp ts(fESD->GetTimeStamp());

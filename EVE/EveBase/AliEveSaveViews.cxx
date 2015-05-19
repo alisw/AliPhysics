@@ -37,8 +37,6 @@ fShowLiveBar(showLiveBar)
 {
     fRunNumber=-1;
     fCurrentFileNumber=0;
-    fCompositeImg=0;
-    fTempImg=0;
     fNumberOfClusters=-1;
     fMaxFiles=100;
     fCompositeImgFileName="";
@@ -52,8 +50,7 @@ fShowLiveBar(showLiveBar)
 
 AliEveSaveViews::~AliEveSaveViews()
 {
-    if(fCompositeImg){delete fCompositeImg;}
-    if(fTempImg){delete fTempImg;}
+    
 }
 
 void AliEveSaveViews::ChangeRun()
@@ -124,7 +121,7 @@ void AliEveSaveViews::Save()
     TEveViewerList* viewers = gEve->GetViewers();
     int Nviewers = viewers->NumChildren()-2; // remark: 3D view is counted twice
     
-    fCompositeImg = new TASImage(fWidth, fHeight);
+    TASImage *compositeImg = new TASImage(fWidth, fHeight);
     
     // 3D View size
     int width3DView = TMath::FloorNint((float)Nviewers*fWidth/(float)(Nviewers+1)); // the width of the 3D view
@@ -147,9 +144,9 @@ void AliEveSaveViews::Save()
         
         // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
         view->GetGLViewer()->SavePictureUsingBB(viewFilename);
-        fTempImg = new TASImage(viewFilename);
+        TASImage *viewImg = new TASImage(viewFilename);
         
-        //        fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
+        //        tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
         
         
         // Second option is to use FBO instead of BB
@@ -158,54 +155,54 @@ void AliEveSaveViews::Save()
         // on new event being loaded
         
         //         if(index==0){
-        //         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+        //         tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
         //         }
         //         else {
-        //         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+        //         tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
         //         }
         //
         
-        if(fTempImg){
+        if(viewImg){
             // copy view image in the composite image
-            int currentWidth = fTempImg->GetWidth();
-            int currentHeight = fTempImg->GetHeight();
+            int currentWidth = viewImg->GetWidth();
+            int currentHeight = viewImg->GetHeight();
             
             if(index==0){
                 if(currentWidth < aspectRatio*currentHeight)
                 {
-                    fTempImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
+                    viewImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
                 }
                 else
                 {
-                    fTempImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
+                    viewImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
                 }
                 
-                fTempImg->Scale(width3DView,height3DView);
-                fTempImg->CopyArea(fCompositeImg, 0,0, width3DView, height3DView);
+                viewImg->Scale(width3DView,height3DView);
+                viewImg->CopyArea(compositeImg, 0,0, width3DView, height3DView);
                 
             }
             else {
-                fTempImg->Crop((currentWidth-widthChildView)*0.5,
-                               (currentHeight-heightChildView)*0.5,
-                               widthChildView,
-                               heightChildView);
-                fTempImg->CopyArea(fCompositeImg, 0,0, widthChildView, heightChildView, x,y);
-                fCompositeImg->DrawRectangle(x,y, widthChildView, heightChildView, "#C0C0C0"); // draw a border around child views
+                viewImg->Crop((currentWidth-widthChildView)*0.5,
+                              (currentHeight-heightChildView)*0.5,
+                              widthChildView,
+                              heightChildView);
+                viewImg->CopyArea(compositeImg, 0,0, widthChildView, heightChildView, x,y);
+                compositeImg->DrawRectangle(x,y, widthChildView, heightChildView, "#C0C0C0"); // draw a border around child views
             }
-            delete fTempImg;fTempImg=0;
+            delete viewImg;viewImg=0;
         }
         if(index>0){ // skip 3D View
             y+=heightChildView;
         }
         index++;
     }
-    
-    // Create a glow (bloom) effect
-    fTempImg = (TASImage*)fCompositeImg->Clone("fTempImg");
-    fTempImg->Blur(10.0,10.0);
-    fCompositeImg->Merge(fTempImg, "lighten");
-    if(fTempImg){delete fTempImg;fTempImg=0;}
-    
+    /*
+     // Create a glow (bloom) effect
+     TASImage *tempImg = (TASImage*)compositeImg->Clone("tempImg");
+     tempImg->Blur(10.0,10.0);
+     compositeImg->Merge(tempImg, "lighten");
+     if(tempImg){delete tempImg;tempImg=0;}
+     */
     
     // show LIVE bar
     if(fShowLiveBar)
@@ -213,20 +210,20 @@ void AliEveSaveViews::Save()
         TTimeStamp ts;
         TString tNow = ts.AsString("s"); // display date & time
         
-        fCompositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 75, 0, 239, 95);
-        fCompositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 155, 60, 152, 26);
-        fCompositeImg->BeginPaint();
-        fCompositeImg->DrawRectangle(50,0, 264, 94);
-        fCompositeImg->DrawText(162, 6, "LIVE", 70, "#FF2D00", "FreeSansBold.otf");
-        fCompositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
-        fCompositeImg->EndPaint();
+        compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 75, 0, 239, 95);
+        compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 155, 60, 152, 26);
+        compositeImg->BeginPaint();
+        compositeImg->DrawRectangle(50,0, 264, 94);
+        compositeImg->DrawText(162, 6, "LIVE", 70, "#FF2D00", "FreeSansBold.otf");
+        compositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
+        compositeImg->EndPaint();
         //include ALICE Logo
-        fTempImg = new TASImage(Form("%s/EVE/alice-data/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
-        if(fTempImg)
+        TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
+        if(aliceLogo)
         {
-            fTempImg->Scale(64,87);
-            fCompositeImg->Merge(fTempImg, "alphablend", 82, 4);
-            delete fTempImg;fTempImg=0;
+            aliceLogo->Scale(64,87);
+            compositeImg->Merge(aliceLogo, "alphablend", 82, 4);
+            delete aliceLogo;aliceLogo=0;
         }
     }
     
@@ -239,26 +236,28 @@ void AliEveSaveViews::Save()
     BuildClustersInfoString();
     
     // put event's info in blue bar on the bottom:
-    fCompositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0,fHeight-1.33*fHeightInfoBar, fWidth, fHeightInfoBar);
-    fCompositeImg->BeginPaint();
-    //fCompositeImg->DrawText(10, fHeight-1.33*fHeightInfoBar+15, fEventInfo, 28, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0,fHeight-1.33*fHeightInfoBar, fWidth, fHeightInfoBar);
+    compositeImg->BeginPaint();
+    compositeImg->DrawText(10, fHeight-1.33*fHeightInfoBar+15, fEventInfo, 28, "#FFFFFF", "FreeSansBold.otf");
     // put trigger classes in blue bar on the bottom:
-    //fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+4 ,fTriggerClasses[0], 16, "#FFFFFF", "FreeSansBold.otf");
-    //fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+24,fTriggerClasses[1], 16, "#FFFFFF", "FreeSansBold.otf");
-    //fCompositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+44,fTriggerClasses[2], 16, "#FFFFFF", "FreeSansBold.otf");
-    fCompositeImg->EndPaint();
+    compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+4 ,fTriggerClasses[0], 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+24,fTriggerClasses[1], 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+44,fTriggerClasses[2], 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->EndPaint();
     // put clusters description in green bar on the bottom:
-    fCompositeImg->Gradient( 90, "#1BDD1B #1DDD1D #01DD01", 0, 0, fHeight-0.33*fHeightInfoBar, fWidth, 0.33*fHeightInfoBar);
-    fCompositeImg->BeginPaint();
-    //fCompositeImg->DrawText(10,fHeight-0.33*fHeightInfoBar+2,fClustersInfo, 16, "#000000", "FreeSansBold.otf");
-    fCompositeImg->EndPaint();
+    compositeImg->Gradient( 90, "#1BDD1B #1DDD1D #01DD01", 0, 0, fHeight-0.33*fHeightInfoBar, fWidth, 0.33*fHeightInfoBar);
+    compositeImg->BeginPaint();
+    compositeImg->DrawText(10,fHeight-0.33*fHeightInfoBar+2,fClustersInfo, 16, "#000000", "FreeSansBold.otf");
+    compositeImg->EndPaint();
     
     // write composite image to disk
-    //fCompositeImg->CopyArea(fCompositeImg, 0,0, fWidth, fHeight);
     fCompositeImgFileName = Form("online-viz-%03d", fCurrentFileNumber);
-    fCompositeImg->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
+    // TASImage *imgToSave = new TASImage(fCompositeImgFileName);
+    compositeImg->CopyArea(compositeImg, 0,0, fWidth, fHeight);
+    compositeImg->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
     
-    if(fCompositeImg){delete fCompositeImg;fCompositeImg=0;}
+    if(compositeImg){delete compositeImg;compositeImg=0;}
+    //if(imgToSave){delete imgToSave;imgToSave=0;}
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
 }
 
@@ -371,5 +370,6 @@ int AliEveSaveViews::SendToAmore()
 {
     return gSystem->Exec(Form("SendImageToAmore %s %s.png %d",fCompositeImgFileName.Data(),fCompositeImgFileName.Data(),fRunNumber));
 }
+
 
 

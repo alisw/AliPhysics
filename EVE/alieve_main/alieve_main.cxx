@@ -77,6 +77,16 @@ int main(int argc, char **argv)
             strcpy(argv[1],"");
         }
     }
+    else if(argc==3)
+    {
+        if(strcmp(argv[2],"online")==0)
+        {
+            onlineMode = true;
+            argc--;
+            strcpy(argv[2],"");
+        }
+    }
+
     
     // make sure logger is instantiated
     AliLog::GetRootLogger();

@@ -46,10 +46,7 @@ private:
     int fHeightInfoBar;     // height of the Information bar
     int fWidth;             // width of resulting image
     int fHeight;            // height of resulting image
-    
-    TASImage *fCompositeImg;// this holds the final image
-    TASImage *fTempImg;     // temporary used for loading images
-    
+        
     // strings with additional info
     TString fEventInfo;
     TString fTriggerClasses[3];

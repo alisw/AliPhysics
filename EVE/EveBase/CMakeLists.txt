@@ -49,6 +49,7 @@ set(SRCS
     AliEveConfigManager.cxx
     AliEveCosmicRayFitter.cxx
     AliEveCosmicRayFitterEditor.cxx
+    AliEveESDTracks.cxx
     AliEveEventManager.cxx
     AliEveEventManagerEditor.cxx
     AliEveEventSelector.cxx

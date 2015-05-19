@@ -18,6 +18,7 @@
 #include <AliEventInfo.h>
 #include <AliESDEvent.h>
 #include <AliEveSaveViews.h>
+#include <AliEveESDTracks.h>
 
 //#ifdef ZMQ
 #include "AliStorageTypes.h"
@@ -259,6 +260,7 @@ private:
     Bool_t fFinished;
 
     AliEveSaveViews *fViewsSaver;
+    AliEveESDTracks *fESDdrawer;
     bool fSaveViews;
     
     bool fFirstEvent;
