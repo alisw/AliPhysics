@@ -654,7 +654,7 @@ class AliHLTComponent : public AliHLTLogging {
    * Helper functions to convert data type to a char array (ZMQ topic) and back
    * fID goes first (8 chars) then fOrigin (4 chars)
    **/
-  static void DataType2Topic( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize] );
+  static void DataType2Topic( const AliHLTComponentDataType type, char* output );
   static void Topic2DataType( const char input[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize], AliHLTComponentDataType* type );
 
   /**

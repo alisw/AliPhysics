@@ -147,6 +147,10 @@ public:
    */
   Bool_t  HasSubSubDetectorRange(){ return fHasSubSubDetectorRange; }
 
+  /** Fill a struct of type AliHLTComponentDataType
+   */
+  void ComponentDataType(AliHLTComponentDataType& dataType);
+
   ///////////////////////////////////////////////////////////////////////////////////
 
 private:

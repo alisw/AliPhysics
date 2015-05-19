@@ -249,3 +249,11 @@ Bool_t AliHLTHOMERBlockDesc::CheckIfRawData() {
   return fIsRawData;
 }
 
+//##################################################################################
+void AliHLTHOMERBlockDesc::ComponentDataType(AliHLTComponentDataType& dataType)
+{
+  dataType.fStructSize = sizeof(AliHLTComponentDataType);
+  memcpy(dataType.fID, fDataType.Data(), kAliHLTComponentDataTypefIDsize);
+  memcpy(dataType.fOrigin, fDetector.Data(), kAliHLTComponentDataTypefOriginSize);
+}
+

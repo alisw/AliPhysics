@@ -251,6 +251,11 @@ extern const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize];
  */
 const int kAliHLTComponentDataTypefIDsize=8;
 
+/** field size of data type topic (ZMQ topic)
+ * @ingroup alihlt_component_datatypes
+ */
+const int kAliHLTComponentDataTypeTopicSize =
+        kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize;
 
 /** invalid data type id 
  * @ingroup alihlt_component_datatypes

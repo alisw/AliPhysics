@@ -133,9 +133,6 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
   //    doSend=kFALSE;
   //}
 
-  const int kAliHLTComponentDataTypeTopicSize = 
-    kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize;
-  
   //create a default selection of any data:
   char selectTopic[kAliHLTComponentDataTypeTopicSize];
   AliHLTComponentDataType selectDataType=kAliHLTAnyDataType;
