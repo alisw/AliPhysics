@@ -89,6 +89,9 @@ Bool_t isTender = kFALSE
 	task->SetAODanalysis(isAOD);
 	task->SetEventMixing(kTRUE);
 	
+	//in order to use same task in pp analysis
+	task->SetPPanalysis(kFALSE);
+	
 	//to separate trigger threshold
 	if(EMCalThreshould==0 && triggerIndex==2) task->SetEMCalTriggerEG1();
 	if(EMCalThreshould==1 && triggerIndex==2) task->SetEMCalTriggerEG2();
