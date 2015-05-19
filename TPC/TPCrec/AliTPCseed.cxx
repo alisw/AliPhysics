@@ -253,13 +253,14 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
 AliTPCseed::~AliTPCseed(){
   //
   // destructor
+  AliDebug(5,"Destruct AliTPCseed - Begin");
   fNoCluster =0;
   if (fClusterOwner){
     for (Int_t icluster=0; icluster<160; icluster++){
       delete fClusterPointer[icluster];
     }
   }
-
+  AliDebug(5,"Destruct AliTPCseed - End");
 }
 //_________________________________________________
 AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
