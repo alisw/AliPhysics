@@ -5,7 +5,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 							TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
                             TString 	cutnumberAODBranch 			= "000000006008400001001500000",
 							TString 	periodname 					= "LHC12f1x", 						// period name
-							Bool_t 		doWeighting 				= kFALSE							// enables weighting
+							Bool_t 		doWeighting 				= kFALSE,							// enables weighting
+							Int_t 		enableExtQA					= 0									// enable QA(3), disabled (0)
 ) {
 
 	// ================= Load Librariers =================================
@@ -244,6 +245,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
+		analysisClusterCuts[i]->SetExtendedQA(enableExtQA);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();

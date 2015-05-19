@@ -1302,6 +1302,9 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 	
 	if(nclus == 0)	return;
 	
+	// plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
+	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent);
+
 	// vertex
 	Double_t vertex[3] = {0};
 	InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
