@@ -215,7 +215,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1I 								**hNGoodESDTracksWeighted;							//!
 		TH1F 								**hCentrality;										//!
 		TH1F 								**hCentralityFlattened;								//!
-		TH1F 								**hCentralityWeights;								//!
 		TH2F								**hCentralityVsPrimaryTracks;						//!
 		TH1I 								**hNGammaCandidates;								//!
 		TH2F 								**hNGoodESDTracksVsNGammaCanditates;				//!
