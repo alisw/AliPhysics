@@ -73,6 +73,7 @@ void emcal_digits()
   // Get the EMCAL bounding boxes for the super modules.
   // 4 kind of SM: 10 Full EMCal, 2 1/3 EMCal, 6 DCal (2/3 EMCal) and 2 1/3 EMCal in DCal region.
   //
+
   TGeoBBox* bbbox = (TGeoBBox*) node->GetDaughter(0) ->GetVolume()->GetShape();
   TEveFrameBox* frame_big = new TEveFrameBox();
   frame_big->SetFrameColorRGBA(200,200,0,50);
@@ -96,7 +97,7 @@ void emcal_digits()
     frame_dcl = new TEveFrameBox();
     frame_dcl->SetFrameColorRGBA(200,200,0,50);
     frame_dcl->SetAABoxCenterHalfSize(0, 0, 0, dbbox->GetDX(), dbbox->GetDY(), dbbox->GetDZ());
-
+    
     TGeoBBox* sdbbox = (TGeoBBox*) node->GetDaughter(18)->GetVolume()->GetShape();
     frame_smld = new TEveFrameBox();
     frame_smld->SetFrameColorRGBA(200,200,0,50);
@@ -186,6 +187,7 @@ void emcal_digits()
     time = dig->GetTime();//time of creation of digit after collision
     
     // Do not add too low ADC values (3 times pedestal)
+
     if(amp <= 3) continue;
     
     //printf("\t Digit %d/%d: Cell ID %d; Amp %f; time %2.3e\n",idig+1,nEnt,id,amp,time);
@@ -213,11 +215,11 @@ void emcal_digits()
       q->QuadValue(TMath::Nint(amp));
       q->QuadId(new AliEMCALDigit(*dig));
     }
-
   }
 
   rl->UnloadDigits("EMCAL");
   
+
   // Send the data to EVE?
   for (Int_t sm = 0; sm < nModules; ++sm)
   {
