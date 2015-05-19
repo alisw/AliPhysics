@@ -194,7 +194,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hCentrality(NULL),
 	fDoCentralityFlat(0),
 	hCentralityFlattened(NULL),
-	hCentralityWeights(NULL),
 	hCentralityVsPrimaryTracks(NULL),
 	hNGammaCandidates(NULL),
 	hNGoodESDTracksVsNGammaCanditates(NULL),
@@ -367,7 +366,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hCentrality(NULL),
 	fDoCentralityFlat(0),
 	hCentralityFlattened(NULL),
-	hCentralityWeights(NULL),
 	hCentralityVsPrimaryTracks(NULL),
 	hNGammaCandidates(NULL),
 	hNGoodESDTracksVsNGammaCanditates(NULL),
@@ -526,7 +524,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	hCentrality = new TH1F*[fnCuts];
 	if(fDoCentralityFlat > 0){
 		hCentralityFlattened = new TH1F*[fnCuts];
-		hCentralityWeights = new TH1F*[fnCuts];
 	}
 	hCentralityVsPrimaryTracks = new TH2F*[fnCuts];
 	hNGammaCandidates = new TH1I*[fnCuts];
@@ -588,26 +585,27 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
 		
-		if(fDoCentralityFlat > 0){
-			
-	        hNEvents[iCut] = new TH1I("NEventsUnweighted","NEventsUnweighted",10,-0.5,9.5);
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-			if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
-				TString TriggerNames = "Not Trigger: ";
-				TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
-				hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
-			} else {
-				hNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
-			}
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
-			fESDList[iCut]->Add(hNEvents[iCut]);
+		if(fDoCentralityFlat > 0) hNEvents[iCut] = new TH1I("NEventsUnweighted","NEventsUnweighted",10,-0.5,9.5);
+		else hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
+			TString TriggerNames = "Not Trigger: ";
+			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
+			hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
+		} else {
+			hNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
+		}
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+		fESDList[iCut]->Add(hNEvents[iCut]);	
+
+		if(fDoCentralityFlat > 0){	
 			
 			hNEventsWeighted[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);//weighted histogram!!
 			hNEventsWeighted[iCut]->Sumw2();
@@ -628,33 +626,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 			fESDList[iCut]->Add(hNEventsWeighted[iCut]);
-		} else {
-			hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-			if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
-				TString TriggerNames = "Not Trigger: ";
-				TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
-				hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
-			} else {
-				hNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
-			}
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-			hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
-			fESDList[iCut]->Add(hNEvents[iCut]);	
 		}
 		
 		
-		if(fDoCentralityFlat > 0){
-			if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracksUnweighted","GoodESDTracksUnweighted",4000,0,4000);
+		if(fDoCentralityFlat > 0 && fIsHeavyIon == 1){
+			hNGoodESDTracks[iCut] = new TH1I("GoodESDTracksUnweighted","GoodESDTracksUnweighted",4000,0,4000);
 			fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
 			
-			if(fIsHeavyIon == 1) hNGoodESDTracksWeighted[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000); //weighted histogram!!
+			hNGoodESDTracksWeighted[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000); //weighted histogram!!
 			hNGoodESDTracksWeighted[iCut]->Sumw2();
 			fESDList[iCut]->Add(hNGoodESDTracksWeighted[iCut]);
 		} else {
@@ -1229,7 +1208,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			Double_t weightCentrality = 1.;
-			if((fDoCentralityFlat > 0) && (fV0Reader->GetPeriodName()).Contains("LHC11h") ){
+			if((fDoCentralityFlat > 0)){
 				weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForCentralityFlattening(fInputEvent);
 			} else weightCentrality = 1.;
 			
@@ -1265,7 +1244,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		fiCut = iCut;
 		
 		Double_t weightCentrality = 1.;
-		if((fDoCentralityFlat > 0) && (fV0Reader->GetPeriodName()).Contains("LHC11h") ){
+		if((fDoCentralityFlat > 0)){
 			weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForCentralityFlattening(fInputEvent);
 		} else weightCentrality = 1.;
 		
@@ -2672,7 +2651,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
     }
 
 	Double_t weightCentrality = 1.;
-	if((fDoCentralityFlat > 0) && (fV0Reader->GetPeriodName()).Contains("LHC11h") ){
+	if((fDoCentralityFlat > 0)){
 		weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForCentralityFlattening(fInputEvent);
 	} else weightCentrality = 1.;
     
@@ -2812,7 +2791,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 	}
 	
 	Double_t weightCentrality = 1.;
-	if((fDoCentralityFlat > 0) && (fV0Reader->GetPeriodName()).Contains("LHC11h") ){
+	if((fDoCentralityFlat > 0)){
 		weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForCentralityFlattening(fInputEvent);
 	} else weightCentrality = 1.;
 
