@@ -232,6 +232,8 @@ list ( APPEND SRCS
   ${SRCS18}
   )
 
+###add_subdirectory(Alignment)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
