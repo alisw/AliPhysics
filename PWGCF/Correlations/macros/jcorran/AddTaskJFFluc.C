@@ -1,9 +1,10 @@
 //_____________________________________________________________________
 AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,
 		Bool_t IsCentFlat=kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, 
-		double pt_min, double pt_max, int effMode, Bool_t IsPhiModule ,TString InFileNameNUE ,int debuglevel){
+		double pt_min, double pt_max, int effMode, Bool_t IsPhiModule ,TString InFileNameNUE ,int debuglevel, char* surfix=""){
     // Load Custom Configuration and parameters
     // override values with parameters
+    // surfix in last arguments are added for subwagons but no need to use in actual codes.
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
 	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
 	cout <<"AddTaskJFFluc:: Force to Cent flatting for LHC11h? = " << IsCentFlat << endl;
