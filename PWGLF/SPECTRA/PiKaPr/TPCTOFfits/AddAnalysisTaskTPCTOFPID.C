@@ -28,6 +28,8 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
       Error("AddAnalysisTaskTPCTOFPID", "cannot get MC truth event handler");
       return NULL;
     }
+    AliMCEventHandler * handler = (AliMCEventHandler *) mgr->GetMCtruthEventHandler();
+    handler->SetReadTR(kTRUE);
   }
   
   /* get common input data container */
