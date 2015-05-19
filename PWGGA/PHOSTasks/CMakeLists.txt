@@ -33,7 +33,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
-                   )
+		    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -139,6 +139,7 @@ install(DIRECTORY UserTasks/macros DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros DESTINATION PWGGA/PHOSTasks/CaloCellQA)
 install(DIRECTORY PHOS_PbPbQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
+install(DIRECTORY PHOS_pPb DESTINATION PWGGA/PHOSTasks)
 install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
 install(FILES PHOS_GAFlow/AddTaskThermalGAFlow.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)
