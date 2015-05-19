@@ -178,8 +178,6 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		TString 			fPeriodName;
 		Bool_t				fUseMassToZero;				// switch on setting the mass to 0 for AODConversionPhotons
 		Bool_t				fProduceV0findingEffi;		// enable histograms for V0finding efficiency
-		Int_t				*fMCPhotonLabelArray;		// array of MC photon labels found by V0Reader
-		Int_t				fNMCRecPhotons;				// number of real reconstructed photons
 		TList				*fHistograms;				// list of histograms for V0 finding efficiency
 		TH2F				*fHistoMCGammaPtvsR;		// histogram with all converted gammas vs Pt and R (eta < 0.9)
 		TH2F				*fHistoMCGammaPtvsPhi;		// histogram with all converted gammas vs Pt and Phi (eta < 0.9)
@@ -203,7 +201,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-	ClassDef(AliV0ReaderV1, 7)
+	ClassDef(AliV0ReaderV1, 8)
 
 };
 
