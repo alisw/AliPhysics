@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: April 22, 2015.								      //
+	//		version: May 18, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -124,6 +124,7 @@ ClassImp(AliAnalysisTaskEMCalHFEpA)
 AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name) 
 : AliAnalysisTaskSE(name)
 ,fCorrelationFlag(0)
+,fIspp(kFALSE)
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
@@ -298,6 +299,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fOpAngleBack(0)
 ,fInvMass2(0)
 ,fInvMassBack2(0)
+,fInvMass_pT(0)
+,fInvMassBack_pT(0)
 ,fDCA2(0)
 ,fDCABack2(0)
 ,fOpAngle2(0)
@@ -425,6 +428,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA() 
 : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEMCalHFEpA")
 ,fCorrelationFlag(0)
+,fIspp(kFALSE)
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
@@ -598,6 +602,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fOpAngleBack(0)
 ,fInvMass2(0)
 ,fInvMassBack2(0)
+,fInvMass_pT(0)
+,fInvMassBack_pT(0)
 ,fDCA2(0)
 ,fDCABack2(0)
 ,fOpAngle2(0)
@@ -1095,6 +1101,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fEoverP_tpc_p_trigger = new TH2F *[10];
 	fEoverP_tpc_pt_trigger = new TH2F *[10];
 	
+	fInvMass_pT = new TH1F *[10];
+	fInvMassBack_pT = new TH1F *[10];
+	
 	
 	fEoverP_tpc = new TH2F *[6];
 	fTPC_pt = new TH1F *[6];
@@ -1193,8 +1202,15 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	{
 			fEoverP_tpc_pt_trigger[i] = new TH2F(Form("fEoverP_tpc_pt_trigger%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
 			fEoverP_tpc_p_trigger[i] = new TH2F(Form("fEoverP_tpc_p_trigger%d",i),Form("%d < p < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
-			fOutputList->Add(fEoverP_tpc_pt_trigger[i]);
-			fOutputList->Add(fEoverP_tpc_p_trigger[i]);
+			
+		
+			fInvMass_pT[i] = new TH1F(Form("fInvMass_pT%d",i),Form("%d < p_{t} < %d GeV/c; Mass ; Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
+			fInvMassBack_pT[i] = new TH1F(Form("fInvMassBack_pT%d",i),Form("%d < p_{t} < %d GeV/c;Mass;Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
+		
+		fOutputList->Add(fEoverP_tpc_pt_trigger[i]);
+		fOutputList->Add(fEoverP_tpc_p_trigger[i]);
+		fOutputList->Add(fInvMass_pT[i]);
+		fOutputList->Add(fInvMassBack_pT[i]);
 
 	}
 	
@@ -1240,6 +1256,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fM20_EoverP[i]);
 		fOutputList->Add(fTPCnsigma_eta_electrons[i]);
 		fOutputList->Add(fTPCnsigma_eta_hadrons[i]);
+		
 		
 		
 		if(fCorrelationFlag)
@@ -1433,6 +1450,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fPtIsPhysicaPrimary);
 	}
 	
+	if(!fIspp){
 	fCentralityHist = new TH1F("fCentralityHist",";Centrality (%); Count",1000000,0,100);
 	fCentralityHistPass = new TH1F("fCentralityHistPass",";Centrality (%); Count",1000000,0,100);
 	fOutputList->Add(fCentralityHist);
@@ -1455,6 +1473,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		Double_t vertexBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
 		
 		fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
+	}
+		
 	}
 		//______________________________________________________________________
 	
@@ -1533,20 +1553,34 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	//______________________________________________________________________
 	//Vertex Selection
+	if(!fIspp){
+		
 	if(fIsAOD)
 	{
 		const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
 			
-		//events without vertex
-		if(!trkVtx) fNevent2->Fill(0);
-		
+				
 		if(!trkVtx || trkVtx->GetNContributors()<=0) return;
 		TString vtxTtl = trkVtx->GetTitle();
 		if(!vtxTtl.Contains("VertexerTracks")) return;
 			//Float_t zvtx = trkVtx->GetZ();
+		
+		
 		Float_t zvtx = -100;
 		zvtx=trkVtx->GetZ();
 		fZvtx = zvtx;
+			//x
+		Float_t xvtx = -100;
+		xvtx=trkVtx->GetX();
+		
+			//y
+		Float_t yvtx = -100;
+		yvtx=trkVtx->GetY();
+		
+		
+			//events without vertex
+		if(zvtx==0 && xvtx==0 && yvtx==0) fNevent2->Fill(0);
+		
 		
 		fVtxZ_new1->Fill(fZvtx);
 		
@@ -1628,6 +1662,66 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
 		if(TMath::Abs(zvtx) > 10) return;
 	}
+	}//close Ispp flag
+	
+		//========================== vertex selection for pp
+
+	if(fIspp)
+	{
+	    if(fIsAOD)
+		{
+			const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+			if(!trkVtx || trkVtx->GetNContributors()<=0) return;
+			Float_t zvtx = -100;
+			zvtx=trkVtx->GetZ();
+			fZvtx = zvtx;
+				//fVtxZ_new1->Fill(fZvtx);
+			
+			if(TMath::Abs(zvtx) > 10) return;
+				//fVtxZ_new2->Fill(fZvtx);
+			
+				//Look for kink mother for AOD
+			
+			fNumberOfVertices = 0; 
+			fNumberOfMotherkink = 0;
+			
+			if(fIsAOD)
+			{
+				fNumberOfVertices = fAOD->GetNumberOfVertices();
+				
+				fListOfmotherkink = new Double_t[fNumberOfVertices];
+				
+				for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++) 
+				{
+					AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+					if(!aodvertex) continue;
+					if(aodvertex->GetType()==AliAODVertex::kKink) 
+					{
+						AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
+						if(!mother1) continue;
+						Int_t idmother = mother1->GetID();
+						fListOfmotherkink[fNumberOfMotherkink] = idmother;
+						fNumberOfMotherkink++;
+					}
+				}
+			}
+		}
+	    else
+		{
+			
+			
+			
+				/// ESD
+			const AliESDVertex* trkVtx = fESD->GetPrimaryVertex();
+			if(!trkVtx || trkVtx->GetNContributors()<=0) return;
+			Float_t zvtx = -100;
+			zvtx=trkVtx->GetZ();
+			if(TMath::Abs(zvtx) > 10) return;
+		}
+	}
+	
+	
+	
 	
 	//______________________________________________________________________
 	//after vertex selection
@@ -1841,6 +1935,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 //______________________________________________________________________
 //Centrality Selection
+if(!fIspp){
 	if(fHasCentralitySelection)
 	{
 		Float_t centrality = -1;
@@ -1865,6 +1960,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(centrality<fCentralityMin || centrality>fCentralityMax) return;
 		
 		fCentralityHistPass->Fill(centrality);
+	}
 	}
 	//______________________________________________________________________
 	
@@ -3278,8 +3374,26 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 						
 						//for shower shape cut studies - now with TPC PID Cut
 						if(fUseEMCal){
-							fShowerShapeM02_EoverP->Fill(M02,EoverP);
-							fShowerShapeM20_EoverP->Fill(M20,EoverP);
+							if(fEMCEG1){
+								if(fClus->E()>=12.00){
+									fShowerShapeM02_EoverP->Fill(M02,EoverP);
+									fShowerShapeM20_EoverP->Fill(M20,EoverP);
+								}
+
+							}
+							if(fEMCEG2){
+								if(fClus->E()>=8.00){
+									fShowerShapeM02_EoverP->Fill(M02,EoverP);
+									fShowerShapeM20_EoverP->Fill(M20,EoverP);
+								}
+								
+							}
+							if(!fEMCEG1 && ! fEMCEG2){
+								fShowerShapeM02_EoverP->Fill(M02,EoverP);
+								fShowerShapeM20_EoverP->Fill(M20,EoverP);
+
+							}
+								
 						}
 						
 					}
@@ -3823,6 +3937,17 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 			fNonHFE->SetHistMassBack(fInvMassBack);
 			fNonHFE->SetHistMass(fInvMass);
 		}
+	
+		//Electron Information
+	Double_t fPhiE = -999;
+	Double_t fEtaE = -999;
+	Double_t fPtE = -999;
+	fPhiE = track->Phi();
+	fEtaE = track->Eta();
+	fPtE = track->Pt();
+
+	
+	
 		if(IsTPConly){
 			fNonHFE->SetHistAngleBack(fOpAngleBack2);
 			fNonHFE->SetHistAngle(fOpAngle2);
@@ -3830,21 +3955,30 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 			fNonHFE->SetHistDCA(fDCA2);
 			fNonHFE->SetHistMassBack(fInvMassBack2);
 			fNonHFE->SetHistMass(fInvMass2);
+			
+			
+				//to look the Invariant mass in pT bins
+			Double_t fPtBin_trigger2[11] = {1,2,4,6,8,10,12,14,16,18,20};
+			for(Int_t i = 0; i < 10; i++)
+			{
+				if(fPtE>=fPtBin_trigger2[i] && fPtE<fPtBin_trigger2[i+1])
+				{
+					fNonHFE->SetHistMassBack(fInvMassBack_pT[i]);
+					fNonHFE->SetHistMass(fInvMass_pT[i]); 
+				}
+			}
+
+			
 		}
+	
+			
 		
 		fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
 		
 			//index of track selected as partner
 		Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
 		
-			//Electron Information
-		Double_t fPhiE = -999;
-		Double_t fEtaE = -999;
-		Double_t fPtE = -999;
-		fPhiE = track->Phi();
-		fEtaE = track->Eta();
-		fPtE = track->Pt();
-		
+					
 			///_________________________________________________________________
 			///MC analysis
 		if(fIsMC)
