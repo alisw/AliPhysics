@@ -70,7 +70,8 @@ void AliEveADModule::LoadEsd(AliESDAD *adESD)
   //
   // Load AD ESD
   //
-
+  if (!adESD) return;
+  
   for (Int_t iChannel=0; iChannel < 16; ++iChannel) {
     Int_t iLayer; Int_t iModule; Float_t rHole;
     if (fIsASide) {
