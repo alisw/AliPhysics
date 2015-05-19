@@ -6,7 +6,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   // Usage example for EMCAL:
   //
   //   gSystem->Load("libPWGGAPHOSTasks");
-  //   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
+  //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
   //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(10); // 10 supermodules
   //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
   //   // taskQA->SetAvoidPileup(kFALSE); // some customization
@@ -17,8 +17,8 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   // Usage example for PHOS:
   //
   //   gSystem->Load("libPWGAPHOSTasks");
-  //   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
-  //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(4, 1);
+  //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
+  //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(5, 1);
   //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
   //   taskQA->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.1); // increase statistics
   //   // taskQA->SetAvoidPileup(kFALSE); // some customization
@@ -28,7 +28,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   //
   // nmods -- maximum supermodule number + 1:
   //   use 4 for EMCAL <= 2010;
-  //   use 4 for PHOS (PHOS numbers start from 1, not from zero);
+  //   use 4 for PHOS <=2013 (Run I), use 5 for PHOS >=2015 (PHOS numbers start from 1, not from zero);
   //   use 10 for EMCAL >= 2011;
   // det -- detector, 0/EMCAL, 1/PHOS;
   // fname -- output file name;
