@@ -74,10 +74,6 @@ AliFlowEvent::AliFlowEvent():
        fQxcvsV0[i] = 0x0;
        fQycvsV0[i] = 0x0;
     }
- for(Int_t i(0); i < 2; i++) {
-  fZNCQ[i] = 0.;
-  fZNAQ[i] = 0.;
- }
     //ctor
   cout << "AliFlowEvent: Default constructor to be used only by root for io" << endl;
 }
@@ -103,10 +99,6 @@ AliFlowEvent::AliFlowEvent(Int_t n):
        fQxcvsV0[i] = 0x0;
        fQycvsV0[i] = 0x0;
     }
- for(Int_t i(0); i < 2; i++) {
-  fZNCQ[i] = 0.;
-  fZNAQ[i] = 0.;
- }
 }
 
 //-----------------------------------------------------------------------
@@ -130,10 +122,6 @@ AliFlowEvent::AliFlowEvent(const AliFlowEvent& event):
      fQxcvsV0[i] = 0x0;
      fQycvsV0[i] = 0x0;
   }
- for(Int_t i(0); i < 2; i++) {
-  fZNCQ[i] = 0.;
-  fZNAQ[i] = 0.;
- }
 }
 
 //-----------------------------------------------------------------------
@@ -167,10 +155,6 @@ AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
      fQxcvsV0[i] = 0x0;
      fQycvsV0[i] = 0x0;
   }
- for(Int_t i(0); i < 2; i++) {
-  fZNCQ[i] = event.fZNCQ[i];
-  fZNAQ[i] = event.fZNAQ[i];
- }
 
   AliFlowEventSimple::operator=(event);
   return *this;
@@ -902,17 +886,6 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
     // from the VZERO oadb file or from the event header
     // if the user does not want to recenter, switch the flag
     fApplyTwisting = rpCuts->GetApplyTwisting();
-   // Q vectors from ZDC
-    AliVEvent* event = rpCuts->GetEvent();
-    AliVZDC* ZDCData = event->GetZDCData();
-    Double_t centrZNC[2] = {0.,0.};
-    Double_t centrZNA[2] = {0.,0.};
-    Double_t energyZNA = ZDCData->GetZNAEnergy();
-    Double_t energyZNC = ZDCData->GetZNCEnergy();
-    if(energyZNA>0 && energyZNC>0) {
-     ZDCData->GetZNCentroidInPbPb(1.,centrZNC,centrZNA);
-     this->SetZDC2Qsub(centrZNC,centrZNA);
-    }
   }
   if (sourcePOI == AliFlowTrackCuts::kBetaVZERO) {
       // probably no-one will choose vzero tracks as poi's ...
@@ -1734,24 +1707,6 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // FIXME as an ugly hack, for now I mark this as 999 to denote the experimental nature
     // of this and use it transparently without disrupting the existing calbiration
     fApplyRecentering = 999;
-}
-
-//_____________________________________________________________________________
-
-void AliFlowEvent::GetZDC2Qsub(AliFlowVector* Qarray)
-{
- Qarray[0].Set(fZNCQ[0],fZNCQ[1]);
- Qarray[1].Set(fZNAQ[0],fZNAQ[1]);
-}
-
-//-----------------------------------------------------------------------------
-
-void AliFlowEvent::SetZDC2Qsub(Double_t* QVC, Double_t* QVA)
-{
- fZNCQ[0] = QVC[0];
- fZNCQ[1] = QVC[1];
- fZNAQ[0] = QVA[0];
- fZNAQ[1] = QVA[1];
 }
 
 //-----------------------------------------------------------------------------

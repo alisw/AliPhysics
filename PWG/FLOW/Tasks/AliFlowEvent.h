@@ -86,8 +86,6 @@ public:
   void InsertTrack(AliFlowTrack*);
 
   virtual AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
-  virtual void GetZDC2Qsub(AliFlowVector* Qarray);
-  virtual void SetZDC2Qsub(Double_t* QVC, Double_t* QVA);
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
   void SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
@@ -113,8 +111,6 @@ private:
   TH1F*         fQxcvsV0[5];            //! recentering
   TH1F*         fQycvsV0[5];            //! recentering
   // END OF BETA TESTING
-  Double_t      fZNCQ[2];                  //! Q_1 vector from ZDCN-C
-  Double_t      fZNAQ[2];                  //! Q_1 vector from ZDCN-A
   AliVEvent*    fEvent;                 //! current event
   TArrayD*      fChi2A;                 //! chi vs cent for vzero A ep_2
   TArrayD*      fChi2C;                 //! chi vs cent for vzero C ep_2
