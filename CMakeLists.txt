@@ -294,6 +294,7 @@ else()
   add_subdirectory(TTherminator)
   add_subdirectory(VZERO)
   add_subdirectory(ZDC)
+  add_subdirectory(ALIGN)
 
   # Fortran modules
   if(CMAKE_Fortran_COMPILER)
