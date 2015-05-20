@@ -167,19 +167,19 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
   if(!fAODheader) AliFatal("Not a standard AOD");
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   Double_t mult = alicent->GetCentralityPercentile("V0M"); //in PbPb
-  fHistEv->Fill(mult);
 
   // EVENT SELECTION ********************
   //collision candidate
-  //if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) return;
+  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) return;
 
   //****** Multiplicity selection *********
-  Int_t fcent = -999;
-  if (mult >= 0 && mult <=20)  fcent = 0;
-  else if (mult >= 20 && mult <=39) fcent = 1;
-  else if (mult >= 40 && mult <=59) fcent = 2;
-  else if (mult >= 60 && mult <=90) fcent = 3;
-  else  return;
+  Int_t fcent = 0;
+  // Int_t fcent = -999;
+  // if (mult >= 0 && mult <=20)  fcent = 0;
+  // else if (mult >= 20 && mult <=39) fcent = 1;
+  // else if (mult >= 40 && mult <=59) fcent = 2;
+  // else if (mult >= 60 && mult <=90) fcent = 3;
+  // else  return;
 
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
   if (!vertex || vertex->GetNContributors()<=0) return;
@@ -209,6 +209,8 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
   Float_t zvtx = vertex->GetZ();
   if (TMath::Abs(zvtx) > 10) return;
 
+  fHistEv->Fill(mult);
+  cout << mult<< endl;
   //**** getting MC array ******
   TClonesArray  *arrayMC;
   arrayMC = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -217,6 +219,7 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
   int labels[20000];
   for (int il=0; il<20000; il++) labels[il] = -1;
 
+  cout << aodEvent->GetNumberOfTracks() << endl;
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i=0;i<aodEvent->GetNumberOfTracks();i++) {
     const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(aodEvent->GetTrack(i));
@@ -235,7 +238,7 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
     //get track
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTracks));
     if (!track) AliFatal("Not a standard AOD");
-    if (!track)continue;
+    if (!track) continue;
 
     UInt_t filterBit = 128;
     if(!track->TestFilterBit(filterBit))continue;
@@ -243,46 +246,46 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
     if (track->Eta() < -0.8 || track->Eta() > 0.8) continue;
     if (track->Pt() < 0.2 || track->Pt() > 20) continue;
 
-    //DCA
-    Double_t DCAXY;
-    Double_t DCAZ;
-    //  if(filterBit==(1 << (7))){
-    DCAXY = -TMath::Abs(track->DCA());
-    DCAZ = -TMath::Abs(track->ZAtDCA());
+    // //DCA
+    // Double_t DCAXY;
+    // Double_t DCAZ;
+    // //  if(filterBit==(1 << (7))){
+    // DCAXY = -TMath::Abs(track->DCA());
+    // DCAZ = -TMath::Abs(track->ZAtDCA());
 
-    if(!(DCAXY==-999 || DCAZ==-999)){
-      //if(TMath::Abs(DCAXY) > 0.0182 + 0.035*TMath::Power(track->Pt(), -1.01)) continue; //XY, Pt dep
-      //no DCA cut
-      //if(TMath::Abs(DCAXY) > 1000.0) {continue;} //XY
-      //if(TMath::Abs(DCAZ) > 1000.0) {continue;} //Z
-    }
-    else {
-      // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
-      // const AliAODVertex* vertex = (AliAODVertex*) aodEvent->GetPrimaryVertex(); (already defined above)
-      float vertexX  = -999.;
-      float vertexY  = -999.;
-      float vertexZ  = -999.;
+    // if(!(DCAXY==-999 || DCAZ==-999)){
+    //   //if(TMath::Abs(DCAXY) > 0.0182 + 0.035*TMath::Power(track->Pt(), -1.01)) continue; //XY, Pt dep
+    //   //no DCA cut
+    //   //if(TMath::Abs(DCAXY) > 1000.0) {continue;} //XY
+    //   //if(TMath::Abs(DCAZ) > 1000.0) {continue;} //Z
+    // }
+    // else {
+    //   // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
+    //   // const AliAODVertex* vertex = (AliAODVertex*) aodEvent->GetPrimaryVertex(); (already defined above)
+    //   float vertexX  = -999.;
+    //   float vertexY  = -999.;
+    //   float vertexZ  = -999.;
 
-      if(vertex) {
-        Double32_t fCov[6];
-        vertex->GetCovarianceMatrix(fCov);
-        if(vertex->GetNContributors() > 0) {
-          if(fCov[5] != 0) {
-            vertexX = vertex->GetX();
-            vertexY = vertex->GetY();
-            vertexZ = vertex->GetZ();
-          }
-        }
-      }
+    //   if(vertex) {
+    //     Double32_t fCov[6];
+    //     vertex->GetCovarianceMatrix(fCov);
+    //     if(vertex->GetNContributors() > 0) {
+    //       if(fCov[5] != 0) {
+    //         vertexX = vertex->GetX();
+    //         vertexY = vertex->GetY();
+    //         vertexZ = vertex->GetZ();
+    //       }
+    //     }
+    //   }
 
-      Double_t pos[3];
-      track->GetXYZ(pos);
+    //   Double_t pos[3];
+    //   track->GetXYZ(pos);
 
-      Double_t DCAX = pos[0] - vertexX;
-      Double_t DCAY = pos[1] - vertexY;
-      DCAZ = pos[2] - vertexZ;
-      DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-    }
+    //   Double_t DCAX = pos[0] - vertexX;
+    //   Double_t DCAY = pos[1] - vertexY;
+    //   DCAZ = pos[2] - vertexZ;
+    //   DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+    // }
 
     AliAODTrack* aodtrackpid;
 
@@ -326,20 +329,21 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
     double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
 
     if (!arrayMC) continue;
-
     //get coresponding MC particle
     Int_t label = TMath::Abs(track->GetLabel());
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(label);
 
     //********* PID - pions ********
     if (IsPionNSigma(track->P(),nSigmaTPCPi, nSigmaTOFPi)){
-      if (!MCtrk) continue;
-      recoParticleArray[1].Add(MCtrk);
+      //if (!MCtrk)
+      continue;
+      //recoParticleArray[1].Add(MCtrk);
     }
     //********* PID - kaons ********
     if (IsKaonNSigma(track->P(),nSigmaTPCK, nSigmaTOFK)){
-      if (!MCtrk) continue;
-      recoParticleArray[2].Add(MCtrk);
+      //if (!MCtrk)
+      continue;
+      //recoParticleArray[2].Add(MCtrk);
     }
     //********* PID - protons ********
     if (IsProtonNSigma(track->P(),nSigmaTPCP, nSigmaTOFP)){
@@ -402,7 +406,7 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
           int motherOfPosID = mcParticlePos->GetMother();
           int motherOfNegID = mcParticleNeg->GetMother();
           if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)){
-             AliAODMCParticle *MCv0 = (AliAODMCParticle*)arrayMC->At(motherOfPosID); //our V0 particle
+            AliAODMCParticle *MCv0 = (AliAODMCParticle*)arrayMC->At(motherOfPosID); //our V0 particle
             if (!MCv0) continue;
             recoParticleArray[4].Add(MCv0);
           }
@@ -420,11 +424,13 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
     AliError("Array of MC particles not found");
     return;
   }
+  cout << arrayMC->GetEntries() << endl;
   // loop over MC stack
   for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
     if (!MCtrk) continue;
     Int_t PDGcode = MCtrk->GetPdgCode();
+    if (! (PDGcode==3122 || PDGcode==2212)) continue;
     Int_t MCTrkMotherID = MCtrk->GetMother();
     Int_t PDGcodeMother = 0;
     if (MCTrkMotherID > -1) { // particle has a mother
@@ -435,29 +441,32 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
     if (MCtrk->Eta() < -0.8 || MCtrk->Eta() > 0.8) continue;
     if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 5) continue;
 
-    // Filling histograms for MC truth particles
-    if(PDGcode==211){
-      fParticleOriginMC[fcent*PARTTYPES+1]->Fill(PDGcodeMother);
-    }
-    else if(PDGcode==321) {
-      fParticleOriginMC[fcent*PARTTYPES+2]->Fill(PDGcodeMother);
-    }
-    else if(PDGcode==2212) {
+    // // filling histograms for MC truth particles
+    // if(PDGcode==211){
+    //   continue;
+    //   //fParticleOriginMC[fcent*PARTTYPES+1]->Fill(PDGcodeMother);
+    // }
+    // else if(PDGcode==321) {
+    //   continue;
+    //   //fParticleOriginMC[fcent*PARTTYPES+2]->Fill(PDGcodeMother);
+    // }
+    // else
+    if(PDGcode==2212) {
       fParticleOriginMC[fcent*PARTTYPES+3]->Fill(PDGcodeMother);
     }
     else if(PDGcode==3122) {
       fParticleOriginMC[fcent*PARTTYPES+4]->Fill(PDGcodeMother);
     }
 
-    //Filling data from MC truth particles only for particles that were reconstruced
-    if (recoParticleArray[1].Contains(MCtrk)){ //Pions
-      if(PDGcode==211)
-      fParticleOriginRec[fcent*PARTTYPES+1]->Fill(PDGcodeMother);
-    }
-    if (recoParticleArray[2].Contains(MCtrk)){ //Kaons
-      if(PDGcode==321)
-      fParticleOriginRec[fcent*PARTTYPES+2]->Fill(PDGcodeMother);
-    }
+    // //Filling data from MC truth particles only for particles that were reconstruced
+    // if (recoParticleArray[1].Contains(MCtrk)){ //Pions
+    //   if(PDGcode==211)
+    //   fParticleOriginRec[fcent*PARTTYPES+1]->Fill(PDGcodeMother);
+    // }
+    // if (recoParticleArray[2].Contains(MCtrk)){ //Kaons
+    //   if(PDGcode==321)
+    //   fParticleOriginRec[fcent*PARTTYPES+2]->Fill(PDGcodeMother);
+    // }
     if (recoParticleArray[3].Contains(MCtrk)){ //Protons
       if(PDGcode==2212){
         fParticleOriginRec[fcent*PARTTYPES+3]->Fill(PDGcodeMother);
