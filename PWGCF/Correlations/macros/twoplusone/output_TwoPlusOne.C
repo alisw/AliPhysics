@@ -8,8 +8,8 @@ Float_t gVertex = 6.9;
 Float_t gZVtxRange = -1;
 Float_t gAxis = 0;
 Float_t gBasisSize = 350;
-Float_t g_phi_bin = 0.51;//0.85;//0.68;//0.32;//bins of 0.174532  //maximum is pi/4, because max(delta phi) + 2 alpha < pi/2 (because at Delta phi = pi/2 the number of background triggers are measured)
-Float_t g_eta_bin = 0.59;//0.79;//0.59;//bins of 0.2
+Float_t g_phi_bin = 0.34;//0.85;//0.68;//0.32;//bins of 0.174532  //maximum is pi/4, because max(delta phi) + 2 alpha < pi/2 (because at Delta phi = pi/2 the number of background triggers are measured)
+Float_t g_eta_bin = 0.39;//0.79;//0.59;//bins of 0.2
 
 Float_t gSubtractFlow_start = 1.01;//1.01;//variable in eta
 Float_t gSubtractFlow_end = 1.39;//1.39;
@@ -23,6 +23,9 @@ Float_t gSubtractBaseline_end = 1.396;//1.396;
 //char* path = "PWGCF_TwoPlusOne/addedEvents_";
 char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_lowPt";//1095
 //char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_bgSame";//1181
+//char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_leadingPt";//1269
+//char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_triggerTwo";//1269 + 1278
+//char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_highPt";//1326
 
 //static const int pt_assoc_bins_number = 8;
 //Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0};
@@ -34,10 +37,25 @@ char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_lowPt";//1095
 //Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.75, 1.5, 2.5, 3.5, 5.0};
 //Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.25, 0.5, 0.5, 0.5, 1.0};
 
-static const int pt_assoc_bins_number = 14;
-Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 0.75, 1.0, 1.25, 1.50, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0};
-Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.625, 0.875, 1.125, 1.375, 1.75, 2.25, 2.75, 3.25, 3.75, 4.5, 5.5, 7.0, 9.0};
-Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.125, 0.125, 0.125, 0.125, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1.0, 1.0};
+//static const int pt_assoc_bins_number = 7;
+//Double_t pt_assoc_bins[pt_assoc_bins_number] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0};
+//Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {1.5, 2.5, 3.5, 4.5, 5.5, 7.0};
+//Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.5, 0.5, 0.5, 0.5, 0.5, 1.0};
+
+static const int pt_assoc_bins_number = 6;
+Double_t pt_assoc_bins[pt_assoc_bins_number] = {2.0, 3.0, 4.0, 6.0, 8.0, 10};
+Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {2.5, 3.5, 5.0, 7.0, 9.0};
+Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.5, 0.5, 1.0, 1.0, 1.0};
+
+//static const int pt_assoc_bins_number = 12;
+//Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 0.75, 1.0, 1.25, 1.50, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0};
+//Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.625, 0.875, 1.125, 1.375, 1.75, 2.25, 2.75, 3.25, 3.75, 4.5, 5.5};
+//Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.125, 0.125, 0.125, 0.125, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5};
+
+//static const int pt_assoc_bins_number = 10;
+//Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 1.0, 1.50, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0};
+//Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.75, 1.25, 1.75, 2.25, 2.75, 3.25, 3.75, 4.5, 5.5};
+//Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5};
 
 
 //static const int pt_assoc_bins_number = 8;
@@ -181,6 +199,7 @@ TH1D* subtractFlow(TH2* etaPhi, Double_t start, Double_t end){
 
   etaPhi_proj->Scale(1.0/usedBins);
 
+  
   for(int i=0;i<=etaPhi->GetNbinsX();i++){
     double subtract = etaPhi_proj->GetBinContent(i);
     double subtract_err = etaPhi_proj->GetBinError(i);
@@ -192,12 +211,73 @@ TH1D* subtractFlow(TH2* etaPhi, Double_t start, Double_t end){
       etaPhi->SetBinError(i, j, error);
     }
   }
+  
+  return etaPhi_proj;
+}
+
+//returns flow distribution
+//flow from 1.0 > |eta| > 1.6 is subtracted from the rest of the histogram
+//the flow in the TH2 is subtracted
+TH1D* subtractFlow(TH2* etaPhi, TH2* etaPhi_1plus1, Double_t start, Double_t end){
+  start += 0.01;
+  end -= 0.01;
+  int firstbin = etaPhi_1plus1->GetYaxis()->FindBin(start);
+  int lastbin = etaPhi_1plus1->GetYaxis()->FindBin(end);
+
+  TH1D* etaPhi_proj = etaPhi_1plus1->ProjectionX("_px", firstbin, lastbin)->Clone("_clone");
+  int usedBins = lastbin - firstbin + 1;
+
+  firstbin = etaPhi_1plus1->GetYaxis()->FindBin(-1.0*end);
+  lastbin = etaPhi_1plus1->GetYaxis()->FindBin(-1.0*start);
+  TH1D* signal2 = etaPhi_1plus1->ProjectionX("_px2", firstbin, lastbin);
+  usedBins += lastbin - firstbin + 1;
+  etaPhi_proj->Add(signal2, 1.0);
+
+  etaPhi_proj->Scale(1.0/usedBins);
+
+  for(int i=0;i<=etaPhi->GetNbinsX();i++){
+    double subtract = etaPhi_proj->GetBinContent(i);
+    double subtract_err = etaPhi_proj->GetBinError(i);
+    //Printf("bin center of x axis: %f ", etaPhi_1plus1->GetXaxis()->GetBinCenter(i));
+    //Printf("subtract %i, %f ", i, subtract);
+
+    for(int j=0;j<etaPhi->GetNbinsY();j++){
+      //Printf("content of %i (=%f) is %f ", j, etaPhi->GetYaxis()->GetBinCenter(j), etaPhi->GetBinContent(i,j));
+      double content = etaPhi->GetBinContent(i,j)-subtract;
+      double error = TMath::Sqrt(TMath::Power(subtract_err, 2) + TMath::Power(etaPhi->GetBinError(i,j), 2));
+      etaPhi->SetBinContent(i,j,content);
+      etaPhi->SetBinError(i, j, error);
+    }
+  }
 
   return etaPhi_proj;
 }
 
+
+//implemented if needed
+//in the normal analysis this screws up the whole pT spectrum
+void removeWing(TH2D* h2_phi){
+
+  Float_t width = 1.5;
+  TH1* proj = h2_phi->ProjectionY(Form("projx", h2_phi->GetName()), h2_phi->GetXaxis()->FindBin(TMath::Pi() - width), h2_phi->GetXaxis()->FindBin(TMath::Pi()+ width));
+  proj->Fit("pol0", "0");
+  //new TCanvas; proj->DrawCopy();
+  proj->Divide(proj->GetFunction("pol0"));
+  //new TCanvas; proj->DrawCopy();
+  //new TCanvas; hist->DrawCopy("SURF1");
+  for (Int_t x=1; x<=h2_phi->GetNbinsX(); x++)
+    for (Int_t y=1; y<=h2_phi->GetNbinsY(); y++)
+      {
+	if (proj->GetBinContent(y) <= 0)
+	  continue;
+	h2_phi->SetBinContent(x, y, h2_phi->GetBinContent(x, y) / proj->GetBinContent(y));
+	h2_phi->SetBinError(x, y, h2_phi->GetBinError(x, y) / proj->GetBinContent(y));
+      }
+  
+}
+
   //use fit method to subtract the baseline if the subtractFlow method doesn't work because of poor statistics
-Double_t subtractBaseline(TH1D* h1_phi){
+Double_t subtractBaseline(TH1D* h1_phi, Int_t execute = 1){
   
   //do not use information inside the cone to subtract the background
   if(g_phi_bin > gSubtractBaseline_start) 
@@ -225,12 +305,15 @@ Double_t subtractBaseline(TH1D* h1_phi){
   //Double_t subtract_err = par1Err;
   Printf("subtract %f +/- %f ", subtract, subtract_err);
   
-  
-  for(int i=0; i<=h1_phi->GetNbinsX(); i++){
-    h1_phi->SetBinContent(i, h1_phi->GetBinContent(i) - subtract);
-    Double_t bin_error = TMath::Sqrt(TMath::Power(subtract_err, 2) + TMath::Power(h1_phi->GetBinError(i), 2));
-    h1_phi->SetBinError(i, bin_error);
-  }
+  //subtract =  h1_phi->GetBinContent(h1_phi->GetMinimumBin());
+  //subtract_err = h1_phi->GetBinError(h1_phi->GetMinimumBin());
+
+  if(execute>0)
+    for(int i=0; i<=h1_phi->GetNbinsX(); i++){
+      h1_phi->SetBinContent(i, h1_phi->GetBinContent(i) - subtract);
+      Double_t bin_error = TMath::Sqrt(TMath::Power(subtract_err, 2) + TMath::Power(h1_phi->GetBinError(i), 2));
+      h1_phi->SetBinError(i, bin_error);
+    }
 
   return subtract;
 }
@@ -238,7 +321,7 @@ Double_t subtractBaseline(TH1D* h1_phi){
 
 Double_t getPhiBinsForAnalysis(Double_t p_t_assoc){
 
-  //if(true) return 0.17;
+  if(true) return 0.34;
 
   if(p_t_assoc<1.0){
     return 0.68;
@@ -257,7 +340,7 @@ Double_t getPhiBinsForAnalysis(Double_t p_t_assoc){
 
 Double_t getEtaBinsForAnalysis(Double_t p_t_assoc){
 
-  //if(true) return 0.19;
+  if(true) return 0.39;
 
   if(p_t_assoc<1.0){
     return 0.79;
@@ -266,7 +349,7 @@ Double_t getEtaBinsForAnalysis(Double_t p_t_assoc){
   }else if(p_t_assoc<3.0){
     return 0.59;
   }else if(p_t_assoc<4.0){
-    return 0.59;
+    return 0.39;//0.59;
   }else if(p_t_assoc<6.0){
     return 0.39;
   }else{
@@ -360,6 +443,8 @@ void showAllMult(const char* fileName, Int_t pt1Minimum = 4.0, Int_t pt1Maximum 
 
 void showMultCompare(const char* filename, Int_t pt1Minimum = 4.0, Int_t pt1Maximum = 14.0, Int_t pt2Minimum = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Int_t side = 0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1){
 
+  Int_t show2Dplots = 2;
+
   TLegend *leg  = new TLegend(0.65,0.7,0.85,0.9);
   leg->SetFillColor(10);
   leg->SetFillStyle(0);
@@ -367,15 +452,16 @@ void showMultCompare(const char* filename, Int_t pt1Minimum = 4.0, Int_t pt1Maxi
   leg->SetTextFont(gStyle->GetTextFont());
   leg->SetTextSize(gStyle->GetTextSize()*1.0);
 
-  TH1D* central = getAnalysis(filename, pt1Minimum, pt1Maximum, pt2Minimum, ptAssocMin, ptAssocMax, 6.9, 1, 5, side, 1, 1, 0, subtractMixedComb, subtractFlow);
+  TH1D* central = (TH1D*)(getAnalysis(filename, pt1Minimum, pt1Maximum, pt2Minimum, ptAssocMin, ptAssocMax, 8.9, 1, 5, side, 1, 0, show2Dplots, subtractMixedComb, subtractFlow))->Clone("_central");
 
-  TCanvas* multCompare = new TCanvas("multCompare", "multCompare", gBasisSize+100, gBasisSize+50, 2*gBasisSize, 2*gBasisSize);
   central->SetLineColor(kBlue);
   leg->AddEntry(central->Clone(),"central","l");
   subtractBaseline(central);
-  central->DrawCopy();
 
-  TH1D* semiCentral = getAnalysis(filename, pt1Minimum, pt1Maximum, pt2Minimum, ptAssocMin, ptAssocMax, 6.9, 9, 10, side, 1, 1, 0, subtractMixedComb, subtractFlow);
+  TH1D* semiCentral = getAnalysis(filename, pt1Minimum, pt1Maximum, pt2Minimum, ptAssocMin, ptAssocMax, 8.9, 9, 10, side, 2, 0, show2Dplots, subtractMixedComb, subtractFlow);
+
+  TCanvas* multCompare = new TCanvas("multCompare", "multCompare", gBasisSize+100, gBasisSize+50, 2*gBasisSize, 2*gBasisSize);
+  central->DrawCopy();
 
   semiCentral->SetLineColor(kRed);
   subtractBaseline(semiCentral);
@@ -395,16 +481,24 @@ void showMultCompare(const char* filename, Int_t pt1Minimum = 4.0, Int_t pt1Maxi
   //getRawAnalysis(filename, pt1Minimum, pt1Maximum, pt2Minimum, ptAssocMin, ptAssocMax, 3, 3);
 }
 
-void showAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t subtractMixedComb = 0, Int_t subtractFlow = 0){
+void showAnalysis_all(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Int_t subtractMixedComb = 0, Int_t subtractFlow = 0){
+
+  showAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 1, 6, subtractMixedComb, subtractFlow, 0);
+  showAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 10, 11, subtractMixedComb, subtractFlow, 1);
+
+}
+
+
+void showAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t subtractMixedComb = 0, Int_t subtractFlow = 0, Int_t subtractBaseline = 0){
 
   TLegend* leg = getLegend();
   Int_t showPlots = 0;
   Double_t vertex = 8.9;
   
-  TH1* near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 0, 1, 1, showPlots, subtractMixedComb, subtractFlow)->Clone();
-  TH1* near_pure = getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 6, 2, 1, showPlots, subtractMixedComb, subtractFlow)->Clone();
+  TH1* near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 0, 1, 1, showPlots, subtractMixedComb, subtractFlow, NULL, NULL, 0)->Clone();
+  TH1* near_pure = getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 6, 2, 1, showPlots, subtractMixedComb, subtractFlow, NULL, NULL, 0)->Clone();
 
-  TCanvas* c1 = new TCanvas("near", "near", gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
+  TCanvas* c1 = new TCanvas(Form("near, baseline subtraction %i", subtractBaseline), Form("near, baseline subtraction %i", subtractBaseline), (1+subtractBaseline)*gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
   near->DrawCopy();
 
   near_pure->SetLineColor(kRed);
@@ -425,10 +519,10 @@ void showAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
   */
   
 showPlots = 0;
-  TCanvas* c2 = new TCanvas("away", "away", gBasisSize+50, 2*gBasisSize+50, gBasisSize, gBasisSize);
+ TCanvas* c2 = new TCanvas(Form("away, baseline subtraction %i", subtractBaseline), Form("away, baseline subtraction %i", subtractBaseline), (1+subtractBaseline)*gBasisSize+50, 2*gBasisSize+50, gBasisSize, gBasisSize);
 
-  TH1* away = getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 1, 2, 1, showPlots, subtractMixedComb, subtractFlow)->Clone();
-  TH1* away_pure = getAnalysis(fileName, pt2Min, pt1Min, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 6, 2, 1, showPlots, subtractMixedComb, subtractFlow);
+  TH1* away = getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 1, 2, 1, showPlots, subtractMixedComb, subtractFlow, NULL, NULL, 0)->Clone();
+  TH1* away_pure = getAnalysis(fileName, pt2Min, pt1Min, pt2Min, ptAssocMin, ptAssocMax, vertex, multBinBegin, multBinEnd, 6, 2, 1, showPlots, subtractMixedComb, subtractFlow, NULL, NULL, 0);
 
   away->DrawCopy();
   away_pure->SetLineColor(kRed);
@@ -439,6 +533,35 @@ showPlots = 0;
   leg2->AddEntry(away_pure, "away pure BG", "l");
   leg2->Draw("same");
   
+
+
+    Double_t phi_bin = getPhiBinsForAnalysis(ptAssocMin);
+    Int_t bin_start = near->FindBin(-1*phi_bin);
+    Int_t bin_end = near->FindBin(phi_bin);
+
+  Double_t error[4];
+
+  Double_t base1 = subtractBaseline((TH1D*)near, 0);
+  Double_t base2 = subtractBaseline((TH1D*)near_pure, 0);
+  Double_t base3 = subtractBaseline((TH1D*)away, 0);
+  Double_t base4 = subtractBaseline((TH1D*)away_pure, 0);
+
+    Double_t error;
+    Double_t content = near->IntegralAndError(bin_start, bin_end, error[0]);
+    Printf("near %f +/- %f, subtraction %f ", content, error[0], base1);
+
+    Double_t error2;
+    Double_t content2 = near_pure->IntegralAndError(bin_start, bin_end, error[1]);
+    Printf("near pure BG %f +/- %f, subtraction %f ", content2, error[1], base2);
+
+    Double_t error3;
+    Double_t content3 = away->IntegralAndError(bin_start, bin_end, error[2]);
+    Printf("away %f +/- %f, subtraction %f ", content3, error[2], base3);
+
+    Double_t error4;
+    Double_t content4 = away_pure->IntegralAndError(bin_start, bin_end, error[3]);
+    Printf("away pure BG %f +/- %f, subtraction %f ", content4, error[3], base4);
+
 }
 
 void peakDifference_mult(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1){
@@ -633,24 +756,54 @@ void peakDifference(const char* fileName, double pt1Min = 4.0, double pt1Max = 1
 
 void create_peakDifference_pictures(const char* fileName){
 
-  Int_t subtractMixedComb = 0;
+  Int_t subtractMixedComb = 1;
   Int_t subtractFlow = 1;
 
   gROOT->SetBatch(kTRUE);
   
-  Printf("peakDifference_draw(fileName, 6, 8, 4, 1, 1, 1");
-  peakDifference_draw(fileName, 6, 8, 4, 1, subtractMixedComb, subtractFlow);
-  Printf("peakDifference_draw(fileName, 6, 8, 6, 1, 1, 1");
-  //peakDifference_draw(fileName, 6, 8, 6, 1, subtractMixedComb, subtractFlow);
-  Printf("peakDifference_draw(fileName, 8, 10, 4, 1, 1, 1");
-  //peakDifference_draw(fileName, 8, 10, 4, 1, subtractMixedComb, subtractFlow);
-  Printf("peakDifference_draw(fileName, 8, 10, 6, 1, 1, 1");
-  //peakDifference_draw(fileName, 8, 10, 6, 1, subtractMixedComb, subtractFlow);
-  Printf("peakDifference_draw(fileName, 10, 12, 4, 1, 1, 1");
-  //peakDifference_draw(fileName, 10, 12, 4, 1, subtractMixedComb, subtractFlow);
-  Printf("peakDifference_draw(fileName, 10, 12, 6, 1, 1, 1");
-  //peakDifference_draw(fileName, 10, 12, 6, 1, subtractMixedComb, subtractFlow);
+  for(int mode=1; mode<=4; mode++){
+    //peakDifference_draw(fileName, 6, 10, 4, 1, subtractMixedComb, subtractFlow);
+
+    //peakDifference_draw(fileName, 4, 6, 4, 1, subtractMixedComb, subtractFlow, mode);
+    //peakDifference_draw(fileName, 6, 8, 6, 1, subtractMixedComb, subtractFlow);
   
+    //peakDifference_draw(fileName, 6, 8, 4, 1, subtractMixedComb, subtractFlow, mode);
+    //peakDifference_draw(fileName, 6, 8, 6, 1, subtractMixedComb, subtractFlow, mode);
+    peakDifference_draw(fileName, 8, 12, 4, 1, subtractMixedComb, subtractFlow, mode);
+    peakDifference_draw(fileName, 8, 12, 6, 1, subtractMixedComb, subtractFlow, mode);
+
+    peakDifference_draw(fileName, 12, 16, 4, 1, subtractMixedComb, subtractFlow, mode);
+    peakDifference_draw(fileName, 12, 16, 6, 1, subtractMixedComb, subtractFlow, mode);
+
+    //peakDifference_draw(fileName, 8, 14, 4, 1, subtractMixedComb, subtractFlow, mode);
+
+    //peakDifference_draw(fileName, 8, 12, 3, 1, subtractMixedComb, subtractFlow);
+    //peakDifference_draw(fileName, 8, 12, 4, 1, subtractMixedComb, subtractFlow);
+    //peakDifference_draw(fileName, 8, 12, 5, 1, subtractMixedComb, subtractFlow);
+  
+    
+    //peakDifference_draw(fileName, 8, 10, 4, 1, subtractMixedComb, subtractFlow);
+    //peakDifference_draw(fileName, 8, 10, 6, 1, subtractMixedComb, subtractFlow);
+
+    //peakDifference_draw(fileName, 10, 12, 4, 1, subtractMixedComb, subtractFlow);
+    //peakDifference_draw(fileName, 10, 12, 6, 1, subtractMixedComb, subtractFlow);
+
+    /*
+      Printf("peakDifference_draw(fileName, 6, 8, 4, 1, 1, 1");
+      peakDifference_draw(fileName, 6, 8, 4, 1, subtractMixedComb, subtractFlow); 
+      Printf("peakDifference_draw(fileName, 6, 8, 6, 1, 1, 1");
+      peakDifference_draw(fileName, 6, 8, 6, 1, subtractMixedComb, subtractFlow);
+      Printf("peakDifference_draw(fileName, 8, 10, 4, 1, 1, 1");
+      peakDifference_draw(fileName, 8, 10, 4, 1, subtractMixedComb, subtractFlow);
+      Printf("peakDifference_draw(fileName, 8, 10, 6, 1, 1, 1");
+      peakDifference_draw(fileName, 8, 10, 6, 1, subtractMixedComb, subtractFlow);
+      Printf("peakDifference_draw(fileName, 10, 12, 4, 1, 1, 1");
+      peakDifference_draw(fileName, 10, 12, 4, 1, subtractMixedComb, subtractFlow);
+      Printf("peakDifference_draw(fileName, 10, 12, 6, 1, 1, 1");
+      peakDifference_draw(fileName, 10, 12, 6, 1, subtractMixedComb, subtractFlow);
+    */
+  }
+
   TCanvas* can = new TCanvas("can_filename", "can_filename");
   TH1F* mixedDist = getMixedDist(fileName);
   mixedDist->SetTitle(fileName);
@@ -683,7 +836,13 @@ void create_peakDifference_pictures(const char* fileName){
 
 
 
-void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t yPos = 0,  Int_t subtractMixedComb = 1, Int_t subtractFlow = 1){
+void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t yPos = 0,  Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t mode = 3){
+
+  Double_t pt2Max = pt2Min+2;
+  char* foldername = "H";
+
+  Double_t saveGraph_min = 0.;
+  Double_t saveGraph_max = 3.;
 
   Int_t trigger_central_near = 0;
   Int_t trigger_central_away = 0;
@@ -694,19 +853,61 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   Int_t trigger_bg_central_away = 0;
   Int_t trigger_bg_semi_near = 0;
   Int_t trigger_bg_semi_away = 0;
+
+  //standard+pure background central
+  if(mode==1){
+    foldername = "D1_central";
+    saveGraph_min = 0.;
+    saveGraph_max = 10.;
+    TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 6, 0, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+    TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 6, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+    TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 6, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+    TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt2Max, pt2Min, 1, 6, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  }else if(mode==2){
+    //standard+pure background central
+    saveGraph_min = 0.;
+    saveGraph_max = 10.;
+    foldername = "D1_semi";
+    TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 10, 11, 0, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+    TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 10, 11, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+    TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 10, 11, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+    TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt2Max, pt2Min, 10, 11, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  }else if(mode==3){
+    //standard
+    foldername = "D2";
+    saveGraph_min = 0.;
+    saveGraph_max = 2.;
+    TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 6, 0, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+    TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 6, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+    TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 10, 11, 0, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+    TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 10, 11, 1, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  }else if(mode==4){
+    //pure background
+    foldername = "D3";
+    saveGraph_min = 0;//0.8;//0.8;
+    saveGraph_max = 2;//1.2;//1.2;
+    TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+    TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt2Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+    TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 13, 13, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+    TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt2Max, pt2Min, 13, 13, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  }else if(mode==5){
+    //pure background
+    foldername = "D4";
+    saveGraph_min = 0;//0.8;//0.8;
+    saveGraph_max = 2;//1.2;//1.2;
+    TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near, 3.9)->Clone());
+    TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away, 5.9)->Clone());
+    TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 13, 13, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near, 3.9)->Clone());
+    TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 13, 13, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away, 5.9)->Clone());
+  }
   
+
   /*
   TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 8, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
   TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
   TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
   TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
   */
-  
-  //standard+pure background central
-  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 0, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
-  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
-  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_semi_near)->Clone());
-  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_semi_away)->Clone());
   
   /*
   //near side over pure background
@@ -719,19 +920,19 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   /*
   //away side over pure background
   TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
-  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
-  //TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+  //TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
 
   TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 1, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
-  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
-  //TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  //TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
   */
   /*
-  //standard
-  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 0, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
-  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
-  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 0, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
-  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 1, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  //mixed comb as signal
+  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 4, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 5, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 4, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 5, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
   */
   /*
   //yield from background same
@@ -750,14 +951,8 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 4, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
   TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 5, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
   */
-  /*
-    //pure background
-  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
-  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+  
 
-  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
-  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
-  */
 
   //write out trigger info
   TCanvas* trigger_info = new TCanvas(Form("trigger info for %.1f > p\\_{T,1} > %.1f,  p\\_{T,12} > %.1f ", pt1Min, pt1Max, pt2Min), Form("trigger info for %.1f > p\\_{T,1} > %.1f,  p\\_{T,12} > %.1f ", pt1Min, pt1Max, pt2Min));
@@ -777,7 +972,7 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   trigger_value_semi_away->SetTextFont(62);
   trigger_value_semi_away->SetTextSize(0.05);
   trigger_value_semi_away->Draw();
-  trigger_info->SaveAs(Form("pt_spectra/trigger_info_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  trigger_info->SaveAs(Form("pt_spectra/%s/trigger_info_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min));
   //trigger info is saved
 
 
@@ -816,12 +1011,15 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   Printf("minimum of semi away is %f ", min);
   if(min>0 && min<minimum) minimum = min;
 
-  minimum = 0.002;
+  if(minimum<0.00000000001)
+    minimum = 0.002;
 
+  //  minimum = 0.0005;
+ 
   graph_central_near->SetMinimum((double)minimum/1.30);
   
     
-  graph_central_near->SetTitle(Form("p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min));
+  graph_central_near->SetTitle(Form("p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < %.1f", pt1Min, pt1Max, pt2Min, pt2Max));
   graph_central_near->Draw("AP");
 
   graph_central_away->SetMarkerColor(kRed);
@@ -840,12 +1038,12 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
 
   TLegend* leg = getLegend(0.40,0.75,0.85,0.9);
   
-  leg->AddEntry(graph_central_near,"semi near","l");
-  leg->AddEntry(graph_central_away,"semi away side","l");
-  //leg->AddEntry(graph_semi_near,"semi central near","l");
-  //leg->AddEntry(graph_semi_away,"semi central away","l");
-  leg->AddEntry(graph_semi_near,"pure BG semi near","l");
-  leg->AddEntry(graph_semi_away,"pure BG semi away","l");
+  leg->AddEntry(graph_central_near,"central near","l");
+  leg->AddEntry(graph_central_away,"central away side","l");
+  leg->AddEntry(graph_semi_near,"semi central near","l");
+  leg->AddEntry(graph_semi_away,"semi central away","l");
+  //leg->AddEntry(graph_semi_near,"pure BG central near","l");
+  //leg->AddEntry(graph_semi_away,"pure BG central away","l");
 
   /*
   leg->AddEntry(graph_central_near,"background same","l");
@@ -855,19 +1053,22 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   */
   leg->Draw("same");
   
-  can_graph->SaveAs(Form("pt_spectra/pt_spectrum_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  can_graph->SaveAs(Form("pt_spectra/%s/pt_spectrum_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min));
   
-  //save_graph_ratio(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near over away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/centralANDsemi_near_away_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min), "central", "semi central");
-  save_graph_ratio(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near over away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/centralANDsemi_near_away_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min), "2+1 no BG corr", "pure background");
+  //  save_graph_ratio(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near over away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < %.1f", pt1Min, pt1Max, pt2Min, pt2Max), Form("pt_spectra/%s/centralANDsemi_near_away_ratio_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min), "central", "semi central", saveGraph_min, saveGraph_max);
+  //    //save_graph_ratio(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near over away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < %.1f", pt1Min, pt1Max, pt2Min, pt2Max), Form("pt_spectra/%s/centralANDsemi_near_away_ratio_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min), "2+1 no BG corr", "pure background");
 
-  save_graph_ratio(graph_central_near, graph_semi_near, graph_central_away, graph_semi_away, elements, Form("near and semi central over semi p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/nearANDaway_central_semi_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min), "near", "away");
+  save_graph_ratio(graph_central_near, graph_semi_near, graph_central_away, graph_semi_away, elements, Form("near and semi central over semi p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < %.1f", pt1Min, pt1Max, pt2Min, pt2Max), Form("pt_spectra/%s/nearANDaway_central_semi_ratio_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min), "T1 associated", "T2 associated", saveGraph_min, saveGraph_max);
 
-  save_graph_difference(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near minus away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/centralANDsemi_near_away_diff_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  //mode 5
+  //  save_graph_ratio(graph_central_near, graph_semi_near, graph_central_away, graph_semi_away, elements, Form("near and semi central over semi p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < %.1f", pt1Min, pt1Max, pt2Min, pt2Max), Form("pt_spectra/%s/nearANDaway_central_semi_ratio_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min), "z vtx < 4", "z vtx < 6", saveGraph_min, saveGraph_max);
+
+  //  save_graph_difference(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near minus away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < %.1f", pt1Min, pt1Max, pt2Min, pt2Max), Form("pt_spectra/%s/centralANDsemi_near_away_diff_%.0f_%.0f_%.0f.eps", foldername, pt1Min, pt1Max, pt2Min));
   
 }
 
 
-void save_graph_ratio(TGraphErrors* first, TGraphErrors* second, TGraphErrors* third, TGraphErrors* forth, const Int_t bins, char* title, char* name, char* legend1, char* legend2){
+void save_graph_ratio(TGraphErrors* first, TGraphErrors* second, TGraphErrors* third, TGraphErrors* forth, const Int_t bins, char* title, char* name, char* legend1, char* legend2, double min, double max){
 
   Double_t start_x = 0.45;
   if(legend1=="near")
@@ -882,9 +1083,9 @@ void save_graph_ratio(TGraphErrors* first, TGraphErrors* second, TGraphErrors* t
     leg->AddEntry(graph, legend1, "p");
     leg->AddEntry(graph2, legend2, "p");
     
-    save_graph(graph, graph2, name, 0, leg);
+    save_graph(graph, graph2, name, 0, leg, min, max);
   }else{
-    save_graph(graph, NULL, name, 0, leg);
+    save_graph(graph, NULL, name, 0, leg, min, max);
   }
 
 }
@@ -906,7 +1107,7 @@ void save_graph_difference(TGraphErrors* first, TGraphErrors* second, TGraphErro
   leg->AddEntry(graph,  Form("\\Delta E = %.1f \\pm %.1f", diff1, diff1_err),"");
   leg->AddEntry(graph2,  Form("\\Delta E = %.1f \\pm %.1f", diff2, diff2_err),"");
 
-  save_graph(graph, graph2, name, 1, leg);
+  save_graph(graph, graph2, name, 1, leg, 0, 0);
 
 }
 
@@ -914,14 +1115,14 @@ void save_graph_difference(TGraphErrors* first, TGraphErrors* second, TGraphErro
 //mode: 0 ratio of the graphs
 //mode: 1 difference of the graphs
 //returns difference of the graphs
-void save_graph(TGraphErrors* first, TGraphErrors* second, char* name, int mode, TLegend *leg){
+void save_graph(TGraphErrors* first, TGraphErrors* second, char* name, int mode, TLegend *leg, double min, double max){
   TCanvas* can_graph_ratio = new TCanvas("can_saveGraph", "can_saveGraph", gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
   if(mode==0){
     //first->SetMinimum(0.4);
     //first->SetMaximum(1.6);
 
-    first->SetMinimum(0);
-    first->SetMaximum(3);
+    first->SetMinimum(min);
+    first->SetMaximum(max);
 
     //first->SetMinimum(0.2);
     //first->SetMaximum(1.8);
@@ -952,14 +1153,27 @@ void save_graph(TGraphErrors* first, TGraphErrors* second, char* name, int mode,
 
   leg->Draw("same");
  
+  can_graph_ratio->SetGridx();
+  can_graph_ratio->SetGridy();
   can_graph_ratio->SaveAs(name);
 }
 
 TGraphErrors* save_graph_compute(TGraphErrors* first, TGraphErrors* second, const Int_t bins, char* title, int mode, Double_t* diff, Double_t* diff_err){
-  Double_t content_x[bins];
-  Double_t content_y[bins];
-  Double_t x_error[bins];
-  Double_t y_error[bins];
+
+  Printf("bins %i ", bins);
+
+  //for not identifiable reasons the use of bins doesn't work and produced an array out of index error
+
+  //Double_t content_x[bins];
+  //Double_t content_y[bins];
+  //Double_t x_error[bins];
+  //Double_t y_error[bins];
+
+  Double_t content_x[pt_assoc_bins_number];
+  Double_t content_y[pt_assoc_bins_number];
+  Double_t x_error[pt_assoc_bins_number];
+  Double_t y_error[pt_assoc_bins_number];
+
   for(int i=0; i<bins; i++){
     content_x[i] = 0;
     content_y[i] = 0;
@@ -985,7 +1199,7 @@ TGraphErrors* save_graph_compute(TGraphErrors* first, TGraphErrors* second, cons
 	Printf("calls save graph with no correct mode");
 	return;
       }
-    }else{Printf("content or content error is smaller or equal to 0");}
+    }else{Printf("content (%f) or content error (%f) is smaller or equal to 0", content_second, error_second); content_second = 0.; error_second = 0.;}
   }
    //if this is mode 1 (difference of the graphs) this calculates the difference of the plots
   //Double_t diff = 0;
@@ -998,20 +1212,20 @@ TGraphErrors* save_graph_compute(TGraphErrors* first, TGraphErrors* second, cons
     *diff_err = TMath::Sqrt(*diff_err);
 
   }
-  TGraphErrors* graph = new TGraphErrors(bins, content_x, content_y, x_error, y_error);
+  TGraphErrors* graph = new TGraphErrors(bins-1, content_x, content_y, x_error, y_error);
   graph->SetTitle(title);
   graph->GetXaxis()->SetTitle("p_{T,assoc} (GeV/c)");
 
   return graph;
 }
 
-
+//TGraphErrors* peakDifference_graph(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t side = 0, Int_t yPos = 0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t* trigger = NULL, Int_t* triggerBackground = NULL, double vtx = 9.9){
 TGraphErrors* peakDifference_graph(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t side = 0, Int_t yPos = 0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t* trigger = NULL, Int_t* triggerBackground = NULL){
   Double_t content[pt_assoc_bins_number-1];
   Double_t error[pt_assoc_bins_number-1];
 
   for(int i=0; i<pt_assoc_bins_number-1; i++){
-    TH1* near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 8.9, multBinBegin, multBinEnd, side, 1, 1, 0, subtractMixedComb, subtractFlow, trigger, triggerBackground)->Clone();
+    TH1* near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 5.9, multBinBegin, multBinEnd, side, 1, 1, 0, subtractMixedComb, subtractFlow, trigger, triggerBackground)->Clone();
     
     Double_t phi_bin = getPhiBinsForAnalysis(pt_assoc_bins[i]);
 
@@ -1085,7 +1299,7 @@ void show1plus1(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0,
   //for 1+1 there is no mixed comb
   Int_t subtractMixedComb = 0;
 
-  const int pt1_bins = 2;//(pt1Max-pt1Min)/2;
+  const int pt1_bins = (pt1Max-pt1Min)/2;
   static const int pt1_bins_max = 20;
 
   if(pt1_bins>pt1_bins_max){
@@ -1188,6 +1402,8 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
   pt2Min += 0.01;
   ptAssocMin += 0.01;
   ptAssocMax -= 0.01;
+
+  Double_t pt2Max = pt2Min+1.98;
   
   AliTwoPlusOneContainer* h = (AliTwoPlusOneContainer*) GetTwoPlusOne(fileName);
 
@@ -1202,11 +1418,11 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
 
   h->GetData()->SetPtRange(ptAssocMin, ptAssocMax);
   h->GetData()->SetPt2Min(pt2Min);
-  h->GetData()->SetPt2Max(pt2Min+1.98);
+  h->GetData()->SetPt2Max(pt2Max);
   h->GetData()->SetZVtxRange(-1*setVertex, setVertex);
- 
+  
   //GetSumOfRatios2(mixed, step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, normalizePerTrigger, stepForMixed)
-  TH2D* h2_etaPhi;
+  //TH2D* h2_etaPhi;
   TH2D* h2_etaPhi_mixedComb;
   TH2D* h2_etaPhi_backgroundSame;
 
@@ -1219,14 +1435,16 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
       h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_mixed, &trigger_etaPhi);
     else  if(step==6){
       h->GetData()->SetPt2Max(-1);
+      h->GetData()->SetPt2Min(-1);
       h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_etaPhi);
-      if(pt1Min<5){
+      if(pt1Min<5 && pt2Min > 0){
 	Int_t trigger_etaPhi2;
-	TH2D* h2_etaPhi2 = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min+2, pt1Max+2, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_etaPhi2);
-	//h2_etaPhi->Scale(0.90);
-	//h2_etaPhi->Add(h2_etaPhi2, 0.10);
+	//TH2D* h2_etaPhi2 = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min+2, pt1Max+2, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_etaPhi2);
+	//h2_etaPhi->Scale(0.93);
+	//h2_etaPhi->Add(h2_etaPhi2, 0.07);
       }
-      h->GetData()->SetPt2Max(pt2Min+1.98);
+      h->GetData()->SetPt2Max(pt2Max);
+      h->GetData()->SetPt2Min(pt2Min);
     }
 
     if(trigger!=NULL)
@@ -1244,16 +1462,13 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
     //don't need to use getMixedComb_scaled_backgroundSame, see compareScaledMixedComb which shows that both methods are identical but here getSumOfRatios is used which makes it easier (and safer against errors)
     //the 1+1 analysis can only be used if the full analysis was done within the same pt bins
     h->GetData()->SetPt2Max(-1);//1+1 spectrum has no real information about pt2
+    h->GetData()->SetPt2Min(-1);
     if(step==0){
       Printf("USE normal method, step %i", step);
       h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_mixed_comb);
     }else if(step==1){
       Printf("USE normal METHOD, step %i", step);
-      if(pt1Min>pt2Min){
-	h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Min, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_mixed_comb);
-      }else
-	h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_mixed_comb);
-	//h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
+      h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt2Max, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_mixed_comb);
     }else{ //this is never used, it's the old method of getting the background
       Printf("#########################");
       Printf("USE OLD BACKGROUND METHOD, step %i", step);
@@ -1261,7 +1476,7 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
       h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_mixed, &trigger_mixed_comb);
     }
     /*
-    h->GetData()->SetPtRange(pt2Min, pt2Min+1.98);
+    h->GetData()->SetPtRange(pt2Min, pt2Max);
     Int_t trig2_1plus1_trigger = 0;
     TH2D* trig2_1plus1 = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trig2_1plus1_trigger);
     TH1D* h1_trig2_1plus1 = trig2_1plus1->ProjectionX("px_trigger estmation", -1, -1);
@@ -1274,13 +1489,18 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
     h1_trig2_1plus1->DrawCopy();
     */
 
-    h->GetData()->SetPt2Max(pt2Min+1.98);
+    h->GetData()->SetPt2Max(pt2Max);
+    h->GetData()->SetPt2Min(pt2Min);
     h2_etaPhi_mixedComb->Scale(trigger_mixed_comb);
 
     h->GetData()->GetSumOfRatios2(h->GetData(), step_backgroundSame, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_background);
+    //h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_background);
+
+    //trigger_background -= (trigger_same-trigger_background);//assumption that the background is too big
 
     //Printf("trigger same: %i, trigger 1plus1 minimum: %i ", trigger_same, guessed_trigger);
     //trigger_background_same *= 2;//error in the plots for runs 968 and 973
+    //trigger_background = trigger_same*0.9;
     double trigger_ratio = (double)trigger_background;
     if(trigger_mixed_comb>0)
       trigger_ratio /= trigger_mixed_comb;
@@ -1302,13 +1522,15 @@ TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 
     if(triggerBackgroundSame!=NULL)
       *triggerBackgroundSame = trigger_background;
 
+
+
   }else{
     Printf("cannot subtract mixed combinatorics from step %i ", step);
     return 0;
   }
 
-  if(subtractFlow)
-    subtractFlow(h2_etaPhi, 1.0, 1.4);
+  //if(subtractFlow)
+  //subtractFlow(h2_etaPhi, 1.0, 1.4);
 
   
   h2_etaPhi->GetYaxis()->SetRangeUser(-1.6, 1.6);//corresponds to the really used eta range
@@ -1357,23 +1579,43 @@ Int_t getNumberOfTrigger(const char* fileName, Double_t pt1Min, Double_t pt1Max,
 //does the reading out of the results
 //divides the same event by the mixed events
 //subtracts the mixed combinatorics
-TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t posX = 1, Int_t posY = 1, Int_t showPlots = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0, Int_t* trigger = NULL, Int_t* triggerBackground = NULL)
+TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t posX = 1, Int_t posY = 1, Int_t showPlots = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0, Int_t* trigger = NULL, Int_t* triggerBackground = NULL, Int_t subtractBaseline = 1)
 {
   
-  TH2D* h2_etaPhi = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, subtractMixedComb, subtractFlow, trigger, triggerBackground);
+  TH2D* h2_etaPhi = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, subtractMixedComb, subtractFlow, trigger, triggerBackground)->Clone("h2_etaphi_clone");
+
+  Int_t trigger2;
+  Int_t triggerBackground2;
+  TH2D* h1_etaPhi;
+  /*
+  if(step==0)
+    h1_etaPhi = getAnalysis_2D(fileName, pt1Min, pt1Max, -1, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, subtractMixedComb, subtractFlow, &trigger2, &triggerBackground2);
+  else if(pt1Min>pt2Min)
+    h1_etaPhi = getAnalysis_2D(fileName, pt2Min, pt1Min, -1, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, subtractMixedComb, subtractFlow, &trigger2, &triggerBackground2);
+  else
+    h1_etaPhi = getAnalysis_2D(fileName, pt2Min, pt1Max, -1, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, subtractMixedComb, subtractFlow, &trigger2, &triggerBackground2);
+  */
+  //h1_etaPhi = (TH2D*)getAnalysis_2D(fileName, pt1Min, pt1Max, -1, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, subtractMixedComb, subtractFlow, &trigger2, &triggerBackground2)->Clone("h1_etaphi_clone");
+
+  if(subtractFlow){
+    //subtractFlow(h2_etaPhi, h1_etaPhi, 1.0, 1.4);
+    subtractFlow(h2_etaPhi, 1.0, 1.4);
+  }
 
   Double_t eta_bin = getEtaBinsForAnalysis(ptAssocMin);
 
   int firstbin = h2_etaPhi->GetYaxis()->FindBin(-1*eta_bin);
   int lastbin = h2_etaPhi->GetYaxis()->FindBin(eta_bin);
 
-  TH1D* h1_phi = projectToTH1D(h2_etaPhi, "fully corrected", firstbin, lastbin, 1.0);
+  TH1D* h1_phi = projectToTH1D(h2_etaPhi, "fully corrected", firstbin, lastbin, 1.0, subtractBaseline);
   //TH1D* h1_phi = projectToTH1D(h2_etaPhi_mixedComb, "fully corrected", firstbin, lastbin, 1.0);//shows background distributions
 
-  if(showPlots>0){ 
+  if(showPlots>1){ 
     TCanvas* can_4 = new TCanvas(Form("2dim fully corrected, %i, %i ", posX, posY), Form("2dim fully corrected, %i, %i ", posX, posY), posX*gBasisSize+100, 50, gBasisSize, gBasisSize);
     //h2_etaPhi->GetYaxis()->SetRangeUser(-1.6, 1.6);
     h2_etaPhi->DrawCopy("surf1");
+  }
+  if(showPlots>2){
 
     TCanvas* can_4b = new TCanvas(Form("1dim phi fully corrected, %i, %i ", posX, posY), Form("1dim phi fully corrected, %i, %i ", posX, posY), posX*gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
     //h2_etaPhi_mixedComb->DrawCopy("surf1");
@@ -1420,7 +1662,7 @@ TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
     */
   }
 
-  if(showPlots==2){
+  if(showPlots>5){//==2
     TCanvas* can_5 = new TCanvas(Form("compare projection, %i, %i ", posX, posY), Form("compare projection, %i, %i ", posX, posY), posX*gBasisSize+100, posY*gBasisSize+50, gBasisSize, gBasisSize);
     TLegend *leg2  = getLegend();
 
@@ -1604,10 +1846,18 @@ void show_steps_of_getAnalysis_projection(const char* fileName, double pt1Min = 
 }
 
 
+
+
+
+
+
+
+
+
 TH1D* projectToTH1D_eta(TH2D* etaPhi, char* name, int firstbin, int lastbin, int trigger){
   //  Printf(Form("name %s", name));
 
-  TH1D* h1_phi_1 = etaPhi->ProjectionY(Form("py_%s", name), firstbin, lastbin);
+  TH1D* h1_phi_1 = etaPhi->ProjectionY(Form("px_%s", name), firstbin, lastbin);
   h1_phi_1->SetLineWidth(3);
   h1_phi_1->SetStats(kFALSE);
   h1_phi_1->Scale(1.0/trigger);
@@ -1618,16 +1868,16 @@ TH1D* projectToTH1D_eta(TH2D* etaPhi, char* name, int firstbin, int lastbin, int
   h1_phi_1->SetYTitle("1/N \\ dN/(d \\Delta \\eta)");
 
   //symmetrize(h1_phi_1);
-  subtractBaseline(h1_phi_1);
+  //subtractBaseline(h1_phi_1);
 
   return h1_phi_1;
 }
 
 
-TH1D* projectToTH1D(TH2D* etaPhi, char* name, int firstbin, int lastbin, int trigger){
+TH1D* projectToTH1D(TH2D* etaPhi, char* name, int firstbin, int lastbin, int trigger, int subtractBaseline = 1){
   //  Printf(Form("name %s", name));
 
-  TH1D* h1_phi_1 = etaPhi->ProjectionX(Form("px_%s", name), firstbin, lastbin);
+  TH1D* h1_phi_1 = etaPhi->ProjectionX(Form("py_%s", name), firstbin, lastbin);
   h1_phi_1->SetLineWidth(3);
   h1_phi_1->SetStats(kFALSE);
   h1_phi_1->Scale(1.0/trigger);
@@ -1638,6 +1888,7 @@ TH1D* projectToTH1D(TH2D* etaPhi, char* name, int firstbin, int lastbin, int tri
   h1_phi_1->SetYTitle("1/N \\ dN/(d \\Delta \\varphi)");
 
   //symmetrize(h1_phi_1);
+  //if(subtractBaseline == 1)
   subtractBaseline(h1_phi_1);
 
   return h1_phi_1;
@@ -1714,34 +1965,47 @@ void compareBackground(const char* fileName, double pt1Min = 4.0, double pt1Max 
 
 
 void compareDeltaEtaGap(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t subtractMixedComb = 0){
-
+  /*
   TH1D* first = (TH1*)getFlowDist(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 8.9, multBinBegin, multBinEnd, step, subtractMixedComb, 1.0, 1.4)->Clone();
 
   TH1D* second = (TH1*)getFlowDist(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 8.9, multBinBegin, multBinEnd, step, subtractMixedComb, 1.2, 1.6)->Clone();
 
   TH1D* third = (TH1*)getFlowDist(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 8.9, multBinBegin, multBinEnd, step, subtractMixedComb, 1.0, 1.6)->Clone();
+  */
+  TH1D* first = (TH1*)getFlowDist(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 8.9, multBinBegin, multBinEnd, 0, subtractMixedComb, 1.0, 1.4)->Clone();
+
+  TH1D* second = (TH1*)getFlowDist(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 8.9, multBinBegin, multBinEnd, 7, subtractMixedComb, 1.0, 1.4)->Clone();
+
+  TH1D* third = (TH1*)getFlowDist(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 8.9, multBinBegin, multBinEnd, 6, subtractMixedComb, 1.0, 1.4)->Clone();
 
 
-  second->SetLineColor(kRed);
-  third->SetLineColor(kGreen);
+  second->SetLineColor(kGreen);
+  third->SetLineColor(kRed);
 
   TCanvas* can = new TCanvas("compare Delta eta", "compare Delta eta", gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
 
   first->SetLineWidth(5);
   second->SetLineWidth(4);
-  third->SetLineWidth(3);
+  third->SetLineWidth(5);
 
   first->DrawCopy();
-  second->DrawCopy("same");
+  //second->DrawCopy("same");
   third->DrawCopy("same");
 
   TLegend *leg  = getLegend();
+  /*
   leg->AddEntry(first, "1.0 - 1.6","l");
   leg->AddEntry(second, "1.0 - 1.4","l");
   leg->AddEntry(third, "1.2 - 1.6","l");
+  */
+  leg->AddEntry(first, "2+1","l");
+  //leg->AddEntry(second, "background same","l");
+  leg->AddEntry(third, "1+1","l");
 
   leg->Draw("same");
 }
+
+
 
 
 void compareAllMixedComb(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Int_t subtractMixedComb = 0, Int_t subtractFlow = 0){
@@ -2143,6 +2407,7 @@ TH1F* getMixedDist(const char* fileName){
 
 void Plot_oneAxis(const char* fileName, int project)
 {
+  //kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS, k1plus1, kBackgroundSameNS, kBackgroundSameAS, kMixed1plus1
   loadlibs();
 
   TFile::Open(fileName);
@@ -2165,6 +2430,8 @@ void Plot_oneAxis(const char* fileName, int project)
   TH1D* tracks_away = away_plot->Project(project);
 
   c1->cd(2);
+  //TCanvas* c2 = new TCanvas("can2", "can2", 1200, 800);
+ tracks_away->SetLineWidth(3);
   tracks_away->DrawCopy();
 }  
 
