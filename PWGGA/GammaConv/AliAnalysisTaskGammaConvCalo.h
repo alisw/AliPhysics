@@ -223,8 +223,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueEtaCaloPhotonInvMassPt;				//! array of histos with validated eta, photon leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloConvertedPhotonInvMassPt;	//! array of histos with validated pi0, converted photon leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated pi0 matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloConvPhotonConvRPt;			//!
+		TH2F 								**fHistoTruePi0CaloConvPhotonConvRAlpha;		//!
+		TH2F 								**fHistoTruePi0CaloConvPhotonPtAlpha;			//!
 		TH2F 								**fHistoTrueEtaCaloConvertedPhotonInvMassPt;	//! array of histos with validated eta, converted photon leading, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated eta matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloConvPhotonConvRPt;			//!
+		TH2F 								**fHistoTrueEtaCaloConvPhotonConvRAlpha;		//!
+		TH2F 								**fHistoTrueEtaCaloConvPhotonPtAlpha;			//!
 		TH2F 								**fHistoTruePi0CaloElectronInvMassPt;			//! array of histos with validated mothers, electron leading, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloElectronInvMassPt;			//! array of histos with validated mothers, electron leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloMergedClusterInvMassPt;		//! array of histos with validated mothers, merged cluster invMass, pt
