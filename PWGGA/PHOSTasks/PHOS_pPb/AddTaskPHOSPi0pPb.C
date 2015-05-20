@@ -27,32 +27,31 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
 
   AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow(Form("%sTask", name));
 
-  // MB or PHOS Trigger:
-  if( AliVEvent::kINT7 == offlineTriggerMask || AliVEvent::kPHI7 == offlineTriggerMask ) {
-    if (nCentBins<1) {
-      ::Error("AddTaskPHOSPi0pPb", Form("Invalid number of centrality bins: %d",nCentBins));
-      return NULL;
-    }
-    Double_t *cbin = new Double_t[nCentBins+1];
-    cbin[0] = centEdge0;
-    cbin[1] = centEdge1;
-    if (nCentBins > 1) cbin[2] = centEdge2;
-    if (nCentBins > 2) cbin[3] = centEdge3;
-    if (nCentBins > 3) cbin[4] = centEdge4;
-    if (nCentBins > 4) cbin[5] = centEdge5;
-    TArrayD tbin(nCentBins+1, cbin);
-
-    Int_t    *nMixed = new Int_t[nCentBins];
-    for (Int_t ibin=0; ibin<nCentBins; ibin++) nMixed[ibin] = 20;
-    TArrayI tNMixed(nCentBins, nMixed);
-
-    task->SetCentralityBinning(tbin, tNMixed);
+  if (nCentBins<1) {
+    ::Error("AddTaskPHOSPi0pPb", Form("Invalid number of centrality bins: %d",nCentBins));
+    return NULL;
   }
+  
+  Double_t *cbin = new Double_t[nCentBins+1];
+  cbin[0] = centEdge0;
+  cbin[1] = centEdge1;
+  if (nCentBins > 1) cbin[2] = centEdge2;
+  if (nCentBins > 2) cbin[3] = centEdge3;
+  if (nCentBins > 3) cbin[4] = centEdge4;
+  if (nCentBins > 4) cbin[5] = centEdge5;
+  TArrayD tbin(nCentBins+1, cbin);
+  
+  Int_t    *nMixed = new Int_t[nCentBins];
+  for (Int_t ibin=0; ibin<nCentBins; ibin++) nMixed[ibin] = 20;
+  TArrayI tNMixed(nCentBins, nMixed);
+  
+  task->SetCentralityBinning(tbin, tNMixed);
+  
   if( TString(options).Contains("LHC13") )
     task->SetPeriod( AliAnalysisTaskPi0Flow::kLHC13 );
-
+  
   task->SetCentralityEstimator(centrality);
-
+  
   task->SetEventMixingRPBinning(1);
   task->SelectCollisionCandidates(offlineTriggerMask);
   task->SetEnablePHOSModule(2, kFALSE);
