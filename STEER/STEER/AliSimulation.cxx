@@ -2168,14 +2168,14 @@ Bool_t AliSimulation::CreateHLT()
   gSystem->Load(ALIHLTSIMULATION_LIBRARY);
 
   // check for the library version
-  AliHLTSimulationGetLibraryVersion_t fctVersion=(AliHLTSimulationGetLibraryVersion_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_GET_LIBRARY_VERSION));
-  if (!fctVersion) {
-    AliError(Form("can not load library %s", ALIHLTSIMULATION_LIBRARY));
-    return kFALSE;
-  }
-  if (fctVersion()!= ALIHLTSIMULATION_LIBRARY_VERSION) {
-    AliWarning(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
-  }
+  // AliHLTSimulationGetLibraryVersion_t fctVersion=(AliHLTSimulationGetLibraryVersion_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_GET_LIBRARY_VERSION));
+  // if (!fctVersion) {
+  //   AliError(Form("can not load library %s", ALIHLTSIMULATION_LIBRARY));
+  //   return kFALSE;
+  // }
+  // if (fctVersion()!= ALIHLTSIMULATION_LIBRARY_VERSION) {
+  //   AliWarning(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
+  // }
 
   // print compile info
   typedef void (*CompileInfo)( const char*& date, const char*& time);
