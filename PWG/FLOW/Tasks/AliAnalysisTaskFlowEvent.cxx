@@ -73,8 +73,12 @@
 #include "AliAnalysisTaskFlowEvent.h"
 
 #include "AliLog.h"
-
+#include "AliVEvent.h"
 #include "AliAODZDC.h"
+#include "AliAODHandler.h"
+#include "AliAODHeader.h"
+#include "AliAODVertex.h"
+#include "AliHeader.h"
 
 using std::cout;
 using std::endl;
@@ -346,20 +350,23 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
    
    // Q vectors from ZDC
    if(myAOD) {
-    AliAODZDC* ZDCData = myAOD->GetZDCData();
-    Double_t centrZNC[2] = {0.,0.};
-    Double_t centrZNA[2] = {0.,0.};
-    Double_t energyZNA = ZDCData->GetZNAEnergy();
-    Double_t energyZNC = ZDCData->GetZNCEnergy();
-    if(energyZNA>0 && energyZNC>0) {
-     ZDCData->GetZNCentroidInPbPb(1.,centrZNC,centrZNA);
-     fFlowEvent->SetZDC2Qsub(centrZNC,centrZNA);
+    AliAODZDC* aodZDCData = myAOD->GetZDCData();
+    if (!aodZDCData) {
+     AliError("no ZDC data");
     }
-    if (fQAon) {
-     TH1* ZNC = static_cast<TH1*>(fQAList->FindObject("ZNC EP"));
-     ZNC->Fill(TMath::ATan2(centrZNC[1],centrZNC[0]));
-     TH1* ZNA = static_cast<TH1*>(fQAList->FindObject("ZNA EP"));
-     ZNA->Fill(TMath::ATan2(centrZNA[1],centrZNA[0]));
+    Double_t centrZNC[2] = {-99.,-99.}, centrZNA[2] = {-99.,-99.};
+    Double_t energyZNA = -1., energyZNC = -1;
+    energyZNA = aodZDCData->GetZNAEnergy();
+    energyZNC = aodZDCData->GetZNCEnergy();
+    if(energyZNA>0 && energyZNC>0) {
+     aodZDCData->GetZNCentroidInPbPb(1380.,centrZNC,centrZNA);
+     fFlowEvent->SetZDC2Qsub(centrZNC,centrZNA);
+     if (fQAon) {
+      TH1* ZNC = static_cast<TH1*>(fQAList->FindObject("ZNC EP"));
+      ZNC->Fill(TMath::ATan2(centrZNC[1],centrZNC[0]));
+      TH1* ZNA = static_cast<TH1*>(fQAList->FindObject("ZNA EP"));
+      ZNA->Fill(TMath::ATan2(centrZNA[1],centrZNA[0]));
+     }
     }
    }
    
