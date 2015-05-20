@@ -281,9 +281,19 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
     }
 
     if (fSpecialPDG != 0) { // skip particle if it's a daughter of a "special" PDG particle
-      Int_t imo = part->GetMother();
-      AliAODMCParticle* pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(imo));
-      if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) {
+      Bool_t daughterOfSpecialPDG = kFALSE;
+      AliAODMCParticle* pm = part;
+      Int_t imo = 0;
+      while (pm != 0) {
+        imo = pm->GetMother();
+        if (imo < 0) break;
+        pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(imo));
+        if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) {
+          daughterOfSpecialPDG = kTRUE;
+          break;
+        }
+      }
+      if (daughterOfSpecialPDG) {
         AliDebug(2, Form("Rejecting particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
                          iPart, part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->PdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
         continue;
