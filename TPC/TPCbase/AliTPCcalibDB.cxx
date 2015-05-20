@@ -354,7 +354,7 @@ void AliTPCcalibDB::SetRun(Long64_t run)
 void AliTPCcalibDB::Update(){
   /// cache the OCDB entries for simulation, reconstruction, calibration
 
-  AliCDBEntry * entry=0;
+  AliCDBEntry * entry=0x0;
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
   fDButil = new AliTPCcalibDButil;
@@ -363,15 +363,22 @@ void AliTPCcalibDB::Update(){
   
   //
   // check the presence of the detectors
-  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject()); 
-  if (!grpData) {printf("Failed to get GRP data for run",fRun); return;}
-  Int_t activeDetectors = grpData->GetDetectorMask(); 
-  TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
-  //printf("Detectors in the data:\n%s\n",detStr.Data());
-  if ( detStr.Contains("TPC")==0){
-    AliInfo("TPC not present in the run");
-    return;
+  try {
+    entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  } catch(...) {
+    AliInfo("No GRP entry found");
+    entry = 0x0;
+  }
+  if (entry) {
+    AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
+    if (!grpData) {printf("Failed to get GRP data for run %d\n",fRun); return;}
+    Int_t activeDetectors = grpData->GetDetectorMask();
+    TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+    //printf("Detectors in the data:\n%s\n",detStr.Data());
+    if ( detStr.Contains("TPC")==0){
+      AliInfo("TPC not present in the run");
+      return;
+    }
   }
 
  
