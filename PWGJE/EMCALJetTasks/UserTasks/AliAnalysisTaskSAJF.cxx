@@ -90,6 +90,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::AllocateTHnSparse()
 {
+  Double_t jetRadius = 0.4;
+  AliJetContainer *jets = GetJetContainer(0);
+  if (jets) jetRadius = jets->GetJetRadius();
+  
   TString title[20]= {""};
   Int_t nbins[20]  = {0};
   Double_t min[20] = {0.};
@@ -147,7 +151,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   title[dim] = "A_{jet}";
   nbins[dim] = 150;
   min[dim] = 0;
-  max[dim] = 1.5;
+  max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
   dim++;
 
   if (fCaloClusters) {
@@ -367,6 +371,9 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistClustersPtDist = new TH2*[fNcentBins];
   fHistRejectionReason = new TH2*[fNcentBins];
 
+  fHistTracksZJetPtJetConst = new TH3*[fNcentBins];
+  fHistClustersZJetPtJetConst = new TH3*[fNcentBins];
+  
   for (Int_t i = 0; i < fNcentBins; i++) {
     TString histname;
 
@@ -390,7 +397,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       histname = "fHistTracksZJetPtJetConst_";
       histname += i;
       fHistTracksZJetPtJetConst[i] = new TH3F(histname.Data(), histname.Data(), 120, 0.0, 1.2, fNbins, fMinBinPt, fMaxBinPt, constituentsNbins, -0.5, constituentsMax);
-      fHistTracksZJetPtJetConst[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
+      fHistTracksZJetPtJetConst[i]->GetXaxis()->SetTitle("z_{track}");
       fHistTracksZJetPtJetConst[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
       fHistTracksZJetPtJetConst[i]->GetZaxis()->SetTitle("# of constituents");
       fOutput->Add(fHistTracksZJetPtJetConst[i]);
@@ -416,7 +423,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       histname = "fHistClustersZJetPtJetConst_";
       histname += i;
       fHistClustersZJetPtJetConst[i] = new TH3F(histname.Data(), histname.Data(), 120, 0.0, 1.2, fNbins, fMinBinPt, fMaxBinPt, constituentsNbins, -0.5, constituentsMax);
-      fHistClustersZJetPtJetConst[i]->GetXaxis()->SetTitle("p_{T,clus} (GeV/c)");
+      fHistClustersZJetPtJetConst[i]->GetXaxis()->SetTitle("z_{clus}");
       fHistClustersZJetPtJetConst[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
       fHistClustersZJetPtJetConst[i]->GetZaxis()->SetTitle("# of constituents");
       fOutput->Add(fHistClustersZJetPtJetConst[i]);
