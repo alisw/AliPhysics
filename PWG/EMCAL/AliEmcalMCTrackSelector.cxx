@@ -171,35 +171,34 @@ void AliEmcalMCTrackSelector::ConvertMCParticles()
     fParticlesMap->AddAt(-1, iPart);
 
     AliMCParticle* part = static_cast<AliMCParticle*>(fMC->GetTrack(iPart));
-
+    
     if (!part) continue;
+
+    Int_t partPdgCode = TMath::Abs(part->PdgCode());
+    Int_t genIndex = part->GetGeneratorIndex();
+    
+    if (fOnlyHIJING && genIndex != 0) continue;
+    
+    AliDebug(10, Form("Particle %d: generator index %d", iPart, part->GetGeneratorIndex()));
 
     if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
 
-    Int_t partPdgCode = TMath::Abs(part->PdgCode());
-    Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG);
-    
     if (fRejectNK && (partPdgCode == 130 || partPdgCode == 2112)) continue;
     
+    Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG && iPart < nprim);
+
+    if (isSpecialPdg) {
+      AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
+                       iPart, partPdgCode, part->Pt(), part->Eta(), part->Phi()));
+    }
+
     if (fChargedMC && part->Charge() == 0 && !isSpecialPdg) continue;
-
-    Int_t genIndex = part->GetGeneratorIndex();
-    if (fOnlyHIJING && genIndex != 0) continue;
-
+    
     Bool_t isPhysPrim = fMC->IsPhysicalPrimary(iPart);
     if (fOnlyPhysPrim && !isPhysPrim && !isSpecialPdg) continue;
 
-    if (fSpecialPDG != 0) { // skip particle if it's a daughter of a "special" PDG particle
-      AliStack* stack = fMC->Stack();
-      TParticle* pm = stack->Particle(iPart);
-      Int_t imo = -1;
-      do {
-        imo = pm->GetFirstMother();
-        pm  = stack->Particle(imo);
-      } while (imo >= stack->GetNprimary());
-      if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) continue;
-    }
-
+    if (!CheckSpecialPDGDaughter(iPart)) continue;
+    
     fParticlesMap->AddAt(nacc, iPart);
 
     Int_t flag = 0;
@@ -231,74 +230,53 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
   fParticlesMap->Clear();
 
   const Int_t Nparticles = fParticlesIn->GetEntriesFast();
-
+  const Int_t nprim = fMC->GetNumberOfPrimaries();
+  
   if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
 
   AliDebug(2, Form("Total number of particles = %d", Nparticles));
-  
+
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
-    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesIn->At(iPart));
-
     fParticlesMap->AddAt(-1, iPart);
+    
+    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesIn->At(iPart));
 
     if (!part) continue;
 
-    if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
-
     Int_t partPdgCode = TMath::Abs(part->PdgCode());
-    Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG);
+
+    AliDebug(10, Form("Particle %d: generator index %d", iPart, part->GetGeneratorIndex()));
+
+    if (fOnlyHIJING && (part->GetGeneratorIndex() != 0)) continue;
+
+    if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
     
     if (fRejectNK && (partPdgCode == 130 || partPdgCode == 2112)) continue;
+
+    Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG && iPart < nprim);
+
+    if (isSpecialPdg && AliLog::GetDebugLevel("AliEmcalMCTrackSelector","AliEmcalMCTrackSelector") >= 2) {
+      Int_t ndaugh = part->GetNDaughters();
+      AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f, n daughters = %d)",
+                       iPart, part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), ndaugh));
+
+      for (Int_t idaugh = 0; idaugh < ndaugh; idaugh++) {
+        Int_t posDaugh = part->GetDaughter(idaugh);
+        AliAODMCParticle *daugh = static_cast<AliAODMCParticle*>(fParticlesIn->At(posDaugh));
+        if (daugh) {
+          AliDebug(2, Form("Daughter %d: i = %d, PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f",
+                           idaugh, posDaugh, daugh->PdgCode(), daugh->Pt(), daugh->Eta(), daugh->Phi()));
+        }
+      } 
+    }
     
     if (fChargedMC && part->Charge() == 0 && !isSpecialPdg) continue;
 
-    AliDebug(10, Form("Particle %d: generator index %d", iPart, part->GetGeneratorIndex()));
-    
-    if (fOnlyHIJING && (part->GetGeneratorIndex() != 0)) continue;
+    if (fOnlyPhysPrim && !part->IsPhysicalPrimary() && !isSpecialPdg) continue;
 
-    if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) {
-      if (isSpecialPdg) {
-        if (AliLog::GetDebugLevel("AliEmcalMCTrackSelector","AliEmcalMCTrackSelector") >= 2) {
-          Int_t ndaugh = part->GetNDaughters();
-          AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f, n daughters = %d)",
-                           iPart, part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), ndaugh));
-
-          for (Int_t idaugh = 0; idaugh < ndaugh; idaugh++) {
-            Int_t posDaugh = part->GetDaughter(idaugh);
-            AliAODMCParticle *daugh = static_cast<AliAODMCParticle*>(fParticlesIn->At(posDaugh));
-            if (daugh) {
-              AliDebug(2, Form("Daughter %d: i = %d, PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f",
-                               idaugh, posDaugh, daugh->PdgCode(), daugh->Pt(), daugh->Eta(), daugh->Phi()));
-            }
-          } 
-        }
-      }
-      else {
-        continue;
-      }
-    }
-
-    if (fSpecialPDG != 0) { // skip particle if it's a daughter of a "special" PDG particle
-      Bool_t daughterOfSpecialPDG = kFALSE;
-      AliAODMCParticle* pm = part;
-      Int_t imo = 0;
-      while (pm != 0) {
-        imo = pm->GetMother();
-        if (imo < 0) break;
-        pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(imo));
-        if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG) {
-          daughterOfSpecialPDG = kTRUE;
-          break;
-        }
-      }
-      if (daughterOfSpecialPDG) {
-        AliDebug(2, Form("Rejecting particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
-                         iPart, part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->PdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
-        continue;
-      }
-    }
+    if (!CheckSpecialPDGDaughter(part, nprim)) continue;
 
     fParticlesMap->AddAt(nacc, iPart);
 
@@ -307,4 +285,48 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
 
     nacc++;
   }
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalMCTrackSelector::CheckSpecialPDGDaughter(AliAODMCParticle* part, Int_t nprim)
+{
+  // skip particle if it's a daughter of a "special" PDG particle
+  if (fSpecialPDG == 0) return kTRUE;
+  
+  AliAODMCParticle* pm = part;
+  Int_t imo = -1;
+  while (pm != 0) {
+    imo = pm->GetMother();
+    if (imo < 0) break;
+    pm = static_cast<AliAODMCParticle*>(fParticlesIn->At(imo));
+    if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG && imo < nprim) {
+      AliDebug(2, Form("Rejecting particle (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
+                       part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->PdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
+      return kFALSE;
+    }
+  }
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalMCTrackSelector::CheckSpecialPDGDaughter(Int_t iPart)
+{
+  // skip particle if it's a daughter of a "special" PDG particle
+  if (fSpecialPDG == 0) return kTRUE;
+  
+  AliStack* stack = fMC->Stack();
+  TParticle* part = stack->Particle(iPart);
+  TParticle* pm = part;
+  Int_t imo = -1;
+  while (pm != 0) {
+    imo = pm->GetFirstMother();
+    if (imo < 0) break;
+    pm = stack->Particle(imo);
+    if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG && imo < stack->GetNprimary()) {
+      AliDebug(2, Form("Rejecting particle (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
+                       part->GetPdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->GetPdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
+      return kFALSE;
+    } 
+  }
+  return kTRUE;
 }

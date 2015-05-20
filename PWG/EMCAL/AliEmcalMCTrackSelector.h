@@ -31,6 +31,9 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void                      ConvertMCParticles();    // for ESD analysis
   void                      CopyMCParticles();       // for AOD analysis
 
+  Bool_t                    CheckSpecialPDGDaughter(AliAODMCParticle* part, Int_t nprim);
+  Bool_t                    CheckSpecialPDGDaughter(Int_t iPart);
+  
   TString                   fParticlesOutName;     // name of output particle array
   Bool_t                    fOnlyPhysPrim;         // true = only physical primary particles
   Bool_t                    fRejectNK;             // true = reject K_0^L and neutrons
