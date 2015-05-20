@@ -1395,3 +1395,14 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(31, "Bit30");
   axis->SetBinLabel(32, "Bit31");
 }
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcal::GetParallelFraction(AliVParticle* part1, AliVParticle* part2)
+{
+  // Calculates the fraction of momentum of part 1 w.r.t. part 2 in the direction of part 2.
+  
+  TVector3 vect1(part1->Px(), part1->Py(), part1->Pz());
+  TVector3 vect2(part2->Px(), part2->Py(), part2->Pz());
+  Double_t z = (vect1 * vect2) / (vect2 * vect2);
+  return z;
+}
