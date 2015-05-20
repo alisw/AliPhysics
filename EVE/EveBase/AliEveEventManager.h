@@ -131,13 +131,15 @@ public:
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
-    Bool_t        GetLoopMarked()            const { return fLoopMarked;     }
     void          SetAutoLoadTime(Float_t time);
     void          SetAutoLoad(Bool_t autoLoad);
     void          SetLoopMarked(Bool_t loopMarked);
     void          SetTrigSel(Int_t trig);
     void          AutoLoadNextEvent();
     void          SetSaveViews(bool save){fSaveViews=save;}
+    void          SetESDcolors(Color_t colors[9]){fESDdrawer->SetColors(colors);}
+    void          SetESDwidths(Width_t widths[9]){fESDdrawer->SetWidths(widths);}
+    void          SetESDdashBad(bool dashBad){fESDdrawer->SetDashBad(dashBad);}
     
     
     Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
@@ -182,7 +184,6 @@ protected:
     AliEventInfo	fEventInfo;		// Current Event Info
 
     Bool_t        fAutoLoad;              // Automatic loading of events (online)
-    Bool_t        fLoopMarked;            // Automatic loading of marked events
     Float_t       fAutoLoadTime;          // Auto-load time in seconds
     TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
 

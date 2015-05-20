@@ -142,7 +142,7 @@ fESDFile   (0), fESDTree (0), fHLTESDTree(0), fESD (0),
 fESDfriend (0), fESDfriendExists(kFALSE),
 fAODFile   (0), fAODTree (0), fAOD (0),
 fRawReader (0), fEventInfo(),
-fAutoLoad  (kFALSE),fLoopMarked(kFALSE), fAutoLoadTime (5),fAutoLoadTimer(0),
+fAutoLoad  (kFALSE), fAutoLoadTime (5),fAutoLoadTimer(0),
 fIsOpen    (kFALSE), fHasEvent(kFALSE),
 fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
 fExecutor    (0), fTransients(0), fTransientLists(0),
@@ -156,7 +156,7 @@ fEventInUse(1),
 fWritingToEventIndex(0),
 fIsNewEventAvaliable(false),
 fOnlineMode(kFALSE),
-fStorageDown(true),
+fStorageDown(false),
 fFinished(false),
 fViewsSaver(0),
 fESDdrawer(0),
@@ -173,6 +173,8 @@ fCenterProjectionsAtPrimaryVertex(false)
     Open();
     if (ev >= 0){GotoEvent(ev);}
     
+    StorageManagerDown(); // turn SM off by default
+    
 #ifdef ZMQ
     if(fOnlineMode)
     {
@@ -180,8 +182,8 @@ fCenterProjectionsAtPrimaryVertex(false)
         fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
         fEventListenerThread->Run();
         
-        fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
-        fStorageManagerWatcherThread->Run();
+//        fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
+//        fStorageManagerWatcherThread->Run();
     }
 #else
     cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
@@ -232,117 +234,53 @@ void AliEveEventManager::GetNextEvent()
     cout<<"\n\nGet next event called\n\n"<<endl;
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
-    eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
     eventManager->CreateSocket(EVENTS_SERVER_SUB);
-    
     
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
     
     AliESDEvent *tmpEvent;
     
-    // get list of marked events:
-    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    requestMessage->messageType = REQUEST_LIST_EVENTS;
-//    requestMessage->list = list;
-    
-//    struct listRequestStruct list;
-    
-    requestMessage->runNumber[0]=0;
-    requestMessage->runNumber[1]=999999;
-    requestMessage->eventNumber[0]=0;
-    requestMessage->eventNumber[1]=999999;
-    requestMessage->marked[0]=1;
-    requestMessage->marked[1]=1;
-    requestMessage->multiplicity[0]=0;
-    requestMessage->multiplicity[1]=999999;
-    strcpy(requestMessage->system[0],"p-p");
-    strcpy(requestMessage->system[1],"");
-    
-    
-
-    
-    cout<<"Sending request for marked events list"<<endl;
-    eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-    cout<<"Waiting for response"<<endl;
-    vector<serverListStruct> *tmpVector;
-    vector<serverListStruct> receivedList;
-    bool isVectorOk = false;
-    if(eventManager->Get(tmpVector,SERVER_COMMUNICATION_REQ))
-    {
-        cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
-        receivedList = *tmpVector;
-        
-        for(int i=0;i<tmpVector->size();i++)
-        {
-            cout<<"ev:"<<receivedList[i].eventNumber<<endl;
-        }
-        isVectorOk = true;
-    }
-    else
-    {
-        cout<<"EVENT DISPLAY -- problems receiving list of marked events"<<endl;
-        eventManager->RecreateSocket(SERVER_COMMUNICATION_REQ);
-    }
-    int iter=0;
-    
     cout<<"Starting subscriber's loop"<<endl;
     while(!fFinished)
     {
-        if(!fLoopMarked || !isVectorOk)
+        cout<<"Waiting for event from online reconstruction...";
+        if(eventManager->Get(tmpEvent,EVENTS_SERVER_SUB))
         {
-            cout<<"Waiting for event from online reconstruction...";
-            if(!eventManager->Get(tmpEvent,EVENTS_SERVER_SUB)){
-//                tmpEvent=0;
-                sleep(1);
-                cout<<"couldn't receive.";
+            if(tmpEvent)
+            {
+                cout<<"received. ("<<tmpEvent->GetRunNumber();
+                if(tmpEvent->GetRunNumber()>=0)
+                {
+                    fMutex->Lock();
+                    if(fEventInUse == 0){fWritingToEventIndex = 1;}
+                    else if(fEventInUse == 1){fWritingToEventIndex = 0;}
+                    cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
+                    if(fCurrentEvent[fWritingToEventIndex])
+                    {
+                        cout<<"EVENT DISPLAY -- deleting old event..."<<fCurrentEvent[fWritingToEventIndex]<<"...";
+                        delete fCurrentEvent[fWritingToEventIndex];
+                        fCurrentEvent[fWritingToEventIndex]=0;
+                        cout<<"deleted"<<endl;
+                    }
+                    fCurrentEvent[fWritingToEventIndex] = tmpEvent;
+                    fIsNewEventAvaliable = true;
+                    NewEventLoaded();
+                    fMutex->UnLock();
+                }
             }
-            else{cout<<"received.";}
+            else
+            {
+                cout<<"received empty event."<<endl;
+                sleep(1);
+            }
         }
         else
         {
-            if(iter<receivedList.size())
-            {
-                cout<<"i:"<<iter<<endl;
-                requestMessage->messageType = REQUEST_GET_EVENT;
-                requestMessage->eventsRunNumber = receivedList[iter].runNumber;
-                requestMessage->eventsEventNumber = receivedList[iter].eventNumber;
-                cout<<"Waiting for event from Storage Manager...";
-                eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-                eventManager->Get(tmpEvent,SERVER_COMMUNICATION_REQ);
-                cout<<"received.";
-                iter++;
-                sleep(1);
-            }
-            else{iter=0;}
+            cout<<"couldn't receive.";
+            sleep(1);
         }
-        
-        if(tmpEvent)
-        {
-            cout<<" ("<<tmpEvent->GetRunNumber();
-            if(tmpEvent->GetRunNumber()>=0)
-            {
-                fMutex->Lock();
-                if(fEventInUse == 0){fWritingToEventIndex = 1;}
-                else if(fEventInUse == 1){fWritingToEventIndex = 0;}
-                cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
-                if(fCurrentEvent[fWritingToEventIndex])
-                {
-                    cout<<"EVENT DISPLAY -- deleting old event..."<<fCurrentEvent[fWritingToEventIndex]<<"...";
-                    delete fCurrentEvent[fWritingToEventIndex];
-                    fCurrentEvent[fWritingToEventIndex]=0;
-                    cout<<"deleted"<<endl;
-                }
-                fCurrentEvent[fWritingToEventIndex] = tmpEvent;
-                fIsNewEventAvaliable = true;
-                NewEventLoaded();
-                fMutex->UnLock();
-            }
-        }
-        else{cout<<"Did not receive new event."<<endl;}
-        
     }
-    
 #endif
 }
 
@@ -912,7 +850,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
     
     AfterNewEventLoaded();
     
-    if (fAutoLoad || fLoopMarked) StartAutoLoadTimer();
+    if (fAutoLoad) StartAutoLoadTimer();
     
 }
 
@@ -1260,7 +1198,6 @@ void AliEveEventManager::NextEvent()
         fMutex->Lock();
         if(fIsNewEventAvaliable)
         {
-
             if(fWritingToEventIndex == 0) fEventInUse = 0;
             else if(fWritingToEventIndex == 1) fEventInUse = 1;
             
@@ -1269,11 +1206,11 @@ void AliEveEventManager::NextEvent()
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() >= 0)
                 {
                     printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
-                    
+         
+                    StorageManagerDown(); // block SM while event is being loaded
                     DestroyElements();
                     InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
                     SetEvent(0,0,fCurrentEvent[fEventInUse],0);
-                    
                 }
             }
             fIsNewEventAvaliable = false;
@@ -1875,14 +1812,12 @@ void AliEveEventManager::RegisterTransientList(TEveElement* element)
 void AliEveEventManager::SetAutoLoadTime(Float_t time)
 {
     // Set the auto-load time in seconds
-    
     fAutoLoadTime = time;
 }
 
 void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
 {
     // Set the automatic event loading mode
-    
     static const TEveException kEH("AliEveEventManager::SetAutoLoad ");
     
     if (fAutoLoad == autoLoad)
@@ -1894,28 +1829,13 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
     fAutoLoad = autoLoad;
     if (fAutoLoad)
     {
+        StorageManagerDown();
         StartAutoLoadTimer();
     }
     else
     {
+        StorageManagerOk();
         StopAutoLoadTimer();
-    }
-}
-
-void AliEveEventManager::SetLoopMarked(Bool_t loopMarked)
-{
-    // Set the automatic event loading mode
-    if(fLoopMarked == loopMarked)
-    {
-        cout<<"loop marked has the same value - ignoring"<<endl;
-        return;
-    }
-    else
-    {
-        cout<<"Setting loof marked to:"<<loopMarked<<endl;
-        fLoopMarked = loopMarked;
-        if (fLoopMarked){StartAutoLoadTimer();}
-        else{StopAutoLoadTimer();}
     }
 }
 
@@ -1972,7 +1892,7 @@ void AliEveEventManager::AutoLoadNextEvent()
     
     StopAutoLoadTimer();
     NextEvent();
-    if (fAutoLoad || fLoopMarked){
+    if (fAutoLoad){
         StartAutoLoadTimer();
     }
 }
@@ -1999,9 +1919,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     NewEventLoaded();
     
     // tests of embedded text
-    
-//    AliESDRun *run = fESD->GetESDRun();
-    
+    /*
     TTimeStamp ts(fESD->GetTimeStamp());
     
     TEveText *txt = new TEveText(Form("Run:%d",fESD->GetRunNumber()));
@@ -2026,6 +1944,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     
     gEve->AddElement(txt);
     gEve->AddElement(txt2);
+     */
     //
     
     
@@ -2081,6 +2000,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         fViewsSaver->Save();
         fViewsSaver->SendToAmore();
     }
+    StorageManagerOk(); // unlock SM when event is fully loaded.
     
     if (this == fgMaster && fSubManagers != 0)
     {
@@ -2123,15 +2043,21 @@ void AliEveEventManager::NoEventLoaded()
 }
 void AliEveEventManager::StorageManagerOk()
 {
-    fStorageDown = false;
-    // Emit StorageManagerOk signal.
-    Emit("StorageManagerOk()");
+    // Emit StorageManagerOk signal if needed
+    if(fStorageDown==true)
+    {
+        Emit("StorageManagerOk()");
+        fStorageDown = false;
+    }
 }
 void AliEveEventManager::StorageManagerDown()
 {
-    fStorageDown = true;
-    // Emit StorageManagerDown signal.
-    Emit("StorageManagerDown()");
+    // Emit StorageManagerDown signal if needed
+    if(fStorageDown==false)
+    {
+        Emit("StorageManagerDown()");
+        fStorageDown = true;
+    }
 }
 
 

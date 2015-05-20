@@ -20,11 +20,11 @@ public:
     TEveGeoShape* GetGeomGentle(bool register_as_global=kTRUE);
     TEveGeoShape* GetGeomGentleRphi();
     TEveGeoShape* GetGeomGentleRhoz();
-    TEveGeoShape* GetGeomGentleTRD();
-    TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE);
+    TEveGeoShape* GetGeomGentleTRD(Color_t color=3);
+    TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE, Color_t color=3);
 
 private:
-    void DrawDeep(TEveGeoShape *gsre);
+    void DrawDeep(TEveGeoShape *gsre, Color_t color);
 };
 
 

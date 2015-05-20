@@ -11,7 +11,7 @@
 
 class AliEveOnline {
 public:
-    AliEveOnline();
+    AliEveOnline(bool storageManager=false);
     ~AliEveOnline();
     
 private:

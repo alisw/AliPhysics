@@ -29,9 +29,27 @@
 
 using namespace std;
 
-AliEveOnline::AliEveOnline()
+AliEveOnline::AliEveOnline(bool storageManager)
 {
     cout<<"Creating AliEveOnline"<<endl;
+ 
+    //-----------------------------------------------------------------------------------------
+    //  Set all preferences here
+    //
+    Color_t colorTRD = kGray;      // color of TRD modules
+    Color_t colorMUON = kGray;     // color of MUON modules
+    
+    bool customPreset = true;            // should one of the following custom presets be used
+    Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
+    Width_t widths[9] = {3,3,3,3,3,3,3,3,3};
+    bool dashBad = true;
+    
+//    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
+
+    bool saveViews = true;          // should screenshot be saved and sent to ALICE LIVE
+    
+    //
+    //-----------------------------------------------------------------------------------------
     
     // set OCDB path:
     AliEveEventManager::SetCdbUri("local:///local/cdb");         // current OCDB snapshot
@@ -40,22 +58,22 @@ AliEveOnline::AliEveOnline()
     AliEveMultiView *multiView = new AliEveMultiView(kTRUE);
     cout<<"created"<<endl;
     
-    Info("alieve_init", "Adding standard macros.");
-    TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
+    cout<<"Adding standard macros...";
     InitImportMacros();
-    gSystem->cd(hack);
-    cout<<"Standard macros added"<<endl;
+    cout<<"added"<<endl;
     
+    cout<<"Creating event manager...";
     new AliEveEventManager("online", -1);
-    gEve->AddEvent(AliEveEventManager::GetMaster());
-    cout<<"Event manager created"<<endl;
+    AliEveEventManager *man = AliEveEventManager::GetMaster();
+    gEve->AddEvent(man);
+    cout<<"created"<<endl;
     
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();
     cout<<"VizDB_scan loaded"<<endl;
     TEveBrowser *browser = gEve->GetBrowser();
     browser->ShowCloseTab(kFALSE);
-    cout<<"browser created"<<endl;
+    cout<<"Browser created"<<endl;
     
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
     
@@ -64,23 +82,13 @@ AliEveOnline::AliEveOnline()
                               geomGentle->GetGeomGentleRhoz(),
                               geomGentle->GetGeomGentleRhoz());
     
-    multiView->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
-    multiView->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(), kFALSE, kFALSE, kTRUE);
+    multiView->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD(colorTRD));
+    multiView->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kFALSE, kTRUE);
     
-    printf("============ Setting macro executor ============\n");
-    
+    cout<<"============ Setting macro executor ============\n"<<endl;;
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
-    printf("exec created\n");
-    
-    // default appearance:
-//    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
-    
-    // preset for cosmics:
-    //exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
-    
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD"   , "ad_esd.C", "ad_esd", "", kTRUE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdcells.C", "emcal_esdcells", "", kTRUE));
-
     cout<<"macros added to exec"<<endl;
     
     //============================================================================
@@ -89,7 +97,7 @@ AliEveOnline::AliEveOnline()
     
     browser->GetTabRight()->SetTab(1);
     browser->StartEmbedding(TRootBrowser::kBottom);
-    new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
+    new AliEveEventManagerWindow(man,storageManager);
     browser->StopEmbedding("EventCtrl");
     
     browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
@@ -111,22 +119,28 @@ AliEveOnline::AliEveOnline()
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
     gEve->Redraw3D(kTRUE);
-    
-    // set autoload by default
-    AliEveEventManager::GetMaster()->SetAutoLoad(true);
-    AliEveEventManager::GetMaster()->SetSaveViews(true);
 
+    if(customPreset)
+    {
+        man->SetESDcolors(colors);
+        man->SetESDwidths(widths);
+        man->SetESDdashBad(dashBad);
+    }
+
+    man->SetSaveViews(saveViews);
+    man->SetAutoLoad(true);     // set autoload by default
 }
 
 AliEveOnline::~AliEveOnline()
 {
-    
 }
 
 void AliEveOnline::InitImportMacros()
 {
     // Put macros in the list of browsables, add a macro browser to
     // top-level GUI.
+    
+    TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     
     TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
     
@@ -177,6 +191,5 @@ void AliEveOnline::InitImportMacros()
             br->SetTab(0, 0);
         }
     }
-
-    
+    gSystem->cd(hack);
 }

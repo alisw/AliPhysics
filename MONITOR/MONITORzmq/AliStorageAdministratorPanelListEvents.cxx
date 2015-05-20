@@ -347,7 +347,6 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 {
     //prepare and send request message
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-//    struct listRequestStruct list;
     
     //build query
     requestMessage->runNumber[0]=fRunMinEntry->GetIntNumber();
@@ -376,7 +375,6 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
         strcpy(requestMessage->triggerClass,"No trigger selection");
     }
     requestMessage->messageType = REQUEST_LIST_EVENTS;
-//    requestMessage->list = list;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {
@@ -437,11 +435,9 @@ void AliStorageAdministratorPanelListEvents::onMarkButton()
     eventNumber=fEventsListVector[selectedEventNumber].eventNumber;
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-//    struct eventStruct mark;
     requestMessage->eventsRunNumber = runNumber;
     requestMessage->eventsEventNumber = eventNumber;
     requestMessage->messageType = REQUEST_MARK_EVENT;
-//    requestMessage->event = mark;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {
@@ -478,11 +474,9 @@ void AliStorageAdministratorPanelListEvents::onLoadButton()
     
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-//    struct eventStruct eventToLoad;
     requestMessage->eventsRunNumber = runNumber;
     requestMessage->eventsEventNumber = eventNumber;
     requestMessage->messageType = REQUEST_GET_EVENT;
-//    requestMessage->event = eventToLoad;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {

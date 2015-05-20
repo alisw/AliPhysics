@@ -67,26 +67,19 @@ int main(int argc, char **argv)
     gROOT->SetMacroPath(macPath);
 
     bool onlineMode=false;
+    bool storageManager=false;
     
-    if(argc==2)
+    for (int i=0; i<argc; i++)
     {
-        if(strcmp(argv[1],"online")==0)
+        if(strcmp(argv[i],"online")==0)
         {
-            onlineMode = true;
-            argc--;
-            strcpy(argv[1],"");
+            onlineMode=true;
+        }
+        if(strcmp(argv[i],"sm")==0)
+        {
+            storageManager=true;
         }
     }
-    else if(argc==3)
-    {
-        if(strcmp(argv[2],"online")==0)
-        {
-            onlineMode = true;
-            argc--;
-            strcpy(argv[2],"");
-        }
-    }
-
     
     // make sure logger is instantiated
     AliLog::GetRootLogger();
@@ -109,7 +102,7 @@ int main(int argc, char **argv)
     
     if(onlineMode)
     {
-        AliEveOnline *online = new AliEveOnline();
+        AliEveOnline *online = new AliEveOnline(storageManager);
     }
     
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");

@@ -25,7 +25,15 @@ public:
     AliEveESDTracks();
     ~AliEveESDTracks();
     
-    TEveElementList* ByCategory(Color_t c0=-1,Color_t c1=-1,Color_t c2=-1,Color_t c3=-1,Color_t c4=-1,Color_t c5=-1,Color_t c6=-1,Color_t c7=-1,Color_t c8=-1,bool dashBad=kTRUE);
+    TEveElementList* ByCategory();
+    
+    void SetColors(Color_t colors[9]){
+        for(int i=0;i<9;i++){fColors[i]=colors[i];}
+    }
+    void SetWidths(Width_t widths[9]){
+        for(int i=0;i<9;i++){fWidths[i]=widths[i];}
+    }
+    void SetDashBad(bool dashBad){fDashBad=dashBad;}
     
 private:
     bool fUseIPonFailedITSrefit;
@@ -51,8 +59,9 @@ private:
     Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
 
     TEveElementList* ByAnalCuts();
-
-    
+    Color_t fColors[9];
+    Width_t fWidths[9];
+    bool fDashBad;
 };
 
 #endif
