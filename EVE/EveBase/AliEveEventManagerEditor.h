@@ -74,14 +74,11 @@ public:
   void DoNextEvent();
   void DoLastEvent();
   void DoMarkEvent();
-    void DoRestartReco();
-    void DoRestartManager();
 
   void DoSetEvent();
 
   void DoRefresh();
   void DoSetAutoLoad();
-  void DoSetLoopMarked();
   void DoSetAutoLoadTime();
   void DoSetTrigSel();
 
