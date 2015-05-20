@@ -1621,4 +1621,17 @@ inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const AliHLTCo
   return AliHLTComponentDataTypeInitializer(src.fID, origin);
 }
 
+/**
+ * Helper function to compare topics
+ * a topic is a string representation of AliHLTComponentDataType
+ */
+inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
+{
+  for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
+  {
+    if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) return false;
+  }
+  return true;
+}
+
 #endif 
