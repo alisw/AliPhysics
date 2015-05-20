@@ -1026,6 +1026,19 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
 {
   AliJetContainer* jets1 = GetJetContainer(0);
   AliJetContainer* jets2 = GetJetContainer(1);
+
+  /*
+  Printf("Detector level jet");
+  jet1->Print();
+  
+  jet1->PrintConstituents(jets1->GetParticleContainer() != 0 ? jets1->GetParticleContainer()->GetArray() : 0,
+                          jets1->GetClusterContainer() != 0 ? jets1->GetClusterContainer()->GetArray() : 0);
+
+  Printf("Matched with particle level jet");
+  jet2->Print();
+  jet2->PrintConstituents(jets2->GetParticleContainer() != 0 ? jets2->GetParticleContainer()->GetArray() : 0,
+                          jets2->GetClusterContainer() != 0 ? jets2->GetClusterContainer()->GetArray() : 0);
+  */
   
   Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
   Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
