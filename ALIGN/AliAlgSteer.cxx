@@ -51,6 +51,8 @@
 using namespace TMath;
 using namespace AliAlgAux;
 
+using std::ifstream;
+
 ClassImp(AliAlgSteer)
 
 const Char_t* AliAlgSteer::fgkMPDataExt = ".mille";
