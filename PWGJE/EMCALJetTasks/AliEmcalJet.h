@@ -63,7 +63,6 @@ class AliEmcalJet : public AliVParticle
   Int_t             PdgCode()                    const { return 0;       }
   const Double_t   *PID()                        const { return 0;       }
   void              GetMom(TLorentzVector &vec)  const;
-  void              Print(Option_t* option = "") const;
 
   Double_t          Area()                       const { return fArea;                     }
   Double_t          AreaPt()                     const { return fArea;                     }
@@ -275,6 +274,9 @@ class AliEmcalJet : public AliVParticle
 
   Bool_t HasGhost() const { return fHasGhost; }
   const std::vector<AliEmcalJet::Ghost> GetGhosts() const { return fGhosts; }
+
+  void Print(Option_t* /*opt*/ = "") const;
+  void PrintConstituents(TClonesArray* tracks, TClonesArray* clusters) const;
 
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt
