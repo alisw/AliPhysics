@@ -60,6 +60,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   //Printf("tracksUS() = %s", ntracksUS);
   AliParticleContainer *trackContTrue  = task->AddParticleContainer(ntracksTrue);
   //Printf("ntracksTrue() = %s, trackContTrue=%p ", ntracksTrue, trackContTrue);
+  AliParticleContainer *trackContPartLevel  = task->AddParticleContainer(ntracksPartLevel);
+
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
   
   AliJetContainer *jetContBase=0x0;
