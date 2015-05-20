@@ -36,18 +36,24 @@ class AliAnalysisTaskADQA : public AliAnalysisTaskSE {
 		      const char* xLabel = NULL, const char* yLabel = NULL);
   TH2F* CreateHist2D(const char* name, const char* title, Int_t nBinsX, Double_t xMin, Double_t xMax,
 		      Int_t nBinsY, Double_t yMin, Double_t yMax,
-		      const char* xLabel = NULL, const char* yLabel = NULL);
+		      const char* xLabel = NULL, const char* yLabel = NULL, const char* zLabel = NULL);
+  TH3F* CreateHist3D(const char* name, const char* title, Int_t nBinsX, Double_t xMin, Double_t xMax,
+		      Int_t nBinsY, Double_t yMin, Double_t yMax,
+		      Int_t nBinsZ, Double_t zMin, Double_t zMax,
+		      const char* xLabel = NULL, const char* yLabel = NULL, const char* zLabel = NULL);
 
 private:
 
   TList       *fListHist;                       //! List of histograms
-  
+  /*From ESD*/
   TH1F        *fHistTotalChargePerEventADA;
   TH1F        *fHistTotalChargePerEventADC;
-  TH2F        *fHistChargePerPM;
-  TH2F        *fHistTimePerPM;
+  TH2F        *fHistChargePerPM_All;
+  TH2F        *fHistChargePerPM_BB;
+  TH2F        *fHistChargePerPM_BG;
+  TH2F        *fHistTimePerPM_Corr;
+  TH2F	      *fHistTimeVsCharge_Corr;
   TH2F        *fHistWidthPerPM;
-  TH2F	      *fHistTimeVsCharge;
   TH2F	      *fHistWidthVsCharge;
   TH1F        *fHistNBBflagsADA;
   TH1F        *fHistNBBflagsADC;
@@ -59,19 +65,35 @@ private:
   TH1F	      *fHistTimeNoFlag;
   TH1F	      *fHistChargeNoTime;
   
+  TH1F	      *fHistMeanTimeADA;
+  TH1F	      *fHistMeanTimeADC;
+  TH1F	      *fHistMeanTimeDifference;
+  TH2F	      *fHistMeanTimeCorrelation;
+  TH2F	      *fHistMeanTimeSumDiff;
+  TH2F	      *fHistDecision;
+  
+  TH1F	      *fTrigger_Flags;
+  
+  /*From ESD friend*/
+  TH1F	      *fTrigger_Bits; 
   TH2F	      *fHistChargeVsClockInt0;
   TH2F	      *fHistChargeVsClockInt1;
   TH2F	      *fHistBBFlagVsClock;
   TH2F	      *fHistBGFlagVsClock;
   TH2F	      *fHistBBFlagPerChannel;
   TH2F	      *fHistBGFlagPerChannel;
+  TH2F	      *fHistMaxChargeClock;
+  TH2F        *fHistTimePerPM_UnCorr;
+  TH2F	      *fHistTimeVsCharge_UnCorr;
+  TH3F	      *fHistTimeVsChargePerPM_UnCorr;
+  
   
   
    
   AliAnalysisTaskADQA(const AliAnalysisTaskADQA&);            // not implemented
   AliAnalysisTaskADQA& operator=(const AliAnalysisTaskADQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADQA, 1);
+  ClassDef(AliAnalysisTaskADQA, 2);
 };
 
 #endif
