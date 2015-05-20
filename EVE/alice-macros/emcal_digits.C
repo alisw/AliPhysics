@@ -96,18 +96,18 @@ void emcal_digits()
     frame_dcl = new TEveFrameBox();
     frame_dcl->SetFrameColorRGBA(200,200,0,50);
     frame_dcl->SetAABoxCenterHalfSize(0, 0, 0, dbbox->GetDX(), dbbox->GetDY(), dbbox->GetDZ());
-    
+
     TGeoBBox* sdbbox = (TGeoBBox*) node->GetDaughter(18)->GetVolume()->GetShape();
     frame_smld = new TEveFrameBox();
     frame_smld->SetFrameColorRGBA(200,200,0,50);
     frame_smld->SetAABoxCenterHalfSize(0, 0, 0, sdbbox->GetDX(), sdbbox->GetDY(), sdbbox->GetDZ());
   }
-  
   // Define EVE stuff
   //
   TEveElementList* l = new TEveElementList("EMCAL");
   l->SetTitle("Tooltip");
   gEve->AddElement(l);
+
 
   gStyle->SetPalette(1, 0);
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
@@ -213,6 +213,7 @@ void emcal_digits()
       q->QuadValue(TMath::Nint(amp));
       q->QuadId(new AliEMCALDigit(*dig));
     }
+
   }
 
   rl->UnloadDigits("EMCAL");

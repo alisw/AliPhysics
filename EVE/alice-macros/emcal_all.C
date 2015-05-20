@@ -9,6 +9,7 @@
 /// \file emcal_all.C
 /// \brief Visualize EMCAL data
 ///
+<<<<<<< HEAD
 /// A macro to read and visualize EMCAL data in different formats with the help of
 /// the classes managing the EMCAL data visulization:
 /// * AliEveEMCALData, 
@@ -38,6 +39,24 @@
 ///   * exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "EMCAL ESD CELLS/DIGITS", "emcal_all.C", "emcal_all","0,1,0,1,0",kTRUE));
 ///   * exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "EMCAL ESD CLUSTERS", "emcal_all.C", "emcal_all","0,1,0,0,1",kTRUE));
 /// (the last parameter of the visscan_init macro indicates that this line is active or not).
+=======
+/// A macro to read and visualize EMCAL data
+/// The macro: 
+/// * can read hits, digits and clusters information from AliRunLoader:
+///     * emcal_data->LoadHits(ht); 
+///     * emcal_data->LoadDigits(dt);
+///     * emcal_data->LoadRecPoints(rt);
+/// * can read hits, digits and clusters information from AliEMCALLoader:
+///     * rl->GetEvent(evtNum);
+///     * emcal_data->LoadHitsFromEMCALLoader(emcl);       // Does not work
+///     * emcal_data->LoadDigitsFromEMCALLoader(emcl);     
+///      emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
+/// * can read hits, digits and clusters information from ESDs
+///     * emcal_data->LoadDigitsFromESD();
+///     * emcal_data->LoadClustersFromESD();
+/// * will read hits, digits and clusters information from raw
+///     * To be implemented
+>>>>>>> merge with master
 ///
 /// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
@@ -117,12 +136,12 @@ void emcal_all
   
   AliESDEvent* esd = 0x0;
   if(iESD) esd = AliEveEventManager::AssertESD();
-  // esd check already in AssertESD function 
-      
+  // esd check already in AssertESD function
   //  gGeoManager = gEve->GetDefaultGeometry();
   AliEveEventManager::AssertGeometry();
   
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
+
   //TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
   
   //printf("*** nodes %d\n",node->GetNdaughters());
@@ -214,7 +233,6 @@ void emcal_all
     
     esm->DropData(); // Not sure it is needed, it works locally with it, but better clean the arrays.    
   }
-  
 
   for (Int_t sm=0; sm<20; sm++)
     {
@@ -224,7 +242,6 @@ void emcal_all
       esm->UpdateQuads();
       l->AddElement(esm);
     }
-
   gEve->Redraw3D(kTRUE);
   
   gEve->EnableRedraw();

@@ -10,6 +10,7 @@
 /// \file emcal_hits.C
 /// \brief Visualize EMCAL digits
 ///
+
 /// A macro to read and visualize EMCAL hits. Standalone.
 ///
 /// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
