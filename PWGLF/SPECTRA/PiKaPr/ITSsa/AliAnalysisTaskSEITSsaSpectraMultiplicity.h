@@ -32,6 +32,9 @@ class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
+using std::cout;
+using std::endl;
+
 class AliAnalysisTaskSEITSsaSpectraMultiplicity : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskSEITSsaSpectraMultiplicity();

@@ -41,6 +41,9 @@
 
 ClassImp(AliHFJetsTaggingVertex)
 
+using std::cout;
+using std::endl;
+
 AliHFJetsTaggingVertex::AliHFJetsTaggingVertex():
 AliHFJetsTagging(),
   fCutsHFjets(0x0){
