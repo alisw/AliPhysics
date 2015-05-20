@@ -645,25 +645,25 @@ void AliJetResponseMaker::AllocateTHnSparse()
 
   if (fNEFAxis) {
     title[dim] = "NEF";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fZAxis) {
     title[dim] = "Z";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fFlavourZAxis) {
     title[dim] = "z_{flavour}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
-    max[dim] = 1.2;
+    nbins[dim] = 100;
+    min[dim] = 0.0;
+    max[dim] = 2.0;
     dim++;
   }
 
@@ -840,43 +840,43 @@ void AliJetResponseMaker::AllocateTHnSparse()
 
   if (fNEFAxis) {
     title[dim] = "NEF_{1}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
 
     title[dim] = "NEF_{2}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fZAxis) {
     title[dim] = "Z_{1}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
 
     title[dim] = "Z_{2}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fFlavourZAxis) {
     title[dim] = "z_{flavour,1}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
-    max[dim] = 1.2;
+    nbins[dim] = 100;
+    min[dim] = 0.0;
+    max[dim] = 2.0;
     dim++;
 
     title[dim] = "z_{flavour,2}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
-    max[dim] = 1.2;
+    nbins[dim] = 100;
+    min[dim] = 0.0;
+    max[dim] = 2.0;
     dim++;
   }
 
