@@ -946,7 +946,10 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
 {
   AliJetContainer* jets = GetJetContainer(Set-1);
   
-  Double_t ptLeading = jets->GetLeadingHadronPt(jet);
+  TLorentzVector leadPart;
+  jets->GetLeadingHadronMomentum(leadPart, jet);
+  Double_t zleading = GetParallelFraction(leadPart.Vect(), jet);
+  
   Double_t corrpt = jet->Pt() - jets->GetRhoVal() * jet->Area();
   Double_t zflavour = 0;
   Double_t ptflavour = 0;
@@ -982,13 +985,13 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
       else if (title=="NEF")
 	contents[i] = jet->NEF();
       else if (title=="Z")
-	contents[i] = ptLeading/jet->Pt();
+	contents[i] = zleading;
       else if (title=="p_{T}^{corr}")
 	contents[i] = corrpt;
       else if (title=="p_{T}^{MC}")
 	contents[i] = jet->MCPt();
       else if (title=="p_{T,particle}^{leading} (GeV/c)")
-	contents[i] = ptLeading;
+	contents[i] = leadPart.Pt();
       else if (title=="z_{flavour}")
 	contents[i] = zflavour;
       else if (title=="p_{T}^{D}")
@@ -1003,7 +1006,7 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
     if (Set == 1) {
       fHistJets1PtArea->Fill(jet->Area(), jet->Pt());
       fHistJets1PhiEta->Fill(jet->Eta(), jet->Phi());
-      fHistJets1ZvsPt->Fill(ptLeading/jet->Pt(), jet->Pt());
+      fHistJets1ZvsPt->Fill(zleading, jet->Pt());
       fHistJets1NEFvsPt->Fill(jet->NEF(), jet->Pt());
       fHistJets1CEFvsCEFPt->Fill(1-jet->NEF(), (1-jet->NEF())*jet->Pt());
       if (fIsJet1Rho)
@@ -1012,7 +1015,7 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
     else if (Set == 2) {
       fHistJets2PtArea->Fill(jet->Area(), jet->Pt());
       fHistJets2PhiEta->Fill(jet->Eta(), jet->Phi());
-      fHistJets2ZvsPt->Fill(ptLeading/jet->Pt(), jet->Pt());
+      fHistJets2ZvsPt->Fill(zleading, jet->Pt());
       fHistJets2NEFvsPt->Fill(jet->NEF(), jet->Pt());
       fHistJets2CEFvsCEFPt->Fill(1-jet->NEF(), (1-jet->NEF())*jet->Pt());
       if (fIsJet2Rho)
@@ -1040,7 +1043,10 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
                           jets2->GetClusterContainer() != 0 ? jets2->GetClusterContainer()->GetArray() : 0);
   */
   
-  Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
+  TLorentzVector leadPart1;
+  jets1->GetLeadingHadronMomentum(leadPart1, jet1);
+  Double_t zleading1 = GetParallelFraction(leadPart1.Vect(), jet1);
+  
   Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
   Double_t zflavour1 = 0;
   Double_t ptflavour1 = 0;
@@ -1051,7 +1057,10 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
   }
   
 
-  Double_t ptLeading2 = jets2->GetLeadingHadronPt(jet2);
+  TLorentzVector leadPart2;
+  jets2->GetLeadingHadronMomentum(leadPart2, jet2);
+  Double_t zleading2 = GetParallelFraction(leadPart2.Vect(), jet2);
+  
   Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
   Double_t zflavour2 = 0;
   Double_t ptflavour2 = 0;
@@ -1103,13 +1112,13 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
       else if (title=="NEF_{2}")
 	contents[i] = jet2->NEF();
       else if (title=="Z_{1}")
-	contents[i] = ptLeading1/jet1->Pt();
+	contents[i] = zleading1;
       else if (title=="Z_{2}")
-	contents[i] = ptLeading2/jet2->Pt();
+	contents[i] = zleading2;
       else if (title=="p_{T,particle,1}^{leading} (GeV/c)")
-	contents[i] = ptLeading1;
+	contents[i] = leadPart1.Pt();
       else if (title=="p_{T,particle,2}^{leading} (GeV/c)")
-	contents[i] = ptLeading2;
+	contents[i] = leadPart2.Pt();
       else if (title=="z_{flavour,1}")
         contents[i] = zflavour1;
       else if (title=="z_{flavour,2}")
