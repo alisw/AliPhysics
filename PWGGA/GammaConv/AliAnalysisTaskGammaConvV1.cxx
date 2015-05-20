@@ -1564,7 +1564,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 				if(fInputEvent->IsA()==AliAODEvent::Class())
 				ProcessTruePhotonCandidatesAOD(PhotonCandidate);
 			}
-			if (fIsFromMBHeader){
+			if (fIsFromMBHeader && fDoPhotonQA == 2){
 			if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
 				fPtGamma = PhotonCandidate->Pt();
 				fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();

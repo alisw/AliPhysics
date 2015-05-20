@@ -135,7 +135,7 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 	
 	//************************************************ EMCAL clusters **********************************************************
 	if (trainConfig == 1){ // min energy = 0.3 GeV/c
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053022230000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053022230000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
         eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000053022230000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
 	} else if (trainConfig == 2){  // min energy = 0.3 GeV/c
         eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053022230000"; mesonCutArray[0] = "01631031000000"; //standart cut, kEMCEGA based on INT7
