@@ -178,7 +178,7 @@ AliAnalysisTaskTPCTOFPID::UserCreateOutputObjects()
   /*
    * user create output objects
    */
-
+  OpenFile(1);
   /* output tree */
   fPIDTree = new TTree("PIDTree","PIDTree");
   fPIDTree->Branch("AnalysisEvent", "AliAnalysisPIDEvent", &fAnalysisEvent);  
@@ -447,7 +447,7 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
 }
 
 void AliAnalysisTaskTPCTOFPID::Terminate(Option_t *) {
-    PostData(1,fPIDTree);
+  //PostData(1,fPIDTree);
   printf("Terminate!\n");
 }
 
