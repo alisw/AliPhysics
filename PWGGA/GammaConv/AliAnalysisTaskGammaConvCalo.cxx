@@ -833,12 +833,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoMotherEtaPtY[iCut]->SetYTitle("y_{ #eta cand}");
 				SetLogBinningXTH2(fHistoMotherEtaPtY[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtY[iCut]);
-				fHistoMotherPi0PtAlpha[iCut] = new TH2F("ESD_MotherPi0_Pt_Alpha","ESD_MotherPi0_Pt_Alpha",150,0.03,15.,100,0,1);
+				fHistoMotherPi0PtAlpha[iCut] = new TH2F("ESD_MotherPi0_Pt_Alpha","ESD_MotherPi0_Pt_Alpha",150,0.03,15.,200,-1,1);
 				fHistoMotherPi0PtAlpha[iCut]->SetXTitle("p_{T, #pi^{0} cand} (GeV/c)");
 				fHistoMotherPi0PtAlpha[iCut]->SetYTitle("#alpha_{#pi^{0} cand}");
 				SetLogBinningXTH2(fHistoMotherPi0PtAlpha[iCut]);
 				fESDList[iCut]->Add(fHistoMotherPi0PtAlpha[iCut]);
-				fHistoMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",150,0.03,15.,100,0,1);
+				fHistoMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",150,0.03,15.,200,-1,1);
 				fHistoMotherEtaPtAlpha[iCut]->SetXTitle("p_{T, #eta cand} (GeV/c)");
 				fHistoMotherEtaPtAlpha[iCut]->SetYTitle("#alpha_{#eta cand}");
 				SetLogBinningXTH2(fHistoMotherEtaPtAlpha[iCut]);
@@ -1076,10 +1076,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 					fHistoMCEtaPtY[iCut]->Sumw2();
 					SetLogBinningXTH2(fHistoMCEtaPtY[iCut]);
 					fMCList[iCut]->Add(fHistoMCEtaPtY[iCut]);
-					fHistoMCPi0PtAlpha[iCut] = new TH2F("MC_Pi0_Pt_Alpha","MC_Pi0_Pt_Alpha",150,0.03,15.,100,0,1);
+					fHistoMCPi0PtAlpha[iCut] = new TH2F("MC_Pi0_Pt_Alpha","MC_Pi0_Pt_Alpha",150,0.03,15.,200,-1,1);
 					SetLogBinningXTH2(fHistoMCPi0PtAlpha[iCut]);
 					fMCList[iCut]->Add(fHistoMCPi0PtAlpha[iCut]);
-					fHistoMCEtaPtAlpha[iCut] = new TH2F("MC_Eta_Pt_Alpha","MC_Eta_Pt_Alpha",150,0.03,15.,100,0,1);
+					fHistoMCEtaPtAlpha[iCut] = new TH2F("MC_Eta_Pt_Alpha","MC_Eta_Pt_Alpha",150,0.03,15.,200,-1,1);
 					SetLogBinningXTH2(fHistoMCEtaPtAlpha[iCut]);
 					fMCList[iCut]->Add(fHistoMCEtaPtAlpha[iCut]);
 
@@ -1423,12 +1423,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 					fHistoTrueEtaPtY[iCut]->SetXTitle("#eta p_{T} (GeV/c)");					
 					SetLogBinningXTH2(fHistoTrueEtaPtY[iCut]);
 					fTrueList[iCut]->Add(fHistoTrueEtaPtY[iCut]);
-					fHistoTruePi0PtAlpha[iCut] = new TH2F("ESD_TruePi0_Pt_Alpha","ESD_TruePi0_Pt_Alpha",150,0.03,15.,100,0,1);
+					fHistoTruePi0PtAlpha[iCut] = new TH2F("ESD_TruePi0_Pt_Alpha","ESD_TruePi0_Pt_Alpha",150,0.03,15.,200,-1,1);
 					fHistoTruePi0PtAlpha[iCut]->SetYTitle("#alpha_{#pi^{0}}");
 					fHistoTruePi0PtAlpha[iCut]->SetXTitle("#pi^{0} p_{T} (GeV/c)");		
 					SetLogBinningXTH2(fHistoTruePi0PtAlpha[iCut]);
 					fTrueList[iCut]->Add(fHistoTruePi0PtAlpha[iCut]);
-					fHistoTrueEtaPtAlpha[iCut] = new TH2F("ESD_TrueEta_Pt_Alpha","ESD_TrueEta_Pt_Alpha",150,0.03,15.,100,0,1);
+					fHistoTrueEtaPtAlpha[iCut] = new TH2F("ESD_TrueEta_Pt_Alpha","ESD_TrueEta_Pt_Alpha",150,0.03,15.,200,-1,1);
 					fHistoTrueEtaPtAlpha[iCut]->SetYTitle("#alpha_{#eta}");
 					fHistoTrueEtaPtAlpha[iCut]->SetXTitle("#eta p_{T} (GeV/c)");		
 					SetLogBinningXTH2(fHistoTrueEtaPtAlpha[iCut]);
@@ -2408,9 +2408,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 					mesonY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
 				}
 				
-				Double_t alpha = -1;
+				Double_t alpha = -10;
 				if (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221){
-					alpha = TMath::Abs((daughter0->E() - daughter1->E()))/(daughter0->E() + daughter1->E());
+					alpha = (daughter0->E() - daughter1->E())/(daughter0->E() + daughter1->E());
 				}
 
 				
@@ -2553,9 +2553,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 						mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
 					}
 
-					Double_t alpha = -1;
+					Double_t alpha = -10;
 					if (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221){
-						alpha = TMath::Abs((daughter0->Energy() - daughter1->Energy()))/(daughter0->Energy() + daughter1->Energy());
+						alpha = (daughter0->Energy() - daughter1->Energy())/(daughter0->Energy() + daughter1->Energy());
 					}
 
 					if(particle->GetPdgCode() == 111){
@@ -2672,7 +2672,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 					// fill new histograms
 					if (!matched){
 						fHistoPhotonPairPtconv[fiCut]->Fill(pi0cand->M(),gamma0->Pt());
-						if(pi0cand->GetAlpha()<0.1)
+						if(abs(pi0cand->GetAlpha())<0.1)
 							fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 						
 						if (fDoMesonQA > 0){
@@ -2722,7 +2722,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 					if (!matched){
 						if (fDoMesonQA == 1){
 							fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),gamma1->E());
-							if(pi0cand->GetAlpha()<0.1)
+							if(abs(pi0cand->GetAlpha())<0.1)
 							fHistoMotherInvMassECalibalpha[fiCut]->Fill(pi0cand->M(),gamma1->E());            
 						}
 					}
