@@ -2975,7 +2975,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhAmpId->SetXTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhAmpId);
 
-  fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,ptfinemin,ptfinemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+  fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,15,ptfinemax+15,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
   fhAmpIdLowGain->SetXTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhAmpIdLowGain);
   
