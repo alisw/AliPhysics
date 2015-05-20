@@ -258,10 +258,12 @@ class AliEmcalJet : public AliVParticle
   void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag;                       }
   void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;                    }
   Bool_t            TestFlavourTag(Int_t tag)    const { return (Bool_t)((tag & fFlavourTagging) !=0); }
-  void              SetFlavourTrack(AliVParticle* hftrack){ fFlavourTrack = hftrack;                      }
-  AliVParticle     *GetFlavourTrack()            const { return fFlavourTrack;                         }
-  Double_t          GetFlavourTrackZ()           const { return fFlavourTrack != 0 && P() > 1e-6 ? fFlavourTrack->P() / P() : 0.; }
-
+  void              AddFlavourTrack(AliVParticle* hftrack){ if (!fFlavourTracks) fFlavourTracks = new TObjArray(); fFlavourTracks->Add(hftrack);               }
+  AliVParticle     *GetFlavourTrack(Int_t i=0)   const { return fFlavourTracks && i >= 0 && i < fFlavourTracks->GetEntriesFast() ? static_cast<AliVParticle*>(fFlavourTracks->At(i)) : 0; }
+  Double_t          GetFlavourTrackZ(Int_t i=0)  const;
+  AliVParticle     *RemoveFlavourTrack(Int_t i=0)      { return fFlavourTracks && i >= 0 && i < fFlavourTracks->GetEntriesFast() ? static_cast<AliVParticle*>(fFlavourTracks->RemoveAt(i)) : 0; }
+  void              ClearFlavourTracks()               { if (fFlavourTracks) fFlavourTracks->Clear(); }
+  
   void AddGhost(const Double_t dPx, const Double_t dPy, const Double_t dPz, const Double_t dE) {
     ghost.fPx = dPx;
     ghost.fPy = dPy;
@@ -291,7 +293,7 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
   Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
   Int_t             fFlavourTagging;      //           tag jet with a flavour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
-  AliVParticle     *fFlavourTrack;        //!          heavy flavour candidate track matched to the jet
+  TObjArray        *fFlavourTracks;       //!          heavy flavour candidate tracks matched to the jet
   Double32_t        fMaxCPt;              //[0,0,12]   pt of maximum charged constituent
   Double32_t        fMaxNPt;              //[0,0,12]   pt of maximum neutral constituent
   Double32_t        fMCPt;                //           pt from MC particles contributing to the jet
