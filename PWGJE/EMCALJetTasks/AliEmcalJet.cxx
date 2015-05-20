@@ -25,7 +25,7 @@ AliEmcalJet::AliEmcalJet() :
   fAreaEmc(-1),
   fAxisInEmcal(0),
   fFlavourTagging(0),
-  fFlavourTrack(0),
+  fFlavourTracks(0),
   fMaxCPt(0),
   fMaxNPt(0),
   fMCPt(0),
@@ -100,7 +100,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fAreaEmc(-1),
   fAxisInEmcal(0),
   fFlavourTagging(0),
-  fFlavourTrack(0),
+  fFlavourTracks(0),
   fMaxCPt(0),
   fMaxNPt(0),
   fMCPt(0),
@@ -180,7 +180,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fAreaEmc(-1),
   fAxisInEmcal(0),
   fFlavourTagging(0),
-  fFlavourTrack(0),
+  fFlavourTracks(0),
   fMaxCPt(0),
   fMaxNPt(0),
   fMCPt(0),
@@ -259,7 +259,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fAreaEmc(jet.fAreaEmc),
   fAxisInEmcal(jet.fAxisInEmcal),
   fFlavourTagging(jet.fFlavourTagging),
-  fFlavourTrack(jet.fFlavourTrack),
+  fFlavourTracks(new TObjArray(*(jet.fFlavourTracks))),
   fMaxCPt(jet.fMaxCPt),
   fMaxNPt(jet.fMaxNPt),
   fMCPt(jet.fMCPt),
@@ -338,7 +338,7 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     fAreaEmc            = jet.fAreaEmc;
     fAxisInEmcal        = jet.fAxisInEmcal;
     fFlavourTagging     = jet.fFlavourTagging;
-    fFlavourTrack       = jet.fFlavourTrack;
+    fFlavourTracks      = new TObjArray(*(jet.fFlavourTracks));
     fMaxCPt             = jet.fMaxCPt;
     fMaxNPt             = jet.fMaxNPt;
     fMCPt               = jet.fMCPt;
@@ -642,4 +642,12 @@ void AliEmcalJet::PrintConstituents(TClonesArray* tracks, TClonesArray* clusters
       }
     }
   }
+}
+
+//________________________________________________________________________
+Double_t AliEmcalJet::GetFlavourTrackZ(Int_t i)  const
+{
+  if (P() < 1e-6) return 0.;
+  AliVParticle* hftrack = GetFlavourTrack(i);
+  return hftrack != 0 ? hftrack->P() / P() : 0.;
 }
