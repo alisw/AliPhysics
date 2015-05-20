@@ -952,7 +952,7 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
   Double_t ptflavour = 0;
   AliVParticle* hftrack = jet->GetFlavourTrack();
   if (hftrack) {
-    zflavour = hftrack->P() / jet->P();
+    zflavour = GetParallelFraction(hftrack, jet);
     ptflavour = hftrack->Pt();
   }
   
@@ -1046,7 +1046,7 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
   Double_t ptflavour1 = 0;
   AliVParticle* hftrack1 = jet1->GetFlavourTrack();
   if (hftrack1) {
-    zflavour1 = hftrack1->P() / jet1->P();
+    zflavour1 = GetParallelFraction(hftrack1, jet1);
     ptflavour1 = hftrack1->Pt();
   }
   
@@ -1057,7 +1057,7 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
   Double_t ptflavour2 = 0;
   AliVParticle* hftrack2 = jet2->GetFlavourTrack();
   if (hftrack2) {
-    zflavour2 = hftrack2->P() / jet2->P();
+    zflavour2 = GetParallelFraction(hftrack2, jet2);
     ptflavour2 = hftrack2->Pt();
   }
   
