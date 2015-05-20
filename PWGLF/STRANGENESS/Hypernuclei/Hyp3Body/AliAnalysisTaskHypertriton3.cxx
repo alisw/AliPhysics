@@ -25,8 +25,9 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include <vector>
+//#include <vector>
 
+#include <TArray.h>
 #include <TAxis.h>
 #include <TChain.h>
 #include <TDatabasePDG.h>
@@ -582,18 +583,15 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Double_t deuteronMass = AliPID::ParticleMass(AliPID::kDeuteron); // deuteron mass = 1.87561 GeV/c2
   //Double_t helium3Mass = AliPID::ParticleMass(AliPID::kHe3); // helium3 mass = 2.80923 GeV/c2
   
-  //PDGCodes
-  //particle
-  //  Long_t pdgPionPlus = 211;
-  Long_t pdgProton = 2212;
-  Long_t pdgDeuteron = 1000010020;
-  //Long_t pdgHypertriton = 1010010030;
-  
-  //antiparticle
-  Long_t pdgPionMinus = -211;
-  //Long_t pdgAntiProton = -2212;
-  //Long_t pdgAntiDeuteron = -1000010020;
-  //Long_t pdgAntiHypertriton = -1010010030;
+  //define PDGCodes  
+  //Long_t pdgPionPlus           =              211;
+  Long_t pdgPionMinus          =             -211;
+  Long_t pdgProton             =             2212;
+  //Long_t pdgAntiProton         =            -2212;
+  Long_t pdgDeuteron           =       1000010020;
+  //Long_t pdgAntiDeuteron       =      -1000010020;
+  //Long_t pdgHypertriton        =       1010010030;
+  //Long_t pdgAntiHypertriton    =      -1010010030;
   //----------------------------------------------------------------------------
 
 
@@ -741,15 +739,19 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   // -------------------------------------------------------
 
   fPIDResponse = handl->GetPIDResponse();
-  
-  vector <AliESDtrack*> cdeuteron;
-  vector <AliESDtrack*> cproton;
-  vector <AliESDtrack*> cpion;
-  
-  vector <Float_t> cmassd;
-  vector <Float_t> cmassp;
-    
+
   ntracks = fESDevent->GetNumberOfTracks();
+
+  TArrayI cdeuteron(ntracks);
+  Int_t nDeuTPC = 0;
+  TArrayI cproton(ntracks);
+  Int_t nProTPC = 0;
+  TArrayI cpion(ntracks);
+  Int_t nPioTPC = 0;
+  
+  //vector <Float_t> cmassd;
+  //vector <Float_t> cmassp;
+    
 
   for(Int_t i=0; i < ntracks; i++) {
     track = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(i));
@@ -806,8 +808,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    //fHistTOFdeusignal->Fill(p,beta);
 	    fHistTOFdeumass->Fill(mass);
 	  }
-	  cdeuteron.push_back(track);
-	  cmassd.push_back(mass); // da spostare nel if length > 350.?
+	  //cdeuteron.push_back(track);
+	  //cmassd.push_back(mass); // da spostare nel if length > 350.?
 	}
 	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && tparticleDaughter->GetPdgCode() == 2212) { // p
 	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
@@ -815,8 +817,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    //fHistTOFprosignal->Fill(p,beta);
 	    fHistTOFpromass->Fill(mass);
 	  }
-	  cproton.push_back(track);
-	  cmassp.push_back(mass); // da spostare nel if length > 350.?
+	  //cproton.push_back(track);
+	  //cmassp.push_back(mass); // da spostare nel if length > 350.?
 	}
 	else if (tparticleDaughter->GetPdgCode() == 211) fHistTPCpionplussignal->Fill(p, track->GetTPCsignal());
       } // end of "track sign +"
@@ -831,7 +833,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	}
 	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && tparticleDaughter->GetPdgCode() == -211) { // pi-
 	  fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
-	  cpion.push_back(track);
+	  //cpion.push_back(track);
 	}
       } // end of "track sign -"
     } // end of MC PID
@@ -855,31 +857,32 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFdeusignal->Fill(p,beta);
 	    fHistTOFdeumass->Fill(mass);
-	    cmassd.push_back(mass);
+	    //cmassd.push_back(mass);
 	  }
-	  cdeuteron.push_back(track);
+	  cdeuteron[nDeuTPC++] = i;
 	}
 	if(partID == 1) { // proton
 	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFprosignal->Fill(p,beta);
 	    fHistTOFpromass->Fill(mass);
-	    cmassp.push_back(mass);
+	    //cmassp.push_back(mass);
 	  }
-	  cproton.push_back(track);
+	  cproton[nProTPC++] = i;
 	}
       } // end of "track sign +"
       else if(track->GetSign()<0){
 	if(partID == 0) { //pion^-
 	  fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
-	  cpion.push_back(track);
+	  cpion[nPioTPC++] = i;
 	}
       }// end of "track sign -"
     } 
   } // end of PID loop
   
-
-
+  cdeuteron.Set(nDeuTPC);
+  cproton.Set(nProTPC);
+  cpion.Set(nPioTPC);
   
   // -------------------------------------------------------
   // Loop for Invariant Mass
@@ -895,20 +898,20 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   TLorentzVector Hypertriton;
   TVector3 h1;
 
-  //========Set of Starting Cut========//
-
-
+  Int_t deuIdx, proIdx, pioIdx = 0.;
   
-  for(UInt_t j=0; j<cdeuteron.size(); j++){ // candidate deuteron loop
-    trackD = cdeuteron.at(j);
+  for(UInt_t j=0; j<nDeuTPC; j++){ // candidate deuteron loop
+    deuIdx = cdeuteron[j];    
+    trackD = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(deuIdx));
     
     trackD->GetImpactParameters(dprim,dprimc);
     dcadprim = TMath::Sqrt((dprim[0]*dprim[0])+(dprim[1]*dprim[1]));
 
     fHistCorrDCAdprimary->Fill(dprim[0],dprim[1]);
 
-    for(UInt_t m=0; m<cproton.size(); m++){ // candidate proton loop
-      trackP = cproton.at(m);
+    for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop
+      proIdx = cproton[m];    
+      trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(proIdx));
 	  
       if(fMC) {if(trackD->GetLabel() == trackP->GetLabel()) continue;}
 
@@ -921,8 +924,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(dca_dp>fDCAdp) continue;
       fHistDCAdeupro->Fill(dca_dp);
       
-      for(UInt_t s=0; s<cpion.size(); s++ ){ // candidate pion loop
-	trackNPi = cpion.at(s);
+      for(UInt_t s=0; s<nPioTPC; s++ ){ // candidate pion loop
+	pioIdx = cpion[s];    
+	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(pioIdx));
 	brotherHood = kFALSE;
 	
 	fHistpionTPCcls->Fill(trackNPi->GetTPCclusters(0));
@@ -1049,7 +1053,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  fTpTdeu = trackD->Pt();
 	  fTpdeu = trackD->P();
 	  fTTPCnsigmadeu = fPIDResponse->NumberOfSigmasTPC(trackD,AliPID::kDeuteron);
-	  fTTOFmassdeu = cmassd.at(j) ;
+	  //fTTOFmassdeu = cmassd.at(j) ;
 	  fTDCAXYdeuprvtx = dprim[0];
 	  fTDCAZdeuprvtx = dprim[1];
 	  fTchi2NDFpro = trackP->GetTPCchi2()/trackP->GetTPCclusters(0);
@@ -1059,7 +1063,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  fTpTpro = trackP->Pt();
 	  fTppro = trackP->P();
 	  fTTPCnsigmapro = fPIDResponse->NumberOfSigmasTPC(trackP,AliPID::kProton);
-	  fTTOFmasspro = cmassp.at(m);
+	  //fTTOFmasspro = cmassp.at(m);
 	  fTDCAXYproprvtx = pprim[0];
 	  fTDCAZproprvtx = pprim[1];
 	  fTchi2NDFpion = trackNPi->GetTPCchi2()/trackNPi->GetTPCclusters(0);
@@ -1156,12 +1160,12 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     } //end of MC content truth check
   }
 
-  cdeuteron.clear();
-  cproton.clear();
-  cpion.clear();
+  cdeuteron.Reset();
+  cproton.Reset();
+  cpion.Reset();
 
-  cmassd.clear();
-  cmassp.clear();
+  //cmassd.clear();
+  //cmassp.clear();
   // Post output data.
   PostData(1,fOutput);
   if(fFillTree) PostData(2,fTTree);
