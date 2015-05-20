@@ -1,0 +1,3228 @@
+From ad6d32a119081b8c57a6b72732e856204138c03e Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 16:46:56 +0200
+Subject: [PATCH 1/9] Update for DCal; Update for doxygen; Cosmetics
+
+---
+ EVE/EveDet/AliEveEMCALData.cxx | 837 ++++++++++++++++++++---------------------
+ EVE/EveDet/AliEveEMCALData.h   |  73 ++--
+ 2 files changed, 457 insertions(+), 453 deletions(-)
+
+diff --git a/EVE/EveDet/AliEveEMCALData.cxx b/EVE/EveDet/AliEveEMCALData.cxx
+index ea40eaf..4411afa 100644
+--- a/EVE/EveDet/AliEveEMCALData.cxx
++++ b/EVE/EveDet/AliEveEMCALData.cxx
+@@ -1,15 +1,3 @@
+-//
+-// Fill containers for visualisation of EMCAL data structures
+-//    - read and store MC Hits    - read and store digits from esds or runloader
+-//    - read and store clusters from esds or runloader 
+-//
+-// Author: Magali Estienne (magali.estienne@cern.ch)
+-// June 30 2008
+-//
+-
+-//#include <Riostream.h>
+-//#include <vector>
+-
+ #include <TTree.h>
+ #include <TBranch.h>
+ #include <TObjArray.h>
+@@ -41,11 +29,15 @@ class AliESDEvent;
+ class AliEMCAL;
+ class AliEMCALGeometry;
+ class AliEveEMCALSModule;
++class AliLog;
+ 
+-using std::cout;
+-using std::endl;
+-ClassImp(AliEveEMCALData)
++/// \cond CLASSIMP
++ClassImp(AliEveEMCALData) ;
++/// \endcond
+ 
++///
++/// Default constructor
++///
+ //______________________________________________________________________________
+ AliEveEMCALData::AliEveEMCALData():
+   TObject(),
+@@ -56,31 +48,26 @@ AliEveEMCALData::AliEveEMCALData():
+   fHMatrix(0),
+   fTree(0x0),
+   fESD(0x0),
+-  fNsm(12),
++  fNsm(20),
+   fNsmfull(10),
+-  fNsmhalf(2),
+-  fSM(12),
++  fNsmhalf(2),  
++  fNsmfullD(6),
++  fNsmhalfD(2),
++  fSM(20),
+   fSMfull(10),
+   fSMhalf(2),
++  fSMfullD(6),
++  fSMhalfD(2),
+   fRunLoader(0),
+   fDebug(0),
+   fPoint(0)
+ {
+-  
+-  //
+-  // Constructor
+-  //
+-  //   for(Int_t i=0; i<12; i++)
+-  //     fSM[i] = 0x0;
+-  //   for(Int_t i=0; i<10; i++)
+-  //     fSMfull[i] = 0x0;
+-  //   fSMhalf[0] = fSMhalf[1] = 0x0;
+-  //  InitEMCALGeom();
+   CreateAllSModules();
+-
+-
+ }
+ 
++///
++/// Constructor
++///
+ //______________________________________________________________________________
+ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* m):
+   TObject(),
+@@ -91,38 +78,30 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix*
+   fHMatrix(m),
+   fTree(0x0),
+   fESD(0x0),
+-  fNsm(12),
++  fNsm(20),
+   fNsmfull(10),
+-  fNsmhalf(2),
+-  fSM(12),
++  fNsmhalf(2),  
++  fNsmfullD(6),
++  fNsmhalfD(2),
++  fSM(20),
+   fSMfull(10),
+   fSMhalf(2),
++  fSMfullD(6),
++  fSMhalfD(2),
+   fRunLoader(rl),
+   fDebug(0),
+   fPoint(0)
+ {
+-  
+-  //
+-  // Constructor
+-  //
+-//   for(Int_t i=0; i<12; i++)
+-//     fSM[i] = 0x0;
+-//   for(Int_t i=0; i<10; i++)
+-//     fSMfull[i] = 0x0;
+-//   fSMhalf[0] = fSMhalf[1] = 0x0;
+   InitEMCALGeom(rl);
+   CreateAllSModules();
+-
+-
+ }
+ 
++///
++/// Destructor
++///
+ //______________________________________________________________________________
+ AliEveEMCALData::~AliEveEMCALData()
+ {
+-  //
+-  // Destructor
+-  //
+-
+   DeleteSuperModules();
+   delete fTree;
+   // delete fEmcal; // deleted by run-loader
+@@ -132,6 +111,9 @@ AliEveEMCALData::~AliEveEMCALData()
+   delete fPoint;
+ }
+ 
++///
++/// Copy constructor
++///
+ //______________________________________________________________________________
+ AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
+   TObject(edata),
+@@ -142,492 +124,500 @@ AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
+   fHMatrix(edata.fHMatrix),
+   fTree(edata.fTree),
+   fESD(edata.fESD),
+-  fNsm(edata.fNsm),
+-  fNsmfull(edata.fNsmfull),
+-  fNsmhalf(edata.fNsmhalf),
+-  fSM(edata.fSM),
+-  fSMfull(edata.fSMfull),
+-  fSMhalf(edata.fSMhalf),
++  fNsm     (edata.fNsm     ),
++  fNsmfull (edata.fNsmfull ),
++  fNsmhalf (edata.fNsmhalf ),
++  fNsmfullD(edata.fNsmfullD),
++  fNsmhalfD(edata.fNsmhalfD),
++  fSM     (edata.fSM),
++  fSMfull (edata.fSMfull ),
++  fSMhalf (edata.fSMhalf ),  
++  fSMfullD(edata.fSMfullD),
++  fSMhalfD(edata.fSMhalfD),
+   fRunLoader(edata.fRunLoader),
+   fDebug(edata.fDebug),
+   fPoint(edata.fPoint)
+ {
+-  //
+-  // Copy constructor
+-  //
+   InitEMCALGeom(edata.fRunLoader);
+   CreateAllSModules();
+ }
+ 
++///
++/// Assignment operator
++///
+ //______________________________________________________________________________
+ AliEveEMCALData& AliEveEMCALData::operator=(const AliEveEMCALData &edata)
+ {
+-  //
+-  // Assignment operator
+-  //
+-
+-  if (this != &edata) {
+-
++  if (this != &edata) 
++  {
+   }
+ 
+   return *this;
+-
+ }
+ 
++///
++/// Set digit-tree to be used for digit retrieval. 
++/// Data is loaded on demand.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::SetTree(TTree* const tree)
+ {
+-  //
+-  // Set digit-tree to be used for digit retrieval. 
+-  // Data is loaded on demand.
+-  // 
+-
+   fTree = tree;
+-
+ }
+ 
++///
++/// Set esd
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::SetESD(AliESDEvent* const esd)
+ {
+-  //
+-  // Set esd
+-  //
+-
+   fESD = esd;
+ }
+ 
++///
++/// Set node
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::SetNode(TGeoNode* const node)
+ {
+-  //
+-  // Set node
+-  //
+-
+   fNode = node;
+ }
+ 
++///
++/// Set data members for EMCAL geometry
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::InitEMCALGeom(AliRunLoader* const rl)
+ {
+-  //
+-  // Set data members for EMCAL geometry
+-  //
+-
+   fEmcal = (AliEMCAL*) rl->GetAliRun()->GetDetector("EMCAL");
+   fGeom  = (AliEMCALGeometry*) fEmcal->GetGeometry();
+-
++  
++  if(!fGeom) AliFatal("EMCAL geometry pointer is NULL");
++  
++  // Get the number of super modules from geometry
++  fNsm = fGeom->GetNumberOfSuperModules();
+ }
+ 
++///
++/// Get geometrical information from hit/digit/cluster absolute id
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::GetGeomInfo(Int_t id, Int_t &iSupMod, Double_t& x, Double_t& y, Double_t& z)
+ {
+-  //
+-  // Get geometrical information from hit/digit/cluster absolute id
+-  //
+-
+   Int_t iTower  =  0 ;
+   Int_t iIphi   =  0 ;
+   Int_t iIeta   =  0 ;
+ 
+   //Geometry methods
+   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
++
+   //Gives SuperModule and Tower numbers
+   fGeom->RelPosCellInSModule(id, x, y, z);
+-
+ }
+ 
++///
++/// Create all fNsm super modules
++///
+ //______________________________________________________________________________
+ void  AliEveEMCALData::CreateAllSModules()
+ {
+-  //
+-  // Create all fNsm super modules
+-  //
+-
+   for(Int_t sm = 0; sm < fNsm; sm++)
+     CreateSModule(sm);
+-
+ }
+ 
++///
++/// Create super-module-data for SM if it does not exist already.
++///
+ //______________________________________________________________________________
+ void  AliEveEMCALData::CreateSModule(Int_t sm)
+ {
+-  //
+-  // Create super-module-data for SM if it does not exist already.
+-  //
+-
+-  if(fSM[sm] == 0) fSM[sm] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
+-  if(fSMfull[sm] == 0 && sm < 10) fSMfull[sm] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
+-  if(fSMhalf[sm-10] == 0 && sm > 10) fSMhalf[sm-10] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
++  if     (fSM[sm] == 0)                    fSM     [sm]    = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
++  if     (fSMfull [sm]    == 0 && sm < 10) fSMfull [sm]    = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
++  else if(fSMhalf [sm-10] == 0 && sm < 12) fSMhalf [sm-10] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
++  else if(fSMfullD[sm-12] == 0 && sm < 18) fSMfullD[sm-12] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
++  else if(fSMhalfD[sm-18] == 0 && sm < 20) fSMhalfD[sm-18] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
+ }
+ 
++///
++/// Drop data of all existing sectors.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::DropAllSModules()
+ {
+-  //
+-  // Drop data of all existing sectors.
+-  //
+-
+-  for (Int_t sm = 0; sm < fNsm; sm++) {
++  for (Int_t sm = 0; sm < fNsm; sm++) 
++  {
+     if (fSM[sm] != 0)
+       fSM[sm]->DropData();
+   }
+ }
+ 
++///
++/// Delete all super module data
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::DeleteSuperModules()
+ {
+-  //
+-  // Delete all super module data
+-  //
+-
+   for (Int_t sm = 0; sm < fNsm; sm++)
+-    {
+-      fSM[sm] = 0;
+-      delete fSM[sm];
+-    }
+-
++  {
++    fSM[sm] = 0;
++    delete fSM[sm];
++  }
++  
+   for(Int_t smf = 0; smf < fNsmfull; smf++) 
+-    {
+-      fSMfull[smf] = 0;
+-      delete fSMfull[smf];
+-    }
+-
++  {
++    fSMfull[smf] = 0;
++    delete fSMfull[smf];
++  }
++  
+   for(Int_t smh = 0; smh < fNsmhalf; smh++)
+-    {
+-      fSMhalf[smh] = 0;
+-      delete fSMhalf[smh];
+-    }
++  {
++    fSMhalf[smh] = 0;
++    delete fSMhalf[smh];
++  }
++
++  for(Int_t smd = 0; smd < fNsmfullD; smd++) 
++  {
++    fSMfullD[smd] = 0;
++    delete fSMfullD[smd];
++  }
+   
++  for(Int_t smh = 0; smh < fNsmhalfD; smh++)
++  {
++    fSMhalfD[smh] = 0;
++    delete fSMhalfD[smh];
++  }
+ }
+ 
++///
++/// Get hit information from RunLoader
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadHits(TTree* const t)
+ {
+-  //
+-  // Get hit information from RunLoader
+-  //
+-
+   /*
+-  // These are global coordinates !
+-  char form[1000];
+-  const char *selection = "";
+-  const char *varexp = "fX:fY:fZ";
+-  sprintf(form,"EMCAL Hits '%s'", selection);
+-  fPoint = new TEvePointSet(form);
+-
+-  TEvePointSelector ps(t, fPoint, varexp, selection);
+-  ps.Select();
+-
+-  if (fPoint->Size() == 0) {
+-    Warning("emcal_hits", Form("No hits match '%s'", selection));
+-    delete fPoint;
+-    //    return 0;
+-  }
+-  */
+-
++   // These are global coordinates !
++   char form[1000];
++   const char *selection = "";
++   const char *varexp = "fX:fY:fZ";
++   sprintf(form,"EMCAL Hits '%s'", selection);
++   fPoint = new TEvePointSet(form);
++   
++   TEvePointSelector ps(t, fPoint, varexp, selection);
++   ps.Select();
++   
++   if (fPoint->Size() == 0) {
++   Warning("emcal_hits", Form("No hits match '%s'", selection));
++   delete fPoint;
++   //    return 0;
++   }
++   */
++  
+   TObjArray *harr=NULL;
+   TBranch *hbranch=t->GetBranch("EMCAL");
+   hbranch->SetAddress(&harr);
+   
+-  if(hbranch->GetEvent(0)) {
+-    for(Int_t ih = 0; ih < harr->GetEntriesFast(); ih++) {
++  if(hbranch->GetEvent(0)) 
++  {
++    for(Int_t ih = 0; ih < harr->GetEntriesFast(); ih++) 
++    {
+       AliEMCALHit* hit =(AliEMCALHit*)harr->UncheckedAt(ih);
+-      if(hit != 0){
+-	if(fDebug>1) cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
+-	Int_t id = hit->GetId();
+-	// These are local coordinates
+-	Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
+-	// Get global coordinates
+-	Double_t x = hit->X();
+-	Double_t y = hit->Y();
+-	Double_t z = hit->Z();
+-	Double_t amp = hit->GetEnergy();
+-	Int_t iSupMod = 0;
+-	// Get SM Id
+-	GetGeomInfo(id,iSupMod,xl,yl,zl);
+-	fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
+-      }
++      
++      if( !hit ) continue ; 
++      
++      Int_t    id  = hit->GetId();
++      Double_t amp = hit->GetEnergy();
++
++      AliDebug(1,Form("Hit info %d, energy %2.3f",id, amp));
++            
++      // Get global coordinates
++      Double_t x = hit->X();
++      Double_t y = hit->Y();
++      Double_t z = hit->Z();
++      
++      Int_t iSupMod = 0;
++      // These are local coordinates
++      Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
++
++      // Get SM Id
++      GetGeomInfo(id,iSupMod,xl,yl,zl);
++      
++      fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
++//      if     ( iSupMod < 10 ) fSMfull [iSupMod]   ->RegisterHit(id,iSupMod,amp,x,y,z);
++//      else if( iSupMod < 12 ) fSMhalf [iSupMod-10]->RegisterHit(id,iSupMod,amp,x,y,z);
++//      else if( iSupMod < 18 ) fSMfullD[iSupMod-12]->RegisterHit(id,iSupMod,amp,x,y,z);
++//      else if( iSupMod < 20 ) fSMhalfD[iSupMod-18]->RegisterHit(id,iSupMod,amp,x,y,z);
+     }
+   }
+ }
+ 
++///
++/// Get hit information from EMCAL Loader
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* const emcl)
+-{
+-  //
+-  // Get hit information from EMCAL Loader
+-  //
+-
+-	AliEMCALHit* hit;
+-  
+-	//Fill array of hits                                                                        
+-	TClonesArray *hits = 0;//(TClonesArray*)emcl->Hits();
+-	TTree *treeH = emcl->TreeH();	
+-	if (treeH) {
+-		Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
+-		TBranch * branchH = treeH->GetBranch("EMCAL");
+-		//if(fHits)fHits->Clear();
+-		branchH->SetAddress(&hits);
+-		for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
+-			branchH->GetEntry(iTrack);
+-			
+-			//Get hits from the list                                                                    
+-			for(Int_t ihit = 0; ihit< hits->GetEntries();ihit++){
+-
+-				hit = static_cast<AliEMCALHit *>(hits->At(ihit)) ;
+-    
+-				if(hit != 0){
+-					if(fDebug>1) cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
+-
+-					Int_t id = hit->GetId();
+-					// These are local coordinates
+-					Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
+-					// Get global coordinates
+-					Double_t x = hit->X();
+-					Double_t y = hit->Y();
+-					Double_t z = hit->Z();
+-					Double_t amp = hit->GetEnergy();
+-					Int_t iSupMod = 0;
+-					// Get SM Id
+-					GetGeomInfo(id,iSupMod,xl,yl,zl);
+-					fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
+-				}//hit exists
+-			}//hit loop
+-			hits->Clear();
+-		}// track loop
+-	}//treeH exists
++{  
++  AliEMCALHit* hit;
++  
++  // Fill array of hits                                                                        
++  TClonesArray *hits = 0;//(TClonesArray*)emcl->Hits();
++  TTree *treeH = emcl->TreeH();	
++  
++  if (!treeH) return ; 
++  
++  Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
++  
++  TBranch * branchH = treeH->GetBranch("EMCAL");
++  //if(fHits)fHits->Clear();
++  
++  branchH->SetAddress(&hits);
++  
++  for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) 
++  {
++    branchH->GetEntry(iTrack);
++    
++    // Get hits from the list                                                                    
++    for(Int_t ihit = 0; ihit< hits->GetEntries();ihit++)
++    {
++      hit = static_cast<AliEMCALHit *>(hits->At(ihit)) ;
++      
++      if(!hit) continue ;
++      
++      Int_t    id  = hit->GetId();
++      Double_t amp = hit->GetEnergy();
++
++      AliDebug(1,Form("Hit info %d, energy %2.3f",id, amp));
++      
++      // These are local coordinates
++      Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
++     
++      // Get global coordinates
++      Double_t x = hit->X();
++      Double_t y = hit->Y();
++      Double_t z = hit->Z();
++      
++      Int_t iSupMod = 0;
++      
++      // Get SM Id
++      GetGeomInfo(id,iSupMod,xl,yl,zl);
++      
++      fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
++      
++//      if     ( iSupMod < 10 ) fSMfull [iSupMod]   ->RegisterHit(id,iSupMod,amp,x,y,z);
++//      else if( iSupMod < 12 ) fSMhalf [iSupMod-10]->RegisterHit(id,iSupMod,amp,x,y,z);
++//      else if( iSupMod < 18 ) fSMfullD[iSupMod-12]->RegisterHit(id,iSupMod,amp,x,y,z);
++//      else if( iSupMod < 20 ) fSMhalfD[iSupMod-18]->RegisterHit(id,iSupMod,amp,x,y,z);
++    }//hit loop
++
++    hits->Clear();
++  }// track loop
+ }
+ 
++///
++/// Get digit information from RunLoader
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadDigits(TTree *t)
+ {
+-  //
+-  // Get digit information from RunLoader
+-  //
+-
+   TClonesArray *digits = 0;
+   t->SetBranchAddress("EMCAL", &digits);
+   t->GetEntry(0);
+-
++  
+   Int_t nEnt = digits->GetEntriesFast();
+-  cout << "nEnt: " << nEnt << endl;
++  
++  AliDebug(1,Form("Number of digits %d",nEnt));
++  
+   AliEMCALDigit * dig;
+-
+-  //  Double_t amp   = -1 ;
++  
+   Double_t ampFlo   = -1 ;
+   Int_t id      = -1 ;
+   Int_t iSupMod =  0 ;
+   Double_t x, y, z;
+-
++  
+   for (Int_t idig = 0; idig < nEnt; idig++)
++  {
++    dig = static_cast<AliEMCALDigit *>(digits->At(idig));
++    
++    if(!dig)
+     {
+-      dig = static_cast<AliEMCALDigit *>(digits->At(idig));
+-      
+-      if(dig != 0) {
+-	id   = dig->GetId() ; //cell (digit) label
+-	// adc
+-	ampFlo  = dig->GetAmplitude(); //amplitude in cell (digit)
+-	// GeV
+-	// 	amp = ampFlo*0.0153; // To be modified with correct OCDB conversion	
+-
+-	GetGeomInfo(id,iSupMod,x,y,z);
+-
+-// 	// GeV
+-// 	fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-// //	fSM[iSupMod]->SaveDigit(dig);
+-// // 	if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-// // 	if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-	fSM[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
+-//	fSM[iSupMod]->SaveDigit(dig);
+-// 	if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-// 	if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-      }
+-      else {
+-	cout << "Digit object empty" << endl;
+-	return;
+-      }
+-    } // end loop digits
+-  cout << "after loop on digits !" << endl;
++      AliWarning(Form("Digit %d in array is null",idig));
++      continue; 
++    }
++    
++    id      = dig->GetId() ;       // cell (digit) label
++    ampFlo  = dig->GetAmplitude(); // amplitude in cell (digit) ADC
++                                   // acess OCDB and get calibration factor to GeV?	
++    
++    GetGeomInfo(id,iSupMod,x,y,z);
++    
++    fSM[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++//	  fSM[iSupMod]->SaveDigit(dig);
++//    if     ( iSupMod < 10 ) fSMfull [iSupMod]   ->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++//    else if( iSupMod < 12 ) fSMhalf [iSupMod-10]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++//    else if( iSupMod < 18 ) fSMfullD[iSupMod-12]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++//    else if( iSupMod < 20 ) fSMhalfD[iSupMod-18]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);  
++  } // end loop digits
++
++  AliDebug(1,("Digits loop done"));
+ }
+ 
++///
++/// Get digit information from EMCAL Loader
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* const emcl)
+ {
+-
+-  //
+-  // Get digit information from EMCAL Loader
+-  //
+-
+   AliEMCALDigit* dig;
+   
+-  //Fill array of digits                                                                        
++  // Fill array of digits                                                                        
+   TClonesArray *digits = (TClonesArray*)emcl->Digits();
+   
+-  //Get digits from the list  
++  // Get digits from the list  
+   
+-  //  Double_t amp   = -1 ;
+   Double_t ampFlo   = -1 ;
+   Int_t id      = -1 ;
+   Int_t iSupMod =  0 ;
+   Double_t x, y, z;
+-                                               
+-   for(Int_t idig = 0; idig< digits->GetEntries();idig++){
+-
+-     dig = static_cast<AliEMCALDigit *>(digits->At(idig)) ;
+-
+-     if(dig != 0){
+-       if(fDebug>1) cout << "Digit info " << dig->GetId() << " " << dig->GetAmplitude() << endl;
+-       id   = dig->GetId() ; //cell (digit) label
+-       // adc
+-       ampFlo  = dig->GetAmplitude(); //amplitude in cell (digit)
+-       // GeV
+-       //       amp = ampFlo*0.0153.; // To be modified with correct OCDB conversion
+-
+-       GetGeomInfo(id,iSupMod,x,y,z);
+-       
+-       //       // GeV
+-       //       fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-       // adc
+-       fSM[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
+-     }
+-      else {
+-	cout << "Digit object empty" << endl;
+-	return;
+-      }
+-   } // end loop on digits
+-   
++  
++  for(Int_t idig = 0; idig< digits->GetEntries();idig++)
++  {
++    
++    dig = static_cast<AliEMCALDigit *>(digits->At(idig)) ;
++    
++    if(!dig)
++    {
++      AliWarning(Form("Digit %d in array is null",idig));
++      continue; 
++    }
++    
++    id      = dig->GetId() ;       // cell (digit) label
++    ampFlo  = dig->GetAmplitude(); // amplitude in cell (digit) ADC
++                                   // acess OCDB and get calibration factor to GeV?	
++    
++    AliDebug(1,Form("Digit info %d, energy %2.3f",id, ampFlo));
++    
++    GetGeomInfo(id,iSupMod,x,y,z);
++    
++    fSM[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++    
++  } // end loop on digits
+ }
+ 
++///
++/// Get digit information from esd
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadDigitsFromESD()
+ {
+-  //
+-  // Get digit information from esd
+-  //
+-  
+   AliESDCaloCells &cells= *(fESD->GetEMCALCells());
+   Int_t ncell = cells.GetNumberOfCells() ;  
+   Int_t iSupMod =  0 ;
+   Double_t x, y, z;
+-
++  
+   // Extract digit information from the ESDs
+   for (Int_t icell=  0; icell <  ncell; icell++) 
+-    {
+-      Int_t id   = cells.GetCellNumber(icell);
+-      // adc
+-      Double_t ampFlo  = cells.GetAmplitude(icell);
+-      // GeV
+-      //      Double_t amp = ampFlo*0.0153; // To be modified with correct OCDB conversion
+-
+-      GetGeomInfo(id,iSupMod,x,y,z);
+-
+-//       // GeV
+-//       fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-//       if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-//       if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
+-      // adc
+-      fSM[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
+-      if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
+-      if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
+-
+-    } // end loop cells
++  {
++    Int_t id         = cells.GetCellNumber(icell);
++    Double_t ampFlo  = cells.GetAmplitude (icell); // GeV
++    
++    GetGeomInfo(id,iSupMod,x,y,z);
++    
++    fSM[iSupMod]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++    
++    if     ( iSupMod < 10 ) fSMfull [iSupMod]   ->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++    else if( iSupMod < 12 ) fSMhalf [iSupMod-10]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++    else if( iSupMod < 18 ) fSMfullD[iSupMod-12]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++    else if( iSupMod < 20 ) fSMhalfD[iSupMod-18]->RegisterDigit(id,iSupMod,ampFlo,x,y,z);
++  } // end loop cells
+ }
+ 
++///
++/// Get rec point information from RunLoader.
++/// To be improved, size and shape of cluster to be implemented.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadRecPoints(TTree* const t)
+ {
+-  //
+-  // Get rec point information from RunLoader
+-  //
+-
+   //*************************************************
+   // To be improved !!!!!
+   // Size and shape of cluster to be implemented
+   // 
+   //*************************************************
+-        
++  
+   // From TTreeR
+-  TObjArray *carr=NULL;
+-  TBranch *cbranch=t->GetBranch("EMCALECARP");
++  TObjArray * carr = NULL;
++  TBranch * cbranch=t->GetBranch("EMCALECARP");
+   cbranch->SetAddress(&carr);
+   
+-  if(cbranch->GetEvent(0)) {
+-    for(Int_t ic = 0; ic < carr->GetEntriesFast(); ic++) {
+-      AliEMCALRecPoint* rp =(AliEMCALRecPoint*)carr->UncheckedAt(ic);
+-      if(rp){
+-	if(fDebug>1) cout << "RecPoint info " << rp->GetAbsId() << " " << rp->GetEnergy() << endl;
+-	Int_t iSupMod = rp->GetSuperModuleNumber();
+-	// GeV
+-	Double_t amp = (Double_t)rp->GetEnergy();
+-	// adc
+-	Double_t ampFlo = amp/0.0153; // To be modified with correct OCDB conversion
+-	TVector3 lpos;
+-	rp->GetLocalPosition(lpos);
+-
+-// 	// GeV
+-// 	fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+-        // adc
+-	fSM[iSupMod]->RegisterCluster(iSupMod,ampFlo,lpos[0],lpos[1],lpos[2]);
+-      }
+-    }
+-  }
++  if(!cbranch->GetEvent(0)) return;
+   
++  for(Int_t ic = 0; ic < carr->GetEntriesFast(); ic++) 
++  {
++    AliEMCALRecPoint * rp =(AliEMCALRecPoint*)carr->UncheckedAt(ic);
++    
++    if(!rp) continue ;
++    
++    Int_t    iSupMod = rp->GetSuperModuleNumber();
++    Double_t amp     = (Double_t)rp->GetEnergy();
++
++    AliDebug(1,Form("RecPoint info, Id %d, energy %2.3f",rp->GetAbsId(0), amp));
++
++    TVector3 lpos;
++    rp->GetLocalPosition(lpos);
++    
++    fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
++  }
+ }
+ 
++///
++/// Get rec point information from EMCalLoader.
++/// To be improved, size and shape of cluster to be implemented.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadRecPointsFromEMCALLoader(AliEMCALLoader* const emcl)
+ {
+-  //
+-  // Get rec point information from EMCAL Loader
+-  //
+-
+   //*************************************************
+   // To be improved !!!!!
+   // Size and shape of cluster to be implemented
+   // 
+   //*************************************************
+-
++  
+   // From EMCALLoader
+-  AliEMCALRecPoint* rp;
++  AliEMCALRecPoint* rp = 0;
+   
+-  //Fill array of clusters                                                                        
++  // Fill array of clusters                                                                        
+   TClonesArray *clusters = (TClonesArray*)emcl->RecPoints();
+   
+-  //Get clusters from the list                                                                    
+-  for(Int_t iclu = 0; iclu< clusters->GetEntries();iclu++){
+-
++  // Get clusters from the list                                                                    
++  for(Int_t iclu = 0; iclu < clusters->GetEntries(); iclu++)
++  {
+     rp = static_cast<AliEMCALRecPoint *>(clusters->At(iclu)) ;
++        
++    if(!rp) continue ;
+     
+-    if(rp){
+-       if(fDebug>1) cout << "RecPoint info " << rp->GetAbsId() << " " << rp->GetEnergy() << endl;
+-       Int_t iSupMod = rp->GetSuperModuleNumber();
+-       Double_t amp = (Double_t)rp->GetEnergy();
+-       Double_t ampFlo = amp/0.0153; // To be modified with correct OCDB conversion
+-       TVector3 lpos;
+-       rp->GetLocalPosition(lpos);
+-       
+-//        // GeV
+-//        fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+-       // adc
+-       fSM[iSupMod]->RegisterCluster(iSupMod,ampFlo,lpos[0],lpos[1],lpos[2]);
+-    }
++    Int_t    iSupMod = rp->GetSuperModuleNumber();
++    Double_t amp     = (Double_t)rp->GetEnergy();
++    
++    AliDebug(1,Form("RecPoint info, Id %d, energy %2.3f",rp->GetAbsId(0), amp));
++    
++    TVector3 lpos;
++    rp->GetLocalPosition(lpos);
++    
++    fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+   }
+-  
+ }
+ 
++///
++/// Get cluster information from esd
++///
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadRecPointsFromESD()
+ {
+-  //
+-  // Get cluster information from esd
+-  //
+-
+- Int_t iSupMod =  0 ;
++  Int_t iSupMod =  0 ;
+   Double_t x, y, z;
+   Int_t iSM =  0 ;
+   Int_t iT  =  0 ;
+-  Int_t iIp   =  0 ;
+-  Int_t iIe   =  0 ;
++  Int_t iIp =  0 ;
++  Int_t iIe =  0 ;
+   Double_t xd, yd, zd;
+   Float_t pos[3] ; 
+   
+@@ -635,94 +625,87 @@ void AliEveEMCALData::LoadRecPointsFromESD()
+   AliESDVertex* primVertex =(AliESDVertex*) fESD->GetVertex();
+   Double_t vertexPosition[3] ; 
+   primVertex->GetXYZ(vertexPosition) ; 
+-
+-  //Get the CaloClusters
+-  //select EMCAL clusters only 
++  
++  // Get the CaloClusters
++  // select EMCAL clusters only 
+   TRefArray * caloClusters  = new TRefArray();
+   fESD->GetEMCALClusters(caloClusters);
++  
+   Int_t nclus = caloClusters->GetEntries();
+-  cout << "nclus: " << nclus << endl; 
++
++  AliDebug(1,Form("Number of clusters %d",nclus));
+   
+   for (Int_t iclus =  0; iclus <  nclus; iclus++) 
+-    {
+-      AliESDCaloCluster *clus = (AliESDCaloCluster *) caloClusters->At(iclus) ; 
+-      //Get the cluster info
+-      
+-      Double_t energy = clus->E() ;
+-      // adc
+-      //      Int_t   eneInt = (Int_t)energy*500+0.5;
+-      Double_t eneInt = energy/0.0153; // To be modified with correct OCDB conversion
+-      Double_t disp   = clus->GetDispersion() ;
+-      
+-      clus->GetPosition(pos) ; // Global position
+-      TVector3 vpos(pos[0],pos[1],pos[2]) ;
+-      TLorentzVector p4 ;
+-      TVector3 p3;
+-      clus->GetMomentum(p4,vertexPosition);
+-      p3.SetXYZ(p4[0],p4[1],p4[2]);
+-      Double_t eta = p3.Eta();
+-      Double_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
+-      
+-      Int_t mult = clus->GetNCells() ;
+-      if(fDebug>2) {
+-	cout << "In cluster: " << iclus << ", ncells: " << mult << ", energy : " << energy << 
+-	  ", disp: " << disp << endl;
+-	cout << "Cluster " << iclus << ", eta: " << eta << ", phi: " << phi << endl;
+-      }
+-
+-      Int_t clusId = 0;
+-      fGeom->GetAbsCellIdFromEtaPhi(eta,phi,clusId);
+-      if(fDebug>2) {
+-	cout << "Abs Cluster Id: " << clusId << ", xc: " << pos[0] << 
+-	  ", yc: " << pos[1] << ", zc: " << pos[2] << endl;
+-      }
+-
+-      GetGeomInfo(clusId,iSupMod,x,y,z);
+-      
+-      //******** Not used yet but will come  ********
+-      // AliESDCaloCells &cells= *(fESD->GetEMCALCells());
+-      Int_t     digMult = clus->GetNCells() ;
+-      UShort_t *digID   = clus->GetCellsAbsId() ;
+-      for(Int_t i=0; i<digMult; i++){
+-	// Float_t  digitAmp     = cells.GetCellAmplitude(digID[i]) ;
+-	fGeom->RelPosCellInSModule(digID[i], xd, yd, zd);
+-	//Geometry methods
+-	fGeom->GetCellIndex(digID[i],iSM,iT,iIp,iIe);
+-	//Gives SuperModule and Tower numbers
+-
+-      } // end digit loop
+-      //*********************************************
+-      //      // GeV
+-      //      fSM[iSupMod]->RegisterCluster(iSM,energy,x,y,z);
+-      // adc
+-      fSM[iSupMod]->RegisterCluster(iSM,eneInt,x,y,z);
+-
+-    } // end cluster loop
++  {
++    AliESDCaloCluster *clus = (AliESDCaloCluster *) caloClusters->At(iclus) ; 
++    //Get the cluster info
++    
++    Double_t energy = clus->E() ;  
++    Double_t disp   = clus->GetDispersion() ;
++    
++    clus->GetPosition(pos) ; // Global position
++    TVector3 vpos(pos[0],pos[1],pos[2]) ;
++    
++    TLorentzVector p4 ;
++    clus->GetMomentum(p4,vertexPosition);
++    
++    TVector3 p3;
++    p3.SetXYZ(p4[0],p4[1],p4[2]);
++    
++    Double_t eta = p3.Eta();
++    Double_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
++    
++    Int_t mult = clus->GetNCells() ;
++    
++    AliDebug(2,Form("In cluster %d, ncells %d, energy %2.2f, disp %2.2f, eta %2.2f, phi %2.2f",
++                    iclus,mult,energy,disp,eta,phi));
++    
++    Int_t clusId = 0;
++    fGeom->GetAbsCellIdFromEtaPhi(eta,phi,clusId);
++    
++    AliDebug(2,Form("Cluster AbsId %d, x %2.2f, y %2.2f, z %2.2f",
++                    clusId,pos[0],pos[1],pos[2]));
++    
++    GetGeomInfo(clusId,iSupMod,x,y,z);
++    
++//    //******** Not used yet but will come  ********
++//    // AliESDCaloCells &cells= *(fESD->GetEMCALCells());
++//    Int_t     digMult = clus->GetNCells() ;
++//    UShort_t *digID   = clus->GetCellsAbsId() ;
++//    for(Int_t i=0; i<digMult; i++)
++//    {
++//      fGeom->RelPosCellInSModule(digID[i], xd, yd, zd);
++//      fGeom->GetCellIndex(digID[i],iSM,iT,iIp,iIe);
++//    } // end digit loop
++//      //*********************************************
++  
++    fSM[iSupMod]->RegisterCluster(iSM,energy,x,y,z);
++    
++  } // end cluster loop
+ }
+ 
++///
++/// Return super module data
++///
+ //______________________________________________________________________________
+ AliEveEMCALSModuleData* AliEveEMCALData::GetSModuleData(Int_t sm)
+ {
+-  //
+-  // Return super module data
+-  //
+-
+   if (sm < 0 || sm > fNsm) 
+-    {
+-      printf("The number of super modules must be lower or equal to %d",fNsm);
+-      return 0;
+-    }
++  {
++    AliWarning(Form("The number of super modules must be lower or equal to %d, requested %d",fNsm,sm));
++    return 0;
++  }
+   
+   return fSM[sm];
+ }
+ 
++///
++/// Get raw information
++///
++/// To be implemented !
++//
+ //______________________________________________________________________________
+ void AliEveEMCALData::LoadRaw() const
+ {
+-  //
+-  // Get raw information
+-  //
+-
+-  // To be implemented !
+ }
+ 
+diff --git a/EVE/EveDet/AliEveEMCALData.h b/EVE/EveDet/AliEveEMCALData.h
+index 17091be..c0b44b8 100644
+--- a/EVE/EveDet/AliEveEMCALData.h
++++ b/EVE/EveDet/AliEveEMCALData.h
+@@ -1,13 +1,18 @@
+-//
+-// Fill containers for visualisation of EMCAL data structures
+-//
+-// Author: Magali Estienne (magali.estienne@cern.ch)
+-// June 30 2008
+-//
+-
+ #ifndef ALIEVEEMCALDATA_H
+ #define ALIEVEEMCALDATA_H
+ 
++/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
++ * See cxx source for full Copyright notice                               */
++
++///
++/// Fill containers for visualisation of EMCAL data structures
++/// * read and store MC Hits    - read and store digits from esds or runloader
++/// * read and store clusters from esds or runloader 
++///
++/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
++/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
++///
++
+ #include <TGeoNode.h> 
+ #include <TGeoMatrix.h>
+ #include <TEveRGBAPalette.h>
+@@ -18,7 +23,6 @@
+ #include "AliESDEvent.h"
+ #include "AliRun.h"
+ 
+-class Riostream;
+ class map;
+ class TTree;
+ class AliRun;
+@@ -34,7 +38,9 @@ class TEveUtil;
+ 
+ class AliEveEMCALData : public TObject, public TEveRefCnt
+ {
++  
+  public:
++  
+   AliEveEMCALData();
+   AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* m);
+   ~AliEveEMCALData();
+@@ -64,27 +70,42 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
+   TEvePointSet*           GetPointSetData() const {return fPoint;};
+ 
+  protected:
+-  AliEMCAL*         fEmcal;     // EMCal data member
+-  AliEMCALGeometry* fGeom;      // Data member to set/call EMCAL geometry
+-  TGeoNode*         fNode;      // Node for bbox definition
+-  TGeoHMatrix*      fHMatrix;   // matrix for local to global transformation
+-  TTree*            fTree;      // Tree
+-  AliESDEvent*      fESD;       // Esd
+-  Int_t             fNsm;       // Total number of Super Modules
+-  Int_t             fNsmfull;   // Number of full size Super Modules
+-  Int_t             fNsmhalf;   // Number of half size Super Modules
+-  std::vector<AliEveEMCALSModuleData*>   fSM;       // vector of fNsm SModules
+-  std::vector<AliEveEMCALSModuleData*>   fSMfull;   // vector of fNsmfull SModules
+-  std::vector<AliEveEMCALSModuleData*>   fSMhalf;   // vector of fNhalf SModules
+-  AliRunLoader*     fRunLoader; // Run Loader
+-  Int_t             fDebug;     // Debug option
+-  TEvePointSet*     fPoint;     // TEvePointSet for hits 
++  
++  AliEMCAL*         fEmcal;     ///< EMCal data member.
++  AliEMCALGeometry* fGeom;      ///< Data member to set/call EMCAL geometry.
++  TGeoNode*         fNode;      ///< Node for bbox definition.
++  TGeoHMatrix*      fHMatrix;   ///< Matrix for local to global transformation.
++  TTree*            fTree;      ///< Data Tree.
++  AliESDEvent*      fESD;       ///< ESD event.
++  
++  Int_t             fNsm;       ///< Total number of Super Modules, EMCal+DCal.
++  Int_t             fNsmfull;   ///< Number of full size EMCal Super-Modules.
++  Int_t             fNsmhalf;   ///< Number of half size EMCal Super-Modules.
++  Int_t             fNsmfullD;  ///< Number of full size DCal Super-Modules
++  Int_t             fNsmhalfD;  ///< Number of half size DCal Super-Modules
++
++  std::vector<AliEveEMCALSModuleData*>   fSM;       ///< Vector of fNsm SModules.
++  std::vector<AliEveEMCALSModuleData*>   fSMfull;   ///< Vector of fNsmfull SModules.
++  std::vector<AliEveEMCALSModuleData*>   fSMhalf;   ///< Vector of fNhalf SModules.
++  std::vector<AliEveEMCALSModuleData*>   fSMfullD;  ///< Vector of fNsmfullD SModules.
++  std::vector<AliEveEMCALSModuleData*>   fSMhalfD;  ///< Vector of fNhalfD SModules.
++  
++  AliRunLoader*     fRunLoader; ///< Run Loader.
++  Int_t             fDebug;     ///< Debug option.
++  TEvePointSet*     fPoint;     ///< TEvePointSet for hits.
+ 
+  private:
+-  AliEveEMCALData(const AliEveEMCALData &edata);            
++  
++  /// Copy constructor not implemented.
++  AliEveEMCALData           (const AliEveEMCALData &edata);  
++  
++  /// Assignment operator not implemented.
+   AliEveEMCALData& operator=(const AliEveEMCALData &edata); // Not implemented
+ 
+-  ClassDef(AliEveEMCALData, 0); // Base class for TRD hits visualisation
++  /// \cond CLASSIMP
++  ClassDef(AliEveEMCALData, 2) ; 
++  /// \endcond
++  
+ };
+ 
+-#endif
++#endif  //ALIEVEEMCALDATA_H
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 85f943f1f8b62bce9fedf17c51824137aefc666f Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 17:09:37 +0200
+Subject: [PATCH 2/9] remove unsused stuff, simplify
+
+---
+ EVE/EveDet/AliEveEMCALData.cxx | 76 +++++++++++++++++-------------------------
+ EVE/EveDet/AliEveEMCALData.h   |  9 +++--
+ 2 files changed, 35 insertions(+), 50 deletions(-)
+
+diff --git a/EVE/EveDet/AliEveEMCALData.cxx b/EVE/EveDet/AliEveEMCALData.cxx
+index 4411afa..26e1658 100644
+--- a/EVE/EveDet/AliEveEMCALData.cxx
++++ b/EVE/EveDet/AliEveEMCALData.cxx
+@@ -49,10 +49,6 @@ AliEveEMCALData::AliEveEMCALData():
+   fTree(0x0),
+   fESD(0x0),
+   fNsm(20),
+-  fNsmfull(10),
+-  fNsmhalf(2),  
+-  fNsmfullD(6),
+-  fNsmhalfD(2),
+   fSM(20),
+   fSMfull(10),
+   fSMhalf(2),
+@@ -60,7 +56,8 @@ AliEveEMCALData::AliEveEMCALData():
+   fSMhalfD(2),
+   fRunLoader(0),
+   fDebug(0),
+-  fPoint(0)
++  fPoint(0),
++  fClusterMom()
+ {
+   CreateAllSModules();
+ }
+@@ -79,10 +76,6 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix*
+   fTree(0x0),
+   fESD(0x0),
+   fNsm(20),
+-  fNsmfull(10),
+-  fNsmhalf(2),  
+-  fNsmfullD(6),
+-  fNsmhalfD(2),
+   fSM(20),
+   fSMfull(10),
+   fSMhalf(2),
+@@ -90,7 +83,8 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix*
+   fSMhalfD(2),
+   fRunLoader(rl),
+   fDebug(0),
+-  fPoint(0)
++  fPoint(0),
++  fClusterMom()
+ {
+   InitEMCALGeom(rl);
+   CreateAllSModules();
+@@ -124,11 +118,7 @@ AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
+   fHMatrix(edata.fHMatrix),
+   fTree(edata.fTree),
+   fESD(edata.fESD),
+-  fNsm     (edata.fNsm     ),
+-  fNsmfull (edata.fNsmfull ),
+-  fNsmhalf (edata.fNsmhalf ),
+-  fNsmfullD(edata.fNsmfullD),
+-  fNsmhalfD(edata.fNsmhalfD),
++  fNsm    (edata.fNsm),
+   fSM     (edata.fSM),
+   fSMfull (edata.fSMfull ),
+   fSMhalf (edata.fSMhalf ),  
+@@ -136,7 +126,8 @@ AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
+   fSMhalfD(edata.fSMhalfD),
+   fRunLoader(edata.fRunLoader),
+   fDebug(edata.fDebug),
+-  fPoint(edata.fPoint)
++  fPoint(edata.fPoint),
++  fClusterMom(edata.fClusterMom)
+ {
+   InitEMCALGeom(edata.fRunLoader);
+   CreateAllSModules();
+@@ -208,10 +199,10 @@ void AliEveEMCALData::GetGeomInfo(Int_t id, Int_t &iSupMod, Double_t& x, Double_
+   Int_t iIphi   =  0 ;
+   Int_t iIeta   =  0 ;
+ 
+-  //Geometry methods
++  // Geometry methods
+   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
+ 
+-  //Gives SuperModule and Tower numbers
++  // Gives SuperModule and Tower numbers
+   fGeom->RelPosCellInSModule(id, x, y, z);
+ }
+ 
+@@ -257,31 +248,31 @@ void AliEveEMCALData::DropAllSModules()
+ //______________________________________________________________________________
+ void AliEveEMCALData::DeleteSuperModules()
+ {
+-  for (Int_t sm = 0; sm < fNsm; sm++)
++  for (Int_t sm = 0; sm < 20; sm++)
+   {
+     fSM[sm] = 0;
+     delete fSM[sm];
+   }
+   
+-  for(Int_t smf = 0; smf < fNsmfull; smf++) 
++  for(Int_t smf = 0; smf < 10; smf++) 
+   {
+     fSMfull[smf] = 0;
+     delete fSMfull[smf];
+   }
+   
+-  for(Int_t smh = 0; smh < fNsmhalf; smh++)
++  for(Int_t smh = 0; smh < 2; smh++)
+   {
+     fSMhalf[smh] = 0;
+     delete fSMhalf[smh];
+   }
+ 
+-  for(Int_t smd = 0; smd < fNsmfullD; smd++) 
++  for(Int_t smd = 0; smd < 6; smd++) 
+   {
+     fSMfullD[smd] = 0;
+     delete fSMfullD[smd];
+   }
+   
+-  for(Int_t smh = 0; smh < fNsmhalfD; smh++)
++  for(Int_t smh = 0; smh < 2; smh++)
+   {
+     fSMhalfD[smh] = 0;
+     delete fSMhalfD[smh];
+@@ -614,12 +605,12 @@ void AliEveEMCALData::LoadRecPointsFromESD()
+ {
+   Int_t iSupMod =  0 ;
+   Double_t x, y, z;
+-  Int_t iSM =  0 ;
+-  Int_t iT  =  0 ;
+-  Int_t iIp =  0 ;
+-  Int_t iIe =  0 ;
+-  Double_t xd, yd, zd;
+-  Float_t pos[3] ; 
++  //  Int_t iSM =  0 ;
++  //  Int_t iT  =  0 ;
++  //  Int_t iIp =  0 ;
++  //  Int_t iIe =  0 ;
++  //  Double_t xd, yd, zd;
++  //  Float_t pos[3] ; 
+   
+   // Get reconstructed vertex position
+   AliESDVertex* primVertex =(AliESDVertex*) fESD->GetVertex();
+@@ -643,28 +634,19 @@ void AliEveEMCALData::LoadRecPointsFromESD()
+     Double_t energy = clus->E() ;  
+     Double_t disp   = clus->GetDispersion() ;
+     
+-    clus->GetPosition(pos) ; // Global position
+-    TVector3 vpos(pos[0],pos[1],pos[2]) ;
++    //clus->GetPosition(pos) ; // Global position
+     
+-    TLorentzVector p4 ;
+-    clus->GetMomentum(p4,vertexPosition);
+-    
+-    TVector3 p3;
+-    p3.SetXYZ(p4[0],p4[1],p4[2]);
+-    
+-    Double_t eta = p3.Eta();
+-    Double_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
++    clus->GetMomentum(fClusterMom,vertexPosition);
++
++    Double_t eta = fClusterMom.Eta();
++    Double_t phi = ( (fClusterMom.Phi()) < 0) ? (fClusterMom.Phi()) + 2. * TMath::Pi() : (fClusterMom.Phi());
+     
+     Int_t mult = clus->GetNCells() ;
+     
+     AliDebug(2,Form("In cluster %d, ncells %d, energy %2.2f, disp %2.2f, eta %2.2f, phi %2.2f",
+                     iclus,mult,energy,disp,eta,phi));
+     
+-    Int_t clusId = 0;
+-    fGeom->GetAbsCellIdFromEtaPhi(eta,phi,clusId);
+-    
+-    AliDebug(2,Form("Cluster AbsId %d, x %2.2f, y %2.2f, z %2.2f",
+-                    clusId,pos[0],pos[1],pos[2]));
++    Int_t clusId = clus->GetCellsAbsId()[0];
+     
+     GetGeomInfo(clusId,iSupMod,x,y,z);
+     
+@@ -679,8 +661,12 @@ void AliEveEMCALData::LoadRecPointsFromESD()
+ //    } // end digit loop
+ //      //*********************************************
+   
+-    fSM[iSupMod]->RegisterCluster(iSM,energy,x,y,z);
++    fSM[iSupMod]->RegisterCluster(iSupMod,energy,x,y,z);
+     
++    //      if     ( iSupMod < 10 ) fSMfull [iSupMod]   ->RegisterCluster(iSupMod,energy,x,y,z);
++    //      else if( iSupMod < 12 ) fSMhalf [iSupMod-10]->RegisterCluster(iSupMod,energy,x,y,z);
++    //      else if( iSupMod < 18 ) fSMfullD[iSupMod-12]->RegisterCluster(iSupMod,energy,x,y,z);
++    //      else if( iSupMod < 20 ) fSMhalfD[iSupMod-18]->RegisterCluster(iSupMod,energy,x,y,z);
+   } // end cluster loop
+ }
+ 
+diff --git a/EVE/EveDet/AliEveEMCALData.h b/EVE/EveDet/AliEveEMCALData.h
+index c0b44b8..e7ef7c7 100644
+--- a/EVE/EveDet/AliEveEMCALData.h
++++ b/EVE/EveDet/AliEveEMCALData.h
+@@ -35,10 +35,10 @@ class TClonesArray;
+ class TGedFrame; 
+ class TEveBoxSet; 
+ class TEveUtil; 
++class TLorentzVector;
+ 
+ class AliEveEMCALData : public TObject, public TEveRefCnt
+ {
+-  
+  public:
+   
+   AliEveEMCALData();
+@@ -79,10 +79,6 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
+   AliESDEvent*      fESD;       ///< ESD event.
+   
+   Int_t             fNsm;       ///< Total number of Super Modules, EMCal+DCal.
+-  Int_t             fNsmfull;   ///< Number of full size EMCal Super-Modules.
+-  Int_t             fNsmhalf;   ///< Number of half size EMCal Super-Modules.
+-  Int_t             fNsmfullD;  ///< Number of full size DCal Super-Modules
+-  Int_t             fNsmhalfD;  ///< Number of half size DCal Super-Modules
+ 
+   std::vector<AliEveEMCALSModuleData*>   fSM;       ///< Vector of fNsm SModules.
+   std::vector<AliEveEMCALSModuleData*>   fSMfull;   ///< Vector of fNsmfull SModules.
+@@ -94,6 +90,9 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
+   Int_t             fDebug;     ///< Debug option.
+   TEvePointSet*     fPoint;     ///< TEvePointSet for hits.
+ 
++  // Temporary data members
++  TLorentzVector    fClusterMom ; ///< Cluster momentum
++
+  private:
+   
+   /// Copy constructor not implemented.
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 60e12ae410cdd107825770b62d8fe6426ed22bce Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 17:38:42 +0200
+Subject: [PATCH 3/9] comment fixes
+
+---
+ EVE/EveDet/AliEveEMCALData.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/EVE/EveDet/AliEveEMCALData.h b/EVE/EveDet/AliEveEMCALData.h
+index e7ef7c7..6a93081 100644
+--- a/EVE/EveDet/AliEveEMCALData.h
++++ b/EVE/EveDet/AliEveEMCALData.h
+@@ -4,6 +4,8 @@
+ /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+  * See cxx source for full Copyright notice                               */
+ 
++/// \class AliEveEMCALData
++/// \brief EMCal event display data handling
+ ///
+ /// Fill containers for visualisation of EMCAL data structures
+ /// * read and store MC Hits    - read and store digits from esds or runloader
+@@ -95,7 +97,6 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
+ 
+  private:
+   
+-  /// Copy constructor not implemented.
+   AliEveEMCALData           (const AliEveEMCALData &edata);  
+   
+   /// Assignment operator not implemented.
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 57198058d75b748705d0d7ac8de3259ece66ebbf Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 17:39:32 +0200
+Subject: [PATCH 4/9] Update for DCal; Update for doxygen; Cosmetics
+
+---
+ EVE/EveDet/AliEveEMCALSModuleData.cxx | 154 ++++++++++++++++------------------
+ EVE/EveDet/AliEveEMCALSModuleData.h   | 134 +++++++++++++++++------------
+ 2 files changed, 150 insertions(+), 138 deletions(-)
+
+diff --git a/EVE/EveDet/AliEveEMCALSModuleData.cxx b/EVE/EveDet/AliEveEMCALSModuleData.cxx
+index 1a7a0e3..71e5bdc 100644
+--- a/EVE/EveDet/AliEveEMCALSModuleData.cxx
++++ b/EVE/EveDet/AliEveEMCALSModuleData.cxx
+@@ -1,19 +1,8 @@
+-//
+-// EMCAL event display
+-// Store the data related to each Super Module (SM)
+-// Possible storage of hits, digits and clusters per SM
+-//
+-//  Author: Magali Estienne (magali.estienne@cern.ch)
+-//  June 30 2008
+-//
+-
+ #include <TGeoBBox.h>
+ 
+-
+ #include "AliEMCALGeometry.h"
+ #include "AliEveEMCALSModuleData.h"
+ 
+-class Riostream;
+ class TClonesArray;
+ class TGeoNode;
+ class TGeoMatrix;
+@@ -25,13 +14,26 @@ ClassImp(AliEveEMCALSModuleData)
+ Float_t AliEveEMCALSModuleData::fgSModuleBigBox0 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleBigBox1 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleBigBox2 = 0.;
++
+ Float_t AliEveEMCALSModuleData::fgSModuleSmallBox0 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleSmallBox1 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleSmallBox2 = 0.;
+-Float_t AliEveEMCALSModuleData::fgSModuleCenter0 = 0.;
+-Float_t AliEveEMCALSModuleData::fgSModuleCenter1 = 0.;
+-Float_t AliEveEMCALSModuleData::fgSModuleCenter2 = 0.;
+ 
++Float_t AliEveEMCALSModuleData::fgSModuleDCalBox0 = 0.;
++Float_t AliEveEMCALSModuleData::fgSModuleDCalBox1 = 0.;
++Float_t AliEveEMCALSModuleData::fgSModuleDCalBox2 = 0.;
++
++Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox0 = 0.;
++Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox1 = 0.;
++Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox2 = 0.;
++
++//Float_t AliEveEMCALSModuleData::fgSModuleCenter0 = 0.;
++//Float_t AliEveEMCALSModuleData::fgSModuleCenter1 = 0.;
++//Float_t AliEveEMCALSModuleData::fgSModuleCenter2 = 0.;
++
++//
++// Constructor
++//
+ //______________________________________________________________________________
+ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, TGeoNode* node, TGeoHMatrix* m) :
+   TObject(),
+@@ -39,8 +41,6 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom,
+   fNode(node),
+   fSmId(sm),
+   fNsm(0),
+-  fNsmfull(0),
+-  fNsmhalf(0),
+   fNDigits(0),
+   fNClusters(0),
+   fNHits(0),
+@@ -51,14 +51,12 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom,
+   fMatrix(0),
+   fHMatrix(m)
+ {
+-  //
+-  // Constructor
+-  //
+-
+   Init(sm);
+-
+ }
+ 
++///
++/// Copy constructor
++///
+ //______________________________________________________________________________
+   AliEveEMCALSModuleData::AliEveEMCALSModuleData(const AliEveEMCALSModuleData &esmdata) :
+   TObject(),
+@@ -66,8 +64,6 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom,
+   fNode(esmdata.fNode),
+   fSmId(esmdata.fSmId),
+   fNsm(esmdata.fNsm),
+-  fNsmfull(esmdata.fNsmfull),
+-  fNsmhalf(esmdata.fNsmhalf),
+   fNDigits(esmdata.fNDigits),
+   fNClusters(esmdata.fNClusters),
+   fNHits(esmdata.fNHits),
+@@ -78,40 +74,31 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom,
+   fMatrix(esmdata.fMatrix),
+   fHMatrix(esmdata.fHMatrix)
+ {
+-  //
+-  // Copy constructor
+-  //
+-
+   Init(esmdata.fNsm);
+-
+ }
+ 
++///
++/// Destructor
++///
+ //______________________________________________________________________________
+ AliEveEMCALSModuleData::~AliEveEMCALSModuleData()
+ {
+-  //
+-  // Destructor
+-  //
+-
+-  if(!fHitArray.empty()){
++  if(!fHitArray.empty())
+     fHitArray.clear();
+-  }
+-  if(!fDigitArray.empty()){
++  
++  if(!fDigitArray.empty())
+     fDigitArray.clear();
+-  }
+-  if(!fClusterArray.empty()){
++  
++  if(!fClusterArray.empty())
+     fClusterArray.clear();
+-  }
+-
+ }
+ 
++///
++/// Release the SM data
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModuleData::DropData()
+ {
+-  //
+-  // Release the SM data
+-  //
+-
+   fNDigits   = 0;
+   fNClusters = 0;
+   fNHits     = 0;
+@@ -126,51 +113,57 @@ void AliEveEMCALSModuleData::DropData()
+     fClusterArray.clear();
+ 
+   return;
+-
+ }
+ 
++///
++/// Initialize parameters
++///
+ // ______________________________________________________________________________
+ void AliEveEMCALSModuleData::Init(Int_t sm)
+ {
+-
+-  //
+-  // Initialize parameters
+-  //
+-
+-  fNsm = 12;
+-  fNsmfull = 10;
+-  fNsmhalf = 2;
+-
++  fNsm         = fGeom->GetNumberOfSuperModules();
+   fPhiTileSize = fGeom->GetPhiTileSize();
+   fEtaTileSize = fGeom->GetPhiTileSize();
+ 
+-  TGeoBBox* bbbox = (TGeoBBox*) fNode->GetDaughter(0) ->GetVolume()->GetShape();
+-  TGeoBBox* sbbox = (TGeoBBox*) fNode->GetDaughter(10)->GetVolume()->GetShape();
++  TGeoBBox* bbbox  = (TGeoBBox*) fNode->GetDaughter(0) ->GetVolume()->GetShape();
++  TGeoBBox* sbbox  = (TGeoBBox*) fNode->GetDaughter(10)->GetVolume()->GetShape();
++  TGeoBBox* dbbox  = (TGeoBBox*) fNode->GetDaughter(12)->GetVolume()->GetShape();
++  TGeoBBox* dsbbox = (TGeoBBox*) fNode->GetDaughter(18)->GetVolume()->GetShape();
+ 
+   fMatrix = (TGeoMatrix*) fNode->GetDaughter(sm)->GetMatrix();
+ 
+-  if(sm<fNsmfull)
+-    {
+-      fgSModuleBigBox0 = bbbox->GetDX();
+-      fgSModuleBigBox1 = bbbox->GetDY();
+-      fgSModuleBigBox2 = bbbox->GetDZ();
+-    }
+-  else 
+-    {
+-      fgSModuleSmallBox0 = sbbox->GetDX();
+-      fgSModuleSmallBox1 = sbbox->GetDY();
+-      fgSModuleSmallBox2 = sbbox->GetDZ();
+-    }
++  if(sm < 10)
++  {
++    fgSModuleBigBox0 = bbbox->GetDX();
++    fgSModuleBigBox1 = bbbox->GetDY();
++    fgSModuleBigBox2 = bbbox->GetDZ();
++  }
++  else if(sm < 12) 
++  {
++    fgSModuleSmallBox0 = sbbox->GetDX();
++    fgSModuleSmallBox1 = sbbox->GetDY();
++    fgSModuleSmallBox2 = sbbox->GetDZ();
++  }  
++  else if(sm < 18) 
++  {
++    fgSModuleDCalBox0 = dbbox->GetDX();
++    fgSModuleDCalBox1 = dbbox->GetDY();
++    fgSModuleDCalBox2 = dbbox->GetDZ();
++  }  
++  else if(sm < 20) 
++  {
++    fgSModuleSmallDBox0 = dsbbox->GetDX();
++    fgSModuleSmallDBox1 = dsbbox->GetDY();
++    fgSModuleSmallDBox2 = dsbbox->GetDZ();
++  }
+ }
+ 
+-
++///
++/// Add a digit to this SM
++///
+ // ______________________________________________________________________________
+ void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
+ {
+-  //
+-  // Add a digit to this SM
+-  //
+-
+   std::vector<Double_t> bufDig(6);
+   bufDig[0] = AbsId;
+   bufDig[1] = isupMod;
+@@ -182,16 +175,14 @@ void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t
+   fDigitArray.push_back(bufDig);
+ 
+   fNDigits++;
+-
+ }
+ 
++///
++/// Add a hit to this SM
++///
+ // ______________________________________________________________________________
+ void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
+ {
+-  //
+-  // Add a hit to this SM
+-  //
+-
+   std::vector<Float_t> bufHit(6);
+   bufHit[0] = AbsId;
+   bufHit[1] = isupMod;
+@@ -203,16 +194,14 @@ void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Double_t ia
+   fHitArray.push_back(bufHit);
+ 
+   fNHits++;
+-
+ }
+ 
++///
++/// Add a cluster to this SM
++///
+ // ______________________________________________________________________________
+ void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
+ {
+-  //
+-  // Add a cluster to this SM
+-  //
+-
+   std::vector<Double_t> bufClu(5);
+   bufClu[0] = isupMod;
+   bufClu[1] = iamp;
+@@ -223,5 +212,4 @@ void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Double_t iamp, Doubl
+   fClusterArray.push_back(bufClu);
+ 
+   fNClusters++;
+-
+ }
+diff --git a/EVE/EveDet/AliEveEMCALSModuleData.h b/EVE/EveDet/AliEveEMCALSModuleData.h
+index 60fa8d3..ce7d2bd 100644
+--- a/EVE/EveDet/AliEveEMCALSModuleData.h
++++ b/EVE/EveDet/AliEveEMCALSModuleData.h
+@@ -1,13 +1,19 @@
+-//
+-// Store the data related to each Super Module
+-//
+-//  Author: Magali Estienne (magali.estienne@cern.ch)
+-//  June 30 2008
+-//
+-
+ #ifndef ALIEVEEMCALSMODULEDATA_H
+ #define ALIEVEEMCALSMODULEDATA_H
+ 
++/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
++ * See cxx source for full Copyright notice                               */
++
++/// \class AliEveEMCALSModuleData
++/// \brief EMCal event display handling of super-modules data
++///
++/// Store the data related to each Super Module (SM)
++/// Possible storage of hits, digits and clusters per SM
++///
++/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
++/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
++///
++
+ #include <vector>
+ 
+ #include <AliEveEMCALData.h>
+@@ -37,75 +43,93 @@ class AliEMCALHit;
+ class AliEMCALDigit;
+ class AliEMCALGeometry;
+ 
+-
+ class AliEveEMCALSModuleData : public TObject
+ {
+ public:
++  
+   AliEveEMCALSModuleData(Int_t chamber,AliEMCALGeometry* geom,TGeoNode* node, TGeoHMatrix* m);
+   virtual ~AliEveEMCALSModuleData();
+ 
+   void        DropData();
+   void        Init(Int_t sm);
+-  void        RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz);
++  void        RegisterDigit  (Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz);
+   void        RegisterCluster(Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz); 
+-  void        RegisterHit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz); 
+-  Int_t       GetNDigits()   const { return fNDigits;   }; 
+-  Int_t       GetNClusters() const { return fNClusters; }; 
+-  Int_t       GetNHits()     const { return fNHits;     }; 
+-  Int_t       GetSmId()      const { return fSmId; };
+-  Int_t       GetNsm()       const {return fNsm;};
+-  Int_t       GetNsmf()      const {return fNsmfull;};
+-  Int_t       GetNsmh()      const {return fNsmhalf;};
+-  std::vector< std::vector<Double_t> > GetDigitBuffer() const  { return fDigitArray;   };  
++  void        RegisterHit    (Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz); 
++  
++  Int_t       GetNDigits()   const { return fNDigits   ; } 
++  Int_t       GetNClusters() const { return fNClusters ; } 
++  Int_t       GetNHits()     const { return fNHits     ; } 
++  Int_t       GetSmId()      const { return fSmId      ; }
++  Int_t       GetNsm()       const { return fNsm       ; }
++
++  std::vector< std::vector<Double_t> > GetDigitBuffer()   const { return fDigitArray;   };  
+   std::vector< std::vector<Double_t> > GetClusterBuffer() const { return fClusterArray; };  
+-  std::vector< std::vector<Float_t> > GetHitBuffer() const { return fHitArray;     };  
++  std::vector< std::vector<Float_t> >  GetHitBuffer()     const { return fHitArray;     };  
+ 
+   void        GetSModuleBigBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
+-  const { bbox0 = fgSModuleBigBox0; bbox1 = fgSModuleBigBox1; bbox2 = fgSModuleBigBox2;};
++  const { bbox0 = fgSModuleBigBox0; bbox1 = fgSModuleBigBox1; bbox2 = fgSModuleBigBox2;}
++  
+   void        GetSModuleSmallBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
+-  const { bbox0 = fgSModuleSmallBox0; bbox1 = fgSModuleSmallBox1; bbox2 = fgSModuleSmallBox2;};
+-  void        GetSModuleCenter(Float_t& bboxCenter0, Float_t& bboxCenter1, Float_t& bboxCenter2) 
+-  const { bboxCenter0 = fgSModuleCenter0; bboxCenter1 = fgSModuleCenter1; bboxCenter2 = fgSModuleCenter2;};
+-  Float_t     GetPhiTileSize() const  {return fPhiTileSize;};
+-  Float_t     GetEtaTileSize() const  {return fEtaTileSize;};
+-  TGeoMatrix* GetSModuleMatrix() const {return fMatrix;};
++  const { bbox0 = fgSModuleSmallBox0; bbox1 = fgSModuleSmallBox1; bbox2 = fgSModuleSmallBox2;}
++  
++//  void        GetSModuleCenter(Float_t& bboxCenter0, Float_t& bboxCenter1, Float_t& bboxCenter2) 
++//  const { bboxCenter0 = fgSModuleCenter0; bboxCenter1 = fgSModuleCenter1; bboxCenter2 = fgSModuleCenter2;}
++  
++  Float_t     GetPhiTileSize()   const { return fPhiTileSize ; }
++  Float_t     GetEtaTileSize()   const { return fEtaTileSize ; }
++  TGeoMatrix* GetSModuleMatrix() const { return fMatrix      ; }
+   
+  protected:
+-  AliEMCALGeometry* fGeom;                 // Data member to set/call EMCAL geometry
+-  TGeoNode*         fNode;                 // Node for bbox definition
+-  Int_t             fSmId;                 // number of the chamber, 0 to 13 
+-  Int_t             fNsm;                  // Total number of super modules
+-  Int_t             fNsmfull;              // Number of full super modules
+-  Int_t             fNsmhalf;              // Number of half super modules
+-  Int_t             fNDigits;              // number of found digits 
+-  Int_t             fNClusters;            // number of found rec points 
+-  Int_t             fNHits;                // number of simulation hits 
+-  
+-  Float_t           fPhiTileSize;          // Typical phi size of a QuadSet (digit)
+-  Float_t           fEtaTileSize;          // Typical eta size of a QuadSet (digit)
+-  
+-  std::vector< std::vector<Float_t> > fHitArray;     //|| Hit coordinates, etc.
++  
++  AliEMCALGeometry* fGeom;                 ///< Data member to set/call EMCAL geometry
++  TGeoNode*         fNode;                 ///< Node for bbox definition
++  Int_t             fSmId;                 ///< number of the chamber, 0 to 19 
++  Int_t             fNsm;                  ///< Total number of super modules
++  Int_t             fNDigits;              ///< number of found digits 
++  Int_t             fNClusters;            ///< number of found rec points 
++  Int_t             fNHits;                ///< number of simulation hits 
++  
++  Float_t           fPhiTileSize;          ///< Typical phi size of a QuadSet (digit)
++  Float_t           fEtaTileSize;          ///< Typical eta size of a QuadSet (digit)
++  
++  std::vector< std::vector<Float_t> >  fHitArray;     //|| Hit coordinates, etc.
+   std::vector< std::vector<Double_t> > fDigitArray;   //|| Digit coordinates, etc.
+   std::vector< std::vector<Double_t> > fClusterArray; //|| Rec point coordinates, etc.
+   
+-  static Float_t    fgSModuleBigBox0;       // SM envelope box
+-  static Float_t    fgSModuleBigBox1;       // SM envelope box
+-  static Float_t    fgSModuleBigBox2;       // SM envelope box
+-  static Float_t    fgSModuleSmallBox0;     // SM envelope box
+-  static Float_t    fgSModuleSmallBox1;     // SM envelope box
+-  static Float_t    fgSModuleSmallBox2;     // SM envelope box
+-  static Float_t    fgSModuleCenter0;       // SM envelope box
+-  static Float_t    fgSModuleCenter1;       // SM envelope box
+-  static Float_t    fgSModuleCenter2;       // SM envelope box
++  static Float_t    fgSModuleBigBox0;      ///< SM envelope box, full EMCAL
++  static Float_t    fgSModuleBigBox1;      ///< SM envelope box, full EMCAL
++  static Float_t    fgSModuleBigBox2;      ///< SM envelope box, full EMCAL
++  
++  static Float_t    fgSModuleSmallBox0;    ///< SM envelope box, 1/3 EMCAL
++  static Float_t    fgSModuleSmallBox1;    ///< SM envelope box, 1/3 EMCAL
++  static Float_t    fgSModuleSmallBox2;    ///< SM envelope box, 1/3 EMCAL
++
++  static Float_t    fgSModuleDCalBox0;     ///< SM envelope box, full DCAL
++  static Float_t    fgSModuleDCalBox1;     ///< SM envelope box, full DCAL
++  static Float_t    fgSModuleDCalBox2;     ///< SM envelope box, full DCAL
++  
++  static Float_t    fgSModuleSmallDBox0;   ///< SM envelope box, 1/3 DCAL
++  static Float_t    fgSModuleSmallDBox1;   ///< SM envelope box, 1/3 DCAL
++  static Float_t    fgSModuleSmallDBox2;   ///< SM envelope box, 1/3 DCAL
++  
++  static Float_t    fgSModuleCenter0;      ///< SM envelope box
++  static Float_t    fgSModuleCenter1;      ///< SM envelope box
++  static Float_t    fgSModuleCenter2;      ///< SM envelope box
+ 
+-  TGeoMatrix*   fMatrix;                   // Matrix for local to global transformation
+-  TGeoHMatrix*  fHMatrix;                  // Matrix for local to global transformation
++  TGeoMatrix*       fMatrix;               ///< Matrix for local to global transformation
++  TGeoHMatrix*      fHMatrix;              ///< Matrix for local to global transformation
+ 
+  private:
+-  AliEveEMCALSModuleData(const AliEveEMCALSModuleData& esmdata);            
+-  AliEveEMCALSModuleData& operator=(const AliEveEMCALSModuleData&); // Not implemented
+   
+-  ClassDef(AliEveEMCALSModuleData, 0);     // class with data for one chamber
++  AliEveEMCALSModuleData           (const AliEveEMCALSModuleData& esmdata); 
++  
++  /// Assignment operator not implemented.
++  AliEveEMCALSModuleData& operator=(const AliEveEMCALSModuleData& esmdata); 
++  
++  /// \cond CLASSIMP
++  ClassDef(AliEveEMCALSModuleData, 1); 
++  /// \endcond
++
+ };
+ 
+-#endif
++#endif //ALIEVEEMCALSMODULEDATA_H
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 4758ca1d022a36e2d412b684d8daca0360b5e51e Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 17:47:34 +0200
+Subject: [PATCH 5/9] add copyright in cxx
+
+---
+ EVE/EveDet/AliEveEMCALData.cxx        | 16 ++++++++++++++++
+ EVE/EveDet/AliEveEMCALSModuleData.cxx | 15 +++++++++++++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/EVE/EveDet/AliEveEMCALData.cxx b/EVE/EveDet/AliEveEMCALData.cxx
+index 26e1658..5073774 100644
+--- a/EVE/EveDet/AliEveEMCALData.cxx
++++ b/EVE/EveDet/AliEveEMCALData.cxx
+@@ -1,3 +1,19 @@
++/**************************************************************************
++ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
++ *                                                                        *
++ * Author: The ALICE Off-line Project.                                    *
++ * Contributors are mentioned in the code where appropriate.              *
++ *                                                                        *
++ * Permission to use, copy, modify and distribute this software and its   *
++ * documentation strictly for non-commercial purposes is hereby granted   *
++ * without fee, provided that the above copyright notice appears in all   *
++ * copies and that both the copyright notice and this permission notice   *
++ * appear in the supporting documentation. The authors make no claims     *
++ * about the suitability of this software for any purpose. It is          *
++ * provided "as is" without express or implied warranty.                  *
++ **************************************************************************/
++
++
+ #include <TTree.h>
+ #include <TBranch.h>
+ #include <TObjArray.h>
+diff --git a/EVE/EveDet/AliEveEMCALSModuleData.cxx b/EVE/EveDet/AliEveEMCALSModuleData.cxx
+index 71e5bdc..4a223d0 100644
+--- a/EVE/EveDet/AliEveEMCALSModuleData.cxx
++++ b/EVE/EveDet/AliEveEMCALSModuleData.cxx
+@@ -1,3 +1,18 @@
++/**************************************************************************
++ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
++ *                                                                        *
++ * Author: The ALICE Off-line Project.                                    *
++ * Contributors are mentioned in the code where appropriate.              *
++ *                                                                        *
++ * Permission to use, copy, modify and distribute this software and its   *
++ * documentation strictly for non-commercial purposes is hereby granted   *
++ * without fee, provided that the above copyright notice appears in all   *
++ * copies and that both the copyright notice and this permission notice   *
++ * appear in the supporting documentation. The authors make no claims     *
++ * about the suitability of this software for any purpose. It is          *
++ * provided "as is" without express or implied warranty.                  *
++ **************************************************************************/
++
+ #include <TGeoBBox.h>
+ 
+ #include "AliEMCALGeometry.h"
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 84b3e6c07d6e2f97daf9c8c1f0d5d7cb3870b166 Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 18:34:37 +0200
+Subject: [PATCH 6/9] forgot ClassImp doxy condition
+
+---
+ EVE/EveDet/AliEveEMCALSModuleData.cxx | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/EVE/EveDet/AliEveEMCALSModuleData.cxx b/EVE/EveDet/AliEveEMCALSModuleData.cxx
+index 4a223d0..2306cc5 100644
+--- a/EVE/EveDet/AliEveEMCALSModuleData.cxx
++++ b/EVE/EveDet/AliEveEMCALSModuleData.cxx
+@@ -24,7 +24,9 @@ class TGeoMatrix;
+ class TVector2;
+ class AliEveEventManager;
+ 
+-ClassImp(AliEveEMCALSModuleData)
++/// \cond CLASSIMP
++ClassImp(AliEveEMCALSModuleData) ;
++/// \endcond
+ 
+ Float_t AliEveEMCALSModuleData::fgSModuleBigBox0 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleBigBox1 = 0.;
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 18855a47befffb2e9c39e71ffbccc512689eb766 Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 18:34:58 +0200
+Subject: [PATCH 7/9] Add methods for DCal SM
+
+---
+ EVE/EveDet/AliEveEMCALSModuleData.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/EVE/EveDet/AliEveEMCALSModuleData.h b/EVE/EveDet/AliEveEMCALSModuleData.h
+index ce7d2bd..a854060 100644
+--- a/EVE/EveDet/AliEveEMCALSModuleData.h
++++ b/EVE/EveDet/AliEveEMCALSModuleData.h
+@@ -71,6 +71,12 @@ public:
+   
+   void        GetSModuleSmallBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
+   const { bbox0 = fgSModuleSmallBox0; bbox1 = fgSModuleSmallBox1; bbox2 = fgSModuleSmallBox2;}
++
++  void        GetSModuleDCalBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
++  const { bbox0 = fgSModuleDCalBox0; bbox1 = fgSModuleDCalBox1; bbox2 = fgSModuleDCalBox2;}
++  
++  void        GetSModuleSmallDBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
++  const { bbox0 = fgSModuleSmallDBox0; bbox1 = fgSModuleSmallDBox1; bbox2 = fgSModuleSmallDBox2;}
+   
+ //  void        GetSModuleCenter(Float_t& bboxCenter0, Float_t& bboxCenter1, Float_t& bboxCenter2) 
+ //  const { bboxCenter0 = fgSModuleCenter0; bboxCenter1 = fgSModuleCenter1; bboxCenter2 = fgSModuleCenter2;}
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 457a630dc3fab8929ec194b832a58004fc9441d8 Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 18:35:14 +0200
+Subject: [PATCH 8/9] Update for DCal; Update for doxygen; Cosmetics
+
+---
+ EVE/EveDet/AliEveEMCALSModule.cxx | 419 ++++++++++++++++++++++----------------
+ EVE/EveDet/AliEveEMCALSModule.h   |  96 +++++----
+ 2 files changed, 301 insertions(+), 214 deletions(-)
+
+diff --git a/EVE/EveDet/AliEveEMCALSModule.cxx b/EVE/EveDet/AliEveEMCALSModule.cxx
+index 2d1c668..50bc813 100644
+--- a/EVE/EveDet/AliEveEMCALSModule.cxx
++++ b/EVE/EveDet/AliEveEMCALSModule.cxx
+@@ -1,8 +1,17 @@
+-// EMCAL event display
+-// Visualization of an EMCAL super module.
+-//
+-//  Author: Magali Estienne (magali.estienne@cern.ch)
+-//  June 30 2008
++/**************************************************************************
++ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
++ *                                                                        *
++ * Author: The ALICE Off-line Project.                                    *
++ * Contributors are mentioned in the code where appropriate.              *
++ *                                                                        *
++ * Permission to use, copy, modify and distribute this software and its   *
++ * documentation strictly for non-commercial purposes is hereby granted   *
++ * without fee, provided that the above copyright notice appears in all   *
++ * copies and that both the copyright notice and this permission notice   *
++ * appear in the supporting documentation. The authors make no claims     *
++ * about the suitability of this software for any purpose. It is          *
++ * provided "as is" without express or implied warranty.                  *
++ **************************************************************************/
+ 
+ #include <iostream>
+ #include <vector>
+@@ -29,16 +38,29 @@ class AliEMCALHit;
+ class AliEMCALDigit;
+ class AliEveEMCALSModuleData;
+ 
+-ClassImp(AliEveEMCALSModule)
++/// \cond CLASSIMP
++ClassImp(AliEveEMCALSModule) ;
++/// \endcond
+ 
+ Bool_t           AliEveEMCALSModule::fgStaticInit = kFALSE;
+-Float_t          AliEveEMCALSModule::fgSMBigBBox[3];
+-Float_t          AliEveEMCALSModule::fgSMSmallBBox[3];
+-TEveFrameBox*    AliEveEMCALSModule::fgFrameBigBox = 0;
+-TEveFrameBox*    AliEveEMCALSModule::fgFrameSmallBox = 0;
++
++Float_t          AliEveEMCALSModule::fgSMBigBBox   [3];
++Float_t          AliEveEMCALSModule::fgSMSmallBBox [3];
++Float_t          AliEveEMCALSModule::fgSMDCalBBox  [3];
++Float_t          AliEveEMCALSModule::fgSMSmallDBBox[3];
++
++TEveFrameBox*    AliEveEMCALSModule::fgFrameBigBox    = 0;
++TEveFrameBox*    AliEveEMCALSModule::fgFrameSmallBox  = 0;
++TEveFrameBox*    AliEveEMCALSModule::fgFrameDCalBox   = 0;
++TEveFrameBox*    AliEveEMCALSModule::fgFrameSmallDBox = 0;
++
+ TEveRGBAPalette* AliEveEMCALSModule::fgFrameDigPalette = 0;
+ TEveRGBAPalette* AliEveEMCALSModule::fgFrameCluPalette = 0;
+ 
++///
++/// Constructor
++///
++//______________________________________________________________________________
+ AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t* t) :
+   TEveElement(fFrameColor),
+   TNamed(n,t),
+@@ -54,27 +76,32 @@ AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t
+   fHitSize(5),
+   fDebug(0)
+ {
+-  // Constructor.
+   Char_t name[256];
+-  if (smid < 10) {
++  
++  if (smid < 10) 
+     snprintf(name,256,"Full Super Module %02d",smid);
+-  } else {
++  else 
+     snprintf(name,256,"Half Super Module %02d",smid);
+-  }
++  
+   SetName(name);
+ 
+   // Hits
+   fPointSet->IncDenyDestroy();
+   AddElement(fPointSet);
++  
+   // Digits
+   fQuadSet->IncDenyDestroy();
+   AddElement(fQuadSet);
++  
+   // Clusters
+   fQuadSet2->IncDenyDestroy();
+   AddElement(fQuadSet2);
+-
+ }
+ 
++///
++/// Copy constructor
++///
++//______________________________________________________________________________
+ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
+   TEveElement(fFrameColor),
+   TNamed(),
+@@ -90,25 +117,25 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
+   fHitSize(esm.fHitSize),
+   fDebug(esm.fDebug)
+ {
+-  // Copy constructor.
+   Char_t name[256];
+-  if (fSModuleID < 10) {
++  if (fSModuleID < 10) 
+     snprintf(name,256,"Full Super Module %02d",fSModuleID);
+-  } else {
++  else 
+     snprintf(name,256,"Half Super Module %02d",fSModuleID);
+-  }
++  
+   SetName(name);
+ 
+   // Hits
+   fPointSet->IncDenyDestroy();
+   AddElement(fPointSet);
++  
+   // Digits
+   fQuadSet->IncDenyDestroy();
+   AddElement(fQuadSet);
++  
+   // Clusters
+   fQuadSet2->IncDenyDestroy();
+   AddElement(fQuadSet2);
+-
+ }
+ 
+ AliEveEMCALSModule::~AliEveEMCALSModule()
+@@ -124,247 +151,279 @@ AliEveEMCALSModule::~AliEveEMCALSModule()
+   if(fEMCALData) fEMCALData->DecRefCount();
+ }
+ 
++///
++/// Release the sm data, not implemented/used?
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::DropData() const
+ {
+-  //
+-  // release the sm data
+-  //
+-
+ //   fNDigits   = 0;
+ //   fNClusters = 0;
+ //   fNHits     = 0;
+ 
+   return;
+-
+ }
+ 
++///
++/// Bounding box, Framebox and Palette
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::InitStatics(AliEveEMCALSModuleData* md)
+ {
+-  //
+-  // Bounding box, Framebox and Palette
+-  //
+-
+   if (fgStaticInit) return;
++  
+   fgStaticInit = kTRUE;
+ 
+-  md->GetSModuleBigBox(fgSMBigBBox[0],fgSMBigBBox[1], fgSMBigBBox[2]);
+-  md->GetSModuleSmallBox(fgSMSmallBBox[0],fgSMSmallBBox[1], fgSMSmallBBox[2]);
++  md->GetSModuleBigBox   (fgSMBigBBox   [0], fgSMBigBBox   [1], fgSMBigBBox   [2]);
++  md->GetSModuleSmallBox (fgSMSmallBBox [0], fgSMSmallBBox [1], fgSMSmallBBox [2]);  
++  md->GetSModuleDCalBox  (fgSMDCalBBox  [0], fgSMDCalBBox  [1], fgSMDCalBBox  [2]);
++  md->GetSModuleSmallDBox(fgSMSmallDBBox[0], fgSMSmallDBBox[1], fgSMSmallDBBox[2]);
+ 
+   fgFrameBigBox = new TEveFrameBox();
+-  fgFrameBigBox->SetAABoxCenterHalfSize(0, 0, 0, fgSMBigBBox[0], fgSMBigBBox[1], fgSMBigBBox[2]);
++  fgFrameBigBox->SetAABoxCenterHalfSize   (0, 0, 0, fgSMBigBBox   [0], fgSMBigBBox   [1], fgSMBigBBox   [2]);
+   fgFrameBigBox->SetFrameColor((Color_t)10);
+   fgFrameBigBox->IncRefCount();
+-  fgFrameDigPalette = new TEveRGBAPalette(0,512);
+-  fgFrameDigPalette->SetLimits(0, 1024);
+-  fgFrameDigPalette->IncRefCount();
+ 
+   fgFrameSmallBox = new TEveFrameBox();
+-  fgFrameSmallBox->SetAABoxCenterHalfSize(0, 0, 0, fgSMSmallBBox[0], fgSMSmallBBox[1], fgSMSmallBBox[2]);
++  fgFrameSmallBox->SetAABoxCenterHalfSize (0, 0, 0, fgSMSmallBBox [0], fgSMSmallBBox [1], fgSMSmallBBox [2]);
+   fgFrameSmallBox->SetFrameColor((Color_t)10);
+   fgFrameSmallBox->IncRefCount();
++
++  fgFrameDCalBox = new TEveFrameBox();
++  fgFrameDCalBox->SetAABoxCenterHalfSize  (0, 0, 0, fgSMDCalBBox  [0], fgSMDCalBBox  [1], fgSMDCalBBox  [2]);
++  fgFrameDCalBox->SetFrameColor((Color_t)10);
++  fgFrameDCalBox->IncRefCount();
++  
++  fgFrameSmallDBox = new TEveFrameBox();
++  fgFrameSmallDBox->SetAABoxCenterHalfSize(0, 0, 0, fgSMSmallDBBox[0], fgSMSmallDBBox[1], fgSMSmallDBBox[2]);
++  fgFrameSmallDBox->SetFrameColor((Color_t)10);
++  fgFrameSmallDBox->IncRefCount();  
++  
++  fgFrameDigPalette = new TEveRGBAPalette(0,512);
++  fgFrameDigPalette->SetLimits(0, 1024);
++  fgFrameDigPalette->IncRefCount();
++  
+   fgFrameCluPalette  = new TEveRGBAPalette(0,512);
+   fgFrameCluPalette->SetLimits(0, 1024);
+   fgFrameCluPalette->IncRefCount();
+ }
+ 
++///
++/// Cluster point size
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::SetClusterSize(Int_t size)
+ {
+-  //
+-  // Cluster point size
+-  //
+-
+   fClusterSize = TMath::Max(1, size);
+ }
+ 
++///
++/// Hit point size
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::SetHitSize(Int_t size)
+ {
+-  //
+-  // hit point size
+-  //
+-
+   fHitSize = TMath::Max(1, size);
+ }
+ 
++///
++/// Set source of data.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* const data)
+ {
+-  //
+-  // Set source of data.
+-  //
+-
+-  if (data == fEMCALData) return;
+-  if(fEMCALData) fEMCALData->DecRefCount();
++  if ( data == fEMCALData ) return;
++  
++  if ( fEMCALData ) fEMCALData->DecRefCount();
++  
+   fEMCALData = data;
+-  if(fEMCALData) fEMCALData->IncRefCount();
++  
++  if ( fEMCALData ) fEMCALData->IncRefCount();
+ 
+   // Get pointer on SM data
+   fEMCALSModuleData = GetSModuleData();
+ }
+ 
++///
++/// Return source of data.
++///
+ //______________________________________________________________________________
+ AliEveEMCALSModuleData* AliEveEMCALSModule::GetSModuleData() const
+ {
+-  //
+-  // Return source of data.
+-  //
+-
+   return fEMCALData ? fEMCALData->GetSModuleData(fSModuleID) : 0;
+ }
+ 
++///
++/// Update hit/digit/cluster representation.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::UpdateQuads()
+-{
+-  //
+-  // Update hit/digit/cluster representation.
+-  //
+-
++{  
+   std::vector< std::vector<Double_t> > bufferDigit;
+   std::vector< std::vector<Double_t> > bufferCluster;
+-  std::vector< std::vector<Float_t> > bufferHit;
++  std::vector< std::vector<Float_t> >  bufferHit;
++  
+   Int_t nDigits, nClusters, nHits, oldSize;
+   Float_t hitX, hitY, hitZ;
+   Int_t smId = fEMCALSModuleData->GetSmId();
+-
++  
+   //--------------------------
+   // Hits from runloader
+   //--------------------------
+   fPointSet->Reset();
+-
++  
+   /*
+-  TEvePointSet* points = fEMCALData->GetPointSetData();
+-  char form[1000];
+-  if(points){
+-    sprintf(form,"N=%d", points->Size());
+-    points->SetTitle(form);
+-    points->SetMarkerSize(.5);
+-    points->SetMarkerColor((Color_t)2);
+-    fPointSet->AddElement(points);
+-  }
+-  else {printf("There is no hits in Runloader \n"); }
++   TEvePointSet* points = fEMCALData->GetPointSetData();
++   char form[1000];
++   if(points){
++   sprintf(form,"N=%d", points->Size());
++   points->SetTitle(form);
++   points->SetMarkerSize(.5);
++   points->SetMarkerColor((Color_t)2);
++   fPointSet->AddElement(points);
++   }
++   else {printf("There is no hits in Runloader \n"); }
++   */
+   
+-  */
+-
+-
+   if (!fgStaticInit)
+     InitStatics(fEMCALSModuleData);
+-
++  
++  //--------------------------------
+   // digits ------------------------
+-
+-   // Define TEveQuadSet for digits
+-   fQuadSet->SetOwnIds(kTRUE);
++  //--------------------------------
++  
++  // Define TEveQuadSet for digits
++  fQuadSet->SetOwnIds(kTRUE);
+   fQuadSet->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
+-    fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
+-    fQuadSet->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
+-    fQuadSet->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
+-    fQuadSet->SetPalette(fgFrameDigPalette);
+-    if(smId<fEMCALSModuleData->GetNsmf()) 
+-      fQuadSet->SetFrame(fgFrameBigBox);
+-    else fQuadSet->SetFrame(fgFrameSmallBox);
+-
+-    // Get the digit information from the buffer
+-    bufferDigit = fEMCALSModuleData->GetDigitBuffer();
+-    if(!bufferDigit.empty())
+-      {
+-	nDigits = fEMCALSModuleData->GetNDigits();
+-    if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nDigits: %d", nDigits );
+-	// loop over digits
+-	for (Int_t id = 0; id < nDigits; id++) {
+-	  //	  Int_t iid = (Int_t)bufferDigit[id][0];
+-	  //	  Int_t isupMod = (Int_t)bufferDigit[id][1];
+-	  Double_t iamp = bufferDigit[id][2];
+-	  Int_t amp = (Int_t)(iamp+0.5);
+-	  //	  Double_t ix = bufferDigit[id][3];
+-	  Double_t iy = bufferDigit[id][4];
+-	  Double_t iz = bufferDigit[id][5];
+-	  
+-	  // Add digit information to the TEveQuadSet
+-	  fQuadSet->AddQuad(iy, iz);
+-	  fQuadSet->QuadValue(amp);
+-	} // end digits loop
+-      }
+-    else { if (fDebug) Info("AliEveEMCALSModule::UpdateQuads", "There is no digits in SM %d \n", smId); }
+-
+-    // hits --------------------------
+-    bufferHit = fEMCALSModuleData->GetHitBuffer();
+-    if(!bufferHit.empty())
+-      {
+-	char form[1000];
+-	nHits = fEMCALSModuleData->GetNHits();
++  fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
++  fQuadSet->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
++  fQuadSet->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
++  fQuadSet->SetPalette(fgFrameDigPalette);
++  
++  if     (smId < 10) 
++    fQuadSet->SetFrame(fgFrameBigBox   );
++  else if(smId < 12)  
++    fQuadSet->SetFrame(fgFrameSmallBox );
++  else if(smId < 18)  
++    fQuadSet->SetFrame(fgFrameDCalBox  );
++  else if(smId < 20)  
++    fQuadSet->SetFrame(fgFrameSmallDBox);
++  
++  // Get the digit information from the buffer
++  bufferDigit = fEMCALSModuleData->GetDigitBuffer();
++  
++  if(!bufferDigit.empty())
++  {
++    nDigits = fEMCALSModuleData->GetNDigits();
++    
++    AliDebug(1,Form("nDigits: %d", nDigits) );
++    
++    // loop over digits
++    for (Int_t id = 0; id < nDigits; id++) 
++    {
++      //	  Int_t iid = (Int_t)bufferDigit[id][0];
++      //	  Int_t isupMod = (Int_t)bufferDigit[id][1];
++      Double_t iamp = bufferDigit[id][2];
++      Int_t amp = (Int_t)(iamp+0.5);
++      //	  Double_t ix = bufferDigit[id][3];
++      Double_t iy = bufferDigit[id][4];
++      Double_t iz = bufferDigit[id][5];
++      
++      // Add digit information to the TEveQuadSet
++      fQuadSet->AddQuad(iy, iz);
++      fQuadSet->QuadValue(amp);
++    } // end digits loop
++  }
++  else AliWarning(Form("There are no digits in SM %d", smId)); 
++  
++  //--------------------------------
++  // hits --------------------------
++  //--------------------------------
++
++  bufferHit = fEMCALSModuleData->GetHitBuffer();
++  
++  if(!bufferHit.empty())
++  {
++    char form[1000];
++    nHits = fEMCALSModuleData->GetNHits();
+     if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nHits: %d", nHits);
+-	oldSize = fPointSet->GrowFor(nHits);
+-	// Loop over hits
+-	for (Int_t ih = 0; ih < nHits; ih++) {
+-	  hitX = bufferHit[ih][3];
+-	  hitY = bufferHit[ih][4];
+-	  hitZ = bufferHit[ih][5];
+-	  fPointSet->SetPoint(ih,hitX,hitY,hitZ);
+-	  snprintf(form,1000,"N=%d", fPointSet->Size());
+-	  fPointSet->SetTitle(form);
+-	  fPointSet->SetMarkerSize(.5);
+-	  fPointSet->SetMarkerColor((Color_t)2);
+-	}
+-      }
+-    else { if (fDebug) printf("There is no hits in SM %d \n", smId); }
+-
+-    // clusters ------------------------
+-
+-    // Define TEveQuadSet for clusters
+-    fQuadSet2->SetOwnIds(kTRUE);
+-    fQuadSet2->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
+-    fQuadSet2->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
+-    fQuadSet2->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
+-    fQuadSet2->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
+-    fQuadSet2->SetPalette(fgFrameCluPalette);
+-    if(smId<fEMCALSModuleData->GetNsmf()) 
+-      fQuadSet2->SetFrame(fgFrameBigBox);
+-    else fQuadSet2->SetFrame(fgFrameSmallBox);
+-
+-    // Get the cluster information from the buffer
+-    bufferCluster = fEMCALSModuleData->GetClusterBuffer();
+-    if(!bufferCluster.empty())
+-      {
+-	nClusters = fEMCALSModuleData->GetNClusters();
++    oldSize = fPointSet->GrowFor(nHits);
++    // Loop over hits
++    for (Int_t ih = 0; ih < nHits; ih++) {
++      hitX = bufferHit[ih][3];
++      hitY = bufferHit[ih][4];
++      hitZ = bufferHit[ih][5];
++      fPointSet->SetPoint(ih,hitX,hitY,hitZ);
++      snprintf(form,1000,"N=%d", fPointSet->Size());
++      fPointSet->SetTitle(form);
++      fPointSet->SetMarkerSize(.5);
++      fPointSet->SetMarkerColor((Color_t)2);
++    }
++  }
++  else AliWarning(Form("There are no hits in SM %d", smId));
++  
++  //----------------------------------
++  // clusters ------------------------
++  //----------------------------------
++
++  // Define TEveQuadSet for clusters
++  fQuadSet2->SetOwnIds(kTRUE);
++  fQuadSet2->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
++  fQuadSet2->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
++  fQuadSet2->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
++  fQuadSet2->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
++  fQuadSet2->SetPalette(fgFrameCluPalette);
++    
++  if     (smId < 10) 
++    fQuadSet2->SetFrame(fgFrameBigBox   );
++  else if(smId < 12)  
++    fQuadSet2->SetFrame(fgFrameSmallBox );
++  else if(smId < 18)  
++    fQuadSet2->SetFrame(fgFrameDCalBox  );
++  else if(smId < 20)  
++    fQuadSet2->SetFrame(fgFrameSmallDBox);
++  
++  // Get the cluster information from the buffer
++  bufferCluster = fEMCALSModuleData->GetClusterBuffer();
++  if(!bufferCluster.empty())
++  {
++    nClusters = fEMCALSModuleData->GetNClusters();
+     if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nClusters: %d", nClusters );
+-	// loop over clusters
+-	for (Int_t id = 0; id < nClusters; id++) {
+-	  if(fDebug>1) {
+-        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][0]: %f", id, bufferCluster[id][0] );
+-        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][1]: %f", id, bufferCluster[id][1] );
+-        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][2]: %f", id, bufferCluster[id][2] );
+-        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][3]: %f", id, bufferCluster[id][3] );
+-        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][4]: %f", id, bufferCluster[id][4] );
+-	  }
+-	  //	  Int_t isupMod = (Int_t)bufferCluster[id][0];
+-	  Double_t iamp = bufferCluster[id][1];
+-	  Int_t amp = (Int_t)(iamp+0.5);
+-	  //	  Double_t ix = bufferCluster[id][2];
+-	  Double_t iy = bufferCluster[id][3];
+-	  Double_t iz = bufferCluster[id][4];
+-	  
+-	  // Add cluster information to the TEveQuadSet
+-	  fQuadSet2->AddQuad(iy, iz);
+-	  fQuadSet2->QuadValue(amp);
+-	  //      fQuadSet2->QuadId(iid);
+-
+-	} // end clusters loop
+-      }
+-    else { if (fDebug) Info("AliEveEMCALSModule::UpdateQuads", "There is no clusters in SM %d \n", smId); }
+-
++    // loop over clusters
++    for (Int_t id = 0; id < nClusters; id++) 
++    {
++      AliDebug(1,Form("bufferCluster[%d][0]: %f",id, bufferCluster[id][0]));
++      AliDebug(1,Form("bufferCluster[%d][1]: %f",id, bufferCluster[id][1]));
++      AliDebug(1,Form("bufferCluster[%d][2]: %f",id, bufferCluster[id][2]));
++      AliDebug(1,Form("bufferCluster[%d][3]: %f",id, bufferCluster[id][3]));
++      AliDebug(1,Form("bufferCluster[%d][4]: %f",id, bufferCluster[id][4]));
++      
++      //	  Int_t isupMod = (Int_t)bufferCluster[id][0];
++      Double_t iamp = bufferCluster[id][1];
++      Int_t amp = (Int_t)(iamp+0.5);
++      //	  Double_t ix = bufferCluster[id][2];
++      Double_t iy = bufferCluster[id][3];
++      Double_t iz = bufferCluster[id][4];
++      
++      // Add cluster information to the TEveQuadSet
++      fQuadSet2->AddQuad(iy, iz);
++      fQuadSet2->QuadValue(amp);
++      //      fQuadSet2->QuadId(iid);
++      
++    } // end clusters loop
++  }
++  else AliWarning(Form("There are no clusters in SM %d", smId));
++  
+ }
+ 
++///
++/// Set id of the SM to display.
++///
+ //______________________________________________________________________________
+ void AliEveEMCALSModule::SetSModuleID(Int_t id)
+ {
+-  //
+-  // Set id of the SM to display.
+-  //
+-
+   if (id <  0) id = 0;
+-  if (id > 12) id = 12;
++  if (id > 20) id = 20;
+ 
+   fSModuleID = id;
+ }
+diff --git a/EVE/EveDet/AliEveEMCALSModule.h b/EVE/EveDet/AliEveEMCALSModule.h
+index 6df430c..eb5b881 100644
+--- a/EVE/EveDet/AliEveEMCALSModule.h
++++ b/EVE/EveDet/AliEveEMCALSModule.h
+@@ -1,13 +1,19 @@
+-//
+-// Visualization of an EMCAL super module.
+-//
+-//  Author: Magali Estienne (magali.estienne@cern.ch)
+-//  June 30 2008
+-//
+-
+ #ifndef ALIEVEEMCALSMODULE_H
+ #define ALIEVEEMCALSMODULE_H
+ 
++/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
++ * See cxx source for full Copyright notice                               */
++
++///
++/// \class AliEveEMCALSModule
++/// \brief Visualization of an EMCAL super module.
++///
++///  Visualization of an EMCAL super module for event display.
++///
++/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
++/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
++///
++
+ #include "AliEveEMCALSModuleData.h"
+ 
+ class AliEveEMCALData;
+@@ -31,7 +37,6 @@ class TBuffer3DTypes;
+ class TBuffer3D;
+ class TVirtualPad;
+ class TVirtualViewer3D;
+-class AliEveEMCALData;
+ class AliEMCALHit;
+ class AliEMCALDigit;
+ 
+@@ -41,53 +46,76 @@ class AliEveEMCALSModule : public TEveElement,
+ {
+ 
+  public:
++  
+   AliEveEMCALSModule(Int_t smodid, const Text_t* n, const Text_t* t);
++  
+   ~AliEveEMCALSModule();
+ 
+   void DropData() const;
+ 
+-  virtual Bool_t CanEditMainColor() const { return kTRUE; }
++  virtual Bool_t CanEditMainColor()        const { return kTRUE      ; }
+ 
+   void  SetDataSource(AliEveEMCALData * const data);
++  
+   void  SetSModuleID(Int_t id);
+-  void  SetFrameColor(Color_t col) { fFrameColor = col; };
+-  const AliEveEMCALData* GetData() const { return fEMCALData; };
+-  AliEveEMCALSModuleData* GetSModuleData() const;
+-  Int_t GetID() const { return fSModuleID; };
++  
++  void  SetFrameColor(Color_t col)               { fFrameColor = col ; }
++  
++  const AliEveEMCALData* GetData()         const { return fEMCALData ; }
++  
++  AliEveEMCALSModuleData* GetSModuleData() const ;
++  
++  Int_t GetID()                            const { return fSModuleID ; }
++  
+   void  SetClusterSize(Int_t size);
++  
+   void  SetHitSize(Int_t size);
+ 
+   void UpdateQuads();
+ 
+  protected:
+-  AliEveEMCALData   *fEMCALData;        //  Data for the current event
+-  AliEveEMCALSModuleData  *fEMCALSModuleData; //  Data of Super Module (SM)
+-  Color_t                 fFrameColor;        //  Main coloring
+-  Int_t                   fSModuleID;         //  Id of super module, 0 to 11
+-  TEveQuadSet             *fQuadSet;          //  Digit container
+-  TEveQuadSet             *fQuadSet2;         //  Cluster container
+-  TEvePointSet            *fPointSet;         //  Hit container
+-  Int_t                   fClusterSize;       //  Cluster point size
+-  Int_t                   fHitSize;           //  Hit point size
+-  Int_t                   fDebug;             //  Debug option
++  
++  AliEveEMCALData         *fEMCALData;         ///<  Data for the current event
++  AliEveEMCALSModuleData  *fEMCALSModuleData;  ///<  Data of Super Module (SM)
++  Color_t                 fFrameColor;         ///<  Main coloring
++  Int_t                   fSModuleID;          ///<  Id of super module, 0 to 11
++  TEveQuadSet             *fQuadSet;           ///<  Digit container
++  TEveQuadSet             *fQuadSet2;          ///<  Cluster container
++  TEvePointSet            *fPointSet;          ///<  Hit container
++  Int_t                   fClusterSize;        ///<  Cluster point size
++  Int_t                   fHitSize;            ///<  Hit point size
++  Int_t                   fDebug;              ///<  Debug option
+ 
+   static void InitStatics(AliEveEMCALSModuleData* md);
+ 
+-  static   Bool_t           fgStaticInit;       // Flag for static variable initialization.
+-  static   Float_t          fgSMBigBBox[3];    //  Bounding Box of full SM
+-  static   Float_t          fgSMSmallBBox[3];  //  Bounding Box of half SM
+-  static   TEveFrameBox    *fgFrameBigBox;     // Frame box per full SM
+-  static   TEveFrameBox    *fgFrameSmallBox;   // Frame box per half SM
+-  static   TEveRGBAPalette *fgFrameDigPalette; // Signal to color mapping for EMCAL digits
+-  static   TEveRGBAPalette *fgFrameCluPalette; // Signal to color mapping for EMCAL clusters
++  static   Bool_t           fgStaticInit;      ///< Flag for static variable initialization.
++  
++  static   Float_t          fgSMBigBBox[3];    ///<  Bounding Box of full SM
++  static   Float_t          fgSMSmallBBox[3];  ///<  Bounding Box of 1/3 SM  
++  static   Float_t          fgSMDCalBBox[3];   ///<  Bounding Box of DCal SM
++  static   Float_t          fgSMSmallDBBox[3]; ///<  Bounding Box of 1/3 DCal SM
++  
++  static   TEveFrameBox    *fgFrameBigBox;     ///< Frame box per full SM
++  static   TEveFrameBox    *fgFrameSmallBox;   ///< Frame box per 1/3 SM
++  static   TEveFrameBox    *fgFrameDCalBox;    ///< Frame box per DCal SM
++  static   TEveFrameBox    *fgFrameSmallDBox;  ///< Frame box per 1/3 DCal SM
++  
++  static   TEveRGBAPalette *fgFrameDigPalette; ///< Signal to color mapping for EMCAL digits
++  static   TEveRGBAPalette *fgFrameCluPalette; ///< Signal to color mapping for EMCAL clusters
+ 
+   void SetupColor(Int_t val, UChar_t* pix) const;
+ 
+  private:
+-  AliEveEMCALSModule(const AliEveEMCALSModule &esm);            
+-  AliEveEMCALSModule& operator=(const AliEveEMCALSModule&); // Not implemented
++  
++  AliEveEMCALSModule           (const AliEveEMCALSModule &esm);  
++  
++  /// Assignment operator not implemented.
++  AliEveEMCALSModule& operator=(const AliEveEMCALSModule &esm); 
++
++  /// \cond CLASSIMP
++  ClassDef(AliEveEMCALSModule, 1) ;
++  /// \endcond
+ 
+-  ClassDef(AliEveEMCALSModule, 0); // Base class for TRD hits visualisation
+ };
+ 
+-#endif
++#endif //ALIEVEEMCALSMODULE_H
+-- 
+1.9.5 (Apple Git-50.3)
+
+
+From 6ca799a7a73ab4eec28a8facddda4856fc407400 Mon Sep 17 00:00:00 2001
+From: gconesab <gustavo.conesa.balbastre@cern.ch>
+Date: Wed, 6 May 2015 19:19:11 +0200
+Subject: [PATCH 9/9] Update for DCal; Update for doxygen; Cosmetics
+
+---
+ EVE/alice-macros/emcal_all.C    | 174 ++++++++++++++++++++++------------------
+ EVE/alice-macros/emcal_digits.C |  72 ++++++++++++-----
+ EVE/alice-macros/emcal_hits.C   |  17 +++-
+ 3 files changed, 162 insertions(+), 101 deletions(-)
+
+diff --git a/EVE/alice-macros/emcal_all.C b/EVE/alice-macros/emcal_all.C
+index 50930d6..8ee14e9 100644
+--- a/EVE/alice-macros/emcal_all.C
++++ b/EVE/alice-macros/emcal_all.C
+@@ -1,24 +1,33 @@
++/**************************************************************************
++ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
++ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
++ * full copyright notice.                                                 *
++ **************************************************************************/
++
+ //************************************************************************
+-// A macro to read and visualize EMCAL data
+-// The macro: 
+-// - can read hits, digits and clusters information from AliRunLoader:
+-//      emcal_data->LoadHits(ht); 
+-//      emcal_data->LoadDigits(dt);
+-//      emcal_data->LoadRecPoints(rt);
+-// - can read hits, digits and clusters information from AliEMCALLoader:
+-//      rl->GetEvent(evtNum);
+-//      emcal_data->LoadHitsFromEMCALLoader(emcl);       // Does not work
+-//      emcal_data->LoadDigitsFromEMCALLoader(emcl);     
+-//      emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
+-// - can read hits, digits and clusters information from ESDs
+-//      emcal_data->LoadDigitsFromESD();
+-//      emcal_data->LoadClustersFromESD();
+-// - will read hits, digits and clusters information from raw
+-//   => To be implemented
+-//
+-//************************************************************************
+-//  Author: Magali Estienne (magali.estienne@cern.ch)
+-//  June 30 2008
++///
++/// \file emcal_all.C
++/// \brief Visualize EMCAL data
++///
++/// A macro to read and visualize EMCAL data
++/// The macro: 
++/// * can read hits, digits and clusters information from AliRunLoader:
++///     * emcal_data->LoadHits(ht); 
++///     * emcal_data->LoadDigits(dt);
++///     * emcal_data->LoadRecPoints(rt);
++/// * can read hits, digits and clusters information from AliEMCALLoader:
++///     * rl->GetEvent(evtNum);
++///     * emcal_data->LoadHitsFromEMCALLoader(emcl);       // Does not work
++///     * emcal_data->LoadDigitsFromEMCALLoader(emcl);     
++///      emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
++/// * can read hits, digits and clusters information from ESDs
++///     * emcal_data->LoadDigitsFromESD();
++///     * emcal_data->LoadClustersFromESD();
++/// * will read hits, digits and clusters information from raw
++///     * To be implemented
++///
++/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
++/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
+ //************************************************************************
+ 
+ #if !defined(__CINT__) || defined(__MAKECINT__)
+@@ -48,103 +57,110 @@
+ class AliEveEMCALData;
+ #endif
+ 
+-AliEveEMCALData     *emcal_data       = 0;
++AliEveEMCALData * emcal_data = 0;
+ 
+ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0, 
+-	       const UInt_t eventsToProcess = 5, TString dirName = "./", 
+-	       const TString esdTreeName = "esdTree", const char *  pattern = ".")*/
++                                        const UInt_t eventsToProcess = 5, TString dirName = "./", 
++                                        const TString esdTreeName = "esdTree", const char *  pattern = ".")*/
+ {
+-
+   Int_t iLoader             = 1;
+   Int_t iESD                = 1;
+   Int_t iHits               = 1;
+   Int_t iDigits             = 1;
+   Int_t iClusters           = 1;
+-
++  
+   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
+   // runloader check already in AssertRunLoader function 
++  
+   AliESDEvent* esd = 0x0;
+   if(iESD) esd = AliEveEventManager::AssertESD();
+   // esd check already in AssertESD function 
++  
+   AliEMCALLoader *emcl = dynamic_cast<AliEMCALLoader*> (rl->GetDetectorLoader("EMCAL"));
++  
+   Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
+   if(evtID != (Int_t)evtNum) AliEveEventManager::GetMaster()->GotoEvent(evtNum);
+-
++  
+   TTree* ht = 0x0; 
+   TTree* dt = 0x0; 
+   TTree* rt = 0x0; 
+   if(iLoader)
++  {
++    // Load Hits
++    if(iHits) 
+     {
+-      //Load Hits
+-      if(iHits) {
+-	if(!rl->LoadHits("EMCAL"))
+-	  ht = rl->GetTreeH("EMCAL",false);
+-	else {printf("Please make sure a have a EMCal.Hits.root file \n"); return;}
+-      }
+-      //Load Digits
+-      if(iDigits) {
+-	if(!rl->LoadDigits("EMCAL"))
+-	  dt = rl->GetTreeD("EMCAL",false);
+-	else {printf("Please make sure a have a EMCal.Digits.root file \n"); return;}
+-      }
+-      //Load RecPoints
+-      if(iClusters) {
+-	if(!rl->LoadRecPoints("EMCAL"))
+-	  rt = rl->GetTreeR("EMCAL",false);
+-	else {printf("Please make sure a have a EMCal.RecPoints.root file \n"); return;}
+-      }
++      if(!rl->LoadHits("EMCAL"))
++        ht = rl->GetTreeH("EMCAL",false);
++      else {printf("Please make sure a have a EMCal.Hits.root file \n"); return;}
+     }
+-
++    
++    // Load Digits
++    if(iDigits) 
++    {
++      if(!rl->LoadDigits("EMCAL"))
++        dt = rl->GetTreeD("EMCAL",false);
++      else {printf("Please make sure a have a EMCal.Digits.root file \n"); return;}
++    }
++    
++    // Load RecPoints
++    if(iClusters) 
++    {
++      if(!rl->LoadRecPoints("EMCAL"))
++        rt = rl->GetTreeR("EMCAL",false);
++      else {printf("Please make sure a have a EMCal.RecPoints.root file \n"); return;}
++    }
++  }
++  
+   //  gGeoManager = gEve->GetDefaultGeometry();
+   AliEveEventManager::AssertGeometry();
++  
+   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
+   TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
++  
+   emcal_data = new AliEveEMCALData(rl,node,m);
+   if(iESD) emcal_data->SetESD(esd);
+-
++  
+   // Get information from RunLoader
+   if(iLoader)
+-    {
+-      if(iHits)     emcal_data->LoadHits(ht); // Does not work with my aliroot version 
+-      if(iDigits)   emcal_data->LoadDigits(dt);
+-      if(iClusters) emcal_data->LoadRecPoints(rt);
+-      
+-      rl->GetEvent(evtNum);
+-
+-      if(iHits)     emcal_data->LoadHitsFromEMCALLoader(emcl);       
+-      if(iDigits)   emcal_data->LoadDigitsFromEMCALLoader(emcl);     
+-      if(iClusters) emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
+-    }
+-
++  {
++    if(iHits)     emcal_data->LoadHits(ht); // Does not work with my aliroot version 
++    if(iDigits)   emcal_data->LoadDigits(dt);
++    if(iClusters) emcal_data->LoadRecPoints(rt);
++    
++    rl->GetEvent(evtNum);
++    
++    if(iHits)     emcal_data->LoadHitsFromEMCALLoader(emcl);       
++    if(iDigits)   emcal_data->LoadDigitsFromEMCALLoader(emcl);     
++    if(iClusters) emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
++  }
++  
+   // Get information from ESDs
+   if(iESD)
+-    {
+-      rl->GetEvent(evtNum);
+-      if(iDigits) emcal_data->LoadDigitsFromESD();
+-      if(iClusters) emcal_data->LoadRecPointsFromESD();
+-    }
+-
++  {
++    rl->GetEvent(evtNum);
++    if(iDigits)   emcal_data->LoadDigitsFromESD();
++    if(iClusters) emcal_data->LoadRecPointsFromESD();
++  }
++  
+   gStyle->SetPalette(1, 0);
+-
++  
+   gEve->DisableRedraw();
+-
++  
+   TEveElementList* l = new TEveElementList("EMCAL");
+   l->SetTitle("Tooltip");
+   l->SetMainColor(Color_t(2));
+   gEve->AddElement(l);
+-
+-  for (Int_t sm=0; sm<12; sm++)
+-    {
+-      AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
+-      //      esm->SetSModuleID(sm);
+-      esm->SetDataSource(emcal_data);
+-      esm->UpdateQuads();
+-      l->AddElement(esm);
+-    }
+-
++  
++  for (Int_t sm = 0; sm < 20; sm++)
++  {
++    AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
++    //      esm->SetSModuleID(sm);
++    esm->SetDataSource(emcal_data);
++    esm->UpdateQuads();
++    l->AddElement(esm);
++  }
++  
+   gEve->Redraw3D(kTRUE);
+-
++  
+   gEve->EnableRedraw();
+-
+-
+ }
+diff --git a/EVE/alice-macros/emcal_digits.C b/EVE/alice-macros/emcal_digits.C
+index 6a513c3..52eca96 100644
+--- a/EVE/alice-macros/emcal_digits.C
++++ b/EVE/alice-macros/emcal_digits.C
+@@ -1,11 +1,22 @@
+-// $Id$
+-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+ 
+ /**************************************************************************
+  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+  * full copyright notice.                                                 *
+  **************************************************************************/
++
++//************************************************************************
++///
++/// \file emcal_digits.C
++/// \brief Visualize EMCAL digits
++///
++/// A macro to read and visualize EMCAL digits
++///
++/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
++/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS. DCal implementation + doxygen, May 2015.
++//************************************************************************
++
++
+ #ifndef __CINT__
+ 
+ #include <TEveManager.h>
+@@ -27,7 +38,6 @@
+ #include <AliEMCALDigit.h>
+ #include <AliLog.h>
+ 
+-// #include <Riostream.h>
+ #endif
+ 
+ void emcal_digits()
+@@ -48,27 +58,43 @@ void emcal_digits()
+   frame_big->SetFrameColorRGBA(200,200,0,50);
+   frame_big->SetAABoxCenterHalfSize(0, 0, 0, bbbox->GetDX(), bbbox->GetDY(), bbbox->GetDZ());
+ 
+-  TEveFrameBox* frame_sml = 0x0;
++  TEveFrameBox* frame_sml  = 0x0;
++  TEveFrameBox* frame_dcl  = 0x0;
++  TEveFrameBox* frame_smld = 0x0;
+ 
+-  if (nModules==12) {
++  if (nModules > 10) 
++  {
+     TGeoBBox* sbbox = (TGeoBBox*) node->GetDaughter(10)->GetVolume()->GetShape();
+     frame_sml = new TEveFrameBox();
+     frame_sml->SetFrameColorRGBA(200,200,0,50);
+     frame_sml->SetAABoxCenterHalfSize(0, 0, 0, sbbox->GetDX(), sbbox->GetDY(), sbbox->GetDZ());
+   }
+ 
++  if (nModules > 12) 
++  {
++    TGeoBBox* dbbox = (TGeoBBox*) node->GetDaughter(12)->GetVolume()->GetShape();
++    frame_dcl = new TEveFrameBox();
++    frame_dcl->SetFrameColorRGBA(200,200,0,50);
++    frame_dcl->SetAABoxCenterHalfSize(0, 0, 0, dbbox->GetDX(), dbbox->GetDY(), dbbox->GetDZ());
++
++    TGeoBBox* sdbbox = (TGeoBBox*) node->GetDaughter(18)->GetVolume()->GetShape();
++    frame_smld = new TEveFrameBox();
++    frame_smld->SetFrameColorRGBA(200,200,0,50);
++    frame_smld->SetAABoxCenterHalfSize(0, 0, 0, sdbbox->GetDX(), sdbbox->GetDY(), sdbbox->GetDZ());
++  }
++
++  
+   gStyle->SetPalette(1, 0);
+   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
+   pal->SetLimits(0, 1024);
+ 
+-  TEveQuadSet* smodules[12];
+-  memset(smodules,0,12*sizeof(TEveQuadSet*));
+-
++  TEveQuadSet* smodules[20];
++  memset(smodules,0,20*sizeof(TEveQuadSet*));
+ 
+   AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance();  
+-  if (!geom) geom = AliEMCALGeometry::GetInstance("","");
++  if (!geom) geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+ 
+-  for (Int_t sm=0; sm<nModules; ++sm)
++  for (Int_t sm =0; sm < nModules; ++sm)
+   {
+     TEveQuadSet* q = new TEveQuadSet(Form("SM %d", sm+1));
+     q->SetOwnIds(kTRUE);
+@@ -78,7 +104,11 @@ void emcal_digits()
+ 
+     q->RefMainTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
+ 
+-    q->SetFrame(sm < 10 ? frame_big : frame_sml);
++    if     (sm < 10) q->SetFrame(frame_big );
++    else if(sm < 12) q->SetFrame(frame_sml );
++    else if(sm < 18) q->SetFrame(frame_dcl );
++    else if(sm < 20) q->SetFrame(frame_smld);
++    
+     q->SetPalette(pal);
+ 
+     gEve->AddElement(q, l);
+@@ -112,7 +142,8 @@ void emcal_digits()
+   {
+     dig = static_cast<AliEMCALDigit *>(digits->At(idig));
+ 
+-    if(dig != 0) {
++    if(dig != 0) 
++    {
+       id   = dig->GetId() ; //cell (digit) label
+       amp  = dig->GetAmp(); //amplitude in cell (digit)
+       time = dig->GetTime();//time of creation of digit after collision
+@@ -138,15 +169,18 @@ void emcal_digits()
+ //      AliDebugGeneral("emcal_digits", 5, Form("(x,y,z)=(%8.3f,%8.3f,%8.3f)", x, y, z));
+ 
+       TEveQuadSet* q = smodules[iSupMod];
+-      if (q) {
+-	q->AddQuad(y, z);
+-	q->QuadValue(TMath::Nint(amp));
+-	q->QuadId(new AliEMCALDigit(*dig));
++      if (q) 
++      {
++        q->AddQuad(y, z);
++        q->QuadValue(TMath::Nint(amp));
++        q->QuadId(new AliEMCALDigit(*dig));
+       }
+-    } else {
++    } 
++//    else 
++//    {
+ //      AliDebugGeneral("emcal_digits", 1, Form("Digit pointer 0x0"));
+-      // cout<<"Digit pointer 0x0"<<endl;
+-    }
++//      cout<<"Digit pointer 0x0"<<endl;
++//    }
+   }
+ 
+   rl->UnloadDigits("EMCAL");
+diff --git a/EVE/alice-macros/emcal_hits.C b/EVE/alice-macros/emcal_hits.C
+index bd8fdc7..1f912f9 100644
+--- a/EVE/alice-macros/emcal_hits.C
++++ b/EVE/alice-macros/emcal_hits.C
+@@ -1,11 +1,21 @@
+-// $Id$
+-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+ 
+ /**************************************************************************
+  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+  * full copyright notice.                                                 *
+  **************************************************************************/
++
++//************************************************************************
++///
++/// \file emcal_hits.C
++/// \brief Visualize EMCAL digits
++///
++/// A macro to read and visualize EMCAL digits
++///
++/// \author Magali Estienne <magali.estienne@cern.ch>, SUBATECH. EMCal implementation, June 2008
++//************************************************************************
++
++
+ #if !defined(__CINT__) || defined(__MAKECINT__)
+ #include <TTree.h>
+ #include <TString.h>
+@@ -33,7 +43,8 @@ emcal_hits(const char *varexp    = "fX:fY:fZ",
+   TEvePointSelector ps(ht, points, varexp, selection);
+   ps.Select();
+ 
+-  if (points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
++  if (points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) 
++  {
+     Warning("emcal_hits", "No hits match '%s'",selection);
+     delete points;
+     return 0;
+-- 
+1.9.5 (Apple Git-50.3)
+

@@ -1,0 +1,370 @@
+diff a/EVE/EveDet/AliEveEMCALSModule.cxx b/EVE/EveDet/AliEveEMCALSModule.cxx	(rejected hunks)
+@@ -33,9 +32,8 @@ class TBuffer3DTypes;
+ class TBuffer3D;
+ class TVirtualPad;
+ class TVirtualViewer3D;
++
+ class AliEveEMCALData;
+-class AliEMCALHit;
+-class AliEMCALDigit;
+ class AliEveEMCALSModuleData;
+ 
+ /// \cond CLASSIMP
+@@ -138,33 +136,19 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
+   AddElement(fQuadSet2);
+ }
+ 
++///
++/// Destructor.
++///
+ AliEveEMCALSModule::~AliEveEMCALSModule()
+ {
+-  //
+-  // Destructor.
+-  //
+-
+   fPointSet->DecDenyDestroy();
+-  fQuadSet->DecDenyDestroy();
++  fQuadSet ->DecDenyDestroy();
+   fQuadSet2->DecDenyDestroy();
+ 
+   if(fEMCALData) fEMCALData->DecRefCount();
+ }
+ 
+ ///
+-/// Release the sm data, not implemented/used?
+-///
+-//______________________________________________________________________________
+-void AliEveEMCALSModule::DropData() const
+-{
+-//   fNDigits   = 0;
+-//   fNClusters = 0;
+-//   fNHits     = 0;
+-
+-  return;
+-}
+-
+-///
+ /// Bounding box, Framebox and Palette
+ ///
+ //______________________________________________________________________________
+@@ -230,7 +214,7 @@ void AliEveEMCALSModule::SetHitSize(Int_t size)
+ /// Set source of data.
+ ///
+ //______________________________________________________________________________
+-void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* const data)
++void AliEveEMCALSModule::SetDataSource(AliEveEMCALData * data)
+ {
+   if ( data == fEMCALData ) return;
+   
+@@ -257,163 +241,183 @@ AliEveEMCALSModuleData* AliEveEMCALSModule::GetSModuleData() const
+ /// Update hit/digit/cluster representation.
+ ///
+ //______________________________________________________________________________
+-void AliEveEMCALSModule::UpdateQuads()
++void AliEveEMCALSModule::UpdateQuads(Bool_t iHits, Bool_t iDigits, Bool_t iClusters)
+ {  
+-  std::vector< std::vector<Double_t> > bufferDigit;
+-  std::vector< std::vector<Double_t> > bufferCluster;
+-  std::vector< std::vector<Float_t> >  bufferHit;
+-  
+-  Int_t nDigits, nClusters, nHits, oldSize;
+-  Float_t hitX, hitY, hitZ;
+   Int_t smId = fEMCALSModuleData->GetSmId();
+   
+-  //--------------------------
+-  // Hits from runloader
+-  //--------------------------
+-  fPointSet->Reset();
+-  
+-  /*
+-   TEvePointSet* points = fEMCALData->GetPointSetData();
+-   char form[1000];
+-   if(points){
+-   sprintf(form,"N=%d", points->Size());
+-   points->SetTitle(form);
+-   points->SetMarkerSize(.5);
+-   points->SetMarkerColor((Color_t)2);
+-   fPointSet->AddElement(points);
+-   }
+-   else {printf("There is no hits in Runloader \n"); }
+-   */
+-  
+   if (!fgStaticInit)
+     InitStatics(fEMCALSModuleData);
+   
+   //--------------------------------
+-  // digits ------------------------
++  // hits --------------------------
+   //--------------------------------
+   
+-  // Define TEveQuadSet for digits
+-  fQuadSet->SetOwnIds(kTRUE);
+-  fQuadSet->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
+-  fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
+-  fQuadSet->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
+-  fQuadSet->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
+-  fQuadSet->SetPalette(fgFrameDigPalette);
+-  
+-  if     (smId < 10) 
+-    fQuadSet->SetFrame(fgFrameBigBox   );
+-  else if(smId < 12)  
+-    fQuadSet->SetFrame(fgFrameSmallBox );
+-  else if(smId < 18)  
+-    fQuadSet->SetFrame(fgFrameDCalBox  );
+-  else if(smId < 20)  
+-    fQuadSet->SetFrame(fgFrameSmallDBox);
+-  
+-  // Get the digit information from the buffer
+-  bufferDigit = fEMCALSModuleData->GetDigitBuffer();
+-  
+-  if(!bufferDigit.empty())
+-  {
+-    nDigits = fEMCALSModuleData->GetNDigits();
++  if(iHits)
++  {    
++    //--------------------------
++    // Hits from runloader
++    //--------------------------
++    fPointSet->Reset();
++    
++    /*
++     TEvePointSet* points = fEMCALData->GetPointSetData();
++     char form[1000];
++     if(points){
++     sprintf(form,"N=%d", points->Size());
++     points->SetTitle(form);
++     points->SetMarkerSize(.5);
++     points->SetMarkerColor((Color_t)2);
++     fPointSet->AddElement(points);
++     }
++     else {printf("There is no hits in Runloader \n"); }
++     */
++    
++    Float_t hitX = 0, hitY = 0, hitZ = 0;
++
++    std::vector< std::vector<Float_t> >  bufferHit;
+     
+-    AliDebug(1,Form("nDigits: %d", nDigits) );
++    bufferHit = fEMCALSModuleData->GetHitBuffer();
+     
+-    // loop over digits
+-    for (Int_t id = 0; id < nDigits; id++) 
++    if(!bufferHit.empty())
+     {
+-      //	  Int_t iid = (Int_t)bufferDigit[id][0];
+-      //	  Int_t isupMod = (Int_t)bufferDigit[id][1];
+-      Double_t iamp = bufferDigit[id][2];
+-      Int_t amp = (Int_t)(iamp+0.5);
+-      //	  Double_t ix = bufferDigit[id][3];
+-      Double_t iy = bufferDigit[id][4];
+-      Double_t iz = bufferDigit[id][5];
++      char form[1000];
+       
+-      // Add digit information to the TEveQuadSet
+-      fQuadSet->AddQuad(iy, iz);
+-      fQuadSet->QuadValue(amp);
+-    } // end digits loop
+-  }
+-  else AliWarning(Form("There are no digits in SM %d", smId)); 
++      Int_t nHits = fEMCALSModuleData->GetNHits();
++      
++      AliDebug(1,Form("nHits: %d", nHits));
++      
++      Int_t oldSize = fPointSet->GrowFor(nHits);
++      
++      // Loop over hits
++      for (Int_t ih = 0; ih < nHits; ih++) 
++      {
++        hitX = bufferHit[ih][3];
++        hitY = bufferHit[ih][4];
++        hitZ = bufferHit[ih][5];
++        
++        fPointSet->SetPoint(ih,hitX,hitY,hitZ);
++        
++        snprintf(form,1000,"N=%d", fPointSet->Size());
++        fPointSet->SetTitle(form);
++        fPointSet->SetMarkerSize(.5);
++        fPointSet->SetMarkerColor((Color_t)2);
++      }
++    }
++    else AliDebug(1,Form("There are no hits in SM %d", smId));
++  }  
+   
+   //--------------------------------
+-  // hits --------------------------
++  // digits ------------------------
+   //--------------------------------
+-
+-  bufferHit = fEMCALSModuleData->GetHitBuffer();
+   
+-  if(!bufferHit.empty())
++  if(iDigits)
+   {
+-    char form[1000];
+-    nHits = fEMCALSModuleData->GetNHits();
+-    if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nHits: %d", nHits);
+-    oldSize = fPointSet->GrowFor(nHits);
+-    // Loop over hits
+-    for (Int_t ih = 0; ih < nHits; ih++) {
+-      hitX = bufferHit[ih][3];
+-      hitY = bufferHit[ih][4];
+-      hitZ = bufferHit[ih][5];
+-      fPointSet->SetPoint(ih,hitX,hitY,hitZ);
+-      snprintf(form,1000,"N=%d", fPointSet->Size());
+-      fPointSet->SetTitle(form);
+-      fPointSet->SetMarkerSize(.5);
+-      fPointSet->SetMarkerColor((Color_t)2);
++    std::vector< std::vector<Double_t> > bufferDigit;
++    
++    // Define TEveQuadSet for digits
++    fQuadSet->SetOwnIds(kTRUE);
++    fQuadSet->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
++    fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
++    fQuadSet->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
++    fQuadSet->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix(smId));
++    fQuadSet->SetPalette(fgFrameDigPalette);
++    
++    if     (smId < 10) 
++      fQuadSet->SetFrame(fgFrameBigBox   );
++    else if(smId < 12)  
++      fQuadSet->SetFrame(fgFrameSmallBox );
++    else if(smId < 18)  
++      fQuadSet->SetFrame(fgFrameDCalBox  );
++    else if(smId < 20)  
++      fQuadSet->SetFrame(fgFrameSmallDBox);
++    
++    // Get the digit information from the buffer
++    bufferDigit = fEMCALSModuleData->GetDigitBuffer();
++    
++    if(!bufferDigit.empty())
++    {
++      Int_t nDigits = fEMCALSModuleData->GetNDigits();
++      
++      AliDebug(1,Form("nDigits: %d", nDigits) );
++      
++      // loop over digits
++      for (Int_t id = 0; id < nDigits; id++) 
++      {
++        //	  Int_t iid = (Int_t)bufferDigit[id][0];
++        //	  Int_t isupMod = (Int_t)bufferDigit[id][1];
++        Double_t iamp = bufferDigit[id][2];
++        //Int_t amp = (Int_t)(iamp+0.5); // Why? Let it be float.
++        
++        //	  Double_t ix = bufferDigit[id][3];
++        Double_t iy = bufferDigit[id][4];
++        Double_t iz = bufferDigit[id][5];
++        
++        // Add digit information to the TEveQuadSet
++        fQuadSet->AddQuad(iy, iz);
++        fQuadSet->QuadValue(iamp);
++      } // end digits loop
+     }
++    else AliDebug(1,Form("There are no digits in SM %d", smId)); 
+   }
+-  else AliWarning(Form("There are no hits in SM %d", smId));
+   
+   //----------------------------------
+   // clusters ------------------------
+   //----------------------------------
+-
+-  // Define TEveQuadSet for clusters
+-  fQuadSet2->SetOwnIds(kTRUE);
+-  fQuadSet2->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
+-  fQuadSet2->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
+-  fQuadSet2->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
+-  fQuadSet2->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
+-  fQuadSet2->SetPalette(fgFrameCluPalette);
+-    
+-  if     (smId < 10) 
+-    fQuadSet2->SetFrame(fgFrameBigBox   );
+-  else if(smId < 12)  
+-    fQuadSet2->SetFrame(fgFrameSmallBox );
+-  else if(smId < 18)  
+-    fQuadSet2->SetFrame(fgFrameDCalBox  );
+-  else if(smId < 20)  
+-    fQuadSet2->SetFrame(fgFrameSmallDBox);
+   
+-  // Get the cluster information from the buffer
+-  bufferCluster = fEMCALSModuleData->GetClusterBuffer();
+-  if(!bufferCluster.empty())
++  if(iClusters)
+   {
+-    nClusters = fEMCALSModuleData->GetNClusters();
+-    if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nClusters: %d", nClusters );
+-    // loop over clusters
+-    for (Int_t id = 0; id < nClusters; id++) 
++    std::vector< std::vector<Double_t> > bufferCluster;
++    
++    // Define TEveQuadSet for clusters
++    fQuadSet2->SetOwnIds(kTRUE);
++    fQuadSet2->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
++    fQuadSet2->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
++    fQuadSet2->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
++    fQuadSet2->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix(smId));
++    fQuadSet2->SetPalette(fgFrameCluPalette);
++    
++    if     (smId < 10) 
++      fQuadSet2->SetFrame(fgFrameBigBox   );
++    else if(smId < 12)  
++      fQuadSet2->SetFrame(fgFrameSmallBox );
++    else if(smId < 18)  
++      fQuadSet2->SetFrame(fgFrameDCalBox  );
++    else if(smId < 20)  
++      fQuadSet2->SetFrame(fgFrameSmallDBox);
++    
++    // Get the cluster information from the buffer
++    bufferCluster = fEMCALSModuleData->GetClusterBuffer();
++    if(!bufferCluster.empty())
+     {
+-      AliDebug(1,Form("bufferCluster[%d][0]: %f",id, bufferCluster[id][0]));
+-      AliDebug(1,Form("bufferCluster[%d][1]: %f",id, bufferCluster[id][1]));
+-      AliDebug(1,Form("bufferCluster[%d][2]: %f",id, bufferCluster[id][2]));
+-      AliDebug(1,Form("bufferCluster[%d][3]: %f",id, bufferCluster[id][3]));
+-      AliDebug(1,Form("bufferCluster[%d][4]: %f",id, bufferCluster[id][4]));
+-      
+-      //	  Int_t isupMod = (Int_t)bufferCluster[id][0];
+-      Double_t iamp = bufferCluster[id][1];
+-      Int_t amp = (Int_t)(iamp+0.5);
+-      //	  Double_t ix = bufferCluster[id][2];
+-      Double_t iy = bufferCluster[id][3];
+-      Double_t iz = bufferCluster[id][4];
++      Int_t nClusters = fEMCALSModuleData->GetNClusters();
+       
+-      // Add cluster information to the TEveQuadSet
+-      fQuadSet2->AddQuad(iy, iz);
+-      fQuadSet2->QuadValue(amp);
+-      //      fQuadSet2->QuadId(iid);
++      AliDebug(1, Form("nClusters: %d", nClusters) );
+       
+-    } // end clusters loop
++      // loop over clusters
++      for (Int_t id = 0; id < nClusters; id++) 
++      {
++        AliDebug(1,Form("bufferCluster[%d][0]: %f",id, bufferCluster[id][0]));
++        AliDebug(1,Form("bufferCluster[%d][1]: %f",id, bufferCluster[id][1]));
++        AliDebug(1,Form("bufferCluster[%d][2]: %f",id, bufferCluster[id][2]));
++        AliDebug(1,Form("bufferCluster[%d][3]: %f",id, bufferCluster[id][3]));
++        AliDebug(1,Form("bufferCluster[%d][4]: %f",id, bufferCluster[id][4]));
++        
++        //	  Int_t isupMod = (Int_t)bufferCluster[id][0];
++        Double_t iamp = bufferCluster[id][1];
++        Int_t amp = (Int_t)(iamp+0.5);
++        //	  Double_t ix = bufferCluster[id][2];
++        Double_t iy = bufferCluster[id][3];
++        Double_t iz = bufferCluster[id][4];
++        
++        // Add cluster information to the TEveQuadSet
++        fQuadSet2->AddQuad(iy, iz);
++        fQuadSet2->QuadValue(amp);
++        //      fQuadSet2->QuadId(iid);
++        
++      } // end clusters loop
++    }
++    else AliDebug(1,Form("There are no clusters in SM %d", smId));
+   }
+-  else AliWarning(Form("There are no clusters in SM %d", smId));
+-  
+ }
+ 
+ ///
