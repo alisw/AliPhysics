@@ -153,8 +153,6 @@ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0,
   l->SetTitle("Tooltip");
   l->SetMainColor(Color_t(2));
   gEve->AddElement(l);
-<<<<<<< HEAD
-<<<<<<< HEAD
 
   for (Int_t sm=0; sm<20; sm++)
     {
@@ -165,9 +163,6 @@ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0,
       l->AddElement(esm);
     }
 
-=======
-=======
->>>>>>> merge with master
   
   for (Int_t sm = 0; sm < 20; sm++)
   {
@@ -178,10 +173,6 @@ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0,
     l->AddElement(esm);
   }
   
-<<<<<<< HEAD
->>>>>>> Update for DCal; Update for doxygen; Cosmetics
-=======
-=======
 
   for (Int_t sm=0; sm<20; sm++)
     {
@@ -192,8 +183,6 @@ void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0,
       l->AddElement(esm);
     }
 
->>>>>>> Fixes in emcal macros
->>>>>>> merge with master
   gEve->Redraw3D(kTRUE);
   
   gEve->EnableRedraw();
