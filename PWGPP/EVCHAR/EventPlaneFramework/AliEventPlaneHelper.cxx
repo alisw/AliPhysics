@@ -57,6 +57,9 @@
 #include <fstream>
 
 ClassImp(AliEventPlaneHelper)
+
+using std::ifstream;
+
 TDirectoryFile* AliEventPlaneHelper::fgHistCali=0x0;  // main directory for a standard tree analysis output (used for calibration, plotting etc.)
 TFile* AliEventPlaneHelper::fgHistCaliFile=0x0;      // pointer to a TFile opened for reading
 

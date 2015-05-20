@@ -80,6 +80,9 @@
 
 ClassImp(AliAnalysisTaskJetChem)
 
+using std::cout;
+using std::endl;
+
 //____________________________________________________________________________
 AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    : AliAnalysisTaskFragmentationFunction()
