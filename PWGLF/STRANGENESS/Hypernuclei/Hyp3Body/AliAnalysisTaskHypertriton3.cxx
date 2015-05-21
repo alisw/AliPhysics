@@ -248,6 +248,7 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3(){
 
     if(fESDtrackCuts) delete fESDtrackCuts;
     if(fESDtrackCutsV0) delete fESDtrackCutsV0;
+    if(fPrimaryVertex) delete fPrimaryVertex;
     if(fVertexer) delete fVertexer;
     if(fTrkArray) delete fTrkArray;
 
@@ -1121,7 +1122,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    fHistMassHypertritonMCt->Fill(Hypertriton.M());
 	  }
 	} // end of Pure MC part
-	decayVtx->Clear();
+	decayVtx->Delete();
 	fTrkArray->Clear();
 	Hypertriton.Clear();
 	h1.Clear();
