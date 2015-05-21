@@ -211,8 +211,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		vector<Int_t>						vecDoubleCountTrueConvGammas;							//! vector containing labels of validated photons
 		TH1I 								**hNEvents;											//!
 		TH1I 								**hNGoodESDTracks;									//!
-		TH1I 								**hNEventsWeighted;									//!
-		TH1I 								**hNGoodESDTracksWeighted;							//!
+		TH1F								**hNEventsWeighted;									//!
+		TH1F 								**hNGoodESDTracksWeighted;							//!
 		TH1F 								**hCentrality;										//!
 		TH1F 								**hCentralityFlattened;								//!
 		TH2F								**hCentralityVsPrimaryTracks;						//!

@@ -518,8 +518,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	hNEvents = new TH1I*[fnCuts];
 	hNGoodESDTracks = new TH1I*[fnCuts];
 	if(fDoCentralityFlat > 0){
-		hNEventsWeighted = new TH1I*[fnCuts];
-		hNGoodESDTracksWeighted = new TH1I*[fnCuts];
+		hNEventsWeighted = new TH1F*[fnCuts];
+		hNGoodESDTracksWeighted = new TH1F*[fnCuts];
 	}
 	hCentrality = new TH1F*[fnCuts];
 	if(fDoCentralityFlat > 0){
@@ -607,7 +607,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 		if(fDoCentralityFlat > 0){	
 			
-			hNEventsWeighted[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);//weighted histogram!!
+			hNEventsWeighted[iCut] = new TH1F("NEvents","NEvents",10,-0.5,9.5);//weighted histogram!!
 			hNEventsWeighted[iCut]->Sumw2();
 			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
@@ -633,7 +633,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hNGoodESDTracks[iCut] = new TH1I("GoodESDTracksUnweighted","GoodESDTracksUnweighted",4000,0,4000);
 			fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
 			
-			hNGoodESDTracksWeighted[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000); //weighted histogram!!
+			hNGoodESDTracksWeighted[iCut] = new TH1F("GoodESDTracks","GoodESDTracks",4000,0,4000); //weighted histogram!!
 			hNGoodESDTracksWeighted[iCut]->Sumw2();
 			fESDList[iCut]->Add(hNGoodESDTracksWeighted[iCut]);
 		} else {
@@ -1269,7 +1269,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		if((fDoCentralityFlat > 0)) hNEventsWeighted[iCut]->Fill(eventQuality, weightCentrality); // Should be 0 here
 		hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
 		if((fDoCentralityFlat > 0)) hNGoodESDTracksWeighted[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), weightCentrality);
-			
+		
 		hCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent));
 		if((fDoCentralityFlat > 0)) hCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), weightCentrality);
 		
