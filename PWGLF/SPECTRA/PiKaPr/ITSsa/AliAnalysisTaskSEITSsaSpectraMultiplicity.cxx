@@ -14,16 +14,16 @@
  **************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////
-// AliAnalysisTaskSE for the extraction of the various histograms to
-// study the pt spectra of identified hadrons vs multiplicity:
-// - multiplicity estimated with Reference Multiplicity and "V0M" percentiles
-// - log(dEdx)-log(dEdxBB) distributions for pions, kaons and protons in pt bins
-// - Pt distributions of pions, kaons and protons with nSigma PID
-// Authors: 
-// E. Biolcati, biolcati@to.infn.it
-// L. Milano,   milano@to.infn.it
-// F. Prino,    prino@to.infn.it
-// N. Jacazio,  jacazio@to.infn.it
+/// AliAnalysisTaskSE for the extraction of the various histograms to
+/// study the pt spectra of identified hadrons vs multiplicity:
+/// - multiplicity estimated with Reference Multiplicity and "V0M" percentiles
+/// - log(dEdx)-log(dEdxBB) distributions for pions, kaons and protons in pt bins
+/// - Pt distributions of pions, kaons and protons with nSigma PID
+/// Authors: 
+/// \author E. Biolcati, biolcati@to.infn.it
+/// \author L. Milano,   milano@to.infn.it
+/// \author F. Prino,    prino@to.infn.it
+/// \author N. Jacazio,  jacazio@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
 #define LOG_NO_INFO
@@ -144,8 +144,8 @@ fptMC(0),
 fChi2(0)
 {
   AliLog::SetClassDebugLevel("AliAnalysisTaskSEITSsaSpectraMultiplicity",2);
-  AliInfoF("Begin of %s", "AliAnalysisTaskSEITSsaSpectraMultiplicity");
-
+  infomsg("Begin of AliAnalysisTaskSEITSsaSpectraMultiplicity");
+  
   // Constructor
   Double_t xbins[kNbins+1]={0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.0};
   for(Int_t iBin=0; iBin<kNbins+1; iBin++) fPtBinLimits[iBin]=xbins[iBin];
@@ -273,7 +273,7 @@ fChi2(0)
   DefineOutput(2, TList::Class());
   DefineOutput(3, TTree::Class());
   DefineOutput(4, TTree::Class());
-  AliInfoF("end of %s", "AliAnalysisTaskSEITSsaSpectraMultiplicity");
+  infomsg("End of AliAnalysisTaskSEITSsaSpectraMultiplicity");
 }
 
 //___________________________________________________________________________
@@ -347,15 +347,36 @@ Bool_t AliAnalysisTaskSEITSsaSpectraMultiplicity::DCAcut(Double_t impactXY, Doub
   // from the study of L. Milano, F. Prino on the ITS standalone tracks
   // using the common binning of the TPC tracks
   
+  return DCAcutXY(impactXY, pt)*DCAcutZ(impactZ, pt);
+}
+
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSEITSsaSpectraMultiplicity::DCAcutXY(Double_t impactXY, Double_t pt) const {
+  // cut on transverse impact parameter updated on 20-5-2010
+  // from the study of L. Milano, F. Prino on the ITS standalone tracks
+  // using the common binning of the TPC tracks
+  
   Double_t xyMax = fDCAxyCutFunc->Eval(pt); //in micron
   AliDebugF(3,"Max value for the DCAxy Cut is:%f Measured value for DCAxy is:%f cut to %.0f sigmas\n",xyMax,TMath::Abs(impactXY)*10000,fDCAxyCutFunc->GetParameter(3));
   if((TMath::Abs(impactXY)*10000)>xyMax) return kFALSE;  
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSEITSsaSpectraMultiplicity::DCAcutZ(Double_t impactZ, Double_t pt) const {
+  // cut on transverse impact parameter updated on 20-5-2010
+  // from the study of L. Milano, F. Prino on the ITS standalone tracks
+  // using the common binning of the TPC tracks
+  
   Double_t zMax = fDCAzCutFunc->Eval(pt); //in micron
   AliDebugF(3,"Max value for the DCAz Cut is:%f Measured value for DCAz is:%f cut to %.0f sigmas\n",zMax,TMath::Abs(impactZ)*10000,fDCAzCutFunc->GetParameter(3));
   if((TMath::Abs(impactZ)*10000)>zMax) return kFALSE;
   
   return kTRUE;
 }
+
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskSEITSsaSpectraMultiplicity::Eta2y(Double_t pt, Double_t m, Double_t eta) const {
@@ -369,7 +390,7 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::Init(){
   //
   // Initialization
   //
-  AliInfoF("AliAnalysisTaskSEITSsaSpectraMultiplicity %s","Init()");
+  infomsg("Begin of Init");
   
   fListCuts=new TList();
   fListCuts->SetOwner();
@@ -410,26 +431,26 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::Init(){
   }
   fDCAxyCutFunc = new TF1("fDCAxyCutFunc","[3]*([0]+[1]/TMath::Power(TMath::Abs(x),[2]))",0.05,10.);
   for(Int_t ipar=0; ipar<3; ipar++) fDCAxyCutFunc->SetParameter(ipar,xyP[ipar]);
-  AliInfoF("Setting DCA cut value to %.0f",fNSigmaDCAxy);
+  infomsg(Form("Setting DCA cut value to %.0f",fNSigmaDCAxy));
   fDCAxyCutFunc->SetParameter(3,fNSigmaDCAxy);
   
   fDCAzCutFunc = new TF1("fDCAzCutFunc","[3]*([0]+[1]/TMath::Power(TMath::Abs(x),[2]))",0.05,10.);
   for(Int_t ipar=0; ipar<3; ipar++) fDCAzCutFunc->SetParameter(ipar,zP[ipar]);
-  AliInfoF("Setting DCA cut value to %.0f",fNSigmaDCAz);
+  infomsg(Form("Setting DCA cut value to %.0f",fNSigmaDCAz));
   fDCAzCutFunc->SetParameter(3,fNSigmaDCAz);
   
   fListCuts->Add(fDCAxyCutFunc);
   fListCuts->Add(fDCAzCutFunc);
   
   PostData(2,fListCuts);
-  AliInfoF("end of %s","Init()");
+  infomsg("End of Init()");
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserCreateOutputObjects(){
   // Create a TList with histograms and a TNtuple
   // Called once
-  AliInfoF("AliAnalysisTaskSEITSsaSpectraMultiplicity %s","CreateOutputObjects()");
+  infomsg("Begin of CreateOutputObjects");
   
   //General Utilities  
   // Multiplicity
@@ -453,18 +474,20 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserCreateOutputObjects(){
   fOutput->SetOwner();
   fOutput->SetName("Spiderman");
   
-  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events;Ev. Sel. Step;Counts",10,-1.5,8.5);
+  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events;Ev. Sel. Step;Counts",11,-1.5,9.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from ESD");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"Pass Phys. Sel. + Trig");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"SDD read out");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"In mult. range");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"IsINELgtZERO");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"IsAcceptedVertexPosition");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"IsNotPileupSPDInMultBins");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"HasConsistentSPDandTrackVertices");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"IsEventSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"IsMinimumBias");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"HasGoodVertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"IsAcceptedVertexPosition");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"IsINELgtZERO");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"IsNotPileupSPDInMultBins");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"HasNoInconsistentSPDandTrackVertices");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"IsEventSelected");
   fOutput->Add(fHistNEvents);
   
   fHistMCSampSel = new TH1F("fHistMCSampSel", "MC Sample",3,-1.5,1.5);
@@ -792,34 +815,36 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserCreateOutputObjects(){
   
   TString label;
   
-  label="no selection";
+  label="no selection";//1
   fHistNTracks->GetXaxis()->SetBinLabel(kHasNoSelection,label.Data());
-  label="ITSsa";
+  label="ITSsa";//2
   fHistNTracks->GetXaxis()->SetBinLabel(kIsITSsa,label.Data());
-  label="ITSrefit";
+  label="ITSrefit";//3
   fHistNTracks->GetXaxis()->SetBinLabel(kIsITSrefit,label.Data());
-  label="neutral particle";
+  label="neutral particle";//4
   fHistNTracks->GetXaxis()->SetBinLabel(kIsNotNeutralParticle,label.Data());
-  label="OneSPDcl";
+  label="OneSPDcl";//5
   fHistNTracks->GetXaxis()->SetBinLabel(kHasOneSPD,label.Data());
-  label="TwoSPDcl";
+  label="TwoSPDcl";//6
   fHistNTracks->GetXaxis()->SetBinLabel(kHasTwoSPD,label.Data());
-  label="SPDcls";
+  label="SPDcls";//7
   fHistNTracks->GetXaxis()->SetBinLabel(kPassSPD,label.Data());
-  label="3 SDD+SSD cls";
+  label="3 SDD+SSD cls";//8
   fHistNTracks->GetXaxis()->SetBinLabel(kHas3PIDcls,label.Data());
-  label="4 SDD+SSD cls";
+  label="4 SDD+SSD cls";//9
   fHistNTracks->GetXaxis()->SetBinLabel(kHas4PIDcls,label.Data());
-  label="SDD+SSD cls";
+  label="SDD+SSD cls";//10
   fHistNTracks->GetXaxis()->SetBinLabel(kPassPIDcls,label.Data());
-  label="chi2/ncls";
+  label="chi2/ncls";//11
   fHistNTracks->GetXaxis()->SetBinLabel(kPassChi2Ncls,label.Data());
-  label="eta";
+  label="eta";//12
   fHistNTracks->GetXaxis()->SetBinLabel(kIsInEta,label.Data());
-  label="de/dx<0";
+  label="de/dx<0";//13
   fHistNTracks->GetXaxis()->SetBinLabel(kPassdEdx,label.Data());
-  label="DCA";
-  fHistNTracks->GetXaxis()->SetBinLabel(kPassDCAcut,label.Data());
+  label="DCAz";//14
+  fHistNTracks->GetXaxis()->SetBinLabel(kPassDCAzcut,label.Data());
+  label="DCAxy";//15
+  fHistNTracks->GetXaxis()->SetBinLabel(kPassDCAxycut,label.Data());
   
   fOutput->Add(fHistNTracks);
   
@@ -828,34 +853,36 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserCreateOutputObjects(){
   fHistNTracksPos->Sumw2();
   fHistNTracksPos->SetMinimum(0);
   
-  label="no selection";
+  label="no selection";//1
   fHistNTracksPos->GetXaxis()->SetBinLabel(kHasNoSelection,label.Data());
-  label="ITSsa";
+  label="ITSsa";//2
   fHistNTracksPos->GetXaxis()->SetBinLabel(kIsITSsa,label.Data());
-  label="ITSrefit";
+  label="ITSrefit";//3
   fHistNTracksPos->GetXaxis()->SetBinLabel(kIsITSrefit,label.Data());
-  label="neutral particle";
+  label="neutral particle";//4
   fHistNTracksPos->GetXaxis()->SetBinLabel(kIsNotNeutralParticle,label.Data());
-  label="OneSPDcl";
+  label="OneSPDcl";//5
   fHistNTracksPos->GetXaxis()->SetBinLabel(kHasOneSPD,label.Data());
-  label="TwoSPDcl";
+  label="TwoSPDcl";//6
   fHistNTracksPos->GetXaxis()->SetBinLabel(kHasTwoSPD,label.Data());
-  label="SPDcls";
+  label="SPDcls";//7
   fHistNTracksPos->GetXaxis()->SetBinLabel(kPassSPD,label.Data());
-  label="3 SDD+SSD cls";
+  label="3 SDD+SSD cls";//8
   fHistNTracksPos->GetXaxis()->SetBinLabel(kHas3PIDcls,label.Data());
-  label="4 SDD+SSD cls";
+  label="4 SDD+SSD cls";//9
   fHistNTracksPos->GetXaxis()->SetBinLabel(kHas4PIDcls,label.Data());
-  label="SDD+SSD cls";
+  label="SDD+SSD cls";//10
   fHistNTracksPos->GetXaxis()->SetBinLabel(kPassPIDcls,label.Data());
-  label="chi2/ncls";
+  label="chi2/ncls";//11
   fHistNTracksPos->GetXaxis()->SetBinLabel(kPassChi2Ncls,label.Data());
-  label="eta";
+  label="eta";//12
   fHistNTracksPos->GetXaxis()->SetBinLabel(kIsInEta,label.Data());
-  label="de/dx<0";
+  label="de/dx<0";//13
   fHistNTracksPos->GetXaxis()->SetBinLabel(kPassdEdx,label.Data());
-  label="DCA";
-  fHistNTracksPos->GetXaxis()->SetBinLabel(kPassDCAcut,label.Data());
+  label="DCAz";//14
+  fHistNTracksPos->GetXaxis()->SetBinLabel(kPassDCAzcut,label.Data());
+  label="DCAxy";//15
+  fHistNTracksPos->GetXaxis()->SetBinLabel(kPassDCAxycut,label.Data());
   
   fOutput->Add(fHistNTracksPos);
   
@@ -864,34 +891,36 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserCreateOutputObjects(){
   fHistNTracksNeg->Sumw2();
   fHistNTracksNeg->SetMinimum(0);
   
-  label="no selection";
+  label="no selection";//1
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kHasNoSelection,label.Data());
-  label="ITSsa";
+  label="ITSsa";//2
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kIsITSsa,label.Data());
-  label="ITSrefit";
+  label="ITSrefit";//3
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kIsITSrefit,label.Data());
-  label="neutral particle";
+  label="neutral particle";//4
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kIsNotNeutralParticle,label.Data());
-  label="OneSPDcl";
+  label="OneSPDcl";//5
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kHasOneSPD,label.Data());
-  label="TwoSPDcl";
+  label="TwoSPDcl";//6
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kHasTwoSPD,label.Data());
-  label="SPDcls";
+  label="SPDcls";//7
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassSPD,label.Data());
-  label="3 SDD+SSD cls";
+  label="3 SDD+SSD cls";//8
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kHas3PIDcls,label.Data());
-  label="4 SDD+SSD cls";
+  label="4 SDD+SSD cls";//9
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kHas4PIDcls,label.Data());
-  label="SDD+SSD cls";
+  label="SDD+SSD cls";//10
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassPIDcls,label.Data());
-  label="chi2/ncls";
+  label="chi2/ncls";//11
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassChi2Ncls,label.Data());
-  label="eta";
+  label="eta";//12
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kIsInEta,label.Data());
-  label="de/dx<0";
+  label="de/dx<0";//13
   fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassdEdx,label.Data());
-  label="DCA";
-  fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassDCAcut,label.Data());
+  label="DCAz";//14
+  fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassDCAzcut,label.Data());
+  label="DCAxy";//15
+  fHistNTracksNeg->GetXaxis()->SetBinLabel(kPassDCAxycut,label.Data());
   
   
   fOutput->Add(fHistNTracksNeg);
@@ -1275,7 +1304,7 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserCreateOutputObjects(){
   PostData(1,fOutput);  
   
   
-  AliInfoF("end of %s","CreateOutputObjects");
+  infomsg("End of CreateOutputObjects");
 }
 
 //________________________________________________________________________
@@ -1304,6 +1333,8 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   fESD=(AliESDEvent*)InputEvent(); //UserExec is called for every event fetched from the handler
   if(!fESD) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
+    PostData(1,fOutput);
+    PostData(2,fListCuts);
     return;
   } 
   fHistNEvents->Fill(-1);//Number of events opened -->Read from ESD
@@ -1313,11 +1344,19 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   UInt_t maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   TString firedTriggerClasses=fESD->GetFiredTriggerClasses();
   //  if(!firedTriggerClasses.Contains("CINT1B")) return;
-  if((maskPhysSel & AliVEvent::kMB)==0) return;
+  if((maskPhysSel & AliVEvent::kMB)==0){
+    PostData(1,fOutput);
+    PostData(2,fListCuts);
+    return;
+  }
   fHistNEvents->Fill(0); //-->Pass Phys. Sel. + Trig
   
   if(fLowEnergypp && !fMC){ // remove events without SDD in pp 2.76 TeV
-    if(!firedTriggerClasses.Contains("ALL")) return;
+    if(!firedTriggerClasses.Contains("ALL")){
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
+      return;
+    }
   }
   fHistNEvents->Fill(1); //-->SDD read out
   
@@ -1325,22 +1364,30 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
       Printf("ERROR: Could not retrieve MC event handler");
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
       return;
     }
     AliMCEvent* mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
       return;
     }
     stack = mcEvent->Stack();
     if (!stack) {
       printf("ERROR: stack not available\n");
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
       return;
     }
     //Selection of the MC sample 
     const  AliVVertex *mcvtx = mcEvent->GetPrimaryVertex();
     if (!mcvtx) {
       printf("ERROR: mcvtx not available\n");
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
       return;
     }
     
@@ -1363,8 +1410,11 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     if(!(fLowCentrality<0.0)&&fUpCentrality>0.0)
     {
       AliCentrality *centrality = fESD->GetCentrality();
-      if(!centrality->IsEventInCentralityClass(fLowCentrality,fUpCentrality,"V0M"))
+      if(!centrality->IsEventInCentralityClass(fLowCentrality,fUpCentrality,"V0M")){
+	PostData(1,fOutput);
+	PostData(2,fListCuts);
 	return;
+      }
       Printf("Centrality of the event: %.1f",centrality->GetCentralityPercentile("V0M"));
       Printf("Centrality cut: %.1f to %.1f",fLowCentrality,fUpCentrality);
       fHistCen->Fill(centrality->GetCentralityPercentile("V0M"));
@@ -1404,8 +1454,16 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   fV0Mult = fPPVsMultUtils->GetMultiplicityPercentile(fESD,"V0M",kFALSE);//No event selection here
   
   if(!fuseV0){//Use reference multiplicity
-    if(fLowMult>-1 && fMult<fLowMult) return;//check on multiplicity lower bin
-    if(fUpMult>-1 && fMult>fUpMult) return;//check on multiplicity higher bin
+    if(fLowMult>-1 && fMult<fLowMult){//check on multiplicity lower bin
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
+      return;
+    }
+    if(fUpMult>-1 && fMult>fUpMult){//check on multiplicity higher bin
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
+      return;
+    }
     fHistMult->Fill(fMult);
     fHistNEvents->Fill(2);//-->In mult. range
     if(fMC) fHistMCSampSel->Fill(0);
@@ -1413,8 +1471,16 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     if(fMC) xsparseMC[0]=fMult;
   }
   else{//Use V0M estimator
-    if(fLowMult>-1 && fV0Mult<fLowMult) return;//check on multiplicity lower bin
-    if(fUpMult>-1 && fV0Mult>=fUpMult) return;//check on multiplicity higher bin
+    if(fLowMult>-1 && fV0Mult<fLowMult){//check on multiplicity lower bin
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
+      return;
+    }
+    if(fUpMult>-1 && fV0Mult>=fUpMult){//check on multiplicity higher bin
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
+      return;
+    }
     fHistMult->Fill(fV0Mult);
     fHistNEvents->Fill(2);//-->In mult. range
     if(fMC) fHistMCSampSel->Fill(0);
@@ -1425,36 +1491,53 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   //sample selection
   if(fMC && sampSel==1) fHistMCSampSel->Fill(1);
   
-  //event selection
+  if(!vtx->GetStatus() && AliPPVsMultUtils::IsINELgtZERO( fESD )) errormsg("UserExec: Check on the consistency in the event selection returned a bad value!");
+  
   //------------------------------------------------
   // Selection Investigation with AliPPVsMultUtils
   //------------------------------------------------
-
+  
   //------------------------------------------------
   //Check if event is selected 
   //------------------------------------------------
-  if(AliPPVsMultUtils::IsEventSelected(fESD)) fHistNEvents->Fill(7);
+  if( AliPPVsMultUtils::IsEventSelected (fESD) ) fHistNEvents->Fill(9);
   else evSel = 0;
   
   //------------------------------------------------
-  //Check for INEL>0
+  //Step 1: Check for Min-Bias Trigger
   //------------------------------------------------
-  if(AliPPVsMultUtils::IsINELgtZERO(fESD)) fHistNEvents->Fill(3);
+  if( AliPPVsMultUtils::IsMinimumBias( fESD ) ){
+    fHistNEvents->Fill(3);
+    //------------------------------------------------
+    //Step 2: Check for INEL>0
+    //------------------------------------------------
+    if( vtx->GetStatus()){
+      fHistNEvents->Fill(4);
+      if( AliPPVsMultUtils::IsAcceptedVertexPosition( fESD ) ){
+	fHistNEvents->Fill(5);
+	//------------------------------------------------
+	//Step 3: Check for Vertex-Z position
+	//------------------------------------------------
+	if( AliPPVsMultUtils::IsINELgtZERO( fESD ) ){
+	  fHistNEvents->Fill(6);
+	  //------------------------------------------------
+	  //Step 4: Check for SPD Pileup
+	  //------------------------------------------------
+	  if( AliPPVsMultUtils::IsNotPileupSPDInMultBins( fESD ) ){
+	    fHistNEvents->Fill(7);
+	    //------------------------------------------------
+	    //Step 5: Check for SPD / track vertex consistency
+	    //------------------------------------------------
+	    if( AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices( fESD ) ){
+	      fHistNEvents->Fill(8);
+	      
+	    }
+	  }
+	}
+      }
+    }
+  }
   
-  //------------------------------------------------
-  //Check for Vertex-Z position
-  //------------------------------------------------
-  if(AliPPVsMultUtils::IsAcceptedVertexPosition(fESD)) fHistNEvents->Fill(4);
-  
-  //------------------------------------------------
-  //Check for SPD Pileup
-  //------------------------------------------------
-  if(AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD)) fHistNEvents->Fill(5);
-  
-  //------------------------------------------------
-  //Check for SPD / track vertex consistency
-  //------------------------------------------------
-  if(AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)) fHistNEvents->Fill(6);
   
   xsparseMC[3]=2*evSel+sampSel;
   
@@ -1596,7 +1679,11 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   }//Loop on MC stack
   
   //event selection
-  if(evSel==0 && fFillTree==kFALSE)return;  
+  if(evSel==0 && fFillTree==kFALSE){
+    PostData(1,fOutput);
+    PostData(2,fListCuts);
+    return;  
+  }
   
   //loop on tracks
   for (Int_t iTrack=0; iTrack<fESD->GetNumberOfTracks(); iTrack++) {  
@@ -1626,7 +1713,7 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     fHistNTracks->Fill(kHasNoSelection);
     if(fTrkSign>0)fHistNTracksPos->Fill(kHasNoSelection);
     if(fTrkSign<0)fHistNTracksNeg->Fill(kHasNoSelection);
-        
+    
     status=track->GetStatus();
     if((status&AliESDtrack::kITSpureSA)==0) continue; //its standalone
     
@@ -1634,21 +1721,21 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     fHistNTracks->Fill(kIsITSsa);
     if(fTrkSign>0)fHistNTracksPos->Fill(kIsITSsa);
     if(fTrkSign<0)fHistNTracksNeg->Fill(kIsITSsa);
-        
+    
     if((status&AliESDtrack::kITSrefit)==0) continue; //its refit
     
     label="ITSrefit";
     fHistNTracks->Fill(kIsITSrefit);
     if(fTrkSign>0)fHistNTracksPos->Fill(kIsITSrefit);
     if(fTrkSign<0)fHistNTracksNeg->Fill(kIsITSrefit);
-        
+    
     if(TMath::Abs(track->GetSign())<0.0001) continue; //no neutral particles
     
     label="neutral particle";
     fHistNTracks->Fill(kIsNotNeutralParticle);
     if(fTrkSign>0)fHistNTracksPos->Fill(kIsNotNeutralParticle);
     if(fTrkSign<0)fHistNTracksNeg->Fill(kIsNotNeutralParticle);
-        
+    
     //cluster in ITS
     fClumap = track->GetITSClusterMap();
     Int_t nSPD=0;
@@ -1659,7 +1746,6 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
       fHistNTracks->Fill(kHasOneSPD);
       if(fTrkSign>0)fHistNTracksPos->Fill(kHasOneSPD);
       if(fTrkSign<0)fHistNTracksNeg->Fill(kHasOneSPD);
-      
     }
     
     if(nSPD == 2){
@@ -1683,7 +1769,7 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
       label="3 SDD+SSD cls";
       fHistNTracks->Fill(kHas3PIDcls);
       if(fTrkSign>0)fHistNTracksPos->Fill(kHas3PIDcls);
-      if(fTrkSign<0)fHistNTracksNeg->Fill(kHas3PIDcls);
+      if(fTrkSign<0)fHistNTracksNeg->Fill(kHas3PIDcls); 
     }
     else if(nPtsForPid == 4){
       label="4 SDD+SSD cls";
@@ -1741,6 +1827,16 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     }
     track->GetImpactParameters(fImpactXY, fImpactZ);
     xsparse[4]=fImpactXY;
+    
+    //DCAz Cut
+    //Because we fit the DCA distributions, we need them after the DCAz cut, otherwise the templates and distributions are modified by this cut (if it is done with the one of the DCAxy)
+    if(!DCAcutZ(fImpactZ,pt)) continue;
+    label="DCAz";   
+    
+    fHistNTracks->Fill(kPassDCAzcut);
+    if(fTrkSign>0)fHistNTracksPos->Fill(kPassDCAzcut);
+    if(fTrkSign<0)fHistNTracksNeg->Fill(kPassDCAzcut);
+    
     //DCA Templates
     //information from the MC kinematics
     if(fMC){
@@ -1938,6 +2034,8 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
       PostData(3,fTreeNSigma);
       if(fMC) PostData(4,fTreeMC);    
       
+      PostData(1,fOutput);
+      PostData(2,fListCuts);
       return;
     }
     
@@ -2007,8 +2105,8 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     if(minPosMean >-1)yPartMean =y[minPosMean];
     if(minPos >-1)yPart=y[minPos];
     
-    if(TMath::Abs(yPartMean)<fMaxY){     
-      //DCA distributions, before the DCA cuts, based on asymmetric nsigma approach
+
+    if(TMath::Abs(yPartMean)<fMaxY){//DCA distributions, before the DCAxy cut, based on asymmetric nsigma approach
       if(xsparse[1]>=0){
 	if(fTrkSign>0){//with THnSparse
 	  if(minPosMean==0){ 
@@ -2048,14 +2146,15 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
     /////////////////////
     //DCA cut on xy and z
     /////////////////////
-    if(!DCAcut(fImpactXY,fImpactZ,pt)){
+    if(!DCAcutXY(fImpactXY,pt)){
       //cout<<"DCA cut "<<endl;
       if(xsparse[0]>-999 && fUseThnSparse) fHistSparse->Fill(xsparse,1);
       continue;
     }
-    fHistNTracks->Fill(kPassDCAcut);
-    if(fTrkSign>0)fHistNTracksPos->Fill(kPassDCAcut);
-    if(fTrkSign<0)fHistNTracksNeg->Fill(kPassDCAcut);
+    
+    fHistNTracks->Fill(kPassDCAxycut);
+    if(fTrkSign>0)fHistNTracksPos->Fill(kPassDCAxycut);
+    if(fTrkSign<0)fHistNTracksNeg->Fill(kPassDCAxycut);
     
     //Information that the DCA cut has been passed
     if(xsparse[2]>0) xsparse[2] = xsparse[2]+1;
@@ -2265,7 +2364,7 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   PostData(1,fOutput);
   PostData(2,fListCuts);
   
-  //  Printf("............. end of Exec");
+  infomsg("End of UserExec");
 }      
 
 //________________________________________________________________________
@@ -2285,6 +2384,6 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::Terminate(Option_t *) {
     printf("ERROR: fHistNEvents not available\n");
   }
   
-  AliInfoF("end of %s","Terminate");
+  infomsg("End of Terminate");
   return;
 }
