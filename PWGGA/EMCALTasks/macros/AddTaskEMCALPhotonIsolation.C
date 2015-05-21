@@ -52,6 +52,7 @@ const Double_t edist = 440;
   TString period(periodstr);
    TString inputTracksAna = "FilterTracksAna";
    Double_t trackeff           = 1.0;
+  Bool_t doAODTrackProp=kTRUE;
   //   // tracks to be used in analysis
    if(dType == "ESD") {
 
@@ -88,93 +89,75 @@ const Double_t edist = 440;
     ///    delete DataSet;
     //  delete CutsType;
   }
-
-
-
-//   else if (dType=="AOD"){
-//     TString trackCutsAna(Form("Hybrid_%s", period.Data()));
-//     gROOT->LoadMacro("./AddTaskEmcalAodTrackFilter.C");
-
-//     AliEmcalAodTrackFilterTask *aodfilterAnaAna = new AliEmcalAodTrackFilterTask("AliEmcalAodTrackFilterTask");
-//     aodfilterAna->SetTracksOutName(inputTracks.Data());
-//   aodfilterAna->SetTracksInName("tracks");
-//   aodfilterAna->SetMC(isMC);
-
-//  Bool_t includeNoITS  = kFALSE;
-//   Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
-//   Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
-//   Bool_t isMC          = kFALSE;
-
-//   TString strTrackCuts(trackCutsAna);
-//    strTrackCuts.ToLower();
-
-
-//    TString runPeriod(period.Data());
-//   runPeriod.ToLower();
-
-//   if(strTrackCuts.Contains("hybrid")){
-//   if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" ||
-//       runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
-//       runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
-//       runPeriod == "lhc12f" || runPeriod == "lhc12g" || runPeriod == "lhc12h" ||
-//       runPeriod == "lhc12i" || runPeriod == "lhc13b" || runPeriod == "lhc13c" ||
-//       runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" ||
-//       runPeriod == "lhc13g"
-//       ) {
-//     aodfilterAna->SetAodfilterAnaBits(256,512); // hybrid tracks
-//     if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
-//       includeNoITS = kTRUE;
-//   } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
-// 	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b")
-// 	     ) {
-//     aodfilterAna->SetAodfilterAnaBits(256,512); // hybrid tracks
-//     isMC = kTRUE;
-//   } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
-//     aodfilterAna->SetAodfilterAnaBits(256,16); // hybrid tracks
-//     includeNoITS = kTRUE;
-//   }
-//   else if (runPeriod.Contains("lhc12a15a") || runPeriod == "lhc12a15f" || runPeriod == "lhc12a15g") {
-//     aodfilterAna->SetAodfilterAnaBits(256,16); // hybrid tracks
-//     isMC = kTRUE;
-//     includeNoITS = kTRUE;
-//   } 
-//  else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
-//   aodfilterAna->SetFilterBits(256,512);
-//   includeNoITS=kFALSE;
-//   }
-//   else {
-//     if (!runPeriod.IsNull())
-//       ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
-//   }
-//   }
-
-//   if(strTrackCuts.Contains("tpconly")){
-//   if (runPeriod.Contains("lh11c") || runPeriod.Contains("lhc11d")){
-//             aodfilterAna->SetAodfilterAnaBits(128);
-//             includeNoITS = kTRUE;
-
-//             }
-//   if(runPeriod.Contains("lhc13e4") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b") || runPeriod.Contains("lhc12a15g")){
-
-//                 aodfilterAna->SetAodfilterAnaBits(128);
-//                 isMC=kTRUE;
-//                 includeNoITS=kTRUE;
-//             }
-
-//   }
-//   aodfilterAna->SetIncludeNoITS(includeNoITS);
-//   aodfilterAna->SetAttemptProp(doAttemptProp);
-//   aodfilterAna->SetMC(isMC);
-//     if (doAODTrackProp) {
-//       aodfilterAna->SetDist(edist);
-//    aodfilterAna->SetAttemptPropMatch(kTRUE);
-//     }
-//      aodfilterAna->SetDoPropagation(kTRUE);
-//     aodfilterAna->SelectCollisionCandidates(pSel);
-//     aodfilterAna->SetTrackEfficiency(trackeff);
-
-
-//   }
+   else if (dType=="AOD"){
+     TString trackCutsAna(Form("Hybrid_%s", period.Data()));
+     
+     AliEmcalAodTrackFilterTask *aodfilterAnaAna = new AliEmcalAodTrackFilterTask("AliEmcalAodTrackFilterTask");
+     aodfilterAna->SetTracksOutName(inputTracks.Data());
+     aodfilterAna->SetTracksInName("tracks");
+     aodfilterAna->SetMC(isMC);
+     
+     Bool_t includeNoITS  = kFALSE;
+     Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
+     Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
+     
+     TString strTrackCuts(trackCutsAna);
+     strTrackCuts.ToLower();
+     
+     
+     TString runPeriod(period.Data());
+     runPeriod.ToLower();
+     
+     if(strTrackCuts.Contains("hybrid")){
+       if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" ||
+           runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
+           runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
+           runPeriod == "lhc12f" || runPeriod == "lhc12g" || runPeriod == "lhc12h" ||
+           runPeriod == "lhc12i" || runPeriod == "lhc13b" || runPeriod == "lhc13c" ||
+           runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" ||
+           runPeriod == "lhc13g"
+           ) {
+         aodfilterAna->SetAODfilterBits(256,512); // hybrid tracks
+         if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
+           includeNoITS = kTRUE;
+       } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
+                  runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b")
+                  ) {
+         aodfilterAna->SetAODfilterBits(256,512); // hybrid tracks
+       } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
+         aodfilterAna->SetAODfilterBits(256,16); // hybrid tracks
+         includeNoITS = kTRUE;
+       }
+       else if (runPeriod.Contains("lhc12a15a") || runPeriod == "lhc12a15f" || runPeriod == "lhc12a15g") {
+         aodfilterAna->SetAODfilterBits(256,16); // hybrid tracks
+         includeNoITS = kTRUE;
+       }
+       else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
+         aodfilterAna->SetAODFilterBits(256,512);
+         includeNoITS=kFALSE;
+       }
+       else {
+         if (!runPeriod.IsNull())
+           ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
+       }
+     }
+     
+     aodfilterAna->SetIncludeNoITS(includeNoITS);
+     aodfilterAna->SetAttemptProp(doAttemptProp);
+     if (doAODTrackProp) {
+       aodfilterAna->SetDist(edist);
+       aodfilterAna->SetAttemptPropMatch(kTRUE);
+     }
+     aodfilterAna->SetDoPropagation(kTRUE);
+     aodfilterAna->SelectCollisionCandidates(pSel);
+     aodfilterAna->SetTrackEfficiency(trackeff);
+     
+     manager->AddTask(aodfilterAna);
+     
+       // Create containers for input/output
+     AliAnalysisDataContainer *cinput1 = manager->GetCommonInputContainer();
+     manager->ConnectInput(aodfilterAna, 0,  cinput1 );
+   }
  TString emctracksAna = Form("EmcalTracks_%s",inputTracksAna.Data());
 
   printf("Creating container names for cluster analysis\n");
