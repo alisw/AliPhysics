@@ -71,6 +71,8 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
   , fWeights(NULL)
+  , fWeightshpt(NULL)
+  , fpTfunction(NULL)
   , fRandom(NULL)
   , fMcArray(NULL)
   , fTrackCuts(NULL)
@@ -137,6 +139,8 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
   , fWeights(NULL)
+  , fWeightshpt(NULL)
+  , fpTfunction(NULL)
   , fRandom(NULL)
   , fMcArray(NULL)
   , fTrackCuts(NULL)
@@ -270,7 +274,9 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 //     InitializeEffHistograms();
 //   }
   // all tasks must post data once for all outputs
-    if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights);
+    if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights,1);
+    if(fWeightshpt)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeightshpt,2);
+    if(fpTfunction)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fpTfunction,3);
     
   PostData(1, fOutput);
 }
@@ -361,8 +367,14 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
     if(fWeights){
-      Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
-      Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
+      if(t->Pt()<4.0){
+	Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
+	Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
+      }
+      else{
+	Int_t etabin  = fWeights->GetZaxis()->FindBin(t->Eta());
+	Weight = fWeightshpt->GetBinContent(MultBin,VZbin,etabin)*fpTfunction->Eval(t->Pt());
+      }
     }
 //     FillHistogram("TracksperRun",fRunFillValue);
     FillHistogram("trackUnselectedPt",t->Pt(),Weight);
@@ -734,7 +746,10 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(new TH1D("NAssociated","Number of Associated per event",200,-0.5,199.5));
   fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",200,-0.5,199.5));
   if(fWeights)fOutput->Add(fWeights);
-//   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
+  if(fWeightshpt)fOutput->Add(fWeightshpt);
+  if(fpTfunction)fOutput->Add(fpTfunction);
+
+  //   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
 //     fOutput->Add(new TH1D("clusterCount", "clusterCount", 1000,  0, 2000));
 //     fOutput->Add(new TH1D("clusterCountphos", "clusterCountphos", 1000,  0, 2000));
 //     fOutput->Add(new TH1D("clusterCountemcal", "clusterCountemcal", 1000,  0, 2000));

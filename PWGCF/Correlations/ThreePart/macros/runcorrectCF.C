@@ -21,6 +21,7 @@ void runcorrectCF(const char* options = "")
   bool checkmixed = false;
   bool periods=false;
   bool centralities=false;
+  bool CountRawNs = false;
   TString delimiter(" ");
   TStringToken token(options, delimiter);
   bool madeachoice = false;
@@ -256,9 +257,24 @@ void runcorrectCF(const char* options = "")
       cout << "Cleaning the directory for compiled objects and result files. You will have to rerun all commands."<<endl;
       continue;
     }    
+    key="Count";
+    if (argument.CompareTo(key)==0) {
+      checkmixed = false;
+      CountRawNs = true;
+      Draw = false;
+      collectMVbins =false;
+      correctforME = false;
+      makeyield    = false;
+      madeachoice = true;
+      option.Append("pp");
+      
+      cout << "Cleaning the directory for compiled objects and result files. You will have to rerun all commands."<<endl;
+      continue;
+    }    
+    
   }
   TString basedir=TString("/home/paulbatzing/alice/paul/ThreeParticle/correlation3p/");
-  if(collectMVbins||collectMVbinsfirst||correctforME||makeyield||result||correctforMEscan||checkmixed||periods||centralities) gROOT->LoadMacro(Form("%scorrectCF.cxx+g",basedir.Data()));
+  if(collectMVbins||collectMVbinsfirst||correctforME||makeyield||result||correctforMEscan||checkmixed||periods||centralities||CountRawNs) gROOT->LoadMacro(Form("%scorrectCF.cxx+g",basedir.Data()));
   if(Merge||Draw){	gROOT->LoadMacro(Form("%srunan.C",basedir.Data()));runan("compile");}
   if(Merge)		gROOT->LoadMacro(Form("%sMergeSet.C+g",basedir.Data()));
   if(Draw) 		gROOT->LoadMacro(Form("%sDrawThreeParticleCorrelations.C",basedir.Data()));
@@ -304,4 +320,6 @@ void runcorrectCF(const char* options = "")
   if(checkmixed)        Checkmixed(option);
   if(periods)		Periods();
   if(centralities)	Centralities();
+  if(CountRawNs)	CountRawNumbers();
+  
 }

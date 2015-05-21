@@ -200,13 +200,13 @@ class AliThreeParticleCorrelator : public TNamed {
   }
   
   /// Set the efficiency weights.
-  void SetWeights(TH3D* weights){
+  void SetWeights(TObject* weights, int type){
     for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
-      (*o)->SetWeight(weights);
+      (*o)->SetWeight(weights,type);
       //And for all ME workers.
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights);
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights);
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights);
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
     }
   }
     
@@ -361,8 +361,8 @@ class AliThreeParticleCorrelator : public TNamed {
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
 	  if (!((*i)->CheckAssociated(*assoc) && (*i)->CheckAssociated(*assoc2))) {continue;}//If either is not associated, do not fill.}
 	  if(*assoc==*assoc2||*assoc2 == (*i)->GetTrigger()) continue;//if associated are the samme or trigger is equal to the second associated.
-	  (*i)->Correlate(*assoc,*assoc2,NAssociated2);//Fill with the number of associated in the other list.
-	  (*i)->Correlate(*assoc2,*assoc,NAssociated1);//both need be considered
+	  (*i)->Correlate(*assoc,*assoc2,(NAssociated1-1)/NAssociated2);//Fill with the number of associated in the other list.
+	  (*i)->Correlate(*assoc2,*assoc,(NAssociated1-1)/NAssociated2);//both need be considered
 	}//loop over second associated
 	if ((*i)->CheckAssociated(*assoc))(*i)->Correlate(*assoc);//2p correlation
 	} // loop over first associated
