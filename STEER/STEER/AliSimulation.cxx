@@ -214,6 +214,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseVertexFromCDB(0),
   fUseMagFieldFromGRP(0),
   fGRPWriteLocation(Form("local://%s", gSystem->pwd())),
+  fUseDetectorsFromGRP(kTRUE),
   fUseTimeStampFromCDB(0),
   fTimeStart(0),
   fTimeEnd(0),
@@ -991,6 +992,12 @@ Bool_t AliSimulation::RunTrigger(const char* config, const char* detectors)
    if (!aCTP->LoadConfiguration( trconfiguration ))
      return kFALSE;
 
+   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+   if (fUseDetectorsFromGRP) {
+     AliInfo("Will run only for detectors seen in the GRP");
+     DeactivateDetectorsAbsentInGRP(detArray);
+   }
+
    // digits -> trigger
    if( !aCTP->RunTrigger( runLoader , detectors ) ) {
       if (fStopOnError) {
@@ -1073,9 +1080,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
   AliSysInfo::AddStamp("RunSimulation_Config");
 
-//
-// If requested obtain the vertex position and vertex sigma_z from the CDB
-// This overwrites the settings from the Config.C  
+  //
+  // If requested obtain the vertex position and vertex sigma_z from the CDB
+  // This overwrites the settings from the Config.C  
   if (fUseVertexFromCDB) {
       Double_t vtxPos[3] = {0., 0., 0.}; 
       Double_t vtxSig[3] = {0., 0., 0.};
@@ -1171,6 +1178,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // in the geometry loaded by AliGeomManager
   TString detsToBeChecked = "";
   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  //
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -1190,6 +1198,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 //     return kFALSE;
 //   }
 //   SetGAliceFile(runLoader->GetFileName());
+
 
   if (!gAlice->GetMCApp()->Generator()) {
     AliError(Form("gAlice has no generator object. "
@@ -1249,6 +1258,16 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   AliInfo("running gAlice");
   AliSysInfo::AddStamp("Start_ProcessRun");
+
+
+
+  if (fUseDetectorsFromGRP) {
+    TObjArray* detArr = runLoader->GetAliRun()->Detectors();
+    AliInfo("Will run only for detectors seen in the GRP");
+    DeactivateDetectorsAbsentInGRP(detArr);
+  }
+  //
+
 
   // Create the Root Tree with one branch per detector
   //Hits moved to begin event -> now we are crating separate tree for each event
@@ -1346,9 +1365,15 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
   
   AliRunLoader* runLoader = LoadRun();
   if (!runLoader) return kFALSE;
-
+  //
   TString detStr = detectors;
   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  //
+  if (fUseDetectorsFromGRP) {
+    AliInfo("Will run only for detectors seen in the GRP");
+    DeactivateDetectorsAbsentInGRP(detArray);  
+  }
+  //
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -1410,6 +1435,12 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   }
   AliRunLoader* runLoader = AliRunLoader::GetRunLoader(digInp.GetInputStream(0)->GetFolderName());
   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  //
+  if (fUseDetectorsFromGRP) {
+    AliInfo("Will run only for detectors seen in the GRP");
+    DeactivateDetectorsAbsentInGRP(detArray);  
+  }
+  //
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -1466,6 +1497,12 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 
   TString detStr = detectors;
   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  //
+  if (fUseDetectorsFromGRP) {
+    AliInfo("Will run only for detectors seen in the GRP");
+    DeactivateDetectorsAbsentInGRP(detArray);  
+  }
+  //
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -1606,6 +1643,12 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
     }
 
     TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+    //
+    if (fUseDetectorsFromGRP) {
+      AliInfo("Will run only for detectors seen in the GRP");
+      DeactivateDetectorsAbsentInGRP(detArray);  
+    }
+    //
     for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
       AliModule* det = (AliModule*) detArray->At(iDet);
       if (!det || !det->IsActive()) continue;
@@ -2048,6 +2091,10 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
     //
     // Get list of detectors
     TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+    if (fUseDetectorsFromGRP) {
+      AliInfo("Will run only for detectors seen in the GRP");
+      DeactivateDetectorsAbsentInGRP(detArray);  
+    }
     //
     // Get Header
     AliHeader* header = runLoader->GetHeader();
@@ -2596,4 +2643,23 @@ void AliSimulation::StoreUsedCDBMaps() const
 	       cdbListCopy->GetName(),
 	       fGAliceFileName.Data()));
   //
+}
+
+//_____________________________________________________________________________
+void AliSimulation::DeactivateDetectorsAbsentInGRP(TObjArray* detArr)
+{
+  // avoid simulating detectors not fount in GRP
+  AliGRPManager grpm;
+  grpm.ReadGRPEntry();
+  const AliGRPObject* grpData = grpm.GetGRPData();
+  Int_t activeDetectors = grpData->GetDetectorMask();
+  TString detStrGRP = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+  for (int idt=detArr->GetEntriesFast();idt--;) {
+    AliModule* det = (AliModule*)detArr->At(idt);
+    if (!det || !det->IsActive()) continue;
+    if (!detStrGRP.Contains(det->GetName())) {
+      AliInfoF("Detector %s is not in GRP, disabling",det->GetName());
+      det->SetActive(kFALSE);
+    }
+  }
 }
