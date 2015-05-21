@@ -11,13 +11,13 @@
 ///
 /// A macro to read and visualize EMCAL data in different formats with the help of
 /// the classes managing the EMCAL data visulization:
-/// * AliEveEMCALData, 
+/// * AliEveEMCALData,
 /// * AliEveEMCALSModule,
 /// * AliEveEMCALSModuleData.
-///  
-/// This macro: 
+///
+/// This macro:
 /// * can read hits, digits and clusters information from AliRunLoader:
-///     * emcal_data->LoadHits(); 
+///     * emcal_data->LoadHits();
 ///     * emcal_data->LoadDigits();
 ///     * emcal_data->LoadRecPoints();
 ///     * Same methods with the AliEMCALLoader implemented in the class AliEveEMCALData, (emcal_data->Load(DataType)FromEMCALLoader()) but it does not work.
@@ -74,7 +74,7 @@ class AliEveEMCALData;
 AliEveEMCALData * emcal_data = 0;
 
 void emcal_all
-(  
+(
  Bool_t iLoader    = 1,
  Bool_t iESD       = 0,
  Bool_t iHits      = 0,
@@ -82,169 +82,118 @@ void emcal_all
  Bool_t iClusters  = 0
  )
 {
-  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
     
+    //  printf("------------------------------------------------------------------------------------\n");
+    //  printf("emcal_all.C - Selected options: Loaders %d, ESDs %d; Hits %d, Digits %d, Clusters %d\n",iLoader,iESD,iHits,iDigits,iClusters);
+    //  printf("------------------------------------------------------------------------------------\n");
     
-  Int_t iLoader             = 1;
-  Int_t iESD                = 1;
-  Int_t iHits               = 0;
-  Int_t iDigits             = 0;
-  Int_t iClusters           = 0;
-
-  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
-  // runloader check already in AssertRunLoader function 
-  
-  AliESDEvent* esd = 0x0;
-  if(iESD) esd = AliEveEventManager::AssertESD();
-  // esd check already in AssertESD function 
-  
-  AliEMCALLoader *emcl = dynamic_cast<AliEMCALLoader*> (rl->GetDetectorLoader("EMCAL"));
-  
-  Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
-  if(evtID != (Int_t)evtNum) AliEveEventManager::GetMaster()->GotoEvent(evtNum);
-  
-  TTree* ht = 0x0; 
-  TTree* dt = 0x0; 
-  TTree* rt = 0x0;
-  if(iLoader)
-  {
-    rl   = AliEveEventManager::AssertRunLoader();
-    // runloader check already in AssertRunLoader function 
-
-    //   Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
-    //   rl->GetEvent(evtID);
-  }
-  
-  AliESDEvent* esd = 0x0;
-  if(iESD) esd = AliEveEventManager::AssertESD();
-  // esd check already in AssertESD function
-  //  gGeoManager = gEve->GetDefaultGeometry();
-  AliEveEventManager::AssertGeometry();
-  
-  TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
-
-  //TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
-  
-  //printf("*** nodes %d\n",node->GetNdaughters());
-  
-  //
-  // Initialize the EMCAL data manager
-  //
-  emcal_data = new AliEveEMCALData(rl,node);//,m);
-  
-  //printf("*** AliEveEMCALData %p\n",emcal_data);
-  
-  if(iESD) emcal_data->SetESD(esd);
-
-  //printf("*** AliEveEMCALData set ESD\n");
-
-  //
-  // Get the EMCAL information from RunLoader
-  //
-  if(iLoader)
-  {
-    //printf("*** Execute Loader methods \n");
-
-    if ( iHits    ) emcal_data->LoadHits(); 
-
-    if ( iDigits  ) emcal_data->LoadDigits();
-
-    if ( iClusters) emcal_data->LoadRecPoints();
-  }
-  
-  //
-  // Get the EMCAL information from ESDs
-  //
-  if(iESD)
-  {
-    //if(iLoader) rl ->GetEvent(evtNum);
-
-    //printf("*** Execute ESD methods \n");
-    
-    if(iDigits)   emcal_data->LoadDigitsFromESD();
-    
-    if(iClusters) emcal_data->LoadRecPointsFromESD();
-  }
-  
-  //printf("*** Data reading executed\n");
-
-  //
-  // EVE stuff
-  //
-  gStyle->SetPalette(1, 0);
-  
-  gEve->DisableRedraw();
-  
-  TEveElementList* l = new TEveElementList("EMCAL");
-  l->SetTitle("Tooltip");
-  l->SetMainColor(Color_t(2));
-  gEve->AddElement(l);
-<<<<<<< HEAD
-
-  for (Int_t sm=0; sm<20; sm++)
+    //
+    // Get the data mangers, AliRunLoader or AliESDEvent and geometry.
+    //
+    AliRunLoader   * rl   = 0x0;
+    if(iLoader)
     {
-      AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
-      //      esm->SetSModuleID(sm);
-      esm->SetDataSource(emcal_data);
-      esm->UpdateQuads();
-      l->AddElement(esm);
+        rl   = AliEveEventManager::AssertRunLoader();
+        // runloader check already in AssertRunLoader function
+        
+        //   Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
+        //   rl->GetEvent(evtID);
     }
-
-  
-  //printf("*** Loop SM data, push data \n");
-
-  //
-  // Pass the recovered EMCAL data per super-module to EVE
-  //
-  for (Int_t sm = 0; sm < node->GetNdaughters(); sm++)
-  {
-    AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"EveEMCAL");
-    // When/where is this created object cleaned?
     
-    esm->SetDataSource(emcal_data);
+    AliESDEvent* esd = 0x0;
+    if(iESD) esd = AliEveEventManager::AssertESD();
+    // esd check already in AssertESD function
     
-    esm->UpdateQuads(iHits, iDigits, iClusters);
+    //  gGeoManager = gEve->GetDefaultGeometry();
+    AliEveEventManager::AssertGeometry();
     
-    //l->AddElement(esm); // comment, it crashes, replace by:
+    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
+    //TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
     
-    if ( iDigits   ) gEve->AddElement(esm->GetDigitQuadSet()  , l);
+    //printf("*** nodes %d\n",node->GetNdaughters());
     
-    if ( iClusters ) gEve->AddElement(esm->GetClusterQuadSet(), l);
+    //
+    // Initialize the EMCAL data manager
+    //
+    emcal_data = new AliEveEMCALData(rl,node);//,m);
     
-    if ( iHits )     gEve->AddElement(esm->GetHitPointSet()   , l);
+    //printf("*** AliEveEMCALData %p\n",emcal_data);
     
-    esm->DropData(); // Not sure it is needed, it works locally with it, but better clean the arrays.    
-  }
-
-  for (Int_t sm=0; sm<20; sm++)
+    if(iESD) emcal_data->SetESD(esd);
+    
+    //printf("*** AliEveEMCALData set ESD\n");
+    
+    //
+    // Get the EMCAL information from RunLoader
+    //
+    if(iLoader)
     {
-      AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
-      //      esm->SetSModuleID(sm);
-      esm->SetDataSource(emcal_data);
-      esm->UpdateQuads();
-      l->AddElement(esm);
+        //printf("*** Execute Loader methods \n");
+        
+        if ( iHits    ) emcal_data->LoadHits();
+        
+        if ( iDigits  ) emcal_data->LoadDigits();
+        
+        if ( iClusters) emcal_data->LoadRecPoints();
     }
-  
-  for (Int_t sm = 0; sm < 20; sm++)
-  {
-    AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
-    //      esm->SetSModuleID(sm);
-    esm->SetDataSource(emcal_data);
-    esm->UpdateQuads();
-    l->AddElement(esm);
-  }
-  
-
-  for (Int_t sm=0; sm<20; sm++)
+    
+    //
+    // Get the EMCAL information from ESDs
+    //
+    if(iESD)
     {
-      AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
-      //      esm->SetSModuleID(sm);
-      esm->SetDataSource(emcal_data);
-      esm->UpdateQuads();
-      l->AddElement(esm);
+        //if(iLoader) rl ->GetEvent(evtNum);
+        
+        //printf("*** Execute ESD methods \n");
+        
+        if(iDigits)   emcal_data->LoadDigitsFromESD();
+        
+        if(iClusters) emcal_data->LoadRecPointsFromESD();
     }
-
-  gEve->Redraw3D(kTRUE);
-  
-  gEve->EnableRedraw();
+    
+    //printf("*** Data reading executed\n");
+    
+    //
+    // EVE stuff
+    //
+    gStyle->SetPalette(1, 0);
+    
+    gEve->DisableRedraw();
+    
+    TEveElementList* l = new TEveElementList("EMCAL");
+    l->SetTitle("Tooltip");
+    l->SetMainColor(Color_t(2));
+    gEve->AddElement(l);
+    
+    //printf("*** Loop SM data, push data \n");
+    
+    //
+    // Pass the recovered EMCAL data per super-module to EVE
+    //
+    for (Int_t sm = 0; sm < node->GetNdaughters(); sm++)
+    {
+        AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"EveEMCAL");
+        // When/where is this created object cleaned?
+        
+        esm->SetDataSource(emcal_data);
+        
+        esm->UpdateQuads(iHits, iDigits, iClusters);
+        
+        //l->AddElement(esm); // comment, it crashes, replace by:
+        
+        if ( iDigits   ) gEve->AddElement(esm->GetDigitQuadSet()  , l);
+        
+        if ( iClusters ) gEve->AddElement(esm->GetClusterQuadSet(), l);
+        
+        if ( iHits )     gEve->AddElement(esm->GetHitPointSet()   , l);
+        
+        esm->DropData(); // Not sure it is needed, it works locally with it, but better clean the arrays.    
+    }
+    
+    //
+    // Draw
+    //
+    gEve->Redraw3D(kTRUE);
+    
+    gEve->EnableRedraw();
 }
