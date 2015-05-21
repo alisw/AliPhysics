@@ -58,6 +58,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
 						Int_t *absIdList,     Float_t *maxEList);
   Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
+  AliVCaloCells          *GetVCaloCells();
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
@@ -98,6 +99,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TClonesArray          *fAODMCParticles;        //!MC particles array for AOD analysis
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
+  AliVCaloCells         *fVCells;                //!pointer to EMCal virtual cells
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
   AliESDtrackCuts       *fCompTrCuts;            //pointer to hold complementary track cuts (a la Gustavo)
   AliEMCALGeometry      *fGeom;                  // geometry utils
