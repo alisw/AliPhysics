@@ -361,6 +361,15 @@ void AliTPCcalibDB::Update(){
   //
   fRun = AliCDBManager::Instance()->GetRun();
   
+  entry          = GetCDBEntry("TPC/Calib/Parameters");
+  if (entry){
+    //if (fPadNoise) delete fPadNoise;
+    entry->SetOwner(kTRUE);
+    fParam = (AliTPCParam*)(entry->GetObject());
+  }else{
+    AliFatal("TPC - Missing calibration entry TPC/Calib/Parameters");
+  }
+
   //
   // check the presence of the detectors
   try {
@@ -454,15 +463,7 @@ void AliTPCcalibDB::Update(){
     fTemperature = (AliTPCSensorTempArray*)entry->GetObject();
   }
 
-  entry          = GetCDBEntry("TPC/Calib/Parameters");
-  if (entry){
-    //if (fPadNoise) delete fPadNoise;
-    entry->SetOwner(kTRUE);
-    fParam = (AliTPCParam*)(entry->GetObject());
-  }else{
-    AliFatal("TPC - Missing calibration entry TPC/Calib/Parameters");
-  }
-
+ 
   entry          = GetCDBEntry("TPC/Calib/ClusterParam");
   if (entry){
     entry->SetOwner(kTRUE);
