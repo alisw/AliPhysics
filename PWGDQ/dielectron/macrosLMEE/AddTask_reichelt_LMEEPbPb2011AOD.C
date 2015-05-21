@@ -5,7 +5,7 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_reichelt_LMEEPbPb2011", "No analysis manager found.");
+    Error("AddTaskLMEEPbPb2011AOD", "No analysis manager found.");
     return 0;
   }
   
@@ -57,9 +57,7 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1));
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-	
-  task->SetRandomizeDaughters(kFALSE);//default kFALSE
-//  task->SetRandomizeDaughters(kTRUE);
+  task->SetRandomizeDaughters(randomizeDau);//default kFALSE
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file

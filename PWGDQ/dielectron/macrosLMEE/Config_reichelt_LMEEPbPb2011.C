@@ -1,6 +1,3 @@
-//#include "AliDielectron.h"
-//#include "PWGDQ/dielectron/macrosLMEE/LMEECutLib.C"
-
 void      InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void      InitCF(AliDielectron* die, Int_t cutDefinition);
 TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
@@ -8,19 +5,25 @@ TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kPhi2D, kY3D, kSigmaEle, kSigmaOther, kTPCdEdx};
 
 
-//TString names=("ITSTPCTOFif_trkSPDfirst_1_PrefAllm50t80;ITSTPCTOFif_trkSPDorSDD_1_PrefAllm10t30");
-TString names=("ITSTPCTOFif_trkSPDfirst_1");
+TString names=("ITSTPCTOFif_trkSPDfirst_1_PrefAllm40t80;ITSTPCTOFif_trkSPDfirst_1_PrefAllp236m40");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
-Bool_t MCenabled=kFALSE;//needed for LMEEcutlib
-Bool_t isQAtask=kFALSE;//needed for InitHistograms() and GetVector()
-Bool_t doRejectionStep=kFALSE;//needed for InitHistograms()
-// _____ for Random Rejection task
-Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms()
-const UInt_t nRndmPt=5;//needed for AddTask_reichelt_RandomRejection
+Bool_t MCenabled=kFALSE; //dont change!!!
+Bool_t isQAtask=kFALSE;//needed for InitHistograms() and GetVector() //dont change!!!
+Bool_t doRejectionStep=kFALSE;//needed for InitHistograms() //dont change!!!
+Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
+//
+// _____ for Random Rejection task (AddTask_reichelt_RandomRejection.C)
+//TF1    PtFunc = TF1("MyPtFunc", "exp(-x/3.)", 0.4, 3.5); // not working
+const TString  RndmPtExpr="exp(-x/3.)";
+const Double_t RndmPtMin=0.4;
+const Double_t RndmPtMax=3.5;
+const Double_t RndmEtaMax=0.9;
+const UInt_t nRndmPt=12;
 const UInt_t nRndmEta=5;
 const UInt_t nRndmPhi=8;
 // _____
+const Bool_t randomizeDau=kFALSE;
 
 AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t isRandomRej=kFALSE)
 {
@@ -52,20 +55,20 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kF
     //prefilter settings:
     LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
     LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee50_theta80;
+    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
     die->SetPreFilterAllSigns();   doRejectionStep=kTRUE; // will be deactivated in 'AliAnalysisTaskRandomRejection.cxx'
   }
-//  else if (cutDefinition==1) {
-//    LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
-//    LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_1;
-//    LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_1;
-//    LMcutlib->SetEtaCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
-//    //prefilter settings:
-//    LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_1;
-//    LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_1;
-//    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee10_theta30;
-//    die->SetPreFilterAllSigns();   doRejectionStep=kTRUE;
-//  }
+  else if (cutDefinition==1) {
+    LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
+    LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+    LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+    LMcutlib->SetEtaCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    //prefilter settings:
+    LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+    LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_phiv236_mee40;
+    die->SetPreFilterAllSigns();   doRejectionStep=kTRUE;
+  }
   else {
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
