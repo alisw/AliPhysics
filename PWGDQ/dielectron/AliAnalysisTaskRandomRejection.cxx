@@ -46,6 +46,9 @@ ClassImp(AliAnalysisTaskRandomRejection)
 AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection() :
   AliAnalysisTaskMultiDielectron(),
   fPtFunc(0x0),
+  fPtExpr("exp(-x/3.)"),
+  fRndmPtMin(0.2),
+  fRndmPtMax(10.),
   fRndmEtaMax(0.9),
   fNRndmPt(8),
   fNRndmEta(8),
@@ -61,6 +64,9 @@ AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection() :
 AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection(const char *name) :
   AliAnalysisTaskMultiDielectron(name),
   fPtFunc(0x0),
+  fPtExpr("exp(-x/3.)"),
+  fRndmPtMin(0.2),
+  fRndmPtMax(10.),
   fRndmEtaMax(0.9),
   fNRndmPt(8),
   fNRndmEta(8),
@@ -263,6 +269,7 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
 
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
   AliDielectronPair::SetBeamEnergy(InputEvent(), fBeamEnergy);
+  AliDielectronPair::SetRandomizeDaughters(fRandomizeDaughters);
   
   //Process event in all AliDielectron instances
   //   TIter nextDie(&fListDielectron);
@@ -273,7 +280,7 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
     ///
     /// _____ modification/extension compared to AliAnalysisTaskMultiDielectron _____
     ///
-    AliInfo(Form(" **************** start of modified code! die #%d **************************", idie));
+    //AliInfo(Form(" **************** start of modified code! die #%d ****************", idie));
     
     if (die->GetPairPreFilter().GetCuts()->GetEntries()<1) {
       AliInfo(Form(" die #%d : no pair prefilter found, skip any calculation. (task should be deactivated on a higher level...)", idie));
@@ -329,10 +336,10 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
 void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
 {
   ///
-  /// Random pairing for prefilter efficiency
+  /// Random pairing for prefilter efficiency.
   /// much inspired by void AliDielectron::PairPreFilter(...)
   ///
-  printf("CalcRandomPairs() \n");
+  //printf("CalcRandomPairs() \n");
   
   UInt_t selectedMask=(1<<die->GetPairPreFilter().GetCuts()->GetEntries())-1;
   AliDielectronPair candidate;
@@ -438,16 +445,17 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
 void AliAnalysisTaskRandomRejection::FillHistogramsRandomPairs(AliDielectron* die, AliDielectronPair* pair, Bool_t wasRejected)
 {
   ///
-  /// Fill histograms from random pairing
+  /// Fill histograms from random pairing, mainly for curiosity and to double-check cuts.
+  /// The histogram classes "Rand_Pair" and "Rand_RejPair" must be available.
   ///
   //printf("FillHistogramsRandomPairs( wasRejected = %s ) \n", wasRejected?"kTRUE":"kFALSE");
   
-  AliVParticle *d1=pair->GetFirstDaughterP();
-  AliVParticle *d2=pair->GetSecondDaughterP();
-  if (!d1 || !d2) {
-    printf(" Error: FillHistogramsRandomPairs(): one daughter is not available! return. \n");
-    return;
-  }
+//  AliVParticle *d1=pair->GetFirstDaughterP();
+//  AliVParticle *d2=pair->GetSecondDaughterP();
+//  if (!d1 || !d2) {
+//    AliFatal(" Error: one daughter is not available! return. \n");
+//    return;
+//  }
 //  Bool_t d1_IsDataEle = ((AliAODTrack*)d1)->GetDetPid()?kTRUE:kFALSE;
 //  Bool_t d2_IsDataEle = ((AliAODTrack*)d2)->GetDetPid()?kTRUE:kFALSE;
   
@@ -470,6 +478,12 @@ void AliAnalysisTaskRandomRejection::FillHistogramsRandomPairs(AliDielectron* di
 //_________________________________________________________________________________
 void AliAnalysisTaskRandomRejection::FillHistogramsTestpart(AliDielectron* die, TObjArray* arrTracks1, Bool_t* bTracks1)
 {
+  ///
+  /// Fill histograms of testparticles.
+  /// The histogram classes "Random_Testpart" and "Random_RejTestpart" must be available.
+  /// The ratio RejTestpart/Testpart (e.g. in dimensions eta, phi, pt) represents the random rejection probability
+  /// of final analysis electrons, which has to be applied track-by-track to the efficiency correction.
+  ///
   AliDielectronHistos *h=die->GetHistoManager();
   if (h) {
     if (h->GetHistogramList()->FindObject("Random_Testpart")) {
@@ -493,6 +507,9 @@ void AliAnalysisTaskRandomRejection::FillHistogramsTestpart(AliDielectron* die, 
 //_________________________________________________________________________________
 void AliAnalysisTaskRandomRejection::FillHistogramsDataEle(AliDielectron* die, TObjArray* arrTracks1, Bool_t* bTracks1)
 {
+  ///
+  /// Fill histograms of prefilter electron sample, mainly for curiosity and to double-check cuts.
+  ///
   AliDielectronHistos *h=die->GetHistoManager();
   if (h) {
     if (h->GetHistogramList()->FindObject("Random_DataEle")) {
@@ -519,8 +536,8 @@ void AliAnalysisTaskRandomRejection::InitTestparticles()
   ///
   /// Initialize array of Testparticles for random pairing.
   /// Since they probe the rejection of final analysis electrons, they should cover the corresponding kinematic region.
-  /// (Could extract pt and eta ranges from trackcuts, but they may vary between the attached Dielectron objects, so it's a bit tricky.
-  ///  Instead, use SetPtFunc(TF1* func) and SetEtaMax(Double_t val) in your AddTask. )
+  /// pt and eta ranges could be extracted from trackcuts, but they may vary between the attached Dielectron objects, so it's a bit tricky.
+  /// Instead, please use SetPtFunc(TF1* func) and SetEtaMax(Double_t val) in your AddTask if the defaults don't fit you.
   /// The number of testparticles per event is 'fNRndmPt*fNRndmEta*fNRndmPhi'. Modify with SetNPtEtaPhi(UInt_t npt, UInt_t neta, UInt_t nphi).
   ///
   //printf("InitTestparticles() \n");
@@ -538,7 +555,12 @@ void AliAnalysisTaskRandomRejection::InitTestparticles()
   //gRandom = &rnd; // doesnt work somehow [ produces crash in unrelated place. seems to mess up 'rnd' as well. ]
   gRandom->SetSeed(0); // gRandom is used by fPtFunc->GetRandom();
   
-  if (!fPtFunc) fPtFunc = new TF1("fPtFunc", "exp(-x/3.)", 0.2, 10.);
+  if (!fPtFunc) fPtFunc = new TF1("fPtFunc", fPtExpr.Data(), fRndmPtMin, fRndmPtMax);
+  if (!fPtFunc) {
+    AliFatal(Form("could not create function for random pt-distribution with expression: \"%s\", range: %f - %f GeV/c. Using default...\n", fPtExpr.Data(), fRndmPtMin, fRndmPtMax));
+    fPtFunc = new TF1("fPtFunc", "exp(-x/3.)", 0.2, 10.);
+  }
+  AliInfo(Form("function used for random pt-distribution:  %s, %s, %f - %f GeV/c \n", fPtFunc->GetName(), fPtFunc->GetTitle(), fPtFunc->GetXmin(), fPtFunc->GetXmax()));
   
   for (int ipt=0; ipt<fNRndmPt; ++ipt) {
     //pt = fPtFunc->GetRandom(); // better to sample pt also more often.
@@ -575,7 +597,8 @@ void AliAnalysisTaskRandomRejection::InitTestparticles()
 void AliAnalysisTaskRandomRejection::FillFinalTrackArrays(AliVEvent * const ev, AliDielectron* die)
 {
   ///
-  /// Presence of final analysis electrons is needed to determine if random rejection needs to be tested in this event.
+  /// Fill track arrays of final analysis electrons.
+  /// Their presence is needed to determine if random rejection needs to be tested in this event.
   /// (taken from void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr))
   ///
   //printf("FillFinalTrackArrays() \n");

@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="reichelt_ElectronEfficiency.root", 
+AliAnalysisTask *AddTask_reichelt_ElectronEfficiency_1050(Char_t* outputFileName="reichelt_ElectronEfficiency_1050.root", 
                                                      Bool_t getFromAlien=kFALSE,
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
                                                      Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
@@ -9,7 +9,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_reichelt_ElectronEfficiency", "No analysis manager found.");
+    Error("AddTask_reichelt_ElectronEfficiency_1050", "No analysis manager found.");
     return 0;
   }
   
@@ -21,13 +21,13 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_ElectronEfficiency.C ."))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_ElectronEfficiency_1050.C ."))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
   
-  TString configFile("Config_reichelt_ElectronEfficiency.C");
+  TString configFile("Config_reichelt_ElectronEfficiency_1050.C");
   TString configFilePath(configBasePath+configFile);
   if (gSystem->Exec(Form("ls %s", configFilePath.Data()))==0) {
     std::cout << "loading config: " << configFilePath.Data() << std::endl;
@@ -53,10 +53,10 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-    ::Info("AddTaskElectronEfficiency","running on AODs.");
+    ::Info("AddTaskElectronEfficiency_1050","running on AODs.");
   }
   else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-    ::Info("AddTaskElectronEfficiency","switching on ESD specific code, make sure ESD cuts are used.");
+    ::Info("AddTaskElectronEfficiency_1050","switching on ESD specific code, make sure ESD cuts are used.");
     bESDANA=kTRUE;
   }
   
@@ -65,7 +65,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   std::cout << "hasMC = " << hasMC << std::endl;
 
   // Electron efficiency task
-  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("reichelt_ElectronEfficiency");
+  AliAnalysisTaskElectronEfficiency_1050 *task = new AliAnalysisTaskElectronEfficiency_1050("reichelt_ElectronEfficiency_1050");
   std::cout << "task created: " << task->GetName() << std::endl;
   //event related
   // Note: event cuts are identical for all analysis 'cutInstance's that run together!
@@ -78,7 +78,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   task->SelectCollisionCandidates(collCands); // didnt check its meaning and effect...!
   //---
   task->SetEventFilter(SetupEventCuts(bESDANA)); //returns eventCuts from Config.
-  task->SetCentralityRange(CentMin, CentMax);
+  task->SetCentralityRange(10., 50.);
   task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
   task->SetCheckV0daughterElectron(checkV0dauEle);

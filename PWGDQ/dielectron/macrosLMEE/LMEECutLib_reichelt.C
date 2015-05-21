@@ -19,12 +19,14 @@ public:
     kPairCut_mee20_theta20, // not yet done (maybe for prefilter with SPD+SDD or as default PairCut for final pairs)
 	  kPairCut_mee20_theta50,
     kPairCut_mee30_theta60,
-    kPairCut_mee50_theta80,
+    kPairCut_mee40_theta80,
     kPairCut_mee60_theta100,
     kPairCut_phiv157_mee40,
+    kPairCut_phiv157_mee60,
     kPairCut_phiv157_mee80,
     kPairCut_phiv157_mee100,
     kPairCut_phiv236_mee40,
+    kPairCut_phiv236_mee60,
     kPairCut_phiv236_mee80,
     kPairCut_phiv236_mee100,
 		kPairCut_OFF
@@ -374,69 +376,79 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre()  {
   switch (selectedPairCutsPre) {
       
       // Mee and opening angle
-case kPairCut_mee10_theta30:
+    case kPairCut_mee10_theta30:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.01);
       pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.03);
       pairCuts = pairVarCuts;
       break;
-case kPairCut_mee20_theta20:
+    case kPairCut_mee20_theta20:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.02);
       pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.02);
       pairCuts = pairVarCuts;
       break;
-case kPairCut_mee20_theta50:
+    case kPairCut_mee20_theta50:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.02);
       pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.05);
       pairCuts = pairVarCuts;
       break;
-case kPairCut_mee30_theta60:
+    case kPairCut_mee30_theta60:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.03);
       pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.06);
       pairCuts = pairVarCuts;
       break;
-case kPairCut_mee50_theta80:
-      pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05);
+    case kPairCut_mee40_theta80:
+      pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.04);
       pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.08);
       pairCuts = pairVarCuts;
       break;
-case kPairCut_mee60_theta100:
+    case kPairCut_mee60_theta100:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.06);
       pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.10);
       pairCuts = pairVarCuts;
       break;
       
       // Mee and phiv
-case kPairCut_phiv157_mee40:
+    case kPairCut_phiv157_mee40:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.04);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.5*TMath::Pi(), 3.2); 
       pairCuts = pairVarCuts;
       break;
-case kPairCut_phiv157_mee80:
+    case kPairCut_phiv157_mee60:
+      pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.06);
+      pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.5*TMath::Pi(), 3.2); 
+      pairCuts = pairVarCuts;
+      break;
+    case kPairCut_phiv157_mee80:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.08);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.5*TMath::Pi(), 3.2); 
       pairCuts = pairVarCuts;
       break;
-case kPairCut_phiv157_mee100:
+    case kPairCut_phiv157_mee100:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.10);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.5*TMath::Pi(), 3.2); 
       pairCuts = pairVarCuts;
       break;
-case kPairCut_phiv236_mee40:
+    case kPairCut_phiv236_mee40:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.04);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.75*TMath::Pi(), 3.2); 
       pairCuts = pairVarCuts;
       break;
-case kPairCut_phiv236_mee80:
+    case kPairCut_phiv236_mee60:
+      pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.06);
+      pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.75*TMath::Pi(), 3.2); 
+      pairCuts = pairVarCuts;
+      break;
+    case kPairCut_phiv236_mee80:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.08);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.75*TMath::Pi(), 3.2); 
       pairCuts = pairVarCuts;
       break;
-case kPairCut_phiv236_mee100:
+    case kPairCut_phiv236_mee100:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.10);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.75*TMath::Pi(), 3.2); 
       pairCuts = pairVarCuts;
       break;
-    
+      
     case kPairCut_OFF:
     default: cout << "No Prefilter Pair Cuts defined " << endl;
   } 

@@ -1,11 +1,11 @@
-AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEoutput.root", 
+AliAnalysisTask *AddTask_reichelt_RandomRejection_nr2(Char_t* outputFileName="LMEEoutput.root", 
  Bool_t flag1=kFALSE, Bool_t configsPreloaded=kFALSE, Bool_t getFromAlien=kFALSE, 
  Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral), Int_t collCands=AliVEvent::kAny) 
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_reichelt_RandomRejection", "No analysis manager found.");
+    Error("AddTask_reichelt_RandomRejection_nr2", "No analysis manager found.");
     return 0;
   }
   
@@ -14,17 +14,17 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   // typical Aliroot environment:
   if (trainRoot.IsNull()) configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  ::Info("AddTask_reichelt_RandomRejection",Form("configBasePath.Data(): %s\n",configBasePath.Data()));
+  ::Info("AddTask_reichelt_RandomRejection_nr2",Form("configBasePath.Data(): %s\n",configBasePath.Data()));
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011.C ."))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011_nr2.C ."))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
   
-  TString configFile("Config_reichelt_LMEEPbPb2011.C");
+  TString configFile("Config_reichelt_LMEEPbPb2011_nr2.C");
   TString configLMEECutLib("LMEECutLib_reichelt.C");
   
   TString configFilePath(configBasePath+configFile);
@@ -32,10 +32,10 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-    ::Info("AddTask_reichelt_RandomRejection","running on AODs.");
+    ::Info("AddTask_reichelt_RandomRejection_nr2","running on AODs.");
   }
   else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-    ::Info("AddTask_reichelt_RandomRejection","switching on ESD specific code, make sure ESD cuts are used.");
+    ::Info("AddTask_reichelt_RandomRejection_nr2","switching on ESD specific code, make sure ESD cuts are used.");
     bESDANA=kTRUE;
   }
   
@@ -52,7 +52,7 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   }
   
   LMEECutLib* cutlib = new LMEECutLib();
-  AliAnalysisTaskRandomRejection *task=new AliAnalysisTaskRandomRejection("MultiDiE_RandomRejection");
+  AliAnalysisTaskRandomRejection *task=new AliAnalysisTaskRandomRejection("MultiDiE_RandomRejection_nr2");
   if (!hasMC) task->UsePhysicsSelection();
   task->SelectCollisionCandidates(collCands);
   task->SetTriggerMask(triggerNames);
@@ -70,7 +70,7 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011(i, hasMC, bESDANA, kTRUE); //kTRUE -> "isRandomRejTask"
+    AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011_nr2(i, hasMC, bESDANA, kTRUE); //kTRUE -> "isRandomRejTask"
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
@@ -80,25 +80,25 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   
   //create output container
   AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("reichelt_RandomRejection_tree",
+	mgr->CreateContainer("reichelt_RandomRejection_tree_nr2",
                        TTree::Class(),
                        AliAnalysisManager::kExchangeContainer,
                        outputFileName);
   
   AliAnalysisDataContainer *cOutputHist1 =
-	mgr->CreateContainer("reichelt_RandomRejection_out",
+	mgr->CreateContainer("reichelt_RandomRejection_out_nr2",
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        outputFileName);
   
   AliAnalysisDataContainer *cOutputHist2 =
-	mgr->CreateContainer("reichelt_RandomRejection_CF",
+	mgr->CreateContainer("reichelt_RandomRejection_CF_nr2",
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        outputFileName);
   
   AliAnalysisDataContainer *cOutputHist3 =
-	mgr->CreateContainer("reichelt_RandomRejection_EventStat",
+	mgr->CreateContainer("reichelt_RandomRejection_EventStat_nr2",
                        TH1D::Class(),
                        AliAnalysisManager::kOutputContainer,
                        outputFileName);
