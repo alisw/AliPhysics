@@ -56,6 +56,14 @@ AliPHOSGeometry  * fGeomPH  = 0;
 AliESDCaloCells  * fCellsEM = 0;
 AliESDCaloCells  * fCellsPH = 0;
 
+Bool_t fMatrixEMSet = kFALSE;
+Bool_t fMatrixPHSet = kFALSE;
+
+TH2F* fHistoEM  = 0;
+TH2F* fHistoPH  = 0;
+TH2F* fHistoneg = 0;
+TH2F* fHistopos = 0;
+
 TEveCaloDataHist* emcal_esdclustercellsV1()
 { 
   
@@ -70,32 +78,69 @@ TEveCaloDataHist* emcal_esdclustercellsV1()
   //
   if(!fGeomEM) 
     fGeomEM  = AliEMCALGeometry::GetInstance();  
+  
   if (!fGeomEM) 
   {
     printf("xxx Set EMCal default geo as Run2 xxx\n");
     fGeomEM  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   }
   
+  // Set the geometry alignment matrices from the ones stored in the data.
+  if(!fMatrixEMSet)
+  {
+    printf("LOAD EMCAL MATRICES\n");
+    
+    for(Int_t mod = 0; mod < (fGeomEM->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+    { 
+      printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
+      
+      if( esd->GetEMCALMatrix(mod) ) 
+        fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+      else // set default identity matrix
+        fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
+    }// loop over super modules	     
+    
+    fMatrixEMSet = kTRUE;
+  }
+  
   // Get the PHOS geometry
   //
   if(!fGeomPH)
     fGeomPH  = AliPHOSGeometry::GetInstance();  
+  
   if (!fGeomPH) 
   {
     printf("xxx Set PHOS default geo as Run2 xxx\n");
     fGeomPH  = AliPHOSGeometry::GetInstance("Run2");
   }
-
+  
+  if(!fMatrixPHSet)
+  {
+    for(Int_t mod = 0; mod < 5; mod++)
+    { 
+      printf("Load PHOS ESD matrix %d, %p\n",mod,esd->GetPHOSMatrix(mod));
+      if(esd->GetPHOSMatrix(mod)) 
+        fGeomPH->SetMisalMatrix(esd->GetPHOSMatrix(mod),mod) ;
+      else // set default identity matrix
+        fGeomPH->SetMisalMatrix((new TGeoHMatrix),mod) ;
+    }// loop over modules	
+    
+    fMatrixPHSet = kTRUE;
+  }
+  
   // Creating 2D histograms
   
-  TH2F *histoEM  = new TH2F("histoEMcell","EMCal Cell #eta vs #phi vs E",
-                            100,-1.5,1.5,80,-pi,pi);
-  TH2F *histoPH  = new TH2F("histoPHcell","PHOS Cell #eta vs #phi vs E",
-                            100,-1.5,1.5,80,-pi,pi);
-  TH2F *histopos = new TH2F("histopos_t","Histo 2d positive",
-                            100,-1.5,1.5,80,-pi,pi);
-  TH2F *histoneg = new TH2F("histoneg_t","Histo 2d negative",
-                            100,-1.5,1.5,80,-pi,pi);
+  if(!fHistoEM)
+  {
+    fHistoEM  = new TH2F("histoEMcell","EMCal Cell #eta vs #phi vs E",
+                              100,-1.5,1.5,80,-pi,pi);
+    fHistoPH  = new TH2F("histoPHcell","PHOS Cell #eta vs #phi vs E",
+                              100,-1.5,1.5,80,-pi,pi);
+    fHistopos = new TH2F("histopos_t","Histo 2d positive",
+                              100,-1.5,1.5,80,-pi,pi);
+    fHistoneg = new TH2F("histoneg_t","Histo 2d negative",
+                              100,-1.5,1.5,80,-pi,pi);
+  }
   
   // Getting current tracks for each event, filling histograms 
   //for ( int event = 0; event < t->GetEntries(); event++ ) 
@@ -113,15 +158,15 @@ TEveCaloDataHist* emcal_esdclustercellsV1()
   {    
     if ( esd->GetTrack(n)->GetSign() > 0 )
     {
-      histopos->Fill(esd->GetTrack(n)->Eta(),
-                     GetPhi(esd->GetTrack(n)->Phi()),
-                     fabs(esd->GetTrack(n)->Pt()));
+      fHistopos->Fill(esd->GetTrack(n)->Eta(),
+                      GetPhi(esd->GetTrack(n)->Phi()),
+                      fabs(esd->GetTrack(n)->Pt()));
     } 
     else 
     {
-      histoneg->Fill(esd->GetTrack(n)->Eta(),
-                     GetPhi(esd->GetTrack(n)->Phi()),
-                     fabs(esd->GetTrack(n)->Pt()));
+      fHistoneg->Fill(esd->GetTrack(n)->Eta(),
+                      GetPhi(esd->GetTrack(n)->Phi()),
+                      fabs(esd->GetTrack(n)->Pt()));
     }
   }
   
@@ -187,6 +232,7 @@ TEveCaloDataHist* emcal_esdclustercellsV1()
     }
     //printf("\t Fill\n");
     
+    
     for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
     {
       id  = cluster->GetCellAbsId(icell);
@@ -202,42 +248,42 @@ TEveCaloDataHist* emcal_esdclustercellsV1()
         //            printf("CaloCell %d, ID %d, energy %2.2f,eta %2.2f, phi %2.2f\n",
         //                   icell,id,amp,eta,GetPhi(phi)*TMath::RadToDeg());
         
-        histoEM->Fill(eta,GetPhi(phi),amp);
+        fHistoEM->Fill(eta,GetPhi(phi),amp);
       }
-      else // PHOS
-      {
-        //        amp = fCellsPH->GetCellAmplitude(id); // GeV
-        //        //if(amp < 0.1) continue ;
-        //        
-        //        TVector3 xyz;
-        //        Int_t relId[4], module;
-        //        Float_t xCell, zCell;
-        //        
-        //        fGeomPH->AbsToRelNumbering(id,relId);
-        //        printf("PHOS, mod %d\n",module);
-        //        module = relId[0];
-        //        fGeomPH->RelPosInModule(relId,xCell,zCell);
-        //        fGeomPH->Local2Global(module,xCell,zCell,xyz);
-        //              
-        //        printf("PHOS CaloCell %d, ID %d, energy %2.3f,eta %f, phi %f\n",
-        //               icell,id,amp,xyz.Eta(),xyz.Phi()*TMath::RadToDeg());        
-        //        
-        //        histoPH->Fill(xyz.Eta(),GetPhi(xyz.Phi()),amp);
-      }
+//      else // PHOS
+//      {
+//        amp = fCellsPH->GetCellAmplitude(id); // GeV
+//                                              //if(amp < 0.1) continue ;
+//        
+//        TVector3 xyz;
+//        Int_t relId[4], module;
+//        Float_t xCell, zCell;
+//        
+//        fGeomPH->AbsToRelNumbering(id,relId);
+//        //        printf("PHOS, mod %d\n",module);
+//        module = relId[0];
+//        fGeomPH->RelPosInModule(relId,xCell,zCell);
+//        fGeomPH->Local2Global(module,xCell,zCell,xyz);
+//        
+//        //        printf("PHOS CaloCell %d, ID %d, energy %2.3f,eta %f, phi %f\n",
+//        //               icell,id,amp,xyz.Eta(),xyz.Phi()*TMath::RadToDeg());        
+//        
+//        fHistoPH->Fill(xyz.Eta(),GetPhi(xyz.Phi()),amp);
+//      }
       
     }
   }
 
   //} event loop
   
-  data->AddHistogram(histoneg);
+  data->AddHistogram(fHistoneg);
   data->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
-  data->AddHistogram(histopos);
+  data->AddHistogram(fHistopos);
   data->RefSliceInfo(1).Setup("PosCg:", 0, kRed);
-  data->AddHistogram(histoEM);
+  data->AddHistogram(fHistoEM);
   data->RefSliceInfo(2).Setup("EMCell:", 0, kViolet);
-//    data->AddHistogram(histoPH);
-//    data->RefSliceInfo(3).Setup("PHCell:", 0, kYellow);
+  data->AddHistogram(fHistoPH);
+  data->RefSliceInfo(3).Setup("PHCell:", 0, kOrange);
   
   data->GetEtaBins()->SetTitleFont(120);
   data->GetEtaBins()->SetTitle("h");

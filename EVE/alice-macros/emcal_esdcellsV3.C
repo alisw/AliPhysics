@@ -25,7 +25,7 @@
 #ifndef __CINT__
 
 #include <TEveManager.h>
-#include <TEveQuadSet.h>
+#include <TEveBoxSet.h>
 #include <TGeoNode.h>
 #include <TGeoBBox.h>
 #include <TGeoManager.h>
@@ -47,8 +47,8 @@
 
 Bool_t fMatrixEMSet = kFALSE;
 
-void emcal_esdcells()
-{    
+void emcal_esdcellsV3()
+{   
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   AliEveEventManager::AssertGeometry();
@@ -139,25 +139,27 @@ void emcal_esdcells()
   // Pass the SM bounding boxes (frames).
   //
   const Int_t nSM = nModules;
-  TEveQuadSet* smodules[nSM];
-  memset(smodules,0,nModules*sizeof(TEveQuadSet*));
+  TEveBoxSet* smodules[nSM];
+  memset(smodules,0,nModules*sizeof(TEveBoxSet*));
   
   for (Int_t sm = 0; sm < nModules; ++sm)
   {
-    TEveQuadSet* q = new TEveQuadSet(Form("SM %d", sm+1));
+    TEveBoxSet* q = new TEveBoxSet(Form("SM %d", sm+1));
     q->SetOwnIds(kTRUE);
     
     // Type of object to be displayed, rectangle with cell size
-    q->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
-    q->SetDefWidth (geom->GetPhiTileSize());
-    q->SetDefHeight(geom->GetEtaTileSize());
+    //q->Reset(TEveBoxSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
+    //q->SetDefWidth (geom->GetPhiTileSize());
+    //q->SetDefHeight(geom->GetEtaTileSize());
+
+    q->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
 
     q->RefMainTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
 
-    if     (sm < 10) q->SetFrame(frame_big );
-    else if(sm < 12) q->SetFrame(frame_sml );
-    else if(sm < 18) q->SetFrame(frame_dcl );
-    else if(sm < 20) q->SetFrame(frame_smld);
+//    if     (sm < 10) q->SetFrame(frame_big );
+//    else if(sm < 12) q->SetFrame(frame_sml );
+//    else if(sm < 18) q->SetFrame(frame_dcl );
+//    else if(sm < 20) q->SetFrame(frame_smld);
     
     q->SetPalette(pal);
 
@@ -183,7 +185,7 @@ void emcal_esdcells()
   
   Int_t ncell = cells.GetNumberOfCells() ;  
   
-  //printf("Number of ESD CaloCells %d\n",ncell);
+  printf("Number of ESD CaloCells %d\n",ncell);
   
   Int_t iSupMod =  0 ;
   Double_t x, y, z;
@@ -196,33 +198,43 @@ void emcal_esdcells()
   Int_t iphi    =  0 ;
   Int_t ieta    =  0 ;
 
+  
   // Extract digit information from the ESDs
   for (Int_t icell=  0; icell <  ncell; icell++) 
   {
     id  = cells.GetCellNumber(icell);
     amp = cells.GetAmplitude (icell); // GeV
-    
-    //printf("CaloCell %d, ID %d, energy %2.3f\n",icell,id,amp);
-    
+        
      //Geometry methods
     geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
     //Gives SuperModule and Tower numbers
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
     //Gives label of cell in eta-phi position per each supermodule
     
-    geom->RelPosCellInSModule(id, x, y, z);
     
     // It should not happen, but in case the OCDB file is not the
     // correct one.
     if(iSupMod >= nModules) continue;
     
+    
+    //printf("CaloCell %d, ID %d, energy %2.3f, SM %d/%d, icol %d, irow %d\n",
+    //       icell,id,amp, iSupMod, nModules,iphi,ieta);
+    
+    //
+    geom->RelPosCellInSModule(id, x, y, z);
+    
     // Push the data to the visualization tools
-    TEveQuadSet* q = smodules[iSupMod];
+    TEveBoxSet* q = smodules[iSupMod];
     if (q) 
     {
-      q->AddQuad(y, z);
-      q->QuadValue(amp);
+      //q->AddQuad(y, z);
+      //q->QuadValue(amp);
+          
+      q->AddBox(15, y,  z, amp, 6.0, 6.0);
+            
+      q->DigitValue(static_cast<Int_t>(amp));
     }
+
   }
     
   // Send the data to EVE?
@@ -231,5 +243,5 @@ void emcal_esdcells()
     smodules[sm]->RefitPlex();
   }
   
-  gEve->Redraw3D();
+  gEve->Redraw3D(kTRUE);
 }

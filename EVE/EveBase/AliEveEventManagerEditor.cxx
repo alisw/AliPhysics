@@ -328,7 +328,7 @@ void AliEveEventManagerWindow::Update(int state)
         fRefresh->SetEnabled(!autoLoad);
         
         fEventId->SetNumber(fM->GetEventId());
-        fEventId->SetState(!autoLoad);
+        fEventId->SetState(kTRUE);
         
         fAutoLoad->SetState(fM->GetAutoLoad() ? kButtonDown : kButtonUp);
         fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
@@ -373,7 +373,7 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fPrevEvent->SetEnabled(kFALSE);
         fFirstEvent->SetEnabled(kFALSE);
         listEventsTab->SetOfflineMode(kTRUE);
-        fEventId->SetState(kFALSE);
+        fEventId->SetState(kTRUE);
     }
     else if(state == 1)// SM on
     {
