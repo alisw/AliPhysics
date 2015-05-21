@@ -69,20 +69,6 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
   //
-  // Add PID response task
-  // NOTE: The PID task must be added before any user task that might use PID
-  //
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  AliAnalysisTaskPIDResponse *taskPIDResponse=AddTaskPIDResponse(hasMC);
-
-  //
-  // Add PIDqa task
-  //
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
-  AliAnalysisTaskPIDqa *taskPIDqa=AddTaskPIDqa();
-  taskPIDqa->SelectCollisionCandidates();
-
-  //
   // Create task
   //
   AliAnalysisTaskFilteredTree *task = new AliAnalysisTaskFilteredTree("AliAnalysisTaskFilteredTree");
