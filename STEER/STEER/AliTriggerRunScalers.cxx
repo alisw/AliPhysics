@@ -423,6 +423,10 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
  ULong64_t c64[6];
  AliTriggerScalersRecordESD* recESD = new AliTriggerScalersRecordESD();
  // add 0
+ if (!fScalersRecord.GetEntriesFast()) {
+   AliError("Scalers record array is empty"); 
+   return 0;
+ }
  AliTriggerScalersRecord* scalers = (AliTriggerScalersRecord*)fScalersRecord.At(0);
 
  recESD->SetTimeStamp(scalers->GetTimeStamp());
