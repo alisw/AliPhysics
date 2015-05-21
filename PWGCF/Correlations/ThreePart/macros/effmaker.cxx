@@ -159,6 +159,39 @@ Float_t GetBinAx(THnF * hist,Int_t Ax1,Int_t Bin1,Int_t Ax2,Int_t Bin2,Int_t Ax3
   return hist->GetBinContent(Bin);
 }
 
+TH3D * Rebin(THnF * input, const char* name, Int_t Ax1, TArrayD * axis1,Int_t Ax2, TArrayD * axis2, Int_t Ax3, TArrayD* axis3, Int_t Ax4, Double_t Ax4min,Int_t Ax5){
+  TH3D * hist3d = new TH3D(name,"",axis1->GetSize()-1,axis1->GetArray(),axis2->GetSize()-1,axis2->GetArray(),axis3->GetSize()-1,axis3->GetArray());
+  TAxis* Axis1 = input->GetAxis(Ax1);
+  hist3d->GetXaxis()->SetTitle(Axis1->GetTitle());
+  TAxis* Axis2 = input->GetAxis(Ax2);
+  hist3d->GetYaxis()->SetTitle(Axis2->GetTitle());
+  TAxis* Axis3 = input->GetAxis(Ax3);
+  hist3d->GetZaxis()->SetTitle(Axis3->GetTitle());
+  TAxis* Axis4 = input->GetAxis(Ax4);
+  cout << Axis4->GetBinCenter(Axis4->GetNbins())<<endl;
+  TAxis* Axis5 = input->GetAxis(Ax5);
+  hist3d->Sumw2();
+  for(int x = 0;x<=Axis1->GetNbins()+1;x++){
+    Double_t Ax1val = Axis1->GetBinCenter(x);
+    for(int y = 0;y<=Axis2->GetNbins()+1;y++){
+      Double_t Ax2val = Axis2->GetBinCenter(y);
+      for(int z = 0;z<=Axis3->GetNbins()+1;z++){
+	Double_t Ax3val = Axis3->GetBinCenter(z);
+	for(int x1=1;x1<=Axis4->GetNbins();x1++){
+	  Double_t Ax4val = Axis4->GetBinLowEdge(x1);
+	  if(Ax4val<Ax4min){ continue;}
+	  for(int x2=1;x2<=Axis5->GetNbins();x2++){
+	    Double_t content = GetBinAx(input,Ax1,x,Ax2,y,Ax3,z,Ax4,x1,Ax5,x2);
+	    for(int i=1;i<=content;i++){
+	      hist3d->Fill(Ax1val,Ax2val,Ax3val);
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return hist3d;
+}
 
 TH3D * Rebin(THnF * input, const char* name, Int_t Ax1, TArrayD * axis1,Int_t Ax2, TArrayD * axis2, Int_t Ax3, TArrayD* axis3, Int_t Ax4,Int_t Ax5){
   TH3D * hist3d = new TH3D(name,"",axis1->GetSize()-1,axis1->GetArray(),axis2->GetSize()-1,axis2->GetArray(),axis3->GetSize()-1,axis3->GetArray());
@@ -528,6 +561,10 @@ void MakeEffHistspp(){
   pTEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   pTEffRecPP->Write();
   
+  TH1D * pTWeightRec = dynamic_cast<TH1D*>(pTMC->Clone("Weight_pT_Rec"));
+  pTWeightRec->Divide(pTRec);
+  pTWeightRec->SetTitle(" produced MC particles divided by Reconstructed tracks");
+  
   //2d projections in correlated variables:
   TH2D * vzetaRec = hnTracksInBins->Projection(3,1);
   vzetaRec->Sumw2();
@@ -581,9 +618,31 @@ void MakeEffHistspp(){
   //eta: same
 //   const Double_t * etabins = hnTracksInBins->GetAxis(3)->GetXbins()->GetArray();
   //pt: 0.1GeV/c up to 3 GeV/c = 25 bins, 0.5GeV/c up to 5 GeV/c = 4 bins, then 1 5GeV/c bin and one 6GeV/c bin: total 30 bins
-  Double_t  pTaxisArray[31] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0,5.0,8.0,16.0};
-  TArrayD * pTaxisA = new TArrayD(31,pTaxisArray);
+  Double_t  pTaxisArray[28] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0};
+  TArrayD * pTaxisA = new TArrayD(28,pTaxisArray);
 
+//   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
+//   histrec->Write();
+//   TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
+//   histMC->Write();
+//   histMC->Divide(histrec);
+//   histMC->Write("Eff3d");
+//   TFile* outfile2 = TFile::Open("LHC10dWeight.root","RECREATE");
+//   outfile2->cd();
+//   histMC->Write("hnWeight");
+//   outfile2->Close();
+//   outfile->cd();
+//   TH1D * err = new TH1D("err","Errors in the 3d histogram",100,0.0,20.0);
+//   for(int x=1;x<=histrec->GetNbinsX();x++){
+//     for(int y=1;y<=histrec->GetNbinsY();y++){
+//       for(int z=1;z<=histrec->GetNbinsZ();z++){
+// 	if(histrec->GetBinContent(x,y,z)>1.0e-10)err->Fill(100*histrec->GetBinError(x,y,z)/histrec->GetBinContent(x,y,z));
+//       }
+//     }
+//   }
+//   err->Write();
+  
+  
   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
   histrec->Write();
   TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
@@ -593,7 +652,6 @@ void MakeEffHistspp(){
   TFile* outfile2 = TFile::Open("LHC10dWeight.root","RECREATE");
   outfile2->cd();
   histMC->Write("hnWeight");
-  outfile2->Close();
   outfile->cd();
   TH1D * err = new TH1D("err","Errors in the 3d histogram",100,0.0,20.0);
   for(int x=1;x<=histrec->GetNbinsX();x++){
@@ -604,6 +662,47 @@ void MakeEffHistspp(){
     }
   }
   err->Write();
+  Double_t etamin = Etaaxis->GetBinLowEdge(1);
+  Double_t etamax = Etaaxis->GetBinUpEdge(Etaaxis->GetNbins());
+  Double_t deta = (etamax - etamin)/Etaaxis->GetNbins();
+  TArrayD * etaaxisAD = new TArrayD(Etaaxis->GetNbins()/3.0+1);
+  for(int i = 0; i<=Etaaxis->GetNbins()/3.0;i++){
+    etaaxisAD->AddAt(etamin+i*3.0*deta,i);
+  }
+//   const TArrayD * etabins = hnTracksInBins->GetAxis(3)->GetXbins();
+//   cout << etabins->GetSize()<<endl;
+  TH3D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+  histrechpT->Write();
+  TH3D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+  histhpTMC->Write();  
+  histhpTMC->Divide(histrechpT);
+  Double_t nbins = 0.0;
+  Double_t content = 0.0;
+  for(int x = 1;x<=histhpTMC->GetXaxis()->GetNbins();x++){
+     for(int y = 1;y<=histhpTMC->GetYaxis()->GetNbins();y++){
+      for(int z = 1;z<=histhpTMC->GetZaxis()->GetNbins();z++){
+	if(histhpTMC->GetBinContent(x,y,z)>1.0E-10){
+	  nbins +=1.0;
+	  content+=histhpTMC->GetBinContent(x,y,z);
+	}
+      }
+    }
+  }
+  cout << content/nbins<<endl;
+  histhpTMC->Write("Eff3dhpT");
+  outfile2->cd();
+  histhpTMC->Write("hnWeight_highpt");
+  TF1* ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*x*x*x",4,16);
+  pTWeightRec->Scale(nbins/content);
+  pTWeightRec->Fit(ptfunc,"","",4,16);
+  outfile->cd();
+  pTWeightRec->Write();
+  outfile2->cd();
+  ptfunc->Write();
+  outfile2->Close();
+  
+  
+  
 //   THnF * RebinRec = Rebin(5,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins())/3.0,hnTracksInBins->GetAxis(3)->GetNbins(),hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBins,"hnRebinRec");
 //   RebinRec->Write();
 //   THnF * RebinMC = Rebin(5,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins())/3.0,hnTracksInBins->GetAxis(3)->GetNbins(),hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBinsMC,"hnRebinMC");
@@ -821,6 +920,12 @@ void MakeEffHistsPbPb(){
   pTEffRecPP->Divide(pTMC);
   pTEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   pTEffRecPP->Write();
+    
+  TH1D * pTWeightRec = dynamic_cast<TH1D*>(pTMC->Clone("Weight_pT_Rec"));
+  pTWeightRec->Divide(pTRec);
+  pTWeightRec->SetTitle(" produced MC particles divided by Reconstructed tracks");
+//   pTWeightRec->Write();
+  
   
   //2d projections in correlated variables:
   TH2D * multvzrec = hnTracksInBins->Projection(1,0);
@@ -998,8 +1103,8 @@ void MakeEffHistsPbPb(){
   //eta: same
 //   const Double_t * etabins = hnTracksInBins->GetAxis(3)->GetXbins()->GetArray();
   //pt: 0.1GeV/c up to 3 GeV/c = 25 bins, 0.5GeV/c up to 5 GeV/c = 4 bins, then 1 5GeV/c bin and one 6GeV/c bin: total 30 bins
-  Double_t  pTaxisArray[31] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0,5.0,8.0,16.0};
-  TArrayD * pTaxisA = new TArrayD(31,pTaxisArray);
+  Double_t  pTaxisArray[28] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0};
+  TArrayD * pTaxisA = new TArrayD(28,pTaxisArray);
   
   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
   histrec->Write();
@@ -1010,7 +1115,6 @@ void MakeEffHistsPbPb(){
   TFile* outfile2 = TFile::Open("LHC10hWeight.root","RECREATE");
   outfile2->cd();
   histMC->Write("hnWeight");
-  outfile2->Close();
   outfile->cd();
   TH1D * err = new TH1D("err","Errors in the 3d histogram",100,0.0,20.0);
   for(int x=1;x<=histrec->GetNbinsX();x++){
@@ -1021,7 +1125,45 @@ void MakeEffHistsPbPb(){
     }
   }
   err->Write();
-  
+  Double_t etamin = Etaaxis->GetBinLowEdge(1);
+  Double_t etamax = Etaaxis->GetBinUpEdge(Etaaxis->GetNbins());
+  Double_t deta = (etamax - etamin)/Etaaxis->GetNbins();
+  TArrayD * etaaxisAD = new TArrayD(Etaaxis->GetNbins()/3.0+1);
+  for(int i = 0; i<=Etaaxis->GetNbins()/3.0;i++){
+    etaaxisAD->AddAt(etamin+i*3.0*deta,i);
+  }
+//   const TArrayD * etabins = hnTracksInBins->GetAxis(3)->GetXbins();
+//   cout << etabins->GetSize()<<endl;
+  TH3D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+  histrechpT->Write();
+  TH3D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+  histhpTMC->Write();  
+  histhpTMC->Divide(histrechpT);
+  Double_t nbins = 0.0;
+  Double_t content = 0.0;
+  for(int x = 1;x<=histhpTMC->GetXaxis()->GetNbins();x++){
+     for(int y = 1;y<=histhpTMC->GetYaxis()->GetNbins();y++){
+      for(int z = 1;z<=histhpTMC->GetZaxis()->GetNbins();z++){
+	if(histhpTMC->GetBinContent(x,y,z)>1.0E-10){
+	  nbins +=1.0;
+	  content+=histhpTMC->GetBinContent(x,y,z);
+	}
+      }
+    }
+  }
+  cout << content/nbins<<endl;
+  histhpTMC->Write("Eff3dhpT");
+  outfile2->cd();
+  histhpTMC->Write("hnWeight_highpt");
+  TF1* ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*x*x*x",4,16);
+  pTWeightRec->Scale(nbins/content);
+  pTWeightRec->Fit(ptfunc,"","",4,16);
+  outfile->cd();
+  pTWeightRec->Write();
+  outfile2->cd();
+  ptfunc->Write();
+  outfile2->Close();
+
 //   cout << "beefopre"<<endl;
 //   THnF * RebinRec = Rebin(7,multaxisArray,7,vzaxisArray,1,hnTracksInBins->GetAxis(2)->GetBinLowEdge(1),hnTracksInBins->GetAxis(2)->GetBinUpEdge(hnTracksInBins->GetAxis(2)->GetNbins()),hnTracksInBins->GetAxis(3)->GetNbins()/3.0,hnTracksInBins->GetAxis(3)->GetBinLowEdge(1),hnTracksInBins->GetAxis(3)->GetBinUpEdge(hnTracksInBins->GetAxis(3)->GetNbins()),30,pTaxisArray,hnTracksInBins,"hnRebinRec");
 //   RebinRec->Write();

@@ -23,6 +23,7 @@
 #include "TPaveLabel.h"
 #include "TObjString.h"
 #include "TPaletteAxis.h"
+#include "TParameter.h"
 
 using namespace std;
 //global pointers for the histograms:
@@ -3786,11 +3787,11 @@ void Periods(){
   TString * path = new TString("/home/paulbatzing/alice/paul/ThreeParticle/correlation3p/");
   TString * path10b = new TString("LHC10b/Train");
   TString * path10c = new TString("LHC10c/Train");
-  TString * path10d = new TString("LHC10d/Train");
+  TString * path10d = new TString("LHC10d/Traineff");
   TString * path10e = new TString("LHC10e/Train");
   TString * path11a = new TString("LHC11a/Train");
-  TString * path10h = new TString("LHC10h/Train");
-  TString * path10h2 = new TString("LHC10h/Train/highpt");
+  TString * path10h = new TString("LHC10h/TrainEff");
+  TString * path10h2 = new TString("LHC10h/TrainEff/highpt");
   
   TDirectory * basedir = resultsdirectory(rfile->GetDirectory("/"),"Periods");
   TObjArray * filearray = new TObjArray();
@@ -4767,4 +4768,167 @@ void Centralities(){
 //     CanvasList->Add(can);
 // //   }
 //   delete near48;delete near816;delete away48;delete away816;
+}
+
+void CountRawNumbers(){
+   //take the same event histograms and compare to different mixed.
+  TFile * infile = TFile::Open("results.root","READ");
+  TFile * outfile =  TFile::Open("CompareMixed.root","RECREATE");
+  TList * folderlist = infile->GetListOfKeys();
+  for(int j = 0;j<folderlist->GetEntries();j++){
+    const char* folder = folderlist->At(j)->GetName();
+    if(!TString(folder).Contains("ThreePartTracks"))continue;
+   
+    BinDirs * divsame = new BinDirs(infile->GetDirectory(Form("%s/",folder)),infile->GetDirectory(Form("%s/META",folder)),infile->GetDirectory(Form("%s/METrigger",folder)),true);
+    TDirectory* outdir =  outfile->mkdir(folder);
+    
+    //List of directories for multiplicity bins:
+    TList * directories = GetMZDirectories(divsame);
+    //Go through the list and find the multiplicity/centrality binning in order to sum over them and add them to the TObjArray:
+    TString  s = TString("");
+    for(int i=0; i<directories->GetEntries();i++){
+      if(TString(directories->At(i)->GetName()).Contains("Z")){
+	TDirectory* outdir2= outdir->mkdir(directories->At(i)->GetName());
+	TDirectory* SAMEDir = divsame->SameDir(directories->At(i)->GetName());
+	TDirectory* METADir = divsame->METADir(directories->At(i)->GetName());
+	TDirectory* METriggerDir = divsame->METriggerDir(directories->At(i)->GetName());
+	TH3F * Same3d = dynamic_cast<TH3F*>(SAMEDir->GetDirectory("same_event")->Get("DPhi_1_DPhi_2_DEta_12")->Clone("CorSame3d"));
+	TH1D * SameNtriggers = dynamic_cast<TH1D*>(SAMEDir->GetDirectory("same_event")->Get("number_of_triggers")->Clone("NTriggersSame"));
+// 	if(SameNtriggers->Integral()>0.1)cout << Same3d->Integral()<< " "<<SameNtriggers->Integral()<<" "<< Same3d->Integral()/SameNtriggers->Integral() <<endl;
+	if(SameNtriggers->Integral()>0.1)Same3d->Scale(1.0/SameNtriggers->Integral());
+	else Same3d->Scale(0.0);
+// 	cout << "s"<< Same3d->Integral()<<endl;
+	Same3d->SetTitle(Form("Same Event, integral = %f",Same3d->Integral()));
+	TH3F * META3d = dynamic_cast<TH3F*>(METADir->GetDirectory("same_event")->Get("DPhi_1_DPhi_2_DEta_12")->Clone("CorMETA3d"));
+	TH1D * METANtriggers = dynamic_cast<TH1D*>(METADir->GetDirectory("same_event")->Get("number_of_triggers")->Clone("NTriggersMETA"));
+// 	if(METANtriggers->Integral()>0.1)cout << META3d->Integral()<< " "<<METANtriggers->Integral()<<" "<< META3d->Integral()/METANtriggers->Integral() <<endl;
+	if(METANtriggers->Integral()>0.1)META3d->Scale(1.0/METANtriggers->Integral());
+	else META3d->Scale(0.0);
+// 	cout<<"o" << META3d->Integral()<<endl;
+	
+	META3d->SetTitle(Form("Mixed Event Trigger - Associated, integral = %f",META3d->Integral()));
+	TH3F * METrigger3d = dynamic_cast<TH3F*>(METriggerDir->GetDirectory("same_event")->Get("DPhi_1_DPhi_2_DEta_12")->Clone("CorMETrigger3d"));
+	TH1D * METriggerNtriggers = dynamic_cast<TH1D*>(METriggerDir->GetDirectory("same_event")->Get("number_of_triggers")->Clone("NTriggersMETrigger"));
+// 	if(METriggerNtriggers->Integral()>0.1)cout << METrigger3d->Integral()<< " "<<METriggerNtriggers->Integral()<<" "<< METrigger3d->Integral()/METriggerNtriggers->Integral() <<endl;
+	if(METriggerNtriggers->Integral()>0.1)METrigger3d->Scale(1.0/METriggerNtriggers->Integral());
+	else METrigger3d->Scale(0.0);
+// 	cout<<"a" << METrigger3d->Integral()<<endl;
+	METrigger3d->SetTitle(Form("Mixed Event Associated - Associated, integral = %f",METrigger3d->Integral()));
+	TCanvas * can = new TCanvas("3dintegrals");
+	can->Divide(2,2);
+	can->cd(1);
+	Same3d->Draw();
+	can->cd(2);
+	META3d->Draw();
+	can->cd(3);
+	METrigger3d->Draw();
+	can->cd(4);
+	TH3F* Substr = dynamic_cast<TH3F*>(Same3d->Clone("Substracted"));
+	Substr->Add(META3d,-1.0/3.0);
+	Substr->Add(METrigger3d,-1.0/3.0);
+	Substr->SetTitle(Form("Substracted, integral = %f",Substr->Integral()));
+	Substr->Draw();
+	
+	outdir2->cd();
+	can->Write();
+	
+	TH2D * SameDphiDphi = dynamic_cast<TH2D*>(SAMEDir->GetDirectory("same_event")->Get("DPhi_1_DPHI_2")->Clone("CorSamePhiPhi"));
+	if(SameNtriggers->Integral()>0.1)SameDphiDphi->Scale(1.0/SameNtriggers->Integral());
+	else SameDphiDphi->Scale(0.0);
+	TH2D * METADphiDphi = dynamic_cast<TH2D*>(METADir->GetDirectory("same_event")->Get("DPhi_1_DPHI_2")->Clone("CorMETAPhiPhi"));
+	if(METANtriggers->Integral()>0.1)METADphiDphi->Scale(1.0/METANtriggers->Integral());
+	else METADphiDphi->Scale(0.0);
+	TH2D * METriggerDphiDphi = dynamic_cast<TH2D*>(METriggerDir->GetDirectory("same_event")->Get("DPhi_1_DPHI_2")->Clone("CorMETriggerPhiPhi"));
+	if(METriggerNtriggers->Integral()>0.1)METriggerDphiDphi->Scale(1.0/METriggerNtriggers->Integral());
+	else METriggerDphiDphi->Scale(0.0);
+		
+	
+	can->cd(1);
+	SameDphiDphi->Draw("colz");
+	can->cd(2);
+	METADphiDphi->Draw("colz");
+	can->cd(3);
+	METriggerDphiDphi->Draw("colz");
+	can->cd(4);
+	TH2D* SubstrPhiPhi = dynamic_cast<TH2D*>(SameDphiDphi->Clone("SubstractedPhiPhi"));
+	SubstrPhiPhi->Add(METADphiDphi,-1.0);
+	SubstrPhiPhi->Add(METriggerDphiDphi,-1.0);
+	SubstrPhiPhi->SetTitle(Form("Substracted, integral = %f",SubstrPhiPhi->Integral()));
+	SubstrPhiPhi->Draw("colz");
+	can->Write("2dintegrals");
+	
+	
+	TH2D * SameDphiDphid = dynamic_cast<TH2D*>(SAMEDir->GetDirectory("divided")->Get("DPhi_1_DPHI_2")->Clone("CorSamePhiPhid"));
+// 	if(SameNtriggers->Integral()>0.1)SameDphiDphi->Scale(1.0/SameNtriggers->Integral());
+// 	else SameDphiDphi->Scale(0.0);
+	TH2D * METADphiDphid = dynamic_cast<TH2D*>(METADir->GetDirectory("divided")->Get("DPhi_1_DPHI_2")->Clone("CorMETAPhiPhid"));
+// 	if(METANtriggers->Integral()>0.1)METADphiDphi->Scale(1.0/METANtriggers->Integral());
+// 	else METADphiDphi->Scale(0.0);
+	TH2D * METriggerDphiDphid = dynamic_cast<TH2D*>(METriggerDir->GetDirectory("divided")->Get("DPhi_1_DPHI_2")->Clone("CorMETriggerPhiPhid"));
+// 	if(METriggerNtriggers->Integral()>0.1)METriggerDphiDphi->Scale(1.0/METriggerNtriggers->Integral());
+// 	else METriggerDphiDphi->Scale(0.0);
+		
+	
+	can->cd(1);
+	SameDphiDphid->Draw("colz");
+	can->cd(2);
+	METADphiDphid->Draw("colz");
+	can->cd(3);
+	METriggerDphiDphid->Draw("colz");
+	can->cd(4);
+	TH2D* SubstrPhiPhid = dynamic_cast<TH2D*>(SameDphiDphi->Clone("SubstractedPhiPhid"));
+	SubstrPhiPhid->Add(METADphiDphi,-1.0);
+	SubstrPhiPhid->Add(METriggerDphiDphi,-1.0);
+	SubstrPhiPhid->SetTitle(Form("Substracted, integral = %f",SubstrPhiPhid->Integral()));
+	SubstrPhiPhid->Draw("colz");
+	can->Write("2dintegralsd");
+	
+	
+	TH2D * SameDphiDetad = dynamic_cast<TH2D*>(SAMEDir->GetDirectory("divided")->Get("DPhi_1_DEta_12_SameSide")->Clone("CorSamePhiEtad"));
+	TH2D * MEDphiDetad   = dynamic_cast<TH2D*>(SAMEDir->GetDirectory("mixed_event")->Get("DPhi_1_DEta_12_SameSide")->Clone("CorMEPhiEtad"));
+	TParameter<double> * par = dynamic_cast<TParameter<double>*>(SAMEDir->GetDirectory("mixed_event")->Get("DPhi_1_DEta_12_SameSide_scale")->Clone("CorMEPhiEtad_scale"));
+	TH1D * MENtriggers = dynamic_cast<TH1D*>(SAMEDir->GetDirectory("mixed_event")->Get("number_of_triggers")->Clone("NTriggersME"));
+	MEDphiDetad->Divide(MEDphiDetad);
+	MEDphiDetad->Scale(par->GetVal());
+	MEDphiDetad->Scale(1.0/MENtriggers->Integral());
+	// 	if(SameNtriggers->Integral()>0.1)SameDphiDphi->Scale(1.0/SameNtriggers->Integral());
+// 	else SameDphiDphi->Scale(0.0);
+	TH2D * METADphiDetad = dynamic_cast<TH2D*>(METADir->GetDirectory("divided")->Get("DPhi_1_DEta_12_SameSide")->Clone("CorMETAPhiEtad"));
+// 	if(METANtriggers->Integral()>0.1)METADphiDphi->Scale(1.0/METANtriggers->Integral());
+// 	else METADphiDphi->Scale(0.0);
+	TH2D * METriggerDphiDetad = dynamic_cast<TH2D*>(METriggerDir->GetDirectory("divided")->Get("DPhi_1_DEta_12_SameSide")->Clone("CorMETriggerPhiEtad"));
+// 	if(METriggerNtriggers->Integral()>0.1)METriggerDphiDphi->Scale(1.0/METriggerNtriggers->Integral());
+// 	else METriggerDphiDphi->Scale(0.0);
+		
+	
+	can->cd(1);
+	SameDphiDetad->Draw("colz");
+	can->cd(2);
+	METADphiDetad->Draw("colz");
+	can->cd(3);
+	METriggerDphiDetad->Draw("colz");
+	can->cd(4);
+	TH2D* SubstrPhiEtad = dynamic_cast<TH2D*>(SameDphiDetad->Clone("SubstractedPhiEtad"));
+	SubstrPhiEtad->Add(METADphiDetad,-1.0);
+	SubstrPhiEtad->Add(METriggerDphiDetad,-1.0);
+	SubstrPhiEtad->Add(MEDphiDetad,1.0);
+	SubstrPhiEtad->SetTitle(Form("Substracted, integral = %f",SubstrPhiEtad->Integral()));
+	SubstrPhiEtad->Draw("colz");
+	can->Write("2dintegralsd2");
+	
+	
+      }
+    }
+    
+    //Get Tokens for all histograms:
+//     TStringToken histtokensbinstats = GetHistTokens(divsame->Same()->GetDirectory(Form("%s/bin_stats",directories->At(1)->GetName())));
+//     while(histtokensbinstats.NextToken()){CollectHistbinstats(histtokensbinstats.Data(),directories,multdirlist);}
+//     TStringToken histtokens = GetHistTokens(divsame->Same()->GetDirectory(Form("%s/divided",directories->At(1)->GetName())));
+//     while(histtokens.NextToken()){CollectHist(histtokens.Data(),directories,multdirlist,false,CDivfirst);}
+
+  }
+  infile->Close();
+  delete infile;
+  outfile->Close();
+  delete outfile;
 }
