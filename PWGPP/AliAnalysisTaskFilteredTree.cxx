@@ -1377,15 +1377,18 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         const Int_t nSpecies=AliPID::kSPECIES;
 	TVectorD tpcNsigma(nSpecies); 
         TVectorD tofNsigma(nSpecies);
+	TVectorD tpcPID(nSpecies); // bayes
+        TVectorD tofPID(nSpecies);
 	if(pidResponse){
           for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
             if (ispecie == Int_t(AliPID::kMuon)) continue;
             tpcNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
             tofNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
-          }
+	    //
+          }	
+	  pidResponse->ComputePIDProbability(AliPIDResponse::kTPC, track, nSpecies, tpcPID.GetMatrixArray());
+	  pidResponse->ComputePIDProbability(AliPIDResponse::kTOF, track, nSpecies, tofPID.GetMatrixArray());	    
 	}
-	
-
         if(fTreeSRedirector && dumpToTree && fFillTree) {
           (*fTreeSRedirector)<<"highPt"<<
             "gid="<<gid<<
@@ -1413,6 +1416,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    //            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
 	    "tofNsigma.="<<&tofNsigma<<
 	    "tpcNsigma.="<<&tpcNsigma<<
+	    "tofPID.="<<&tofPID<<                  // bayesian PID - without priors
+	    "tpcPID.="<<&tpcPID<<                  // bayesian PID - without priors
+	    
 	    "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack
             "extTPCInnerC.="<<tpcInnerC<<          // ??? 
             "extInnerParamC.="<<trackInnerC<<      // ???
