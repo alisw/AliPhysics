@@ -303,9 +303,11 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(fJetShapeType==kDetEmbPart){
             AliJetContainer *jetContPart=GetJetContainer(3);
             jet3=jet2->ClosestJet();
+           
 	    if(!jet3){
 	      Printf("jet3 does not exist, returning");
               continue;}
+	    cout<<"jet 3 exists"<<jet3->Pt()<<endl;
 }
             
           
@@ -415,14 +417,14 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
        if (fJetShapeType == kDetEmbPart) {
         kMatched = 3;
-        ptMatch=jet2->Pt();
-        ptDMatch=GetJetpTD(jet2, kMatched);
-        massMatch=GetJetMass(jet2,kMatched);
-        constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
-        angulMatch=GetJetAngularity(jet2, kMatched);
-        circMatch=GetJetCircularity(jet2, kMatched);
-        lesubMatch=GetJetLeSub(jet2, kMatched);
-        sigma2Match = GetSigma2(jet2, kMatched);
+        ptMatch=jet3->Pt();
+        ptDMatch=GetJetpTD(jet3, kMatched);
+        massMatch=GetJetMass(jet3,kMatched);
+        constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
+        angulMatch=GetJetAngularity(jet3, kMatched);
+        circMatch=GetJetCircularity(jet3, kMatched);
+        lesubMatch=GetJetLeSub(jet3, kMatched);
+        sigma2Match = GetSigma2(jet3, kMatched);
         
       }
 
