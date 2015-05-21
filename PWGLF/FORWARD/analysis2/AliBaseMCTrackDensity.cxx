@@ -361,6 +361,8 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
   GetCollisionParameters(event);
   
   AliStack* stack = const_cast<AliMCEvent&>(event).Stack();
+  if (!stack) return kFALSE;
+  
   Int_t nTracks   = stack->GetNtrack();//event.GetNumberOfTracks();
   Int_t nPrim     = stack->GetNprimary();//event.GetNumberOfPrimary();
   for (Int_t iTr = 0; iTr < nTracks; iTr++) { 
