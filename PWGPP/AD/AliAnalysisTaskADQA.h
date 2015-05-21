@@ -58,9 +58,15 @@ private:
   TH1F        *fHistNBBflagsADA;
   TH1F        *fHistNBBflagsADC;
   TH2F	      *fHistNBBflagsADAVsADC;
-  TH1F	      *fHistNCoincidencesADA;
-  TH1F	      *fHistNCoincidencesADC;
-  TH2F	      *fHistNCoincidencesADAVsADC;
+  TH1F        *fHistNBGflagsADA;
+  TH1F        *fHistNBGflagsADC;
+  TH2F	      *fHistNBGflagsADAVsADC;
+  TH1F	      *fHistNBBCoincidencesADA;
+  TH1F	      *fHistNBBCoincidencesADC;
+  TH2F	      *fHistNBBCoincidencesADAVsADC;
+  TH1F	      *fHistNBGCoincidencesADA;
+  TH1F	      *fHistNBGCoincidencesADC;
+  TH2F	      *fHistNBGCoincidencesADAVsADC;
   TH1F	      *fHistChargeNoFlag;
   TH1F	      *fHistTimeNoFlag;
   TH1F	      *fHistChargeNoTime;
@@ -72,10 +78,9 @@ private:
   TH2F	      *fHistMeanTimeSumDiff;
   TH2F	      *fHistDecision;
   
-  TH1F	      *fTrigger_Flags;
+  TH1F	      *fHistTrigger;
   
   /*From ESD friend*/
-  TH1F	      *fTrigger_Bits; 
   TH2F	      *fHistChargeVsClockInt0;
   TH2F	      *fHistChargeVsClockInt1;
   TH2F	      *fHistBBFlagVsClock;
