@@ -32,6 +32,9 @@ class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
+using std::cout;
+using std::endl;
+
 #ifdef LOG_NO_INFO
 #define errormsg(msg) do { } while (false)
 #define warningmsg(msg) do { } while (false)
