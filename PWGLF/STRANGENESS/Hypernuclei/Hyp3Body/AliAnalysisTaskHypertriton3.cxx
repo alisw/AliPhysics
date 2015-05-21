@@ -299,41 +299,41 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   
   fHistZPrimaryVtx = new TH1F("fHistZPrimaryVtx","primary vertex - Z coordinate; z_{primary vtx} (cm); entries",40,-10.,10.);
 
-  fHistXPrimaryVtx = new TH1F("fHistXPrimaryVtx","primary vertex - X coordinate; x_{primary vtx} (cm); entries",2000,-1.,1.);
+  fHistXPrimaryVtx = new TH1F("fHistXPrimaryVtx","primary vertex - X coordinate; x_{primary vtx} (cm); entries",800,-1.,1.);
   
-  fHistYPrimaryVtx = new TH1F("fHistYPrimaryVtx","primary vertex - Y coordinate; y_{primary vtx} (cm); entries",2000,-1.,1.);
+  fHistYPrimaryVtx = new TH1F("fHistYPrimaryVtx","primary vertex - Y coordinate; y_{primary vtx} (cm); entries",800,-1.,1.);
 
   fHistChi2perTPCcluster = new TH1F("fHistChi2perTPCcluster","#Chi^{2}/TPC cluster distribution; #Chi^{2}/TPCcls; entries",44,-0.5,10.5);
  
   
   //TPC
-  fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCpid->SetOption("scat");
   fHistTPCpid->SetMarkerStyle(kFullCircle);
 
   //Hypertriton prongs
-  fHistTPCdeusignal = new TH2F("fHistTPCdeusignal", "dE/dx after d PID; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCdeusignal = new TH2F("fHistTPCdeusignal", "dE/dx after d PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCdeusignal->SetOption("scat");
   fHistTPCdeusignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCprosignal = new TH2F("fHistTPCprosignal", "dE/dx after p PID; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCprosignal = new TH2F("fHistTPCprosignal", "dE/dx after p PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCprosignal->SetOption("scat");
   fHistTPCprosignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{-} PID; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{-} PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCpionsignal->SetOption("scat");
   fHistTPCpionsignal->SetMarkerStyle(kFullCircle);
   
   //Anti-hypertriton prongs
-  fHistTPCantideusignal = new TH2F("fHistTPCantideusignal", "dE/dx after d PID; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCantideusignal = new TH2F("fHistTPCantideusignal", "dE/dx after d PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCantideusignal->SetOption("scat");
   fHistTPCantideusignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCantiprosignal = new TH2F("fHistTPCantiprosignal", "dE/dx after p PID; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCantiprosignal = new TH2F("fHistTPCantiprosignal", "dE/dx after p PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCantiprosignal->SetOption("scat");
   fHistTPCantiprosignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCpionplussignal= new TH2F("fHistTPCpionplussignal", "dE/dx after  #pi^{+} PID; p (GeV/c); TPC signal", 1000, 0., 10, 300, 0, 2100);
+  fHistTPCpionplussignal= new TH2F("fHistTPCpionplussignal", "dE/dx after  #pi^{+} PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
   fHistTPCpionplussignal->SetOption("scat");
   fHistTPCpionplussignal->SetMarkerStyle(kFullCircle);
 
@@ -356,18 +356,18 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
   fHistpionTPCcls = new TH1F("fHistpionTPCcls","#pi^{-} TPC clusters; TPC clusters; entries",201,-0.5,200.5);
   fHistpTpion = new TH1F("fHistpTpion","pion p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
-  fHistCorrDCAdprimary = new TH2F("fHistCorrDCAdprimary","DCA_{PV,xy} vs DCA_{PV,z} - deuteron; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
-  fHistCorrDCApprimary = new TH2F("fHistCorrDCApprimary","DCA_{PV,xy} vs DCA_{PV,z} - proton; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
-  fHistCorrDCApiprimary = new TH2F("fHistCorrDCApiprimary","DCA_{PV,xy} vs DCA_{PV,z} - pion; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
+  fHistCorrDCAdprimary = new TH2F("fHistCorrDCAdprimary","DCA_{PV,xy} vs DCA_{PV,z} - deuteron; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
+  fHistCorrDCApprimary = new TH2F("fHistCorrDCApprimary","DCA_{PV,xy} vs DCA_{PV,z} - proton; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
+  fHistCorrDCApiprimary = new TH2F("fHistCorrDCApiprimary","DCA_{PV,xy} vs DCA_{PV,z} - pion; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
   fHistDCApiprimary = new TH1F("fHistDCApiprimary","DCA pion-primary vertex; DCA (cm); entries",3200,0.f,80.f);
   
   //DCA prongs
-  fHistDCAdeupro = new TH1F("fHistDCAdeupro","DCA d-p tracks;d-p DCA (cm);entries",800,-1.0,5.0);
-
-  fHistDCApiondeu = new TH1F("fHistDCApiondeu","DCA #pi^{-}-d tracks; #pi^{-}-d DCA (cm); entries",800,-1.0,5.0);
+  fHistDCAdeupro = new TH1F("fHistDCAdeupro","DCA d-p tracks;d-p DCA (cm);entries",550,-0.5,5.0);
   
-  fHistDCApionpro = new TH1F("fHistDCApionpro","DCA #pi^{-}-p tracks; #pi^{-}-p DCA (cm); entries",800,-1.0,5.0);
-
+  fHistDCApiondeu = new TH1F("fHistDCApiondeu","DCA #pi^{-}-d tracks; #pi^{-}-d DCA (cm); entries",550,-0.5,5.0);
+  
+  fHistDCApionpro = new TH1F("fHistDCApionpro","DCA #pi^{-}-p tracks; #pi^{-}-p DCA (cm); entries",550,-0.5,5.0);
+  
   //Decay histo
   fHistZDecayVtx = new TH1F("fHistZDecayVtx","decay vertex - z coordinate; z_{decay vtx} (cm); entries",800,-20.f,20.f);
   fHistXDecayVtx = new TH1F("fHistXDecayVtx","decay vertex - x coordinate; x_{decay vtx} (cm); entries",8000,-20.f,20.f);
@@ -380,9 +380,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistDCAZpionvtx = new TH1F("fHistDCAZpionvtx","DCA candidate #pi^{-}-decay vertex - z coordinate; DCA_{z} (cm); entries",200,-10.,10.);
   fHistDecayLengthH3L = new TH1F("fHistDecayLengthH3L","decay length ^{3}H_{#Lambda}; decay length (cm); entries",400,0.,100.);
 
-  
   fHistCosPointingAngle= new TH1F("fHistCosPointingAngle", "Cos pointing angle distribution; cos point angle; entries", 220, -1.1, 1.1);
   fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+
   if(fMC){
     fHistParticle = new TH1F("fHistParticle","Check particle candidate",23,-0.5,22.5);
     fHistParticle->GetXaxis()->SetBinLabel(1,"electron");
@@ -411,9 +411,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistpTpionMCt = new TH1F("fHistpTpionMCt","pion p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTproMCt = new TH1F("fHistpTproMCt","proton p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTdeuMCt = new TH1F("fHistpTdeuMCt","deuteron p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
-    fHistCorrDCAdprimaryMCt = new TH2F("fHistCorrDCAdprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - deuteron MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
-    fHistCorrDCApprimaryMCt = new TH2F("fHistCorrDCApprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - proton MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
-    fHistCorrDCApiprimaryMCt = new TH2F("fHistCorrDCApiprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - pion MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",3200,-40.f,40.f,3200,-40.f,40.f);
+    fHistCorrDCAdprimaryMCt = new TH2F("fHistCorrDCAdprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - deuteron MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
+    fHistCorrDCApprimaryMCt = new TH2F("fHistCorrDCApprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - proton MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
+    fHistCorrDCApiprimaryMCt = new TH2F("fHistCorrDCApiprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - pion MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
     fHistDCApiprimaryMCt = new TH1F("fHistDCApiprimaryMCt","DCA pion-primary vertex; DCA (cm); entries",3200,0.f,80.f);
     fHistDCApprimaryMCt = new TH1F("fHistDCApprimaryMCt","DCA proton-primary vertex; DCA (cm); entries",3200,0.f,80.f);
     fHistDCAdprimaryMCt = new TH1F("fHistDCAdprimaryMCt","DCA deuteron-primary vertex; DCA (cm); entries",3200,0.f,80.f);
@@ -743,11 +743,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   ntracks = fESDevent->GetNumberOfTracks();
 
   TArrayI cdeuteron(ntracks);
-  Int_t nDeuTPC = 0;
+  UInt_t nDeuTPC = 0;
   TArrayI cproton(ntracks);
-  Int_t nProTPC = 0;
+  UInt_t nProTPC = 0;
   TArrayI cpion(ntracks);
-  Int_t nPioTPC = 0;
+  UInt_t nPioTPC = 0;
   
   //vector <Float_t> cmassd;
   //vector <Float_t> cmassp;
@@ -1121,6 +1121,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    fHistMassHypertritonMCt->Fill(Hypertriton.M());
 	  }
 	} // end of Pure MC part
+	decayVtx->Clear();
 	fTrkArray->Clear();
 	Hypertriton.Clear();
 	h1.Clear();
