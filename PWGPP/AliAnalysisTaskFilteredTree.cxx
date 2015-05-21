@@ -83,6 +83,8 @@
 #include "AliAnalysisTaskFilteredTree.h"
 #include "AliKFParticle.h"
 #include "AliESDv0.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "TVectorD.h"
 
 using namespace std;
@@ -788,6 +790,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
 
   // trigger
@@ -1370,6 +1373,18 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	tofClInfo[3]=track->GetTOFsignalDz();
 	tofClInfo[4]=track->GetTOFsignalDx();
 
+	//get the nSigma information; NB particle number ID in the vectors follow the convention of AliPID
+        const Int_t nSpecies=AliPID::kSPECIES;
+	TVectorD tpcNsigma(nSpecies); 
+        TVectorD tofNsigma(nSpecies);
+	if(pidResponse){
+          for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
+            if (ispecie == Int_t(AliPID::kMuon)) continue;
+            tpcNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
+            tofNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
+          }
+	}
+	
 
         if(fTreeSRedirector && dumpToTree && fFillTree) {
           (*fTreeSRedirector)<<"highPt"<<
@@ -1396,7 +1411,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "esdTrack.="<<track<<                  // esdTrack as used in the physical analysis
 	    "tofClInfo.="<<&tofClInfo<<           // tof info
 	    //            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
-            "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack
+	    "tofNsigma.="<<&tofNsigma<<
+	    "tpcNsigma.="<<&tpcNsigma<<
+	    "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack
             "extTPCInnerC.="<<tpcInnerC<<          // ??? 
             "extInnerParamC.="<<trackInnerC<<      // ???
             "extInnerParam.="<<trackInnerC2<<      // ???
@@ -1790,6 +1807,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   // trigger
   if(evtCuts->IsTriggerRequired())  
@@ -1948,6 +1966,22 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       tofClInfo1[2]=track1->GetTOFsignalRaw();
       tofClInfo1[3]=track1->GetTOFsignalDz();
       tofClInfo1[4]=track1->GetTOFsignalDx();
+ 
+      //get the nSigma information; NB particle number ID in the vectors follow the convention in AliPID
+      const Int_t nSpecies=AliPID::kSPECIES;
+      TVectorD tpcNsigma0(nSpecies); 
+      TVectorD tofNsigma0(nSpecies);
+      TVectorD tpcNsigma1(nSpecies); 
+      TVectorD tofNsigma1(nSpecies);
+      if(pidResponse){
+        for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
+          if (ispecie == Int_t(AliPID::kMuon)) continue;
+          tpcNsigma0[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track0, (AliPID::EParticleType)ispecie);
+          tofNsigma0[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track0, (AliPID::EParticleType)ispecie);
+          tpcNsigma1[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track1, (AliPID::EParticleType)ispecie);
+          tofNsigma1[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track1, (AliPID::EParticleType)ispecie);
+        }
+      }
 
 
       (*fTreeSRedirector)<<"V0s"<<
@@ -1967,6 +2001,10 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         "track1.="<<track1<<
 	"tofClInfo0.="<<&tofClInfo0<<
 	"tofClInfo1.="<<&tofClInfo1<<
+      	"tofNsigma0.="<<&tofNsigma0<<
+	"tofNsigma1.="<<&tofNsigma1<<
+      	"tpcNsigma0.="<<&tpcNsigma0<<
+	"tpcNsigma1.="<<&tpcNsigma1<<
         "friendTrack0.="<<friendTrackStore0<<
         "friendTrack1.="<<friendTrackStore1<<
         "centralityF="<<centralityF<<
@@ -2004,6 +2042,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   if(evtCuts->IsTriggerRequired())  
   {
@@ -2080,6 +2119,21 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
 
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
+
+
+      //get the nSigma information; NB particle number ID in the vectors follow the convention of AliPID
+      const Int_t nSpecies=AliPID::kSPECIES;
+      TVectorD tpcNsigma(nSpecies); 
+      TVectorD tofNsigma(nSpecies);
+      if(pidResponse){
+        for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
+          if (ispecie == Int_t(AliPID::kMuon)) continue;
+          tpcNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
+          tofNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
+        }
+      }
+	
+
       (*fTreeSRedirector)<<"dEdx"<<           // high dEdx tree
         "gid="<<gid<<                         // global id
         "fileName.="<<&fCurrentFileName<<     // file name
@@ -2092,6 +2146,8 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
         "mult="<<mult<<
         "esdTrack.="<<track<<
         "friendTrack.="<<friendTrack<<
+        "tofNsigma.="<<&tofNsigma<<
+        "tpcNsigma.="<<&tpcNsigma<<
         "\n";
     }
   }
