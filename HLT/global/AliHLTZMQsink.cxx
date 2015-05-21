@@ -29,9 +29,9 @@ AliHLTZMQsink::AliHLTZMQsink() :
   AliHLTDataSink()
   , fZMQcontext(zmq_ctx_new())
   , fZMQout(NULL)
-  , fZMQsocketMode("REP")
+  , fZMQsocketType(ZMQ_PUB)
   , fZMQconnectMode("bind")
-  , fZMQendpoint("tcp://*:60100")
+  , fZMQendpoint("tcp://*:60201")
   , fZMQpollIn(kTRUE)
   , fZMQsendAllInOne(kTRUE)
 {
@@ -76,14 +76,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   ProcessOptionString(GetComponentArgs());
 
   //init sockets
-  if (fZMQconnectMode.Contains("REP"))
-  { 
-    fZMQout = zmq_socket(fZMQcontext, ZMQ_REP); 
-  }
-  if (fZMQconnectMode.Contains("PUB"))
-  { 
-    fZMQout = zmq_socket(fZMQcontext, ZMQ_PUB); 
-  }
+  fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
 
   int rc = 0;
   
@@ -134,12 +127,12 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
   //}
 
   //create a default selection of any data:
-  char selectTopic[kAliHLTComponentDataTypeTopicSize];
-  AliHLTComponentDataType selectDataType=kAliHLTAnyDataType;
-  DataType2Topic(selectDataType, selectTopic);
+  char requestedTopic[kAliHLTComponentDataTypeTopicSize];
+  memset(requestedTopic, '*', kAliHLTComponentDataTypeTopicSize);
 
   //in case we reply to requests instead of just pushing/publishing
   //we poll for requests
+  int requestedTopicSize=0;
   if (fZMQpollIn)
   {
     zmq_pollitem_t items[] = { { fZMQout, 0, ZMQ_POLLIN, 0 } };
@@ -147,11 +140,11 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
 
     if (items[0].revents & ZMQ_POLLIN)
     {
-      int bytesReceived = zmq_recv (fZMQout, selectTopic, kAliHLTComponentDataTypeTopicSize, 0);
+      requestedTopicSize = zmq_recv (fZMQout, requestedTopic, kAliHLTComponentDataTypeTopicSize, 0);
     }
     else { doSend = kFALSE; }
   } 
-  
+ 
   if (doSend)
   {
     Bool_t nothingSelected=kTRUE; //if we select nothing, send a void reply
@@ -162,11 +155,13 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
         inputBlock=GetNextInputBlock(), iBlock++) 
     {
       //check if the block is selected
-      if (! ( selectDataType==inputBlock->fDataType )) continue;
+      char blockTopic[kAliHLTComponentDataTypeTopicSize];
+      DataType2Topic(inputBlock->fDataType, blockTopic);
+      if (!Topicncmp(requestedTopic, blockTopic, requestedTopicSize)) continue;
       nothingSelected=kFALSE;
 
       char topic[kAliHLTComponentDataTypeTopicSize];
-      DataType2Topic(inputBlock->fDataType,topic);
+      DataType2Topic(inputBlock->fDataType, topic);
 
       //send:
       //  first part : AliHLTComponentDataType in string format
@@ -174,10 +169,11 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
       zmq_send(fZMQout, &topic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
       zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (fZMQsendAllInOne)?ZMQ_SNDMORE:0);
     }
-    if (nothingSelected)
+    if (nothingSelected && fZMQsocketType==ZMQ_REP)
     { 
-      //empty frame of type void
-      const char delimiter[kAliHLTComponentDataTypeTopicSize] = {0,0,0,0,0,0,0,0,0,0,0,0};
+      //empty frame of type void if we really need a reply (ZMQ_REP mode)
+      char delimiter[kAliHLTComponentDataTypeTopicSize];
+      memset(delimiter, 0, kAliHLTComponentDataTypeTopicSize);
       zmq_send(fZMQout, &delimiter, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
       zmq_send(fZMQout, 0, 0, 0);
     }
@@ -199,14 +195,11 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
  
   if (option.Contains("ZMQsocketMode")) 
   {
-    if (! (
-          value.Contains("REP") || 
-          value.Contains("PUB")
-          )
-       ) {return 1;}
-    fZMQsocketMode = value;
+    if (value.Contains("REP")) fZMQsocketType=ZMQ_PUB;
+    if (value.Contains("PUB")) fZMQsocketType=ZMQ_REP;
+    
     //always poll when REPlying
-    fZMQpollIn=(value.Contains("REP"))?kTRUE:kFALSE;
+    fZMQpollIn=(fZMQsocketType==ZMQ_REP)?kTRUE:kFALSE;
   }
  
   if (option.Contains("ZMQconnectMode"))

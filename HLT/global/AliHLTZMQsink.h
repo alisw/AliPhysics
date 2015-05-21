@@ -47,7 +47,7 @@ private:
 
   void* fZMQcontext;       //ZMQ context pointer
   void* fZMQout;           //the output socket
-  TString fZMQsocketMode;  //REP
+  int fZMQsocketType;      //REP
   TString fZMQconnectMode; //"connect" or "bind"
   TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"
   Bool_t fZMQpollIn;       //do we poll fo incoming requests?
