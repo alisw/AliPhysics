@@ -54,6 +54,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fAODMCParticles(0),
   fESDCells(0),
   fAODCells(0),
+  fVCells(0),
   fPrTrCuts(0),
   fCompTrCuts(0),
   fGeom(0x0),
@@ -175,6 +176,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fAODMCParticles(0),
   fESDCells(0),
   fAODCells(0),
+  fVCells(0),
   fPrTrCuts(0),
   fCompTrCuts(0),
   fGeom(0x0),
@@ -408,16 +410,16 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fInConePairedClusEtVsCandEt = new TH2F("hInConePairedClusEtVsCandEt","E_{T}^{partner} vs. E_{T}^{cand} (R<0.4, 0.110<m_{#gamma#gamma}<0.165);E_{T}^{cand};E_{T}^{partner}",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,200,0,40);
   fOutputList->Add(fInConePairedClusEtVsCandEt);
 
-  Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt, nInConeMass=100;
-  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt,nInConeMass};
+  Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt, nInConeMass=100, nNLM=11;
+  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt,nInConeMass, nNLM};
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
-  Double_t xmin[] = { fPtBinLowEdge,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,fPtBinLowEdge,0.0};
-  Double_t xmax[] = { fPtBinHighEdge, 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,fPtBinHighEdge, 1.0};
+  Double_t xmin[] = { fPtBinLowEdge,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,fPtBinLowEdge,0.0,-0.5};
+  Double_t xmax[] = { fPtBinHighEdge, 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,fPtBinHighEdge, 1.0,10.5};
   if(fPeriod.Contains("11h")){
     xmax[12]=3999.5;
   }
-  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma}", ndims, bins, xmin, xmax);
+  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma},NLM", ndims, bins, xmin, xmax);
   fHnOutput->Sumw2();
   fOutputList->Add(fHnOutput);
 
@@ -734,6 +736,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     if(fDebug)
       std::cout<<"ERROR: NO MC EVENT!!!!!!\n";
   }
+  fVCells = GetVCaloCells();
   LoopOnCells();
   FollowGamma();
   CheckTriggerPatch();
@@ -905,6 +908,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       fClusEtCPVSBGISO->Fill(Et,alliso - trcore);
     if(c->GetM02()>0.5 && c->GetM02()<2.0 && isCPV)
       fClusEtCPVBGISO->Fill(Et,alliso - trcore);
+    Int_t clusNLM = GetNumberOfLocalMaxima(c,fVCells);
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
     if(mcptsum<2)
@@ -940,6 +944,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       outputValues[14] = onePairMass;
     else
       outputValues[14] = -1;
+    if(clusNLM<10)
+      outputValues[15] = clusNLM;
+    else 
+      outputValues[15] = 10;
     fHnOutput->Fill(outputValues);
     if(c->E()>maxE)
       maxE = c->E();
@@ -956,15 +964,10 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
   if(fDebug)
     printf("....indside GetCeIso funtcion\n");
   // Get cell isolation.
-  AliVCaloCells *cells = fESDCells;
-  if (!cells){
-    cells = fAODCells;
-    if(fDebug)
-      printf("ESD cells empty...\n");
-  }
+  AliVCaloCells *cells = fVCells;
   if (!cells){
      if(fDebug)
-      printf("  and AOD cells are empty  as well!!!\n"); 
+      printf("cells are empty  as well!!!\n"); 
     return;
   }
 
@@ -1130,10 +1133,7 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluste
 {
   // Calculate the energy of cross cells around the leading cell.
 
-  AliVCaloCells *cells = 0;
-  cells = fESDCells;
-  if (!cells)
-    cells = fAODCells;
+  AliVCaloCells *cells = fVCells;
   if (!cells)
     return 0;
 
@@ -1181,10 +1181,7 @@ Double_t AliAnalysisTaskEMCALIsoPhoton ::GetMaxCellEnergy(const AliVCluster *clu
 
   id = -1;
 
-  AliVCaloCells *cells = 0;
-  cells = fESDCells;
-  if (!cells)
-    cells = fAODCells;
+  AliVCaloCells *cells = fVCells;
   if(!cells)
     return 0;
 
@@ -1737,10 +1734,7 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::LoopOnCells()
 {
-  AliVCaloCells *cells = 0;
-  cells = fESDCells;
-  if (!cells)
-    cells = fAODCells;
+  AliVCaloCells *cells = fVCells;
   if(!cells)
     return;
   Double_t maxe = 0;
@@ -1840,7 +1834,7 @@ Int_t AliAnalysisTaskEMCALIsoPhoton::GetNumberOfLocalMaxima(AliVCluster* cluster
   Int_t   absIdList[nc]; 
   Float_t maxEList[nc]; 
   
-  Int_t nMax = 0;//GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList);
+  Int_t nMax = GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList);
   
   return nMax;
 }
@@ -1983,15 +1977,12 @@ Bool_t AliAnalysisTaskEMCALIsoPhoton::AreNeighbours(Short_t absId1, Short_t absI
   // Calculate the energy of cross cells around the leading cell.
   Bool_t neighbourhood = kFALSE;
 
-  AliVCaloCells *cells = 0;
-  cells = fESDCells;
+  AliVCaloCells *cells = fVCells;
   if (!cells)
-    cells = fAODCells;
-  if (!cells)
-    return 0;
+    return neighbourhood;
 
   if (!fGeom)
-    return 0;
+    return neighbourhood;
 
   Int_t iSupMod1 = -1;
   Int_t iTower1  = -1;
@@ -2024,6 +2015,17 @@ Bool_t AliAnalysisTaskEMCALIsoPhoton::AreNeighbours(Short_t absId1, Short_t absI
     }
 
   return neighbourhood;
+}
+//________________________________________________________________________
+AliVCaloCells* AliAnalysisTaskEMCALIsoPhoton::GetVCaloCells()
+{
+  AliVCaloCells *cells = 0;
+  cells = fESDCells;
+  if (!cells)
+    cells = fAODCells;
+  if (!cells)
+    return 0;
+  return cells;
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
