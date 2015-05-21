@@ -39,12 +39,38 @@ class AliJDiJet {
         int GetEntries(){ return fJet.size(); }
         void Safe( UInt_t x ){ if( fJet.size()<x) fJet.resize(x); }
         double LeadingPt(){ double pt0=jet(0).Pt();double pt1=jet(1).Pt();return pt0>pt1?pt0:pt1;}
+        double Mt(){ return (jet(0)+jet(1)).Mt(); }
+        double Mt0(){ return sqrt( pow(jet(0).Pt()+jet(1).Pt(),2) - pow(PtPair(),2)); }
+        double Mt1(){ return sqrt( pow(sqrt(jet(0).M2()+jet(0).Perp2())+sqrt(jet(1).M2()+jet(1).Perp2()),2) - pow(PtPair(),2)); }
+        double Mt2(){ return sqrt( pow(sqrt(jet(0).E2nd2()-jet(0).Pz()*jet(0).Pz())+sqrt(jet(1).E2nd2()-jet(1).Pz()*jet(1).Pz()),2) - pow(PtPair(),2)); }
+
 
         AliJJet& jet(int i){ Safe(i);return (*this)(i); }
         AliJJet& operator()(int i ){
             if( i > 1 || i< 0) { cout<<"wrong index"<<endl;exit(2);  }
             if( !fJet[i] ){ cout<<"Empty jet"<<endl;exit(3); }
             return* fJet[i];
+        }
+        void Print(int type){
+            static int count = 0;
+            if( GetEntries() < 2 ){
+                cout<<"number of dijet is "<<GetEntries()<<endl;
+                return;
+            }
+            TLorentzVector lvsum = jet(0)+jet(1);
+            TLorentzVector * lv[3];
+            lv[0] = &jet(0);
+            lv[1] = &jet(1);
+            lv[2] = &lvsum;
+
+            cout<<"DEBUG_DiJet_Mass ==== START"<<endl;
+            for( int i=0;i<3;i++ ){
+                TLorentzVector &l = *lv[i];
+                cout<<Form("DEBUG_DiJet_Mass : %d %d %d : %10.3f %10.3f %10.3f %10.3f %10.3f",count, type, i,l.Px(),l.Py(),l.Pz(),l.E(), l.M())<<endl;
+            }
+            lv[2]->Print();
+            cout<<"DEBUG_DiJet_Mass === EMD"<<endl;
+            count++;
         }
 
         vector<AliJJet*> fJet;
@@ -54,16 +80,21 @@ class AliJDiJet {
 class AliJDiJetAnalysis{
     public:
         enum { 
-            kJDiJetLeadingSubLeading,
+            kJDiJetLeadingSubLeading5,
+            kJDiJetLeadingSubLeading10,
+            kJDiJetLeadingSubLeading20,
+            kJDiJetLeadingSubLeading50,
             kLeadingSubLeadingOpposite,
-            kJDiJetMarta,
+            kLeadingSubLeadingEtaWindow,
             //kJDiJetAtlas,
-            kJNDiJetSelection
+            kJNDiJetSelection,
+            kJDiJetMarta,
+            kJDiJetCMS,
         };
         enum { 
             kJIncomingJet, kJOutgoingJet, 
-            kJFullJet, kJFullJet08, 
-            kJChargedJet, kJChargedJet08, 
+            kJFullJetR03, kJFullJetR04, kJFullJetR05, kJFullJetR06, 
+            kJChargedJetR03, kJChargedJetR04, kJChargedJetR05, kJChargedJetR06,
             //kJIdealJet, 
             kJMultiPartonAll, 
             kJNJetType 
@@ -81,6 +112,9 @@ class AliJDiJetAnalysis{
         void FillHistosJets();
         void FillHistosDiJet();
         void CreateHistos();
+
+        static bool CompareTrackByPt( AliJBaseTrack * a, AliJBaseTrack* b );
+        vector<AliJBaseTrack*> SortTrackByPt( TObjArray * os );
 
 
         void AddJets(TObjArray * jets ){ 
@@ -162,6 +196,9 @@ class AliJDiJetAnalysis{
         AliJTH1D fhJetEta;
         AliJTH1D fhJetNConst;
         AliJTH1D fhJetEnergy;
+        AliJTH1D fhJetInvM;
+        AliJTH1D fhJetMjjEbin;
+        AliJTH1D fhJetMtEbin;
 
         AliJTProfile fhJetEnergyComp;
         AliJTProfile fhJetPtComp;
@@ -169,8 +206,19 @@ class AliJDiJetAnalysis{
         AliJTH1D fhJetDPhiToRef;
         //== DiJets;
         AliJTH1D fhDiJetPtPair;
+        AliJTH1D fhDiJetPtPairRaw;
+        AliJTH1D fhDiJetPt1;
+        AliJTH1D fhDiJetPt2;
         AliJTH1D fhDiJetInvM;
+        AliJTH1D fhDiJetInvMInclu;
+        AliJTH1D fhDiJetMtInclu;
         AliJTH1D fhDiJetKtA;
+
+        AliJTH1D fhDiJetSingleJetMass;
+        AliJTH1D fhDiJetSingleJetArea;
+        AliJTH1D fhDiJetSingleJetActivity;
+        AliJTH1D fhDiJetSingleJetNCont;
+
         AliJTH1D fhDiJetDeltaR;     //!
         AliJTH1D fhDiJetDeltaPhi;
         AliJTH1D fhDiJetDeltaEta;
@@ -178,11 +226,17 @@ class AliJDiJetAnalysis{
         AliJTH1D fhDiJetEAsymm;
         AliJTH1D fhDiJetMultiplicity;
 
+        AliJTH2D fhDiJetTypeCor;
+        AliJTH2D fhInvMPttCor;
+        AliJTH2D fhMtMjjCor;
+
         //== PYTHIA
         AliJTH1D fhPythiaJetPtPair;
         AliJTH1D fhPythiaJetSum;
 
+
         int fDiJetBin[kJNJetType][kJNJetSelection][kJNDiJetSelection][10];
+        double fDiJetMass[kJNJetType][kJNJetSelection][kJNDiJetSelection][10];
 };
 
 #endif

@@ -19,12 +19,10 @@
 
 AliJJet::AliJJet(): 
     AliJBaseTrack(), 
-    fLeadingTrackId(-1),
-    fLeadingTrackPt(-1),
-    fLeadingTrackE(-1),
-    fNConstituent(0),
+    fE2(0),
     fArea(0),
-    fConstituents()
+    fConstituents(),
+    fConstituentsRef()
 {;}
 
 
@@ -33,9 +31,10 @@ AliJJet::AliJJet(float px,float py, float pz, float e, Int_t id, Short_t ptype, 
     fLeadingTrackId(-1),
     fLeadingTrackPt(-1),
     fLeadingTrackE(-1),
-    fNConstituent(0),
+    fE2(0),
     fArea(0),
-    fConstituents()
+    fConstituents(),
+    fConstituentsRef()
 {;}
 
 AliJJet::AliJJet(const AliJJet& a):
@@ -43,9 +42,10 @@ AliJJet::AliJJet(const AliJJet& a):
     fLeadingTrackId( a.fLeadingTrackId),
     fLeadingTrackPt( a.fLeadingTrackPt),
     fLeadingTrackE( a.fLeadingTrackE),
-    fNConstituent(a.fNConstituent),
+    fE2(a.fArea),
     fArea( a.fArea ),
-    fConstituents( a.fConstituents )
+    fConstituents( a.fConstituents),
+    fConstituentsRef( a.fConstituentsRef )
 {;}
 
 AliJJet::AliJJet(const TLorentzVector & a):
@@ -53,9 +53,10 @@ AliJJet::AliJJet(const TLorentzVector & a):
     fLeadingTrackId(-1),
     fLeadingTrackPt(-1),
     fLeadingTrackE(-1),
-    fNConstituent(0),
+    fE2(0),
     fArea(0),
-    fConstituents()
+    fConstituents(),
+    fConstituentsRef()
 {;}
 
 
@@ -65,9 +66,11 @@ AliJJet& AliJJet::operator=(const AliJJet& trk){
     AliJBaseTrack::operator=(trk);
     fArea = trk.fArea;
     fConstituents = trk.fConstituents;
+    fConstituentsRef = trk.fConstituentsRef;
     fLeadingTrackId = trk.fLeadingTrackId;
     fLeadingTrackPt = trk.fLeadingTrackPt;
     fLeadingTrackE = trk.fLeadingTrackE;
+    fE2 = trk.fE2;
   }
   return *this;
 }
@@ -78,25 +81,33 @@ void AliJJet::ReSum(){
     double lpt = 1e-10;
     int lidE = -1;
     double lE = 1e-10;
+    fE2 = E();
+    if( GetNConstituentsRef() < 1 ) return;
+    GenConstituentsFromRef();
     fNConstituent = fConstituents.GetEntriesFast();
-    for( int i=0;i<GetNConstituents();i++ ){
-        AliJBaseTrack * trk = (AliJBaseTrack*) fConstituents[i];
+    double E2 = -1;
+    for( int i=0;i<GetNConstituentsRef();i++ ){
+        AliJBaseTrack * trk = (AliJBaseTrack*) fConstituents.At(i);
         if( !trk ){ 
-            cout<<"DEBUG E1 : No trk in "<<endl;
-        continue;
+            //cout<<"DEBUG E1 : No trk in "<<fConstituentsRef.GetUID(i)<<" "<<fConstituentsRef.At(i)<<endl;
+            continue;
         }
-        TLorentzVector * v = (TLorentzVector*)fConstituents[i];
-        v->SetE( v->Perp() );
+        TLorentzVector * v = (TLorentzVector*)fConstituents.At(i);
         lv += *v;
+        double e2 = TMath::Sqrt(TMath::Power(v->P(),2)+TMath::Power(0.1349766,2)) ;
+        E2 += e2;
         double pt = trk->Pt();
         if( pt > lpt ){lpt = pt;lid = i;}
         double e = trk->E();
         if( e > lE ){lE = e;lidE = i;}
     }
-	fLeadingTrackId = lid;
+    if( lv.E() < 1e-4 ) return;
+    if( lv.E() > 0 ) TLorentzVector::operator=(lv);
+    if( E2 < 0 ) E2 = E();
+    else E2+=1;
+    fE2=E2;
     fLeadingTrackPt = lpt;
     fLeadingTrackE = lE;
-    TLorentzVector::operator=(lv);
 }
 
 ClassImp(AliJJet)

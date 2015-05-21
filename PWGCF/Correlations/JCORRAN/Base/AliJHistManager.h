@@ -269,6 +269,7 @@ class AliJTH1 : public AliJArrayBase{
         int AddDim( AliJBin * bin );
         int AddDim( TString v);
         void AddToManager( AliJHistManager * hmg );
+        AliJBin* GetBinPtr(int i){ return fBins.at(i); }
 
         // Virtual from AliJArrayBase
         virtual void * BuildItem() ;
@@ -285,6 +286,7 @@ class AliJTH1 : public AliJArrayBase{
         virtual TString BuildTitle();
         bool    IsLoadMode(); 
         void    SetTemplate(TH1* h);
+        TH1*    GetTemplatePtr(){ return fTemplate; }
 
 
 
@@ -312,8 +314,6 @@ class AliJTH1Derived : public AliJTH1 {
             AliJTH1(config, hmg),fPlayer(this){}
         virtual ~AliJTH1Derived();
 
-        //AliJTH1DerivedPlayer<T> & operator[](int i){ fPlayer.Init();return fPlayer[i]; }
-   //     AliJTH1DerivedPlayer<T> & operator[](int i){ fPlayer.Init();fPlayer[i];return fPlayer; }
         AliJTH1DerivedPlayer<T> & operator[](int i){ fPlayer.Init();fPlayer[i];return fPlayer; }
         T * operator->(){ return static_cast<T*>(GetSingleItem()); }
         operator T*(){ return static_cast<T*>(GetSingleItem()); }
@@ -326,6 +326,20 @@ class AliJTH1Derived : public AliJTH1 {
         AliJTH1Derived<T>& operator<<(AliJBin& v){ AddDim(&v);return *this; }
         AliJTH1Derived<T>& operator<<(TString v){ AddDim(v);return *this; }
         AliJTH1Derived<T>& operator<<(T v){ SetTemplate(&v);return *this; }
+        void SetWith( AliJTH1Derived<T>& v, TString name, TString title="" ){
+          SetTemplate( v.GetTemplatePtr() );
+          fName = name;
+          fTitle = title;
+          GetTemplatePtr()->SetName( name );
+          GetTemplatePtr()->SetTitle( title );
+          for( int i=0;i<v.Dimension();i++ ) AddDim( v.GetBinPtr(i) );
+          AddDim("END");
+        }
+        void SetWith( AliJTH1Derived<T>& v, T tem ){
+          SetTemplate( &tem );
+          for( int i=0;i<v.Dimension();i++ ) AddDim( v.GetBinPtr(i) );
+          AddDim("END");
+        }
     protected:
         AliJTH1DerivedPlayer<T> fPlayer;
 
@@ -369,8 +383,7 @@ typedef AliJTH1Derived<TProfile> AliJTProfile;
 //////////////////////////////////////////////////////////////////////////
 class AliJHistManager: public AliJNamed{
     public:
-        AliJHistManager(TString name );
-        AliJHistManager(TString name, TString dirname );
+        AliJHistManager(TString name, TString dirname="" );
         AliJHistManager(const AliJHistManager& obj);
         AliJHistManager& operator=(const AliJHistManager& obj);
         void Add( AliJBin * o );
