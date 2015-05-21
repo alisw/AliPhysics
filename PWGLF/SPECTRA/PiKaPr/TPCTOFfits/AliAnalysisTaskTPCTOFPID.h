@@ -44,7 +44,6 @@ public AliAnalysisTaskSE
 
 
   /* getters */
-  //AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}; // getter
   AliESDpid *GetESDpid() const {return fESDpid;}; // get ESD PID
   AliTOFcalib *GetTOFcalib() const {return fTOFcalib;}; // getter
   AliTOFT0maker *GetTOFT0maker() const {return fTOFT0maker;}; // getter
@@ -57,7 +56,6 @@ public AliAnalysisTaskSE
   void SetVertexCut(Double_t value) {fVertexCut = value;}; // setter
   void SetRapidityCut(Double_t value) {fRapidityCut = value;}; // setter
   void SetTimeResolution(Double_t value) {fTimeResolution = value;}; // setter
-  //void SetTrackCuts(AliESDtrackCuts *value) {fTrackCuts = value;}; // setter
 
  protected:
 
