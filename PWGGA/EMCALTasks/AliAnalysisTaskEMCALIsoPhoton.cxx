@@ -98,6 +98,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fInConePairClEt(""),
   fNSigNeutMesonCut(2.0),
   fSigmaSmear(0.0),
+  fNLMCut(100),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -218,6 +219,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fInConePairClEt(""),
   fNSigNeutMesonCut(2.0),
   fSigmaSmear(0.0),
+  fNLMCut(100),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -1828,6 +1830,199 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::SmearM02(Double_t m02)
     return m02;
   TRandom3 *r = new TRandom3(0);
   return m02*(1+r->Gaus(0,fSigmaSmear));
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskEMCALIsoPhoton::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells) 
+{  
+  const Int_t   nc = cluster->GetNCells();
+  
+  Int_t   absIdList[nc]; 
+  Float_t maxEList[nc]; 
+  
+  Int_t nMax = 0;//GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList);
+  
+  return nMax;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskEMCALIsoPhoton::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
+                                                  Int_t *absIdList,     Float_t *maxEList) 
+{
+  Int_t iDigitN = 0 ;
+  Int_t iDigit  = 0 ;
+  Int_t absId1 = -1 ;
+  Int_t absId2 = -1 ;
+  const Int_t nCells = cluster->GetNCells();
+  
+  Float_t eCluster = cluster->E();
+  Float_t fLocalMaxCutE = 0.1;
+  Float_t fLocMaxCutEDiff = 0.05;
+
+  
+  if(!cluster->IsEMCAL())
+    return 0;
+  
+  //printf("cluster : ncells %d \n",nCells);
+  
+  Float_t emax  = 0;
+  Int_t   idmax =-1;
+  for(iDigit = 0; iDigit < nCells ; iDigit++)
+  {
+    absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit]  ; 
+    Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+    
+    
+    if( en > emax )
+    {
+      emax  = en ;
+      idmax = absIdList[iDigit] ;
+    }
+    //Int_t icol = -1, irow = -1, iRCU = -1;
+    //Int_t sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
+    //printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
+  }
+  
+  for(iDigit = 0 ; iDigit < nCells; iDigit++) 
+  {   
+    if( absIdList[iDigit] >= 0 ) 
+    {
+      absId1 = cluster->GetCellsAbsId()[iDigit];
+      
+      Float_t en1 = cells->GetCellAmplitude(absId1);
+      
+      
+      //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
+      
+      for(iDigitN = 0; iDigitN < nCells; iDigitN++) 
+      {	
+        absId2 = cluster->GetCellsAbsId()[iDigitN] ;
+        
+        if(absId2==-1 || absId2==absId1) continue;
+        
+        //printf("\t %d : absIDj %d\n",iDigitN, absId2);
+        
+        Float_t en2 = cells->GetCellAmplitude(absId2);
+        
+
+        //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
+        
+        if ( AreNeighbours( absId1, absId2) ) 
+        {
+          // printf("\t \t Neighbours \n");
+          if ( en1 > en2 ) 
+          {    
+            absIdList[iDigitN] = -1 ;
+            //printf("\t \t indexN %d not local max\n",iDigitN);
+            // but may be digit too is not local max ?
+            if(en1 < en2 + fLocMaxCutEDiff) {
+              //printf("\t \t index %d not local max cause locMaxCutEDiff\n",iDigit);
+              absIdList[iDigit] = -1 ;
+            }
+          }
+          else 
+          {
+            absIdList[iDigit] = -1 ;
+            //printf("\t \t index %d not local max\n",iDigitN);
+            // but may be digitN too is not local max ?
+            if(en1 > en2 - fLocMaxCutEDiff) 
+            {
+              absIdList[iDigitN] = -1 ; 
+              //printf("\t \t indexN %d not local max cause locMaxCutEDiff\n",iDigit);
+            }
+          } 
+        } // if Are neighbours
+        //else printf("\t \t NOT Neighbours \n");
+      } // while digitN
+    } // slot not empty
+  } // while digit
+  
+  iDigitN = 0 ;
+  for(iDigit = 0; iDigit < nCells; iDigit++) 
+  { 
+    if( absIdList[iDigit] >= 0 )
+    {
+      absIdList[iDigitN] = absIdList[iDigit] ;
+      
+      Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+
+      
+      
+      if(en < fLocalMaxCutE ) continue; // Maxima only with seed energy at least
+      
+      maxEList[iDigitN] = en ;
+      
+      //printf("Local max %d, id %d, en %f\n", iDigit,absIdList[iDigitN],en);
+      iDigitN++ ; 
+    }
+  }
+  
+  if ( iDigitN == 0 )
+  {
+    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f",
+                    idmax,emax,cluster->E()));
+    iDigitN      = 1     ;
+    maxEList[0]  = emax  ;
+    absIdList[0] = idmax ; 
+  }
+  
+  
+  AliDebug(1,Form("In cluster E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d",
+                  cluster->E(),eCluster, cluster->GetM02(),cluster->GetM20(), iDigitN));
+  
+//  if(fDebug > 1) for(Int_t imax = 0; imax < iDigitN; imax++)
+//  {
+//    printf(" \t i %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
+//  }
+  
+  return iDigitN ;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALIsoPhoton::AreNeighbours(Short_t absId1, Short_t absId2)
+{
+  // Calculate the energy of cross cells around the leading cell.
+  Bool_t neighbourhood = kFALSE;
+
+  AliVCaloCells *cells = 0;
+  cells = fESDCells;
+  if (!cells)
+    cells = fAODCells;
+  if (!cells)
+    return 0;
+
+  if (!fGeom)
+    return 0;
+
+  Int_t iSupMod1 = -1;
+  Int_t iTower1  = -1;
+  Int_t iIphi1   = -1;
+  Int_t iIeta1   = -1;
+  Int_t iphi1   = -1;
+  Int_t ieta1    = -1;
+  Int_t iSupMod2 = -1;
+  Int_t iTower2  = -1;
+  Int_t iIphi2   = -1;
+  Int_t iIeta2   = -1;
+  Int_t iphi2   = -1;
+  Int_t ieta2  = -1;
+
+  //first cell
+  fGeom->GetCellIndex(absId1,iSupMod1,iTower1,iIphi1,iIeta1);
+  fGeom->GetCellPhiEtaIndexInSModule(iSupMod1,iTower1,iIphi1, iIeta1,iphi1,ieta1);
+  //second cell
+  fGeom->GetCellIndex(absId2,iSupMod2,iTower2,iIphi2,iIeta2);
+  fGeom->GetCellPhiEtaIndexInSModule(iSupMod2,iTower2,iIphi2, iIeta2,iphi2,ieta2);
+
+  Int_t aphidiff = TMath::Abs(iphi1-iphi1);
+    if (aphidiff>1)
+      return neighbourhood;
+    Int_t aetadiff = TMath::Abs(ieta1-ieta1);
+    if (aetadiff>1)
+      return neighbourhood;
+    if ((aphidiff + aetadiff) == 1) {
+      neighbourhood = kTRUE;
+    }
+
+  return neighbourhood;
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
