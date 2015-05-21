@@ -181,17 +181,28 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
   {
     if (treeCosmicPairs->GetEntries()>0)
     { 
+      TCut cutCosmic="1";
       // Additional cuts for cosmics
-      TCut ptCut="abs(t0.fP[4])<0.33"; //cut on 1/pt < 0.33
-      TCut cutDCA="abs(0.5*(t0.fD-t1.fD))>5&&abs(0.5*(t0.fD-t1.fD))<80"; //tracks crossing the inner field cage (80cm)
-      TCut cutCross="t0.fOp.fP[1]*t1.fOp.fP[1]<0"; //tracks crossing central electrode
-      
+      if (gSystem->Getenv("isCosmic")!=NULL &&strstr(gSystem->Getenv("isCosmic"),"0")!=0){
+	treeCosmicPairs->SetAlias("alphaPrime","abs(t0.fAlpha)-pi/2");
+	treeCosmicPairs->SetAlias("alphaPrimeFit","TMath::Gaus(alphaPrime,0,0.573+0)");
+	treeCosmicPairs->SetAlias("alphaPrimeDownscale","alphaPrimeFit*rndm<0.05");  
+	treeCosmicPairs->SetAlias("itsFiducial","min(abs(t0.fP[0]),abs(t1.fP[0]))<16&&min(abs(t0.fP[1]),abs(t1.fP[1]))<30");
+	cutCosmic="itsFiducial || alphaPrimeDownscale";
+      }
+      else{
+	TCut ptCut="abs(t0.fP[4])<0.33"; //cut on 1/pt < 0.33
+	TCut cutDCA="abs(0.5*(t0.fD-t1.fD))>5&&abs(0.5*(t0.fD-t1.fD))<80"; //tracks crossing the inner field cage (80cm)
+	TCut cutCross="t0.fOp.fP[1]*t1.fOp.fP[1]<0"; //tracks crossing central electrode
+	cutCosmic= ptCut && cutDCA && cutCross;
+      }
+
       // Dump the tree scan in to file
       printf("offlineTrigger: CosmicPairs\n");
       treeCosmicPairs->GetUserInfo()->AddFirst(new TNamed("CosmicPairs","CosmicPairs"));
       treeCosmicPairs->SetScanField(nEvents);
       AliSysInfo::AddStamp("cosmicFilterBegin",4,1);
-      treeCosmicPairs->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp", ptCut && cutDCA && cutCross, "col=130.s:14.d:30.s:20.lu:20.lu"); 
+      treeCosmicPairs->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp", cutCosmic, "col=130.s:14.d:30.s:20.lu:20.lu"); 
       AliSysInfo::AddStamp("cosmicFilterEnd",4,2);
     }
   }
