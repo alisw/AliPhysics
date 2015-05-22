@@ -48,6 +48,7 @@
 
 // PWG includes
 #include "AliAnalysisMuonUtility.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 
 using std::cout;
@@ -70,11 +71,10 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fTrackCounters(0x0),
   fEventCounters(0x0),
   fSelectCharge(0),
-  fSelectPhysics(kFALSE),
-  fSelectTrigger(kFALSE),
-  fTriggerMask(0),
+  fSelectEvent(kFALSE),
   fSelectMatched(kFALSE),
   fApplyAccCut(kFALSE),
+  fEventCuts(0x0),
   fTrackCuts(0x0),
   fMuonTrigIndex()
 {
@@ -90,11 +90,10 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fTrackCounters(0x0),
   fEventCounters(0x0),
   fSelectCharge(0),
-  fSelectPhysics(kFALSE),
-  fSelectTrigger(kFALSE),
-  fTriggerMask(0),
+  fSelectEvent(kFALSE),
   fSelectMatched(kFALSE),
   fApplyAccCut(kFALSE),
+  fEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts")),
   fMuonTrigIndex()
 {
@@ -126,6 +125,8 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
     delete fEventCounters;
     delete fListNorm;
   }
+  
+  delete fEventCuts;
   delete fTrackCuts;
 }
 
@@ -318,6 +319,8 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
 {
   /// Called for each event
 
+  Bool_t isEventSelected = fEventCuts->IsSelected(fInputHandler);
+
   AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     Printf("ERROR: fESD not available");
@@ -338,24 +341,23 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
 
   UInt_t geomAccMask = ( AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs );
   
-  // check physics selection
-  UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
-  Bool_t isPhysicsSelected = (triggerWord != 0);
-  TString selected = isPhysicsSelected ? "selected:yes" : "selected:no";
+  // check AliMuonEventCuts selection
+  TString selected = isEventSelected ? "selected:yes" : "selected:no";
   selected += t0PileUp ? "/t0pileup:yes" : "/t0pileup:no";
   selected += bgID ? "/bgID:yes" : "/bgID:no";
   selected += spdPileUp ? "/spdpileup:yes" : "/spdpileup:no";
 
   // fill muon trigger cases
+  UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
   for ( Int_t idx=0; idx < fMuonTrigIndex.GetSize(); idx++ ) {
     UInt_t currMask = (UInt_t) fMuonTrigIndex[idx];
     if ( ( triggerWord & currMask ) == currMask ) ((TH1I*)fList->UncheckedAt(kMuonTrig))->Fill(idx);
   }
   
-  // check trigger selection 
-  TString FiredTriggerClasses = fESD->GetFiredTriggerClasses();
-  Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
-  
+  // check trigger selection by AliMuonEventCuts
+  //  TString FiredTriggerClasses = fESD->GetFiredTriggerClasses();
+  const TObjArray* selectedTrigClasses = fEventCuts->GetSelectedTrigClassesInEvent(InputEvent());
+
   // get the V0 multiplicity (except for p-p)
   AliESDVZERO* v0Data = fESD->GetVZEROData();
   Float_t v0Mult = 0.;
@@ -399,8 +401,8 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   
   // --- fill event counters ---
   
-  // build the list of trigger cases
-  TList* triggerCases = BuildListOfAllTriggerCases(FiredTriggerClasses);
+  // build the list of selected trigger cases
+  TList* triggerCases = BuildListOfTriggers(selectedTrigClasses);
 
   // loop over trigger cases
   TObjString* triggerKey = 0x0;
@@ -508,11 +510,8 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     if (!esdTrack->ContainTrackerData()) continue;
     
     // select on "physics" before filling histograms
-    if (fSelectPhysics && !isPhysicsSelected) continue;
+    if (fSelectEvent && !isEventSelected) continue;
     
-    // select on trigger before filling histograms
-    if (fSelectTrigger && !isTriggerSelected) continue;
-
     // select on track charge
     if (fSelectCharge*esdTrack->Charge() < 0) continue;
     
@@ -584,7 +583,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
   }
   
-  if ( (!fSelectPhysics || isPhysicsSelected)  && (!fSelectTrigger || isTriggerSelected) ) {
+  if ( (!fSelectEvent || isEventSelected) ) {
     ((TH1F*)fList->UncheckedAt(kNTracks))->Fill(nSelectedTrackerTracks);
     ((TH1F*)fList->UncheckedAt(kMatchTrig))->Fill(nSelectedTrackMatchTrig);
   } 
@@ -752,39 +751,27 @@ Double_t AliAnalysisTaskMuonQA::ChangeThetaRange(Double_t theta)
 }
 
 
-
 //________________________________________________________________________
-TList* AliAnalysisTaskMuonQA::BuildListOfAllTriggerCases(TString& FiredTriggerClasses)
+TList* AliAnalysisTaskMuonQA::BuildListOfTriggers(const TObjArray *obj)
 {
-  /// build the list of trigger for the counters from the fired trigger classes
+  /// build the list of trigger for the counters from the selected trigger objarray
   /// returned TList must be deleted by user
-  
+    
   TList* list = new TList();
   list->SetOwner();
   
-  // add case any
-  list->AddLast(new TObjString("trigger:any"));
-  
-  TObjArray *obj = FiredTriggerClasses.Tokenize(" ");
   if ( obj ){
-    TIter nextTrigger(obj);
-    TObjString* trigClasseName;
-    while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
-			
-      //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
-			
+    for ( Int_t itrig = 0; itrig<obj->GetEntries(); itrig++ ) {
+      TString sTrigClassName = ((TObjString*)obj->At(itrig))->GetString();
       //Add specific trigger
-      list->AddLast(new TObjString(Form("trigger:%s",trigClasseName->GetName())));
+      list->AddLast(new TObjString(Form("trigger:%s",sTrigClassName.Data())));
     }
-    delete obj;
   }
   
   // add case other if no specific trigger was found
   if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
-	
+
   return list;
 }
-
-
 
 

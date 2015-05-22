@@ -1,11 +1,7 @@
-AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Bool_t selectMatched = kTRUE, 
-				     Bool_t applyAccCut = kTRUE, Bool_t selectTrigger = kFALSE,
-				     UInt_t triggerMask = AliVEvent::kMUS7,
-						 Short_t selectCharge = 0)
+AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectEvent = kTRUE, Bool_t selectMatched = kTRUE, 
+				     Bool_t applyAccCut = kTRUE, Short_t selectCharge = 0)
 {
   /// Add AliAnalysisTaskMuonQA to the train (Philippe Pillot)
-  
-  
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) { 
@@ -26,12 +22,12 @@ AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Bool_t select
     Error("AddTaskMuonQA", "Muon QA task cannot be created!");
     return NULL;
   }
-  task->SelectPhysics(selectPhysics);
-  task->SelectTrigger(selectTrigger, triggerMask);
+  task->SelectEvent(selectEvent);
   task->SelectMatched(selectMatched);
   task->ApplyAccCut(applyAccCut);
   task->SelectCharge(selectCharge);
-  
+  ((AliMuonEventCuts*) task->GetEventCuts())->SetFilterMask( AliMuonEventCuts::kSelectedTrig|AliMuonEventCuts::kPhysicsSelected );
+  ((AliMuonEventCuts*) task->GetEventCuts())->SetTrigClassPatterns("ANY,C*,!*-E-*,!*-A-*,!*-C-*,!*WU*,!*UP*,!*SPI*,!*PHI*,!*EMC*,!*ZED*,!*TRUE*,!*TPC*,!*BEAM*,!*1A*,!*1C*,!*VB*,!*VG*,!*UB*,!*AD*,!*UG*,!*TVX*,!*T0*,!*TS*");
   // Add task to analysis manager
   mgr->AddTask(task);
   
@@ -42,7 +38,7 @@ AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Bool_t select
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   if ( outputfile.IsNull() ) {
     Error("AddTaskMuonQA", "Common output file is not defined!");
-    return NULL;
+    return NULL; 
   }
   outputfile += ":MUON_QA";
   
