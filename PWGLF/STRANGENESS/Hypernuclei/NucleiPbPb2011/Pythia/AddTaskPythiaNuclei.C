@@ -1,6 +1,6 @@
-AliAnalysisTaskPythiaNuclei* AddTaskPythiaNuclei(){
+AliAnalysisTaskPythiaNuclei* AddTaskPythiaNuclei(TString suffix = ""){
   
-  AliAnalysisTaskPythiaNuclei *task = new AliAnalysisTaskPythiaNuclei("");
+  AliAnalysisTaskPythiaNuclei *task = new AliAnalysisTaskPythiaNuclei(Form("nuclei%s",suffix.Data()));
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
@@ -15,7 +15,7 @@ AliAnalysisTaskPythiaNuclei* AddTaskPythiaNuclei(){
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("fOutputList", TList::Class(),  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("fOutputList%s",suffix.Data()), TList::Class(),  
     AliAnalysisManager::kOutputContainer,
     outputFileName);
   
