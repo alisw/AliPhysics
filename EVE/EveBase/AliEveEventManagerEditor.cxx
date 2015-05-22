@@ -19,6 +19,7 @@
 #include <TGButton.h>
 #include <TGTextView.h>
 #include <TGLabel.h>
+#include <TGFileDialog.h>
 
 #include "Riostream.h"
 
@@ -159,6 +160,9 @@ fEventInfo    (0)
         b->Connect("Clicked()", cls, this, "DoLastEvent()");
         fMarkEvent = b = MkTxtButton(f, "Mark", width);
         b->Connect("Clicked()", cls, this, "DoMarkEvent()");
+
+        fScreenshot = b = MkTxtButton(f, "Screenshot", 2*width);
+        b->Connect("Clicked()", cls, this, "DoScreenshot()");
         
         
         MkLabel(f, "||", 0, 8, 8);
@@ -276,6 +280,27 @@ void AliEveEventManagerWindow::DoMarkEvent()
 }
 
 //______________________________________________________________________________
+void AliEveEventManagerWindow::DoScreenshot()
+{
+    // Save screenshot to file
+
+    TGFileInfo fileinfo;
+    const char *filetypes[] = {"PNG images", "*.png", 0, 0};
+    fileinfo.fFileTypes = filetypes;
+    fileinfo.fIniDir = StrDup(".");
+    new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
+    if(!fileinfo.fFilename)
+    {
+        return;
+    }
+
+    AliEveSaveViews *viewsSaver = new AliEveSaveViews();
+    viewsSaver->Save(fileinfo.fFilename);
+    
+    
+}
+
+//______________________________________________________________________________
 void AliEveEventManagerWindow::DoSetEvent()
 {
     // Set current event
@@ -374,6 +399,8 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fFirstEvent->SetEnabled(kFALSE);
         listEventsTab->SetOfflineMode(kTRUE);
         fEventId->SetState(kTRUE);
+        
+        fScreenshot->SetEnabled(kFALSE);
     }
     else if(state == 1)// SM on
     {
@@ -384,6 +411,8 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fFirstEvent->SetEnabled(kTRUE);
         listEventsTab->SetOfflineMode(kFALSE);
         fEventId->SetState(kTRUE);
+        
+        fMarkEvent->SetEnabled(kTRUE);
     }
 #endif
 }

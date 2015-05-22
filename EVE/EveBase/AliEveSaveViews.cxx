@@ -252,13 +252,168 @@ void AliEveSaveViews::Save()
     
     // write composite image to disk
     fCompositeImgFileName = Form("online-viz-%03d", fCurrentFileNumber);
-    // TASImage *imgToSave = new TASImage(fCompositeImgFileName);
     compositeImg->CopyArea(compositeImg, 0,0, fWidth, fHeight);
     compositeImg->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
     
     if(compositeImg){delete compositeImg;compositeImg=0;}
     //if(imgToSave){delete imgToSave;imgToSave=0;}
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
+}
+
+void AliEveSaveViews::Save(TString filename)
+{
+    if(filename=="")
+    {
+        cout<<"AliEveSaveViews::Save() -- no filename specified!"<<endl;
+        return;
+    }
+    
+    gEve->GetBrowser()->RaiseWindow();
+    gEve->FullRedraw3D();
+    gSystem->ProcessEvents();
+    
+    if(AliEveEventManager::HasESD())
+    {
+        fESDEvent = AliEveEventManager::AssertESD();
+    }
+    else
+    {
+        cout<<"AliEveSaveViews -- event manager has no esd file"<<endl;
+        return;
+    }
+    
+    TEveViewerList* viewers = gEve->GetViewers();
+    int Nviewers = viewers->NumChildren()-2; // remark: 3D view is counted twice
+    
+    int width = 3556;
+    int height= 2000;
+    
+    TASImage *compositeImg = new TASImage(width, height);
+    
+    // 3D View size
+    int width3DView = TMath::FloorNint(2.*width/3.);            // the width of the 3D view
+    int height3DView= height;                                   // the height of the 3D view
+    float aspectRatio = (float)width3DView/(float)height3DView; // 3D View aspect ratio
+    
+    // Children View Size
+    int heightChildView = TMath::FloorNint((float)height/2.);
+    int widthChildView  = TMath::FloorNint((float)width/3.);
+    
+    int index=0;            // iteration counter
+    int x = width3DView;    // x position of the child view
+    int y = 0;              // y position of the child view
+    TString viewFilename;   // save view to this file
+    
+    for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
+    { // NB: this skips the first children (first 3D View)
+        TEveViewer* view = ((TEveViewer*)*i);
+        viewFilename = Form("view-%d.png", index);
+        
+        // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
+        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
+        TASImage *viewImg = new TASImage(viewFilename);
+        
+        //        tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
+        
+        
+        // Second option is to use FBO instead of BB
+        // This improves the quality of pictures in some specific cases
+        // but is causes a bug (moving mouse over views makes them disappear
+        // on new event being loaded
+        
+        //         if(index==0){
+        //         tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+        //         }
+        //         else {
+        //         tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+        //         }
+        //
+        
+        if(viewImg){
+            // copy view image in the composite image
+            int currentWidth = viewImg->GetWidth();
+            int currentHeight = viewImg->GetHeight();
+            
+            if(index==0){
+                if(currentWidth < aspectRatio*currentHeight)
+                {
+                    viewImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
+                }
+                else
+                {
+                    viewImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
+                }
+                
+                viewImg->Scale(width3DView,height3DView);
+                viewImg->CopyArea(compositeImg, 0,0, width3DView, height3DView);
+                
+            }
+            else {
+                if(currentWidth < aspectRatio*currentHeight)
+                {
+                    viewImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
+                }
+                else
+                {
+                    viewImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
+                }
+                viewImg->Scale(widthChildView,heightChildView);
+                viewImg->CopyArea(compositeImg,0,0, widthChildView, heightChildView, x,y);
+                compositeImg->DrawRectangle(x,y, widthChildView, heightChildView, "#C0C0C0"); // draw a border around child views
+            }
+            delete viewImg;viewImg=0;
+        }
+        if(index>0){ // skip 3D View
+            y+=heightChildView;
+        }
+        index++;
+    }
+    
+    //draw ALICE Logo
+    TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
+    if(aliceLogo)
+    {
+        double ratio = 1434./1939.;
+        aliceLogo->Scale(0.08*width,0.08*width/ratio);
+        compositeImg->Merge(aliceLogo, "alphablend", 20, 20);
+        delete aliceLogo;aliceLogo=0;
+    }
+    
+    // draw info
+    TTimeStamp ts(fESDEvent->GetTimeStamp());
+    const char *runNumber = Form("Run:%d",fESDEvent->GetRunNumber());
+    const char *timeStamp = Form("Timestamp:%s(UTC)",ts.AsString("s"));
+    const char *system;
+    if(strcmp(fESDEvent->GetBeamType(),"")!=0)
+    {
+        system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+    }
+    else
+    {
+        system = "Colliding system: unknown";
+    }
+    const char *energy;
+    if(fESDEvent->GetBeamEnergy()>=0.0000001)
+    {
+        energy = Form("Energy:%f",fESDEvent->GetBeamEnergy());
+    }
+    else
+    {
+        energy = "Energy: unknown";
+    }
+    int fontSize = 0.015*height;
+    compositeImg->BeginPaint();
+    compositeImg->DrawText(10, height-25-4*fontSize, runNumber, fontSize, "#BBBBBB", "FreeSansBold.otf");
+    compositeImg->DrawText(10, height-20-3*fontSize, timeStamp, fontSize, "#BBBBBB", "FreeSansBold.otf");
+    compositeImg->DrawText(10, height-15-2*fontSize, system,    fontSize, "#BBBBBB", "FreeSansBold.otf");
+    compositeImg->DrawText(10, height-10-1*fontSize, energy,    fontSize, "#BBBBBB", "FreeSansBold.otf");
+    compositeImg->EndPaint();
+    
+    // write composite image to disk
+    compositeImg->CopyArea(compositeImg, 0,0, width, height);
+    compositeImg->WriteImage(filename.Data());
+    
+    if(compositeImg){delete compositeImg;compositeImg=0;}
 }
 
 void AliEveSaveViews::BuildEventInfoString()

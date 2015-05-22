@@ -74,6 +74,7 @@ public:
   void DoNextEvent();
   void DoLastEvent();
   void DoMarkEvent();
+    void DoScreenshot();
 
   void DoSetEvent();
 
@@ -94,6 +95,7 @@ protected:
     TGTextButton         *fLastEvent;    // Go to last event
     TGTextButton         *fRefresh;      // Refresh event-file state
     TGTextButton         *fMarkEvent;    // Mark current event
+    TGTextButton         *fScreenshot;   // Save screenshot to file
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id
