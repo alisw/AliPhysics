@@ -55,6 +55,7 @@ set(SRCS
     PHOS_embedding/AliPHOSEmbedding.cxx
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
+    PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
