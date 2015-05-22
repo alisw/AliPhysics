@@ -39,7 +39,7 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
 
 //
 
-  private:
+  protected:
     Int_t fRunNumber; //Run number of present run
 
     TList             *fAnalist;
