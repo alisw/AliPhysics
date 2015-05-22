@@ -252,11 +252,13 @@ void AliEveSaveViews::Save()
     
     // write composite image to disk
     fCompositeImgFileName = Form("online-viz-%03d", fCurrentFileNumber);
-    compositeImg->CopyArea(compositeImg, 0,0, fWidth, fHeight);
-    compositeImg->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
+    TASImage *imgToSave = new TASImage(fWidth,fHeight);
+    compositeImg->CopyArea(imgToSave, 0,0, fWidth, fHeight);
+
+    imgToSave->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
     
     if(compositeImg){delete compositeImg;compositeImg=0;}
-    //if(imgToSave){delete imgToSave;imgToSave=0;}
+    if(imgToSave){delete imgToSave;imgToSave=0;}
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
 }
 
@@ -296,8 +298,9 @@ void AliEveSaveViews::Save(TString filename)
     float aspectRatio = (float)width3DView/(float)height3DView; // 3D View aspect ratio
     
     // Children View Size
-    int heightChildView = TMath::FloorNint((float)height/2.);
+    int heightChildView = TMath::FloorNint((float)height/Nviewers);
     int widthChildView  = TMath::FloorNint((float)width/3.);
+    float childAspectRatio = (float)widthChildView/(float)heightChildView; // 3D View aspect ratio
     
     int index=0;            // iteration counter
     int x = width3DView;    // x position of the child view
@@ -348,14 +351,15 @@ void AliEveSaveViews::Save(TString filename)
                 viewImg->CopyArea(compositeImg, 0,0, width3DView, height3DView);
                 
             }
-            else {
+            else
+            {
                 if(currentWidth < aspectRatio*currentHeight)
                 {
-                    viewImg->Crop(0,(currentHeight-currentWidth/aspectRatio)*0.5,currentWidth,currentWidth/aspectRatio);
+                    viewImg->Crop(0,(currentHeight-currentWidth/childAspectRatio)*0.5,currentWidth,currentWidth/childAspectRatio);
                 }
                 else
                 {
-                    viewImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
+                    viewImg->Crop((currentWidth-currentHeight*childAspectRatio)*0.5,0,currentHeight*childAspectRatio,currentHeight);
                 }
                 viewImg->Scale(widthChildView,heightChildView);
                 viewImg->CopyArea(compositeImg,0,0, widthChildView, heightChildView, x,y);
@@ -410,10 +414,12 @@ void AliEveSaveViews::Save(TString filename)
     compositeImg->EndPaint();
     
     // write composite image to disk
-    compositeImg->CopyArea(compositeImg, 0,0, width, height);
-    compositeImg->WriteImage(filename.Data());
+    TASImage *imgToSave = new TASImage(width,height);
+    compositeImg->CopyArea(imgToSave, 0,0, width, height);
+    imgToSave->WriteImage(filename.Data());
     
     if(compositeImg){delete compositeImg;compositeImg=0;}
+    if(imgToSave){delete imgToSave;imgToSave=0;}
 }
 
 void AliEveSaveViews::BuildEventInfoString()

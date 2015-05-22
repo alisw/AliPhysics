@@ -399,8 +399,6 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fFirstEvent->SetEnabled(kFALSE);
         listEventsTab->SetOfflineMode(kTRUE);
         fEventId->SetState(kTRUE);
-        
-        fScreenshot->SetEnabled(kFALSE);
     }
     else if(state == 1)// SM on
     {
@@ -411,8 +409,6 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fFirstEvent->SetEnabled(kTRUE);
         listEventsTab->SetOfflineMode(kFALSE);
         fEventId->SetState(kTRUE);
-        
-        fMarkEvent->SetEnabled(kTRUE);
     }
 #endif
 }
