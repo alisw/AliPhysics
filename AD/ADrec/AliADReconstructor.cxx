@@ -149,7 +149,7 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
       Float_t time = rawStream.GetTime(iChannel)*fCalibData->GetTimeResolution(board);
       Float_t width = rawStream.GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
       // Add a digit
-      if(!fCalibData->IsChannelDead(iChannel)){
+      if(!fCalibData->IsChannelDead(offlineCh)){
 	  new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliADdigit(offlineCh, time, width,integrator, chargeADC, BBflag, BGflag);
       }
       
