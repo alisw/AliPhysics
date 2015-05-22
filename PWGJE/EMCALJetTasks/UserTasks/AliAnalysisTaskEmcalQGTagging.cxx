@@ -416,7 +416,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       }
       
        if (fJetShapeType == kDetEmbPart) {
-        kMatched = 3;
+	 if(fJetShapeSub==kConstSub) kMatched = 3;
+         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
         massMatch=GetJetMass(jet3,kMatched);
