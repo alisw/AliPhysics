@@ -291,10 +291,10 @@ public:
  TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
  void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
  TH1F* GetPhiWeights() const {return this->fPhiWeightsRPs;};
- void SetPtWeights(TH1D* const histPtWeights, Int_t c) {this->fPtWeights[c] = histPtWeights;};
- TH1D* GetPtWeights(Int_t c) const {return this->fPtWeights[c];};
- void SetEtaWeights(TH1D* const histEtaWeights) {this->fEtaWeightsRPs = histEtaWeights;};
- TH1D* GetEtaWeights() const {return this->fEtaWeightsRPs;};
+// void SetPtWeights(TH1D* const histPtWeights, Int_t c) {this->fPtWeights[c] = histPtWeights;};
+// TH1D* GetPtWeights(Int_t c) const {return this->fPtWeights[c];};
+// void SetEtaWeights(TH1D* const histEtaWeights) {this->fEtaWeightsRPs = histEtaWeights;};
+// TH1D* GetEtaWeights() const {return this->fEtaWeightsRPs;};
  
  // 2b.) event weights:
  void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -649,6 +649,7 @@ public:
  TProfile* GetCRCNUATermsPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[c][eg][h];};
  void SetCRCNUATermsHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCNUATermsHist[c][eg][h] = TH;};
  TH1D* GetCRCNUATermsHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsHist[c][eg][h];};
+ 
  // 12.e) Q Vectors:
  void SetCRCQVecReHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecRe[r][c] = TH;};
  TProfile* GetCRCQVecReHist(Int_t const r, Int_t const c) const {return this->fCRCQVecRe[r][c];};
@@ -658,6 +659,8 @@ public:
  TProfile* GetCRCQVecReCorrHist(Int_t const r, Int_t const c) const {return this->fCRCQVecReCorr[r][c];};
  void SetCRCQVecImCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecImCorr[r][c] = TH;};
  TProfile* GetCRCQVecImCorrHist(Int_t const r, Int_t const c) const {return this->fCRCQVecImCorr[r][c];};
+ void SetCRCPhiHist(TH2D* const TH, Int_t const r, Int_t const c, Int_t const i) {this->fCRCPhiHist[r][c][i] = TH;};
+ TH2D* GetCRCPhiHist(Int_t const r, Int_t const c, Int_t const i) const {return this->fCRCPhiHist[r][c][i];};
  
  void SetCRCEvPl(TH1D* const TH, Int_t const r, Int_t const c, Int_t const h) {this->fCRCEvPl[r][c][h] = TH;};
  TH1D* GetCRCEvPl(Int_t const r, Int_t const c, Int_t const h) const {return this->fCRCEvPl[r][c][h];};
@@ -796,22 +799,23 @@ private:
  Bool_t fUseTrackWeights; // use track weights (e.g. VZERO sector weights)
  Bool_t fUsePhiEtaWeights; // use phi,eta weights
  TProfile *fUseParticleWeights; //! profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
- TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
- TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
- TH1D *fEtaWeightsPOIs[2]; //! histogram holding eta weights
- TH2D *fPhiEtaWeightsPOIs[2]; //! histogram holding phi,eta weights
+// TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
+// TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
+// TH1D *fEtaWeightsPOIs[2]; //! histogram holding eta weights
+// TH2D *fPhiEtaWeightsPOIs[2]; //! histogram holding phi,eta weights
  TH1F *fPhiWeightsRPs; //!
- TH1D *fPtWeightsRPs; //!
- TH1D *fEtaWeightsRPs; //!
- TH1F *fPhiDistrRefPOIs[2]; //! histogram holding phi weights
- TH1D *fPtDistrRefPOIs[2]; //! histogram holding pt weights
- TH1D *fEtaDistrRefPOIs[2]; //! histogram holding eta weights
- TH2D *fPhiEtaDistrRefPOIs[2]; //! histogram holding phi,eta weights
- TH1F *fPhiDistrRefRPs; //!
- TH1D *fPtDistrRefRPs; //!
- TH1D *fEtaDistrRefRPs; //!
- TH2D *fPhiEtaDistrRefRPs; //!
- TH1D *fPtWeights[2]; //! histogram holding pt weights
+// TH1D *fPtWeightsRPs; //!
+// TH1D *fEtaWeightsRPs; //!
+// TH1F *fPhiDistrRefPOIs[2]; //! histogram holding phi weights
+// TH1D *fPtDistrRefPOIs[2]; //! histogram holding pt weights
+// TH1D *fEtaDistrRefPOIs[2]; //! histogram holding eta weights
+// TH2D *fPhiEtaDistrRefPOIs[2]; //! histogram holding phi,eta weights
+// TH1F *fPhiDistrRefRPs; //!
+// TH1D *fPtDistrRefRPs; //!
+// TH1D *fEtaDistrRefRPs; //!
+// TH2D *fPhiEtaDistrRefRPs; //!
+// TH1D *fPtWeights[2]; //! histogram holding pt weights
+ TH2D *fPhiEtaWeights[2]; //!
  
  // 2b.) event weights:
  TString *fMultiplicityWeight; //! event-by-event weights for multiparticle correlations
@@ -1109,6 +1113,7 @@ private:
  TProfile *fCRCQVecIm[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Im
  TProfile *fCRCQVecReCorr[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Re
  TProfile *fCRCQVecImCorr[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Im
+ TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
  
  TH1D *fCRCEvPl[fCRCMaxnRun][fCRCQVecnCR][fCRCMaxnCen]; //! Ev Plane TPC
  TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA

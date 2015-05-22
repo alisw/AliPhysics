@@ -410,57 +410,69 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
  Int_t n = fHarmonic; // shortcut for the harmonic
  
  // d.1) Initialize particle weights
- Double_t PhiAv = 0.;
- Double_t EtaAv = 0.;
+// Double_t PhiAv = 0.;
+// Double_t EtaAv = 0.;
  Double_t PhiEtaAv = 0.;
- Int_t nBinsPhi = 0;
- Int_t nBinsEta = 0;
  Int_t cw = 0;
  
- // determine phi weight for POI && RP particle:
- if(fUsePhiWeights && fPhiWeightsRPs && fPhiBinWidth) {
-  nBinsPhi = fPhiWeightsRPs->GetNbinsX();
-  for(Int_t i=0; i<nBinsPhi; i++) {
-   PhiAv += fPhiDistrRefRPs->GetBinContent(i+1);
-  }
-  PhiAv = PhiAv/nBinsPhi;
-  for(Int_t i=0; i<nBinsPhi; i++) {
-   fPhiWeightsRPs->SetBinContent(i+1,PhiAv/fPhiDistrRefRPs->GetBinContent(i+1));
-   for(Int_t c=0; c<2; c++) {
-    fPhiWeightsPOIs[c]->SetBinContent(i+1,PhiAv/(2.*fPhiDistrRefPOIs[c]->GetBinContent(i+1)));
-   }
-  }
- }
- // determine eta weight for POI && RP particle:
- if(fUseEtaWeights && fEtaWeightsRPs && fEtaBinWidth) {
-  nBinsEta = fEtaWeightsRPs->GetNbinsX();
-  for(Int_t i=0; i<nBinsEta; i++) {
-   EtaAv += fEtaDistrRefRPs->GetBinContent(i+1);
-  }
-  EtaAv = EtaAv/nBinsEta;
-  for(Int_t i=0; i<nBinsEta; i++) {
-   fEtaWeightsRPs->SetBinContent(i+1,EtaAv/fEtaDistrRefRPs->GetBinContent(i+1));
-   for(Int_t c=0; c<2; c++) {
-    fEtaWeightsPOIs[c]->SetBinContent(i+1,EtaAv/(2.*fEtaDistrRefPOIs[c]->GetBinContent(i+1)));
-   }
-  }
- }
+ Int_t RunBin = GetCRCRunBin(fRunNum);
+ if(RunBin==-1) return;
+ Int_t CenBin = GetCRCCenBin(fCentralityEBE);
+ if(CenBin==-1) return;
+ 
+// // determine phi weight for POI && RP particle:
+// if(fUsePhiWeights && fPhiWeightsRPs && fPhiBinWidth) {
+//  nBinsPhi = fPhiWeightsRPs->GetNbinsX();
+//  for(Int_t i=0; i<nBinsPhi; i++) {
+//   PhiAv += fPhiDistrRefRPs->GetBinContent(i+1);
+//  }
+//  PhiAv = PhiAv/nBinsPhi;
+//  for(Int_t i=0; i<nBinsPhi; i++) {
+//   fPhiWeightsRPs->SetBinContent(i+1,PhiAv/fPhiDistrRefRPs->GetBinContent(i+1));
+//   for(Int_t c=0; c<2; c++) {
+//    fPhiWeightsPOIs[c]->SetBinContent(i+1,PhiAv/(2.*fPhiDistrRefPOIs[c]->GetBinContent(i+1)));
+//   }
+//  }
+// }
+// // determine eta weight for POI && RP particle:
+// if(fUseEtaWeights && fEtaWeightsRPs && fEtaBinWidth) {
+//  nBinsEta = fEtaWeightsRPs->GetNbinsX();
+//  for(Int_t i=0; i<nBinsEta; i++) {
+//   EtaAv += fEtaDistrRefRPs->GetBinContent(i+1);
+//  }
+//  EtaAv = EtaAv/nBinsEta;
+//  for(Int_t i=0; i<nBinsEta; i++) {
+//   fEtaWeightsRPs->SetBinContent(i+1,EtaAv/fEtaDistrRefRPs->GetBinContent(i+1));
+//   for(Int_t c=0; c<2; c++) {
+//    fEtaWeightsPOIs[c]->SetBinContent(i+1,EtaAv/(2.*fEtaDistrRefPOIs[c]->GetBinContent(i+1)));
+//   }
+//  }
+// }
+ 
  // determine phi,eta weight for POI && RP particle:
- if(fUsePhiEtaWeights && fPhiEtaDistrRefRPs && fnBinsPhi && fEtaBinWidth) {
-  for(Int_t i=0; i<nBinsEta; i++) {
-   for (Int_t j=0; j<nBinsPhi; j++) {
-    PhiEtaAv += fPhiEtaDistrRefRPs->GetBinContent(j+1,i+1);
-   }
-  }
-  PhiEtaAv = PhiEtaAv/(nBinsEta*nBinsPhi);
-  for(Int_t i=0; i<nBinsEta; i++) {
-   for (Int_t j=0; j<nBinsPhi; j++) {
-    for(Int_t c=0; c<2; c++) {
-     fPhiEtaWeightsPOIs[c]->SetBinContent(j+1,i+1,PhiEtaAv/(2.*fPhiEtaDistrRefPOIs[c]->GetBinContent(j+1,i+1)));
+ if(fUsePhiEtaWeights && fWeightsList) {
+  for(Int_t k=0; k<2; k++) {
+   TH2D* PhiEtaTemp = (TH2D*)(fWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCPhiHist[%d][%d][%d]",fRunNum,CenBin,k)));
+   if(PhiEtaTemp) {
+    cout << "*************************************** "<< fRunNum << " " << CenBin << " " << k << endl;
+    Int_t nBinsEta = PhiEtaTemp->GetNbinsY();
+    Int_t nBinsPhi = PhiEtaTemp->GetNbinsX();
+    for(Int_t i=1; i<=nBinsEta; i++) {
+     for (Int_t j=1; j<=nBinsPhi; j++) {
+      PhiEtaAv += PhiEtaTemp->GetBinContent(j,i);
+     }
+     PhiEtaAv /= 1.*nBinsPhi;
+     for (Int_t j=1; j<=nBinsPhi; j++) {
+      Double_t Val = PhiEtaTemp->GetBinContent(j,i);
+      fPhiEtaWeights[k]->SetBinContent(j,i,PhiEtaAv/Val);
+      cout << "Phi bin " << j << " : " << PhiEtaAv/Val << endl;
+     }
+     cout << endl;
+     PhiEtaAv = 0.;
     }
-   }
-  }
- }
+   } else cout << " WARNING: fUsePhiEtaWeights set to kTRUE but fPhiEtaWeights not found !!! " << endl;
+  } // end of for(Int_t k=0; k<2; k++)
+ } // end of if(fUsePhiEtaWeights && fWeightsList)
 
  // VZERO *********************************************************************************************************
  
@@ -535,26 +547,26 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     wEta = 1.;
     wPhiEta = 1.;
     wTrack = 1.;
-    if(fUsePhiWeights && fPhiWeightsRPs && fnBinsPhi) // determine phi weight for POI:
-    {
-     wPhi = fPhiWeightsRPs->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())));
-    }
-    if(fUsePtWeights) // determine pt weight for POI:
-    {
-     wPt = 1.;
-    }
-    if(fUseEtaWeights && fEtaWeightsRPs && fEtaBinWidth) // determine eta weight for POI:
-    {
-     wEta = fEtaWeightsRPs->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
-    }
-    if(fUsePhiEtaWeights && fPhiEtaWeightsPOIs[cw] && fnBinsPhi && fEtaBinWidth) // determine eta weight for POI:
-    {
-     wPhiEta = fPhiEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())),1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
-    }
-    if(aftsTrack->InPOISelection() && fUseTrackWeights) // Access track weight for POI && RP particle:
-    {
-     wTrack = aftsTrack->Weight();
-    }
+//    if(fUsePhiWeights && fPhiWeightsRPs && fnBinsPhi) // determine phi weight for POI:
+//    {
+//     wPhi = fPhiWeightsRPs->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())));
+//    }
+//    if(fUsePtWeights) // determine pt weight for POI:
+//    {
+//     wPt = 1.;
+//    }
+//    if(fUseEtaWeights && fEtaWeightsRPs && fEtaBinWidth) // determine eta weight for POI:
+//    {
+//     wEta = fEtaWeightsRPs->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
+//    }
+//    if(fUsePhiEtaWeights && fPhiEtaWeightsPOIs[cw] && fnBinsPhi && fEtaBinWidth) // determine eta weight for POI:
+//    {
+//     wPhiEta = fPhiEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())),1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
+//    }
+//    if(aftsTrack->InPOISelection() && fUseTrackWeights) // Access track weight for POI && RP particle:
+//    {
+//     wTrack = aftsTrack->Weight();
+//    }
     // Calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}] for this event (m = 1,2,...,12, k = 0,1,...,8):
     for(Int_t m=0;m<12;m++) // to be improved - hardwired 6
     {
@@ -654,27 +666,28 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     wPt  = 1.;
     wEta = 1.;
     wTrack = 1.;
-    if(fUsePhiWeights && fPhiWeightsRPs && fnBinsPhi) // determine phi weight for POI:
+    wPhiEta = 1.;
+//    if(fUsePhiWeights && fPhiWeightsRPs && fnBinsPhi) // determine phi weight for POI:
+//    {
+//     wPhi = fPhiWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())));
+//    }
+//    if(fUsePtWeights) // determine pt weight for POI:
+//    {
+//     wPt = 1.;
+//    }
+//    if(fUseEtaWeights && fEtaWeightsRPs && fEtaBinWidth) // determine eta weight for POI:
+//    {
+//     wEta = fEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
+//    }
+    if(fUsePhiEtaWeights && fPhiEtaWeights[cw]) // determine phieta weight for POI:
     {
-     wPhi = fPhiWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())));
+     wPhiEta = fPhiEtaWeights[cw]->GetBinContent(fPhiEtaWeights[cw]->FindBin(dPhi,dEta));
     }
-    if(fUsePtWeights) // determine pt weight for POI:
-    {
-     wPt = 1.;
-    }
-    if(fUseEtaWeights && fEtaWeightsRPs && fEtaBinWidth) // determine eta weight for POI:
-    {
-     wEta = fEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
-    }
-    if(fUsePhiEtaWeights && fPhiEtaWeightsPOIs[cw] && fnBinsPhi && fEtaBinWidth) // determine eta weight for POI:
-    {
-     wPhiEta = fPhiEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())),1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
-    }
-    // Access track weight for POI && RP particle:
-    if(aftsTrack->InRPSelection() && fUseTrackWeights)
-    {
-     wTrack = aftsTrack->Weight();
-    }
+//    // Access track weight for POI && RP particle:
+//    if(aftsTrack->InRPSelection() && fUseTrackWeights)
+//    {
+//     wTrack = aftsTrack->Weight();
+//    }
     ptEta[0] = dPt;
     ptEta[1] = dEta;
     // Calculate p_{m*n,k} ('p-vector' for POIs):
@@ -701,14 +714,16 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     // Charge-Rapidity Correlations
     if(fCalculateCRC) {
      for (Int_t h=0;h<fCRCnHar;h++) {
-      fCRCQRe[cw][h]->Fill(dEta,TMath::Cos((h+1.)*dPhi));
-      fCRCQIm[cw][h]->Fill(dEta,TMath::Sin((h+1.)*dPhi));
-      fCRCMult[cw][h]->Fill(dEta);
-      fCRCPtQRe[cw][h]->Fill(dEta,dPt,TMath::Cos((h+1.)*dPhi));
-      fCRCPtQIm[cw][h]->Fill(dEta,dPt,TMath::Sin((h+1.)*dPhi));
-      fCRCPtMult[cw][h]->Fill(dEta,dPt);
+      fCRCQRe[cw][h]->Fill(dEta,wPhiEta*TMath::Cos((h+1.)*dPhi));
+      fCRCQIm[cw][h]->Fill(dEta,wPhiEta*TMath::Sin((h+1.)*dPhi));
+      fCRCMult[cw][h]->Fill(dEta,wPhiEta);
+      fCRCPtQRe[cw][h]->Fill(dEta,dPt,wPhiEta*TMath::Cos((h+1.)*dPhi));
+      fCRCPtQIm[cw][h]->Fill(dEta,dPt,wPhiEta*TMath::Sin((h+1.)*dPhi));
+      fCRCPtMult[cw][h]->Fill(dEta,dPt,wPhiEta);
      } // end of for (Int_t h=0;h<fCRCnHar;h++)
     } // end of if(fCalculateCRC)
+    
+    fCRCPhiHist[RunBin][CenBin][cw]->Fill(dPhi,dEta,wPhiEta);
     
    } // end of if(pTrack->InPOISelection())
   } else // to if(aftsTrack)
@@ -1797,8 +1812,12 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
  fUseParticleWeights->Fill(4.5,(Int_t)fUsePhiEtaWeights);
  fWeightsList->Add(fUseParticleWeights);
  
- // POIs
- 
+ for(Int_t c=0; c<2; c++) {
+  fPhiEtaWeights[c] = new TH2D(Form("fPhiEtaWeights[%d]",c),
+                               Form("fPhiEtaWeights[%d]",c),32,0.,TMath::TwoPi(),32,-0.8,0.8);
+ }
+
+// // POIs
 // for(Int_t c=0; c<2; c++)
 // {
 //  fPhiWeightsPOIs[c] = new TH1F(Form("fPhiWeightsPOIs[%d][%d]",c,h),Form("fPhiWeightsPOIs[%d][%d]",c,h),fnBinsPhi,fPhiMin,fPhiMax);
@@ -1903,97 +1922,97 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
  
  // RPs
  
- fPhiWeightsRPs = new TH1F("fPhiWeightsRPs","fPhiWeightsRPs",fnBinsPhi,fPhiMin,fPhiMax);
- fEtaWeightsRPs = new TH1D("fEtaWeightsRPs","fEtaWeightsRPs",fnBinsEta,fEtaMin,fEtaMax);
- 
- if(fUsePhiWeights)
- {
-  if(fWeightsList->FindObject("fPhiDistrRPs"))
-  {
-   fPhiDistrRefRPs = dynamic_cast<TH1F*>(fWeightsList->FindObject("fPhiDistrRPs"));
-   if(!fPhiDistrRefRPs)
-   {
-    printf("\n WARNING (QC): fPhiDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
-    exit(0);
-   }
-   if(TMath::Abs(fPhiDistrRefRPs->GetBinWidth(1)-fPhiBinWidth)>pow(10.,-6.))
-   {
-    cout<<endl;
-    cout<<"WARNING (QC): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
-    cout<<endl;
-    //exit(0);
-   }
-  } else
-  {
-   cout<<"WARNING: fWeightsList->FindObject(\"fPhiDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
-   exit(0);
-  }
- } // end of if(fUsePhiWeights)
- 
- if(fUsePtWeights)
- {
-  if(fWeightsList->FindObject("fPtDistrRPs"))
-  {
-   fPtDistrRefRPs = dynamic_cast<TH1D*>(fWeightsList->FindObject("fPtDistrRPs"));
-   if(!fPtDistrRefRPs)
-   {
-    printf("\n WARNING (QC): fPtDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
-    exit(0);
-   }
-   if(TMath::Abs(fPtDistrRefRPs->GetBinWidth(1)-fPtBinWidth)>pow(10.,-6.))
-   {
-    cout<<endl;
-    cout<<"WARNING (QC): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
-    cout<<endl;
-    //exit(0);
-   }
-  } else
-  {
-   cout<<"WARNING: fWeightsList->FindObject(\"fPtDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
-   exit(0);
-  }
- } // end of if(fUsePtWeights)
- 
- if(fUseEtaWeights)
- {
-  if(fWeightsList->FindObject("fEtaDistrRPs"))
-  {
-   fEtaDistrRefRPs = dynamic_cast<TH1D*>(fWeightsList->FindObject("fEtaDistrRPs"));
-   if(!fEtaDistrRefRPs)
-   {
-    printf("\n WARNING (QC): fEtaDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
-    exit(0);
-   }
-   if(TMath::Abs(fEtaDistrRefRPs->GetBinWidth(1)-fEtaBinWidth)>pow(10.,-6.))
-   {
-    cout<<endl;
-    cout<<"WARNING (QC): Inconsistent binning in histograms for eta-weights throughout the code."<<endl;
-    cout<<endl;
-    //exit(0);
-   }
-  } else
-  {
-   cout<<"WARNING: fWeightsList->FindObject(\"fEtaDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
-   exit(0);
-  }
- } // end of if(fUseEtaWeights)
- 
- if(fUsePhiEtaWeights)
- {
-  if(fWeightsList->FindObject("fPhiEtaDistrRPs"))
-  {
-   fPhiEtaDistrRefRPs = dynamic_cast<TH2D*>(fWeightsList->FindObject("fPhiEtaDistrRPs"));
-   if(!fPhiEtaDistrRefRPs)
-   {
-    printf("\n WARNING (QC): fPhiEtaDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
-    exit(0);
-   }
-  } else
-  {
-   cout<<"WARNING: fWeightsList->FindObject(\"fPhiEtaDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
-   exit(0);
-  }
- } // end of if(fUsePhiEtaWeights)
+// fPhiWeightsRPs = new TH1F("fPhiWeightsRPs","fPhiWeightsRPs",fnBinsPhi,fPhiMin,fPhiMax);
+// fEtaWeightsRPs = new TH1D("fEtaWeightsRPs","fEtaWeightsRPs",fnBinsEta,fEtaMin,fEtaMax);
+// 
+// if(fUsePhiWeights)
+// {
+//  if(fWeightsList->FindObject("fPhiDistrRPs"))
+//  {
+//   fPhiDistrRefRPs = dynamic_cast<TH1F*>(fWeightsList->FindObject("fPhiDistrRPs"));
+//   if(!fPhiDistrRefRPs)
+//   {
+//    printf("\n WARNING (QC): fPhiDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
+//    exit(0);
+//   }
+//   if(TMath::Abs(fPhiDistrRefRPs->GetBinWidth(1)-fPhiBinWidth)>pow(10.,-6.))
+//   {
+//    cout<<endl;
+//    cout<<"WARNING (QC): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
+//    cout<<endl;
+//    //exit(0);
+//   }
+//  } else
+//  {
+//   cout<<"WARNING: fWeightsList->FindObject(\"fPhiDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
+//   exit(0);
+//  }
+// } // end of if(fUsePhiWeights)
+// 
+// if(fUsePtWeights)
+// {
+//  if(fWeightsList->FindObject("fPtDistrRPs"))
+//  {
+//   fPtDistrRefRPs = dynamic_cast<TH1D*>(fWeightsList->FindObject("fPtDistrRPs"));
+//   if(!fPtDistrRefRPs)
+//   {
+//    printf("\n WARNING (QC): fPtDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
+//    exit(0);
+//   }
+//   if(TMath::Abs(fPtDistrRefRPs->GetBinWidth(1)-fPtBinWidth)>pow(10.,-6.))
+//   {
+//    cout<<endl;
+//    cout<<"WARNING (QC): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
+//    cout<<endl;
+//    //exit(0);
+//   }
+//  } else
+//  {
+//   cout<<"WARNING: fWeightsList->FindObject(\"fPtDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
+//   exit(0);
+//  }
+// } // end of if(fUsePtWeights)
+// 
+// if(fUseEtaWeights)
+// {
+//  if(fWeightsList->FindObject("fEtaDistrRPs"))
+//  {
+//   fEtaDistrRefRPs = dynamic_cast<TH1D*>(fWeightsList->FindObject("fEtaDistrRPs"));
+//   if(!fEtaDistrRefRPs)
+//   {
+//    printf("\n WARNING (QC): fEtaDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
+//    exit(0);
+//   }
+//   if(TMath::Abs(fEtaDistrRefRPs->GetBinWidth(1)-fEtaBinWidth)>pow(10.,-6.))
+//   {
+//    cout<<endl;
+//    cout<<"WARNING (QC): Inconsistent binning in histograms for eta-weights throughout the code."<<endl;
+//    cout<<endl;
+//    //exit(0);
+//   }
+//  } else
+//  {
+//   cout<<"WARNING: fWeightsList->FindObject(\"fEtaDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
+//   exit(0);
+//  }
+// } // end of if(fUseEtaWeights)
+// 
+// if(fUsePhiEtaWeights)
+// {
+//  if(fWeightsList->FindObject("fPhiEtaDistrRPs"))
+//  {
+//   fPhiEtaDistrRefRPs = dynamic_cast<TH2D*>(fWeightsList->FindObject("fPhiEtaDistrRPs"));
+//   if(!fPhiEtaDistrRefRPs)
+//   {
+//    printf("\n WARNING (QC): fPhiEtaDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
+//    exit(0);
+//   }
+//  } else
+//  {
+//   cout<<"WARNING: fWeightsList->FindObject(\"fPhiEtaDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
+//   exit(0);
+//  }
+// } // end of if(fUsePhiEtaWeights)
  
 } // end of AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
 
@@ -15828,6 +15847,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
   for(Int_t c=0;c<fCRCnCen;c++) {
    fCRCZDCEvPlA[r][c] = NULL;
    fCRCZDCEvPlC[r][c] = NULL;
+   for(Int_t i=0;i<2;i++) {
+    fCRCPhiHist[r][c][i] = NULL;
+   }
   }
   for(Int_t i=0;i<2;i++) {
    fCRCZDCQVecA[r][i] = NULL;
@@ -16224,25 +16246,27 @@ void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
  // Initialize all arrays used for various unclassified objects.
  for(Int_t c=0; c<2; c++)
  {
-  fPhiDistrRefPOIs[c] = NULL;
-  fPtDistrRefPOIs[c] = NULL;
-  fEtaDistrRefPOIs[c] = NULL;
-  fPhiEtaDistrRefPOIs[c] = NULL;
+//  fPhiDistrRefPOIs[c] = NULL;
+//  fPtDistrRefPOIs[c] = NULL;
+//  fEtaDistrRefPOIs[c] = NULL;
+//  fPhiEtaDistrRefPOIs[c] = NULL;
+//  
+//  fPhiWeightsPOIs[c] = NULL;
+//  fPtWeightsPOIs[c] = NULL;
+//  fEtaWeightsPOIs[c] = NULL;
+//  fPhiEtaWeightsPOIs[c] = NULL;
   
-  fPhiWeightsPOIs[c] = NULL;
-  fPtWeightsPOIs[c] = NULL;
-  fEtaWeightsPOIs[c] = NULL;
-  fPhiEtaWeightsPOIs[c] = NULL;
+  fPhiEtaWeights[c] = NULL;
  }
  
- fPhiDistrRefRPs = NULL;
- fPtDistrRefRPs = NULL;
- fEtaDistrRefRPs = NULL;
- fPhiEtaDistrRefRPs = NULL;
- 
- fPhiWeightsRPs = NULL;
- fPtWeightsRPs = NULL;
- fEtaWeightsRPs = NULL;
+// fPhiDistrRefRPs = NULL;
+// fPtDistrRefRPs = NULL;
+// fEtaDistrRefRPs = NULL;
+// fPhiEtaDistrRefRPs = NULL;
+// 
+// fPhiWeightsRPs = NULL;
+// fPtWeightsRPs = NULL;
+// fEtaWeightsRPs = NULL;
  
 } //  end of void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
 
@@ -17363,7 +17387,7 @@ void AliFlowAnalysisCRC::CalculateCRCQVec()
    Double_t QMA  = (*fCRCVZMult)(1,h);
    Double_t EvPlVZA = TMath::ATan2(QImA,QReA);
    
-   if(CenBin!=-1) {
+   if(CenBin!=-1 && QMA>0. && QMC>0.) {
     fCRCVZEvPlA[RunBin][CenBin][h]->Fill(EvPlVZA);
     fCRCVZEvPlC[RunBin][CenBin][h]->Fill(EvPlVZC);
    }
@@ -17393,7 +17417,7 @@ void AliFlowAnalysisCRC::CalculateCRCQVec()
   Double_t QMA  = (*fCRCZDCMult)(1,0);
   Double_t EvPlZDCA = TMath::ATan2(QImA,QReA);
   
-  if(CenBin!=-1) {
+  if(CenBin!=-1 && QMA>0. && QMC>0.) {
    fCRCZDCEvPlA[RunBin][CenBin]->Fill(EvPlZDCA);
    fCRCZDCEvPlC[RunBin][CenBin]->Fill(EvPlZDCC);
   }
@@ -18616,6 +18640,9 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
    QAQT -= cosA*cosT + sinA*sinT;
   }
    
+   Double_t D=0.,DErr=0.,SqD=0.,SqDErr=0.,SPuPQCErr=0.,SPuNQAErr=0.;
+   Double_t SumCum=0., SumCorr=0., SumCorrErr=0.;
+   
    for (Int_t c=0; c<2; c++) {
     
     Double_t uPQC    = fCRCVZCorrHist[NUABin][eg][h]->GetBinContent(c+1);
@@ -18635,7 +18662,7 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
     
     Double_t SPuPQC=0., SPuNQA=0.;
     if((QCQT*QCQA)/QAQT < 0) {
-     cout << " WARNING: negative correlations !!!" << endl;
+     //cout << " WARNING: negative correlations !!!" << endl;
      SPuPQC = - uPQC / TMath::Sqrt(TMath::Abs((QCQT*QCQA)/QAQT));
      SPuNQA = - uNQA / TMath::Sqrt(TMath::Abs((QAQT*QCQA)/QCQT));
     } else {
@@ -18643,28 +18670,53 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
      SPuNQA = uNQA / TMath::Sqrt((QAQT*QCQA)/QCQT);
     }
     
-     Double_t D = TMath::Abs((QCQT*QCQA)/QAQT);
-     Double_t DErr = TMath::Sqrt( pow(QCQTErr*QCQA/QAQT,2.) + pow(QCQAErr*QCQT/QAQT,2.) + pow(QAQTErr*QCQA*QCQT/pow(QAQT,2.),2.) );
-     Double_t SqD = TMath::Sqrt(D);
-     Double_t SqDErr = DErr*0.5*pow(D,-0.5);
-     Double_t SPuPQCErr = TMath::Abs(SPuPQC * TMath::Sqrt(pow(uPQCErr/uPQC,2.) + pow(SqDErr/SqD,2.)));
-     
+     D = TMath::Abs((QCQT*QCQA)/QAQT);
+     DErr = TMath::Sqrt( pow(QCQTErr*QCQA/QAQT,2.) + pow(QCQAErr*QCQT/QAQT,2.) + pow(QAQTErr*QCQA*QCQT/pow(QAQT,2.),2.) );
+     SqD = TMath::Sqrt(D);
+     SqDErr = DErr*0.5*pow(D,-0.5);
+     SPuPQCErr = TMath::Abs(SPuPQC * TMath::Sqrt(pow(uPQCErr/uPQC,2.) + pow(SqDErr/SqD,2.)));
+    
      fCRCVZCFunHist[eg][h]->SetBinContent(c+1,SPuPQC);
      fCRCVZCFunHist[eg][h]->SetBinError(c+1,SPuPQCErr);
+    
+    SumCorr += pow(-1,c)*uPQC;
+    SumCorrErr += pow(uPQCErr,2.);
      
      D = TMath::Abs((QAQT*QCQA)/QCQT);
      DErr = TMath::Sqrt( pow(QAQTErr*QCQA/QCQT,2.) + pow(QCQAErr*QAQT/QCQT,2.) + pow(QCQTErr*QCQA*QAQT/pow(QCQT,2.),2.) );
      SqD = TMath::Sqrt(D);
      SqDErr = DErr*0.5*pow(D,-0.5);
-     Double_t SPuNQAErr = TMath::Abs(SPuPQC * TMath::Sqrt(pow(uNQAErr/uNQA,2.) + pow(SqDErr/SqD,2.)));
+     SPuNQAErr = TMath::Abs(SPuPQC * TMath::Sqrt(pow(uNQAErr/uNQA,2.) + pow(SqDErr/SqD,2.)));
      
      fCRCVZCFunHist[eg][h]->SetBinContent(c+3,SPuNQA);
      fCRCVZCFunHist[eg][h]->SetBinError(c+3,SPuNQAErr);
+    
+    SumCorr += pow(-1,c+1)*uNQA;
+    SumCorrErr += pow(uNQAErr,2.);
      
      cout << "cfun["<<eg<<"]["<<h<<"] SPuPQC: " << SPuPQC << " " << SPuPQCErr << endl;
      cout << "cfun["<<eg<<"]["<<h<<"] SPuNQA: " << SPuNQA << " " << SPuNQAErr << endl;
     
    }
+   
+   SumCum += fCRCVZCFunHist[eg][h]->GetBinContent(1);
+   SumCum -= fCRCVZCFunHist[eg][h]->GetBinContent(2);
+   SumCum -= fCRCVZCFunHist[eg][h]->GetBinContent(3);
+   SumCum += fCRCVZCFunHist[eg][h]->GetBinContent(4);
+   SumCum /= 4.;
+   
+   SumCorr /= 4.;
+   SumCorrErr -= 2.*(fCRCVZCovHist[eg][h]->GetBinContent(1,1) + fCRCVZCovHist[eg][h]->GetBinContent(1,2) + fCRCVZCovHist[eg][h]->GetBinContent(2,1) + fCRCVZCovHist[eg][h]->GetBinContent(2,2));
+   SumCorrErr = pow(TMath::Abs(SumCorrErr),0.5)/4.;
+   
+   D = TMath::Abs((QCQT*QCQA)/QAQT);
+   DErr = TMath::Sqrt( pow(QCQTErr*QCQA/QAQT,2.) + pow(QCQAErr*QCQT/QAQT,2.) + pow(QAQTErr*QCQA*QCQT/pow(QAQT,2.),2.) );
+   SqD = TMath::Sqrt(D);
+   SqDErr = DErr*0.5*pow(D,-0.5);
+   SPuPQCErr = TMath::Abs(SumCum * TMath::Sqrt(pow(SumCorrErr/SumCorr,2.) + pow(SqDErr/SqD,2.)));
+   
+   fCRCVZCFunHist[eg][h]->SetBinContent(5,SumCum);
+   fCRCVZCFunHist[eg][h]->SetBinError(5,SPuPQCErr);
    
   } // end of for (Int_t h=0;h<fCRCVZnCen;h++)
  } // end of for(Int_t eg=0; eg<fCRCnEtaGap; eg++)
@@ -18809,6 +18861,8 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
 //      cout << Cov34 << " " << pow(Corr3Err,2.) << " " << pow(Corr4Err,2.) << endl;
 //      CFunErr=0.;
      }
+     
+     cout << (pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.))/(pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.) + 2*(-Cov12-Cov13+Cov14+Cov23-Cov24-Cov34)) << endl;
      
      fCRCCFunHist[eg][h]->SetBinContent(CFunBin,CFun);
      fCRCCFunHist[eg][h]->SetBinError(CFunBin,CFunErr);
@@ -21111,6 +21165,11 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
    TH1D *CRCZDCEvPlC = dynamic_cast<TH1D*>(fCRCQVecListRun[r]->FindObject(Form("fCRCZDCEvPlC[%d][%d]",fRunList[r],c)));
    if(CRCZDCEvPlC) { this->SetCRCZDCEvPlC(CRCZDCEvPlC,r,c); }
    else { cout<<"WARNING: CRCZDCEvPlC is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
+   for(Int_t i=0;i<2;i++) {
+    TH2D *CRCPhiHist = dynamic_cast<TH2D*>(fCRCQVecListRun[r]->FindObject(Form("fCRCPhiHist[%d][%d][%d]",fRunList[r],c,i)));
+    if(CRCPhiHist) { this->SetCRCPhiHist(CRCPhiHist,r,c,i); }
+    else { cout<<"WARNING: CRCPhiHist is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
+   }
   }
   for(Int_t i=0;i<2;i++) {
    TProfile *CRCZDCQVecA = dynamic_cast<TProfile*>(fCRCQVecListRun[r]->FindObject(Form("fCRCZDCQVecA[%d][%d]",fRunList[r],i)));
@@ -21131,7 +21190,6 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
    TProfile *CRCVZQVecNC = dynamic_cast<TProfile*>(fCRCQVecListRun[r]->FindObject(Form("fCRCVZQVecNC[%d][%d]",fRunList[r],i)));
    if(CRCVZQVecNC) { this->SetCRCVZQVecNCHist(CRCVZQVecNC,r,i); }
    else { cout<<"WARNING: CRCVZQVecNC is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
-   
   }
   for(Int_t c=0;c<fCRCQVecnCR;c++) {
    TProfile *CRCQVecRe = dynamic_cast<TProfile*>(fCRCQVecListRun[r]->FindObject(Form("fCRCQVecRe[%d][%d]",fRunList[r],c)));
@@ -21858,6 +21916,12 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
                                  Form("fCRCZDCEvPlC[%d][%d]",fRunList[r],c),100,-TMath::Pi(),TMath::Pi());
    fCRCZDCEvPlC[r][c]->Sumw2();
    fCRCQVecListRun[r]->Add(fCRCZDCEvPlC[r][c]);
+   for(Int_t i=0;i<2;i++) {
+    fCRCPhiHist[r][c][i] = new TH2D(Form("fCRCPhiHist[%d][%d][%d]",fRunList[r],c,i),
+                                    Form("fCRCPhiHist[%d][%d][%d]",fRunList[r],c,i),32,0.,TMath::TwoPi(),32,-0.8,0.8);
+    fCRCPhiHist[r][c][i]->Sumw2();
+    fCRCQVecListRun[r]->Add(fCRCPhiHist[r][c][i]);
+   }
   }
   for(Int_t i=0;i<2;i++) {
    fCRCZDCQVecA[r][i] = new TProfile(Form("fCRCZDCQVecA[%d][%d]",fRunList[r],i),
