@@ -45,8 +45,8 @@ private:
   AliHLTZMQsink(const AliHLTZMQsink&);
   AliHLTZMQsink& operator=(const AliHLTZMQsink&);
 
-  void* fZMQcontext;       //ZMQ context pointer
-  void* fZMQout;           //the output socket
+  void* fZMQcontext;       //!ZMQ context pointer
+  void* fZMQout;           //!the output socket
   int fZMQsocketType;      //REP
   TString fZMQconnectMode; //"connect" or "bind"
   TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"

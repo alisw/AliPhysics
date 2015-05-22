@@ -27,7 +27,7 @@ ClassImp(AliHLTZMQsink)
 //______________________________________________________________________________
 AliHLTZMQsink::AliHLTZMQsink() :
   AliHLTDataSink()
-  , fZMQcontext(zmq_ctx_new())
+  , fZMQcontext(NULL)
   , fZMQout(NULL)
   , fZMQsocketType(ZMQ_PUB)
   , fZMQconnectMode("bind")
@@ -75,7 +75,8 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   //process arguments
   ProcessOptionString(GetComponentArgs());
 
-  //init sockets
+  //init ZMQ stuff
+  fZMQcontext = zmq_ctx_new();
   fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
 
   int rc = 0;
