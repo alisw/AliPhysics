@@ -119,6 +119,9 @@ EOF
   if [ "${dataType}" = "data" ]; then
     runScalers="kTRUE";
   fi
+  if [ ! -z $MUSkipScalerCheck ]; then
+    runScalers="kFALSE"
+  fi
 
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/trigEffQA.C
   aliroot -b <<EOF
