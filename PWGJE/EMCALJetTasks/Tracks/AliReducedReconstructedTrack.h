@@ -41,7 +41,7 @@ public:
   AliReducedReconstructedTrack();
   virtual ~AliReducedReconstructedTrack();
 
-  void FillMomentumVector(TVector3 &pvec);
+  void FillMomentumVector(TVector3 &pvec) const;
   /**
    * Set the Momentum vector of the track at the vertex
    * \param px x-component of the primary vertex
@@ -94,6 +94,10 @@ public:
    * \return Number of findable clusters
    */
   Int_t GetNumberOfTPCFindableClusters() const { return fFindableClustersTPC; }
+
+  Double_t Pt() const;
+  Double_t Eta() const;
+  Double_t Phi() const;
 
   /**
    * Mark track as selected by a given track cuts using the index
