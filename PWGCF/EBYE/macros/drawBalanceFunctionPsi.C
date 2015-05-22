@@ -16,8 +16,11 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 			    Bool_t kUseVzBinning = kTRUE,
 			    Bool_t k2pMethod = kFALSE,
 			    Bool_t k2pMethod2D = kFALSE,
+			    Double_t etaWindow = -1.,
 			    TString eventClass = "EventPlane", //Can be "EventPlane", "Centrality", "Multiplicity"
-			    Bool_t bRootMoments = kTRUE)
+			    Bool_t bRootMoments = kTRUE,
+			    TString listNameAdd = ""
+)
 {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -37,9 +40,9 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
   }
 
   //Prepare the objects and return them
-  TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
-  TList *listBFShuffled = 0x0;//GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
-  TList *listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
+  TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0,listNameAdd);
+  TList *listBFShuffled = 0x0;//GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1,listNameAdd);
+  TList *listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2,listNameAdd);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
@@ -50,7 +53,7 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 	 gCentralityEstimator,
 	 psiMin,psiMax,vertexZMin,vertexZMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,kUseVzBinning,
-	 k2pMethod,k2pMethod2D,eventClass,bRootMoments);  
+	 k2pMethod,k2pMethod2D,etaWindow,eventClass,bRootMoments);  
 }
 
 //______________________________________________________//
@@ -58,7 +61,8 @@ TList *GetListOfObjects(const char* filename,
 			Int_t gCentrality,
 			Int_t gBit,
 			const char *gCentralityEstimator,
-			Int_t kData = 1) {
+			Int_t kData = 1,
+			TString listNameAdd = "") {
   //Get the TList objects (QA, bf, bf shuffled)
   TList *listBF = 0x0;
   
@@ -95,6 +99,8 @@ TList *GetListOfObjects(const char* filename,
     listBFName += "_Bit"; listBFName += gBit; }
   if(gCentralityEstimator) {
     listBFName += "_"; listBFName += gCentralityEstimator;}
+  listBFName += listNameAdd;
+  
 
   // histograms were already retrieved (in first iteration)
   if(dir->Get(Form("%s_histograms",listBFName.Data()))){
@@ -214,7 +220,8 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
 	  Bool_t kUseVzBinning=kFALSE,
-	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE, 
+	  Bool_t k2pMethod = kFALSE,Bool_t k2pMethod2D = kFALSE,
+	  Double_t etaWindow = -1,
 	  TString eventClass="EventPlane",Bool_t bRootMoments=kTRUE,
 	  Bool_t kUseZYAM = kFALSE) {
   gROOT->LoadMacro("~/SetPlotStyle.C");
@@ -399,7 +406,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //Raw balance function
   if(k2pMethod && !k2pMethod2D){ 
     if(bMixed){
-      gHistBalanceFunction = b->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      gHistBalanceFunction = b->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,etaWindow,bMixed);
     }
     else{
       cerr<<"RAW: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
@@ -428,7 +435,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //Shuffled balance function
   //if(k2pMethod){ 
   //if(bMixed)
-      //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,vertexZMin,vertexZMax,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      //gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,vertexZMin,vertexZMax,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,etaWindow,bMixed);
   //else{
   //cerr<<"SHUFFLE: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
   //return;
@@ -454,7 +461,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //Mixed balance function
   if(k2pMethod && !k2pMethod2D){ 
     if(bMixed)
-      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram2pMethod(0,gDeltaEtaDeltaPhi,psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,etaWindow,bMixed);
     else{
       cerr<<"MIXED: NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
       return;
@@ -575,6 +582,17 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     Bool_t kProjectInEta = kFALSE;
     if(gDeltaEtaDeltaPhi==1) //Delta eta
       kProjectInEta = kTRUE;
+
+   TString integralFileName = "";
+   Double_t integralHisto = 0.;
+   Double_t integralErrorHisto = 0.;
+    if(kProjectInEta) 
+      integralFileName= "deltaEtaProjection_Integral.txt";
+    else              
+      integralFileName = "deltaPhiProjection_Integral.txt";
+    ofstream fileIntegral(integralFileName.Data(),ios::app);
+    integralHisto = gHistBalanceFunctionSubtracted->IntegralAndError(1,gHistBalanceFunctionSubtracted->GetNbinsX(),integralErrorHisto,"width");
+    fileIntegral << " " << integralHisto << " " <<integralErrorHisto<<endl;
 
     TString meanFileName = "";
     if(kProjectInEta) 
