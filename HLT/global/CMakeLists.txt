@@ -119,6 +119,9 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib)
+if(ZEROMQ_FOUND)
+  set(LIBDEPS ${LIBDEPS} ${ZEROMQ_LIBRARIES})
+endif(ZEROMQ_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
