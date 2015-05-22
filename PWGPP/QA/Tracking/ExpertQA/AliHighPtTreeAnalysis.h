@@ -21,8 +21,10 @@ class TTree;
 class AliHighPtTreeAnalysis : public TObject {
 public :
   AliHighPtTreeAnalysis();
-  AliHighPtTreeAnalysis( TString file );
   virtual ~AliHighPtTreeAnalysis();
+  void InitAnalysis( TString file );
+
+
   virtual Int_t         GetEntry(Long64_t entry);
   virtual Long64_t      LoadTree(Long64_t entry);
   virtual Long64_t      LoadV0Tree(Long64_t entry);
@@ -67,7 +69,7 @@ public :
   virtual void          SetPeriodName( const char *ch ) {  fPeriodName = new TString( ch ); };
   virtual void		 SetMakeFitPerfomancePlots( Bool_t bFPP ) { fMakeFitPerfomancePlots = bFPP; }
   
-private:  
+public:  
   TTree          *fChain;                     //!pointer to the analyzed TTree or TChain
   TTree          *fV0Chain;                   //!pointer to the V0 tree    
   TTree          *OutTree;                    // output tree
@@ -90,8 +92,6 @@ private:
   AliExternalTrackParam *extInnerParamRef;
   Double_t               chi2TPCInnerC;
   Double_t               chi2InnerC;
-
-
   //
   TString        *fPeriodName;                // LHC period name
   Bool_t          fMakePeriod;                // switch to run per period ExperQA - who is setting ????      
@@ -116,59 +116,78 @@ private:
   Int_t fNtracks_TPCHighPt;
   Int_t fNtracks_TPCITSLowPt;
   Int_t fNtracks_TPCITSHighPt;
-  
-  
+   
   // Declaration of V0 data members
   AliESDv0              *v0;                  
   AliESDtrack           *v0track0;
   AliESDtrack           *v0track1;
-  
-  
-   // Histos
- 
-  TH3D *hPulldcaRTPConly_vs_eta_1pT;          TH3D *hPulldcaRcomb_vs_eta_1pT;
-  TH3D *hResdcaRTPConly_vs_eta_1pT;           TH3D *hResdcaRcomb_vs_eta_1pT;
-  
+  // Histos
+  TH3D *hPulldcaRTPConly_vs_eta_1pT;          
+  TH3D *hPulldcaRcomb_vs_eta_1pT;
+  TH3D *hResdcaRTPConly_vs_eta_1pT;           
+  TH3D *hResdcaRcomb_vs_eta_1pT;
   TH3D *hphiPull_vs_eta_1pT;                  
   TH3D *hphiRes_vs_eta_1pT; 
- 
-  TH3D *hPulldcaR_vs_eta_pT_Aside;            TH3D *hPulldcaR_vs_eta_pT_Cside;
-  TH3D *hPulldcaRTPCInner_vs_eta_pT_Aside;    TH3D *hPulldcaRTPCInner_vs_eta_pT_Cside;
-  TH3D *hResdcaR_vs_eta_pT_Aside;             TH3D *hResdcaR_vs_eta_pT_Cside;
-  TH3D *hResdcaRTPCInner_vs_eta_pT_Aside;     TH3D *hResdcaRTPCInner_vs_eta_pT_Cside;
-  TH3D *hphiPull_vs_eta_pT_Aside;             TH3D *hphiPull_vs_eta_pT_Cside;
-  TH3D *hphiRes_vs_eta_pT_Aside;              TH3D *hphiRes_vs_eta_pT_Cside;
-  TH3D *hPulldcaR_vs_phi_pT_Aside;            TH3D *hPulldcaR_vs_phi_pT_Cside;
-  TH3D *hPulldcaRTPCInner_vs_phi_pT_Aside;    TH3D *hPulldcaRTPCInner_vs_phi_pT_Cside;
-  TH3D *hResdcaR_vs_phi_pT_Aside;             TH3D *hResdcaR_vs_phi_pT_Cside;
-  TH3D *hResdcaRTPCInner_vs_phi_pT_Aside;     TH3D *hResdcaRTPCInner_vs_phi_pT_Cside;
-  TH3D *hphiPull_vs_phi_pT_Aside;             TH3D *hphiPull_vs_phi_pT_Cside;
-  TH3D *hphiRes_vs_phi_pT_Aside;              TH3D *hphiRes_vs_phi_pT_Cside;
+  TH3D *hPulldcaR_vs_eta_pT_Aside;            
+  TH3D *hPulldcaR_vs_eta_pT_Cside;
+  TH3D *hPulldcaRTPCInner_vs_eta_pT_Aside;    
+  TH3D *hPulldcaRTPCInner_vs_eta_pT_Cside;
+  TH3D *hResdcaR_vs_eta_pT_Aside;             
+  TH3D *hResdcaR_vs_eta_pT_Cside;
+  TH3D *hResdcaRTPCInner_vs_eta_pT_Aside;     
+  TH3D *hResdcaRTPCInner_vs_eta_pT_Cside;
+  TH3D *hphiPull_vs_eta_pT_Aside;             
+  TH3D *hphiPull_vs_eta_pT_Cside;
+  TH3D *hphiRes_vs_eta_pT_Aside;              
+  TH3D *hphiRes_vs_eta_pT_Cside;
+  TH3D *hPulldcaR_vs_phi_pT_Aside;            
+  TH3D *hPulldcaR_vs_phi_pT_Cside;
+  TH3D *hPulldcaRTPCInner_vs_phi_pT_Aside;    
+  TH3D *hPulldcaRTPCInner_vs_phi_pT_Cside;
+  TH3D *hResdcaR_vs_phi_pT_Aside;             
+  TH3D *hResdcaR_vs_phi_pT_Cside;
+  TH3D *hResdcaRTPCInner_vs_phi_pT_Aside;     
+  TH3D *hResdcaRTPCInner_vs_phi_pT_Cside;
+  TH3D *hphiPull_vs_phi_pT_Aside;             
+  TH3D *hphiPull_vs_phi_pT_Cside;
+  TH3D *hphiRes_vs_phi_pT_Aside;              
+  TH3D *hphiRes_vs_phi_pT_Cside;
   TH3D *heta_phi_pT;
-  TH3D *hphi_vs_eta_pT_cutTPC;                TH3D *hphi_vs_eta_pT_cutTPCITS;
-  
-
+  TH3D *hphi_vs_eta_pT_cutTPC;                
+  TH3D *hphi_vs_eta_pT_cutTPCITS;
   // histogram for 1/pt shift calculation
   TH3F *h1pt_vs_eta_phi;
-  TH3D *h1ptRes_vs_phi_pT_Aside;        TH3D *h1ptRes_vs_phi_pT_Cside;        // 1/pT resolution from cov. matrix
-  TH3D *h1ptRes_vs_mult_pT_Aside;       TH3D *h1ptRes_vs_mult_pT_Cside;           // 1/pT resolution from cov. matrix vs mult.
-  TH3D *h1ptSigma_vs_phi_pT_Aside;      TH3D *h1ptSigma_vs_phi_pT_Cside;      // sigma 1/pT from cov. matrix
-  TH3D *h1ptSigma_vs_mult_pT_Aside;     TH3D *h1ptSigma_vs_mult_pT_Cside;      // sigma 1/pT from cov. matrix vs mult.
+  TH3D *h1ptRes_vs_phi_pT_Aside;        
+  TH3D *h1ptRes_vs_phi_pT_Cside;        // 1/pT resolution from cov. matrix
+  TH3D *h1ptRes_vs_mult_pT_Aside;       
+  TH3D *h1ptRes_vs_mult_pT_Cside;           // 1/pT resolution from cov. matrix vs mult.
+  TH3D *h1ptSigma_vs_phi_pT_Aside;      
+  TH3D *h1ptSigma_vs_phi_pT_Cside;      // sigma 1/pT from cov. matrix
+  TH3D *h1ptSigma_vs_mult_pT_Aside;     
+  TH3D *h1ptSigma_vs_mult_pT_Cside;      // sigma 1/pT from cov. matrix vs mult.
   //
   // histogram for 1/pt shift calculation for TPCInnerC
   //
   TH3F *h1ptTPCInnerC_vs_eta_phi;
-  TH3D *h1ptResTPCInnerC_vs_phi_pT_Aside;    TH3D *h1ptResTPCInnerC_vs_phi_pT_Cside;  // 1/pT resolution from cov. matrix TPCInnerC
-  TH3D *h1ptResTPCInnerC_vs_mult_pT_Aside;   TH3D *h1ptResTPCInnerC_vs_mult_pT_Cside;  // 1/pT resolution from cov. matrix vs mult. TPCInnerC
-  TH3D *h1ptSigmaTPCInnerC_vs_phi_pT_Aside;  TH3D *h1ptSigmaTPCInnerC_vs_phi_pT_Cside; // 1/pT sigma from cov. matrix TPCInnerC
-  TH3D *h1ptSigmaTPCInnerC_vs_mult_pT_Aside; TH3D *h1ptSigmaTPCInnerC_vs_mult_pT_Cside; // 1/pT sigma from cov. matrix vs mult. TPCInnerC
+  TH3D *h1ptResTPCInnerC_vs_phi_pT_Aside;    
+  TH3D *h1ptResTPCInnerC_vs_phi_pT_Cside;  // 1/pT resolution from cov. matrix TPCInnerC
+  TH3D *h1ptResTPCInnerC_vs_mult_pT_Aside;   
+  TH3D *h1ptResTPCInnerC_vs_mult_pT_Cside;  // 1/pT resolution from cov. matrix vs mult. TPCInnerC
+  TH3D *h1ptSigmaTPCInnerC_vs_phi_pT_Aside;  
+  TH3D *h1ptSigmaTPCInnerC_vs_phi_pT_Cside; // 1/pT sigma from cov. matrix TPCInnerC
+  TH3D *h1ptSigmaTPCInnerC_vs_mult_pT_Aside; 
+  TH3D *h1ptSigmaTPCInnerC_vs_mult_pT_Cside; // 1/pT sigma from cov. matrix vs mult. TPCInnerC
   //
   // histogram for 1/pt shift calculation for TPCInner
   TH3F *h1ptTPCInner_vs_eta_phi; 
-  TH3D *h1ptResTPCInner_vs_phi_pT_Aside;    TH3D *h1ptResTPCInner_vs_phi_pT_Cside;     // 1/pT resolution from cov. matrix TPCInner
-  TH3D *h1ptResTPCInner_vs_mult_pT_Aside;   TH3D *h1ptResTPCInner_vs_mult_pT_Cside;   // 1/pT resolution from cov. matrix vs mult. TPCInner
-  TH3D *h1ptSigmaTPCInner_vs_phi_pT_Aside;  TH3D *h1ptSigmaTPCInner_vs_phi_pT_Cside;   // 1/pT sigma from cov. matrix TPCInner
-  TH3D *h1ptSigmaTPCInner_vs_mult_pT_Aside; TH3D *h1ptSigmaTPCInner_vs_mult_pT_Cside;   // 1/pT sigma from cov. matrix vs mult. TPCInner
+  TH3D *h1ptResTPCInner_vs_phi_pT_Aside;    
+  TH3D *h1ptResTPCInner_vs_phi_pT_Cside;     // 1/pT resolution from cov. matrix TPCInner
+  TH3D *h1ptResTPCInner_vs_mult_pT_Aside;  
+  TH3D *h1ptResTPCInner_vs_mult_pT_Cside;   // 1/pT resolution from cov. matrix vs mult. TPCInner
+  TH3D *h1ptSigmaTPCInner_vs_phi_pT_Aside;  
+  TH3D *h1ptSigmaTPCInner_vs_phi_pT_Cside;   // 1/pT sigma from cov. matrix TPCInner
+  TH3D *h1ptSigmaTPCInner_vs_mult_pT_Aside; 
+  TH3D *h1ptSigmaTPCInner_vs_mult_pT_Cside;   // 1/pT sigma from cov. matrix vs mult. TPCInner
   //
   // Histogramm for V0s
   //
