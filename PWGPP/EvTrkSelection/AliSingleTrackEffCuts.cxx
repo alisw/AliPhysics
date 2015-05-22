@@ -16,7 +16,7 @@
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliPIDResponse.h"
-
+#include "AliPIDCombined.h"
 #include "AliSingleTrackEffCuts.h"
 
 using std::cout;
@@ -59,7 +59,9 @@ AliAnalysisCuts(),
   fnPTOFBinLimits(0),
   fPTOFBinLimits(0),
   fnSigmaTOF(0),
-  fPmaxTOF(9999.)
+  fPmaxTOF(9999.),
+  fuseCombinPid(0),
+  fThreshold(0.3)
 {
   //
   // Default constructor
@@ -101,7 +103,9 @@ AliAnalysisCuts(name,title),
   fnPTOFBinLimits(0),
   fPTOFBinLimits(0),
   fnSigmaTOF(0),
-  fPmaxTOF(9999.)
+  fPmaxTOF(9999.),
+  fuseCombinPid(0),
+  fThreshold(0.3)
 {
   //
   // Default constructor
@@ -143,7 +147,9 @@ AliSingleTrackEffCuts::AliSingleTrackEffCuts(const AliSingleTrackEffCuts &source
   fnPTOFBinLimits(source.fnPTOFBinLimits),
   fPTOFBinLimits(source.fPTOFBinLimits),
   fnSigmaTOF(source.fnSigmaTOF),
-  fPmaxTOF(source.fPmaxTOF)
+  fPmaxTOF(source.fPmaxTOF),
+  fuseCombinPid(source.fuseCombinPid),
+  fThreshold(source.fThreshold)
 {
   //
   // Copy constructor
@@ -196,7 +202,8 @@ AliSingleTrackEffCuts &AliSingleTrackEffCuts::operator=(const AliSingleTrackEffC
   if(source.fPTOFBinLimits && source.fnSigmaTOF) 
     SetTOFSigmaPtBins(source.fnPTOFBins,source.fPTOFBinLimits,source.fnSigmaTOF);
   fPmaxTOF = source.fPmaxTOF;
-
+  fuseCombinPid = source.fuseCombinPid;
+  fThreshold = source.fThreshold;
   return *this;
 }
 
@@ -622,6 +629,39 @@ Bool_t AliSingleTrackEffCuts::IsRecoParticlePID(TObject *obj)
   Bool_t okTPC = CheckTPCPIDStatus(track);
   Bool_t okTOF = CheckTOFPIDStatus(track);
 
+  //
+  // Bayesian PID (fuseCombinPid>0)
+  // maximum probability selection(fuseCombinPid==1)
+  if(fuseCombinPid>0){
+    isSelected = false;
+    AliPIDCombined *combin = new AliPIDCombined();
+    combin->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    combin->SetDefaultTPCPriors();
+    Double_t prob[AliPID::kSPECIES];
+    combin->ComputeProbabilities(track,pidResp,prob);
+
+    if(fuseCombinPid==AliSingleTrackEffCuts::kMaximumBayesianProb) {
+    // maximum probability selection
+      if( prob[(AliPID::EParticleType)fParticlePid]>0. &&
+	  (TMath::MaxElement(AliPID::kSPECIES,prob) == prob[(AliPID::EParticleType)fParticlePid]) ){
+	isSelected = true;
+      }
+    }
+    else if(fuseCombinPid==AliSingleTrackEffCuts::kThresholdBayesianProb) {
+      // probability threshold selection
+      if( prob[(AliPID::EParticleType)fParticlePid] > GetPIDThreshold()){
+	isSelected = true;
+      }
+    }
+    else {
+      AliWarning("Method for Bayesian PID not yet implemented");
+    }
+
+    delete combin;
+    return isSelected;
+  }
+
+
   //  Check Number of Sigmas
   Double_t nsigmaTPC=pidResp->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)fParticlePid);
   Double_t nsigmaTOF=pidResp->NumberOfSigmasTOF((AliVParticle*)track,(AliPID::EParticleType)fParticlePid);
@@ -643,6 +683,7 @@ Bool_t AliSingleTrackEffCuts::IsRecoParticlePID(TObject *obj)
     }
     if(pPart>fPmaxTOF) isTOFPid=true;
   }
+
 
   isSelected = (isTPCPid || isTOFPid) ? true : false;
 

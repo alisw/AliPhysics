@@ -9,12 +9,18 @@
 #include "AliAnalysisCuts.h"
 #include "AliPID.h"
 #include "AliAODTrack.h"
-
+#include "AliPIDCombined.h"
 
 
 class AliSingleTrackEffCuts : public AliAnalysisCuts 
 {
  public:
+
+  enum {
+      kNoBayesianPID=0,         // no Bayesian PID applied (default)
+      kMaximumBayesianProb=1,   // maximum Bayesian PID probability
+      kThresholdBayesianProb=2  // Bayesian PID with probability Threshold
+  };
 
   AliSingleTrackEffCuts();
   AliSingleTrackEffCuts(const char* name, const char* title);
@@ -101,8 +107,9 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   // maximum momentum to use PID
   void SetMaximumPTPC(Float_t p) { fPmaxTPC=p; }
   void SetMaximumPTOF(Float_t p) { fPmaxTOF=p; }
-  
-
+  // Bayesian PID settings (0=no, 1=maximum)
+  void SetUseCombinPID(Int_t flag=0){ fuseCombinPid=flag; }
+  void SetPIDThreshold(Float_t value=0.3){ fThreshold=value; }
   //
   // Getters
   //
@@ -112,7 +119,8 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   Int_t  GetNPTPCBins() const {return fnPTPCBins; }
   Float_t *GetPTOFBinLimits() const { return fPTOFBinLimits; }
   Int_t  GetNPTOFBins() const { return fnPTOFBins; }
-
+  Int_t GetUseCombinPID(){ return fuseCombinPid; }
+  Float_t GetPIDThreshold(){ return fThreshold; }
 
  protected:
 
@@ -160,9 +168,10 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   Float_t*  fPTOFBinLimits;   //[fnPTOFBinLimits]  p bins
   Float_t*  fnSigmaTOF;       //[fnPTOFBins]
   Float_t   fPmaxTOF;         // maximum TOF P to use Pid
-  
+  Int_t 	fuseCombinPid;	  // Bayesiand PID (0=no, 1=maximum, 2=Threshold)
+  Float_t	fThreshold;		  // Threshold for PID Combined
 
-  ClassDef(AliSingleTrackEffCuts,1)  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliSingleTrackEffCuts,2)  // base class for cuts on single tracks
  };
 
 #endif
