@@ -51,8 +51,37 @@ AliReducedReconstructedTrack::~AliReducedReconstructedTrack() {
  * Fill a TVector3 with the track momentum information
  * \param pvec The vector to be filled
  */
-void AliReducedReconstructedTrack::FillMomentumVector(TVector3& pvec) {
+void AliReducedReconstructedTrack::FillMomentumVector(TVector3& pvec) const {
   pvec.SetXYZ(pvec[0], pvec[1], pvec[2]);
+}
+/**
+ * Get reconstructed track \f$ p_{t} \f$
+ * \return The reconstructed \f$ p_{t} \f$
+ */
+Double_t AliReducedReconstructedTrack::Pt() const {
+  TVector3 pvec;
+  FillMomentumVector(pvec);
+  return pvec.Pt();
+}
+
+/**
+ * Get reconstructed track \f$ \eta \f$
+ * \return The reconstructed \f$ \eta \f$
+ */
+Double_t AliReducedReconstructedTrack::Eta() const {
+  TVector3 pvec;
+  FillMomentumVector(pvec);
+  return pvec.Eta();
+}
+
+/**
+ * Get reconstructed track \f$ \phi \f$
+ * \return The reconstructed \f$ \phi \f$
+ */
+Double_t AliReducedReconstructedTrack::Phi() const {
+  TVector3 pvec;
+  FillMomentumVector(pvec);
+  return pvec.Phi();
 }
 
 } /* namespace HighPtTracks */

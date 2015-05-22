@@ -18,6 +18,7 @@
 #define ALIREDUCEDHIGHPTEVENT_H
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+#include <vector>
 
 #include <TObject.h>
 #include "AliReducedPatchContainer.h"
@@ -62,16 +63,19 @@ public:
    * \return The cluster container
    */
   TObjArray *GetClusterContainer() { return fReducedClusterInfo; }
+  std::vector<HighPtTracks::AliReducedEmcalCluster *> GetClusterVector() const;
   /**
    * Get the particle container (at generator level)
    * \return The particle container
    */
   TObjArray *GetParticleContainer() { return fReducedParticleInfo; }
+  std::vector<HighPtTracks::AliReducedGeneratedParticle *> GetParticleVector() const;
   /**
    * Get the container with reconstructed tracks
    * \return Container with reconstructed tracks
    */
   TObjArray *GetTrackContainer() { return fReducedTrackInfo; }
+  std::vector<HighPtTracks::AliReducedReconstructedTrack *> GetTrackVector() const;
   AliReducedEmcalCluster * GetClusterForIndex(Int_t index);
   AliReducedGeneratedParticle *GetParticleForIndex(Int_t index);
   /**
