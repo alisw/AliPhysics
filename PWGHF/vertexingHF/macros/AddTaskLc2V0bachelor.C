@@ -9,7 +9,9 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
 						     Double_t pTmin=0.,
 						     Double_t pTmax=999.,
 						     Double_t minRotAngle=5.*TMath::Pi()/6.,
-						     Double_t maxRotAngle=7.*TMath::Pi()/6.)
+						     Double_t maxRotAngle=7.*TMath::Pi()/6.,
+						     Bool_t useTPCpidToFillTree=kFALSE,
+						     Char_t sign=2)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -53,11 +55,12 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
 
   //CREATE THE TASK
 
+  if (writeVariableTree) sign=2;
+
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree,additionalChecks,trackRotation);
+  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree,additionalChecks,trackRotation,useTPCpidToFillTree,sign);
   task->SetAdditionalChecks(additionalChecks);
   task->SetMC(theMCon);
-  task->SetK0SAnalysis(kTRUE);
   task->SetDebugLevel(0);
   task->SetNRotations(nRot);
   task->SetPtMinToFillTheTree(pTmin);
@@ -70,6 +73,8 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_Lc2pK0S_";
   outputfile += nTour;
+  if (sign==0) outputfile += "pos";
+  else if (sign==1) outputfile += "neg";
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
