@@ -609,7 +609,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
       histoTitle = Form("Chamber %i - %s: fraction of masked channels", 11+ich, cathName.Data());
       TH2* histo = new TH2D(histoName.Data(), histoTitle.Data(),1,0.,1., 234, 0.5, 234. + 0.5);
       histo->GetYaxis()->SetTitle("Board Id");
-      histo->SetOption("COLZ");
+//      histo->SetOption("COLZ");
       Int_t imask = 2*ich + icath;
       maskedList.AddAt(histo, imask);
       auxList.AddAt(histo->Clone(Form("%s_aux",histoName.Data())), imask);
@@ -681,6 +681,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     TCanvas* can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
     can->SetRightMargin(0.14);
     histo->SetStats(kFALSE);
+    if ( histo->GetMinimum() == 0. && histo->GetMaximum() == 0. ) histo->SetMaximum(0.1);
     histo->DrawCopy("COLZ");
     outCanList.Add(can);
   }
