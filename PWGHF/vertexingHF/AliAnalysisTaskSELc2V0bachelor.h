@@ -38,7 +38,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   
   AliAnalysisTaskSELc2V0bachelor();
   AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cuts,
-				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE, Bool_t trackRotation=kFALSE);
+				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE, Bool_t trackRotation=kFALSE, Bool_t useTPCpid=kFALSE, Char_t sign=2);
   virtual ~AliAnalysisTaskSELc2V0bachelor();
 
   // Implementation of interface methods  
@@ -67,9 +67,6 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   void FillArmPodDistribution(AliAODRecoDecay *vZero,TString histoTitle, Bool_t isCandidateSelectedCuts, Bool_t isBachelorID);
 
-  void SetK0SAnalysis(Bool_t a) {fIsK0SAnalysis=a;}
-  Bool_t GetK0SAnalysis() const {return fIsK0SAnalysis;}
-
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
@@ -89,6 +86,13 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Double_t GetMinAngleForRot() { return fMinAngleForRot; }
   Double_t GetMaxAngleForRot() { return fMaxAngleForRot; }
 
+  void SetUseTPCPIDtoFillTree(Bool_t a) {fUseTPCPIDtoFillTree=a;}
+  Bool_t GetUseTPCPIDtoFillTree() const {return fUseTPCPIDtoFillTree;}
+
+  // set MC usage
+  void SetSign(Char_t sign) {fSign = sign;}
+  Char_t GetSign() const {return fSign;}
+
  private:
   
   void CheckEventSelection(AliAODEvent *aodEvent);
@@ -104,7 +108,6 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Int_t SearchLcDaughter(TClonesArray *arrayMC, Int_t iii);
 
   void DefineGeneralHistograms();
-  void DefineAnalysisHistograms();
   void DefineK0SHistos();
   void FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis);
   void TrackRotation(AliRDHFCutsLctoV0 *cutsAnal, AliAODRecoCascadeHF *part, TString appendthis);
@@ -133,10 +136,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   TList *fOutputPIDBach;      // User output slot 5 // histos with PID on Bachelor
 
   TH1F *fCEvents;                    // Histogram to check selected events
-  Bool_t fIsK0SAnalysis;             // switch between Lpi and K0Sp
   AliNormalizationCounter *fCounter; // AliNormalizationCounter on output slot 2
   AliRDHFCutsLctoV0 *fAnalCuts;      // Cuts - sent to output slot 3
-  //TList *fListCuts;                  // list of cuts
   Bool_t fUseOnTheFlyV0;             // flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           // flag for event selected
 
@@ -157,8 +158,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Int_t fNRotations;//=9;
   Double_t fPtMinToFillTheTree;//0.
   Double_t fPtMaxToFillTheTree;//999.
+  Bool_t fUseTPCPIDtoFillTree;//kFALSE
+  Char_t fSign;
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,7); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,8); // class for Lc->p K0
 };
 
 #endif
