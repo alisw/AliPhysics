@@ -1,10 +1,12 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,
+AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,
 		Bool_t IsCentFlat=kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, 
-		double pt_min, double pt_max, int effMode, Bool_t IsPhiModule ,TString InFileNameNUE ,int debuglevel, char* surfix=""){
+		double pt_min, double pt_max, int effMode, Bool_t IsPhiModule ,TString InFileNameNUE ,int debuglevel, char* suffix=""){
     // Load Custom Configuration and parameters
     // override values with parameters
-    // surfix in last arguments are added for subwagons but no need to use in actual codes.
+    // surfix in last arguments are added for subwagons.
+    TString combinedName = Form("%s%s", taskName.Data(), suffix);
+    //
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
 	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
 	cout <<"AddTaskJFFluc:: Force to Cent flatting for LHC11h? = " << IsCentFlat << endl;
@@ -28,9 +30,9 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsW
 
     //==== JCORRAN TASK
     int CollisionCandidates = AliVEvent::kCentral;
-    AliJFFlucTask *FFtask = new AliJFFlucTask( taskName , CollisionCandidates, IsMC, IsWeakExclude );
+    AliJFFlucTask *FFtask = new AliJFFlucTask( combinedName.Data() , CollisionCandidates, IsMC, IsWeakExclude );
 
-	FFtask->SetFFlucTaskName( taskName ) ;
+	FFtask->SetFFlucTaskName( combinedName.Data() ) ;
 	FFtask->SetIsMC( IsMC );
 	FFtask->SetIsWeakDeacyExclude( IsWeakExclude ) ;
 	FFtask->SetTestFilterBit( FilterBit ) ;
@@ -50,8 +52,7 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsW
 
 	//==== Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-
-	AliAnalysisDataContainer *FFhist = mgr->CreateContainer(Form("%scontainer",FFtask->GetName()),    TDirectory::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:%s",  AliAnalysisManager::GetCommonFileName(), FFtask->GetName()));
+	AliAnalysisDataContainer *FFhist = mgr->CreateContainer(Form("%scontainer",FFtask->GetName()),  TDirectory::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:%s",  AliAnalysisManager::GetCommonFileName(), FFtask->GetName()));
 
 	//==== Connect input/output
 	mgr->ConnectInput(FFtask, 0, cinput);
