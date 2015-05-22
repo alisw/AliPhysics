@@ -12,15 +12,14 @@
 //  - libPWGPPMUONlite
 // The macro reads ESDs and store outputs in standard output file (AnalysisResults.root)
 //
-// Author: Philippe Pillot - SUBATECH Nantes
+// Author: Philippe Pillot / Cynthia Hadjidakis 
 //--------------------------------------------------------------------------
 
 enum {kLocal, kInteractif_xml, kInteractif_ESDList};
 
 void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE, 
-	       Bool_t selectPhysics = kTRUE, Bool_t selectMatched = kTRUE, 
-	       Bool_t applyAccCut = kTRUE, Bool_t selectTrigger = kFALSE,
-	       UInt_t triggerMask = AliVEvent::kMUS7, Short_t selectCharge = 0)
+	       Bool_t selectEvent = kTRUE, Bool_t selectMatched = kTRUE, 
+	       Bool_t applyAccCut = kTRUE, Short_t selectCharge = 0)
 {
   TStopwatch timer;
   timer.Start();
@@ -70,14 +69,16 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   
   // Muon QA analysis
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
-  AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(selectPhysics, selectMatched, applyAccCut, selectTrigger, triggerMask, selectCharge);
-  if(!muonQA) {
-    Error("RunMuonQA","AliAnalysisTaskMuonQA not created!");
+
+  // Create and configure task
+  AliAnalysisTaskMuonQA *muonQA = AddTaskMuonQA(selectEvent,selectMatched,applyAccCut,selectCharge);
+  if (!muonQA) {
+    Error("RunMuonQA", "Muon QA task not created!");
     return;
   }
-  
+
   // Enable debug printouts
-  //mgr->SetDebugLevel(2);
+  // mgr->SetDebugLevel(2);
   
   // start local analysis
   if (mgr->InitAnalysis()) {

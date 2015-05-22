@@ -5,10 +5,10 @@
 
 /* $Id$ */ 
 
-/// \ingroup muondep
+/// \ingroup lite
 /// \class AliAnalysisTaskMuonQA
 /// \brief Quality assurance of MUON ESDs
-//Author: Philippe Pillot - SUBATECH Nantes
+//Author: Philippe Pillot / Cynthia Hadjidakis
 
 #include "AliAnalysisTaskSE.h"
 #include "TArrayI.h"
@@ -17,6 +17,7 @@ class TMap;
 class TList;
 class TObjArray;
 class AliCounterCollection;
+class AliMuonEventCuts;
 class AliMuonTrackCuts;
 
 class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
@@ -34,14 +35,9 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   /// Select negative (<0), positive (>0) or all (==0) tracks to fill histograms
   void SelectCharge(Short_t charge = 0) {fSelectCharge = charge;}
   
-  /// Select events passing the physics selection to fill histograms
-  void SelectPhysics(Bool_t flag = kTRUE) {fSelectPhysics = flag;}
+  /// Select events passing the AliMuonEventCuts as defined by the task to fill histograms
+  void SelectEvent(Bool_t flag = kTRUE) {fSelectEvent = flag;}
   
-  /// Select events belonging to at least one of the trigger classes selected by the mask to fill histograms:
-  /// - if the physics selection is used, apply the mask to the trigger word returned by the physics selection
-  /// - if not, apply the mask to the trigger word of the physics selection task
-  void SelectTrigger(Bool_t flag = kTRUE, UInt_t mask = AliVEvent::kMUON) {fSelectTrigger = flag; fTriggerMask = mask;}
-	
   /// Select track matching the trigger to fill histograms
   void SelectMatched(Bool_t flag = kTRUE) {fSelectMatched = flag;}
   
@@ -52,6 +48,8 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   void SetTrackCuts ( AliMuonTrackCuts* trackCuts );
   /// Get track cuts
   AliMuonTrackCuts* GetTrackCuts() { return fTrackCuts; }
+  /// Get event cuts
+  AliMuonEventCuts* GetEventCuts() { return fEventCuts;}
   
  private:
   
@@ -62,7 +60,7 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   
   Double_t ChangeThetaRange(Double_t theta);
 
-  TList* BuildListOfAllTriggerCases(TString& FiredTriggerClasses);
+  TList* BuildListOfTriggers(const TObjArray*);
 	
  private:
   
@@ -124,12 +122,11 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   AliCounterCollection* fEventCounters; //!< event statistics
   
   Short_t fSelectCharge;  ///< Fill histograms only with negative/position tracks (0=all)
-  Bool_t  fSelectPhysics; ///< Fill histograms only with events passing the physics selection
-  Bool_t  fSelectTrigger; ///< Fill histograms only with events passing the trigger selection
-  UInt_t  fTriggerMask;   ///< Trigger mask to be used when selecting events
+  Bool_t  fSelectEvent; ///< Fill histograms only with events passing the AliMuonEventCuts selection
   Bool_t  fSelectMatched; ///< Fill histograms only with tracks matching the trigger
   Bool_t  fApplyAccCut;   ///< use only tracks passing the acceptance cuts (Rabs, eta)
   
+  AliMuonEventCuts* fEventCuts; ///< Event cuts
   AliMuonTrackCuts* fTrackCuts; ///< Track cuts
   TArrayI fMuonTrigIndex; ///< Combined muon trigger index
   
@@ -137,7 +134,7 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   static const Int_t nDE;       ///< number of DE
   static const Float_t dMax[5]; ///< maximum diameter of each station
   
-  ClassDef(AliAnalysisTaskMuonQA, 8);
+  ClassDef(AliAnalysisTaskMuonQA, 9);
 };
 
 #endif
