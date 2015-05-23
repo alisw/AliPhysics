@@ -53,6 +53,9 @@ class AliAlgSens : public AliAlgVol
   //
   virtual void UpdatePointByTrackInfo(AliAlgPoint* pnt, const AliExternalTrackParam* t) const;
   //
+  const TGeoHMatrix&  GetMatrixClAlg()            const {return fMatClAlg;}
+  void  SetMatrixClAlg(const TGeoHMatrix& m)            {fMatClAlg = m;}
+  //
  protected:
   //
   virtual Bool_t  IsSortable()                         const {return kTRUE;}
@@ -66,6 +69,8 @@ class AliAlgSens : public AliAlgVol
   //
   Double_t fAddError[2];              // additional error increment for measurement
   const AliAlgDet* fDet;              // pointer on detector
+  TGeoHMatrix fMatClAlg;              // reference cluster alignment matrix in tracking frame
+
   //
   ClassDef(AliAlgSens,1)
 };

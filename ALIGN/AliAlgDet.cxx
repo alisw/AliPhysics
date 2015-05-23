@@ -116,14 +116,17 @@ AliAlgPoint* AliAlgDet::TrackPoint2AlgPoint(int pntId, const AliTrackPointArray*
   AliAlgPoint* pnt = GetPointFromPool();
   pnt->SetSensor(sens);
   //
-  double tra[3],loc[3],glo[3] = {trpArr->GetX()[pntId], trpArr->GetY()[pntId], trpArr->GetZ()[pntId]};
+  double tra[3],traId[3],loc[3],
+    glo[3] = {trpArr->GetX()[pntId], trpArr->GetY()[pntId], trpArr->GetZ()[pntId]};
   const TGeoHMatrix& matL2Grec = sens->GetMatrixL2GReco(); // local to global matrix used for reconstruction
   //const TGeoHMatrix& matL2G    = sens->GetMatrixL2G();     // local to global orig matrix used as a reference 
   const TGeoHMatrix& matT2L    = sens->GetMatrixT2L();     // matrix for tracking to local frame translation
   //
   // undo reco-time alignment
   matL2Grec.MasterToLocal(glo,loc); // go to local frame using reco-time matrix 
-  matT2L.MasterToLocal(loc,tra); // go to tracking frame
+  matT2L.MasterToLocal(loc,traId); // go to tracking frame 
+  //
+  sens->GetMatrixClAlg().LocalToMaster(traId,tra);   // apply alignment
   //
   if (!fUseErrorParam) {
     // convert error

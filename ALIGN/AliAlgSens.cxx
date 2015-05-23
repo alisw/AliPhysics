@@ -31,6 +31,7 @@ using namespace TMath;
 AliAlgSens::AliAlgSens(const char* name,Int_t vid, Int_t iid) 
   : AliAlgVol(name,iid)
   ,fDet(0)
+  ,fMatClAlg()  
 {
   // def c-tor
   SetVolID(vid);
@@ -321,6 +322,8 @@ void AliAlgSens::Print(const Option_t *opt) const
     GetMatrixL2GReco().Print();
     printf("T2L         : "); 
     GetMatrixT2L().Print();
+    printf("ClAlg       : "); 
+    GetMatrixClAlg().Print();
   }
   //
 }
@@ -334,7 +337,14 @@ void AliAlgSens::PrepareMatrixT2L()
     Print("long");
     AliFatalF("Failed to find T2L matrix for VID:%d %s",GetVolID(),GetSymName());
   }
-  SetMatrixT2L(*t2l);  
+  SetMatrixT2L(*t2l);
+  //
+  // create alignment matrix
+  TGeoHMatrix ma = GetMatrixT2L();
+  ma.MultiplyLeft(&GetMatrixL2G());
+  ma.MultiplyLeft(&GetMatrixL2GIdeal().Inverse());
+  ma.MultiplyLeft(&GetMatrixT2L().Inverse());
+  SetMatrixClAlg(ma);
   //
 }
 
