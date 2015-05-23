@@ -18,7 +18,6 @@
 #include <TObject.h>
 #include <TPRegexp.h>
 #include "zmq.h"
-#include "AliLog.h"
 
 using namespace std;
 
@@ -32,7 +31,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQsocketType(ZMQ_PUB)
   , fZMQconnectMode("bind")
   , fZMQendpoint("tcp://*:60201")
-  , fZMQpollIn(kTRUE)
+  , fZMQpollIn(kFALSE)
   , fZMQsendAllInOne(kTRUE)
 {
   //ctor
@@ -57,7 +56,8 @@ const Char_t* AliHLTZMQsink::GetComponentID()
 void AliHLTZMQsink::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   //what data types do we accept
-  list.push_back(kAliHLTAnyDataType);
+  list.clear();
+  list.push_back(kAliHLTAllDataTypes);
 }
 
 //______________________________________________________________________________
@@ -75,28 +75,36 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   //process arguments
   ProcessOptionString(GetComponentArgs());
 
+  int rc = 0;
   //init ZMQ stuff
   fZMQcontext = zmq_ctx_new();
+  HLTMessage(Form("ctx create rc %i errno %i\n",rc,errno));
   fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
+  HLTMessage(Form("socket create rc %i errno %i\n",rc,errno));
 
-  int rc = 0;
-  
   //set socket options
   int lingerValue = 10;
   rc = zmq_setsockopt(fZMQout, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  int highWaterMarkSend = 2;
+  HLTMessage(Form("setopt rc %i errno %i\n",rc,errno));
+  int highWaterMarkSend = 20;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
-  int highWaterMarkRecv = 2;
+  HLTMessage(Form("setopt rc %i errno %i\n",rc,errno));
+  int highWaterMarkRecv = 20;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
+  HLTMessage(Form("setopt rc %i errno %i\n",rc,errno));
 
   //connect or bind, after setting socket options
   if (fZMQconnectMode.Contains("connect")) 
   {
-    rc = zmq_connect(fZMQout,fZMQendpoint);
+    HLTMessage(Form("AliHLTZMQsink: ZMQ connect to %s\n",fZMQendpoint.Data()));
+    rc = zmq_connect(fZMQout,fZMQendpoint.Data());
+    HLTMessage(Form("connect rc %i errno %i\n",rc,errno));
   }
-  else if(fZMQconnectMode.Contains("bind"))
+  else 
   {
-    rc = zmq_bind(fZMQout,fZMQendpoint);
+    HLTMessage(Form("AliHLTZMQsink: ZMQ bind to %s\n",fZMQendpoint.Data()));
+    rc = zmq_bind(fZMQout,fZMQendpoint.Data());
+    HLTMessage(Form("bind rc %i errno %i\n",rc,errno));
   }
 
   return 0;
@@ -117,8 +125,6 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
   // see header file for class documentation
   Int_t iResult=0;
   
-  Bool_t doSend = kTRUE;
-
   //if enabled (option -pushback-period), send at most so often
   //if (fPushbackPeriod>0)
   //{
@@ -131,9 +137,11 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
   char requestedTopic[kAliHLTComponentDataTypeTopicSize];
   memset(requestedTopic, '*', kAliHLTComponentDataTypeTopicSize);
 
+  int rc = 0;
+  Bool_t doSend = kTRUE;
   //in case we reply to requests instead of just pushing/publishing
   //we poll for requests
-  int requestedTopicSize=0;
+  int requestedTopicSize=kAliHLTComponentDataTypeTopicSize;
   if (fZMQpollIn)
   {
     zmq_pollitem_t items[] = { { fZMQout, 0, ZMQ_POLLIN, 0 } };
@@ -161,22 +169,23 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
       if (!Topicncmp(requestedTopic, blockTopic, requestedTopicSize)) continue;
       nothingSelected=kFALSE;
 
-      char topic[kAliHLTComponentDataTypeTopicSize];
-      DataType2Topic(inputBlock->fDataType, topic);
-
       //send:
       //  first part : AliHLTComponentDataType in string format
       //  second part: Payload
-      zmq_send(fZMQout, &topic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
-      zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (fZMQsendAllInOne)?ZMQ_SNDMORE:0);
+      rc = zmq_send(fZMQout, &blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
+      HLTMessage(Form("send rc %i errno %i\n",rc,errno));
+      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (fZMQsendAllInOne)?ZMQ_SNDMORE:0);
+      HLTMessage(Form("send rc %i errno %i\n",rc,errno));
     }
     if (nothingSelected && fZMQsocketType==ZMQ_REP)
     { 
       //empty frame of type void if we really need a reply (ZMQ_REP mode)
       char delimiter[kAliHLTComponentDataTypeTopicSize];
       memset(delimiter, 0, kAliHLTComponentDataTypeTopicSize);
-      zmq_send(fZMQout, &delimiter, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
-      zmq_send(fZMQout, 0, 0, 0);
+      rc = zmq_send(fZMQout, &delimiter, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
+      HLTMessage(Form("send rc %i errno %i\n",rc,errno));
+      rc = zmq_send(fZMQout, 0, 0, 0);
+      HLTMessage(Form("send rc %i errno %i\n",rc,errno));
     }
   }
 

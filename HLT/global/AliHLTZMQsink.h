@@ -23,7 +23,7 @@ public:
   virtual ~AliHLTZMQsink();
 
   //interface functions
-  const Char_t* GetComponentID();
+  const char* GetComponentID();
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
   AliHLTComponent* Spawn();
 
@@ -47,7 +47,7 @@ private:
 
   void* fZMQcontext;       //!ZMQ context pointer
   void* fZMQout;           //!the output socket
-  int fZMQsocketType;      //REP
+  int fZMQsocketType;      //ZMQ_REP,ZMQ_PUB,ZMQ_PUSH
   TString fZMQconnectMode; //"connect" or "bind"
   TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"
   Bool_t fZMQpollIn;       //do we poll fo incoming requests?
