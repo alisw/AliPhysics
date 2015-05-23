@@ -9,7 +9,7 @@ declare -i ptAssoc=$5
 declare -i reflect=$6
 declare -i rebinAzi=$7
 declare -i localcode=$8
-declare dirmacroFD="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
+declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 
 declare -ai ptTrigMin=(3 5 8) 
 declare -ai ptTrigMax=(5 8 16) 
