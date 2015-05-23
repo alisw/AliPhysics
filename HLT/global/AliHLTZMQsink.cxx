@@ -205,8 +205,9 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
  
   if (option.Contains("ZMQsocketMode")) 
   {
-    if (value.Contains("REP")) fZMQsocketType=ZMQ_PUB;
-    if (value.Contains("PUB")) fZMQsocketType=ZMQ_REP;
+    if (value.Contains("REP"))  fZMQsocketType=ZMQ_PUB;
+    if (value.Contains("PUB"))  fZMQsocketType=ZMQ_REP;
+    if (value.Contains("PUSH")) fZMQsocketType=ZMQ_PUSH;
     
     //always poll when REPlying
     fZMQpollIn=(fZMQsocketType==ZMQ_REP)?kTRUE:kFALSE;
