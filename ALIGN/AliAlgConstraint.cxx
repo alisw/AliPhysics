@@ -16,6 +16,7 @@
 #include "AliAlgConstraint.h"
 #include "AliAlignObjParams.h"
 #include "AliAlgAux.h"
+#include "AliLog.h"
 #include <TGeoMatrix.h>
 #include <TMath.h>
 #include <stdio.h>
@@ -79,6 +80,7 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
   }
   //
   float *jac = cstrArr;
+  int nContCh[kNDOFGeom] = {0}; // we need at least on contributing children DOF to constrain the parent DOF
   for (int ich=0;ich<nch;ich++) {
     AliAlgVol* child = GetChild(ich);
     TGeoHMatrix matRel;
@@ -86,18 +88,30 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
     else                     matRel = child->GetMatrixL2G(); // local to global
     matRel.MultiplyLeft(&mPar);
     ConstrCoefGeom(matRel,jac);
+    //
+    for (int ics=0;ics<kNDOFGeom;ics++) { // DOF of parent to be constrained
+      for (int ip=0;ip<kNDOFGeom;ip++) { // count contributing DOFs
+	float jv = jac[ics*kNDOFGeom+ip];
+	if (!IsZeroAbs(jv) && child->IsFreeDOF(ip) && child->GetParErr(ip)>=0) nContCh[ip]++;
+      }
+    }
     jac += kNDOFGeom*kNDOFGeom; // matrix for next slot
   }
   //
   for (int ics=0;ics<kNDOFGeom;ics++) {
     if (!IsDOFConstrained(ics)) continue;
-    fprintf(conOut,"\n%s%s\t%e\t%s %s of %s %s\n",comment[kOff],kKeyConstr,0.0,
+    int cmtStatus = nContCh[ics]>0 ? kOff : kOn;   // do we comment this constraint?
+    //
+    if (cmtStatus) AliInfoF("No contributors to constraint of %3s of %s",GetDOFName(ics),GetName());
+    //
+    fprintf(conOut,"\n%s%s\t%e\t%s %s of %s %s\n",comment[cmtStatus],kKeyConstr,0.0,
 	    comment[kOnOn],GetDOFName(ics),GetName(),GetTitle());
     for (int ich=0;ich<nch;ich++) { // contribution from this children DOFs to constraint 
       AliAlgVol* child = GetChild(ich);
       jac = cstrArr + kNDOFGeom*kNDOFGeom*ich;
+      if (cmtStatus) fprintf(conOut,"%s",comment[cmtStatus]); // comment out contribution
       for (int ip=0;ip<kNDOFGeom;ip++) {
-	double jv = jac[ics*kNDOFGeom+ip];
+	float jv = jac[ics*kNDOFGeom+ip];
 	if (child->IsFreeDOF(ip)&&!IsZeroAbs(jv)) 
 	  fprintf(conOut,"%9d %+.3e\t",child->GetParLab(ip),jv);
       } // loop over DOF's of children contributing to this constraint
