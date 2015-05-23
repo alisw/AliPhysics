@@ -185,7 +185,7 @@ class AliAlgVol : public TNamed
   TGeoHMatrix fMatL2GReco;            // local to global matrix used for reco of data being processed
   TGeoHMatrix fMatL2G;                // local to global matrix, including current alignment
   TGeoHMatrix fMatL2GIdeal;           // local to global matrix, ideal
-  TGeoHMatrix fMatT2L;                // tracking to local matrix
+  TGeoHMatrix fMatT2L;                // tracking to local matrix (ideal)
   //
   static const char* fgkDOFName[kNDOFGeom];
   static const char* fgkFrameName[kNVarFrames];

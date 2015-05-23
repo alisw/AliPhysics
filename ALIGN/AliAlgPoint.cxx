@@ -121,7 +121,7 @@ void AliAlgPoint::Print(Option_t* opt) const
   }
   //
   if (opts.Contains("mat") && ContainsMaterial()) {
-    printf("  MatCorr Exp (diag): %+.4e %+.4e %+.4e %+.4e %+.4e\n", 
+    printf("  MatCorr Exp(ELOSS): %+.4e %+.4e %+.4e %+.4e %+.4e\n", 
 	   fMatCorrExp[0], fMatCorrExp[1], fMatCorrExp[2], fMatCorrExp[3], fMatCorrExp[4]);
     printf("  MatCorr Cov (diag): %+.4e %+.4e %+.4e %+.4e %+.4e\n", 
 	   fMatCorrCov[0], fMatCorrCov[1], fMatCorrCov[2], fMatCorrCov[3], fMatCorrCov[4]);
@@ -168,6 +168,36 @@ void AliAlgPoint::Print(Option_t* opt) const
     printf("\n");
   }
   //
+}
+
+//_____________________________________
+void AliAlgPoint::DumpCoordinates() const
+{
+  // dump various corrdinates for inspection
+  // global xyz
+  double xyz[3];
+  GetXYZGlo(xyz);
+  for (int i=0;i<3;i++) printf("%+.4e ",xyz[i]);
+  //
+  AliExternalTrackParam wsb;
+  AliExternalTrackParam wsa;
+  GetTrWSB(wsb);
+  GetTrWSA(wsa);
+  wsb.GetXYZ(xyz);
+  for (int i=0;i<3;i++) printf("%+.4e ",xyz[i]); // track before mat corr
+  wsa.GetXYZ(xyz);
+  for (int i=0;i<3;i++) printf("%+.4e ",xyz[i]); // track after mat corr
+  //
+  printf("%+.4f ",fAlphaSens);
+  printf("%+.4e ",GetXPoint());
+  printf("%+.4e ",GetYTracking());
+  printf("%+.4e ",GetZTracking());
+  //
+  printf("%+.4e %.4e ",wsb.GetY(),wsb.GetZ());
+  printf("%+.4e %.4e ",wsa.GetY(),wsa.GetZ());
+  //
+  printf("%4e %4e",Sqrt(fErrYZTracking[0]),Sqrt(fErrYZTracking[2]));
+  printf("\n");
 }
 
 //_____________________________________

@@ -756,6 +756,7 @@ void AliAlgVol::AddAutoConstraints(TObjArray* constrArr)
   //
   if (HasChildrenConstraint()) {
     AliAlgConstraint* constr = new AliAlgConstraint();
+    constr->SetConstrainPattern(fConstrChild);
     constr->SetParent(this);
     for (int ich=nch;ich--;) {
       AliAlgVol* child = GetChild(ich);

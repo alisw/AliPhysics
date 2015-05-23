@@ -42,3 +42,13 @@ void AliAlgVtx::PrepareMatrixT2L()
   //  fMatT2L.MultiplyLeft(&GetMatrixL2GIdeal().Inverse()); L2G=I !!!
   //
 }
+
+//____________________________________________
+void AliAlgVtx::ApplyCorrection(double* vtx) const
+{
+  // apply eventual correction to supplied vertex position
+  vtx[kDOFTX] += GetParVal(kDOFTX);
+  vtx[kDOFTY] += GetParVal(kDOFTY);
+  vtx[kDOFTZ] += GetParVal(kDOFTZ);
+  //
+}

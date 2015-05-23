@@ -51,8 +51,6 @@
 using namespace TMath;
 using namespace AliAlgAux;
 
-using std::ifstream;
-
 ClassImp(AliAlgSteer)
 
 const Char_t* AliAlgSteer::fgkMPDataExt = ".mille";
@@ -506,7 +504,7 @@ Bool_t AliAlgSteer::ProcessTrack(const AliESDtrack* esdTr)
   //
   if (GetProduceControlRes() &&  // need control residuals, ignore selection fraction if this is the 
       (fMPOutType==kContR || gRandom->Rndm()<fControlFrac) ) { // output requested
-    if ( !TestLocalSolution() || !StoreProcessedTrack(kContR) ) return kFALSE;
+    if (!TestLocalSolution() || !StoreProcessedTrack(kContR) ) return kFALSE;
   }
   //
   FillStatHisto( kTrackStore );
@@ -987,8 +985,11 @@ Bool_t AliAlgSteer::TestLocalSolution()
   }
   */
   //
-  fAlgTrack->CalcResiduals(vsl.GetMatrixArray());
+  // increment current params by new solution
+  rhs.SetElements(fAlgTrack->GetLocPars());
+  vsl += rhs;
   fAlgTrack->SetLocPars(vsl.GetMatrixArray());
+  fAlgTrack->CalcResiduals();
   delete mat;
   //
   return kTRUE;
@@ -1224,6 +1225,7 @@ Bool_t AliAlgSteer::AddVertexConstraint()
   fVtxSens->SetAlpha(trc.GetAlpha());
   // usually translation from GLO to TRA frame should go via matrix T2G
   // but for the VertexSensor Local and Global are the same frames
+  fVtxSens->ApplyCorrection(xyz);
   fVtxSens->GetMatrixT2L().MasterToLocal(xyz,xyzT);
   fRefPoint->SetSensor(fVtxSens);
   fRefPoint->SetAlphaSens(fVtxSens->GetAlpTracking());
