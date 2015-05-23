@@ -47,6 +47,8 @@ set(SRCS
     AliITSUv0Layer.cxx
     AliITSUv1.cxx
     AliITSUv1Layer.cxx
+    AliITSUv2.cxx
+    AliITSUv2Layer.cxx
    )
 
 # Headers from sources
