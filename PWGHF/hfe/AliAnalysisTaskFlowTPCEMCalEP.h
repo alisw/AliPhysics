@@ -68,6 +68,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Int_t iCent) const;
   
   Double_t GetEPweight(Int_t bin);
+  Bool_t   RejectEvent(Double_t cent, Int_t centbin);
   Bool_t   IsFromHFdecay(TParticle *particle);
   Bool_t   IsFromLMdecay(TParticle *particle);
   Bool_t   IsPrimary(TParticle *particle);
@@ -109,7 +110,10 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Int_t			fWhichDecay;		//! which decay
   Double_t 		fPi0EtaWeight;		//! weight for pi0/eta in MC with enhanced signal
 
-  TH1F		        *fTrigger;		//! check trigger
+  TH1F		        *fCentAftThr;		//! centrality for events with electron pt  > 8 GeV/c
+  TH1F		        *fevPlaneV0AftThr[3];	//! V0 event plane distribution for events with electron pt  > 8 GeV/c
+  
+  TH2F		        *fTrigger;		//! check trigger
   TH1F		        *fNoEvents;		//! no of events
   TH1F		        *fTrkpt;		//! track pt
   TH2F		        *fTrkEovPBef;		//! track E/p before HFE pid
@@ -119,7 +123,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH2F		        *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
   TH2F		        *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
   TH2F		        *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
-  TH1F		        *fInclElec[3];   	 //! inclusive electron pt
+  TH2F		        *fInclElec[3];   	 //! inclusive electron pt
   
   TH2F                  *fInvmassLS[3];	//! Inv mass of LS (e,e)
   TH2F                  *fInvmassULS[3];	//! Inv mass of ULS (e,e)
@@ -130,7 +134,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH1F		        *fTrackPtAftTrkCuts;	//! Track pt after track cuts
   TH2F		        *fTPCnsigma;		//! TPC n sigma vs p	
   
-  TH1F		        *fCent;			//! centrality
+  TH1F		        *fCent;			//! centrality distribution
+  TH1F		        *fCentAftFlt;		//! centrality distribution after centrality flattening
+  
   TH1F		        *fevPlaneV0[3];		//! V0 event plane distribution
   TH1F		        *fTPCsubEPres;		//! TPC event plane resolution
   TH2F		        *fEPres[3];		//! histograms for event plane resolution calculation
