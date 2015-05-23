@@ -677,9 +677,9 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
       if(k%3==0)continue;
     }
     if(k<3) {
-      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],suberr[k],"CanvasFinalTrendPedestal",grbase[k],grv2[k]);
-      //      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
-      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
+      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],suberr[k],"CanvasBaselineVariationTrendPedestal",grbase[k],grv2[k]);
+      //      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"CanvasBaselineVariationTrendPedestal",&b1,&b2);
+      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"CanvasBaselineVariationTrendPedestal",&b1,&b2);
       //      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
       //      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
       cout<<"sub -> "<<subtractedhisto[k]->GetBinContent(5)<<endl;
@@ -696,9 +696,9 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
     }
 
     if(k>=3) { 
-      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],suberr[k],"CanvasFinalTrendPedestal",grbase[k],grv2[k]);
-      //      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
-      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"CanvasFinalTrendPedestal",&b1,&b2);
+      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],suberr[k],"CanvasBaselineVariationTrendPedestal",grbase[k],grv2[k]);
+      //      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pp",k,histo[k],err[k],&gr,"CanvasBaselineVariationTrendPedestal",&b1,&b2);
+      //    subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],&gr,"CanvasBaselineVariationTrendPedestal",&b1,&b2);
       //      cout<<"BOX1 = "<<b1->GetX1()<<"  "<<b1->GetX2()<<"  "<<b1->GetY1()<<"  "<<b1->GetY2()<<"  "<<endl;
       //      cout<<"BOX2 = "<<b2->GetX1()<<"  "<<b2->GetX2()<<"  "<<b2->GetY1()<<"  "<<b2->GetY2()<<"  "<<endl;
       cout<<"sub -> "<<subtractedhisto[k]->GetBinContent(5)<<endl;
@@ -1096,8 +1096,8 @@ void LoadFileNamesppVspPb(TString pthadron){
     }
     //    pedestalfilenames[0] += Form("/finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pp
     //    pedestalfilenames[1] += Form("/p_Pb_finalCanvas_DAverage_Baseline%s.root",pthadron.Data());//pPb
-    pedestalfilenames[0] += Form("/Trends_pp/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pp
-    pedestalfilenames[1] += Form("/Trends_pPb/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pPb
+    pedestalfilenames[0] += Form("/Trends_pp/CanvasBaselineVariationTrendPedestal_pthad%s.root",pthadron.Data());//pp
+    pedestalfilenames[1] += Form("/Trends_pPb/CanvasBaselineVariationTrendPedestal_pthad%s.root",pthadron.Data());//pPb
 
 }
 
@@ -1169,7 +1169,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1
     TFile * file = TFile::Open(path.Data(),"READ");
     TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
     TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
-    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fBaselineVariationSystematicsPedestal");    
     grV2=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fv2SystematicsPedestal");    
     //example:
     //    TBox  X1= 5.600000 Y1=6.724682 X2=7.400000 Y2=6.802155     bin 5-8 : v2
@@ -1241,7 +1241,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1
     TFile * file = TFile::Open(path.Data(),"READ");
     TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
     TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
-    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fBaselineVariationSystematicsPedestal");    
 
     if(isReflected){
       xuncFull=3.25;

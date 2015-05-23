@@ -25,33 +25,33 @@
 ######## THE FOLLOWING LINES ARE THE ONLY VARIABLES TO BE CHANGED ACCORDING TO YOUR LOCAL PATHS #####
 
 
-declare baseStartingDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF"
+declare baseStartingDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/TEST"
 #declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
-export HFCJlocalCodeDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF"
+export HFCJlocalCodeDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/TEST"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
-declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pp_12May15"
-declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
+declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pp"
+declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pPb"
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
-declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
-declare dirpPbDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pPb"
+declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dzero_pp"
+declare dirpPbDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dzero_pPb"
 declare -a dirDzeroNotFDsubt=( "$dirppDzeroNotFDsubt" "$dirpPbDzeroNotFDsubt" )
 declare -a fpromptfileDzero=( "HFPtSpectrum_pp.root" "HFPtSpectrum_DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDzero=( "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" )
 
-declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pp"
-declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pPb"
+declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dstar_pp"
+declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dstar_pPb"
 declare -a dirDstarNotFDsubt=( "$dirppDstarNotFDsubt" "$dirpPbDstarNotFDsubt" )
 declare -a fpromptfileDstar=( "outputkfcB6_23mb.root" "fPromptWithBeautyRpA.root" )
 declare -a filerootDstar=( "FinalDphiCorrelationsCanvas_" "FinalDphiCorrelationsCanvas_" )
 
-declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pp"
-declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pPb"
+declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dplus_pp"
+declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dplus_pPb"
 declare -a dirDplusNotFDsubt=( "$dirppDplusNotFDsubt" "$dirpPbDplusNotFDsubt" )
-declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_pp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
+declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDplus=( "1D_pp_DplusHCorr_" "1D_pPb_DplusHCorr_" )
 
 
@@ -241,11 +241,11 @@ if [ $doFeedDownGlob = 1 ]; then
 	    mkdir -p ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    cd ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    if [ ${imeson} = 0 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 0 ${templateDirSystemSuffix[${collsyst}]}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]}
 	    elif [ ${imeson} = 1 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 0 ${templateDirSystemSuffix[${collsyst}]}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]}
 	    elif [ ${imeson} = 2 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 0 ${templateDirSystemSuffix[${collsyst}]}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]}
 	    fi
 	    imeson=${imeson}+1
 	done
@@ -271,25 +271,25 @@ if [ $doInitAndReflStep = 1 ]; then
 		    if [ ${collsyst} = 0 ]; then 
 			if [ ${imeson} = 0 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 0
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
 			    
 			elif [ ${imeson} = 1 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 0
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
 			elif [ ${imeson} = 2 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 0
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
 			fi
 		else 
 			if [ ${imeson} = 0 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 0
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
 			elif [ ${imeson} = 1 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 0
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
 			elif [ ${imeson} = 2 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 0
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
 			fi
 		    fi
 		    if [ -e CanvaAndVariedHisto${collsystdir[$collsyst]}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assocPt${ptassoc[${iassocbin}]}.root ]; then

@@ -223,8 +223,7 @@ private:
     Double_t *fValueSystematicBaselineASYield;
     Double_t *fValueSystematicBaselineASSigma;
     Double_t *fValueSystematicBaselinePedestal;
-    
-    
+
     Double_t *fValueSystematicNSYieldUp;
     Double_t *fValueSystematicNSSigmaUp;
     Double_t *fValueSystematicASYieldUp;
@@ -299,6 +298,7 @@ private:
     TCanvas *fCanvasFinalTrendASYield;
     TCanvas *fCanvasFinalTrendASSigma;
     TCanvas *fCanvasFinalTrendPedestal;
+    TCanvas *fCanvasVariationBaselineTrendPedestal;
     
     TH1D *fFinalTrendNSYield;
     TH1D *fFinalTrendNSSigma;
@@ -316,10 +316,11 @@ private:
     TGraphAsymmErrors *fv2SystematicsASSigma;
     TGraphAsymmErrors *fFullSystematicsPedestal;
     TGraphAsymmErrors *fv2SystematicsPedestal;
+    TGraphAsymmErrors *fBaselineVariationSystematicsPedestal;
     TCanvas *fCanvasRefernce;
     TCanvas **fCanvasFitting;
 
-    ClassDef(AliHFCorrFitSystematics,2);    
+    ClassDef(AliHFCorrFitSystematics,3);    
     
 };
 

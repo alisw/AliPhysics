@@ -1,4 +1,3 @@
-
 //############################################################################
 // 
 //  Macros to perform and draw the comparison of D-haron correlation results
@@ -551,7 +550,7 @@ void DoComparison_pPbVsMCTEST(TString pthad = "0.3_1.0"){
     }
     if(k<3) {
       Printf("Checking pointers, bin %d %p, %p",k,histo[k],err[k]);
-      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],suberr[k],"CanvasFinalTrendPedestal",grbase[k],grv2[k]);
+      subtractedhisto[k] = GetPedestalHistoAndSystAndSubtractPedpPb("pPb",k,histo[k],err[k],suberr[k],"CanvasBaselineVariationTrendPedestal",grbase[k],grv2[k]);
       grbase[k]->SetFillStyle(3002);
       grbase[k]->SetFillColor(kBlue-7);
       grbase[k]->SetLineColor(kBlue-7);
@@ -1117,8 +1116,8 @@ void LoadFileNamespPbVsMCtemplates(TString pthadron){
   for(Int_t k = 0; k<2; k++){
     pedestalfilenames[k] = baselinedirectory;
   }
-  pedestalfilenames[0] += Form("/Trends_pp/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pp
-  pedestalfilenames[1] += Form("/Trends_pPb/CanvasFinalTrendPedestal_pthad%s.root",pthadron.Data());//pPb
+  pedestalfilenames[0] += Form("/Trends_pp/CanvasBaselineVariationTrendPedestal_pthad%s.root",pthadron.Data());//pp
+  pedestalfilenames[1] += Form("/Trends_pPb/CanvasBaselineVariationTrendPedestal_pthad%s.root",pthadron.Data());//pPb
 }
 
 
@@ -1188,7 +1187,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system,Int_t i,TH1D *his
     TFile * file = TFile::Open(path.Data(),"READ");
     TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
     h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
-    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fBaselineVariationSystematicsPedestal");    
     grV2=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fv2SystematicsPedestal");    
   }
   else if(system.Contains("pp")){
@@ -1199,7 +1198,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system,Int_t i,TH1D *his
     TFile * file = TFile::Open(path.Data(),"READ");
     TCanvas* c=(TCanvas*)file->Get(canvasname.Data());
     TH1D* h = (TH1D*)c->GetListOfPrimitives()->FindObject("FinalTrendPedestal");
-    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fFullSystematicsPedestal");    
+    grBase=(TGraphAsymmErrors*)c->GetListOfPrimitives()->FindObject("fBaselineVariationSystematicsPedestal");    
   }
     
   if(isReflectedData){

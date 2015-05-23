@@ -58,142 +58,144 @@ ClassImp(AliHFCorrFitSystematics)
 //___________________________________________________________
 AliHFCorrFitSystematics::AliHFCorrFitSystematics():
 fVecHisto(0),
-fVecHistoMinVar(0),
-fVecHistoMaxVar(0),
-fVecMinCorrelatedSyst(0),
-fVecMaxCorrelatedSyst(0),
-fCorrelationCanvas(0),
-fCorrelationGraphAsymmErrors(0),
-fFitFunctions(0),
-fVecLowEdgeDpt(0),
-fVecUpEdgeDpt(0),
-fVecSystMode(0),
-fMinBaselineEstimationRange(0),
-fMaxBaselineEstimationRange(0),
-fVecIsReference(0),
-fEntries(0),
-fVecSize(-1),
-fVecSystModesSize(-1),
-fDim(-1),
-fReferenceIndex(-1),
-fIsReferenceAlreadySet(kFALSE),
-fUseCorrelatedSystematics(kFALSE),
-fUseMaximumVariation(kFALSE),
-fIspPb(kFALSE),
-fUseCorrelatedSystematicsForWidths(kFALSE),
-fPlotV2SystSeparately(kFALSE),
-fSaveDotC(kFALSE),
-fSaveRoot(kFALSE),
-fSavePng(kFALSE),
-fSaveEps(kFALSE),
-fSavePdf(kFALSE),
-fMinFitRange(0),
-fMaxFitRange(-1),
-fv2had(0),
-fv2Dmeson(0),
-fAssocTrackPtMin(-1),
-fAssocTrackPtMax(100),
-fMinReferenceBaselineEstimationRange(0),
-fMaxReferenceBaselineEstimationRange(0),
-fValueNSYield(0x0),
-fRatioNSYield(0x0),
-fValueNSSigma(0x0),
-fRatioNSSigma(0x0),
-fValueASYield(0x0),
-fRatioASYield(0x0),
-fValueASSigma(0x0),
-fRatioASSigma(0x0),
-fValuePedestal(0x0),
-fRatioPedestal(0x0),
-fValuev2NSYield(0x0),
-fValuev2NSSigma(0x0),
-fValuev2ASYield(0x0),
-fValuev2ASSigma(0x0),
-fValuev2Pedestal(0x0),
-fSystValuev2NSYield(0x0),
-fSystValuev2NSSigma(0x0),
-fSystValuev2ASYield(0x0),
-fSystValuev2ASSigma(0x0),
-fSystValuev2Pedestal(0x0),
-fValueSystematicBaselineNSYield(0x0),
-fValueSystematicBaselineNSSigma(0x0),
-fValueSystematicBaselineASYield(0x0),
-fValueSystematicBaselineASSigma(0x0),
-fValueSystematicBaselinePedestal(0x0),
-fValueSystematicNSYieldUp(0x0),
-fValueSystematicNSSigmaUp(0x0),
-fValueSystematicASYieldUp(0x0),
-fValueSystematicASSigmaUp(0x0),
-fValueSystematicPedestalUp(0x0),
-fValueSystematicNSYieldLow(0x0),
-fValueSystematicNSSigmaLow(0x0),
-fValueSystematicASYieldLow(0x0),
-fValueSystematicASSigmaLow(0x0),
-fValueSystematicPedestalLow(0x0),
-fOutputFileName(""),
-fOutputDirectory(""),
-fSystMode(kTransverse),
-fCombineSystematics(kRMS),
-fDmeson(AliHFCorrelationUtils::kDaverage),
-fFitter(0x0),
-fOutputFile(0x0),
-fReferenceHistoNSYield(0x0),
-fReferenceHistoNSSigma(0x0),
-fReferenceHistoASYield(0x0),
-fReferenceHistoASSigma(0x0),
-fReferenceHistoPedestal(0x0),
-fValueHistoNSYield(0x0),
-fRatioHistoNSYield(0x0),
-fValueHistoNSSigma(0x0),
-fRatioHistoNSSigma(0x0),
-fValueHistoASYield(0x0),
-fRatioHistoASYield(0x0),
-fValueHistoASSigma(0x0),
-fRatioHistoASSigma(0x0),
-fValueHistoPedestal(0x0),
-fRatioHistoPedestal(0x0),
-fRMSHistoNSYield(0x0),
-fRMSHistoNSSigma(0x0),
-fRMSHistoASYield(0x0),
-fRMSHistoASSigma(0x0),
-fRMSHistoPedestal(0x0),
-fSystematicSourcesNSYield(0x0),
-fSystematicSourcesNSSigma(0x0),
-fSystematicSourcesASYield(0x0),
-fSystematicSourcesASSigma(0x0),
-fSystematicSourcesPedestal(0x0),
-fCanvasSystematicSourcesNSYield(0x0),
-fCanvasSystematicSourcesNSSigma(0x0),
-fCanvasSystematicSourcesASYield(0x0),
-fCanvasSystematicSourcesASSigma(0x0),
-fCanvasSystematicSourcesPedestal(0x0),
-fCanvasTotalSystematicSourcesNSYield(0x0),
-fCanvasTotalSystematicSourcesNSSigma(0x0),
-fCanvasTotalSystematicSourcesASYield(0x0),
-fCanvasTotalSystematicSourcesASSigma(0x0),
-fCanvasTotalSystematicSourcesPedestal(0x0),
-fCanvasFinalTrendNSYield(0x0),
-fCanvasFinalTrendNSSigma(0x0),
-fCanvasFinalTrendASYield(0x0),
-fCanvasFinalTrendASSigma(0x0),
-fCanvasFinalTrendPedestal(0x0),
-fFinalTrendNSYield(0x0),
-fFinalTrendNSSigma(0x0),
-fFinalTrendASYield(0x0),
-fFinalTrendASSigma(0x0),
-fFinalTrendPedestal(0x0),
-fFullSystematicsNSYield(0x0),
-fv2SystematicsNSYield(0x0),
-fFullSystematicsNSSigma(0x0),
-fv2SystematicsNSSigma(0x0),
-fFullSystematicsASYield(0x0),
-fv2SystematicsASYield(0x0),
-fFullSystematicsASSigma(0x0),
-fv2SystematicsASSigma(0x0),
-fFullSystematicsPedestal(0x0),
-fv2SystematicsPedestal(0x0),
-fCanvasRefernce(0x0),
-fCanvasFitting(0x0)
+  fVecHistoMinVar(0),
+  fVecHistoMaxVar(0),
+  fVecMinCorrelatedSyst(0),
+  fVecMaxCorrelatedSyst(0),
+  fCorrelationCanvas(0),
+  fCorrelationGraphAsymmErrors(0),
+  fFitFunctions(0),
+  fVecLowEdgeDpt(0),
+  fVecUpEdgeDpt(0),
+  fVecSystMode(0),
+  fMinBaselineEstimationRange(0),
+  fMaxBaselineEstimationRange(0),
+  fVecIsReference(0),
+  fEntries(0),
+  fVecSize(-1),
+  fVecSystModesSize(-1),
+  fDim(-1),
+  fReferenceIndex(-1),
+  fIsReferenceAlreadySet(kFALSE),
+  fUseCorrelatedSystematics(kFALSE),
+  fUseMaximumVariation(kFALSE),
+  fIspPb(kFALSE),
+  fUseCorrelatedSystematicsForWidths(kFALSE),
+  fPlotV2SystSeparately(kFALSE),
+  fSaveDotC(kFALSE),
+  fSaveRoot(kFALSE),
+  fSavePng(kFALSE),
+  fSaveEps(kFALSE),
+  fSavePdf(kFALSE),
+  fMinFitRange(0),
+  fMaxFitRange(-1),
+  fv2had(0),
+  fv2Dmeson(0),
+  fAssocTrackPtMin(-1),
+  fAssocTrackPtMax(100),
+  fMinReferenceBaselineEstimationRange(0),
+  fMaxReferenceBaselineEstimationRange(0),
+  fValueNSYield(0x0),
+  fRatioNSYield(0x0),
+  fValueNSSigma(0x0),
+  fRatioNSSigma(0x0),
+  fValueASYield(0x0),
+  fRatioASYield(0x0),
+  fValueASSigma(0x0),
+  fRatioASSigma(0x0),
+  fValuePedestal(0x0),
+  fRatioPedestal(0x0),
+  fValuev2NSYield(0x0),
+  fValuev2NSSigma(0x0),
+  fValuev2ASYield(0x0),
+  fValuev2ASSigma(0x0),
+  fValuev2Pedestal(0x0),
+  fSystValuev2NSYield(0x0),
+  fSystValuev2NSSigma(0x0),
+  fSystValuev2ASYield(0x0),
+  fSystValuev2ASSigma(0x0),
+  fSystValuev2Pedestal(0x0),
+  fValueSystematicBaselineNSYield(0x0),
+  fValueSystematicBaselineNSSigma(0x0),
+  fValueSystematicBaselineASYield(0x0),
+  fValueSystematicBaselineASSigma(0x0),
+  fValueSystematicBaselinePedestal(0x0),
+  fValueSystematicNSYieldUp(0x0),
+  fValueSystematicNSSigmaUp(0x0),
+  fValueSystematicASYieldUp(0x0),
+  fValueSystematicASSigmaUp(0x0),
+  fValueSystematicPedestalUp(0x0),
+  fValueSystematicNSYieldLow(0x0),
+  fValueSystematicNSSigmaLow(0x0),
+  fValueSystematicASYieldLow(0x0),
+  fValueSystematicASSigmaLow(0x0),
+  fValueSystematicPedestalLow(0x0),
+  fOutputFileName(""),
+  fOutputDirectory(""),
+  fSystMode(kTransverse),
+  fCombineSystematics(kRMS),
+  fDmeson(AliHFCorrelationUtils::kDaverage),
+  fFitter(0x0),
+  fOutputFile(0x0),
+  fReferenceHistoNSYield(0x0),
+  fReferenceHistoNSSigma(0x0),
+  fReferenceHistoASYield(0x0),
+  fReferenceHistoASSigma(0x0),
+  fReferenceHistoPedestal(0x0),
+  fValueHistoNSYield(0x0),
+  fRatioHistoNSYield(0x0),
+  fValueHistoNSSigma(0x0),
+  fRatioHistoNSSigma(0x0),
+  fValueHistoASYield(0x0),
+  fRatioHistoASYield(0x0),
+  fValueHistoASSigma(0x0),
+  fRatioHistoASSigma(0x0),
+  fValueHistoPedestal(0x0),
+  fRatioHistoPedestal(0x0),
+  fRMSHistoNSYield(0x0),
+  fRMSHistoNSSigma(0x0),
+  fRMSHistoASYield(0x0),
+  fRMSHistoASSigma(0x0),
+  fRMSHistoPedestal(0x0),
+  fSystematicSourcesNSYield(0x0),
+  fSystematicSourcesNSSigma(0x0),
+  fSystematicSourcesASYield(0x0),
+  fSystematicSourcesASSigma(0x0),
+  fSystematicSourcesPedestal(0x0),
+  fCanvasSystematicSourcesNSYield(0x0),
+  fCanvasSystematicSourcesNSSigma(0x0),
+  fCanvasSystematicSourcesASYield(0x0),
+  fCanvasSystematicSourcesASSigma(0x0),
+  fCanvasSystematicSourcesPedestal(0x0),
+  fCanvasTotalSystematicSourcesNSYield(0x0),
+  fCanvasTotalSystematicSourcesNSSigma(0x0),
+  fCanvasTotalSystematicSourcesASYield(0x0),
+  fCanvasTotalSystematicSourcesASSigma(0x0),
+  fCanvasTotalSystematicSourcesPedestal(0x0),
+  fCanvasFinalTrendNSYield(0x0),
+  fCanvasFinalTrendNSSigma(0x0),
+  fCanvasFinalTrendASYield(0x0),
+  fCanvasFinalTrendASSigma(0x0),
+  fCanvasFinalTrendPedestal(0x0),
+  fCanvasVariationBaselineTrendPedestal(0x0),
+  fFinalTrendNSYield(0x0),
+  fFinalTrendNSSigma(0x0),
+  fFinalTrendASYield(0x0),
+  fFinalTrendASSigma(0x0),
+  fFinalTrendPedestal(0x0),
+  fFullSystematicsNSYield(0x0),
+  fv2SystematicsNSYield(0x0),
+  fFullSystematicsNSSigma(0x0),
+  fv2SystematicsNSSigma(0x0),
+  fFullSystematicsASYield(0x0),
+  fv2SystematicsASYield(0x0),
+  fFullSystematicsASSigma(0x0),
+  fv2SystematicsASSigma(0x0),
+  fFullSystematicsPedestal(0x0),
+  fv2SystematicsPedestal(0x0),
+  fBaselineVariationSystematicsPedestal(0x0),
+  fCanvasRefernce(0x0),
+  fCanvasFitting(0x0)
 {
     // default constructor
   
@@ -246,7 +248,9 @@ AliHFCorrFitSystematics::~AliHFCorrFitSystematics()
     if(fValueHistoPedestal){delete fValueHistoPedestal;}
     if(fRatioHistoPedestal){delete fRatioHistoPedestal;}
     
+    if(fBaselineVariationSystematicsPedestal){delete fBaselineVariationSystematicsPedestal;}
     if(fCanvasFitting){delete fCanvasFitting;}
+    if(fCanvasVariationBaselineTrendPedestal){delete fCanvasVariationBaselineTrendPedestal;}
 }
 
 //___________________________________________________________
@@ -1894,6 +1898,8 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
       fv2SystematicsPedestal = new TGraphAsymmErrors();
       fv2SystematicsPedestal->SetName("fv2SystematicsPedestal");
     }
+    fBaselineVariationSystematicsPedestal = new TGraphAsymmErrors();
+    fBaselineVariationSystematicsPedestal->SetName("fBaselineVariationSystematicsPedestal");
     
     Double_t Avpt = 0;
     Color_t sysboxcolor;
@@ -2091,7 +2097,7 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
     if(drawPed){fCanvasFinalTrendPedestal = new TCanvas("CanvasFinalTrendPedestal","CanvasFinalTrendPedestal",0,0,1000,800);
         fCanvasFinalTrendPedestal->SetTickx();
         fCanvasFinalTrendPedestal->SetTicky();
-        fFinalTrendPedestal = new TH1D("FinalTrendPedestal"," p_{T}(D) GeV/c; Pedestal",fVecSize+2,ptbinspointerout);
+        fFinalTrendPedestal = new TH1D("FinalTrendPedestal","; p_{T}(D) GeV/c; Pedestal",fVecSize+2,ptbinspointerout);
         SetHisto(fFinalTrendPedestal,fReferenceHistoPedestal);
         fCanvasFinalTrendPedestal->cd();
         fFinalTrendPedestal->Draw("ep");
@@ -2129,7 +2135,56 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
 	  Legend->Draw("same");
 	}
         fCanvasFinalTrendPedestal->Write();
-    }
+        
+        
+        
+        
+        /*NEW PART ADDED BY SANDRO ON 23 MAY 2015*/
+        fCanvasVariationBaselineTrendPedestal = new TCanvas("CanvasBaselineVariationTrendPedestal","CanvasBaselineVariationTrendPedestal",0,0,1000,800);
+        fCanvasVariationBaselineTrendPedestal->SetTickx();
+        fCanvasVariationBaselineTrendPedestal->SetTicky();
+        fCanvasVariationBaselineTrendPedestal->cd();
+        fFinalTrendPedestal->Draw("ep");
+        DefinePaveText();
+        fBaselineVariationSystematicsPedestal->SetFillColor(sysboxcolor);
+        fBaselineVariationSystematicsPedestal->SetFillStyle(0);
+        fBaselineVariationSystematicsPedestal->SetLineColor(2);
+        if(fPlotV2SystSeparately){
+            fv2SystematicsPedestal->SetFillColor(kGreen-2);
+            fv2SystematicsPedestal->SetFillStyle(3001);
+            fv2SystematicsPedestal->SetLineColor(kGreen-2);
+        }
+        for(Int_t iPtBin = 0; iPtBin<fVecSize; iPtBin++){
+            
+            Avpt = (fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])*0.5;
+            fBaselineVariationSystematicsPedestal->SetPoint(iPtBin,Avpt,fFinalTrendPedestal->GetBinContent(iPtBin+2));
+            fBaselineVariationSystematicsPedestal->SetPointError(iPtBin,0.9,0.9,fValueSystematicBaselinePedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2),fValueSystematicBaselinePedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
+            if(fPlotV2SystSeparately){
+                fv2SystematicsPedestal->SetPoint(iPtBin,Avpt,fFinalTrendPedestal->GetBinContent(iPtBin+2));
+                if(fSystValuev2Pedestal[iPtBin]>0.){
+                    fv2SystematicsPedestal->SetPointError(iPtBin,0.9,0.9,0,fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
+                }
+                else{
+                    fv2SystematicsPedestal->SetPointError(iPtBin,0.9,0.9,TMath::Abs(fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2)),0.);
+                }
+                // if(fSystValuev2Pedestal[iPtBin]>=0) fv2SystematicsNSSigma[iPtBin] =new TBox(Avpt-0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2)+fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2));
+                //    else fv2SystematicsPedestal[iPtBin] =new TBox(Avpt-0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2)-fSystValuev2Pedestal[iPtBin]*fFinalTrendPedestal->GetBinContent(iPtBin+2),Avpt+0.9,fFinalTrendPedestal->GetBinContent(iPtBin+2));
+            }
+        }
+        fBaselineVariationSystematicsPedestal->Draw("E2");
+        if(fPlotV2SystSeparately){
+            Legend->AddEntry(fBaselineVariationSystematicsPedestal,"Baseline variation Systematic Uncert.","l");
+            Legend->AddEntry(fv2SystematicsPedestal,"v_{2} Systematic Uncert.","f");
+            fv2SystematicsPedestal->Draw("E2");
+            Legend->Draw("same");
+        }
+        fCanvasVariationBaselineTrendPedestal->Write();
+
+        
+        
+        
+        
+    } // end if draw pedestal
     
     
     
@@ -2305,6 +2360,9 @@ void AliHFCorrFitSystematics::SaveCanvasesDotC(){
     if(fCanvasFinalTrendASYield) fCanvasFinalTrendASYield->SaveAs(Form("%s/%s_pthad%.1fto%.1f.C",fOutputDirectory.Data(),fCanvasFinalTrendASYield->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendASSigma) fCanvasFinalTrendASSigma->SaveAs(Form("%s/%s_pthad%.1fto%.1f.C",fOutputDirectory.Data(),fCanvasFinalTrendASSigma->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendPedestal) fCanvasFinalTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.C",fOutputDirectory.Data(),fCanvasFinalTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
+    if(fCanvasVariationBaselineTrendPedestal) fCanvasVariationBaselineTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.C",fOutputDirectory.Data(),fCanvasVariationBaselineTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
+    
+    
     
     if(fCanvasRefernce) fCanvasRefernce->SaveAs(Form("%s/%s_pthad%.1fto%.1f.C",fOutputDirectory.Data(),fCanvasRefernce->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
@@ -2345,6 +2403,7 @@ void AliHFCorrFitSystematics::SaveCanvasesDotRoot(){
     if(fCanvasFinalTrendASYield) fCanvasFinalTrendASYield->SaveAs(Form("%s/%s_pthad%.1fto%.1f.root",fOutputDirectory.Data(),fCanvasFinalTrendASYield->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendASSigma) fCanvasFinalTrendASSigma->SaveAs(Form("%s/%s_pthad%.1fto%.1f.root",fOutputDirectory.Data(),fCanvasFinalTrendASSigma->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendPedestal) fCanvasFinalTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.root",fOutputDirectory.Data(),fCanvasFinalTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
+    if(fCanvasVariationBaselineTrendPedestal) fCanvasVariationBaselineTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.root",fOutputDirectory.Data(),fCanvasVariationBaselineTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
     if(fCanvasRefernce) fCanvasRefernce->SaveAs(Form("%s/%s_pthad%.1fto%.1f.root",fOutputDirectory.Data(),fCanvasRefernce->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
@@ -2385,6 +2444,7 @@ void AliHFCorrFitSystematics::SaveCanvasesDotPng(){
     if(fCanvasFinalTrendASYield) fCanvasFinalTrendASYield->SaveAs(Form("%s/%s_pthad%.1fto%.1f.png",fOutputDirectory.Data(),fCanvasFinalTrendASYield->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendASSigma) fCanvasFinalTrendASSigma->SaveAs(Form("%s/%s_pthad%.1fto%.1f.png",fOutputDirectory.Data(),fCanvasFinalTrendASSigma->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendPedestal) fCanvasFinalTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.png",fOutputDirectory.Data(),fCanvasFinalTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
+    if(fCanvasVariationBaselineTrendPedestal) fCanvasVariationBaselineTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.png",fOutputDirectory.Data(),fCanvasVariationBaselineTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
     if(fCanvasRefernce) fCanvasRefernce->SaveAs(Form("%s/%s_pthad%.1fto%.1f.png",fOutputDirectory.Data(),fCanvasRefernce->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
@@ -2425,6 +2485,7 @@ void AliHFCorrFitSystematics::SaveCanvasesDotPdf(){
     if(fCanvasFinalTrendASYield) fCanvasFinalTrendASYield->SaveAs(Form("%s/%s_pthad%.1fto%.1f.pdf",fOutputDirectory.Data(),fCanvasFinalTrendASYield->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendASSigma) fCanvasFinalTrendASSigma->SaveAs(Form("%s/%s_pthad%.1fto%.1f.pdf",fOutputDirectory.Data(),fCanvasFinalTrendASSigma->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendPedestal) fCanvasFinalTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.pdf",fOutputDirectory.Data(),fCanvasFinalTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
+    if(fCanvasVariationBaselineTrendPedestal) fCanvasVariationBaselineTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.pdf",fOutputDirectory.Data(),fCanvasVariationBaselineTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
     if(fCanvasRefernce) fCanvasRefernce->SaveAs(Form("%s/%s_pthad%.1fto%.1f.pdf",fOutputDirectory.Data(),fCanvasRefernce->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
@@ -2465,6 +2526,7 @@ void AliHFCorrFitSystematics::SaveCanvasesDotEps(){
     if(fCanvasFinalTrendASYield) fCanvasFinalTrendASYield->SaveAs(Form("%s/%s_pthad%.1fto%.1f.eps",fOutputDirectory.Data(),fCanvasFinalTrendASYield->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendASSigma) fCanvasFinalTrendASSigma->SaveAs(Form("%s/%s_pthad%.1fto%.1f.eps",fOutputDirectory.Data(),fCanvasFinalTrendASSigma->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     if(fCanvasFinalTrendPedestal) fCanvasFinalTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.eps",fOutputDirectory.Data(),fCanvasFinalTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
+    if(fCanvasVariationBaselineTrendPedestal) fCanvasVariationBaselineTrendPedestal->SaveAs(Form("%s/%s_pthad%.1fto%.1f.eps",fOutputDirectory.Data(),fCanvasVariationBaselineTrendPedestal->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
     if(fCanvasRefernce) fCanvasRefernce->SaveAs(Form("%s/%s_pthad%.1fto%.1f.eps",fOutputDirectory.Data(),fCanvasRefernce->GetName(),fAssocTrackPtMin,fAssocTrackPtMax));
     
