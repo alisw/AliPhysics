@@ -18679,7 +18679,7 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
      fCRCVZCFunHist[eg][h]->SetBinContent(c+1,SPuPQC);
      fCRCVZCFunHist[eg][h]->SetBinError(c+1,SPuPQCErr);
     
-    SumCorr += pow(-1,c)*uPQC;
+    SumCorr += pow(-1.,1.*c)*uPQC;
     SumCorrErr += pow(uPQCErr,2.);
      
      D = TMath::Abs((QAQT*QCQA)/QCQT);
@@ -18691,7 +18691,7 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
      fCRCVZCFunHist[eg][h]->SetBinContent(c+3,SPuNQA);
      fCRCVZCFunHist[eg][h]->SetBinError(c+3,SPuNQAErr);
     
-    SumCorr += pow(-1,c+1)*uNQA;
+    SumCorr += pow(-1.,1.*(c+1))*uNQA;
     SumCorrErr += pow(uNQAErr,2.);
      
      cout << "cfun["<<eg<<"]["<<h<<"] SPuPQC: " << SPuPQC << " " << SPuPQCErr << endl;
