@@ -274,9 +274,9 @@ Double_t AliAnalysisTaskHypertriton3::GetDCAcut(Int_t part, Double_t dca)const{
 void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   // Create a TList with Histograms
   // Called once
-  printf("**************************************************\n");
-  printf("AliAnalysisTaskHypertriton3::CreateOutputObjects()\n");
-  printf("**************************************************\n");
+  //printf("**************************************************\n");
+  //printf("AliAnalysisTaskHypertriton3::CreateOutputObjects()\n");
+  //printf("**************************************************\n");
 
   fVertexer = new AliVertexerTracks();
   fTrkArray = new TObjArray(3);
@@ -511,9 +511,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   
   // Post output data.
   PostData(1,fOutput);
-  printf("**************************************************\n");
-  printf("end of fOutput\n");
-  printf("**************************************************\n");
+  //printf("**************************************************\n");
+  //printf("end of fOutput\n");
+  //printf("**************************************************\n");
 
   if(fFillTree){
   OpenFile(2);
@@ -567,9 +567,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   } 
 
   
-  printf("**************************************************\n");
-  printf("end of CreateOutputObjects\n");
-  printf("**************************************************\n");
+  //printf("**************************************************\n");
+  //printf("end of CreateOutputObjects\n");
+  //printf("**************************************************\n");
   
 } // end of UserCreateOutputObjects
 
@@ -579,9 +579,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   // Called for each event
   //----------------------------------------------------------------------------
   // Mass definition
-  Double_t pionMass     = TDatabasePDG::Instance()->GetParticle(211)->Mass(); // pion mass = 0.13957 GeV/c2
-  Double_t protonMass   = TDatabasePDG::Instance()->GetParticle(2212)->Mass(); // proton mass = 0.93827 GeV/c2
-  Double_t deuteronMass = AliPID::ParticleMass(AliPID::kDeuteron); // deuteron mass = 1.87561 GeV/c2
+  Double_t pionMass     = 0.13957; // pion mass = TDatabasePDG::Instance()->GetParticle(211)->Mass() GeV/c2
+  Double_t protonMass   = 0.93827; // proton mass = TDatabasePDG::Instance()->GetParticle(2212)->Mass() GeV/c2
+  Double_t deuteronMass = 1.87561; // deuteron mass = AliPID::ParticleMass(AliPID::kDeuteron) GeV/c2
   //Double_t helium3Mass = AliPID::ParticleMass(AliPID::kHe3); // helium3 mass = 2.80923 GeV/c2
   
   //define PDGCodes  
@@ -713,9 +713,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Int_t refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
   fHistMultiplicity->Fill(refMultTpc);
   
-
+  
   //==========Primary Vertex==========
-  fPrimaryVertex = (AliESDVertex*)fESDevent->GetPrimaryVertex();
+  fPrimaryVertex = (AliESDVertex*)fESDevent->GetPrimaryVertexTracks();
   if (fPrimaryVertex->GetNContributors()<1) {
       // SPD vertex
     fPrimaryVertex = (AliESDVertex*)fESDevent->GetPrimaryVertexSPD();
@@ -733,7 +733,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   fHistZPrimaryVtx->Fill(fPrimaryVertex->GetZ());
   fHistXPrimaryVtx->Fill(fPrimaryVertex->GetX());
   fHistYPrimaryVtx->Fill(fPrimaryVertex->GetY());
-
+  
   
   // -------------------------------------------------------
   // Loop for PID on ESD tracks
@@ -902,8 +902,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Int_t deuIdx, proIdx, pioIdx = 0.;
   
   for(UInt_t j=0; j<nDeuTPC; j++){ // candidate deuteron loop
-    deuIdx = cdeuteron[j];    
-    trackD = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(deuIdx));
+    
+    trackD = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cdeuteron[j]));
     
     trackD->GetImpactParameters(dprim,dprimc);
     dcadprim = TMath::Sqrt((dprim[0]*dprim[0])+(dprim[1]*dprim[1]));
@@ -911,8 +911,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     fHistCorrDCAdprimary->Fill(dprim[0],dprim[1]);
 
     for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop
-      proIdx = cproton[m];    
-      trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(proIdx));
+          
+      trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cproton[m]));
 	  
       if(fMC) {if(trackD->GetLabel() == trackP->GetLabel()) continue;}
 
@@ -926,8 +926,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       fHistDCAdeupro->Fill(dca_dp);
       
       for(UInt_t s=0; s<nPioTPC; s++ ){ // candidate pion loop
-	pioIdx = cpion[s];    
-	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(pioIdx));
+	    
+	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cpion[s]));
 	brotherHood = kFALSE;
 	
 	fHistpionTPCcls->Fill(trackNPi->GetTPCclusters(0));
