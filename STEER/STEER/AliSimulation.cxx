@@ -2224,6 +2224,18 @@ Bool_t AliSimulation::CreateHLT()
   //   AliWarning(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
   // }
 
+  /*
+  // print compile info
+  {
+    const char* date="";
+    const char* time="";
+    CompileInfo(date, time);
+    if (!date) date="unknown";
+    if (!time) time="unknown";
+    AliInfo(Form("%s build on %s (%s)", ALIHLTSIMULATION_LIBRARY, date, time));
+  }
+  */
+  /*
   // print compile info
   typedef void (*CompileInfo)( const char*& date, const char*& time);
   CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, "CompileInfo");
@@ -2237,13 +2249,21 @@ Bool_t AliSimulation::CreateHLT()
   } else {
     AliInfo(Form("no build info available for %s", ALIHLTSIMULATION_LIBRARY));
   }
+  */
 
+  // create instance of the HLT simulation
+  if ( (fpHLT=AliHLTSimulationCreateInstance())==NULL) {
+    AliError("can not create instance of HLT simulation");
+    return kFALSE;    
+  }
+  /*
   // create instance of the HLT simulation
   AliHLTSimulationCreateInstance_t fctCreate=(AliHLTSimulationCreateInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_CREATE_INSTANCE));
   if (fctCreate==NULL || (fpHLT=(fctCreate()))==NULL) {
     AliError(Form("can not create instance of HLT simulation (creator %p)", fctCreate));
     return kFALSE;    
   }
+  */
 
   TString specObjects;
   for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
@@ -2251,11 +2271,15 @@ Bool_t AliSimulation::CreateHLT()
     specObjects+=fSpecCDBUri[i]->GetName();
   }
 
+  if (AliHLTSimulationSetup(fpHLT, this, specObjects.Data())<0) {
+    AliWarning("failed to setup HLT simulation");
+  }
+  /*
   AliHLTSimulationSetup_t fctSetup=(AliHLTSimulationSetup_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_SETUP));
   if (fctSetup==NULL || fctSetup(fpHLT, this, specObjects.Data())<0) {
     AliWarning(Form("failed to setup HLT simulation (function %p)", fctSetup));
   }
-
+  */
   return kTRUE;
 }
 
@@ -2326,6 +2350,16 @@ Bool_t AliSimulation::RunHLT()
     options+=" rawfile=./";
   }
 
+  if ( (iResult=AliHLTSimulationInit(pHLT, pRunLoader, options.Data()))<0) {
+    AliError(Form("can not init HLT simulation: error %d", iResult));
+  } else {
+    // run the HLT simulation
+    if ((iResult=AliHLTSimulationRun(pHLT, pRunLoader))<0) {
+      AliError(Form("can not run HLT simulation: error %d", iResult));
+    }
+  }
+
+  /*
   AliHLTSimulationInit_t fctInit=(AliHLTSimulationInit_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_INIT));
   if (fctInit==NULL || (iResult=(fctInit(pHLT, pRunLoader, options.Data())))<0) {
     AliError(Form("can not init HLT simulation: error %d (init %p)", iResult, fctInit));
@@ -2336,12 +2370,18 @@ Bool_t AliSimulation::RunHLT()
       AliError(Form("can not run HLT simulation: error %d (run %p)", iResult, fctRun));
     }
   }
+  */
 
   // delete the instance
-  AliHLTSimulationDeleteInstance_t fctDelete=(AliHLTSimulationDeleteInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_DELETE_INSTANCE));
-  if (fctDelete==NULL || fctDelete(pHLT)<0) {
-    AliError(Form("can not delete instance of HLT simulation (creator %p)", fctDelete));
+  if (AliHLTSimulationDeleteInstance(pHLT)<0) {
+    AliError("can not delete instance of HLT simulation");
   }
+  /*
+    AliHLTSimulationDeleteInstance_t fctDelete=(AliHLTSimulationDeleteInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_DELETE_INSTANCE));
+    if (fctDelete==NULL || fctDelete(pHLT)<0) {
+    AliError(Form("can not delete instance of HLT simulation (creator %p)", fctDelete));
+    }
+  */
   pHLT=NULL;
 
   return iResult>=0?kTRUE:kFALSE;
