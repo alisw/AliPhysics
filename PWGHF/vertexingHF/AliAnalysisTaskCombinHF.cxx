@@ -24,6 +24,7 @@
 
 #include <TList.h>
 #include <TH1F.h>
+#include <TDatabasePDG.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <THnSparse.h>
@@ -82,6 +83,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fPhiMassCut(99999.),
   fPidHF(new AliAODPidHF()),
   fAnalysisCuts(0x0),
   fMinMass(1.720),
@@ -171,6 +173,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fPhiMassCut(99999.),
   fPidHF(new AliAODPidHF()),
   fAnalysisCuts(analysiscuts),
   fMinMass(1.720),
@@ -672,7 +675,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   AliAODRecoDecay* tmpRD3 = new AliAODRecoDecay(0x0,3,1,d03);
   UInt_t pdg0[2]={321,211};
   UInt_t pdgp[3]={321,211,211};
-  //  UInt_t pdgs[3]={321,321,211};
+  UInt_t pdgs[3]={321,211,321};
   Double_t tmpp[3];
   Double_t px[3],py[3],pz[3];
   Int_t dgLabels[3];
@@ -729,7 +732,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       }else{
         for(Int_t iTr3=iTr2+1; iTr3<ntracks; iTr3++){
           if((status[iTr3] & 1)==0) continue;
-          if((status[iTr3] & 4)==0) continue;
+          if(fMeson==kDplus && (status[iTr3] & 4)==0) continue;
+          if(fMeson==kDs && (status[iTr3] & 2)==0) continue;
           if(iTr1==iTr3) continue;
           AliAODTrack* trPi2=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr3));
 	  if(!trPi2){
@@ -742,14 +746,32 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
           py[2] = tmpp[1];
           pz[2] = tmpp[2];
           dgLabels[2]=trPi2->GetLabel();
-	  if(chargePi1==chargeK && chargePi2==chargeK) FillLSHistos(411,3,tmpRD3,px,py,pz,pdgp,chargePi1);
-	  if(chargePi1!=chargeK && chargePi2!=chargeK){
+	  if(fMeson==kDs){
+	    Double_t massKK=ComputeInvMassKK(trK,trPi2);
+	    Double_t deltaMass=massKK-TDatabasePDG::Instance()->GetParticle(333)->Mass();
+	    if(TMath::Abs(deltaMass)>fPhiMassCut) continue;
+	  }
+	  Bool_t isThreeLS=kFALSE;
+	  if(chargePi1==chargeK && chargePi2==chargeK){
+	    isThreeLS=kTRUE;
+	    if(fMeson==kDplus)FillLSHistos(411,3,tmpRD3,px,py,pz,pdgp,chargePi1);
+	    else if(fMeson==kDs)FillLSHistos(431,3,tmpRD3,px,py,pz,pdgs,chargePi1);
+	  }
+	  Bool_t acceptOS=kFALSE;	  
+	  if(fMeson==kDplus){
+	    if(chargePi1!=chargeK && chargePi2!=chargeK)acceptOS=kTRUE;
+	  }else if(fMeson==kDs){
+	    if(chargePi2!=chargeK && !isThreeLS) acceptOS=kTRUE;
+	  }
+	  if(acceptOS){
 	    nFiltered++;
   	    v3->AddDaughter(trK);
 	    v3->AddDaughter(trPi1);
 	    v3->AddDaughter(trPi2);
 	    tmpRD3->SetSecondaryVtx(v3);
-	    Bool_t ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,dgLabels);
+	    Bool_t ok=kFALSE;
+	    if(fMeson==kDplus) ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,dgLabels);
+	    else if(fMeson==kDs) ok=FillHistos(431,3,tmpRD3,px,py,pz,pdgs,arrayMC,dgLabels);
 	    v3->RemoveDaughters();
 	    if(ok) nSelected++;
 	  }
@@ -815,7 +837,10 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSe
   if(fMeson==kDzero){
     thePDG=421;
     nProng=2;
-  }
+  }else if(fMeson==kDs){
+    thePDG=431;
+    nProng=3;
+   }
   for(Int_t ip=0; ip<totPart; ip++){
     AliAODMCParticle *part = (AliAODMCParticle*)arrayMC->At(ip);
     if(TMath::Abs(part->GetPdgCode())==thePDG){
@@ -835,6 +860,9 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSe
       }else if(fMeson==kDplus){
         deca=AliVertexingHFUtils::CheckDplusDecay(arrayMC,part,labDau);
         if(deca>0) isGoodDecay=kTRUE;
+      }else if(fMeson==kDs){
+        deca=AliVertexingHFUtils::CheckDsDecay(arrayMC,part,labDau);
+        if(deca==1) isGoodDecay=kTRUE;
       }
       fHistCheckDecChan->Fill(deca);
       if(labDau[0]==-1){
@@ -1272,6 +1300,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
   AliAODRecoDecay* tmpRD3 = new AliAODRecoDecay(0x0,3,1,d03);
   UInt_t pdg0[2]={321,211};
   UInt_t pdgp[3]={321,211,211};
+  UInt_t pdgs[3]={321,211,321};
   Double_t px[3],py[3],pz[3];
   Int_t evId1,esdId1,nk1,np1;
   Int_t evId2,esdId2,nk2,np2;
@@ -1348,7 +1377,8 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 		  py[2] = trPi2->Py();
 		  pz[2] = trPi2->Pz();
 		  if(chargePi2*chargeK<0){
-		    FillMEHistos(411,3,tmpRD3,px,py,pz,pdgp);
+		    if(fMeson==kDplus) FillMEHistos(411,3,tmpRD3,px,py,pz,pdgp);
+		    else if(fMeson==kDs) FillMEHistos(431,3,tmpRD3,px,py,pz,pdgs);
 		  }
 		}
 	      }
@@ -1381,6 +1411,21 @@ void AliAnalysisTaskCombinHF::FinishTaskOutput()
   }else if(fDoEventMixing==2){
     DoMixingWithCuts();
   }
+}
+//_________________________________________________________________
+Double_t AliAnalysisTaskCombinHF::ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const{
+  // inv mass of KK
+  Double_t massK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  Double_t p1=tr1->P();
+  Double_t p2=tr2->P();
+  Double_t pxtot=tr1->Px()+tr2->Px();
+  Double_t pytot=tr1->Py()+tr2->Py();
+  Double_t pztot=tr1->Pz()+tr2->Pz();
+  Double_t e1=TMath::Sqrt(massK*massK+p1*p1);
+  Double_t e2=TMath::Sqrt(massK*massK+p2*p2);
+  Double_t etot=e1+e2;
+  Double_t m2=etot*etot-(pxtot*pxtot+pytot*pytot+pztot*pztot);
+  return TMath::Sqrt(m2);
 }
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::Terminate(Option_t */*option*/)
