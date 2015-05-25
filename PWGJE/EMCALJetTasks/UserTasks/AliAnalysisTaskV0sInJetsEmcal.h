@@ -168,10 +168,10 @@ private:
   Double_t fdCutNCrossedRowsTPCMin; // (70.) min number of crossed TPC rows
   Double_t fdCutCrossedRowsOverFindMin; // (0.8) min ratio crossed rows / findable clusters
   Double_t fdCutCrossedRowsOverFindMax; // (1e3) max ratio crossed rows / findable clusters
-  Double_t fdCutPtDaughterMin; // (0.150) [GeV/c] min transverse momentum of daughter tracks
+  Double_t fdCutPtDaughterMin; // (0.150) [GeV/c] min transverse momentum of daughter tracks, to reject primaries which do not make it to the TPC
   Double_t fdCutDCAToPrimVtxMin; // (0.1) [cm] min DCA of daughters to the prim vtx
   Double_t fdCutDCADaughtersMax; // (1.) [sigma of TPC tracking] max DCA between daughters
-  Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks
+  Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
   Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut
   // V0 candidate
@@ -442,7 +442,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 11) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 12) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

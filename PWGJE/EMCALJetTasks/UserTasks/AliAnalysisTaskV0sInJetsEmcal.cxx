@@ -1341,10 +1341,18 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     printf("angular correlations of V0s with jets: %s\n", fbCorrelations ? "yes" : "no");
     printf("pt correlations of jets with trigger tracks: %s\n", fbCompareTriggers ? "yes" : "no");
     printf("-------------------------------------------------------\n");
-    printf("Signal jet container cuts\n");
-    if(fJetsCont) fJetsCont->PrintCuts();
-    printf("Background jet container cuts\n");
-    if(fJetsBgCont) fJetsBgCont->PrintCuts();
+    printf("Signal jet container parameters\n");
+    if(fJetsCont)
+    {
+      printf("Jet R = %g\n",fJetsCont->GetJetRadius());
+      fJetsCont->PrintCuts();
+    }
+    printf("Background jet container parameters\n");
+    if(fJetsBgCont)
+    {
+      printf("Jet R = %g\n",fJetsBgCont->GetJetRadius());
+      fJetsBgCont->PrintCuts();
+    }
   }
   printf("=======================================================\n");
 }
@@ -1359,7 +1367,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
 Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 {
   // Main loop, called for each event
-  if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Start");
+  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start");
 
   fh1EventCounterCut->Fill(0); // all available selected events (collision candidates)
 
@@ -1369,7 +1377,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     AliError("No input AOD found!");
     return kFALSE;
   }
-  if(fDebug > 1) printf("%s::%s: %s\n", ClassName(), __func__, "Loading AOD OK");
+  if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
 
   TClonesArray* arrayMC = 0; // array particles in the MC event
   AliAODMCHeader* headerMC = 0; // MC header
@@ -1385,9 +1393,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       AliError("No MC array found!");
       return kFALSE;
     }
-    if(fDebug > 1) printf("%s::%s: %s\n", ClassName(), __func__, "MC array found");
+    if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
     iNTracksMC = arrayMC->GetEntriesFast();
-    if(fDebug > 2) printf("%s::%s: %s\n", ClassName(), __func__, Form("There are %d MC tracks in this event", iNTracksMC));
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d MC tracks in this event", iNTracksMC));
     headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
     if(!headerMC)
     {
@@ -1420,10 +1428,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   // Event selection
   if(!IsSelectedForJets(fAODIn, fdCutVertexZ, fdCutVertexR2, fdCutCentLow, fdCutCentHigh, fdCutDeltaZMax))
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Event rejected");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Event rejected");
     return kFALSE;
   }
-  if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Event accepted: cent. %g", fdCentrality));
+  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Event accepted: cent. %g", fdCentrality));
   if(!fbIsPbPb)
     fdCentrality = 0.; // select the first bin for p+p data
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
@@ -1436,12 +1444,15 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1EventCounterCutCent[iCentIndex]->Fill(2);
 
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
-  if(fDebug > 2) printf("%s::%s: %s\n", ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
+
+//  Double_t dMagField = fAODIn->GetMagneticField();
+//  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Magnetic field: %g", dMagField));
 
   Int_t iNV0s = fAODIn->GetNumberOfV0s(); // get the number of V0 candidates
   if(!iNV0s)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "No V0s found in event");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No V0s found in event");
   }
 
   //===== Event is OK for the analysis =====
@@ -1467,7 +1478,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     {
 //      pool->SetDebug(1);
 //      pool->PrintInfo();
-      printf("%s::%s: %s\n", ClassName(), __func__, Form("Pool %d-%d: events in pool = %d, jets in pool = %d", pool->MultBinIndex(), pool->ZvtxBinIndex(), pool->GetCurrentNEvents(), pool->NTracksInPool()));
+      printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Pool %d-%d: events in pool = %d, jets in pool = %d", pool->MultBinIndex(), pool->ZvtxBinIndex(), pool->GetCurrentNEvents(), pool->NTracksInPool()));
     }
   }
 
@@ -1542,7 +1553,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       iNJet = fJetsCont->GetNJets();
     if(bJetEventGood && !iNJet) // check whether there are some jets
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "No jets in array");
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No jets in array");
       bJetEventGood = kFALSE;
     }
     if(bJetEventGood && !fJetsBgCont)
@@ -1562,7 +1573,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 //    printf("%s::%s: %s\n",ClassName(),__func__,Form("Loaded rho value: %g\n",dRho));
     if(bLeadingJetOnly)
       iNJet = 1; // only leading jets
-    if(fDebug > 2) printf("%s::%s: %s\n", ClassName(), __func__, Form("Jet selection for %d jets", iNJet));
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet selection for %d jets", iNJet));
     for(Int_t iJet = 0; iJet < iNJet; iJet++)
     {
       AliEmcalJet* jetSel = (AliEmcalJet*)(fJetsCont->GetAcceptJet(iJet)); // load a jet in the list
@@ -1570,7 +1581,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         jetSel = fJetsCont->GetLeadingJet();
       if(!jetSel)
       {
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Jet %d not accepted in container", iJet));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet %d not accepted in container", iJet));
         continue;
       }
       Double_t dPtJetCorr = jetSel->PtSub(dRho);
@@ -1584,25 +1595,25 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       if(bPrintJetSelection)
         if(fDebug > 4) printf("accepted\n");
-      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Jet %d with pt %g passed selection", iJet, dPtJetCorr));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet %d with pt %g passed selection", iJet, dPtJetCorr));
 
       vecJetSel.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
       vecPerpPlus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
       vecPerpMinus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
       vecPerpPlus.RotateZ(TMath::Pi() / 2.); // rotate vector by +90 deg around z
       vecPerpMinus.RotateZ(-TMath::Pi() / 2.); // rotate vector by -90 deg around z
-      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Adding perp. cones number %d, %d", iNJetPerp, iNJetPerp + 1));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding perp. cones number %d, %d", iNJetPerp, iNJetPerp + 1));
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus); // write perp. cone to the array
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
-      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Adding jet number %d", iNJetSel));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding jet number %d", iNJetSel));
       new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
       fh2PtJetPtTrackLeading[iCentIndex]->Fill(dPtJetCorr, fJetsCont->GetLeadingHadronPt(jetSel)); // pt_jet vs pt of leading jet track
       if(fbCorrelations)
         arrayMixedEventAdd->Add(new TLorentzVector(vecJetSel)); // copy selected jet to the list of new jets for event mixing
     }
-    if(fDebug > 3) printf("%s::%s: %s\n", ClassName(), __func__, Form("Added jets: %d", iNJetSel));
+    if(fDebug > 3) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Added jets: %d", iNJetSel));
     iNJetSel = jetArraySel->GetEntriesFast();
-    if(fDebug > 2) printf("%s::%s: %s\n", ClassName(), __func__, Form("Selected jets in array: %d", iNJetSel));
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Selected jets in array: %d", iNJetSel));
     fh1NJetPerEvent[iCentIndex]->Fill(iNJetSel);
     // fill jet spectra
     for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
@@ -1703,7 +1714,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh2VtxXY[iCentIndex]->Fill(dPrimVtxPos[0], dPrimVtxPos[1]);
 
   //===== Start of loop over V0 candidates =====
-  if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Start of V0 loop");
+  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start of V0 loop");
   for(Int_t iV0 = 0; iV0 < iNV0s; iV0++)
   {
     v0 = fAODIn->GetV0(iV0); // get next candidate from the list in AOD
@@ -1768,8 +1779,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Bool_t bOnFlyStatus = v0->GetOnFlyStatus(); // online (on fly) reconstructed vs offline reconstructed
     const AliAODTrack* trackPos = (AliAODTrack*)v0->GetDaughter(0); // positive daughter track
     const AliAODTrack* trackNeg = (AliAODTrack*)v0->GetDaughter(1); // negative daughter track
-    Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track
-    Double_t dPtDaughterNeg = trackNeg->Pt();
+    Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track calculated as if primary, != v0->PtProng(0)
+    Double_t dPtDaughterNeg = trackNeg->Pt(); // != v0->PtProng(1)
     Double_t dNRowsPos = trackPos->GetTPCClusterInfo(2, 1); // crossed TPC pad rows of a daughter track
     Double_t dNRowsNeg = trackNeg->GetTPCClusterInfo(2, 1);
     Double_t dFindablePos = Double_t(trackPos->GetTPCNclsF()); // Findable clusters
@@ -1782,8 +1793,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 //      Double_t dSecVtxPos[3] = {v0->DecayVertexV0X(),v0->DecayVertexV0Y(),v0->DecayVertexV0Z()}; // V0 vertex position
     v0->GetSecondaryVtx(dSecVtxPos);
     Double_t dRadiusDecay = TMath::Sqrt(dSecVtxPos[0] * dSecVtxPos[0] + dSecVtxPos[1] * dSecVtxPos[1]); // distance of the V0 vertex from the z-axis
-    Double_t dEtaDaughterNeg = trackNeg->Eta(); // = v0->EtaProng(1), pseudorapidity of a daughter track
-    Double_t dEtaDaughterPos = trackPos->Eta(); // = v0->EtaProng(0)
+    Double_t dEtaDaughterPos = trackPos->Eta(); // pseudorapidity of a daughter track calculated as if primary, != v0->EtaProng(0)
+    Double_t dEtaDaughterNeg = trackNeg->Eta(); // != v0->EtaProng(1);
     Double_t dRapK0s = v0->RapK0Short(); // rapidity calculated for K0s assumption
     Double_t dRapLambda = v0->RapLambda(); // rapidity calculated for Lambda assumption
     Double_t dEtaV0 = v0->Eta(); // V0 pseudorapidity
@@ -2129,30 +2140,30 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     if(iNJetSel && (bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda))
     {
       // Selection of V0s in jet cones
-      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Searching for V0 %d %d in %d jet cones", bIsCandidateK0s, bIsCandidateLambda, iNJetSel));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d in %d jet cones", bIsCandidateK0s, bIsCandidateLambda, iNJetSel));
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
         jet = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
         if(!jet)
           continue;
         vecJetMomentum.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Checking if V0 %d %d in jet cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if V0 %d %d in jet cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
         if(IsParticleInCone(v0, jet, fdDistanceV0JetMax)) // If good jet in event, find out whether V0 is in that jet
         {
-          if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("V0 %d %d found in jet cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
+          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("V0 %d %d found in jet cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
           bIsInConeJet = kTRUE;
           break;
         }
       }
       // Selection of V0s in perp. cones
-      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Searching for V0 %d %d in %d perp. cones", bIsCandidateK0s, bIsCandidateLambda, iNJetPerp));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d in %d perp. cones", bIsCandidateK0s, bIsCandidateLambda, iNJetPerp));
       for(Int_t iJet = 0; iJet < iNJetPerp; iJet++)
       {
         jetPerp = (AliAODJet*)jetArrayPerp->At(iJet); // load a jet in the list
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Checking if V0 %d %d in perp. cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if V0 %d %d in perp. cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
         if(IsParticleInCone(v0, jetPerp, fdDistanceV0JetMax)) // V0 in perp. cone
         {
-          if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("V0 %d %d found in perp. cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
+          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("V0 %d %d found in perp. cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
           bIsInConePerp = kTRUE;
           break;
         }
@@ -2160,28 +2171,28 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       // Selection of V0s in random cones
       if(jetRnd)
       {
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Searching for V0 %d %d in the rnd. cone", bIsCandidateK0s, bIsCandidateLambda));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d in the rnd. cone", bIsCandidateK0s, bIsCandidateLambda));
         if(IsParticleInCone(v0, jetRnd, fdDistanceV0JetMax)) // V0 in rnd. cone?
         {
-          if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("V0 %d %d found in the rnd. cone", bIsCandidateK0s, bIsCandidateLambda));
+          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("V0 %d %d found in the rnd. cone", bIsCandidateK0s, bIsCandidateLambda));
           bIsInConeRnd = kTRUE;
         }
       }
       // Selection of V0s in median-cluster cones
       if(jetMed)
       {
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Searching for V0 %d %d in the med. cone", bIsCandidateK0s, bIsCandidateLambda));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d in the med. cone", bIsCandidateK0s, bIsCandidateLambda));
         if(IsParticleInCone(v0, jetMed, fdDistanceV0JetMax)) // V0 in med. cone?
         {
-          if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("V0 %d %d found in the med. cone", bIsCandidateK0s, bIsCandidateLambda));
+          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("V0 %d %d found in the med. cone", bIsCandidateK0s, bIsCandidateLambda));
           bIsInConeMed = kTRUE;
         }
       }
       // Selection of V0s outside jet cones
-      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Searching for V0 %d %d outside jet cones", bIsCandidateK0s, bIsCandidateLambda));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d outside jet cones", bIsCandidateK0s, bIsCandidateLambda));
       if(!OverlapWithJets(jetArraySel, v0, dRadiusExcludeCone)) // V0 oustide jet cones
       {
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("V0 %d %d found outside jet cones", bIsCandidateK0s, bIsCandidateLambda));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("V0 %d %d found outside jet cones", bIsCandidateK0s, bIsCandidateLambda));
         bIsOutsideCones = kTRUE;
       }
     }
@@ -2684,7 +2695,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     //===== End Association of reconstructed V0 candidates with MC particles =====
   }
   //===== End of V0 loop =====
-  if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "End of V0 loop");
+  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of V0 loop");
 
   if(fbCorrelations && iNJetSel)
   {
@@ -2783,14 +2794,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Bool_t bIsMCV0InJet = kFALSE;
       if(iNJetSel)
       {
-        if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Searching for gen V0 in %d MC jets", iNJetSel));
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for gen V0 in %d MC jets", iNJetSel));
         for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
         {
           jetMC = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
-          if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Checking if gen V0 in MC jet %d", iJet));
+          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if gen V0 in MC jet %d", iJet));
           if(IsParticleInCone(particleMC, jetMC, fdDistanceV0JetMax)) // If good jet in event, find out whether V0 is in that jet
           {
-            if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("gen V0 found in MC jet %d", iJet));
+            if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("gen V0 found in MC jet %d", iJet));
             bIsMCV0InJet = kTRUE;
             break;
           }
@@ -2853,7 +2864,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   PostData(3, fOutputListCuts);
   PostData(4, fOutputListMC);
 
-  if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "End");
+  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End");
 
   return kFALSE; // Must be false to avoid calling PostData from AliAnalysisTaskEmcal. Otherwise, slot 1 is not stored.
 }
@@ -3022,7 +3033,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets(const TClonesArray* array,
   Int_t iNJets = array->GetEntriesFast();
   if(iNJets <= 0)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Warning: No jets");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Warning: No jets");
     return kFALSE;
   }
   AliVParticle* jet = 0;
@@ -3043,7 +3054,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets(const TClonesArray* array,
 AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const
 {
 // generate a random cone which does not overlap with selected jets
-  if(fDebug > 3) printf("%s::%s: %s\n", ClassName(), __func__, "Generating random cone...");
+  if(fDebug > 3) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Generating random cone...");
   TLorentzVector vecCone;
   AliAODJet* part = 0;
   Double_t dEta, dPhi;
@@ -3051,7 +3062,7 @@ AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* arra
   Bool_t bStatus = kFALSE;
   for(Int_t iTry = 0; iTry < iNTrialsMax; iTry++)
   {
-    if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Try %d", iTry));
+    if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Try %d", iTry));
     dEta = dEtaConeMax * (2 * fRandom->Rndm() - 1.); // random eta in [-dEtaConeMax,+dEtaConeMax]
     dPhi = TMath::TwoPi() * fRandom->Rndm(); // random phi in [0,2*Pi]
     vecCone.SetPtEtaPhiM(1., dEta, dPhi, 0.);
@@ -3059,7 +3070,7 @@ AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* arra
     if(!OverlapWithJets(array, part, dDistance))
     {
       bStatus = kTRUE;
-      if(fDebug > 1) printf("%s::%s: %s\n", ClassName(), __func__, "Random cone successfully generated");
+      if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Random cone successfully generated");
       break;
     }
     else
@@ -3067,7 +3078,7 @@ AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* arra
   }
   if(!bStatus)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Failed to find a random cone");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Failed to find a random cone");
     part = 0;
   }
   return part;
@@ -3086,13 +3097,13 @@ AliEmcalJet* AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster(AliJetContainer* co
 
   // get list of densities
   std::vector<std::vector<Double_t> > vecListClusters; // vector that contains pairs [ index, density ]
-  if(fDebug > 3) printf("%s::%s: %s\n", ClassName(), __func__, Form("Loop over %d clusters.", iNClTot));
+  if(fDebug > 3) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Loop over %d clusters.", iNClTot));
   for(Int_t ij = 0; ij < iNClTot; ij++)
   {
     AliEmcalJet* clusterBg = (AliEmcalJet*)(cont->GetAcceptJet(ij));
     if(!clusterBg)
       continue;
-    if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Cluster %d/%d used as accepted cluster %d.", ij, iNClTot, int(vecListClusters.size())));
+    if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cluster %d/%d used as accepted cluster %d.", ij, iNClTot, int(vecListClusters.size())));
     Double_t dPtBg = clusterBg->Pt();
     Double_t dAreaBg = clusterBg->Area();
     Double_t dDensityBg = 0;
@@ -3106,18 +3117,18 @@ AliEmcalJet* AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster(AliJetContainer* co
   iNCl = vecListClusters.size();
   if(iNCl < 3) // need at least 3 clusters (skipping 2 highest)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Warning: Too little clusters");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Warning: Too little clusters");
     return NULL;
   }
 
-//  printf("%s::%s: %s\n", ClassName(), __func__, "Original lists:");
+//  printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Original lists:");
 //  for(Int_t i = 0; i < iNCl; i++)
 //    printf("%g %g\n", (vecListClusters[i])[0], (vecListClusters[i])[1]);
 
   // sort list of indeces by density in descending order
   std::sort(vecListClusters.begin(), vecListClusters.end(), CompareClusters);
 
-//  printf("%s::%s: %s\n", ClassName(), __func__, "Sorted lists:");
+//  printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Sorted lists:");
 //  for(Int_t i = 0; i < iNCl; i++)
 //    printf("%g %g\n", (vecListClusters[i])[0], (vecListClusters[i])[1]);
 
@@ -3128,23 +3139,23 @@ AliEmcalJet* AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster(AliJetContainer* co
   if(TMath::Odd(iNCl)) // odd number of clusters
   {
     iIndex = (Int_t)(0.5 * (iNCl + 1)); // = (n - skip + 1)/2 + 1, skip = 2
-//    printf("%s::%s: %s\n", ClassName(), __func__, Form("Odd, median index = %d/%d", iIndex, iNCl));
+//    printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Odd, median index = %d/%d", iIndex, iNCl));
   }
   else // even number: picking randomly one of the two closest to median
   {
     Int_t iIndex1 = (Int_t)(0.5 * iNCl); // = (n - skip)/2 + 1, skip = 2
     Int_t iIndex2 = (Int_t)(0.5 * iNCl + 1); // = (n - skip)/2 + 1 + 1, skip = 2
     iIndex = ((fRandom->Rndm() > 0.5) ? iIndex1 : iIndex2);
-//    printf("%s::%s: %s\n", ClassName(), __func__, Form("Even, median index = %d or %d -> %d/%d", iIndex1, iIndex2, iIndex, iNCl));
+//    printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Even, median index = %d or %d -> %d/%d", iIndex1, iIndex2, iIndex, iNCl));
   }
   iIndexMed = Int_t((vecListClusters[iIndex])[0]);
 
-  if(fDebug > 1) printf("%s::%s: %s\n", ClassName(), __func__, Form("Getting median cluster %d/%d ok, rho = %g", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]));
+  if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Getting median cluster %d/%d ok, rho = %g", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]));
   clusterMed = (AliEmcalJet*)(cont->GetAcceptJet(iIndexMed));
 
   if(TMath::Abs(clusterMed->Eta()) > dEtaConeMax)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Chosen median cluster is out of window |eta| < %g, eta = %g", dEtaConeMax, clusterMed->Eta()));
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Chosen median cluster is out of window |eta| < %g, eta = %g", dEtaConeMax, clusterMed->Eta()));
     return NULL;
   }
 
@@ -3175,7 +3186,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   AliAODVertex* vertex = fAOD->GetPrimaryVertex();
   if(!vertex)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "No vertex");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No vertex");
     return kFALSE;
   }
   Int_t iNContribMin = 3;
@@ -3183,19 +3194,19 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     iNContribMin = 2;
   if(vertex->GetNContributors() < iNContribMin)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
     return kFALSE;
   }
   TString vtxTitle(vertex->GetTitle());
   if(vtxTitle.Contains("TPCVertex"))
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "TPC vertex");
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "TPC vertex");
     return kFALSE;
   }
   Double_t zVertex = vertex->GetZ();
   if(TMath::Abs(zVertex) > dVtxZCut)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Cut on z, %g", zVertex));
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
     return kFALSE;
   }
   if(dDeltaZMax > 0.) // cut on |delta z| in 2011 data between SPD vertex and nominal primary vertex
@@ -3203,13 +3214,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     AliAODVertex* vertexSPD = fAOD->GetPrimaryVertexSPD();
     if(!vertexSPD)
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "No SPD vertex");
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No SPD vertex");
       return kFALSE;
     }
     Double_t zVertexSPD = vertexSPD->GetZ();
     if(TMath::Abs(zVertex - zVertexSPD) > dDeltaZMax)
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Cut on Delta z = %g - %g = %g", zVertex, zVertexSPD, zVertex - zVertexSPD));
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on Delta z = %g - %g = %g", zVertex, zVertexSPD, zVertex - zVertexSPD));
       return kFALSE;
     }
   }
@@ -3218,7 +3229,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
   if(radiusSq > dVtxR2Cut)
   {
-    if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Cut on r, %g", radiusSq));
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
     return kFALSE;
   }
   fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
@@ -3226,17 +3237,17 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   {
     if(fdCentrality < 0)
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Negative centrality");
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Negative centrality");
       return kFALSE;
     }
     if((dCentCutUp < 0) || (dCentCutLo < 0) || (dCentCutUp > 100) || (dCentCutLo > 100) || (dCentCutLo > dCentCutUp))
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, "Wrong centrality limits");
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Wrong centrality limits");
       return kFALSE;
     }
     if((fdCentrality < dCentCutLo) || (fdCentrality > dCentCutUp))
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Centrality cut, %g", fdCentrality));
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Centrality cut, %g", fdCentrality));
       return kFALSE;
     }
   }
@@ -3244,7 +3255,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   {
     if(fdCentrality != -1)
     {
-      if(fDebug > 0) printf("%s::%s: %s\n", ClassName(), __func__, Form("Wrong centrality, %g", fdCentrality));
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Wrong centrality, %g", fdCentrality));
       return kFALSE;
     }
   }
