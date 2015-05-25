@@ -11,6 +11,8 @@ void AddTaskCRC(Double_t centrMin,
                 Bool_t bCalculateCRCPt=kFALSE,
                 Bool_t bUseCRCRecentering=kFALSE,
                 TString QVecWeightsFileName,
+                Bool_t bUsePhiEtaWeights,
+                TString PhiEtaWeightsFileName,
                 Bool_t bUseVZERO=kFALSE,
                 Bool_t bUseVZEROCalib=kFALSE,
                 Bool_t bUseVZEROTwist=kFALSE,
@@ -26,11 +28,11 @@ void AddTaskCRC(Double_t centrMin,
  gSystem->Load("libPhysics");
  gSystem->Load("libCore.so");
  gSystem->Load("libTree.so");
- gSystem->Load("libSTEERBase");
- gSystem->Load("libESD");
- gSystem->Load("libAOD");
- gSystem->Load("libANALYSIS");
- gSystem->Load("libANALYSISalice");
+ gSystem->Load("libSTEERBase.so");
+ gSystem->Load("libESD.so");
+ gSystem->Load("libAOD.so");
+ gSystem->Load("libANALYSIS.so");
+ gSystem->Load("libANALYSISalice.so");
  gSystem->Load("libOADB.so");
  gSystem->Load("libPWGflowBase.so");
  gSystem->Load("libPWGflowTasks.so");
@@ -92,7 +94,13 @@ void AddTaskCRC(Double_t centrMin,
  taskFEname += suffix;
  // create instance of the class
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
- AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
+ if(!bUseZDC) {
+  AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
+ } else {
+  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
+  taskFE->SetCentralityRange(0.,100.);
+  taskFE->SetCentralityEstimator("V0M");
+ }
  // add the task to the manager
  mgr->AddTask(taskFE);
  // set the trigger selection
@@ -212,15 +220,14 @@ void AddTaskCRC(Double_t centrMin,
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
  }
- 
- Bool_t UseParticleWeights = kFALSE;
+
  //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
  
  // create the flow analysis tasks
  TString taskCRCname = "AnalysisTask";
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
- AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
+ AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, bUsePhiEtaWeights);
 // TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
 // if (TPCMultOut == "2011") QVecWeightsFileName += "CRCTPCQVecCalib11h.root";
 // else if (TPCMultOut == "2010") QVecWeightsFileName += "CRCTPCQVecCalib10h.root";
@@ -266,6 +273,23 @@ void AddTaskCRC(Double_t centrMin,
    exit(1);
   }
  } // end of if(bUseCRCRecentering)
+ taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
+ if(bUsePhiEtaWeights) {
+  TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
+  if(!PhiEtaWeightsFile) {
+   cout << "ERROR: PhiEtaWeightsFile not found!" << endl;
+   exit(1);
+  }
+  TList* PhiEtaWeightsList = dynamic_cast<TList*>(PhiEtaWeightsFile->FindObjectAny("PhiEta Weights"));
+  if(PhiEtaWeightsList) {
+   taskQC->SetWeightsList(PhiEtaWeightsList);
+   cout << "PhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
+  }
+  else {
+   cout << "ERROR: PhiEtaWeightsList not found!" << endl;
+   exit(1);
+  }
+ } // end of if(bUsePhiEtaWeights)
 
  // connect the task to the analysis manager
  mgr->AddTask(taskQC);
