@@ -1079,13 +1079,13 @@ WriteFitInfo(fitterME[iPtBin],hMassPtBin);
   hChiSqRot->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hChiSqRot->GetYaxis()->SetTitle("#chi^{2}/ndf");
   hChiSqRot->GetYaxis()->SetTitleOffset(1.8);
-  Double_t max=hChiSqRot->GetMaximum();
-  if(hChiSqLS->GetMaximum()>max)max=hChiSqLS->GetMaximum();
-  if(hChiSqME->GetMaximum()>max)max=hChiSqME->GetMaximum();
+  Double_t maxc=hChiSqRot->GetMaximum();
+  if(hChiSqLS->GetMaximum()>maxc)maxc=hChiSqLS->GetMaximum();
+  if(hChiSqME->GetMaximum()>maxc)maxc=hChiSqME->GetMaximum();
   if(tryDirectFit){
-    if(hChiSqSBfit->GetMaximum()>max)max=hChiSqSBfit->GetMaximum();
+    if(hChiSqSBfit->GetMaximum()>maxc)maxc=hChiSqSBfit->GetMaximum();
   }
-  hChiSqRot->SetMaximum(max*1.2);
+  hChiSqRot->SetMaximum(maxc*1.2);
 
   hChiSqLS->SetMarkerStyle(22);
   hChiSqLS->SetMarkerColor(kGreen+2);

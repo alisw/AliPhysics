@@ -10,20 +10,22 @@
 #include <TStyle.h>
 #include <TLegend.h>
 #include <TLatex.h>
+#include <TSystem.h>
 #include <TProfile.h>
 #include <TLegendEntry.h>
 #endif
 
-enum EPtWei{kFONLL5overLHC13d3,kFONLL7overLHC10f6a,kNoWei};
+enum EPtWei{kFONLL5overLHC13d3,kFONLL7overLHC10f7a,kFONLL7overLHC10f6a,kFLAToverLHC10f7a,kNoWei};
 
-const Int_t nPtBins=6;
-Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,6.,8.};
+const Int_t nPtBins=8;
+Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
 
-TString fileNameMC="AnalysisResultsMC_train434432.root";
+TString fileNameMC="AnalysisResultsMC_train471472.root";
 TString suffix="c3SigPID_Pt400_EM1";
-TString fileNameToy="Acceptance_Toy_D0Kpi_yfid08_etaDau09_ptDau100_FONLL7ptshape.root";
+TString fileNameToy="Acceptance_Toy_D0Kpi_yfid08_etaDau09_ptDau100_FONLL5ptshape.root";
 Int_t ptWeight=kFONLL5overLHC13d3;
-
+Bool_t useMultWeight=kTRUE;
+Double_t maxMult=200;
 
 
 void ComputeEfficiencyFromCombinHF(){
@@ -47,12 +49,18 @@ void ComputeEfficiencyFromCombinHF(){
   }else if (ptWeight==kFONLL7overLHC10f6a){
     funcPtWeight=new TF1("funcPtWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
     funcPtWeight->SetParameters(2.41522e+01,4.92146e+00,6.72495e+00,2.5,6.15361e-03,4.78995e+00,-4.29135e-01,3.99421e-01,-1.57220e-02);
+  }else if (ptWeight==kFONLL7overLHC10f7a){
+    funcPtWeight=new TF1("funcPtWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
+    funcPtWeight->SetParameters(3.59525,2.67871,2.70402,1.72578,4.78167e-03,4.90992,-1.26424e-01,8.21269e-02,-1.26425e-01);
+  }else if(ptWeight==kFLAToverLHC10f7a){
+    funcPtWeight=new TF1("funcPtWeight","[0]+[1]*x+[2]*x*x+[3]*x*x*x",0.15,40.);
+    funcPtWeight->SetParameters(1.99498e-01,-9.90532e-02,3.03645e-02,7.42483e-04);
   }else{
     funcPtWeight=new TF1("funcPtWeight","[0]");
     funcPtWeight->SetParameter(0,1.);
   }
 
-  Int_t ptcol[nPtBins]={1,kRed+1,kGreen+2,4,kOrange+2,kMagenta};
+  Int_t ptcol[nPtBins]={1,kRed+1,kGreen+2,4,kOrange+2,kMagenta,kAzure+5,kMagenta+2};
 
   
   TString dirName=Form("PWG3_D2H_InvMassDzeroLowPt%s",suffix.Data());
@@ -62,7 +70,124 @@ void ComputeEfficiencyFromCombinHF(){
   TList* l=(TList*)df->Get(lstName.Data());
   //  l->ls();
 
+
+
+
+  TH2F* hEventMultZv=(TH2F*)l->FindObject("hEventMultZv");
+  if(hEventMultZv){
+    TH2F* hEventMultZvEvSel=(TH2F*)l->FindObject("hEventMultZvEvSel");
+    hEventMultZv->GetXaxis()->SetTitle("Z_{vertex} (cm)");
+    hEventMultZv->GetYaxis()->SetTitle("N_{tracklets}");
+    hEventMultZvEvSel->GetXaxis()->SetTitle("Z_{vertex} (cm)");
+    hEventMultZvEvSel->GetYaxis()->SetTitle("N_{tracklets}");
+    
+    Int_t binzm10=hEventMultZvEvSel->GetXaxis()->FindBin(-9.999);
+    Int_t binzp10=hEventMultZvEvSel->GetXaxis()->FindBin(9.999);
+    printf("%d %f    --- %d %f\n",binzm10,hEventMultZvEvSel->GetXaxis()->GetBinLowEdge(binzm10),
+	   binzp10,hEventMultZvEvSel->GetXaxis()->GetBinUpEdge(binzp10));
+    TH1D* hMultAllEv=hEventMultZv->ProjectionY("hMultAllEv");
+    TH1D* hMultEvZ10=hEventMultZv->ProjectionY("hMultEvZ10",binzm10,binzp10);
+    TH1D* hMultEvSel=hEventMultZvEvSel->ProjectionY("hMultEvSel");
+    hMultAllEv->SetLineColor(1);
+    hMultEvZ10->SetLineColor(kGreen+2);
+    hMultEvSel->SetLineColor(6);
+    hMultAllEv->GetYaxis()->SetTitle("Entries");
+    
+    TH1D* hZvAllEv=hEventMultZv->ProjectionX("hZvAllEv");
+    TH1D* hZvEvSel=hEventMultZvEvSel->ProjectionX("hZvEvSel");
+    hZvAllEv->SetLineColor(1);
+    hZvEvSel->SetLineColor(6);
+    hZvAllEv->GetYaxis()->SetTitle("Entries");
+    
+    TH1D* hRatioMultEv=(TH1D*)hMultEvSel->Clone("hRatioMultEv");
+    hRatioMultEv->Divide(hMultEvSel,hMultEvZ10,1.,1.,"B");
+    hRatioMultEv->SetStats(0);
+    hRatioMultEv->GetYaxis()->SetTitle("Ratio");
+    hRatioMultEv->SetLineColor(4);
+    TH1D* hRatioMultEvAll=(TH1D*)hMultEvSel->Clone("hRatioMultEvAll");
+    hRatioMultEvAll->Divide(hMultEvSel,hMultAllEv,1.,1.,"B");
+    hRatioMultEvAll->SetStats(0);
+    hRatioMultEvAll->GetYaxis()->SetTitle("Ratio");
+    hRatioMultEvAll->SetLineColor(6);
+    TH1D* hRatioMultEvZ10=(TH1D*)hMultEvZ10->Clone("hRatioMultEvZ10");
+    hRatioMultEvZ10->Divide(hMultEvZ10,hMultAllEv,1.,1.,"B");
+    hRatioMultEvZ10->SetStats(0);
+    hRatioMultEvZ10->GetYaxis()->SetTitle("Ratio");
+    TH1D* hRatioZvEv=(TH1D*)hZvEvSel->Clone("hRatioZvEv");
+    hRatioZvEv->Divide(hZvEvSel,hZvAllEv,1.,1.,"B");
+    hRatioZvEv->SetStats(0);
+    hRatioZvEv->GetYaxis()->SetTitle("Ratio");
+    
+    TCanvas* cev=new TCanvas("cev","Event selection",1300,950);
+    cev->Divide(2,2);
+    cev->cd(1);
+    gPad->SetLogy();
+    gPad->SetTickx();
+    gPad->SetTicky();
+    hMultAllEv->GetXaxis()->SetRangeUser(0.,maxMult);
+    hMultAllEv->Draw();
+    gPad->Update();
+    TPaveStats *sta=(TPaveStats*)hMultAllEv->GetListOfFunctions()->FindObject("stats");
+    sta->SetY1NDC(0.7);
+    sta->SetY2NDC(0.89);
+    gPad->Modified();
+    hMultEvZ10->Draw("sames");
+    gPad->Update();
+    TPaveStats *stz=(TPaveStats*)hMultEvZ10->GetListOfFunctions()->FindObject("stats");
+    stz->SetY1NDC(0.5);
+    stz->SetY2NDC(0.69);
+    stz->SetTextColor(hMultEvZ10->GetLineColor());
+    gPad->Modified();
+    hMultEvSel->Draw("sames");
+    gPad->Update();
+    TPaveStats *stb=(TPaveStats*)hMultEvSel->GetListOfFunctions()->FindObject("stats");
+    stb->SetY1NDC(0.3);
+    stb->SetY2NDC(0.49);
+    stb->SetTextColor(hMultEvSel->GetLineColor());
+    gPad->Modified();
+    cev->cd(3);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    hRatioMultEvAll->SetMinimum(0.);
+    hRatioMultEvAll->GetXaxis()->SetRangeUser(0.,maxMult);
+    hRatioMultEvAll->Draw();
+    hRatioMultEvZ10->Draw("same");
+    hRatioMultEv->Draw("same");
+    TLegend* leg=new TLegend(0.45,0.3,0.89,0.7);
+    leg->AddEntry(hRatioMultEvAll,"EvSel / AllEv","L")->SetTextColor(hRatioMultEvAll->GetLineColor());
+    leg->AddEntry(hRatioMultEvZ10,"Ev(|z|<10) / AllEv","L")->SetTextColor(hRatioMultEvZ10->GetLineColor());
+    leg->AddEntry(hRatioMultEv,"EvSel / Ev(|z|<10)","L")->SetTextColor(hRatioMultEv->GetLineColor());
+    leg->Draw();
+    cev->cd(2);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    hZvAllEv->Draw();
+    gPad->Update();
+    TPaveStats *stc=(TPaveStats*)hZvAllEv->GetListOfFunctions()->FindObject("stats");
+    stc->SetY1NDC(0.7);
+    stc->SetY2NDC(0.89);
+    gPad->Modified();
+    hZvEvSel->Draw("sames");
+    gPad->Update();
+    TPaveStats *std=(TPaveStats*)hZvEvSel->GetListOfFunctions()->FindObject("stats");
+    std->SetY1NDC(0.5);
+    std->SetY2NDC(0.69);
+    std->SetTextColor(hZvEvSel->GetLineColor());
+    gPad->Modified();
+    cev->cd(4);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    hRatioZvEv->SetMinimum(0.85);
+    hRatioZvEv->SetMaximum(1.01);
+    hRatioZvEv->Draw();
+    cev->SaveAs(Form("figures/FracEvSel%s.eps",suffix.Data()));
+  }
+
+
+
+
   TH3F* hPtVsYVsMultReco=(TH3F*)l->FindObject("hPtVsYVsMultReco");
+  TH3F* hPtVsYVsMultGenAccEvSel=(TH3F*)l->FindObject("hPtVsYVsMultGenAccEvSel");
   TH3F* hPtVsYVsMultGenAcc=(TH3F*)l->FindObject("hPtVsYVsMultGenAcc");
   TH3F* hPtVsYVsMultGenLimAcc=(TH3F*)l->FindObject("hPtVsYVsMultGenLimAcc");
 
@@ -76,6 +201,7 @@ void ComputeEfficiencyFromCombinHF(){
   hypt->GetYaxis()->SetTitle("y");
   hptmult->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   hptmult->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
+  hptmult->GetXaxis()->SetRangeUser(0.,maxMult);
   
   TProfile* hMeanPtMult=hptmult->ProfileX("hMeanPtMult");
   TCanvas* c0=new TCanvas("c0","2D plots",1200,600);
@@ -93,6 +219,8 @@ void ComputeEfficiencyFromCombinHF(){
   
   TH1D* hPtReco=hPtVsYVsMultReco->ProjectionX("hPtReco");
   TH1D* hPtGenAcc=hPtVsYVsMultGenAcc->ProjectionX("hPtGenAcc");
+  TH1D* hPtGenAccEvSel=0x0;
+  if(hPtVsYVsMultGenAccEvSel) hPtGenAccEvSel=hPtVsYVsMultGenAccEvSel->ProjectionX("hPtGenAccEvSel");
   TH1D* hPtGenLimAcc=hPtVsYVsMultGenLimAcc->ProjectionX("hPtGenLimAcc");
   TH1D* hPtRecoR=(TH1D*)hPtReco->Rebin(nPtBins,"hPtRecoReb",binLims);
   TH1D* hPtGenAccR=(TH1D*)hPtGenAcc->Rebin(nPtBins,"hPtRecoReb",binLims);
@@ -109,7 +237,13 @@ void ComputeEfficiencyFromCombinHF(){
   hAccVsPtR->Divide(hPtGenAccR,hPtGenLimAccR,1,1,"B");
   hAccVsPt->SetStats(0);
   hAccVsPtR->SetStats(0);
- 
+  TH1D* hEvSelEffVsPt=0x0;
+  if(hPtGenAccEvSel){
+    hEvSelEffVsPt=(TH1D*)hPtGenAccEvSel->Clone("hEvSelEff");
+    hEvSelEffVsPt->Divide(hPtGenAccEvSel,hPtGenAcc,1,1,"B");
+    hEvSelEffVsPt->SetStats(0);
+  }
+
   TFile* fileAccToy=new TFile(fileNameToy.Data());
   TH1F* hPtGenAccToy=(TH1F*)fileAccToy->Get("hPtGenAcc");
   TH1F* hPtGenLimAccToy=(TH1F*)fileAccToy->Get("hPtGenLimAcc");
@@ -127,9 +261,9 @@ void ComputeEfficiencyFromCombinHF(){
   hAccToy->SetStats(0);
   hAccToyFine->SetLineColor(kGreen+2);
 
-  TCanvas* c1=new TCanvas("c1","EffVsPt",1200,600);
-  c1->Divide(2,1);
-  c1->cd(1);
+  TCanvas* c1a=new TCanvas("c1a","AccVsPt",1200,600);
+  c1a->Divide(2,1);
+  c1a->cd(1);
   gPad->SetLogy();
   hPtGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtGenLimAcc->GetYaxis()->SetTitle("Entries");
@@ -146,15 +280,24 @@ void ComputeEfficiencyFromCombinHF(){
   st2->SetY1NDC(0.5);
   st2->SetY2NDC(0.69);
   st2->SetTextColor(2);
+  if(hPtGenAccEvSel){
+    hPtGenAccEvSel->SetLineColor(6);
+    hPtGenAccEvSel->Draw("sames");
+    gPad->Update();
+    TPaveStats *st2s=(TPaveStats*)hPtGenAccEvSel->GetListOfFunctions()->FindObject("stats");
+    st2s->SetY1NDC(0.3);
+    st2s->SetY2NDC(0.49);
+    st2s->SetTextColor(6);
+  }
   hPtReco->SetLineColor(4);
   hPtReco->Draw("sames");
   gPad->Update();
-  TPaveStats *st3=(TPaveStats*)hPtReco->GetListOfFunctions()->FindObject("stats");
-  st3->SetY1NDC(0.3);
-  st3->SetY2NDC(0.49);
-  st3->SetTextColor(4);
+  TPaveStats *st13=(TPaveStats*)hPtReco->GetListOfFunctions()->FindObject("stats");
+  st13->SetY1NDC(0.1);
+  st13->SetY2NDC(0.29);
+  st13->SetTextColor(4);
   gPad->Modified();
-  c1->cd(2);
+  c1a->cd(2);
   hEffVsPt->SetLineColor(4);
   hEffVsPt->SetMinimum(0);
   hEffVsPt->SetMaximum(1.95);
@@ -177,10 +320,67 @@ void ComputeEfficiencyFromCombinHF(){
   te->SetNDC();
   te->SetTextColor(hEffVsPt->GetLineColor());
   te->Draw();
-  c1->SaveAs(Form("figures/EfficVsPt_%s.eps",suffix.Data()));
+
+
+  TCanvas* c1e=new TCanvas("c1e","EffVsPt",1200,600);
+  c1e->Divide(2,1);
+  c1e->cd(1);
+  gPad->SetLogy();
+  hPtGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  hPtGenLimAcc->GetYaxis()->SetTitle("Entries");
+  hPtGenLimAcc->SetLineColor(1);
+  hPtGenLimAcc->Draw();
+  gPad->Update();
+  TPaveStats *st11=(TPaveStats*)hPtGenLimAcc->GetListOfFunctions()->FindObject("stats");
+  st11->SetY1NDC(0.7);
+  st11->SetY2NDC(0.89);
+  hPtGenAcc->SetLineColor(2);
+  hPtGenAcc->Draw("sames");
+  gPad->Update();
+  TPaveStats *st12=(TPaveStats*)hPtGenAcc->GetListOfFunctions()->FindObject("stats");
+  st12->SetY1NDC(0.5);
+  st12->SetY2NDC(0.69);
+  st12->SetTextColor(2);
+  if(hPtGenAccEvSel){
+    hPtGenAccEvSel->SetLineColor(6);
+    hPtGenAccEvSel->Draw("sames");
+    gPad->Update();
+    TPaveStats *st12s=(TPaveStats*)hPtGenAccEvSel->GetListOfFunctions()->FindObject("stats");
+    st12s->SetY1NDC(0.3);
+    st12s->SetY2NDC(0.49);
+    st12s->SetTextColor(6);
+  }
+  hPtReco->SetLineColor(4);
+  hPtReco->Draw("sames");
+  gPad->Update();
+  TPaveStats *st3=(TPaveStats*)hPtReco->GetListOfFunctions()->FindObject("stats");
+  st3->SetY1NDC(0.1);
+  st3->SetY2NDC(0.29);
+  st3->SetTextColor(4);
+  gPad->Modified();
+  c1e->cd(2);
+  TLatex* t1=new TLatex(6.,0.25,"GenAccInEvSel / GenAcc");
+  t1->SetTextColor(6);
+  if(hPtGenAccEvSel){
+    hEvSelEffVsPt->SetLineColor(6);
+    hEvSelEffVsPt->SetMinimum(0);
+    hEvSelEffVsPt->SetMaximum(1.05);
+    hEvSelEffVsPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hEvSelEffVsPt->GetYaxis()->SetTitle("Ratio");
+    hEvSelEffVsPt->Draw();
+    t1->Draw();  
+  }
+  hEffVsPt->Draw("same");
+  TLatex* t3=new TLatex(6.,0.15,"Reco / GenAcc");
+  t3->SetTextColor(4);
+  t3->Draw();
+  c1e->SaveAs(Form("figures/EfficVsPt_%s.eps",suffix.Data()));
+
 
   TH1D* hMultRecoAllPt=hPtVsYVsMultReco->ProjectionZ("hMultReco");
   TH1D* hMultGenAccAllPt=hPtVsYVsMultGenAcc->ProjectionZ("hMultGenAcc");
+  TH1D* hMultGenAccEvSelAllPt=0x0;
+  if(hPtVsYVsMultGenAccEvSel) hMultGenAccEvSelAllPt=hPtVsYVsMultGenAccEvSel->ProjectionZ("hMultGenAccEvSel");
   TH1D* hMultGenLimAccAllPt=hPtVsYVsMultGenLimAcc->ProjectionZ("hMultGenLimAcc");
   TH1D* hEffVsMultAllPt=(TH1D*)hMultRecoAllPt->Clone("hEff");
   hEffVsMultAllPt->Divide(hMultRecoAllPt,hMultGenAccAllPt,1,1,"B");
@@ -191,40 +391,57 @@ void ComputeEfficiencyFromCombinHF(){
   hEffVsMultAllPt->SetStats(0);
   hAccVsMultAllPt->SetStats(0);
   hAccEffVsMultAllPt->SetStats(0);
+  TH1D* hEvSelEffVsMultAllPt=0x0;
+  if(hMultGenAccEvSelAllPt){
+    hEvSelEffVsMultAllPt=(TH1D*)hMultGenAccEvSelAllPt->Clone("hEvSelEffMult");
+    hEvSelEffVsMultAllPt->Divide(hMultGenAccEvSelAllPt,hMultGenAccAllPt,1,1,"B");
+    hEvSelEffVsMultAllPt->SetStats(0);
+  }
 
-  TCanvas* c2=new TCanvas("c2","EffVsMult",1200,600);
-  c2->Divide(2,1);
-  c2->cd(1);
+  TCanvas* c2a=new TCanvas("c2a","AccVsMult",1200,600);
+  c2a->Divide(2,1);
+  c2a->cd(1);
   gPad->SetLogy();
   hMultGenLimAccAllPt->SetLineColor(1);
-  hMultGenLimAccAllPt->Draw();
   hMultGenLimAccAllPt->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
   hMultGenLimAccAllPt->GetYaxis()->SetTitle("Entries");
+  hMultGenLimAccAllPt->GetXaxis()->SetRangeUser(0.,maxMult);
+  hMultGenLimAccAllPt->Draw();
   gPad->Update();
-  TPaveStats *st11=(TPaveStats*)hMultGenLimAccAllPt->GetListOfFunctions()->FindObject("stats");
-  st11->SetY1NDC(0.7);
-  st11->SetY2NDC(0.89);
+  TPaveStats *st21=(TPaveStats*)hMultGenLimAccAllPt->GetListOfFunctions()->FindObject("stats");
+  st21->SetY1NDC(0.7);
+  st21->SetY2NDC(0.89);
   hMultGenAccAllPt->SetLineColor(2);
   hMultGenAccAllPt->Draw("sames");
   gPad->Update();
-  TPaveStats *st12=(TPaveStats*)hMultGenAccAllPt->GetListOfFunctions()->FindObject("stats");
-  st12->SetY1NDC(0.5);
-  st12->SetY2NDC(0.69);
-  st12->SetTextColor(2);
+  TPaveStats *st22=(TPaveStats*)hMultGenAccAllPt->GetListOfFunctions()->FindObject("stats");
+  st22->SetY1NDC(0.5);
+  st22->SetY2NDC(0.69);
+  st22->SetTextColor(2);
+  if(hMultGenAccEvSelAllPt){
+    hMultGenAccEvSelAllPt->SetLineColor(6);
+    hMultGenAccEvSelAllPt->Draw("sames");
+    gPad->Update();
+    TPaveStats *st22s=(TPaveStats*)hMultGenAccEvSelAllPt->GetListOfFunctions()->FindObject("stats");
+    st22s->SetY1NDC(0.3);
+    st22s->SetY2NDC(0.49);
+    st22s->SetTextColor(6);
+  }
   hMultRecoAllPt->SetLineColor(4);
   hMultRecoAllPt->Draw("sames");
   gPad->Update();
-  TPaveStats *st13=(TPaveStats*)hMultRecoAllPt->GetListOfFunctions()->FindObject("stats");
-  st13->SetY1NDC(0.3);
-  st13->SetY2NDC(0.49);
-  st13->SetTextColor(4);
+  TPaveStats *st23=(TPaveStats*)hMultRecoAllPt->GetListOfFunctions()->FindObject("stats");
+  st23->SetY1NDC(0.1);
+  st23->SetY2NDC(0.29);
+  st23->SetTextColor(4);
   gPad->Modified();
-  c2->cd(2);
+  c2a->cd(2);
   hEffVsMultAllPt->SetLineColor(4);
   hEffVsMultAllPt->SetMinimum(0);
   hEffVsMultAllPt->SetMaximum(1.6);
   hEffVsMultAllPt->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
   hEffVsMultAllPt->GetYaxis()->SetTitle("Ratio");
+  hEffVsMultAllPt->GetXaxis()->SetRangeUser(0.,maxMult);
   hEffVsMultAllPt->Draw();
   hAccVsMultAllPt->SetLineColor(2);
   hAccVsMultAllPt->Draw("same");
@@ -238,8 +455,61 @@ void ComputeEfficiencyFromCombinHF(){
   te2->SetNDC();
   te2->SetTextColor(hEffVsMultAllPt->GetLineColor());
   te2->Draw();
-  c2->SaveAs(Form("figures/EfficVsMult_%s.eps",suffix.Data()));
 
+  TCanvas* c2e=new TCanvas("c2e","EffVsMult",1200,600);
+  c2e->Divide(2,1);
+  c2e->cd(1);
+  gPad->SetLogy();
+  hMultGenLimAccAllPt->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
+  hMultGenLimAccAllPt->GetYaxis()->SetTitle("Entries");
+  hMultGenLimAccAllPt->GetXaxis()->SetRangeUser(0.,maxMult);
+  hMultGenLimAccAllPt->SetLineColor(1);
+  hMultGenLimAccAllPt->Draw();
+  gPad->Update();
+  TPaveStats *st1e=(TPaveStats*)hMultGenLimAccAllPt->GetListOfFunctions()->FindObject("stats");
+  st1e->SetY1NDC(0.7);
+  st1e->SetY2NDC(0.89);
+  hMultGenAccAllPt->SetLineColor(2);
+  hMultGenAccAllPt->Draw("sames");
+  gPad->Update();
+  TPaveStats *st2e=(TPaveStats*)hMultGenAccAllPt->GetListOfFunctions()->FindObject("stats");
+  st2e->SetY1NDC(0.5);
+  st2e->SetY2NDC(0.69);
+  st2e->SetTextColor(2);
+  if(hMultGenAccEvSelAllPt){
+    hMultGenAccEvSelAllPt->SetLineColor(6);
+    hMultGenAccEvSelAllPt->Draw("sames");
+    gPad->Update();
+    TPaveStats *st2se=(TPaveStats*)hMultGenAccEvSelAllPt->GetListOfFunctions()->FindObject("stats");
+    st2se->SetY1NDC(0.3);
+    st2se->SetY2NDC(0.49);
+    st2se->SetTextColor(6);
+  }
+  hMultRecoAllPt->SetLineColor(4);
+  hMultRecoAllPt->Draw("sames");
+  gPad->Update();
+  TPaveStats *st3s=(TPaveStats*)hMultRecoAllPt->GetListOfFunctions()->FindObject("stats");
+  st3s->SetY1NDC(0.1);
+  st3s->SetY2NDC(0.29);
+  st3s->SetTextColor(4);
+  gPad->Modified();
+  c2e->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  if(hMultGenAccEvSelAllPt){
+    hEvSelEffVsMultAllPt->SetLineColor(6);
+    hEvSelEffVsMultAllPt->SetMinimum(0);
+    hEvSelEffVsMultAllPt->SetMaximum(1.05);
+    hEvSelEffVsMultAllPt->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
+    hEvSelEffVsMultAllPt->GetYaxis()->SetTitle("Ratio");
+    hEvSelEffVsMultAllPt->GetXaxis()->SetRangeUser(0.,maxMult);
+    hEvSelEffVsMultAllPt->Draw();
+    t1->Draw();
+  }
+  hEffVsMultAllPt->SetLineColor(4);
+  hEffVsMultAllPt->Draw("same");
+  t3->Draw();
+  c2e->SaveAs(Form("figures/EfficVsMult_%s.eps",suffix.Data()));
 
   const Int_t nMultBins=6;
   Double_t mulLims[nMultBins+1]={0.,5.,12.,20.,40.,80.,200.};
@@ -328,17 +598,22 @@ void ComputeEfficiencyFromCombinHF(){
   // legm->Draw();
 
 
-  TFile* filw = new TFile(fileWeightName.Data());
   TH1F** hWeight=new TH1F*[3];
-  for(Int_t iw=0;iw<3; iw++){
-    hWeight[iw]=(TH1F*)filw->Get(histoWeightName[iw].Data());
-    hWeight[iw]->SetLineColor(wcol[iw]);
-    hWeight[iw]->SetStats(0);
-    hWeight[iw]->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
-    hWeight[iw]->GetYaxis()->SetTitle("Weight");
-    hWeight[iw]->GetYaxis()->SetTitleOffset(1.4);
-    hWeight[iw]->SetMaximum(3.);
-    hWeight[iw]->SetMinimum(0.);
+  for(Int_t iw=0;iw<3; iw++) hWeight[iw]=0x0;
+
+  if(gSystem->AccessPathName(fileWeightName.Data())==0){
+    printf("Open file with multiplicity weights\n");
+    TFile* filw = new TFile(fileWeightName.Data());
+    for(Int_t iw=0;iw<3; iw++){
+      hWeight[iw]=(TH1F*)filw->Get(histoWeightName[iw].Data());
+      hWeight[iw]->SetLineColor(wcol[iw]);
+      hWeight[iw]->SetStats(0);
+      hWeight[iw]->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
+      hWeight[iw]->GetYaxis()->SetTitle("Weight");
+      hWeight[iw]->GetYaxis()->SetTitleOffset(1.4);
+      hWeight[iw]->SetMaximum(3.);
+      hWeight[iw]->SetMinimum(0.);
+    }
   }
 
   hEffVsMult[0]->SetStats(0);
@@ -346,6 +621,7 @@ void ComputeEfficiencyFromCombinHF(){
   cw->Divide(2,1);
   cw->cd(1);
   gPad->SetLeftMargin(0.12);
+  hEffVsMult[0]->GetXaxis()->SetRangeUser(0.,maxMult);
   hEffVsMult[0]->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
   hEffVsMult[0]->GetYaxis()->SetTitle("Efficiency");
   hEffVsMult[0]->GetYaxis()->SetTitleOffset(1.4);
@@ -364,16 +640,23 @@ void ComputeEfficiencyFromCombinHF(){
   }
   legm->Draw();
   cw->cd(2);
-  gPad->SetLeftMargin(0.12);
-  hWeight[0]->Draw();
-  hWeight[1]->Draw("same");
-  hWeight[2]->Draw("same");
-  TLegend* legw=new TLegend(0.55,0.65,0.89,0.89);
-  legw->SetFillStyle(0);
-  legw->AddEntry(hWeight[0],"Candidate Weight","L");
-  legw->AddEntry(hWeight[1],"D Weight","L");
-  legw->AddEntry(hWeight[2],"EvSel Weight","L");
-  legw->Draw();
+  if(hWeight[0]){
+    gPad->SetLeftMargin(0.12);
+    hWeight[0]->GetXaxis()->SetRangeUser(0.,maxMult);
+    hWeight[0]->Draw();
+    TLegend* legw=new TLegend(0.2,0.65,0.55,0.89);
+    legw->SetFillStyle(0);
+    legw->AddEntry(hWeight[0],"Candidate Weight","L");
+    if(hWeight[1]){
+      hWeight[1]->Draw("same");
+      legw->AddEntry(hWeight[1],"D Weight","L");
+    }
+    if(hWeight[2]){ 
+      hWeight[2]->Draw("same");
+      legw->AddEntry(hWeight[2],"EvSel Weight","L");
+    }
+    legw->Draw();
+  }
   cw->SaveAs(Form("figures/EfficVsMultPtBins_%s.eps",suffix.Data()));
 
 
@@ -425,17 +708,22 @@ void ComputeEfficiencyFromCombinHF(){
 	  countNumer[jPtBin]+=hPtVsYVsMultReco->GetBinContent(ibx,iby,ibz);
 	  countDenom[jPtBin]+=hPtVsYVsMultGenAcc->GetBinContent(ibx,iby,ibz);
 	  for(Int_t iw=0; iw<3; iw++){
-	    Int_t binw=hWeight[iw]->FindBin(mult);
 	    Double_t w=0;
-	    if(binw>=1 && binw<hWeight[iw]->GetNbinsX()+1){
-	      w=hWeight[iw]->GetBinContent(binw);
-	      //		printf("mult %.0f   bin %d   wei %f\n",mult,binw,w);
-	    }else{
-	      if(hPtVsYVsMultGenAcc->GetBinContent(ibx,iby,ibz)>0){
-		printf("mult %.0f   bin %d   wei %f\n",mult,binw,w);
-		getchar();
+	    if(hWeight[iw]){
+	      Int_t binw=hWeight[iw]->FindBin(mult);
+	      if(binw>=1 && binw<hWeight[iw]->GetNbinsX()+1){
+		w=hWeight[iw]->GetBinContent(binw);
+		//		printf("mult %.0f   bin %d   wei %f\n",mult,binw,w);
+	      }else{
+		if(hPtVsYVsMultGenAcc->GetBinContent(ibx,iby,ibz)>0){
+		  printf("mult %.0f   bin %d   wei %f\n",mult,binw,w);
+		  getchar();
+		}
 	      }
+	    }else{
+	      w=1;
 	    }
+	    if(!useMultWeight) w=1;
 	    countNumerMultWei[jPtBin][iw]+=hPtVsYVsMultReco->GetBinContent(ibx,iby,ibz)*w;
 	    countDenomMultWei[jPtBin][iw]+=hPtVsYVsMultGenAcc->GetBinContent(ibx,iby,ibz)*w;
 	    countNumerMultPtWei[jPtBin][iw]+=hPtVsYVsMultReco->GetBinContent(ibx,iby,ibz)*w*wpt;
@@ -483,9 +771,10 @@ void ComputeEfficiencyFromCombinHF(){
   c2w->cd(1);
   gPad->SetLogy();
   hMultGenLimAccAllPtW->SetLineColor(1);
-  hMultGenLimAccAllPtW->Draw();
+  hMultGenLimAccAllPtW->GetXaxis()->SetRangeUser(0.,maxMult);
   hMultGenLimAccAllPtW->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
   hMultGenLimAccAllPtW->GetYaxis()->SetTitle("Entries");
+  hMultGenLimAccAllPtW->Draw();
   hMultGenAccAllPtW->SetLineColor(2);
   hMultGenAccAllPtW->Draw("same");
   hMultRecoAllPtW->SetLineColor(4);
@@ -494,6 +783,7 @@ void ComputeEfficiencyFromCombinHF(){
   hEffVsMultAllPtW->SetLineColor(4);
   hEffVsMultAllPtW->SetMinimum(0);
   hEffVsMultAllPtW->SetMaximum(1.6);
+  hEffVsMultAllPtW->GetXaxis()->SetRangeUser(0.,maxMult);
   hEffVsMultAllPtW->GetXaxis()->SetTitle("N_{tracklets} in |#eta|<1");
   hEffVsMultAllPtW->GetYaxis()->SetTitle("Ratio");
   hEffVsMultAllPtW->Draw();
@@ -571,8 +861,8 @@ void ComputeEfficiencyFromCombinHF(){
   gPad->SetTickx();
   gPad->SetTicky();
   hRatio[0]->Draw();
-  hRatio[0]->SetMinimum(0.85);
-  hRatio[0]->SetMaximum(1.15);
+  hRatio[0]->SetMinimum(0.95);
+  hRatio[0]->SetMaximum(1.05);
   for(Int_t iw=1;iw<3; iw++) hRatio[iw]->Draw("same");
   ceff->SaveAs(Form("figures/EfficWithMultWeights_%s.eps",suffix.Data()));
 
@@ -615,6 +905,7 @@ void ComputeEfficiencyFromCombinHF(){
   hpteffMultPtWeight[0]->Write();
   hpteffMultPtWeight[1]->Write();
   hpteffMultPtWeight[2]->Write();
+  hEvSelEffVsPt->Write();
   out->Close();
 
 }
