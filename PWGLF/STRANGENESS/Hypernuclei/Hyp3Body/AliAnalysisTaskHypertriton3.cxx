@@ -644,7 +644,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   AliInputEventHandler *handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
   fHistCount->Fill(0);
-
+  /*
  //==========MC info==========
   AliStack *stack=0x0;
   AliMCEvent *mcEvent = 0x0;
@@ -1168,6 +1168,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   //cmassd.clear();
   //cmassp.clear();
+  */
   // Post output data.
   PostData(1,fOutput);
   if(fFillTree) PostData(2,fTTree);
