@@ -157,7 +157,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 			
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
-				if(variation > 0.01) fDeadChannel[iAlias] = kTRUE;
+				if(variation > 0.05) fDeadChannel[iAlias] = kTRUE;
 			}
 			fHv[iAlias]->Fill(values[iValue]);
 			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[iAlias]);
