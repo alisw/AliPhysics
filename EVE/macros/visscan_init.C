@@ -95,7 +95,9 @@ void visscan_init(const TString& cdburi = "",
 
   TEveUtil::AssertMacro("VizDB_scan.C");
 
-  AliEveMacroExecutor *exec    = AliEveEventManager::GetMaster()->GetExecutor();
+    AliEveEventManager *man = AliEveEventManager::GetMaster();
+    
+  AliEveMacroExecutor *exec    = man->GetExecutor();
   TEveBrowser         *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);
 
@@ -179,7 +181,7 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MI",           "esd_tracks.C", "esd_tracks_MI",           "", kFALSE));
     
     // default appearance:
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
+//  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
   
     // preset for cosmics:
 //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
@@ -233,7 +235,7 @@ void visscan_init(const TString& cdburi = "",
   // Event selection tab
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
-  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::GetMaster()->GetEventSelector());
+  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, man->GetEventSelector());
   slot->StopEmbedding("Selections");
 
   // QA viewer
@@ -246,7 +248,7 @@ void visscan_init(const TString& cdburi = "",
   browser->GetTabRight()->SetTab(1);
 */
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
+  new AliEveEventManagerWindow(man);
   browser->StopEmbedding("EventCtrl");
 
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
@@ -280,8 +282,8 @@ void visscan_init(const TString& cdburi = "",
   gSystem->ProcessEvents();
 
   // Register command to call on each event.
-  AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
-  AliEveEventManager::GetMaster()->GotoEvent(0);
+    man->AddNewEventCommand("on_new_event();");
+    man->GotoEvent(0);
 
   gEve->EditElement(g_trkcnt);
   gEve->Redraw3D(kTRUE);
@@ -294,7 +296,19 @@ void visscan_init(const TString& cdburi = "",
   gSystem->ProcessEvents();
   gEve->Redraw3D(kTRUE);
   // set autoload by default
-  AliEveEventManager::GetMaster()->SetAutoLoad(true);
+    
+
+        
+    Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
+    Width_t widths[9] = {3,3,3,3,3,3,3,3,3};
+
+    man->SetESDcolors(colors);
+    man->SetESDwidths(widths);
+    man->SetESDdashBad(true);
+
+    man->SetESDtracksByCategory(true);
+    
+    man->SetAutoLoad(true);
 }
 
 /******************************************************************************/

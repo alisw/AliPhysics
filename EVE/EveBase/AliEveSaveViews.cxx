@@ -8,6 +8,7 @@
 
 #include "AliEveSaveViews.h"
 
+#include <TGFileDialog.h>
 #include <TGLViewer.h>
 #include <TEveViewer.h>
 #include <TEveManager.h>
@@ -262,14 +263,8 @@ void AliEveSaveViews::Save()
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
 }
 
-void AliEveSaveViews::Save(TString filename)
+void AliEveSaveViews::SaveWithDialog()
 {
-    if(filename=="")
-    {
-        cout<<"AliEveSaveViews::Save() -- no filename specified!"<<endl;
-        return;
-    }
-    
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
@@ -416,7 +411,21 @@ void AliEveSaveViews::Save(TString filename)
     // write composite image to disk
     TASImage *imgToSave = new TASImage(width,height);
     compositeImg->CopyArea(imgToSave, 0,0, width, height);
-    imgToSave->WriteImage(filename.Data());
+    
+    // Save screenshot to file
+    
+    TGFileInfo fileinfo;
+    const char *filetypes[] = {"PNG images", "*.png", 0, 0};
+    fileinfo.fFileTypes = filetypes;
+    fileinfo.fIniDir = StrDup(".");
+    new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
+    if(!fileinfo.fFilename)
+    {
+        cout<<"AliEveSaveViews::SaveWithDialog() -- couldn't get path from dialog window!!!"<<endl;
+        return;
+    }
+    
+    imgToSave->WriteImage(fileinfo.fFilename);
     
     if(compositeImg){delete compositeImg;compositeImg=0;}
     if(imgToSave){delete imgToSave;imgToSave=0;}

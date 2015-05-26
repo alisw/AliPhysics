@@ -19,7 +19,6 @@
 #include <TGButton.h>
 #include <TGTextView.h>
 #include <TGLabel.h>
-#include <TGFileDialog.h>
 
 #include "Riostream.h"
 
@@ -282,22 +281,8 @@ void AliEveEventManagerWindow::DoMarkEvent()
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoScreenshot()
 {
-    // Save screenshot to file
-
-    TGFileInfo fileinfo;
-    const char *filetypes[] = {"PNG images", "*.png", 0, 0};
-    fileinfo.fFileTypes = filetypes;
-    fileinfo.fIniDir = StrDup(".");
-    new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
-    if(!fileinfo.fFilename)
-    {
-        return;
-    }
-
     AliEveSaveViews *viewsSaver = new AliEveSaveViews();
-    viewsSaver->Save(fileinfo.fFilename);
-    
-    
+    viewsSaver->SaveWithDialog();
 }
 
 //______________________________________________________________________________

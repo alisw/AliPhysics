@@ -128,6 +128,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     }
 
     man->SetSaveViews(saveViews);
+    man->SetESDtracksByCategory(true);
     man->SetAutoLoad(true);     // set autoload by default
 }
 

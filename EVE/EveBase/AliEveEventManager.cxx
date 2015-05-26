@@ -161,6 +161,7 @@ fFinished(false),
 fViewsSaver(0),
 fESDdrawer(0),
 fSaveViews(false),
+fDrawESDtracksByCategory(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
 {
@@ -1948,9 +1949,9 @@ void AliEveEventManager::AfterNewEventLoaded()
     //
     
     
-    if(HasESD() && fOnlineMode)
+    if(HasESD())
     {
-        fESDdrawer->ByCategory();
+        if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
         
         Double_t x[3] = { 0, 0, 0 };
         
@@ -1988,10 +1989,13 @@ void AliEveEventManager::AfterNewEventLoaded()
         gEve->FullRedraw3D();
         gSystem->ProcessEvents();
         
-        if(fFirstEvent)
+        if(fOnlineMode)
         {
-            gROOT->ProcessLine(".x geom_emcal.C");
-            fFirstEvent=false;
+            if(fFirstEvent)
+            {
+                gROOT->ProcessLine(".x geom_emcal.C");
+                fFirstEvent=false;
+            }
         }
     }
     

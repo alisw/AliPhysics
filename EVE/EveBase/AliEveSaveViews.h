@@ -24,7 +24,7 @@ public:
     ~AliEveSaveViews();
     
     void Save();
-    void Save(TString filename);
+    void SaveWithDialog();
     int SendToAmore();
 private:
     TString GetEventInfo();
