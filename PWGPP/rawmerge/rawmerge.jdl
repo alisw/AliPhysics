@@ -6,10 +6,10 @@
 #     $ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C
 
 
-Executable="/alice/cern.ch/user/p/pwg_pp/rawmerge/v20150512/rawmerge.sh";
+Executable="/alice/cern.ch/user/p/pwg_pp/rawmerge/vAN-20150526/rawmerge.sh";
 
 Packages = {
-    "VO_ALICE@AliPhysics::vAN-20150511",
+    "VO_ALICE@AliPhysics::vAN-20150525",
     "VO_ALICE@AliRoot::v5-06-16",
     "VO_ALICE@APISCONFIG::V1.1x",
     "VO_ALICE@jemalloc::v3.0.0"
@@ -31,7 +31,7 @@ Requirements=member(other.GridPartitions,"ultrapower");
 
 
 Split="se";
-SplitMaxInputFileNumber="50";
+SplitMaxInputFileNumber="$5";
 InputDataListFormat="xml-single";
 InputDataList="wn.xml";
 
@@ -45,8 +45,8 @@ JDLVariables={
 Workdirectorysize={"6000MB"};
 
 InputFile={
-       "LF:/alice/cern.ch/user/p/pwg_pp/rawmerge/v20150512/rawmerge.C",
-              "LF:/alice/cern.ch/user/p/pwg_pp/rawmerge/v20150512/validation.rc",
+       "LF:/alice/cern.ch/user/p/pwg_pp/rawmerge/vAN-20150526/rawmerge.C",
+       "LF:/alice/cern.ch/user/p/pwg_pp/rawmerge/vAN-20150526/validation.rc",
        "LF:/alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/$3/$2/000$1/lists/event.list"
 };
 
