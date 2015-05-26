@@ -644,7 +644,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   AliInputEventHandler *handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
   fHistCount->Fill(0);
-  /*
+  
  //==========MC info==========
   AliStack *stack=0x0;
   AliMCEvent *mcEvent = 0x0;
@@ -880,7 +880,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       }// end of "track sign -"
     } 
   } // end of PID loop
-  
+  /*
   cdeuteron.Set(nDeuTPC);
   cproton.Set(nProTPC);
   cpion.Set(nPioTPC);
@@ -1161,14 +1161,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(pstack->GetPdgCode() == 3122 && pstack->GetNDaughters() == 2) fHistParticle->Fill(20); // Lambda
     } //end of MC content truth check
   }
-
+  */
   cdeuteron.Reset();
   cproton.Reset();
   cpion.Reset();
 
   //cmassd.clear();
   //cmassp.clear();
-  */
+  
   // Post output data.
   PostData(1,fOutput);
   if(fFillTree) PostData(2,fTTree);
