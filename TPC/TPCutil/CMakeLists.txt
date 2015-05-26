@@ -34,11 +34,13 @@ include_directories(${ROOT_INCLUDE_DIR}
 set(SRCS
     AliTPCAlign.cxx
     AliTPCAltroEmulator.cxx
+    AliTPCSAMPAEmulator.cxx
     AliTPCCalibQAChecker.cxx
     AliTPCCalibViewerGUIAlarms.cxx
     AliTPCGenDBConf.cxx
     AliTPCGenDBTemp.cxx
     AliTPCkalmanTime.cxx
+    
    )
 
 # Headers from sources

@@ -9,6 +9,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliTPCAltroEmulator+;   //UTIL Altro emulator -- Used 2010 for checks for MAF and TCF in Altro does proper job
+#pragma link C++ class AliTPCSAMPAEmulator+;   //UTIL SAMPA emulator
 #pragma link C++ class AliTPCAlign;            //UTIL Transform survey measurements to TPC alignment
 #pragma link C++ class AliTPCCalibViewerGUIAlarms+;            //UTIL Used in Expert AMORE : Visualize Outlier histograms based on reference data - useful for use after LS1
 #pragma link C++ class AliTPCCalibQAChecker+;                  //UTIL Used in Expert AMORE : Does the checking for above - useful for use after LS1
