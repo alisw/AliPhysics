@@ -702,13 +702,13 @@ void AliADQADataMakerRec::InitRaws()
   h2d->GetXaxis()->SetNdivisions(808,kFALSE);
   h2d->GetYaxis()->SetNdivisions(808,kFALSE);
   h2d->GetXaxis()->SetBinLabel(1, "Empty");
-  h2d->GetXaxis()->SetBinLabel(2, "Fake");
-  h2d->GetXaxis()->SetBinLabel(3, "BB");
-  h2d->GetXaxis()->SetBinLabel(4, "BG");
+  h2d->GetXaxis()->SetBinLabel(2, "BB");
+  h2d->GetXaxis()->SetBinLabel(3, "BG");
+  h2d->GetXaxis()->SetBinLabel(4, "Fake");
   h2d->GetYaxis()->SetBinLabel(1, "Empty");
-  h2d->GetYaxis()->SetBinLabel(2, "Fake");
-  h2d->GetYaxis()->SetBinLabel(3, "BB");
-  h2d->GetYaxis()->SetBinLabel(4, "BG");
+  h2d->GetYaxis()->SetBinLabel(2, "BB");
+  h2d->GetYaxis()->SetBinLabel(3, "BG");
+  h2d->GetYaxis()->SetBinLabel(4, "Fake");
 
   //Creation of debug histograms
   h1d = new TH1F("H1D_Pair_TimeDiffMean","Time difference mean for coincidence pair [ns];Pair number;Time mean [ns]",kNPairBins, kPairMin, kPairMax);
@@ -1096,14 +1096,14 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Int_t ADADecision=0;
     Int_t ADCDecision=0; 
 
-    if(timeADA > (fADADist + fRecoParam->GetTimeWindowBBALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBBAUp())) ADADecision=2;
-    else if(timeADA > (fADADist + fRecoParam->GetTimeWindowBGALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBGAUp())) ADADecision=3;
-    else if(timeADA>-1024.+1.e-6) ADADecision=1;
+    if(timeADA > (fADADist + fRecoParam->GetTimeWindowBBALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBBAUp())) ADADecision=1;
+    else if(timeADA > (fADADist + fRecoParam->GetTimeWindowBGALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBGAUp())) ADADecision=2;
+    else if(timeADA>-1024.+1.e-6) ADADecision=3;
     else ADADecision=0;
     
-    if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBBCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBBCUp())) ADCDecision=2;
-    else if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBGCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBGCUp())) ADCDecision=3;
-    else if(timeADC>-1024.+1.e-6) ADCDecision=1;
+    if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBBCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBBCUp())) ADCDecision=1;
+    else if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBGCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBGCUp())) ADCDecision=2;
+    else if(timeADC>-1024.+1.e-6) ADCDecision=3;
     else ADCDecision=0;
 
     FillRawsData(kDecisions,ADADecision,ADCDecision);
