@@ -197,7 +197,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TVectorD errors(entriesVal,tree->GetVal(1));
   // 2.b) variables
   TObjArray pointArray(fNParameters);
-  Int_t entriesVar = tree->Draw(formulaVar,selection,"goffpara");
+  Int_t entriesVar = tree->Draw(formulaVar,selection,"goffpara",entries);
   if (entriesVal!=entriesVar) {
     AliError(TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
     return kFALSE; 
@@ -205,7 +205,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   for (Int_t ipar=0; ipar<fNParameters; ipar++) pointArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
   // 2.c) kernel array 
   TObjArray kernelArray(fNParameters);
-  Int_t entriesKernel = tree->Draw(formulaKernel,selection,"goffpara");
+  Int_t entriesKernel = tree->Draw(formulaKernel,selection,"goffpara",entries);
   for (Int_t ipar=0; ipar<fNParameters; ipar++) kernelArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
   //
   // 3.) Make local fits
