@@ -51,7 +51,7 @@ AliReducedPatchContainer::AliReducedPatchContainer(Bool_t doAlloc) :
 AliReducedPatchContainer::AliReducedPatchContainer(const AliReducedPatchContainer &ref):
   TObject(ref)
 {
-  ref.Copy(this);
+  ref.Copy(*this);
 }
 
 /**
@@ -63,7 +63,7 @@ AliReducedPatchContainer &AliReducedPatchContainer::operator=(const AliReducedPa
   if(&ref != this){
     this->~AliReducedPatchContainer();
     TObject::operator=(ref);
-    ref.Copy(this);
+    ref.Copy(*this);
   }
   return *this;
 }
@@ -73,8 +73,8 @@ AliReducedPatchContainer &AliReducedPatchContainer::operator=(const AliReducedPa
  * copy constructor. Copies entries from this object into the target object.
  * \param target Target where to copy to
  */
-void AliReducedPatchContainer::Copy(TObject *target) const{
-  AliReducedPatchContainer *targetcont = dynamic_cast<AliReducedPatchContainer *>(target);
+void AliReducedPatchContainer::Copy(TObject &target) const{
+  AliReducedPatchContainer *targetcont = dynamic_cast<AliReducedPatchContainer *>(&target);
   if(!targetcont) return;
   for(int icont = 0; icont < 4; icont++){
     targetcont->fOnlinePatches[icont] = new TObjArray;

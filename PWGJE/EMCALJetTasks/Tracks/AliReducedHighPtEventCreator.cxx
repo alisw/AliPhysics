@@ -264,6 +264,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
         rectrack->SetMatchedClusterIndex(found->second);
       }
     }
+    fOutputEvent->AddReducedReconstructedParticle(rectrack);
   }
 
   fOutputTree->Fill();

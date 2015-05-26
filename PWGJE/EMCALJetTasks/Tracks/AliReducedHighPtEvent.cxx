@@ -74,7 +74,7 @@ AliReducedHighPtEvent::AliReducedHighPtEvent(const AliReducedHighPtEvent& ref):
   fReducedParticleInfo(NULL),
   fReducedTrackInfo(NULL)
 {
-  ref.Copy(this);
+  ref.Copy(*this);
 }
 
 /**
@@ -86,7 +86,7 @@ AliReducedHighPtEvent& AliReducedHighPtEvent::operator=(const AliReducedHighPtEv
   if(this != &ref){
     this->~AliReducedHighPtEvent();
     TObject::operator=(ref);
-    ref.Copy(this);
+    ref.Copy(*this);
 
   }
   return *this;
@@ -108,8 +108,8 @@ AliReducedHighPtEvent::~AliReducedHighPtEvent() {
  * into the target object. Performs a deep copy.
  * @param target
  */
-void AliReducedHighPtEvent::Copy(TObject* target) const {
-  AliReducedHighPtEvent *targetevent = dynamic_cast<AliReducedHighPtEvent *>(target);
+void AliReducedHighPtEvent::Copy(TObject& target) const {
+  AliReducedHighPtEvent *targetevent = dynamic_cast<AliReducedHighPtEvent *>(&target);
   if(!targetevent) return;
   targetevent->fCentralityPercentile = fCentralityPercentile;
   targetevent->fVertexZ = fVertexZ;

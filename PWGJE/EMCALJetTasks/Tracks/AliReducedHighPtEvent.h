@@ -56,7 +56,7 @@ public:
   AliReducedHighPtEvent(const AliReducedHighPtEvent &ref);
   AliReducedHighPtEvent &operator=(const AliReducedHighPtEvent &ref);
   virtual ~AliReducedHighPtEvent();
-  void Copy(TObject *target) const;
+  void Copy(TObject &target) const;
 
   /**
    * Get the cluster container
