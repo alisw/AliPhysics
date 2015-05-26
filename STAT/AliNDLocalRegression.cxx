@@ -113,7 +113,7 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   // Setup the local regression ayout according THn hitogram binning
   //
   if (fHistPoints!=0){
-    AliError("Hostogram initialized");
+    AliError("Hostogram initialized\n");
     return ;
   }
   fHistPoints=histo;
@@ -146,19 +146,19 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   //
   //  const Double_t kEpsilon=1e-6;
   if (fHistPoints==NULL){
-    AliError("ND histogram not initialized");
+    AliError("ND histogram not initialized\n");
     return kFALSE;
   }
   if (tree==NULL || tree->GetEntries()==0){
-    AliError("Empty tree");
+    AliError("Empty tree\n");
     return kFALSE;
   }
   if (formulaVar==NULL || formulaVar==0) {
-    AliError("Empty variable list");
+    AliError("Empty variable list\n");
     return kFALSE;
   }
   if (formulaKernel==NULL) {
-    AliError("Kernel width not specified");
+    AliError("Kernel width not specified\n");
     return kFALSE;
   }
 
@@ -172,7 +172,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TObjArray * arrayFormulaVar=fFormulaVar->String().Tokenize(":");
   Int_t nvarFormula = arrayFormulaVar->GetEntries();
   if (nvarFormula!=fHistPoints->GetNdimensions()){
-    AliError("Histogram/points mismatch");
+    AliError("Histogram/points mismatch\n");
     return kFALSE;
   }
   TObjArray * arrayKernel=fKernelWidthFormula->String().Tokenize(":");
@@ -180,7 +180,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   if (nvarFormula!=nwidthFormula){
     delete arrayKernel;
     delete arrayFormulaVar;
-    AliError("Variable/Kernel mismath");
+    AliError("Variable/Kernel mismath\n");
     return kFALSE;
   }
   fNParameters=nvarFormula;
@@ -190,7 +190,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   //
   Int_t entriesVal = tree->Draw(formulaVal,selection,"goffpara",entries);
   if (entriesVal==0) {
-    AliError("Empty point list");
+    AliError(TString::Format("Empty point list\t%s\t%s\n",formulaVal,selection).Data());
     return kFALSE; 
   }
   TVectorD values(entriesVal,tree->GetVal(0));
@@ -199,7 +199,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TObjArray pointArray(fNParameters);
   Int_t entriesVar = tree->Draw(formulaVar,selection,"goffpara");
   if (entriesVal!=entriesVar) {
-    AliError("Wrong selection");
+    AliError(TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
     return kFALSE; 
   }
   for (Int_t ipar=0; ipar<fNParameters; ipar++) pointArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);

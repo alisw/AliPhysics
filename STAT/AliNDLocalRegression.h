@@ -28,7 +28,7 @@ class AliNDLocalRegression : public TNamed {
   AliNDLocalRegression();
   ~AliNDLocalRegression();
 
-  Bool_t MakeFit(TTree * tree , const char *formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel,  const char * dimensionFormula, Double_t weightCut=0.00001, Int_t entries=-1);
+  Bool_t MakeFit(TTree * tree , const char *formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel,  const char * dimensionFormula, Double_t weightCut=0.00001, Int_t entries=1000000000);
   Double_t Eval(Double_t *point);
   Double_t EvalError(Double_t *point);
   const THn *GetHistogram() {return fHistPoints;}
