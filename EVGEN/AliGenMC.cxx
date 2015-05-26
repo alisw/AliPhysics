@@ -457,6 +457,6 @@ void AliGenMC::AddHeader(AliGenEventHeader* header)
         header->SetName(fName);
 	fContainer->AddHeader(header);
     } else {
-	gAlice->SetGenEventHeader(header);	
+      if (gAlice) gAlice->SetGenEventHeader(header);	
     }
 }
