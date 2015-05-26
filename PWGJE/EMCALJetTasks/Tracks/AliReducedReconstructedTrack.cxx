@@ -52,7 +52,7 @@ AliReducedReconstructedTrack::~AliReducedReconstructedTrack() {
  * \param pvec The vector to be filled
  */
 void AliReducedReconstructedTrack::FillMomentumVector(TVector3& pvec) const {
-  pvec.SetXYZ(pvec[0], pvec[1], pvec[2]);
+  pvec.SetXYZ(fPVec[0], fPVec[1], fPVec[2]);
 }
 /**
  * Get reconstructed track \f$ p_{t} \f$
