@@ -126,6 +126,8 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   Double_t                       fTrackPtCut;//!                         Track pt cut to do PID on
   Double_t                       fTrackEta;//!
   Double_t                       fTrkQAcut;//!                           Track QA cut
+  Double_t                       fM02max;//!                             Cut on max EMCal Shower shape size for Electron ID
+  Double_t                       fM02min;//!                             Cut on min EMCal Shower shape size for Electron ID
   AliESDtrackCuts                *fesdTrackCuts;//!                      ESD track cuts!!
   //General Task Switches
   Bool_t                         fGlobalQA;//!                           Switch for all HF Electron Candidates (Non-Jet)
