@@ -4240,17 +4240,29 @@ TF1* AliJetFlowTools::GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b,
             if(h->GetBinContent(i+1) < 0) h->SetBinError(i+1, 1e8);
         }
     }*/
-    TF1* lin = new TF1("lin", Form("(x<%i)*((-1*[0]/%i)*x+[0])-(x>%i)*[1]", pivot, pivot, pivot), a, b);
+    TF1* lin = new TF1("lin", Form("(x<%i)*(pol1)+(x>%i)*[2]", pivot, pivot, pivot), a, b);
     // clone the input
+    TF1* fit_pol0 = new TF1("fit_pol0", "pol0", pivot, b);
+    TF1* fit_pol1 = new TF1("fit_pol1", "pol1", a, pivot);
+
     TH1* h((TH1*)h1->Clone("clone"));
     // add them
     h->Add(h2);
     // fit to full error
-    h->Fit(lin, "L", "", a, b);
+    h->Fit(fit_pol0, "", "", pivot, b);
+    lin->SetParameter(2, fit_pol0->GetParameter(0));
+
+    h->Fit(fit_pol1, "", "", a, pivot);
+    lin->SetParameter(0, fit_pol1->GetParameter(0));
+    lin->SetParameter(1, fit_pol1->GetParameter(1));
+
+    h->GetListOfFunctions()->Add(lin);
+
+    
     if(!gMinuit->fISW[1] == 3) {
         printf(" fit is NOT ok ! " );
         return 0x0;
-    } 
+    }
     if(setContent) {
         // update the histos with the fit result
 //        TH1F* clone((TH1F*)h->Clone(Form("%s_clone", h->GetName())));

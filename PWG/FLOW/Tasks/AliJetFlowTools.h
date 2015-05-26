@@ -266,7 +266,7 @@ class AliJetFlowTools {
         static TGraphAsymmErrors*       AddHistoErrorsToGraphErrors(TGraphAsymmErrors* g, TH1D* h);
         static Double_t         GetRMSOfTH1(TH1* h, Double_t a, Double_t b);
         static TF1*             GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b, 
-                Bool_t setContent = kTRUE, Bool_t excludeSubZero = kFALSE, Int_t pivot = 40);
+                Bool_t setContent = kTRUE, Bool_t excludeSubZero = kFALSE, Int_t pivot = 75);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
