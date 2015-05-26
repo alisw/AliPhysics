@@ -253,7 +253,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 		}
 	}
 
-	task->SetNeutralPionMode(0);
+	task->SetNeutralPionMode(neutralPionMode);
 	task->SetEventCutList(numberOfCuts,EventCutList);
 	task->SetConversionCutList(ConvCutList);
 	task->SetNeutralPionCutList(NeutralPionCutList);
