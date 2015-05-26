@@ -45,7 +45,7 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA()
     fHistNBBCoincidencesADA(0),fHistNBBCoincidencesADC(0),fHistNBBCoincidencesADAVsADC(0),
     fHistNBGflagsADA(0),fHistNBGflagsADC(0),fHistNBGflagsADAVsADC(0),
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
-    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),
+    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
     fHistTrigger(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
@@ -62,7 +62,7 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name)
     fHistNBBCoincidencesADA(0),fHistNBBCoincidencesADC(0),fHistNBBCoincidencesADAVsADC(0),
     fHistNBGflagsADA(0),fHistNBGflagsADC(0),fHistNBGflagsADAVsADC(0),
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
-    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),
+    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
     fHistTrigger(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
@@ -90,9 +90,9 @@ void AliAnalysisTaskADQA::UserCreateOutputObjects()
   const Float_t kTdcWidthMin = 2.343750;
   const Float_t kTdcWidthMax = 121.875000;
   
-  const Int_t kNChargeChannelBins = 5000;
+  const Int_t kNChargeChannelBins = 5500;
   const Int_t kChargeChannelMin = 0;
-  const Int_t kChargeChannelMax = 5000;
+  const Int_t kChargeChannelMax = 5500;
   
   const Int_t kNChargeSideBins = 40000;
   const Int_t kChargeSideMin = 0;
@@ -213,6 +213,10 @@ if (!fHistChargeNoTime) {
     fHistChargeNoTime = CreateHist1D("fHistChargeNoTime","Charge in PM without time measurement",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"Charge","Entries");
     fListHist->Add(fHistChargeNoTime);
   }
+if (!fHistChargePerCoincidence) {
+     fHistChargePerCoincidence = CreateHist2D("fHistChargePerCoincidence","Charge in PM per coincidence",5,-0.5,4.5,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"Number of BB coincidences","Charge","Entries");
+     fListHist->Add(fHistChargePerCoincidence);
+     }
 
 if (!fHistMeanTimeADA) {
     fHistMeanTimeADA = CreateHist1D("fHistMeanTimeADA","Mean Time in ADA",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
@@ -246,13 +250,13 @@ if (!fHistDecision) {
     fHistDecision->GetXaxis()->SetNdivisions(808,kFALSE);
     fHistDecision->GetYaxis()->SetNdivisions(808,kFALSE);
     fHistDecision->GetXaxis()->SetBinLabel(1, "Empty");
-    fHistDecision->GetXaxis()->SetBinLabel(2, "Fake");
-    fHistDecision->GetXaxis()->SetBinLabel(3, "BB");
-    fHistDecision->GetXaxis()->SetBinLabel(4, "BG");
+    fHistDecision->GetXaxis()->SetBinLabel(2, "BB");
+    fHistDecision->GetXaxis()->SetBinLabel(3, "BG");
+    fHistDecision->GetXaxis()->SetBinLabel(4, "Fake");
     fHistDecision->GetYaxis()->SetBinLabel(1, "Empty");
-    fHistDecision->GetYaxis()->SetBinLabel(2, "Fake");
-    fHistDecision->GetYaxis()->SetBinLabel(3, "BB");
-    fHistDecision->GetYaxis()->SetBinLabel(4, "BG");
+    fHistDecision->GetYaxis()->SetBinLabel(2, "BB");
+    fHistDecision->GetYaxis()->SetBinLabel(3, "BG");
+    fHistDecision->GetYaxis()->SetBinLabel(4, "Fake");
     fListHist->Add(fHistDecision);
  }
 
@@ -409,6 +413,8 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	if(esdAD->GetBGFlag(i) && esdAD->GetBGFlag(i+4)) nBGCoincidencesADC++;
 	if(esdAD->GetBGFlag(i+8) && esdAD->GetBGFlag(i+12)) nBGCoincidencesADA++;
   	}
+  for(Int_t i=0; i<8; i++) fHistChargePerCoincidence->Fill(nBBCoincidencesADC,esdAD->GetAdc(i));
+  for(Int_t i=8; i<16; i++) fHistChargePerCoincidence->Fill(nBBCoincidencesADA,esdAD->GetAdc(i));
 	
   fHistTotalChargePerEventADA->Fill(totChargeADA);
   fHistTotalChargePerEventADC->Fill(totChargeADC);

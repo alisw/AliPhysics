@@ -70,6 +70,7 @@ private:
   TH1F	      *fHistChargeNoFlag;
   TH1F	      *fHistTimeNoFlag;
   TH1F	      *fHistChargeNoTime;
+  TH2F	      *fHistChargePerCoincidence;
   
   TH1F	      *fHistMeanTimeADA;
   TH1F	      *fHistMeanTimeADC;
