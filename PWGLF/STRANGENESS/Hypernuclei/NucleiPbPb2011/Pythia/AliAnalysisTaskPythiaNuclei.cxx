@@ -64,7 +64,7 @@ void AliAnalysisTaskPythiaNuclei::UserCreateOutputObjects() {
   fOutputList->Add(fYPtA);
   fOutputList->Add(fYPA);
 
-  return;
+  PostData(1,fOutputList);
 }
 
 void AliAnalysisTaskPythiaNuclei::Init() {
