@@ -143,7 +143,9 @@ AliJetFlowTools::AliJetFlowTools() :
     fDptIn              (0x0),
     fDptOut             (0x0),
     fFullResponseIn     (0x0),
-    fFullResponseOut    (0x0) { // class constructor
+    fFullResponseOut    (0x0),
+    fPivot              (40.),
+    fSubdueError        (kTRUE) { // class constructor
 #ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
 #endif
@@ -2288,18 +2290,16 @@ void AliJetFlowTools::GetShapeUncertainty(
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRegularization(new TCanvas("relativeErrorRegularization", "relativeErrorRegularization"));
             Style(gPad, "GRID");
-            relativeErrorRegularization->Divide(2);
             relativeErrorRegularization->cd(1);
-            relativeErrorRegularizationInUp->DrawCopy("b");
-            relativeErrorRegularization->cd(2);
             TH1F* relativeErrorRegularizationInUpErrors = (TH1F*)relativeErrorRegularizationInUp->Clone();
             for(Int_t i(1); i < relativeErrorRegularizationInUp->GetNbinsX() + 1; i++) {
                 relativeErrorRegularizationInUpErrors->SetBinContent(i, relativeErrorRegularizationInUp->GetBinError(i));
                 relativeErrorRegularizationInUpErrors->SetBinError(i, 0);
             }
-            relativeErrorRegularizationInUpErrors->GetYaxis()->SetTitle("absolute error on V2 from unfolding");
+            relativeErrorRegularizationInUpErrors->GetYaxis()->SetTitle("absolute error on v_{2} from unfolding");
+            relativeErrorRegularizationInUpErrors->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
             relativeErrorRegularizationInUpErrors->DrawCopy("b");
-            Style(AddLegend(gPad));
+            Style(gPad, "GRID");
             relativeErrorRegularization->Write();
         }
     }
@@ -2395,10 +2395,10 @@ void AliJetFlowTools::GetShapeUncertainty(
     Double_t aInLow(0.), cInLow(0.), dInLow(0.), eInLow(0.);
     Double_t aOutLow(0.), cOutLow(0.), dOutLow(0.), eOutLow(0.);
 
-    GetErrorFromFit(relativeErrorRecBinInUp, relativeErrorRecBinInLow, rangeLow, rangeUp);
-    GetErrorFromFit(relativeErrorRecBinOutUp, relativeErrorRecBinOutLow, rangeLow, rangeUp);
-    GetErrorFromFit(relativeErrorMethodInUp, relativeErrorMethodInLow, rangeLow, rangeUp);
-    GetErrorFromFit(relativeErrorMethodOutUp, relativeErrorMethodOutLow, rangeLow, rangeUp);
+    GetErrorFromFit(relativeErrorRecBinInUp, relativeErrorRecBinInLow, rangeLow, rangeUp, fPivot, fSubdueError);
+    GetErrorFromFit(relativeErrorRecBinOutUp, relativeErrorRecBinOutLow, rangeLow, rangeUp, fPivot, fSubdueError);
+    GetErrorFromFit(relativeErrorMethodInUp, relativeErrorMethodInLow, rangeLow, rangeUp, fPivot, fSubdueError);
+    GetErrorFromFit(relativeErrorMethodOutUp, relativeErrorMethodOutLow, rangeLow, rangeUp, fPivot, fSubdueError);
 
     for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
         // for the upper bound only add regularization stuff if it is NOT done on v2 directly
@@ -4228,48 +4228,34 @@ Double_t AliJetFlowTools::GetRMSOfTH1(TH1* h, Double_t a, Double_t b)
 }
 //_____________________________________________________________________________
 TF1* AliJetFlowTools::GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b, 
-        Bool_t setContent, Bool_t excludeSubZero, Int_t pivot) 
+        Float_t pivot, Bool_t subdueError, Bool_t setContent) 
 {
 #ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
 #endif
-    // return an error from a fit, exclude < 0 bins
- /*   if(excludeSubZero) {
-        h = (TH1*)h->Clone(Form("%s_excludeSubZero", h->GetName()));
-        for(Int_t i(0); i < h->GetNbinsX(); i++) {
-            if(h->GetBinContent(i+1) < 0) h->SetBinError(i+1, 1e8);
-        }
-    }*/
-    TF1* lin = new TF1("lin", Form("(x<%i)*(pol1)+(x>%i)*[2]", pivot, pivot, pivot), a, b);
+    // return an error from a fit
+    TF1* lin = new TF1("lin", Form("(x<%i)*(pol1)+(x>%i)*[2]", (int)pivot, (int)pivot), a, b);
     // clone the input
     TF1* fit_pol0 = new TF1("fit_pol0", "pol0", pivot, b);
     TF1* fit_pol1 = new TF1("fit_pol1", "pol1", a, pivot);
 
-    TH1* h((TH1*)h1->Clone("clone"));
+    TH1* h((TH1*)h1->Clone(Form("%s clone", h1->GetName())));
     // add them
     h->Add(h2);
-    // fit to full error
+    // fit to full error. root doesn't like fitting a step-function, so fit these
+    // two components separately ...
     h->Fit(fit_pol0, "", "", pivot, b);
-    lin->SetParameter(2, fit_pol0->GetParameter(0));
+    lin->SetParameter(2, (subdueError) ? 0. : fit_pol0->GetParameter(0));
 
     h->Fit(fit_pol1, "", "", a, pivot);
     lin->SetParameter(0, fit_pol1->GetParameter(0));
     lin->SetParameter(1, fit_pol1->GetParameter(1));
 
+    // .. and then add them together
     h->GetListOfFunctions()->Add(lin);
 
-    
-    if(!gMinuit->fISW[1] == 3) {
-        printf(" fit is NOT ok ! " );
-        return 0x0;
-    }
     if(setContent) {
         // update the histos with the fit result
-//        TH1F* clone((TH1F*)h->Clone(Form("%s_clone", h->GetName())));
-//        clone->Draw("E");
-//        gPad->SaveAs(Form("%i.PDF", (int)gRandom->Uniform(0,100000)));
-        h1->Write();
-        h2->Write();    // just bookkeep these guys here
         for(Int_t i(1); i < h->GetNbinsX() + 1; i++) {
             // calculate the integral in a given bin
             Double_t dud(lin->Integral(h->GetXaxis()->GetBinLowEdge(i),h->GetXaxis()->GetBinUpEdge(i))/h->GetXaxis()->GetBinWidth(i));
@@ -4278,14 +4264,17 @@ TF1* AliJetFlowTools::GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b,
             h2->SetBinContent(i, 0);
             h1->SetBinError(i, 0);
             h2->SetBinError(i, 0);
+            // dont' show errors outside of range of interest
+            if(a > h->GetXaxis()->GetBinLowEdge(i) || b < h->GetXaxis()->GetBinUpEdge(i)) continue;
+            // assign them correctly to up or low
             if(dud > 0) {
                 h1->SetBinContent(i, dud);
-                if(h1->GetBinContent(i) > 0) h1->SetBinError(i, TMath::Sqrt(h1->GetBinContent(i)));
             } else {
                 h2->SetBinContent(i, dud);
-                if(h2->GetBinContent(i) > 0) h2->SetBinError(i, TMath::Sqrt(h2->GetBinContent(i)));
             }
         }
+        h1->Write();
+        h2->Write();    // just bookkeep these guys here
         h->Write();
     } 
     return lin;

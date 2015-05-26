@@ -76,6 +76,8 @@ class AliJetFlowTools {
         void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
         void            SetReductionFactorCorr(Float_t g)       {gReductionFactorCorr   =g;}
         void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
+        void            SetPivot(Float_t p)             {fPivot                 = p;}
+        void            SetSubdueError(Bool_t b)        {fSubdueError           = b;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
             fInputList          = list;
@@ -266,7 +268,7 @@ class AliJetFlowTools {
         static TGraphAsymmErrors*       AddHistoErrorsToGraphErrors(TGraphAsymmErrors* g, TH1D* h);
         static Double_t         GetRMSOfTH1(TH1* h, Double_t a, Double_t b);
         static TF1*             GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b, 
-                Bool_t setContent = kTRUE, Bool_t excludeSubZero = kFALSE, Int_t pivot = 75);
+                Float_t pivot = 40., Bool_t subdueError = kFALSE, Bool_t setContent = kTRUE);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
@@ -559,6 +561,8 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TH2D*                   fDptOut;                // out plane dpt matrix
         TH2D*                   fFullResponseIn;        // full response matrix, in plane
         TH2D*                   fFullResponseOut;       // full response matrix, out of plane
+        Float_t                 fPivot;                 // pivot of step-function
+        Bool_t                  fSubdueError;           // no error > pivot
 
         static TArrayD*         gV2;                    // internal use only, do not touch these
         static TArrayD*         gStat;                  // internal use only, do not touch these
@@ -586,6 +590,5 @@ Int_t    AliJetFlowTools::gOffsetStop   = 0;           // stop chi2 fit at this 
 Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
 Float_t  AliJetFlowTools::gReductionFactorCorr  = 1.;   // multiply corr uncertainty by this factor
 Float_t  AliJetFlowTools::gPwrtTo               = 0.;   // p-value will be evaluated wrt y = gPwrtTo
-
 #endif
 //_____________________________________________________________________________
