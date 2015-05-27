@@ -28,6 +28,8 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
       Error("AddAnalysisTaskTPCTOFPID", "cannot get MC truth event handler");
       return NULL;
     }
+    AliMCEventHandler * handler = (AliMCEventHandler *) mgr->GetMCtruthEventHandler();
+    handler->SetReadTR(kTRUE);
   }
   
   /* get common input data container */
@@ -37,10 +39,6 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
     return NULL;
   }
   
-  /* setup output event handler */
-  AliAODHandler *outputh = (AliAODHandler *)mgr->GetOutputEventHandler();
-  outputh->SetCreateNonStandardAOD();
-  outputh->SetOutputFileName("AnalysisResults.root");
 
   /*  create task and connect input/output */
   AliAnalysisTaskTPCTOFPID *task = new AliAnalysisTaskTPCTOFPID(mcFlag);
@@ -65,21 +63,6 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
   task->SetTimeResolution(timeReso);
   task->GetESDpid()->GetTOFResponse().SetTimeResolution(timeReso);
   task->GetTOFT0maker()->SetTimeResolution(timeReso);
-  /* setup track cuts */
-  /*AliESDtrackCuts *trackCuts = new AliESDtrackCuts;
-  trackCuts->SetMaxChi2PerClusterTPC(4.5);
-  trackCuts->SetAcceptKinkDaughters(kFALSE);
-  trackCuts->SetRequireTPCRefit(kTRUE);
-  trackCuts->SetRequireITSRefit(kTRUE);
-  trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-				      AliESDtrackCuts::kAny);
-  trackCuts->SetMaxDCAToVertexZ(2);
-  trackCuts->SetDCAToVertex2D(kFALSE);
-  trackCuts->SetRequireSigmaToVertex(kFALSE);
-  trackCuts->SetMaxChi2PerClusterITS(36);
-  trackCuts->SetPtRange(0.15, 10.);
-  trackCuts->SetEtaRange(-0.9, 0.9);*/
-  //task->SetTrackCuts(trackCuts);
   
   /* return task */
   mgr->AddTask(task);

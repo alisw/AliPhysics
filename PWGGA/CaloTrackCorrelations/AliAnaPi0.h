@@ -408,9 +408,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F **  fhMCEtaPtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
   TH2F *   fhMCPi0PtOrigin ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID.
+  TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCNotResonancePi0PtOrigin;//!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID, pi0 status 1.
   TH2F *   fhMCPi0PtStatus ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother status.
-  TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.
 
   TH2F *   fhMCPi0ProdVertex;          //!<! Spectrum of selected pi0 vs production vertex
   TH2F *   fhMCEtaProdVertex;          //!<! Spectrum of selected eta vs production vertex

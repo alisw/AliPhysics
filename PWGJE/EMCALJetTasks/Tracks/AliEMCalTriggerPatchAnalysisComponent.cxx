@@ -86,15 +86,15 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
   const TAxis *patchaxes[6] = {
     DefineAxis("energy", 100, 0., 100),
     DefineAxis("energyRough", 100, 0., 100),
-    DefineAxis("amplitude", 5000, 0., 5000.),       // limit for the moment
+    DefineAxis("amplitude", 2100, 0., 2100.),       // limit for the moment
     DefineAxis("eta", etabinning),
     DefineAxis("phi", phibinning),
     DefineAxis("isMain", 2, -0.5, 1.5)
   };
 
   const TAxis *ampaxes[5] = {
-     DefineAxis("amplitudeOnline", 5000, 0., 5000.),
-     DefineAxis("amplitudeOffline", 5000, 0., 5000.),
+     DefineAxis("amplitudeOnline", 2000, 0., 2100.),
+     DefineAxis("amplitudeOffline", 2000, 0., 2100.),
      DefineAxis("eta", etabinning),
      DefineAxis("phi", phibinning),
      DefineAxis("isMain", 2, -0.5, 1.5)

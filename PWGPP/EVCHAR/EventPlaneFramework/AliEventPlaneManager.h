@@ -138,10 +138,6 @@ class AliEventPlaneManager : public TObject {
   TString InputFriendFileName() {return fInputFriendFileName;}
   TString OutputFriendFileName() {return fOutputFriendFileName;}
   Bool_t RunLightWeight()   {return fRunLightWeight;}   
-  Double_t VZEROminMult() {return fVZEROminMult;}
-  Double_t TZEROminMult() {return fTZEROminMult;}
-  Double_t ZDCminMult() {return fZDCminMult;}
-  Double_t FMDminMult() {return fFMDminMult;}
 
   //static AliEventPlaneManager* Instance() { if(!fgAliEventPlaneManager) fgAliEventPlaneManager = new AliEventPlaneManager(); return fgAliEventPlaneManager;}
 

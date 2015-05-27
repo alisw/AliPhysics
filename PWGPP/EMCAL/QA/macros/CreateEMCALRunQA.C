@@ -20,9 +20,19 @@
 #include <AliLog.h>
 #endif
 
-// This macro produces runLevelQA for EMCAL from a QAresults.root file
-// Authors: Y. Mao, A. Mas, M. Germain & A.Shabetai  SUBATECH
-// re-factored for automatic QA processing A.SHABETAI
+///
+/// \file CreateEMCALRunQA.C
+/// \brief QA at run level
+///
+/// This macro produces runLevelQA for EMCAL from a QAresults.root file.
+/// Re-factored for automatic QA processing A. Shabetai.
+///
+/// \author Yaxian Mao, <Yaxian.Mao@cern.ch>, CCNU
+/// \author Alexis Mas, <Alexis.Mas@subatech.in2p3.fr>, SUBATECH
+/// \author Alexandre Shabetai, <Alexandre.Shabetai@subatech.in2p3.fr>  SUBATECH
+/// \author Marie Germain, <Marie.Germain@subatech.in2p3.fr>, SUBATECH
+/// 
+///
 
 Int_t DrawOccupancy(Long_t run, TString period, TString pass, TString fTrigger, TString system, TFile* f, TFile* fout, AliEMCALGeometry* geom, Int_t SavePlots);
 Int_t DrawRun(Long_t run, TString period, TString pass, TString fTrigger, TFile *f, TFile* fout, Int_t SavePlots, Int_t nSM , Bool_t kFilter);

@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <TVector3.h>
 #include "AliReducedGeneratedParticle.h"
 
 /// \cond CLASSIMP
@@ -58,4 +59,41 @@ AliReducedGeneratedParticle::AliReducedGeneratedParticle(Int_t id, Int_t pdg,
  */
 AliReducedGeneratedParticle::~AliReducedGeneratedParticle() {}
 
+/**
+ * Get \f$ p_{t} \f$ of the generated particle
+ * \return \f$ p_{t} \f$
+ */
+Double_t AliReducedGeneratedParticle::Pt() const {
+  TVector3 pvec(fPVec[0], fPVec[1], fPVec[2]);
+  return pvec.Pt();
+}
+
+/**
+ * Get \f$ \eta \f$ of the generated particle
+ * \return \f$ \eta \f$
+ */
+Double_t AliReducedGeneratedParticle::Eta() const {
+  TVector3 pvec(fPVec[0], fPVec[1], fPVec[2]);
+  return pvec.Eta();
+}
+
+/**
+ * Get \f$ \phi \f$ of the generated particle
+ * \return \f$ \phi \f$
+ */
+Double_t AliReducedGeneratedParticle::Phi() const {
+  TVector3 pvec(fPVec[0], fPVec[1], fPVec[2]);
+  return pvec.Phi();
+}
+
+/**
+ * Provide access to the momentum vector
+ * \param pvec Momentum vector to be filled
+ */
+void AliReducedGeneratedParticle::FillMomentumVector(TVector3 &pvec) const{
+  pvec.SetXYZ(fPVec[0], fPVec[1], fPVec[2]);
+}
+
+
 } /* namespace HighPtTracks */
+

@@ -24,37 +24,38 @@ public:
 
   enum ERsnDaughterCutSet {
     kNoCuts,
-    kQualityStd2010,//quality only
+    kQualityStd2010,     //quality only
     kQualityStd2011,
     kQualityStd2011HighPt,    
-    kTOFMatch,  
-    kFastTPCpidNsigma, //PbPb analysis
-    kFastTOFpidNsigma,
-    kTPCTOFpidKstarPP2010,
+    kQualityStd2010TRD, //checks on TRD
+    kQualityStd2010NoTRD,    
+    kTOFMatch,          //TOF match
+    kTOFMatchTRD2010,   
+    kTOFMatchNoTRD2010, 
+    kTOFMatchPPB2011, 
+    kFastTPCpidNsigma,     //basic TPC PID cut without pT dependence
+    kFastTOFpidNsigma,     //basic TOF PID cut without pT dependence
+    kTPCTOFpidKstarPP2010, //cuts for PbPb analysis
     kTOFpidKstarPbPb2010,
     kTOFTPCmismatchKstarPbPb2010,
-    kTOFMatchTRD2010,
-    kTOFMatchNoTRD2010,
     kTOFpidKstarPbPbTRD2010,
     kTOFpidKstarPbPbNoTRD2010,
-    kTOFMatchTPCpidNsigma,     
-    kQualityStd2010TRD,
-    kQualityStd2010NoTRD,    
-    kTOFMatchPPB2011, //pA analysis
-    kTPCpidKstarPPB2011,
+    kTOFMatchTPCpidNsigma, //basic TPC PID with TOF veto    
+    kTPCpidKstarPPB2011,   //vuts for pPb analysis
     kTOFpidKstarPPB2011,
     kTPCTOFpidKstarPPB2011,
     kTPCTOFtightPidKStarPPB2011, //TPC 2.0 (3.0) sigma pid & TOF at 3.0 (5.0) sigma 
     kTPCpidMatchPPB2011, //Match with nsigma = fNsigmaTPC
     kTPCpidTOFveto4s, //TPC n sigma + 4.0 sigma TOF veto
     kTPCpidTOFveto3s, //TPC n sigma + 3.0 sigma TOF veto
-    kCombinedPidBestPtDep, 
-    kTPCPidPtDep,
+    kCombinedPidBestPtDep, //combined TPC-TOF cut
+    kTPCPidPtDep,     //basic PID cuts with pt dependence
     kTOFPidPtDep,
     kTPCRejPtDepTOFNsigma,
     kTPCNsigmaTOFVetoPtDep,
-    kTPCTOFpidLstar,//cuts for L* in pA
-    kTPCTOFpidLstarPbPb2011,//cuts for L* in AA
+    kTPCTOFpidLstar,         //cuts for L* in pPb
+    kTPCTOFpidLstarPbPb2011, //cuts for L* in PbPb
+    kTPCTOFpidLstarPbPb2011elRej,//cuts for L* in AA with electron rejection
     kNDaughterCuts
   };
 

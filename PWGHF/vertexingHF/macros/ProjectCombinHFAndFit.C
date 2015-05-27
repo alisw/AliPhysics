@@ -41,6 +41,7 @@ Bool_t fixMean=kFALSE;
 Double_t minMass=1.74;
 Double_t maxMass=2.04;
 Int_t optForNorm=1;
+Double_t rangeForNorm=0.05;
 TString fitoption="E";
 Bool_t useEMwithLS=kTRUE;
 Int_t typeb=2;
@@ -60,12 +61,6 @@ Bool_t tryDirectFit=kTRUE;
 Int_t nparback=0;
 Double_t fitrangelow[nPtBins]={1.74,1.74,1.74,1.72,1.72,1.72,1.72,1.72};
 Double_t fitrangeup[nPtBins]={2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};
-Bool_t refitWithSignal=kTRUE;  // kFALSE: the background is obtained by fitting the side-bands only and then subtracted. The residual distribution is fittied with a pol0+gaus 
-// using the min chi2 ROOT option
-                               // kTRUE: the fit of the side-bands is used to initialize the background function parameters, then the whole distribution is fitted with sign+back, susing the max likelihood option accounting properly for poissonian uncertainties
-Bool_t fixBackParFromFirstFit=kFALSE; // if kTRUE, in the case refitWithSignal=kTRUE the parameter related to the bacgkround part of the final fit function are fixed 
-                                     // from the fit of the side-bands. (n.b. allows to use the max likelihood option but it is not that useful, better use refitWithSignal=kFALSE)
-Double_t nsigmaSubBackFit=2.5;      // defines the mass window for excluding the signal region for the side-band fit
 Int_t nDegreeBackPol=4;             // degree of polynomial function describing the background
 
 TH1D* hMCReflPtBin;
@@ -192,6 +187,17 @@ Double_t GetSignalBinCounting(TH1 *h,TF1 *fbackground,Double_t &err,Double_t nsi
   return sign; 
 }
 
+void PrintGausParams(TH1F* hPulls){
+  TF1* fgfit=(TF1*)hPulls->GetListOfFunctions()->FindObject("gaus");
+  TLatex* tg1=new TLatex(0.2,0.8,Form("Gauss mean = %.2f#pm%.2f",fgfit->GetParameter(1),fgfit->GetParError(1)));
+  tg1->SetNDC();
+  tg1->Draw();
+  TLatex* tg2=new TLatex(0.2,0.7,Form("Gauss #sigma = %.2f#pm%.2f",fgfit->GetParameter(2),fgfit->GetParError(2)));
+  tg2->SetNDC();
+  tg2->Draw();
+
+}
+
 TH1* AdaptRangesAndBinning(const TH1 *hRef,TH1 *h1){
   
   Double_t min=hRef->GetBinLowEdge(1);
@@ -275,79 +281,7 @@ Bool_t QuadraticSmooth(TH1 *h,Int_t ntimes=1){// quadratic fit of 5 points
   return kTRUE; 
 }
 
-TH1F* GetResidualsAndPulls(TH1 *h,TF1 *f,Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0){
-  Int_t binmi=1,binma=h->GetNbinsX();
 
-  if(maxrange>minrange){
-    binmi=h->FindBin(minrange*1.001);
-    binma=h->FindBin(maxrange*0.9999);
-  }
-  if(hResidualTrend){
-    //h->Copy(hResidualTrend);
-    hResidualTrend->SetBins(h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax());
-    hResidualTrend->SetName(Form("%s_residualTrend",h->GetName()));
-    hResidualTrend->SetTitle(Form("%s ; Invariant Mass (GeV/c^{2}) ; Residuals",h->GetTitle()));
-    hResidualTrend->SetMarkerStyle(20);
-    hResidualTrend->SetMarkerSize(1.0);
-    hResidualTrend->Reset();
-  }
-  if(hPullsTrend){
-    hPullsTrend->SetBins(h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax());
-    hPullsTrend->Reset();
-    hPullsTrend->SetName(Form("%s_pullTrend",h->GetName()));
-    hPullsTrend->SetTitle(Form("%s ; Invariant Mass (GeV/c^{2}) ; Pulls",h->GetTitle()));
-    hPullsTrend->SetMarkerStyle(20);
-    hPullsTrend->SetMarkerSize(1.0);
-  }
-  if(hPulls){
-    hPulls->SetName(Form("%s_pulls",h->GetName()));
-    hPulls->SetTitle(Form("%s ; Pulls",h->GetTitle()));
-    hPulls->SetBins(40,-10,10);
-    hPulls->Reset();
-  }
-
-  Double_t res=-1.e-6,min=1.e+12,max=-1.e+12;
-  TArrayD *arval=new TArrayD(binma-binmi+1);
-  for(Int_t jst=binmi;jst<=binma;jst++){      
-    
-    res=h->GetBinContent(jst)-f->Integral(h->GetBinLowEdge(jst),h->GetBinLowEdge(jst)+h->GetBinWidth(jst))/h->GetBinWidth(jst);
-    arval->AddAt(res,jst-binmi);
-    if(res<min)min=res;
-    if(res>max)max=res;
-    //      Printf("Res = %f from %f - %f",res,h->GetBinContent(jst),f->Integral(h->GetBinLowEdge(jst),h->GetBinLowEdge(jst)+h->GetBinWidth(jst))/h->GetBinWidth(jst));
-    if(hResidualTrend){
-      hResidualTrend->SetBinContent(jst,res);
-      hResidualTrend->SetBinError(jst,h->GetBinError(jst));
-    }
-    if(hPulls){
-      hPulls->Fill(res/h->GetBinError(jst));
-    }    
-    if(hPullsTrend){
-      hPullsTrend->SetBinContent(jst,res/h->GetBinError(jst));
-      hPullsTrend->SetBinError(jst,0.0001);
-    }
-  }
-  if(hPullsTrend){
-    hPullsTrend->GetXaxis()->SetRange(binmi,binma);
-    hPullsTrend->SetMinimum(-7);
-    hPullsTrend->SetMaximum(+7);
-  }
-  if(TMath::Abs(min)>TMath::Abs(max))max=min;
-
-  TH1F *hout=new TH1F(Form("%s_residuals",h->GetName()),Form("%s ; residuals",h->GetTitle()),25,-TMath::Abs(max)*1.5,TMath::Abs(max)*1.5);
-  for(Int_t j=0;j<binma-binmi+1;j++){
-    hout->Fill(arval->At(j));
-  }
-  hout->Sumw2();
-  hout->Fit("gaus","LEMI","",-TMath::Abs(max)*1.2,TMath::Abs(max)*1.2);
-
-  if(hPulls){
-    hPulls->Sumw2();
-    hPulls->Fit("gaus","RLEMI","",-3,3);
-  }
-  delete arval;
-  return hout;
-}
 void SetStyleHisto(TH1 *h,Int_t method,Int_t isXpt=-1){
   if(isXpt==1)h->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");// just for convenience, most of the time it's pt :)
 
@@ -443,7 +377,30 @@ TF1 *GausPlusLine(Double_t minRange=1.72,Double_t maxRange=2.05){
 }
 
 
+Double_t GetBackgroundNormalizationFactor(TH1D* hRatio){
+  //
+  Double_t norm=hRatio->GetMaximum();
 
+  if(optForNorm==1){
+      norm=0.0001;
+      for(Int_t iMassBin=1; iMassBin<hRatio->GetNbinsX(); iMassBin++){
+	Double_t bce=hRatio->GetBinCenter(iMassBin);
+	if(bce>minMass && bce<maxMass){
+	  Double_t bco=hRatio->GetBinContent(iMassBin);
+	  if(bco>norm) norm=bco;
+	}
+      }
+  }else if(optForNorm==2){ 
+    hRatio->Fit("pol0","","",minMass,minMass+rangeForNorm);
+    TF1* func0=(TF1*)hRatio->GetListOfFunctions()->FindObject("pol0");
+    Double_t norml=func0->GetParameter(0);
+    hRatio->Fit("pol0","","",maxMass-rangeForNorm,maxMass);
+    func0=(TF1*)hRatio->GetListOfFunctions()->FindObject("pol0");
+    Double_t normh=func0->GetParameter(0);
+    norm=TMath::Max(norml,normh);
+  }
+  return norm;
+}
 
 void ProjectCombinHFAndFit(){
 
@@ -582,6 +539,11 @@ void ProjectCombinHFAndFit(){
   TH1F* hRawYieldME=new TH1F("hRawYieldME","",nPtBins,binLims);
   TH1F* hRawYieldSBfit=new TH1F("hRawYieldSBfit","",nPtBins,binLims);
 
+  TH1F* hChiSqRot=new TH1F("hChiSqRot","",nPtBins,binLims);
+  TH1F* hChiSqLS=new TH1F("hChiSqLS","",nPtBins,binLims);
+  TH1F* hChiSqME=new TH1F("hChiSqME","",nPtBins,binLims);
+  TH1F* hChiSqSBfit=new TH1F("hChiSqSBfit","",nPtBins,binLims);
+
   TH1F* hRawYieldRotBC=new TH1F("hRawYieldRotBC","BC yield (rotational background)",nPtBins,binLims);
   TH1F* hRawYieldLSBC=new TH1F("hRawYieldLSBC","BC yield (like-sign background)",nPtBins,binLims);
   TH1F* hRawYieldMEBC=new TH1F("hRawYieldMEBC","BC yield (mixed-event background)",nPtBins,binLims);
@@ -678,22 +640,8 @@ void ProjectCombinHFAndFit(){
     hRatio->Draw();
     hRatio->GetYaxis()->SetTitle("Rotational/All");
     hRatio->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
-    Double_t norm=hRatio->GetMaximum();
-    if(optForNorm==1){
-      norm=0.0001;
-      for(Int_t iMassBin=1; iMassBin<hRatio->GetNbinsX(); iMassBin++){
-	Double_t bce=hRatio->GetBinCenter(iMassBin);
-	if(bce>minMass && bce<maxMass){
-	  Double_t bco=hRatio->GetBinContent(iMassBin);
-	  if(bco>norm) norm=bco;
-	}
-      }
-    }else if(optForNorm==2){ 
-      hRatio->Fit("pol0");
-      TF1* func0=(TF1*)hRatio->GetListOfFunctions()->FindObject("pol0");
-      norm=func0->GetParameter(0);
-    }
-    hMassPtBinr->Scale(1./norm);
+    Double_t normRot=GetBackgroundNormalizationFactor(hRatio);
+    hMassPtBinr->Scale(1./normRot);
     c0->cd(2);
     hMassPtBinme->GetYaxis()->SetTitle("Entries (EvMix)");
     hMassPtBinme->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
@@ -720,38 +668,10 @@ void ProjectCombinHFAndFit(){
     hRatioME->GetYaxis()->SetTitle("EvMix/All");
     hRatioME->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
  
-
-    Double_t normME=hRatioME->GetMaximum();
-    Double_t normMEAll=hRatioMEAll->GetMaximum();
-    if(optForNorm==1){
-      normME=0.0001;
-      for(Int_t iMassBin=1; iMassBin<hRatioME->GetNbinsX(); iMassBin++){
-	Double_t bce=hRatioME->GetBinCenter(iMassBin);
-	if(bce>minMass && bce<maxMass){
-	  Double_t bco=hRatioME->GetBinContent(iMassBin);
-	  if(bco>normME) normME=bco;
-	}
-      }
-      normMEAll=0.0001;
-      for(Int_t iMassBin=1; iMassBin<hRatioME->GetNbinsX(); iMassBin++){
-	Double_t bce=hRatioMEAll->GetBinCenter(iMassBin);
-	if(bce>minMass && bce<maxMass){
-	  Double_t bco=hRatioMEAll->GetBinContent(iMassBin);
-	  if(bco>normMEAll) normMEAll=bco;
-	}
-      }
-    }else if(optForNorm==2){ 
-      hRatioME->Fit("pol0");
-      TF1* func0ME=(TF1*)hRatioME->GetListOfFunctions()->FindObject("pol0");
-      normME=func0ME->GetParameter(0);
-      hRatioMEAll->Fit("pol0");
-      TF1* func0MEAll=(TF1*)hRatioMEAll->GetListOfFunctions()->FindObject("pol0");
-      normMEAll=func0MEAll->GetParameter(0);
-    }
+    Double_t normME=GetBackgroundNormalizationFactor(hRatioME);
+    Double_t normMEAll=GetBackgroundNormalizationFactor(hRatioMEAll);
     hMassPtBinme->Scale(1./normME);
     hMassPtBinmeAll->Scale(1./normMEAll);
-
-
 
     c1->cd(iPtBin+1);
     hMassPtBin->Draw();
@@ -827,6 +747,8 @@ void ProjectCombinHFAndFit(){
 	else fitterSB[iPtBin]->DrawHere(gPad,3,1);
 	hRawYieldSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
 	hRawYieldSBfit->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
+	hChiSqSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
+	hChiSqSBfit->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	//	if(!correctForRefl)
 	WriteFitInfo(fitterSB[iPtBin],hMassPtBin);
 	
@@ -836,7 +758,7 @@ void ProjectCombinHFAndFit(){
 	TH1F* hsubTempAllRange=(TH1F*)hMassDirectFit->Clone(Form("%sSubBackAllRange%d",hMassDirectFit->GetName(),iPtBin));
 	TF1* funcAll=fitterSB[iPtBin]->GetMassFunc();
 	TF1* funcBkg=fitterSB[iPtBin]->GetBackgroundRecalcFunc();
-	TF1* funcBkg2=fitterSB[iPtBin]->GetBackgroundFullRangeFunc();	
+	//	TF1* funcBkg2=fitterSB[iPtBin]->GetBackgroundFullRangeFunc();	
 	for(Int_t jst=1;jst<=hsubTemp->GetNbinsX();jst++){
 	  Double_t backg=funcBkg->Integral(hsubTemp->GetBinLowEdge(jst),hsubTemp->GetBinLowEdge(jst)+hsubTemp->GetBinWidth(jst))/hsubTemp->GetBinWidth(jst);
 	  Double_t tot=funcAll->Integral(hsubTempAllRange->GetBinLowEdge(jst),hsubTempAllRange->GetBinLowEdge(jst)+hsubTempAllRange->GetBinWidth(jst))/hsubTempAllRange->GetBinWidth(jst);
@@ -863,6 +785,8 @@ void ProjectCombinHFAndFit(){
 	hsubTemp->GetXaxis()->SetRangeUser(fitrangelow[iPtBin],fitrangeup[iPtBin]);
 	hsubTemp->SetMinimum(ymin);
 	hsubTemp->SetMaximum(ymax);
+	hsubTemp->SetMarkerStyle(20);
+	hsubTemp->SetMarkerColor(hsubTemp->GetLineColor());
 	hsubTemp->DrawCopy();
 	hsubTempAllRange->DrawCopy("same");
 	hsubTemp->DrawCopy("same");
@@ -880,9 +804,10 @@ void ProjectCombinHFAndFit(){
 	TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
 	TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
 	TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
-	TH1F *hResiduals=(TH1F*)GetResidualsAndPulls(hMassDirectFit,fitterSB[iPtBin]->GetMassFunc(),fitrangelow[iPtBin],fitrangeup[iPtBin],hPulls,hResidualTrend,hPullsTrend);
+	TH1F *hResiduals=fitterSB[iPtBin]->GetResidualsAndPulls(hMassDirectFit,fitterSB[iPtBin]->GetMassFunc(),fitrangelow[iPtBin],fitrangeup[iPtBin],hPulls,hResidualTrend,hPullsTrend);
 
 	hPulls->Draw();
+	PrintGausParams(hPulls);
 	
 	c5residuals->cd(iPtBin+1);
 	hResiduals->Draw();
@@ -908,6 +833,8 @@ void ProjectCombinHFAndFit(){
       else static_cast<AliHFMassFitterVAR*>(fitterRot[iPtBin])->AliHFMassFitterVAR::DrawHere(gPad,3,1);
       hRawYieldRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield());
       hRawYieldRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError());
+      hChiSqRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReducedChiSquare());
+      hChiSqRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterRot[iPtBin],hMassPtBin);
       
@@ -920,9 +847,10 @@ void ProjectCombinHFAndFit(){
       TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
       TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
       TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
-      TH1F *hResiduals=(TH1F*)GetResidualsAndPulls(hMassSubRot,fitterRot[iPtBin]->GetMassFunc(),minMass,maxMass,hPulls,hResidualTrend,hPullsTrend);
+      TH1F *hResiduals=fitterRot[iPtBin]->GetResidualsAndPulls(hMassSubRot,fitterRot[iPtBin]->GetMassFunc(),minMass,maxMass,hPulls,hResidualTrend,hPullsTrend);
 
       hPulls->Draw();
+      PrintGausParams(hPulls);
 
       c2residuals->cd(iPtBin+1);
       hResiduals->Draw();
@@ -947,6 +875,8 @@ void ProjectCombinHFAndFit(){
       else static_cast<AliHFMassFitterVAR*>(fitterLS[iPtBin])->AliHFMassFitterVAR::DrawHere(gPad,3,1); 
       hRawYieldLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield());
       hRawYieldLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError());
+      hChiSqLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReducedChiSquare());
+      hChiSqLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
 WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
 
@@ -959,9 +889,10 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
       TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
       TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
-      TH1F *hResiduals=(TH1F*)GetResidualsAndPulls(hMassSubLS,fitterLS[iPtBin]->GetMassFunc(),minMass,maxMass,hPulls,hResidualTrend,hPullsTrend);
+      TH1F *hResiduals=fitterLS[iPtBin]->GetResidualsAndPulls(hMassSubLS,fitterLS[iPtBin]->GetMassFunc(),minMass,maxMass,hPulls,hResidualTrend,hPullsTrend);
   
       hPulls->Draw();
+      PrintGausParams(hPulls);
 
       c3residuals->cd(iPtBin+1);
       hResiduals->Draw();
@@ -985,7 +916,9 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       else static_cast<AliHFMassFitterVAR*>(fitterME[iPtBin])->AliHFMassFitterVAR::DrawHere(gPad,3,1); 
       hRawYieldME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield());
       hRawYieldME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetRawYieldError());
-      //      if(!correctForRefl)
+      hChiSqME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReducedChiSquare());
+      hChiSqME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+     //      if(!correctForRefl)
 WriteFitInfo(fitterME[iPtBin],hMassPtBin);
 
       Double_t errbc;
@@ -998,8 +931,9 @@ WriteFitInfo(fitterME[iPtBin],hMassPtBin);
       TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
       TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
       TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
-      TH1F *hResiduals=(TH1F*)GetResidualsAndPulls(hMassSubME,fitterME[iPtBin]->GetMassFunc(),minMass,maxMass,hPulls,hResidualTrend,hPullsTrend);
+      TH1F *hResiduals=fitterME[iPtBin]->GetResidualsAndPulls(hMassSubME,fitterME[iPtBin]->GetMassFunc(),minMass,maxMass,hPulls,hResidualTrend,hPullsTrend);
       hPulls->Draw();
+      PrintGausParams(hPulls);
 
       c4residuals->cd(iPtBin+1);
       hResiduals->Draw();
@@ -1137,6 +1071,86 @@ WriteFitInfo(fitterME[iPtBin],hMassPtBin);
   if(saveCanvasAsEps>0) cry->SaveAs(Form("figures/RawYield_%s.eps",suffix.Data()));
   if(saveCanvasAsRoot) cry->SaveAs(Form("figures/RawYield_%s.root",suffix.Data()));
 
+  TCanvas* cch2=new TCanvas("cch2","Chi2",800,700);
+  cch2->SetLeftMargin(0.15);
+  hChiSqRot->SetMarkerStyle(21);
+  hChiSqRot->Draw("P");
+  hChiSqRot->SetMinimum(0);
+  hChiSqRot->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  hChiSqRot->GetYaxis()->SetTitle("#chi^{2}/ndf");
+  hChiSqRot->GetYaxis()->SetTitleOffset(1.8);
+  Double_t maxc=hChiSqRot->GetMaximum();
+  if(hChiSqLS->GetMaximum()>maxc)maxc=hChiSqLS->GetMaximum();
+  if(hChiSqME->GetMaximum()>maxc)maxc=hChiSqME->GetMaximum();
+  if(tryDirectFit){
+    if(hChiSqSBfit->GetMaximum()>maxc)maxc=hChiSqSBfit->GetMaximum();
+  }
+  hChiSqRot->SetMaximum(maxc*1.2);
+
+  hChiSqLS->SetMarkerStyle(22);
+  hChiSqLS->SetMarkerColor(kGreen+2);
+  hChiSqLS->SetLineColor(kGreen+2);
+  hChiSqLS->Draw("PZSAME");
+  hChiSqME->SetMarkerStyle(25);
+  hChiSqME->SetMarkerColor(4);
+  hChiSqME->SetLineColor(4);
+  hChiSqME->Draw("PSAME");
+  if(tryDirectFit){
+    hChiSqSBfit->SetMarkerStyle(27);
+    hChiSqSBfit->SetMarkerColor(6);
+    hChiSqSBfit->SetLineColor(6);
+    hChiSqSBfit->Draw("PSAME");
+  }
+  legry->Draw();
+  if(saveCanvasAsEps>0) cch2->SaveAs(Form("figures/ChiSq_%s.eps",suffix.Data()));
+  if(saveCanvasAsRoot) cch2->SaveAs(Form("figures/ChiSq_%s.root",suffix.Data()));
+
+
+
+
+  TH1F* hRatioLSToME=(TH1F*)hRawYieldLS->Clone("hRatioLStoME");
+  TH1F* hRatioRotToME=(TH1F*)hRawYieldRot->Clone("hRatioRottoME");
+  TH1F* hRatioMEToME=(TH1F*)hRawYieldME->Clone("hRatioMEtoME");
+  TH1F* hRatioSBToME=(TH1F*)hRawYieldSBfit->Clone("hRatioSBtoME");
+  for(Int_t ib=1; ib<=hRawYieldME->GetNbinsX(); ib++){
+    Double_t yme=hRawYieldME->GetBinContent(ib);
+    if(yme>0.){
+      hRatioLSToME->SetBinContent(ib,hRawYieldLS->GetBinContent(ib)/yme);
+      hRatioLSToME->SetBinError(ib,hRawYieldLS->GetBinError(ib)/yme);
+      hRatioMEToME->SetBinContent(ib,hRawYieldME->GetBinContent(ib)/yme);
+      hRatioMEToME->SetBinError(ib,hRawYieldME->GetBinError(ib)/yme);
+      hRatioRotToME->SetBinContent(ib,hRawYieldRot->GetBinContent(ib)/yme);
+      hRatioRotToME->SetBinError(ib,hRawYieldRot->GetBinError(ib)/yme);
+      hRatioSBToME->SetBinContent(ib,hRawYieldSBfit->GetBinContent(ib)/yme);
+      hRatioSBToME->SetBinError(ib,hRawYieldSBfit->GetBinError(ib)/yme);
+    }
+  }
+
+  TCanvas* cry2=new TCanvas("cry2","RawYield+Ratios",1400,700);
+  cry2->Divide(2,1);
+  cry2->cd(1);
+  gPad->SetLeftMargin(0.15);
+  gPad->SetRightMargin(0.05);    
+  hRawYieldRot->Draw("P");
+  hRawYieldLS->Draw("PZSAME");
+  hRawYieldME->Draw("PSAME");
+  if(tryDirectFit){
+    hRawYieldSBfit->Draw("PSAME");
+  }
+  legry->Draw();
+  cry2->cd(2);
+  hRatioLSToME->SetStats(0);
+  hRatioLSToME->SetMinimum(0.3);
+  hRatioLSToME->SetMaximum(1.7);
+  hRatioLSToME->GetYaxis()->SetTitle("Ratio To EvMix");
+  hRatioLSToME->Draw("same");
+  hRatioRotToME->Draw("same");
+  hRatioMEToME->Draw("same");
+  hRatioSBToME->Draw("same");
+  if(saveCanvasAsEps>0) cry2->SaveAs(Form("figures/RawYieldAndRatios_%s.eps",suffix.Data()));
+  if(saveCanvasAsRoot) cry2->SaveAs(Form("figures/RawYieldAndRatios_%s.root",suffix.Data()));
+
+
   cCompareResidualTrends->cd(1);
   TLegend *legRT=new TLegend(*legry);
   legRT->SetX1NDC(0.12);
@@ -1212,6 +1226,10 @@ WriteFitInfo(fitterME[iPtBin],hMassPtBin);
   hRawYieldLS->Write();
   hRawYieldME->Write();
   hRawYieldSBfit->Write();
+  hChiSqRot->Write();
+  hChiSqLS->Write();
+  hChiSqME->Write();
+  hChiSqSBfit->Write();
   hnEv->Write();
   fout->Close();
 
@@ -1248,3 +1266,6 @@ void WriteFitInfo(AliHFMassFitter *fitter, TH1D* histo){
   tss->Draw();
 
 }
+
+
+

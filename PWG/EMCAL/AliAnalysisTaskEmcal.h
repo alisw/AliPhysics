@@ -129,6 +129,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
   static Double_t*            GenerateFixedBinArray(Int_t n, Double_t min, Double_t max);
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
+  static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
+  static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
 
   // Task configuration
   BeamType                    fForceBeamType;              // forced beam type

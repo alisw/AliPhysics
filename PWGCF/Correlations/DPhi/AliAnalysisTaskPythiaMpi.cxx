@@ -315,7 +315,7 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
        if(particle_id == 3322 || particle_id == 3312)
 	 pid = 4; //csis
 
-       Double_t prop[4] = {track->Eta(),track->Pt(),Nmpi,pid};
+       Double_t prop[4] = {track->Eta(),track->Pt(),(Double_t)Nmpi,pid};
        fHistTracksPID->Fill(prop, weight);
        n_phys_prim_charged++;
 

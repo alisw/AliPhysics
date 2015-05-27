@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: April 22, 2015.								      //
+	//		version: May 18, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -89,6 +89,7 @@ public:
 	void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) {fRejectKinkMother = rejectKinkMother;};
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
 	void SetMCanalysis() {fIsMC = kTRUE;};
+	void SetPPanalysis(Bool_t Ispp = kFALSE) {fIspp = Ispp;};
 	void SetCentrality(Double_t CentralityMin, Double_t CentralityMax) { fCentralityMin = CentralityMin; fCentralityMax = CentralityMax; fHasCentralitySelection = kTRUE; };
 	void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	void SetEventMixing(Bool_t EventMixingFlag) { fEventMixingFlag = EventMixingFlag;};
@@ -154,6 +155,7 @@ private:
 	
 		//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
+	Bool_t				fIspp;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
 	Bool_t				fUseTrigger;
@@ -356,6 +358,11 @@ private:
 	TH1F				*fOpAngleBack;
 	TH1F				*fInvMass2;
 	TH1F				*fInvMassBack2;
+	
+	TH1F				**fInvMass_pT;
+	TH1F				**fInvMassBack_pT;
+
+	
 	TH1F				*fDCA2;
 	TH1F				*fDCABack2;
 	TH1F				*fOpAngle2;

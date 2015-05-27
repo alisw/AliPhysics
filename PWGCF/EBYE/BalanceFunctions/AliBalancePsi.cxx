@@ -807,6 +807,7 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
 							 Double_t ptTriggerMax,
 							 Double_t ptAssociatedMin,
 							 Double_t ptAssociatedMax,
+							 Double_t etaWindow,
 							 AliBalancePsi *bfMix) {
   //Returns the BF histogram, extracted from the 6 AliTHn objects 
   //after dividing each correlation function by the Event Mixing one 
@@ -1147,18 +1148,22 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       hTemp2->Scale(1./hTemp6->Integral());
       hTemp4->Scale(1./hTemp6->Integral());
 
-      // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
-      // does not work here, so normalize also to trigger particles 
-      // --> careful: gives different integrals then as with full 2D method 
-      hTemp1Mix->Scale(1./hTemp5Mix->Integral());
-      hTemp3Mix->Scale(1./hTemp5Mix->Integral());
-      hTemp2Mix->Scale(1./hTemp6Mix->Integral());
-      hTemp4Mix->Scale(1./hTemp6Mix->Integral());
 
-      hTemp1->Divide(hTemp1Mix);
-      hTemp2->Divide(hTemp2Mix);
-      hTemp3->Divide(hTemp3Mix);
-      hTemp4->Divide(hTemp4Mix);
+      // normalization of Event mixing to 1 at (0,0) --> simplified method (just used for cross check with old analysis)
+      hTemp1Mix->Scale(1./hTemp1Mix->GetBinContent(1));
+      hTemp2Mix->Scale(1./hTemp2Mix->GetBinContent(1));
+      hTemp3Mix->Scale(1./hTemp3Mix->GetBinContent(1));
+      hTemp4Mix->Scale(1./hTemp4Mix->GetBinContent(1));
+
+
+      // use event mixing only if no eta window for simple triangular correction given
+      // if etaWindow < -2 use no correction at all
+      if(etaWindow<0 && etaWindow>-2){
+	hTemp1->Divide(hTemp1Mix);
+	hTemp2->Divide(hTemp2Mix);
+	hTemp3->Divide(hTemp3Mix);
+	hTemp4->Divide(hTemp4Mix);
+      }
 
       // for the first: clone
       if(iBinPsi == binPsiMin && iBinVertex == binVertexMin ){
@@ -1223,7 +1228,18 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
     h2->Add(h4,-1.);
 
     gHistBalanceFunctionHistogram->Add(h1,h2,1.,1.);
-    gHistBalanceFunctionHistogram->Scale(0.5);
+
+    // use simple triangular correction if eta window given (only for delta eta)
+    if(etaWindow>0 && iVariablePair==1){
+      for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
+	
+	Double_t notCorrected = gHistBalanceFunctionHistogram->GetBinContent(iBin+1);
+	Double_t corrected    = notCorrected / (1 - (gHistBalanceFunctionHistogram->GetBinCenter(iBin+1))/ etaWindow );
+	gHistBalanceFunctionHistogram->SetBinContent(iBin+1, corrected);
+	gHistBalanceFunctionHistogram->SetBinError(iBin+1,corrected/notCorrected*gHistBalanceFunctionHistogram->GetBinError(iBin+1));
+	
+      }
+    }
 
     //normalize to bin width
     gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)));

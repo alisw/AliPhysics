@@ -1,10 +1,12 @@
 AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
                                                      const char * njetsUS,
 						     const char * njetsTrue,
+                                                     const char * njetsPartLevel,
 						     const Double_t R,
 						     const char * nrhoBase, 
 						     const char * ntracks, 
                                                      const char * ntracksUS,
+                                                     const char *ntracksPartLevel,
 						     const char * nclusters,
 						     const char * ntracksTrue,
 						     const char *type,				      
@@ -58,12 +60,14 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   //Printf("tracksUS() = %s", ntracksUS);
   AliParticleContainer *trackContTrue  = task->AddParticleContainer(ntracksTrue);
   //Printf("ntracksTrue() = %s, trackContTrue=%p ", ntracksTrue, trackContTrue);
+  AliParticleContainer *trackContPartLevel  = task->AddParticleContainer(ntracksPartLevel);
+
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
   
   AliJetContainer *jetContBase=0x0;
   AliJetContainer *jetContUS=0x0;
   AliJetContainer *jetContTrue=0x0;
-  
+  AliJetContainer *jetContPart=0x0;
   TString strType(type);
 
   if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kTrue) {
@@ -137,6 +141,60 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     }
   }
 
+    if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPart){
+    jetContBase = task->AddJetContainer(njetsBase,strType,R);
+    if(jetContBase) {
+      jetContBase->SetRhoName(nrhoBase);
+      jetContBase->ConnectParticleContainer(trackCont);
+      jetContBase->ConnectClusterContainer(clusterCont);
+      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPythiaInfoName("PythiaInfo");
+      if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub) jetContBase->SetAreaEmcCut(-2);
+    }
+
+    jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
+    if(jetContTrue) {
+      jetContTrue->SetRhoName(nrhoBase);
+      jetContTrue->ConnectParticleContainer(trackContTrue);
+      jetContTrue->SetPercAreaCut(0.6); 
+      jetContTrue->SetPythiaInfoName("PythiaInfo");
+    }
+    
+    if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
+      jetContUS=task->AddJetContainer(njetsUS,strType,R);
+      if(jetContUS) {
+        jetContUS->SetRhoName(nrhoBase);
+        jetContUS->ConnectParticleContainer(trackContUS);
+        jetContUS->SetPercAreaCut(0.6);
+        jetContUS->SetPythiaInfoName("PythiaInfo");
+      }
+    }
+ 
+     jetContPart = task->AddJetContainer(njetsPartLevel,strType,R);
+      if(jetContPart) {
+      jetContPart->SetRhoName(nrhoBase);
+      jetContPart->ConnectParticleContainer(trackContPartLevel);
+      jetContPart->SetPercAreaCut(0.6); 
+      jetContPart->SetPythiaInfoName("PythiaInfo");
+    }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kPythiaDef){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
@@ -183,6 +241,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrueDet) contName1 += "_TrueDet"; 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kData) contName1 += "_Data"; 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kDetEmb) contName1 += "_DetEmb"; 
+   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kDetEmbPart) contName1 += "_DetEmbPart"; 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kPythiaDef) contName1 +="_PythiaDef";
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kNoSub) contName1 += "_NoSub"; 
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kConstSub) contName1 += "_ConstSub"; 

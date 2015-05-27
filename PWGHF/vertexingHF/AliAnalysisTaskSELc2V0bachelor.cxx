@@ -83,7 +83,6 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
-  fIsK0SAnalysis(kFALSE),
   fCounter(0),
   fAnalCuts(0),
   fUseOnTheFlyV0(kFALSE),
@@ -102,7 +101,9 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fMaxMass(0),
   fNRotations(9),
   fPtMinToFillTheTree(0.),
-  fPtMaxToFillTheTree(999.)
+  fPtMaxToFillTheTree(999.),
+  fUseTPCPIDtoFillTree(kFALSE),
+  fSign(2)
 {
   //
   // Default ctor
@@ -116,14 +117,13 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
 //___________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* name,
 							       AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly,
-							       Bool_t writeVariableTree, Bool_t additionalChecks, Bool_t trackRotation) :
+							       Bool_t writeVariableTree, Bool_t additionalChecks, Bool_t trackRotation, Bool_t useTPCpid, Char_t sign) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fOutput(0),
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
-  fIsK0SAnalysis(kFALSE),
   fCounter(0),
   fAnalCuts(analCuts),
   fUseOnTheFlyV0(useOnTheFly),
@@ -142,7 +142,9 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fMaxMass(0),
   fNRotations(9),
   fPtMinToFillTheTree(0.),
-  fPtMaxToFillTheTree(999.)
+  fPtMaxToFillTheTree(999.),
+  fUseTPCPIDtoFillTree(useTPCpid),
+  fSign(sign)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -171,6 +173,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
     // Output slot #4 keeps a tree of the candidate variables after track selection
     DefineOutput(4,TTree::Class());  //My private output
   }
+
+  if (fWriteVariableTree) fSign=2;
 
 }
 
@@ -277,7 +281,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
 
 
   // fix for temporary bug in ESDfilter 
-  fBzkG = (Double_t)aodEvent->GetMagneticField(); 
+  fBzkG = (Double_t)aodEvent->GetMagneticField();
   if (TMath::Abs(fBzkG)<0.001) return;
   fCEvents->Fill(2);
 
@@ -321,6 +325,12 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
     }
   }
 
+  Int_t runnumber = aodEvent->GetRunNumber();
+  if (aodEvent->GetTriggerMask() == 0 && (runnumber >= 195344 && runnumber <= 195677)){
+    AliDebug(3,"Event rejected because of null trigger mask");
+    return;
+  }
+
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo); // it is very important that it stays BEFORE any other event selection
 
   if (fVtx1->GetNContributors()>0) // this check is done in IsEventSelected
@@ -330,13 +340,10 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   fCEvents->Fill(7);
 
   Int_t nSelectedAnal = 0;
-  if (fIsK0SAnalysis) {
-    MakeAnalysisForLc2prK0S(arrayLctopKos,mcArray, nSelectedAnal, fAnalCuts);
+  MakeAnalysisForLc2prK0S(arrayLctopKos,mcArray, nSelectedAnal, fAnalCuts);
 
-    if (nSelectedAnal)
-      CheckEventSelectionWithCandidates(aodEvent);
-
-  }
+  if (nSelectedAnal)
+    CheckEventSelectionWithCandidates(aodEvent);
 
   fCounter->StoreCandidates(aodEvent,nSelectedAnal,kTRUE);
   fCounter->StoreCandidates(aodEvent,nSelectedAnal,kFALSE);
@@ -436,7 +443,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
       fOutputPIDBachTR->SetName("listPIDBachTR");
     }
 
-    DefineAnalysisHistograms(); // define analysis histograms
+    DefineK0SHistos(); // define analysis histograms
   
     PostData(4,fOutputAll);
     PostData(5,fOutputPIDBach);
@@ -497,6 +504,12 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 
     if (lcK0Spr->GetNDaughters()!=2) {
       AliDebug(2,Form("Cascade %d has not 2 daughters (nDaughters=%d)",iLctopK0S,lcK0Spr->GetNDaughters())); // it will be done in AliRDHFCutsLctoV0::IsSelected
+      continue;
+    }
+
+    if ( (fSign == 0 && lcK0Spr->Charge()<0) ||
+	 (fSign == 1 && lcK0Spr->Charge()>0) ) {
+      AliDebug(2,Form("Charge of the cascade %d is different with respect to the required one",iLctopK0S)); //
       continue;
     }
 
@@ -636,9 +649,12 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   if ( fWriteVariableTree ) {
     Double_t invmassK0S = v0part->MassK0Short();
     Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+    Double_t nSigmaTPCpr=-999.;
+    cutsAnal->GetPidHF()->GetnSigmaTPC(bachelor,4,nSigmaTPCpr);
     if ( !onFlyV0 && isInCascadeWindow &&
 	 part->CosV0PointingAngle()>0.99 && TMath::Abs(invmassK0S-mk0sPDG)<=0.05 &&
-	 part->Pt()>=fPtMinToFillTheTree && part->Pt()<fPtMaxToFillTheTree)
+	 part->Pt()>=fPtMinToFillTheTree && part->Pt()<fPtMaxToFillTheTree &&
+	 (!fUseTPCPIDtoFillTree || (fUseTPCPIDtoFillTree && TMath::Abs(nSigmaTPCpr)<3.)))
       FillTheTree(part,cutsAnal,mcArray,isLc);
     return;
   }
@@ -847,8 +863,8 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     // V0 invariant masses (on-the-fly)
     nameHisto="histK0SMass";
-    titleHisto="K^{0}_{S} invariant mass VS p_{T}; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-    TH2F* spectrumK0SMass = new TH2F(nameHisto.Data(),titleHisto.Data(),1000,mK0SPDG-0.050,mK0SPDG+0.050,41,binLimpTprong);
+    titleHisto="K^{0}_{S} invariant mass VS p_{T}; p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; Entries";
+    TH2F* spectrumK0SMass = new TH2F(nameHisto.Data(),titleHisto.Data(),11,binLimpTLc,1000,mK0SPDG-0.050,mK0SPDG+0.050);
 
     // Lc invariant masses (x K0S on-the-fly)
     nameHisto="histLcMassByK0S";
@@ -860,49 +876,49 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH2F* momentumDistributionK0Svsp = new TH2F(nameHisto.Data(),titleHisto.Data(),41,binLimpTprong,41,binLimpTprong);
 
     nameHisto="histArmPodK0S";
-    titleHisto="K^{0}_{S} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0S = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-1.,1.,300,0.,0.3);
  
     nameHisto="histArmPodLc";
-    titleHisto="#Lambda_{c} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHisto="#Lambda_{c}-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLc = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-4.,4.,800,0.,1.6);
  
-    TH2F* allspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone(); 
-    TH2F* allspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone(); 
+    TH2F* allspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone();
+    TH2F* allspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone();
     TH2F* allmomentumDistributionK0Svsp = (TH2F*)momentumDistributionK0Svsp->Clone();
     TH2F* allArmenterosPodK0S = (TH2F*)armenterosPodK0S->Clone();
     TH2F* allArmenterosPodLc = (TH2F*)armenterosPodLc->Clone();
 
-    TH2F* pidBachspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone(); 
-    TH2F* pidBachspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone(); 
+    TH2F* pidBachspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone();
+    TH2F* pidBachspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone();
     TH2F* pidBachmomentumDistributionK0Svsp = (TH2F*)momentumDistributionK0Svsp->Clone();
     TH2F* pidBachArmenterosPodK0S = (TH2F*)armenterosPodK0S->Clone();
     TH2F* pidBachArmenterosPodLc = (TH2F*)armenterosPodLc->Clone();
 
     fOutputAll->Add(allspectrumK0SMass);
     fOutputAll->Add(allspectrumLcMassByK0S);
-    fOutputAll->Add(allmomentumDistributionK0Svsp); 
+    fOutputAll->Add(allmomentumDistributionK0Svsp);
     fOutputAll->Add(allArmenterosPodK0S);
     fOutputAll->Add(allArmenterosPodLc);
 
     fOutputPIDBach->Add(pidBachspectrumK0SMass);
     fOutputPIDBach->Add(pidBachspectrumLcMassByK0S);
-    fOutputPIDBach->Add(pidBachmomentumDistributionK0Svsp); 
+    fOutputPIDBach->Add(pidBachmomentumDistributionK0Svsp);
     fOutputPIDBach->Add(pidBachArmenterosPodK0S);
     fOutputPIDBach->Add(pidBachArmenterosPodLc);
  
     nameHisto="histArmPodK0S0";
-    titleHisto="K^{0}_{S} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0S0 = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-1.,1.,300,0.,0.3);
     nameHisto="histArmPodLc0";
-    titleHisto="#Lambda_{c} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHisto="#Lambda_{c}-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLc0 = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-4.,4.,800,0.,1.6);
     fOutputAll->Add(armenterosPodK0S0);
     fOutputAll->Add(armenterosPodLc0);
  
 
     if (fTrackRotation) {
-      TH2F* pidBachTRspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone(); 
+      TH2F* pidBachTRspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone();
       fOutputPIDBachTR->Add(pidBachTRspectrumLcMassByK0S);
     }
 
@@ -1017,8 +1033,8 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
   // V0 invariant masses (offline)
   nameHisto="histK0SMassOffline";
-  titleHisto="K^{0}_{S} invariant mass VS p_{T}; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-  TH2F* spectrumK0SMassOffline = new TH2F(nameHisto.Data(),titleHisto.Data(),1000,mK0SPDG-0.050,mK0SPDG+0.050,41,binLimpTprong);
+  titleHisto="K^{0}_{S} invariant mass VS p_{T}; p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; Entries";
+  TH2F* spectrumK0SMassOffline = new TH2F(nameHisto.Data(),titleHisto.Data(),11,binLimpTLc,1000,mK0SPDG-0.050,mK0SPDG+0.050);
 
   // Lc invariant masses (x K0S offline)
   nameHisto="histLcMassByK0SOffline";
@@ -1030,48 +1046,48 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   TH2F* momentumDistributionK0SvspOffline = new TH2F(nameHisto.Data(),titleHisto.Data(),41,binLimpTprong,41,binLimpTprong);
 
   nameHisto="histArmPodK0SOffline";
-  titleHisto="K^{0}_{S} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+  titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
   TH2F* armenterosPodK0SOffline = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-1.,1.,300,0.,0.3);
 
   nameHisto="histArmPodLcOffline";
-  titleHisto="#Lambda_{c} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+  titleHisto="#Lambda_{c}-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
   TH2F* armenterosPodLcOffline = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-4.,4.,800,0.,1.6);
 
-  TH2F* allspectrumK0SMassOffline = (TH2F*)spectrumK0SMassOffline->Clone(); 
-  TH2F* allspectrumLcMassOfflineByK0S = (TH2F*)spectrumLcMassOfflineByK0S->Clone(); 
+  TH2F* allspectrumK0SMassOffline = (TH2F*)spectrumK0SMassOffline->Clone();
+  TH2F* allspectrumLcMassOfflineByK0S = (TH2F*)spectrumLcMassOfflineByK0S->Clone();
   TH2F* allmomentumDistributionK0SvspOffline = (TH2F*)momentumDistributionK0SvspOffline->Clone();
   TH2F* allArmenterosPodK0SOffline = (TH2F*)armenterosPodK0SOffline->Clone();
   TH2F* allArmenterosPodLcOffline = (TH2F*)armenterosPodLcOffline->Clone();
 
-  TH2F* pidBachspectrumK0SMassOffline = (TH2F*)spectrumK0SMassOffline->Clone(); 
-  TH2F* pidBachspectrumLcMassOfflineByK0S = (TH2F*)spectrumLcMassOfflineByK0S->Clone(); 
+  TH2F* pidBachspectrumK0SMassOffline = (TH2F*)spectrumK0SMassOffline->Clone();
+  TH2F* pidBachspectrumLcMassOfflineByK0S = (TH2F*)spectrumLcMassOfflineByK0S->Clone();
   TH2F* pidBachmomentumDistributionK0SvspOffline = (TH2F*)momentumDistributionK0SvspOffline->Clone();
   TH2F* pidBachArmenterosPodK0SOffline = (TH2F*)armenterosPodK0SOffline->Clone();
   TH2F* pidBachArmenterosPodLcOffline = (TH2F*)armenterosPodLcOffline->Clone();
 
   fOutputAll->Add(allspectrumK0SMassOffline);
   fOutputAll->Add(allspectrumLcMassOfflineByK0S);
-  fOutputAll->Add(allmomentumDistributionK0SvspOffline); 
+  fOutputAll->Add(allmomentumDistributionK0SvspOffline);
   fOutputAll->Add(allArmenterosPodK0SOffline);
   fOutputAll->Add(allArmenterosPodLcOffline);
 
   fOutputPIDBach->Add(pidBachspectrumK0SMassOffline);
   fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0S);
-  fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOffline); 
+  fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOffline);
   fOutputPIDBach->Add(pidBachArmenterosPodK0SOffline);
   fOutputPIDBach->Add(pidBachArmenterosPodLcOffline);
 
   nameHisto="histArmPodK0SOffline0";
-  titleHisto="K^{0}_{S} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+  titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
   TH2F* armenterosPodK0SOffline0 = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-1.,1.,300,0.,0.3);
   nameHisto="histArmPodLcOffline0";
-  titleHisto="#Lambda_{c} Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+  titleHisto="#Lambda_{c}-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
   TH2F* armenterosPodLcOffline0 = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-4.,4.,800,0.,1.6);
   fOutputAll->Add(armenterosPodK0SOffline0);
   fOutputAll->Add(armenterosPodLcOffline0);
 
   if (fTrackRotation) {
-    TH2F* pidBachTRspectrumLcMassOfflineByK0S = (TH2F*)spectrumLcMassOfflineByK0S->Clone(); 
+    TH2F* pidBachTRspectrumLcMassOfflineByK0S = (TH2F*)spectrumLcMassOfflineByK0S->Clone();
     fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0S);
   }
 
@@ -1193,10 +1209,10 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
       nameHistoSgn="histK0SMassSgn";
       nameHistoBkg="histK0SMassBkg";
-      titleHistoSgn="K^{0}_{S} - sgn: invariant mass VS p_{T} - MC; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-      titleHistoBkg="K^{0}_{S} - bkg: invariant mass VS p_{T} - MC; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-      TH2F* spectrumK0SMassSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),1000,mK0SPDG-0.050,mK0SPDG+0.050,41,binLimpTprong);
-      TH2F* spectrumK0SMassBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),1000,mK0SPDG-0.050,mK0SPDG+0.050,41,binLimpTprong);
+      titleHistoSgn="K^{0}_{S} - sgn: invariant mass VS p_{T} - MC; p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; Entries";
+      titleHistoBkg="K^{0}_{S} - bkg: invariant mass VS p_{T} - MC; p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; Entries";
+      TH2F* spectrumK0SMassSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,mK0SPDG-0.050,mK0SPDG+0.050);
+      TH2F* spectrumK0SMassBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,mK0SPDG-0.050,mK0SPDG+0.050);
 
       nameHistoSgn="histLcMassByK0SSgn";
       nameHistoBkg="histLcMassByK0SBkg";
@@ -1215,15 +1231,15 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
       // armenteros-podolanski plots K0S
       nameHistoSgn="histArmPodK0SSgn";
       nameHistoBkg="histArmPodK0SBkg";
-      titleHistoSgn="K^{0}_{S} Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-      titleHistoBkg="K^{0}_{S} Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoSgn="V0-candidate Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoBkg="V0-candidate Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
       TH2F* armenterosPodK0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
       TH2F* armenterosPodK0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-1.,1.,300,0.,0.3);
 
       nameHistoSgn="histArmPodLcSgn";
       nameHistoBkg="histArmPodLcBkg";
-      titleHistoSgn="#Lambda_{c} Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-      titleHistoBkg="#Lambda_{c} Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoSgn="#Lambda_{c}-candidate Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoBkg="#Lambda_{c}-candidate Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
       TH2F* armenterosPodLcSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
       TH2F* armenterosPodLcBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-4.,4.,800,0.,1.6);
 
@@ -1273,16 +1289,16 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
       nameHistoSgn="histArmPodK0SSgn0";
       nameHistoBkg="histArmPodK0SBkg0";
-      titleHistoSgn="K^{0}_{S} Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-      titleHistoBkg="K^{0}_{S} Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoSgn="V0-candidate Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoBkg="V0-candidate Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
       TH2F* armenterosPodK0SSgn0 = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
       TH2F* armenterosPodK0SBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-1.,1.,300,0.,0.3);
       fOutputAll->Add(armenterosPodK0SSgn0);
       fOutputAll->Add(armenterosPodK0SBkg0);
       nameHistoSgn="histArmPodLcSgn0";
       nameHistoBkg="histArmPodLcBkg0";
-      titleHistoSgn="#Lambda_{c} Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-      titleHistoBkg="#Lambda_{c} Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoSgn="#Lambda_{c}-candidate Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+      titleHistoBkg="#Lambda_{c}-candidate Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
       TH2F* armenterosPodLcSgn0 = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
       TH2F* armenterosPodLcBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-4.,4.,800,0.,1.6);
       fOutputAll->Add(armenterosPodLcSgn0);
@@ -1494,10 +1510,10 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     nameHistoSgn="histK0SMassOfflineSgn";
     nameHistoBkg="histK0SMassOfflineBkg";
-    titleHistoSgn="K^{0}_{S} - sgn: invariant mass VS p_{T} - MC; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-    titleHistoBkg="K^{0}_{S} - bkg: invariant mass VS p_{T} - MC; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-    TH2F* spectrumK0SMassOfflineSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),1000,mK0SPDG-0.050,mK0SPDG+0.050,41,binLimpTprong);
-    TH2F* spectrumK0SMassOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),1000,mK0SPDG-0.050,mK0SPDG+0.050,41,binLimpTprong);
+    titleHistoSgn="K^{0}_{S} - sgn: invariant mass VS p_{T} - MC; p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; Entries";
+    titleHistoBkg="K^{0}_{S} - bkg: invariant mass VS p_{T} - MC; p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#pi^{+},#pi^{-}) [GeV/c^{2}]; Entries";
+    TH2F* spectrumK0SMassOfflineSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,mK0SPDG-0.050,mK0SPDG+0.050);
+    TH2F* spectrumK0SMassOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,mK0SPDG-0.050,mK0SPDG+0.050);
 
     nameHistoSgn="histLcMassByK0SOfflineSgn";
     nameHistoBkg="histLcMassByK0SOfflineBkg";
@@ -1516,22 +1532,22 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     // armenteros-podolanski plots K0S (offline)
     nameHistoSgn="histArmPodK0SOfflineSgn";
     nameHistoBkg="histArmPodK0SOfflineBkg";
-    titleHistoSgn="K^{0}_{S} Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-    titleHistoBkg="K^{0}_{S} Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoSgn="V0-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoBkg="V0-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0SOfflineSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
     TH2F* armenterosPodK0SOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
 
     nameHistoSgn="histArmPodLcOfflineSgn";
     nameHistoBkg="histArmPodLcOfflineBkg";
-    titleHistoSgn="#Lambda_{c} Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-    titleHistoBkg="#Lambda_{c} Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoSgn="#Lambda_{c}-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoBkg="#Lambda_{c}-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLcOfflineSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
     TH2F* armenterosPodLcOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
 
 
-    TH2F* allspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
+    TH2F* allspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone();
     TH2F* allspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();  
-    TH2F* allspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
+    TH2F* allspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone();
     TH2F* allspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
     TH2F* allmomentumDistributionK0SvspOfflineSgn = (TH2F*)momentumDistributionK0SvspOfflineSgn->Clone();
     TH2F* allmomentumDistributionK0SvspOfflineBkg = (TH2F*)momentumDistributionK0SvspOfflineBkg->Clone();
@@ -1575,14 +1591,14 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     nameHistoSgn="histArmPodK0SOfflineSgn0";
     nameHistoBkg="histArmPodK0SOfflineBkg0";
-    titleHistoSgn="K^{0}_{S} Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-    titleHistoBkg="K^{0}_{S} Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoSgn="V0-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoBkg="V0-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0SOfflineSgn0 = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
     TH2F* armenterosPodK0SOfflineBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
     nameHistoSgn="histArmPodLcOfflineSgn0";
     nameHistoBkg="histArmPodLcOfflineBkg0";
-    titleHistoSgn="#Lambda_{c} Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
-    titleHistoBkg="#Lambda_{c} Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoSgn="#Lambda_{c}-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
+    titleHistoBkg="#Lambda_{c}-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLcOfflineSgn0 = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
     TH2F* armenterosPodLcOfflineBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
     fOutputAll->Add(armenterosPodK0SOfflineSgn0);
@@ -1591,7 +1607,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     fOutputAll->Add(armenterosPodLcOfflineBkg0);
 
     if (fTrackRotation) {
-      TH2F* pidBachTRspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
+      TH2F* pidBachTRspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone();
       TH2F* pidBachTRspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
       fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0SSgn);
       fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0SBkg);
@@ -2508,8 +2524,8 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 
       Int_t aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kTracks);
       if ( (aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr ) {
-	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()==-1)  ||
-	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()==+1) )
+	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0)  ||
+	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates1")))->Fill( -aaa );
 	else
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates1")))->Fill( aaa );
@@ -2518,8 +2534,8 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
       cutsAnal->SetUsePID(kFALSE);
       aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate);
       if ((aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
-	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()==-1) ||
-	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()==+1) )
+	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0) ||
+	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates2")))->Fill( -aaa );
 	else
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates2")))->Fill( aaa );
@@ -2528,8 +2544,8 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 
       aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kPID);
       if ((aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
-	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()==-1) ||
-	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()==+1) )
+	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0) ||
+	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates3")))->Fill( -aaa );
 	else
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates3")))->Fill( aaa );
@@ -2537,8 +2553,8 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 
       aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kAll);
       if ((aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
-	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()==-1) ||
-	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()==+1) )
+	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0) ||
+	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates4")))->Fill( -aaa );
 	else
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates4")))->Fill( aaa );
@@ -2598,8 +2614,8 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     Int_t pdgDgV0toDaughters[2]={2212,211};
     mcLabel = part->MatchToMC(pdgCand,pdgDgLctoV0bachelor[1],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE);
     if (mcLabel!=-1) {
-      if (bachelor->Charge()==-1) isLc2LBarpi=1;
-      if (bachelor->Charge()==+1) isLc2Lpi=1;
+      if (bachelor->Charge()<0) isLc2LBarpi=1;
+      if (bachelor->Charge()>0) isLc2Lpi=1;
       AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel);
       if (lambdaCpartMC) {
 	ptCandByMC = lambdaCpartMC->Pt();
@@ -2738,52 +2754,10 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
 
 
   Int_t flagToCheckCandidate = 1*(TMath::Abs(invmassK0S-mk0sPDG)<=0.050);
-  flagToCheckCandidate+=2*((TMath::Abs(invmassLambdaBar-mLPDG)<=0.050) && (bachelor->Charge()==-1));
-  flagToCheckCandidate+=4*((TMath::Abs(invmassLambda-mLPDG)<=0.050) && (bachelor->Charge()==+1));
-  flagToCheckCandidate+=8*((TMath::Abs(invmassLambdaBar-mLPDG)<=0.050) && (bachelor->Charge()==+1));
-  flagToCheckCandidate+=16*((TMath::Abs(invmassLambda-mLPDG)<=0.050) && (bachelor->Charge()==-1));
-
-  /*
-  Bool_t areCutsUsingPID = cutsAnal->GetIsUsePID();
-  cutsAnal->SetUsePID(kFALSE);
-  Int_t aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate);
-  if ( (aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr ) {
-    if ( aaa==AliRDHFCutsLctoV0::kLcToK0Spr ) {
-      flagToCheckCandidate = aaa; // Lc->K0S+p OK
-    } else {
-      if ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi ) {
-	if (bachelor->Charge()==+1)
-	  flagToCheckCandidate = aaa; // Lc->Lambda+pi+
-	else if (bachelor->Charge()==-1)
-	  flagToCheckCandidate =-aaa; // Lambda+pi- AS Lc->K0S+p candidate
-      }
-      if ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi ) {
-	if (bachelor->Charge()==-1)
-	  flagToCheckCandidate = aaa; // Lc->LambdaBar+pi-
-	else if (bachelor->Charge()==+1)
-	  flagToCheckCandidate =-aaa; // LambdaBar+pi+ AS Lc->K0S+p candidate
-      }
-    }
-  } else {
-    //if ( aaa==AliRDHFCutsLctoV0::kLcToK0Spr ) {
-    //flagToCheckCandidate = -10-(AliRDHFCutsLctoV0::kLcToK0Spr); // NEVER
-    //} else {
-      if ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi ) {
-	if (bachelor->Charge()==+1)
-	  flagToCheckCandidate = aaa; // Lc->Lambda+pi+ OK
-	else if (bachelor->Charge()==-1)
-	  flagToCheckCandidate =-aaa; // Lambda+pi- AS Lc->Lambda+pi+ candidate
-      }
-      if ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi ) {
-	if (bachelor->Charge()==-1)
-	  flagToCheckCandidate = aaa; // Lc->LambdaBar+pi- OK
-	else if (bachelor->Charge()==+1)
-	  flagToCheckCandidate =-aaa; // LambdaBar+pi+ AS Lc->LambdaBar+pi- candidate
-      }
-      //}
-  }
-  cutsAnal->SetUsePID(areCutsUsingPID);
-  */
+  flagToCheckCandidate+=2*((TMath::Abs(invmassLambdaBar-mLPDG)<=0.050) && (bachelor->Charge()<0));
+  flagToCheckCandidate+=4*((TMath::Abs(invmassLambda-mLPDG)<=0.050) && (bachelor->Charge()>0));
+  flagToCheckCandidate+=8*((TMath::Abs(invmassLambdaBar-mLPDG)<=0.050) && (bachelor->Charge()>0));
+  flagToCheckCandidate+=16*((TMath::Abs(invmassLambda-mLPDG)<=0.050) && (bachelor->Charge()<0));
 
   fCandidateVariables[ 0] = fUseMCInfo+isLcByMC; // 0: real data; 1: bkg; 2: Lc->K0S+p; 3: Lc->LambdaBar+pbar; 5: Lc->Lambda+p; 9: D+->K0S+pi; 17: Ds+->K0S+K; 33: K*+->K0S+pi; 65: K*+->K0S+K
   fCandidateVariables[ 1] = fUseMCInfo+isV0ByMC; // 0: real data; 1: bkg; 2: K0S->pi+pi; 3: LambdaBar->pbar+pi+; 5: Lambda->p+pi-
@@ -2904,34 +2878,18 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   fCandidateVariables[79]=v0part->Pz();
   fCandidateVariables[80]=bachelor->Charge();
   fCandidateVariables[81]=isMCparticleInFiducialAcceptance;
+  fCandidateVariables[82] = part->InvMass2Prongs(0,1,211,310); // Kstar( 892)+ -> pi+K0S
+  fCandidateVariables[83] = part->InvMass2Prongs(0,1,321,310); // Kstar(1430)+ -> pi+K0S
+
+  fCandidateVariables[84]=-1;
+  fCandidateVariables[85]=-1;
+  fCandidateVariables[86]=-1;
+  fCandidateVariables[87]=-1;
+  fCandidateVariables[88]=-1;
   if (fUseMCInfo) {
-    fCandidateVariables[82]=0;
     if (bachelor->GetLabel()!=-1) {
       AliAODMCParticle *partBachelor = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(bachelor->GetLabel())));
-      if(partBachelor) fCandidateVariables[82]=partBachelor->GetPdgCode();
-    }
-  } else {
-    fCandidateVariables[82]=-1;
-  }
-  fCandidateVariables[83] = part->InvMass2Prongs(0,1,211,310); // Kstar( 892)+ -> pi+K0S
-  fCandidateVariables[84] = part->InvMass2Prongs(0,1,321,310); // Kstar(1430)+ -> pi+K0S
-
-  fCandidateVariables[85]=0;
-  fCandidateVariables[86]=0;
-  fCandidateVariables[87]=0;
-  fCandidateVariables[88]=0;
-  if (fUseMCInfo) {
-    if (v0pos->GetLabel()!=-1 &&
-	v0neg->GetLabel()!=-1) {
-      const Int_t ndg=2;
-      Int_t dgLabels[ndg]={TMath::Abs(v0pos->GetLabel()),
-			   TMath::Abs(v0neg->GetLabel())};
-      Int_t ndgCk=0;
-      Int_t *pdgDg=0;
-      Int_t absLabelMother=-1;
-      Int_t nDauCand=-1;
-      fCandidateVariables[88]=SearchForCommonMother(mcArray,
-						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
+      if(partBachelor) fCandidateVariables[84]=partBachelor->GetPdgCode();
     }
     if (bachelor->GetLabel()!=-1 &&
 	v0pos->GetLabel()!=-1 &&
@@ -2946,10 +2904,26 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
       Int_t nDauCand=-1;
       fCandidateVariables[85]=SearchForCommonMother(mcArray,
 						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
+    }
+    if (v0pos->GetLabel()!=-1) {
       AliAODMCParticle *part1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0pos->GetLabel())));
-      AliAODMCParticle *part2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0neg->GetLabel())));
       if(part1) fCandidateVariables[86]=part1->GetPdgCode();
+    }
+    if (v0neg->GetLabel()!=-1) {
+      AliAODMCParticle *part2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0neg->GetLabel())));
       if(part2) fCandidateVariables[87]=part2->GetPdgCode();
+    }
+    if (v0pos->GetLabel()!=-1 &&
+	v0neg->GetLabel()!=-1) {
+      const Int_t ndg=2;
+      Int_t dgLabels[ndg]={TMath::Abs(v0pos->GetLabel()),
+			   TMath::Abs(v0neg->GetLabel())};
+      Int_t ndgCk=0;
+      Int_t *pdgDg=0;
+      Int_t absLabelMother=-1;
+      Int_t nDauCand=-1;
+      fCandidateVariables[88]=SearchForCommonMother(mcArray,
+						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
     }
   }
 
@@ -3080,9 +3054,9 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   fCandidateVariableNames[79]="pzVtxV0";
   fCandidateVariableNames[80]="bachelorCharge";
   fCandidateVariableNames[81]="isMCparticleInFiducialAcceptance";
-  fCandidateVariableNames[82]="pdgBachelor"; // pdg MC bachelor
-  fCandidateVariableNames[83]="massKstar12K0Spi"; // Kstar( 892)+ -> pi+ K0S
-  fCandidateVariableNames[84]="massKstar22K0Spi"; // Kstar(1430)+ -> pi+ K0S
+  fCandidateVariableNames[82]="massKstar12K0Spi"; // Kstar( 892)+ -> pi+ K0S
+  fCandidateVariableNames[83]="massKstar22K0Spi"; // Kstar(1430)+ -> pi+ K0S
+  fCandidateVariableNames[84]="pdgBachelor"; // pdg MC bachelor
   fCandidateVariableNames[85]="pdgCandidate"; // pdg MC candidate recovered via new method
   fCandidateVariableNames[86]="pdgV0pos"; // pdg MC V0 positive
   fCandidateVariableNames[87]="pdgV0neg"; // pdg MC V0 negative
@@ -3311,17 +3285,6 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
 }
 
 //________________________________________________________________________
-void  AliAnalysisTaskSELc2V0bachelor::DefineAnalysisHistograms() {
-  //
-  // This is to define analysis histograms
-  //
-
-  if (fIsK0SAnalysis) DefineK0SHistos();// hK0S histos declarations
-
-  return;
-}
-
-//________________________________________________________________________
 void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis) {
   //
   // This is to fill analysis histograms
@@ -3349,15 +3312,15 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
 
   AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
   Double_t ptV0pos = v0pos->Pt();
-  AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack(); 
+  AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
   Double_t ptV0neg = v0neg->Pt();
 
   fillthis="histK0SMass"+appendthis;
   //    cout << fillthis << endl;
   cutsAnal->SetExcludedCut(2);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
+    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
+    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
   }
   cutsAnal->SetExcludedCut(-1);
 
@@ -3574,8 +3537,8 @@ Double_t AliAnalysisTaskSELc2V0bachelor::GetAlpha(Double_t xyz[3],Double_t pxpyp
     alpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
   } else { // outside the ITS
     Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
-     alpha =
-       TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+    alpha =
+      TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
   }
 
   Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);

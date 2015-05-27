@@ -66,6 +66,7 @@
 // event handler (and pico's) includes                                                                                                      
 #include <AliInputEventHandler.h>
 #include <AliVEventHandler.h>
+#include "AliAODHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliPicoTrack.h"
 #include "AliEventPoolManager.h"
@@ -102,6 +103,8 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() :
   fTrackPtCut(2.0),
   fTrackEta(0.9),
   fTrkQAcut(0),
+  fM02max(0.35),
+  fM02min(0.006),
   fesdTrackCuts(0),
   fPIDResponse(0x0), fTPCResponse(),
   fEsdtrackCutsITSTPC(),
@@ -151,6 +154,8 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
   fTrackPtCut(2.0),
   fTrackEta(0.9),
   fTrkQAcut(0),
+  fM02max(0.35),
+  fM02min(0.006),
   fesdTrackCuts(0),
   fPIDResponse(0x0), fTPCResponse(),
   fEsdtrackCutsITSTPC(),
@@ -491,7 +496,6 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
   Double_t PatchEE = 0.0;
   Double_t VZEROAmp = (Double_t)(InputEvent()->GetVZEROData()->GetTriggerChargeA() + InputEvent()->GetVZEROData()->GetTriggerChargeC());
   Double_t PatchEtaMax, PatchEtaMin, PatchPhiMax, PatchPhiMin, PatchAreaE, PatchAreaP;
-    
   // Get GA Trigger Info
   if(fTriggerPatchInfo) {
     if(fMainPatchType==kManual) ExtractMainPatch();
@@ -573,7 +577,10 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         }
         if(!IsJetTrack(jet,iTracks,kFALSE))continue;
         //Get matched cluster
-        Int_t emc1 = AcceptedTrack->GetEMCALcluster();
+        Int_t emc1 = -999;
+        emc1 = AcceptedTrack->GetEMCALcluster();//Get EMCal Cluster Matched Index
+        if(emc1 < 0) continue;
+        Int_t TPCNclus = -999, ITSNclus = -999;
         Double_t acceptTrackP = AcceptedTrack->P();
         Double_t acceptTrackPt = AcceptedTrack->Pt();
         Double_t acceptTrackEta = AcceptedTrack->Eta();
@@ -584,26 +591,33 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
 
         if(!useAOD){
           AliESDtrack *ESDacceptedTrack = static_cast<AliESDtrack*>(AcceptedTrack);
-       
           if(!ESDacceptedTrack){
             AliError(Form("Couldn't get AliESDTrack %d\n", iTracks));
             continue;
           }
         //ESDacceptedTrack->GetImpactParameters(DCAxy_at, DCAz_at);
+        TPCNclus = ESDacceptedTrack->GetTPCNcls();
+        ITSNclus = ESDacceptedTrack->GetITSNcls();
         }
         if(useAOD){
           AliAODTrack *AODacceptedTrack = static_cast<AliAODTrack*>(AcceptedTrack);
           if(!AODacceptedTrack) continue;
           if(!fPIDResponse) continue;
+          TPCNclus = AODacceptedTrack->GetTPCNcls();
+          ITSNclus = AODacceptedTrack->GetITSNcls();
           // AODacceptedTrack->GetImpactParameters(DCAxy_at, DCAz_at);
         }
-          
         if(fCaloClustersCont && emc1>=0) {
           AliVCluster *clusMatch = fCaloClustersCont->GetCluster(emc1);
           if(!clusMatch){
             AliError(Form("Couldn't get matched AliVCluster %d\n", emc1));
             continue;
           }
+          Double_t m02 = -999.;
+          m02 = clusMatch->GetM02();
+          if(TPCNclus < 80) continue;
+          if(ITSNclus < 3) continue;
+          if(m02 <= fM02max && m02 >= fM02min) continue;
           Double_t mClusterE = clusMatch->E();
           Float_t pos_mc[3];
           clusMatch->GetPosition(pos_mc);  // Get cluster position

@@ -80,6 +80,10 @@ AliFlowEventSimple::AliFlowEventSimple():
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
 {
+  for(Int_t i(0); i < 2; i++) {
+   fZNCQ[i] = 0.;
+   fZNAQ[i] = 0.;
+  }
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
 
@@ -127,6 +131,11 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
 
   if (method==kGenerate)
     Generate(n,ptDist,phiMin,phiMax,etaMin,etaMax);
+ 
+  for(Int_t i(0); i < 2; i++) {
+   fZNCQ[i] = 0.;
+   fZNAQ[i] = 0.;
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -163,6 +172,10 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
 {
   //copy constructor
   memcpy(fNumberOfPOIs,anEvent.fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
+  for(Int_t i(0); i < 2; i++) {
+   fZNCQ[i] = anEvent.fZNCQ[i];
+   fZNAQ[i] = anEvent.fZNAQ[i];
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -228,6 +241,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fShuffleTracks = anEvent.fShuffleTracks;
   fCentrality = anEvent.fCentrality;
   fRun = anEvent.fRun;
+  for(Int_t i(0); i < 2; i++) {
+   fZNCQ[i] = anEvent.fZNCQ[i];
+   fZNAQ[i] = anEvent.fZNAQ[i];
+  }
   delete [] fShuffledIndexes;
   return *this;
 }
@@ -673,6 +690,23 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 
 
 //-----------------------------------------------------------------------
+void AliFlowEventSimple::GetZDC2Qsub(AliFlowVector* Qarray)
+{
+ Qarray[0].Set(fZNCQ[0],fZNCQ[1]);
+ Qarray[1].Set(fZNAQ[0],fZNAQ[1]);
+}
+
+//-----------------------------------------------------------------------------
+
+void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t* QVA)
+{
+ fZNCQ[0] = QVC[0];
+ fZNCQ[1] = QVC[1];
+ fZNAQ[0] = QVA[0];
+ fZNAQ[1] = QVA[1];
+}
+//-----------------------------------------------------------------------
+
 void AliFlowEventSimple::Print(Option_t *option) const
 {
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
@@ -797,6 +831,11 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
     }
   }//for i
   delete pParticle;
+ 
+  for(Int_t i(0); i < 2; i++) {
+   fZNCQ[i] = 0.;
+   fZNAQ[i] = 0.;
+  }
 }
 
 //_____________________________________________________________________________

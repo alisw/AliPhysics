@@ -53,13 +53,15 @@ const Float_t centmax_10_60 = 60.;
 const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
 
-
+//PID Threshold
+const Float_t thresholdPID = 0.8;
 AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
 							     TString suffix="default", // suffix for the output directory
 							     AliPID::EParticleType specie=AliPID::kPion, Int_t pdgcode=0, //particle specie
 							     ULong64_t triggerMask=AliVEvent::kAnyINT,
 							     Bool_t useCentrality = kFALSE,
-                                 Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast)
+                                 Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
+                                 Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID)
 {
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -227,6 +229,13 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
     cuts->SetUseTOFPid();
     cuts->SetTOFSigmaPtBins(nlims2,plims2,sigmas2);
     cuts->SetMaximumPTOF(4.);
+
+    if(usageOfBayesianPID>0) {
+      cuts->SetUseCombinPID(usageOfBayesianPID);
+      if(usageOfBayesianPID==AliSingleTrackEffCuts::kThresholdBayesianProb)
+	cuts->SetPIDThreshold(thresholdPID);
+    }
+
   }
 
   //

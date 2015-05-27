@@ -1,12 +1,22 @@
-Executable="rawmerge.sh";
+# TO RUN THE CODE   EXECUTE submit in aliensh 
+# submit /alice/cern.ch/user/p/pwg_pp/rawmerge/v20150512/rawmerge.jdl $run $period $year
+# e.g
+# submit /alice/cern.ch/user/p/pwg_pp/rawmerge/v20150512/rawmerge.jdl 189122  LHC12h 2012
+# source code can be found in git (in case you are using alien version, path should indicate git tag) 
+#     $ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C
 
-Packages={
-    "VO_ALICE@ROOT::v5-34-05",
-    "VO_ALICE@APISCONFIG::V1.1x"
+
+Executable="/alice/cern.ch/user/p/pwg_pp/rawmerge/vAN-20150526/rawmerge.sh";
+
+Packages = {
+    "VO_ALICE@AliPhysics::vAN-20150525",
+    "VO_ALICE@AliRoot::v5-06-16",
+    "VO_ALICE@APISCONFIG::V1.1x",
+    "VO_ALICE@jemalloc::v3.0.0"
 };
 
 Jobtag={
-    "Raw Filtering"
+    "Raw data filtering. Triggering speciefied in the input list "
 };
 
 TTL="40000";
@@ -16,8 +26,12 @@ Validationcommand="/alice/validation/validation.sh";
 
 Requirements=member(other.GridPartitions,"ultrapower");
 
+# This are lego train requronment - use one form old Mikolaj jdl
+# Requirements = ( other.Type == "machine" ) && ( member(other.Packages,"VO_ALICE@AliPhysics::vAN-20150506") ) && ( member(other.Packages,"VO_ALICE@APISCONFIG::V1.1x") ) && ( member(other.Packages,"VO_ALICE@jemalloc::v3.0.0") ) && ( other.TTL > 70000 ) && ( other.Price <= 1 );
+
+
 Split="se";
-SplitMaxInputFileNumber="50";
+SplitMaxInputFileNumber="$5";
 InputDataListFormat="xml-single";
 InputDataList="wn.xml";
 
@@ -31,13 +45,14 @@ JDLVariables={
 Workdirectorysize={"6000MB"};
 
 InputFile={
-    "LF:/alice/cern.ch/user/m/mkrzewic/rawmerge/rawmerge.C",
-    "LF:/alice/cern.ch/user/m/mkrzewic/rawmerge/eventLists/$1.list"
+       "LF:/alice/cern.ch/user/p/pwg_pp/rawmerge/vAN-20150526/rawmerge.C",
+       "LF:/alice/cern.ch/user/p/pwg_pp/rawmerge/vAN-20150526/validation.rc",
+       "LF:/alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/$3/$2/000$1/lists/event.list"
 };
 
 InputDataCollection="LF:/alice/data/$3/$2/000$1/fullrun.xml,nodownload";
 
-OutputDir="/alice/cern.ch/user/m/mkrzewic/alice/data/$3/$2/000$1/raw_filtered/#alien_counter_04i#";
+OutputDir="/alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/$3/$2/000$1/#alien_counter_04i#";
 
 Output={
     "log_archive.zip:*.log@disk=2",

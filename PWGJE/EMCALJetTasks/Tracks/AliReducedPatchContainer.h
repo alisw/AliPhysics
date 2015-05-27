@@ -53,7 +53,7 @@ public:
   AliReducedPatchContainer(Bool_t doAlloc = kFALSE);
   AliReducedPatchContainer(const AliReducedPatchContainer &cont);
   AliReducedPatchContainer &operator=(const AliReducedPatchContainer &cont);
-  void Copy(TObject *target) const;
+  void Copy(TObject &target) const;
   virtual ~AliReducedPatchContainer();
 
   void AddTriggerPatch(Bool_t isOffline, PatchType_t patchtype, Float_t energy, Int_t amplitude, Float_t eta, Float_t phi);

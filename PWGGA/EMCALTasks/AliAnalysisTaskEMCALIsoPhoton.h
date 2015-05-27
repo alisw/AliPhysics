@@ -18,6 +18,7 @@ class AliESDtrackCuts;
 class AliAODEvent;
 class AliAODCaloCells;
 class AliVCluster;
+class AliVCaloCells;
 class AliMCEvent;
 class AliStack;
 class TParticle;
@@ -53,6 +54,11 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   bool                   IsExotic(AliVCluster *c);
   void                   CheckTriggerPatch();
   Double_t               SmearM02(Double_t m02);
+  Int_t                  GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells);
+  Int_t                  GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
+						Int_t *absIdList,     Float_t *maxEList);
+  Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
+  AliVCaloCells          *GetVCaloCells();
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
@@ -84,6 +90,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
   void                  SetNSigmaNeutMesonCut(Double_t n)       { fNSigNeutMesonCut   = n;       }
   void                  SetSmearM02On(Double_t s)               { fSigmaSmear         = s;       }
+  void                  SetNLMCut(Int_t n)                      { fNLMCut             = n;       }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -92,6 +99,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TClonesArray          *fAODMCParticles;        //!MC particles array for AOD analysis
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
+  AliVCaloCells         *fVCells;                //!pointer to EMCal virtual cells
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
   AliESDtrackCuts       *fCompTrCuts;            //pointer to hold complementary track cuts (a la Gustavo)
   AliEMCALGeometry      *fGeom;                  // geometry utils
@@ -137,6 +145,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TString                fInConePairClEt;        // string to hold the array of Et of paired clusters in the pi0 mass (isolation clusters pairs only)
   Double_t               fNSigNeutMesonCut;      // definition of the cut size on the neutral meson peaks to remove the additional dcy photon in isolation  
   Double_t               fSigmaSmear;            //std dev of the gaussian smearing for the MC M02 values
+  Int_t                  fNLMCut;                //maximum of local maxima in a cluster
 
  private:
   AliESDEvent *fESD;      //! ESD object

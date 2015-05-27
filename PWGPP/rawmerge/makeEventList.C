@@ -48,19 +48,24 @@ using namespace std;
 using std::cout;
 using std::setw;
 
+// variables related to config file
+TString rawDataPrefix;
+TString commonPrefix;
+TString alienPrefix="alien://";
 
-TFile  *fInput;
-TString fName;
 Long_t  nEvents=0;
-Int_t   runNo=0;
-Int_t   nEventsPerFile=500;
+TFile  *fInputFile;
+TString fInputFileName;
+TString period;
+Int_t   run=0;
+Int_t   year=0;
+Int_t   runType=0;
 
 TTree *treeHighPt=NULL;
 TTree *treeV0s=NULL;
 TTree *treeLaser=NULL;
 TTree *treeCosmicPairs=NULL;
 TTree *treedEdx=NULL;
-
 
 TString treeNameHighPt      = "highPt";
 TString treeNameV0s         = "V0s";
@@ -75,16 +80,33 @@ TString scanOutputLaser;
 TString scanOutputCosmicPairs;
 TString scanOutputdEdx;
 
+Int_t counterHighPtAll;   // number of all hightpt events
+Int_t counterV0sAll;      // number of all V0s events
+Int_t counterCosmicAll;   // number of all Cosmic events
+Int_t counterLaserAll;    // number of all Laser events
+Int_t counterdEdxAll;     // number of all dEdx events
+
+Int_t counterHighPtSelected;  // number of selected hightpt events
+Int_t counterV0sSelected;     // number of selected V0s events
+Int_t counterCosmicSelected;  // number of selected Cosmic events
+Int_t counterLaserSelected;   // number of selected Laser events
+Int_t counterdEdxSelected;    // number of selected dEdx events
+
+TCut cutHighPt="";
+TCut cutV0s="";
+TCut cutCosmic="";
+TCut cutLaser="";
+TCut cutdEdx;
+
+
 
 // Helper Functions
 void    ReadTrees();
 Int_t   GuessRunNumber();
+Int_t   FindNEventsPerTrigger(TTree *t, TCut selection);
 void    SetDumpOutputFile(Int_t run);
+void    DumpCounters();
 void    MakeRawList(const char *scanOutput);
-TString rawDataPrefix;
-TString commonPrefix;
-TString alienPrefix="alien://";
-
 
 
 // Main Function
@@ -94,37 +116,29 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
   // Reads the filtered trees and creates the raw data list 
   // 
 
-  rawDataPrefix  = gSystem->GetFromPipe("echo $rawDataPrefix");
-  commonPrefix   = gSystem->GetFromPipe("echo $commonPrefix");
-  TString strnEventsPerFile=gSystem->GetFromPipe("echo $nEventsPerFile");
-  nEventsPerFile = strnEventsPerFile.Atoi();
-  
-  cout << " rawDataPrefix   = " << rawDataPrefix << endl;
-  cout << " commonPrefix    = " << commonPrefix << endl;
-  cout << " nEventsPerFile  = " << nEventsPerFile << endl;
-  cout << " gridRunning     = " << atoi(gSystem->GetFromPipe("echo $gridRunning")) << endl;
+  rawDataPrefix = gSystem->GetFromPipe("echo $rawDataPrefix");
+  commonPrefix  = gSystem->GetFromPipe("echo $commonPrefix");
+  runType       = atoi(gSystem->Getenv("isCosmic"));
 
+  // check alien connection
   if (fFileName.Contains("alien://")!=0) {
     TGrid * grid = TGrid::Connect("alien://");
     if (!grid){
-      //::Error("makeEventList","Alien not available");
+      cout << " Error:: makeEventList.C  --> Alien not available " << endl;
       return;
     }
   }
   
   // Read input:  Filtered tree file and get the trees to be used for "Scan()"
-  fName = fFileName; 
+  fInputFileName = fFileName; 
   ReadTrees();
-  runNo = GuessRunNumber();
-  SetDumpOutputFile(runNo);
+  run = GuessRunNumber();
+  SetDumpOutputFile(run);
   // Base cut for the high pt tracks:
   // 1.) rough pointing to the primary vertex 
   // 2.) reasonable q/pt resolution
   // 3.) at minimum one of the outer detectors - to clean pile-up
-  //
-  TCut cutHighPt="abs(esdTrack.fdTPC)<4&&abs(esdTrack.fzTPC)<4&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.1&&((esdTrack.fFlags&0x4401)>0)";
-  TCut cutV0="abs(track0.fzTPC)<20&&abs(track1.fzTPC)<20&&sqrt(track0.fC[14])<0.1&&sqrt(track1.fC[14])<0.1&&((track0.fFlags&0x4401)+(track1.fFlags&0x4401)>0)";
-  
+    
   // Analyse Hight pt tree
   if (treeHighPt)
   {
@@ -132,15 +146,23 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
     { 
       // Dump the tree scan in to file
       printf("offlineTrigger: highPt\n");
+      cutHighPt="abs(esdTrack.fdTPC)<4&&abs(esdTrack.fzTPC)<4&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.03&&((esdTrack.fFlags&0x4401)>0)";
       treeHighPt->GetUserInfo()->AddFirst(new TNamed("highPt","highPt"));
       treeHighPt->SetScanField(nEvents);
       //      tree->Scan("fileName.GetString():evtNumberInFile:triggerName:gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=.2f:8.d:8.d:130.s:15.lu:12.d");
       AliSysInfo::AddStamp("highPtFilterScanBegin",1,1);
       treeHighPt->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp:esdTrack.Pt()",Form("esdTrack.Pt()>%lf",ptMinHighPt)+cutHighPt,"col=130.s:14.d:30.s:20.lu:20.lu");
       AliSysInfo::AddStamp("highPtFilterScanEnd",1,2);
+      
+      // Process the Scan output further to prepare the raw data list
+      MakeRawList(scanOutputHighPt.Data());
+      counterHighPtAll      = FindNEventsPerTrigger(treeHighPt,"");
+      counterHighPtSelected = FindNEventsPerTrigger(treeHighPt,cutHighPt);    
+    } else {     
+      counterHighPtAll      = 0;
+      counterHighPtSelected = 0;
     }
   } 
-  MakeRawList(scanOutputHighPt.Data()); // Process the Scan output further to prepare the raw data list
   AliSysInfo::AddStamp("highPtFilterListEnd",1,3);
   
   // Analyse V0s tree
@@ -150,15 +172,23 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
     { 
       // Dump the tree scan in to file
       printf("offlineTrigger: V0s\n");
+      cutV0s="abs(track0.fzTPC)<20&&abs(track1.fzTPC)<20&&sqrt(track0.fC[14])<0.1&&sqrt(track1.fC[14])<0.03&&((track0.fFlags&0x4401)+(track1.fFlags&0x4401)>0)";
       treeV0s->GetUserInfo()->AddFirst(new TNamed("V0s","V0s"));
       treeV0s->SetScanField(nEvents);
       AliSysInfo::AddStamp("highV0sFilterScanBegin",2,1);
-      treeV0s->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp",Form("v0.Pt()>%lf",ptMinV0s)+cutV0,"col=130.s:14.d:30.s:20.lu:20.lu"); 
+      treeV0s->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp",Form("v0.Pt()>%lf",ptMinV0s)+cutV0s,"col=130.s:14.d:30.s:20.lu:20.lu"); 
       AliSysInfo::AddStamp("highV0sFilterScanEnd",2,2);
+      
+      // Process the Scan output further to prepare the raw data list
+      MakeRawList(scanOutputV0s.Data()); 
+      counterV0sAll      = FindNEventsPerTrigger(treeV0s,"");
+      counterV0sSelected = FindNEventsPerTrigger(treeV0s,cutV0s);              
+    } else {     
+      counterV0sAll      = 0;
+      counterV0sSelected = 0;
     }
   }
-  MakeRawList(scanOutputV0s.Data());       // Process the Scan output further to prepare the raw data list
-
+  
   // Analyse Laser tree
   if (treeLaser)
   {
@@ -171,32 +201,55 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
       AliSysInfo::AddStamp("laserFilterBegin",3,1);
       treeLaser->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp","","col=130.s:14.d:30.s:20.lu:20.lu"); 
       AliSysInfo::AddStamp("laserFilterEnd",3,2);
+      
+      // Process the Scan output further to prepare the raw data list
+      MakeRawList(scanOutputLaser.Data());    
+      counterLaserAll      = FindNEventsPerTrigger(treeLaser,"");
+      counterLaserSelected = FindNEventsPerTrigger(treeLaser,cutLaser);          
+    } else {     
+      counterLaserAll      = 0;
+      counterLaserSelected = 0;
     }
   }
-  MakeRawList(scanOutputLaser.Data());      // Process the Scan output further to prepare the raw data list
-
-
+  
   // Analyse Laser tree
   if (treeCosmicPairs)
   {
     if (treeCosmicPairs->GetEntries()>0)
     { 
+      cutCosmic="1";
       // Additional cuts for cosmics
-      TCut ptCut="abs(t0.fP[4])<0.33"; //cut on 1/pt < 0.33
-      TCut cutDCA="abs(0.5*(t0.fD-t1.fD))>5&&abs(0.5*(t0.fD-t1.fD))<80"; //tracks crossing the inner field cage (80cm)
-      TCut cutCross="t0.fOp.fP[1]*t1.fOp.fP[1]<0"; //tracks crossing central electrode
-      
+      if (gSystem->Getenv("isCosmic")!=NULL &&strstr(gSystem->Getenv("isCosmic"),"0")!=0){
+	treeCosmicPairs->SetAlias("alphaPrime","abs(t0.fAlpha)-pi/2");
+	treeCosmicPairs->SetAlias("alphaPrimeFit","TMath::Gaus(alphaPrime,0,0.573+0)");
+	treeCosmicPairs->SetAlias("alphaPrimeDownscale","alphaPrimeFit*rndm<0.05");  
+	treeCosmicPairs->SetAlias("itsFiducial","min(abs(t0.fP[0]),abs(t1.fP[0]))<16&&min(abs(t0.fP[1]),abs(t1.fP[1]))<30");
+	cutCosmic="itsFiducial || alphaPrimeDownscale";
+      }
+      else{
+	TCut ptCut="abs(t0.fP[4])<0.33"; //cut on 1/pt < 0.33
+	TCut cutDCA="abs(0.5*(t0.fD-t1.fD))>5&&abs(0.5*(t0.fD-t1.fD))<80"; //tracks crossing the inner field cage (80cm)
+	TCut cutCross="t0.fOp.fP[1]*t1.fOp.fP[1]<0"; //tracks crossing central electrode
+	cutCosmic= ptCut && cutDCA && cutCross;
+      }
       // Dump the tree scan in to file
       printf("offlineTrigger: CosmicPairs\n");
       treeCosmicPairs->GetUserInfo()->AddFirst(new TNamed("CosmicPairs","CosmicPairs"));
       treeCosmicPairs->SetScanField(nEvents);
       AliSysInfo::AddStamp("cosmicFilterBegin",4,1);
-      treeCosmicPairs->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp", ptCut && cutDCA && cutCross, "col=130.s:14.d:30.s:20.lu:20.lu"); 
+      treeCosmicPairs->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp", cutCosmic, "col=130.s:14.d:30.s:20.lu:20.lu"); 
       AliSysInfo::AddStamp("cosmicFilterEnd",4,2);
+      
+      // Process the Scan output further to prepare the raw data list
+      MakeRawList(scanOutputCosmicPairs.Data()); 
+      counterCosmicAll      = FindNEventsPerTrigger(treeCosmicPairs,"");
+      counterCosmicSelected = FindNEventsPerTrigger(treeCosmicPairs,cutCosmic);     
+    } else {     
+      counterCosmicAll      = 0;
+      counterCosmicSelected = 0;
     }
   }
-  MakeRawList(scanOutputCosmicPairs.Data()); // Process the Scan output further to prepare the raw data list
-
+  
   // Analyse Laser tree
   if (treedEdx)
   {
@@ -209,34 +262,46 @@ void makeEventList(TString fFileName="FilteredESDs.root", Double_t ptMinHighPt =
       AliSysInfo::AddStamp("highdEdxFilterBegin",5,1);
       treedEdx->Scan("fileName.GetString():evtNumberInFile:This->GetUserInfo()->At(0)->GetName():gid:evtTimeStamp","","col=130.s:14.d:30.s:20.lu:20.lu"); 
       AliSysInfo::AddStamp("highdEdxFilterBegin",5,2);
-
+      
+      // Process the Scan output further to prepare the raw data list
+      MakeRawList(scanOutputdEdx.Data());  
+      counterdEdxAll      = FindNEventsPerTrigger(treedEdx,"");
+      counterdEdxSelected = FindNEventsPerTrigger(treedEdx,cutdEdx);
+    }
+    else {     
+      counterdEdxAll      = 0;
+      counterdEdxSelected = 0;
     }
   }
-  MakeRawList(scanOutputdEdx.Data());        // Process the Scan output further to prepare the raw data list
+ 
+ gSystem->Exec("cat rawEvents*.list >> event.list");
+ DumpCounters();
+ cout << "------------------------- Event list creation is successful -------------------------" << endl;
 
 }
 // -----------------------------------------------------------------------------------------------------
-void ReadTrees(){
+void ReadTrees()
+{
   
   //
   // Read the trees from the .root file if the file is a list of root files then make the chain of files 
   //
   
-  if (fName.Contains(".root")){
-    fInput = TFile::Open(fName);
+  if (fInputFileName.Contains(".root")){
+    fInputFile = TFile::Open(fInputFileName);
     cout << " make the tree " << endl;
-    treeHighPt      = (TTree*)fInput->Get(treeNameHighPt);
-    treeV0s         = (TTree*)fInput->Get(treeNameV0s);
-    treeLaser       = (TTree*)fInput->Get(treeNameLaser);
-    treeCosmicPairs = (TTree*)fInput->Get(treeNameCosmicPairs);  
-    treedEdx        = (TTree*)fInput->Get(treeNamedEdx);      
+    treeHighPt      = (TTree*)fInputFile->Get(treeNameHighPt);
+    treeV0s         = (TTree*)fInputFile->Get(treeNameV0s);
+    treeLaser       = (TTree*)fInputFile->Get(treeNameLaser);
+    treeCosmicPairs = (TTree*)fInputFile->Get(treeNameCosmicPairs);  
+    treedEdx        = (TTree*)fInputFile->Get(treeNamedEdx);      
   } else {
     cout << " make the chain " << endl;
-    treeHighPt      = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameHighPt     ,0,500000,0);  
-    treeV0s         = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameV0s        ,0,500000,0);  
-    treeLaser       = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameLaser      ,0,500000,0);  
-    treeCosmicPairs = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNameCosmicPairs,0,500000,0); 
-    treedEdx        = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fName,treeNamedEdx       ,0,500000,0);   
+    treeHighPt      = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fInputFileName,treeNameHighPt     ,0,500000,0);  
+    treeV0s         = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fInputFileName,treeNameV0s        ,0,500000,0);  
+    treeLaser       = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fInputFileName,treeNameLaser      ,0,500000,0);  
+    treeCosmicPairs = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fInputFileName,treeNameCosmicPairs,0,500000,0); 
+    treedEdx        = (TTree*)AliXRDPROOFtoolkit::MakeChainRandom(fInputFileName,treeNamedEdx       ,0,500000,0);   
   }
   
    treeHighPt->SetCacheSize(100000000);
@@ -246,55 +311,83 @@ void ReadTrees(){
    treedEdx->SetCacheSize(100000000);
 }
 // -----------------------------------------------------------------------------------------------------
-Int_t GuessRunNumber(){
+Int_t GuessRunNumber()
+{
 
   //
   // read run number from file
   //
   
   TTree * tree;
-  if (treeHighPt) tree=treeHighPt;
-  else if (treeV0s) tree=treeV0s;
-  else if (treeCosmicPairs) tree=treeCosmicPairs;
-  else if (treeLaser) tree=treeLaser;
-  else if (treedEdx) tree=treedEdx;
+  if (treeHighPt && treeHighPt->GetEntries()>0) tree=treeHighPt;
+  else if (treeV0s && treeV0s->GetEntries()>0) tree=treeV0s;
+  else if (treeCosmicPairs && treeCosmicPairs->GetEntries()>0) tree=treeCosmicPairs;
+  else if (treeLaser && treeLaser->GetEntries()>0) tree=treeLaser;
+  else if (treedEdx && treedEdx->GetEntries()>0) tree=treedEdx;
   else return 0;
   
+  // get run number 
   tree->Draw("runNumber>>htmp","","goff",100);
   TH1D * htmp = (TH1D*)tree->GetHistogram();
   return (Int_t)htmp->GetMean();
-
+  
 }
 // -----------------------------------------------------------------------------------------------------
-void SetDumpOutputFile(Int_t run){
+Int_t FindNEventsPerTrigger(TTree *t, TCut selection)
+{
+
+  //
+  // guess number events of a ttree from the global id information
+  //
+  
+  Int_t nEntries = t->Draw("gid>>his(100,0,1)",selection,"goff");
+  std::map<int,int> gids;
+  for (Int_t i=0; i<nEntries; i++) gids[long(t->GetV1()[i])]+=1;
+  return gids.size();
+}
+// -----------------------------------------------------------------------------------------------------
+void SetDumpOutputFile(Int_t run)
+{
 
   //
   // Prepare the dump of output file
   //
   
-  scanOutputHighPt.Form("%d",run);      scanOutputHighPt.Append("_HighPt.list");
-  scanOutputV0s.Form("%d",run);         scanOutputV0s.Append("_V0s.list"); 
-  scanOutputLaser.Form("%d",run);       scanOutputLaser.Append("_Laser.list");
-  scanOutputCosmicPairs.Form("%d",run); scanOutputCosmicPairs.Append("_CosmicPairs.list"); 
-  scanOutputdEdx.Form("%d",run);        scanOutputdEdx.Append("_dEdx.list"); 
+  scanOutputHighPt      ="HighPt.list";
+  scanOutputV0s         ="V0s.list";
+  scanOutputLaser       ="Laser.list";
+  scanOutputCosmicPairs ="CosmicPairs.list";
+  scanOutputdEdx        ="dEdx.list";
 
- 
-  ((TTreePlayer*)(treeHighPt     ->GetPlayer()))->SetScanRedirect(true);
-  ((TTreePlayer*)(treeV0s        ->GetPlayer()))->SetScanRedirect(true);
-  ((TTreePlayer*)(treeLaser      ->GetPlayer()))->SetScanRedirect(true);
-  ((TTreePlayer*)(treeCosmicPairs->GetPlayer()))->SetScanRedirect(true);
-  ((TTreePlayer*)(treedEdx       ->GetPlayer()))->SetScanRedirect(true);
-
-  ((TTreePlayer*)(treeHighPt     ->GetPlayer()))->SetScanFileName(scanOutputHighPt);
-  ((TTreePlayer*)(treeV0s        ->GetPlayer()))->SetScanFileName(scanOutputV0s);
-  ((TTreePlayer*)(treeLaser      ->GetPlayer()))->SetScanFileName(scanOutputLaser);
-  ((TTreePlayer*)(treeCosmicPairs->GetPlayer()))->SetScanFileName(scanOutputCosmicPairs);
-  ((TTreePlayer*)(treedEdx       ->GetPlayer()))->SetScanFileName(scanOutputdEdx);
-
+  if (treeHighPt && treeHighPt->GetEntries()>0) {
+    ((TTreePlayer*)(treeHighPt     ->GetPlayer()))->SetScanRedirect(true);
+    ((TTreePlayer*)(treeHighPt     ->GetPlayer()))->SetScanFileName(scanOutputHighPt);
+  }
+  
+  if (treeV0s && treeV0s->GetEntries()>0) {
+    ((TTreePlayer*)(treeV0s        ->GetPlayer()))->SetScanRedirect(true);
+    ((TTreePlayer*)(treeV0s        ->GetPlayer()))->SetScanFileName(scanOutputV0s);
+  }
+  
+  if (treeLaser && treeLaser->GetEntries()>0) { 
+    ((TTreePlayer*)(treeLaser      ->GetPlayer()))->SetScanRedirect(true);
+    ((TTreePlayer*)(treeLaser      ->GetPlayer()))->SetScanFileName(scanOutputLaser);
+  }
+  
+  if (treeCosmicPairs && treeCosmicPairs->GetEntries()>0) {
+    ((TTreePlayer*)(treeCosmicPairs->GetPlayer()))->SetScanRedirect(true);
+    ((TTreePlayer*)(treeCosmicPairs->GetPlayer()))->SetScanFileName(scanOutputCosmicPairs);
+  }
+  
+  if (treedEdx && treedEdx->GetEntries()>0) { 
+    ((TTreePlayer*)(treedEdx       ->GetPlayer()))->SetScanRedirect(true);
+    ((TTreePlayer*)(treedEdx       ->GetPlayer()))->SetScanFileName(scanOutputdEdx);
+  }
 
 }
 // -----------------------------------------------------------------------------------------------------
-void MakeRawList(const char *scanOutput){
+void MakeRawList(const char *scanOutput)
+{
   
   //
   // Create a new list replacing the esd path with raw path of the chunk
@@ -303,7 +396,7 @@ void MakeRawList(const char *scanOutput){
   // Create the rawlist output file
   ofstream rawlist;
   TString rawListName = Form("rawEvents_%s",scanOutput);
-  rawlist.open(rawListName);   // raw_<runNumber>_<TriggerName>.list
+  rawlist.open(rawListName);   // rawEvents_<TriggerName>.list
 
   // open Tree::Scan output  
   std::ifstream file(scanOutput);
@@ -339,12 +432,13 @@ void MakeRawList(const char *scanOutput){
     }
          
     // Retrieve runNumber, period, and year from the esdfilePath
-    TString runNumber = TString((objArr2->At(runNumberIndex))->GetName());
-    TString period    = TString((objArr2->At(runNumberIndex-1))->GetName());
-    TString year      = TString((objArr2->At(runNumberIndex-2))->GetName());
+    TString runStr  = TString((objArr2->At(runNumberIndex))->GetName());
+    TString yearStr = TString((objArr2->At(runNumberIndex-2))->GetName());
+    period    = TString((objArr2->At(runNumberIndex-1))->GetName());
+    year      = atoi((objArr2->At(runNumberIndex-2))->GetName());
     
     // prepare the raw file path
-    rootFile.Prepend(Form("%s%s/%s/%s/%s/raw/",rawDataPrefix.Data(),commonPrefix.Data(),year.Data(),period.Data(),runNumber.Data()));
+    rootFile.Prepend(Form("%s%s/%s/%s/%s/raw/",rawDataPrefix.Data(),commonPrefix.Data(),yearStr.Data(),period.Data(),runStr.Data()));
     
     // Other variables needed for raw list
     Int_t   eventNumber = atoi(objArr1->At(2)->GetName());
@@ -360,6 +454,42 @@ void MakeRawList(const char *scanOutput){
   
   // Avoid duplicated event numbers in file
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",rawListName.Data(),rawListName.Data(),rawListName.Data()));
-  // gSystem->Exec(Form("csplit -f %d_%s. -n 4 -k %s %d {10000}", nEventsPerFile,rawListName.Data(),rawListName.Data(),nEventsPerFile )); 
-   
+}
+// -----------------------------------------------------------------------------------------------------
+void DumpCounters(){
+  
+  //
+  //  Dump event counters and necessary info
+  //
+  cout << "-----------------------------------------------" << endl; 
+  cout << "KeyValue_Index0="  << run << endl;   
+  cout << "KeyValue_Index1="  << fInputFileName << endl;     
+  cout << "KeyValue_year="    << year << endl;    
+  cout << "KeyValue_period="  << period << endl;      
+  cout << "KeyValue_runType=" << runType << endl;      
+  cout << "-----------------------------------------------" << endl; 
+  cout << "KeyValue_CounterHighPtAll="  << counterHighPtAll << endl; 
+  cout << "KeyValue_CounterHighPtSelected="  << counterHighPtSelected << endl;  
+  if (counterHighPtAll) cout << "KeyValue_HighPtRatio=" << counterHighPtSelected/Double_t(counterHighPtAll) << endl; 
+  else  cout << "KeyValue_HighPtRatio=0" << endl;
+  cout << "-----------------------------------------------" << endl; 
+  cout << "KeyValue_CounterV0sAll="     << counterV0sAll << endl;  
+  cout << "KeyValue_CounterV0sSelected="     << counterV0sSelected << endl;     
+  if (counterV0sAll) cout << "KeyValue_V0sRatio=" << counterV0sSelected/Double_t(counterV0sAll) << endl;     
+  else  cout << "KeyValue_V0sRatio=0" << endl;
+  cout << "-----------------------------------------------" << endl; 
+  cout << "KeyValue_CounterCosmicAll="  << counterCosmicAll << endl; 
+  cout << "KeyValue_CounterCosmicSelected="  << counterCosmicSelected << endl;
+  if (counterCosmicAll) cout << "KeyValue_CosmicRatio=" << counterCosmicSelected/Double_t(counterCosmicAll) << endl;  
+  else  cout << "KeyValue_CosmicRatio=0" << endl;
+  cout << "-----------------------------------------------" << endl; 
+  cout << "KeyValue_CounterLaserAll="   << counterLaserAll << endl;
+  cout << "KeyValue_CounterLaserSelected="   << counterLaserSelected << endl;   
+  if (counterLaserAll) cout << "KeyValue_LaserRatio=" << counterLaserSelected/Double_t(counterLaserAll) << endl;   
+  else  cout << "KeyValue_LaserRatio=0" << endl;
+  cout << "-----------------------------------------------" << endl; 
+  cout << "KeyValue_CounterdEdxAll="    << counterdEdxAll << endl;     
+  cout << "KeyValue_CounterdEdxSelected="    << counterdEdxSelected << endl;  
+  if (counterdEdxAll) cout << "KeyValue_dEdxRatio=" << counterdEdxSelected/Double_t(counterdEdxAll) << endl;    
+  else  cout << "KeyValue_dEdxRatio=0" << endl;
 }

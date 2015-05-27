@@ -19,7 +19,8 @@ execTrackQA=1
 execScalers=1
 defaultStorage="raw://"
 isPrivateProd=0
-optList="ad:efi:kmo:pst"
+usePhysicsSelection=1
+optList="ad:efi:kmno:pst"
 inputTriggerList="0x0"
 while getopts $optList option
 do
@@ -31,6 +32,7 @@ do
     i ) inputTriggerList=$OPTARG;;
     k ) execTrackQA=0;;
     m ) execMerge=0;;
+    n ) usePhysicsSelection=0;;
     o ) outTaskName=$OPTARG;;
     p ) isPrivateProd=1;;
     s ) execScalers=0;;
@@ -53,6 +55,7 @@ if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     echo "       -i input trigger list (default: no list)"
     echo "       -k skip run muon QA (defult: run)"
     echo "       -m skip merging (default: run)"
+    echo "       -n disable physics selection (default: enable)"
     echo "       -o task output name (default: QAresults.root)"
     echo "       -p is private production. Use directory structure of the plugin"
     echo "       -s skip run scalers trending (default: run)"
@@ -134,13 +137,13 @@ EOF
 
 	aliroot -b <<EOF &> logTerminateTrack.txt
 ${includeAliroot} ${loadAnalysisLibs}
-.x $qaMacroDir/terminateQA.C("${outTaskName}",$forceTerminate,0)
+.x $qaMacroDir/terminateQA.C("${outTaskName}",$forceTerminate,0,$usePhysicsSelection)
 .q
 EOF
 
 aliroot -b <<EOF &> logTerminateTrig.txt
 ${includeAliroot} ${loadAnalysisLibs}
-.x $qaMacroDir/terminateQA.C("${outTaskName}",1,1)
+.x $qaMacroDir/terminateQA.C("${outTaskName}",1,1,$usePhysicsSelection)
 .q
 EOF
 	#rm logTerminate.txt
@@ -212,10 +215,9 @@ fi
 
 if [ $execTrigQA -eq 1 ]; then
     outName="trigEffQA_${outFileSuffix}.root"
-
     runTrigQA "${mergeOut}" "${outName}"
 fi
 
 if [ $execTrackQA -eq 1 ]; then
-    runTrackQA 1
+    runTrackQA $usePhysicsSelection
 fi

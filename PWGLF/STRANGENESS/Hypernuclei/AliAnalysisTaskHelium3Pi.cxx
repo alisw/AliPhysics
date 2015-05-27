@@ -406,6 +406,20 @@ Double_t AliAnalysisTaskHelium3Pi::BetheBloch(Double_t betaGamma,Double_t charge
   return out;
  
 }
+//____________________________________________________________________
+
+// Flattening of the centrality distribution
+// true =  means skip event
+
+Bool_t AliAnalysisTaskHelium3Pi::Flatten(Float_t cent) {
+  float prob[13] = {
+    0.855566,0.846964,0.829618,0.829259,0.830984,
+    0.85094,0.844346,0.851818,0.874758,1,
+    0.374767,0.650491,0.946963
+  };
+  if (cent >= 13.f) return kFALSE;
+  else return gRandom->Rndm() > prob[int(cent)];
+}
 
 //==================DEFINITION OF OUTPUT OBJECTS==============================
 
@@ -648,7 +662,7 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
     fNtuple4->Branch("tHelEta"              ,&tHelEta              ,"tHelEta/F");
     fNtuple4->Branch("tHelisTOF"            ,&tHelisTOF            ,"tHelisTOF/F");
     fNtuple4->Branch("tHelTOFpull"          ,&tHelTOFpull          ,"tHelTOFpull/F");
-    fNtuple4->Branch("tHeMass"              ,&tHelisTOF            ,"tHelisTOF/F");
+    fNtuple4->Branch("tHeMass"              ,&tHeMass              ,"tHeMass/F");
     fNtuple4->Branch("tHelimpactXY"         ,&tHelimpactXY         ,"tHelimpactXY/F");
     fNtuple4->Branch("tHelimpactZ"          ,&tHelimpactZ          ,"tHelimpactZ/F");
     fNtuple4->Branch("tHelmapITS"           ,&tHelmapITS           ,"tHelmapITS/F");
@@ -745,7 +759,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
  
   AliCentrality *centrality = lESDevent->GetCentrality();
   Float_t percentile=centrality->GetCentralityPercentile("V0M");
-
+  if(Flatten(percentile))return;
   TrackNumber = lESDevent->GetNumberOfTracks();
   if (TrackNumber<2) return;  
 
@@ -1016,7 +1030,11 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  //------------------------------
 	
 	  fhBBHe->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
-	  HeTPC[nHeTPC++]=j;
+	  if(pinTPC<1.2)
+	    HeTPC[nHeTPC++]=j;
+	  else
+	    if(hasTOF && TMath::Abs(pullTOF)<=3)
+	      HeTPC[nHeTPC++]=j;
 	  
 	  esdtrack->GetImpactParameters(impactXY, impactZ);
 	  /*  
@@ -1072,8 +1090,11 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  tHelimpactZ	        =(Float_t)impactZ;
 	  tHelmapITS	        =(Float_t)mapITS;
 
-	  fNtuple4->Fill();
- 	  
+ 	  if(pinTPC<1.2)
+	    fNtuple4->Fill();
+ 	  else
+	    if(hasTOF && TMath::Abs(pullTOF)<=3)
+	      fNtuple4->Fill();
 	  //
 	}
       }

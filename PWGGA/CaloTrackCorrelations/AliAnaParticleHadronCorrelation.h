@@ -274,11 +274,11 @@ private:
   
   Int_t        fNDecayBits ;                             ///<  in case of study of decay triggers, select the decay bit.
   
-  Int_t        fNBkgBin;                                 ///<  Number of bins on pt content in cone.
-  Float_t      fBkgBinLimit[20];                         ///<  Pt bin limits on pt content in the cone.
-  
   ///  in case of study of decay triggers, select the decay bit
   UInt_t       fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ;
+
+  Int_t        fNBkgBin;                                 ///<  Number of bins on pt content in cone.
+  Float_t      fBkgBinLimit[20];                         ///<  Pt bin limits on pt content in the cone.
   
   Bool_t       fMakeAbsoluteLeading ;                    ///<  Requesting absolute leading triggers.
   Bool_t       fMakeNearSideLeading ;                    ///<  Requesting near side leading (+-90º from trigger particle) triggers.

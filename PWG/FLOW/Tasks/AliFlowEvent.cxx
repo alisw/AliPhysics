@@ -55,7 +55,7 @@ ClassImp(AliFlowEvent)
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent():
-  AliFlowEventSimple(), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -80,7 +80,7 @@ AliFlowEvent::AliFlowEvent():
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent(Int_t n):
-  AliFlowEventSimple(n), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(n), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -103,7 +103,7 @@ AliFlowEvent::AliFlowEvent(Int_t n):
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent(const AliFlowEvent& event):
-  AliFlowEventSimple(event), fApplyRecentering(event.fApplyRecentering), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(event), fApplyRecentering(event.fApplyRecentering), fApplyTwisting(event.fApplyTwisting), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // copy constructor 
   for(Int_t i(0); i < 9; i++) {
@@ -131,7 +131,8 @@ AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
   if (&event==this) return *this;       // check self-assignment
 
   fApplyRecentering = event.fApplyRecentering;
-  fCachedRun = event.fCachedRun; 
+  fApplyTwisting = event.fApplyTwisting;
+  fCachedRun = event.fCachedRun;
   fVZEROcentralityBin = event.fVZEROcentralityBin;
   fEvent = 0x0; // should never be copied
   fChi2A = 0x0; // do not clone these; if 0x0 they will be retrieved from the rp cuts object
@@ -228,7 +229,7 @@ void AliFlowEvent::SetMCReactionPlaneAngle(const AliMCEvent* mcEvent)
 AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // constructor
   for(Int_t i(0); i < 9; i++) {
@@ -291,7 +292,7 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // constructor
   for(Int_t i(0); i < 9; i++) {
@@ -359,7 +360,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // constructor
   for(Int_t i(0); i < 9; i++) {
@@ -453,7 +454,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             KineSource anOption,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // constructor
   for(Int_t i(0); i < 9; i++) {
@@ -557,7 +558,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliMultiplicity* anInputTracklets,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // constructor
   for(Int_t i(0); i < 9; i++) {
@@ -639,7 +640,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
 			    const AliCFManager* poiCFManager,
                             Bool_t hybrid):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
   // constructor
   for(Int_t i(0); i < 9; i++) {
@@ -739,7 +740,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const TH2F* anInputFMDhist,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -875,14 +876,16 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   // if the source for rp's or poi's is the VZERO detector, get the calibration 
   // and set the calibration parameters
   if (sourceRP == AliFlowTrackCuts::kBetaVZERO) {
-      SetBetaVZEROCalibrationForTrackCuts(rpCuts);
-      if(!rpCuts->GetApplyRecentering()) {
-          // if the user does not want to recenter, switch the flag
-          fApplyRecentering = -1;
-      }
-      // note: this flag is used in the overloaded implementation of Get2Qsub()
-      // and tells the function to use as Qsub vectors the recentered Q-vectors
-      // from the VZERO oadb file or from the event header
+    SetBetaVZEROCalibrationForTrackCuts(rpCuts);
+    if(!rpCuts->GetApplyRecentering()) {
+      // if the user does not want to recenter, switch the flag
+      fApplyRecentering = -1;
+    }
+    // note: this flag is used in the overloaded implementation of Get2Qsub()
+    // and tells the function to use as Qsub vectors the recentered Q-vectors
+    // from the VZERO oadb file or from the event header
+    // if the user does not want to recenter, switch the flag
+    fApplyTwisting = rpCuts->GetApplyTwisting();
   }
   if (sourcePOI == AliFlowTrackCuts::kBetaVZERO) {
       // probably no-one will choose vzero tracks as poi's ...
@@ -1003,7 +1006,7 @@ AliFlowTrack* AliFlowEvent::ReuseTrack(Int_t i)
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
                             AliFlowTrackCuts* poiCuts ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 
 {
   // constructor
@@ -1034,7 +1037,7 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliESDPmdTrack *pmdtracks,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fApplyTwisting(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 
 {
   // constructor
@@ -1297,23 +1300,64 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
    
     // just a precaution ...
     if(n > 5) {
-        Qxamean = 0;
-        Qxarms = 1;
-        Qyamean = 0;
-        Qyarms = 1;
-        Qxcmean = 0;
-        Qxcrms = 1; 
-        Qycmean = 0;    // this effectively disables the calibration
-        Qycrms = 1;
+      Qxamean = 0;
+      Qxarms = 1;
+      Qyamean = 0;
+      Qyarms = 1;
+      Qxcmean = 0;
+      Qxcrms = 1; 
+      Qycmean = 0;    // this effectively disables the calibration
+      Qycrms = 1;
     }
-
-    Double_t QxaCor = (Qxa - Qxamean)/Qxarms;
-    Double_t QyaCor = (Qya - Qyamean)/Qyarms;
-    Double_t QxcCor = (Qxc - Qxcmean)/Qxcrms;
-    Double_t QycCor = (Qyc - Qycmean)/Qycrms;
+   
+   Double_t QxaR = (Qxa - Qxamean)/Qxarms;
+   Double_t QyaR = (Qya - Qyamean)/Qyarms;
+   Double_t QxcR = (Qxc - Qxcmean)/Qxcrms;
+   Double_t QycR = (Qyc - Qycmean)/Qycrms;
+   
+   // update the vector
+   vA.Set(QxcR, QycR);
+   vB.Set(QxaR, QyaR);
+   
+   if(fApplyTwisting && n==1) {
+    QxaR = Qxa - Qxamean;
+    QyaR = Qya - Qyamean;
+    QxcR = Qxc - Qxcmean;
+    QycR = Qyc - Qycmean;
+    
     // update the vector
-    vA.Set(QxcCor, QycCor);
-    vB.Set(QxaCor, QyaCor);
+    vA.Set(QxcR, QycR);
+    vB.Set(QxaR, QyaR);
+    
+//    // Twist
+//    // default values for vector a (VZEROA)
+//    Double_t Q2xamean(fQxavsV0[1]->GetBinContent(c+1));
+//    Double_t Q2yamean(fQyavsV0[1]->GetBinContent(c+1));
+//    // default values for vector b (VZEROC)
+//    Double_t Q2xcmean(fQxcvsV0[1]->GetBinContent(c+1));
+//    Double_t Q2ycmean(fQycvsV0[1]->GetBinContent(c+1));
+//    
+//    Double_t lam = Q2yamean/(1-Q2xamean);
+//    Double_t lap = Q2yamean/(1+Q2xamean);
+//    Double_t lcm = Q2ycmean/(1-Q2xcmean);
+//    Double_t lcp = Q2ycmean/(1+Q2xcmean);
+//    
+//    Double_t QxaRT = (QxaR-lam*QyaR)/(1-lam*lap);
+//    Double_t QyaRT = (QyaR-lap*QxaR)/(1-lam*lap);
+//    Double_t QxcRT = (QxcR-lcm*QycR)/(1-lcm*lcp);
+//    Double_t QycRT = (QycR-lcp*QxcR)/(1-lcm*lcp);
+//    
+//    // Rescale
+//    Double_t QxaRTR = QxaRT/(1+Q2xamean);
+//    Double_t QyaRTR = QyaRT/(1-Q2xamean);
+//    Double_t QxcRTR = QxcRT/(1+Q2xcmean);
+//    Double_t QycRTR = QycRT/(1-Q2xcmean);
+//    
+//    // update the vector
+//    vA.Set(QxcRTR, QycRTR);
+//    vB.Set(QxaRTR, QyaRTR);
+   }
+   
   }
  Qarray[0] = vA;
  Qarray[1] = vB;
@@ -1642,7 +1686,7 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // the parameters to weigh the vzero track cuts have been extracted now, 
     // so we can pass them to the current track cuts obect
     cuts->SetVZEROgainEqualisation(fMultVZERO);       // passed as a TH1
-
+ 
     // step 2) extract the calibration histograms from the database and
     // pass them to the cuts object
     //
@@ -1665,12 +1709,12 @@ void AliFlowEvent::SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     fApplyRecentering = 999;
 }
 
-//_____________________________________________________________________________
+//-----------------------------------------------------------------------------
 
 void AliFlowEvent::ClearFast()
 {
   //clear the event without releasing any memory
-  //note that cached run number of recentering settigns are not clear 
+  //note that cached run number of recentering settigns are not clear
   //(see AliFlowEvent::ClearCachedRun() )
   AliFlowEventSimple::ClearFast();
 }

@@ -14,13 +14,14 @@
 #include "TFractionFitter.h"
 #include  <Riostream.h>
 #include "TLegend.h"
- #include "TStyle.h"
+#include "TStyle.h"
 #include "TSystem.h"
+#include "TGraph.h"
 #include <TROOT.h>
 
 TString Particle[]={"Pion","Kaon","Proton"};
 TCanvas* plot_on_canvas(TString name, TH1* h1,TH1* h2);
-
+void RunNumberQA(AliSpectraBothEventCuts* ecuts_data, AliSpectraBothEventCuts* ecuts_mc,TGraph* gresults);
 
 Float_t QAPlotsBoth( AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,
 	      AliSpectraBothEventCuts* ecuts_data, AliSpectraBothEventCuts* ecuts_mc,
@@ -205,7 +206,15 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 		cout<<"MC merging problem"<<endl;
 	if(events_data>0&&TMath::Abs(hman_data->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()/events_data-1.0)>0.001)
 		cout<<"Data merging problem"<<endl;
-	
+
+		
+	TGraph* gruns=new TGraph();
+	gruns->SetName("RunnumberQA");
+	RunNumberQA(ecuts_data,ecuts_mc,gruns);
+	gruns->SetTitle(Form("N_{runs}=%d;run;N_{mc}/N_{mcall}-N_{data}/N_{dataall}",gruns->GetN()));
+
+	flistqa->Add(gruns);
+
 	if(fullicorr)
 		return (1.0-badchunksfraction)*mcvertexratio/datavertexratio;
 	else 
@@ -233,4 +242,63 @@ TCanvas* plot_on_canvas(TString name, TH1* h1,TH1* h2)
 	lvtr->Draw();
 	return cvrt;
 }
+void RunNumberQA(AliSpectraBothEventCuts* ecuts_data, AliSpectraBothEventCuts* ecuts_mc,TGraph* gresults)
+{
+	TH1F* hmc=ecuts_mc->GetHistoRunNumbers();
+	TH1F* hdata=ecuts_data->GetHistoRunNumbers();
+		
+	Float_t dataentries=1.0;
+	Float_t mcentries=1.0;
 
+	
+	if(!hmc||!hdata)
+		return;
+	if(hmc->GetEntries()>0.0)
+		mcentries=hmc->GetEntries();
+	else
+		return;
+	if(hdata->GetEntries()>0.0)
+		dataentries=hdata->GetEntries();
+
+	else
+		return;
+		
+	for (int i=1;i<=hmc->GetXaxis()->GetNbins();i++)
+	{
+		if(hmc->GetBinContent(i)>0.0)
+		{
+			Int_t bindata=hdata->GetXaxis()->FindBin(hmc->GetXaxis()->GetBinCenter(i));
+			if(bindata>hdata->GetXaxis()->GetNbins()||bindata<1)
+			{
+				gresults->SetPoint(gresults->GetN(),hmc->GetXaxis()->GetBinCenter(i),1.1);
+			}
+			else
+			{	
+				if(hdata->GetBinContent(bindata)>0.0)
+					gresults->SetPoint(gresults->GetN(),hmc->GetXaxis()->GetBinCenter(i),hmc->GetBinContent(i)/mcentries-hdata->GetBinContent(bindata)/dataentries);
+				else
+					gresults->SetPoint(gresults->GetN(),hmc->GetXaxis()->GetBinCenter(i),1.1);	
+			}
+		}
+	}
+	for (int i=1;i<=hdata->GetXaxis()->GetNbins();i++)
+	{
+		if(hdata->GetBinContent(i)>0.0)
+		{
+			Int_t binmc=hmc->GetXaxis()->FindBin(hdata->GetXaxis()->GetBinCenter(i));
+			if(binmc>hmc->GetXaxis()->GetNbins()||binmc<1)
+			{
+				gresults->SetPoint(gresults->GetN(),hdata->GetXaxis()->GetBinCenter(i),-1.1);
+			}
+			else
+			{
+				if(hmc->GetBinContent(binmc)<1.0)
+					gresults->SetPoint(gresults->GetN(),hdata->GetXaxis()->GetBinCenter(i),-1.1);	
+			}
+
+		}
+
+	}
+	return;
+		
+}

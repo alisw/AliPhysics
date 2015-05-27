@@ -62,9 +62,10 @@ fMaxAssocPt(1000.),             fMinAssocPt(0.),
 fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),
 fSelectIsolated(0),             fMakeSeveralUE(0),
 fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.),
-fPi0AODBranchName(""),          fNeutralCorr(0),
+fPi0AODBranchName(""),          fAODNamepTInConeHisto(""), fNeutralCorr(0),
 fPi0Trigger(0),                 fDecayTrigger(0),
 fNDecayBits(0),                 fDecayBits(),
+fNBkgBin(0),
 fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),
 fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
 fNAssocPtBins(0),               fAssocPtBinLimit(),
@@ -77,6 +78,7 @@ fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
 fMinLeadHadPt(0),               fMaxLeadHadPt(0),
 fFillEtaGapsHisto(1),           fFillMomImbalancePtAssocBinsHisto(0),
 fFillInvMassHisto(0),           fFillBkgBinsHisto(0),
+fFillTaggedDecayHistograms(0),  fDecayTagsM02Cut(0),
 fMCGenTypeMin(0),               fMCGenTypeMax(0),
 fTrackVector(),                 fMomentum(),           fMomentumIM(),
 fDecayMom1(),                   fDecayMom2(),
@@ -106,7 +108,7 @@ fhZTCharged(0),                 fhZTUeCharged(0),
 fhZTPosCharged(0),              fhZTNegCharged(0),
 fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
 fhXEChargedMC(),                fhDeltaPhiChargedMC(),
-fhXEUeChargedLeftMC(),          fhXEUeChargedRightMC(),
+fhXEUeChargedRightMC(),         fhXEUeChargedLeftMC(),          
 fhDeltaPhiDeltaEtaChargedPtA3GeV(0),
 fhDeltaPhiChargedPtA3GeV(0),    fhDeltaEtaChargedPtA3GeV(0),
 // Pile-Up
@@ -187,8 +189,8 @@ fhMixDeltaPhiDeltaEtaChargedAssocPtBin(),
 fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0),
 fhMassPtTrigger(0),             fhMCMassPtTrigger(),
 fhPtLeadInConeBin(),            fhPtSumInConeBin(),
-fAODNamepTInConeHisto("")
-
+fhPtLeadConeBinDecay(),         fhSumPtConeBinDecay(),
+fhPtLeadConeBinMC(),            fhSumPtConeBinMC()
 {
   InitParameters();
   
@@ -3388,8 +3390,8 @@ void AliAnaParticleHadronCorrelation::InvMassHisto(AliAODPWG4ParticleCorrelation
     fMomentumIM += fMomentum;
     
     Double_t mass  = fMomentumIM.M();
-    Double_t epair = fMomentumIM.E();
-    Float_t ptpair = fMomentumIM.Pt();
+    //    Double_t epair = fMomentumIM.E();
+    //    Float_t ptpair = fMomentumIM.Pt();
     
     // Mass of all pairs
     fhMassPtTrigger->Fill(ptTrig, mass, GetEventWeight());

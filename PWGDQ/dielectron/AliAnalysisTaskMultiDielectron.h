@@ -55,7 +55,8 @@ public:
   void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
   void SetBeamEnergy(Double_t beamEbyHand=-1.)  { fBeamEnergy=beamEbyHand;  }
-  
+  void SetRandomizeDaughters(Bool_t random=kTRUE) { fRandomizeDaughters=random; }
+
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
   TObjArray *fPairArray;             //! output array
@@ -71,6 +72,7 @@ protected:
   Bool_t fFiredExclude;              // cut logic: select(default) or exclude
   Bool_t fRejectPileup;              // pileup rejection wanted
   Double_t fBeamEnergy;              // beam energy in GeV (set by hand)
+  Bool_t   fRandomizeDaughters;      // shuffle daughters at pair creation (sorted according to pt by default, which affects PhivPair at least for Like Sign)
 
   ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
   

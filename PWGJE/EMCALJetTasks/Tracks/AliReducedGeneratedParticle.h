@@ -15,6 +15,8 @@
 
 #include <TObject.h>
 
+class TVector3;
+
 /**
  * \namespace HighPtTracks
  * \brief Namespace for classes creating trees of events with jets
@@ -63,6 +65,12 @@ public:
    * \return The energy of the particle
    */
   Double_t GetParticleEnergy() const { return fEnergy; }
+
+  Double_t Pt() const;
+  Double_t Eta() const;
+  Double_t Phi() const;
+
+  void FillMomentumVector(TVector3 &) const;
 
   /**
    * Set the basic paricle parameters

@@ -231,35 +231,44 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1I("hCellMultEventM1","PHOS cell multiplicity per event, M1",2000,0,2000));
   fOutputContainer->Add(new TH1I("hCellMultEventM2","PHOS cell multiplicity per event, M2",2000,0,2000));
   fOutputContainer->Add(new TH1I("hCellMultEventM3","PHOS cell multiplicity per event, M3",2000,0,2000));
+  fOutputContainer->Add(new TH1I("hCellMultEventM4","PHOS cell multiplicity per event, M4",2000,0,2000));
 
   fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,3000,0.,30.));
   fOutputContainer->Add(new TH1F("hCellEnergyM1","Cell energy in module 1",3000,0.,30.));
   fOutputContainer->Add(new TH1F("hCellEnergyM2","Cell energy in module 2",3000,0.,30.));
   fOutputContainer->Add(new TH1F("hCellEnergyM3","Cell energy in module 3",3000,0.,30.));
+  fOutputContainer->Add(new TH1F("hCellEnergyM4","Cell energy in module 4",3000,0.,30.));
 
   fOutputContainer->Add(new TH2F("hCellNXZM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellNXZM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellNXZM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCellNXZM4","Cell (X,Z), M4" ,64,0.5,64.5, 56,0.5,56.5));
+
   fOutputContainer->Add(new TH2F("hCellEXZM1","Cell E(X,Z), M1",64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellEXZM2","Cell E(X,Z), M2",64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellEXZM3","Cell E(X,Z), M3",64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCellEXZM4","Cell E(X,Z), M4",64,0.5,64.5, 56,0.5,56.5));
 
   //Bad Map
   fOutputContainer->Add(new TH2F("hCluLowM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluLowM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluLowM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM4","Cell (X,Z), M4" ,64,0.5,64.5, 56,0.5,56.5));
 
-  fOutputContainer->Add(new TH2F("hCluHighM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluHighM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluHighM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluHighM1","Cell (X,Z), M1 (E_{clu}>1.5 GeV)" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluHighM2","Cell (X,Z), M2 (E_{clu}>1.5 GeV)" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluHighM3","Cell (X,Z), M3 (E_{clu}>1.5 GeV)" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluHighM4","Cell (X,Z), M4 (E_{clu}>1.5 GeV)" ,64,0.5,64.5, 56,0.5,56.5));
 
   fOutputContainer->Add(new TH2F("hCluVetoM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluVetoM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluVetoM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluVetoM4","Cell (X,Z), M4" ,64,0.5,64.5, 56,0.5,56.5));
 
   fOutputContainer->Add(new TH2F("hCluDispM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluDispM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluDispM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluDispM4","Cell (X,Z), M4" ,64,0.5,64.5, 56,0.5,56.5));
 
 
   //Single photon and pi0 spectrum
@@ -273,9 +282,13 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hPi0M11","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   fOutputContainer->Add(new TH2F("hPi0M12","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   fOutputContainer->Add(new TH2F("hPi0M13","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+  fOutputContainer->Add(new TH2F("hPi0M14","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   fOutputContainer->Add(new TH2F("hPi0M22","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   fOutputContainer->Add(new TH2F("hPi0M23","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+  fOutputContainer->Add(new TH2F("hPi0M24","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
   fOutputContainer->Add(new TH2F("hPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+  fOutputContainer->Add(new TH2F("hPi0M34","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+  fOutputContainer->Add(new TH2F("hPi0M44","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
   // Histograms for different centralities
   const int kNPID = 17;
@@ -569,7 +582,7 @@ void AliAnalysisTaskPi0Flow::FillPHOSCellQAHists()
   FillHistogram("hCenTrack",fCentrality,fEvent->GetNumberOfTracks()) ;
 
 
-  Int_t nCellModule[3] = {0,0,0};
+  Int_t nCellModule[4] = {0,0,0,0};
   for (Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++) {
     Int_t cellAbsId = cells->GetCellNumber(iCell);
     Int_t relId[4] = {0,0,0,0};
@@ -597,11 +610,18 @@ void AliAnalysisTaskPi0Flow::FillPHOSCellQAHists()
       FillHistogram("hCellNXZM3",cellX,cellZ,1.);
       FillHistogram("hCellEXZM3",cellX,cellZ,energy);
     }
+    else if (mod1==4) {
+      nCellModule[3]++;
+      FillHistogram("hCellEnergyM4",cells->GetAmplitude(iCell));
+      FillHistogram("hCellNXZM4",cellX,cellZ,1.);
+      FillHistogram("hCellEXZM4",cellX,cellZ,energy);
+    }
   }
-  FillHistogram("hCellMultEvent",nCellModule[0]+nCellModule[1]+nCellModule[2]);
+  FillHistogram("hCellMultEvent",nCellModule[0]+nCellModule[1]+nCellModule[2]+nCellModule[3]);
   FillHistogram("hCellMultEventM1",nCellModule[0]);
   FillHistogram("hCellMultEventM2",nCellModule[1]);
   FillHistogram("hCellMultEventM3",nCellModule[2]);
+  FillHistogram("hCellMultEventM4",nCellModule[3]);
 
 }
 //_____________________________________________________________________________
@@ -1090,13 +1110,20 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
 	    FillHistogram("hPi0M22",m,pt );
           else if(ph1->Module()==3 && ph2->Module()==3)
 	    FillHistogram("hPi0M33",m,pt );
+          else if(ph1->Module()==4 && ph2->Module()==4)
+	    FillHistogram("hPi0M44",m,pt );
           else if(ph1->Module()==1 && ph2->Module()==2)
 	    FillHistogram("hPi0M12",m,pt );
           else if(ph1->Module()==1 && ph2->Module()==3)
 	    FillHistogram("hPi0M13",m,pt );
+          else if(ph1->Module()==1 && ph2->Module()==4)
+	    FillHistogram("hPi0M14",m,pt );
           else if(ph1->Module()==2 && ph2->Module()==3)
 	    FillHistogram("hPi0M23",m,pt );
-
+          else if(ph1->Module()==2 && ph2->Module()==4)
+	    FillHistogram("hPi0M24",m,pt );
+          else if(ph1->Module()==3 && ph2->Module()==4)
+	    FillHistogram("hPi0M34",m,pt );
         }
 	
       }

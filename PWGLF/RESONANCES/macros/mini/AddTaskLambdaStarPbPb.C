@@ -28,13 +28,12 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    Float_t     nsigmaKaTOF = 3.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
-   UInt_t      triggerMask = AliVEvent::kMB,
+   UInt_t      triggerMask = AliVEvent::kCentral,
    //Bool_t      is2011PbPb = kFALSE,
-   Int_t       nmix = 0,
+   Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
-   Int_t       aodN = 0,
    TString     outNameSuffix = ""
    )
 {  
@@ -52,23 +51,10 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    // create the task and configure 
    TString taskName = Form("TPCLStar%s%s_%i%i_%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPrCandidate,(Int_t)cutKaCandidate,outNameSuffix.Data()  );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-   if (!isMC && !isPP){
-     Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
-     task->SetUseCentralityPatch(aodN==49);
-   }
-    //if(is2011PbPb)
-   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-   //else
-   task->SelectCollisionCandidates(triggerMask);
-  
-
-   if (isPP) 
-     task->UseMultiplicity("QUALITY");
-   else
-     task->UseCentrality("V0M");   
+   task->SelectCollisionCandidates(triggerMask);  
+   task->UseCentrality("V0M");   
    // set event mixing options
    task->UseContinuousMix();
-   //task->UseBinnedMix();
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
@@ -132,7 +118,7 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarPbPb.C");
-   if (!ConfigLambdaStarPbPb(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPrTPC, nsigmaKaTPC, nsigmaPrTOF, nsigmaKaTOF, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0; 
+   if (!ConfigLambdaStarPbPb(task, isMC, isPP, outNameSuffix.Data(), cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPrTPC, nsigmaKaTPC, nsigmaPrTOF, nsigmaKaTOF, enableMonitor, isMC&IsMcTrueOnly)) return 0x0; 
   
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

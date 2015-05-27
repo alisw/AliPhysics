@@ -74,6 +74,7 @@ class AliJJetJtAnalysis{
 
         void WriteHistograms();
         
+	double getDiffR(double phi1, double phi2, double eta1, double eta2);
         int GetBin(TVector *array, double val){
 
             int iBin=-1;

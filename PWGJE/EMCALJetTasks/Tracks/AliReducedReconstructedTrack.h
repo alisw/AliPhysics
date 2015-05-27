@@ -41,7 +41,7 @@ public:
   AliReducedReconstructedTrack();
   virtual ~AliReducedReconstructedTrack();
 
-  void FillMomentumVector(TVector3 &pvec);
+  void FillMomentumVector(TVector3 &pvec) const;
   /**
    * Set the Momentum vector of the track at the vertex
    * \param px x-component of the primary vertex
@@ -95,6 +95,16 @@ public:
    */
   Int_t GetNumberOfTPCFindableClusters() const { return fFindableClustersTPC; }
 
+  Double_t Pt() const;
+  Double_t Eta() const;
+  Double_t Phi() const;
+
+  /**
+   * Get the charge of the reconstructed track
+   * \return Charge of the reconstructed track
+   */
+  Char_t Charge() const { return fCharge; }
+
   /**
    * Mark track as selected by a given track cuts using the index
    * \param index Index of the track cuts
@@ -136,10 +146,16 @@ public:
    * \param nfindable Number of findable clusters
    */
   void SetTPCFindableClusters(Int_t nfindable) { fFindableClustersTPC = nfindable; }
+  /**
+   * Set the charge of the reconstructed track
+   * \param charge Charge of the reconstructed track
+   */
+  void SetCharge(Char_t charge) { fCharge = charge; }
 
 
 protected:
   Double_t                      fPVec[3];             ///< Momentum vector of the particle
+  Char_t                        fCharge;              ///< Charge
   Long_t                        fTrackCutsMap;        ///< Map of Track cuts
   Int_t                         fClusterIndex;        ///< Index of cluster matched to the track
   Int_t                         fParticleIndex;       ///< Index of true particle matched to this track
@@ -150,7 +166,7 @@ protected:
   Char_t                        fFindableClustersTPC; ///< Number of findable clusters in the TPC
 
   /// \cond CLASSIMP
-  ClassDef(AliReducedReconstructedTrack, 1);
+  ClassDef(AliReducedReconstructedTrack, 2);
   /// \endcond
 };
 

@@ -178,7 +178,7 @@ AliAnalysisTaskTPCTOFPID::UserCreateOutputObjects()
   /*
    * user create output objects
    */
-
+  OpenFile(1);
   /* output tree */
   fPIDTree = new TTree("PIDTree","PIDTree");
   fPIDTree->Branch("AnalysisEvent", "AliAnalysisPIDEvent", &fAnalysisEvent);  
@@ -246,9 +246,7 @@ AliAnalysisTaskTPCTOFPID::InitEvent()
 
   /* get ESD event */
   fESDEvent = dynamic_cast<AliESDEvent *>(InputEvent());
-  //printf("Checking if fESD...");
   if (!fESDEvent) return kFALSE;
-  //printf("pass!\n");
   /* get MC event */
   if (fMCFlag) {
     fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
@@ -278,14 +276,12 @@ AliAnalysisTaskTPCTOFPID::InitEvent()
   }
   else fHasVertex = kTRUE;
 
-  //  if (fVertexSelectionFlag && (!fHasVertex || TMath::Abs(vertex->GetZ()) > fVertexCut)) return kFALSE;
   
   fVertexZ = vertex->GetZ();
   /* centrality in PbPb */
   if (fPbPbFlag) {
     fCentrality = fESDEvent->GetCentrality();
   }
-  //printf("smack");
   /* calibrate ESD (also in MC to correct TExp) */
   fTOFcalib->CalibrateESD(fESDEvent);
 
@@ -347,19 +343,12 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
 
   /*** INITIALIZATION ***/
 
-  /* unset fill AOD */
-  ((AliAODHandler*)(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()))->SetFillAOD(kFALSE);
-
   /* init run */
   if (!InitRun()) return;
   /* init event */
   if (!InitEvent()) return;
   if(!(fMultiUtils->IsEventSelected(fESDEvent))) return;
-
   Float_t V0MPercentile = fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M");
-
-  /* set fill AOD */
-  ((AliAODHandler*)(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()))->SetFillAOD(kTRUE);
 
   /*** MC PRIMARY PARTICLES ***/
 
@@ -447,7 +436,6 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
 }
 
 void AliAnalysisTaskTPCTOFPID::Terminate(Option_t *) {
-    PostData(1,fPIDTree);
   printf("Terminate!\n");
 }
 

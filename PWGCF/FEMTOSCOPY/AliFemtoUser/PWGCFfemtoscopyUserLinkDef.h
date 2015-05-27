@@ -56,6 +56,7 @@
 #pragma link C++ class AliFemtoPicoEventRP;
 #pragma link C++ class AliFemtoCorrFctnPairFractions;
 #pragma link C++ class AliAnalysisTaskParticleEfficiency+;
+#pragma link C++ class AliAnalysisTaskParticleFractions+;
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
 #pragma link C++ class AliFemtoCorrFctnGammaMonitorAlpha+;

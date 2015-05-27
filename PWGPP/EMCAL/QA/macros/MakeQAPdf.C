@@ -10,8 +10,14 @@
 #include "TError.h"
 #endif
 
-// Make a pdf with all QA plots 
-// A. SHABETAI
+///
+/// \file MakeQAPdf.C
+/// \brief QA to PDF files
+///
+/// Make a pdf with all QA plots
+///
+/// \author Alexandre Shabetai, <Alexandre.Shabetai@subatech.in2p3.fr>  SUBATECH
+///
 
 TFile* sourceFile;
 TObject* Myobj;

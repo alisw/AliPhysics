@@ -1,15 +1,12 @@
+///
+/// \file AliFemtoCorrFctnCollection.h
+/// \author Mike Lisa, Ohio State <lisa@mps.ohio-state.edu>
+///
+/// \brief Container of pointers to all correlation functions which are associated
+///        with a particular Analysis object.
+///
+
 /***************************************************************************
- *
- * $Id$
- *
- * Author: Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   The CorrFctnCollection contains pointers to all Correlation Functions
- *   that are associated with a particular Analysis object.
- *
- ***************************************************************************
  *
  * $Log$
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos

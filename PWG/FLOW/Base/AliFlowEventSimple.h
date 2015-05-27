@@ -118,7 +118,9 @@ class AliFlowEventSimple: public TObject {
   AliFlowTrackSimple* MakeNewTrack();
  
   virtual AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
-  virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
+  virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
+  virtual void GetZDC2Qsub(AliFlowVector* Qarray);
+  virtual void SetZDC2Qsub(Double_t* QVC, Double_t* QVA);
 
   void SetCentrality(Double_t c) {fCentrality=c;}
   Double_t GetCentrality() const {return fCentrality;}
@@ -161,12 +163,14 @@ class AliFlowEventSimple: public TObject {
   TObjArray*              fMothersCollection;         //!cache the particles with daughters
   Double_t                fCentrality;                // centrality
   Int_t                   fRun;                       // run number
+  Double_t                fZNCQ[2];                   //! Q_1 vector from ZDCN-C
+  Double_t                fZNAQ[2];                   //! Q_1 vector from ZDCN-A
  
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
-  ClassDef(AliFlowEventSimple,2)
+  ClassDef(AliFlowEventSimple,1)
 };
 
 #endif

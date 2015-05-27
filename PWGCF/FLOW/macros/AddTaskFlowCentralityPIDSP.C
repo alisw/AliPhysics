@@ -366,6 +366,7 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
     else     taskSP->SetTotalQvector("Qa");
     taskSP->SetRelDiffMsub(1.0);
     taskSP->SetApplyCorrectionForNUA(kTRUE);
+    taskSP->SetHarmonic(harmonic);
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){

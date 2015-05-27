@@ -210,10 +210,16 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 //------------------- November 2013 -----------------------------------< 
 	  // new cuts to remove electron (do not take into analysis if 400<p<500) 
-	 dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
-	 dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
+	  //dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	  //dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
+	 dtc1etaphitpc[aniter]->SetNsigmaTPCle250(0.0);
+	 dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(0.0);
+	 
 	 dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
+	 //dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(0.0);
+	 //dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(0.0);
+	 
 	 dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);    
 	 // new cuts are stronger, better separation of pion in TOF 
 	 // when momentum is greater then 800 MeV/c
@@ -221,10 +227,16 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	 dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
 	 dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
 
-	 dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
-	 dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
+	 //dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	 //dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
+	 dtc2etaphitpc[aniter]->SetNsigmaTPCle250(0.0);
+	 dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(0.0);
+	 
 	 dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
+	 //dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(0.0);
+	 //dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(0.0);
+	 
 	 dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);    
 	 // new cuts are stronger, better separation of pion in TOF 
 	 // when momentum is greater then 800 MeV/c

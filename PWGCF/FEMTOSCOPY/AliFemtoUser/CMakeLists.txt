@@ -77,6 +77,7 @@ set(SRCS
   AliFemtoCorrFctnMinvMonitor.cxx
   AliFemtoCorrFctnPairFractions.cxx
   AliAnalysisTaskParticleEfficiency.cxx
+  AliAnalysisTaskParticleFractions.cxx
   AliFemtoPairOriginMonitor.cxx
   AliFemtoPairCutAntiGammaAlpha.cxx
   AliFemtoCorrFctnGammaMonitorAlpha.cxx

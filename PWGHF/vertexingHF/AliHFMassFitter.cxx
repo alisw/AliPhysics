@@ -2065,3 +2065,205 @@ void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &signifi
 }
 
 
+TH1F* AliHFMassFitter::GetResidualsAndPulls(TH1 *h,TF1 *f,Double_t minrange,Double_t maxrange,TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend){
+  Int_t binmi=1,binma=h->GetNbinsX();
+
+  if(maxrange>minrange){
+    binmi=h->FindBin(minrange*1.001);
+    binma=h->FindBin(maxrange*0.9999);
+  }
+  if(hResidualTrend){
+    //h->Copy(hResidualTrend);
+    hResidualTrend->SetBins(h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax());
+    hResidualTrend->SetName(Form("%s_residualTrend",h->GetName()));
+    hResidualTrend->SetTitle(Form("%s  (Residuals)",h->GetTitle()));
+    hResidualTrend->SetMarkerStyle(20);
+    hResidualTrend->SetMarkerSize(1.0);
+    hResidualTrend->Reset();
+  }
+  if(hPullsTrend){
+    hPullsTrend->SetBins(h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax());
+    hPullsTrend->Reset();
+    hPullsTrend->SetName(Form("%s_pullTrend",h->GetName()));
+    hPullsTrend->SetTitle(Form("%s (Pulls)",h->GetTitle()));
+    hPullsTrend->SetMarkerStyle(20);
+    hPullsTrend->SetMarkerSize(1.0);
+  }
+  if(hPulls){
+    hPulls->SetName(Form("%s_pulls",h->GetName()));
+    hPulls->SetTitle(Form("%s ; Pulls",h->GetTitle()));
+    hPulls->SetBins(40,-10,10);
+    hPulls->Reset();
+  }
+
+  Double_t res=-1.e-6,min=1.e+12,max=-1.e+12;
+  TArrayD *arval=new TArrayD(binma-binmi+1);
+  for(Int_t jst=1;jst<=h->GetNbinsX();jst++){      
+    
+    res=h->GetBinContent(jst)-f->Integral(h->GetBinLowEdge(jst),h->GetBinLowEdge(jst)+h->GetBinWidth(jst))/h->GetBinWidth(jst);
+    if(jst>=binmi&&jst<=binma){
+      arval->AddAt(res,jst-binmi);
+      if(res<min)min=res;
+      if(res>max)max=res;
+    }
+    //      Printf("Res = %f from %f - %f",res,h->GetBinContent(jst),f->Integral(h->GetBinLowEdge(jst),h->GetBinLowEdge(jst)+h->GetBinWidth(jst))/h->GetBinWidth(jst));
+    if(hResidualTrend){
+      hResidualTrend->SetBinContent(jst,res);
+      hResidualTrend->SetBinError(jst,h->GetBinError(jst));
+    }
+    if(hPulls){
+      if(jst>=binmi&&jst<=binma)hPulls->Fill(res/h->GetBinError(jst));
+    }    
+    if(hPullsTrend){
+      hPullsTrend->SetBinContent(jst,res/h->GetBinError(jst));
+      hPullsTrend->SetBinError(jst,0.0001);
+    }
+  }
+  if(hResidualTrend)hResidualTrend->GetXaxis()->SetRange(binmi,binma);
+  if(hPullsTrend){
+    hPullsTrend->GetXaxis()->SetRange(binmi,binma);
+    hPullsTrend->SetMinimum(-7);
+    hPullsTrend->SetMaximum(+7);
+  }
+  if(TMath::Abs(min)>TMath::Abs(max))max=min;
+
+  TH1F *hout=new TH1F(Form("%s_residuals",h->GetName()),Form("%s ; residuals",h->GetTitle()),25,-TMath::Abs(max)*1.5,TMath::Abs(max)*1.5);
+  for(Int_t j=0;j<binma-binmi+1;j++){
+    hout->Fill(arval->At(j));
+  }
+  hout->Sumw2();
+  hout->Fit("gaus","LEM","",-TMath::Abs(max)*1.2,TMath::Abs(max)*1.2);
+
+  if(hPulls){
+    hPulls->Sumw2();
+    hPulls->Fit("gaus","LEM","",-3,3);
+  }
+  delete arval;
+  return hout;
+}
+
+
+TH1F* AliHFMassFitter::GetOverBackgroundResidualsAndPulls(Double_t minrange,Double_t maxrange,TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend){
+  
+
+  if(!fhistoInvMass){
+    Printf("AliHFMassFitter::GetOverBackgroundResidualsAndPulls, invariant mass histogram not avaialble!");
+    return 0x0;
+  }
+  
+  TF1 *fback=fhistoInvMass->GetFunction("funcbkgRecalc"); 
+  if(!fback){
+    Printf("AliHFMassFitter::GetOverBackgroundResidualsAndPulls, funcbkgRecalc not available!");
+    return 0x0;
+  }
+
+  // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
+
+  //  TF1 *fbackCp=(TF1*)fback->Clone("ftmpback");
+  TF1 *fbackCp=new TF1("ftmpback",this,&AliHFMassFitter::FitFunction4Bkg,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");;
+  for(Int_t i=0;i< fNFinalPars-3;i++){
+    fbackCp->SetParameter(i,fback->GetParameter(i));
+  }
+  //  fbackCp->SetName("ftmpback");
+  //  fbackCp->SetRange(minrange*0.5,maxrange*1.5);
+  //  fback->Copy(*fbackCp);
+  //  fbackCp->SetRange(minrange*0.5,maxrange*1.5);
+  //  fbackCp->Paint();
+  //  fbackCp->Update();
+
+  TH1F *h=GetResidualsAndPulls(fhistoInvMass,fbackCp,minrange,maxrange,hPulls,hResidualTrend,hPullsTrend);
+  delete fbackCp;
+  
+  if(fSigmaSgn<0){
+    Printf("AliHFMassFitter::GetOverBackgroundResidualsAndPulls, negative sigma: fit not performed or something went wrong, cannto draw gaussian term on top of residuals");    
+    return h;
+  }
+
+  if(hResidualTrend){  
+    TF1 *fgauss=new TF1("signalTermForRes","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])",fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1));
+    fgauss->SetParameter(0,fRawYield*fhistoInvMass->GetBinWidth(1));
+    fgauss->SetParameter(1,fMass);
+    fgauss->SetParameter(2,fSigmaSgn);
+    fgauss->SetLineColor(kBlue);  
+    hResidualTrend->GetListOfFunctions()->Add(fgauss); 
+  }
+  return h;
+}
+
+
+TH1F* AliHFMassFitter::GetAllRangeResidualsAndPulls(Double_t minrange,Double_t maxrange,TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend){
+  
+
+  if(!fhistoInvMass){
+    Printf("AliHFMassFitter::GetAllRangeResidualsAndPulls, invariant mass histogram not avaialble!");
+    return 0x0;
+  }
+  
+  TF1 *f=fhistoInvMass->GetFunction("funcmass"); 
+  if(!f){
+    Printf("AliHFMassFitter::GetAllRangeResidualsAndPulls, funcmass not available!");
+    return 0x0;
+  }
+  
+  // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
+  TF1 *fmassCp=new TF1("fmassCp",this,&AliHFMassFitter::FitFunction4MassDistr,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars,"AliHFMassFitter","FitFunction4MassDistr");
+  for(Int_t i=0;i< fNFinalPars;i++){
+    fmassCp->SetParameter(i,f->GetParameter(i));
+  }
+  
+  TH1F *h=GetResidualsAndPulls(fhistoInvMass,fmassCp,minrange,maxrange,hPulls,hResidualTrend,hPullsTrend);
+  delete fmassCp;
+  return h;
+
+}
+
+TPaveText* AliHFMassFitter::GetFitParametersBox(Double_t nsigma,Int_t mode){
+  
+  TPaveText *pinfom=new TPaveText(0.6,0.7,1.,.87,"NDC");
+  pinfom->SetBorderSize(0);
+  pinfom->SetFillStyle(0);
+  TF1* ff=fhistoInvMass->GetFunction("funcmass");
+  
+  for (Int_t i=fNFinalPars-3;i<fNFinalPars;i++){
+    pinfom->SetTextColor(kBlue);
+    TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+    if(!(mode==1 && i==fNFinalPars-3)) pinfom->AddText(str);
+  }  
+  
+  
+  if(mode>1){
+    pinfom->SetTextColor(kBlue+5);
+    for (Int_t i=0;i<fNFinalPars-3;i++){      
+      TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+      pinfom->AddText(str);
+    }
+  }
+  pinfom->AddText(Form("#chi^{2}/NDF=%.2f/%d",ff->GetChisquare(),ff->GetNDF()));  
+  return pinfom;
+} 
+
+
+TPaveText* AliHFMassFitter::GetYieldBox(Double_t nsigma){
+    TPaveText *pinfo2=new TPaveText(0.1,0.1,0.6,0.4,"NDC");
+    pinfo2->SetBorderSize(0);
+    pinfo2->SetFillStyle(0);
+
+    Double_t signif, signal, bkg, errsignif, errsignal, errbkg;
+
+    Signal(nsigma,signal,errsignal);
+    Background(nsigma,bkg, errbkg);
+    AliVertexingHFUtils::ComputeSignificance(signal,errsignal,bkg,errbkg,signif,errsignif);
+
+
+    TString str=Form("Significance (%.0f#sigma) %.1f #pm %.1f ",nsigma,signif,errsignif);
+    pinfo2->AddText(str);
+    str=Form("S (%.0f#sigma) %.0f #pm %.0f ",nsigma,signal,errsignal);
+    pinfo2->AddText(str);
+    str=Form("B (%.0f#sigma) %.0f #pm %.0f",nsigma,bkg,errbkg);
+    pinfo2->AddText(str);
+    if(bkg>0) str=Form("S/B (%.0f#sigma) %.4f ",nsigma,signal/bkg); 
+    pinfo2->AddText(str);
+    
+    return pinfo2;
+
+}

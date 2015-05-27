@@ -87,6 +87,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fTOFlowBoundary(-2.4)
 ,fTOFhighBoundary(3.6)
 ,fTOFnBins(75)
+,fDisableITSatHighPt(100.f)
+,fDisableTPCpidAtHighPt(100.f)
 ,fEnablePerformance(kFALSE)
 ,fEnablePtCorrection(kTRUE)
 ,fRequireITSrefit(kTRUE)
@@ -497,30 +499,37 @@ void AliAnalysisTaskNucleiYield::Terminate(Option_t *) {
 ///
 Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]) {
   ULong_t status = track->GetStatus();
-  if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return kFALSE;
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return kFALSE;
   if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return kFALSE;
   if (track->Y(fPDGMass) < fRequireYmin || track->Y(fPDGMass) > fRequireYmax) return kFALSE;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return kFALSE;
-  unsigned int nSPD = 0, nITS = 0, nSDD = 0;
-  for (int i = 0; i < 6; ++i) {
-    if (track->HasPointOnITSLayer(i)) {
-      if (i < 2) nSPD++;
-      else if (i < 4) nSDD++;
-      nITS++;
-    }
-  }
-  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
-  if (nITS < fRequireITSrecPoints) return kFALSE;
-  if (nSPD < fRequireSPDrecPoints) return kFALSE;
-  if (nSDD < fRequireSDDrecPoints) return kFALSE;
-  if (fRequireVetoSPD && nSPD > 0) return kFALSE;
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
-  Double_t cov[3];
-  if (!track->PropagateToDCA(fPrimaryVertex, fMagField, 100, dca, cov)) return kFALSE;
-  if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
-  if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
+  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
+  
+  /// ITS related cuts
+  dca[0] = 0.;
+  dca[1] = 0.;
+  if (track->Pt() < fDisableITSatHighPt) {
+    unsigned int nSPD = 0, nITS = 0, nSDD = 0;
+    for (int i = 0; i < 6; ++i) {
+      if (track->HasPointOnITSLayer(i)) {
+        if (i < 2) nSPD++;
+        else if (i < 4) nSDD++;
+        nITS++;
+      }
+    }
+    if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return kFALSE;
+    if (nITS < fRequireITSrecPoints) return kFALSE;
+    if (nSPD < fRequireSPDrecPoints) return kFALSE;
+    if (nSDD < fRequireSDDrecPoints) return kFALSE;
+    if (fRequireVetoSPD && nSPD > 0) return kFALSE;
+    Double_t cov[3];
+    if (!track->PropagateToDCA(fPrimaryVertex, fMagField, 100, dca, cov)) return kFALSE;
+    if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
+    if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
+  }
+  
   return kTRUE;
 }
 
@@ -607,23 +616,26 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
 /// \return Boolean value: true means that the track passes the PID selection
 ///
 Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
-  bool itsPID = kTRUE;
-  if (fRequireITSpidSigmas > 0) {
+  bool itsPID = kTRUE, tpcPID = kTRUE;
+  if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
     AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
     itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
   }
   
-  if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
-    AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
-    return itsPID && TMath::Abs(tpcPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
-  } else {
-    const float p = t->GetTPCmomentum() / fPDGMassOverZ;
-    const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
-                                                           fCustomTPCpid[2], fCustomTPCpid[3],
-                                                           fCustomTPCpid[4]);
-    return itsPID && TMath::Abs(t->GetTPCsignal() - r) < fRequireTPCpidSigmas * fCustomTPCpid[5] * r;
+  if (t->Pt() < fDisableTPCpidAtHighPt) {
+    if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
+      AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
+      tpcPID = TMath::Abs(tpcPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
+    } else {
+      const float p = t->GetTPCmomentum() / fPDGMassOverZ;
+      const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
+                                                             fCustomTPCpid[2], fCustomTPCpid[3],
+                                                             fCustomTPCpid[4]);
+      tpcPID = TMath::Abs(t->GetTPCsignal() - r) < fRequireTPCpidSigmas * fCustomTPCpid[5] * r;
+    }
   }
   
+  return itsPID && tpcPID;
 }
 
 /// This function sets the number of TOF bins and the boundaries of the histograms

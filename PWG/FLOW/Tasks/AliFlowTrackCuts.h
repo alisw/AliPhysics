@@ -302,6 +302,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   // set the flag for recentering (which is done in AliFlowEvent)
   void SetApplyRecentering(Bool_t r)    { fApplyRecentering = r; }
   Bool_t GetApplyRecentering() const    { return fApplyRecentering;}
+  void SetApplyTwisting(Bool_t r)    { fApplyTwisting = r; }
+  Bool_t GetApplyTwisting() const    { return fApplyTwisting;}
   void SetVZEROgainEqualizationPerRing(Bool_t s)   {fVZEROgainEqualizationPerRing = s;}
   Bool_t GetVZEROgainEqualizationPerRing() const {return fVZEROgainEqualizationPerRing;}
   // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
@@ -455,6 +457,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //gain equalization and recentering for vzero
   TH1* fVZEROgainEqualization;     //! equalization histo
   Bool_t fApplyRecentering;     // apply recentering of q-sub vectors in AliFlowEvent ?
+  Bool_t fApplyTwisting;        // apply twisting of q-sub vectors in AliFlowEvent ?
   Bool_t fVZEROgainEqualizationPerRing;    // per ring vzero gain calibration
   Float_t fVZEROApol[4];           //! calibration info per ring
   Float_t fVZEROCpol[4];           //! calibration info per ring

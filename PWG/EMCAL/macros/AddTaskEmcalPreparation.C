@@ -61,9 +61,23 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   TString tmpClusters = "tmpCaloClusters";
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
   AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","",tmpClusters.Data(),clusterizer,cellthresh,seedthresh,
-									       timeMin,timeMax,timeCut,remExoticCell,distBC,
-									       AliAnalysisTaskEMCALClusterizeFast::kFEEData);
+      timeMin,timeMax,timeCut,remExoticCell,distBC,
+      AliAnalysisTaskEMCALClusterizeFast::kFEEData);
   
+  if(isMC){
+    if((period.Contains("lhc10") || period.Contains("lhc11") || period.Contains("lhc12a") 
+          || period.Contains("lhc12b") || period.Contains("lhc12c") 
+          || period.Contains("lhc12d") || period.Contains("lhc12e"))
+        && !(period.Contains("lhc12a15d") || period.Contains("lhc12a15f")
+          || period.Contains("lhc12a15g") || period.Contains("lhc12a15h")
+          || period.Contains("lhc12c4") || period.Contains("lhc12d1") 
+          || period.Contains("lhc12d2") || period.Contains("lhc12d3") 
+          || period.Contains("lhc12e1") || period.Contains("lhc12e2") || period.Contains("lhc12e3")))
+    {
+      clusterizerTask->SetCellMCLabelFromCluster(1);
+    }
+  }
+
   //----------------------- Add cluster maker -----------------------------------------------------
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity, 
   UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
@@ -75,7 +89,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   }
   remExoticClus  = kTRUE;
   AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,tmpClusters.Data(),"EmcCaloClusters",0.,kTRUE);
-  
+
   return clusterizerTask;
-  
+
 }

@@ -56,7 +56,7 @@ fAlpha(-1)
       	fOpeningAngle=v1.Angle(v2);
 	// Calculate Alpha
 	if((d1.GetE()+d2.GetE()) != 0){
-	    fAlpha=TMath::Abs((d1.GetE()-d2.GetE())/(d1.GetE()+d2.GetE()));
+	    fAlpha=(d1.GetE()-d2.GetE())/(d1.GetE()+d2.GetE());
 	}
 }
 

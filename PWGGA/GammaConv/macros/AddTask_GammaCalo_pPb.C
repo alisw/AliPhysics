@@ -7,7 +7,8 @@ void AddTask_GammaCalo_pPb(
 							Int_t 		doWeightingPart 			= 0,  								// enable Weighting
 							TString 	generatorName 				= "DPMJET",
                             TString 	cutnumberAODBranch 			= "800000006008400000001500000", 	// cutnumber for AOD branch
-                            Bool_t 		isUsingTHnSparse 			= kTRUE 							// enable or disable usage of THnSparses for background estimation
+							Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
+							Int_t 		enableExtQA					= 0									// enable QA(3), disabled (0)
 						   ) {
 
 	// ================= Load Librariers =================================
@@ -213,6 +214,7 @@ void AddTask_GammaCalo_pPb(
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
+		analysisClusterCuts[i]->SetExtendedQA(enableExtQA);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();

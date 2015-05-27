@@ -31,6 +31,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
   ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtAnalysis.cxx
   ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb.cxx
@@ -83,7 +84,7 @@ set(SRCS
   Nuclei/B2/AliAnalysisTaskB2.cxx
   Nuclei/B2/AliAnalysisTaskB2AOD.cxx
   Nuclei/masses/AliAnalysisNucleiMass.cxx
-  Nuclei/masses/AliAnalysisNucleiInfo.cxx
+  Nuclei/masses/AliAnalysisNuclMult.cxx
   Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
   XtAnalysis/AliXtAnalysis.cxx
   XtAnalysis/AliJXtHistos.cxx
@@ -164,6 +165,8 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
+install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
+  PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY Nuclei/B2/macros DESTINATION PWGLF/SPECTRA/Nuclei/B2)

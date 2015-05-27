@@ -6,7 +6,7 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 									Int_t 		doWeightingPart 			= 0,  								// enable Weighting
 									TString 	generatorName 				= "DPMJET",							// generator Name	
 									TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
-									Bool_t 		enableExtendedMatching 		= kFALSE, 							// enable or disable extended matching histograms for conversion electrons <-> cluster
+									Int_t 		enableExtMatchAndQA 		= 0,								// enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
 									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
 ) {
@@ -135,7 +135,7 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 	
 	//************************************************ EMCAL clusters **********************************************************
 	if (trainConfig == 1){ // min energy = 0.3 GeV/c
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053022230000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053022230000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
         eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000053022230000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
 	} else if (trainConfig == 2){  // min energy = 0.3 GeV/c
         eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053022230000"; mesonCutArray[0] = "01631031000000"; //standart cut, kEMCEGA based on INT7
@@ -251,7 +251,7 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
-        analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
+		analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();

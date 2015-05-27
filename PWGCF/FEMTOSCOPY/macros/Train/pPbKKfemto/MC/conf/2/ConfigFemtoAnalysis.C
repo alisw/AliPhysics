@@ -299,8 +299,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  ////sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.998);
 	  ////sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
 
-	  sqpcetaphitpc[aniter]->SetMaxEEMinv(0.015);
-	  sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.9995);
+	  sqpcetaphitpc[aniter]->SetMaxEEMinv(0.025);
+	  sqpcetaphitpc[aniter]->SetMaxAlphaDiff(0.999);
 	  sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
 
 	  // sqpcetaphitpc[aniter]->SetPhiStarDistanceMinimum(0.03);

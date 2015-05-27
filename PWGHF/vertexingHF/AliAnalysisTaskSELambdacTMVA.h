@@ -75,8 +75,10 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Int_t MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Int_t LambdacDaugh(AliAODMCParticle *part,TClonesArray *arrayMC, Bool_t &isInAcc) const;
+	void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection);
   void FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, Int_t selection);
   void FillEffHists(Int_t kStep);
+	void FillSelectionBits(AliAODRecoDecayHF3Prong *d, TH2F *hSelectionBits);
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -96,8 +98,19 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   TH1F    *fHistNEvents; //!hist. for No. of events
   TH1F    *fHistNEventsRejTM; //!hist. for Rejected events from null trigger mask 
   TH1F *fhSelectBit; //! hist for Filter Bit 	
-	TH2F *fhMassLcPt; //!Lc Bkg+signal invariant mass vs pt
-	TH2F *fhMassLcPtSig; //!Lc signal invariant mass vs pt
+	TH2F *fhSelectionBits;    //! hist for ALL Filter bits
+	TH2F *fhSelectionBitsSigc; //! hist for ALL Filter bits Lc from c
+	TH2F *fhSelectionBitsSigb; //! hist for ALL Filter bits Lc from b
+	TH1F *fhSetIsLc; //! hist for before/after reco check MC LC
+	TH2F *fhPIDmassLcPt; //!Lc Bkg+signal invariant mass vs pt
+	TH2F *fhPIDmassLcPtSig; //!Lc signal invariant mass vs pt
+	TH2F *fhPIDmassLcPtSigc; //!Lc from c signal invariant mass vs pt
+	TH2F *fhPIDmassLcPtSigb; //!Lc from b signal invariant mass vs pt
+	TH2F *fhMCmassLcPt; //!Lc Bkg+signal invariant mass vs pt
+	TH2F *fhMCmassLcPtSig; //!Lc signal invariant mass vs pt
+	TH2F *fhMCmassLcPtSigc; //!Lc from c signal invariant mass vs pt
+	TH2F *fhMCmassLcPtSigb; //!Lc from b signal invariant mass vs pt
+	TH1F *fhIsLcResonantGen; //!hist for resonant flag
   TH1F *fhNBkgNI[12];	       //! hist. for n bkg, pT
   TH1F *fhNLc[12];             //! hist. for n Lc tot., pT
   TH1F *fhNLcc[12];            //! hist. for n Lc tot. from c, pT
@@ -172,7 +185,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 7
 
 
-  ClassDef(AliAnalysisTaskSELambdacTMVA,3); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,4); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif

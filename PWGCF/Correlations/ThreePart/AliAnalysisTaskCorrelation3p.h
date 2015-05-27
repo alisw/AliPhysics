@@ -9,6 +9,9 @@
 #include "TArrayD.h"
 #include "TFile.h"
 #include "THn.h"
+#include "TH3D.h"
+#include "TF1.h"
+#include<iostream>
 
 class AliCorrelation3p;
 class AliESDtrackCuts;
@@ -16,12 +19,12 @@ class AliAODTrack;
 class AliCentrality;
 class TH1;
 class TH2;
+class TH3;
 class TText;
 class TList;
 class TTree;
 class TRandom3;
-class TF1;
-
+using namespace std;
 class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   public:
   /// default constructor
@@ -71,11 +74,17 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
   void SetWeights(const char* file){
-    TFile* wfile = TFile::Open(file,"READ");
+    TFile* wfile = TFile::Open(file,"OLD");
     if(wfile){
-      fWeights = dynamic_cast<THnF*>(wfile->Get("hnWeight")->Clone("hnWeight"));}
+      fWeights = dynamic_cast<TH3D*>(wfile->Get("hnWeight")->Clone("hnWeight_task"));
+      fWeights->SetDirectory(0x0);
+      fWeightshpt = dynamic_cast<TH3D*>(wfile->Get("hnWeight_highpt")->Clone("hnWeight_highpt_task"));
+      fWeightshpt->SetDirectory(0x0);
+      fpTfunction= dynamic_cast<TF1*>(wfile->Get("pT_function")->Clone("pT_function_task"));
+    }
     else{fWeights = NULL;}
-    wfile->Close();
+    
+    wfile->Close();   
   }
   void SetTrackCut(const char* cutmask){
     fCutMask = 0;//Defaults to GlobalHybrid tracks.
@@ -138,7 +147,9 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
-  THnF *            fWeights;//!THnF to hold the correction weights Axis: 0 = centrality, 1 = vertex, 2 = eta, 3 = pT.
+  TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
+  TH3D * 	    fWeightshpt;//TH3D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex, 2 = eta
+  TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.
   TRandom3 *	    fRandom;//
   TClonesArray*     fMcArray;//
   //Objects that contain needed/used objects for the task:
@@ -190,7 +201,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   static const Int_t fNRunsP11a = 58;
   static const Int_t fNRunsP11h = 108;
   //Class definition.
-  ClassDef(AliAnalysisTaskCorrelation3p, 2);
+  ClassDef(AliAnalysisTaskCorrelation3p, 3);
 };
 
 #endif

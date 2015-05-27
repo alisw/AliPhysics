@@ -258,6 +258,7 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
   // Physics selection task
   if ( !bIsMC ) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+    AliVEvent::EOfflineTriggerTypes pSel = AliVEvent::kAny;
     AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, pSel, 0., 0., 10, kTRUE, -1, -1, -1, -1);
     if ( !physSelTask ) {
       ::Error("AddWagonsTask", "no physSelTask but running on data");
@@ -269,7 +270,7 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
   AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
   
-  gROOT->LoadMacro("AddTaskJetPreparationHF.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/jetsHF/macros/AddTaskJetPreparationHF.C");
   AliAnalysisTaskSE *clusm = AddTaskJetPreparationHF("lhc10b" /*Period*/,
                                                      "PicoTracks" ,
                                                      bIsMC /*isMC*/,
@@ -293,12 +294,41 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
   // ################# Now: Add jet finders+analyzers
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask *jetFinderTask   = AddTaskEmcalJet("PicoTracks", "", kANTIKT, 0.4, kCHARGEDJETS, 0.150, 0.300);
-  AliEmcalJetTask *jetFinderTaskMC = AddTaskEmcalJet("MCParticlesSelected", "", kANTIKT, 0.4, kCHARGEDJETS, 0.150, 0.300);
-  //IF BACKGROUND REJECTION
+
+  if ( bIsMC ) {
+    AliEmcalJetTask *jetFinderTaskMC = AddTaskEmcalJet("MCParticlesSelected", "", kANTIKT, 0.4, kCHARGEDJETS, 0.150, 0.300);
+    
+    //    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
+    //    TString kJetAkTName   = jetFinderTask->GetJetsName();
+    //    TString kJetAkTNameMC = jetFinderTaskMC->GetJetsName();
+    
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetTagger.C");
+    AliAnalysisTaskEmcalJetTagger *tagger = AddTaskEmcalJetTagger(jetFinderTask->GetName(),
+                                                                  jetFinderTaskMC->GetName(),
+                                                                  0.4, "", "", "PicoTracks", "", 0,
+                                                                  "V0M", AliVEvent::kAny, "", "");
+    tagger->SetNCentBins(1);
+    tagger->SetForceBeamType(AliAnalysisTaskEmcal::kpA);
+    tagger->SetIsPythia(kTRUE);
+    tagger->SetJetTaggingType(AliAnalysisTaskEmcalJetTagger::kClosest);
+    tagger->SetJetTaggingMethod(AliAnalysisTaskEmcalJetTagger::kGeo);
+  }
+  
+  //IF DO BACKGROUND REJECTION
   if (doBkgRej) {
     TString myRhoName("ExternalRhoTask");
     AlgoType aType = kKT; //or kANTIKT
-    AliEmcalJetTask *jetFinderRhoKT = AddTaskEmcalJet("PicoTracks", "", aType, 0.4, kCHARGEDJETS, 0.150,0.300, 0.005, 1, "Jet", 0., 0, 0);
+    AliEmcalJetTask *jetFinderRhoKT = AddTaskEmcalJet("PicoTracks",
+                                                      "",
+                                                      aType,
+                                                      0.4,
+                                                      kCHARGEDJETS,
+                                                      0.150,
+                                                      0.300,
+                                                      0.005,
+                                                      1,
+                                                      "Jet",
+                                                      0., 0, 0);
     jetFinderRhoKT->SetMinJetPt(0);
     
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
@@ -316,30 +346,44 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
                                                          2,  //excl Jets
                                                          kFALSE,   //no histo
                                                          myRhoName.Data(),  //task name
-                                                         kTRUE); //claculate rho CMS
-  }
-  //
-  if ( bIsMC ) gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
-  TString kJetAkTName   = jetFinderTask->GetJetsName();
-  TString kJetAkTNameMC = jetFinderTaskMC->GetJetsName();
+                                                         kTRUE); //calculate rho CMS
   
-  if ( bIsMC ) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetTagger.C");
-    AliAnalysisTaskEmcalJetTagger *tagger = AddTaskEmcalJetTagger(jetFinderTask->GetName(),
-                                                                  jetFinderTaskMC->GetName(),
-                                                                  0.4, "", "", "PicoTracks", "", 0,
-                                                                  "V0M", AliVEvent::kAny, "", "");
-    tagger->SetNCentBins(1);
-    tagger->SetForceBeamType(AliAnalysisTaskEmcal::kpA);
-    tagger->SetIsPythia(kTRUE);
-    tagger->SetJetTaggingType(AliAnalysisTaskEmcalJetTagger::kClosest);
-    tagger->SetJetTaggingMethod(AliAnalysisTaskEmcalJetTagger::kGeo);
-  }
-  
+    if ( bIsMC ) {
+      TString myRhoNameMC("ExternalRhoTaskMC");
+      AliEmcalJetTask *jetFinderRhoKTMC = AddTaskEmcalJet("MCParticlesSelected",
+                                                          "",
+                                                          aType,
+                                                          0.4,
+                                                          kCHARGEDJETS,
+                                                          0.150,
+                                                          0.300,
+                                                          0.005,
+                                                          1,
+                                                          "Jet",
+                                                          0., 0, 0);
+      jetFinderRhoKTMC->SetMinJetPt(0);
+      
+      AliAnalysisTaskRhoSparse *rhotaskMC = AddTaskRhoSparse(jetFinderRhoKTMC->GetName(),
+                                                             jetFinderTaskMC->GetName(),
+                                                             "MCParticlesSelected",   //pico trakcs
+                                                             "",   //calo clusters
+                                                             myRhoNameMC.Data(),
+                                                             0.4,  //jet radius
+                                                             "TPC",  //cut type
+                                                             0.,  //jet area cut
+                                                             0.,  //jet pt cut ????????
+                                                             0,  //enareacut
+                                                             0,  //sfunc
+                                                             2,  //excl Jets
+                                                             kFALSE,   //no histo
+                                                             myRhoNameMC.Data(),  //task name
+                                                             kTRUE); //claculate rho CMS
+      
+    } //isMC
+  }//doBkgRej
   TString taskName;
   taskName="AddTaskEmcalJetBtagSV.C";
   gROOT->LoadMacro(taskName.Data());
-  
   
   Int_t taskHardPtCut[4] = {10, 18, 30, 50};
   
@@ -347,12 +391,14 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
   for (Int_t iTask = 0; iTask < nBJetTask; ++iTask) {
     TString ptHardName = Form("%d", taskHardPtCut[iTask]);
     
-    AliAnalysisTaskEmcalJetBtagSV *taskJet = AddTaskEmcalJetBtagSV("PicoTracks", jetFinderTask->GetName(),
-                                                                   "MCParticlesSelected", jetFinderTaskMC->GetName(),
-                                                                   0.4/*R*/,
+    AliAnalysisTaskEmcalJetBtagSV *taskJet = AddTaskEmcalJetBtagSV("PicoTracks",
+                                                                   jetFinderTask->GetName(),
+                                                                   "MCParticlesSelected",
+                                                                   jetFinderTaskMC->GetName(),
+                                                                   0.4 /*R*/,
                                                                    "TPC",
                                                                    "standard",
-                                                                   kTRUE /*IsCorrMode*/,
+                                                                   bIsMC /*IsCorrMode*/,
                                                                    kTRUE /*PtHard*/,
                                                                    kTRUE /*DoBkgRej*/,
                                                                    ptHardName.Data(),
@@ -363,10 +409,12 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
                                                                    100.,
                                                                    "HFjetsContainer",
                                                                    kFALSE);
+
     if (doBkgRej) {
       taskJet->SetExternalRhoTaskName(myRhoName.Data());
+      if (bIsMC) taskJet->SetMcExternalRhoTaskName(myRhoNameMC.Data());
     }
-    
   }
+  
   return;
 }

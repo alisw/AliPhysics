@@ -48,6 +48,8 @@ class AliESDVertex;
 
 ClassImp(AliProtonAnalysis)
 
+using std::cout;
+using std::endl;
 //____________________________________________________________________//
 AliProtonAnalysis::AliProtonAnalysis() : 
   TObject(), fProtonAnalysisBase(0),

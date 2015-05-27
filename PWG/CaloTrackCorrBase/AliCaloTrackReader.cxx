@@ -442,7 +442,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
   
-  Int_t run = fInputEvent->GetRunNumber();
+  //Int_t run = fInputEvent->GetRunNumber();
   
   if ( fRemoveLEDEvents )
   {

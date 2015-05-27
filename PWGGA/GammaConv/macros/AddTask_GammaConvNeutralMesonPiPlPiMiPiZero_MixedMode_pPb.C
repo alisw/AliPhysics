@@ -35,7 +35,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb(
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-		Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_pPb_%i",trainConfig), "No analysis manager found.");
+		Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb_%i",trainConfig), "No analysis manager found.");
 		return ;
 	}
 

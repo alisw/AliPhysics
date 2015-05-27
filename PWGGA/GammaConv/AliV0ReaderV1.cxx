@@ -36,6 +36,7 @@
 // If you want to find the AODTrack corresponding to the daugher track of a AliAODConversionPhoton you have to find the AODTrack with
 // AODTrack->GetID() == GetTrackLabelPositive() (GetTrackLabelNagative()).
 
+#include <vector>
 #include <TGeoGlobalMagField.h>
 
 #include "AliV0ReaderV1.h"
@@ -94,8 +95,6 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fPeriodName(""),
 	fUseMassToZero(kTRUE),
 	fProduceV0findingEffi(kFALSE),
-	fMCPhotonLabelArray(NULL),
-	fNMCRecPhotons(0),
 	fHistograms(NULL),
 	fHistoMCGammaPtvsR(NULL),
 	fHistoMCGammaPtvsPhi(NULL),
@@ -113,7 +112,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fHistoRecMCGammaMultiPtvsEta(NULL),
 	fHistoRecMCGammaMultiR(NULL),
 	fHistoRecMCGammaMultiPhi(NULL),
-	fStrFoundGammas("")
+	fVectorFoundGammas(0)
 {
 	// Default constructor
 
@@ -297,6 +296,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		fHistoRecMCGammaMultiPhi->SetXTitle("#phi_{MC} (rad)");
 		fHistograms->Add(fHistoRecMCGammaMultiPhi);
 		
+		fVectorFoundGammas.clear();
 	}	
 
 }
@@ -387,7 +387,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 	
 	if(fProduceV0findingEffi){
 		CreatePureMCHistosForV0FinderEffiESD();
-		fStrFoundGammas = "";
+		fVectorFoundGammas.clear();
 	}	
 
 
@@ -1133,7 +1133,7 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 			
 			TParticle* mother =  (TParticle *)fMCStack->Particle(motherlabelNeg);
 			if (mother->GetPdgCode() == 22 ){
-				if (!CheckIfContainedInStringAndAppend(fStrFoundGammas,motherlabelNeg ) ){
+				if (!CheckVectorForDoubleCount(fVectorFoundGammas,motherlabelNeg ) ){
 					if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
 						fHistoRecMCGammaPtvsR->Fill(mother->Pt(),negPart->R());
 						fHistoRecMCGammaPtvsPhi->Fill(mother->Pt(),mother->Phi());
@@ -1156,32 +1156,40 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 					}	
 // 					cout << "this one I had already: " << motherlabelNeg << endl << "-----------------------"  << endl;
 				}	
-// 				cout << "event gammas: " << fStrFoundGammas.Data() << endl;
+// 				cout << "event gammas: " << endl;
+//				for(Int_t iGamma=0; iGamma<fVectorFoundGammas.size(); iGamma++){cout << fVectorFoundGammas.at(iGamma) << ", ";}
 			}	
 		}	
 	}	
 }	
 
 //_________________________________________________________________________________
-Bool_t AliV0ReaderV1::CheckIfContainedInString(TString input, Int_t tobechecked){
-	TObjArray *arr = input.Tokenize(",");
-	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
-		TString tempStr = ((TObjString*)arr->At(i))->GetString();
-		if (tempStr.Atoi() == tobechecked) return kTRUE;
-	}	
-	return kFALSE;
+Bool_t AliV0ReaderV1::CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked)
+{
+	if(tobechecked > -1)
+	{
+		vector<Int_t>::iterator it;
+		it = find (vec.begin(), vec.end(), tobechecked);
+		if (it != vec.end()) return true;
+		else return false;
+	}
+	return false;
 }
 
 //_________________________________________________________________________________
-Bool_t AliV0ReaderV1::CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked){
-	TObjArray *arr = input.Tokenize(",");
-	Bool_t isContained = kFALSE;
-	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
-		TString tempStr = ((TObjString*)arr->At(i))->GetString();
-		if (tempStr.Atoi() == tobechecked) isContained= kTRUE;
-	}	
-	if (!isContained)input.Append(Form("%i,",tobechecked));	
-	return isContained;
+Bool_t AliV0ReaderV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked)
+{
+	if(tobechecked > -1)
+	{
+		vector<Int_t>::iterator it;
+		it = find (vec.begin(), vec.end(), tobechecked);
+		if (it != vec.end()) return true;
+		else{
+			vec.push_back(tobechecked);
+			return false;
+		}
+	}
+	return false;
 }
 
 //________________________________________________________________________

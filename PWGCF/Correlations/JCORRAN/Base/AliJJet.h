@@ -26,6 +26,7 @@
 #include <iostream>
 #include <TLorentzVector.h>
 #include <TObjArray.h>
+#include <TRefArray.h>
 #include  "AliJConst.h"
 #include "AliJBaseTrack.h"
 
@@ -46,24 +47,49 @@ public:
   Double_t GetArea() const{ return fArea; }
   Double_t Area() const{ return fArea; }
   void AddConstituent(TObject* t){ fConstituents.Add(t); }
-  TObjArray* GetConstituents(){ return &fConstituents; }
-  int GetNConstituents(){ return fNConstituent; }
-  //int GetNConstituents(){ return fConstituents.GetEntriesFast(); }
-  AliJBaseTrack * GetConstituent(int i) const{ return (AliJBaseTrack*)fConstituents[i]; }
+  void AddConstituentRef(TObject* t){ fConstituentsRef.Add(t); }
+  TRefArray* GetConstituentsRef(){ return &fConstituentsRef; }
+  TObjArray* GetConstituents(){ GenConstituentsFromRef();return &fConstituents; }
+  int GetNConstituentsRef(){ return fConstituentsRef.GetEntriesFast(); }
+  int GetNConstituents(){ GenConstituentsFromRef();return fConstituents.GetEntriesFast(); }
+  AliJBaseTrack * GetConstituent(int i) { GenConstituentsFromRef();return (AliJBaseTrack*)fConstituents.At(i); }
+  AliJBaseTrack * GetConstituentRef(int i) const{ return (AliJBaseTrack*)fConstituentsRef.At(i); }
   void ReSum();
+  void ReSum2(){ SetE( E()>fE2?E():fE2 ); }
   int LeadingParticleId(){ return fLeadingTrackId; }
   double LeadingParticlePt(){ return fLeadingTrackPt; }
   double LeadingParticleE(){ return fLeadingTrackE; }
-  
+  virtual void    Clear(Option_t* = ""){
+      fConstituents.Clear();
+      fConstituentsRef.Clear();
+  }
+  void SetConstituentsOwner(){
+      fConstituents.SetOwner(kTRUE);
+  }
+  double E2nd(){ return fE2; }
+  double E2nd2(){ return fE2*fE2; }
+
+  void GenConstituentsFromRef( int force = 0){
+      if( force == 1 || fConstituents.GetEntriesFast() < 1 ){
+          fConstituents.Clear();
+          for( int i=0;i<GetNConstituentsRef();i++ ){
+              AddConstituent( GetConstituentRef(i) );
+          }
+      }
+  }
+
+
 private:
   int      fLeadingTrackId;     //! id of leading track in constituents
   double   fLeadingTrackPt;
   double   fLeadingTrackE;
   double   fNConstituent;
+  double   fE2;
   Double_t fArea;              // Area of the jet
   TObjArray fConstituents;     //! Constituent tracks of the jets
+  TRefArray fConstituentsRef;     // Constituent tracks of the jets
 
-  
-  ClassDef(AliJJet,1)
+
+  ClassDef(AliJJet,3)
 };
 #endif

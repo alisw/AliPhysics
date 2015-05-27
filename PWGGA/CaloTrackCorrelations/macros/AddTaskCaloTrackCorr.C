@@ -575,7 +575,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
     if(kClusterArray == "" && !kTender) cu->SwitchOnRunDepCorrection();
   }
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           kSimulation,                             
                           kExotic,
