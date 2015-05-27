@@ -2212,32 +2212,43 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 
 
 //------------------------------------------------------------------------------------
+///
+/// Extrapolate track to EMCAL surface
+///
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                          Double_t emcalR,
                                                          Double_t mass, 
                                                          Double_t step, 
                                                          Float_t &eta, 
                                                          Float_t &phi,
-							 Float_t &pt)
+                                                         Float_t &pt)
 {
-  //Extrapolate track to EMCAL surface
-  
   eta = -999, phi = -999, pt = -999;
+ 
   if (!trkParam) return kFALSE;
+  
   if (!AliTrackerBase::PropagateTrackToBxByBz(trkParam, emcalR, mass, step, kTRUE, 0.8, -1)) return kFALSE;
+  
   Double_t trkPos[3] = {0.,0.,0.};
+  
   if (!trkParam->GetXYZ(trkPos)) return kFALSE;
+  
   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+  
   eta = trkPosVec.Eta();
   phi = trkPosVec.Phi();
-  pt = trkParam->Pt();
-  if (phi<0)
-    phi += 2*TMath::Pi();
+  pt  = trkParam->Pt();
+  
+  if ( phi < 0 )
+    phi += TMath::TwoPi();
 
   return kTRUE;
 }
 
 //-----------------------------------------------------------------------------------
+///
+/// Return the residual by extrapolating a track param to a global position
+///
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, 
                                                      const Float_t *clsPos, 
                                                      Double_t mass, 
@@ -2245,23 +2256,34 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkP
                                                      Float_t &tmpEta, 
                                                      Float_t &tmpPhi)
 {
-  //
-  //Return the residual by extrapolating a track param to a global position
-  //
   tmpEta = -999;
   tmpPhi = -999;
+  
   if (!trkParam) return kFALSE;
+  
   Double_t trkPos[3] = {0.,0.,0.};
   TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
-  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
-  vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
-  if (!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), mass, step,kTRUE, 0.8, -1)) return kFALSE;
-  if (!trkParam->GetXYZ(trkPos)) return kFALSE; //Get the extrapolated global position
+  
+  Float_t phi = vec.Phi();
+  
+  if ( phi < 0 )
+    phi += TMath::TwoPi();
+  
+  // Rotate the cluster to the local extrapolation coordinate system
+  Double_t alpha = ((int)(phi*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+  
+  vec.RotateZ(-alpha); 
+  
+  if (!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), mass, step,kTRUE, 0.8, -1)) 
+    return kFALSE;
+  
+  if (!trkParam->GetXYZ(trkPos)) 
+    return kFALSE; // Get the extrapolated global position
 
   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
 
-  // track cluster matching
+  // Track cluster matching
   tmpPhi = clsPosVec.DeltaPhi(trkPosVec);    // tmpPhi is between -pi and pi
   tmpEta = clsPosVec.Eta()-trkPosVec.Eta();
 
@@ -2269,6 +2291,9 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkP
 }
 
 //----------------------------------------------------------------------------------
+///
+/// Return the residual by extrapolating a track param to a cluster
+///
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, 
                                                     const AliVCluster *cluster, 
                                                     Double_t mass, 
@@ -2276,11 +2301,9 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkPa
                                                     Float_t &tmpEta, 
                                                     Float_t &tmpPhi)
 {
-  //
-  //Return the residual by extrapolating a track param to a cluster
-  //
   tmpEta = -999;
   tmpPhi = -999;
+  
   if (!cluster || !trkParam) 
     return kFALSE;
 
