@@ -442,10 +442,10 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
  for( Int_t ic=0; ic<fnClasses; ++ic ){
     TObjArray* scalersArray = (TObjArray*)scalers->GetTriggerScalers();
     AliTriggerScalers* counters = (AliTriggerScalers*)scalersArray->At(ic);
-    if(fVersion>2)counters->GetAllScalers(c1); else counters->GetAllScalers(c1);
+    if(fVersion>2)counters->GetAllScalersM012(c1); else counters->GetAllScalers(c1);
     UChar_t iclass = counters->GetClassIndex();
     if(fVersion>2){
-      for(Int_t i=0; i<6; i++)c64[i]=c1[i+1];
+      for(Int_t i=0; i<6; i++)c64[i]=c1[i+2];
     }else{
       for(Int_t i=0; i<6; i++)c64[i]=c1[i];
     }
