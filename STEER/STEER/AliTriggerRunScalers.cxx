@@ -97,6 +97,9 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
   //  scaler->Print();
   //  fScalersRecord.Sort(); 
  }
+ for(Int_t i=0; i<8; i++) {
+    delete overflow[i];
+ }
 }
 //_____________________________________________________________________________
 
@@ -335,6 +338,8 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
         return 1;
       }else return 0; // to work correctly in AddScalers
    };
+   UInt_t ovflow[8]; // Overflow for last pair of counters
+   for(Int_t i=0;i<8;i++)ovflow[i]=0;
    Int_t nlevels=6;
    if(fVersion>2) nlevels=8;
    UInt_t c2[8], c1[8];
@@ -368,7 +373,8 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       if(fVersion>2)counters1->GetAllScalersM012(c1); else counters1->GetAllScalers(c1);
       for(Int_t i=0;i<(nlevels);i++){
          if ( c2[i] >= c1[i] ) continue;
-         else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i][ic]++;
+         //else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i][ic]++;
+         else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) ovflow[i]++;
          else{
 	  cout << "Decreasing count with time." << endl;
 	  cout << i << " c2: " << c2[i] << " c1[i] " << c1[i] << endl;
@@ -379,8 +385,8 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       //  Checking reletaive increase between 2 subsequent records
       //  Counters in one record can decrease versus level
       for(Int_t i=0;i<nlevels;i++){
-       c2_64[i]=c2[i]+max1*overflow[i][ic];
-       c1_64[i]=c1[i]+max1*overflow[i][ic-1];
+       c2_64[i]=c2[i]+max1*(overflow[i][ic]+ovflow[i]);
+       c1_64[i]=c1[i]+max1*overflow[i][ic];
       }
       for(Int_t i=0;i<(nlevels-1);i++){
         if ((c2_64[i] - c1_64[i]) < (c2_64[i+1] - c1_64[i+1]) ) {
@@ -394,6 +400,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       }
       // Correct for overflow
       if(correctOverflow){ 
+        for(Int_t i=0;i<8;i++)overflow[i][ic] += ovflow[i];
         if(fVersion>2){for(Int_t i=0;i<6;i++){ c64[i]=c2[i+2]+max1*overflow[i+2][ic]; }}
 	else{for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i][ic]; }}
         AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
@@ -419,8 +426,8 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
  // Temporary fix for the OCDB entries written with v4-16-Release
  // where the wrong sorting was used
  fScalersRecord.Sort();
- UInt_t c1[6];
- ULong64_t c64[6];
+ UInt_t c1[8];
+ ULong64_t c64[8];
  AliTriggerScalersRecordESD* recESD = new AliTriggerScalersRecordESD();
  // add 0
  if (!fScalersRecord.GetEntriesFast()) {
@@ -435,9 +442,13 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
  for( Int_t ic=0; ic<fnClasses; ++ic ){
     TObjArray* scalersArray = (TObjArray*)scalers->GetTriggerScalers();
     AliTriggerScalers* counters = (AliTriggerScalers*)scalersArray->At(ic);
-    counters->GetAllScalers(c1);
+    if(fVersion>2)counters->GetAllScalers(c1); else counters->GetAllScalers(c1);
     UChar_t iclass = counters->GetClassIndex();
-    for(Int_t i=0; i<6; i++)c64[i]=c1[i];
+    if(fVersion>2){
+      for(Int_t i=0; i<6; i++)c64[i]=c1[i+1];
+    }else{
+      for(Int_t i=0; i<6; i++)c64[i]=c1[i];
+    }
     AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
     if(fVersion>2){
       s->SetLMCB(counters->GetLMCB());
@@ -460,9 +471,11 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     fScalersRecordESD.SetOwner(); 
     fScalersRecordESD.Delete(); 
     AliErrorClass("Inconsistent scalers, they will not be provided.\n");
+    for(Int_t i=0; i<8; i++)delete overflow[i];
     return 1;
   }
  }
+ for(Int_t i=0; i<8; i++)delete overflow[i];
  if(fScalersRecordESD.GetEntriesFast() != fScalersRecord.GetEntriesFast()){
     AliErrorClass("Internal error: #scalers ESD != #scalers \n");
     return 1;
