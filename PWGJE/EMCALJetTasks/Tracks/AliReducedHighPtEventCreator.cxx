@@ -154,6 +154,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   TString triggerString(fInputEvent->GetFiredTriggerClasses());
   fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EG1"), triggerString.Contains("EG2"), triggerString.Contains("EJ1"), triggerString.Contains("EJ2"));
   fOutputEvent->SetMinBiasEvent(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
+  fOutputEvent->SetRunNumber(fInputEvent->GetRunNumber());
 
   std::map<int, int> mcindexmap;
   if(MCEvent()){
