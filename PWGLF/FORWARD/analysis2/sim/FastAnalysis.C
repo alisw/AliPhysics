@@ -537,7 +537,7 @@ struct FastAnalysis : public TSelector
     fParticles = new TClonesArray("TParticle");
     fTree->SetBranchAddress("header",    &(fHeader->fRunNo));
     fTree->SetBranchAddress("particles", &fParticles);
-    if (!fCentMethod.IsNull())
+    if (!fCentMethod.IsNull() && !fCentMethod.EqualTo("B"))
       fTree->SetBranchAddress(fCentMethod, &fEventMult);
     return true;
    
@@ -551,6 +551,7 @@ struct FastAnalysis : public TSelector
   virtual Bool_t SetupEstimator()
   {
     if (fCentMethod.IsNull()) return true;
+    if (fCentMethod.EqualTo("B",TString::kIgnoreCase)) return true;
 
     if (!fTree) {
       Warning("SetupEstimator", "No tree defined!");
@@ -992,11 +993,34 @@ struct FastAnalysis : public TSelector
 
     FastAnalysis* analysis = Make(type,verbose,monitor);
     if (!analysis) return false;
-    
-    TChain*       chain    = new TChain("T", "");
-    if (!chain->AddFile(u.GetFile())) {
-      Printf("Error: FastAnalysis::Run: Failed to add file %s",
+
+    TString treeName = u.GetAnchor();
+    if (treeName.IsNull()) treeName = "T";
+    TFile*  file = TFile::Open(u.GetFile(), "READ");
+    if (!file) {
+      Printf("Error: FastAnalysis::Run: Failed to open %s",
 	     u.GetFile());
+      return false;
+    }
+
+    TChain*   chain = new TChain(treeName, treeName);
+    TObject*  o = file->Get(treeName);
+    if (!o) {
+      Printf("Error: FastAnalysis::Run: Couldn't get %s from %s",
+	     treeName.Data(), u.GetFile());
+      file->Close();
+      return false;
+    }
+    Int_t cret = 0;
+    if (o->IsA()->InheritsFrom(TChain::Class()))
+      cret = chain->Add(static_cast<TChain*>(o));
+    else if (o->IsA()->InheritsFrom(TTree::Class()))
+      cret = chain->AddFile(u.GetFile());
+    else if (o->IsA()->InheritsFrom(TCollection::Class()))
+      cret = chain->AddFileInfoList(static_cast<TCollection*>(o));
+    file->Close();
+    if (cret <= 0 || chain->GetListOfFiles()->GetEntries() <= 0) {
+      Printf("Error: FastAnalysis::Run: Failed to create chain");
       return false;
     }
     
@@ -1226,6 +1250,10 @@ struct CentAnalysis : public dNdetaAnalysis
   TH1*         fCentAll; //!
   TH1*         fCentAcc; //!
   TH2*         fCentMult; //!
+  TH2*         fCentNPart; //!
+  TH2*         fCentNBin; //!
+  TH2*         fCentB; //!
+  TH1*         fBtoC; //! 
   /** 
    * Constructor 
    * 
@@ -1240,7 +1268,8 @@ struct CentAnalysis : public dNdetaAnalysis
       fMinEvents(100),
       fCentAll(0),
       fCentAcc(0),
-      fCentMult(0)
+      fCentMult(0),
+      fCentB(0)
   {
     fCentMethod = method;
     if (fCentMethod.Contains("RefMult")) SetCentAxis("mult");
@@ -1450,20 +1479,112 @@ struct CentAnalysis : public dNdetaAnalysis
   {
     if (!dNdetaAnalysis::SetupEstimator()) return false;
     
-    if (!fCentHist) return true;
     if (fCentMult) return true;
 
-    fCentMult = new TH2D("centMult","Event multiplicity vs. centrality",
-			 fCentHist->GetXaxis()->GetNbins(),
-			 fCentHist->GetXaxis()->GetXmin(),
-			 fCentHist->GetXaxis()->GetXmax(),
-			 fCentAxis->GetNbins(),
-			 fCentAxis->GetXbins()->GetArray());
+    fCentMult  = 0;
+    fCentNPart = 0;
+    fCentNBin  = 0;
+    Int_t maxNPart = 2*210;
+    Int_t maxNBin  = 3*210;
+    if (fCentAxis->GetXbins()->GetArray()) {
+      fCentNPart = new TH2D("centNPart", "Centrality vs. N_{part}",
+			    fCentAxis->GetNbins(), 
+			    fCentAxis->GetXbins()->GetArray(),
+			    maxNPart, 0, maxNPart);
+      fCentNBin  = new TH2D("centNBin", "Centrality vs. N_{bin}", 
+			    fCentAxis->GetNbins(), 
+			    fCentAxis->GetXbins()->GetArray(),
+			    maxNBin, 0, maxNBin);
+      fCentB     = new TH2D("centB", "Centrality vs. b",
+			    fCentAxis->GetNbins(), 
+			    fCentAxis->GetXbins()->GetArray(),
+			    200, 0, 20);
+    } else {
+      fCentNPart = new TH2D("centNPart", "Centrality vs. N_{part}",
+			    fCentAxis->GetNbins(), fCentAxis->GetXmin(), 
+			    fCentAxis->GetXmax(),
+			    maxNPart, 0, maxNPart);
+      fCentNBin  = new TH2D("centNBin", "Centrality vs. N_{bin}", 
+			    fCentAxis->GetNbins(), fCentAxis->GetXmin(), 
+			    fCentAxis->GetXmax(),
+			    maxNBin, 0, maxNBin);
+      fCentB     = new TH2D("centB", "Centrality vs. b",
+			    fCentAxis->GetNbins(), fCentAxis->GetXmin(), 
+			    fCentAxis->GetXmax(),
+			    200, 0, 20);
+    }
+
+    fCentNPart->SetXTitle(Form("Centrality (%s) %%", fCentMethod.Data()));
+    fCentNPart->SetYTitle("N_{part}");
+    fCentNPart->SetDirectory(0);
+
+    fCentNBin->SetXTitle(Form("Centrality (%s) %%", fCentMethod.Data()));
+    fCentNBin->SetYTitle("N_{bin}");
+    fCentNBin->SetDirectory(0);
+
+    fCentB->SetXTitle(Form("Centrality (%s) %%", fCentMethod.Data()));
+    fCentB->SetYTitle("b [fm]");
+    fCentB->SetDirectory(0);
+    
+    fOutput->Add(fCentNPart);
+    fOutput->Add(fCentNBin);
+    fOutput->Add(fCentB);
+
+    Double_t bin[25];
+    Double_t cent[24];
+    Int_t    i = 0;
+    bin[i] =  0.00; cent[i] = Double_t( 0+  1)/2; i++; //  0 -   1 ( 0.00 -  1.57)
+    bin[i] =  1.57; cent[i] = Double_t( 1+  2)/2; i++; //  1 -   2 ( 1.57 -  2.22)
+    bin[i] =  2.22; cent[i] = Double_t( 2+  3)/2; i++; //  2 -   3 ( 2.22 -  2.71)
+    bin[i] =  2.71; cent[i] = Double_t( 3+  4)/2; i++; //  3 -   4 ( 2.71 -  3.13)
+    bin[i] =  3.13; cent[i] = Double_t( 4+  5)/2; i++; //  4 -   5 ( 3.13 -  3.50)
+    bin[i] =  3.50; cent[i] = Double_t( 5+ 10)/2; i++; //  5 -  10 ( 3.50 -  4.94)
+    bin[i] =  4.94; cent[i] = Double_t(10+ 15)/2; i++; // 10 -  15 ( 4.94 -  6.05)
+    bin[i] =  6.05; cent[i] = Double_t(15+ 20)/2; i++; // 15 -  20 ( 6.05 -  6.98)
+    bin[i] =  6.98; cent[i] = Double_t(20+ 25)/2; i++; // 20 -  25 ( 6.98 -  7.81)
+    bin[i] =  7.81; cent[i] = Double_t(25+ 30)/2; i++; // 25 -  30 ( 7.81 -  8.55)
+    bin[i] =  8.55; cent[i] = Double_t(30+ 35)/2; i++; // 30 -  35 ( 8.55 -  9.23)
+    bin[i] =  9.23; cent[i] = Double_t(35+ 40)/2; i++; // 35 -  40 ( 9.23 -  9.88)
+    bin[i] =  9.88; cent[i] = Double_t(40+ 45)/2; i++; // 40 -  45 ( 9.88 - 10.47)
+    bin[i] = 10.47; cent[i] = Double_t(45+ 50)/2; i++; // 45 -  50 (10.47 - 11.04)
+    bin[i] = 11.04; cent[i] = Double_t(50+ 55)/2; i++; // 50 -  55 (11.04 - 11.58)
+    bin[i] = 11.58; cent[i] = Double_t(55+ 60)/2; i++; // 55 -  60 (11.58 - 12.09)
+    bin[i] = 12.09; cent[i] = Double_t(60+ 65)/2; i++; // 60 -  65 (12.09 - 12.58)
+    bin[i] = 12.58; cent[i] = Double_t(65+ 70)/2; i++; // 65 -  70 (12.58 - 13.05)
+    bin[i] = 13.05; cent[i] = Double_t(70+ 75)/2; i++; // 70 -  75 (13.05 - 13.52)
+    bin[i] = 13.52; cent[i] = Double_t(75+ 80)/2; i++; // 75 -  80 (13.52 - 13.97)
+    bin[i] = 13.97; cent[i] = Double_t(80+ 85)/2; i++; // 80 -  85 (13.97 - 14.43)
+    bin[i] = 14.43; cent[i] = Double_t(85+ 90)/2; i++; // 85 -  90 (14.43 - 14.96)
+    bin[i] = 14.96; cent[i] = Double_t(90+ 95)/2; i++; // 90 -  95 (14.96 - 15.67)
+    bin[i] = 15.67; cent[i] = Double_t(95+100)/2; i++; // 95 - 100 (15.67 - 20.00)
+    bin[i] = 20;
+    fBtoC  = new TH1D("bToC", "Centrality from b", 24, bin);
+    fBtoC->SetXTitle("b [fm]");
+    fBtoC->SetYTitle("Centrality [%]");
+    for (Int_t i = 0; i < 24; i++) fBtoC->SetBinContent(i+1, cent[i]);
+    fOutput->Add(fBtoC);
+    
+    if (!fCentHist) return true;
+    if (fCentAxis->GetXbins()->GetArray()) {
+      fCentMult  = new TH2D("centMult","Event multiplicity vs. centrality",
+			    fCentHist->GetXaxis()->GetNbins(),
+			    fCentHist->GetXaxis()->GetXmin(),
+			    fCentHist->GetXaxis()->GetXmax(),
+			    fCentAxis->GetNbins(),
+			    fCentAxis->GetXbins()->GetArray());
+    } else {
+      fCentMult  = new TH2D("centMult","Event multiplicity vs. centrality",
+			    fCentHist->GetXaxis()->GetNbins(),
+			    fCentHist->GetXaxis()->GetXmin(),
+			    fCentHist->GetXaxis()->GetXmax(),
+			    fCentAxis->GetNbins(),
+			    fCentAxis->GetXmin(), fCentAxis->GetXmax());
+    }
     fCentMult->SetXTitle(Form("Event multiplicity (%s)", fCentMethod.Data()));
     fCentMult->SetYTitle(Form("Centrality (%s) %%", fCentMethod.Data()));
     fCentMult->SetDirectory(0);
+    
     fOutput->Add(fCentMult);
-
     return true;
   }    
 		     
@@ -1482,15 +1603,22 @@ struct CentAnalysis : public dNdetaAnalysis
    */
   virtual Bool_t ProcessHeader()
   {
-    Double_t cent = GetCentrality();
+    Double_t cent = 0;
+    if (fCentMethod.EqualTo("B"))
+      cent = fBtoC->GetBinContent(fBtoC->FindBin(fHeader->fB));
+    else
+      cent = GetCentrality();
     fCentAll->Fill(cent);
-    fCentMult->Fill(fEventMult, cent);
+    if (fCentMult) fCentMult->Fill(fEventMult, cent);
+    fCentB->Fill(cent, fHeader->fB);
     if (cent < 0 || cent > 999) return false;
     fCentBin = fCentAxis->FindBin(cent);
     if (fCentBin < 1 || fCentBin > fCentAxis->GetNbins()) {
       fCentBin = -1;
       return false;
     }
+    fCentNPart->Fill(cent, fHeader->fNtgt+fHeader->fNproj);
+    fCentNBin->Fill(cent, fHeader->fNbin);
     fCentAcc->Fill(cent);
     return true;
   }
@@ -1552,8 +1680,11 @@ struct CentAnalysis : public dNdetaAnalysis
       return;
     }
     
-    fCentAll   = static_cast<TH1*>(GetOutputObject("cent", TH1::Class()));
-    fCentAcc   = static_cast<TH1*>(GetOutputObject("centAcc", TH1::Class()));
+    fCentAll   = static_cast<TH1*>(GetOutputObject("cent",      TH1::Class()));
+    fCentAcc   = static_cast<TH1*>(GetOutputObject("centAcc",   TH1::Class()));
+    fCentMult  = static_cast<TH2*>(GetOutputObject("centMult",  TH2::Class()));
+    fCentNPart = static_cast<TH2*>(GetOutputObject("centNPart", TH2::Class()));
+    fCentNBin  = static_cast<TH2*>(GetOutputObject("centNBin",  TH2::Class()));
     // fCentStack = static_cast<THStack*>(GetOutputObject("stack",
     // THStack::Class()));
     fCentList = static_cast<TList*>(GetOutputObject("byCent",
@@ -1703,7 +1834,7 @@ struct MultAnalysis : public CentAnalysis
  * The function to make our analyser 
  */
 FastAnalysis*
-  FastAnalysis::Make(const char* type, Bool_t verbose, Int_t monitor)
+FastAnalysis::Make(const char* type, Bool_t verbose, Int_t monitor)
 {
   TString t(type);
   if      (t.EqualTo("INEL"))    return new INELAnalysis(verbose,monitor);
@@ -1715,7 +1846,11 @@ FastAnalysis*
 	  w.EqualTo("RefMult00d50") ||
 	  w.EqualTo("V0M") ||
 	  w.EqualTo("V0A") ||
-	  w.EqualTo("V0C"))) {
+	  w.EqualTo("V0C") ||
+	  w.EqualTo("V0MP") ||
+	  w.EqualTo("V0AP") ||
+	  w.EqualTo("V0CP") ||
+	  w.EqualTo("B"))) {
       Printf("Warning: FastAnalysis::Make: Unknown estimator: %s", w.Data());
       return 0;
     }

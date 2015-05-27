@@ -61,10 +61,8 @@ protected:
     else if (t.EndsWith("perugia0btojspi2e")) g=PythiaHF(5);
     else if (t.BeginsWith("pythia"))          g=Pythia(rt);
     else if (t.BeginsWith("hijing2000hf"))    g=HFCocktail(rt, b1, b2);
-    else if (t.BeginsWith("hijing2000"))      g=Hijing(b1, b2, asym, 
-							false, 2.3);
-    else if (t.BeginsWith("hijing"))          g=Hijing(b1, b2, asym, 
-							grp->IsAA(), 0);
+    else if (t.BeginsWith("hijing2000"))      g=Hijing(b1, b2, rt);
+    else if (t.BeginsWith("hijing"))          g=Hijing(b1, b2, rt);
     else if (t.BeginsWith("ampthf"))          g=HFCocktail(rt,b1,b2);
     else if (t.BeginsWith("ampt"))            g=Ampt(b1, b2, rt);
     else if (t.BeginsWith("dpmjet"))          g=Dpmjet(b1, b2);
@@ -111,12 +109,19 @@ protected:
     // Int_t kCTEQ6l = 8;
     if (!grp->IsPP()) Fatal("Setup", "Pythia6 only works for pp");
 
+    TString tit(Form("Pythia6 %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+
     TString t(tune);
     t.ToUpper();
     t.ReplaceAll("PYTHIA6", "");
     t.ReplaceAll("PYTHIA", "");
     Info("Setup", "Making Pythia6 event generator (tune: %s)", t.Data());
 
+    tit.Append(Form(" tune=%s", t.Data()));
+    
     LoadPythia();
     AliGenPythia* pythia = new AliGenPythia(-1); 
     pythia->SetMomentumRange(0, 999999.);
@@ -192,6 +197,7 @@ protected:
       Int_t limit = weight->GetRandom();
       pythia->SetTriggerChargedMultiplicity(limit, 1.4);
     }
+    pythia->SetTitle(tit);
     return pythia;
   }
   /** 
@@ -261,37 +267,69 @@ protected:
    */
   AliGenerator* Hijing(Float_t minB, 
 		       Float_t maxB, 
-		       Bool_t  slowN=false, 
-		       Bool_t  quench=1, 
-		       Float_t ptHard=0) 
+		       const TString& rt) 
   {
     LoadHijing();
-    AliGenHijing *gener = new AliGenHijing(-1);
-    // centre of mass energy 
-    gener->SetEnergyCMS(grp->energy);
-    gener->SetImpactParameterRange(minB, maxB);	
-    // reference frame
-    gener->SetReferenceFrame("CMS");
-    // projectil
-    gener->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    gener->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
-    // tell hijing to keep the full parent child chain
-    gener->KeepFullEvent();
-    // enable jet quenching
-    gener->SetJetQuenching(quench);
-    // enable shadowing
-    gener->SetShadowing(slowN);
-    // Don't track spectators
-    gener->SetSpectators(!slowN);
-    // 
-    if (ptHard > 0) hi->SetPtHardMin(ptHard);
+    TString opt(rt);
+    opt.ToLower();
+    opt.Remove(0,6); // Remove hijing prefix 
 
-    // kinematic selection
-    gener->SetSelectAll(0);
+    // When no options are passed, we
+    //  Enable shadowing
+    //  Disable spectators
+    //  Disable quenching
+    // Which corresponds to the defaults for PbPb MB.  Note, if we
+    // simulate pA/Ap then, we always
+    //  Disable shadowing
+    //  Enable spectators
+    // and add a slow-nucleon model afterburner 
+    Bool_t quench = opt.Contains("quench");
+    Bool_t spec   = (grp->IsPA() || grp->IsAP() || opt.Contains("spectators"));
+    Bool_t shadow = !spec && !opt.Contains("noshadow");
+
+    TString tit(Form("Hijing %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+    tit.Append(Form(" %squench",    quench ? "" : "no"));
+    tit.Append(Form(" %sspectator", spec   ? "" : "no"));
+    tit.Append(Form(" %sshadow",    shadow ? "" : "no"));
+    
+    AliGenHijing *gener = new AliGenHijing(-1);
+    // --- Centre of mass energy -------------------------------------
+    gener->SetEnergyCMS(grp->energy);
+    // --- Impact parameter range ------------------------------------
+    gener->SetImpactParameterRange(minB, maxB);	
+    // --- Reference frame -------------------------------------------
+    gener->SetReferenceFrame("CMS");
+    // --- projectile ------------------------------------------------
+    gener->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    // -- Target -----------------------------------------------------
+    gener->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    // --- tell hijing to keep the full parent child chain - default 0
+    gener->KeepFullEvent();
+    // --- enable jet quenching - off for PbPb - 1 by default --------
+    gener->SetJetQuenching(quench);
+    // --- enable shadowing - on for PbPb - 1 by default -------------
+    gener->SetShadowing(shadow); 
+    // --- Don't track spectators - off for PbPb - 1 by default ------
+    gener->SetSpectators(spec);
+    // --- Possibly Pt cut-off - 2.3 for PbPb ------------------------
+    gener->SetPtHardMin(2.3);
+    // --- Do not disable decays -- 3 for PbPb -----------------------
+    // gener->SetDecaysOff(3); 
+    // --- kinematic selection - 0 by default ------------------------
+    // gener->SetSelectAll(0);
     // Boosted CMS 
     gener->SetBoostLHC(grp->IsPA() || grp->IsAP());
-    // No need for cocktail 
-    if (!slowN || !grp->IsPA() || !grp->IsAP()) return gener;
+
+    
+    // No need for cocktail
+    if (!grp->IsPA() || !grp->IsAP()) {
+      gener->SetTitle(tit);
+      return gener;
+    }
+
 
     AliGenCocktail* cocktail = new AliGenCocktail();
     cocktail->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
@@ -314,7 +352,9 @@ protected:
 
     cocktail->AddGenerator(gener, "Hijing pPb", 1);
     cocktail->AddGenerator(gray, "Gray Particles", 1);
-    
+
+    tit.Append(" + slow nucleon");
+    cocktail->SetTitle(tit);
     return cocktail;
   }
   /** 
@@ -328,16 +368,18 @@ protected:
 		       Bool_t fragments=0)
   {
     LoadDpmjet();
-    AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 
+    AliGenDPMjet* dpmjet = new AliGenDPMjet(-1);
+    TString tit(Form("DpmJet %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+
     dpmjet->SetEnergyCMS(grp->energy);
     dpmjet->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     dpmjet->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
     dpmjet->SetImpactParameterRange(minB, maxB);
     dpmjet->SetProjectileBeamEnergy(grp->beam2.z*grp->beamEnergy/grp->beam2.a);
-    if (grp->IsAA()) { 
-      dpmjet->SetPi0Decay(0);
-    }
-    else if (grp->IsPA() || grp->IsAP()) { 
+    if (grp->IsPA() || grp->IsAP()) { 
       // dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
       dpmjet->SetFragmentProd(false/*fragments*/); // Alwas disabled 
     }
@@ -346,7 +388,9 @@ protected:
       dpmjet->SetThetaRange(0., 180.);
       dpmjet->SetYRange(-12.,12.);
       dpmjet->SetPtRange(0,1000.);
+      tit.Append(" (Phojet)");
     }
+    // dpmjet->SetTitle(tit);
     return dpmjet;
   }
   /** 
@@ -357,45 +401,78 @@ protected:
   AliGenerator* Ampt(Float_t minB, Float_t maxB, const TString& rt)
   {
     LoadAmpt();
+    TString opt(rt);
+    opt.ToLower();
+    opt.Remove(0,4); // Remove AMPT prefix 
+
+    TString tit(Form("AMPT %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+
+    // When no options are passed, we
+    //  Enable decayer
+    //  Turn on screening mass
+    //  Dislable string melting
+    //  Enable shadowing
+    //  Disable spectators
+    //  Disable quenching
+    // Which corresponds to the defaults for PbPb MB 
+    Bool_t decayer = !opt.Contains("nodecay"); // Default for PbPb 
+    Bool_t screen  = !opt.Contains("noscreen");
+    Bool_t melt    = opt.Contains("melt");
+    Bool_t shadow  = !opt.Contains("noshadow");
+    Bool_t spec    = opt.Contains("spectators");
+    Bool_t quench  = opt.Contains("quench");
+    tit.Append(Form(" %sdecay",     decayer ? "" : "no"));
+    tit.Append(Form(" %sscreen",    screen  ? "" : "no"));
+    tit.Append(Form(" %smelt",      melt    ? "" : "no"));
+    tit.Append(Form(" %sshadow",    shadow  ? "" : "no"));
+    tit.Append(Form(" %sspectator", spec    ? "" : "no"));
+    tit.Append(Form(" %squench",    quench  ? "" : "no"));
+    
     AliGenAmpt *genHi = new AliGenAmpt(-1);
     genHi->SetEnergyCMS(grp->energy);
     genHi->SetReferenceFrame("CMS");
     genHi->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
     genHi->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
-    genHi->SetPtHardMin (2);
     genHi->SetImpactParameterRange(minB,maxB);
-    // disable jet quenching
-    genHi->SetJetQuenching(0); 
-    // enable shadowing
-    genHi->SetShadowing(1);    
+    // --- Least hard Pt ---------------------------------------------
+    genHi->SetPtHardMin (3);
+    // --- disable jet quenching -------------------------------------
+    genHi->SetJetQuenching(quench); 
+    // --- enable shadowing ------------------------------------------
+    genHi->SetShadowing(shadow);    
     // neutral pion and heavy particle decays switched off
-    genHi->SetDecaysOff(1);
-    genHi->SetSpectators(0);   // track spectators 
+    genHi->SetDecaysOff(decayer);
+    // --- track spectators ------------------------------------------
+    genHi->SetSpectators(spec);
+    // --- Keep everything -------------------------------------------
     genHi->KeepFullEvent();
+    // --- Do not use all --------------------------------------------
     genHi->SetSelectAll(0);
 
+    // -- String melting: 1 default ----------------------------------
+    genHi->SetIsoft(melt ? 4 : 1);
+    // --- Lund string fragmentation parameters ----------------------
+    genHi->SetStringFrag(0.5, 0.9);
+    // --- MAx number of time steps ----------------------------------
+    genHi->SetNtMax(150);
+    // --- Boost according to LHC parameters -------------------------
+    genHi->SetBoostLHC(1);
+    // --- Create random reaction plane ------------------------------
+    genHi->SetRandomReactionPlane(true);
+    // --- parton screening mass in fm^(-1) (D=3.2264d0) -------------
+    if (screen) genHi->SetXmu(3.2264);
+    
     // -- Process tunes ----------------------------------------------
-    TString opt(rt);
-    opt.ToLower();
-    opt.Remove(0,4); // Remove AMPT prefix 
-    if (opt.Contains("decay")) {
+    if (decayer) {
       // Add a decayer here
       hftype = 1;
       genHi->SetDecayer(CreateDecayer("hijing2000hf"));
     }
-    // Enable string melting
-    if (opt.Contains("melt")) genHi->SetIsoft(4);
-    // parton screening mass in fm^(-1) (D=3.2264d0)
-    if (opt.Contains("screen")) genHi->SetXmu(3.2264);
-    // Enable Jet quenching 
-    if (opt.Contains("quench")) genHi->SetJetQuenching(1);
-    // Enable Jet quenching 
-    if (opt.Contains("noshadow")) genHi->SetShadowing(0);
-    // Enable spectators 
-    if (opt.Contains("spectators")) genHi->SetShadowing(0);
-
-      
-	
+    genHi->SetTitle(tit);
+    
     return genHi;
   }
   /** 
@@ -415,6 +492,12 @@ protected:
     genHi->SetBmin(minB);
     genHi->SetBmax(maxB);
     genHi->SetPyquenPtmin(9);
+
+    TString tit(Form("Hydjet %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+    genHi->SetTitle(tit);
     return genHi;
   }
   /** 
@@ -429,6 +512,11 @@ protected:
     gen->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
     gen->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     gen->SetEnergyCMS(grp->energy);
+    TString tit(Form("EPOS %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+    gen->SetTitle(tit);
     return gen;
   }    
   AliGenerator* Therminator(Float_t,Float_t)
@@ -532,20 +620,21 @@ protected:
     
     // Add underlying event
     if (base.BeginsWith("ampt", TString::kIgnoreCase)) { 
-      hi = Ampt(minB, maxB);
+      hi = Ampt(minB, maxB, base);
       cocktail->AddGenerator(hi,"ampt",1);
     }
     else { 
-      hi = Hijing(minB, maxB, grp->IsPA() || grp->IsAP(), false, 2.3);
-      cocktail->AddGenerator(hi,"hijing",1);
-
+      hi = Hijing(minB, maxB, base);
+      cocktail->AddGenerator(hi,"hijing",1);      
     }
-
+    TString tit(hi->GetTitle());
+    
     // --- Default formula -------------------------------------------
     TForumla* one = new TFormula("one", "1.");
 
     // --- Pythia ----------------------------------------------------
     AliGenerator* pythia = PythiaHF(hftype);
+    tit.Append(Form(" + %s", pythia->GetTitle()));
     switch (hftype) { 
     case 6: 
       cocktail->AddGenerator(pythia, "pythiaJets", 1, one);
@@ -629,6 +718,7 @@ protected:
 	cocktail->AddGenerator(box, Form("%s%c",hptT[i],(j<0,'-','+')),1,hptF);
       }
     }
+    cocktail->SetTitle(tit);
     return cocktail;
   }
 
