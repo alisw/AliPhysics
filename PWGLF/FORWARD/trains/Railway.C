@@ -19,6 +19,7 @@
 #define TRAIN_HELPER_C
 #ifndef __CINT__
 # include "Option.C"
+# include "ChainBuilder.C"
 # include <TUrl.h>
 # include <TString.h>
 # include <TMap.h>
@@ -28,6 +29,7 @@
 # include <TError.h>
 # include <TObjArray.h>
 # include <TFile.h>
+# include <TChain.h>
 # include <AliAnalysisManager.h>
 # include <iostream>
 #else 
@@ -36,6 +38,7 @@ class TUrl;
 class TMap;
 class Option;
 class OptionList;
+class TChain;
 #endif
 
 /**
@@ -471,6 +474,57 @@ protected:
     return true;
   }
   /** 
+   * Create a local chain based on URL and options 
+   * 
+   * 
+   * @return Chain or null
+   */
+  TChain* LocalChain()
+  {
+    // -- Check the source -------------------------------------------
+    TString  src       = fUrl.GetFile();
+    if (src.IsNull()) {
+      Error("LocalChain", "No input source specified");
+      return 0;
+    }
+
+    // --- Check possible pattern ------------------------------------
+    TString  pattern   = (fOptions.Has("pattern") ?fOptions.Get("pattern") :"");
+    pattern.ReplaceAll("@", "#");
+
+    // --- Get the tree name -----------------------------------------
+    TString  treeName  = fUrl.GetAnchor();
+
+    // --- Create flags for the chain builder ------------------------
+    UShort_t flags     = 0;
+    if (fOptions.Has("mc") &&
+	AliAnalysisManager::GetAnalysisManager()
+	->GetMCtruthEventHandler() != 0) flags |= ChainBuilder::kMC;
+    if (fOptions.Has("recursive"))       flags |= ChainBuilder::kRecursive;
+    if (fOptions.Has("trackref"))        flags |= ChainBuilder::kTrRef;
+    if (fOptions.Has("clean"))           flags |= ChainBuilder::kClean;
+    if (fOptions.Has("scan"))            flags |= ChainBuilder::kScan;
+    if (fVerbose > 5)                    flags |= ChainBuilder::kVerbose;
+
+    // --- Check input -----------------------------------------------
+    UShort_t type      = ChainBuilder::CheckSource(src, flags);
+    if (type == ChainBuilder::kInvalid) {
+      Error("LocalChain", "Cannot generate TChain from %s", src.Data());
+      return 0;
+    }
+
+    // --- Create the chain ------------------------------------------
+    TChain* chain = ChainBuilder::Create(type, src, treeName, pattern, flags);
+    if (!chain) { 
+      Error("LocalChain", "No chain defined "
+	    "(src=%s, treeName=%s, pattern=%s, flags=0x%x)", 
+	    src.Data(), treeName.Data(), pattern.Data(), flags);
+      return 0;
+    }
+    
+    return chain;
+  }
+  /** 
    * Deduce the top of job from a string 
    * 
    * @param str String 
@@ -483,7 +537,7 @@ protected:
     if (str.Contains("aod", TString::kIgnoreCase)) return kAOD;
     if (str.Contains("esd", TString::kIgnoreCase)) return kESD;
     return kUser;
-  }
+  }  
   // --- Data members ------------------------------------------------
   TUrl        fUrl;     // The URI
   OptionList  fOptions; 

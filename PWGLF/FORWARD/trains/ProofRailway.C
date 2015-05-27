@@ -15,7 +15,6 @@
 #ifndef __CINT__
 # include "OutputUtilities.C"
 # include "ParUtilities.C"
-# include "ChainBuilder.C"
 # include <TUrl.h>
 # include <TString.h>
 # include <TProof.h>
@@ -447,6 +446,7 @@ struct ProofRailway : public Railway
     ExportEnvVar(env, "ALICE_ROOT");
     
     TString setup("gSystem->AddDynamicPath(\"$(ALICE_ROOT)/lib\");\n"
+                  "gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");\n"
 		  "// Info(\"SETUP\",\"Loading ROOT libraries\");\n"
 		  "gSystem->Load(\"libTree\");\n"
 		  "gSystem->Load(\"libGeom\");\n"
@@ -509,6 +509,7 @@ struct ProofRailway : public Railway
     ExportEnvVar(env, "OADB_PATH");
     
     TString setup("gSystem->AddDynamicPath(\"$(ALICE_PHYSICS)/lib\");\n"
+                  "gSystem->AddIncludePath(\"-I${ALICE_PHYSICS}/include\");\n"
 		  "// Info(\"SETUP\",\"Parameter list:\");\n"
 		  "if (!opts) return;\n"
 		  "//opts->ls();\n"
@@ -740,7 +741,7 @@ struct ProofRailway : public Railway
     TString    tmp2 = fExtraSrcs.Strip(TString::kBoth, ':');
     TObjArray* srcs = tmp2.Tokenize(":");
     TIter      next2(srcs);
-    while ((obj = next())) { 
+    while ((obj = next2())) { 
       Int_t ret = gProof->Load(Form("%s++g", obj->GetName()), true);
       if (ret < 0) { 
 	Error("ProofRailway::PostSetup", "Failed to compile %s",obj->GetName());

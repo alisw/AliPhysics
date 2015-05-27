@@ -74,6 +74,9 @@ struct LocalRailway : public Railway
     : Railway(url, verbose), fChain(0)
   {
     fOptions.Add("recursive","Scan recursive");
+    fOptions.Add("trackref", "For MC input, check TrackRef.root presence");
+    fOptions.Add("scan",     "Scan for number of events in chain");
+    fOptions.Add("clean",    "Clean chain elements");
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
   }
   /** 
@@ -140,32 +143,17 @@ struct LocalRailway : public Railway
    */
   virtual Bool_t PostSetup() 
   {
-    TString treeName(fUrl.GetAnchor());
-    TString pattern(fOptions.Has("pattern") ? fOptions.Get("pattern") : "");
-    Bool_t  recursive = fOptions.Has("recursive");
-    Bool_t  mc        = fOptions.Has("mc");
-    TString file      = fUrl.GetFile();
-    if (file.IsNull()) {
-      Error("PostSetup", "No input source specified");
-      return false;
-    }
-
-    pattern.ReplaceAll("@", "#");
-    fChain = ChainBuilder::Create(file, treeName, pattern, mc, recursive,
-				  fVerbose);
-    if (!fChain) { 
-      Error("PostSetup", "No chain defined "
-	    "(src=%s, treeName=%s, pattern=%s, mc=%s, recursive=%s)", 
-	    file.Data(), treeName.Data(), pattern.Data(), 
-	    (mc ? "true" : "false"), (recursive ? "true" : "false"));
-      return false;
-    }
-
+    // --- Check that the manager was made ---------------------------
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { 
       Error("PostSetup", "No analysis manager defined");
       return false;
     }
+
+    // --- Create the chain ------------------------------------------
+    fChain = LocalChain();
+    if (!fChain) return false;
+    
     return true;
   };
   /** 

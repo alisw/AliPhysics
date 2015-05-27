@@ -18,7 +18,6 @@
 # include <TUrl.h>
 # include <TString.h>
 # include <TEnv.h>
-# include <TProof.h>
 # include <AliAnalysisManager.h>
 # include <AliAnalysisAlien.h>
 #else
@@ -213,7 +212,7 @@ struct PluginRailway : public Railway
     Bool_t tmp = fUsePars;
     fUsePars   = false;
     
-    if (!LoadLibrary("OADB"))          return false;
+    // if (!LoadLibrary("OADB"))          return false;
     fUsePars = tmp;
 
     return true;
@@ -243,6 +242,7 @@ struct PluginRailway : public Railway
     fUsePars   = fOptions.Has("par");
     fTestBuild = fOptions.Has("testpar");
 
+    fHandler->SetAPIVersion("V1.1x");
     fHandler->SetROOTVersion(root);
     fHandler->SetAliROOTVersion(aliroot);
     fHandler->SetAliPhysicsVersion(aliphysics);
