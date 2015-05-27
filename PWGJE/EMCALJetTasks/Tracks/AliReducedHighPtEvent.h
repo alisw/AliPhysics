@@ -123,7 +123,11 @@ public:
    * \return true if event is a jet high event, false otherwise
    */
   Bool_t IsJetHighFromString() const { return fJetTriggerString[1]; }
-
+  /**
+   * Get the run number
+   * \return Run number
+   */
+  Int_t GetRunNumber() const { return fRunNumber; }
 
   void AddReducedCluster(AliReducedEmcalCluster *cluster);
   void AddReducedGeneratedParticle(AliReducedGeneratedParticle *part);
@@ -161,8 +165,10 @@ public:
    * \param header The Monte-Carlo event header
    */
   void SetMonteCarloHeader(AliReducedMCHeader *header) { fMCHeader = header; }
+  void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
 
 protected:
+  Int_t                                   fRunNumber;                         ///< Run number
   Float_t                                 fCentralityPercentile;              ///< Centrality percentile
   Float_t                                 fVertexZ;                           ///< z-position of the primary vertex
   AliReducedMCHeader                      *fMCHeader;                         ///< Reduced Monte-Carlo header
@@ -175,7 +181,7 @@ protected:
   TObjArray                               *fReducedTrackInfo;                 ///< Container for reduced reconstructed tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliReducedHighPtEvent, 1);
+  ClassDef(AliReducedHighPtEvent, 2);
   /// \endcond
 };
 
