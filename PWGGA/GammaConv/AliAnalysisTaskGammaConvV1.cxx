@@ -1231,7 +1231,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		if((fDoCentralityFlat > 0)){
 			fWeightCentrality[iCut] = 1.;
 			fWeightCentrality[iCut] = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForCentralityFlattening(fInputEvent);
-		} else fWeightCentrality[iCut] = 1.;
+		}
 	} 
 	
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
