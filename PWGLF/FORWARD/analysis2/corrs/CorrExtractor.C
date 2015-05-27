@@ -146,7 +146,8 @@ struct CorrExtractor
     if (oSat)                  fSatellite = oSat->GetUniqueID();
 
     if (fSys <= 0 || fSys > 3 || fSNN <= 0 || fField >= 999 || fRunNo <= 0 ){
-      Error("CorrExtractor", "Failed to get settings");
+      Error("CorrExtractor", "Failed to get settings\n"
+	    "  sys=%d sNN=%d field=%d run=%ld", fSys, fSNN, fField, fRunNo);
       Clear();
       return false;
     } 

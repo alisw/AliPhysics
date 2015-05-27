@@ -22,6 +22,7 @@ check_token()
 }
 
 # --- Diagnostics output ---------------------------------------------
+noact=0
 verb=0
 mess()
 {
@@ -157,7 +158,7 @@ _download_file()
     else
 	printf "copying\n"
 	# mess 2 -n "copying ... " 
-	if test $noact -lt 1 ; then 
+	if test x$noact == x || test $noact -lt 1 ; then 
 	    alien_cp alien:${source} file:${o} >> ${redir} 2>&1 
 	    fix_perm $o 
 	else 
@@ -165,7 +166,7 @@ _download_file()
 	fi
 	mess 2 "done"
     fi
-    if test $noact -gt 0 ; then return 0 ; fi 
+    if test x$noact == x || test $noact -gt 0 ; then return 0 ; fi 
     if test ! -f $o ; then return 1 ; fi 
 	
 
