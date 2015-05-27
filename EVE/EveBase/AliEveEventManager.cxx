@@ -134,7 +134,7 @@ Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
 
-AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
+AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev, bool storageManager) :
 TEveEventManager(name, ""),
 fEventId(-1),
 fRunLoader (0),
@@ -155,12 +155,15 @@ fCurrentRun(-1),
 fEventInUse(1),
 fWritingToEventIndex(0),
 fIsNewEventAvaliable(false),
+fFailCounter(0),
 fOnlineMode(kFALSE),
 fStorageDown(false),
+fEventServerDown(false),
 fFinished(false),
 fViewsSaver(0),
 fESDdrawer(0),
 fSaveViews(false),
+fStorageManager(storageManager),
 fDrawESDtracksByCategory(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
@@ -175,6 +178,7 @@ fCenterProjectionsAtPrimaryVertex(false)
     if (ev >= 0){GotoEvent(ev);}
     
     StorageManagerDown(); // turn SM off by default
+    EventServerDown();
     
 #ifdef ZMQ
     if(fOnlineMode)
@@ -182,9 +186,12 @@ fCenterProjectionsAtPrimaryVertex(false)
         cout<<"ZMQ FOUND. Starting subscriber thread."<<endl;
         fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
         fEventListenerThread->Run();
-        
-//        fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
-//        fStorageManagerWatcherThread->Run();
+    
+        if(fStorageManager)
+        {
+            fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
+            fStorageManagerWatcherThread->Run();
+        }
     }
 #else
     cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
@@ -288,7 +295,7 @@ void AliEveEventManager::GetNextEvent()
 void AliEveEventManager::CheckStorageStatus()
 {
 #ifdef ZMQ
-    if(!fOnlineMode){return;}
+    if(!fOnlineMode || !fStorageManager){return;}
     
     AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
     configManager->ConnectEventManagerSignals();
@@ -954,10 +961,8 @@ void AliEveEventManager::GotoEvent(Int_t event)
             else  if (event == 2) {requestMessage->messageType = REQUEST_GET_NEXT_EVENT;}
             
             // set event struct:
-//            struct eventStruct eventToLoad;
             requestMessage->eventsRunNumber = fESD->GetRunNumber();
             requestMessage->eventsEventNumber = fESD->GetEventNumberInFile();
-//            requestMessage->event = eventToLoad;
             
             // create event manager:
             AliZMQManager *eventManager = AliZMQManager::GetInstance();
@@ -1201,11 +1206,13 @@ void AliEveEventManager::NextEvent()
         {
             if(fWritingToEventIndex == 0) fEventInUse = 0;
             else if(fWritingToEventIndex == 1) fEventInUse = 1;
-            
+        
             if(fCurrentEvent[fEventInUse])
             {
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() >= 0)
                 {
+                    fFailCounter=0;
+                    EventServerOk();
                     printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
          
                     StorageManagerDown(); // block SM while event is being loaded
@@ -1219,7 +1226,14 @@ void AliEveEventManager::NextEvent()
         else
         {
             cout<<"No new event is avaliable."<<endl;
+            fFailCounter++;
             NoEventLoaded();
+        }
+        if(fFailCounter==5)
+        {
+            cout<<"fail counter = 5"<<endl;
+            EventServerDown();
+            fFailCounter=0;
         }
         fMutex->UnLock();
 #endif
@@ -1278,35 +1292,14 @@ void AliEveEventManager::PrevEvent()
 void AliEveEventManager::MarkCurrentEvent()
 {
 #ifdef ZMQ
-    if(!fOnlineMode){return;}
+    if(!fOnlineMode || !fStorageManager){return;}
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-//    struct eventStruct mark;
     requestMessage->eventsRunNumber = fESD->GetRunNumber();
     requestMessage->eventsEventNumber = fESD->GetEventNumberInFile();
     requestMessage->messageType = REQUEST_MARK_EVENT;
-//    requestMessage->event = mark;
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
-    
-    /*
-     std::future<bool> unused = std::async([]()
-     {
-     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-     bool response =  eventManager->GetBool(SERVER_COMMUNICATION_REQ);
-     
-     if(response)
-     {
-     //fStatusLabel->SetText("Event marked");
-     cout<<"ADMIN PANEL -- Event marked succesfully"<<endl;
-     }
-     else
-     {
-     //fStatusLabel->SetText("Couldn't mark this event");
-     cout<<"ADMIN PANEL -- Could not matk event"<<endl;
-     }
-     });
-     */
     
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
     bool response;
@@ -2048,6 +2041,8 @@ void AliEveEventManager::NoEventLoaded()
 void AliEveEventManager::StorageManagerOk()
 {
     // Emit StorageManagerOk signal if needed
+    
+    if(!fStorageManager){return;}
     if(fStorageDown==true)
     {
         Emit("StorageManagerOk()");
@@ -2057,11 +2052,24 @@ void AliEveEventManager::StorageManagerOk()
 void AliEveEventManager::StorageManagerDown()
 {
     // Emit StorageManagerDown signal if needed
+    
+    if(!fStorageManager){return;}
     if(fStorageDown==false)
     {
         Emit("StorageManagerDown()");
         fStorageDown = true;
     }
+}
+
+void AliEveEventManager::EventServerOk()
+{
+    // Emit StorageManagerOk signal
+    Emit("EventServerOk()");
+}
+void AliEveEventManager::EventServerDown()
+{
+    // Emit StorageManagerDown signal
+    Emit("EventServerDown()");
 }
 
 

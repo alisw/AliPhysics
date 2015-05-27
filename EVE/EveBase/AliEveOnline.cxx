@@ -63,7 +63,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"added"<<endl;
     
     cout<<"Creating event manager...";
-    new AliEveEventManager("online", -1);
+    new AliEveEventManager("online", -1, storageManager);
     AliEveEventManager *man = AliEveEventManager::GetMaster();
     gEve->AddEvent(man);
     cout<<"created"<<endl;

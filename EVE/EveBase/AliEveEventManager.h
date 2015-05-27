@@ -56,7 +56,7 @@ class TMap;
 class AliEveEventManager : public TEveEventManager, public TQObject
 {
 public:
-    AliEveEventManager(const TString& name="Event", Int_t ev=0);
+    AliEveEventManager(const TString& name="Event", Int_t ev=0, bool storageManager=false);
     virtual ~AliEveEventManager();
 	
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
@@ -159,7 +159,9 @@ public:
     void          NoEventLoaded();      // *SIGNAL*
     void          StorageManagerOk();    // *SIGNAL*
     void          StorageManagerDown();  // *SIGNAL*
-
+    void          EventServerOk();    // *SIGNAL*
+    void          EventServerDown();  // *SIGNAL*
+    
     AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
     void InitOCDB(int runNo=-1);
 
@@ -254,11 +256,13 @@ private:
     int fEventInUse;
     int fWritingToEventIndex;
     bool fIsNewEventAvaliable;
+    int fFailCounter;
     storageSockets fgSubSock;
     int fCurrentRun;
 
     Bool_t fOnlineMode;
     Bool_t fStorageDown;
+    Bool_t fEventServerDown;
     Bool_t fFinished;
 
     AliEveSaveViews *fViewsSaver;
@@ -266,6 +270,7 @@ private:
 
     bool fSaveViews;
     bool fDrawESDtracksByCategory;
+    bool fStorageManager;
     
     bool fFirstEvent;
     bool fCenterProjectionsAtPrimaryVertex;

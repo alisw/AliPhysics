@@ -191,10 +191,14 @@ fEventInfo    (0)
         fTrigSel->Select(-1,kFALSE);
         f->AddFrame(fTrigSel, new TGLayoutHints(kLHintsNormal, 10, 5, 0, 0));
         fTrigSel->Connect("Selected(char*)", cls, this, "DoSetTrigSel()");
-        
-        fStorageStatus = MkLabel(f,"Storage: Waiting",0,8,8);
-        fEventServerStatus = MkLabel(f,"Event Server: Waiting",0,10,10);
-        
+        if(storageManager){
+            fStorageStatus = MkLabel(f,"Storage: Waiting",0,8,8);
+        }
+        else{
+            fStorageStatus = MkLabel(f,"",0,8,8);
+        }
+        fEventServerStatus = MkLabel(f,"Reconstruction: Waiting",0,10,10);
+        fEventServerStatus->SetTextColor(0xFFA500);
     }
     
     fEventInfo = new TGTextView(this, 400, 600);
@@ -203,6 +207,9 @@ fEventInfo    (0)
     fM->Connect("NewEventLoaded()", cls, this, "Update(=1)");
     fM->Connect("NoEventLoaded()", cls, this, "Update(=0)");
 
+    fM->Connect("EventServerOk()", cls, this, "EventServerChangedState(=1)");
+    fM->Connect("EventServerDown()", cls, this, "EventServerChangedState(=0)");
+    
     if(storageManager) // if SM is enabled in general
     {
         fM->Connect("StorageManagerOk()",cls,this,"StorageManagerChangedState(=1)");
@@ -395,6 +402,25 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         listEventsTab->SetOfflineMode(kFALSE);
         fEventId->SetState(kTRUE);
     }
+#endif
+}
+
+void AliEveEventManagerWindow::EventServerChangedState(int state)
+{
+#ifdef ZMQ
+    cout<<"MAN EDITOR - change state called"<<endl;
+    if (state == 0)// Event Server off
+    {
+        fEventServerStatus->SetText("Reconstruction: DOWN");
+        fEventServerStatus->SetTextColor(0xFF0000);
+    }
+    else if(state == 1)// SM on
+    {
+        fEventServerStatus->SetText("Reconstruction: OK");
+        fEventServerStatus->SetTextColor(0x00FF00);
+    }
+//    SetCleanup(kDeepCleanup);
+    Layout();
 #endif
 }
 
