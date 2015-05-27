@@ -100,8 +100,8 @@ struct AAFPluginRailway : public PluginRailway
   virtual Bool_t PreSetup()
   {
     // --- Handle software options -----------------------------------
-    TString root = fOptions.Get("root");
-    fHandler->SetRootVersionForProof(Form("VO_ALICE@ROOT::%s", root.Data()));
+    // TString root = fOptions.Get("root");
+    // fHandler->SetRootVersionForProof(Form("VO_ALICE@ROOT::%s", root.Data()));
     fHandler->SetProofCluster(fUrl.GetHost());
     fHandler->SetProofDataSet(fUrl.GetFile());
 

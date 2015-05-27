@@ -49,7 +49,8 @@ struct ChainBuilder
     kMC        =  0x4,
     kCheck     =  0x8,
     kClean     = 0x10,
-    kScan      = 0x20
+    kScan      = 0x20, 
+    kTrRef     = 0x40
   };
   enum { 
     kInvalid,
@@ -125,6 +126,7 @@ struct ChainBuilder
    * - @c verbose Be verbose
    * - @c check Check files by trying to open them 
    * - @c clean Remove invalid files 
+   * - @c trackref For MC input, insist on TrackRefs.root presence
    * - @c pattern=PATTERN Search pattern when scanning directories 
    * 
    * @param url The input url 
@@ -145,16 +147,13 @@ struct ChainBuilder
       const TString& str = token->String();
       if (str.EqualTo("mc", TString::kIgnoreCase)) 
 	flags |= kMC;
-      else if (str.EqualTo("recursive", TString::kIgnoreCase)) 
+      else if (str.EqualTo("recursive", TString::kIgnoreCase))
 	flags |= kRecursive;
-      else if (str.EqualTo("verbose", TString::kIgnoreCase)) 
-	flags |= kVerbose;
-      else if (str.EqualTo("check", TString::kIgnoreCase)) 
-	flags |= kCheck;
-      else if (str.EqualTo("clean", TString::kIgnoreCase)) 
-	flags |= kClean; 
-      else if (str.EqualTo("scan", TString::kIgnoreCase)) 
-	flags |= kScan; 
+      else if (str.EqualTo("verbose", TString::kIgnoreCase)) flags |= kVerbose;
+      else if (str.EqualTo("check", TString::kIgnoreCase))   flags |= kCheck;
+      else if (str.EqualTo("trackref", TString::kIgnoreCase))flags |= kTrRef;
+      else if (str.EqualTo("clean", TString::kIgnoreCase))   flags |= kClean; 
+      else if (str.EqualTo("scan", TString::kIgnoreCase))    flags |= kScan; 
       else if (str.BeginsWith("pattern=", TString::kIgnoreCase)) { 
 	Int_t eq = str.Index("=");
 	pattern  = str(eq+1, str.Length()-eq-1);
@@ -192,7 +191,8 @@ struct ChainBuilder
 			Bool_t         recursive,
 			Bool_t         verbose=false,
 			Bool_t         checkFiles=false, 
-			Bool_t         removeFiles=false)
+			Bool_t         removeFiles=false,
+			Bool_t         trackRefs=false)
   {
     UShort_t flags = 0;
     if (verbose)     flags |= kVerbose;
@@ -200,6 +200,7 @@ struct ChainBuilder
     if (mc)          flags |= kMC;
     if (checkFiles)  flags |= kCheck;
     if (removeFiles) flags |= kClean;
+    if (trackRefs)   flags |= kTrRef;
 
     TString tmp(src);
     UShort_t type = CheckSource(tmp, flags);
@@ -230,7 +231,8 @@ struct ChainBuilder
 			Bool_t         recursive,
 			Bool_t         verbose=false,
 			Bool_t         checkFiles=false, 
-			Bool_t         removeFiles=false)
+			Bool_t         removeFiles=false,
+			Bool_t         trackRefs=false)
   {
     // Info("ChainBuilder::Create", 
     // "src=%s treeName=%s pattern=%s mc=%s recursive=%s",
@@ -243,6 +245,7 @@ struct ChainBuilder
     if (mc)          flags |= kMC;
     if (checkFiles)  flags |= kCheck;
     if (removeFiles) flags |= kClean;
+    if (trackRefs)   flags |= kTrRef;
 
     return Create(type, src, treeName, pattern, flags);
   }
@@ -279,6 +282,7 @@ struct ChainBuilder
     if (pat.IsNull()) {
       if      (tN.EqualTo("esdTree")) pat = "AliESD*";
       else if (tN.EqualTo("aodTree")) pat = "AliAOD*";
+      else if (tN.EqualTo("TE"))      pat = "galice*";
       if ((flags & kVerbose)) Info("", "Pattern set to %s", pat.Data());
     }
     if ((flags & kVerbose))
@@ -561,7 +565,9 @@ struct ChainBuilder
       test->Close();
       ok = true;
       if (flags & kMC) { 
-	const char*  auxs[] = { "galice", "Kinematics", "TrackRefs", 0 };
+	const char*  auxs[] = { "galice", "Kinematics",
+				(flags & kTrRef ? "TrackRefs" : 0),
+				0 };
 	const char** aux    = auxs;
 	while ((*aux)) { 
 	  TString t1;

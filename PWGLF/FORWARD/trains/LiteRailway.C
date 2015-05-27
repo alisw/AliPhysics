@@ -12,7 +12,6 @@
 #define LITEHELPER_C
 #include "ProofRailway.C"
 #ifndef __CINT__
-# include "ChainBuilder.C"
 # include <TUrl.h>
 # include <TString.h>
 # include <TChain.h>
@@ -84,6 +83,9 @@ struct LiteRailway : public ProofRailway
     : ProofRailway(url, verbose), fChain(0)
   {
     fOptions.Add("recursive","Recursive scan");
+    fOptions.Add("trackref", "For MC input, check TrackRef.root presence");
+    fOptions.Add("scan",     "Scan for number of events in chain");
+    fOptions.Add("clean",    "Clean chain elements");
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
     fOptions.Remove("dsname");
     fOptions.Remove("storage");
@@ -132,31 +134,9 @@ struct LiteRailway : public ProofRailway
    */
   virtual Bool_t PostSetup()
   {
-    // -- Check for local chain --------------------------------------
-    TString  pattern   = (fOptions.Has("pattern") ?fOptions.Get("pattern") :"");
-    TString  treeName  = fUrl.GetAnchor();
-    Bool_t   recursive = fOptions.Has("recursive");
-    Bool_t   mc        = fOptions.Has("mc");
-    TString  src       = fUrl.GetFile();
-    UShort_t type      = ChainBuilder::CheckSource(src, 0);
-    if (type == ChainBuilder::kInvalid) {
-      Error("LiteRailway", "Cannot generate TChain from %s", src.Data());
-      return false;
-    }
-
     // --- Create the chain ------------------------------------------
-    pattern.ReplaceAll("@", "#");
-    Bool_t chainMC = (mc && AliAnalysisManager::GetAnalysisManager()
-		      ->GetMCtruthEventHandler() != 0);
-    fChain = ChainBuilder::Create(type, src, treeName, pattern, 
-				  chainMC, recursive, fVerbose > 5);
-    if (!fChain) { 
-      Error("PostSetup", "No chain defined "
-	    "(src=%s, treeName=%s, pattern=%s, mc=%s, recursive=%s)", 
-	    src.Data(), treeName.Data(), pattern.Data(), 
-	    (mc ? "true" : "false"), (recursive ? "true" : "false"));
-      return false;
-    }
+    fChain = LocalChain();
+    if (!fChain) return false;
 
     return ProofRailway::PostSetup();
   }

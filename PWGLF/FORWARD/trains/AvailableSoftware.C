@@ -107,7 +107,12 @@ struct AvailableSoftware
 		   query.Contains("standard",   TString::kIgnoreCase));
     Bool_t rele = (query.Contains("release",    TString::kIgnoreCase));
     Bool_t anat = (query.Contains("analysis",   TString::kIgnoreCase));
-
+    if (!query.IsNull() && (!list && !last && !nots && !rele && !anat)) {
+      Info("GetPackage", "%s=%s already specified, leaving that",
+	   name.Data(), query.Data());
+      return 0;
+    }
+    
     TPRegexp pRele(Form("%s::v[0-9]-[0-9]+-(Rev-|)[0-9]+.*",name.Data()));
     TPRegexp pAnat(Form("%s::vAN-[0-9]{8}.*", name.Data()));
     TString  vers(Form("%s::%s", name.Data(), query.Data()));
@@ -160,7 +165,7 @@ struct AvailableSoftware
   static Bool_t GetVer(TObject* pack, const TString& name, TString& ret)
   {
     if (!pack) {
-      ret = "";
+      // if (!ret.IsNull())    ret = "";
       return false;
     }
     
