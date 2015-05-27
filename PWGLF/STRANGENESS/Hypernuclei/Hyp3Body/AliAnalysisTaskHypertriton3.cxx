@@ -880,7 +880,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       }// end of "track sign -"
     } 
   } // end of PID loop
-  /*
+  
   cdeuteron.Set(nDeuTPC);
   cproton.Set(nProTPC);
   cpion.Set(nPioTPC);
@@ -901,7 +901,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   Int_t deuIdx, proIdx, pioIdx = 0.;
   
-  for(UInt_t j=0; j<nDeuTPC; j++){ // candidate deuteron loop
+  for(UInt_t j=0; j<nDeuTPC; j++){ // candidate deuteron loop cdeuteron.size()
     
     trackD = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cdeuteron[j]));
     
@@ -910,7 +910,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
     fHistCorrDCAdprimary->Fill(dprim[0],dprim[1]);
 
-    for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop
+    for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop cproton.size()
           
       trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cproton[m]));
 	  
@@ -925,8 +925,15 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(dca_dp>fDCAdp) continue;
       fHistDCAdeupro->Fill(dca_dp);
       
-      for(UInt_t s=0; s<nPioTPC; s++ ){ // candidate pion loop
-	    
+      for(UInt_t s=0; s<nPioTPC; s++ ){ // candidate pion loop cpion.size()
+
+	fTrkArray->Clear();
+	Hypertriton.Clear();
+	h1.Clear();
+	posD.Clear();
+	posP.Clear();
+	negPi.Clear();
+	
 	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cpion[s]));
 	brotherHood = kFALSE;
 	
@@ -978,29 +985,29 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	decayLengthH3L = TMath::Sqrt((dlh[0]*dlh[0]) + (dlh[1]*dlh[1]) + (dlh[2]*dlh[2]));
 	
-	if(decayLengthH3L > fDecayLength) continue;
 	fHistDecayLengthH3L->Fill(decayLengthH3L);
 	
 	trackD->PropagateToDCA(decayVtx, bz, 10,dcad);
 	fHistDCAXYdeuvtx->Fill(dcad[0]);
 	fHistDCAZdeuvtx->Fill(dcad[1]);
-
-	if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) continue;
 	
 	trackP->PropagateToDCA(decayVtx, bz, 10,dcap);
 	fHistDCAXYprovtx->Fill(dcap[0]);
 	fHistDCAZprovtx->Fill(dcap[1]);
-
-	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
 	
 	trackNPi->PropagateToDCA(decayVtx, bz, 10,dcapi);
+        
+	fHistDCAXYpionvtx->Fill(dcapi[0]);
+	fHistDCAZpionvtx->Fill(dcapi[1]);
+
+	delete decayVtx;
+	
+	if(decayLengthH3L > fDecayLength) continue;
+	if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) continue;
+	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
 	if(TMath::Abs(dcapi[0]) > fDCAPiSVxymax) continue;
 	if(TMath::Abs(dcapi[1]) > fDCAPiSVzmax) continue;
 	
-	fHistDCAXYpionvtx->Fill(dcapi[0]);
-	fHistDCAZpionvtx->Fill(dcapi[1]);
-	
-
 	posD.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),deuteronMass);
 	posP.SetXYZM(trackP->Px(),trackP->Py(),trackP->Pz(),protonMass);
 	negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),pionMass);
@@ -1015,7 +1022,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 	fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
-
 	
 
 	fHistMassHypertriton->Fill(Hypertriton.M());
@@ -1122,13 +1128,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    fHistMassHypertritonMCt->Fill(Hypertriton.M());
 	  }
 	} // end of Pure MC part
-	decayVtx->Delete();
-	fTrkArray->Clear();
-	Hypertriton.Clear();
-	h1.Clear();
-	posD.Clear();
-	posP.Clear();
-	negPi.Clear();
       } // end of candidate pion loop
     } // end of candidate proton loop
   }// end of candidate deuteron loop
@@ -1161,7 +1160,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(pstack->GetPdgCode() == 3122 && pstack->GetNDaughters() == 2) fHistParticle->Fill(20); // Lambda
     } //end of MC content truth check
   }
-  */
+  
   cdeuteron.Reset();
   cproton.Reset();
   cpion.Reset();
