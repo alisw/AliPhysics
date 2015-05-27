@@ -29,6 +29,7 @@ namespace HighPtTracks {
  */
 AliReducedReconstructedTrack::AliReducedReconstructedTrack() :
    TObject(),
+   fCharge(0),
    fTrackCutsMap(0),
    fClusterIndex(-1),
    fParticleIndex(-1),
