@@ -71,9 +71,16 @@ public:
    * associated MC particle which fulfills the physical primary condition. Only relevant
    * for analysis of Monte-Carlo data sets
    *
-   * @param doRequest If true, only MC-true tracks are selected
+   * \param doRequest If true, only MC-true tracks are selected
    */
   void SetRequestMCtrueTracks(Bool_t doRequest = kTRUE) { fRequestMCtrue = doRequest; }
+
+  /**
+   * Defines whether track patch matching is performed and correponding histograms are created and filled.
+   *
+   * \param doRequest
+   */
+  void SetRequestMatchTriggerPatches(Bool_t doRequest = kTRUE) { fDoMatchPatches = doRequest; }
 
   /**
    * Set the track selection applied in the analysis. Track cuts are always of type
@@ -94,6 +101,7 @@ protected:
   Bool_t                            fSwapEta;                 ///< Swap eta sign
   ETriggerMethod_t                  fTriggerMethod;           ///< Method used for trigger decision
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
+  Bool_t                            fDoMatchPatches;          ///< Request matching with trigger patches
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerRecTrackAnalysisComponent, 1);      // Analysis component for charged tracks

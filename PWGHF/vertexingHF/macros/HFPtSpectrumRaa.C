@@ -895,8 +895,6 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
 
   }
-  delete [] limits;
-  delete [] binwidths;
 
 
   // Finish filling the y-uncertainties of the Eloss scenarii 
@@ -972,6 +970,10 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   TH1D *hSigmaABEloss10= new TH1D("hSigmaABEloss10","hSigmaABEloss10",nbins,limits);
   TH1D *hSigmaABEloss15= new TH1D("hSigmaABEloss15","hSigmaABEloss15",nbins,limits);
   TH1D *hSigmaABEloss20= new TH1D("hSigmaABEloss20","hSigmaABEloss20",nbins,limits);
+
+  delete [] limits;
+  delete [] binwidths;
+
   for (Int_t i=0; i<=nSigmaAB->GetEntriesFast(); i++) {
     nSigmaAB->GetEntry(i);
     if (fdMethod==kfc) {

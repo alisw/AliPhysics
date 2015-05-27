@@ -44,18 +44,25 @@ class AliHFJetsContainerVertex : public AliHFJetsContainer
   virtual void Copy(TObject& c) const;
 
   /* virtual void FillStepJets(AliHFJetsContainer::CFSteps step=kCFStepEventSelected, Double_t mult=0, const AliEmcalJet *jet=0x0, Int_t nvtx=0, Double_t partonnat[2]=0x0,Double_t partpt[2]=0x0); */
-
-  virtual void FillStepJetVtx(AliHFJetsContainer::CFSteps step=kCFStepEventSelected, Double_t mult=0, const AliEmcalJet *jet=0x0, const TClonesArray *vertices=0x0, Int_t nvtx=0,const AliAODVertex *primVtx=0x0,const TClonesArray *mcPart=0x0,Double_t partonnat[2]=0x0, Double_t partpt[2]=0x0, Double_t* disp=0x0);
   
-  virtual void FillStepJetVtxData(AliHFJetsContainer::CFSteps step=kCFStepEventSelected, Double_t mult=0, const AliEmcalJet *jet=0x0, const TClonesArray *vertices=0x0, Int_t nvtx=0,const AliAODVertex *primVtx=0x0,Double_t* disp=0x0, Double_t jetpt_sub = 0.);
+  virtual void FillStepQaVtx(AliHFJetsContainer::CFSteps step = kCFStepEventSelected, Double_t mult = 0, const AliEmcalJet *jet = 0x0,
+                             const TClonesArray *vertices = 0x0, Double_t *disp = 0x0, Int_t nvtx = 0, const AliAODVertex *primVtx = 0x0,
+                             const TClonesArray *mcPart = 0x0, Double_t p[2] = 0x0, Double_t jetpt_sub = 0.);
+  
+  virtual void FillStepJetVtx(AliHFJetsContainer::CFSteps step = kCFStepEventSelected, Double_t mult = 0, const AliEmcalJet *jet = 0x0,
+                              const TClonesArray *vertices = 0x0, Int_t nvtx = 0, const AliAODVertex *primVtx = 0x0, const TClonesArray *mcPart = 0x0,
+                              Double_t partonnat[2] = 0x0, Double_t partpt[2] = 0x0, Double_t *disp = 0x0, Double_t jetpt_sub = 0.);
+  
+  virtual void FillStepJetVtxData(AliHFJetsContainer::CFSteps step = kCFStepEventSelected, Double_t mult = 0, const AliEmcalJet *jet = 0x0,
+                                  const TClonesArray *vertices = 0x0, Int_t nvtx = 0, const AliAODVertex *primVtx = 0x0, Double_t *disp=0x0, Double_t jetpt_sub = 0.);
 
-  virtual void FillStepQaVtx(AliHFJetsContainer::CFSteps step=kCFStepEventSelected, Double_t mult=0, const AliEmcalJet *jet=0x0, const TClonesArray *vertices=0x0, Double_t* disp=0x0,Int_t nvtx=0,const AliAODVertex *primVtx=0x0,const TClonesArray *mcPart=0x0,Double_t p[2]=0x0);
+
  
 protected:
   ContType fType;                   // container type       
   AliHFJetsTaggingVertex *fTagger;  // to use tagging methods  
-  void CreateContainerVertex(ContType contType=kJetVtx); // create containers belonging to this class
-  void GetBinningVertex(TString var, Int_t& nBins,Double_t * bins, const char*& axistitle); // returns array of bin limts for relevant vars
+  void CreateContainerVertex(ContType contType = kJetVtx); // create containers belonging to this class
+  void GetBinningVertex(TString var, Int_t &nBins, Double_t *bins, const char *&axistitle); // returns array of bin limts for relevant vars
   
   ClassDef(AliHFJetsContainerVertex, 1)    // containers for HF b-jets analysis
 };

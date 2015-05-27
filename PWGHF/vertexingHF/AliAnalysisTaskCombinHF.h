@@ -65,6 +65,9 @@ public:
     if(fTrackCutsKaon) delete fTrackCutsKaon;
     fTrackCutsKaon=new AliESDtrackCuts(*cuts);
   }
+  void SetCutOnKKInvMass(Double_t cut){
+    fPhiMassCut=cut;
+  }
   void SetPIDHF(AliAODPidHF* pid){
     if(fPidHF) delete fPidHF;
     fPidHF=new AliAODPidHF(*pid);
@@ -127,7 +130,8 @@ private:
   
   AliAnalysisTaskCombinHF(const AliAnalysisTaskCombinHF &source);
   AliAnalysisTaskCombinHF& operator=(const AliAnalysisTaskCombinHF& source);
-  
+  Double_t ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const;
+
   TList   *fOutput; //! list send on output slot 0
   TH1F *fHistNEvents;         //!hist. for No. of events
   TH2F *fHistEventMultZv;       //!hist. of evnt Mult vs. Zv for all events
@@ -164,6 +168,7 @@ private:
   AliESDtrackCuts* fTrackCutsAll; // track selection
   AliESDtrackCuts* fTrackCutsPion; // pion track selection
   AliESDtrackCuts* fTrackCutsKaon; // kaon track selection
+  Double_t fPhiMassCut;   // cut on the KK inv mass for phi selection
   AliAODPidHF* fPidHF; // PID configuration
   AliRDHFCuts *fAnalysisCuts; // Cuts for candidates
   

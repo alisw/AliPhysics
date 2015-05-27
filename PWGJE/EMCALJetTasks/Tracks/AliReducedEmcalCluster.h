@@ -22,7 +22,7 @@ class TObjArray;
  * \namespace HighPtTracks
  * \brief Namespace for classes creating trees of events with jets
  *
- * This namespace contains classes descibing reduced events with high
+ * This namespace contains classes describing reduced events with high
  * jets. A jet event consists of the following classes.
  *    - AliReducedJetEvent
  *    - AliReducedJetParticle
@@ -106,7 +106,7 @@ public:
   AliReducedEmcalCluster(const AliReducedEmcalCluster &ref);
   AliReducedEmcalCluster &operator=(const AliReducedEmcalCluster &ref);
   virtual ~AliReducedEmcalCluster();
-  void Copy(TObject *target) const;
+  void Copy(TObject &target) const;
 
   /**
    * Get the ID of the cluster inside the event

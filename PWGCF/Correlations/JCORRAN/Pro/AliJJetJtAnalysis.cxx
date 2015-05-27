@@ -865,14 +865,17 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
 
 
 
-        vOrtho.SetVect(jet->Vect().Orthogonal());
+        //vOrtho.SetVect(jet->Vect().Orthogonal());
+        vOrtho.SetVect(jet->Vect());
         vOrtho.SetE(jet->E());
+	vOrtho.SetPhi(jet->Phi()+TMath::Pi()/2);
 
-        k=0; // count number of rotations of the orthogonal axis of a jet. 
+        //k=0; // count number of rotations of the orthogonal axis of a jet. 
 
         //Background jet (iBgJet) will be produced. This background jet is orthogonal to the iJet.  
         //If there is another jJet, then iBgJet will be consecutevely moved not to 
         //have jJet in the cone size. 
+	int doBkg = 1;
         if (Jets->GetEntries()>1){
             fhNumber[iContainer]->Fill(3.5);
             for (int j = 0; j<Jets->GetEntries(); j++){
@@ -880,32 +883,33 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                 AliJJet *jet2 = dynamic_cast<AliJJet*>( Jets->At(j) );
                 if (!jet2) continue;
 
-                if (k>15) {
+                /*if (k>15) {
                     fhNumber[iContainer]->Fill(5.5);
                     break;
-                }
+                }*/
 
 
-                deltaEta = vOrtho.Eta() - jet2->Eta();
-                deltaPhi = vOrtho.Phi() - jet2->Phi();
-                deltaR   = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
-                if ( deltaR < thisConeSize) {
-
-                    vOrtho.Rotate(TMath::Pi()/8, jet->Vect());
+                deltaR   = getDiffR(vOrtho.Phi(),jet2->Phi(),vOrtho.Eta(),jet2->Eta());
+                if ( deltaR < 2*thisConeSize) {
+			doBkg = 0;
+                    /*vOrtho.Rotate(TMath::Pi()/8, jet->Vect());
                     j=0;
-                    k++;
+                    k++;*/
                     fhNumber[iContainer]->Fill(4.5);
+		    break;
                 }
 
             }
-            fhKNumber[iContainer]->Fill(k);
+            //fhKNumber[iContainer]->Fill(k);
         }
 
+	if(doBkg){
+		fhNumber[iContainer]->Fill(4.5);
+	}
+
         // Filling iBgJet,  Bgjt and Bgz
-        // "k<16" means that we will select a iBgJet which hasn't moved 
-        // more than 16 times by the process above
         double maxconpt = 0;
-        if ( k<16 ){
+        if ( doBkg ){
             new (bgjets[iBgJet]) AliJJet(vOrtho.Px(),vOrtho.Py(), vOrtho.Pz(), vOrtho.E(), i ,0,0);
             AliJJet * jbg = (AliJJet*) fJetBgListOfList[iContainer][iBgJet];
             iBgJet++;
@@ -919,14 +923,13 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
             if( iBin < 0 ) continue;
             fhJetBgPtBin[iContainer][iBin]->Fill( pT );
 
+	    
             
             for (int icon = 0; icon<fTracks->GetEntries(); icon++){
                 AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(fTracks->At(icon));
                 if (!track) continue;
                 fhTrackEtaPhi[iContainer]->Fill(track->Eta(),track->Phi());
-                deltaEta = vOrtho.Eta() - track->Eta();
-                deltaPhi = vOrtho.Phi() - track->Phi();
-                deltaR   = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+                deltaR   = getDiffR(vOrtho.Phi(),track->Phi(),vOrtho.Eta(),track->Eta());
                 if ( deltaR > thisConeSize) continue;
         
                 jbg->AddConstituent(track);
@@ -1082,4 +1085,14 @@ void AliJJetJtAnalysis::FillBgJtWithDiffAxes (
     }
 
 }
+
+//Phi1 and Phi2 between 0 and 2 pi
+Double_t AliJJetJtAnalysis::getDiffR(double phi1, double phi2, double eta1, double eta2){
+        Double_t diffPhi = TMath::Abs(phi1-phi2);
+        if(diffPhi > TMath::Pi()){
+                diffPhi = 2*TMath::Pi() - diffPhi;
+        }
+        return TMath::Sqrt(TMath::Power(diffPhi,2)+TMath::Power(eta1-eta2,2));
+}
+
 

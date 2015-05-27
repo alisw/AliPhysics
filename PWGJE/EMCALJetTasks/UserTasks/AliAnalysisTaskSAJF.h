@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKSAJF_H
 
 class TH2;
+class TH3;
 class THnSparse;
 
 #include <TH3F.h>
@@ -34,6 +35,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistClustersJetPt;           //!Cluster pt vs. jet pt
   TH2                       **fHistTracksPtDist;            //!Track pt vs. distance form jet axis
   TH2                       **fHistClustersPtDist;          //!Cluster pt vs. distance form jet axis
+  TH3                       **fHistTracksZJetPtJetConst;    //!Track z vs. jet pt vs. no. of jet const
+  TH3                       **fHistClustersZJetPtJetConst;  //!Cluster z vs. jet pt vs. no. of jet const
+
 
   // Inclusive jets histograms
   THnSparse                  *fHistJetObservables;          //!Jet observables

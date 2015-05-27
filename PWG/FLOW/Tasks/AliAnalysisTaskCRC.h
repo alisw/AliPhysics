@@ -29,6 +29,7 @@
 class TString;
 class TList;
 class AliFlowEventSimple;
+class AliFlowEvent;
 class AliFlowAnalysisCRC;
 
 //==============================================================================================================
@@ -151,6 +152,8 @@ public:
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
+ void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
+ Bool_t GetUseZDC() const {return this->fUseZDC;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -169,7 +172,7 @@ private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
  AliAnalysisTaskCRC& operator=(const AliAnalysisTaskCRC& aatqc);
  
- AliFlowEventSimple *fEvent;         // the input event
+ AliFlowEvent *fEvent;         // the input event
  AliFlowAnalysisCRC *fQC;            // CRC object
  TList *fListHistos;                 // collection of output
  // Common:
@@ -226,6 +229,7 @@ private:
  Bool_t fCalculateCRC; // calculate CRC quantities
  Bool_t fCalculateCRCPt;
  Bool_t fUseVZERO;
+ Bool_t fUseZDC;
  Bool_t fUseNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;

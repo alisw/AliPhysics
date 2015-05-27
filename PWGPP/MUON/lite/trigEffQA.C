@@ -231,24 +231,24 @@ Double_t* GetBinomial(Double_t* effErr1, Double_t* effErr2 = 0x0, Double_t* effE
     if ( effErr2 ) {
       Double_t* auxEffErr = GetConditionalEffErr(effErr1, effErr2, effErrBoth, ich);
       auxBinomial = GetBinomial(auxEffErr);
-      delete auxEffErr;
+      delete [] auxEffErr;
     }
     for ( Int_t ival=0; ival<2; ival++ ) {
       effProd[2*ival] = currEffErr[ival];
       effProd[2*ival+1] = ( effErr2 ) ? auxBinomial[ival] : defaultEffErr[ival];
     }
     if ( ich < 0 ) currEffErr44 = currEffErr;
-    else delete currEffErr;
-    delete auxBinomial;
+    else delete [] currEffErr;
+    delete [] auxBinomial;
     
     Double_t* effErr = GetProdErr(effProd, -1, 2);
     //printf("%f * %f = %f\n", effProd[0], effProd[1], effErr[0]); // REMEMBER TO CUT
     effErrBinomial[0] += effErr[0];
     effErrBinomial[1] += effErr[1]*effErr[1];
-    delete effErr;
+    delete [] effErr;
   } // loop on chambers
   
-  delete currEffErr44;
+  delete [] currEffErr44;
   
   effErrBinomial[1] = TMath::Sqrt(effErrBinomial[1]);
   
@@ -352,6 +352,8 @@ Bool_t SetAndCheckOCDB ( TString defaultStorage )
     else {
       TString checkFile = Form("%s/%s",fullPath.Data(),ocdbList->At(0)->GetName());
       checkFile.ReplaceAll("local://","");
+      checkFile.ReplaceAll("folder=","");
+      checkFile.ReplaceAll("Folder=","");
       TFile* file = TFile::Open(checkFile.Data());
       if ( ! file ) {
         printf("Cannot access test file: %s\n", checkFile.Data());
@@ -515,7 +517,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
       // Sometimes it happens that efficiency + error > 1.
       // In that case reduce the error.
       totalEff->SetBinError(currBin, TMath::Min(binomialEff[1], 1.-binomialEff[0]));
-      delete binomialEff;
+      delete [] binomialEff;
     } // loop on detection elements
   } // loop on runs
   
@@ -580,6 +582,8 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
         if ( ! histo ) continue;
         histo->SetStats(kFALSE);
         histo->GetYaxis()->SetTitle(elementName[iel].Data());
+        // FIX issue when plotting 2D histos in aliroot on linux
+        if ( histo->GetMinimum() == 0. && histo->GetMaximum() == 0. ) histo->SetMaximum(0.1);
         histo->DrawCopy("COLZ");
 //      } // loop on counts
       outCanList.Add(can);
@@ -605,7 +609,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
       histoTitle = Form("Chamber %i - %s: fraction of masked channels", 11+ich, cathName.Data());
       TH2* histo = new TH2D(histoName.Data(), histoTitle.Data(),1,0.,1., 234, 0.5, 234. + 0.5);
       histo->GetYaxis()->SetTitle("Board Id");
-      histo->SetOption("COLZ");
+//      histo->SetOption("COLZ");
       Int_t imask = 2*ich + icath;
       maskedList.AddAt(histo, imask);
       auxList.AddAt(histo->Clone(Form("%s_aux",histoName.Data())), imask);
@@ -677,6 +681,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     TCanvas* can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
     can->SetRightMargin(0.14);
     histo->SetStats(kFALSE);
+    if ( histo->GetMinimum() == 0. && histo->GetMaximum() == 0. ) histo->SetMaximum(0.1);
     histo->DrawCopy("COLZ");
     outCanList.Add(can);
   }

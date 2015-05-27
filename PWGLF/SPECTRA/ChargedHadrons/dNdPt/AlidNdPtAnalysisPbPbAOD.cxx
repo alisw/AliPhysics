@@ -248,6 +248,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t minbinsZvPtEtaCent[4]={-30.,0,-1.5,0};
   Double_t maxbinsZvPtEtaCent[4]={30  ,200,1.5,100};
   
+  Int_t binsZvPtCorrEtaCent[4]={fZvNbins-1,fPtCorrNbins-1,fEtaNbins-1,fCentralityNbins-1};
+  Double_t minbinsZvPtCorrEtaCent[4]={-30.,0,-1.5,0};
+  Double_t maxbinsZvPtCorrEtaCent[4]={30  ,200,1.5,100};
+  
   Int_t binsPhiPtEtaCent[5]={fDeltaphiNbins-1,fPtNbins-1,fEtaNbins-1,fPhiNbins-1,fCentralityNbins-1};
   Double_t minbinsPhiPtEtaCent[5]={0,				0,-1.5,0 ,0};
   Double_t maxbinsPhiPtEtaCent[5]={TMath::Pi()/2.,200,1.5,2.*TMath::Pi(),100};
@@ -295,9 +299,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPtResptCent->GetAxis(2)->SetTitle("centrality");
   fPtResptCent->Sumw2();
   
-  fMCRecPrimZvPtEtaCent = new THnSparseF("fMCRecPrimZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtEtaCent);
+  fMCRecPrimZvPtEtaCent = new THnSparseF("fMCRecPrimZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtCorrEtaCent, minbinsZvPtCorrEtaCent, maxbinsZvPtCorrEtaCent);
   fMCRecPrimZvPtEtaCent->SetBinEdges(0,fBinsZv);
-  fMCRecPrimZvPtEtaCent->SetBinEdges(1,fBinsPt);
+  fMCRecPrimZvPtEtaCent->SetBinEdges(1,fBinsPtCorr);
   fMCRecPrimZvPtEtaCent->SetBinEdges(2,fBinsEta);
   fMCRecPrimZvPtEtaCent->SetBinEdges(3,fBinsCentrality);
   fMCRecPrimZvPtEtaCent->GetAxis(0)->SetTitle("MC Zv (cm)");
@@ -306,9 +310,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCRecPrimZvPtEtaCent->GetAxis(3)->SetTitle("Centrality");
   fMCRecPrimZvPtEtaCent->Sumw2();
   
-  fMCGenZvPtEtaCent = new THnSparseF("fMCGenZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtEtaCent);
+  fMCGenZvPtEtaCent = new THnSparseF("fMCGenZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtCorrEtaCent, minbinsZvPtCorrEtaCent, maxbinsZvPtCorrEtaCent);
   fMCGenZvPtEtaCent->SetBinEdges(0,fBinsZv);
-  fMCGenZvPtEtaCent->SetBinEdges(1,fBinsPt);
+  fMCGenZvPtEtaCent->SetBinEdges(1,fBinsPtCorr);
   fMCGenZvPtEtaCent->SetBinEdges(2,fBinsEta);
   fMCGenZvPtEtaCent->SetBinEdges(3,fBinsCentrality);
   fMCGenZvPtEtaCent->GetAxis(0)->SetTitle("MC Zv (cm)");
@@ -317,9 +321,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCGenZvPtEtaCent->GetAxis(3)->SetTitle("Centrality");
   fMCGenZvPtEtaCent->Sumw2();
   
-  fMCRecSecZvPtEtaCent = new THnSparseF("fMCRecSecZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtEtaCent);
+  fMCRecSecZvPtEtaCent = new THnSparseF("fMCRecSecZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtCorrEtaCent, minbinsZvPtCorrEtaCent, maxbinsZvPtCorrEtaCent);
   fMCRecSecZvPtEtaCent->SetBinEdges(0,fBinsZv);
-  fMCRecSecZvPtEtaCent->SetBinEdges(1,fBinsPt);
+  fMCRecSecZvPtEtaCent->SetBinEdges(1,fBinsPtCorr);
   fMCRecSecZvPtEtaCent->SetBinEdges(2,fBinsEta);
   fMCRecSecZvPtEtaCent->SetBinEdges(3,fBinsCentrality);
   fMCRecSecZvPtEtaCent->GetAxis(0)->SetTitle("MC Sec Zv (cm)");

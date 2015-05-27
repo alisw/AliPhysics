@@ -22,6 +22,7 @@ class TFile;
 class TList;
 class TH1F;
 class TVirtualPad;
+class TPaveText;
 
 class AliHFMassFitterVAR : public AliHFMassFitter {
 
@@ -113,6 +114,11 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   Double_t FitFunction4BkgAndReflDraw(Double_t *x, Double_t *par);
   Bool_t   MassFitter(Bool_t draw=kTRUE);
   Bool_t   RefitWithBkgOnly(Bool_t draw=kTRUE);
+  TH1F* GetOverBackgroundResidualsAndPulls(Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0);
+  TH1F* GetAllRangeResidualsAndPulls(Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0);
+  TPaveText* GetYieldBox(Double_t nsigma=3.);
+  TPaveText* GetFitParametersBox(Double_t nsigma=3.,Int_t mode=0);
+
 /*   void     RebinMass(Int_t bingroup=1); */
 /*   TF1*     GetBackgroundFullRangeFunc(){ */
 /*     return fhistoInvMass->GetFunction("funcbkgFullRange"); */

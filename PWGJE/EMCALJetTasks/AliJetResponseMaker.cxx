@@ -51,6 +51,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fNEFAxis(0),
   fZAxis(0),
   fFlavourZAxis(0),
+  fFlavourPtAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -133,6 +134,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fNEFAxis(0),
   fZAxis(0),
   fFlavourZAxis(0),
+  fFlavourPtAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -643,25 +645,33 @@ void AliJetResponseMaker::AllocateTHnSparse()
 
   if (fNEFAxis) {
     title[dim] = "NEF";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fZAxis) {
     title[dim] = "Z";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fFlavourZAxis) {
     title[dim] = "z_{flavour}";
-    nbins[dim] = fNbins/4;
+    nbins[dim] = 100;
+    min[dim] = 0.0;
+    max[dim] = 2.0;
+    dim++;
+  }
+
+  if (fFlavourPtAxis) {
+    title[dim] = "p_{T}^{D}";
+    nbins[dim] = fNbins/2;
     min[dim] = 0;
-    max[dim] = 1.2;
+    max[dim] = 125;
     dim++;
   }
 
@@ -830,43 +840,57 @@ void AliJetResponseMaker::AllocateTHnSparse()
 
   if (fNEFAxis) {
     title[dim] = "NEF_{1}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
 
     title[dim] = "NEF_{2}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fZAxis) {
     title[dim] = "Z_{1}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
 
     title[dim] = "Z_{2}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
+    nbins[dim] = 120;
+    min[dim] = 0.0;
     max[dim] = 1.2;
     dim++;
   }
 
   if (fFlavourZAxis) {
     title[dim] = "z_{flavour,1}";
-    nbins[dim] = fNbins/4;
-    min[dim] = 0;
-    max[dim] = 1.2;
+    nbins[dim] = 100;
+    min[dim] = 0.0;
+    max[dim] = 2.0;
     dim++;
 
     title[dim] = "z_{flavour,2}";
-    nbins[dim] = fNbins/4;
+    nbins[dim] = 100;
+    min[dim] = 0.0;
+    max[dim] = 2.0;
+    dim++;
+  }
+
+  if (fFlavourPtAxis) {
+    title[dim] = "p_{T,1}^{D}";
+    nbins[dim] = fNbins/2;
     min[dim] = 0;
-    max[dim] = 1.2;
+    max[dim] = 125;
+    dim++;
+
+    title[dim] = "p_{T,2}^{D}";
+    nbins[dim] = fNbins/2;
+    min[dim] = 0;
+    max[dim] = 125;
     dim++;
   }
       
@@ -918,42 +942,60 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt, Double_t FlavourZ, Int_t Set)
+void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
 {
+  AliJetContainer* jets = GetJetContainer(Set-1);
+  
+  TLorentzVector leadPart;
+  jets->GetLeadingHadronMomentum(leadPart, jet);
+  Double_t zleading = GetParallelFraction(leadPart.Vect(), jet);
+  
+  Double_t corrpt = jet->Pt() - jets->GetRhoVal() * jet->Area();
+  Double_t zflavour = 0;
+  Double_t ptflavour = 0;
+  AliVParticle* hftrack = jet->GetFlavourTrack();
+  if (hftrack) {
+    zflavour = GetParallelFraction(hftrack, jet);
+    ptflavour = hftrack->Pt();
+  }
+  
   if (fHistoType==1) {
     THnSparse *histo = 0;
-    if (Set==1)
+    if (Set==1) {
       histo = fHistJets1;
-    else if (Set==2)
+    }
+    else if (Set==2) {
       histo = fHistJets2;
+    }
 
-    if (!histo)
-      return;
+    if (!histo) return;
 
     Double_t contents[20]={0};
 
     for (Int_t i = 0; i < histo->GetNdimensions(); i++) {
       TString title(histo->GetAxis(i)->GetTitle());
       if (title=="#phi")
-	contents[i] = Phi;
+	contents[i] = jet->Phi();
       else if (title=="#eta")
-	contents[i] = Eta;
+	contents[i] = jet->Eta();
       else if (title=="p_{T}")
-	contents[i] = Pt;
+	contents[i] = jet->Pt();
       else if (title=="A_{jet}")
-	contents[i] = A;
+	contents[i] = jet->Area();
       else if (title=="NEF")
-	contents[i] = NEF;
+	contents[i] = jet->NEF();
       else if (title=="Z")
-	contents[i] = LeadingPt/Pt;
+	contents[i] = zleading;
       else if (title=="p_{T}^{corr}")
-	contents[i] = CorrPt;
+	contents[i] = corrpt;
       else if (title=="p_{T}^{MC}")
-	contents[i] = MCPt;
+	contents[i] = jet->MCPt();
       else if (title=="p_{T,particle}^{leading} (GeV/c)")
-	contents[i] = LeadingPt;
+	contents[i] = leadPart.Pt();
       else if (title=="z_{flavour}")
-	contents[i] = FlavourZ;
+	contents[i] = zflavour;
+      else if (title=="p_{T}^{D}")
+	contents[i] = ptflavour;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -962,45 +1004,85 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
   }
   else {
     if (Set == 1) {
-      fHistJets1PtArea->Fill(A, Pt);
-      fHistJets1PhiEta->Fill(Eta, Phi);
-      fHistJets1ZvsPt->Fill(LeadingPt/Pt, Pt);
-      fHistJets1NEFvsPt->Fill(NEF, Pt);
-      fHistJets1CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
+      fHistJets1PtArea->Fill(jet->Area(), jet->Pt());
+      fHistJets1PhiEta->Fill(jet->Eta(), jet->Phi());
+      fHistJets1ZvsPt->Fill(zleading, jet->Pt());
+      fHistJets1NEFvsPt->Fill(jet->NEF(), jet->Pt());
+      fHistJets1CEFvsCEFPt->Fill(1-jet->NEF(), (1-jet->NEF())*jet->Pt());
       if (fIsJet1Rho)
-	fHistJets1CorrPtArea->Fill(A, CorrPt);
+	fHistJets1CorrPtArea->Fill(jet->Area(), corrpt);
     }
     else if (Set == 2) {
-      fHistJets2PtArea->Fill(A, Pt);
-      fHistJets2PhiEta->Fill(Eta, Phi);
-      fHistJets2ZvsPt->Fill(LeadingPt/Pt, Pt);
-      fHistJets2NEFvsPt->Fill(NEF, Pt);
-      fHistJets2CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
+      fHistJets2PtArea->Fill(jet->Area(), jet->Pt());
+      fHistJets2PhiEta->Fill(jet->Eta(), jet->Phi());
+      fHistJets2ZvsPt->Fill(zleading, jet->Pt());
+      fHistJets2NEFvsPt->Fill(jet->NEF(), jet->Pt());
+      fHistJets2CEFvsCEFPt->Fill(1-jet->NEF(), (1-jet->NEF())*jet->Pt());
       if (fIsJet2Rho)
-	fHistJets2CorrPtArea->Fill(A, CorrPt);
+	fHistJets2CorrPtArea->Fill(jet->Area(), corrpt);
     }
   }
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
-					     Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
-					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2,
-                                             Double_t FlavourZ1, Double_t FlavourZ2)
+void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet2, Double_t d, Double_t CE1, Double_t CE2)
 {
+  AliJetContainer* jets1 = GetJetContainer(0);
+  AliJetContainer* jets2 = GetJetContainer(1);
+
+  /*
+  Printf("Detector level jet");
+  jet1->Print();
+  
+  jet1->PrintConstituents(jets1->GetParticleContainer() != 0 ? jets1->GetParticleContainer()->GetArray() : 0,
+                          jets1->GetClusterContainer() != 0 ? jets1->GetClusterContainer()->GetArray() : 0);
+
+  Printf("Matched with particle level jet");
+  jet2->Print();
+  jet2->PrintConstituents(jets2->GetParticleContainer() != 0 ? jets2->GetParticleContainer()->GetArray() : 0,
+                          jets2->GetClusterContainer() != 0 ? jets2->GetClusterContainer()->GetArray() : 0);
+  */
+  
+  TLorentzVector leadPart1;
+  jets1->GetLeadingHadronMomentum(leadPart1, jet1);
+  Double_t zleading1 = GetParallelFraction(leadPart1.Vect(), jet1);
+  
+  Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
+  Double_t zflavour1 = 0;
+  Double_t ptflavour1 = 0;
+  AliVParticle* hftrack1 = jet1->GetFlavourTrack();
+  if (hftrack1) {
+    zflavour1 = GetParallelFraction(hftrack1, jet1);
+    ptflavour1 = hftrack1->Pt();
+  }
+  
+
+  TLorentzVector leadPart2;
+  jets2->GetLeadingHadronMomentum(leadPart2, jet2);
+  Double_t zleading2 = GetParallelFraction(leadPart2.Vect(), jet2);
+  
+  Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
+  Double_t zflavour2 = 0;
+  Double_t ptflavour2 = 0;
+  AliVParticle* hftrack2 = jet2->GetFlavourTrack();
+  if (hftrack2) {
+    zflavour2 = GetParallelFraction(hftrack2, jet2);
+    ptflavour2 = hftrack2->Pt();
+  }
+  
   if (fHistoType==1) {
     Double_t contents[20]={0};
 
     for (Int_t i = 0; i < fHistMatching->GetNdimensions(); i++) {
       TString title(fHistMatching->GetAxis(i)->GetTitle());
       if (title=="p_{T,1}")
-	contents[i] = Pt1;
+	contents[i] = jet1->Pt();
       else if (title=="p_{T,2}")
-	contents[i] = Pt2;
+	contents[i] = jet2->Pt();
       else if (title=="A_{jet,1}")
-	contents[i] = A1;
+	contents[i] = jet1->Area();
       else if (title=="A_{jet,2}")
-	contents[i] = A2;
+	contents[i] = jet2->Area();
       else if (title=="distance")
 	contents[i] = d;
       else if (title=="CE1")
@@ -1008,39 +1090,43 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
       else if (title=="CE2")
 	contents[i] = CE2;
       else if (title=="#deltaA_{jet}")
-	contents[i] = A1-A2;
+	contents[i] = jet1->Area()-jet2->Area();
       else if (title=="#deltap_{T}")
-	contents[i] = Pt1-Pt2;
+	contents[i] = jet1->Pt()-jet2->Pt();
       else if (title=="#delta#eta")
-	contents[i] = Eta1-Eta2;
+	contents[i] = jet1->Eta()-jet2->Eta();
       else if (title=="#delta#phi")
-	contents[i] = Phi1-Phi2;
+	contents[i] = jet1->Phi()-jet2->Phi();
       else if (title=="p_{T,1}^{corr}")
-	contents[i] = CorrPt1;
+	contents[i] = corrpt1;
       else if (title=="p_{T,2}^{corr}")
-	contents[i] = CorrPt2;
+	contents[i] = corrpt2;
       else if (title=="#deltap_{T}^{corr}")
-	contents[i] = CorrPt1-CorrPt2;
+	contents[i] = corrpt1-corrpt2;
       else if (title=="p_{T,1}^{MC}")
-	contents[i] = MCPt1;
+	contents[i] = jet1->MCPt();
       else if (title=="#deltap_{T}^{MC}")
-	contents[i] = MCPt1-Pt2;
+	contents[i] = jet1->MCPt()-jet2->Pt();
       else if (title=="NEF_{1}")
-	contents[i] = NEF1;
+	contents[i] = jet1->NEF();
       else if (title=="NEF_{2}")
-	contents[i] = NEF2;
+	contents[i] = jet2->NEF();
       else if (title=="Z_{1}")
-	contents[i] = LeadingPt1/Pt1;
+	contents[i] = zleading1;
       else if (title=="Z_{2}")
-	contents[i] = LeadingPt2/Pt2;
+	contents[i] = zleading2;
       else if (title=="p_{T,particle,1}^{leading} (GeV/c)")
-	contents[i] = LeadingPt1;
+	contents[i] = leadPart1.Pt();
       else if (title=="p_{T,particle,2}^{leading} (GeV/c)")
-	contents[i] = LeadingPt2;
+	contents[i] = leadPart2.Pt();
       else if (title=="z_{flavour,1}")
-        contents[i] = FlavourZ1;
+        contents[i] = zflavour1;
       else if (title=="z_{flavour,2}")
-	contents[i] = FlavourZ2;
+	contents[i] = zflavour2;
+      else if (title=="p_{T,1}^{D}")
+        contents[i] = ptflavour1;
+      else if (title=="p_{T,2}^{D}")
+	contents[i] = ptflavour2;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1048,67 +1134,67 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
     fHistMatching->Fill(contents);
   }
   else {
-    fHistCommonEnergy1vsJet1Pt->Fill(CE1, Pt1);
-    fHistCommonEnergy2vsJet2Pt->Fill(CE2, Pt2);
+    fHistCommonEnergy1vsJet1Pt->Fill(CE1, jet1->Pt());
+    fHistCommonEnergy2vsJet2Pt->Fill(CE2, jet2->Pt());
 
-    fHistDistancevsJet1Pt->Fill(d, Pt1);
-    fHistDistancevsJet2Pt->Fill(d, Pt2);
+    fHistDistancevsJet1Pt->Fill(d, jet1->Pt());
+    fHistDistancevsJet2Pt->Fill(d, jet2->Pt());
 
     fHistDistancevsCommonEnergy1->Fill(d, CE1);
     fHistDistancevsCommonEnergy2->Fill(d, CE2);
     fHistCommonEnergy1vsCommonEnergy2->Fill(CE1, CE2);
 
-    fHistDeltaEtaDeltaPhi->Fill(Eta1-Eta2,Phi1-Phi2);
+    fHistDeltaEtaDeltaPhi->Fill(jet1->Eta()-jet2->Eta(),jet1->Phi()-jet2->Phi());
 
-    fHistJet2PtOverJet1PtvsJet2Pt->Fill(Pt2, Pt2 / Pt1);
-    fHistJet1PtOverJet2PtvsJet1Pt->Fill(Pt1, Pt1 / Pt2);
+    fHistJet2PtOverJet1PtvsJet2Pt->Fill(jet2->Pt(), jet2->Pt() / jet1->Pt());
+    fHistJet1PtOverJet2PtvsJet1Pt->Fill(jet1->Pt(), jet1->Pt() / jet2->Pt());
 
-    Double_t dpt = Pt1 - Pt2;
-    fHistDeltaPtvsJet1Pt->Fill(Pt1, dpt);
-    fHistDeltaPtvsJet2Pt->Fill(Pt2, dpt);
-    fHistDeltaPtOverJet1PtvsJet1Pt->Fill(Pt1, dpt/Pt1);
-    fHistDeltaPtOverJet2PtvsJet2Pt->Fill(Pt2, dpt/Pt2);
+    Double_t dpt = jet1->Pt() - jet2->Pt();
+    fHistDeltaPtvsJet1Pt->Fill(jet1->Pt(), dpt);
+    fHistDeltaPtvsJet2Pt->Fill(jet2->Pt(), dpt);
+    fHistDeltaPtOverJet1PtvsJet1Pt->Fill(jet1->Pt(), dpt/jet1->Pt());
+    fHistDeltaPtOverJet2PtvsJet2Pt->Fill(jet2->Pt(), dpt/jet2->Pt());
 
     fHistDeltaPtvsDistance->Fill(d, dpt);
     fHistDeltaPtvsCommonEnergy1->Fill(CE1, dpt);
     fHistDeltaPtvsCommonEnergy2->Fill(CE2, dpt);
 
-    fHistDeltaPtvsArea1->Fill(A1, dpt);
-    fHistDeltaPtvsArea2->Fill(A2, dpt);
+    fHistDeltaPtvsArea1->Fill(jet1->Area(), dpt);
+    fHistDeltaPtvsArea2->Fill(jet2->Area(), dpt);
 
-    Double_t darea = A1 - A2;
+    Double_t darea = jet1->Area() - jet2->Area();
     fHistDeltaPtvsDeltaArea->Fill(darea, dpt);
 
-    fHistJet1PtvsJet2Pt->Fill(Pt1, Pt2);
+    fHistJet1PtvsJet2Pt->Fill(jet1->Pt(), jet2->Pt());
 
     if (fIsJet1Rho || fIsJet2Rho) {
-      Double_t dcorrpt = CorrPt1 - CorrPt2;
-      fHistDeltaCorrPtvsJet1CorrPt->Fill(CorrPt1, dcorrpt);
-      fHistDeltaCorrPtvsJet2CorrPt->Fill(CorrPt2, dcorrpt);
-      fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt->Fill(CorrPt1, dcorrpt/CorrPt1);
-      fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt->Fill(CorrPt2, dcorrpt/CorrPt2);
+      Double_t dcorrpt = corrpt1 - corrpt2;
+      fHistDeltaCorrPtvsJet1CorrPt->Fill(corrpt1, dcorrpt);
+      fHistDeltaCorrPtvsJet2CorrPt->Fill(corrpt2, dcorrpt);
+      fHistDeltaCorrPtOverJet1CorrPtvsJet1CorrPt->Fill(corrpt1, dcorrpt/corrpt1);
+      fHistDeltaCorrPtOverJet2CorrPtvsJet2CorrPt->Fill(corrpt2, dcorrpt/corrpt2);
       fHistDeltaCorrPtvsDistance->Fill(d, dcorrpt);
       fHistDeltaCorrPtvsCommonEnergy1->Fill(CE1, dcorrpt);
       fHistDeltaCorrPtvsCommonEnergy2->Fill(CE2, dcorrpt);
-      fHistDeltaCorrPtvsArea1->Fill(A1, dcorrpt);
-      fHistDeltaCorrPtvsArea2->Fill(A2, dcorrpt);
+      fHistDeltaCorrPtvsArea1->Fill(jet1->Area(), dcorrpt);
+      fHistDeltaCorrPtvsArea2->Fill(jet2->Area(), dcorrpt);
       fHistDeltaCorrPtvsDeltaArea->Fill(darea, dcorrpt);
-      fHistJet1CorrPtvsJet2CorrPt->Fill(CorrPt1, CorrPt2);
+      fHistJet1CorrPtvsJet2CorrPt->Fill(corrpt1, corrpt2);
     }
 
     if (fIsEmbedded) {
-      Double_t dmcpt = MCPt1 - Pt2;
-      fHistDeltaMCPtvsJet1MCPt->Fill(MCPt1, dmcpt);
-      fHistDeltaMCPtvsJet2Pt->Fill(Pt2, dmcpt);
-      fHistDeltaMCPtOverJet1MCPtvsJet1MCPt->Fill(MCPt1, dmcpt/MCPt1);
-      fHistDeltaMCPtOverJet2PtvsJet2Pt->Fill(Pt2, dmcpt/Pt2);
+      Double_t dmcpt = jet1->MCPt() - jet2->Pt();
+      fHistDeltaMCPtvsJet1MCPt->Fill(jet1->MCPt(), dmcpt);
+      fHistDeltaMCPtvsJet2Pt->Fill(jet2->MCPt(), dmcpt);
+      fHistDeltaMCPtOverJet1MCPtvsJet1MCPt->Fill(jet1->MCPt(), dmcpt/jet1->MCPt());
+      fHistDeltaMCPtOverJet2PtvsJet2Pt->Fill(jet2->Pt(), dmcpt/jet2->Pt());
       fHistDeltaMCPtvsDistance->Fill(d, dmcpt);
       fHistDeltaMCPtvsCommonEnergy1->Fill(CE1, dmcpt);
       fHistDeltaMCPtvsCommonEnergy2->Fill(CE2, dmcpt);
-      fHistDeltaMCPtvsArea1->Fill(A1, dmcpt);
-      fHistDeltaMCPtvsArea2->Fill(A2, dmcpt);
+      fHistDeltaMCPtvsArea1->Fill(jet1->Area(), dmcpt);
+      fHistDeltaMCPtvsArea2->Fill(jet2->Area(), dmcpt);
       fHistDeltaMCPtvsDeltaArea->Fill(darea, dmcpt);
-      fHistJet1MCPtvsJet2Pt->Fill(MCPt1, Pt2);
+      fHistJet1MCPtvsJet2Pt->Fill(jet1->MCPt(), jet2->Pt());
     }
   }
 }
@@ -1681,16 +1767,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     if (jet2->Pt() < jets2->GetJetPtCut()) continue;
 
-    Double_t ptLeading2 = jets2->GetLeadingHadronPt(jet2);
-    Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
-    Double_t zflavour2 = 0;
-
-    AliVParticle* hftrack2 = jet2->GetFlavourTrack();
-    if (hftrack2) zflavour2 = hftrack2->P() / jet2->P();
-
     if (jets2->AcceptJet(jet2))
-      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), ptLeading2, 
-		   corrpt2, jet2->MCPt(), zflavour2, 2);
+      FillJetHisto(jet2, 2);
     else
       fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(), jet2->Pt());
 
@@ -1716,16 +1794,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
       ce2 = jet2->ClosestJetDistance();
     }
 
-    Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
-    Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
-    Double_t zflavour1 = 0;
-    
-    AliVParticle* hftrack1 = jet1->GetFlavourTrack();
-    if (hftrack1) zflavour1 = hftrack1->P() / jet1->P();
-
-    FillMatchingHistos(jet1->Pt(), jet2->Pt(), jet1->Eta(), jet2->Eta(), jet1->Phi(), jet2->Phi(), 
-		       jet1->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet1->MCPt(), 
-		       jet1->NEF(), jet2->NEF(), ptLeading1, ptLeading2, zflavour1, zflavour2);
+    FillMatchingHistos(jet1, jet2, d, ce1, ce2);
   }
 
   jets1->ResetCurrentID();
@@ -1736,16 +1805,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
     }
     if (jet1->MCPt() < fMinJetMCPt) continue;
     AliDebug(2,Form("Processing jet (1) %d", jets1->GetCurrentID()));
-
-    Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
-    Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
-    Double_t zflavour1 = 0;
     
-    AliVParticle* hftrack1 = jet1->GetFlavourTrack();
-    if (hftrack1) zflavour1 = hftrack1->P() / jet1->P();
-    
-    FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), ptLeading1, 
-		 corrpt1, jet1->MCPt(), zflavour1, 1);
+    FillJetHisto(jet1, 1);
   }
   return kTRUE;
 }

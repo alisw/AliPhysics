@@ -83,7 +83,7 @@ fTrueMeson(0)
     DetermineMesonQuality(y1,y2);
     // Calculate Alpha
     if((y1->E()+y2->E()) != 0){
-		fAlpha=TMath::Abs((y1->E()-y2->E())/(y1->E()+y2->E()));
+		fAlpha=(y1->E()-y2->E())/(y1->E()+y2->E());
     }
 
     // Set Chi2 to the mean chi2 of gammas
@@ -122,7 +122,7 @@ fTrueMeson(0)
 
     // Calculate Alpha
     if((meson->E()+gamma->E()) != 0){
-		fAlpha=TMath::Abs((meson->E()-gamma->E())/(meson->E()+gamma->E()));
+		fAlpha=(meson->E()-gamma->E())/(meson->E()+gamma->E());
     }
 
     // Set Chi2 to the mean chi2 of gammas

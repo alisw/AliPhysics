@@ -25,7 +25,7 @@ AliAnalysisGrid* CreateAlienHandler( TString mode )
    plugin->SetKeepLogs();
    plugin->SetExecutableCommand("root -b -q -x");
    plugin->SetPrice		(1);
-   plugin->SetNtestFiles	(2);
+   plugin->SetNtestFiles	(3);
    plugin->SetNrunsPerMaster(1);
    plugin->SetMergeDirName("");
    plugin->SetMaxMergeFiles(20);

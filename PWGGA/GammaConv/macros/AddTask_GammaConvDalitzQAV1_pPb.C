@@ -79,7 +79,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    cutnumberPhoton = "00000070004000000500000000";  
    } else {
      
-   cutnumberPhoton = "06000008400100007500000000";   //Online  V0 finder //change
+   cutnumberPhoton = "06000078400100007500000000";   //Online  V0 finder //change
 		      
    }
    

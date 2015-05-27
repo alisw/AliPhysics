@@ -88,6 +88,10 @@
 
 ClassImp(AliAnalysisTaskHFEMulti)
 
+using std::cerr;
+using std::cout;
+using std::endl;
+
     //____________________________________________________________
     AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti():
     AliAnalysisTaskSE("PID efficiency Analysis")

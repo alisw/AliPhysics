@@ -57,6 +57,9 @@
 
 #include "AliLog.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskFastEmbedding)
 
 //__________________________________________________________________________

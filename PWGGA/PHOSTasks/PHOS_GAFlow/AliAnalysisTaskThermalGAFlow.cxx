@@ -395,17 +395,17 @@ return 1;
 
 //___________________________Apply Cluster Cuts______________________________________//
 Bool_t AliAnalysisTaskThermalGAFlow::ApplyClusterCuts(AliESDCaloCluster *cluster){
-if(!cluster->IsPHOS()){return 0;}
-if(!cluster->GetNCells() >= fMinCells){return 0;}
-if(!cluster->E() >= fMinE){return 0;}
+if(!(cluster->IsPHOS())){return 0;}
+if(!(cluster->GetNCells() >= fMinCells)){return 0;}
+if(!(cluster->E() >= fMinE)){return 0;}
 if(!(cluster->GetTOF() > -0.0000002 && cluster->GetTOF() < 0.0000002)){return 0;}
 return 1;
 }
 
 Bool_t AliAnalysisTaskThermalGAFlow::ApplyClusterCuts(AliAODCaloCluster *cluster){
-if(!cluster->IsPHOS()){return 0;}
-if(!cluster->GetNCells() >= fMinCells){return 0;}
-if(!cluster->E() >= fMinE){return 0;}
+if(!(cluster->IsPHOS())){return 0;}
+if(!(cluster->GetNCells() >= fMinCells)){return 0;}
+if(!(cluster->E() >= fMinE)){return 0;}
 return 1;
 }
 
@@ -430,7 +430,7 @@ Double_t dz = cluster->GetTrackDz();
   Double_t trackDr = sqrt(dx*dx + dz*dz);
 //  printf("trackDr: %f ; trackDx: %f . \n", trackDr, cluster->GetTrackDx());
   FillHist("Clus_Trackdr", trackDr);
-  if(!trackDr > fMinTrackDr){return 0;}
+  if(!(trackDr > fMinTrackDr)){return 0;}
   return 1;
 }
 
@@ -461,16 +461,16 @@ for(Int_t cellIndex = 0; cellIndex < nCells; cellIndex++){
   cellETot = cells->GetCellAmplitude(cluster->GetCellAbsId(cellIndex));
   fPHOSgeomU->RelPosInModule(realID, x, z);
 
-  xzematrix[cellIndex][1] = x - xc;
-  xzematrix[cellIndex][2] = z - zc;
-  xzematrix[cellIndex][3] = cellETot * cluster->GetCellAmplitudeFraction(cellIndex);
+  xzematrix[cellIndex][0] = x - xc;
+  xzematrix[cellIndex][1] = z - zc;
+  xzematrix[cellIndex][2] = cellETot * cluster->GetCellAmplitudeFraction(cellIndex);
 
-  cellDistance = TMath::Sqrt(xzematrix[cellIndex][1]*xzematrix[cellIndex][1]+xzematrix[cellIndex][2]*xzematrix[cellIndex][2]);
+  cellDistance = TMath::Sqrt(xzematrix[cellIndex][0]*xzematrix[cellIndex][0]+xzematrix[cellIndex][1]*xzematrix[cellIndex][1]);
 
-  FillHist("Cluster_AvgShape", cellDistance, xzematrix[cellIndex][3]);
+  FillHist("Cluster_AvgShape", cellDistance, xzematrix[cellIndex][2]);
   
   if(cellDistance < fCoreRadius){
-  coreE = coreE + xzematrix[cellIndex][3];
+  coreE = coreE + xzematrix[cellIndex][2];
   }
 } 
 
@@ -526,7 +526,7 @@ Int_t *AliAnalysisTaskThermalGAFlow::GetPos(AliAODCaloCluster* cluster, Int_t x[
 
 //____________________________Keep a record of events so the user knows what's going on_____//
 void AliAnalysisTaskThermalGAFlow::CaptainsLog(Int_t s){
-if((fDebug == 1)){printf("Step %d Completed.\n", s);}
+if(fDebug == 1){printf("Step %d Completed.\n", s);}
 }
 
 //______________________________Method to Fill Histo as Seg Fualt workaround_________//

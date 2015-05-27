@@ -35,7 +35,7 @@ class AliAnalysisTaskHelium3Pi : public AliAnalysisTaskSE {
   void SetDataType    (const char* dataType = "REAL") {fDataType = dataType;}
   
   Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t isPbPb);
-
+  Bool_t  Flatten(Float_t cent);
   //  Bool_t IsTrackAccepted(AliVTrack *track);
   
   private:

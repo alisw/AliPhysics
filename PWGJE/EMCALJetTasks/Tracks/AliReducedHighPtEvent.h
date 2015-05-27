@@ -18,6 +18,7 @@
 #define ALIREDUCEDHIGHPTEVENT_H
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+#include <vector>
 
 #include <TObject.h>
 #include "AliReducedPatchContainer.h"
@@ -55,23 +56,26 @@ public:
   AliReducedHighPtEvent(const AliReducedHighPtEvent &ref);
   AliReducedHighPtEvent &operator=(const AliReducedHighPtEvent &ref);
   virtual ~AliReducedHighPtEvent();
-  void Copy(TObject *target) const;
+  void Copy(TObject &target) const;
 
   /**
    * Get the cluster container
    * \return The cluster container
    */
   TObjArray *GetClusterContainer() { return fReducedClusterInfo; }
+  std::vector<HighPtTracks::AliReducedEmcalCluster *> GetClusterVector() const;
   /**
    * Get the particle container (at generator level)
    * \return The particle container
    */
   TObjArray *GetParticleContainer() { return fReducedParticleInfo; }
+  std::vector<HighPtTracks::AliReducedGeneratedParticle *> GetParticleVector() const;
   /**
    * Get the container with reconstructed tracks
    * \return Container with reconstructed tracks
    */
   TObjArray *GetTrackContainer() { return fReducedTrackInfo; }
+  std::vector<HighPtTracks::AliReducedReconstructedTrack *> GetTrackVector() const;
   AliReducedEmcalCluster * GetClusterForIndex(Int_t index);
   AliReducedGeneratedParticle *GetParticleForIndex(Int_t index);
   /**
@@ -119,7 +123,11 @@ public:
    * \return true if event is a jet high event, false otherwise
    */
   Bool_t IsJetHighFromString() const { return fJetTriggerString[1]; }
-
+  /**
+   * Get the run number
+   * \return Run number
+   */
+  Int_t GetRunNumber() const { return fRunNumber; }
 
   void AddReducedCluster(AliReducedEmcalCluster *cluster);
   void AddReducedGeneratedParticle(AliReducedGeneratedParticle *part);
@@ -157,8 +165,10 @@ public:
    * \param header The Monte-Carlo event header
    */
   void SetMonteCarloHeader(AliReducedMCHeader *header) { fMCHeader = header; }
+  void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
 
 protected:
+  Int_t                                   fRunNumber;                         ///< Run number
   Float_t                                 fCentralityPercentile;              ///< Centrality percentile
   Float_t                                 fVertexZ;                           ///< z-position of the primary vertex
   AliReducedMCHeader                      *fMCHeader;                         ///< Reduced Monte-Carlo header
@@ -171,7 +181,7 @@ protected:
   TObjArray                               *fReducedTrackInfo;                 ///< Container for reduced reconstructed tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliReducedHighPtEvent, 1);
+  ClassDef(AliReducedHighPtEvent, 2);
   /// \endcond
 };
 

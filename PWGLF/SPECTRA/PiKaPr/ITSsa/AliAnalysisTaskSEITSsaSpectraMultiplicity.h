@@ -2,16 +2,16 @@
 #define ALIANALYSISTASKSEITSSASPECTRAMULTIPLICITY_H
 
 ///////////////////////////////////////////////////////////////////////////
-// AliAnalysisTaskSE for the extraction of the various histograms to
-// study the pt spectra of identified hadrons vs multiplicity:
-// - multiplicity estimated with Reference Multiplicity and "V0M" percentiles
-// - log(dEdx)-log(dEdxBB) distributions for pions, kaons and protons in pt bins
-// - Pt distributions of pions, kaons and protons with nSigma PID
-// Authors: 
-// E. Biolcati, biolcati@to.infn.it
-// L. Milano, milano@to.infn.it
-// F. Prino, prino@to.infn.it
-// N. Jacazio jacazio@to.infn.it
+/// AliAnalysisTaskSE for the extraction of the various histograms to
+/// study the pt spectra of identified hadrons vs multiplicity:
+/// - multiplicity estimated with Reference Multiplicity and "V0M" percentiles
+/// - log(dEdx)-log(dEdxBB) distributions for pions, kaons and protons in pt bins
+/// - Pt distributions of pions, kaons and protons with nSigma PID
+/// Authors: 
+/// E. Biolcati, biolcati@to.infn.it
+/// L. Milano,   milano@to.infn.it
+/// F. Prino,    prino@to.infn.it
+/// N. Jacazio,  jacazio@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
 /* $Id$ */
@@ -25,12 +25,33 @@ class TRandom3;
 class AliESDEvent;
 class TNtuple;
 class AliITSPIDResponse;
-class THnSparse;
+class THnSparse;//per la vettorizzazione
 class AliESDtrackCuts;
 class AliPPVsMultUtils;
 class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
+
+using std::cout;
+using std::endl;
+
+#ifdef LOG_NO_INFO
+#define errormsg(msg) do { } while (false)
+#define warningmsg(msg) do { } while (false)
+#define infomsg(msg) do { } while (false)
+#else
+#define errormsg(msg) AliErrorF("%s%s%s",redTxt,msg,normalTxt)
+#define warningmsg(msg) AliWarningF("%s%s%s",magentaTxt,msg,normalTxt)
+#define infomsg(msg) AliInfoF("%s%s%s",blueTxt,msg,normalTxt)
+#endif
+
+const char redTxt[] =     { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
+const char greenTxt[] =   { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };
+const char yellowTxt[] =  { 0x1b, '[', '1', ';', '3', '3', 'm', 0 };
+const char blueTxt[] =    { 0x1b, '[', '1', ';', '3', '4', 'm', 0 };
+const char magentaTxt[] = { 0x1b, '[', '1', ';', '3', '5', 'm', 0 };
+const char cyanTxt[] =    { 0x1b, '[', '1', ';', '3', '6', 'm', 0 };
+const char normalTxt[] =  { 0x1b, '[', '0', ';', '3', '9', 'm', 0 };
 
 class AliAnalysisTaskSEITSsaSpectraMultiplicity : public AliAnalysisTaskSE {
 public:
@@ -100,6 +121,8 @@ public:
   Double_t CookdEdx(Double_t *s) const; 
   Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
   Bool_t DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt) const;
+  Bool_t DCAcutXY(Double_t impactXY, Double_t pt) const;
+  Bool_t DCAcutZ(Double_t impactZ, Double_t pt) const;
   
   void PrintStatus(){
     Printf("Printing Status");
@@ -120,7 +143,7 @@ private:
   enum {kNbins=22};//Number of pt bins
   enum {kIsNewEvent,kWithSPDVtx,kWithVtxCont,kVtxInRange,kVtxRes,kGoodZVtx,kPassPileUp,kMCVtxInRange,kbitEv=1*8};//Event selection bitmask
   enum {kIsPositive,kIsPion,kIsKaon,kIsProton,kIsPhysicalPrimary,kIsFromStrangeness,kIsFromMaterial};//MC information
-  enum {kHasNoSelection=1,kIsITSsa,kIsITSrefit,kIsNotNeutralParticle,kHasOneSPD,kHasTwoSPD,kPassSPD,kHas3PIDcls,kHas4PIDcls,kPassPIDcls,kPassChi2Ncls,kIsInEta,kPassdEdx,kPassDCAcut};//!track selection criteria
+  enum {kHasNoSelection=1,kIsITSsa,kIsITSrefit,kIsNotNeutralParticle,kHasOneSPD,kHasTwoSPD,kPassSPD,kHas3PIDcls,kHas4PIDcls,kPassPIDcls,kPassChi2Ncls,kIsInEta,kPassdEdx,kPassDCAzcut,kPassDCAxycut};//!track selection criteria
   AliESDEvent *fESD; //ESD object
   
   //////////////////////////////
@@ -189,6 +212,7 @@ private:
   TH1F *fHistSecStrMCnegBefEvSel[3]; //! histo with spectra of strange decays from the MC truth (negative)
   TH1F *fHistSecMatMCposBefEvSel[3]; //! histo with spectra of sec. from material from the MC truth (positive)
   TH1F *fHistSecMatMCnegBefEvSel[3]; //! histo with spectra of sec. from material from the MC truth (negative)
+  //Reconstructed with MC Truth
   TH1F *fHistPrimMCposReco[3]; //! histo with spectra of primaries from the MC truth (positive)
   TH1F *fHistPrimMCnegReco[3]; //! histo with spectra of primaries from the MC truth (negative)
   TH1F *fHistPrimMCposRecoEtaY[3]; //! histo with spectra of primaries from the MC truth with both cut on y and eta(positive)
@@ -346,7 +370,7 @@ private:
   Float_t fptMC;
   Float_t fChi2;
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectraMultiplicity, 11);
+  ClassDef(AliAnalysisTaskSEITSsaSpectraMultiplicity, 12);
 };
 
 #endif

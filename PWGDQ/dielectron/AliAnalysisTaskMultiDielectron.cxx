@@ -56,6 +56,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
   fBeamEnergy(-1.),
+  fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fEventFilter(0x0),
@@ -81,6 +82,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
   fBeamEnergy(-1.),
+  fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fEventFilter(0x0),
@@ -272,6 +274,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
 
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
   AliDielectronPair::SetBeamEnergy(InputEvent(), fBeamEnergy);
+  AliDielectronPair::SetRandomizeDaughters(fRandomizeDaughters);
   
   //Process event in all AliDielectron instances
   //   TIter nextDie(&fListDielectron);
@@ -283,8 +286,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
       sel= die->Process(InputEvent());
       // input for internal train
       if(die->DontClearArrays()) {
-	fPairArray = (*(die->GetPairArraysPointer()));
-
+        fPairArray = (*(die->GetPairArraysPointer())); // the pair arrays from the current 'die' object are stored so they can be used by the next one(s). saves computing time from pairing.
       }
     }
     else {

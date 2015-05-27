@@ -1,19 +1,303 @@
-#define AliHighPtTreeAnalysis_cxx
+/*
+  Used in the Expert QA for the tracking:
+  HTML pages:
+  
+  http://aliqatrk.web.cern.ch/aliqatrk/<data|sim>/<year>/period>/<run>
+  e.g:
+  http://aliqatrk.web.cern.ch/aliqatrk/data/2010/LHC10d/pass2/outputBneg/RawPowerLawFit_Combined.png
 
+  To run the code ses:
+  $ALICE_PHYSICS/../PWGPP/QA/detectorQAscripts/TRK.sh
+  $ALICE_PHYSICS/../src/PWGPP/QA/Tracking/ExpertQA/makePlots.C
+
+
+  To test code  compilation:
+  .L  $ALICE_PHYSICS/../src/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx+
+  
+  To do add unit test before further modifiing
+
+*/
+
+/*
+  Original author:
+     tbroeker@ikf.uni-frankfurt.de
+      
+  Rewritten by: (ongoing - started at 11.05.2015)
+    marian.ivanov@cern.ch
+    j.gronefeld@cern.ch
+
+*/
+
+
+
+#include <inttypes.h>
+#include <iostream>
+#include <fstream>
+#include <TROOT.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TPaveStats.h>
+#include <TVectorT.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TF1.h>
+#include <TH3.h>
+#include <TGraphErrors.h>
+#include <TObjString.h>
+#include <TObject.h>
+#include "AliESDVertex.h"
+#include <TNamed.h>
+#include "AliVertex.h"
+#include "AliESDtrack.h"
+#include "AliESDv0.h"
+#include "AliExternalTrackParam.h"
+#include <TBits.h>
+#include <TParticle.h>
+#include <TStyle.h>
+#include <TLegend.h>
+#include <TTreeStream.h>
+#include "TString.h"
+#include "TSystem.h"
+#include "TMinuit.h"
+#include "TCanvas.h"
+
+
+
+#define AliHighPtTreeAnalysis_cxx
 #include "AliHighPtTreeAnalysis.h"
 
 ClassImp(AliHighPtTreeAnalysis)
 
+
+AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( ) :
+  TObject(),
+  fChain(0),                     //!pointer to the analyzed TTree or TChain
+  fV0Chain(0),                   //!pointer to the V0 tree    
+  OutTree(0),                    // output tree
+  //
+  // Declaration of leaf types for the highPt tree
+  //
+  fChunkName(0),          // highPt - chunk name  -  never used -  TO REMOVE    MI!!!
+  runNumber(0),           // highPt - run number as double - should be carefully removed MI!!! 
+  fRunNumberInt(0),       // highPt - run number as Ingeter
+  fMult(0),
+  triggerClass(0),
+  Bz(0),
+  BzInt(0),
+  vtxESD(0),
+  esdTrack(0),
+  particle(0),
+  extTPCInnerC(0),
+  extInnerParamC(0),
+  extInnerParam(0),
+  extInnerParamRef(0),
+  chi2TPCInnerC(0),
+  chi2InnerC(0),
+  //
+  fPeriodName(0),                // LHC period name
+  fMakePeriod(0),                // switch to run per period ExperQA - who is setting ????      
+  fHasMC(0),                     // swith has MC information - automatically got from the tree
+  fPtCut(1),                     // pt cut lowe rvalue of pt ranges for some histograms - name is misleading as it is not general
+  fBfield(0),                    // cache value for B field -- TO FIX - use abasolute field, currently only sign e.g -0.5 T, 0.5 T
+  //
+  //   
+  fApplyCorrections(0),          // switch to apply q/pt correction
+  fMakePlots(kTRUE),                 // switch to run  MakePlot and produce figure 
+  fMakeV0s(0),                   // switch to make plots/trending for the V0s  (currently harrdwired kTRUE)
+  fMakeFitPerfomancePlots(0),    // swith to make performance plot
+  // set apply q/pt correction - here we stroe parameters of corrections - factors com from external files set by ::SetApplyCorrections( const char *correctionFile )
+  fCorrectionAside(0),           // delta(q/pt) per sector on A side  - combined tracks
+  fCorrectionCside(0),           // delta(q/pt) per sector on C side  - combined tracks
+  fCorrectionAsideTPCInner(0),   // delta(q/pt) per sector on A side  - TPC only
+  fCorrectionCsideTPCInner(0),   // delta(q/pt) per sector on C side  - TPC only
+  fCorrectionAsideTPCInnerC(0),  // delta(q/pt) per sector on A side  - TPC constrained 
+  fCorrectionCsideTPCInnerC(0),  // delta(q/pt) per sector on C side  - TPC constrained 
+  
+  fNtracks_TPCLowPt(0),                    // 
+  fNtracks_TPCHighPt(0),
+  fNtracks_TPCITSLowPt(0),
+  fNtracks_TPCITSHighPt(0),
+   
+  // Declaration of V0 data members
+  v0(0),                  
+  v0track0(0),
+  v0track1(0),
+  // Histos
+  hPulldcaRTPConly_vs_eta_1pT(0),          
+  hPulldcaRcomb_vs_eta_1pT(0),
+  hResdcaRTPConly_vs_eta_1pT(0),           
+  hResdcaRcomb_vs_eta_1pT(0),
+  hphiPull_vs_eta_1pT(0),                  
+  hphiRes_vs_eta_1pT(0), 
+  hPulldcaR_vs_eta_pT_Aside(0),            
+  hPulldcaR_vs_eta_pT_Cside(0),
+  hPulldcaRTPCInner_vs_eta_pT_Aside(0),    
+  hPulldcaRTPCInner_vs_eta_pT_Cside(0),
+  hResdcaR_vs_eta_pT_Aside(0),             
+  hResdcaR_vs_eta_pT_Cside(0),
+  hResdcaRTPCInner_vs_eta_pT_Aside(0),     
+  hResdcaRTPCInner_vs_eta_pT_Cside(0),
+  hphiPull_vs_eta_pT_Aside(0),             
+  hphiPull_vs_eta_pT_Cside(0),
+  hphiRes_vs_eta_pT_Aside(0),              
+  hphiRes_vs_eta_pT_Cside(0),
+  hPulldcaR_vs_phi_pT_Aside(0),            
+  hPulldcaR_vs_phi_pT_Cside(0),
+  hPulldcaRTPCInner_vs_phi_pT_Aside(0),    
+  hPulldcaRTPCInner_vs_phi_pT_Cside(0),
+  hResdcaR_vs_phi_pT_Aside(0),             
+  hResdcaR_vs_phi_pT_Cside(0),
+  hResdcaRTPCInner_vs_phi_pT_Aside(0),     
+  hResdcaRTPCInner_vs_phi_pT_Cside(0),
+  hphiPull_vs_phi_pT_Aside(0),             
+  hphiPull_vs_phi_pT_Cside(0),
+  hphiRes_vs_phi_pT_Aside(0),              
+  hphiRes_vs_phi_pT_Cside(0),
+  heta_phi_pT(0),
+  hphi_vs_eta_pT_cutTPC(0),                
+  hphi_vs_eta_pT_cutTPCITS(0),
+  
+
+  // histogram for 1/pt shift calculation
+  h1pt_vs_eta_phi(0),
+  h1ptRes_vs_phi_pT_Aside(0),        
+  h1ptRes_vs_phi_pT_Cside(0),        // 1/pT resolution from cov. matrix
+  h1ptRes_vs_mult_pT_Aside(0),       
+  h1ptRes_vs_mult_pT_Cside(0),           // 1/pT resolution from cov. matrix vs mult.
+  h1ptSigma_vs_phi_pT_Aside(0),      
+  h1ptSigma_vs_phi_pT_Cside(0),      // sigma 1/pT from cov. matrix
+  h1ptSigma_vs_mult_pT_Aside(0),     
+  h1ptSigma_vs_mult_pT_Cside(0),      // sigma 1/pT from cov. matrix vs mult.
+  //
+  // histogram for 1/pt shift calculation for TPCInnerC
+  //
+  h1ptTPCInnerC_vs_eta_phi(0),
+  h1ptResTPCInnerC_vs_phi_pT_Aside(0),    
+  h1ptResTPCInnerC_vs_phi_pT_Cside(0),  // 1/pT resolution from cov. matrix TPCInnerC
+  h1ptResTPCInnerC_vs_mult_pT_Aside(0),   
+  h1ptResTPCInnerC_vs_mult_pT_Cside(0),  // 1/pT resolution from cov. matrix vs mult. TPCInnerC
+  h1ptSigmaTPCInnerC_vs_phi_pT_Aside(0),  
+  h1ptSigmaTPCInnerC_vs_phi_pT_Cside(0), // 1/pT sigma from cov. matrix TPCInnerC
+  h1ptSigmaTPCInnerC_vs_mult_pT_Aside(0), 
+  h1ptSigmaTPCInnerC_vs_mult_pT_Cside(0), // 1/pT sigma from cov. matrix vs mult. TPCInnerC
+  //
+  // histogram for 1/pt shift calculation for TPCInner
+  h1ptTPCInner_vs_eta_phi(0), 
+  h1ptResTPCInner_vs_phi_pT_Aside(0),    
+  h1ptResTPCInner_vs_phi_pT_Cside(0),     // 1/pT resolution from cov. matrix TPCInner
+  h1ptResTPCInner_vs_mult_pT_Aside(0),  
+  h1ptResTPCInner_vs_mult_pT_Cside(0),   // 1/pT resolution from cov. matrix vs mult. TPCInner
+  h1ptSigmaTPCInner_vs_phi_pT_Aside(0),  
+  h1ptSigmaTPCInner_vs_phi_pT_Cside(0),   // 1/pT sigma from cov. matrix TPCInner
+  h1ptSigmaTPCInner_vs_mult_pT_Aside(0), 
+  h1ptSigmaTPCInner_vs_mult_pT_Cside(0),   // 1/pT sigma from cov. matrix vs mult. TPCInner
+  //
+  // Histogramm for V0s
+  //
+  hK0sPull_vs_alpha_1pT_pos(0),
+  hK0sRes_vs_alpha_1pT_pos(0),
+  hK0sPull_vs_alpha_1pT_neg(0),
+  hK0sRes_vs_alpha_1pT_neg(0),
+  // MC info
+  hptPull_vs_eta_pT(0),
+  hptRes_vs_eta_pT(0),
+  hptPullTPCInnerC_vs_eta_pT(0),
+  hptResTPCInnerC_vs_eta_pT(0),
+  hptPullTPCInner_vs_eta_pT(0),
+  hptResTPCInner_vs_eta_pT(0),
+
+  hptPull_vs_phi_pT(0),
+  hptRes_vs_phi_pT(0),
+  hptPullTPCInnerC_vs_phi_pT(0),
+  hptResTPCInnerC_vs_phi_pT(0),
+  hptPullTPCInner_vs_phi_pT(0),
+  hptResTPCInner_vs_phi_pT(0)
+{
+}
+
+
+AliHighPtTreeAnalysis::~AliHighPtTreeAnalysis()
+{
+  if (!fChain) return;
+  delete fChain->GetCurrentFile();
+}
+
+
+
+void AliHighPtTreeAnalysis::InitAnalysis( TString file ) 
+{
+  //
+  // if parameter tree is not specified (or zero), connect the file
+  // used to generate this class and read the Tree.
+  //
+  if( file.Length()==0 ){
+    TFile * f = TFile::Open("AliHighPtTreeAnalysis.root");
+    if (!f){
+      ::Error("AliHighPtTreeAnalysis::InitAnalysis","You have to specify the Input file");
+      exit(1);
+    }
+    Int_t nbytes= Read("AliHighPtTreeAnalysis");
+    if (nbytes<=0){
+      ::Error("AliHighPtTreeAnalysis::InitAnalysis","Wrong input file AliHighPtTreeAnalysis.root");
+    }
+    return;
+  }
+  
+  TTree *tree = NULL;
+  TTree *V0tree = NULL;
+  TFile *f = TFile::Open(file);
+  if (!f) return;
+  f->GetObject("highPt",tree);
+  f->GetObject("V0s",V0tree);  
+  Bool_t highPtTreeOK=kFALSE;
+  Bool_t V0sTreeOK=kFALSE;
+  if (V0tree) { if(V0tree->GetEntries() > 1 &&
+                   V0tree->GetBranchStatus("v0.") &&
+                   V0tree->GetBranchStatus("track0.") &&
+                   V0tree->GetBranchStatus("track1.") 
+                  )   V0sTreeOK = kTRUE;}
+
+  if (tree)   { if(tree->GetEntries() > 1 &&
+                   tree->GetBranchStatus("Bz") &&
+                   tree->GetBranchStatus("esdTrack.") &&
+                   tree->GetBranchStatus("vtxESD.") &&
+                   tree->GetBranchStatus("extTPCInnerC.") &&
+                   tree->GetBranchStatus("chi2TPCInnerC") &&
+                   tree->GetBranchStatus("mult") &&
+                   tree->GetBranchStatus("runNumber") 
+                  )   highPtTreeOK = kTRUE;}
+  //   fMakePlots = kTRUE;
+  if(highPtTreeOK)   
+  {
+    Init(tree);
+  } 
+  else printf("tree highPt not found or empty!\n");
+  if(V0sTreeOK) 
+  {
+    InitV0tree(V0tree);
+  }
+  else printf("tree V0s not found or empty!\n");
+}
+
+
+
+
+
 void AliHighPtTreeAnalysis::Loop(){
+  //
+  // Main function loop fill standard histograms
+  // and store object with histograms in file for later analysis
+  //
   if(fChain == 0) return;
   BookHistos();
-  Long64_t nentries = fChain->GetEntriesFast();
+  //
+  Long64_t nentriesHPT = fChain->GetEntriesFast();
   Long64_t nbytes = 0, nb = 0;
-  for (Long64_t jentry=0; jentry<nentries;jentry++) {  
+  for (Long64_t jentry=0; jentry<nentriesHPT;jentry++) {  
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
-    if(runNumber == 0) runNumber = (Double_t) runNumberInt;
+    if(runNumber == 0) runNumber = (Double_t) fRunNumberInt;
     if(Bz == 0) Bz = (Double_t) BzInt;
     if(Bz > 0) fBfield = 1;
     else fBfield = -1;
@@ -21,11 +305,11 @@ void AliHighPtTreeAnalysis::Loop(){
     FillHistos();
   }
 
-  if(fV0s){
+  if(fMakeV0s){
     Double_t massK0 = .497614000000000001;
-    nentries = fV0Chain->GetEntriesFast();
+    Int_t nentriesV0s = fV0Chain->GetEntriesFast();
     nbytes = 0, nb = 0;
-    for (Long64_t jentry=0; jentry<nentries;jentry++) {  
+    for (Long64_t jentry=0; jentry<nentriesV0s;jentry++) {  
       Long64_t ientry = LoadV0Tree(jentry);
       if (ientry < 0) break;
       nb = fV0Chain->GetEntry(jentry);   nbytes += nb;
@@ -40,13 +324,17 @@ void AliHighPtTreeAnalysis::Loop(){
       }
     }
   }
-
+  TFile * fout = TFile::Open("AliHighPtTreeAnalysis.root","recreate");
+  fout->cd();
+  this->Write("AliHighPtTreeAnalysis");
+  fout->Close();  
   Terminate();
 }
 
 void AliHighPtTreeAnalysis::FillHistos(){
   //
-
+  //
+  //
 
 
   if(esdTrack->IsOn(0x0040)&&esdTrack->GetTPCclusters(0)>0&&esdTrack->GetTPCClusterInfo(2,1)>120.&&(esdTrack->GetTPCNclsF()>0&&(esdTrack->GetTPCClusterInfo(2,1)/esdTrack->GetTPCNclsF())>0.8)&&(esdTrack->GetTPCchi2()/esdTrack->GetTPCclusters(0)<4.0)&&(esdTrack->GetTPCnclsS()/esdTrack->GetTPCclusters(0)<0.4)&&abs(esdTrack->fdTPC)<3&&abs(esdTrack->fzTPC)<3 ){
@@ -107,17 +395,17 @@ void AliHighPtTreeAnalysis::FillHistos(){
       hResdcaRTPCInner_vs_phi_pT_Aside   ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), esdTrack->GetTPCInnerParam()->Phi(), esdTrack->fdTPC );
 
       h1ptRes_vs_phi_pT_Aside            ->Fill( (1./abs(esdTrack->GetSigned1Pt())), esdTrack->Phi(), 1./abs(esdTrack->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
-      h1ptRes_vs_mult_pT_Aside           ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , mult                                     , 1./abs(esdTrack->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
+      h1ptRes_vs_mult_pT_Aside           ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , fMult                                     , 1./abs(esdTrack->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
       h1ptSigma_vs_phi_pT_Aside          ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , esdTrack->Phi()                          , TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
-      h1ptSigma_vs_mult_pT_Aside         ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , mult                                     , TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
+      h1ptSigma_vs_mult_pT_Aside         ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , fMult                                     , TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
       h1ptResTPCInnerC_vs_phi_pT_Aside   ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), extTPCInnerC->Phi()                      , 1./abs(extTPCInnerC->GetSigned1Pt())*TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
-      h1ptResTPCInnerC_vs_mult_pT_Aside  ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), mult                                     , 1./abs(extTPCInnerC->GetSigned1Pt())*TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
+      h1ptResTPCInnerC_vs_mult_pT_Aside  ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), fMult                                     , 1./abs(extTPCInnerC->GetSigned1Pt())*TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
       h1ptSigmaTPCInnerC_vs_phi_pT_Aside ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), extTPCInnerC->Phi()                      , TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
-      h1ptSigmaTPCInnerC_vs_mult_pT_Aside->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), mult                                     , TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
+      h1ptSigmaTPCInnerC_vs_mult_pT_Aside->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), fMult                                     , TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
       h1ptResTPCInner_vs_phi_pT_Aside    ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), esdTrack->GetTPCInnerParam()->Phi(), 1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
-      h1ptResTPCInner_vs_mult_pT_Aside   ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), mult                               , 1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
+      h1ptResTPCInner_vs_mult_pT_Aside   ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), fMult                               , 1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
       h1ptSigmaTPCInner_vs_phi_pT_Aside  ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), esdTrack->GetTPCInnerParam()->Phi(), TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
-      h1ptSigmaTPCInner_vs_mult_pT_Aside ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), mult                               , TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
+      h1ptSigmaTPCInner_vs_mult_pT_Aside ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), fMult                               , TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
     }
     if(esdTrack->Eta() < 0){
       hPulldcaR_vs_eta_pT_Cside          ->Fill( (1./abs(esdTrack->GetSigned1Pt())), esdTrack->Eta(), pullDCA );
@@ -133,17 +421,17 @@ void AliHighPtTreeAnalysis::FillHistos(){
       hResdcaRTPCInner_vs_phi_pT_Cside   ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), esdTrack->GetTPCInnerParam()->Phi(), esdTrack->fdTPC );
 
       h1ptRes_vs_phi_pT_Cside            ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , esdTrack->Phi()                          , 1./abs(esdTrack->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
-      h1ptRes_vs_mult_pT_Cside           ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , mult                                     , 1./abs(esdTrack->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
+      h1ptRes_vs_mult_pT_Cside           ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , fMult                                     , 1./abs(esdTrack->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
       h1ptSigma_vs_phi_pT_Cside          ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , esdTrack->Phi()                          , TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
-      h1ptSigma_vs_mult_pT_Cside         ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , mult                                     , TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
+      h1ptSigma_vs_mult_pT_Cside         ->Fill( (1./abs(esdTrack->GetSigned1Pt()))    , fMult                                     , TMath::Sqrt(esdTrack->GetSigma1Pt2()) );
       h1ptResTPCInnerC_vs_phi_pT_Cside   ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), extTPCInnerC->Phi()                      , 1./abs(extTPCInnerC->GetSigned1Pt())*TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
-      h1ptResTPCInnerC_vs_mult_pT_Cside  ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), mult                                     , 1./abs(extTPCInnerC->GetSigned1Pt())*TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
+      h1ptResTPCInnerC_vs_mult_pT_Cside  ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), fMult                                     , 1./abs(extTPCInnerC->GetSigned1Pt())*TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
       h1ptSigmaTPCInnerC_vs_phi_pT_Cside ->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), extTPCInnerC->Phi()                      , TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
-      h1ptSigmaTPCInnerC_vs_mult_pT_Cside->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), mult                                     , TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
+      h1ptSigmaTPCInnerC_vs_mult_pT_Cside->Fill( (1./abs(extTPCInnerC->GetSigned1Pt())), fMult                                     , TMath::Sqrt(extTPCInnerC->GetSigma1Pt2()) );
       h1ptResTPCInner_vs_phi_pT_Cside    ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), esdTrack->GetTPCInnerParam()->Phi(), 1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
-      h1ptResTPCInner_vs_mult_pT_Cside   ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), mult                               , 1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
+      h1ptResTPCInner_vs_mult_pT_Cside   ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), fMult                               , 1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())*TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
       h1ptSigmaTPCInner_vs_phi_pT_Cside  ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), esdTrack->GetTPCInnerParam()->Phi(), TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) );
-      h1ptSigmaTPCInner_vs_mult_pT_Cside ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), mult                               , TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) ); 
+      h1ptSigmaTPCInner_vs_mult_pT_Cside ->Fill( (1./abs(esdTrack->GetTPCInnerParam()->GetSigned1Pt())), fMult                               , TMath::Sqrt(esdTrack->GetTPCInnerParam()->GetSigma1Pt2()) ); 
     }
   }
 }
@@ -153,6 +441,8 @@ Bool_t AliHighPtTreeAnalysis::BaseCut(){
     return kTRUE;
   else return kFALSE;
 }
+
+
 
 void AliHighPtTreeAnalysis::BookHistos(){
   // Book the Histograms which are filled in the loop
@@ -472,8 +762,8 @@ void AliHighPtTreeAnalysis::MakeDCArPullFits(){
       h1PulldcaR=h1PulldcaRcomb;
       h2PulldcaR=h2PulldcaRcomb;
     }
-    h1PulldcaR->GetXaxis()->SetRangeUser(pTcut,100.);
-    h2PulldcaR->GetXaxis()->SetRangeUser(pTcut,100.);
+    h1PulldcaR->GetXaxis()->SetRangeUser(fPtCut,100.);
+    h2PulldcaR->GetXaxis()->SetRangeUser(fPtCut,100.);
 
     countsPulldcaR_TPCAside  = h1PulldcaR->Integral();
     countsPulldcaR_TPCCside  = h2PulldcaR->Integral();
@@ -608,8 +898,8 @@ void AliHighPtTreeAnalysis::MakeDCArResFits(){
                                                 h1ResdcaR=h1ResdcaRcomb;
                                                 h2ResdcaR=h2ResdcaRcomb;
                                               }
-                                              h1ResdcaR->GetXaxis()->SetRangeUser(pTcut,100.);
-                                              h2ResdcaR->GetXaxis()->SetRangeUser(pTcut,100.);
+                                              h1ResdcaR->GetXaxis()->SetRangeUser(fPtCut,100.);
+                                              h2ResdcaR->GetXaxis()->SetRangeUser(fPtCut,100.);
                                               h1ResdcaR->GetZaxis()->SetRangeUser(-0.15,0.1499);
                                               h2ResdcaR->GetZaxis()->SetRangeUser(-0.15,0.1499);
 
@@ -743,8 +1033,8 @@ void AliHighPtTreeAnalysis::MakePhiFits(){
   TH3D *h2phiPull = (TH3D*) hphiPull_vs_phi_pT_Cside->Clone();
   if(!h1phiPull) return;
   if(!h2phiPull) return;
-  h1phiPull->GetXaxis()->SetRangeUser(pTcut,100.);
-  h2phiPull->GetXaxis()->SetRangeUser(pTcut,100.);
+  h1phiPull->GetXaxis()->SetRangeUser(fPtCut,100.);
+  h2phiPull->GetXaxis()->SetRangeUser(fPtCut,100.);
 
   countsPhiPull_TPCAside = h1phiPull->Integral();
   countsPhiPull_TPCCside = h2phiPull->Integral();
@@ -807,8 +1097,8 @@ void AliHighPtTreeAnalysis::MakePhiFits(){
   if(!h1phiRes) return;
   if(!h2phiRes) return;
 
-  h1phiRes->GetXaxis()->SetRangeUser(pTcut,100.);
-  h2phiRes->GetXaxis()->SetRangeUser(pTcut,100.);
+  h1phiRes->GetXaxis()->SetRangeUser(fPtCut,100.);
+  h2phiRes->GetXaxis()->SetRangeUser(fPtCut,100.);
 
   countsPhiRes_TPCAside = h1phiRes->Integral();
   countsPhiRes_TPCCside = h2phiRes->Integral();
@@ -955,8 +1245,8 @@ void AliHighPtTreeAnalysis::Make1pTresCovFits(){
   if(!h11ptRes) return;
   if(!h21ptRes) return;
 
-  h11ptRes->GetXaxis()->SetRangeUser(pTcut,100.);
-  h21ptRes->GetXaxis()->SetRangeUser(pTcut,100.);
+  h11ptRes->GetXaxis()->SetRangeUser(fPtCut,100.);
+  h21ptRes->GetXaxis()->SetRangeUser(fPtCut,100.);
 
   counts1ptRes_TPCAside = h11ptRes->Integral();
   counts1ptRes_TPCCside = h21ptRes->Integral();
@@ -1019,7 +1309,7 @@ TGraphErrors* AliHighPtTreeAnalysis::Calc2DProfileContent(TH3D *h1, const char *
   sprintf(name,"%s_1",h1->GetName());
   TH3D *h1c = (TH3D*)h1->Clone(name);
   if(!h1c) return 0;
-  if(pTcut>0.)  h1c->GetXaxis()->SetRangeUser(pTcut,100);
+  if(fPtCut>0.)  h1c->GetXaxis()->SetRangeUser(fPtCut,100);
 
   TH2D *h1proj = (TH2D*)h1c->Project3D(projAxisName);
   if(!h1proj) return 0;
@@ -1678,7 +1968,7 @@ void AliHighPtTreeAnalysis::MakePowerFit(Int_t entries){
       grNpointsAside->Write();
       grNpointsCside->Write();
 
-      if(!fPeriod){      
+      if(!fMakePeriod){      
         //     TBranch *brItype  = OutTree->Branch("itype",&itype);
         //     brItype->Fill();
         TBranch *brfAll   = OutTree->Branch( Form("fAll_%s.",typeName[itype]) ,&vecFitAll);
@@ -1808,8 +2098,8 @@ void AliHighPtTreeAnalysis::MakeTPCITSMatchingEff(){
   if(!h1TPCITS) return;
 
   // pT above 3 GeV/c
-  h1TPC->GetZaxis()->SetRangeUser(pTcut,100.);
-  h1TPCITS->GetZaxis()->SetRangeUser(pTcut,100.);
+  h1TPC->GetZaxis()->SetRangeUser(fPtCut,100.);
+  h1TPCITS->GetZaxis()->SetRangeUser(fPtCut,100.);
 
   // TPC A side
   h1TPC->GetYaxis()->SetRangeUser(0.,0.999);
@@ -1847,7 +2137,7 @@ void AliHighPtTreeAnalysis::MakeTPCITSMatchingEff(){
   h1TPC->GetYaxis()->SetRange(1,h1TPC->GetYaxis()->GetNbins());
   h1TPCITS->GetYaxis()->SetRange(1,h1TPCITS->GetYaxis()->GetNbins());
 
-  if(!fPeriod){      
+  if(!fMakePeriod){      
     //     TBranch *brItype  = OutTree->Branch("itype",&itype);
     //     brItype->Fill();
     TBranch *brCountsTPC_TPCAside = OutTree->Branch("countsTPC_TPCAside",&countsTPC_TPCAside);
@@ -1902,7 +2192,7 @@ void AliHighPtTreeAnalysis::MakeK0trends(){
   Double_t  sigmaK0sResNegLow1pt  = -999.; Double_t  sigmaK0sResPosLow1pt  = -999.;
   Double_t eSigmaK0sResNegLow1pt  = -999.; Double_t eSigmaK0sResPosLow1pt  = -999.;
 
-  if(fV0s){
+  if(fMakeV0s){
     Double_t low1pt  = 0.;
     Double_t high1pt = 1.;
     TF1 *fLinearFitK0sShift = new TF1("fLinearFitK0sShift","[0] + [1]*x",0.,1.);
@@ -1972,7 +2262,7 @@ void AliHighPtTreeAnalysis::MakeK0trends(){
     }
   }
 
-  if(fV0s){
+  if(fMakeV0s){
     // fit function
     TF1 * fmass = new TF1("fmass","[0]+[1]*x+[2]*TMath::Gaus(x,[3],[4])",-0.5,0.5); 
 
@@ -1983,8 +2273,8 @@ void AliHighPtTreeAnalysis::MakeK0trends(){
     if(!h1K0sRes || !h2K0sRes || !h1K0sPull || !h2K0sPull) return; 
 
     // pT above 3 GeV/c
-    h1K0sPull->GetXaxis()->SetRangeUser(0.0,1./pTcut);
-    h2K0sPull->GetXaxis()->SetRangeUser(0.0,1./pTcut);
+    h1K0sPull->GetXaxis()->SetRangeUser(0.0,1./fPtCut);
+    h2K0sPull->GetXaxis()->SetRangeUser(0.0,1./fPtCut);
     countsK0sNeg = h1K0sPull->Integral();
     countsK0sPos = h2K0sPull->Integral();
 
@@ -2029,8 +2319,8 @@ void AliHighPtTreeAnalysis::MakeK0trends(){
     h2K0sPull->GetXaxis()->SetRange(1,h2K0sPull->GetXaxis()->GetNbins());
 
     // pT above 3 GeV/c
-    h1K0sRes->GetXaxis()->SetRangeUser(0.0,1./pTcut);
-    h2K0sRes->GetXaxis()->SetRangeUser(0.0,1./pTcut);
+    h1K0sRes->GetXaxis()->SetRangeUser(0.0,1./fPtCut);
+    h2K0sRes->GetXaxis()->SetRangeUser(0.0,1./fPtCut);
 
     countsK0sNeg = h1K0sRes->Integral();
     countsK0sPos = h2K0sRes->Integral();
@@ -2569,8 +2859,8 @@ void AliHighPtTreeAnalysis::PlotEff(TH3D *hTPCITS, TH3D *hTPC, const char *projA
   sprintf(name,"%s_1",hTPC->GetName());
   TH3D *h2c = (TH3D*)hTPC->Clone(name);
   if(!h1c || !h2c) return;
-  if(pTcut>0.) h1c->GetZaxis()->SetRangeUser(pTcut,100);
-  if(pTcut>0.) h2c->GetZaxis()->SetRangeUser(pTcut,100);
+  if(fPtCut>0.) h1c->GetZaxis()->SetRangeUser(fPtCut,100);
+  if(fPtCut>0.) h2c->GetZaxis()->SetRangeUser(fPtCut,100);
   TH1D *h1proj = (TH1D*)h1c->Project3D(projAxisName);
   TH1D *h2proj = (TH1D*)h2c->Project3D(projAxisName);
   if(!h1proj || !h2proj) return;
@@ -2604,8 +2894,8 @@ void AliHighPtTreeAnalysis::PlotEff(TH3D *hTPCITS, TH3D *hTPC, const char *projA
   //    sprintf(name,"%s.pdf",plotName);
   //    can->SaveAs(name);
 
-  if(pTcut>0.) h1c->GetZaxis()->SetRangeUser(0.,100);
-  if(pTcut>0.) h2c->GetZaxis()->SetRangeUser(0.,100);
+  if(fPtCut>0.) h1c->GetZaxis()->SetRangeUser(0.,100);
+  if(fPtCut>0.) h2c->GetZaxis()->SetRangeUser(0.,100);
 
   delete can;
   delete h1proj;
@@ -2624,7 +2914,7 @@ void AliHighPtTreeAnalysis::Plot1D(TH3D *h1, const char *projAxisName, Int_t his
   TH3D *h1c = (TH3D*)h1->Clone(name);
   if(!h1c) return;
 
-  if(pTcut>0.) h1c->GetZaxis()->SetRangeUser(pTcut,100);
+  if(fPtCut>0.) h1c->GetZaxis()->SetRangeUser(fPtCut,100);
 
   TH1D *h1proj = (TH1D*)h1c->Project3D(projAxisName);
   if(!h1proj) return;
@@ -2659,7 +2949,7 @@ void AliHighPtTreeAnalysis::Plot1D(TH3D *h1, const char *projAxisName, Int_t his
   //    sprintf(name,"%s.pdf",plotName);
   //    can->SaveAs(name);
 
-  if(pTcut>0.) h1c->GetZaxis()->SetRangeUser(0.,100);
+  if(fPtCut>0.) h1c->GetZaxis()->SetRangeUser(0.,100);
 
   delete can;
   delete h1proj;
@@ -2678,7 +2968,7 @@ void AliHighPtTreeAnalysis::Plot2D(TH3D *h1, const char *projAxisName, Int_t his
   if(!h1c) return;
 
 
-  if(pTcut>0.) h1c->GetXaxis()->SetRangeUser(pTcut,100);
+  if(fPtCut>0.) h1c->GetXaxis()->SetRangeUser(fPtCut,100);
 
   TH2D *h1proj = (TH2D*)h1c->Project3D(projAxisName);
   if(!h1proj) return;
@@ -2849,7 +3139,7 @@ void AliHighPtTreeAnalysis::Plot2D(TH3D *h1, const char *projAxisName, Int_t his
   sprintf(name,"%s.png",plotName);
   can->SaveAs(name);
 
-  if(pTcut>0.) h1c->GetXaxis()->SetRangeUser(0.,100.);
+  if(fPtCut>0.) h1c->GetXaxis()->SetRangeUser(0.,100.);
 
   delete can;
   delete h1proj;
@@ -2865,12 +3155,12 @@ void AliHighPtTreeAnalysis::Plot2DK0s(TH3D *h1, const char *projAxisName, Int_t 
   TH3D *h1c = (TH3D*)h1->Clone(name);
   if(!h1c) return;
 
-  if(pTcut>0.) h1c->GetXaxis()->SetRangeUser(0,1./pTcut);
+  if(fPtCut>0.) h1c->GetXaxis()->SetRangeUser(0,1./fPtCut);
 
   TH2D *h1proj = (TH2D*)h1c->Project3D(projAxisName);
   if(!h1proj) return;
   const char *OutXaxis  = "x";
-  if(pTcut>0.) OutXaxis = "y";
+  if(fPtCut>0.) OutXaxis = "y";
   TH1D *h1mean = (TH1D*)h1c->Project3D(OutXaxis);
   if(!h1mean) return;
   h1mean->SetName("h1mean");
@@ -2948,7 +3238,7 @@ void AliHighPtTreeAnalysis::Plot2DK0s(TH3D *h1, const char *projAxisName, Int_t 
   sprintf(name,"%s.png",plotName);
   can->SaveAs(name);
 
-  if(pTcut>0.) h1c->GetXaxis()->SetRangeUser(0.,1.);
+  if(fPtCut>0.) h1c->GetXaxis()->SetRangeUser(0.,1.);
 
   delete can;
   delete h1proj;
@@ -2968,8 +3258,8 @@ void AliHighPtTreeAnalysis::Plot1PtRes(TH3D *h1, const char *projAxisName, Int_t
   if(!h1c) return;
 
 
-  if(pTcut>0.) {
-    h1c->GetXaxis()->SetRangeUser(pTcut,100);
+  if(fPtCut>0.) {
+    h1c->GetXaxis()->SetRangeUser(fPtCut,100);
   }
 
   TH2D *h1proj = (TH2D*)h1c->Project3D(projAxisName);
@@ -3060,7 +3350,7 @@ void AliHighPtTreeAnalysis::Plot1PtRes(TH3D *h1, const char *projAxisName, Int_t
   //    can->SaveAs(name);
 
   //
-  if(pTcut>0.) {
+  if(fPtCut>0.) {
     h1c->GetXaxis()->SetRangeUser(0.,100.);
   }
 
@@ -3123,7 +3413,7 @@ void AliHighPtTreeAnalysis::MakeAllPlots(){
     gStyle->SetOptTitle(1);
     gStyle->SetOptStat(0);
     TH3D *h1c = (TH3D*) heta_phi_pT->Clone(Form("%s_1",heta_phi_pT->GetName()));
-    h1c->GetZaxis()->SetRangeUser(pTcut,100);
+    h1c->GetZaxis()->SetRangeUser(fPtCut,100);
     TH2D *heta_vs_phi = (TH2D*) h1c->Project3D("yx");
     heta_vs_phi->GetYaxis()->SetTitle("#phi (rad)");
     heta_vs_phi->GetXaxis()->SetTitle("#eta");
@@ -3141,7 +3431,7 @@ void AliHighPtTreeAnalysis::MakeAllPlots(){
   }
 
   //vs Pt
-  pTcut = 0;
+  fPtCut = 0;
   //Aside
   if(hPulldcaR_vs_phi_pT_Aside->GetEntries())          Plot2D(hPulldcaR_vs_phi_pT_Aside,             "zx",0,1,"p_{T} (GeV/c)","dcaRPull_pT_TPCAside");
   if(hPulldcaRTPCInner_vs_phi_pT_Aside->GetEntries())  Plot2D(hPulldcaRTPCInner_vs_phi_pT_Aside,     "zx",0,1,"p_{T} (GeV/c)","dcaRPullTPCInner_pT_TPCAside");
@@ -3265,161 +3555,6 @@ Bool_t AliHighPtTreeAnalysis::GetK0TrendFitFunction(TF1 *fLinearFitK0sShift, TF1
   return kTRUE;
 }
 
-AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( ) :
-  fChain(0),fV0Chain(0),fApplyCorrections(kFALSE),fMakePlots(kTRUE),fV0s(kFALSE),fMakeFitPerfomancePlots(kFALSE),fCorrectionAside(0),fCorrectionCside(0),fCorrectionAsideTPCInner(0),fCorrectionCsideTPCInner(0),
-  fCorrectionAsideTPCInnerC(0),fCorrectionCsideTPCInnerC(0),fNtracks_TPCLowPt(0),fNtracks_TPCHighPt(0),fNtracks_TPCITSLowPt(0),fNtracks_TPCITSHighPt(0),fPeriodName(0),
-  fPeriod(kFALSE),hasMC(0),pTcut(3.),fBfield(0),fileName(0),runNumber(0),runNumberInt(0),mult(0),triggerClass(0),Bz(0),BzInt(0),vtxESD(0),
-  esdTrack(0),particle(0),extTPCInnerC(0),extInnerParamC(0),extInnerParam(0),extInnerParamRef(0),chi2TPCInnerC(0),chi2InnerC(0),v0(0),v0track0(0),v0track1(0),hPulldcaRTPConly_vs_eta_1pT(0),
-  hPulldcaRcomb_vs_eta_1pT(0),hResdcaRTPConly_vs_eta_1pT(0), hResdcaRcomb_vs_eta_1pT(0),hphiPull_vs_eta_1pT(0),hphiRes_vs_eta_1pT(0),
-  hPulldcaR_vs_eta_pT_Aside(0),hPulldcaR_vs_eta_pT_Cside(0),hPulldcaRTPCInner_vs_eta_pT_Aside(0),hPulldcaRTPCInner_vs_eta_pT_Cside(0),hResdcaR_vs_eta_pT_Aside(0),
-  hResdcaR_vs_eta_pT_Cside(0),hResdcaRTPCInner_vs_eta_pT_Aside(0),hResdcaRTPCInner_vs_eta_pT_Cside(0),hphiPull_vs_eta_pT_Aside(0),hphiPull_vs_eta_pT_Cside(0),hphiRes_vs_eta_pT_Aside(0),
-  hphiRes_vs_eta_pT_Cside(0),hPulldcaR_vs_phi_pT_Aside(0),hPulldcaR_vs_phi_pT_Cside(0),hPulldcaRTPCInner_vs_phi_pT_Aside(0),hPulldcaRTPCInner_vs_phi_pT_Cside(0),hResdcaR_vs_phi_pT_Aside(0),
-  hResdcaR_vs_phi_pT_Cside(0),hResdcaRTPCInner_vs_phi_pT_Aside(0),hResdcaRTPCInner_vs_phi_pT_Cside(0),hphiPull_vs_phi_pT_Aside(0),hphiPull_vs_phi_pT_Cside(0),
-  hphiRes_vs_phi_pT_Aside(0),hphiRes_vs_phi_pT_Cside(0),heta_phi_pT(0),hphi_vs_eta_pT_cutTPC(0),hphi_vs_eta_pT_cutTPCITS(0),h1pt_vs_eta_phi(0),h1ptRes_vs_phi_pT_Aside(0),h1ptRes_vs_phi_pT_Cside(0),
-  h1ptRes_vs_mult_pT_Aside(0),h1ptRes_vs_mult_pT_Cside(0),h1ptSigma_vs_phi_pT_Aside(0),h1ptSigma_vs_phi_pT_Cside(0),h1ptSigma_vs_mult_pT_Aside(0),h1ptSigma_vs_mult_pT_Cside(0),h1ptTPCInnerC_vs_eta_phi(0),
-  h1ptResTPCInnerC_vs_phi_pT_Aside(0),h1ptResTPCInnerC_vs_phi_pT_Cside(0),h1ptResTPCInnerC_vs_mult_pT_Aside(0),h1ptResTPCInnerC_vs_mult_pT_Cside(0),h1ptSigmaTPCInnerC_vs_phi_pT_Aside(0),
-  h1ptSigmaTPCInnerC_vs_phi_pT_Cside(0),h1ptSigmaTPCInnerC_vs_mult_pT_Aside(0),h1ptSigmaTPCInnerC_vs_mult_pT_Cside(0),h1ptTPCInner_vs_eta_phi(0),h1ptResTPCInner_vs_phi_pT_Aside(0),
-  h1ptResTPCInner_vs_phi_pT_Cside(0),h1ptResTPCInner_vs_mult_pT_Aside(0),h1ptResTPCInner_vs_mult_pT_Cside(0),h1ptSigmaTPCInner_vs_phi_pT_Aside(0),h1ptSigmaTPCInner_vs_phi_pT_Cside(0),
-  h1ptSigmaTPCInner_vs_mult_pT_Aside(0),h1ptSigmaTPCInner_vs_mult_pT_Cside(0),hK0sPull_vs_alpha_1pT_pos(0),hK0sRes_vs_alpha_1pT_pos(0),hK0sPull_vs_alpha_1pT_neg(0),hK0sRes_vs_alpha_1pT_neg(0)
-{
-}
-
-AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( TString file ) :
-  fChain(0),
-  fV0Chain(0),
-  fApplyCorrections(kFALSE),
-  fMakePlots(kTRUE),
-  fV0s(kFALSE),
-  fMakeFitPerfomancePlots(kFALSE),
-  fCorrectionAside(0),
-  fCorrectionCside(0),
-  fCorrectionAsideTPCInner(0),
-  fCorrectionCsideTPCInner(0),
-  fCorrectionAsideTPCInnerC(0),
-  fCorrectionCsideTPCInnerC(0),
-  fNtracks_TPCLowPt(0),fNtracks_TPCHighPt(0),fNtracks_TPCITSLowPt(0),fNtracks_TPCITSHighPt(0),
-  fPeriodName(0),
-  fPeriod(kFALSE),
-  hasMC(0),
-  pTcut(3.),
-  fBfield(0),
-  fileName(0),
-  runNumber(0),
-  runNumberInt(0),
-  mult(0),
-  triggerClass(0),
-  Bz(0),
-  BzInt(0),
-  vtxESD(0),
-  esdTrack(0),
-  particle(0),
-  extTPCInnerC(0),
-  extInnerParamC(0),
-  extInnerParam(0),
-  extInnerParamRef(0),
-  chi2TPCInnerC(0),
-  chi2InnerC(0),
-  v0(0),
-  v0track0(0),
-  v0track1(0),
-  hPulldcaRTPConly_vs_eta_1pT(0), hPulldcaRcomb_vs_eta_1pT(0),
-  hResdcaRTPConly_vs_eta_1pT(0), hResdcaRcomb_vs_eta_1pT(0),
-  hPulldcaR_vs_eta_pT_Aside(0), hPulldcaR_vs_eta_pT_Cside(0),
-  hPulldcaRTPCInner_vs_eta_pT_Aside(0), hPulldcaRTPCInner_vs_eta_pT_Cside(0),
-  hResdcaR_vs_eta_pT_Aside(0), hResdcaR_vs_eta_pT_Cside(0),
-  hResdcaRTPCInner_vs_eta_pT_Aside(0), hResdcaRTPCInner_vs_eta_pT_Cside(0),
-  hphiPull_vs_eta_pT_Aside(0), hphiPull_vs_eta_pT_Cside(0),
-  hphiRes_vs_eta_pT_Aside(0), hphiRes_vs_eta_pT_Cside(0),
-  hPulldcaR_vs_phi_pT_Aside(0), hPulldcaR_vs_phi_pT_Cside(0),
-  hPulldcaRTPCInner_vs_phi_pT_Aside(0), hPulldcaRTPCInner_vs_phi_pT_Cside(0),
-  hResdcaR_vs_phi_pT_Aside(0), hResdcaR_vs_phi_pT_Cside(0),
-  hResdcaRTPCInner_vs_phi_pT_Aside(0), hResdcaRTPCInner_vs_phi_pT_Cside(0),
-  hphiPull_vs_phi_pT_Aside(0), hphiPull_vs_phi_pT_Cside(0),
-  hphiRes_vs_phi_pT_Aside(0), hphiRes_vs_phi_pT_Cside(0),
-  heta_phi_pT(0),
-  hphi_vs_eta_pT_cutTPC(0),
-  hphi_vs_eta_pT_cutTPCITS(0),
-  h1pt_vs_eta_phi(0),
-  h1ptRes_vs_phi_pT_Aside(0),
-  h1ptRes_vs_phi_pT_Cside (0),
-  h1ptRes_vs_mult_pT_Aside(0),
-  h1ptRes_vs_mult_pT_Cside(0),
-  h1ptSigma_vs_phi_pT_Aside(0),
-  h1ptSigma_vs_phi_pT_Cside(0),
-  h1ptSigma_vs_mult_pT_Aside(0),
-  h1ptSigma_vs_mult_pT_Cside(0),
-  h1ptTPCInnerC_vs_eta_phi(0),
-  h1ptResTPCInnerC_vs_phi_pT_Aside(0),
-  h1ptResTPCInnerC_vs_phi_pT_Cside(0),
-  h1ptResTPCInnerC_vs_mult_pT_Aside(0),
-  h1ptResTPCInnerC_vs_mult_pT_Cside(0),
-  h1ptSigmaTPCInnerC_vs_phi_pT_Aside(0),
-  h1ptSigmaTPCInnerC_vs_phi_pT_Cside(0),
-  h1ptSigmaTPCInnerC_vs_mult_pT_Aside(0),
-  h1ptSigmaTPCInnerC_vs_mult_pT_Cside(0),
-  h1ptTPCInner_vs_eta_phi(0),
-  h1ptResTPCInner_vs_phi_pT_Aside(0),
-  h1ptResTPCInner_vs_phi_pT_Cside(0),
-  h1ptResTPCInner_vs_mult_pT_Aside(0),
-  h1ptResTPCInner_vs_mult_pT_Cside(0),
-  h1ptSigmaTPCInner_vs_phi_pT_Aside(0),
-  h1ptSigmaTPCInner_vs_phi_pT_Cside(0),
-  h1ptSigmaTPCInner_vs_mult_pT_Aside(0),
-  h1ptSigmaTPCInner_vs_mult_pT_Cside(0),
-  hK0sPull_vs_alpha_1pT_pos(0),
-  hK0sRes_vs_alpha_1pT_pos(0),
-  hK0sPull_vs_alpha_1pT_neg(0),
-  hK0sRes_vs_alpha_1pT_neg(0)
-{
-  // if parameter tree is not specified (or zero), connect the file
-  // used to generate this class and read the Tree.
-  if( file == 0 ){
-    std::cout << "You have to specify the Input file" << std::endl;
-    exit(1);
-  }
-
-  TTree *tree = NULL;
-  TTree *V0tree = NULL;
-  TFile *f = TFile::Open(file);
-  if (!f) return;
-  f->GetObject("highPt",tree);
-  f->GetObject("V0s",V0tree);  
-  Bool_t highPtTreeOK=kFALSE;
-  Bool_t V0sTreeOK=kFALSE;
-  if (V0tree) { if(V0tree->GetEntries() > 1 &&
-                   V0tree->GetBranchStatus("v0.") &&
-                   V0tree->GetBranchStatus("track0.") &&
-                   V0tree->GetBranchStatus("track1.") 
-                  )   V0sTreeOK = kTRUE;}
-
-  if (tree)   { if(tree->GetEntries() > 1 &&
-                   tree->GetBranchStatus("Bz") &&
-                   tree->GetBranchStatus("esdTrack.") &&
-                   tree->GetBranchStatus("vtxESD.") &&
-                   tree->GetBranchStatus("extTPCInnerC.") &&
-                   tree->GetBranchStatus("chi2TPCInnerC") &&
-                   tree->GetBranchStatus("mult") &&
-                   tree->GetBranchStatus("runNumber") 
-                  )   highPtTreeOK = kTRUE;}
-  //   fMakePlots = kTRUE;
-  if(highPtTreeOK)   
-  {
-    Init(tree);
-  } 
-  else printf("tree highPt not found or empty!\n");
-  if(V0sTreeOK) 
-  {
-    InitV0tree(V0tree);
-  }
-  else printf("tree V0s not found or empty!\n");
-}
-
-AliHighPtTreeAnalysis::~AliHighPtTreeAnalysis()
-{
-  if (!fChain) return;
-  delete fChain->GetCurrentFile();
-}
-
 Int_t AliHighPtTreeAnalysis::GetEntry(Long64_t entry)
 {
   // Read contents of entry.
@@ -3452,7 +3587,7 @@ void AliHighPtTreeAnalysis::InitV0tree(TTree *tree)
   // Set branch addresses and branch pointers
 
   if(!tree) return;
-  fV0s=kTRUE;
+  fMakeV0s=kTRUE;
   fV0Chain = tree;
 
   fV0Chain->SetBranchAddress("v0.", &v0);
@@ -3470,7 +3605,7 @@ void AliHighPtTreeAnalysis::Init(TTree *tree)
 
   TString str(fChain->GetBranch("runNumber")->GetTitle());
   if(str[str.Length()-1]=='I')
-    fChain->SetBranchAddress("runNumber", &runNumberInt);
+    fChain->SetBranchAddress("runNumber", &fRunNumberInt);
   if(str[str.Length()-1]=='D')
     fChain->SetBranchAddress("runNumber", &runNumber);
   str = fChain->GetBranch("Bz")->GetTitle();
@@ -3484,14 +3619,14 @@ void AliHighPtTreeAnalysis::Init(TTree *tree)
   //   fChain->SetBranchAddress("runNumber", &runNumber);
   fChain->SetBranchAddress("extTPCInnerC.", &extTPCInnerC);
   fChain->SetBranchAddress("chi2TPCInnerC", &chi2TPCInnerC);
-  fChain->SetBranchAddress("mult", &mult);
+  fChain->SetBranchAddress("mult", &fMult);
   //   fChain->SetBranchAddress("Bz", &Bz);
   if( fChain->GetBranchStatus("particle.") ){
-    hasMC = kTRUE;
+    fHasMC = kTRUE;
     fChain->SetBranchAddress("particle.", &particle);
   }
   else
-    hasMC = kFALSE;
+    fHasMC = kFALSE;
 }
 
 Bool_t AliHighPtTreeAnalysis::ConnectGenericHistos( const char *genericHistoFile )
@@ -3549,7 +3684,7 @@ Bool_t AliHighPtTreeAnalysis::ConnectGenericHistos( const char *genericHistoFile
   hphiPull_vs_eta_1pT          = (TH3D*) f->Get("hphiPull_vs_eta_1pT");
   hphiRes_vs_eta_1pT           = (TH3D*) f->Get("hphiRes_vs_eta_1pT");
 
-  if(hK0sPull_vs_alpha_1pT_pos && hK0sRes_vs_alpha_1pT_pos && hK0sPull_vs_alpha_1pT_neg && hK0sRes_vs_alpha_1pT_neg) fV0s = kTRUE;
+  if(hK0sPull_vs_alpha_1pT_pos && hK0sRes_vs_alpha_1pT_pos && hK0sPull_vs_alpha_1pT_neg && hK0sRes_vs_alpha_1pT_neg) fMakeV0s = kTRUE;
 
   return kTRUE;
 }
@@ -3558,6 +3693,9 @@ void AliHighPtTreeAnalysis::SetMakePlots(Bool_t makeAllPlots){ fMakePlots = make
 
 void AliHighPtTreeAnalysis::SetApplyCorrections( const char *correctionFile )
 {
+  //
+  // 
+  //
   fApplyCorrections = kTRUE;
 
   TFile *fCorr = TFile::Open( correctionFile );

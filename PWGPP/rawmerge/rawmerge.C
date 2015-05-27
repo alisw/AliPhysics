@@ -1,6 +1,8 @@
 //
 // Macro to create the "raw" data file with selected events
-
+// source is 
+//     $ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C
+// 
 // Original code: 
 //    marian.ivanov@cern.ch
 //    modifications:
@@ -9,7 +11,7 @@
 //
 void rawmerge( TString inputFileName="wn.xml",
                TString fullEventListFileName="event.list",
-               TString outputFileNameTMP="filtered.root")
+               TString outputFileNameTMP="filtered.root", Int_t timeOut=30)
 {
    // Create the filtered raw data files using a file with list of raw chunks with event numbers.
    // inputFileName         - either the text file with chunkname+event number or xml collection
@@ -20,8 +22,12 @@ void rawmerge( TString inputFileName="wn.xml",
    // first extract the available chunks and event numbers from the
    // reference file, and use that as input
   
-//   TGrid::Connect("alien://")
-  Int_t timeOut = 60;
+//   TGrid::Connect("alien://") 
+  gSystem->Setenv("XRDCLIENTMAXWAIT",Form("%d",timeOut));
+  gEnv->SetValue("XNet.RequestTimeout", timeOut);
+  gEnv->SetValue("XNet.ConnectTimeout", timeOut);
+  gEnv->SetValue("XNet.TransactionTimeout", timeOut);
+  gEnv->SetValue("XNet.FirstConnectMaxCnt", 2);
   TGrid * alien = TGrid::Connect("alien://",0,0,"t");
   TFile::SetOpenTimeout(timeOut);
   printf(" ------ TFile open timeout limit = %ds ------ \n",TFile::GetOpenTimeout()); 
@@ -93,7 +99,9 @@ void rawmerge( TString inputFileName="wn.xml",
       printf("new file: %s\n",iURI.Data());
       delete ifile;
       ifile=0;
+      AliSysInfo::AddStamp((iURI+"_OpenBegin").Data(),11,lineNumber); // open + file counter
       ifile=TFile::Open(iURI.Data());
+      AliSysInfo::AddStamp((iURI+"_OpenEnd").Data(),10,lineNumber); // open + file counter
       if (!ifile)
       {
         fprintf(stderr,"warning: could not open file for event \"%s\", skipping it...\n",iURI.Data());
@@ -106,6 +114,7 @@ void rawmerge( TString inputFileName="wn.xml",
       printf("using already open file: %s\n",iURI.Data());
     }
     iURIold=iURI;
+    AliSysInfo::AddStamp((iURI+"_Begin").Data(),100,lineNumber); // dump file   + event   counter within file
     //
     TTree *itree=dynamic_cast<TTree*>(ifile->Get("RAW"));
     if (!itree)
@@ -141,10 +150,14 @@ void rawmerge( TString inputFileName="wn.xml",
     }
 
     otree->CopyAddresses(itree);
+    AliSysInfo::AddStamp((iURI+"_GetBegin").Data(),1001,lineNumber); // get entry + file counter
     itree->GetEntry(ievent);
+    AliSysInfo::AddStamp((iURI+"_GetEnd").Data(),1000,lineNumber); // get entry + file counter
     eventold=ievent;
     printf("filling event %i in file %s\n",ievent,ofile->GetName());
+    AliSysInfo::AddStamp((iURI+"_FillBegin").Data(),2001,lineNumber); // get entry + file counter
     otree->Fill();
+    AliSysInfo::AddStamp((iURI+"_FillEnd").Data(),2000,lineNumber); // get entry + file counter
       //otree->CopyEntries(itree,Form("Entry$==%d",ievent),1);
 
       // reset input
@@ -155,7 +168,7 @@ void rawmerge( TString inputFileName="wn.xml",
     printf(" ----- Merging time of event %d ----- and total time elapsed so far %f ----- \n", lineNumber, realTime);
     timer.Stop(); timer.Print();
     printf(" ================================================= \n");
-
+    AliSysInfo::AddStamp((iURI+"End").Data(),3,lineNumber); // dump file   + event   counter within file
   }
 
    //close the files

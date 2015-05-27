@@ -2,21 +2,19 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
  Bool_t flag1=kFALSE, Bool_t flag2=kFALSE, Bool_t getFromAlien=kFALSE, 
  Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral), Int_t collCands=AliVEvent::kAny) 
 {
-  Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_reichelt_LMEEPbPb2011", "No analysis manager found.");
+    Error("AddTaskLMEEPbPb2011AOD", "No analysis manager found.");
     return 0;
   }
   
-  //  create task and add it to the manager
-  //	gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
-  
+  // environment for testing/running at GSI:
   TString configBasePath("$TRAIN_ROOT/reichelt_lowmass/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
-  
+  // typical Aliroot environment:
+  if (trainRoot.IsNull()) configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+  ::Info("AddTaskLMEEPbPb2011AOD",Form("configBasePath.Data(): %s\n",configBasePath.Data()));
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
@@ -32,18 +30,18 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   TString configFilePath(configBasePath+configFile);
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
   
-  //AOD Usage currently tested with separate task, to be merged
+  Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-    ::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
+    ::Info("AddTaskLMEEPbPb2011AOD","running on AODs.");
   }
   else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-    ::Info("AddTaskLMEEPbPb2011AOD","switching on ESD specific code");
+    ::Info("AddTaskLMEEPbPb2011AOD","switching on ESD specific code, make sure ESD cuts are used.");
     bESDANA=kTRUE;
   }
   
-  
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
+  std::cout << "hasMC = " << hasMC << std::endl;
   
   //load dielectron configuration files
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
@@ -55,16 +53,16 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(triggerNames);
   task->SelectCollisionCandidates(collCands);  
+  task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1));
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-	
+  task->SetRandomizeDaughters(randomizeDau);//default kFALSE
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011(i,hasMC,bESDANA);
+    AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011(i, hasMC, bESDANA);
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());

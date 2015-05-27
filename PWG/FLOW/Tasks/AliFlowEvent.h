@@ -98,6 +98,7 @@ protected:
 
 private:
   Int_t         fApplyRecentering;      // apply recentering of q-vectors? 2010 is 10h style, 2011 is 11h style
+  Bool_t        fApplyTwisting;         // apply twisting of q-vectors
   Int_t         fCachedRun;             //! cached calibration info for vzero
   Int_t         fVZEROcentralityBin;    //! centrality bin for the current event 
   Float_t       fMeanQ[9][2][2];        //! recentering
@@ -115,7 +116,6 @@ private:
   TArrayD*      fChi2C;                 //! chi vs cent for vzero C ep_2
   TArrayD*      fChi3A;                 //! chi vs cent for vzero A ep_3
   TArrayD*      fChi3C;                 //! chi vs cent for vzero C ep_3
-
 
   ClassDef(AliFlowEvent,4)
 };

@@ -297,7 +297,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   cu->SwitchOffRecalibration(); // Check the reader if it is taken into account during filtering
   cu->SwitchOffRunDepCorrection();
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simulation,
                           kTRUE,//kExotic,

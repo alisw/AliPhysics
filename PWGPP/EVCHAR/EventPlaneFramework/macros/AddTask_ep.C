@@ -52,7 +52,7 @@ void AddVZERO(AliEventPlaneManager* EPmanager);
 void AddTPC(AliEventPlaneManager* EPmanager);
 void AddTZERO(AliEventPlaneManager* EPmanager);
 //void AddFMD(AliEventPlaneManager* EPmanager);
-//void AddZDC(AliEventPlaneManager* EPmanager);
+void AddZDC(AliEventPlaneManager* EPmanager);
 
 
 void AddTask_ep() {
@@ -148,13 +148,13 @@ void AddTask_ep() {
 
   
   taskEP->SetEventCuts(eventCuts);
-  taskEP->SetTrigger(AliVEvent::kMB);  // Trigger stream to be used for calibration and QA histograms
-  taskEP->SelectCollisionCandidates(AliVEvent::kMB|AliVEvent::kCentral);  // Events passing trigger and physics selection for analysis
+  taskEP->SetTrigger(AliVEvent::kMB);                 // Trigger stream to be used for calibration and QA histograms
+  taskEP->SelectCollisionCandidates(AliVEvent::kMB);  // Events passing trigger and physics selection for analysis
 
   AddVZERO(EPmanager);
   AddTPC(EPmanager);
   //AddTZERO(EPmanager);
-  //AddZDC(EPmanager);
+  AddZDC(EPmanager);
   //AddFMD(EPmanager);
 
   taskEP->SetEventPlaneManager(EPmanager);
@@ -203,13 +203,13 @@ void AddTask_ep() {
 void AddVZERO(AliEventPlaneManager* EPmanager){
 
   //const Char_t* gkVzeroEqualizationPath = "";
-  const Char_t* gkVzeroEqualizationPath = "/alien/alice/cern.ch/user/j/jonderwa/CalibrationFiles/000%d/CalibrationHistograms.root";
+  const Char_t* gkVzeroEqualizationPath = "/alien/alice/cern.ch/user/j/jonderwa/AnalysisTesting5/output/000%d/CalibrationHistograms.root";
   const Char_t* gkVzeroRecenteringPath  = "";
   const Char_t* gkVzeroDiagonalizationPath = "";
   //const Char_t* gkVzeroEqualizationPath = "/hera/alice/jonderw/PbPb2010/EventPlane_20141210_000-1-1/";
   //const Char_t* gkVzeroRecenteringPath  = "/hera/alice/jonderw/PbPb2010/EventPlane_20141210_000-1-1/";
   //const Char_t* gkVzeroDiagonalizationPath = "/hera/alice/jonderw/PbPb2010/EventPlane_20131010_3222-1/";
-  const Int_t gkVZEROstep=0;
+  const Int_t gkVZEROstep=1;
   Short_t VZEROchannels[4][64];
   for(Int_t iv0=0; iv0<4; iv0++) for(Int_t ich=0; ich<64; ich++) VZEROchannels[iv0][ich] = 0;
   
@@ -251,7 +251,7 @@ void AddVZERO(AliEventPlaneManager* EPmanager){
   AliEventPlaneConfiguration * VZEROAconf = new AliEventPlaneConfiguration();
   VZEROAconf->SetCalibrationStep(gkVZEROstep);
   VZEROAconf->SetCalibrationMethod(1);
-  VZEROAconf->SetEqualizationMethod(2);
+  VZEROAconf->SetEqualizationMethod(1);
   VZEROAconf->SetTwistAndScalingMethod(2);
   VZEROAconf->SetChannelList(new TArrayS(64, VZEROchannels[0]));
   VZEROAconf->SetCalibrationDetectorName("VZEROA");
@@ -271,7 +271,7 @@ void AddVZERO(AliEventPlaneManager* EPmanager){
   AliEventPlaneConfiguration * VZEROCconf = new AliEventPlaneConfiguration();
   VZEROCconf->SetCalibrationStep(gkVZEROstep);
   VZEROCconf->SetCalibrationMethod(1);
-  VZEROCconf->SetEqualizationMethod(2);
+  VZEROCconf->SetEqualizationMethod(1);
   VZEROCconf->SetTwistAndScalingMethod(2);
   VZEROCconf->SetChannelList(new TArrayS(64, VZEROchannels[1]));
   VZEROCconf->SetCalibrationDetectorName("VZEROC");
@@ -283,6 +283,7 @@ void AddVZERO(AliEventPlaneManager* EPmanager){
   VZEROCconf->SetCorrelationHistPath(gkVzeroDiagonalizationPath);
   VZEROCconf->SetCalibrationBinning(VZERObinning);
   VZEROCconf->SetEqualizationBinning(VZEROchannelbinning);
+
   EPmanager->AddEventPlaneConfiguration(VZEROCconf, AliEventPlaneManager::kVZERO);
   
 }
@@ -293,7 +294,7 @@ void AddVZERO(AliEventPlaneManager* EPmanager){
         
 const Int_t gkTPCstep=0;
 //const Char_t* gkTpcRecenteringPath   = "";
-const Char_t* gkTpcRecenteringPath   = "/alien/alice/cern.ch/user/j/jonderwa/CalibrationFiles/000%d/CalibrationHistograms.root";
+const Char_t* gkTpcRecenteringPath   = "/alien/alice/cern.ch/user/j/jonderwa/AnalysisTesting5/output/000%d/CalibrationHistograms.root";
 //const Char_t* gkTpcRecenteringPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20131120_00000/";
 const Char_t* gkTpcDiagonalizationPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20141207_00-1-1-1/";
 
@@ -522,45 +523,81 @@ const Char_t* gkTzeroDiagonalizationPath   = "/hera/alice/jonderw/PbPb2010/Event
     /////////////// Add ZDC subdetectors ///////////////////
 
 const Int_t gkZDCstep=0;
-const Char_t* gkZdcEqualizationPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20131010_0000-1/";
-const Char_t* gkZdcRecenteringPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20131010_2111-1/";
-const Char_t* gkZdcDiagonalizationPath   = "/hera/alice/jonderw/PbPb2010/EventPlane_20131010_3222-1/";
+const Char_t* gkZdcEqualizationPath   = "";
+const Char_t* gkZdcRecenteringPath   = "";
+const Char_t* gkZdcDiagonalizationPath   = "";
 
 
     Short_t ZDCchannels[2][10];
     for(Int_t iv0=0; iv0<2; iv0++) for(Int_t ich=0; ich<10; ich++) ZDCchannels[iv0][ich] = 0;
     
     for(Int_t ich=6; ich<10; ich++) ZDCchannels[0][ich] = 1;
-    for(Int_t ich=1; ich<5; ich++) ZDCchannels[1][ich] = 1;
+    for(Int_t ich=1; ich<5; ich++)  ZDCchannels[1][ich] = 1;
+
+
+  //-----------------------------------------------------------
+  // Binning for Q-vector calibration
+
+  const Int_t ZDCdim              = 3;
+  AliEventPlaneBinning * ZDCbinning = new AliEventPlaneBinning(ZDCdim);
+   
+
+  // centrality bins
+  const Int_t nCtwidths = 1;   
+  Double_t Ctedges[nCtwidths+1] = {0.0, 100.0};
+  Int_t Ctbins[nCtwidths] = {50};
+
+  ZDCbinning->AddBinAxis(0, AliEventPlaneVarManager::kCentVZERO, nCtwidths, Ctbins, Ctedges);
+
+    
+  // vertex Z bins
+  const Int_t nVtxXwidths = 1;   
+  Double_t VtxXedges[nVtxXwidths+1] = {-0.06, 0.04};
+  Int_t VtxXbins[nVtxXwidths] = {5};
+
+  ZDCbinning->AddBinAxis(1, AliEventPlaneVarManager::kVtxX, nVtxXwidths, VtxXbins, VtxXedges);
+
+
+    
+  // vertex Z bins
+  const Int_t nVtxYwidths = 1;   
+  Double_t VtxYedges[nVtxYwidths+1] = {0.12,0.24};
+  Int_t VtxYbins[nVtxYwidths] = {5};
+
+  ZDCbinning->AddBinAxis(2, AliEventPlaneVarManager::kVtxY, nVtxYwidths, VtxYbins, VtxYedges);
+
+
 
       AliEventPlaneConfiguration * ZDCAconf = new AliEventPlaneConfiguration();
       ZDCAconf->SetCalibrationStep(gkZDCstep);
       ZDCAconf->SetCalibrationMethod(1);
-      ZDCAconf->SetEqualizationMethod(2);
+      //ZDCAconf->SetEqualizationMethod(2);
       ZDCAconf->SetTwistAndScalingMethod(2);
       ZDCAconf->SetChannelList(new TArrayS(10, ZDCchannels[0]));
       ZDCAconf->SetCalibrationDetectorName("ZDCA");
       ZDCAconf->SetEqualizationDetectorName("ZDCA");
       ZDCAconf->SetEventPlaneDetectorName("ZDCA");
       ZDCAconf->SetCorrelationDetectorNames("ZDCC","TPC");
-      ZDCAconf->SetEqualizationHistPath(gkZdcEqualizationPath);
+      //ZDCAconf->SetEqualizationHistPath(gkZdcEqualizationPath);
       ZDCAconf->SetRecenteringHistPath(gkZdcRecenteringPath);
       ZDCAconf->SetCorrelationHistPath(gkZdcDiagonalizationPath);
+      ZDCAconf->SetCalibrationBinning(ZDCbinning);
       EPmanager->AddEventPlaneConfiguration(ZDCAconf, AliEventPlaneManager::kZDC);
 
       AliEventPlaneConfiguration * ZDCCconf = new AliEventPlaneConfiguration();
       ZDCCconf->SetCalibrationStep(gkZDCstep);
       ZDCCconf->SetCalibrationMethod(1);
-      ZDCCconf->SetEqualizationMethod(2);
+      //ZDCCconf->SetEqualizationMethod(2);
       ZDCCconf->SetTwistAndScalingMethod(2);
       ZDCCconf->SetChannelList(new TArrayS(10, ZDCchannels[1]));
       ZDCCconf->SetCalibrationDetectorName("ZDCC");
       ZDCCconf->SetEqualizationDetectorName("ZDCC");
       ZDCCconf->SetEventPlaneDetectorName("ZDCC");
       ZDCCconf->SetCorrelationDetectorNames("ZDCA","TPC");
-      ZDCCconf->SetEqualizationHistPath(gkZdcEqualizationPath);
+      //ZDCCconf->SetEqualizationHistPath(gkZdcEqualizationPath);
       ZDCCconf->SetRecenteringHistPath(gkZdcRecenteringPath);
       ZDCCconf->SetCorrelationHistPath(gkZdcDiagonalizationPath);
+      ZDCCconf->SetCalibrationBinning(ZDCbinning);
       EPmanager->AddEventPlaneConfiguration(ZDCCconf, AliEventPlaneManager::kZDC);
 
   }

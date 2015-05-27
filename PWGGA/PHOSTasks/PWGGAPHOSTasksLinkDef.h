@@ -32,6 +32,7 @@
 
 //PHOS_GAFlow
 #pragma link C++ class AliAnalysisTaskThermalGAFlow+;
+#pragma link C++ class AliAnalysisTaskThermalGAFlowMC+;
 
 // PHOS_PbPbQA
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;

@@ -41,6 +41,9 @@
 
 ClassImp(AliHFJetsTaggingVertex)
 
+using std::cout;
+using std::endl;
+
 AliHFJetsTaggingVertex::AliHFJetsTaggingVertex():
 AliHFJetsTagging(),
   fCutsHFjets(0x0){
@@ -134,16 +137,6 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet, AliAODTrack *
     // const AliAODTrack *nTrack=fGTI[v0->GetNegID()];
     AliESDtrack *esdt = new AliESDtrack(tmpTr);
 
-    Double_t point[16]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,999.,-999.,-999.,-999.,-999.,-999.};
-    for(Int_t jj=0;jj<10;jj++){
-      if(tmpTr->TestFilterBit(TMath::Power(2,jj))){
-    	point[jj]=1;      
-      }
-    }
-    Printf(MSGINFO("\n \n %d **** filterbit =  %d"), j, tmpTr->GetFilterMap());
-    for (Int_t ii = 0; ii<10; ii++)
-      Printf("%d       bit = %.1f", ii, point[ii]);
-    
     tarresd->Add(esdt);
   }
 

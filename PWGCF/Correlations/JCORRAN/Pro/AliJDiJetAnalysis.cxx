@@ -1,4 +1,4 @@
-/**************************************************************************
+/*************************************************************************
  * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -185,7 +185,21 @@ AliJDiJetAnalysis& AliJDiJetAnalysis::operator=(const AliJDiJetAnalysis & obj){
     return *this;
 }
 
+bool AliJDiJetAnalysis::CompareTrackByPt( AliJBaseTrack * a, AliJBaseTrack* b ){
+    return (a->Pt()>b->Pt());
+}
+
+vector<AliJBaseTrack*> AliJDiJetAnalysis::SortTrackByPt( TObjArray * os ){
+    vector<AliJBaseTrack*> a(os->GetEntriesFast());
+    for( int i=0;i<os->GetEntriesFast();i++ ){
+        a[i] = (AliJBaseTrack*)os->At(i);
+    }
+    sort( a.begin(), a.end(), CompareTrackByPt );
+    return a;
+}
+
 void AliJDiJetAnalysis::UserCreateOutputObjects(){
+    TH1D::StatOverflows();
     fJetListOfList.Clear();
     // comment needed
     fJetPtBins = fCard->GetVector("Jet:PtBins");
@@ -231,6 +245,11 @@ void AliJDiJetAnalysis::UserExec(){
             //cout<<"DEBUG_B2 no array at "<<i<<endl;
             continue;
         }
+        for( int j=0;j<ar->GetEntriesFast();j++ ){
+            AliJJet * jet = (AliJJet*) ar->At(j);
+            //if( i > 1 && i!=kJMultiPartonAll && jet->LeadingParticleId() < 0 ) jet->ReSum();
+            jet->ReSum(); // TODO temp
+        }
     }
     FillHistosJets();
     FillHistosDiJet();
@@ -240,7 +259,7 @@ void AliJDiJetAnalysis::UserExec(){
 void AliJDiJetAnalysis::Terminate() const{
     // comment needed
     fHMG->Write();
-    fHMG->WriteConfig();
+    //fHMG->WriteConfig();
 }
 
 
@@ -254,18 +273,28 @@ AliJDiJet * AliJDiJetAnalysis::GetDiJets(int type, int js, int djs){
     if( type==kJIncomingJet && js!=0 && djs!=0 ){
         return dijet;
     }
-    //==== DIJET DiJet In Full Acceptance
-    if( djs == kJDiJetLeadingSubLeading ){
+    //==== DIJET DiJet - Leading - sub leading
+    if( djs == kJDiJetLeadingSubLeading5 || djs==kJDiJetLeadingSubLeading10 || djs==kJDiJetLeadingSubLeading20 || djs==kJDiJetLeadingSubLeading50 ){
         for( int ij=0;ij<jets->GetEntriesFast();ij++ ){
             AliJJet * jet = (AliJJet*) jets->At(ij);
             dijet->Add( jet );
             if( dijet->GetEntries() >= 2 ) break;
         }
+        double jetptcut= 0;
+        if( djs == kJDiJetLeadingSubLeading5 ) jetptcut = 5;
+        if( djs == kJDiJetLeadingSubLeading10 ) jetptcut = 10;
+        if( djs == kJDiJetLeadingSubLeading20 ) jetptcut = 20;
+        if( djs == kJDiJetLeadingSubLeading50 ) jetptcut = 50;
+        if(dijet->GetEntries() > 1 && dijet->jet(0).Pt()>jetptcut && dijet->jet(1).Pt()>jetptcut){
+        }else{
+          dijet->Clear();
+        }
     }
-    //==== DIJET DiJet In Alice Acceptance
+    //==== DIJET DiJet - leading - subleading - opposite 
     if( djs == kLeadingSubLeadingOpposite ){
         for( int ij=0;ij<jets->GetEntriesFast();ij++ ){
             AliJJet * jet = (AliJJet*) jets->At(ij);
+            if( jet->Pt() < fJetPtMinCut ) break;
             dijet->Add(jet);
             if( dijet->GetEntries() >= 2 ) break;
         }
@@ -275,13 +304,36 @@ AliJDiJet * AliJDiJetAnalysis::GetDiJets(int type, int js, int djs){
         }
 
     }
+    //==== DIJET DiJet - leading - subleading - opposite 
+    if( djs == kLeadingSubLeadingEtaWindow ){
+        for( int ij=0;ij<jets->GetEntriesFast();ij++ ){
+            AliJJet * jet = (AliJJet*) jets->At(ij);
+            if( jet->Pt() < fJetPtMinCut ) break;
+            dijet->Add(jet);
+            if( dijet->GetEntries() >= 2 ) break;
+        }
+        if( dijet->GetEntries() < 2){
+
+        }else{
+          AliJJet & j0 = dijet->jet(0);
+          AliJJet & j1 = dijet->jet(1);
+          TLorentzVector lcms = (j0+j1)*0.5;
+          AliJJet jj0 = j0 - lcms;
+          AliJJet jj1 = j1 - lcms;
+          if( fabs(jj0.Eta()) > 0.4 || fabs(jj1.Eta()) > 0.4 ){
+            dijet->Clear();
+          }
+        }
+    }
     //==== DIJET 2 : Marta - Find DiJet in Eta
     if( djs == kJDiJetMarta ){
         if( type == kJIncomingJet ) return dijet;
         TObjArray *jetsFull = NULL;
         switch ( type ){
-            case kJChargedJet: jetsFull = GetJets( kJFullJet, js );break;
-            case kJChargedJet08: jetsFull = GetJets( kJFullJet08, js );break;
+            case kJChargedJetR03: jetsFull = GetJets( kJChargedJetR03, js );break;
+            case kJChargedJetR04: jetsFull = GetJets( kJChargedJetR04, js );break;
+            case kJChargedJetR05: jetsFull = GetJets( kJChargedJetR05, js );break;
+            case kJChargedJetR06: jetsFull = GetJets( kJChargedJetR06, js );break;
             default: jetsFull = jets;
         }
 
@@ -315,6 +367,46 @@ AliJDiJet * AliJDiJetAnalysis::GetDiJets(int type, int js, int djs){
             dijet->SetJets( trigJet,asocJet );
         }
     }
+    //===== DIJET CMS 
+    if( djs == kJDiJetCMS ){
+        const double kRapidityCut = 0.5;
+        if( type == kJIncomingJet || type == kJOutgoingJet) return dijet;
+        AliJJet * trigJet = NULL;
+        double trigJetPtMax = 0; 
+        for( int ij=0;ij<jets->GetEntriesFast();ij++ ){
+            AliJJet * jet = (AliJJet*) jets->At(ij);
+            double jetPt = jet->Pt();
+            if( jetPt < 60 ) continue;
+            if( fabs(jet->Rapidity()) < kRapidityCut ) continue;
+            if( trigJetPtMax < jetPt ){
+                trigJet = jet;
+                trigJetPtMax = jetPt;
+            }
+        }
+        if( trigJet == NULL ) return dijet;
+        double ptt = trigJet->Pt();
+        AliJJet * asocJet = NULL;
+        double asocJetPtMax = 0;
+        for( int ij=0;ij<jets->GetEntriesFast();ij++ ){
+            AliJJet * jet = (AliJJet*) jets->At(ij);
+            if( !jet ){
+                cout<<"JWARN_GETDIJET13: "<<dijet->GetEntries()<<endl;
+                continue;
+            }
+            double pta = jet->Pt();
+            if( fabs(jet->Rapidity()) < kRapidityCut ) continue;
+            if( pta < 30 ) continue;
+            if( pta > ptt ) break;
+            if( asocJetPtMax < pta ){
+                asocJet = jet;
+                asocJetPtMax = pta;
+            }
+        }
+        if( asocJet ){
+            dijet->SetJets( trigJet,asocJet );
+        }
+    }
+
     return fDiJets[type][js][djs];
 }
 
@@ -324,11 +416,13 @@ TObjArray * AliJDiJetAnalysis::GetJets(int type, int js){
     //=========================================
     //== Jet Selection
     //=========================================
-    TObjArray * jets =  (TObjArray*)fJetListOfList[type];
-    if( !jets ) return na;
-    for( int i=0;i<jets->GetEntriesFast();i++ ){
-        AliJJet * jet = (AliJJet*)  jets->At(i);
-		if( jet->LeadingParticleId() < 0 ) jet->ReSum();
+    TObjArray * jetsOrg =  (TObjArray*)fJetListOfList[type];
+    if( !jetsOrg ) return na;
+    vector<AliJBaseTrack*> jets = SortTrackByPt(jetsOrg);
+    int nEntries = jets.size();
+    for( int i=0;i<nEntries;i++ ){
+        AliJJet * jet = (AliJJet*)  jets[i];
+        //if(  jet->LeadingParticleId() < 0 ) jet->ReSum();
         if( type == kJIncomingJet ){
             //=========================================
             //== Incoming jets
@@ -340,9 +434,11 @@ TObjArray * AliJDiJetAnalysis::GetJets(int type, int js){
             //== kJEtaAll
             //=========================================
             if( type == kJOutgoingJet ){
+                if( jets.size() < 2 ) cout<<"JWARN_W1 : number of outgoing jets is "<<jets.size()<<endl;
                 //cout<<"DEBUG_G1 "<<jet->Eta()<<endl;
             }
-            if( fabs(jet->Eta()) < 5 ){
+            if( type == kJOutgoingJet ||  fabs(jet->Eta()) < 5 ){
+                if( jet->Pt()<5 ) continue;
                 na->Add(jet);
             }
         }else if( js == kJEtaAlice ){
@@ -350,10 +446,28 @@ TObjArray * AliJDiJetAnalysis::GetJets(int type, int js){
             //== kJEtaAlice
             //=========================================
             if( fabs(jet->Eta()) < 0.4 ){
+                if( jet->Pt()<5 ) continue;
                 na->Add(jet);
             }
         }
     }// jets
+
+    // DEBUG
+    if( nEntries > 2 ){
+        AliJJet * jet0 = (AliJJet*)  jets[0];
+        AliJJet * jet1 = (AliJJet*)  jets[1];
+        AliJJet * jet2 = (AliJJet*)  jets[2];
+        if( jet0->Pt() < jet1->Pt() ){
+            cout<<"JERROR : jet0 is weaker than jet1 "<< jet0->Pt()<<"\t"<<jet1->Pt()<<"\t"<<jet2->Pt()<<endl;
+            cout<<"JERROR : jet0 is weaker than jet1 "<< jet0->E()<<"\t"<<jet1->E()<<"\t"<<jet2->E()<<endl;
+            gSystem->Exit(2);
+        }
+    }
+
+    for( int i=0;i<na->GetEntriesFast();i++ ){
+
+
+    }
     //=========================================
     //== NOJET
     //=========================================
@@ -366,38 +480,36 @@ TObjArray * AliJDiJetAnalysis::GetJets(int type, int js){
 
 void AliJDiJetAnalysis::FillHistosJets(){
     //==== TYPE 
-    //for( int type=0;type<kJNJetType;type++:set ){
     for( int type=0;type<fJetListOfList.GetEntriesFast();type++ ){
         //==== Jet Selection
         for( int js=0;js<kJNJetSelection;js++ ){
-            //cout<<"DEBUG_F0: type="<< type <<"\tjs="<<js<<endl;
             TObjArray *jets = GetJets( type, js );
-            if( !jets ) {
-                //cout<<"DEBUG_F1: type="<< type <<"\tjs="<<js<<"\t"<<jets<<endl;
-                continue;
-            }else{
-                //cout<<"DEBUG_F2: type="<< type <<"\tjs="<<js<<"\t"<<jets<<endl;
-            }
+            if( !jets ) continue;
             //==== jets
             for( int i=0;i<jets->GetEntriesFast();i++ ){
                 AliJJet * jet = dynamic_cast<AliJJet*>( jets->At(i) );
-                if( !jet ) { 
-                    //cout<<"DEBUG_F15 type="<<type<<"\tjs="<<js<<"\ti="<<i<<endl;
-                    continue;
-                }else{
-                    //cout<<"DEBUG_F16 type="<<type<<"\tjs="<<js<<"\ti="<<i<<endl;
-
+                if( !jet ) continue;
+                double jpt = jet->Pt();
+                int ipt = fJetPtBin.GetBin( jpt );
+                int iE = fJetPtBin.GetBin( jet->E() );
+                if( ipt >= 0 ){
+                    fhJetInvM[type][js][ipt]->Fill( jet->M() );
                 }
                 fhJetPt[type][js]->Fill( jet->Pt() );
                 fhJetPhi[type][js]->Fill( jet->Phi() );
                 fhJetEta[type][js]->Fill( jet->Eta() );
                 fhJetNConst[type][js]->Fill( jet->GetNConstituents() );
                 fhJetEnergy[type][js]->Fill( jet->E() );
+                if( iE >= 0 ){
+                    fhJetMjjEbin[type][js][iE]->Fill( jet->M() );
+                    fhJetMtEbin[type][js][iE]->Fill( jet->Mt() );
+                }
                 //== DiJet Multiplicity
                 for( int j=i+1;j<jets->GetEntriesFast();j++ ){
                     AliJJet * jet1 = dynamic_cast<AliJJet*>( jets->At(j) );
                     AliJDiJet dijet(jet,jet1);
                     fhDiJetMultiplicity[type][js]->Fill( dijet.InvM() );
+                    //fhDiJetInvMMultiplicityPt[type][js][ipt]->Fill( dijet.InvM() );
                 }
             }
         }
@@ -413,16 +525,41 @@ void AliJDiJetAnalysis::FillHistosDiJet(){
             //==== DiJet Selection
             for( int djs=0;djs<kJNDiJetSelection;djs++ ){
                 AliJDiJet & dijet = *GetDiJets( type, js, djs );
+                fDiJetBin[type][js][djs][0] = -1;
+                fDiJetBin[type][js][djs][1] = -1;
+                fDiJetBin[type][js][djs][2] = -1;
+                fDiJetBin[type][js][djs][3] = -1;
+                fDiJetBin[type][js][djs][4] = -1;
+                fDiJetMass[type][js][djs][0] = -1;
+                fDiJetMass[type][js][djs][1] = -1;
+                fDiJetMass[type][js][djs][2] = -1;
+                fDiJetMass[type][js][djs][3] = -1;
+                fDiJetMass[type][js][djs][4] = -1;
                 if( dijet.GetEntries() < 2 ) continue;
                 //TODO error check
-                //double pt0 = dijet(0).Pt();
-                //double pt1 = dijet(1).Pt();
-                double invm = dijet.InvM();
-                double lpt  = dijet.LeadingPt();
-                int iInvM = fInvMBin.GetBin( invm );
-                int iLPt  = fJetPtBin.GetBin( lpt );
-                fDiJetBin[type][js][djs][0] = iInvM;
-                fDiJetBin[type][js][djs][1] = iLPt;
+                double mjj = dijet.InvM();
+                double lpt = dijet.LeadingPt();
+                double mT0  = dijet.Mt0(); // Mt^2 with Massless Jet = (pt1+pt2)^2 - PtPair^2
+                double mT1  = dijet.Mt1(); // Mt^2 with Massive Jet  = ((m1^2+pt1^2)^.5+(m2^2+pt2^2)^.5)^2 - PtPair^2
+                double mT2  = dijet.Mt2(); // Mt^2 with Massive Jet  = ((m1^2+pt1^2)^.5+(m2^2+pt2^2)^.5)^2 - PtPair^2
+                fDiJetMass[type][js][djs][0] = mjj;
+                fDiJetMass[type][js][djs][1] = mT0;
+                fDiJetMass[type][js][djs][2] = mT1;
+                fDiJetMass[type][js][djs][3] = mT2;
+                fDiJetMass[type][js][djs][4] = lpt;
+                fDiJetBin[type][js][djs][0] = fInvMBin.GetBin( mjj );
+                fDiJetBin[type][js][djs][1] = fInvMBin.GetBin( mT0 );
+                fDiJetBin[type][js][djs][2] = fInvMBin.GetBin( mT1 );
+                fDiJetBin[type][js][djs][3] = fInvMBin.GetBin( mT2 );
+                fDiJetBin[type][js][djs][4] = fJetPtBin.GetBin( lpt );
+                fhInvMPttCor[type][js][djs]->Fill( mjj, lpt );
+                fhMtMjjCor[type][js][djs][0]->Fill( mjj, mT1 );
+                fhMtMjjCor[type][js][djs][1]->Fill( mT2, mT0 );
+                fhMtMjjCor[type][js][djs][2]->Fill( mT2, mT1 );
+                fhDiJetInvMInclu[type][js][djs]->Fill( mjj );
+                fhDiJetMtInclu[type][js][djs]->Fill( mT1 );
+                //if( type==0 ) continue;
+                //cout<<Form("DEBUG_M1 : (%d,%d,%d) mT0=%10.4f mT1=%10.4f mT2=%10.4f",type,js,djs,mT0,mT1,mT2)<<endl;
             }
         }
     }
@@ -432,38 +569,100 @@ void AliJDiJetAnalysis::FillHistosDiJet(){
         for( int js=0;js<kJNJetSelection;js++ ){
             //==== DiJet Selection
             for( int djs=0;djs<kJNDiJetSelection;djs++ ){
+                //==== Select Outgoing Jet without cut
+                int ojs = js;int odjs = djs;
+                if( type == kJIncomingJet && js == 1 ) continue;
+                if( type == kJOutgoingJet || type == kJIncomingJet ){
+                    ojs = 0;odjs = 0;
+                }
+                //==== Get DiJet
                 AliJDiJet & dijet = *GetDiJets( type, js, djs );
                 if( dijet.GetEntries() < 2 ) continue;
+                double pt1    = dijet(0).Pt();
+                double pt2    = dijet(1).Pt();
                 double ptpair = dijet.PtPair();
                 double invm   = dijet.InvM();
                 double dR     = dijet.DR();
                 double dPhi   = dijet.DPhi();
+                double dPhi2  = dPhi<0?dPhi+TMath::TwoPi():dPhi;
                 double dEta   = dijet.DEta();
                 double eAsymm = dijet.EAsymm();
                 double ptAsymm= dijet.PtAsymm();
-                //double kTA    = dijet.kTA();
+                double kTA    = dijet.kTA();
+                double mT     = dijet.Mt();
+                double mT0     = dijet.Mt0();
+                double mT1     = dijet.Mt1();
 
-                for( int i=0; i<6 ; i++ ){
-                    int bin = 0;
-                    if( i==0 ) bin = fDiJetBin[kJChargedJet][js][djs][0];
-                    if( i==1 ) bin = fDiJetBin[kJOutgoingJet][js][0][0];
-                    if( i==2 ) bin = fDiJetBin[kJChargedJet][js][djs][1];
-                    if( i==3 ) bin = fDiJetBin[kJOutgoingJet][js][0][1];
-                    if( i==4 ) bin = fDiJetBin[type][js][djs][0];
-                    if( i==5 ) bin = fDiJetBin[type][js][djs][1];
-
+                for( int i=0; i<12 ; i++ ){
+                    int bin = -1;
+                    int t,j,d,b=-1;
+                    if( i==0 ) { t=kJChargedJetR04;j=js;d=djs;b=0; }
+                    if( i==1 ) { t=kJChargedJetR04;j=js;d=djs;b=1; }
+                    if( i==2 ) { t=kJChargedJetR04;j=js;d=djs;b=2; }
+                    if( i==3 ) { t=kJChargedJetR04;j=js;d=djs;b=3; }
+                    if( i==4 ) { t=type;j=js;d=djs;b=0; }
+                    if( i==5 ) { t=type;j=js;d=djs;b=1; }
+                    if( i==6 ) { t=type;j=js;d=djs;b=2; }
+                    if( i==7 ) { t=type;j=js;d=djs;b=3; }
+                    //if( i==5 ) bin = fDiJetBin[type][ojs][odjs][1];
+                    if( js == 1 && i==8){
+                        AliJDiJet & dj = *GetDiJets( type, 0, djs );
+                        if( dj.GetEntries() < 2 ){ continue; }
+                        if( ( dj(0).GetID() == dijet(0).GetID() && dj(1).GetID()==dijet(1).GetID() ) 
+                                || ( dj(0).GetID() == dijet(1).GetID() && dj(1).GetID()==dijet(0).GetID() )
+                          ) { t=type;j=js;d=djs;b=0; }
+                    }
+                    if( js == 1 && i==9){
+                        AliJDiJet & dj = *GetDiJets( type, 0, djs );
+                        if( dj.GetEntries() < 2 ){ continue; }
+                        if( ( dj(0).GetID() == dijet(0).GetID() && dj(1).GetID()==dijet(1).GetID() ) 
+                                || ( dj(0).GetID() == dijet(1).GetID() && dj(1).GetID()==dijet(0).GetID() )
+                          ) { t=type;j=js;d=djs;b=1; }
+                    }
+                    if( js == 1 && i==10){
+                        AliJDiJet & dj = *GetDiJets( type, 0, djs );
+                        if( dj.GetEntries() < 2 ){ continue; }
+                        if( ( dj(0).GetID() == dijet(0).GetID() && dj(1).GetID()==dijet(1).GetID() ) 
+                                || ( dj(0).GetID() == dijet(1).GetID() && dj(1).GetID()==dijet(0).GetID() )
+                          ) { t=type;j=js;d=djs;b=2; }
+                    }
+                    if( js == 1 && i==11){
+                        AliJDiJet & dj = *GetDiJets( type, 0, djs );
+                        if( dj.GetEntries() < 2 ){ continue; }
+                        if( ( dj(0).GetID() == dijet(0).GetID() && dj(1).GetID()==dijet(1).GetID() ) 
+                                || ( dj(0).GetID() == dijet(1).GetID() && dj(1).GetID()==dijet(0).GetID() )
+                          ) { t=type;j=js;d=djs;b=3; }
+                    }
+                    if( b < 0 ) continue;
+                    bin = fDiJetBin[t][j][d][b];
                     if( bin < 0 ) continue;
+                    double mass = fDiJetMass[type][js][djs][b];
 
-                    fhDiJetPtPair[type][js][djs][i][bin]->Fill( ptpair );
-                    fhDiJetInvM[type][js][djs][i][bin]->Fill( invm );
+                    fhDiJetPtPair[type][js][djs][i][bin]->Fill( ptpair, ptpair<1e-8?1./1e-8:1./ptpair );
+                    fhDiJetPtPairRaw[type][js][djs][i][bin]->Fill( ptpair );
+                    fhDiJetPt1[type][js][djs][i][bin]->Fill(pt1);
+                    fhDiJetPt2[type][js][djs][i][bin]->Fill(pt2);
+                    fhDiJetKtA[type][js][djs][i][bin]->Fill( kTA );
+                    fhDiJetInvM[type][js][djs][i][bin]->Fill( mass );
                     fhDiJetDeltaR[type][js][djs][i][bin]->Fill( dR );
-                    fhDiJetDeltaPhi[type][js][djs][i][bin]->Fill( dPhi );
+                    fhDiJetDeltaPhi[type][js][djs][i][bin]->Fill( dPhi2 );
                     fhDiJetDeltaEta[type][js][djs][i][bin]->Fill( dEta );
+                    cout<<"DEBUG_J1 : "<<ptAsymm<<endl;
                     fhDiJetPtAsymm[type][js][djs][i][bin]->Fill( ptAsymm );
                     fhDiJetEAsymm[type][js][djs][i][bin]->Fill( eAsymm );
 
+                    fhDiJetSingleJetMass[type][js][djs][i]->Fill( dijet(0).M() );
+                    fhDiJetSingleJetMass[type][js][djs][i]->Fill( dijet(1).M() );
+                    fhDiJetSingleJetArea[type][js][djs][i]->Fill( dijet(0).Area() );
+                    fhDiJetSingleJetArea[type][js][djs][i]->Fill( dijet(1).Area() );
+                    fhDiJetSingleJetNCont[type][js][djs][i]->Fill( dijet(0).GetNConstituentsRef() );
+                    fhDiJetSingleJetNCont[type][js][djs][i]->Fill( dijet(1).GetNConstituentsRef() );
+                    fhDiJetSingleJetActivity[type][js][djs][i]->Fill( dijet(0).LeadingParticlePt() / dijet(0).Pt() );
+                    fhDiJetSingleJetActivity[type][js][djs][i]->Fill( dijet(1).LeadingParticlePt() / dijet(1).Pt() );
+                    // TODO rapidity
+
                 }
-                if( type==kJChargedJet ){
+                if( type==kJChargedJetR04 ){
                     AliJDiJet & dijet0 = * GetDiJets(1, js, 0);
                     AliJDiJet & dijet1 = * GetDiJets(2, js, djs);
                     for( int j0=0;j0<2;j0++){
@@ -485,6 +684,22 @@ void AliJDiJetAnalysis::FillHistosDiJet(){
             }
         }
     }
+
+    if(1)
+        for( int js=0;js<kJNJetSelection;js++ ){
+            for( int djs=0;djs<kJNDiJetSelection;djs++ ){
+                for( int type0=0;type0<fJetListOfList.GetEntriesFast()-1;type0++ ){
+                    AliJDiJet & dijet0 = * GetDiJets(1, type0<2?0:js, type0<2?0:djs);
+                    if( dijet0.GetEntries() < 2 ) continue;
+                    for( int type1=type0+1;type1<fJetListOfList.GetEntriesFast();type1++ ){
+                        if( type0<2 && type1<2 && (js > 0 || djs >0) ) continue;
+                        AliJDiJet & dijet1 = * GetDiJets(1, type1<2?0:js, type1<2?0:djs);
+                        if( dijet1.GetEntries() < 2 ) continue;
+                        fhDiJetTypeCor[type0][type1][js][djs]->Fill( dijet0.InvM(), dijet1.InvM() );
+                    }
+                }
+            }
+        }
 }
 
 /*
@@ -502,7 +717,6 @@ void AliJDiJetAnalysis::FillPythiaDiJet(int js ){
     AliJDiJet & jetsIn  = *GetDiJets( 0, 0, 0 );
     AliJDiJet & jetsOut = *GetDiJets( 1, js, 0 );
 
-
     if( jetsIn.GetEntries() < 2 || jetsOut.GetEntries() < 2 ) return;
 
     AliJJet&  jet00 =  jetsIn(0);
@@ -518,8 +732,10 @@ void AliJDiJetAnalysis::FillPythiaDiJet(int js ){
     int iM1 = fInvMBin.GetBin( jetsOut.InvM() ); 
 
     if( iM0 > -1 && iM1 > -1 ){
-        fhPythiaJetPtPair[0][iM0]->Fill( jetsIn.PtPair() );
-        fhPythiaJetPtPair[1][iM1]->Fill( jetsOut.PtPair() );
+        double ptpair0 = jetsIn.PtPair();
+        double ptpair1 = jetsOut.PtPair();
+        fhPythiaJetPtPair[0][iM0]->Fill( ptpair0 );
+        fhPythiaJetPtPair[1][iM1]->Fill( ptpair1 );
         fhPythiaJetSum[0]->Fill( jetsum.P() );
         fhPythiaJetSum[1]->Fill( jetsum.E() );
     }
@@ -529,7 +745,7 @@ void AliJDiJetAnalysis::CreateHistos(){
     // Create Histograms
 
     //==== Hist Manager
-    fHMG = new AliJHistManager( "AliJDiJetAnalysisHistManager");
+    fHMG = new AliJHistManager( "AliJDiJetAnalysisHistManager", "AliJDiJetAnalysisHistManager");
 
     //==== BIN
     fJetPtPairBin   .Set("JetPtPair",   "P", "p_{Tpair}:%2.0f-%2.0f").SetBin( fCard->GetVector("Jet:PtPairBins") );
@@ -540,21 +756,28 @@ void AliJDiJetAnalysis::CreateHistos(){
     fDiJetSelectionBin.Set("DiJetSelection","J", "J%1.0f",AliJBin::kSingle).SetBin( kJNDiJetSelection);
 
     fJetRBin        .Set("JetR",        "R", "R:%2.1f",AliJBin::kSingle ).SetBin( "0.4, 0.5");
-    fDiJetBinTypeBin.Set("BinType",     "B", "B:%1.f", AliJBin::kSingle ).SetBin( 6 );
+    fDiJetBinTypeBin.Set("BinType",     "B", "B:%1.f", AliJBin::kSingle ).SetBin( 12 );
     fJetDRBin	    .Set("JetDR",   	"R", "R:%1.f" ).SetBin( "0.5, 1, 2, 4");
     fPYJetTypeBin.Set("PYJetType",   "T", "T%1.0f", AliJBin::kSingle).SetBin( 2 );
     fBin2		.Set("Bin2",	"B",  "B%1.0f", AliJBin::kSingle).SetBin( 2 );
 
     //==== Log Bins
-    int nBINS2=300;
+    int nBINS2=100;
     double logBinsX2[nBINS2+2], limL2=0.1, LimH2=2000;
     double logBW2 = (log(LimH2)-log(limL2))/nBINS2;
     for(int ij=0;ij<=nBINS2;ij++) logBinsX2[ij+1]=limL2*exp(ij*logBW2);
     logBinsX2[0]=0;
 
+    int nBINS3=100;
+    double logBinsX3[nBINS3+2], limL3=0.1, LimH3=2000;
+    double logBW3 = (log(LimH3)-log(limL3))/nBINS3;
+    for(int ij=0;ij<=nBINS3;ij++) logBinsX3[ij+1]=limL3*exp(ij*logBW3);
+    logBinsX3[0]=0;
+
     //==== Histogram
     int nDR = 1000;double xDR0= -10; double xDR1 = 10;
-    int nDPhi=1000;double xDPhi0=-TMath::Pi(); double xDPhi1=-xDPhi0;
+    //int nDPhi=1000;double xDPhi0=-TMath::Pi(); double xDPhi1=-xDPhi0;
+    int nDPhi=1000;double xDPhi0=-1; double xDPhi1=TMath::TwoPi()+1;
     //== Jets QA
     fhJetPt 
         << TH1D("hJetPt","",nBINS2, logBinsX2 )
@@ -562,8 +785,8 @@ void AliJDiJetAnalysis::CreateHistos(){
     fhJetPhi 
         << TH1D("hJetPhi","",nDPhi, xDPhi0, xDPhi1 )
         << fJetTypeBin << fJetSelectionBin  <<"END";
-    fJetTypeBin.Print();
-    fJetSelectionBin.Print();
+    //fJetTypeBin.Print();
+    //fJetSelectionBin.Print();
     fhJetEta 
         << TH1D("hJetEta","",nDR, xDR0, xDR1 )
         << fJetTypeBin << fJetSelectionBin  <<"END";
@@ -576,6 +799,15 @@ void AliJDiJetAnalysis::CreateHistos(){
     fhJetEnergy 
         << TH1D("hJetEnergy","",nBINS2, logBinsX2 )
         << fJetTypeBin << fJetSelectionBin  <<"END";
+    fhJetInvM
+        << TH1D("hJetInvM","",nBINS2, logBinsX2 )
+        << fJetTypeBin << fJetSelectionBin  << fJetPtBin << "END";
+    fhJetMjjEbin
+        << TH1D("fhJetMjjEbin","",nBINS2, logBinsX2 )
+        << fJetTypeBin << fJetSelectionBin  << fJetPtBin << "END";
+    fhJetMtEbin
+        << TH1D("fhJetMtEbin","",nBINS2, logBinsX2 )
+        << fJetTypeBin << fJetSelectionBin  << fJetPtBin << "END";
 
     //== Jet Comparision
     fhJetEnergyComp
@@ -597,15 +829,18 @@ void AliJDiJetAnalysis::CreateHistos(){
     fhDiJetPtPair // Inclusive PtPair
         << TH1D("hDiJetPtPair","",nBINS2, logBinsX2 )
         << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << fDiJetBinTypeBin << fInvMBin<<"END";
-    fhDiJetInvM
-        << TH1D("hDiJetInvM","",nBINS2, logBinsX2 )
-        << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << fDiJetBinTypeBin << fInvMBin<<"END";
-    fhDiJetKtA
-        << TH1D("hDiJetKtA","",nBINS2, logBinsX2 ) // TODO change bins
-        << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << fDiJetBinTypeBin << fInvMBin<<"END";
-    fhDiJetDeltaR
-        << TH1D("hDiJetDeltaR","",nDR, xDR0, xDR1 ) // TODO change bins
-        << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << fDiJetBinTypeBin << fInvMBin<<"END";
+    fhDiJetPtPairRaw  .SetWith( fhDiJetPtPair, "hDiJetPtPaiRaw" );
+    fhDiJetPt1        .SetWith( fhDiJetPtPair, "hDiJetPt1" ); // Inclusive PtPair
+    fhDiJetPt2        .SetWith( fhDiJetPtPair, "hDiJetPt2" ); // Inclusive PtPair
+    fhDiJetInvM       .SetWith( fhDiJetPtPair, "hDiJetInvM" );
+    fhDiJetKtA        .SetWith( fhDiJetPtPair, "hDiJetKtA");
+
+    fhDiJetSingleJetMass      .SetWith( fhDiJetPtPair, "hDiJetSingleJetMass");
+    fhDiJetSingleJetArea      .SetWith( fhDiJetPtPair, TH1D("fhDiJetSingleJetArea","",100, 0,1 ) );
+    fhDiJetSingleJetActivity  .SetWith( fhDiJetSingleJetArea , "hDiJetSingleJetActivity");
+    fhDiJetSingleJetNCont     .SetWith( fhDiJetPtPair, TH1D("fhDiJetSingleJetNCont","",100, -.5,100-.5 ) );
+
+    fhDiJetDeltaR .SetWith( fhDiJetPtPair, TH1D("hDiJetDeltaR","",nDR, xDR0, xDR1 ) );// TODO change bins
     fhDiJetDeltaPhi
         << TH1D("hDiJetDeltaPhi","",nDPhi, xDPhi0, xDPhi1) // TODO change bins
         << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << fDiJetBinTypeBin << fInvMBin<<"END";
@@ -618,20 +853,38 @@ void AliJDiJetAnalysis::CreateHistos(){
     fhDiJetEAsymm
         << TH1D("hDiJetEAsymm","",100,0,1 ) // TODO change bins
         << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << fDiJetBinTypeBin << fInvMBin<<"END";
+
+
+    fhDiJetInvMInclu
+        << TH1D("hDiJetInvM","",nBINS2, logBinsX2 )
+        << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin <<"END";
+    fhDiJetMtInclu    .SetWith( fhDiJetInvMInclu, "hDiJetMtInclu" );
     fhDiJetMultiplicity
         << TH1D("hDiJetMultiplicity","",nBINS2, logBinsX2)// TODO change bins
         << fJetTypeBin << fJetSelectionBin << "END";
 
 
+    //== DiJet Correlation
+    fhDiJetTypeCor
+        << TH2D("hDiJetTypeCor","", nBINS3, logBinsX3, nBINS3, logBinsX3 )
+        << fJetTypeBin << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << "END";
+
+    fhMtMjjCor
+        << TH2D("hDiJetMtMjjCor","", nBINS3, logBinsX3, nBINS3, logBinsX3 )
+        << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin << 3 <<"END";
+    fhInvMPttCor
+        << TH2D("hDiJetInvMPttCor","", nBINS3, logBinsX3, nBINS3, logBinsX3 )
+        << fJetTypeBin << fJetSelectionBin << fDiJetSelectionBin <<"END";
+
     //== PYTHIA
     fhPythiaJetPtPair
-        << TH1D("hPythiaJetPtPair", "", 1000,-10,10 )
+        << TH1D("hPythiaJetPtPair", "", nBINS2, logBinsX2 )
         << fPYJetTypeBin << fInvMBin << "END";
     fhPythiaJetSum
         << TH1D("hPythiaJetSum", "", 1000,-10,10 )
         << fBin2 << fInvMBin << "END";
 
-    fHMG->Print();
+    //fHMG->Print();
     fHMG->WriteConfig();
 }
 

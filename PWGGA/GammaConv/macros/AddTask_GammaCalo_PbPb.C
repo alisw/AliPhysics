@@ -7,7 +7,8 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 									TString 	cutnumberAODBranch 			= "100000006008400000001500000",
 									TString 	periodName 					= "LHC13d2",  						// name of the period for added signals and weighting
                                     Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
-                                    Bool_t 		isUsingTHnSparse 			= kTRUE 							// enable or disable usage of THnSparses for background estimation
+									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
+									Int_t 		enableExtQA			 		= 0									// enable QA(3), disabled (0)
 								) {
 
 	// ================= Load Librariers =================================
@@ -211,6 +212,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
+		analysisClusterCuts[i]->SetExtendedQA(enableExtQA);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();

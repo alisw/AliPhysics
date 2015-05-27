@@ -267,9 +267,12 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
   AliEmcalJet* jet = 0;
   while ((jet = jets->GetNextJet())) {
     if (!jet->TestFlavourTag(ftag)) continue;
-    AliVParticle* HFcand = jet->GetFlavourTrack();
-    if (!HFcand) continue;
-    FillHistograms(HFcand, jet, kSingleMatch, 0.);
+    AliVParticle* HFcand = 0;
+    Int_t itrk = 0;
+    while ((HFcand = jet->GetFlavourTrack(itrk))) {
+      FillHistograms(HFcand, jet, kSingleMatch, 0.);
+      itrk++;
+    }
   }
 
   return kTRUE;
@@ -395,8 +398,7 @@ void AliAnalysisTaskDmesonJetCorrelations::DoJetLoop()
       
       if (matched) {
         jet->AddFlavourTag(ftag);
-        jet->SetFlavourTrack(part);
-        break;
+        jet->AddFlavourTrack(part);
       }
     }
   }
@@ -414,6 +416,9 @@ void AliAnalysisTaskDmesonJetCorrelations::DoDmesonLoop()
   matchedJets.SetOwner(kFALSE);
 
   AliJetContainer* jets = GetJetContainer(0);
+
+  Int_t ftag = AliEmcalJet::kD0;
+  if (fCandidateType == kDstartoKpipi) ftag = AliEmcalJet::kDStar;
 
   AliDebug(2,"Starting D meson candidate loop");
   for (Int_t icand = 0; icand < nDcand; icand++) {
@@ -436,13 +441,8 @@ void AliAnalysisTaskDmesonJetCorrelations::DoDmesonLoop()
 
     if (matchingStatus == kSingleMatch || (matchingStatus == kMultipleMatches && !fOnlySingleMatches)) {
       jet = static_cast<AliEmcalJet*>(matchedJets.At(0));
-      jet->SetFlavourTrack(HFcand);
-      if (fCandidateType == kDstartoKpipi) {
-        jet->AddFlavourTag(AliEmcalJet::kDStar);
-      }
-      else {
-        jet->AddFlavourTag(AliEmcalJet::kD0);
-      }
+      jet->AddFlavourTrack(HFcand);
+      jet->AddFlavourTag(ftag);
     }
     
     FillHistograms(HFcand, jet, matchingStatus, matchingLevel[0]);

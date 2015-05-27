@@ -13,6 +13,7 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include <vector>
 
 class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
@@ -71,6 +72,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		void UpdateEventByEventData();
 		void SetLogBinningXTH2(TH2* histoRebin);
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
+
+		// Additional functions
+		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 		
 	protected:
 		AliV0ReaderV1 						*fV0Reader;											//
@@ -199,13 +203,18 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hESDTrueSecondaryConvGammaFromXFromLambdaPt;		//!
 		TH2F 								**hESDTrueDalitzPsiPairDeltaPhi;					//!
 		TH2F 								**hESDTrueGammaPsiPairDeltaPhi;						//!
+		TH2F				 				**hDoubleCountTruePi0InvMassPt;						//! array of histos with double counted pi0s, invMass, pT
+		TH2F				 				**hDoubleCountTrueEtaInvMassPt;						//! array of histos with double counted etas, invMass, pT
+		TH2F				 				**hDoubleCountTrueConvGammaRPt;							//! array of histos with double counted photons, R, pT
+		vector<Int_t>						vecDoubleCountTruePi0s;								//! vector containing labels of validated pi0
+		vector<Int_t>						vecDoubleCountTrueEtas;								//! vector containing labels of validated eta
+		vector<Int_t>						vecDoubleCountTrueConvGammas;							//! vector containing labels of validated photons
 		TH1I 								**hNEvents;											//!
 		TH1I 								**hNGoodESDTracks;									//!
-		TH1I 								**hNEventsWeighted;									//!
-		TH1I 								**hNGoodESDTracksWeighted;							//!
+		TH1F								**hNEventsWeighted;									//!
+		TH1F 								**hNGoodESDTracksWeighted;							//!
 		TH1F 								**hCentrality;										//!
 		TH1F 								**hCentralityFlattened;								//!
-		TH1F 								**hCentralityWeights;								//!
 		TH2F								**hCentralityVsPrimaryTracks;						//!
 		TH1I 								**hNGammaCandidates;								//!
 		TH2F 								**hNGoodESDTracksVsNGammaCanditates;				//!
@@ -247,12 +256,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		Bool_t 								fIsMC;												//
 		Bool_t                              fDoTHnSparse;                       				// flag for using THnSparses for background estimation
 		Int_t								fDoCentralityFlat;									//flag for centrality flattening
+		Double_t							*fWeightCentrality;									//[fnCuts], weight for centrality flattening
 
 	private:
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 17);
+		ClassDef(AliAnalysisTaskGammaConvV1, 19);
 };
 
 #endif

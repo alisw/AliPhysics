@@ -4,11 +4,12 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /*____________________________________________________________
-| AliHFCorrFitter for the fitting of Correlation plots            |
-| of charmed mesons                                           |
-|                                                             |
-|  Author:                                                    |
-|                                                             |
+| Class for performing the fit of azimuthal correlations           |      
+| Example of its usage in the macro PWGHF/correlationHF/FitPlots.C |
+|                                                                  |
+|  Author: S. Kar (somnath.kar@cern.ch),                           |
+|          A. Rossi (andrea.rossi@cern.ch)                         |
+|                                                                  |
 |_____________________________________________________________*/
 
 
@@ -31,7 +32,7 @@ class AliHFCorrFitter{
 
   // constructors
   AliHFCorrFitter();
-  AliHFCorrFitter(const TH1F* histoToFit, Double_t min, Double_t max);
+  AliHFCorrFitter(TH1F* histoToFit, Double_t min, Double_t max,Bool_t isowner=kFALSE);
   virtual ~AliHFCorrFitter();
   AliHFCorrFitter(const AliHFCorrFitter &source);
   AliHFCorrFitter& operator=(const AliHFCorrFitter &cfit);
@@ -52,6 +53,9 @@ class AliHFCorrFitter{
         fMinBaselineRange = min; // minimum for estimation of the baseline
         fMaxBaselineRange = max; // max for estimation of the baseline
   }
+  void SetHistoIsReflected(Bool_t isrefl){
+    fIsReflected=isrefl;
+  }
   //---------------------Getters----------->
   Double_t GetNSSigma(){return fFit->GetParameter("NS #sigma");}
   Double_t GetNSYield(){return fFit->GetParameter("NS Y");}
@@ -68,15 +72,22 @@ class AliHFCorrFitter{
   Double_t GetPedestalError(){return fErrbaseline;}
   Double_t Getv2hadronError(){return fFit->GetParError(fFit->GetParNumber("v_{2} hadron"));}
   Double_t Getv2DmesonError(){return fFit->GetParError(fFit->GetParNumber("v_{2} D meson"));}
-
+  Double_t GetBinCountingYields(Double_t &nsYieldErr,Double_t &asYield,Double_t &asYieldErr){
+    nsYieldErr=fEnsybc;
+    asYield=fAsybc;
+    asYieldErr=fEasybc;
+    return fNsybc;
+  }
+  
   //------------------Functions---------->
   TF1 * GetFitFunction(){
     if(!fFit) {printf("AliHFCorrFitter::GetFitFunction NoFitFunc - error"); return NULL;}
     return fFit;
   }
-    
+
+  Double_t FindBaseline();
   void Fitting(Bool_t drawSplitTerm=kTRUE);
-  void YieldErrAboveBaseline();
+  void CalculateYieldsAboveBaseline();
   TH1F* SubtractBaseline();
   void DrawLegendWithParameters();
   void SetSingleTermsForDrawing(Bool_t draw);
@@ -105,6 +116,7 @@ class AliHFCorrFitter{
   Double_t fMaxBaselineRange; // maximum for estimation of the baseline
   Int_t        fTypeOfFitfunc;     //type of functions
   Int_t           fDmesonType;
-  ClassDef(AliHFCorrFitter,1);
+  Bool_t         fIsReflected;  // label to signal if the histogram is in 2pi range or pi (reflected)
+  ClassDef(AliHFCorrFitter,2);
 };
 #endif

@@ -74,7 +74,7 @@ AliReducedHighPtEvent::AliReducedHighPtEvent(const AliReducedHighPtEvent& ref):
   fReducedParticleInfo(NULL),
   fReducedTrackInfo(NULL)
 {
-  ref.Copy(this);
+  ref.Copy(*this);
 }
 
 /**
@@ -86,7 +86,7 @@ AliReducedHighPtEvent& AliReducedHighPtEvent::operator=(const AliReducedHighPtEv
   if(this != &ref){
     this->~AliReducedHighPtEvent();
     TObject::operator=(ref);
-    ref.Copy(this);
+    ref.Copy(*this);
 
   }
   return *this;
@@ -108,8 +108,8 @@ AliReducedHighPtEvent::~AliReducedHighPtEvent() {
  * into the target object. Performs a deep copy.
  * @param target
  */
-void AliReducedHighPtEvent::Copy(TObject* target) const {
-  AliReducedHighPtEvent *targetevent = dynamic_cast<AliReducedHighPtEvent *>(target);
+void AliReducedHighPtEvent::Copy(TObject& target) const {
+  AliReducedHighPtEvent *targetevent = dynamic_cast<AliReducedHighPtEvent *>(&target);
   if(!targetevent) return;
   targetevent->fCentralityPercentile = fCentralityPercentile;
   targetevent->fVertexZ = fVertexZ;
@@ -210,4 +210,42 @@ void AliReducedHighPtEvent::AddReducedReconstructedParticle(AliReducedReconstruc
   fReducedTrackInfo->Add(trk);
 }
 
+/**
+ * Create a stl vector with reduced Emcal cluster information
+ * \return vector with reduced Emcal clusters
+ */
+std::vector<HighPtTracks::AliReducedEmcalCluster*> AliReducedHighPtEvent::GetClusterVector() const {
+  std::vector<HighPtTracks::AliReducedEmcalCluster*> resultvec;
+  for(TIter clustIter = TIter(fReducedClusterInfo).Begin(); clustIter != TIter::End(); ++clustIter){
+    resultvec.push_back(static_cast<AliReducedEmcalCluster *>(*clustIter));
+  }
+  return resultvec;
+}
+
+/**
+ * Create a stl vector with reduced generated particle information
+ * \return vector with reduced generated particles
+ */
+std::vector<HighPtTracks::AliReducedGeneratedParticle*> AliReducedHighPtEvent::GetParticleVector() const {
+  std::vector<HighPtTracks::AliReducedGeneratedParticle*> resultvec;
+  for(TIter partIter = TIter(fReducedParticleInfo).Begin(); partIter != TIter::End(); ++partIter){
+    resultvec.push_back(static_cast<AliReducedGeneratedParticle *>(*partIter));
+  }
+  return resultvec;
+}
+
+/**
+ * Create a stl vector with reduced reconstructed
+ * \return vector with reduced reconstructed tracks
+ */
+std::vector<HighPtTracks::AliReducedReconstructedTrack*> HighPtTracks::AliReducedHighPtEvent::GetTrackVector() const {
+  std::vector<HighPtTracks::AliReducedReconstructedTrack*> resultvec;
+  for(TIter trackIter = TIter(fReducedTrackInfo).Begin(); trackIter != TIter::End(); ++trackIter){
+    resultvec.push_back(static_cast<AliReducedReconstructedTrack *>(*trackIter));
+  }
+  return resultvec;
+}
+
+
 } /* namespace HighPtTracks */
+

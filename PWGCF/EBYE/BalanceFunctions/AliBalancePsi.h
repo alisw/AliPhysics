@@ -168,6 +168,7 @@ class AliBalancePsi : public TObject {
 					    Double_t ptTriggerMax=-1.,
 					    Double_t ptAssociatedMin=-1.,
 					    Double_t ptAssociatedMax=-1,
+					    Double_t etaWindow=-1,
 					    AliBalancePsi *bfMix=NULL);
 
   TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax,

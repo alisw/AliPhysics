@@ -33,6 +33,8 @@
 #include <cerrno>
 #include <memory>
 #include <set>
+#include "TParameter.h"
+#include "TF1.h"
 
 using namespace std;
 
@@ -49,6 +51,8 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   , fhPhiEtaDeltaPhi12Cut2(0.25*TMath::Pi())
   , fAcceptanceCut(0.8)
   , fWeights(NULL)
+  , fWeightshpT(NULL)
+  , fhighpt(NULL)
   , fMultWeightIndex(0)
   , fVZWeightIndex(0)
   , fMixedEvent(NULL)
@@ -75,6 +79,8 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
   , fAcceptanceCut(other.fAcceptanceCut)  
   , fWeights(NULL)
+  , fWeightshpT(NULL)
+  , fhighpt(NULL)
   , fMultWeightIndex(0)
   , fVZWeightIndex(0)
   , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p(*other.fMixedEvent)):NULL))
@@ -243,8 +249,8 @@ int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
   if (fMBin<0||fVzBin<0) return -1;
   HistFill(GetNumberHist(khQAtocheckadressing,fMBin,fVzBin),1.0);
   if(fWeights){
-    fMultWeightIndex = fWeights->GetAxis(0)->FindBin(fMultiplicity);
-    fVZWeightIndex   = fWeights->GetAxis(1)->FindBin(fVZ);
+    fMultWeightIndex = fWeights->GetXaxis()->FindBin(fMultiplicity);
+    fVZWeightIndex   = fWeights->GetYaxis()->FindBin(fVZ);
   }
   return 1;
 }
@@ -260,11 +266,9 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   if (fMaxTriggerPt>fMinTriggerPt && ptrigger->Pt()>fMaxTriggerPt) return false;
   if (doHistogram) {
     Double_t Weight = 1.0;
-    if(fWeights){
-      Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-      Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());
-      Int_t x[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-      Weight *= fWeights->GetBinContent(x);
+    if(fWeightshpT&&fhighpt){
+      Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
+      Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(ptrigger->Pt());
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),ptrigger->Phi(),Weight);
@@ -289,11 +293,15 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   if (fMaxAssociatedPt>fMinAssociatedPt && p->Pt()>fMaxAssociatedPt) return false;
   if (doHistogram) {
     Double_t Weight = 1.0;
-    if(fWeights){
-      Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p->Eta());
-      Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p->Pt());
-      Int_t x[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-      Weight *= fWeights->GetBinContent(x);
+    if(fWeights&&fWeightshpT&&fhighpt){
+      if(p->Pt()<4.0){
+	Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p->Pt());
+	Weight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
+      }
+      else {
+	Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(p->Eta());
+	Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(p->Pt());
+      }
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),p->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),p->Phi(),Weight);
@@ -308,7 +316,7 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   return true;
 }
 
-int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1, const AliVParticle* p2, const int weight)
+int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1, const AliVParticle* p2, const double weight)
 {
   /// fill histograms from particles, fills each histogram exactly once.
   Double_t fillweight = 1.0;
@@ -352,25 +360,30 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
 //     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p2->Eta(),phi2);  
     return 0;
   }//Track duplicate, reject.
-  if(fWeights){
+  if(fWeights&&fWeightshpT&&fhighpt){
     //t:
-    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());
-
+    Int_t indexetat = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
+    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexetat)*fhighpt->Eval(ptrigger->Pt()); 
     //a1:
-    Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p1->Eta());
-    Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p1->Pt());
+    if(p1->Pt()>4.0){
+      Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(p1->Eta());
+      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(p1->Pt());      
+    }
+    else{
+      Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
+      fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
+    }
     //a2
-    Int_t indexeta2 = fWeights->GetAxis(2)->FindBin(p2->Eta());
-    Int_t indexpT2 = fWeights->GetAxis(3)->FindBin(p2->Pt());
-    Int_t x1[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-    Int_t x2[4] = {fMultWeightIndex,fVZWeightIndex,indexeta2,indexpT2};
-    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
-    fillweight *= fWeights->GetBinContent(x1);
-    fillweight *= fWeights->GetBinContent(x2);
-    fillweight *= fWeights->GetBinContent(xtrigger);    
+    if(p2->Pt()>4.0){
+      Int_t indexeta2 = fWeightshpT->GetZaxis()->FindBin(p2->Eta());
+      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta2)*fhighpt->Eval(p2->Pt());      
+    }
+    else{
+      Int_t indexpT2 = fWeights->GetZaxis()->FindBin(p2->Pt());
+      fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT2);
+    }
   }
-  HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, fillweight);
+  HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, fillweight*weight);
 //   if(weight>1)  HistFill(GetNumberHist(khPhiPhiDEtaScaled,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2,1.0/(weight-1));
   return 0;
 }
@@ -390,17 +403,19 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
   }
   // eta difference
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
-  if(fWeights){
+  if(fWeights&&fWeightshpT&&fhighpt){
     //t:
-    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());    
+    Int_t indexetat = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
+    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexetat)*fhighpt->Eval(ptrigger->Pt());    
     //a1:
-    Int_t indexeta1 = fWeights->GetAxis(2)->FindBin(p1->Eta());
-    Int_t indexpT1 = fWeights->GetAxis(3)->FindBin(p1->Pt());
-    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
-    Int_t x1[4] = {fMultWeightIndex,fVZWeightIndex,indexeta1,indexpT1};
-    fillweight *= fWeights->GetBinContent(x1);
-    fillweight *= fWeights->GetBinContent(xtrigger);
+    if(p1->Pt()>4.0){
+      Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(p1->Eta());
+      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(p1->Pt());      
+    }
+    else{
+      Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
+      fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
+    }
   }
   
   HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, fillweight);//2p correlation
@@ -410,12 +425,10 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
 int AliCorrelation3p::FillTrigger(const AliVParticle* ptrigger)
 {
   Double_t fillweight = 1.0;
-  if(fWeights){
+  if(fWeights&&fWeightshpT&&fhighpt){
     //t:
-    Int_t indexetat = fWeights->GetAxis(2)->FindBin(ptrigger->Eta());
-    Int_t indexpTt = fWeights->GetAxis(3)->FindBin(ptrigger->Pt());    
-    Int_t xtrigger[4] = {fMultWeightIndex,fVZWeightIndex,indexetat,indexpTt};
-    fillweight *= fWeights->GetBinContent(xtrigger);
+    Int_t indexetat = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
+    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexetat)*fhighpt->Eval(ptrigger->Pt());    
   }
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;
@@ -1300,7 +1313,7 @@ TH1 * AliCorrelation3p::PrepareHist(int HistLocation,const char* HistName,const 
   return Hist;
 }
 
-TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis, bool scale){
+TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis, bool scale, TParameter<double> * par){
   Double_t LeastContent = 1.0;//Least amount in mixed to scale.
   Hist->SetTitle(title);
   Hist->GetXaxis()->SetTitle(xaxis);
@@ -1314,7 +1327,8 @@ TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xax
     Hist->SetTitleSize(0.045,"xyz");
     Hist->SetTitleOffset(1.2,"xy");
     Hist->SetTitleOffset(0.9,"z");
-    if(scale){
+    if(scale){      
+      if(par) par->SetVal(GetPoint(Hist,0.0,0.0));
       if(GetPoint(Hist,0.0,0.0)>LeastContent){Hist->Scale(1.0/GetPoint(Hist,0.0,0.0));}
       else Hist->Scale(0.0);
     }
@@ -1514,6 +1528,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       
 /////////mixed event histograms
 	dirmzbinmixed->cd();
+	TParameter<double> * scale = new TParameter<double>("scale",0.0);
 	TH1D* scalinghistm= dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of times the mixed histogram was filled with a trigger","","# triggers","",true));
 	scalinghistm->Write();
 	TH3F* DPHIDPHIDETAm = dynamic_cast<TH3F*>(PrepareHist(GetNumberHist(khPhiPhiDEta,mb,zb),"DPhi_1_DPhi_2_DEta_12","#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]",true));
@@ -1523,19 +1538,27 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	DPhi12DEta12m->Write("DPhi_12_DEta_12");
 //////////DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3m = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetNbinsX(),"DPhi_1_DPHI_2",kFALSE);
-	  PrepareHist(DPHIDPHI3m,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  PrepareHist(DPHIDPHI3m,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true, scale);
 	  DPHIDPHI3m->Write("DPhi_1_DPHI_2");
+	  scale->Write("DPhi_1_DPHI_2_scale");
+	  scale->SetVal(0.0);
 	  TH2D* DPHIDPHI3nearm = slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4),DPHIDPHIDETAm->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near",kFALSE);
-	  PrepareHist(DPHIDPHI3nearm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  PrepareHist(DPHIDPHI3nearm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true,scale);
 	  DPHIDPHI3nearm->Write("DPhi_1_DPHI_2_near");
+	  scale->Write("DPhi_1_DPHI_2_near_scale");
+	  scale->SetVal(0.0);
 	  TH2D* DPHIDPHI3midm = slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-1),DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid",kFALSE);
 	  AddSlice(DPHIDPHIDETAm,DPHIDPHI3midm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist1",kFALSE);
-	  PrepareHist(DPHIDPHI3midm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  PrepareHist(DPHIDPHI3midm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true,scale);
 	  DPHIDPHI3midm->Write("DPhi_1_DPHI_2_mid");
+	  scale->Write("DPhi_1_DPHI_2_mid_scale");
+	  scale->SetVal(0.0);
 	  TH2D* DPHIDPHI3farm = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
 	  AddSlice(DPHIDPHIDETAm,DPHIDPHI3farm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist2",kFALSE);
-	  PrepareHist(DPHIDPHI3farm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true);
+	  PrepareHist(DPHIDPHI3farm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true,scale);
 	  DPHIDPHI3farm->Write("DPhi_1_DPHI_2_far");      
+	  scale->Write("DPhi_1_DPHI_2_far_scale");
+	  scale->SetVal(0.0);
 	  tempcanvas= Makecanvas(DPHIDPHI3m,DPHIDPHI3nearm,DPHIDPHI3midm,DPHIDPHI3farm,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
@@ -1559,17 +1582,22 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 // 	  tempcanvas->Write();
 // 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3m =DeltaEtaCut(DPHIDPHIDETAm,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
+	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
 	  DPHIDETA12SameSide_3m->Write("DPhi_1_DEta_12_SameSide");
+	  scale->Write("DPhi_1_DEta_12_SameSide_scale");
+	  scale->SetVal(0.0);
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3m,"DPHIDEta12_SameSide",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHIDETAm = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","",true);
+	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","",true,scale);
 	  DPHIDETAm->Write();
+	  scale->Write("DPhi_DEta_scale");
+	  scale->SetVal(0.0);
 	  tempcanvas= Makecanvas(DPHIDETAm,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;	
+	  delete scale;
 
       Double_t resultscalingfactor = 1.0;//Scale the result with 1/ntriggers
       if(scalinghist->Integral()!=0)resultscalingfactor=1.0/scalinghist->Integral();

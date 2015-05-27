@@ -13,6 +13,7 @@
 #include "AliConvEventCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include <vector>
 
 class AliESDInputHandler;
 class AliMCEventHandler;
@@ -82,6 +83,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		Bool_t IsPiPlPiMiGammaDecay(TParticle *fMCMother) const;
 		Bool_t IsEtaPiPlPiMiGammaDaughter( Int_t label ) const;
 		
+		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 		
 
 		AliV0ReaderV1 					*fV0Reader;									//
@@ -155,6 +157,10 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		TH1F 							**fHistoTrueNegPionFromEtaPt;				//
 		TH2F 							**fHistoTruePionPionInvMassPt;				//
 		TH2F 							**fHistoTruePionPionFromEtaInvMassPt;		//
+		TH2F				 			**fHistoDoubleCountTrueEtaInvMassPt;		//! array of histos with double counted etas, invMass, pT
+		TH2F				 			**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
+		vector<Int_t>					fVectorDoubleCountTrueEtas;					//! vector containing labels of validated eta
+		vector<Int_t>					fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
 		// Event properties
 		TH1I 							**fHistoNEvents;							//
 		TH1I 							**fHistoNGoodESDTracks;						//
@@ -175,7 +181,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 2 );
+		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 3 );
 };
 
 #endif // ALIANALYSISTASKETATOPIPLPIMIGAMMA_H

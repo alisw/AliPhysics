@@ -51,9 +51,10 @@ set(SRCS
     AliHFCorrelationFDsubtraction.cxx	
     AliHFDmesonCorrAverage.cxx
     AliHFCorrelationUtils.cxx
-    AliAnalysisHFCorrOnFlySim.cxx	
-    AliHFCorrFitter.cxx			
-  )
+    AliAnalysisHFCorrOnFlySim.cxx
+    AliHFCorrFitter.cxx
+    AliHFCorrFitSystematics.cxx
+  ) 						
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

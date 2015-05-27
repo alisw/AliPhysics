@@ -76,7 +76,7 @@ AliReducedEmcalCluster::AliReducedEmcalCluster(const AliReducedEmcalCluster& ref
   fM20(ref.fM20),
   fContributors(NULL)
 {
-  ref.Copy(this);
+  ref.Copy(*this);
 }
 
 /**
@@ -88,7 +88,7 @@ AliReducedEmcalCluster& AliReducedEmcalCluster::operator=(const AliReducedEmcalC
   if(&ref != this){
     this->~AliReducedEmcalCluster();
     TObject::operator=(ref);
-    ref.Copy(this);
+    ref.Copy(*this);
   }
   return *this;
 }
@@ -104,8 +104,8 @@ AliReducedEmcalCluster::~AliReducedEmcalCluster() {
  * Copy content of this cluster into target
  * \param target Target for the copy
  */
-void AliReducedEmcalCluster::Copy(TObject* target) const {
-  AliReducedEmcalCluster *targetcluster = dynamic_cast<AliReducedEmcalCluster *>(target);
+void AliReducedEmcalCluster::Copy(TObject &target) const {
+  AliReducedEmcalCluster *targetcluster = dynamic_cast<AliReducedEmcalCluster *>(&target);
   if(!targetcluster) return;
   targetcluster->fClusterID = fClusterID;
   targetcluster->fEnergy = fEnergy;

@@ -587,17 +587,18 @@ void * AliJTH1::BuildItem(){
             void * tmp;
             while( Next(tmp) ){
                 item = (TH1*)fSubDirectory->Get(BuildName());
-                if(item ) break;
+                if( item ) break;
             }
             if( item ) {
                 item = dynamic_cast<TH1*>((static_cast<TH1*>(item))->Clone(name));
+                if( !item ){ JERROR("Any of "+fName+" doesn't exists. I need at least one"); return NULL;}
                 item->Reset();
                 item->SetTitle( BuildTitle() );
                 item->SetDirectory(0);
                 *rawItem = (void*)item;
             }
         }
-        if( !item ){ JERROR("Any of "+fName+" doesn't exists. I need at least one");}
+        if( !item ){ JERROR("Any of "+fName+" doesn't exists. I need at least one"); return NULL;}
     }
     else{ //  Gen Mode
         TH1 * titem = NULL;
@@ -646,24 +647,6 @@ AliJTH1Derived<T>::~AliJTH1Derived(){
 // Array Base Class                                                     //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-AliJHistManager::AliJHistManager(TString name):
-    AliJNamed(name,"","",0),
-    fIsLoadMode(false),
-    fDirectory(gDirectory),
-    fConfigStr(),
-    fBin(0),
-    fHist(0),
-    fManager(0),
-    fBinNames(0),
-    fBinConfigs(0),
-    fHistNames(0),
-    fHistConfigs(0)
-{
-    // constructor
-    fDirectory = gDirectory;
-    this->cd();
-}
-
 AliJHistManager::AliJHistManager(TString name, TString dirname):
     AliJNamed(name,"","",0),
     fIsLoadMode(false),
@@ -678,14 +661,20 @@ AliJHistManager::AliJHistManager(TString name, TString dirname):
     fHistConfigs(0)
 {
     // constructor
+    if( dirname.Length() == 0 ) dirname = name;
     if( dirname.Length() > 0 ) {
         fDirectory = (TDirectory*)gDirectory->Get(dirname);
+        if( fDirectory ){
+            std::cout<<"JERROR : "<<Form("Hist directory %s is exists", dirname.Data() )<<std::endl;
+            gSystem->Exit(1);
+        }
         if( !fDirectory ){
             fDirectory = gDirectory->mkdir( dirname );
         }
     }
     if( !fDirectory ){
-        fDirectory = gDirectory;
+        std::cout<<"JERROR : "<<Form("Fail to generate Hist directory %s", dirname.Data() )<<std::endl;
+        gSystem->Exit(1);
     }
     this->cd();
 }
@@ -704,17 +693,17 @@ AliJHistManager::AliJHistManager(const AliJHistManager& obj) :
     fHistNames(obj.fHistNames),
     fHistConfigs(obj.fHistConfigs)
 {
-  // copy constructor TODO: proper handling of pointer data members
+    // copy constructor TODO: proper handling of pointer data members
 }
 
 //_____________________________________________________
 AliJHistManager& AliJHistManager::operator=(const AliJHistManager& obj)
 {
-  // assignment operator
-  if(this != &obj){
-    // TODO: proper implementation
-  }
-  return *this;
+    // assignment operator
+    if(this != &obj){
+        // TODO: proper implementation
+    }
+    return *this;
 }
 
 AliJHistManager* AliJHistManager::GlobalManager(){
@@ -791,9 +780,11 @@ void AliJHistManager::Write(){
 }
 
 void AliJHistManager::WriteConfig(){
-    TDirectory *owd = gDirectory;
-    cout<<"DEBUG_T1: "<<gDirectory<<endl;
-    gDirectory->Print();
+    TDirectory *owd = fDirectory;
+    //cout<<"DEBUG_T1: "<<fDirectory<<endl;
+    //cout<<"DEBUG_T2: "<<GetName()<<"\t"<<fDirectory->GetName()<<endl;
+    //exit(1);
+    // TODO 1.Error Check 2.Duplicaition check
     TDirectory * fHistConfigDir = fDirectory->mkdir("HistManager");
     fHistConfigDir->cd();
     TObjString * config = new TObjString(GetString().Data());

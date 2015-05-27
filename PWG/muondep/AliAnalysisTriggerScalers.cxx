@@ -106,12 +106,18 @@ ClassImp(AliAnalysisTriggerScalers)
 namespace {
   
   //______________________________________________________________________________
-  UChar_t GetIndex(ULong64_t mask)
+  Int_t GetIndex(ULong64_t mask, ULong64_t maskNext50)
   {
-    for ( Int_t i = 0; i < 64; ++i )
+    for ( Int_t i = 0; i < 50; ++i )
     {
       if ( mask & ( 1ull << i ) ) return i+1;
     }
+    
+    for ( Int_t i = 0; i < 50; ++i )
+    {
+      if ( maskNext50 & ( 1ull << i ) ) return i+51;
+    }
+    
     return 0;
   }
   
@@ -671,7 +677,12 @@ AliAnalysisTriggerScalers::GetTriggerScaler(Int_t runNumber, const char* level, 
   {
     return 0x0;
   }
-  UChar_t index = GetIndex(triggerClass->GetMask());
+  
+  Int_t index = GetIndex(triggerClass->GetMask(),triggerClass->GetMaskNext50());
+  
+  triggerClass->Print("");
+  
+  std::cout << "Index=" << index << std::endl;
   
   ULong64_t value(0);
   
@@ -835,15 +846,15 @@ AliAnalysisTriggerScalers::IntegratedLuminosityGraph(Int_t runNumber, const char
   
   Bool_t first(kTRUE);
   
-  UChar_t classIndices[2];
+  Int_t classIndices[2];
   
   // class 0 = class for luminomiter
   // class 1 = class for livetime estimate
   //           or for PAC estimate if triggerClassNameForPACEstimate
   //              is given and triggerClass is the same as the lumi class
   
-  classIndices[0] = GetIndex(lumiTriggerClass->GetMask());
-  classIndices[1] = GetIndex(triggerClass->GetMask());
+  classIndices[0] = GetIndex(lumiTriggerClass->GetMask(),lumiTriggerClass->GetMaskNext50());
+  classIndices[1] = GetIndex(triggerClass->GetMask(),triggerClass->GetMaskNext50());
 
   Bool_t sameClass = ( classIndices[0] == classIndices[1] );
   Bool_t pacRemoval(kFALSE);
@@ -856,7 +867,7 @@ AliAnalysisTriggerScalers::IntegratedLuminosityGraph(Int_t runNumber, const char
       AliError(Form("Could not find triggerClassForPACEstimate=%s. Will not correct for PAC durations",triggerClassNameForPACEstimate));
       return 0x0;
     }
-    classIndices[1] = GetIndex(triggerClassForPACEstimate->GetMask());
+    classIndices[1] = GetIndex(triggerClassForPACEstimate->GetMask(),triggerClassForPACEstimate->GetMaskNext50());
     sameClass = ( classIndices[0] == classIndices[1] );
     if (!sameClass)
     {
@@ -1506,7 +1517,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
     
     while ( ( triggerClass = static_cast<AliTriggerClass*>(next()) ) )
     {
-      UChar_t index = GetIndex(triggerClass->GetMask());
+      Int_t index = GetIndex(triggerClass->GetMask(),triggerClass->GetMaskNext50());
       
       if ( !TString(triggerClass->GetName()).Contains(triggerClassName) ) continue;
       

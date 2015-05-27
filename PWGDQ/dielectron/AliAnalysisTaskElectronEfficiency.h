@@ -21,7 +21,8 @@
  Additional functionality:
  Determination of random electron rejection efficiency due to pair-prefiltering (used for photon conversion + Dalitz rejection).
  It is estimated by pairing primary, non-injected, charged pions with the selected electrons (so the pair has no real correlation)
- and applying the prefilter pair cuts to these random pairs. All and rejected pions are stored in 3D histograms. 
+ and applying the prefilter pair cuts to these random pairs. All and rejected pions are stored in 3D histograms.
+ HOWEVER: this can be done in data as well. For this purpose the task "AliAnalysisTaskRandomRejection" is available now.
  ---
  As examples to set up the task, see PWGDQ/dielectron/macrosLMEE/Config_reichelt_ElectronEfficiency.C or Config_tbroeker_ElectronEfficiency.C
 **/
@@ -48,7 +49,11 @@ class AliMCEvent;
 class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
  public:
   
-  //AliAnalysisTaskElectronEfficiency();
+  AliAnalysisTaskElectronEfficiency();
+  /// default constructor is mandatory for local LEGO train:
+  /// W-TBufferFile::WriteObjectAny: since AliAnalysisTaskElectronEfficiency has no public constructor
+  /// which can be called without argument, objects of this class can not be read with the current library.
+  /// You will need to add a default constructor before attempting to read it.
   /// default constructor is mandatory to call in the AddTask: 'task->SetTriggerMask(triggerNames);'
   /// dont understand how this is inherited from: void AliEventTagCuts::SetTriggerMask(ULong64_t trmask)
   /// and it can crash, so instead, we implement the function and checks within this task, as done in 'AliAnalysisTaskMultiDielectron'.
@@ -71,6 +76,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetSupportedCutInstance(Int_t supp)           {fSupportedCutInstance=supp;}
   void          SetWriteTree(Bool_t write)                    {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)    {fPIDResponse=fPIDRespIn;}
+  void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
   
   void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins) {
     /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;
@@ -84,7 +90,6 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          AttachRejCutTheta(Double_t rejcut)            { fvRejCutTheta.push_back(rejcut); }
   void          AttachRejCutPhiV(Double_t rejcut)             { fvRejCutPhiV.push_back(rejcut); }
   
-  
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
   void          CreateSupportHistos();
@@ -95,7 +100,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
  private:
   Bool_t        IsInjectedSignal(AliMCEvent* mcEventLocal, Int_t tracklabel);
   void          CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra);
-  Double_t      PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 fD1, TVector3 fD2);
+  Double_t      PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
   const char*   GetParticleName(Int_t pdg) {
     /**/          TParticlePDG* p1 = TDatabasePDG::Instance()->GetParticle(pdg);
     /**/          if(p1) return p1->GetName();
@@ -105,18 +110,20 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
   AliPIDResponse*   fPIDResponse;
-  Bool_t            fSelectPhysics;             // Whether to use physics selection
-  UInt_t            fTriggerMask;               // Event trigger mask
-  AliAnalysisCuts*  fEventFilter;               // event filter
+  Bool_t            fSelectPhysics;           // Whether to use physics selection
+  UInt_t            fTriggerMask;             // Event trigger mask
+  AliAnalysisCuts*  fEventFilter;             // event filter
   Bool_t            fRequireVtx;
   Bool_t            fCheckV0daughterElectron;
-  Bool_t            fCutInjectedSignal;         // this flag is needed because the function IsInjectedSignal() doesnt behave properly when there are no injected signals. (e.g. in p-Pb MC)
-  UInt_t            fNminEleInEventForRej;      // should be fNminEleInEventForRej=2, because if there are less than 2 electrons, then no random ee-pair would be possible.
-  Int_t             fSupportedCutInstance;      // for debugging
+  Bool_t            fCutInjectedSignal;       // this flag is needed because the function IsInjectedSignal() doesnt behave properly when there are no injected signals. (e.g. in p-Pb MC)
+  UInt_t            fNminEleInEventForRej;    // should be fNminEleInEventForRej=2, because if there are less than 2 electrons, then no random ee-pair would be possible.
+  Int_t             fSupportedCutInstance;    // for debugging
   //Int_t             fEventcount;
+  Bool_t            fRandomizeDaughters;      // shuffle daughters at pair creation (sorted according to pt by default, which affects PhivPair at least for Like Sign)
+  TRandom3          fRandom3;
   
   Double_t          fMaxVtxZ;
-  Double_t          fCentMin;                   // should be fCentMin=-1 for pp and p-Pb
+  Double_t          fCentMin;                 // should be fCentMin=-1 for pp and p-Pb
   Double_t          fCentMax;
   Double_t          fEtaMinGEN;
   Double_t          fEtaMaxGEN;
@@ -125,10 +132,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Int_t             fNptBins;
   Int_t             fNetaBins;
   Int_t             fNphiBins;
-  Double_t*         fPtBins;
-  Double_t*         fEtaBins;
-  Double_t*         fPhiBins;
-  TString           fsRunBins;                  // for run dependency histograms
+  Double_t*         fPtBins;                  //! ("!" to avoid streamer error)
+  Double_t*         fEtaBins;                 //! ("!" to avoid streamer error)
+  Double_t*         fPhiBins;                 //! ("!" to avoid streamer error)
+  TString           fsRunBins;                // for run dependency histograms
   
   //Cut Settings
   std::vector<AliAnalysisFilter*> fvTrackCuts;

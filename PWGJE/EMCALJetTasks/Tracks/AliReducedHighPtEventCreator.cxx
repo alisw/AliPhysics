@@ -154,6 +154,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   TString triggerString(fInputEvent->GetFiredTriggerClasses());
   fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EG1"), triggerString.Contains("EG2"), triggerString.Contains("EJ1"), triggerString.Contains("EJ2"));
   fOutputEvent->SetMinBiasEvent(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
+  fOutputEvent->SetRunNumber(fInputEvent->GetRunNumber());
 
   std::map<int, int> mcindexmap;
   if(MCEvent()){
@@ -240,6 +241,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     double pvec[3];
     trackToCheck->GetPxPyPz(pvec);
     rectrack->SetMomentumVector(pvec[0], pvec[1], pvec[2]);
+    rectrack->SetCharge(static_cast<Char_t>(trackToCheck->Charge()));
     for(Int_t icut = 0; icut < cutIndices.GetSize(); icut++) rectrack->SetTrackCuts(cutIndices[icut]);
     if(MCEvent()){
       // handle label
@@ -264,6 +266,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
         rectrack->SetMatchedClusterIndex(found->second);
       }
     }
+    fOutputEvent->AddReducedReconstructedParticle(rectrack);
   }
 
   fOutputTree->Fill();

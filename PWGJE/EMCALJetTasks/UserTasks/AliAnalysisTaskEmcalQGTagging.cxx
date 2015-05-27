@@ -262,17 +262,25 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
     while((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1) continue;
       AliEmcalJet* jet2 = 0x0;
+      AliEmcalJet* jet3=0x0;
       fPtJet->Fill(jet1->Pt());
       AliEmcalJet *jetUS = NULL;
       Int_t ifound=0;
       Int_t ilab=-1;
-  
+      
+      if(fSemigoodCorrect && (fJetSelection != kRecoil)){
+      Double_t disthole=RelativePhi(jet1->Phi(),fHolePos);
+      if(TMath::Abs(disthole)<fHoleWidth){
+      continue;}
+    } 
+ 
       if (!(fJetShapeType == kData)) {
         AliPythiaInfo *partonsInfo = 0x0;
-        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) ){
+        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ){
           AliJetContainer *jetContTrue = GetJetContainer(1);
           AliJetContainer *jetContUS = GetJetContainer(2);
-          
+       
+ 
           if(fJetShapeSub==kConstSub){
             for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
               jetUS = jetContUS->GetJet(i);
@@ -288,12 +296,20 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           }
           if(!(fJetShapeSub==kConstSub)) jet2 = jet1->ClosestJet();
           if (!jet2) {
-            Printf("jet2 not exists, returning");
+            Printf("jet2 does not exist, returning");
             continue;
           }
           
-         // AliVParticle *vp1 = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-         // AliVParticle *vp2 = static_cast<AliVParticle*>(jet2->TrackAt(i, jetContTrue->GetParticleContainer()->GetArray()));
+          if(fJetShapeType==kDetEmbPart){
+            AliJetContainer *jetContPart=GetJetContainer(3);
+            jet3=jet2->ClosestJet();
+           
+	    if(!jet3){
+	      Printf("jet3 does not exist, returning");
+              continue;}
+	    cout<<"jet 3 exists"<<jet3->Pt()<<endl;
+}
+            
           
           fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());
           
@@ -369,7 +385,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         ptSubtracted = jet1->Pt();
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
       
-      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef)|| (fJetShapeType==kTrue))
+      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef))
         if (ptSubtracted < fPtThreshold) continue;
      
      
@@ -399,6 +415,21 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
+       if (fJetShapeType == kDetEmbPart) {
+	 if(fJetShapeSub==kConstSub) kMatched = 3;
+         if(fJetShapeSub==kDerivSub) kMatched = 2;
+        ptMatch=jet3->Pt();
+        ptDMatch=GetJetpTD(jet3, kMatched);
+        massMatch=GetJetMass(jet3,kMatched);
+        constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
+        angulMatch=GetJetAngularity(jet3, kMatched);
+        circMatch=GetJetCircularity(jet3, kMatched);
+        lesubMatch=GetJetLeSub(jet3, kMatched);
+        sigma2Match = GetSigma2(jet3, kMatched);
+        
+      }
+
+
 
       if (fJetShapeType == kTrue || fJetShapeType == kData) {
         kMatched = 0;
@@ -754,7 +785,7 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
   
   for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
     
-    if (fJetShapeSub == kNoSub) {
+    if ((fJetShapeSub == kNoSub) || (fJetShapeSub == kDerivSub)) {
       picoTrack = static_cast<AliPicoTrack*>(tracksArray->At(iTrack));
       if (!picoTrack) continue;
       

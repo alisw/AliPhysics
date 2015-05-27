@@ -56,7 +56,8 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   fTrackSelection(NULL),
   fSwapEta(kFALSE),
   fTriggerMethod(kTriggerString),
-  fRequestMCtrue(kFALSE)
+  fRequestMCtrue(kFALSE),
+  fDoMatchPatches(kFALSE)
 {
 }
 
@@ -71,7 +72,8 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   fTrackSelection(NULL),
   fSwapEta(kFALSE),
   fTriggerMethod(kTriggerString),
-  fRequestMCtrue(kFALSE)
+  fRequestMCtrue(kFALSE),
+  fDoMatchPatches(kFALSE)
 {
 }
 
@@ -141,8 +143,10 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
     fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
     fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 5, trackaxes, "s");
     fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal clusters with MC kinematics", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hTrackHistPatchMatch%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal patches", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hMCTrackHistPatchMatch%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal patches with MC kinematics", title.c_str()), 5, trackaxes, "s");
+    if(fDoMatchPatches){
+      fHistos->CreateTHnSparse(Form("hTrackHistPatchMatch%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal patches", title.c_str()), 5, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hMCTrackHistPatchMatch%s", name.c_str()), Form("Track-based data for %s events for tracks matched to EMCal patches with MC kinematics", title.c_str()), 5, trackaxes, "s");
+    }
   }
 
   // Correlation Matrix
@@ -222,18 +226,18 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
 
     // Try to match to EMCAL patches (only in case the event is triggered)
     TList patches;
-    if(triggernames.size()) MatchTriggerPatches(track, data->GetTriggerPatchContainer(), patches);
+    if(fDoMatchPatches && triggernames.size()) MatchTriggerPatches(track, data->GetTriggerPatchContainer(), patches);
 
     // Fill histograms
     for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); name++){
       FillHistogram(Form("hTrackHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       if(hasCluster) FillHistogram(Form("hTrackInAcceptanceHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       Bool_t hasPatch = HasMatchedPatchOfType(*name, patches);
-      if(hasPatch) FillHistogram(Form("hTrackHistPatchMatch%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
+      if(fDoMatchPatches && hasPatch) FillHistogram(Form("hTrackHistPatchMatch%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       if(assocMC){
         FillHistogram(Form("hMCTrackHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE, weight);
         if(hasCluster) FillHistogram(Form("hMCTrackInAcceptanceHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE, weight);
-        if(hasPatch) FillHistogram(Form("hMCTrackHistPatchMatch%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
+        if(fDoMatchPatches && hasPatch) FillHistogram(Form("hMCTrackHistPatchMatch%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       }
     }
   }

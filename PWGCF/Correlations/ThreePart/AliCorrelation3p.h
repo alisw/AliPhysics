@@ -14,15 +14,21 @@
 #include "TNamed.h"
 #include "TArrayD.h"
 #include "THn.h"
+#include "TParameter.h"
+#include "TF1.h"
+#include "TH3D.h"
 class TH1;
 class TH1F;
 class TH2F;
 class TH1D;
 class TH2D;
+class TH3D;
 class TH3F;
+
 class AliVParticle;
 class AliVEvent;
 class TCanvas;
+// class TParameter<double>;
 
 class AliCorrelation3p : public TNamed {
  public:
@@ -43,7 +49,7 @@ class AliCorrelation3p : public TNamed {
   // check associated particle cuts
   bool CheckAssociated( AliVParticle* p, const AliVParticle* trigger=NULL, bool doHistogram=false);
   /// fill histograms from particles
-  int Fill(const AliVParticle* trigger		,const AliVParticle* p1	,const AliVParticle* p2	, const int weight=1);
+  int Fill(const AliVParticle* trigger		,const AliVParticle* p1	,const AliVParticle* p2	, const double weight=1.0);
   int Fill(const AliVParticle* trigger		,const AliVParticle* p1				);
   int FillTrigger(const AliVParticle*ptrigger);
   int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool all=false);
@@ -63,7 +69,13 @@ class AliCorrelation3p : public TNamed {
   AliCorrelation3p& operator+=(const AliCorrelation3p& other);
   void SetMixedEvent(AliCorrelation3p* pME) {fMixedEvent=pME;}
   void SetAcceptanceCut(float AccCut){fAcceptanceCut = AccCut;}
-  void SetWeight(THnT<Float_t>*weight){fWeights = weight;}
+  void SetWeight(TObject*weight,int type){
+    if(type == 1)fWeights = dynamic_cast<TH3D*>(weight);
+    if(type == 2)fWeightshpT = dynamic_cast<TH3D*>(weight);
+    if(type == 3)fhighpt = dynamic_cast<TF1*>(weight);
+    
+    
+  }
   enum {
     kHistpT,  // TH1F
     kHistPhi, // TH1F
@@ -120,7 +132,7 @@ class AliCorrelation3p : public TNamed {
   Double_t GetPoint(TH1* hist,Double_t xpoint,Double_t ypoint = 0, Double_t zpoint=0);
   void AddHists(Bool_t isAverage,TH1* hist1, TH1* hist2);
   TH1* PrepareHist(int HistLocation,const char* HistName,const char* title, const char* xaxis, const char* yaxis,const char* zaxis = "",bool mixed = false);
-  TH1* PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis = "",bool scale = false);
+  TH1* PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis = "",bool scale = false,TParameter<double> * par = NULL);
 
   //Actual members
   TObjArray* fHistograms; // the histograms
@@ -131,7 +143,10 @@ class AliCorrelation3p : public TNamed {
   float fhPhiEtaDeltaPhi12Cut1; // phi vs. eta plots: cut on phi between associated particles 
   float fhPhiEtaDeltaPhi12Cut2; // phi vs. eta plots: cut on phi between associated particles 
   float fAcceptanceCut;
-  THnF * fWeights;//!
+  TH3D * fWeights;//!
+  TH3D * fWeightshpT;//!
+  TF1  * fhighpt;//!
+
   Int_t fMultWeightIndex;//
   Int_t fVZWeightIndex;//
   AliCorrelation3p* fMixedEvent; // mixed event analysis

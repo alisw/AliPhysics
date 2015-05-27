@@ -34,6 +34,7 @@
 #include "TH2F.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
+#include "AliAODHandler.h"
 
 // ALICE Analysis Framework
 #include "AliAnalysisManager.h"
@@ -73,6 +74,9 @@
 #include "AliAnalysisTaskFlowEvent.h"
 
 #include "AliLog.h"
+#include "AliAODHeader.h"
+#include "AliAODVertex.h"
+#include "AliHeader.h"
 
 using std::cout;
 using std::endl;
@@ -294,12 +298,12 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA()); //0
     if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());  //1
     if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA()); //2
-    fQAList->Add(new TH1F("event plane angle","event plane angle;angle [rad];",100,0.,TMath::TwoPi())); //3
     PostData(2,fQAList);
   }
 }
 
 //________________________________________________________________________
+
 void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 {
   // Main loop
@@ -309,7 +313,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
   AliMultiplicity* myTracklets = NULL;
-  AliESDPmdTrack* pmdtracks = NULL;//pmd      
+  AliESDPmdTrack* pmdtracks = NULL;//pmd
 
   int availableINslot=1;
 

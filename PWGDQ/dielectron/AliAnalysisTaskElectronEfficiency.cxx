@@ -68,8 +68,8 @@ using std::endl;
 
 
 //________________________________________________________________________
-AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency(const char *name) : 
-AliAnalysisTaskSE(name),
+AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency() : 
+AliAnalysisTaskSE(),
 fESD(0x0),
 mcEvent(0x0),
 fPIDResponse(0x0),
@@ -82,6 +82,8 @@ fCutInjectedSignal(kFALSE),
 fNminEleInEventForRej(2),
 fSupportedCutInstance(0),
 //fEventcount(0),
+fRandomizeDaughters(kFALSE),
+fRandom3(4357),//default seed 4357
 fMaxVtxZ(0.),
 fCentMin( -1.),
 fCentMax(101.),
@@ -155,7 +157,101 @@ pzMC(-1.),
 selectedByCut(0),
 selectedByExtraCut(0)
 {
-  // Constructor
+  /// Default Constructor
+}
+
+
+//________________________________________________________________________
+AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency(const char *name) : 
+AliAnalysisTaskSE(name),
+fESD(0x0),
+mcEvent(0x0),
+fPIDResponse(0x0),
+fSelectPhysics(kFALSE),
+fTriggerMask(AliVEvent::kAny),
+fEventFilter(0x0),
+fRequireVtx(kFALSE),
+fCheckV0daughterElectron(kFALSE),
+fCutInjectedSignal(kFALSE),
+fNminEleInEventForRej(2),
+fSupportedCutInstance(0),
+//fEventcount(0),
+fRandomizeDaughters(kFALSE),
+fRandom3(4357),//default seed 4357
+fMaxVtxZ(0.),
+fCentMin( -1.),
+fCentMax(101.),
+fEtaMinGEN(-10.),
+fEtaMaxGEN( 10.),
+fPtMinGEN( -1.),
+fPtMaxGEN(100.),
+fNptBins(0),
+fNetaBins(0),
+fNphiBins(0),
+fPtBins(0x0),
+fEtaBins(0x0),
+fPhiBins(0x0),
+fsRunBins(""),
+fvTrackCuts(),
+fvExtraTrackCuts(),
+fvDoPrefilterEff(),
+fvRejCutMee(),
+fvRejCutTheta(),
+fvRejCutPhiV(),
+fNgen(0x0),
+fvReco_Ele(),
+fvReco_Ele_poslabel(),
+fvAllPionsForRej(),
+fvPionsRejByAllSigns(),
+fvPionsRejByUnlike(),
+fOutputList(0x0),
+fOutputListSupportHistos(0x0),
+fEventStat(0x0),
+tracksT(0x0),
+fWriteTree(kFALSE),
+pxESD(-1.), // tree variables
+pyESD(-1.),
+pzESD(-1.),
+pTPC(-1.),
+chargeT(-999),
+signalITS(-1.),
+signalTPC(-1.),
+beta(-1.),
+kchi2ITS(-1.),
+kNclsITS(-1),
+kITSchi2Cl(-1.),
+kNclsTPC(-1),
+kTPCchi2Cl(-1.),
+kNclsTPCdEdx(-1),
+kNFclsTPCr(-1.),
+kNFclsTPCfCross(-1.),
+kNtrkltsTRD(-1),
+kNtrkltsTRDPID(-1),
+sigmaEleITS(-999.),
+sigmaEleTPC(-999.),
+sigmaEleTOF(-999.),
+probEleTRD(-999.),
+sigmaPioITS(-999.),
+sigmaPioTPC(-999.),
+sigmaPioTOF(-999.),
+sigmaKaoITS(-999.),
+sigmaKaoTPC(-999.),
+sigmaProITS(-999.),
+sigmaProTPC(-999.),
+isGlobalT(kFALSE),
+isGlobalSDD(kFALSE),
+labelT(-1),
+pdgT(-1),
+labelmotherT(-1),
+pdgmotherT(-1),
+labelgrandmotherT(-1),
+pxMC(-1.),
+pyMC(-1.),
+pzMC(-1.),
+selectedByCut(0),
+selectedByExtraCut(0)
+{
+  /// Constructor
   
   fvTrackCuts.clear();
   fvExtraTrackCuts.clear();
@@ -180,8 +276,8 @@ selectedByExtraCut(0)
 //________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 {
-  // Create histograms
-  // Called once
+  /// Create histograms
+  /// Called once
 	AliInfo("Create the output objects");
 	Printf("Now running: CreateOutputObjects()");
   
@@ -741,37 +837,103 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
 
 
 //______________________________________________
-Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 fD1, TVector3 fD2) //const
+Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2) //const
 {
-  /// Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
-  /// to ID conversions. Angle between ee plane and magnetic field is calculated.
-  /// from util/dielectron/dielectron/AliDielectronPair.cxx
-  
-  if (charge1 == charge2) return -1;
-  //cout << " MagField = " << MagField << endl;
-  
-  //Define local buffer variables for leg properties                                                                                                               
+  /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
+  /// to identify conversions. Angle between ee plane and magnetic field is calculated (0 to pi).
+  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle 
+  /// always end up as pair in "cowboy" configuration. The function as defined here then 
+  /// returns values close to pi.
+  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up 
+  /// at pi or at 0 depending on which leg has the higher momentum. (not checked yet)
+  /// This expected ambiguity is not seen due to sorting of track arrays in this framework. 
+  /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
+  /// from PWGDQ/dielectron/AliDielectronPair.cxx
+
+  //Define local buffer variables for leg properties
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-  
-  if(MagField>0){
-    if(charge1>0){
-      px1 = fD1.Px();   py1 = fD1.Py();   pz1 = fD1.Pz();
-      px2 = fD2.Px();   py2 = fD2.Py();   pz2 = fD2.Pz();
-    }else{
-      px1 = fD2.Px();   py1 = fD2.Py();   pz1 = fD2.Pz();
-      px2 = fD1.Px();   py2 = fD1.Py();   pz2 = fD1.Pz();
+
+  TVector3 fD1=dau1;
+  TVector3 fD2=dau2;
+  Int_t    d1Q=charge1;
+  //Int_t    d2Q=charge2;
+  if (fRandomizeDaughters) { // randomize daughters if requested
+    if (fRandom3.Rndm()>0.5) {
+      fD1=dau2;
+      fD2=dau1;
+      d1Q=charge2;
+      //d2Q=charge1;
     }
-  }else{
-    if(charge1>0){
-      px1 = fD2.Px();   py1 = fD2.Py();   pz1 = fD2.Pz();
-      px2 = fD1.Px();   py2 = fD1.Py();   pz2 = fD1.Pz();
-    }else{
-      px1 = fD1.Px();   py1 = fD1.Py();   pz1 = fD1.Pz();
-      px2 = fD2.Px();   py2 = fD2.Py();   pz2 = fD2.Pz();
+  }
+  else { // sort particles according to pt, as done by default in AliDielectronPair
+    if (dau1.Pt() < dau2.Pt()) {
+      fD1=dau2;
+      fD2=dau1;
+      d1Q=charge2;
+      //d2Q=charge1;
     }
-  }    
+  }
   
+  if (charge1*charge2 > 0.) { // Like Sign
+    if(MagField<0){ // inverted behaviour
+      if(d1Q>0){
+        px1 = fD1.Px();   py1 = fD1.Py();   pz1 = fD1.Pz();
+        px2 = fD2.Px();   py2 = fD2.Py();   pz2 = fD2.Pz();
+      }else{
+        px1 = fD2.Px();   py1 = fD2.Py();   pz1 = fD2.Pz();
+        px2 = fD1.Px();   py2 = fD1.Py();   pz2 = fD1.Pz();
+      }
+    }else{
+      if(d1Q>0){
+        px1 = fD2.Px();   py1 = fD2.Py();   pz1 = fD2.Pz();
+        px2 = fD1.Px();   py2 = fD1.Py();   pz2 = fD1.Pz();
+      }else{
+        px1 = fD1.Px();   py1 = fD1.Py();   pz1 = fD1.Pz();
+        px2 = fD2.Px();   py2 = fD2.Py();   pz2 = fD2.Pz();
+      }
+    }
+  }
+  else { // Unlike Sign
+    if(MagField>0){ // regular behaviour
+      if(d1Q>0){
+        px1 = fD1.Px();
+        py1 = fD1.Py();
+        pz1 = fD1.Pz();
+        
+        px2 = fD2.Px();
+        py2 = fD2.Py();
+        pz2 = fD2.Pz();
+      }else{
+        px1 = fD2.Px();
+        py1 = fD2.Py();
+        pz1 = fD2.Pz();
+        
+        px2 = fD1.Px();
+        py2 = fD1.Py();
+        pz2 = fD1.Pz();
+      }
+    }else{
+      if(d1Q>0){
+        px1 = fD2.Px();
+        py1 = fD2.Py();
+        pz1 = fD2.Pz();
+        
+        px2 = fD1.Px();
+        py2 = fD1.Py();
+        pz2 = fD1.Pz();
+      }else{
+        px1 = fD1.Px();
+        py1 = fD1.Py();
+        pz1 = fD1.Pz();
+        
+        px2 = fD2.Px();
+        py2 = fD2.Py();
+        pz2 = fD2.Pz();
+      }
+    }
+  }
+
   Double_t px = px1+px2;
   Double_t py = py1+py2;
   Double_t pz = pz1+pz2;
@@ -785,7 +947,7 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
   Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
   Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy); 
   
-  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition. 
+  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition.
   //Double_t ptep = iep->Px()*ax + iep->Py()*ay; 
   //Double_t ptem = iem->Px()*ax + iem->Py()*ay; 
   
@@ -885,7 +1047,7 @@ void AliAnalysisTaskElectronEfficiency::Terminate(const Option_t *)
 //________________________________________________________________________
 AliAnalysisTaskElectronEfficiency::~AliAnalysisTaskElectronEfficiency()
 {
-  // Destructor
+  /// Destructor
   Printf(" Now running: ~Destructor");
   
   Printf("deleting TList");

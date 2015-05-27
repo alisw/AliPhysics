@@ -18,6 +18,7 @@ add_subdirectory(pid)
 add_subdirectory(EVCHAR)
 add_subdirectory(EVCHAR/EventPlaneFramework)
 add_subdirectory(MUON)
+add_subdirectory(EMCAL)
 
 #Module
 set (MODULE PWGPP)
@@ -56,6 +57,7 @@ set ( SRCS1
 set ( SRCS2
   global/AliAnalysisTaskGlobalQA.cxx
   global/AliAnalysisTaskVertexESD.cxx
+  global/AliAnalysisTaskCheckPileup.cxx
   global/AliGlobalFBFqa.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )
@@ -230,6 +232,8 @@ list ( APPEND SRCS
   ${SRCS18}
   )
 
+###add_subdirectory(Alignment)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -243,7 +247,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript)
+set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -269,6 +273,8 @@ install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY PilotTrain DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSIONS)
+install(DIRECTORY EMCAL/macros DESTINATION PWGPP/EMCAL)
+
 install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
 install(FILES HMPID/macros/copyHMPQAfiles.C
  	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)

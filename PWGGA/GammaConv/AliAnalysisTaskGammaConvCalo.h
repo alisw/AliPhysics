@@ -15,6 +15,8 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "THnSparse.h"
+#include <vector>
 
 class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 	public:
@@ -96,8 +98,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		// Additional functions for convenience
 		void SetLogBinningXTH2(TH2* histoRebin);
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
-		Bool_t CheckIfContainedInString(TString input, Int_t tobechecked);
-		Bool_t CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked);
+		Bool_t CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked);
+		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 	
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
@@ -221,8 +223,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueEtaCaloPhotonInvMassPt;				//! array of histos with validated eta, photon leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloConvertedPhotonInvMassPt;	//! array of histos with validated pi0, converted photon leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated pi0 matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloConvPhotonConvRPt;			//!
+		TH2F 								**fHistoTruePi0CaloConvPhotonConvRAlpha;		//!
+		TH2F 								**fHistoTruePi0CaloConvPhotonPtAlpha;			//!
 		TH2F 								**fHistoTrueEtaCaloConvertedPhotonInvMassPt;	//! array of histos with validated eta, converted photon leading, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated eta matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloConvPhotonConvRPt;			//!
+		TH2F 								**fHistoTrueEtaCaloConvPhotonConvRAlpha;		//!
+		TH2F 								**fHistoTrueEtaCaloConvPhotonPtAlpha;			//!
 		TH2F 								**fHistoTruePi0CaloElectronInvMassPt;			//! array of histos with validated mothers, electron leading, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloElectronInvMassPt;			//! array of histos with validated mothers, electron leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloMergedClusterInvMassPt;		//! array of histos with validated mothers, merged cluster invMass, pt
@@ -292,12 +300,18 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoTrueSecondaryPi0PhotonPairPtconv;		//! array of histos with validated secondary pi0's vs conversion photon pT
 		TH1F				 				**fHistoTrueSecondaryPi0DCPtconv;				//! array of histos with validated secondary pi0's vs conversion photon pT, double counting
 		TH1F				 				**fHistoTrueSecondaryPi0MissingPtconv;			//! array of histos with validated secondary pi0's vs conversion photon pT, missing
-		TString 							*fStringRecTruePi0s;							//! array of strings containing the stack position of the reconstructed validated pi0
-		TString 							*fStringRecTrueEtas;							//! array of strings containing the stack position of the reconstructed validated eta
+		vector<Int_t> 						fVectorRecTruePi0s;								//! array of strings containing the stack position of the reconstructed validated pi0
+		vector<Int_t> 						fVectorRecTrueEtas;								//! array of strings containing the stack position of the reconstructed validated eta
+		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
+		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
+		TH2F				 				**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
+		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
+		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
+		vector<Int_t>						fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
-		TH1F								**fHistoVertexZ;									//! array of histos with vertex z distribution for selected events
+		TH1F								**fHistoVertexZ;								//! array of histos with vertex z distribution for selected events
 		TH1I 								**fHistoNGammaCandidates;						//! array of histos with number of gamma candidates per event
 		TH2F 								**fHistoNGoodESDTracksVsNGammaCandidates;		//! array of histos with number of good tracks vs gamma candidates
 		TH1I 								**fHistoNV0Tracks;								//! array of histos with V0 counts
@@ -333,7 +347,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 6);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 7);
 };
 
 #endif

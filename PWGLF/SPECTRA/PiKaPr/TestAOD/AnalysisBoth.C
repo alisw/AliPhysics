@@ -84,7 +84,8 @@ enum {
  kuseTOFcorrforPIDsignalmatching=0x2000, // rescale the for spectra by the factor given in config files	
  kuseeffcorrectionfromfile=0x4000, //use the efficiency from the file specfied in config file			
  kusePIDcontaminatiofromfile=0x8000, //use the PID contamination from the file specfied in config file
- kuseseccontaminatiofromfile=0x10000 //use the secondary contamination from the file specfied in config file
+ kuseseccontaminatiofromfile=0x10000, //use the secondary contamination from the file specfied in config file
+ kusespecialbinninginDCAfits=0x20000 //use constum binning in the dca fit 	
  							
 };	
 
@@ -92,7 +93,7 @@ Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasda
  void GetMCTruth(TH1F** MCTruth);
 void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHistoManager* hman,TH1F** histo,TFormula* dcacutxy);
 void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0);
-void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary);
+void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary,Bool_t binning=false);
 void RecomputeErrors(TH1* h);
 void SetBintoOne(TH1* h);
 void GetCorrectedSpectra(TH1F* corr,TH1F* raw,TH1F* eff, TH1F* con);
@@ -120,10 +121,11 @@ TH1* GetSumAllCh(TH1F** spectra, Double_t* mass,Double_t etacut);
 Short_t DCAfitsettings (Float_t pt, Int_t type);
 Float_t Normaliztionwithbin0integrals(UInt_t options);
 Bool_t ReadConfigFile(TString configfile);
+TH1F* ReBinDCAHisto(TH1* h);
 
 
 
-void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="" )
+void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="",TString customoutfilename="")
 {
 	gStyle->SetOptStat(0);	
 	TH1::AddDirectory(kFALSE);
@@ -505,12 +507,14 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 	outdate.ReplaceAll("/","_");
 	configfile.ReplaceAll(".","_");
 	TFile* fout=0x0;
-	if(configfile.Length()>0&&(options&kuserangeonfigfile))
+	if(customoutfilename.Length()>0)
+		fout=new TFile(customoutfilename.Data(),"RECREATE");
+	else if(configfile.Length()>0&&(options&kuserangeonfigfile))
 		fout=new TFile(Form("./results/ResMY_%s_%s_%#X_%s.root",outnamemc.Data(),outdate.Data(),options,configfile.Data()),"RECREATE");
 	else
 		fout=new TFile(Form("./results/ResMY_%s_%s_%#X.root",outnamemc.Data(),outdate.Data(),options),"RECREATE");
 	if (((options&kdodca)==kdodca)&&((options&kuseseccontaminatiofromfile)!=kuseseccontaminatiofromfile))
-		DCACorrectionMarek(managerdata,managermc,dcacutxy,fout,contfit,contWDfit,contMatfit,primaryfit);
+		DCACorrectionMarek(managerdata,managermc,dcacutxy,fout,contfit,contWDfit,contMatfit,primaryfit,((options&kusespecialbinninginDCAfits)==kusespecialbinninginDCAfits));
 	else if ((options&kuseseccontaminatiofromfile)==kuseseccontaminatiofromfile)
 	{
 		CopyCorrectionFromFile(filenames[2],"contfit",contfit);
@@ -775,7 +779,7 @@ void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid)
 }
 
 
-void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary)
+void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary, Bool_t binning)
 {
   printf("\n\n-> DCA Correction");  
   
@@ -805,7 +809,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					}	
 					debug<<"cut  "<<CutRange[1]<<" "<<CutRange[0]<<endl;		
 	     				Short_t fitsettings=DCAfitsettings(lowedge+0.5*binwidth,index);
-					debug<<"settings "<< fitsettings<<endl;
+					debug<<"settings "<< fitsettings<<" "<<isample<<endl;
+					cout<<"MC FIT "<<endl;
 					if(fitsettings==0)
 						continue;	
 						
@@ -833,29 +838,69 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					cout<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
                                         cout<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
 					if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || ((fitsettings&0x1)&&hmc2->GetEntries()<=minentries) || ((fitsettings&0x2)&&hmc3->GetEntries()<=minentries))
+					{
+						delete 	hToFit;
+						delete 	hmc1;
+						delete 	hmc2;
+						delete 	hmc3;
 						continue;
+					}	
 					hToFit->Sumw2();
 					hmc1->Sumw2();
 					hmc2->Sumw2();
 					hmc3->Sumw2();
 					
 					Float_t corrforrebinning[4]={1.0,1.0,1.0,1.0};	
-					Int_t binCutRange[]={hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1])};			
+					Int_t binCutRange[]={hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]),hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1])};			
 
 					
 					if(hmc3->GetNbinsX()>300)
 					{
 					
 						corrforrebinning[0]=hToFit->Integral(binCutRange[0],binCutRange[1]);
-						corrforrebinning[1]=hmc1->Integral(binCutRange[0],binCutRange[1]);
-						corrforrebinning[2]=hmc2->Integral(binCutRange[0],binCutRange[1]);
-						corrforrebinning[3]=hmc3->Integral(binCutRange[0],binCutRange[1]);
+						corrforrebinning[1]=hmc1->Integral(binCutRange[2],binCutRange[3]);
+						corrforrebinning[2]=hmc2->Integral(binCutRange[2],binCutRange[3]);
+						corrforrebinning[3]=hmc3->Integral(binCutRange[2],binCutRange[3]);
 
-						hToFit->Rebin(30);
-						hmc1->Rebin(30);
-						hmc2->Rebin(30);
-						hmc3->Rebin(30);
+						//hToFit->Rebin(30);
+						//hmc1->Rebin(30);
+						//hmc2->Rebin(30);
+						//hmc3->Rebin(30);
+						if(binning)
+						{
+							hToFit=ReBinDCAHisto(hToFit);
+							hmc1=ReBinDCAHisto(hmc1);
+							hmc2=ReBinDCAHisto(hmc2);
+							hmc3=ReBinDCAHisto(hmc3);
+						}
+						else
+						{
+							Int_t datarebinning=30;
+							if(managerdata->GetNRebin()>0)
+								datarebinning=30/managerdata->GetNRebin();
+							Int_t mcrebinning=30;
+							if(managermc->GetNRebin()>0)
+								mcrebinning=30/managermc->GetNRebin();
+							if(isample==0)
+								hToFit->Rebin(datarebinning);
+							else
+								hToFit->Rebin(mcrebinning);
+							cout<<isample<<" Rebin "<<mcrebinning<<" "<<datarebinning<<endl;
+							hmc1->Rebin(mcrebinning);
+							hmc2->Rebin(mcrebinning);
+							hmc3->Rebin(mcrebinning);
 
+							
+						}
+
+						if(hToFit->GetXaxis()->GetNbins()!=hmc1->GetXaxis()->GetNbins())
+						{
+							delete 	hToFit;
+							delete 	hmc1;
+							delete 	hmc2;
+							delete 	hmc3;
+							return;
+						}
 						binCutRange[0]=hmc1->GetXaxis()->FindBin(CutRange[0]);
 						binCutRange[1]=hmc1->GetXaxis()->FindBin(CutRange[1]);
 
@@ -897,7 +942,6 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						mc = new TObjArray(2);
 						Npar=2;
 					}
-						
 					mc->Add(hmc1);
 					if(fitsettings&0x1)
 						mc->Add(hmc2);
@@ -964,7 +1008,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 
 						}
 						
-					
+						
 						debug<<v1<<" "<<ev1<<" "<<v2<<" "<<ev2<<" "<<v3<<" "<<ev3<<" "<<" "<<cov<<endl;
 					
 	    					// becuase dca cut range is not a fit range the results from TFractionFitter should be rescale
@@ -974,8 +1018,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						
  						// Method 1 input histo 	
 
+						debug<<hToFit->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc1->Integral(binFitRange[0],binFitRange[1])<<hmc2->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc3->Integral(binFitRange[0],binFitRange[1])<<endl;
 						Float_t normalizationdata=hToFit->Integral(hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]))/hToFit->Integral(binFitRange[0],binFitRange[1]);
+						debug<<normalizationdata<<" "<<hToFit->Integral(hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]))<<endl;	
 						normalizationdata*=corrforrebinning[0];
+						debug<<normalizationdata<<endl;
 
 						Float_t normalizationmc1=(hmc1->Integral(binCutRange[0],binCutRange[1])/hmc1->Integral(binFitRange[0],binFitRange[1]))/normalizationdata;
 						Float_t normalizationmc2=0.0;
@@ -1046,17 +1093,20 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hToFit->GetXaxis()->SetTitle("DCA_{xy} (cm)");
 						hToFit->GetYaxis()->SetTitle("N_{counts}/N_{counts}(-3cm;3cm)");
 						hToFit->GetYaxis()->SetTitleOffset(1.3);
+						hToFit->Scale(1.0,"width");
 						hToFit->DrawClone("E1x0");
 						Leg1->AddEntry(hToFit,"data","p");
 						result->SetTitle("Fit result");
 						result->SetLineColor(kBlack);
 						Leg1->AddEntry(result,"fit result","l");
+						 result->Scale(1.0,"width");
 						result->DrawClone("histsame");
 					
 						PrimMCPred->SetLineColor(kGreen+2);
 						PrimMCPred->SetLineStyle(2);
 						 PrimMCPred->SetLineWidth(3.0);
 						Leg1->AddEntry(PrimMCPred,"primaries","l");
+						PrimMCPred->Scale(1.0,"width");
 						PrimMCPred->DrawClone("histsame");
 						if(fitsettings&0x1)
 						{
@@ -1067,6 +1117,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 
 							secStMCPred->SetLineStyle(3);
 							Leg1->AddEntry(secStMCPred,"weak decays","l");
+							secStMCPred->Scale(1.0,"width");
 							secStMCPred->DrawClone("histsame");
 
 						}
@@ -1079,6 +1130,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 
 							secMCPred->SetLineStyle(4);	
 							Leg1->AddEntry(secMCPred,"material","l");
+							secMCPred->Scale(1.0,"width");
 							secMCPred->DrawClone("histsame");
 	    
 						}   
@@ -1102,6 +1154,9 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					listofdcafits->Add(cDCA);
 					
 					//cDCA->Write();
+					delete 	hmc1;
+					delete 	hmc2;
+					delete 	hmc3;
 					delete hToFit;
 				}
 	
@@ -1826,4 +1881,35 @@ void CopyCorrectionFromFile(TString filename,TString correctionname,TH1F** corrt
 	}
 	delete ltmp;
 	ftmp->Close();
+}
+
+TH1F* ReBinDCAHisto(TH1* h)
+{
+	TString name=h->GetName();
+	name+="Rebin";
+	Int_t kDCABins=88;
+	Double_t binsDCADummy[]={-3.0,-2.8,-2.6,-2.4,-2.2,-2.0,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.75,-0.7,-0.65,-0.6,-0.55,-0.5,-0.45,-0.4,-0.35,-0.3,-0.25,-0.2,-0.18,-0.16,-0.14,-0.12,-0.1,-0.09,-0.08,-0.07,-0.06,-0.05,-0.04,-0.03,-0.02,-0.01,0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.7,2.8,3.0};
+	
+	TH1F* hout=new TH1F(name.Data(),";;dcaxy[cm];",kDCABins,binsDCADummy);
+	Int_t j=1;
+	Float_t sum=0.0;
+	for (int i=1;i<=h->GetXaxis()->GetNbins();i++)
+	{
+		if(TMath::Abs(h->GetXaxis()->GetBinUpEdge(i)-hout->GetXaxis()->GetBinUpEdge(j))>0.0002)
+		{
+			sum+=h->GetBinContent(i);	
+		}
+		else
+		{
+			sum+=h->GetBinContent(i);
+			hout->SetBinContent(j,sum);
+			hout->SetBinError(j,TMath::Sqrt(sum));
+			j++;
+			sum=0.0;	
+		}
+	}
+	delete h;
+	hout->Sumw2();
+	return hout;
+
 }			

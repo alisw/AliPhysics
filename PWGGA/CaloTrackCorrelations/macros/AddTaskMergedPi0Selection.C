@@ -481,7 +481,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     cu->SwitchOffRunDepCorrection();
   }
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simulation,                             
                           kTRUE,      // exotic

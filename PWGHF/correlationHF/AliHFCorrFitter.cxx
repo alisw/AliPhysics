@@ -14,10 +14,11 @@
  **************************************************************************/
 
 /*____________________________________________________________
-| AliHFCorrFitter for the fitting of Correlation plots
-| of charmed mesons
+| Class for performing the fit of azimuthal correlations           |      
+| Example of its usage in the macro PWGHF/correlationHF/FitPlots.C | 
 |
-|  Author: Somnath Kar (somnath.kar@cern.ch), Andrea Rossi (andrea.rossi@cern.ch)
+|  Author: Somnath Kar (somnath.kar@cern.ch), 
+|          Andrea Rossi (andrea.rossi@cern.ch)
 |_____________________________________________________________*/
 
 
@@ -67,17 +68,18 @@ AliHFCorrFitter::AliHFCorrFitter():
   fEnsybc(0),
   fAsybc(0),
   fEasybc(0),
-  fMinBaselineRange(0),
-  fMaxBaselineRange(-1),
+  fMinBaselineRange(0.25*TMath::Pi()),
+  fMaxBaselineRange(0.5*TMath::Pi()),
   fTypeOfFitfunc(kTwoGausPeriodicity),
-  fDmesonType(AliHFCorrelationUtils::kDaverage)
+  fDmesonType(AliHFCorrelationUtils::kDaverage),
+  fIsReflected(kFALSE)
 {
   //Default Constructor......... fix me
 
 }
 
  //_____________________________|Standard Constructor|________________________________________
-AliHFCorrFitter::AliHFCorrFitter(const TH1F* histoToFit, Double_t min, Double_t max):
+AliHFCorrFitter::AliHFCorrFitter(TH1F* histoToFit, Double_t min, Double_t max,Bool_t isowner):
 fHist(0x0),
 fFit(0x0),
 fGausNS(0x0),
@@ -95,12 +97,14 @@ fNsybc(0),
 fEnsybc(0),
 fAsybc(0),
 fEasybc(0),
-fMinBaselineRange(0),
-fMaxBaselineRange(-1),
+fMinBaselineRange(0.25*TMath::Pi()),
+fMaxBaselineRange(0.5*TMath::Pi()),
 fTypeOfFitfunc(kTwoGausPeriodicity),
-fDmesonType(AliHFCorrelationUtils::kDaverage)
+fDmesonType(AliHFCorrelationUtils::kDaverage),
+fIsReflected(kFALSE)
 {
-  fHist=(TH1F*)histoToFit->Clone("fHist");
+  if(isowner)fHist=histoToFit;
+  else fHist=(TH1F*)histoToFit->Clone("fHist");
   fMin=min; 
   fMax=max;
 }
@@ -127,7 +131,8 @@ AliHFCorrFitter::AliHFCorrFitter(const AliHFCorrFitter &source):
   fMinBaselineRange(source.fMinBaselineRange),
   fMaxBaselineRange(source.fMaxBaselineRange),
   fTypeOfFitfunc(source.fTypeOfFitfunc),
-  fDmesonType(source.fDmesonType)
+  fDmesonType(source.fDmesonType),
+  fIsReflected(source.fIsReflected)
 {
   //copy constructor
 }
@@ -173,7 +178,7 @@ AliHFCorrFitter& AliHFCorrFitter::operator=(const AliHFCorrFitter &cfit)
   fMaxBaselineRange=cfit.fMaxBaselineRange;
   fTypeOfFitfunc=cfit.fTypeOfFitfunc;
   fDmesonType=cfit.fDmesonType;
-
+  fIsReflected=cfit.fIsReflected;
   
   return *this;
 
@@ -386,8 +391,8 @@ case 4:
     break;
           
     case 5: // v2 modulation
-      fFit=new TF1("v2Modulation","[0]*(1+2*[1]*[2](1+TMath::TMath::Cos(2*x)))",fMin,fMax);
-      fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2](1+TMath::TMath::Cos(2*x))",fMin,fMax); 
+      fFit=new TF1("v2Modulation","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax);
+      fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax); 
 
       fFit->SetParLimits(0,0.,999.);
       fFit->SetParLimits(1,-1,1);
@@ -399,12 +404,12 @@ case 4:
       break;
       
       case 6: // case 2 + v2 modulation
-	fFit=new TF1("TwoGausPeriodicityPlusV2modulation","[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[0]*(1+2*[7]*[8](1+TMath::TMath::Cos(2*x)))",fMin,fMax);
+	fFit=new TF1("TwoGausPeriodicityPlusV2modulation","[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[0]*(1+2*[7]*[8]*TMath::TMath::Cos(2*x))",fMin,fMax);
         
     fGausNS=new TF1("fGausNSper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
     fGausNS2=new TF1("fGausNS2per","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
     fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
-    fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2](1+TMath::TMath::Cos(2*x))",fMin,fMax); 
+    fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax); 
     
     fFit->SetParLimits(0,0.,999.);
     fFit->SetParLimits(1,0,999.);
@@ -441,8 +446,163 @@ case 4:
   }
   
 }
+//_______________________________________________________________________________
+Double_t AliHFCorrFitter::FindBaseline(){
 
+  if(fFixBase==0){
+    Printf("AliHFCorrFitter::FindBasline:  The baseline option is set to free baselie: now the full fit will be done. Beware!");
+    Fitting();
+    return fBaseline;
+  }
 
+  //_________________________________________ fFixBase 1
+  if(fFixBase==1){
+    Double_t min=1.e10;
+    Int_t k=-1;
+    for(Int_t j=1;j<=fHist->GetNbinsX();j++){
+      if(fHist->GetBinContent(j)<min){
+	min=fHist->GetBinContent(j);
+	k=j;
+      }
+    }
+    fBaseline=min;
+    fErrbaseline=fHist->GetBinError(k);      
+    return fBaseline;
+  }
+    
+  //_________________________________________ fFixBase <0
+  if(fFixBase<0){
+    Int_t npointsAv=TMath::Abs(fFixBase);
+    Int_t *ind=new Int_t[fHist->GetNbinsX()];
+    Float_t *hval=fHist->GetArray();
+    Double_t errAv=0.,av=0.;
+    TMath::Sort(fHist->GetNbinsX(),&hval[1],ind,kFALSE);// need to exclude under and over flow bins, KFALSE->increasing order
+    // Average of abs(fFixBase) lower points
+    for(Int_t k=0;k<npointsAv;k++){
+      
+      av+=(fHist->GetBinContent(ind[k]+1)/(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1)));
+      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
+      errAv+=1./(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1));	  
+    }
+    av/=errAv;
+    errAv=TMath::Sqrt(1./errAv);
+    Printf("Average fBaseline: %f +- %f",av,errAv);
+    fBaseline=av;
+    fErrbaseline=errAv;
+    return fBaseline;
+  }
+    
+  //_________________________________________ fFixBase 2
+  if(fFixBase==2){// ZYAM, USE 2 POINTS AT +- pi/2
+    Double_t errAv=0.,av=0.;
+    // Average of abs(fFixBase) lower points
+    Int_t binPhi=fHist->FindBin(TMath::Pi()/2.);
+    av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+    //	printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
+    errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
+    if(!fIsReflected){
+      binPhi=fHist->FindBin(-TMath::Pi()/2.);
+      if(binPhi<1)binPhi=1;
+      av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+      //	printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
+      errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	
+    }
+    av/=errAv;
+    errAv=TMath::Sqrt(1./errAv);
+    printf("Average fBaseline: %f +- %f \n",av,errAv);
+    fBaseline=av;
+    fErrbaseline=errAv;
+    return fBaseline;
+  }
+  
+    //_________________________________________ fFixBase 4
+ if(fFixBase==4){// ZYAM, USE 4 points around +- pi/2
+   Double_t errAv=0.,av=0.;
+   // Average of abs(fFixBase) lower points
+   Int_t binPhi=fHist->FindBin(TMath::Pi()/2.);
+   av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+   errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
+   
+   Double_t binCentreCloseL=fHist->GetBinCenter(binPhi-1);
+   Double_t binCentreCloseR=fHist->GetBinCenter(binPhi+1);
+   
+   if(TMath::Abs(binCentreCloseR-TMath::Pi()/2.)<TMath::Abs(binCentreCloseL-TMath::Pi()/2.))binPhi++;
+   else  binPhi--;
+   av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+   errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
+   if(!fIsReflected){
+     binPhi=fHist->FindBin(-TMath::Pi()/2.);
+     if(binPhi<1)binPhi=fHist->GetNbinsX();
+     av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
+     
+     Int_t binphiL,binphiR;
+     if(binPhi==1){
+       binphiL=fHist->GetNbinsX();
+       binCentreCloseL=fHist->GetBinCenter(fHist->GetNbinsX())-TMath::Pi()*2.;
+     }
+     else {
+       binCentreCloseL=fHist->GetBinCenter(binPhi-1);
+       binphiL=binPhi-1;
+     }
+     
+     if(binPhi==fHist->GetNbinsX()){
+       binphiR=1;
+       binCentreCloseR=fHist->GetBinCenter(1);
+     }
+     else {
+       binphiR=binPhi+1;
+       binCentreCloseR=fHist->GetBinCenter(binPhi+1);
+     }
+     
+     if(TMath::Abs(binCentreCloseR+TMath::Pi()/2.)<TMath::Abs(binCentreCloseL+TMath::Pi()/2.)){
+       binPhi=binphiR;
+     }
+     else {
+       binPhi=binphiL;      
+     }
+     av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
+   }
+   av/=errAv;
+   errAv=TMath::Sqrt(1./errAv);
+   printf("Average fBaseline: %f +- %f \n",av,errAv);
+   fBaseline=av;
+   fErrbaseline=errAv;
+   return fBaseline;
+ }
+ 
+ if(fFixBase==5){// use fit range
+   Double_t errAv=0.,av=0.;     
+   for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
+     
+     if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+     
+     if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
+       cout << "iBin = " << binPhi << endl;
+       av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+       errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
+     }
+   }
+   
+   av/=errAv;
+   errAv=TMath::Sqrt(1./errAv);
+   //  av/=2;
+   //  errAv/=2;
+   printf("Average fBaseline: %f +- %f \n",av,errAv);
+   fBaseline=av;
+   fErrbaseline=errAv;
+   return fBaseline;     
+ }
+ 
+ Printf("AliHFCorrFitter::FindBaseline   WRONG BASELINE OPTION SET, RETURNING -999");
+ return -999.;
+    
+}
 //_______________________________________________________________________________
 
 void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
@@ -462,243 +622,63 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
 |___________________________________________________________________________|*/
     
   //_________________________________________ fFixBase 0
-  if(fFixBase==6){
+  if(fFixBase!=0&&fFixBase!=6){
+    Printf("AliHFCorrFitter::Fitting, Finding baseline");
+    FindBaseline();    
+  }   
+  Printf("AliHFCorrFitter::Fitting, Setting Function");
+  SetFunction();
+
+  if(fFixBase!=0){
     fFit->FixParameter(0,fBaseline);
   }
-    
-  //_________________________________________ fFixBase 1
-  if(fFixBase==1){
-    Double_t min=1.e10;
-    Int_t k=-1;
-    for(Int_t j=1;j<=fHist->GetNbinsX();j++){
-      if(fHist->GetBinContent(j)<min){
-	min=fHist->GetBinContent(j);
-	k=j;
-      }
-    }
-    fFit->FixParameter(0,min);
-    fBaseline=min;
-    fErrbaseline=fHist->GetBinError(k);      
+  if(fFixMean==1||fFixMean==3){
+    fFit->FixParameter(2,0.);
   }
-    
-  //_________________________________________ fFixBase <0
-  if(fFixBase<0){
-    Int_t npointsAv=TMath::Abs(fFixBase);
-    Int_t *ind=new Int_t[fHist->GetNbinsX()];
-    Float_t *hval=fHist->GetArray();
-    Double_t errAv=0.,av=0.;
-    TMath::Sort(fHist->GetNbinsX(),&hval[1],ind,kFALSE);// need to exclude under and over flow bins, KFALSE->increasing order
-    // Average of abs(fFixBase) lower points
-    for(Int_t k=0;k<npointsAv;k++){
-      
-      av+=(fHist->GetBinContent(ind[k]+1)/(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1)));
-      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
-      errAv+=1./(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1));	  
-    }
-    av/=errAv;
-    errAv=TMath::Sqrt(1./errAv);
-    printf("Average fBaseline: %f +- %f \n",av,errAv);
-    fFit->FixParameter(0,av);      
-    fBaseline=av;
-    fErrbaseline=errAv;
+  if(fFixMean==2||fFixMean==3){
+    if(fTypeOfFitfunc!=0)fFit->FixParameter(5,TMath::Pi());
   }
-    
-  //_________________________________________ fFixBase 2
-  if(fFixBase==2){// ZYAM, USE 2 POINTS AT +- pi/2
-    Double_t errAv=0.,av=0.;
-    // Average of abs(fFixBase) lower points
-    Int_t binPhi=fHist->FindBin(TMath::Pi()/2.);
-    av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-    //	printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
-    errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
+  Printf("AliHFCorrFitter::Fitting, fitting");
+  fHist->Fit(fFit,"REMI","",fMin,fMax);
+  if(fFixBase==0){
+    fBaseline=fFit->GetParameter(0);
+    fErrbaseline=fFit->GetParError(0);
+  }
+  Printf("AliHFCorrFitter::Fitting, Calculating yields with BC");
+  CalculateYieldsAboveBaseline();
+  fHist->SetTitle(";#Delta#varphi (rad); #frac{1}{N_{D}}#frac{dN^{assoc}}{d#Delta#varphi} (rad^{-1}");
+  Printf("AliHFCorrFitter::Fitting, Now drawing, if requested");
+  SetSingleTermsForDrawing(drawSplitTerm);
 
-    binPhi=fHist->FindBin(-TMath::Pi()/2.);
-    if(binPhi<1)binPhi=1;
-    av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-    //	printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
-    errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	
-   
-    av/=errAv;
-    errAv=TMath::Sqrt(1./errAv);
-    printf("Average fBaseline: %f +- %f \n",av,errAv);
-    fFit->FixParameter(0,av);      
-    fBaseline=av;
-    fErrbaseline=errAv;
-    
-  }
-  
-    //_________________________________________ fFixBase 4
- if(fFixBase==4){// ZYAM, USE 4 points around +- pi/2
-   Double_t errAv=0.,av=0.;
-   // Average of abs(fFixBase) lower points
-   Int_t binPhi=fHist->FindBin(TMath::Pi()/2.);
-   av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-   errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
-    
-   Double_t binCentreCloseL=fHist->GetBinCenter(binPhi-1);
-   Double_t binCentreCloseR=fHist->GetBinCenter(binPhi+1);
-   
-   if(TMath::Abs(binCentreCloseR-TMath::Pi()/2.)<TMath::Abs(binCentreCloseL-TMath::Pi()/2.))binPhi++;
-   else  binPhi--;
-    av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-    errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
-    
-    binPhi=fHist->FindBin(-TMath::Pi()/2.);
-    if(binPhi<1)binPhi=fHist->GetNbinsX();
-    av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-    errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
-    
-    Int_t binphiL,binphiR;
-    if(binPhi==1){
-      binphiL=fHist->GetNbinsX();
-      binCentreCloseL=fHist->GetBinCenter(fHist->GetNbinsX())-TMath::Pi()*2.;
-    }
-    else {
-      binCentreCloseL=fHist->GetBinCenter(binPhi-1);
-      binphiL=binPhi-1;
-    }
-    
-    if(binPhi==fHist->GetNbinsX()){
-      binphiR=1;
-      binCentreCloseR=fHist->GetBinCenter(1);
-    }
-    else {
-      binphiR=binPhi+1;
-      binCentreCloseR=fHist->GetBinCenter(binPhi+1);
-    }
-    
-    if(TMath::Abs(binCentreCloseR+TMath::Pi()/2.)<TMath::Abs(binCentreCloseL+TMath::Pi()/2.)){
-      binPhi=binphiR;
-    }
-    else {
-      binPhi=binphiL;      
-    }
-    av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-    errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));	  
-    
-    av/=errAv;
-    errAv=TMath::Sqrt(1./errAv);
-    printf("Average fBaseline: %f +- %f \n",av,errAv);
-    fFit->FixParameter(0,av);      
-    fBaseline=av;
-    fErrbaseline=errAv;
- }
-    
-    //_________________________________________ fFixBase 5
- /*if(fFixBase==5){// use fit range
-      Double_t errAv=0.,av=0.;
-      
-      
-        for(Int_t binPhi =0; binPhi<fHist->GetNbinsX();binPhi++){
-	  
-	  if(fHist->GetBinLowEdge(binPhi)>=-0.5*TMath::Pi() && fHist->GetBinLowEdge(binPhi+1)<=-0.25*TMath::Pi()){
-	      cout << "iBin = " << binPhi << endl;
-	      av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-	      errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-	  }
-	  
-	  if(fHist->GetBinLowEdge(binPhi)>=0.25*TMath::Pi() && fHist->GetBinLowEdge(binPhi+1)<=0.5*TMath::Pi()){
-	    cout << "iBin = " << binPhi << endl;
-            av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-            errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-	  }
-        }
-        
-        av/=errAv;
-        errAv=TMath::Sqrt(1./errAv);
-	//  av/=2;
-	//  errAv/=2;
-        printf("Average fBaseline: %f +- %f \n",av,errAv);
-        fFit->FixParameter(0,av);
-        fBaseline=av;
-        fErrbaseline=errAv;
-	
-    }*/
-    if(fFixBase==5){// use fit range
-        Double_t errAv=0.,av=0.;
-        
-        
-        for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
-            
-            if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
-                cout << "iBin = " << binPhi << endl;
-                av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-                errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-            }
-            
-            if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
-                cout << "iBin = " << binPhi << endl;
-                av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-                errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
-            }
-        }
-        
-        av/=errAv;
-        errAv=TMath::Sqrt(1./errAv);
-        //  av/=2;
-        //  errAv/=2;
-        printf("Average fBaseline: %f +- %f \n",av,errAv);
-        fFit->FixParameter(0,av);
-        fBaseline=av;
-        fErrbaseline=errAv;
-        
-    }
-  
-    
- if(fFixMean==1||fFixMean==3){
-   fFit->FixParameter(2,0.);
- }
- if(fFixMean==2||fFixMean==3){
-   if(fTypeOfFitfunc!=0)fFit->FixParameter(5,TMath::Pi());
- }
-
- SetFunction();
- fHist->Fit(fFit,"REMI","",fMin,fMax);
- if(fFixBase==0){
-   fBaseline=fFit->GetParameter(0);
-   fErrbaseline=fFit->GetParError(0);
- }
- fHist->SetTitle(";#Delta#varphi (rad); #frac{1}{N_{D}}#frac{dN^{assoc}}{d#Delta#varphi} (rad^{-1}");
- SetSingleTermsForDrawing(drawSplitTerm);
 }
- 
+
 //________________________________________________________________
-void AliHFCorrFitter::YieldErrAboveBaseline()
+void AliHFCorrFitter::CalculateYieldsAboveBaseline()
 {
-  Double_t errAvns=0 ; Double_t errAvas=0;
-  // Double_t base=fFit->GetParameter(0);
-  Double_t base=fBaseline;
-  Double_t ebase=fErrbaseline;
-  //cout<<base<<"$$$$$$$$"<<endl;
-  cout<<ebase<<"<---------"<<endl;
-
+  fNsybc=0;
+  fEnsybc=0;
+  fAsybc=0;
+  fEasybc=0;
+  cout<<"--------> Baseline: "<<fBaseline<<"+-"<<fErrbaseline<<"<---------"<<endl;
   Int_t binMinNS=fHist->FindBin(-1.5);// slightly more than -pi/2
-  if(binMinNS<1)binMinNS=1;
+  if(binMinNS<1)binMinNS=1;// with this, it is ok even in the case of a reflected fHist (range 0 - pi)
   Int_t binMaxNS=fHist->FindBin(1.5);// slightly less than +pi/2
-  
   Int_t binMinAS=fHist->FindBin(1.6);// slightly more than +pi/2
-  cout<<binMinAS<<"<-----"<<endl;
   Int_t binMaxAS=fHist->FindBin(3.14+1.5);// slightly less than +3pi/2
-  if(binMaxAS>fHist->GetNbinsX())binMaxNS=fHist->GetNbinsX();
-  cout<<binMaxAS<<"<-----"<<endl;
-  for(Int_t bmNS=binMinNS;bmNS<binMaxNS;bmNS++){
-    fNsybc+=(fHist->GetBinContent(bmNS)-base)*fHist->GetBinWidth(bmNS);
-    fEnsybc+=((fHist->GetBinError(bmNS)*fHist->GetBinError(bmNS))-(ebase*ebase))*fHist->GetBinWidth(bmNS);
-    //fEnsybc+=TMath::Sqrt(fNsybc+(binMaxNS-binMinNS+1)*ebase*ebase)*fHist->GetBinWidth(bmNS);
-    
+  if(binMaxAS>fHist->GetNbinsX())binMaxNS=fHist->GetNbinsX();// with this, it is ok even in the case of a reflected fHist (range 0 - pi)
+  for(Int_t bmNS=binMinNS;bmNS<=binMaxNS;bmNS++){
+    fNsybc+=(fHist->GetBinContent(bmNS)-fBaseline)*fHist->GetBinWidth(bmNS);
+    fEnsybc+=(fHist->GetBinError(bmNS)*fHist->GetBinError(bmNS))*fHist->GetBinWidth(bmNS)*fHist->GetBinWidth(bmNS);
   }
-  errAvns=TMath::Sqrt(1./fEnsybc);
-
-  for(Int_t bmAS=binMinAS;bmAS<binMaxAS;bmAS++){
-    fAsybc+=(fHist->GetBinContent(bmAS)-base)*fHist->GetBinWidth(bmAS);
-    fEasybc+=((fHist->GetBinError(bmAS)*fHist->GetBinError(bmAS))-(ebase*ebase))*fHist->GetBinWidth(bmAS);
-
-    // fEasybc+=TMath::Sqrt(fAsybc+(binMaxAS-binMinAS+1)*ebase*ebase)*fHist->GetBinWidth(bmAS);
-
+  fEnsybc=TMath::Sqrt(fEnsybc);
+  
+  for(Int_t bmAS=binMinAS;bmAS<=binMaxAS;bmAS++){
+    fAsybc+=(fHist->GetBinContent(bmAS)-fBaseline)*fHist->GetBinWidth(bmAS);
+    fEasybc+=(fHist->GetBinError(bmAS)*fHist->GetBinError(bmAS))*fHist->GetBinWidth(bmAS)*fHist->GetBinWidth(bmAS);
   }
-  errAvas=TMath::Sqrt(1./fEasybc);
+  fEasybc=TMath::Sqrt(fEasybc);
 
-  printf("Bin counting results: NS y= %f |______| yerr=- %f \n AS y: %f |______| yerr=- %f \n",fNsybc,errAvns,fAsybc,errAvas);
+  printf("Bin counting results: NS y= %f |______| yerr=- %f \n AS y: %f |______| yerr=- %f \n",fNsybc,fEnsybc,fAsybc,fEasybc);
   
 }
 
