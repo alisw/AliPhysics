@@ -76,7 +76,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fMaxRelParError(AliFMDCorrELossFit::ELossFit::fgMaxRelError),
     fMaxChi2PerNDF(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu), 
     fMinWeight(AliFMDCorrELossFit::ELossFit::fgLeastWeight),
-    fDebug(3),
+    fDebug(0),
     fResidualMethod(kNoResiduals),
     fSkips(0),
     fRegularizationCut(3e6)

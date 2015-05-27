@@ -212,11 +212,13 @@ namespace {
     if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
     if (TMath::Abs(energy - 2760.)  < 20)  return 2760;
     if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
+    if (TMath::Abs(energy - 5000.)  < 10)  return 5000;
     if (TMath::Abs(energy - 5022.)  < 10)  return 5023;
     if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
     if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
     if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
     if (TMath::Abs(energy - 10000.) < 10)  return 10000;
+    if (TMath::Abs(energy - 13000.) < 10)  return 13000;
     if (TMath::Abs(energy - 14000.) < 10)  return 14000;
     return 0;
   }

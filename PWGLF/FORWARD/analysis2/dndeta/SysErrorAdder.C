@@ -315,7 +315,8 @@ struct INELAdder : public SysErrorAdder
       case  900:   fLow = 0.001;  fHigh = 0.003; break;
       case 2760:   fLow = 0.0035; fHigh = 0.006; break;
       case 7000: 
-      case 8000:   fLow = 0.003;  fHigh = 0.006; break;
+      case 8000:
+      case 13000: fLow = 0.003;  fHigh = 0.006; break;
       default: break;
       }
     }
@@ -392,7 +393,8 @@ struct NSDAdder : public SysErrorAdder
       case  900:   fValue = 0.02; break;
       case 2760:   fValue = 0.03; break;
       case 7000: 
-      case 8000:   fValue = 0.02; break;
+      case 8000:
+      case 13000:  fValue = 0.02; break;
       default: break;
       }
     }
@@ -448,11 +450,11 @@ struct CENTAdder : public SysErrorAdder
   }
   const char* GetTriggerName() const 
   {
-    static TString n;
-    n = fTrig;
-    n.ReplaceAll("CENT", "Centrality (");
-    n.Append(")");
-    return n.Data();
+    // static TString n;
+    // n = fTrig;
+    // n.ReplaceAll("CENT", "Centrality (");
+    // n.Append(")");
+    return "Centrality";
   }
   virtual const char* GetTriggerString() const
   {
