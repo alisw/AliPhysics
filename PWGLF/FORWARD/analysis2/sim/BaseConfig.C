@@ -233,8 +233,10 @@ struct VirtualEGCfg
     char m = vers[0];
     if (gROOT->GetClass(Form("AliPythia6%c", m))) return;
 
+    TString v(vers); 
+    v.ReplaceAll(".", "_");
     LoadLibrary("libmicrocern");
-    LoadLibrary(Form("libpythia%s",vers));
+    LoadLibrary(Form("libpythia%s",v.Data()));
     LoadLibrary(Form("libAliPythia%c", m));
   }
   /**
