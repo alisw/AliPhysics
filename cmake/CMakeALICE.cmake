@@ -51,6 +51,8 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
                        WORKING_DIRECTORY
                          ${CMAKE_CURRENT_BINARY_DIR}
                       )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
     endif (ROOT_VERSION_MAJOR LESS 6)
 
 endmacro(generate_dictionary)

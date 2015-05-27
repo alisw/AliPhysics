@@ -646,7 +646,7 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
       else if(cent<fCentClass[1])cenClass = 1;
       else if(cent<fCentClass[2])cenClass = 2;
       else if(cent<fCentClass[3])cenClass = 3;
-      cout << "Centrality class: " << cenClass << endl;
+      std::cout << "Centrality class: " << cenClass << std::endl;
     }
 
     if(physicsSelection){
@@ -886,7 +886,7 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
 	AliAODTrack* track = (AliAODTrack*) trackRef->At(icons);
 	TVector3 trackV(track->Px(), track->Py(), track->Pz());
 	if(ujet->Pt()) Z = track->Pt()/ujet->Pt();
-	else {cout << "The reconstructed jet pt is NULL!! Check your jet list containt!";}
+	else {std::cout << "The reconstructed jet pt is NULL!! Check your jet list containt!";}
 	lnjT = TMath::Log((trackV.Cross(jetV)).Mag()/jetV.Mag());
 	deltaTheta = trackV.Angle(jetV);
 	Double_t TracksInJets[10] = {
@@ -938,13 +938,13 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
 
       if(fDebug > 9) { 
 	fastjet::PseudoJet j = sorted_jets_fj[iJetBranch][ijet];
-        cout << "pseudo jet eta: " << j.eta() << ", phi: " << j.phi() << ", pt: " << j.pt() << ", area: " << j.area() << endl;
+        std::cout << "pseudo jet eta: " << j.eta() << ", phi: " << j.phi() << ", pt: " << j.pt() << ", area: " << j.area() << std::endl;
         fastjet::PseudoJet area4vect = j.area_4vector();
-        cout << "a_x: " << area4vect.px() << ", a_y: " << area4vect.py() << "a_z: " << area4vect.pz() << endl;
+        std::cout << "a_x: " << area4vect.px() << ", a_y: " << area4vect.py() << "a_z: " << area4vect.pz() << std::endl;
 
 	fastjet::PseudoJet subtracted_jet = subtractor(j);
-	cout << "# [subtracted hard jet " << ijet+1 << "]:(pt,y,phi) = (" << subtracted_jet.pt() << ", "
-	     << subtracted_jet.rap() << ", " << subtracted_jet.phi() << ")" << endl;
+	std::cout << "# [subtracted hard jet " << ijet+1 << "]:(pt,y,phi) = (" << subtracted_jet.pt() << ", "
+	     << subtracted_jet.rap() << ", " << subtracted_jet.phi() << ")" << std::endl;
       }
             
       // Compute FFM
@@ -1004,14 +1004,14 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
       // //////////////////////////////////////// FFM done!!!!! ////////////////////////////////////////
 
       if(fDebug > 8) {
-        cout << "# Fragmentation function moments for full jet "
-             << ": (pt, eta, phi) = (" << pseudoJetUsed.pt() << ", "<< pseudoJetUsed.eta() << ", " << pseudoJetUsed.phi() << "), #constituents="<< pseudoJetUsed.constituents().size() << endl
-             <<": (px, py, pz, E )  = ("<<pseudoJetUsed.px()<<", "<<pseudoJetUsed.py()<<", "<<pseudoJetUsed.pz()<<", "<<pseudoJetUsed.e()<<")"<<"  sqrt(px^2+py^2): "<<TMath::Sqrt(pseudoJetUsed.px()*pseudoJetUsed.px() + pseudoJetUsed.py()*pseudoJetUsed.py())<<endl;
-        cout << "# N	M_N(unsubtracted)	M_N(subtracted)	      M_N(improved)(NOT YET)" << endl;
+        std::cout << "# Fragmentation function moments for full jet "
+             << ": (pt, eta, phi) = (" << pseudoJetUsed.pt() << ", "<< pseudoJetUsed.eta() << ", " << pseudoJetUsed.phi() << "), #constituents="<< pseudoJetUsed.constituents().size() << std::endl
+             <<": (px, py, pz, E )  = ("<<pseudoJetUsed.px()<<", "<<pseudoJetUsed.py()<<", "<<pseudoJetUsed.pz()<<", "<<pseudoJetUsed.e()<<")"<<"  sqrt(px^2+py^2): "<<TMath::Sqrt(pseudoJetUsed.px()*pseudoJetUsed.px() + pseudoJetUsed.py()*pseudoJetUsed.py())<<std::endl;
+        std::cout << "# N	M_N(unsubtracted)	M_N(subtracted)	      M_N(improved)(NOT YET)" << std::endl;
         for (unsigned int in=0; in<ffm_subtracted.size(); in++){
 	  printf("%1.2f	   %2.9f  	  %2.9f  	  %2.9f	 \n", ffms_subtracted.N(in), ffm_unsubtracted[in], ffm_subtracted[in], ffm_improved[in]);
         }
-        cout << "# N	A*M_N(unsubtracted)	A*M_N(subtracted)	      A*M_N(improved)(NOT YET)" << endl;
+        std::cout << "# N	A*M_N(unsubtracted)	A*M_N(subtracted)	      A*M_N(improved)(NOT YET)" << std::endl;
         for (unsigned int in=0; in<ffm_subtracted.size(); in++){
 	  printf("%1.2f	   %2.9f  	  %2.9f  	  %2.9f  \n", ffms_subtracted.N(in), fFFMs_Raw[iJetBranch][in][ijet], fFFMs_Sub[iJetBranch][in][ijet], fFFMs_Imp[iJetBranch][in][ijet]);
         }
