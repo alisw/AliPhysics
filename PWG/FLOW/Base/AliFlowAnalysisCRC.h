@@ -623,6 +623,8 @@ public:
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
  Bool_t GetUseZDC() const {return this->fUseZDC;};
+ void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
+ Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -692,6 +694,10 @@ public:
  TProfile* GetCRCZDCQVecAHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecA[r][c];};
  void SetCRCZDCQVecCHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecC[r][c] = TH;};
  TProfile* GetCRCZDCQVecCHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecC[r][c];};
+ void SetCRCZDCQVecACorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecACorr[r][c] = TH;};
+ TProfile* GetCRCZDCQVecACorrHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecACorr[r][c];};
+ void SetCRCZDCQVecCCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecCCorr[r][c] = TH;};
+ TProfile* GetCRCZDCQVecCCorrHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecCCorr[r][c];};
 // void SetRunBinMin(Int_t const n) {this->fCRCRunBinMin = n;};
 // Int_t GetRunBinMin() const {return this->fCRCRunBinMin;}
 // void SetRunBinMax(Int_t const n) {this->fCRCRunBinMax = n;};
@@ -1099,6 +1105,7 @@ private:
  Bool_t fCalculateCRCPt;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
+ Bool_t fRecenterZDC;
  Bool_t fNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
@@ -1157,6 +1164,8 @@ private:
  TH1D *fCRCZDCEvPlC[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-C
  TProfile *fCRCZDCQVecA[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
+ TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
+ TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List

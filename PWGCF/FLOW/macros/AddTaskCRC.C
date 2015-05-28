@@ -1,5 +1,7 @@
 void AddTaskCRC(Double_t centrMin,
                 Double_t centrMax,
+                Int_t nCenBin,
+                Double_t CenBinWidth,
                 Double_t ptMin=0.2,
                 Double_t ptMax=5.0,
                 Double_t etaMin=-0.8,
@@ -17,6 +19,7 @@ void AddTaskCRC(Double_t centrMin,
                 Bool_t bUseVZEROCalib=kFALSE,
                 Bool_t bUseVZEROTwist=kFALSE,
                 Bool_t bUseZDC=kFALSE,
+                Bool_t bRecenterZDC=kFALSE,
                 Bool_t bEventCutsQA=kFALSE,
                 Bool_t bTrackCutsQA=kFALSE,
                 TString Label="",
@@ -98,7 +101,7 @@ void AddTaskCRC(Double_t centrMin,
   AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
  } else {
   AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
-  taskFE->SetCentralityRange(0.,100.);
+  taskFE->SetCentralityRange(centrMin,centrMax);
   taskFE->SetCentralityEstimator("V0M");
  }
  // add the task to the manager
@@ -168,7 +171,7 @@ void AddTaskCRC(Double_t centrMin,
    cutsRP->SetApplyTwisting(bUseVZEROTwist);
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
-   cutsRP->SetAODfilterBit(768);
+   cutsRP->SetAODfilterBit(AODfilterBit);
    cutsRP->SetMinimalTPCdedx(-999999999);
    cutsRP->SetPtRange(ptMin,ptMax);
    cutsRP->SetEtaRange(etaMin,etaMax);
@@ -176,7 +179,7 @@ void AddTaskCRC(Double_t centrMin,
   }
   // Track cuts for POIs
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
-  cutsPOI->SetAODfilterBit(768);
+  cutsPOI->SetAODfilterBit(AODfilterBit);
   cutsPOI->SetMinimalTPCdedx(-999999999);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
@@ -228,9 +231,10 @@ void AddTaskCRC(Double_t centrMin,
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
  AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, bUsePhiEtaWeights);
-// TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-// if (TPCMultOut == "2011") QVecWeightsFileName += "CRCTPCQVecCalib11h.root";
-// else if (TPCMultOut == "2010") QVecWeightsFileName += "CRCTPCQVecCalib10h.root";
+ // set number of centrality bins
+ taskQC->SetnCenBin(nCenBin);
+ taskQC->SetCenBinWidth(CenBinWidth);
+ taskQC->SetRunSet(TPCMultOut);
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -253,11 +257,11 @@ void AddTaskCRC(Double_t centrMin,
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
+ taskQC->SetRecenterZDC(bRecenterZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
- taskQC->SetRunSet(TPCMultOut);
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
- if(bUseCRCRecentering) {
+ if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {
    cout << "ERROR: QVecWeightsFile not found!" << endl;
