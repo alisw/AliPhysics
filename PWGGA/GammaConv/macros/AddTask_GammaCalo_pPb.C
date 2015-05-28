@@ -37,7 +37,7 @@ void AddTask_GammaCalo_pPb(
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-		Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
+		Error(Form("AddTask_GammaCalo_pPb_%i",trainConfig), "No analysis manager found.");
 		return ;
 	}
 
