@@ -335,8 +335,8 @@ updateQA()
       fi
 
       #perform some default actions:
-      #if trending.root not created, create a default one
-      if [[ ! -f trending.root ]]; then
+      #if trending.root not created, create a default one, if anything was actually processed
+      if [[ ! -f trending.root && -n ${qaFile} ]]; then
         echo "trending.root not provided, falling back to:"
         echo "aliroot -b -q -l $ALICE_PHYSICS/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\") 2>&1 | tee -a runLevelQA.log > simpleTrending.log"
         aliroot -b -q -l "$ALICE_PHYSICS/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log > simpleTrending.log
