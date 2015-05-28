@@ -57,6 +57,7 @@
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
 #include <vector>
+#include <map>
 
 ClassImp(AliAnalysisTaskGammaConvCalo)
 
@@ -245,6 +246,12 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fVectorDoubleCountTruePi0s(0),
 	fVectorDoubleCountTrueEtas(0),
 	fVectorDoubleCountTrueConvGammas(0),
+	fHistoMultipleCountTruePi0(NULL),
+	fHistoMultipleCountTrueEta(NULL),
+	fHistoMultipleCountTrueConvGamma(NULL),
+	fMapMultipleCountTruePi0s(),
+	fMapMultipleCountTrueEtas(),
+	fMapMultipleCountTrueConvGammas(),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fHistoVertexZ(NULL),
@@ -465,6 +472,12 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fVectorDoubleCountTruePi0s(0),
 	fVectorDoubleCountTrueEtas(0),
 	fVectorDoubleCountTrueConvGammas(0),
+	fHistoMultipleCountTruePi0(NULL),
+	fHistoMultipleCountTrueEta(NULL),
+	fHistoMultipleCountTrueConvGamma(NULL),
+	fMapMultipleCountTruePi0s(),
+	fMapMultipleCountTrueEtas(),
+	fMapMultipleCountTrueConvGammas(),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fHistoVertexZ(NULL),
@@ -899,7 +912,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoMCDecayGammaSigmaPt 			= new TH1F*[fnCuts];
 		fHistoMCConvGammaPt 				= new TH1F*[fnCuts];
 		fHistoTrueConvGammaPt 				= new TH1F*[fnCuts];
-		fHistoDoubleCountTrueConvGammaRPt		= new TH2F*[fnCuts];
+		fHistoDoubleCountTrueConvGammaRPt	= new TH2F*[fnCuts];
+		fHistoMultipleCountTrueConvGamma	= new TH1F*[fnCuts];
     
 		fHistoCombinatorialPt 							= new TH2F*[fnCuts];
 		fHistoTruePrimaryConvGammaPt 					= new TH1F*[fnCuts];
@@ -951,7 +965,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoTruePi0MatchedInvMassPt				= new TH2F*[fnCuts];
 			fHistoTrueEtaMatchedInvMassPt				= new TH2F*[fnCuts];
 			fHistoDoubleCountTruePi0InvMassPt			= new TH2F*[fnCuts];
+			fHistoMultipleCountTruePi0					= new TH1F*[fnCuts];
 			fHistoDoubleCountTrueEtaInvMassPt			= new TH2F*[fnCuts];
+			fHistoMultipleCountTrueEta					= new TH1F*[fnCuts];
 			fHistoTruePrimaryPi0InvMassPt 				= new TH2F*[fnCuts];
 			fHistoTruePrimaryEtaInvMassPt 				= new TH2F*[fnCuts];
 			fHistoTruePrimaryPi0W0WeightingInvMassPt 	= new TH2F*[fnCuts];
@@ -1135,6 +1151,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
 			fHistoDoubleCountTrueConvGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt","ESD_TrueDoubleCountConvGamma_R_Pt",800,0,200,300,0,30);
 			fTrueList[iCut]->Add(fHistoDoubleCountTrueConvGammaRPt[iCut]);
+			fHistoMultipleCountTrueConvGamma[iCut] = new TH1F("ESD_TrueMultipleCountConvGamma","ESD_TrueMultipleCountConvGamma",5,0,5);
+			fTrueList[iCut]->Add(fHistoMultipleCountTrueConvGamma[iCut]);
       
 			fHistoCombinatorialPt[iCut] = new TH2F("ESD_TrueCombinatorial_Pt","ESD_TrueCombinatorial_Pt",300,0,30,16,-0.5,15.5);
 			fHistoCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 1,"Elec+Elec");
@@ -1233,8 +1251,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
 				fHistoDoubleCountTruePi0InvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountPi0_InvMass_Pt","ESD_TrueDoubleCountPi0_InvMass_Pt",800,0,0.8,300,0,30);
 				fTrueList[iCut]->Add(fHistoDoubleCountTruePi0InvMassPt[iCut]);
+				fHistoMultipleCountTruePi0[iCut] = new TH1F("ESD_TrueMultipleCountPi0","ESD_TrueMultipleCountPi0",5,0,5);
+				fTrueList[iCut]->Add(fHistoMultipleCountTruePi0[iCut]);
 				fHistoDoubleCountTrueEtaInvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountEta_InvMass_Pt","ESD_TrueDoubleCountEta_InvMass_Pt",800,0,0.8,300,0,30);
 				fTrueList[iCut]->Add(fHistoDoubleCountTrueEtaInvMassPt[iCut]);
+				fHistoMultipleCountTrueEta[iCut] = new TH1F("ESD_TrueMultipleCountEta","ESD_TrueMultipleCountEta",5,0,5);
+				fTrueList[iCut]->Add(fHistoMultipleCountTrueEta[iCut]);
 
 				fHistoTruePrimaryPi0InvMassPt[iCut] = new TH2F("ESD_TruePrimaryPi0_InvMass_Pt", "ESD_TruePrimaryPi0_InvMass_Pt", 800,0,0.8,300,0,30);
 				fHistoTruePrimaryPi0InvMassPt[iCut]->SetXTitle("M_{inv,prim #pi^{0}} (GeV/c^{2})");
@@ -1512,6 +1534,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	fVectorDoubleCountTrueEtas.clear();
 	fVectorDoubleCountTrueConvGammas.clear();
 
+	fMapMultipleCountTruePi0s.clear();
+	fMapMultipleCountTrueEtas.clear();
+	fMapMultipleCountTrueConvGammas.clear();
+
 	fVectorRecTruePi0s.clear();
 	fVectorRecTrueEtas.clear();
     
@@ -1744,10 +1770,15 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 				fVectorRecTrueEtas.clear();
 				fVectorDoubleCountTruePi0s.clear();
 				fVectorDoubleCountTrueEtas.clear();
+				FillMultipleCountHistoAndClear(fMapMultipleCountTruePi0s,fHistoMultipleCountTruePi0[iCut]);
+				FillMultipleCountHistoAndClear(fMapMultipleCountTrueEtas,fHistoMultipleCountTrueEta[iCut]);
 			}
 		}
 
-		if(fIsMC) fVectorDoubleCountTrueConvGammas.clear();
+		if(fIsMC){
+			fVectorDoubleCountTrueConvGammas.clear();
+			FillMultipleCountHistoAndClear(fMapMultipleCountTrueConvGammas,fHistoMultipleCountTrueConvGamma[iCut]);
+		}
 
 		fGammaCandidates->Clear(); // delete this cuts good gammas
 		fClusterCandidates->Clear(); // delete cluster candidates
@@ -2225,7 +2256,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 	if(fIsFromMBHeader){
 		fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		if (fDoPhotonQA > 0) fHistoTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
-		if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother())) fHistoDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+		if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother())){
+			fHistoDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+			FillMultipleCountMap(fMapMultipleCountTrueConvGammas,posDaughter->GetMother());
+		}
 	}
 
 	Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -2309,7 +2343,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
 	if(fIsFromMBHeader){
 		fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		if (fDoPhotonQA > 0) fHistoTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
-		if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother(0))) fHistoDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+		if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother(0))){
+			fHistoDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt());
+			FillMultipleCountMap(fMapMultipleCountTrueConvGammas,posDaughter->GetMother(0));
+		}
 	}
 	Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
 	if(isPrimary){
@@ -2828,11 +2865,17 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 		if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
 			if(((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
 				isTruePi0=kTRUE;
-				if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)){
+					fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					FillMultipleCountMap(fMapMultipleCountTruePi0s,gamma0MotherLabel);
+				}
 			}
 			if(((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 221){
 				isTrueEta=kTRUE;
-				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,gamma0MotherLabel)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,gamma0MotherLabel)){
+					fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					FillMultipleCountMap(fMapMultipleCountTrueEtas,gamma0MotherLabel);
+				}
 			}
 		}
 		
@@ -3065,11 +3108,17 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 	if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
 		if(((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
 			isTruePi0=kTRUE;
-			if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)){
+				fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				FillMultipleCountMap(fMapMultipleCountTruePi0s,gamma0MotherLabel);
+			}
 		}
 		if(((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221){
 			isTrueEta=kTRUE;
-			if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,gamma0MotherLabel)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,gamma0MotherLabel)){
+				fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				FillMultipleCountMap(fMapMultipleCountTrueEtas,gamma0MotherLabel);
+			}
 		}
 	}
 	
@@ -3534,6 +3583,7 @@ void AliAnalysisTaskGammaConvCalo::RelabelAODPhotonCandidates(Bool_t mode){
 	}
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::SetLogBinningXTH2(TH2* histoRebin){
 	TAxis *axisafter = histoRebin->GetXaxis();
 	Int_t bins = axisafter->GetNbins();
@@ -3724,4 +3774,21 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
 		}	
 	}	
 	return;
-}	
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaConvCalo::FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked){
+	if( ma.find(tobechecked) != ma.end() ) ma[tobechecked] += 1;
+	else ma[tobechecked] = 2;
+	return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaConvCalo::FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist){
+	map<Int_t, Int_t>::iterator it;
+	for (it = ma.begin(); it != ma.end(); it++){
+		hist->Fill(it->second);
+	}
+	ma.clear();
+	return;
+}
