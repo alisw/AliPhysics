@@ -185,6 +185,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
+  fMaxTimeBinAllPads(-1),
   fHVsensors(),
   fGrRunState(0x0),
   fTemperature(0),
@@ -247,6 +248,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
+  fMaxTimeBinAllPads(-1),
   fHVsensors(),
   fGrRunState(0x0),
   fTemperature(0),
@@ -574,6 +576,9 @@ void AliTPCcalibDB::Update(){
 
   // Create Dead Channel Map
   InitDeadMap();
+
+  // Calculate derived ALTRO information
+  InitAltroData();
 
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
@@ -922,6 +927,54 @@ Int_t AliTPCcalibDB::InitDeadMap()
   }
 
   return 1;
+}
+
+void AliTPCcalibDB::InitAltroData()
+{
+  /// Initialise derived ALTRO data
+  ///
+  /// List of required OCDB Entries
+  /// - TPC/Calib/AltroConfig
+  /// - TPC/Calib/Parameters
+
+  // ===| Maximum time bin |====================================================
+  //
+  // Calculate the maximum time using the 'AcqStart' cal pad object from
+  // TPC/Calib/AltroConfig
+  // if this object is not available, the value will return the max time bin
+  // stored in the AliTPCParam object from TPC/Calib/Parameters
+
+  fMaxTimeBinAllPads=-1;
+
+  const AliTPCCalPad *calPadAcqStop = GetALTROAcqStop();
+
+  if (calPadAcqStop) {
+    //find max elememt
+    // TODO: change this once the GetMaxElement function is implemented in AliTPCCalPad
+    Float_t maxBin=-1;
+    for (Int_t iroc=0; iroc<AliTPCCalPad::kNsec; ++iroc) {
+      const AliTPCCalROC *roc = calPadAcqStop->GetCalROC(iroc);
+      if (!roc) continue;
+      for (Int_t ichannel=0; ichannel<roc->GetNchannels(); ++ichannel) {
+        const Float_t val=roc->GetValue(ichannel);
+        if (val>maxBin) maxBin=val;
+      }
+    }
+    fMaxTimeBinAllPads = TMath::Nint(maxBin);
+  }
+
+  if (fMaxTimeBinAllPads<0) {
+    if (fParam) {
+      AliWarning("Could not access 'AcqStop' map from AltroConfig or invalid max time bine. fMaxTimeBinAllPads will be set from AliTPCParam.");
+      fMaxTimeBinAllPads = fParam->GetMaxTBin();
+    } else {
+      // last fallback
+      AliWarning("Could neither access 'Parameters' nor 'AcqStop' map from AltroConfig. fMaxTimeBinAllPads will be set to 1000.");
+      fMaxTimeBinAllPads=1000;
+    }
+  }
+
+  AliInfo(TString::Format("fMaxTimeBinAllPads set to %d", fMaxTimeBinAllPads).Data());
 }
 
 void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {

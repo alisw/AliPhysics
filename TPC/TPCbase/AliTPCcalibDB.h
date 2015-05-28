@@ -76,7 +76,8 @@ class AliTPCcalibDB : public TObject
 
   AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
   AliTPCCalPad* GetPedestals() const{return fPedestals;}
-  //ALTRO config data
+
+  // ===| ALTRO config data |===================================================
   TObjArray* GetAltroConfigData()  const {return fALTROConfigData;}
   AliTPCCalPad* GetALTROAcqStart() const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("AcqStart")):0;}
   AliTPCCalPad* GetALTROZsThr()    const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("ZsThr")):0;}
@@ -88,9 +89,10 @@ class AliTPCcalibDB : public TObject
   Int_t GetRCUTriggerConfig() const;
   Bool_t IsTrgL0();
   Bool_t IsTrgL1();
-    
+  Int_t GetMaxTimeBinAllPads() const { return fMaxTimeBinAllPads; }
+
+  //
   TObjArray*    GetIonTailArray()  const {return fIonTailArray;}
-    
   //Pulser data
   TObjArray*    GetPulserData()  const {return fPulserData;}
   AliTPCCalPad* GetPulserTmean() const {return fPulserData?static_cast<AliTPCCalPad*>(fPulserData->FindObject("PulserTmean")):0;}
@@ -195,6 +197,7 @@ protected:
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
   void         UpdateChamberHighVoltageData();
   Int_t        InitDeadMap();
+  void         InitAltroData();
 
   Int_t        fRun;         ///< current run number
   AliTPCTransform *fTransform;      ///< object responsible for spacial corrections
@@ -218,6 +221,10 @@ protected:
   TObjArray * fIonTailArray;      ///< array of graphs with the ion tail
   TObjArray *fPulserData;         ///< Calibration Pulser data
   TObjArray *fCEData;             ///< CE data
+  //
+  // Defived ALTRO information
+  //
+  Int_t fMaxTimeBinAllPads;       ///< Maximum Time bin in whole TPC extracted from AltroConfig
   //
   // Chamber HV info
   //
