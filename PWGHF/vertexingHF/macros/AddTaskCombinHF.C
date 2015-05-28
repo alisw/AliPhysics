@@ -36,7 +36,8 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   }
   else {
     if(meson==0) analysiscuts=new AliRDHFCutsD0toKpi();
-    else analysiscuts=new AliRDHFCutsDplustoKpipi();
+    else if(meson==1) analysiscuts=new AliRDHFCutsDplustoKpipi();
+    else if(meson==3) analysiscuts=new AliRDHFCutsDstoKKpi();
     analysiscuts->SetStandardCutsPP2010();
     pid=new AliAODPidHF();
     pid->SetMatch(5);
@@ -85,6 +86,7 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   
   TString mesname="Dzero";
   if(meson==1) mesname="Dplus";
+  else if(meson==3) mesname="Ds";
   TString inname = Form("cinput%s%s",mesname.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",mesname.Data(),containerStr.Data());
   TString normname = Form("coutput%sNorm%s",mesname.Data(),containerStr.Data());
