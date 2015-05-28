@@ -57,6 +57,18 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
 
+  void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
+  void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
+  void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
+  void SetMaxPtMother(double maxpt) {fPtMother = maxpt;}
+  void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
+  void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
+  void SetDCAProDecayVtx(double maxpro) {fDCAProSVmax = maxpro;}
+  void SetDCADeuDecayVtx(double maxdeu) {fDCADeuSVmax = maxdeu;}
+  void SetDCADeuteronProton(double maxdp) {fDCAdp = maxdp;}
+  void SetDCAPionProton(double maxpip) {fDCApip = maxpip;}
+  void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
+  
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
 
  private:
