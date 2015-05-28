@@ -35,7 +35,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
   if(reflected==1)histname="hDataCorrectedTempl0CentrFpromptReflected";
   // Dzero
   TFile *f=0x0;
-  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDplusPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
+  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDzeroPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
   if(!f)return;
   TH1D *hDzero=f->Get(histname.Data());
   hDzero->SetName(Form("Dzero%.0fto%.0fassoc%.0fto%.0f",ptmin,ptmax,ptassocmin*10,ptassocmax*10,v2suffix.Data()));
@@ -45,7 +45,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
     
   // DSTAR
   f=0x0;
-  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDstarPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
+  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDstarPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDstar.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
 
   if(!f) return;
   TH1D *hDstar=f->Get(histname.Data());
@@ -56,7 +56,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
 
   // DPLUS
   f=0x0;
-  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDzeroPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
+  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDplusPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDplus.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
   if(!f)return;
   TH1D *hDplus=f->Get(histname.Data());
   hDplus->SetName(Form("Dplus%.0fto%.0fassoc%.1fto%.1f",ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()));

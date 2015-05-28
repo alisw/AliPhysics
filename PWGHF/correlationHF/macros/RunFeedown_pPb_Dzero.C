@@ -11,6 +11,7 @@ TString inputcorrelationDir = "./Input_Plots_pp/";// directory where input files
 TString inputfileroot="1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated";
 TString fdsubtrmacrodir="";
 TString strSystemFDtempl="none";
+Bool_t isLoadedFDsubtract=kFALSE;
 void SetFDmacroDirectory(TString macrodir){
   fdsubtrmacrodir=macrodir;
 }
@@ -29,8 +30,8 @@ void SetInputFileNameRoot(TString fileinputroot){
 
 
 void RunFeedown_pPb_Dzero(){
-    GetEnvelopeForEachV2();
-    GetTotalEnvelopeFromV2();
+  GetEnvelopeForEachV2();
+  GetTotalEnvelopeFromV2();
 }
 
 void SetFDtemplateSystemString(TString str){
@@ -46,7 +47,11 @@ void GetEnvelopeForEachV2(){
     //***********************************
 
     Int_t collsyst = 1; // 0 is pp, 1 is p-Pb (note that if you run on pp, it will perform only the v2=0 feeddown
-    gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
+    if(!isLoadedFDsubtract){
+      gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
+      isLoadedFDsubtract=kTRUE;
+    }
+
 
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     Double_t v2hadmin, v2hadmax, v2Dmin, v2Dmax;
@@ -157,8 +162,10 @@ void GetTotalEnvelopeFromV2(){
     
     gSystem->Exec("mkdir -p ./Final_Plots_pPb/TotalEnvelope/");
     gSystem->Sleep(100);
-    
-    gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
+    if(!isLoadedFDsubtract){
+      gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
+      isLoadedFDsubtract=kTRUE;
+    }
     //exit(1);
     Double_t v2hadmin, v2hadmax, v2Dmin, v2Dmax;
     v2Dmin = 0.05; v2Dmax = 0.13;
