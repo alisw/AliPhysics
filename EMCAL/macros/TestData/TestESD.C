@@ -43,13 +43,13 @@ Bool_t kPrintCaloTrigger  = kFALSE; /// Print trigger patches information
 Bool_t kPrintTrackMatches = kFALSE; /// Print cluster-track matching information
 Bool_t kPrintClusterCells = kFALSE; /// Print cells in clusters information
 Bool_t kPrintClusterPID   = kFALSE; /// Print clusters PID (bayesian) weights
-
+Bool_t kPrintMisalMatrix  = kFALSE; /// Print the alignment matrices stored in ESDs
+ 
 ///
 /// Main method to read information stored in AliESDCaloClusters and AliESDCaloCells
 ///
 void TestESD() 
-{
-	
+{	
   // Init some example histograms
   // ESD
   TH1F * hEta  = (TH1F*) new TH1F("hEta","reco #eta",1000, -0.71,0.71); 
@@ -94,6 +94,14 @@ void TestESD()
   hTMEOverP    ->SetXTitle("E_{cluster}/ p_{Track}");
   hTMEOverPOut ->SetXTitle("E_{cluster}/ p_{Track-out}");
   
+  // L1 trigger 
+  TH2I * hEGAPatch = new TH2I("hEGAPatch","EGA trigger",51,-0.5,50.5,65,-0.5,64.5);
+  TH2I * hEJEPatch = new TH2I("hEJEPatch","EJE trigger",51,-0.5,50.5,65,-0.5,64.5);
+  hEGAPatch->SetXTitle("column (#eta direction)");
+  hEGAPatch->SetYTitle("row (#phi direction)");
+  hEJEPatch->SetXTitle("column (#eta direction)");
+  hEJEPatch->SetYTitle("row (#phi direction)");
+  
   // Open the ESD file, get the tree with events
   TFile* f = new TFile("AliESDs.root");
   TTree* esdTree = (TTree*)f->Get("esdTree");
@@ -114,8 +122,14 @@ void TestESD()
     //printf("matrix %d\n",mod);
     if(esd->GetEMCALMatrix(mod)) 
     {
-      //printf("EMCAL: mod %d, matrix %p\n",mod, esd->GetEMCALMatrix(mod));
-      (esd->GetEMCALMatrix(mod))->Print("");
+      if(kPrintMisalMatrix) 
+      {
+        printf("Misalign matrid for: mod %d, matrix %p\n",mod, esd->GetEMCALMatrix(mod));
+
+        (esd->GetEMCALMatrix(mod))->Print("");
+      }
+      
+      // Fill it in case cell index to global position is requested
       geom->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
     }//matrix
   }//module
@@ -168,25 +182,43 @@ void TestESD()
     // Calo Trigger 
     //------------------------------------------------------
     
-	  if(kPrintCaloTrigger)
-	  {  
-		  AliESDCaloTrigger& trg = *(esd->GetCaloTrigger("EMCAL"));
+    if(kPrintCaloTrigger)
+    { 
+      Int_t bitEGA = 5;
+      Int_t bitEJE = 8;
+      
+      AliESDCaloTrigger& trg = *(esd->GetCaloTrigger("EMCAL"));
 		  
-		  trg.Reset();
-		  while (trg.Next())
-		  {
-			  int posX, posY;
-			  trg.GetPosition(posX, posY);
-			  
-			  if (posX > -1 && posY > -1) 
-			  {
-				  Int_t ts = 0;
-				  trg.GetL1TimeSum(ts);
-				  
-				  cout << "Position: " << posX << " " << posY << " L1 amplitude: " << ts << endl;
-			  }
-		  }
-	  }
+      trg.Reset();
+      while (trg.Next())
+      {
+        Int_t col, row;
+        trg.GetPosition(col, row);
+  
+        if (col > -1 && row > -1) 
+        {
+          Int_t bit = 0;
+          trg.GetTriggerBits(bit);
+          
+          Int_t ts = 0;
+          trg.GetL1TimeSum(ts);
+
+          // Check if it is EGA or EJE (it does not work??)
+          Bool_t isEGA1 = ((bit>> bitEGA  ) & 0x1);
+          Bool_t isEGA2 = ((bit>> bitEGA+1) & 0x1);
+          Bool_t isEJE1 = ((bit>> bitEJE  ) & 0x1);
+          Bool_t isEJE2 = ((bit>> bitEJE+1) & 0x1);
+          
+          if ( ts >= 0 )
+          {
+            printf("Bit %d (G1 %d,G2 %d,J1 %d,J2 %d), cell in patch position (ieta,iphi)=(%d,%d), L1 amplitude %d\n ",
+                            bit, isEGA1, isEGA2, isEJE1, isEJE2, col, row, ts);
+            if(bit>10) hEJEPatch->Fill(col,row);
+            else       hEGAPatch->Fill(col,row);
+          }
+        }
+      }
+    }
     
     //------------------------------------------------------
     // Calo Clusters 
@@ -418,6 +450,12 @@ void TestESD()
     
     hTMResEta->Write();
     hTMResPhi->Write();  
+  }
+  
+  if(kPrintCaloTrigger)
+  {
+    hEJEPatch->Write();
+    hEGAPatch->Write();
   }
   
   fhisto->Close();
