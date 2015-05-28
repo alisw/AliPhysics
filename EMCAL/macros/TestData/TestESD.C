@@ -2,7 +2,7 @@
 /// \brief Example to analyze calorimeter ESDs
 ///
 /// Example macro to extract calorimeter related information from ESDs.
-/// Very similar for AODs.
+/// Very similar for AODs (see TestAOD.C).
 /// It mostly prints clusters/cells information but it can also plot some example 
 /// histograms with clusters energy, position, and track matching.
 ///
@@ -15,7 +15,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 //Root include files 
-//#include <Riostream.h>
+#include <Riostream.h>
 #include <TFile.h>
 //#include <TSystem.h>
 #include <TH1F.h>
@@ -157,9 +157,11 @@ void TestESD()
       stack = rl->Stack();
     }  
     
-    // Get reconstructed vertex position
-    Double_t vertex_position[3];
-    esd->GetVertex()->GetXYZ(vertex_position);
+    // Get reconstructed vertex position, only used if 
+    // the momentum of the cluster is calculated, see comment below
+    //
+    //Double_t vertex_position[3];
+    //esd->GetVertex()->GetXYZ(vertex_position);
     
     //------------------------------------------------------
     // Get Cells Array, all cells in event, print cells info 
@@ -179,13 +181,14 @@ void TestESD()
     }
     
     //------------------------------------------------------
-    // Calo Trigger 
+    // Calo Trigger, L1 
     //------------------------------------------------------
     
     if(kPrintCaloTrigger)
     { 
-      Int_t bitEGA = 5;
-      Int_t bitEJE = 8;
+      // Bits to know what L1 trigger, 
+      Int_t bitEGA = 6; // 4 for old data
+      Int_t bitEJE = 8; // 5 for old data
       
       AliESDCaloTrigger& trg = *(esd->GetCaloTrigger("EMCAL"));
 		  
@@ -204,10 +207,10 @@ void TestESD()
           trg.GetL1TimeSum(ts);
 
           // Check if it is EGA or EJE (it does not work??)
-          Bool_t isEGA1 = ((bit>> bitEGA  ) & 0x1);
-          Bool_t isEGA2 = ((bit>> bitEGA+1) & 0x1);
-          Bool_t isEJE1 = ((bit>> bitEJE  ) & 0x1);
-          Bool_t isEJE2 = ((bit>> bitEJE+1) & 0x1);
+          Bool_t isEGA1 = ((bit>>  bitEGA   ) & 0x1);
+          Bool_t isEGA2 = ((bit>> (bitEGA+1)) & 0x1);
+          Bool_t isEJE1 = ((bit>>  bitEJE   ) & 0x1);
+          Bool_t isEJE2 = ((bit>> (bitEJE+1)) & 0x1);
           
           if ( ts >= 0 )
           {
@@ -236,7 +239,9 @@ void TestESD()
       clus->GetPosition(pos);
       TVector3 vpos(pos[0],pos[1],pos[2]);
       
-      // We can get a momentum TLorentzVector per cluster, corrected by the vertex position 
+      // We can get a momentum TLorentzVector per cluster, 
+      // corrected by the vertex position, see above 
+      //
       //TLorentzVector p;
       //clus->GetMomentum(p,vertex_position);
       
@@ -309,7 +314,6 @@ void TestESD()
         AliESDtrack* track = esd->GetTrack(trackIndex);
         if(track)
         {
- 
           Double_t tphi = track->Phi();
           Double_t teta = track->Eta();
           Double_t tmom = track->P();
@@ -362,7 +366,7 @@ void TestESD()
         else printf("!!! NO TRACK !!!\n");
       }// matching
       
-      //Get PID weights and print them
+      // Get PID weights and print them
       if(kPrintClusterPID)
       {
         const Double_t *pid = clus->GetPID();
