@@ -36,7 +36,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-		Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
+		Error(Form("AddTask_GammaConvCalo_pp_%i",trainConfig), "No analysis manager found.");
 		return ;
 	}
 
@@ -230,14 +230,10 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 33) { //PHOS clusters without and with added signals
 		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "20000047033200000"; mesonCutArray[0] = "01631031000000";
 		eventCutArray[ 1] = "0000312"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "20000047033200000"; mesonCutArray[1] = "01631031000000";
-	} else {
-		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
-		return;
-	}
 
 	// ************************************* EMCAL cuts ****************************************************
 	// LHC12
-	if (trainConfig == 101){ // EMCAL clusters 8 TeV LHC12
+	} else if (trainConfig == 101){ // EMCAL clusters 8 TeV LHC12
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
 	} else if (trainConfig == 102){ //EMCAL minEnergy variation
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053012230000"; mesonCutArray[0] = "01631031000000"; //0.2 GeV/c
@@ -252,7 +248,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10031053032230000"; mesonCutArray[3] = "01631031000000"; //only modules with TRD infront
 		eventCutArray[ 4] = "0000011"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "10012053032230000"; mesonCutArray[4] = "01631031000000"; //no modules with TRD infront
 	} else if (trainConfig == 104){ // EMCAL track matching variations
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000051032230000"; mesonCutArray[0] = "01631031000000"; //
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000051032230000"; mesonCutArray[0] = "01631031000000"; // track matching variations
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "10000052032230000"; mesonCutArray[1] = "01631031000000"; //
 		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "01631031000000"; //
 		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10000054032230000"; mesonCutArray[3] = "01631031000000"; //
@@ -284,6 +280,10 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 109){ // PCM variations
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00202209327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "01631031000000"; // restrict acceptance to EMCAL loose
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00204409327000008250400000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "01631031000000"; // restrict acceptance to EMCAL tight
+	} else {
+		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+		return;
+	}
 
 	// ************************************* PHOS cuts ****************************************************
 	// LHC12
