@@ -527,8 +527,8 @@ void AliEMCALQADataMakerRec::InitRaws()
 	/// STU histgrams
 
  /// histos
-Int_t nSTUCols = nbinsZ/2.;
- Int_t nSTURows = nbinsPhi/2.;
+ Int_t nSTUCols = nbinsZ;
+ Int_t nSTURows = nbinsPhi;
 /// 		kAmpL1, kGL1, kJL1,
 /// 		kGL1V0, kJL1V0, kSTUTRU  
 	
