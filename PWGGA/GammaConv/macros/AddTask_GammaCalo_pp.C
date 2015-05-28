@@ -115,6 +115,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	if (trainConfig == 5) numberOfCuts = 6;
 	if (trainConfig == 31) numberOfCuts = 4;
 	if (trainConfig == 32) numberOfCuts = 1;
+	if (trainConfig == 51 || trainConfig == 52 || trainConfig == 53 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56) numberOfCuts = 6;
 	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
