@@ -226,7 +226,7 @@ TF1 *GetFitFunctionConst3GausPeriodicity(){
 }
 
 
-TF1* FitPlotsShort(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Bool_t refl=kFALSE){
+TF1* FitPlotsShort(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Bool_t refl=kFALSE,Double_t rangeTransvMin=0.25*TMath::Pi(),Double_t rangeTransvMax=0.5*TMath::Pi()){
 // - fitFunc=0: 2 gaussian + const baseline w/o periodicity (to be avoided, only for checks)
 //               =1: 2 gauss + const baseline + periodicity
 //               =2: 3 gaus (2 on the NS) + const baseline with periodicity. Useful for fitting MC templates
@@ -243,10 +243,10 @@ TF1* FitPlotsShort(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Bool_
 //                 =3: NS mean fixed to 0, AS mean to pi
 
   Double_t nsybc, ensybc,asybc, easybc;
-  return FitPlots(h,fitFunc, fixBase, fixMean, nsybc, ensybc, asybc, easybc,refl);
+  return FitPlots(h,fitFunc, fixBase, fixMean, nsybc, ensybc, asybc, easybc,refl,rangeTransvMin,rangeTransvMax);
 }
 
-TF1 *FitPlots(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Double_t &nsybc,Double_t &ensybc,Double_t &asybc,Double_t &easybc,Bool_t refl){//
+TF1 *FitPlots(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Double_t &nsybc,Double_t &ensybc,Double_t &asybc,Double_t &easybc,Bool_t refl,Double_t rangeTransvMin=0.25*TMath::Pi(),Double_t rangeTransvMax=0.5*TMath::Pi()){//
 // - fitFunc=0: 2 gaussian + const baseline w/o periodicity (to be avoided, only for checks)
 //               =1: 2 gauss + const baseline + periodicity
 //               =2: 3 gaus (2 on the NS) + const baseline with periodicity. Useful for fitting MC templates
@@ -275,6 +275,9 @@ TF1 *FitPlots(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Double_t &
   corrfitter->SetHistoIsReflected(refl);
   corrfitter->SetFuncType(fitFunc);
   corrfitter->SetFixBasetype(fixBase);
+  if(fixBase==5){
+    corrfitter->SetBaselineEstimationRange(rangeTransvMin,rangeTransvMax);
+  }
   corrfitter->SetFixMeanType(fixMean);
   corrfitter->Fitting(kTRUE);
   nsybc=corrfitter->GetBinCountingYields(ensybc,asybc,easybc);

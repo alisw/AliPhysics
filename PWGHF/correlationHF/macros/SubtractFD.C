@@ -1,5 +1,6 @@
 TString localcode="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros";
 TString strsystem="none";
+Bool_t fitcodeIsLoaded=kFALSE;
 void SetSystemStringForTemplateFDnames(TString str){
   strsystem=str;
 }
@@ -122,7 +123,7 @@ void GetTemplateFromFit(TH1D *h,TH1D *hOut,TString strCanv="cFit",Int_t methodFD
       Double_t nsybc, ensybc,asybc, easybc,ebase;
       Double_t nsybcMC, ensybcMC,asybcMC, easybcMC,ebaseMC;
       cFit->cd();
-      TF1 *fitFunctionMC=FitPlots(h,2,2,3,nsybcMC, ensybcMC,asybcMC, easybcMC,kFALSE);
+      TF1 *fitFunctionMC=FitPlots(h,2,-2,3,nsybcMC, ensybcMC,asybcMC, easybcMC,kFALSE);
       Double_t baseMC=GetBaseline(ebaseMC);//fitFunctionMC->GetParameter(0);
       
       TCanvas *cFitData=new TCanvas(Form("Data%s",strCanv.Data()),"cGetTemplatefromFit_FitData",700,700);
@@ -134,7 +135,7 @@ void GetTemplateFromFit(TH1D *h,TH1D *hOut,TString strCanv="cFit",Int_t methodFD
       test->cd(1);
       hDataForFit->Draw("ep");
 
-      TF1 *fitFunctionData=FitPlots(hDataForFit,1,-8,3,nsybc, ensybc,asybc, easybc,kFALSE);
+      TF1 *fitFunctionData=FitPlots(hDataForFit,1,5,3,nsybc, ensybc,asybc, easybc,kFALSE);
       Double_t baseData=GetBaseline(ebase);//fitFunctionData->GetParameter(0);
       
       // generate v2 function
@@ -184,7 +185,8 @@ void SubtractFDexploitingClassDzero(Double_t ptmin, Double_t ptmax, Double_t pta
     
     const Int_t Dzero = 0;
     SubtractFDexploitingClass(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption);
-    
+    fDataCorr->Close();
+    fSpectrum->Close();
 }
 
 
@@ -205,7 +207,8 @@ void SubtractFDexploitingClassDstar(Double_t ptmin, Double_t ptmax, Double_t pta
     
     const Int_t Dstar = 1;
     SubtractFDexploitingClass(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption);
-    
+    fDataCorr->Close();
+    fSpectrum->Close();    
 }
 
 //______________________________________________________________________________________________
@@ -224,7 +227,8 @@ void SubtractFDexploitingClassDplus(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get("gFcConservative");
     const Int_t Dplus = 2;
     SubtractFDexploitingClass(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption);
-    
+    fDataCorr->Close();
+    fSpectrum->Close();
 }
 
 //______________________________________________________________________________________________
@@ -276,6 +280,8 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
     
     const Int_t Dstar = 1;
     SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocmax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption);
+    fDataCorr->Close();
+    fSpectrum->Close();
 }
 
 //______________________________________________________________________________________________
@@ -301,6 +307,8 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
 
     const Int_t Dplus = 2;
     SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocmax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption);
+    fDataCorr->Close();
+    fSpectrum->Close();
 }
 
 //______________________________________________________________________________________________
@@ -323,7 +331,10 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     cout << "for hadron = " << v2Had << endl;
     cout << " " << endl;
     
-    gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
+    if(!fitcodeIsLoaded){
+      gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
+      fitcodeIsLoaded=kTRUE;
+    }
     hData->Sumw2();
     hData->Rebin(rebin);
     hData->Scale(purity*1./(Double_t)rebin);
@@ -338,6 +349,9 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
         strmes="Dplus";
     }
     else return;
+
+    TFile *fOut=new TFile(strfileout.Data(),"RECREATE");
+    fOut->cd();
     
     AliHFCorrelationFDsubtraction *fdSubtracter=new AliHFCorrelationFDsubtraction();
     fdSubtracter->SetUncorrectedHistogram(hData);
@@ -395,12 +409,47 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     
     //1. Perugia0
     TFile *fFDtemplCorr=TFile::Open(templPerugia0.Data(),"READ");
-    TH1D *hFDtemplFile[0]=(TH1D*)fFDtemplCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hFDtemplFile[0]=(TH1D*)(fFDtemplCorr->Get("hCorrDeltaPhi")->Clone());
     hFDtemplFile[0]->Draw();
     TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia0.Data(),"READ");
-    TH1D *hPromptTempl[0]=(TH1D*)fFDtemplPromptCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hPromptTempl[0]=(TH1D*)(fFDtemplPromptCorr->Get("hCorrDeltaPhi")->Clone());
     hPromptTempl[0]->SetTitle("PromptPerugia0");
     hPromptTempl[0]->SetName("PromptPerugia0");
+    fFDtemplCorr->Close();
+    fFDtemplPromptCorr->Close();
+
+    //2. Perugia 2010
+    TFile *fFDtemplCorr=TFile::Open(templPerugia2010.Data(),"READ");
+    fOut->cd();
+    hFDtemplFile[1]=(TH1D*)(fFDtemplCorr->Get("hCorrDeltaPhi")->Clone());
+    TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia2010.Data(),"READ");
+    fOut->cd();
+    hPromptTempl[1]=(TH1D*)(fFDtemplPromptCorr->Get("hCorrDeltaPhi")->Clone());
+    hPromptTempl[1]->SetTitle("PromptPerugia2010");
+    hPromptTempl[1]->SetName("PromptPerugia2010");
+    fFDtemplCorr->Close();
+    fFDtemplPromptCorr->Close();
+
+    //3. Perugia 2011
+    TFile *fFDtemplCorr=TFile::Open(templPerugia2011.Data(),"READ");
+    fOut->cd();
+    hFDtemplFile[2]=(TH1D*)(fFDtemplCorr->Get("hCorrDeltaPhi")->Clone());
+    TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia2011.Data(),"READ");
+    fOut->cd();
+    hPromptTempl[2]=(TH1D*)(fFDtemplPromptCorr->Get("hCorrDeltaPhi")->Clone());
+    hPromptTempl[2]->SetTitle("PromptPerugia2011");
+    hPromptTempl[2]->SetName("PromptPerugia2011");
+    fFDtemplCorr->Close();
+    fFDtemplPromptCorr->Close();
+
+
+    Printf("The pointer to the objects are: %p , %p ",    hPromptTempl[0],    hFDtemplFile[0]);
+    hPromptTempl[0]->GetTitle();
+    hFDtemplFile[0]->GetTitle();
+    Printf("And they are not empty");
+
     cout << "crash here 1" << endl;
     cout<<"Macro path works?"<< localcode.Data() <<endl;
     Printf(localcode.Data());
@@ -430,13 +479,6 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     
    
     //2. Perugia 2010
-    TFile *fFDtemplCorr=TFile::Open(templPerugia2010.Data(),"READ");
-    TH1D *hFDtemplFile[1]=(TH1D*)fFDtemplCorr->Get("hCorrDeltaPhi");
-    TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia2010.Data(),"READ");
-    TH1D *hPromptTempl[1]=(TH1D*)fFDtemplPromptCorr->Get("hCorrDeltaPhi");
-    hPromptTempl[1]->SetTitle("PromptPerugia2010");
-    hPromptTempl[1]->SetName("PromptPerugia2010");
-    
     if(methodSubtr==0)
         hFDtempl[1]=(TH1D*)hFDtemplFile[1]->Clone("hTemplDfromB");
     else if(methodSubtr==1){
@@ -454,13 +496,6 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
   
 
     //3. Perugia 2011
-    TFile *fFDtemplCorr=TFile::Open(templPerugia2011.Data(),"READ");
-    TH1D *hFDtemplFile[2]=(TH1D*)fFDtemplCorr->Get("hCorrDeltaPhi");
-    TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia2011.Data(),"READ");
-    TH1D *hPromptTempl[2]=(TH1D*)fFDtemplPromptCorr->Get("hCorrDeltaPhi");
-    hPromptTempl[2]->SetTitle("PromptPerugia2011");
-    hPromptTempl[2]->SetName("PromptPerugia2011");
-    
     if(methodSubtr==0)
         hFDtempl[2]=(TH1D*)hFDtemplFile[2]->Clone("hTemplDfromB");
     else if(methodSubtr==1){
@@ -536,8 +571,6 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     cout << "Saving outptut as " << strfileout << endl;
     cout << "checkmate 1" << endl;
     
-    TFile *fOut=new TFile(strfileout.Data(),"RECREATE");
-    fOut->cd();
     oUnc->Write();
     canvFinal->Write();
     hFinal->Write();
@@ -579,7 +612,9 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     cout << "for hadron = " << v2hadmin << "," << v2hadmax << endl;
     cout << " " << endl;
     
-    gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
+    if(!fitcodeIsLoaded){
+      gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
+    }
     hData->Sumw2();
     hData->Rebin(rebin);
     hData->Scale(purity*1./(Double_t)rebin);
@@ -589,6 +624,9 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     else if(meson==2)strmes="Dplus";
     else return;
     
+    TFile *fOut=new TFile(strfileout.Data(),"RECREATE");
+    fOut->cd();
+
     AliHFCorrelationFDsubtraction *fdSubtracter=new AliHFCorrelationFDsubtraction();
     fdSubtracter->SetUncorrectedHistogram(hData);
     fdSubtracter->SetDptRange(ptmin,ptmax);
@@ -626,13 +664,16 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     
     //1. Load Perugia0
     TFile *fFDtemplCorr=TFile::Open(templPerugia0.Data(),"READ");
-    TH1D *hFDtemplFile[0]=(TH1D*)fFDtemplCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hFDtemplFile[0]=(TH1D*)(fFDtemplCorr->Get("hCorrDeltaPhi")->Clone());
     hFDtemplFile[0]->Draw();
-    
     TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia0.Data(),"READ");
-    TH1D *hPromptTempl[0]=(TH1D*)fFDtemplPromptCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hPromptTempl[0]=(TH1D*)(fFDtemplPromptCorr->Get("hCorrDeltaPhi")->Clone());
     hPromptTempl[0]->SetTitle("PromptPerugia0");
     hPromptTempl[0]->SetName("PromptPerugia0");
+    fFDtemplCorr->Close();
+    fFDtemplPromptCorr->Close();
     if(methodSubtr==0) {
         hFDtempl[0]=(TH1D*)hFDtemplFile[0]->Clone("hTemplDfromB0"); // check those numbers
         hFDtempl[1]=(TH1D*)hFDtemplFile[0]->Clone("hTemplDfromB1");
@@ -651,12 +692,15 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     
     //load perugia 2010
     TFile *fFDtemplCorr=TFile::Open(templPerugia2010.Data(),"READ");
-    TH1D *hFDtemplFile[1]=(TH1D*)fFDtemplCorr->Get("hCorrDeltaPhi");
-    
+    fOut->cd();
+    hFDtemplFile[1]=(TH1D*)(fFDtemplCorr->Get("hCorrDeltaPhi")->Clone());
     TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia2010.Data(),"READ");
-    TH1D *hPromptTempl[1]=(TH1D*)fFDtemplPromptCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hPromptTempl[1]=(TH1D*)(fFDtemplPromptCorr->Get("hCorrDeltaPhi")->Clone());
     hPromptTempl[1]->SetTitle("PromptPerugia2010");
     hPromptTempl[1]->SetName("PromptPerugia2010");
+    fFDtemplCorr->Close();
+    fFDtemplPromptCorr->Close();
     if(methodSubtr==0) {
         hFDtempl[5]=(TH1D*)hFDtemplFile[1]->Clone("hTemplDfromB5"); // check those numbers
         hFDtempl[6]=(TH1D*)hFDtemplFile[1]->Clone("hTemplDfromB6");
@@ -675,11 +719,15 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     
     //load perugia 2011
     TFile *fFDtemplCorr=TFile::Open(templPerugia2011.Data(),"READ");
-    TH1D *hFDtemplFile[2]=(TH1D*)fFDtemplCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hFDtemplFile[2]=(TH1D*)(fFDtemplCorr->Get("hCorrDeltaPhi")->Clone());
     TFile *fFDtemplPromptCorr=TFile::Open(templPromptPerugia2011.Data(),"READ");
-    TH1D *hPromptTempl[2]=(TH1D*)fFDtemplPromptCorr->Get("hCorrDeltaPhi");
+    fOut->cd();
+    hPromptTempl[2]=(TH1D*)(fFDtemplPromptCorr->Get("hCorrDeltaPhi")->Clone());
     hPromptTempl[2]->SetTitle("PromptPerugia2011");
     hPromptTempl[2]->SetName("PromptPerugia2011");
+    fFDtemplCorr->Close();
+    fFDtemplPromptCorr->Close();
     if(methodSubtr==0){
         hFDtempl[10]=(TH1D*)hFDtemplFile[2]->Clone("hTemplDfromB10"); // check those numbers
         hFDtempl[11]=(TH1D*)hFDtemplFile[2]->Clone("hTemplDfromB11");
@@ -784,8 +832,6 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     
     
     cout << "check :) 1" << endl;
-    TFile *fOut=new TFile(strfileout.Data(),"RECREATE");
-    fOut->cd();
     oUnc->Write();
     canvFinal->Write();
     hFinal->Write();
@@ -806,7 +852,9 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
 //______________________________________________________________________________________________
 void OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TString strMeson="D^{0}",Double_t ptminAss=0.3, Double_t pTmaxAss=1.0, Double_t deltaeta=1, Int_t system=0,Double_t max=10,Bool_t rangeLabel=kFALSE){
   gStyle->SetOptStat(0000);
-  gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
+  if(!fitcodeIsLoaded){
+    gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
+  }
 
   TFile *f=TFile::Open(strfile.Data(),"READ");
   AliHFDhadronCorrSystUnc *syst=(AliHFDhadronCorrSystUnc*)f->Get("SystematicUncertainty");
