@@ -339,12 +339,11 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       }else return 0; // to work correctly in AddScalers
    };
    UInt_t ovflow[8]; // Overflow for last pair of counters
-   for(Int_t i=0;i<8;i++)ovflow[i]=0;
    Int_t nlevels=6;
    if(fVersion>2) nlevels=8;
    UInt_t c2[8], c1[8];
    ULong64_t c64[6]; 
-   ULong64_t c1_64[6],c2_64[8]; 
+   ULong64_t c1_64[8],c2_64[8]; 
    ULong64_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
    ULong64_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
@@ -364,6 +363,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    }
    // Consistency check
    for( Int_t ic=0; ic<fnClasses; ++ic ){
+      for(Int_t i=0;i<8;i++)ovflow[i]=0;
       TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
       AliTriggerScalers* counters2 = (AliTriggerScalers*)scalersArray2->At(ic);
       UChar_t iclass = counters2->GetClassIndex();
