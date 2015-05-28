@@ -1,24 +1,26 @@
 #ifndef ALIEMCALQADATAMAKERREC_H
 #define ALIEMCALQADATAMAKERREC_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  Produces the data needed to calculate the quality assurance. 
-  All data must be mergeable objects.
-
-  Based on PHOS code written by
-  Y. Schutz CERN July 2007
- 
- Created one histogram for QA shifter;-- Yaxian Mao: 11/2009
- The idea:average counts for all the towers should be flat 
- Change all existing histograms as experts
- 
- Change histograms for DQM shifter: --  Yaxian Mao 04/2010
- Calcuate the amplitude ratio from current run and the LED reference, for QAChecker use
- Also calculate the ratio of amplitude from LED Monitor system (current/Reference), to check LED system  
- 
-*/
+/// \class AliEMCALQADataMakerRec
+/// \brief 
+///
+/// Produces the data needed to calculate the quality assurance. 
+/// All data must be mergeable objects
+/// 
+/// Based on PHOS code written by
+/// Y. Schutz CERN July 2007
+///
+///  Created one histogram for QA shifter;-- Yaxian Mao: 11/2009
+///  The idea:average counts for all the towers should be flat 
+///  Change all existing histograms as experts
+///
+/// Change histograms for DQM shifter: --  Yaxian Mao 04/2010
+/// Calcuate the amplitude ratio from current run and the LED reference, for QAChecker use
+/// Also calculate the ratio of amplitude from LED Monitor system (current/Reference), to check LED system  
+///
+/// \author J.Klay (Cal Poly) 
+/// \author S. Salur LBL 
+/// \date 2008
+///
 
 // --- ROOT system ---
 class TH1F ; 
@@ -69,8 +71,8 @@ public:
   enum HESDType_t {kESDCaloClusE,kESDCaloClusM,kESDCaloCellA,kESDCaloCellM} ;
   
 public:
-  
-  AliEMCALQADataMakerRec(Int_t fitAlgo = Algo::kStandard) ;  // ctor
+  // ctor
+  AliEMCALQADataMakerRec(Int_t fitAlgo = Algo::kStandard) ;  
   // Default fitter is kStandard=0 (see AliCaloConstants)
   
   AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
@@ -82,20 +84,21 @@ public:
   
   AliCaloRawAnalyzer *GetRawAnalyzer()    const {return fRawAnalyzer   ;}
   AliCaloRawAnalyzer *GetRawAnalyzerTRU() const {return fRawAnalyzerTRU;}
-
-  void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
-  int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
+  // The number of SuperModules
+  void SetSuperModules(int i) {fSuperModules = i;}; 
+  // The number of SuperModules
+  int GetSuperModules() const {return fSuperModules;}; 
 
   // for pedestal calculation with raw data
-  void SetFirstPedestalSample(int i)  {fFirstPedestalSample = i;}          // first sample
-  int  GetFirstPedestalSample() const {return fFirstPedestalSample;}       // first sample
-  void SetLastPedestalSample(int i)   {fLastPedestalSample = i;}           // last sample
-  int  GetLastPedestalSample() const  {return fLastPedestalSample;}        // last sample
+  void SetFirstPedestalSample(int i)  {fFirstPedestalSample = i;}          //  first sample
+  int  GetFirstPedestalSample() const {return fFirstPedestalSample;}       //  first sample
+  void SetLastPedestalSample(int i)   {fLastPedestalSample = i;}           //  last sample
+  int  GetLastPedestalSample() const  {return fLastPedestalSample;}        //  last sample
   
-  void SetFirstPedestalSampleTRU(int i)  {fFirstPedestalSampleTRU = i;}    // first sample, TRU
-  int  GetFirstPedestalSampleTRU() const {return fFirstPedestalSampleTRU;} // first sample, TRU
-  void SetLastPedestalSampleTRU(int i)   {fLastPedestalSampleTRU = i;}     // last sample, TRU
-  int  GetLastPedestalSampleTRU() const  {return fLastPedestalSampleTRU;}  // last sample, TRU
+  void SetFirstPedestalSampleTRU(int i)  {fFirstPedestalSampleTRU = i;}    //  first sample, TRU
+  int  GetFirstPedestalSampleTRU() const {return fFirstPedestalSampleTRU;} //  first sample, TRU
+  void SetLastPedestalSampleTRU(int i)   {fLastPedestalSampleTRU = i;}     //  last sample, TRU
+  int  GetLastPedestalSampleTRU() const  {return fLastPedestalSampleTRU;}  //  last sample, TRU
   
   // for selection of interesting signal (max-min) range 
   // Low Gain channels
@@ -143,42 +146,47 @@ public:
 
 private:
   
-  void ConvertProfile2H(TProfile * p, TH2 * histo) ; //change the profile plot to a 2D histogram
+  void ConvertProfile2H(TProfile * p, TH2 * histo) ; //<change the profile plot to a 2D histogram
   
-  Int_t fFittingAlgorithm;              // select the fitting algorithm, only used in copy ctor ...
+  Int_t fFittingAlgorithm;              ///< select the fitting algorithm, only used in copy ctor ...
 
-  AliCaloRawAnalyzer *fRawAnalyzer;     // for signal fitting
-  AliCaloRawAnalyzer *fRawAnalyzerTRU;  // for TRU signal fitting
-  AliEMCALGeometry   *fGeom;            // EMCAL geometry, needed for STU decoding
+  AliCaloRawAnalyzer *fRawAnalyzer;     ///< for signal fitting
+  AliCaloRawAnalyzer *fRawAnalyzerTRU;  ///< for TRU signal fitting
+  AliEMCALGeometry   *fGeom;            ///< EMCAL geometry, needed for STU decoding
 
-  int fSuperModules;           // The number of SuperModules activated
-  int fFirstPedestalSample;    // first sample for pedestal calculation, in bunch
-  int fLastPedestalSample;     // last sample for pedestal calculation, in bunch
-  int fFirstPedestalSampleTRU; // first sample for pedestal calculation, in bunch
-  int fLastPedestalSampleTRU;  // last sample for pedestal calculation, in bunch
+  int fSuperModules;           ///< The number of SuperModules activated
+  int fFirstPedestalSample;    ///< first sample for pedestal calculation, in bunch
+  int fLastPedestalSample;     ///< last sample for pedestal calculation, in bunch
+  int fFirstPedestalSampleTRU; ///< first sample for pedestal calculation, in bunch
+  int fLastPedestalSampleTRU;  ///< last sample for pedestal calculation, in bunch
   
-  int fMinSignalLG;       // minimum signal, for Low Gain channels
-  int fMaxSignalLG;       // maximum signal, for Low Gain channels
-  int fMinSignalHG;       // minimum signal, for High Gain channels
-  int fMaxSignalHG;       // maximum signal, for High Gain channels
-  int fMinSignalTRU;      // minimum signal, for TRU channels
-  int fMaxSignalTRU;      // maximum signal, for TRU channels
-  int fMinSignalLGLEDMon; // minimum signal, for LEDMon channels, low gain
-  int fMaxSignalLGLEDMon; // maximum signal, for LEDMon channels, low gain
-  int fMinSignalHGLEDMon; // minimum signal, for LEDMon channels, high gain
-  int fMaxSignalHGLEDMon; // maximum signal, for LEDMon channels, high gain
-
-  TProfile * fCalibRefHistoPro ; // Profile reference histogram from LED run
-  TH2F     * fCalibRefHistoH2F ; // H2F reference histogram from LED run
-  TProfile * fLEDMonRefHistoPro; // Profile reference histogram from LED monitor
-  TH2F     * fHighEmcHistoH2F  ; // H2F reference histogram from LED run
+  int fMinSignalLG;       ///< minimum signal, for Low Gain channels
+  int fMaxSignalLG;       ///< maximum signal, for Low Gain channels
+  int fMinSignalHG;       ///< minimum signal, for High Gain channels
+  int fMaxSignalHG;       ///< maximum signal, for High Gain channels
+  int fMinSignalTRU;      ///< minimum signal, for TRU channels
+  int fMaxSignalTRU;      ///< maximum signal, for TRU channels
+  int fMinSignalLGLEDMon; ///< minimum signal, for LEDMon channels, low gain
+  int fMaxSignalLGLEDMon; ///< maximum signal, for LEDMon channels, low gain
+  int fMinSignalHGLEDMon; ///< minimum signal, for LEDMon channels, high gain
+  int fMaxSignalHGLEDMon; ///< maximum signal, for LEDMon channels, high gain
   
-//  TText **    fTextSM        ; //! Text info for each SM  
-//  TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
+  //Profile reference histogram from LED run
+  TProfile * fCalibRefHistoPro ; // ->
+  //H2F reference histogram from LED run
+  TH2F     * fCalibRefHistoH2F ; //-> 
+  //Profile reference histogram from LED monitor
+  TProfile * fLEDMonRefHistoPro; //-> 
+  //H2F reference histogram from LED run
+  TH2F     * fHighEmcHistoH2F  ; //-> 
+  
+//   TText **    fTextSM        ; //! Text info for each SM  
+//   TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
 //  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
 
-  ClassDef(AliEMCALQADataMakerRec,6)  // description
-
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALQADataMakerRec,6);  /// description
+  /// \endcond
 };
 
-#endif // AliEMCALQADATAMAKERREC_H
+#endif /// AliEMCALQADATAMAKERREC_H

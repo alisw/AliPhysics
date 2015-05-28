@@ -55,13 +55,15 @@
 ClassImp(AliEMCALQAChecker)
 
 //__________________________________________________________________
+/// constructor.
+///
 AliEMCALQAChecker::AliEMCALQAChecker() : 
 AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
 fTextSM(new TText*[fgknSM]),
 fLineCol(new TLine(47.5,-0.5,47.5,119.5)),
 fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
-  // ctor
+
   fLineCol->SetLineColor(1);
   fLineCol->SetLineWidth(2);
 
@@ -93,9 +95,10 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 }          
 
 //__________________________________________________________________
+/// destructor.
+///
 AliEMCALQAChecker::~AliEMCALQAChecker() 
 {
-	/// dtor
   delete [] fTextSM ;
   delete fLineCol ;
   for (Int_t i=0; i<5; ++i) delete fLineRow[i] ;
@@ -103,10 +106,10 @@ AliEMCALQAChecker::~AliEMCALQAChecker()
 }
 
 //______________________________________________________________________________
+/// Check objects in list
+///
 void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
-	/// Check objects in list
-	
 	if ( index == AliQAv1::kRAW ) 
 	{
     CheckRaws(test, list);
@@ -126,10 +129,11 @@ void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArr
 }
 
 //______________________________________________________________________________
-TH1* 
-AliEMCALQAChecker::GetHisto(TObjArray* list, const char* hname, Int_t specie) const
+/// Get a given histo from the list
+///
+TH1* AliEMCALQAChecker::GetHisto(TObjArray* list, const char* hname, Int_t specie) const
 {
-	/// Get a given histo from the list
+
 	TH1* h = static_cast<TH1*>(list->FindObject(Form("%s_%s",AliRecoParam::GetEventSpecieName(specie),hname)));
 	if (!h)
 	{
@@ -139,10 +143,11 @@ AliEMCALQAChecker::GetHisto(TObjArray* list, const char* hname, Int_t specie) co
 }
 
 //______________________________________________________________________________
-Double_t 
-AliEMCALQAChecker::MarkHisto(TH1& histo, Double_t value) const
+/// Mark histo as originator of some QA error/warning
+///
+Double_t AliEMCALQAChecker::MarkHisto(TH1& histo, Double_t value) const
 {
-	/// Mark histo as originator of some QA error/warning
+	
 	
 	if ( value != 1.0 )
 	{
@@ -152,18 +157,17 @@ AliEMCALQAChecker::MarkHisto(TH1& histo, Double_t value) const
 	return value;
 }
 
-
 //______________________________________________________________________________
+///  Check RAW QA histograms
+///  adding new checking method: 25/04/2010, Yaxian Mao
+///
+///  Comparing the amplitude from current run to the reference run, if the ratio in the range [0.8, .12], count as a good tower.
+///  If more than 90% towers are good, EMCAL works fine, otherwise experts should be contacted. 
+///
 void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 {
-  //  Check RAW QA histograms	
-  //  -- Yaxian Mao, CCNU/CERN/LPSC
-  //adding new checking method: 25/04/2010, Yaxian Mao
-  //Comparing the amplitude from current run to the reference run, if the ratio in the range [0.8, .12], count as a good tower.
-  //If more than 90% towers are good, EMCAL works fine, otherwise experts should be contacted. 
-
-
-  // Retrieve the thresholds
+  
+  // Setting the thresholds
   Float_t ratioThresh = 0.9;   // threshold for calibration ratio = good towers/all towers (default 0.9)
   Float_t ThreshG     = 0.5;   // threshold for L1 Gamma triggers (default 0.5)
   Float_t ThreshJ     = 0.5;   // threshold for L1 Jet triggers (default 0.5)
@@ -193,8 +197,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       }
     }
   }
-  
-  Double_t nTot = AliEMCALTriggerMappingV2::fNTotalTRU*AliEMCALTriggerMappingV2::fNModulesInTRU*4; //46(NTRUs)*96(NModulesInTRU)*NTowersPerModule
+  //46(NTRUs)*96(NModulesInTRU)*NTowersPerModule(4)
+  Double_t nTot = AliEMCALTriggerMappingV2::fNTotalTRU*AliEMCALTriggerMappingV2::fNModulesInTRU*4; 
   TList *lstF = 0;
   Int_t calibSpecieId = (Int_t)TMath::Log2( AliRecoParam::kCalib );
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -213,11 +217,11 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       TH1I *hFrameR = (TH1I*)list[specie]->At(kSTUTRU);
       
       
-      // =======================================================================================
-      //calib histo checker first:
+      //  =======================================================================================
+      // calib histo checker first:
       if( hdata && ratio ){
 	
-	// first clean lines, text (functions)
+	//  first clean lines, text (functions)
 	lstF = hdata->GetListOfFunctions();
 	CleanListOfFunctions(lstF);
 	lstF = ratio->GetListOfFunctions();
@@ -227,18 +231,18 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  
 	  lstF = hdata->GetListOfFunctions();
 	  
-	  //adding the lines to distinguish different SMs
+	  // adding the lines to distinguish different SMs
 	  lstF->Add(fLineCol->Clone()); 
 	  for(Int_t iLine = 0; iLine < fgknSectLines; iLine++) {
 	    lstF->Add(fLineRow[iLine]->Clone());
 	  } 
-	  //Now adding the text to for each SM
-	  for(Int_t iSM = 0 ; iSM < fgknSM ; iSM++){  //number of SMs loop start
+	  // Now adding the text to for each SM
+	  for(Int_t iSM = 0 ; iSM < fgknSM ; iSM++){  // number of SMs loop start
 	    lstF->Add(fTextSM[iSM]->Clone()); 
 	  }			
 	  
 	  
-	  //now check the ratio histogram
+	  // now check the ratio histogram
 	  lstF = ratio->GetListOfFunctions();
 	  
 	  Double_t binContent = 0. ;  
@@ -251,7 +255,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    }
 	  }
 	  rv = nGoodTower/nTot ; 
-	  //printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
+	  // printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
 	  if(fText){
 	    lstF->Add(fText->Clone()) ;
 	    fText->Clear() ; 
@@ -259,7 +263,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
 	    if (rv < ratioThresh) {
 	      test[specie] = ratioThresh;
-	      // 2 lines text info for quality         
+	      //  2 lines text info for quality         
 	      fText->SetFillColor(2) ;
 	      fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
 	    }
@@ -268,29 +272,29 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      fText->SetFillColor(3) ;
 	      fText->AddText(Form("EMCAL = OK, ENJOY...")); 
 	    }
-	  }//fText
-	}//calib histo checking done
-      }//histograms NOT NULL
+	  }// fText
+	}// calib histo checking done
+      }// histograms NOT NULL
       
-      // ========================================================================================
-      // now L1 checks:
+      //  ========================================================================================
+      //  now L1 checks:
       
       if( hL1GammaPatch ){
 	
-	// first clean lines, text (functions)
+	//  first clean lines, text (functions)
 	lstF = hL1GammaPatch->GetListOfFunctions();
 	CleanListOfFunctions(lstF);
 	
 	if (specie != calibSpecieId) {
-	  //if(hL1GammaPatch->GetEntries() !=0 ) {
-	  if(hL1GammaPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
+	  // if(hL1GammaPatch->GetEntries() !=0 ) {
+	  if(hL1GammaPatch->GetEntries() > 10) { //  need some statistics for hot spot calculation
 	    lstF = hL1GammaPatch->GetListOfFunctions();
 	    
-	    // Checker for L1GammaPatch 
-	    //Double_t dL1GmeanTrig    = 1./2961.; 
-	    //Double_t dL1GmeanTrigTRU = 1./32.; 
-	    //Int_t sigmaG    = 100; // deviation from mean value (increased to 100)
-	    //Int_t sigmaGTRU = 5; // deviation from mean value for TRUs
+	    //  Checker for L1GammaPatch 
+	    // Double_t dL1GmeanTrig    = 1./2961.; 
+	    // Double_t dL1GmeanTrigTRU = 1./32.; 
+	    // Int_t sigmaG    = 100; //  deviation from mean value (increased to 100)
+	    // Int_t sigmaGTRU = 5; //  deviation from mean value for TRUs
 	    Double_t dL1GEntries = hL1GammaPatch->GetEntries();
 	    Int_t badL1G[2*AliEMCALTriggerMappingV2::fNPhi][2*AliEMCALTriggerMappingV2::fNEta]   = {{0}} ;
 	    Int_t badL1GTRU[2][AliEMCALTriggerMappingV2::fNTotalTRU/2] = {{0}} ;
@@ -302,18 +306,18 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
 		if (binContent != 0) {
 		  
-		  // fill counter for TRUs
-		  //binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;//OLD TRU SCHEME
-		  binContentTRU[(Int_t)((ix-1)/8)][(Int_t)((iy-1)/12)] += binContent;  //NEW TRU SCHEME
-		  // OLD METHOD (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
-		  // if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
-		  // 	badL1G[ix-1][iy-1] += 1;
-		  // 	nBadL1G += 1;
-		  // }
+		  //  fill counter for TRUs
+		  // binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;// OLD TRU SCHEME
+		  binContentTRU[(Int_t)((ix-1)/8)][(Int_t)((iy-1)/12)] += binContent;  // NEW TRU SCHEME
+		  //  OLD METHOD (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
+		  //  if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
+		  //  	badL1G[ix-1][iy-1] += 1;
+		  //  	nBadL1G += 1;
+		  //  }
 		  
-		  // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
-		  // Thresold = how much does the noisy tower/TRU contribute to the rate
-		  //            1.0 --> Rate of noisy tower/TRU = Rate of all other towers/TRUs  
+		  //  NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
+		  //  Thresold = how much does the noisy tower/TRU contribute to the rate
+		  //             1.0 --> Rate of noisy tower/TRU = Rate of all other towers/TRUs  
 		  if (binContent/dL1GEntries > ThreshG / ( 1 + ThreshG )) {
 		    badL1G[ix-1][iy-1] += 1;
 		    nBadL1G += 1;
@@ -322,10 +326,10 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      }
 	    }
 	    
-	    // check TRUs
+	    //  check TRUs
 	    for(Int_t ix = 1; ix <=  2; ix++) {
 	      for(Int_t iy = 1; iy <= AliEMCALTriggerMappingV2::fNTotalTRU/2; iy++) {
-		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {//NEED TO CHECK THIS DEFINITION  
+		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {// NEED TO CHECK THIS DEFINITION  
 		  badL1GTRU[ix-1][iy-1] += 1;
 		  nBadL1GTRU += 1;
 		}
@@ -356,10 +360,10 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		  }
 		*/
 	      }
-	    }//fTextL1[0]
-	  }// L1 gamma patch checking done
-	}// if (specie != calibSpecieId) ..
-      }//hL1GammaPatch NOT NULL
+	    }// fTextL1[0]
+	  }//  L1 gamma patch checking done
+	}//  if (specie != calibSpecieId) ..
+      }// hL1GammaPatch NOT NULL
       
       if( hL1JetPatch ){
 	
@@ -368,30 +372,30 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	
 	if (specie != calibSpecieId) {
 	  
-	  //if(hL1JetPatch->GetEntries() !=0) {
-	  if(hL1JetPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
+	  // if(hL1JetPatch->GetEntries() !=0) {
+	  if(hL1JetPatch->GetEntries() > 10) { //  need some statistics for hot spot calculation
 	    
 	    lstF = hL1JetPatch->GetListOfFunctions();
 	    
-	    // Checker for L1JetPatch
-	    //Double_t dL1JmeanTrig = 1/126.;
-	    //Int_t sigmaJ = 5; // deviation from  mean value
+	    //  Checker for L1JetPatch
+	    // Double_t dL1JmeanTrig = 1/126.;
+	    // Int_t sigmaJ = 5; //  deviation from  mean value
 	    Double_t dL1JEntries = hL1JetPatch->GetEntries();
-	    Int_t badL1J[12][16] = {{0}} ;//NEED TO CHECK THIS FOR JETs !!!!!!!
+	    Int_t badL1J[12][16] = {{0}} ;// NEED TO CHECK THIS FOR JETs !!!!!!!
 	    Int_t nBadL1J = 0;
 	    for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
 	      for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
 		Double_t binContent = hL1JetPatch->GetBinContent(ix, iy) ; 
 		if (binContent != 0) {
 		  
-		  // OLD METHOD  (if a patch triggers > sigmaJ * mean value (1/#patch positions total) says "hot spot !")
-		  // if ((double)binContent/(double)dL1JEntries > sigmaJ*dL1JmeanTrig) {
-		  // 	badL1J[ix-1][iy-1] += 1 ;
-		  // 	nBadL1J += 1;
-		  // }
+		  //  OLD METHOD  (if a patch triggers > sigmaJ * mean value (1/#patch positions total) says "hot spot !")
+		  //  if ((double)binContent/(double)dL1JEntries > sigmaJ*dL1JmeanTrig) {
+		  //  	badL1J[ix-1][iy-1] += 1 ;
+		  //  	nBadL1J += 1;
+		  //  }
 		  
-		  // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
-		  // Threshold: same definitionas for Gamma
+		  //  NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
+		  //  Threshold: same definitionas for Gamma
 		  if ((double)binContent/(double)dL1JEntries > ThreshJ / ( 1 + ThreshJ )) {
 		    badL1J[ix-1][iy-1] += 1 ;
 		    nBadL1J += 1;
@@ -420,10 +424,10 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		*/
 		
 	      }
-	    }//fTextL1[1]
-	  } // L1 Jet patch checking done
-	} // if (specie != calibSpecieId) ..
-      }// hL1JetPatch NOT NULL
+	    }// fTextL1[1]
+	  } //  L1 Jet patch checking done
+	} //  if (specie != calibSpecieId) ..
+      }//  hL1JetPatch NOT NULL
       
       if(hFrameR){
 	
@@ -459,17 +463,18 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		}
 	      */
 	    }   
-	  }//fTextL1[2]
-	} // Checker for link TRU-STU done
-      }//hFrameR NOT NULL
-    } // species processed		
-  } // specie
+	  }// fTextL1[2]
+	} //  Checker for link TRU-STU done
+      }// hFrameR NOT NULL
+    } //  species processed		
+  } //  specie
 }
 //______________________________________________________________________________
-
+///
+/// intialises QA and QA checker settings
+///
 void AliEMCALQAChecker::Init(const AliQAv1::DETECTORINDEX_t det) 
 {
-	/// intialises QA and QA checker settings
 	AliQAv1::Instance(det) ; 
 	Float_t hiValue[AliQAv1::kNBIT] ; 
 	Float_t lowValue[AliQAv1::kNBIT] ;
@@ -485,10 +490,11 @@ void AliEMCALQAChecker::Init(const AliQAv1::DETECTORINDEX_t det)
 }
 
 //______________________________________________________________________________
-
+///
+///  clean up
+///
 void AliEMCALQAChecker::CleanListOfFunctions(TList *list)
-{ // clean up
-
+{ 
 	if (list) {
 		TObject *stats = list->FindObject("stats"); list->Remove(stats);
 		TObject *obj;
@@ -499,7 +505,6 @@ void AliEMCALQAChecker::CleanListOfFunctions(TList *list)
 		AliWarning(Form("Checker : empty list of data functions; returning"));
 		return;
 	}
-
 }
 
 
