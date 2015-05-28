@@ -82,14 +82,13 @@ void AliJJet::ReSum(){
     int lidE = -1;
     double lE = 1e-10;
     fE2 = E();
-    if( GetNConstituentsRef() < 1 ) return;
     GenConstituentsFromRef();
+    if( GetNConstituents() < 1 ) return;
     fNConstituent = fConstituents.GetEntriesFast();
     double E2 = -1;
-    for( int i=0;i<GetNConstituentsRef();i++ ){
+    for( int i=0;i<GetNConstituents();i++ ){
         AliJBaseTrack * trk = (AliJBaseTrack*) fConstituents.At(i);
         if( !trk ){ 
-            //cout<<"DEBUG E1 : No trk in "<<fConstituentsRef.GetUID(i)<<" "<<fConstituentsRef.At(i)<<endl;
             continue;
         }
         TLorentzVector * v = (TLorentzVector*)fConstituents.At(i);

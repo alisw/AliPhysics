@@ -136,8 +136,10 @@ void AliJDiJetTask::UserCreateOutputObjects()
 	//for( int ij=0;ij< fJetTask->GetNumberOfJetCollections();ij++ ){
 	//   fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( ij ) );
 	//}
+	fJDiJetAnalysis->AddJets( 0 );
 	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 0 ) );
 	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 1 ) );
+	fJDiJetAnalysis->AddJets( 0 );
 	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 3 ) );
 	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 4 ) );
 
