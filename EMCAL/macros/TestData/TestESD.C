@@ -1,3 +1,16 @@
+/// \file TestESD.C
+/// \brief Example to analyze calorimeter ESDs
+///
+/// Example macro to extract calorimeter related information from ESDs.
+/// Very similar for AODs.
+/// It mostly prints clusters/cells information but it can also plot some example 
+/// histograms with clusters energy, position, and track matching.
+///
+/// Different global bools can be set to inspect different parameters: cells, trigger, 
+/// track-cluster matching, cells in clusters, PID or MC origin of the clusters.
+///
+/// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS
+///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -22,18 +35,20 @@
 
 #endif
 
-//Change the bool depending on what information you want to print
+// Change the bool depending on what information you want to print
 // when all FALSE, prints minimum cluster information.
-Bool_t kPrintKine         = kFALSE; //Do not use for raw data.
-Bool_t kPrintCaloCells    = kFALSE;
-Bool_t kPrintCaloTrigger  = kFALSE;
-Bool_t kPrintTrackMatches = kFALSE;
-Bool_t kPrintClusterCells = kFALSE;
-Bool_t kPrintClusterPID   = kFALSE;
+Bool_t kPrintKine         = kFALSE; /// Print MC related information. Do not use for raw data.
+Bool_t kPrintCaloCells    = kFALSE; /// Print cells parameters
+Bool_t kPrintCaloTrigger  = kFALSE; /// Print trigger patches information
+Bool_t kPrintTrackMatches = kFALSE; /// Print cluster-track matching information
+Bool_t kPrintClusterCells = kFALSE; /// Print cells in clusters information
+Bool_t kPrintClusterPID   = kFALSE; /// Print clusters PID (bayesian) weights
 
+///
+/// Main method to read information stored in AliESDCaloClusters and AliESDCaloCells
+///
 void TestESD() 
 {
-  // Main method to read information stored in AliESDCaloClusters and AliESDCaloCells
 	
   // Init some example histograms
   // ESD
