@@ -1,20 +1,26 @@
+/// \file TestAOD.C
+/// \brief Example to analyze calorimeter AODs
+///
+/// Example macro to extract calorimeter related information from AODs.
+/// Almost identical for ESDs (see TestESD.C).
+/// It mostly prints clusters/cells information but it can also plot some example 
+/// histograms with clusters energy, position, and track matching.
+///
+/// Different global bools can be set to inspect different parameters: cells, trigger, 
+/// track-cluster matching, cells in clusters, PID or MC origin of the clusters.
+///
+/// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS
+///
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 //Root include files 
-#include <Riostream.h>
+//#include <Riostream.h>
 #include <TFile.h>
-#include <TChain.h>
-#include <TParticle.h>
-#include <TNtuple.h>
-#include <TCanvas.h>
-#include <TObjArray.h>
-#include <TSystem.h>
-#include <TString.h>
+//#include <TSystem.h>
 #include <TH1F.h>
-#include <TVector.h>
 #include <TParticle.h>
 #include <TRefArray.h>
-#include <TArrayS.h>
 
 //AliRoot include files 
 #include "AliRunLoader.h"
@@ -23,79 +29,426 @@
 #include "AliAODVertex.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODCaloCells.h"
+#include "AliAODCaloTrigger.h"
+#include "AliAODTrack.h"
 #include "AliPID.h"
-#include "AliLog.h"
+#include "AliEMCALGeometry.h"
+#include "AliAODMCParticle.h"
 
 #endif
 
-Bool_t kPrintCaloCells    = kTRUE;
-Bool_t kPrintCaloClusters = kTRUE;
+// Change the bool depending on what information you want to print
+// when all FALSE, prints minimum cluster information.
+Bool_t kPrintKine         = kFALSE; /// Print MC related information. Do not use for raw data.
+Bool_t kPrintCaloCells    = kFALSE; /// Print cells parameters
+Bool_t kPrintCaloTrigger  = kFALSE; /// Print trigger patches information
+Bool_t kPrintTrackMatches = kFALSE; /// Print cluster-track matching information
+Bool_t kPrintClusterCells = kFALSE; /// Print cells in clusters information
+Bool_t kPrintClusterPID   = kFALSE; /// Print clusters PID (bayesian) weights
+ 
+///
+/// Main method to read information stored in AliAODCaloClusters and AliAODCaloCells
+///
+void TestAOD() 
+{	
+  // Init some example histograms
+  // AOD
+  TH1F * hEta  = (TH1F*) new TH1F("hEta","reco #eta",1000, -0.71,0.71); 
+  TH1F * hPhi  = (TH1F*) new TH1F("hPhi","reco #phi",360, 0,360); 
+  TH1F * hE    = (TH1F*) new TH1F("hE"  ,"reco e",300, 0,30); 
+  TH1F * hTime = (TH1F*) new TH1F("hTime"  ,"reco time",1000, 0,1000); 
+  hEta ->SetXTitle("#eta");
+  hPhi ->SetXTitle("#phi (deg)");
+  hE   ->SetXTitle("E (GeV)");
+  hTime->SetXTitle("time (ns)");
+  
+  // Monte Carlo
+  TH1F * hMCEta = (TH1F*) new TH1F("hMCEta","MC #eta",1000, -0.71,0.71); 
+  TH1F * hMCPhi = (TH1F*) new TH1F("hMCPhi","MC #phi",360, 0,360); 
+  TH1F * hMCE   = (TH1F*) new TH1F("hMCE"  ,"MC e",300, 0,30); 
+  hMCEta->SetXTitle("#eta");
+  hMCPhi->SetXTitle("#phi (deg)");
+  hMCE  ->SetXTitle("E (GeV)");
+  
+  // AOD - MonteCarlo
+  TH1F * hMCDEta = (TH1F*) new TH1F("hMCDEta"," #eta cluster - #eta MC",500, -0.05,0.05); 
+  TH1F * hMCDPhi = (TH1F*) new TH1F("hMCDPhi"," #phi cluster - #phi MC",500, -0.05,0.05); 
+  TH1F * hMCDE   = (TH1F*) new TH1F("hMCDE"  ,"e cluster - e MC",200, -10,10); 
+  hMCDEta->SetXTitle("#eta_{reco}-#eta_{MC}");
+  hMCDPhi->SetXTitle("#phi_{reco}-#phi_{MC} (rad)");
+  hMCDE  ->SetXTitle("E_{reco}-E_{MC} (GeV)");
 
-
-void TestAOD() {
-
+  // AOD - Track-matching
+  TH1F * hTMDEta   = (TH1F*) new TH1F("hTMDEta"," #eta cluster - eta track",500, -0.05,0.05); 
+  TH1F * hTMDPhi   = (TH1F*) new TH1F("hTMDPhi"," #phi cluster - phi track",500, -0.05,0.05);     
+  //TH1F * hTMDEtaOut= (TH1F*) new TH1F("hTMDEtaOut"," #eta cluster - eta track-outer",500, -0.05,0.05); 
+  //TH1F * hTMDPhiOut= (TH1F*) new TH1F("hTMDPhiOut"," #phi cluster - phi track-outer",500, -0.05,0.05);   
+  TH1F * hTMResEta = (TH1F*) new TH1F("hTMResEta"," Residual #eta cluster - eta track",500, -0.05,0.05); 
+  TH1F * hTMResPhi = (TH1F*) new TH1F("hTMResPhi"," Residual #phi cluster - phi track",500, -0.05,0.05); 
+  hTMDEta   ->SetXTitle("#eta_{cluster}-#eta_{track}");
+  hTMDPhi   ->SetXTitle("#phi_{cluster}-#phi_{track} (rad)");  
+  //hTMDEtaOut->SetXTitle("#eta_{cluster}-#eta_{track-out}");
+  //hTMDPhiOut->SetXTitle("#phi_{cluster}-#phi_{track-out} (rad)");
+  
+  TH1F * hTMEOverP    = (TH1F*) new TH1F("hTMEOverP"," E_{cluster}/ p_{Track}",100,0,2); 
+  //TH1F * hTMEOverPOut = (TH1F*) new TH1F("hTMEOverPOut"," E_{cluster}/ p_{Track-out}",100,0,2); 
+  hTMEOverP    ->SetXTitle("E_{cluster}/ p_{Track}");
+  //hTMEOverPOut ->SetXTitle("E_{cluster}/ p_{Track-out}");
+  
+  // L1 trigger 
+  TH2I * hEGAPatch = new TH2I("hEGAPatch","EGA trigger",51,-0.5,50.5,65,-0.5,64.5);
+  TH2I * hEJEPatch = new TH2I("hEJEPatch","EJE trigger",51,-0.5,50.5,65,-0.5,64.5);
+  hEGAPatch->SetXTitle("column (#eta direction)");
+  hEGAPatch->SetYTitle("row (#phi direction)");
+  hEJEPatch->SetXTitle("column (#eta direction)");
+  hEJEPatch->SetYTitle("row (#phi direction)");
+  
+  // Open the AOD file, get the tree with events
   TFile* f = new TFile("AliAOD.root");
   TTree* aodTree = (TTree*)f->Get("aodTree");
   
   AliAODEvent* aod = new AliAODEvent();
   aod->ReadFromTree(aodTree);
+  
+  // Init geometry and array that will contain the clusters, Run2
+  AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM") ;  	
+  
+  // Run1:
+  //AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1") ;  	
+  //AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1") ;  	
+  //AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1") ;  	
+  
+  // Loop of events
+
+  Float_t pos[3];
+
+  TRefArray* caloClusters = new TRefArray();
 
   Int_t nEvt = aodTree->GetEntries();
-
-  for(Int_t iev = 0; iev < nEvt; iev++) {
-    cout << "Event: " << iev+1 << "/" << nEvt << endl;
+  
+  for(Int_t iev = 0; iev < nEvt; iev++) 
+  {
+    cout << "<<<< Event: " << iev+1 << "/" << nEvt << " >>>>"<<endl;
     aodTree->GetEvent(iev);
-
-    //get reconstructed vertex position
-    Double_t vertex_position[3] = { aod->GetPrimaryVertex()->GetX(),
-				    aod->GetPrimaryVertex()->GetY(),
-				    aod->GetPrimaryVertex()->GetZ()};
-
+    
+    // Get reconstructed vertex position, only used if 
+    // the momentum of the cluster is calculated, see comment below
+    //
+    //Double_t vertex_position[3];
+    //aod->GetPrimaryVertex()->GetXYZ(vertex_position);
+    
     //------------------------------------------------------
-    // Clusters loop
-    //------------------------------------------------------
-    if(kPrintCaloClusters)
+    // Get Cells Array, all cells in event, print cells info 
+    //------------------------------------------------------ 
+    AliVCaloCells &cells = *(aod->GetEMCALCells());
+    
+    if(kPrintCaloCells)
     {  
-      TRefArray* caloClusters = new TRefArray();
-      aod->GetEMCALClusters(caloClusters);
-
-      Int_t nclus = caloClusters->GetEntries();
-      for (Int_t icl = 0; icl < nclus; icl++) 
+      Int_t nTotalCells = cells.GetNumberOfCells() ;  
+      //Int_t type        = cells.GetType();
+      for (Int_t icell=  0; icell <  nTotalCells; icell++) 
       {
-        
-        AliAODCaloCluster* clus = (AliAODCaloCluster*)caloClusters->At(icl);
-        Float_t energy = clus->E();
-        Float_t time   = clus->GetTOF()*1.e9;
-        TLorentzVector p;
-        clus->GetMomentum(p,vertex_position);
-        Int_t nMatched = clus->GetNTracksMatched();
-        
-        cout << "Cluster: " << icl+1 << "/" << nclus << " - Energy: " << energy << "; Time "<<time
-             <<"; Phi: " << p.Phi() << "; Eta: " << p.Eta() << "; #Matches: " << nMatched << endl;
-        
+        cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" - ID: "<<cells.GetCellNumber(icell)<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
+        cout << "; MC label "<<cells.GetMCLabel(icell)<<"; Embeded E fraction "<<cells.GetEFraction(icell);
+        cout<<endl;	       
+      }// cell loop
+    }
+    
+    //------------------------------------------------------
+    // Calo Trigger, L1 
+    //------------------------------------------------------
+    
+    if(kPrintCaloTrigger)
+    { 
+      // Bits to know what L1 trigger, 
+      Int_t bitEGA = 6; // 4 for old data
+      Int_t bitEJE = 8; // 5 for old data
+      
+      AliAODCaloTrigger& trg = *(aod->GetCaloTrigger("EMCAL"));
+		  
+      trg.Reset();
+      while (trg.Next())
+      {
+        Int_t col, row;
+        trg.GetPosition(col, row);
+  
+        if (col > -1 && row > -1) 
+        {
+          Int_t bit = 0;
+          trg.GetTriggerBits(bit);
+          
+          Int_t ts = 0;
+          trg.GetL1TimeSum(ts);
+
+          // Check if it is EGA or EJE (it does not work??)
+          Bool_t isEGA1 = ((bit>>  bitEGA   ) & 0x1);
+          Bool_t isEGA2 = ((bit>> (bitEGA+1)) & 0x1);
+          Bool_t isEJE1 = ((bit>>  bitEJE   ) & 0x1);
+          Bool_t isEJE2 = ((bit>> (bitEJE+1)) & 0x1);
+          
+          if ( ts >= 0 )
+          {
+            printf("Bit %d (G1 %d,G2 %d,J1 %d,J2 %d), cell in patch position (ieta,iphi)=(%d,%d), L1 amplitude %d\n ",
+                            bit, isEGA1, isEGA2, isEJE1, isEJE2, col, row, ts);
+            if(bit>10) hEJEPatch->Fill(col,row);
+            else       hEGAPatch->Fill(col,row);
+          }
+        }
       }
     }
     
     //------------------------------------------------------
-    // Cells loop
-    //------------------------------------------------------ 
+    // Calo Clusters 
+    //------------------------------------------------------
     
-    if(kPrintCaloCells)
-    {  
-      AliVCaloCells &cells= *(aod->GetEMCALCells());
+    // Get CaloClusters Array
+    aod->GetEMCALClusters(caloClusters);
+    
+    // Loop over clusters
+    Int_t nclus = caloClusters->GetEntries();
+    for (Int_t icl = 0; icl < nclus; icl++) 
+    {
+      AliVCluster* clus = (AliVCluster*)caloClusters->At(icl);
+      Float_t energy = clus->E();
+      clus->GetPosition(pos);
+      TVector3 vpos(pos[0],pos[1],pos[2]);
       
-      Int_t nTotalCells = cells.GetNumberOfCells() ;  
-      //Int_t type        = cells.GetType();
-      for (Int_t icell=  0; icell <  nTotalCells; icell++) {
-        cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" - ID: "<<cells.GetCellNumber(icell)<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
-        cout << "; MC label "<<cells.GetMCLabel(icell)<<"; Embeded E fraction "<<cells.GetEFraction(icell);
-        cout<<endl;	  
-      }// cell loop
-    }
-    
+      // We can get a momentum TLorentzVector per cluster, 
+      // corrected by the vertex position, see above 
+      //
+      //TLorentzVector p;
+      //clus->GetMomentum(p,vertex_position);
+      
+      Double_t cphi = vpos.Phi();
+      if(cphi < 0) cphi +=TMath::TwoPi();
+      Double_t ceta = vpos.Eta();
+      
+      Int_t nMatched   = clus->GetNTracksMatched();
+      //Int_t trackIndex = clus->GetTrackMatchedIndex(); // Not set on AODs only on ESDs
+      Int_t nLabels    = clus->GetNLabels();
+      Int_t labelIndex = clus->GetLabel();
+      Int_t nCells     = clus->GetNCells();
+      
+      // Fill some histograms
+      hEta ->Fill(ceta);
+      hPhi ->Fill(cphi*TMath::RadToDeg());
+      hE   ->Fill(energy);
+      hTime->Fill(clus->GetTOF()*1e9);
+      
+      // Print basic cluster information
+      cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
+      << cphi*TMath::RadToDeg() << "; Eta: " << ceta << "; NCells: " << nCells 
+      << "; #Labels: " << nLabels << " Index: " 
+      << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
+      
+      if(nMatched > 0)
+      {
+        printf("\t N matches %d, Residual phi %2.4f, eta %2.4f\n",nMatched,clus->GetTrackDx(),clus->GetTrackDz());
+        hTMResEta->Fill(clus->GetTrackDz());
+        hTMResPhi->Fill(clus->GetTrackDx());
+      }
+      
+      // Print primary info
+      // Careful, different from ESDs.
+      if(kPrintKine) 
+      {
+        TClonesArray * arr = dynamic_cast<TClonesArray*>(aod->FindListObject("mcparticles")) ;
+        if(!arr) continue ;
 
+        if(labelIndex >= 0 && labelIndex < arr->GetEntriesFast())
+        {
+          AliAODMCParticle * particle =  (AliAODMCParticle*) arr->At(labelIndex);
+          
+          // Fill histograms with primary info
+          hMCEta  ->Fill(particle->Eta());
+          hMCPhi  ->Fill(particle->Phi()*TMath::RadToDeg());
+          hMCE    ->Fill(particle->E());
+          hMCDEta ->Fill(ceta-particle->Eta());
+          hMCDPhi ->Fill(cphi-particle->Phi());
+          hMCDE   ->Fill(energy-particle->E());
+          
+          // Print primary values
+          cout<<"         MC More  contributing primary: "<<particle->GetName()<<"; with kinematics: "<<endl;
+          cout<<" \t     Energy: "<<particle->E()<<"; Phi: "<<particle->Phi()*TMath::RadToDeg()<<"; Eta: "<<particle->Eta()<<endl;   
+          cout<<" \t     dE: "<<energy-particle->E()<<"; dPhi: "<<(cphi-particle->Phi())*TMath::RadToDeg()<<"; dEta: "<<ceta-particle->Eta()<<endl;   
+          
+          for(Int_t i = 1; i < nLabels; i++)
+          {
+            //particle = stack->Particle((((AliAODCaloCluster*)clus)->GetLabelsArray())->At(i));
+            particle = (AliAODMCParticle*)arr->At((clus->GetLabels())[i]);
+            //or Int_t *labels = clus->GetLabels();
+            //particle = stack->Particle(labels[i]);
+            cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->E()<<endl;
+          }
+        }
+        else if( labelIndex >= arr->GetEntriesFast()) 
+          cout <<"PROBLEM, label is too large : "<<labelIndex<<" >= particles in stack "<< arr->GetEntriesFast() <<endl;
+        else 
+          cout<<"Negative label!!!  : "<<labelIndex<<endl;
+      } // play with stack
+      
+      // Matching results
+      // Careful, different from ESDs
+      if(kPrintTrackMatches && nMatched > 0) 
+      {
+        AliAODTrack* track = (AliAODTrack*) clus->GetTrackMatched(0);
+        
+        if(track)
+        {
+          Double_t tphi = track->Phi();
+          Double_t teta = track->Eta();
+          Double_t tmom = track->P();
+
+          Double_t deta = teta - ceta;
+          Double_t dphi = tphi - cphi;
+
+          if(dphi >  TMath::Pi()) dphi -= 2*TMath::Pi();
+          if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+          
+          Double_t dR = sqrt(dphi*dphi + deta*deta);
+
+          Double_t pOverE = tmom/energy;
+
+          cout << "\t Track Momentum        : " << tmom << " phi: " << tphi << " eta: " << teta << endl;
+
+          hTMEOverP->Fill(pOverE);
+          hTMDEta  ->Fill(deta);        
+          hTMDPhi  ->Fill(dphi);
+          
+          // Check equivalent for AODs.
+//          if(track->GetOuterParam())
+//          {
+//            tphi = track->GetOuterParam()->Phi();
+//            teta = track->GetOuterParam()->Eta();
+//            tmom = track->GetOuterParam()->P();
+//            
+//            cout << "\t Track Momentum - Outer: " << tmom << " phi: " << tphi << " eta: " << teta << endl;
+//            
+//            deta = teta - ceta;
+//            dphi = tphi - cphi;
+//            
+//            if(dphi >  TMath::Pi()) dphi -= 2*TMath::Pi();
+//            if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+//            
+//            dR = sqrt(dphi*dphi + deta*deta);
+//            
+//            pOverE = tmom/energy;
+//            
+//            if(dR < 0.02 && pOverE < 1.8 && nCells > 1)
+//            {
+//              cout << "\t Excellent MATCH! dR = " << dR << " p/E = " << pOverE << "Residuals phi "<< dphi*TMath::RadToDeg()<< " eta "<< deta  <<  endl;
+//            }
+//            
+//            hTMEOverPOut->Fill(pOverE);
+//            hTMDEtaOut->Fill(deta);        
+//            hTMDPhiOut->Fill(dphi);  
+//          }
+//          else printf("!!! NO OUTER PARAM !!!\n");
+        }
+        else printf("!!! NO TRACK !!!\n");
+      }// matching
+      
+      //Get PID weights and print them
+      if(kPrintClusterPID)
+      {
+        const Double_t *pid = clus->GetPID();
+        printf("PID weights: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+               pid[AliVCluster::kPhoton],   pid[AliVCluster::kPi0],
+               pid[AliVCluster::kElectron], pid[AliVCluster::kEleCon],
+               pid[AliVCluster::kPion],     pid[AliVCluster::kKaon],   pid[AliVCluster::kProton],
+               pid[AliVCluster::kNeutron],  pid[AliVCluster::kKaon0]);
+      } // PID
+      
+      // Get CaloCells of cluster and print their info, position.
+      if(kPrintClusterCells)
+      {	
+        UShort_t * index    = clus->GetCellsAbsId() ;
+        Double_t * fraction = clus->GetCellsAmplitudeFraction() ;
+        Int_t sm = -1;
+        
+        for(Int_t i = 0; i < nCells ; i++)
+        {
+          Int_t absId       =   index[i]; // or clus->GetCellNumber(i) ;
+          Double_t ampFract =  fraction[i];
+          Float_t amp       = cells.GetCellAmplitude(absId) ;
+          Double_t time     = cells.GetCellTime(absId);
+          
+          cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time*1e9<<endl;
+          
+          // Geometry methods  
+          Int_t iSupMod =  0 ;
+          Int_t iTower  =  0 ;
+          Int_t iIphi   =  0 ;
+          Int_t iIeta   =  0 ;
+          Int_t iphi    =  0 ;
+          Int_t ieta    =  0 ;
+          
+          if(geom)
+          {
+            geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
+            //Gives SuperModule and Tower numbers
+            geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                              iIphi, iIeta,iphi,ieta);
+            
+            // Gives label of cell in eta-phi position per each supermodule
+            // Need alignment matrices, comment for now.
+            //Float_t cellPhi = 0;
+            //Float_t cellEta = 0;
+            //geom->EtaPhiFromIndex(absId,cellEta,cellPhi);
+            
+            cout<< "                SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
+            <<"; Phi "<<iIphi<<"; Index: Cell Eta "<<ieta<<"; Cell Phi "<<iphi
+            //<<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()
+            <<endl;
+            
+            if(i==0) sm = iSupMod;
+            else
+            {
+              if(sm!=iSupMod) printf("******CLUSTER SHARED BY 2 SuperModules!!!!\n");
+            }	
+          }// geometry on
+        }// cluster cell loop
+      }// print cell clusters
+    } //cluster loop
+  } // event loop
+  
+  
+  //Write histograms in a file
+  TFile * fhisto = (TFile*) new TFile("histos.root","recreate");
+  hEta->Write();
+  hPhi->Write();
+  hE  ->Write();
+  hTime->Write();
+  
+  if(kPrintKine)
+  {
+    hMCEta->Write();
+    hMCPhi->Write();
+    hMCE  ->Write();
+    hMCDEta->Write();
+    hMCDPhi->Write();
+    hMCDE  ->Write();
   }
-
-
-
+  
+  if(kPrintTrackMatches)
+  {
+    hTMEOverP->Write();
+    hTMDEta  ->Write();
+    hTMDPhi  ->Write();
+ 
+//    hTMEOverPOut->Write();
+//    hTMDEtaOut  ->Write();
+//    hTMDPhiOut  ->Write();
+    
+    hTMResEta->Write();
+    hTMResPhi->Write();  
+  }
+  
+  if(kPrintCaloTrigger)
+  {
+    hEJEPatch->Write();
+    hEGAPatch->Write();
+  }
+  
+  fhisto->Close();
 }
