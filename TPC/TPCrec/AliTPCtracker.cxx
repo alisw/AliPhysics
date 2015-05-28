@@ -472,7 +472,7 @@ AliTracker(),
 
   // crosstalk array and matrix initialization
   Int_t nROCs   = 72;
-  Int_t nTimeBinsAll  = par->GetMaxTBin();
+  Int_t nTimeBinsAll  = AliTPCcalibDB::Instance()->GetMaxTimeBinAllPads() ;
   Int_t nWireSegments = 11;
   fCrossTalkSignalArray = new TObjArray(nROCs*4);  //  
   fCrossTalkSignalArray->SetOwner(kTRUE);
