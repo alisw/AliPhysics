@@ -97,8 +97,8 @@
 #pragma link C++ class AliHLTTPCHWClusterMerger+;
 #pragma link C++ class AliHLTTPCHWClusterMergerV1+;
 #pragma link C++ class AliHLTTPCHWClusterDecoderComponent+;
-#pragma link C++ class AliHLTTPCSpline2D3DObject;
-#pragma link C++ class AliHLTTPCFastTransformObject;
+#pragma link C++ class AliHLTTPCSpline2D3DObject+;
+#pragma link C++ class AliHLTTPCFastTransformObject+;
 #endif // __CINT__
 //
 // EOF

@@ -156,7 +156,6 @@ Int_t AliHLTTPCFastTransform::WriteToObject( AliHLTTPCFastTransformObject &obj )
   //
   // write fast transformation to ROOT object to store it in database
   //
-  
   obj.Reset();
 
   if( obj.GetMaxSec() < fkNSec ) return Error( -10, "AliHLTTPCFastTransform::WriteToObject: Wrong N Sectors in object");
@@ -165,7 +164,7 @@ Int_t AliHLTTPCFastTransform::WriteToObject( AliHLTTPCFastTransformObject &obj )
   obj.SetLastTimeBin( fLastTimeBin );
   obj.SetTimeSplit1( fTimeBorder1 );
   obj.SetTimeSplit2( fTimeBorder2 );
- 
+
   TArrayF &alignment =obj.GetAlignmentNonConst();
   if( !fAlignment ) alignment.Set(0);
   else{
@@ -182,7 +181,8 @@ Int_t AliHLTTPCFastTransform::WriteToObject( AliHLTTPCFastTransformObject &obj )
 	spline.WriteToObject( splineObj );
       }
     }
-  }  
+  }   
+  return 0;
 }
 
 
@@ -217,7 +217,7 @@ Int_t AliHLTTPCFastTransform::ReadFromObject( const AliHLTTPCFastTransformObject
 
   int nSec = tpcParam->GetNSector();
   if( nSec>fkNSec ) nSec = fkNSec;
-
+  
   for( Int_t iSec=0; iSec<nSec; iSec++ ){     
     int nRows = tpcParam->GetNRow(iSec);
     if( nRows>fkNRows ) nRows = fkNRows;
@@ -231,15 +231,14 @@ Int_t AliHLTTPCFastTransform::ReadFromObject( const AliHLTTPCFastTransformObject
       }
     }
   }
-
+  
   const TArrayF &alignment =obj.GetAlignment();
   delete[] fAlignment;
-  fAlignment = 0;
+  fAlignment = 0;  
   if( alignment.GetSize() == fkNSec*21 ){
     fAlignment = new Float_t [fkNSec*21];
     for( Int_t i=0; i<fkNSec*21; i++ ) fAlignment[i] = alignment[i];
-  }
-
+  }  
   return 0;
 }
 

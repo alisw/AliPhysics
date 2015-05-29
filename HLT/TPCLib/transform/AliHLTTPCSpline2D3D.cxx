@@ -125,18 +125,20 @@ Int_t AliHLTTPCSpline2D3D::ReadFromBuffer( const char*buf, size_t &size )
   return err;
 }
 
-Int_t AliHLTTPCSpline2D3D::WriteToObject( AliHLTTPCSpline2D3DObject &obj )
+void AliHLTTPCSpline2D3D::WriteToObject( AliHLTTPCSpline2D3DObject &obj )
 {
   //
   // write spline to ROOT object to store it in database
-  //
-
-  obj.Init( fMinA, fNA, fStepA, fMinB, fNB, fStepB );
-  for( int i=0; i<fN; i++ ) obj.Set( i, fXYZ + i*4);
-  return 0;
+  //  
+  obj.SetMinA( fMinA );
+  obj.SetMinB( fMinB );
+  obj.SetStepA( fStepA );
+  obj.SetStepB( fStepB );
+  obj.InitGrid( fNA, fNB );
+  for( int i=0; i<fN; i++ ) obj.SetGridValue( i, fXYZ + i*4);
 }
  
-Int_t AliHLTTPCSpline2D3D::ReadFromObject( const AliHLTTPCSpline2D3DObject &obj )
+void  AliHLTTPCSpline2D3D::ReadFromObject( const AliHLTTPCSpline2D3DObject &obj )
 {
   //
   // read spline from ROOT object stored in database
@@ -158,10 +160,9 @@ Int_t AliHLTTPCSpline2D3D::ReadFromObject( const AliHLTTPCSpline2D3DObject &obj 
   Vc::free( fXYZ );
   fXYZ = Vc::malloc< float, Vc::AlignOnCacheline>( 4*fN );
   for( int i=0; i<fN; i++ ){
-    obj.Get( i, fXYZ + i*4 );
+    obj.GetGridValue( i, fXYZ + i*4 );
     fXYZ[i*4+3] = 0.;
   }
-  return 0;
 }
 
 void AliHLTTPCSpline2D3D::Consolidate()

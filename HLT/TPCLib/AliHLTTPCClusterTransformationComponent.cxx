@@ -118,6 +118,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   int iResult=0;
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
+  fOfflineMode = 0;
+
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
 
@@ -166,8 +168,6 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   }
 
   fDataId = kFALSE;
-  fOfflineMode = 0;
-
 
   return iResult;
 } // end DoInit()
