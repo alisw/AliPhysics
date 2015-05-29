@@ -6,7 +6,9 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
                             TString 	cutnumberAODBranch 			= "000000006008400001001500000",
 							TString 	periodname 					= "LHC12f1x", 						// period name
 							Bool_t 		doWeighting 				= kFALSE,							// enables weighting
+							Bool_t 		isUsingTHnSparse 			= kTRUE,							// enable or disable usage of THnSparses for background estimation
 							Int_t 		enableExtQA					= 0									// enable QA(3), disabled (0)
+							
 ) {
 
 	// ================= Load Librariers =================================
@@ -305,7 +307,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-
+    task->SetDoTHnSparse(isUsingTHnSparse);
+	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer(Form("GammaCalo_%i",trainConfig), TList::Class(),
