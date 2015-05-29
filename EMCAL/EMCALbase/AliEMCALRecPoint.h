@@ -103,14 +103,19 @@ class AliEMCALRecPoint : public AliCluster {
 
   virtual Int_t   GetSuperModuleNumber(void)   const { return fSuperModuleNumber;}
 
+  // searches for the local maxima 
   // energy above relative level
+  virtual Int_t   GetNumberOfLocalMax(Int_t nDigitMult,
+                                      Float_t locMaxCut,TClonesArray * digits ) const ; 
+
   virtual Int_t   GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                       Float_t locMaxCut,TClonesArray * digits ) const ; 
-                                                                   // searches for the local maxima 
-  // Number of local maxima found in cluster in unfolding:
-  // 0: no unfolding
-  //-1: unfolding failed
-  Short_t         GetNExMax(void)              const { return fNExMax       ; }  // Number of maxima found in cluster in unfolding
+
+  /// Number of local maxima found in cluster, set for V1 and V1+unfolding 
+  /// in unfolding case:
+  ///  * 0: no unfolding
+  ///  *-1: unfolding failed
+  Short_t         GetNExMax(void)              const { return fNExMax       ; }  
   void            SetNExMax(Int_t nmax=1)            { fNExMax = static_cast<Short_t>(nmax) ;}
 	
   Int_t           GetPrimaryIndex()            const  ;

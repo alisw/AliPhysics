@@ -1218,56 +1218,105 @@ Int_t AliEMCALRecPoint::GetMultiplicityAtLevel(Float_t H) const
   return multipl ;
 }
 
+
 //____________________________________________________________________________
+///
+/// Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
+/// energy difference between two local maxima.
+/// Called by AliEMCALClusterizerv1.
+///
+/// \return Number of local maxima in cluster
+/// \param nMult : Number digits in cluster
+/// \param locMaxCut : Minimum energy difference between local maximum and neighbour towers.
+/// \param digits : List of digits in cluster
+///
+Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(Int_t nMult,
+                                             Float_t locMaxCut,
+                                             TClonesArray * digits) const
+{
+  AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMult] ;
+  Float_t * maxAtEnergy  = new Float_t       [nMult] ;
+
+  Int_t nMax =  GetNumberOfLocalMax(maxAt, maxAtEnergy, locMaxCut, digits);
+  
+  delete[] maxAt ;
+  delete[] maxAtEnergy ;
+  
+  return nMax;
+}
+
+//____________________________________________________________________________
+///
+/// Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
+/// energy difference between two local maxima.
+/// Called by AliEMCALUnfolding.
+///
+/// \return Number of local maxima in cluster
+/// \param maxAt : list of local maxima digits
+/// \param maxAtEnergy : list of local maxima energies
+/// \param locMaxCut : Minimum energy difference between local maximum and neighbour towers.
+/// \param digits : List of digits in cluster
+///
 Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
 					       Float_t locMaxCut,TClonesArray * digits) const
 { 
-  // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
-  // energy difference between two local maxima
-
   AliEMCALDigit * digit  = 0;
   AliEMCALDigit * digitN = 0;
   
   Int_t iDigitN = 0 ;
   Int_t iDigit  = 0 ;
-
-  for(iDigit = 0; iDigit < fMulDigit; iDigit++)
-    maxAt[iDigit] = (AliEMCALDigit*) digits->At(fDigitsList[iDigit])  ;
   
-  for(iDigit = 0 ; iDigit < fMulDigit; iDigit++) {   
-    if(maxAt[iDigit]) {
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++)
+  {
+    maxAt[iDigit] = (AliEMCALDigit*) digits->At(fDigitsList[iDigit])  ;
+  }
+  
+  for(iDigit = 0 ; iDigit < fMulDigit; iDigit++) 
+  {   
+    if(maxAt[iDigit]) 
+    {
       digit = maxAt[iDigit] ;
-          
-      for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) {	
-	if(iDigitN == iDigit) continue;//the same digit
+      
+      for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) 
+      {	
+        if(iDigitN == iDigit) continue;//the same digit
+        
         digitN = (AliEMCALDigit *) digits->At(fDigitsList[iDigitN]) ; 
-	
-	if ( AreNeighbours(digit, digitN) ) {
-	  if (fEnergyList[iDigit] > fEnergyList[iDigitN] ) {    
-	    maxAt[iDigitN] = 0 ;
-	    // but may be digit too is not local max ?
-	    if(fEnergyList[iDigit] < fEnergyList[iDigitN] + locMaxCut) 
-	      maxAt[iDigit] = 0 ;
-	  } else {
-	    maxAt[iDigit] = 0 ;
-	    // but may be digitN too is not local max ?
-	    if(fEnergyList[iDigit] > fEnergyList[iDigitN] - locMaxCut) 
-	      maxAt[iDigitN] = 0 ; 
-	  } 
-	} // if Areneighbours
+        
+        if ( AreNeighbours(digit, digitN) ) 
+        {
+          if (fEnergyList[iDigit] > fEnergyList[iDigitN] ) 
+          {    
+            maxAt[iDigitN] = 0 ;
+            
+            // but may be digit too is not local max ?
+            if(fEnergyList[iDigit] < fEnergyList[iDigitN] + locMaxCut) 
+              maxAt[iDigit] = 0 ;
+          } 
+          else 
+          {
+            maxAt[iDigit] = 0 ;
+            
+            // but may be digitN too is not local max ?
+            if(fEnergyList[iDigit] > fEnergyList[iDigitN] - locMaxCut) 
+              maxAt[iDigitN] = 0 ; 
+          } 
+        } // if Are neighbours
       } // while digitN
     } // slot not empty
   } // while digit
   
   iDigitN = 0 ;
-  for(iDigit = 0; iDigit < fMulDigit; iDigit++) { 
-    if(maxAt[iDigit] ){
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++) 
+  { 
+    if(maxAt[iDigit] )
+    {
       maxAt[iDigitN] = maxAt[iDigit] ;
       maxAtEnergy[iDigitN] = fEnergyList[iDigit] ;
       iDigitN++ ; 
     }
   }
-
+  
   return iDigitN ;
 }
 
