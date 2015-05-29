@@ -365,11 +365,13 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fhSelectBit->GetXaxis()->SetBinLabel(3,"SelectionMap");
 	fhSelectBit->GetXaxis()->SetBinLabel(4,"!LcCut");
 	fhSelectBit->GetXaxis()->SetBinLabel(5,"!LcPID");
+	fhSelectBit->GetXaxis()->SetNdivisions(1,kFALSE);
 	fOutput->Add(fhSelectBit);
 
 	fHistNEvents = new TH1F("fHistNEvents", "Number of processed events; ; Events",3,-0.5,2.5);
 	fHistNEvents->GetXaxis()->SetBinLabel(2,"N events");
 	fHistNEvents->GetXaxis()->SetBinLabel(3,"N events (after selection)");
+	fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
 	fHistNEvents->Sumw2();
 	fOutput->Add(fHistNEvents);
 
@@ -410,6 +412,7 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fhSelectionBits->GetXaxis()->SetBinLabel(12,"DstarCuts");
 	fhSelectionBits->GetXaxis()->SetBinLabel(13,"DstarPID");
 	fhSelectionBits->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+	fhSelectionBits->GetXaxis()->SetNdivisions(1,kFALSE);
 	fOutput->Add(fhSelectionBits);
 
 	fhSelectionBitsSigc = new TH2F("hSelectionBitsSigc","Reconstruction + selection bit from c",13,-0.5,12.5,150,0,15);
@@ -426,6 +429,7 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fhSelectionBitsSigc->GetXaxis()->SetBinLabel(12,"DstarCuts");
 	fhSelectionBitsSigc->GetXaxis()->SetBinLabel(13,"DstarPID");
 	fhSelectionBitsSigc->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+	fhSelectionBitsSigc->GetXaxis()->SetNdivisions(1,kFALSE);
 	fOutput->Add(fhSelectionBitsSigc);
 
 	fhSelectionBitsSigb = new TH2F("hSelectionBitsSigb","Reconstruction + selection bit from b",13,-0.5,13.5,150,0,15);
@@ -442,9 +446,8 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fhSelectionBitsSigb->GetXaxis()->SetBinLabel(12,"DstarCuts");
 	fhSelectionBitsSigb->GetXaxis()->SetBinLabel(13,"DstarPID");
 	fhSelectionBitsSigb->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+	fhSelectionBitsSigb->GetXaxis()->SetNdivisions(1,kFALSE);
 	fOutput->Add(fhSelectionBitsSigb);
-
-
 
 // enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
 
@@ -720,7 +723,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 	// Execute analysis for current event:
 	// heavy flavor candidates association to MC truth
 	//
-
 	AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 	//tmp
 	fHistNEvents->Fill(1); // count event
@@ -801,13 +803,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 	TString trigclass=aod->GetFiredTriggerClasses();
 	//if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) 
 
-// Event selection as done is CF task
-	Double_t zPrimVertex = vtx1 ->GetZ();
-	Double_t zMCVertex = mcHeader->GetVtxZ();
-	if (TMath::Abs(zMCVertex) > fRDCutsAnalysis->GetMaxVtxZ()){
-		return;
-	}
-
 	//Bool_t isThereA3prongWithGoodTracks = kFALSE;
 	//Bool_t isThereA3ProngLcKine = kFALSE;
 	//Bool_t isThereA3ProngLcKineANDpid = kFALSE;
@@ -826,6 +821,12 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 	Bool_t isInFidAcc = kFALSE; 
 	Bool_t isInAcc = kFALSE;
 	if(fReadMC) {
+		// Event selection as done is CF task
+		Double_t zPrimVertex = vtx1 ->GetZ();
+		Double_t zMCVertex = mcHeader->GetVtxZ();
+		if (TMath::Abs(zMCVertex) > fRDCutsAnalysis->GetMaxVtxZ()){
+			return;
+		}
 		for (Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++) { 
 			fIsLc=0;
 			fIsLcResonant=0;
@@ -1310,7 +1311,6 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 		delete util;
 
 		//signal
-		//Fill with non-injected
 		if(fIsLc>=1) {
 			//MC PID
 			fhMCmassLcPtSig->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
@@ -1342,9 +1342,9 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 		}
 	}
 	//Bkg
-	if(fIsLc==0 && IsInjected>0) {
+	if(!fReadMC || (fIsLc==0 && IsInjected==0)) { //data or non-injected background
 		//MC PID
-		fhMCmassLcPt->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
+		if(fReadMC) fhMCmassLcPt->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
 		//Real PID
 		if(selection==1){
 			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpKpi());
@@ -1358,7 +1358,6 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 		}
 	}
 }
-
 
 //---------------------------
 
@@ -1381,6 +1380,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
+	if(fReadMC && IsInjected && !IsLc) return; //dont fill if injected bkg
 
 	Double_t invMasspKpi=-1.;
 	Double_t invMasspiKp=-1.;
