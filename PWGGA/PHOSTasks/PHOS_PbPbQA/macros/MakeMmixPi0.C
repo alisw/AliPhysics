@@ -1,9 +1,10 @@
 const Double_t kMean=0.135 ; //Approximate peak position to facilitate error estimate
 
 //-----------------------------------------------------------------------------
-void MakeMmixPi0(const char* file = "PHOSPbPbQA.root",
-		 const Int_t centrality=0,
-		 const char* cModule="")
+void MakeMmixPi0(const char* file       = "PHOSPbPbQA.root",
+		 const char* cModule    = "",
+		 const char* listName   = "PHOSPbPbQAResults",
+		 const Int_t centrality = 0)
 {
   //---------------------------------------------------------------------------
   // This macro processes PWGPP QA output of the analysis task PHOSPbPbQA
@@ -17,8 +18,8 @@ void MakeMmixPi0(const char* file = "PHOSPbPbQA.root",
   //---------------------------------------------------------------------------
 /* $Id$ */
 
-  TFile * f = new TFile("PHOSPbPb_all.root") ;
-  TList *histESD = (TList*) f->Get("PHOSPbPbQAResults");
+  TFile * f = new TFile(file) ;
+  TList *histESD = (TList*) f->Get(listName);
   char key[125] ;
 
   const char* pid="All";
