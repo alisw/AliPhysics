@@ -384,12 +384,13 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   // Random rejection of events in MB in 0-10% to flatten the centrality distribution
   
-  Bool_t rejectEvent = kFALSE;
+//   Bool_t rejectEvent = kFALSE;
   Int_t centBin = fCent->FindBin(cent);
-  rejectEvent = RejectEvent(cent,centBin);
-  
-  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
-  fCentAftFlt->Fill(cent);
+  Double_t centWeight = 1.;
+  centWeight =GetCentWeight(centBin);
+ 
+//   rejectEvent = RejectEvent(cent,centBin);
+//   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
   
   // Trigger study and selection of V0 low threshold trigger in 10-20%
 
@@ -422,9 +423,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   if(evPlaneV0 > TMath::Pi()) evPlaneV0 = evPlaneV0 - TMath::Pi();
   
   Int_t epBin = fevPlaneV0[0]->FindBin(evPlaneV0);
-  Double_t EPweight = GetEPweight(epBin);
+  Double_t EPweight = 1.;
+  EPweight = GetEPweight(epBin);
  
-  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fevPlaneV0[iCent]->Fill(evPlaneV0,EPweight);
+  Double_t wEvent = EPweight*centWeight;
+  
+  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ){
+    fevPlaneV0[iCent]->Fill(evPlaneV0,wEvent);
+    fCentAftFlt->Fill(cent,wEvent);
+  }
   else fevPlaneV0[iCent]->Fill(evPlaneV0);
   
   AliEventplane* esdTPCep = fESD->GetEventplane();
@@ -494,15 +501,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneTPCpos = TMath::ATan2(Qy2pos, Qx2pos)/2;
 
   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ){
-    fEPres[0]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),EPweight);
-    fEPres[1]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),EPweight);
+    fEPres[0]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),wEvent);
+    fEPres[1]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),wEvent);
+    fEPres[2]->Fill(iCent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),wEvent);
   }
   else{
     fEPres[0]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos));
     fEPres[1]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg));
+    fEPres[2]->Fill(iCent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg));
   }
-  fEPres[2]->Fill(iCent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg));
-  
   
   // Selection of pi0 and eta in MC to compute the weight
   if(fIsMC && fMC && fStack){
@@ -607,15 +614,14 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagPhotonicElecBCG = kFALSE;
-    Double_t weight = 1.;
+    Double_t MCweight = 1.;
     Int_t iDecay = 0;
 
     // checking centrality and event plane distributions for events with electron above the trigger threshold
-    if (fTPCnSigma>=-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3 && pt>=8 && !IsSameEvent){
-      fCentAftThr->Fill(cent);
-      if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fevPlaneV0AftThr[iCent]->Fill(evPlaneV0,EPweight);
-      else fevPlaneV0AftThr[iCent]->Fill(evPlaneV0);
-      IsSameEvent=kTRUE;
+    if (fTPCnSigma>=-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3 && pt>=8 && GetCollisionCandidates()==AliVEvent::kEMCEGA && !IsSameEvent){
+	fevPlaneV0AftThr[iCent]->Fill(evPlaneV0);
+	fCentAftThr->Fill(cent);
+        IsSameEvent=kTRUE;
     }
     
     // MC part
@@ -624,8 +630,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Bool_t MChijing; 
 
     if(fIsMC && fMC && fStack){
-      if(fTPCnSigma <= -1 || fTPCnSigma >= 3) continue;
-      if(fEMCalnSigma <= 0 || fEMCalnSigma >= 3) continue;
+      if(m20<=0.02 && m02<=0.02) continue;
       Int_t label = track->GetLabel();
       if(label!=0){
         TParticle *particle = fStack->Particle(TMath::Abs(label));	
@@ -638,11 +643,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
           Int_t iHijing = 1;
           if(!MChijing) iHijing = 0; // 0 if enhanced sample
 
-	  GetWeightAndDecay(particle,iCent,iDecay,weight);
+	  GetWeightAndDecay(particle,iCent,iDecay,MCweight);
 	  
-	  fInclElec[iCent]->Fill(pt,iDecay,weight);
+	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
 	  
-	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,weight,iCent,iHijing,iDecay);
+	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
 
         }// end particle
       }// end label
@@ -659,20 +664,20 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
        
     if (m20>0.02 && m02>0.02){
       Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,EovP};
-      if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fCorr->Fill(corr,EPweight);
+      if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fCorr->Fill(corr,wEvent);
       else fCorr->Fill(corr);
     }
 
-    if(!fIsMC && m20>0.02 && m02>0.02 && fTPCnSigma>-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3){ 
-      SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0);
+    if(!fIsMC && m20>0.02 && m02>0.02){ 
+      SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,fEMCalnSigma,fTPCnSigma);
       fInclElec[iCent]->Fill(pt,0);
     }
     
-    if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fChargPartV2[iCent]->Fill(iPt,cosdphi,EPweight); 
+    if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fChargPartV2[iCent]->Fill(iPt,cosdphi,wEvent); 
     else fChargPartV2[iCent]->Fill(iPt,cosdphi); 
     
     if (clsE>0){
-      if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA )  fMtcPartV2[iCent]->Fill(iPt,cosdphi,EPweight);
+      if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA )  fMtcPartV2[iCent]->Fill(iPt,cosdphi,wEvent);
       else  fMtcPartV2[iCent]->Fill(iPt,cosdphi); 
     }
     
@@ -785,11 +790,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fCorr->Sumw2();
   fOutputList->Add(fCorr);
   
-  //iCent,pt,mass,fFlagLS,fFlagULS,iHijing,iDecay
-  Int_t binsv3[7]={3,40,100,40,40,4,7}; 
-  Double_t xminv3[7]={0,0,0,0,0,-1,0};
-  Double_t xmaxv3[7]={3,20,0.3,20,20,3,7}; 
-  fElecMC = new THnSparseD ("fElecMC","MC",7,binsv3,xminv3,xmaxv3);
+  //iCent,pt,mass,fFlagLS,fFlagULS,iHijing,iDecay,,fEMCalnSigma,fTPCnSigma
+  Int_t binsv3[9]={3,40,100,40,40,4,7,100,100}; 
+  Double_t xminv3[9]={0,0,0,0,0,-1,0,-5,-5};
+  Double_t xmaxv3[9]={3,20,0.3,20,20,3,7,5,5}; 
+  fElecMC = new THnSparseD ("fElecMC","MC",9,binsv3,xminv3,xmaxv3);
   fElecMC->Sumw2();
   fOutputList->Add(fElecMC);
   
@@ -1158,6 +1163,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::GetWeightAndDecay(TParticle *particle, Int_t
   weight = w;
 }
 //_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetCentWeight(Int_t centbin){
+  // Get cebtrality weight for flattening (0-10%)
+  Int_t wBin = centbin-1;
+  if (wBin<0 || wBin>9) return 1;
+  Double_t weightcent[] = {0.994815,0.98834,0.967179,0.966593,0.968024,0.990962,0.983735,0.991754,1.01623,1.15813};
+  
+  return weightcent[wBin];
+}
+//_________________________________________
 Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEPweight(Int_t bin) 
 {
   //Get event plane weight for flattening (0-10%)
@@ -1236,7 +1250,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(TParticle *particle)
   return isprimary;
 }
 //_________________________________________
-void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay)
+void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
@@ -1324,7 +1338,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDt
     
     recg.GetMass(mass,width);
     
-    Double_t elecMC[7]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)fFlagULS,(Double_t)iHijing,(Double_t)iDecay};
+    Double_t elecMC[9]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)fFlagULS,(Double_t)iHijing,(Double_t)iDecay, fEMCalnSigma, fTPCnSigma};
     fElecMC->Fill(elecMC,weight);
     
     if(fFlagLS) fInvmassLS[iCent]->Fill(mass,pt,weight);
