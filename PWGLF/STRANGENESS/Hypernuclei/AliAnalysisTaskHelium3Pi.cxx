@@ -187,6 +187,7 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi()
   tHelimpactXY(0),
   tHelimpactZ(0),
   tHelmapITS(0),
+  tHelBetaTOF(0),
   fPIDResponse(0)
   
 {
@@ -326,7 +327,8 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi(const char *name)
   tHeMass(0),
   tHelimpactXY(0),
   tHelimpactZ(0),
-  tHelmapITS(0),	   
+  tHelmapITS(0),
+  tHelBetaTOF(0),	   
   fPIDResponse(0)
 {					  
 
@@ -510,7 +512,7 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   }
 
   if(! fhMassTOF){
-    fhMassTOF=new TH1F ("fhMassTOF","Particle Mass - TOF", 300,0 ,5);
+    fhMassTOF=new TH1F ("fhMassTOF","Particle Mass - TOF", 600,-5,5);
     fhMassTOF->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
     fListHist->Add(fhMassTOF);
   }
@@ -666,7 +668,8 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
     fNtuple4->Branch("tHelimpactXY"         ,&tHelimpactXY         ,"tHelimpactXY/F");
     fNtuple4->Branch("tHelimpactZ"          ,&tHelimpactZ          ,"tHelimpactZ/F");
     fNtuple4->Branch("tHelmapITS"           ,&tHelmapITS           ,"tHelmapITS/F");
-    
+    fNtuple4->Branch("tHelBetaTOF"          ,&tHelBetaTOF          ,"tHelBetaTOF/F");
+   
   } 
 
   PostData(1,  fListHist);
@@ -1004,11 +1007,14 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       //      bbtheoM = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 7)));
       // if( bbtheoM < 3.) {
 
-      //------ new
-      ptcExp   = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
-      bbtheoM  = (TPCSignal - ptcExp)/(0.07*ptcExp);
-      expbeta  = TMath::Sqrt(1-((Helium3Mass*Helium3Mass)/(pinTPC*pinTPC+Helium3Mass*Helium3Mass))); 
-      pullTOF  = (betaTOF - expbeta)/(0.007*expbeta);
+      //------ new // 29/05/15
+      //ptcExp   = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
+      // bbtheoM  = (TPCSignal - ptcExp)/(0.07*ptcExp);
+      bbtheoM = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType)6))); //r
+      // expbeta  = TMath::Sqrt(1-((Helium3Mass*Helium3Mass)/(pinTPC*pinTPC+Helium3Mass*Helium3Mass))); 
+      // pullTOF  = (betaTOF - expbeta)/(0.007*expbeta);
+      pullTOF = fPIDResponse->NumberOfSigmasTOF(esdtrack,(AliPID::EParticleType)6);
+
       //-------
       
       //      if( TPCSignal > bbtheoM ) {
@@ -1025,7 +1031,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  if(hasTOF){
 	    if(TMath::Abs(massTOF) > 5.0)continue;
 	    if(TMath::Abs(massTOF) < 1.8 )continue;
-	    fhMassTOF->Fill(massTOF);
+	    fhMassTOF->Fill(massTOF*esdtrack->GetSign());
 	  }
 	  //------------------------------
 	
@@ -1089,12 +1095,22 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  tHelimpactXY	        =(Float_t)impactXY;
 	  tHelimpactZ	        =(Float_t)impactZ;
 	  tHelmapITS	        =(Float_t)mapITS;
-
+	  tHelBetaTOF           =(Float_t)betaTOF;
+	  /*
  	  if(pinTPC<1.2)
 	    fNtuple4->Fill();
  	  else
 	    if(hasTOF && TMath::Abs(pullTOF)<=3)
-	      fNtuple4->Fill();
+	    fNtuple4->Fill();
+	  */	  
+
+	  if(pinTPC<1.2)
+	    fNtuple4->Fill();
+ 	  else
+	    if(hasTOF)
+	    fNtuple4->Fill();
+	  
+	  
 	  //
 	}
       }
@@ -1304,7 +1320,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	tchi2Pi                 =(Float_t)PionTrack->GetTPCchi2()/(Float_t)(nClustersTPCPi);
 		
 
-	fNtuple1->Fill();  
+	//	fNtuple1->Fill();  
 	vertex.Delete();
       }// positive TPC
       
