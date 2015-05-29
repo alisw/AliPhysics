@@ -189,13 +189,16 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh2QAV0PtPtLambdaPeak[i] = 0;
     fh2ArmPodLambda[i] = 0;
 
-//    fh2QAV0EtaPtALambdaPeak[i] = 0;
-//    fh2QAV0EtaEtaALambda[i] = 0;
-//    fh2QAV0PhiPhiALambda[i] = 0;
-//    fh1QAV0RapALambda[i] = 0;
-//    fh2QAV0PtPtALambdaPeak[i] = 0;
+    fh2QAV0EtaPtALambdaPeak[i] = 0;
+    fh2QAV0EtaEtaALambda[i] = 0;
+    fh2QAV0PhiPhiALambda[i] = 0;
+    fh1QAV0RapALambda[i] = 0;
+    fh2QAV0PtPtALambdaPeak[i] = 0;
     fh2ArmPodALambda[i] = 0;
 
+    fh2QAV0PhiPtK0sPeak[i] = 0;
+    fh2QAV0PhiPtLambdaPeak[i] = 0;
+    fh2QAV0PhiPtALambdaPeak[i] = 0;
     fh1QAV0Pt[i] = 0;
     fh1QAV0Charge[i] = 0;
     fh1QAV0DCAVtx[i] = 0;
@@ -459,13 +462,16 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh2QAV0PtPtLambdaPeak[i] = 0;
     fh2ArmPodLambda[i] = 0;
 
-//    fh2QAV0EtaPtALambdaPeak[i] = 0;
-//    fh2QAV0EtaEtaALambda[i] = 0;
-//    fh2QAV0PhiPhiALambda[i] = 0;
-//    fh1QAV0RapALambda[i] = 0;
-//    fh2QAV0PtPtALambdaPeak[i] = 0;
+    fh2QAV0EtaPtALambdaPeak[i] = 0;
+    fh2QAV0EtaEtaALambda[i] = 0;
+    fh2QAV0PhiPhiALambda[i] = 0;
+    fh1QAV0RapALambda[i] = 0;
+    fh2QAV0PtPtALambdaPeak[i] = 0;
     fh2ArmPodALambda[i] = 0;
 
+    fh2QAV0PhiPtK0sPeak[i] = 0;
+    fh2QAV0PhiPtLambdaPeak[i] = 0;
+    fh2QAV0PhiPtALambdaPeak[i] = 0;
     fh1QAV0Pt[i] = 0;
     fh1QAV0Charge[i] = 0;
     fh1QAV0DCAVtx[i] = 0;
@@ -925,11 +931,11 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh1EtaJet[i]);
     fh2EtaPtJet[i] = new TH2D(Form("fh2EtaPtJet_%d", i), Form("Jet eta vs pT spectrum, cent: %s;#it{#eta} jet;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), 80, -1., 1., 2 * iNJetPtBins, dJetPtMin, dJetPtMax);
     fOutputListStd->Add(fh2EtaPtJet[i]);
-    fh2EtaPhiRndCone[i] = new TH2D(Form("fh2EtaPhiRndCone_%d", i), Form("Rnd. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 100, 0., TMath::TwoPi());
+    fh2EtaPhiRndCone[i] = new TH2D(Form("fh2EtaPhiRndCone_%d", i), Form("Rnd. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 90, 0., TMath::TwoPi());
     fOutputListStd->Add(fh2EtaPhiRndCone[i]);
-    fh2EtaPhiMedCone[i] = new TH2D(Form("fh2EtaPhiMedCone_%d", i), Form("Med.-cl. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 100, 0., TMath::TwoPi());
+    fh2EtaPhiMedCone[i] = new TH2D(Form("fh2EtaPhiMedCone_%d", i), Form("Med.-cl. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 90, 0., TMath::TwoPi());
     fOutputListStd->Add(fh2EtaPhiMedCone[i]);
-    fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 100, 0., TMath::TwoPi());
+    fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 90, 0., TMath::TwoPi());
     fOutputListStd->Add(fh1PhiJet[i]);
     fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 4 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
     fOutputListStd->Add(fh2PtJetPtTrackLeading[i]);
@@ -1086,25 +1092,34 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh1QAV0Eta[i] = new TH1D(Form("fh1QAV0Eta_%d", i), "QA: Daughter Eta", 200, -2, 2);
     fh2QAV0EtaRows[i] = new TH2D(Form("fh2QAV0EtaRows_%d", i), "QA: Daughter Eta vs TPC rows;#eta;TPC rows", 200, -2, 2, 160, 0, 160);
     fh2QAV0PtRows[i] = new TH2D(Form("fh2QAV0PtRows_%d", i), "QA: Daughter Pt vs TPC rows;pt;TPC rows", 100, 0, 10, 160, 0, 160);
-    fh2QAV0PhiRows[i] = new TH2D(Form("fh2QAV0PhiRows_%d", i), "QA: Daughter Phi vs TPC rows;#phi;TPC rows", 100, 0, TMath::TwoPi(), 160, 0, 160);
+    fh2QAV0PhiRows[i] = new TH2D(Form("fh2QAV0PhiRows_%d", i), "QA: Daughter Phi vs TPC rows;#phi;TPC rows", 90, 0, TMath::TwoPi(), 160, 0, 160);
     fh2QAV0NClRows[i] = new TH2D(Form("fh2QAV0NClRows_%d", i), "QA: Daughter NCl vs TPC rows;findable clusters;TPC rows", 100, 0, 160, 160, 0, 160);
     fh2QAV0EtaNCl[i] = new TH2D(Form("fh2QAV0EtaNCl_%d", i), "QA: Daughter Eta vs NCl;#eta;findable clusters", 200, -2, 2, 160, 0, 160);
 
     fh2QAV0EtaPtK0sPeak[i] = new TH2D(Form("fh2QAV0EtaPtK0sPeak_%d", i), "QA: K0s: Daughter Eta vs V0 pt, peak;track eta;V0 pt", 200, -2, 2, iNBinsPtV0, dPtV0Min, dPtV0Max);
     fh2QAV0EtaEtaK0s[i] = new TH2D(Form("fh2QAV0EtaEtaK0s_%d", i), "QA: K0s: Eta vs Eta Daughter", 200, -2, 2, 200, -2, 2);
-    fh2QAV0PhiPhiK0s[i] = new TH2D(Form("fh2QAV0PhiPhiK0s_%d", i), "QA: K0s: Phi vs Phi Daughter", 200, 0, TMath::TwoPi(), 200, 0, TMath::TwoPi());
+    fh2QAV0PhiPhiK0s[i] = new TH2D(Form("fh2QAV0PhiPhiK0s_%d", i), "QA: K0s: Phi vs Phi Daughter", 90, 0, TMath::TwoPi(), 90, 0, TMath::TwoPi());
     fh1QAV0RapK0s[i] = new TH1D(Form("fh1QAV0RapK0s_%d", i), "QA: K0s: V0 Rapidity", 200, -2, 2);
     fh2QAV0PtPtK0sPeak[i] = new TH2D(Form("fh2QAV0PtPtK0sPeak_%d", i), "QA: K0s: Daughter Pt vs Pt;neg pt;pos pt", 100, 0, 5, 100, 0, 5);
 
     fh2QAV0EtaPtLambdaPeak[i] = new TH2D(Form("fh2QAV0EtaPtLambdaPeak_%d", i), "QA: Lambda: Daughter Eta vs V0 pt, peak;track eta;V0 pt", 200, -2, 2, iNBinsPtV0, dPtV0Min, dPtV0Max);
     fh2QAV0EtaEtaLambda[i] = new TH2D(Form("fh2QAV0EtaEtaLambda_%d", i), "QA: Lambda: Eta vs Eta Daughter", 200, -2, 2, 200, -2, 2);
-    fh2QAV0PhiPhiLambda[i] = new TH2D(Form("fh2QAV0PhiPhiLambda_%d", i), "QA: Lambda: Phi vs Phi Daughter", 200, 0, TMath::TwoPi(), 200, 0, TMath::TwoPi());
+    fh2QAV0PhiPhiLambda[i] = new TH2D(Form("fh2QAV0PhiPhiLambda_%d", i), "QA: Lambda: Phi vs Phi Daughter", 90, 0, TMath::TwoPi(), 90, 0, TMath::TwoPi());
     fh1QAV0RapLambda[i] = new TH1D(Form("fh1QAV0RapLambda_%d", i), "QA: Lambda: V0 Rapidity", 200, -2, 2);
     fh2QAV0PtPtLambdaPeak[i] = new TH2D(Form("fh2QAV0PtPtLambdaPeak_%d", i), "QA: Lambda: Daughter Pt vs Pt;neg pt;pos pt", 100, 0, 5, 100, 0, 5);
 
+    fh2QAV0EtaPtALambdaPeak[i] = new TH2D(Form("fh2QAV0EtaPtALambdaPeak_%d", i), "QA: anti-Lambda: Daughter Eta vs V0 pt, peak;track eta;V0 pt", 200, -2, 2, iNBinsPtV0, dPtV0Min, dPtV0Max);
+    fh2QAV0EtaEtaALambda[i] = new TH2D(Form("fh2QAV0EtaEtaALambda_%d", i), "QA: anti-Lambda: Eta vs Eta Daughter", 200, -2, 2, 200, -2, 2);
+    fh2QAV0PhiPhiALambda[i] = new TH2D(Form("fh2QAV0PhiPhiALambda_%d", i), "QA: anti-Lambda: Phi vs Phi Daughter", 90, 0, TMath::TwoPi(), 90, 0, TMath::TwoPi());
+    fh1QAV0RapALambda[i] = new TH1D(Form("fh1QAV0RapALambda_%d", i), "QA: anti-Lambda: V0 Rapidity", 200, -2, 2);
+    fh2QAV0PtPtALambdaPeak[i] = new TH2D(Form("fh2QAV0PtPtALambdaPeak_%d", i), "QA: anti-Lambda: Daughter Pt vs Pt;neg pt;pos pt", 100, 0, 5, 100, 0, 5);
+
+    fh2QAV0PhiPtK0sPeak[i] = new TH2D(Form("fh2QAV0PhiPtK0sPeak_%d", i), "QA: K0S: #phi-pt;#phi;pt", 90, 0, TMath::TwoPi(), iNBinsPtV0, dPtV0Min, dPtV0Max);
+    fh2QAV0PhiPtLambdaPeak[i] = new TH2D(Form("fh2QAV0PhiPtLambdaPeak_%d", i), "QA: Lambda: #phi-pt;#phi;pt", 90, 0, TMath::TwoPi(), iNBinsPtV0, dPtV0Min, dPtV0Max);
+    fh2QAV0PhiPtALambdaPeak[i] = new TH2D(Form("fh2QAV0PhiPtALambdaPeak_%d", i), "QA: anti-Lambda: #phi-pt;#phi;pt", 90, 0, TMath::TwoPi(), iNBinsPtV0, dPtV0Min, dPtV0Max);
     fh1QAV0Pt[i] = new TH1D(Form("fh1QAV0Pt_%d", i), "QA: Daughter Pt", 100, 0, 5);
     fh1QAV0Charge[i] = new TH1D(Form("fh1QAV0Charge_%d", i), "QA: V0 Charge", 3, -1, 2);
-    fh1QAV0DCAVtx[i] = new TH1D(Form("fh1QAV0DCAVtx_%d", i), "QA: DCA daughters to primary vertex", 100, 0, 10);
+    fh1QAV0DCAVtx[i] = new TH1D(Form("fh1QAV0DCAVtx_%d", i), "QA: DCA daughters to primary vertex", 1000, 0, 10);
     fh1QAV0DCAV0[i] = new TH1D(Form("fh1QAV0DCAV0_%d", i), "QA: DCA daughters", 100, 0, 2);
     fh1QAV0Cos[i] = new TH1D(Form("fh1QAV0Cos_%d", i), "QA: CPA", 10000, 0.9, 1);
     fh1QAV0R[i] = new TH1D(Form("fh1QAV0R_%d", i), "QA: R", 1500, 0, 150);
@@ -1140,6 +1155,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListQA->Add(fh1QAV0RapLambda[i]);
     fOutputListQA->Add(fh2QAV0PtPtLambdaPeak[i]);
 
+    fOutputListQA->Add(fh2QAV0PhiPtK0sPeak[i]);
+    fOutputListQA->Add(fh2QAV0PhiPtLambdaPeak[i]);
+    fOutputListQA->Add(fh2QAV0PhiPtALambdaPeak[i]);
     fOutputListQA->Add(fh1QAV0Pt[i]);
     fOutputListQA->Add(fh1QAV0Charge[i]);
     fOutputListQA->Add(fh1QAV0DCAVtx[i]);
@@ -1344,13 +1362,13 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     printf("Signal jet container parameters\n");
     if(fJetsCont)
     {
-      printf("Jet R = %g\n",fJetsCont->GetJetRadius());
+      printf("Jet R = %g\n", fJetsCont->GetJetRadius());
       fJetsCont->PrintCuts();
     }
     printf("Background jet container parameters\n");
     if(fJetsBgCont)
     {
-      printf("Jet R = %g\n",fJetsBgCont->GetJetRadius());
+      printf("Jet R = %g\n", fJetsBgCont->GetJetRadius());
       fJetsBgCont->PrintCuts();
     }
   }
@@ -2945,6 +2963,7 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const A
       fh2QAV0EtaPtK0sPeak[iIndexHisto]->Fill(vZero->Eta(), vZero->Pt());
       fh2QAV0PtPtK0sPeak[iIndexHisto]->Fill(trackNeg->Pt(), trackPos->Pt());
       fh2ArmPodK0s[iIndexHisto]->Fill(dAlpha, dPtArm);
+      fh2QAV0PhiPtK0sPeak[iIndexHisto]->Fill(vZero->Phi(), vZero->Pt());
     }
     fh2QAV0EtaEtaK0s[iIndexHisto]->Fill(trackNeg->Eta(), trackPos->Eta());
     fh2QAV0PhiPhiK0s[iIndexHisto]->Fill(trackNeg->Phi(), trackPos->Phi());
@@ -2960,6 +2979,7 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const A
       fh2QAV0EtaPtLambdaPeak[iIndexHisto]->Fill(vZero->Eta(), vZero->Pt());
       fh2QAV0PtPtLambdaPeak[iIndexHisto]->Fill(trackNeg->Pt(), trackPos->Pt());
       fh2ArmPodLambda[iIndexHisto]->Fill(dAlpha, dPtArm);
+      fh2QAV0PhiPtLambdaPeak[iIndexHisto]->Fill(vZero->Phi(), vZero->Pt());
     }
     fh2QAV0EtaEtaLambda[iIndexHisto]->Fill(trackNeg->Eta(), trackPos->Eta());
     fh2QAV0PhiPhiLambda[iIndexHisto]->Fill(trackNeg->Phi(), trackPos->Phi());
@@ -2972,13 +2992,14 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const A
     {
 //      fh2QAV0EtaPtALambdaPeak[iIndexHisto]->Fill(trackNeg->Eta(),vZero->Pt());
 //      fh2QAV0EtaPtALambdaPeak[iIndexHisto]->Fill(trackPos->Eta(),vZero->Pt());
-//      fh2QAV0EtaPtALambdaPeak[iIndexHisto]->Fill(vZero->Eta(), vZero->Pt());
-//      fh2QAV0PtPtALambdaPeak[iIndexHisto]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2QAV0EtaPtALambdaPeak[iIndexHisto]->Fill(vZero->Eta(), vZero->Pt());
+      fh2QAV0PtPtALambdaPeak[iIndexHisto]->Fill(trackNeg->Pt(), trackPos->Pt());
       fh2ArmPodALambda[iIndexHisto]->Fill(dAlpha, dPtArm);
+      fh2QAV0PhiPtALambdaPeak[iIndexHisto]->Fill(vZero->Phi(), vZero->Pt());
     }
-//    fh2QAV0EtaEtaALambda[iIndexHisto]->Fill(trackNeg->Eta(), trackPos->Eta());
-//    fh2QAV0PhiPhiALambda[iIndexHisto]->Fill(trackNeg->Phi(), trackPos->Phi());
-//    fh1QAV0RapALambda[iIndexHisto]->Fill(vZero->RapALambda());
+    fh2QAV0EtaEtaALambda[iIndexHisto]->Fill(trackNeg->Eta(), trackPos->Eta());
+    fh2QAV0PhiPhiALambda[iIndexHisto]->Fill(trackNeg->Phi(), trackPos->Phi());
+    fh1QAV0RapALambda[iIndexHisto]->Fill(vZero->RapALambda());
   }
 
   fh2ArmPod[iIndexHisto]->Fill(dAlpha, dPtArm);

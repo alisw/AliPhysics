@@ -350,11 +350,11 @@ private:
   // ALambda
   TH1D* fh1V0CounterCentALambda[fgkiNBinsCent]; //! number of ALambda candidates after various cuts
   TH1D* fh1V0InvMassALambdaAll[fgkiNCategV0]; //!
-//  TH2D* fh2QAV0EtaPtALambdaPeak[fgkiNQAIndeces]; //!
-//  TH2D* fh2QAV0EtaEtaALambda[fgkiNQAIndeces]; //!
-//  TH2D* fh2QAV0PhiPhiALambda[fgkiNQAIndeces]; //!
-//  TH1D* fh1QAV0RapALambda[fgkiNQAIndeces]; //!
-//  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0EtaPtALambdaPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0EtaEtaALambda[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0PhiPhiALambda[fgkiNQAIndeces]; //!
+  TH1D* fh1QAV0RapALambda[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
   TH2D* fh2ArmPodALambda[fgkiNQAIndeces]; //!
   TH1D* fh1V0CandPerEventCentALambda[fgkiNBinsCent]; //!
   TH1D* fh1V0InvMassALambdaCent[fgkiNBinsCent]; //!
@@ -397,7 +397,10 @@ private:
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
   TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
 
-  TH1D* fh1QAV0Pt[fgkiNQAIndeces]; //! pt
+  TH2D* fh2QAV0PhiPtK0sPeak[fgkiNQAIndeces]; //! K0S candidate in peak: azimuth; pt
+  TH2D* fh2QAV0PhiPtLambdaPeak[fgkiNQAIndeces]; //! Lambda candidate in peak: azimuth; pt
+  TH2D* fh2QAV0PhiPtALambdaPeak[fgkiNQAIndeces]; //! anti-Lambda candidate in peak: azimuth; pt
+  TH1D* fh1QAV0Pt[fgkiNQAIndeces]; //! pt daughter
   TH1D* fh1QAV0Charge[fgkiNQAIndeces]; //! charge
   TH1D* fh1QAV0DCAVtx[fgkiNQAIndeces]; //! DCA of daughters to prim vtx
   TH1D* fh1QAV0DCAV0[fgkiNQAIndeces]; //! DCA between daughters
@@ -442,7 +445,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 12) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 13) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
