@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
 declare -i collsyst=$1
 declare -i ptTrig=$2
 declare -i ptAssoc=$3
@@ -20,13 +19,13 @@ declare -ai ptAssocMax=(10 990 990)
 declare -a ptAssocMinStr=("0.3" "0.3" "1.0") 
 declare -a ptAssocMaxStr=("1.0" "99.0" "99.0") 
 
-declare -ai plotheightpp=(7 7 7)
-declare -ai plotheightpPb=(10 10 10)
+declare -ai plotheightpp=(6 8 3)
+declare -ai plotheightpPb=(10 14 5)
 declare -i heightPlot=${plotheightpp[$ptAssoc]}
 declare -ai maxrange=(10 15)
 declare -i year=2010
 declare collsyststr="pp"
-declare dirmacroAverage="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
+declare dirmacroAverage="/home/colamaria/Desktop/Dhadron_Final_Output"
 
 if [ ${localCode} = 1 ]; then
     dirmacroAverage=${HFCJlocalCodeDir}
@@ -60,6 +59,6 @@ EOF
 root -b <<EOF &> outStyleColl${collsyst}PtD${ptTrig}PtAssoc${ptAssoc}.log
 Printf("inside root");
 .L ${dirmacroAverage}/MakeAverageDhCorrel.C
-OpenOutputFileAndDraw("${avString}Average${collsyststr}DzeroDstarDplus${ptTrigMin[$ptTrig]}to${ptTrigMax[$ptTrig]}_assoc${ptAssocMinStr[$ptAssoc]}to${ptAssocMaxStr[$ptAssoc]}.root",${ptTrigMin[$ptTrig]},${ptTrigMax[$ptTrig]},"D",${collsyst},${ptAssocMin[$ptAssoc]}/10.,${ptAssocMax[$ptAssoc]}/10,1,"${avString}")
+OpenOutputFileAndDraw("${avString}Average${collsyststr}DzeroDstarDplus${ptTrigMin[$ptTrig]}to${ptTrigMax[$ptTrig]}_assoc${ptAssocMinStr[$ptAssoc]}to${ptAssocMaxStr[$ptAssoc]}.root",${ptTrigMin[$ptTrig]},${ptTrigMax[$ptTrig]},"D",${collsyst},${ptAssocMin[$ptAssoc]}/10.,${ptAssocMax[$ptAssoc]}/10,1,"${avString}",$heightPlot)
 .q
 EOF

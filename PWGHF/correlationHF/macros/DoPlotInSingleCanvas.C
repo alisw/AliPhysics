@@ -70,17 +70,16 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	hDraw=(TH1D*)obj->Clone("hDraw");
 	hDraw->Reset(0);
 
-	hDraw->SetXTitle("#Delta#varphi  (rad)");
+	hDraw->SetXTitle("#Delta#varphi(D,h) (rad)");
 	hDraw->GetXaxis()->SetTitleFont(42);
 	hDraw->GetXaxis()->SetLabelFont(42);
 	hDraw->GetXaxis()->SetTitleOffset(1.1);
 	hDraw->GetXaxis()->SetTitleSize(0.042);
 
-    
-	if(particle=="Dstar")hDraw->SetYTitle("#frac{1}{#it{N}_{D^{*+}}}#frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
+ 	if(particle=="Dstar")hDraw->SetYTitle("#frac{1}{#it{N}_{D^{*+}}}#frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
 	hDraw->GetYaxis()->SetLabelFont(42);
 	hDraw->GetYaxis()->SetTitleFont(42);
-	hDraw->GetYaxis()->SetTitleOffset(1.3);
+	hDraw->GetYaxis()->SetTitleOffset(1.5);
 	hDraw->GetYaxis()->SetTitleSize(0.042);	
       }
     }
@@ -118,10 +117,33 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
       TH1D *hDrL=(TH1D*)hDraw->DrawCopy();
 
       if(particle.Contains("Average") && k==0){
-	TLatex *tlTitle=new TLatex(0.18,0.30,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+	TLatex *tlTitle=new TLatex(0.2,0.25,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
 	tlTitle->SetNDC();
 	tlTitle->Draw();
-	tlTitle->SetTextSize(0.0425);
+	tlTitle->SetTextSize(0.05);
+
+	if(system=="pp") {
+	  TLatex *tly=new TLatex(0.37,0.66,Form("#bf{|#Delta#eta|<1.0}, #bf{|#it{y}^{D}|<0.5}"));
+	  tly->SetNDC();
+	  tly->Draw();
+	  tly->SetTextSize(0.045);
+
+    	  TLatex *tlAlice=new TLatex(0.69,0.27,Form("#bf{ALICE}"));
+	  tlAlice->SetNDC();
+	  tlAlice->Draw();
+	  tlAlice->SetTextSize(0.06);
+	}
+	else if(system=="pPb"){
+	  TLatex *tly=new TLatex(0.30,0.66,Form("#bf{|#Delta#eta|<1.0}, #bf{-0.96<#it{y}^{D}_{cms}<0.04}"));
+	  tly->SetNDC();
+	  tly->Draw();
+	  tly->SetTextSize(0.045);
+
+    	  TLatex *tlAlice=new TLatex(0.66,0.33,Form("#bf{ALICE}"));
+	  tlAlice->SetNDC();
+	  tlAlice->Draw();
+	  tlAlice->SetTextSize(0.06);
+	}
       }
       
       for(Int_t jl=0;jl<entries;jl++){
@@ -163,7 +185,7 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	  if(strName.Contains("TLatex")){
             TLatex *tl=(TLatex*)obj;
             TString str=tl->GetTitle();
-            
+      
 	    // Title 
             if(str.Contains("charged")){
 	      if(particle=="Avg") {
@@ -173,26 +195,52 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	      tl->SetY(tl->GetY()-0.015);
 	      if(system=="pp")tl->SetTextSize(0.0360);
 	      else if(system=="pPb")tl->SetTextSize(0.0360);
-	      else Printf("Check your particle name");
+	      else Printf("Check your system name");
 	      
             }
             
-	    // Dplus and Assso pT range
-            if(str.Contains("{p}_{T}^{assoc}")){
+	    // D meson pT range
+            if(str.Contains("{p}_{T}^{D}")){
 	      tl->SetX(tl->GetX()+0.005);
 	      if(system=="pp"){
 		tl->SetTextSize(0.045);
 		tl->SetY(tl->GetY()-0.066);
+		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
 	      }
 	      else if(system=="pPb"){
-		tl->SetTextSize(0.043);
+		tl->SetTextSize(0.045);
 		if(particle=="Dstar")tl->SetY(tl->GetY()+0.016);
 		else if(particle=="Dplus") tl->SetY(tl->GetY()+0.030);
 		else if(particle=="Dzero") tl->SetY(tl->GetY()+0.030);
+		else if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
 		else Printf("Check your particle name");
 		
 	      }
 	      else Printf("Check your particle name");
+            }
+
+	    // Dplus and Assso pT range
+            if(str.Contains("{p}_{T}^{assoc}")){
+	      tl->SetX(tl->GetX()+0.005);
+  	  /*    if(str.Contains("99")) {
+	        if(str.Contains("0.3")) tl->SetTitle("#it{p}_{T}^{assoc}>0.3 GeV/#it{c}");
+	        if(str.Contains("1")) tl->SetTitle("#it{p}_{T}^{assoc}>1 GeV/#it{c}");
+	      }*/
+	      if(system=="pp"){
+		tl->SetTextSize(0.045);
+		tl->SetY(tl->GetY()-0.066);
+		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
+	      }
+	      else if(system=="pPb"){
+		tl->SetTextSize(0.045);
+		if(particle=="Dstar")tl->SetY(tl->GetY()+0.016);
+		else if(particle=="Dplus") tl->SetY(tl->GetY()+0.030);
+		else if(particle=="Dzero") tl->SetY(tl->GetY()+0.030);
+		else if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
+		else Printf("Check your particle name");
+		
+	      }
+	      else Printf("Check your system name");
             }
             
 	    
@@ -200,15 +248,17 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
             if(str.Contains("eta")){
 	      if(system=="pp"){
 		tl->SetX(tl->GetX()+0.005);
-		tl->SetY(tl->GetY()-0.098); 
+		tl->SetY(tl->GetY()-0.11); 
 		tl->SetTextSize(0.045);
+		if(particle.Contains("Average")) tl->SetTitle(""); //{tl->SetX(0.2); tl->SetY(0.74);}
 	      }
 	      else if(system=="pPb"){
 		tl->SetX(tl->GetX()+0.005);
-		tl->SetTextSize(0.043);
+		tl->SetTextSize(0.045);
 		if(particle=="Dstar")tl->SetY(tl->GetY()-0.018);
 		else if(particle=="Dplus") tl->SetY(tl->GetY()-0.018);
 		else if(particle=="Dzero") tl->SetY(tl->GetY()-0.018);
+		else if(particle.Contains("Average")) tl->SetTitle(""); //{tl->SetX(0.2); tl->SetY(0.74);}
 		else Printf("Check your particle name");
 	      }
 	      else Printf("Check your particle name"); 
@@ -221,13 +271,15 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 		if(particle=="Dstar") tl->SetY(tl->GetY()-0.06);
 		else if(particle=="Dplus")  tl->SetY(tl->GetY()-0.04);
 		else if(particle=="Dzero")  tl->SetY(tl->GetY()-0.04);
-                tl->SetTextSize(0.053);
+		else if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.57);}
+                tl->SetTextSize(0.055);
 	      }
               
 	      else if(system=="pPb"){
 		tl->SetX(tl->GetX()+0.25);
 		tl->SetY(tl->GetY()+0.04);
-		tl->SetTextSize(0.047);
+		tl->SetTextSize(0.055);
+		if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.57);}
 	      }
 	      else Printf("Check your particle name");              
             }
@@ -255,15 +307,15 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
               if(system=="pp"){
               tl->SetX(tl->GetX()+0.010);
               tl->SetY(tl->GetY()-0.029);
-	          tl->SetTextSize(0.045);
+	          tl->SetTextSize(0.05);
                   
               Printf("%s Line Written here is <--- ",strTitle.Data());
               strTitle.ReplaceAll("pp,","pp, ");
               strTitle.ReplaceAll("L_{int}","#it{L}_{int} ");
               if(particle=="Dstar")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s} ");
               else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s} ");
-                  
-              if(particle=="Dstar")  strTitle.ReplaceAll("=5.02 TeV"," = 5.02 TeV");
+              else if(particle=="Dstar")  strTitle.ReplaceAll("=5.02 TeV"," = 5.02 TeV");
+              else if(particle.Contains("Average"))  {tl->SetX(0.2); tl->SetY(0.18);}
 
               //else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#it{s} ");
 
@@ -275,13 +327,13 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 		tl->SetX(tl->GetX()+0.03);
 		tl->SetY(tl->GetY()-0.62);
 		tl->SetTextSize(0.042);
-        Printf("%s Line Written here is <--",strTitle.Data());
-        strTitle.ReplaceAll("L_{int}"," #it{L}_{int}");
-        strTitle.ReplaceAll("p-Pb,","p-Pb,  ");
-        if(particle=="Dstar")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s}");
-        else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s}");
-
-        if(particle=="Dstar")  strTitle.ReplaceAll("=7 TeV"," = 7 TeV");
+        	Printf("%s Line Written here is <--",strTitle.Data());
+       	 	strTitle.ReplaceAll("L_{int}"," #it{L}_{int}");
+        	strTitle.ReplaceAll("p-Pb,","p-Pb,  ");
+        	if(particle=="Dstar")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s}");
+        	else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s}");
+       		else if(particle=="Dstar")  strTitle.ReplaceAll("=7 TeV"," = 7 TeV");
+              	else if(particle.Contains("Average"))  {tl->SetX(0.2); tl->SetY(0.18);}
 
         tl->SetTitle(strTitle.Data());
     };
@@ -317,17 +369,22 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	    }
             
 	    TString str5=tl->GetTitle();
-	    if(str4.Contains("{p}_{T}^{assoc}")){
-	      
+	    if(str5.Contains("{p}_{T}^{assoc}")) {
+  	 /*     if(str5.Contains("99")) {
+	        if(str5.Contains("0.3")) tl->SetTitle("#it{p}_{T}^{assoc}>0.3 GeV/#it{c}");
+	        if(str5.Contains("1")) tl->SetTitle("#it{p}_{T}^{assoc}>1 GeV/#it{c}");
+	      }*/
 	      if(system=="pp") {
 		tl->SetX(tl->GetX()+0.03);
 		tl->SetY(tl->GetY()+0.020);
-		tl->SetTextSize(0.044);
+		tl->SetTextSize(0.045);
+		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
 	      }
 	      else if(system=="pPb") {
 		tl->SetX(tl->GetX()+0.03);
 		tl->SetY(tl->GetY()+0.050);
-		tl->SetTextSize(0.042);
+		tl->SetTextSize(0.045);
+		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
 	      }
 	      
 	    }
@@ -337,12 +394,32 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	      if(system=="pp") {
 		tl->SetX(tl->GetX()+0.16);
 		tl->SetY(tl->GetY()-0.02);
-		tl->SetTextSize(0.060);
+		tl->SetTextSize(0.055);
+		if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.66);}
 	      }
 	      else if(system=="pPb") {
                 tl->SetX(tl->GetX()+0.23);
                 tl->SetY(tl->GetY()+0.06);
-                tl->SetTextSize(0.047);
+                tl->SetTextSize(0.055);
+		if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.66);}
+	      }
+	      
+	    }
+
+	    TString str7=tl->GetTitle();
+	    if(str7.Contains("{p}_{T}^{D}")){
+	      
+	      if(system=="pp") {
+		tl->SetX(tl->GetX()+0.03);
+		tl->SetY(tl->GetY()+0.020);
+		tl->SetTextSize(0.045);
+		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
+	      }
+	      else if(system=="pPb") {
+		tl->SetX(tl->GetX()+0.03);
+		tl->SetY(tl->GetY()+0.050);
+		tl->SetTextSize(0.045);
+		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
 	      }
 	      
 	    }
@@ -425,12 +502,12 @@ void LoadFileNames(TString Part ="Dplus",TString Sys = "pPb"){
       
       Printf(" -------------------> Adding %s in %s coll",Part.Data(),Sys.Data());
       if(Sys.EqualTo("pp")){
-	filenames[0] = Form("%s/CanvaAndVariedHisto%s%sPt3to5assocPt0.3to1.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
-	filenames[1] = Form("%s/CanvaAndVariedHisto%s%sPt3to5assocPt0.3to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
+	filenames[0] = Form("%s/CanvaAndVariedHisto%s%sPt3to5assocPt0.3to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
+	filenames[1] = Form("%s/CanvaAndVariedHisto%s%sPt3to5assocPt0.3to1.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
 	filenames[2] = Form("%s/CanvaAndVariedHisto%s%sPt3to5assocPt1.0to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
       }
-      filenames[3-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt5to8assocPt0.3to1.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
-      filenames[4-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt5to8assocPt0.3to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
+      filenames[3-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt5to8assocPt0.3to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
+      filenames[4-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt5to8assocPt0.3to1.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
       filenames[5-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt5to8assocPt1.0to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
       filenames[6-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt8to16assocPt0.3to1.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
       filenames[7-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s%sPt8to16assocPt0.3to99.0.root",inputdirectory.Data(),Sys.Data(),Part.Data());
@@ -439,15 +516,15 @@ void LoadFileNames(TString Part ="Dplus",TString Sys = "pPb"){
   }  
   else {
       if(Sys.EqualTo("pp")){
-	filenames[0] = Form("%s/CanvaAndVariedHisto%s_%s_Pt3to5assocPt0.3to1.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
-	filenames[1] = Form("%s/CanvaAndVariedHisto%s_%s_Pt3to5assocPt0.3to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
+	filenames[0] = Form("%s/CanvaAndVariedHisto%s_%s_Pt3to5assocPt0.3to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
+	filenames[1] = Form("%s/CanvaAndVariedHisto%s_%s_Pt3to5assocPt0.3to1.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
 	filenames[2] = Form("%s/CanvaAndVariedHisto%s_%s_Pt3to5assocPt1.0to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
       }
-      filenames[3-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt5to8assocPt0.3to1.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
-      filenames[4-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt5to8assocPt0.3to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
+      filenames[3-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt5to8assocPt0.3to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
+      filenames[4-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt5to8assocPt0.3to1.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
       filenames[5-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt5to8assocPt1.0to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
-      filenames[6-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt8to16assocPt0.3to1.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
-      filenames[7-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt8to16assocPt0.3to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
+      filenames[6-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt8to16assocPt0.3to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
+      filenames[7-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt8to16assocPt0.3to1.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());
       filenames[8-skip3to5pPb] = Form("%s/CanvaAndVariedHisto%s_%s_Pt8to16assocPt1.0to99.0.root",inputdirectory.Data(),Part.Data(),Sys.Data());  
   }    
   
