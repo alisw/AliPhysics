@@ -637,7 +637,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 	
 	
 	// Alpha Max Cut
-	if(pi0->GetAlpha()>fAlphaCutMeson){
+	if(abs(pi0->GetAlpha())>fAlphaCutMeson){
 // 		if (!IsSignal) cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
@@ -645,7 +645,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 	cutIndex++;
 
 	// Alpha Min Cut
-	if(pi0->GetAlpha()<fAlphaMinCutMeson){
+	if(abs(pi0->GetAlpha())<fAlphaMinCutMeson){
 // 		if (!IsSignal)cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
