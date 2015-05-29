@@ -47,8 +47,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void ProcessAODMCParticles();
 		void RelabelAODPhotonCandidates(Bool_t mode);
 		void ProcessTruePhotonCandidates( AliAODConversionPhoton* TruePhotonCandidate);
-		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate);
-		void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
+		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Float_t clusM02);
+		void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Float_t clusM02);
 		void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
 		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
@@ -318,6 +318,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		map<Int_t,Int_t>					fMapMultipleCountTruePi0s;						//! map containing pi0 labels that are counted at least twice
 		map<Int_t,Int_t>					fMapMultipleCountTrueEtas;						//! map containing eta labels that are counted at least twice
 		map<Int_t,Int_t>					fMapMultipleCountTrueConvGammas;				//! map containing photon labels that are counted at least twice
+		TH2F								**fHistoTrueClusGammaEM02;						//! array of histos with TruePhotons: cluster E vs M02
+		TH2F								**fHistoTrueClusPi0EM02;						//! array of histos with TruePi0s: cluster E vs M02
 
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
