@@ -45,6 +45,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FillClusHists();
   void                   FillMcHists();
   void                   FillQA();
+  void                   FillInvMass(); //inv mass for all neutral clusters
   Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
@@ -213,7 +214,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
   //trigger histos
   TH1F        *fETrigg;           //!energy returned by trigger patch info
-
+  TH2F        *fM02vsESoftPi0Kid; //!energy dependence of M02 of pi0 softer daughter
+  TH2F        *fM02vsEHardPi0Kid; //!energy dependence of M02 of pi0 harder daughter
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
