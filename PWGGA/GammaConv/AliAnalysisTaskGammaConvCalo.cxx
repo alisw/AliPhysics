@@ -1946,11 +1946,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
 			Int_t motherLab = Photon->GetMother(0);
 			if (motherLab > -1){
-				if ( abs(fMCStack->Particle(Photon->GetMother(0))->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() )
+				if ( abs(fMCStack->Particle(motherLab)->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() )
 					fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02);
-//				Int_t grandMotherLab = fMCStack->Particle(Photon->GetMother(0))->GetMother(0);
+//				Int_t grandMotherLab = fMCStack->Particle(motherLab)->GetMother(0);
 //				if (grandMotherLab > -1){
-//					if ( abs(fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversionFullyContained() && TruePhotonCandidate->IsMergedPartConv())
+//					if ( abs(fMCStack->Particle(grandMotherLab)->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversionFullyContained() && TruePhotonCandidate->IsMergedPartConv())
 //						fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02);
 //				}
 			}
@@ -2031,11 +2031,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
 			Int_t motherLab = Photon->GetMother();
 			if (motherLab > -1){
-				if ( abs(((AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother()))->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() )
+				if ( abs(((AliAODMCParticle*) AODMCTrackArray->At(motherLab))->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() )
 					fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02);
-//				Int_t grandMotherLab = ((AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother()))->GetMother();
+//				Int_t grandMotherLab = ((AliAODMCParticle*) AODMCTrackArray->At(motherLab))->GetMother();
 //				if (grandMotherLab > -1){
-//					if ( abs(((AliAODMCParticle*) AODMCTrackArray->At(((AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversionFullyContained() && TruePhotonCandidate->IsMergedPartConv() )
+//					if ( abs(((AliAODMCParticle*) AODMCTrackArray->At(grandMotherLab))->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversionFullyContained() && TruePhotonCandidate->IsMergedPartConv() )
 //						fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02);
 //				}
 			}

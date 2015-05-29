@@ -441,7 +441,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			Int_t nMaxCellsEMCAL = nMaxEMCalModules*48*24;
 			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",300,0,30,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistograms->Add(fHistClusterEnergyvsMod);
-			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",50,0,50,nMaxEMCalModules,0,nMaxEMCalModules);
+			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",60,0,60,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistograms->Add(fHistNCellsBigger100MeVvsMod);
 			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",50,0,50,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistograms->Add(fHistNCellsBigger1500MeVvsMod);
@@ -451,14 +451,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistograms->Add(fHistClusterEnergyvsNCells);
 			fHistCellEnergyvsCellID = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",300,0,30,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
 			fHistograms->Add(fHistCellEnergyvsCellID);
-			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",800,timeMin,timeMax,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",1200,-timeMax,timeMax,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
 			fHistograms->Add(fHistCellTimevsCellID);
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
 			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",300,0,30,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistograms->Add(fHistClusterEnergyvsMod);
-			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",50,0,50,nMaxPHOSModules,0,nMaxPHOSModules);
+			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",60,0,60,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistograms->Add(fHistNCellsBigger100MeVvsMod);
 			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",50,0,50,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistograms->Add(fHistNCellsBigger1500MeVvsMod);
@@ -468,7 +468,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistograms->Add(fHistClusterEnergyvsNCells);
 			fHistCellEnergyvsCellID = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",300,0,30,nMaxCellsPHOS,0,nMaxCellsPHOS);
 			fHistograms->Add(fHistCellEnergyvsCellID);
-			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",800,timeMin,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",1200,-timeMax,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
 			fHistograms->Add(fHistCellTimevsCellID);
 		}
 		else{AliError(Form("fExtendedMatchAndQA (%i) not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,GetClusterType()));}
