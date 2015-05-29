@@ -181,11 +181,13 @@ Bool_t AliITSMeanVertexer::Init() {
     fVertexer = new AliITSVertexer3D();
     fVertexer->SetDetTypeRec(fDetTypeRec);
     AliITSVertexer3D* alias = (AliITSVertexer3D*)fVertexer;
-    alias->SetWideFiducialRegion(fZCutDiamond,0.5);
+    //    alias->SetWideFiducialRegion(fZCutDiamond,0.5);
+    alias->SetWideFiducialRegion(fZCutDiamond,2.5);
     alias->SetNarrowFiducialRegion(0.5,0.5);
     alias->SetDeltaPhiCuts(0.5,0.025);
     alias->SetDCACut(0.1);
     alias->SetPileupAlgo(3);
+    alias->SetFallBack(500);
     fVertexer->SetComputeMultiplicity(kFALSE);
   }
   return kTRUE;
