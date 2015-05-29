@@ -647,7 +647,7 @@ void AliJDiJetAnalysis::FillHistosDiJet(){
                     fhDiJetDeltaR[type][js][djs][i][bin]->Fill( dR );
                     fhDiJetDeltaPhi[type][js][djs][i][bin]->Fill( dPhi2 );
                     fhDiJetDeltaEta[type][js][djs][i][bin]->Fill( dEta );
-                    cout<<"DEBUG_J1 : "<<ptAsymm<<endl;
+                    //cout<<"DEBUG_J1 : "<<ptAsymm<<endl;
                     fhDiJetPtAsymm[type][js][djs][i][bin]->Fill( ptAsymm );
                     fhDiJetEAsymm[type][js][djs][i][bin]->Fill( eAsymm );
 
