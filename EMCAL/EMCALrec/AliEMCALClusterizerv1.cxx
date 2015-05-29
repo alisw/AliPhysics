@@ -105,18 +105,32 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
   
   MakeClusters();  //only the real clusters
   
-  if(fToUnfold){
+  if(fToUnfold)
+  {
     fClusterUnfolding->SetInput(fNumberOfECAClusters,fRecPoints,fDigitsArr);
     fClusterUnfolding->MakeUnfolding();
   }
     
   //Evaluate position, dispersion and other RecPoint properties for EC section 
   Int_t index;
-  for(index = 0; index < fRecPoints->GetEntries(); index++) {
+  for(index = 0; index < fRecPoints->GetEntries(); index++) 
+  {
     AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
-    if(rp){
+  
+    if(rp)
+    {
       rp->EvalAll(fECAW0,fDigitsArr,fJustClusters);
-      //For each rec.point set the distance to the nearest bad crystal
+      
+      // Calculate the number of local maxima in cluster
+      // Do not do it for unfolded clusters
+      if(!fToUnfold)
+      {
+        Int_t nMax = rp->GetNumberOfLocalMax(rp->GetMultiplicity(),fECALocMaxCut,fDigitsArr) ;
+      
+        rp->SetNExMax(nMax);
+      }
+      
+      // For each rec.point set the distance to the nearest bad crystal
       if (fCaloPed)
         rp->EvalDistanceToBadChannels(fCaloPed);
     }
