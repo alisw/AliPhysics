@@ -179,7 +179,7 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
   
   mcParticles = static_cast<TClonesArray*>(source.FindListObject(AliAODMCParticle::StdBranchName()));
   
-  if ( mcParticles && fMCMode>=2 )
+  if ( mcParticles && mcParticles->GetLast() >= 0 && fMCMode>=2 )
   {
     // loop on (kept) muon tracks to find their ancestors
     TIter nextMT(fTracks);
