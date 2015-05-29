@@ -346,6 +346,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
+    fh1DistanceJets[i] = 0;
 
     fh1VtxZ[i] = 0;
     fh1VtxZME[i] = 0;
@@ -619,6 +620,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
+    fh1DistanceJets[i] = 0;
 
     fh1VtxZ[i] = 0;
     fh1VtxZME[i] = 0;
@@ -931,10 +933,6 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh1EtaJet[i]);
     fh2EtaPtJet[i] = new TH2D(Form("fh2EtaPtJet_%d", i), Form("Jet eta vs pT spectrum, cent: %s;#it{#eta} jet;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), 80, -1., 1., 2 * iNJetPtBins, dJetPtMin, dJetPtMax);
     fOutputListStd->Add(fh2EtaPtJet[i]);
-    fh2EtaPhiRndCone[i] = new TH2D(Form("fh2EtaPhiRndCone_%d", i), Form("Rnd. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 90, 0., TMath::TwoPi());
-    fOutputListStd->Add(fh2EtaPhiRndCone[i]);
-    fh2EtaPhiMedCone[i] = new TH2D(Form("fh2EtaPhiMedCone_%d", i), Form("Med.-cl. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 90, 0., TMath::TwoPi());
-    fOutputListStd->Add(fh2EtaPhiMedCone[i]);
     fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 90, 0., TMath::TwoPi());
     fOutputListStd->Add(fh1PhiJet[i]);
     fh2PtJetPtTrackLeading[i] = new TH2D(Form("fh2PtJetPtTrackLeading_%d", i), Form("jet pt vs leading track pt, cent: %s;#it{p}_{T}^{jet} (GeV/#it{c});#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 4 * iNJetPtBins, dJetPtMin, dJetPtMax, 200, 0., 20);
@@ -945,6 +943,12 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh1PtTrigger[i]);
     fh1NJetPerEvent[i] = new TH1D(Form("fh1NJetPerEvent_%d", i), Form("Number of selected jets per event, cent: %s;# jets;# events", GetCentBinLabel(i).Data()), 100, 0., 100.);
     fOutputListStd->Add(fh1NJetPerEvent[i]);
+    fh2EtaPhiRndCone[i] = new TH2D(Form("fh2EtaPhiRndCone_%d", i), Form("Rnd. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 90, 0., TMath::TwoPi());
+    fOutputListStd->Add(fh2EtaPhiRndCone[i]);
+    fh2EtaPhiMedCone[i] = new TH2D(Form("fh2EtaPhiMedCone_%d", i), Form("Med.-cl. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone", GetCentBinLabel(i).Data()), 80, -1., 1., 90, 0., TMath::TwoPi());
+    fOutputListStd->Add(fh2EtaPhiMedCone[i]);
+    fh1DistanceJets[i] = new TH1D(Form("fh1DistanceJets_%d", i), Form("Distance between jets in #eta-#phi, cent: %s;#it{D}", GetCentBinLabel(i).Data()), 40, 0., 4.);
+    fOutputListStd->Add(fh1DistanceJets[i]);
     // event histograms
     fh1VtxZ[i] = new TH1D(Form("fh1VtxZ_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 150, -1.5 * fdCutVertexZ, 1.5 * fdCutVertexZ);
     fOutputListQA->Add(fh1VtxZ[i]);
@@ -1554,6 +1558,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   AliAODJet* jetRnd = 0; // pointer to a rand. cone
   AliEmcalJet* jetMed = 0; // pointer to a median cluster
   TVector3 vecJetMomentum; // 3D vector of jet momentum
+  TVector3 vecJetMomentumPair; // 3D vector of another jet momentum for calculating distance between jets
   Bool_t bJetEventGood = kTRUE; // indicator of good jet events
   Double_t dRho = 0; // average bg pt density
   TLorentzVector vecJetSel; // 4-momentum of selected jet
@@ -1645,8 +1650,17 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       dAreaExcluded -= AreaCircSegment(dRadiusExcludeCone, fdCutEtaV0Max - jet->Eta()); // positive eta overhang
       dAreaExcluded -= AreaCircSegment(dRadiusExcludeCone, fdCutEtaV0Max + jet->Eta()); // negative eta overhang
       fh1AreaExcluded->Fill(iCentIndex, dAreaExcluded);
+      // calculate distances between all pairs of selected jets in the event
+      vecJetMomentum.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
+      for(Int_t iJetPair = iJet + 1; iJetPair < iNJetSel; iJetPair++)
+      {
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Calculating distance for jet pair: %d-%d/%d\n", iJet, iJetPair, iNJetSel));
+        jet = (AliAODJet*)jetArraySel->At(iJetPair); // load a another jet in the list
+        vecJetMomentumPair.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of the second jet momentum
+        fh1DistanceJets[iCentIndex]->Fill(vecJetMomentum.DeltaR(vecJetMomentumPair));
+      }
     }
-    jet = 0;
+    jet = 0; // just to be sure
   }
 
   if(bJetEventGood) // there should be some reconstructed jets
@@ -2999,7 +3013,7 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const A
     }
     fh2QAV0EtaEtaALambda[iIndexHisto]->Fill(trackNeg->Eta(), trackPos->Eta());
     fh2QAV0PhiPhiALambda[iIndexHisto]->Fill(trackNeg->Phi(), trackPos->Phi());
-    fh1QAV0RapALambda[iIndexHisto]->Fill(vZero->RapALambda());
+    fh1QAV0RapALambda[iIndexHisto]->Fill(vZero->RapLambda());
   }
 
   fh2ArmPod[iIndexHisto]->Fill(dAlpha, dPtArm);
