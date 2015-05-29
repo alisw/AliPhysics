@@ -212,6 +212,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH2F*		fHistClusterEnergyvsNCells;				// Cluster Energy vs NCells
 		TH2F*		fHistCellEnergyvsCellID;				// Cell Energy vs CellID
 		TH2F*		fHistCellTimevsCellID;					// Cell Time vs CellID
+		TH2F* 		fHistClusterEM02BeforeQA;				// 2-dim plot E vs. M02
+		TH2F* 		fHistClusterEM02AfterQA;				// 2-dim plot E vs. M02
 
         //Track matching histograms
 		TH1F* 		fHistClusterRBeforeQA;					// cluster position in R=SQRT(x^2+y^2) (before QA)
@@ -234,14 +236,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         TH2F*       fHistClusterdEtadPhiNegTracksP_125_999BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P > 1.25
         TH2F* 		fHistClusterdEtadPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterdPhidPtBeforeQA;			// 2-dim plot dEta vs. Pt
-		TH2F* 		fHistClusterM20PtBeforeQA;				// 2-dim plot M20 vs. Pt
-		TH2F* 		fHistClusterM02PtBeforeQA;				// 2-dim plot M02 vs. Pt
         TH2F* 		fHistClusterM20M02BeforeQA;				// 2-dim plot M20 vs. M02
         TH2F* 		fHistClusterM20M02AfterQA;				// 2-dim plot M20 vs. M20
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,3)
+		ClassDef(AliCaloPhotonCuts,4)
 };
 
 #endif
