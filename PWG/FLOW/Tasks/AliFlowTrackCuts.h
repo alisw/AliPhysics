@@ -488,7 +488,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
     
     
 
-  ClassDef(AliFlowTrackCuts,16)
+  ClassDef(AliFlowTrackCuts,17)
 };
 
 #endif
