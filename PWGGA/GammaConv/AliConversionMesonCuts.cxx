@@ -64,7 +64,9 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
    "UseMCPSmearing", //10
    "DcaGammaGamma", //11
    "DcaRPrimVtx", //12
-   "DcaZPrimVtx" //13
+   "DcaZPrimVtx", //13
+   "MinOpanMesonCut", //14
+   "MaxOpanMesonCut" //15
 };
 
 
@@ -114,8 +116,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    hDCARMesonPrimVtxBefore(NULL),
    hDCAGammaGammaMesonAfter(NULL),
    hDCAZMesonPrimVtxAfter(NULL),
-   hDCARMesonPrimVtxAfter(NULL)
-
+   hDCARMesonPrimVtxAfter(NULL),
+   fMinOpanCutMeson(0),
+   fFMinOpanCut(0),
+   fMinOpanPtDepCut(kFALSE),
+   fMaxOpanCutMeson(TMath::Pi()),
+   fFMaxOpanCut(0),
+   fMaxOpanPtDepCut(kFALSE)
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -175,7 +182,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    hDCARMesonPrimVtxBefore(NULL),
    hDCAGammaGammaMesonAfter(NULL),
    hDCAZMesonPrimVtxAfter(NULL),
-   hDCARMesonPrimVtxAfter(NULL)
+   hDCARMesonPrimVtxAfter(NULL),
+   fMinOpanCutMeson(0),
+   fFMinOpanCut(0),
+   fMinOpanPtDepCut(kFALSE),
+   fMaxOpanCutMeson(TMath::Pi()),
+   fFMaxOpanCut(0),
+   fMaxOpanPtDepCut(kFALSE)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -628,6 +641,23 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
 	}
+
+	if ( fMinOpanPtDepCut == kTRUE ) {
+                fMinOpanCutMeson = fFMinOpanCut->Eval( pi0->Pt() );
+        }
+
+        if( pi0->GetOpeningAngle() < fMinOpanCutMeson){
+                return kFALSE;
+        }
+
+        if ( fMaxOpanPtDepCut == kTRUE ) {
+                fMaxOpanCutMeson = fFMaxOpanCut->Eval( pi0->Pt() );
+        }
+        if( pi0->GetOpeningAngle() > fMaxOpanCutMeson){
+                return kFALSE;
+        }
+
+
 	cutIndex++;
 
 	if ( fAlphaPtDepCut == kTRUE ) {
@@ -831,6 +861,19 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
+  case kMinOpanMesonCut:
+      if( SetMinOpanMesonCut(value)) {
+         fCuts[kMinOpanMesonCut] = value;
+         UpdateCutString();
+         return kTRUE;
+      } else return kFALSE;
+
+   case kMaxOpanMesonCut:
+      if( SetMaxOpanMesonCut(value)) {
+         fCuts[kMaxOpanMesonCut] = value;
+         UpdateCutString();
+         return kTRUE;
+      } else return kFALSE;
 
    case kNCuts:
       cout << "Error:: Cut id out of range"<< endl;
@@ -969,6 +1012,64 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
    default:
       cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
       return kFALSE;
+   }
+   return kTRUE;
+}
+Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut)
+{   // Set Cut
+   switch(minOpanMesonCut){
+   case 0:      // 
+     fMinOpanCutMeson=0;
+     fMinOpanPtDepCut= kFALSE;
+     break;
+   case 1:      // 
+     fMinOpanCutMeson=0.005;
+     fMinOpanPtDepCut= kFALSE;
+     break;
+   case 2:      
+     if( fFMinOpanCut ) delete fFMinOpanCut;
+     fFMinOpanCut= new TF1("fFMinOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+     fFMinOpanCut->SetParameter(0,1.5);
+     fFMinOpanCut->SetParameter(1,1.35);
+     fFMinOpanCut->SetParameter(2,0.02);
+     fMinOpanCutMeson=0;
+     fMinOpanPtDepCut= kTRUE;
+     break;
+     
+   default:
+     cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
+     return kFALSE;
+   }
+   return kTRUE;
+}
+Bool_t AliConversionMesonCuts::SetMaxOpanMesonCut(Int_t maxOpanMesonCut)
+{   // Set Cut
+   switch(maxOpanMesonCut){
+   case 0:      // 
+     fMaxOpanCutMeson=TMath::Pi();
+     fMaxOpanPtDepCut= kFALSE;
+     break;
+   case 1:  
+     if( fFMaxOpanCut ) delete fFMaxOpanCut;
+     fFMaxOpanCut= new TF1("fFMaxOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+     fFMaxOpanCut->SetParameter(0,2.5);
+     fFMaxOpanCut->SetParameter(1,0.85);
+     fFMaxOpanCut->SetParameter(2,0.35);
+     fMaxOpanPtDepCut= kTRUE;
+     fMaxOpanCutMeson=TMath::Pi();
+     break;
+   case 2:  
+     if( fFMaxOpanCut ) delete fFMaxOpanCut;
+     fFMaxOpanCut= new TF1("fFMaxOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+     fFMaxOpanCut->SetParameter(0,2.3);
+     fFMaxOpanCut->SetParameter(1,0.85);
+     fFMaxOpanCut->SetParameter(2,0.35);
+     fMaxOpanPtDepCut= kTRUE;
+     fMaxOpanCutMeson=TMath::Pi();
+     break;
+   default:
+     cout<<"Warning: maxOpanMesonCut not defined "<< maxOpanMesonCut<<endl;
+     return kFALSE;
    }
    return kTRUE;
 }
