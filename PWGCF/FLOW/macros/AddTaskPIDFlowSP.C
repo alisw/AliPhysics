@@ -14,23 +14,24 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       TString fileNameBase="AnalysisResults",
                       TString uniqueStr="Pion_02",
                       TString Qvector ="Qa",
-                      Int_t AODfilterBit = 272,
+                      Int_t AODfilterBit = 1,
                       Int_t charge=0,
                       Int_t MinTPCdedx = 10,
                       Int_t ncentralityminlim = 0,//0 start from 0-1cc
                       Int_t ncentralitymaxlim = 6,//6 runs over 0-50%
                       Int_t maxITSCls = 7,
                       Double_t maxChi2ITSCls = 37,
-                      Bool_t doQA=kTRUE,
+                      Float_t PurityLevel=0.8,
                       Bool_t isPID = kTRUE,
-                      Bool_t VZERO = kFALSE, // use vzero sp method
-                      Bool_t is2011 = kFALSE,
+                      Bool_t isVZERO = kFALSE, // use vzero sp method
+                      Bool_t is2011 = kTRUE,
                       Bool_t isAOD = kTRUE,
-                      Bool_t UsePIDParContours = kFALSE,
-	              Bool_t UseOldDedx = kTRUE,
+                      Bool_t UsePurityPIDmethod = kFALSE,
                       AliPID::EParticleType particleType=AliPID::kPion,
                       AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
+    
+    Bool_t doQA=kTRUE,
     // Define a range of the detector to exclude
     Bool_t ExcludeRegion = kFALSE;
     Double_t excludeEtaMin = -0.;
@@ -39,10 +40,10 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t excludePhiMax = 0.;
     
     //Define the range for eta subevents (for SP method) with TPC
-    Double_t minA = -0.8;//
+    Double_t minA = etamin;//
     Double_t maxA = -0.5*EtaGap;//
     Double_t minB = +0.5*EtaGap;//
-    Double_t maxB = +0.8;//
+    Double_t maxB = etamax;//
     
     int centrMin[8] = {0,0,10,20,30,40,60,60};
     int centrMax[8] = {1,2,20,30,40,50,70,80};
@@ -67,7 +68,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     //===========================================================================
     // EVENTS CUTS:
     const int ncentr = ncentrmaxlim - ncentrminlim;
-
+    
     const int nharmonics = uptoWhichHarmonics-1;
     AliFlowEventCuts* cutsEvent[ncentr];
     AliFlowTrackCuts* cutsRP[ncentr];
@@ -86,23 +87,23 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         
         
         // RP TRACK CUTS:
-        if(!VZERO){
+        if(!isVZERO){
             cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
             //cutsRP[icentr]->SetParamType(rptype);
             //cutsRP[icentr]->SetParamMix(rpmix);
             cutsRP[icentr]->SetPtRange(0.2,5.);
             cutsRP[icentr]->SetEtaRange(etamin,etamax);
-            cutsRP[icentr]->SetMinNClustersTPC(70);
-            cutsRP[icentr]->SetMinChi2PerClusterTPC(0.1);
-            cutsRP[icentr]->SetMaxChi2PerClusterTPC(4.0);
-            cutsRP[icentr]->SetMaxDCAToVertexXY(2.4);
-            cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
-            cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
+            //cutsRP[icentr]->SetMinNClustersTPC(70);
+            //cutsRP[icentr]->SetMinChi2PerClusterTPC(0.1);
+            //cutsRP[icentr]->SetMaxChi2PerClusterTPC(4.0);
+            //cutsRP[icentr]->SetMaxDCAToVertexXY(2.4);
+            //cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
+            //cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
             cutsRP[icentr]->SetMinimalTPCdedx(MinTPCdedx);
             cutsRP[icentr]->SetAODfilterBit(AODfilterBit);
         }
         
-        if(VZERO) { // use vzero sub analysis
+        if(isVZERO) { // use vzero sub analysis
             if(!is2011) cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
             if(is2011)  cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011(); // select vzero tracks
             
@@ -122,7 +123,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         //=======================SP POI Cuts
         SP_POI[icentr] = DefinePOIcuts();
         
-        if(UseOldDedx) SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
+        if(!is2011) SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
         if(!isAOD){
             SP_POI[icentr]->SetMaxSharedITSCluster(maxITSCls);
             SP_POI[icentr]->SetMaxChi2perITSCluster(maxChi2ITSCls);
@@ -142,17 +143,23 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         
         
         
-        if(!VZERO && Qvector=="Qa"){
-            SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
+        if(!isVZERO && Qvector=="Qa"){
+            SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );//not working
+            //SP_POI[icentr]->SetEtaRange( etamin, etamax );//working
+            //SP_POI[icentr]->SetEtaRange( 0.5,0.8);
+            //cutsRP[icentr]->SetEtaRange( etamin,-0.5*EtaGap);
+            //cutsRP[icentr]->SetEtaRange( etamin,etamax);
+            //cutsRP[icentr]->SetEtaRange( -0.8,0.8);
             printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
             
         }
-        if(!VZERO && Qvector=="Qb"){
+        if(!isVZERO && Qvector=="Qb"){
             SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
+            //cutsRP[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
             printf(" > NOTE: Using half TPC (Qb) as POI selection u < \n");
             
         }
-        if(VZERO){
+        if(isVZERO){
             SP_POI[icentr]->SetEtaRange( etamin,etamax );
             printf(" > NOTE: Using full TPC as POI selection u < \n");
         }
@@ -160,15 +167,19 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         //SP_POI->SetRequireTPCRefit(kTRUE);
         //SP_POI->SetMinNClustersITS(2);
         //SP_POI->SetMaxChi2PerClusterITS(1.e+09);
-        SP_POI[icentr]->SetMaxDCAToVertexXY(2.4);
-        SP_POI[icentr]->SetMaxDCAToVertexZ(3.0);
+        //SP_POI[icentr]->SetMaxDCAToVertexXY(2.4);
+        //SP_POI[icentr]->SetMaxDCAToVertexZ(3.0);
         //SP_POI->SetDCAToVertex2D(kTRUE);
         //SP_POI->SetMaxNsigmaToVertex(1.e+10);
         //SP_POI->SetRequireSigmaToVertex(kFALSE);
-        SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
+        //SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
         if(isPID){
             SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
-            SP_POI[icentr]->SetTPCTOFNsigmaPIDCutContours(UsePIDParContours,centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
+            
+            if(UsePurityPIDmethod){
+                SP_POI[icentr]->SetCentralityPercentile(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
+                SP_POI[icentr]->SetTPCTOFNsigmaPIDPurityFunctions(0.8);
+            }
         }
         
         if (charge!=0) SP_POI[icentr]->SetCharge(charge);
@@ -181,9 +192,9 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         
         //=====================================================================
         
-        if(!VZERO && Qvector=="Qa") suffixName[icentr] = "Qa";
-        if(!VZERO && Qvector=="Qb") suffixName[icentr] = "Qb";
-        if(VZERO) suffixName[icentr] = "vzero";
+        if(!isVZERO && Qvector=="Qa") suffixName[icentr] = "Qa";
+        if(!isVZERO && Qvector=="Qb") suffixName[icentr] = "Qb";
+        if(isVZERO) suffixName[icentr] = "vzero";
         suffixName[icentr] += "_flow_";
         suffixName[icentr] += Form("%i_", centrMin[icentr+ncentrminlim]);
         suffixName[icentr] += Form("%i_", centrMax[icentr+ncentrminlim]);
@@ -272,8 +283,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         
         //  if(taskFE[icentr]->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;
         
-        if(!VZERO) taskFE[icentr]->SetSubeventEtaRange(minA, maxA, minB, maxB);
-        if(VZERO)  taskFE[icentr]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
+        if(!isVZERO) taskFE[icentr]->SetSubeventEtaRange(minA, maxA, minB, maxB);
+        if(isVZERO)  taskFE[icentr]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
         mgr->AddTask(taskFE[icentr]);
         
         // Pass cuts for RPs and POIs to the task:
@@ -312,10 +323,11 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                                              AliAnalysisManager::kExchangeContainer );
             
             tskFilter[icentr][harm-2] = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP[icentr][harm-2].Data()),cutsRP[icentr], NULL);
-            if(!VZERO){
+            if(!isVZERO){
                 tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
+                //tskFilter[icentr][harm-2]->SetSubeventEtaRange(-0.8, -0.5, 0.5,0.8);
             }
-            if(VZERO) tskFilter[icentr][harm-2]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
+            if(isVZERO) tskFilter[icentr][harm-2]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
             mgr->AddTask(tskFilter[icentr][harm-2]);
             mgr->ConnectInput( tskFilter[icentr][harm-2],0,coutputFE[icentr]);
             mgr->ConnectOutput(tskFilter[icentr][harm-2],1,flowEvent[icentr][harm-2]);

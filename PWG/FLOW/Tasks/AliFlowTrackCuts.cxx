@@ -72,6 +72,8 @@
 #include "AliFlowCommonConstants.h"
 #include "AliAnalysisManager.h"
 #include "AliPIDResponse.h"
+#include "TF2.h"
+
 
 using std::cout;
 using std::endl;
@@ -122,6 +124,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
+  fPurityLevel(0.8),
   fCutPmdDet(kFALSE),
   fPmdDet(0),
   fCutPmdAdc(kFALSE),
@@ -162,7 +165,6 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAllowTOFmismatchFlag(kFALSE),
   fRequireStrictTOFTPCagreement(kFALSE),
   fCutRejectElectronsWithTPCpid(kFALSE),
-  fUseTPCTOFNsigmaCutContours(kFALSE),
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
@@ -175,8 +177,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fChi3C(0x0),
   fPIDResponse(NULL),
   fNsigmaCut2(9),
-  fContoursFile(0),
-  fCutContourList(0),
+  fPurityFunctionsFile(0),
+  fPurityFunctionsList(0),
   fMaxITSclusterShared(0),
   fMaxITSChi2(0),
   fRun(0)
@@ -195,9 +197,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
     
-  for(Int_t i(0) ; i < 50; i++) {
-    fCutContour[i]= NULL;
-    fCutGraph[i]=NULL;
+  for(Int_t i(0) ; i < 150; i++) {
+     fPurityFunction[i]=NULL;
   }
 
 }
@@ -246,6 +247,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
+  fPurityLevel(0.8),
   fCutPmdDet(kFALSE),
   fPmdDet(0),
   fCutPmdAdc(kFALSE),
@@ -286,7 +288,6 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fAllowTOFmismatchFlag(kFALSE),
   fRequireStrictTOFTPCagreement(kFALSE),
   fCutRejectElectronsWithTPCpid(kFALSE),
-  fUseTPCTOFNsigmaCutContours(kFALSE),
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
@@ -299,8 +300,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fChi3C(0x0),
   fPIDResponse(NULL),
   fNsigmaCut2(9),
-  fContoursFile(0),
-  fCutContourList(0),
+  fPurityFunctionsFile(0),
+  fPurityFunctionsList(0),
   fMaxITSclusterShared(0),
   fMaxITSChi2(0),
   fRun(0)
@@ -321,11 +322,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
       fVZEROCpol[i] = 0;
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
-
-  for(int i=0;i<50;i++){
-    fCutContour[i]= NULL;
-    fCutGraph[i]=NULL;
+    
+  for(int i=0;i<150;i++){
+     fPurityFunction[i]=NULL;
   }
+
 }
 
 //-----------------------------------------------------------------------
@@ -372,6 +373,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
+  fPurityLevel(that.fPurityLevel),
   fCutPmdDet(that.fCutPmdDet),
   fPmdDet(that.fPmdDet),
   fCutPmdAdc(that.fCutPmdAdc),
@@ -412,7 +414,6 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fAllowTOFmismatchFlag(that.fAllowTOFmismatchFlag),
   fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement),
   fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid),
-  fUseTPCTOFNsigmaCutContours(that.fUseTPCTOFNsigmaCutContours),
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
@@ -425,8 +426,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fChi3C(0x0),
   fPIDResponse(that.fPIDResponse),
   fNsigmaCut2(that.fNsigmaCut2),
-  fContoursFile(0),
-  fCutContourList(0),
+  fPurityFunctionsFile(that.fPurityFunctionsFile),
+  fPurityFunctionsList(that.fPurityFunctionsList),
   fMaxITSclusterShared(0),
   fMaxITSChi2(0),
   fRun(0)
@@ -437,7 +438,6 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
   if (that.fMuonTrackCuts)   fMuonTrackCuts   = new AliMuonTrackCuts(*(that.fMuonTrackCuts));  // XZhang 20120604
   SetPriors(); //init arrays
-  if(fUseTPCTOFNsigmaCutContours) GetTPCTOFPIDContours();
   if (that.fQA) DefineHistograms();
   // would be neater via copy ctor of TArrayD
   fChi2A = new TArrayD(that.fChi2A->GetSize(), that.fChi2A->GetArray());
@@ -458,10 +458,10 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
   
-  for(Int_t i(0); i < 50; i++) {
-    fCutContour[i]= that.fCutContour[i];
-    fCutGraph[i]=that.fCutGraph[i];
+  for(Int_t i(0); i < 150; i++) {
+     fPurityFunction[i]=that.fPurityFunction[i];
   }
+    
 }
 
 //-----------------------------------------------------------------------
@@ -521,6 +521,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
   fCentralityPercentileMax=that.fCentralityPercentileMax;
+  fPurityLevel=that.fPurityLevel;
   fCutPmdDet=that.fCutPmdDet;
   fPmdDet=that.fPmdDet;
   fCutPmdAdc=that.fCutPmdAdc;
@@ -566,7 +567,6 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fAllowTOFmismatchFlag=that.fAllowTOFmismatchFlag;
   fRequireStrictTOFTPCagreement=that.fRequireStrictTOFTPCagreement;
   fCutRejectElectronsWithTPCpid=that.fCutRejectElectronsWithTPCpid;
-  fUseTPCTOFNsigmaCutContours=that.fUseTPCTOFNsigmaCutContours;
   fProbBayes = that.fProbBayes;
   fCurrCentr = that.fCurrCentr;
     
@@ -628,20 +628,18 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
       delete fChi3C;
       fChi3C = 0x0;
   }
-  if(fContoursFile) {
-      fContoursFile->Close();
-      fContoursFile = 0x0;
+  if(fPurityFunctionsFile) {
+    fPurityFunctionsFile->Close();
+    fPurityFunctionsFile = 0x0;
   }
-  for(int i=0;i<50;i++){
-     if(fCutContour[i]) {
-         delete fCutContour[i];
-         fCutContour[i] = 0;
-     }
-     if(fCutGraph[i]) {
-         delete fCutGraph[i];
-         fCutGraph[i] = 0x0;
-     }
+  for(int i=0;i<150;i++){
+    if(fPurityFunction[i]) {
+        delete fPurityFunction[i];
+        fPurityFunction[i] = 0;
+    }
   }
+
+  
 }
 
 //-----------------------------------------------------------------------
@@ -689,7 +687,6 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   if(fPIDsource==kTOFbayesian) fBayesianResponse->SetDetAND(1);
   else if(fPIDsource==kTPCbayesian) fBayesianResponse->ResetDetOR(1);
     
-  if(fUseTPCTOFNsigmaCutContours) GetTPCTOFPIDContours();
 }
 
 //-----------------------------------------------------------------------
@@ -3702,41 +3699,47 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliESDtrack* track)
 //-----------------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track)
 {
-    // do a combined cut on the n sigma from tpc and tof based on purity of the identified particle. (Particle is selected if Purity>0.8 & nsigma|<3)
+    // do a combined cut on the n sigma from tpc and tof based on purity of the identified particle. (Particle is selected if Purity>fPurityLevel & nsigma<3)
     // with information of the pid response object (needs pid response task)
-
+    
     if(!fPIDResponse) return kFALSE;
     if(!track) return kFALSE;
-    if(!fUseTPCTOFNsigmaCutContours) return kFALSE;
-
+    
     Int_t p_int = -999;
     Double_t pInterval=0;
     for(int i=0;i<50;i++){
         pInterval=0.1*i;
         if(track->P()>pInterval && track->P()<pInterval+0.1){p_int = i;}
     }
-    Double_t LowPtPIDTPCnsigLow_Pion[2] = {-3,-3};
-    Double_t LowPtPIDTPCnsigLow_Kaon[2] = {-3,-2};
-    Double_t LowPtPIDTPCnsigHigh_Pion[2] ={2.4,3};
-    Double_t LowPtPIDTPCnsigHigh_Kaon[2] ={3,2.2};
+    /*
+     Double_t LowPtPIDTPCnsigLow_Pion[2] = {-3,-3};
+     Double_t LowPtPIDTPCnsigLow_Kaon[2] = {-3,-2};
+     Double_t LowPtPIDTPCnsigHigh_Pion[2] ={2.4,3};
+     Double_t LowPtPIDTPCnsigHigh_Kaon[2] ={3,2.2};
+     */
     
     Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
     Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
     
+    int index = (fParticleID-2)*50 + p_int;
     if ( (track->IsOn(AliAODTrack::kITSin))){
         if(p_int<2) return kFALSE;
-        if(!fCutContour[p_int]){ cout<<"fCutContour[p_int] does not exist"<<endl; return kFALSE;}
-        if(p_int>3){
+        
+        if(!fPurityFunction[index]){ cout<<"fPurityFunction[index] does not exist"<<endl; return kFALSE;}
+        if(p_int>1){
             if((track->IsOn(AliAODTrack::kTOFpid))){
-                if(fCutContour[p_int]->IsInside(nsigmaTOF,nsigmaTPC)){return kTRUE;}
+                if(fPurityFunction[index]->Eval(nsigmaTOF,nsigmaTPC)>fPurityLevel){
+                    if(TMath::Sqrt(TMath::Power(nsigmaTPC,2)+TMath::Power(nsigmaTOF,2))<3){
+                        return kTRUE;
+                    }
+                }
             }
         }
-        if(p_int<4){
-            if(fParticleID==AliPID::kKaon && nsigmaTPC>LowPtPIDTPCnsigLow_Kaon[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Kaon[p_int-2]){return kTRUE;}
-            if(fParticleID==AliPID::kPion && nsigmaTPC>LowPtPIDTPCnsigLow_Pion[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Pion[p_int-2]){return kTRUE;}
-            if(fParticleID==AliPID::kProton && nsigmaTPC>-3 && nsigmaTPC<3){return kTRUE;}
-        }
-        
+        /*if(p_int<4){
+         if(fParticleID==AliPID::kKaon && nsigmaTPC>LowPtPIDTPCnsigLow_Kaon[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Kaon[p_int-2]){return kTRUE;}
+         if(fParticleID==AliPID::kPion && nsigmaTPC>LowPtPIDTPCnsigLow_Pion[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Pion[p_int-2]){return kTRUE;}
+         if(fParticleID==AliPID::kProton && nsigmaTPC>-3 && nsigmaTPC<3){return kTRUE;}
+         }*/
     }
     return kFALSE;
 }
@@ -5088,49 +5091,35 @@ Long64_t AliFlowTrackCuts::Merge(TCollection* list)
   return fQA->Merge(&tmplist);
 }
 //________________________________________________________________//
-void AliFlowTrackCuts::GetTPCTOFPIDContours()
+void AliFlowTrackCuts::SetTPCTOFNsigmaPIDPurityFunctions(Float_t PurityLevel)
 {
-    fContoursFile = TFile::Open(Form("$ALICE_PHYSICS/PWGCF/FLOW/database/PIDCutContours_%i-%i.root",fCentralityPercentileMin,fCentralityPercentileMax));
-    fCutContourList=(TDirectory*)fContoursFile->Get("Filterbit1");
-    if(!fCutContourList){printf("The contour file is empty"); return;}
-
-    Double_t pBinning[50];
-    for(int b=0;b<50;b++){pBinning[b]=b;}
+    fPurityLevel = PurityLevel;
+    cout<<"fPurityLevel = "<<fPurityLevel<<endl;
+    
+    fPurityFunctionsFile = TFile::Open(Form("$ALICE_PHYSICS/../src/PWGCF/FLOW/database/PurityFunctions_%i-%icent.root",fCentralityPercentileMin,fCentralityPercentileMax));
+    if((!fPurityFunctionsFile) || (!fPurityFunctionsFile->IsOpen())) {
+        printf("The purity functions file does not exist");
+        return;
+    }
+    fPurityFunctionsList=(TDirectory*)fPurityFunctionsFile->Get("Filterbit1");
+    if(!fPurityFunctionsList){printf("The purity functions list is empty"); return;}
+    
     TString species[3] = {"pion","kaon","proton"};
-    TList *Species_contours[3];
+    TList *Species_functions[3];
     Int_t ispecie = 0;
     for(ispecie = 0; ispecie < 3; ispecie++) {
-       Species_contours[ispecie] = (TList*)fCutContourList->Get(species[ispecie]);
-        if(!Species_contours[ispecie]) {
-            cout<<"Contours for species: "<<species[ispecie]<<" not found!!!"<<endl;
+        Species_functions[ispecie] = (TList*)fPurityFunctionsList->Get(species[ispecie]);
+        if(!Species_functions[ispecie]) {
+            cout<<"Purity functions for species: "<<species[ispecie]<<" not found!!!"<<endl;
             return;
         }
     }
-    Int_t iParticle = -999;
-
-    switch (fParticleID)
-    {
-        case AliPID::kPion:
-            iParticle=0;
-            break;
-        case AliPID::kKaon:
-            iParticle=1;
-            break;
-        case AliPID::kProton:
-            iParticle=2;
-            break;
-        default:
-            return;
-    }
- 
-    for(int i=0;i<50;i++){
-        TString Graph_Name = "contourlines_";
-        Graph_Name += species[iParticle];
-        Graph_Name += Form("%.f%.f-%i%icent",pBinning[i],pBinning[i]+1,fCentralityPercentileMin,fCentralityPercentileMax);
-        fCutGraph[i] = (TGraph*)Species_contours[iParticle]->FindObject(Graph_Name);
-        
-        if(!fCutGraph[i]){cout<<"Contour Graph does not exist"<<endl; continue;}
-        fCutContour[i] = new TCutG(Graph_Name.Data(),fCutGraph[i]->GetN(),fCutGraph[i]->GetX(),fCutGraph[i]->GetY());
+    
+    for(int i=0;i<150;i++){
+        int ispecie = i/50;
+        int iPbin = i%50;
+        fPurityFunction[i] = (TF2*)Species_functions[ispecie]->FindObject(Form("PurityFunction_%d%d",iPbin,iPbin+1));
+        if(!fPurityFunction[i]){printf("Purity function does not exist"); return;}
     }
 }
 //__________________
