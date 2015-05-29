@@ -229,6 +229,7 @@ private:
   TH1D* fh1NMedConeCent; //! number of found median-cluster cones in centrality bins
   TH2D* fh2EtaPhiMedCone[fgkiNBinsCent]; //! median-cluster cone eta-phi
   TH1D* fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
+  TH1D* fh1DistanceJets[fgkiNBinsCent]; //! distance in eta-phi between jets within events
 
   static const Int_t fgkiNCategV0 = 17; // number of V0 selection steps
 
@@ -445,7 +446,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 13) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 14) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
