@@ -269,17 +269,22 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, const Float_t energy, con
   if(shared) fSharedCluster = kTRUE;
 }
 //____________________________________________________________________________
+/// \return  true or false if two digits are neighbours
+///
+/// A neighbour is defined as being two digits which share a side. 
+/// If sharing a corner, cells are not neighbours (not the case in early versions).
+/// Only used in case of V1 clusterizer, with and without unfolding.
+///
+/// \param digit1 check closeness of digit1 with digit2
+/// \param digit2 check closeness of digit2 with digit1
+///
 Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * digit2 ) const
-{
-  // Tells if (true) or not (false) two digits are neighbours
-  // A neighbour is defined as being two digits which share a corner
-  // ONLY USED IN CASE OF UNFOLDING 
-	
+{	
   Bool_t areNeighbours = kFALSE ;
-  Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0;
-  Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0;
+  Int_t nSupMod  = 0, nModule  = 0, nIphi  = 0, nIeta  = 0;
+  Int_t nSupMod1 = 0, nModule1 = 0, nIphi1 = 0, nIeta1 = 0;
   Int_t relid1[2] , relid2[2] ; // ieta, iphi
-  Int_t rowdiff=0, coldiff=0;
+  Int_t rowdiff  = 0, coldiff  = 0;
 
   areNeighbours = kFALSE ;
 
@@ -291,11 +296,8 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   
   // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
   // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
-  if(fSharedCluster){
-    //printf("Shared cluster in 2 SMs!\n");
-
-    //    if(nSupMod1%2) relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;//bad
-    //    else           relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;//bad
+  if(fSharedCluster)
+  {
     if(nSupMod1%2) relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;
     else           relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;
   }
@@ -303,7 +305,10 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
 
+  // With this condition, cells touching one corner are considered neighbours
+  // which was considered as the behavior expected initially, but changed later.
   //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
+  
   if ((coldiff + rowdiff == 1 )) 
     areNeighbours = kTRUE ;
   
