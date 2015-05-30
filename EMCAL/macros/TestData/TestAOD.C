@@ -228,7 +228,8 @@ void TestAOD()
       Int_t nLabels    = clus->GetNLabels();
       Int_t labelIndex = clus->GetLabel();
       Int_t nCells     = clus->GetNCells();
-      
+      Int_t nlm        = clus->GetNExMax() ;
+
       // Fill some histograms
       hEta ->Fill(ceta);
       hPhi ->Fill(cphi*TMath::RadToDeg());
@@ -237,7 +238,8 @@ void TestAOD()
       
       // Print basic cluster information
       cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
-      << cphi*TMath::RadToDeg() << "; Eta: " << ceta << "; NCells: " << nCells 
+      << cphi*TMath::RadToDeg() << "; Eta: " << ceta 
+      << "; NCells: " << nCells   << "; NLM: " << nlm
       << "; #Labels: " << nLabels << " Index: " 
       << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
       
