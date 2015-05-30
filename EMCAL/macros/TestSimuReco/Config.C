@@ -1,3 +1,12 @@
+/// 
+/// Example of configuration for particle (photon) 
+/// simulation in EMCal/DCal acceptance.
+/// Include only EMCAL in this example, 
+/// for fast testing of the simulation and reconstruction of the EMCal.
+///
+/// Example for the configuration needed for different years provided.
+///
+
 // One can use the configuration macro in compiled mode by
 // root [0] gSystem->Load("libgeant321");
 // root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
@@ -57,8 +66,11 @@ void Config()
   // Theta range given through pseudorapidity limits 22/6/2001
   
   // Set Random Number seed
-  //gRandom->SetSeed(123456); // Set 0 to use the currecnt time
-  AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
+  //gRandom->SetSeed(123456); // Set 0 to use the current time
+  
+  AliLog::Message(AliLog::kInfo, 
+                  Form("Seed for random number generation = %d",gRandom->GetSeed()), 
+                  "Config.C", "Config.C", "Config()","Config.C", __LINE__);
   
   // Load Pythia libraries                                        
   LoadPythia();
@@ -82,6 +94,7 @@ void Config()
     gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
     return;
   }
+  
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(10000);
   gAlice->SetRunLoader(rl);
@@ -96,12 +109,14 @@ void Config()
   
   decayer->SetForceDecay(kAll);
   decayer->Init();
+
+  TVirtualMC * vmc = TVirtualMC::GetMC();
+
   gMC->SetExternalDecayer(decayer);
   //=======================================================================
   // ************* STEERING parameters FOR ALICE SIMULATION **************
   // --- Specify event type to be tracked through the ALICE setup
-  // --- All positions are in cm, angles in degrees, and P and E in GeV
-  
+  // --- All positions are in cm, angles in degrees, and P and E in GeV 
   
   gMC->SetProcess("DCAY",1);
   gMC->SetProcess("PAIR",1);
@@ -118,7 +133,7 @@ void Config()
   gMC->SetProcess("MULS",1);
   gMC->SetProcess("RAYL",1);
   
-  Float_t cut    = 1.e-3;  // 1MeV cut by default
+  Float_t cut    = 1.e-3;  // 1 MeV cut by default
   Float_t tofmax = 1.e10;
   
   gMC->SetCut("CUTGAM", cut);
@@ -133,7 +148,10 @@ void Config()
   gMC->SetCut("PPCUTM", cut);
   gMC->SetCut("TOFMAX", tofmax); 
   
-  
+  //
+  // Particle generator settings
+  //
+
   int     nParticles = 1;
   if (gSystem->Getenv("CONFIG_NPARTICLES"))
   {
@@ -148,50 +166,50 @@ void Config()
   AliGenBox *gener = new AliGenBox(nParticles);
   gener->SetMomentumRange(10.,10.);
   
-  gener->SetPart(22);
+  gener->SetPart(22); // Photons
   
   if     (year == 2010)
-    gener->SetPhiRange(80.0,120.0);
+  gener->SetPhiRange(80.0,120.0);
   else if(year == 2011)
-    gener->SetPhiRange(80.0,180.0);
+  gener->SetPhiRange(80.0,180.0);
   else if(year == 2012 || year == 2013)
-    gener->SetPhiRange(80.0,190.0);
+  gener->SetPhiRange(80.0,190.0);
   else
-    gener->SetPhiRange(80.0,330.0); // Include DCal
+  gener->SetPhiRange(80.0,330.0); // Include DCal
   
   gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
   
-//  AliGenLib* lib   = new AliGenPHOSlib();
-//  Int_t      type  = AliGenPHOSlib::kEtaFlat;
-//  AliGenParam *gener = new AliGenParam(1,lib,type,"");
-//	gener->SetMomentumRange(0,999);
-//	gener->SetPtRange(1,30);
-//	gener->SetPhiRange(80, 200.);
-//	gener->SetYRange(-2,2);
-//	gener->SetThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
-//	gener->SetCutOnChild(1);
-//  gener->SetChildPtRange(0.1,30);
-//	gener->SetChildThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
-//  gener->SetChildPhiRange(80, 180.);
-//	gener->SetOrigin(0,0,0);        //vertex position
-//	gener->SetSigma(0,0,5.3);       //Sigma in (X,Y,Z) (cm) on IP position
-//	gener->SetForceDecay(kGammaEM);
-//
-//  //gener->SetTrackingFlag(0);
+  //  AliGenLib* lib   = new AliGenPHOSlib();
+  //  Int_t      type  = AliGenPHOSlib::kEtaFlat;
+  //  AliGenParam *gener = new AliGenParam(1,lib,type,"");
+  //	gener->SetMomentumRange(0,999);
+  //	gener->SetPtRange(1,30);
+  //	gener->SetPhiRange(80, 200.);
+  //	gener->SetYRange(-2,2);
+  //	gener->SetThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+  //	gener->SetCutOnChild(1);
+  //  gener->SetChildPtRange(0.1,30);
+  //	gener->SetChildThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+  //  gener->SetChildPhiRange(80, 180.);
+  //	gener->SetOrigin(0,0,0);        //vertex position
+  //	gener->SetSigma(0,0,5.3);       //Sigma in (X,Y,Z) (cm) on IP position
+  //	gener->SetForceDecay(kGammaEM);
+  //
+  //  //gener->SetTrackingFlag(0);
   
-//  AliGenCocktail *gener = new AliGenCocktail();
-//  gener->SetProjectile("A", 208, 82);
-//  gener->SetTarget    ("A", 208, 82);
-//  
-//  // 1 Pi0 in EMCAL, 2010 configuration, 4 SM
-//  AliGenParam *gEMCPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "EMCAL");
-//  gener->AddGenerator(gEMCPi0,"pi0EMC", 1);
-//  
-//  // 1 Eta in EMCAL, 2010 configuration, 4 SM
-//  AliGenParam *gEMCEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "EMCAL");
-//  gener->AddGenerator(gEMCEta,"etaEMC", 1);
-//  
- 
+  //  AliGenCocktail *gener = new AliGenCocktail();
+  //  gener->SetProjectile("A", 208, 82);
+  //  gener->SetTarget    ("A", 208, 82);
+  //  
+  //  // 1 Pi0 in EMCAL, 2010 configuration, 4 SM
+  //  AliGenParam *gEMCPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "EMCAL");
+  //  gener->AddGenerator(gEMCPi0,"pi0EMC", 1);
+  //  
+  //  // 1 Eta in EMCAL, 2010 configuration, 4 SM
+  //  AliGenParam *gEMCEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "EMCAL");
+  //  gener->AddGenerator(gEMCEta,"etaEMC", 1);
+  //  
+  
   gener->Init();
   
   // 
@@ -199,6 +217,7 @@ void Config()
   // track by track
   //
   //gener->SetVertexSmear(perTrack); 
+  
   // Field (L3 0.5 T)
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
   
@@ -223,7 +242,9 @@ void Config()
   Int_t   iEMCAL =  1;
   Int_t   iACORDE=  0;
   Int_t   iVZERO =  0;
+  
   rl->CdGAFile();
+  
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
   
@@ -459,6 +480,5 @@ AliGenerator * GenParamCalo(Int_t nPart, Int_t type, TString calo)
   }
   
   return gener;
-  
 }
 
