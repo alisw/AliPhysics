@@ -3,7 +3,7 @@ import zmq
 import sys
 
 request=b"ALIESD"
-endpoint="tcp://localhost:5556"
+endpoint="tcp://localhost:60200"
 if len(sys.argv)>1:
   request=sys.argv[1];
 if len(sys.argv)>2:

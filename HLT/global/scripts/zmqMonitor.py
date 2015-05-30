@@ -11,10 +11,13 @@ if len(sys.argv)>2:
 #  Prepare our context and sockets
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
-socket.setsockopt(zmq.SUBSCRIBE, subscription)
+print "connect to: "+endpoint
 socket.connect(str(endpoint))
+print "subscribe to: "+subscription
+socket.setsockopt(zmq.SUBSCRIBE, subscription)
 
 while True:
+  print "listening..."
   msg = socket.recv_multipart();
   print "topic: "+str(msg[0])
   print "messagesize: "+str(sys.getsizeof(msg[1]))
