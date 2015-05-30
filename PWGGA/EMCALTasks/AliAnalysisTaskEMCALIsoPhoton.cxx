@@ -752,6 +752,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   LoopOnCells();
   FollowGamma();
   CheckTriggerPatch();
+  FillInvMass();
   if(fDebug)
     printf("passed calling of FollowGamma\n");
   FillClusHists(); 
