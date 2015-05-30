@@ -862,11 +862,13 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       digit = static_cast<AliPHOSDigit*>( fDigitsArr->At( emcDigits[iDigit] ) ) ; 
       fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
       fGeom->RelPosInModule(relid, xDigit, zDigit) ;
+      if(efit[iDigit]>0){
 //      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar,vIncid) / efit[iDigit] ; 
-      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ; 
-      eDigit = emcEnergies[iDigit] * ratio ;
-      emcRP->AddDigit( *digit, eDigit,CalibrateT(digit->GetTime(),digit->GetId(),digit->IsLG()) ) ;
-    }        
+        ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ; 
+        eDigit = emcEnergies[iDigit] * ratio ;
+        emcRP->AddDigit( *digit, eDigit,CalibrateT(digit->GetTime(),digit->GetId(),digit->IsLG()) ) ;
+      }
+    } 
   }
  
   delete[] fitparameters ; 
