@@ -105,7 +105,6 @@ if(ZEROMQ_FOUND)
       ${SRCS}
       AliHLTZMQsink.cxx
      )
-  add_definitions(-DZEROMQ_FOUND)
 endif(ZEROMQ_FOUND)
 
 # Headers from sources

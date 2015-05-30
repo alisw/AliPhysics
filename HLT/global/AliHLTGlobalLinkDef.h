@@ -46,7 +46,7 @@
 #pragma link C++ class AliHLTESDAnaManagerComponent+;
 #pragma link C++ class AliHLTAnalysisManager+;
 #pragma link C++ class AliHLTTPCCalibProcessor+;
-#ifdef ZEROMQ_FOUND
+#ifdef ZMQ
 #pragma link C++ class AliHLTZMQsink+;
 #endif
 #endif // __CINT__
