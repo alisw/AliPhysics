@@ -177,15 +177,15 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (fZMQsendAllInOne)?ZMQ_SNDMORE:0);
       HLTMessage(Form("send rc %i errno %i\n",rc,errno));
     }
-    if (nothingSelected && fZMQsocketType==ZMQ_REP)
+    //if (nothingSelected && fZMQsocketType==ZMQ_REP)
     { 
       //empty frame of type void if we really need a reply (ZMQ_REP mode)
       char delimiter[kAliHLTComponentDataTypeTopicSize];
       memset(delimiter, 0, kAliHLTComponentDataTypeTopicSize);
       rc = zmq_send(fZMQout, &delimiter, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
-      HLTMessage(Form("send rc %i errno %i\n",rc,errno));
+      HLTMessage(Form("send endframe rc %i errno %i\n",rc,errno));
       rc = zmq_send(fZMQout, 0, 0, 0);
-      HLTMessage(Form("send rc %i errno %i\n",rc,errno));
+      HLTMessage(Form("send endframe rc %i errno %i\n",rc,errno));
     }
   }
 
