@@ -137,6 +137,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0),
   fdDistanceV0JetMax(0.4),
+  fiBgSubtraction(0),
 
   fbCompareTriggers(0),
 
@@ -411,6 +412,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0),
   fdDistanceV0JetMax(0.4),
+  fiBgSubtraction(0),
 
   fbCompareTriggers(0),
 
@@ -1355,6 +1357,10 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
   if(fbJetSelection)
   {
+    printf("rho subtraction: ");
+    if(fiBgSubtraction == 0) printf("none\n");
+    else if(fiBgSubtraction == 1) printf("scalar\n");
+    else if(fiBgSubtraction == 2) printf("vector\n");
     if(fdCutPtJetMin > 0.) printf("min jet pt [GeV/c]: %g\n", fdCutPtJetMin);
     if(fdCutPtTrackJetMin > 0.) printf("min pt of leading jet-track [GeV/c]: %g\n", fdCutPtTrackJetMin);
     if(fdCutAreaPercJetMin > 0.) printf("min area of jet [pi*R^2]: %g\n", fdCutAreaPercJetMin);
@@ -1363,18 +1369,22 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     printf("angular correlations of V0s with jets: %s\n", fbCorrelations ? "yes" : "no");
     printf("pt correlations of jets with trigger tracks: %s\n", fbCompareTriggers ? "yes" : "no");
     printf("-------------------------------------------------------\n");
-    printf("Signal jet container parameters\n");
     if(fJetsCont)
     {
+      printf("Signal jet container parameters\n");
       printf("Jet R = %g\n", fJetsCont->GetJetRadius());
       fJetsCont->PrintCuts();
     }
-    printf("Background jet container parameters\n");
+    else
+      printf("No signal jet container!\n");
     if(fJetsBgCont)
     {
+      printf("Background jet container parameters\n");
       printf("Jet R = %g\n", fJetsBgCont->GetJetRadius());
       fJetsBgCont->PrintCuts();
     }
+    else
+      printf("No background jet container\n");
   }
   printf("=======================================================\n");
 }
@@ -1579,9 +1589,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No jets in array");
       bJetEventGood = kFALSE;
     }
-    if(bJetEventGood && !fJetsBgCont)
+    if(fbIsPbPb && bJetEventGood && !fJetsBgCont)
     {
-      AliError("No bg jet container!");
+      AliWarning("No bg jet container!");
 //      bJetEventGood = kFALSE;
     }
   }
@@ -1591,9 +1601,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   // select good jets and copy them to another array
   if(bJetEventGood)
   {
-    if(fbIsPbPb)
+    if(fiBgSubtraction)
+    {
       dRho = fJetsCont->GetRhoVal();
-//    printf("%s::%s: %s\n",ClassName(),__func__,Form("Loaded rho value: %g\n",dRho));
+      if(fDebug > 4) printf("%s::%s: %s\n", ClassName(), __func__, Form("Loaded rho value: %g", dRho));
+    }
     if(bLeadingJetOnly)
       iNJet = 1; // only leading jets
     if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet selection for %d jets", iNJet));
@@ -1607,9 +1619,26 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet %d not accepted in container", iJet));
         continue;
       }
-      Double_t dPtJetCorr = jetSel->PtSub(dRho);
+
+      Double_t dPtJetCorr = jetSel->Pt(); // raw pt
+      Double_t dEtaJetCorr = jetSel->Eta(); // raw eta
+      Double_t dPhiJetCorr = jetSel->Phi(); // raw phi
+      Double_t dPtTrackJet = fJetsCont->GetLeadingHadronPt(jetSel); // pt of leading track
+
+      if(fiBgSubtraction == 1) // scalar subtraction: correct pt only
+      {
+        dPtJetCorr = jetSel->PtSub(dRho);
+      }
+      else if(fiBgSubtraction == 2) // vector subtraction: correct momentum vector
+      {
+        vecJetSel = jetSel->SubtractRhoVect(dRho);
+        dPtJetCorr = vecJetSel.Pt();
+        dEtaJetCorr = vecJetSel.Eta();
+        dPhiJetCorr = TVector2::Phi_0_2pi(vecJetSel.Phi());
+      }
+
       if(bPrintJetSelection)
-        if(fDebug > 4) printf("jet: i = %d, pT = %g, eta = %g, phi = %g, pt lead tr = %g, pt corr = %g ", iJet, jetSel->Pt(), jetSel->Eta(), jetSel->Phi(), fJetsCont->GetLeadingHadronPt(jetSel), dPtJetCorr);
+        if(fDebug > 4) printf("jet: i = %d, pT = %g, eta = %g, phi = %g, pt lead tr = %g ", iJet, dPtJetCorr, dEtaJetCorr, dPhiJetCorr, dPtTrackJet);
       if(fdCutPtJetMin > 0. && dPtJetCorr < fdCutPtJetMin) // selection of high-pt jets, needs to be applied on the pt after bg subtraction
       {
         if(bPrintJetSelection)
@@ -1620,17 +1649,17 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if(fDebug > 4) printf("accepted\n");
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet %d with pt %g passed selection", iJet, dPtJetCorr));
 
-      vecJetSel.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
-      vecPerpPlus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
-      vecPerpMinus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
+      vecJetSel.SetPtEtaPhiM(dPtJetCorr, dEtaJetCorr, dPhiJetCorr, 0.);
+      vecPerpPlus = vecJetSel;
+      vecPerpMinus = vecJetSel;
       vecPerpPlus.RotateZ(TMath::Pi() / 2.); // rotate vector by +90 deg around z
       vecPerpMinus.RotateZ(-TMath::Pi() / 2.); // rotate vector by -90 deg around z
-      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding perp. cones number %d, %d", iNJetPerp, iNJetPerp + 1));
+      if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding perp. cones number %d, %d, pt %g", iNJetPerp, iNJetPerp + 1, vecPerpPlus.Pt()));
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus); // write perp. cone to the array
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding jet number %d", iNJetSel));
       new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
-      fh2PtJetPtTrackLeading[iCentIndex]->Fill(dPtJetCorr, fJetsCont->GetLeadingHadronPt(jetSel)); // pt_jet vs pt of leading jet track
+      fh2PtJetPtTrackLeading[iCentIndex]->Fill(dPtJetCorr, dPtTrackJet); // pt_jet vs pt of leading jet track
       if(fbCorrelations)
         arrayMixedEventAdd->Add(new TLorentzVector(vecJetSel)); // copy selected jet to the list of new jets for event mixing
     }
@@ -1686,15 +1715,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
-    if(jetMed)
+    if(fJetsBgCont)
     {
-      fh1NMedConeCent->Fill(iCentIndex);
-      fh2EtaPhiMedCone[iCentIndex]->Fill(jetMed->Eta(), jetMed->Phi());
+      jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
+      if(jetMed)
+      {
+        fh1NMedConeCent->Fill(iCentIndex);
+        fh2EtaPhiMedCone[iCentIndex]->Fill(jetMed->Eta(), jetMed->Phi());
+      }
     }
   }
 
-  if(fbJetSelection && fbCompareTriggers)
+  if(fbJetSelection && fbCompareTriggers) // Correlations of pt_jet with pt_trigger-track
   {
     if(!fTracksCont)
       AliError("No track container!");

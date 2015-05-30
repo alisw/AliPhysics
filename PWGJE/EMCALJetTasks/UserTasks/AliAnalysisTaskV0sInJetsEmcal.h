@@ -51,6 +51,7 @@ public:
   void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
+  void SetBgSubtraction(Int_t val = 1) {fiBgSubtraction = val;}
 
   // pt correlations of jets with trigger tracks
   void SetCompareTriggerTracks(Bool_t val = kTRUE) {fbCompareTriggers = val;}
@@ -193,6 +194,7 @@ private:
   Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
   Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the jet cone
+  Int_t fiBgSubtraction; // subtraction of rho from jet pt, 0 - no subtraction, 1 - scalar subtraction, 2 - vector subtraction
 
   // Correlations of pt_jet with pt_trigger-track
   Bool_t fbCompareTriggers; // switch for pt correlations of jets with trigger tracks
@@ -446,7 +448,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 14) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 15) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
