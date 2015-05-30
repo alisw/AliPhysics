@@ -1,7 +1,9 @@
 #!/usr/bin/python
 import zmq,time,sys
 
-port=sys.argv[1]
+port="60201"
+if (len(sys.argv)>1):
+  port=sys.argv[1]
 
 #  Prepare our context and sockets
 context = zmq.Context()

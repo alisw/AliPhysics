@@ -17,7 +17,6 @@ print "subscribe to: "+subscription
 socket.setsockopt(zmq.SUBSCRIBE, subscription)
 
 while True:
-  print "listening..."
   msg = socket.recv_multipart();
   print "topic: "+str(msg[0])
   print "messagesize: "+str(sys.getsizeof(msg[1]))
