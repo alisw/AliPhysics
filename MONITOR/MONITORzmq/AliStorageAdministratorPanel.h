@@ -63,7 +63,7 @@ private:
 	//socket connection
 	TThread *fCommunicationThread;
 	storageSockets fCommunicationSocket;
-    static void* Dispatch(void *arg){static_cast<AliStorageAdministratorPanel*>(arg)->CheckStateHandle();}
+	static void Dispatch(void *arg){static_cast<AliStorageAdministratorPanel*>(arg)->CheckStateHandle();}
 	void CheckStateHandle();
 	void CheckClientState(int option);
 	

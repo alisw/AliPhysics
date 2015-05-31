@@ -50,6 +50,7 @@
 
 using namespace TMath;
 using namespace AliAlgAux;
+using std::ifstream;
 
 ClassImp(AliAlgSteer)
 

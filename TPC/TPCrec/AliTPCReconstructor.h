@@ -43,7 +43,7 @@ public:
   static void  SetAltroEmulator(AliTPCAltroEmulator *altro) { fAltroEmulator=altro;}
   static AliTPCAltroEmulator *  GetAltroEmulator() { return fAltroEmulator;}
   static TTreeSRedirector    *GetDebugStreamer(){return fgDebugStreamer;}
-  static TTreeSRedirector    *SetDebugStreamer(TTreeSRedirector    *debugStreamer){fgDebugStreamer=debugStreamer;}
+  static void SetDebugStreamer(TTreeSRedirector    *debugStreamer){fgDebugStreamer=debugStreamer;}
   void ParseOptions(AliTPCtracker* tracker) const;
   
 private:
