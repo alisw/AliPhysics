@@ -509,7 +509,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
             fHistograms->Add(fHistClusterdEtadPhiPosTracksP_075_125BeforeQA);
             fHistClusterdEtadPhiPosTracksP_125_999BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P>1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P>1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiPosTracksP_125_999BeforeQA);
-            fHistClusterdEtadPhiNegTracksP_000_075BeforeQA= new TH2F(Form("dEtaVsdPhi_negTrack_P<0.75_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTrack_P<0.75_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+			fHistClusterdEtadPhiNegTracksP_000_075BeforeQA= new TH2F(Form("dEtaVsdPhi_negTracks_P<0.75_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_P<0.75_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksP_000_075BeforeQA);
             fHistClusterdEtadPhiNegTracksP_075_125BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_0.75<P<1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_0.75<P<1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksP_075_125BeforeQA);
