@@ -71,6 +71,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
+  fhnDeltaMass(0x0),
   fh2PtTrueSubFacV1(0x0),
   fh2PtRawSubFacV1(0x0),
   fh2PtCorrSubFacV1(0x0),
@@ -90,6 +91,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
   fh2PtTrueSubFacV1        = new TH2F*[fNcentBins];
   fh2PtRawSubFacV1         = new TH2F*[fNcentBins];
   fh2PtCorrSubFacV1        = new TH2F*[fNcentBins];
@@ -108,6 +110,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
     fh2PtTrueSubFacV1[i]        = 0;
     fh2PtRawSubFacV1[i]         = 0;
     fh2PtCorrSubFacV1[i]        = 0;
@@ -157,6 +160,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
+  fhnDeltaMass(0x0),
   fh2PtTrueSubFacV1(0x0),
   fh2PtRawSubFacV1(0x0),
   fh2PtCorrSubFacV1(0x0),
@@ -176,6 +180,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
   fh2PtTrueSubFacV1        = new TH2F*[fNcentBins];
   fh2PtRawSubFacV1         = new TH2F*[fNcentBins];
   fh2PtCorrSubFacV1        = new TH2F*[fNcentBins];
@@ -194,6 +199,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
     fh2PtTrueSubFacV1[i]        = 0;
     fh2PtRawSubFacV1[i]         = 0;
     fh2PtCorrSubFacV1[i]        = 0;
@@ -330,8 +336,11 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
     histName = Form("fhnDeltaMass_%d", i);
     histTitle = Form("%s; (#it{M}_{det} - #it{M}_{part})/#it{M}_{part}; (#it{p}_{T,det} - #it{p}_{T,part})/#it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
-     fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
-     fOutput->Add(fhnDeltaMass[i]);
+    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    Printf("New pointer");
+    Printf(" %p", fhnDeltaMass[i] );
+    fOutput->Add(fhnDeltaMass[i]);
 
     //derivative histograms
     histName = Form("fh2PtTrueSubFacV1_%d",i);
