@@ -66,7 +66,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh3MTruePtTrueLeadPt(0x0),
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
-  fhnMassResponse(0x0)
+  fhnMassResponse(0x0),
+  fhnDeltaMass(0)
 {
   // Default constructor.
 
@@ -78,6 +79,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -88,6 +90,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -124,7 +127,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh3MTruePtTrueLeadPt(0x0),
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
-  fhnMassResponse(0x0)
+  fhnMassResponse(0x0),
+  fhnDeltaMass(0)
 {
   // Standard constructor.
 
@@ -136,6 +140,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -146,6 +151,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -189,6 +195,9 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     minDM   = -0.5;
     maxDM   = 0.5;
   }
+  Int_t nBinsDpT  = 100;
+  Double_t minDpT = -50.;
+  Double_t maxDpT = 50.;
 
   const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event
   const Double_t minDRToLJ = 0.;
@@ -203,6 +212,11 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
+
+  const Int_t nBinsSparse1 = 6;
+  const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt};
+  const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt};
+  const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt};
 
   TString histName = "";
   TString histTitle = "";
@@ -249,6 +263,15 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}",i,varName.Data(),varName.Data());
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
+    
+    histName = Form("fhnDeltaMass_%d", i);
+    histTitle = Form("%s; (#it{M}_{det} - #it{M}_{part})/#it{M}_{part}; (#it{p}_{T,det} - #it{p}_{T,part})/#it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    Printf("New pointer");
+    Printf(" %p", fhnDeltaMass[i] );
+    fOutput->Add(fhnDeltaMass[i]);
+
   }
 
   if(fUseSumw2) {
@@ -395,6 +418,16 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
           if(jetR->M()>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(jetR->Pt(),(var-var2)/var2,jet1->MaxTrackPt());
 	  Double_t varsp[5] = {var,var2,ptjet1,jetR->Pt(),jet1->MaxTrackPt()};
 	  fhnMassResponse[fCentBin]->Fill(varsp);
+	  
+	  varsp[0] = (var-var2)/var2;
+	  varsp[1] = (ptjet1-jetR->Pt())/jetR->Pt();
+	  varsp[2] = var;
+	  varsp[3] = var2;
+	  varsp[4] = ptjet1;
+	  varsp[5] = jetR->Pt();
+
+	  fhnDeltaMass[fCentBin]->Fill(varsp);
+
 	}
       }
       
