@@ -107,6 +107,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fiNJetsPerPool(0),
   ffFractionMin(0),
   fiNEventsMin(0),
+  fdDeltaEtaMax(0),
 
   fbTPCRefit(0),
   fbRejectKinks(0),
@@ -382,6 +383,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fiNJetsPerPool(0),
   ffFractionMin(0),
   fiNEventsMin(0),
+  fdDeltaEtaMax(0),
 
   fbTPCRefit(0),
   fbRejectKinks(0),
@@ -817,17 +819,18 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   // binning in V0-jet correlations
   Int_t iNBinsDeltaPhi = 60;
   const Int_t iNDimCorrel = 6;
-  Double_t fDeltaEtaMax = 2. * 0.7; // >= 2*eta_V0^max
-//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fDeltaEtaMax / 0.1); // does not work if fDeltaEtaMax is Float_t
-//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fDeltaEtaMax / 0.7); // does not work if fDeltaEtaMax is Float_t
-  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fDeltaEtaMax / fDeltaEtaMax); // does not work if fDeltaEtaMax is Float_t
+//  Double_t fdDeltaEtaMax = 2. * 0.7; // >= 2*eta_V0^max
+//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fdDeltaEtaMax / 0.1); // does not work if fdDeltaEtaMax is Float_t
+//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fdDeltaEtaMax / 0.7); // does not work if fdDeltaEtaMax is Float_t
+//  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fdDeltaEtaMax / fdDeltaEtaMax); // does not work if fdDeltaEtaMax is Float_t
+  Int_t iNBinsDeltaEtaCorrel = 1;
 //  printf("%s: %d\n", "iNBinsDeltaEtaCorrel", iNBinsDeltaEtaCorrel);
   Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
-  Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
-  Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
+  Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fdDeltaEtaMax};
+  Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fdDeltaEtaMax};
   Int_t binsLCorrel[iNDimCorrel] = {fgkiNBinsMassLambda / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel};
-  Double_t xminLCorrel[iNDimCorrel] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fDeltaEtaMax};
-  Double_t xmaxLCorrel[iNDimCorrel] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fDeltaEtaMax};
+  Double_t xminLCorrel[iNDimCorrel] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fdDeltaEtaMax};
+  Double_t xmaxLCorrel[iNDimCorrel] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fdDeltaEtaMax};
 //  printf("binsKCorrel: %d %d %d %d %d %d\n", fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel);
 
   // binning eff inclusive vs eta-pT
@@ -1367,6 +1370,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     if(fdCutEtaV0Max > 0. && fdDistanceV0JetMax > 0.) printf("max |eta| of jet: %g\n", dCutEtaJetMax);
     printf("max distance between V0 and jet axis: %g\n", fdDistanceV0JetMax);
     printf("angular correlations of V0s with jets: %s\n", fbCorrelations ? "yes" : "no");
+    if(fbCorrelations) printf("max |delta-eta_V0-jet|: %g\n", fdDeltaEtaMax);
     printf("pt correlations of jets with trigger tracks: %s\n", fbCompareTriggers ? "yes" : "no");
     printf("-------------------------------------------------------\n");
     if(fJetsCont)
@@ -2459,18 +2463,23 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // V0-jet correlations
     if(fbCorrelations && iNJetSel)
     {
+      Double_t dDPhi, dDEta;
       // Fill V0-jet correlations in same events
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
         AliAODJet* jetCorrel = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+        dDPhi = GetNormalPhi(dPhiV0 - jetCorrel->Phi());
+        dDEta = dEtaV0 - jetCorrel->Eta();
+        if(TMath::Abs(dDEta) > fdDeltaEtaMax)
+          continue;
         if(bIsCandidateK0s)
         {
-          Double_t valueKCorrel[6] = {dMassV0K0s, dPtV0, dEtaV0, jetCorrel->Pt(), GetNormalPhi(dPhiV0 - jetCorrel->Phi()), dEtaV0 - jetCorrel->Eta()};
+          Double_t valueKCorrel[6] = {dMassV0K0s, dPtV0, dEtaV0, jetCorrel->Pt(), dDPhi, dDEta};
           fhnV0CorrelSEK0s[iCentIndex]->Fill(valueKCorrel);
         }
         if(bIsCandidateLambda)
         {
-          Double_t valueLCorrel[6] = {dMassV0Lambda, dPtV0, dEtaV0, jetCorrel->Pt(), GetNormalPhi(dPhiV0 - jetCorrel->Phi()), dEtaV0 - jetCorrel->Eta()};
+          Double_t valueLCorrel[6] = {dMassV0Lambda, dPtV0, dEtaV0, jetCorrel->Pt(), dDPhi, dDEta};
           fhnV0CorrelSELambda[iCentIndex]->Fill(valueLCorrel);
         }
       }
@@ -2487,14 +2496,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             TLorentzVector* jetMixed = (TLorentzVector*)arrayMixedEvent->At(iJet);
             if(!jetMixed)
               continue;
+            dDPhi = GetNormalPhi(dPhiV0 - jetMixed->Phi());
+            dDEta = dEtaV0 - jetMixed->Eta();
+            if(TMath::Abs(dDEta) > fdDeltaEtaMax)
+              continue;
             if(bIsCandidateK0s)
             {
-              Double_t valueKCorrel[6] = {dMassV0K0s, dPtV0, dEtaV0, jetMixed->Pt(), GetNormalPhi(dPhiV0 - jetMixed->Phi()), dEtaV0 - jetMixed->Eta()};
+              Double_t valueKCorrel[6] = {dMassV0K0s, dPtV0, dEtaV0, jetMixed->Pt(), dDPhi, dDEta};
               fhnV0CorrelMEK0s[iCentIndex]->Fill(valueKCorrel);
             }
             if(bIsCandidateLambda)
             {
-              Double_t valueLCorrel[6] = {dMassV0Lambda, dPtV0, dEtaV0, jetMixed->Pt(), GetNormalPhi(dPhiV0 - jetMixed->Phi()), dEtaV0 - jetMixed->Eta()};
+              Double_t valueLCorrel[6] = {dMassV0Lambda, dPtV0, dEtaV0, jetMixed->Pt(), dDPhi, dDEta};
               fhnV0CorrelMELambda[iCentIndex]->Fill(valueLCorrel);
             }
           }
