@@ -5,27 +5,25 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition);
 
 AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
+AliDielectronEventCuts *GetEventCuts();
 
 
-//start systematics
-//TString names ("AllSignFiltering_opAngle0.03_mass30MeV_highMulti;AllSignFiltering_opAngle0.06_mass30MeV_highMulti;AllSignFiltering_opAngle0.09_mass30MeV_highMulti");
-//TString names ("AllSignFiltering_opAngle0.12_mass30MeV;AllSignFiltering_opAngle0.15_mass30MeV;AllSignFiltering_opAngle0.18_mass30MeV");
 
+TString names ("MB_pf;MBstd"); // LEGO train dummy
+//TString names ("MB_pf"); // LEGO train dummy
 
-//TString names ("USfiltering_opAngle0.1_mass30MeV_cut23;USfiltering_opAngle0.4_mass80MeV_cut23;nofiltering_cut23");
-
-//TString names ("USfiltering_100mrad_mass30MeV_cut23;USfiltering_25mrad_mass60MeV_cut23;USfiltering_50mrad_mass60MeV_cut23");
-//TString names ("USfiltering_100mrad_mass60MeV_cut23;USfiltering_50mrad_mass100MeV_cut23;USfiltering_100mrad_mass100MeV_cut23");
-TString names ("cut23"); // LGEO train dummy
 	Bool_t kRot = 0;
 	Bool_t kMix = 1;
+
+    ULong64_t triggerMask = AliVEvent::kINT7;
+    Bool_t randomizeDau = kTRUE;
 
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
-const Int_t nPF = -3;
+const Int_t nPF = 1;
 
-AliDielectron* Config_lowmasspPb(Int_t cutDefinition=1/*,Bool_t hasMC = kFALSE*/)
+AliDielectron* Config_lowmasspPb(Int_t cutDefinition)
 {
   //
   // Setup the instance of AliDielectron
@@ -55,7 +53,7 @@ AliDielectron* Config_lowmasspPb(Int_t cutDefinition=1/*,Bool_t hasMC = kFALSE*/
 	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
         mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
 	mix->SetDepth(17);
-	mix->SetMixUncomplete(kFALSE);
+	//mix->SetMixUncomplete(kFALSE);
 	die->SetMixingHandler(mix);
 	}//kMix
 
@@ -74,6 +72,8 @@ AliDielectron* Config_lowmasspPb(Int_t cutDefinition=1/*,Bool_t hasMC = kFALSE*/
 
   // eta correction
   // SetEtaCorrection();
+
+  die->SetNoPairing(kFALSE);
 
   return die;
 
@@ -360,20 +360,16 @@ if(cutDefinition < nPF){
   //add histograms to Pair classes
   //
 
-  histos->UserHistogram("Pair","InvMass_pPt","Inv.Mass vs. pair p_{T};Inv. Mass (GeV/c^{2});pair p_{T} (GeV/c)",
-                        800,0.,8.,800,0.,8.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+//  histos->UserHistogram("Pair","InvMass_pPt","Inv.Mass vs. pair p_{T};Inv. Mass (GeV/c^{2});pair p_{T} (GeV/c)",
+//                        800,0.,8.,800,0.,8.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
   //histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
   //                      650,0.,6.5, 200,0.,10., 100,0.,TMath::Pi(),
   //                      AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-   Int_t     nbins[3]   = {1000,200,100};			
-   Double_t  binMins[3] = {0.,0.,0.};
-   Double_t  binMaxs[3] = {10.,10.,TMath::Pi()};
-   UInt_t    vars[3]    = {AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair};
-   histos->UserSparse("Pair",3,nbins,binMins,binMaxs,vars);
+
   
-//  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
-//                        350,0.,3.5, 100,0.,5., 32,0.,3.2,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
+  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
+                        500,0.,5., 100,0.,5., 32,0.,TMath::Pi(),
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
 			
   //histos->UserHistogram("Pair","InvMass_pPt_FineBinning","Inv.Mass vs. pair p_{T};Inv. Mass (GeV/c^{2});pair p_{T} (GeV/c)",
   //                      4000,0.,0.4,50,0.,5.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);	
@@ -458,3 +454,12 @@ if(cutDefinition < nPF){
 
 }
 
+AliDielectronEventCuts* GetEventCuts(){
+
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  eventCuts->SetRequireVertex();
+  eventCuts->SetVertexZ(-10.,10.);
+  eventCuts->SetMinVtxContributors(1); 
+  
+  return eventCuts;
+}
