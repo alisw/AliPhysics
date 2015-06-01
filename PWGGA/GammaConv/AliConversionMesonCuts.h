@@ -38,12 +38,12 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
 		enum cutIds {
 			kMesonKind,
-			kBackgroundScheme,            
-			kNumberOfBGEvents,           
-			kDegreesForRotationMethod,    
-			kRapidityMesonCut,    
+			kBackgroundScheme,
+			kNumberOfBGEvents,
+			kDegreesForRotationMethod,
+			kRapidityMesonCut,
 			kRCut,
-			kalphaMesonCut,               
+			kalphaMesonCut,
 			kSelectionCut,
 			kElecShare,
 			kToCloseV0s,
@@ -51,8 +51,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 			kDcaGammaGamma,
 			kDcaRPrimVtx,
 			kDcaZPrimVtx,
-                        kMinOpanMesonCut,
-                        kMaxOpanMesonCut,
+			kMinOpanMesonCut,
+			kMaxOpanMesonCut,
 			kNCuts
 		};
 
@@ -113,8 +113,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx);
 		Bool_t SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx);
 		void SetOpeningAngleCut(Float_t OpeningAngle){fOpeningAngle = OpeningAngle;} 
-                Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
-                Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
+		Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
+		Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
 
 		// Request Flags
 		Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
@@ -131,7 +131,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Double_t GetSelectionHigh() const {return fSelectionHigh;}
 		
 	protected:
-		TList *fHistograms;
+		TList		*fHistograms;
 		//cuts
 		Int_t 		fMesonKind;
 		Double_t 	fMaxR; 						//r cut  
@@ -166,12 +166,12 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t 		fDCAGammaGammaCutOn; 		// cut flag for the maximum distance between the two photons
 		Bool_t 		fDCAZMesonPrimVtxCutOn; 	// cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex 
 		Bool_t 		fDCARMesonPrimVtxCutOn; 	// cut flag for the maximum distance in R between the production point of the Meson & the primary vertex 
-                Double_t        fMinOpanCutMeson;     
-                TF1*            fFMinOpanCut;                                   //
-                Bool_t          fMinOpanPtDepCut;                               //
-                Double_t        fMaxOpanCutMeson;     
-                TF1*            fFMaxOpanCut;                                   //
-                Bool_t          fMaxOpanPtDepCut;                               //
+		Double_t	fMinOpanCutMeson;			//
+		TF1*		fFMinOpanCut;				//
+		Bool_t		fMinOpanPtDepCut;			//
+		Double_t	fMaxOpanCutMeson;			//
+		TF1*		fFMaxOpanCut;				//
+		Bool_t		fMaxOpanPtDepCut;			//
 		Int_t 		fBackgroundHandler; 		//
 		
 		// Histograms
@@ -187,8 +187,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
 	private:
 
-
-		ClassDef(AliConversionMesonCuts,8)
+		ClassDef(AliConversionMesonCuts,9)
 };
 
 

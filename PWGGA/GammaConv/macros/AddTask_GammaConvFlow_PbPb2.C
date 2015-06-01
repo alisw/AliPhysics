@@ -155,91 +155,91 @@ void AddTask_GammaConvFlow_PbPb2(
     TString *mesonCutArray = new TString[numberOfCuts];
  
     if (trainConfig == 1){
-        eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522045009000";
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
     } else if (trainConfig == 2) {
-        eventCutArray[ 0] = "6120001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522045009000";
+		eventCutArray[ 0] = "6120001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
     } else if (trainConfig == 3) {
-        eventCutArray[ 0] = "5010001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522045009000";
+		eventCutArray[ 0] = "5010001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
     } else if (trainConfig == 4) {
-        eventCutArray[ 0] = "5020001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522045009000";
+		eventCutArray[ 0] = "5020001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
     } else if (trainConfig == 5) {
-        eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522045009000";
+		eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
     } else if (trainConfig == 6) {
-        eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522045009000";
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
     } else if (trainConfig == 7) {
-        eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 8) {
-        eventCutArray[ 0] = "5480001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5480001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 9) {
-        eventCutArray[ 0] = "5450001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5450001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 10) {
-        eventCutArray[ 0] = "5560001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5560001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 11) {
-        eventCutArray[ 0] = "5680001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5680001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 12) {
-        eventCutArray[ 0] = "5670001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5670001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 13) {
-        eventCutArray[ 0] = "5780001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5780001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 14) {
-        eventCutArray[ 0] = "4690001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "4690001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else if (trainConfig == 15) {
-        eventCutArray[ 0] = "5890001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "01522065009000";
+		eventCutArray[ 0] = "5890001"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
     } else  if (trainConfig == 16){
-        eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 17) {
-        eventCutArray[ 0] = "6120001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "6120001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 18) {
-        eventCutArray[ 0] = "5010001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5010001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 19) {
-        eventCutArray[ 0] = "5020001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5020001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 20) {
-        eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 21) {
-        eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 22) {
-        eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 23) {
-        eventCutArray[ 0] = "5480001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5480001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 24) {
-        eventCutArray[ 0] = "5450001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5450001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 25) {
-        eventCutArray[ 0] = "5560001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5560001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 26) {
-        eventCutArray[ 0] = "5680001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5680001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 27) {
-        eventCutArray[ 0] = "5670001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5670001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 28) {
-        eventCutArray[ 0] = "5780001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5780001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 29) {
-        eventCutArray[ 0] = "4690001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "4690001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 30) {
-        eventCutArray[ 0] = "5890001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5890001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 31) {
-        eventCutArray[ 0] = "5080001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5080001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 32) {
-        eventCutArray[ 0] = "5250001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5250001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 33) {
-        eventCutArray[ 0] = "5350001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5350001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 34) {
-        eventCutArray[ 0] = "5450001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5450001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 35) {
-        eventCutArray[ 0] = "5340001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5340001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 36) {
-        eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 37){                           
-        eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 38) {
-        eventCutArray[ 0] = "6120001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "6120001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 39) {
-        eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 40) {
-        eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 41) {
-        eventCutArray[ 0] = "5680001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5680001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 42) {
-        eventCutArray[ 0] = "5340001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5340001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else if (trainConfig == 43) {
-        eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
     } else {
         Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
         return;

@@ -268,7 +268,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
   
 	eventCutArray[0]="8000011"; photonCutArray[0] = "00200009360300007200000000"; ElecCutarray[0] = "90475400233102723710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  New Stardad cut +100 events background
 	eventCutArray[1]="8000011"; photonCutArray[1] = "00200009360300007200000000"; ElecCutarray[1] = "90475400233101623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  New Standard cut + Background method V0 multiplicity
-	eventCutArray[2]="8000011"; photonCutArray[2] = "00200009360300007200000000"; ElecCutarray[2] = "90475400233102623710"; MesonCutarray[2] = "01031035000000"; //standard cut Pi0 PbPb 00-100 + No extra smearing
+	eventCutArray[2]="8000011"; photonCutArray[2] = "00200009360300007200000000"; ElecCutarray[2] = "90475400233102623710"; MesonCutarray[2] = "0103103500000000"; //standard cut Pi0 PbPb 00-100 + No extra smearing
 	eventCutArray[3]="8000011"; photonCutArray[3] = "00200009360300007200000000"; ElecCutarray[3] = "90475400253102621710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100 + Old Standard
 
 } else if( trainConfig == 10 ) {  // No eta shift |Y| < 0.8 + AddedSignals
@@ -333,7 +333,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
   
 	eventCutArray[0]="8000012"; photonCutArray[0] = "00200009360300007200000000"; ElecCutarray[0] = "90475400233102723710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  New Stardad cut +100 events background
 	eventCutArray[1]="8000012"; photonCutArray[1] = "00200009360300007200000000"; ElecCutarray[1] = "90475400233101623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  New Standard cut + Background method V0 multiplicity
-	eventCutArray[2]="8000012"; photonCutArray[2] = "00200009360300007200000000"; ElecCutarray[2] = "90475400233102623710"; MesonCutarray[2] = "01031035000000"; //standard cut Pi0 PbPb 00-100 + No extra smearing
+	eventCutArray[2]="8000012"; photonCutArray[2] = "00200009360300007200000000"; ElecCutarray[2] = "90475400233102623710"; MesonCutarray[2] = "0103103500000000"; //standard cut Pi0 PbPb 00-100 + No extra smearing
 	eventCutArray[3]="8000012"; photonCutArray[3] = "00200009360300007200000000"; ElecCutarray[3] = "90475400253102621710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100 + Old Standard
 
 } else if ( trainConfig == 19 ) {
@@ -462,7 +462,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	eventCutArray[0] = "8000011"; photonCutArray[0] = "00200009360300007200000000"; ElecCutarray[0] = "90475400433202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + ITScls >= 3
 	eventCutArray[1] = "8000011"; photonCutArray[1] = "00200009360300007200000000"; ElecCutarray[1] = "90475400533202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + ITScls >= 4
 	eventCutArray[2] = "8000011"; photonCutArray[2] = "00200009360300007200000000"; ElecCutarray[2] = "90475400633202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + ITScls >= 5
-	eventCutArray[3] = "8000011"; photonCutArray[3] = "00200009360300007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035000000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + No extra smearing
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "00200009360300007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "0103103500000000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + No extra smearing
 	
 } else if ( trainConfig == 37 ) {
   
