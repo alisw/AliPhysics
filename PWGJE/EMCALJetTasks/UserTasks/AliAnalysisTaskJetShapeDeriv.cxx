@@ -328,7 +328,7 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
 
-    histName = Form("fhnDeltaMass", i);
+    histName = Form("fhnDeltaMass_%d", i);
     histTitle = Form("%s; (#it{M}_{det} - #it{M}_{part})/#it{M}_{part}; (#it{p}_{T,det} - #it{p}_{T,part})/#it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
      fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
      fOutput->Add(fhnDeltaMass[i]);
