@@ -44,6 +44,7 @@ public:
   // mixed events
   void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
   void SetPoolParam(Int_t sizepool = 1000, Int_t jetsperpool = 1, Float_t fractionmin = 1., Int_t neventsmin = 0) {fiSizePool = sizepool; fiNJetsPerPool = jetsperpool; ffFractionMin = fractionmin; fiNEventsMin = neventsmin;}
+  void SetDeltaEtaMax(Double_t val = kTRUE) {fdDeltaEtaMax = val;}
 
   // jet selection
   void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
@@ -160,6 +161,7 @@ private:
   Int_t fiNJetsPerPool; // required number of jets available in each pool
   Float_t ffFractionMin; // minimum fraction of fiNJetsPerPool at which pool is ready (default: 1.0)
   Int_t fiNEventsMin; // if non-zero: number of filled events after which pool is ready regardless of fiNJetsPerPool (default: 0)
+  Double_t fdDeltaEtaMax; // maximum delta-eta_V0-jet for angular correlations
 
   // V0 selection
   // Daughter tracks
@@ -448,7 +450,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 15) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 16) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
