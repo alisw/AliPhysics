@@ -413,12 +413,12 @@ void AliEMCALQADataMakerRec::InitRaws()
   TH2I * hT3 = new TH2I("hTRUEmcalL0hits", "L0 trigger hits: Total number of 2x2 L0 generated",  nTRUCols, -0.5, nTRUCols - 0.5, nTRURows, -0.5, nTRURows-0.5);
   hT3->SetOption("COLZ");
   //hT3->Sumw2();
-  Add2RawsList(hT3, kNL0TRU, expert, image, !saveCorr);
+  Add2RawsList(hT3, kNL0TRU, !expert, image, !saveCorr);
 
   // L0 trigger hits: average time (bins are TRU channels)
   TProfile2D * hT4 = new TProfile2D("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTRUCols, -0.5, nTRUCols - 0.5, nTRURows, -0.5, nTRURows-0.5, profileOption);
   hT4->SetOption("COLZ");
-  Add2RawsList(hT4, kTimeL0TRU, expert, image, !saveCorr);
+  Add2RawsList(hT4, kTimeL0TRU, !expert, image, !saveCorr);
 
   // L0 trigger hits: first in the event (bins are TRU channels)
   TH1I * hT5 = new TH1I("hTRUEmcalL0hitsFirst", "L0 trigger hits: First hit in the event", nTot2x2, -0.5, nTot2x2);
@@ -490,7 +490,7 @@ void AliEMCALQADataMakerRec::InitRaws()
   h15->GetZaxis()->SetNdivisions(3);
   h15->UseCurrentStyle();
   h15->SetDirectory(0);
-  Add2RawsList(h15, k2DRatioAmp, expert, image, !saveCorr) ;
+  Add2RawsList(h15, k2DRatioAmp, !expert, image, !saveCorr) ;
 
   TH1F * h16 = new TH1F("hRatioDist", "Amplitude_{current run}/Amplitude_{reference run} ratio distribution", nTot, 0., 2.);
   // h16->SetMinimum(0.1); 
@@ -511,14 +511,14 @@ void AliEMCALQADataMakerRec::InitRaws()
   hL10->UseCurrentStyle();
   hL10->SetDirectory(0);
 //  hL10->SetOption("E");
-  Add2RawsList(hL10, kLEDMonRatio, expert, image, !saveCorr) ;
+  Add2RawsList(hL10, kLEDMonRatio, !expert, image, !saveCorr) ;
 
   TH1F * hL11 = new TH1F("hMaxMinusMinLEDMonRatioDist", "LEDMon amplitude, Ratio distribution", nTotLEDMon, 0, 2);
   // hL11->SetMinimum(0.1) ;
   gStyle->SetOptStat(0);
   hL11->UseCurrentStyle();
   hL11->SetDirectory(0);
-  Add2RawsList(hL11, kLEDMonRatioDist, expert, image, !saveCorr) ;
+  Add2RawsList(hL11, kLEDMonRatioDist, !expert, image, !saveCorr) ;
   
   GetCalibRefFromOCDB();   
 
