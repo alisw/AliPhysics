@@ -535,3 +535,50 @@ void AliAlgDet::AddAutoConstraints() const
     if (!vol->GetParent()) vol->AddAutoConstraints((TObjArray*)fAlgSteer->GetConstraints());
   }
 }
+
+//________________________________________
+void AliAlgDet::FixNonSensors()
+{
+  // fix all non-sensor volumes
+  for (int i=GetNVolumes();i--;) {
+    AliAlgVol *vol = GetVolume(i);
+    if (vol->IsSensor()) continue;
+    vol->SetFreeDOFPattern(0);
+    vol->SetChildrenConstrainPattern(0);
+  }
+}
+
+//________________________________________
+void AliAlgDet::SetFreeDOFPattern(UInt_t pat, int lev,const char* match)
+{
+  // set free DOFs to volumes matching either to hierarchy level or
+  // whose name contains match
+  //
+  TString mts=match, syms;
+  for (int i=GetNVolumes();i--;) {
+    AliAlgVol *vol = GetVolume(i);
+    if (lev>=0 && vol->CountParents()!=lev) continue; // wrong level
+    if (!mts.IsNull() && !(syms=vol->GetSymName()).Contains(mts)) continue; //wrong name
+    vol->SetFreeDOFPattern(pat);
+  }
+  //
+}
+
+//________________________________________
+void AliAlgDet::SetDOFCondition(int dof, float condErr ,int lev,const char* match)
+{
+  // set condition for DOF of volumes matching either to hierarchy level or
+  // whose name contains match
+  //
+  TString mts=match, syms;
+  for (int i=GetNVolumes();i--;) {
+    AliAlgVol *vol = GetVolume(i);
+    if (lev>=0 && vol->CountParents()!=lev) continue; // wrong level
+    if (!mts.IsNull() && !(syms=vol->GetSymName()).Contains(mts)) continue; //wrong name
+    if (dof>=vol->GetNDOFs()) continue;
+    vol->SetParErr(dof, condErr);
+    if (condErr>=0 && !vol->IsFreeDOF(dof)) vol->SetFreeDOF(dof);
+    if (condErr<0  && vol->IsFreeDOF(dof)) vol->FixDOF(dof);
+  }
+  //
+}

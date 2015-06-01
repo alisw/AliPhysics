@@ -83,6 +83,9 @@ class AliAlgDet : public TNamed
   //
   void      SetInitDOFsDone()                             {SetBit(kInitDOFsDone);}
   Bool_t    GetInitDOFsDone()                       const {return TestBit(kInitDOFsDone);}
+  void      FixNonSensors();
+  void      SetFreeDOFPattern(UInt_t pat=0xffffffff, int lev=-1,const char* match=0);
+  void      SetDOFCondition(int dof, float condErr, int lev=-1,const char* match=0);
   //
   Int_t     GetNDOFs()                              const {return fNDOFs;}
   //
