@@ -110,10 +110,18 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
       AliAlgVol* child = GetChild(ich);
       jac = cstrArr + kNDOFGeom*kNDOFGeom*ich;
       if (cmtStatus) fprintf(conOut,"%s",comment[cmtStatus]); // comment out contribution
+      // first write real constraints
       for (int ip=0;ip<kNDOFGeom;ip++) {
 	float jv = jac[ics*kNDOFGeom+ip];
-	if (child->IsFreeDOF(ip)&&!IsZeroAbs(jv)) 
-	  fprintf(conOut,"%9d %+.3e\t",child->GetParLab(ip),jv);
+	if (child->IsFreeDOF(ip)&&!IsZeroAbs(jv)&& child->GetParErr(ip)>=0) 
+	fprintf(conOut,"%9d %+.3e\t",child->GetParLab(ip),jv);
+      } // loop over DOF's of children contributing to this constraint
+      // now, after comment, write disabled constraints
+      fprintf(conOut,"%s ",comment[kOn]);
+      for (int ip=0;ip<kNDOFGeom;ip++) {
+	float jv = jac[ics*kNDOFGeom+ip];
+	if (child->IsFreeDOF(ip)&&!IsZeroAbs(jv)&& child->GetParErr(ip)>=0) continue;
+	fprintf(conOut,"%9d %+.3e\t",child->GetParLab(ip),jv);
       } // loop over DOF's of children contributing to this constraint
       fprintf(conOut,"%s from %s\n",comment[kOnOn],child->GetName());
     } // loop over children
