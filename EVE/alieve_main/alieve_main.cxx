@@ -30,7 +30,10 @@
 #include <AliEveApplication.h>
 #include <AliEveMainWindow.h>
 
+#include "AliEveOffline.h"
+#ifdef ZMQ
 #include "AliEveOnline.h"
+#endif
 
 #include <iostream>
 using namespace std;
@@ -67,7 +70,10 @@ int main(int argc, char **argv)
     gROOT->SetMacroPath(macPath);
 
     bool onlineMode=false;
+    bool offlineMode=false;
     bool storageManager=false;
+    bool mfFix=false;
+    bool localMode=false;
     
     for (int i=0; i<argc; i++)
     {
@@ -78,6 +84,18 @@ int main(int argc, char **argv)
         if(strcmp(argv[i],"sm")==0)
         {
             storageManager=true;
+        }
+        if(strcmp(argv[i],"offline")==0)
+        {
+            offlineMode=true;
+        }
+        if(strcmp(argv[i],"mffix")==0)
+        {
+            mfFix=true;
+        }
+        if(strcmp(argv[i],"local")==0)
+        {
+            localMode=true;
         }
     }
     
@@ -99,10 +117,25 @@ int main(int argc, char **argv)
         AliErrorGeneral("alieve_main",exc.Data());
     }
 
-    
     if(onlineMode)
     {
+#ifdef ZMQ
         AliEveOnline *online = new AliEveOnline(storageManager);
+#else
+        printf("\nOnline mode not avaliable -- no ZMQ installed!\n");
+        return 1;
+#endif
+    }
+    else if(offlineMode)
+    {
+        if(mfFix)
+        {
+            gROOT->ProcessLine(".x mf_fix.C");
+        }
+        if(localMode)
+        {
+            AliEveOffline *offline = new AliEveOffline(".","local:///local/cdb");
+        }
     }
     
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");

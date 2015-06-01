@@ -34,7 +34,7 @@
 #include <AliEveTrack.h>
 #include <AliEveTrackCounter.h>
 #include <AliEveMagField.h>
-#include <AliEveEventManager.h>
+#include <AliEveOfflineEventManager.h>
 #include <AliEveEventManagerEditor.h>
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
@@ -66,7 +66,7 @@ void visscan_init(const TString& cdburi = "",
 		  Bool_t showMuon = kTRUE,
 		  Bool_t showTrd = kFALSE)
 {
-  
+    new AliEveOfflineEventManager();
   if (showMuon)
   {
     if (gSystem->Getenv("ALICE_ROOT") != 0)
@@ -219,6 +219,8 @@ void visscan_init(const TString& cdburi = "",
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
 
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
+      
   }
 
   //==============================================================================

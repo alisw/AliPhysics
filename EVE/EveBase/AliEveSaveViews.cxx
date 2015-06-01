@@ -88,6 +88,8 @@ void AliEveSaveViews::ChangeRun()
     // read values from logbook entry:
     TSQLRow* row;
     int i=0;
+    fCluster.clear();
+    
     while((row=result->Next()))
     {
         fCluster.push_back(atoi(row->GetField(2)));
@@ -120,7 +122,7 @@ void AliEveSaveViews::Save()
     }
     
     TEveViewerList* viewers = gEve->GetViewers();
-    int Nviewers = viewers->NumChildren()-2; // remark: 3D view is counted twice
+    int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
     
     TASImage *compositeImg = new TASImage(fWidth, fHeight);
     
@@ -255,7 +257,7 @@ void AliEveSaveViews::Save()
     fCompositeImgFileName = Form("online-viz-%03d", fCurrentFileNumber);
     TASImage *imgToSave = new TASImage(fWidth,fHeight);
     compositeImg->CopyArea(imgToSave, 0,0, fWidth, fHeight);
-
+    
     imgToSave->WriteImage(Form("%s.png", fCompositeImgFileName.Data()));
     
     if(compositeImg){delete compositeImg;compositeImg=0;}
@@ -280,7 +282,7 @@ void AliEveSaveViews::SaveWithDialog()
     }
     
     TEveViewerList* viewers = gEve->GetViewers();
-    int Nviewers = viewers->NumChildren()-2; // remark: 3D view is counted twice
+    int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
     
     int width = 3556;
     int height= 2000;
@@ -380,6 +382,8 @@ void AliEveSaveViews::SaveWithDialog()
     
     // draw info
     TTimeStamp ts(fESDEvent->GetTimeStamp());
+    //    TTimeStamp offset(0,0,0,0,0,0,0,true,-2*3600);
+    //    ts.Add(offset);
     const char *runNumber = Form("Run:%d",fESDEvent->GetRunNumber());
     const char *timeStamp = Form("Timestamp:%s(UTC)",ts.AsString("s"));
     const char *system;
@@ -473,35 +477,39 @@ void AliEveSaveViews::BuildTriggerClassesStrings()
     ULong64_t triggerMask = esd->GetTriggerMask();
     ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
     
-//    for(int clusterIter=0;clusterIter<fNumberOfClusters;clusterIter++)//loop over all clusters in run
-//    {
-        // get trigger classes for given cluster
-    mask=1;
-    for(int i=0;i<50;i++)
+    fTriggerClasses[0]="";
+    fTriggerClasses[1]="";
+    fTriggerClasses[2]="";
+    
+    for(int clusterIter=0;clusterIter<fNumberOfClusters;clusterIter++)//loop over all clusters in run
     {
-        if(mask & triggerMask)
+        // get trigger classes for given cluster
+        mask=1;
+        for(int i=0;i<50;i++)
         {
-            fTriggerClasses[sw]+=esd->GetESDRun()->GetTriggerClass(i);
-//                fTriggerClasses[sw]+=Form("(%d)",fCluster[clusterIter]);
-            fTriggerClasses[sw]+="   ";
-            
-            if(sw==0)sw=1;
-            else if(sw==1)sw=2;
-            else if(sw==2)sw=0;
+            if(mask & triggerMask)
+            {
+                fTriggerClasses[sw]+=esd->GetESDRun()->GetTriggerClass(i);
+                fTriggerClasses[sw]+=Form("(%d)",fCluster[clusterIter]);
+                fTriggerClasses[sw]+="   ";
+                
+                if(sw==0)sw=1;
+                else if(sw==1)sw=2;
+                else if(sw==2)sw=0;
+            }
+            if(mask & triggerMaskNext50)
+            {
+                fTriggerClasses[sw]+=esd->GetESDRun()->GetTriggerClass(i+50);
+                fTriggerClasses[sw]+=Form("(%d)",fCluster[clusterIter]);
+                fTriggerClasses[sw]+="   ";
+                
+                if(sw==0)sw=1;
+                else if(sw==1)sw=2;
+                else if(sw==2)sw=0;
+            }
+            mask = mask<<1;
         }
-        if(mask & triggerMaskNext50)
-        {
-            fTriggerClasses[sw]+=esd->GetESDRun()->GetTriggerClass(i+50);
-//                fTriggerClasses[sw]+=Form("(%d)",fCluster[clusterIter]);
-            fTriggerClasses[sw]+="   ";
-            
-            if(sw==0)sw=1;
-            else if(sw==1)sw=2;
-            else if(sw==2)sw=0;
-        }
-        mask = mask<<1;
     }
-//    }
 }
 
 void AliEveSaveViews::BuildClustersInfoString()
@@ -510,10 +518,13 @@ void AliEveSaveViews::BuildClustersInfoString()
     TString clustersInfo;
     ULong64_t mask = 1;
     
+    fClustersInfo="";
+    
     for(int clusterIter=0;clusterIter<fNumberOfClusters;clusterIter++)//loop over all clusters in run
     {
+        clustersInfo="";
         mask=1;
-        for(int i=0;i<20;i++)
+        for(int i=0;i<22;i++)
         {
             if(fInputDetectorMask[clusterIter] & mask)
             {

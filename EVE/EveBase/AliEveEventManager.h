@@ -20,10 +20,6 @@
 #include <AliEveSaveViews.h>
 #include <AliEveESDTracks.h>
 
-//#ifdef ZMQ
-#include "AliStorageTypes.h"
-//#endif
-
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
 
@@ -56,9 +52,8 @@ class TMap;
 class AliEveEventManager : public TEveEventManager, public TQObject
 {
 public:
-    AliEveEventManager(const TString& name="Event", Int_t ev=0, bool storageManager=false);
-    virtual ~AliEveEventManager();
-	
+    static AliEveEventManager* GetMaster();
+    
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
 
     static void SetESDFileName(const TString& esd, EVisibleESDTrees shown=kOfflineTree);
@@ -122,10 +117,7 @@ public:
     static TGeoManager*  AssertGeometry();
     static AliRecoParam* AssertRecoParams();
 
-    static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
-    static AliEveEventManager* GetDependentManager(const TString& name);
-    static AliEveEventManager* GetMaster();
-    static AliEveEventManager* GetCurrent();
+
     static void                RegisterTransient    (TEveElement* element);
     static void                RegisterTransientList(TEveElement* element);
 
@@ -145,9 +137,6 @@ public:
     
     Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
     Bool_t        IsEventAvailable()       const { return fHasEvent;     }
-
-    Bool_t        IsOnlineMode() const { return fOnlineMode; }
-
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,
                                Bool_t replace, Bool_t update);
@@ -166,9 +155,13 @@ public:
     void InitOCDB(int runNo=-1);
 
     void PrepareForNewEvent(AliESDEvent *event);
-    Int_t NewEventAvailable();
 
 protected:
+    AliEveEventManager(const TString& name="Event", Int_t ev=0, bool storageManager=false);
+    virtual ~AliEveEventManager();
+    void SetMaster(AliEveEventManager *master);
+    
+    
     Int_t         fEventId;		// Id of current event.
 
     AliRunLoader* fRunLoader;		// Run loader.
@@ -204,7 +197,7 @@ protected:
 
     AliEveEventSelector* fPEventSelector; // Event filter
 
-    TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
+//    TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
     static TString  fgGAliceFileName;        // galice.root file
     static TString  fgESDFileName;        // Name by which to open ESD.
@@ -228,49 +221,25 @@ protected:
     static AliMagF      *fgMagField;      // Global pointer to magnetic field.
     static AliRecoParam* fgRecoParam;
     static Bool_t        fgUniformField;  // Track with uniform field.
-
+    Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
 private:
+    static AliEveEventManager* fgMaster;
+    
     void InitInternals();
 
     void StartAutoLoadTimer();
     void StopAutoLoadTimer();
-    Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
     static Bool_t InitGRP();
     static Bool_t InitRecoParam();
     TTree* readESDTree(const char* treeName, int &run);
-
-    static AliEveEventManager* fgMaster;
-    static AliEveEventManager* fgCurrent;
-
-    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();return nullptr;}
-    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();return nullptr;}
-    void GetNextEvent();
-    void CheckStorageStatus();
-    TThread *fEventListenerThread;
-    TThread *fStorageManagerWatcherThread;
-    TMutex *fMutex;
-    AliESDEvent *fCurrentEvent[2];
-    TTree *fCurrentTree[2];
-    int fEventInUse;
-    int fWritingToEventIndex;
-    bool fIsNewEventAvaliable;
-    int fFailCounter;
-    storageSockets fgSubSock;
-    int fCurrentRun;
-
-    Bool_t fOnlineMode;
-    Bool_t fStorageDown;
-    Bool_t fEventServerDown;
-    Bool_t fFinished;
 
     AliEveSaveViews *fViewsSaver;
     AliEveESDTracks *fESDdrawer;
 
     bool fSaveViews;
     bool fDrawESDtracksByCategory;
-    bool fStorageManager;
     
     bool fFirstEvent;
     bool fCenterProjectionsAtPrimaryVertex;

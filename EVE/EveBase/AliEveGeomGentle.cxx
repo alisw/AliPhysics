@@ -40,11 +40,11 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentle(bool register_as_global)
     elPHOS->SetRnrState(kTRUE);
     elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
     
-    elPHOS->FindChild("PHOS_1")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_2")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_3")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_4")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_5")->SetMainColor(kViolet-3);
+    elPHOS->FindChild("PHOS_1")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_2")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_3")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_4")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_5")->SetMainColor(593);
     
     elPHOS->FindChild("PHOS_1")->SetMainTransparency(70);
     elPHOS->FindChild("PHOS_2")->SetMainTransparency(70);
@@ -97,11 +97,11 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRphi()
     elPHOS->SetRnrState(kTRUE);
     elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
     
-    elPHOS->FindChild("PHOS_1")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_2")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_3")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_4")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_5")->SetMainColor(kViolet-3);
+    elPHOS->FindChild("PHOS_1")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_2")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_3")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_4")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_5")->SetMainColor(593);
     
     elPHOS->FindChild("PHOS_1")->SetMainTransparency(70);
     elPHOS->FindChild("PHOS_2")->SetMainTransparency(70);
@@ -160,11 +160,11 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRhoz()
     elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
 
     
-    elPHOS->FindChild("PHOS_1")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_2")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_3")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_4")->SetMainColor(kViolet-3);
-    elPHOS->FindChild("PHOS_5")->SetMainColor(kViolet-3);
+    elPHOS->FindChild("PHOS_1")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_2")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_3")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_4")->SetMainColor(593);
+    elPHOS->FindChild("PHOS_5")->SetMainColor(593);
     
     elPHOS->FindChild("PHOS_1")->SetMainTransparency(70);
     elPHOS->FindChild("PHOS_2")->SetMainTransparency(70);

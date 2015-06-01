@@ -8,7 +8,7 @@
 
 #include "AliEveOnline.h"
 #include "AliEveGeomGentle.h"
-#include "AliEveEventManager.h"
+#include "AliEveOnlineEventManager.h"
 #include "AliEveEventManagerEditor.h"
 #include "AliEveMultiView.h"
 #include "AliEveMacroExecutor.h"
@@ -17,6 +17,7 @@
 #include <TROOT.h>
 #include <TEveManager.h>
 #include <TEveBrowser.h>
+#include <TBrowser.h>
 #include <TEveMacro.h>
 #include <TGTab.h>
 #include <TGFileBrowser.h>
@@ -63,8 +64,8 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"added"<<endl;
     
     cout<<"Creating event manager...";
-    new AliEveEventManager("online", -1, storageManager);
-    AliEveEventManager *man = AliEveEventManager::GetMaster();
+    AliEveOnlineEventManager *man =  new AliEveOnlineEventManager(-1, storageManager);
+//    AliEveEventManager *man = AliEveEventManager::GetMaster();
     gEve->AddEvent(man);
     cout<<"created"<<endl;
     
@@ -88,7 +89,8 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"============ Setting macro executor ============\n"<<endl;;
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD"   , "ad_esd.C", "ad_esd", "", kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdcells.C", "emcal_esdcells", "", kTRUE));
+//    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdclustercellsV1.C", "emcal_esdclustercellsV1", "", kTRUE)); // this macro resets 3D view's camera!!
+    
     cout<<"macros added to exec"<<endl;
     
     //============================================================================
@@ -100,7 +102,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     new AliEveEventManagerWindow(man,storageManager);
     browser->StopEmbedding("EventCtrl");
     
-    browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
+//    browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
     
     gEve->FullRedraw3D(kTRUE);
     gSystem->ProcessEvents();
@@ -115,6 +117,23 @@ AliEveOnline::AliEveOnline(bool storageManager)
     glv2->CurrentCamera().Dolly(90, kFALSE, kFALSE);
     glv3->CurrentCamera().Dolly(2300, kFALSE, kFALSE);
     glv4->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+    
+    
+//    TGFrame *f1 = multiView->Get3DView()->GetGUIFrame();
+//    TGFrame *f2 = multiView->GetRPhiView()->GetGUIFrame();
+//    TGFrame *f3 = multiView->GetRhoZView()->GetGUIFrame();
+//    TGFrame *f4 = multiView->GetMuonView()->GetGUIFrame();
+//    
+//    int width = f1->GetWidth()+f2->GetWidth();
+//    int heigth = f1->GetHeight();
+//    
+////    TGWindow *superParent = (TGWindow*)f1->GetParent()->GetParent();
+//    
+////    ((TGWindow*)(f1->GetParent()))->MoveResize(0          ,0            , 0.66*width,heigth);
+//    ((TGWindow*)(f2->GetParent()))->MoveResize(0.66*width, 0            , 0.33*width,0.33*heigth);
+//    ((TGWindow*)(f3->GetParent()))->MoveResize(0.66*width, 0.33*heigth , 0.33*width,0.33*heigth);
+//    ((TGWindow*)(f4->GetParent()))->MoveResize(0.66*width, 0.66*heigth , 0.33*width,0.33*heigth);
+
     
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();

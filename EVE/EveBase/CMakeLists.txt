@@ -74,7 +74,8 @@ set(SRCS
     AliEveMagField.cxx
     AliEveMainWindow.cxx
     AliEveMultiView.cxx
-    AliEveOnline.cxx
+    AliEveOffline.cxx
+    AliEveOfflineEventManager.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx
@@ -88,6 +89,15 @@ set(SRCS
     AliEveV0ListEditor.cxx
     AliEveVSDCreator.cxx
    )
+
+# Sources if ZMQ installed
+if(ZEROMQ_FOUND)
+    set(SRCS
+        ${SRCS}
+        AliEveOnline.cxx
+        AliEveOnlineEventManager.cxx
+       )
+endif(ZEROMQ_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

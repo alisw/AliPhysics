@@ -330,7 +330,7 @@ void AliEveMainWindow::setupToolbars()
 void AliEveMainWindow::loadFiles()
 {
     TString name("Event"); // CINT has trouble with direct "Event".
-    new AliEveEventManager(name, 0);
+//    new AliEveEventManager(name, 0);
     gEve->AddEvent(AliEveEventManager::GetMaster());
 
     TEveUtil::AssertMacro("VizDB_scan.C");

@@ -301,7 +301,7 @@ void AliEveTRDClusters::Load(const Char_t *w) const
 
   loader->AddChambers(AliTRDgeometry::GetSector(det),AliTRDgeometry::GetStack(det), AliTRDgeometry::GetLayer(det));
   // load first event
-  if(!loader->GoToEvent(AliEveEventManager::GetCurrent()->GetEventId())) AliWarning(Form("No data loaded for event %d", AliEveEventManager::GetCurrent()->GetEventId()));
+  if(!loader->GoToEvent(AliEveEventManager::GetMaster()->GetEventId())) AliWarning(Form("No data loaded for event %d", AliEveEventManager::GetMaster()->GetEventId()));
   // register loader with alieve
   gEve->AddElement(loader->GetChamber(det), *(BeginParents()));
   //loader->SpawnEditor();

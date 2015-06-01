@@ -246,13 +246,13 @@ void AliEveEventManagerWindow::DoPrevEvent()
 {
     // Load previous event
     // fM->PrevEvent();
-    if (fM->IsOnlineMode()) {
-        fM->GotoEvent(1);
-    }
-    else {
+//    if (fM->IsOnlineMode()) {
+//        fM->GotoEvent(1);
+//    }
+//    else {
         fM->GotoEvent((Int_t) fEventId->GetNumber()-1);
         
-    }
+//    }
     
 }
 
@@ -261,14 +261,14 @@ void AliEveEventManagerWindow::DoNextEvent()
 {
     // Load next event
     // fM->NextEvent();
-    if (fM->IsOnlineMode()) {
-        cout<<"next event, online node"<<endl;
-        fM->GotoEvent(2);
-    }
-    else {
-        cout<<"next event, offline mode"<<endl;
+//    if (fM->IsOnlineMode()) {
+//        cout<<"next event, online node"<<endl;
+//        fM->GotoEvent(2);
+//    }
+//    else {
+//        cout<<"next event, offline mode"<<endl;
         fM->GotoEvent((Int_t) fEventId->GetNumber()+1);
-    }
+//    }
 }
 
 //______________________________________________________________________________
@@ -316,7 +316,7 @@ void AliEveEventManagerWindow::DoSetAutoLoad()
     // Set the auto-load flag
     
     fM->SetAutoLoad(fAutoLoad->IsOn());
-    Update(fM->NewEventAvailable());
+//    Update(fM->NewEventAvailable());
 }
 
 //______________________________________________________________________________
@@ -351,7 +351,7 @@ void AliEveEventManagerWindow::Update(int state)
         fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
         
         // Loop over active trigger classes
-        if (fM->GetESD() && !fM->IsOnlineMode())
+        if (fM->GetESD())// && !fM->IsOnlineMode())
         {
             for(Int_t iTrig = 0; iTrig < AliESDRun::kNTriggerClasses; iTrig++)
             {
@@ -376,8 +376,9 @@ void AliEveEventManagerWindow::Update(int state)
 
 void AliEveEventManagerWindow::StorageManagerChangedState(int state)
 {
+    return;
 #ifdef ZMQ
-    if (!fM->IsOnlineMode())return;
+//    if (!fM->IsOnlineMode())return;
     
     Bool_t autoLoad = fM->GetAutoLoad();
     AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();

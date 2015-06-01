@@ -83,6 +83,8 @@ protected:
   TEveViewer            *fRPhiView; // Obvious meaning.
   TEveViewer            *fRhoZView; // Obvious meaning.
   TEveViewer            *fMuonView; // Obvious meaning.
+    
+    TEveWindowPack *fPack;
 
   TEveScene             *fRPhiGeomScene;  // Obvious meaning.
   TEveScene             *fRhoZGeomScene;  // Obvious meaning.
