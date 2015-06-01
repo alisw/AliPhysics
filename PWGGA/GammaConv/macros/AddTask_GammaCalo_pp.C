@@ -116,7 +116,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	if (trainConfig == 2 || trainConfig == 3) numberOfCuts = 5;
 	if (trainConfig == 5) numberOfCuts = 6;
 	if (trainConfig == 31) numberOfCuts = 4;
-	if (trainConfig == 32) numberOfCuts = 1;
+	if (trainConfig == 32 || trainConfig == 101) numberOfCuts = 1;
 	if (trainConfig == 51 || trainConfig == 52 || trainConfig == 53 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56) numberOfCuts = 6;
 	
 	TString *eventCutArray = new TString[numberOfCuts];
@@ -211,7 +211,11 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 3] = "0005111"; clusterCutArray[3] = "10000050031220000"; mesonCutArray[3] = "01631031000000"; // EMCEG1,                     NCells >=1
 		eventCutArray[ 4] = "0005111"; clusterCutArray[4] = "10000050033220000"; mesonCutArray[4] = "01631031000000"; // EMCEG1,                     NCells >=3
 		eventCutArray[ 5] = "0005111"; clusterCutArray[5] = "10000050032000000"; mesonCutArray[5] = "01631031000000"; // EMCEG1,                                 no M02 cut		
-	} else {
+
+	} else if (trainConfig == 101){ // EMCAL clusters pp 8 TeV / 7 TeV
+		eventCutArray[ 0] = "0000011"; clusterCutArray[0] = "10000050032230000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
+	}
+	else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
