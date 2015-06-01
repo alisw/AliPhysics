@@ -346,34 +346,42 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     histName = Form("fh2PtTrueSubFacV1_%d",i);
     histTitle = Form("fh2PtTrueSubFacV1_%d;#it{p}_{T,true};-(#rho+#rho_{m})V_{1}",i);
     fh2PtTrueSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV1,minV1,maxV1);
+    fOutput->Add(fh2PtTrueSubFacV1[i]);
 
     histName = Form("fh2PtRawSubFacV1_%d",i);
     histTitle = Form("fh2PtRawSubFacV1_%d;#it{p}_{T,raw};-(#rho+#rho_{m})V_{1}",i);
     fh2PtRawSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV1,minV1,maxV1);
+    fOutput->Add(fh2PtRawSubFacV1[i]);
 
     histName = Form("fh2PtCorrSubFacV1_%d",i);
     histTitle = Form("fh2PtCorrSubFacV1_%d;#it{p}_{T,corr};-(#rho+#rho_{m})V_{1}",i);
     fh2PtCorrSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV1,minV1,maxV1);
+    fOutput->Add(fh2PtCorrSubFacV1[i]);
 
     histName = Form("fh2NConstSubFacV1_%d",i);
     histTitle = Form("fh2NConstSubFacV1_%d;#it{N}_{const};-(#rho+#rho_{m})V_{1}",i);
     fh2NConstSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,200.);
+    fOutput->Add(fh2NConstSubFacV1[i]);
 
     histName = Form("fh2PtTrueSubFacV2_%d",i);
     histTitle = Form("fh2PtTrueSubFacV2_%d;#it{p}_{T,true};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2PtTrueSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV2,minV2,maxV2);
+    fOutput->Add(fh2PtTrueSubFacV2[i]);
 
     histName = Form("fh2PtRawSubFacV2_%d",i);
     histTitle = Form("fh2PtRawSubFacV2_%d;#it{p}_{T,raw};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2PtRawSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV2,minV2,maxV2);
+    fOutput->Add(fh2PtRawSubFacV2[i]);
 
     histName = Form("fh2PtCorrSubFacV2_%d",i);
     histTitle = Form("fh2PtCorrSubFacV2_%d;#it{p}_{T,corr};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2PtCorrSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV2,minV2,maxV2);
+    fOutput->Add(fh2PtCorrSubFacV2[i]);
 
     histName = Form("fh2NConstSubFacV2_%d",i);
     histTitle = Form("fh2NConstSubFacV2_%d;#it{N}_{const};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2NConstSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,200.);
+    fOutput->Add(fh2NConstSubFacV2[i]);
 
   }
 
