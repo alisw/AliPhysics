@@ -515,7 +515,7 @@ AliAlgVol* AliAlgDet::GetVolOfDOFID(Int_t id) const
 void AliAlgDet::Terminate(TH1* h)
 {
   // called at the end of processing
-  if (IsDisabled()) return;
+  //  if (IsDisabled()) return;
   int nvol = GetNVolumes();
   fNProcPoints = 0;
   for (int iv=0;iv<nvol;iv++) {

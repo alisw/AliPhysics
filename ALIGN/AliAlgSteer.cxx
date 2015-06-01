@@ -1653,7 +1653,8 @@ void AliAlgSteer::FixLowStatFromHisto(Int_t thresh)
     int id = lb.First('_');
     if (id<0) {
       AliErrorF("Failed to extract DOF label from bin %d: %s",ib,lb.Data());
-      return;
+      if (lb.IsNull()) continue;
+      else             return;
     }
     lb.Resize(id);
     if (!lb.IsDigit()) {
