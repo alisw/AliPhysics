@@ -18,6 +18,7 @@
 #include "AliPhysicsSelection.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
 #include "AliAODHandler.h"
 #include "AliMultiplicity.h"
 #include "AliInputEventHandler.h"
@@ -218,7 +219,7 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
     
   // Get the input data 
   AliMCEvent*  mcEvent = MCEvent();
-  if (!mcEvent) return false;
+  if (!mcEvent || !mcEvent->Stack()) return false;
 
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
