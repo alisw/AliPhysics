@@ -23,12 +23,13 @@ class AliAlgVtx : public AliAlgSens
   AliAlgVtx();
   //
   void           ApplyCorrection(double *vtx) const;
-
+  virtual Bool_t IsSensor()                   const {return kTRUE;}
+  //
   void SetAlpha(double alp)              {fAlp=alp; PrepareMatrixT2L();}
   virtual void   PrepareMatrixL2G()      {fMatL2G.Clear();} // unit matrix
-  virtual void   PrepareMatrixL2GIdeal()  {fMatL2GIdeal.Clear();} // unit matrix
+  virtual void   PrepareMatrixL2GIdeal() {fMatL2GIdeal.Clear();} // unit matrix
   virtual void   PrepareMatrixT2L();
-  
+
  protected:
   //
   ClassDef(AliAlgVtx,1);
