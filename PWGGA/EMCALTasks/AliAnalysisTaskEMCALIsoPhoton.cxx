@@ -162,7 +162,10 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fEoverPvsE(0),
   fETrigg(0),
   fM02vsESoftPi0Kid(0),
-  fM02vsEHardPi0Kid(0)
+  fM02vsEHardPi0Kid(0),
+  fM02vsESoftPi0BGKid(0),
+  fM02vsEHardPi0BGKid(0),
+  fCellsPi0KidE6(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -286,7 +289,10 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEoverPvsE(0),
   fETrigg(0),
   fM02vsESoftPi0Kid(0),
-  fM02vsEHardPi0Kid(0)
+  fM02vsEHardPi0Kid(0),
+  fM02vsESoftPi0BGKid(0),
+  fM02vsEHardPi0BGKid(0),
+  fCellsPi0KidE6(0)
 {
   // Constructor
 
@@ -508,6 +514,16 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fM02vsEHardPi0Kid = new TH2F("fM02vsEHardPi0Kid","#lambda_{0}^{2} vs E_{clus} (harder #pi^{0} daughter);E_{clus};#lambda_{0}^{2}",fNBinsPt,fPtBinLowEdge,fPtBinHighEdge,400,0,4);
   fM02vsEHardPi0Kid->Sumw2();
   fQAList->Add(fM02vsEHardPi0Kid);
+  fM02vsESoftPi0BGKid = new TH2F("fM02vsESoftPi0BGKid","#lambda_{0}^{2} vs E_{clus} (softer #pi^{0}-BG daughter);E_{clus};#lambda_{0}^{2}",fNBinsPt,fPtBinLowEdge,fPtBinHighEdge,400,0,4);
+  fM02vsESoftPi0BGKid->Sumw2();
+  fQAList->Add(fM02vsESoftPi0BGKid);
+  fM02vsEHardPi0BGKid = new TH2F("fM02vsEHardPi0BGKid","#lambda_{0}^{2} vs E_{clus} (harder #pi^{0}-BG daughter);E_{clus};#lambda_{0}^{2}",fNBinsPt,fPtBinLowEdge,fPtBinHighEdge,400,0,4);
+  fM02vsEHardPi0BGKid->Sumw2();
+  fQAList->Add(fM02vsEHardPi0BGKid);
+
+  fCellsPi0KidE6 = new TH2F("fCellsPi0KidE6","Distribution of cluster energy in its cells (5.5<E_{clus}<6.5,#pi^0 daughters, all #lambda_{0}^{2};col;row",17,-8,8,17,-8,8);
+  fCellsPi0KidE6->Sumw2();
+  fQAList->Add(fCellsPi0KidE6);
 
 
 
@@ -2090,8 +2106,57 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	    fM02vsESoftPi0Kid->Fill(c->E(),c->GetM02());
 	  }
 	}
+	if((lvm.M()>0.1 && lvm.M()<0.11) || (lvm.M()>0.15 && lvm.M()<0.16)){
+	  if(c->E()>c2->E()){
+	    fM02vsESoftPi0BGKid->Fill(c2->E(),c2->GetM02());
+	    fM02vsEHardPi0BGKid->Fill(c->E(),c->GetM02());
+	  }
+	  else{
+	    fM02vsEHardPi0BGKid->Fill(c2->E(),c2->GetM02());
+	    fM02vsESoftPi0BGKid->Fill(c->E(),c->GetM02());
+	  }
+	}
       }
     }
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton::GetEDistInClusCells(const AliVCluster *cluster, Short_t &idmax)
+{
+  // Calculate the energy of cross cells around the leading cell.
+
+  AliVCaloCells *cells = fVCells;
+  if (!cells)
+    return ;
+
+  if (!fGeom)
+    return ;
+
+  Int_t iSupMod = -1;
+  Int_t iTower  = -1;
+  Int_t iIphi   = -1;
+  Int_t iIeta   = -1;
+  Int_t iphi    = -1;
+  Int_t ieta    = -1;
+  Int_t iphis   = -1;
+  Int_t ietas   = -1;
+
+
+  fGeom->GetCellIndex(idmax,iSupMod,iTower,iIphi,iIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphis,ietas);
+
+  Int_t ncells = cluster->GetNCells();
+  for (Int_t i=0; i<ncells; i++) {
+    Int_t cellAbsId = cluster->GetCellAbsId(i);
+    fGeom->GetCellIndex(cellAbsId,iSupMod,iTower,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
+    Int_t phidiff = iphi-iphis;
+    /*    if (aphidiff>1)
+	  continue;*/
+    Int_t etadiff = ieta-ietas;
+    /*if (aetadiff>1)
+      continue;*/
+    fCellsPi0KidE6->Fill(etadiff,phidiff,cells->GetCellAmplitude(cellAbsId));
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
