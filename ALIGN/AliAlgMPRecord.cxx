@@ -178,13 +178,13 @@ Bool_t AliAlgMPRecord::FillTrack(const AliAlgTrack* trc, const Int_t *id2Lab)
     }
     if (pnt->ContainsMaterial()) {     // material point can add 4 or 5 otrhogonal pseudo-measurements
       int nmatpar = pnt->GetNMatPar();  // residuals (correction expectation value)
-      const float* expMatCorr = pnt->GetMatCorrExp(); // expected corrections (diagonalized)
+      //      const float* expMatCorr = pnt->GetMatCorrExp(); // expected corrections (diagonalized)
       const float* expMatCov  = pnt->GetMatCorrCov(); // their diagonalized error matrix
       int offs  = pnt->GetMaxLocVarID() - nmatpar;    // start of material variables
       // here all derivatives are 1 = dx/dx
       for (int j=0;j<nmatpar;j++) {
 	fNDGlo[fNResid]  = 0;                       // mat corrections don't depend on global params
-	fResid[fNResid]  = expMatCorr[j];
+	fResid[fNResid]  = 0;                       // expectation for MS effects is 0 
 	fResErr[fNResid] = Sqrt(expMatCov[j]);
 	fNDLoc[fNResid] = 1;                        // only 1 non-0 derivative
 	fDLoc[fNDLocTot] = 1.0;

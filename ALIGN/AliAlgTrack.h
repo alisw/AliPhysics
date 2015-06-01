@@ -129,6 +129,7 @@ class AliAlgTrack: public AliExternalTrackParam
   Int_t     fNLocPar;                    // number of local params
   Int_t     fNLocExtPar;                 // number of local params for the external track param
   Int_t     fNGloPar;                    // number of free global parameters the track depends on
+  Int_t     fNDF;                        // number of degrees of freedom
   Int_t     fInnerPointID;               // ID of inner point in sorted track. For 2-leg cosmics - innermost point of lower leg
   Bool_t    fNeedInv[2];                 // set if one of cosmic legs need inversion
   Double_t  fMinX2X0Pt2Account;          // minimum X2X0/pT accumulated between 2 points worth to account

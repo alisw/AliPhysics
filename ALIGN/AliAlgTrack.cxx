@@ -38,6 +38,7 @@ AliAlgTrack::AliAlgTrack() :
   fNLocPar(0)
   ,fNLocExtPar(0)
   ,fNGloPar(0)
+  ,fNDF(0)
   ,fInnerPointID(0)
   //  ,fMinX2X0Pt2Account(5/1.0)
   ,fMinX2X0Pt2Account(0.5e-3/1.0)
@@ -81,6 +82,7 @@ void AliAlgTrack::Clear(Option_t *)
   ResetBit(0xffffffff);
   fPoints.Clear();
   fChi2 = fChi2CosmUp = 0;
+  fNDF = 0;
   fChi2Ini = fChi2IniCosmUp = 0;
   fInnerPointID = -1;
   fNeedInv[0] = fNeedInv[1] = kFALSE;
@@ -369,8 +371,8 @@ Bool_t AliAlgTrack::CalcResidDerivGlo(AliAlgPoint* pnt)
       // effect of changing X is accounted neglecting track curvature
       //
       // store diagonalize residuals in track buffer
-      pnt->DiagonalizeResiduals(dXYZ[AliAlgPoint::kX]*slpY - dXYZ[AliAlgPoint::kY],
-				dXYZ[AliAlgPoint::kX]*slpZ - dXYZ[AliAlgPoint::kZ],
+      pnt->DiagonalizeResiduals((dXYZ[AliAlgPoint::kX]*slpY - dXYZ[AliAlgPoint::kY]),
+				(dXYZ[AliAlgPoint::kX]*slpZ - dXYZ[AliAlgPoint::kZ]),
 				fDResDGloA[0][fNGloPar],fDResDGloA[1][fNGloPar]);
       // and register global ID of varied parameter
       fGloParIDA[fNGloPar] = vol->GetParGloID(ip);
@@ -403,6 +405,7 @@ Bool_t AliAlgTrack::CalcResiduals(const double *params)
   fChi2Ini = fChi2;  // save chi2
   fChi2IniCosmUp = fChi2CosmUp;  
   fChi2 = 0;
+  fNDF = 0;
   //
   // collision track or cosmic lower leg
   if (!CalcResiduals(params,fNeedInv[0],GetInnerPointID(),0)) {
@@ -423,6 +426,7 @@ Bool_t AliAlgTrack::CalcResiduals(const double *params)
     fChi2CosmUp += fChi2;
   }
   //
+  fNDF -= fNLocExtPar;
   SetResidDone();
   return kTRUE;
 }
@@ -471,8 +475,16 @@ Bool_t AliAlgTrack::CalcResiduals(const double *params,Bool_t invert,int pFrom,i
       pnt->GetResidualsDiag(probe.GetParameter(),fResidA[0][ip],fResidA[1][ip]);
       fChi2 += fResidA[0][ip]*fResidA[0][ip]/pnt->GetErrDiag(0);
       fChi2 += fResidA[1][ip]*fResidA[1][ip]/pnt->GetErrDiag(1);
+      fNDF += 2;
     }
     //
+    if (pnt->ContainsMaterial()) {
+      // material degrees of freedom do not contribute to NDF since they are constrained by 0 expectation
+      int nCorrPar = pnt->GetNMatPar();
+      const double *corrDiag = &fLocParA[pnt->GetMaxLocVarID()-nCorrPar]; // corrections in diagonalized frame
+      float *corCov = pnt->GetMatCorrCov(); // correction diagonalized covariance
+      for (int i=0;i<nCorrPar;i++) fChi2 += corrDiag[i]*corrDiag[i]/corCov[i];
+    }
   }
   return kTRUE;
 }
@@ -835,8 +847,8 @@ void AliAlgTrack::Print(Option_t *opt) const
   // print track data
   printf("%s ",IsCosmic() ? "  Cosmic  ":"Collision ");
   AliExternalTrackParam::Print();
-  printf("N Free Par: %d (Kinem: %d) | Npoints: %d (Inner:%d) | M : %.3f | Chi2: %.1f",fNLocPar,fNLocExtPar,
-	 GetNPoints(),GetInnerPointID(),fMass,fChi2);
+  printf("N Free Par: %d (Kinem: %d) | Npoints: %d (Inner:%d) | M : %.3f | Chi2: %.1f/%d",fNLocPar,fNLocExtPar,
+	 GetNPoints(),GetInnerPointID(),fMass,fChi2,fNDF);
   if (IsCosmic()) {
     double chi2CosmLow = fChi2 - fChi2CosmUp;
     int npLow = GetInnerPointID();

@@ -45,6 +45,7 @@
 #include <TSystem.h>
 #include <TRandom.h>
 #include <TH1F.h>
+#include <TList.h>
 #include <stdio.h>
 #include <TGeoGlobalMagField.h>
 
@@ -152,7 +153,7 @@ AliAlgSteer::AliAlgSteer(const char* configMacro)
   // run config macro if provided
   if (!fConfMacroName.IsNull()) {
     gROOT->ProcessLine(Form(".x %s+g((AliAlgSteer*)%p)",fConfMacroName.Data(),this));
-    InitDOFs();
+    if (!GetInitDOFsDone()) InitDOFs();
     if (!GetNDOFs()) AliFatalF("No DOFs found, initialization with %s failed",
 			       fConfMacroName.Data());
   }  
@@ -214,7 +215,8 @@ void AliAlgSteer::InitDetectors()
   memset(fGloParVal,0,dofCnt*sizeof(Float_t));
   memset(fGloParErr,0,dofCnt*sizeof(Float_t));
   memset(fGloParLab,0,dofCnt*sizeof(Int_t));
-  AliInfoF("Booked %d global parameters, actual DOFs will be assigned after InitDOFs",dofCnt);
+  AssignDOFs();
+  AliInfoF("Booked %d global parameters",dofCnt);
   //
   SetInitGeomDone();
   //
@@ -232,21 +234,23 @@ void AliAlgSteer::InitDOFs()
   }
   //
   fNDOFs = 0;
+  int ndfAct = 0;
   AssignDOFs();
   //
   int nact = 0;
   fVtxSens->InitDOFs();
   for (int i=0;i<fNDet;i++) {
     AliAlgDet* det = GetDetector(i);
+    det->InitDOFs();
     if (det->IsDisabled()) continue;
-    fDetectors[i]->InitDOFs();
     nact++;
+    ndfAct += det->GetNDOFs();
   }
   for (int i=0;i<kNTrackTypes;i++) 
     if (nact<fMinDetAcc[i])
       AliFatalF("%d detectors are active, while %d in track are asked",nact,fMinDetAcc[i]);
   //
-  AliInfoF("%d global parameters in %d active detectors",fNDOFs,nact);
+  AliInfoF("%d global parameters %d detectors, %d in %d active detectors",fNDOFs,fNDet,ndfAct,nact);
   //
   AddAutoConstraints();
   //
@@ -267,7 +271,8 @@ void AliAlgSteer::AssignDOFs()
   //
   for (int idt=0;idt<kNDetectors;idt++) {
     AliAlgDet* det = GetDetectorByDetID(idt);
-    if (!det || det->IsDisabled()) continue;
+    if (!det) continue;
+    //if (det->IsDisabled()) continue;
     fNDOFs += det->AssignDOFs();
   }
   AliInfoF("Assigned parameters/labels arrays for %d DOFs",fNDOFs);
@@ -375,6 +380,19 @@ UInt_t AliAlgSteer::AcceptTrackCosmic(const AliESDtrack* esdPairCosm[kNCosmLegs]
   if (!CheckDetectorPattern(detAcc)) return 0;
   return detAcc;
   //
+}
+
+//_________________________________________________________
+void AliAlgSteer::SetESDEvent(const AliESDEvent* ev)
+{
+  // attach event to analyse
+  fESDEvent = ev;
+  // setup magnetic field if needed
+  if (fESDEvent && 
+      (!TGeoGlobalMagField::Instance()->GetField() || 
+       !Abs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz())>1e-4) ) { 
+    fESDEvent->InitMagneticField();
+  }
 }
 
 //_________________________________________________________
@@ -710,14 +728,16 @@ Bool_t AliAlgSteer::FillMilleData()
     if (pnt->ContainsMaterial()) {     // material point can add 4 or 5 otrhogonal pseudo-measurements
       memset(buffDL,0,nVarLoc*sizeof(float));      
       int nmatpar = pnt->GetNMatPar();  // residuals (correction expectation value)
-      const float* expMatCorr = pnt->GetMatCorrExp(); // expected corrections (diagonalized)
+      //      const float* expMatCorr = pnt->GetMatCorrExp(); // expected corrections (diagonalized)
       const float* expMatCov  = pnt->GetMatCorrCov(); // their diagonalized error matrix
       int offs  = pnt->GetMaxLocVarID() - nmatpar;    // start of material variables
       // here all derivatives are 1 = dx/dx
       for (int j=0;j<nmatpar;j++) { // mat. "measurements" don't depend on global params
 	int j1 = j+offs;
 	buffDL[j1] = 1.0;                     // only 1 non-0 derivative	
-	fMille->mille(nVarLoc,buffDL,0,buffDG,buffI,expMatCorr[j],Sqrt(expMatCov[j]));
+	//fMille->mille(nVarLoc,buffDL,0,buffDG,buffI,expMatCorr[j],Sqrt(expMatCov[j]));
+	// expectation for MS effect is 0
+	fMille->mille(nVarLoc,buffDL,0,buffDG,buffI,0,Sqrt(expMatCov[j]));
 	buffDL[j1] = 0.0;                     // reset buffer
       }
     } // material "measurement"
@@ -795,8 +815,9 @@ void AliAlgSteer::AcknowledgeNewRun(Int_t run)
   AliInfoF("Processing new run %d",fRunNumber);
   //
   // setup magnetic field
-  if (!TGeoGlobalMagField::Instance()->GetField() || 
-      !IsZeroAbs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz())) { 
+  if (fESDEvent && 
+      (!TGeoGlobalMagField::Instance()->GetField() || 
+       !IsZeroAbs(fESDEvent->GetMagneticField()-AliTrackerBase::GetBz())) ) { 
     fESDEvent->InitMagneticField();
   }
   //
@@ -1035,12 +1056,13 @@ AliSymMatrix* AliAlgSteer::BuildMatrix(TVectorD &vec)
     if (pnt->ContainsMaterial()) {
       // at least 4 parameters: 2 spatial + 2 angular kinks with 0 expectaction
       int npm = pnt->GetNMatPar();
-      const float* expMatCorr = pnt->GetMatCorrExp(); // expected correction (diagonalized)
+      // const float* expMatCorr = pnt->GetMatCorrExp(); // expected correction (diagonalized)
       const float* expMatCov  = pnt->GetMatCorrCov(); // its error
       int offs  = pnt->GetMaxLocVarID() - npm;
       for (int ipar=0;ipar<npm;ipar++) {
 	int parI = offs + ipar;
-	vec[parI] -= expMatCorr[ipar]/expMatCov[ipar]; // consider expectation as measurement
+	// expected 
+	//	vec[parI] -= expMatCorr[ipar]/expMatCov[ipar]; // consider expectation as measurement
 	mat(parI,parI) += 1./expMatCov[ipar]; // this measurement is orthogonal to all others
 	//printf("Pnt:%3d MatVar:%d DOF %3d | ExpVal: %+e Cov: %+e\n",ip,ipar,parI, expMatCorr[ipar], expMatCov[ipar]);
       }
@@ -1452,7 +1474,7 @@ Bool_t AliAlgSteer::ReadParameters(const char* parfile, Bool_t useErrors)
       AliErrorF("Invalid label %d at line %d -> ParID=%d",lab,cnt,parID);
       return kFALSE;
     }
-    fGloParVal[parID] = v0;
+    fGloParVal[parID] = -v0;
     if (useErrors) fGloParErr[parID] = v1;
     asg++;
     //
@@ -1612,4 +1634,71 @@ void AliAlgSteer::WritePedeConstraints() const
   for (int icon=0;icon<nconstr;icon++) GetConstraint(icon)->WriteChildrenConstraints(conFl);
   //
   fclose(conFl);
+}
+
+//____________________________________________________________
+void AliAlgSteer::FixLowStatFromHisto(Int_t thresh)
+{
+  // fix DOFs having stat below threshold
+  //
+  if (!fHistoDOF) {
+    AliError("No histo with DOFs statistics");
+    return;
+  }
+  TAxis*  xax = fHistoDOF->GetXaxis();
+  int nb = xax->GetNbins();
+  for (int ib=1;ib<=nb;ib++) {
+    if (fHistoDOF->GetBinContent(ib)>=thresh) continue;
+    TString lb = xax->GetBinLabel(ib);
+    int id = lb.First('_');
+    if (id<0) {
+      AliErrorF("Failed to extract DOF label from bin %d: %s",ib,lb.Data());
+      return;
+    }
+    lb.Resize(id);
+    if (!lb.IsDigit()) {
+      AliErrorF("Label for bin %d is not digit: %s",ib,lb.Data());
+      return;
+    }
+    int lbID = lb.Atoi();
+    int parID = Label2ParID(lbID);
+    if (parID<0) {
+      AliErrorF("Did not find parameter for label %d of bin %d: %s",lbID,ib,xax->GetBinLabel(ib));
+      return;
+    }
+    AliInfoF("Fixing DOF (stat: %4d) %s",int(fHistoDOF->GetBinContent(ib)),xax->GetBinLabel(ib));
+    fGloParErr[parID] = -999.;
+  }
+  //
+}
+
+//____________________________________________________________
+void AliAlgSteer::LoadStatHistos(const char* flname)
+{
+  // load statistics histos from external file produced by alignment task
+  TFile* fl = TFile::Open(flname);
+  //
+  TH1F *hdf=0,*hst=0;
+  TList* lst = (TList*)fl->Get("clist");
+  if (lst) {
+    hdf = (TH1F*)lst->FindObject("DOFstat");
+    if (hdf) lst->Remove(hdf);
+    hst = (TH1F*)lst->FindObject("stat");
+    if (hst) lst->Remove(hst);
+    delete lst;
+  }
+  else {
+    hdf = (TH1F*)fl->Get("DOFstat");
+    hst = (TH1F*)fl->Get("stat");
+  }
+  if (hdf) hdf->SetDirectory(0);
+  else AliWarning("did not fine DOFstat histo");
+  if (hst) hst->SetDirectory(0);
+  else AliWarning("did not fine stat histo");
+  //
+  SetHistoStat(hst);
+  SetHistoDOF(hdf);
+  //
+  fl->Close();
+  delete fl;
 }

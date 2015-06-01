@@ -109,7 +109,7 @@ class AliAlgSteer : public TObject
   //
   void     SetESDTree(const TTree* tr)                          {fESDTree = tr;}
   const    TTree* GetESDTree()                            const {return fESDTree;}
-  void     SetESDEvent(const AliESDEvent* ev)                   {fESDEvent = ev;}
+  void     SetESDEvent(const AliESDEvent* ev);
   const    AliESDEvent* GetESDEvent()                     const {return fESDEvent;}
   void     SetESDtrack(const AliESDtrack* tr, int i=0)          {fESDTrack[i] = tr;}
   const    AliESDtrack* GetESDtrack(int i=0)              const {return fESDTrack[i];}
@@ -188,6 +188,7 @@ class AliAlgSteer : public TObject
   UInt_t     AcceptTrackCosmic(const AliESDtrack* esdPairCosm[kNCosmLegs]) const;
   Bool_t     CheckSetVertex(const AliESDVertex* vtx);
   Bool_t     AddVertexConstraint();
+  Int_t      GetNDetectors()                              const {return fNDet;}
   AliAlgDet* GetDetector(Int_t i)                         const {return fDetectors[i];}
   AliAlgDet* GetDetectorByDetID(Int_t i)                  const {return fDetPos[i]<0 ? 0:fDetectors[fDetPos[i]];}
   AliAlgDet* GetDetectorByVolID(Int_t id)                 const;
@@ -249,11 +250,15 @@ class AliAlgSteer : public TObject
   void     WritePedeConstraints()                          const;
   void     CheckConstraints(const char* params=0);
   TH1*     GetHistoDOF()                                   const {return fHistoDOF;}
-  void     DetachHistoDOF()                                      {fHistoDOF = 0;}
+  void     SetHistoDOF(TH1F* h)                                  {fHistoDOF = h;}
+  void     DetachHistoDOF()                                      {SetHistoDOF(0);}
   TH1*     GetHistoStat()                                  const {return fHistoStat;}
-  void     DetachHistoStat()                                     {fHistoStat = 0;}
+  void     DetachHistoStat()                                     {SetHistoStat(0);}
+  void     SetHistoStat(TH1F* h)                                 {fHistoStat = h;}
   void     FillStatHisto(int type, float w=1);
   void     CreateStatHisto();
+  void     FixLowStatFromHisto(Int_t thresh=40);
+  void     LoadStatHistos(const char* flname);
   //
   //----------------------------------------
   void   SetRefOCDBConfigMacro(const char* nm="configRefOCDB.C") {fRefOCDBConf = nm;}
