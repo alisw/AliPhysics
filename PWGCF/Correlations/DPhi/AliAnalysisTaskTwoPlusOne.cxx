@@ -61,6 +61,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fTrackStatus(0),
   fThreeParticleMixed(0),
   fUseEventCombination(0),
+  fUsePP(0),
   fCustomBinning(),
   fAlpha(0.2),
   fUseLeadingPt(1),
@@ -152,7 +153,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   Double_t centrality = 0;
   AliCentrality *centralityObj = 0;
   
-  if (fAOD){
+  if (!fUsePP && fAOD){
     centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
   
     if (centralityObj)
