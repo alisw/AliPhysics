@@ -67,6 +67,7 @@ AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent()
   fMaxTrackletsToRun(-1),
   fMaxVtxIter(-1),
   fStopScaleChange(-1),
+  fMaxRSPDVtx(-1),
   fBenchmark("ITSSAPTracker"),
   fTracker(0),
   fClusters(0)
@@ -87,6 +88,7 @@ AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent( const AliHLTITSSAPTr
    fMaxTrackletsToRun(-1),
    fMaxVtxIter(-1),
    fStopScaleChange(-1),
+   fMaxRSPDVtx(-1),
    fBenchmark("ITSSAPTracker"),
    fTracker(0),
    fClusters(0)
@@ -244,6 +246,13 @@ int AliHLTITSSAPTrackerComponent::ReadConfigurationString(  const char* argument
       continue;
     } 
     //
+    if (argument.CompareTo("-maxrspdv")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fMaxRSPDVtx = ((TObjString*)pTokens->At(i))->GetString().Atof();
+      HLTInfo("Accept SPD vertices with R<",fMaxRSPDVtx);
+      continue;
+    }
+    //
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }
@@ -391,6 +400,10 @@ int AliHLTITSSAPTrackerComponent::DoInit( int argc, const char** argv )
   if (fMaxMissL>3) fMaxMissL = 3;
   HLTInfo("Allow to skip at most %d layers",fMaxMissL);
   //
+  if (fMaxRSPDVtx<0) fMaxRSPDVtx = 1.5;
+  else HLTInfo("Accept SPD vertices with R<",fMaxRSPDVtx);
+  fTracker->SetMaxRSPDVtx(fMaxRSPDVtx);
+
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
   fBenchmark.SetTimer(1,"reco");

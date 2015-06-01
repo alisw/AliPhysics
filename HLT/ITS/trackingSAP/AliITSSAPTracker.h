@@ -66,6 +66,7 @@ class AliITSSAPTracker : public TObject
   const AliESDVertex* GetSPDVertex()  const        {return fSPDVertex;}
   void AddCluster(AliITSRecPoint* cl);
   void SetBz(float v)                              {fBz = v;}
+  void SetMaxRSPDVtx(float v=1.5)                  {fMaxRSPDVtx = v>0.5 ? v:0.5;}
   //
   // methods for trackleting ---------------->>>
   Bool_t FindTracklets();
@@ -145,6 +146,7 @@ class AliITSSAPTracker : public TObject
   Float_t  fDThetaTrackletSc;                     //! max dTheta for tracklets with scaling from chi2 cut
   Float_t  fDPhiTrackletSc;                       //! max dPhi for tracklets with scaling from chi2 cut
   Float_t  fBz;                                   //! Bz field in ITS
+  Float_t  fMaxRSPDVtx;                           //! max allowed R of SPD vertex
   //
   // auxilary precomputed stuff
   Float_t  fDPhiTol;                              //! tolerance on phi, accounting for bending

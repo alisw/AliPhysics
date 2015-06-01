@@ -152,6 +152,8 @@ private:
   
   float fStopScaleChange; // min scale change in vertexer to stop iterations
 
+  float fMaxRSPDVtx;      // max R of SPD vertex to accept
+
   AliHLTComponentBenchmark fBenchmark;// benchmark
   AliITSSAPTracker *fTracker; // the tracker itself
 

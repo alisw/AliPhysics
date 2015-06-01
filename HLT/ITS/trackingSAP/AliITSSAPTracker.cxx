@@ -80,6 +80,7 @@ AliITSSAPTracker::AliITSSAPTracker() :
   ,fDThetaTrackletSc(0)
   ,fDPhiTrackletSc(0)
   ,fBz(5.0)
+  ,fMaxRSPDVtx(1.5)
   ,fDPhiTol(0.)
   ,fDThSig2Inv(0.)
   ,fDPhSig2Inv(0.)
@@ -213,7 +214,7 @@ void AliITSSAPTracker::ProcessEvent()
   if (fFitVertex) {
     if (FitTrackVertex()) {
 #ifdef _DEBUG_
-      printf("FittedVertex: "); fTrackVertex.Print();
+      printf("FittedVertex: "); fTrackVertex.Print(();
       printf("SPD   Vertex: "); fSPDVertex->Print();
 #endif
     }
@@ -279,9 +280,11 @@ Bool_t AliITSSAPTracker::FindTracklets()
     return kFALSE;
   }
   float rv2 = fSPDVertex->GetX()*fSPDVertex->GetX()+fSPDVertex->GetY()*fSPDVertex->GetY();
-  if (rv2>0.25*fgkRLayITS[kLrBeamPime]*fgkRLayITS[kLrBeamPime]) {
-    //    AliInfo("SPD vertex is too far from beam line");
+  if (rv2>fMaxRSPDVtx*fMaxRSPDVtx) {
+#ifdef _DEBUG_
+    AliInfo("SPD vertex is too far from beam line");
     fSPDVertex->Print();
+#endif
     return kFALSE;    
   } 
   fPhiShiftSc = fPhiShift*TMath::Abs(fBz/5.0);
