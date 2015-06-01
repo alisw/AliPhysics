@@ -154,7 +154,7 @@ class AliAlgVol : public TNamed
   //
  protected:
   void       SetNDOFs(Int_t n=kNDOFGeom);
-  void       CalcFree();
+  void       CalcFree(Bool_t condFree=kFALSE);
   //
   // ------- dummies -------
   AliAlgVol(const AliAlgVol&);

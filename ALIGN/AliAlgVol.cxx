@@ -268,6 +268,12 @@ void AliAlgVol::Print(const Option_t *opt) const
   if (GetExcludeFromParentConstraint()) printf(" Excl.from parent constr.");
   printf("\n");
   //
+  if (opts.Contains("par") && fParVals) {
+    printf("     Lb: "); for (int i=0;i<fNDOFs;i++) printf("%10d  ",GetParLab(i)); printf("\n");
+    printf("     Vl: "); for (int i=0;i<fNDOFs;i++) printf("%+9.3e  ",GetParVal(i)); printf("\n");
+    printf("     Er: "); for (int i=0;i<fNDOFs;i++) printf("%+9.3e  ",GetParErr(i)); printf("\n");
+  }
+
   if (opts.Contains("mat")) { // print matrices
     printf("L2G ideal   : "); 
     GetMatrixL2GIdeal().Print();
@@ -396,19 +402,22 @@ void AliAlgVol::InitDOFs()
   // Do we need this strict condition?
   if (GetInitDOFsDone()) AliFatalF("Something is wrong, DOFs are already initialized for %s",GetName());
   for (int i=0;i<fNDOFs;i++) if (fParErrs[i]<0 && IsZeroAbs(fParVals[i])) FixDOF(i);
-  CalcFree();
+  CalcFree(kTRUE);
   //
   SetInitDOFsDone();
   //
 }
 
 //__________________________________________________________________
-void AliAlgVol::CalcFree()
+void AliAlgVol::CalcFree(Bool_t condFix)
 {
-  // calculate free dofs
+  // calculate free dofs. If condFix==true, condition parameter a la pede, i.e. error < 0
   fNDOFFree = fNDOFGeomFree = 0;
   for (int i=0;i<fNDOFs;i++) {
-    if (!IsFreeDOF(i)) continue;
+    if (!IsFreeDOF(i)) {
+      if (condFix) SetParErr(i,-999);
+      continue;
+    }
     fNDOFFree++;
     if (i<kNDOFGeom) fNDOFGeomFree++;
   }
@@ -449,7 +458,7 @@ void AliAlgVol::SetParVals(Int_t npar,Double_t *vl,Double_t *er)
 Bool_t AliAlgVol::IsCondDOF(Int_t i) const
 {
   // is DOF free and conditioned?
-  return IsFreeDOF(i) && (!IsZeroAbs(GetParVal(i)) || !IsZeroAbs(GetParErr(i)));
+  return (!IsZeroAbs(GetParVal(i)) || !IsZeroAbs(GetParErr(i)));
 }
 
 //______________________________________________________
@@ -483,12 +492,12 @@ void AliAlgVol::WritePedeInfo(FILE* parOut,const Option_t *opt) const
   // is there something to print ?
   int nCond(0),nFix(0),nDef(0);
   for (int i=0;i<fNDOFs;i++) {
-    if      (!IsFreeDOF(i)) nFix++;
-    else if (IsCondDOF(i))  nCond++;
-    else                    nDef++;
+    if (!IsFreeDOF(i)) nFix++;
+    if (IsCondDOF(i))  nCond++;
+    if (!IsCondDOF(i) && IsFreeDOF(i)) nDef++;
   }  
   //
-  int cmt = nCond>0 ? kOff:kOn; // do we comment the "parameter" keyword for this volume
+  int cmt = nCond>0 || nFix>0 ? kOff:kOn; // do we comment the "parameter" keyword for this volume
   if (!nFix) showFix = kFALSE;
   if (!nDef) showDef = kFALSE;
   //
@@ -499,7 +508,7 @@ void AliAlgVol::WritePedeInfo(FILE* parOut,const Option_t *opt) const
   if (nCond || showDef || showFix) {
     for (int i=0;i<fNDOFs;i++) {
       cmt = kOn;
-      if      (IsCondDOF(i)) cmt = kOff;  // free-conditioned : MUST print
+      if      (IsCondDOF(i) || !IsFreeDOF(i)) cmt = kOff;  // free-conditioned : MUST print
       else if (!IsFreeDOF(i)) {if (!showFix) continue;} // Fixed: print commented if asked
       else if (!showDef) continue;  // free-unconditioned: print commented if asked
       //
