@@ -58,6 +58,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorrection = effcorr; }
   virtual void            SetEffCorrFunc(Double_t efffunc)     { fEffFunctionCorrection = efffunc; }
 
+  void			  SetRunType(const Short_t runtype) { fRunType = runtype; }
+
  protected:
   void					 ExecOnce();
   Bool_t			     Run();
@@ -114,6 +116,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TH2                   *fHistJetHTT[6][5][3];//!
   THnSparse             *fhnMixedEvents;      //!mixed events matrix
   THnSparse             *fhnJH;      //!Fg events matrix
+
+  Short_t               fRunType; // 0-pp 1-pA 2-AA
 
  private:
    
