@@ -147,7 +147,12 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; //standard cut pp 8 TeV		
 	} else if (trainConfig == 17){
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis 8 TeV
-		
+	} else if (trainConfig == 18){
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta analysis 8 TeV
+	} else if (trainConfig == 19){
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000002"; //New standard cut for eta analysis 8 TeV
+	} else if (trainConfig == 20){
+  	        eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000022"; //New standard cut for eta analysis 8 TeV	
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
