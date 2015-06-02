@@ -114,6 +114,7 @@ public:
   virtual const Char_t* GetGeometryFile() const {return fGeometryFile.Data();}
   virtual Bool_t IsGeometryFromFile() const {return !fGeometryFile.IsNull();}
 
+  void  DeactivateDetectorsAbsentInGRP(TObjArray* detArr);
 
   // HLT
   void SetRunHLT(const char* options) {fRunHLT=options;}
@@ -144,7 +145,10 @@ public:
 
   void UseTimeStampFromCDB()   {fUseTimeStampFromCDB   = kTRUE;}
   time_t GenerateTimeStamp() const;
-
+  //
+  Bool_t          GetUseDetectorsFromGRP()               const {return fUseDetectorsFromGRP;}
+  void            SetUseDetectorsFromGRP(Bool_t v=kTRUE)       {fUseDetectorsFromGRP = v;}
+  //
 private:
 
   AliSimulation(const AliSimulation&); // Not implemented
@@ -202,6 +206,8 @@ private:
   Bool_t          fUseVertexFromCDB;   // Flag to use Vertex from CDB
   Bool_t          fUseMagFieldFromGRP; // Use magnetic field settings from GRP
   TString         fGRPWriteLocation;   // Location to write the GRP entry from simulation
+  
+  Bool_t          fUseDetectorsFromGRP; // do not simulate detectors absent in the GRP
 
   Bool_t          fUseTimeStampFromCDB;// Flag to generate event time-stamps according to SOR/EOR from GRP
   time_t          fTimeStart;          // SOR time-stamp
@@ -224,7 +230,7 @@ private:
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 13)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 14)  // class for running generation, simulation and digitization
 };
 
 #endif
