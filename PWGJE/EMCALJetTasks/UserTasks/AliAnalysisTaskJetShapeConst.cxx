@@ -265,7 +265,7 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     fOutput->Add(fhnMassResponse[i]);
     
     histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; (#it{M}_{det} - #it{M}_{part})/#it{M}_{part}; (#it{p}_{T,det} - #it{p}_{T,part})/#it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+    histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
     Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
     fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
     Printf("New pointer");
@@ -419,8 +419,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	  Double_t varsp[5] = {var,var2,ptjet1,jetR->Pt(),jet1->MaxTrackPt()};
 	  fhnMassResponse[fCentBin]->Fill(varsp);
 	  
-	  varsp[0] = (var-var2)/var2;
-	  varsp[1] = (ptjet1-jetR->Pt())/jetR->Pt();
+	  varsp[0] = var-var2;
+	  varsp[1] = ptjet1-jetR->Pt();
 	  varsp[2] = var;
 	  varsp[3] = var2;
 	  varsp[4] = ptjet1;
