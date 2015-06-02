@@ -94,6 +94,7 @@ set(SRCS
 if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
+        AliEveHLT.cxx
         AliEveOnline.cxx
         AliEveOnlineEventManager.cxx
        )
