@@ -2006,3 +2006,14 @@ TEveElement* AliEveEventManager::FindGlobal(const TString& tag)
 {
     return dynamic_cast<TEveElement*>(fGlobal->GetValue(tag));
 }
+
+void AliEveEventManager::StorageManagerOk(){}
+void AliEveEventManager::StorageManagerDown(){}
+void AliEveEventManager::EventServerOk(){}
+void AliEveEventManager::EventServerDown(){}
+
+void AliEveEventManager::MarkCurrentEvent(){}
+
+
+
+

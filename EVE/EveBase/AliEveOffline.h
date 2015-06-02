@@ -15,7 +15,7 @@ class AliEveOffline
 {
 public:
     AliEveOffline(const TString& path = ".", const TString& cdbUri="local:///local/cdb");
-    ~AliEveOffline();
+    ~AliEveOffline(){};
 private:
     const TString& fCDBuri;
     const TString& fPath;
