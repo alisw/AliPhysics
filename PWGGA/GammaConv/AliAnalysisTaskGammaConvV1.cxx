@@ -1012,7 +1012,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 			hDoubleCountTrueConvGammaRPt[iCut] = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt","ESD_TrueDoubleCountConvGamma_R_Pt",800,0,200,300,0,30);
 			fTrueList[iCut]->Add(hDoubleCountTrueConvGammaRPt[iCut]);
-			hMultipleCountTrueConvGamma[iCut] = new TH1F("ESD_TrueMultipleCountConvGamma","ESD_TrueMultipleCountConvGamma",5,1,6);
+			hMultipleCountTrueConvGamma[iCut] = new TH1F("ESD_TrueMultipleCountConvGamma","ESD_TrueMultipleCountConvGamma",10,1,11);
 			fTrueList[iCut]->Add(hMultipleCountTrueConvGamma[iCut]);
 
 			hESDCombinatorialPt[iCut] = new TH2F("ESD_TrueCombinatorial_Pt","ESD_TrueCombinatorial_Pt",250,0,25,16,-0.5,15.5);
@@ -1086,11 +1086,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 				fTrueList[iCut]->Add(hESDTrueMotherInvMassPt[iCut]);
 				hDoubleCountTruePi0InvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountPi0_InvMass_Pt","ESD_TrueDoubleCountPi0_InvMass_Pt",800,0,0.8,300,0,30);
 				fTrueList[iCut]->Add(hDoubleCountTruePi0InvMassPt[iCut]);
-				hMultipleCountTruePi0[iCut] = new TH1F("ESD_TrueMultipleCountPi0","ESD_TrueMultipleCountPi0",5,1,6);
+				hMultipleCountTruePi0[iCut] = new TH1F("ESD_TrueMultipleCountPi0","ESD_TrueMultipleCountPi0",10,1,11);
 				fTrueList[iCut]->Add(hMultipleCountTruePi0[iCut]);
 				hDoubleCountTrueEtaInvMassPt[iCut] = new TH2F("ESD_TrueDoubleCountEta_InvMass_Pt","ESD_TrueDoubleCountEta_InvMass_Pt",800,0,0.8,300,0,30);
 				fTrueList[iCut]->Add(hDoubleCountTrueEtaInvMassPt[iCut]);
-				hMultipleCountTrueEta[iCut] = new TH1F("ESD_TrueMultipleCountEta","ESD_TrueMultipleCountEta",5,1,6);
+				hMultipleCountTrueEta[iCut] = new TH1F("ESD_TrueMultipleCountEta","ESD_TrueMultipleCountEta",10,1,11);
 				fTrueList[iCut]->Add(hMultipleCountTrueEta[iCut]);
 				hESDTruePrimaryMotherInvMassPt[iCut]
 				= new TH2F("ESD_TruePrimaryMother_InvMass_Pt", "ESD_TruePrimaryMother_InvMass_Pt", 800,0,0.8,250,0,25);
