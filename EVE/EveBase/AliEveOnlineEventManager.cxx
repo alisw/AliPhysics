@@ -17,6 +17,7 @@
 
 #include <TEnv.h>
 #include <TInterpreter.h>
+#include <RVersion.h>
 
 #include <iostream>
 
@@ -100,7 +101,9 @@ void AliEveOnlineEventManager::GetNextEvent()
                 cout<<"received. ("<<tmpEvent->GetRunNumber();
                 if(tmpEvent->GetRunNumber()>=0)
                 {
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->Lock();
+#endif
                     if(fEventInUse == 0){fWritingToEventIndex = 1;}
                     else if(fEventInUse == 1){fWritingToEventIndex = 0;}
                     cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
@@ -114,7 +117,9 @@ void AliEveOnlineEventManager::GetNextEvent()
                     fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                     fIsNewEventAvaliable = true;
                     NewEventLoaded();
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->UnLock();
+#endif
                 }
             }
             else
@@ -271,7 +276,9 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
         
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->Lock();
+#endif
         
         // send request and receive event:
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
@@ -291,7 +298,9 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
             if(event==2){cout<<"\n\nWARNING -- No next event is avaliable.\n\n"<<endl;}
         }
         
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->UnLock();
+#endif
     }
     else
     {
@@ -303,7 +312,9 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
         
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->Lock();
+#endif
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
         eventManager->Get(resultEvent,SERVER_COMMUNICATION_REQ);
         
@@ -314,7 +325,9 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
             SetEvent(0,0,resultEvent,0);
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->UnLock();
+#endif
     }
     //
 //    AliEveEventManager::GotoEvent(event);
@@ -327,7 +340,9 @@ void AliEveOnlineEventManager::NextEvent()
     
     if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->Lock();
+#endif
     if(fIsNewEventAvaliable)
     {
         if(fWritingToEventIndex == 0) fEventInUse = 0;
@@ -361,7 +376,9 @@ void AliEveOnlineEventManager::NextEvent()
         EventServerDown();
         fFailCounter=0;
     }
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->UnLock();
+#endif
     
     gSystem->ProcessEvents();
 }
