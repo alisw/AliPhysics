@@ -66,7 +66,6 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kAD), "AD Quality Assurance Data 
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
-  fTimeSlewing(0),
   fADADist(56.7),
   fADCDist(65.19)
     
@@ -93,7 +92,6 @@ AliADQADataMakerRec::AliADQADataMakerRec(const AliADQADataMakerRec& qadm) :
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
-  fTimeSlewing(0),
   fADADist(56.7),
   fADCDist(65.19)
   
@@ -174,39 +172,6 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   fCalibData = GetCalibData();
   fQAParam = GetQAParam();
   if(!fRecoParam)fRecoParam = (AliADRecoParam*)GetRecoParam();
- 
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
-  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
-  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
-  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
-
-  AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
-  if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
-  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
-  l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
-  
-  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
-  if (!entry2) AliFatal("AD time delays are not found in OCDB !");
-  TH1F *TimeDelays = (TH1F*)entry2->GetObject();
-
-  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
-  if (!entry3) AliFatal("LHC clock-phase shift is not found in OCDB !");
-  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry3->GetObject();
-
-  AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("AD/Calib/TimeSlewing");
-  if (!entry4) AliFatal("AD time slewing function is not found in OCDB !");
-  fTimeSlewing = (TF1*)entry4->GetObject();
-  
-  for(Int_t i = 0 ; i < 16; ++i) {
-    Int_t board = AliADCalibData::GetBoardNumber(i); 
-    fHptdcOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
-			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0
-		       +fCalibData->GetTimeOffset(i)
-		       -l1Delay
-		       -phase->GetMeanPhase()
-		       -TimeDelays->GetBinContent(i+1)
-		       -kADOffset);
-   }
 	
   TTimeStamp currentTime;
   fCycleStartTime = currentTime.GetSec();
@@ -1014,25 +979,14 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		nCorrelation++;
 		}
     	}
-	
+		
     for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
     	//Enable time is used to turn off the coincidence 
-    	if(fCalibData->GetEnableTiming(iChannel) && fCalibData->GetEnableTiming(iChannel+4)){
-    		if(flagBB[iChannel] && flagBB[iChannel+4]) pBBmulADC++;
-		if(flagBG[iChannel] && flagBG[iChannel+4]) pBGmulADC++;
-		}
-	else{
-		if(flagBB[iChannel] || flagBB[iChannel+4]) pBBmulADC++;
-		if(flagBG[iChannel] || flagBG[iChannel+4]) pBGmulADC++;
-		}
-	if(fCalibData->GetEnableTiming(iChannel+8) && fCalibData->GetEnableTiming(iChannel+12)){	
-		if(flagBB[iChannel+8] && flagBB[iChannel+12]) pBBmulADA++;
-		if(flagBG[iChannel+8] && flagBG[iChannel+12]) pBGmulADA++;
-		}
-	else{
-		if(flagBB[iChannel+8] || flagBB[iChannel+12]) pBBmulADA++;
-		if(flagBG[iChannel+8] || flagBG[iChannel+12]) pBGmulADA++;
-		}
+    	if((!fCalibData->GetEnableTiming(iChannel) || flagBB[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || flagBB[iChannel+4])) pBBmulADC++;
+	if((!fCalibData->GetEnableTiming(iChannel) || flagBG[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || flagBG[iChannel+4])) pBGmulADC++;
+
+	if((!fCalibData->GetEnableTiming(iChannel+8) || flagBB[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || flagBB[iChannel+12])) pBBmulADA++;
+	if((!fCalibData->GetEnableTiming(iChannel+8) || flagBG[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || flagBG[iChannel+12])) pBGmulADA++;
 	}
 					
     FillRawsData(kNBBCoincADA,pBBmulADA);
@@ -1129,7 +1083,7 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float
   if (adc < 1)return time;
 
   // Slewing correction
-  time -= fTimeSlewing->Eval(adc);
+  //time -= fTimeSlewing->Eval(adc);
   
    // Channel alignment and general offset subtraction
   //  time -= fHptdcOffset[i];

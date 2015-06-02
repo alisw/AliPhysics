@@ -92,12 +92,10 @@ private:
   size_t fTrendingUpdateTime;         // trending histos update time
   UInt_t fCycleStartTime;             // timestamp of QA start-of-cycle
   UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle
-  Float_t fHptdcOffset[16]; 	      //! HPTDC time offsets channel by channel
-  TF1* fTimeSlewing;                  //! Function for time slewing correction
   Float_t fADADist;     	      // Z position of ADA
   Float_t fADCDist;     	      // Z position of ADC
 
-  ClassDef(AliADQADataMakerRec,2)  // description 
+  ClassDef(AliADQADataMakerRec,3)  // description 
 
 };
 

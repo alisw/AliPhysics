@@ -29,6 +29,7 @@
 #include "AliRunInfo.h"
 #include "AliCTPTimeParams.h"
 #include "AliLHCClockPhase.h"
+#include "TSpline.h"
 
 #include "AliADReconstructor.h"
 #include "AliADdigit.h"
@@ -52,9 +53,12 @@ AliADReconstructor:: AliADReconstructor():
   fBeamEnergy(0.)
 
 {
+  
   // Default constructor  
   // Get calibration data
   fCalibData = GetCalibData();
+  //Get time slewing
+  GetTimeSlewingSplines();
   
   // Now get the CTP L0->L1 delay
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
@@ -130,14 +134,21 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
 
   rawReader->Reset();
   AliADRawStream rawStream(rawReader);
-  if (rawStream.Next()) { 
-
+  if (rawStream.Next()) {
+   
+    Bool_t aBBflag[16];
+    Bool_t aBGflag[16];
+    
     for(Int_t iChannel=0; iChannel < 16; ++iChannel) {
       Int_t offlineCh = kOfflineChannel[iChannel];
       // ADC charge samples
       Short_t chargeADC[kNClocks];
+      aBBflag[offlineCh] = kFALSE;
+      aBGflag[offlineCh] = kFALSE;
       for(Int_t iClock=0; iClock < kNClocks; ++iClock) {
 	chargeADC[iClock] = rawStream.GetPedestal(iChannel,iClock);
+	if(rawStream.GetBBFlag(iChannel,iClock)) aBBflag[offlineCh]=kTRUE;
+	if(rawStream.GetBGFlag(iChannel,iClock)) aBGflag[offlineCh]=kTRUE;
       }
       // Integrator flag
       Bool_t integrator = rawStream.GetIntegratorFlag(iChannel,kNClocks/2);
@@ -149,13 +160,10 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
       Float_t time = rawStream.GetTime(iChannel)*fCalibData->GetTimeResolution(board);
       Float_t width = rawStream.GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
       // Add a digit
-      if(!fCalibData->IsChannelDead(offlineCh)){
+      //if(!fCalibData->IsChannelDead(offlineCh)){ Off for the moment
 	  new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliADdigit(offlineCh, time, width,integrator, chargeADC, BBflag, BGflag);
-      }
+      //}
       
-      fESDADfriend->SetTriggerInputs(rawStream.GetTriggerInputs());
-      fESDADfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
-    
       fESDADfriend->SetBBScalers(offlineCh,rawStream.GetBBScalers(iChannel));
       fESDADfriend->SetBGScalers(offlineCh,rawStream.GetBGScalers(iChannel));
       for (Int_t iEv = 0; iEv < kNClocks; iEv++) {
@@ -163,6 +171,46 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
 	  fESDADfriend->SetBGFlag(offlineCh,iEv,rawStream.GetBGFlag(iChannel,iEv));
       }
     }
+    //BC Unmasked triggers
+    Int_t pBBmulADA = 0;
+    Int_t pBBmulADC = 0;
+    Int_t pBGmulADA = 0;
+    Int_t pBGmulADC = 0;
+  
+    for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
+    //Enable time is used to turn off the coincidence 
+      if((!fCalibData->GetEnableTiming(iChannel) || aBBflag[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || aBBflag[iChannel+4])) pBBmulADC++;
+      if((!fCalibData->GetEnableTiming(iChannel) || aBGflag[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || aBGflag[iChannel+4])) pBGmulADC++;
+
+      if((!fCalibData->GetEnableTiming(iChannel+8) || aBBflag[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || aBBflag[iChannel+12])) pBBmulADA++;
+      if((!fCalibData->GetEnableTiming(iChannel+8) || aBGflag[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || aBGflag[iChannel+12])) pBGmulADA++;
+	}
+	
+    Bool_t UBA = kFALSE;
+    Bool_t UBC = kFALSE;
+    Bool_t UGA = kFALSE;
+    Bool_t UGC = kFALSE;
+
+    if(pBBmulADA>=fCalibData->GetBBAThreshold()) UBA = kTRUE;
+    if(pBBmulADC>=fCalibData->GetBBCThreshold()) UBC = kTRUE;
+    if(pBGmulADA>=fCalibData->GetBGAThreshold()) UGA = kTRUE;
+    if(pBGmulADC>=fCalibData->GetBGCThreshold()) UGC = kTRUE;
+  
+    UShort_t fTrigger = 0;
+    if(UBA && UBC) fTrigger |= 1;
+    if(UBA || UBC) fTrigger |= (1<<1);
+    if(UGA && UBC) fTrigger |= (1<<2);
+    if(UGA) fTrigger |= (1<<3);
+    if(UGC && UBA) fTrigger |= (1<<4);
+    if(UGC) fTrigger |= (1<<5);
+    if(UBA) fTrigger |= (1<<12);
+    if(UBC) fTrigger |= (1<<13); 
+    if(UBA || UBC) fTrigger |= (1<<14);
+    if((UGA && UBC) || (UGC && UBA)) fTrigger |= (1<<15);
+   
+    fESDADfriend->SetTriggerInputs(fTrigger);
+    fESDADfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
+  
     for(Int_t iScaler = 0; iScaler < AliESDADfriend::kNScalers; iScaler++)
       fESDADfriend->SetTriggerScalers(iScaler,rawStream.GetTriggerScalers(iScaler));
 
@@ -285,10 +333,56 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetADC(adc);
   fESDAD->SetTime(time);
   fESDAD->SetWidth(width);
-  fESDAD->SetBit(AliESDAD::kOnlineBitsFilled,kTRUE);
   fESDAD->SetBBFlag(aBBflag);
   fESDAD->SetBGFlag(aBGflag);
   //fESDAD->SetBit(AliESDAD::kCorrectedForSaturation,kTRUE);
+  
+  Int_t	pBBmulADA = 0;
+  Int_t	pBBmulADC = 0;
+  Int_t	pBGmulADA = 0;
+  Int_t	pBGmulADC = 0;
+  
+  for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
+    //Enable time is used to turn off the coincidence 
+    if((!fCalibData->GetEnableTiming(iChannel) || aBBflag[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || aBBflag[iChannel+4])) pBBmulADC++;
+    if((!fCalibData->GetEnableTiming(iChannel) || aBGflag[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || aBGflag[iChannel+4])) pBGmulADC++;
+
+    if((!fCalibData->GetEnableTiming(iChannel+8) || aBBflag[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || aBBflag[iChannel+12])) pBBmulADA++;
+    if((!fCalibData->GetEnableTiming(iChannel+8) || aBGflag[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || aBGflag[iChannel+12])) pBGmulADA++;
+	}
+	
+  Bool_t UBA = kFALSE;
+  Bool_t UBC = kFALSE;
+  Bool_t UGA = kFALSE;
+  Bool_t UGC = kFALSE;
+
+  if(pBBmulADA>=fCalibData->GetBBAThreshold()) UBA = kTRUE;
+  if(pBBmulADC>=fCalibData->GetBBCThreshold()) UBC = kTRUE;
+  if(pBGmulADA>=fCalibData->GetBGAThreshold()) UGA = kTRUE;
+  if(pBGmulADC>=fCalibData->GetBGCThreshold()) UGC = kTRUE;
+  
+  UShort_t fTrigger = 0;
+  if(UBA && UBC) fTrigger |= 1;
+  if(UBA || UBC) fTrigger |= (1<<1);
+  if(UGA && UBC) fTrigger |= (1<<2);
+  if(UGA) fTrigger |= (1<<3);
+  if(UGC && UBA) fTrigger |= (1<<4);
+  if(UGC) fTrigger |= (1<<5);
+  
+  //CTA1 and CTC1
+  //CTA1 or CTC1
+  //CTA2 and CTC2
+  //CTA2 or CTC2 
+  //MTA and MTC
+  //MTA or MTC
+  
+  if(UBA) fTrigger |= (1<<12);
+  if(UBC) fTrigger |= (1<<13); 
+  if(UBA || UBC) fTrigger |= (1<<14);
+  if((UGA && UBC) || (UGC && UBA)) fTrigger |= (1<<15);
+
+  fESDAD->SetTriggerBits(fTrigger);
+  fESDAD->SetBit(AliESDAD::kOnlineBitsFilled,kTRUE);
 
   // now fill the AD decision
   AliADDecision offlineDecision;
@@ -318,15 +412,6 @@ AliADCalibData* AliADReconstructor::GetCalibData() const
   AliCDBEntry *entry=0;
 
   entry = man->Get("AD/Calib/Data");
-  if(!entry){
-    AliWarning("Load of calibration data from default storage failed!");
-    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
-	
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    man->SetRun(1);
-    entry = man->Get("AD/Calib/Data");
-  }
-  // Retrieval of data in directory AD/Calib/Data:
 
   AliADCalibData *calibdata = 0;
 
@@ -334,6 +419,26 @@ AliADCalibData* AliADReconstructor::GetCalibData() const
   if (!calibdata)  AliFatal("No calibration data from calibration database !");
 
   return calibdata;
+}
+
+//_____________________________________________________________________________
+void AliADReconstructor::GetTimeSlewingSplines()
+{
+
+  AliCDBManager *man = AliCDBManager::Instance();
+
+  AliCDBEntry *entry=0;
+
+  entry = man->Get("AD/Calib/TimeSlewing");
+  
+  TList *fListSplines = 0;
+
+  if (entry) fListSplines = (TList*) entry->GetObject();
+  if (!fListSplines)  AliFatal("No time slewing correction from calibration database !");
+  
+  for(Int_t i=0; i<16; i++) fTimeSlewingSpline[i] = (TSpline3*)(fListSplines->At(i));
+  
+
 }
 
 //_____________________________________________________________________________
@@ -395,17 +500,20 @@ Float_t AliADReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t ad
   // Correct the leading time
   // for slewing effect and
   // misalignment of the channels
+  const Double_t fTOF[4] = {65.30,65.12,56.54,56.71};
+  
   if (time < 1e-6) return kInvalidTime;
 
   // In case of pathological signals
   if (adc < 1) return time;
 
-  /*/ Slewing correction
-  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
-  time -= fTimeSlewing->Eval(adc);/*/
+  // Slewing and offset correction
+  Int_t board = AliADCalibData::GetBoardNumber(i);
+  time -= fTimeSlewingSpline[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
+  time += fTOF[i/4];
   
   // Channel alignment and general offset subtraction
-  time -= fHptdcOffset[i];
+  //time -= fHptdcOffset[i];
 
   return time;
 }
