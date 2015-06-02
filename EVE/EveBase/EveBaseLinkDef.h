@@ -27,7 +27,7 @@
 
 // AliEveEventManager
 #pragma link C++ class AliEveEventManager+;
-#pragma link C++ class AliEveHLTEventManager+;
+#pragma link C++ class AliEveHLTZMQeventManager+;
 #pragma link C++ class AliEveEventManagerEditor+;
 #pragma link C++ class AliEveEventManagerWindow+;
 

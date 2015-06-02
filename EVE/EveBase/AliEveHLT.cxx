@@ -8,7 +8,7 @@
 
 #include "AliEveHLT.h"
 #include "AliEveGeomGentle.h"
-#include "AliEveHLTEventManager.h"
+#include "AliEveHLTZMQeventManager.h"
 #include "AliEveEventManagerEditor.h"
 #include "AliEveMultiView.h"
 #include "AliEveMacroExecutor.h"
@@ -64,7 +64,7 @@ AliEveHLT::AliEveHLT(bool storageManager)
     cout<<"added"<<endl;
     
     cout<<"Creating event manager...";
-    AliEveHLTEventManager *man =  new AliEveHLTEventManager(-1, storageManager);
+    AliEveHLTZMQeventManager *man =  new AliEveHLTZMQeventManager(-1, storageManager);
 //    AliEveEventManager *man = AliEveEventManager::GetMaster();
     gEve->AddEvent(man);
     cout<<"created"<<endl;

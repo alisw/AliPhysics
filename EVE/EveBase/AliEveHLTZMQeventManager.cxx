@@ -1,11 +1,11 @@
 //
-//  AliEveHLTEventManager
+//  AliEveHLTZMQeventManager
 //
 //  blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 //
 //
 
-#include "AliEveHLTEventManager.h"
+#include "AliEveHLTZMQeventManager.h"
 
 #include "AliEveConfigManager.h"
 #include "AliCDBManager.h"
@@ -26,7 +26,7 @@
 
 using namespace std;
 
-AliEveHLTEventManager::AliEveHLTEventManager(Int_t ev, bool storageManager) :
+AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(Int_t ev, bool storageManager) :
     AliEveEventManager("HLT",ev,false),
     fEventListenerThreadHLT(0),
     fCurrentRun(-1),
@@ -55,7 +55,7 @@ AliEveHLTEventManager::AliEveHLTEventManager(Int_t ev, bool storageManager) :
     AliEveEventManager::SetMaster(this);
 }
 
-AliEveHLTEventManager::~AliEveHLTEventManager()
+AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
 {
 #ifdef ZMQ
   if (fZMQeventQueue)
@@ -72,7 +72,7 @@ AliEveHLTEventManager::~AliEveHLTEventManager()
 
 }
 
-void AliEveHLTEventManager::GetNextEvent()
+void AliEveHLTZMQeventManager::GetNextEvent()
 {
 #ifdef ZMQ
   int rc = 0;
@@ -159,7 +159,7 @@ void AliEveHLTEventManager::GetNextEvent()
 #endif
 }
 
-void AliEveHLTEventManager::InitOCDB(int runNo)
+void AliEveHLTZMQeventManager::InitOCDB(int runNo)
 {
     TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
     AliCDBManager* cdb = AliCDBManager::Instance();
@@ -206,7 +206,7 @@ void AliEveHLTEventManager::InitOCDB(int runNo)
     AliEveEventManager::InitOCDB(runNo);
 }
 
-void AliEveHLTEventManager::GotoEvent(Int_t /*event*/)
+void AliEveHLTZMQeventManager::GotoEvent(Int_t /*event*/)
 {
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
     
@@ -218,7 +218,7 @@ void AliEveHLTEventManager::GotoEvent(Int_t /*event*/)
     
 }
 
-void AliEveHLTEventManager::NextEvent()
+void AliEveHLTZMQeventManager::NextEvent()
 {
     static const TEveException kEH("AliEveEventManager::NextEvent ");
   //read event from queue

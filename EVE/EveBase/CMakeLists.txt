@@ -96,7 +96,7 @@ if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
         AliEveHLT.cxx
-        AliEveHLTEventManager.cxx
+        AliEveHLTZMQeventManager.cxx
         AliEveOnline.cxx
         AliEveOnlineEventManager.cxx
        )

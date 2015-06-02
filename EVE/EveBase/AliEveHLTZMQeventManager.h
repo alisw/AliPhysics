@@ -1,26 +1,26 @@
 //
-//  AliEveHLTEventManager.h
+//  AliEveHLTZMQeventManager.h
 //
 //  blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 //
 //
 
-#ifndef __AliEveHLTEventManager__
-#define __AliEveHLTEventManager__
+#ifndef __AliEveHLTZMQeventManager__
+#define __AliEveHLTZMQeventManager__
 
 #include "AliEveEventManager.h"
 #include "AliHLTDataTypes.h"
 
 #include "TThread.h"
 
-class AliEveHLTEventManager : public AliEveEventManager
+class AliEveHLTZMQeventManager : public AliEveEventManager
 {
 public:
-    AliEveHLTEventManager(Int_t ev=0, bool storageManager=false);
-    ~AliEveHLTEventManager();
+    AliEveHLTZMQeventManager(Int_t ev=0, bool storageManager=false);
+    ~AliEveHLTZMQeventManager();
     
 private:
-    static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveHLTEventManager*>(arg)->GetNextEvent();return nullptr;}
+    static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveHLTZMQeventManager*>(arg)->GetNextEvent();return nullptr;}
     void GetNextEvent();
     void InitOCDB(int runNo);
     void GotoEvent(Int_t event);
@@ -33,7 +33,7 @@ private:
     void* fZMQContext;
     void* fZMQeventQueue; //this is the ONLY queue for threads!
     TString fHLTPublisherAddress;
-    ClassDef(AliEveHLTEventManager, 0); // Interface for getting all event components in a uniform way.
+    ClassDef(AliEveHLTZMQeventManager, 0); // Interface for getting all event components in a uniform way.
 };
 
 const int kAliHLTComponentDataTypeTopicSize = kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize;
