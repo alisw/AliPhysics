@@ -33,6 +33,7 @@
 #include "AliEveOffline.h"
 #ifdef ZMQ
 #include "AliEveOnline.h"
+#include "AliEveHLT.h"
 #endif
 
 #include <iostream>
@@ -72,11 +73,13 @@ int main(int argc, char **argv)
     bool storageManager=false;
     bool mfFix=false;
     bool onlineMode=false;
+    bool hltMode=false;
     const char* cdbPath="";
     
     for (int i=0; i<argc; i++)
     {
         if(strcmp(argv[i],"online")==0){    onlineMode = true; }
+        if(strcmp(argv[i],"hlt")==0){       hltMode = true; }
         if(strcmp(argv[i],"local") ==0){    cdbPath = "local:///local/cdb"; }
         if(strcmp(argv[i],"mc")==0){        cdbPath = "mcideal://"; }
         if(strcmp(argv[i],"raw")==0){       cdbPath = "raw://";}
@@ -115,6 +118,15 @@ int main(int argc, char **argv)
         AliEveOnline *online = new AliEveOnline(storageManager);
 #else
         printf("\nOnline mode not avaliable -- no ZMQ installed!\n");
+        return 1;
+#endif
+    }
+    else if(hltMode)
+    {
+#ifdef ZMQ
+        AliEveHLT *hlt = new AliEveHLT();
+#else
+        printf("\nHLT mode not avaliable -- no ZMQ installed!\n");
         return 1;
 #endif
     }

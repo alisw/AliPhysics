@@ -412,12 +412,6 @@ void AliEveOnlineEventManager::MarkCurrentEvent()
     if(requestMessage){delete requestMessage;}
 }
 
-Int_t AliEveOnlineEventManager::NewEventAvailable()
-{
-    if (fIsNewEventAvaliable){return 1;}
-    else{return 0;}
-}
-
 void AliEveOnlineEventManager::StorageManagerOk()
 {
     Emit("StorageManagerOk()");
