@@ -41,8 +41,10 @@ namespace AliMUONCDB
   AliMUONRecoParam* LoadRecoParam();
   TClonesArray* LoadAlignmentData();
   
+  void AddDCSValue ( TMap& aliasMap, Int_t imeas, const char* smt, const char* sInOut, Int_t rpc, Float_t value );
+
   Int_t MakeHVStore(TMap& aliasMap, Bool_t defaultValues);
-  Int_t MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues);
+  Int_t MakeTriggerDCSStore(TMap& aliasMap);
   Int_t MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues);
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues);
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
@@ -99,7 +101,7 @@ namespace AliMUONCDB
   void WriteRegionalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteGlobalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   
-  void WriteTriggerDCS(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteTriggerDCS(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteTriggerLut(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteTriggerEfficiency(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
 }
