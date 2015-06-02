@@ -417,6 +417,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
+  fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(that.fApplyRecentering),
   fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing),
   fChi2A(0x0),
