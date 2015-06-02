@@ -19,6 +19,8 @@
 #include "AliTrackerBase.h"
 #include "AliTracker.h"
 
+#include "zmq.h"
+
 using namespace std;
 
 AliZMQManager *AliZMQManager::fManagerInstance = 0;

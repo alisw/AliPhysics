@@ -49,10 +49,10 @@
 #include <sstream>
 #include <set>
 
-#include "zmq.h"
-
 #include <TMessage.h>
 #include <TFile.h>
+
+struct zmq_msg_t;
 
 class AliZMQManager
 {
