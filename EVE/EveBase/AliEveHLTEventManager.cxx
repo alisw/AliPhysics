@@ -5,12 +5,19 @@
 //
 //
 
+#include "AliEveHLTEventManager.h"
+
 #include "AliEveConfigManager.h"
 #include "AliCDBManager.h"
 #include "AliGRPPreprocessor.h"
 #include <TEnv.h>
 #include <TInterpreter.h>
 #include <iostream>
+
+#include "AliHLTComponent.h"
+#include "AliHLTMessage.h"
+
+#include "AliOnlineReconstructionUtil.h"
 
 #ifdef ZMQ
 #include "zmq.h"
@@ -21,6 +28,8 @@ using namespace std;
 
 AliEveHLTEventManager::AliEveHLTEventManager(Int_t ev, bool storageManager) :
     AliEveEventManager("HLT",ev,false),
+    fEventListenerThreadHLT(0),
+    fCurrentRun(-1),
     fZMQContext(NULL),
     fZMQeventQueue(NULL),
     fHLTPublisherAddress("tcp://localhost:60201")
@@ -92,7 +101,7 @@ void AliEveHLTEventManager::GetNextEvent()
   memset(&requestedTopic1, '*', kAliHLTComponentDataTypeTopicSize);
   strncpy(requestedTopic1, "FLATESD**************", kAliHLTComponentDataTypeTopicSize);
 
-  bool_t done=false;
+  Bool_t done=false;
   while (!done)
   {
     int more = 0;
@@ -199,8 +208,6 @@ void AliEveHLTEventManager::InitOCDB(int runNo)
 
 void AliEveHLTEventManager::GotoEvent(Int_t /*event*/)
 {
-    cout<<"Go to event:"<<event<<endl;
-    
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
     
     if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
@@ -213,6 +220,7 @@ void AliEveHLTEventManager::GotoEvent(Int_t /*event*/)
 
 void AliEveHLTEventManager::NextEvent()
 {
+    static const TEveException kEH("AliEveEventManager::NextEvent ");
   //read event from queue
   if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
 
@@ -271,12 +279,12 @@ void AliEveHLTEventManager::NextEvent()
     delete fESD;
     fESD = esdObject;
     
-    fIsNewEventAvaliable = true;
+//    fIsNewEventAvaliable = true;
     NewEventLoaded();
   }
   else
   {
-    fIsNewEventAvaliable = false;
+//    fIsNewEventAvaliable = false;
     cout<<"No new event is avaliable."<<endl;
     NoEventLoaded();
   }

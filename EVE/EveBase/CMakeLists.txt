@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE})
 include_directories(
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/MONITOR/alionlinereco
@@ -95,6 +96,7 @@ if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
         AliEveHLT.cxx
+        AliEveHLTEventManager.cxx
         AliEveOnline.cxx
         AliEveOnlineEventManager.cxx
        )
@@ -110,12 +112,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint ASImage)
+set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint HLTbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint ASImage)
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+#target_link_libraries(${MODULE} STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
