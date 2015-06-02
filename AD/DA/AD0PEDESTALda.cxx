@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
       fprintf(fpLocal," %.3f %.3f %.3f %.3f\n",pedMean[i],pedSigma[i],adcMean[i],adcSigma[i]);
       
       if (i < 16) {
-          Int_t j = kOfflineChannel[i];;     
+          Int_t j = kOfflineChannel[i];     
           pedMeanOff[j]  = pedMean[i];
           pedSigmaOff[j] = pedSigma[i];
           adcMeanOff[j]  = adcMean[i];
@@ -378,16 +378,18 @@ int main(int argc, char **argv) {
   fclose(fp);
  
   /* export result file to FES */
-  status=daqDA_FES_storeFile("./AD0_Pedestals_Off.dat","AD0da_results");
+  status=daqDA_FES_storeFile("AD0_Pedestals_Off.dat","AD0da_results");
   if (status)    {
       printf("Failed to export file : %d\n",status);
       return -1; }
 
-  /* store result file into Online DB */
-  status=daqDA_DB_storeFile("./AD0_Pedestals_On.dat","AD0da_results");
-  if (status)    {
-      printf("Failed to store file into Online DB: %d\n",status);
-      return -1; }
+  /* store result file into Online DB in case of LDC mode*/
+  if(runType == "PEDESTAL"){
+  	status=daqDA_DB_storeFile("AD0_Pedestals_On.dat","AD0_Pedestals_On.dat");
+  	if (status)    {
+      		printf("Failed to store file into Online DB: %d\n",status);
+      		return -1; }
+	}
       
   return status;
 }

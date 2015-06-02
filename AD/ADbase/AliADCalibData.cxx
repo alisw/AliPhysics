@@ -1208,7 +1208,7 @@ printf("\n");
 
     for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
     	for(Int_t integrator = 0; integrator < 2; ++integrator){
-    		if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.3f, Width = %3f,", pmNumber, kOfflineChannel[pmNumber],integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
+    		if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.3f, Width = %3f,", pmNumber, kOnlineChannel[pmNumber],integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
 		else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));	
 			}
   }

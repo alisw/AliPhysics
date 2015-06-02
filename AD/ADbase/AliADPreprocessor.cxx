@@ -141,36 +141,82 @@ UInt_t AliADPreprocessor::Process(TMap* dcsAliasMap)
 
 	delete source;      
   
-  // Check that everything was properly transmitted
-
-//   for(Int_t j=0; j<128; j++){printf("Pedestal[%d] -> %f \n",j,calibData->GetPedestal(j));}
-//   for(Int_t j=0; j<128; j++){printf("pedSigma[%d] -> %f \n",j,calibData->GetSigma(j));}
-//   for(Int_t j=0; j<128; j++){printf("Gain[%d] -> %f \n",j,calibData->GetGain(j));}
-//   for(Int_t j=0; j<128; j++){printf("adcSigma[%d] -> %f \n",j,calibData->GetADCsigma(j));}
-//   for(Int_t j=0; j<64; j++){printf("MeanHV[%d] -> %f \n",j,calibData->GetMeanHV(j));}
-//   for(Int_t j=0; j<64; j++){printf("WidthHV[%d] -> %f \n",j,calibData->GetWidthHV(j));}
-  
   // Now we store the AD Calibration Object into CalibrationDB
 
-  Bool_t resECal=kTRUE;
+  Bool_t resECal=kFALSE;
   
   Bool_t result = 0;
-//  if(sourceList && sourceList->GetEntries()>0)
-//  {
+  if(sourceList && sourceList->GetEntries()>0)
+  {
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Michal Broz");
   metaData.SetComment("This preprocessor fills an AliADCalibData object");
 
   resECal = Store("Calib", "Data", calibData, &metaData, 0, kTRUE);
-//  }
+  }
   if(resECal==kFALSE ) result = 1;
   
 
   delete calibData;
   delete sourceList; 
-
+  
+  if(runType == "PHYSICS") ProcessTimeSlewing();
  	
   return result;
 }
 
+//______________________________________________________________________________________________
+UInt_t AliADPreprocessor::ProcessTimeSlewing()
+{
+
+  // *************** From DAQ ******************
+  TList *fListSplines = 0x0;
+  TString fileName; 
+  TString sourcesId = "AD0da_slewing";
+
+  TList* sourceList = GetFileSources(kDAQ, sourcesId.Data());
+  if (!sourceList)  {
+	  Log(Form("No sources found for id %s", sourcesId.Data()));			  
+          return 1; }
+  Log(Form("The following sources produced files with the id %s",sourcesId.Data()));
+  sourceList->Print();    
+
+  TIter iter(sourceList);
+  TObjString *source;
+	  
+  while((source=dynamic_cast<TObjString*> (iter.Next()))){
+	  fileName = GetFile(kDAQ, sourcesId.Data(), source->GetName());
+	  if (fileName.Length() > 0)
+	  Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+	  TFile *f = TFile::Open(fileName);
+	  if(!f){
+        	Log(Form("Cannot open file %s",fileName.Data()));
+		return 1;}
+		
+	  fListSplines = (TList*)f->Get("fListSplines");
+	  if ( !fListSplines ) {
+	       Log("No Spline List in file");
+	       return 1;}
+	  f->Close();
+	  }				  
+
+  Bool_t result = 0;
+  Bool_t resECal=kFALSE;
+ 
+  if(sourceList && sourceList->GetEntries()>0)
+  {
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Michal Broz");
+  metaData.SetComment("This preprocessor fills an time slewing splines object");
+
+  resECal = Store("Calib", "TimeSlewing", fListSplines, &metaData, 0, kTRUE);
+  }
+  if(resECal==kFALSE ) result = 1;
+  
+  delete sourceList;
+   
+  return result;
+
+}

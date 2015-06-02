@@ -1,13 +1,23 @@
-void MakeADTimeSlewingEntry(const char *outputCDB = "local://$ALICE_ROOT/../AliRoot/OCDB")
+void MakeADTimeSlewingEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB")
 {
 
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage(outputCDB);
 
-  // Creation of the time slewing OCDB object
-  TF1 *slew = new TF1("TimeSlewing","[0]*TMath::Power(x,[1])",1,1024);
-  slew->SetParameter(0,286.8);
-  slew->SetParameter(1,-1.437);
+  // Creation of the default time slewing OCDB object - splines at 0 - no correction
+  // Other objects to be created per run by DA and Preprocessor
+  TH1F *slew = new TH1F("NoSlewing"," ",100,-4,0);
+  for(Int_t i =0; i<100; i++){slew->SetBinContent(i+1,0.0); slew->SetBinError(i+1,0.1);}
+  
+  TList *fListSplines = new TList();
+  TSpline3 *fTimeSlewingSpline[16];
+  for(Int_t i=0; i<16; i++){
+	TString TimeSlewingSplineName = "hTimeSlewingSpline";
+	TimeSlewingSplineName += i;
+	fTimeSlewingSpline[i] = new TSpline3(slew);
+	fTimeSlewingSpline[i]->SetName(TimeSlewingSplineName.Data());
+	fListSplines->Add(fTimeSlewingSpline[i]);	
+	}
 	
   TObjString str("AD Time-slewing correction");
 
@@ -21,7 +31,7 @@ void MakeADTimeSlewingEntry(const char *outputCDB = "local://$ALICE_ROOT/../AliR
   AliCDBStorage *storLoc = man->GetDefaultStorage();
   AliCDBId id("AD/Calib/TimeSlewing",0,AliCDBRunRange::Infinity());
 
-  storLoc->Put(slew, id, md);
+  storLoc->Put(fListSplines, id, md);
 
   storLoc->Delete();
   delete md;

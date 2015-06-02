@@ -65,7 +65,8 @@ void ADTestPreprocessor()
 //  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC1", "file2b.root");
 //  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2c.root");
 //  shuttle->AddInputFile(AliShuttleInterface::kHLT, "TPC", "HLTData", "source1", "hlt_file1.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "AD0", "AD0da_results", "source1", "./AD0da_results.txt");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "AD0", "AD0da_results", "source1", "/home/mbroz/AD/Data/db/run000000000_DAQ_test_AD0da_results");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "AD0", "AD0da_slewing", "source2", "/home/mbroz/AD/Data/db/run000000000_DAQ_test_AD0da_slewing");
 //
   // TODO(3)
   //

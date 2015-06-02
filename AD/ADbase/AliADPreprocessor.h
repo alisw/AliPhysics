@@ -8,7 +8,8 @@ class  AliADDataDCS;
 
 //  AD Preprocessor  header 
 
-//  1 calibration object from DCS and DAQ is written into  OCDB/AD/Calib/Data
+//  Calibration object from DCS and DAQ is written into  OCDB/AD/Calib/Data
+//  Calibration object from DAQ is written into OCDB/AD/Calib/TimeSlewing
 
 class AliADPreprocessor : public AliPreprocessor
 {
@@ -19,6 +20,7 @@ class AliADPreprocessor : public AliPreprocessor
 
   protected:
     virtual UInt_t Process(TMap* dcsAliasMap);
+    UInt_t ProcessTimeSlewing();
 
     AliADDataDCS *fDCSData;    // CDB class that stores the calibration data
 

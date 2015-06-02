@@ -12,3 +12,4 @@ set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static ADbase-static)
 # The DA file has to be named DetectorNameAlgortihmda.cxx
 # generateDA("DetectorName" "Algorithm" "${STATIC_DEPENDENCIES}")
 generateDA("AD0" "PEDESTAL" "${STATIC_DEPENDENCIES}")
+generateDA("AD0" "TIMESLEWING" "${STATIC_DEPENDENCIES}")
