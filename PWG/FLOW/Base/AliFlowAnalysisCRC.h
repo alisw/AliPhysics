@@ -1119,7 +1119,7 @@ private:
  const static Int_t fCRCMaxnCen = 10;
  Int_t fCRCnCen;
  Int_t fCRCCenBinWidth;
- const static Int_t fCRCnHar = 5;
+ const static Int_t fCRCnHar = 3;
  
  TH1D *fCRCQRe[2][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCRCQIm[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]

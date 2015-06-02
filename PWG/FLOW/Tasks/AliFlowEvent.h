@@ -23,6 +23,7 @@ class AliMultiplicity;
 class AliESDPmdTrack;
 class AliFlowVector;
 class TH1F;
+class TH1;
 class TH2F;
 class TArrayD;
 
@@ -89,6 +90,7 @@ public:
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
   void SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
+  void SetDeltaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
 
   virtual void ClearFast();
   virtual void ClearCachedRun();
@@ -98,7 +100,6 @@ protected:
 
 private:
   Int_t         fApplyRecentering;      // apply recentering of q-vectors? 2010 is 10h style, 2011 is 11h style
-  Bool_t        fApplyTwisting;         // apply twisting of q-vectors
   Int_t         fCachedRun;             //! cached calibration info for vzero
   Int_t         fVZEROcentralityBin;    //! centrality bin for the current event 
   Float_t       fMeanQ[9][2][2];        //! recentering
@@ -106,10 +107,10 @@ private:
   Float_t       fMeanQv3[9][2][2];      //! recentering
   Float_t       fWidthQv3[9][2][2];     //! recentering
   // BETA testing of new VZERO calibration
-  TH1F*         fQxavsV0[5];            //! recentering
-  TH1F*         fQyavsV0[5];            //! recentering
-  TH1F*         fQxcvsV0[5];            //! recentering
-  TH1F*         fQycvsV0[5];            //! recentering
+  TH1*         fQxavsV0[5];            //! recentering
+  TH1*         fQyavsV0[5];            //! recentering
+  TH1*         fQxcvsV0[5];            //! recentering
+  TH1*         fQycvsV0[5];            //! recentering
   // END OF BETA TESTING
   AliVEvent*    fEvent;                 //! current event
   TArrayD*      fChi2A;                 //! chi vs cent for vzero A ep_2
