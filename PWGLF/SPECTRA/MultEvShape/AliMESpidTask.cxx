@@ -105,6 +105,11 @@ void AliMESpidTask::UserExec(Option_t *opt)
 //   vec_hNoEvts[3] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);		// combined multiplicity with 0.4 < |eta| < 0.8
   vec_hNoEvts[3] = mult_comb0408;		// combined multiplicity with 0.4 < |eta| < 0.8
 
+/*
+ // !!!!!!!!!!
+ // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
+ // !!!!!!!!!!
+ 
   if( !fEvInfo->HasTriggerMB() ) return;
 
   if( !fEvInfo->HasVertex() ) return;
@@ -119,8 +124,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
   vec_hNoEvts[0] = 2.;
   hNoEvts->Fill(vec_hNoEvts);
 
-//   if(mult_comb08 < 0. || mult_V0M < 0.) return;
-  if(mult_comb08 < 0.) return;
+  if(mult_comb08 < 0. || mult_V0M < 0.) return;
+//   if(mult_comb08 < 0.){
+	  return;
+  }
+
+  // !!!!!!!!!!
+*/
   vec_hNoEvts[0] = 3.;
   hNoEvts->Fill(vec_hNoEvts);
 
