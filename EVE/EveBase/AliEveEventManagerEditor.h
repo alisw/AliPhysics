@@ -66,7 +66,7 @@ private:
 class AliEveEventManagerWindow : public TGMainFrame
 {
 public:
-  AliEveEventManagerWindow(AliEveEventManager* mgr);
+  AliEveEventManagerWindow(AliEveEventManager* mgr, bool storageManager=false);
   virtual ~AliEveEventManagerWindow();
 
   void DoFirstEvent();
@@ -74,18 +74,17 @@ public:
   void DoNextEvent();
   void DoLastEvent();
   void DoMarkEvent();
-    void DoRestartReco();
-    void DoRestartManager();
+    void DoScreenshot();
 
   void DoSetEvent();
 
   void DoRefresh();
   void DoSetAutoLoad();
-  void DoSetLoopMarked();
   void DoSetAutoLoadTime();
   void DoSetTrigSel();
 
-  void Update(int=1);    
+  void Update(int=1);
+  void EventServerChangedState(int state);
   void StorageManagerChangedState(int state);
 
 protected:
@@ -97,14 +96,12 @@ protected:
     TGTextButton         *fLastEvent;    // Go to last event
     TGTextButton         *fRefresh;      // Refresh event-file state
     TGTextButton         *fMarkEvent;    // Mark current event
-    TGTextButton         *fRestartReco;    // Restart reconstruction server
-    TGTextButton         *fRestartManager; // Restart storage manager
+    TGTextButton         *fScreenshot;   // Save screenshot to file
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id
 
   TGCheckButton        *fAutoLoad;     // Check-box for automatic loading of events
-  TGCheckButton        *fLoopMarked;     // Check-box for automatic loading of events
   TEveGValuator        *fAutoLoadTime; // Time for automatic loading of events
 
   TGComboBox           *fTrigSel;      // Trigger selection combo box
@@ -117,7 +114,7 @@ protected:
 			    Int_t lo=0, Int_t ro=0, Int_t to=0, Int_t bo=0);
   TGLabel* MkLabel(TGCompositeFrame* p, const char* txt, Int_t width,
 		   Int_t lo=0, Int_t ro=0, Int_t to=2, Int_t bo=0);
-
+    
 private:
   AliEveEventManagerWindow(const AliEveEventManagerWindow&);            // Not implemented
   AliEveEventManagerWindow& operator=(const AliEveEventManagerWindow&); // Not implemented

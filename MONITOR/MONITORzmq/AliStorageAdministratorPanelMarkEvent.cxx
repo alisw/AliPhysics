@@ -33,8 +33,7 @@ AliStorageAdministratorPanelMarkEvent::AliStorageAdministratorPanelMarkEvent() :
 	fServerSocket(SERVER_COMMUNICATION_REQ),
 	fEventManager(0)
 {
-	fEventManager = AliStorageEventManager::GetEventManagerInstance();
-	fEventManager->CreateSocket(fServerSocket);
+	fEventManager = AliZMQManager::GetInstance();
 	InitWindow();
 }
 
@@ -105,14 +104,15 @@ void AliStorageAdministratorPanelMarkEvent::onMarkButton()
 	eventNumber=fEventNumberEntry->GetIntNumber();
 	
 	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-	struct eventStruct mark;
-	mark.runNumber = runNumber;
-	mark.eventNumber = eventNumber;
+//	struct eventStruct mark;
+	requestMessage->eventsRunNumber = runNumber;
+	requestMessage->eventsEventNumber = eventNumber;
 	requestMessage->messageType = REQUEST_MARK_EVENT;
-	requestMessage->event = mark;
+//	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	bool response = fEventManager->GetBool(fServerSocket);
+    bool response;
+    fEventManager->Get(&response,fServerSocket);
 	
 	if(response)
 	{

@@ -30,8 +30,8 @@
 
 TEvePointSet*
 emcal_hits(const char *varexp    = "fX:fY:fZ",
-	   const char *selection = "",
-	   TEveElement* cont = 0)
+           const char *selection = "",
+           TEveElement* cont = 0)
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadHits("EMCAL");

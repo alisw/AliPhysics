@@ -1,0 +1,121 @@
+diff a/EVE/EveDet/AliEveEMCALSModuleData.cxx b/EVE/EveDet/AliEveEMCALSModuleData.cxx	(rejected hunks)
+@@ -16,12 +16,14 @@
+ #include <TGeoBBox.h>
+ 
+ #include "AliEMCALGeometry.h"
++
+ #include "AliEveEMCALSModuleData.h"
+ 
+ class TClonesArray;
+ class TGeoNode;
+-class TGeoMatrix;
++//class TGeoMatrix;
+ class TVector2;
++
+ class AliEveEventManager;
+ 
+ /// \cond CLASSIMP
+@@ -44,15 +46,11 @@ Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox0 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox1 = 0.;
+ Float_t AliEveEMCALSModuleData::fgSModuleSmallDBox2 = 0.;
+ 
+-//Float_t AliEveEMCALSModuleData::fgSModuleCenter0 = 0.;
+-//Float_t AliEveEMCALSModuleData::fgSModuleCenter1 = 0.;
+-//Float_t AliEveEMCALSModuleData::fgSModuleCenter2 = 0.;
+-
+ //
+ // Constructor
+ //
+ //______________________________________________________________________________
+-AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, TGeoNode* node, TGeoHMatrix* m) :
++AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, TGeoNode* node): //, TGeoHMatrix* m) :
+   TObject(),
+   fGeom(geom),
+   fNode(node),
+@@ -64,9 +62,9 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom,
+   fPhiTileSize(0), fEtaTileSize(0),
+   fHitArray(0),
+   fDigitArray(0),
+-  fClusterArray(0),
+-  fMatrix(0),
+-  fHMatrix(m)
++  fClusterArray(0)
++//  fMatrix(0), 
++//  fHMatrix(m) 
+ {
+   Init(sm);
+ }
+@@ -87,9 +85,9 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom,
+   fPhiTileSize(esmdata.fPhiTileSize), fEtaTileSize(esmdata.fEtaTileSize),
+   fHitArray(esmdata.fHitArray),
+   fDigitArray(esmdata.fDigitArray),
+-  fClusterArray(esmdata.fClusterArray),
+-  fMatrix(esmdata.fMatrix),
+-  fHMatrix(esmdata.fHMatrix)
++  fClusterArray(esmdata.fClusterArray)
++//  fMatrix(esmdata.fMatrix),
++//  fHMatrix(esmdata.fHMatrix)
+ {
+   Init(esmdata.fNsm);
+ }
+@@ -111,7 +109,7 @@ AliEveEMCALSModuleData::~AliEveEMCALSModuleData()
+ }
+ 
+ ///
+-/// Release the SM data
++/// Release the SM data.
+ ///
+ //______________________________________________________________________________
+ void AliEveEMCALSModuleData::DropData()
+@@ -142,36 +140,33 @@ void AliEveEMCALSModuleData::Init(Int_t sm)
+   fPhiTileSize = fGeom->GetPhiTileSize();
+   fEtaTileSize = fGeom->GetPhiTileSize();
+ 
+-  TGeoBBox* bbbox  = (TGeoBBox*) fNode->GetDaughter(0) ->GetVolume()->GetShape();
+-  TGeoBBox* sbbox  = (TGeoBBox*) fNode->GetDaughter(10)->GetVolume()->GetShape();
+-  TGeoBBox* dbbox  = (TGeoBBox*) fNode->GetDaughter(12)->GetVolume()->GetShape();
+-  TGeoBBox* dsbbox = (TGeoBBox*) fNode->GetDaughter(18)->GetVolume()->GetShape();
+-
+-  fMatrix = (TGeoMatrix*) fNode->GetDaughter(sm)->GetMatrix();
++  //fMatrix = (TGeoMatrix*) fNode->GetDaughter(sm)->GetMatrix();
+ 
++  TGeoBBox * bbox  = (TGeoBBox*) fNode->GetDaughter(sm)->GetVolume()->GetShape();
++  
+   if(sm < 10)
+   {
+-    fgSModuleBigBox0 = bbbox->GetDX();
+-    fgSModuleBigBox1 = bbbox->GetDY();
+-    fgSModuleBigBox2 = bbbox->GetDZ();
++    fgSModuleBigBox0    = bbox->GetDX();
++    fgSModuleBigBox1    = bbox->GetDY();
++    fgSModuleBigBox2    = bbox->GetDZ();
+   }
+   else if(sm < 12) 
+   {
+-    fgSModuleSmallBox0 = sbbox->GetDX();
+-    fgSModuleSmallBox1 = sbbox->GetDY();
+-    fgSModuleSmallBox2 = sbbox->GetDZ();
++    fgSModuleSmallBox0  = bbox->GetDX();
++    fgSModuleSmallBox1  = bbox->GetDY();
++    fgSModuleSmallBox2  = bbox->GetDZ();
+   }  
+   else if(sm < 18) 
+   {
+-    fgSModuleDCalBox0 = dbbox->GetDX();
+-    fgSModuleDCalBox1 = dbbox->GetDY();
+-    fgSModuleDCalBox2 = dbbox->GetDZ();
++    fgSModuleDCalBox0   = bbox->GetDX();
++    fgSModuleDCalBox1   = bbox->GetDY();
++    fgSModuleDCalBox2   = bbox->GetDZ();
+   }  
+   else if(sm < 20) 
+   {
+-    fgSModuleSmallDBox0 = dsbbox->GetDX();
+-    fgSModuleSmallDBox1 = dsbbox->GetDY();
+-    fgSModuleSmallDBox2 = dsbbox->GetDZ();
++    fgSModuleSmallDBox0 = bbox->GetDX();
++    fgSModuleSmallDBox1 = bbox->GetDY();
++    fgSModuleSmallDBox2 = bbox->GetDZ();
+   }
+ }
+ 

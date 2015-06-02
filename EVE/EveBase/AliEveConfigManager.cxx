@@ -244,7 +244,7 @@ const char *gPictureSaveAsTypes[] = {"PNG Image", "*.png",
 
 void AliEveConfigManager::ConnectEventManagerSignals()
 {
-    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
+    AliEveEventManager *manager = AliEveEventManager::GetMaster();
     manager->Connect("StorageManagerOk()","AliEveConfigManager",this,"StorageManagerChangedState(=1)");
     manager->Connect("StorageManagerDown()","AliEveConfigManager",this,"StorageManagerChangedState(=0)");
 }
@@ -254,7 +254,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
   // Handle user selections from AliEve popup.
 
   static const TEveException kEH("AliEveConfigManager::AliEvePopupHandler ");
-
+    
   switch (id)
   {
 
@@ -1094,7 +1094,7 @@ void AliEveConfigManager::StorageManagerChangedState(int state)
     AliEveEventManager *manager = AliEveEventManager::GetMaster();
     AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
     
-    if (manager->IsOnlineMode()) {
+//    if (manager->IsOnlineMode()) {
         if (state == 0)// storage manager is down
         {
             listEventsTab->SetOfflineMode(kTRUE);
@@ -1103,7 +1103,7 @@ void AliEveConfigManager::StorageManagerChangedState(int state)
         {
             listEventsTab->SetOfflineMode(kFALSE);
         }
-    }
+//    }
 #endif
 }
 

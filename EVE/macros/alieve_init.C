@@ -122,7 +122,7 @@ void alieve_init(const TString& cdburi = "",
 
   Info("alieve_init", "Opening event %d from '%s' ...", event, path.Data());
   TString name("Event"); // CINT has trouble with direct "Event".
-  new AliEveEventManager(name, event);
+//  new AliEveEventManager(name, event);
   gEve->AddEvent(AliEveEventManager::GetMaster());
 }
 

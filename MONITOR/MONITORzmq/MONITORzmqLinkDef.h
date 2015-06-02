@@ -16,7 +16,7 @@
 #pragma link C++ class AliEventsCollectorThread+;
 #pragma link C++ class AliCommunicationThread+;
 #pragma link C++ class AliStorageServerThread+;
-#pragma link C++ class AliStorageEventManager+;     
+#pragma link C++ class AliZMQManager+;     
 #pragma link C++ class AliStorageAdministratorPanel+;
 #pragma link C++ class AliStorageAdministratorPanelMarkEvent+;
 #pragma link C++ class AliStorageAdministratorPanelListEvents+;

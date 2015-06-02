@@ -1,7 +1,7 @@
 #ifndef AliStorageAdministratorPanelMarkEvent_H
 #define AliStorageAdministratorPanelMarkEvent_H
 
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <TGLabel.h>
 #include <TGNumberEntry.h>
@@ -31,7 +31,7 @@ private:
 	void CloseWindow();
 
 	storageSockets fServerSocket;
-	AliStorageEventManager *fEventManager;
+	AliZMQManager *fEventManager;
 	
 	AliStorageAdministratorPanelMarkEvent(const AliStorageAdministratorPanelMarkEvent&);
 	AliStorageAdministratorPanelMarkEvent& operator=(const AliStorageAdministratorPanelMarkEvent&);

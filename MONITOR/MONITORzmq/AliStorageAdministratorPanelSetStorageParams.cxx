@@ -37,8 +37,7 @@ AliStorageAdministratorPanelSetStorageParams::AliStorageAdministratorPanelSetSto
 	fClientSocket(CLIENT_COMMUNICATION_REQ),
 	fEventManager(0)
 {
-	fEventManager = AliStorageEventManager::GetEventManagerInstance();
-	fEventManager->CreateSocket(fClientSocket);
+	fEventManager = AliZMQManager::GetInstance();
 	InitWindow();
 }
 
@@ -143,7 +142,8 @@ void AliStorageAdministratorPanelSetStorageParams::onSetParamsButton()
 	requestMessage->eventsInChunk = fEventsInChunkEntry->GetIntNumber();
 
 	fEventManager->Send(requestMessage,fClientSocket);
-	bool response = fEventManager->GetBool(fClientSocket);
+    bool response;
+    fEventManager->Get(&response,fClientSocket);
 	
 	if(response)
 	{

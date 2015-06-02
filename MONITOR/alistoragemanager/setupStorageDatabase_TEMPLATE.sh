@@ -49,6 +49,8 @@ system text(7) DEFAULT NULL,\
 multiplicity int(5) DEFAULT NULL,\
 permanent tinyint(1) DEFAULT NULL,\
 file_path text(100) DEFAULT NULL,\
+trigger_mask bigint(20) DEFAULT NULL,\
+trigger_mask_next bigint(20) DEFAULT NULL,\
 PRIMARY KEY(run_number,event_number));"
 
 echo "-----------------------------"

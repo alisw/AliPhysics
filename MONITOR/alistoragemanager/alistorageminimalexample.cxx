@@ -1,4 +1,4 @@
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 #include <iostream>
 #include <TFile.h>
 #include <TThread.h>
@@ -16,8 +16,7 @@ bool fIsNewEventAvaliable = false;
 
 int main()
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
@@ -27,7 +26,7 @@ int main()
     
     while(1)
     {
-        tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB);
+        eventManager->Get(tmpEvent,EVENTS_SERVER_SUB);
         
         if(tmpEvent)
         {

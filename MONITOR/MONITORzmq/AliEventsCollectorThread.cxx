@@ -1,5 +1,5 @@
 #include "AliEventsCollectorThread.h"
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <TSystemDirectory.h>
 
@@ -48,9 +48,8 @@ void AliEventsCollectorThread::Kill()
 
 void AliEventsCollectorThread::CollectorHandle()
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    if(eventManager->CreateSocket(EVENTS_SERVER_SUB)){fManager->fConnectionStatus=STATUS_OK;}
-    else{fManager->fConnectionStatus=STATUS_ERROR;}
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
+    eventManager->CreateSocket(EVENTS_SERVER_SUB);
     
     int chunkNumber=0;
     int previousChunkNumber=-1;
@@ -60,12 +59,14 @@ void AliEventsCollectorThread::CollectorHandle()
     vector<struct eventStruct> eventsToUpdate;
     struct eventStruct currentEvent;
     
+    bool receiveStatus = false;
+    
     while(!fFinished)
     {
         cout<<"CLIENT -- waiting for event..."<<endl;
-        event = eventManager->GetEvent(EVENTS_SERVER_SUB,5000);
+        receiveStatus = eventManager->Get(event,EVENTS_SERVER_SUB);
         
-        if(event)
+        if(event && receiveStatus)
         {
             cout<<"CLIENT -- received event"<<endl;
             fManager->fReceivingStatus=STATUS_OK;
@@ -188,13 +189,20 @@ void AliEventsCollectorThread::CollectorHandle()
                 eventFile->Close();
                 delete eventFile;
 		TThread::Lock();
+                
+                cout<<"COLLECTOR -- events mask:"<<event->GetTriggerMask()<<endl;
+                cout<<"COLLECTOR -- events mask next 50:"<<event->GetTriggerMaskNext50()<<endl;
+                
                 fDatabase->InsertEvent(event->GetRunNumber(),
                                        event->GetEventNumberInFile(),
                                        (char*)event->GetBeamType(),
                                        event->GetMultiplicity()->GetNumberOfTracklets(),
                                        Form("%s/run%d/event%d.root",fManager->fStoragePath.c_str(),
                                             event->GetRunNumber(),
-                                            eventsInChunk));
+                                            eventsInChunk),
+                                       event->GetTriggerMask(),
+                                       event->GetTriggerMaskNext50()
+                                       );
 		TThread::UnLock();
                 currentEvent.runNumber = event->GetRunNumber();
                 currentEvent.eventNumber = event->GetEventNumberInFile();

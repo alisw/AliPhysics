@@ -1,10 +1,17 @@
 #include "AliStorageServerThread.h"
 #include "AliStorageTypes.h"
 #include "AliESDEvent.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
+#include "AliOnlineReconstructionUtil.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
 
 #include <iostream>
 #include <fstream>
 
+#include <TEnv.h>
 #include <TFile.h>
 #include <TThread.h>
 
@@ -52,85 +59,133 @@ AliStorageServerThread::~AliStorageServerThread()
 
 void AliStorageServerThread::StartCommunication()
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     storageSockets socket = SERVER_COMMUNICATION_REP;
     eventManager->CreateSocket(socket);
     
     struct serverRequestStruct *request;
     
+    bool receiveStatus = false;
+    bool sendStatus = false;
+    
     while(1)
     {
         cout<<"Server waiting for requests"<<endl;
-        request = eventManager->GetServerStruct(socket);
-        cout<<"Server received request"<<endl;
+        do{ // try to receive requests until success
+            receiveStatus = eventManager->Get(request,socket);
+        } while(receiveStatus == false);
+        
+        cout<<"Server received request:"<<request->messageType<<endl;
         switch(request->messageType)
         {
             case REQUEST_LIST_EVENTS:
             {
                 cout<<"SERVER -- received request for list of events"<<endl;
-                vector<serverListStruct> result = fDatabase->GetList(request->list);
+                struct listRequestStruct list;
+                list.runNumber[0] = request->runNumber[0];
+                list.runNumber[1] = request->runNumber[1];
+                list.eventNumber[0] = request->eventNumber[0];
+                list.eventNumber[1] = request->eventNumber[1];
+                list.marked[0] = request->marked[0];
+                list.marked[1] = request->marked[1];
+                list.multiplicity[0] = request->multiplicity[0];
+                list.multiplicity[1] = request->multiplicity[1];
+                strcpy(list.system[0],request->system[0]);
+                strcpy(list.system[1],request->system[1]);
+                strcpy(list.triggerClass,request->triggerClass);
+                
+                vector<serverListStruct> result = fDatabase->GetList(list);
                 cout<<"SERVER -- got list from database"<<endl;
-                eventManager->Send(result,socket);
-                cout<<"SERVER -- list was sent"<<endl;
+                sendStatus = eventManager->Send(result,socket);
+                if(sendStatus){cout<<"SERVER -- list was sent"<<endl;}
+                else{cout<<"SERVER -- couldn't send list"<<endl;}
                 break;
             }
             case REQUEST_GET_EVENT:
             {
-	      cout<<"get event"<<endl;
-                TThread::Lock();
-                AliESDEvent *event = fDatabase->GetEvent(request->event);
-                TThread::UnLock();
-                eventManager->Send(event,socket);
+                cout<<"get event"<<endl;
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                AliESDEvent *event = fDatabase->GetEvent(ev);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
             case REQUEST_GET_NEXT_EVENT:
             {
                 cout<<"NEXT EVENT request received"<<endl;
-                AliESDEvent *event = fDatabase->GetNextEvent(request->event);
-                eventManager->Send(event,socket);
+                
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                AliESDEvent *event = fDatabase->GetNextEvent(ev);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
             case REQUEST_GET_PREV_EVENT:
             {
-	      cout<<"PREV request"<<endl;
-                AliESDEvent *event = fDatabase->GetPrevEvent(request->event);
-                eventManager->Send(event,socket);
+                cout<<"PREV request"<<endl;
+                
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                AliESDEvent *event = fDatabase->GetPrevEvent(ev);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
             case REQUEST_GET_LAST_EVENT:
             {
-	      cout<<"LAST request"<<endl;
+                cout<<"LAST request"<<endl;
                 AliESDEvent *event = fDatabase->GetLastEvent();
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
             case REQUEST_GET_FIRST_EVENT:
             {
-	      cout<<"FIRST request"<<endl;
+                cout<<"FIRST request"<<endl;
                 AliESDEvent *event = fDatabase->GetFirstEvent();
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
             case REQUEST_MARK_EVENT:
             {
-	      cout<<"MARK request"<<endl;
-                struct eventStruct *markData  = &(request->event);
-                eventManager->Send(MarkEvent(*markData),socket);
+                cout<<"MARK request"<<endl;
+                struct eventStruct ev;
+                ev.runNumber = request->eventsRunNumber;
+                ev.eventNumber = request->eventsEventNumber;
+                
+                struct eventStruct *markData  = &(ev);
+                sendStatus = eventManager->Send(MarkEvent(*markData),socket);
+                break;
+            }
+            case REQUEST_GET_TRIGGER_LIST:
+            {
+                cout<<"Get trigger list request"<<endl;
+                vector<string100> classes = GetTriggerClasses();
+                cout<<"SERVER -- got set from database"<<endl;
+                sendStatus = eventManager->Send(classes,socket);
                 break;
             }
             default:
-	      {
-		cout<<"unknown request message"<<endl;
-		eventManager->Send(false,socket);
+            {
+                cout<<"SERVER -- unknown request message"<<endl;
+                sendStatus = false;
                 break;
-	      }
+            }
         }
-        
+        if(sendStatus == false)
+        {
+            eventManager->RecreateSocket(socket);// if couldn't send, recreate socket to be able to receive messages (currently socket is in SEND state)
+        }
+        delete request;
     }
 }
 
@@ -198,4 +253,66 @@ bool AliStorageServerThread::MarkEvent(struct eventStruct event)
     //	if(currentRun)delete currentRun;//this line crashes if there is no permanent file yet
     return true;
 }
+
+vector<string100> AliStorageServerThread::GetTriggerClasses()
+{
+    set<string> setResult;
+    
+    // craete CDB manager:
+    TEnv settings;
+    settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+    const char *cdbPath = settings.GetValue("cdb.defaultStorage", "");
+    AliCDBManager *man = AliCDBManager::Instance();
+    man->SetDefaultStorage(cdbPath);
+    
+    // get list of runs stored in Storage's database:
+    vector<int> runs = fDatabase->GetListOfRuns();
+    
+    // get trigger classes for all runs:
+    AliCDBEntry *cdbEntry;
+    AliTriggerConfiguration *cfg;
+    TObjArray trarr;
+    AliCDBPath path("GRP/CTP/Config");
+
+    AliTriggerClass* trgclass;
+    
+    for(int i=0;i<runs.size();i++)
+    {
+        man->SetRun(runs[i]);
+        cdbEntry = man->Get(path);
+        cfg = (AliTriggerConfiguration*)cdbEntry->GetObject();
+        trarr = cfg->GetClasses();
+        
+        for (int j=0;j<trarr.GetEntriesFast();j++)
+        {
+            trgclass = (AliTriggerClass*)trarr.At(j);
+            if(strcmp(trgclass->GetName(),"NONE")!=0)
+            {
+                setResult.insert(trgclass->GetName());
+            }
+            else
+            {
+                cout<<"Trigger classes not defined for run "<<runs[i]<<endl;
+                cout<<"This may indicate problems with OCDB"<<endl;
+            }
+        }
+    }
+    
+    vector<string100> result;
+    set<string>::iterator it;
+    
+    for (it = setResult.begin(); it != setResult.end(); ++it)
+    {
+        string str = *it;
+        string100 cls(str.c_str());
+        result.push_back(cls);
+    }
+    return result;
+}
+
+
+
+
+
+
 

@@ -10,7 +10,7 @@
 /// \file emcal_esdcells.C
 /// \brief Visualize EMCAL ESD cells
 ///
-/// A macro to read and visualize EMCAL digits. 
+/// A macro to read and visualize EMCAL digits.
 /// Standalone, it does not used the goodies of the classes AliEveEMCALXXX.
 /// It could be used as a simple testing tool for further development in the classes.
 ///
@@ -46,7 +46,7 @@
 #endif
 
 void emcal_esdcells()
-{  
+{
   AliEveEventManager::AssertGeometry();
   
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");

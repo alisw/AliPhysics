@@ -1,4 +1,4 @@
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 #include "AliStorageTypes.h"
 #include <iostream>
 #include <sstream>
@@ -47,13 +47,12 @@ stringstream& getXml(AliESDEvent *event)
 
 int main()
 {
-	AliStorageEventManager *manager = AliStorageEventManager::GetEventManagerInstance();
-	manager->CreateSocket(EVENTS_SERVER_SUB);
+	AliZMQManager *manager = AliZMQManager::GetInstance();
 	AliESDEvent *event;
 
 	while(1)
 	{
-		event = manager->GetEvent(EVENTS_SERVER_SUB);		
+        manager->Get(event,EVENTS_SERVER_SUB);
 		cout<<"sending xml"<<endl;
 		manager->Send(getXml(event),XML_PUB);
 		cout<<"xml sent"<<endl;

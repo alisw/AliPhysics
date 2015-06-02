@@ -32,7 +32,7 @@ void DrawDeep(TEveGeoShape *gsre) {
   } else {
     
     gsre->SetRnrSelf(kTRUE);
-    gsre->SetMainColor(3);
+    gsre->SetMainColor(kGray);
     gsre->SetMainTransparency(80);
     
   }

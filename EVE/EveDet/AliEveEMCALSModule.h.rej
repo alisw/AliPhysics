@@ -1,0 +1,104 @@
+diff a/EVE/EveDet/AliEveEMCALSModule.h b/EVE/EveDet/AliEveEMCALSModule.h	(rejected hunks)
+@@ -16,29 +16,25 @@
+ 
+ #include "AliEveEMCALSModuleData.h"
+ 
+-class AliEveEMCALData;
++class TStyle;
++class TBuffer3DTypes;
++class TBuffer3D;
++class TVirtualPad;
++class TVirtualViewer3D;
++class TClonesArray;
++class TTree;
++class TGedFrame;
++
+ class TEveQuadSet;
+ class TEveBoxSet;
+ class TEveFrameBox;
+ class TEvePointSet;
+-class TClonesArray;
+-class TTree;
+-class TGedFrame;
+-class TGeoNode; 
+-class TGeoMatrix; 
++class TEveTrans;
++
+ class AliRun;
+-class AliEMCALGeometry;
+ class AliESDEvent;
+-class AliEMCAL;
+ 
+-class TEveTrans;
+-class TStyle;
+-class TBuffer3DTypes;
+-class TBuffer3D;
+-class TVirtualPad;
+-class TVirtualViewer3D;
+-class AliEMCALHit;
+-class AliEMCALDigit;
++class AliEveEMCALData;
+ 
+ class AliEveEMCALSModule : public TEveElement,
+                            public TNamed,
+@@ -51,11 +47,9 @@ class AliEveEMCALSModule : public TEveElement,
+   
+   ~AliEveEMCALSModule();
+ 
+-  void DropData() const;
+-
+-  virtual Bool_t CanEditMainColor()        const { return kTRUE      ; }
++  virtual Bool_t CanEditMainColor()        const { return kTRUE      ; } // Remove?
+ 
+-  void  SetDataSource(AliEveEMCALData * const data);
++  void  SetDataSource(AliEveEMCALData * data);
+   
+   void  SetSModuleID(Int_t id);
+   
+@@ -63,6 +57,8 @@ class AliEveEMCALSModule : public TEveElement,
+   
+   const AliEveEMCALData* GetData()         const { return fEMCALData ; }
+   
++  void  DropData()                               { fEMCALSModuleData->DropData() ; }
++  
+   AliEveEMCALSModuleData* GetSModuleData() const ;
+   
+   Int_t GetID()                            const { return fSModuleID ; }
+@@ -71,20 +67,26 @@ class AliEveEMCALSModule : public TEveElement,
+   
+   void  SetHitSize(Int_t size);
+ 
+-  void UpdateQuads();
++  void  UpdateQuads(Bool_t iHits, Bool_t iDigits, Bool_t iClusters);
+ 
++  TEveQuadSet * GetDigitQuadSet()          const { return fQuadSet   ; }
++  
++  TEveQuadSet * GetClusterQuadSet()        const { return fQuadSet2  ; }
++  
++  TEvePointSet* GetHitPointSet()           const { return fPointSet  ; }
++    
+  protected:
+   
+-  AliEveEMCALData         *fEMCALData;         ///<  Data for the current event
+-  AliEveEMCALSModuleData  *fEMCALSModuleData;  ///<  Data of Super Module (SM)
+-  Color_t                 fFrameColor;         ///<  Main coloring
+-  Int_t                   fSModuleID;          ///<  Id of super module, 0 to 11
+-  TEveQuadSet             *fQuadSet;           ///<  Digit container
+-  TEveQuadSet             *fQuadSet2;          ///<  Cluster container
+-  TEvePointSet            *fPointSet;          ///<  Hit container
+-  Int_t                   fClusterSize;        ///<  Cluster point size
+-  Int_t                   fHitSize;            ///<  Hit point size
+-  Int_t                   fDebug;              ///<  Debug option
++  AliEveEMCALData          *fEMCALData;        ///<  Data for the current event
++  AliEveEMCALSModuleData   *fEMCALSModuleData; ///<  Data of Super Module (SM)
++  Color_t                   fFrameColor;       ///<  Main coloring
++  Int_t                     fSModuleID;        ///<  Id of super module, 0 to 11
++  TEveQuadSet              *fQuadSet;          ///<  Digit container
++  TEveQuadSet              *fQuadSet2;         ///<  Cluster container
++  TEvePointSet             *fPointSet;         ///<  Hit container
++  Int_t                     fClusterSize;      ///<  Cluster point size
++  Int_t                     fHitSize;          ///<  Hit point size
++  Int_t                     fDebug;            ///<  Debug option
+ 
+   static void InitStatics(AliEveEMCALSModuleData* md);
+ 

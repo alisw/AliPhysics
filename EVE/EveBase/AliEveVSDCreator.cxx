@@ -736,7 +736,7 @@ void AliEveVSDCreator::ConvertV0()
     fTreeV0->Fill();
   }
   // if (esdEvent->GetNumberOfV0s()) fTreeV0->BuildIndex("label");
-  delete esdEvent;
+  //delete esdEvent;
 }
 
 /******************************************************************************/

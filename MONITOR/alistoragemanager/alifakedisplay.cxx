@@ -1,22 +1,16 @@
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 #include "AliStorageTypes.h"
 #include "AliESDEvent.h"
 #include "AliESDRun.h"
 
 #include <iostream>
 
+#include "zmq.h"
+
 #include <TThread.h>
 #include <TFile.h>
 
 using namespace std;
-
-/* parameters:
- 
- 0 - connect directly to reconstruction socket
- 1 - connect to Storage Manager and ask for last event
- 2 - connect to alieventserver, receive in thread and use in main thread
- 
- */
 
 // global variables:
 AliESDEvent *currentEvent[2];
@@ -37,24 +31,24 @@ int main(int argc, char **argv)
         cout<<"mode:"<<endl;
         cout<<"0 - connect directly to reconstruction socket"<<endl;
         cout<<"1 - connect to Storage Manager and ask for last event"<<endl;
+        cout<<"2 - connect to alieventserver, receive in thread and use in main thread"<<endl;
         cout<<"3 - connect to Storage Manager, download list of perm events and ask for them in loop"<<endl;
         return 0;
     }
     
     storageSockets socket;
-    AliStorageEventManager *manager = AliStorageEventManager::GetEventManagerInstance();
+    AliZMQManager *manager = AliZMQManager::GetInstance();
     AliESDEvent *event;
     struct recPointsStruct *files;
     
     if(atoi(argv[1])==0)
     {
         manager->CreateSocket(EVENTS_SERVER_SUB);
-	manager->CreateSocket(ITS_POINTS_SUB);
-        cout<<"Socket created"<<endl;
+        
         while(1)
         {
             cout<<"waiting for event..."<<flush;
-            event = manager->GetEvent(EVENTS_SERVER_SUB);
+            manager->Get(event,EVENTS_SERVER_SUB);
             
             if(event)
             {
@@ -104,24 +98,35 @@ int main(int argc, char **argv)
     {
         socket = SERVER_COMMUNICATION_REQ;
         manager->CreateSocket(socket);
+        
+        struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+        requestMessage->messageType = REQUEST_GET_LAST_EVENT;
+        
         while(1)
         {
-            struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-            requestMessage->messageType = REQUEST_GET_LAST_EVENT;
+            sleep(1);
+            if(!manager->Send(requestMessage,socket))
+            {
+                cout<<"Couldn't send request"<<endl;
+                continue;
+            }
             
-            manager->Send(requestMessage,socket);
-            event = manager->GetEvent(socket);
+            if(!manager->Get(event,socket))
+            {
+                cout<<"Couldn't receive response"<<endl;
+                manager->RecreateSocket(socket);
+                continue;
+            }
+            
             if(event)
             {
                 cout<<"Last event - Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
-                
                 delete event;
             }
             else
             {
                 cout<<"NO EVENT"<<endl;
             }
-            sleep(1);
         }
     }
     else if(atoi(argv[1])==2)
@@ -160,26 +165,28 @@ int main(int argc, char **argv)
     else if(atoi(argv[1])==3)
     {
         socket = SERVER_COMMUNICATION_REQ;
-        manager->CreateSocket(socket);
-        
-        
-        struct listRequestStruct list;
-        list.runNumber[0]=0;
-        list.runNumber[1]=999999;
-        list.eventNumber[0]=0;
-        list.eventNumber[1]=999999;
-        list.marked[0]=1;
-        list.marked[1]=1;
-        list.multiplicity[0]=1;
-        list.multiplicity[1]=999999;
-        strcpy(list.system[0],"p-p");
-        strcpy(list.system[1],"A-A");
+
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
         requestMessage->messageType = REQUEST_LIST_EVENTS;
-        requestMessage->list = list;
+//        requestMessage->list = list;
+        
+//        struct listRequestStruct list;
+        requestMessage->runNumber[0]=0;
+        requestMessage->runNumber[1]=999999;
+        requestMessage->eventNumber[0]=0;
+        requestMessage->eventNumber[1]=999999;
+        requestMessage->marked[0]=1;
+        requestMessage->marked[1]=1;
+        requestMessage->multiplicity[0]=1;
+        requestMessage->multiplicity[1]=999999;
+        strcpy(requestMessage->system[0],"p-p");
+        strcpy(requestMessage->system[1],"A-A");
+
         
         manager->Send(requestMessage,socket);
-        vector<serverListStruct> receivedList = manager->GetServerListVector(socket,3000);
+        vector<serverListStruct> *tmpVector;
+        manager->Get(tmpVector,socket);
+        vector<serverListStruct> &receivedList = *tmpVector;
         
         cout<<"FAKE DISPLAY -- received list of marked events"<<endl;
         
@@ -192,15 +199,15 @@ int main(int argc, char **argv)
         {
             if(iter<receivedList.size())
             {
-                struct eventStruct mark;
-                mark.runNumber = receivedList[iter].runNumber;
-                mark.eventNumber = receivedList[iter].eventNumber;
+//                struct eventStruct mark;
+                requestMessage->eventsRunNumber = receivedList[iter].runNumber;
+                requestMessage->eventsEventNumber = receivedList[iter].eventNumber;
                 
                 requestMessage->messageType = REQUEST_GET_EVENT;
-                requestMessage->event = mark;
+//                requestMessage->event = mark;
                 
                 manager->Send(requestMessage,socket);
-                event = manager->GetEvent(socket);
+                manager->Get(event,socket);
              
                 if(event)
                 {
@@ -216,14 +223,127 @@ int main(int argc, char **argv)
             else{iter=0;}
         }
     }
+    else if(atoi(argv[1])==4)
+    {
+        cout<<"***************************"<<endl;
+        cout<<"simulation of server thread"<<endl;
+        cout<<"***************************"<<endl;
+        socket = SERVER_COMMUNICATION_REP;
+        
+        long request;
+        manager->Get(&request,socket);
+        cout<<"\nreceived request:"<<request<<endl;
+        
+        if(request==55)
+        {
+            vector<serverListStruct> eventsVector;
+            
+            for(int i=0;i<5;i++)
+            {
+                serverListStruct resultList;
+                
+                resultList.runNumber = i;
+                resultList.eventNumber = i;
+                strcpy(resultList.system, "pp");
+                resultList.multiplicity = 77;
+                resultList.marked = 0;
+                
+                eventsVector.push_back(resultList);
+            }
+            manager->Send(eventsVector,socket);
+            cout<<"sent reply"<<endl;
+        }
+        
+        cout<<"waiting for bool"<<endl;
+        bool boolMessage;
+        manager->Get(&boolMessage,socket);
+        cout<<"received bool:"<<boolMessage<<endl;
+        
+        cout<<"sending server request struct"<<endl;
+        struct serverRequestStruct *srs = new struct serverRequestStruct;
+       
+        srs->messageType = REQUEST_GET_EVENT;
+//        struct eventStruct es;
+        srs->eventsRunNumber = 197669;
+        srs->eventsEventNumber = 123;
+//        srs->event = es;
+        
+        manager->Send(srs,socket);
+        cout<<"server request struct sent"<<endl;
+        
+        cout<<"waiting for client struct"<<endl;
+        struct clientRequestStruct *crs;
+        manager->Get(crs,socket);
+        cout<<"received client request struct:"<<crs->messageType<<"\tmaxOcc:"<<crs->maxOccupation<<"\tmaxsize:"<<crs->maxStorageSize<<endl;
+        
+        
+        cout<<"sending AliESDevent"<<endl;
+        TFile *esdFile = TFile::Open("~/Desktop/AliESDs.root");
+        AliESDEvent *event = new AliESDEvent();
+        TTree *esdTree = (TTree*)esdFile->Get("esdTree");
+        event->ReadFromTree(esdTree);
+        
+        esdTree->GetEvent(0);
+        cout<<"run number:"<<event->GetRunNumber()<<endl;
+        cout<<"tracks:"<<event->GetNumberOfTracks()<<endl;
+        
+        manager->Send(event,socket);
+        cout<<"event sent"<<endl;
+    }
+    else if(atoi(argv[1])==5)
+    {
+        cout<<"****************"<<endl;
+        cout<<"simulation of ED"<<endl;
+        cout<<"****************"<<endl;
+        socket = SERVER_COMMUNICATION_REQ;
+        
+        cout<<"\nsending long request"<<endl;
+        manager->Send((long)55,socket);
+        
+        vector<serverListStruct> *tmpVector;
+        manager->Get(tmpVector,socket);
+        vector<serverListStruct> &result = *tmpVector;
+        
+        cout<<"received vector list:"<<endl;
+        for(int i=0;i<result.size();i++)
+        {
+            cout<<result[i].runNumber<<"\t"<<result[i].system<<endl;
+        }
+        cout<<"sending bool message:"<<true<<endl;
+        manager->Send(true,socket);
+        cout<<"bool message sent"<<endl;
+        
+        cout<<"waiting for server request struct"<<endl;
+        struct serverRequestStruct *srs;
+        manager->Get(srs,socket);
+        
+        cout<<"received server request struct:"<<srs->messageType<<"\trun:"<<srs->eventsRunNumber<<"\tevent:"<<srs->eventsEventNumber<<endl;
+        
+        cout<<"sending client request struct"<<endl;
+        struct clientRequestStruct *crs = new struct clientRequestStruct;
+        
+        crs->messageType = REQUEST_SAVING;
+        crs->maxStorageSize = 234;
+        crs->maxOccupation = 0;
+        crs->removeEvents = 0;
+        crs->eventsInChunk = 0;
+        
+        manager->Send(crs,socket);
+        cout<<"client request struct sent"<<endl;
+        
+        cout<<"waiting for AliESDevent"<<endl;
+        AliESDEvent *event = NULL;
+        manager->Get(event,socket);
+        
+        cout<<"received event with run number"<<event->GetRunNumber()<<"\ttracks:"<<event->GetNumberOfTracks()<<endl;
+    }
     
     return 0;
 }
 
 void* GetNextEvent(void*)
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     currentEvent[0]=0;
     currentEvent[1]=0;
@@ -234,7 +354,7 @@ void* GetNextEvent(void*)
     while(1)
     {
         //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
-        tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB);
+        eventManager->Get(tmpEvent,EVENTS_SERVER_SUB);
         
         if(tmpEvent)
         {

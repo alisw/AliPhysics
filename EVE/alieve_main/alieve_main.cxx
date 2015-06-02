@@ -30,6 +30,10 @@
 #include <AliEveApplication.h>
 #include <AliEveMainWindow.h>
 
+#include "AliEveOffline.h"
+#ifdef ZMQ
+#include "AliEveOnline.h"
+#endif
 
 #include <iostream>
 using namespace std;
@@ -65,6 +69,24 @@ int main(int argc, char **argv)
 
     gROOT->SetMacroPath(macPath);
 
+    bool storageManager=false;
+    bool mfFix=false;
+    bool onlineMode=false;
+    const char* cdbPath="";
+    
+    for (int i=0; i<argc; i++)
+    {
+        if(strcmp(argv[i],"online")==0){    onlineMode = true; }
+        if(strcmp(argv[i],"local") ==0){    cdbPath = "local:///local/cdb"; }
+        if(strcmp(argv[i],"mc")==0){        cdbPath = "mcideal://"; }
+        if(strcmp(argv[i],"raw")==0){       cdbPath = "raw://";}
+        if(strcmp(argv[i],"mcfull")==0){    cdbPath = "mcfull://"; }
+        if(strcmp(argv[i],"mcresidual")==0){cdbPath = "mcresidual://"; }
+
+        if(strcmp(argv[i],"sm")==0){storageManager=true;}
+        if(strcmp(argv[i],"mffix")==0){mfFix=true;}
+    }
+    
     // make sure logger is instantiated
     AliLog::GetRootLogger();
     TRint *app = new TRint("App", &argc, argv);
@@ -83,6 +105,24 @@ int main(int argc, char **argv)
         AliErrorGeneral("alieve_main",exc.Data());
     }
 
+    if(mfFix){gROOT->ProcessLine(".x mf_fix.C");}
+
+    AliEveOffline *offline = NULL;
+    
+    if(onlineMode)
+    {
+#ifdef ZMQ
+        AliEveOnline *online = new AliEveOnline(storageManager);
+#else
+        printf("\nOnline mode not avaliable -- no ZMQ installed!\n");
+        return 1;
+#endif
+    }
+    else if(strcmp(cdbPath,"")!=0)
+    {
+        offline = new AliEveOffline(".",cdbPath);
+    }
+    
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
     app->Run(kTRUE);
 

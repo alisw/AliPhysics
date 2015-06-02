@@ -27,7 +27,7 @@ TEveCompound* assert_vertex_parent(const TString& name, Color_t col)
   // that is, remove the color var and pass viz-db tag.
 
   TEveCompound* parent = dynamic_cast<TEveCompound*>
-    (AliEveEventManager::GetCurrent()->FindChild(name));
+    (AliEveEventManager::GetMaster()->FindChild(name));
   if (parent == 0)
   {
     parent = new TEveCompound(name);

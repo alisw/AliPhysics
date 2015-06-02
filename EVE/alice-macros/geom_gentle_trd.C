@@ -43,7 +43,7 @@ TEveGeoShape* geom_gentle_trd()
           break; 
         }
       }
-      lvl2->SetMainColor(3);
+      lvl2->SetMainColor(kGray);
       lvl2->SetMainTransparency(80);
 
       ++sm;

@@ -11,13 +11,13 @@
 ///
 /// A macro to read and visualize EMCAL data in different formats with the help of
 /// the classes managing the EMCAL data visulization:
-/// * AliEveEMCALData, 
+/// * AliEveEMCALData,
 /// * AliEveEMCALSModule,
 /// * AliEveEMCALSModuleData.
 ///  
 /// This macro: 
 /// * can read hits, digits and clusters information from AliRunLoader:
-///     * emcal_data->LoadHits(); 
+///     * emcal_data->LoadHits();
 ///     * emcal_data->LoadDigits();
 ///     * emcal_data->LoadRecPoints();
 ///     * Same methods with the AliEMCALLoader implemented in the class AliEveEMCALData, (emcal_data->Load(DataType)FromEMCALLoader()) but it does not work.
@@ -74,7 +74,7 @@ class AliEveEMCALData;
 AliEveEMCALData * emcal_data = 0;
 
 void emcal_all
-(  
+(
  Bool_t iLoader    = 1,
  Bool_t iESD       = 0,
  Bool_t iHits      = 0,
@@ -82,7 +82,6 @@ void emcal_all
  Bool_t iClusters  = 0
  )
 {
- 
 //  printf("------------------------------------------------------------------------------------\n");
 //  printf("emcal_all.C - Selected options: Loaders %d, ESDs %d; Hits %d, Digits %d, Clusters %d\n",iLoader,iESD,iHits,iDigits,iClusters);
 //  printf("------------------------------------------------------------------------------------\n");

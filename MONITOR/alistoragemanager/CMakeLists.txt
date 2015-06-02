@@ -58,6 +58,7 @@ install(TARGETS alistorageadmin RUNTIME DESTINATION bin)
 # alifakedisplay executable
 add_executable(alifakedisplay alifakedisplay.cxx)
 target_link_libraries(alifakedisplay MONITOR MONITORzmq)
+#target_link_libraries(alifakedisplay -lzmq)
 if(PYTHIA6)
     target_link_libraries(alifakedisplay EVGEN HepMC HepMCParser)
 endif(PYTHIA6)

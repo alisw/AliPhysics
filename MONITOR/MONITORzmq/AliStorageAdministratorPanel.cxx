@@ -61,9 +61,9 @@ AliStorageAdministratorPanel::AliStorageAdministratorPanel() :
 	InitWindow();
     
 	//create event manager
-	fEventManager = AliStorageEventManager::GetEventManagerInstance();
-	fEventManager->CreateSocket(fServerSocket);
-	fEventManager->CreateSocket(fCommunicationSocket);
+	fEventManager = AliZMQManager::GetInstance();
+    fEventManager->CreateSocket(CLIENT_COMMUNICATION_REQ);
+    fEventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
 
 	// start communication with client thread
 	fCommunicationThread = new TThread("fCommunicationThread",
@@ -98,7 +98,7 @@ void AliStorageAdministratorPanel::CheckClientState(int option)
 {
 	struct clientRequestStruct *request = new struct clientRequestStruct;
 	request->messageType = option;
-	if(!fEventManager->Send(request,fCommunicationSocket,10000))
+	if(!fEventManager->Send(request,fCommunicationSocket))
 	{
 		SetLabel(fConnectionLabel,STATUS_DOWN);
 		SetLabel(fDataLabel,STATUS_DOWN);
@@ -112,11 +112,11 @@ void AliStorageAdministratorPanel::CheckClientState(int option)
 	
 	if(option == REQUEST_GET_PARAMS)
 	{
-		responseParams = fEventManager->GetClientStruct(fCommunicationSocket);
+        fEventManager->Get(responseParams,fCommunicationSocket);
 	}
 	else
 	{
-		response = fEventManager->GetLong(fCommunicationSocket);
+        fEventManager->Get(&response,fCommunicationSocket);
 	}
 	switch(option)
 	{
@@ -346,25 +346,28 @@ void AliStorageAdministratorPanel::onServerMarkEvent()
 void AliStorageAdministratorPanel::onServerMarkAllEvents()
 {
     // get list of all events:
-    struct listRequestStruct list;
-    
-    list.runNumber[0]=0;
-    list.runNumber[1]=999999;
-    list.eventNumber[0]=0;
-    list.eventNumber[1]=999999;
-    list.marked[0]=1;
-    list.marked[1]=0;
-    list.multiplicity[0]=1;
-    list.multiplicity[1]=999999;
-    strcpy(list.system[0],"p-p");
-    strcpy(list.system[1],"A-A");
-    
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
     requestMessage->messageType = REQUEST_LIST_EVENTS;
-    requestMessage->list = list;
+//    requestMessage->list = list;
+
+//    struct listRequestStruct list;
+    
+    requestMessage->runNumber[0]=0;
+    requestMessage->runNumber[1]=999999;
+    requestMessage->eventNumber[0]=0;
+    requestMessage->eventNumber[1]=999999;
+    requestMessage->marked[0]=1;
+    requestMessage->marked[1]=0;
+    requestMessage->multiplicity[0]=1;
+    requestMessage->multiplicity[1]=999999;
+    strcpy(requestMessage->system[0],"p-p");
+    strcpy(requestMessage->system[1],"A-A");
+    
     
     fEventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-    vector<serverListStruct> receivedList = fEventManager->GetServerListVector(SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> *tmpVector;
+    fEventManager->Get(tmpVector,SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> &receivedList = *tmpVector;
     
     cout<<"ADMIN PANEL -- received list of marked events:"<<receivedList.size()<<endl;
     
@@ -374,16 +377,18 @@ void AliStorageAdministratorPanel::onServerMarkAllEvents()
     for(i=0;i<receivedList.size();i++)
     {
         cout<<"marking:"<<i<<endl;
-        struct eventStruct mark;
-        mark.runNumber   = receivedList[i].runNumber;
-        mark.eventNumber = receivedList[i].eventNumber;
-     
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
         requestMessage->messageType = REQUEST_MARK_EVENT;
-        requestMessage->event = mark;
+//        requestMessage->event = mark;
+
+//        struct eventStruct mark;
+        requestMessage->eventsRunNumber   = receivedList[i].runNumber;
+        requestMessage->eventsEventNumber = receivedList[i].eventNumber;
+     
         
         fEventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-        bool response = fEventManager->GetBool(SERVER_COMMUNICATION_REQ);
+        bool response;
+        fEventManager->Get(&response,SERVER_COMMUNICATION_REQ);
         delete requestMessage;
         if(!response){failCounter++;}
     }
@@ -410,14 +415,15 @@ void AliStorageAdministratorPanel::onServerGetEvent()
 	int eventNumber=168;
 	
 	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-	struct eventStruct mark;
-	mark.runNumber = runNumber;
-	mark.eventNumber = eventNumber;
+//	struct eventStruct mark;
+	requestMessage->eventsRunNumber = runNumber;
+	requestMessage->eventsEventNumber = eventNumber;
 	requestMessage->messageType = REQUEST_GET_EVENT;
-	requestMessage->event = mark;
+//	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	AliESDEvent *resultEvent = fEventManager->GetEvent(fServerSocket);
+    AliESDEvent *resultEvent = NULL;
+    fEventManager->Get(resultEvent,fServerSocket);
 	
 	if(resultEvent)
 	{
@@ -437,14 +443,15 @@ void AliStorageAdministratorPanel::onServerGetNextEvent()
 	int eventNumber=33;
 	
 	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-	struct eventStruct mark;
-	mark.runNumber = runNumber;
-	mark.eventNumber = eventNumber;
+//	struct eventStruct mark;
+	requestMessage->eventsRunNumber = runNumber;
+	requestMessage->eventsEventNumber = eventNumber;
 	requestMessage->messageType = REQUEST_GET_NEXT_EVENT;
-	requestMessage->event = mark;
+//	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	AliESDEvent* resultEvent= fEventManager->GetEvent(fServerSocket);	
+    AliESDEvent* resultEvent = NULL;
+    fEventManager->Get(resultEvent,fServerSocket);
 	if(resultEvent)
 	{
 		cout<<"ADMIN -- received event. Run no:"<<resultEvent->GetRunNumber()<<"\tEvent no in file:"<<resultEvent->GetEventNumberInFile()<<endl;
@@ -462,7 +469,8 @@ void AliStorageAdministratorPanel::onServerGetLastEvent()
 	requestMessage->messageType = REQUEST_GET_LAST_EVENT;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	AliESDEvent* resultEvent= fEventManager->GetEvent(fServerSocket);
+    AliESDEvent* resultEvent = NULL;
+    fEventManager->Get(resultEvent,fServerSocket);
 
 	if(resultEvent)
 	{

@@ -40,9 +40,9 @@ class AliSysInfo;
 TH2D *V0StateHistogram;
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
-Int_t      g_pic_id  = 0;
-Int_t      g_pic_max = 100;
-TTimeStamp g_pic_prev(0, 0);
+//Int_t      g_pic_id  = 0;
+//Int_t      g_pic_max = 100;
+//TTimeStamp g_pic_prev(0, 0);
 
 void alieve_init_import_macros();
 
@@ -62,15 +62,15 @@ void alieve_online_new()
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     alieve_init_import_macros();
     gSystem->cd(Form("%s/../src/",gSystem->Getenv("ALICE_ROOT")));
-    gROOT->ProcessLine(".L saveViews.C+");
+    //    gROOT->ProcessLine(".L saveViews.C+");
     gROOT->ProcessLine(".L geom_gentle.C+");
     gROOT->ProcessLine(".L geom_gentle_trd.C+");
     gROOT->ProcessLine(".L geom_gentle_muon.C+");
-    TEveUtil::LoadMacro("saveViews.C");
+    //    TEveUtil::LoadMacro("saveViews.C");
     gSystem->cd(hack);
     cout<<"Standard macros added"<<endl;
     
-
+    
     new AliEveEventManager("online", -1);
     gEve->AddEvent(AliEveEventManager::GetMaster());
     cout<<"Event manager created"<<endl;
@@ -93,10 +93,11 @@ void alieve_online_new()
     
     TEveUtil::LoadMacro("geom_gentle_trd.C");
     multiView->InitGeomGentleTrd(geom_gentle_trd());
-
+    
     TEveUtil::LoadMacro("geom_gentle_muon.C");
     multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
- 
+    
+    
     //============================================================================
     // Standard macros to execute -- not all are enabled by default.
     //============================================================================
@@ -106,19 +107,19 @@ void alieve_online_new()
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
     printf("exec created\n");
     /*
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box",         "kFALSE, 3, 3, 3", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_spd",         "",                kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_spd", "",                kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_spd",     "kFALSE, 3, 3, 3", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_tpc",         "",                kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks",             "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_MI",          "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track MUON", "esd_muon_tracks.C", "esd_muon_tracks",        "kTRUE,kFALSE", kTRUE));
-    */
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box",         "kFALSE, 3, 3, 3", kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_spd",         "",                kTRUE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_spd", "",                kTRUE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_spd",     "kFALSE, 3, 3, 3", kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_tpc",         "",                kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks",             "", kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_MI",          "", kFALSE));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track MUON", "esd_muon_tracks.C", "esd_muon_tracks",        "kTRUE,kFALSE", kTRUE));
+     */
     
     
     // default appearance:
@@ -127,8 +128,8 @@ void alieve_online_new()
     // preset for cosmics:
     //exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
     
-    
-    
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD"   , "ad_esd.C", "ad_esd", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdcells.C", "emcal_esdcells", "", kTRUE));
     //exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC FMD",        "fmd_esd.C",           "fmd_esd",                "", kTRUE));//huge leak
     //
     
@@ -136,15 +137,15 @@ void alieve_online_new()
     // exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC TRD", "trd_detectors.C", "trd_detectors",         "", kFALSE));
     // trd_tracks disabled due to memory leaks
     cout<<"macros added to exec"<<endl;
-
+    
     //----------------------------------------------------------------------------
     /* something is wrong here:
-    slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-    slot->StartEmbedding();
-    AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
-    slot->StopEmbedding("DataSelection");
-    exewin->PopulateMacros();
-    */
+     slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+     slot->StartEmbedding();
+     AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
+     slot->StopEmbedding("DataSelection");
+     exewin->PopulateMacros();
+     */
     //============================================================================
     // Final GUI setup
     //============================================================================
@@ -177,14 +178,17 @@ void alieve_online_new()
     
     // set autoload by default
     AliEveEventManager::GetMaster()->SetAutoLoad(true);
+    AliEveEventManager::GetMaster()->SetSaveViews(true);
 }
+
+bool firstEvent=true;
 
 void alieve_online_on_new_event()
 {
     if (AliEveEventManager::HasESD())
-      {
-	Double_t x[3] = { 0, 0, 0 };
-
+    {
+        Double_t x[3] = { 0, 0, 0 };
+        
         AliESDEvent* esd = AliEveEventManager::AssertESD();
         esd->GetPrimaryVertex()->GetXYZ(x);
         
@@ -194,49 +198,39 @@ void alieve_online_on_new_event()
         win_title += "; Event # in ESD file: ";
         win_title += esd->GetEventNumberInFile();
         gEve->GetBrowser()->SetWindowName(win_title);
-    
-    
-	TEveElement* top = gEve->GetCurrentEvent();
-    
-	AliEveMultiView *mv = AliEveMultiView::Instance();
-    
-	mv->DestroyEventRPhi();
-	if (gCenterProjectionsAtPrimaryVertex){
-	  mv->SetCenterRPhi(x[0], x[1], x[2]);
-	}
-	mv->ImportEventRPhi(top);
-    
-	mv->DestroyEventRhoZ();
-	if (gCenterProjectionsAtPrimaryVertex){
-	  mv->SetCenterRhoZ(x[0], x[1], x[2]);
-	}
-	mv->ImportEventRhoZ(top);
-    
-	if (gCenterProjectionsAtPrimaryVertex)
-	  mv->SetCenterMuon(x[0], x[1], x[2]);
-	mv->ImportEventMuon(top);
-    
-	
-	// Register image to amore.
-	  TString id;      id.Form("online-viz-%03d", g_pic_id);
-	  TString pic(id); pic += ".png";
-     
-	  //printf("In image dump: file='%s'.\n", pic.Data());
-     
-	  gEve->GetBrowser()->RaiseWindow();
-	  gEve->FullRedraw3D();
-	  gSystem->ProcessEvents();
- 
-	  // create screenshots from OpenGL views
-	  saveViews(pic.Data());
-     
-	  // send screenshot to AMORE
-	  int status = gSystem->Exec(Form("SendImageToAmore %s %s %d",id.Data(),pic.Data(),esd->GetRunNumber()));
-	    printf("Post AMORE reg -- status=%d, run=%d.\n", status, esd->GetRunNumber());
-     
-	  if (++g_pic_id >= g_pic_max) g_pic_id = 0;
-	  g_pic_prev.Set();
-      }
+        
+        
+        TEveElement* top = gEve->GetCurrentEvent();
+        
+        AliEveMultiView *mv = AliEveMultiView::Instance();
+        
+        mv->DestroyEventRPhi();
+        if (gCenterProjectionsAtPrimaryVertex){
+            mv->SetCenterRPhi(x[0], x[1], x[2]);
+        }
+        mv->ImportEventRPhi(top);
+        
+        mv->DestroyEventRhoZ();
+        if (gCenterProjectionsAtPrimaryVertex){
+            mv->SetCenterRhoZ(x[0], x[1], x[2]);
+        }
+        mv->ImportEventRhoZ(top);
+        
+        if (gCenterProjectionsAtPrimaryVertex)
+            mv->SetCenterMuon(x[0], x[1], x[2]);
+        mv->ImportEventMuon(top);
+        
+        
+        gEve->GetBrowser()->RaiseWindow();
+        gEve->FullRedraw3D();
+        gSystem->ProcessEvents();
+        
+        if(firstEvent)
+        {
+            gROOT->ProcessLine(".x geom_emcal.C");
+            firstEvent=false;
+        }
+    }
 }
 
 void alieve_init_import_macros()
@@ -244,13 +238,13 @@ void alieve_init_import_macros()
     // Put macros in the list of browsables, add a macro browser to
     // top-level GUI.
     
-  TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
-
+    TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
+    
     if (gSystem->Getenv("ALICE_ROOT") != 0)
     {
         gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
         gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
-	gSystem->ExpandPathName(macdir);
+        gSystem->ExpandPathName(macdir);
     }
     
     
