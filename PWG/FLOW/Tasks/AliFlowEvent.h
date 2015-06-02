@@ -118,7 +118,7 @@ private:
   TArrayD*      fChi3A;                 //! chi vs cent for vzero A ep_3
   TArrayD*      fChi3C;                 //! chi vs cent for vzero C ep_3
 
-  ClassDef(AliFlowEvent,4)
+  ClassDef(AliFlowEvent,5)
 };
 
 #endif
