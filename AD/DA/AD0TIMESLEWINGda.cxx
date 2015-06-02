@@ -5,24 +5,24 @@
 - Reference run number : 	      
 - Run Type:   PHYSICS
 - DA Type:    MON
-- Number of events needed: >=1000
+- Number of events needed: >=50000
 - Input Files:  argument list
-- Output Files: local files  AD0_Histos.root, AD0_Pedestals_On.dat (Online mapping)
-                FXS file     AD0_Pedestals_Off.dat (Offline mapping)
+- Output Files: FXS file  AD0_SlewingSplines.root (Offline mapping)
 - Trigger types used: PHYSICS_EVENT
 **********************************************************************************/
 
 /**********************************************************************************
 *                                                                                 *
-* AD Detector Algorithm used for extracting calibration parameters             *
+* AD Detector Algorithm used for extracting time slewing splines                  *
 *                                                                                 *
 * This program connects to the DAQ data source passed as argument.                *
-* It computes calibration parameters, populates local "./AD0_Pedestals_On.dat"   *            
-* file, exports it to the FES, and stores it into DAQ DB                          *
+* It reads calibration parameters, from DAQ_DB "AD0_Pedestals_On.dat"   	  *            
+* file, Compute 16 TSplines, place it to a root file in TList. 			  *
+* File is stored in FXS.                          				  *
 * The program exits when being asked to shut down (daqDA_checkshutdown)           *
 * or on End of Run event.                                                         *
-* We have 32 channels instead of 16 as expected for AD0 due to the two sets of    *
-* charge integrators which are used by the FEE ...                                *
+* Runs in monitoring mode, the splines needs solid statistics, so it asks 	  *
+* for rather high number of events to be processed.				  *
 *                                                                                 *
 ***********************************************************************************/
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   if (status) {
       printf("Failed to get Config file AD0_TimeSlewing_DA.config from DAQ DB, status=%d\n", status);
       printf("Take default values of parameters for pedestal calculation \n");
-       kMinEvents = 1000;
+       kMinEvents = 50000;
        kNPreClocks = 1;  
        kNPostClocks = 10;
        kNPedSigma = 3;
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
       int res = fscanf(fpConfig,"%d %d %d %d %d",&kMinEvents,&kNPreClocks,&kNPostClocks,&kNPedSigma,&kNBinsCharge);
       if(res!=5) {
 	    printf("Failed to get values from Config file (AD0_TimeSlewing_DA.config): wrong file format - 4 integers are expected - \n");
-       	    kMinEvents = 1000;
+       	    kMinEvents = 50000;
             kNPreClocks = 1;  
             kNPostClocks = 10;
             kNPedSigma = 3;
