@@ -1,4 +1,4 @@
-TString localcode="/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros";
+TString localcode="/Users/elenabruna/alicesw/aliphysics/master/src/PWGHF/correlationHF/macros";
 TString strsystem="none";
 Bool_t fitcodeIsLoaded=kFALSE;
 void SetSystemStringForTemplateFDnames(TString str){
@@ -350,6 +350,10 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     }
     else return;
 
+    strfileout += Form("_v2D%.2f_v2had%.2f.root",v2Had,v2D);
+    cout << "Saving outptut as " << strfileout << endl;
+    cout << "checkmate 1 in SubtractFDexploitingClass" << endl;
+   
     TFile *fOut=new TFile(strfileout.Data(),"RECREATE");
     fOut->cd();
     
@@ -567,10 +571,7 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     hFinal->Draw();
     grNonFlat->Draw("E2");
     
-    strfileout += Form("_v2D%.2f_v2had%.2f.root",v2Had,v2D);
-    cout << "Saving outptut as " << strfileout << endl;
-    cout << "checkmate 1" << endl;
-    
+     
     oUnc->Write();
     canvFinal->Write();
     hFinal->Write();
