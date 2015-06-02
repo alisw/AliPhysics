@@ -20,8 +20,8 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString 
 
   TString configFilePath(configBasePath+cFileName);
 
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
-	  gROOT->LoadMacro(configFilePath.Data());
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
+  gROOT->LoadMacro(configFilePath.Data());
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("MultiDielectron_pPb");
