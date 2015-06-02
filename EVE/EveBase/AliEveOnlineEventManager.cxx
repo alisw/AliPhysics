@@ -16,6 +16,7 @@
 #include "AliGRPPreprocessor.h"
 
 #include <TEnv.h>
+#include <TInterpreter.h>
 
 #include <iostream>
 
@@ -23,7 +24,8 @@ using namespace std;
 
 AliEveOnlineEventManager::AliEveOnlineEventManager(Int_t ev, bool storageManager) :
     AliEveEventManager("online",ev,true),
-    fMutex(new TMutex()),
+//    fMutex(new TMutex()),
+//    fMutex(gCINTMutex),
     fgSubSock(EVENTS_SERVER_SUB),
     fCurrentRun(-1),
     fEventInUse(1),
@@ -72,7 +74,7 @@ AliEveOnlineEventManager::~AliEveOnlineEventManager()
         delete fStorageManagerWatcherThread;
         cout<<"storage watcher thread killed and deleted"<<endl;
     }
-    if(fMutex){delete fMutex;}
+//    if(fMutex){delete fMutex;}
 }
 
 void AliEveOnlineEventManager::GetNextEvent()
@@ -98,7 +100,7 @@ void AliEveOnlineEventManager::GetNextEvent()
                 cout<<"received. ("<<tmpEvent->GetRunNumber();
                 if(tmpEvent->GetRunNumber()>=0)
                 {
-                    fMutex->Lock();
+                    gCINTMutex->Lock();
                     if(fEventInUse == 0){fWritingToEventIndex = 1;}
                     else if(fEventInUse == 1){fWritingToEventIndex = 0;}
                     cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
@@ -112,7 +114,7 @@ void AliEveOnlineEventManager::GetNextEvent()
                     fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                     fIsNewEventAvaliable = true;
                     NewEventLoaded();
-                    fMutex->UnLock();
+                    gCINTMutex->UnLock();
                 }
             }
             else
@@ -269,7 +271,7 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
         
-        fMutex->Lock();
+        gCINTMutex->Lock();
         
         // send request and receive event:
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
@@ -289,7 +291,7 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
             if(event==2){cout<<"\n\nWARNING -- No next event is avaliable.\n\n"<<endl;}
         }
         
-        fMutex->UnLock();
+        gCINTMutex->UnLock();
     }
     else
     {
@@ -301,7 +303,7 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
         
-        fMutex->Lock();
+        gCINTMutex->Lock();
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
         eventManager->Get(resultEvent,SERVER_COMMUNICATION_REQ);
         
@@ -312,7 +314,7 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
             SetEvent(0,0,resultEvent,0);
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
-        fMutex->UnLock();
+        gCINTMutex->UnLock();
     }
     //
 //    AliEveEventManager::GotoEvent(event);
@@ -325,7 +327,7 @@ void AliEveOnlineEventManager::NextEvent()
     
     if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     
-    fMutex->Lock();
+    gCINTMutex->Lock();
     if(fIsNewEventAvaliable)
     {
         if(fWritingToEventIndex == 0) fEventInUse = 0;
@@ -359,7 +361,7 @@ void AliEveOnlineEventManager::NextEvent()
         EventServerDown();
         fFailCounter=0;
     }
-    fMutex->UnLock();
+    gCINTMutex->UnLock();
     
     gSystem->ProcessEvents();
 }

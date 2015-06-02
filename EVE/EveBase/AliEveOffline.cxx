@@ -60,19 +60,12 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     fCDBuri(cdbUri),
     fPath(path)
 {
-
-    fShowHLTESDtree=kFALSE;
-    Bool_t showMuon = kTRUE;
-    Bool_t showTrd = kTRUE;
-    
-    Bool_t gShowMuonRPhi = kFALSE;
-    Bool_t gShowMuonRhoZ = kTRUE;
-    
-    Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
- 
     //-----------------------------------------------------------------------------------------
     //  Set all preferences here
     //
+    fShowHLTESDtree = kFALSE;       // show HLT ESD tree
+    Bool_t showMuon = kTRUE;        // show MUON
+    
     Color_t colorTRD = kGray;      // color of TRD modules
     Color_t colorMUON = kGray;     // color of MUON modules
     
@@ -83,8 +76,6 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     
     //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
     
-    bool saveViews = false;          // should screenshot be saved and sent to ALICE LIVE
-    
     //
     //-----------------------------------------------------------------------------------------
 
@@ -93,18 +84,12 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     Init();
     man->Open();
     
-    if (showMuon)
+    if (gSystem->Getenv("ALICE_ROOT") != 0)
     {
-        if (gSystem->Getenv("ALICE_ROOT") != 0)
-        {
-            gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
-            gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
-        }
+        gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
+        gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
     }
-    else
-    {
-        gShowMuonRPhi = gShowMuonRhoZ = kFALSE;
-    }
+
     
     if (!AliCDBManager::Instance()->IsDefaultStorageSet())
     {
@@ -113,24 +98,22 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     }
     
     AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
-    
+
     TEveUtil::AssertMacro("VizDB_scan.C");
     
     AliEveMacroExecutor *exec = man->GetExecutor();
     TEveBrowser *browser = gEve->GetBrowser();
     browser->ShowCloseTab(kFALSE);
     
-    
     //==============================================================================
     // Geometry, scenes, projections and viewers
     //==============================================================================
     
     AliEveMultiView *mv = new AliEveMultiView;
-    
-    mv->SetDepth(-10);
-    
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
-    
+
+    mv->SetDepth(-10);
+
     mv->InitGeomGentle(geomGentle->GetGeomGentle(),
                               geomGentle->GetGeomGentleRphi(),
                               geomGentle->GetGeomGentleRhoz(),
@@ -328,13 +311,8 @@ void AliEveOffline::Init()
     const Text_t* esdfile = 0;
     const Text_t* aodfile = 0;
     const Text_t* rawfile = 0;
-    Bool_t assert_runloader = kFALSE;
-    Bool_t assert_esd       = kFALSE;
-    Bool_t assert_aod       = kFALSE;
-    Bool_t assert_raw       = kFALSE;
     
     cout<<"Adding standard macros"<<endl;
-
     ImportMacros();
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();
@@ -350,7 +328,7 @@ void AliEveOffline::Init()
     
     AliEveEventManager::SetRawFileName(rawfile);
     AliEveEventManager::SetCdbUri(fCDBuri);
-    AliEveEventManager::SetAssertElements(assert_runloader, assert_esd,assert_aod,assert_raw);
+//    AliEveEventManager::SetAssertElements(0,0,0,0);
     
     // Open event
     if (fPath.BeginsWith("alien:") || !fCDBuri.BeginsWith("local:"))

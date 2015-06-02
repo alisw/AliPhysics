@@ -35,7 +35,7 @@ private:
     
     TThread *fEventListenerThread;
     TThread *fStorageManagerWatcherThread;
-    TMutex *fMutex;
+//    TVirtualMutex *fMutex;
     AliESDEvent *fCurrentEvent[2];
     TTree *fCurrentTree[2];
     int fEventInUse;
