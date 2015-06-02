@@ -27,6 +27,7 @@
 #include <TPRegexp.h>
 #include <TFolder.h>
 #include <TSystemDirectory.h>
+#include <TGButton.h>
 #include <TGFileBrowser.h>
 #include <TEveMacro.h>
 
