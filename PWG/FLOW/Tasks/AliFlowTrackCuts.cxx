@@ -168,8 +168,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
+  fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(kFALSE),
-  fApplyTwisting(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
   fChi2A(0x0),
   fChi2C(0x0),
@@ -291,8 +291,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
+  fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(kFALSE),
-  fApplyTwisting(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
   fChi2A(0x0),
   fChi2C(0x0),
@@ -418,7 +418,6 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(that.fApplyRecentering),
-  fApplyTwisting(that.fApplyTwisting),
   fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing),
   fChi2A(0x0),
   fChi2C(0x0),
@@ -571,13 +570,14 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCurrCentr = that.fCurrCentr;
     
   fApplyRecentering = that.fApplyRecentering;
-  fApplyTwisting = that.fApplyTwisting;
   fVZEROgainEqualizationPerRing = that.fVZEROgainEqualizationPerRing;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
   if (that.fVZEROgainEqualization) fVZEROgainEqualization = new TH1(*(that.fVZEROgainEqualization));
+  if (that.fVZEROgainEqualizationCen) fVZEROgainEqualizationCen = new TH2(*(that.fVZEROgainEqualizationCen));
 #else
   //PH Lets try Clone, however the result might be wrong
   if (that.fVZEROgainEqualization) fVZEROgainEqualization = (TH1*)that.fVZEROgainEqualization->Clone();
+  if (that.fVZEROgainEqualizationCen) fVZEROgainEqualizationCen = (TH2*)that.fVZEROgainEqualizationCen->Clone();
 #endif
     
   for(Int_t i(0); i < 4; i++) { // no use to copy these guys since they're only initialized on worked node
@@ -611,6 +611,10 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
   if (fVZEROgainEqualization) {
       delete fVZEROgainEqualization;
       fVZEROgainEqualization = 0x0;
+  }
+  if (fVZEROgainEqualizationCen) {
+      delete fVZEROgainEqualizationCen;
+      fVZEROgainEqualizationCen = 0x0;
   }
   if(fChi2A) {
       delete fChi2A;
@@ -1618,7 +1622,6 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetBetaVZEROOnlyTrackCuts()
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   cuts->SetApplyRecentering(kTRUE);
-  cuts->SetApplyTwisting(kFALSE);
   // idea of the cuts is that calibration is done per ring
   // and that it is transparent for different data taking periods
   return cuts;
@@ -2081,6 +2084,8 @@ AliFlowTrack* AliFlowTrackCuts::FillFlowTrack(TObjArray* trackCollection, Int_t 
       return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kBetaVZERO:
       return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kDeltaVZERO:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kKink:
       return FillFlowTrackKink(trackCollection, trackIndex);
     //case kV0:
@@ -2104,6 +2109,8 @@ Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
     case kVZERO:
       return FillFlowTrackGeneric(track);
     case kBetaVZERO:
+      return FillFlowTrackGeneric(track);
+    case kDeltaVZERO:
       return FillFlowTrackGeneric(track);
     default:
       return FillFlowTrackVParticle(track);
@@ -2608,6 +2615,8 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
       return fgkNumberOfVZEROtracks;
     case kBetaVZERO:
       return fgkNumberOfVZEROtracks;
+    case kDeltaVZERO:
+      return fgkNumberOfVZEROtracks;
     case kMUON:                                      // XZhang 20120604
       if (!fEvent) return 0;                         // XZhang 20120604
       esd = dynamic_cast<AliESDEvent*>(fEvent);      // XZhang 20120604
@@ -2662,6 +2671,15 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       }
       return esd->GetVZEROData();
     case kBetaVZERO:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) //contributed by G.Ortona
+      {
+        aod = dynamic_cast<AliAODEvent*>(fEvent);
+        if(!aod)return NULL;
+        return aod->GetVZEROData();
+      }
+      return esd->GetVZEROData();
+   case kDeltaVZERO:
       esd = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esd) //contributed by G.Ortona
       {
@@ -4908,6 +4926,8 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "VZERO";
     case kBetaVZERO:
       return "BetaVZERO";
+    case kDeltaVZERO:
+      return "DeltaVZERO";
     case kMUON:       // XZhang 20120604
       return "MUON";  // XZhang 20120604
     case kKink:
@@ -4996,6 +5016,29 @@ Bool_t AliFlowTrackCuts::PassesVZEROcuts(Int_t id)
     }
     // printf ( " tile %i and weight %.2f \n", id, fTrackWeight);
   }
+ 
+  // 29052015 weighting vzero tiles - jacopo.margutti@cern.ch
+  if(fVZEROgainEqualizationCen) {
+    Double_t EventCentrality = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+    Double_t CorrectionFactor = fVZEROgainEqualizationCen->GetBinContent(fVZEROgainEqualizationCen->FindBin(id,EventCentrality));
+    // the fVZEROxpol[] weights are used to enable or disable vzero rings
+    if(id<32) {   // v0c side
+      fTrackEta = -3.45+0.5*(id/8);
+      if(id < 8) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[0];
+      else if (id < 16 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[1];
+      else if (id < 24 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[2];
+      else if (id < 32 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[3];
+     } else {       // v0a side
+       fTrackEta = +4.8-0.6*((id/8)-4);
+       if( id < 40) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[0];
+       else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[1];
+       else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[2];
+       else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[3];
+      }
+    if(CorrectionFactor) {
+      fTrackWeight /= CorrectionFactor;
+     }
+   }
 
   if (fLinearizeVZEROresponse && id < 64)
   {

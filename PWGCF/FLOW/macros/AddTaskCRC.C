@@ -17,7 +17,6 @@ void AddTaskCRC(Double_t centrMin,
                 TString PhiEtaWeightsFileName,
                 Bool_t bUseVZERO=kFALSE,
                 Bool_t bUseVZEROCalib=kFALSE,
-                Bool_t bUseVZEROTwist=kFALSE,
                 Bool_t bUseZDC=kFALSE,
                 Bool_t bRecenterZDC=kFALSE,
                 Bool_t bEventCutsQA=kFALSE,
@@ -160,7 +159,10 @@ void AddTaskCRC(Double_t centrMin,
  else if (analysisType == "AOD") {
   // Track cuts for RPs
   if(bUseVZERO) {
-   cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
+   if (TPCMultOut == "2011")
+    cutsRP->SetParamType(AliFlowTrackCuts::kDeltaVZERO);
+   else if (TPCMultOut == "2010")
+    cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
    cutsRP->SetPhiMin(0.);
@@ -168,7 +170,6 @@ void AddTaskCRC(Double_t centrMin,
    // options for the reweighting
    cutsRP->SetVZEROgainEqualizationPerRing(bUseVZEROCalib);
    cutsRP->SetApplyRecentering(bUseVZEROCalib);
-   cutsRP->SetApplyTwisting(bUseVZEROTwist);
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
    cutsRP->SetAODfilterBit(AODfilterBit);

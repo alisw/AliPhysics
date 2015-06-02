@@ -489,8 +489,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   //
   fOutput->Add(fhTDC[i]);
  }
- 
- 
+
  fhZNCvsZNA = new TH2F("hZNCvsZNA","hZNCvsZNA",200,-50.,140000,200,-50.,140000);
  fOutput->Add(fhZNCvsZNA);
  fhZPCvsZPA = new TH2F("hZPCvsZPA","hZPCvsZPA",200,-50.,50000,200,-50.,50000);
@@ -615,25 +614,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),mcEvent));
   fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),mcEvent));
   if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
-  
-//  // Q vectors from ZDC
-//  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-//  AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
-//  if(hdr->IsEventSelected() && aod) {
-//   AliAODZDC* aodZDCData = aod->GetZDCData();
-//   if (!aodZDCData) {
-//    AliError("no ZDC data");
-//   }
-//   Double_t centrZNC[2] = {-99.,-99.}, centrZNA[2] = {-99.,-99.};
-//   Double_t energyZNA = -1., energyZNC = -1;
-//   energyZNA = aodZDCData->GetZNAEnergy();
-//   energyZNC = aodZDCData->GetZNCEnergy();
-//   if(energyZNA>0 && energyZNC>0) {
-//    aodZDCData->GetZNCentroidInPbPb(1380.,centrZNC,centrZNA);
-//    fFlowEvent->SetZDC2Qsub(centrZNC,centrZNA);
-//   }
-//  }
-  
  }
  
  //inject candidates
@@ -721,26 +701,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  // PHYSICS SELECTION
  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
  AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
- if(hdr->IsEventSelected() & AliVEvent::kAnyINT){
+ 
+ if(hdr->IsEventSelected() & AliVEvent::kAny) {
   
   AliCentrality* centrality = aod->GetCentrality();
   Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
-  
-  /*AliAODHeader *aodheader =  aod->GetHeader();
-   AliCentrality *centralityp = aodheader->GetCentralityP();
-   Float_t centrperc = centralityp->GetCentralityPercentile(fCentrEstimator.Data());
-   */
-  
-  if(centrperc<fCentrLowLim || centrperc>fCentrUpLim)  return;
-  
-  // ***** Trigger selection
-  /*TString triggerClass = aod->GetFiredTriggerClasses();
-   sprintf(fTrigClass,"%s",triggerClass.Data());
-   
-   const AliAODVertex *vertex = aod->GetPrimaryVertexSPD();
-   fxVertex = vertex->GetX();
-   fyVertex = vertex->GetY();
-   fzVertex = vertex->GetZ();*/
   
   AliAODTracklets *trackl = aod->GetTracklets();
   Int_t nTracklets = trackl->GetNumberOfTracklets();
@@ -774,9 +739,50 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
   aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+  
+//  const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+//  const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+//  const Float_t alpha=0.395;
+//  Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
+//  Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
+//  Float_t zncEnergy=0., znaEnergy=0.;
+//  //
+//  for(Int_t i=1; i<5; i++){
+//   zncEnergy += towZNC[i];
+//   znaEnergy += towZNA[i];
+//  }
+//  for(Int_t i=1; i<5; i++){
+//   if(towZNC[i]>0.) {
+//    wZNC = TMath::Power(towZNC[i], alpha);
+//    numXZNC += x[i]*wZNC;
+//    numYZNC += y[i]*wZNC;
+//    denZNC += wZNC;
+//   }
+//   if(towZNA[i]>0.) {
+//    wZNA = TMath::Power(towZNA[i], alpha);
+//    numXZNA += x[i]*wZNA;
+//    numYZNA += y[i]*wZNA;
+//    denZNA += wZNA;
+//   }
+//  }
+//  if(denZNC!=0) {
+//   xyZNC[0] = numXZNC/denZNC;
+//   xyZNC[1] = numYZNC/denZNC;
+//  }
+//  else{
+//   xyZNC[0] = xyZNC[1] = 0.;
+//  }
+//  if(denZNA!=0){
+//   xyZNA[0] = numXZNA/denZNA;
+//   xyZNA[1] = numYZNA/denZNA;
+//  }
+//  else{
+//   xyZNA[0] = xyZNA[1] = 0.;
+//  }
+  
   fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
   fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-  fFlowEvent->SetZDC2Qsub(xyZNC,xyZNA);
+  fFlowEvent->SetZDC2Qsub(xyZNC,towZNC[0],xyZNA,towZNA[0]);
   
   Float_t tdcSum = aodZDC->GetZDCTimeSum();
   Float_t tdcDiff = aodZDC->GetZDCTimeDiff();
@@ -845,7 +851,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
  } // PHYSICS SELECTION
  
- PostData(1,fFlowEvent);
+ PostData(1, fFlowEvent);
  
  PostData(2, fOutput);
  

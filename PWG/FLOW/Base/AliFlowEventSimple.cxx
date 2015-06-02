@@ -77,6 +77,8 @@ AliFlowEventSimple::AliFlowEventSimple():
   fMothersCollection(NULL),
   fCentrality(-1.),
   fRun(-1),
+  fZNCM(0.),
+  fZNAM(0.),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
 {
@@ -121,6 +123,8 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
   fRun(-1),
+  fZNCM(0.),
+  fZNAM(0.),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -167,6 +171,8 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fMothersCollection(new TObjArray()),
   fCentrality(anEvent.fCentrality),
   fRun(anEvent.fRun),
+  fZNCM(anEvent.fZNCM),
+  fZNAM(anEvent.fZNAM),
   fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -241,6 +247,8 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fShuffleTracks = anEvent.fShuffleTracks;
   fCentrality = anEvent.fCentrality;
   fRun = anEvent.fRun;
+  fZNCM = anEvent.fZNCM;
+  fZNAM = anEvent.fZNAM;
   for(Int_t i(0); i < 2; i++) {
    fZNCQ[i] = anEvent.fZNCQ[i];
    fZNAQ[i] = anEvent.fZNAQ[i];
@@ -693,17 +701,21 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 void AliFlowEventSimple::GetZDC2Qsub(AliFlowVector* Qarray)
 {
  Qarray[0].Set(fZNCQ[0],fZNCQ[1]);
+ Qarray[0].SetMult(fZNCM);
  Qarray[1].Set(fZNAQ[0],fZNAQ[1]);
+ Qarray[1].SetMult(fZNAM);
 }
 
 //-----------------------------------------------------------------------------
 
-void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t* QVA)
+void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t MC, Double_t* QVA, Double_t MA)
 {
  fZNCQ[0] = QVC[0];
  fZNCQ[1] = QVC[1];
+ fZNCM = MC;
  fZNAQ[0] = QVA[0];
  fZNAQ[1] = QVA[1];
+ fZNAM = MA;
 }
 //-----------------------------------------------------------------------
 
