@@ -335,11 +335,9 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fOutput->Add(fhnMassResponse[i]);
 
     histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; (#it{M}_{det} - #it{M}_{part}); (#it{p}_{T,det} - #it{p}_{T,part}); #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+    histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
     Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
     fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
-    Printf("New pointer");
-    Printf(" %p", fhnDeltaMass[i] );
     fOutput->Add(fhnDeltaMass[i]);
 
     //derivative histograms
