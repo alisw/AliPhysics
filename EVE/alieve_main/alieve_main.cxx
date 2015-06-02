@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     else if(hltMode)
     {
 #ifdef ZMQ
-        AliEveHLT *hlt = new AliEveHLT();
+        AliEveHLT *hlt = new AliEveHLT(storageManager);
 #else
         printf("\nHLT mode not avaliable -- no ZMQ installed!\n");
         return 1;
