@@ -13,13 +13,14 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString 
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-
-  if(getFromAlien && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/Config_lowmasspPb.C .")) ){
+  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
     TString configBasePath=Form("%s/",gSystem->pwd());
   }
 
   TString configFilePath(configBasePath+cFileName);
 
+  std::cout << "Configpath:  " << configFilePath << std::endl;
+  
   //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
   gROOT->LoadMacro(configFilePath.Data());
 
