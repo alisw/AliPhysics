@@ -61,17 +61,20 @@ struct AliRawDataHeaderV3 {
   ULong64_t GetTriggerClasses() const
   {return (((ULong64_t) (fTriggerClassesMiddleLow & 0x3FFFF)) << 32) | fTriggerClassLow;}
   ULong64_t GetTriggerClassesNext50() const
-  {return (((ULong64_t) (fROILowTriggerClassHigh & 0x3FFFF)) << 32) | fTriggerClassesMiddleHigh;}
+  {return ((((ULong64_t) (fROILowTriggerClassHigh & 0xF)) << 46) | ((ULong64_t)fTriggerClassesMiddleHigh<<14) | (((ULong64_t)fTriggerClassesMiddleLow>>18) & 0x3fff));}
   ULong64_t GetROI() const
   {return (((ULong64_t) fROIHigh) << 4) | ((fROILowTriggerClassHigh >> 28) & 0xF);}
 
   void      SetTriggerClass(ULong64_t mask)
-    {fTriggerClassLow = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
-     fTriggerClassesMiddleLow = (UInt_t)((mask >> 32) & 0x3FFFF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-17)
+    {
+     fTriggerClassLow = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
+     fTriggerClassesMiddleLow = fTriggerClassesMiddleLow | ((UInt_t)((mask >> 32) & 0x3FFFF)); // middle low bits of trigger class
     };
   void      SetTriggerClassNext50(ULong64_t mask)
-    {fTriggerClassesMiddleHigh = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
-     fROILowTriggerClassHigh = (UInt_t)((mask >> 32) & 0x3FFFF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-17)
+    {
+     fTriggerClassesMiddleLow  = fTriggerClassesMiddleLow | (((UInt_t)(mask & 0x3FFF) << 18));
+     fTriggerClassesMiddleHigh = (UInt_t)((mask >> 14) & 0xFFFFFFFF);  // middle high bits of trigger class
+     fROILowTriggerClassHigh = (UInt_t)((mask >> 46) & 0xF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-3)
     };
 
   UInt_t    fSize;              // size of the raw data in bytes
