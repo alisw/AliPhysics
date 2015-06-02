@@ -101,13 +101,13 @@ AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistSt
     ((TGraphAsymmErrors*)fGraphStat)->SetPointError(ipoints, 
 						    binWidth,
 						    binWidth,
-						    statp->String().Atof(),
-						    statm->String().Atof());
+						    TMath::Abs(statp->String().Atof()),
+						    TMath::Abs(statm->String().Atof()));
     if(systp && systm) ((TGraphAsymmErrors*)fGraphSyst)->SetPointError(ipoints, 
-							      binWidth,
-							      binWidth,
-							      systp->String().Atof(),
-							      systm->String().Atof());
+                                                                       binWidth,
+                                                                       binWidth,
+                                                                       TMath::Abs(systp->String().Atof()),
+                                                                       TMath::Abs(systm->String().Atof()));
     ipoints++;
     delete tokens;
   }
