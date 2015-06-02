@@ -310,8 +310,8 @@ if (!fHistMaxChargeClock) {
     fListHist->Add(fHistMaxChargeClock);
   }
 if(!fHistTimeVsChargePerPM_UnCorr) {
-    fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, 
-    					kNChargeChannelBins/10,kChargeChannelMin,kChargeChannelMax,
+    fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",800, 400, 1200, 
+    					2000,-4,0,
 					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
     fListHist->Add(fHistTimeVsChargePerPM_UnCorr);
   } 
@@ -379,7 +379,7 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	if(esdADfriend){
 		fHistTimePerPM_UnCorr->Fill(i,esdADfriend->GetTime(i));
 		fHistTimeVsCharge_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
-		fHistTimeVsChargePerPM_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i),i);
+		if(esdAD->GetAdc(i)>0)fHistTimeVsChargePerPM_UnCorr->Fill(TMath::Nint(esdADfriend->GetTime(i)/(25./256.)),TMath::Log10(1.0/esdAD->GetAdc(i)),i);
 		Int_t nbbFlag = 0;
       		Int_t nbgFlag = 0;
 		Int_t charge[21];
