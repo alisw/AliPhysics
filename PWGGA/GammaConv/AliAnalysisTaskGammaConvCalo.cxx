@@ -1946,7 +1946,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
 			Int_t motherLab = Photon->GetMother(0);
 			if (motherLab > -1){
-				if ( abs(fMCStack->Particle(motherLab)->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() )
+				if ( abs(fMCStack->Particle(motherLab)->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() && !TruePhotonCandidate->IsDalitzMerged() && !TruePhotonCandidate->IsMergedPartConv())
 					fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02);
 //				Int_t grandMotherLab = fMCStack->Particle(motherLab)->GetMother(0);
 //				if (grandMotherLab > -1){
