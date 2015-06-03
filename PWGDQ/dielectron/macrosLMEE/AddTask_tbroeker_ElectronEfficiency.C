@@ -14,13 +14,14 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/Config_tbroeker_ElectronEfficiency.C ."))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName)))
       // Task files (.cxx & .h) not possible because they need to be compiled...
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  
+
   TString configFilePath(configBasePath+cFileName);
+  std::cout << "Configpath:  " << configFilePath << std::endl;
   if (gSystem->Exec(Form("ls %s", configFilePath.Data()))==0) {
     std::cout << "loading config: " << configFilePath.Data() << std::endl;
     gROOT->LoadMacro(configFilePath.Data());
