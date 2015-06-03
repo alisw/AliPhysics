@@ -51,9 +51,7 @@ AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(Int_t ev, bool storageManager
   fEventListenerThreadHLT->Run();
 #endif
     
-    InitOCDB(-1);
-    
-    AliEveEventManager::SetMaster(this);
+  AliEveEventManager::SetMaster(this);
 }
 
 AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
@@ -62,8 +60,10 @@ AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
   if (fZMQeventQueue)
   {
     int lingerValue = 0;
-    zmq_setsockopt(fZMQeventQueue, ZMQ_LINGER, &lingerValue, sizeof(int));
-    zmq_close(fZMQeventQueue);
+    int rc = zmq_setsockopt(fZMQeventQueue, ZMQ_LINGER, &lingerValue, sizeof(int));
+    if (rc<0) printf("error setting linger on fZMQeventQueue\n");
+    rc = zmq_close(fZMQeventQueue);
+    if (rc<0) printf("error closing socket fZMQeventQueue\n");
   }
 
   printf("trying to destroy fZMQContext\n");
@@ -82,7 +82,7 @@ AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
 
 }
 
-void AliEveHLTZMQeventManager::GetNextEvent()
+void AliEveHLTZMQeventManager::PullEventFromHLT()
 {
 #ifdef ZMQ
   int rc = 0;
@@ -122,10 +122,8 @@ void AliEveHLTZMQeventManager::GetNextEvent()
       //receive the topic
       char receivedTopic[kAliHLTComponentDataTypeTopicSize+1]; memset(&receivedTopic, 0, sizeof(receivedTopic));
       int receivedTopicSize = zmq_recv(listenerSocket, &receivedTopic, sizeof(receivedTopic), 0);
-      //printf("HLT listener thread: received topic: %s\n", receivedTopic);
-      //printf("HLT listener thread: requeste topic: %s\n", requestedTopic);
-      //printf("HLT listener thread: requeste topic: %s\n", requestedTopic1);
-      if (receivedTopicSize < 0 && errno==ETERM) {break;}
+      if (receivedTopicSize < 0 && errno==ETERM) {printf("listenerSocket received ETERM, exiting main loop\n"); done=true; break;}
+
       //reive the message if there is any
       zmq_msg_t message;
       rc = zmq_msg_init(&message);
@@ -161,11 +159,15 @@ void AliEveHLTZMQeventManager::GetNextEvent()
     } while (more != 0);
   }
   //cleanly exit the thread
-  int lingerValue = 1;
-  rc += zmq_setsockopt(listenerSocket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  rc += zmq_setsockopt(internalPublisher, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  zmq_close(listenerSocket);
-  zmq_close(internalPublisher);
+  int lingerValue = 10;
+  rc = zmq_setsockopt(listenerSocket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
+  if (rc<0) printf("error setting linger on listenerSocket, errno: %i\n", errno);
+  rc = zmq_setsockopt(internalPublisher, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
+  if (rc<0) printf("error setting linger on internalPublisher, errno: %i\n",errno);
+  rc = zmq_close(listenerSocket);
+  if (rc<0) printf("error closing listenerSocket, errno: %i\n", errno);
+  rc = zmq_close(internalPublisher);
+  if (rc<0) printf("error closing internalPublisher, errno: %i\n", errno);
 #endif
 }
 
@@ -185,6 +187,7 @@ void AliEveHLTZMQeventManager::GotoEvent(Int_t /*event*/)
     if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     
     NextEvent();
+    gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
     
     return;
     
@@ -243,21 +246,23 @@ void AliEveHLTZMQeventManager::NextEvent()
   }
   if (esdObject) 
   {
+    printf("setting new event\n");
     esdObject->GetStdContent();
     DestroyElements();
-    if (esdObject->GetRunNumber() >= 0) InitOCDB(130704);
+    int runNumber = esdObject->GetRunNumber();
+    InitOCDB(runNumber);
 
     //replace the ESD
     delete fESD;
     fESD = esdObject;
+    fHasEvent=kTRUE;
     
-//    fIsNewEventAvaliable = true;
-    NewEventLoaded();
+    AfterNewEventLoaded();
   }
   else
   {
-//    fIsNewEventAvaliable = false;
     cout<<"No new event is avaliable."<<endl;
+    fHasEvent=kFALSE;
     NoEventLoaded();
   }
   zmq_msg_close(&message);
