@@ -27,6 +27,7 @@
 #include <TSystem.h>
 #include <TSystemDirectory.h>
 #include <TList.h>
+#include "TString.h"
 
 #include <iostream>
 
@@ -46,9 +47,12 @@ Int_t      g_pic_max = 100;
 TTimeStamp g_pic_prev(0, 0);
 
 void alieve_init_import_macros();
+void alieve_online_on_new_event();
 
-void alieve_hlt(TString ocdbStorage="local://CDB")
+void alieve_hlt(TString ocdbStorage="local://OCDB")
 {
+    if (gSystem->Getenv("ocdbStorage"))
+      ocdbStorage=gSystem->Getenv("ocdbStorage");
     AliEveEventManager::SetCdbUri(ocdbStorage);         // current OCDB snapshot
     AliCDBManager* cdbManager = AliCDBManager::Instance();
     cdbManager->SetDefaultStorage(ocdbStorage);
@@ -58,19 +62,15 @@ void alieve_hlt(TString ocdbStorage="local://CDB")
     cout<<"created"<<endl;
     
     Info("alieve_init", "Adding standard macros.");
-    TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     alieve_init_import_macros();
-    gSystem->cd(Form("%s/../src/",gSystem->Getenv("ALICE_ROOT")));
     gROOT->ProcessLine(".L geom_gentle.C+");
     gROOT->ProcessLine(".L geom_gentle_trd.C+");
     gROOT->ProcessLine(".L geom_gentle_muon.C+");
     TEveUtil::LoadMacro("saveViews.C");
-    gSystem->cd(hack);
     cout<<"Standard macros added"<<endl;
-    
 
-    new AliEveHLTZMQeventManager();
-    gEve->AddEvent(AliEveEventManager::GetMaster());
+    AliEveEventManager* eventManager = new AliEveHLTZMQeventManager();
+    gEve->AddEvent(eventManager);
     cout<<"Event manager created"<<endl;
     
     TEveUtil::AssertMacro("VizDB_scan.C");
@@ -89,16 +89,12 @@ void alieve_hlt(TString ocdbStorage="local://CDB")
                               geom_gentle_rhoz());
     cout<<"geom gentl inited"<<endl;
     
-    TEveUtil::LoadMacro("geom_gentle_trd.C");
+    //TEveUtil::LoadMacro("geom_gentle_trd.C");
     multiView->InitGeomGentleTrd(geom_gentle_trd());
 
-    TEveUtil::LoadMacro("geom_gentle_muon.C");
+    //TEveUtil::LoadMacro("geom_gentle_muon.C");
     multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
  
-    //============================================================================
-    // Standard macros to execute -- not all are enabled by default.
-    //============================================================================
-    
     printf("============ Setting macro executor ============\n");
     
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
@@ -125,8 +121,6 @@ void alieve_hlt(TString ocdbStorage="local://CDB")
     // preset for cosmics:
     //exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
     
-    
-    
     //exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC FMD",        "fmd_esd.C",           "fmd_esd",                "", kTRUE));//huge leak
     //
     
@@ -152,8 +146,6 @@ void alieve_hlt(TString ocdbStorage="local://CDB")
     new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
     browser->StopEmbedding("EventCtrl");
     
-    browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
-    
     gEve->FullRedraw3D(kTRUE);
     gSystem->ProcessEvents();
     
@@ -169,6 +161,7 @@ void alieve_hlt(TString ocdbStorage="local://CDB")
     glv4->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     
     AliEveEventManager::GetMaster()->AddNewEventCommand("alieve_online_on_new_event();");
+    
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
     gEve->Redraw3D(kTRUE);
@@ -179,20 +172,21 @@ void alieve_hlt(TString ocdbStorage="local://CDB")
 
 void alieve_online_on_new_event()
 {
-    if (AliEveEventManager::HasESD())
-      {
-	Double_t x[3] = { 0, 0, 0 };
+  if (!AliEveEventManager::HasESD()) return;
 
-        AliESDEvent* esd = AliEveEventManager::AssertESD();
-        esd->GetPrimaryVertex()->GetXYZ(x);
-        
-        TTimeStamp ts(esd->GetTimeStamp());
-        TString win_title("Eve Main Window -- Timestamp: ");
-        win_title += ts.AsString("s");
-        win_title += "; Event # in ESD file: ";
-        win_title += esd->GetEventNumberInFile();
-        gEve->GetBrowser()->SetWindowName(win_title);
-    
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
+	
+  Double_t x[3] = { 0, 0, 0 };
+  esd->GetPrimaryVertex()->GetXYZ(x);
+  
+  TTimeStamp ts(esd->GetTimeStamp());
+  TString win_title("Eve Main Window -- Timestamp: ");
+  win_title += ts.AsString("s");
+  win_title += "; Event # in ESD file: ";
+  win_title += esd->GetEventNumberInFile();
+  win_title += " | run: ";
+  win_title += esd->GetRunNumber();
+  gEve->GetBrowser()->SetWindowName(win_title);
     
 	TEveElement* top = gEve->GetCurrentEvent();
     
@@ -213,82 +207,60 @@ void alieve_online_on_new_event()
 	if (gCenterProjectionsAtPrimaryVertex)
 	  mv->SetCenterMuon(x[0], x[1], x[2]);
 	mv->ImportEventMuon(top);
-    
-	
-	// Register image to amore.
-	  TString id;      id.Form("online-viz-%03d", g_pic_id);
-	  TString pic(id); pic += ".png";
-     
-	  //printf("In image dump: file='%s'.\n", pic.Data());
-     
-	  gEve->GetBrowser()->RaiseWindow();
-	  gEve->FullRedraw3D();
-	  gSystem->ProcessEvents();
- 
-	  // create screenshots from OpenGL views
-	  //saveViews(pic.Data());
-     
-	  // send screenshot to AMORE
-	  //int status = gSystem->Exec(Form("SendImageToAmore %s %s %d",id.Data(),pic.Data(),esd->GetRunNumber()));
-	  //  printf("Post AMORE reg -- status=%d, run=%d.\n", status, esd->GetRunNumber());
-     
-	  //if (++g_pic_id >= g_pic_max) g_pic_id = 0;
-	  //g_pic_prev.Set();
-      }
 }
 
 void alieve_init_import_macros()
 {
-    // Put macros in the list of browsables, add a macro browser to
-    // top-level GUI.
-    
+  // Put macros in the list of browsables, add a macro browser to
+  // top-level GUI.
+
   TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
 
-    if (gSystem->Getenv("ALICE_ROOT") != 0)
+  if (gSystem->Getenv("ALICE_ROOT") != 0)
+  {
+    gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
+    gSystem->ExpandPathName(macdir);
+  }
+
+  TFolder* f = gEve->GetMacroFolder();
+  void* dirhandle = gSystem->OpenDirectory(macdir.Data());
+  if (dirhandle != 0)
+  {
+    char* filename;
+    TPMERegexp re("\\.C$");
+    TObjArray names;
+    while ((filename = (char*)(gSystem->GetDirEntry(dirhandle))) != 0)
     {
-        gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
-        gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
-	gSystem->ExpandPathName(macdir);
+      if (re.Match(filename))
+        names.AddLast(new TObjString(filename));
     }
-    
-    
-    TFolder* f = gEve->GetMacroFolder();
-    void* dirhandle = gSystem->OpenDirectory(macdir.Data());
-    if (dirhandle != 0)
+    names.Sort();
+
+    for (Int_t ii=0; ii<names.GetEntries(); ++ii)
     {
-        char* filename;
-        TPMERegexp re("\\.C$");
-        TObjArray names;
-        while ((filename = (char*)(gSystem->GetDirEntry(dirhandle))) != 0)
-        {
-            if (re.Match(filename))
-                names.AddLast(new TObjString(filename));
-        }
-        names.Sort();
-        
-        for (Int_t ii=0; ii<names.GetEntries(); ++ii)
-        {
-            TObjString * si = (TObjString*) names.At(ii);
-            f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), (si->GetString()).Data())));
-        }
+      TObjString * si = (TObjString*) names.At(ii);
+      f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), (si->GetString()).Data())));
     }
-    gSystem->FreeDirectory(dirhandle);
-    
-    gROOT->GetListOfBrowsables()->Add(new TSystemDirectory(macdir.Data(), macdir.Data()));
-    
+  }
+  gSystem->FreeDirectory(dirhandle);
+
+  gROOT->GetListOfBrowsables()->Add(new TSystemDirectory(macdir.Data(), macdir.Data()));
+
+  {
+    TEveBrowser   *br = gEve->GetBrowser();
+    TGFileBrowser *fb = 0;
+    fb = br->GetFileBrowser();
+    fb->GotoDir(macdir);
     {
-        TEveBrowser   *br = gEve->GetBrowser();
-        TGFileBrowser *fb = 0;
-        fb = br->GetFileBrowser();
-        fb->GotoDir(macdir);
-        {
-            br->StartEmbedding(0);
-            fb = br->MakeFileBrowser();
-            fb->BrowseObj(f);
-            fb->Show();
-            br->StopEmbedding();
-            br->SetTabTitle("Macros", 0);
-            br->SetTab(0, 0);
-        }
+      br->StartEmbedding(0);
+      fb = br->MakeFileBrowser();
+      fb->BrowseObj(f);
+      fb->Show();
+      br->StopEmbedding();
+      br->SetTabTitle("Macros", 0);
+      br->SetTab(0, 0);
     }
+  }
 }
+
