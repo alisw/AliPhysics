@@ -35,7 +35,7 @@ void trd_qaRec()
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   AliEveEventManager::AssertMagField();
 
   AliTRDReconstructor *reco = new AliTRDReconstructor();

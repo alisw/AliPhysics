@@ -19,7 +19,7 @@
 void geom_mft()
 
 {
-  //  AliEveEventManager::AssertGeometry();
+  //  AliEveEventManager::GetMaster()->AssertGeometry();
 
   gGeoManager = gEve->GetGeometry("geometry.root");
 

@@ -92,7 +92,7 @@ void add_esd_muon_tracks(AliESDEvent* esd, AliMUONESDInterface* data,
   static AliMUONTriggerCircuit* gTriggerCircuit = 0x0;
   if (!gTriggerCircuit) 
   {
-    AliEveEventManager::AssertGeometry();
+    AliEveEventManager::GetMaster()->AssertGeometry();
     AliMUONGeometryTransformer* fMUONGeometryTransformer = new AliMUONGeometryTransformer();
     fMUONGeometryTransformer->LoadGeometryData();
     gTriggerCircuit = new AliMUONTriggerCircuit(fMUONGeometryTransformer);
@@ -186,7 +186,7 @@ void add_esd_muon_tracks(AliESDEvent* esd, AliMUONESDInterface* data,
 void esd_muon_tracks(Bool_t showClusters, Bool_t showDigits)
 {
   // load ESD
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   if (esd->GetNumberOfMuonTracks() == 0 && !gEve->GetKeepEmptyCont()) return;
   
   // load field

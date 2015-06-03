@@ -319,7 +319,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   // Constructor.
   SetName("tracklet");
   
-  if(!gGeoManager) AliEveEventManager::AssertGeometry();
+  if(!gGeoManager) AliEveEventManager::GetMaster()->AssertGeometry();
   SetUserData(trklt);
   // init tracklet line
   Int_t sec = AliTRDgeometry::GetSector(trklt->GetDetector());

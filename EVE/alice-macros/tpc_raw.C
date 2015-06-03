@@ -74,7 +74,7 @@ void tpc_raw(Int_t mode = 3)
 {
   gStyle->SetPalette(1, 0);
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   AliEveEventManager::AssertMagField();
   
   AliRawReader *reader = AliEveEventManager::AssertRawReader();

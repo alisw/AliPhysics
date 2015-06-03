@@ -18,7 +18,7 @@
 
 void esd_VO_fill_pointset(TEvePointSet* ps, Bool_t onFly)
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   Int_t NV0s = esd->GetNumberOfV0s();
 

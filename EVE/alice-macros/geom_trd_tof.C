@@ -18,7 +18,7 @@
 
 void geom_trd_tof()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("B077_1");
 

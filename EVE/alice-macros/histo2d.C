@@ -43,7 +43,7 @@ TEveCaloDataHist* histo2d()
 { 
 
    // Access to esdTree
-   AliESDEvent* esd = AliEveEventManager::AssertESD();
+   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
    // Creating 2D histograms
    TH2F *histopos = new TH2F("histopos","Histo 2d positive",100,-1.5,1.5,80,-pi,pi);
@@ -66,7 +66,7 @@ TEveCaloDataHist* histo2d()
    }
 
    TEveCaloDataHist* data = new TEveCaloDataHist();
-   AliEveEventManager::RegisterTransient(data);
+   AliEveEventManager::GetMaster()->RegisterTransient(data);
    
    data->AddHistogram(histoneg);
    data->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
@@ -87,7 +87,7 @@ TEveCaloDataHist* histo2d()
    // Plotting projections RPhi and RhoZ
    CreateProjections(data, calo3d);
    
-   gEve->Redraw3D(kTRUE);
+   gEve->Redraw3D();
 
    return data;
 }
@@ -130,7 +130,7 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data){
    //plotting histo
    TEveCaloLego* lego = new TEveCaloLego(data);
    g_histo2d_s->AddElement(lego);
-   AliEveEventManager::RegisterTransient(lego);
+   AliEveEventManager::GetMaster()->RegisterTransient(lego);
 
    // move to real world coordinates
    lego->InitMainTrans();
@@ -156,7 +156,7 @@ TEveCalo3D* Create3DView(TEveCaloData* data){
    }
  
    TEveCalo3D* calo3d = new TEveCalo3D(data);
-   AliEveEventManager::RegisterTransient(calo3d);
+   AliEveEventManager::GetMaster()->RegisterTransient(calo3d);
    
    calo3d->SetBarrelRadius(550);
    calo3d->SetEndCapPos(550);

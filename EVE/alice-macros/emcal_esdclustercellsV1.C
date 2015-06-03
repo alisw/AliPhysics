@@ -68,11 +68,11 @@ TEveCaloDataHist* emcal_esdclustercellsV1()
 { 
   
   // Access to esdTree
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   //TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
   
   TEveCaloDataHist* data = new TEveCaloDataHist();
-  AliEveEventManager::RegisterTransient(data);
+  AliEveEventManager::GetMaster->RegisterTransient(data);
   
   // Get the EMCAL geometry
   //
@@ -344,7 +344,7 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data){
    //plotting histo
    TEveCaloLego* lego = new TEveCaloLego(data);
    g_histo2d_s->AddElement(lego);
-   AliEveEventManager::RegisterTransient(lego);
+   AliEveEventManager::GetMaster()->RegisterTransient(lego);
 
    // move to real world coordinates
    lego->InitMainTrans();
@@ -370,7 +370,7 @@ TEveCalo3D* Create3DView(TEveCaloData* data){
    }
  
    TEveCalo3D* calo3d = new TEveCalo3D(data);
-   AliEveEventManager::RegisterTransient(calo3d);
+   AliEveEventManager::GetMaster()->RegisterTransient(calo3d);
    
    calo3d->SetBarrelRadius(550);
    calo3d->SetEndCapPos(550);

@@ -35,7 +35,7 @@ void acorde_raw()
 
   // From Mario RC
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRawReader       * reader = AliEveEventManager::AssertRawReader();
   AliACORDERawStream * stream = new AliACORDERawStream(reader);

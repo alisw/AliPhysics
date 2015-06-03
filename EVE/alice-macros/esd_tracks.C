@@ -240,7 +240,7 @@ AliEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
 
 TEveTrackList* esd_tracks_TPC()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
 
   TEveTrackList* cont = new TEveTrackList("TPC Tracks");
@@ -272,7 +272,7 @@ TEveTrackList* esd_tracks_TPC()
 
 TEveTrackList* esd_tracks_ITS()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
 
   TEveTrackList* cont = new TEveTrackList("ITS Tracks");
@@ -306,7 +306,7 @@ TEveTrackList* esd_tracks_ITS()
 
 TEveTrackList* esd_tracks_ITS_standalone()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
 
   TEveTrackList* cont = new TEveTrackList("ITS Standalone Tracks");
@@ -340,7 +340,7 @@ TEveTrackList* esd_tracks_ITS_standalone()
 
 TEveTrackList* esd_tracks()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(6);
@@ -368,7 +368,7 @@ TEveTrackList* esd_tracks()
 
 TEveTrackList* esd_tracks_MI()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks MI");
   cont->SetLineColor(5);
@@ -407,7 +407,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
   // Retrieves AliESDTrack's from collection.
   // See example usage with AliAnalysisTrackCuts in the next function.
 
-  if (esd == 0) esd = AliEveEventManager::AssertESD();
+  if (esd == 0) esd = AliEveEventManager::GetMaster()->AssertESD();
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(6);
@@ -445,7 +445,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 
 void esd_tracks_alianalcuts_demo()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   AliESDtrackCuts atc;
   atc.SetPtRange(0.1, 5);
@@ -517,7 +517,7 @@ TEveElementList* esd_tracks_by_category(Color_t c0=-1,Color_t c1=-1,Color_t c2=-
    // Import ESD tracks, separate them into several containers
    // according to primary-vertex cut and ITS&TPC refit status.
 
-   AliESDEvent* esd = AliEveEventManager::AssertESD();
+   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
    TEveElementList* cont = new TEveElementList("ESD Tracks by category");
    gEve->AddElement(cont);
@@ -676,7 +676,7 @@ AliESDtrackCuts* g_esd_tracks_anal_cuts = 0;
 
 TEveElementList* esd_tracks_by_anal_cuts()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   if (g_esd_tracks_anal_cuts == 0)
   {

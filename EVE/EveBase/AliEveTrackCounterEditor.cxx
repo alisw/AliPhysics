@@ -277,7 +277,7 @@ void AliEveTrackCounterEditor::DoActivate()
    fScanSummaryFile = new ofstream(fname);
    (*fScanSummaryFile) << "Scan summary" << std::endl;
    (*fScanSummaryFile) << "Scan started at " << dat.GetDate() << " " << dat.GetTime() << std::endl;
-   AliESDEvent *esd = AliEveEventManager::AssertESD();
+   AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
    (*fScanSummaryFile) << "Run number " << esd->GetRunNumber() << std::endl;
 }
 
@@ -311,7 +311,7 @@ void AliEveTrackCounterEditor::DoNext()
    // Slot for Next.
 
    if (fScanSummaryFile) {
-     AliESDEvent *esd = AliEveEventManager::AssertESD();
+     AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
      (*fScanSummaryFile) << std::hex << std::right ;
      fScanSummaryFile->width(5); (*fScanSummaryFile) << esd->GetPeriodNumber() << "   " ;
      fScanSummaryFile->width(6); (*fScanSummaryFile) << esd->GetOrbitNumber() << "   ";

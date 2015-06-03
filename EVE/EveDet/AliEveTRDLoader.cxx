@@ -56,7 +56,7 @@ AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) : TEveElement
 {
   // Constructor.
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   fGeo = new AliTRDgeometry();
   //fGeo->CreateClusterMatrixArray();

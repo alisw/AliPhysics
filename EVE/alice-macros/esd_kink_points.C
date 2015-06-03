@@ -20,7 +20,7 @@
 
 void esd_kink_fill_pointset(TEvePointSet* ps)
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); ++n)
   { 

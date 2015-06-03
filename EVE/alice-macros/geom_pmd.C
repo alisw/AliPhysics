@@ -17,7 +17,7 @@
 
 void geom_pmd()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   for(Int_t i=1; i<=4; ++i) {
     //PH The line below is replaced waiting for a fix in Root

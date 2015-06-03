@@ -109,17 +109,17 @@ public:
     static Bool_t HasRawReader();
 
     static AliRunLoader* AssertRunLoader();
-    static AliESDEvent*  AssertESD();
+    AliESDEvent*  AssertESD();
     static AliESDfriend* AssertESDfriend();
     static AliAODEvent*  AssertAOD();
     static AliRawReader* AssertRawReader();
     static AliMagF*      AssertMagField();
-    static TGeoManager*  AssertGeometry();
+    TGeoManager*  AssertGeometry();
     static AliRecoParam* AssertRecoParams();
 
 
-    static void                RegisterTransient    (TEveElement* element);
-    static void                RegisterTransientList(TEveElement* element);
+    void RegisterTransient(TEveElement* element);
+    static void RegisterTransientList(TEveElement* element);
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }

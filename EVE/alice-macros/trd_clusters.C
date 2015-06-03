@@ -29,7 +29,7 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
 {
   const Int_t kMaxClusters = 18 * 6 * 24 *10;
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TRD");

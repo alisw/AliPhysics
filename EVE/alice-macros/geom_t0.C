@@ -19,7 +19,7 @@
 
 void geom_t0()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveElementList* list = new TEveElementList("T0");
   gEve->AddGlobalElement(list);

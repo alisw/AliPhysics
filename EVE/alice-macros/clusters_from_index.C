@@ -19,7 +19,7 @@
 
 TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   if (index < 0) {
     Warning("clusters_from_index", "index not set.");

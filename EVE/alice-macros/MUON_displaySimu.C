@@ -167,7 +167,7 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
 //______________________________________________________________________________
 void MUON_ESD_tracks()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
   lt->SetMainColor(6);
