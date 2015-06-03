@@ -171,49 +171,11 @@ void AliEveHLTZMQeventManager::GetNextEvent()
 
 void AliEveHLTZMQeventManager::InitOCDB(int runNo)
 {
-    TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
     AliCDBManager* cdb = AliCDBManager::Instance();
-    
-    if(runNo != fCurrentRun)
-    {
-        cout<<"Loading OCDB for new run:"<<runNo<<" in online mode."<<endl;
-        TEnv settings;
-        settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
-        fCurrentRun = runNo;
-        cout<<"config read"<<endl;
-        
-        // Retrieve GRP entry for given run from aldaqdb.
-        TString dbHost = settings.GetValue("logbook.host", DEFAULT_LOGBOOK_HOST);
-        Int_t   dbPort =  settings.GetValue("logbook.port", DEFAULT_LOGBOOK_PORT);
-        TString dbName =  settings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB);
-        TString user =  settings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER);
-        TString password = settings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
-        
-        gSystem->cd(cdbPath.Data());
-        gSystem->Exec("rm -fr GRP/");
-        cout<<"CDB path for GRP:"<<cdbPath<<endl;
-        
-        TString gdc;
-        
-        Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fCurrentRun, dbHost.Data(),
-                                                                  dbPort, dbName.Data(),
-                                                                  user.Data(), password.Data(),
-                                                                  Form("%s",cdbPath.Data()),
-                                                                  gdc);
-        
-        if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
-        else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
-        else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
-        
-        
-        cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
-        cdb->SetSpecificStorage("GRP/GRP/Data",cdbPath.Data());
-        cdb->SetRun(fCurrentRun);
-        cdb->Print();
+    if (runNo!=fCurrentRun){
+      fCurrentRun=runNo;
+      cdb->SetRun(runNo);
     }
-    
-    
-    AliEveEventManager::InitOCDB(runNo);
 }
 
 void AliEveHLTZMQeventManager::GotoEvent(Int_t /*event*/)
