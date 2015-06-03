@@ -284,6 +284,7 @@ protected:
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity
   TH2                   *fHClustEtaPhi;           //!histo for cluster eta vs. phi
   TH2                   *fHClustEnergyPt;         //!histo for cluster energy vs. pT
+  TH2                   *fHClustEnergySM;         //!histo for cluster energy vs. Supermodule
   TH2                   *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis
   TH2                   *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
   TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n cells vs. energy ratio
@@ -300,11 +301,13 @@ protected:
   TH1                   *fHMatchEp;               //!histo for E/p track cluster matching
   // histograms for pion candidates
   TH2                   *fHPionEtaPhi;            //!histo for pion eta vs. phi
-  TH2                   *fHAddPionEtaPhi;            //!histo for pion eta vs. phi
-  TH2                   *fHPyPionEtaPhi;            //!histo for pion eta vs. phi
+  TH2                   *fHAddPionEtaPt;            //!histo for pion eta vs. pt
+  TH2                   *fHAddPionEtaPtWgt;            //!histo for pion eta vs. pt
+  TH2                   *fHPyPionEtaPt;            //!histo for pion eta vs. pt
   TH1                   *fHdr;                    //!histo for dR of pairs
   TH2                   *fHPionMggPt;             //!histo for pion mass vs. pT
   TH2                   *fHPionMggAsym;           //!histo for pion mass vs. asym
+  TH2                   *fHPionPtAsym;           //!histo for pion pT vs. asym
   TH2                   *fHPionMggDgg;            //!histo for pion mass vs. opening angle
   TH2                   *fHPionInvMasses;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesSym;     //!histos for invariant mass plots
@@ -313,6 +316,7 @@ protected:
   TH2                   *fHSecPionInvMasses;     //!histos for secondary pion invariant mass
   TH2                   *fHK0PionInvMasses;     //!histos for K0 pion invariant mass
   TH2                   *fHMatPionInvMasses;     //!histos for material pion invariant mass
+  TH2                   *fHPionInvMassesAdd1NoWgt; //!histos for added signal pions without weight
   TH2                   *fHPionInvMassesAdd1;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesAdd1Sym;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesAdd1Asym;     //!histos for invariant mass plots
@@ -412,11 +416,11 @@ protected:
   Int_t ietamin; // first added eta particle index
   Int_t ietamax; // last added eta particle index
   
-  const static int nMulClass =   5;
-  const static int nZClass   =   5;
+  const static int nMulClass =   4;
+  const static int nZClass   =   4;
   const static int nPtClass = 1;
   int iEvt[nMulClass][nZClass][nPtClass];
-  const static int nEvt      =   20; // mixing "depth"
+  const static int nEvt      =   30; // mixing "depth"
   
   EmcEvent evt;
   EmcEvent EmcEventList[nMulClass][nZClass][nPtClass][nEvt];

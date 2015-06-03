@@ -15,7 +15,8 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       Bool_t bunfold = 0,
 				      Double_t cutm02 = 100,
 				      Double_t cutchi2 = -1,
-				      Bool_t dotrmsmpl = 0)
+				      Bool_t dotrmsmpl = 0,
+                                      Bool_t doManualRecal = 0)
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -72,6 +73,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetM02Cut(cutm02);
   task->SetMinEcc(cutchi2);
   task->SetTrackMatchSimple(dotrmsmpl);
+  task->SetDoManualRecal(doManualRecal);
   mgr->AddTask(task);
   
   char name[256];
