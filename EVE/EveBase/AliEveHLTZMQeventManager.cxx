@@ -37,8 +37,8 @@ AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(Int_t ev, bool storageManager
 #ifdef ZMQ
   fIsOpen=kTRUE;
   //get the address of the HLT proxy from the environment
-  const char* hltproxy = gSystem->Getenv("HLT_ZMQ_proxy");
-  if (strlen(hltproxy)>0) fHLTPublisherAddress = hltproxy;
+  if (gSystem->Getenv("HLT_ZMQ_proxy")) 
+    fHLTPublisherAddress=gSystem->Getenv("HLT_ZMQ_proxy");
   //single ZMQ context for inter thread comm. etc.
   fZMQContext = zmq_ctx_new();
   //single ZMQ socket for gathering the events form various listening threads
