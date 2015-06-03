@@ -168,7 +168,7 @@ void on_new_event()
   
   if (AliEveEventManager::HasESD())
   {
-    AliESDEvent* esd = AliEveEventManager::AssertESD();
+    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     esd->GetPrimaryVertex()->GetXYZ(x);
     
     TTimeStamp ts(esd->GetTimeStamp());

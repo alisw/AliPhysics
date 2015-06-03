@@ -26,7 +26,7 @@
 TEveTrackList* primary_vertex_tracks()
 {
   TEveUtil::LoadMacro("esd_tracks.C");
-  AliESDEvent   *esd = AliEveEventManager::AssertESD();
+  AliESDEvent   *esd = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *pv  = esd->GetPrimaryVertex();
 
   TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex");

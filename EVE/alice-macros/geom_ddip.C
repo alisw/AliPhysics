@@ -18,7 +18,7 @@
 
 void geom_ddip()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("DDIP_1");
   if (!node) {

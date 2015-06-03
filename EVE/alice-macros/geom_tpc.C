@@ -18,7 +18,7 @@
 
 void geom_tpc()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("TPC_M_1");
 

@@ -2246,7 +2246,7 @@ void SetCutsWindow::DrawHistos()
          histEtaPhi = new TH2D("#eta-#phi\nSingle Event", "AliEve #eta-#phi histogram", 100, -1.5, 1.5, 100, 0.0, 2*TMath::Pi());
    }
 
-   AliESDEvent* esd = AliEveEventManager::AssertESD();
+   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
    if(esd->GetNumberOfTracks())
    {
@@ -2451,7 +2451,7 @@ void SetCutsWindow::DrawHistosAll()
    for(Int_t i = 0; i <= nEvents; i++)
    {
 
-   AliESDEvent* esd = AliEveEventManager::AssertESD();
+   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 /*
    if(esd->GetMultiplicity())
      histMult->Fill(esd->GetMultiplicity()->GetNumberOfTracklets());

@@ -107,7 +107,7 @@ void AliEveSaveViews::Save()
     
     if(AliEveEventManager::HasESD())
     {
-        fESDEvent = AliEveEventManager::AssertESD();
+        fESDEvent = AliEveEventManager::GetMaster()->AssertESD();
     }
     else
     {
@@ -273,7 +273,7 @@ void AliEveSaveViews::SaveWithDialog()
     
     if(AliEveEventManager::HasESD())
     {
-        fESDEvent = AliEveEventManager::AssertESD();
+        fESDEvent = AliEveEventManager::GetMaster()->AssertESD();
     }
     else
     {
@@ -451,7 +451,7 @@ void AliEveSaveViews::BuildEventInfoString()
     }
     else if (AliEveEventManager::HasESD())
     {
-        AliESDEvent* esd =  AliEveEventManager::AssertESD();
+        AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
         if(!esd)return;
         fEventInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
                         esd->GetESDRun()->GetBeamType(),
@@ -473,7 +473,7 @@ void AliEveSaveViews::BuildTriggerClassesStrings()
     ULong64_t mask = 1;
     int sw=0;
     
-    AliESDEvent* esd =  AliEveEventManager::AssertESD();
+    AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
     ULong64_t triggerMask = esd->GetTriggerMask();
     ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
     

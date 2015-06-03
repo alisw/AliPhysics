@@ -88,7 +88,7 @@ void on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
   proj->DestroyElements();
-  //AliESDEvent* esd = AliEveEventManager::AssertESD();
+  //AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   // geom
   proj->ImportElements(geom);

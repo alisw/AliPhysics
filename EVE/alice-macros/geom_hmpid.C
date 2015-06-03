@@ -17,7 +17,7 @@
 
 void geom_hmpid()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveElementList* list = new TEveElementList("HMPID");
   gEve->AddGlobalElement(list);

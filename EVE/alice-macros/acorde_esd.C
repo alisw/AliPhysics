@@ -31,9 +31,9 @@ void acorde_esd()
 
   // From Mario RC:
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   //AliESDEvent* fESD = new AliESDEvent();
-  AliESDACORDE *acordeESD = AliEveEventManager::AssertESD()->GetACORDEData();
+  AliESDACORDE *acordeESD = AliEveEventManager::GetMaster()->AssertESD()->GetACORDEData();
 
 
   if (acorde_module_path(0).IsNull())

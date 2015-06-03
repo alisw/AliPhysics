@@ -542,7 +542,7 @@ void ButtonWindow::DrawResiduals()
       
       TEveUtil::LoadMacro("$ALICE_ROOT/ANALYSIS/macros/ConfigCalibTrain.C+");
 
-      AliESDEvent *esd = AliEveEventManager::AssertESD();
+      AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
 
       ConfigCalibTrain(esd->GetRunNumber());
 

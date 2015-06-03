@@ -17,7 +17,7 @@
 
 void geom_phos()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveElementList* list = new TEveElementList("PHOS");
   gEve->AddGlobalElement(list);

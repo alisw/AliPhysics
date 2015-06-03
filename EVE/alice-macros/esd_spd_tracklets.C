@@ -28,7 +28,7 @@ TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=2,
 {
   // radius - cylindrical radius to which the tracklets should be extrapolated
 
-  AliESDEvent     *esd = AliEveEventManager::AssertESD();
+  AliESDEvent     *esd = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex    *pv  = esd->GetPrimaryVertexSPD();
   const AliMultiplicity *mul = esd->GetMultiplicity();
 

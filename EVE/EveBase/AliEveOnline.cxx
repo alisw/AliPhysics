@@ -89,6 +89,9 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"============ Setting macro executor ============\n"<<endl;;
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD"   , "ad_esd.C", "ad_esd", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "PT HISTO"   , "histo2d.C", "histo2d", "", kTRUE));
+    
+    
 //    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdclustercellsV1.C", "emcal_esdclustercellsV1", "", kTRUE)); // this macro resets 3D view's camera!!
     
     cout<<"macros added to exec"<<endl;

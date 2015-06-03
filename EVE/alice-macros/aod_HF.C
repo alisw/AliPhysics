@@ -87,7 +87,7 @@ AliEveHFList* aod_HF()
   LoadLibraries(useParFiles);
   
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   /*
     gSystem->Load("libANALYSIS");

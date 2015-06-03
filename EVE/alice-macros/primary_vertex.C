@@ -167,7 +167,7 @@ make_vertex_box(const AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy,
 TEveStraightLineSet*
 primary_vertex(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
 {
-  AliESDEvent  *esd = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *pv  = esd->GetPrimaryVertex();
   if ( ! pv->GetStatus()) {
     Info("primary_vertex", "Primary vertex not available.");
@@ -184,7 +184,7 @@ primary_vertex(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
 TEveStraightLineSet*
 primary_vertex_spd(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
 {
-  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
   if ( ! spdv->GetStatus()) {
     Info("primary_vertex_spd", "Primary vertex SPD not available.");
@@ -201,7 +201,7 @@ primary_vertex_spd(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
 TEveStraightLineSet*
 primary_vertex_tpc(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
 {
-  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
   if ( ! tpcv->GetStatus()) {
     Info("primary_vertex_tpc", "Primary vertex TPC not available.");
@@ -222,7 +222,7 @@ primary_vertex_tpc(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
 TEveStraightLineSet*
 primary_vertex_ellipse(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
 {
-  AliESDEvent  *esd = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *pv  = esd->GetPrimaryVertex();
   if ( ! pv->GetStatus()) {
     Info("primary_vertex_ellipse", "Primary vertex not available.");
@@ -239,7 +239,7 @@ primary_vertex_ellipse(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
 TEveStraightLineSet*
 primary_vertex_ellipse_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
 {
-  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
   if ( ! spdv->GetStatus()) {
     Info("primary_vertex_ellipse_spd", "Primary vertex SPD not available.");
@@ -256,7 +256,7 @@ primary_vertex_ellipse_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
 TEveStraightLineSet*
 primary_vertex_ellipse_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
 {
-  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
   if ( ! tpcv->GetStatus()) {
     Info("primary_vertex_ellipse_tpc", "Primary vertex TPC not available.");
@@ -277,7 +277,7 @@ primary_vertex_ellipse_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
 TEveStraightLineSet*
 primary_vertex_box(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
 {
-  AliESDEvent  *esd = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *pv  = esd->GetPrimaryVertex();
   if ( ! pv->GetStatus()) {
     Info("primary_vertex_box", "Primary vertex not available.");
@@ -294,7 +294,7 @@ primary_vertex_box(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t
 TEveStraightLineSet*
 primary_vertex_box_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
 {
-  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
   if ( ! spdv->GetStatus()) {
     Info("primary_vertex_box_spd", "Primary vertex SPD not available.");
@@ -311,7 +311,7 @@ primary_vertex_box_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
 TEveStraightLineSet*
 primary_vertex_box_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
 {
-  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
   if ( ! tpcv->GetStatus()) {
     Info("primary_vertex_box_tpc", "Primary vertex TPC not available.");

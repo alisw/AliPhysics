@@ -30,7 +30,7 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 
   Int_t fNColorBins = 5;
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TPC");

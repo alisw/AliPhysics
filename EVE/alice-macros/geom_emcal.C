@@ -18,7 +18,7 @@
 
 void geom_emcal()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   if (!node) {

@@ -66,9 +66,9 @@ zdc_make_cross(const Text_t* name, const Text_t* title_base,
 
 void esd_zdc() 
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
-  AliESDZDC *esd = AliEveEventManager::AssertESD()->GetESDZDC();
+  AliESDZDC *esd = AliEveEventManager::GetMaster()->AssertESD()->GetESDZDC();
 
   if (g_zdc_palette == 0)
   {

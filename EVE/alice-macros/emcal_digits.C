@@ -48,7 +48,7 @@
 
 void emcal_digits()
 {
-    AliEveEventManager::AssertGeometry();
+    AliEveEventManager::GetMaster()->AssertGeometry();
     
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
     if (!node) return;
