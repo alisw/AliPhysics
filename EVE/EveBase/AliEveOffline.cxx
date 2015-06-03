@@ -302,7 +302,9 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
         man->SetESDwidths(widths);
         man->SetESDdashBad(true);
     }
-    man->SetESDtracksByCategory(true);
+    man->SetESDtracksByCategory(false);
+    man->SetESDtracksByType(true);
+    man->SetESDdashBad(false);
     
     man->SetAutoLoad(true);// set autoload by default
 }

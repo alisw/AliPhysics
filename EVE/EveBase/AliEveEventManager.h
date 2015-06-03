@@ -130,6 +130,7 @@ public:
     void          SetSaveViews(bool save){fSaveViews=save;}
     
     void          SetESDtracksByCategory(bool set){fDrawESDtracksByCategory=set;}
+    void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
     void          SetESDcolors(Color_t colors[9]){fESDdrawer->SetColors(colors);}
     void          SetESDwidths(Width_t widths[9]){fESDdrawer->SetWidths(widths);}
     void          SetESDdashBad(bool dashBad){fESDdrawer->SetDashBad(dashBad);}
@@ -240,6 +241,7 @@ private:
 
     bool fSaveViews;
     bool fDrawESDtracksByCategory;
+    bool fDrawESDtracksByType;
     
     bool fFirstEvent;
     bool fCenterProjectionsAtPrimaryVertex;

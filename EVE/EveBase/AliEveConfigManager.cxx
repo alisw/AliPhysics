@@ -53,7 +53,7 @@ namespace
 }
  
 //______________________________________________________________________________
-AliEveConfigManager* AliEveConfigManager::InitializeMaster()
+AliEveConfigManager* AliEveConfigManager::InitializeMaster(bool storageManager)
 {
   // Get main instance.
 
@@ -62,7 +62,7 @@ AliEveConfigManager* AliEveConfigManager::InitializeMaster()
   if (fgMaster)
     throw kEH + "Master already initialized.";
 
-  fgMaster = new AliEveConfigManager;
+  fgMaster = new AliEveConfigManager(storageManager);
   return fgMaster;
 }
 
@@ -80,7 +80,7 @@ AliEveConfigManager* AliEveConfigManager::GetMaster()
 }
 
 //______________________________________________________________________________
-AliEveConfigManager::AliEveConfigManager() :
+AliEveConfigManager::AliEveConfigManager(bool storageManager) :
   TObject(),
   fAnalysisPopup(0),
   fAliEvePopup(0),
@@ -187,11 +187,14 @@ AliEveConfigManager::AliEveConfigManager() :
 
   //Storage Manager:
 #ifdef ZMQ
-    gEve->GetBrowser()->StartEmbedding(0);
-    AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
-    gEve->GetBrowser()->StopEmbedding("List");
-    
-    fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+    if(storageManager)
+    {
+        gEve->GetBrowser()->StartEmbedding(0);
+        AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+        gEve->GetBrowser()->StopEmbedding("List");
+
+        fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+    }
 #endif
   
   fLoadCheck = kFALSE;

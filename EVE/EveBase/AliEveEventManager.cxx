@@ -153,6 +153,7 @@ fViewsSaver(0),
 fESDdrawer(0),
 fSaveViews(false),
 fDrawESDtracksByCategory(false),
+fDrawESDtracksByType(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
 {
@@ -1599,6 +1600,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     if(HasESD())
     {
         if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
+        if(fDrawESDtracksByType)fESDdrawer->ByType();
         
         Double_t x[3] = { 0, 0, 0 };
         

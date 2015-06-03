@@ -26,6 +26,7 @@ public:
     ~AliEveESDTracks();
     
     TEveElementList* ByCategory();
+    TEveElementList* ByType();
     
     void SetColors(Color_t colors[9]){
         for(int i=0;i<9;i++){fColors[i]=colors[i];}
@@ -59,8 +60,8 @@ private:
     Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
 
     TEveElementList* ByAnalCuts();
-    Color_t fColors[9];
-    Width_t fWidths[9];
+    Color_t fColors[15];
+    Width_t fWidths[15];
     bool fDashBad;
     
     AliEveESDTracks(const AliEveESDTracks&);
