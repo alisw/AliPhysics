@@ -529,6 +529,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 	// Array of current cut's gammas
 	fGammaCandidates = new TList();
+	fGammaCandidates->SetOwner(kTRUE);
 
 	fCutFolder = new TList*[fnCuts];
 	fESDList = new TList*[fnCuts];
@@ -1432,7 +1433,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 {
 	Int_t nV0 = 0;
 	TList *GammaCandidatesStepOne = new TList();
+	GammaCandidatesStepOne->SetOwner(kTRUE);
 	TList *GammaCandidatesStepTwo = new TList();
+	GammaCandidatesStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 		AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);

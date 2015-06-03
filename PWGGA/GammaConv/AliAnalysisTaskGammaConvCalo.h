@@ -127,7 +127,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TList 								**fPhotonDCAList;					// Array of lists with photon dca trees
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
-		TList 								**fHeaderNameList;					// Array of lists with header names for MC header selection
 		TList								**fClusterOutputList;     			//!Array of lists of output histograms for cluster photons
 		TList 								*fOutputContainer;					// Output container
 		TClonesArray 						*fReaderGammas;						// Array with conversion photons selected by V0Reader Cut

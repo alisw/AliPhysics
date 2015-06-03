@@ -505,6 +505,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   
 	// Array of current cut's gammas
 	fClusterCandidates = new TList();
+	fClusterCandidates->SetOwner(kTRUE);
   
 	fCutFolder = new TList*[fnCuts];
 	fESDList = new TList*[fnCuts];
