@@ -20,8 +20,8 @@ public:
     ~AliEveHLTZMQeventManager();
     
 private:
-    static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveHLTZMQeventManager*>(arg)->GetNextEvent();return nullptr;}
-    void GetNextEvent();
+    static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveHLTZMQeventManager*>(arg)->PullEventFromHLT();return nullptr;}
+    void PullEventFromHLT();
     void InitOCDB(int runNo);
     void GotoEvent(Int_t event);
     void NextEvent();

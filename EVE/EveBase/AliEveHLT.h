@@ -13,6 +13,7 @@ class AliEveHLT {
 public:
     AliEveHLT(bool storageManager=false);
     ~AliEveHLT();
+    static void OnNewEvent();
     
 private:
     void InitImportMacros();
