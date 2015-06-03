@@ -30,6 +30,7 @@
 #include <TROOT.h>
 
 #include "AliAnalysisTaskSE.h"
+#include <TString.h>
 
 class TChain;
 class TH1F;
@@ -47,7 +48,7 @@ class AliVertexerTracks;
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
  public:
-  AliAnalysisTaskHypertriton3();
+  AliAnalysisTaskHypertriton3(TString taskname = "taskHypertriton");
   virtual ~AliAnalysisTaskHypertriton3();
 
   virtual void   UserCreateOutputObjects();

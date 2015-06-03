@@ -8,7 +8,9 @@
 #include "AliPID.h"
 #endif
 
-AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE, Bool_t fillTree=kFALSE){
+AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE,
+						 Bool_t fillTree=kFALSE,
+						 TString suffix = ""){
 
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // with ITS standalone tracks
@@ -44,7 +46,9 @@ AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE, Bool_t fi
 
 
   // Create and configure the task
-  
+
+  TString tskname = "hypertriton";
+  tskname.Append(Form("%s",suffix.Data()));
   AliAnalysisTaskHypertriton3 *taskhyp = new AliAnalysisTaskHypertriton3();
   taskhyp->SetReadMC(kFALSE);
   taskhyp->SetFillTree(kFALSE);
@@ -59,7 +63,7 @@ AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE, Bool_t fi
   
   AliAnalysisDataContainer *coutput =0x0;
   
-  coutput = mgr->CreateContainer("listHypertriton",
+  coutput = mgr->CreateContainer(Form("strogolo_%s",tskname.Data()),
 				 TList::Class(),
 				 AliAnalysisManager::kOutputContainer,
 				 AliAnalysisManager::GetCommonFileName());    
