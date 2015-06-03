@@ -78,7 +78,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fPhotonDCAList(NULL),
 	fTrueList(NULL),
 	fMCList(NULL),
-	fHeaderNameList(NULL),
 	fClusterOutputList(NULL),
 	fOutputContainer(NULL),
 	fReaderGammas(NULL),
@@ -306,7 +305,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fPhotonDCAList(NULL),
 	fTrueList(NULL),
 	fMCList(NULL),
-	fHeaderNameList(NULL),
 	fClusterOutputList(NULL),
 	fOutputContainer(0),
 	fReaderGammas(NULL),
@@ -647,7 +645,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   
 	// Array of current cut's gammas
 	fGammaCandidates = new TList();
+	fGammaCandidates->SetOwner(kTRUE);
 	fClusterCandidates = new TList();
+	fClusterCandidates->SetOwner(kTRUE);
   
 	fCutFolder = new TList*[fnCuts];
 	fESDList = new TList*[fnCuts];
@@ -902,8 +902,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fMCList 	= new TList*[fnCuts];
 		// True Histogramms
 		fTrueList 	= new TList*[fnCuts];
-		// Selected Header List
-		fHeaderNameList 					= new TList*[fnCuts];
+
 		fHistoMCHeaders 					= new TH1I*[fnCuts];
 		fHistoMCAllGammaPt 					= new TH1F*[fnCuts];
 		fHistoMCAllGammaEMCALAccPt 			= new TH1F*[fnCuts];
@@ -2068,7 +2067,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 {
 	Int_t nV0 = 0;
 	TList *GammaCandidatesStepOne = new TList();
+	GammaCandidatesStepOne->SetOwner(kTRUE);
 	TList *GammaCandidatesStepTwo = new TList();
+	GammaCandidatesStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 		AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);

@@ -394,9 +394,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 	}
 
 	fGoodConvGammas = new TList();
+	fGoodConvGammas->SetOwner(kTRUE);
 	fClusterCandidates = new TList();
+	fClusterCandidates->SetOwner(kTRUE);
 	fNeutralPionCandidates = new TList();
+	fNeutralPionCandidates->SetOwner(kTRUE);
 	fGoodVirtualParticles = new TList();
+	fGoodVirtualParticles->SetOwner(kTRUE);
 	
 	fCutFolder				= new TList*[fnCuts];
 	fESDList				= new TList*[fnCuts];
@@ -1049,7 +1053,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueCaloPhotonCandidate
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessConversionPhotonCandidates(){
 	Int_t nV0 = 0;
 	TList *GoodGammasStepOne = new TList();
+	GoodGammasStepOne->SetOwner(kTRUE);
 	TList *GoodGammasStepTwo = new TList();
+	GoodGammasStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){

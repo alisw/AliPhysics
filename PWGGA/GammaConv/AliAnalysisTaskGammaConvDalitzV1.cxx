@@ -551,6 +551,7 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
 		
 		if( ( (AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetBKGMethod() == 3 ){
 			fGammasPool[iCut] = new TList();
+			fGammasPool[iCut]->SetOwner(kTRUE);
 		}
 			
 	}
@@ -574,7 +575,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 	}
 
 	fGoodGammas = new TList();
-	//fGoodGammas->SetOwner(kTRUE);
+	fGoodGammas->SetOwner(kTRUE);
 
 	fGoodVirtualGammas = new TList();
 	fGoodVirtualGammas->SetOwner(kTRUE);
@@ -1558,7 +1559,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessPhotonCandidates()
 {
 	Int_t nV0 = 0;
 	TList *GoodGammasStepOne = new TList();
+	GoodGammasStepOne->SetOwner(kTRUE);
 	TList *GoodGammasStepTwo = new TList();
+	GoodGammasStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
