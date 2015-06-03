@@ -837,7 +837,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					debug<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
 					cout<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
                                         cout<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
-					if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || ((fitsettings&0x1)&&hmc2->GetEntries()<=minentries) || ((fitsettings&0x2)&&hmc3->GetEntries()<=minentries))
+					if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries)
 					{
 						delete 	hToFit;
 						delete 	hmc1;
@@ -845,6 +845,20 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						delete 	hmc3;
 						continue;
 					}	
+					if(((fitsettings&0x1)&&hmc2->GetEntries()<=minentries))
+						fitsettings=fitsettings-1;
+					if(((fitsettings&0x2)&&hmc3->GetEntries()<=minentries))
+						fitsettings=fitsettings-2;
+					if(fitsettings==0)
+					{
+						delete 	hToFit;
+						delete 	hmc1;
+						delete 	hmc2;
+						delete 	hmc3;
+						continue;
+
+					}	
+
 					hToFit->Sumw2();
 					hmc1->Sumw2();
 					hmc2->Sumw2();
