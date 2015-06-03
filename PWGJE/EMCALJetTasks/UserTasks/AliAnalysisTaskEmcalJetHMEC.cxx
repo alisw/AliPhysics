@@ -256,7 +256,16 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
    centralityBins[ic]=mult*ic;
   }
 
-  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+  // for pp we need mult bins for event mixing. Create binning here, to also make a histogram from it
+  Int_t nCentralityBins_pp  = 8;
+  Double_t centralityBins_pp[9] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
+
+  if ( fRunType > 0 ) {   //all besides pp
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+  }
+  else if (0==fRunType) { //for pp only
+  	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins_pp, centralityBins_pp, nZvtxBins, zvtxbin);
+  }
 
 }
 
@@ -524,11 +533,23 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 	      fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            Double_t triggerEntries[6] = {fCent,jetPt,trackpt,deta,dphijh,leadjet};
-            fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+          	if ( fRunType > 0 ) { //pA and AA
+              Double_t triggerEntries[6] = {fCent,jetPt,trackpt,deta,dphijh,leadjet};
+              fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+          	}
+          	else if (0==fRunType) {
+          		Double_t triggerEntries[6] = {Ntracks,jetPt,trackpt,deta,dphijh,leadjet};
+          		fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+          	}
           } else { 
-	        Double_t triggerEntries[8] = {fCent,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};                      
-            fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+          	if ( fRunType > 0 ) { //pA and AA
+	            Double_t triggerEntries[8] = {fCent,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
+              fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+          	}
+          	else if (0==fRunType) {
+              Double_t triggerEntries[8] = {Ntracks,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
+              fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+          	}
           }
 	    }
 
@@ -568,10 +589,18 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     // if event was not selected (triggered) for any reseason (should never happen) then return
     if (trigger==0)  return kTRUE;
 
-    AliEventPool* pool = fPoolMgr->GetEventPool(fCent, zVtx);
+    AliEventPool *pool = 0;
+    if ( fRunType > 0 ) {//everything but pp
+      pool = fPoolMgr->GetEventPool(fCent, zVtx);
+    }
+    else if (0==fRunType) {//pp only
+    	Double_t Ntrks = (Double_t)Ntracks*1.0;
+      pool = fPoolMgr->GetEventPool(Ntrks, zVtx);
+    }
     
     if (!pool){
-      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
+      if (fRunType > 0) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
+      else if (0==fRunType) AliFatal(Form("No pool found for ntracks_pp = %d, zVtx = %f", Ntracks, zVtx));
       return kTRUE;
     }
 
@@ -622,11 +651,23 @@ if(trigger & fTriggerEventType) {
 		    if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
 		    if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
             if(fDoLessSparseAxes) {  // check if we want all the axis filled
-              Double_t triggerEntries[6] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet};
-              fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+             	if ( fRunType > 0 ) { //pA and AA
+                Double_t triggerEntries[6] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet};
+                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+             	}
+             	else if (0 == fRunType) { //pp
+             		Double_t triggerEntries[6] = {Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet};
+             		fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+             	}
             } else {
-		      Double_t triggerEntries[8] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};                      
-              fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+            	if ( fRunType > 0 ) { //pA and AA
+		            Double_t triggerEntries[8] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
+                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+            	}
+            	else if (0==fRunType) {
+            		Double_t triggerEntries[8] = {Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
+            	  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+            	}
 		    }
 		    }
 	      }
