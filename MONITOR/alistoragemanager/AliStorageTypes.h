@@ -47,7 +47,13 @@ enum requestType{
 
 struct clientRequestStruct
 {
-    clientRequestStruct(){};
+    clientRequestStruct() :
+    messageType(-1),
+    maxStorageSize(-1),
+    maxOccupation(-1),
+    removeEvents(-1),
+    eventsInChunk(-1)
+    {};
     clientRequestStruct(const clientRequestStruct& crs){
         messageType = crs.messageType;
         maxStorageSize =crs.maxStorageSize;
@@ -79,7 +85,11 @@ struct listRequestStruct{
 
 struct serverRequestStruct
 {
-    serverRequestStruct(){};
+    serverRequestStruct():
+    messageType(-1),
+    eventsRunNumber(-1),
+    eventsEventNumber(-1)
+    {};
     serverRequestStruct(const serverRequestStruct& src){
         messageType = src.messageType;
         eventsRunNumber = src.eventsRunNumber;

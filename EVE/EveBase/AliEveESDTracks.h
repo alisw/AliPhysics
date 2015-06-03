@@ -62,6 +62,9 @@ private:
     Color_t fColors[9];
     Width_t fWidths[9];
     bool fDashBad;
+    
+    AliEveESDTracks(const AliEveESDTracks&);
+    AliEveESDTracks& operator=(const AliEveESDTracks&);
 };
 
 #endif
