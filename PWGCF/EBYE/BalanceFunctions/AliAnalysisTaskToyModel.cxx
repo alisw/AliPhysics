@@ -98,6 +98,9 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fEllipticFlowProtons(0.0), fTriangularFlowProtons(0.0),
   fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0),
   fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1),
+  fDynamicalCorrelationsDeltaEta(0.1), fDynamicalCorrelationsDeltaPhi(0.1),
+  fUseRapidityShift(kFALSE), fRapidityShift(0.0),
+  vTmp(NULL),vShift(NULL),vBeam_p(NULL),vBeam_Pb(NULL),
   fUseJets(kFALSE), fPtAssoc(0),
   fUseLCC(kFALSE),
   fSigmaPt(0.1),fSigmaEta(0.5),fSigmaPhi(0.5){
@@ -128,6 +131,12 @@ AliAnalysisTaskToyModel::~AliAnalysisTaskToyModel() {
     delete fAzimuthalAngleProtons;
   }
   if(fUseJets) delete fPtAssoc;
+  if(fUseRapidityShift){
+    delete vTmp;
+    delete vShift;
+    delete vBeam_p;
+    delete vBeam_Pb;
+  }
 }
 
 //________________________________________________________________________
@@ -234,6 +243,31 @@ void AliAnalysisTaskToyModel::Init() {
   //==============Efficiency matrix==============//
   if(fSimulateDetectorEffects) SetupEfficiencyMatrix();
   //==============Efficiency matrix==============//
+
+  //==============Rapidity shift==============//
+  if(fUseRapidityShift){
+
+    vTmp = new TLorentzVector();
+    vShift = new TLorentzVector();
+    vBeam_p = new TLorentzVector();
+    vBeam_Pb = new TLorentzVector();
+
+    Double_t eBeam_p = fProtonMass+4000;//in GeV
+    Double_t pBeam_p = TMath::Sqrt(eBeam_p*eBeam_p - fProtonMass*fProtonMass);
+
+    Double_t eBeam_Pb = fProtonMass + 82*4000/208;//in GeV (neglect difference between proton and neutron mass)
+    Double_t pBeam_Pb = TMath::Sqrt(eBeam_Pb*eBeam_Pb - fProtonMass*fProtonMass);
+
+    vBeam_p->SetPxPyPzE(0.,0.,pBeam_p,eBeam_p);
+    vBeam_Pb->SetPxPyPzE(0.,0.,-pBeam_Pb,eBeam_Pb);
+
+    (*vShift) =  (*vBeam_p) + (*vBeam_Pb);
+
+    Printf("=====================================================");
+    Printf("Running with rapidity shift of %.3f (sNN = %.2f TeV)",vShift->Rapidity(),vShift->M()/1000.);
+    Printf("=====================================================");
+  }
+  //==============Rapidity shift==============//
 }
 
 //________________________________________________________________________
@@ -617,13 +651,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 
 
   for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
-    //vector<Double_t> *chargeVectorShuffle[9];   // this will be shuffled
-    //vector<Double_t> *chargeVector[9];          // original charge
-    //for(Int_t i = 0; i < 9; i++){
-    //chargeVectorShuffle[i] = new vector<Double_t>;
-    //chargeVector[i]        = new vector<Double_t>;
-    //}
 
     // TObjArray for the accepted particles 
     // (has to be done here, otherwise mxing with event pool does not work, overwriting pointers!)
@@ -686,9 +713,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	vEta = gRandom->Gaus(0.0,fSigmaGaussEta);
       }
 
-      //Fill QA histograms (full phase space)
-      fHistEtaTotal->Fill(vEta);
-
       //Decide the charge
       gDecideCharge = gRandom->Rndm();
       if(fFixedPositiveRatio){
@@ -703,9 +727,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	else 
 	  vCharge = -1;
       }
-
-      //Acceptance
-      if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
 
       if(!fUseAllCharges) {
 	//Decide the specie
@@ -739,9 +760,25 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  vPt = fPtSpectraAllCharges->GetRandom();
 	vPhi = fAzimuthalAngleAllCharges->GetRandom();
       }
-
+     
       if(fUseDebug) 
 	Printf("Generated: Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge,vEta,vPhi,vPt);
+      
+      if(fUseRapidityShift){
+		
+	vTmp->SetPtEtaPhiM(vPt,vEta,vPhi,fParticleMass);
+	vTmp->Boost(vShift->BoostVector());
+
+	vEta = vTmp->Eta();
+	vPhi = vTmp->Phi();
+	vPt  = vTmp->Pt();
+
+	if(vPhi < 0.)
+	  vPhi = 2*TMath::Pi() + vPhi;
+	
+	if(fUseDebug) 
+	  Printf("Rapidity shift: Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge,vEta,vPhi,vPt);
+      }
       
       vP[0] = vPt*TMath::Cos(vPhi);
       vP[1] = vPt*TMath::Sin(vPhi);
@@ -752,7 +789,13 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 			TMath::Power(vP[2],2));
       
       vY = 0.5*TMath::Log((vE + vP[2])/(vE - vP[2]));
+
+      //Fill QA histograms (full phase space)
+      fHistEtaTotal->Fill(vEta);
       
+      //Acceptance (after rapidity shift)
+      if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
+
       //pt coverage
       if((vPt < fPtMin) || (vPt > fPtMax)) continue;
       //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
@@ -1134,7 +1177,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     //Dynamical correlations
     Int_t nGeneratedPositiveDynamicalCorrelations = 0;
     Int_t nGeneratedNegativeDynamicalCorrelations = 0;
-    /*Double_t vChargePrime = 0;
+    Double_t vChargePrime = 0;
     Double_t vYPrime = 0.0;
     Double_t vEtaPrime = 0.0;
     Double_t vPhiPrime = 0.0;
@@ -1147,19 +1190,23 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       for(Int_t iDynamicalCorrelations = 0; iDynamicalCorrelations < gNumberOfDynamicalCorrelations; iDynamicalCorrelations++) {
 	isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
 	
+	// use a constant distribution of particles in eta in a certain range, -fConstantEta - +fConstantEta
+	if(fConstantEta>0){
+	  vEta = gRandom->Uniform(-fConstantEta,fConstantEta);
+	}
+	
 	//Pseudo-rapidity sampled from a Gaussian centered @ 0
-	vEta = gRandom->Gaus(0.0,0.1);
-	vCharge = 1.0;
+	else{
+	  vEta = gRandom->Gaus(0.0,fSigmaGaussEta);
+	}
+	vCharge = 1;
 	nGeneratedPositiveDynamicalCorrelations += 1;
 	
-	vEtaPrime = -vEta;
+	vEtaPrime = vEta + gRandom->Gaus(0.0,fDynamicalCorrelationsDeltaEta);
+
 	vChargePrime = -1.0;
 	nGeneratedNegativeDynamicalCorrelations += 1;
-	  
-	//Acceptance
-	if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
-	if((vEtaPrime < fEtaMin) || (vEtaPrime > fEtaMax)) continue;
-      
+	       
 	if(!fUseAllCharges) {
 	  //Decide the specie
 	  Double_t randomNumberSpecies = gRandom->Rndm();
@@ -1191,8 +1238,41 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  vPhi = fAzimuthalAngleAllCharges->GetRandom();
 	}
 	vPtPrime = vPt;
-	vPhiPrime = vPhi;
+	vPhiPrime = vPhi + gRandom->Gaus(0.0,fDynamicalCorrelationsDeltaPhi);
 
+	if(fUseDebug){ 
+	  Printf("Generated (Dynamical +): Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge,vEta,vPhi,vPt);
+	  Printf("Generated (Dynamical -): Charge = %.0f, eta = %.2f, phi = %.2f, pt = %.2f",vChargePrime,vEtaPrime,vPhiPrime,vPtPrime);
+	}
+	
+	if(fUseRapidityShift){
+	  
+	  vTmp->SetPtEtaPhiM(vPt,vEta,vPhi,fParticleMass);
+	  vTmp->Boost(vShift->BoostVector());
+	  
+	  vEta = vTmp->Eta();
+	  vPhi = vTmp->Phi();
+	  vPt  = vTmp->Pt();
+	  
+	  if(vPhi < 0.)
+	    vPhi = 2*TMath::Pi() + vPhi;
+
+	  vTmp->SetPtEtaPhiM(vPtPrime,vEtaPrime,vPhiPrime,fParticleMass);
+	  vTmp->Boost(vShift->BoostVector());
+	  
+	  vEtaPrime = vTmp->Eta();
+	  vPhiPrime = vTmp->Phi();
+	  vPtPrime  = vTmp->Pt();
+	  
+	  if(vPhiPrime < 0.)
+	    vPhiPrime = 2*TMath::Pi() + vPhiPrime;
+	  
+	  if(fUseDebug){ 
+	    Printf("Rapidity shift (+): Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge,vEta,vPhi,vPt);
+	    Printf("Rapidity shift (-): Charge = %.0f, eta = %.2f, phi = %.2f, pt = %.2f",vChargePrime,vEtaPrime,vPhiPrime,vPtPrime);
+	  }
+	}
+	
 	vP[0] = vPt*TMath::Cos(vPhi);
 	vP[1] = vPt*TMath::Sin(vPhi);
 	vP[2] = vPt*TMath::SinH(vEta);
@@ -1212,11 +1292,10 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 			  TMath::Power(vPPrime[2],2));
 	
 	vYPrime = 0.5*TMath::Log((vEPrime + vPPrime[2])/(vEPrime - vPPrime[2]));
+	//Fill QA histograms (full phase space)
+	fHistEtaTotal->Fill(vEta);
+	fHistEtaTotal->Fill(vEtaPrime);
       
-	//pt coverage
-	if((vPt < fPtMin) || (vPt > fPtMax)) continue;
-	if((vPtPrime < fPtMin) || (vPtPrime > fPtMax)) continue;
-
 	//acceptance filter
 	if(fUseAcceptanceParameterization) {
 	  Double_t gRandomNumberForAcceptance = gRandom->Rndm();
@@ -1227,56 +1306,75 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  if(gRandomNumberForAcceptancePrime > fAcceptanceParameterization->Eval(vPtPrime)) 
 	    continue;
 	}
-      
-	// fill charge vector (positive)
-	chargeVector[0]->push_back(vCharge);
-	chargeVector[1]->push_back(vY);
-	chargeVector[2]->push_back(vEta);
-	chargeVector[3]->push_back(vPhi);
-	chargeVector[4]->push_back(vP[0]);
-	chargeVector[5]->push_back(vP[1]);
-	chargeVector[6]->push_back(vP[2]);
-	chargeVector[7]->push_back(vPt);
-	chargeVector[8]->push_back(vE);
-	
-	if(fRunShuffling) {
-	  chargeVectorShuffle[0]->push_back(vCharge);
-	  chargeVectorShuffle[1]->push_back(vY);
-	  chargeVectorShuffle[2]->push_back(vEta);
-	  chargeVectorShuffle[3]->push_back(vPhi);
-	  chargeVectorShuffle[4]->push_back(vP[0]);
-	  chargeVectorShuffle[5]->push_back(vP[1]);
-	  chargeVectorShuffle[6]->push_back(vP[2]);
-	  chargeVectorShuffle[7]->push_back(vPt);
-	  chargeVectorShuffle[8]->push_back(vE);
+
+	//Acceptance and pt coverage
+	if((vPt > fPtMin) && (vPt < fPtMax)){
+	  if((vEta > fEtaMin) && (vEta < fEtaMax)){
+
+	    fHistEta->Fill(vEta);
+	    fHistRapidity->Fill(vY);
+	    fHistPhi->Fill(vPhi);
+	    fHistPt->Fill(vPt);
+	    
+	    if(isPion) {
+	      fHistRapidityPions->Fill(vY);
+	      fHistPhiPions->Fill(vPhi);
+	      fHistPtPions->Fill(vPt);
+	    }
+	    else if(isKaon) {
+	      fHistRapidityKaons->Fill(vY);
+	      fHistPhiKaons->Fill(vPhi);
+	      fHistPtKaons->Fill(vPt);
+	    }
+	    else if(isProton) {
+	      fHistRapidityProtons->Fill(vY);
+	      fHistPhiProtons->Fill(vPhi);
+	      fHistPtProtons->Fill(vPt);
+	    }
+	    
+	    // add the track to the TObjArray (positive)
+	    tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+	    if(fRunMixing) 
+	      tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+
+	    gNumberOfAcceptedParticles += 1;
+	  }
 	}
 
-	// fill charge vector (negative)
-	chargeVector[0]->push_back(vChargePrime);
-	chargeVector[1]->push_back(vYPrime);
-	chargeVector[2]->push_back(vEtaPrime);
-	chargeVector[3]->push_back(vPhiPrime);
-	chargeVector[4]->push_back(vPPrime[0]);
-	chargeVector[5]->push_back(vPPrime[1]);
-	chargeVector[6]->push_back(vPPrime[2]);
-	chargeVector[7]->push_back(vPtPrime);
-	chargeVector[8]->push_back(vEPrime);
+	//Acceptance and pt coverage
+	if((vPtPrime > fPtMin) && (vPtPrime < fPtMax)){
+	  if((vEtaPrime > fEtaMin) && (vEtaPrime < fEtaMax)){
 	
-	if(fRunShuffling) {
-	  chargeVectorShuffle[0]->push_back(vChargePrime);
-	  chargeVectorShuffle[1]->push_back(vYPrime);
-	  chargeVectorShuffle[2]->push_back(vEtaPrime);
-	  chargeVectorShuffle[3]->push_back(vPhiPrime);
-	  chargeVectorShuffle[4]->push_back(vPPrime[0]);
-	  chargeVectorShuffle[5]->push_back(vPPrime[1]);
-	  chargeVectorShuffle[6]->push_back(vPPrime[2]);
-	  chargeVectorShuffle[7]->push_back(vPtPrime);
-	  chargeVectorShuffle[8]->push_back(vEPrime);
-	}
-
-	gNumberOfAcceptedParticles += 2;
-	}//loop over the dynamical correlations
-	}*/// usage of dynamical correlations
+	    fHistEta->Fill(vEtaPrime);
+	    fHistRapidity->Fill(vYPrime);
+	    fHistPhi->Fill(vPhiPrime);
+	    fHistPt->Fill(vPtPrime);
+	    if(isPion) {
+	      fHistRapidityPions->Fill(vYPrime);
+	      fHistPhiPions->Fill(vPhiPrime);
+	      fHistPtPions->Fill(vPtPrime);
+	    }
+	    else if(isKaon) {
+	      fHistRapidityKaons->Fill(vYPrime);
+	      fHistPhiKaons->Fill(vPhiPrime);
+	      fHistPtKaons->Fill(vPtPrime);
+	    }
+	    else if(isProton) {
+	      fHistRapidityProtons->Fill(vYPrime);
+	      fHistPhiProtons->Fill(vPhiPrime);
+	      fHistPtProtons->Fill(vPtPrime);
+	    }
+  
+	    // add the track to the TObjArray (positive)
+	    tracksMain->Add(new AliBFBasicParticle(vEtaPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));  
+	    if(fRunMixing) 
+	      tracksMixing->Add(new AliBFBasicParticle(vEtaPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));  
+	    
+    	    gNumberOfAcceptedParticles += 1;
+	  }
+	}      
+      }//loop over the dynamical correlations
+    }// usage of dynamical correlations
 
     if(fUseDebug) {
       Printf("=======================================================");
@@ -1286,7 +1384,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       Printf("Number of accepted particles: %d",gNumberOfAcceptedParticles);
       if(!fUseAllCharges)
 	Printf("Pions: %lf - Kaons: %lf - Protons: %lf",1.*nGeneratedPions/nMultiplicity,1.*nGeneratedKaons/nMultiplicity,1.*nGeneratedProtons/nMultiplicity);
-      //Printf("Calculating the balance function for %d particles",chargeVector[0]->size());
     }
 
     fHistEventStats->Fill(4);

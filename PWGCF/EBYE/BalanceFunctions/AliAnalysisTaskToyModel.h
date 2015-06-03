@@ -10,6 +10,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TF1;
+class TLorentzVector;
 
 class AliBalancePsi;
 class AliEventPoolManager;
@@ -160,7 +161,20 @@ class AliAnalysisTaskToyModel : public TObject {
     fUseDynamicalCorrelations = kTRUE; 
     fDynamicalCorrelationsPercentage = percentage;
   }
+  void SetCorrelationDeltaEta(Double_t deltaEta) {
+    fUseDynamicalCorrelations = kTRUE; 
+    fDynamicalCorrelationsDeltaEta = deltaEta;
+  }
+  void SetCorrelationDeltaPhi(Double_t deltaPhi) {
+    fUseDynamicalCorrelations = kTRUE; 
+    fDynamicalCorrelationsDeltaPhi = deltaPhi;
+  }
 
+  //Rapidity shift
+  void SetRapidityShift() {
+    fUseRapidityShift = kTRUE;
+  }
+  
   //Jet-like structures
   void SetUseJets() {fUseJets = kTRUE;}
 
@@ -308,6 +322,15 @@ class AliAnalysisTaskToyModel : public TObject {
 
   Bool_t fUseDynamicalCorrelations; //Usage of dynamical correlations
   Double_t fDynamicalCorrelationsPercentage; //Percentage of correlations
+  Double_t fDynamicalCorrelationsDeltaEta; //Gaussian Width in Eta for correlations
+  Double_t fDynamicalCorrelationsDeltaPhi; //Gaussian Width in Eta correlations
+
+  Bool_t fUseRapidityShift; //Usage of rapidity shift
+  Double_t fRapidityShift;//shift in rapidity (only applicable if fUseAllCharges==kFALSE)
+  TLorentzVector *vTmp;// temporary vector for calculating shifted observables
+  TLorentzVector *vShift;// rapidity shift
+  TLorentzVector *vBeam_p;// proton beam
+  TLorentzVector *vBeam_Pb;// Pb beam
 
   Bool_t fUseJets;//Usage of jet-like structures
   TF1 *fPtAssoc;//pt of associated
