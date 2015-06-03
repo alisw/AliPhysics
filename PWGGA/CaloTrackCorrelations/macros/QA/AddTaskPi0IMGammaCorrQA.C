@@ -89,7 +89,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   Int_t n = 0;//Analysis number, order is important
   
   // Photon analysis
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,collision,containerName,simulation,year,    ,debugLevel), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
   maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,collision,containerName,simulation,year,qaan,debugLevel) ,n++); // Previous photon invariant mass
 
   if(hadronan)
