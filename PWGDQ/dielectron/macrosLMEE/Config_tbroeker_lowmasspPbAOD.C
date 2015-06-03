@@ -3,12 +3,14 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 
 void SetupCuts(AliDielectron *die, Int_t cutDefinition);
 
-AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
+AliESDtrackCuts *SetupTrackCuts(Int_t cutDefinition);
+AliAnalysisCuts *SetupPreFilterTrackCuts(Int_t cutDefinition);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
+AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 AliDielectronEventCuts* GetEventCuts();
 
 
-TString names ("MBstd");
+TString names ("MB_cut23_pf;MB_cut23");
 
 //TString names ("USfiltering_100mrad_mass30MeV_cut23;USfiltering_25mrad_mass60MeV_cut23;USfiltering_50mrad_mass60MeV_cut23");
 //TString names ("USfiltering_100mrad_mass60MeV_cut23;USfiltering_50mrad_mass100MeV_cut23;USfiltering_100mrad_mass100MeV_cut23");
@@ -25,9 +27,9 @@ TString names ("MBstd");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
-const Int_t nPF = -1;
+const Int_t nPF = 1;
 
-AliDielectron* Config_lowmasspPb(Int_t cutDefinition=0/*,Bool_t hasMC = kFALSE*/)
+AliDielectron* Config_lowmasspPb(Int_t cutDefinition=0)
 {
   //
   // Setup the instance of AliDielectron
@@ -103,8 +105,8 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition)
       
       if(cutDefinition < nPF){
 
-	die->GetTrackFilter().AddCuts(SetupPreFilterESDtrackCuts(cutDefinition));
-	//if(cutDefinition != 2) die->GetTrackFilter().AddCuts(SetPreFilterPIDcuts(cutDefinition));
+	die->GetTrackFilter().AddCuts(SetupPreFilterTrackCuts(cutDefinition));
+	//die->GetTrackFilter().AddCuts(SetPreFilterPIDcuts(cutDefinition));
 	
 	//pairPrefilter
 	AliAnalysisCuts* pairPreCuts=0x0;
@@ -115,19 +117,6 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition)
 	pairCutsInvM ->AddCut(AliDielectronVarManager::kM, 0.0, 0.06);
         pairCutsOpAng->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.050);
 	
-// 	if(cutDefinition == 0){
-//           pairCutsInvM ->AddCut(AliDielectronVarManager::kM, 0.0, 0.06);
-//           pairCutsOpAng->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.100); 
-// 	}
-// 	if(cutDefinition == 1){
-// 	  pairCutsInvM ->AddCut(AliDielectronVarManager::kM, 0.0, 0.10);
-// 	  pairCutsOpAng->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.050);
-// 	}
-// 	if(cutDefinition == 2){
-//           pairCutsInvM ->AddCut(AliDielectronVarManager::kM, 0.0, 0.10);
-//           pairCutsOpAng->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.100); 
-// 	}
-
         AliDielectronCutGroup* pairCutsCG =new AliDielectronCutGroup("pairCutsCG","pairCutsCG",AliDielectronCutGroup::kCompAND);
         pairCutsCG->AddCut(pairCutsInvM);
         pairCutsCG->AddCut(pairCutsOpAng);
@@ -150,13 +139,8 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition)
 	//if(cutDefinition == 1) die->SetPreFilterAllSigns(kTRUE);
       }
       else{
-        if(cutDefinition == 0){
         die->GetTrackFilter().AddCuts(SetupTrackCuts(cutDefinition));
         die->GetTrackFilter().AddCuts(SetPIDcuts(cutDefinition));
-        }
-        else{
-          die->GetTrackFilter().AddCuts(SetupPreFilterTrackCuts(cutDefinition));
-        }
         die->GetTrackFilter().AddCuts(noconv);
       }
 }
@@ -376,7 +360,7 @@ if(cutDefinition < nPF){
 
   
   histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
-                        500,0.,5., 100,0.,5., 32,0.,TMath::Pi(),
+                        800,0.,8., 400,0.,8., 32,0.,TMath::Pi(),
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
 			
   //histos->UserHistogram("Pair","InvMass_pPt_FineBinning","Inv.Mass vs. pair p_{T};Inv. Mass (GeV/c^{2});pair p_{T} (GeV/c)",
