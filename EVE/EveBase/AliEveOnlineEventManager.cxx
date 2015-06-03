@@ -25,14 +25,13 @@ using namespace std;
 
 AliEveOnlineEventManager::AliEveOnlineEventManager(Int_t ev, bool storageManager) :
     AliEveEventManager("online",ev,true),
-//    fMutex(new TMutex()),
-//    fMutex(gCINTMutex),
-    fgSubSock(EVENTS_SERVER_SUB),
-    fCurrentRun(-1),
+    fEventListenerThread(0),
+    fStorageManagerWatcherThread(0),
     fEventInUse(1),
     fWritingToEventIndex(0),
     fIsNewEventAvaliable(false),
     fFailCounter(0),
+    fCurrentRun(-1),
     fOnlineMode(kFALSE),
     fStorageDown(false),
     fEventServerDown(false),

@@ -56,6 +56,9 @@ private:
     // info from logbook
     std::vector<int> fCluster;
     std::vector<ULong64_t> fInputDetectorMask;
+    
+    AliEveSaveViews(const AliEveSaveViews&);
+    AliEveSaveViews& operator=(const AliEveSaveViews&);
 };
 
-#endif /* defined(__AliRoot__AliEveSaveViews__) */
+#endif

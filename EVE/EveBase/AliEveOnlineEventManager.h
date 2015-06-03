@@ -33,14 +33,12 @@ private:
     
     TThread *fEventListenerThread;
     TThread *fStorageManagerWatcherThread;
-//    TVirtualMutex *fMutex;
     AliESDEvent *fCurrentEvent[2];
     TTree *fCurrentTree[2];
     int fEventInUse;
     int fWritingToEventIndex;
     bool fIsNewEventAvaliable;
     int fFailCounter;
-    storageSockets fgSubSock;
     int fCurrentRun;
     
     Bool_t fOnlineMode;
@@ -51,6 +49,9 @@ private:
     
     static void* DispatchEventListener(void *arg){static_cast<AliEveOnlineEventManager*>(arg)->GetNextEvent();return nullptr;}
     static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveOnlineEventManager*>(arg)->CheckStorageStatus();return nullptr;}
+    
+    AliEveOnlineEventManager(const AliEveOnlineEventManager&);
+    AliEveOnlineEventManager& operator=(const AliEveOnlineEventManager&);
 };
 
 
