@@ -293,9 +293,11 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) {
     fOutputList->Add(fvReco_Ele.at(iCut));
     fOutputList->Add(fvReco_Ele_poslabel.at(iCut));
-    fOutputList->Add(fvAllPionsForRej.at(iCut));
-    fOutputList->Add(fvPionsRejByAllSigns.at(iCut));
-    fOutputList->Add(fvPionsRejByUnlike.at(iCut));
+    if(fvDoPrefilterEff.at(iCut)){
+      fOutputList->Add(fvAllPionsForRej.at(iCut));
+      fOutputList->Add(fvPionsRejByAllSigns.at(iCut));
+      fOutputList->Add(fvPionsRejByUnlike.at(iCut));
+    }
     // be really careful if you need to implement this (see comments in UserExec):
     //    fOutputList->Add(fvReco_Pio.at(iCut));
     //    fOutputList->Add(fvReco_Kao.at(iCut));
