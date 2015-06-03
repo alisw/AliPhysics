@@ -352,11 +352,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
  
   Int_t fNOtrks =fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  const AliESDVertex *spdVtx = fESD->GetPrimaryVertexSPD();
 
-  Double_t pVtxZ = -999;
+  Double_t pVtxZ = -999, spdVtxZ= -999;
   pVtxZ = pVtx->GetZ();
+  spdVtxZ = spdVtx->GetZ();
 
   if(TMath::Abs(pVtxZ)>10) return;
+  if(TMath::Abs(pVtxZ-spdVtxZ)>0.5) return;
+  
   fNoEvents->Fill(0);
 
   if(fNOtrks<2) return;
@@ -371,10 +375,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   fCFM->SetRecEventInfo(fVevent);
 
-  Float_t cent = -1.;
+  Float_t cent = -1., centTRK = -1.;
   Int_t iPt=8, iCent=3, iDeltaphi=4;
   AliCentrality *centrality = fESD->GetCentrality(); 
   cent = centrality->GetCentralityPercentile("V0M");
+  centTRK = centrality->GetCentralityPercentile("TRK");
+  
+  if(TMath::Abs(cent-centTRK)>5.) return;
+  
+  
   fCent->Fill(cent);
  
   if (cent>=0  && cent<10) iCent=0;
@@ -599,7 +608,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     dEdx = track->GetTPCsignal();
     EovP = clsE/p;
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-    fEMCalnSigma = GetSigmaEMCal(EovP, pt, iCent);
+    if(fIsMC) fEMCalnSigma = GetSigmaEMCalMC(EovP, pt, iCent);
+    else fEMCalnSigma = GetSigmaEMCal(EovP, pt, iCent);
     fdEdxBef->Fill(p,dEdx);
     fTPCnsigma->Fill(p,fTPCnSigma);
 
@@ -624,6 +634,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         IsSameEvent=kTRUE;
     }
     
+    if(fTPCnSigma >= -1 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
+    
+    //--- track accepted
+    AliHFEpidObject hfetrack;
+    hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+    hfetrack.SetRecTrack(track);
+    hfetrack.SetPbPb();
+    if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) continue;
+
     // MC part
     Int_t partPDG = -99;
     Double_t partPt = -99.;
@@ -647,28 +666,21 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	  
 	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
 	  
+	  Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
+          fCorr->Fill(corr);
+	  
 	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
 
         }// end particle
       }// end label
     }//end MC
-
-    if(fTPCnSigma >= -1 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
-    
-    //--- track accepted
-    AliHFEpidObject hfetrack;
-    hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-    hfetrack.SetRecTrack(track);
-    hfetrack.SetPbPb();
-    if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) continue;
-       
-    if (m20>0.02 && m02>0.02){
-      Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,EovP};
+        
+    // data
+    if(!fIsMC && m20>0.02 && m02>0.02){ 
+      Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,0};
       if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fCorr->Fill(corr,wEvent);
       else fCorr->Fill(corr);
-    }
-
-    if(!fIsMC && m20>0.02 && m02>0.02){ 
+      
       SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,fEMCalnSigma,fTPCnSigma);
       fInclElec[iCent]->Fill(pt,0);
     }
@@ -782,10 +794,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fTPCsubEPres = new TH1F("fTPCsubEPres","TPC subevent plane resolution",100,-1,1);
   fOutputList->Add(fTPCsubEPres);
   
-  //iCent,iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,EoP
-  Int_t binsv2[8]={3,8,100,100,100,120,100,100}; 
+  //iCent,iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay
+  Int_t binsv2[8]={3,8,100,100,100,120,100,7}; 
   Double_t xminv2[8]={0,0,-5,-5,0,0,-1,0};
-  Double_t xmaxv2[8]={3,8,5,5,2,TMath::Pi(),1,2}; 
+  Double_t xmaxv2[8]={3,8,5,5,2,TMath::Pi(),1,7}; 
   fCorr = new THnSparseD ("fCorr","Correlations",8,binsv2,xminv2,xmaxv2);
   fCorr->Sumw2();
   fOutputList->Add(fCorr);
@@ -1078,6 +1090,45 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetSigmaEMCal(Double_t EoverP, Double_t 
   if (iCent==2){
     Double_t mean[8]={0.947362,0.951933,0.959288,0.977004,0.984502,1.02004,1.00489,0.986696};
     Double_t sigma[8]={0.100127,0.0887731,0.0842077,0.0787335,0.0804325,0.0652376,0.0766669,0.0597849};
+    for(Int_t i=0;i<8;i++) {
+      if (pt>=ptRange[i] && pt<ptRange[i+1]){
+        NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];
+        continue;
+      }
+    }
+  }
+  return NumberOfSigmasEMCal;
+}
+//_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetSigmaEMCalMC(Double_t EoverP, Double_t pt, Int_t iCent) const
+{
+  //Get sigma for EMCal PID
+  Double_t NumberOfSigmasEMCal = 99.;
+  Double_t ptRange[9] = {1.5,2,2.5,3,4,6,8,10,13};
+
+  if (iCent==0){
+    Double_t mean[8]={1.01076,1.00735,1.00386,1.00281,1.00114,0.998282,0.995936,0.998286};
+    Double_t sigma[8]={0.153704,0.137907,0.127886,0.115947,0.102482,0.0921989,0.0896079,0.0944837};
+    for(Int_t i=0;i<8;i++) {
+      if (pt>=ptRange[i] && pt<ptRange[i+1]){
+        NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];
+        continue;
+      }
+    }
+  }
+  if (iCent==1){
+    Double_t mean[8]={0.97531,0.973007,0.971888,0.972424,0.97437,0.976057,0.977703,0.984494};
+    Double_t sigma[8]={0.132568,0.119308,0.107527,0.099176,0.0873851,0.0779302,0.0779114,0.0834648};
+    for(Int_t i=0;i<8;i++) {
+      if (pt>=ptRange[i] && pt<ptRange[i+1]){
+        NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];
+        continue;
+      }
+    }
+  }
+  if (iCent==2){
+    Double_t mean[8]={0.954379,0.952449,0.952901,0.955364,0.961415,0.965205,0.968959,0.976448};
+    Double_t sigma[8]={0.120315,0.106597,0.0968691,0.0879189,0.0784124,0.0719245,0.0704888,0.080023};
     for(Int_t i=0;i<8;i++) {
       if (pt>=ptRange[i] && pt<ptRange[i+1]){
         NumberOfSigmasEMCal = (EoverP-mean[i])/sigma[i];
