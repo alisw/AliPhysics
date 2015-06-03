@@ -48,6 +48,7 @@ AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(Int_t ev, bool storageManager
 
   cout<<"ZMQ FOUND. Starting subscriber threads."<<endl;
   fEventListenerThreadHLT = new TThread("fEventListenerThreadHLT",DispatchEventListenerHLT,(void*)this);
+  fEventListenerThreadHLT->Run();
 #endif
     
     InitOCDB(-1);
@@ -69,6 +70,15 @@ AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
   if (fZMQContext) zmq_ctx_destroy(fZMQContext);
   printf("destroyed fZMQContext\n");
 #endif
+
+  if(fEventListenerThreadHLT)
+  {
+    fEventListenerThreadHLT->Join();
+    fEventListenerThreadHLT->Kill();
+    delete fEventListenerThreadHLT;
+    cout<<"HLT listener thread killed and deleted"<<endl;
+  }
+
 
 }
 
