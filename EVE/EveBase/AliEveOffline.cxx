@@ -298,11 +298,11 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     
     if(customPreset)
     {
-        man->SetESDcolors(colors);
+//        man->SetESDcolors(colors);
         man->SetESDwidths(widths);
-        man->SetESDdashBad(true);
+        man->SetESDdashBad(false);
     }
-    man->SetESDtracksByCategory(false);
+    man->SetESDtracksByCategory(true);
     man->SetESDtracksByType(true);
     man->SetESDdashBad(false);
     

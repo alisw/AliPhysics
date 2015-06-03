@@ -402,7 +402,7 @@ void AliEveSaveViews::SaveWithDialog()
     }
     else
     {
-        energy = "Energy: unknown";
+        energy = "Energy: 13 TeV";
     }
     int fontSize = 0.015*height;
     compositeImg->BeginPaint();
