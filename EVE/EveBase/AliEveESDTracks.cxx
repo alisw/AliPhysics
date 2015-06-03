@@ -25,6 +25,10 @@
 #include <AliEveMagField.h>
 #include <AliEveEventManager.h>
 
+#include <iostream>
+
+using namespace std;
+
 AliEveESDTracks::AliEveESDTracks() :
 fUseIPonFailedITSrefit(kFALSE),
 fTrueField(kTRUE),
@@ -42,6 +46,11 @@ fDashBad(true)
     fColors[6] = kGreen;
     fColors[7] = kMagenta-9;
     fColors[8] = kRed+2;
+    fColors[9] = kRed+3;
+    fColors[10]= kRed+4;
+    fColors[11]= kRed+5;
+    fColors[12]= kRed+6;
+    fColors[13]= kRed+7;
     
     for(int i=0;i<9;i++){fWidths[i] = 1;}
 }
@@ -587,6 +596,115 @@ TEveElementList* AliEveESDTracks::ByCategory()
         tlist->MakeTracks();
         
         //    Bool_t good_cont = ti <= 1;
+        Bool_t good_cont = ((ti == 6) || (ti == 7));
+        if (AliEveTrackCounter::IsActive())
+        {
+            AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
+        }
+        else
+        {
+            if ( ! good_cont && fDashBad)
+                tlist->SetLineStyle(6);
+        }
+    }
+    cont->SetTitle(Form("N all tracks = %d", count));
+    // ??? The following does not always work:
+    cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+    
+    gEve->Redraw3D();
+    
+    return cont;
+}
+
+TEveElementList* AliEveESDTracks::ByType()
+{
+    // Import ESD tracks, separate them into several containers
+    // according to primary-vertex cut and ITS&TPC refit status.
+    
+    AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
+    
+    TEveElementList* cont = new TEveElementList("ESD Tracks by PID");
+    gEve->AddElement(cont);
+    
+    fColors[0] = kCyan;         // e
+    fColors[1] = kCyan+1;       // mu
+    fColors[2] = kMagenta;      // pi
+    fColors[3] = kOrange;       // K
+    fColors[4] = kRed;          // Pr
+    fColors[5] = kYellow;       // Dtr
+    fColors[6] = kYellow+1;     // Trit
+    fColors[7] = kYellow+2;     // He3
+    fColors[8] = kYellow+3;     // Alpha
+    fColors[9] = kWhite;        // Photon
+    fColors[10]= kMagenta+1;    // pi0
+    fColors[11]= kGreen;        // neutron
+    fColors[12]= kOrange+1;     // K0
+    fColors[13]= kGray;         // EleCon
+    fColors[14]= kGray;         // unknown
+    
+    const Int_t   nCont = 15;
+    const Float_t maxR  = 520;
+    const Float_t magF  = 0.1*esd->GetMagneticField();
+    
+    TEveTrackList *tl[nCont];
+    Int_t          tc[nCont];
+    Int_t          count = 0;
+    
+    tl[0] = new TEveTrackList("Electrons");
+    tl[1] = new TEveTrackList("Muons");
+    tl[2] = new TEveTrackList("Pions");
+    tl[3] = new TEveTrackList("Kaons");
+    tl[4] = new TEveTrackList("Protons");
+    tl[5] = new TEveTrackList("Deuterons");
+    tl[6] = new TEveTrackList("Tritons");
+    tl[7] = new TEveTrackList("He3");
+    tl[8] = new TEveTrackList("Alpha");
+    tl[9] = new TEveTrackList("Photons");
+    tl[10]= new TEveTrackList("Pi0");
+    tl[11]= new TEveTrackList("Neutrons");
+    tl[12]= new TEveTrackList("Kaon0");
+    tl[13]= new TEveTrackList("EleCon");
+    tl[14]= new TEveTrackList("Unknown");
+    
+    for (int i=0; i<15; i++) {
+        tc[i] = 0;
+        SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
+        tl[i]->SetMainColor(fColors[i]);
+        tl[i]->SetLineWidth(fWidths[i]);
+        cont->AddElement(tl[i]);
+    }
+    
+    int pid = -1;
+    AliESDtrack* at = NULL;
+    
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        at = esd->GetTrack(n);
+        pid = at->GetPID();
+        cout<<"PID:"<<pid<<endl;
+        
+        Int_t   ti;
+        
+        ti = pid;
+        
+        TEveTrackList* tlist = tl[ti];
+        ++tc[ti];
+        ++count;
+        
+        AliEveTrack* track = MakeTrack(at, tlist);
+        
+        track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
+        tlist->AddElement(track);
+    }
+    
+    for (Int_t ti = 0; ti < nCont; ++ti)
+    {
+        TEveTrackList* tlist = tl[ti];
+        tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
+        tlist->SetTitle(Form("N tracks=%d", tc[ti]));
+        
+        tlist->MakeTracks();
+        
         Bool_t good_cont = ((ti == 6) || (ti == 7));
         if (AliEveTrackCounter::IsActive())
         {

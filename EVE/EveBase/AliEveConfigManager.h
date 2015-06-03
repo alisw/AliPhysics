@@ -21,7 +21,7 @@ class TGPopupMenu;
 class AliEveConfigManager : public TObject
 {
 public:
-    static AliEveConfigManager* InitializeMaster();
+    static AliEveConfigManager* InitializeMaster(bool storageManager=false);
     static AliEveConfigManager* GetMaster();
     
     virtual ~AliEveConfigManager() {}
@@ -49,7 +49,7 @@ protected:
     TGPopupMenu *fStoragePopup;
     
 private:
-    AliEveConfigManager();
+    AliEveConfigManager(bool storageManager=false);
     
     AliEveConfigManager(const AliEveConfigManager&);            // Not implemented
     AliEveConfigManager& operator=(const AliEveConfigManager&); // Not implemented
