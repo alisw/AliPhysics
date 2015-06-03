@@ -109,7 +109,7 @@ public:
     static Bool_t HasRawReader();
 
     static AliRunLoader* AssertRunLoader();
-    AliESDEvent*  AssertESD();
+    static AliESDEvent*  AssertESD();
     static AliESDfriend* AssertESDfriend();
     static AliAODEvent*  AssertAOD();
     static AliRawReader* AssertRawReader();
