@@ -496,7 +496,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
       return;
     }
   }
-    
+  FillClusterHists();
   if(fESD)
     FillTrackHists();
 
