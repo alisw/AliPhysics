@@ -38,6 +38,7 @@
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TParticle.h>
+#include <TString.h>
 #include <TTree.h>
 #include <TVector3.h>
 
@@ -70,8 +71,8 @@ using std::vector;
 
 /* $Id$ */
 //________________________________________________________________________
-AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3():
-AliAnalysisTaskSE("taskHypertriton"),
+AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
+  AliAnalysisTaskSE(taskname.Data()),
   fESDevent(0),
   fESDtrackCuts(0x0),
   fESDtrackCutsV0(0x0),
@@ -869,7 +870,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(partID == 2) { //deuteron
 	  fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
-	    //fHistTOFdeusignal->Fill(p,beta);
+	    fHistTOFdeusignal->Fill(p,beta);
 	    fHistTOFdeumass->Fill(mass);
 	    //cmassd.push_back(mass);
 	  }
@@ -879,7 +880,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(partID == 1) { // proton
 	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
 	  if(track->GetIntegratedLength() > 350.){
-	    //fHistTOFprosignal->Fill(p,beta);
+	    fHistTOFprosignal->Fill(p,beta);
 	    fHistTOFpromass->Fill(mass);
 	    //cmassp.push_back(mass);
 	  }
