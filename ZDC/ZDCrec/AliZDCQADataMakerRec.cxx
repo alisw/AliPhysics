@@ -175,17 +175,17 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawSumQZPC, 12, expert, !image);
   Add2RawsList(hRawSumQZPA, 13, expert, !image);
   
-  TH1F * hRawTDCZNC = new TH1F("hRawTDCZNC", "TDC ZNC;TDC [ns]",160, -320., -260.);
+  TH1F * hRawTDCZNC = new TH1F("hRawTDCZNC", "TDC ZNC;TDC [ns]",160, -360., -320.);
   Add2RawsList(hRawTDCZNC, 14, expert, !image);
-  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "TDC ZPC;TDC [ns]",160, -340., -280.);
+  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "TDC ZPC;TDC [ns]",160, -360., -320.);
   Add2RawsList(hRawTDCZPC, 15, expert, !image);
-  TH1F * hRawTDCZNA = new TH1F("hRawTDCZNA", "TDC ZNA;TDC [ns]",160, -340., -280.);
+  TH1F * hRawTDCZNA = new TH1F("hRawTDCZNA", "TDC ZNA;TDC [ns]",160, -360., -320.);
   Add2RawsList(hRawTDCZNA, 16, expert, !image);
-  TH1F * hRawTDCZPA = new TH1F("hRawTDCZPA", "TDC ZPA;TDC [ns]",160, -340., -280.);
+  TH1F * hRawTDCZPA = new TH1F("hRawTDCZPA", "TDC ZPA;TDC [ns]",160, -360., -320.);
   Add2RawsList(hRawTDCZPA, 17, expert, !image);
-  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "TDC ZEM1;TDC [ns]",160, -320., -280.);
+  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "TDC ZEM1;TDC [ns]",160, -330., -290.);
   Add2RawsList(hRawTDCZEM1, 18, expert, !image);
-  TH1F * hRawTDCZEM2 = new TH1F("hRawTDCZEM2", "TDC ZEM2;TDC [ns]",160, -320., -280.);
+  TH1F * hRawTDCZEM2 = new TH1F("hRawTDCZEM2", "TDC ZEM2;TDC [ns]",160, -330., -290.);
   Add2RawsList(hRawTDCZEM2, 19, expert, !image);
   
   TProfile * hRawADCProfs = new TProfile("hRawADCProfs", "ADC profiles;ADC id;Mean ADC values",22,-0.5,21.5,10.,1210.,"");
@@ -402,7 +402,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   // Filling Raws QA histos
   //
   // Checking the event type 
-//  if (rawReader->GetType()!=7){
+  if (rawReader->GetType()!=7){
   
     // Check if histograms already created for this Event Specie
     if(!GetRawsData(0)) InitRaws();
@@ -675,7 +675,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
       }
     
     } //stream.Next()
-//  } // check on event type
+  } // check on event type
 //  else{
 //    AliDebug(1,Form("Skipping non-physics event for QA -> event type %d \n", rawReader->GetType())); 
 //  }
