@@ -58,7 +58,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMergedPi0Selection
  Bool_t   printSettings = kFALSE, 
  Int_t    debug         = 0  // Debug level
  )
-
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   
