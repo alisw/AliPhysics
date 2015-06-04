@@ -490,10 +490,10 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
   if(jetCont) {
      
     AliEmcalJet *lj = jetCont->GetLeadingJet(); //leading pt without rho subtraction
-     
-    fh3RhoVsLeadJetPtVsCent->Fill(jetCont->GetRhoVal(),lj->Pt(),fCent);
-    fh3RhoMVsLeadJetPtVsCent->Fill(jetCont->GetRhoMassVal(),lj->Pt(),fCent);
-                            
+    if(lj){
+       fh3RhoVsLeadJetPtVsCent->Fill(jetCont->GetRhoVal(),lj->Pt(),fCent);
+       fh3RhoMVsLeadJetPtVsCent->Fill(jetCont->GetRhoMassVal(),lj->Pt(),fCent);
+    }                
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
 
