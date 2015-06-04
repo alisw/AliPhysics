@@ -418,8 +418,12 @@ struct RefData
 
     TDirectory* sNNDir = 0;
     const char* sNNName = SNNName(sNN);
-    if (!sNNName || !(sNNDir = sysDir->GetDirectory(sNNName))) { 
+    if (!sNNName) {
       ::Error("", "Invalid CMS energy %d (%s)", sNN, sNNName);
+      return 0;
+    }
+    if (!(sNNDir = sysDir->GetDirectory(sNNName))) {
+      ::Warning("", "No other data for CMS energy %d (%s)", sNN, sNNName);
       return 0;
     }
 

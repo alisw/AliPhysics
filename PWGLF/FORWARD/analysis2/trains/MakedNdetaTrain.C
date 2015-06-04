@@ -61,8 +61,8 @@ protected:
     FromOption(tsk, "TriggerMask",         "trig",     "INEL");
     FromOption(tsk, "FilterMask",          "filter",   "OUTLIER|PILEUP-BIN");
     FromOption(tsk, "NormalizationScheme", "scheme",   "EVENT,TRIGGER");
-    FromOption(tsk, "IpZMin",              "vzmin",    -10.);
-    FromOption(tsk, "IpZMax",              "vzmax",    +10.);
+    FromOption(tsk, "IpZMin",              "vzMin",    -10.);
+    FromOption(tsk, "IpZMax",              "vzMax",    +10.);
     FromOption(tsk, "TriggerEff",          "trigEff",  1.);
     FromOption(tsk, "TriggerEff0",         "trigEff0", 1.);
     FromOption(tsk, "CentralityMethod",    "cent",     "");
