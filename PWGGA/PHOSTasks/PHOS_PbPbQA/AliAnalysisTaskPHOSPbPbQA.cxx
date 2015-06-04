@@ -114,7 +114,7 @@ void AliAnalysisTaskPHOSPbPbQA::UserCreateOutputObjects()
 
   //per module
   for(Int_t cent=0; cent<2; cent++){
-    for(Int_t sm=1; sm<4; sm++) {
+    for(Int_t sm=1; sm<5; sm++) {
       
       snprintf(key,55,"hPi0AllSM%d_cen%d",sm,cent) ;
       fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
@@ -157,11 +157,6 @@ void AliAnalysisTaskPHOSPbPbQA::UserExec(Option_t *)
 
   AliCentrality *centrality = event->GetCentrality(); 
   fCentrality=centrality->GetCentralityPercentile("V0M");
-
-  if( fCentrality < 0. ){
-    PostData(1, fOutputContainer);
-    return;
-  }
 
   if(fCentrality < 20.) fCenBin = 0;
   else fCenBin = 1;

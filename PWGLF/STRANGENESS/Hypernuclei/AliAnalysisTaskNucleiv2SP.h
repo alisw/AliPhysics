@@ -20,27 +20,32 @@ class TH2F;
 
 class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
  public:
- 
-  AliAnalysisTaskNucleiv2SP();
+
   AliAnalysisTaskNucleiv2SP(const char *name); 
+  AliAnalysisTaskNucleiv2SP();
   virtual ~AliAnalysisTaskNucleiv2SP() {}
-  
+      
+  Float_t GetEventPlaneForCandidate(AliESDtrack* track0, const TVector2* q,AliEventplane *pl);
+  Float_t GetPhi0Pi(Float_t phi);
+  Bool_t  Flatten(Float_t cent);
+    
   virtual void  UserCreateOutputObjects();
   virtual void  Initialize();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
-   
-  Float_t GetEventPlaneForCandidate(AliESDtrack* track0, const TVector2* q,AliEventplane *pl);
-  Float_t GetPhi0Pi(Float_t phi);
-  Bool_t  Flatten(Float_t cent);
-  void SetIsPrimCut        (Bool_t  isPrimCut           = kFALSE) { fisPrimCut       = isPrimCut;         } 
-  void SetParticle         (Float_t ptc                 = 1.    ) { fptc             = ptc;               }
+
+  void SetIsPrimCut(Bool_t  isPrimCut)           {fisPrimCut   = isPrimCut; }; 
+  void SetParticle(Int_t ptc)                    {fptc         = ptc;       };
+  void SetVzMax(Float_t Vzmax)                   {fVzmax       = Vzmax;     };
+  void SetCentralityEstimator( TString centEst)  {fCentrality  = centEst;   };
 
  private:
   
   Bool_t         fisPrimCut;                     // Boolean : kTRUE = isprimarycut 
-  Float_t        fptc;                           // Selected ptc 1 = d; 2 = t; 3 =3He 
-
+  Int_t          fptc;                           // Selected ptc 1 = d; 2 = t; 3 =3He 
+  Float_t        fVzmax;                         // Selected vz max
+  TString        fCentrality;                    //
+  
   TList	*fListHist;	           //! List of  histograms
  
   TH1F  *fHistEventMultiplicity;           //! event multiplicity
@@ -123,17 +128,18 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   Double_t timpactZ         ;
   Double_t tpull            ;
   Double_t tphi             ;
-  
+ 
   //---------------------------------------------------------------------------
   AliESDtrackCuts *fESDtrackCuts; 
   AliESDtrackCuts *fESDtrackCutsEP;
   AliPIDResponse  *fPIDResponse;   //! pointer to PID response
   //_______________________________________________________________________
- 
+  
   AliAnalysisTaskNucleiv2SP(const AliAnalysisTaskNucleiv2SP&);            // not implemented
   AliAnalysisTaskNucleiv2SP& operator=(const AliAnalysisTaskNucleiv2SP&); // not implemented
-  
-  ClassDef(AliAnalysisTaskNucleiv2SP, 0);
+
+  ClassDef(AliAnalysisTaskNucleiv2SP, 1);
 };
+
 
 #endif

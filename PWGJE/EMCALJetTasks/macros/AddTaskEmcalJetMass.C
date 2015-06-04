@@ -9,6 +9,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
 						 TString     trigClass      = "",
 						 TString     kEmcalTriggers = "",
 						 TString     nJetsUnsub     = "",
+						 const char * nrhoMassBase  = "",
 						 TString     optionName     = "") {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -45,6 +46,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
   AliJetContainer *jetContBase = task->AddJetContainer(njetsBase,strType,R);
   if(jetContBase) {
     jetContBase->SetRhoName(nrhoBase);
+    jetContBase->SetRhoMassName(nrhoMassBase);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
     jetContBase->SetPercAreaCut(0.6);
@@ -53,6 +55,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
     AliJetContainer *jetContUS = task->AddJetContainer(nJetsUnsub.Data(),strType,R);
     if(jetContUS) {
       jetContUS->SetRhoName(nrhoBase);
+      jetContUS->SetRhoMassName(nrhoMassBase);
       jetContUS->ConnectParticleContainer(trackCont);
       jetContUS->ConnectClusterContainer(clusterCont);
       jetContUS->SetPercAreaCut(0.6);

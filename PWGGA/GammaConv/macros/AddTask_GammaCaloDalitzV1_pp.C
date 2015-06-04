@@ -185,26 +185,26 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 	
 	if ( trainConfig == 1){ // min energy = 0.3 GeV/c																
 																								        
-	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "13300053032230000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
+	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "13300053032230000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
 	     
 	
 	} else if ( trainConfig == 2){     /****PHOS******/
 	  
-	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "23300048033200000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
+	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "23300048033200000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kPHI7
 	   
 	  
 	} else if ( trainConfig == 3 ){  /*****EMCAL*****/
 	  
-	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10012053032230000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7 with TRD
-	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10031053032230000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7 No TRD
+	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10012053032230000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7 with TRD
+	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10031053032230000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7 No TRD
 	      
 	  
 	} else if ( trainConfig == 4 ) {  /****PHOS******/
 	  
-	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033300000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "23300048033300000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "02631031000000"; //standard cut, kINT7
+	    eventCutArray[0] = "0000311"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033300000"; electronCutArray[0] = "90475400233102621710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "0000311"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "23300048033300000"; electronCutArray[1] = "90475400233102621710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7
 	 
 	  
 	}  else {

@@ -44,6 +44,7 @@ public:
   // mixed events
   void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
   void SetPoolParam(Int_t sizepool = 1000, Int_t jetsperpool = 1, Float_t fractionmin = 1., Int_t neventsmin = 0) {fiSizePool = sizepool; fiNJetsPerPool = jetsperpool; ffFractionMin = fractionmin; fiNEventsMin = neventsmin;}
+  void SetDeltaEtaMax(Double_t val = kTRUE) {fdDeltaEtaMax = val;}
 
   // jet selection
   void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
@@ -51,6 +52,7 @@ public:
   void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
+  void SetBgSubtraction(Int_t val = 1) {fiBgSubtraction = val;}
 
   // pt correlations of jets with trigger tracks
   void SetCompareTriggerTracks(Bool_t val = kTRUE) {fbCompareTriggers = val;}
@@ -159,6 +161,7 @@ private:
   Int_t fiNJetsPerPool; // required number of jets available in each pool
   Float_t ffFractionMin; // minimum fraction of fiNJetsPerPool at which pool is ready (default: 1.0)
   Int_t fiNEventsMin; // if non-zero: number of filled events after which pool is ready regardless of fiNJetsPerPool (default: 0)
+  Double_t fdDeltaEtaMax; // maximum delta-eta_V0-jet for angular correlations
 
   // V0 selection
   // Daughter tracks
@@ -168,10 +171,10 @@ private:
   Double_t fdCutNCrossedRowsTPCMin; // (70.) min number of crossed TPC rows
   Double_t fdCutCrossedRowsOverFindMin; // (0.8) min ratio crossed rows / findable clusters
   Double_t fdCutCrossedRowsOverFindMax; // (1e3) max ratio crossed rows / findable clusters
-  Double_t fdCutPtDaughterMin; // (0.150) [GeV/c] min transverse momentum of daughter tracks
+  Double_t fdCutPtDaughterMin; // (0.150) [GeV/c] min transverse momentum of daughter tracks, to reject primaries which do not make it to the TPC
   Double_t fdCutDCAToPrimVtxMin; // (0.1) [cm] min DCA of daughters to the prim vtx
   Double_t fdCutDCADaughtersMax; // (1.) [sigma of TPC tracking] max DCA between daughters
-  Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks
+  Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
   Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut
   // V0 candidate
@@ -193,6 +196,7 @@ private:
   Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
   Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the jet cone
+  Int_t fiBgSubtraction; // subtraction of rho from jet pt, 0 - no subtraction, 1 - scalar subtraction, 2 - vector subtraction
 
   // Correlations of pt_jet with pt_trigger-track
   Bool_t fbCompareTriggers; // switch for pt correlations of jets with trigger tracks
@@ -229,6 +233,7 @@ private:
   TH1D* fh1NMedConeCent; //! number of found median-cluster cones in centrality bins
   TH2D* fh2EtaPhiMedCone[fgkiNBinsCent]; //! median-cluster cone eta-phi
   TH1D* fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
+  TH1D* fh1DistanceJets[fgkiNBinsCent]; //! distance in eta-phi between jets within events
 
   static const Int_t fgkiNCategV0 = 17; // number of V0 selection steps
 
@@ -350,11 +355,11 @@ private:
   // ALambda
   TH1D* fh1V0CounterCentALambda[fgkiNBinsCent]; //! number of ALambda candidates after various cuts
   TH1D* fh1V0InvMassALambdaAll[fgkiNCategV0]; //!
-//  TH2D* fh2QAV0EtaPtALambdaPeak[fgkiNQAIndeces]; //!
-//  TH2D* fh2QAV0EtaEtaALambda[fgkiNQAIndeces]; //!
-//  TH2D* fh2QAV0PhiPhiALambda[fgkiNQAIndeces]; //!
-//  TH1D* fh1QAV0RapALambda[fgkiNQAIndeces]; //!
-//  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0EtaPtALambdaPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0EtaEtaALambda[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0PhiPhiALambda[fgkiNQAIndeces]; //!
+  TH1D* fh1QAV0RapALambda[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
   TH2D* fh2ArmPodALambda[fgkiNQAIndeces]; //!
   TH1D* fh1V0CandPerEventCentALambda[fgkiNBinsCent]; //!
   TH1D* fh1V0InvMassALambdaCent[fgkiNBinsCent]; //!
@@ -397,7 +402,10 @@ private:
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
   TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
 
-  TH1D* fh1QAV0Pt[fgkiNQAIndeces]; //! pt
+  TH2D* fh2QAV0PhiPtK0sPeak[fgkiNQAIndeces]; //! K0S candidate in peak: azimuth; pt
+  TH2D* fh2QAV0PhiPtLambdaPeak[fgkiNQAIndeces]; //! Lambda candidate in peak: azimuth; pt
+  TH2D* fh2QAV0PhiPtALambdaPeak[fgkiNQAIndeces]; //! anti-Lambda candidate in peak: azimuth; pt
+  TH1D* fh1QAV0Pt[fgkiNQAIndeces]; //! pt daughter
   TH1D* fh1QAV0Charge[fgkiNQAIndeces]; //! charge
   TH1D* fh1QAV0DCAVtx[fgkiNQAIndeces]; //! DCA of daughters to prim vtx
   TH1D* fh1QAV0DCAV0[fgkiNQAIndeces]; //! DCA between daughters
@@ -442,7 +450,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 11) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 16) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

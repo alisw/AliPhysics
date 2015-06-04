@@ -30,6 +30,7 @@
 #include <TROOT.h>
 
 #include "AliAnalysisTaskSE.h"
+#include <TString.h>
 
 class TChain;
 class TH1F;
@@ -47,7 +48,7 @@ class AliVertexerTracks;
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
  public:
-  AliAnalysisTaskHypertriton3();
+  AliAnalysisTaskHypertriton3(TString taskname = "taskHypertriton");
   virtual ~AliAnalysisTaskHypertriton3();
 
   virtual void   UserCreateOutputObjects();
@@ -57,6 +58,18 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
 
+  void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
+  void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
+  void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
+  void SetMaxPtMother(double maxpt) {fPtMother = maxpt;}
+  void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
+  void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
+  void SetDCAProDecayVtx(double maxpro) {fDCAProSVmax = maxpro;}
+  void SetDCADeuDecayVtx(double maxdeu) {fDCADeuSVmax = maxdeu;}
+  void SetDCADeuteronProton(double maxdp) {fDCAdp = maxdp;}
+  void SetDCAPionProton(double maxpip) {fDCApip = maxpip;}
+  void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
+  
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
 
  private:
@@ -116,10 +129,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //--> TOF
   TH2F               *fHistTOFsignal;              //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
-  //TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
-  //TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
-  //TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
-  //TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
+  TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
+  TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
+  TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
+  TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
   TH1F               *fHistTOFdeumass;             //!<! TOF mass of deuteron identified with TPC
   TH1F               *fHistTOFpromass;             //!<! TOF mass of proton identified with TPC
 
@@ -134,6 +147,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCAdeupro;              //!<! DCA deuteron-proton distribution
   TH1F               *fHistDCApiondeu;	           //!<! DCA pion-deuteron distribution
   TH1F               *fHistDCApionpro;             //!<! DCA pion-proton distribution
+  TH2F               *fHistDCAdpdpi;
+  TH2F               *fHistDCApdppi;
+  TH2F               *fHistDCApidpip;
   TH1F               *fHistZDecayVtx;              //!<! Reco secondary vertex Z coordinate
   TH1F               *fHistXDecayVtx;              //!<! Reco secondary vertex X coordinate
   TH1F               *fHistYDecayVtx;              //!<! Reco secondary vertex Y coordinate
@@ -146,6 +162,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDecayLengthH3L;         //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;       //!<! Cosine of pointing angle distribution of candidate mother particle
   TH1F               *fHistMassHypertriton;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistMassAntiHypertriton;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
   // MC only histograms
   TH1F               *fHistParticle;               //!<! *(MC only)* Reconstructed particles distribution per species through PDGCode cross-check
   TH1F               *fHistpionTPCclsMCt;          //!<! *(MC only)* TPC clusters distribution of candidate \f$\pi\f$ through PDGCode cross-check

@@ -189,8 +189,9 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
 
   AliDebug(10,Form("new event at %d: %d",bin,pool.GetEntriesFast()));
   AliDielectronEvent *event=new(pool[pool.GetEntriesFast()]) AliDielectronEvent();
-  if(ev->IsA() == AliAODEvent::Class()) event->SetAOD(TMath::Max(diele->GetTrackArray(0)->GetEntriesFast(),diele->GetTrackArray(1)->GetEntriesFast()));
-  else event->SetESD();
+  if(ev->IsA() == AliAODEvent::Class()) event->SetAOD(diele->GetTrackArray(0)->GetEntriesFast(),diele->GetTrackArray(1)->GetEntriesFast());
+  else event->SetESD(diele->GetTrackArray(0)->GetEntriesFast(),diele->GetTrackArray(1)->GetEntriesFast());
+  //  else event->SetESD();
 
   event->SetProcessID(fPID);
   event->SetTracks(*diele->GetTrackArray(0), *diele->GetTrackArray(1), *diele->GetPairArray(1));

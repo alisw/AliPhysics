@@ -54,7 +54,7 @@ SetFpromptInputFile("$fpromptfile")
 SetTemplateDir("${templatedir}")
 SetDirectoryInputFiles("${inputfiledir}")
 SetInputFileNameRoot("$inputfileroot")
-SetSystemStringForTemplateFDnames("${suffixTemplSystm}")
+SetFDtemplateSystemString("${suffixTemplSystm}")
 //cout<<"file: "<<$file<<endl
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})

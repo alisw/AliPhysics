@@ -21,6 +21,8 @@
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
 #include "TCutG.h"
+#include "TF2.h"
+
 
 
 
@@ -62,9 +64,9 @@ public:
     void CheckCentrality(AliVEvent *event,Double_t centrality, Bool_t &centralitypass); //to use only events with the correct centrality....
     void SetCuts(Bool_t b){fPIDcuts = b;}
     //void MultiplicityOutlierCut(AliVEvent *event,Bool_t &centralitypass,Int_t ntracks);
-    void SetPIDcontoursList(TDirectory* b){fCutContourList = b;}
-    //TGraph* GetPIDcontours(TString specie, Double_t Plow, Double_t Phigh,Int_t centMin, Int_t centMax){}
-    void GetPIDContours();
+    //void SetPIDcontoursList(TDirectory* b){fCutContourList = b;}
+    
+    void SetPIDPurityFunctions(Float_t PurityLevel);
     
 protected:
     
@@ -77,7 +79,8 @@ private:
     AliPIDResponse        *fPIDResponse;        //! PID response Handler
     Int_t                  fTriggerSelection;   // trigger selection
     Int_t                  fCentralityPercentileMin;    // min centrality
-    Int_t                  fCentralityPercentileMax;    // max cen
+    Int_t                  fCentralityPercentileMax;    // max
+    Float_t                fPurityLevel;  //purity level
     Double_t               fFilterBit;                  // filterbit
     Double_t               fDCAxyCut;           // dca cut
     Double_t               fDCAzCut;            // dcz z
@@ -90,8 +93,8 @@ private:
     Bool_t                 fCutTPCmultiplicityOutliersAOD;      // do outlier cut
     Bool_t                 fPIDcuts;            // pid cuts
     TString                fCentralityEstimator;// cen estimator "V0M","TRK","TKL","ZDC","FMD"
-    TFile                 *fContoursFile;       //! contours file
-    TDirectory            *fCutContourList;     //! contour list
+    TFile                 *fPurityFunctionsFile;       //! purity functions file
+    TDirectory            *fPurityFunctionsList;     //! purity functions list
     TList                 *fListQA;             //! List of all lists
     TList                 *fListQAtpctof;       //! List with combined PID from TPC + TOF
     TList                 *fListQAInfo;         //! list q ainfo
@@ -112,7 +115,7 @@ private:
     TH2F                  *fHistdEdxvsPTPCbeforePID;    //! another hist
     TH3F                  *fhistNsigmaP;        //! another hist
     TH2F                  *fhistTPCnSigmavsP;   //! another hist
-    TH2F		  *fhistTOFnSigmavsP;   //! another hist
+    TH2F                  *fhistTOFnSigmavsP;   //! another hist
     TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
     TH2F                  *fHistBetavsPTOFafterPID_2;     //! another hist
@@ -130,9 +133,7 @@ private:
     TH1F                  *fhistPionEtaDistAfter; //!another hist
     TH1F                  *fhistKaonEtaDistAfter; //!another hist
     TH1F                  *fhistProtonEtaDistAfter; //!another hist
-    TCutG                 *fCutContour[150];    //! TCutG contours
-    TGraph                *fCutGraph[150];      //! graphs
-    
+    TF2                   *fPurityFunction[150];  //purity functions
     
     //qa object initialisation
     void SetupTPCTOFqa();

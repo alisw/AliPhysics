@@ -11,6 +11,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskEmcal.h"
+#include "AliVEvent.h"
 #include <TString.h>
 
 class TArrayI;
@@ -129,6 +130,11 @@ public:
   void SetCentralityMethod(const char *centmethod){
     fCentralityMethod = centmethod;
   }
+  /**
+   * Set trigger bit for min. bias event selection
+   * \param minbiasbit
+   */
+  void SetMinBiasSelection(AliVEvent::EOfflineTriggerTypes minbiasbit) { fMinBiasSelection = minbiasbit; }
 
 protected:
   Bool_t SelectEvent(AliVEvent *event) const;
@@ -150,6 +156,7 @@ protected:
   Double_t                  fMinEta;                      ///< Min. track \f$ \eta \f$
   Double_t                  fMaxEta;                      ///< Max. track \f$ \eta \f$
   TString                   fCentralityMethod;            ///< Method to obtain the event centrality
+  AliVEvent::EOfflineTriggerTypes fMinBiasSelection;      ///< Trigger bit for min. bias event tagging
 
 private:
   AliReducedHighPtEventCreator(const AliReducedHighPtEventCreator &);

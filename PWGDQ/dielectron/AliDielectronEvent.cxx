@@ -212,24 +212,24 @@ void AliDielectronEvent::Clear(Option_t *opt)
 }
 
 //______________________________________________
-void AliDielectronEvent::SetAOD(Int_t size)
+void AliDielectronEvent::SetAOD(Int_t sizeP, Int_t sizeN)
 {
   //
   // use AOD as input
   //
-  fArrTrackP.SetClass("AliAODTrack",size);
-  fArrTrackN.SetClass("AliAODTrack",size);
+  fArrTrackP.SetClass("AliAODTrack",sizeP);
+  fArrTrackN.SetClass("AliAODTrack",sizeN);
   fIsAOD=kTRUE;
 }
 
 //______________________________________________
-void AliDielectronEvent::SetESD()
+void AliDielectronEvent::SetESD(Int_t sizeP, Int_t sizeN)
 {
   //
   // use ESD as input
   //
-  fArrTrackP.SetClass("AliESDtrack",1000);
-  fArrTrackN.SetClass("AliESDtrack",1000);
+  fArrTrackP.SetClass("AliESDtrack",sizeP);
+  fArrTrackN.SetClass("AliESDtrack",sizeN);
   fIsAOD=kFALSE;
 }
 

@@ -71,6 +71,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
+  fhnDeltaMass(0x0),
   fh2PtTrueSubFacV1(0x0),
   fh2PtRawSubFacV1(0x0),
   fh2PtCorrSubFacV1(0x0),
@@ -90,6 +91,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
   fh2PtTrueSubFacV1        = new TH2F*[fNcentBins];
   fh2PtRawSubFacV1         = new TH2F*[fNcentBins];
   fh2PtCorrSubFacV1        = new TH2F*[fNcentBins];
@@ -108,6 +110,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
     fh2PtTrueSubFacV1[i]        = 0;
     fh2PtRawSubFacV1[i]         = 0;
     fh2PtCorrSubFacV1[i]        = 0;
@@ -157,6 +160,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
+  fhnDeltaMass(0x0),
   fh2PtTrueSubFacV1(0x0),
   fh2PtRawSubFacV1(0x0),
   fh2PtCorrSubFacV1(0x0),
@@ -176,6 +180,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
   fh2PtTrueSubFacV1        = new TH2F*[fNcentBins];
   fh2PtRawSubFacV1         = new TH2F*[fNcentBins];
   fh2PtCorrSubFacV1        = new TH2F*[fNcentBins];
@@ -194,6 +199,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
     fh2PtTrueSubFacV1[i]        = 0;
     fh2PtRawSubFacV1[i]         = 0;
     fh2PtCorrSubFacV1[i]        = 0;
@@ -245,6 +251,9 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     minDM   = -0.5;
     maxDM   = 0.5;
   }
+  Int_t nBinsDpT  = 100;
+  Double_t minDpT = -50.;
+  Double_t maxDpT = 50.;
 
   const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event
   const Double_t minDRToLJ = 0.;
@@ -262,11 +271,22 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   const Double_t minV2 = -30.;
   const Double_t maxV2 = 0.;
 
+  const Int_t nBinsdMr  = 200;
+  const Double_t mindMr = -2.;
+  const Double_t maxdMr = 2.;
+  Double_t *binsdMr = new Double_t[nBinsdMr+1];
+  for(Int_t i=0; i<=nBinsdMr; i++) binsdMr[i]=(Double_t)mindMr + (maxdMr-mindMr)/nBinsdMr*(Double_t)i ;
+
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
+
+  const Int_t nBinsSparse1 = 6;
+  const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt};
+  const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt};
+  const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt};
 
   TString histName = "";
   TString histTitle = "";
@@ -314,38 +334,52 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
 
+    histName = Form("fhnDeltaMass_%d", i);
+    histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    fOutput->Add(fhnDeltaMass[i]);
+
     //derivative histograms
     histName = Form("fh2PtTrueSubFacV1_%d",i);
     histTitle = Form("fh2PtTrueSubFacV1_%d;#it{p}_{T,true};-(#rho+#rho_{m})V_{1}",i);
     fh2PtTrueSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV1,minV1,maxV1);
+    fOutput->Add(fh2PtTrueSubFacV1[i]);
 
     histName = Form("fh2PtRawSubFacV1_%d",i);
     histTitle = Form("fh2PtRawSubFacV1_%d;#it{p}_{T,raw};-(#rho+#rho_{m})V_{1}",i);
     fh2PtRawSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV1,minV1,maxV1);
+    fOutput->Add(fh2PtRawSubFacV1[i]);
 
     histName = Form("fh2PtCorrSubFacV1_%d",i);
     histTitle = Form("fh2PtCorrSubFacV1_%d;#it{p}_{T,corr};-(#rho+#rho_{m})V_{1}",i);
     fh2PtCorrSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV1,minV1,maxV1);
+    fOutput->Add(fh2PtCorrSubFacV1[i]);
 
     histName = Form("fh2NConstSubFacV1_%d",i);
     histTitle = Form("fh2NConstSubFacV1_%d;#it{N}_{const};-(#rho+#rho_{m})V_{1}",i);
     fh2NConstSubFacV1[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,200.);
+    fOutput->Add(fh2NConstSubFacV1[i]);
 
     histName = Form("fh2PtTrueSubFacV2_%d",i);
     histTitle = Form("fh2PtTrueSubFacV2_%d;#it{p}_{T,true};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2PtTrueSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV2,minV2,maxV2);
+    fOutput->Add(fh2PtTrueSubFacV2[i]);
 
     histName = Form("fh2PtRawSubFacV2_%d",i);
     histTitle = Form("fh2PtRawSubFacV2_%d;#it{p}_{T,raw};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2PtRawSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV2,minV2,maxV2);
+    fOutput->Add(fh2PtRawSubFacV2[i]);
 
     histName = Form("fh2PtCorrSubFacV2_%d",i);
     histTitle = Form("fh2PtCorrSubFacV2_%d;#it{p}_{T,corr};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2PtCorrSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsV2,minV2,maxV2);
+    fOutput->Add(fh2PtCorrSubFacV2[i]);
 
     histName = Form("fh2NConstSubFacV2_%d",i);
     histTitle = Form("fh2NConstSubFacV2_%d;#it{N}_{const};0.5(#rho+#rho_{m})^{2}V_{2}",i);
     fh2NConstSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,200.);
+    fOutput->Add(fh2NConstSubFacV2[i]);
 
   }
 
@@ -495,6 +529,15 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
       fhnMassResponse[fCentBin]->Fill(varsp);
+      
+      varsp[0] = var-var2;
+      varsp[1] = ptjet1-ptJetR;
+      varsp[2] = var;
+      varsp[3] = var2;
+      varsp[4] = ptjet1;
+      varsp[5] = ptJetR;
+
+      fhnDeltaMass[fCentBin]->Fill(varsp);
     }
     
     if(fCreateTree) {      

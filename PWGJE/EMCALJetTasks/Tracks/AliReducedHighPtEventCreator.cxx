@@ -36,7 +36,6 @@
 #include "AliPicoTrack.h"
 #include "AliStack.h"
 #include "AliVCluster.h"
-#include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliEmcalTriggerPatchInfo.h"
@@ -73,7 +72,8 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
-  fCentralityMethod("V0A")
+  fCentralityMethod("V0A"),
+  fMinBiasSelection(AliVEvent::kINT7)
 {
 
 }
@@ -94,7 +94,8 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
-  fCentralityMethod("V0A")
+  fCentralityMethod("V0A"),
+  fMinBiasSelection(AliVEvent::kINT7)
 {
   DefineOutput(2, TTree::Class());
 
@@ -153,7 +154,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   ConvertTriggerPatches(fTriggerPatchInfo, fOutputEvent->GetPatchContainer());
   TString triggerString(fInputEvent->GetFiredTriggerClasses());
   fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EG1"), triggerString.Contains("EG2"), triggerString.Contains("EJ1"), triggerString.Contains("EJ2"));
-  fOutputEvent->SetMinBiasEvent(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
+  fOutputEvent->SetMinBiasEvent(fInputHandler->IsEventSelected() & fMinBiasSelection);
   fOutputEvent->SetRunNumber(fInputEvent->GetRunNumber());
 
   std::map<int, int> mcindexmap;

@@ -229,7 +229,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, co
     
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
       if ( (++fCount % 100) == 0) {
-	if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+	if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
 	else cout<<" MC Reaction Plane Angle = unknown "<< endl;
 	cout<<" iGoodTracks = "<<iGoodTracks<<endl;
 	cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
@@ -311,7 +311,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  c
     
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
       if ( (++fCount % 100) == 0) {
-	if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+	if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
 	else cout<<" MC Reaction Plane Angle = unknown "<< endl;
 	cout<<" iGoodTracks = "<<iGoodTracks<<endl;
 	cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
@@ -430,7 +430,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, c
         
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
       if ( (++fCount % 100) == 0) {
-	if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+	if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
 	else cout<<" MC Reaction Plane Angle = unknown "<< endl;
 	cout << " Number of MC input tracks = " << iNumberOfInputTracksMC << endl;
 	cout<<" iGoodTracks = "<<iGoodTracks<<endl;
@@ -546,7 +546,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, const Al
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
-    if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+    if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;
     cout<<" iGoodTracks = "<< iGoodTracks << endl;
     cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
@@ -629,7 +629,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
-    if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+    if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;
     cout<<" iGoodTracks = "<<iGoodTracks<<endl;
     cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
@@ -690,7 +690,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
-    if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+    if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;
     cout<<" iGoodTracks = "<<iGoodTracks<<endl;
     cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
@@ -747,7 +747,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
-    if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+    if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;
     cout<<" iGoodTracks = "<<iGoodTracks<<endl;
     cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
@@ -831,7 +831,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, c
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
-    if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+    if (fMCReactionPlaneAngle != 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;
     cout<<" iGoodTracks = "<<iGoodTracks<<endl;
     cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;

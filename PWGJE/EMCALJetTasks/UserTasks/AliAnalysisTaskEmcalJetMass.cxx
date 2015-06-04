@@ -63,7 +63,9 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fh2RatVsNConstJet1TaggedMatch(0),
   fh3JetPtVsMassVsEPRelAllSel(0),
   fh3JetPtVsMassVsEPRelTagged(0),
-  fh3JetPtVsMassVsEPRelTaggedMatch(0)
+  fh3JetPtVsMassVsEPRelTaggedMatch(0),
+  fh3RhoVsLeadJetPtVsCent(0),
+  fh3RhoMVsLeadJetPtVsCent(0)
 {
   // Default constructor.
 
@@ -96,7 +98,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fh3JetPtVsMassVsEPRelAllSel          = new TH3F*[fNcentBins];
   fh3JetPtVsMassVsEPRelTagged          = new TH3F*[fNcentBins];
   fh3JetPtVsMassVsEPRelTaggedMatch     = new TH3F*[fNcentBins];
-
+  
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh3PtJet1VsMassVsLeadPtAllSel[i]        = 0;
     fh3PtJet1VsMassVsLeadPtTagged[i]        = 0;
@@ -127,6 +129,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
     fh3JetPtVsMassVsEPRelAllSel[i]          = 0;
     fh3JetPtVsMassVsEPRelTagged[i]          = 0;
     fh3JetPtVsMassVsEPRelTaggedMatch[i]     = 0;
+    
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -170,7 +173,9 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh2RatVsNConstJet1TaggedMatch(0),
   fh3JetPtVsMassVsEPRelAllSel(0),
   fh3JetPtVsMassVsEPRelTagged(0),
-  fh3JetPtVsMassVsEPRelTaggedMatch(0)
+  fh3JetPtVsMassVsEPRelTaggedMatch(0),
+  fh3RhoVsLeadJetPtVsCent(0),
+  fh3RhoMVsLeadJetPtVsCent(0)
 {
   // Standard constructor.
 
@@ -203,7 +208,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh3JetPtVsMassVsEPRelAllSel          = new TH3F*[fNcentBins];
   fh3JetPtVsMassVsEPRelTagged          = new TH3F*[fNcentBins];
   fh3JetPtVsMassVsEPRelTaggedMatch     = new TH3F*[fNcentBins];
-
+  
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh3PtJet1VsMassVsLeadPtAllSel[i]        = 0;
     fh3PtJet1VsMassVsLeadPtTagged[i]        = 0;
@@ -274,6 +279,13 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   const Int_t nBinsNConst = 200;
   const Double_t minNConst = 0.;
   const Double_t maxNConst = 200.;
+  
+  Int_t nBinsRho = 200;
+  Double_t minRho = 0.;
+  Double_t maxRho = 20.;
+  Int_t nBinsRhom = 200;
+  Double_t minRhom = 0.;
+  Double_t maxRhom = 1.;
 
   TString histName = "";
   TString histTitle = "";
@@ -429,6 +441,16 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};centrality",histName.Data());
   fh3PtJet1VsMassVsCentTaggedMatch = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,101,-1.,100.);
   fOutput->Add(fh3PtJet1VsMassVsCentTaggedMatch);
+  
+  histName = "fh2RhoVsLeadJetPtVsCent";
+  histTitle = Form("Rho Vs LeadJetPt Vs Cent; #rho;#it{p}_{T,lead-jet} (GeV/#it{c});centrality");
+  fh3RhoVsLeadJetPtVsCent = new TH3F(histName.Data(), histTitle.Data(), nBinsRho, minRho, maxRho, nBinsPt, minPt, maxPt, 101, -1., 100.);
+  fOutput->Add(fh3RhoVsLeadJetPtVsCent);
+  
+  histName = "fh2RhoMVsLeadJetPtVsCent";
+  histTitle = Form("RhoM Vs LeadJetPt Vs Cent; #rho_{m};#it{p}_{T,lead-jet} (GeV/#it{c});centrality");
+  fh3RhoMVsLeadJetPtVsCent = new TH3F(histName.Data(), histTitle.Data(), nBinsRhom, minRhom, maxRhom, nBinsPt, minPt, maxPt, 101, -1., 100.);
+  fOutput->Add(fh3RhoMVsLeadJetPtVsCent);
 
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
@@ -466,6 +488,17 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
+     AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoMassName()));
+     if (!rhomParam) {
+      AliError(Form("%s: Could not retrieve rho_m %s!", GetName(), jetCont->GetRhoMassName().Data()));
+      return false;
+    }
+
+    AliEmcalJet *lj = jetCont->GetLeadingJet(); //leading pt without rho subtraction
+    if(lj){
+       fh3RhoVsLeadJetPtVsCent->Fill(jetCont->GetRhoVal(),lj->Pt(),fCent);
+       fh3RhoMVsLeadJetPtVsCent->Fill(rhomParam->GetVal(),lj->Pt(),fCent);
+    }                
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
 

@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------
 // Authors:
 // C. Bianchin (Utrecht University) chiara.bianchin@cern.ch
+// S. Antônio (University of São Paulo) antonio.silva@cern.ch
 // A. Grelli (Utrecht University) a.grelli@uu.nl
 // X. Zhang (LBNL)  XMZhang@lbl.gov
 //-----------------------------------------------------------------------
@@ -915,26 +916,26 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    
    const Int_t nbinsmass=300;
    const Int_t nbinspttrack=500;
-   Int_t nbinsptjet=500;
-   if(!fJetCont->GetRhoName().IsNull()) nbinsptjet=400;
+   Int_t nbinsptjet=150;
+   if(!fJetCont->GetRhoName().IsNull()) nbinsptjet=200;
    const Int_t nbinsptD=100;
-   const Int_t nbinsz=100;
+   const Int_t nbinsz=144;
    const Int_t nbinsphi=200;
    const Int_t nbinseta=100;
    
    //binning for THnSparse
    const Int_t nbinsSpsmass=50;
-   const Int_t nbinsSpsptjet=100;
+   const Int_t nbinsSpsptjet=200;
    const Int_t nbinsSpsptD=50;
-   const Int_t nbinsSpsz=100;
+   const Int_t nbinsSpsz=144;
    const Int_t nbinsSpsphi=100;
    const Int_t nbinsSpseta=60;
    const Int_t nbinsSpsContrib=100;
    const Int_t nbinsSpsA=100;
     
    const Float_t pttracklims[2]={0.,200.};
-   Float_t ptjetlims[2]={0.,200.};
-   if(!fJetCont->GetRhoName().IsNull()) ptjetlims[0]=-200.;
+   Float_t ptjetlims[2]={0.,150.};
+   if(!fJetCont->GetRhoName().IsNull()) ptjetlims[0]=-50.;
    const Float_t ptDlims[2]={0.,50.};
    const Float_t zlims[2]={0.,1.2};
    const Float_t philims[2]={0.,6.3};

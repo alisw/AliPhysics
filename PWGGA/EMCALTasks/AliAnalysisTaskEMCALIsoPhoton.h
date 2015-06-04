@@ -45,6 +45,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FillClusHists();
   void                   FillMcHists();
   void                   FillQA();
+  void                   FillInvMass(); //inv mass for all neutral clusters
   Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
@@ -58,6 +59,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
 						Int_t *absIdList,     Float_t *maxEList);
   Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
+  void                   GetEDistInClusCells(const AliVCluster *cluster, Short_t &idmax);
   AliVCaloCells          *GetVCaloCells();
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
@@ -213,7 +215,12 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
   //trigger histos
   TH1F        *fETrigg;           //!energy returned by trigger patch info
+  TH2F        *fM02vsESoftPi0Kid; //!energy dependence of M02 of pi0 softer daughter
+  TH2F        *fM02vsEHardPi0Kid; //!energy dependence of M02 of pi0 harder daughter
+  TH2F        *fM02vsESoftPi0BGKid; //!energy dependence of M02 of pi0-BG softer daughter
+  TH2F        *fM02vsEHardPi0BGKid; //!energy dependence of M02 of pi0-BG harder daughter
 
+  TH2F        *fCellsPi0KidE6;      //!energy distribution in cells for cluster 5.5<E<6.5 GeV (all M02 values)
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

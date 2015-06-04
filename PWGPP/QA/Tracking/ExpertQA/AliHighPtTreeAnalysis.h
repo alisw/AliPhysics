@@ -14,6 +14,8 @@ const Int_t kMaxextInnerParam = 1;
 const Int_t kMaxextInnerParamRef = 1;
 
 class TTree;
+
+#include "TTreeStream.h"
 #include "TObject.h"
 
 
@@ -23,6 +25,9 @@ public :
   AliHighPtTreeAnalysis();
   virtual ~AliHighPtTreeAnalysis();
   void InitAnalysis( TString file );
+  TTreeSRedirector * GetStreamer() { return fStreamer;}
+  void InitStreamer( const char * streamerName="AliHighPtTreeAnalysisStreamer.root") { fStreamer=new TTreeSRedirector(streamerName,"recreate");}
+  void CloseStreamer(  ) { if (fStreamer) delete fStreamer;}
 
 
   virtual Int_t         GetEntry(Long64_t entry);
@@ -38,6 +43,9 @@ public :
   //
   virtual TGraphErrors* Calc2DProfileContent(TH3D *h1, const char *projAxisName);
   //
+  virtual void          MakeDCArPullFitsMI();
+
+
   virtual void          MakeDCArPullFits();
   virtual void          MakeDCArResFits();
   virtual void          MakePhiFits();
@@ -73,6 +81,7 @@ public:
   TTree          *fChain;                     //!pointer to the analyzed TTree or TChain
   TTree          *fV0Chain;                   //!pointer to the V0 tree    
   TTree          *OutTree;                    // output tree
+  TTreeSRedirector *fStreamer;                //! fStreamer
   //
   // Declaration of leaf types for the highPt tree
   //

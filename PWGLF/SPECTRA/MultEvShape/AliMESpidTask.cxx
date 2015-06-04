@@ -105,6 +105,11 @@ void AliMESpidTask::UserExec(Option_t *opt)
 //   vec_hNoEvts[3] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);		// combined multiplicity with 0.4 < |eta| < 0.8
   vec_hNoEvts[3] = mult_comb0408;		// combined multiplicity with 0.4 < |eta| < 0.8
 
+/*
+ // !!!!!!!!!!
+ // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
+ // !!!!!!!!!!
+ 
   if( !fEvInfo->HasTriggerMB() ) return;
 
   if( !fEvInfo->HasVertex() ) return;
@@ -119,8 +124,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
   vec_hNoEvts[0] = 2.;
   hNoEvts->Fill(vec_hNoEvts);
 
-//   if(mult_comb08 < 0. || mult_V0M < 0.) return;
-  if(mult_comb08 < 0.) return;
+  if(mult_comb08 < 0. || mult_V0M < 0.) return;
+//   if(mult_comb08 < 0.){
+	  return;
+  }
+
+  // !!!!!!!!!!
+*/
   vec_hNoEvts[0] = 3.;
   hNoEvts->Fill(vec_hNoEvts);
 
@@ -161,7 +171,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 
 	Double_t vec_hAllESD[10];    	// vector used to fill hAllESD
-	Double_t vec_hPIDQA[7];	//  vector used to fill hPIDQA
+	Double_t vec_hPIDQA[8];	//  vector used to fill hPIDQA
 
 	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(1);
 	enum axis_hAllESD {l_comb08, l_V0M, l_comb0408, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis

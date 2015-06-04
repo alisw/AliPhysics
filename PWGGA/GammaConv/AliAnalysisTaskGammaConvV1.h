@@ -14,6 +14,7 @@
 #include "TH3.h"
 #include "TH3F.h"
 #include <vector>
+#include <map>
 
 class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
@@ -75,6 +76,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		// Additional functions
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
+		void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
+		void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
 		
 	protected:
 		AliV0ReaderV1 						*fV0Reader;											//
@@ -205,10 +208,16 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH2F 								**hESDTrueGammaPsiPairDeltaPhi;						//!
 		TH2F				 				**hDoubleCountTruePi0InvMassPt;						//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**hDoubleCountTrueEtaInvMassPt;						//! array of histos with double counted etas, invMass, pT
-		TH2F				 				**hDoubleCountTrueConvGammaRPt;							//! array of histos with double counted photons, R, pT
+		TH2F				 				**hDoubleCountTrueConvGammaRPt;						//! array of histos with double counted photons, R, pT
 		vector<Int_t>						vecDoubleCountTruePi0s;								//! vector containing labels of validated pi0
 		vector<Int_t>						vecDoubleCountTrueEtas;								//! vector containing labels of validated eta
-		vector<Int_t>						vecDoubleCountTrueConvGammas;							//! vector containing labels of validated photons
+		vector<Int_t>						vecDoubleCountTrueConvGammas;						//! vector containing labels of validated photons
+		TH1F								**hMultipleCountTruePi0;							//! array of histos how often TruePi0s are counted
+		TH1F								**hMultipleCountTrueEta;							//! array of histos how often TrueEtas are counted
+		TH1F								**hMultipleCountTrueConvGamma;						//! array of histos how often TrueConvGammass are counted
+		map<Int_t,Int_t>					mapMultipleCountTruePi0s;							//! map containing pi0 labels that are counted at least twice
+		map<Int_t,Int_t>					mapMultipleCountTrueEtas;							//! map containing eta labels that are counted at least twice
+		map<Int_t,Int_t>					mapMultipleCountTrueConvGammas;						//! map containing photon labels that are counted at least twice
 		TH1I 								**hNEvents;											//!
 		TH1I 								**hNGoodESDTracks;									//!
 		TH1F								**hNEventsWeighted;									//!
@@ -262,7 +271,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 19);
+		ClassDef(AliAnalysisTaskGammaConvV1, 20);
 };
 
 #endif

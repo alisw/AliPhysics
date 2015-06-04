@@ -551,6 +551,7 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
 		
 		if( ( (AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetBKGMethod() == 3 ){
 			fGammasPool[iCut] = new TList();
+			fGammasPool[iCut]->SetOwner(kTRUE);
 		}
 			
 	}
@@ -574,7 +575,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 	}
 
 	fGoodGammas = new TList();
-	//fGoodGammas->SetOwner(kTRUE);
 
 	fGoodVirtualGammas = new TList();
 	fGoodVirtualGammas->SetOwner(kTRUE);

@@ -64,7 +64,9 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
    "UseMCPSmearing", //10
    "DcaGammaGamma", //11
    "DcaRPrimVtx", //12
-   "DcaZPrimVtx" //13
+   "DcaZPrimVtx", //13
+   "MinOpanMesonCut", //14
+   "MaxOpanMesonCut" //15
 };
 
 
@@ -114,8 +116,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    hDCARMesonPrimVtxBefore(NULL),
    hDCAGammaGammaMesonAfter(NULL),
    hDCAZMesonPrimVtxAfter(NULL),
-   hDCARMesonPrimVtxAfter(NULL)
-
+   hDCARMesonPrimVtxAfter(NULL),
+   fMinOpanCutMeson(0),
+   fFMinOpanCut(0),
+   fMinOpanPtDepCut(kFALSE),
+   fMaxOpanCutMeson(TMath::Pi()),
+   fFMaxOpanCut(0),
+   fMaxOpanPtDepCut(kFALSE)
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -175,7 +182,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    hDCARMesonPrimVtxBefore(NULL),
    hDCAGammaGammaMesonAfter(NULL),
    hDCAZMesonPrimVtxAfter(NULL),
-   hDCARMesonPrimVtxAfter(NULL)
+   hDCARMesonPrimVtxAfter(NULL),
+   fMinOpanCutMeson(0),
+   fFMinOpanCut(0),
+   fMinOpanPtDepCut(kFALSE),
+   fMaxOpanCutMeson(TMath::Pi()),
+   fFMaxOpanCut(0),
+   fMaxOpanPtDepCut(kFALSE)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -200,6 +213,23 @@ AliConversionMesonCuts::~AliConversionMesonCuts() {
    if(fElectronLabelArray){
       delete fElectronLabelArray;
       fElectronLabelArray = NULL;
+   }
+
+   if(fFAlphaCut != NULL){
+	   delete fFAlphaCut;
+	   fFAlphaCut = NULL;
+   }
+   if(fBrem != NULL){
+	   delete fBrem;
+	   fBrem = NULL;
+   }
+   if(fFMinOpanCut != NULL){
+	   delete fFMinOpanCut;
+	   fFMinOpanCut = NULL;
+   }
+   if(fFMaxOpanCut != NULL){
+	   delete fFMaxOpanCut;
+	   fFMaxOpanCut = NULL;
    }
 
 }
@@ -586,7 +616,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
    return kFALSE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift)
 {
 
@@ -628,16 +658,28 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
 	}
-	cutIndex++;
 
-	if ( fAlphaPtDepCut == kTRUE ) {
-	
-		fAlphaCutMeson = fFAlphaCut->Eval( pi0->Pt() );
+	// Min Opening Angle
+	if (fMinOpanPtDepCut == kTRUE) fMinOpanCutMeson = fFMinOpanCut->Eval(pi0->Pt());
+
+	if (pi0->GetOpeningAngle() < fMinOpanCutMeson){
+		if(hist)hist->Fill(cutIndex);
+		return kFALSE;
 	}
-	
+
+	// Max Opening Angle
+	if (fMaxOpanPtDepCut == kTRUE) fMaxOpanCutMeson = fFMaxOpanCut->Eval(pi0->Pt());
+
+	if( pi0->GetOpeningAngle() > fMaxOpanCutMeson){
+		if(hist)hist->Fill(cutIndex);
+		return kFALSE;
+	}
+	cutIndex++;
 	
 	// Alpha Max Cut
-	if(pi0->GetAlpha()>fAlphaCutMeson){
+	if (fAlphaPtDepCut == kTRUE) fAlphaCutMeson = fFAlphaCut->Eval(pi0->Pt());
+
+	if(abs(pi0->GetAlpha())>fAlphaCutMeson){
 // 		if (!IsSignal) cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
@@ -645,7 +687,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 	cutIndex++;
 
 	// Alpha Min Cut
-	if(pi0->GetAlpha()<fAlphaMinCutMeson){
+	if(abs(pi0->GetAlpha())<fAlphaMinCutMeson){
 // 		if (!IsSignal)cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
@@ -696,8 +738,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
 
 
-///________________________________________________________________________
-///________________________________________________________________________
+//________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::UpdateCutString() {
    ///Update the cut string (if it has been created yet)
 
@@ -709,7 +751,7 @@ Bool_t AliConversionMesonCuts::UpdateCutString() {
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
    // Initialize Cuts from a given Cut string
    AliInfo(Form("Set Meson Cutnumber: %s",analysisCutSelection.Data()));
@@ -736,7 +778,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
    PrintCutsWithValues();
    return kTRUE;
 }
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
    ///Set individual cut ID
 
@@ -831,6 +873,19 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
+  case kMinOpanMesonCut:
+      if( SetMinOpanMesonCut(value)) {
+         fCuts[kMinOpanMesonCut] = value;
+         UpdateCutString();
+         return kTRUE;
+      } else return kFALSE;
+
+   case kMaxOpanMesonCut:
+      if( SetMaxOpanMesonCut(value)) {
+         fCuts[kMaxOpanMesonCut] = value;
+         UpdateCutString();
+         return kTRUE;
+      } else return kFALSE;
 
    case kNCuts:
       cout << "Error:: Cut id out of range"<< endl;
@@ -843,7 +898,7 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConversionMesonCuts::PrintCuts() {
    // Print out current Cut Selection
    for(Int_t ic = 0; ic < kNCuts; ic++) {
@@ -851,7 +906,7 @@ void AliConversionMesonCuts::PrintCuts() {
    }
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConversionMesonCuts::PrintCutsWithValues() {
    // Print out current Cut Selection with values
 	printf("\nMeson cutnumber \n");
@@ -864,10 +919,15 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
 	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
 	printf("\t theta_{open} < %3.4f\n", fOpeningAngle);
 	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
+	else printf("\t alpha pT-dep cut active\n");
 	if (fDCAGammaGammaCutOn)printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
 	if (fDCARMesonPrimVtxCutOn)printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
 	if (fDCAZMesonPrimVtxCutOn)printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
-	printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh); 
+	printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh);
+	if (!fMinOpanPtDepCut) printf("\t theta_{open} < %3.2f\n", fMinOpanCutMeson);
+	else printf("\t Min theta_{open} pT-dep cut active\n");
+	if (!fMaxOpanPtDepCut) printf("\t %3.2f < theta_{open}\n", fMaxOpanCutMeson);
+	else printf("\t Max theta_{open} pT-dep cut active\n");
 	
 	 printf("Meson BG settings \n");
 	 if (!fDoBG){
@@ -883,7 +943,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
    // Set Cut
    switch(mesonKind){
@@ -900,7 +960,7 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetRCut(Int_t rCut){
    // Set Cut
    switch(rCut){
@@ -933,7 +993,7 @@ Bool_t AliConversionMesonCuts::SetRCut(Int_t rCut){
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
    // Set Cut
    switch(selectionCut){
@@ -973,8 +1033,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
    return kTRUE;
 }
 
-
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
 {   // Set Cut
    switch(alphaMesonCut){
@@ -1056,7 +1115,7 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
    // Set Cut
    switch(RapidityMesonCut){
@@ -1098,7 +1157,7 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
    // Set Cut
    switch(BackgroundScheme){
@@ -1156,7 +1215,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetNDegreesForRotationMethod(Int_t DegreesForRotationMethod){
    // Set Cut
    switch(DegreesForRotationMethod){
@@ -1180,7 +1239,7 @@ Bool_t AliConversionMesonCuts::SetNDegreesForRotationMethod(Int_t DegreesForRota
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetNumberOfBGEvents(Int_t NumberOfBGEvents){
    // Set Cut
    switch(NumberOfBGEvents){
@@ -1214,7 +1273,7 @@ Bool_t AliConversionMesonCuts::SetNumberOfBGEvents(Int_t NumberOfBGEvents){
    }
    return kTRUE;
 }
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetSharedElectronCut(Int_t sharedElec) {
 
    switch(sharedElec){
@@ -1232,7 +1291,7 @@ Bool_t AliConversionMesonCuts::SetSharedElectronCut(Int_t sharedElec) {
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 
    switch(toClose){
@@ -1259,7 +1318,7 @@ Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 {// Set Cut
    switch(useMCPSmearing){
@@ -1332,7 +1391,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetDCAGammaGammaCut(Int_t DCAGammaGamma){
 	// Set Cut
 	switch(DCAGammaGamma){
@@ -1383,7 +1442,7 @@ Bool_t AliConversionMesonCuts::SetDCAGammaGammaCut(Int_t DCAGammaGamma){
 	return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx){
 	// Set Cut
 	switch(DCAZMesonPrimVtx){
@@ -1434,7 +1493,7 @@ Bool_t AliConversionMesonCuts::SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx){
 	return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx){
 	// Set Cut
 	switch(DCARMesonPrimVtx){
@@ -1485,8 +1544,69 @@ Bool_t AliConversionMesonCuts::SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx){
 	return kTRUE;
 }
 
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
+	// Set Cut
+   switch(minOpanMesonCut){
+   case 0:      //
+	 fMinOpanCutMeson=0;
+	 fMinOpanPtDepCut= kFALSE;
+	 break;
+   case 1:      //
+	 fMinOpanCutMeson=0.005;
+	 fMinOpanPtDepCut= kFALSE;
+	 break;
+   case 2:
+	 if( fFMinOpanCut ) delete fFMinOpanCut;
+	 fFMinOpanCut= new TF1("fFMinOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+	 fFMinOpanCut->SetParameter(0,1.5);
+	 fFMinOpanCut->SetParameter(1,1.35);
+	 fFMinOpanCut->SetParameter(2,0.02);
+	 fMinOpanCutMeson=0;
+	 fMinOpanPtDepCut= kTRUE;
+	 break;
 
-///________________________________________________________________________
+   default:
+	 cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
+	 return kFALSE;
+   }
+   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::SetMaxOpanMesonCut(Int_t maxOpanMesonCut){
+	// Set Cut
+   switch(maxOpanMesonCut){
+   case 0:      //
+	 fMaxOpanCutMeson=TMath::Pi();
+	 fMaxOpanPtDepCut= kFALSE;
+	 break;
+   case 1:
+	 if( fFMaxOpanCut ) delete fFMaxOpanCut;
+	 fFMaxOpanCut= new TF1("fFMaxOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+	 fFMaxOpanCut->SetParameter(0,2.5);
+	 fFMaxOpanCut->SetParameter(1,0.85);
+	 fFMaxOpanCut->SetParameter(2,0.35);
+	 fMaxOpanPtDepCut= kTRUE;
+	 fMaxOpanCutMeson=TMath::Pi();
+	 break;
+   case 2:
+	 if( fFMaxOpanCut ) delete fFMaxOpanCut;
+	 fFMaxOpanCut= new TF1("fFMaxOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+	 fFMaxOpanCut->SetParameter(0,2.3);
+	 fFMaxOpanCut->SetParameter(1,0.85);
+	 fFMaxOpanCut->SetParameter(2,0.35);
+	 fMaxOpanPtDepCut= kTRUE;
+	 fMaxOpanCutMeson=TMath::Pi();
+	 break;
+   default:
+	 cout<<"Warning: maxOpanMesonCut not defined "<< maxOpanMesonCut<<endl;
+	 return kFALSE;
+   }
+   return kTRUE;
+}
+
+//________________________________________________________________________
 TString AliConversionMesonCuts::GetCutNumber(){
    // returns TString with current cut number
    TString a(kNCuts);
@@ -1496,7 +1616,7 @@ TString AliConversionMesonCuts::GetCutNumber(){
    return a;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConversionMesonCuts::FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0){
 
    Int_t posLabel = photon->GetTrackLabelPositive();
@@ -1506,7 +1626,7 @@ void AliConversionMesonCuts::FillElectonLabelArray(AliAODConversionPhoton* photo
    fElectronLabelArray[(nV0*2)+1] = negLabel;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s){
 
    Int_t posLabel = photon->GetTrackLabelPositive();
@@ -1523,7 +1643,7 @@ Bool_t AliConversionMesonCuts::RejectSharedElectronV0s(AliAODConversionPhoton* p
 
    return kTRUE;
 }
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0){
    Double_t posX = photon->GetConversionX();
    Double_t posY = photon->GetConversionY();
@@ -1548,7 +1668,7 @@ Bool_t AliConversionMesonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, 
    return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
 {
 
@@ -1582,7 +1702,7 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    photon->SetE(photon->P());
 }
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
 {
 
@@ -1616,7 +1736,7 @@ void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    
 }
-///________________________________________________________________________
+//________________________________________________________________________
 TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
 {
 

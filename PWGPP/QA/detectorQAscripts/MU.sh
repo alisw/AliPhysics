@@ -6,26 +6,117 @@
 #  $pass         e.g. cpass1,pass1,passMC
 #  #ocdbStorage  e.g. "raw://", "local://./OCDB"
 
+WriteMuonConfig()
+{
+  # FIXME
+  # This function allows to create special configuration files
+  # steer the MU.sh in special cases
+  # (e.g. problems with CDB, Physics Selection, etc.)
+  # When the macro will run at CERN it will be possible to
+  # put custom cfg files when needed
+  # and this function can be commented
+  local cfgFilename="$1"
+  if [ -e $cfgFilename ]; then
+    return
+  fi
+  local cfgDir=$(dirname "$cfgFilename")
+  if [ ! -e $cfgDir ]; then
+    mkdir "$cfgDir"
+  fi
+
+  if [ "$period" = "LHC15d" ]; then
+    echo "MUenablePhysSel=0" >> $cfgFilename
+  elif [ "$period" = "LHC15e" ]; then
+    echo "MUenablePhysSel=0" >> $cfgFilename
+    echo "MUcheckTrigScalers=0" >> $cfgFilename
+  fi
+}
+
+GetCfgVarFromFile()
+{
+  # Read special configuration variables for muon
+  # Usually one does not need special configuration
+  # However, it might be needed in case of issues
+  # (arising e.g. when there are problems with CDB, Physics Selection, etc.)
+  local what="$1"
+  local filename="$2"
+  local fullFlag=""
+  if [ -e $filename ]; then
+    fullFlag=$(grep "$what" $filename | xargs)
+    fullFlag=${fullFlag/"$what"/""}
+    fullFlag=${fullFlag/"="/""}
+    fullFlag=${fullFlag/" "/""}
+  fi
+  echo $fullFlag
+}
+
+GetMUvar()
+{
+  # Get configuration variable for muon.
+
+  # Assume that "outputDir" is known from the steering runQA.sh
+  local cfgFileDir="${outputDir}/configFiles"
+  local cfgFilename="${cfgFileDir}/cfg_MU_${dataType}_${period}_${pass}.txt"
+  local cfgFileSuffix="${dataType}_${period}.txt"
+
+  # FIXME: comment the following line when we will run at CERN
+  WriteMuonConfig "$cfgFilename"
+
+  local what="$1"
+  local output=""
+  local filename=""
+
+  if [ "$what" = "triggerList" ]; then
+    filename="${cfgFileDir}/trigList_${cfgFileSuffix}"
+    if [ -e "$filename" ]; then
+      output="\"${filename}\""
+    else
+      output="0x0"
+    fi
+  elif [ "$what" = "runList" ]; then
+    filename="${cfgFileDir}/runList_${cfgFileSuffix}"
+    if [ -e "$filename" ]; then
+      output="$(cat ${filename} | xargs)"
+    else
+      output=""
+    fi
+  elif [ "$what" = "isMC" ]; then
+    if [ "$dataType" = "sim" ]; then
+      output="1"
+    else
+      output="0"
+    fi
+  elif [ "$what" = "MUenablePhysSel" ]; then
+    output=$(GetCfgVarFromFile "MUenablePhysSel" "$cfgFilename")
+    if [ "$output" = "" ]; then
+      if [ "$dataType" = "sim" ]; then
+        output="0"
+      else
+        output="1"
+      fi
+    fi
+  elif [ "$what" = "MUcheckTrigScalers" ]; then
+    output=$(GetCfgVarFromFile "MUcheckTrigScalers" "$cfgFilename")
+    if [ "$output" = "" ]; then
+      output="1"
+    fi
+  fi
+  echo "$output"
+}
+
+
 runLevelQA()
 {
   #full path of QAresults.root is provided
   local qaFile=$1
-  local isMC=0
-  local usePhysicsSelection=1
-  if [ "$dataType" = "sim" ]; then
-    isMC=1
-    usePhysicsSelection=0
-  fi
-
-  if [ ! -z $ignorePhysicsSelection ]; then
-    usePhysicsSelection=0
-  fi
+  local isMC=$(GetMUvar "isMC")
+  local MUenablePhysSel=$(GetMUvar "MUenablePhysSel")
 
   # This is used only to extract the muon information
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/MakeTrend.C
   aliroot -b -l <<EOF
 gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
-.x MakeTrend.C("${qaFile}",${runNumber},$isMC,$usePhysicsSelection)
+.x MakeTrend.C("${qaFile}",${runNumber},$isMC,$MUenablePhysSel)
 .q
 EOF
   rm MakeTrend.C
@@ -55,19 +146,12 @@ periodLevelQA()
     done
   fi
 
-  # Assume that "outputDir" is known from the steering runQA.sh
-  local cfgFileDir="${outputDir}/configFiles"
-  local cfgFileSuffix="${dataType}_${period}.txt"
-
   #if run list is provided, filter the output limiting to this list
-  # FIXME: the code is run in a temporary directory
-  # where should we add this file?
-  local runList="${cfgFileDir}/runList_${cfgFileSuffix}"
-  if [ -e ${runList} ]; then
-    sRunList=$(cat ${runList} | xargs)
+  local runList=$(GetMUvar "runList")
+  if [ "$runList" != "" ]; then
     tmpFileList="tmp${fileList}"
     mv ${fileList} ${tmpFileList}
-    for irun in $sRunList; do
+    for irun in $runList; do
       currFile=$(grep ${irun} $tmpFileList)
       if [ "${currFile}" = "" ]; then
         continue
@@ -78,14 +162,7 @@ periodLevelQA()
   fi
 
   #if trigger list is provided, filter the tracking output accordngly
-  # FIXME: the code is run in a temporary directory
-  # where should we add this file?
-  local triggerList="$cfgFileDir/trigList_${cfgFileSuffix}"
-  if [ -e ${triggerList} ]; then
-    triggerList="\"${triggerList}\""
-  else
-    triggerList="0x0"
-  fi
+local triggerList=$(GetMUvar "triggerList")
 
   # First run tracker (it merges the QAresults and we need it for
   # scaler trending in trigger
@@ -98,35 +175,23 @@ periodLevelQA()
     fi
   done
 
-  local usePhysicsSelection=1
-  if [ "$dataType" = "sim" ]; then
-    usePhysicsSelection=0
-  fi
-  if [ ! -z $ignorePhysicsSelection ]; then
-    usePhysicsSelection=0
-  fi
+  local MUenablePhysSel=$(GetMUvar "MUenablePhysSel")
 
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/PlotMuonQA.C
 aliroot -b <<EOF
 gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
-.x PlotMuonQA.C+(".","${fileList}",${triggerList},${usePhysicsSelection},"muon_tracker","${mergedQAname}");
+.x PlotMuonQA.C+(".","${fileList}",${triggerList},${MUenablePhysSel},"muon_tracker","${mergedQAname}");
 .q
 EOF
   rm PlotMuonQA.C
 
   # Then run trigger
-  local runScalers="kFALSE"
-  if [ "${dataType}" = "data" ]; then
-    runScalers="kTRUE";
-  fi
-  if [ ! -z $MUSkipScalerCheck ]; then
-    runScalers="kFALSE"
-  fi
+  local MUcheckTrigScalers=$(GetMUvar "MUcheckTrigScalers")
 
   ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/trigEffQA.C
   aliroot -b <<EOF
 gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
-.x trigEffQA.C+("${fileList}","QA_muon_trigger.root","${ocdbStorage}",$runScalers,"${mergedQAname}");
+.x trigEffQA.C+("${fileList}","QA_muon_trigger.root","${ocdbStorage}",$MUcheckTrigScalers,"${mergedQAname}");
 .q
 EOF
   rm trigEffQA.C

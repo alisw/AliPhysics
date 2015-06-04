@@ -1,8 +1,10 @@
 const Double_t kMean=0.135 ; //Approximate peak position to facilitate error estimate
 
 //-----------------------------------------------------------------------------
-void MakeMmixPi0(const Int_t centrality=0,
-		 const char* cModule="")
+void MakeMmixPi0(const char* file       = "PHOSPbPbQA.root",
+		 const char* cModule    = "",
+		 const char* listName   = "PHOSPbPbQAResults",
+		 const Int_t centrality = 0)
 {
   //---------------------------------------------------------------------------
   // This macro processes PWGPP QA output of the analysis task PHOSPbPbQA
@@ -16,13 +18,13 @@ void MakeMmixPi0(const Int_t centrality=0,
   //---------------------------------------------------------------------------
 /* $Id$ */
 
-  TFile * f = new TFile("PHOSPbPb_all.root") ;
-  TList *histESD = (TList*) f->Get("PHOSPbPbQAResults");
+  TFile * f = new TFile(file) ;
+  TList *histESD = (TList*) f->Get(listName);
   char key[125] ;
 
   const char* pid="All";
   const char* txtCent[] = {"0-20%","20-100%"};
-  TH2F * hCentrality  = (TH2F*)f->Get("hCenPHOS") ;
+  TH2F * hCentrality  = (TH2F*)histESD->FindObject("hCenPHOS") ;
   TH1D * hCentrality1 = hCentrality->ProjectionX();
   TString inputKey;
   TString outputKey = Form("%s10_cent%d",pid,centrality);
@@ -31,9 +33,9 @@ void MakeMmixPi0(const Int_t centrality=0,
   TH2F *hm, *hmAdd;
   if (centrality == 0 || centrality == 1) {// centrality 0-20%, 20-100%
     inputKey = Form("hPi0%s%s_cen%d"  ,pid,cModule,centrality);
-    TH2F *h = (TH2F*)f->Get(inputKey) ;
+    TH2F *h = (TH2F*)histESD->FindObject(inputKey) ;
     inputKey = Form("hMiPi0%s%s_cen%d",pid,cModule,centrality);
-    TH2F *hm= (TH2F*)f->Get(inputKey) ;
+    TH2F *hm= (TH2F*)histESD->FindObject(inputKey) ;
     if (h==0) {
       printf("Missing histogram %s\n",inputKey);
       return;
