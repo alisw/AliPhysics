@@ -8,6 +8,8 @@
 
 #include "AliEveOfflineEventManager.h"
 
+ClassImp(AliEveOfflineEventManager);
+
 AliEveOfflineEventManager::AliEveOfflineEventManager(Int_t ev, bool storageManager) :
 AliEveEventManager("offline",ev,storageManager)
 {

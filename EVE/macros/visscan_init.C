@@ -66,7 +66,8 @@ void visscan_init(const TString& cdburi = "",
 		  Bool_t showMuon = kTRUE,
 		  Bool_t showTrd = kFALSE)
 {
-    new AliEveOfflineEventManager();
+    AliEveOfflineEventManager *man = new AliEveOfflineEventManager();
+    
   if (showMuon)
   {
     if (gSystem->Getenv("ALICE_ROOT") != 0)
@@ -79,23 +80,29 @@ void visscan_init(const TString& cdburi = "",
   {
     gShowMuonRPhi = gShowMuonRhoZ = kFALSE;
   }
-  
+
+    if(cdburi.EqualTo(""))
+    {
+        cdburi = Form("%s/../src/OCDB/", gSystem->Getenv("ALICE_ROOT"));
+        cout<<"\n\nsetting cdb uri:"<<cdburi<<endl;
+    }
   if (cdburi.IsNull() && ! AliCDBManager::Instance()->IsDefaultStorageSet())
   {
     gEnv->SetValue("Root.Stacktrace", "no");
     Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
   }
 
+
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
 
   TEveUtil::LoadMacro("alieve_init.C+");
   alieve_init(cdburi, path, -1, showHLTESDTree);
 
+        man->Open();
+    
   // TEveLine::SetDefaultSmooth(1);
 
   TEveUtil::AssertMacro("VizDB_scan.C");
-
-    AliEveEventManager *man = AliEveEventManager::GetMaster();
     
   AliEveMacroExecutor *exec    = man->GetExecutor();
   TEveBrowser         *browser = gEve->GetBrowser();
