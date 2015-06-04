@@ -48,5 +48,6 @@
 #pragma link C++ class AliHLTTPCCalibProcessor+;
 #ifdef ZMQ
 #pragma link C++ class AliHLTZMQsink+;
+#pragma link C++ class AliHLTZMQsource+;
 #endif
 #endif // __CINT__

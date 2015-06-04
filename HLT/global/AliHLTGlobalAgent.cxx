@@ -52,7 +52,11 @@
 #include "AliHLTTPCCalibManagerComponent.h"
 #include "AliHLTTPCCalibProcessor.h"
 #include "AliHLTAsyncTestComponent.h"
+
+#ifdef ZMQ
 #include "AliHLTZMQsink.h"
+#include "AliHLTZMQsource.h"
+#endif
 
 // header file for preprocessor plugin
 #include "AliHLTGlobalPreprocessor.h"
@@ -109,7 +113,10 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTTPCCalibManagerComponent);
   pHandler->AddComponent(new AliHLTTPCCalibProcessor);
   pHandler->AddComponent(new AliHLTAsyncTestComponent);
+#ifdef ZMQ
   pHandler->AddComponent(new AliHLTZMQsink);
+  pHandler->AddComponent(new AliHLTZMQsource);
+#endif
   return 0;
 }
 

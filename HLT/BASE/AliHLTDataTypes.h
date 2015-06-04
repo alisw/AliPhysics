@@ -12,6 +12,8 @@
     @brief  Data type declaration for the HLT module.
 */
 
+#include <string.h>
+
 //////////////////////////////////////////////////////////////////////////
 //
 // version no of HLT data types
@@ -725,6 +727,15 @@ extern "C" {
     AliHLTUInt32_t fStructSize;                            /// Size of this structure in bytes.
     char fID[kAliHLTComponentDataTypefIDsize];             /// Data type identifier.
     char fOrigin[kAliHLTComponentDataTypefOriginSize];     /// Subsystem or detector origin of the data.
+    
+    //assignment from a topic string
+    AliHLTComponentDataType& operator=( const char topic[kAliHLTComponentDataTypeTopicSize] )
+    {
+      memcpy( fID, &topic[0], kAliHLTComponentDataTypefIDsize );
+      memcpy( fOrigin, &topic[kAliHLTComponentDataTypefIDsize], kAliHLTComponentDataTypefOriginSize );
+      return *this;
+    }
+
   };
 
   /**
@@ -1633,5 +1644,6 @@ inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kA
   }
   return true;
 }
+
 
 #endif 
