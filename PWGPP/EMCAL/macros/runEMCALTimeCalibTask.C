@@ -12,7 +12,7 @@
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 /// \date Jun 3, 2015
 
-void runTimeCalibTask(Int_t type=0)
+void runEMCALTimeCalibTask(Int_t type=0)
 {
   //type = 0: local 
   //type = 1: grid
