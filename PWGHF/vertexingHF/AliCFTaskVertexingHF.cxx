@@ -15,7 +15,7 @@
 
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables
-// 6 Steps introduced: MC, MC Acc, Reco, Reco Acc, Reco Acc + ITS Cl, 
+// 6 Steps introduced: MC, MC Acc, Reco, Reco Acc, Reco Acc + ITS Cl,
 // Reco Acc + ITS Cl + PPR cuts
 // 12 variables used: pt, y, cosThetaStar, ptPi, ptK, ct,
 // dca, d0Pi, d0K, d0Pixd0K, cosPointingAngle, phi
@@ -28,7 +28,7 @@
 // Base class for HF Unfolding (pt and eta)
 // correlation matrix filled at Acceptance and PPR level
 // Author: A.Grelli ,  Utrecht - agrelli@uu.nl
-//----------------------------------------------------------------------- 
+//-----------------------------------------------------------------------
 #include <TCanvas.h>
 #include <TParticle.h>
 #include <TDatabasePDG.h>
@@ -114,7 +114,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fSign(2),
   fCentralitySelection(kTRUE),
   fFakeSelection(0),
-  fRejectIfNoQuark(kTRUE),	
+  fRejectIfNoQuark(kTRUE),
   fUseMCVertex(kFALSE),
   fDsOption(1),
   fGenDsOption(3),
@@ -164,7 +164,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fFillFromGenerated(kFALSE),
   fOriginDselection(0),
   fAcceptanceUnf(kTRUE),
-  fCuts(cuts), 
+  fCuts(cuts),
   fUseWeight(kFALSE),
   fWeight(1.),
   fUseFlatPtWeight(kFALSE),
@@ -175,7 +175,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fNvar(0),
   fPartName(""),
   fDauNames(""),
-  fSign(2), 
+  fSign(2),
   fCentralitySelection(kTRUE),
   fFakeSelection(0),
   fRejectIfNoQuark(kTRUE),
@@ -215,12 +215,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(4,AliRDHFCuts::Class());
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
-	
+
   fCuts->PrintAll();
 }
 
 //___________________________________________________________________________
-AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF& c) 
+AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF& c)
 {
   //
   // Assignment operator
@@ -305,7 +305,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 }
 
 //___________________________________________________________________________
-AliCFTaskVertexingHF::~AliCFTaskVertexingHF() 
+AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
 {
   //
   //destructor
@@ -328,7 +328,7 @@ void AliCFTaskVertexingHF::Init()
   //
   // Initialization
   //
-	
+
   if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
   if(fUseWeight && fUseZWeight) { AliFatal("Can not use at the same time pt and z-vtx weights, please choose"); return; }
   if(fUseWeight && fUseNchWeight) { AliInfo("Beware, using at the same time pt and Nch weights, please check"); }
@@ -357,7 +357,7 @@ void AliCFTaskVertexingHF::Init()
     fDauNames="K+pi";
     break;
   }
-  case 21:{ 
+  case 21:{
     fPDGcode = 413;
     copyfCuts = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
     switch (fConfiguration) {
@@ -367,7 +367,7 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
-    }			
+    }
     fPartName="Dstar";
     fDauNames="K+pi+pi";
     break;
@@ -382,7 +382,7 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
-    }			
+    }
     fPartName="Lambdac";
     fDauNames="V0+bachelor";
     break;
@@ -397,7 +397,7 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
-    }			
+    }
     fPartName="Dplus";
     fDauNames="K+pi+pi";
     break;
@@ -412,7 +412,7 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
-    }			
+    }
     fPartName="Lambdac";
     fDauNames="p+K+pi";
     break;
@@ -427,7 +427,7 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
-    }			
+    }
     fPartName="Ds";
     fDauNames="K+K+pi";
     break;
@@ -442,7 +442,7 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
-    }			
+    }
     fPartName="D0";
     fDauNames="K+pi+pi+pi";
     break;
@@ -450,12 +450,12 @@ void AliCFTaskVertexingHF::Init()
   default:
     AliFatal("The decay channel MUST be defined according to AliCFVertexing::DecayChannel - Exiting...");
     break;
-  }  
-	
+  }
+
   const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
   if (copyfCuts){
     copyfCuts->SetName(nameoutput);
-		
+
     //Post the data
     PostData(4, copyfCuts);
   }
@@ -467,7 +467,7 @@ void AliCFTaskVertexingHF::Init()
   fListProfiles->SetOwner();
   TString period[4];
   Int_t nProfiles=4;
-  
+
   if (fIsPPbData) { //if pPb, use only two estimator histos
     period[0] = "LHC13b"; period[1] = "LHC13c";
     nProfiles = 2;
@@ -491,7 +491,7 @@ void AliCFTaskVertexingHF::Init()
   if(fHistoMCNch) fListProfiles->Add(fHistoMCNch);
 
   PostData(5,fListProfiles);
-	
+
   return;
 }
 
@@ -501,38 +501,38 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   //
   // Main loop function
   //
-	
+
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
-  PostData(3,fCorrelation) ;	
+  PostData(3,fCorrelation) ;
 
   AliDebug(3,Form("*** Processing event %d\n", fEvents));
 
   if (fFillFromGenerated){
     AliWarning("Flag to fill container with generated value ON ---> dca, d0pi, d0K, d0xd0, cosPointingAngle will be set as dummy!");
   }
-	
+
   if (!fInputEvent) {
     Error("UserExec","NO EVENT FOUND!");
     return;
   }
-	
+
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-	
+
   TClonesArray *arrayBranch=0;
-	
+
   if(!aodEvent && AODEvent() && IsStandardAOD()) {
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
     aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
+    AliAODHandler* aodHandler = (AliAODHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
-			
+
       switch (fDecayChannel){
       case 2:{
         arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
@@ -560,14 +560,14 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
         break;
       }
     }
-  } 
+  }
   else {
     switch (fDecayChannel){
     case 2:{
       arrayBranch=(TClonesArray*)aodEvent->GetList()->FindObject("D0toKpi");
       break;
     }
-    case 21:{ 
+    case 21:{
       arrayBranch=(TClonesArray*)aodEvent->GetList()->FindObject("Dstar");
       break;
     }
@@ -600,16 +600,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliError("Could not find array of HF vertices");
     return;
   }
-	
+
   fEvents++;
 
   fCFManager->SetRecEventInfo(aodEvent);
   fCFManager->SetMCEventInfo(aodEvent);
-	
+
   //******** DEFINE number of variables of the container***** for now set at 13, in the future in the config macro.
-	
+
   //loop on the MC event
-	
+
   TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!mcArray) {
     AliError("Could not find Monte-Carlo in AOD");
@@ -625,7 +625,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Int_t icountRecoPPR = 0;
   Int_t icountRecoPID = 0;
   Int_t cquarks = 0;
-		
+
   AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
   if (!mcHeader) {
     AliError("Could not find MC Header in AOD");
@@ -635,16 +635,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   fHistEventsProcessed->Fill(0.5);
 
   Double_t* containerInput = new Double_t[fNvar];
-  Double_t* containerInputMC = new Double_t[fNvar]; 
-	
-       
+  Double_t* containerInputMC = new Double_t[fNvar];
+
+
   AliCFVertexingHF* cfVtxHF=0x0;
   switch (fDecayChannel){
   case 2:{
     cfVtxHF = new AliCFVertexingHF2Prong(mcArray, fOriginDselection);
     break;
   }
-  case 21:{ 
+  case 21:{
     cfVtxHF = new AliCFVertexingHFCascade(mcArray, fOriginDselection);
     ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGcascade(413);
     ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGbachelor(211);
@@ -677,14 +677,14 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   case 31:
     //	case 32:
   case 33:{
-    cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel); 
+    cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel);
     if(fDecayChannel==33){
       ((AliCFVertexingHF3Prong*)cfVtxHF)->SetGeneratedDsOption(fGenDsOption);
     }
     break;
   }
   case 32:{
-    cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel,fResonantDecay); 
+    cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel,fResonantDecay);
   }
   case 4:{
     //cfVtxHF = new AliCFVertexingHF4Prong(mcArray, originDselection);  // not there yet
@@ -699,7 +699,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     delete[] containerInputMC;
     return;
   }
-	
+
   Double_t zPrimVertex = aodVtx ->GetZ();
   Double_t zMCVertex = mcHeader->GetVtxZ();
   Int_t runnumber = aodEvent->GetRunNumber();
@@ -715,8 +715,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(fZvtxCorrectedNtrkEstimator) {
     TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
     if(estimatorAvg) {
-      Int_t nTrackletsEta10Corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult)); 
-      Int_t nTrackletsEta16Corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta16,zPrimVertex,fRefMult)); 
+      Int_t nTrackletsEta10Corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult));
+      Int_t nTrackletsEta16Corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta16,zPrimVertex,fRefMult));
       nTracklets = (Double_t)nTrackletsEta10Corr;
       if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16Corr - nTrackletsEta10Corr); }
     }
@@ -741,7 +741,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     return;
   }
 
-  if(aodEvent->GetTriggerMask()==0 && 
+  if(aodEvent->GetTriggerMask()==0 &&
      (runnumber>=195344 && runnumber<=195677)){
     AliDebug(3,"Event rejected because of null trigger mask");
     delete[] containerInput;
@@ -770,7 +770,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     }
   }
 
-  //General settings: vertex, feed down and fill reco container with generated values.  			
+  //General settings: vertex, feed down and fill reco container with generated values.
   cfVtxHF->SetRecoPrimVertex(zPrimVertex);
   cfVtxHF->SetMCPrimaryVertex(zMCVertex);
   cfVtxHF->SetFillFromGenerated(fFillFromGenerated);
@@ -783,7 +783,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   fCuts->SetTriggerClass("");
 
   // MC vertex, to be used, in case, for pp
-  if (fUseMCVertex) fCuts->SetUseMCVertex(); 
+  if (fUseMCVertex) fCuts->SetUseMCVertex();
 
   if (fCentralitySelection){ // keep only the requested centrality
 
@@ -793,16 +793,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       delete [] trackCuts;
       delete cfVtxHF;
       return;
-    }    
+    }
   }  else { // keep all centralities
     fCuts->SetMinCentrality(0.);
     fCuts->SetMaxCentrality(100.);
   }
-	
+
   Float_t centValue = 0.;
   if(!fIsPPData) centValue = fCuts->GetCentrality(aodEvent);
-  cfVtxHF->SetCentralityValue(centValue);  
-	
+  cfVtxHF->SetCentralityValue(centValue);
+
   // multiplicity estimator with VZERO
   Double_t vzeroMult=0;
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
@@ -814,8 +814,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   cfVtxHF->SetMultiplicity(multiplicity);
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
-	
-  for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
+
+  for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) {
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
     if (!mcPart){
       AliError("Failed casting particle from MC array!, Skipping particle");
@@ -839,7 +839,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     if (!(cfVtxHF->SetLabelArray())){
       AliDebug(2,Form("Impossible to set the label array for particle %d (decaychannel = %d)", iPart, fDecayChannel));
       continue;
-    }		   
+    }
 
     //check the candiate family at MC level
     if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
@@ -849,7 +849,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     else{
       AliDebug(2,Form("Check on the family OK for particle %d!!! (decaychannel = %d)", iPart, fDecayChannel));
     }
-		
+
     //Fill the MC container
     Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
     AliDebug(2, Form("particle = %d mcContainerFilled = %d", iPart, mcContainerFilled));
@@ -882,12 +882,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc, fWeight);
         AliDebug(3,"MC Lim Acc container filled\n");
       }
-			
-      //MC 
+
+      //MC
       fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
       icountMC++;
       AliDebug(3,"MC container filled \n");
-			
+
       // MC in acceptance
       // check the MC-Acceptance level cuts
       // since standard CF functions are not applicable, using Kine Cuts on daughters
@@ -930,7 +930,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       AliDebug (3, "MC container not filled\n");
     }
   }
-	
+
   if (cquarks<2) AliDebug(2,Form("Event with %d c-quarks", cquarks));
   AliDebug(2,Form("Found %i MC particles that are %s!!",icountMC,fPartName.Data()));
   AliDebug(2,Form("Found %i MC particles that are %s and satisfy Acc cuts!!",icountAcc,fPartName.Data()));
@@ -944,7 +944,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   fCountRefit+= icountRefit;
 
   AliDebug(2,Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
-	
+
   for(Int_t iCandid = 0; iCandid<arrayBranch->GetEntriesFast();iCandid++){
     AliAODRecoDecayHF* charmCandidate=0x0;
     switch (fDecayChannel){
@@ -970,13 +970,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     default:
       break;
     }
-		
+
     Bool_t unsetvtx=kFALSE;
     if(!charmCandidate->GetOwnPrimaryVtx()) {
       charmCandidate->SetOwnPrimaryVtx(aodVtx); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-		
+
     Bool_t signAssociation = cfVtxHF->SetRecoCandidateParam((AliAODRecoDecayHF*)charmCandidate);
     if (!signAssociation){
       if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
@@ -1021,7 +1021,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       Bool_t recoStep = cfVtxHF->RecoStep();
       if (recoStep) AliDebug(2, Form("particle = %d --> CF task: Reco step for candidate %d is %d", iCandid, iCandid, (Int_t)recoStep));
       Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
-			
+
 
       // Selection on the filtering bit
       Bool_t isBitSelected = kTRUE;
@@ -1178,16 +1178,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
         continue;
       }
     }
-		
+
     if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
   } // end loop on candidate
-		
+
   fCountReco+= icountReco;
   fCountRecoAcc+= icountRecoAcc;
   fCountRecoITSClusters+= icountRecoITSClusters;
   fCountRecoPPR+= icountRecoPPR;
   fCountRecoPID+= icountRecoPID;
-	
+
   fHistEventsProcessed->Fill(1.5);
 
   delete[] containerInput;
@@ -1209,7 +1209,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
-	
+
   AliAnalysisTaskSE::Terminate();
 
   AliInfo(Form("Found %i MC particles that are %s in MC, in %d events",fCountMC,fPartName.Data(),fEvents));
@@ -1221,7 +1221,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and have at least 5 clusters in ITS, in %d events",fCountRecoITSClusters,fPartName.Data(),fDauNames.Data(),fEvents));
   AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and satisfy PPR cuts, in %d events",fCountRecoPPR,fPartName.Data(),fDauNames.Data(),fEvents));
   AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and satisfy PPR+PID cuts, in %d events",fCountRecoPID,fPartName.Data(),fDauNames.Data(),fEvents));
-	
+
   // draw some example plots....
   AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
   if(!cont) {
@@ -1231,7 +1231,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   // projecting the containers to obtain histograms
   // first argument = variable, second argument = step
 
-  TH1D** h = new TH1D*[3]; 
+  TH1D** h = new TH1D*[3];
   Int_t nvarToPlot = 0;
   if (fConfiguration == kSnail){
     //h = new TH1D[3][12];
@@ -1243,7 +1243,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       }
       h[ih] = new TH1D[nvarToPlot];
     }
-    for(Int_t iC=1;iC<nvarToPlot; iC++){ 
+    for(Int_t iC=1;iC<nvarToPlot; iC++){
       // MC-level
       h[0][iC] =   *(cont->ShowProjection(iC,0));
       // MC-Acceptance level
@@ -1258,14 +1258,14 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     for (Int_t ih = 0; ih<3; ih++){
       h[ih] = new TH1D[nvarToPlot];
     }
-    for(Int_t iC=0;iC<nvarToPlot; iC++){ 
+    for(Int_t iC=0;iC<nvarToPlot; iC++){
       // MC-level
       h[0][iC] =   *(cont->ShowProjection(iC,0));
       // MC-Acceptance level
       h[1][iC] =   *(cont->ShowProjection(iC,1));
       // Reco-level
       h[2][iC] =   *(cont->ShowProjection(iC,4));
-    }	
+    }
   }
   TString* titles;
   //Int_t nvarToPlot = 0;
@@ -1349,25 +1349,25 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   }
 
   Int_t markers[16]={20,24,21,25,27,28,
-		     20,24,21,25,27,28,
-		     20,24,21,25};
+                     20,24,21,25,27,28,
+                     20,24,21,25};
   Int_t colors[3]={2,8,4};
-  for(Int_t iC=0;iC<nvarToPlot; iC++){ 
+  for(Int_t iC=0;iC<nvarToPlot; iC++){
     for(Int_t iStep=0;iStep<3;iStep++){
       h[iStep][iC].SetTitle(titles[iC].Data());
       h[iStep][iC].GetXaxis()->SetTitle(titles[iC].Data());
       Double_t maxh=h[iStep][iC].GetMaximum();
       h[iStep][iC].GetYaxis()->SetRangeUser(0,maxh*1.2);
       h[iStep][iC].SetMarkerStyle(markers[iC]);
-      h[iStep][iC].SetMarkerColor(colors[iStep]);	    
+      h[iStep][iC].SetMarkerColor(colors[iStep]);
     }
   }
-	
+
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
-	
+
   // drawing in 2 separate canvas for a matter of clearity
   TCanvas * c1 =new TCanvas(Form("c1New_%d",fDecayChannel),"Vars 0, 1, 2, 3",1100,1200);
   c1->Divide(3,4);
@@ -1380,7 +1380,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     c1->cd(iPad++);
     h[2][iVar].DrawCopy("p");
   }
-	
+
   TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
   c2->Divide(3,4);
   iPad=1;
@@ -1422,10 +1422,10 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 
   /*
     THnSparseD* hcorr = dynamic_cast<THnSparseD*> (GetOutputData(3));
-	
+
     TH2D* corr1 = hcorr->Projection(0,2);
     TH2D* corr2 = hcorr->Projection(1,3);
-	
+
     TCanvas * c7 =new TCanvas(Form("c7New_%d",fDecayChannel),"",800,400);
     c7->Divide(2,1);
     c7->cd(1);
@@ -1434,11 +1434,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     corr2->DrawCopy("text");
   */
   TFile* file_projection = new TFile("CFtaskHFprojectionNew.root","RECREATE");
-	
+
   //	corr1->Write();
   //	corr2->Write();
-	
-  for(Int_t iC=0;iC<nvarToPlot; iC++){ 
+
+  for(Int_t iC=0;iC<nvarToPlot; iC++){
     for(Int_t iStep=0;iStep<3;iStep++){
       h[iStep][iC].Write(Form("Step%d_%s",iStep,titles[iC].Data()));
     }
@@ -1447,11 +1447,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   for (Int_t ih = 0; ih<3; ih++) delete [] h[ih];
   delete [] h;
   delete [] titles;
-	
+
 }
 
 //___________________________________________________________________________
-void AliCFTaskVertexingHF::UserCreateOutputObjects() 
+void AliCFTaskVertexingHF::UserCreateOutputObjects()
 {
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
@@ -1474,7 +1474,7 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17a(){
-  // ad-hoc weight function from ratio of 
+  // ad-hoc weight function from ratio of
   // pt spectra from FONLL 2.76 TeV and
   // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
   if(fFuncWeight) delete fFuncWeight;
@@ -1486,7 +1486,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17a(){
 }
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
-  // ad-hoc weight function from ratio of 
+  // ad-hoc weight function from ratio of
   // D0 pt spectra in PbPb 2011 0-10% centrality and
   // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
   if(fFuncWeight) delete fFuncWeight;
@@ -1594,7 +1594,7 @@ Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
   //
   // calculating the weight to fill the container
   //
-	
+
   // FNOLL central:
   // p0 = 1.63297e-01 --> 0.322643
   // p1 = 2.96275e+00
@@ -1619,14 +1619,14 @@ Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
 
 //__________________________________________________________________________________________________
 Double_t AliCFTaskVertexingHF::dNdptFit(Float_t pt, Double_t* par)
-{	
-  // 
+{
+  //
   // calculating dNdpt
   //
-	
+
   Double_t denom =  TMath::Power((pt/par[1]), par[3] );
   Double_t dNdpt = par[0]*pt/TMath::Power(1.+denom, par[2]);
-	
+
   return dNdpt;
 }
 
@@ -1652,7 +1652,7 @@ Double_t AliCFTaskVertexingHF::GetZWeight(Float_t z, Int_t runnumber){
   //
   //  calculating the z-vtx weight for the given run range
   //
-  
+
   if(runnumber>146824 || runnumber<146803) return 1.0;
 
   Double_t func1[3] = {1.0, -0.5, 6.5 };
@@ -1668,7 +1668,7 @@ Double_t AliCFTaskVertexingHF::GetZWeight(Float_t z, Int_t runnumber){
 Double_t AliCFTaskVertexingHF::DodzFit(Float_t z, Double_t* par) {
 
   //
-  // Gaussian z-vtx shape 
+  // Gaussian z-vtx shape
   //
   //gaussian = [0]/TMath::Sqrt(2.*TMath::Pi())/[2]*exp[-(x-[1])*(x-[1])/(2*[2]*[2])]
 
@@ -1792,7 +1792,7 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
     if (runNo>195343 && runNo<195484) period = 0;
     if (runNo>195528 && runNo<195678) period = 1;
     if (period<0 || period>1) return 0;
-  } else {             //else assume pp 2010                 
+  } else {             //else assume pp 2010
     if(runNo>114930 && runNo<117223) period = 0;
     if(runNo>119158 && runNo<120830) period = 1;
     if(runNo>122373 && runNo<126438) period = 2;
