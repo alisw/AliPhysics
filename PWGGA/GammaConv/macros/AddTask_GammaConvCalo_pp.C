@@ -118,7 +118,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	if (trainConfig==101) {numberOfCuts = 1;}
-	if (trainConfig==8 || trainConfig==10 || trainConfig==13 || trainConfig==108) {numberOfCuts = 4;}
+	if (trainConfig==8 || trainConfig==10 || trainConfig==13 || trainConfig==108 || trainConfig == 15|| trainConfig == 16) {numberOfCuts = 4;}
 	if (trainConfig==2 || trainConfig==3 || trainConfig==5 || trainConfig==6 || trainConfig==7 || trainConfig==14 || trainConfig==102 || trainConfig==103 || trainConfig==105 || trainConfig==106 || trainConfig==107) {numberOfCuts = 5;}
 	if (trainConfig==4 || trainConfig==11 || trainConfig==31 || trainConfig==32 || trainConfig==104) {numberOfCuts = 6;}
 
@@ -209,6 +209,17 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "00200009315600008250400000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "0163103100000000"; // dEdx pi: 0: 0.3-2, -10: 2. ->
 		eventCutArray[ 3] = "0000311"; photonCutArray[ 3] = "00200009367400008250400000"; clusterCutArray[3] = "10000053032230000"; mesonCutArray[3] = "0163103100000000"; // dEdx pi: 2: 0.4-3, 0.5: 3. ->
 		eventCutArray[ 4] = "0000311"; photonCutArray[ 4] = "00200009347400008250400000"; clusterCutArray[4] = "10000053032230000"; mesonCutArray[4] = "0163103100000000"; // dEdx pi: 3: 0.4-3, 1: 3. ->
+	} else if (trainConfig == 15){ // PCM variations to close V0s	
+        eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // dEdx pi: 1: 0.4-2, -10: 2. ->
+		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "00200009327000008250401000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "0163103100000000"; // dEdx pi: 1: 0.4-3, -10: 3. ->
+		eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "00200009327000008250402000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "0163103100000000"; // dEdx pi: 0: 0.3-2, -10: 2. ->
+		eventCutArray[ 3] = "0000311"; photonCutArray[ 3] = "00200009327000008250403000"; clusterCutArray[3] = "10000053032230000"; mesonCutArray[3] = "0163103100000000"; // dEdx pi: 2: 0.4-3, 0.5: 3. ->
+	} else if (trainConfig == 16){ // PCM variations to close V0s
+        eventCutArray[ 0] = "0000312"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // dEdx pi: 1: 0.4-2, -10: 2. ->
+		eventCutArray[ 1] = "0000312"; photonCutArray[ 1] = "00200009327000008250401000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "0163103100000000"; // dEdx pi: 1: 0.4-3, -10: 3. ->
+		eventCutArray[ 2] = "0000312"; photonCutArray[ 2] = "00200009327000008250402000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "0163103100000000"; // dEdx pi: 0: 0.3-2, -10: 2. ->
+		eventCutArray[ 3] = "0000312"; photonCutArray[ 3] = "00200009327000008250403000"; clusterCutArray[3] = "10000053032230000"; mesonCutArray[3] = "0163103100000000"; // dEdx pi: 2: 0.4-3, 0.5: 3. ->
+		
 		
 	// ************************************* PHOS cuts ****************************************************
 	// LHC11a	
