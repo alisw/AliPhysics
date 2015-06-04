@@ -31,6 +31,7 @@ set(SRCS
     AliAnalysisTaskEMCALClusterize.cxx
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
+    AliAnalysisTaskEMCALTimeCalib.cxx
    )
 
 # Headers from sources
