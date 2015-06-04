@@ -196,6 +196,10 @@ int AliHLTZMQsource::GetEvent( const AliHLTComponentEventData& /*evtData*/,
     }
 
     if (blockSize <= 0) continue; //empty data, dont push back
+
+    char printable[kAliHLTComponentDataTypeTopicSize+1]; printable[kAliHLTComponentDataTypeTopicSize]=0;
+    memcpy(printable, blockTopic, kAliHLTComponentDataTypeTopicSize);
+    HLTMessage(Form("pushing back %s\n", printable));
     
     AliHLTComponentBlockData blockHeader; FillBlockData(blockHeader);
     blockHeader.fPtr      = outputBuffer;
