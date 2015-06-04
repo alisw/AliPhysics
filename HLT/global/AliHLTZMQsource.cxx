@@ -41,6 +41,7 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fZMQsocketType(ZMQ_PUB)
   , fZMQconnectMode("connect")
   , fZMQendpoint("tcp://localhost:60201")
+  , fSubscription("")
 {
 }
 
@@ -108,6 +109,9 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   HLTMessage(Form("socket create rc %i errno %i\n",rc,errno));
 
   //set socket options
+  //default subscription to all
+  rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, 0, 0);
+  
   int lingerValue = 10;
   rc = zmq_setsockopt(fZMQin, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
   HLTMessage(Form("setopt ZMQ_LINGER=%i rc=%i errno=%i\n", lingerValue, rc, errno));
@@ -231,6 +235,12 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
   if (option.Contains("ZMQendpoint"))
   {
     fZMQendpoint = value;
+  }
+
+  if (option.Contains("subscription"))
+  {
+    fSubscription = value;
+    zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fSubscription.Data(), fSubscription.Length());
   }
 
   return 1; 
