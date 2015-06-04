@@ -323,7 +323,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 		fHistExtQA=new TList();
 		fHistExtQA->SetOwner(kTRUE);
 		if(name=="")fHistExtQA->SetName(Form("CaloExtQA_%s",GetCutNumber().Data()));
-		else fHistExtQA->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
+		else fHistExtQA->SetName(Form("%s_ExtQA_%s",name.Data(),GetCutNumber().Data()));
 	}
 
 	// IsPhotonSelected
