@@ -59,6 +59,7 @@
 #pragma link C++ class AliAnalysisTaskB2AOD+;
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
+#pragma link C++ class AliAnalysisMCNuclMult+;
 
 #pragma link C++ class AliAnalysisDeuteronpA+;
 

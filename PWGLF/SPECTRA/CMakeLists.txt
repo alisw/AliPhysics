@@ -85,6 +85,7 @@ set(SRCS
   Nuclei/B2/AliAnalysisTaskB2AOD.cxx
   Nuclei/masses/AliAnalysisNucleiMass.cxx
   Nuclei/masses/AliAnalysisNuclMult.cxx
+  Nuclei/masses/AliAnalysisMCNuclMult.cxx
   Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
   XtAnalysis/AliXtAnalysis.cxx
   XtAnalysis/AliJXtHistos.cxx
