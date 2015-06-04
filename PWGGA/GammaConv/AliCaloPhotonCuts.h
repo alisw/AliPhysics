@@ -99,6 +99,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		void 			InitCutHistograms(TString name="");
 		void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);} return;}
 		TList*			GetCutHistograms()												{return fHistograms;}
+		TList*			GetExtQAHistograms()											{return fHistExtQA;}
 		void 			FillClusterCutIndex(Int_t photoncut)							{if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
 
 		void 			SetExtendedMatchAndQA(Int_t extendedMatchAndQA)					{fExtendedMatchAndQA = extendedMatchAndQA; return;}
@@ -131,7 +132,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			SetNLM(Int_t);
 		
 	protected:
-        TList       *fHistograms;
+		TList			*fHistograms;
+		TList			*fHistExtQA;
 
 		AliEMCALGeometry	*geomEMCAL;					// pointer to EMCAL geometry
 		AliPHOSGeometry		*geomPHOS;					// pointer to PHOS geometry

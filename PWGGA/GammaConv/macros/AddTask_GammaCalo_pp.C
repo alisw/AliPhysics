@@ -312,6 +312,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
     task->SetDoTHnSparse(isUsingTHnSparse);
+	if(enableExtQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
