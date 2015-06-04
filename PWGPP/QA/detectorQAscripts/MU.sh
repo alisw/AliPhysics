@@ -24,10 +24,10 @@ WriteMuonConfig()
     mkdir "$cfgDir"
   fi
 
-  if [ "$period" = "LHC15d" ]; then
+  if [[ "$period" =~ ^LHC15[a-z]$ ]]; then
     echo "MUenablePhysSel=0" >> $cfgFilename
-  elif [ "$period" = "LHC15e" ]; then
-    echo "MUenablePhysSel=0" >> $cfgFilename
+  fi
+  if [ "$period" = "LHC15e" ]; then
     echo "MUcheckTrigScalers=0" >> $cfgFilename
   fi
 }
