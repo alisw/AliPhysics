@@ -565,15 +565,17 @@ Float_t AliTRDrecoTask::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin,
 }
 
 //________________________________________________________
-void AliTRDrecoTask::SetRangeZ(TH2 *h2, Float_t min, Float_t max, Float_t thr)
+void AliTRDrecoTask::SetRangeZ(TH2 *h2, Float_t min, Float_t max, Float_t thr, Float_t scale)
 {
-// Set range on Z axis such to avoid outliers
+// Set range on Z axis such to avoid outliers. Optionally a scale factor can be applied 
 
   Float_t c(0.), dz(1.e-3*(max-min));
   for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
     for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
-      if((c = h2->GetBinContent(ix, iy))<thr) continue;
+      c = h2->GetBinContent(ix, iy)*scale;
+      if(c<thr) continue;
       if(c<=min) h2->SetBinContent(ix, iy, min+dz);
+      else h2->SetBinContent(ix, iy, c);
     }
   }
   h2->GetZaxis()->SetRangeUser(min, max);
@@ -728,7 +730,9 @@ void AliTRDrecoTask::AliTRDrecoProjection::Increment(Int_t bin[], Double_t v)
 // increment bin with value "v" pointed by general coord in "bin"
   if(!fH) return;
   AliDebug(4, Form("  %s[%2d]", fH->GetName(), Int_t(v)));
-  fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
+  //fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
+  TAxis *ax(fH->GetXaxis()),  *ay(fH->GetYaxis()),  *az(fH->GetZaxis());
+  fH->Fill(ax->GetBinCenter(bin[fAx[0]]), ay->GetBinCenter(bin[fAx[1]]), az->GetBinCenter(bin[fAx[2]]), v);
 }
 
 //________________________________________________________
@@ -860,7 +864,7 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
       h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin);
       Int_t ne((Int_t)h->Integral());
       //printf("  x[%2d %2d] y[%2d %2d] ne[%4d]\n", ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin, ne);
-      if(ne<nstat/2){
+      if(ne<nstat/4){
         h2->SetBinContent(ix+1, iy+1, -999);
         h2->SetBinError(ix+1, iy+1, 1.);
         n++;
