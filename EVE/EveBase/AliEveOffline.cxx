@@ -217,11 +217,10 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C", "muon_digits", "", kFALSE));
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", kTRUE));
         exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
-        
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
-        
     }
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
+    
     
     //==============================================================================
     // Additional GUI components
@@ -286,7 +285,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     man->GotoEvent(0);
     
     gEve->EditElement(g_trkcnt);
-    gEve->Redraw3D(kTRUE);
+    gEve->Redraw3D();
     
     //move multiview to the front
     browser->GetTabRight()->SetTab(1);

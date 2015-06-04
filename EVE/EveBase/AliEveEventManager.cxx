@@ -1596,7 +1596,6 @@ void AliEveEventManager::AfterNewEventLoaded()
      */
     //
     
-    
     if(HasESD())
     {
         if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
@@ -1617,13 +1616,13 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         AliEveMultiView *mv = AliEveMultiView::Instance();
         
-        mv->DestroyEventRPhi();
+//        mv->DestroyEventRPhi();
         if (fCenterProjectionsAtPrimaryVertex){
             mv->SetCenterRPhi(x[0], x[1], x[2]);
         }
         mv->ImportEventRPhi(top);
         
-        mv->DestroyEventRhoZ();
+//        mv->DestroyEventRhoZ();
         if (fCenterProjectionsAtPrimaryVertex){
             mv->SetCenterRhoZ(x[0], x[1], x[2]);
         }
