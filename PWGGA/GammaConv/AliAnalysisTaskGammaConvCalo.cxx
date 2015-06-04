@@ -3708,11 +3708,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
 		AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
 		if (gamma0->IsTrueConvertedPhoton()){
-			UInt_t gamma0MotherLabel = -1;
-			UInt_t gamma0MCLabel = gamma0->GetMCParticleLabel(fMCStack);
-			if(gamma0MCLabel != -1){ 
+			Int_t gamma0MotherLabel = -1;
+			Int_t gamma0MCLabel = gamma0->GetMCParticleLabel(fMCStack);
+			if(gamma0MCLabel > -1){
 				TParticle * gammaMC0 = (TParticle*)fMCStack->Particle(gamma0MCLabel);
-				gamma0MotherLabel=gammaMC0->GetFirstMother();
+				gamma0MotherLabel = gammaMC0->GetFirstMother();
 				if (gamma0MotherLabel>-1){
 					if(((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 111){
 						if (!CheckVectorForDoubleCount(fVectorRecTruePi0s,gamma0MotherLabel)){
@@ -3777,7 +3777,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
 			if (gamma0->IsTrueConvertedPhoton()){
 				gamma0MCLabel = positiveMC->GetMother();
 				AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
-				gamma0MotherLabel=gammaMC0->GetMother();
+				gamma0MotherLabel = gammaMC0->GetMother();
 
 				if (gamma0MotherLabel>-1){
 					if(((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 111){
