@@ -5,7 +5,7 @@
 // run in the current directory:
 // alieve mf_fix.C visscan_local.C'(".", kTRUE)'
 
-void visscan_local(const TString& path = ".", Bool_t showHLTESDTree=kFALSE, Bool_t showMuon = kTRUE, Bool_t showTrd = kFALSE, const char *pathToCDB="$ALICE_ROOT/OCDB")
+void visscan_local(const TString& path = ".", Bool_t showHLTESDTree=kFALSE, Bool_t showMuon = kTRUE, Bool_t showTrd = kFALSE, const char *pathToCDB="$ALICE_ROOT/../src/OCDB")
 {
 
   gROOT->ProcessLine(TString::Format(".x visscan_init.C(\"local://%s\", \"%s\", %d, %d, %d)",

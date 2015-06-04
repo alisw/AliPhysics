@@ -18,6 +18,7 @@ public:
     ~AliEveOfflineEventManager();
 private:
     
+   ClassDef(AliEveOfflineEventManager, 0);
 };
 
 

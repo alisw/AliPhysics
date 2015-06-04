@@ -110,7 +110,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     // Geometry, scenes, projections and viewers
     //==============================================================================
     
-    AliEveMultiView *mv = new AliEveMultiView;
+    AliEveMultiView *mv = new AliEveMultiView(kTRUE);
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
 
     mv->SetDepth(-10);
@@ -118,7 +118,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     mv->InitGeomGentle(geomGentle->GetGeomGentle(),
                               geomGentle->GetGeomGentleRphi(),
                               geomGentle->GetGeomGentleRhoz(),
-                              NULL);
+                              geomGentle->GetGeomGentleRhoz());
     
     mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD(colorTRD));
     mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kFALSE, kTRUE);
