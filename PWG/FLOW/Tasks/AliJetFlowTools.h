@@ -250,6 +250,8 @@ class AliJetFlowTools {
                 TH1D* dptIn,            // in plane delta pt distribution
                 TH1D* dptOut,           // out of plane delta pt distribution
                 Int_t eventCount = 0);  // event count (optional)
+        TH1*            GetUnfoldedSpectrumIn() const   {return fUnfoldedSpectrumIn;}
+        TH1*            GetUnfoldedSpectrumOut() const  {return fUnfoldedSpectrumOut;}
         // static const helper functions, mainly histogram manipulation
         static void     RemoveSign(Double_t& d)         {d = TMath::Abs(d);}
         static TH1D*    ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix = "");
@@ -563,6 +565,8 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TH2D*                   fFullResponseOut;       // full response matrix, out of plane
         Float_t                 fPivot;                 // pivot of step-function
         Bool_t                  fSubdueError;           // no error > pivot
+        TH1*                    fUnfoldedSpectrumIn;    // unfolded spectrum in plane
+        TH1*                    fUnfoldedSpectrumOut;   // unfolded spectrum out of plane
 
         static TArrayD*         gV2;                    // internal use only, do not touch these
         static TArrayD*         gStat;                  // internal use only, do not touch these
