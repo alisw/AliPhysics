@@ -384,7 +384,7 @@ if(!fOnlyZEM){
     boxpar[2] = 124.4/2.;
     printf("  AliZDCv4 -> C side injection collimator (TCLIA) jaws: apertures +%1.2f/-%1.2f center %1.2f [cm]\n", 
     	fVCollSideCAperture, fVCollSideCApertureNeg,fVCollSideCCentreY);
-    TVirtualMC::GetMC()->Gsvolu("QCVC" , "BOX ", idtmed[15], boxpar, 3); 
+    TVirtualMC::GetMC()->Gsvolu("QCVC" , "BOX ", idtmed[14], boxpar, 3); 
     TVirtualMC::GetMC()->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollSideCAperture+fVCollSideCCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
     TVirtualMC::GetMC()->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollSideCApertureNeg+fVCollSideCCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
   }
@@ -1951,11 +1951,10 @@ void AliZDCv4::CreateMaterials()
   //
   // Create Materials for the Zero Degree Calorimeter
   //
-  Float_t dens=0., ubuf[1]={0.};
+  Float_t ubuf[1]={0.};
   Float_t wmat[3]={0.,0,0}, a[3]={0.,0,0}, z[3]={0.,0,0};
 
   // --- W alloy -> ZN passive material
-  dens = 17.6;
   a[0] = 183.85;
   a[1] = 55.85;
   a[2] = 58.71;
@@ -1965,27 +1964,25 @@ void AliZDCv4::CreateMaterials()
   wmat[0] = .93;
   wmat[1] = .03;
   wmat[2] = .04;
-  AliMixture(1, "WALL", a, z, dens, 3, wmat);
+  AliMixture(1, "WALL", a, z, 17.6, 3, wmat);
 
   // --- Brass (CuZn)  -> ZP passive material
-  dens = 8.48;
   a[0] = 63.546;
   a[1] = 65.39;
   z[0] = 29.;
   z[1] = 30.;
   wmat[0] = .63;
   wmat[1] = .37;
-  AliMixture(2, "BRASS", a, z, dens, 2, wmat);
+  AliMixture(2, "BRASS", a, z, 8.48, 2, wmat);
   
   // --- SiO2 
-  dens = 2.64;
   a[0] = 28.086;
   a[1] = 15.9994;
   z[0] = 14.;
   z[1] = 8.;
   wmat[0] = 1.;
   wmat[1] = 2.;
-  AliMixture(3, "SIO2", a, z, dens, -2, wmat);  
+  AliMixture(3, "SIO2", a, z, 2.64, -2, wmat);  
   
   // --- Lead 
   ubuf[0] = 1.12;
@@ -1993,14 +1990,12 @@ void AliZDCv4::CreateMaterials()
 
   // --- Copper (energy loss taken into account)
   ubuf[0] = 1.10;
-  AliMaterial(6, "COPP0", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
+  AliMaterial(6, "COPP0", 63.54, 29., 8.96, 1.43, 0., ubuf, 1);
 
   // --- Copper 
-  ubuf[0] = 1.10;
-  AliMaterial(9, "COPP1", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
+  AliMaterial(9, "COPP1", 63.54, 29., 8.96, 1.43, 0., ubuf, 1);
   
   // --- Iron (energy loss taken into account)
-  ubuf[0] = 1.1;
   AliMaterial(7, "IRON0", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // --- Iron (no energy loss)
@@ -2031,8 +2026,11 @@ void AliZDCv4::CreateMaterials()
   //
   AliMixture(12, "Air    $", aAir, zAir, dAir, 4, wAir);
   
+  // --- Aluminum 
+  AliMaterial(14, "ALUM", 26.98, 13., 2.7, 8.9, 0., ubuf, 1);
+  
   // --- Carbon 
-  AliMaterial(15, "GRAP", 12.011, 6., 2.2, 18.8, 0., ubuf, 1);
+  AliMaterial(15, "GRAPH", 12.011, 6., 2.265, 18.8, 49.9);
   
   // ---  Definition of tracking media: 
   
@@ -2078,9 +2076,8 @@ void AliZDCv4::CreateMaterials()
   AliMedium(10,"ZVOID",10, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(11,"ZVOIM",11, isvol, 	ifield, fieldm,   tmaxfdv,stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(13,"ZTANT",13, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(14,"ZIRONT",7, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(15,"ZGRAP",15, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(13,"ZALUM",13, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(14,"ZGRAPH",14,isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
 
 } 
 
@@ -2134,7 +2131,7 @@ void AliZDCv4::Init()
   fMedSensPI     = idtmed[7];  // Sensitive volume: beam pipes
   fMedSensLumi   = idtmed[9];  // Sensitive volume: luminometer
   fMedSensGR     = idtmed[12]; // Sensitive volume: air into the grooves
-  fMedSensVColl  = idtmed[13]; // Sensitive volume: collimator jaws
+  fMedSensVColl  = idtmed[14]; // Sensitive volume: collimator vertical jaws
 }
 
 //_____________________________________________________________________________
