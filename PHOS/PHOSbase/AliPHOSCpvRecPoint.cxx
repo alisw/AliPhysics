@@ -294,18 +294,18 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 & /*vtx *
       z    += zi * w ;
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
 
   if (wtot != 0) {
     x /= wtot ;
     z /= wtot ;
   } else {
-    x = -1e6 ;
-    z = -1e6 ;
-    if (fMulDigit != 0) 
-      AliWarning(Form("Too low log weight factor to evaluate cluster's center" )) ;
+    x = 999 ;
+    z = 999 ;
+//    if (fMulDigit != 0) 
+//      AliWarning(Form("Too low log weight factor to evaluate cluster's center" )) ;
   }
   fLocPos.SetX(x)  ;
   fLocPos.SetY(0.) ;

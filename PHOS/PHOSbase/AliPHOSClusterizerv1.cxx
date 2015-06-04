@@ -547,8 +547,16 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   SetDistancesToBadChannels();
 
   //Now the same for CPV
+  Float_t cpvMinE= AliPHOSReconstructor::GetRecoParam()->GetCPVMinE(); //Minimal digit energy
   for(index = 0; index < fCPVRecPoints->GetEntries(); index++){
     AliPHOSCpvRecPoint * rp = static_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) );
+    rp->Purify(cpvMinE,fDigitsArr) ;
+    if(rp->GetMultiplicity()==0){
+      fCPVRecPoints->RemoveAt(index) ;
+      delete rp ;
+      continue;
+    } 
+    
     rp->EvalAll(fDigitsArr) ;
     rp->EvalAll(fW0CPV,fakeVtx,fDigitsArr) ;
     rp->EvalLocal2TrackingCSTransform();
@@ -734,8 +742,9 @@ void AliPHOSClusterizerv1::MakeUnfolding()
       AliPHOSDigit ** maxAt = new AliPHOSDigit*[nMultipl] ;
       Float_t * maxAtEnergy = new Float_t[nMultipl] ;
       Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fCpvLocMaxCut,fDigitsArr) ;
-      
-      if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0       
+
+      //Number of points to fit should be larger than number of parameters
+      if( nMax > 1 && emcRecPoint->GetMultiplicity()>3*nMax ) {  // if cluster is very flat (no pronounced maximum) then nMax = 0       
         UnfoldCluster(emcRecPoint, nMax, maxAt, maxAtEnergy) ;
         fCPVRecPoints->Remove(emcRecPoint); 
         fCPVRecPoints->Compress() ;

@@ -416,15 +416,15 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
       z    += zi * w ;
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   if (wtot>0) {
     x /= wtot ;
     z /= wtot ;
   }
-  else
-    AliError(Form("Wrong weight %f\n", wtot));
+//  else
+//    AliError(Form("Wrong weight %f\n", wtot));
 
 
 // Calculates the dispersion in coordinates 
@@ -441,16 +441,16 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
       d += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
       wtot+=w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   
 
   if (wtot>0) {
     d /= wtot ;
   }
-  else
-    AliError(Form("Wrong weight %f\n", wtot));
+//  else
+//    AliError(Form("Wrong weight %f\n", wtot));
 
   fDispersion = 0;
   if (d>=0)
@@ -491,15 +491,15 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, Float_t coreRadius, T
       z    += zi * w ;
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   if (wtot>0) {
     x /= wtot ;
     z /= wtot ;
   }
-  else
-    AliError(Form("Wrong weight %f\n", wtot));
+//  else
+//    AliError(Form("Wrong weight %f\n", wtot));
 
 
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
@@ -552,8 +552,8 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits,
       dxz  += w * xi * zi ; 
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   if (wtot>0) {
     dxx /= wtot ;
@@ -590,7 +590,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits,
       fLambda[1]= 0. ;
   }
   else {
-    AliError(Form("Wrong weight %f\n", wtot));
+//    AliError(Form("Wrong weight %f\n", wtot));
     fLambda[0]=fLambda[1]=0.;
   }
 }
@@ -637,8 +637,8 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, T
       dxz  += w * xi * zi ; 
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
     
   }
   if (wtot>0) {
@@ -657,7 +657,7 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, T
     lambda1 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
   }
   else {
-    AliError(Form("Wrong weight %f\n", wtot));
+//    AliError(Form("Wrong weight %f\n", wtot));
     lambda0=lambda1=0.;
   }
 
@@ -708,8 +708,8 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, T
       dz4  += w * zi * zi * zi * zi ;
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   if (wtot>0) {
     x   /= wtot ;
@@ -726,8 +726,8 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, T
     dzz -= z * z ;
     dxz -= x * z ;
   }
-  else
-    AliError(Form("Wrong weight %f\n", wtot));
+//  else
+//    AliError(Form("Wrong weight %f\n", wtot));
 
   // 5) Find an angle between cluster center vector and eigen vector e0
 
@@ -856,15 +856,15 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TCl
       z    += zi * w ;
       wtot += w ;
     }
-    else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+//    else
+//      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   if (wtot>0) {
     x /= wtot ;
     z /= wtot ;
   }
-  else
-    AliError(Form("Wrong weight %f\n", wtot));
+//  else
+//    AliError(Form("Wrong weight %f\n", wtot));
 
   // Correction for the depth of the shower starting point (TDR p 127)  
   Float_t para = 0.925 ; 
@@ -878,8 +878,8 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TCl
     depthx = ( para * TMath::Log(fAmp) + parb ) * vInc.X()/TMath::Abs(vInc.Y()) ;
     depthz = ( para * TMath::Log(fAmp) + parb ) * vInc.Z()/TMath::Abs(vInc.Y()) ;
   }
-  else 
-    AliError(Form("Wrong amplitude %f\n", fAmp));
+//  else 
+//    AliError(Form("Wrong amplitude %f\n", fAmp));
 
   fLocPos.SetX(x - depthx)  ;
   fLocPos.SetY(0.) ;

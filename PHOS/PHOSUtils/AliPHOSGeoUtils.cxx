@@ -615,7 +615,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
         //Try half-mod name      
         snprintf(path,255,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1",mod) ;
         if (!gGeoManager->CheckPath(path)){
-          AliWarning(Form("Geo manager can not find path %s \n",path));
+//          AliWarning(Form("Geo manager can not find path %s \n",path));
           return 0;
 	}
       }
@@ -649,7 +649,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
         //Look for half-module path
         snprintf(path,255,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1/PSTR_%d",mod,strip) ;
         if (!gGeoManager->CheckPath(path)){    
-          AliWarning(Form("Geo manager can not find path %s \n",path));
+//          AliWarning(Form("Geo manager can not find path %s \n",path));
           return 0 ;
 	}
       }
@@ -681,7 +681,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
     if (!gGeoManager->CheckPath(path)){
       snprintf(path,255,"/ALIC_1/PHOH_%d/PCPV_1",mod) ;
       if (!gGeoManager->CheckPath(path)){
-        AliWarning(Form("Geo manager can not find path %s \n",path));
+//        AliWarning(Form("Geo manager can not find path %s \n",path));
         return 0 ;
       }
     }
@@ -714,7 +714,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
       if (!gGeoManager->CheckPath(path)){ //1/2 module
         snprintf(path,255,"/ALIC_1/PHOH_%d",mod) ;
         if (!gGeoManager->CheckPath(path)){
-          AliWarning(Form("Geo manager can not find path %s \n",path));
+//          AliWarning(Form("Geo manager can not find path %s \n",path));
           return 0 ;
 	}
       }

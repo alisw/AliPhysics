@@ -336,26 +336,27 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   lxyz[1] = lxyz[1] - dy;
 
   const TGeoHMatrix* tr2loc = GetTracking2LocalMatrix();
-  if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found for VolumeID=%d",GetVolumeId()));
+  if(!tr2loc) AliError(Form("No Tracking2LocalMatrix found for VolumeID=%d",GetVolumeId()));
 
-  tr2loc->MasterToLocal(lxyz,txyz);
-  SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);
+  if(tr2loc){
+    tr2loc->MasterToLocal(lxyz,txyz);
+    SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);
 
-  if(AliLog::GetGlobalDebugLevel()>0) {
-    TVector3 gpos; TMatrixF gmat;
-    GetGlobalPosition(gpos,gmat);
-    Float_t gxyz[3];
-    GetGlobalXYZ(gxyz);
-    TString emc;
-    if(IsEmc()) 
-      emc="EMC";
-    else
-      emc="CPV";
-    AliInfo(Form("lCS-->(%.3f,%.3f,%.3f), tCS-->(%.3f,%.3f,%.3f), gCS-->(%.3f,%.3f,%.3f),  gCScalc-->(%.3f,%.3f,%.3f), module %d %s",
+    if(AliLog::GetGlobalDebugLevel()>0) {
+      TVector3 gpos; TMatrixF gmat;
+      GetGlobalPosition(gpos,gmat);
+      Float_t gxyz[3];
+      GetGlobalXYZ(gxyz);
+      TString emc;
+      if(IsEmc()) 
+        emc="EMC";
+      else
+        emc="CPV";
+      AliInfo(Form("lCS-->(%.3f,%.3f,%.3f), tCS-->(%.3f,%.3f,%.3f), gCS-->(%.3f,%.3f,%.3f),  gCScalc-->(%.3f,%.3f,%.3f), module %d %s",
 		 fLocPos.X(),fLocPos.Y(),fLocPos.Z(),
 		 GetX(),GetY(),GetZ(),
 		 gpos.X(),gpos.Y(),gpos.Z(),
 		 gxyz[0],gxyz[1],gxyz[2],GetPHOSMod(),emc.Data()));
+    }
   }
-
 }
