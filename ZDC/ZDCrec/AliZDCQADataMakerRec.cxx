@@ -200,7 +200,7 @@ void AliZDCQADataMakerRec::InitRaws()
 //  hRawTDCs->SetMaximum(-300); hRawTDCs->SetMinimum(-340);
   Add2RawsList(hRawTDCs, 23, !expert, image);
   
-  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 120,-30.,30.,120,-100.,-40.);
+  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 240,-60.,60.,240,-60.,-60.);
   Add2RawsList(hTimeZDC, 24, !expert, image);
   
   TH2F *hZNCrawCentr  = new TH2F("hZNCrawCentr", "ZNC centroid;X (cm);Y(cm)", 100,-3.5,3.5,100,-3.5,3.5);
@@ -901,15 +901,15 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
 	}
 	else{
-	 h25->SetMarkerColor(kPink-2); 
-	 h26->SetMarkerColor(kAzure-2);
+	 //h25->SetMarkerColor(kPink-2); 
+	 //h26->SetMarkerColor(kAzure-2);
 	}
 	if(!h24) {
 	 AliWarning("AliZDCQADataMakerRec -> RAW debunching histo not found!"); 
 	 AliWarning(Form("for specie %s and trigger class %s",
 			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
 	}
-	else h24->SetMarkerColor(kAzure);
+	//else h24->SetMarkerColor(kAzure);
       }
     } // loop over t
   } //  loop over species

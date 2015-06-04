@@ -95,6 +95,8 @@ public:
   
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent *esd) const;
   
+  int    GetChannelSignal(int det, int quad, Bool_t intime=kTRUE) const;
+  
   // parameter settings for reconstruction
   void SetRecoMode(Int_t recoMode, Float_t beamEnergy) 
        {fRecoMode=recoMode; fBeamEnergy=beamEnergy;}
@@ -127,12 +129,12 @@ private:
   AliZDCReconstructor& operator =(const AliZDCReconstructor&); //Not implemented
 
   void   ReconstructEventpp(TTree *clustersTree, 
-	 Float_t corrADC[24][2], Int_t signalCodeADC[48], Int_t signalCodeTDC[7], Bool_t isScalerOn, UInt_t* scaler, 
+	 Float_t corrADC[24][2], Int_t signalCodeADC[24], Int_t signalCodeTDC[7], Bool_t isScalerOn, UInt_t* scaler, 
 	 Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	 const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const;
 	 
   void   ReconstructEventPbPb(TTree *clustersTree, 
-	 Float_t corrADC[24][2], Int_t signalCodeADC[48], Int_t signalCodeTDC[7], Bool_t isScalerOn, UInt_t* scaler, 
+	 Float_t corrADC[24][2], Int_t signalCodeADC[24], Int_t signalCodeTDC[7], Bool_t isScalerOn, UInt_t* scaler, 
 	 Int_t tdcData[32][4], const Int_t* const evQualityBlock, 
 	 const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const;
 

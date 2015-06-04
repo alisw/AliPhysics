@@ -240,7 +240,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   for(Int_t iDigit=0; iDigit<digNentries; iDigit++){
      digitsTree->GetEntry(iDigit);
      if(pdigit){       
-       // first kNch channels are in-time ADC valkues
+       // first kNch channels are in-time ADC values
        if(iDigit<kNch){
   	  for(int igain=0; igain<=1; igain++) adcInTime[iDigit][igain] = digit.GetADCValue(igain);
        }
@@ -253,85 +253,11 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
        int det = digit.GetSector(0);
        int quad = digit.GetSector(1);
        if(iDigit<kNch){  // first Nch digits are for in time signals
-          if(quad!=5){ // No ref. PMT
-             if(det==1){
-               if(quad==0) signalCode[iDigit] = kZNCC;
-               else if(quad==1) signalCode[iDigit] = kZNC1;
-               else if(quad==2) signalCode[iDigit] = kZNC2;
-               else if(quad==3) signalCode[iDigit] = kZNC3;
-               else if(quad==4) signalCode[iDigit] = kZNC4;
-             }
-             else if(det==2){
-               if(quad==0) signalCode[iDigit] = kZPCC;
-               else if(quad==1) signalCode[iDigit] = kZPC1;
-               else if(quad==2) signalCode[iDigit] = kZPC2;
-               else if(quad==3) signalCode[iDigit] = kZPC3;
-               else if(quad==4) signalCode[iDigit] = kZPC4;
-             }
-             else if(det==3){
-               if(quad==1) signalCode[iDigit] = kZEM1;
-               else if(quad==2) signalCode[iDigit] = kZEM2;
-             }
-             else if(det==4){
-               if(quad==0) signalCode[iDigit] = kZNAC;
-               else if(quad==1) signalCode[iDigit] = kZNA1;
-               else if(quad==2) signalCode[iDigit] = kZNA2;
-               else if(quad==3) signalCode[iDigit] = kZNA3;
-               else if(quad==4) signalCode[iDigit] = kZNA4;
-             }
-             else if(det==5){
-               if(quad==0) signalCode[iDigit] = kZPAC;
-               else if(quad==1) signalCode[iDigit] = kZPA1;
-               else if(quad==2) signalCode[iDigit] = kZPA2;
-               else if(quad==3) signalCode[iDigit] = kZPA3;
-               else if(quad==4) signalCode[iDigit] = kZPA4;
-             }
-          }
-          else{ // Ref. PMT
-            if(quad==1) signalCode[iDigit] = kZDCCMon;
-            else if(quad==4)  signalCode[iDigit] = kZDCAMon;
-          }
-       }
+         signalCode[iDigit] = GetChannelSignal(det, quad, kTRUE);
+       } 
        if(testPedSubBit){
 	 if(iDigit>=kNch && iDigit<2*kNch){  // 2nd Nch digits are for out of time signals
-	    if(quad!=5){ // No ref. PMT
-	       if(det==1){
-	    	 if(quad==0) signalCode[iDigit+kNch] = kZNCCoot;
-	    	 else if(quad==1) signalCode[iDigit+kNch] = kZNC1oot;
-	    	 else if(quad==2) signalCode[iDigit+kNch] = kZNC2oot;
-	    	 else if(quad==3) signalCode[iDigit+kNch] = kZNC3oot;
-	    	 else if(quad==4) signalCode[iDigit+kNch] = kZNC4oot;
-	       }
-	       else if(det==2){
-	    	 if(quad==0) signalCode[iDigit+kNch] = kZPCCoot;
-	    	 else if(quad==1) signalCode[iDigit+kNch] = kZPC1oot;
-	    	 else if(quad==2) signalCode[iDigit+kNch] = kZPC2oot;
-	    	 else if(quad==3) signalCode[iDigit+kNch] = kZPC3oot;
-	    	 else if(quad==4) signalCode[iDigit+kNch] = kZPC4oot;
-	       }
-	       else if(det==3){
-	    	 if(quad==1) signalCode[iDigit+kNch] = kZEM1oot;
-	    	 else if(quad==2) signalCode[iDigit+kNch] = kZEM2oot;
-	       }
-	       else if(det==4){
-	    	 if(quad==0) signalCode[iDigit] = kZNACoot;
-	    	 else if(quad==1) signalCode[iDigit] = kZNA1oot;
-	    	 else if(quad==2) signalCode[iDigit] = kZNA2oot;
-	    	 else if(quad==3) signalCode[iDigit] = kZNA3oot;
-	    	 else if(quad==4) signalCode[iDigit] = kZNA4oot;
-	       }
-	       else if(det==5){
-	    	 if(quad==0) signalCode[iDigit+kNch] = kZPACoot;
-	    	 else if(quad==1) signalCode[iDigit+kNch] = kZPA1oot;
-	    	 else if(quad==2) signalCode[iDigit+kNch] = kZPA2oot;
-	    	 else if(quad==3) signalCode[iDigit+kNch] = kZPA3oot;
-	    	 else if(quad==4) signalCode[iDigit+kNch] = kZPA4oot;
-	       }
-	    }
-	    else{
-	      if(quad==1) signalCode[iDigit+kNch] = kZDCCMon;
-	      else if(quad==4)  signalCode[iDigit+kNch] = kZDCAMon;
-	    }
+            signalCode[iDigit] = GetChannelSignal(det, quad, kFALSE);
 	  }
       } // if(testPedSubBit)
     }
@@ -403,11 +329,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 //printf("   pedSubMode from OCDB object (test bit) %d \n", testPedSubBit);
   
   // Reading mapping from OCDB 
-  //
-  Int_t adcSignalCode[2*kNch] = {0};
-  for(int i=0; i<2*kNch; i++) adcSignalCode[i] = fMapping->GetADCSignalCode(i);
   //fMapping->Print("");
-  //for(int i=0; i<2*kNch; i++) printf(" ADC ch.%d adcSignalCode %d\n",i, adcSignalCode[i]);
   //
   Int_t tdcSignalCode[32] = {0};
   for(int i=0; i<32; i++) tdcSignalCode[i] = fMapping->GetTDCSignalCode(i);
@@ -431,7 +353,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   int adcInTime[kNch][2], adcOutOfTime[kNch][2];
   float adcCorr[kNch][2];
   for(int ich=0; ich<kNch; ich++){
-    for(int ig=0; ig<=1; ig++) adcInTime[ich][ig] = adcOutOfTime[ich][ig] = adcCorr[ich][ig] = -1;
+    for(int ig=0; ig<=1; ig++) adcInTime[ich][ig] = adcOutOfTime[ich][ig] = adcCorr[ich][ig] = 0;
   }
   
   Bool_t chPedSubMode[kNch] = {0,};
@@ -439,6 +361,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     for(int i=0; i<kNch; i++) chPedSubMode[i] = fPedData->GetUseCorrFit(i);
   }
   
+  int adcSignal[kNch]={0};
   int tdcCabling[7]={-1,-1,-1,-1,-1,-1,-1};
 
   
@@ -457,43 +380,41 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     if((rawData.IsADCDataWord()) && (rawData.IsADCEventGood() == kTRUE)) evQualityBlock[0] = kTRUE;
     
     if((rawData.IsADCDataWord()) && (rawData.IsUnderflow()==kFALSE) 
-        && (rawData.IsOverflow()==kFALSE) && (rawData.IsADCEventGood()==kTRUE)){
+        && (rawData.IsOverflow()==kFALSE)){
+        //&& (rawData.IsOverflow()==kFALSE) && (rawData.IsADCEventGood()==kTRUE)){
      
       Int_t adcMod = rawData.GetADCModule();
       Int_t adcCh = rawData.GetADCChannel();
       Int_t det = rawData.GetSector(0);
       Int_t quad = rawData.GetSector(1);
       Int_t gain = rawData.GetADCGain();
-      
-      if(adcMod==0 || adcMod==1){
-         adcInTime[adcCh][gain] = rawData.GetADCValue(); // in time signals
-      
-        //  !!!! NB !!!! The mapping was NOT correctly set in 2013 data !!!!
-        //  Therefore I should set again the cabled signals and NOT read them from OCDB!!!!
-        /*if(quad!=5){
-          if(det==1)	  signalCode[quad]    = 12+quad;
-          else if(det==2) signalCode[quad+5]  = 17+quad;
-          else if(det==3) signalCode[quad+9]  = 21+quad; // giusto 21!!!!
-          else if(det==4) signalCode[quad+12] = 2+quad;
-          else if(det==5) signalCode[quad+17] = 7+quad;
-        }
-        else signalCode[22+(det-1)/3] = (det-1)/3+24;	*/
+      Int_t value = rawData.GetADCValue();
+      //
+      // NB -> index is needed to cpompute which of the 24 signal I want to reconstruct I am dealing with!!!!!!!!!
+      // The order is: ZNC(PMC,1,2,3,4) ZPC(PMC,1,2,3,4) ZEM1 ZEM2 ZNA(PMC,1,2,3,4) ZPA(PMC,1,2,3,4) PMREF1 PMREF2
+      // that MUST correspond to the oredr with which are written the pedestals!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      int index = -1;
+      if(quad!=5){
+        if(det==1)	index = quad;
+        else if(det==2) index = 5+quad;
+        else if(det==3) index = 9+quad; // giusto 9!!!!
+        else if(det==4) index = 12+quad;
+        else if(det==5) index = 17+quad;
       }
-      else if(adcMod==2 || adcMod==3){
-	adcOutOfTime[adcCh][gain] = rawData.GetADCValue(); // out of time signals
-        //  !!!! NB !!!! The mapping was NOT correctly set in 2013 data !!!!
-        //  Therefore I should set again the cabled signals and NOT read them from OCDB!!!!
-        /*if(quad!=5){
-          if(det==1)	  signalCode[kNch+quad]    = 26+quad;
-          else if(det==2) signalCode[kNch+quad+5]  = 31+quad;
-          else if(det==3) signalCode[kNch+quad+9]  = 45+quad; // giusto 45!!!!
-          else if(det==4) signalCode[kNch+quad+12] = 36+quad;
-          else if(det==5) signalCode[kNch+quad+17] = 41+quad;
-        }
-        else signalCode[kNch+22+(det-1)/3] = (det-1)/3+48;  */	
-	
-      }
+      else index = (det-1)/3+22;     
+      //Ch.debug
+      //printf("\t AliZDCReconstructor: ADC mod.%d ch.%d det.%d quad.%d, gain.%d   value %d\n",adcMod, adcCh,det,quad,gain,value);
       
+      if((adcMod==0 || adcMod==1) && index!=-1){
+         adcInTime[index][gain] = value; // in time signals     
+         adcSignal[index] = GetChannelSignal(det, quad, kTRUE);
+         //Ch.debug
+         //printf("   mod.%d ch.%d sigcode %d det.%d  sec.%d  adcInTime[%d][%d] = %d\n\n",adcMod, adcCh, adcSignal[index], det,quad,index, gain, value);
+      }
+      else if((adcMod==2 || adcMod==3) && index!=-1){
+         adcOutOfTime[index][gain] = value; // out of time signals
+      }
+
     }//IsADCDataWord
    }// ADC DATA
    // ***************************** Reading Scaler
@@ -556,26 +477,27 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
      else{
         // Pedestal subtraction from mean value ------------------------------------------------
         for(int igain=0; igain<=1; igain++){
-	   adcCorr[ich][igain] = (float) (adcInTime[ich][igain]-meanPed[ich+igain*kNch]);
+	   adcCorr[ich][igain] = (float) (adcInTime[ich][igain] - meanPed[ich+igain*kNch]);
 	}
       }
   }
-   // Ch. debug
-   //printf("\n  **** AliZDCReconstructor: rec from RAW DATA\n");
-   //for(int ich=0; ich<kNch; ich++) printf(" ch.%d signalcode %d rawADC HR %d subMode %d meanPed %f  corrADC HR %f \n", ich, adcSignalCode[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], adcCorr[ich][0]);
+  
+  // Ch. debug
+  //printf("\n  **** AliZDCReconstructor: rec from RAW DATA\n");
+  //for(int ich=0; ich<kNch; ich++) printf(" ch.%d (code %d) rawADC %d subMode %d meanPed %f pedfromcorr = %f  -> corrADC HR %f \n", ich, adcSignal[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], corrCoeff1[ich]*adcOutOfTime[ich][0]+corrCoeff0[ich], adcCorr[ich][0]);
   
     
   if(fRecoMode==1) // p-p data
-    ReconstructEventpp(clustersTree, adcCorr, adcSignalCode, tdcCabling, isScalerOn, scalerData, tdcData,
+    ReconstructEventpp(clustersTree, adcCorr, adcSignal, tdcCabling, isScalerOn, scalerData, tdcData,
       evQualityBlock, triggerBlock, chBlock, puBits);
   else if(fRecoMode==2) // Pb-Pb data
-      ReconstructEventPbPb(clustersTree, adcCorr, adcSignalCode, tdcCabling, isScalerOn, scalerData,  tdcData,
+      ReconstructEventPbPb(clustersTree, adcCorr, adcSignal, tdcCabling, isScalerOn, scalerData,  tdcData,
       evQualityBlock, triggerBlock, chBlock, puBits);
 }
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, 
-	Float_t adc[24][2], Int_t signalCodeADC[48], Int_t tdcCabling[7], Bool_t isScalerOn, UInt_t* scaler, 
+	Float_t adc[24][2], Int_t signalCodeADC[24], Int_t tdcCabling[7], Bool_t isScalerOn, UInt_t* scaler, 
 	Int_t tdc[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
@@ -669,9 +591,9 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   /*printf("\n*************************************************\n");
   printf(" ReconstructEventpp -> values after pedestal subtraction:\n");
   for(int ich=0; ich<24; ich++) printf(" ch.%d ADC hg %1.2f  lg %1.2f\n", ich, adc[ich][0],adc[ich][1]);
-  printf("*************************************************\n");*/
+  printf("*************************************************\n");
   // CH. debug
-  /*printf("\n*************************************************\n");
+  printf("\n*************************************************\n");
   printf(" ADCZNC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
         corrADCZNC[0],corrADCZNC[1],corrADCZNC[2],corrADCZNC[3],corrADCZNC[4]);
   printf(" ADCZPC [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -741,6 +663,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   // **** Energy calibration coefficient set to 1 
   // **** (no trivial way to calibrate in p-p runs)
   for(Int_t ij=0; ij<6; ij++) calibEne[ij] = fEnCalibData->GetEnCalib(ij);
+  //fEnCalibData->Print("");
   for(Int_t ij=0; ij<4; ij++){
     calibSatZNA[ij] = fSatCalibData->GetZNASatCalib(ij);
     calibSatZNC[ij] = fSatCalibData->GetZNCSatCalib(ij);
@@ -877,7 +800,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, 
-	Float_t adc[24][2], Int_t signalCodeADC[48], Int_t tdcCabling[7], Bool_t isScalerOn, UInt_t* scaler, 
+	Float_t adc[24][2], Int_t signalCodeADC[24], Int_t tdcCabling[7], Bool_t isScalerOn, UInt_t* scaler, 
 	Int_t tdc[32][4], const Int_t* const evQualityBlock, 
 	const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const
 {
@@ -1467,7 +1390,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   Int_t *tdcCabling = reco.GetTDCchCabling();
   //
   // Ch. debug
-  printf("\n  FillZDCintoESD: TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n",  tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  //printf("\n  FillZDCintoESD: TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n",  tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
   Int_t tdcValues[32][4] = {{0,}}; 
   Float_t tdcCorrected[32][4] = {{999.,}};
@@ -1514,7 +1437,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   fESDZDC->AliESDZDC::SetBit(AliESDZDC::kTDCcablingSet, kTRUE);
   fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, kTRUE);
   fESDZDC->AliESDZDC::SetBit(AliESDZDC::kEnergyCalibratedSignal, reco.GetEnergyFlag());
-  fESDZDC->Print("");
+  //fESDZDC->Print("");
   
   if(esd) esd->SetZDCData(fESDZDC);
 }
@@ -1665,4 +1588,90 @@ AliZDCChMap* AliZDCReconstructor::GetMapping() const
 
   }
   return calibdata;
+}
+
+
+//_____________________________________________________________________________
+int AliZDCReconstructor::GetChannelSignal(int det, int quad, Bool_t intime) const
+{
+  if(intime){
+   if(quad!=5){ // No ref. PMT
+      if(det==1){
+   	if(quad==0) return kZNCC;
+   	else if(quad==1) return kZNC1;
+   	else if(quad==2) return kZNC2;
+   	else if(quad==3) return kZNC3;
+   	else if(quad==4) return kZNC4;
+      }
+      else if(det==2){
+   	if(quad==0) return kZPCC;
+   	else if(quad==1) return kZPC1;
+   	else if(quad==2) return kZPC2;
+   	else if(quad==3) return kZPC3;
+   	else if(quad==4) return kZPC4;
+      }
+      else if(det==3){
+   	if(quad==1) return kZEM1;
+   	else if(quad==2) return kZEM2;
+      }
+      else if(det==4){
+   	if(quad==0) return kZNAC;
+   	else if(quad==1) return kZNA1;
+   	else if(quad==2) return kZNA2;
+   	else if(quad==3) return kZNA3;
+   	else if(quad==4) return kZNA4;
+      }
+      else if(det==5){
+   	if(quad==0) return kZPAC;
+   	else if(quad==1) return kZPA1;
+   	else if(quad==2) return kZPA2;
+   	else if(quad==3) return kZPA3;
+   	else if(quad==4) return kZPA4;
+      }
+   }
+   else{ // Ref. PMT
+     if(quad==1) return kZDCCMon;
+     else if(quad==4)  return kZDCAMon;
+   }
+  }
+  else{
+      if(quad!=5){ // No ref. PMT
+         if(det==1){
+           if(quad==0) return kZNCCoot;
+           else if(quad==1) return kZNC1oot;
+           else if(quad==2) return kZNC2oot;
+           else if(quad==3) return kZNC3oot;
+           else if(quad==4) return kZNC4oot;
+         }
+         else if(det==2){
+           if(quad==0) return kZPCCoot;
+           else if(quad==1) return kZPC1oot;
+           else if(quad==2) return kZPC2oot;
+           else if(quad==3) return kZPC3oot;
+           else if(quad==4) return kZPC4oot;
+         }
+         else if(det==3){
+           if(quad==1) return kZEM1oot;
+           else if(quad==2) return kZEM2oot;
+         }
+         else if(det==4){
+           if(quad==0) return kZNACoot;
+           else if(quad==1) return kZNA1oot;
+           else if(quad==2) return kZNA2oot;
+           else if(quad==3) return kZNA3oot;
+           else if(quad==4) return kZNA4oot;
+         }
+         else if(det==5){
+           if(quad==0) return kZPACoot;
+           else if(quad==1) return kZPA1oot;
+           else if(quad==2) return kZPA2oot;
+           else if(quad==3) return kZPA3oot;
+           else if(quad==4) return kZPA4oot;
+         }
+      }
+      else{
+        if(quad==1) return kZDCCMon;
+        else if(quad==4)  return kZDCAMon;
+      }
+    }
 }
