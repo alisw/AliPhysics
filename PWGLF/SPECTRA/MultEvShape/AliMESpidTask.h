@@ -28,7 +28,7 @@ private:
   AliMESpidTask(const AliMESpidTask&);
   AliMESpidTask& operator=(const AliMESpidTask&);
 
-  ClassDef(AliMESpidTask, 1)            // PID task for the Multi Event Shape
+  ClassDef(AliMESpidTask, 2)            // PID task for the Multi Event Shape
 };
 
 #endif
