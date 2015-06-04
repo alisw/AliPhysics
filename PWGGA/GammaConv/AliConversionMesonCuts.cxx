@@ -215,6 +215,23 @@ AliConversionMesonCuts::~AliConversionMesonCuts() {
       fElectronLabelArray = NULL;
    }
 
+   if(fFAlphaCut != NULL){
+	   delete fFAlphaCut;
+	   fFAlphaCut = NULL;
+   }
+   if(fBrem != NULL){
+	   delete fBrem;
+	   fBrem = NULL;
+   }
+   if(fFMinOpanCut != NULL){
+	   delete fFMinOpanCut;
+	   fFMinOpanCut = NULL;
+   }
+   if(fFMaxOpanCut != NULL){
+	   delete fFMaxOpanCut;
+	   fFMaxOpanCut = NULL;
+   }
+
 }
 
 //________________________________________________________________________
