@@ -110,7 +110,7 @@ public:
   Bool_t          GetRefFigure(Int_t ifig);
 
   virtual TObjArray*  Histos(); 
-//  Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
+  Bool_t          LoadResults(const Char_t *file, ETRDresolutionClass c);
 //  Bool_t  LoadCorrection(const Char_t *file=NULL);
   void            MakeSummary();
 
@@ -154,7 +154,7 @@ public:
   static Bool_t   UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
 
   void        AdjustF1(TH1 *h, TF1 *f);
-  TH2*        DrawSigma(TH2 *h2, const Char_t *t, Float_t m=0., Float_t M=-1., Float_t scale=1);
+  TH2*        DrawSigma(TH2 *h2, const Char_t *t, Float_t m=0., Float_t M=-1., Float_t scale=1, Float_t thr=-100);
   void        GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 

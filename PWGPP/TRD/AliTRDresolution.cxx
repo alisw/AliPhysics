@@ -1257,16 +1257,16 @@ void AliTRDresolution::MakeSummary()
   // cluster resolution
   // define palette
   gStyle->SetPalette(1);
-  const Int_t nClViews(9);
-  const Char_t *vClName[nClViews] = {"ClY", "ClYn", "ClYp", "ClQn", "ClQp", "ClYXTCp", "ClYXTCn", "ClYXPh", "ClYXPh"};
-  const UChar_t vClOpt[nClViews] = {1, 1, 1, 0, 0, 0, 0, 0, 1};
+  const Int_t nClViews(10);
+  const Char_t *vClName[nClViews] = {"ClY", "ClY", "ClYn", "ClYp", "ClQn", "ClQp", "ClYXTCp", "ClYXTCn", "ClYXPh", "ClYXPh"};
+  const UChar_t vClOpt[nClViews] = {0, 1, 1, 1, 0, 0, 0, 0, 0, 1};
   const Float_t vClSignMin[2] = {2.6e2, 4.4e2},
                 vClSignMax[2] = {4.4e2, 6.2e2},
-                vClMin[nClViews] = {3.2e2, vClSignMin[Int_t(fBsign)], vClSignMin[Int_t(!fBsign)], 0., 0., 0., 0., 0., 3.2e2},
-                vClMax[nClViews] = {5.e2, vClSignMax[Int_t(fBsign)], vClSignMax[Int_t(!fBsign)], 0., 0., 0., 0., 0., 5.e2};
+                vClMin[nClViews] = {-150., 3.2e2, vClSignMin[Int_t(fBsign)], vClSignMin[Int_t(!fBsign)], 0., 0., 0., 0., 0., 3.2e2},
+                vClMax[nClViews] = {150., 5.e2, vClSignMax[Int_t(fBsign)], vClSignMax[Int_t(!fBsign)], 0., 0., 0., 0., 0., 5.e2};
   const Int_t nTrkltViews(20);
   const Char_t *vTrkltName[nTrkltViews] = {
-    "TrkltY", "TrkltYn", "TrkltYp", "TrkltY", "TrkltYn", "TrkltYp",
+    "TrkltY", "TrkltY", "TrkltYn", "TrkltYn", "TrkltYp", "TrkltYp",
     "TrkltRCZ",
     "TrkltPh", "TrkltPhn", "TrkltPhp",
     "TrkltQ", "TrkltQn", "TrkltQp",
@@ -1277,7 +1277,7 @@ void AliTRDresolution::MakeSummary()
     "TrkltYnl2", "TrkltYpl2", "TrkltPhnl2", "TrkltPhpl2", "TrkltQnl2", "TrkltQpl2"  // pions low pt*/
   };
   const UChar_t vTrkltOpt[nTrkltViews] = {
-    0, 0, 0, 1, 1, 1,
+    0, 1, 0, 1, 0, 1,
     0,
     0, 0, 0,
     0, 0, 0,
@@ -1294,9 +1294,9 @@ void AliTRDresolution::MakeSummary()
     //{"TrkInRCX", "TrkInRCY", "TrkInRCPh", "TrkInRCZl", "TrkInRCZi", "TrkInRCZh"}
   };
   const UChar_t vTrkInOpt[nTrkInViews] = {0, 1, 0, 0, 0};
-  const Float_t min[6] = {0.15, 0.15, 0.15, 0.15, 0.5, 0.5};
-  const Float_t max[6] = {0.6, 0.6, 0.6, 0.6, 2.3, 2.3};
-  const Char_t *ttt[6] = {"#sigma(#Deltay) [cm]", "#sigma(#Deltay) [cm]", "#sigma(#Deltay) [cm]", "#sigma(#Deltaz) [cm]", "#sigma(#Delta#phi) [deg]", "#sigma(#Delta#phi) [deg]"};
+  const Float_t min[6] = {1., 1., 1., 1.5, 0.5, 0.5};
+  const Float_t max[6] = {2.5, 2.5, 2.5, 6., 2.3, 2.3};
+  const Char_t *ttt[6] = {"#sigma(#Deltay) [mm]", "#sigma(#Deltay) [mm]", "#sigma(#Deltay) [mm]", "#sigma(#Deltaz) [mm]", "#sigma(#Delta#phi) [deg]", "#sigma(#Delta#phi) [deg]"};
 
   const Int_t nTrkViews(27);
   const Char_t *vTrkName[nTrkViews] = {
@@ -1346,7 +1346,7 @@ void AliTRDresolution::MakeSummary()
   }
   for(Int_t ityp(0); ityp<(HasMCdata()?2:1); ityp++){
     if((arr = (TObjArray*)fProj->FindObject(ityp?"hCluster2MC":"hCluster2Track"))){
-      for(Int_t iview(0); iview<nClViews; iview++){
+      for(Int_t iview(0); iview<2/*nClViews*/; iview++){
         cOut = new TCanvas(Form("%s_%s%s_%d", GetName(), typName[ityp], vClName[iview], vClOpt[iview]), "Cluster Resolution", nx, ny);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
         Int_t nplot(0);
@@ -1354,8 +1354,8 @@ void AliTRDresolution::MakeSummary()
           p=cOut->cd(ily+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
           if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vClName[iview], UseLYselectTrklt()?fLYselect:ily)))) continue;
           nplot++;
-          if(vClOpt[iview]==0) h2->Draw("colz");
-          else if(vClOpt[iview]==1) h2e[ih2e++] = DrawSigma(h2, "#sigma(#Deltay) [#mum]", vClMin[iview], vClMax[iview], 1.e4);
+          if(vClOpt[iview]==0){SetRangeZ(h2, vClMin[iview], vClMax[iview], -2000., 1.e4); h2->GetZaxis()->SetTitle("#mu(#Deltay) [#mum]"); h2->Draw("colz");}
+          else if(vClOpt[iview]==1) h2e[ih2e++] = DrawSigma(h2, "#sigma(#Deltay) [#mum]", vClMin[iview], vClMax[iview], 1.e4, -200);
           if(iview<5) MakeDetectorPlot(ily);
         }
         if(nplot==AliTRDgeometry::kNlayer) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
@@ -1364,7 +1364,7 @@ void AliTRDresolution::MakeSummary()
     }
     // tracklet systematic
     if((arr = (TObjArray*)fProj->FindObject(ityp?"hTracklet2MC":"hTracklet2Track"))){
-      for(Int_t iview(0); iview<nTrkltViews; iview++){
+      for(Int_t iview(0); iview<2/*nTrkltViews*/; iview++){
         cOut = new TCanvas(Form("%s_%s%s_%d", GetName(), typName[ityp], vTrkltName[iview], vTrkltOpt[iview]), "Tracklet Resolution", nx, ny);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
         Int_t nplot(0);
@@ -1373,7 +1373,7 @@ void AliTRDresolution::MakeSummary()
           if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vTrkltName[iview], iplot)))) continue;
           nplot++;
           if(vTrkltOpt[iview]==0) h2->Draw("colz");
-          else if (vTrkltOpt[iview]==1) h2e[ih2e++] = DrawSigma(h2, "#sigma(#Deltay) [cm]", .15, .4);
+          else if (vTrkltOpt[iview]==1) h2e[ih2e++] = DrawSigma(h2, "#sigma(#Deltay) [mm]", 1, 2.2, 1.e1);
           else if (vTrkltOpt[iview]==2) h2e[ih2e++] = DrawSigma(h2, "#sigma(occupancy) [%]", 10.5, 15.);
           MakeDetectorPlot(iplot);
         }
@@ -1404,7 +1404,7 @@ void AliTRDresolution::MakeSummary()
             }
             nplot++;
             if(vTrkInOpt[iview]==0) h2->Draw("colz");
-            else h2e[ih2e++] = DrawSigma(h2, ttt[iplot], min[iplot], max[iplot]);
+            else h2e[ih2e++] = DrawSigma(h2, ttt[iplot], min[iplot], max[iplot], (iplot<4?1.e1:1.));
             MakeDetectorPlot(0);
           }
           if(nplot==6) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
@@ -1515,7 +1515,7 @@ void AliTRDresolution::MakeSummary()
 }
 
 //________________________________________________________
-TH2* AliTRDresolution::DrawSigma(TH2 *h2, const Char_t *title, Float_t m, Float_t M, Float_t scale)
+TH2* AliTRDresolution::DrawSigma(TH2 *h2, const Char_t *title, Float_t m, Float_t M, Float_t scale, Float_t thr)
 {
   // Draw error bars scaled with "scale" instead of content values
   //use range [m,M] if limits are specified
@@ -1533,7 +1533,7 @@ TH2* AliTRDresolution::DrawSigma(TH2 *h2, const Char_t *title, Float_t m, Float_
   az->SetTitleOffset(1.5);
   for(Int_t ix(1); ix<=h2->GetNbinsX(); ix++){
     for(Int_t iy(1); iy<=h2->GetNbinsY(); iy++){
-      if(h2->GetBinContent(ix, iy)<-100.) continue;
+      if(h2->GetBinContent(ix, iy)<thr) continue;
       Float_t v(scale*h2->GetBinError(ix, iy));
       if(M>m && v<m) v=m+TMath::Abs((M-m)*1.e-3);
       h2e->SetBinContent(ix, iy, v);
@@ -2791,7 +2791,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
 
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(mc?kMCTrkInNproj:kTrkInNproj), cidx);
-  arr->SetName(mc?projName[1]:(v0?projName[2]:projName[0]));  arr->SetOwner();
+  arr->SetName(Form("h%s", (mc?projName[1]:(v0?projName[2]:projName[0]))));  arr->SetOwner();
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
@@ -3857,6 +3857,43 @@ void AliTRDresolution::GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm
   while((fx = f->Eval(xM))>.5*max) xM += dx;
 }
 
+#include <TKey.h>
+//________________________________________________________
+Bool_t AliTRDresolution::LoadResults(const Char_t *file, ETRDresolutionClass c)
+{
+  AliWarning("!!! Expert function. Use it if you know what you are doing !!!");
+  
+  if(!file){
+    AliError(Form("Missing file \"%s\".", file));
+    return kFALSE;
+  }  
+  TDirectory *cwd = gDirectory;
+  TFile *fIn(NULL);
+  if(!(fIn= TFile::Open(file))) return kFALSE;
+  TList *kl=fIn->GetListOfKeys();
+  
+  if(!fProj){
+    AliInfo("Building array of projections ...");
+    fProj = new TObjArray(kNclasses+1); fProj->SetOwner(kTRUE);
+  }
+  TObjArray *arr(NULL);
+  if(!(arr = (TObjArray*)fProj->At(c))){
+    AliInfo(Form("Building array of projections for %s ...", fgPerformanceName[c]));
+    fProj->AddAt(arr = new TObjArray(kl->GetEntries()), c);
+    arr->SetName(Form("h%s", fgPerformanceName[c]));  arr->SetOwner();
+  }
+  TIterator *i(kl->MakeIterator());
+  TKey *k(NULL); TH2 *h(NULL);
+  cwd->cd();
+  while((k=(TKey*)i->Next())){
+    if(!(h=(TH2*)fIn->Get(Form("%s;%d", k->GetName(), k->GetCycle())))){
+      AliError(Form("Missing h2=%s;%d", k->GetName(), k->GetCycle()));
+      continue;
+    }
+    arr->AddLast((TH2*)h->Clone());
+  }
+  fIn->Close();
+}
 
 // #include "TFile.h>
 // //________________________________________________________
