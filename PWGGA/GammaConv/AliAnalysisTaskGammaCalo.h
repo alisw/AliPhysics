@@ -16,6 +16,7 @@
 #include "TH3.h"
 #include "TH3F.h"
 #include <vector>
+#include <map>
 
 class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 	public:
@@ -86,6 +87,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
 
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
+		void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
+		void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
 		
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
@@ -243,8 +246,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoTrueSecondaryClusConvGammaFromXFromEtasPt;//! array of histos with validated secondary cluster conversion photon from Eta, pt  
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
+		TH1F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
+		vector<Int_t>						fVectorDoubleCountTrueClusterGammas;			//! vector containing labels of validated cluster photons
+		TH1F								**fHistoMultipleCountTrueClusterGamma;			//! array of histos how often TrueClusterGammas are counted
+		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
+
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
@@ -273,7 +281,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 4);
+		ClassDef(AliAnalysisTaskGammaCalo, 5);
 };
 
 #endif
