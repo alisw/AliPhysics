@@ -62,6 +62,9 @@
 #include "AliPHOSGeometry.h"
 #endif
 
+#include <iostream>
+using namespace std;
+
 double pi = TMath::Pi();
 
 Double_t GetPhi(Double_t phi);
@@ -1068,6 +1071,7 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     {
         g_histo2d_s2 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
         gEve->GetDefaultViewer()->AddScene(g_histo2d_s2);
+        AliEveMultiView::Instance()->Get3DView()->AddScene(g_histo2d_s2);
         g_histo2d_s2->SetElementName("3D Histogram Scene");
     }
     
