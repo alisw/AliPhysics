@@ -61,6 +61,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
 		void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
+		void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
 
 		// Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -353,13 +354,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
 		Bool_t								fDoTHnSparse;						// flag for using THnSparses for background estimation
+		Bool_t								fSetPlotHistsExtQA;					// flag for extended QA hists
 
 		
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 9);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 10);
 };
 
 #endif

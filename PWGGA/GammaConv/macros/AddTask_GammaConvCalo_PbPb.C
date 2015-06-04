@@ -289,6 +289,7 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t 		trainConfig 				= 1,  								// cha
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
     task->SetUseTHnSparse(isUsingTHnSparse);
+	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =

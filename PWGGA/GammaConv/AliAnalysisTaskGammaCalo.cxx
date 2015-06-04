@@ -229,7 +229,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
 	fIsMC(kFALSE),
-	fDoTHnSparse(kTRUE)
+	fDoTHnSparse(kTRUE),
+	fSetPlotHistsExtQA(kFALSE)
 {
   
 }
@@ -405,7 +406,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
 	fIsMC(kFALSE),
-	fDoTHnSparse(kTRUE)
+	fDoTHnSparse(kTRUE),
+	fSetPlotHistsExtQA(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1142,6 +1144,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))) continue;
 		if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms()){
 			fCutFolder[iCut]->Add(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms());
+		}
+		if(fSetPlotHistsExtQA){
+			if(!((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))) continue;
+			if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetExtQAHistograms()){
+				fCutFolder[iCut]->Add(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetExtQAHistograms());
+			}
 		}
 		if(fDoMesonAnalysis){
 			if(!((AliConversionMesonCuts*)fMesonCutArray->At(iCut))) continue;

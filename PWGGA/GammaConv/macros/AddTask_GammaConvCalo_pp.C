@@ -7,7 +7,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 									Int_t 		enableExtMatchAndQA 		= 0,								// enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
 									TString 	periodname 					= "LHC12f1x", 						// period name
 									Bool_t 		doWeighting 				= kFALSE,							// enables weighting
-									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+									Bool_t 		isUsingTHnSparse 			= kTRUE 							// enable or disable usage of THnSparses for background estimation
 							) {
 
 	// ================= Load Librariers =================================
@@ -393,6 +394,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
+	task->SetUseTHnSparse(isUsingTHnSparse);
+	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
