@@ -1305,7 +1305,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
 	fGRPMaps.Add(new TObjString(runstr),map);
       }
     }
-    fGRPArray.Add(new TObjString(runstr),grpRun);
+    fGRPArray.Add(new TObjString(runstr),new AliGRPObject(*grpRun));
   }
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Goofie",run);
   if (entry){
