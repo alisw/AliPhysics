@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -469,11 +470,11 @@ void AliCFTaskVertexingHF::Init()
   Int_t nProfiles=4;
   
   if (fIsPPbData) { //if pPb, use only two estimator histos
-     period[0] = "LHC13b"; period[1] = "LHC13c";
-     nProfiles = 2;
+    period[0] = "LHC13b"; period[1] = "LHC13c";
+    nProfiles = 2;
   } else {        // else assume pp (four histos for LHC10)
-     period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e";
-     nProfiles = 4;
+    period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e";
+    nProfiles = 4;
   }
 
   for(Int_t i=0; i<nProfiles; i++){
@@ -1488,7 +1489,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17a(){
 void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
   // ad-hoc weight function from ratio of 
   // D0 pt spectra in PbPb 2011 0-10% centrality and
- // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
+  // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","[0]+[1]/TMath::Power(x,[2])",0.05,50.);
   fFuncWeight->SetParameter(0,1.43116e-02);
@@ -1789,15 +1790,15 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
                        // pPb: 0-LHC13b, 1-LHC13c
 
   if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
-      if (runNo>195343 && runNo<195484) period = 0;
-      if (runNo>195528 && runNo<195678) period = 1;
-      if (period<0 || period>1) return 0;
+    if (runNo>195343 && runNo<195484) period = 0;
+    if (runNo>195528 && runNo<195678) period = 1;
+    if (period<0 || period>1) return 0;
   } else {             //else assume pp 2010                 
-      if(runNo>114930 && runNo<117223) period = 0;
-      if(runNo>119158 && runNo<120830) period = 1;
-      if(runNo>122373 && runNo<126438) period = 2;
-      if(runNo>127711 && runNo<130841) period = 3;
-      if(period<0 || period>3) return 0;
+    if(runNo>114930 && runNo<117223) period = 0;
+    if(runNo>119158 && runNo<120830) period = 1;
+    if(runNo>122373 && runNo<126438) period = 2;
+    if(runNo>127711 && runNo<130841) period = 3;
+    if(period<0 || period>3) return 0;
   }
 
   return fMultEstimatorAvg[period];
