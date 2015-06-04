@@ -397,7 +397,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         TString sTitle;
         Int_t binTrackMult=100, binPT=70, binM02=100, binETiso=110, binETUE=110, binETisoUE=110, binetacl=140,binphicl=100;
 
-        Int_t binMCMotherPDG=50,bindx=200, bindz=200, /*bincells=20,*/ binlabel=2500;
+        Int_t binMCMotherPDG=50,bindx=200, bindz=200, /*bincells=20,*/ binlabel=1500;
 
         Int_t bins[] = {binTrackMult, binPT, binM02, binETiso, binETUE, binETisoUE, binetacl, binphicl,binlabel};
 
@@ -406,9 +406,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 
         Double_t xmin[]= {  0.,  0., 0., -10., -10., -10.,-1.0, 1. ,     0};
 
-        Double_t xmax[]= {1000., 70., 2., 100., 100., 100., 1.0, 3.5, 3000};
+        Double_t xmax[]= {1000., 70., 2., 100., 100., 100., 1.0, 3.5, 1500};
 
-        sTitle = Form("Direct Photons: Track Multiplicity, p_{T} , M02 , E_{T} Iso%s in %s, E_{T} UE %s in %s, E_{T} Iso_%s - E_{T} UE_%s in %s, #eta_{clus} distribution,#phi_{clus} distribution, Label; N_{ch}; p_{T} (GeV/c); M02; E_{T}^{iso%s} (GeV/c) ; E_{T}^{UE%s} (GeV/c); E_{T}^{iso%s}-E_{T}^{UE%s} (GeV/c); #eta_{cl}; #phi_{cl}; Label", sIsoMethod.Data(), sBoundaries.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data(), sIsoMethod.Data(), sUEMethod.Data());
+        sTitle = Form("Direct Photons: Track Multiplicity, p_{T} , M02 , E_{T} Iso%s in %s, E_{T} UE %s in %s, E_{T} Iso_%s - E_{T} UE_%s in %s, #eta_{clus} distribution,#phi_{clus} distribution,Label; N_{ch}; p_{T} (GeV/c); M02; E_{T}^{iso%s} (GeV/c) ; E_{T}^{UE%s} (GeV/c); E_{T}^{iso%s}-E_{T}^{UE%s} (GeV/c); #eta_{cl}; #phi_{cl}; Label", sIsoMethod.Data(), sBoundaries.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data(), sIsoMethod.Data(), sUEMethod.Data());
 
         fOutputTHnS =  new THnSparseF("fHnOutput",sTitle.Data(), ndims, bins, xmin, xmax);
         fOutputTHnS->Sumw2();
@@ -424,7 +424,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
             //const Int_t nDimMC = fMCDimensions;
 
           Double_t xminbis[] = {   0.,  0., -10., -10., -1000., -1.0,  1.,    0};
-          Double_t xmaxbis[] = {1000., 70., 100., 100.,  1000.,  1.0, 3.5, 3000};
+          Double_t xmaxbis[] = {1000., 70., 100., 100.,  1000.,  1.0, 3.5, 1500};
 
           fOutMCTruth = new THnSparseF ("fOutMCTruth","Multiplicity, E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; N_{Tracks}; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",8,binsMC,xminbis,xmaxbis);
           fOutMCTruth->Sumw2();
@@ -444,7 +444,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
           Double_t xminbismix[] = {0.,  0., -3000, -4000,  0.,-1., -1., -10,    0};
-          Double_t xmaxbismix[] = {70., 2.,  3000,  4000, 70., 1.,  1., 100.,3000};
+          Double_t xmaxbismix[] = {70., 2.,  3000,  4000, 70., 1.,  1., 100.,1500};
 
           fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); M02;PDG Code; PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",9,binsSMC,xminbismix,xmaxbismix);
           fOutClustMC->Sumw2();
