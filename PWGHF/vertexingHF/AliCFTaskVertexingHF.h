@@ -15,10 +15,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */ 
+/* $Id$ */
 
 //-----------------------------------------------------------------------
-// Class for HF corrections as a function of many variables and step 
+// Class for HF corrections as a function of many variables and step
 // Author : C. Zampolli, CERN
 //			D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
 // Base class for HF Unfolding - agrelli@uu.nl
@@ -49,7 +49,7 @@ class AliCFVertexingHF3Prong;
 
 class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
  public:
-	
+
   enum {
     kStepGeneratedLimAcc = 0,
     kStepGenerated       = 1,
@@ -77,26 +77,26 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   };
 
   enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; // multiplicity estimators
-	
+
   AliCFTaskVertexingHF();
   AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func = 0x0);
   AliCFTaskVertexingHF& operator= (const AliCFTaskVertexingHF& c);
   AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c);
   virtual ~AliCFTaskVertexingHF();
-	
+
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
   void     UserCreateOutputObjects();
   void     UserExec(Option_t *option);
   void     Init();
   void     LocalInit() {Init();}
   void     Terminate(Option_t *);
-	
+
   // UNFOLDING
   void     SetCorrelationMatrix(THnSparse* h) {fCorrelation=h;}
   void     SetAcceptanceUnf(Bool_t AcceptanceUnf) {fAcceptanceUnf = AcceptanceUnf;}
   Bool_t   GetAcceptanceUnf() const {return fAcceptanceUnf;}
-	
-	
+
+
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
   AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
@@ -159,7 +159,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
     if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
     fMultEstimatorAvg[3]=new TProfile(*hprof);
   }
-	
+
   void SetMultiplVsZProfileLHC13b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
     fMultEstimatorAvg[0]=new TProfile(*hprof);
@@ -172,14 +172,14 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   TProfile* GetEstimatorHistogram(const AliVEvent* event);
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
-	
+
   void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
   UShort_t GetDselection (){return fOriginDselection;}
   void SetSign(Char_t isSign) {fSign = isSign;}
   Char_t GetSign() {return fSign;}
-	 
-  void SetCentralitySelection(Bool_t centSelec = kTRUE) {fCentralitySelection = centSelec;}   
-  Bool_t GetCentralitySelection() {return fCentralitySelection;} 
+
+  void SetCentralitySelection(Bool_t centSelec = kTRUE) {fCentralitySelection = centSelec;}
+  Bool_t GetCentralitySelection() {return fCentralitySelection;}
 
   void SetFakeSelection(Int_t fakeSel = 0) {fFakeSelection=fakeSel;}
   Int_t GetFakeSelection(){return fFakeSelection;}
@@ -189,7 +189,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   void SetUseMCVertex(Bool_t opt){fUseMCVertex=opt;}
   Bool_t GetUseMCVertex(){return fUseMCVertex;}
-	
+
 
   void SetKeepDsViaPhi(){fDsOption=1;}
   void SetKeepDsViaK0star(){fDsOption=2;}
@@ -202,9 +202,9 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   Bool_t ProcessDs(Int_t returnCodeDs) const;
 
-  void SetConfiguration(Int_t configuration) {(configuration == kSnail) ? Printf("Slow configuration chosen, all variables will be used!") : Printf("Fast configuration chosen, all variablesOnly pt, y, phi, ct, fake, z_vtx, centrality and multiplicity will be used!"); fConfiguration = configuration;} 
-  Int_t GetConfiguration() const {return fConfiguration;} 
-	
+  void SetConfiguration(Int_t configuration) {(configuration == kSnail) ? Printf("Slow configuration chosen, all variables will be used!") : Printf("Fast configuration chosen, all variablesOnly pt, y, phi, ct, fake, z_vtx, centrality and multiplicity will be used!"); fConfiguration = configuration;}
+  Int_t GetConfiguration() const {return fConfiguration;}
+
   void SetWeightFunction(TF1* func) {fFuncWeight = func;}
   TF1* GetWeightFunction() const {return fFuncWeight;}
   void SetWeightHistogram(TH1F* histo) {
@@ -235,7 +235,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   void SetCountLctoK0Sp(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountK0Sp;}
   void SetCountLctoLambdapi(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountLambdapi;}
-    
+
   void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
   Bool_t GetUseSelectionBit() const { return fUseSelectionBit; }
 
@@ -265,7 +265,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Int_t fCountRecoAcc;          //  Reco particle found that satisfy cuts in requested acceptance
   Int_t fCountRecoITSClusters;  //  Reco particle found that satisfy cuts in n. of ITS clusters
   Int_t fCountRecoPPR;          //  Reco particle found that satisfy cuts in PPR
-  Int_t fCountRecoPID;          //Reco PID step 
+  Int_t fCountRecoPID;          //Reco PID step
   Int_t fEvents;                //  n. of events
   Int_t fDecayChannel;          // decay channel to configure the task
   Bool_t fFillFromGenerated;    //  flag to indicate whether data container should be filled with generated values also for reconstructed particles
@@ -284,7 +284,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   TString fDauNames;    // daughter in fin state
   Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
   Bool_t fCentralitySelection;  //flag to switch off the centrality selection
-  Int_t  fFakeSelection;  //selection flag for fakes tracks 
+  Int_t  fFakeSelection;  //selection flag for fakes tracks
   Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
   Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
   Int_t  fDsOption;     // Ds decay option (selection level)
