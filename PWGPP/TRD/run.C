@@ -105,7 +105,7 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
   // VERY GENERAL SETTINGS
   //AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS")<0) return;
-  if(gSystem->Load("libANALYSISalice")<0) return;
+  //if(gSystem->Load("libANALYSISalice")<0) return;
   if(gSystem->Load("libTender")<0) return;
   if(gSystem->Load("libCORRFW")<0) return;
   if(gSystem->Load("libPWGPP")<0) return;
