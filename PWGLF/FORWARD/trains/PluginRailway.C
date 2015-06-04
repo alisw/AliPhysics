@@ -242,7 +242,7 @@ struct PluginRailway : public Railway
     fUsePars   = fOptions.Has("par");
     fTestBuild = fOptions.Has("testpar");
 
-    fHandler->SetAPIVersion("V1.1x");
+    // fHandler->SetAPIVersion("V1.1x");
     fHandler->SetROOTVersion(root);
     fHandler->SetAliROOTVersion(aliroot);
     fHandler->SetAliPhysicsVersion(aliphysics);
