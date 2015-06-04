@@ -51,8 +51,8 @@ private:
   TString fZMQconnectMode; //"connect" or "bind"
   TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"
   Bool_t fZMQpollIn;       //do we poll fo incoming requests?
-  Bool_t fZMQsendAllInOne; //send all blocks in one multi part message
-  
+  Int_t fPushbackDelayPeriod;   //how often do we send?
+  Int_t fLastPushbackDelayTime; //last push back time
   
   ClassDef(AliHLTZMQsink, 1)
 };
