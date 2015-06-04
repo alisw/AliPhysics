@@ -20,7 +20,7 @@
 #include "AliMuonTrackCuts.h"  // XZhang 20120604
 #include "AliPID.h"
 #include "AliESDpid.h"
-#include "TCutG.h"
+#include "TF2.h"
 
 
 class TBrowser;
@@ -78,7 +78,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kAODFilterBit,
                             kUserA, // reserved for custom cuts
                             kUserB, // reserved for custom cuts
-                            kBetaVZERO // temporary enum for beta testing of new vzero calibration
+                            kBetaVZERO, // temporary enum for beta testing of new vzero calibration
+                            kDeltaVZERO // temporary enum for beta testing of new vzero calibration
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
@@ -252,7 +253,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //PID
   void SetPID(AliPID::EParticleType pid, PIDsource s=kTOFpid, Double_t prob=0.9)
              {fParticleID=pid; fPIDsource=s; fParticleProbability=prob; fCutPID=kTRUE; InitPIDcuts();}
-  void SetTPCTOFNsigmaPIDCutContours(Bool_t b,Double_t cMin,Double_t cMax){fUseTPCTOFNsigmaCutContours = b; fCentralityPercentileMin=cMin; fCentralityPercentileMax=cMax;}
   AliPID::EParticleType GetParticleID() const {return fParticleID;}
   Bool_t GetCutPID() const {return fCutPID;}
   void SetTPCpidCuts(const TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
@@ -294,16 +294,18 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
-  void GetTPCTOFPIDContours();
+    
+  void SetTPCTOFNsigmaPIDPurityFunctions(Float_t purityLevel);
+  void SetCentralityPercentile(Int_t centMin,Int_t centMax){fCentralityPercentileMin=centMin; fCentralityPercentileMax=centMax;}
+    
   //gain equalization and recentering
   void SetVZEROgainEqualisation(TH1* g) {fVZEROgainEqualization=g;}
+  void SetVZEROgainEqualisationCen(TH2* g) {fVZEROgainEqualizationCen=g;}
   void SetVZEROApol(Int_t ring, Float_t f) {fVZEROApol[ring]=f;}
   void SetVZEROCpol(Int_t ring, Float_t f) {fVZEROCpol[ring]=f;}
   // set the flag for recentering (which is done in AliFlowEvent)
   void SetApplyRecentering(Bool_t r)    { fApplyRecentering = r; }
   Bool_t GetApplyRecentering() const    { return fApplyRecentering;}
-  void SetApplyTwisting(Bool_t r)    { fApplyTwisting = r; }
-  Bool_t GetApplyTwisting() const    { return fApplyTwisting;}
   void SetVZEROgainEqualizationPerRing(Bool_t s)   {fVZEROgainEqualizationPerRing = s;}
   Bool_t GetVZEROgainEqualizationPerRing() const {return fVZEROgainEqualizationPerRing;}
   // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
@@ -399,7 +401,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   
   Int_t fCentralityPercentileMin; //centrality min
   Int_t fCentralityPercentileMax; //centrality max
-    
+  Float_t fPurityLevel; //Purity cut percentage
+
   Bool_t  fCutPmdDet;   //cut on PMD detector plane 
   Int_t   fPmdDet;      // value of PMD detector plane
   Bool_t  fCutPmdAdc;   //cut on cluster ADC
@@ -445,7 +448,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fAllowTOFmismatchFlag; //allow TOFmismatch flag=1 in ESD
   Bool_t fRequireStrictTOFTPCagreement; //require stricter than TOFmismatch flag TOF-TPC agreement
   Bool_t fCutRejectElectronsWithTPCpid; //reject electrons with TPC pid
-  Bool_t fUseTPCTOFNsigmaCutContours;  // Flag to use purity based TPC-TOF nsigma cuts
 
   // part added by F. Noferini
   static const Int_t fgkPIDptBin = 20; // pT bins for priors
@@ -456,8 +458,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   
   //gain equalization and recentering for vzero
   TH1* fVZEROgainEqualization;     //! equalization histo
+  TH2* fVZEROgainEqualizationCen;  //! equalization histo per centrality bin
   Bool_t fApplyRecentering;     // apply recentering of q-sub vectors in AliFlowEvent ?
-  Bool_t fApplyTwisting;        // apply twisting of q-sub vectors in AliFlowEvent ?
   Bool_t fVZEROgainEqualizationPerRing;    // per ring vzero gain calibration
   Float_t fVZEROApol[4];           //! calibration info per ring
   Float_t fVZEROCpol[4];           //! calibration info per ring
@@ -474,24 +476,19 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t         fRun;                   // run number
  
     
-  //TPC TOF nsigma Purity based cut contours
-  TFile                 *fContoursFile;       //! contours file
-  TDirectory            *fCutContourList;     //! contour list
+  //TPC TOF nsigma Purity based cut functions
+  TFile                 *fPurityFunctionsFile;       //! purity functions file
+  TDirectory            *fPurityFunctionsList;     //! purity functions list
+    
+  TF2                   *fPurityFunction[150]; //TF2 purity functions
   
   Int_t  fMaxITSclusterShared;
   Double_t  fMaxITSChi2;
   
     
-  TCutG                 *fCutContour[50];    //! TCutG contours
-  //TCutG                 *fCutContour_kaon[50];    //! TCutG contours
-  //TCutG                 *fCutContour_proton[50];    //! TCutG contours
-  TGraph                *fCutGraph[50];      //! graphs
-  //TGraph                *fCutGraph_kaon[50];      //! graphs
-  //TGraph                *fCutGraph_proton[50];      //! graphs
-    
     
 
-  ClassDef(AliFlowTrackCuts,16)
+  ClassDef(AliFlowTrackCuts,18)
 };
 
 #endif

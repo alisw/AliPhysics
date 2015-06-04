@@ -8,21 +8,32 @@
 #include <AliMESchgTask.h>
 #endif
 
-void AddMESchgTask(AliAnalysisDataContainer **ci, Bool_t mc)
+void AddMESchgTask(Bool_t mc)
 {
-  Info("AddMESchgTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
-      ci[0]?ci[0]->GetName():"none", 
-      ci[1]?ci[1]->GetName():"none", 
-      ci[2]?ci[2]->GetName():"none", 
-      ci[3]?ci[3]->GetName():"none"));
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager(); 
-  AliMESchgTask *chg = new AliMESchgTask("PID");
+  AliMESchgTask *chg = new AliMESchgTask("MESchg");
   mgr->AddTask(chg);
   chg->SetPostProcess(kFALSE);
   chg->SetMCdata(mc);
   chg->SetDebugLevel(0);
+
   mgr->ConnectInput(chg, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
+
+  // get exchange containers
+  AliAnalysisDataContainer *ci[AliMESbaseTask::kNcontainers] = {NULL};
+  ci[0] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESeventInfo"));
+  ci[1] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MEStracks"));
+  if(mc){
+	  ci[2] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCeventInfo"));
+	  ci[3] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCtracks"));
+  }
+  Info("AddMESchgTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
+							 ci[0]?ci[0]->GetName():"none", 
+							 ci[1]?ci[1]->GetName():"none", 
+							 ci[2]?ci[2]->GetName():"none", 
+							 ci[3]?ci[3]->GetName():"none"));
+
+  // connect containers
   mgr->ConnectInput(chg, AliMESbaseTask::kEventInfo, ci[0]); // connect event info
   mgr->ConnectInput(chg, AliMESbaseTask::kTracks, ci[1]);    // connect track info container
   if(mc){

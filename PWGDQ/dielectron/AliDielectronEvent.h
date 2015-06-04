@@ -29,8 +29,8 @@ public:
 
   virtual ~AliDielectronEvent();
 
-  void SetESD();
-  void SetAOD(Int_t size=1000);
+  void SetESD(Int_t sizeP=1000, Int_t sizeN=1000);
+  void SetAOD(Int_t sizeP=1000, Int_t sizeN=1000);
   Bool_t IsAOD() const { return fIsAOD; }
 
   void SetTracks(const TObjArray &arrP, const TObjArray &arrN, const TObjArray &arrPairs);

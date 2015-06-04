@@ -145,7 +145,9 @@ AliJetFlowTools::AliJetFlowTools() :
     fFullResponseIn     (0x0),
     fFullResponseOut    (0x0),
     fPivot              (40.),
-    fSubdueError        (kTRUE) { // class constructor
+    fSubdueError        (kTRUE),
+    fUnfoldedSpectrumIn (0x0),
+    fUnfoldedSpectrumOut(0x0) { // class constructor
 #ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
 #endif
@@ -367,10 +369,10 @@ void AliJetFlowTools::Make(TH1* customIn, TH1* customOut) {
     }   // end of if(fDphiUnfolding)
     fDeltaPtDeltaPhi->Write();
     unfoldedJetSpectrumIn->Sumw2();
-    ProtectHeap(unfoldedJetSpectrumIn, kFALSE);
+    fUnfoldedSpectrumIn = ProtectHeap(unfoldedJetSpectrumIn, kFALSE);
     unfoldedJetSpectrumIn->Write();
     unfoldedJetSpectrumOut->Sumw2();
-    ProtectHeap(unfoldedJetSpectrumOut, kFALSE);
+    fUnfoldedSpectrumOut = ProtectHeap(unfoldedJetSpectrumOut, kFALSE);
     unfoldedJetSpectrumOut->Write();
     fJetPtDeltaPhi->Write();
     // save the current state of the unfolding object

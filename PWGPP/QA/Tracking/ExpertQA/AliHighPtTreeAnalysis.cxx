@@ -12,6 +12,8 @@
 
 
   To test code  compilation:
+  gSystem->SetIncludePath("-I$ROOTSYS/include  -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCBase -I$ALICE_ROOT/TPC/TPCCalib");
+
   .L  $ALICE_PHYSICS/../src/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx+
   
   To do add unit test before further modifiing
@@ -74,6 +76,7 @@ AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( ) :
   fChain(0),                     //!pointer to the analyzed TTree or TChain
   fV0Chain(0),                   //!pointer to the V0 tree    
   OutTree(0),                    // output tree
+  fStreamer(0),                  // streamer for the trending output
   //
   // Declaration of leaf types for the highPt tree
   //
@@ -723,6 +726,138 @@ void AliHighPtTreeAnalysis::Terminate(){
   if(fMakePlots) MakeAllPlots();
 
 }
+
+void AliHighPtTreeAnalysis::MakeDCArPullFitsMI(){
+  //
+  // fit function
+  //
+  if (fStreamer==NULL) InitStreamer();
+  
+  TF1 * fFun = new TF1("fFun","[0]*TMath::Gaus(x,[1],[2])",-0.5,0.5); 
+  if(!fFun) return;
+
+  TH3D *h1PulldcaRcomb = hPulldcaR_vs_phi_pT_Aside;
+  TH3D *h2PulldcaRcomb = hPulldcaR_vs_phi_pT_Cside;
+  if(!h1PulldcaRcomb) return;
+  if(!h2PulldcaRcomb) return;
+  TH3D *h1PulldcaRTPConly = hPulldcaRTPCInner_vs_phi_pT_Aside;
+  TH3D *h2PulldcaRTPConly = hPulldcaRTPCInner_vs_phi_pT_Cside;
+  if(!h1PulldcaRTPConly) return;
+  if(!h2PulldcaRTPConly) return;
+
+  static Int_t    countsPulldcaR_TPCAside[2] = {0,0};
+  static Int_t    countsPulldcaR_TPCCside[2] = {0,0};
+  static Double_t meanPulldcaR_TPCAside[2]   = {0,0};  
+  static Double_t meanPulldcaR_TPCCside[2]   = {0,0};
+  static Double_t eMeanPulldcaR_TPCAside[2]  = {0,0};  
+  static Double_t eMeanPulldcaR_TPCCside[2]  = {0,0};
+  static Double_t rmsPulldcaR_TPCAside[2]    = {0,0};  
+  static Double_t rmsPulldcaR_TPCCside[2]    = {0,0};
+  static Double_t eRMSPulldcaR_TPCAside[2]   = {0,0};  
+  static Double_t eRMSPulldcaR_TPCCside[2]   = {0,0};
+  static Double_t shiftPulldcaR_TPCAside[2]  = {0,0};  
+  static Double_t shiftPulldcaR_TPCCside[2]  = {0,0};
+  static Double_t eShiftPulldcaR_TPCAside[2] = {0,0};  
+  static Double_t eShiftPulldcaR_TPCCside[2] = {0,0};
+  static Double_t sigmaPulldcaR_TPCAside[2]  = {0,0};  
+  static Double_t sigmaPulldcaR_TPCCside[2]  = {0,0};
+  static Double_t eSigmaPulldcaR_TPCAside[2] = {0,0};  
+  static Double_t eSigmaPulldcaR_TPCCside[2] = {0,0};
+
+  const char * typeName[2]={"TPConly","Combined"};
+
+  for(Int_t itype = 0; itype <= 1; itype++){  //
+    TH3D *h1PulldcaR = 0;
+    TH3D *h2PulldcaR = 0;
+    if(itype == 0){ 
+      h1PulldcaR=h1PulldcaRTPConly;
+      h2PulldcaR=h2PulldcaRTPConly;
+    }
+    if(itype == 1){
+      h1PulldcaR=h1PulldcaRcomb;
+      h2PulldcaR=h2PulldcaRcomb;
+    }
+    h1PulldcaR->GetXaxis()->SetRangeUser(fPtCut,100.);
+    h2PulldcaR->GetXaxis()->SetRangeUser(fPtCut,100.);
+
+    countsPulldcaR_TPCAside[itype]  = h1PulldcaR->Integral();
+    countsPulldcaR_TPCCside[itype]  = h2PulldcaR->Integral();
+
+    // calculate average values and RMS of profiles in the given pt range
+    TGraphErrors *gr1PulldcaR = Calc2DProfileContent(h1PulldcaR,"zy");
+    TGraphErrors *gr2PulldcaR = Calc2DProfileContent(h2PulldcaR,"zy");
+
+    meanPulldcaR_TPCAside[itype]  = gr1PulldcaR->GetX()[0];
+    eMeanPulldcaR_TPCAside[itype] = gr1PulldcaR->GetEX()[0];
+    rmsPulldcaR_TPCAside[itype]   = gr1PulldcaR->GetY()[0];
+    eRMSPulldcaR_TPCAside[itype]  = gr1PulldcaR->GetEY()[0];
+    meanPulldcaR_TPCCside[itype]  = gr2PulldcaR->GetX()[0];
+    eMeanPulldcaR_TPCCside[itype] = gr2PulldcaR->GetEX()[0];
+    rmsPulldcaR_TPCCside[itype]   = gr2PulldcaR->GetY()[0];
+    eRMSPulldcaR_TPCCside[itype]  = gr2PulldcaR->GetEY()[0];
+
+
+    TH1D *h1PulldcaRproj = (TH1D*)h1PulldcaR->Project3D("z");
+    TH1D *h2PulldcaRproj = (TH1D*)h2PulldcaR->Project3D("z");
+
+    if(!h1PulldcaRproj) return;
+    if(!h2PulldcaRproj) return;
+
+    //  ConfigGausFit(fFun,h1PulldcaRproj);
+    fFun->SetParameter(0,h1PulldcaRproj->GetMaximum());
+    fFun->SetParameter(1,0);
+    fFun->SetParameter(2,h1PulldcaRproj->GetRMS());
+    h1PulldcaRproj->Fit(fFun,"Q");
+    h1PulldcaRproj->Fit(fFun,"Q"); 
+    //h1PulldcaRproj->Draw("e"); 
+    shiftPulldcaR_TPCAside[itype]  = fFun->GetParameter(1);
+    eShiftPulldcaR_TPCAside[itype] = fFun->GetParError(1);    
+    sigmaPulldcaR_TPCAside[itype]  = TMath::Abs(fFun->GetParameter(2));
+    eSigmaPulldcaR_TPCAside[itype] = TMath::Abs(fFun->GetParError(2));    
+
+    //  ConfigGausFit(fFun,h2PulldcaRproj);
+    fFun->SetParameter(0,h2PulldcaRproj->GetMaximum());
+    fFun->SetParameter(1,0);
+    fFun->SetParameter(2,h2PulldcaRproj->GetRMS());
+    h2PulldcaRproj->Fit(fFun,"Q");
+    h2PulldcaRproj->Fit(fFun,"Q");
+    //h1PulldcaRproj->Draw("e"); 
+    shiftPulldcaR_TPCCside[itype]  = fFun->GetParameter(1);
+    eShiftPulldcaR_TPCCside[itype] = fFun->GetParError(1);    
+    sigmaPulldcaR_TPCCside[itype]  = TMath::Abs(fFun->GetParameter(2));
+    eSigmaPulldcaR_TPCCside[itype] = TMath::Abs(fFun->GetParError(2));    
+
+    if(h1PulldcaRproj) delete h1PulldcaRproj;
+    if(h2PulldcaRproj) delete h2PulldcaRproj;
+    // set back full range
+    h1PulldcaR->GetXaxis()->SetRange(1,h1PulldcaR->GetXaxis()->GetNbins());
+    h2PulldcaR->GetXaxis()->SetRange(1,h2PulldcaR->GetXaxis()->GetNbins());
+    (*fStreamer)<<"trending"<<
+      // TString::Format("grPulldcaR_TPCAside_%s.=",typeName[itype]).Data()<< gr1PulldcaR<<  // mean pulls graphs A side
+      // TString::Format("grPulldcaR_TPCCside_%s.=",typeName[itype]).Data()<< gr2PulldcaR<<  // mean pulls graphs C side 
+      //
+      TString::Format("countsPulldcaR_TPCAside_%s=",typeName[itype]).Data()<<countsPulldcaR_TPCAside[itype]<<  // histogram counter A side GetEntries()
+      TString::Format("countsPulldcaR_TPCCside_%s=",typeName[itype]).Data()<<countsPulldcaR_TPCCside[itype]<<  // histogram counter C side GetEntries()
+      TString::Format("meanPulldcaR_TPCAside_%s=",typeName[itype]).Data()<<meanPulldcaR_TPCAside[itype]<<      // mean Pull A side      
+      TString::Format("meanPulldcaR_TPCCside_%s=",typeName[itype]).Data()<<meanPulldcaR_TPCCside[itype]<<      //
+      TString::Format("eMeanPulldcaR_TPCAside_%s",typeName[itype]).Data()<<eMeanPulldcaR_TPCAside[itype]<<
+      TString::Format("eMeanPulldcaR_TPCCside_%s",typeName[itype]).Data()<<eMeanPulldcaR_TPCCside[itype]<<
+      TString::Format("rmsPulldcaR_TPCAside_%s",typeName[itype]).Data()<<rmsPulldcaR_TPCAside[itype]<<
+      TString::Format("rmsPulldcaR_TPCCside_%s",typeName[itype]).Data()<<rmsPulldcaR_TPCCside[itype]<<
+      TString::Format("eRMSPulldcaR_TPCAside_%s",typeName[itype]).Data()<<eRMSPulldcaR_TPCAside[itype]<<
+      TString::Format("eRMSPulldcaR_TPCCside_%s",typeName[itype]).Data()<<eRMSPulldcaR_TPCCside[itype]<<
+      TString::Format("shiftPulldcaR_TPCAside_%s",typeName[itype]).Data()<<shiftPulldcaR_TPCAside[itype]<<      
+      TString::Format("shiftPulldcaR_TPCCside_%s",typeName[itype]).Data()<<shiftPulldcaR_TPCCside[itype]<<      
+      TString::Format("eShiftPulldcaR_TPCAside_%s",typeName[itype]).Data()<<eShiftPulldcaR_TPCAside[itype]<<
+      TString::Format("eShiftPulldcaR_TPCCside_%s",typeName[itype]).Data()<<eShiftPulldcaR_TPCCside[itype]<<
+      TString::Format("sigmaPulldcaR_TPCAside_%s",typeName[itype]).Data()<<sigmaPulldcaR_TPCAside[itype]<<
+      TString::Format("sigmaPulldcaR_TPCCside_%s",typeName[itype]).Data()<<sigmaPulldcaR_TPCCside[itype]<<
+      TString::Format("eSigmaPulldcaR_TPCAside_%s",typeName[itype]).Data()<<eSigmaPulldcaR_TPCAside[itype]<<
+      TString::Format("eSigmaPulldcaR_TPCCside_%s",typeName[itype]).Data()<<eSigmaPulldcaR_TPCCside[itype];
+  }
+}
+
+
 
 void AliHighPtTreeAnalysis::MakeDCArPullFits(){
 

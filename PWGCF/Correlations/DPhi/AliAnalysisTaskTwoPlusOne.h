@@ -61,6 +61,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
 
   void   SetThreeParticleMixed(Bool_t flag) { fThreeParticleMixed = flag; }
   void   SetUseEventCombination(Bool_t flag) { fUseEventCombination = flag; }
+  void   SetUsePP(Bool_t flag)             { fUsePP = flag; }
   
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
 
@@ -120,6 +121,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     
     Bool_t              fThreeParticleMixed;   //0 use trigger from one event and mixed particles from another; 1 use trigger particles from two different events and mixed event from a third event
     Bool_t              fUseEventCombination;   //0 normal analysis run; 1 add 4 30-50% events up to the multiplicity of an 0-5% event
+    Bool_t              fUsePP;                 //0 PbPb collisions; 1 pp collisions
 
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Double_t fAlpha;            //sets the alpha parameter in the container
@@ -134,7 +136,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-    ClassDef(AliAnalysisTaskTwoPlusOne, 7); // two plus one analysis with two trigger particles and particle correlations to these triggers
+    ClassDef(AliAnalysisTaskTwoPlusOne, 8); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif

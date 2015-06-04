@@ -35,7 +35,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
   if(reflected==1)histname="hDataCorrectedTempl0CentrFpromptReflected";
   // Dzero
   TFile *f=0x0;
-  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDplusPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
+  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDzeroPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
   if(!f)return;
   TH1D *hDzero=f->Get(histname.Data());
   hDzero->SetName(Form("Dzero%.0fto%.0fassoc%.0fto%.0f",ptmin,ptmax,ptassocmin*10,ptassocmax*10,v2suffix.Data()));
@@ -45,7 +45,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
     
   // DSTAR
   f=0x0;
-  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDstarPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
+  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDstarPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDstar.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
 
   if(!f) return;
   TH1D *hDstar=f->Get(histname.Data());
@@ -56,7 +56,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
 
   // DPLUS
   f=0x0;
-  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDzeroPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDzero.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
+  f=TFile::Open(Form("%s/CanvaAndVariedHisto%sDplusPt%.0fto%.0fassocPt%.1fto%.1f%s.root",strDplus.Data(),systemStr.Data(),ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()),"READ");
   if(!f)return;
   TH1D *hDplus=f->Get(histname.Data());
   hDplus->SetName(Form("Dplus%.0fto%.0fassoc%.1fto%.1f",ptmin,ptmax,ptassocmin,ptassocmax,v2suffix.Data()));
@@ -187,7 +187,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
 
 
 
-void OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TString strMeson="D",Int_t system=0,Double_t ptminAss=0.3,Double_t ptmaxAss=99.0,Double_t deltaeta=1,TString avString="Weighted"){
+void OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TString strMeson="D",Int_t system=0,Double_t ptminAss=0.3,Double_t ptmaxAss=99.0,Double_t deltaeta=1,TString avString="Weighted",Double_t maxH=7./*just for graphics*/){
   gStyle->SetOptStat(0000);
 
   TFile *f=TFile::Open(strfile.Data(),"READ");
@@ -209,7 +209,7 @@ void OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TStri
   hFDsub->SetXTitle("#Delta#phi (rad)");
   hFDsub->SetYTitle(Form("#frac{1}{N_{%s}}#frac{dN^{assoc}}{d#Delta#phi} (rad^{-1})",strMeson.Data()));
   hFDsub->GetYaxis()->SetTitleOffset(1.3);
-  hFDsub->GetYaxis()->SetRangeUser(0,10);
+  hFDsub->GetYaxis()->SetRangeUser(0,maxH);
   hFDsub->SetTitle("");
   gr->SetLineColor(kBlack);
   gr->SetMarkerColor(kBlack);
@@ -222,28 +222,28 @@ void OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TStri
   tSystem->SetTextSize(0.03);
   tSystem->Draw();
   
-  TLatex *tptD=new TLatex(0.6,0.83,Form("%.1f<p_{T}^{%s}<%.1f GeV/c",ptminD,ptmaxD,strMeson.Data()));
+  TLatex *tptD=new TLatex(0.6,0.83,Form("#bf{%.1f<#it{p}_{T}^{%s}<%.1f GeV/#it{c}}",ptminD,ptmaxD,strMeson.Data()));
   tptD->SetNDC();
   tptD->SetTextSize(0.04);
   tptD->Draw();
 
   TLatex *tptAssoc;
-  if(ptmaxAss>0){
-    tptAssoc=new TLatex(0.6,0.78,Form("%.1f<p_{T}^{assoc}<%.1f GeV/c",ptminAss,ptmaxAss));
+  if(ptmaxAss!=99.0){
+    tptAssoc=new TLatex(0.6,0.78,Form("#bf{%.1f<#it{p}_{T}^{assoc}<%.1f GeV/#it{c}}",ptminAss,ptmaxAss));
   }
-  else tptAssoc=new TLatex(0.6,0.78,Form("p_{T}^{assoc}>%.1f GeV/c",ptminAss));
+  else tptAssoc=new TLatex(0.6,0.78,Form("#bf{#it{p}_{T}^{assoc}>%.1f GeV/#it{c}}",ptminAss));
   tptAssoc->SetNDC();
   tptAssoc->SetTextSize(0.04);
   tptAssoc->Draw();
-  TLatex *tDEta=new TLatex(0.6,0.73,Form("|#Delta#eta|<%.1f",deltaeta));
+  TLatex *tDEta=new TLatex(0.6,0.73,Form("#bf{|#Delta#eta|<%.1f}",deltaeta));
   tDEta->SetNDC();
   tDEta->SetTextSize(0.04);
   tDEta->Draw();
 
-
+printf("RANGE MAX = %d\n",maxH);
   TLatex *tUncertainty;
   if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.2,0.6,Form("%.0f#% correlated uncertainty",hUncCorrMin->GetBinContent(1)*100.));
-  else tUncertainty=new TLatex(0.18,0.68,Form("{}^{+%.0f%s}_{-%.0f%s} scale uncertainty","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+  else tUncertainty=new TLatex(0.18,0.68,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
   tUncertainty->SetNDC();
   tUncertainty->SetTextSize(0.04);
   tUncertainty->Draw();

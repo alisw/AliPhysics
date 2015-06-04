@@ -82,6 +82,7 @@ const char* AliCaloPhotonCuts::fgkCutNames[AliCaloPhotonCuts::kNCuts] = {
 AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	AliAnalysisCuts(name,title),
 	fHistograms(NULL),
+	fHistExtQA(NULL),
 	geomEMCAL(NULL),
 	geomPHOS(NULL),
 	nMaxEMCalModules(12),
@@ -152,6 +153,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistClusterEnergyvsNCells(NULL),
 	fHistCellEnergyvsCellID(NULL),
 	fHistCellTimevsCellID(NULL),
+	fHistClusterEM02BeforeQA(NULL),
+	fHistClusterEM02AfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -170,8 +173,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
     fHistClusterdEtadPhiNegTracksP_125_999BeforeQA(NULL),
     fHistClusterdEtadPtBeforeQA(NULL),
     fHistClusterdPhidPtBeforeQA(NULL),
-	fHistClusterM20PtBeforeQA(NULL),
-	fHistClusterM02PtBeforeQA(NULL),
     fHistClusterM20M02BeforeQA(NULL),
     fHistClusterM20M02AfterQA(NULL)
 {
@@ -183,6 +184,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
    AliAnalysisCuts(ref),
 	fHistograms(NULL),
+	fHistExtQA(NULL),
 	geomEMCAL(NULL),
 	geomPHOS(NULL),
 	nMaxEMCalModules(ref.nMaxEMCalModules),
@@ -253,6 +255,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistClusterEnergyvsNCells(NULL),
 	fHistCellEnergyvsCellID(NULL),
 	fHistCellTimevsCellID(NULL),
+	fHistClusterEM02BeforeQA(NULL),
+	fHistClusterEM02AfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -271,8 +275,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
     fHistClusterdEtadPhiNegTracksP_125_999BeforeQA(NULL),
     fHistClusterdEtadPtBeforeQA(NULL),
     fHistClusterdPhidPtBeforeQA(NULL),
-	fHistClusterM20PtBeforeQA(NULL),
-	fHistClusterM02PtBeforeQA(NULL),
     fHistClusterM20M02BeforeQA(NULL),
     fHistClusterM20M02AfterQA(NULL)
 {
@@ -311,6 +313,17 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 		fHistograms->SetOwner(kTRUE);
 		if(name=="")fHistograms->SetName(Form("CaloCuts_%s",GetCutNumber().Data()));
 		else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
+	}
+
+	if(fHistExtQA != NULL){
+		delete fHistExtQA;
+		fHistExtQA=NULL;
+	}
+	if(fHistExtQA==NULL){
+		fHistExtQA=new TList();
+		fHistExtQA->SetOwner(kTRUE);
+		if(name=="")fHistExtQA->SetName(Form("CaloExtQA_%s",GetCutNumber().Data()));
+		else fHistExtQA->SetName(Form("%s_ExtQA_%s",name.Data(),GetCutNumber().Data()));
 	}
 
 	// IsPhotonSelected
@@ -432,39 +445,44 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     //fHistograms->Add(fHistNLMAfterQA);
 
 	if(fExtendedMatchAndQA > 1){
+		fHistClusterEM02BeforeQA = new TH2F(Form("EVsM02_beforeClusterQA %s",GetCutNumber().Data()),"EVsM02_beforeClusterQA",300,0,30,400,0,5);
+		fHistExtQA->Add(fHistClusterEM02BeforeQA);
+		fHistClusterEM02AfterQA = new TH2F(Form("EVsM02_afterClusterQA %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",300,0,30,400,0,5);
+		fHistExtQA->Add(fHistClusterEM02AfterQA);
+
 		if( GetClusterType() == 1 ){ //EMCAL
 			Int_t nMaxCellsEMCAL = nMaxEMCalModules*48*24;
 			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",300,0,30,nMaxEMCalModules,0,nMaxEMCalModules);
-			fHistograms->Add(fHistClusterEnergyvsMod);
-			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",50,0,50,nMaxEMCalModules,0,nMaxEMCalModules);
-			fHistograms->Add(fHistNCellsBigger100MeVvsMod);
+			fHistExtQA->Add(fHistClusterEnergyvsMod);
+			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",60,0,60,nMaxEMCalModules,0,nMaxEMCalModules);
+			fHistExtQA->Add(fHistNCellsBigger100MeVvsMod);
 			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",50,0,50,nMaxEMCalModules,0,nMaxEMCalModules);
-			fHistograms->Add(fHistNCellsBigger1500MeVvsMod);
+			fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
 			fHistEnergyOfModvsMod = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule",1000,0,100,nMaxEMCalModules,0,nMaxEMCalModules);
-			fHistograms->Add(fHistEnergyOfModvsMod);
+			fHistExtQA->Add(fHistEnergyOfModvsMod);
 			fHistClusterEnergyvsNCells = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",300,0,30,50,0,50);
-			fHistograms->Add(fHistClusterEnergyvsNCells);
+			fHistExtQA->Add(fHistClusterEnergyvsNCells);
 			fHistCellEnergyvsCellID = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",300,0,30,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
-			fHistograms->Add(fHistCellEnergyvsCellID);
-			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",800,timeMin,timeMax,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
-			fHistograms->Add(fHistCellTimevsCellID);
+			fHistExtQA->Add(fHistCellEnergyvsCellID);
+			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",1200,-timeMax,timeMax,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistExtQA->Add(fHistCellTimevsCellID);
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
 			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",300,0,30,nMaxPHOSModules,0,nMaxPHOSModules);
-			fHistograms->Add(fHistClusterEnergyvsMod);
-			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",50,0,50,nMaxPHOSModules,0,nMaxPHOSModules);
-			fHistograms->Add(fHistNCellsBigger100MeVvsMod);
+			fHistExtQA->Add(fHistClusterEnergyvsMod);
+			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",60,0,60,nMaxPHOSModules,0,nMaxPHOSModules);
+			fHistExtQA->Add(fHistNCellsBigger100MeVvsMod);
 			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",50,0,50,nMaxPHOSModules,0,nMaxPHOSModules);
-			fHistograms->Add(fHistNCellsBigger1500MeVvsMod);
+			fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
 			fHistEnergyOfModvsMod = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule",1000,0,100,nMaxPHOSModules,0,nMaxPHOSModules);
-			fHistograms->Add(fHistEnergyOfModvsMod);
+			fHistExtQA->Add(fHistEnergyOfModvsMod);
 			fHistClusterEnergyvsNCells = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",300,0,30,50,0,50);
-			fHistograms->Add(fHistClusterEnergyvsNCells);
+			fHistExtQA->Add(fHistClusterEnergyvsNCells);
 			fHistCellEnergyvsCellID = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",300,0,30,nMaxCellsPHOS,0,nMaxCellsPHOS);
-			fHistograms->Add(fHistCellEnergyvsCellID);
-			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",800,timeMin,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
-			fHistograms->Add(fHistCellTimevsCellID);
+			fHistExtQA->Add(fHistCellEnergyvsCellID);
+			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",1200,-timeMax,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistExtQA->Add(fHistCellTimevsCellID);
 		}
 		else{AliError(Form("fExtendedMatchAndQA (%i) not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,GetClusterType()));}
 	}
@@ -504,7 +522,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
             fHistograms->Add(fHistClusterdEtadPhiPosTracksP_075_125BeforeQA);
             fHistClusterdEtadPhiPosTracksP_125_999BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P>1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P>1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiPosTracksP_125_999BeforeQA);
-            fHistClusterdEtadPhiNegTracksP_000_075BeforeQA= new TH2F(Form("dEtaVsdPhi_negTrack_P<0.75_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTrack_P<0.75_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+			fHistClusterdEtadPhiNegTracksP_000_075BeforeQA= new TH2F(Form("dEtaVsdPhi_negTracks_P<0.75_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_P<0.75_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksP_000_075BeforeQA);
             fHistClusterdEtadPhiNegTracksP_075_125BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_0.75<P<1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_0.75<P<1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksP_075_125BeforeQA);
@@ -514,10 +532,6 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
             fHistograms->Add(fHistClusterdEtadPtBeforeQA);
 			fHistClusterdPhidPtBeforeQA = new TH2F(Form("dPhiVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dPhiVsPt_beforeClusterQA",2*nPhiBins,2*PhiRange[0],2*PhiRange[1],300,0,30);
             fHistograms->Add(fHistClusterdPhidPtBeforeQA);
-			fHistClusterM20PtBeforeQA = new TH2F(Form("M20VsPt_beforeClusterQA %s",GetCutNumber().Data()),"M20VsPt_beforeClusterQA",200,0,2.5,300,0,30);
-			fHistograms->Add(fHistClusterM20PtBeforeQA);
-			fHistClusterM02PtBeforeQA = new TH2F(Form("M02VsPt_beforeClusterQA %s",GetCutNumber().Data()),"M20VsPt_beforeClusterQA",400,0,5,300,0,30);
-			fHistograms->Add(fHistClusterM02PtBeforeQA);
             fHistClusterM20M02BeforeQA = new TH2F(Form("M20VsM02_beforeClusterQA %s",GetCutNumber().Data()),"M20VsM02_beforeClusterQA",200,0,2.5,400,0,5);
             fHistograms->Add(fHistClusterM20M02BeforeQA);
             fHistClusterM20M02AfterQA = new TH2F(Form("M20VsM02_afterClusterQA %s",GetCutNumber().Data()),"M20VsM02_afterClusterQA",200,0,2.5,400,0,5);
@@ -624,6 +638,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	if(fHistM20BeforeQA) fHistM20BeforeQA->Fill(cluster->GetM20());
 	if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion());
 // 	if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(cluster->GetNExMax());
+	if(fExtendedMatchAndQA > 1){
+		if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02());
+	}
 	
 	// Check wether timing is ok
 	if (fUseTimeDiff){
@@ -766,6 +783,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 // 	if(fHistNLMBeforeQA) fHistNLMAfterQA->Fill(cluster->GetNExMax());
 
 	if(fExtendedMatchAndQA > 1){
+		if(fHistClusterEM02AfterQA) fHistClusterEM02AfterQA->Fill(cluster->E(),cluster->GetM02());
 		if(fHistClusterEnergyvsNCells) fHistClusterEnergyvsNCells->Fill(cluster->E(),cluster->GetNCells());
 		if(cluster->IsEMCAL()){
 			Int_t iSuperModule = -1;
@@ -782,7 +800,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 				fHistClusterEnergyvsMod->Fill(cluster->E(),relId[0]);
 			}
 		}
-
 	}
 
 	return kTRUE;
@@ -1079,8 +1096,6 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
                 }
                 fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt());
                 fHistClusterdPhidPtBeforeQA->Fill(dPhi, inTrack->Pt());
-				fHistClusterM20PtBeforeQA->Fill(clusM20, inTrack->Pt());
-				fHistClusterM02PtBeforeQA->Fill(clusM02, inTrack->Pt());
                 fHistClusterM20M02BeforeQA->Fill(clusM20, clusM02);
             }
 

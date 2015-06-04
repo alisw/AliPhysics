@@ -17,6 +17,7 @@
 #include "TH3F.h"
 #include "THnSparse.h"
 #include <vector>
+#include <map>
 
 class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 	public:
@@ -46,8 +47,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void ProcessAODMCParticles();
 		void RelabelAODPhotonCandidates(Bool_t mode);
 		void ProcessTruePhotonCandidates( AliAODConversionPhoton* TruePhotonCandidate);
-		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate);
-		void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
+		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Float_t clusM02);
+		void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Float_t clusM02);
 		void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
 		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
@@ -60,6 +61,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
 		void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
+		void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
 
 		// Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -100,6 +102,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
 		Bool_t CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked);
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
+
+		void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
+		void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
 	
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
@@ -123,7 +128,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TList 								**fPhotonDCAList;					// Array of lists with photon dca trees
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
-		TList 								**fHeaderNameList;					// Array of lists with header names for MC header selection
 		TList								**fClusterOutputList;     			//!Array of lists of output histograms for cluster photons
 		TList 								*fOutputContainer;					// Output container
 		TClonesArray 						*fReaderGammas;						// Array with conversion photons selected by V0Reader Cut
@@ -308,6 +312,15 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
 		vector<Int_t>						fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
+		TH1F								**fHistoMultipleCountTruePi0;					//! array of histos how often TruePi0s are counted
+		TH1F								**fHistoMultipleCountTrueEta;					//! array of histos how often TrueEtas are counted
+		TH1F								**fHistoMultipleCountTrueConvGamma;				//! array of histos how often TrueConvGammass are counted
+		map<Int_t,Int_t>					fMapMultipleCountTruePi0s;						//! map containing pi0 labels that are counted at least twice
+		map<Int_t,Int_t>					fMapMultipleCountTrueEtas;						//! map containing eta labels that are counted at least twice
+		map<Int_t,Int_t>					fMapMultipleCountTrueConvGammas;				//! map containing photon labels that are counted at least twice
+		TH2F								**fHistoTrueClusGammaEM02;						//! array of histos with TruePhotons: cluster E vs M02
+		TH2F								**fHistoTrueClusPi0EM02;						//! array of histos with TruePi0s: cluster E vs M02
+
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
@@ -341,13 +354,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
 		Bool_t								fDoTHnSparse;						// flag for using THnSparses for background estimation
+		Bool_t								fSetPlotHistsExtQA;					// flag for extended QA hists
 
 		
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 7);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 10);
 };
 
 #endif

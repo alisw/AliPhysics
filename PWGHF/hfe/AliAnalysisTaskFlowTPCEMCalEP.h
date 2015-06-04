@@ -56,7 +56,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay);
+  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma);
   void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight); 
   void InitParameters();
 
@@ -66,7 +66,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetPi0weight(Double_t mcPi0pT,Int_t iCent) const;
   Double_t GetEtaweight(Double_t mcEtapT,Int_t iCent) const;
   Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Int_t iCent) const;
+  Double_t GetSigmaEMCalMC(Double_t EoverP, Double_t pt, Int_t iCent) const;
   
+  Double_t GetCentWeight(Int_t centbin);
   Double_t GetEPweight(Int_t bin);
   Bool_t   RejectEvent(Double_t cent, Int_t centbin);
   Bool_t   IsFromHFdecay(TParticle *particle);

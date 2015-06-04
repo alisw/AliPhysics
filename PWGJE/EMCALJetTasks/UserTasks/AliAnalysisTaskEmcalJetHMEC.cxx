@@ -366,6 +366,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     return kTRUE;
   }
 
+  if (0==fRunType) fCent = 0.0; //put pp centrality to 0.0
+
   Int_t centbin = GetCentBin(fCent);
   if(centbin<0) return kTRUE;
 

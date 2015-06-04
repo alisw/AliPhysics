@@ -99,6 +99,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		void 			InitCutHistograms(TString name="");
 		void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);} return;}
 		TList*			GetCutHistograms()												{return fHistograms;}
+		TList*			GetExtQAHistograms()											{return fHistExtQA;}
 		void 			FillClusterCutIndex(Int_t photoncut)							{if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
 
 		void 			SetExtendedMatchAndQA(Int_t extendedMatchAndQA)					{fExtendedMatchAndQA = extendedMatchAndQA; return;}
@@ -131,7 +132,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			SetNLM(Int_t);
 		
 	protected:
-        TList       *fHistograms;
+		TList			*fHistograms;
+		TList			*fHistExtQA;
 
 		AliEMCALGeometry	*geomEMCAL;					// pointer to EMCAL geometry
 		AliPHOSGeometry		*geomPHOS;					// pointer to PHOS geometry
@@ -212,6 +214,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH2F*		fHistClusterEnergyvsNCells;				// Cluster Energy vs NCells
 		TH2F*		fHistCellEnergyvsCellID;				// Cell Energy vs CellID
 		TH2F*		fHistCellTimevsCellID;					// Cell Time vs CellID
+		TH2F* 		fHistClusterEM02BeforeQA;				// 2-dim plot E vs. M02
+		TH2F* 		fHistClusterEM02AfterQA;				// 2-dim plot E vs. M02
 
         //Track matching histograms
 		TH1F* 		fHistClusterRBeforeQA;					// cluster position in R=SQRT(x^2+y^2) (before QA)
@@ -234,14 +238,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         TH2F*       fHistClusterdEtadPhiNegTracksP_125_999BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P > 1.25
         TH2F* 		fHistClusterdEtadPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterdPhidPtBeforeQA;			// 2-dim plot dEta vs. Pt
-		TH2F* 		fHistClusterM20PtBeforeQA;				// 2-dim plot M20 vs. Pt
-		TH2F* 		fHistClusterM02PtBeforeQA;				// 2-dim plot M02 vs. Pt
         TH2F* 		fHistClusterM20M02BeforeQA;				// 2-dim plot M20 vs. M02
         TH2F* 		fHistClusterM20M02AfterQA;				// 2-dim plot M20 vs. M20
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,3)
+		ClassDef(AliCaloPhotonCuts,4)
 };
 
 #endif

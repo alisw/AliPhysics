@@ -130,7 +130,7 @@ public:
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
  AliAnalysisTaskCRCZDC& operator=(const AliAnalysisTaskCRCZDC& dud);
- 
+
  TString       fAnalysisType;      // can be MC, ESD or AOD
  TString       fRPType;            // can be Global or Tracklet or FMD
  AliCFManager* fCFManager1;        // correction framework manager

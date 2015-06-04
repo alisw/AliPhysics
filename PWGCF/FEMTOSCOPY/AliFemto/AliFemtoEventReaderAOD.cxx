@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <map>
 
 ClassImp(AliFemtoEventReaderAOD)
 
@@ -365,8 +366,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   int realnofTracks = 0; // number of track which we use in a analysis
   int tracksPrim = 0;
 
-  std::vector<int> labels;
-  labels.assign(20000, -1);
+  // 'labels' maps a track's id to the track's index in the Event
+  // i.e. labels[Event->GetTrack(x)->GetID()] == x
+  std::map<int, int> labels;
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i = 0; i < nofTracks; i++) {
@@ -404,7 +406,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     if (fEstEventMult == kGlobalCount) {
       //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
       if (aodtrack->Chi2perNDF() < 4.0)
-        if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
+        if (0.15 <= aodtrack->Pt() && aodtrack->Pt() < 20)
           if (aodtrack->GetTPCNcls() > 70)
             if (aodtrack->Eta() < 0.8)
               tNormMult++;
@@ -417,7 +419,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
 
     // For TPC Only tracks we have to copy PID information from corresponding global tracks
-    AliAODTrack *aodtrackpid = ((fFilterBit == (1 << (7))) || fFilterMask == 128)
+    AliAODTrack *aodtrackpid = ( fFilterBit == (1 << (7)) || fFilterMask == 128 )
                              ? dynamic_cast<AliAODTrack *>(fEvent->GetTrack(labels[-1 - fEvent->GetTrack(i)->GetID()]))
                              : dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
     assert(aodtrackpid && "Not a standard AOD");
@@ -584,57 +586,58 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   if (cent) {
     switch (fEstEventMult) {
       case kCentrality:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("V0M"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0M"));
+        break;
       case kCentralityV0A:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("V0A"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0A"));
+        break;
       case kCentralityV0C:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("V0C"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0C"));
+        break;
       case kCentralityZNA:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNA"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNA"));
+        break;
       case kCentralityZNC:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNC"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNC"));
+        break;
       case kCentralityCL1:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("CL1"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("CL1"));
+        break;
       case kCentralityCL0:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("CL0"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("CL0"));
+        break;
       case kCentralityTRK:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("TRK"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("TRK"));
+        break;
       case kCentralityTKL:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("TKL"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("TKL"));
+        break;
       case kCentralityCND:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("CND"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("CND"));
+        break;
       case kCentralityNPA:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("NPA"));
-	break;
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("NPA"));
+        break;
       case kCentralityFMD:
-	norm_mult = lrint(10 * cent->GetCentralityPercentile("FMD"));
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("FMD"));
+        break;
     }
   } else {
     switch (fEstEventMult) {
       case kGlobalCount:
-	norm_mult = tNormMult; // Particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
-	break;
+        norm_mult = tNormMult; // Particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
+        break;
       case kReference:
-	norm_mult = fAODheader->GetRefMultiplicity();
-	break;
+        norm_mult = fAODheader->GetRefMultiplicity();
+        break;
       case kTPCOnlyRef:
-	norm_mult = fAODheader->GetTPConlyRefMultiplicity();
-	break;
+        norm_mult = fAODheader->GetTPConlyRefMultiplicity();
+        break;
       case kVZERO:
-	Float_t multV0 = 0.0;
-	for (Int_t i = 0; i < 64; i++)
-	  multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
-	norm_mult = lrint(multV0);
+        Float_t multV0 = 0.0;
+        for (Int_t i = 0; i < 64; i++)
+          multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
+        norm_mult = lrint(multV0);
     }
   }
 
@@ -685,16 +688,13 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       }
       tEvent->V0Collection()->push_back(trackCopyV0);
       count_pass++;
-      //cout<<"Pushback v0 to v0collection"<<endl;
     }
   }
 
   return tEvent;
 }
 
-AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
-    //            AliPWG2AODTrack *tPWG2AODTrack
-                                                          )
+AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack)
 {
   // Copy the track information from the AOD into the internal AliFemtoTrack
   // If it exists, use the additional information from the PWG2 AOD
@@ -1367,34 +1367,32 @@ void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
   fisPileUp = ispileup;
 }
 
-
-
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
-{
+{   
   fDCAglobalTrack = dcagt;
 }
 
-
 bool AliFemtoEventReaderAOD::RejectEventCentFlat(float MagField, float CentPercent)
 {
-  // to flatten centrality distribution
-  bool RejectEvent = kFALSE;
-  int weightBinSign;
-  TRandom3 *fRandomNumber = new TRandom3();  //for 3D, random sign switching
-  fRandomNumber->SetSeed(0);
+  // Flattens the centrality distribution
 
-  if (MagField > 0) weightBinSign = 0;
-  else weightBinSign = 1;
-  float kCentWeight[2][9] = {{.878, .876, .860, .859, .859, .88, .873, .879, .894},
+  // Setting 0 as seed ensures random seed every time.
+  TRandom3 RNG(0); // for 3D, random sign switching
+
+  float kCentWeight[2][9] = {
+    {.878, .876, .860, .859, .859, .880, .873, .879, .894},
     {.828, .793, .776, .772, .775, .796, .788, .804, .839}
   };
-  int weightBinCent = (int) CentPercent;
-  if (fRandomNumber->Rndm() > kCentWeight[weightBinSign][weightBinCent]) RejectEvent = kTRUE;
-  delete fRandomNumber;
-  return RejectEvent;
+
+  int weightBinCent = (int) CentPercent,
+      weightBinSign = (MagField > 0) ? 0 : 1;
+
+  bool rejectEvent = RNG.Rndm() > kCentWeight[weightBinSign][weightBinCent];
+  return rejectEvent;
 }
 
 void AliFemtoEventReaderAOD::SetCentralityFlattening(Bool_t dcagt)
 {
   fFlatCent = dcagt;
 }
+

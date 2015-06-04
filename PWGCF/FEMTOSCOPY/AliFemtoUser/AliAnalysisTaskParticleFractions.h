@@ -7,9 +7,6 @@
 #ifndef ALIANALYSISTASKPARTICLEFRACTIONS
 #define ALIANALYSISTASKPARTICLEFRACTIONS
 
-#define MULTBINS 1
-#define PARTTYPES 5
-
 #include "AliAnalysisTaskSE.h"
 
 class AliESDtrackCuts;
@@ -39,7 +36,7 @@ public:
 
 AliAnalysisTaskParticleFractions() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0)
   {
-    for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+    for(Int_t i = 0; i < multbins*parttypes; i++)  {
       fParticleOriginMC[i] = NULL;
       fParticleOriginRec[i] = NULL;
     }
@@ -61,12 +58,16 @@ private:
   AliCentrality *centrality;
   AliPIDResponse *fpidResponse;
 
+  static const int multbins = 1;
+  static const int parttypes = 5;
+
   TList *fHistoList; // histo list
   TH1F *fHistEv;
-  TH1F *fParticleOriginMC[MULTBINS*PARTTYPES];
-  TH1F *fParticleOriginRec[MULTBINS*PARTTYPES];
+  TH1F *fParticleOriginMC[multbins*parttypes];
+  TH1F *fParticleOriginRec[multbins*parttypes];
 
   double fV1[3];
+
 
   ClassDef(AliAnalysisTaskParticleFractions, 1);
 

@@ -27,6 +27,7 @@
 #include <AliPID.h>
 #include <AliPIDResponse.h>
 #include <AliAnalysisUtils.h>
+#include <AliPPVsMultUtils.h>
 
 #include "AliMESbaseTask.h"
 #include "AliMEStender.h"
@@ -209,8 +210,8 @@ void AliMEStender::UserCreateOutputObjects()
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
 
-  fUtils = new AliAnalysisUtils();
-
+//   fUtils = new AliAnalysisUtils();
+  fUtils = new AliPPVsMultUtils();
 
   if(!HasMCdata()) return;
   fMCtracks = new TObjArray(200);
@@ -291,14 +292,26 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     if(!grpManager.SetMagField()) AliError("Problem with magnetic field setup");
   }
 
+
+  ((TH1*)fHistosQA->At(kEfficiency))->Fill(0);  // all events
+  if( AliPPVsMultUtils::IsMinimumBias(fESD) ) {
+	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection (for MB normalisation to INEL)
+  }
+  if( !AliPPVsMultUtils::IsEventSelected(fESD) ) {
+	  // Event isn't selected, post output data, done here
+	  return;
+  }
+  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // analyzed events
+
+
   // TRIGGER SELECTION
   // MB & HM triggers
   Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
          triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
   if(!triggerHM && !triggerMB){
     AliDebug(2, "Miss trigger");
-    ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
-    return;
+//     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
+//     return;
   }
   if(triggerMB) fEvInfo->SetTriggerMB();
   if(triggerHM) fEvInfo->SetTriggerHM();
@@ -311,11 +324,23 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     if(vertex->GetNContributors()>=1) fEvInfo->SetVertex();
     else {
       AliDebug(2, "Miss vertex");
-      ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-      return;
+//       ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+//       return;
     }
   }
-  ((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
+/*  
+  if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
+	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+  }
+  if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
+	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+  }
+  
+// 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
+*/
+
   fEvInfo->SetVertexZ(vertex->GetZ());
 
   // pile-up selection
@@ -325,7 +350,8 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   AliESDtrackCuts *tc(NULL);
   if((tc = dynamic_cast<AliESDtrackCuts*>(fTrackFilter->GetCuts()->At(0)/*FindObject("std10TC")*/))){
     //MakeMultiplicityESD(fESD, "Combined")
-    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
+// 	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
+	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
     // MakeMultiplicityESD(fESD, "Global")
     fEvInfo->SetMultiplicity(AliMESeventInfo::kGlob08, tc->CountAcceptedTracks(fESD));
 	// V0M
@@ -336,8 +362,14 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     AliWarning("No track cuts defined. No multiplicity computed for REC data.");
     fTrackFilter->GetCuts()->ls();
   }
-
 //   printf( "V0M = %f \n", fUtils->GetMultiplicityPercentile(fESD, "V0M") );
+// 	Int_t testOur = tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+// 	Int_t testChi = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD);
+// 	if( testOur != testChi ){
+// // 		printf("\n\n AHA! \n\n");
+// 		printf("our = %i \t Chinellato = %i \n", testOur, testChi);
+// // 		exit(1);
+// 	}
 
   Double_t val[7] = {0.};
   THnSparse *H(NULL);

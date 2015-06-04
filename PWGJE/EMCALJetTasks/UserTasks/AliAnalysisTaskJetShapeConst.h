@@ -40,7 +40,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   void SetJetContainerSub(Int_t c)                              { fContainerSub      = c   ; }
   void SetJetContainerNoEmb(Int_t c)                            { fContainerNoEmb    = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
-  void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
+  void SetSingleTrackEmbedding(Bool_t b, Int_t min = 99999, Int_t max = 999999) { fSingleTrackEmb = b; fMinLabelEmb = min; fMaxLabelEmb = max; }
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
@@ -74,7 +74,9 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   Float_t         fRhoM;                                           // rho_m
   Int_t           fNConst;                                         // N constituents in jet1
   Int_t           fMatch;                                          // 1: matched to MC jet; 0: no match
-
+  Int_t           fMinLabelEmb;                                    // min label of embedded particles
+  Int_t           fMaxLabelEmb;                                    // max label of embedded particles
+  
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
   TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
   TH3F          **fh3MSubPtRawDRMatch;                             //! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
@@ -83,11 +85,12 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   TH3F          **fh3PtTrueDeltaMLeadPt;                           //! true jet pT vs (Msub - Mtrue) vs LeadPt for matched jets
   TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
+  THnSparse     **fhnDeltaMass;                                    //! deltaM vs deltapT
 
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 7)
+  ClassDef(AliAnalysisTaskJetShapeConst, 8)
 };
 #endif
 

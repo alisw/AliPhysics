@@ -22,7 +22,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    const char *branch         = "biased",
-   const char *CentEst         = "V0M"
+   const char *CentEst         = "V0M",
+   const Short_t runtype       = 2 //0 - pp, 1 - pA, 2 - AA
                                                  
 )
 {  
@@ -72,6 +73,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetCentBinSize(centbinsize);
   correlationtask->SetDoEffCorr(doEffcorrSW);
   correlationtask->SetCentralityEstimator(CentEst);
+  correlationtask->SetRunType(runtype);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -1,4 +1,4 @@
-AliAnalysisTask AddTaskEMCalHFEpp(
+AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpp(
 
 			Bool_t 	isMC 			= kFALSE, 
 			Int_t 	triggerIndex 	= 0, 
@@ -26,7 +26,8 @@ AliAnalysisTask AddTaskEMCalHFEpp(
 	
 	//_______________________
 	//Config Task
-	gROOT->LoadMacro("ConfigEMCalHFEpp.C");
+	//gROOT->LoadMacro("ConfigEMCalHFEpp.C");
+	gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigEMCalHFEpp.C");
 	AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpp(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender);
 	
 	//_______________________

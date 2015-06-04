@@ -497,7 +497,11 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   else
     fSimpleOfflineTriggers->GetPosition(globCol, globRow);
 
-  if(globCol >= kPatchCols || globRow >= kPatchRows){
+  // Markus: For the moment reject jet patches with a row larger than 44 to overcome
+  // an issue with patches containing inactive TRUs
+  if((type == kTMEMCalJet && IsEJE( tBits )) && (globRow > fGeom->GetNTotalTRU() - 16)) {
+    AliDebug(1, Form("Jet patch in inactive area: row[%d]", globRow));
+    return NULL;
   }
 
   if(fRejectOffAcceptancePatches){

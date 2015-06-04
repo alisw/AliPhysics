@@ -56,7 +56,7 @@ void AliAnalysisTaskRhoMassSparse::UserCreateOutputObjects()
   fHistMdAreavsCent->GetYaxis()->SetTitle("#rho_{m} (GeV/c * rad^{-1})");
   fOutput->Add(fHistMdAreavsCent);
   
-  fHistOccCorrvsCent = new TH2F("OccCorrvsCent", "OccCorrvsCent", 101, -1, 100, 2000, 0 , 0.25);
+  fHistOccCorrvsCent = new TH2F("OccCorrvsCent", "OccCorrvsCent", 101, -1, 100, 2000, 0 , 2);
   fOutput->Add(fHistOccCorrvsCent);
 
 }

@@ -337,10 +337,9 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserCreateOutputObjects()
 	}
 
 	fGoodGammas = new TList();
-	//fGoodGammas->SetOwner(kTRUE);
 
 	fGoodVirtualParticles = new TList();
-	//fGoodVirtualParticles->SetOwner(kTRUE);
+	fGoodVirtualParticles->SetOwner(kTRUE);
 
 	fCutFolder				= new TList*[fnCuts];
 	fESDList				= new TList*[fnCuts];

@@ -1,5 +1,6 @@
 TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20;pt200_cut21;pt200_cut22;pt200_cut23");
 
+
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Int_t       selectedCentrality=-1; // not yet implemented
@@ -16,15 +17,15 @@ Double_t    rejCutPhiV;
 // eta bins
 const Double_t EtaMin   = -1.;
 const Double_t EtaMax   =  1.;
-const Int_t    nBinsEta = 100; //flexible to rebin
+const Int_t    nBinsEta = 20; //flexible to rebin
 // phi bins
 const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
-const Int_t    nBinsPhi = 60; //flexible to rebin
+const Int_t    nBinsPhi = 50; //flexible to rebin
 const Double_t PtBins[] = {
   0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
-  4.00,5.0,6.0,7.0,8.0
+  4.00,5.0,6.0,7.0,8.0,10.0,20.0
 };
 // run dependency (currently only "TPC_dEdx_P_run")
 // run string must be sorted in increasing order!
@@ -202,7 +203,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
 
   if(cutInstance == 0){
     fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -211,7 +213,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 1){
     fesdTrackCuts->SetMinNClustersITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(130);
@@ -220,7 +223,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 2){
     fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -229,7 +233,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 3){
     fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(130);
@@ -238,7 +243,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 4){
     fesdTrackCuts->SetMinNClustersITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -247,7 +253,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 5){
     fesdTrackCuts->SetMinNClustersITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -256,7 +263,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 6){
     fesdTrackCuts->SetMinNClustersITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -265,7 +273,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 7){
     fesdTrackCuts->SetMinNClustersITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -274,7 +283,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 8){
     fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(130);
@@ -283,7 +293,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 9){
     fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -292,7 +303,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 10){
     fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -301,6 +313,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 11){
     fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -309,6 +323,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 12){
     fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(120);
@@ -317,6 +333,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 13){
     fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(120);
@@ -325,6 +343,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 14){
     fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(120);
@@ -333,6 +353,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 15){
     fesdTrackCuts->SetMinNClustersITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -341,41 +363,46 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 16){
     fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
   }
   if(cutInstance == 17){
     fesdTrackCuts->SetMinNClustersITS(6);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
   }
   if(cutInstance == 18){
     fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);    
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
   }
   if(cutInstance == 19){
     fesdTrackCuts->SetMinNClustersITS(4);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
   }
   if(cutInstance == 20){
     fesdTrackCuts->SetMinNClustersITS(3);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
@@ -383,6 +410,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 21){
     fesdTrackCuts->SetMinNClustersITS(4);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
@@ -390,7 +419,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 22){
     fesdTrackCuts->SetMinNClustersITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);

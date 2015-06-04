@@ -169,6 +169,7 @@ class AliAnalysisTaskHelium3Pi : public AliAnalysisTaskSE {
   Float_t  tHelimpactXY	   ;
   Float_t  tHelimpactZ	   ;
   Float_t  tHelmapITS;
+  Float_t  tHelBetaTOF;
   static const Int_t fgNrot;
  
   AliPIDResponse *fPIDResponse;     //! pointer to PID response

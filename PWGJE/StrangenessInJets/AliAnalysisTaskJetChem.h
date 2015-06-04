@@ -258,6 +258,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* jetConeLaEmblist;
   TList* jetConeALaEmblist;
   TList* jetPerpConeK0list;
+  TList* jetPerpRecCutslist; 
   TList* jetPerpConeK0Emblist;
   TList* jetPerpConeLalist;
   TList* jetPerpConeLaEmblist;
@@ -266,9 +267,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* jetMedianConeK0list;
   TList* jetMedianConeLalist;
   TList* jetMedianConeALalist;
+  TList* jetMedianRecCutslist;
   TList* fListK0sRC;
   TList* fListLaRC;
   TList* fListALaRC;
+  TList* fTracksRecCutsRC;
   TList* fTracksPerpCone;
                                   //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
@@ -434,6 +437,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnNJK0;
   THnSparse* fhnNJLa;
   THnSparse* fhnNJALa;
+  TH2F* fh2ChTracksNJ;
+  TH2F* fh2ChTracksRC;
+  TH2F* fh2ChTracksOC;
+  TH2F* fh2ChTracksMCC;
+  TH2F* fh2ChTracksPC;
   //  TH2F* fh2MCgenK0Cone;
   //  TH2F* fh2MCgenLaCone;
   //  TH2F* fh2MCgenALaCone;

@@ -1,5 +1,6 @@
-AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Char_t* outputFileName="LMEEoutput.root", 
-                                                     Bool_t getFromAlien=kFALSE,
+AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
+                                                     TString cFileName = "Config_tbroeker_ElectronEfficiency.C",
+                                                     Char_t* outputFileName="LMEEoutput.root",
                                                      Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree'! (needed for LEGO trains)
                                                      )
 {
@@ -13,14 +14,14 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Char_t* outputFileName="LME
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/Config_tbroeker_ElectronEfficiency.C ."))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName)))
       // Task files (.cxx & .h) not possible because they need to be compiled...
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  
-  TString configFile("Config_tbroeker_ElectronEfficiency.C");
-  TString configFilePath(configBasePath+configFile);
+
+  TString configFilePath(configBasePath+cFileName);
+  std::cout << "Configpath:  " << configFilePath << std::endl;
   if (gSystem->Exec(Form("ls %s", configFilePath.Data()))==0) {
     std::cout << "loading config: " << configFilePath.Data() << std::endl;
     gROOT->LoadMacro(configFilePath.Data());
@@ -90,12 +91,15 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Char_t* outputFileName="LME
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("tbroeker_EffTree", TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("tbroeker_stats", TH1D::Class(),
+                                                            AliAnalysisManager::kOutputContainer,outputFileName);                                                          
 
   //connect input/output
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
+  mgr->ConnectOutput(task,4,coutput4);
 
   return task;
 

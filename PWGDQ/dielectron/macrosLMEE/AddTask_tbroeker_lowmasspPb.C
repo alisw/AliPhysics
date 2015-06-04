@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString cFileName = "Config_lowmasspPb.C",Char_t* outputFileName="LMEEoutput.root"){
+AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString cFileName = "Config_tbroeker_lowmasspPb.C",Char_t* outputFileName="LMEEoutput.root"){
 
 
   //get the current analysis manager
@@ -13,41 +13,35 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString 
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-
-  if(getFromAlien && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/Config_lowmasspPb.C .")) ){
+  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
     TString configBasePath=Form("%s/",gSystem->pwd());
   }
 
   TString configFilePath(configBasePath+cFileName);
 
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
-	  gROOT->LoadMacro(configFilePath.Data());
+  std::cout << "Configpath:  " << configFilePath << std::endl;
+  
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
+  gROOT->LoadMacro(configFilePath.Data());
 
   //create task and add it to the manager (MB)
-  AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
-  if (!hasMC) taskMB->UsePhysicsSelection();
-//  taskMB->SelectCollisionCandidates(AliVEvent::kMB);
-//  taskMB->SelectCollisionCandidates(AliVEvent::kINT7); //kINT7
-  taskMB->SetTriggerMask(AliVEvent::kINT7);
-//taskMB->SetRejectPileup();
+  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("MultiDielectron_pPb");
+  if (!hasMC) task->UsePhysicsSelection();
+  task->SetTriggerMask(triggerMask);
+//  taskMB->SetRejectPileup();
+  task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  eventCuts->SetRequireVertex();
-  eventCuts->SetVertexZ(-10.,10.);
-  eventCuts->SetMinVtxContributors(1);
-
-  taskMB->SetEventFilter(eventCuts);
-  mgr->AddTask(taskMB);
-
+  task->SetEventFilter( GetEventCuts() );
+  
+  mgr->AddTask(task);
 
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_lowMB = Config_lowmasspPb(i);
-    if(!diel_lowMB)continue;
-    diel_lowMB->SetNoPairing(kFALSE);
-    taskMB->AddDielectron(diel_lowMB);
+    AliDielectron *diel_low = Config_lowmasspPb(i);
+    if(!diel_low)continue;
+    task->AddDielectron(diel_low);
 
   }//loop
 
@@ -72,18 +66,18 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString 
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("tbroeker_lowmass_EventStat",
-                         TList::Class(),
+                         TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName);
 
-  mgr->ConnectInput(taskMB,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskMB, 0, coutput1 );
-  mgr->ConnectOutput(taskMB, 1, cOutputHist1);
-  mgr->ConnectOutput(taskMB, 2, cOutputHist2);
-  mgr->ConnectOutput(taskMB, 3, cOutputHist3);
+  mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 0, coutput1 );
+  mgr->ConnectOutput(task, 1, cOutputHist1);
+  mgr->ConnectOutput(task, 2, cOutputHist2);
+  mgr->ConnectOutput(task, 3, cOutputHist3);
   
 
 
-    return taskMB;
+    return task;
 
 }

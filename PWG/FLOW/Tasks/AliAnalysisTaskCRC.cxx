@@ -192,6 +192,7 @@ fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
+fRecenterZDC(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -262,6 +263,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
+ fQC->SetRecenterZDC(fRecenterZDC);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
@@ -277,7 +279,6 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fUseEtaWeights){fQC->SetUseEtaWeights(fUseEtaWeights);}
   if(fUseTrackWeights){fQC->SetUseTrackWeights(fUseTrackWeights);}
   if(fUsePhiEtaWeights){fQC->SetUsePhiEtaWeights(fUsePhiEtaWeights);}
-  
   // Pass the list with weights to class:
   if(fWeightsList) fQC->SetWeightsList(fWeightsList);
  }
@@ -286,7 +287,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
  }
  // Q Vector weights:
- if(fUseCRCRecenter) {
+ if(fUseCRCRecenter || fRecenterZDC) {
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
  

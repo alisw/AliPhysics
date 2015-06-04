@@ -1390,25 +1390,26 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
       histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    }
       else // Run2
-    {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 329*TMath::DegToRad(), 250) ;
-      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
-      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
+      {
+        histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 329*TMath::DegToRad(), 250) ;
+        histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
+        histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
+      }
+      
+      histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
     }
-    
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    else if(calorimeter=="PHOS") 
+    {
+      histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
+      histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
+    }
+    else if(calorimeter=="CTS")
+    {
+      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+    }
   }
-  else if(calorimeter=="PHOS") 
-  {
-    histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
-    histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
-  }
-  else if(calorimeter=="CTS")
-  {
-    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
-    ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
-  }
-    
+  
   histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 4.9, 500);
   
   // Invariant mass histo

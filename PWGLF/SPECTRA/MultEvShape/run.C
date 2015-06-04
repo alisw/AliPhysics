@@ -89,48 +89,29 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
 
 
   // *******************  MES Tender  ******************
-//   AliLog::SetClassDebugLevel("AliMEStender", 2);
-//   AliLog::SetClassDebugLevel("AliMESpidTask", 2);
-//   AliLog::SetClassDebugLevel("AliMESchgTask", 2);
-//   AliLog::SetClassDebugLevel("AliMESppColTask", 2);
-  AliMEStender *tender = new AliMEStender((char*)"MEStender");
-  tender->SetMCdata(mc);
-  mgr->AddTask(tender);
-  tender->SetDebugLevel(0);
-  tender->ConfigTask( AliMEStender::AliMESconfigTender::kStandard,                    // event cuts
-                      AliMEStender::AliMESconfigTender::kStandardITSTPCTrackCuts2010, // track cuts
-					            AliMEStender::AliMESconfigTender::kIterative);                  // PID priors
-
-  // Connect IO slots
-  mgr->ConnectInput (tender, 0, mgr->GetCommonInputContainer());
-  AliAnalysisDataContainer *co[AliMESbaseTask::kNcontainers] = {NULL};
-  co[0]                          = mgr->CreateContainer("tenderQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MES", mgr->GetCommonFileName()));
-  co[AliMESbaseTask::kEventInfo] = mgr->CreateContainer("eventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-  co[AliMESbaseTask::kTracks]    = mgr->CreateContainer("tracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  if(mc){
-    co[AliMESbaseTask::kMCeventInfo] = mgr->CreateContainer("MCeventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-    co[AliMESbaseTask::kMCtracks]    = mgr->CreateContainer("MCtracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  }
-  for(Int_t ios(0);ios<AliMESbaseTask::kNcontainers;ios++)
-    if(co[ios]) mgr->ConnectOutput(tender, ios+1, co[ios]);
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMEStender.C");
+  AddMEStender(mc);
 
   // *******************  MES PID task  ******************
   if(tpid){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
-    AddMESpidTask(&co[AliMESbaseTask::kEventInfo], mc);
+	AddMESpidTask(mc);
   }
 //
+
 //   // *******************  MES CHG task  ******************
   if(tchg){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C");
-    AddMESchgTask(&co[AliMESbaseTask::kEventInfo], mc);
+    AddMESchgTask(mc);
   }
 //
 //   // *******************  MES ppCol task  ******************
   if(tpp){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
-    AddMESppColTask(&co[AliMESbaseTask::kEventInfo], mc);
+    AddMESppColTask(mc);
   }
+
+
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local", chain, nev, first);

@@ -654,7 +654,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
             fHistdEtaPatchvdPhiPatch->Fill(dEtaPatch,dPhiPatch);
             fHistRawJetEvPatchE->Fill(jetptraw,fMaxPatch->GetPatchE());
           }//Fill Histos
-          Double_t JetTrig[18] = {jetptraw, jetPt, jeteta, jetphi, jet->E(), fMaxPatch->GetPatchE(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo(), fMaxPatch->GetADCAmp(), mClusterE, mcp.PseudoRapidity(), mcp.Phi(),acceptTrackP, acceptTrackPt, acceptTrackEta, acceptTrackPhi, EovPJetGA, nSigmaElectron_TPC_GA};
+          Double_t JetTrig[18] = {jetptraw, jetPt, jeteta, jetphi, jet->E(), fMaxPatch->GetPatchE(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo(), (Double_t)fMaxPatch->GetADCAmp(), mClusterE, mcp.PseudoRapidity(), mcp.Phi(),acceptTrackP, acceptTrackPt, acceptTrackEta, acceptTrackPhi, EovPJetGA, nSigmaElectron_TPC_GA};
           if(fJetPID>0) fhnJetTrigger->Fill(JetTrig);
         }//Trigger Patch Matching 'if'
         

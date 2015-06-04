@@ -59,6 +59,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fRhoM(0),
   fNConst(0),
   fMatch(0),
+  fMinLabelEmb(-kMaxInt),
+  fMaxLabelEmb(kMaxInt),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -66,7 +68,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh3MTruePtTrueLeadPt(0x0),
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
-  fhnMassResponse(0x0)
+  fhnMassResponse(0x0),
+  fhnDeltaMass(0)
 {
   // Default constructor.
 
@@ -78,6 +81,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -88,6 +92,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -117,6 +122,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fRhoM(0),
   fNConst(0),
   fMatch(0),
+  fMinLabelEmb(-kMaxInt),
+  fMaxLabelEmb(kMaxInt),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -124,7 +131,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh3MTruePtTrueLeadPt(0x0),
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
-  fhnMassResponse(0x0)
+  fhnMassResponse(0x0),
+  fhnDeltaMass(0)
 {
   // Standard constructor.
 
@@ -136,6 +144,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
+  fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -146,6 +155,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
+    fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -189,6 +199,9 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     minDM   = -0.5;
     maxDM   = 0.5;
   }
+  Int_t nBinsDpT  = 100;
+  Double_t minDpT = -50.;
+  Double_t maxDpT = 50.;
 
   const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event
   const Double_t minDRToLJ = 0.;
@@ -203,6 +216,11 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
+
+  const Int_t nBinsSparse1 = 6;
+  const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt};
+  const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt};
+  const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt};
 
   TString histName = "";
   TString histTitle = "";
@@ -249,6 +267,13 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}",i,varName.Data(),varName.Data());
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
+    
+    histName = Form("fhnDeltaMass_%d", i);
+    histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    fOutput->Add(fhnDeltaMass[i]);
+
   }
 
   if(fUseSumw2) {
@@ -301,7 +326,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
   AliEmcalJet *jetR  = NULL; //true jet for response matrix
   AliEmcalJet *jetS = NULL;  //subtracted jet
-
+  AliVParticle *vpe  = NULL; //embedded particle
+  
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   AliJetContainer *jetContS = GetJetContainer(fContainerSub);
 
@@ -341,79 +367,102 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
       Double_t var = mjetS;
       if(fJetMassVarType==kRatMPt) {
-	if(ptjet1>0. || ptjet1<0.) var = mjetS/ptjet1;
-	else var = -999.;
+      	 if(ptjet1>0. || ptjet1<0.) var = mjetS/ptjet1;
+      	 else var = -999.;
       }
-
+      
       //Fill histograms for all AA jets
       fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
-
+      
       Double_t fraction = 0.;
       fMatch = 0;
       fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
       if(fSingleTrackEmb) {
-	AliVParticle *vp = GetEmbeddedConstituent(jet1);
-	if(vp) {
-	  fJet2Vec->SetPxPyPzE(vp->Px(),vp->Py(),vp->Pz(),vp->E());
-	  fMatch = 1;
-	}
+      	 AliVParticle *vp = GetEmbeddedConstituent(jet1);
+      	 if(vp) {
+      	    fJet2Vec->SetPxPyPzE(vp->Px(),vp->Py(),vp->Pz(),vp->E());
+      	    fMatch = 1;
+      	 }
       } else {
-	jet2 = jet1->ClosestJet();
-	fraction = jetCont->GetFractionSharedPt(jet1);
-	fMatch = 1;
-	if(fMinFractionShared>0.) {
-	  if(fraction>fMinFractionShared) {
-	    fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
-	    fMatch = 1;
-
-            //choose jet type for true axis of response matrix
-            if(fResponseReference==kDet) 
-              jetR = jet2;
-            else if(fResponseReference==kPart)
-              jetR = jet2->GetTaggedJet();
-	  } else
-	    fMatch = 0;
-	}
+      	 jet2 = jet1->ClosestJet();
+      	 fraction = jetCont->GetFractionSharedPt(jet1);
+      	 fMatch = 1;
+      	 if(fMinFractionShared>0.) {
+      	    if(fraction>fMinFractionShared) {
+      	       fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
+      	       fMatch = 1;
+      	       
+      	       //choose jet type for true axis of response matrix
+      	       if(fResponseReference==kDet) 
+      	       	  jetR = jet2;
+      	       else if(fResponseReference==kPart)
+      	       	  jetR = jet2->GetTaggedJet();
+      	    } else
+      	       fMatch = 0;
+      	 }
       }
-
+      
       //      if(fMatch==1 && jet2->GetTagStatus()>0) jet2T = jet2->GetTaggedJet();
-
+      
       //Fill histograms for matched jets
       fh2MSubMatch[fCentBin]->Fill(var,fMatch);
       if(fMatch==1) {
-	Double_t drToLJ = -1.;
-	if(jetL) drToLJ = jet1->DeltaR(jetL);
-	fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
-	if(jetR) {
-	  Double_t var2 = jetR->M();
-	  if(fJetMassVarType==kRatMPt) {
-	    if(jetR->Pt()>0. || jetR->Pt()<0.) var2 = jetR->M()/jetR->Pt();
-	  }
-          fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,jetR->Pt(),jet1->MaxTrackPt());
-          fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,jetR->Pt(),jet1->MaxTrackPt());
-          fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(jetR->Pt(),var-var2,jet1->MaxTrackPt());
-          if(jetR->M()>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(jetR->Pt(),(var-var2)/var2,jet1->MaxTrackPt());
-	  Double_t varsp[5] = {var,var2,ptjet1,jetR->Pt(),jet1->MaxTrackPt()};
-	  fhnMassResponse[fCentBin]->Fill(varsp);
-	}
+      	 Double_t drToLJ = -1.;
+      	 if(jetL) drToLJ = jet1->DeltaR(jetL);
+      	 if(fSingleTrackEmb && vpe)
+      	    drToLJ = jet1->DeltaR(vpe);
+      	 fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
+      	 Double_t var2 = 0.;
+      	 Double_t mJetR = 0.;
+      	 Double_t ptJetR = 0.;
+      	 if(jetR) {
+      	    mJetR  = jetR->M();
+      	    var2 = jetR->M();
+      	    ptJetR = jetR->Pt();
+      	 }
+      	 if(fSingleTrackEmb && vpe) {
+      	    mJetR  = vpe->M();
+      	    var2   = vpe->M();
+      	    ptJetR = vpe->Pt();
+      	 }
+      	 
+      	 if(fJetMassVarType==kRatMPt) {
+      	    if(ptJetR>0. || ptJetR<0.) var2 /= ptJetR;
+      	 }
+      	 fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,ptJetR,jet1->MaxTrackPt());
+      	 fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,ptJetR,jet1->MaxTrackPt());
+      	 fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
+      	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
+      	 Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};
+      	 fhnMassResponse[fCentBin]->Fill(varsp);
+      	 
+      	 varsp[0] = var-var2;
+      	 varsp[1] = ptjet1-ptJetR;
+      	 varsp[2] = var;
+      	 varsp[3] = var2;
+      	 varsp[4] = ptjet1;
+      	 varsp[5] = ptJetR;
+      	 
+      	 fhnDeltaMass[fCentBin]->Fill(varsp);
+      	 
       }
       
       if(fCreateTree) {      
-	fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-	if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
-	else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
-	fArea = (Float_t)jet1->Area();
-	fAreaPhi = (Float_t)jet1->AreaPhi();
-	fAreaEta = (Float_t)jet1->AreaEta();
-	fRho  = (Float_t)jetCont->GetRhoVal();
-	fRhoM = (Float_t)jetCont->GetRhoMassVal();
-	fNConst = (Int_t)jet1->GetNumberOfTracks();
-	fTreeJetBkg->Fill();
+      	 fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
+      	 if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
+      	 else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
+      	 fArea = (Float_t)jet1->Area();
+      	 fAreaPhi = (Float_t)jet1->AreaPhi();
+      	 fAreaEta = (Float_t)jet1->AreaEta();
+      	 fRho  = (Float_t)jetCont->GetRhoVal();
+      	 fRhoM = (Float_t)jetCont->GetRhoMassVal();
+      	 fNConst = (Int_t)jet1->GetNumberOfTracks();
+      	 fTreeJetBkg->Fill();
       }
     } //jet1 loop
   }//jetCont
-
-
+  
+  
   return kTRUE;
 }
 
@@ -426,7 +475,11 @@ AliVParticle* AliAnalysisTaskJetShapeConst::GetEmbeddedConstituent(AliEmcalJet *
   Int_t nc = 0;
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray())); //check if fTracks is the correct track branch
-    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+    //if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+    Int_t lab = TMath::Abs(vp->GetLabel());
+    if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
+      continue;
+
     if(!vpe) vpe = vp;
     else if(vp->Pt()>vpe->Pt()) vpe = vp;
     nc++;

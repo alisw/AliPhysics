@@ -41,7 +41,7 @@ using std::endl;
 AliAnalysisTaskParticleFractions::AliAnalysisTaskParticleFractions(const Char_t *partName) :
   AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0)
 {
-  for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++) {
+  for(Int_t i = 0; i < multbins*parttypes; i++) {
     fParticleOriginMC[i] = NULL;
     fParticleOriginRec[i] = NULL;
   }
@@ -70,28 +70,28 @@ void AliAnalysisTaskParticleFractions::UserCreateOutputObjects()
   TString htitle1M, htitle2M, htitle;
   TString parttypename = "None";
 
-  for (Int_t j = 0; j < PARTTYPES; j++)  {
+  for (Int_t j = 0; j < parttypes; j++)  {
     if (j==0) parttypename="All";
     else if (j==1) parttypename="Pion";
     else if (j==2) parttypename="Kaon";
     else if (j==3) parttypename="Proton";
     else if (j==4) parttypename="Lambda";
 
-    for (Int_t i = 0; i < MULTBINS; i++)  {
+    for (Int_t i = 0; i < multbins; i++)  {
       hname1  = "hParticleOriginMC"; hname1+=i; hname1+=parttypename;
       htitle1 = "Particle Origin MC"; htitle1+=i; htitle1+=parttypename;
-      fParticleOriginMC[i*PARTTYPES+j] = new TH1F(hname1.Data(),htitle1.Data(),6000, 0, 6000.);;
+      fParticleOriginMC[i*parttypes+j] = new TH1F(hname1.Data(),htitle1.Data(),6000, 0, 6000.);;
 
       hname2  = "hParticleOriginREC"; hname2+=i; hname2+=parttypename;
       htitle2 = "Particle Origin Rec"; htitle2+=i; htitle2+=parttypename;
-      fParticleOriginRec[i*PARTTYPES+j] = new TH1F(hname2.Data(),htitle2.Data(),6000, 0, 6000.);;
+      fParticleOriginRec[i*parttypes+j] = new TH1F(hname2.Data(),htitle2.Data(),6000, 0, 6000.);;
     }
   }
 
   fHistEv = new TH1F("fHistEv", "Multiplicity", 100, 0, 100);
   fHistoList->Add(fHistEv);
 
-  for (Int_t i = 0; i < MULTBINS*PARTTYPES; i++) {
+  for (Int_t i = 0; i < multbins*parttypes; i++) {
     fHistoList->Add(fParticleOriginMC[i]);
     fHistoList->Add(fParticleOriginRec[i]);
   }
@@ -231,7 +231,7 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
   }
 
   //RECONSTRUCTED TRACKS
-  TObjArray recoParticleArray[PARTTYPES];
+  TObjArray recoParticleArray[parttypes];
 
   //loop over AOD tracks
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
@@ -444,37 +444,37 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
     // // filling histograms for MC truth particles
     // if(PDGcode==211){
     //   continue;
-    //   //fParticleOriginMC[fcent*PARTTYPES+1]->Fill(PDGcodeMother);
+    //   //fParticleOriginMC[fcent*parttypes+1]->Fill(PDGcodeMother);
     // }
     // else if(PDGcode==321) {
     //   continue;
-    //   //fParticleOriginMC[fcent*PARTTYPES+2]->Fill(PDGcodeMother);
+    //   //fParticleOriginMC[fcent*parttypes+2]->Fill(PDGcodeMother);
     // }
     // else
     if(PDGcode==2212) {
-      fParticleOriginMC[fcent*PARTTYPES+3]->Fill(PDGcodeMother);
+      fParticleOriginMC[fcent*parttypes+3]->Fill(PDGcodeMother);
     }
     else if(PDGcode==3122) {
-      fParticleOriginMC[fcent*PARTTYPES+4]->Fill(PDGcodeMother);
+      fParticleOriginMC[fcent*parttypes+4]->Fill(PDGcodeMother);
     }
 
     // //Filling data from MC truth particles only for particles that were reconstruced
     // if (recoParticleArray[1].Contains(MCtrk)){ //Pions
     //   if(PDGcode==211)
-    //   fParticleOriginRec[fcent*PARTTYPES+1]->Fill(PDGcodeMother);
+    //   fParticleOriginRec[fcent*parttypes+1]->Fill(PDGcodeMother);
     // }
     // if (recoParticleArray[2].Contains(MCtrk)){ //Kaons
     //   if(PDGcode==321)
-    //   fParticleOriginRec[fcent*PARTTYPES+2]->Fill(PDGcodeMother);
+    //   fParticleOriginRec[fcent*parttypes+2]->Fill(PDGcodeMother);
     // }
     if (recoParticleArray[3].Contains(MCtrk)){ //Protons
       if(PDGcode==2212){
-        fParticleOriginRec[fcent*PARTTYPES+3]->Fill(PDGcodeMother);
+        fParticleOriginRec[fcent*parttypes+3]->Fill(PDGcodeMother);
       }
     }
     if (recoParticleArray[4].Contains(MCtrk)){ //Lambdas
       if(PDGcode==3122){
-        fParticleOriginRec[fcent*PARTTYPES+4]->Fill(PDGcodeMother);
+        fParticleOriginRec[fcent*parttypes+4]->Fill(PDGcodeMother);
       }
     }
   }
