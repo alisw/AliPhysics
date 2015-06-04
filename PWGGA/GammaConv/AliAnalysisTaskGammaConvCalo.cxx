@@ -645,7 +645,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   
 	// Array of current cut's gammas
 	fGammaCandidates = new TList();
-	fGammaCandidates->SetOwner(kTRUE);
 	fClusterCandidates = new TList();
 	fClusterCandidates->SetOwner(kTRUE);
   
@@ -1834,7 +1833,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 		tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
 		
 		// convert to AODConversionPhoton
-		AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
+		AliAODConversionPhoton *PhotonCandidate = new AliAODConversionPhoton(tmpvec);
 		if(!PhotonCandidate) continue;
 		
 		// Flag Photon as CaloPhoton
@@ -1872,18 +1871,20 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 			}	
 		}	
 
-		if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
-			fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-			fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
-		}
-		if (fIsFromMBHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-		
 		if(fIsMC){
 			if(fInputEvent->IsA()==AliESDEvent::Class()){
 				ProcessTrueClusterCandidates(PhotonCandidate,clus->GetM02());
 			} else {
 				ProcessTrueClusterCandidatesAOD(PhotonCandidate,clus->GetM02());
-			}	
+			}
+		}
+
+		if (fIsFromMBHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+		if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
+			fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+			fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+		} else{
+			delete PhotonCandidate;
 		}
 		
 		delete tmpvec;
@@ -2067,9 +2068,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 {
 	Int_t nV0 = 0;
 	TList *GammaCandidatesStepOne = new TList();
-	GammaCandidatesStepOne->SetOwner(kTRUE);
 	TList *GammaCandidatesStepTwo = new TList();
-	GammaCandidatesStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 		AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);

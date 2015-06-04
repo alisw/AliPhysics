@@ -337,7 +337,6 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserCreateOutputObjects()
 	}
 
 	fGoodGammas = new TList();
-	fGoodGammas->SetOwner(kTRUE);
 
 	fGoodVirtualParticles = new TList();
 	fGoodVirtualParticles->SetOwner(kTRUE);
@@ -756,9 +755,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::Terminate(const Option_t *){
 void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessPhotonCandidates(){
 	Int_t nV0 = 0;
 	TList *GoodGammasStepOne = new TList();
-	GoodGammasStepOne->SetOwner(kTRUE);
 	TList *GoodGammasStepTwo = new TList();
-	GoodGammasStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){

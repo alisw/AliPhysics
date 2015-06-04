@@ -663,7 +663,6 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
   
 	// Array of current cut's gammas
 	fGammaCandidates = new TList();
-	fGammaCandidates->SetOwner(kTRUE);
 	fClusterCandidates = new TList();
 	fClusterCandidates->SetOwner(kTRUE);
 	fVirtualGammaCandidates = new TList();
@@ -1963,19 +1962,20 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 			}	
 		}
 
-		if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
-			fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-			fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
-		}
-		if (fIsFromMBHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-		
 		if(fIsMC){
-		  
 			if(fInputEvent->IsA()==AliESDEvent::Class()){
 				ProcessTrueClusterCandidates(PhotonCandidate);
 			} else {
 				ProcessTrueClusterCandidatesAOD(PhotonCandidate);
-			}	
+			}
+		}
+
+		if (fIsFromMBHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+		if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
+			fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+			fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+		} else{
+			delete PhotonCandidate;
 		}
 		
 		delete tmpvec;
@@ -3302,9 +3302,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessPhotonCandidates()
 {
 	Int_t nV0 = 0;
 	TList *GammaCandidatesStepOne = new TList();
-	GammaCandidatesStepOne->SetOwner(kTRUE);
 	TList *GammaCandidatesStepTwo = new TList();
-	GammaCandidatesStepTwo->SetOwner(kTRUE);
 	// Loop over Photon Candidates allocated by ReaderV1
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 		AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
