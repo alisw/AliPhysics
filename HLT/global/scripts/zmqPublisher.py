@@ -11,9 +11,10 @@ if (len(sys.argv)>2):
 #  Prepare our context and sockets
 context = zmq.Context()
 socket = context.socket(zmq.PUB)
-socket.bind('tcp://*:'+port)
+endpoint = "tcp://*:"+port
+socket.bind(endpoint)
 while True:
-  print "publishing on "+port
+  print "publishing " + topic  + " on " +endpoint
   socket.send(topic,zmq.SNDMORE)
   socket.send("payload part",0)
   time.sleep(1)
