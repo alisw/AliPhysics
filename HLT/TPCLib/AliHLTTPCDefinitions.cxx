@@ -48,7 +48,8 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataTyp
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDataType = AliHLTComponentDataTypeInitializer("REMCLSMD", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType = AliHLTComponentDataTypeInitializer("CLSTRKCM", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
-										      								  	      
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType = AliHLTComponentDataTypeInitializer("HLTTPCFT", kAliHLTDataOriginTPC);
+
 const AliHLTComponentDataType& AliHLTTPCDefinitions::DDLEncodedEntropyRawDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("DDLENCEN", kAliHLTDataOriginTPC);
   return dt;
