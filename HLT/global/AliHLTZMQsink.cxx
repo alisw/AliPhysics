@@ -35,6 +35,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQendpoint("tcp://*:60201")
   , fZMQpollIn(kFALSE)
   , fPushbackDelayPeriod(-1)
+  , fIncludePrivateBlocks(kFALSE)
 {
   //ctor
 }
@@ -104,7 +105,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
 
   //connect or bind, after setting socket options
-  if (fZMQconnectMode.Contains("connect")) 
+  if (fZMQconnectMode.EqualTo("connect")) 
   {
     HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
     rc = zmq_connect(fZMQout,fZMQendpoint.Data());
@@ -195,6 +196,13 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
         inputBlock!=NULL;
         inputBlock=GetNextInputBlock(), iBlock++) 
     {
+      //don't include provate data unless explicitly asked to
+      if (!fIncludePrivateBlocks)
+      {
+        if (!memcmp(inputBlock->fDataType.fOrigin, &kAliHLTDataOriginPrivate, kAliHLTComponentDataTypefOriginSize))
+          continue;
+      }
+
       //check if the block is selected
       char blockTopic[kAliHLTComponentDataTypeTopicSize];
       DataType2Topic(inputBlock->fDataType, blockTopic);
@@ -229,40 +237,45 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   
-  //if (option.Contains("ZMQpollIn"))
+  //if (option.EqualTo("ZMQpollIn"))
   //{
-  //  fZMQpollIn = (value.Contains("0"))?kFALSE:kTRUE;
+  //  fZMQpollIn = (value.EqualTo("0"))?kFALSE:kTRUE;
   //}
  
-  if (option.Contains("ZMQsocketMode")) 
+  if (option.EqualTo("ZMQsocketMode")) 
   {
-    if (value.Contains("PUB"))  fZMQsocketType=ZMQ_PUB;
-    if (value.Contains("REP"))  fZMQsocketType=ZMQ_REP;
-    if (value.Contains("PUSH")) fZMQsocketType=ZMQ_PUSH;
+    if (value.EqualTo("PUB"))  fZMQsocketType=ZMQ_PUB;
+    if (value.EqualTo("REP"))  fZMQsocketType=ZMQ_REP;
+    if (value.EqualTo("PUSH")) fZMQsocketType=ZMQ_PUSH;
     
     //always poll when REPlying
     fZMQpollIn=(fZMQsocketType==ZMQ_REP)?kTRUE:kFALSE;
   }
  
-  if (option.Contains("ZMQconnectMode"))
+  if (option.EqualTo("ZMQconnectMode"))
   {
     if (! (
-          value.Contains("connect") ||
-          value.Contains("bind")
+          value.EqualTo("connect") ||
+          value.EqualTo("bind")
           )
        ) {return 1;}
     fZMQconnectMode = value;
   }
  
-  if (option.Contains("ZMQendpoint"))
+  if (option.EqualTo("ZMQendpoint"))
   {
     fZMQendpoint = value;
   }
 
-  if (option.Contains("pushback-period"))
+  if (option.EqualTo("pushback-period"))
   {
     HLTMessage(Form("Setting pushback delay to %i", atoi(value.Data())));
     fPushbackDelayPeriod = atoi(value.Data());
+  }
+
+  if (option.EqualTo("IncludePrivateBlocks"))
+  {
+    fIncludePrivateBlocks=kTRUE;
   }
 
   return 1; 
@@ -278,7 +291,7 @@ int AliHLTZMQsink::ProcessOptionString(TString arguments)
   stringMap* options = TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    HLTMessage("  %s : %s\n", i->first.data(), i->second.data());
+    HLTMessage("  %s : %s", i->first.data(), i->second.data());
     ProcessOption(i->first,i->second);
   }
   delete options; //tidy up

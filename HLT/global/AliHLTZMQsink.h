@@ -53,6 +53,7 @@ private:
   Bool_t fZMQpollIn;       //do we poll fo incoming requests?
   Int_t fPushbackDelayPeriod;   //how often do we send?
   Int_t fLastPushbackDelayTime; //last push back time
+  Bool_t fIncludePrivateBlocks; //include private blocks?
   
   ClassDef(AliHLTZMQsink, 1)
 };
