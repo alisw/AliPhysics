@@ -131,7 +131,7 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
 
   //connect or bind, after setting socket options
-  if (fZMQconnectMode.Contains("connect")) 
+  if (fZMQconnectMode.EqualTo("connect")) 
   {
     HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
     rc = zmq_connect(fZMQin,fZMQendpoint.Data());
@@ -225,28 +225,28 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   
-  if (option.Contains("ZMQsocketMode")) 
+  if (option.EqualTo("ZMQsocketMode")) 
   {
-    if (value.Contains("SUB"))  fZMQsocketType=ZMQ_SUB;
-    if (value.Contains("PULL")) fZMQsocketType=ZMQ_PULL;
+    if (value.EqualTo("SUB"))  fZMQsocketType=ZMQ_SUB;
+    if (value.EqualTo("PULL")) fZMQsocketType=ZMQ_PULL;
   }
  
-  if (option.Contains("ZMQconnectMode"))
+  if (option.EqualTo("ZMQconnectMode"))
   {
     if (! (
-          value.Contains("connect") ||
-          value.Contains("bind")
+          value.EqualTo("connect") ||
+          value.EqualTo("bind")
           )
        ) {return 1;}
     fZMQconnectMode = value;
   }
  
-  if (option.Contains("ZMQendpoint"))
+  if (option.EqualTo("ZMQendpoint"))
   {
     fZMQendpoint = value;
   }
 
-  if (option.Contains("fMessageFilter"))
+  if (option.EqualTo("MessageFilter"))
   {
     fMessageFilter = value;
   }
