@@ -17,8 +17,6 @@
 #include "AliHLTComponent.h"
 #include "AliHLTMessage.h"
 
-#include "AliOnlineReconstructionUtil.h"
-
 #ifdef ZMQ
 #include "zmq.h"
 #endif
