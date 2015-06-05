@@ -68,13 +68,13 @@ struct AliRawDataHeaderV3 {
   void      SetTriggerClass(ULong64_t mask)
     {
      fTriggerClassLow = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
-     fTriggerClassesMiddleLow = fTriggerClassesMiddleLow | ((UInt_t)((mask >> 32) & 0x3FFFF)); // middle low bits of trigger class
+     fTriggerClassesMiddleLow = (fTriggerClassesMiddleLow & 0xFFFC0000) | ((UInt_t)((mask >> 32) & 0x3FFFF)); // middle low bits of trigger class
     };
   void      SetTriggerClassNext50(ULong64_t mask)
     {
-     fTriggerClassesMiddleLow  = fTriggerClassesMiddleLow | (((UInt_t)(mask & 0x3FFF) << 18));
+     fTriggerClassesMiddleLow  = (fTriggerClassesMiddleLow & 0x3FFFF) | (((UInt_t)(mask & 0x3FFF) << 18));
      fTriggerClassesMiddleHigh = (UInt_t)((mask >> 14) & 0xFFFFFFFF);  // middle high bits of trigger class
-     fROILowTriggerClassHigh = (UInt_t)((mask >> 46) & 0xF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-3)
+     fROILowTriggerClassHigh = (fROILowTriggerClassHigh & 0xFFFFFFF0) | (UInt_t)((mask >> 46) & 0xF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-3)
     };
 
   UInt_t    fSize;              // size of the raw data in bytes
