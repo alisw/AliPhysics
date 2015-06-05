@@ -1213,6 +1213,17 @@ class AliHLTComponent : public AliHLTLogging {
    * @return pointer to @ref TObject, NULL if no more objects available
    */
   const TObject* GetNextInputObject(int bForce=0);
+  
+  /**
+   * Removes a TObject from the list of objects automatically deleted
+   * after the event processing function DoEvent. Objects obtained via
+   * GetFirstInputObject etc. are placed there and cleaned up afterwards.
+   * With these function, the component "takes ownership" and has to make
+   * sure the object is cleaned up properly by itself. Returns a non-const
+   * pointer on success and NULL otherwise
+   */
+  
+  TObject* RemoveInputObjectFromCleanupList(const TObject* obj);
 
   /**
    * Get data type of an input block.

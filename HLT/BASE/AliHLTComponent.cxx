@@ -1283,6 +1283,20 @@ int AliHLTComponent::CleanupInputObjects()
   return 0;
 }
 
+TObject* AliHLTComponent::RemoveInputObjectFromCleanupList(const TObject* obj)
+{
+  if (!fpInputObjects) return(NULL);
+  TObjArray* array=fpInputObjects;
+  for (int i=0; i<array->GetEntriesFast(); i++) {
+    if (array->At(i) == obj) {
+	  TObject* retVal = array->At(i);
+	  array->RemoveAt(i);
+	  return(retVal);
+	}
+  }
+  return(NULL);
+}
+
 AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
 {
   // see header file for function documentation
