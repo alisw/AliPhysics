@@ -1360,7 +1360,7 @@ int main(Int_t argc, Char_t **argv)
     // sans carte JTAG 0x1F ---> 0x0F (!)
     if (cfg.GetGlobalMasks()->GetGlobalCrateEnable() != 0x1F) {
       printf("The MTS proxy does not control all global cards\n");
-      return -1;
+      //return -1;
     }
     
     // The global cards are ON (active on the global inputs)
