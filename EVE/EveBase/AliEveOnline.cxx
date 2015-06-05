@@ -40,10 +40,11 @@ AliEveOnline::AliEveOnline(bool storageManager)
     Color_t colorTRD = kGray;      // color of TRD modules
     Color_t colorMUON = kGray;     // color of MUON modules
     
-    bool customPreset = true;            // should one of the following custom presets be used
+    bool customPreset = false;            // should one of the following custom presets be used
     Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-    Width_t widths[9] = {3,3,3,3,3,3,3,3,3};
-    bool dashBad = true;
+    Width_t width = 3;
+    bool dashNoRefit = true;
+    bool drawNoRefit = true;
     
 //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
 
@@ -89,10 +90,10 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"============ Setting macro executor ============\n"<<endl;;
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD"   , "ad_esd.C", "ad_esd", "", kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "PT HISTO"   , "histo2d.C", "histo2d", "", kTRUE));
+//    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "PT HISTO"   , "histo2d.C", "histo2d", "", kTRUE));
     
     
-//    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdclustercellsV1.C", "emcal_esdclustercellsV1", "", kTRUE)); // this macro resets 3D view's camera!!
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCAL", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE)); // this macro resets 3D view's camera!!
     
     cout<<"macros added to exec"<<endl;
     
@@ -142,13 +143,11 @@ AliEveOnline::AliEveOnline(bool storageManager)
     gSystem->ProcessEvents();
     gEve->Redraw3D(kTRUE);
 
-    if(customPreset)
-    {
-        man->SetESDcolors(colors);
-        man->SetESDwidths(widths);
-        man->SetESDdashBad(dashBad);
-    }
-
+//    man->SetESDcolors(colors);
+//    man->SetESDwidths(widths);
+    man->SetESDdashNoRefit(dashNoRefit);
+    man->SetESDdrawNoRefit(drawNoRefit);
+    
     man->SetSaveViews(saveViews);
     man->SetESDtracksByCategory(false);
     man->SetESDtracksByType(true);

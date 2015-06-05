@@ -44,8 +44,9 @@ AliEveHLT::AliEveHLT(bool storageManager)
 
   bool customPreset = true;            // should one of the following custom presets be used
   Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-  Width_t widths[9] = {3,3,3,3,3,3,3,3,3};
-  bool dashBad = true;
+  Width_t width = 3;
+  bool dashNoRefit = true;
+  bool drawNoRefit = true;
 
   //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
 
@@ -134,9 +135,10 @@ AliEveHLT::AliEveHLT(bool storageManager)
 
   if(customPreset)
   {
-    eventManager->SetESDcolors(colors);
-    eventManager->SetESDwidths(widths);
-    eventManager->SetESDdashBad(dashBad);
+    eventManager->SetESDcolorsByCategory(colors);
+    eventManager->SetESDwidth(width);
+    eventManager->SetESDdashNoRefit(dashNoRefit);
+    eventManager->SetESDdrawNoRefit(drawNoRefit);
   }
 
   eventManager->SetSaveViews(saveViews);

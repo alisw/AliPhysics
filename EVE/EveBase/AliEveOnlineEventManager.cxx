@@ -329,7 +329,7 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
 #endif
     }
     //
-//    AliEveEventManager::GotoEvent(event);
+    AliEveEventManager::GotoEvent(event);
     //
 }
 
@@ -344,6 +344,26 @@ void AliEveOnlineEventManager::NextEvent()
 #endif
     if(fIsNewEventAvaliable)
     {
+        //
+        TEveManager::TRedrawDisabler rd(gEve);
+        gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
+        
+        // !!! MT this is somewhat brutal; at least optionally, one could be
+        // a bit gentler, checking for objs owning their external refs and having
+        // additinal parents.
+        gEve->GetViewers()->DeleteAnnotations();
+        fTransients->DestroyElements();
+        for (TEveElement::List_i i = fTransientLists->BeginChildren();
+             i != fTransientLists->EndChildren(); ++i)
+        {
+            (*i)->DestroyElements();
+        }
+        DestroyElements();
+        
+        ElementChanged();
+        
+        //
+        
         if(fWritingToEventIndex == 0) fEventInUse = 0;
         else if(fWritingToEventIndex == 1) fEventInUse = 1;
         
@@ -377,25 +397,7 @@ void AliEveOnlineEventManager::NextEvent()
     }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->UnLock();
-    //
-//    TEveManager::TRedrawDisabler rd(gEve);
-    gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
-    
-    // !!! MT this is somewhat brutal; at least optionally, one could be
-    // a bit gentler, checking for objs owning their external refs and having
-    // additinal parents.
-//    gEve->GetViewers()->DeleteAnnotations();
-//    fTransients->DestroyElements();
-//    for (TEveElement::List_i i = fTransientLists->BeginChildren();
-//         i != fTransientLists->EndChildren(); ++i)
-//    {
-//        (*i)->DestroyElements();
-//    }
-//    DestroyElements();
-//    
-//    ElementChanged();
-    
-//
+
     
     gSystem->ProcessEvents();
 }

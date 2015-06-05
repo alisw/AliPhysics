@@ -34,25 +34,39 @@ fUseIPonFailedITSrefit(kFALSE),
 fTrueField(kTRUE),
 fRKstepper(kFALSE),
 fAnalCuts(0),
-fDashBad(true)
+fDashNoRefit(true),
+fDrawNoRefit(false),
+fWidth(1)
 {
-    // default color scheme:
-    fColors[0] = 3;
-    fColors[1] = 7;
-    fColors[2] = 46;
-    fColors[3] = 41;
-    fColors[4] = 48;
-    fColors[5] = kRed;
-    fColors[6] = kGreen;
-    fColors[7] = kMagenta-9;
-    fColors[8] = kRed+2;
-    fColors[9] = kRed+3;
-    fColors[10]= kRed+4;
-    fColors[11]= kRed+5;
-    fColors[12]= kRed+6;
-    fColors[13]= kRed+7;
+    // default color scheme by category:
+    fColorsByCategory[0] = kMagenta;
+    fColorsByCategory[1] = kMagenta+1;
+    fColorsByCategory[2] = kMagenta+2;
+    fColorsByCategory[3] = kRed;
+    fColorsByCategory[4] = kRed+1;
+    fColorsByCategory[5] = kRed+2;
+    fColorsByCategory[6] = kGreen;
+    fColorsByCategory[7] = kGreen+1;
+    fColorsByCategory[8] = kGreen+2;
     
-    for(int i=0;i<9;i++){fWidths[i] = 1;}
+    // default color scheme by type:
+    fColorsByType[0] = kBlue;         // e
+    fColorsByType[1] = kGreen;        // mu
+    fColorsByType[2] = kRed;          // pi      (1)
+    fColorsByType[3] = kYellow;       // K       (3)
+    fColorsByType[4] = kOrange-3;     // Pr      (2)
+    fColorsByType[5] = kOrange-3;     // Dtr     (2)
+    fColorsByType[6] = kOrange-3;     // Trit    (2)
+    fColorsByType[7] = kOrange-3;     // He3     (2)
+    fColorsByType[8] = kYellow+3;     // Alpha
+    fColorsByType[9] = kWhite;        // Photon
+    fColorsByType[10]= kMagenta;      // pi0
+    fColorsByType[11]= kPink;         // neutron
+    fColorsByType[12]= kOrange+1;     // K0
+    fColorsByType[13]= kGray;         // EleCon
+    fColorsByType[14]= kGray;         // unknown
+    
+    
 }
 
 AliEveESDTracks::~AliEveESDTracks()
@@ -255,7 +269,7 @@ TEveTrackList* AliEveESDTracks::TPCtracks()
     cont->SetMainColor(kMagenta);
     
     SetupPropagator(cont->GetPropagator(),
-                               0.1*esd->GetMagneticField(), 520);
+                    0.1*esd->GetMagneticField(), 520);
     
     gEve->AddElement(cont);
     
@@ -287,7 +301,7 @@ TEveTrackList* AliEveESDTracks::ITStracks()
     cont->SetMainColor(kMagenta+3);
     
     SetupPropagator(cont->GetPropagator(),
-                               0.1*esd->GetMagneticField(), 520);
+                    0.1*esd->GetMagneticField(), 520);
     cont->GetPropagator()->SetMaxR(85.0);
     cont->SetLineWidth(1);
     
@@ -321,7 +335,7 @@ TEveTrackList* AliEveESDTracks::ITSstandaloneTracks()
     cont->SetMainColor(kBlue);
     
     SetupPropagator(cont->GetPropagator(),
-                               0.1*esd->GetMagneticField(), 520);
+                    0.1*esd->GetMagneticField(), 520);
     cont->GetPropagator()->SetMaxR(85.0);
     cont->SetLineWidth(1);
     
@@ -354,7 +368,7 @@ TEveTrackList* AliEveESDTracks::Tracks()
     cont->SetMainColor(6);
     
     SetupPropagator(cont->GetPropagator(),
-                               0.1*esd->GetMagneticField(), 520);
+                    0.1*esd->GetMagneticField(), 520);
     
     gEve->AddElement(cont);
     
@@ -528,8 +542,8 @@ TEveElementList* AliEveESDTracks::ByCategory()
     for (int i=0; i<9; i++) {
         tc[i] = 0;
         SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
-        tl[i]->SetMainColor(fColors[i]);
-        tl[i]->SetLineWidth(fWidths[i]);
+        tl[i]->SetMainColor(fColorsByCategory[i]);
+        tl[i]->SetLineWidth(fWidth);
         cont->AddElement(tl[i]);
     }
     
@@ -603,8 +617,12 @@ TEveElementList* AliEveESDTracks::ByCategory()
         }
         else
         {
-            if ( ! good_cont && fDashBad)
+            if ( ! good_cont && fDashNoRefit)
                 tlist->SetLineStyle(6);
+        }
+        if(!good_cont)
+        {
+            tlist->SetRnrLine(fDrawNoRefit);
         }
     }
     cont->SetTitle(Form("N all tracks = %d", count));
@@ -625,22 +643,6 @@ TEveElementList* AliEveESDTracks::ByType()
     
     TEveElementList* cont = new TEveElementList("ESD Tracks by PID");
     gEve->AddElement(cont);
-    
-    fColors[0] = kCyan;         // e
-    fColors[1] = kCyan+1;       // mu
-    fColors[2] = kMagenta;      // pi
-    fColors[3] = kOrange;       // K
-    fColors[4] = kRed;          // Pr
-    fColors[5] = kYellow;       // Dtr
-    fColors[6] = kYellow+1;     // Trit
-    fColors[7] = kYellow+2;     // He3
-    fColors[8] = kYellow+3;     // Alpha
-    fColors[9] = kWhite;        // Photon
-    fColors[10]= kMagenta+1;    // pi0
-    fColors[11]= kGreen;        // neutron
-    fColors[12]= kOrange+1;     // K0
-    fColors[13]= kGray;         // EleCon
-    fColors[14]= kGray;         // unknown
     
     const Int_t   nCont = 15;
     const Float_t maxR  = 520;
@@ -669,8 +671,8 @@ TEveElementList* AliEveESDTracks::ByType()
     for (int i=0; i<15; i++) {
         tc[i] = 0;
         SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
-        tl[i]->SetMainColor(fColors[i]);
-        tl[i]->SetLineWidth(fWidths[i]);
+        tl[i]->SetMainColor(fColorsByType[i]);
+        tl[i]->SetLineWidth(fWidth);
         cont->AddElement(tl[i]);
     }
     
@@ -680,21 +682,21 @@ TEveElementList* AliEveESDTracks::ByType()
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
     {
         at = esd->GetTrack(n);
-        pid = at->GetPID();
-        cout<<"PID:"<<pid<<endl;
         
-        Int_t   ti;
+        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
         
-        ti = pid;
-        
-        TEveTrackList* tlist = tl[ti];
-        ++tc[ti];
-        ++count;
-        
-        AliEveTrack* track = MakeTrack(at, tlist);
-        
-        track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
-        tlist->AddElement(track);
+        if(good_cont || fDrawNoRefit)
+        {
+            pid = at->GetPID();
+            TEveTrackList* tlist = tl[pid];
+            ++tc[pid];
+            ++count;
+            
+            AliEveTrack* track = MakeTrack(at, tlist);
+            
+            track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
+            tlist->AddElement(track);
+        }
     }
     
     for (Int_t ti = 0; ti < nCont; ++ti)
@@ -702,19 +704,7 @@ TEveElementList* AliEveESDTracks::ByType()
         TEveTrackList* tlist = tl[ti];
         tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
         tlist->SetTitle(Form("N tracks=%d", tc[ti]));
-        
         tlist->MakeTracks();
-        
-        Bool_t good_cont = ((ti == 6) || (ti == 7));
-        if (AliEveTrackCounter::IsActive())
-        {
-            AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
-        }
-        else
-        {
-            if ( ! good_cont && fDashBad)
-                tlist->SetLineStyle(6);
-        }
     }
     cont->SetTitle(Form("N all tracks = %d", count));
     // ??? The following does not always work:
@@ -734,9 +724,9 @@ TEveElementList* AliEveESDTracks::ByAnalCuts()
         gSystem->Load("libPWGUDbase");
         gROOT->ProcessLine(".L $ALICE_ROOT/PWGUD/CreateStandardCuts.C");
         /*Int_t mode = AliPWG0Helper::kTPC;
-        if (TMath::Abs(esd->GetMagneticField()) > 0.01)
-            mode |= AliPWG0Helper::kFieldOn;
-        gROOT->ProcessLine(Form("fAnalCuts = CreateTrackCuts(%d, kFALSE)", mode));*/
+         if (TMath::Abs(esd->GetMagneticField()) > 0.01)
+         mode |= AliPWG0Helper::kFieldOn;
+         gROOT->ProcessLine(Form("fAnalCuts = CreateTrackCuts(%d, kFALSE)", mode));*/
     }
     
     TEveElementList* cont = new TEveElementList("ESD Tracks by Analysis Cuts");

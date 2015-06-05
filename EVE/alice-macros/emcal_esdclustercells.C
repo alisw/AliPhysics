@@ -1080,6 +1080,7 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     
     calo3d->SetBarrelRadius(550);
     calo3d->SetEndCapPos(550);
+    calo3d->SetFrameTransparency(100);
     g_histo2d_s2->AddElement(calo3d);
     
     return calo3d;

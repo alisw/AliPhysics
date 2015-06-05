@@ -1151,33 +1151,40 @@ AliMagF* AliEveEventManager::AssertMagField()
     static const TEveException kEH("AliEveEventManager::AssertMagField ");
     
     if (fgMagField)
+    {
         return fgMagField;
-    
-    if (TGeoGlobalMagField::Instance()->GetField())
-    {
-        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-        if (fgMagField == 0)
-            throw kEH + "Global field set, but it is not AliMagF.";
-        return fgMagField;
-    }
-    
-    if (!fgGRPLoaded)
-    {
-        InitGRP();
-    }
-    
-    if (TGeoGlobalMagField::Instance()->GetField())
-    {
-        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-        if (fgMagField == 0)
-            throw kEH + "Global field set, but it is not AliMagF.";
     }
     else
     {
-        throw kEH + "Could not initialize magnetic field.";
+        AliEveEventManager::GetMaster()->AssertESD()->InitMagneticField();
+        if (TGeoGlobalMagField::Instance()->GetField())
+        {
+            fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+            if (fgMagField == 0)
+                throw kEH + "Global field set, but it is not AliMagF.";
+            return fgMagField;
+        }
     }
+    cout<<"\n\nCould not assert magnetic filed!!"<<endl;
+    exit(0);
     
-    return fgMagField;
+//    if (!fgGRPLoaded)
+//    {
+//        InitGRP();
+//    }
+//    
+//    if (TGeoGlobalMagField::Instance()->GetField())
+//    {
+//        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+//        if (fgMagField == 0)
+//            throw kEH + "Global field set, but it is not AliMagF.";
+//    }
+//    else
+//    {
+//        throw kEH + "Could not initialize magnetic field.";
+//    }
+    
+//    return fgMagField;
 }
 
 TGeoManager* AliEveEventManager::AssertGeometry()
@@ -1905,6 +1912,7 @@ TString AliEveEventManager::GetEventInfoVertical() const
 // code to do this somewhere in STEER.
 //==============================================================================
 
+/*
 Bool_t AliEveEventManager::InitGRP()
 {
     //------------------------------------
@@ -1925,32 +1933,32 @@ Bool_t AliEveEventManager::InitGRP()
     //*** Get the diamond profiles from OCDB
     // Eventually useful.
     
-    /*
-     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
-     if (entry) {
-     fDiamondProfileSPD = dynamic_cast<AliESDVertex*> (entry->GetObject());
-     } else {
-     ::Error(kEH, "No SPD diamond profile found in OCDB!");
-     }
-     
-     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
-     if (entry) {
-     fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());
-     } else {
-     ::Error(kEH, "No diamond profile found in OCDB!");
-     }
-     
-     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexTPC");
-     if (entry) {
-     fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());
-     } else {
-     ::Error(kEH, "No TPC diamond profile found in OCDB!");
-     }
-     */
+ 
+//     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
+//     if (entry) {
+//     fDiamondProfileSPD = dynamic_cast<AliESDVertex*> (entry->GetObject());
+//     } else {
+//     ::Error(kEH, "No SPD diamond profile found in OCDB!");
+//     }
+//     
+//     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
+//     if (entry) {
+//     fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());
+//     } else {
+//     ::Error(kEH, "No diamond profile found in OCDB!");
+//     }
+//     
+//     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexTPC");
+//     if (entry) {
+//     fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());
+//     } else {
+//     ::Error(kEH, "No TPC diamond profile found in OCDB!");
+//     }
+ 
     
     return kTRUE;
 }
-
+*/
 //------------------------------------
 // Global variables management
 //------------------------------------
