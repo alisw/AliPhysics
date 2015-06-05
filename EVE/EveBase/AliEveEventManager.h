@@ -131,9 +131,11 @@ public:
     
     void          SetESDtracksByCategory(bool set){fDrawESDtracksByCategory=set;}
     void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
-    void          SetESDcolors(Color_t colors[9]){fESDdrawer->SetColors(colors);}
-    void          SetESDwidths(Width_t widths[9]){fESDdrawer->SetWidths(widths);}
-    void          SetESDdashBad(bool dashBad){fESDdrawer->SetDashBad(dashBad);}
+    void          SetESDcolorsByCategory(Color_t colors[9]){fESDdrawer->SetColorsByCategory(colors);}
+    void          SetESDcolorsByType(Color_t colors[15]){fESDdrawer->SetColorsByType(colors);}
+    void          SetESDwidth(Width_t width){fESDdrawer->SetWidth(width);}
+    void          SetESDdashNoRefit(bool dashNoRefit){fESDdrawer->SetDashNoRefit(dashNoRefit);}
+    void          SetESDdrawNoRefit(bool drawNoRefit){fESDdrawer->SetDrawNoRefit(drawNoRefit);}
     
     
     Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }

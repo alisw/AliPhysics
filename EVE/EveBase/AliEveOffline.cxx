@@ -70,10 +70,16 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     Color_t colorTRD = kGray;      // color of TRD modules
     Color_t colorMUON = kGray;     // color of MUON modules
     
-    bool customPreset = true;            // should one of the following custom presets be used
+//    bool customPreset = true;            // should one of the following custom presets be used
     Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-    Width_t widths[9] = {3,3,3,3,3,3,3,3,3};
-    bool dashBad = true;
+    Width_t width = 3;
+    bool dashNoRefit = true;
+    bool drawNoRefit = true;
+    
+    bool drawClusters = false;
+    bool drawKinks = false;
+    bool drawV0s = false;
+    bool drawCascades = false;
     
     //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
     
@@ -166,13 +172,13 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
      exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse TPC", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
      exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box TPC",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
      */
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_onfly"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_offline"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",              "esd_V0"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade_points.C",  "esd_cascade_points"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade.C",         "esd_cascade"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink"));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_onfly","",drawV0s));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_offline","",drawV0s));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",              "esd_V0","",drawV0s));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade_points.C",  "esd_cascade_points","",drawCascades));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade.C",         "esd_cascade","",drawCascades));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points","",drawKinks));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink","",drawKinks));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks",              "esd_tracks.C", "esd_tracks",              "", kFALSE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS standalone",          "esd_tracks.C", "esd_tracks_ITS_standalone",              "", kFALSE));
@@ -195,13 +201,13 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters",     "clusters.C",     "clusters", "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "its_clusters.C", "its_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "tpc_clusters.C", "tpc_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TRD", "trd_clusters.C", "trd_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TOF", "tof_clusters.C", "tof_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters HMPID", "hmpid_clusters.C", "hmpid_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters PHOS", "phos_clusters.C", "phos_clusters"));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters",     "clusters.C",     "clusters"    ,"",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "its_clusters.C", "its_clusters","",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "tpc_clusters.C", "tpc_clusters","",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TRD", "trd_clusters.C", "trd_clusters","",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TOF", "tof_clusters.C", "tof_clusters","",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters HMPID", "hmpid_clusters.C","hmpid_clusters","",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters PHOS", "phos_clusters.C","phos_clusters","",drawClusters));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "vplot_tpc.C",    "vplot_tpc", "", kFALSE));
     
@@ -220,6 +226,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     }
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
+//    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "PT Histo 2D", "histo2d.C", "histo2d", "", kTRUE));
     
     
     //==============================================================================
@@ -277,7 +284,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     //==============================================================================
     
     // A refresh to show proper window.
-    //gEve->GetViewers()->SwitchColorSet();
+//    gEve->GetViewers()->SwitchColorSet();
     browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
     gEve->Redraw3D(kTRUE);
     gSystem->ProcessEvents();
@@ -295,17 +302,15 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     gSystem->ProcessEvents();
     gEve->Redraw3D(kTRUE);
     
-    if(customPreset)
-    {
 //        man->SetESDcolors(colors);
-        man->SetESDwidths(widths);
-        man->SetESDdashBad(false);
-    }
+//        man->SetESDwidth(widths);
+    man->SetESDdashNoRefit(dashNoRefit);
+    man->SetESDdrawNoRefit(drawNoRefit);
+    
     man->SetESDtracksByCategory(true);
     man->SetESDtracksByType(true);
-    man->SetESDdashBad(false);
     
-    man->SetAutoLoad(true);// set autoload by default
+    man->SetAutoLoad(false);// set autoload by default
 }
 
 void AliEveOffline::Init()
