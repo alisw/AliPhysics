@@ -402,7 +402,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   // Filling Raws QA histos
   //
   // Checking the event type 
-  if (rawReader->GetType()!=7){
+//  if (rawReader->GetType()!=7){
   
     // Check if histograms already created for this Event Specie
     if(!GetRawsData(0)) InitRaws();
@@ -605,63 +605,63 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
       } //IsADCDataWord && signal ADCs
       else if(stream.IsZDCTDCDatum()){
          Float_t tdcValue = 0.025*stream.GetZDCTDCDatum();
-	 if(stream.GetChannel()==1 && tdcValue!=0.){
+	 if(stream.GetChannel()==8 && tdcValue!=0.){
 	    zncTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==3 && tdcValue!=0.){
+	 else if(stream.GetChannel()==9 && tdcValue!=0.){
 	    zpcTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==5 && tdcValue!=0.){
+	 else if(stream.GetChannel()==10 && tdcValue!=0.){
 	    znaTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==7 && tdcValue!=0.){
+	 else if(stream.GetChannel()==11 && tdcValue!=0.){
 	    zpaTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==8 && tdcValue!=0.){
+	 else if(stream.GetChannel()==22 && tdcValue!=0.){
 	    zem1TDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==9 && tdcValue!=0.){
+	 else if(stream.GetChannel()==23 && tdcValue!=0.){
 	    zem2TDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==10 && tdcValue!=0.){
+	 else if(stream.GetChannel()==16 && tdcValue!=0.){
 	    zncSumTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==12 && tdcValue!=0.){
+	 else if(stream.GetChannel()==18 && tdcValue!=0.){
 	    znaSumTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==14 && tdcValue!=0.) tdcGate = tdcValue;
-	 else if(stream.GetChannel()==15 && tdcValue!=0.) l0 = tdcValue;
+	 else if(stream.GetChannel()==20 && tdcValue!=0.) tdcGate = tdcValue;
+	 else if(stream.GetChannel()==21 && tdcValue!=0.) l0 = tdcValue;
 	 
 	 if(stream.GetChannel()==16 && tdcGate!=0. && l0!=0.){
 	      if(zncTDC!=0.){
 	        Float_t znc = zncTDC-tdcGate;
 	        FillRawsData(14,znc);
-		if(znc>-340. && znc<-290.) FillRawsData(21,1, znc);
+		if(znc>-360. && znc<-320.) FillRawsData(21,1, znc);
 	      }
 	      if(zpcTDC!=0.){
 	        Float_t zpc = zpcTDC-tdcGate;
 	        FillRawsData(15,zpc);
-	        if(zpc>-340. && zpc<-290.) FillRawsData(21,2, zpc);
+	        if(zpc>-360. && zpc<-320.) FillRawsData(21,2, zpc);
 	      }
 	      if(znaTDC!=0.){
 	        Float_t zna = znaTDC-tdcGate;
 	        FillRawsData(16,zna);
-	        if(zna>-340. && zna<-290.) FillRawsData(21,3, zna);
+	        if(zna>-360. && zna<-320.) FillRawsData(21,3, zna);
 	      }
 	      if(zpaTDC!=0.){
 	        Float_t zpa = zpaTDC-tdcGate;
 	        FillRawsData(17,zpa);
-	        if(zpa>-340. && zpa<-290.) FillRawsData(21,4, zpa);
+	        if(zpa>-360. && zpa<-320.) FillRawsData(21,4, zpa);
 	      }
 	      if(zem1TDC!=0.){
 	        Float_t zem1 = zem1TDC-tdcGate;
 	        FillRawsData(18,zem1);
-		if(zem1>-340. && zem1<-290.) FillRawsData(21,5, zem1);
+		if(zem1>-330. && zem1<-290.) FillRawsData(21,5, zem1);
 	      }
 	      if(zem2TDC!=0.){
 	        Float_t zem2 = zem2TDC-tdcGate;
 	        FillRawsData(19,zem2);
-	        if(zem2TDC>-340. && zem2<-290.) FillRawsData(21,6, zem2);
+	        if(zem2TDC>-330. && zem2<-290.) FillRawsData(21,6, zem2);
               }
 	      if(znaSumTDC!=0. && zncSumTDC!=0.){
 	         Float_t tdcC = zncSumTDC-l0;
@@ -675,7 +675,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
       }
     
     } //stream.Next()
-  } // check on event type
+//  } // check on event type
 //  else{
 //    AliDebug(1,Form("Skipping non-physics event for QA -> event type %d \n", rawReader->GetType())); 
 //  }
