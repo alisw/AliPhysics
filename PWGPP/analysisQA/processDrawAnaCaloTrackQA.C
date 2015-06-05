@@ -1,25 +1,24 @@
-/*******************************************************************
- Macro to plot few selected histograms
- to QA data productions at 0th order
- Analysis performed with the wagon
- AddTaskPi0IMGammaCorrQA.C
- It generates 5 eps plots, each containing 2 to 4 canvases
-
- To execute: 
-  root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL_default","AnalysisResults.root", "eps", 0, "output.root")'
-
- The input list name might change depending on the wagon / data type
- In case output file is too large, possiblity to dump the list content in a sepate file:  export = kTRUE
-
- Author: Gustavo.Conesa.Balbastre@cern.ch
-
- Few Modifications are done by sjena  to
- -- include it in automatic process script
- -- save objects into file
- -- dynamically picking the listName
- 
-*******************************************************************/
-
+/// \file DrawAnaCaloTrackQA.C
+/// \brief Plot analysis QA histograms from EMCal PWG-GA wagon
+///
+/// Macro to plot few selected histograms
+/// to QA data productions at 0th order
+/// Analysis performed with the wagon
+/// AddTaskPi0IMGammaCorrQA.C
+/// It generates 5 eps plots, each containing 2 to 4 canvases
+///
+/// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL_default","AnalysisResults.root")'
+/// The input list name might change depending on the wagon / data type
+/// In case output file is too large, possiblity to dump the list content in a sepate file:  export = kTRUE
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+///
+/// Few Modifications are done by sjena  to
+/// * include it in automatic process script
+/// * save objects into file
+/// * dynamically picking the listName
+/// 
 
 // Some global variables
 TList *list = 0;
@@ -30,6 +29,17 @@ TString suffix = "eps";
 
 TFile *fout;
 
+///
+/// Main method, produce the plots for the 5 different types of analysis:
+/// * Calorimeter QA in CaloQA method
+/// * Track QA in TrackQA method
+/// * Invariant mass plots in Pi0QA method
+/// * Cluster-track correlation plots in CorrelationQA method
+/// * Dedicated generated particles QA in MCQA method
+/// Input:
+/// \param listName: Name of list with histograms in file
+/// \param fileName: File name
+/// \param export: export list with histograms to separate file, intereting in case of big output file.
 //_______________________________________________________________________
 void processDrawAnaCaloTrackQA(TString listName     = "Pi0IM_GammaTrackCorr_EMCAL_defaultCen0_100",
 			       TString fileName     = "AnalysisResults.root",
@@ -51,11 +61,11 @@ void processDrawAnaCaloTrackQA(TString listName     = "Pi0IM_GammaTrackCorr_EMCA
 
  cout << histoTag.Data() << endl;
 
- if(!isOk) {
+ if(!isOk) 
+ {
    Printf("FATAL: Check file or Input List");
    return;
  }
-
 
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
@@ -65,20 +75,21 @@ void processDrawAnaCaloTrackQA(TString listName     = "Pi0IM_GammaTrackCorr_EMCA
   //gStyle->SetPadLeftMargin(0.15);
   gStyle->SetTitleFontSize(0.06);
 
+  //---------------
   // Added by sjena
   fout = TFile::Open(outfile,"UPDATE");
   fout->ls();
   
   TDirectoryFile *cdd = NULL;
   cdd = (TDirectoryFile*)fout->Get("GA");
-  if(!cdd) {
+  if(!cdd) 
+  {
     Printf("Warning: GA <dir> doesn't exist, creating a new one");
     cdd = (TDirectoryFile*)fout->mkdir("GA");
   }
   cdd->cd();
   cdd->ls();
-
-
+  //---------------
 
   //Plot basic Calorimeter QA
   CaloQA();
@@ -90,21 +101,22 @@ void processDrawAnaCaloTrackQA(TString listName     = "Pi0IM_GammaTrackCorr_EMCA
   Pi0QA();
 
   //Plot basic correlation QA
-   CorrelationQA();
+  CorrelationQA();
   
   // MC basic QA plots, cluster origins (only if it run on MC)
-   MCQA();
+  MCQA();
 
-   fout->cd();
-   fout->Close();
+  fout->cd();
+  fout->Close();
 
 }
 
-//___________
+///
+/// Plot basic calorimeter QA histograms.
+///
+//______________________________________
 void CaloQA()
 {
-  // Basic calorimeter QA histograms
-  
   TCanvas * ccalo = new TCanvas(Form("CaloHisto_%s",histoTag.Data()),"",1000,1000);
   ccalo->Divide(2,2);
   
@@ -193,9 +205,11 @@ void CaloQA()
   
   // Plot track-matching residuals
   // first test did not have this histogram, add protection
-  TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto("QA_hTrackMatchedDEtaDPhi");
+  TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto("QA_hTrackMatchedDEtaDPhiPos");
   if(hTrackMatchResEtaPhi)
   {
+    hTrackMatchResEtaPhi ->Add( (TH2F*) GetHisto("QA_hTrackMatchedDEtaDPhiNeg") );
+
     ccalo->cd(3);
     gPad->SetLogz();
     
@@ -212,13 +226,10 @@ void CaloQA()
     ccalo->cd(4);
     gPad->SetLogy();
     
-    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto("QA_hTrackMatchedDEta");
+    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto("QA_hTrackMatchedDEtaNeg");
     TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto("QA_hTrackMatchedDEtaPos");
-    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto("QA_hTrackMatchedDPhi");
+    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto("QA_hTrackMatchedDPhiNeg");
     TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto("QA_hTrackMatchedDPhiPos");
-    
-    h2TrackMatchResEtaNeg->Add(h2TrackMatchResEtaPos,-1);
-    h2TrackMatchResPhiNeg->Add(h2TrackMatchResPhiPos,-1);
     
     Float_t binMin = hCorr->FindBin(0.5);
     TH1F* hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY("TMProjEtaNeg",binMin, 1000);
@@ -264,7 +275,6 @@ void CaloQA()
     l3.Draw();
   }
   ccalo->SaveAs(Form("fig_ga_%s_CaloHisto.%s",histoTag.Data(),suffix.Data()));
-  
   
   
   TCanvas * ccalo2 = new TCanvas(Form("CaloHisto2_%s",histoTag.Data()),"",500,500);
@@ -314,15 +324,14 @@ void CaloQA()
   hClusterActivity->Draw("colz");
   
   ccalo2->SaveAs(Form("fig_ga_%s_CaloHisto2.%s",histoTag.Data(), suffix.Data()));
-  
-  
 }
 
-//____________
+///
+/// Plot basic hybrid tracks histograms.
+///
+//______________________________________
 void TrackQA()
-{
-  // Basic hybrid tracks histograms
-  
+{  
   TCanvas * ctrack = new TCanvas(Form("TrackHisto_%s",histoTag.Data()),"",1000,500);
   ctrack->Divide(2,1);
   
@@ -381,15 +390,14 @@ void TrackQA()
 //  hPtDCAz->Draw("colz");
   
   ctrack->SaveAs(Form("fig_ga_%s_TrackHisto.%s",histoTag.Data(), suffix.Data()));
-  
-  
 }
 
-//__________
+///
+/// Plot basic invariant mass QA
+///
+//_____________________________
 void Pi0QA()
 {
-  // Basic invariant mass QA
-  
   TCanvas * cpi0 = new TCanvas(Form("Pi0Histo_%s",histoTag.Data()),"",500,500);
   cpi0->Divide(2,2);
   
@@ -397,8 +405,8 @@ void Pi0QA()
   TH2F* hMixMassE[10];
   for(Int_t icen = 0; icen < 10; icen++)
   {
-    hMassE   [icen] = (TH2F*) GetHisto(Form("AnaPi0_hRe_cen%d_pidbit0_asy1_dist1",icen));
-    hMixMassE[icen] = (TH2F*) GetHisto(Form("AnaPi0_hMi_cen%d_pidbit0_asy1_dist1",icen));
+    hMassE   [icen] = (TH2F*) GetHisto(Form("AnaPi0_hRe_cen%d_pidbit0_asy0_dist1",icen));
+    hMixMassE[icen] = (TH2F*) GetHisto(Form("AnaPi0_hMi_cen%d_pidbit0_asy0_dist1",icen));
   }
   
   // 2D Invariant mass vs E, in PbPb from 60 to 100 %, all in pp
@@ -556,11 +564,9 @@ void Pi0QA()
       //printf("Scale factor %f for cen %d\n",scale,icen);
       hSM[ism]->Scale(1./scale);
       hSM[ism]->SetYTitle("Real / Mixed");
-
     }
     
     if(maxSM < hSM[ism]->GetMaximum()) maxSM = hSM[ism]->GetMaximum();
-
   }
   
   hSM[0]->SetTitle("#pi^{0} peak in Modules, 4 < E_{pair}< 10 GeV");
@@ -622,14 +628,14 @@ void Pi0QA()
   }
 
   cpi0->SaveAs(Form("fig_ga_%s_Pi0Histo.%s",histoTag.Data(),suffix.Data()));
-  
-  
 }
 
-//__________________
+///
+/// Plot basic cluster-track correlation histograms.
+///
+//__________________________________________________
 void CorrelationQA()
 {
-
   TCanvas * cCorrelation = new TCanvas(Form("CorrelationHisto_%s",histoTag.Data()),"",1000,500);
   cCorrelation->Divide(2,1);
   
@@ -681,15 +687,14 @@ void CorrelationQA()
     
     l.AddEntry(hDeltaPhi[ibin],Form("%2.1f< p_{T,A}< %2.1f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
   }
-  
-  
+    
   hDeltaPhi[2]->SetMaximum(hDeltaPhi[2]->GetMaximum()*10);
   hDeltaPhi[2]->SetMinimum(0.8);
   
-   hDeltaPhi[2]->Draw("H");
-   hDeltaPhi[1]->Draw("Hsame");
-   hDeltaPhi[3]->Draw("Hsame");
-   hDeltaPhi[0]->Draw("Hsame");
+  hDeltaPhi[2]->Draw("H");
+  hDeltaPhi[1]->Draw("Hsame");
+  hDeltaPhi[3]->Draw("Hsame");
+  hDeltaPhi[0]->Draw("Hsame");
   
   l.Draw("same");
   
@@ -731,28 +736,24 @@ void CorrelationQA()
   hXEUE->SetLineColor(2);
   l2.AddEntry(hXEUE,"raw Und. Event x_{E}","P");
   hXEUE->Draw("same");
-
   
   l2.Draw("same");
-
   
   cCorrelation->SaveAs(Form("fig_ga_%s_CorrelationHisto.%s",histoTag.Data(),suffix.Data()));
- 
-
 }
 
-//___________
+///
+/// Plot basic generated particle distribution histograms.
+///
+//________________________________________________________
 void MCQA()
-{
-  // Basic calorimeter QA histograms
-  
+{  
   TH2F* h2ClusterPho = (TH2F*) GetHisto("QA_hRecoMCE_Photon_Match0");    // not track-matched
   TH2F* h2ClusterPi0 = (TH2F*) GetHisto("QA_hRecoMCE_Pi0_Match0");       // not track-matched
   TH2F* h2ClusterEta = (TH2F*) GetHisto("QA_hRecoMCE_Eta_Match0");       // not track-matched
   TH2F* h2ClusterEle = (TH2F*) GetHisto("QA_hRecoMCE_Electron_Match1");  // Track-matched
   
   if(!h2ClusterPho) return;
-  
   
 //  TH1F* hPrimPho = (TH1F*) GetHisto("QA_hGenMCAccE_Photon");
 //  TH1F* hPrimPi0 = (TH1F*) GetHisto("QA_hGenMCAccE_Pi0");
@@ -948,14 +949,11 @@ void MCQA()
   hPrimEtaEta->Draw("same");
   
   cmc->SaveAs(Form("fig_ga_%s_MCHisto.%s",histoTag.Data(),suffix.Data()));
-  
+}
 
-
-
-  
- }
-
-
+///
+/// Open the file and list containing the histograms
+///
 //____________________________________________________________________
 Bool_t GetFileAndList(TString fileName, TString listNameNN, Bool_t export)
 {
@@ -963,7 +961,8 @@ Bool_t GetFileAndList(TString fileName, TString listNameNN, Bool_t export)
 
   Printf("\n\n\n");
 
-  if(!file) {
+  if(!file) 
+  {
     Printf("FATAL:The file is not Available >>>>> Provide the correct input file");
     Printf("FATAL: %s => Not Available", fileName.Data());
     return kFALSE;
@@ -973,11 +972,12 @@ Bool_t GetFileAndList(TString fileName, TString listNameNN, Bool_t export)
 
   TString listName;  
   TList *keylist = file->GetListOfKeys();
-  for(Int_t i = 0; i < keylist->GetEntries(); i++) {
-
+  for(Int_t i = 0; i < keylist->GetEntries(); i++) 
+  {
     TKey *lk = (TKey *)keylist->At(i);
     TString listNN = lk->GetName();
-    if(listNN.Contains(listNameNN.Data())) { 
+    if(listNN.Contains(listNameNN.Data())) 
+    { 
       listName = lk->GetName();
       cout << listName.Data() <<endl;
     }
@@ -988,7 +988,8 @@ Bool_t GetFileAndList(TString fileName, TString listNameNN, Bool_t export)
   //return;
 
   TDirectory * dir = (TDirectory*) file->Get(listName);
-  if(!dir) {
+  if(!dir) 
+  {
     Printf("FATAL:The listName is not Available <<<<<<>>>>> Provide the correct input List");
     Printf("FATAL: %s => Not Available", listName.Data());
     return kFALSE;
@@ -1008,67 +1009,41 @@ Bool_t GetFileAndList(TString fileName, TString listNameNN, Bool_t export)
   }
 
   return kTRUE;
-
 }
 
-
-void  SaveHisto(TObject* histo){
-  if(histo){
+///
+/// Save recovered histogram in new file?
+///
+//___________________________________
+void  SaveHisto(TObject* histo)
+{
+  if(histo)
+  {
     histo->Write(Form("fig_ga_%s",histo->GetName()));
   }
   else Printf("Object not Available");
 }
 
+///
+/// Check if the list is available,
+/// if not get the histo directly from file
+///
 //___________________________________
 TObject * GetHisto(TString histoName)
-{
-  // Check if the list is available, if not get the histo directly from file
-  
-  if(list) {
+{  
+  if(list) 
+  {
     // (list->FindObject(histoName))->Write(Form("fig_ga_%s",histoName.Data()));
 
     SaveHisto(list->FindObject(histoName));
     return list->FindObject(histoName);
   }
 
-  else {
+  else 
+  {
     // (file->Get(histoName))->Write(Form("fig_ga_%s",histoName.Data()));
     SaveHisto(file->Get(histoName));
-    return file->Get       (histoName);
+    return file->Get(histoName);
   }
 }
-
-//___________________________________________________
-void ScaleAxis(TAxis *a, Double_t scale)
-{
-  if (!a) return; // just a precaution
-  if (a->GetXbins()->GetSize())
-  {
-    // an axis with variable bins
-    // note: bins must remain in increasing order, hence the "Scale"
-    // function must be strictly (monotonically) increasing
-    TArrayD X(*(a->GetXbins()));
-    for(Int_t i = 0; i < X.GetSize(); i++) X[i] = scale*X[i];
-    a->Set((X.GetSize() - 1), X.GetArray()); // new Xbins
-  }
-  else
-  {
-    // an axis with fix bins
-    // note: we modify Xmin and Xmax only, hence the "Scale" function
-    // must be linear (and Xmax must remain greater than Xmin)
-    a->Set(a->GetNbins(),
-           scale*a->GetXmin(), // new Xmin
-           scale*a->GetXmax()); // new Xmax
-  }
-  return;
-}
-
-//___________________________________________________
-void ScaleXaxis(TH1 *h, Double_t scale)
-{
-  if (!h) return; // just a precaution
-  ScaleAxis(h->GetXaxis(), scale);
-  return;
-}
-
 
