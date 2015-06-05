@@ -26,6 +26,7 @@
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCFastTransform.h"
+#include "AliHLTTPCDefinitions.h"
 
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"

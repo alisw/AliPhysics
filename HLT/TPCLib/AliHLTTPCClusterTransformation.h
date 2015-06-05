@@ -82,6 +82,8 @@ class AliHLTTPCClusterTransformation{
   const AliHLTTPCFastTransform& GetFastTransform(){ return fFastTransform; }
   
   AliHLTTPCFastTransform& GetFastTransformNonConst(){ return fFastTransform; }
+  
+  void SetInitSec(Int_t min, Int_t max) {fFastTransform.SetInitSec(min, max);}
 
  private:
 
