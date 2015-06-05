@@ -521,7 +521,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fM02vsEHardPi0BGKid->Sumw2();
   fQAList->Add(fM02vsEHardPi0BGKid);
 
-  fCellsPi0KidE6 = new TH2F("fCellsPi0KidE6","Distribution of cluster energy in its cells (5.5<E_{clus}<6.5,#pi^0 daughters, all #lambda_{0}^{2};col;row",17,-8,8,17,-8,8);
+  fCellsPi0KidE6 = new TH2F("fCellsPi0KidE6","Distribution of cluster energy in its cells (5.9<E_{clus}<6.1,#pi^0 daughters, all #lambda_{0}^{2};col;row",17,-8,8,17,-8,8);
   fCellsPi0KidE6->Sumw2();
   fQAList->Add(fCellsPi0KidE6);
 
@@ -2076,6 +2076,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	isCPV = kTRUE;
       if(!isCPV)
 	continue;
+      Short_t idm1;
+      Double_t Emax1 = GetMaxCellEnergy( c, idm1);
+      Float_t ec1 = GetCrossEnergy(c,idm1);
+      if(Emax1 == 0 || ec1/Emax1<0.03)
+	continue;
       Float_t clsPos[3] = {0,0,0};
       c->GetPosition(clsPos);
       TVector3 clsVec(clsPos);
@@ -2088,6 +2093,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	  isCPV2 = kTRUE;
 	if(!isCPV2)
 	  continue;
+	Short_t idm2;
+	Double_t Emax2 = GetMaxCellEnergy( c2, idm2);
+	Float_t ec2 = GetCrossEnergy(c2,idm2);
+	if(Emax2==0 || ec2/Emax2<0.03)
+	  continue;
 	Float_t clsPos2[3] = {0,0,0};
 	c2->GetPosition(clsPos2);
 	TVector3 clsVec2(clsPos2);
@@ -2097,6 +2107,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	lv2.SetPtEtaPhiM(c2->E()*TMath::Sin(clsVec2.Theta()),clsVec2.Eta(),clsVec2.Phi(),0.0);
 	lvm = lv1 + lv2;
 	if(TMath::Abs(lvm.M()-0.135)<0.015){
+	  GetEDistInClusCells(c,idm1);
+	  GetEDistInClusCells(c2,idm2);
 	  if(c->E()>c2->E()){
 	    fM02vsESoftPi0Kid->Fill(c2->E(),c2->GetM02());
 	    fM02vsEHardPi0Kid->Fill(c->E(),c->GetM02());
@@ -2120,7 +2132,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskEMCALIsoPhoton::GetEDistInClusCells(const AliVCluster *cluster, Short_t &idmax)
+void AliAnalysisTaskEMCALIsoPhoton::GetEDistInClusCells(const AliVCluster *cluster, Short_t idmax)
 {
   // Calculate the energy of cross cells around the leading cell.
 
@@ -2140,7 +2152,6 @@ void AliAnalysisTaskEMCALIsoPhoton::GetEDistInClusCells(const AliVCluster *clust
   Int_t iphis   = -1;
   Int_t ietas   = -1;
 
-
   fGeom->GetCellIndex(idmax,iSupMod,iTower,iIphi,iIeta);
   fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphis,ietas);
 
@@ -2155,7 +2166,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetEDistInClusCells(const AliVCluster *clust
     Int_t etadiff = ieta-ietas;
     /*if (aetadiff>1)
       continue;*/
-    fCellsPi0KidE6->Fill(etadiff,phidiff,cells->GetCellAmplitude(cellAbsId));
+    if(cluster->E()>5.5 && cluster->E()<6.5)
+      fCellsPi0KidE6->Fill(etadiff,phidiff,cells->GetCellAmplitude(cellAbsId));
   }
 }
 //________________________________________________________________________
