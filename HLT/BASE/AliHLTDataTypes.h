@@ -75,8 +75,9 @@
  *  17       New CDH v3 (10 32bit words, 100 trigger classes, etc.)
  *  18       Added AD detector in AliHLTEventDDLV2
  *  19       Added AD Component Data Types
+ *  20       Add data type for ZMQ components and for internal custom triggers
  */
-#define ALIHLT_DATA_TYPES_VERSION 19
+#define ALIHLT_DATA_TYPES_VERSION 20
 
 //////////////////////////////////////////////////////////////////////////
 //
