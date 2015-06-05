@@ -78,13 +78,15 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
 {
 
   Float_t zero_timecdb[24]={0};
+  Float_t zero_cfdvalue[52]={0};
   Float_t *timecdb = zero_timecdb;
-  Float_t *cfdvalue = zero_timecdb;
+  Float_t *cfdvalue = zero_cfdvalue;
   Float_t cfd[24][5];
   for(Int_t i=0; i<24; i++) 
     for (Int_t i0=0; i0<5; i0++)
       cfd[i][i0] = 0;
   Int_t badpmt=-1;
+  Float_t meanvertex=0;
   //Processing data from DAQ Physics run
   AliInfo("Processing Time Offset between channels");
   if (pocdbStorage) ocdbStorage=pocdbStorage;
@@ -99,12 +101,17 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
   else
     {
       AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entryCalib->GetObject();
+      //  clb->Print();
       timecdb = clb->GetTimeEq();
       for(Int_t i=0; i<24; i++) 
 	for (Int_t i0=0; i0<5; i0++)  cfd[i][i0] = clb->GetCFDvalue(i, i0);
-      
+      meanvertex=clb->GetMeanVertex();
     }
-  for(Int_t i=0; i<24; i++)cfdvalue[i]=cfd[i][0];
+  for(Int_t i=0; i<24; i++) cfdvalue[i]=cfd[i][0];
+  for(Int_t i=24; i<48; i++) cfdvalue[i]=cfd[i-24][1];
+  cfdvalue[48] = meanvertex;
+  for(Int_t i=49; i<51; i++) cfdvalue[i]=cfd[i-49][2];
+  
   
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
   Int_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);

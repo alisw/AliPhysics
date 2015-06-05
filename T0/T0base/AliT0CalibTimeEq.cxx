@@ -112,7 +112,10 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
   printf("\n	----	PM Arrays	----\n\n");
   printf(" Time delay CFD \n");
   for (Int_t i=0; i<24; i++) 
-    printf(" CFD  %f diff %f  \n",fCFDvalue[i][0],fTimeEq[i]);
+    printf(" CFD  %f diff %f qt1 %f  \n",fCFDvalue[i][0],fTimeEq[i],fCFDvalue[i][1]);
+  printf(" TVDC  %f OrA %f OrC %f  \n",fMeanVertex,fCFDvalue[0][2], fCFDvalue[1][2]);
+
+
 } 
 
 
@@ -270,6 +273,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
   TH1F *cfddiff = NULL; 
   TH1F *cfdtime = NULL;
   TObjArray * tzeroObj = NULL;
+  Float_t qt1[24], orA, orC, tvdc;
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {
@@ -396,10 +400,16 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0, meancfdtime );
+	  qt1[i]=cfdvalue[24+i];
+	  SetCFDvalue(i,1,qt1[i]);
 	  if (cfddiff) cfddiff->Reset();
 	  if (cfdtime) cfdtime->Reset();
 	  } //bad pmt
 	}      
+      SetMeanVertex(cfdvalue[48]);
+      SetOrA(cfdvalue[49]);
+      SetOrC(cfdvalue[50]);
+
       gFile->Close();
       delete gFile;
     }
@@ -420,7 +430,7 @@ void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigm
   // sigmaEstimate = 10;
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","R","");
+  hist->Fit("fit","RQ","");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);

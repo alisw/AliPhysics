@@ -145,12 +145,12 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 
 	if(!cfd) {
 	  AliError(Form("no histograms collected for %s", histname[i].Data()));
-	  return 300;
+	  return -300;
 	}
 	if(cfd) {
 	  if( cfd->GetEntries() == 0) {
 	  AliError(Form("%s histogram is empty", histname[i].Data()));
-	  return 300;
+	  return -300;
 	  }
 	  GetMeanAndSigma(cfd, mean, sigma);
 	  if (sigma == 0 || sigma > 600 || cfd->GetEntries()<50 ){ //!!!
