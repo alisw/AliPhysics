@@ -16,5 +16,5 @@ while True:
   print "publishing on "+port
   socket.send(topic,zmq.SNDMORE)
   socket.send("payload part",0)
-  time.sleep(5)
+  time.sleep(1)
 

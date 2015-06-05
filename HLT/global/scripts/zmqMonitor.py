@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import zmq,sys
 
-endpoint = "tcp://localhost:5556"
+endpoint = "tcp://localhost:60201"
 subscription = ""
 if len(sys.argv)>1:
     subscription=sys.argv[1]
