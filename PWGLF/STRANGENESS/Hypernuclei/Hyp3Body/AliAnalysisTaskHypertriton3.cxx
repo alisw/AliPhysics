@@ -970,6 +970,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       dca_dp = trackD->GetDCA(trackP,bz,xthiss,xpp);
 
       fHistDCAdeupro->Fill(dca_dp);
+
+      if(dca_dp > fDCAdp) continue;
+
       
       for(UInt_t s=0; s<nPioTPC; s++ ){ // candidate pion loop cpion.size()
 
@@ -1014,7 +1017,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDCApdppi->Fill(dca_dp,dca_ppi);
 	fHistDCApidpip->Fill(dca_ppi,dca_dpi);
 	
-	if(dca_dp > fDCAdp) continue;
+	
 	if(dca_dpi > GetDCAcut(5,dca_dp)) continue;
 	if(dca_ppi > GetDCAcut(4,dca_dp)) continue;
 
