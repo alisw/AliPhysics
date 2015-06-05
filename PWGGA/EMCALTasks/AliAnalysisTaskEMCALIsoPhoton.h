@@ -59,7 +59,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
 						Int_t *absIdList,     Float_t *maxEList);
   Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
-  void                   GetEDistInClusCells(const AliVCluster *cluster, Short_t &idmax);
+  void                   GetEDistInClusCells(const AliVCluster *cluster, Short_t idmax);
   AliVCaloCells          *GetVCaloCells();
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
