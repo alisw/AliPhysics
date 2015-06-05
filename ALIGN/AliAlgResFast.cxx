@@ -108,6 +108,31 @@ void AliAlgResFast::Clear(const Option_t *)
 void AliAlgResFast::Print(const Option_t */*opt*/) const
 {
   // print info
+  printf("%3s:%1s (%9s/%5s) %6s | [ %7s:%7s ]\n","Pnt","M","Label",
+	 "VolID","Sigma","resid","pull/LG");
+  for (int irs=0;irs<fNPoints;irs++) {
+    printf("%3d:%1d (%9d/%5d) %6.4f | [%+.2e:%+7.2f]\n",
+	   irs,0, fLabel[irs],fVolID[irs],fSig0[irs],fD0[irs],
+	   fSig0[irs]>0 ? fD0[irs]/fSig0[irs]:-99);
+    printf("%3d:%1d (%9d/%5d) %6.4f | [%+.2e:%+7.2f]\n",
+	   irs,1, fLabel[irs],fVolID[irs],fSig1[irs],fD1[irs],
+	   fSig1[irs]>0 ? fD1[irs]/fSig1[irs]:-99);
+  }
+  //
+  printf("CorrETP: ");
+  for (int i=0;i<5;i++) printf("%+.3f ",fTrCorr[i]); printf("\n");
+  printf("MatCorr (corr/sig:pull)\n");
+  int nmp = fNMatSol/4;
+  int cnt = 0;
+  for (int imp=0;imp<nmp;imp++) {
+    for (int ic=0;ic<4;ic++) {
+      printf("%+.2e/%.2e:%+8.3f|",fSolMat[cnt],fMatErr[cnt],
+	     fMatErr[cnt]>0 ? fSolMat[cnt]/fMatErr[cnt] : -99);
+      cnt++;
+    }
+    printf("\n");
+  }
+  //
 }
 
 //____________________________________________

@@ -1893,9 +1893,9 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
       if ( ((++cntL)%4)==0 ) {printf("\n"); nln = kFALSE;}
     }
     if (!nln) printf("\n");
-    if (loc) printf("%3s (%9s) %6s | [%6s:%7s] [%6s:%7s]","Pnt","Label",
+    if (loc) printf("%3s (%9s) %6s | [ %7s:%7s ] [ %7s:%7s ]\n","Pnt","Label",
 		    "Sigma","resid","pull/L ","resid","pull/LG");
-    else     printf("%3s (%9s) %6s | [%6s:%7s]","Pnt","Label",
+    else     printf("%3s (%9s) %6s | [ %7s:%7s ]\n","Pnt","Label",
 		    "Sigma","resid","pull/LG");
   }
   int idMeas=-1,pntID=-1,matID=-1;
@@ -1947,7 +1947,7 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
     recDLoc   += ndloc;
   }
   // store track corrections
-  int nTrCor = nvloc - matID;
+  int nTrCor = nvloc - matID - 1;
   for (int i=0;i<nTrCor;i++) {
     if (rLG) rLG->GetTrCor()[i] = vecSolG[i];
     if (rL)  rL->GetTrCor()[i]  = vecSol[i];
