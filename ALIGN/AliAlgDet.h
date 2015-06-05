@@ -112,6 +112,7 @@ class AliAlgDet : public TNamed
   Int_t     GetNPointsSelColl()                     const {return GetNPointsSel(AliAlgAux::kColl);}
   Int_t     GetNPointsSelCosm()                     const {return GetNPointsSel(AliAlgAux::kCosm);}
   //
+  //
   Bool_t    IsObligatory(Int_t tp)                  const {return fObligatory[tp];}
   Bool_t    IsObligatoryColl()                      const {return IsObligatory(AliAlgAux::kColl);}
   Bool_t    IsObligatoryCosm()                      const {return IsObligatory(AliAlgAux::kCosm);}
@@ -120,6 +121,8 @@ class AliAlgDet : public TNamed
   void      SetObligatoryCosm(Bool_t v=kTRUE)             {SetObligatory(AliAlgAux::kCosm,v);}
   //
   void      AddAutoConstraints()                    const;
+  void      ConstrainOrphans(const double* sigma, const char* match=0);
+
   virtual void      WritePedeInfo(FILE* parOut,const Option_t *opt="") const;
   virtual void      WriteCalibrationResults()       const;
   virtual void      WriteAlignmentResults()         const;

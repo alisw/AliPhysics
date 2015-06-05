@@ -18,6 +18,7 @@
 #include "AliAlgDet.h"
 #include "AliAlgSteer.h"
 #include "AliAlgTrack.h"
+#include "AliAlgConstraint.h"
 #include "AliLog.h"
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
@@ -580,5 +581,35 @@ void AliAlgDet::SetDOFCondition(int dof, float condErr ,int lev,const char* matc
     if (condErr>=0 && !vol->IsFreeDOF(dof)) vol->SetFreeDOF(dof);
     if (condErr<0  && vol->IsFreeDOF(dof)) vol->FixDOF(dof);
   }
+  //
+}
+
+//________________________________________
+void AliAlgDet::ConstrainOrphans(const double* sigma, const char* match)
+{
+  // additional constraint on volumes w/o parents (optionally containing "match" in symname)
+  // sigma<0 : dof is not contrained
+  // sigma=0 : dof constrained exactly (Lagrange multiplier)
+  // sigma>0 : dof constrained by gaussian constraint
+  //
+  TString mts=match, syms;
+  AliAlgConstraint* constr = new AliAlgConstraint();
+  for (int i=0;i<AliAlgVol::kNDOFGeom;i++) {
+    if (sigma[i]>=0) constr->ConstrainDOF(i);
+    else             constr->UnConstrainDOF(i);
+    constr->SetSigma(i,sigma[i]);
+  }
+  for (int i=GetNVolumes();i--;) {
+    AliAlgVol *vol = GetVolume(i);
+    if (vol->GetParent()) continue; // wrong level
+    if (!mts.IsNull() && !(syms=vol->GetSymName()).Contains(mts)) continue; //wrong name
+    constr->AddChild(vol);
+  }
+  //
+  if (!constr->GetNChildren()) {
+    AliInfoF("No volume passed filter %s",match);
+    delete constr;
+  }
+  else ((TObjArray*)fAlgSteer->GetConstraints())->Add(constr);
   //
 }

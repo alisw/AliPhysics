@@ -11,6 +11,9 @@
   corrections of children for requested DOFs in the frame of 
   parent (of LAB if parent is not defined) forced to be 0.
   The parent - child relationship need not to be real
+
+  Constraint wil be quazi-exact (Lagrange multiplier) if 
+  corresponding sigma = 0, or of gaussian type is sigma>0
   -------------------------------------------------------*/
 
 // Author: ruben.shahoyan@cern.ch
@@ -34,9 +37,11 @@ class AliAlgConstraint : public TNamed
   Bool_t     IsDOFConstrained(Int_t dof)       const {return fConstraint&0x1<<dof;}
   UChar_t    GetConstraintPattern()            const {return fConstraint;}
   void       ConstrainDOF(Int_t dof)                 {fConstraint |= 0x1<<dof;}
-  void       UContrainDOF(Int_t dof)                 {fConstraint &=~(0x1<<dof);}
+  void       UnConstrainDOF(Int_t dof)               {fConstraint &=~(0x1<<dof);}
   void       SetConstrainPattern(UInt_t pat)         {fConstraint = pat;}
   Bool_t     HasConstraint()                   const {return  fConstraint;}
+  Double_t   GetSigma(int i)                   const {return  fSigma[i];}
+  void       SetSigma(int i,double s=0)              {fSigma[i] = s;}
   //
   void       ConstrCoefGeom(const TGeoHMatrix &matRD, float* jac/*[kNDOFGeom][kNDOFGeom]*/) const;
   //
@@ -52,10 +57,11 @@ class AliAlgConstraint : public TNamed
   //
  protected:
   UInt_t            fConstraint;          // bit pattern of constraint
+  Double_t          fSigma[kNDOFGeom];    // optional sigma if constraint is gaussian
   const AliAlgVol*  fParent;              // parent volume for contraint, lab if 0
   TObjArray         fChildren;            // volumes subjected to constraints
   //
-  ClassDef(AliAlgConstraint,1);
+  ClassDef(AliAlgConstraint,2);
 };
 
 #endif

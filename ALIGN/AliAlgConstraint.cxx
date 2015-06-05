@@ -34,6 +34,7 @@ AliAlgConstraint::AliAlgConstraint(const char* name,const char* title)
   ,fChildren(2)
 {
   // def. c-tor
+  for (int i=kNDOFGeom;i--;) fSigma[i] = 0;
 }
 
 //___________________________________________________________________
@@ -61,8 +62,9 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
   // write for PEDE eventual constraints on children movement in parent frame
   //
   enum {kOff,kOn,kOnOn};
+  enum {kConstr,kMeas};
   const char* comment[3] = {"  ","! ","!!"};
-  const char* kKeyConstr = "constraint";
+  const char* kKeyConstr[2] = {"constraint","measurement"};
   //
   int nch = GetNChildren();
   float *cstrArr = new float[nch*kNDOFGeom*kNDOFGeom];
@@ -104,8 +106,14 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
     //
     if (cmtStatus) AliInfoF("No contributors to constraint of %3s of %s",GetDOFName(ics),GetName());
     //
-    fprintf(conOut,"\n%s%s\t%e\t%s %s of %s %s\n",comment[cmtStatus],kKeyConstr,0.0,
-	    comment[kOnOn],GetDOFName(ics),GetName(),GetTitle());
+    if (fSigma[ics]>0) {
+      fprintf(conOut,"\n%s%s\t%e\t%e\t%s %s of %s %s\n",comment[cmtStatus],kKeyConstr[kMeas],0.0,fSigma[ics],
+	      comment[kOnOn],GetDOFName(ics),GetName(),GetTitle());
+    }
+    else {
+      fprintf(conOut,"\n%s%s\t%e\t%s %s of %s %s\n",comment[cmtStatus],kKeyConstr[kConstr],0.0,
+	      comment[kOnOn],GetDOFName(ics),GetName(),GetTitle());
+    }
     for (int ich=0;ich<nch;ich++) { // contribution from this children DOFs to constraint 
       AliAlgVol* child = GetChild(ich);
       jac = cstrArr + kNDOFGeom*kNDOFGeom*ich;
@@ -205,6 +213,11 @@ void AliAlgConstraint::CheckConstraint() const
   else printf(" no parent -> Global ");
   printf(" ! <----- %s\n",GetName());
   //
+  printf(" Sig | ");
+  for (int jp=0;jp<kNDOFGeom;jp++) printf("    %+.3e    ",fSigma[jp]);
+  printf(" ! <----- \n");
+
+  //
   delete[] cstrArr;
   //
 }
@@ -281,7 +294,7 @@ void AliAlgConstraint::Print(const Option_t *) const
 {
   // print info
   printf("Constraint on ");
-  for (int i=0;i<kNDOFGeom;i++) if (IsDOFConstrained(i)) printf("%3s ",GetDOFName(i));
+  for (int i=0;i<kNDOFGeom;i++) if (IsDOFConstrained(i)) printf("%3s (Sig:%+e) ",GetDOFName(i),GetSigma(i));
   printf(" | %s %s\n",GetName(),GetTitle());
   for (int i=0;i<GetNChildren();i++) {
     const AliAlgVol* child = GetChild(i);
