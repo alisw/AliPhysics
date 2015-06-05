@@ -55,7 +55,6 @@ void DoPlotSingle1Canvas(TString TrackpTthr ="1.0to99.0",TString system = "pPb")
   //cout->SetFrameBorderMode(0);
   
   TString CanvasName = ""; 
-  Reset();
   LoadFileNamesToCompare(TrackpTthr,system);
 
   cout << " " << endl << "Adding file.." << endl;
@@ -165,8 +164,8 @@ void DoPlotSingle1Canvas(TString TrackpTthr ="1.0to99.0",TString system = "pPb")
       tlTitle0->Draw();
       
       
-      if(kTemp==1)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{5 < #it{p}_{T}^{D^{}} < 8 GeV/c,   #it{p}_{T}^{assoc} > 1.0  GeV/c}");
-      if(kTemp==2)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{8 < #it{p}_{T}^{D^{}} < 16 GeV/c,   #it{p}_{T}^{assoc} > 1.0  GeV/c}");
+      if(kTemp==1)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{5 < #it{p}_{T}^{D^{}} < 8 GeV/c}, #bf{-0.96<#it{y}^{D}_{cms}<0.04}");
+      if(kTemp==2)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{8 < #it{p}_{T}^{D^{}} < 16 GeV/c}, #bf{-0.96<#it{y}^{D}_{cms}<0.04}");
       
       tlTitle00->SetNDC();
       //tlTitle0->SetTextColor(kRed);
@@ -213,8 +212,8 @@ void DoPlotSingle1Canvas(TString TrackpTthr ="1.0to99.0",TString system = "pPb")
 	    if(str.Contains("assoc")){
 	      TString strTitle5=tl->GetTitle();
 	      Printf("\n%s <-- Default txt(4)",strTitle5.Data());
-	      if(kTemp==1)strTitle5.ReplaceAll("#bf{5 < #it{p}_{T}^{D^{0}} < 8 GeV/c,  #it{p}_{T}^{assoc} > 1.0  GeV/c}","");
-	      if(kTemp==2)strTitle5.ReplaceAll("#bf{8 < #it{p}_{T}^{D^{0}} < 16 GeV/c,  #it{p}_{T}^{assoc} > 1.0  GeV/c}","");
+	      if(kTemp==1)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{#it{p}_{T}^{assoc}>1 GeV/#it{c}}, #bf{|#Delta#eta|<1.0}");
+	      if(kTemp==2)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{#it{p}_{T}^{assoc}>1 GeV/#it{c}}, #bf{|#Delta#eta|<1.0}");
 	      Printf("%s <-- Replaced with txt(4)",strTitle5.Data());
 	      tl->SetTitle(strTitle5.Data());
               

@@ -156,6 +156,7 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitSystematicsAverage_pPb.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitPlots.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/SubtractFD.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceSpecieComparisonPlot.C .
 fi
 
 #############  CREATE BASIC DIRECTORY TREE #############
@@ -387,6 +388,15 @@ DoPlotComparedot3to1pPb()
 .q
 EOF
     
+
+    root -b <<EOF &> CompareMesonsNiceStyle.log
+.L ${HFCJlocalCodeDir}/DoNiceSpecieComparisonPlot.C
+SetInputDirectory("${baseDir}/AllPlots/CompareMesons/Output_SngCav_Comparison")
+DoNiceSpecieComparisonPlot("${pttrig[1]}","${ptassoc[2]}","${collsystdir[0]}","${pttrig[2]}","${ptassoc[2]}","${collsystdir[1]}")
+.q
+EOF
+
+
 fi
 
 ######## NOW FIT DISTRIBUTIONS ############
