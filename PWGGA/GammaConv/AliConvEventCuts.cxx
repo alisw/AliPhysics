@@ -2114,18 +2114,14 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent){
 
 	AliInfo("Inside the GetWeightForCentralityFlattening function");
-	Double_t centrality = 0;
+	Double_t centrality = 0.;
 	//obtain centrality for ESD or AOD
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
 		AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(InputEvent);
 		if(esdEvent){
 			AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
-			if(fDetectorCentrality==0){
-				if (fIsHeavyIon==1){
+			if(fDetectorCentrality==0 && fIsHeavyIon==1){
 					centrality = fESDCentrality->GetCentralityPercentile("V0M"); // default for PbPb
-				} else{
-					return 1;
-				}
 			}
 		}
 	} else if(InputEvent->IsA()==AliAODEvent::Class()){
@@ -2140,37 +2136,32 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent
 	//Get the maximum vlaue from the reference distribution and interpolated value
 	Float_t GetValueForWeight = 1.;
 	Float_t maximum = 1.;
+	Double_t weightCentrality = 1.;
+	Bool_t CorrCentrLoop = kFALSE;
 	
 	//depending on the value of the flag, flattening in different cent. range
-	if ( fDoCentralityFlat == 1){
-		if(centrality > -1. && centrality <= 10.){
-			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
-			maximum = hCentralityNotFlat->GetMaximum();
-		} else {return 1;}
-	} else if ( fDoCentralityFlat == 2){
-		if(centrality >=10. && centrality <= 20.){
-			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
-			maximum = hCentralityNotFlat->GetMaximum();
-		} else {return 1;}
-	} else if ( fDoCentralityFlat == 9 ){
-		if(centrality > -1. && centrality <= 10.){
-			GetValueForWeight = 1.;
-			maximum = 2.;
-		}
+	if ( fDoCentralityFlat == 1 && (centrality >= 0. && centrality <= 10.) ){
+		GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
+		maximum = hCentralityNotFlat->GetMaximum();
+		CorrCentrLoop = kTRUE;
+	} else if ( fDoCentralityFlat == 2 && (centrality >=10. && centrality <= 20.) ){
+		GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
+		maximum = hCentralityNotFlat->GetMaximum();
+		CorrCentrLoop = kTRUE;
 	} else if ( fDoCentralityFlat == 8 ){
-			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
-			maximum = hCentralityNotFlat->GetMaximum();
+		GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
+		maximum = hCentralityNotFlat->GetMaximum();
+		CorrCentrLoop = kTRUE;
+	} else {
+		CorrCentrLoop = kFALSE;
 	}
-
-// 	cout << "maximum: " << maximum << endl;
-// 	cout << "GetValueForWeight: " << GetValueForWeight << endl;
-	Double_t weightCentrality = 1.;
-	if (GetValueForWeight != 0. && maximum !=0. && isfinite(GetValueForWeight) && isfinite(maximum) ){
+	
+	if (CorrCentrLoop && GetValueForWeight != 0. && maximum !=0. && isfinite(GetValueForWeight) && isfinite(maximum) ){
 			weightCentrality = maximum/GetValueForWeight;
 			if (!isfinite(GetValueForWeight)) weightCentrality = 1.;
 			if (!isfinite(weightCentrality)) weightCentrality = 1.;
-		}
-// 	cout << "weightCentrality: " << weightCentrality << endl;
+	}
+	
 	return weightCentrality;
 }
 
