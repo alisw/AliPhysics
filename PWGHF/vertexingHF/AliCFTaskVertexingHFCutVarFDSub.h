@@ -114,6 +114,7 @@ public:
   Bool_t   GetUseWeight() const {return fUseWeight;}
   Double_t GetWeight(Float_t pt);
   Double_t dNdptFit(Float_t pt, Double_t* par);
+  Double_t GetPtWeightFromHistogram(Float_t pt);
 
   void     SetUseFlatPtWeight(Bool_t useWeight){fUseFlatPtWeight=useWeight; fUseWeight=useWeight;}
   Bool_t   GetUseFlatPtWeight() const {return fUseFlatPtWeight;}
@@ -261,6 +262,7 @@ protected:
   Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
   Bool_t fUseNchWeight;         // flag to decide whether to use Ncharged weights != 1 when filling the container or not
   Bool_t fUseTrackletsWeight;   // flag to decide whether to use Ncharged weights != 1 when filling the container or not
+  Bool_t fUseMultRatioAsWeight; // flag to use directly the ratio of the distributions (fHistoMCNch) instead of computing it
   Int_t fNvar;                  // number of variables for the container
   TString fPartName;    // D meson name
   TString fDauNames;    // daughter in fin state
@@ -273,6 +275,7 @@ protected:
   Int_t  fGenDsOption;     // Ds decay option (generation level)
   Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
   TF1* fFuncWeight;     // user-defined function to be used to calculate weights
+  TH1F* fHistoPtWeight; // user-defined histogram to calculate the Pt weights
   TH1F* fHistoMeasNch;  // histogram with measured Nch distribution (pp 7 TeV)
   TH1F* fHistoMCNch;  // histogram with Nch distribution from MC production
   UInt_t fResonantDecay;  // resonant deacy channel to be used if the CF should be run on resonant channels only
@@ -287,11 +290,16 @@ protected:
   Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
   Bool_t fIsPPData; // flag for pp data (not checking centrality)
   Bool_t fIsPPbData; // flag for pPb data (used for multiplicity corrections)
+  Bool_t fUseAdditionalCuts;  // flag to use additional cuts needed for Lc --> K0S + p, TMVA
+  Bool_t fUseCutsForTMVA;     // flag to use additional cuts needed for Lc --> K0S + p, TMVA
+                              // these are the pre-selection cuts for the TMVA
+  Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
+  Float_t fCutOnMomConservation; // cut on momentum conservation
   AliHFsubtractBFDcuts *fobjSpr; // object for cut variation study
   THnSparseF *fhsparsecutvar; //
   TH1F *fhPtCutVar; //
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,1); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,2); // class for HF corrections as a function of many variables
 };
 
 #endif
