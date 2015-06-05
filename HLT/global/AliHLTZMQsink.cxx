@@ -27,7 +27,7 @@ ClassImp(AliHLTZMQsink)
 
 //______________________________________________________________________________
 AliHLTZMQsink::AliHLTZMQsink() :
-  AliHLTDataSink()
+  AliHLTComponent()
   , fZMQcontext(NULL)
   , fZMQout(NULL)
   , fZMQsocketType(ZMQ_PUB)
@@ -56,11 +56,30 @@ const Char_t* AliHLTZMQsink::GetComponentID()
 }
 
 //______________________________________________________________________________
+AliHLTComponentDataType AliHLTZMQsink::GetOutputDataType()
+{
+  // default method as sink components do not produce output
+  AliHLTComponentDataType dt =
+    {sizeof(AliHLTComponentDataType),
+     kAliHLTVoidDataTypeID,
+     kAliHLTVoidDataOrigin};
+  return dt;
+}
+
+//______________________________________________________________________________
 void AliHLTZMQsink::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   //what data types do we accept
   list.clear();
   list.push_back(kAliHLTAllDataTypes);
+}
+
+//______________________________________________________________________________
+void AliHLTZMQsink::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+{
+  // default method as sink components do not produce output
+  constBase=0;
+  inputMultiplier=0;
 }
 
 //______________________________________________________________________________
@@ -128,9 +147,13 @@ Int_t AliHLTZMQsink::DoDeinit()
 }
 
 //______________________________________________________________________________
-int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
-                              const AliHLTComponentBlockData* blocks, 
-                              AliHLTComponentTriggerData& trigData )
+int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
+                                const AliHLTComponentBlockData* blocks, 
+                                AliHLTComponentTriggerData& /*trigData*/,
+                                AliHLTUInt8_t* /*outputPtr*/, 
+                                AliHLTUInt32_t& /*size*/,
+                                AliHLTComponentBlockDataList& outputBlocks,
+                                AliHLTComponentEventDoneData*& /*edd*/ )
 { 
   // see header file for class documentation
   Int_t retCode=0;
@@ -228,6 +251,7 @@ int AliHLTZMQsink::DumpEvent( const AliHLTComponentEventData& evtData,
     //}
   }
 
+  outputBlocks.clear();
   return retCode;
 }
 

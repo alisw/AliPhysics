@@ -10,14 +10,14 @@
 //  @brief  An HLT ZMQ data source component.
 // 
 
-#include "AliHLTDataSource.h"
+#include "AliHLTComponent.h"
 #include <TList.h>
 #include <map>
 #include <string>
 
 class TFile;
 
-class AliHLTZMQsource : public AliHLTDataSource  {
+class AliHLTZMQsource : public AliHLTComponent  {
   public:
     AliHLTZMQsource();
     virtual ~AliHLTZMQsource();
@@ -26,8 +26,9 @@ class AliHLTZMQsource : public AliHLTDataSource  {
 
     const char* GetComponentID();
     AliHLTComponentDataType GetOutputDataType();
-    int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
+    void GetInputDataTypes( AliHLTComponentDataTypeList& list);
     void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+    TComponentType GetComponentType() { return AliHLTComponent::kSource;}
     AliHLTComponent* Spawn();
 
     //new option parser
@@ -39,13 +40,13 @@ class AliHLTZMQsource : public AliHLTDataSource  {
     virtual int DoInit( int argc, const char** argv );
     int DoDeinit();
 
-    int GetEvent( const AliHLTComponentEventData& evtData,
-        AliHLTComponentTriggerData& trigData,
-        AliHLTUInt8_t* outputPtr, 
-        AliHLTUInt32_t& size,
-        AliHLTComponentBlockDataList& outputBlocks );
-
-    using AliHLTDataSource::GetEvent;
+    int DoProcessing( const AliHLTComponentEventData& evtData,
+                      const AliHLTComponentBlockData* blocks, 
+                      AliHLTComponentTriggerData& trigData,
+                      AliHLTUInt8_t* outputPtr, 
+                      AliHLTUInt32_t& size,
+                      AliHLTComponentBlockDataList& outputBlocks,
+                      AliHLTComponentEventDoneData*& edd );
 
   private:
     /** prohibit copy constructor */

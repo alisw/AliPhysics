@@ -10,11 +10,11 @@
     @brief   ZeroMQ sink
 */
 
-#include "AliHLTDataSink.h"
+#include "AliHLTComponent.h"
 #include <map>
 #include <string>
 
-class AliHLTZMQsink : public AliHLTDataSink {
+class AliHLTZMQsink : public AliHLTComponent {
 public:
   
   typedef map<std::string,std::string> stringMap;
@@ -25,6 +25,9 @@ public:
   //interface functions
   const char* GetComponentID();
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
+  TComponentType GetComponentType() { return AliHLTComponent::kSink;}
+  void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 
   //new option parser
@@ -36,9 +39,13 @@ protected:
   //interface functions
   Int_t DoInit( Int_t /*argc*/, const Char_t** /*argv*/ );
   Int_t DoDeinit();
-  virtual int DumpEvent( const AliHLTComponentEventData& evtData,
-                         const AliHLTComponentBlockData* blocks, 
-                         AliHLTComponentTriggerData& trigData );
+  int DoProcessing( const AliHLTComponentEventData& evtData,
+                    const AliHLTComponentBlockData* blocks, 
+                    AliHLTComponentTriggerData& trigData,
+                    AliHLTUInt8_t* outputPtr, 
+                    AliHLTUInt32_t& size,
+                    AliHLTComponentBlockDataList& outputBlocks,
+                    AliHLTComponentEventDoneData*& edd );
   
 private:
 

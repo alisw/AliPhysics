@@ -34,7 +34,7 @@ ClassImp(AliHLTZMQsource)
 
 //______________________________________________________________________________
 AliHLTZMQsource::AliHLTZMQsource()
-  : AliHLTDataSource()
+  : AliHLTComponent()
   , fOutputDataTypes()
   , fZMQcontext(NULL)
   , fZMQin(NULL)
@@ -61,22 +61,28 @@ const char* AliHLTZMQsource::GetComponentID()
 }
 
 //______________________________________________________________________________
-AliHLTComponentDataType AliHLTZMQsource::GetOutputDataType()
+void AliHLTZMQsource::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
   // overloaded from AliHLTComponent
-  if (fOutputDataTypes.size()==0) return kAliHLTVoidDataType;
-  else if (fOutputDataTypes.size()==1) return fOutputDataTypes[0];
-  return kAliHLTMultipleDataType;
+  list.clear();
+  list.push_back(kAliHLTAllDataTypes);
 }
 
 //______________________________________________________________________________
-int AliHLTZMQsource::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+AliHLTComponentDataType AliHLTZMQsource::GetOutputDataType()
 {
   // overloaded from AliHLTComponent
-  tgtList.assign(fOutputDataTypes.begin(), fOutputDataTypes.end());
-  HLTMessage("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
-  return fOutputDataTypes.size();
+  return kAliHLTAllDataTypes;
 }
+
+////______________________________________________________________________________
+//int AliHLTZMQsource::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+//{
+//  // overloaded from AliHLTComponent
+//  tgtList.assign(fOutputDataTypes.begin(), fOutputDataTypes.end());
+//  HLTMessage("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
+//  return fOutputDataTypes.size();
+//}
 
 //______________________________________________________________________________
 void AliHLTZMQsource::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -156,13 +162,15 @@ int AliHLTZMQsource::DoDeinit()
 }
 
 //______________________________________________________________________________
-int AliHLTZMQsource::GetEvent( const AliHLTComponentEventData& /*evtData*/,
-    AliHLTComponentTriggerData& /*trigData*/,
-    AliHLTUInt8_t* outputBuffer, 
-    AliHLTUInt32_t& outputBufferSize,
-    AliHLTComponentBlockDataList& outputBlocks )
+int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
+                  const AliHLTComponentBlockData* blocks, 
+                  AliHLTComponentTriggerData& /*trigData*/,
+                  AliHLTUInt8_t* outputBuffer, 
+                  AliHLTUInt32_t& outputBufferSize,
+                  AliHLTComponentBlockDataList& outputBlocks,
+                  AliHLTComponentEventDoneData*& edd )
 {
-  // overloaded from AliHLTDataSource: event processing
+  // overloaded from AliHLTComponent: event processing
   int retCode=0;
 
   // process data events only
@@ -216,6 +224,7 @@ int AliHLTZMQsource::GetEvent( const AliHLTComponentEventData& /*evtData*/,
     outputBlocks.push_back(blockHeader);
   } while (more==1);
 
+  edd=NULL;
   return retCode;
 }
 
