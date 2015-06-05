@@ -29,7 +29,7 @@ class AliGenLightNuclei: public AliGenCocktail
 	
 	void SetNucleusPdgCode(Int_t pdg) { fPdg = pdg; }
 	
-	enum {kDeuteron=1000010020, kAntiDeuteron=-1000010020, kTriton=1000010030, kAntiTriton=-1000010030, kHe3Nucleus=1000020030, kAntiHe3Nucleus=-1000020030, kAlpha=1000020040, kAntiAlpha=-1000020040 };
+	enum {kDeuteron=1000010020, kAntiDeuteron=-1000010020, kTriton=1000010030, kAntiTriton=-1000010030, kHe3Nucleus=1000020030, kAntiHe3Nucleus=-1000020030, kAlpha=1000020040, kAntiAlpha=-1000020040, kHyperTriton=1010010030, kAntiHyperTriton=-1010010030 };
 
 	enum {kCluster=77};
 	

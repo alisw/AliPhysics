@@ -84,8 +84,10 @@ void AliGenLightNuclei::Generate()
 	// find the nucleons and anti-nucleons
 	TList* protons      = new TList();
 	TList* neutrons     = new TList();
+	TList* lambdas      = new TList();
 	TList* antiprotons  = new TList();
 	TList* antineutrons = new TList();
+	TList* antilambdas  = new TList();
 	
 	for (Int_t i=0; i < fStack->GetNprimary(); ++i)
 	{
@@ -101,11 +103,17 @@ void AliGenLightNuclei::Generate()
 			case kNeutron:
 				neutrons->Add(iParticle);
 				break;
+			case kLambda0:
+				lambdas->Add(iParticle);
+				break;
 			case kProtonBar:
 				antiprotons->Add(iParticle);
 				break;
 			case kNeutronBar:
 				antineutrons->Add(iParticle);
+				break;
+			case kLambda0Bar:
+				antilambdas->Add(iParticle);
 				break;
 			default:
 				break;
@@ -115,8 +123,10 @@ void AliGenLightNuclei::Generate()
 	// do not delete content
 	protons->SetOwner(kFALSE);
 	neutrons->SetOwner(kFALSE);
+	lambdas->SetOwner(kFALSE);
 	antiprotons->SetOwner(kFALSE);
 	antineutrons->SetOwner(kFALSE);
+	antilambdas->SetOwner(kFALSE);
 	
 	if(TMath::Abs(fPdg) == kDeuteron)
 	{
@@ -127,6 +137,11 @@ void AliGenLightNuclei::Generate()
 	{
 		this->GenerateNuclei(kTriton, 2.80925, protons, neutrons, neutrons);
 		this->GenerateNuclei(kAntiTriton, 2.80925, antiprotons, antineutrons, antineutrons);
+	}
+	else if(TMath::Abs(fPdg) == kHyperTriton )
+	{
+		this->GenerateNuclei(kHyperTriton, 2.99131, protons, neutrons, lambdas);
+		this->GenerateNuclei(kAntiHyperTriton, 2.99131, antiprotons, antineutrons, antilambdas);
 	}
 	else if(TMath::Abs(fPdg) == kHe3Nucleus)
 	{
@@ -145,13 +160,17 @@ void AliGenLightNuclei::Generate()
 	
 	protons->Clear("nodelete");
 	neutrons->Clear("nodelete");
+	lambdas->Clear("nodelete");
 	antiprotons->Clear("nodelete");
 	antineutrons->Clear("nodelete");
+	antilambdas->Clear("nodelete");
 	
 	delete protons;
 	delete neutrons;
+	delete lambdas;
 	delete antiprotons;
 	delete antineutrons;
+	delete antilambdas;
 }
 
 Bool_t AliGenLightNuclei::Coalescence(const TLorentzVector& p1, const TLorentzVector& p2) const
