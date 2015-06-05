@@ -40,11 +40,12 @@ AliHLTAsyncTestComponent::~AliHLTAsyncTestComponent() {
 }
 
 const Char_t* AliHLTAsyncTestComponent::GetComponentID() { 
-	return "AliHLTAsyncTestComponent";
+	return "AsyncTest";
 }
 
 void AliHLTAsyncTestComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
 	list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginAny);
+	list.push_back(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
 }
 
 AliHLTComponentDataType AliHLTAsyncTestComponent::GetOutputDataType() {

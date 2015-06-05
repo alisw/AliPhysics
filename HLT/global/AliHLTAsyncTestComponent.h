@@ -1,8 +1,8 @@
 //-*- Mode: C++ -*-
 // $Id: AliHLTAsyncTestComponent $
 
-#ifndef ALIHLTASYNCTESTCOMPONENG_H
-#define ALIHLTASYNCTESTCOMPONENG_H
+#ifndef ALIHLTASYNCTESTCOMPONENT_H
+#define ALIHLTASYNCTESTCOMPONENT_H
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
 * ALICE Experiment at CERN, All rights reserved.                         *
