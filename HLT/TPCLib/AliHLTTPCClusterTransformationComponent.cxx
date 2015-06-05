@@ -52,6 +52,8 @@ Bool_t AliHLTTPCClusterTransformationComponent::fgTimeInitialisedFromEvent = 0;
 AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent()
 :
 fOfflineMode(0),
+fInitializeByObjectInDoEvent(0),
+fInitialized(0),
 fDataId(kFALSE),
 fBenchmark("ClusterTransformation")
 {
@@ -81,7 +83,8 @@ void AliHLTTPCClusterTransformationComponent::GetInputDataTypes( vector<AliHLTCo
 
   list.clear(); 
   list.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC  );
-  list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTTPCClusterTransformationComponent::GetOutputDataType() { 
@@ -135,8 +138,12 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     TStopwatch timer;
     timer.Start();
     int err = 0;
-    if( fOfflineMode ) {
+	if ( fInitializeByObjectInDoEvent ) {
+	  HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object" );
+	}
+    else if( fOfflineMode ) {
       err = fgTransform.Init( GetBz(), GetTimeStamp() );
+	  fInitialized = true;
     } else {
        const char* defaultNotify = "";
        const char* cdbEntry = "HLT/ConfigTPC/TPCFastTransform";
@@ -158,6 +165,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 
        HLTInfo( "received configuration object." );
        fgTransform.Init( *configObj );
+	   fInitialized = true;
     }
     timer.Stop();
     cout<<"\n\n Initialisation: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
@@ -174,7 +182,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 
 int AliHLTTPCClusterTransformationComponent::DoDeinit() { 
   // see header file for class documentation   
-  fgTransform.DeInit();
+  if (fInitialized) fgTransform.DeInit();
+  fInitialized = false;
   return 0;
 }
 
@@ -195,11 +204,15 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
     if (argument.CompareTo("-change-dataId")==0){
       HLTDebug("Change data ID received.");
       fDataId = kTRUE;
-      iRet = 1;
+      iRet++;
     } else if (argument.CompareTo("-offline-mode")==0){
       fOfflineMode = 1;
       HLTDebug("Offline mode set.");
-      iRet = 1;
+      iRet++;
+    } else if (argument.CompareTo("-initialize-on-the-fly")==0){
+      fInitializeByObjectInDoEvent = 1;
+      HLTDebug("Initialize on the fly mode set.");
+      iRet++;
     } else {
       iRet = -EINVAL;
       HLTInfo("Unknown argument %s",argv[i]);     
@@ -219,8 +232,42 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   UInt_t maxOutSize = size;
   size = 0;
   int iResult = 0;
-  if(!IsDataEvent()) return 0;
 
+  if (fInitializeByObjectInDoEvent)
+  {
+	//Check first whether there is a new FastTransformation object
+	for ( const TObject *iter = GetFirstInputObject(AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType); iter != NULL; iter = GetNextInputObject() )
+	{
+		const AliHLTTPCFastTransformObject *configObj = dynamic_cast<const AliHLTTPCFastTransformObject *>(const_cast<TObject*>( iter ) );
+
+		if (!configObj)
+		{
+			HLTError( "Error getting configuration object" );
+			return -EINVAL;
+		}
+		if (fInitialized)
+		{
+			HLTImportant("Received updated cluster transformation map");
+			fgTransform.DeInit();
+		}
+		else
+		{
+			HLTImportant("Received initial cluster transformation map");
+		}
+
+		HLTInfo( "received configuration object." );
+		if (fgTransform.Init( *configObj ))
+		{
+			HLTError("Failed on-the-fly-initialization of transformation map");
+			return(-1);
+		}
+		fInitialized = true;
+		break;
+	}
+  }
+
+  if(!IsDataEvent()) return 0;
+  
   if( !fgTransform.IsInitialised() ){
     HLTError(" TPC Transformation is not initialised ");
     return -ENOENT;    
