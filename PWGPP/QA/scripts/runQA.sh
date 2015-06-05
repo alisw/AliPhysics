@@ -408,8 +408,8 @@ updateQA()
       for x in ${productionDir}/000*; do [[ -d $x ]] && ln -s $x && linkedStuff+=(${x##*/}); done
 
       #merge trending files if any
-      if /bin/ls 000*/trending.root &>/dev/null; then
-        hadd trending.root 000*/trending.root &> periodLevelQA.log
+      if /bin/ls 000*/trending.root &>/dev/null; then # skip corrupted and empty trending files
+        hadd -k trending.root 000*/trending.root &> periodLevelQA.log
       fi
       
       #run the period level trending/QA
