@@ -1,0 +1,249 @@
+/* 
+ Comparison macro for D*, D0, D+
+ in good style
+ You can choose 2 plots to be shown,
+ as arguments of the main method
+ by: Fabio (fabio.colamaria@cern.ch)
+*/
+
+TString inputdirectory = "";
+TCanvas **Canvas;
+TString *filenames;
+
+void SetInputDirectory(TString strdir){
+  inputdirectory=strdir;
+}
+
+//main function
+void DoNiceSpecieComparisonPlot(TString ptD1 ="5to8", TString ptThr1 ="0.3to1.0", TString sys1 = "pp", TString ptD2 ="8to16", TString ptThr2 ="1.0to99.0", TString sys2 = "pPb") {
+
+  TString ptD[2] = {ptD1.Data(),ptD2.Data()};
+  TString ptThr[2] = {ptThr1.Data(),ptThr2.Data()};
+  TString sys[2] = {sys1.Data(),sys2.Data()};
+
+  LoadFileNamesToCompare(ptThr[0],sys[0],ptThr[1],sys[1]);
+
+  Canvas = new TCanvas *[2];
+  Canvas[0] = GetCanvas(0,"CanvasCorrelation");   // get p-Pb
+  Canvas[0]->SetName("canvaInput0");
+  Canvas[1] = GetCanvas(1,"CanvasCorrelation");   // get p-Pb
+  Canvas[1]->SetName("canvaInput1");
+
+  TCanvas *cOut = new TCanvas("cOut","Nice Style D-meson comparison",150,150,1500,750);
+  cOut->Divide(2,1);
+  TPad *pad[2];
+
+  // load the selected pads in the canvas
+  for(int i=0; i<=1; i++) {
+    cOut->cd(i+1);
+    Int_t suffPad = 0;
+    if(ptD[i]=="3to5") suffPad=1;  else if(ptD[i]=="5to8") suffPad=2;  else if(ptD[i]=="8to16") suffPad=3;
+    if(sys[i]=="pPb") suffPad-=1;
+    if(suffPad==0) {printf("Error! Uncorrect pT_D range selected!"); return;}
+    pad[i] = (TPad*)Canvas[i]->FindObject(Form("CanvasCorrelation_%d",suffPad));
+    pad[i]->SetPad(0,0,1,1);
+    pad[i]->Draw();
+  }
+
+  printf("Canvas and pads correctly opened and loaded");
+
+  //adjust the graphic layout
+  RestylePlot(pad[0],0);
+  RestylePlot(pad[1],1);
+
+  // saving the canvases in .root and .png
+  TString directname="Output_SngCav_Comparison";
+  SaveCanvas(cOut, directname);
+  printf("... Plot correctly produced and saved!");
+
+}
+
+//_______________________________________________________________________
+void LoadFileNamesToCompare(TString ptThr1 ="0.3to1.0", TString sys1 = "pp", TString ptThr2 ="1.0to99.0", TString sys2 = "pPb"){
+ 
+  filenames = new TString[2];
+ 
+  filenames[0] = Form("%s/Comparison_DHCorrelations_assopT%s_%s.root",inputdirectory.Data(),ptThr1.Data(),sys1.Data());
+  filenames[1] = Form("%s/Comparison_DHCorrelations_assopT%s_%s.root",inputdirectory.Data(),ptThr2.Data(),sys2.Data());
+
+}  
+
+//_______________________________________________________________________
+TCanvas * GetCanvas(Int_t i, TString canvasname = "cDraw"){
+
+  TString path = filenames[i];
+  //cout <<"file #" <<i<<": Reading File from path --->> " << path << endl;
+  TFile * file = TFile::Open(path.Data(),"READ");
+  TCanvas * c = (TCanvas*)file->Get(canvasname.Data());  
+  return c;  
+}
+
+//_______________________________________________________________________
+void RestylePlot(TPad * pad, Int_t pos){
+
+  TList *lc=pad->GetListOfPrimitives();
+  Int_t entries=lc->GetEntries();
+  lc->ls();
+  Int_t syst=1;
+  Int_t nextMeson=0;
+
+  pad->SetTickx();
+  pad->SetTicky();
+
+  Double_t maxY[3] = {0.,0.,0.};
+
+  for(Int_t jl=0;jl<entries;jl++){
+    TObject *obj=(TObject*)lc->At(jl);
+    TString strName=obj->ClassName();
+
+    printf("Primitive %d is: %s\n",jl,strName.Data());
+    if(strName.Contains("TFrame")) continue;
+
+    if(strName.Contains("TLatex")) {
+      TLatex *tl=(TLatex*)obj;
+      TString str=tl->GetTitle();
+
+      if(str.Contains("#it{p}_{T}^{D^{0}}")) {tl->SetTitle(""); continue;}
+
+      if(str.Contains("Comparison")) tl->SetTitle("");
+
+      if(str.Contains("#Delta#eta")) tl->SetTitle("");
+
+      if(str.Contains("scale uncertainty") && tl->GetTextColor()==kBlack) tl->SetTitle("");
+
+      if(str.Contains("D^{}  meson-charged")) {
+   	/*if(pos==0) {str.ReplaceAll("D^{}  meson","D meson"); tl->SetX(tl->GetX()+0.01); tl->SetTextSize(0.035);}*/
+	/*else*/ tl->SetTitle("");
+      }
+
+      if(str.Contains("TeV")) {
+	if(str.Contains("pp")) syst=0;  //needed to set correctly the y range later
+	tl->SetX(tl->GetX()+0.01); 
+	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.04); 
+	tl->SetTextSize(0.035);
+      }
+
+      if(str.Contains("GeV")) {
+	tl->SetX(tl->GetX()+0.01);
+	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.04); 
+	str.ReplaceAll("GeV/c","GeV/#it{c}");
+	tl->SetTitle(str.Data());
+	tl->SetTextSize(0.035);
+      }
+
+      if(str.Contains("assoc")) {
+	tl->SetX(tl->GetX());
+	/*if(pos!=0)*/ tl->SetY(tl->GetY()-0.05); 
+	str.ReplaceAll("GeV/c","GeV/#it{c}");
+	tl->SetTitle(str.Data());
+	tl->SetTextSize(0.035);
+      }
+
+      if(str.Contains("scale uncertainty") && tl->GetTextColor()==kRed) {
+	tl->SetX(0.53);
+	tl->SetY(0.68);
+	str.ReplaceAll("#cbar",",");
+	tl->SetTitle(str.Data());
+      }
+
+      if(str.Contains("scale uncertainty") && tl->GetTextColor()==kAzure-2) {
+	tl->SetX(0.53);
+	tl->SetY(0.62); 
+	str.ReplaceAll("#cbar",","); 
+	tl->SetTitle(str.Data());
+      }
+
+      if(str.Contains("scale uncertainty") && tl->GetTextColor()==kGreen+3) {
+	tl->SetX(0.53);
+	tl->SetY(0.56); 
+	str.ReplaceAll("#cbar",","); 
+	tl->SetTitle(str.Data());
+      }
+
+    } //end of TLatex 'if'
+
+    if(strName.Contains("TH1")) {
+      TH1D *hist = (TH1D*)lc->At(jl);  
+      if(hist->GetMarkerColor()==kRed) {
+	maxY[0] = hist->GetBinContent(hist->GetMaximumBin());
+	hist->SetMarkerSize(hist->GetMarkerSize()+0.15);
+	hist->GetXaxis()->SetTitle("#Delta#varphi(D,h) (rad)");
+	nextMeson=1;
+      }
+      if(hist->GetMarkerColor()==kAzure-2) {
+	maxY[1] = hist->GetBinContent(hist->GetMaximumBin());
+	hist->SetMarkerSize(hist->GetMarkerSize()+0.4);	
+	nextMeson=2;
+      }
+      if(hist->GetMarkerColor()==kGreen+3) {
+	maxY[2] = hist->GetBinContent(hist->GetMaximumBin());
+	hist->SetMarkerSize(hist->GetMarkerSize()+0.3);	
+	nextMeson=3;
+      }
+
+    } //end of TH1D 'if'
+
+    if(strName.Contains("TGraphAsymmErrors")) {
+      TGraphAsymmErrors *errBox = (TGraphAsymmErrors*)lc->At(jl);  
+      if(nextMeson==1) {
+	errBox->SetLineColor(kRed);
+	nextMeson=0;
+      }
+      if(nextMeson==2) {
+	errBox->SetLineColor(kAzure-2);
+	nextMeson=0;
+      }
+      if(nextMeson==3) {
+	errBox->SetLineColor(kGreen+3);
+	nextMeson=0;
+      }
+
+    } //end of TGraphAsymmErrors 'if'
+
+
+  } //end of cycle on primitives
+
+  pad->cd();
+      if(pos==0){
+
+	TLatex *tlAlice=new TLatex(0.68,0.78,Form("#bf{ALICE}"));
+	tlAlice->SetNDC();
+	tlAlice->Draw();
+	tlAlice->SetTextSize(0.042);
+      }
+/*
+      if(syst==0) {
+	  TLatex *tly=new TLatex(0.19,0.74,Form("#bf{|#Delta#eta|<1.0}, #bf{|#it{y}^{D}|<0.5}"));
+	  tly->SetNDC();
+	  tly->Draw();
+	  tly->SetTextSize(0.035);
+      }
+      else {
+	  TLatex *tly=new TLatex(0.19,0.74,Form("#bf{|#Delta#eta|<1.0}, #bf{-0.96<#it{y}^{D}_{cms}<0.04}"));
+	  tly->SetNDC();
+	  tly->Draw();
+	  tly->SetTextSize(0.035);
+      }
+*/
+  Double_t maxFinalY = TMath::Max(maxY[0],TMath::Max(maxY[1],maxY[2])) * 1.9;
+  maxFinalY = (TMath::Floor(maxFinalY*2)+1)/2.;
+
+  TH1D *histFin = (TH1D*)pad->FindObject("hDataCorrectedTempl0CentrFpromptReflected");
+  histFin->SetMaximum(maxFinalY);
+  histFin->GetYaxis()->SetTitleOffset(histFin->GetYaxis()->GetTitleOffset()+0.3);
+}  
+
+//_______________________________________________________________________
+void SaveCanvas(TCanvas * c, TString directory){
+  
+  TString outputDir = "";
+  TString nameoutput = "Comparison_DHCorrelations_NiceStyle";  
+   
+  c->SaveAs(Form("%s/%s.root",directory.Data(),nameoutput.Data()));
+  c->SaveAs(Form("%s/%s.png",directory.Data(),nameoutput.Data()));
+  c->SaveAs(Form("%s/%s.eps",directory.Data(),nameoutput.Data()));
+  
+}
+
+
+
