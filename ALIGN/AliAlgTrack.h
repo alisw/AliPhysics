@@ -15,7 +15,7 @@
 
 // Author: ruben.shahoyan@cern.ch
 
-#define DEBUG 4
+//#define DEBUG 4
 
 class AliAlgTrack: public AliExternalTrackParam
 {

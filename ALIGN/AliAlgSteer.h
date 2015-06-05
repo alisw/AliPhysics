@@ -24,6 +24,7 @@ class AliAlgVtx;
 class AliAlgPoint;
 class AliAlgMPRecord;
 class AliAlgRes;
+class AliAlgResFast;
 class AliAlgConstraint;
 class TTree;
 class TFile;
@@ -276,6 +277,10 @@ class AliAlgSteer : public TObject
   //
   AliSymMatrix* BuildMatrix(TVectorD &vec);
   Bool_t        TestLocalSolution();
+  //
+  // fast check of solution using derivatives
+  void   CheckSol(TTree* mpRecTree, Bool_t store=kTRUE,Bool_t verbose=kFALSE,Bool_t loc=kTRUE, const char* outName="resFast");
+  Bool_t CheckSol(AliAlgMPRecord* rec,AliAlgResFast *rLG=0, AliAlgResFast* rL=0,Bool_t verbose=kTRUE, Bool_t loc=kTRUE);
   //
  protected:
   //

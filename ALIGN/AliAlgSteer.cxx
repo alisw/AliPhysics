@@ -26,6 +26,7 @@
 #include "AliAlgVtx.h"
 #include "AliAlgMPRecord.h"
 #include "AliAlgRes.h"
+#include "AliAlgResFast.h"
 #include "AliAlgConstraint.h"
 #include "AliTrackerBase.h"
 #include "AliESDCosmicTrack.h"
@@ -414,9 +415,11 @@ Bool_t AliAlgSteer::ProcessEvent(const AliESDEvent* esdEv)
   //
   FillStatHisto( kEvInp );
   //
+#if DEBUG>2    
   AliInfoF("Processing event %d of ev.specie %d -> Ntr: %4d",
 	   esdEv->GetEventNumberInFile(),esdEv->GetEventSpecie(),
 	   IsCosmic() ? esdEv->GetNumberOfCosmicTracks():esdEv->GetNumberOfTracks());
+#endif
   //
   SetFieldOn(Abs(esdEv->GetMagneticField())>kAlmostZeroF);
   if (!IsCosmic() && !CheckSetVertex(esdEv->GetPrimaryVertexTracks())) return kFALSE;
@@ -444,9 +447,10 @@ Bool_t AliAlgSteer::ProcessEvent(const AliESDEvent* esdEv)
   //
   FillStatHisto( kTrackAcc, accTr);
   //
-  AliInfoF("Processed event %d of ev.specie %d -> Accepted: %4d of %4d tracks",
-	   esdEv->GetEventNumberInFile(),esdEv->GetEventSpecie(),accTr,ntr);
-
+  if (accTr) {
+    AliInfoF("Processed event %d of ev.specie %d -> Accepted: %4d of %4d tracks",
+	     esdEv->GetEventNumberInFile(),esdEv->GetEventSpecie(),accTr,ntr);
+  }
   return kTRUE;
 }
 
@@ -1702,4 +1706,254 @@ void AliAlgSteer::LoadStatHistos(const char* flname)
   //
   fl->Close();
   delete fl;
+}
+
+//______________________________________________
+void AliAlgSteer::CheckSol(TTree* mpRecTree, Bool_t store, 
+			     Bool_t verbose, Bool_t loc, const char* outName)
+{
+  // do fast check of pede solution with MPRecord tree
+  AliAlgResFast* rLG = store ? new AliAlgResFast() : 0;
+  AliAlgResFast* rL  = store&&loc  ? new AliAlgResFast() : 0;
+  TTree *trLG=0,*trL=0;
+  TFile* outFile = 0;
+  if (store) {
+    TString outNS = outName;
+    if (outNS.IsNull()) outNS = "resFast";
+    if (!outNS.EndsWith(".root")) outNS += ".root";
+    outFile = TFile::Open(outNS.Data(),"recreate");
+    trLG = new TTree("resFLG","Fast residuals with LG correction");
+    trLG->Branch("rLG","AliAlgResFast",&rLG);
+    //
+    if (rL) {
+      trL = new TTree("resFL","Fast residuals with L correction");
+      trL->Branch("rL","AliAlgResFast",&rL);
+    }
+  }
+  //
+  AliAlgMPRecord* rec = new AliAlgMPRecord();
+  mpRecTree->SetBranchAddress("mprec",&rec);
+  int nrec = mpRecTree->GetEntriesFast();
+  for (int irec=0;irec<nrec;irec++) {
+    mpRecTree->GetEntry(irec);
+    CheckSol(rec,rLG,rL,verbose,loc);
+    // store even in case of failure, to have the trees aligned with controlRes
+    if (trLG) trLG->Fill();
+    if (trL)  trL->Fill();    
+  }
+  //
+  // save
+  if (trLG) {
+    outFile->cd();
+    trLG->Write();
+    delete trLG;
+    if (trL) {
+      trL->Write();
+      delete trL;
+    }
+    outFile->Close();
+    delete outFile;
+  }
+  //
+}
+
+//______________________________________________
+Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec, 
+			     AliAlgResFast *rLG, AliAlgResFast* rL,
+			     Bool_t verbose, Bool_t loc)
+{
+  // Check pede solution using derivates, rather than updated geometry
+  // If loc==true, also produces residuals for current geometry, 
+  // neglecting global corrections
+  //
+  if (rL) loc = kTRUE; // if local sol. tree asked, always evaluate it
+  //
+  int nres = rec->GetNResid();
+  // 
+  const float *recDGlo = rec->GetArrGlo();
+  const float *recDLoc = rec->GetArrLoc();
+  const short *recLabLoc = rec->GetArrLabLoc();
+  const int   *recLabGlo = rec->GetArrLabGlo();
+  int nvloc = rec->GetNVarLoc();
+  //
+  // count number of real measurement duplets and material correction fake 4-plets
+  int nPoints = 0;
+  int nMatCorr = 0;
+  for (int irs=0;irs<nres;irs++) {
+    if (rec->GetNDGlo(irs)>0) {
+      if (irs==nres-1 || rec->GetNDGlo(irs+1)==0) 
+	AliFatal("Real coordinate measurements must come in pairs");
+      nPoints++;
+      irs++; // skip 2nd 
+      continue;
+    }
+    nMatCorr++;
+  }
+  //
+  if (nMatCorr%4) AliWarningF("Error? NMatCorr=%d is not multiple of 4",nMatCorr);
+  //
+  if (rLG) {
+    rLG->Clear();
+    rLG->SetNPoints(nPoints);
+    rLG->SetNMatSol(nMatCorr);
+    rLG->SetCosmic(rec->IsCosmic());
+  }
+  if (rL) {
+    rL->Clear();
+    rL->SetNPoints(nPoints);
+    rL->SetNMatSol(nMatCorr);
+    rL->SetCosmic(rec->IsCosmic());
+  }
+  //
+  AliSymMatrix* matpG = new AliSymMatrix(nvloc);
+  TVectorD* vecp=0, *vecpG = new TVectorD(nvloc);
+  //
+  if (loc) vecp = new TVectorD(nvloc);
+  //
+  // residuals, accounting for global solution
+  double *resid = new Double_t[nres];
+  int* volID = new Int_t[nres];
+  for (int irs=0;irs<nres;irs++) {
+    double resOr = rec->GetResid(irs);
+    resid[irs] = resOr;
+    //
+    int ndglo = rec->GetNDGlo(irs);
+    int ndloc = rec->GetNDLoc(irs);
+    for (int ig=0;ig<ndglo;ig++) {
+      int lbI = recLabGlo[ig];
+      int idP = Label2ParID(lbI);
+      if (idP<0) AliFatalF("Did not find parameted for label %d\n",lbI);
+      double parVal = GetGloParVal()[idP];
+      resid[irs] += parVal*recDGlo[ig];
+      if (!ig) volID[irs] = GetVolOfDOFID(idP)->GetVolID();
+    }
+    //
+    double  sg2inv = rec->GetResErr(irs);
+    sg2inv = 1./sg2inv/sg2inv;
+    //
+    // Build matrix to solve local parameters
+    for (int il=0;il<ndloc;il++) {
+      int lbLI = recLabLoc[il]; // id of local variable
+      (*vecpG)[lbLI] -= recDLoc[il]*resid[irs]*sg2inv;
+      if (loc) (*vecp)[lbLI]  -= recDLoc[il]*resOr*sg2inv;
+      for (int jl=il+1;jl--;) {
+	int lbLJ = recLabLoc[jl]; // id of local variable
+	(*matpG)(lbLI,lbLJ) += recDLoc[il]*recDLoc[jl]*sg2inv;	  
+      }
+    }
+    //
+    recLabGlo += ndglo; // prepare for next record
+    recDGlo   += ndglo;
+    recLabLoc += ndloc;
+    recDLoc   += ndloc;
+    //
+  }
+  //
+  TVectorD vecSol(nvloc);
+  TVectorD vecSolG(nvloc);
+  //
+  if (!matpG->SolveChol(*vecpG,vecSolG,kFALSE)) {
+    AliInfo("Failed to solve track corrected for globals\n");
+    delete matpG;
+    matpG = 0;
+  }
+  else if (loc) { // solution with local correction only
+    if (!matpG->SolveChol(*vecp,vecSol,kFALSE)) {
+      AliInfo("Failed to solve track corrected for globals\n");
+      delete matpG;
+      matpG = 0;
+    }
+  }
+  delete vecpG;
+  delete vecp;
+  if (!matpG) { // failed
+    delete[] resid;
+    delete[] volID;
+    if (rLG) rLG->Clear();
+    if (rL)  rL->Clear();
+    return kFALSE;
+  }
+  // check
+  recDGlo = rec->GetArrGlo();
+  recDLoc = rec->GetArrLoc();
+  recLabLoc = rec->GetArrLabLoc();
+  recLabGlo = rec->GetArrLabGlo();
+  //
+  if (verbose) {
+    printf(loc ? "Sol L/LG:\n":"Sol LG:\n");
+    int nExtP = (nvloc%4) ? 5:4;
+    for (int i=0;i<nExtP;i++) 
+      loc ? printf("%+.3e/%+.3e ",vecSol[i],vecSolG[i]) : printf("%+.3e ",vecSolG[i]);
+    printf("\n");
+    Bool_t nln = kTRUE;
+    int cntL = 0;
+    for (int i=nExtP;i<nvloc;i++) {
+      nln = kTRUE;
+      loc ? printf("%+.3e/%+.3e ",vecSol[i],vecSolG[i]) : printf("%+.3e ",vecSolG[i]);
+      if ( ((++cntL)%4)==0 ) {printf("\n"); nln = kFALSE;}
+    }
+    if (!nln) printf("\n");
+    if (loc) printf("%3s (%9s) %6s | [%6s:%7s] [%6s:%7s]","Pnt","Label",
+		    "Sigma","resid","pull/L ","resid","pull/LG");
+    else     printf("%3s (%9s) %6s | [%6s:%7s]","Pnt","Label",
+		    "Sigma","resid","pull/LG");
+  }
+  int idMeas=-1,pntID=-1,matID=-1;
+  for (int irs=0;irs<nres;irs++) {
+    double resOr = rec->GetResid(irs);
+    double resL = resOr;
+    double resLG = resid[irs];
+    double  sg = rec->GetResErr(irs);
+    //
+    int ndglo = rec->GetNDGlo(irs);
+    int ndloc = rec->GetNDLoc(irs);
+    //
+    for (int il=0;il<ndloc;il++) {
+      int lbLI = recLabLoc[il]; // id of local variable
+      resL  += recDLoc[il]*vecSol[lbLI];
+      resLG += recDLoc[il]*vecSolG[lbLI];
+    }
+    //
+    if (ndglo) { // real measurement
+      idMeas++;
+      if (idMeas>1) idMeas = 0; 
+      if (idMeas==0) pntID++; // measurements come in pairs
+      if (rLG) {
+	rLG->SetResSigMeas(pntID,idMeas,resLG,sg);
+	if (idMeas==0) rLG->SetLabel(pntID,recLabGlo[0],volID[irs]);
+      }
+      if (rL) {
+	rL->SetResSigMeas(pntID,idMeas,resL,sg);
+	if (idMeas==0) rL->SetLabel(pntID,recLabGlo[0],volID[irs]);
+      }
+    }
+    else {
+      matID++; // mat.correcitons come in 4-plets, but we fill each separately
+      // 
+      if (rLG) rLG->SetMatCorr(matID,resLG,sg);
+      if (rL ) rL->SetMatCorr(matID,resL,sg);
+    }
+    //
+    if (verbose) {
+      if (loc) printf("%3d (%9d) %6.4f | [%+.2e:%+7.2f] [%+.2e:%+7.2f]\n",
+		      irs,ndglo ? recLabGlo[0]:-1,sg,resL,resL/sg,resLG,resLG/sg);
+      else     printf("%3d (%9d) %6.4f | [%+.2e:%+7.2f]\n",
+		      irs,ndglo ? recLabGlo[0]:-1,sg,resLG,resLG/sg);
+    }
+    //
+    recLabGlo += ndglo; // prepare for next record
+    recDGlo   += ndglo;
+    recLabLoc += ndloc;
+    recDLoc   += ndloc;
+  }
+  // store track corrections
+  int nTrCor = nvloc - matID;
+  for (int i=0;i<nTrCor;i++) {
+    if (rLG) rLG->GetTrCor()[i] = vecSolG[i];
+    if (rL)  rL->GetTrCor()[i]  = vecSol[i];
+  }
+  //
+  delete[] resid;
+  delete[] volID;
+  return kTRUE;
 }

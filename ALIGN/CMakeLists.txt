@@ -41,6 +41,7 @@ set(SRCS
   AliAlgSensTRD.cxx
   AliAlgSensITS.cxx
   AliAlgRes.cxx
+  AliAlgResFast.cxx
   AliAlgSens.cxx
   AliAlgMPRecord.cxx
   AliAlgPoint.cxx
