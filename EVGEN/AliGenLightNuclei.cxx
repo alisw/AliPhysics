@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2009-2014, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2009-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -131,27 +131,27 @@ void AliGenLightNuclei::Generate()
 	if(TMath::Abs(fPdg) == kDeuteron)
 	{
 		this->GenerateNuclei(kDeuteron, 1.87561282, protons, neutrons);
-		this->GenerateNuclei(kAntiDeuteron, 1.87561282, antiprotons, antineutrons);
+		this->GenerateNuclei(-kDeuteron, 1.87561282, antiprotons, antineutrons);
 	}
 	else if(TMath::Abs(fPdg) == kTriton)
 	{
 		this->GenerateNuclei(kTriton, 2.80925, protons, neutrons, neutrons);
-		this->GenerateNuclei(kAntiTriton, 2.80925, antiprotons, antineutrons, antineutrons);
+		this->GenerateNuclei(-kTriton, 2.80925, antiprotons, antineutrons, antineutrons);
 	}
 	else if(TMath::Abs(fPdg) == kHyperTriton )
 	{
 		this->GenerateNuclei(kHyperTriton, 2.99131, protons, neutrons, lambdas);
-		this->GenerateNuclei(kAntiHyperTriton, 2.99131, antiprotons, antineutrons, antilambdas);
+		this->GenerateNuclei(-kHyperTriton, 2.99131, antiprotons, antineutrons, antilambdas);
 	}
 	else if(TMath::Abs(fPdg) == kHe3Nucleus)
 	{
 		this->GenerateNuclei(kHe3Nucleus, 2.80923, protons, neutrons, protons);
-		this->GenerateNuclei(kAntiHe3Nucleus, 2.80923, antiprotons, antineutrons, antiprotons);
+		this->GenerateNuclei(-kHe3Nucleus, 2.80923, antiprotons, antineutrons, antiprotons);
 	}
 	else if(TMath::Abs(fPdg) == kAlpha )
 	{
 		this->GenerateNuclei(kAlpha, 3.727417, protons, neutrons, protons, neutrons);
-		this->GenerateNuclei(kAntiAlpha, 3.727417, antiprotons, antineutrons, antiprotons, antineutrons);
+		this->GenerateNuclei(-kAlpha, 3.727417, antiprotons, antineutrons, antiprotons, antineutrons);
 	}
 	else
 	{
