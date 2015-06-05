@@ -84,6 +84,7 @@ public:
   Bool_t          HasMCdata() const       { return TestBit(kMCdata);};
   virtual void    SetDebugLevel(Int_t level);
   virtual void    SetMCdata(Bool_t mc = kTRUE);
+  virtual void    SetPriors();
 
   virtual Bool_t  PostProcess();
   virtual void    UserCreateOutputObjects();
@@ -106,10 +107,10 @@ private:
   TObjArray *fMCtracks;
   AliMESeventInfo *fMCevInfo;
 
-//   AliAnalysisUtils *fUtils;
   AliPPVsMultUtils *fUtils;
+  TH1F* fPriorsDist[4];
 
-  ClassDef(AliMEStender, 3)          // Tender task for the Multi Event Shape
+  ClassDef(AliMEStender, 4)          // Tender task for the Multi Event Shape
 };
 
 #endif

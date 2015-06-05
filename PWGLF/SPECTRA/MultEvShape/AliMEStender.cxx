@@ -91,6 +91,7 @@ AliMEStender::AliMEStender()
   ,fMCtracks(NULL)
   ,fMCevInfo(NULL)
   ,fUtils(NULL)
+  ,fPriorsDist()
 {
   //
   // Constructor
@@ -108,6 +109,7 @@ AliMEStender::AliMEStender(const char *name)
   ,fMCtracks(NULL)
   ,fMCevInfo(NULL)
   ,fUtils(NULL)
+  ,fPriorsDist()
 {
   //
   // Constructor
@@ -173,36 +175,30 @@ void AliMEStender::UserCreateOutputObjects()
   fPIDcomb = new AliPIDCombined();
   fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
 
-  // DEFAULT aliroot priors
   switch(fConfig.fPIDpriors){
 	case AliMESconfigTender::kTPC:
+		// default aliroot priors
 		fPIDcomb->SetDefaultTPCPriors();
 		break;
 	case AliMESconfigTender::kIterative:
-  {  // data priors identified @ 10.02.2015 by Cristi for LHC10d
-    AliInfo("Getting iterative data priors ...");
-	TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
-    if (lPriors->IsZombie()) {
-	    AliError("Could not open the priors file");
-	    break;
-    }
-		fPIDcomb->SetPriorDistribution(AliPID::kMuon, (TH1F*)lPriors->Get("priors_e_final"));
-		fPIDcomb->SetPriorDistribution(AliPID::kElectron, (TH1F*)lPriors->Get("priors_e_final"));
-		fPIDcomb->SetPriorDistribution(AliPID::kPion, (TH1F*)lPriors->Get("priors_pi_final"));
-		fPIDcomb->SetPriorDistribution(AliPID::kKaon, (TH1F*)lPriors->Get("priors_K_final"));
-		fPIDcomb->SetPriorDistribution(AliPID::kProton, (TH1F*)lPriors->Get("priors_p_final"));
-   		AliInfo("Done loading iterative data priors.");
-    	lPriors->Close();
+	{  // data priors identified @ 15.04.2015 by Cristi for LHC10d
+		AliInfo("Loading iterative data priors ...");
+		fPIDcomb->SetPriorDistribution(AliPID::kMuon, fPriorsDist[0]);
+		fPIDcomb->SetPriorDistribution(AliPID::kElectron, fPriorsDist[0]);
+		fPIDcomb->SetPriorDistribution(AliPID::kPion, fPriorsDist[1]);
+		fPIDcomb->SetPriorDistribution(AliPID::kKaon, fPriorsDist[2]);
+		fPIDcomb->SetPriorDistribution(AliPID::kProton, fPriorsDist[3]);
+		AliInfo("Done loading iterative data priors.");
 		break;
-  }
-  case AliMESconfigTender::kNoPP:
-  { // flat priors for pi, K, p and e and 0 for mu
+	}
+	case AliMESconfigTender::kNoPP:
+	{ // flat priors
 		fPIDcomb->SetEnablePriors(kFALSE);  // FLAT priors
 		break;
 	}
-  default:
-    AliDebug(2, "No PID priors selected");
-    break;
+	default:
+		AliDebug(2, "No PID priors selected");
+		break;
   }
 
 
@@ -210,7 +206,6 @@ void AliMEStender::UserCreateOutputObjects()
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
 
-//   fUtils = new AliAnalysisUtils();
   fUtils = new AliPPVsMultUtils();
 
   if(!HasMCdata()) return;
@@ -218,44 +213,12 @@ void AliMEStender::UserCreateOutputObjects()
   fMCtracks->SetOwner(kTRUE);
   fMCevInfo = new AliMESeventInfo;
 
-
-//   TObjArray *tracks = new TObjArray(200); tracks->SetOwner(kTRUE);
-//   PostData(AliMESbaseTask::kEventInfo+1, new AliMESeventInfo);
-//   PostData(AliMESbaseTask::kTracks+1, tracks);
-//   if(!HasMCdata()) return;
-
-//   tracks = new TObjArray(200); tracks->SetOwner(kTRUE);
-//   PostData(AliMESbaseTask::kMCeventInfo+1, new AliMESeventInfo);
-//   PostData(AliMESbaseTask::kMCtracks+1, tracks);
 }
 
 #include "AliGRPManager.h"
 //________________________________________________________________________
 void AliMEStender::UserExec(Option_t */*opt*/)
 {
-/*
-	printf("AliMEStender::UserExec: inputs =%i \t outputs = %i \n", GetNinputs(), GetNoutputs());
-  for(Int_t in(0); in<GetNinputs(); in++){
-    TObject *o(GetInputData(in));
-    if(!o) continue;
-    printf("-> slot[%d]=%s\n", in, o->IsA()->GetName());
-  }
-
-  for(Int_t is(0); is<GetNoutputs(); is++){
-    TObject *o(GetOutputData(is));
-    if(!o) continue;
-    printf("<- slot[%d]=%s\n", is, o->IsA()->GetName());
-  }
-*/
-
-//   PostData(AliMESbaseTask::kEventInfo+1, fEvInfo);
-//   PostData(AliMESbaseTask::kTracks+1, fTracks);
-//   if(HasMCdata()){
-//   	PostData(AliMESbaseTask::kQA, fHistosQA);
-//   	PostData(AliMESbaseTask::kMCeventInfo+1, fMCevInfo);
-//   	PostData(AliMESbaseTask::kMCtracks+1, fMCtracks);
-//   }
-
   AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     AliError("ESD event not available");
@@ -298,7 +261,6 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection (for MB normalisation to INEL)
   }
   if( !AliPPVsMultUtils::IsEventSelected(fESD) ) {
-	  // Event isn't selected, post output data, done here
 	  return;
   }
   ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // analyzed events
@@ -362,14 +324,6 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     AliWarning("No track cuts defined. No multiplicity computed for REC data.");
     fTrackFilter->GetCuts()->ls();
   }
-//   printf( "V0M = %f \n", fUtils->GetMultiplicityPercentile(fESD, "V0M") );
-// 	Int_t testOur = tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
-// 	Int_t testChi = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD);
-// 	if( testOur != testChi ){
-// // 		printf("\n\n AHA! \n\n");
-// 		printf("our = %i \t Chinellato = %i \n", testOur, testChi);
-// // 		exit(1);
-// 	}
 
   Double_t val[7] = {0.};
   THnSparse *H(NULL);
@@ -563,6 +517,27 @@ void AliMEStender::SetDebugLevel(Int_t level)
   AliAnalysisTaskSE::SetDebugLevel(level);
   if(level>=1 && !AliMESbaseTask::DebugStream()) AliMESbaseTask::OpenDebugStream();
   if(level>=1) AliMESbaseTask::AddDebugUser(GetName());
+}
+
+//_____________________________________________________________________
+void AliMEStender::SetPriors(){
+
+	AliInfo("Getting iterative data priors from file...");
+	TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
+	if (lPriors->IsZombie()) {
+		AliError("Could not open the priors file");
+		return;
+	}
+	fPriorsDist[0] = (TH1F*)lPriors->Get("priors_e_final");
+	fPriorsDist[0]->SetDirectory(0);
+	fPriorsDist[1] = (TH1F*)lPriors->Get("priors_pi_final");
+	fPriorsDist[1]->SetDirectory(0);
+	fPriorsDist[2] = (TH1F*)lPriors->Get("priors_K_final");
+	fPriorsDist[2]->SetDirectory(0);
+	fPriorsDist[3] = (TH1F*)lPriors->Get("priors_p_final");
+	fPriorsDist[3]->SetDirectory(0);
+	AliInfo("Done getting the data priors.");
+	lPriors->Close();
 }
 
 //________________________________________________________________________
