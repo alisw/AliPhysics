@@ -28,9 +28,11 @@
 // AliEveEventManager
 #pragma link C++ class AliEveEventManager+;
 #pragma link C++ class AliEveOfflineEventManager+;
-#pragma link C++ class AliEveHLTZMQeventManager+;
 #pragma link C++ class AliEveEventManagerEditor+;
 #pragma link C++ class AliEveEventManagerWindow+;
+#ifdef ZMQ
+#pragma link C++ class AliEveHLTZMQeventManager+;
+#endif
 
 // AliEveEventSelector
 #pragma link C++ class AliEveEventSelector+;
