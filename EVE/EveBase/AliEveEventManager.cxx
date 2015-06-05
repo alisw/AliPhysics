@@ -1154,37 +1154,33 @@ AliMagF* AliEveEventManager::AssertMagField()
     {
         return fgMagField;
     }
+
+    AliEveEventManager::GetMaster()->AssertESD()->InitMagneticField();
+    if (TGeoGlobalMagField::Instance()->GetField())
+    {
+        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+        if (fgMagField == 0)
+            throw kEH + "Global field set, but it is not AliMagF.";
+        return fgMagField;
+    }
+    
+    if (!fgGRPLoaded)
+    {
+        InitGRP();
+    }
+    
+    if (TGeoGlobalMagField::Instance()->GetField())
+    {
+        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+        if (fgMagField == 0)
+            throw kEH + "Global field set, but it is not AliMagF.";
+    }
     else
     {
-        AliEveEventManager::GetMaster()->AssertESD()->InitMagneticField();
-        if (TGeoGlobalMagField::Instance()->GetField())
-        {
-            fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-            if (fgMagField == 0)
-                throw kEH + "Global field set, but it is not AliMagF.";
-            return fgMagField;
-        }
+        throw kEH + "Could not initialize magnetic field.";
     }
-    cout<<"\n\nCould not assert magnetic filed!!"<<endl;
-    exit(0);
     
-//    if (!fgGRPLoaded)
-//    {
-//        InitGRP();
-//    }
-//    
-//    if (TGeoGlobalMagField::Instance()->GetField())
-//    {
-//        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-//        if (fgMagField == 0)
-//            throw kEH + "Global field set, but it is not AliMagF.";
-//    }
-//    else
-//    {
-//        throw kEH + "Could not initialize magnetic field.";
-//    }
-    
-//    return fgMagField;
+    return fgMagField;
 }
 
 TGeoManager* AliEveEventManager::AssertGeometry()
