@@ -61,7 +61,7 @@ class AliHLTZMQsource : public AliHLTDataSource  {
     int fZMQsocketType;      //ZMQ_REP,ZMQ_PUB,ZMQ_PUSH
     TString fZMQconnectMode; //"connect" or "bind"
     TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"
-    TString fSubscription;   //ZMQ subscription
+    TString fMessageFilter;   //ZMQ subscription
 
     ClassDef(AliHLTZMQsource, 0)
 };

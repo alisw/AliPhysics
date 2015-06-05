@@ -41,7 +41,7 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fZMQsocketType(ZMQ_PUB)
   , fZMQconnectMode("connect")
   , fZMQendpoint("tcp://localhost:60201")
-  , fSubscription("")
+  , fMessageFilter("")
 {
 }
 
@@ -74,7 +74,7 @@ int AliHLTZMQsource::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
 {
   // overloaded from AliHLTComponent
   tgtList.assign(fOutputDataTypes.begin(), fOutputDataTypes.end());
-  HLTInfo("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
+  HLTMessage("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
   return fOutputDataTypes.size();
 }
 
@@ -100,46 +100,48 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   int retCode=0;
   //process arguments
   ProcessOptionString(GetComponentArgs());
+  HLTMessage("options processed\n");
 
   int rc = 0;
   //init ZMQ stuff
   fZMQcontext = zmq_ctx_new();
-  HLTMessage(Form("ctx create rc %i errno %i\n",rc,errno));
+  HLTMessage(Form("ctx create rc %i errno %i",rc,errno));
   fZMQin = zmq_socket(fZMQcontext, fZMQsocketType); 
-  HLTMessage(Form("socket create rc %i errno %i\n",rc,errno));
+  HLTMessage(Form("socket create rc %i errno %i",rc,errno));
 
   //set socket options
   //default subscription to all
-  rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, 0, 0);
+  rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fMessageFilter.Data(), fMessageFilter.Length());
+  HLTMessage(Form("setopt ZMQ_SUBSCRIBE=\'%s\' arglength=%i rc=%i errno=%i", fMessageFilter.Data(), fMessageFilter.Length(), rc, errno));
   
   int lingerValue = 10;
   rc = zmq_setsockopt(fZMQin, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i rc=%i errno=%i\n", lingerValue, rc, errno));
+  HLTMessage(Form("setopt ZMQ_LINGER=%i rc=%i errno=%i", lingerValue, rc, errno));
   int highWaterMarkSend = 20;
   rc = zmq_setsockopt(fZMQin, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
-  HLTMessage(Form("setopt ZMQ_SNDHWM rc = %i errno=%i\n",highWaterMarkSend, rc, errno));
+  HLTMessage(Form("setopt ZMQ_SNDHWM=%i rc=%i errno=%i",highWaterMarkSend, rc, errno));
   int highWaterMarkRecv = 20;
   rc = zmq_setsockopt(fZMQin, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i rc=%i errno=%i\n",highWaterMarkRecv, rc, errno));
+  HLTMessage(Form("setopt ZMQ_RCVHWM=%i rc=%i errno=%i",highWaterMarkRecv, rc, errno));
   int rcvtimeo = 1000;
   rc = zmq_setsockopt(fZMQin, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(rcvtimeo));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%i\n",rcvtimeo, rc, errno));
+  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%i",rcvtimeo, rc, errno));
   int sndtimeo = 1000;
   rc = zmq_setsockopt(fZMQin, ZMQ_SNDTIMEO, &sndtimeo, sizeof(sndtimeo));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i\n",sndtimeo, rc, errno));
+  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
 
   //connect or bind, after setting socket options
   if (fZMQconnectMode.Contains("connect")) 
   {
-    HLTMessage(Form("ZMQ connect to %s\n",fZMQendpoint.Data()));
+    HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
     rc = zmq_connect(fZMQin,fZMQendpoint.Data());
-    HLTMessage(Form("connect rc %i errno %i\n",rc,errno));
+    HLTMessage(Form("connect rc %i errno %i",rc,errno));
   }
   else 
   {
-    HLTMessage(Form("ZMQ bind to %s\n",fZMQendpoint.Data()));
+    HLTMessage(Form("ZMQ bind to %s",fZMQendpoint.Data()));
     rc = zmq_bind(fZMQin,fZMQendpoint.Data());
-    HLTMessage(Form("bind rc %i errno %i\n",rc,errno));
+    HLTMessage(Form("bind rc %i errno %i",rc,errno));
   }
 
   return retCode;
@@ -185,6 +187,7 @@ int AliHLTZMQsource::GetEvent( const AliHLTComponentEventData& /*evtData*/,
     outputBufferSize += blockSize;
     block = outputBuffer + outputBufferSize;
     
+
     blockTopicSize = zmq_recv (fZMQin, blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_DONTWAIT);
     if (blockTopicSize<0 && errno==EAGAIN) break; //nothing on the socket
     zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
@@ -195,11 +198,13 @@ int AliHLTZMQsource::GetEvent( const AliHLTComponentEventData& /*evtData*/,
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     }
 
-    if (blockSize <= 0) continue; //empty data, dont push back
-
     char printable[kAliHLTComponentDataTypeTopicSize+1]; printable[kAliHLTComponentDataTypeTopicSize]=0;
     memcpy(printable, blockTopic, kAliHLTComponentDataTypeTopicSize);
-    HLTMessage(Form("pushing back %s\n", printable));
+    //HLTMessage(Form("topic: %s, topic size: %i, block %p, blockSize %i",printable, blockTopicSize, block, blockSize));
+
+    if (blockTopicSize <= 0) continue; //empty header, dont push back
+
+    HLTMessage(Form("pushing back %s, %i bytes", printable, blockSize));
     
     AliHLTComponentBlockData blockHeader; FillBlockData(blockHeader);
     blockHeader.fPtr      = outputBuffer;
@@ -241,10 +246,9 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
     fZMQendpoint = value;
   }
 
-  if (option.Contains("subscription"))
+  if (option.Contains("fMessageFilter"))
   {
-    fSubscription = value;
-    zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fSubscription.Data(), fSubscription.Length());
+    fMessageFilter = value;
   }
 
   return 1; 
@@ -256,11 +260,11 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
 int AliHLTZMQsource::ProcessOptionString(TString arguments)
 {
   //process passed options
-  HLTInfo("Argument string: %s\n", arguments.Data());
+  HLTMessage("Argument string: %s", arguments.Data());
   stringMap* options = TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    HLTInfo("  %s : %s\n", i->first.data(), i->second.data());
+    HLTMessage("  %s : %s", i->first.data(), i->second.data());
     ProcessOption(i->first,i->second);
   }
   delete options; //tidy up
