@@ -58,6 +58,10 @@
 #include "TTreeStream.h"
 #include "AliTPCReconstructor.h"
 #include <TGraphErrors.h>
+#include "AliTPCSAMPAEmulator.h"
+
+
+AliTPCSAMPAEmulator *  AliTPCDigitizer::fgSAMPAEmulator=0;
 
 using std::cout;
 using std::cerr;

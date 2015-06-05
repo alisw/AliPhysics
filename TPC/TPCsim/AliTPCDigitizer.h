@@ -9,6 +9,7 @@
 class TTreeSRedirector;
 
 class AliDigitizationInput;
+class AliTPCSAMPAEmulator;
 
 class AliTPCDigitizer : public AliDigitizer {
  public:    
@@ -18,20 +19,23 @@ class AliTPCDigitizer : public AliDigitizer {
     kStreamSignalAll        =0x4      // flag: stream signal per pad dump all signal (without 0 suppression)
   };
   AliTPCDigitizer();
-    AliTPCDigitizer(AliDigitizationInput * digInput);
-    virtual ~AliTPCDigitizer();
+  AliTPCDigitizer(AliDigitizationInput * digInput);
+  virtual ~AliTPCDigitizer();
     // Initialize merging and digitization
     virtual Bool_t Init();
     // Do the main work
     virtual void Digitize(Option_t* option=0);    
     Int_t GetDebug() const {return fDebug;}       // get debug level
-    void SetDebug(Int_t level){fDebug = level;}   // set debug level        
+    void SetDebug(Int_t level){fDebug = level;}   // set debug level     
+  static AliTPCSAMPAEmulator *GetEmulator(){return fgSAMPAEmulator;}
+  static void SetEmulator( AliTPCSAMPAEmulator *emulator){fgSAMPAEmulator=emulator;}
  private: 
     void DigitizeFast(Option_t* option=0); //digitize - using row pointers
     void DigitizeSave(Option_t* option=0); // digitize using controlled arrays   
     void DigitizeWithTailAndCrossTalk(Option_t* option=0); 
     Int_t fDebug;                         //
     TTreeSRedirector *fDebugStreamer;     //!debug streamer
+  static AliTPCSAMPAEmulator *fgSAMPAEmulator; 
  private:
     AliTPCDigitizer& operator=(const AliTPCDigitizer&);
     AliTPCDigitizer(const AliTPCDigitizer&);

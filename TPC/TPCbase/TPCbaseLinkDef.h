@@ -139,5 +139,6 @@
 #pragma link C++ class AliTPCTrackerPoint+;   // defined in AliComplexCluster.h - moved from TPCrec
 #pragma link C++ class AliTPCTrackPoint+;     // defined in AliComplexCluster.h - moved from TPCrec
 #pragma link C++ class AliTPCTrackPoint2+;    // defined in AliComplexCluster.h - moved from TPCrec
+#pragma link C++ class AliTPCSAMPAEmulator+;   //UTIL SAMPA emulator
 #endif
 

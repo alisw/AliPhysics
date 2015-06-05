@@ -105,6 +105,7 @@ set(SRCS
     AliTPCTransform.cxx
     AliTransform.cxx
     AliXRDPROOFtoolkit.cxx
+    AliTPCSAMPAEmulator.cxx
    )
 
 # Headers from sources
