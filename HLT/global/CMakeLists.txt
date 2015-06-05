@@ -59,7 +59,8 @@ set(SRCS
     AliHLTV0FinderComponent.cxx
     AliHLTVertexFinderBase.cxx
     AliHLTAsyncTestComponent.cxx
-    AliHLTAsyncProcessor.cxx
+    AliHLTAsyncCalibrationComponent.cxx
+    AliHLTZeroComponent.cxx
     AliHLTGlobalCompareFlatComponent.cxx
     AliHLTGlobalFlatEsdConverterComponent.cxx
     AliHLTGlobalEsdToFlatConverterComponent.cxx
@@ -141,11 +142,6 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-# Add header files to include directory here, so that they are not processed by CINT, because CINT cannot process these
-set(HDRS ${HDRS}
-    AliHLTAsyncMemberProcessor.h
-    AliHLTAsyncProcessorBackend.h
-)
 install(FILES ${HDRS} DESTINATION include)
 
 #install macros

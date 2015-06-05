@@ -53,6 +53,8 @@
 #include "AliHLTTPCCalibProcessor.h"
 #include "AliHLTAsyncTestComponent.h"
 
+#include "AliHLTAsyncCalibrationComponent.h"
+#include "AliHLTZeroComponent.h"
 #ifdef ZMQ
 #include "AliHLTZMQsink.h"
 #include "AliHLTZMQsource.h"
@@ -113,6 +115,8 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTTPCCalibManagerComponent);
   pHandler->AddComponent(new AliHLTTPCCalibProcessor);
   pHandler->AddComponent(new AliHLTAsyncTestComponent);
+  pHandler->AddComponent(new AliHLTAsyncCalibrationComponent);
+  pHandler->AddComponent(new AliHLTZeroComponent);
 #ifdef ZMQ
   pHandler->AddComponent(new AliHLTZMQsink);
   pHandler->AddComponent(new AliHLTZMQsource);

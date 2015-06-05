@@ -74,6 +74,8 @@ set(SRCS
     AliHLTTPCClusterHistoComponent.cxx
     AliHLTTPCClusters.cxx
     AliHLTTPCClusterTransformationComponent.cxx
+    AliHLTTPCClusterTransformationMergerComponent.cxx
+    AliHLTTPCClusterTransformationPrepareComponent.cxx
     AliHLTTPCClusterTransformation.cxx
     AliHLTTPCDataCheckerComponent.cxx
     AliHLTTPCDataPublisherComponent.cxx

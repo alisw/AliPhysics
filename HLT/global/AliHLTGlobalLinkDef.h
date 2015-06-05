@@ -32,7 +32,8 @@
 #pragma link C++ class AliHLTMultiplicityCorrelationsComponent+;
 #pragma link C++ class AliHLTGlobalCompareFlatComponent+;
 #pragma link C++ class AliHLTAsyncTestComponent+;
-#pragma link C++ class AliHLTAsyncProcessor+;
+#pragma link C++ class AliHLTAsyncCalibrationComponent+;
+#pragma link C++ class AliHLTZeroComponent+;
 #pragma link C++ class AliHLTFlatAnaManagerComponent+;
 #pragma link C++ class AliHLTGlobalFlatEsdConverterComponent+;
 #pragma link C++ class AliFlatESDFriendTrack+;

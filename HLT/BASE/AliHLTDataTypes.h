@@ -1372,6 +1372,8 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypedNdPt;
+  
+  extern const AliHLTComponentDataType kAliHLTDataTypeCustomTrigger;
 
   //////////////////////////////////////////////////////////////////////////
   //

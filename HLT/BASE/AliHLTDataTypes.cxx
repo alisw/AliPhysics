@@ -249,6 +249,8 @@ const AliHLTComponentDataType kAliHLTDataTypedEdx = AliHLTComponentDataTypeIniti
 /** Container of dNdPt */
 const AliHLTComponentDataType kAliHLTDataTypedNdPt = AliHLTComponentDataTypeInitializer( "DNDPT   ", kAliHLTDataOriginAny );
 
+const AliHLTComponentDataType kAliHLTDataTypeCustomTrigger = AliHLTComponentDataTypeInitializer( "HLTCTRIG", kAliHLTDataOriginHLT );;
+
 /** Input trigger counters */
 const char kAliHLTInputTriggerCountersDataTypeIDstring[8] = kAliHLTInputTriggerCountersDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeInputTriggerCounters = AliHLTComponentDataTypeInitializer(kAliHLTInputTriggerCountersDataTypeIDstring, kAliHLTDataOriginHLT);
