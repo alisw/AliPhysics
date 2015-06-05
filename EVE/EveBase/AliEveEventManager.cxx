@@ -1908,7 +1908,7 @@ TString AliEveEventManager::GetEventInfoVertical() const
 // code to do this somewhere in STEER.
 //==============================================================================
 
-/*
+
 Bool_t AliEveEventManager::InitGRP()
 {
     //------------------------------------
@@ -1954,7 +1954,7 @@ Bool_t AliEveEventManager::InitGRP()
     
     return kTRUE;
 }
-*/
+
 //------------------------------------
 // Global variables management
 //------------------------------------
