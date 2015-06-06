@@ -111,6 +111,7 @@ set(SRCS
   AntiprotonToProton/AliProtonAbsorptionCorrection.cxx 
   AntiprotonToProton/AliProtonSpectraCorrection.cxx 
   AntiprotonToProton/AliProtonCorrectionAnalysisTask.cxx
+  Spherocity/AliTransverseEventShape.cxx
 )
 
 # Headers from sources
@@ -180,3 +181,4 @@ install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaP
 install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
 install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "*.C")
 install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION  PWGLF/SPECTRA/MultEvShape)
+install(FILES Spherocity/macros/AddTaskEventShape.C DESTINATION  PWGLF/SPECTRA/Spherocity/macros)
