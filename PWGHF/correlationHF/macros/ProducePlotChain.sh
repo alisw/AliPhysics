@@ -25,9 +25,9 @@
 ######## THE FOLLOWING LINES ARE THE ONLY VARIABLES TO BE CHANGED ACCORDING TO YOUR LOCAL PATHS #####
 
 
-declare baseStartingDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/TEST"
+declare baseStartingDir="$PWD"
 #declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
-export HFCJlocalCodeDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/TEST"
+export HFCJlocalCodeDir="$PWD"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
 declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pp"
 declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pPb"
@@ -326,7 +326,7 @@ if [ ${doAverage} = 1 ]; then
 	    iassocbin=${firstassocbin}
 	    while [ ${iassocbin} -le ${lastassocbin} ]; do
 		echo "Averaging for ${collsystdir[${collsyst}]} collisions,  pt(D) bin ${itrigbin}, pt(assoc) bin  ${iassocbin} "
-		$HFCJlocalCodeDir/DoAverages.sh ${collsyst} ${itrigbin} ${iassocbin} ${averageOpt} ${reflect} 5 ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ 0
+		$HFCJlocalCodeDir/DoAverages.sh ${collsyst} ${itrigbin} ${iassocbin} ${averageOpt} ${reflect} 5 ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ 1
 		iassocbin=${iassocbin}+1
 		done
 	    itrigbin=${itrigbin}+1
