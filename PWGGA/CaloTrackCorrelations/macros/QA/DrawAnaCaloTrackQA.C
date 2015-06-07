@@ -926,3 +926,46 @@ TObject * GetHisto(TString histoName)
   else     return file->Get       (histoName);
 }
 
+///
+/// Scale axis by a constant factor
+/// used just to scale degrees to rad in a single histogram in the MC case
+///
+//___________________________________________________
+void ScaleAxis(TAxis *a, Double_t scale)
+{
+  if (!a) return; // just a precaution
+  if (a->GetXbins()->GetSize())
+  {
+    // an axis with variable bins
+    // note: bins must remain in increasing order, hence the "Scale"
+    // function must be strictly (monotonically) increasing
+    TArrayD X(*(a->GetXbins()));
+    for(Int_t i = 0; i < X.GetSize(); i++) X[i] = scale*X[i];
+    a->Set((X.GetSize() - 1), X.GetArray()); // new Xbins
+  }
+  else
+  {
+    // an axis with fix bins
+    // note: we modify Xmin and Xmax only, hence the "Scale" function
+    // must be linear (and Xmax must remain greater than Xmin)
+    a->Set(a->GetNbins(),
+           -           scale*a->GetXmin(), // new Xmin
+           -           scale*a->GetXmax()); // new Xmax
+  }
+  return;
+}
+
+///
+/// Scale x axis by a constant factor
+/// used just to scale degrees to rad in a single histogram in the MC case
+///
+//___________________________________________________
+void ScaleXaxis(TH1 *h, Double_t scale)
+{
+  if (!h) return; // just a precaution
+  ScaleAxis(h->GetXaxis(), scale);
+  return;
+}
+
+
+
