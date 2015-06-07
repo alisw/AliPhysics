@@ -25,7 +25,7 @@ declare -i heightPlot=${plotheightpp[$ptAssoc]}
 declare -ai maxrange=(10 15)
 declare -i year=2010
 declare collsyststr="pp"
-declare dirmacroAverage="/home/colamaria/Desktop/Dhadron_Final_Output"
+declare dirmacroAverage="$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros"
 
 if [ ${localCode} = 1 ]; then
     dirmacroAverage=${HFCJlocalCodeDir}
