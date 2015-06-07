@@ -215,6 +215,11 @@ set ( SRCS19
   BeamGasMonitoring/AliAnalysisMBVeto.cxx
   )  
 
+#file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
+set ( SRCS20 
+  HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
+  )
+
 list ( APPEND SRCS 
   ${SRCS1} 
   ${SRCS2} 
@@ -235,6 +240,7 @@ list ( APPEND SRCS
   ${SRCS17}
   ${SRCS18}
   ${SRCS19}	
+  ${SRCS20}	
   )
 
 ###add_subdirectory(Alignment)
