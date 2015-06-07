@@ -131,42 +131,62 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   // Process DCS and calibration part for HLT
   //
 
-  TString runType = GetRunType();
+  const TString runType = GetRunType();
   Log(Form("runtype %s\n",runType.Data()));
+
+  // We initialize the return values of all 
+  // subfunctions to zero, ie 'good'
+  Int_t DCSConfigReturn = 0;
+  Int_t pedastalReturn  = 0;
+  Int_t DCSReturn       = 0;
+  Int_t HLTReturn       = 0;
+  Int_t DAQReturn       = 0;
   
-  // always process the configuration data
-  Int_t dCSConfigReturn = ProcessDCSConfigData();
-  if(dCSConfigReturn) return dCSConfigReturn; 
+  // Always process the configuration data
+  DCSConfigReturn = ProcessDCSConfigData();
 
+  // Extract pedastals in pedastal runs
   if (runType=="PEDESTAL"){
-    if(ExtractPedestals()) return 1;
-    return 0;
-  } 
+    pedastalReturn = ExtractPedestals();
+  }
 
+  // Process the DCS sensors
   if ((runType=="PHYSICS") || (runType=="STANDALONE") || (runType=="DAQ")){
     // DCS
-    if(ProcessDCS(dcsAliasMap)) return 1;
+    DCSReturn = ProcessDCS(dcsAliasMap);
+
     /*
     if(runType=="PHYSICS"){
       // HLT if On
       //TString runPar = GetRunParameter("HLTStatus");
       //if(runPar=="1") {
       if(GetHLTStatus()) {
-	//if(ExtractHLT()) return 1; // for testing!
-	ExtractHLT();
+        HLTReturn = ExtractHLT();
       } 
       // DAQ if HLT failed
       if(!fVdriftHLT) {
-	//if(ExtractDriftVelocityDAQ()) return 1; 
-	ExtractDriftVelocityDAQ(); // for testing!
+        DAQReturn = ExtractDriftVelocityDAQ();
       }
     }
     */
    
   }
-  
-  return 0;  
-  
+
+  // Check for any errors
+  if(DCSConfigReturn || pedastalReturn || DCSReturn
+     || HLTReturn || DAQReturn){
+    // Error
+    Log(Form("ERROR - Listing return values for subfunctions (0=good)"));
+    Log(Form("DCSConfig %d, pedastal %d, DCS %d, HLT %d, DAQ %d"
+	     ,DCSConfigReturn,pedastalReturn,DCSReturn
+	     ,HLTReturn,DAQReturn));
+    return 1;
+  }
+  else{
+    // Good
+    Log(Form("SUCCESS All subfuntions returned without error"));
+    return 0;
+  }
 }
 //______________________________________________________________________________
 Bool_t AliTRDPreprocessor::ProcessDCS()
@@ -1060,15 +1080,14 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 
   Log("Processing the DCS config summary files.");
 
-  if(fCalDCSObjSOR) delete fCalDCSObjSOR;
-  if(fCalDCSObjEOR) delete fCalDCSObjEOR;
+  if(fCalDCSObjSOR) delete fCalDCSObjSOR; fCalDCSObjSOR=0;
+  if(fCalDCSObjEOR) delete fCalDCSObjEOR; fCalDCSObjEOR=0;
 
   TString xmlFile[2];
   TString esor[2] = {"SOR", "EOR"};
   // get the XML files
   xmlFile[0] = GetFile(kDCS,"CONFIGSUMMARYSOR","");
   xmlFile[1] = GetFile(kDCS,"CONFIGSUMMARYEOR","");
-
 
   // check both files
   for (Int_t iFile=0; iFile<2; iFile++) {
@@ -1094,7 +1113,9 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
       continue;
     }
     Log(Form("%s file is valid.", esor[iFile].Data()));
-
+    // Close the file descriptor
+    fileTest.close();
+    
     // make a robust XML validation
     TSAXParser testParser;
     if (testParser.ParseFile(xmlFile[iFile].Data()) < 0 ) {
@@ -1133,18 +1154,22 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
     if (iFile == 1) fCalDCSObjEOR = calDCSObj;
   }
 
-  if (!fCalDCSObjSOR && !fCalDCSObjEOR) { Log("ERROR: Failed reading both files!"); return 1; }
+  // If none of the two objects exists we don't even store a CDB entry
+  if (!fCalDCSObjSOR && !fCalDCSObjEOR) {
+    Log("ERROR: Failed reading both files!");
+    return 1;
+  }
 
   // put both objects in one TObjArray to store them
-  TObjArray* calObjArray = new TObjArray(2);
-  calObjArray->SetOwner();
+  TObjArray calObjArray(2);
+  calObjArray.SetOwner();
 
   if (fCalDCSObjSOR) {
-    calObjArray->AddAt(fCalDCSObjSOR,0);
+    calObjArray.AddAt(fCalDCSObjSOR,0);
     Log("TRDCalDCS object for SOR created.");
   }
   if (fCalDCSObjEOR) {
-    calObjArray->AddAt(fCalDCSObjEOR,1);
+    calObjArray.AddAt(fCalDCSObjEOR,1);
     Log("TRDCalDCS object for EOR created.");
   }
 
@@ -1153,10 +1178,14 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   metaData1.SetBeamPeriod(0);
   metaData1.SetResponsible("Frederick Kramer");
   metaData1.SetComment("DCS configuration data in two AliTRDCalDCSv2 objects in one TObjArray (0:SOR, 1:EOR).");
-  if (!Store("Calib", "DCS", calObjArray, &metaData1, 0, kTRUE)) { Log("ERROR: Storing DCS config data object failed!"); return 1; }
+  if (!Store("Calib", "DCS", &calObjArray, &metaData1, 0, kTRUE)) { Log("ERROR: Storing DCS config data object failed!"); return 1; }
 
-  delete calObjArray;
-
+  // ALICE policy is to always have an SOR object
+  if(!fCalDCSObjSOR){
+    Log("ERROR: Could not build an SOR object.");  
+    return 1;
+  }
+  
   Log("SUCCESS: Processing of the DCS config summary file DONE.");  
   return 0;
 }
