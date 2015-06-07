@@ -11,13 +11,20 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
 							   Double_t pTrg2min = 5.0,
 							   Double_t pTrg2max = 8.0,
                                Double_t bit = 272,
-                                                         //  Double_t alpha = TMath::Pi(),
+                               TString fileTrackeff = "",
+                               //  Double_t alpha = TMath::Pi(),
                               // Double_t alphaB2B = TMath::Pi(),
 							  // TString effLoc = "",
                                Bool_t bkgSE = kFALSE)
 {
   
   Bool_t UseFbits = kTRUE;
+    
+    
+    
+//    Bool_t isTrackEff = kTRUE;
+    
+   
   
   //____________________________________| Correlation class setting..
   AliAnalysisTaskDiJetCorrelationsAllb2b *dijetcorrelations = new AliAnalysisTaskDiJetCorrelationsAllb2b("");
@@ -25,7 +32,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
   dijetcorrelations->SetCorr2plus1or1plus1(twoplus1);
   dijetcorrelations->SetSystem(ppOrPbPb); //PbPb = kTRUE
   dijetcorrelations->SetSEorME(SEorME); //kTRUE for mixed events
-  if(SEorME)dijetcorrelations->SetMESettings(5000, 20000, 8); //evt,track,minMixEvents
+  if(SEorME)dijetcorrelations->SetMESettings(1000, 50000, 5); //evt,track,minMixEvents
     //if(SEorME)dijetcorrelations->SetMESettings(2, 10, 2); //evt,track,minMixEvents
   dijetcorrelations->SetTrigger1PTValue(pTrg1min, pTrg1max); //GeV/c
   dijetcorrelations->SetTrigger2PTValue(pTrg2min, pTrg2max); //GeV/c
@@ -38,10 +45,43 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
  // dijetcorrelations->SetAlphaAngle(alphaB2B);
   //if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));
  // dijetcorrelations->SetAlphaAngle(alphaB2B);
+
   dijetcorrelations->SetBkgSE(bkgSE);
- 
     
 
+    
+    
+    if(fileTrackeff!="")
+        
+        {
+            
+            TFile* fAssoTracksEffMap;
+            THnF* hEff;
+            fAssoTracksEffMap=TFile::Open(fileTrackeff.Data());
+            
+            if(!fAssoTracksEffMap ||(fAssoTracksEffMap&& !fAssoTracksEffMap->IsOpen())){
+                
+                AliFatal("Input Associated Track Efficeincy Map object not found");
+                
+                return;
+                
+            }
+            
+            THnF *hEff = (THnF*)fAssoTracksEffMap->Get("correction");
+            if(!hEff){
+                Printf("%s%d Couldn't find correction",(char*)__FILE__,__LINE__);
+                return;
+            }
+            
+            
+            // hEff = dynamic_cast<THnF*>tmp1->Clone("hEff");
+            
+            dijetcorrelations->SetEfficiencyWeightMap(hEff);
+            
+        }
+    
+    
+    
   // Create containers for input/output        
   TString finDirname         = "_DiJetMayCERN";
   TString inname             = "cinputDiJetCorrelations";
