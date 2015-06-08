@@ -5140,7 +5140,7 @@ void AliFlowTrackCuts::SetTPCTOFNsigmaPIDPurityFunctions(Float_t PurityLevel)
     fPurityLevel = PurityLevel;
     cout<<"fPurityLevel = "<<fPurityLevel<<endl;
     
-    fPurityFunctionsFile = TFile::Open(Form("$ALICE_PHYSICS/../src/PWGCF/FLOW/database/PurityFunctions_%i-%icent.root",fCentralityPercentileMin,fCentralityPercentileMax));
+    fPurityFunctionsFile = TFile::Open(Form("$ALICE_PHYSICS/PWGCF/FLOW/database/PurityFunctions_%i-%icent.root",fCentralityPercentileMin,fCentralityPercentileMax));
     if((!fPurityFunctionsFile) || (!fPurityFunctionsFile->IsOpen())) {
         printf("The purity functions file does not exist");
         return;
