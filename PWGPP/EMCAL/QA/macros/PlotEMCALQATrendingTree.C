@@ -21,9 +21,18 @@
 #include <TGaxis.h>
 #endif
 
-// This macro produces periodLevelQA for EMCAL from a trending tree
-// Authors: A. Mas, M. Germain & A.Shabetai SUBATECH
-// re-factored for automatic QA processing and trending A. SHABETAI
+///
+/// \file PlotEMCALQATrendingTree.C
+/// \brief QA at run level
+///
+/// This macro produces periodLevelQA for EMCAL from a trending tree.
+/// Re-factored for automatic QA processing and trending by Alexandre Shabetai.
+///
+/// \author Alexis Mas, <Alexis.Mas@subatech.in2p3.fr>, SUBATECH
+/// \author Alexandre Shabetai, <Alexandre.Shabetai@subatech.in2p3.fr>  SUBATECH
+/// \author Marie Germain, <Marie.Germain@subatech.in2p3.fr>, SUBATECH
+///
+
 
 int PlotEMCALQATrendingTree(TTree* tree, const char* trig,TFile* fout,Bool_t SavePlots,TString expr);
 TH1F* ZoomFromTree(TH1F* h, TTree* atree, Int_t n, const char* aVar, UShort_t aScaleFactor=1);
