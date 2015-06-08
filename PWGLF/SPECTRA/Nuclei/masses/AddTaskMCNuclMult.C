@@ -1,8 +1,8 @@
 AliAnalysisTaskSE *AddTaskMCNuclMult(Bool_t kAOD=kFALSE, Bool_t isMC=kTRUE){
 
   //for ESDs
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
-  
+  //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
+
   //To set the track cuts (useful only for ESDs)
   AliESDtrackCuts* esdTrackCutsStd2010 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2010");
   esdTrackCutsStd2010->GetStandardITSTPCTrackCuts2010(kFALSE,0);
@@ -93,7 +93,6 @@ AliAnalysisTaskSE *AddTaskMCNuclMult(Bool_t kAOD=kFALSE, Bool_t isMC=kTRUE){
     cOutputL_1[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task_1[i],1,cOutputL_1[i]);
   }
-  
-  
+    
   return task_0[0];
 }

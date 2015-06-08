@@ -105,7 +105,7 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   void ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge);
   void FillDca(Double_t DCAxy, Double_t DCAz, Int_t Pdg, Short_t t_charge, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak, Double_t t_pt, Bool_t kTOF);
   
-  ClassDef(AliAnalysisMCNuclMult, 1);
+  ClassDef(AliAnalysisMCNuclMult, 2);
 };
 
 #endif
