@@ -921,6 +921,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   //
   // 2.) Loop over segments (padrows) of the TPC 
   //  
+  // 
   for (Int_t globalRowID=0; globalRowID<param->GetNRowsTotal(); globalRowID++) {
     Int_t sector, padRow;
     if (!param->AdjustSectorRow(globalRowID,sector,padRow)) {
@@ -1076,7 +1077,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	  "\n";
       }// dump the results to the debug streamer if in debug mode
       
-      if (q > zerosup){ 
+      if (q > zerosup || fgSAMPAEmulator!=NULL){ 
         if(q >= param->GetADCSat()) q = (Short_t)(param->GetADCSat() - 1);
         //digrow->SetDigitFast((Short_t)q,rows,col);  
         *pdig1 =Short_t(q);
@@ -1085,6 +1086,38 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
           if (tr<labptr) 
             ptr1[tr*nElems] = label[tr];
         }
+      }
+      if (fgSAMPAEmulator && (timeBin==nTimeBins-1)) {  // pocess Emulator for given pad
+	//
+	TVectorD vecSAMPAIn(nTimeBins); // allocate workin array for SAMPA emulator processing (if set)
+	TVectorD vecSAMPAOut(nTimeBins); // allocate workin array for SAMPA emulator processing (if set)
+	Double_t baseline=0;
+        for (Int_t itime=0; itime<=nTimeBins;itime++) vecSAMPAIn[itime]=pdig1[itime-nTimeBins];  // set workin array for SAMPA emulator 
+        for (Int_t itime=0; itime<=nTimeBins;itime++) vecSAMPAOut[itime]=pdig1[itime-nTimeBins];  // set workin array for SAMPA emulator 
+	fgSAMPAEmulator->BC3SlopeFilterFloat(nTimeBins, vecSAMPAOut.GetMatrixArray(), baseline);
+	//
+	if ( ((AliTPCReconstructor::StreamLevel()&kStreamSignal)>0)){	  
+	  (*fDebugStreamer)<<"sampaEmulator"<<
+	    "sector="<< sector<<   
+	    "globalRowID="<<globalRowID<<
+	    "padRow="<< padRow<<                 //pad row
+	    "wireSegmentID="<< wireSegmentID<<   //wire segment 0-11, 0-3 in IROC 4-10 in OROC 
+	    "localPad="<<localPad<<              // pad number -npads/2 .. npads/2
+	    "padNumber="<<padNumber<<            // pad number 0..npads 
+	    "timeBin="<< timeBin<<               // time bin 
+	    "nPadsPerSegment="<<nPadsPerSegment<<// number of pads per wire segment	  
+	    "qTotPerSector="<<qTotPerSector<<    // total charge in sector 
+	    "nTotPerSector="<<nTotPerSector<<    // total number of digit (above threshold) in sector 
+	    "vSAMPAin.="<<&vecSAMPAIn<<          // input  data
+	    "vSAMPAout.="<<&vecSAMPAOut<<        // ouptut data
+	    "\n";
+	}
+	for (Int_t itime=0; itime<=nTimeBins;itime++) {
+	  if ( TMath::Nint(vecSAMPAOut[itime]) <  zerosup) pdig1[itime-nTimeBins]=0;
+	  else{
+	    pdig1[itime-nTimeBins]=TMath::Nint(vecSAMPAOut[itime]);
+	  }
+	}
       }
       pdig1++;
       ptr1++;
