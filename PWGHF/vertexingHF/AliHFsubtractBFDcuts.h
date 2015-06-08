@@ -52,15 +52,33 @@ public:
   void FillSparses(AliAODRecoDecayHF2Prong *dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
 
 private:
-  Int_t GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand,TClonesArray* mcArray) const;
-  Bool_t DetermineDecayType(Int_t labCand,TClonesArray* mcArrray, UInt_t& nProngs, Bool_t& decayChain, Double_t& motherPt) const; // check in which decay process a particle was created
+  AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c);
+  AliHFsubtractBFDcuts operator=(const AliHFsubtractBFDcuts& c);
 
-  Bool_t   fIsMC;        // flag for MC/Data
-  TH1F *fPtMCGenStep;    //! histo with spectrum at generation level
-  THnSparseF *fCutsData; //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
-  THnSparseF *fCutsMC;   //! THnSparse for cut variables (MC at PID level, w/o mass axis)
+  void GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand);
+  Bool_t AnalyseDecay();                 // check in which decay process a particle was created
+  void   CountProngs(Int_t labCurrMother, Int_t labCurrExcl);  // counting the prongs of labCurrMother,
+                                                               // labCurrExcl is assumed to be a stable particle
+  Bool_t IsStable(Int_t labProng) const;       // Is that prong a stable particle?
+  Bool_t IsInAcceptance(Int_t labProng) const; // Is that prong within the fiducial acceptance
 
-  ClassDef(AliHFsubtractBFDcuts,2);
+  Bool_t      fIsMC;              // flag for MC/Data
+  Bool_t      fCheckAcceptance;   // flag for checking whether the decay prongs are within acceptance
+  Bool_t      fResolveResonances; // flag resolve resonances in during the prong determination
+  TH1F*       fPtMCGenStep;       //! histo with spectrum at generation level
+  THnSparseF* fCutsData;          //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
+  THnSparseF* fCutsMC;            //! THnSparse for cut variables (MC at PID level, w/o mass axis)
+
+  // Event specific variables
+  TClonesArray* fMCarray;    //! TClonesArray holding the particles of the event to be processed
+  Int_t         fLabCand;    // Label of the candidate D0 (charmed hadron in case of a chained decay)
+  Int_t         fLabMother;  // Label of the mother of the candidate D0 (or charmed hadron)
+  UInt_t        fNprongs;    // Number of prongs, counting the first charmed hadron as one particle
+  Bool_t        fDecayChain; // Chained decay of charmed hadrons
+  Double_t      fMotherPt;   // Transverse momentum of the mother particle (B hadron in case of feed-down,
+                             // the charmed hadron itsself in case of prompt production)
+
+  ClassDef(AliHFsubtractBFDcuts,3);
 };
 
 #endif
