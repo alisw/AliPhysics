@@ -770,8 +770,8 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   legend->SetFillStyle(0);
   legend->SetBorderSize(0);
   legend->SetTextSize(0.027);
-  legend->AddEntry(histo[ihskip],"pp #sqrt{#it{s}}=7 TeV, |y^{D}_{cms}|<0.5","lep");
-  legend->AddEntry(histo[4],"p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<y^{D}_{cms}<0.04","lep");
+  legend->AddEntry(histo[ihskip],"pp #sqrt{#it{s}}=7 TeV, |#it{y}^{D}_{cms}|<0.5","lep");
+  legend->AddEntry(histo[4],"p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<#it{y}^{D}_{cms}<0.04","lep");
   
   TLegend * legend2 = new TLegend(0.55,0.50,0.74,0.60);
   legend2->SetFillColor(0);
@@ -826,8 +826,8 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   SetPaveStyle(fitvalueshigh2);
  //TPaveText *fitvalueshigh2 = new TPaveText(0.15,0.78,0.84,0.825,"NDC");
   //  TPaveText *fitvalueshigh2 = new TPaveText(0.18,0.79,0.84,0.843,"NDC");
-  fitvalueshigh2->SetTextSize(0.025);
-  fitvalueshigh2->AddText("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |y^{D}|<0.5");
+  fitvalueshigh2->SetTextSize(0.03);
+  fitvalueshigh2->AddText("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}|<0.5");
   //  fitvalueshigh2->AddText(Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > %s GeV/#it{c}, |#Delta#eta| < 1.0 ",pthad.Data()));
   if(pthad.Contains("0.3"))  {
     fitvalueshigh2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
