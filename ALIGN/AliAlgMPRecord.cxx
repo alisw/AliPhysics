@@ -35,6 +35,7 @@ AliAlgMPRecord::AliAlgMPRecord()
   ,fNDGloTot(0)
   ,fNDLoc(0)
   ,fNDGlo(0)
+  ,fVolID(0)
   ,fResid(0)
   ,fResErr(0)
   ,fIDLoc(0)
@@ -56,6 +57,7 @@ AliAlgMPRecord::~AliAlgMPRecord()
   // d-tor
   delete[] fNDLoc;
   delete[] fNDGlo;
+  delete[] fVolID;
   delete[] fResid;
   delete[] fResErr;
   delete[] fIDLoc;
@@ -75,6 +77,7 @@ void AliAlgMPRecord::DummyRecord(Float_t res, Float_t err, Float_t dGlo, Int_t l
   fIDGlo[0] = labGlo;
   fDGlo[0] = dGlo;
   fNDGlo[0] = 1;
+  fVolID[0] = -1;
   fResid[0] = res;
   fResErr[0] = err;
   //
@@ -133,6 +136,7 @@ Bool_t AliAlgMPRecord::FillTrack(const AliAlgTrack* trc, const Int_t *id2Lab)
       //
       for (int idim=0;idim<2;idim++) { // 2 dimensional orthogonal measurement
 	fNDGlo[fNResid] = 0;
+	fVolID[fNResid] = pnt->GetSensor()->GetVolID()+1;
 	// 
 	// measured residual/error
 	fResid[ fNResid] = trc->GetResidual(idim,ip);
@@ -158,7 +162,7 @@ Bool_t AliAlgMPRecord::FillTrack(const AliAlgTrack* trc, const Int_t *id2Lab)
 	  fNDLocTot++;
 	}
 	//
-	fNDLoc[fNResid] = nnon0;          // local derivatives done, store thier number for this residual
+	fNDLoc[fNResid] = nnon0;          // local derivatives done, store their number for this residual
 	//
 	// derivatives over global params
 	nnon0 = 0;
@@ -184,6 +188,7 @@ Bool_t AliAlgMPRecord::FillTrack(const AliAlgTrack* trc, const Int_t *id2Lab)
       // here all derivatives are 1 = dx/dx
       for (int j=0;j<nmatpar;j++) {
 	fNDGlo[fNResid]  = 0;                       // mat corrections don't depend on global params
+	fVolID[fNResid]  = 0;                       // not associated to global parameter
 	fResid[fNResid]  = 0;                       // expectation for MS effects is 0 
 	fResErr[fNResid] = Sqrt(expMatCov[j]);
 	fNDLoc[fNResid] = 1;                        // only 1 non-0 derivative
@@ -209,15 +214,18 @@ void AliAlgMPRecord::Resize(Int_t nresid, Int_t nloc, Int_t nglo)
   if (nresid>fNResidBook) {
     delete[] fNDLoc;
     delete[] fNDGlo;
+    delete[] fVolID;
     delete[] fResid;
     delete[] fResErr;
     fNDLoc = new Short_t[nresid];
     fNDGlo = new Int_t[nresid];
+    fVolID = new Int_t[nresid];
     fResid   = new Float_t[nresid];
     fResErr  = new Float_t[nresid];
     fNResidBook = nresid;
     memset(fNDLoc,0,nresid*sizeof(Short_t));
     memset(fNDGlo,0,nresid*sizeof(Int_t));
+    memset(fVolID,0,nresid*sizeof(Int_t));
     memset(fResid,0,nresid*sizeof(Float_t));
     memset(fResErr,0,nresid*sizeof(Float_t));
   }
@@ -268,7 +276,8 @@ void AliAlgMPRecord::Print(const Option_t *) const
   const int kNColLoc=5;
   for (int ir=0;ir<fNResid;ir++) {
     int ndloc = fNDLoc[ir], ndglo = fNDGlo[ir];
-    printf("Res:%3d %+e (%+e) | NDLoc:%3d NDGlo:%4d\n",ir,fResid[ir],fResErr[ir],ndloc,ndglo);
+    printf("Res:%3d %+e (%+e) | NDLoc:%3d NDGlo:%4d [VID:%5d]\n",
+	   ir,fResid[ir],fResErr[ir],ndloc,ndglo,GetVolID(ir));
     //
     printf("Local Derivatives:\n");
     Bool_t eolOK = kTRUE;

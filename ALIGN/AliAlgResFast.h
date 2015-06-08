@@ -22,6 +22,12 @@ class AliAlgResFast: public TObject
   void     SetNPoints(Int_t n)                        {fNPoints=n; Resize(n);}
   void     SetNMatSol(Int_t n)                        {fNMatSol = n;}
   //
+  void     SetChi2(float v)                           {fChi2 = v;}
+  Float_t  GetChi2()                            const {return fChi2;}
+  //
+  void     SetChi2Ini(float v)                        {fChi2Ini = v;}
+  Float_t  GetChi2Ini()                         const {return fChi2Ini;}
+  //
   Bool_t   IsCosmic()                           const {return TestBit(kCosmicBit);}
   Bool_t   HasVertex()                          const {return TestBit(kVertexBit);}
   void     SetCosmic(Bool_t v=kTRUE)                  {SetBit(kCosmicBit,v);}
@@ -66,6 +72,8 @@ class AliAlgResFast: public TObject
   Int_t    fNPoints;                // n meas points
   Int_t    fNMatSol;                // n local params - ExtTrPar corrections
   Int_t    fNBook;                  //! booked lenfth
+  Float_t  fChi2;                   // chi2
+  Float_t  fChi2Ini;                // chi2 before local fit
   //  
   Float_t  fTrCorr[5];              //  correction to ExternalTrackParam
   Float_t* fD0;                     //[fNPoints] 1st residual (track - meas)

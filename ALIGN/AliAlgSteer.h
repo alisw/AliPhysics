@@ -322,6 +322,8 @@ class AliAlgSteer : public TObject
   Float_t*      fGloParVal;                               //[fNDOFs] parameters for DOFs
   Float_t*      fGloParErr;                               //[fNDOFs] errors for DOFs
   Int_t*        fGloParLab;                               //[fNDOFs] labels for DOFs
+  Int_t*        fOrderedLbl;                              //[fNDOFs] ordered labels
+  Int_t*        fLbl2ID;                                  //[fNDOFs] Label order in fOrderedLbl -> parID
   //
   AliAlgPoint*   fRefPoint;                               // reference point for track definition
   //

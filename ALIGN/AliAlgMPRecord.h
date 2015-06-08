@@ -37,6 +37,7 @@ class AliAlgMPRecord : public TObject
   //
   Int_t        GetNDLoc(int id)        const {return fNDLoc[id];}
   Int_t        GetNDGlo(int id)        const {return fNDGlo[id];}
+  Int_t        GetVolID(int id)        const {return fVolID ? fVolID[id]-1:-1;}
   Float_t      GetResid(int id)        const {return fResid[id];}
   Float_t      GetResErr(int id)       const {return fResErr[id];}
   //
@@ -73,6 +74,7 @@ class AliAlgMPRecord : public TObject
   //
   Short_t*     fNDLoc;           //[fNResid] number of non-0 local derivatives per residual
   Int_t*       fNDGlo;           //[fNResid] number of non-0 global derivatives per residual
+  Int_t*       fVolID;           //[fNResid] volume id + 1 (0 - not a volume)
   Float_t*     fResid;           //[fNResid] residuals
   Float_t*     fResErr;          //[fNResid] error associated to residual
   //
@@ -86,7 +88,7 @@ class AliAlgMPRecord : public TObject
   Int_t        fNDLocTotBook;    //! number of slots booked for local derivatives
   Int_t        fNDGloTotBook;    //! number of slots booked for global derivatives
   //
-  ClassDef(AliAlgMPRecord,1);
+  ClassDef(AliAlgMPRecord,3);
 };
 
 

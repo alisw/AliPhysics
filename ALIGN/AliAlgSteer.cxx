@@ -92,6 +92,8 @@ AliAlgSteer::AliAlgSteer(const char* configMacro)
   ,fGloParVal(0)
   ,fGloParErr(0)
   ,fGloParLab(0)
+  ,fOrderedLbl(0)
+  ,fLbl2ID(0)
   ,fRefPoint(0)
   ,fESDTree(0)
   ,fESDEvent(0)
@@ -213,9 +215,13 @@ void AliAlgSteer::InitDetectors()
   fGloParVal = new Float_t[dofCnt];
   fGloParErr = new Float_t[dofCnt];
   fGloParLab = new Int_t[dofCnt];  
+  fOrderedLbl = new Int_t[dofCnt];  
+  fLbl2ID    = new Int_t[dofCnt];  
   memset(fGloParVal,0,dofCnt*sizeof(Float_t));
   memset(fGloParErr,0,dofCnt*sizeof(Float_t));
   memset(fGloParLab,0,dofCnt*sizeof(Int_t));
+  memset(fOrderedLbl,0,dofCnt*sizeof(Int_t));
+  memset(fLbl2ID,0,dofCnt*sizeof(Int_t));
   AssignDOFs();
   AliInfoF("Booked %d global parameters",dofCnt);
   //
@@ -278,6 +284,11 @@ void AliAlgSteer::AssignDOFs()
   }
   AliInfoF("Assigned parameters/labels arrays for %d DOFs",fNDOFs);
   if (ndfOld>-1 && ndfOld != fNDOFs) AliErrorF("Recalculated NDOFs=%d not equal to saved NDOFs=%d",fNDOFs,ndfOld);
+  //
+  // build Lbl <-> parID table
+  Sort(fNDOFs,fGloParLab,fLbl2ID,kFALSE); // sort in increasing order
+  for (int i=fNDOFs;i--;) fOrderedLbl[i] = fGloParLab[fLbl2ID[i]];
+  //
 }
 
 //________________________________________________________________
@@ -400,6 +411,17 @@ void AliAlgSteer::SetESDEvent(const AliESDEvent* ev)
 Bool_t AliAlgSteer::ProcessEvent(const AliESDEvent* esdEv)
 {
   // process event
+  const int kProcStatFreq = 100;
+  static int evCount=0;
+  if (!(evCount%kProcStatFreq)) {
+    ProcInfo_t procInfo;
+    gSystem->GetProcInfo(&procInfo);
+    AliInfoF("ProcStat: CPUusr: %6d CPUsys: %6d RMem:%6d VMem:%6d",
+	     int(procInfo.fCpuUser), int(procInfo.fCpuSys),
+	     int(procInfo.fMemResident/1024),int(procInfo.fMemVirtual/1024));
+  }
+  evCount++;
+  //
   SetESDEvent(esdEv);
   //
   if (esdEv->GetRunNumber() != GetRunNumber()) SetRunNumber(esdEv->GetRunNumber());
@@ -1612,8 +1634,9 @@ void AliAlgSteer::PrintLabels() const
 Int_t AliAlgSteer::Label2ParID(int lab) const
 {
   // convert Mille label to ParID (slow)
-  for (int i=fNDOFs;i--;) if (fGloParLab[i]==lab) return i;
-  return -1;
+  int ind = FindKeyIndex(lab,fOrderedLbl,fNDOFs);
+  if (ind<0) return -1;
+  return fLbl2ID[ind];
 }
 
 //____________________________________________________________
@@ -1787,7 +1810,14 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
       irs++; // skip 2nd 
       continue;
     }
-    nMatCorr++;
+    else if (rec->GetResid(irs)==0 && rec->GetVolID(irs)==-1) { // material corrections have 0 residual
+      nMatCorr++; 
+    }
+    else { // might be fixed parameter, global derivs are skept
+      nPoints++;
+      irs++; // skip 2nd 
+      continue;     
+    }
   }
   //
   if (nMatCorr%4) AliWarningF("Error? NMatCorr=%d is not multiple of 4",nMatCorr);
@@ -1810,6 +1840,8 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
   //
   if (loc) vecp = new TVectorD(nvloc);
   //
+  float chi2Ini=0,chi2L=0,chi2LG=0;
+  //
   // residuals, accounting for global solution
   double *resid = new Double_t[nres];
   int* volID = new Int_t[nres];
@@ -1819,17 +1851,20 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
     //
     int ndglo = rec->GetNDGlo(irs);
     int ndloc = rec->GetNDLoc(irs);
+    volID[irs]=0;
     for (int ig=0;ig<ndglo;ig++) {
       int lbI = recLabGlo[ig];
       int idP = Label2ParID(lbI);
       if (idP<0) AliFatalF("Did not find parameted for label %d\n",lbI);
       double parVal = GetGloParVal()[idP];
-      resid[irs] += parVal*recDGlo[ig];
+      resid[irs] -= parVal*recDGlo[ig];
       if (!ig) volID[irs] = GetVolOfDOFID(idP)->GetVolID();
     }
     //
     double  sg2inv = rec->GetResErr(irs);
-    sg2inv = 1./sg2inv/sg2inv;
+    sg2inv = 1./(sg2inv*sg2inv);
+    //
+    chi2Ini += resid[irs]*resid[irs]*sg2inv; // chi accounting for global solution only
     //
     // Build matrix to solve local parameters
     for (int il=0;il<ndloc;il++) {
@@ -1848,6 +1883,9 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
     recDLoc   += ndloc;
     //
   }
+  //
+  if (rL)  rL->SetChi2Ini(chi2Ini);
+  if (rLG) rLG->SetChi2Ini(chi2Ini);
   //
   TVectorD vecSol(nvloc);
   TVectorD vecSolG(nvloc);
@@ -1904,6 +1942,7 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
     double resL = resOr;
     double resLG = resid[irs];
     double  sg = rec->GetResErr(irs);
+    double  sg2Inv = 1/(sg*sg);
     //
     int ndglo = rec->GetNDGlo(irs);
     int ndloc = rec->GetNDLoc(irs);
@@ -1914,17 +1953,22 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
       resLG += recDLoc[il]*vecSolG[lbLI];
     }
     //
-    if (ndglo) { // real measurement
+    chi2L  += resL*resL*sg2Inv; // chi accounting for global solution only
+    chi2LG += resLG*resLG*sg2Inv; // chi accounting for global solution only
+    //
+    if (ndglo || resOr!=0) { // real measurement
       idMeas++;
       if (idMeas>1) idMeas = 0; 
       if (idMeas==0) pntID++; // measurements come in pairs
+      int lbl = rec->GetVolID(irs);
+      lbl = ndglo ? recLabGlo[0] : 0; // TMP, until VolID is filled // RS!!!!
       if (rLG) {
 	rLG->SetResSigMeas(pntID,idMeas,resLG,sg);
-	if (idMeas==0) rLG->SetLabel(pntID,recLabGlo[0],volID[irs]);
+	if (idMeas==0) rLG->SetLabel(pntID,lbl,volID[irs]);
       }
       if (rL) {
 	rL->SetResSigMeas(pntID,idMeas,resL,sg);
-	if (idMeas==0) rL->SetLabel(pntID,recLabGlo[0],volID[irs]);
+	if (idMeas==0) rL->SetLabel(pntID,lbl,volID[irs]);
       }
     }
     else {
@@ -1935,16 +1979,26 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
     }
     //
     if (verbose) {
+      int lbl = rec->GetVolID(irs); 
+      lbl = ndglo ? recLabGlo[0] : (resOr==0 ? -1 : 0); // TMP, until VolID is filled // RS!!!!
       if (loc) printf("%3d (%9d) %6.4f | [%+.2e:%+7.2f] [%+.2e:%+7.2f]\n",
-		      irs,ndglo ? recLabGlo[0]:-1,sg,resL,resL/sg,resLG,resLG/sg);
+		      irs,lbl,sg,resL,resL/sg,resLG,resLG/sg);
       else     printf("%3d (%9d) %6.4f | [%+.2e:%+7.2f]\n",
-		      irs,ndglo ? recLabGlo[0]:-1,sg,resLG,resLG/sg);
+		      irs,lbl,sg,resLG,resLG/sg);
     }
     //
     recLabGlo += ndglo; // prepare for next record
     recDGlo   += ndglo;
     recLabLoc += ndloc;
     recDLoc   += ndloc;
+  }
+  if (rL)  rL->SetChi2(chi2L);
+  if (rLG) rLG->SetChi2(chi2LG);
+  //
+  if (verbose) {
+    printf("Chi: G = %e | LG = %e",chi2Ini,chi2LG);
+    if (loc) printf(" | L = %e",chi2L);
+    printf("\n");
   }
   // store track corrections
   int nTrCor = nvloc - matID - 1;

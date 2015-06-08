@@ -198,7 +198,7 @@ class AliAlgVol : public TNamed
 inline void AliAlgVol::GetMatrixT2G(TGeoHMatrix& m) const
 {
   // compute tracking to global matrix, i.e. glo = T2G*tra = L2G*loc = L2G*T2L*tra
-  m = GetMatrixL2G();
+  m = GetMatrixL2GIdeal();
   m *= GetMatrixT2L();
 }
 

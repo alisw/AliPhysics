@@ -131,3 +131,17 @@ void AliAlgAux::CleanOCDB()
   AliCDBManager::Destroy();
   if (isGrid && !gGrid) TGrid::Connect("alien://");
 }
+
+//__________________________________________
+int AliAlgAux::FindKeyIndex(int key, const int *arr, int n)
+{
+  // finds index of key in the array
+  int imn=0,imx=n-1;
+  while (imx>=imn) {
+    int mid = (imx+imn)>>1;
+    if (arr[mid]==key) return mid;
+    if (arr[mid]<key) imn=mid+1;
+    else              imx=mid-1;
+  }
+  return -1;
+}

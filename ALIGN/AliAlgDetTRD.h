@@ -20,6 +20,8 @@ class AliAlgDetTRD : public AliAlgDet
   //
   Bool_t AcceptTrack(const AliESDtrack* trc,Int_t trtype) const;
   //
+  virtual AliAlgPoint* TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trp, const AliESDtrack* tr);
+  //
  protected:
   //
   // -------- dummies --------

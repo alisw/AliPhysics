@@ -349,8 +349,8 @@ void AliAlgVol::PrepareMatrixT2L()
   //
   // 1st create Tracking to Global matrix
   fMatT2L.Clear();
-  fMatT2L.RotateZ(fAlp*RadToDeg());
   fMatT2L.SetDx(fX);
+  fMatT2L.RotateZ(fAlp*RadToDeg());
   // then convert it to Tracking to Local  matrix
   fMatT2L.MultiplyLeft(&GetMatrixL2GIdeal().Inverse());
   //

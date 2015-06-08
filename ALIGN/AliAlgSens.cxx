@@ -97,8 +97,8 @@ void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv, const AliA
   double delta[kNDOFGeom],pos0[3],pos1[3],pos2[3],pos3[3];
   TGeoHMatrix matMod;
   // this is the matrix for transition from sensor to parent volume local frames: LOC=matRel*loc
-  TGeoHMatrix matRel = parent->GetMatrixL2G().Inverse(); 
-  matRel *= GetMatrixL2G();
+  TGeoHMatrix matRel = parent->GetMatrixL2GIdeal().Inverse(); 
+  matRel *= GetMatrixL2GIdeal();
   //
   memset(delta,0,kNDOFGeom*sizeof(double));
   memset(deriv,0,kNDOFGeom*3*sizeof(double));

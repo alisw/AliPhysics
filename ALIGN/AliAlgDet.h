@@ -67,7 +67,7 @@ class AliAlgDet : public TNamed
   virtual void  DefineMatrices();
   virtual void  Print(const Option_t *opt="")    const;
   virtual Int_t ProcessPoints(const AliESDtrack* esdTr, AliAlgTrack* algTrack,Bool_t inv=kFALSE);
-  virtual AliAlgPoint* TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trp);
+  virtual AliAlgPoint* TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trp, const AliESDtrack* tr);
   virtual void  UpdatePointByTrackInfo(AliAlgPoint* pnt, const AliExternalTrackParam* t) const;
   virtual void  SetUseErrorParam(Int_t v=0);
   Int_t         GetUseErrorParam()                   const {return fUseErrorParam;}

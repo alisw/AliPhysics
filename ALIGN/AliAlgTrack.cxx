@@ -526,7 +526,7 @@ Bool_t AliAlgTrack::PropagateParamToPoint(AliExternalTrackParam &tr, const AliAl
   double xTgt = pnt->GetXPoint();
   double xBeg = tr.GetX();
   double dx = xTgt - xBeg;
-  int nstep = Abs(dx)/maxStep+1;
+  int nstep = int(Abs(dx)/maxStep)+1;
   dx/=nstep;
   //
   for (int ist=nstep;ist--;) {

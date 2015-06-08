@@ -2,6 +2,7 @@
 #define ALIALGRES_H
 
 #include <TObject.h>
+#include <TMath.h>
 class AliAlgTrack;
 
 /*--------------------------------------------------------
@@ -47,10 +48,13 @@ class AliAlgRes: public TObject
   Float_t  GetTgl(int i)                        const {return fTgl[i];}        
   Float_t  GetAlpha(int i)                      const {return fAlpha[i];}      
   Float_t  GetDY(int i)                         const {return fDY[i];}      
-  Float_t  GetDZ(int i)                         const {return fDZ[i];}      
-  Float_t  GetSigY2(int i)                      const {return fSigY2[i];}      
-  Float_t  GetSigYZ(int i)                      const {return fSigYZ[i];}      
-  Float_t  GetSigZ2(int i)                      const {return fSigZ2[i];}      
+  Float_t  GetDZ(int i)                         const {return fDZ[i];}
+  Float_t  GetSigY2(int i)                      const {return fSigY2[i];}
+  Float_t  GetSigYZ(int i)                      const {return fSigYZ[i];}
+  Float_t  GetSigZ2(int i)                      const {return fSigZ2[i];}
+  Float_t  GetSigmaY(int i)                     const {return TMath::Sqrt(fSigY2[i]);}      
+  Float_t  GetSigmaZ(int i)                     const {return TMath::Sqrt(fSigZ2[i]);}      
+
   Int_t    GetVolID(int i)                      const {return fVolID[i];}
   //
   Float_t  GetXLab(int i)                       const;

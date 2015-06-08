@@ -44,6 +44,8 @@ namespace AliAlgAux {
   inline Bool_t IsZeroPos(double d) {return Smaller(d,kAlmostZeroD);}
   inline Bool_t IsZeroPos(float  f) {return Smaller(f,kAlmostZeroF);}
   //
+  int    FindKeyIndex(int key, const int *arr, int n);
+  //
   void   PrintBits(ULong64_t patt, Int_t maxBits);
   //
   // OCDB related stuff
