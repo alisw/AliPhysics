@@ -161,7 +161,7 @@ void emcal_esdclustercells()
     // Access to esd event
     //--------------------
     
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::AssertESD();
     
     //-----------------------------------
     // Set geometry, volumes, alignment,
@@ -170,7 +170,7 @@ void emcal_esdclustercells()
     
     if( !fGeoSet )
     {
-        AliEveEventManager::GetMaster()->AssertGeometry();
+        AliEveEventManager::AssertGeometry();
         
         SetUpEMCALGeometry(esd);
         
@@ -220,7 +220,7 @@ void emcal_esdclustercells()
     //---------------------------
     
     TEveCaloDataHist* data = new TEveCaloDataHist();
-    AliEveEventManager::GetMaster()->RegisterTransient(data);
+    AliEveEventManager::RegisterTransient(data);
     
     data->AddHistogram(fHistoEM);
     data->RefSliceInfo(0).Setup("EMCell:", 0, kOrange+7);
@@ -1048,7 +1048,7 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data)
     // plotting histo
     TEveCaloLego* lego = new TEveCaloLego(data);
     g_histo2d_s->AddElement(lego);
-    AliEveEventManager::GetMaster()->RegisterTransient(lego);
+    AliEveEventManager::RegisterTransient(lego);
     
     // move to real world coordinates
     lego->InitMainTrans();
@@ -1076,7 +1076,7 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     }
     
     TEveCalo3D* calo3d = new TEveCalo3D(data);
-    AliEveEventManager::GetMaster()->RegisterTransient(calo3d);
+    AliEveEventManager::RegisterTransient(calo3d);
     
     calo3d->SetBarrelRadius(550);
     calo3d->SetEndCapPos(550);

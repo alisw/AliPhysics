@@ -307,16 +307,16 @@ void visscan_init(const TString& cdburi = "",
     
     
     
-    Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-    Width_t widths[9] = {3,3,3,3,3,3,3,3,3};
+    Color_t colors[9] = {kCyan,kCyan,kCyan,kRed,kRed,kRed,kGreen,kGreen,kGreen};
     
-    man->SetESDcolors(colors);
-    man->SetESDwidths(widths);
-    man->SetESDdashBad(true);
+    man->SetESDcolorsByCategory(colors);
+    man->SetESDwidth(2);
+    man->SetESDdashNoRefit(true);
+    man->SetESDdrawNoRefit(true);
     
     man->SetESDtracksByCategory(true);
     
-    man->SetAutoLoad(true);
+    man->SetAutoLoad(false);
 }
 
 /******************************************************************************/

@@ -116,7 +116,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     // Geometry, scenes, projections and viewers
     //==============================================================================
     
-    AliEveMultiView *mv = new AliEveMultiView(kTRUE);
+    AliEveMultiView *mv = new AliEveMultiView(false);
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
 
     mv->SetDepth(-10);

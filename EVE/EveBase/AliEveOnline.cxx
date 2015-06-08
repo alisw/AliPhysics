@@ -40,7 +40,6 @@ AliEveOnline::AliEveOnline(bool storageManager)
     Color_t colorTRD = kGray;      // color of TRD modules
     Color_t colorMUON = kGray;     // color of MUON modules
     
-    bool customPreset = false;            // should one of the following custom presets be used
     Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
     Width_t width = 3;
     bool dashNoRefit = true;
@@ -48,7 +47,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     
 //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
 
-    bool saveViews = true;          // should screenshot be saved and sent to ALICE LIVE
+    bool saveViews = false;          // should screenshot be saved and sent to ALICE LIVE
     
     //
     //-----------------------------------------------------------------------------------------

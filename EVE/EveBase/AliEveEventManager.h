@@ -114,11 +114,11 @@ public:
     static AliAODEvent*  AssertAOD();
     static AliRawReader* AssertRawReader();
     static AliMagF*      AssertMagField();
-    TGeoManager*  AssertGeometry();
+    static TGeoManager*  AssertGeometry();
     static AliRecoParam* AssertRecoParams();
 
 
-    void RegisterTransient(TEveElement* element);
+    static void RegisterTransient(TEveElement* element);
     static void RegisterTransientList(TEveElement* element);
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
