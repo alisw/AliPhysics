@@ -45,6 +45,9 @@
 ClassImp(AliAnalysisTaskEMCALTimeCalib) ;
 /// \endcond
 
+using std::cout;
+using std::endl;
+
 //________________________________________________________________________
 /// Constructor
 AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
