@@ -61,7 +61,7 @@ AliAnalysisMCNuclMult::AliAnalysisMCNuclMult():
   hNtrack(NULL),
   hpdg(NULL)
 {
-  for(Int_t i=0;i<8;i++) stdPdg[i] = 0;
+  for(Int_t i=0;i<9;i++) stdPdg[i] = 0;
   fList->SetName("results");
   //fList->SetOwner();
 }
@@ -89,7 +89,7 @@ AliAnalysisMCNuclMult::AliAnalysisMCNuclMult(const char *name):
   hNtrack(NULL),
   hpdg(NULL)
 {
-  for(Int_t i=0;i<8;i++) stdPdg[i] = 0;
+  for(Int_t i=0;i<9;i++) stdPdg[i] = 0;
   DefineOutput(1, TList::Class());
   fList->SetName("results");
 }
@@ -122,7 +122,7 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
     htriggerMask_noMB->Fill(xaxisTitle[i],0);
   }
   
-  hNspdVertex = new TH1I("hNspdVertex","Number of vertices determined in the SPD. Attention: before to cut on multiplicity;N_{vtx}^{SPD}",201,-1,200);
+  hNspdVertex = new TH1I("hNspdVertex","Number of vertices determined in the SPD. Attention: before to cut on multiplicity;N_{vtx}^{SPD}",220,-20,200);
 
   hzvertex = new TH1F("hzvertex","z-vertex distribution. Attention: before to cut on multiplicity;z_{vtx}",1000,-50,50);
 
@@ -132,14 +132,14 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
     hpileUp->Fill(xaxisTitle2[i],0);
   }
   
-  fNtrVsMult = new TH2I("fNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1099,-100,999,1001,-1,1000);
-  prNtrVsMult = new TProfile("prNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1099,-100,999,-1,1000,"");
+  fNtrVsMult = new TH2I("fNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,1000,-100,900);
+  prNtrVsMult = new TProfile("prNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,-100,900,"");
 
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",2*1099,-100,999);
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",1200,-200,1000);
   if(iMultEstimator==0) hmult->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
   else if(iMultEstimator==1) hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
 
-  hNtrack = new TH1I("hNtrack","Number of tracks per event (after cuts on event);N_{tracks}",1001,-1,1000);
+  hNtrack = new TH1I("hNtrack","Number of tracks per event (after cuts on event);N_{tracks}",2100,-100,2000);
 
   hpdg = new TH1I("hpdg","Pdg label of generated particles;Pdg label",50082,-25041,25041);
 
@@ -193,16 +193,16 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_%s",nameSpec[iS]);
     snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s;p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.3,0.3);
-    else fptRecoVsTrue[iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.3,0.3);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
+    else fptRecoVsTrue[iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
   }
   Char_t name_prptRecoVsTrue[200];
   Char_t title_prptRecoVsTrue[200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_%s",nameSpec[iS]);
     snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s;p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
-    else prptRecoVsTrue[iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.4,0.2,"");
+    else prptRecoVsTrue[iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.4,0.2,"");
   }
   
   Char_t name_fDca[18][200];
@@ -353,7 +353,7 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[5+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[4+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[5+9*i]);
-
+  
   for(Int_t i=0;i<2;i++) fList->Add(fdEdxVSp[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hDeDxExp[i]);
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[0][5+9*i]);
@@ -565,8 +565,8 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
   Int_t nTracks = fEvent->GetNumberOfTracks();
   fNtrVsMult->Fill(mult,nTracks);
   prNtrVsMult->Fill(mult,nTracks);
- 
- if(multiplicityMin!=-999) {
+  
+  if(multiplicityMin!=-999) {
     if(mult<multiplicityMin || mult>multiplicityMax) return;
   }
   hmult->Fill(mult);
@@ -850,6 +850,11 @@ void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Sho
   }
   if(kSpec<0) return;
 
+  if(kSpec>6) {//He3, He4
+    pt*=2;
+    t_pt*=2;
+  }
+  
   if(t_charge>0) {
     fptRecoVsTrue[kSpec]->Fill(pt,pt-t_pt);
     prptRecoVsTrue[kSpec]->Fill(pt,pt-t_pt);
