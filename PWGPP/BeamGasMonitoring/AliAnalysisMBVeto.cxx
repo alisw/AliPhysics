@@ -443,7 +443,7 @@ void AliAnalysisMBVeto::Exec(Option_t *)
             SelGoodEvent[0][1][0] &= BBFlagA[11]<ii & BBFlagA[12]<ii & BBFlagA[13]<ii & BBFlagA[14]<ii & BBFlagA[15]<ii & BBFlagA[16]<ii & BBFlagA[17]<ii;
             SelGoodEvent[0][1][0] &= BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
             //V0 variation 2 // Bunch range 3-7, V0 : V0C, Flag : BB & BG
-            SelGoodEvent[0][2][0] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
+            SelGoodEvent[0][2][0] = BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
             SelGoodEvent[0][2][0] &= BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
             SelGoodEvent[0][2][0] &= BBFlagC[11]<ii & BBFlagC[12]<ii & BBFlagC[13]<ii & BBFlagC[14]<ii & BBFlagC[15]<ii & BBFlagC[16]<ii & BBFlagC[17]<ii;
             SelGoodEvent[0][2][0] &= BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
@@ -467,7 +467,7 @@ void AliAnalysisMBVeto::Exec(Option_t *)
             SelGoodEvent[0][1][2] = BGFlagA[11]<ii & BGFlagA[12]<ii & BGFlagA[13]<ii & BGFlagA[14]<ii & BGFlagA[15]<ii & BGFlagA[16]<ii & BGFlagA[17]<ii;
             SelGoodEvent[0][1][2] &= BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
              //V0 variation 2 // Bunch range 3-7, V0 : V0C, Flag : BG
-            SelGoodEvent[0][2][2] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
+            SelGoodEvent[0][2][2] = BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
             SelGoodEvent[0][2][2] &= BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
 
             
@@ -487,7 +487,7 @@ void AliAnalysisMBVeto::Exec(Option_t *)
             SelGoodEvent[1][1][0] &= BBFlagA[11]<ii & BBFlagA[12]<ii & BBFlagA[13]<ii & BBFlagA[14]<ii & BBFlagA[15]<ii & BBFlagA[16]<ii & BBFlagA[17]<ii;
             SelGoodEvent[1][1][0] &= BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
             //V0 variation 2 // Bunch range 3-8, V0 : V0C, Flag : BB & BG
-            SelGoodEvent[1][2][0] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
+            SelGoodEvent[1][2][0] = BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
             SelGoodEvent[1][2][0] &= BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
             SelGoodEvent[1][2][0] &= BBFlagC[11]<ii & BBFlagC[12]<ii & BBFlagC[13]<ii & BBFlagC[14]<ii & BBFlagC[15]<ii & BBFlagC[16]<ii & BBFlagC[17]<ii;
             SelGoodEvent[1][2][0] &= BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
@@ -511,51 +511,64 @@ void AliAnalysisMBVeto::Exec(Option_t *)
             SelGoodEvent[1][1][2] = BGFlagA[11]<ii & BGFlagA[12]<ii & BGFlagA[13]<ii & BGFlagA[14]<ii & BGFlagA[15]<ii & BGFlagA[16]<ii & BGFlagA[17]<ii;
             SelGoodEvent[1][1][2] &= BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
             //V0 variation 2 // Bunch range 3-8, V0 : V0C, Flag : BG
-            SelGoodEvent[1][2][2] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
+            SelGoodEvent[1][2][2] = BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
             SelGoodEvent[1][2][2] &= BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
             
             //***** Bunch range 3-9 and 11-17 ****/
             //V0 variation 0// Bunch range 3-9, V0 : V0AC, Flag : BB & BG
             SelGoodEvent[2][0][0] = BGFlagA[11]<ii & BGFlagA[12]<ii & BGFlagA[13]<ii & BGFlagA[14]<ii & BGFlagA[15]<ii & BGFlagA[16]<ii & BGFlagA[17]<ii;
             SelGoodEvent[2][0][0] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
-            SelGoodEvent[2][0][0] &= BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
-            SelGoodEvent[2][0][0] &= BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
+            SelGoodEvent[2][0][0] &= BGFlagA[9]<ii  &  BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
+            SelGoodEvent[2][0][0] &= BGFlagA[9]<ii  &  BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
             SelGoodEvent[2][0][0] &= BBFlagA[11]<ii & BBFlagA[12]<ii & BBFlagA[13]<ii & BBFlagA[14]<ii & BBFlagA[15]<ii & BBFlagA[16]<ii & BBFlagA[17]<ii;
             SelGoodEvent[2][0][0] &= BBFlagC[11]<ii & BBFlagC[12]<ii & BBFlagC[13]<ii & BBFlagC[14]<ii & BBFlagC[15]<ii & BBFlagC[16]<ii & BBFlagC[17]<ii;
-            SelGoodEvent[2][0][0] &= BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
-            SelGoodEvent[2][0][0] &= BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
+            SelGoodEvent[2][0][0] &= BBFlagA[9]<ii  &  BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
+            SelGoodEvent[2][0][0] &= BBFlagC[9]<ii  &  BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
             //V0 variation 1 // Bunch range 3-9, V0 : V0A, Flag : BB & BG
             SelGoodEvent[2][1][0] = BGFlagA[11]<ii & BGFlagA[12]<ii & BGFlagA[13]<ii & BGFlagA[14]<ii & BGFlagA[15]<ii & BGFlagA[16]<ii & BGFlagA[17]<ii;
-            SelGoodEvent[2][1][0] &= BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
+            SelGoodEvent[2][1][0] &= BGFlagA[9]<ii  &  BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
             SelGoodEvent[2][1][0] &= BBFlagA[11]<ii & BBFlagA[12]<ii & BBFlagA[13]<ii & BBFlagA[14]<ii & BBFlagA[15]<ii & BBFlagA[16]<ii & BBFlagA[17]<ii;
-            SelGoodEvent[2][1][0] &= BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
+            SelGoodEvent[2][1][0] &= BBFlagA[9]<ii  &  BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
             //V0 variation 2 // Bunch range 3-9, V0 : V0C, Flag : BB & BG
-            SelGoodEvent[2][2][0] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
-            SelGoodEvent[2][2][0] &= BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
+            SelGoodEvent[2][2][0] = BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
+            SelGoodEvent[2][2][0] &= BGFlagC[9]<ii  &  BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
             SelGoodEvent[2][2][0] &= BBFlagC[11]<ii & BBFlagC[12]<ii & BBFlagC[13]<ii & BBFlagC[14]<ii & BBFlagC[15]<ii & BBFlagC[16]<ii & BBFlagC[17]<ii;
-            SelGoodEvent[2][2][0] &= BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
+            SelGoodEvent[2][2][0] &= BBFlagC[9]<ii  &  BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
             //Flag variation : BB// Bunch range 3-9, V0 : V0AC, Flag : BB
             SelGoodEvent[2][0][1] = BBFlagA[11]<ii & BBFlagA[12]<ii & BBFlagA[13]<ii & BBFlagA[14]<ii & BBFlagA[15]<ii & BBFlagA[16]<ii & BBFlagA[17]<ii;
             SelGoodEvent[2][0][1] &= BBFlagC[11]<ii & BBFlagC[12]<ii & BBFlagC[13]<ii & BBFlagC[14]<ii & BBFlagC[15]<ii & BBFlagC[16]<ii & BBFlagC[17]<ii;
-            SelGoodEvent[2][0][1] &= BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
-            SelGoodEvent[2][0][1] &= BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
+            SelGoodEvent[2][0][1] &= BBFlagA[9]<ii  &  BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
+            SelGoodEvent[2][0][1] &= BBFlagC[9]<ii  &  BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
             // Bunch range 3-9, V0 : V0A, Flag : BB
             SelGoodEvent[2][1][1] = BBFlagA[11]<ii & BBFlagA[12]<ii & BBFlagA[13]<ii & BBFlagA[14]<ii & BBFlagA[15]<ii & BBFlagA[16]<ii & BBFlagA[17]<ii;
-            SelGoodEvent[2][1][1] &= BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
+            SelGoodEvent[2][1][1] &= BBFlagA[9]<ii  &  BBFlagA[8]<ii  & BBFlagA[7]<ii  & BBFlagA[6]<ii  & BBFlagA[5]<ii  & BBFlagA[4]<ii  & BBFlagA[3]<ii;
             // Bunch range 3-9, V0 : V0C, Flag : BB
             SelGoodEvent[2][2][1] = BBFlagC[11]<ii & BBFlagC[12]<ii & BBFlagC[13]<ii & BBFlagC[14]<ii & BBFlagC[15]<ii & BBFlagC[16]<ii & BBFlagC[17]<ii;
-            SelGoodEvent[2][2][1] &= BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
+            SelGoodEvent[2][2][1] &= BBFlagC[9]<ii  &  BBFlagC[8]<ii  & BBFlagC[7]<ii  & BBFlagC[6]<ii  & BBFlagC[5]<ii  & BBFlagC[4]<ii  & BBFlagC[3]<ii;
             //Flag variation : BG // Bunch range 3-9, V0 : V0AC, Flag : BG
             SelGoodEvent[2][0][2] = BGFlagA[11]<ii & BGFlagA[12]<ii & BGFlagA[13]<ii & BGFlagA[14]<ii & BGFlagA[15]<ii & BGFlagA[16]<ii & BGFlagA[17]<ii;
             SelGoodEvent[2][0][2] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
-            SelGoodEvent[2][0][2] &= BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
-            SelGoodEvent[2][0][2] &= BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
+            SelGoodEvent[2][0][2] &= BGFlagA[9]<ii  &  BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
+            SelGoodEvent[2][0][2] &= BGFlagC[9]<ii  &  BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
             //V0 variation 1 // Bunch range 3-9, V0 : V0A, Flag : BG
             SelGoodEvent[2][1][2] = BGFlagA[11]<ii & BGFlagA[12]<ii & BGFlagA[13]<ii & BGFlagA[14]<ii & BGFlagA[15]<ii & BGFlagA[16]<ii & BGFlagA[17]<ii;
-            SelGoodEvent[2][1][2] &= BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
+            SelGoodEvent[2][1][2] &= BGFlagA[9]<ii  &  BGFlagA[8]<ii  & BGFlagA[7]<ii  & BGFlagA[6]<ii  & BGFlagA[5]<ii  & BGFlagA[4]<ii  & BGFlagA[3]<ii;
             //V0 variation 2 // Bunch range 3-9, V0 : V0C, Flag : BG
-            SelGoodEvent[2][2][2] &= BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
-            SelGoodEvent[2][2][2] &= BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
+            SelGoodEvent[2][2][2] = BGFlagC[11]<ii & BGFlagC[12]<ii & BGFlagC[13]<ii & BGFlagC[14]<ii & BGFlagC[15]<ii & BGFlagC[16]<ii & BGFlagC[17]<ii;
+            SelGoodEvent[2][2][2] &= BGFlagC[9]<ii  &  BGFlagC[8]<ii  & BGFlagC[7]<ii  & BGFlagC[6]<ii  & BGFlagC[5]<ii  & BGFlagC[4]<ii  & BGFlagC[3]<ii;
+            
+            double check1=0;
+            double check2=0;
+            double check3=0;
+            if(SelGoodEvent[2][2][0]) check1++;
+            if(SelGoodEvent[2][2][1]) check2++;
+            if(SelGoodEvent[2][2][2]) check3++;
+
+            
+            cout<< "3-9, v0c , bb+bg = " <<SelGoodEvent[2][2][0]<<",  num 1 = "<<check1<<endl;
+            cout<< "3-9, v0c , bb = " <<SelGoodEvent[2][2][1]<<",  num 2 = "<<check2<<endl;
+            cout<< "3-9, v0c , bg = " <<SelGoodEvent[2][2][2]<<",  num 3 = "<<check3<<endl;
+
             
             for(int i=0; i<3; i++){
                 for(int j=0; j<3; j++){
@@ -581,7 +594,6 @@ void AliAnalysisMBVeto::Exec(Option_t *)
                         }
                         if(bgID){
                             ((TH1F*)fList->FindObject(Form("hDenomRejecEffBC%d_V0%d_Flag%d",i,j,k)))->Fill(ii-1);
-                            
                             if(!SelGoodEvent[i][j][k]){
                                 ((TH1F*)fList->FindObject(Form("hNumRejecEffBC%d_V0%d_Flag%d",i,j,k)))->Fill(ii-1);
                                 
