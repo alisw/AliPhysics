@@ -2954,7 +2954,8 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       Int_t offset=36*(isec/36);
       Double_t norm,rms;
       AliMathBase::EvaluateUni(36, &(value.GetMatrixArray()[offset]),norm,rms,33);
-      valueNorm[isec]=value[isec]/norm;
+      valueNorm[isec]=1;
+      if (norm>0) valueNorm[isec]=value[isec]/norm;  // if norm==0 means values not defined - we defineed normalized values in that case==1
     }
     grRaw[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,valueRMS.GetMatrixArray());
     grRaw[itype]->SetMarkerColor(kcolors[itype]);

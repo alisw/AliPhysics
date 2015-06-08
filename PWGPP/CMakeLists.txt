@@ -210,6 +210,15 @@ set ( SRCS17
 set ( SRCS18
   AD/AliAnalysisTaskADQA.cxx
   )  
+#file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
+set ( SRCS19 
+  BeamGasMonitoring/AliAnalysisMBVeto.cxx
+  )  
+
+#file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
+set ( SRCS20 
+  HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
+  )
 
 list ( APPEND SRCS 
   ${SRCS1} 
@@ -230,6 +239,8 @@ list ( APPEND SRCS
   ${SRCS16}
   ${SRCS17}
   ${SRCS18}
+  ${SRCS19}	
+  ${SRCS20}	
   )
 
 ###add_subdirectory(Alignment)
@@ -335,5 +346,7 @@ install(FILES CalibMacros/CPass1/LoadLibraries.C
 	      DESTINATION PWGPP/CalibMacros/CPass1)
 install(FILES CalibMacros/commonMacros/CleanGeom.C
 	      DESTINATION PWGPP/CalibMacros/commonMacros)
+install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
+	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 
 message(STATUS "PWGPP enabled")

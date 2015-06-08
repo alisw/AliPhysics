@@ -59,7 +59,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
 						Int_t *absIdList,     Float_t *maxEList);
   Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
-  void                   GetEDistInClusCells(const AliVCluster *cluster, Short_t &idmax);
+  void                   GetEDistInClusCells(const AliVCluster *cluster, Short_t idmax);
   AliVCaloCells          *GetVCaloCells();
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
@@ -215,12 +215,22 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
   //trigger histos
   TH1F        *fETrigg;           //!energy returned by trigger patch info
-  TH2F        *fM02vsESoftPi0Kid; //!energy dependence of M02 of pi0 softer daughter
-  TH2F        *fM02vsEHardPi0Kid; //!energy dependence of M02 of pi0 harder daughter
+  //shower shape studies
+  TH2F        *fM02vsESoftPi0Kid;   //!energy dependence of M02 of pi0 softer daughter
+  TH2F        *fM02vsEHardPi0Kid;   //!energy dependence of M02 of pi0 harder daughter
   TH2F        *fM02vsESoftPi0BGKid; //!energy dependence of M02 of pi0-BG softer daughter
   TH2F        *fM02vsEHardPi0BGKid; //!energy dependence of M02 of pi0-BG harder daughter
+  TH2F        *fClusInvMassPairEt;  //!invariant mass of neutral clusters pairs vs. pair Et
+  TH2F        *fPi0KidClusEtPairEt; //!Et of most energetic cluster in the pi0 peak vs the pair Et
+  TH2F        *fCellsPi0KidE6;      //!energy distribution in cells for pi0 daughter cluster 5.5<E<6.5 GeV (all M02 values)
+  TH2F        *fCellsPi0KidE11;     //!energy distribution in cells for pi0 daughter cluster 10.5<E<11.5 GeV (all M02 values)
+  TH2F        *fCellsPi0KidE13;     //!energy distribution in cells for pi0 daughter cluster 12.5<E<13.5 GeV (all M02 values)
+  TH2F        *fCellsPi0KidM021st;   //!energy distribution in cells for pi0 daughter cluster M02 values in 1st subrange (0.10-0.15)
+  TH2F        *fCellsPi0KidM022nd;   //!energy distribution in cells for pi0 daughter cluster M02 values in 2nd subrange (0.15-0.20)
+  TH2F        *fCellsPi0KidM023rd;   //!energy distribution in cells for pi0 daughter cluster M02 values in 3rd subrange (0.20-0.25)
+  TH2F        *fCellsPi0KidM024th;   //!energy distribution in cells for pi0 daughter cluster M02 values in 4th subrange (0.25-0.30)
 
-  TH2F        *fCellsPi0KidE6;      //!energy distribution in cells for cluster 5.5<E<6.5 GeV (all M02 values)
+
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

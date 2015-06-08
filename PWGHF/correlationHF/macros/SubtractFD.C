@@ -1,4 +1,4 @@
-TString localcode="/Users/elenabruna/alicesw/aliphysics/master/src/PWGHF/correlationHF/macros";
+TString localcode=gSystem->ExpandPathName("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/");
 TString strsystem="none";
 Bool_t fitcodeIsLoaded=kFALSE;
 void SetSystemStringForTemplateFDnames(TString str){

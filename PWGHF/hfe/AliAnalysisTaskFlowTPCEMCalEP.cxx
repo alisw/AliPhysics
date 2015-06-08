@@ -666,7 +666,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	  
 	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
 	  
-	  Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
+	  Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,(Double_t)iDecay};
           fCorr->Fill(corr);
 	  
 	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);

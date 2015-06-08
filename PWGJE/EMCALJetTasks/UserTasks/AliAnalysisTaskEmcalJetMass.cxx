@@ -489,15 +489,16 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
      AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoMassName()));
+     Double_t rhomassval = 0;
      if (!rhomParam) {
       AliError(Form("%s: Could not retrieve rho_m %s!", GetName(), jetCont->GetRhoMassName().Data()));
-      return false;
-    }
+      
+    } else rhomassval = rhomParam->GetVal();
 
     AliEmcalJet *lj = jetCont->GetLeadingJet(); //leading pt without rho subtraction
     if(lj){
        fh3RhoVsLeadJetPtVsCent->Fill(jetCont->GetRhoVal(),lj->Pt(),fCent);
-       fh3RhoMVsLeadJetPtVsCent->Fill(rhomParam->GetVal(),lj->Pt(),fCent);
+       fh3RhoMVsLeadJetPtVsCent->Fill(rhomassval,lj->Pt(),fCent);
     }                
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {

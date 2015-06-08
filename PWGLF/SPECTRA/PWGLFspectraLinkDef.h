@@ -59,6 +59,7 @@
 #pragma link C++ class AliAnalysisTaskB2AOD+;
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
+#pragma link C++ class AliAnalysisMCNuclMult+;
 
 #pragma link C++ class AliAnalysisDeuteronpA+;
 
@@ -101,5 +102,6 @@
 #pragma link C++ class AliProtonAbsorptionCorrection+;
 #pragma link C++ class AliProtonSpectraCorrection+;
 #pragma link C++ class AliProtonCorrectionAnalysisTask+;
-
+// spherocity analysis
+#pragma link C++ class AliTransverseEventShape+;
 #endif

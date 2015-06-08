@@ -26,8 +26,10 @@
 #include <THnSparse.h>
 #include <TH1F.h>
 #include <TNamed.h>
+#include <TClonesArray.h>
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
+
 class AliHFsubtractBFDcuts : public TNamed{
 
 public:
@@ -36,33 +38,29 @@ public:
 
   void InitHistos();
 
-  void FillGenStep(AliAODMCParticle *dzeroMC,Double_t pt=-1);
-  THnSparseF* GetSparseData(){return fcutsData;}
-  THnSparseF* GetSparseMC(){return fcutsMC;}
-  TH1F* GetHistoPtMCgen(){return fPtMCGenStep;}
+  void FillGenStep(AliAODMCParticle *dzeroMC,Double_t pt=-1,Double_t weight=1.);
+  THnSparseF* GetSparseData() const {return fCutsData;}
+  THnSparseF* GetSparseMC()   const {return fCutsMC;}
+  TH1F* GetHistoPtMCgen()     const {return fPtMCGenStep;}
 
   void SetHistoPtMCgen(TH1F *h){if(fPtMCGenStep)delete fPtMCGenStep;fPtMCGenStep=(TH1F*)h->Clone();return;}
-  void SetSparseData(THnSparseF *h){if(fcutsData)delete fcutsData;fcutsData=(THnSparseF*)h->Clone();return;}
-  void SetSparseMC(THnSparseF *h){if(fcutsMC)delete fcutsMC;fcutsMC=(THnSparseF*)h->Clone();return;}
+  void SetSparseData(THnSparseF *h){if(fCutsData)delete fCutsData;fCutsData=(THnSparseF*)h->Clone();return;}
+  void SetSparseMC(THnSparseF *h){if(fCutsMC)delete fCutsMC;fCutsMC=(THnSparseF*)h->Clone();return;}
 
-  void SetFillMC (Bool_t fillMC = kTRUE) {fisMC = fillMC;}
+  void SetFillMC (Bool_t fillMC = kTRUE) {fIsMC = fillMC;}
 
-  void FillSparses(AliAODRecoDecayHF2Prong *dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1);
+  void FillSparses(AliAODRecoDecayHF2Prong *dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
 
 private:
+  Int_t GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand,TClonesArray* mcArray) const;
+  Bool_t DetermineDecayType(Int_t labCand,TClonesArray* mcArrray, UInt_t& nProngs, Bool_t& decayChain, Double_t& motherPt) const; // check in which decay process a particle was created
 
-  AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts &source);
-  AliHFsubtractBFDcuts& operator=(const AliHFsubtractBFDcuts& source); 
- 
-
-  Bool_t   fisMC;        // flag for MC/Data
+  Bool_t   fIsMC;        // flag for MC/Data
   TH1F *fPtMCGenStep;    //! histo with spectrum at generation level
-  THnSparseF *fcutsData; //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
-  THnSparseF *fcutsMC;   //! THnSparse for cut variables (MC at PID level, w/o mass axis)
+  THnSparseF *fCutsData; //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
+  THnSparseF *fCutsMC;   //! THnSparse for cut variables (MC at PID level, w/o mass axis)
 
-
-
-  ClassDef(AliHFsubtractBFDcuts,1);
+  ClassDef(AliHFsubtractBFDcuts,2);
 };
 
 #endif

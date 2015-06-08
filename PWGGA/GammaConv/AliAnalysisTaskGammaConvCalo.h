@@ -309,15 +309,19 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
+		TH1F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
 		vector<Int_t>						fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
+		vector<Int_t>						fVectorDoubleCountTrueClusterGammas;			//! vector containing labels of validated cluster photons
 		TH1F								**fHistoMultipleCountTruePi0;					//! array of histos how often TruePi0s are counted
 		TH1F								**fHistoMultipleCountTrueEta;					//! array of histos how often TrueEtas are counted
-		TH1F								**fHistoMultipleCountTrueConvGamma;				//! array of histos how often TrueConvGammass are counted
+		TH1F								**fHistoMultipleCountTrueConvGamma;				//! array of histos how often TrueConvGammas are counted
+		TH1F								**fHistoMultipleCountTrueClusterGamma;			//! array of histos how often TrueClusterGammas are counted
 		map<Int_t,Int_t>					fMapMultipleCountTruePi0s;						//! map containing pi0 labels that are counted at least twice
 		map<Int_t,Int_t>					fMapMultipleCountTrueEtas;						//! map containing eta labels that are counted at least twice
 		map<Int_t,Int_t>					fMapMultipleCountTrueConvGammas;				//! map containing photon labels that are counted at least twice
+		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
 		TH2F								**fHistoTrueClusGammaEM02;						//! array of histos with TruePhotons: cluster E vs M02
 		TH2F								**fHistoTrueClusPi0EM02;						//! array of histos with TruePi0s: cluster E vs M02
 
@@ -361,7 +365,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 10);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 11);
 };
 
 #endif

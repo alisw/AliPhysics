@@ -115,6 +115,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fUseZWeight(kFALSE),
   fUseNchWeight(kFALSE),
   fUseTrackletsWeight(kFALSE),
+  fUseMultRatioAsWeight(kFALSE),
   fNvar(0),
   fPartName(""),
   fDauNames(""),
@@ -127,6 +128,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fGenDsOption(3),
   fConfiguration(kCheetah), // by default, setting the fast configuration
   fFuncWeight(0x0),
+  fHistoPtWeight(0x0),
   fHistoMeasNch(0x0),
   fHistoMCNch(0x0),
   fResonantDecay(0),
@@ -139,6 +141,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
+  fUseAdditionalCuts(kFALSE),
+  fUseCutsForTMVA(kFALSE),
+  fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fCutOnMomConservation(0.00001),
   fobjSpr(0x0),
   fhsparsecutvar(0x0),
   fhPtCutVar(0x0)
@@ -176,6 +182,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fUseZWeight(kFALSE),
   fUseNchWeight(kFALSE),
   fUseTrackletsWeight(kFALSE),
+  fUseMultRatioAsWeight(kFALSE),
   fNvar(0),
   fPartName(""),
   fDauNames(""),
@@ -188,6 +195,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fGenDsOption(3),
   fConfiguration(kCheetah),  // by default, setting the fast configuration
   fFuncWeight(func),
+  fHistoPtWeight(0x0),
   fHistoMeasNch(0x0),
   fHistoMCNch(0x0),
   fResonantDecay(0),
@@ -200,6 +208,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
+  fUseAdditionalCuts(kFALSE),
+  fUseCutsForTMVA(kFALSE),
+  fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fCutOnMomConservation(0.00001),
   fobjSpr(0x0),
   fhsparsecutvar(0x0),
   fhPtCutVar(0x0)
@@ -235,6 +247,7 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fHistEventsProcessed = c.fHistEventsProcessed;
     fCuts = c.fCuts;
     fFuncWeight = c.fFuncWeight;
+    fHistoPtWeight = c.fHistoPtWeight;
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
     for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
@@ -273,6 +286,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fUseZWeight(c.fUseZWeight),
   fUseNchWeight(c.fUseNchWeight),
   fUseTrackletsWeight(c.fUseTrackletsWeight),
+  fUseMultRatioAsWeight(c.fUseMultRatioAsWeight),
   fNvar(c.fNvar),
   fPartName(c.fPartName),
   fDauNames(c.fDauNames),
@@ -285,6 +299,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fGenDsOption(c.fGenDsOption),
   fConfiguration(c.fConfiguration),
   fFuncWeight(c.fFuncWeight),
+  fHistoPtWeight(c.fHistoPtWeight),
   fHistoMeasNch(c.fHistoMeasNch),
   fHistoMCNch(c.fHistoMCNch),
   fResonantDecay(c.fResonantDecay),
@@ -297,6 +312,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
   fIsPPData(c.fIsPPData),
   fIsPPbData(c.fIsPPbData),
+  fUseAdditionalCuts(c.fUseAdditionalCuts),
+  fUseCutsForTMVA(c.fUseCutsForTMVA),
+  fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
+  fCutOnMomConservation(c.fCutOnMomConservation),
   fobjSpr(c.fobjSpr),
   fhsparsecutvar(c.fhsparsecutvar),
   fhPtCutVar(c.fhPtCutVar)
@@ -313,20 +332,19 @@ AliCFTaskVertexingHFCutVarFDSub::~AliCFTaskVertexingHFCutVarFDSub()
   //
   //destructor
   //
-  /*
   if (fCFManager)           delete fCFManager ;
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
-  if (fCorrelation)	  delete fCorrelation ;
+  if (fCorrelation)         delete fCorrelation ;
   if (fListProfiles)        delete fListProfiles;
   if (fCuts)                delete fCuts;
   if (fFuncWeight)          delete fFuncWeight;
+  if (fHistoPtWeight)       delete fHistoPtWeight;
   if (fHistoMeasNch)        delete fHistoMeasNch;
   if (fHistoMCNch)          delete fHistoMCNch;
   for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
   if(fobjSpr) delete fobjSpr;
   if(fhsparsecutvar) delete fhsparsecutvar;
   if(fhPtCutVar) delete fhPtCutVar;
-  */
 }
 
 //_________________________________________________________________________-
@@ -476,11 +494,11 @@ void AliCFTaskVertexingHFCutVarFDSub::Init()
   Int_t nProfiles=4;
 
   if (fIsPPbData) { //if pPb, use only two estimator histos
-     period[0] = "LHC13b"; period[1] = "LHC13c";
-     nProfiles = 2;
+    period[0] = "LHC13b"; period[1] = "LHC13c";
+    nProfiles = 2;
   } else {        // else assume pp (four histos for LHC10)
-     period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e";
-     nProfiles = 4;
+    period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e";
+    nProfiles = 4;
   }
 
   for(Int_t i=0; i<nProfiles; i++){
@@ -490,6 +508,13 @@ void AliCFTaskVertexingHFCutVarFDSub::Init()
       fListProfiles->Add(hprof);
     }
   }
+
+  // Save also the weight functions or histograms
+  if(fFuncWeight) fListProfiles->Add(fFuncWeight);
+  if(fHistoPtWeight) fListProfiles->Add(fHistoPtWeight);
+  if(fHistoMeasNch) fListProfiles->Add(fHistoMeasNch);
+  if(fHistoMCNch) fListProfiles->Add(fHistoMCNch);
+
   PostData(5,fListProfiles);
 
   return;
@@ -504,7 +529,9 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
-  PostData(3,fCorrelation) ;
+  PostData(3,fCorrelation);
+
+  AliDebug(3,Form("*** Processing event %d\n", fEvents));
 
   if (fFillFromGenerated){
     AliWarning("Flag to fill container with generated value ON ---> dca, d0pi, d0K, d0xd0, cosPointingAngle will be set as dummy!");
@@ -533,29 +560,29 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
 
       switch (fDecayChannel){
       case 2:{
-	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
-	break;
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+        break;
       }
       case 21:{
-	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
-	break;
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        break;
       }
       case 22:{
-	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
-	break;
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
+        break;
       }
       case 31:
       case 32:
       case 33:{
-	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
-	break;
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+        break;
       }
       case 4:{
-	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm4Prong");
-	break;
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm4Prong");
+        break;
       }
       default:
-	break;
+        break;
       }
     }
   }
@@ -589,7 +616,10 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
   }
 
   AliAODVertex *aodVtx = (AliAODVertex*)aodEvent->GetPrimaryVertex();
-  if (!aodVtx) return;
+  if (!aodVtx) {
+    AliDebug(3, "The event was skipped due to missing vertex");
+    return;
+  }
 
   if (!arrayBranch) {
     AliError("Could not find array of HF vertices");
@@ -641,10 +671,32 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
   }
   case 21:{
     cfVtxHF = new AliCFVertexingHFCascade(mcArray, fOriginDselection);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGcascade(413);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGbachelor(211);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaugh(421);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughForMC(421);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughPositive(211);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughNegative(321);
+    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPrimaryVertex(aodVtx);
     break;
   }
   case 22:{
-    cfVtxHF = new AliCFVertexingHFLctoV0bachelor(mcArray, fOriginDselection,fGenLctoV0bachelorOption); // Lc -> K0S+proton
+    // Lc ->  K0S+proton
+    if (fUseCascadeTaskForLctoV0bachelor){
+      cfVtxHF = new AliCFVertexingHFCascade(mcArray, fOriginDselection);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGcascade(4122);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGbachelor(2212);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaugh(310);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughForMC(311);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughPositive(211);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughNegative(211);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPrimaryVertex(aodVtx);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetCutOnMomConservation(fCutOnMomConservation);
+      if (fUseAdditionalCuts) ((AliCFVertexingHFCascade*)cfVtxHF)->SetUseCutsForTMVA(fUseCutsForTMVA);
+    }
+    else {
+      cfVtxHF = new AliCFVertexingHFLctoV0bachelor(mcArray, fOriginDselection,fGenLctoV0bachelorOption);
+    }
     break;
   }
   case 31:
@@ -679,8 +731,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
 
   // Multiplicity definition with tracklets
   Double_t nTracklets = 0;
-  Int_t nTrackletsEta10 = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
-  Int_t nTrackletsEta16 = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6);
+  Int_t nTrackletsEta10 = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+  Int_t nTrackletsEta16 = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
   nTracklets = (Double_t)nTrackletsEta10;
   if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16 - nTrackletsEta10); }
 
@@ -688,8 +740,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
   if(fZvtxCorrectedNtrkEstimator) {
     TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
     if(estimatorAvg) {
-      Int_t nTrackletsEta10Corr = AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult);
-      Int_t nTrackletsEta16Corr = AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta16,zPrimVertex,fRefMult);
+      Int_t nTrackletsEta10Corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult));
+      Int_t nTrackletsEta16Corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta16,zPrimVertex,fRefMult));
       nTracklets = (Double_t)nTrackletsEta10Corr;
       if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16Corr - nTrackletsEta10Corr); }
     }
@@ -701,7 +753,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
   if(fUseNchWeight){
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
     if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
-    else fWeight *= GetNchWeight(nTracklets);
+    else fWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
     AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
   }
   Double_t eventWeight=fWeight;
@@ -759,6 +811,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
   if (fUseMCVertex) fCuts->SetUseMCVertex();
 
   if (fCentralitySelection){ // keep only the requested centrality
+
     if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
       delete[] containerInput;
       delete[] containerInputMC;
@@ -783,7 +836,6 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
   Double_t multiplicity = nTracklets; // set to the Ntracklet estimator
   if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
 
-
   cfVtxHF->SetMultiplicity(multiplicity);
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
@@ -803,87 +855,101 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
       AliDebug(2,"Check the MC-level cuts - not desidered particle");
       continue;  // 0 stands for MC level
     }
+    else {
+      AliDebug(3, Form("\n\n---> COOL! we found a particle (particle %d)!!! with PDG code = %d \n\n", iPart, mcPart->GetPdgCode()));
+    }
     cfVtxHF->SetMCCandidateParam(iPart);
 
 
     if (!(cfVtxHF->SetLabelArray())){
-      AliDebug(2,Form("Impossible to set the label array (decaychannel = %d)",fDecayChannel));
+      AliDebug(2,Form("Impossible to set the label array for particle %d (decaychannel = %d)", iPart, fDecayChannel));
       continue;
     }
 
     //check the candiate family at MC level
     if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
-      AliDebug(2,Form("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel));
+      AliDebug(2,Form("Check on the family wrong for particle %d!!! (decaychannel = %d)", iPart, fDecayChannel));
       continue;
     }
     else{
-      AliDebug(2,Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
+      AliDebug(2,Form("Check on the family OK for particle %d!!! (decaychannel = %d)", iPart, fDecayChannel));
     }
 
     //Fill the MC container
     Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
-    AliDebug(2,Form("mcContainerFilled = %d)",mcContainerFilled));
+    AliDebug(2, Form("particle = %d mcContainerFilled = %d", iPart, mcContainerFilled));
     if (mcContainerFilled) {
       if (fUseWeight){
-	if (fFuncWeight){ // using user-defined function
-	  AliDebug(2,"Using function");
-	  fWeight = eventWeight*fFuncWeight->Eval(containerInputMC[0]);
-	}
-	else{ // using FONLL
-	  AliDebug(2,"Using FONLL");
-	  fWeight = eventWeight*GetWeight(containerInputMC[0]);
-	}
-	AliDebug(2,Form("pt = %f, weight = %f",containerInputMC[0], fWeight));
+        if (fHistoPtWeight) { // using an histogram as weight function
+          AliDebug(2,"Using Histogram as Pt weight function");
+          fWeight = eventWeight*GetPtWeightFromHistogram(containerInputMC[0]);
+        }
+        else if (fFuncWeight){ // using user-defined function
+          AliDebug(2,"Using function");
+          fWeight = eventWeight*fFuncWeight->Eval(containerInputMC[0]);
+        }
+        else{ // using FONLL
+          AliDebug(2,"Using FONLL");
+          fWeight = eventWeight*GetWeight(containerInputMC[0]);
+        }
+        AliDebug(2,Form("pt = %f, weight = %f",containerInputMC[0], fWeight));
       }
-      if (!fCuts->IsInFiducialAcceptance(containerInputMC[0],containerInputMC[1])) continue;
+      if (!fCuts->IsInFiducialAcceptance(containerInputMC[0],containerInputMC[1])) {
+        AliDebug(3, Form("Not in limited acceptance, containerInputMC[0] = %f, containerInputMC[1] = %f", containerInputMC[0], containerInputMC[1]));
+        continue;
+      }
+      else{
+        AliDebug(3, Form("YES!! in limited acceptance, containerInputMC[0] = %f, containerInputMC[1] = %f", containerInputMC[0],containerInputMC[1]));
+      }
+
       //MC Limited Acceptance
       if (TMath::Abs(containerInputMC[1]) < 0.5) {
-	fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc, fWeight);
-	AliDebug(3,"MC Lim Acc container filled\n");
+        fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc, fWeight);
+        AliDebug(3,"MC Lim Acc container filled\n");
       }
 
       //MC
       fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
       icountMC++;
-      AliDebug(3,"MC cointainer filled \n");
+      AliDebug(3,"MC container filled \n");
 
       // MC in acceptance
       // check the MC-Acceptance level cuts
       // since standard CF functions are not applicable, using Kine Cuts on daughters
       Bool_t mcAccepStep = cfVtxHF-> MCAcceptanceStep();
       if (mcAccepStep){
-	fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
-	AliDebug(3,"MC acceptance cut passed\n");
-	icountAcc++;
-	if(fhPtCutVar){fobjSpr->FillGenStep(mcPart, mcPart->Pt());}
+        fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
+        AliDebug(3,"MC acceptance cut passed\n");
+        icountAcc++;
+        if(fhPtCutVar){fobjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight);}
 
-	//MC Vertex step
-	if (fCuts->IsEventSelected(aodEvent)){
-	  // filling the container if the vertex is ok
-	  fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
-	  AliDebug(3,"Vertex cut passed and container filled\n");
-	  icountVertex++;
+        //MC Vertex step
+        if (fCuts->IsEventSelected(aodEvent)){
+          // filling the container if the vertex is ok
+          fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
+          AliDebug(3,"Vertex cut passed and container filled\n");
+          icountVertex++;
 
-	  //mc Refit requirement
-	  Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, &trackCuts[0]);
-	  if (mcRefitStep){
-	    fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
-	    AliDebug(3,"MC Refit cut passed and container filled\n");
-	    icountRefit++;
-	  }
-	  else{
-	    AliDebug(3,"MC Refit cut not passed\n");
-	    continue;
-	  }
-	}
-	else{
-	  AliDebug (3, "MC vertex step not passed\n");
-	  continue;
-	}
+          //mc Refit requirement
+          Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, &trackCuts[0]);
+          if (mcRefitStep){
+            fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
+            AliDebug(3,"MC Refit cut passed and container filled\n");
+            icountRefit++;
+          }
+          else{
+            AliDebug(3,"MC Refit cut not passed\n");
+            continue;
+          }
+        }
+        else{
+          AliDebug (3, "MC vertex step not passed\n");
+          continue;
+        }
       }
       else{
-	AliDebug (3, "MC in acceptance step not passed\n");
-	continue;
+        AliDebug (3, "MC in acceptance step not passed\n");
+        continue;
       }
     }
     else {
@@ -953,140 +1019,200 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
     AliDebug(3,Form("iCandid=%d - signAssociation=%d, isPartOrAntipart=%d",iCandid, signAssociation, isPartOrAntipart));
 
     Bool_t recoContFilled = cfVtxHF->FillRecoContainer(containerInput);
+    AliDebug(3, Form("CF task: RecoContFilled for candidate %d is %d", iCandid, (Int_t)recoContFilled));
     if (recoContFilled){
 
       // weight according to pt
       if (fUseWeight){
-          if (fFuncWeight){  // using user-defined function
-              AliDebug(2, "Using function");
-              fWeight = eventWeight*fFuncWeight->Eval(containerInput[0]);
+        if (fHistoPtWeight) {
+          AliDebug(2,"Using Histogram as Pt weight function");
+          fWeight = eventWeight*GetPtWeightFromHistogram(containerInput[0]);
+        }
+        else if (fFuncWeight){ // using user-defined function
+          AliDebug(2, "Using function");
+          fWeight = eventWeight*fFuncWeight->Eval(containerInput[0]);
+        }
+        else{ // using FONLL
+          AliDebug(2, "Using FONLL");
+          fWeight = eventWeight*GetWeight(containerInput[0]);
+        }
+        AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
+      }
+
+      if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])){
+        if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+        continue;
+      }
+      //Reco Step
+      Bool_t recoStep = cfVtxHF->RecoStep();
+      if (recoStep) AliDebug(2, Form("particle = %d --> CF task: Reco step for candidate %d is %d", iCandid, iCandid, (Int_t)recoStep));
+      Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
+
+
+      // Selection on the filtering bit
+      Bool_t isBitSelected = kTRUE;
+      if(fDecayChannel==2) {
+        if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==31){
+        if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDplusCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==33){
+        if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==32){
+        if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kLcCuts)) isBitSelected = kFALSE;
+      }
+      if(!isBitSelected){
+        if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+        continue;
+      }
+
+
+      if (recoStep && recoContFilled && vtxCheck){
+        fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;
+        icountReco++;
+        AliDebug(3,"Reco step  passed and container filled\n");
+
+        //Reco in the acceptance -- take care of UNFOLDING!!!!
+        Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(&trackCuts[0]);
+        if (recoAcceptanceStep) {
+          fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
+          icountRecoAcc++;
+          AliDebug(3,"Reco acceptance cut passed and container filled\n");
+
+          if(fAcceptanceUnf){
+            Double_t fill[4]; //fill response matrix
+            Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fPDGcode,fill);
+            if (bUnfolding) fCorrelation->Fill(fill);
           }
-          else{ // using FONLL
-              AliDebug(2, "Using FONLL");
-              fWeight = eventWeight*GetWeight(containerInput[0]);
-          }
-          AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
-        }
 
-        if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])){
-            if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
-            continue;
-        }
-        //Reco Step
-        Bool_t recoStep = cfVtxHF->RecoStep();
-        Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
+          //Number of ITS cluster requirements
+          Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks);
+          if (recoITSnCluster){
+            fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
+            icountRecoITSClusters++;
+            AliDebug(3,"Reco n ITS cluster cut passed and container filled\n");
 
+            Bool_t iscutsusingpid = fCuts->GetIsUsePID();
+            Int_t recoAnalysisCuts = -1, recoPidSelection = -1;
+            fCuts->SetUsePID(kFALSE);
+            recoAnalysisCuts = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
 
-        // Selection on the filtering bit
-        Bool_t isBitSelected = kTRUE;
-        if(fDecayChannel==2) {
-            if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) isBitSelected = kFALSE;
-        }else if(fDecayChannel==31){
-            if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDplusCuts)) isBitSelected = kFALSE;
-        }else if(fDecayChannel==33){
-            if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
-        }
-        if(!isBitSelected){
-            if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
-            continue;
-        }
+            if (fDecayChannel==33){ // Ds case, where more possibilities are considered
+              Bool_t keepDs=ProcessDs(recoAnalysisCuts);
+              if(keepDs) recoAnalysisCuts=3;
+            }
+            else if (fDecayChannel==22){ // Lc->V0+bachelor case, where more possibilities are considered
+              Bool_t keepLctoV0bachelor = ProcessLctoV0Bachelor(recoAnalysisCuts);
+              if (keepLctoV0bachelor) recoAnalysisCuts=3;
+              AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+              AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+              AliPIDResponse* pidResponse = inputHandler->GetPIDResponse();
+              if (fUseAdditionalCuts){
+                if (!((AliCFVertexingHFCascade*)cfVtxHF)->CheckAdditionalCuts(pidResponse)) recoAnalysisCuts = -1;
+              }
+            }
 
+            fCuts->SetUsePID(iscutsusingpid); //restoring usage of the PID from the cuts object
+            Bool_t tempAn=(recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart);
+            if (fDecayChannel == 22) tempAn = (recoAnalysisCuts == 3);
+            if (fDecayChannel == 32) tempAn=(recoAnalysisCuts >0 || recoAnalysisCuts == isPartOrAntipart);
 
-        if (recoStep && recoContFilled && vtxCheck){
-            fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;
-            icountReco++;
-            AliDebug(3,"Reco step  passed and container filled\n");
+            if (tempAn){
+              fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPPR, fWeight);
+              icountRecoPPR++;
+              AliDebug(3,"Reco Analysis cuts passed and container filled \n");
+              //pid selection
+              //recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kPID);
+              //if((fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==isPartOrAntipart)||(fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==3)){
+              recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
 
-            //Reco in the acceptance -- take care of UNFOLDING!!!!
-            Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(&trackCuts[0]);
-            if (recoAcceptanceStep) {
-                fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
-                    icountRecoAcc++;
-                AliDebug(3,"Reco acceptance cut passed and container filled\n");
+              if (fDecayChannel==33){ // Ds case, where more possibilities are considered
+                Bool_t keepDs=ProcessDs(recoPidSelection);
+                if(keepDs) recoPidSelection=3;
+              } else if (fDecayChannel==22){ // Lc->V0+bachelor case, where more possibilities are considered
+                Bool_t keepLctoV0bachelor=ProcessLctoV0Bachelor(recoPidSelection);
+                if (keepLctoV0bachelor) recoPidSelection=3;
+              }
 
-                if(fAcceptanceUnf){
-                    Double_t fill[4]; //fill response matrix
-                    Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fPDGcode,fill);
-                    if (bUnfolding) fCorrelation->Fill(fill);
-                }
+              Bool_t tempPid=(recoPidSelection == 3 || recoPidSelection == isPartOrAntipart);
+              if (fDecayChannel == 22) tempPid = (recoPidSelection == 3);
+              if (fDecayChannel == 32) tempPid=(recoPidSelection >0 || recoPidSelection == isPartOrAntipart);
 
-		//Number of ITS cluster requirements
-                Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks);
-                if (recoITSnCluster){
-		  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
-		  icountRecoITSClusters++;
-		  AliDebug(3,"Reco n ITS cluster cut passed and container filled\n");
-
-		  Bool_t iscutsusingpid = fCuts->GetIsUsePID();
-		  Int_t recoAnalysisCuts = -1, recoPidSelection = -1;
-		  fCuts->SetUsePID(kFALSE);
-		  recoAnalysisCuts = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
-
-		  if (fDecayChannel==33){ // Ds case, where more possibilities are considered
-		    Bool_t keepDs=ProcessDs(recoAnalysisCuts);
-		    if(keepDs) recoAnalysisCuts=3;
+              if (tempPid){
+                Double_t weigPID = 1.;
+                if (fDecayChannel == 2){ // D0 with Bayesian PID using weights
+                  if(((AliRDHFCutsD0toKpi*)fCuts)->GetCombPID() && (((AliRDHFCutsD0toKpi*)fCuts)->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeight || ((AliRDHFCutsD0toKpi*)fCuts)->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeightNoFilter)){
+                    if (isPartOrAntipart == 1){
+                      weigPID = ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsNegative()[AliPID::kKaon] * ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsPositive()[AliPID::kPion];
+                    }else if (isPartOrAntipart == 2){
+                      weigPID = ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsPositive()[AliPID::kKaon] * ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsNegative()[AliPID::kPion];
                     }
-		  else if (fDecayChannel==22){ // Lc->V0+bachelor case, where more possibilities are considered
-		    Bool_t keepLctoV0bachelor=ProcessLctoV0Bachelor(recoAnalysisCuts);
-		    if (keepLctoV0bachelor) recoAnalysisCuts=3;
-		  }
-
-		  fCuts->SetUsePID(iscutsusingpid); //restoring usage of the PID from the cuts object
-		  Bool_t tempAn=(recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart);
-		  if (fDecayChannel == 32) tempAn=(recoAnalysisCuts >0 || recoAnalysisCuts == isPartOrAntipart);
-
-		  if (tempAn){
-		    fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPPR, fWeight);
-		    icountRecoPPR++;
-		    AliDebug(3,"Reco Analysis cuts passed and container filled \n");
-
-		    //pid selection
-		    //recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kPID);
-		    //if((fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==isPartOrAntipart)||(fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==3)){
-		    recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
-
-		    if (fDecayChannel==33){ // Ds case, where more possibilities are considered
-		      Bool_t keepDs=ProcessDs(recoPidSelection);
-		      if(keepDs) recoPidSelection=3;
-		    } else if (fDecayChannel==22){ // Lc->V0+bachelor case, where more possibilities are considered
-		      Bool_t keepLctoV0bachelor=ProcessLctoV0Bachelor(recoPidSelection);
-		      if (keepLctoV0bachelor) recoPidSelection=3;
-		    }
-
-		    Bool_t tempPid=(recoPidSelection == 3 || recoPidSelection == isPartOrAntipart);
-		    if (fDecayChannel == 32) tempPid=(recoPidSelection > 0 || recoPidSelection == isPartOrAntipart);
-
-		    if (tempPid){
-		      fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight);
-		      icountRecoPID++;
-		      AliDebug(3,"Reco PID cuts passed and container filled \n");
-
-		      AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)charmCandidate;
-		      fobjSpr->SetFillMC(kTRUE);
-		      fobjSpr->FillSparses(d0toKpi,recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar());
-		    }
-		  }
-		  else{
-		    AliDebug(3, "Number of ITS cluster step not passed\n");
-		    if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
-		    continue;
-		  }
+                    if ((weigPID  < 0) || (weigPID > 1)) weigPID = 0.;
+                  }
+                }else if (fDecayChannel == 33){ // Ds with Bayesian PID using weights
+                  if(((AliRDHFCutsDstoKKpi*)fCuts)->GetPidOption()==AliRDHFCutsDstoKKpi::kBayesianWeights){
+                    Int_t labDau0=((AliAODTrack*)charmCandidate->GetDaughter(0))->GetLabel();
+                    AliAODMCParticle* firstDau=(AliAODMCParticle*)mcArray->UncheckedAt(TMath::Abs(labDau0));
+                    if(firstDau){
+                      Int_t pdgCode0=TMath::Abs(firstDau->GetPdgCode());
+                      if(pdgCode0==321){
+                        weigPID=((AliRDHFCutsDstoKKpi*)fCuts)->GetWeightForKKpi();
+                      }else if(pdgCode0==211){
+                        weigPID=((AliRDHFCutsDstoKKpi*)fCuts)->GetWeightForpiKK();
+                      }
+                      if ((weigPID  < 0) || (weigPID > 1)) weigPID = 0.;
+                    }else{
+                      weigPID=0.;
+                    }
+                  }
                 }
-                else{
-		  AliDebug(3, "Reco acceptance step not passed\n");
-		  if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
-		  continue;
-		}
+                fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
+
+                AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)charmCandidate;
+                fobjSpr->SetFillMC(kTRUE);
+                fobjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray);
+
+                icountRecoPID++;
+                AliDebug(3,"Reco PID cuts passed and container filled \n");
+                if(!fAcceptanceUnf){
+                  Double_t fill[4]; //fill response matrix
+                  Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fPDGcode,fill);
+                  if (bUnfolding) fCorrelation->Fill(fill);
+                }
+              }
+              else {
+                AliDebug(3, "Analysis Cuts step not passed \n");
+                if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+                continue;
+              }
             }
             else {
-	      AliDebug(3, "Reco step not passed\n");
-	      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
-	      continue;
+              AliDebug(3, "PID selection not passed \n");
+              if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+              continue;
             }
+          }
+          else{
+            AliDebug(3, "Number of ITS cluster step not passed\n");
+            if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+            continue;
+          }
         }
+        else{
+          AliDebug(3, "Reco acceptance step not passed\n");
+          if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+          continue;
+        }
+      }
+      else {
+        AliDebug(3, "Reco step not passed\n");
         if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+        continue;
+      }
     }
+
+    if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
   } // end loop on candidate
+
   fCountReco+= icountReco;
   fCountRecoAcc+= icountRecoAcc;
   fCountRecoITSClusters+= icountRecoITSClusters;
@@ -1104,6 +1230,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
     //	}
     delete [] trackCuts;
   }
+
+
 }
 
 //___________________________________________________________________________
@@ -1140,9 +1268,9 @@ void AliCFTaskVertexingHFCutVarFDSub::Terminate(Option_t*)
     //h = new TH1D[3][12];
     for (Int_t ih = 0; ih<3; ih++){
       if(fDecayChannel==22){
-	nvarToPlot = 16;
+        nvarToPlot = 16;
       } else {
-	nvarToPlot = 12;
+        nvarToPlot = 12;
       }
       h[ih] = new TH1D[nvarToPlot];
     }
@@ -1252,8 +1380,8 @@ void AliCFTaskVertexingHFCutVarFDSub::Terminate(Option_t*)
   }
 
   Int_t markers[16]={20,24,21,25,27,28,
-		     20,24,21,25,27,28,
-		     20,24,21,25};
+                     20,24,21,25,27,28,
+                     20,24,21,25};
   Int_t colors[3]={2,8,4};
   for(Int_t iC=0;iC<nvarToPlot; iC++){
     for(Int_t iStep=0;iStep<3;iStep++){
@@ -1313,12 +1441,12 @@ void AliCFTaskVertexingHFCutVarFDSub::Terminate(Option_t*)
       c4->Divide(3,4);
       iPad=1;
       for(Int_t iVar=12; iVar<16; iVar++){
-	c4->cd(iPad++);
-	h[0][iVar].DrawCopy("p");
-	c4->cd(iPad++);
-	h[1][iVar].DrawCopy("p");
-	c4->cd(iPad++);
-	h[2][iVar].DrawCopy("p");
+        c4->cd(iPad++);
+        h[0][iVar].DrawCopy("p");
+        c4->cd(iPad++);
+        h[1][iVar].DrawCopy("p");
+        c4->cd(iPad++);
+        h[2][iVar].DrawCopy("p");
       }
     }
   }
@@ -1399,7 +1527,7 @@ void AliCFTaskVertexingHFCutVarFDSub::SetPtWeightsFromFONLL276overLHC12a17a(){
 void AliCFTaskVertexingHFCutVarFDSub::SetPtWeightsFromDataPbPb276overLHC12a17a(){
   // ad-hoc weight function from ratio of
   // D0 pt spectra in PbPb 2011 0-10% centrality and
- // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
+  // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","[0]+[1]/TMath::Power(x,[2])",0.05,50.);
   fFuncWeight->SetParameter(0,1.43116e-02);
@@ -1541,6 +1669,23 @@ Double_t AliCFTaskVertexingHFCutVarFDSub::dNdptFit(Float_t pt, Double_t* par)
   return dNdpt;
 }
 
+//_________________________________________________________________________
+Double_t AliCFTaskVertexingHFCutVarFDSub::GetPtWeightFromHistogram(Float_t pt)
+{
+  //
+  // Using an histogram as weight function
+  //  weight = 0 in the range outside the function
+  //
+  Double_t weight = 0.0;
+  Int_t histoNbins = fHistoPtWeight->GetNbinsX();
+  Int_t histobin = fHistoPtWeight->FindBin(pt);
+  if( (histobin>0) && (histobin<=histoNbins) ) {
+    weight = fHistoPtWeight->GetBinContent(histobin);
+  }
+
+  return weight;
+}
+
 //__________________________________________________________________________________________________
 Double_t AliCFTaskVertexingHFCutVarFDSub::GetZWeight(Float_t z, Int_t runnumber){
   //
@@ -1580,7 +1725,7 @@ Double_t AliCFTaskVertexingHFCutVarFDSub::GetNchWeight(Int_t nch){
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
   Double_t weight = pMC>0 ? pMeas/pMC : 0.;
-  if(fUseTrackletsWeight)  weight = pMC;
+  if(fUseMultRatioAsWeight)  weight = pMC;
   return weight;
 }
 //__________________________________________________________________________________________________
@@ -1593,23 +1738,23 @@ void AliCFTaskVertexingHFCutVarFDSub::CreateMeasuredNchHisto(){
   // fit1->SetParameter(2,12.8); // mean multiplicity
   //
   Double_t nchbins[82]={0.50,1.50,2.50,3.50,4.50,5.50,6.50,7.50,8.50,9.50,
-			10.50,11.50,12.50,13.50,14.50,15.50,16.50,17.50,18.50,19.50,
-			20.50,21.50,22.50,23.50,24.50,25.50,26.50,27.50,28.50,29.50,
-			30.50,31.50,32.50,33.50,34.50,35.50,36.50,37.50,38.50,39.50,
-			40.50,41.50,42.50,43.50,44.50,45.50,46.50,47.50,48.50,49.50,
-			50.50,51.50,52.50,53.50,54.50,55.50,56.50,57.50,58.50,59.50,
-			60.50,62.50,64.50,66.50,68.50,70.50,72.50,74.50,76.50,78.50,
-			80.50,82.50,84.50,86.50,88.50,90.50,92.50,94.50,96.50,98.50,
-			100.50,102.50};
+                        10.50,11.50,12.50,13.50,14.50,15.50,16.50,17.50,18.50,19.50,
+                        20.50,21.50,22.50,23.50,24.50,25.50,26.50,27.50,28.50,29.50,
+                        30.50,31.50,32.50,33.50,34.50,35.50,36.50,37.50,38.50,39.50,
+                        40.50,41.50,42.50,43.50,44.50,45.50,46.50,47.50,48.50,49.50,
+                        50.50,51.50,52.50,53.50,54.50,55.50,56.50,57.50,58.50,59.50,
+                        60.50,62.50,64.50,66.50,68.50,70.50,72.50,74.50,76.50,78.50,
+                        80.50,82.50,84.50,86.50,88.50,90.50,92.50,94.50,96.50,98.50,
+                        100.50,102.50};
   Double_t pch[81]={0.062011,0.072943,0.070771,0.067245,0.062834,0.057383,0.051499,0.04591,0.041109,0.036954,
-		    0.03359,0.030729,0.028539,0.026575,0.024653,0.0229,0.021325,0.019768,0.018561,0.017187,
-		    0.01604,0.014836,0.013726,0.012576,0.011481,0.010393,0.009502,0.008776,0.008024,0.007452,
-		    0.006851,0.006428,0.00594,0.005515,0.005102,0.00469,0.004162,0.003811,0.003389,0.003071,
-		    0.002708,0.002422,0.002184,0.001968,0.00186,0.00165,0.001577,0.001387,0.001254,0.001118,
-		    0.001037,0.000942,0.000823,0.000736,0.000654,0.000579,0.000512,0.00049,0.00045,0.000355,
-		    0.000296,0.000265,0.000193,0.00016,0.000126,0.0000851, 0.0000676,0.0000537,0.0000426, 0.0000338,
-		    0.0000268,0.0000213,0.0000166,0.0000133,0.0000106,0.00000837,0.00000662, 0.00000524,0.00000414, 0.00000327,
-		    0.00000258};
+                    0.03359,0.030729,0.028539,0.026575,0.024653,0.0229,0.021325,0.019768,0.018561,0.017187,
+                    0.01604,0.014836,0.013726,0.012576,0.011481,0.010393,0.009502,0.008776,0.008024,0.007452,
+                    0.006851,0.006428,0.00594,0.005515,0.005102,0.00469,0.004162,0.003811,0.003389,0.003071,
+                    0.002708,0.002422,0.002184,0.001968,0.00186,0.00165,0.001577,0.001387,0.001254,0.001118,
+                    0.001037,0.000942,0.000823,0.000736,0.000654,0.000579,0.000512,0.00049,0.00045,0.000355,
+                    0.000296,0.000265,0.000193,0.00016,0.000126,0.0000851, 0.0000676,0.0000537,0.0000426, 0.0000338,
+                    0.0000268,0.0000213,0.0000166,0.0000133,0.0000106,0.00000837,0.00000662, 0.00000524,0.00000414, 0.00000327,
+                    0.00000258};
 
   if(fHistoMeasNch) delete fHistoMeasNch;
   fHistoMeasNch=new TH1F("hMeaseNch","",81,nchbins);
@@ -1680,15 +1825,15 @@ TProfile* AliCFTaskVertexingHFCutVarFDSub::GetEstimatorHistogram(const AliVEvent
                        // pPb: 0-LHC13b, 1-LHC13c
 
   if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
-      if (runNo>195343 && runNo<195484) period = 0;
-      if (runNo>195528 && runNo<195678) period = 1;
-      if (period<0 || period>1) return 0;
+    if (runNo>195343 && runNo<195484) period = 0;
+    if (runNo>195528 && runNo<195678) period = 1;
+    if (period<0 || period>1) return 0;
   } else {             //else assume pp 2010
-      if(runNo>114930 && runNo<117223) period = 0;
-      if(runNo>119158 && runNo<120830) period = 1;
-      if(runNo>122373 && runNo<126438) period = 2;
-      if(runNo>127711 && runNo<130841) period = 3;
-      if(period<0 || period>3) return 0;
+    if(runNo>114930 && runNo<117223) period = 0;
+    if(runNo>119158 && runNo<120830) period = 1;
+    if(runNo>122373 && runNo<126438) period = 2;
+    if(runNo>127711 && runNo<130841) period = 3;
+    if(period<0 || period>3) return 0;
   }
 
   return fMultEstimatorAvg[period];

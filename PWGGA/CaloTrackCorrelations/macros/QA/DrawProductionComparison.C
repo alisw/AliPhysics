@@ -1,3 +1,4 @@
+///
 /// \file DrawProductionComparison.C
 /// \brief Plot N productions comparison analysis of QA histograms from EMCal PWG-GA wagon
 ///
@@ -113,17 +114,16 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
   TH1F* hXEUE[nProd];
   TH1F* hRatXE[nProd-1];
   TH1F* hRatXEUE[nProd-1];
-
   
   // Fill the histograms array for each of the productions, do the comparison ratios
   for(Int_t iprod = 0; iprod <  nProd; iprod++)
   {
     // Calorimeter Clusters
     {
-      hRaw [iprod] = (TH1F*) GetHisto("AnaPhoton_hCut_0_Open"    ,iprod);
-      hCorr[iprod] = (TH1F*) GetHisto("AnaPhoton_hCut_4_NCells"  ,iprod);
-      hTM  [iprod] = (TH1F*) GetHisto("AnaPhoton_hCut_7_Matching",iprod);
-      hShSh[iprod] = (TH1F*) GetHisto("AnaPhoton_hCut_9_PID"     ,iprod);
+      hRaw [iprod] = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_0_Open"    ,iprod);
+      hCorr[iprod] = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_4_NCells"  ,iprod);
+      hTM  [iprod] = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_7_Matching",iprod);
+      hShSh[iprod] = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_9_PID"     ,iprod);
 
       hRaw [iprod]->Sumw2();
       hCorr[iprod]->Sumw2();
@@ -174,14 +174,11 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
     
     // Cluster-Track Matching Residuals
     {
-      h2TrackMatchResEtaNeg[iprod] = (TH2F*) GetHisto("QA_hTrackMatchedDEta"   ,iprod);
+      h2TrackMatchResEtaNeg[iprod] = (TH2F*) GetHisto("QA_hTrackMatchedDEtaNeg",iprod);
       h2TrackMatchResEtaPos[iprod] = (TH2F*) GetHisto("QA_hTrackMatchedDEtaPos",iprod);
-      h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto("QA_hTrackMatchedDPhi"   ,iprod);
+      h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto("QA_hTrackMatchedDPhiNeg",iprod);
       h2TrackMatchResPhiPos[iprod] = (TH2F*) GetHisto("QA_hTrackMatchedDPhiPos",iprod);
-      
-      h2TrackMatchResEtaNeg[iprod]->Add(h2TrackMatchResEtaPos[iprod],-1);
-      h2TrackMatchResPhiNeg[iprod]->Add(h2TrackMatchResPhiPos[iprod],-1);
-      
+
       Float_t binMin = hCorr[iprod]->FindBin(0.5);
       Float_t binMax = hCorr[iprod]->FindBin(2);
       hTrackMatchResEtaNeg[iprod] = (TH1F*) h2TrackMatchResEtaNeg[iprod]->ProjectionY(Form("TMProjEtaNeg%s",prod[iprod].Data()),binMin, binMax);
@@ -391,6 +388,10 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
       hVertex[1][iprod] = (TH1F*) GetHisto("hYVertex",iprod);
       hVertex[2][iprod] = (TH1F*) GetHisto("hXVertex",iprod);
       
+      hVertex[0][iprod]->Sumw2();
+      hVertex[1][iprod]->Sumw2();
+      hVertex[2][iprod]->Sumw2();
+      
       for(Int_t ivertex = 0; ivertex < 3; ivertex++)
       {
         //hVertex[ivertex][iprod]->Sumw2();
@@ -403,7 +404,8 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
         hVertex[ivertex][iprod]->SetMarkerColor(color[iprod]);
         hVertex[ivertex][iprod]->SetLineColor(color[iprod]);
         hVertex[ivertex][iprod]->SetMarkerStyle(20);
-        hVertex[ivertex][iprod]->SetAxisRange(-15,15.,"X");
+        if(ivertex==0)hVertex[ivertex][iprod]->SetAxisRange(-10,10.,"X");
+        else          hVertex[ivertex][iprod]->SetAxisRange(-1.5,1.5,"X");
         //hVertex[ivertex][iprod]->SetMaximum(1.1);
         //hVertex[ivertex][iprod]->SetMinimum(0);
         
@@ -545,8 +547,8 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
     
     ccalo2->cd(4);
     
-    hRatTrackMatchResPhiPos[0]->SetMaximum(1.05);
-    hRatTrackMatchResPhiPos[0]->SetMinimum(0.98);
+    hRatTrackMatchResPhiPos[0]->SetMaximum(1.20);
+    hRatTrackMatchResPhiPos[0]->SetMinimum(0.95);
     hRatTrackMatchResPhiPos[0]->Draw("");
     hRatTrackMatchResPhiPos[0]->SetYTitle(Form("data X / %s",prod[0].Data()));
     for(Int_t iprod = 0; iprod < nProd-1; iprod++)
@@ -718,12 +720,12 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
       lprod.Draw();
       
       cvertex->cd(npannel+3);
-      //gPad->SetLogy();
+      gPad->SetGridy();
       
       //hRatVertex[ivertex][0]->SetTitle("");
       hRatVertex[ivertex][0]->SetYTitle(Form("data X / %s",prod[0].Data()));
-//      hRatVertex[ivertex][0]->SetMinimum(0.95);
-//      hRatVertex[ivertex][0]->SetMaximum(1.05);
+      hRatVertex[ivertex][0]->SetMinimum(0.90);
+      hRatVertex[ivertex][0]->SetMaximum(1.10);
       hRatVertex[ivertex][0]->Draw("");
       
       for(Int_t iprod = 0; iprod <  nProd-1; iprod++)
@@ -735,8 +737,6 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
     }
     cvertex->Print(Form("%s_VertexComp.eps",histoTag.Data()));
   }
-
-  
 }
 
 //_____________________________________________________
