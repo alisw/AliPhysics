@@ -120,6 +120,7 @@ Bool_t  AliTPCSAMPAEmulator::BC3SlopeFilterFloat(Int_t npoints, Double_t *dataAr
       slopeBaseline=TMath::Nint(slopeBaseline*round)/round;
     }
     dataArray[iTimeBin]-=slopeBaseline;
+    dataArray[iTimeBin]=TMath::Nint(dataArray[iTimeBin]);
   }
   return kTRUE;
 };
