@@ -108,9 +108,8 @@ private:
   AliMESeventInfo *fMCevInfo;
 
   AliPPVsMultUtils *fUtils;
-  TH1F* fPriorsDist[4];
 
-  ClassDef(AliMEStender, 4)          // Tender task for the Multi Event Shape
+  ClassDef(AliMEStender, 5)          // Tender task for the Multi Event Shape
 };
 
 #endif

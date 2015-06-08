@@ -21,7 +21,7 @@ void AddMEStender(Bool_t mc)
   tender->ConfigTask( AliMEStender::AliMESconfigTender::kStandard,                    // event cuts
 					  AliMEStender::AliMESconfigTender::kStandardITSTPCTrackCuts2010, // track cuts
 					  AliMEStender::AliMESconfigTender::kIterative);                  // PID priors
-  tender->SetPriors();
+  tender->SetPriors();  // always call this after ConfigTask !!
 
   // connect input
   mgr->ConnectInput (tender, 0, mgr->GetCommonInputContainer());
