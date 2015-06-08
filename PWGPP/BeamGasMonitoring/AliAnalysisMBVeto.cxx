@@ -30,6 +30,10 @@
 
 ClassImp(AliAnalysisMBVeto)
 
+using std::cout;
+using std::endl;
+using std::ofstream;
+
 //________________________________________________________________________
 AliAnalysisMBVeto::AliAnalysisMBVeto(const char *name) :
 AliAnalysisTaskSE(name),
