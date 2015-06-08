@@ -452,11 +452,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
 		if( GetClusterType() == 1 ){ //EMCAL
 			Int_t nMaxCellsEMCAL = nMaxEMCalModules*48*24;
-			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",300,0,30,nMaxEMCalModules,0,nMaxEMCalModules);
+			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",500,0,50,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistExtQA->Add(fHistClusterEnergyvsMod);
-			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",60,0,60,nMaxEMCalModules,0,nMaxEMCalModules);
+			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",200,0,200,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistExtQA->Add(fHistNCellsBigger100MeVvsMod);
-			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",50,0,50,nMaxEMCalModules,0,nMaxEMCalModules);
+			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",100,0,100,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
 			fHistEnergyOfModvsMod = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule",1000,0,100,nMaxEMCalModules,0,nMaxEMCalModules);
 			fHistExtQA->Add(fHistEnergyOfModvsMod);
@@ -469,11 +469,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
-			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",300,0,30,nMaxPHOSModules,0,nMaxPHOSModules);
+			fHistClusterEnergyvsMod = new TH2F(Form("ClusterEnergyVsModule_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyVsModule_afterClusterQA",500,0,50,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistExtQA->Add(fHistClusterEnergyvsMod);
-			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",60,0,60,nMaxPHOSModules,0,nMaxPHOSModules);
+			fHistNCellsBigger100MeVvsMod = new TH2F(Form("NCellsAbove100VsModule %s",GetCutNumber().Data()),"NCellsAbove100VsModule",200,0,200,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistExtQA->Add(fHistNCellsBigger100MeVvsMod);
-			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",50,0,50,nMaxPHOSModules,0,nMaxPHOSModules);
+			fHistNCellsBigger1500MeVvsMod = new TH2F(Form("NCellsAbove1500VsModule %s",GetCutNumber().Data()),"NCellsAbove1500VsModule",100,0,100,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistExtQA->Add(fHistNCellsBigger1500MeVvsMod);
 			fHistEnergyOfModvsMod = new TH2F(Form("ModuleEnergyVsModule %s",GetCutNumber().Data()),"ModuleEnergyVsModule",1000,0,100,nMaxPHOSModules,0,nMaxPHOSModules);
 			fHistExtQA->Add(fHistEnergyOfModvsMod);
