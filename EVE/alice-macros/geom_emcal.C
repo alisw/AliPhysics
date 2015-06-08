@@ -14,20 +14,36 @@
 #include <TEveGeoNode.h>
 
 #include <AliEveEventManager.h>
+#include <AliEveMultiView.h>
 #endif
 
 void geom_emcal()
 {
-  AliEveEventManager::GetMaster()->AssertGeometry();
-
-  TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
-  if (!node) {
-    Warning("geom_emcal()", "Node XEN1_1 not found.");
-    return;
-  }
-  
-  TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, node);
+    AliEveEventManager::GetMaster()->AssertGeometry();
+    AliEveMultiView *mv = AliEveMultiView::Instance();
+    
+    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
+    if (!node) {
+        Warning("geom_emcal()", "Node XEN1_1 not found.");
+        return;
+    }
+    
+    TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, node);
     emcal_re->SetVisLevel(1);
-  gEve->AddGlobalElement(emcal_re);
-  gEve->Redraw3D();
+    emcal_re->SetMainTransparency(70);
+    
+    // 3D view:
+    gEve->AddGlobalElement(emcal_re);
+    
+    // RPhi
+    mv->ImportGeomRPhi(emcal_re);
+    emcal_re->ProjectAllChildren();
+    emcal_re->PropagateRnrStateToProjecteds();
+    g_proj = gEve->SpawnNewScene("emcal proj", "emcal proj");
+    AliEveMultiView::Instance()->GetRPhiView()->AddScene(g_proj);
+    g_proj->SetElementName("EMCal geom RPhi");
+    g_proj->AddElement(emcal_re);
+    
+    gSystem->ProcessEvents();
+    gEve->Redraw3D();
 }
