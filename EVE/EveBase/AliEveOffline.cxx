@@ -124,10 +124,10 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     mv->InitGeomGentle(geomGentle->GetGeomGentle(),
                               geomGentle->GetGeomGentleRphi(),
                               geomGentle->GetGeomGentleRhoz(),
-                              geomGentle->GetGeomGentleRhoz());
+                              0/*geomGentle->GetGeomGentleRhoz()*/);
     
     mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD(colorTRD));
-    mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kFALSE, kTRUE);
+    mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kTRUE, kFALSE);
 
     mv->SetDepth(0);
     

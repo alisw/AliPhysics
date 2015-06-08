@@ -56,7 +56,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     AliEveEventManager::SetCdbUri("local:///local/cdb");         // current OCDB snapshot
     
     cout<<"Creating multiview...";
-    AliEveMultiView *multiView = new AliEveMultiView(kTRUE);
+    AliEveMultiView *multiView = new AliEveMultiView(false);
     cout<<"created"<<endl;
     
     cout<<"Adding standard macros...";
@@ -64,8 +64,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"added"<<endl;
     
     cout<<"Creating event manager...";
-    AliEveOnlineEventManager *man =  new AliEveOnlineEventManager(-1, storageManager);
-//    AliEveEventManager *man = AliEveEventManager::GetMaster();
+    AliEveOnlineEventManager *man = new AliEveOnlineEventManager(-1, storageManager);
     gEve->AddEvent(man);
     cout<<"created"<<endl;
     
@@ -81,10 +80,10 @@ AliEveOnline::AliEveOnline(bool storageManager)
     multiView->InitGeomGentle(geomGentle->GetGeomGentle(),
                               geomGentle->GetGeomGentleRphi(),
                               geomGentle->GetGeomGentleRhoz(),
-                              geomGentle->GetGeomGentleRhoz());
+                              0/*geomGentle->GetGeomGentleRhoz()*/);
     
     multiView->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD(colorTRD));
-    multiView->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kFALSE, kTRUE);
+    multiView->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kTRUE, kFALSE);
     
     cout<<"============ Setting macro executor ============\n"<<endl;;
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
@@ -114,12 +113,12 @@ AliEveOnline::AliEveOnline(bool storageManager)
     TGLViewer *glv1 = multiView->Get3DView()->GetGLViewer();
     TGLViewer *glv2 = multiView->GetRPhiView()->GetGLViewer();
     TGLViewer *glv3 = multiView->GetRhoZView()->GetGLViewer();
-    TGLViewer *glv4 = multiView->GetMuonView()->GetGLViewer();
+//    TGLViewer *glv4 = multiView->GetMuonView()->GetGLViewer();
     
     glv1->CurrentCamera().RotateRad(-0.4, 0.6);
-    glv2->CurrentCamera().Dolly(90, kFALSE, kFALSE);
-    glv3->CurrentCamera().Dolly(2300, kFALSE, kFALSE);
-    glv4->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+    glv2->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+    glv3->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+//    glv4->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     
     
 //    TGFrame *f1 = multiView->Get3DView()->GetGUIFrame();
