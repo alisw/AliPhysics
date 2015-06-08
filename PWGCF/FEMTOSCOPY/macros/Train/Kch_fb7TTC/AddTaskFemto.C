@@ -9,8 +9,7 @@
 //  KM: March 25, 2013
 //=============================================================================
 
-//this line for local: 
-//AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
+//this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 
 AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
 {
@@ -56,20 +55,13 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //in $ALICE_ROOT/PWGCF/FEMTOSCOPY/macros/Train/
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
-  //Train:
-  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
-  //Local and aliensh:
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   //10-90% only two triggers: SemiCentral and MB
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
   taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
   //0-10 % all three triggers
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
-
-  //MC PID (not needed for data):
-  AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse(kTRUE);
-  //AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse(kTRUE, kTRUE,kFALSE, 2,kFALSE, "",kFALSE,kFALSE, -1);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
@@ -80,7 +72,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist_withTTC",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
