@@ -91,7 +91,6 @@ AliMEStender::AliMEStender()
   ,fMCtracks(NULL)
   ,fMCevInfo(NULL)
   ,fUtils(NULL)
-  ,fPriorsDist()
 {
   //
   // Constructor
@@ -109,7 +108,6 @@ AliMEStender::AliMEStender(const char *name)
   ,fMCtracks(NULL)
   ,fMCevInfo(NULL)
   ,fUtils(NULL)
-  ,fPriorsDist()
 {
   //
   // Constructor
@@ -172,9 +170,9 @@ void AliMEStender::UserCreateOutputObjects()
   }
 
   // PID priors
-  fPIDcomb = new AliPIDCombined();
-  fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
-
+//   fPIDcomb = new AliPIDCombined();
+//   fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
+/*
   switch(fConfig.fPIDpriors){
 	case AliMESconfigTender::kTPC:
 		// default aliroot priors
@@ -200,7 +198,7 @@ void AliMEStender::UserCreateOutputObjects()
 		AliDebug(2, "No PID priors selected");
 		break;
   }
-
+*/
 
   fTracks = new TObjArray(200);
   fTracks->SetOwner(kTRUE);
@@ -522,22 +520,55 @@ void AliMEStender::SetDebugLevel(Int_t level)
 //_____________________________________________________________________
 void AliMEStender::SetPriors(){
 
-	AliInfo("Getting iterative data priors from file...");
-	TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
-	if (lPriors->IsZombie()) {
-		AliError("Could not open the priors file");
-		return;
+	fPIDcomb = new AliPIDCombined();
+	fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
+	
+	switch(fConfig.fPIDpriors){
+		case AliMESconfigTender::kTPC:
+			// default aliroot priors
+			AliInfo("Setting default priors ...");
+			fPIDcomb->SetDefaultTPCPriors();
+			AliInfo("Done setting default priors.");
+			break;
+		case AliMESconfigTender::kIterative:
+		{  // data priors identified @ 15.04.2015 by Cristi for LHC10d
+			AliInfo("Getting iterative data priors from file...");
+			TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
+			if (lPriors->IsZombie()) {
+				AliError("Could not open the priors file");
+				return;
+			}
+			TH1F *priorsDist[4];
+			priorsDist[0] = (TH1F*)lPriors->Get("priors_e_final");
+			priorsDist[1] = (TH1F*)lPriors->Get("priors_pi_final");
+			priorsDist[2] = (TH1F*)lPriors->Get("priors_K_final");
+			priorsDist[3] = (TH1F*)lPriors->Get("priors_p_final");
+			for(Int_t i=0; i<4; i++) priorsDist[i]->SetDirectory(0);
+			lPriors->Close();
+			AliInfo("Done getting the data priors.");
+
+			AliInfo("Setting iterative data priors ...");
+			fPIDcomb->SetPriorDistribution(AliPID::kMuon, priorsDist[0]);
+			fPIDcomb->SetPriorDistribution(AliPID::kElectron, priorsDist[0]);
+			fPIDcomb->SetPriorDistribution(AliPID::kPion, priorsDist[1]);
+			fPIDcomb->SetPriorDistribution(AliPID::kKaon, priorsDist[2]);
+			fPIDcomb->SetPriorDistribution(AliPID::kProton, priorsDist[3]);
+			AliInfo("Done setting iterative data priors.");
+			break;
+		}
+		case AliMESconfigTender::kNoPP:
+		{ // flat priors
+			AliInfo("Setting flat priors ...");
+			fPIDcomb->SetEnablePriors(kFALSE);  // FLAT priors
+			AliInfo("Done setting flat priors.");
+			break;
+		}
+		default:
+			AliWarning("No PID priors selected");
+			break;
 	}
-	fPriorsDist[0] = (TH1F*)lPriors->Get("priors_e_final");
-	fPriorsDist[0]->SetDirectory(0);
-	fPriorsDist[1] = (TH1F*)lPriors->Get("priors_pi_final");
-	fPriorsDist[1]->SetDirectory(0);
-	fPriorsDist[2] = (TH1F*)lPriors->Get("priors_K_final");
-	fPriorsDist[2]->SetDirectory(0);
-	fPriorsDist[3] = (TH1F*)lPriors->Get("priors_p_final");
-	fPriorsDist[3]->SetDirectory(0);
-	AliInfo("Done getting the data priors.");
-	lPriors->Close();
+	
+	
 }
 
 //________________________________________________________________________
