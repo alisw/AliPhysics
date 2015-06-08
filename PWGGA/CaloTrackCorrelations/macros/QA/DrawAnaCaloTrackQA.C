@@ -14,14 +14,13 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-
 // Some global variables
 TList *list = 0;
 TFile *file = 0;
 TString histoTag = "";
 Int_t color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray};
 
-//_______________________________________________________________________
+///
 /// Main method, produce the plots for the 5 different types of analysis:
 /// * Calorimeter QA in CaloQA method
 /// * Track QA in TrackQA method
@@ -68,11 +67,12 @@ void DrawAnaCaloTrackQA(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
   MCQA();
 }
 
-//______________________________________
-// Plot basic calorimeter QA histograms.
+///
+/// Plot basic calorimeter QA histograms.
+///
 //______________________________________
 void CaloQA()
-{
+{ 
   TCanvas * ccalo = new TCanvas(Form("CaloHisto_%s",histoTag.Data()),"",1000,1000);
   ccalo->Divide(2,2);
   
@@ -150,9 +150,11 @@ void CaloQA()
   
   // Plot track-matching residuals
   // first test did not have this histogram, add protection
-  TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto("QA_hTrackMatchedDEtaDPhi");
+  TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto("QA_hTrackMatchedDEtaDPhiPos");
   if(hTrackMatchResEtaPhi)
   {
+    hTrackMatchResEtaPhi ->Add( (TH2F*) GetHisto("QA_hTrackMatchedDEtaDPhiNeg") );
+    
     ccalo->cd(3);
     gPad->SetLogz();
     
@@ -168,13 +170,10 @@ void CaloQA()
     ccalo->cd(4);
     gPad->SetLogy();
     
-    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto("QA_hTrackMatchedDEta");
+    TH2F* h2TrackMatchResEtaNeg = (TH2F*) GetHisto("QA_hTrackMatchedDEtaNeg");
     TH2F* h2TrackMatchResEtaPos = (TH2F*) GetHisto("QA_hTrackMatchedDEtaPos");
-    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto("QA_hTrackMatchedDPhi");
+    TH2F* h2TrackMatchResPhiNeg = (TH2F*) GetHisto("QA_hTrackMatchedDPhiNeg");
     TH2F* h2TrackMatchResPhiPos = (TH2F*) GetHisto("QA_hTrackMatchedDPhiPos");
-    
-    h2TrackMatchResEtaNeg->Add(h2TrackMatchResEtaPos,-1);
-    h2TrackMatchResPhiNeg->Add(h2TrackMatchResPhiPos,-1);
     
     Float_t binMin = hCorr->FindBin(0.5);
     TH1F* hTrackMatchResEtaNeg = (TH1F*) h2TrackMatchResEtaNeg->ProjectionY("TMProjEtaNeg",binMin, 1000);
@@ -271,8 +270,9 @@ void CaloQA()
   ccalo2->Print(Form("%s_CaloHisto2.eps",histoTag.Data()));
 }
 
-//______________________________________
+///
 /// Plot basic hybrid tracks histograms.
+///
 //______________________________________
 void TrackQA()
 {
@@ -336,8 +336,9 @@ void TrackQA()
   ctrack->Print(Form("%s_TrackHisto.eps",histoTag.Data()));
 }
 
-//______________________________
-// Plot basic invariant mass QA
+///
+/// Plot basic invariant mass QA
+///
 //_____________________________
 void Pi0QA()
 {
@@ -348,8 +349,8 @@ void Pi0QA()
   TH2F* hMixMassE[10];
   for(Int_t icen = 0; icen < 10; icen++)
   {
-    hMassE   [icen] = (TH2F*) GetHisto(Form("AnaPi0_hRe_cen%d_pidbit0_asy1_dist1",icen));
-    hMixMassE[icen] = (TH2F*) GetHisto(Form("AnaPi0_hMi_cen%d_pidbit0_asy1_dist1",icen));
+    hMassE   [icen] = (TH2F*) GetHisto(Form("AnaPi0_hRe_cen%d_pidbit0_asy0_dist1",icen));
+    hMixMassE[icen] = (TH2F*) GetHisto(Form("AnaPi0_hMi_cen%d_pidbit0_asy0_dist1",icen));
   }
   
   // 2D Invariant mass vs E, in PbPb from 60 to 100 %, all in pp
@@ -507,7 +508,6 @@ void Pi0QA()
       //printf("Scale factor %f for cen %d\n",scale,icen);
       hSM[ism]->Scale(1./scale);
       hSM[ism]->SetYTitle("Real / Mixed");
-
     }
     
     if(maxSM < hSM[ism]->GetMaximum()) maxSM = hSM[ism]->GetMaximum();
@@ -574,8 +574,9 @@ void Pi0QA()
   cpi0->Print(Form("%s_Pi0Histo.eps",histoTag.Data()));
 }
 
-//__________________________________________________
+///
 /// Plot basic cluster-track correlation histograms.
+///
 //__________________________________________________
 void CorrelationQA()
 {
@@ -679,16 +680,15 @@ void CorrelationQA()
   hXEUE->SetLineColor(2);
   l2.AddEntry(hXEUE,"raw Und. Event x_{E}","P");
   hXEUE->Draw("same");
-
   
   l2.Draw("same");
 
-  
   cCorrelation->Print(Form("%s_CorrelationHisto.eps",histoTag.Data()));
 }
 
-//________________________________________________________
+///
 /// Plot basic generated particle distribution histograms.
+///
 //________________________________________________________
 void MCQA()
 {
@@ -698,7 +698,6 @@ void MCQA()
   TH2F* h2ClusterEle = (TH2F*) GetHisto("QA_hRecoMCE_Electron_Match1");  // Track-matched
   
   if(!h2ClusterPho) return;
-  
   
 //  TH1F* hPrimPho = (TH1F*) GetHisto("QA_hGenMCAccE_Photon");
 //  TH1F* hPrimPi0 = (TH1F*) GetHisto("QA_hGenMCAccE_Pi0");
@@ -895,7 +894,9 @@ void MCQA()
   cmc->Print(Form("%s_MCHisto.eps",histoTag.Data()));
 }
 
-
+///
+/// Open the file and list containing the histograms
+///
 //____________________________________________________________________
 void GetFileAndList(TString fileName, TString listName, Bool_t export)
 {
@@ -914,9 +915,10 @@ void GetFileAndList(TString fileName, TString listName, Bool_t export)
   }
 }
 
-//___________________________________
+///
 /// Check if the list is available,
 /// if not get the histo directly from file
+///
 //___________________________________
 TObject * GetHisto(TString histoName)
 {
@@ -924,7 +926,11 @@ TObject * GetHisto(TString histoName)
   else     return file->Get       (histoName);
 }
 
-//______________________________________
+///
+/// Scale axis by a constant factor
+/// used just to scale degrees to rad in a single histogram in the MC case
+///
+//___________________________________________________
 void ScaleAxis(TAxis *a, Double_t scale)
 {
   if (!a) return; // just a precaution
@@ -943,18 +949,23 @@ void ScaleAxis(TAxis *a, Double_t scale)
     // note: we modify Xmin and Xmax only, hence the "Scale" function
     // must be linear (and Xmax must remain greater than Xmin)
     a->Set(a->GetNbins(),
-           scale*a->GetXmin(), // new Xmin
-           scale*a->GetXmax()); // new Xmax
+           -           scale*a->GetXmin(), // new Xmin
+           -           scale*a->GetXmax()); // new Xmax
   }
   return;
 }
 
-//_____________________________________
+///
+/// Scale x axis by a constant factor
+/// used just to scale degrees to rad in a single histogram in the MC case
+///
+//___________________________________________________
 void ScaleXaxis(TH1 *h, Double_t scale)
 {
   if (!h) return; // just a precaution
   ScaleAxis(h->GetXaxis(), scale);
   return;
 }
+
 
 

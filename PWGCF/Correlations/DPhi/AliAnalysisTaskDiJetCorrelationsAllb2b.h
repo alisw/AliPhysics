@@ -1,5 +1,3 @@
-//THnSparse binning changed to accommodate wider pT range at a time.
-
 #ifndef AliAnalysisTaskDiJetCorrelationsAllb2b_H
 #define AliAnalysisTaskDiJetCorrelationsAllb2b_H
 
@@ -15,6 +13,7 @@
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TObjArray.h>
+#include <THn.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventPoolManager.h"
@@ -22,6 +21,10 @@
 #include "AliCentrality.h"
 #include "AliAODTrack.h"
 
+class TH1F;
+class TH2F;
+class TH3F;
+class THnSparse;
 class AliAODEvent;
 class AliVParticle;
 class TObjArray;
@@ -69,24 +72,28 @@ public:
     virtual void    SetVarPtBin(Bool_t varPtbin=kTRUE){fuseVarPtBins= varPtbin;}
     
             void    SetCorr2plus1or1plus1(Bool_t twoplus1){ftwoplus1 = twoplus1;}
-            void    SetEffCorrection(TH3F *hEff){f3DEffCor = hEff;}
+            //void    SetEffCorrection(TH3F *hEff){fThnEff = hEff;}
             void    SetAlphaAngle(Double_t alpha){fAlpha = alpha;}
             void    SetBkgSE(Bool_t BkgSE){fBkgSE = BkgSE;}
-
- 
-private:
+            void    SetEfficiencyWeightMap(THnF* hEff){fThnEff = hEff;}
     
+   
+    
+private:
     AliAnalysisTaskDiJetCorrelationsAllb2b(const AliAnalysisTaskDiJetCorrelationsAllb2b &source);
     AliAnalysisTaskDiJetCorrelationsAllb2b& operator=(const AliAnalysisTaskDiJetCorrelationsAllb2b& source);
-  
+    
+   
     void DefineHistoNames();
-    Double_t GetTrackbyTrackEffValue(AliAODTrack* track, Double_t CentrOrMult, TH3F *h);
+    //Double_t GetTrackbyTrackEffValue(AliAODTrack* track, Double_t CentrOrMult, TH3F *h);
+
     Bool_t ConversionResonanceCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, TH2F*fControlConvResT, TH1F* fHistTCorrTrack);
     Bool_t TwoTrackEfficiencyCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, Float_t bSigntmp);
  
     TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
-
-
+    
+    Double_t GetTrackWeight(Double_t eta, Double_t pt, Double_t CentrOrMult, Double_t zVertex);
+    
     
     //______________________________|  DPhi Star
     Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign){
@@ -173,16 +180,33 @@ private:
     }
     
     //______________________________| Mixed Event Pool
-    Bool_t DefineMixedEventPool(){
+    Bool_t DefineMixedEventPoolPbPb(){
         Int_t  NofCentBins  = 7;
         Double_t MBins[]={0.,7.5, 10., 20., 30., 40., 50., 100.1};
         Double_t * CentrORMultBins = MBins;
         
-        Int_t NofZVrtxBins  = 5;
-        Double_t ZBins[]={-10.0, -6, -2, 2, 6, 10};
+        Int_t NofZVrtxBins  = 10;
+        Double_t ZBins[]={-10.0, -8.0, -6.0, -4.0, -2.0, 0, 2., 4., 6., 8., 10.};
         Double_t *ZVrtxBins = ZBins;
         
         fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
+        fPoolMgr->SetTargetValues(fMEMinTracks, 0.05, 5);
+        if(!fPoolMgr) return kFALSE;
+        return kTRUE;
+    }
+    
+   //______________________________| Mixed Event Pool
+    Bool_t DefineMixedEventPoolpp(){
+        Int_t  NofCentBins  = 1;
+        Double_t MBins[]={0, 250.};
+        Double_t * CentrORMultBins = MBins;
+        
+        Int_t NofZVrtxBins  = 10;
+        Double_t ZBins[]={-10.0, -8.0, -6.0, -4.0, -2., 0, 2.0, 4.0, 6.0, 8.0, 10.0};
+        Double_t *ZVrtxBins = ZBins;
+        
+        fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
+        fPoolMgr->SetTargetValues(fMEMinTracks, 0.05, 5);
         if(!fPoolMgr) return kFALSE;
         return kTRUE;
     }
@@ -195,7 +219,7 @@ private:
         return kTRUE;
     }
     
-    
+  
     //______________________________| All Used Ojects
     Bool_t    ftwoplus1;
     Bool_t    fSetSystemValue;
@@ -223,13 +247,15 @@ private:
     Double_t  fAlpha;
     Bool_t    fBkgSE;
   
-    TH1F     *fHistNEvents; //!
-    TH1F     *fHistCent;//!
-    TH1F     *fHistT1CorrTrack; //!
-    TH1F     *fHistT2CorrTrack; //!
-    TList    *fOutputQA; //! Output list
-    TList    *fOutputCorr; //! Output list
-    TH3F     *f3DEffCor; //!
+    TH1F     *fHistNEvents;
+    TH1F     *fHistCent;
+    TH1F     *fHistT1CorrTrack;
+    TH1F     *fHistT2CorrTrack;
+    TList    *fOutputQA;   //!QA Output list
+    TList    *fOutputCorr;//!corr Output list
+   
+    THnF *fThnEff;// eff histogram
+    //TH3F     *fThnEff_clone; //!
     
     AliEventPool *fPool; //! Pool for event mixing
     AliEventPoolManager  *fPoolMgr;         //! event pool manager
@@ -238,12 +264,21 @@ private:
     Int_t  fMEMinTracks;
     Int_t  fMEMinEventToMix;
 
-    TH1F *fHistQA[9]; //!
-    TH1F *fHistTrigDPhi; //!
-    TH2F *fControlConvResT1; //!
-    TH2F *fControlConvResT2; //!
-    TH2F *fControlConvResMT1;//!
-    TH2F *fControlConvResMT2;//!
+    TH1F *fHistQA[9];//! QA histos
+    TH1F *fHistTrigDPhi;//!dphi between T1 and T2
+    TH2F *fControlConvResT1;//!control res histo T1
+    TH2F *fControlConvResT2;//!control res hist T2
+    TH2F *fControlConvResMT1;//! control res histo T1 mixed
+    TH2F *fControlConvResMT2;//!control res histo T2 mixed
+    
+    TH1F *fEffCheck;
+    
+    TH1F *fNoMixedEvents;//
+    TH2F *fMixStatCentorMult; //no of events in pool vs cent/multplicity
+    TH2F *fMixStatZvtx; //no of events in pool vs zvtx
+    
+    
+    
 
     ClassDef(AliAnalysisTaskDiJetCorrelationsAllb2b, 1); // example of analysis
 };

@@ -21,6 +21,11 @@ Bool_t skip3to5=kTRUE;
 Int_t ihskip=0;
 TString fitplotmacrodir=gSystem->ExpandPathName("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/");
 Bool_t isReflected=kFALSE;
+Double_t leftMarginCanvas=0.17;
+Double_t rightMarginCanvas=0.055;
+Double_t bottomMarginCanvas=0.1;
+Double_t topMarginCanvas=0.1;
+
 void SetIsReflected(Bool_t isrefl){
   isReflected=isrefl;
 }
@@ -51,6 +56,31 @@ void SetAverageMode(Int_t avmode){
   else if(avmode==1)avType="Arithmetic";
   else Printf("DO COMPARISON WITH MC: WRONGE AVERAGE METHOD SET");
 }
+
+void SetPaveStyle(TPaveText *pv){
+  pv->SetFillColor(0);
+  pv->SetFillStyle(0);
+  //  pv->SetBorderStyle(0);
+  pv->SetBorderSize(0);
+  pv->SetTextFont(42);
+  pv->SetTextAlign(12);
+
+}
+TCanvas *GetCanvasWithStyle(TString name,TString title){
+  TCanvas *c=new TCanvas(name.Data(),title.Data(),800,800);
+  c->SetTicky();
+  c->SetTickx();
+
+  c->SetFrameBorderMode(0);
+  c->Range(-2.6,-1.5,5.4,4.4);
+  c->SetLeftMargin(leftMarginCanvas);
+  c->SetRightMargin(rightMarginCanvas);
+  c->SetBottomMargin(bottomMarginCanvas);
+  c->SetTopMargin(topMarginCanvas);
+
+  return c;
+}
+
 void Init(){
   if(filenames)delete [] filenames;
   if(pedestalfilenames)delete [] pedestalfilenames;
@@ -134,7 +164,7 @@ TH1D* OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TStr
 
   hFDsub->SetLineColor(kBlack);
   hFDsub->SetMarkerColor(kBlack);
-  hFDsub->SetXTitle("#Delta#varphi (rad)");
+  hFDsub->SetXTitle("#Delta#varphi(D,h) (rad)");
   hFDsub->SetYTitle(Form("#frac{1}{N_{%s}}#frac{dN^{assoc}}{d#Delta#varphi} (rad^{-1})",strMeson.Data()));
   hFDsub->GetYaxis()->SetTitleOffset(1.3);
   hFDsub->GetYaxis()->SetRangeUser(0,max);
@@ -179,6 +209,7 @@ TH1D* OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TStr
   tUncertainty->SetNDC();
   tUncertainty->SetTextSize(0.04);
   tUncertainty->Draw();
+  tUncertainty->SetTextFont(62);
   (*lt)=tUncertainty;
   
   TCanvas *cVaryHisto=new TCanvas("cVaryHisto","cVaryHisto",700,700);
@@ -445,7 +476,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1
   cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
   cout<<"now return histogram"<<endl;
   
-  outputhisto->SetXTitle("#Delta#varphi (rad)");
+  outputhisto->SetXTitle("#Delta#varphi (D,h) (rad)");
   outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
   outputhisto->GetYaxis()->SetTitleOffset(1.5);
   return outputhisto;
@@ -513,17 +544,18 @@ TH1D * GetHistoAndSyst(Int_t i, TString hname, TString hnamesyst,TGraphAsymmErro
   //  (*gr2)=gr;
 
   if(i<3){
-    if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.2,0.6,Form("#bf{%.0f#% scale uncertainty pp}",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.55,0.59,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty pp}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.46,Form("#bf{%.0f#% scale uncertainty pp}",hUncCorrMin->GetBinContent(1)*100.));
+    else tUncertainty=new TLatex(0.55,0.46,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty (pp)}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
    
   }
 if(i>=3){
-    if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.2,0.6,Form("#bf{%.0f#% scale uncertainty p-Pb}",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.55,0.55,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty p-Pb}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.42,Form("#bf{%.0f#% scale uncertainty p-Pb}",hUncCorrMin->GetBinContent(1)*100.));
+    else tUncertainty=new TLatex(0.55,0.42,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty (p-Pb)}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
   }
 
   tUncertainty->SetNDC();
   tUncertainty->SetTextSize(0.025);
+  tUncertainty->SetTextFont(62);
   //tUncertainty->Draw();
 
   
@@ -600,7 +632,7 @@ TH1D * ReflectHistogram(TH1D * h){
   TString   histname = h->GetName();
   histname += "_reflected";//Form("_reflected",i);
     
-  TH1D *h2=new TH1D(histname.Data(),"; #Delta#varphi(D,had) (rad); #frac{1}{N_{D}} #frac{dN}{d#Delta#varphi}^{ass} (rad^{-1})",h->GetNbinsX()/2.,0.,TMath::Pi());
+  TH1D *h2=new TH1D(histname.Data(),"; #Delta#varphi (rad); #frac{1}{N_{D}} #frac{dN}{d#Delta#varphi}^{ass} (rad^{-1})",h->GetNbinsX()/2.,0.,TMath::Pi());
   for(Int_t j=1;j<=h->GetNbinsX();j++){
     Double_t x=h->GetBinCenter(j);
     Double_t y0=h->GetBinContent(j);
@@ -721,27 +753,29 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
     subtractedhisto[2]->SetMinimum(-0.9);
     subtractedhisto[4]->SetMinimum(-0.9);
     subtractedhisto[5]->SetMinimum(-0.9);
-    subtractedhisto[4]->SetMaximum(4);
+    subtractedhisto[4]->SetMaximum(3);
     subtractedhisto[5]->SetMaximum(4);///QUI
   }
   else if(pthad.Contains("1.0")){
-    subtractedhisto[4]->SetMinimum(-0.9);
-    subtractedhisto[5]->SetMinimum(-0.9);
-    subtractedhisto[4]->SetMaximum(4);
-    subtractedhisto[5]->SetMaximum(4);
+    subtractedhisto[4]->SetMinimum(-0.5);
+    subtractedhisto[5]->SetMinimum(-0.5);
+    subtractedhisto[4]->SetMaximum(2.5);
+    subtractedhisto[5]->SetMaximum(3);
  
   }
  
     
-  TLegend * legend = new TLegend(0.14,0.67,0.47,0.77);
+  TLegend * legend = new TLegend(0.21,0.63,0.47,0.72);
   legend->SetFillColor(0);
+  legend->SetFillStyle(0);
   legend->SetBorderSize(0);
   legend->SetTextSize(0.027);
-  legend->AddEntry(histo[ihskip],"pp #sqrt{#it{s}}=7 TeV","lep");
-  legend->AddEntry(histo[4],"p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV","lep");
+  legend->AddEntry(histo[ihskip],"pp #sqrt{#it{s}}=7 TeV, |#it{y}^{D}_{cms}|<0.5","lep");
+  legend->AddEntry(histo[4],"p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<#it{y}^{D}_{cms}<0.04","lep");
   
-  TLegend * legend2 = new TLegend(0.55,0.62,0.74,0.72);
+  TLegend * legend2 = new TLegend(0.55,0.50,0.74,0.60);
   legend2->SetFillColor(0);
+  legend2->SetFillStyle(0);
   legend2->SetBorderSize(0);
   legend2->SetTextSize(0.025);
   legend2->AddEntry(grbase[1],"baseline uncertainty pp","f");
@@ -749,77 +783,69 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   // legend2->AddEntry(box2[4],"v2 subtr p-Pb","f");
   
 
-  TPaveText *alice = new TPaveText(0.58,0.73,0.82,0.76,"NDC");
-  alice->SetBorderSize(0);
-  alice->SetFillColor(0);
-  alice->SetTextFont(42);
+  TPaveText *alice = new TPaveText(0.72,0.78,0.85,0.83,"NDC");
+  SetPaveStyle(alice);
   alice->SetTextSize(0.04);
-  //  alice->AddText("ALICE Preliminary");//commented
+  alice->AddText("ALICE");//commented
 
-  TPaveText *fitvalueslow = new TPaveText(0.17,0.855,0.7,0.893,"NDC");
+  TPaveText *fitvalueslow = new TPaveText(0.21,0.835,0.75,0.873,"NDC"); // not used
+  SetPaveStyle(fitvalueslow);
   //  TPaveText *fitvalueslow = new TPaveText(0.54,0.72,0.89,0.82,"NDC");
-  fitvalueslow->SetBorderSize(0);
-  fitvalueslow->SetFillColor(0);
-  fitvalueslow->SetTextFont(42);
-  fitvalueslow->AddText("D meson  - charged particle correlation");
+  fitvalueslow->SetTextSize(0.032);
+  fitvalueslow->AddText("D meson - charged particle correlation");
+
   // fitvalueslow->AddText("D meson (average D^{0},D^{+},D^{*+}) - charged particle correlation");
-  TPaveText *fitvalueslow1 = new TPaveText(0.134,0.82,0.45,0.855,"NDC");
-  fitvalueslow1->SetBorderSize(0);
-  fitvalueslow1->SetFillColor(0);
-  fitvalueslow1->SetTextFont(42);
+  TPaveText *fitvalueslow1 = new TPaveText(0.21,0.83,0.5,0.863,"NDC");
+  SetPaveStyle(fitvalueslow1);
+  fitvalueslow1->SetTextSize(0.032);
   fitvalueslow1->AddText("Average D^{0},D^{+},D^{*+}");
-  TPaveText *fitvalueslow2 = new TPaveText(0.13,0.774,0.81,0.81,"NDC");
-  fitvalueslow2->SetBorderSize(0);
-  fitvalueslow2->SetFillColor(0);
-  fitvalueslow2->SetTextFont(42);
-  fitvalueslow2->AddText(Form("3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > %s GeV/#it{c}, |#Delta#eta| < 1.0 ",pthad.Data()));
+  //  TPaveText *fitvalueslow2 = new TPaveText(0.13,0.774,0.81,0.81,"NDC");
+  //  SetPaveStyle(fitvalueslow2);
+  //  fitvalueslow2->AddText(Form("3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > %s GeV/#it{c}, |#Delta#eta| < 1.0 ",pthad.Data()));
     
 
-TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
-  fitvaluesmid->SetBorderSize(0);
-  fitvaluesmid->SetFillColor(0);
+  TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");// not used
+  SetPaveStyle(fitvaluesmid);
   fitvaluesmid->SetTextFont(42);
   fitvaluesmid->AddText("D meson (average D^{0},D^{+},D^{*+}) - charged particle correlation");
-  TPaveText *fitvaluesmid2 = new TPaveText(0.15,0.774,0.84,0.81,"NDC");
+  
+  TPaveText *fitvaluesmid2 = new TPaveText(0.21,0.73,0.64,0.82,"NDC");
+  SetPaveStyle(fitvaluesmid2);
   //  TPaveText *fitvaluesmid2 = new TPaveText(0.15,0.78,0.84,0.825,"NDC");
   // TPaveText *fitvaluesmid2 = new TPaveText(0.18,0.79,0.84,0.843,"NDC");
-  fitvaluesmid2->SetBorderSize(0);
-  fitvaluesmid2->SetFillColor(0);
-  fitvaluesmid2->SetTextFont(42);
-  if(pthad.Contains("0.3"))  fitvaluesmid2->AddText("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
-  else if(pthad.Contains("1.0"))  fitvaluesmid2->AddText("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
+  fitvaluesmid2->SetTextSize(0.03);
+  fitvaluesmid2->AddText("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}");
+  if(pthad.Contains("0.3"))  fitvaluesmid2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
+  else if(pthad.Contains("1.0"))  fitvaluesmid2->AddText("#it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
 
 
- TPaveText *fitvalueshigh = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
-  fitvalueshigh->SetBorderSize(0);
-  fitvalueshigh->SetFillColor(0);
-  fitvalueshigh->SetTextFont(42);
+  TPaveText *fitvalueshigh = new TPaveText(0.136,0.85,0.88,0.893,"NDC"); // not used
+  SetPaveStyle(fitvalueshigh);
   fitvalueshigh->AddText("D meson (average D^{0},D^{+},D^{*+}) - charged particle correlation");
-  TPaveText *fitvalueshigh2 = new TPaveText(0.15,0.774,0.84,0.81,"NDC");
+  TPaveText *fitvalueshigh2 = new TPaveText(0.21,0.73,0.64,0.82,"NDC");
+  SetPaveStyle(fitvalueshigh2);
  //TPaveText *fitvalueshigh2 = new TPaveText(0.15,0.78,0.84,0.825,"NDC");
   //  TPaveText *fitvalueshigh2 = new TPaveText(0.18,0.79,0.84,0.843,"NDC");
-  fitvalueshigh2->SetBorderSize(0);
-  fitvalueshigh2->SetFillColor(0);
-  fitvalueshigh2->SetTextFont(42);
+  fitvalueshigh2->SetTextSize(0.03);
+  fitvalueshigh2->AddText("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}|<0.5");
   //  fitvalueshigh2->AddText(Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > %s GeV/#it{c}, |#Delta#eta| < 1.0 ",pthad.Data()));
-  if(pthad.Contains("0.3"))  fitvalueshigh2->AddText("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
-  else if(pthad.Contains("1.0"))  fitvalueshigh2->AddText("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
+  if(pthad.Contains("0.3"))  {
+    fitvalueshigh2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
+  }
+  else if(pthad.Contains("1.0"))  {
+    fitvalueshigh2->AddText("#it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
+  }
  
   Double_t startline,endline,wi;
   wi=subtractedhisto[4]->GetBinWidth(1);
   startline=subtractedhisto[4]->GetBinLowEdge(1);
-  endline=subtractedhisto[4]->GetBinLowEdge(subtractedhisto[4]->GetNbinsX())+wi+0.5;
+  endline=subtractedhisto[4]->GetBinLowEdge(subtractedhisto[4]->GetNbinsX())+wi+0.4;
   // cout<<"******************* "<<startline<<"  "<<endline<<endl;
   TLine* line=new TLine(startline, 0, endline, 0);
   line->SetLineStyle(2);
 
-  TCanvas * ptmidsub = new TCanvas("cc","mid pt subtracted correlations",800,800);
+  TCanvas * ptmidsub = GetCanvasWithStyle("ptmidsub","mid pt subtracted correlations");
   ptmidsub->cd();
-  ptmidsub->SetTicky();
-  ptmidsub->SetTickx();
-
-  ptmidsub->Range(-2.6,-1.5,5.4,4.4);
-  ptmidsub->SetLeftMargin(0.125);
   
   TH1D* h=new TH1D(*subtractedhisto[4]);
   h->Reset();
@@ -837,25 +863,19 @@ TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
   suberr[4]->Draw("E2");
   ltscale[4]->Draw();//commented
   subtractedhisto[1]->Draw("same");
-  subtractedhisto[1]->Draw("same");
   suberr[1]->Draw("E2");
   ltscale[1]->Draw();//commented
   legend->Draw();
   legend2->Draw();
-  fitvalueslow->Draw();
+  //  fitvalueslow->Draw();
   //  fitvaluesmid->Draw();
   alice->Draw();
   fitvaluesmid2->Draw("same");
   fitvalueslow1->Draw("same");
 
 
-  TCanvas * pthighsub = new TCanvas("pthighsub","high pt subtracted correlations",416,90,800,800);
+  TCanvas * pthighsub = GetCanvasWithStyle("pthighsub","high pt subtracted correlations");
   pthighsub->cd();
-  pthighsub->SetTicky();
-  pthighsub->SetTickx();
-
-  pthighsub->Range(-2.6,-1.5,5.4,4.4);
-  pthighsub->SetLeftMargin(0.125);
   TH1D* h2=new TH1D(*subtractedhisto[5]);
   h2->Reset();
   h2->GetXaxis()->SetLimits(startline,endline);
@@ -878,7 +898,7 @@ TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
   ltscale[2]->Draw();//commented
   legend->Draw();
   legend2->Draw();
-  fitvalueslow->Draw();
+  //  fitvalueslow->Draw();
   // fitvalueshigh->Draw();
   alice->Draw();
   fitvalueshigh2->Draw("same");
@@ -900,184 +920,6 @@ TPaveText *fitvaluesmid = new TPaveText(0.136,0.85,0.88,0.893,"NDC");
 
  
 }
-//_______________________________________________________________________
-void DoComparison_ppVspPb(Double_t pthad=0.3){
- 
-    
-  gStyle->SetOptStat(0);
-    
-  // set all the paths for the averaged plots
-  for(Int_t k = 0; k<nhistos; k++){
-    filenames[k] = directory;
-  }
-  for(Int_t k = 0; k<2; k++){
-    pedestalfilenames[k] = directory;
-  }
-        
-  LoadFileNamesppVspPb(pthad);       ///modified w proper files===========================
-
-   
-  TH1D ** histo = new TH1D *[nhistos];
-  // loop on histos
-  //   for(Int_t k=0; k<nhistos; k++){ //GetHisto has to get graph/syst uncer===========================
-
-  //         if(k<3) { histo[k] = GetHisto(k,"cDraw","fhDaverage"); histo[k]->SetMarkerColor(2); histo[k]->SetMarkerStyle(20); } // get p-Pb
-  //         if(k>=3) { histo[k] = GetHisto(k,"cDraw","fhDaverage"); histo[k]->SetMarkerColor(4); histo[k]->SetMarkerStyle(21); } // get p-p
-  //           histo[k]->Rebin(rebin); histo[k]->Scale(1./rebin);
-  //     }
-
-    
-    
-  Double_t BaselinePP, BaselineErrPP;// = 0;
-  Double_t BaselinepPb, BaselineErrpPb;// = 0;
-
-  TH1D ** subtractedhisto = new TH1D *[nhistos];
-  for(Int_t k=0; k<nhistos; k++){
-    if(k<3) {//baseline with syst uncert?===========================
-      GetBaseline(BaselinePP,BaselineErrPP, histo[k]);
-      cout <<"------pp-------> " <<BaselinePP << " +/- " <<BaselineErrPP<<endl;
-      subtractedhisto[k] = subtractpedestal(k,histo[k],BaselinePP);
-        
-    } // get p-Pb
-    if(k>=3) {
-      GetBaseline(BaselinepPb,BaselineErrpPb, histo[k]);
-      cout <<"------pPb-------> " <<BaselinepPb << " +/- " <<BaselineErrpPb<<endl;
-      subtractedhisto[k] = subtractpedestal(k,histo[k],BaselinepPb);
-        
-    }  // subtract pp
-        
-    subtractedhisto[k]->GetYaxis()->SetRangeUser(-0.5,2*subtractedhisto[k]->GetBinContent(subtractedhisto[k]->GetMaximumBin()));
-    //===========================subtract baseline also form point syst uncer.
-
-  }
-
-  // reflect histos
-  TH1D ** reflectedhisto = new TH1D *[nhistos];
-  cout << "test 3 "<< endl;
-  for(Int_t k=0; k<nhistos; k++){
-    reflectedhisto[k] = ReflectHistogram(subtractedhisto[k]);
-    if(k<3) {reflectedhisto[k]->SetMarkerColor(2); reflectedhisto[k]->SetMarkerStyle(20);}
-    if(k>=3) {reflectedhisto[k]->SetMarkerColor(4); reflectedhisto[k]->SetMarkerStyle(21);}
-    reflectedhisto[k]->GetYaxis()->SetRangeUser(-0.5,2*reflectedhisto[k]->GetBinContent(reflectedhisto[k]->GetMaximumBin()));
-  }
-  cout << "test 4 "<< endl;
-    
-
-  TLegend *legend = new TLegend(0.1,0.8,0.5,0.9);
-  legend->SetFillColor(0);
-  legend->SetTextSize(0.025);
-  legend->AddEntry(histo[0+ihskip],"pp #sqrt(s) 7 TeV Data","lep");
-  legend->AddEntry(histo[3+ihskip],"p-Pb #sqrt(s_{NN}) 5.02 TeV Data","lep");
-    
-    
-  TPaveText *fitvalueslow = new TPaveText(0.51,0.78,0.85,0.88,"NDC");
-  fitvalueslow->SetBorderSize(0);
-  fitvalueslow->SetFillColor(0);
-  fitvalueslow->AddText("3 GeV/c < p_{T}^{D} < 5 GeV/c");
-  fitvalueslow->AddText(Form("p_{T}^{Ass} > %.1f GeV/c ",pthad));
-  fitvalueslow->AddText(Form("|#Delta#eta| < %.1f ",1.0));
-    
-  TPaveText *fitvaluesmid = new TPaveText(0.51,0.78,0.85,0.88,"NDC");
-  fitvaluesmid->SetBorderSize(0);
-  fitvaluesmid->SetFillColor(0);
-  fitvaluesmid->AddText("5 GeV/c < p_{T}^{D} < 8 GeV/c");
-  fitvaluesmid->AddText(Form("p_{T}^{Ass} > %.1f GeV/c ",pthad));
-  fitvaluesmid->AddText(Form("|#Delta#eta| < %.1f ",1.0));
-    
-  TPaveText *fitvalueshigh = new TPaveText(0.51,0.78,0.85,0.88,"NDC");
-  fitvalueshigh->SetBorderSize(0);
-  fitvalueshigh->SetFillColor(0);
-  fitvalueshigh->AddText("8 GeV/c < p_{T}^{D} < 16 GeV/c");
-  fitvalueshigh->AddText(Form("p_{T}^{Ass} > %.1f GeV/c ",pthad));
-  fitvalueshigh->AddText(Form("|#Delta#eta| < %.1f ",1.0));
-    
-  TCanvas * ptlow = new TCanvas("Correlation_ptlow","pT 3-5 correlations",0,0,800,800);
-  TCanvas * ptmid = new TCanvas("Correlation_ptmid","pT 5-8 correlations",0,0,800,800);
-  TCanvas * pthigh = new TCanvas("Correlation_pthigh","pT 8-16 correlations",0,0,800,800);
-    
-  TCanvas * ptlowRef = new TCanvas("CorrelationReflected_ptlow","pT 3-5 correlations",0,0,800,800);
-  TCanvas * ptmidRef = new TCanvas("CorrelationReflected_ptmid","pT 5-8 correlations",0,0,800,800);
-  TCanvas * pthighRef = new TCanvas("CorrelationReflected_pthigh","pT 8-16 correlations",0,0,800,800);
-    
-  ptlow->cd();
-  subtractedhisto[0+ihskip]->Draw("ep");
-  subtractedhisto[3+ihskip]->Draw("sameep");
-  legend->Draw("same");
-  fitvalueslow->Draw("same");
-    
-  ptlowRef->cd();
-  reflectedhisto[1]->Draw("ep");
-  reflectedhisto[4]->Draw("sameep");
-  legend->Draw("same");
-  fitvalueslow->Draw("same");
-    
-    
-  ptmid->cd();
-  subtractedhisto[2]->Draw("ep");
-  subtractedhisto[5]->Draw("sameep");
-  legend->Draw("same");
-  fitvaluesmid->Draw("same");
-    
-  ptmidRef->cd();
-  reflectedhisto[0+ihskip]->Draw("ep");
-  reflectedhisto[3+ihskip]->Draw("sameep");
-  legend->Draw("same");
-  fitvaluesmid->Draw("same");
-    
-    
-  pthigh->cd();
-  subtractedhisto[1]->Draw("ep");
-  subtractedhisto[4]->Draw("sameep");
-  legend->Draw("same");
-  fitvalueshigh->Draw("same");
-    
-  pthighRef->cd();
-  reflectedhisto[2]->Draw("ep");
-  reflectedhisto[5]->Draw("sameep");
-  legend->Draw("same");
-  fitvalueshigh->Draw("same");
-    
-  // saving the canvases in .root and .png
-  TString ptoutput="",ptoutputRef="", direcname="", direcnameRef="";
-  ptoutput += Form("%sAverage_ppVspPb",avType.Data());
-  direcname += "Output_Plots/ppVspPbPlots";
-  
-  // changes name of final canvas/histo
-  if(pthad == 0.3) ptoutput += "_pt03";
-  if(pthad == 0.5) ptoutput += "_pt05";
-  if(pthad == 1.0) ptoutput += "_pt1";
-    
-    
-  SaveCanvas(ptlow, direcname, ptoutput);
-  SaveCanvas(ptmid, direcname, ptoutput);
-  SaveCanvas(pthigh, direcname, ptoutput);
-    
-  //ptlow->Close();
-  //ptmid->Close();
-  //pthigh->Close();
-    
-    
-  ptoutputRef += Form("%sAverage_ppVspPb",avType.Data());
-  direcnameRef += "Output_PlotsRef/ppVspPbPlots";
-    
-  // changes name of final canvas/histo
-  if(pthad == 0.3) ptoutputRef += "_Reflected_pt03";
-  if(pthad == 0.5) ptoutputRef += "_Reflected_pt05";
-  if(pthad == 1.0) ptoutputRef += "_Reflected_pt1";
-    
-  SaveCanvas(ptlowRef, direcnameRef, ptoutputRef);
-  SaveCanvas(ptmidRef, direcnameRef, ptoutputRef);
-  SaveCanvas(pthighRef, direcnameRef, ptoutputRef);
-    
-  //ptlowRef->Close();
-  //ptmidRef->Close();
-  //pthighRef->Close();
-    
-  return;
-    
-    
-}
-
 
 
 void LoadFileNamesppVspPb(TString pthadron){
@@ -1130,22 +972,6 @@ void GetBaseline(Double_t &av=0.,Double_t &errAv=0.,TH1D * h){
   //errbaseline=errAv;
     
 }
-
-
-void DoAllComparison(){
-    
-    
-  DoComparison_ppVspPb(0.3);
-  DoComparison_ppVspPb(0.5);
-  DoComparison_ppVspPb(1.0);
-  cout << "Done ! Check yours plots in folder ...  " << endl;
-    
-    
-}
-
-
-
-
 
 //_______________________________________________________________________
 TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1D *histo, TGraphAsymmErrors* gr,TGraphAsymmErrors *&grout, TString canvasname,TGraphAsymmErrors *&grbaseOut,TGraphAsymmErrors *&grv2Out){
@@ -1324,9 +1150,14 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(TString system="pPb",Int_t i,TH1
   cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
   cout<<"now return histogram"<<endl;
   
-  outputhisto->SetXTitle("#Delta#varphi (rad)");
+  outputhisto->SetXTitle("#Delta#varphi (D,h) (rad)");
   outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
   outputhisto->GetYaxis()->SetTitleOffset(1.5);
+  outputhisto->GetYaxis()->SetTitleSize(0.04);
+  outputhisto->GetXaxis()->SetTitleSize(0.04);
+  outputhisto->GetYaxis()->SetLabelSize(0.04);
+  outputhisto->GetXaxis()->SetLabelSize(0.04);
+
   return outputhisto;
     
 }

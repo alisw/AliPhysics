@@ -917,7 +917,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     "ntracks="<<ntracks<<                     // number of the esd tracks (to take into account the pileup in the TPC)
     "isEventOK="<<isEventOK<<                 // flag - AliFilteredTreeEventCuts - track dumped only for selected events 
     "isEventTriggered="<<isEventTriggered<<   // flag - if tigger required - track dumped only for selected events 
-    "/n";
+    "\n";
 
 
 
@@ -1883,7 +1883,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     "nV0s="<<nV0s<<                           // number of V0s
     "isEventOK="<<isEventOK<<                 // flag - AliFilteredTreeEventCuts - track dumped only for selected events 
     "isEventTriggered="<<isEventTriggered<<   // flag - if tigger required - track dumped only for selected events 
-    "/n";
+    "\n";
 
 
 

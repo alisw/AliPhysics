@@ -108,7 +108,7 @@ public:
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   virtual void   SetMomSegmentation(Int_t np) {fNpt = np;}
   static Float_t SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
-  static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
+  static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0., Float_t scale=1);
   void           SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
   void           SetTriggerList(const Char_t *tl);
   virtual void   Terminate(Option_t *);

@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include <TString.h>
+#include <TStopwatch.h>
 class AliAlgSteer;
 
 class AliGloAlgTask : public AliAnalysisTaskSE {
@@ -15,6 +16,7 @@ class AliGloAlgTask : public AliAnalysisTaskSE {
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  NotifyRun();
+  virtual Bool_t  Notify();
   virtual void  Terminate(Option_t *);
   //
   UInt_t     GetTriggerSelection()                            const {return fTrigSel;}
@@ -34,6 +36,9 @@ class AliGloAlgTask : public AliAnalysisTaskSE {
   //
   TString      fIniParFileName;          // initial parameters file
   TString      fConfMacroName;           // name of alignment configuration macro
+  //
+  TStopwatch   fStopWatch;               // stopwatch
+  Int_t        fChunks;                  // chunks processed
   //
  private:    
   AliGloAlgTask(const AliGloAlgTask&); // not implemented

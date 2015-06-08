@@ -82,7 +82,7 @@
 #include <AliTRDinfoGen.h>
 #endif
 
-const Char_t *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libCORRFW", "libTender", "libPWGPP"};
+const Char_t *libs[] = {"libANALYSIS", "libCORRFW", "libTender", "libPWGPP"};
 // define setup
 TCanvas *c(NULL);
 Bool_t mc(kFALSE), friends(kFALSE);
@@ -139,7 +139,7 @@ void makeResults(const Char_t *opt = "ALL",
     new(ctask) TClass(AliTRDpwgppHelper::TaskClassName(itask));
     task = (AliAnalysisTask*)ctask->New();
     task->SetName(Form("%s%s", task->GetName(), cid));
-    printf(" *** task %s, output file %s\n", task->GetName(), outputFile.Data());
+    printf(" *** task %s, input QA file \"%s\"\n", task->GetName(), outputFile.Data());
     if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task, outputFile.Data());
     else if(strcmp(task->IsA()->GetName(), "AliTRDcheckESD")==0) processESD(task, outputFile.Data());
     else if(strcmp(task->IsA()->GetName(), "AliTRDinfoGen")==0) processGEN(task, outputFile.Data());

@@ -35,6 +35,8 @@ AliGloAlgTask::AliGloAlgTask(const char *name)
   ,fAlgSteer(0)
   ,fIniParFileName()
   ,fConfMacroName()
+  ,fStopWatch()
+  ,fChunks(0)
 {
   // Constructor
   DefineOutput(1, TList::Class());
@@ -77,6 +79,17 @@ void AliGloAlgTask::NotifyRun()
 }
 
 //________________________________________________________________________
+Bool_t AliGloAlgTask::Notify()
+{
+  // notify chunk change
+  fStopWatch.Stop();
+  AliInfoF("Processing chunk %d",fChunks++);
+  fStopWatch.Print();
+  fStopWatch.Start(kFALSE);
+  return kTRUE;
+}
+
+//________________________________________________________________________
 void AliGloAlgTask::UserExec(Option_t *) 
 {
   // Main loop
@@ -112,6 +125,10 @@ void AliGloAlgTask::Terminate(Option_t *)
   hstat = fAlgSteer->GetHistoStat();
   if (hstat) fOutput->Add(hstat);
   fAlgSteer->DetachHistoStat();
+  //
+  fStopWatch.Stop();
+  AliInfoF("Processed %d chunks",fChunks);
+  fStopWatch.Print();
   //
 }
 
