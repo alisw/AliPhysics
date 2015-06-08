@@ -377,6 +377,9 @@ void AliEveOnlineEventManager::NextEvent()
                 
                 StorageManagerDown(); // block SM while event is being loaded
                 DestroyElements();
+                if(fCurrentEvent[fEventInUse]->GetRunNumber() != fCurrentRun){
+                    fgMagField=0;
+                }
                 InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
                 SetEvent(0,0,fCurrentEvent[fEventInUse],0);
             }
