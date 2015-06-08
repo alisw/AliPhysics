@@ -64,6 +64,8 @@ WithSysError(const TString&  system,
   TString trigLegTitle = ""; // trigger;
   if (trigger.EqualTo("INEL",TString::kIgnoreCase))
     adder = new INELAdder(system, sNN);
+  if (trigger.EqualTo("INELGt0",TString::kIgnoreCase))
+    adder = new INELGt0Adder(system, sNN);
   else if (trigger.EqualTo("NSD",TString::kIgnoreCase))
     adder = new NSDAdder(system, sNN);
   else {
