@@ -14,19 +14,16 @@
 // Felix Reidt  <Felix.Reidt@cern.ch>                                     //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TNtuple.h>
-#include <TTree.h>
-#include <TH1F.h>
-#include <THnSparse.h>
+#include "THnSparse.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
-#include "AliNormalizationCounter.h"
-#include "AliHFsubtractBFDcuts.h"
 
+class AliNormalizationCounter;
+class AliHFsubtractBFDcuts;
 class AliAODEvent;
+class AliAODMCHeader;
+class AliAODMCParticle;
 
 class AliAnalysisTaskSED0MassCutVarFDSub : public AliAnalysisTaskSE
 {
