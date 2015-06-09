@@ -368,27 +368,16 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // 'labels' maps a track's id to the track's index in the Event
   // i.e. labels[Event->GetTrack(x)->GetID()] == x
-  int max_track_id = nofTracks;
-
-  std::vector<int> labels(max_track_id);
-  labels.assign(max_track_id, -1);
+  std::map<int, int> labels;
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i = 0; i < nofTracks; i++) {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(fEvent->GetTrack(i));
     assert(aodtrack && "Not a standard AOD");
     if (!aodtrack->TestFilterBit(fFilterBit)) {
-      const int id = aodtrack->GetID();
       // Skip TPC-only tracks
-      if (id < 0) {
-        continue;
-      }
-      // Resize labels vector in event of larger id than labels may contain
-      if (id >= max_track_id) {
-        max_track_id = id + 1024;
-        labels.resize(max_track_id, -1);
-      }
-      labels[id] = i;
+      if (aodtrack->GetID() < 0) continue;
+      labels[aodtrack->GetID()] = i;
     }
   }
 
@@ -431,12 +420,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
 
     // For TPC Only tracks we have to copy PID information from corresponding global tracks
-
-    // If we're looking at TPC (filterbit 7) we need to 'get' the global track id associated with the next track
-    size_t pid_track_id = (fFilterBit == (1 << (7)) || fFilterMask == 128)
-                        ? labels.at(-1 - fEvent->GetTrack(i)->GetID())
-                        : i;
-    
+    Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
+                       ? labels[-1 - fEvent->GetTrack(i)->GetID()]
+                       : i;
     AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
     assert(aodtrackpid && "Not a standard AOD");
 
