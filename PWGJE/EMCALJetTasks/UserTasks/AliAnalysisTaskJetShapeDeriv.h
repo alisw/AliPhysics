@@ -44,6 +44,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
 
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
+  void SetPartialExclusion(Bool_t b)                            { fPartialExclusion  = b   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
