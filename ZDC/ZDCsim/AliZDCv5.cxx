@@ -92,7 +92,8 @@ AliZDCv5::AliZDCv5() :
   fTDIAperturePos(5.5),
   fTDIApertureNeg(5.5),
   fTDIConfiguration(2),
-  fLumiLength(15.)
+  fLumiLength(15.),
+  fSwitchOnTrackRef(kFALSE)
 {
   //
   // Default constructor for Zero Degree Calorimeter
@@ -141,7 +142,8 @@ AliZDCv5::AliZDCv5(const char *name, const char *title) :
   fTDIAperturePos(5.5),
   fTDIApertureNeg(5.5),
   fTDIConfiguration(2),
-  fLumiLength(15.)  
+  fLumiLength(15.),
+  fSwitchOnTrackRef(kFALSE)  
 {
   //
   // Standard constructor for Zero Degree Calorimeter 
@@ -2694,7 +2696,8 @@ void AliZDCv5::StepManager()
     }
     else if(!strncmp(knamed,"ZE",2)) vol[0]=3; //ZEM
     // February 2015: Adding TrackReference
-    if(TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting()) {
+    // June 2015: adding a switch for track reference!!!
+    if(fSwitchOnTrackRef==kTRUE && (TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting())) {
        AliTrackReference* trackRef = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kZDC);
        if(vol[0]>0){
          trackRef->SetUserId(vol[0]);

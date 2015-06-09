@@ -57,6 +57,7 @@ public:
   void SetYZPC(Float_t yZPC) {fPosZPC[1] = yZPC;}
   void SetYZPA(Float_t yZPA) {fPosZPA[1] = yZPA;}
   
+  void SetSwitchOnTrackreferences() {fSwitchOnTrackRef = kTRUE;}
  
 protected:
 
@@ -118,8 +119,9 @@ protected:
   Float_t fTDIApertureNeg;	  // TDI semi-aperture  neg. y dir. (abs. value)
   
   Float_t fLumiLength;  	  // Luminometer length
+  Bool_t fSwitchOnTrackRef;       // to switch on/off storing of track references
   
-  ClassDef(AliZDCv4, 1)  // Zero Degree Calorimeter version 1
+  ClassDef(AliZDCv4, 2)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif
