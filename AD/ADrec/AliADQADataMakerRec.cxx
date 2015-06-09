@@ -439,6 +439,13 @@ void AliADQADataMakerRec::InitRaws()
   const Int_t kNTdcTimeBins  = fQAParam->GetNTdcTimeBins();
   const Float_t kTdcTimeMin    =  fQAParam->GetTdcTimeMin();
   const Float_t kTdcTimeMax    = fQAParam->GetTdcTimeMax();
+  const Int_t kNTdcTimeBinsFlag  = fQAParam->GetNTdcTimeBinsFlag();
+  const Float_t kTdcTimeMinFlag    =  fQAParam->GetTdcTimeMinFlag();
+  const Float_t kTdcTimeMaxFlag    = fQAParam->GetTdcTimeMaxFlag();
+  const Int_t kNTdcTimeRatioBins  = fQAParam->GetNTdcTimeRatioBins();
+  const Float_t kTdcTimeRatioMin    =  fQAParam->GetTdcTimeRatioMin();
+  const Float_t kTdcTimeRatioMax    = fQAParam->GetTdcTimeRatioMax();
+  
   const Int_t kNTdcWidthBins =  fQAParam->GetNTdcWidthBins();
   const Float_t kTdcWidthMin   =    fQAParam->GetTdcWidthMin();
   const Float_t kTdcWidthMax   =  fQAParam->GetTdcWidthMax();
@@ -551,20 +558,20 @@ void AliADQADataMakerRec::InitRaws()
   h2i = new TH2I("H2I_HPTDCTime", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h2i,kHPTDCTime, !expert, image, saveCorr); iHisto++;
   
-  h2i = new TH2I("H2I_HPTDCTime_BB", "HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  h2i = new TH2I("H2I_HPTDCTime_BB", "HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBinsFlag, kTdcTimeMinFlag, kTdcTimeMaxFlag);
   Add2RawsList(h2i,kHPTDCTimeBB, !expert, image, !saveCorr); iHisto++;
 
-  h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBinsFlag, kTdcTimeMinFlag, kTdcTimeMaxFlag);
   Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
   
   //With wide binning for ratio
-  h2d = new TH2F("H2D_HPTDCTimeRebin", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
+  h2d = new TH2F("H2D_HPTDCTimeRebin", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeRatioBins, kTdcTimeRatioMin, kTdcTimeRatioMax);
   Add2RawsList(h2d,kHPTDCTimeRebin, !expert, image, saveCorr); iHisto++;
   
-  h2d = new TH2F("H2D_HPTDCTimeRebin_BB", "Ratio Time w_BB_Flag/All ;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
+  h2d = new TH2F("H2D_HPTDCTimeRebin_BB", "Ratio Time w_BB_Flag/All ;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeRatioBins, kTdcTimeRatioMin, kTdcTimeRatioMax);
   Add2RawsList(h2d,kHPTDCTimeRebinBB, !expert, image, !saveCorr); iHisto++;
 
-  h2d = new TH2F("H2D_HPTDCTimeRebin_BG", "Ratio Time w_BG_Flag/All;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, 300, 0, 300);
+  h2d = new TH2F("H2D_HPTDCTimeRebin_BG", "Ratio Time w_BG_Flag/All;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeRatioBins, kTdcTimeRatioMin, kTdcTimeRatioMax);
   Add2RawsList(h2d,kHPTDCTimeRebinBG, !expert, image, !saveCorr); iHisto++;
 
   //Mean time histograms	
@@ -581,10 +588,10 @@ void AliADQADataMakerRec::InitRaws()
   h1d = new TH1F("H1D_MeanTimeDifference","Mean Time Difference ADA-ADC ;AD Mean time t_{A} - t_{C} [ns];Counts",1024,-150,150);
   Add2RawsList(h1d,kMeanTimeDiff, expert, !image, !saveCorr); iHisto++;
 
-  h2d = new TH2F("H2D_MeanTimeCorr", "Mean Time in ADA vs ADC;Mean time ADA [ns];Mean time ADC [ns]", kNMeanTimeCorrBins,kMeanTimeCorrMin,kMeanTimeCorrMax,kNMeanTimeCorrBins, kMeanTimeCorrMin,kMeanTimeCorrMax) ;  
+  h2d = new TH2F("H2D_MeanTimeCorr", "AD Mean time t_{A} vs t_{C};Mean time ADA [ns];Mean time ADC [ns]", kNMeanTimeCorrBins,kMeanTimeCorrMin,kMeanTimeCorrMax,kNMeanTimeCorrBins, kMeanTimeCorrMin,kMeanTimeCorrMax) ;  
   Add2RawsList(h2d,kMeanTimeCorr, expert, !image, !saveCorr);   iHisto++;
  
-  h2d = new TH2F("H2D_MeanTimeSumDiff", "Mean Time in ADA vs ADC; AD Mean time t_{A} - t_{C} [ns];AD Mean time t_{A} + t_{C} [ns]", 99, -150.0, 149.707031, 100, 0.0, 400.390625);  
+  h2d = new TH2F("H2D_MeanTimeSumDiff", "AD Mean time t_{A} - t_{C} vs t_{A} + t_{C}; AD Mean time t_{A} - t_{C} [ns];AD Mean time t_{A} + t_{C} [ns]", 307, -150.000000, 149.804688, 410, 0.000000, 400.390625);  
   Add2RawsList(h2d,kMeanTimeSumDiff, expert, !image, !saveCorr);   iHisto++;
  
   //Slewing histograms
@@ -911,16 +918,16 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       // Fill Flag and Charge Versus LHC-Clock histograms
       Int_t nbbFlag = 0;
       Int_t nbgFlag = 0;
-      flagBB[offlineCh] = kFALSE;
-      flagBG[offlineCh] = kFALSE;
+      flagBB[offlineCh] = rawStream->GetBBFlag(iChannel,10);
+      flagBG[offlineCh] = rawStream->GetBGFlag(iChannel,10);
       
       for(Int_t iEvent=0; iEvent<21; iEvent++){
 	charge = rawStream->GetPedestal(iChannel,iEvent);
 	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
 	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel,iEvent);
 	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent);
-	if(bbFlag){nbbFlag++;flagBB[offlineCh]=kTRUE;}
-	if(bgFlag){nbgFlag++;flagBG[offlineCh]=kTRUE;}
+	if(bbFlag) nbbFlag++;
+	if(bgFlag) nbgFlag++;
 	
 	FillRawsData((intgr == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), offlineCh,(float)iEvent-10,(float)charge);
 	FillRawsData(kBBFlagVsClock, offlineCh,(float)iEvent-10,(float)bbFlag);
@@ -939,16 +946,16 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       FillRawsData(kHPTDCTime,offlineCh,time[offlineCh]);
       FillRawsData(kHPTDCTimeRebin,offlineCh,time[offlineCh]);
       FillRawsData(kWidth,offlineCh,width[offlineCh]);
-      //if(flagBB[offlineCh]) {
-      if(nbbFlag > 0){
+      if(flagBB[offlineCh]) {
+      //if(nbbFlag > 0){
 	FillRawsData(kHPTDCTimeBB,offlineCh,time[offlineCh]);
 	FillRawsData(kHPTDCTimeRebinBB,offlineCh,time[offlineCh]);
 	FillRawsData(kWidthBB,offlineCh,width[offlineCh]);
 	FillRawsData(kChargeEoIBB,offlineCh,adc[offlineCh]);
 	FillRawsData(kNEventsBBFlag,offlineCh);
       }
-      //if(flagBG[offlineCh]) {
-      if(nbgFlag > 0){
+      if(flagBG[offlineCh]) {
+      //if(nbgFlag > 0){
 	FillRawsData(kHPTDCTimeBG,offlineCh,time[offlineCh]);
 	FillRawsData(kHPTDCTimeRebinBG,offlineCh,time[offlineCh]);
 	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);

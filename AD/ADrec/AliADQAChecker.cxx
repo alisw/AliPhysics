@@ -66,7 +66,9 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxNoTimeRate(10e-3),
   fMaxNoFlagRate(10e-2),
   fMaxBBVariation(5),
-  fMaxBGVariation(5)
+  fMaxBGVariation(5),
+  fAsynchronBB(0.5),
+  fAsynchronBG(0.5)
 {
   fQAParam = (AliADQAParam*)GetQAParam();
   fSatMed = fQAParam->GetSatMed();
@@ -80,6 +82,8 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxNoFlagRate = fQAParam->GetMaxNoFlagRate();
   fMaxBBVariation = fQAParam->GetMaxBBVariation();
   fMaxBGVariation = fQAParam->GetMaxBGVariation();
+  fAsynchronBB = fQAParam->GetAsynchronBB();
+  fAsynchronBG = fQAParam->GetAsynchronBG();
 }
 
 //____________________________________________________________________________
@@ -406,8 +410,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			
 			for(Int_t i=1; i<=8; i++){
 				if(hNEventsBBFlag->GetBinError(i) == 0 || hNEventsBBFlag->GetBinError(i+8) == 0) continue;
-				if(((TMath::Abs(hNEventsBBFlag->GetBinContent(i)-meanRateADC)/hNEventsBBFlag->GetBinError(i))>fMaxBBVariation) || 
-				   ((TMath::Abs(hNEventsBBFlag->GetBinContent(i+8)-meanRateADA)/hNEventsBBFlag->GetBinError(i+8))>fMaxBBVariation)){
+				if(((TMath::Abs(hNEventsBBFlag->GetBinContent(i)-meanRateADC))>fMaxBBVariation) || 
+				   ((TMath::Abs(hNEventsBBFlag->GetBinContent(i+8)-meanRateADA))>fMaxBBVariation)){
 					test = 0.7;
 					highVar = kTRUE;
 					}
@@ -448,8 +452,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			
 			for(Int_t i=1; i<=8; i++){
 				if(hNEventsBGFlag->GetBinError(i) == 0 || hNEventsBGFlag->GetBinError(i+8) == 0) continue;
-				if(((TMath::Abs(hNEventsBGFlag->GetBinContent(i)-meanRateADC)/hNEventsBGFlag->GetBinError(i))>fMaxBGVariation) || 
-				   ((TMath::Abs(hNEventsBGFlag->GetBinContent(i+8)-meanRateADA)/hNEventsBGFlag->GetBinError(i+8))>fMaxBGVariation)){
+				if(((TMath::Abs(hNEventsBGFlag->GetBinContent(i)-meanRateADC))>fMaxBGVariation) || 
+				   ((TMath::Abs(hNEventsBGFlag->GetBinContent(i+8)-meanRateADA))>fMaxBGVariation)){
 					test = 0.7;
 					highVar = kTRUE;
 					}
@@ -639,7 +643,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i<8)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > 0.5) {
+				if(around/center > fAsynchronBB) {
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
 					}
@@ -679,7 +683,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			Bool_t notSynchADC = kFALSE;
 
     			for(Int_t i=0; i<16; i++){
-      				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
+      				hClockSlice = hBGFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
 				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
 				if(center == 0){
@@ -687,7 +691,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i<8)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > 0.5) {
+				if(around/center > fAsynchronBG) {
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
 					}
@@ -1037,9 +1041,18 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	gPad->SetLogy();
 	histoBlue=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADA);
 	nEvents = histoBlue->Integral(-1,-1);
-	histoBlue->DrawCopy();
 	histoRed=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADC);
+	Float_t max[2];
+	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+	Float_t min[2];
+	min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
+	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
+	
+	histoBlue->GetYaxis()->SetRangeUser(TMath::MinElement(2,min)+1 ,2*TMath::MaxElement(2,max));
+	histoBlue->DrawCopy();
 	histoRed->DrawCopy("same");
+	
 	TLegend *myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
 	myLegend1->SetTextFont(42);
   	myLegend1->SetBorderSize(0);
@@ -1094,7 +1107,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTimeNoFlag);
 	histoRed = (TH1*)histo->Clone("histoRed");
 	if(nEvents != 0) histoRed->Scale(1/nEvents);
-	Float_t max[2];
 	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
 	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
 	histoBlue->GetYaxis()->SetRangeUser(0,2*TMath::MaxElement(2,max));
@@ -1134,7 +1146,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	
 	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
 	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
-	Float_t min[2];
+
 	min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
 	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
 	
@@ -1167,9 +1179,9 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	for(Int_t iHist = 0; iHist<2; iHist++){
 		pad = pCoinc->cd(iHist+1);
 		gPad->SetLogy();
-		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist);
-		histo->DrawCopy();
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADC+2*iHist);
+		histo->DrawCopy();
+		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist);
 		histo->DrawCopy("same");
 		myLegend1->Draw();
 		}
@@ -1213,6 +1225,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	myLegend1->Draw();
 	for(Int_t iHist = 0; iHist<3; iHist++){
 		pad = pMeanTime->cd(iHist+2);
+		gPad->SetLogz();
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeDiff+iHist);
 		histo->DrawCopy("COLZ");
 		}
