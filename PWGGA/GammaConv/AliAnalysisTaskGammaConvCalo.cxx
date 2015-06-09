@@ -1245,9 +1245,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fClusterOutputList[iCut]->Add(fHistoTrueClusEMNonLeadingPt[iCut]);
 				fHistoTrueNLabelsInClus[iCut] = new TH1F("TrueNLabelsInClus","TrueNLabelsInClus",100,-0.5,99.5);
 				fClusterOutputList[iCut]->Add(fHistoTrueNLabelsInClus[iCut]);	
-				fHistoTrueClusGammaEM02[iCut] = new TH2F("TrueClusGammaEM02","TrueClusGammaEM02",300,0,30,400,0,5);
+				fHistoTrueClusGammaEM02[iCut] = new TH2F("TrueClusGammaEM02","TrueClusGammaEM02",500,0,50,400,0,5);
 				fClusterOutputList[iCut]->Add(fHistoTrueClusGammaEM02[iCut]);
-				fHistoTrueClusPi0EM02[iCut] = new TH2F("TrueClusPi0EM02","TrueClusPi0EM02",300,0,30,400,0,5);
+				fHistoTrueClusPi0EM02[iCut] = new TH2F("TrueClusPi0EM02","TrueClusPi0EM02",500,0,50,400,0,5);
 				fClusterOutputList[iCut]->Add(fHistoTrueClusPi0EM02[iCut]);
 				fHistoDoubleCountTrueClusterGammaPt[iCut] = new TH1F("TrueDoubleCountClusterGamma_Pt","TrueDoubleCountClusterGamma_Pt",300,0,30);
 				fClusterOutputList[iCut]->Add(fHistoDoubleCountTrueClusterGammaPt[iCut]);
