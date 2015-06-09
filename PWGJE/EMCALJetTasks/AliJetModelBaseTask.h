@@ -51,7 +51,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   virtual void           SetNClusters(Int_t n)                 { fNClusters    = n;    }
   virtual void           SetNCells(Int_t n)                    { fNCells       = n;    }
   virtual void           SetNTracks(Int_t n)                   { fNTracks      = n;    }
-
+  
+  TString                GetOutTrackName() const;
  protected:
   void                   UserExec(Option_t* /*option*/);
   void                   UserCreateOutputObjects();
@@ -78,6 +79,9 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   virtual Bool_t         ExecOnce();                                                            // intialize task
   virtual void           Run();                                                                 // do jet model action
 
+  
+  
+  
   TString                fGeomName;               // EMCal geometry name
   TString                fTracksName;             // name of track collection
   TString                fOutTracksName;          // name of output track collection

@@ -17,6 +17,7 @@
 #include <TFile.h>
 #include <TKey.h>
 #include <TTree.h>
+#include <TRandom3.h>
 
 #include "AliVCluster.h"
 #include "AliVTrack.h"
@@ -47,6 +48,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fJetMassVarType(kMass),
   fResponseReference(kDet),
   fUseSumw2(0),
+  fPartialExclusion(0),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -136,6 +138,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fJetMassVarType(kMass),
   fResponseReference(kDet),
   fUseSumw2(0),
+  fPartialExclusion(0),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -432,7 +435,6 @@ Bool_t AliAnalysisTaskJetShapeDeriv::Run()
 Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 {
   // Fill histograms.
-
   AliEmcalJet *jet1  = NULL; //AA jet
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
   AliEmcalJet *jetR  = NULL; //true jet for response matrix
@@ -441,7 +443,6 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   fRho  = (Float_t)jetCont->GetRhoVal();
   fRhoM = (Float_t)jetCont->GetRhoMassVal();
-
   //Get leading jet in Pb-Pb event without embedded objects
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
@@ -450,10 +451,9 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   jetCont->ResetCurrentID();
   while((jet1 = jetCont->GetNextAcceptJet())) {
     jet2 = NULL;
-
     if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
       continue;
-
+    
     Double_t mjet1 = jet1->GetSecondOrderSubtracted();
     Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
     Double_t var = mjet1;
@@ -470,35 +470,52 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     fh2PtRawSubFacV2[fCentBin]->Fill(jet1->Pt(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
     fh2PtCorrSubFacV2[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
     fh2NConstSubFacV2[fCentBin]->Fill(jet1->GetNumberOfTracks(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
-
+    
     Double_t fraction = 0.;
     fMatch = 0;
     fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
     if(fSingleTrackEmb) {
-      vpe = GetEmbeddedConstituent(jet1);
-      if(vpe) {
-        fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
-        fMatch = 1;
-      }
+       vpe = GetEmbeddedConstituent(jet1);
+       if(vpe) {
+       	  Bool_t reject = kFALSE; 	     
+       	  if(fPartialExclusion) {
+       	     
+       	     TRandom3 rnd;
+       	     rnd.SetSeed(0);
+       	     
+       	     Double_t ncoll = 6.88; //GetNColl(); //check it out from AliAnalysisTaskDeltaPt and possibly refine
+       	     
+       	     Double_t prob = 0.;
+       	     if(ncoll>0)
+       	     	prob = 1./ncoll;
+       	     
+       	     if(rnd.Rndm()<=prob) reject = kTRUE; //reject cone
+       	  }
+          if(!reject){	  
+             fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
+             fMatch = 1;
+       	  }
+       }
     } else {
-      jet2 = jet1->ClosestJet();
-      fraction = jetCont->GetFractionSharedPt(jet1);
-      fMatch = 1;
-      if(fMinFractionShared>0.) {
-        if(fraction>fMinFractionShared) {
-          fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
-          fMatch = 1;
-
-          //choose jet type for true axis of response matrix
-          if(fResponseReference==kDet) 
-            jetR = jet2;
-          else if(fResponseReference==kPart)
-            jetR = jet2->GetTaggedJet();
-        } else
-          fMatch = 0;
-      }
+       
+       jet2 = jet1->ClosestJet();
+       fraction = jetCont->GetFractionSharedPt(jet1);
+       fMatch = 1;
+       if(fMinFractionShared>0.) {
+       	  if(fraction>fMinFractionShared) {
+       	     fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
+       	     fMatch = 1;
+       	     
+       	     //choose jet type for true axis of response matrix
+       	     if(fResponseReference==kDet) 
+       	     	jetR = jet2;
+       	     else if(fResponseReference==kPart)
+       	     	jetR = jet2->GetTaggedJet();
+       	  } else
+       	     fMatch = 0;
+       }
     }
-
+    
     //Fill histograms for matched jets
     fh2MSubMatch[fCentBin]->Fill(var,fMatch);
     if(fMatch==1) {
@@ -518,7 +535,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       if(fSingleTrackEmb && vpe) {
         mJetR  = vpe->M();
         var2   = vpe->M();
-        ptJetR = vpe->Pt();
+        ptJetR = vpe->Pt(); 
       }
       if(fJetMassVarType==kRatMPt) {
         if(ptJetR>0. || ptJetR<0.) var2 /= ptJetR;
@@ -553,7 +570,6 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       fTreeJetBkg->Fill();
     }
   }
-
   return kTRUE;
 }
 

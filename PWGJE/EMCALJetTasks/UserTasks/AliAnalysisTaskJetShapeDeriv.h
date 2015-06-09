@@ -61,7 +61,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   JetMassVarType                      fJetMassVarType;             // observable to use
   ResponseReference                   fResponseReference;          // true axis of response matrix
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
-
+  Bool_t                              fPartialExclusion;           // randomly esclude areas according to Ncoll
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       // jet1(AA) vector  
   TLorentzVector  *fJet2Vec;                                       // jet2(probe) vector
