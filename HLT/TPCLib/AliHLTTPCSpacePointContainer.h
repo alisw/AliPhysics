@@ -48,6 +48,7 @@ class AliHLTTPCSpacePointContainer : public AliHLTSpacePointContainer
   virtual float GetCharge(AliHLTUInt32_t clusterID) const;
   virtual float GetMaxSignal(AliHLTUInt32_t clusterID) const;
   virtual float GetPhi(AliHLTUInt32_t clusterID) const;
+  virtual UChar_t GetPadRow(AliHLTUInt32_t clusterID) const;
 
   /// add input block to the collection
   virtual int AddInputBlock(const AliHLTComponentBlockData* pDesc);
