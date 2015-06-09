@@ -25,8 +25,8 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   gSystem->Load("libSTAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGPP");
   
@@ -61,13 +61,13 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   };
   for(Int_t i=0; i<kNESDtrends; ++i)
     (*treeStreamer)<< "trending" << Form("%s=",kESDTrendNames[i].Data()) << esdTrendValues[i];
-  
+
   // process the QA output from the other tasks----------------------------------------
   if(dataType.Contains("sim"))
-    makeResults("PID DET", qaFile.Data());
+    makeResults("PID DET RES", qaFile.Data());
   else  
-    makeResults("NOMC PID DET", qaFile.Data());
-  
+    makeResults("NOMC PID DET RES", qaFile.Data());
+
   TFile *trendFile = new TFile("TRD.Trend.root","READ");
   if(!trendFile || !trendFile->IsOpen() ){
     printf("E-Couldn't open the TRD.Trend.root file. No tree.\n");
@@ -75,9 +75,10 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
     return;
   }
   TKey *tk(NULL); AliTRDtrendValue *tv(NULL); Int_t itv(0);
-  Double_t trendValues[100]={0.0};
+  const Int_t ntrends(5000);
+  Double_t trendValues[ntrends]={0.0};
   TIterator *it(trendFile->GetListOfKeys()->MakeIterator());
-  while((tk = (TKey*)it->Next()) && itv < 5000){
+  while((tk = (TKey*)it->Next()) && itv < ntrends){
     if(!(tv = (AliTRDtrendValue*)trendFile->Get(tk->GetName()))) continue;
     trendValues[itv] = tv->GetVal();
     TString trendName = tv->GetName();
