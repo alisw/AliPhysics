@@ -22,6 +22,12 @@ AliADQAParam::AliADQAParam():
   fNTdcTimeBins(3062),
   fTdcTimeMin(0.976562),
   fTdcTimeMax(300.0),
+  fNTdcTimeBinsFlag(410),
+  fTdcTimeMinFlag(50.0),
+  fTdcTimeMaxFlag(90.039062),
+  fNTdcTimeRatioBins(40),
+  fTdcTimeRatioMin(50),
+  fTdcTimeRatioMax(90),
   fNTdcWidthBins(153),
   fTdcWidthMin(2.343750),
   fTdcWidthMax(121.875000),
@@ -52,8 +58,10 @@ AliADQAParam::AliADQAParam():
   fMaxPedWidth(1.5),
   fMaxNoTimeRate(10e-4),
   fMaxNoFlagRate(10e-3),
-  fMaxBBVariation(5),
-  fMaxBGVariation(5)
+  fMaxBBVariation(0.1),
+  fMaxBGVariation(0.1),
+  fAsynchronBB(0.5),
+  fAsynchronBG(0.5)
   
    	
 

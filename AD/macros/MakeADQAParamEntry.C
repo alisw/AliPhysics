@@ -24,6 +24,14 @@ void MakeADQAParamEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
   ADQAParam->SetNTdcTimeBins(3062); 
   ADQAParam->SetTdcTimeMin(0.976562); 
   ADQAParam->SetTdcTimeMax(300.0); 
+  
+  ADQAParam->SetNChargeChannelBins(10000);
+  ADQAParam->SetChargeChannelMin(1);
+  ADQAParam->SetChargeChannelMax(10001);
+  
+  ADQAParam->SetNChargeSideBins(8000);
+  ADQAParam->SetChargeSideMin(10);
+  ADQAParam->SetChargeSideMax(80000);
 
   // save in CDB storage
   AliCDBMetaData *md= new AliCDBMetaData();

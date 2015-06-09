@@ -71,8 +71,10 @@ private:
   Float_t fMaxNoFlagRate;
   Float_t fMaxBBVariation;
   Float_t fMaxBGVariation;
+  Float_t fAsynchronBB;
+  Float_t fAsynchronBG;
 
-  ClassDef(AliADQAChecker,4)  // description 
+  ClassDef(AliADQAChecker,5)  // description 
 
 };
 

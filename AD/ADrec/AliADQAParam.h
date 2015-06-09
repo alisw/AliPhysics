@@ -28,6 +28,14 @@ class AliADQAParam : public TNamed
   void SetNTdcTimeBins (Int_t val) { fNTdcTimeBins = val; }
   void SetTdcTimeMin (Float_t val) { fTdcTimeMin = val; }
   void SetTdcTimeMax (Float_t val) { fTdcTimeMax = val; }
+  //HPTDC time flag
+  void SetNTdcTimeBinsFlag (Int_t val) { fNTdcTimeBinsFlag = val; }
+  void SetTdcTimeMinFlag (Float_t val) { fTdcTimeMinFlag = val; }
+  void SetTdcTimeMaxFlag (Float_t val) { fTdcTimeMaxFlag = val; }
+  //HPTDC TimeRatio
+  void SetNTdcTimeRatioBins (Int_t val) { fNTdcTimeRatioBins = val; }
+  void SetTdcTimeRatioMin (Float_t val) { fTdcTimeRatioMin = val; }
+  void SetTdcTimeRatioMax (Float_t val) { fTdcTimeRatioMax = val; }
   //Width
   void SetNTdcWidthBins (Int_t val) { fNTdcWidthBins = val; }
   void SetTdcWidthMin (Float_t val) { fTdcWidthMin = val; }
@@ -71,11 +79,22 @@ class AliADQAParam : public TNamed
   void SetMaxNoFlagRate(Float_t val) {fMaxNoFlagRate = val;}
   void SetMaxBBVariation(Float_t val) {fMaxBBVariation = val;}
   void SetMaxBGVariation(Float_t val) {fMaxBGVariation = val;}
+  
+  void SetAsynchronBB(Float_t val) {fAsynchronBB = val;}
+  void SetAsynchronBG(Float_t val) {fAsynchronBG = val;}
 
   //HPTDC time
   Int_t GetNTdcTimeBins() const { return fNTdcTimeBins; }
   Float_t GetTdcTimeMin() const { return fTdcTimeMin; }
   Float_t GetTdcTimeMax() const { return fTdcTimeMax; }
+  //HPTDC time with flag
+  Int_t GetNTdcTimeBinsFlag() const { return fNTdcTimeBinsFlag; }
+  Float_t GetTdcTimeMinFlag() const { return fTdcTimeMinFlag; }
+  Float_t GetTdcTimeMaxFlag() const { return fTdcTimeMaxFlag; }
+  //HPTDC TimeRatio
+  Int_t GetNTdcTimeRatioBins() const { return fNTdcTimeRatioBins; }
+  Float_t GetTdcTimeRatioMin() const { return fTdcTimeRatioMin; }
+  Float_t GetTdcTimeRatioMax() const { return fTdcTimeRatioMax; }
   //Width
   Int_t GetNTdcWidthBins() const { return fNTdcWidthBins; }
   Float_t GetTdcWidthMin() const { return fTdcWidthMin; }
@@ -119,6 +138,9 @@ class AliADQAParam : public TNamed
   Float_t GetMaxNoFlagRate() const {return fMaxNoFlagRate;}
   Float_t GetMaxBBVariation() const {return fMaxBBVariation;}
   Float_t GetMaxBGVariation() const {return fMaxBGVariation;}
+  
+  Float_t GetAsynchronBB() const {return fAsynchronBB;}
+  Float_t GetAsynchronBG() const {return fAsynchronBG;}
 
  private:
  
@@ -126,6 +148,12 @@ class AliADQAParam : public TNamed
   Int_t	fNTdcTimeBins;	//Time bining
   Float_t fTdcTimeMin;	
   Float_t fTdcTimeMax;
+  Int_t	fNTdcTimeBinsFlag;	//Time bining with BB/BG flag
+  Float_t fTdcTimeMinFlag;	
+  Float_t fTdcTimeMaxFlag;
+  Int_t	fNTdcTimeRatioBins;	//Time ratio w_flag/All bining
+  Float_t fTdcTimeRatioMin;	
+  Float_t fTdcTimeRatioMax;
   Int_t fNTdcWidthBins; //Width binning
   Float_t fTdcWidthMin;
   Float_t fTdcWidthMax;
@@ -166,7 +194,10 @@ class AliADQAParam : public TNamed
   Float_t fMaxBBVariation;
   Float_t fMaxBGVariation;
   
+  Float_t fAsynchronBB;
+  Float_t fAsynchronBG;
+  
 
-  ClassDef(AliADQAParam,3)
+  ClassDef(AliADQAParam,4)
 };
 #endif
