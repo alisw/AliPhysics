@@ -20,7 +20,7 @@
 //#include "UPGRADE/AliITSUDigitPix.h"
 
 #include <AliITSUGeomTGeo.h>
-#include <AliITSsegmentation.h>
+#include <AliITSUSegmentationPix.h>
 #include <AliITSUDigitPix.h>
 //______________________________________________________________________________
 //
@@ -35,7 +35,7 @@ TEveFrameBox*    AliEveITSUModule::fgITSUFrameBoxDead = 0;
 TEveRGBAPalette* AliEveITSUModule::fgITSUPalette  = 0;
 
 AliITSUGeomTGeo* fGM                 = 0;
-const AliITSsegmentation* fSegm      = 0;
+const AliITSUSegmentationPix* fSegm      = 0;
 
 /******************************************************************************/
 
@@ -67,7 +67,7 @@ AliEveITSUModule::AliEveITSUModule(AliITSUGeomTGeo *gm, Int_t id, Int_t layer, I
   //
   fGM = gm; // ITSU Geometry Manager
   fgStaticInitDone = kFALSE; 
-  fSegm = fGM->GetSegmentation(layer);
+  fSegm = (AliITSUSegmentationPix *)fGM->GetSegmentation(layer);//Fixme later
   fDpx = fSegm->Dpx(0);  // pixel pitch in x
   fDpz = fSegm->Dpz(0);  // pixel pitch in z
   SetID(id);
