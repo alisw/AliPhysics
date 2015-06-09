@@ -1629,7 +1629,7 @@ inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kA
 {
   for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
   {
-    if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) return false;
+    if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
   }
   return true;
 }
