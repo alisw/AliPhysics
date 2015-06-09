@@ -68,6 +68,8 @@ public:
   virtual void SetYZNA(Float_t /*yZNA*/) {}
   virtual void SetYZPC(Float_t /*yZPC*/) {}
   virtual void SetYZPA(Float_t /*yZPA*/) {}
+  
+  virtual void SetSwitchOnTrackreferences() {}
 
   //Calibration methods 
   void    SetZDCCalibFName(const char *name);
