@@ -36,18 +36,15 @@
 // Andrea Rossi <Andrea.Rossi@cern.ch>
 // Felix Reidt  <Felix.Reidt@cern.ch>
 //-----------------------------------------------------------------------
-#include <TCanvas.h>
-#include <TParticle.h>
-#include <TDatabasePDG.h>
-#include <TProfile.h>
-#include <TH1I.h>
-#include <TStyle.h>
-#include <TFile.h>
-#include <TF1.h>
-
 #include "AliCFTaskVertexingHFCutVarFDSub.h"
-#include "AliStack.h"
-#include "AliMCEvent.h"
+
+#include "TCanvas.h"
+#include "TProfile.h"
+#include "TH1I.h"
+#include "TStyle.h"
+#include "TFile.h"
+#include "TF1.h"
+
 #include "AliCFManager.h"
 #include "AliCFContainer.h"
 #include "AliLog.h"
@@ -55,7 +52,6 @@
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
-#include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
@@ -64,9 +60,8 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliESDtrack.h"
-#include "TChain.h"
+
 #include "THnSparse.h"
-#include "TH2D.h"
 #include "AliESDtrackCuts.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -84,6 +79,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
 #include "AliHFsubtractBFDcuts.h"
 

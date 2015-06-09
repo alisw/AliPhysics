@@ -21,12 +21,17 @@
 //     Felix Reidt  <felix.reidt@cern.ch>                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+#include "AliHFsubtractBFDcuts.h"
+
 #include <TNamed.h>
 #include <THnSparse.h>
 #include <TH1F.h>
 #include <TClonesArray.h>
+
 #include "AliAODRecoDecayHF2Prong.h"
-#include "AliHFsubtractBFDcuts.h"
+#include "AliAODMCParticle.h"
+
+ClassImp(AliHFsubtractBFDcuts);
 
 AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
   : TNamed()

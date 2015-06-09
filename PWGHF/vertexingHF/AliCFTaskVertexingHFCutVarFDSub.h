@@ -28,28 +28,17 @@
 // Felix Reidt  <Felix.Reidt@cern.ch>
 //-----------------------------------------------------------------------
 
+#include "THnSparse.h"
+#include "TH1F.h"
+#include "TProfile.h"
+
 #include "AliAnalysisTaskSE.h"
-#include "AliCFVertexingHF2Prong.h"
 #include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHFLctoV0bachelor.h"
-#include "AliCFVertexingHF.h"
-#include "AliHFsubtractBFDcuts.h"
-#include <TH1F.h>
-#include <TProfile.h>
 
-class TH1I;
-class TParticle ;
-class TFile ;
-class TClonesArray ;
 class AliCFManager;
-class AliAODRecoDecay;
-class AliAODRecoDecayHF2Prong;
-class AliAODMCParticle;
-class THnSparse;
-class TF1;
 class AliRDHFCuts;
-class AliCFVertexingHF2Prong;
-class AliCFVertexingHF3Prong;
+class AliHFsubtractBFDcuts;
 
 class AliCFTaskVertexingHFCutVarFDSub: public AliAnalysisTaskSE {
 public:
