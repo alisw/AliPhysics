@@ -265,6 +265,14 @@ float AliHLTTPCSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
   return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
+UChar_t AliHLTTPCSpacePointContainer::GetPadRow(AliHLTUInt32_t clusterID) const
+{
+  // get pad row
+  if (fClusters.find(clusterID)==fClusters.end() ||
+      fClusters.find(clusterID)->second.Data()==NULL) return 0;
+  return fClusters.find(clusterID)->second.Data()->fPadRow;
+}
+
 void AliHLTTPCSpacePointContainer::Clear(Option_t * option)
 {
   // clear the object and reset pointer references
