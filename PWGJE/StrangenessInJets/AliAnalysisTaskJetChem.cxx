@@ -8,7 +8,7 @@
 
 /**************************************************************************
  * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
+ *                                                                  *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -275,7 +275,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fhnNJALa(0)
    ,fh2ChTracksNJ(0)
    ,fh2ChTracksRC(0)
-   ,fh2ChTracksOC(0)
+     // ,fh2ChTracksOC(0)
    ,fh2ChTracksMCC(0) 
    ,fh2ChTracksPC(0)  
   // ,fh2MCgenK0Cone(0)
@@ -563,7 +563,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fhnNJALa(0)
   ,fh2ChTracksNJ(0)
   ,fh2ChTracksRC(0)
-  ,fh2ChTracksOC(0)
+    // ,fh2ChTracksOC(0)
   ,fh2ChTracksMCC(0)
   ,fh2ChTracksPC(0)
     //,fh2MCgenK0Cone(0)
@@ -854,7 +854,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fhnNJALa(copy.fhnNJALa)
   ,fh2ChTracksNJ(copy.fh2ChTracksNJ)
   ,fh2ChTracksRC(copy.fh2ChTracksRC)
-  ,fh2ChTracksOC(copy.fh2ChTracksOC)
+    // ,fh2ChTracksOC(copy.fh2ChTracksOC)
   ,fh2ChTracksMCC(copy.fh2ChTracksMCC)
   ,fh2ChTracksPC(copy.fh2ChTracksPC)
     //,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
@@ -1140,7 +1140,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fhnNJALa                        = o.fhnNJALa;
     fh2ChTracksNJ                   = o.fh2ChTracksNJ;
     fh2ChTracksRC                   = o.fh2ChTracksRC;
-    fh2ChTracksOC                   = o.fh2ChTracksOC;
+    //   fh2ChTracksOC                   = o.fh2ChTracksOC;
     fh2ChTracksMCC                  = o.fh2ChTracksMCC;
     fh2ChTracksPC                   = o.fh2ChTracksPC;
     //fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
@@ -1748,7 +1748,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh2ChTracksNJ                = new TH2F("fh2ChTracksNJ","charged tracks in non-jet events; it{p}_{T} (GeV/it{c};#eta)",120,0.,12.,200,-1.,1.);
 
   fh2ChTracksRC                = new TH2F("fh2ChTracksRC","charged tracks in random cones; it{p}_{T} (GeV/it{c};#eta)",120,0.,12.,200,-1.,1.);
-  fh2ChTracksOC                = new TH2F("fh2ChTracksOC","charged tracks outside cones; it{p}_{T} (GeV/it{c};#eta)",120,0.,12.,200,-1.,1.);
+  //fh2ChTracksOC                = new TH2F("fh2ChTracksOC","charged tracks outside cones; it{p}_{T} (GeV/it{c};#eta)",120,0.,12.,200,-1.,1.);
 
   fh2ChTracksMCC               = new TH2F("fh2ChTracksMCC","charged tracks in non-jet events; it{p}_{T} (GeV/it{c};#eta)",120,0.,12.,200,-1.,1.);
 
@@ -2134,7 +2134,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnNJALa);
     fCommonHistList->Add(fh2ChTracksNJ);
     fCommonHistList->Add(fh2ChTracksRC);
-    fCommonHistList->Add(fh2ChTracksOC);
+    //    fCommonHistList->Add(fh2ChTracksOC);
     fCommonHistList->Add(fh2ChTracksMCC);
     fCommonHistList->Add(fh2ChTracksPC);
     //fCommonHistList->Add(fh2MCgenK0Cone);
@@ -2752,12 +2752,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   lPrimaryVtxPosition[2] = primVtx->GetZ();
   Double_t dRadiusExcludeCone = 2*GetFFRadius(); //2 times jet radius
  
-  Bool_t bIsChTrackInCone = kFALSE;//init boolean for charged tracks in OC method     
+  //Bool_t bIsChTrackInCone = kFALSE;//init boolean for charged tracks in OC method     
 
  //##########################################
 
   //charged tracks outside cones
-
+  /*
   for(Int_t in=0; in<fTracksRecCuts->GetEntries(); ++in){//loop over all charged tracks in event
     
     AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(in)); //inputlist is fListK0s, all reconstructed K0s in event
@@ -2801,7 +2801,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     }
     
   }//end charged tracks in OC method
-
+  */
 
 
 
@@ -3362,10 +3362,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Double_t trackPt = track->Pt();
 	    Double_t trackEta = track->Eta();
-	    fh2ChTracksNJ->Fill(trackPt,trackEta);   
-	    
+	    if(TMath::Abs(trackEta) <= fCutEta){
+	    fh2ChTracksNJ->Fill(trackPt,trackEta);   	    
+	    }
 	  }
-	  
 	  
 	}
 
@@ -3395,7 +3395,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
      
       if(!(fUseExtraTracks == 0)){//only for Embedding study used
       
-      	std::cout<<"fCutFractionPtEmbedded: "<<fCutFractionPtEmbedded<<" fCutDeltaREmbedded: "<<fCutDeltaREmbedded<<std::endl;	
+      	//std::cout<<"fCutFractionPtEmbedded: "<<fCutFractionPtEmbedded<<" fCutDeltaREmbedded: "<<fCutDeltaREmbedded<<std::endl;	
 
 	Double_t ptFractionEmbedded = 0; 
 	Double_t deltaREmbedded     = 0;
@@ -4189,7 +4189,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	    Double_t trackPt = track->Pt();
 	    Double_t trackEta = track->Eta();
-	    fh2ChTracksRC->Fill(trackPt,trackEta);   	    
+	    if(TMath::Abs(trackEta) <= fCutEta){
+	      fh2ChTracksRC->Fill(trackPt,trackEta);
+	    }   
 	  }
 
 	}
@@ -4303,7 +4305,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	    Double_t trackPt = track->Pt();
 	    Double_t trackEta = track->Eta();
-	    fh2ChTracksMCC->Fill(trackPt,trackEta);   	    
+	    if(TMath::Abs(trackEta)<=fCutEta){
+	      fh2ChTracksMCC->Fill(trackPt,trackEta);
+	    }   	    
 	  }
 
 
