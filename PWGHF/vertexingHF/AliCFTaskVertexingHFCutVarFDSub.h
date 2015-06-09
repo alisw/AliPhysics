@@ -284,11 +284,11 @@ protected:
                               // these are the pre-selection cuts for the TMVA
   Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
   Float_t fCutOnMomConservation; // cut on momentum conservation
-  AliHFsubtractBFDcuts *fobjSpr; // object for cut variation study
-  THnSparseF *fhsparsecutvar; //
-  TH1F *fhPtCutVar; //
+  AliHFsubtractBFDcuts* fobjSpr; // object for cut variation study
+  THnSparseF* fhsparsecutvar; //
+  TH2F* fhPtCutVar; //
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,2); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,3); // class for HF corrections as a function of many variables
 };
 
 #endif

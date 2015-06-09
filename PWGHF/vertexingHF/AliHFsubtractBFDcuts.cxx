@@ -116,20 +116,33 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fCutsMC->GetAxis(4)->SetName("Mother_pt");
   fCutsMC->GetAxis(4)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
 
-  fPtMCGenStep=new TH1F("fPtMCGenStep","fPtMCGenStep",20,0.,20);
+  fPtMCGenStep=new TH2F("fPtMCGenStep","fPtMCGenStep;#it{p}_{T};Number of prongs",24,0.,24.,20,0.,20.);
   return;
 }
 
-void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*=-1.*/,Double_t weight/*=1.*/){
-  if(pt<0){
+void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*=-1.*/,Double_t weight/*=1.*/,TClonesArray* mcArray/*=0x0*/){
+  fMCarray=mcArray;
+  if (pt<0) {
     pt=dzeropart->Pt();
   }
-  fPtMCGenStep->Fill(pt,weight);
+  if (fIsMC && fMCarray) {
+    fNprongs=0;
+    fDecayChain=kFALSE; // TODO: use this value
+    fMotherPt=pt;
+    fLabCand=dzeropart->GetLabel();
+    if (!AnalyseDecay()) {
+      AliDebug(3, "Error during the decay type determination!");
+    }
+    fPtMCGenStep->Fill(pt,(Double_t)fNprongs,weight);
+  }
+  else {
+    fPtMCGenStep->Fill(pt,0.,weight);
+  }
+  fMCarray=0x0;
   return;
 }
 
 void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t isSelected,Double_t pt,Double_t massD0,Double_t massD0bar,Double_t weight,TClonesArray* mcArray){
-
   fMCarray=mcArray;
   if(isSelected<=0||isSelected>3){
     Printf("isSelected = %d", isSelected);
