@@ -101,6 +101,9 @@ class AliITSUv2Layer : public AliITSv11Geometry {
     TGeoVolume* CreateStaveModelOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateStaveModelOuterB0(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelOuterB12(const TGeoManager *mgr=gGeoManager);
+    void        CreateOBColdPlateConnectors();
+    void        CreateOBColdPlateConnectorsASide();
+    void        CreateOBColdPlateConnectorsCSide();
     TGeoVolume* CreateSpaceFrameOuterB(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateSpaceFrameOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateSpaceFrameOuterB1(const TGeoManager *mgr=gGeoManager);
@@ -233,6 +236,38 @@ class AliITSUv2Layer : public AliITSv11Geometry {
     static const Double_t fgkOBCoolTubeInnerD;   // OB cooling inner diameter
     static const Double_t fgkOBCoolTubeThick;    // OB cooling tube thickness
     static const Double_t fgkOBCoolTubeXDist;    // OB cooling tube separation
+
+    static const Double_t fgkOBCPConnectorXWidth;// OB Cold Plate Connect Width
+    static const Double_t fgkOBCPConnBlockZLen;  // OB CP Connect Block Z len
+    static const Double_t fgkOBCPConnBlockYHei;  // OB CP Connect Block Z len
+    static const Double_t fgkOBCPConnHollowZLen; // OB CP Connect Block Z len
+    static const Double_t fgkOBCPConnHollowYHei; // OB CP Connect Block Z len
+    static const Double_t fgkOBCPConnSquareHoleX;// OB Conn Square Hole X len
+    static const Double_t fgkOBCPConnSquareHoleZ;// OB Conn Square Hole Z len
+    static const Double_t fgkOBCPConnSqrHoleZPos;// OB Conn Square Hole Z pos
+    static const Double_t fgkOBCPConnSqrInsertRZ;// OB Conn Square Insert RZpos
+    static const Double_t fgkOBCPConnRoundHoleD; // OB Conn Round Hole diam
+    static const Double_t fgkOBCPConnRndHoleZPos;// OB Conn Round Hole Z pos
+    static const Double_t fgkOBCPConnTubesXDist; // OB Connector Tubes X dist
+    static const Double_t fgkOBCPConnTubesYPos;  // OB Connector Tubes Y pos
+    static const Double_t fgkOBCPConnTubeHole1D; // OB Connector Tube1 diam
+    static const Double_t fgkOBCPConnTubeHole1Z; // OB Connector Tube1 Z len
+    static const Double_t fgkOBCPConnTubeHole2D; // OB Connector Tube2 diam
+    static const Double_t fgkOBCPConnFitHoleD;   // OB Connector Fit Hole diam
+    static const Double_t fgkOBCPConnTubeHole3XP;// OB Connector Tube3 X pos
+    static const Double_t fgkOBCPConnTubeHole3ZP;// OB Connector Tube3 Z pos
+    static const Double_t fgkOBCPConnInstInnerX; // OB Connector Insert X in
+    static const Double_t fgkOBCPConnInstInnerR; // OB Connector Insert R in
+    static const Double_t fgkOBCPConnInstZThick; // OB Connector Insert height
+    static const Double_t fgkOBCPConnInsertYHei; // OB Connector Insert height
+    static const Double_t fgkOBCPConnInsertD;    // OB Connector Insert diam
+    static const Double_t fgkOBCPConnAFitExtD;   // OB ConnectorA Fitting ext D
+    static const Double_t fgkOBCPConnAFitThick;  // OB ConnectorA Fitting thick
+    static const Double_t fgkOBCPConnAFitZLen;   // OB ConnectorA Fitting Z len
+    static const Double_t fgkOBCPConnAFitZOut;   // OB ConnectorA Fitting Z Out
+    static const Double_t fgkOBCPConnPlugInnerD; // OB Connector Plug int diam
+    static const Double_t fgkOBCPConnPlugTotLen; // OB Connector Plug tot le
+    static const Double_t fgkOBCPConnPlugThick;  // OB Connector Plug thickness
 
     static const Double_t fgkOBSpaceFrameZLen[2];// OB Space Frame Length
     static const Int_t    fgkOBSpaceFrameNUnits[2];//OB Number of SF Units

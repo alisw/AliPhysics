@@ -138,7 +138,39 @@ const Double_t AliITSUv2Layer::fgkOBCarbonFleeceThick =  20.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkOBCoolTubeInnerDM1  =   2.052*fgkmm;
 const Double_t AliITSUv2Layer::fgkOBCoolTubeInnerD    =   2.05 *fgkmm;
 const Double_t AliITSUv2Layer::fgkOBCoolTubeThick     =  32.0  *fgkmicron;
-const Double_t AliITSUv2Layer::fgkOBCoolTubeXDist     =  11.1  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCoolTubeXDist     =  10.0  *fgkmm;
+
+const Double_t AliITSUv2Layer::fgkOBCPConnectorXWidth =  16.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnBlockZLen   =  15.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnBlockYHei   =   3.6  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnHollowZLen  =   3.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnHollowYHei  =   0.9  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnSquareHoleX =   6.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnSquareHoleZ =   6.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnSqrHoleZPos =   4.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnSqrInsertRZ =   3.5  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnRoundHoleD  =   6.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnRndHoleZPos =   4.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubesXDist  =  10.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubesYPos   =   1.8  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubeHole1D  =   2.6  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubeHole1Z  =   3.5  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubeHole2D  =   2.2  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnFitHoleD    =   2.8  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubeHole3XP =   1.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnTubeHole3ZP =   2.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnInstInnerX  =   4.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnInstInnerR  =   1.5  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnInstZThick  =   1.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnInsertYHei  =   3.4  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnInsertD     =   4.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnAFitExtD    =   2.77 *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnAFitThick   =   0.3  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnAFitZLen    =  25.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnAFitZOut    =  22.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnPlugInnerD  =   0.8  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnPlugTotLen  =   1.7  *fgkmm;
+const Double_t AliITSUv2Layer::fgkOBCPConnPlugThick   =   0.5  *fgkmm;
 
 const Double_t AliITSUv2Layer::fgkOBSpaceFrameZLen[2] = { 900.0*fgkmm,
 							 1526.0*fgkmm};
@@ -2164,28 +2196,28 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
 
   // The connectors' containers
   zlen = fgkIBConnectBlockZLen - fgkIBConnTailZLen + fgkIBConnectAFitZOut;
-  TGeoBBox *connAside = new TGeoBBox("connAside",fgkIBConnectorXWidth/2,
+  TGeoBBox *connAside = new TGeoBBox("connAsideIB",fgkIBConnectorXWidth/2,
 				     fgkIBConnectorYTot/2, zlen/2);
 
   zlen = fgkIBConnectBlockZLen - fgkIBConnTailZLen;
-  TGeoBBox *connCside = new TGeoBBox("connCside",fgkIBConnectorXWidth/2,
+  TGeoBBox *connCside = new TGeoBBox("connCsideIB",fgkIBConnectorXWidth/2,
 				     fgkIBConnectorYTot/2, zlen/2);
 
   // The StaveStruct container, a Composite Shape
   ypos = connAside->GetDY() - fgkIBConnTailYShift + layerHeight;
   zpos = zstave + connAside->GetDZ();
-  TGeoTranslation *transAside = new TGeoTranslation("transAside",
+  TGeoTranslation *transAside = new TGeoTranslation("transAsideIB",
 						    0, ypos, zpos);
   transAside->RegisterYourself();
 
   ypos = connCside->GetDY() - fgkIBConnTailYShift + layerHeight;
   zpos = zstave + connCside->GetDZ();
-  TGeoTranslation *transCside = new TGeoTranslation("transCside",
+  TGeoTranslation *transCside = new TGeoTranslation("transCsideIB",
 						    0, ypos,-zpos);
   transCside->RegisterYourself();
 
   TGeoCompositeShape *mechStavSh = new TGeoCompositeShape(
-	  "mechStruct+connAside:transAside+connCside:transCside");
+	  "mechStruct+connAsideIB:transAsideIB+connCsideIB:transCsideIB");
 
 
   // We have all shapes: now create the real volumes
@@ -2204,7 +2236,6 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelInnerB4(const Double_t xstave,
   char volname[30];
   snprintf(volname, 30, "%s%d_StaveStruct",
 	   AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
-//  TGeoVolume *mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
   TGeoVolume *mechStavVol = new TGeoVolume(volname, mechStavSh, medAir);
   mechStavVol->SetLineColor(12);
   mechStavVol->SetFillColor(12); 
@@ -2779,7 +2810,7 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
 					 zlen/2);
 
   xpos = fgkIBConnTubeHole3XPos;
-  zpos = connBody->GetDZ() - fgkIBConnTubeHole3ZPos;;
+  zpos = connBody->GetDZ() - fgkIBConnTubeHole3ZPos;
   TGeoCombiTrans *connTubes3Trans = new TGeoCombiTrans("tubes3TransC",
 						        xpos, ypos, zpos,
 					       new TGeoRotation("",90,-90,90));
@@ -2867,7 +2898,7 @@ void AliITSUv2Layer::CreateIBConnectorsCSide(const TGeoManager *mgr){
   connInsert->SetLineColor(kGray);
 
 
-  // The plug, an Pcon
+  // The plug, a Pcon
   TGeoPcon *connPlugSh = new TGeoPcon(0,360,4);
   connPlugSh->DefineSection(0,                 0., 0., fgkIBConnTubeHole2D/2);
   connPlugSh->DefineSection(1, fgkIBConnPlugThick, 0., fgkIBConnTubeHole2D/2);
@@ -3094,6 +3125,7 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   Double_t xHalfSt     = fgkOBHalfStaveWidth/2;
   Double_t yCFleece    = fgkOBCarbonFleeceThick;
   Double_t yGraph      = fgkOBGraphiteFoilThick;
+  Double_t yHalfSt     = 0; // will be computed
 
   Double_t ymod, zmod;
   Double_t xtru[12], ytru[12];
@@ -3166,15 +3198,15 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   TGeoBBox *flex2_5cm  = new TGeoBBox("Flex2MV_5cm",xHalfSt,yFlex2/2,flexOverlap/2);
 
   // The half stave container (an XTru to avoid overlaps between neightbours)
-  ylen = ymod + busAl->GetDY() + busKap->GetDY() + coldPlate->GetDY()
-	      + fleeccent->GetDY() + graphlat->GetDY() + fleeclat->GetDY();
+  yHalfSt = ymod + busAl->GetDY() + busKap->GetDY() + coldPlate->GetDY()
+	  + fleeccent->GetDY() + graphlat->GetDY() + fleeclat->GetDY();
   if (fStaveModel == AliITSUv2::kOBModel2)
-    ylen += 2*glue->GetDY();
+    yHalfSt += 2*glue->GetDY();
 
   xtru[0] = xHalfSt;
   ytru[0] = 0;
   xtru[1] = xtru[0];
-  ytru[1] = -2*ylen;
+  ytru[1] = -2*yHalfSt;
   xtru[2] = fgkOBCoolTubeXDist/2 + fleectub->GetRmax();
   ytru[2] = ytru[1];
   xtru[3] = xtru[2];
@@ -3187,10 +3219,40 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
     xtru[6+i] = -xtru[5-i];
     ytru[6+i] =  ytru[5-i];
   }
-  TGeoXtru *halfStave = new TGeoXtru(2);
-  halfStave->DefinePolygon(12, xtru, ytru);
-  halfStave->DefineSection(0,-fZLength/2);
-  halfStave->DefineSection(1, fZLength/2);
+  TGeoXtru *halfStaveCent = new TGeoXtru(2);
+  halfStaveCent->DefinePolygon(12, xtru, ytru);
+  halfStaveCent->DefineSection(0,-fZLength/2);
+  halfStaveCent->DefineSection(1, fZLength/2);
+  snprintf(volname, 30, "staveCentral%d", fLayerNumber);
+  halfStaveCent->SetName(volname);
+
+  // The connectors' containers
+  TGeoBBox *connAside = new TGeoBBox("connAsideOB",fgkOBCPConnectorXWidth/2,
+				     fgkOBCPConnBlockYHei/2,
+			     (fgkOBCPConnBlockZLen + fgkOBCPConnAFitZOut)/2);
+
+  TGeoBBox *connCside = new TGeoBBox("connCsideOB",fgkOBCPConnectorXWidth/2,
+				     fgkOBCPConnBlockYHei/2,
+				     fgkOBCPConnBlockZLen/2);
+
+  // The StaveStruct container, a Composite Shape
+  ypos = 2*yHalfSt + connAside->GetDY() - fgkOBCPConnHollowYHei;
+  zpos = zlen + connAside->GetDZ() - fgkOBCPConnHollowZLen;
+  snprintf(volname, 30, "transAsideOB%d", fLayerNumber);
+  TGeoTranslation *transAside = new TGeoTranslation(volname, 0,-ypos, zpos);
+  transAside->RegisterYourself();
+
+  zpos = zlen + connCside->GetDZ() - fgkOBCPConnHollowZLen;
+  snprintf(volname, 30, "transCsideOB%d", fLayerNumber);
+  TGeoTranslation *transCside = new TGeoTranslation(volname, 0,-ypos,-zpos);
+  transCside->RegisterYourself();
+
+  char componame[70];
+  snprintf(componame, 70,
+     "staveCentral%d+connAsideOB:transAsideOB%d+connCsideOB:transCsideOB%d",
+	   fLayerNumber,fLayerNumber,fLayerNumber);
+
+  TGeoCompositeShape *halfStave = new TGeoCompositeShape(componame);
 
 
   // We have all shapes: now create the real volumes
@@ -3415,34 +3477,491 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   }
 
 
-  //THE FOLLOWING IS ONLY A REMINDER FOR WHAT IS STILL MISSING
+  // Add the end-stave connectors
+  TGeoVolume *connectorASide, *connectorCSide;
 
-//   for (Int_t j=0; j<fNChips; j++) {
+  // Check whether we have already all pieces
+  // Otherwise create them
+  connectorASide = mgr->GetVolume("OBColdPlateConnectorASide");
 
-//     zpos = -(zact + (fNChips-1)*modGap)/2 + j*(zMod + modGap) + zMod/2;
-//     zpos5cm = -(zact + (fNChips-1)*modGap)/2 + (j+1)*(zMod + modGap) + flexOverlap/2 ;
+  if (!connectorASide) {
+    CreateOBColdPlateConnectors();
+    connectorASide = mgr->GetVolume("OBColdPlateConnectorASide");
+  }
+  connectorCSide = mgr->GetVolume("OBColdPlateConnectorCSide");
 
-//     halfStaveVol->AddNode(moduleVol, j, new TGeoTranslation(xPos, -ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + ymod, zpos));
-//     halfStaveVol->AddNode(moduleVol, fNChips+j, new TGeoTranslation(-xPos, -ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + ymod +deltaY, zpos));
+  ypos = 2*yHalfSt + ((TGeoBBox*)connectorASide->GetShape())->GetDY()
+       - fgkOBCPConnHollowYHei;
+  zpos = zlen + ((TGeoBBox*)connectorASide->GetShape())->GetDZ()
+       - fgkOBCPConnHollowZLen;
+  halfStaveVol->AddNode(connectorASide, 1, new TGeoCombiTrans(0,-ypos, zpos,
+					      new TGeoRotation("",180,0,0)));
 
-//     if((j+1)!=fNChips){
-//       halfStaveVol->AddNode(flex1_5cmVol,j,new TGeoTranslation(xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + yFlex1 + yFlex2 + yFlex1/2,zpos5cm));
-//       halfStaveVol->AddNode(flex1_5cmVol,fNChips+j,new TGeoTranslation(-xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + yFlex1 + yFlex2 + yFlex1/2 +deltaY,zpos5cm));
-//       halfStaveVol->AddNode(flex2_5cmVol,j,new TGeoTranslation(xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + 2*yFlex1 + 3*yFlex2/2,zpos5cm));
-//       halfStaveVol->AddNode(flex2_5cmVol,fNChips+j,new TGeoTranslation(-xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + 2*yFlex1 + 3*yFlex2/2 +deltaY,zpos5cm));
-//     }
-//     else {
-//       halfStaveVol->AddNode(flex1_5cmVol,j,new TGeoTranslation(xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + yFlex1/2,zpos5cm-modGap));
-//       halfStaveVol->AddNode(flex1_5cmVol,fNChips+j,new TGeoTranslation(-xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + yFlex1/2 +deltaY,zpos5cm-modGap));
-//       halfStaveVol->AddNode(flex2_5cmVol,j,new TGeoTranslation(xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate +2*ymod + yFlex1 + yFlex2/2,zpos5cm-modGap));
-//       halfStaveVol->AddNode(flex2_5cmVol,fNChips+j,new TGeoTranslation(-xPos,-ylen + yPos + 2*rCoolMax + yCPlate + yGlue + yModPlate + 2*ymod + yFlex1 + yFlex2/2 +deltaY,zpos5cm-modGap));
+  zpos = zlen + ((TGeoBBox*)connectorCSide->GetShape())->GetDZ()
+       - fgkOBCPConnHollowZLen;
+  halfStaveVol->AddNode(connectorCSide, 1, new TGeoCombiTrans(0,-ypos,-zpos,
+					      new TGeoRotation("",180,0,0)));
 
-//       }
-//   }
-  
 
   // Done, return the half stave structure
   return halfStaveVol;
+}
+
+//________________________________________________________________________
+void AliITSUv2Layer::CreateOBColdPlateConnectors(){
+//
+// Create the Cold Plate connectors for OB half staves
+// (simply call the actual creator methods)
+//
+// Input:
+//
+// Output:
+//
+// Return:
+//
+// Created:      26 May 2015  Mario Sitta
+//
+
+  CreateOBColdPlateConnectorsASide();
+  CreateOBColdPlateConnectorsCSide();
+
+}
+
+
+//________________________________________________________________________
+void AliITSUv2Layer::CreateOBColdPlateConnectorsASide(){
+//
+// Create the A-Side end-stave connectors for IB staves
+//
+// Input:
+//
+// Output:
+//
+// Return:
+//
+// Created:      26 May 2015  Mario Sitta
+//
+
+  // The geoManager
+  const TGeoManager *mgr = gGeoManager;
+
+  // Local variables
+  const Int_t nv = 16;
+  Double_t xv[nv], yv[nv];
+  Double_t xlen, ylen, zlen;
+  Double_t xpos, ypos, zpos;
+  char volname[30];
+
+
+  // Gather all material pointers
+  TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medPEEK     = mgr->GetMedium("ITS_PEEKCF30$");
+  TGeoMedium *medWC       = mgr->GetMedium("ITS_TUNGCARB$");
+  TGeoMedium *medInox304  = mgr->GetMedium("ITS_INOX304$");
+
+
+  // First create all elements
+
+  // The connector block, a Composite Shape
+  xlen = fgkOBCPConnectorXWidth;
+  ylen = fgkOBCPConnBlockYHei;
+  zlen = fgkOBCPConnBlockZLen;
+  TGeoBBox *connBlock = new TGeoBBox("connBlockA", xlen/2, ylen/2, zlen/2);
+
+
+  xv[0] =  fgkOBCPConnectorXWidth*0.6;
+  yv[0] = -fgkOBCPConnHollowYHei;
+  xv[1] = xv[0];
+  yv[1] =  fgkOBCPConnHollowYHei;
+  xv[2] =  fgkOBCPConnTubesXDist/2 + fgkOBCPConnTubeHole1D/2;
+  yv[2] = yv[1];
+  xv[3] = xv[2];
+  yv[3] =  fgkOBCPConnTubesYPos;
+  xv[4] =  fgkOBCPConnTubesXDist/2 - fgkOBCPConnTubeHole1D/2;
+  yv[4] = yv[3];
+  xv[5] = xv[4];
+  yv[5] = yv[2];
+
+  for (Int_t i = 0; i<6; i++) {
+    xv[6+i] = -xv[5-i];
+    yv[6+i] =  yv[5-i];
+  }
+
+  TGeoXtru *connBlockHoll = new TGeoXtru(2);
+  connBlockHoll->SetName("connBlockHollA");
+  connBlockHoll->DefinePolygon(12, xv, yv);
+  connBlockHoll->DefineSection(0,-fgkOBCPConnHollowZLen);
+  connBlockHoll->DefineSection(1, fgkOBCPConnHollowZLen);
+
+  ypos = -connBlock->GetDY();
+  zpos = -connBlock->GetDZ();
+  TGeoTranslation *transBlockHoll = new TGeoTranslation("transBlockHollA",
+							0, ypos, zpos);
+  transBlockHoll->RegisterYourself();
+
+
+  xlen = fgkOBCPConnSquareHoleX/2;
+  ylen = fgkOBCPConnBlockYHei/1.5;
+  zlen = fgkOBCPConnSquareHoleZ/2;
+  TGeoBBox *connSquareHole = new TGeoBBox("connASquareHole", xlen, ylen, zlen);
+
+  zpos = -connBlock->GetDZ() + ( fgkOBCPConnHollowZLen + fgkOBCPConnSqrHoleZPos
+         + fgkOBCPConnSqrInsertRZ - connSquareHole->GetDZ() );
+  TGeoTranslation *transSquareHole = new TGeoTranslation(
+					 "transASquareHole", 0, 0, zpos);
+  transSquareHole->RegisterYourself();
+
+
+  zlen = fgkOBCPConnTubeHole1Z;
+  TGeoTube *connTubeHole1 = new TGeoTube("tube1AHole", 0,
+					 fgkOBCPConnTubeHole1D/2,
+					 zlen);
+
+  xpos = fgkOBCPConnTubesXDist/2;
+  ypos = -connBlock->GetDY() + fgkOBCPConnTubesYPos;
+  zpos =  connBlock->GetDZ();
+  TGeoTranslation *trans1Tube1AHole = new TGeoTranslation("trans1Tube1AHole",
+							  -xpos, ypos,-zpos);
+  trans1Tube1AHole->RegisterYourself();
+  TGeoTranslation *trans2Tube1AHole = new TGeoTranslation("trans2Tube1AHole",
+							   xpos, ypos,-zpos);
+  trans2Tube1AHole->RegisterYourself();
+
+
+  zlen = fgkOBCPConnBlockZLen;
+  TGeoTube *connTubeHole2 = new TGeoTube("tube2AHole", 0,
+					 fgkOBCPConnTubeHole2D/2,
+					 zlen);
+
+  TGeoTranslation *trans1Tube2AHole = new TGeoTranslation("trans1Tube2AHole",
+							  -xpos, ypos, 0);
+  trans1Tube2AHole->RegisterYourself();
+  TGeoTranslation *trans2Tube2AHole = new TGeoTranslation("trans2Tube2AHole",
+							   xpos, ypos, 0);
+  trans2Tube2AHole->RegisterYourself();
+
+
+  zlen = fgkOBCPConnAFitZLen - fgkOBCPConnAFitZOut;
+  TGeoTube *connFitHole = new TGeoTube("fitAHole", 0,
+				       fgkOBCPConnFitHoleD/2,
+				       zlen);
+
+  TGeoTranslation *trans1FitAHole = new TGeoTranslation("trans1FitAHole",
+							-xpos, ypos, zpos);
+  trans1FitAHole->RegisterYourself();
+  TGeoTranslation *trans2FitAHole = new TGeoTranslation("trans2FitAHole",
+							 xpos, ypos, zpos);
+  trans2FitAHole->RegisterYourself();
+
+
+  TGeoCompositeShape *connBlockSh = new TGeoCompositeShape(
+    "connBlockA-connBlockHollA:transBlockHollA-connASquareHole:transASquareHole-tube1AHole:trans1Tube1AHole-tube1AHole:trans2Tube1AHole-tube2AHole:trans1Tube2AHole-tube2AHole:trans2Tube2AHole-fitAHole:trans1FitAHole-fitAHole:trans2FitAHole");
+
+
+  TGeoVolume *connBlockA = new TGeoVolume("OBColdPlateConnectorBlockASide",
+					  connBlockSh,medPEEK);
+  connBlockA->SetFillColor(42);  // Brownish shade
+  connBlockA->SetLineColor(42);
+
+
+  // The steel insert, an Xtru
+  xv[0] =  fgkOBCPConnSquareHoleX/2;
+  yv[0] = -fgkOBCPConnSqrInsertRZ;
+  xv[1] = xv[0];
+  yv[1] = yv[0] + fgkOBCPConnSquareHoleZ;
+  xv[2] = fgkOBCPConnInstInnerX/2;
+  yv[2] = yv[1];
+  xv[3] = xv[2];
+  yv[3] = yv[0] + fgkOBCPConnInstZThick + fgkOBCPConnInstInnerR;
+  for (Int_t i = 1; i<5 ; i++) {
+    Double_t alpha = TMath::PiOver2()*i/4.;
+    xv[3+i] = xv[3] - (1 - TMath::Cos(alpha))*fgkOBCPConnInstInnerR;
+    yv[3+i] = yv[3]      - TMath::Sin(alpha) *fgkOBCPConnInstInnerR;
+  }
+
+  for (Int_t i = 0; i<8; i++) {
+    xv[8+i] = -xv[7-i];
+    yv[8+i] =  yv[7-i];
+  }
+
+  TGeoXtru *connInsertSh = new TGeoXtru(2);
+  connInsertSh->DefinePolygon(16, xv, yv);
+  connInsertSh->DefineSection(0,-fgkOBCPConnInsertYHei/2);
+  connInsertSh->DefineSection(1, fgkOBCPConnInsertYHei/2);
+
+  TGeoVolume *connInsert = new TGeoVolume("OBColdPlateConnectorInsertSquare",
+					  connInsertSh, medWC);
+  connInsert->SetFillColor(kGray);
+  connInsert->SetLineColor(kGray);
+
+
+  // The fitting tubes, a Tube
+  Double_t rmin = fgkOBCPConnAFitExtD/2 - fgkOBCPConnAFitThick;
+  TGeoTube *connFitSh = new TGeoTube(rmin, fgkOBCPConnAFitExtD/2, 
+				     fgkOBCPConnAFitZLen/2);
+
+  TGeoVolume *connFit = new TGeoVolume("OBColdPlateConnectorFitting",
+				       connFitSh, medInox304);
+  connFit->SetFillColor(kGray);
+  connFit->SetLineColor(kGray);
+
+
+  // Now create the container: cannot be a simple box
+  // to avoid fake overlaps with stave elements
+  xlen = fgkOBCPConnectorXWidth;
+  ylen = fgkOBCPConnBlockYHei;
+  zlen = fgkOBCPConnBlockZLen + fgkOBCPConnAFitZOut;
+  TGeoBBox *connBox = new TGeoBBox("connectorOBCPA", xlen/2, ylen/2, zlen/2);
+
+  ypos = -connBox->GetDY();
+  zpos = -connBox->GetDZ();
+  TGeoTranslation *transBoxHoll = new TGeoTranslation("transBoxHollA",
+						      0, ypos, zpos);
+  transBoxHoll->RegisterYourself();
+
+  xpos = fgkOBCPConnTubesXDist/2;
+  ypos = -connBox->GetDY() + fgkOBCPConnTubesYPos;
+  zpos =  connBox->GetDZ();
+  TGeoTranslation *trans1BoxHole = new TGeoTranslation("trans1BoxAHole",
+						      -xpos, ypos,-zpos);
+  trans1BoxHole->RegisterYourself();
+  TGeoTranslation *trans2BoxHole = new TGeoTranslation("trans2BoxAHole",
+						       xpos, ypos,-zpos);
+  trans2BoxHole->RegisterYourself();
+
+
+  TGeoCompositeShape *connectSh = new TGeoCompositeShape(
+     "connectorOBCPA-connBlockHollA:transBoxHollA-tube1AHole:trans1BoxAHole-tube1AHole:trans2BoxAHole");
+
+
+  TGeoVolume *connectorASide = new TGeoVolume("OBColdPlateConnectorASide",
+					      connectSh, medAir);
+
+
+  // Finally build up the connector
+  zpos = -connectSh->GetDZ() + connBlock->GetDZ();
+  connectorASide->AddNode(connBlockA, 1, new TGeoTranslation(0, 0, zpos));
+
+  zpos = -connectSh->GetDZ() + fgkOBCPConnHollowZLen + fgkOBCPConnSqrHoleZPos;
+  connectorASide->AddNode(connInsert, 1, new TGeoCombiTrans(0, 0, zpos,
+					     new TGeoRotation("",0,-90,0)));
+
+  xpos = fgkOBCPConnTubesXDist/2;
+  ypos = -connBlock->GetDY() + fgkOBCPConnTubesYPos;
+  zpos = connectSh->GetDZ() - connFitSh->GetDz();
+  connectorASide->AddNode(connFit, 1, new TGeoTranslation(-xpos, ypos, zpos));
+  connectorASide->AddNode(connFit, 2, new TGeoTranslation( xpos, ypos, zpos));
+
+
+}
+
+//________________________________________________________________________
+void AliITSUv2Layer::CreateOBColdPlateConnectorsCSide(){
+//
+// Create the C-Side end-stave connectors for IB staves
+//
+// Input:
+//
+// Output:
+//
+// Return:
+//
+// Created:      29 May 2015  Mario Sitta
+//
+
+  // The geoManager
+  const TGeoManager *mgr = gGeoManager;
+
+  // Local variables
+  const Int_t nv = 16;
+  Double_t xv[nv], yv[nv];
+  Double_t xlen, ylen, zlen;
+  Double_t xpos, ypos, zpos;
+  char volname[30];
+
+
+  // Gather all material pointers
+  TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medPEEK     = mgr->GetMedium("ITS_PEEKCF30$");
+  TGeoMedium *medWC       = mgr->GetMedium("ITS_TUNGCARB$");
+
+
+  // First create all elements
+
+  // The connector block, a Composite Shape
+  xlen = fgkOBCPConnectorXWidth;
+  ylen = fgkOBCPConnBlockYHei;
+  zlen = fgkOBCPConnBlockZLen;
+  TGeoBBox *connBlock = new TGeoBBox("connBlockC", xlen/2, ylen/2, zlen/2);
+
+
+  xv[0] =  fgkOBCPConnectorXWidth*0.6;
+  yv[0] = -fgkOBCPConnHollowYHei;
+  xv[1] = xv[0];
+  yv[1] =  fgkOBCPConnHollowYHei;
+  xv[2] =  fgkOBCPConnTubesXDist/2 + fgkOBCPConnTubeHole1D/2;
+  yv[2] = yv[1];
+  xv[3] = xv[2];
+  yv[3] =  fgkOBCPConnTubesYPos;
+  xv[4] =  fgkOBCPConnTubesXDist/2 - fgkOBCPConnTubeHole1D/2;
+  yv[4] = yv[3];
+  xv[5] = xv[4];
+  yv[5] = yv[2];
+
+  for (Int_t i = 0; i<6; i++) {
+    xv[6+i] = -xv[5-i];
+    yv[6+i] =  yv[5-i];
+  }
+
+  TGeoXtru *connBlockHoll = new TGeoXtru(2);
+  connBlockHoll->SetName("connBlockHollC");
+  connBlockHoll->DefinePolygon(12, xv, yv);
+  connBlockHoll->DefineSection(0,-fgkOBCPConnHollowZLen);
+  connBlockHoll->DefineSection(1, fgkOBCPConnHollowZLen);
+
+  ypos = -connBlock->GetDY();
+  zpos =  connBlock->GetDZ();
+  TGeoTranslation *transBlockHoll = new TGeoTranslation("transBlockHollC",
+							0, ypos, zpos);
+  transBlockHoll->RegisterYourself();
+
+
+  TGeoTube *connRoundHole = new TGeoTube("connCRoundHole", 0,
+					 fgkOBCPConnRoundHoleD/2,
+					 fgkOBCPConnBlockYHei/1.5);
+
+  zpos = connBlock->GetDZ() - fgkOBCPConnHollowZLen - fgkOBCPConnRndHoleZPos;
+  TGeoCombiTrans *transRoundHole = new TGeoCombiTrans("transCRoundHole",
+						      0, 0, zpos,
+						new TGeoRotation("",0,90,0));
+  transRoundHole->RegisterYourself();
+
+
+  zlen = fgkOBCPConnTubeHole1Z;
+  TGeoTube *connTubeHole1 = new TGeoTube("tube1CHole", 0,
+					 fgkOBCPConnTubeHole1D/2,
+					 zlen);
+
+  xpos = fgkOBCPConnTubesXDist/2;
+  ypos = -connBlock->GetDY() + fgkOBCPConnTubesYPos;
+  zpos =  connBlock->GetDZ();
+  TGeoTranslation *trans1Tube1AHole = new TGeoTranslation("trans1Tube1CHole",
+							  -xpos, ypos, zpos);
+  trans1Tube1AHole->RegisterYourself();
+  TGeoTranslation *trans2Tube1AHole = new TGeoTranslation("trans2Tube1CHole",
+							   xpos, ypos, zpos);
+  trans2Tube1AHole->RegisterYourself();
+
+
+  TGeoTube *connTubeHole2 = new TGeoTube("tube2CHole", 0,
+					 fgkOBCPConnTubeHole2D/2,
+					 connBlock->GetDZ());
+
+  zpos = fgkOBCPConnTubeHole3ZP;
+  TGeoTranslation *connTubes2Trans1 = new TGeoTranslation("trans1Tube2CHole",
+							  -xpos, ypos, zpos);
+  connTubes2Trans1->RegisterYourself();
+  TGeoTranslation *connTubes2Trans2 = new TGeoTranslation("trans2Tube2CHole",
+							   xpos, ypos, zpos);
+  connTubes2Trans2->RegisterYourself();
+
+
+  TGeoTube *connTubeHole3 = new TGeoTube("tube3CHole", 0,
+					 fgkOBCPConnTubeHole2D/2,
+					 connBlock->GetDX());
+
+  xpos = -fgkOBCPConnTubeHole3XP;
+  zpos = -connBlock->GetDZ() + fgkOBCPConnTubeHole3ZP;
+  TGeoCombiTrans *connTubes3Trans = new TGeoCombiTrans("transTube3CHole",
+						        xpos, ypos, zpos,
+					       new TGeoRotation("",90,-90,90));
+  connTubes3Trans->RegisterYourself();
+
+
+  TGeoCompositeShape *connBlockSh = new TGeoCompositeShape(
+    "connBlockC-connBlockHollC:transBlockHollC-connCRoundHole:transCRoundHole-tube1CHole:trans1Tube1CHole-tube1CHole:trans2Tube1CHole-tube2CHole:trans1Tube2CHole-tube2CHole:trans2Tube2CHole-tube3CHole:transTube3CHole");
+
+
+  TGeoVolume *connBlockC = new TGeoVolume("OBColdPlateConnectorBlockCSide",
+					  connBlockSh,medPEEK);
+  connBlockC->SetFillColor(42);  // Brownish shade
+  connBlockC->SetLineColor(42);
+
+
+  // The steel insert, a Tube
+  TGeoTube *connInsertSh = new TGeoTube(fgkOBCPConnInsertD/2,
+					fgkOBCPConnRoundHoleD/2,
+					fgkOBCPConnInsertYHei/2);
+
+  TGeoVolume *connInsert = new TGeoVolume("OBColdPlateConnectorInsertRound",
+					  connInsertSh, medWC);
+  connInsert->SetFillColor(kGray);
+  connInsert->SetLineColor(kGray);
+
+
+  // The plug, a Pcon
+  TGeoPcon *connPlugSh = new TGeoPcon(0,360,4);
+  connPlugSh->DefineSection(0,                   0., 0.,
+			       fgkOBCPConnTubeHole2D/2);
+  connPlugSh->DefineSection(1, fgkOBCPConnPlugThick, 0.,
+			       fgkOBCPConnTubeHole2D/2);
+  connPlugSh->DefineSection(2, fgkOBCPConnPlugThick , fgkOBCPConnPlugInnerD/2,
+			       fgkOBCPConnTubeHole2D/2);
+  connPlugSh->DefineSection(3, fgkOBCPConnPlugTotLen, fgkOBCPConnPlugInnerD/2,
+			       fgkOBCPConnTubeHole2D/2);
+
+  TGeoVolume *connPlug = new TGeoVolume("OBCPConnectorPlugC",
+					connPlugSh,medPEEK);
+  connPlug->SetFillColor(44);  // Brownish shade (a bit darker to spot it)
+  connPlug->SetLineColor(44);
+
+
+  // Now create the container: cannot be a simple box
+  // to avoid fake overlaps with stave elements
+  xlen = fgkOBCPConnectorXWidth;
+  ylen = fgkOBCPConnBlockYHei;
+  zlen = fgkOBCPConnBlockZLen;
+  TGeoBBox *connBox = new TGeoBBox("connectorOBCPC", xlen/2, ylen/2, zlen/2);
+
+  ypos = -connBox->GetDY();
+  zpos =  connBox->GetDZ();
+  TGeoTranslation *transBoxHoll = new TGeoTranslation("transBoxHollC",
+						      0, ypos, zpos);
+  transBoxHoll->RegisterYourself();
+
+  xpos = fgkOBCPConnTubesXDist/2;
+  ypos = -connBox->GetDY() + fgkOBCPConnTubesYPos;
+  zpos =  connBox->GetDZ();
+  TGeoTranslation *trans1BoxHole = new TGeoTranslation("trans1BoxCHole",
+						      -xpos, ypos, zpos);
+  trans1BoxHole->RegisterYourself();
+  TGeoTranslation *trans2BoxHole = new TGeoTranslation("trans2BoxCHole",
+						       xpos, ypos, zpos);
+  trans2BoxHole->RegisterYourself();
+
+
+  TGeoCompositeShape *connectSh = new TGeoCompositeShape(
+    "connectorOBCPC-connBlockHollC:transBoxHollC-tube1CHole:trans1BoxCHole-tube1CHole:trans2BoxCHole");
+
+
+  TGeoVolume *connectorCSide = new TGeoVolume("OBColdPlateConnectorCSide",
+					      connectSh, medAir);
+
+
+  // Finally build up the connector
+  connectorCSide->AddNode(connBlockC, 1);
+
+  zpos = connBlock->GetDZ() - fgkOBCPConnHollowZLen - fgkOBCPConnRndHoleZPos;
+  connectorCSide->AddNode(connInsert, 1, new TGeoCombiTrans(0, 0, zpos,
+					     new TGeoRotation("", 0,90, 0)));
+
+  xpos = -connBlock->GetDX();
+  ypos = -connBlock->GetDY() + fgkOBCPConnTubesYPos;
+  zpos = -connBlock->GetDZ() + fgkOBCPConnTubeHole3ZP;
+  connectorCSide->AddNode(connPlug, 1, new TGeoCombiTrans(xpos, ypos, zpos,
+					     new TGeoRotation("",90,90,90)));
+
+
 }
 
 //________________________________________________________________________
@@ -3512,11 +4031,12 @@ TGeoVolume* AliITSUv2Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 //         a TGeoVolume with the Space Frame of a stave
 //
 // Created:      03 Feb 2015  Mario Sitta
+// Updated:      04 Jun 2015  Mario Sitta  Change container to avoid overlaps
 //
 
   TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
 
-  TGeoVolume *unitVol[2], *endVol[2];
+  TGeoVolume *unitVol[2], *next2EndVol[2], *endVol[2];
   Double_t *xtru, *ytru;
   Double_t zlen, zpos;
   Int_t nPoints;
@@ -3534,6 +4054,9 @@ TGeoVolume* AliITSUv2Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 
   unitVol[1] = mgr->GetVolume("SpaceFrameUnit1");
 
+  next2EndVol[0]  = mgr->GetVolume("SpaceFrameNext2EndUnit0");
+  next2EndVol[1]  = mgr->GetVolume("SpaceFrameNext2EndUnit1");
+
   endVol[0]  = mgr->GetVolume("SpaceFrameEndUnit0");
   endVol[1]  = mgr->GetVolume("SpaceFrameEndUnit1");
 
@@ -3550,12 +4073,36 @@ TGeoVolume* AliITSUv2Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
     ytru[i] = volShape->GetY(i);
   }
 
-  zlen = fgkOBSpaceFrameZLen[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
+  Int_t nUnits = fgkOBSpaceFrameNUnits[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
+  zlen = (nUnits-2)*fgkOBSpaceFrameUnitLen; // Take end units out
 
-  TGeoXtru *spaceFrame = new TGeoXtru(2);
-  spaceFrame->DefinePolygon(nPoints, xtru, ytru);
-  spaceFrame->DefineSection(0,-zlen/2);
-  spaceFrame->DefineSection(1, zlen/2);
+  TGeoXtru *spaceFrameCentral = new TGeoXtru(2);
+  spaceFrameCentral->DefinePolygon(nPoints, xtru, ytru);
+  spaceFrameCentral->DefineSection(0,-zlen/2);
+  spaceFrameCentral->DefineSection(1, zlen/2);
+  snprintf(volname, 30, "sframecentral%d", fLayerNumber);
+  spaceFrameCentral->SetName(volname);
+
+  zpos = zlen/2 + fgkOBSpaceFrameUnitLen/2;
+  snprintf(volname, 30, "endUnit0Trans%d", fLayerNumber);
+  TGeoTranslation *endUnit0Trans = new TGeoTranslation(volname,
+						       0, 0,-zpos);
+  endUnit0Trans->RegisterYourself();
+  snprintf(volname, 30, "endUnit1Trans%d", fLayerNumber);
+  TGeoTranslation *endUnit1Trans = new TGeoTranslation(volname,
+						       0, 0, zpos);
+  endUnit1Trans->RegisterYourself();
+
+  // The Space Frame container: a Composite Shape to avoid overlaps
+  // between the U-legs space and the end-stave connectors
+  // "endunitcontainer" is defined in CreateOBSpaceFrameObjects)
+  char componame[100];
+  snprintf(componame, 100,
+	   "sframecentral%d+endunitcontainer:endUnit0Trans%d+endunitcontainer:endUnit1Trans%d",
+	   fLayerNumber,fLayerNumber,fLayerNumber);
+
+  TGeoCompositeShape *spaceFrame = new TGeoCompositeShape(componame);
+
 
   snprintf(volname, 30, "SpaceFrameVolumeLay%d", fLayerNumber);
   TGeoVolume *spaceFrameVol = new TGeoVolume(volname, spaceFrame, medAir);
@@ -3563,22 +4110,30 @@ TGeoVolume* AliITSUv2Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 
 
   // Finally build up the space frame
-  Int_t nUnits = fgkOBSpaceFrameNUnits[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
-
   TGeoXtru *frameUnit = (TGeoXtru*)(unitVol[0]->GetShape());
   TGeoXtru *endUnit   = (TGeoXtru*)( endVol[0]->GetShape());
 
   zpos = -spaceFrame->GetDZ() + endUnit->GetDZ();
+//  zpos = -fgkOBSpaceFrameZLen[fLayerNumber/5]/2 + endUnit->GetDZ();
   spaceFrameVol->AddNode(endVol[0], 1, new TGeoTranslation(0, 0, zpos));
 
-  for(Int_t i=1; i<nUnits-1; i++){
+  zpos += (endUnit->GetDZ() + frameUnit->GetDZ());
+  spaceFrameVol->AddNode(next2EndVol[0], 1, new TGeoTranslation(0, 0, zpos));
+
+  for(Int_t i=2; i<nUnits-2; i++){
     zpos = -spaceFrame->GetDZ() + (1 + 2*i)*frameUnit->GetDZ();
+//    zpos = -spaceFrame->GetDZ() + 2*i*frameUnit->GetDZ();
     Int_t j = i/2;
     Int_t k = i - j*2;  // alternatively 0 or 1
-    spaceFrameVol->AddNode(unitVol[k], j+1, new TGeoTranslation(0, 0, zpos));
+    spaceFrameVol->AddNode(unitVol[k], j, new TGeoTranslation(0, 0, zpos));
   }
 
+  zpos = -spaceFrame->GetDZ() + (2*nUnits - 3)*frameUnit->GetDZ();
+  spaceFrameVol->AddNode(next2EndVol[1], 1, new TGeoTranslation(0, 0, zpos));
+
   zpos = -spaceFrame->GetDZ() + (2*nUnits - 1)*endUnit->GetDZ();
+//  zpos = -fgkOBSpaceFrameZLen[fLayerNumber/5]/2 +
+//         (2*nUnits - 1)*endUnit->GetDZ();
   spaceFrameVol->AddNode(endVol[1], 1, new TGeoTranslation(0, 0, zpos));
 
 
@@ -3605,6 +4160,7 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
 //         a TGeoVolume with the Space Frame of a stave
 //
 // Created:      03 Feb 2015  Mario Sitta
+// Updated:      03 Jun 2015  Mario Sitta  End units w/o U-legs
 //
 
 
@@ -3645,7 +4201,6 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
   char volname[30];
 
 
-  zlen = fgkOBSpaceFrameZLen[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
   unitlen = fgkOBSpaceFrameUnitLen;
 
   xlen = halfFrameWidth + sideRibRadius;
@@ -3686,21 +4241,48 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
 
   // The space frame single units
   // We need two units because the base ribs are alternately oriented
-  // The end units are slightly different
-  TGeoXtru *frameUnit  = new TGeoXtru(2);
+  // The next-to-end units are slightly different
+  TGeoXtru *frameUnit = new TGeoXtru(2);
   frameUnit->DefinePolygon(22, xtru, ytru);
   frameUnit->DefineSection(0,-unitlen/2);
   frameUnit->DefineSection(1, unitlen/2);
 
-  TGeoXtru *endUnit    = new TGeoXtru(2);
-  endUnit->DefinePolygon(22, xtru, ytru);
+  TGeoXtru *next2EndUnit = new TGeoXtru(2);
+  next2EndUnit->DefinePolygon(22, xtru, ytru);
+  next2EndUnit->DefineSection(0,-unitlen/2);
+  next2EndUnit->DefineSection(1, unitlen/2);
+
+
+  // The end units have no U-legs, so a simpler Xtru
+  // to avoid overlaps with the end-stave connectors
+  xtru[0] = xlen;
+  ytru[0] = -(triangleHeight/2 + baseRibRadius);
+  xtru[1] = xtru[0];
+  ytru[1] = 0.9*ytru[0];
+  xtru[2] = 0.3*xtru[0];
+  ytru[2] = triangleHeight/2;
+  for (Int_t i=0; i<3; i++) { // Reflect on the X negative side
+    xtru[i+3] = -xtru[2-i];
+    ytru[i+3] =  ytru[2-i];
+  }
+
+  TGeoXtru *endUnit = new TGeoXtru(2);
+  endUnit->SetName("endunitcontainer");  // Will be used when create spaceframe
+  endUnit->DefinePolygon(6, xtru, ytru);
   endUnit->DefineSection(0,-unitlen/2);
   endUnit->DefineSection(1, unitlen/2);
 
 
+  // The air containers
   TGeoVolume *unitVol[2];
   unitVol[0] = new TGeoVolume("SpaceFrameUnit0", frameUnit, medAir);
   unitVol[1] = new TGeoVolume("SpaceFrameUnit1", frameUnit, medAir);
+
+  TGeoVolume *next2EndVol[2];
+  next2EndVol[0]  = new TGeoVolume("SpaceFrameNext2EndUnit0",
+				   next2EndUnit, medAir);
+  next2EndVol[1]  = new TGeoVolume("SpaceFrameNext2EndUnit1",
+				   next2EndUnit, medAir);
 
   TGeoVolume *endVol[2];
   endVol[0]  = new TGeoVolume("SpaceFrameEndUnit0", endUnit, medAir);
@@ -3720,6 +4302,12 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
 		      new TGeoTranslation(0, triangleHeight/2, 0));
 
   unitVol[1]->AddNode(cfStavTopVol, 1,
+		      new TGeoTranslation(0, triangleHeight/2, 0));
+  
+  next2EndVol[0]->AddNode(cfStavTopVol, 1,
+		      new TGeoTranslation(0, triangleHeight/2, 0));
+
+  next2EndVol[1]->AddNode(cfStavTopVol, 1,
 		      new TGeoTranslation(0, triangleHeight/2, 0));
   
   endVol[0]->AddNode(cfStavTopVol, 1,
@@ -3745,6 +4333,18 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
   unitVol[1]->AddNode(cfStavSideVol, 1,
 		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
   unitVol[1]->AddNode(cfStavSideVol, 2,
+		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
+					 new TGeoRotation("",90,180,-90)));
+
+  next2EndVol[0]->AddNode(cfStavSideVol, 1,
+		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
+  next2EndVol[0]->AddNode(cfStavSideVol, 2,
+		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
+					 new TGeoRotation("",90,180,-90)));
+
+  next2EndVol[1]->AddNode(cfStavSideVol, 1,
+		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
+  next2EndVol[1]->AddNode(cfStavSideVol, 2,
 		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
 					 new TGeoRotation("",90,180,-90)));
 
@@ -3801,6 +4401,16 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
   unitVol[1]->AddNode(sideRibVol, 2, sideTransf[1]);
   unitVol[1]->AddNode(sideRibVol, 3, sideTransf[2]);
   unitVol[1]->AddNode(sideRibVol, 4, sideTransf[3]);
+
+  next2EndVol[0]->AddNode(sideRibVol, 1, sideTransf[0]);
+  next2EndVol[0]->AddNode(sideRibVol, 2, sideTransf[1]);
+  next2EndVol[0]->AddNode(sideRibVol, 3, sideTransf[2]);
+  next2EndVol[0]->AddNode(sideRibVol, 4, sideTransf[3]);
+
+  next2EndVol[1]->AddNode(sideRibVol, 1, sideTransf[0]);
+  next2EndVol[1]->AddNode(sideRibVol, 2, sideTransf[1]);
+  next2EndVol[1]->AddNode(sideRibVol, 3, sideTransf[2]);
+  next2EndVol[1]->AddNode(sideRibVol, 4, sideTransf[3]);
 
   endVol[0]->AddNode(sideRibVol, 1, sideTransf[0]);
   endVol[0]->AddNode(sideRibVol, 2, sideTransf[1]);
@@ -3861,6 +4471,14 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
   unitVol[1]->AddNode(baseRib2Vol, 2, baseTransf[1]);
   unitVol[1]->AddNode(baseRib1Vol, 1, baseTransf[3]);
 
+  next2EndVol[0]->AddNode(baseRib2Vol, 1, baseTransf[0]);
+  next2EndVol[0]->AddNode(baseRib2Vol, 2, baseTransf[1]);
+  next2EndVol[0]->AddNode(baseRib1Vol, 1, baseTransf[3]);
+
+  next2EndVol[1]->AddNode(baseRib2Vol, 1, baseTransf[0]);
+  next2EndVol[1]->AddNode(baseRib2Vol, 2, baseTransf[1]);
+  next2EndVol[1]->AddNode(baseRib1Vol, 1, baseTransf[3]);
+
   endVol[0]->AddNode(baseEndRibVol, 1, baseTransf[4]);
   endVol[0]->AddNode(baseRib2Vol,   1, baseTransf[1]);
   endVol[0]->AddNode(baseRib1Vol,   1, baseTransf[2]);
@@ -3885,7 +4503,7 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
     ytru[i+4] =  ytru[3-i];
   }
 
-  TGeoXtru *uleg1full = new TGeoXtru(2);  // This will go in the end units
+  TGeoXtru *uleg1full = new TGeoXtru(2);  // This will go in the next end units
   uleg1full->DefinePolygon(8, xtru, ytru);
   uleg1full->DefineSection(0,-ulegHalfWidth);
   uleg1full->DefineSection(1, ulegHalfWidth);
@@ -3909,7 +4527,7 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
   ytru[5] = -ulegHigh2;
   ytru[6] = -ulegHigh2;
 
-  TGeoXtru *uleg2full = new TGeoXtru(2);  // This will go in the end units
+  TGeoXtru *uleg2full = new TGeoXtru(2);  // This will go in the next end units
   uleg2full->DefinePolygon(8, xtru, ytru);
   uleg2full->DefineSection(0,-ulegHalfWidth);
   uleg2full->DefineSection(1, ulegHalfWidth);
@@ -3952,25 +4570,25 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
   unitVol[1]->AddNode(uleg2halfVol, 2,
 		      new TGeoTranslation( -xpos, -ypos,  zpos));
 
-  endVol[0]->AddNode(uleg1halfVol, 1,
+  next2EndVol[0]->AddNode(uleg1halfVol, 1,
 		  new TGeoTranslation(  xpos, -ypos,  zpos));
-  endVol[0]->AddNode(uleg2halfVol, 1,
+  next2EndVol[0]->AddNode(uleg2halfVol, 1,
 		  new TGeoTranslation( -xpos, -ypos,  zpos));
 
-  endVol[1]->AddNode(uleg1halfVol, 1,
+  next2EndVol[1]->AddNode(uleg1halfVol, 1,
 		  new TGeoTranslation(  xpos, -ypos, -zpos));
-  endVol[1]->AddNode(uleg2halfVol, 1,
+  next2EndVol[1]->AddNode(uleg2halfVol, 1,
 		  new TGeoTranslation( -xpos, -ypos, -zpos));
 
   zpos = unitlen/2 - uleg1full->GetZ(1);
-  endVol[0]->AddNode(uleg1fullVol, 1,
+  next2EndVol[0]->AddNode(uleg1fullVol, 1,
 		  new TGeoTranslation(  xpos, -ypos, -zpos));
-  endVol[0]->AddNode(uleg2fullVol, 1,
-		  new TGeoTranslation( -xpos, -ypos, -zpos));
+  next2EndVol[0]->AddNode(uleg2fullVol, 1,
+ 		  new TGeoTranslation( -xpos, -ypos, -zpos));
 
-  endVol[1]->AddNode(uleg1fullVol, 1,
+  next2EndVol[1]->AddNode(uleg1fullVol, 1,
 		  new TGeoTranslation(  xpos, -ypos,  zpos));
-  endVol[1]->AddNode(uleg2fullVol, 1,
+  next2EndVol[1]->AddNode(uleg2fullVol, 1,
 		  new TGeoTranslation( -xpos, -ypos,  zpos));
 
 
