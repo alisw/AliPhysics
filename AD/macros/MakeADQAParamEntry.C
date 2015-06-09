@@ -26,8 +26,8 @@ void MakeADQAParamEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
   ADQAParam->SetTdcTimeMax(300.0); 
   
   ADQAParam->SetNChargeChannelBins(10000);
-  ADQAParam->SetChargeChannelMin(1);
-  ADQAParam->SetChargeChannelMax(10001);
+  ADQAParam->SetChargeChannelMin(0);
+  ADQAParam->SetChargeChannelMax(10000);
   
   ADQAParam->SetNChargeSideBins(8000);
   ADQAParam->SetChargeSideMin(10);
