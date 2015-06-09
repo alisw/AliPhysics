@@ -161,6 +161,15 @@ AliJetModelBaseTask::~AliJetModelBaseTask()
 }
 
 //________________________________________________________________________
+TString AliJetModelBaseTask::GetOutTrackName() const{
+   Printf("Note: If the code changes this method could give a wrong result");
+   TString futurenamefOutputTrack;
+   if(fCopyArray) futurenamefOutputTrack = Form("%s%s", fTracksName.Data(), fSuffix.Data());
+   else futurenamefOutputTrack = fTracksName;
+   return futurenamefOutputTrack;
+
+}
+//________________________________________________________________________
 void AliJetModelBaseTask::UserCreateOutputObjects()
 {
   // Create user output.
@@ -303,13 +312,13 @@ Bool_t AliJetModelBaseTask::ExecOnce()
       fTracks = 0;
       return kFALSE;
     }
-
     if (!fOutTracks) {
       fOutTracksName = fTracksName;
       if (fCopyArray)
 	fOutTracksName += fSuffix;
       if (fCopyArray || !fTracks) {
 	fOutTracks = new TClonesArray("AliPicoTrack");
+	//fOutTracks->SetOwner(kTRUE);
 	fOutTracks->SetName(fOutTracksName);
 	if (InputEvent()->FindListObject(fOutTracksName)) {
 	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutTracksName.Data())); 
@@ -321,8 +330,10 @@ Bool_t AliJetModelBaseTask::ExecOnce()
       }
       else {
 	fOutTracks = fTracks;
+	InputEvent()->AddObject(fOutTracks);
       }
     }
+    InputEvent()->ls();
   }
 
   if(fAddV2 && (!fDifferentialV2)) {
@@ -703,7 +714,6 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
     label += fMarkMC+fMCLabelShift;
   else if (label < 0)
     label -= fMarkMC+fMCLabelShift;
-  
   if(fAddV2) AddV2(phi, pt);
 
   const Int_t nTracks = fOutTracks->GetEntriesFast();
