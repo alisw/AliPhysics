@@ -917,7 +917,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
         AliDebug(3,"MC acceptance cut passed\n");
         icountAcc++;
-        if(fhPtCutVar){fobjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight);}
+        if(fhPtCutVar){fobjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
 
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
