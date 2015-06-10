@@ -167,6 +167,8 @@ class AliITSSAPTracker : public TObject
   Float_t  fNSigma2[kNLrActive];                  //! N^2 sigma margin for cluster search
   Float_t  fYToler2[kNLrActive];                  //! Y additional margin^2 for cluster search
   Float_t  fZToler2[kNLrActive];                  //! Z additional margin^2 for cluster search
+  Float_t  fMaxDRPhi;                             //! maximal search window in rphi
+  Float_t  fMaxDZ;                                //! maximal search window in z
 
   Float_t  fMSDist[kNLrActive];                   //! shift due to the MS for 1 GeV particle
   Float_t  fMSPhi[kNLrActive];                    //! dphi due to the MS for 1 GeV particle
