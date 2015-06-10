@@ -70,6 +70,8 @@ public:
   TEveViewer* GetRhoZView() { return fRhoZView; }
   TEveViewer* GetMuonView() { return fMuonView; }
 
+    TEveProjectionManager* GetRhoZMgr() { return fRhoZMgr;}
+    
   void SetMuonView(Bool_t set) { fIsMuonView = set; }
   Bool_t IsMuonView() { return fIsMuonView; }
 

@@ -1,12 +1,12 @@
 //
-//  AliEveOnlineEventManager.cpp
+//  AliEveDataSourceOnline.cpp
 //  xAliRoot
 //
 //  Created by Jeremi Niedziela on 28/05/15.
 //
 //
 
-#include "AliEveOnlineEventManager.h"
+#include "AliEveDataSourceOnline.h"
 #include "AliEveConfigManager.h"
 
 #include "AliCDBManager.h"
@@ -23,7 +23,7 @@
 
 using namespace std;
 
-AliEveOnlineEventManager::AliEveOnlineEventManager(bool storageManager) :
+AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     AliEveEventManager("online"),
     fEventListenerThread(0),
     fStorageManagerWatcherThread(0),
@@ -38,7 +38,7 @@ AliEveOnlineEventManager::AliEveOnlineEventManager(bool storageManager) :
     fFinished(false),
     fStorageManager(storageManager)
 {
-    cout<<"\n\n\nAliEveOnlineEventManager constructor called!!!\n\n\n"<<endl;
+    cout<<"\n\n\nAliEveDataSourceOnline constructor called!!!\n\n\n"<<endl;
     
     InitOCDB(-1);
     fIsOpen = kFALSE;
@@ -57,7 +57,7 @@ AliEveOnlineEventManager::AliEveOnlineEventManager(bool storageManager) :
     AliEveEventManager::SetMaster(this);
 }
 
-AliEveOnlineEventManager::~AliEveOnlineEventManager()
+AliEveDataSourceOnline::~AliEveDataSourceOnline()
 {
     fFinished = true;
     if(fEventListenerThread)
@@ -76,7 +76,7 @@ AliEveOnlineEventManager::~AliEveOnlineEventManager()
     }
 }
 
-void AliEveOnlineEventManager::GetNextEvent()
+void AliEveDataSourceOnline::GetNextEvent()
 {
     cout<<"\n\nGet next event called\n\n"<<endl;
     
@@ -134,7 +134,7 @@ void AliEveOnlineEventManager::GetNextEvent()
     }
 }
 
-void AliEveOnlineEventManager::CheckStorageStatus()
+void AliEveDataSourceOnline::CheckStorageStatus()
 {
     if(!fStorageManager){return;}
     
@@ -193,7 +193,7 @@ void AliEveOnlineEventManager::CheckStorageStatus()
     manager->Disconnect("StorageManagerDown");
 }
 
-void AliEveOnlineEventManager::InitOCDB(int runNo)
+void AliEveDataSourceOnline::InitOCDB(int runNo)
 {
     TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
     AliCDBManager* cdb = AliCDBManager::Instance();
@@ -240,7 +240,7 @@ void AliEveOnlineEventManager::InitOCDB(int runNo)
     AliEveEventManager::InitOCDB(runNo);
 }
 
-void AliEveOnlineEventManager::GotoEvent(Int_t event)
+void AliEveDataSourceOnline::GotoEvent(Int_t event)
 {
     cout<<"Go to event:"<<event<<endl;
     
@@ -332,7 +332,7 @@ void AliEveOnlineEventManager::GotoEvent(Int_t event)
     //
 }
 
-void AliEveOnlineEventManager::NextEvent()
+void AliEveDataSourceOnline::NextEvent()
 {
     static const TEveException kEH("AliEveEventManager::NextEvent ");
     
@@ -405,7 +405,7 @@ void AliEveOnlineEventManager::NextEvent()
 }
 
 
-void AliEveOnlineEventManager::MarkCurrentEvent()
+void AliEveDataSourceOnline::MarkCurrentEvent()
 {
     if(!fStorageManager){return;}
     
@@ -433,20 +433,20 @@ void AliEveOnlineEventManager::MarkCurrentEvent()
     if(requestMessage){delete requestMessage;}
 }
 
-void AliEveOnlineEventManager::StorageManagerOk()
+void AliEveDataSourceOnline::StorageManagerOk()
 {
     Emit("StorageManagerOk()");
 }
-void AliEveOnlineEventManager::StorageManagerDown()
+void AliEveDataSourceOnline::StorageManagerDown()
 {
     Emit("StorageManagerDown()");
 }
 
-void AliEveOnlineEventManager::EventServerOk()
+void AliEveDataSourceOnline::EventServerOk()
 {
     Emit("EventServerOk()");
 }
-void AliEveOnlineEventManager::EventServerDown()
+void AliEveDataSourceOnline::EventServerDown()
 {
     Emit("EventServerDown()");
 }
