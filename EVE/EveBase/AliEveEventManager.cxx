@@ -132,9 +132,8 @@ AliRecoParam* AliEveEventManager::fgRecoParam = 0;
 Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 
 AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
-//AliEveEventManager* AliEveEventManager::fgCurrent = 0;
 
-AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev, bool storageManager) :
+AliEveEventManager::AliEveEventManager(const TString& name) :
 TEveEventManager(name, ""),
 fEventId(-1),
 fRunLoader (0),
@@ -147,7 +146,6 @@ fIsOpen    (kFALSE), fHasEvent(kFALSE),
 fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
 fExecutor    (0), fTransients(0), fTransientLists(0),
 fPEventSelector(0),
-//fSubManagers (0),
 fAutoLoadTimerRunning(kFALSE),
 fViewsSaver(0),
 fESDdrawer(0),
@@ -157,17 +155,7 @@ fDrawESDtracksByType(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
 {
-    // Constructor with event-id.
-    cout<<"\n\n\nAliEveEventManager constructor called!!!\n\n\n"<<endl;
-    
-    
     InitInternals();
-
-//    if (0 != name.CompareTo("online")){
-//        Open();
-//    }
-    
-//    if (ev >= 0){GotoEvent(ev);}
 }
 
 AliEveEventManager::~AliEveEventManager()
@@ -1647,7 +1635,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         }
     }
     
-    if(fSaveViews)
+    if(fSaveViews  && fESD->GetNumberOfTracks()>0)
     {
         fViewsSaver->Save();
         fViewsSaver->SendToAmore();

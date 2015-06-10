@@ -47,7 +47,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     
 //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
 
-    bool saveViews = false;          // should screenshot be saved and sent to ALICE LIVE
+    bool saveViews = true;          // should screenshot be saved and sent to ALICE LIVE
     
     //
     //-----------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"added"<<endl;
     
     cout<<"Creating event manager...";
-    AliEveOnlineEventManager *man = new AliEveOnlineEventManager(-1, storageManager);
+    AliEveOnlineEventManager *man = new AliEveOnlineEventManager(storageManager);
     gEve->AddEvent(man);
     cout<<"created"<<endl;
     

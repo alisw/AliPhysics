@@ -314,7 +314,8 @@ void visscan_init(const TString& cdburi = "",
     man->SetESDdashNoRefit(true);
     man->SetESDdrawNoRefit(true);
     
-    man->SetESDtracksByCategory(true);
+    man->SetESDtracksByCategory(false);
+    man->SetESDtracksByType(true);
     
     man->SetAutoLoad(false);
 }

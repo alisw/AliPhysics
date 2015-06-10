@@ -10,8 +10,8 @@
 
 ClassImp(AliEveOfflineEventManager);
 
-AliEveOfflineEventManager::AliEveOfflineEventManager(Int_t ev, bool storageManager) :
-AliEveEventManager("offline",ev,storageManager)
+AliEveOfflineEventManager::AliEveOfflineEventManager(bool storageManager) :
+AliEveEventManager("offline")
 {
     AliEveEventManager::SetMaster(this);
 }

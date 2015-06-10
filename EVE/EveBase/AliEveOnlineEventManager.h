@@ -15,7 +15,7 @@
 class AliEveOnlineEventManager : public AliEveEventManager
 {
 public:
-    AliEveOnlineEventManager(Int_t ev=0, bool storageManager=false);
+    AliEveOnlineEventManager(bool storageManager=false);
     ~AliEveOnlineEventManager();
         
     void StorageManagerOk();    // *SIGNAL*

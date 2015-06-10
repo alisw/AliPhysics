@@ -23,8 +23,8 @@
 
 using namespace std;
 
-AliEveOnlineEventManager::AliEveOnlineEventManager(Int_t ev, bool storageManager) :
-    AliEveEventManager("online",ev,true),
+AliEveOnlineEventManager::AliEveOnlineEventManager(bool storageManager) :
+    AliEveEventManager("online"),
     fEventListenerThread(0),
     fStorageManagerWatcherThread(0),
     fEventInUse(1),
@@ -74,7 +74,6 @@ AliEveOnlineEventManager::~AliEveOnlineEventManager()
         delete fStorageManagerWatcherThread;
         cout<<"storage watcher thread killed and deleted"<<endl;
     }
-//    if(fMutex){delete fMutex;}
 }
 
 void AliEveOnlineEventManager::GetNextEvent()
