@@ -198,6 +198,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		// Event Cuts
 		Bool_t 		IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
 		Bool_t 		VertexZCut(AliVEvent *fInputEvent);
+		Bool_t		IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
 		Bool_t 		IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC);
 		Bool_t 		HasV0AND()												{ return fHasV0AND										; }
 		Bool_t		IsSDDFired()											{ return fIsSDDFired									; }
@@ -288,10 +289,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t						fEMCALTrigInitialized;					// EMCAL triggers initialized
 		// Primary secondary distinction
 		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
-		
+		Int_t						fBinJetJetMC;							//
 	private:
 
-		ClassDef(AliConvEventCuts,6)
+		ClassDef(AliConvEventCuts,7)
 };
 
 
