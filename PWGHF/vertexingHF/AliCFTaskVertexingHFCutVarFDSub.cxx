@@ -41,6 +41,7 @@
 #include "TCanvas.h"
 #include "TProfile.h"
 #include "TH1I.h"
+#include "TH3F.h"
 #include "TStyle.h"
 #include "TFile.h"
 #include "TF1.h"

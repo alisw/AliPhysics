@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////////////
 #include "TNamed.h"
 #include "THnSparse.h"
-#include "TH2F.h"
+#include "TH3F.h"
 
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
@@ -41,9 +41,9 @@ public:
   void FillGenStep(AliAODMCParticle *dzeroMC,Double_t pt=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
   THnSparseF* GetSparseData() const {return fCutsData;}
   THnSparseF* GetSparseMC()   const {return fCutsMC;}
-  TH2F* GetHistoPtMCgen()     const {return fPtMCGenStep;}
+  TH3F* GetHistoPtMCgen()     const {return fPtMCGenStep;}
 
-  void SetHistoPtMCgen(TH2F *h){if(fPtMCGenStep)delete fPtMCGenStep;fPtMCGenStep=(TH2F*)h->Clone();return;}
+  void SetHistoPtMCgen(TH3F *h){if(fPtMCGenStep)delete fPtMCGenStep;fPtMCGenStep=(TH3F*)h->Clone();return;}
   void SetSparseData(THnSparseF *h){if(fCutsData)delete fCutsData;fCutsData=(THnSparseF*)h->Clone();return;}
   void SetSparseMC(THnSparseF *h){if(fCutsMC)delete fCutsMC;fCutsMC=(THnSparseF*)h->Clone();return;}
 
@@ -65,7 +65,7 @@ private:
   Bool_t      fIsMC;              // flag for MC/Data
   Bool_t      fCheckAcceptance;   // flag for checking whether the decay prongs are within acceptance
   Bool_t      fResolveResonances; // flag resolve resonances in during the prong determination
-  TH2F*       fPtMCGenStep;       //! histo with spectrum at generation level
+  TH3F*       fPtMCGenStep;       //! histo with spectrum at generation level
   THnSparseF* fCutsData;          //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
   THnSparseF* fCutsMC;            //! THnSparse for cut variables (MC at PID level, w/o mass axis)
 
