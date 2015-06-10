@@ -30,8 +30,8 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/FMD/FMDsim
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSsim
-                    ${AliRoot_SOURCE_DIR}/ITS/UPGRADE/ITSUpgradeBase
-                    ${AliRoot_SOURCE_DIR}/ITS/UPGRADE/ITSUpgradeSim
+                    ${AliRoot_SOURCE_DIR}/ITSMFT/ITS/ITSUpgradeBase
+                    ${AliRoot_SOURCE_DIR}/ITSMFT/ITS/ITSUpgradeSim
                     ${AliRoot_SOURCE_DIR}/MONITOR/alistoragemanager
                     ${AliRoot_SOURCE_DIR}/MUON/MUONbase
                     ${AliRoot_SOURCE_DIR}/MUON/MUONcore
