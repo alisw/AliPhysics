@@ -84,6 +84,12 @@ class AliTPCCalPad : public TNamed {
   static TCanvas * MakeReportPadSector(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char * cutUser="");
   static TCanvas * MakeReportPadSector2D(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser="");
   static AliTPCCalPad *MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC);
+
+  //
+  // unit test
+  //
+  void DumpUnitTestTrees(const TString fileName="");
+
  protected:
   AliTPCCalROC *fROC[kNsec];                    ///< Array of ROC objects which contain the values per pad
   /// \cond CLASSIMP

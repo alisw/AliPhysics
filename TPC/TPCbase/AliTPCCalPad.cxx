@@ -164,7 +164,7 @@ void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
 
    if (sector == -1) sector = roc->GetSector();
    if (!fROC[sector]) fROC[sector] = new AliTPCCalROC(sector);
-   for (UInt_t ichannel = 0; ichannel < roc->GetNchannels(); ichannel++) 
+   for (UInt_t ichannel = 0; ichannel < roc->GetNchannels(); ichannel++)
       fROC[sector]->SetValue(ichannel, roc->GetValue(ichannel));
 }
 
@@ -299,32 +299,32 @@ TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio, AliTPCCalROC::EPad
     for (Int_t i=36;i<72;i++) if (fROC[i]) npoints+=2;//oroc split
   }
   TGraph * graph = new TGraph(npoints);
-  npoints=0;   
+  npoints=0;
   for (Int_t isec=0;isec<36;isec++){//iroc
     if (!fROC[isec]) continue;
-    if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean());      
+    if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean());
     if (type==1)  graph->SetPoint(npoints,isec,fROC[isec]->GetMedian());
-    if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio));    
+    if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio));
     npoints++;
   }
   if(padType==AliTPCCalROC::kAll) {
     for (Int_t isec=36;isec<72;isec++){//oroc full
       if (!fROC[isec]) continue;
-      if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean());      
+      if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean());
       if (type==1)  graph->SetPoint(npoints,isec,fROC[isec]->GetMedian());
-      if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio));    
+      if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio));
       npoints++;
     }
   }else{
     for (Int_t isec=36;isec<72;isec++){//oroc split
       if (!fROC[isec]) continue;
-      if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean(0,AliTPCCalROC::kOROCmedium));      
+      if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean(0,AliTPCCalROC::kOROCmedium));
       if (type==1)  graph->SetPoint(npoints,isec,fROC[isec]->GetMedian(0,AliTPCCalROC::kOROCmedium));
-      if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio,0,AliTPCCalROC::kOROCmedium));    
+      if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio,0,AliTPCCalROC::kOROCmedium));
       npoints++;
-      if (type==0)  graph->SetPoint(npoints,isec+36,fROC[isec]->GetMean(0,AliTPCCalROC::kOROClong));      
+      if (type==0)  graph->SetPoint(npoints,isec+36,fROC[isec]->GetMean(0,AliTPCCalROC::kOROClong));
       if (type==1)  graph->SetPoint(npoints,isec+36,fROC[isec]->GetMedian(0,AliTPCCalROC::kOROClong));
-      if (type==2)  graph->SetPoint(npoints,isec+36,fROC[isec]->GetLTM(0,ratio,0,AliTPCCalROC::kOROClong));    
+      if (type==2)  graph->SetPoint(npoints,isec+36,fROC[isec]->GetLTM(0,ratio,0,AliTPCCalROC::kOROClong));
       npoints++;
     }
   }
@@ -536,7 +536,7 @@ TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
 
   Float_t kEpsilon = 0.000000000001;
   TH2F * his = new TH2F(GetName(), GetName(), 250,-250,250,250,-250,250);
-  AliTPCROC * roc  = AliTPCROC::Instance(); 
+  AliTPCROC * roc  = AliTPCROC::Instance();
   for (Int_t isec=0; isec<72; isec++){
     if (side==0 && isec%36>=18) continue;
     if (side>0 && isec%36<18) continue;
@@ -549,7 +549,7 @@ TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
 	    roc->GetPositionGlobal(isec,irow,ipad,xyz);
 	    Int_t binx = 1+TMath::Nint((xyz[0]+250.)*0.5);
 	    Int_t biny = 1+TMath::Nint((xyz[1]+250.)*0.5);
-	    Float_t value = calRoc->GetValue(irow,ipad);	    
+	    Float_t value = calRoc->GetValue(irow,ipad);
 	    his->SetBinContent(binx,biny,value);
 	  }
     }
@@ -808,7 +808,7 @@ TCanvas * AliTPCCalPad::MakeReportPadSector(TTree *chain, const char* varName, c
   /// Make a report - cal pads per sector
   /// mean valeus per sector and local X
 
-  TH1* his=0; 
+  TH1* his=0;
   TLegend *legend = 0;
   TCanvas *canvas = new TCanvas(Form("Sector: %s",varTitle),Form("Sector: %s",varTitle),1500,1100);
 
@@ -879,7 +879,7 @@ TCanvas * AliTPCCalPad::MakeReportPadSector2D(TTree *chain, const char* varName,
   /// 2D view
   /// Input tree should be created using AliPreprocesorOnline before
 
-  TH1* his=0; 
+  TH1* his=0;
   TCanvas *canvas = new TCanvas(Form("%s2D",varTitle),Form("%s2D",varTitle),1500,1100);
   canvas->Divide(2);
   //
@@ -924,7 +924,7 @@ TCanvas * AliTPCCalPad::MakeReportPadSector2D(TTree *chain, const char* varName,
 void  AliTPCCalPad::Draw(Option_t* option){
   /// Draw function - standard 2D view
 
-  TH1* his=0; 
+  TH1* his=0;
   TCanvas *canvas = new TCanvas(Form("%s2D",GetTitle()),Form("%s2D",GetTitle()),900,900);
   canvas->Divide(2,2);
   //
@@ -1044,4 +1044,56 @@ void AliTPCCalPad::AddFriend(TTree * treePad, const char *friendName, const char
   TTree * tree = (TTree*)f->Get("calPads");
   treePad->AddFriend(tree,friendName);
   //  tree->AddFriend(TString::Format("%s = calPads",friendName).Data(),fname);
+}
+
+//_____________________________________________________________________________
+void AliTPCCalPad::DumpUnitTestTrees(TString fileName/*=""*/)
+{
+  /// Dump a unit test tree with most derived variables
+  /// If filename is empty, then the "<ClassName>_UnitTest.root" is used
+
+  if (fileName.IsNull()) fileName=TString::Format("%s_UnitTest.root",IsA()->GetName());
+
+  //===========================================================================
+  // ===| CalPad fits |========================================================
+  // --- create fit cal pads
+  AliTPCCalPad *localFit         = LocalFit ("localFit",5,5);
+  AliTPCCalPad *globalFit        = GlobalFit("globalFit");
+  AliTPCCalPad *globalFitRegions = GlobalFit("globalFitRegions",0,kFALSE,1,5,0.7,1,0x0,0x0,AliTPCCalROC::kOROCmedium);
+
+  TObjArray arrFits(3);
+  arrFits.Add(localFit);
+  arrFits.Add(globalFit);
+  arrFits.Add(globalFitRegions);
+  arrFits.SetOwner();
+
+  // --- dump to tree
+  AliTPCCalibViewer::MakeTree(fileName, &arrFits);
+
+  //===========================================================================
+  // ===| single variables     |===============================================
+
+  TTreeSRedirector stream(fileName,"UPDATE");
+
+  // ---| set up all variables |-----------------------------------------------
+  Double_t mean       = GetMean();
+  Double_t rms        = GetRMS();
+  Double_t median     = GetMedian();
+  Double_t minElement = GetMinElement();
+  Double_t maxElement = GetMaxElement();
+  Double_t ltmSigma   = 0.;
+  Double_t ltm        = GetLTM(&ltmSigma);
+
+  // ---| Dump to Tree |-------------------------------------------------------
+  stream << "vars" <<
+  "mean="       << mean        <<
+  "rms="        << rms         <<
+  "median="     << median      <<
+  "minElement=" << minElement  <<
+  "maxElement=" << maxElement  <<
+  "ltmSigma="   << ltmSigma    <<
+  "ltm="        << ltm         <<
+  "\n";
+
+
 }
