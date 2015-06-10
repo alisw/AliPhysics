@@ -694,13 +694,8 @@ void AliADCalibData::SetDiscriThr(Float_t thr, Int_t board, Int_t channel)
   // threshold values expressed in units of ADC
   Int_t ch = AliADCalibData::GetOfflineChannelNumber(board,channel);
   if(ch >= 0){
-    if (thr >= 0) {
       fDiscriThr[ch]=thr;
       AliInfo(Form("Discriminator threshold for channel %d set to %f",ch,fDiscriThr[ch]));
-    }
-    else {
-      AliWarning(Form("Ignore wrong threshold value (%f) for channel %d !",thr,ch));
-    }
   }
   else
     AliError("Board/Channel numbers are not valid");
