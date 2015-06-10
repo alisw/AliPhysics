@@ -17,8 +17,6 @@
 #include <AliEveEventManager.h>
 #include <AliGeomManager.h>
 
-//#include "UPGRADE/AliITSUDigitPix.h"
-
 #include <AliITSUGeomTGeo.h>
 #include <AliITSUSegmentationPix.h>
 #include <AliITSUDigitPix.h>
@@ -67,7 +65,7 @@ AliEveITSUModule::AliEveITSUModule(AliITSUGeomTGeo *gm, Int_t id, Int_t layer, I
   //
   fGM = gm; // ITSU Geometry Manager
   fgStaticInitDone = kFALSE; 
-  fSegm = (AliITSUSegmentationPix *)fGM->GetSegmentation(layer);//Fixme later
+  fSegm = fGM->GetSegmentation(layer);
   fDpx = fSegm->Dpx(0);  // pixel pitch in x
   fDpz = fSegm->Dpz(0);  // pixel pitch in z
   SetID(id);
