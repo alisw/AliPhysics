@@ -137,7 +137,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fTriggersEMCAL(0),
 	fTriggersEMCALSelected(-1),
 	fEMCALTrigInitialized(kFALSE),
-	fSecProdBoundary(1.0)
+	fSecProdBoundary(1.0),
+	fBinJetJetMC(0)
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -219,7 +220,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fTriggersEMCAL(ref.fTriggersEMCAL),
 	fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
 	fEMCALTrigInitialized(kFALSE),
-	fSecProdBoundary(ref.fSecProdBoundary)
+	fSecProdBoundary(ref.fSecProdBoundary),
+	fBinJetJetMC(ref.fBinJetJetMC)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -1558,6 +1560,110 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 	}
 	// cout << "rejected " << fESDEvent->GetEventNumberInFile() << endl;
 	return 0;
+}
+
+///________________________________________________________________________
+// Analysing Jet-Jet MC's 
+///________________________________________________________________________
+Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight){
+	AliGenCocktailEventHeader *cHeader 	= 0x0;
+	AliAODMCHeader *cHeaderAOD 			= 0x0;
+	Bool_t headerFound 					= kFALSE;
+	AliStack *fMCStack 					= 0x0;
+	TClonesArray *fMCStackAOD 			= 0x0;
+	weight = 1;
+	
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
+	
+	if(MCEvent->IsA()==AliMCEvent::Class()){
+		if(dynamic_cast<AliMCEvent*>(MCEvent)){
+			cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+			if(cHeader) headerFound 	= kTRUE;
+			fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		}	
+	}
+	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
+		cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+		fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if(cHeaderAOD) headerFound 		= kTRUE;
+	}
+	
+	if(headerFound){
+		TList *genHeaders 				= 0x0;
+		if(cHeader) genHeaders 			= cHeader->GetHeaders();
+		if(cHeaderAOD){
+			genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+			if(genHeaders->GetEntries()==1){
+				return kFALSE;
+			}
+		}
+		AliGenEventHeader* gh 			= 0;
+		for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+			gh 						= (AliGenEventHeader*)genHeaders->At(i);
+			TString GeneratorName 	= gh->GetName();
+			if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+				Bool_t eventAccepted = kTRUE;			
+				TParticle * jet =  0;
+				Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
+				Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
+				Float_t tmpjet[]={0,0,0,0};
+				for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+					dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
+					jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+					//Compare jet pT and pt Hard
+					if(jet->Pt() > 4 * ptHard){
+						eventAccepted= kFALSE;
+					}	
+					if (periodName.CompareTo("LHC15a3b") == 0 ){
+						Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
+															21,	28, 36, 45, 57, 
+															70, 85, 1000};
+						Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+															1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
+															1.933238e-05, 1.562895e-05};
+						Int_t bin = 0;
+						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+						if (bin < 12) weight = weightsBins[bin];
+					}
+				}
+				return eventAccepted;
+			} 	
+		}		
+	} else {		
+		AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
+		TString eventHeaderName 		= eventHeader->ClassName();
+		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+			Bool_t eventAccepted = kTRUE;
+			TParticle * jet =  0;
+			Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
+			Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+			Float_t tmpjet[]={0,0,0,0};
+			for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+				dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
+				jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+				//Compare jet pT and pt Hard
+				if(jet->Pt() > 4 * ptHard){
+					eventAccepted= kFALSE;
+				}	
+				if (periodName.CompareTo("LHC15a3b") == 0 ){
+					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
+														21,	28, 36, 45, 57, 
+														70, 85, 1000};
+					Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+														1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
+														1.933238e-05, 1.562895e-05};
+					Int_t bin = 0;
+					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+					if (bin < 12) weight = weightsBins[bin];
+				}				
+			}
+			return eventAccepted;
+		} else {
+			return kFALSE;
+		}	
+	}	
+	
+	return kFALSE;
 }
 
 

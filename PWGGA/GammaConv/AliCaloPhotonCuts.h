@@ -92,7 +92,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		virtual Bool_t 	IsSelected(TObject* /*obj*/)									{return kTRUE;}
 		virtual Bool_t 	IsSelected(TList* /*list*/) 									{return kTRUE;}
 
-		Bool_t 			ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Bool_t isMC);
+		Bool_t 			ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC);
 		Bool_t 			ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
@@ -108,7 +108,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 		// Cut functions
 		Bool_t 			AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
-		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Bool_t isMC);
+		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC);
 
 		Bool_t 			MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event);
 
