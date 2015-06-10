@@ -97,7 +97,7 @@ if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
         AliEveHLT.cxx
-        AliEveDataSourceHLTZMQ.cxx
+        AliEveDataSourceHLT.cxx
         AliEveOnline.cxx
         AliEveDataSourceOnline.cxx
        )
