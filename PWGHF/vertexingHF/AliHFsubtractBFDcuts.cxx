@@ -116,7 +116,7 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fCutsMC->GetAxis(4)->SetName("Mother_pt");
   fCutsMC->GetAxis(4)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
 
-  fPtMCGenStep=new TH2F("fPtMCGenStep","fPtMCGenStep;#it{p}_{T};Number of prongs",24,0.,24.,20,0.,20.);
+  fPtMCGenStep=new TH3F("fPtMCGenStep","fPtMCGenStep;#it{p}_{T};Number of prongs;Mother #it{p}_{T}",24,0.,24.,20,0.,20.,24,0.,24.);
   return;
 }
 
@@ -133,7 +133,7 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*
     if (!AnalyseDecay()) {
       AliDebug(3, "Error during the decay type determination!");
     }
-    fPtMCGenStep->Fill(pt,(Double_t)fNprongs,weight);
+    fPtMCGenStep->Fill(pt,(Double_t)fNprongs,fMotherPt,weight);
   }
   else {
     fPtMCGenStep->Fill(pt,0.,weight);

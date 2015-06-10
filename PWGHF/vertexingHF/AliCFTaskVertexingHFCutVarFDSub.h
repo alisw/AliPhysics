@@ -39,6 +39,7 @@
 class AliCFManager;
 class AliRDHFCuts;
 class AliHFsubtractBFDcuts;
+class TH3F;
 
 class AliCFTaskVertexingHFCutVarFDSub: public AliAnalysisTaskSE {
 public:
@@ -286,7 +287,7 @@ protected:
   Float_t fCutOnMomConservation; // cut on momentum conservation
   AliHFsubtractBFDcuts* fobjSpr; // object for cut variation study
   THnSparseF* fhsparsecutvar; //
-  TH2F* fhPtCutVar; //
+  TH3F* fhPtCutVar; //
 
   ClassDef(AliCFTaskVertexingHFCutVarFDSub,3); // class for HF corrections as a function of many variables
 };
