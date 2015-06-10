@@ -19,6 +19,7 @@
 #include <AliESDEvent.h>
 #include <AliEveSaveViews.h>
 #include <AliEveESDTracks.h>
+#include "AliEveDataSource.h"
 
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
@@ -48,10 +49,11 @@ class TMap;
 // geometry.
 //
 
-
 class AliEveEventManager : public TEveEventManager, public TQObject
 {
 public:
+  enum EDataSource { kSourceHLT, kSourceOnline, kSourceOffline };
+
     static AliEveEventManager* GetMaster();
     
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
@@ -108,6 +110,7 @@ public:
     static Bool_t HasAOD();
     static Bool_t HasRawReader();
 
+    //static getters for drawing macros
     static AliRunLoader* AssertRunLoader();
     static AliESDEvent*  AssertESD();
     static AliESDfriend* AssertESDfriend();
@@ -158,9 +161,9 @@ public:
     void InitOCDB(int runNo=-1);
 
     void PrepareForNewEvent(AliESDEvent *event);
+    AliEveEventManager(const TString& name="Event");
 
 protected:
-    AliEveEventManager(const TString& name="Event");
     virtual ~AliEveEventManager();
     void SetMaster(AliEveEventManager *master);
     
@@ -178,6 +181,11 @@ protected:
     TFile        *fAODFile;		// AOD file.
     TTree        *fAODTree;		// AOD tree.
     AliAODEvent  *fAOD;			// AODEvent object.
+
+    AliEveData* fCurrentData; //current data struct from one of the data sources
+    AliEveDataSource* fCurrentDataSource; //data source in use at the moent
+    //std::map<EDataSource, AliDataSource*> fDataSources; //list of registered data sources (HLT,File,Online)
+    void ChangeDataSource(EDataSource newSource) {}
 
     AliRawReader *fRawReader;             // Raw-data reader.
     AliEventInfo	fEventInfo;		// Current Event Info
@@ -210,6 +218,7 @@ protected:
     static TString  fgSpecificCdbUriValue;		// Global URI to specific CDB object.
     static TString  fgSpecificCdbUriPath;		// Global URI to specific CDB object.
     static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
+
     static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
     static Bool_t   fgAssertAOD;		// Global flag specifying if AODEvent must be asserted during opening of the event-data.
     static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.

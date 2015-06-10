@@ -89,6 +89,7 @@ set(SRCS
     AliEveV0Editor.cxx
     AliEveV0ListEditor.cxx
     AliEveVSDCreator.cxx
+    AliEveDataSource.cxx
    )
 
 # Sources if ZMQ installed
@@ -96,7 +97,7 @@ if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
         AliEveHLT.cxx
-        AliEveHLTZMQeventManager.cxx
+        AliEveDataSourceHLTZMQ.cxx
         AliEveOnline.cxx
         AliEveOnlineEventManager.cxx
        )

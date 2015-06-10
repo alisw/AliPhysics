@@ -1,11 +1,11 @@
 //
-//  AliEveHLTZMQeventManager
+//  AliEveDataSourceHLTZMQ
 //
 //  blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 //
 //
 
-#include "AliEveHLTZMQeventManager.h"
+#include "AliEveDataSourceHLTZMQ.h"
 
 #include "AliEveConfigManager.h"
 #include "AliCDBManager.h"
@@ -24,8 +24,8 @@
 
 using namespace std;
 
-AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(bool storageManager) :
-    AliEveEventManager("HLT"),
+AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
+    AliEveDataSource("HLT"),
     fEventListenerThreadHLT(0),
     fCurrentRun(-1),
     fZMQContext(NULL),
@@ -33,7 +33,6 @@ AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(bool storageManager) :
     fHLTPublisherAddress("tcp://localhost:60201")
 {
 #ifdef ZMQ
-  fIsOpen=kTRUE;
   //get the address of the HLT proxy from the environment
   if (gSystem->Getenv("HLT_ZMQ_proxy")) 
     fHLTPublisherAddress=gSystem->Getenv("HLT_ZMQ_proxy");
@@ -48,11 +47,9 @@ AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(bool storageManager) :
   fEventListenerThreadHLT = new TThread("fEventListenerThreadHLT",DispatchEventListenerHLT,(void*)this);
   fEventListenerThreadHLT->Run();
 #endif
-    
-  AliEveEventManager::SetMaster(this);
 }
 
-AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
+AliEveDataSourceHLTZMQ::~AliEveDataSourceHLTZMQ()
 {
 #ifdef ZMQ
   if (fZMQeventQueue)
@@ -80,7 +77,7 @@ AliEveHLTZMQeventManager::~AliEveHLTZMQeventManager()
 
 }
 
-void AliEveHLTZMQeventManager::PullEventFromHLT()
+void AliEveDataSourceHLTZMQ::PullEventFromHLT()
 {
 #ifdef ZMQ
   int rc = 0;
@@ -169,7 +166,7 @@ void AliEveHLTZMQeventManager::PullEventFromHLT()
 #endif
 }
 
-void AliEveHLTZMQeventManager::InitOCDB(int runNo)
+void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
 {
     AliCDBManager* cdb = AliCDBManager::Instance();
     if (runNo!=fCurrentRun){
@@ -178,11 +175,9 @@ void AliEveHLTZMQeventManager::InitOCDB(int runNo)
     }
 }
 
-void AliEveHLTZMQeventManager::GotoEvent(Int_t /*event*/)
+void AliEveDataSourceHLTZMQ::GotoEvent(Int_t /*event*/)
 {
-    static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    
-    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
+    static const TEveException kEH("AliEveDataSourceHLTZMQ::GotoEvent ");
     
     NextEvent();
     gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
@@ -191,11 +186,10 @@ void AliEveHLTZMQeventManager::GotoEvent(Int_t /*event*/)
     
 }
 
-void AliEveHLTZMQeventManager::NextEvent()
+void AliEveDataSourceHLTZMQ::NextEvent()
 {
-    static const TEveException kEH("AliEveEventManager::NextEvent ");
+    static const TEveException kEH("AliEveDataSourceHLTZMQ::NextEvent ");
   //read event from queue
-  if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
 
 #ifdef ZMQ
   //init some stuff
@@ -246,25 +240,18 @@ void AliEveHLTZMQeventManager::NextEvent()
   {
     printf("setting new event\n");
     esdObject->GetStdContent();
-    DestroyElements();
     int runNumber = esdObject->GetRunNumber();
     InitOCDB(runNumber);
 
     //replace the ESD
-    delete fESD;
-    fESD = esdObject;
-    fHasEvent=kTRUE;
-    
-    AfterNewEventLoaded();
+    delete fCurrentData->fESD;
+    fCurrentData->fESD = esdObject;
   }
   else
   {
     cout<<"No new event is avaliable."<<endl;
-    fHasEvent=kFALSE;
-    NoEventLoaded();
   }
   zmq_msg_close(&message);
 #endif
-  gSystem->ProcessEvents();
 }
 

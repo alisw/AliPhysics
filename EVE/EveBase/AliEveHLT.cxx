@@ -8,7 +8,7 @@
 
 #include "AliEveHLT.h"
 #include "AliEveGeomGentle.h"
-#include "AliEveHLTZMQeventManager.h"
+#include "AliEveEventManager.h"
 #include "AliEveEventManagerEditor.h"
 #include "AliEveMultiView.h"
 #include "AliEveMacroExecutor.h"
@@ -64,7 +64,7 @@ AliEveHLT::AliEveHLT(bool storageManager)
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage(ocdbStorage);
 
-  AliEveEventManager* eventManager = new AliEveHLTZMQeventManager();
+  AliEveEventManager* eventManager = new AliEveEventManager();
   gEve->AddEvent(eventManager);
   cout<<"Event manager created"<<endl;
 
