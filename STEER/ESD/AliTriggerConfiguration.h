@@ -71,6 +71,7 @@ public:
 		   void   Reset();
 
   //  Getters
+  	    const char*   GetPartitionName()const {return GetName();}
                TString    GetActiveDetectors() const;
                TString    GetTriggeringDetectors() const;
                TString    GetTriggeringModules() const;
