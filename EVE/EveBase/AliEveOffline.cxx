@@ -72,7 +72,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     
 //    bool customPreset = true;            // should one of the following custom presets be used
     Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-    Width_t width = 3;
+    Width_t width = 2;
     bool dashNoRefit = true;
     bool drawNoRefit = true;
     
@@ -303,11 +303,11 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     gEve->Redraw3D(kTRUE);
     
 //        man->SetESDcolors(colors);
-//        man->SetESDwidth(widths);
+    man->SetESDwidth(width);
     man->SetESDdashNoRefit(dashNoRefit);
     man->SetESDdrawNoRefit(drawNoRefit);
     
-    man->SetESDtracksByCategory(true);
+    man->SetESDtracksByCategory(false);
     man->SetESDtracksByType(true);
     
     man->SetAutoLoad(false);// set autoload by default

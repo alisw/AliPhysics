@@ -16,7 +16,7 @@
 class AliEveHLTZMQeventManager : public AliEveEventManager
 {
 public:
-    AliEveHLTZMQeventManager(Int_t ev=0, bool storageManager=false);
+    AliEveHLTZMQeventManager(bool storageManager=false);
     ~AliEveHLTZMQeventManager();
     
 private:

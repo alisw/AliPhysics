@@ -398,11 +398,11 @@ void AliEveSaveViews::SaveWithDialog()
     const char *energy;
     if(fESDEvent->GetBeamEnergy()>=0.0000001)
     {
-        energy = Form("Energy:%f",fESDEvent->GetBeamEnergy());
+        energy = Form("Energy:%.0f TeV",2*fESDEvent->GetBeamEnergy()/1000);
     }
     else
     {
-        energy = "Energy: 13 TeV";
+        energy = "Energy: unknown";
     }
     int fontSize = 0.015*height;
     compositeImg->BeginPaint();

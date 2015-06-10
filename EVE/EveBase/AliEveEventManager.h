@@ -160,7 +160,7 @@ public:
     void PrepareForNewEvent(AliESDEvent *event);
 
 protected:
-    AliEveEventManager(const TString& name="Event", Int_t ev=0, bool storageManager=false);
+    AliEveEventManager(const TString& name="Event");
     virtual ~AliEveEventManager();
     void SetMaster(AliEveEventManager *master);
     
@@ -199,8 +199,6 @@ protected:
     TEveElementList     *fTransientLists; // Container for lists of transient (per event) elements.
 
     AliEveEventSelector* fPEventSelector; // Event filter
-
-//    TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
     static TString  fgGAliceFileName;        // galice.root file
     static TString  fgESDFileName;        // Name by which to open ESD.

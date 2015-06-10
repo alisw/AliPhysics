@@ -24,8 +24,8 @@
 
 using namespace std;
 
-AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(Int_t ev, bool storageManager) :
-    AliEveEventManager("HLT",ev,false),
+AliEveHLTZMQeventManager::AliEveHLTZMQeventManager(bool storageManager) :
+    AliEveEventManager("HLT"),
     fEventListenerThreadHLT(0),
     fCurrentRun(-1),
     fZMQContext(NULL),

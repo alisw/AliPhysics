@@ -14,7 +14,7 @@
 class AliEveOfflineEventManager : public AliEveEventManager
 {
 public:
-    AliEveOfflineEventManager(Int_t ev=0, bool storageManager=false);
+    AliEveOfflineEventManager(bool storageManager=false);
     ~AliEveOfflineEventManager();
 private:
     
