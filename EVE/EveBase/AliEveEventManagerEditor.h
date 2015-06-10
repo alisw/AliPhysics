@@ -13,6 +13,8 @@
 #include "TGedFrame.h"
 #include "TGComboBox.h"
 #include <TObjString.h>
+#include "TGButton.h"
+#include "TGButtonGroup.h"
 
 class AliEveEventManager;
 class TEveGValuator;
@@ -75,6 +77,7 @@ public:
   void DoLastEvent();
   void DoMarkEvent();
     void DoScreenshot();
+    void DoSwitchDataSource(Int_t source);
 
   void DoSetEvent();
 
@@ -86,7 +89,7 @@ public:
   void Update(int=1);
   void EventServerChangedState(int state);
   void StorageManagerChangedState(int state);
-
+    
 protected:
   AliEveEventManager   *fM;            // Model object.
     
@@ -97,6 +100,10 @@ protected:
     TGTextButton         *fRefresh;      // Refresh event-file state
     TGTextButton         *fMarkEvent;    // Mark current event
     TGTextButton         *fScreenshot;   // Save screenshot to file
+    
+    TGRadioButton *fSwitchToHLT;         // switch data source to HLT
+    TGRadioButton *fSwitchToOnline;      // switch data source to Online
+    TGRadioButton *fSwitchToOffline;     // switch data source to Offline
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id

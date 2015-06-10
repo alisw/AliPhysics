@@ -199,6 +199,15 @@ fEventInfo    (0)
         }
         fEventServerStatus = MkLabel(f,"Reconstruction: Waiting",0,10,10);
         fEventServerStatus->SetTextColor(0xFFA500);
+        
+        TGButtonGroup *horizontal = new TGButtonGroup(f, "Data Source");
+//        horizontal->SetTitlePos(TGGroupFrame::kCenter);
+        fSwitchToHLT     = new TGRadioButton(horizontal, "HLT",AliEveEventManager::kSourceHLT);
+        fSwitchToOnline  = new TGRadioButton(horizontal, "Online",AliEveEventManager::kSourceOnline);
+        fSwitchToOffline = new TGRadioButton(horizontal, "Offline",AliEveEventManager::kSourceOffline);
+        horizontal->SetButton(2);
+        horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(Int_t)");
+        f->AddFrame(horizontal, new TGLayoutHints(kLHintsExpandX));
     }
     
     fEventInfo = new TGTextView(this, 400, 600);
@@ -333,6 +342,11 @@ void AliEveEventManagerWindow::DoSetTrigSel()
     // Set the trigger selection
     
     fM->SetTrigSel(fTrigSel->GetSelectedEntry()->EntryId());
+}
+
+void AliEveEventManagerWindow::DoSwitchDataSource(Int_t source)
+{
+    fM->ChangeDataSource(source);
 }
 
 //______________________________________________________________________________

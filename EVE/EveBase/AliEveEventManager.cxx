@@ -155,6 +155,9 @@ fDrawESDtracksByType(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
 {
+    fM->Connect("NewEventLoaded()", cls, this, "Update(=1)");
+    fM->Connect("NoEventLoaded()", cls, this, "Update(=0)");
+    
     InitInternals();
 }
 

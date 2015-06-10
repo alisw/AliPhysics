@@ -32,7 +32,8 @@
 #pragma link C++ class AliEveEventManagerWindow+;
 #pragma link C++ class AliEveDataSource+;
 #ifdef ZMQ
-#pragma link C++ class AliEveDataSourceHLTZMQ+;
+#pragma link C++ class AliEveHLTZMQeventManager+;
+#pragma link C++ class AliEveDataSourceOnline+;
 #endif
 
 // AliEveEventSelector

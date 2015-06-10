@@ -1,22 +1,22 @@
 //
-//  AliEveOnlineEventManager.h
+//  AliEveDataSourceOnline.h
 //  xAliRoot
 //
 //  Created by Jeremi Niedziela on 28/05/15.
 //
 //
 
-#ifndef __AliEveOnlineEventManager__
-#define __AliEveOnlineEventManager__
+#ifndef __AliEveDataSourceOnline__
+#define __AliEveDataSourceOnline__
 
 #include "AliEveEventManager.h"
 #include "AliStorageTypes.h"
 
-class AliEveOnlineEventManager : public AliEveEventManager
+class AliEveDataSourceOnline : public AliEveDataSource
 {
 public:
-    AliEveOnlineEventManager(bool storageManager=false);
-    ~AliEveOnlineEventManager();
+    AliEveDataSourceOnline(bool storageManager=false);
+    ~AliEveDataSourceOnline();
         
     void StorageManagerOk();    // *SIGNAL*
     void StorageManagerDown();  // *SIGNAL*
@@ -26,6 +26,7 @@ public:
 private:
     void GetNextEvent();
     void CheckStorageStatus();
+    void Init(){};// to implement
     void InitOCDB(int runNo);
     void GotoEvent(Int_t event);
     void NextEvent();
@@ -47,11 +48,11 @@ private:
     Bool_t fFinished;
     bool fStorageManager;
     
-    static void* DispatchEventListener(void *arg){static_cast<AliEveOnlineEventManager*>(arg)->GetNextEvent();return nullptr;}
-    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveOnlineEventManager*>(arg)->CheckStorageStatus();return nullptr;}
+    static void* DispatchEventListener(void *arg){static_cast<AliEveDataSourceOnline*>(arg)->GetNextEvent();return nullptr;}
+    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveDataSourceOnline*>(arg)->CheckStorageStatus();return nullptr;}
     
-    AliEveOnlineEventManager(const AliEveOnlineEventManager&);
-    AliEveOnlineEventManager& operator=(const AliEveOnlineEventManager&);
+    AliEveDataSourceOnline(const AliEveDataSourceOnline&);
+    AliEveDataSourceOnline& operator=(const AliEveDataSourceOnline&);
 };
 
 

@@ -64,7 +64,7 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"added"<<endl;
     
     cout<<"Creating event manager...";
-    AliEveOnlineEventManager *man = new AliEveOnlineEventManager(storageManager);
+    AliEveEventManager *man = new AliEveEventManager(storageManager);
     gEve->AddEvent(man);
     cout<<"created"<<endl;
     
@@ -87,6 +87,9 @@ AliEveOnline::AliEveOnline(bool storageManager)
     
     cout<<"============ Setting macro executor ============\n"<<endl;;
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+    
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM TrackRef MUON", "muon_trackRefs.C", "muon_trackRefs", "kTRUE", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD"   , "ad_esd.C", "ad_esd", "", kTRUE));
 //    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "PT HISTO"   , "histo2d.C", "histo2d", "", kTRUE));
     

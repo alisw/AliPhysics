@@ -99,7 +99,7 @@ if(ZEROMQ_FOUND)
         AliEveHLT.cxx
         AliEveDataSourceHLTZMQ.cxx
         AliEveOnline.cxx
-        AliEveOnlineEventManager.cxx
+        AliEveDataSourceOnline.cxx
        )
 endif(ZEROMQ_FOUND)
 
