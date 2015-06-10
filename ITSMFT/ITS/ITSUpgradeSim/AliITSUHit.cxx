@@ -33,6 +33,23 @@ ClassImp(AliITSUHit)
 ////////////////////////////////////////////////////////////////////////
 
 //----------------------------------------------------------------------
+AliITSUHit::AliITSUHit() : AliHit(),
+fStatus(0), // Track Status
+fModule(0), // Module number 
+fPx(0),     // PX of particle at the point of the hit
+fPy(0),     // PY of particle at the point of the hit
+fPz(0),     // PZ of particle at the point of the hit
+fDestep(0), // Energy deposited in the current step
+fTof(0),    // Time of flight at the point of the hit
+fStatus0(0),// Track Status of Starting point
+fx0(0),     // Starting point of this step
+fy0(0),     // Starting point of this step
+fz0(0),     // Starting point of this step
+ft0(0)     // Starting point of this step
+{
+}
+
+//----------------------------------------------------------------------
 AliITSUHit::AliITSUHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,
 			   TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p) 
 : AliHit(shunt,track),
