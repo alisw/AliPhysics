@@ -13,17 +13,9 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-add_subdirectory(ITSbase)
-add_subdirectory(ITSrec)
-add_subdirectory(ITSsim)
+# Libraries
+add_subdirectory(COMMON)
+add_subdirectory(ITS)
+add_subdirectory(MFT)
 
-if(DA)
-    add_subdirectory(DA)
-endif(DA)
-
-# Macros
-install(DIRECTORY oldmacros DESTINATION ITS)
-install(DIRECTORY macrosSDD macros DESTINATION ITS)
-
-
-message(STATUS "ITS enabled")
+message(STATUS "ITSMFT enabled")
