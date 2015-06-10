@@ -747,7 +747,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     out.open(fileExp.Data(), std::ofstream::out);
     if (!out.good()) {
-	printf("Failed to create file: %s\n",file.Data());
+	printf("Failed to create file: %s\n",fileExp.Data());
 	return kFALSE;
     }      
 
@@ -761,6 +761,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     file = cfg.GetLocalMaskFileName();  
     if ((cfg.GetLocalMaskFileLastVersion() != cfg.GetLocalMaskFileVersion()) || initFES) {
       modified = kTRUE;
+      status = 0;
       status = daqDA_FES_storeFile(file.Data(), "LOCAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetLocalMaskFileName());
@@ -773,6 +774,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     file = cfg.GetLocalLutFileName();
     if ((cfg.GetLocalLutFileLastVersion() != cfg.GetLocalLutFileVersion()) || initFES) {
       modified = kTRUE;
+      status = 0;
       status = daqDA_FES_storeFile(file.Data(), "LUT");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetLocalLutFileName());
@@ -784,9 +786,10 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     }
 
     file = cfg.GetGlobalFileName();
-    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || modified || initFES || cfg.SaveScalers()) {
+    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || modified || initFES) {
       modified = kTRUE;
       globalExported = kTRUE;
+      status = 0;
       status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
@@ -797,7 +800,8 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     }
 
     file = cfg.GetRegionalFileName();
-    if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES || cfg.SaveScalers()) {
+    if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES) {
+      status = 0;
       status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetRegionalFileName());
@@ -809,6 +813,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
       // needed for the initialisation of the mapping
       if (!globalExported) {
 	file = cfg.GetGlobalFileName();
+	status = 0;
 	status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
 	if (status) {
 	  printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
@@ -820,24 +825,68 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     }
 
-    if (cfg.SaveScalers()) {
-      out << cfg.GetTrigScalFileName() << endl;
-    }
-
     out.close();
-
-    // export Exported file to FES anyway
-    status = daqDA_FES_storeFile(fileExp.Data(), "EXPORTED");
-    if (status) {
-      printf("Failed to export file: %s\n", fileExp.Data());
-      return kFALSE;
-    }
-    if(cfg.GetPrintLevel()) printf("Export file: %s\n",fileExp.Data());
 
     // write last current file
     WriteLastCurrentFile(cfg,cfg.GetLastCurrentFileName());
 
     return kTRUE;
+}
+
+//__________________
+Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
+{
+
+  /// Export trigger scalers file to FES
+  /// with global and regional configuration too
+
+  TString file;
+  Int_t status = 0;
+
+  ofstream out;
+  out.open(fileExp.Data(), std::ofstream::app);
+  if (!out.good()) {
+    printf("Failed to open file in append mode: %s\n",fileExp.Data());
+    return kFALSE;
+  }
+
+  // global config
+  file = cfg.GetGlobalFileName();
+  status = 0;
+  status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
+  if (status) {
+    printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
+    return kFALSE;
+  }
+  if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
+  out << cfg.GetGlobalFileName() << endl;
+
+  // regional config
+  file = cfg.GetRegionalFileName();
+  status = 0;
+  status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
+  if (status) {
+    printf("Failed to export file: %s\n",cfg.GetRegionalFileName());
+    return kFALSE;
+  }
+  if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
+  out << cfg.GetRegionalFileName() << endl;
+
+  // trigger scalers
+  file = cfg.GetTrigScalFileName();  
+  status = 0;
+  status = daqDA_FES_storeFile(file.Data(), "TRIGSCAL");
+  if (status) {
+    printf("Failed to export file: %s\n",cfg.GetTrigScalFileName());
+    return status;
+  }
+  if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetTrigScalFileName());
+  out << cfg.GetTrigScalFileName() << endl;
+
+  out.close();
+
+  return kTRUE;
+
 }
 
 //__________________
@@ -856,6 +905,7 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     gSystem->Setenv("DAQDALIB_PATH", "$DATE_ROOT/db");
 #endif
 
+    status = 0;
     status = daqDA_DB_getFile(cfg.GetDAConfigFileName(), cfg.GetDAConfigFileName());
     if (status) {
       printf("Failed to get DA config file from DB: %s\n",cfg.GetDAConfigFileName());
@@ -864,6 +914,7 @@ Bool_t ImportFiles(AliDAConfig& cfg)
  
     ReadDAConfig(cfg);
     
+    status = 0;
     status = daqDA_DB_getFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetCurrentFileName());
@@ -872,24 +923,28 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     
     ReadFileNames(cfg);
 
+    status = 0;
     status = daqDA_DB_getFile(cfg.GetGlobalFileName(), cfg.GetGlobalFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n", cfg.GetGlobalFileName());
       return kFALSE;
     }
 
+    status = 0;
     status = daqDA_DB_getFile(cfg.GetRegionalFileName(), cfg.GetRegionalFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetRegionalFileName());
       return kFALSE;
     }
 
+    status = 0;
     status = daqDA_DB_getFile(cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetLocalMaskFileName());
       return kFALSE;
     }
 
+    status = 0;
     status = daqDA_DB_getFile(cfg.GetLocalLutFileName(), cfg.GetLocalLutFileName());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",cfg.GetLocalLutFileName());
@@ -1049,12 +1104,14 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
     // write last current file
     WriteLastCurrentFile(cfg,cfg.GetCurrentFileName());
 
+    status = 0;
     status = daqDA_DB_storeFile(cfg.GetGlobalFileName(), cfg.GetGlobalFileName());
     if (status) {
       printf("Failed to export file to DB: %s\n",cfg.GetGlobalFileName());
       return;
     }
     
+    status = 0;
     status = daqDA_DB_storeFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
       printf("Failed to export file to DB: %s\n",cfg.GetCurrentFileName());
@@ -1257,12 +1314,14 @@ void MakePatternStore(AliDAConfig& cfg)
     // write last current file
     WriteLastCurrentFile(cfg,cfg.GetCurrentFileName());
 
+    status = 0;
     status = daqDA_DB_storeFile(cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileName());
     if (status) {
       printf("Failed to export file to DB: %s\n",cfg.GetLocalMaskFileName());
       return;
     }
     
+    status = 0;
     status = daqDA_DB_storeFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
       printf("Failed to export file to DB: %s\n",cfg.GetCurrentFileName());
@@ -1360,7 +1419,7 @@ int main(Int_t argc, Char_t **argv)
     // sans carte JTAG 0x1F ---> 0x0F (!)
     if (cfg.GetGlobalMasks()->GetGlobalCrateEnable() != 0x1F) {
       printf("The MTS proxy does not control all global cards\n");
-      //return -1;
+      return -1;
     }
     
     // The global cards are ON (active on the global inputs)
@@ -1373,12 +1432,14 @@ int main(Int_t argc, Char_t **argv)
     const Char_t* tableSOD[]  = {"ALL", "yes", "CAL", "all", NULL, NULL};
     monitorDeclareTable(const_cast<char**>(tableSOD));
 
+    status = 0;
     status = monitorSetDataSource(inputFile);
     if (status) {
       cerr << "ERROR : monitorSetDataSource status (hex) = " << hex << status
 	   << " " << monitorDecodeError(status) << endl;
       return -1;
     }
+    status = 0;
     status = monitorDeclareMp("MUON Trigger monitoring");
     if (status) {
       cerr << "ERROR : monitorDeclareMp status (hex) = " << hex << status
@@ -1428,6 +1489,7 @@ int main(Int_t argc, Char_t **argv)
     }
 
     FILE* fsc = fopen(cfg.GetTrigScalFileName(),"wb");
+    Bool_t writeScalers = kFALSE;
 
     UInt_t *globalInput = new UInt_t[4];
     Bool_t doUpdate = kFALSE;
@@ -1448,11 +1510,13 @@ int main(Int_t argc, Char_t **argv)
 
       // Skip Events if needed
       while (cfg.GetSkipEvents()) {
+	status = 0;
 	status = monitorGetEventDynamic(&event);
 	cfg.DecSkipEvents();
       }
 
       // starts reading
+      status = 0;
       status = monitorGetEventDynamic(&event);
       if (status < 0)  {
 	cout << "MUONTRGda : EOF found" << endl;
@@ -1629,6 +1693,7 @@ int main(Int_t argc, Char_t **argv)
       if (cfg.SaveScalers()) {
 	if (!overFlow && (deltaT > cfg.GetScalerRecTime())) {
 	  //printf("Write scalers after %d events\n",nEvents);
+	  writeScalers = kTRUE;
 	  Int_t ibw = 0;
 	  // global
 	  buffer[ibw++] = (nCalibEvents >> 24) & 0xff;
@@ -1709,16 +1774,24 @@ int main(Int_t argc, Char_t **argv)
     fclose(fsc);
 
     if (cfg.SaveScalers()) {
-      //printf("Store scalers to FES, DATE_RUN_NUMBER %s \n",gSystem->Getenv("DATE_RUN_NUMBER"));
-      Int_t stat = 0;
-      TString file = cfg.GetTrigScalFileName();  
-      stat = daqDA_FES_storeFile(file.Data(), "TRIGSCAL");
-      if (stat) {
-	printf("Failed to export file: %s\n",cfg.GetTrigScalFileName());
-	return stat;
+      if (writeScalers) {
+	//printf("Store scalers to FES, DATE_RUN_NUMBER %s \n",gSystem->Getenv("DATE_RUN_NUMBER"));
+	if(!ExportTRIGSCAL(cfg)) {
+	  printf("ExportTRIGSCAL failed\n");
+	}
+      } else {
+	printf("Run too short ( < %d sec ), no scalers calculated! \n",cfg.GetScalerRecTime());
       }
-      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetTrigScalFileName());
-   }
+    }
+    
+    // export Exported file to FES
+    status = 0;
+    status = daqDA_FES_storeFile(fileExp.Data(), "EXPORTED");
+    if (status) {
+      printf("Failed to export file: %s\n", fileExp.Data());
+      return kFALSE;
+    }
+    if(cfg.GetPrintLevel()) printf("Export file: %s\n",fileExp.Data());
 
     timers.Stop();
 
