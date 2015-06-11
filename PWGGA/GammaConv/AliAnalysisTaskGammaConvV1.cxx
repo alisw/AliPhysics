@@ -2217,9 +2217,9 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 					
 					if (fDoMesonQA > 0){
 
-					  if(fDoMesonQA ==3){
-					    Double_t sparesFill[4] = {gamma0->GetPhotonPt(),gamma0->GetConversionRadius(),abs(gamma0->GetConversionRadius()-gamma1->GetConversionRadius()),pi0cand->GetOpeningAngle()};
-					    sPtRDeltaROpenAngle[fiCut]->Fill(sparesFill, 1);
+					  if(fDoMesonQA ==3 && abs(gamma0->GetConversionRadius()-gamma1->GetConversionRadius())<10 && pi0cand->GetOpeningAngle()<0.1){
+					          Double_t sparesFill[4] = {gamma0->GetPhotonPt(),gamma0->GetConversionRadius(),abs(gamma0->GetConversionRadius()-gamma1->GetConversionRadius()),pi0cand->GetOpeningAngle()};
+					          sPtRDeltaROpenAngle[fiCut]->Fill(sparesFill, 1);
 					  }
 
 						if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
