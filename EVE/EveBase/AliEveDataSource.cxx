@@ -28,4 +28,7 @@ void AliEveDataSource::GotoEvent(Int_t /*event*/)
 {
 }
 
-
+void AliEveDataSource::StorageManagerOk(){}
+void AliEveDataSource::StorageManagerDown(){}
+void AliEveDataSource::EventServerOk(){}
+void AliEveDataSource::EventServerDown(){}

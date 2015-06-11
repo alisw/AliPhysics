@@ -163,6 +163,11 @@ public:
     void PrepareForNewEvent(AliESDEvent *event);
     AliEveEventManager(const TString& name="Event");
 
+    void ChangeDataSource(EDataSource newSource) {}
+    
+    void DestroyTransients();
+    void ResetMagneticField(){fgMagField=0;}
+    
 protected:
     virtual ~AliEveEventManager();
     void SetMaster(AliEveEventManager *master);
@@ -185,7 +190,6 @@ protected:
     AliEveData* fCurrentData; //current data struct from one of the data sources
     AliEveDataSource* fCurrentDataSource; //data source in use at the moent
     //std::map<EDataSource, AliDataSource*> fDataSources; //list of registered data sources (HLT,File,Online)
-    void ChangeDataSource(EDataSource newSource) {}
 
     AliRawReader *fRawReader;             // Raw-data reader.
     AliEventInfo	fEventInfo;		// Current Event Info
