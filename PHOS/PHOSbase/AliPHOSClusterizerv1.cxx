@@ -192,7 +192,7 @@ ClassImp(AliPHOSClusterizerv1)
 //____________________________________________________________________________
 AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   AliPHOSClusterizer(),
-  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
+  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),  fToUnfoldCPV(0),
   fWrite(0),                  
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
@@ -418,6 +418,7 @@ void AliPHOSClusterizerv1::InitParameters()
   fEcoreRadius             = recoParam->GetEMCEcoreRadius();
   
   fToUnfold                = recoParam->EMCToUnfold() ;
+  fToUnfoldCPV             = recoParam->CPVToUnfold() ;
     
   fWrite                   = kTRUE ;
 }
