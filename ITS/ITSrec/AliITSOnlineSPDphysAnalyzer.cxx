@@ -204,8 +204,12 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
   }
   
   UInt_t nrEnoughStatChips = 0;
+  UInt_t nrEvts = GetNrEvents();
+  UInt_t eq = GetEqNr();
+  UInt_t minHitsNoisy = fDefinitelyNoisyRatio*GetNrEvents();
 
   for (UInt_t hs=0; hs<6; hs++) {
+    if(fPhysObj->GetAverageMultiplicityTot(hs)<1e-6) continue;
     for (UInt_t chip=0; chip<10; chip++) {
 
       UInt_t nrPixels = 0;
@@ -217,8 +221,8 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
 	  nrChipHits += nrHits;
 	  //	  if (nrHits>0) nrPixels++; // don't include pixels that might be dead
 	  nrPixels++;
-	  if (nrHits>fDefinitelyNoisyRatio*GetNrEvents()) {
-	    fHandler->SetNoisyPixel(GetEqNr(),hs,chip,col,row);
+	  if (nrHits>minHitsNoisy) {
+	    fHandler->SetNoisyPixel(eq,hs,chip,col,row);
 	    nrPixels--;
 	    nrChipHits-=nrHits;
 	  }
@@ -230,7 +234,7 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
 
       if (nrChipHits>0) { // otherwise there are for sure no noisy
 	// Binomial with n events and probability p for pixel hit
-	UInt_t n = GetNrEvents();
+	UInt_t n = nrEvts;
 	if (nrPixels>0 && n>0) {
 
 	  Double_t p = (Double_t)nrChipHits/nrPixels/n;
@@ -255,7 +259,7 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
 		for (UInt_t row=0; row<256; row++) {
 		  UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
 		  if (nrHits >= noiseLimit) {
-		    fHandler->SetNoisyPixel(GetEqNr(),hs,chip,col,row);
+		    fHandler->SetNoisyPixel(eq,hs,chip,col,row);
 		  }
 		}
 	      }
@@ -648,4 +652,3 @@ TH2F* AliITSOnlineSPDphysAnalyzer::GetHitMapChip(UInt_t hs, UInt_t chip) {
 
   return returnHisto;
 }
-

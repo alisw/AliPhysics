@@ -183,9 +183,9 @@ void AliITSOnlineSPDphys::SaveHitmap() {
   }
   for (UInt_t hs=0; hs<6; hs++) {
     TString hName = Form("HitArray_HS%d",hs);
-    TString hDelete = Form("%s;*",hName.Data());
-    fFile->Delete(hDelete.Data());
-    fFile->WriteTObject(fHitArray[hs], hName.Data());
+    //TString hDelete = Form("%s;*",hName.Data());
+    //fFile->Delete(hDelete.Data());
+    fFile->WriteTObject(fHitArray[hs], hName.Data(),"overwrite");
   }
   fModified=kFALSE;
 }
@@ -296,5 +296,4 @@ UInt_t AliITSOnlineSPDphys::GetEqNr() const {
 UInt_t AliITSOnlineSPDphys::GetNrEvents() const {
   return fPhysInfo->GetNrEvents();
 }
-
 
