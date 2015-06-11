@@ -39,6 +39,7 @@
 class AliCFManager;
 class AliRDHFCuts;
 class AliHFsubtractBFDcuts;
+class TH1F;
 class TH3F;
 
 class AliCFTaskVertexingHFCutVarFDSub: public AliAnalysisTaskSE {
@@ -285,11 +286,12 @@ protected:
                               // these are the pre-selection cuts for the TMVA
   Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
   Float_t fCutOnMomConservation; // cut on momentum conservation
-  AliHFsubtractBFDcuts* fobjSpr; // object for cut variation study
-  THnSparseF* fhsparsecutvar; //
-  TH3F* fhPtCutVar; //
+  AliHFsubtractBFDcuts* fObjSpr; // object for cut variation study
+  THnSparseF* fhSparseCutVar; //
+  TH3F* fhPtCutVar;  // Generator level histogram D0 pt, Nprongs of the decay, Mother pt
+  TH1F* fhBptCutVar; // B0 pt spectrum
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,4); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,5); // class for HF corrections as a function of many variables
 };
 
 #endif
