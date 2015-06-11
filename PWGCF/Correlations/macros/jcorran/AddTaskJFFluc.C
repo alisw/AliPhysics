@@ -14,23 +14,19 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 
 	//==== Get the pointer to the Analyis mgr
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
 	/*
     //=== AOD handler
     AliAODInputHandler *aodHandler = new AliAODInputHandler();
     mgr->SetInputEventHandler(aodHandler);
 	*/
-
 	//==== Check the analysis type using the event handlers connected to the analysis mgr	
 	if (!mgr->GetInputEventHandler() ){
 		::Error("AddTaskFFluc", "This task requires an input event handler" );
 		return NULL;
 	}
 
-
     //==== JCORRAN TASK
-    int CollisionCandidates = AliVEvent::kCentral;
-    AliJFFlucTask *FFtask = new AliJFFlucTask( combinedName.Data() , CollisionCandidates, IsMC, IsWeakExclude );
+    AliJFFlucTask *FFtask = new AliJFFlucTask( combinedName.Data() ,  IsMC, IsWeakExclude );
 
 	FFtask->SetFFlucTaskName( combinedName.Data() ) ;
 	FFtask->SetIsMC( IsMC );
@@ -43,6 +39,7 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 	FFtask->SetEffConfig( effMode, FilterBit); 
 	FFtask->SetIsPhiModule( IsPhiModule );
 	FFtask->SetInFileName( InFileNameNUE ); 
+    //int CollisionCandidates = AliVEvent::kCentral;
 	//FFtask->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ; 
 	//FFTask->SelectCollisionCandidates( CollisionCandidates );
 	//FFtask->SelectCollisionCandidates( AliVEvent::kCentral ) ; 
@@ -57,7 +54,6 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 	//==== Connect input/output
 	mgr->ConnectInput(FFtask, 0, cinput);
 	mgr->ConnectOutput(FFtask, 1, FFhist);
-
 	return FFtask;
 }
 
