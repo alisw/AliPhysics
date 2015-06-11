@@ -289,7 +289,7 @@ protected:
   THnSparseF* fhsparsecutvar; //
   TH3F* fhPtCutVar; //
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,3); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,4); // class for HF corrections as a function of many variables
 };
 
 #endif
