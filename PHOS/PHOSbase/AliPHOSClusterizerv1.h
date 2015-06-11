@@ -145,6 +145,7 @@ private:
   Int_t   fEmcCrystals ;             // number of EMC cristals in PHOS
 
   Bool_t  fToUnfold ;                // To perform unfolding 
+  Bool_t  fToUnfoldCPV ;             // To perform unfolding in CPV
   Bool_t  fWrite ;                   // Write RecPoints to TreeR  
   Bool_t  fDigitsUsed[53760];        //Mark digits as already used in cluster (EMC:5*56*64 ; CPV: 5*56*128)
  
