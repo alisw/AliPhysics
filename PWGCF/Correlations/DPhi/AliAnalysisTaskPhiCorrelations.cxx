@@ -351,6 +351,11 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fCheckCertainSpecies > 0)
     fListOfHistos->Add(new TH2F("checkSpecies", ";eta;pt;particles", 20, -1, 1, 40, 0, 10));
   
+  if (fCentralityMethod == "ZNAC")
+  {
+    fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
+  }
+
   PostData(0,fListOfHistos);
   
   // Add task configuration to output list 
@@ -388,7 +393,7 @@ void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
 {
   // exec (per event)
   fAnalyseUE->NextEvent();
-  
+
   // receive ESD pointer if we are not running AOD analysis
   if (!fAOD)
   {
@@ -1055,6 +1060,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   Double_t centrality = 0;
   
   AliCentrality *centralityObj = 0;
+
   if (fCentralityMethod.Length() > 0)
   {
     if (fCentralityMethod == "ZNA_MANUAL")
@@ -1081,6 +1087,29 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       }
       else
 	centrality = -1;
+    }
+    else if (fCentralityMethod == "ZNAC") // pp
+    {
+      // values from Cvetan
+      const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
+      const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
+
+      Double_t enZNA = 1.13 * towZNA[0];
+      Double_t enZNC = towZNC[0];
+      Double_t enZN = enZNA + enZNC;
+
+      Float_t znaccut[8] = {1e9, 797.743, 526.879, 238.595, 107.325, 39.214, 7.633, -100};
+      
+      if(enZN > znaccut[1] && enZN < znaccut[0]) centrality = 96;
+      else if(enZN > znaccut[2]) centrality = 91;
+      else if(enZN > znaccut[3]) centrality = 81;
+      else if(enZN > znaccut[4]) centrality = 71;
+      else if(enZN > znaccut[5]) centrality = 61;
+      else if(enZN > znaccut[6]) centrality = 51;
+      else if(enZN > znaccut[7]) centrality = 1;
+      else centrality = -1;
+
+     ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
     }
     else if (fCentralityMethod == "TRACKS_MANUAL")
     {
@@ -1121,7 +1150,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     }
    else if (fCentralityMethod == "PPVsMultUtils")
      {
-       if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+         if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
        else centrality = -1;
     }
    else
@@ -1174,7 +1203,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
   
   // Pileup selection ************************************************
-  if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(inputEvent)) 
+  if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(inputEvent))
   {
     // count the removed events
     fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
@@ -1198,7 +1227,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (fAOD)
       ((TH2F*) fListOfHistos->FindObject("V0AMultCorrelation"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A(), fAOD->GetTracklets()->GetNumberOfTracklets());
   }
-    
+ 
   // optimization
   if (centrality < 0)
     return;
@@ -1211,7 +1240,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     Double_t qx = 0; Double_t qy = 0;
     if(evtPlane) evtPlanePhi = evtPlane->CalculateVZEROEventPlane(inputEvent, 10, 2, qx, qy);
     //Reject event if the plane is not available
-    else return; 
+    else return;
   }
  
   if (fTriggersFromDetector == 0)
@@ -1264,7 +1293,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracks;
     return;
   }
-  
+
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if(fAssociatedFromDetector==0){
