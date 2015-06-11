@@ -1837,16 +1837,18 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 
 		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,isRunningEMCALrelAna);
 		
-		fWeightJetJetMC = 1;
-// 		cout << fMCEvent << endl;
-		Bool_t isMCJet = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC );
-		if (!isMCJet){
-			fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
-			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(10);
-			continue;
-// 		} else {
-// 			cout << fWeightJetJetMC << endl;
-		}	
+		if(fIsMC>0){
+	// 		cout << fMCEvent << endl;
+			Bool_t isMCJet = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC );
+			if(fIsMC==1) fWeightJetJetMC = 1;
+			if (!isMCJet){
+				fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
+				if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(10);
+				continue;
+	// 		} else {
+	// 			cout << fWeightJetJetMC << endl;
+			}
+		}
 			
 		if(eventNotAccepted){
 		// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
