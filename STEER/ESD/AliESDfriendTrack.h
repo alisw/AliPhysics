@@ -29,6 +29,10 @@ public:
   AliESDfriendTrack(const AliESDfriendTrack &t);
   virtual ~AliESDfriendTrack();
 
+  // This function will set the ownership
+  // needed to read old ESDfriends
+  void SetOwner(){if(fCalibContainer)fCalibContainer->SetOwner();}
+
   void Set1P(Float_t p) {f1P=p;}
   void SetTrackPointArray(AliTrackPointArray *points) {
     fPoints=points;

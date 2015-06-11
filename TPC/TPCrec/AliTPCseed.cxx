@@ -257,7 +257,9 @@ AliTPCseed::~AliTPCseed(){
   fNoCluster =0;
   if (fClusterOwner){
     for (Int_t icluster=0; icluster<160; icluster++){
-      delete fClusterPointer[icluster];
+      if(fClusterPointer[icluster])
+	delete fClusterPointer[icluster];
+      fClusterPointer[icluster]=0;
     }
   }
   AliDebug(5,"Destruct AliTPCseed - End");
