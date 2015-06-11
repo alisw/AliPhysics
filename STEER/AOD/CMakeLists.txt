@@ -27,6 +27,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources - alphabetical order
 set(SRCS
+    AliAODAD.cxx
     AliAODBranchReplicator.cxx
     AliAODCaloCells.cxx
     AliAODCaloCluster.cxx
