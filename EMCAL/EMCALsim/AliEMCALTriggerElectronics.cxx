@@ -275,7 +275,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 							dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
 						}
 							
-						dig->SetL0Time(p->Time());
+						if (dig) dig->SetL0Time(p->Time());
 					}
 				}
 					
@@ -295,7 +295,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 					dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
 				}
 					
-				dig->SetTriggerBit(kL0, 0);
+				if (dig) dig->SetTriggerBit(kL0, 0);
 			}
 		}
 	}
@@ -310,7 +310,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				
 				AliEMCALTriggerRawDigit *digit = (AliEMCALTriggerRawDigit*)digits->At(pos);
 		
-				if (digit->GetL1TimeSum() > -1) region[i][j] = digit->GetL1TimeSum();
+				if (digit && digit->GetL1TimeSum() > -1) region[i][j] = digit->GetL1TimeSum();
 			}
 		}
 	}
@@ -380,7 +380,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				
 				if (AliDebugLevel()) dig->Print("");
 				
-				dig->SetTriggerBit(kL1GammaHigh + ithr, 0);
+				if (dig) dig->SetTriggerBit(kL1GammaHigh + ithr, 0);
 			}
 		}
 		
@@ -416,7 +416,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				
 				if (AliDebugLevel()) dig->Print("");
 				
-				dig->SetTriggerBit(kL1JetHigh + ithr, 0);
+				if (dig) dig->SetTriggerBit(kL1JetHigh + ithr, 0);
 			}
 		}
 	}
