@@ -195,7 +195,12 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 	fUseITSpid(kFALSE),
 	fITSPIDnSigmaAboveElectronLine(100),
 	fITSPIDnSigmaBelowElectronLine(-100),
-    fMaxPtPIDITS(1.5)
+        fMaxPtPIDITS(1.5),
+        fDoDoubleCountingCut(kFALSE),
+        fMinRDC(0.),
+        fDeltaR(0.),
+        fOpenAngle(0.)
+
 	
 {
 	InitPIDResponse();
@@ -311,7 +316,11 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
 	fUseITSpid(ref.fUseITSpid),
 	fITSPIDnSigmaAboveElectronLine(ref.fITSPIDnSigmaAboveElectronLine),
 	fITSPIDnSigmaBelowElectronLine(ref.fITSPIDnSigmaBelowElectronLine),
-    fMaxPtPIDITS(ref.fMaxPtPIDITS)
+        fMaxPtPIDITS(ref.fMaxPtPIDITS),
+        fDoDoubleCountingCut(ref.fDoDoubleCountingCut),
+        fMinRDC(ref.fMinRDC),
+        fDeltaR(ref.fDeltaR),
+        fOpenAngle(ref.fOpenAngle)
 {
 	// Copy Constructor
 	for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -1754,6 +1763,8 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
 	printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
 	printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
 	if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
+	if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > %3.2f, DeltaR < %3.2f, OpenAngle < %3.2f  \n", fMinRDC, fDeltaR,fOpenAngle );
+
 }
 
 ///________________________________________________________________________
@@ -2761,6 +2772,28 @@ Bool_t AliConversionPhotonCuts::SetToCloseV0sCut(Int_t toClose) {
 		fDoToCloseV0sCut = kTRUE;
 		fminV0Dist = 3;
 		break;
+        case 4:
+                fDoToCloseV0sCut = kTRUE;
+                fDoDoubleCountingCut = kTRUE;
+                fMinRDC=0.;
+                fDeltaR=6.;
+                fOpenAngle=0.02;
+                break;
+        case 5:
+                fDoToCloseV0sCut = kTRUE;
+                fDoDoubleCountingCut = kTRUE;
+                fMinRDC=0.;
+                fDeltaR=6.;
+                fOpenAngle=0.03;
+                break;
+        case 6:
+                fDoToCloseV0sCut = kTRUE;
+                fDoDoubleCountingCut = kTRUE;
+                fMinRDC=0.;
+                fDeltaR=6.;
+                fOpenAngle=0.04;
+                break;
+
 	default:
 		AliError(Form("Shared Electron Cut not defined %d",toClose));
 		return kFALSE;
@@ -3027,6 +3060,7 @@ Bool_t AliConversionPhotonCuts::RejectSharedElectronV0s(AliAODConversionPhoton* 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0){
 
+        if (fDoDoubleCountingCut && photon->GetConversionRadius() < fMinRDC) return kTRUE;
 
 	Double_t posX = photon->GetConversionX();
 	Double_t posY = photon->GetConversionY();
@@ -3039,13 +3073,21 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
 		Double_t posCompY = photonComp->GetConversionY();
 		Double_t posCompZ = photonComp->GetConversionZ();
 
-		Double_t dist = pow((posX - posCompX),2)+pow((posY - posCompY),2)+pow((posZ - posCompZ),2);
-
-		if(dist < fminV0Dist*fminV0Dist){
-			if(photon->GetChi2perNDF() < photonComp->GetChi2perNDF()) return kTRUE;
-			else {
-				return kFALSE;}
-		}
+                if (!fDoDoubleCountingCut){
+                         Double_t dist = pow((posX - posCompX),2)+pow((posY - posCompY),2)+pow((posZ - posCompZ),2);
+                    
+                         if(dist < fminV0Dist*fminV0Dist){
+                                 if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
+                         }
+                 }else{ 
+                    
+                         TVector3 v1(photon->Px(),photon->Py(),photon->Pz());
+                         TVector3 v2(photonComp->Px(),photonComp->Py(),photonComp->Pz());
+                         Double_t OpeningAngle=v1.Angle(v2);
+                         if( OpeningAngle < fOpenAngle && abs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR){
+                                 if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
+                         }      
+                 }
 
 	}
 	return kTRUE;
