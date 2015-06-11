@@ -43,6 +43,7 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     cout<<"\n\n\nAliEveDataSourceOnline constructor called!!!\n\n\n"<<endl;
     
     InitOCDB(-1);
+    fCurrentData = new AliEveData();
 //    fIsOpen = kFALSE;
     
     StorageManagerDown(); // turn SM off by default
@@ -116,7 +117,6 @@ void AliEveDataSourceOnline::GetNextEvent()
                     }
                     fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                     fIsNewEventAvaliable = true;
-//                    NewEventLoaded();
                     gCINTMutex->UnLock();
 #endif
                 }
@@ -366,6 +366,16 @@ void AliEveDataSourceOnline::NextEvent()
                 }
                 InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
                 fCurrentData->fESD = fCurrentEvent[fEventInUse];
+                
+                AliEveEventManager::GetMaster()->SetHasEvent(true);
+                
+                AliEveEventManager::GetMaster()->AfterNewEventLoaded();
+                
+                if (AliEveEventManager::GetMaster()->GetAutoLoad()) {
+                    AliEveEventManager::GetMaster()->StartAutoLoadTimer();
+                }
+                AliEveEventManager::GetMaster()->NewEventLoaded();
+                
 //                SetEvent(0,0,fCurrentEvent[fEventInUse],0);
             }
         }
@@ -375,7 +385,7 @@ void AliEveDataSourceOnline::NextEvent()
     {
         cout<<"No new event is avaliable."<<endl;
         fFailCounter++;
-//        NoEventLoaded();
+        AliEveEventManager::GetMaster()->NoEventLoaded();
     }
     if(fFailCounter==5)
     {

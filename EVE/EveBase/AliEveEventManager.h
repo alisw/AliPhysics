@@ -20,9 +20,10 @@
 #include <AliEveSaveViews.h>
 #include <AliEveESDTracks.h>
 #include "AliEveDataSource.h"
+#include "AliEveDataSourceOffline.h"
 
 class AliEveMacroExecutor;
-class AliEveEventSelector; 
+class AliEveEventSelector;
 
 class AliRunLoader;
 class AliESDEvent;
@@ -54,47 +55,28 @@ class AliEveEventManager : public TEveEventManager, public TQObject
 public:
   enum EDataSource { kSourceHLT, kSourceOnline, kSourceOffline };
 
+    AliEveEventManager(const TString& name="Event");
     static AliEveEventManager* GetMaster();
     
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
 
-    static void SetESDFileName(const TString& esd, EVisibleESDTrees shown=kOfflineTree);
-    static void SetESDfriendFileName(const TString& esdf);
-    static void SetAODFileName(const TString& aod);
-    static void AddAODfriend  (const TString& friendFileName);
-    static void SetRawFileName(const TString& raw);
-    static void SetCdbUri     (const TString& cdb);
-    static void SetSpecificCdbUri(const TString& path,const TString& value);
-    static void SetGAliceFileName(const TString& galice);
+    static void           SetCdbUri(const TString& cdb);
+    static const TString& GetCdbUri() {return fgCdbUri;}
 
-    // set Local Directory or URL where the files are located
-    // it can also be a path to root_archive.zip
-    // assumes the filenames of ESD, AOD, etc are standard ALICE names
-    // (AliESDs.root, AliESDfriends.root, AliAOD.root, AliAODfriend.root, galice.root,raw.root)
-    static void SetFilesPath(const TString& path);
-    static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
-                                  Bool_t assertAod, Bool_t assertRaw);
-    static void SearchRawForCentralReconstruction();
+    virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const{
+        return fDataSourceOffline?fDataSourceOffline->GetMaxEventId(refreshESD):-1;
+    }
 
-    virtual void  Open();
-    virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
-    virtual void  GotoEvent(Int_t event);
-    virtual void  NextEvent();
-    virtual void  PrevEvent();
-    void MarkCurrentEvent();
-    virtual void  Close();
-
-    void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf);
     void Timeout(); // * SIGNAL*
 
     Int_t         GetEventId()         const { return fEventId; }
+    void          SetEventId(int eventId)    { fEventId=eventId;}
     AliRunLoader* GetRunLoader()       const { return fRunLoader; }
     TFile*        GetESDFile()         const { return fESDFile; }
     TTree*        GetESDTree()         const { return fESDTree; }
     TTree*        GetHLTESDTree()      const { return fHLTESDTree; }
-    AliESDEvent*  GetESD()             const { return fESD;     }
+    AliESDEvent*  GetESD()             const { return fCurrentData->fESD;     }
     AliESDfriend* GetESDfriend()       const { return fESDfriend; }
-    Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
     TFile*        GetAODFile()         const { return fAODFile; }
     TTree*        GetAODTree()         const { return fAODTree; }
     AliAODEvent*  GetAOD()             const { return fAOD;     }
@@ -126,8 +108,12 @@ public:
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
+    bool          GetAutoLoadRunning()     const { return fAutoLoadTimerRunning;}
+    
     void          SetAutoLoadTime(Float_t time);
     void          SetAutoLoad(Bool_t autoLoad);
+    void          StartAutoLoadTimer();
+    void          StopAutoLoadTimer();
     void          SetTrigSel(Int_t trig);
     void          AutoLoadNextEvent();
     void          SetSaveViews(bool save){fSaveViews=save;}
@@ -140,8 +126,6 @@ public:
     void          SetESDdashNoRefit(bool dashNoRefit){fESDdrawer->SetDashNoRefit(dashNoRefit);}
     void          SetESDdrawNoRefit(bool drawNoRefit){fESDdrawer->SetDrawNoRefit(drawNoRefit);}
     
-    
-    Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
     Bool_t        IsEventAvailable()       const { return fHasEvent;     }
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,
@@ -160,13 +144,16 @@ public:
     AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
     void InitOCDB(int runNo=-1);
 
-    void PrepareForNewEvent(AliESDEvent *event);
-    AliEveEventManager(const TString& name="Event");
+//    void PrepareForNewEvent(AliESDEvent *event);
 
-    void ChangeDataSource(EDataSource newSource) {}
+    void ChangeDataSource(EDataSource newSource);
+    AliEveDataSource* GetDataSourceOnline(){return fDataSourceOnline;}
+    AliEveDataSource* GetDataSourceOffline(){return fDataSourceOffline;}
+    AliEveDataSource* GetDataSourceHLTZMQ(){return fDataSourceHLTZMQ;}
     
     void DestroyTransients();
     void ResetMagneticField(){fgMagField=0;}
+    void SetHasEvent(bool hasEvent){fHasEvent=hasEvent;}
     
 protected:
     virtual ~AliEveEventManager();
@@ -188,7 +175,11 @@ protected:
     AliAODEvent  *fAOD;			// AODEvent object.
 
     AliEveData* fCurrentData; //current data struct from one of the data sources
-    AliEveDataSource* fCurrentDataSource; //data source in use at the moent
+    AliEveDataSource* fCurrentDataSource; //data source in use at the moment
+    AliEveDataSource *fDataSourceOnline;
+    AliEveDataSource *fDataSourceOffline;
+    AliEveDataSource *fDataSourceHLTZMQ;
+    
     //std::map<EDataSource, AliDataSource*> fDataSources; //list of registered data sources (HLT,File,Online)
 
     AliRawReader *fRawReader;             // Raw-data reader.
@@ -212,24 +203,7 @@ protected:
 
     AliEveEventSelector* fPEventSelector; // Event filter
 
-    static TString  fgGAliceFileName;        // galice.root file
-    static TString  fgESDFileName;        // Name by which to open ESD.
-    static EVisibleESDTrees  fgESDvisibleTrees; // trees to open from ESD
-    static TString  fgESDfriendsFileName;
-    static TString  fgAODFileName;        // Name by which to open AOD.
-    static TString  fgRawFileName;        // Name by which to open raw-data file.
     static TString  fgCdbUri;		// Global URI to CDB.
-    static TString  fgSpecificCdbUriValue;		// Global URI to specific CDB object.
-    static TString  fgSpecificCdbUriPath;		// Global URI to specific CDB object.
-    static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
-
-    static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
-    static Bool_t   fgAssertAOD;		// Global flag specifying if AODEvent must be asserted during opening of the event-data.
-    static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
-
-    static TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
-
-    static Bool_t   fgRawFromStandardLoc; // Global flag to enable looking for raw data in ../../../raw/, as it is stored for central reco.
 
     static Bool_t        fgGRPLoaded;     // Global run parameters loaded?
     static AliMagF      *fgMagField;      // Global pointer to magnetic field.
@@ -241,13 +215,8 @@ private:
     static AliEveEventManager* fgMaster;
     
     void InitInternals();
-
-    void StartAutoLoadTimer();
-    void StopAutoLoadTimer();
-
     static Bool_t InitGRP();
     static Bool_t InitRecoParam();
-    TTree* readESDTree(const char* treeName, int &run);
 
     AliEveSaveViews *fViewsSaver;
     AliEveESDTracks *fESDdrawer;

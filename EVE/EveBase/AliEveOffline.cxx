@@ -41,7 +41,6 @@
 #include <AliEveTrack.h>
 #include <AliEveTrackCounter.h>
 #include <AliEveMagField.h>
-#include <AliEveOfflineEventManager.h>
 #include <AliEveEventManagerEditor.h>
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
@@ -50,6 +49,8 @@
 #include <AliEveEventSelectorWindow.h>
 #include <AliEveTrackFitter.h>
 #include <AliEveGeomGentle.h>
+#include <AliEveDataSourceOffline.h>
+#include <AliEveEventManager.h>
 
 #include <AliCDBManager.h>
 
@@ -61,6 +62,8 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     fCDBuri(cdbUri),
     fPath(path)
 {
+    cout<<"AliEveOffline"<<endl;
+    
     //-----------------------------------------------------------------------------------------
     //  Set all preferences here
     //
@@ -86,10 +89,11 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     //
     //-----------------------------------------------------------------------------------------
 
-    
-    AliEveEventManager *man = new AliEveOfflineEventManager();
+    cout<<"creating manager...";
+    AliEveEventManager *man = new AliEveEventManager();
+    cout<<"created"<<endl;
     Init();
-    man->Open();
+//    man->Open();
     
     if (gSystem->Getenv("ALICE_ROOT") != 0)
     {
@@ -104,7 +108,9 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
         Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
     }
     
-    AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
+    
+    dataSource->AddAODfriend("AliAOD.VertexingHF.root");
 
     TEveUtil::AssertMacro("VizDB_scan.C");
     
@@ -324,16 +330,18 @@ void AliEveOffline::Init()
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();
     
-    AliEveEventManager::SetFilesPath(fPath);
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+    
+    dataSource->SetFilesPath(fPath);
     
     if(fShowHLTESDtree){
-        AliEveEventManager::SetESDFileName(esdfile, AliEveEventManager::kHLTTree);
+        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kHLTTree);
     }
     else{
-        AliEveEventManager::SetESDFileName(esdfile, AliEveEventManager::kOfflineTree);
+        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kOfflineTree);
     }
     
-    AliEveEventManager::SetRawFileName(rawfile);
+    dataSource->SetRawFileName(rawfile);
     AliEveEventManager::SetCdbUri(fCDBuri);
 //    AliEveEventManager::SetAssertElements(0,0,0,0);
     

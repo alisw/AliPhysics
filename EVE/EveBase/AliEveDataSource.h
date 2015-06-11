@@ -13,6 +13,8 @@
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliAODEvent.h"
+#include "AliRunLoader.h"
+#include "AliRawReader.h"
 #include "TNamed.h"
 
 #include "TQObject.h"
@@ -26,7 +28,9 @@ struct AliEveData {
   TFile        *fAODFile;		// AOD file.
   TTree        *fAODTree;		// AOD tree.
   AliAODEvent  *fAOD;			// AODEvent object.
-
+  AliRunLoader* fRunLoader;		// Run loader.
+  AliRawReader *fRawReader;             // Raw-data reader.
+    
   AliEveData()
       : fESDFile(NULL)
       , fESDTree(NULL)
@@ -36,6 +40,8 @@ struct AliEveData {
       , fAODFile(NULL)
       , fAODTree(NULL)
       , fAOD(NULL)
+      , fRunLoader(NULL)
+      , fRawReader(NULL)
   {}
 };
 
@@ -47,8 +53,10 @@ public:
     
     virtual void Init();
     virtual void GotoEvent(Int_t event);
+    virtual void NextEvent();
     virtual AliEveData* GetData() const {return fCurrentData;}
-
+    virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const{return -1;}
+    
     void StorageManagerOk();     // *SIGNAL*
     void StorageManagerDown();   // *SIGNAL*
     void EventServerOk();        // *SIGNAL*

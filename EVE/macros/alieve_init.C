@@ -85,11 +85,11 @@ void alieve_init(const TString& cdburi = "",
   AliEveEventManager::SetFilesPath(path);
   
   if(showHLTESDTree){
-   AliEveEventManager::SetESDFileName(esdfile, AliEveEventManager::kHLTTree);
+   AliEveEventManager::GetMaster()->GetDataSourceOffline()->SetESDFileName(esdfile, AliEveEventManager::kHLTTree);
   }
   else
   {
-   AliEveEventManager::SetESDFileName(esdfile, AliEveEventManager::kOfflineTree);
+   AliEveEventManager::GetMaster()->GetDataSourceOffline()->SetESDFileName(esdfile, AliEveEventManager::kOfflineTree);
   }
   
   AliEveEventManager::SetRawFileName(rawfile);
