@@ -156,6 +156,8 @@ public:
  Bool_t GetUseZDC() const {return this->fUseZDC;};
  void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
  Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
+ void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
+ Bool_t GetDivSigma() const {return this->fDivSigma;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -233,6 +235,7 @@ private:
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
+ Bool_t fDivSigma;
  Bool_t fUseNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
