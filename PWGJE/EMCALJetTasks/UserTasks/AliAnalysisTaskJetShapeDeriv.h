@@ -89,6 +89,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue
   THnSparse     **fhnDeltaMass;                                    //! DeltaM, DeltapT 
+  THnSparse      *fhnDeltaMassAndBkgInfo;                          //! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
 
   TH2F          **fh2PtTrueSubFacV1;                               //! true pT vs -(rho+rhom)*V1
   TH2F          **fh2PtRawSubFacV1;                                //! raw pT vs -(rho+rhom)*V1
