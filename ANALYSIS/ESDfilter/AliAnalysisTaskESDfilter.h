@@ -63,6 +63,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void DisableVZERO()        {fIsVZEROEnabled = kFALSE;}
   void DisableTZERO()        {fIsTZEROEnabled = kFALSE;}
   void DisableZDC()          {fIsZDCEnabled   = kFALSE;}
+  void DisableAD()           {fIsADEnabled   = kFALSE;}
   void DisableCascades()     {fAreCascadesEnabled = kFALSE;}
   void DisableV0s()          {fAreV0sEnabled = kFALSE;}
   void DisableKinks()        {fAreKinksEnabled = kFALSE;}
@@ -101,6 +102,7 @@ private:
   void ConvertVZERO(const AliESDEvent& esd);
   void ConvertTZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
+  void ConvertAD(const AliESDEvent& esd);
   Int_t ConvertHMPID(const AliESDEvent& esd);
   void ConvertTRD(const AliESDEvent& esd);
   void CopyCaloProps(AliESDtrack *esdt, AliAODTrack *aodt);
@@ -143,6 +145,7 @@ private:
   Bool_t             fIsVZEROEnabled;              // whether or not to fill the vzero branch (true by default)
   Bool_t             fIsTZEROEnabled;              // whether or not to fill the tzero branch (true by default)
   Bool_t             fIsZDCEnabled;                // whether or not to fill the zdc branch (true by default)
+  Bool_t             fIsADEnabled;                 // whether or not to fill the ad branch (true by default) 
   Bool_t             fIsHMPIDEnabled;              // whether or not to fill the hmpid branch (true by default) 
   Bool_t             fIsV0CascadeRecoEnabled;      // whether or not to reconstruct again V0s and cascades (false by default)
   Bool_t             fAreCascadesEnabled;          // whether or not to fill the cascades branch (true by default)
@@ -168,7 +171,7 @@ private:
   Int_t              fRefitVertexTracksNCuts;      // number of cut parameters
   Double_t*          fRefitVertexTracksCuts;       //[fRefitVertexTracksNCuts] optional cuts for vertex refit
   
-  ClassDef(AliAnalysisTaskESDfilter, 19); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 20); // Analysis task for standard ESD filtering
 };
 
 #endif

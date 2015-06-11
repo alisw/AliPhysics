@@ -67,6 +67,7 @@
 #pragma link C++ class AliAODTZERO+;
 #pragma link C++ class AliAODVZERO+;
 #pragma link C++ class AliAODZDC+;
+#pragma link C++ class AliAODAD+;
 #pragma link C++ class AliAODHMPIDrings+;
 #pragma link C++ class AliAODTrdTrack+;
 #pragma link C++ class AliAODTrdTracklet+;
