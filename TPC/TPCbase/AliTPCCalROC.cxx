@@ -481,10 +481,9 @@ Double_t AliTPCCalROC::GetLTM(Double_t *const sigma, Double_t fraction, AliTPCCa
   if(padType==kOROCmedium) indexMax=fkIndexes[64];
   else if(padType==kOROClong) indexMin=fkIndexes[64];
   for (UInt_t i=indexMin;i<indexMax;i++) {
-     if (outlierROC && (outlierROC->GetValue(i) >1e-20)) {
-        ddata[nPoints]= fData[i];
-        nPoints++;
-     }
+     if (outlierROC && (outlierROC->GetValue(i) >1e-20)) continue;
+     ddata[nPoints]= fData[i];
+     nPoints++;
   }
 
   Double_t ltm =0, lsigma=0;
