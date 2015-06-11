@@ -10,6 +10,8 @@
 #ifndef AliEveEventManagerEditor_H
 #define AliEveEventManagerEditor_H
 
+#include "AliEveEventManager.h"
+
 #include "TGedFrame.h"
 #include "TGComboBox.h"
 #include <TObjString.h>
@@ -77,7 +79,7 @@ public:
   void DoLastEvent();
   void DoMarkEvent();
     void DoScreenshot();
-    void DoSwitchDataSource(Int_t source);
+    void DoSwitchDataSource(AliEveEventManager::EDataSource source);
 
   void DoSetEvent();
 

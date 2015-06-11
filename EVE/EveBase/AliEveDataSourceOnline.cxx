@@ -23,8 +23,10 @@
 
 using namespace std;
 
+ClassImp(AliEveDataSourceOnline)
+
 AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
-    AliEveEventManager("online"),
+    AliEveDataSource(storageManager),
     fEventListenerThread(0),
     fStorageManagerWatcherThread(0),
     fEventInUse(1),
@@ -41,7 +43,7 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     cout<<"\n\n\nAliEveDataSourceOnline constructor called!!!\n\n\n"<<endl;
     
     InitOCDB(-1);
-    fIsOpen = kFALSE;
+//    fIsOpen = kFALSE;
     
     StorageManagerDown(); // turn SM off by default
     EventServerDown();
@@ -54,7 +56,7 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
         fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
         fStorageManagerWatcherThread->Run();
     }
-    AliEveEventManager::SetMaster(this);
+//    AliEveEventManager::SetMaster(this);
 }
 
 AliEveDataSourceOnline::~AliEveDataSourceOnline()
@@ -114,8 +116,7 @@ void AliEveDataSourceOnline::GetNextEvent()
                     }
                     fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                     fIsNewEventAvaliable = true;
-                    NewEventLoaded();
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+//                    NewEventLoaded();
                     gCINTMutex->UnLock();
 #endif
                 }
@@ -237,7 +238,7 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
     }
     
     
-    AliEveEventManager::InitOCDB(runNo);
+//    AliEveEventManager::InitOCDB(runNo);
 }
 
 void AliEveDataSourceOnline::GotoEvent(Int_t event)
@@ -246,8 +247,8 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
     
-    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
-    else if (!fIsOpen && !fOnlineMode){throw (kEH + "Event-files not opened but ED is in offline mode.");}
+//    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
+//    else if (!fIsOpen && !fOnlineMode){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
     if (fStorageDown && -1 == event)
     {
@@ -255,7 +256,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         return;
     }
     
-    if (fESD)
+    if (fCurrentData->fESD)
     {
         // create new server request:
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
@@ -267,8 +268,8 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         else  if (event == 2) {requestMessage->messageType = REQUEST_GET_NEXT_EVENT;}
         
         // set event struct:
-        requestMessage->eventsRunNumber = fESD->GetRunNumber();
-        requestMessage->eventsEventNumber = fESD->GetEventNumberInFile();
+        requestMessage->eventsRunNumber = fCurrentData->fESD->GetRunNumber();
+        requestMessage->eventsEventNumber = fCurrentData->fESD->GetEventNumberInFile();
         
         // create event manager:
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
@@ -284,9 +285,10 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         
         if(resultEvent)
         {
-            DestroyElements();
+//            DestroyElements();
             InitOCDB(resultEvent->GetRunNumber());
-            SetEvent(0,0,resultEvent,0);
+            fCurrentData->fESD = resultEvent;
+//            SetEvent(0,0,resultEvent,0);
         }
         else
         {
@@ -318,9 +320,10 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         
         if(resultEvent)
         {
-            DestroyElements();
+//            DestroyElements();
             InitOCDB(resultEvent->GetRunNumber());
-            SetEvent(0,0,resultEvent,0);
+            fCurrentData->fESD = resultEvent;
+//            SetEvent(0,0,resultEvent,0);
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
@@ -328,7 +331,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
 #endif
     }
     //
-    AliEveEventManager::GotoEvent(event);
+//    AliEveEventManager::GotoEvent(event);
     //
 }
 
@@ -336,32 +339,14 @@ void AliEveDataSourceOnline::NextEvent()
 {
     static const TEveException kEH("AliEveEventManager::NextEvent ");
     
-    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
+//    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->Lock();
 #endif
     if(fIsNewEventAvaliable)
     {
-        //
-        TEveManager::TRedrawDisabler rd(gEve);
-        gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
-        
-        // !!! MT this is somewhat brutal; at least optionally, one could be
-        // a bit gentler, checking for objs owning their external refs and having
-        // additinal parents.
-        gEve->GetViewers()->DeleteAnnotations();
-        fTransients->DestroyElements();
-        for (TEveElement::List_i i = fTransientLists->BeginChildren();
-             i != fTransientLists->EndChildren(); ++i)
-        {
-            (*i)->DestroyElements();
-        }
-        DestroyElements();
-        
-        ElementChanged();
-        
-        //
+        AliEveEventManager::GetMaster()->DestroyTransients();
         
         if(fWritingToEventIndex == 0) fEventInUse = 0;
         else if(fWritingToEventIndex == 1) fEventInUse = 1;
@@ -375,12 +360,13 @@ void AliEveDataSourceOnline::NextEvent()
                 printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
                 
                 StorageManagerDown(); // block SM while event is being loaded
-                DestroyElements();
+//                DestroyElements();
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() != fCurrentRun){
-                    fgMagField=0;
+                    AliEveEventManager::GetMaster()->ResetMagneticField();
                 }
                 InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
-                SetEvent(0,0,fCurrentEvent[fEventInUse],0);
+                fCurrentData->fESD = fCurrentEvent[fEventInUse];
+//                SetEvent(0,0,fCurrentEvent[fEventInUse],0);
             }
         }
         fIsNewEventAvaliable = false;
@@ -389,7 +375,7 @@ void AliEveDataSourceOnline::NextEvent()
     {
         cout<<"No new event is avaliable."<<endl;
         fFailCounter++;
-        NoEventLoaded();
+//        NoEventLoaded();
     }
     if(fFailCounter==5)
     {
@@ -410,8 +396,8 @@ void AliEveDataSourceOnline::MarkCurrentEvent()
     if(!fStorageManager){return;}
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    requestMessage->eventsRunNumber = fESD->GetRunNumber();
-    requestMessage->eventsEventNumber = fESD->GetEventNumberInFile();
+    requestMessage->eventsRunNumber = fCurrentData->fESD->GetRunNumber();
+    requestMessage->eventsEventNumber = fCurrentData->fESD->GetEventNumberInFile();
     requestMessage->messageType = REQUEST_MARK_EVENT;
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
@@ -435,20 +421,20 @@ void AliEveDataSourceOnline::MarkCurrentEvent()
 
 void AliEveDataSourceOnline::StorageManagerOk()
 {
-    Emit("StorageManagerOk()");
+//    Emit("StorageManagerOk()");
 }
 void AliEveDataSourceOnline::StorageManagerDown()
 {
-    Emit("StorageManagerDown()");
+//    Emit("StorageManagerDown()");
 }
 
 void AliEveDataSourceOnline::EventServerOk()
 {
-    Emit("EventServerOk()");
+//    Emit("EventServerOk()");
 }
 void AliEveDataSourceOnline::EventServerDown()
 {
-    Emit("EventServerDown()");
+//    Emit("EventServerDown()");
 }
 
 

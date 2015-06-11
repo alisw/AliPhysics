@@ -10,7 +10,10 @@
 #define __AliEveDataSourceOnline__
 
 #include "AliEveEventManager.h"
+#include "AliEveDataSource.h"
 #include "AliStorageTypes.h"
+
+#include <TQObject.h>
 
 class AliEveDataSourceOnline : public AliEveDataSource
 {
@@ -53,6 +56,8 @@ private:
     
     AliEveDataSourceOnline(const AliEveDataSourceOnline&);
     AliEveDataSourceOnline& operator=(const AliEveDataSourceOnline&);
+    
+    ClassDef(AliEveDataSourceOnline, 0); // Interface for getting all event components in a uniform way.
 };
 
 

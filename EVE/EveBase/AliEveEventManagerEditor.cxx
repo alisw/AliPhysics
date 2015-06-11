@@ -8,7 +8,6 @@
  **************************************************************************/
 
 #include "AliEveEventManagerEditor.h"
-#include "AliEveEventManager.h"
 
 #include <AliESDEvent.h>
 
@@ -206,7 +205,7 @@ fEventInfo    (0)
         fSwitchToOnline  = new TGRadioButton(horizontal, "Online",AliEveEventManager::kSourceOnline);
         fSwitchToOffline = new TGRadioButton(horizontal, "Offline",AliEveEventManager::kSourceOffline);
         horizontal->SetButton(AliEveEventManager::kSourceOnline);
-        horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(Int_t)");
+        horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
         f->AddFrame(horizontal, new TGLayoutHints(kLHintsExpandX));
     }
     
@@ -344,7 +343,7 @@ void AliEveEventManagerWindow::DoSetTrigSel()
     fM->SetTrigSel(fTrigSel->GetSelectedEntry()->EntryId());
 }
 
-void AliEveEventManagerWindow::DoSwitchDataSource(Int_t source)
+void AliEveEventManagerWindow::DoSwitchDataSource(AliEveEventManager::EDataSource source)
 {
     fM->ChangeDataSource(source);
 }

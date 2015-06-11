@@ -154,10 +154,7 @@ fDrawESDtracksByCategory(false),
 fDrawESDtracksByType(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
-{
-    fM->Connect("NewEventLoaded()", cls, this, "Update(=1)");
-    fM->Connect("NoEventLoaded()", cls, this, "Update(=0)");
-    
+{    
     InitInternals();
 }
 
@@ -346,6 +343,22 @@ void AliEveEventManager::SearchRawForCentralReconstruction()
     // "alien:///alice/data/2009/LHC09c/000101134/ESDs/pass1/09000101134018.10".
     
     fgRawFromStandardLoc = kTRUE;
+}
+
+void AliEveEventManager::DestroyTransients()
+{
+    TEveManager::TRedrawDisabler rd(gEve);
+    gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
+    
+    gEve->GetViewers()->DeleteAnnotations();
+    fTransients->DestroyElements();
+    for (TEveElement::List_i i = fTransientLists->BeginChildren();
+         i != fTransientLists->EndChildren(); ++i)
+    {
+        (*i)->DestroyElements();
+    }
+    DestroyElements();
+    ElementChanged();
 }
 
 /******************************************************************************/
@@ -2002,11 +2015,6 @@ TEveElement* AliEveEventManager::FindGlobal(const TString& tag)
 {
     return dynamic_cast<TEveElement*>(fGlobal->GetValue(tag));
 }
-
-void AliEveEventManager::StorageManagerOk(){}
-void AliEveEventManager::StorageManagerDown(){}
-void AliEveEventManager::EventServerOk(){}
-void AliEveEventManager::EventServerDown(){}
 
 void AliEveEventManager::MarkCurrentEvent(){}
 

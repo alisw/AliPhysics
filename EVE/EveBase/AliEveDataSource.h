@@ -15,6 +15,8 @@
 #include "AliAODEvent.h"
 #include "TNamed.h"
 
+#include "TQObject.h"
+
 struct AliEveData {
   TFile        *fESDFile;		// ESD file.
   TTree        *fESDTree;		// ESD tree.
@@ -47,6 +49,11 @@ public:
     virtual void GotoEvent(Int_t event);
     virtual AliEveData* GetData() const {return fCurrentData;}
 
+    void StorageManagerOk();     // *SIGNAL*
+    void StorageManagerDown();   // *SIGNAL*
+    void EventServerOk();        // *SIGNAL*
+    void EventServerDown();      // *SIGNAL*
+    
 protected:
     AliEveData* fCurrentData;
     

@@ -8,7 +8,6 @@
 
 #include "AliEveOnline.h"
 #include "AliEveGeomGentle.h"
-#include "AliEveOnlineEventManager.h"
 #include "AliEveEventManagerEditor.h"
 #include "AliEveMultiView.h"
 #include "AliEveMacroExecutor.h"
