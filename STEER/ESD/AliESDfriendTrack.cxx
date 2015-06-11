@@ -24,7 +24,6 @@
 #include "TClonesArray.h"
 #include "AliKalmanTrack.h"
 #include "AliVTPCseed.h"
-#include "AliLog.h"
 
 ClassImp(AliESDfriendTrack)
 
@@ -101,12 +100,11 @@ fTRDIn(0)
   if (t.fPoints) fPoints=new AliTrackPointArray(*t.fPoints);
   if (t.fCalibContainer) {
      fCalibContainer = new TObjArray(5);
-     fCalibContainer->SetOwner();
      Int_t no=t.fCalibContainer->GetEntriesFast();
      for (i=0; i<no; i++) {
        TObject *o=t.fCalibContainer->At(i);
        if (o) fCalibContainer->AddLast(o->Clone());
-     }
+     }  
   }
 
   if (t.fTPCOut) fTPCOut = new AliExternalTrackParam(*(t.fTPCOut));
@@ -119,39 +117,17 @@ AliESDfriendTrack::~AliESDfriendTrack() {
   //
   // Simple destructor
   //
-
-  if(fPoints)
-    delete fPoints;
-  fPoints=0;
-  if (fCalibContainer){
-    fCalibContainer->Delete();
-    delete fCalibContainer;
-    fCalibContainer=0;
-  }
-  if(fITStrack)
-    delete fITStrack;
-  fITStrack=0;
-  if(fTRDtrack)
-    delete fTRDtrack;
-  fTRDtrack=0;
-  if(fTPCOut)
-    delete fTPCOut;
-  fTPCOut=0;
-  if(fITSOut)
-    delete fITSOut;
-  fITSOut=0;
-  if(fTRDIn)
-    delete fTRDIn;
-  fTRDIn=0;
-  if(fITSindex)
-    delete[] fITSindex;
-  fITSindex=0;
-  if(fTPCindex)
-    delete[] fTPCindex;
-  fTPCindex=0;
-  if(fTRDindex)
-    delete[] fTRDindex;
-  fTRDindex=0;
+   delete fPoints;
+   if (fCalibContainer) fCalibContainer->Delete();
+   delete fCalibContainer;
+   delete fITStrack;
+   delete fTRDtrack;
+   delete fTPCOut;
+   delete fITSOut;
+   delete fTRDIn;
+   delete[] fITSindex;
+   delete[] fTPCindex;
+   delete[] fTRDindex;
 }
 
 
@@ -160,10 +136,7 @@ void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   // add calibration object to array -
   // track is owner of the objects in the container 
   //
-  if (!fCalibContainer) {
-    fCalibContainer = new TObjArray(5);
-    fCalibContainer->SetOwner();
-  }
+  if (!fCalibContainer) fCalibContainer = new TObjArray(5);
   fCalibContainer->AddLast(calibObject);
 }
 
@@ -192,24 +165,21 @@ void AliESDfriendTrack::SetTPCOut(const AliExternalTrackParam &param) {
   // 
   // backup TPC out track
   //
-  if(fTPCOut)
-    delete fTPCOut;
+  delete fTPCOut;
   fTPCOut=new AliExternalTrackParam(param);
 } 
 void AliESDfriendTrack::SetITSOut(const AliExternalTrackParam &param) {
   //
   // backup ITS out track
   //
-  if(fITSOut)
-    delete fITSOut;
+  delete fITSOut;
   fITSOut=new AliExternalTrackParam(param);
 } 
 void AliESDfriendTrack::SetTRDIn(const AliExternalTrackParam  &param)  {
   //
   // backup TRD in track
   //
-  if(fTRDIn)
-    delete fTRDIn;
+  delete fTRDIn;
   fTRDIn=new AliExternalTrackParam(param);
 } 
 
@@ -219,13 +189,7 @@ void AliESDfriendTrack::SetITSIndices(Int_t* indices, Int_t n){
 	// setting fITSindex
 	// instantiating the pointer if still NULL
 	//
-        // TODO: what if the array was already set but
-        // the old fnMaxITScluster and n differ!?
-        if(fnMaxITScluster!=n){
-	        AliError(Form("Array size does not fit %d/%d\n"
-			      ,fnMaxITScluster,n));
-	}
-	
+
 	fnMaxITScluster = n;
 	AliDebug(2,Form("fnMaxITScluster = %d",fnMaxITScluster));
 	if (fITSindex == 0x0){
@@ -242,13 +206,7 @@ void AliESDfriendTrack::SetTPCIndices(Int_t* indices, Int_t n){
 	// setting fTPCindex
 	// instantiating the pointer if still NULL
 	//
-        // TODO: what if the array was already set but
-        // the old fnMaxITScluster and n differ!?
-        if(fnMaxTPCcluster!=n){
-                AliError(Form("Array size does not fit %d/%d\n"
-			      ,fnMaxTPCcluster,n));
-	}
-       
+
 	fnMaxTPCcluster = n;
 	AliDebug(2,Form("fnMaxTPCcluster = %d",fnMaxTPCcluster));
 	if (fTPCindex == 0x0){
@@ -265,13 +223,7 @@ void AliESDfriendTrack::SetTRDIndices(Int_t* indices, Int_t n){
 	// setting fTRDindex
 	// instantiating the pointer if still NULL
 	//
-        // TODO: what if the array was already set but
-        // the old fnMaxITScluster and n differ!?
-        if(fnMaxTRDcluster!=n){
-                AliError(Form("Array size does not fit %d/%d\n"
-			      ,fnMaxTRDcluster,n));
-	}
-	
+
 	fnMaxTRDcluster = n;
 	AliDebug(2,Form("fnMaxTRDcluster = %d",fnMaxTRDcluster));
 	if (fTRDindex == 0x0){
