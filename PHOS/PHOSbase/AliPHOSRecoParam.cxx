@@ -133,6 +133,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
 void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 {
   AliDebug(2,Form("PHOS reconstruction parameters:\n"
+		  "\tEventSpecie            = %d (%s)\n"
 		  "\tEMCClusteringThreshold = %f\n"
 		  "\tEMCLocMaxCut           = %f\n"
 		  "\tEMCRawDigitThreshold   = %f\n"
@@ -144,9 +145,20 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  "\tEMCSubtractPedestals   = %d\n"
 		  "\tEMCUnfold              = %d\n"
 		  "\tEMCEnergyCorrectionOn  = %d\n"
-		  "\tEMCFitterVersion       = \"%s\"\n"
+		  "\tEMCFitterVersion       = %s\n"
 		  "\tGlobalAltroOffset      = %d\n"
-		  "\tGlobalAltroThreshold   = %d",
+		  "\tGlobalAltroThreshold   = %d\n"
+		  "\tTimeGateAmpThresh      = %f\n"
+		  "\tTimeGateLow            = %f\n"
+		  "\tTimeGateHigh           = %f\n"
+		  "\tNonLinCorrVersion      = %s\n"
+		  "\tCPVClusteringThreshold = %f\n"
+		  "\tCPVLocMaxCut           = %f\n"
+		  "\tCPVMinE                = %f\n"
+		  "\tCPVW0                  = %f\n"
+		  "\tCPVUnfold              = %d\n",
+		  GetEventSpecie(),
+		  AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(GetEventSpecie())),
 		  fEMCClusteringThreshold,
 		  fEMCLocMaxCut,
 		  fEMCRawDigitThreshold,
@@ -160,7 +172,16 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  fEMCEnergyCorrectionOn,
 		  fEMCFitterVersion.Data(),
 		  fGlobalAltroOffset,
-		  fGlobalAltroThreshold));
+		  fGlobalAltroThreshold,
+		  fTimeGateAmpThresh,
+		  fTimeGateLow,
+		  fTimeGateHigh,
+		  fNonlinearityCorrVersion.Data(),
+		  fCPVClusteringThreshold,
+		  fCPVLocMaxCut,
+		  fCPVMinE,
+		  fCPVW0,
+		  fCPVUnfold));
 
 }
 
