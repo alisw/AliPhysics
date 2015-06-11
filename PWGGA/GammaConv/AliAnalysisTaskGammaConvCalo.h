@@ -327,6 +327,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
 		// event histograms
 		TH1F 								**fHistoNEvents;								//! array of histos with event information
+		TH1F 								**fHistoNEventsWOWeight;						//! array of histos with event information without event weights
 		TH1F 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
 		TH1F								**fHistoVertexZ;								//! array of histos with vertex z distribution for selected events
 		TH1F 								**fHistoNGammaCandidates;						//! array of histos with number of gamma candidates per event
