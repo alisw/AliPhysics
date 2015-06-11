@@ -1086,7 +1086,7 @@ if(ftwoplus1){
         nBinsCentorMult = 12; fMinCentorMult = 0.0, fMaxCentorMult = 100.0;}
     
     if(!fSetSystemValue){
-        Int_t nBinsCentorMult = 3; Int_t fMinCentorMult = 0.0; Int_t fMaxCentorMult = 250.0;}
+        nBinsCentorMult = 3; fMinCentorMult = 0.0; fMaxCentorMult = 250.0;}
     
     
     if(ftwoplus1){
