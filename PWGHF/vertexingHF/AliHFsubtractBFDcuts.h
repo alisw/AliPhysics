@@ -78,7 +78,7 @@ private:
   Double_t      fMotherPt;   // Transverse momentum of the mother particle (B hadron in case of feed-down,
                              // the charmed hadron itsself in case of prompt production)
 
-  ClassDef(AliHFsubtractBFDcuts,4);
+  ClassDef(AliHFsubtractBFDcuts,5);
 };
 
 #endif
