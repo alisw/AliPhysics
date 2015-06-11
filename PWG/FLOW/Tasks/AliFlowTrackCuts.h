@@ -308,6 +308,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t GetApplyRecentering() const    { return fApplyRecentering;}
   void SetVZEROgainEqualizationPerRing(Bool_t s)   {fVZEROgainEqualizationPerRing = s;}
   Bool_t GetVZEROgainEqualizationPerRing() const {return fVZEROgainEqualizationPerRing;}
+  void SetDivSigma(Bool_t r)    { fDivSigma = r; }
+  Bool_t GetDivSigma() const    { return fDivSigma;}
   // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
   // 0 corresponds to segment ID 0 through 7, etc
   // disabled vzero rings get weight 0
@@ -398,7 +400,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutMinimalTPCdedx;    //cut on minimal dedx in TPC to reject noise tracks
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
   Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
-  
+ 
   Int_t fCentralityPercentileMin; //centrality min
   Int_t fCentralityPercentileMax; //centrality max
   Float_t fPurityLevel; //Purity cut percentage
@@ -461,6 +463,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TH2* fVZEROgainEqualizationCen;  //! equalization histo per centrality bin
   Bool_t fApplyRecentering;     // apply recentering of q-sub vectors in AliFlowEvent ?
   Bool_t fVZEROgainEqualizationPerRing;    // per ring vzero gain calibration
+  Bool_t fDivSigma;                // divide by st.dev. after recentering
   Float_t fVZEROApol[4];           //! calibration info per ring
   Float_t fVZEROCpol[4];           //! calibration info per ring
   Bool_t fUseVZERORing[8];      // kTRUE means the ring is included

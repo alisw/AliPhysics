@@ -19,6 +19,7 @@ void AddTaskCRC(Double_t centrMin,
                 Bool_t bUseVZEROCalib=kFALSE,
                 Bool_t bUseZDC=kFALSE,
                 Bool_t bRecenterZDC=kFALSE,
+                Bool_t bDivSigma=kTRUE,
                 Bool_t bEventCutsQA=kFALSE,
                 Bool_t bTrackCutsQA=kFALSE,
                 TString Label="",
@@ -170,6 +171,7 @@ void AddTaskCRC(Double_t centrMin,
    // options for the reweighting
    cutsRP->SetVZEROgainEqualizationPerRing(bUseVZEROCalib);
    cutsRP->SetApplyRecentering(bUseVZEROCalib);
+   cutsRP->SetDivSigma(bDivSigma);
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
    cutsRP->SetAODfilterBit(AODfilterBit);
@@ -262,6 +264,7 @@ void AddTaskCRC(Double_t centrMin,
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
+ taskQC->SetDivSigma(bDivSigma);
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {

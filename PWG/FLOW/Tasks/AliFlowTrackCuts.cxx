@@ -171,6 +171,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
+  fDivSigma(kTRUE),
   fChi2A(0x0),
   fChi2C(0x0),
   fChi3A(0x0),
@@ -294,6 +295,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
+  fDivSigma(kTRUE),
   fChi2A(0x0),
   fChi2C(0x0),
   fChi3A(0x0),
@@ -420,6 +422,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(that.fApplyRecentering),
   fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing),
+  fDivSigma(that.fDivSigma),
   fChi2A(0x0),
   fChi2C(0x0),
   fChi3A(0x0),
@@ -572,7 +575,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
     
   fApplyRecentering = that.fApplyRecentering;
   fVZEROgainEqualizationPerRing = that.fVZEROgainEqualizationPerRing;
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
+  fDivSigma = that.fDivSigma;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
   if (that.fVZEROgainEqualization) fVZEROgainEqualization = new TH1(*(that.fVZEROgainEqualization));
   if (that.fVZEROgainEqualizationCen) fVZEROgainEqualizationCen = new TH2(*(that.fVZEROgainEqualizationCen));
 #else
