@@ -92,6 +92,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fHistoMotherEtaPtY(NULL),
 	fHistoMotherPi0PtAlpha(NULL),
 	fHistoMotherEtaPtAlpha(NULL),
+	fSparseMotherOpenAngleInvMassPt(NULL),
 	fHistoMotherPi0PtOpenAngle(NULL),
 	fHistoMotherEtaPtOpenAngle(NULL),
 	fHistoMotherInvMassECalib(NULL),
@@ -271,6 +272,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fHistoMotherInvMassEalpha(NULL),
 	fHistoMotherPi0PtY(NULL),
 	fHistoMotherEtaPtY(NULL),
+	fSparseMotherOpenAngleInvMassPt(NULL),
 	fHistoMotherPi0PtAlpha(NULL),
 	fHistoMotherEtaPtAlpha(NULL),
 	fHistoMotherPi0PtOpenAngle(NULL),
@@ -540,6 +542,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		if (fDoMesonQA > 0){
 			fHistoMotherPi0PtY =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtY =  new TH2F*[fnCuts];
+			fSparseMotherOpenAngleInvMassPt = new THnSparseF*[fnCuts];
 			fHistoMotherPi0PtAlpha =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtAlpha =  new TH2F*[fnCuts];
 			fHistoMotherPi0PtOpenAngle =  new TH2F*[fnCuts];
@@ -647,6 +650,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",350,0.03,35.,100,0,1);
 				SetLogBinningXTH2(fHistoMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtAlpha[iCut]);
+
+				const Int_t nDim = 4;
+				Int_t nBins[nDim] = {3,100,800,350};
+				Double_t xMin[nDim] = {0,0,0,0};
+				Double_t xMax[nDim] = {3,TMath::Pi(),0.8,35};
+				fSparseMotherOpenAngleInvMassPt[iCut] = new THnSparseF("sMother_Int_OpenAngle_InvMass_Pt","ESD_Mother_Int_OpenAngle_InvMass_Pt",nDim,nBins,xMin,xMax);
+				fESDList[iCut]->Add(fSparseMotherOpenAngleInvMassPt[iCut]);
+
 				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",350,0.03,35.,100,0,TMath::Pi());
 				SetLogBinningXTH2(fHistoMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherPi0PtOpenAngle[iCut]);
@@ -1448,7 +1459,16 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
 				fHistoTrueClusElectronPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
 				fHistoTrueClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-				fHistoTrueClusConvGammaMCPt[fiCut]->Fill(((TParticle*)fMCStack->Particle(Photon->GetMother(0)))->Pt());
+				TParticle* motherPart = (TParticle*)fMCStack->Particle(Photon->GetMother(0));
+				fHistoTrueClusConvGammaMCPt[fiCut]->Fill(motherPart->Pt());
+				if(motherPart->GetNDaughters() == 2){
+					TParticle* d1 = (TParticle*)fMCStack->Particle(motherPart->GetFirstDaughter());
+					TParticle* d2 = (TParticle*)fMCStack->Particle(motherPart->GetLastDaughter());
+					TVector3 v1(d1->Px(),d1->Py(),d1->Pz());
+					TVector3 v2(d2->Px(),d2->Py(),d2->Pz());
+					Double_t sparesFill[4] = {0,v1.Angle(v2),TruePhotonCandidate->M(),TruePhotonCandidate->Pt()};
+					fSparseMotherOpenAngleInvMassPt[fiCut]->Fill(sparesFill,1);
+				}
 			}	
 			if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && TruePhotonCandidate->IsConversionFullyContained()) 
 				fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt());
@@ -1577,8 +1597,16 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
 				fHistoTrueClusElectronPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()) {
 				fHistoTrueClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-				AliAODMCParticle *Mother = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
-				fHistoTrueClusConvGammaMCPt[fiCut]->Fill(Mother->Pt());
+				AliAODMCParticle *motherPart = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
+				fHistoTrueClusConvGammaMCPt[fiCut]->Fill(motherPart->Pt());
+				if(motherPart->GetNDaughters() == 2){
+					TParticle* d1 = (TParticle*)fMCStack->Particle(motherPart->GetFirstDaughter());
+					TParticle* d2 = (TParticle*)fMCStack->Particle(motherPart->GetLastDaughter());
+					TVector3 v1(d1->Px(),d1->Py(),d1->Pz());
+					TVector3 v2(d2->Px(),d2->Py(),d2->Pz());
+					Double_t sparesFill[4] = {0,v1.Angle(v2),TruePhotonCandidate->M(),TruePhotonCandidate->Pt()};
+					fSparseMotherOpenAngleInvMassPt[fiCut]->Fill(sparesFill,1);
+				}
 			}	
 			if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && TruePhotonCandidate->IsConversionFullyContained()) 
 				fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt());
@@ -1991,7 +2019,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 						if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
 							fHistoMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
 							fHistoMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->GetAlpha()));
-							fHistoMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());	
+							fHistoMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());
 						}
 						if ( pi0cand->M() > 0.45 && pi0cand->M() < 0.65){
 							fHistoMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
@@ -2122,6 +2150,14 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 		if (isTruePi0) 	fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 		if (isTrueEta) 	fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 		if (fDoMesonQA > 0){
+			if(isTruePi0) {
+				Double_t sparesFill[4] = {1,Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),Pi0Candidate->Pt()};
+				fSparseMotherOpenAngleInvMassPt[fiCut]->Fill(sparesFill,1);
+			}
+			if(isTrueEta) {
+				Double_t sparesFill[4] = {2,Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),Pi0Candidate->Pt()};
+				fSparseMotherOpenAngleInvMassPt[fiCut]->Fill(sparesFill,1);
+			}
 			// both gammas are real gammas
 			if (TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsLargestComponentPhoton()) {
 				if (isTruePi0) fHistoTruePi0CaloPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
@@ -2393,6 +2429,14 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 		if (isTruePi0)fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 		if (isTrueEta)fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 		if (fDoMesonQA > 0){
+			if(isTruePi0) {
+				Double_t sparesFill[4] = {1,Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),Pi0Candidate->Pt()};
+				fSparseMotherOpenAngleInvMassPt[fiCut]->Fill(sparesFill,1);
+			}
+			if(isTrueEta) {
+				Double_t sparesFill[4] = {2,Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),Pi0Candidate->Pt()};
+				fSparseMotherOpenAngleInvMassPt[fiCut]->Fill(sparesFill,1);
+			}
 			// both gammas are real gammas
 			if (TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsLargestComponentPhoton()) {
 				if (isTruePi0)fHistoTruePi0CaloPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
