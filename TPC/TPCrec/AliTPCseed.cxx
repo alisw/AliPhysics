@@ -257,7 +257,9 @@ AliTPCseed::~AliTPCseed(){
   fNoCluster =0;
   if (fClusterOwner){
     for (Int_t icluster=0; icluster<160; icluster++){
-      delete fClusterPointer[icluster];
+      if(fClusterPointer[icluster])
+	delete fClusterPointer[icluster];
+      fClusterPointer[icluster]=0;
     }
   }
   AliDebug(5,"Destruct AliTPCseed - End");
@@ -271,18 +273,22 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
   //
   if(this!=&param){
     AliTPCtrack::operator=(param);
-    fEsd =param.fEsd; 
-    fClusterOwner = param.fClusterOwner;
-    if (!fClusterOwner) for(Int_t i = 0;i<160;++i)fClusterPointer[i] = param.fClusterPointer[i];
-    else                for(Int_t i = 0;i<160;++i) {
-	delete fClusterPointer[i];
-	if (param.fClusterPointer[i]) { 
-	  fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
-	}
-	else {
-	  fClusterPointer[i] = 0x0;
-	}
+    fEsd =param.fEsd;
+    // Clean the clusters if we're owner
+    if (fClusterOwner) {
+      for(Int_t i=0;i<160;i++){
+	if(fClusterPointer[i])
+	  delete fClusterPointer[i];
+	fClusterPointer[i]=0;
       }
+    }
+    // Make a deep copy of the clusters
+    for(Int_t i=0;i<160;i++){
+      if (param.fClusterPointer[i]) { 
+	fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
+      }
+    }
+    fClusterOwner = kTRUE;
     // leave out fPoint, they are also not copied in the copy ctor...
     // but deleted in the dtor... strange...
     fRow            = param.fRow;
