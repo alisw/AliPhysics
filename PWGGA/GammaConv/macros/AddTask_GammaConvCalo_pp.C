@@ -8,7 +8,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 									TString 	periodname 					= "LHC12f1x", 						// period name
 									Bool_t 		doWeighting 				= kFALSE,							// enables weighting
 									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
-									Bool_t 		isUsingTHnSparse 			= kTRUE 							// enable or disable usage of THnSparses for background estimation
+									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
+								    Bool_t 		enableTriggerMimicking		= kFALSE							// enable trigger mimicking
 							) {
 
 	// ================= Load Librariers =================================
@@ -409,6 +410,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
