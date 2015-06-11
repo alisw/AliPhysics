@@ -22828,7 +22828,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t bins[6] =    {fCRCnRun, fCRCPtnCenBin, fCRCnEtaGap, fCRCPtnPtBin, fCRCnCR, 10 };
  Double_t xmin[6] = {0,        fCRCPtCenMin,  0.,          fCRCPtMinPt,  0.,      0.};
- Double_t xmax[6] = {fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 10.};
+ Double_t xmax[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 10.};
  fCRCPtCorrTHnS = new THnSparseD("fCRCPtCorrTHnS","run:cen:eta:pt:CRC:ID",6,bins,xmin,xmax);
  fCRCPtCorrTHnS->GetAxis(0)->SetTitle("run");
  fCRCPtCorrTHnS->GetAxis(1)->SetTitle("cen");
@@ -22842,7 +22842,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t binsN[6] =    {fCRCnRun, fCRCPtnCenBin, fCRCnEtaGap, fCRCPtnPtBin, fCRCnCR, 6 };
  Double_t xminN[6] = {0,        fCRCPtCenMin,  0.,          fCRCPtMinPt,  0.,      0.};
- Double_t xmaxN[6] = {fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 6.};
+ Double_t xmaxN[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 6.};
  fCRCPtNUATHnS = new THnSparseD("fCRCPtNUATHnS","run:cen:eta:pt:CRC:ID",6,binsN,xminN,xmaxN);
  fCRCPtNUATHnS->GetAxis(0)->SetTitle("run");
  fCRCPtNUATHnS->GetAxis(1)->SetTitle("cen");
@@ -22856,7 +22856,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t binsC[7] =    {fCRCnRun, fCRCPtnCenBin, fCRCnEtaGap, fCRCPtnPtBin, fCRCnCR, fCRCnCR, 2 };
  Double_t xminC[7] = {0,        fCRCPtCenMin,  0.,          fCRCPtMinPt,  0.,      0.,      0.};
- Double_t xmaxC[7] = {fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, fCRCnCR, 2.};
+ Double_t xmaxC[7] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, fCRCnCR, 2.};
  fCRCPtCovTHnS = new THnSparseD("fCRCPtCovTHnS","run:cen:eta:pt:CRC1:CRC2:ID",7,binsC,xminC,xmaxC);
  fCRCPtCovTHnS->GetAxis(0)->SetTitle("run");
  fCRCPtCovTHnS->GetAxis(1)->SetTitle("cen");
