@@ -258,6 +258,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoTrueClusGammaEM02(NULL),
 	fHistoTrueClusPi0EM02(NULL),
 	fHistoNEvents(NULL),
+	fHistoNEventsWOWeight(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fHistoVertexZ(NULL),
 	fHistoNGammaCandidates(NULL),
@@ -491,6 +492,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoTrueClusGammaEM02(NULL),
 	fHistoTrueClusPi0EM02(NULL),
 	fHistoNEvents(NULL),
+	fHistoNEventsWOWeight(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fHistoVertexZ(NULL),
 	fHistoNGammaCandidates(NULL),
@@ -675,6 +677,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	}
 
 	fHistoNEvents = new TH1F*[fnCuts];
+	if (fIsMC == 2){
+		fHistoNEventsWOWeight = new TH1F*[fnCuts];
+	}	
 	fHistoNGoodESDTracks = new TH1F*[fnCuts];
 	fHistoVertexZ = new TH1F*[fnCuts];
 	fHistoNGammaCandidates = new TH1F*[fnCuts];
@@ -754,6 +759,29 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
+	
+		if (fIsMC == 2){
+			fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",11,-0.5,10.5);
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+			if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
+				TString TriggerNames = "Not Trigger: ";
+				TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
+				fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
+			} else {
+				fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
+			}
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+			fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
+			
+		}	
 		
 		if(fIsHeavyIon == 1) fHistoNGoodESDTracks[iCut] = new TH1F("GoodESDTracks","GoodESDTracks",4000,0,4000);
 		else if(fIsHeavyIon == 2) fHistoNGoodESDTracks[iCut] = new TH1F("GoodESDTracks","GoodESDTracks",400,0,400);
@@ -1765,6 +1793,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			fHistoNEvents[iCut]->Fill(eventQuality);
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
 		}
 		return;
 	}
@@ -1813,6 +1842,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 		Bool_t isMCJet = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC );
 		if (!isMCJet){
 			fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(10);
 			continue;
 // 		} else {
 // 			cout << fWeightJetJetMC << endl;
@@ -1821,16 +1851,20 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 		if(eventNotAccepted){
 		// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
 			fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
 			continue;
 		}
 
 		if(eventQuality != 0){// Event Not Accepted
 			//cout << "event rejected due to: " <<eventQuality << endl;
 			fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
 			continue;
 		}
 
 		fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
+		if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
+
 		fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
 		fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
