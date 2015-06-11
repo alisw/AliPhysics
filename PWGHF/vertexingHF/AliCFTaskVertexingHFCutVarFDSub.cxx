@@ -42,6 +42,7 @@
 #include "TProfile.h"
 #include "TH1I.h"
 #include "TH3F.h"
+#include "TH1F.h"
 #include "TStyle.h"
 #include "TFile.h"
 #include "TF1.h"
@@ -142,9 +143,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fCutOnMomConservation(0.00001),
-  fobjSpr(0x0),
-  fhsparsecutvar(0x0),
-  fhPtCutVar(0x0)
+  fObjSpr(0x0),
+  fhSparseCutVar(0x0),
+  fhPtCutVar(0x0),
+  fhBptCutVar(0x0)
 {
   //
   //Default ctor
@@ -209,9 +211,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fCutOnMomConservation(0.00001),
-  fobjSpr(0x0),
-  fhsparsecutvar(0x0),
-  fhPtCutVar(0x0)
+  fObjSpr(0x0),
+  fhSparseCutVar(0x0),
+  fhPtCutVar(0x0),
+  fhBptCutVar(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -227,7 +230,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
   DefineOutput(6,THnSparseF::Class());
-  DefineOutput(7,TH1F::Class());
+  DefineOutput(7,TH3F::Class());
+  DefineOutput(8,TH1F::Class());
 
   fCuts->PrintAll();
 }
@@ -248,9 +252,10 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
     for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
-    fobjSpr=c.fobjSpr;
-    fhsparsecutvar=c.fhsparsecutvar;
+    fObjSpr=c.fObjSpr;
+    fhSparseCutVar=c.fhSparseCutVar;
     fhPtCutVar=c.fhPtCutVar;
+    fhBptCutVar=c.fhBptCutVar;
   }
   return *this;
 }
@@ -313,9 +318,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fCutOnMomConservation(c.fCutOnMomConservation),
-  fobjSpr(c.fobjSpr),
-  fhsparsecutvar(c.fhsparsecutvar),
-  fhPtCutVar(c.fhPtCutVar)
+  fObjSpr(c.fObjSpr),
+  fhSparseCutVar(c.fhSparseCutVar),
+  fhPtCutVar(c.fhPtCutVar),
+  fhBptCutVar(c.fhBptCutVar)
 {
   //
   // Copy Constructor
@@ -339,9 +345,10 @@ AliCFTaskVertexingHFCutVarFDSub::~AliCFTaskVertexingHFCutVarFDSub()
   if (fHistoMeasNch)        delete fHistoMeasNch;
   if (fHistoMCNch)          delete fHistoMCNch;
   for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
-  if(fobjSpr) delete fobjSpr;
-  if(fhsparsecutvar) delete fhsparsecutvar;
+  if(fObjSpr) delete fObjSpr;
+  if(fhSparseCutVar) delete fhSparseCutVar;
   if(fhPtCutVar) delete fhPtCutVar;
+  if(fhBptCutVar) delete fhBptCutVar;
 }
 
 //_________________________________________________________________________-
@@ -844,6 +851,12 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
       continue;
     }
 
+    // Obtain B0 pt spectrum
+    if ((((mcPart->GetPdgCode()%1000)/100==5||(mcPart->GetPdgCode()%1000)/100==-5)) &&
+        (mcPart->Y()<1.)&&(mcPart->Y()>-1.)) {
+      fhBptCutVar->Fill(mcPart->Pt());
+    }
+
     //counting c quarks
     cquarks += cfVtxHF->MCcquarkCounting(mcPart);
 
@@ -918,7 +931,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
         AliDebug(3,"MC acceptance cut passed\n");
         icountAcc++;
-        if(fhPtCutVar){fobjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
+        if(fhPtCutVar){fObjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
 
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
@@ -1165,8 +1178,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
                 fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
 
                 AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)charmCandidate;
-                fobjSpr->SetFillMC(kTRUE);
-                fobjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray);
+                fObjSpr->SetFillMC(kTRUE);
+                fObjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray);
 
                 icountRecoPID++;
                 AliDebug(3,"Reco PID cuts passed and container filled \n");
@@ -1493,18 +1506,21 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
 
-  if(!fobjSpr){
-    fobjSpr=new AliHFsubtractBFDcuts("feedDownCuts","feedDownCuts");
-    fobjSpr->InitHistos();
-    fhsparsecutvar=fobjSpr->GetSparseMC();
-    fhPtCutVar=fobjSpr->GetHistoPtMCgen();
+  if(!fObjSpr){
+    fObjSpr=new AliHFsubtractBFDcuts("feedDownCuts","feedDownCuts");
+    fObjSpr->InitHistos();
+    fhSparseCutVar=fObjSpr->GetSparseMC();
+    fhPtCutVar=fObjSpr->GetHistoPtMCgen();
   }
+
+  fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",48,0.,24.);
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
-  PostData(6,fhsparsecutvar);
+  PostData(6,fhSparseCutVar);
   PostData(7,fhPtCutVar);
+  PostData(8,fhBptCutVar);
 }
 
 
