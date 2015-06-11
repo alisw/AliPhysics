@@ -74,6 +74,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
   fhnDeltaMass(0x0),
+  fhnDeltaMassAndBkgInfo(0x0),
   fh2PtTrueSubFacV1(0x0),
   fh2PtRawSubFacV1(0x0),
   fh2PtCorrSubFacV1(0x0),
@@ -164,6 +165,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
   fhnDeltaMass(0x0),
+  fhnDeltaMassAndBkgInfo(0x0),
   fh2PtTrueSubFacV1(0x0),
   fh2PtRawSubFacV1(0x0),
   fh2PtCorrSubFacV1(0x0),
@@ -280,6 +282,13 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   Double_t *binsdMr = new Double_t[nBinsdMr+1];
   for(Int_t i=0; i<=nBinsdMr; i++) binsdMr[i]=(Double_t)mindMr + (maxdMr-mindMr)/nBinsdMr*(Double_t)i ;
 
+  //These are good for pPb
+  Int_t nBinsRho = 50;
+  Double_t minRho = 0.;
+  Double_t maxRho = 20.;
+  Int_t nBinsRhom = 50;
+  Double_t minRhom = 0.;
+  Double_t maxRhom = 1.;
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
@@ -290,6 +299,12 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt};
   const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt};
   const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt};
+
+  const Int_t nBinsSparse2 = 8;
+  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
+  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
+  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
 
   TString histName = "";
   TString histTitle = "";
@@ -385,6 +400,14 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fOutput->Add(fh2NConstSubFacV2[i]);
 
   }
+  
+  //Chiara's histograms: rho and rhom correlation with pT and mass at reco level with no subtraction
+  histName = "fhnDeltaMassAndBkgInfo";
+  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unbub when M_part is zero
+  
+  fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
+  fOutput->Add(fhnDeltaMassAndBkgInfo);
+
 
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
@@ -441,8 +464,25 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   AliVParticle *vpe  = NULL; //embedded particle
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
-  fRho  = (Float_t)jetCont->GetRhoVal();
-  fRhoM = (Float_t)jetCont->GetRhoMassVal();
+  if(!jetCont){
+     Printf("Jet Container %d not found, return", fContainerBase);
+     return kFALSE;
+  }
+  //rho
+  AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoName()));
+  fRho = 0;
+  if (!rhoParam) {
+     AliError(Form("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data()));
+      
+  } else fRho = rhoParam->GetVal();
+  //rhom
+  AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoMassName()));
+  fRhoM = 0;
+  if (!rhomParam) {
+     AliError(Form("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data()));
+      
+  } else fRhoM = rhomParam->GetVal();
+  
   //Get leading jet in Pb-Pb event without embedded objects
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
@@ -455,7 +495,9 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       continue;
     
     Double_t mjet1 = jet1->GetSecondOrderSubtracted();
-    Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
+    Double_t mUnsubjet1 = jet1->M();
+    Double_t ptjet1 = jet1->Pt()-fRho*jet1->Area();
+    Double_t ptUnsubjet1 = jet1->Pt();
     Double_t var = mjet1;
     if(fJetMassVarType==kRatMPt) {
       if(ptjet1>0. || ptjet1<0.) var = mjet1/ptjet1;
@@ -555,6 +597,10 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       varsp[5] = ptJetR;
 
       fhnDeltaMass[fCentBin]->Fill(varsp);
+      
+      //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+      Double_t varsp2[8] = {var-var2, ptjet1-ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
+      fhnDeltaMassAndBkgInfo->Fill(varsp2);
     }
     
     if(fCreateTree) {      
