@@ -538,7 +538,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
               fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           	else if (0==fRunType) {
-          		Double_t triggerEntries[6] = {Ntracks,jetPt,trackpt,deta,dphijh,leadjet};
+		  Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet};
           		fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           } else { 
@@ -547,7 +547,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
               fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           	else if (0==fRunType) {
-              Double_t triggerEntries[8] = {Ntracks,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
+		  Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
               fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           }
@@ -656,7 +656,7 @@ if(trigger & fTriggerEventType) {
                 fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
              	}
              	else if (0 == fRunType) { //pp
-             		Double_t triggerEntries[6] = {Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet};
+		  Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet};
              		fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
              	}
             } else {
@@ -665,7 +665,7 @@ if(trigger & fTriggerEventType) {
                 fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
             	}
             	else if (0==fRunType) {
-            		Double_t triggerEntries[8] = {Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
+		  Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
             	  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
             	}
 		    }
