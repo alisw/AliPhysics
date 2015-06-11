@@ -112,6 +112,9 @@ int main(int argc, char **argv)
     }
     
     // make sure logger is instantiated
+    
+    cout<<"Agruments read"<<endl;
+    
     AliLog::GetRootLogger();
     TRint *app = new TRint("App", &argc, argv);
 

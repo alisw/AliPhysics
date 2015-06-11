@@ -290,7 +290,8 @@ void AliEveEventManagerWindow::DoLastEvent()
 void AliEveEventManagerWindow::DoMarkEvent()
 {
     // Mark current event
-    fM->MarkCurrentEvent();
+    cout<<"\n\n mark event not implemented!!\n\n"<<endl;
+//    fM->MarkCurrentEvent();
 }
 
 //______________________________________________________________________________

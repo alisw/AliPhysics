@@ -50,6 +50,8 @@ set(SRCS
     AliEveConfigManager.cxx
     AliEveCosmicRayFitter.cxx
     AliEveCosmicRayFitterEditor.cxx
+    AliEveDataSource.cxx
+    AliEveDataSourceOffline.cxx
     AliEveESDTracks.cxx
     AliEveEventManager.cxx
     AliEveEventManagerEditor.cxx
@@ -76,7 +78,6 @@ set(SRCS
     AliEveMainWindow.cxx
     AliEveMultiView.cxx
     AliEveOffline.cxx
-    AliEveOfflineEventManager.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx
@@ -89,7 +90,6 @@ set(SRCS
     AliEveV0Editor.cxx
     AliEveV0ListEditor.cxx
     AliEveVSDCreator.cxx
-    AliEveDataSource.cxx
    )
 
 # Sources if ZMQ installed

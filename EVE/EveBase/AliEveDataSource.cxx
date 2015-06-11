@@ -7,8 +7,6 @@
 
 #include "AliEveDataSource.h"
 
-using namespace std;
-
 AliEveDataSource::AliEveDataSource(bool storageManager)
   : TNamed("","")
   , fCurrentData()
@@ -25,6 +23,10 @@ void AliEveDataSource::Init()
 }
 
 void AliEveDataSource::GotoEvent(Int_t /*event*/)
+{
+}
+
+void AliEveDataSource::NextEvent()
 {
 }
 

@@ -1086,7 +1086,8 @@ void AliEveConfigManager::SetEventInEventManager()
 	    cout<<"SETTING EVENT IN ED"<<endl;
 	    //fListEventsWindow->onExit();
         manager->SetAutoLoad(kFALSE);
-        manager->PrepareForNewEvent(event);
+//        manager->PrepareForNewEvent(event);
+        cout<<"\n\nSetting new event should be implemented in AliEveConfigManager, but is not\n\n"<<endl;
     }
 #endif
 }

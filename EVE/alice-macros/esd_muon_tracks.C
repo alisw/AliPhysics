@@ -214,14 +214,14 @@ void esd_muon_tracks(Bool_t showClusters, Bool_t showDigits)
   TEveTrackList* nomatch = new TEveTrackList("Not matched");
   nomatch->SetRnrPoints(kFALSE);
   nomatch->SetRnrLine(kTRUE);
-  nomatch->SetLineColor(kAzure);
+  nomatch->SetLineColor(kGreen);
   esd_muon_track_propagator_setup(nomatch->GetPropagator(), kTRUE, kFALSE);
   trackCont->AddElement(nomatch);
   
   TEveTrackList* ghost = new TEveTrackList("Ghost");
   ghost->SetRnrPoints(kFALSE);
   ghost->SetRnrLine(kTRUE);
-  ghost->SetLineColor(kAzure);
+  ghost->SetLineColor(kGreen);
   esd_muon_track_propagator_setup(ghost->GetPropagator(), kFALSE, kTRUE);
   trackCont->AddElement(ghost);
   

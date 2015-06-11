@@ -50,6 +50,12 @@ AliEveOnline::AliEveOnline(bool storageManager)
     
     //
     //-----------------------------------------------------------------------------------------
+ 
+    
+    cout<<"Creating event manager...";
+    AliEveEventManager *man = new AliEveEventManager(storageManager);
+    gEve->AddEvent(man);
+    cout<<"created"<<endl;
     
     // set OCDB path:
     AliEveEventManager::SetCdbUri("local:///local/cdb");         // current OCDB snapshot
@@ -61,11 +67,6 @@ AliEveOnline::AliEveOnline(bool storageManager)
     cout<<"Adding standard macros...";
     InitImportMacros();
     cout<<"added"<<endl;
-    
-    cout<<"Creating event manager...";
-    AliEveEventManager *man = new AliEveEventManager(storageManager);
-    gEve->AddEvent(man);
-    cout<<"created"<<endl;
     
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();

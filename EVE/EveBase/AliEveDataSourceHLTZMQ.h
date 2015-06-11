@@ -19,7 +19,7 @@ class AliEveDataSourceHLTZMQ : public AliEveDataSource
 public:
     AliEveDataSourceHLTZMQ(bool storageManager=false);
     ~AliEveDataSourceHLTZMQ();
-    
+
 private:
     static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveDataSourceHLTZMQ*>(arg)->PullEventFromHLT();return nullptr;}
     void PullEventFromHLT();
@@ -31,7 +31,7 @@ private:
     TThread *fEventListenerThreadHLT;
     
     int fCurrentRun;
-    
+
     void* fZMQContext;
     void* fZMQeventQueue; //this is the ONLY queue for threads!
     TString fHLTPublisherAddress;
