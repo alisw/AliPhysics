@@ -542,7 +542,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		if (fDoMesonQA > 0){
 			fHistoMotherPi0PtY =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtY =  new TH2F*[fnCuts];
-			fSparseMotherOpenAngleInvMassPt = new THnSparseF*[fnCuts];
 			fHistoMotherPi0PtAlpha =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtAlpha =  new TH2F*[fnCuts];
 			fHistoMotherPi0PtOpenAngle =  new TH2F*[fnCuts];
@@ -650,14 +649,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",350,0.03,35.,100,0,1);
 				SetLogBinningXTH2(fHistoMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtAlpha[iCut]);
-
-				const Int_t nDim = 4;
-				Int_t nBins[nDim] = {3,100,800,350};
-				Double_t xMin[nDim] = {0,0,0,0};
-				Double_t xMax[nDim] = {3,TMath::Pi(),0.8,35};
-				fSparseMotherOpenAngleInvMassPt[iCut] = new THnSparseF("sMother_Int_OpenAngle_InvMass_Pt","ESD_Mother_Int_OpenAngle_InvMass_Pt",nDim,nBins,xMin,xMax);
-				fESDList[iCut]->Add(fSparseMotherOpenAngleInvMassPt[iCut]);
-
 				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",350,0.03,35.,100,0,TMath::Pi());
 				SetLogBinningXTH2(fHistoMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherPi0PtOpenAngle[iCut]);
@@ -787,6 +778,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoTrueEtaPtAlpha 						= new TH2F*[fnCuts];
 				fHistoTruePi0PtOpenAngle 					= new TH2F*[fnCuts];
 				fHistoTrueEtaPtOpenAngle 					= new TH2F*[fnCuts];
+				fSparseMotherOpenAngleInvMassPt				= new THnSparseF*[fnCuts];
 			}
 			if (fDoMesonQA==2){
 				fHistoTruePi0Category1						= new TH2F*[fnCuts];
@@ -1110,6 +1102,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 					fHistoTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",350,0.03,35.,200,0,2*TMath::Pi());
 					SetLogBinningXTH2(fHistoTrueEtaPtOpenAngle[iCut]);
 					fTrueList[iCut]->Add(fHistoTrueEtaPtOpenAngle[iCut]);
+					const Int_t nDim = 4;
+					Int_t nBins[nDim] = {3,100,800,350};
+					Double_t xMin[nDim] = {0,0,0,0};
+					Double_t xMax[nDim] = {3,TMath::Pi(),0.8,35};
+					fSparseMotherOpenAngleInvMassPt[iCut] = new THnSparseF("sMother_Int_OpenAngle_InvMass_Pt","ESD_Mother_Int_OpenAngle_InvMass_Pt",nDim,nBins,xMin,xMax);
+					fTrueList[iCut]->Add(fSparseMotherOpenAngleInvMassPt[iCut]);
 				}
 				
 				if (fDoMesonQA == 2){
