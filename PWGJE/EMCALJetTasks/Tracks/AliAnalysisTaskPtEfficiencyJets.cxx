@@ -100,9 +100,9 @@ Bool_t AliAnalysisTaskPtEfficiencyJets::Run() {
     // track eta
     // track phi
     // vertex z
-    Float_t data[] = {(Float_t)TMath::Abs(part->Pt()), reconstructed ? TMath::Abs(reconstructed->Pt()) : 0,
-        jet ? TMath::Abs(jet->Pt()) : 0, pthard, (Float_t)part->Eta(), (Float_t)part->Phi(), reconstructed ? reconstructed->Eta() : -1000000.,
-            reconstructed ? reconstructed->Phi() : -1000000., primvertex ? primvertex->GetZ() : -1000000.
+    Float_t data[] = {(Float_t)TMath::Abs(part->Pt()), reconstructed ? static_cast<Float_t>(TMath::Abs(reconstructed->Pt())) : 0,
+        jet ? static_cast<Float_t>(TMath::Abs(jet->Pt())) : 0, pthard, (Float_t)part->Eta(), (Float_t)part->Phi(), static_cast<Float_t>(reconstructed ? reconstructed->Eta() : -1000.),
+            static_cast<Float_t>(reconstructed ? reconstructed->Phi() : -1000.), static_cast<Float_t>(primvertex ? primvertex->GetZ() : -1000.)
     };
     fTrackNtuple->Fill(data);
   }
