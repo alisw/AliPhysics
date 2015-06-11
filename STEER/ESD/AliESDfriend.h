@@ -24,18 +24,7 @@ public:
   AliESDfriend(const AliESDfriend &);
   AliESDfriend& operator=(const AliESDfriend& esd);  
   virtual ~AliESDfriend();
-  
-  // This function will set the ownership
-  // needed to read old ESDfriends
-  void SetOwner(){
-    fTracks.SetOwner();
-    Int_t n=fTracks.GetEntriesFast();
-    for(;n--;){
-      AliESDfriendTrack *t=(AliESDfriendTrack *)fTracks.UncheckedAt(n);
-      if(t)t->SetOwner();
-    }
-  }
-  
+
   Int_t GetNumberOfTracks() const {return fTracks.GetEntriesFast();}
   AliESDfriendTrack *GetTrack(Int_t i) const {
      return (AliESDfriendTrack *)fTracks.At(i);

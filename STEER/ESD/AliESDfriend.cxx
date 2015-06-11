@@ -67,28 +67,16 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     // Assignment operator
     if(&esd == this) return *this;
     TObject::operator=(esd);
-    // Clean up the old TClonesArray
-    fTracks.Delete();
-    // Assign the new one
     fTracks = esd.fTracks;
 
-    if(fESDVZEROfriend)
-      delete fESDVZEROfriend;
-    fESDVZEROfriend=0;
-    if(esd.fESDVZEROfriend)
-      fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
-    
-    if(fESDTZEROfriend)
-      delete fESDTZEROfriend;
-    fESDTZEROfriend=0;
-    if(esd.fESDTZEROfriend)
-      fESDTZEROfriend = new AliESDTZEROfriend(*esd.fESDTZEROfriend);
+    delete fESDVZEROfriend;
+    fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
 
-    if(fESDADfriend)
-      delete fESDADfriend;
-    fESDADfriend=0;
-    if(esd.fESDADfriend)
-      fESDADfriend = new AliESDADfriend(*esd.fESDADfriend);
+    delete fESDTZEROfriend;
+    fESDTZEROfriend = new AliESDTZEROfriend(*esd.fESDTZEROfriend);
+    
+    delete fESDADfriend;
+    fESDADfriend = new AliESDADfriend(*esd.fESDADfriend);
  
     memcpy(fNclustersTPC,esd.fNclustersTPC,sizeof(fNclustersTPC));
     memcpy(fNclustersTPCused,esd.fNclustersTPCused,sizeof(fNclustersTPCused));
@@ -104,15 +92,9 @@ AliESDfriend::~AliESDfriend() {
   // Destructor
   //
   fTracks.Delete();
-  if(fESDVZEROfriend)
-    delete fESDVZEROfriend;
-  fESDVZEROfriend=0;
-  if(fESDTZEROfriend)
-    delete fESDTZEROfriend;
-  fESDTZEROfriend=0;
-  if(fESDADfriend)
-    delete fESDADfriend;
-  fESDADfriend=0;
+  delete fESDVZEROfriend;
+  delete fESDTZEROfriend;
+  delete fESDADfriend;
 }
 
 
