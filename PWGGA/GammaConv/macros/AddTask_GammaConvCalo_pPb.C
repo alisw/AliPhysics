@@ -1,5 +1,5 @@
 void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// change different set of cuts
-									Bool_t 		isMC   						= kFALSE, 							// run MC
+									Int_t 		isMC   						= 0, 							// run MC
 									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
 									Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
 									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
@@ -44,10 +44,14 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 	
+	Bool_t isMCForOtherTasks = kFALSE;
+	if (isMC > 0) isMCForOtherTasks = kTRUE;
+
+	
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC);
+		AddTaskPIDResponse(isMCForOtherTasks);
 	}
 	
 	Printf("here \n");
