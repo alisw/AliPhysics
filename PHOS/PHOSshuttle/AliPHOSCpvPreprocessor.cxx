@@ -171,8 +171,9 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
 		fitFunc->SetParameters(1.,200.,60.);
 		TH1* hAmpl = (TH1*)f.Get(Form("hAmplA0_DDL%d_iX%d_iY%d",iDDL,iX,iY));
 		if(!hAmpl)continue;
+		hAmpl->Rebin(4);
 		if(hAmpl->Integral(20,2000)<minimalStatistics)continue;
-		hAmpl->Fit(fitFunc,"SQL","",20.,2000.);
+		hAmpl->Fit(fitFunc,"QL0","",20.,2000.);
 		coeff = 200./fitFunc->GetParameter(1);
 		calib->SetADCchannelCpv(AliPHOSCpvParam::DDL2Mod(iDDL),iX+1,iY+1,coeff);
 		hAmpl->Delete();
