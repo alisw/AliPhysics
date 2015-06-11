@@ -23300,7 +23300,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t bins[6] =    {fCRCnRun, fCRCPtnCenBin, fCRCnEtaGap, fCRCPtnPtBin, fCRCnCR, 5 };
  Double_t xmin[6] = {0,        fCRCPtCenMin,  0.,          fCRCPtMinPt,  0.,      0.};
- Double_t xmax[6] = {fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 5.};
+ Double_t xmax[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 5.};
  fCRCPtCorrTHnS = new THnSparseD("fCRCPtCorrTHnS","run:cen:eta:pt:CRC:ID",6,bins,xmin,xmax);
  fCRCPtCorrTHnS->GetAxis(0)->SetTitle("run");
  fCRCPtCorrTHnS->GetAxis(1)->SetTitle("cen");
@@ -23314,7 +23314,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t binsN[6] =    {fCRCnRun, fCRCPtnCenBin, fCRCnEtaGap, fCRCPtnPtBin, fCRCnCR, 6 };
  Double_t xminN[6] = {0,        fCRCPtCenMin,  0.,          fCRCPtMinPt,  0.,      0.};
- Double_t xmaxN[6] = {fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 6.};
+ Double_t xmaxN[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, 6.};
  fCRCPtNUATHnS = new THnSparseD("fCRCPtNUATHnS","run:cen:eta:pt:CRC:ID",6,binsN,xminN,xmaxN);
  fCRCPtNUATHnS->GetAxis(0)->SetTitle("run");
  fCRCPtNUATHnS->GetAxis(1)->SetTitle("cen");
@@ -23328,7 +23328,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t binsC[7] =    {fCRCnRun, fCRCPtnCenBin, fCRCnEtaGap, fCRCPtnPtBin, fCRCnCR, fCRCnCR, 2 };
  Double_t xminC[7] = {0,        fCRCPtCenMin,  0.,          fCRCPtMinPt,  0.,      0.,      0.};
- Double_t xmaxC[7] = {fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, fCRCnCR, 2.};
+ Double_t xmaxC[7] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCnEtaGap, fCRCPtMaxPt,  fCRCnCR, fCRCnCR, 2.};
  fCRCPtCovTHnS = new THnSparseD("fCRCPtCovTHnS","run:cen:eta:pt:CRC1:CRC2:ID",7,binsC,xminC,xmaxC);
  fCRCPtCovTHnS->GetAxis(0)->SetTitle("run");
  fCRCPtCovTHnS->GetAxis(1)->SetTitle("cen");
@@ -23345,7 +23345,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t binCorVZ[6] =     {fCRCnRun, fCRCPtnCenBin, fCRCVZnEtaBin, fCRCPtnPtBin, fCRCVZnCR, 5 };
  Double_t xminCorVZ[6] = {0,        fCRCPtCenMin,  0.,             fCRCPtMinPt,  0.,         0.};
- Double_t xmaxCorVZ[6] = {fCRCnRun, fCRCPtCenMax,  fCRCVZnEtaBin, fCRCPtMaxPt,  fCRCVZnCR, 5.};
+ Double_t xmaxCorVZ[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCVZnEtaBin, fCRCPtMaxPt,  fCRCVZnCR, 5.};
  fCRCVZCorTHnS = new THnSparseD("fCRCVZCorTHnS","run:cen:eta:pt:CRC:ID",6,binCorVZ,xminCorVZ,xmaxCorVZ);
  fCRCVZCorTHnS->GetAxis(0)->SetTitle("run");
  fCRCVZCorTHnS->GetAxis(1)->SetTitle("cen");
@@ -23359,7 +23359,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t    binNUAVZ[6] =  {fCRCnRun, fCRCPtnCenBin, fCRCVZnEtaBin, fCRCPtnPtBin, fCRCVZnCR, 6 };
  Double_t xminNUAVZ[6] = {0,        fCRCPtCenMin,  0.,             fCRCPtMinPt,  0.,         0.};
- Double_t xmaxNUAVZ[6] = {fCRCnRun, fCRCPtCenMax,  fCRCVZnEtaBin, fCRCPtMaxPt,  fCRCVZnCR, 6.};
+ Double_t xmaxNUAVZ[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCVZnEtaBin, fCRCPtMaxPt,  fCRCVZnCR, 6.};
  fCRCVZNUATHnS = new THnSparseD("fCRCVZNUATHnS","run:cen:eta:pt:CRC:ID",6,binNUAVZ,xminNUAVZ,xmaxNUAVZ);
  fCRCVZNUATHnS->GetAxis(0)->SetTitle("run");
  fCRCVZNUATHnS->GetAxis(1)->SetTitle("cen");
@@ -23373,7 +23373,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t    binCovVZ[7] =  {fCRCnRun, fCRCPtnCenBin, fCRCVZnEtaBin, fCRCPtnPtBin, fCRCVZnCR, fCRCVZnCR, 2 };
  Double_t xminCovVZ[7] = {0,        fCRCPtCenMin,  0.,             fCRCPtMinPt,  0.,         0.,         0.};
- Double_t xmaxCovVZ[7] = {fCRCnRun, fCRCPtCenMax,  fCRCVZnEtaBin, fCRCPtMaxPt,  fCRCVZnCR, fCRCVZnCR, 2.};
+ Double_t xmaxCovVZ[7] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCVZnEtaBin, fCRCPtMaxPt,  fCRCVZnCR, fCRCVZnCR, 2.};
  fCRCVZCovTHnS = new THnSparseD("fCRCVZCovTHnS","run:cen:eta:pt:CRC1:CRC2:ID",7,binCovVZ,xminCovVZ,xmaxCovVZ);
  fCRCVZCovTHnS->GetAxis(0)->SetTitle("run");
  fCRCVZCovTHnS->GetAxis(1)->SetTitle("cen");
@@ -23390,7 +23390,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t binCorZDC[6] =     {fCRCnRun, fCRCPtnCenBin, fCRCZDCnEtaBin, fCRCPtnPtBin, fCRCZDCnCR, 5 };
  Double_t xminCorZDC[6] = {0,        fCRCPtCenMin,  0.,             fCRCPtMinPt,  0.,         0.};
- Double_t xmaxCorZDC[6] = {fCRCnRun, fCRCPtCenMax,  fCRCZDCnEtaBin, fCRCPtMaxPt,  fCRCZDCnCR, 5.};
+ Double_t xmaxCorZDC[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCZDCnEtaBin, fCRCPtMaxPt,  fCRCZDCnCR, 5.};
  fCRCZDCCorTHnS = new THnSparseD("fCRCZDCCorTHnS","run:cen:eta:pt:CRC:ID",6,binCorZDC,xminCorZDC,xmaxCorZDC);
  fCRCZDCCorTHnS->GetAxis(0)->SetTitle("run");
  fCRCZDCCorTHnS->GetAxis(1)->SetTitle("cen");
@@ -23404,7 +23404,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t    binNUAZDC[6] =  {fCRCnRun, fCRCPtnCenBin, fCRCZDCnEtaBin, fCRCPtnPtBin, fCRCZDCnCR, 6 };
  Double_t xminNUAZDC[6] = {0,        fCRCPtCenMin,  0.,             fCRCPtMinPt,  0.,         0.};
- Double_t xmaxNUAZDC[6] = {fCRCnRun, fCRCPtCenMax,  fCRCZDCnEtaBin, fCRCPtMaxPt,  fCRCZDCnCR, 6.};
+ Double_t xmaxNUAZDC[6] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCZDCnEtaBin, fCRCPtMaxPt,  fCRCZDCnCR, 6.};
  fCRCZDCNUATHnS = new THnSparseD("fCRCZDCNUATHnS","run:cen:eta:pt:CRC:ID",6,binNUAZDC,xminNUAZDC,xmaxNUAZDC);
  fCRCZDCNUATHnS->GetAxis(0)->SetTitle("run");
  fCRCZDCNUATHnS->GetAxis(1)->SetTitle("cen");
@@ -23418,7 +23418,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCPt()
  
  Int_t    binCovZDC[7] =  {fCRCnRun, fCRCPtnCenBin, fCRCZDCnEtaBin, fCRCPtnPtBin, fCRCZDCnCR, fCRCZDCnCR, 2 };
  Double_t xminCovZDC[7] = {0,        fCRCPtCenMin,  0.,             fCRCPtMinPt,  0.,         0.,         0.};
- Double_t xmaxCovZDC[7] = {fCRCnRun, fCRCPtCenMax,  fCRCZDCnEtaBin, fCRCPtMaxPt,  fCRCZDCnCR, fCRCZDCnCR, 2.};
+ Double_t xmaxCovZDC[7] = {(Double_t)fCRCnRun, fCRCPtCenMax,  fCRCZDCnEtaBin, fCRCPtMaxPt,  fCRCZDCnCR, fCRCZDCnCR, 2.};
  fCRCZDCCovTHnS = new THnSparseD("fCRCZDCCovTHnS","run:cen:eta:pt:CRC1:CRC2:ID",7,binCovZDC,xminCovZDC,xmaxCovZDC);
  fCRCZDCCovTHnS->GetAxis(0)->SetTitle("run");
  fCRCZDCCovTHnS->GetAxis(1)->SetTitle("cen");
