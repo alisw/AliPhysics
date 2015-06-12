@@ -208,8 +208,6 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
         
         TString gdc;
 
-        cdb->UnsetDefaultStorage();
-
         Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(runNo, dbHost.Data(),
                                                                   dbPort, dbName.Data(),
                                                                   user.Data(), password.Data(),
@@ -219,7 +217,6 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
         if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
         else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
         else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
-        
         
         cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
         cdb->SetSpecificStorage("GRP/GRP/Data",cdbPath.Data());

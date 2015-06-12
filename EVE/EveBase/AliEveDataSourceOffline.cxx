@@ -59,37 +59,36 @@ void AliEveDataSourceOffline::InitOCDB(int runNo)
     
     static const TEveException kEH("AliEveDataSourceOffline::InitOCDB ");
 
-//    if (cdb->IsDefaultStorageSet() == kTRUE)
-//    {
-//        Warning(kEH, "CDB already set - using the old storage:\n  '%s'",
-//                cdb->GetDefaultStorage()->GetURI().Data());
-//    }
-//    else
+    if (cdb->IsDefaultStorageSet())
     {
-        if (fgCdbUri.IsNull())
-        {
-            gEnv->SetValue("Root.Stacktrace", "no");
-            Fatal("Open()", "OCDB path was not specified.");
-        }
-        cout<<"Setting default storage:"<<fgCdbUri<<endl;
-        // Handle some special cases for MC (should be in OCDBManager).
-        if (fgCdbUri == "mcideal://")
-            cdb->SetDefaultStorage("MC", "Ideal");
-        else if (fgCdbUri == "mcresidual://")
-            cdb->SetDefaultStorage("MC", "Residual");
-        else if (fgCdbUri == "mcfull://")
-            cdb->SetDefaultStorage("MC", "Full");
-        else if (fgCdbUri == "local://"){
-            fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
-            cdb->SetDefaultStorage(fgCdbUri);
-        }
-        else{
-            cdb->SetDefaultStorage(fgCdbUri);
-        }
-        cdb->SetRun(runNo);
-        
-        if (cdb->IsDefaultStorageSet() == kFALSE){throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";}
+        cdb->UnsetDefaultStorage();
     }
+
+    if (fgCdbUri.IsNull())
+    {
+        gEnv->SetValue("Root.Stacktrace", "no");
+        Fatal("Open()", "OCDB path was not specified.");
+    }
+    cout<<"Setting default storage:"<<fgCdbUri<<endl;
+
+    // Handle some special cases for MC (should be in OCDBManager).
+    if (fgCdbUri == "mcideal://")
+        cdb->SetDefaultStorage("MC", "Ideal");
+    else if (fgCdbUri == "mcresidual://")
+        cdb->SetDefaultStorage("MC", "Residual");
+    else if (fgCdbUri == "mcfull://")
+        cdb->SetDefaultStorage("MC", "Full");
+    else if (fgCdbUri == "local://"){
+        fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
+        cdb->SetDefaultStorage(fgCdbUri);
+    }
+    else{
+        cdb->SetDefaultStorage(fgCdbUri);
+    }
+    cdb->SetRun(runNo);
+    
+    if (!cdb->IsDefaultStorageSet()){throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";}
+
     /*
      if (fgCdbUri.BeginsWith("local://"))
      {
