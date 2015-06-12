@@ -961,13 +961,17 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
 {
   // Compute the luminosity for a set of triggers
   
-  // for T0 based lumi (end of pp 2012), use lumiTrigger = C0TVX-S-NOPF-ALLNOTRD and lumiCrossSection = 28 mb (and csUnit="nb")
+  // for T0 based lumi (end of pp 2012), use lumiTrigger = C0TVX-S-NOPF-ALLNOTRD and lumiCrossSection = 24.9547 mb (and csUnit="nb")
   //
   // for T0 based lumi (pPb 2013), use lumiTrigger = C0TVX-B-NOPF-ALLNOTRD
   // and lumiCrossSection = 0.755*2000 mb (and csUnit="mub")
-  
+  //
   // for T0 based lumi (pp 2.76 TeV 2013), use lumiTrigger = C0TVX-B-NOPF-ALLNOTRD
   // and lumiCrossSection = 18 mb (and csUnit="nb")
+  //
+  // for T0 based lumi (pp 2013), use lumiTrigger=C0TVX-B-NOPF-ALLNOTRD and lumiCrossSection = 39 mb (estimate so far)
+  //
+  //
   
   double intLumi(0);
   
@@ -980,7 +984,12 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
   
   if ( sTriggerList.Length()==0 )
   {
-    if ( lumiCrossSection < 30 && lumiCrossSection  > 20 )
+    if ( lumiCrossSection>=39 && strcmp(csUnit,"nb")==0)
+    {
+      // assuming pp 13 TeV
+      sTriggerList = "C0MSL-B-NOPF-ALLNOTRD,C0MSL-B-NOPF-MUON,C0MUL-B-NOPF-MUON";
+    }
+    else if ( lumiCrossSection < 30 && lumiCrossSection  > 20 )
     {
       // assuming it's pp 2012
       sTriggerList = "CMUL8-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-ALLNOTRD,CMUL8-S-NOPF-MUON,CMUL7-S-NOPF-MUON";
