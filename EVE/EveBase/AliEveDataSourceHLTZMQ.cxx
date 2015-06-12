@@ -28,6 +28,7 @@ using namespace std;
 AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     AliEveDataSource("HLT"),
     fEventListenerThreadHLT(0),
+    fCurrentRun(-1),
     fZMQContext(NULL),
     fZMQeventQueue(NULL),
     fHLTPublisherAddress("tcp://localhost:60201")
@@ -183,13 +184,19 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
 }
 
 void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
-{
-    AliCDBManager* cdb = AliCDBManager::Instance();
+{  
+  AliInfo(Form("Initializing OCDB for run: %i",runNo));
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  if (!cdb) return;
+
   if (cdb->IsDefaultStorageSet() == kTRUE)
   {
     AliInfo(Form("CDB already set - using the old storage:  '%s'", cdb->GetDefaultStorage()->GetURI().Data()));
     return;
   }
+  else {
+    if (gSystem->Getenv("ocdbStorage")) {
+    cdb->SetDefaultStorage(gSystem->Getenv("ocdbStorage"));
     if (runNo!=AliEveEventManager::GetMaster()->GetCurrentRun()){
         AliEveEventManager::GetMaster()->SetCurrentRun(runNo);
       cdb->SetRun(runNo);
@@ -263,10 +270,17 @@ void AliEveDataSourceHLTZMQ::NextEvent()
     //replace the ESD
     fCurrentData.Clear();
     fCurrentData.fESD = esdObject;
+    
+    AliEveEventManager::GetMaster()->SetHasEvent(true);
+    AliEveEventManager::GetMaster()->AfterNewEventLoaded();
+    //if (AliEveEventManager::GetMaster()->GetAutoLoad()) {
+    //  AliEveEventManager::GetMaster()->StartAutoLoadTimer();
+    //}
   }
   else
   {
     cout<<"No new event is avaliable."<<endl;
+    //AliEveEventManager::GetMaster()->NoEventLoaded();
   }
   zmq_msg_close(&message);
 #endif
