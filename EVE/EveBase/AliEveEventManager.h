@@ -160,7 +160,7 @@ protected:
     Int_t         fEventId;		// Id of current event.
     int fCurrentRun;
 
-    AliEveData* fCurrentData; //current data struct from one of the data sources
+    const AliEveData* fCurrentData; //current data struct from one of the data sources
     AliEveDataSource* fCurrentDataSource; //data source in use at the moment
     AliEveDataSource *fDataSourceOnline;
     AliEveDataSource *fDataSourceOffline;

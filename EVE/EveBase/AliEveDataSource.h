@@ -43,6 +43,20 @@ struct AliEveData {
       , fRunLoader(NULL)
       , fRawReader(NULL)
   {}
+
+  void Clear()
+  {
+    delete fESDFile; fESDFile=NULL;
+    delete fESDTree; fESDTree=NULL;
+    delete fHLTESDTree; fHLTESDTree=NULL;
+    delete fESD; fESD=NULL;
+    delete fESDfriend; fESDfriend=NULL;
+    delete fAODFile; fAODFile=NULL;
+    delete fAODTree; fAODTree=NULL;
+    delete fAOD; fAOD=NULL;
+    delete fRunLoader; fRunLoader=NULL;
+    delete fRawReader; fRawReader=NULL;
+  }
 };
 
 class AliEveDataSource : public TNamed
@@ -54,7 +68,7 @@ public:
     virtual void Init();
     virtual void GotoEvent(Int_t event);
     virtual void NextEvent();
-    virtual AliEveData* GetData() const {return fCurrentData;}
+    virtual const AliEveData* GetData() const {return &fCurrentData;}
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const{return -1;}
     
     void StorageManagerOk();     // *SIGNAL*
@@ -63,7 +77,7 @@ public:
     void EventServerDown();      // *SIGNAL*
     
 protected:
-    AliEveData* fCurrentData;
+    AliEveData fCurrentData;
     
 private:
     ClassDef(AliEveDataSource, 0); // Interface for getting all event components in a uniform way.
