@@ -2018,7 +2018,8 @@ void AliAnalysisTaskESDfilter::ConvertAD(const AliESDEvent& esd)
 {
   // Convert AD data
   AliAODAD* adData = AODEvent()->GetADData();
-  *adData = *(esd.GetADData());
+  if (adData && esd.GetADData())
+    *adData = *(esd.GetADData());
 }
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskESDfilter::ConvertHMPID(const AliESDEvent& esd) // clm
