@@ -57,15 +57,25 @@ class AliHFCorrFitter{
     fIsReflected=isrefl;
   }
   //---------------------Getters----------->
-  Double_t GetNSSigma(){return fFit->GetParameter("NS #sigma");}
+  Double_t GetNSSigma(){
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicity){// other cases to be implemented
+      return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParameter("NS #sigma 1g")*fFit->GetParameter("NS #sigma 1g")+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParameter("NS #sigma 2g")*fFit->GetParameter("NS #sigma 2g"));
+    }
+    else return fFit->GetParameter("NS #sigma");
+  }
+  
   Double_t GetNSYield(){return fFit->GetParameter("NS Y");}
   Double_t GetASSigma(){return fFit->GetParameter("AS #sigma");}
   Double_t GetASYield(){return fFit->GetParameter("AS Y");}
   Double_t GetPedestal(){return fBaseline;}
   Double_t Getv2hadron(){return fFit->GetParameter("v_{2} hadron");}
   Double_t Getv2Dmeson(){return fFit->GetParameter("v_{2} D meson");}
-  
-  Double_t GetNSSigmaError(){return fFit->GetParError(fFit->GetParNumber("NS #sigma"));}
+  Double_t GetNSSigmaError(){
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicity){// THE FOLLOWING FORMULA IS WRONG... FULL ERROR PROPAGATION TO BE DONE
+      return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParError(fFit->GetParNumber("NS #sigma 1g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 1g"))+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 2g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 2g")));
+    }
+    return fFit->GetParError(fFit->GetParNumber("NS #sigma"));
+  }
   Double_t GetNSYieldError(){return fFit->GetParError(fFit->GetParNumber("NS Y"));}
   Double_t GetASSigmaError(){return fFit->GetParError(fFit->GetParNumber("AS #sigma"));}
   Double_t GetASYieldError(){return fFit->GetParError(fFit->GetParNumber("AS Y"));}

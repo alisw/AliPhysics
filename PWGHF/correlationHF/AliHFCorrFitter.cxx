@@ -474,12 +474,15 @@ Double_t AliHFCorrFitter::FindBaseline(){
   if(fFixBase<0){
     Int_t npointsAv=TMath::Abs(fFixBase);
     Int_t *ind=new Int_t[fHist->GetNbinsX()];
-    Float_t *hval=fHist->GetArray();
+    Float_t *hval=new Float_t[fHist->GetNbinsX()];// needed because problems were found with usage of fHist->GetArray();
+    for(Int_t k=1;k<=fHist->GetNbinsX();k++){
+      hval[k-1]=fHist->GetBinContent(k);
+    }
     Double_t errAv=0.,av=0.;
-    TMath::Sort(fHist->GetNbinsX(),&hval[1],ind,kFALSE);// need to exclude under and over flow bins, KFALSE->increasing order
+    TMath::Sort(fHist->GetNbinsX(),hval,ind,kFALSE);//  KFALSE->increasing order
     // Average of abs(fFixBase) lower points
     for(Int_t k=0;k<npointsAv;k++){
-      
+      //      Printf("Point %d, index %d,value: %f",k,ind[k],fHist->GetBinContent(ind[k]+1));
       av+=(fHist->GetBinContent(ind[k]+1)/(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1)));
       //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
       errAv+=1./(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1));	  
@@ -575,7 +578,8 @@ Double_t AliHFCorrFitter::FindBaseline(){
  if(fFixBase==5){// use fit range
    Double_t errAv=0.,av=0.;     
    for(Int_t binPhi =1; binPhi<=fHist->GetNbinsX();binPhi++){
-     
+     Printf("Bin %d range %f: %f content %f error",binPhi,fHist->GetBinLowEdge(binPhi),fHist->GetBinContent(binPhi),fHist->GetBinError(binPhi));
+     Printf("max and min range:%f and %f",fMaxBaselineRange,fMinBaselineRange);
      if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
        cout << "iBin = " << binPhi << endl;
        av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
@@ -797,14 +801,32 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     TPaveText *pvStatTests1=new TPaveText(0.51,0.6,0.85,0.82,"NDC");
     pvStatTests1->SetFillStyle(0);
     pvStatTests1->SetBorderSize(0);
-    TText* t1=pvStatTests1->AddText(0.,0.87,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
-    TText* t2=pvStatTests1->AddText(0.,0.69,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));
-    TText* t3=pvStatTests1->AddText(0.,0.51,Form("NS #sigma = %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
-    TText* t4=pvStatTests1->AddText(0.,0.33,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
-    TText* t5=pvStatTests1->AddText(0.,0.15,Form("AS #sigma = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+    TText *t1,*t2,*t3,*t3bis=0x0,*tAvSig=0x0,*t4,*t5;
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicity){
+      t1=pvStatTests1->AddText(0.,0.85,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
+      t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      nss=fFit->GetParNumber("NS #sigma 1g");
+      t3=pvStatTests1->AddText(0.,0.61,Form("NS #sigma 1g= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      nss=fFit->GetParNumber("NS #sigma 2g");
+      t3bis=pvStatTests1->AddText(0.,0.49,Form("NS #sigma 2g= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      tAvSig=pvStatTests1->AddText(0.,0.37,Form("NS effective #sigma = %.2f#pm%.2f",GetNSSigma(),GetNSSigmaError()));
+      t4=pvStatTests1->AddText(0.,0.24,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      t5=pvStatTests1->AddText(0.,0.12,Form("AS #sigma = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+    }
+    else{
+      t1=pvStatTests1->AddText(0.,0.87,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
+      t2=pvStatTests1->AddText(0.,0.69,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      t3=pvStatTests1->AddText(0.,0.51,Form("NS #sigma= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t4=pvStatTests1->AddText(0.,0.33,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      t5=pvStatTests1->AddText(0.,0.15,Form("AS #sigma = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+    }
     t1->SetTextSize(0.02);
     t2->SetTextSize(0.02);
     t3->SetTextSize(0.02);
+    if(t3bis){
+      t3bis->SetTextSize(0.02);
+      tAvSig->SetTextSize(0.02);
+    }
     t4->SetTextSize(0.02);
     t5->SetTextSize(0.02);
     if(fBaseline<-998.){
