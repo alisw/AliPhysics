@@ -134,7 +134,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b(c
   fPoolMgr(0x0),
   fMixedEvent(kTRUE),
   fMEMaxPoolEvent(1000),
-  fMEMinTracks(2000),
+  fMEMinTracks(10000),
   fMEMinEventToMix(6),
   fHistTrigDPhi(0x0),
   fControlConvResT1(0x0),
@@ -313,7 +313,7 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
     
     if (fSetSystemValue) fHistCent = new TH1F("fHistCent", "centrality distribution", 100, 0, 100);
     
-    if(!fSetSystemValue) fHistCent = new TH1F("fHistCent", "centrality distribution", 100, 0, 250);
+    if(!fSetSystemValue) fHistCent = new TH1F("fHistMult", "multiplicity distribution", 100, 0, 250);
   fHistCent->Sumw2();
   fOutputQA->Add(fHistCent);
   
@@ -402,15 +402,14 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
       return;
     }
   }
-  
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
   Float_t bSign = 0;
   bSign = (aod->GetMagneticField() > 0) ? 1 : -1;
   fHistNEvents->Fill(1);
   
-    
-  AliCentrality *centralityObj = 0x0;
+  
   if(fSetSystemValue){ // pPb, PbPb
+    AliCentrality *centralityObj = 0x0;
     centralityObj = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
     fCentrOrMult = centralityObj->GetCentralityPercentileUnchecked("V0M");
     if(centralityObj->GetQuality()!=0) return;
@@ -427,6 +426,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     }
     fCentrOrMult = count;
   }
+    
   fHistNEvents->Fill(2); //
   fHistCent->Fill(fCentrOrMult);
   
@@ -439,22 +439,22 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
   }
   if(!isGoodVtx) return;
     
+    const AliAODVertex* vtxSPD = aod->GetPrimaryVertexSPD();
+    if(vtxSPD->GetNContributors()<=0) return;
+    TString vtxTyp = vtxSPD->GetTitle();
+    Double_t cov[6] = {0};
+    vtxSPD->GetCovarianceMatrix(cov);
+    Double_t zRes = TMath::Sqrt(cov[5]);
+    if(vtxTyp.Contains("vertexer:Z") && (zRes > 0.25)) return;
+    if(TMath::Abs(vtxSPD->GetZ() - vtxPrm->GetZ()) > 0.5) return;
+    
+ 
   
   Float_t zVertex = vtxPrm->GetZ();
   if (TMath::Abs(zVertex) > 10) return;
   fHistQA[0]->Fill(zVertex);
     
-    
-  const AliAODVertex* vtxSPD = aod->GetPrimaryVertexSPD();
-  if(vtxSPD->GetNContributors()<=0) return;
-  TString vtxTyp = vtxSPD->GetTitle();
-  Double_t cov[6] = {0};
-  vtxSPD->GetCovarianceMatrix(cov);
-  Double_t zRes = TMath::Sqrt(cov[5]);
-  if(vtxTyp.Contains("vertexer:Z") && (zRes > 0.25)) return;
-  if(TMath::Abs(vtxSPD->GetZ() - vtxPrm->GetZ()) > 0.5) return;
-    
-  fHistNEvents->Fill(4);
+    fHistNEvents->Fill(4);
    
   TObjArray* fTrackArray = new TObjArray;
   
@@ -534,14 +534,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
 	fTrackArray->Add(fAodTracks); //Storing all tracks for Data
     }
     
-     // cout<<"ftrackarray filled"<<endl;
-   /* if(fAodTracks->Pt() >= fTrigger1pTLowThr && fAodTracks->Pt()  <= fTrigger1pTHighThr){
-      if(fAodTracks->Pt() > refmaxpT1){
-	refmaxpT1 = fAodTracks->Pt();
-	etaMaxpT1 = fAodTracks->Eta();
-	phiMaxpT1 = fAodTracks->Phi();
-	Charge1 = fAodTracks->Charge();
-      }*/
+   
       fHistNEvents->Fill(6);
     
   }
@@ -591,14 +584,19 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
       if(TMath::Abs(TrigDPhi12)>(TMath::Pi())/8) continue;
                
                
-     Double_t ptTrig1 = fAodTracksT1->Pt();
-     Double_t ptTrig2 = fAodTracksT2->Pt();
+     Double_t ptTrackT1 = fAodTracksT1->Pt();
+     Double_t ptTrackT2 = fAodTracksT2->Pt();
+     Double_t effvalueT1 = GetTrackWeight( fAodTracksT1->Eta(), ptTrackT1,fCentrOrMult, zVertex);
+     Double_t effvalueT2 = GetTrackWeight( fAodTracksT2->Eta(), ptTrackT2, fCentrOrMult, zVertex);
+     Double_t effvalueTrg = effvalueT1*effvalueT2;
            
-      Double_t fCentZvtxpT1[3] = {fCentrOrMult, zVertex, ptTrig1};
-      if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxpT_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT1);
+      Double_t fCentZvtxpT1[4] = {fCentrOrMult, zVertex, ptTrackT1, ptTrackT2};
+      if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxpT_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT1,effvalueTrg);
+               
+        
       
-      Double_t fCentZvtxpT2[3] = {fCentrOrMult, zVertex, ptTrig2};
-      if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxpT_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT2);
+     // Double_t fCentZvtxpT2[3] = {fCentrOrMult, zVertex, ptTrig2};
+      //if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxpT_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT2);
           
           
        Int_t NofEventsinPool = 1, NumberOfTracksStore=0; // SE
@@ -632,18 +630,14 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                    if(!fAodTracksAS) continue;
                   // if (fAodTracksAS->Pt() > fAodTracksT1->Pt())continue;
                  
-                   Double_t ptTrackT1 = fAodTracksT1->Pt();
-                   Double_t ptTrackT2 = fAodTracksT2->Pt();
+                   
                    Double_t ptTrack1AS = fAodTracksAS->Pt();
                    
-                   Double_t effvalueT1 = GetTrackWeight( fAodTracksT1->Eta(), ptTrackT1,fCentrOrMult, zVertex);
-                   Double_t effvalueT2 = GetTrackWeight( fAodTracksT2->Eta(), ptTrackT2, fCentrOrMult, zVertex);
+                  
                    Double_t effvalueAS = GetTrackWeight( fAodTracksAS->Eta(), ptTrack1AS, fCentrOrMult, zVertex);
                    Double_t effvalue = effvalueT1*effvalueT2*effvalueAS;
                    fEffCheck->Fill(effvalue);
                    
-                //cout<<"effvalueT1:"<<effvalueT1<<"effvalueT2:"<<effvalueT2<<"effvalueAS:"<<effvalueAS<<"effvalue:"<<effvalue<<endl;
-        
                    
                    if(fAodTracksAS->Pt() < fAodTracksT1->Pt()){
                        
@@ -656,7 +650,9 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                        
                        Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
-
+  
+                       
+                   
                            
                        Double_t CentzVtxDEtaDPhiTrg1[7] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1, ptTrackT1, ptTrackT2, ptTrack1AS};
                        
@@ -676,12 +672,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                        
                        Double_t deltaPhi2 =  AssignCorrectPhiRange(fAodTracksT2->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta2 = fAodTracksT2->Eta() - fAodTracksAS->Eta();
-                       
-                     //  Double_t ptLim_Sparse2 = 0.0;
-                      // Double_t ptTrig2 = fAodTracksT2->Pt();
-                       //Double_t ptTrack2 = fAodTracksAS->Pt();
-                     //  ptLim_Sparse2 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
-                       //if(ptTrack2 > ptLim_Sparse2) ptTrack2 = ptLim_Sparse2-0.01; //filling all the pT in last bin
+                    
                            
                            Double_t CentzVtxDEtaDPhiTrg2[7] = {fCentrOrMult, zVertex, deltaEta2, deltaPhi2, ptTrackT1, ptTrackT2, ptTrack1AS};
                        
@@ -727,10 +718,11 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
             
             if(fAodTracksT1->Pt() >= fTrigger2pTLowThr && fAodTracksT1->Pt() <= fTrigger1pTHighThr){
                 
-              
-                        Double_t fCentZvtxpT1[3] = {fCentrOrMult, zVertex, fAodTracksT1->Pt()};
+                Double_t ptTrackT1 = fAodTracksT1->Pt();
+                Double_t effvalueT1 = GetTrackWeight(fAodTracksT1->Eta(), ptTrackT1,fCentrOrMult,zVertex);
+                        Double_t fCentZvtxpT1[3] = {fCentrOrMult, zVertex, ptTrackT1};
                 
-                        if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnCentZvtxpTT1plus1_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT1);
+                        if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnCentZvtxpTT1plus1_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT1,effvalueT1);
                 
                
                 
@@ -744,10 +736,8 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                                 return;
                             }
                             
-                          //  cout<<"fmixed event"<<" "<< "pool quality checked"<<PoolQuality<<endl;
                             NofEventsinPool = fPool->GetCurrentNEvents();
                             
-                            //cout<<"NofEventsinPool"<<NofEventsinPool<<endl;
                         }
                 
                
@@ -765,17 +755,15 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                             NumberOfTracksStore = SEMEEvtTracks->GetEntriesFast();
                             
                             
-                            //cout << "Number of Tracks in this event are = " << NumberOfTracksStore << endl;
                             for(int k=0; k < NumberOfTracksStore; k++){
                                 
                                 TObject* objSEorME = SEMEEvtTracks->At(k);
                                 AliAODTrack* fAodTracksAS = (AliAODTrack*)objSEorME;
                                 if(!fAodTracksAS) continue;
-                                // if (fAodTracksAS->Pt() > fAodTracksT1->Pt())continue;
-                                Double_t ptTrackT1 = fAodTracksT1->Pt();
+                               
                                 Double_t ptTrack1AS = fAodTracksAS->Pt();
                                 
-                                Double_t effvalueT1 = GetTrackWeight(fAodTracksT1->Eta(), ptTrackT1,fCentrOrMult,zVertex);
+                               
                                 Double_t effvalueAS = GetTrackWeight( fAodTracksAS->Eta(), ptTrack1AS, fCentrOrMult, zVertex);
                                 Double_t effvalue = effvalueT1*effvalueAS;
                                 fEffCheck->Fill(effvalue);
@@ -792,8 +780,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                                     Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                                     Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
                                     
-                                   // Double_t ptTrig1 = fAodTracksT1->Pt();
-                                    //Double_t ptTrack1 = fAodTracksAS->Pt();
+                                  
                                    
                                     
                                     Double_t CentzVtxDEtaDPhiTrg1[6] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1,ptTrackT1,ptTrack1AS};
@@ -992,7 +979,7 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
   TString nameThnTrg1CentZvtxDEtaDPhi   = "ThnTrg1CentZvtxDEtaDPhi";
   TString nameThnTrg2CentZvtxDEtaDPhi   = "ThnTrg2CentZvtxDEtaDPhi";
   TString nameThnTrg1CentZvtxpT     = "ThnTrg1CentZvtxpT" ;
-  TString nameThnTrg2CentZvtxpT    = "ThnTrg2CentZvtxpT" ;
+ // TString nameThnTrg2CentZvtxpT    = "ThnTrg2CentZvtxpT" ;
    
     
     
@@ -1000,7 +987,7 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
   TString nameThnCentZvtxpTT1plus1     = "ThnCentZvtxpTT1plus1" ;
  
   THnSparseD *THnTrig1CentZvtxpT;
-  THnSparseD *THnTrig2CentZvtxpT;
+ // THnSparseD *THnTrig2CentZvtxpT;
   THnSparseD *THnTrig1CentZvtxDEtaDPhi;
   THnSparseD *THnTrig2CentZvtxDEtaDPhi;
   THnSparseD *THnCentZvtxpTT1plus1;
@@ -1012,7 +999,7 @@ if(ftwoplus1){
       nameThnTrg1CentZvtxDEtaDPhi  += "_Data";
       nameThnTrg2CentZvtxDEtaDPhi  += "_Data";
       nameThnTrg1CentZvtxpT  += "_Data";
-      nameThnTrg2CentZvtxpT  += "_Data";
+     // nameThnTrg2CentZvtxpT  += "_Data";
       //nameThnTrg1BasicsPlots  += "_Data";
       //nameThnTrg2BasicsPlots  += "_Data";
     }
@@ -1020,7 +1007,7 @@ if(ftwoplus1){
       nameThnTrg1CentZvtxDEtaDPhi  += "_MCrc";
       nameThnTrg2CentZvtxDEtaDPhi  += "_MCrc";
       nameThnTrg1CentZvtxpT  += "_MCrc";
-      nameThnTrg2CentZvtxpT  += "_MCrc";
+    //  nameThnTrg2CentZvtxpT  += "_MCrc";
       //nameThnTrg1BasicsPlots  += "_MCrc";
       //nameThnTrg2BasicsPlots  += "_MCrc";
     }
@@ -1029,7 +1016,7 @@ if(ftwoplus1){
     nameThnTrg1CentZvtxDEtaDPhi  += "_MCKn";
     nameThnTrg2CentZvtxDEtaDPhi  += "_MCKn";
     nameThnTrg1CentZvtxpT  += "_MCKn";
-    nameThnTrg2CentZvtxpT  += "_MCKn";
+  //  nameThnTrg2CentZvtxpT  += "_MCKn";
     //nameThnTrg1BasicsPlots  += "_MCKn";
     //nameThnTrg2BasicsPlots  += "_MCKn";
   }
@@ -1038,14 +1025,14 @@ if(ftwoplus1){
     nameThnTrg1CentZvtxDEtaDPhi  += "_SE";
     nameThnTrg2CentZvtxDEtaDPhi  += "_SE";
     nameThnTrg1CentZvtxpT  += "_SE";
-    nameThnTrg2CentZvtxpT  += "_SE";
+  //  nameThnTrg2CentZvtxpT  += "_SE";
     //nameThnTrg1BasicsPlots  += "_SE";
     //nameThnTrg2BasicsPlots  += "_SE";
   }else if(fMixedEvent){
     nameThnTrg1CentZvtxDEtaDPhi  += "_ME";
     nameThnTrg2CentZvtxDEtaDPhi  += "_ME";
     nameThnTrg1CentZvtxpT  += "_ME";
-    nameThnTrg2CentZvtxpT  += "_ME";
+   // nameThnTrg2CentZvtxpT  += "_ME";
   }
     }
     
@@ -1086,7 +1073,7 @@ if(ftwoplus1){
         nBinsCentorMult = 12; fMinCentorMult = 0.0, fMaxCentorMult = 100.0;}
     
     if(!fSetSystemValue){
-        nBinsCentorMult = 3; fMinCentorMult = 0.0; fMaxCentorMult = 250.0;}
+        nBinsCentorMult = 3; fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
     
     
     if(ftwoplus1){
@@ -1095,19 +1082,20 @@ if(ftwoplus1){
   //Catgry :1 Trigger Particles --> Cent, Zvtx, Trigger_pT
   //_____________________________________________Trigger-1
   const Int_t pTbinTrigger1 = Int_t(fTrigger1pTHighThr - fTrigger1pTLowThr)/2;
-  Int_t   fBinsTrg1[3]   = {nBinsCentorMult,       5,        pTbinTrigger1};
-  Double_t fMinTrg1[3]   = {fMinCentorMult,   -10.0,    fTrigger1pTLowThr};
-  Double_t fMaxTrg1[3]   = {fMaxCentorMult,  10.0,   fTrigger1pTHighThr};
-  THnTrig1CentZvtxpT = new THnSparseD(nameThnTrg1CentZvtxpT.Data(),"Cent-Zvtx-pTtr1",3, fBinsTrg1, fMinTrg1, fMaxTrg1);
+  const Int_t pTbinTrigger2 = Int_t(fTrigger2pTHighThr - fTrigger2pTLowThr);
+  Int_t   fBinsTrg1[4]   = {nBinsCentorMult,       5,        pTbinTrigger1, pTbinTrigger2};
+  Double_t fMinTrg1[4]   = {fMinCentorMult,   -10.0,    fTrigger1pTLowThr, fTrigger2pTLowThr};
+  Double_t fMaxTrg1[4]   = {fMaxCentorMult,  10.0,   fTrigger1pTHighThr, fTrigger2pTHighThr};
+  THnTrig1CentZvtxpT = new THnSparseD(nameThnTrg1CentZvtxpT.Data(),"Cent-Zvtx-pTtr1",4, fBinsTrg1, fMinTrg1, fMaxTrg1);
   
 
   //_____________________________________________Trigger-2
-  const Int_t pTbinTrigger2 = Int_t(fTrigger2pTHighThr - fTrigger2pTLowThr);
+ /*
   Int_t   fBinsTrg2[3]   = {nBinsCentorMult,       5,        pTbinTrigger2};
   Double_t fMinTrg2[3]   = {fMinCentorMult,   -10.0,    fTrigger2pTLowThr};
   Double_t fMaxTrg2[3]   = {fMaxCentorMult,  10.0,   fTrigger2pTHighThr};
   THnTrig2CentZvtxpT = new THnSparseD(nameThnTrg2CentZvtxpT.Data(),"Cent-Zvtx-pTtr2",3, fBinsTrg2, fMinTrg2, fMaxTrg2);
- 
+ */
         
   //const Int_t pTbinTrigger = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
     
@@ -1117,8 +1105,8 @@ if(ftwoplus1){
   Int_t    fBins12[7] = {nBinsCentorMult,     5,   18,               36, pTbinTrigger1, pTbinTrigger2, 8};
   Double_t  fMin12[7] = {fMinCentorMult,   -10.0, -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
   Double_t  fMax12[7] = {fMaxCentorMult,  10.0,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, 6};
-  THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-Trk",7, fBins12, fMin12, fMax12);
-  THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-Trk",7, fBins12, fMin12, fMax12);
+  THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-T1-T2-Trk",7, fBins12, fMin12, fMax12);
+  THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-T1-T2-Trk",7, fBins12, fMin12, fMax12);
         
     }
     
@@ -1155,7 +1143,7 @@ if(ftwoplus1){
             THnTrig2CentZvtxDEtaDPhi->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
             
             THnTrig1CentZvtxpT->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
-            THnTrig2CentZvtxpT->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
+           // THnTrig2CentZvtxpT->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
         }
         
         
@@ -1181,7 +1169,7 @@ if(ftwoplus1){
                 THnTrig2CentZvtxDEtaDPhi->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
                 
                 THnTrig1CentZvtxpT->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
-                THnTrig2CentZvtxpT->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
+               // THnTrig2CentZvtxpT->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
             }
             
             
@@ -1215,11 +1203,11 @@ if(fuseVarPtBins){
    THnTrig1CentZvtxDEtaDPhi->Sumw2();
    THnTrig2CentZvtxDEtaDPhi->Sumw2();
    THnTrig1CentZvtxpT->Sumw2();
-   THnTrig2CentZvtxpT->Sumw2();
+   //THnTrig2CentZvtxpT->Sumw2();
    fOutputCorr->Add(THnTrig1CentZvtxDEtaDPhi);
    fOutputCorr->Add(THnTrig2CentZvtxDEtaDPhi);
    fOutputCorr->Add(THnTrig1CentZvtxpT);
-   fOutputCorr->Add(THnTrig2CentZvtxpT);
+   //fOutputCorr->Add(THnTrig2CentZvtxpT);
    }
     
  else if(!ftwoplus1){
