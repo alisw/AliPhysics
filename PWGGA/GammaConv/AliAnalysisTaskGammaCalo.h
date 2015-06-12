@@ -40,7 +40,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		void CalculatePi0Candidates();
 		
 		// MC functions
-		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+		void SetIsMC(Int_t isMC){fIsMC=isMC;}
 		void ProcessMCParticles();
 		void ProcessAODMCParticles();
 		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate);
@@ -230,7 +230,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH1F								**fHistoTrueClusPhotonFromElecMotherPt;			//! array of histos with validated photon from electron, pt
 		TH1F								**fHistoTrueClusShowerPt;						//! array of histos with validated shower, pt
 		TH1F								**fHistoTrueClusSubLeadingPt;					//! array of histos with pi0/eta/eta_prime in subleading contribution
-		TH1I								**fHistoTrueClusNParticles;						//! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
+		TH1F								**fHistoTrueClusNParticles;						//! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
 		TH1F								**fHistoTrueClusEMNonLeadingPt;					//! array of histos with cluster with largest energy by hadron
 		TH1F								**fHistoTrueNLabelsInClus;						//! array of histos with number of labels in cluster 
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary photon cluster, pt
@@ -255,12 +255,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
 
 		// event histograms
-		TH1I 								**fHistoNEvents;								//! array of histos with event information
-		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
+		TH1F 								**fHistoNEvents;								//! array of histos with event information
+		TH1F 								**fHistoNEventsWOWeight;						//! array of histos with event information without event weights
+		TH1F 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
 		TH1F								**fHistoVertexZ;									//! array of histos with vertex z distribution for selected events
-		TH1I 								**fHistoNGammaCandidates;						//! array of histos with number of gamma candidates per event
-		TH2F 								**fHistoNGoodESDTracksVsNGammaCanditates;		//! array of histos with number of good tracks vs gamma candidates
-		TH1I 								**fHistoNV0Tracks;								//! array of histos with V0 counts
+		TH1F 								**fHistoNGammaCandidates;						//! array of histos with number of gamma candidates per event
+		TH2F 								**fHistoNGoodESDTracksVsNGammaCandidates;		//! array of histos with number of good tracks vs gamma candidates
+		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
 		
 		// additional variables
@@ -274,15 +275,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		Int_t 								fDoClusterQA;						// flag for cluster QA
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
-		Bool_t 								fIsMC;								// flag for MC information
+		Int_t 								fIsMC;								// flag for MC information
 		Bool_t								fDoTHnSparse;						// flag for using THnSparses for background estimation
 		Bool_t								fSetPlotHistsExtQA;					// flag for extended QA hists
+		Double_t 							fWeightJetJetMC;					// weight for Jet-Jet MC
 
 	private:
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 6);
+		ClassDef(AliAnalysisTaskGammaCalo, 7);
 };
 
 #endif
