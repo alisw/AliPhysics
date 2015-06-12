@@ -51,4 +51,8 @@
 #pragma link C++ class AliPidPidCorrelationReducedTrack+;
 #pragma link C++ class AliAnalysisTaskPythiaMpi+;
 #pragma link C++ class AliAnalysisTaskDiJetCorrelations+;
+#pragma link C++ class AliAnalysisTaskEPCorrPP+;
+#pragma link C++ class AliCorrReducedTrackPP+;
+#pragma link C++ class AliAnalysisTaskEPCorrAA+;
+#pragma link C++ class AliCorrReducedTrackAA+;
 #endif
