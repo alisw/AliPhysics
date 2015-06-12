@@ -69,7 +69,7 @@ void alieve_hlt(TString ocdbStorage="local://OCDB")
     TEveUtil::LoadMacro("saveViews.C");
     cout<<"Standard macros added"<<endl;
 
-    AliEveEventManager* eventManager = new AliEveHLTZMQeventManager();
+    AliEveEventManager* eventManager = new AliEveEventManager(AliEveEventManager::kSourceHLT);
     gEve->AddEvent(eventManager);
     cout<<"Event manager created"<<endl;
     
