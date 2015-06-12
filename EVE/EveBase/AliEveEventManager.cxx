@@ -27,7 +27,6 @@
 #include <AliESDfriend.h>
 #include <AliAODEvent.h>
 
-#include <AliRecoParam.h>
 #include <AliCentralTrigger.h>
 #include <AliCDBEntry.h>
 #include <AliTriggerClass.h>
@@ -69,10 +68,6 @@
 #ifdef ZMQ
 #include "AliEveDataSourceOnline.h"
 #include "AliEveDataSourceHLTZMQ.h"
-
-//#include "AliZMQManager.h"
-//#include "AliOnlineReconstructionUtil.h"
-//#include "AliGRPPreprocessor.h"
 #endif
 
 using std::cout;
@@ -110,13 +105,8 @@ using std::vector;
 
 ClassImp(AliEveEventManager)
 
-//TString  AliEveEventManager::fgCdbUri;
-//TString  AliEveEventManager::fgSpecificCdbUriValue;
-//TString  AliEveEventManager::fgSpecificCdbUriPath;
-
 Bool_t   AliEveEventManager::fgGRPLoaded    = kFALSE;
 AliMagF* AliEveEventManager::fgMagField     = 0;
-AliRecoParam* AliEveEventManager::fgRecoParam = 0;
 Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 
 AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
@@ -437,117 +427,10 @@ TGeoManager* AliEveEventManager::AssertGeometry()
     return gGeoManager;
 }
 
-AliRecoParam* AliEveEventManager::AssertRecoParams()
-{
-    if(!fgRecoParam)
-        InitRecoParam();
-    
-    return fgRecoParam;
-}
-
-Bool_t AliEveEventManager::InitRecoParam()
-{
-    // This is mostly a reap-off from reconstruction
-    // The method accesses OCDB and retrieves all
-    // the available reco-param objects from there.
-    
-    fgRecoParam = new AliRecoParam;
-    const Int_t  kNDetectors = 14;
-    
-    static const TEveException kEH("AliEveEventManager::InitRecoParam");
-    
-    Bool_t isOK = kTRUE;
-    
-    if (fgRecoParam->GetDetRecoParamArray(kNDetectors)) {
-        ::Info(kEH, "Using custom GRP reconstruction parameters");
-    }
-    else {
-        ::Info(kEH, "Loading GRP reconstruction parameter objects");
-        
-        AliCDBPath path("GRP","Calib","RecoParam");
-        AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
-        if(!entry){
-            ::Warning(kEH, "Couldn't find GRP RecoParam entry in OCDB");
-            isOK = kFALSE;
-        }
-        else {
-            TObject *recoParamObj = entry->GetObject();
-            if (dynamic_cast<TObjArray*>(recoParamObj)) {
-                // GRP has a normal TobjArray of AliDetectorRecoParam objects
-                // Registering them in AliRecoParam
-                fgRecoParam->AddDetRecoParamArray(kNDetectors,dynamic_cast<TObjArray*>(recoParamObj));
-            }
-            else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
-                // GRP has only onse set of reco parameters
-                // Registering it in AliRecoParam
-                ::Info(kEH, "Single set of GRP reconstruction parameters found");
-                dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
-                fgRecoParam->AddDetRecoParam(kNDetectors,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
-            }
-            else {
-                ::Error(kEH, "No valid GRP RecoParam object found in the OCDB");
-                isOK = kFALSE;
-            }
-            entry->SetOwner(0);
-        }
-    }
-    
-    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE" };
-    
-    
-    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-        
-        if (fgRecoParam->GetDetRecoParamArray(iDet)) {
-            ::Info(kEH, "Using custom reconstruction parameters for detector %s",fgkDetectorName[iDet]);
-            continue;
-        }
-        
-        ::Info(kEH, "Loading reconstruction parameter objects for detector %s",fgkDetectorName[iDet]);
-        
-        AliCDBPath path(fgkDetectorName[iDet],"Calib","RecoParam");
-        AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
-        if(!entry){
-            ::Warning(kEH, "Couldn't find RecoParam entry in OCDB for detector %s",fgkDetectorName[iDet]);
-            isOK = kFALSE;
-        }
-        else {
-            TObject *recoParamObj = entry->GetObject();
-            if (dynamic_cast<TObjArray*>(recoParamObj)) {
-                // The detector has a normal TobjArray of AliDetectorRecoParam objects
-                // Registering them in AliRecoParam
-                fgRecoParam->AddDetRecoParamArray(iDet,dynamic_cast<TObjArray*>(recoParamObj));
-            }
-            else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
-                // The detector has only onse set of reco parameters
-                // Registering it in AliRecoParam
-                ::Info(kEH, "Single set of reconstruction parameters found for detector %s",fgkDetectorName[iDet]);
-                dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
-                fgRecoParam->AddDetRecoParam(iDet,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
-            }
-            else {
-                ::Error(kEH, "No valid RecoParam object found in the OCDB for detector %s",fgkDetectorName[iDet]);
-                isOK = kFALSE;
-            }
-            entry->SetOwner(0);
-            
-        }
-    }
-    
-    if(!isOK) {
-        delete fgRecoParam;
-        fgRecoParam = 0;
-    }
-    
-    return isOK;
-}
-
 AliEveEventManager* AliEveEventManager::GetMaster()
 {
     // Get master event-manager.
-    if(fgMaster)
-    {
-        return fgMaster;
-    }
+    if(fgMaster){return fgMaster;}
     else
     {
         cout<<"FATAL -- Event Manager was not created. You must create it first with new AliEveEventManager()\n"<<endl;
@@ -568,12 +451,6 @@ void AliEveEventManager::RegisterTransientList(TEveElement* element)
 //------------------------------------------------------------------------------
 // Autoloading of events
 //------------------------------------------------------------------------------
-
-void AliEveEventManager::SetAutoLoadTime(Float_t time)
-{
-    // Set the auto-load time in seconds
-    fAutoLoadTime = time;
-}
 
 void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
 {
@@ -668,9 +545,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     //
     // Virtual from TEveEventManager.
     
-    static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
-    
-    Info(kEH, "------------------!!!------------");
+    cout<<"AliEveEventManager::AfterNewEventLoaded ------------------!!!------------"<<endl;
 
     ElementChanged();
     
@@ -762,29 +637,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         fViewsSaver->Save();
         fViewsSaver->SendToAmore();
     }
-    
-//    if (this == fgMaster && fSubManagers != 0)
-//    {
-//        TIter next(fSubManagers);
-//        while ((fgCurrent = dynamic_cast<AliEveEventManager*>(next())) != 0)
-//        {
-//            gEve->SetCurrentEvent(fgCurrent);
-//            try
-//            {
-//                fgCurrent->GotoEvent(fEventId);
-//            }
-//            catch (TEveException& exc)
-//            {
-//                // !!! Should somehow tag / disable / remove it?
-//                Error(kEH, "Getting event %d for sub-event-manager '%s' failed: '%s'.",
-//                      fEventId, fgCurrent->GetName(), exc.Data());
-//            }
-//            Info(kEH, "------------------!!! while() gEve->SetCurrentEvent() ------------");
-//        }
-//        fgCurrent = fgMaster;
-//        Info(kEH, "------------------!!! while() gEve->SetCurrentEvent(MASTER) ------------");
-//        gEve->SetCurrentEvent(fgMaster);
-//    }
 }
 
 void AliEveEventManager::NewEventDataLoaded()
@@ -803,222 +655,6 @@ void AliEveEventManager::NoEventLoaded()
     Emit("NoEventLoaded()");
 }
 
-//------------------------------------------------------------------------------
-// Event info dumpers
-//------------------------------------------------------------------------------
-
-const AliEventInfo* AliEveEventManager::GetEventInfo()
-{
-    // Fill the event info object
-    
-    AliCentralTrigger *aCTP = NULL;
-    if (fCurrentData->fRawReader) {
-        fEventInfo.SetEventType(fCurrentData->fRawReader->GetType());
-        
-        ULong64_t mask = fCurrentData->fRawReader->GetClassMask();
-        fEventInfo.SetTriggerMask(mask);
-        UInt_t clmask = fCurrentData->fRawReader->GetDetectorPattern()[0];
-        fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(clmask));
-        
-        aCTP = new AliCentralTrigger();
-        TString configstr("");
-        if (!aCTP->LoadConfiguration(configstr)) { // Load CTP config from OCDB
-            AliError("No trigger configuration found in OCDB! The trigger configuration information will not be used!");
-            delete aCTP;
-            return 0;
-        }
-        aCTP->SetClassMask(mask);
-        aCTP->SetClusterMask(clmask);
-        
-        if (fCurrentData->fRunLoader) {
-            AliCentralTrigger* rlCTP = fCurrentData->fRunLoader->GetTrigger();
-            if (rlCTP) {
-                rlCTP->SetClassMask(mask);
-                rlCTP->SetClusterMask(clmask);
-            }
-        }
-    }
-    else {
-        fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
-        
-        if (fCurrentData->fRunLoader && (!fCurrentData->fRunLoader->LoadTrigger())) {
-            aCTP = fCurrentData->fRunLoader->GetTrigger();
-            fEventInfo.SetTriggerMask(aCTP->GetClassMask());
-            // get inputs from actp - just get
-            AliESDHeader* esdheader = fCurrentData->fESD->GetHeader();
-            esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());
-            esdheader->SetL1TriggerInputs(aCTP->GetL1TriggerInputs());
-            esdheader->SetL2TriggerInputs(aCTP->GetL2TriggerInputs());
-            fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
-        }
-        else {
-            AliWarning("No trigger can be loaded! The trigger information will not be used!");
-            return 0;
-        }
-    }
-    
-    AliTriggerConfiguration *config = aCTP->GetConfiguration();
-    if (!config) {
-        AliError("No trigger configuration has been found! The trigger configuration information will not be used!");
-        if (fCurrentData->fRawReader) delete aCTP;
-        return 0;
-    }
-    
-    TString declTriggerClasses;
-    
-    // Load trigger aliases and declare the trigger classes included in aliases
-    AliCDBEntry * entry = AliCDBManager::Instance()->Get("GRP/CTP/Aliases");
-    if (entry) {
-        THashList * lst = dynamic_cast<THashList*>(entry->GetObject());
-        if (lst) {
-            lst->Sort(kSortDescending); // to avoid problems with substrings
-            if (fCurrentData->fRawReader) fCurrentData->fRawReader->LoadTriggerAlias(lst);
-            // Now declare all the triggers present in the aliases
-            TIter iter(lst);
-            TNamed *nmd = 0;
-            while((nmd = dynamic_cast<TNamed*>(iter.Next()))){
-                declTriggerClasses += " ";
-                declTriggerClasses += nmd->GetName();
-            }
-        }
-        else {
-            AliError("Cannot cast the object with trigger aliases to THashList!");
-        }
-    }
-    else {
-        AliError("No OCDB entry for the trigger aliases!");
-    }
-    
-    // Load trigger classes for this run
-    UChar_t clustmask = 0;
-    TString trclasses;
-    ULong64_t trmask = fEventInfo.GetTriggerMask();
-    const TObjArray& classesArray = config->GetClasses();
-    Int_t nclasses = classesArray.GetEntriesFast();
-    for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
-        AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
-        if (trclass && trclass->GetMask()>0) {
-            Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
-            if (fCurrentData->fESD) fCurrentData->fESD->SetTriggerClass(trclass->GetName(),trindex);
-            if (fCurrentData->fRawReader) fCurrentData->fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
-            if (trmask & (1ull << trindex)) {
-                trclasses += " ";
-                trclasses += trclass->GetName();
-                trclasses += " ";
-                clustmask |= trclass->GetCluster()->GetClusterMask();
-            }
-        }
-    }
-    fEventInfo.SetTriggerClasses(trclasses);
-    
-    if (!aCTP->CheckTriggeredDetectors()) {
-        if (fCurrentData->fRawReader) delete aCTP;
-        return 0;
-    }
-    
-    if (fCurrentData->fRawReader) delete aCTP;
-    
-    // everything went ok, return pointer
-    return (&fEventInfo);
-}
-
-
-TString AliEveEventManager::GetEventInfoHorizontal() const
-{
-    // Dumps the event-header contents in vertical formatting.
-    
-    TString rawInfo, esdInfo;
-    
-    if (!fCurrentData->fRawReader)
-    {
-        rawInfo = "No raw-data event info is available!\n";
-    }
-    else
-    {
-        const UInt_t* attr = fCurrentData->fRawReader->GetAttributes();
-        TTimeStamp ts(fCurrentData->fRawReader->GetTimestamp());
-        rawInfo.Form("RAW event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
-                     "Trigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x  Timestamp: %s\n",
-                     fCurrentData->fRawReader->GetRunNumber(),fCurrentData->fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fCurrentData->fRawReader->GetType()),
-                     fCurrentData->fRawReader->GetPeriod(),fCurrentData->fRawReader->GetOrbitID(),fCurrentData->fRawReader->GetBCID(),
-                     fCurrentData->fRawReader->GetClassMask(),
-                     *(fCurrentData->fRawReader)->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(fCurrentData->fRawReader)->GetDetectorPattern()),
-                     attr[0],attr[1],attr[2], ts.AsString("s"));
-    }
-    
-    if (!fCurrentData->fESD)
-    {
-        esdInfo = "No ESD event info is available!";
-    }
-    else
-    {
-        TString acttrclasses   = fCurrentData->fESD->GetESDRun()->GetActiveTriggerClasses();
-        TString firedtrclasses = fCurrentData->fESD->GetFiredTriggerClasses();
-        TTimeStamp ts(fCurrentData->fESD->GetTimeStamp());
-        esdInfo.Form("ESD event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
-                     "Active trigger classes: %s\nTrigger: %llx (%s)\nEvent# in file: %d  Timestamp: %s, MagField: %.2e",
-                     fCurrentData->fESD->GetRunNumber(),
-                     fCurrentData->fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fCurrentData->fESD->GetEventType()),
-                     fCurrentData->fESD->GetPeriodNumber(),fCurrentData->fESD->GetOrbitNumber(),fCurrentData->fESD->GetBunchCrossNumber(),
-                     acttrclasses.Data(),
-                     fCurrentData->fESD->GetTriggerMask(),firedtrclasses.Data(),
-                     fCurrentData->fESD->GetEventNumberInFile(), ts.AsString("s"), fCurrentData->fESD->GetMagneticField());
-    }
-    
-    return rawInfo + esdInfo;
-}
-
-TString AliEveEventManager::GetEventInfoVertical() const
-{
-    // Dumps the event-header contents in vertical formatting.
-    
-    TString rawInfo, esdInfo;
-    
-    if (!fCurrentData->fRawReader)
-    {
-        rawInfo = "No raw-data event info is available!\n";
-    }
-    else
-    {
-        const UInt_t* attr = fCurrentData->fRawReader->GetAttributes();
-        rawInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
-                     fCurrentData->fRawReader->GetRunNumber(),fCurrentData->fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fCurrentData->fRawReader->GetType()),
-                     fCurrentData->fRawReader->GetPeriod(),fCurrentData->fRawReader->GetOrbitID(),fCurrentData->fRawReader->GetBCID(),
-                     fCurrentData->fRawReader->GetClassMask(),
-                     *(fCurrentData->fRawReader)->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(fCurrentData->fRawReader)->GetDetectorPattern()),
-                     attr[0],attr[1],attr[2],
-                     fCurrentData->fRawReader->GetTimestamp());
-    }
-    
-    if (!fCurrentData->fESD)
-    {
-        esdInfo = "No ESD event info is available!\n";
-    }
-    else
-    {
-        TString acttrclasses   = fCurrentData->fESD->GetESDRun()->GetActiveTriggerClasses();
-        TString firedtrclasses = fCurrentData->fESD->GetFiredTriggerClasses();
-        esdInfo.Form("ESD event info:\nRun#: %d\nActive trigger classes: %s\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx (%s)\nEvent# in file:%d\nTimestamp: %x\n",
-                     fCurrentData->fESD->GetRunNumber(),
-                     acttrclasses.Data(),
-                     fCurrentData->fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fCurrentData->fESD->GetEventType()),
-                     fCurrentData->fESD->GetPeriodNumber(),fCurrentData->fESD->GetOrbitNumber(),fCurrentData->fESD->GetBunchCrossNumber(),
-                     fCurrentData->fESD->GetTriggerMask(),firedtrclasses.Data(),
-                     fCurrentData->fESD->GetEventNumberInFile(),
-                     fCurrentData->fESD->GetTimeStamp());
-    }
-    
-    return rawInfo + "\n" + esdInfo;
-}
-
-
-//==============================================================================
-// Reading of GRP and MagneticField.
-// This is a reap-off from reconstruction ... should really be a common
-// code to do this somewhere in STEER.
-//==============================================================================
-
-
 Bool_t AliEveEventManager::InitGRP()
 {
     //------------------------------------
@@ -1036,38 +672,8 @@ Bool_t AliEveEventManager::InitGRP()
         throw kEH + "Setting of field failed!";
     }
     
-    //*** Get the diamond profiles from OCDB
-    // Eventually useful.
-    
- 
-//     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
-//     if (entry) {
-//     fDiamondProfileSPD = dynamic_cast<AliESDVertex*> (entry->GetObject());
-//     } else {
-//     ::Error(kEH, "No SPD diamond profile found in OCDB!");
-//     }
-//     
-//     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
-//     if (entry) {
-//     fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());
-//     } else {
-//     ::Error(kEH, "No diamond profile found in OCDB!");
-//     }
-//     
-//     entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexTPC");
-//     if (entry) {
-//     fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());
-//     } else {
-//     ::Error(kEH, "No TPC diamond profile found in OCDB!");
-//     }
- 
-    
     return kTRUE;
 }
-
-//------------------------------------
-// Global variables management
-//------------------------------------
 
 Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model)
 {
