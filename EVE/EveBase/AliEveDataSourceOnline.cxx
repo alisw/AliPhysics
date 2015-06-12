@@ -39,7 +39,6 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     fEventManager = AliEveEventManager::GetMaster();
     
     InitOCDB(-1);
-    fCurrentData = new AliEveData();
     
     StorageManagerDown(); // turn SM off by default
     EventServerDown();    // assume that there are no events comming from online reco
@@ -239,7 +238,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         return;
     }
     
-    if (fCurrentData->fESD)
+    if (fCurrentData.fESD)
     {
         // create new server request:
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
@@ -251,8 +250,8 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         else  if (event == 2) {requestMessage->messageType = REQUEST_GET_NEXT_EVENT;}
         
         // set event struct:
-        requestMessage->eventsRunNumber = fCurrentData->fESD->GetRunNumber();
-        requestMessage->eventsEventNumber = fCurrentData->fESD->GetEventNumberInFile();
+        requestMessage->eventsRunNumber = fCurrentData.fESD->GetRunNumber();
+        requestMessage->eventsEventNumber = fCurrentData.fESD->GetEventNumberInFile();
         
         // create event manager:
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
@@ -270,7 +269,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         {
 //            DestroyElements();
             InitOCDB(resultEvent->GetRunNumber());
-            fCurrentData->fESD = resultEvent;
+            fCurrentData.fESD = resultEvent;
         }
         else
         {
@@ -304,7 +303,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         {
 //            DestroyElements();
             InitOCDB(resultEvent->GetRunNumber());
-            fCurrentData->fESD = resultEvent;
+            fCurrentData.fESD = resultEvent;
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
@@ -337,8 +336,8 @@ void AliEveDataSourceOnline::NextEvent()
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() != fEventManager->GetCurrentRun()){
                     fEventManager->ResetMagneticField();
                 }
-                fCurrentData->fESD = fCurrentEvent[fEventInUse];
-                InitOCDB(fCurrentData->fESD->GetRunNumber());
+                fCurrentData.fESD = fCurrentEvent[fEventInUse];
+                InitOCDB(fCurrentData.fESD->GetRunNumber());
                 
                 fEventManager->SetHasEvent(true);
                 fEventManager->AfterNewEventLoaded();
@@ -373,8 +372,8 @@ void AliEveDataSourceOnline::MarkCurrentEvent()
     if(!fStorageManager){return;}
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    requestMessage->eventsRunNumber = fCurrentData->fESD->GetRunNumber();
-    requestMessage->eventsEventNumber = fCurrentData->fESD->GetEventNumberInFile();
+    requestMessage->eventsRunNumber = fCurrentData.fESD->GetRunNumber();
+    requestMessage->eventsEventNumber = fCurrentData.fESD->GetEventNumberInFile();
     requestMessage->messageType = REQUEST_MARK_EVENT;
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
