@@ -666,7 +666,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	  
 	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
 	  
-	  Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
+	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
           fCorr->Fill(corr,MCweight);
 	  
 	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
@@ -678,7 +678,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     // data
     else{
       if(m20>0.02 && m02>0.02){ 
-	Double_t corr[8]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,0.};
+	Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,0.};
 	if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fCorr->Fill(corr,wEvent);
 	else fCorr->Fill(corr);
 	
@@ -797,9 +797,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fOutputList->Add(fTPCsubEPres);
   
   //iCent,iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay
-  Int_t binsv2[8]={3,8,100,100,100,120,100,7}; 
+  Int_t binsv2[8]={100,40,100,100,100,120,100,7}; 
   Double_t xminv2[8]={0,0,-5,-5,0,0,-1,0};
-  Double_t xmaxv2[8]={3,8,5,5,2,TMath::Pi(),1,7}; 
+  Double_t xmaxv2[8]={100,20,5,5,2,TMath::Pi(),1,7}; 
   fCorr = new THnSparseD ("fCorr","Correlations",8,binsv2,xminv2,xmaxv2);
   fCorr->Sumw2();
   fOutputList->Add(fCorr);
