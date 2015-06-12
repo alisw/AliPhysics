@@ -505,9 +505,11 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList( hBeamTVDCoff,222, expert, image, !saveCorr);
 
   //vertex 1st
-  TH1F* hVertex1stTVDCon = new TH1F("Beam/hVertex1stTVDCon", "(T0A-T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000); //FK
-  Add2RawsList(hVertex1stTVDCon ,223, !expert, image, !saveCorr);
-  TH1F* hVertex1stTVDCoff = new TH1F("Beam/hVertex1stTVDCoff", "(T0A-T0C)/2, ps, from 1st hit TVDC off", 500, -2000, 2000);//FK
+  // TH1F* hVertex1stTVDCon = new TH1F("Beam/hVertex1stTVDCon", "(T0A-T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000); //FK
+  TH1F* hVertex1stTVDCon = new TH1F("Beam/hVertex1stTVDCon", "(T0A-T0C)/2, cm, from 1st hit TVDC on", 200, -100, 100); //alla
+   Add2RawsList(hVertex1stTVDCon ,223, !expert, image, !saveCorr);
+   //  TH1F* hVertex1stTVDCoff = new TH1F("Beam/hVertex1stTVDCoff", "(T0A-T0C)/2, ps, from 1st hit TVDC off", 500, -2000, 2000);//FK
+  TH1F* hVertex1stTVDCoff = new TH1F("Beam/hVertex1stTVDCoff", "(T0A-T0C)/2, cm, from 1st hit TVDC off", 500, -100, 100);//alla
   Add2RawsList( hVertex1stTVDCoff,225, !expert, image, !saveCorr);
   TH1F* hMean1stTVDCon  = new TH1F("Beam/hMean1stTVDCon", "(T0A+T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000);//FK
   Add2RawsList( hMean1stTVDCon,  226, !expert, image, !saveCorr);
@@ -563,7 +565,7 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* hRatioCFDLEDeff = new TH1F("hRatioCFDLEDeff","Ratio CFD/LED eff in subrange; #PMT; ratio CDF/LED eff",24, 0 ,24);  
   hRatioCFDLEDeff->SetMinimum(0);
   hRatioCFDLEDeff->SetMaximum(2);
-  Add2RawsList( hRatioCFDLEDeff, 239, !expert, image, !saveCorr);//FK   
+  Add2RawsList( hRatioCFDLEDeff, 239, expert, image, !saveCorr);//FK   
  
   TH1F* hEventCounter = new TH1F("hEventCounter","Event counter for eff histos; X; number of events",1, 0 ,1);  
   Add2RawsList( hEventCounter, 240, expert, !image, !saveCorr);//FK   
@@ -946,6 +948,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
   for (int itr=-1;itr<GetNEventTrigClasses();itr++) { //RS loop over all active trigger classes, including the global one
     int itrID = itr==-1 ? -1 : int( GetEventTrigClass(itr)->GetUniqueID());
 
+    Float_t c = 0.0299792458; // cm/ps
     TH2 *hBeam             = (TH2*)GetRawsData(220,itrID);
     TH2 *hBeamTVDCon       = (TH2*)GetRawsData(221,itrID);
     TH2 *hBeamTVDCoff      = (TH2*)GetRawsData(222,itrID);
@@ -975,14 +978,12 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	if(hBeam) hBeam->Fill(0.001*ver1st, 0.001*(t01st)); //Mean versus vertex
 	if(allData[kTZeroVertex][0] > 0){//TVDC on
           if(hBeamTVDCon)      hBeamTVDCon->Fill(0.001*ver1st, 0.001*(t01st));//Mean versus  TVDC on from first
-          if(hVertex1stTVDCon) hVertex1stTVDCon->Fill(ver1st);
-          //if(hVertex1stTVDCon) hVertex1stTVDCon->Fill(1500);//for testing AM
-
+          //if(hVertex1stTVDCon) hVertex1stTVDCon->Fill(ver1st);
+	  if(hVertex1stTVDCon) hVertex1stTVDCon->Fill(c*ver1st);   //alla ps2cm
           if(hMean1stTVDCon)   hMean1stTVDCon->Fill(t01st);
-	  //          if(hMean1stTVDCon)   hMean1stTVDCon->Fill(1800);//testing AM
-        }else{//TVDC off
+       }else{//TVDC off
           if(hBeamTVDCoff)      hBeamTVDCoff->Fill(0.001*ver1st, 0.001*(t01st));//FK// TVDC off from first
-          if(hVertex1stTVDCoff) hVertex1stTVDCoff->Fill(ver1st);
+          if(hVertex1stTVDCoff) hVertex1stTVDCoff->Fill(c*ver1st); //alla ps2cm
           if(hMean1stTVDCoff)   hMean1stTVDCoff->Fill(t01st);
         }
       }	  
