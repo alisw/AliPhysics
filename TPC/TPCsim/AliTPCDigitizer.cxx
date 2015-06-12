@@ -1069,6 +1069,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	  "qTotPerSector="<<qTotPerSector<<    // total charge in sector 
 	  "nTotPerSector="<<nTotPerSector<<    // total number of digit (above threshold) in sector 
 	  //
+	  "noise="<<noise<<                    // electornic noise contribution
 	  "qTotTPC="<<qTotTPC<<                // acumulated charge without crosstalk and ion tail in full TPC
 	  "qOrig="<< qOrig<<                   // charge in given pad-row,pad,time-bin
 	  "q="<<q<<                            // q=qOrig-qXtalk-qIonTail - to check sign of the effects
