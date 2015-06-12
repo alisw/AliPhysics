@@ -114,7 +114,7 @@ void AliEveEventManagerEditor::DumpEventInfo()
 
 ClassImp(AliEveEventManagerWindow)
 
-AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr,bool storageManager) :
+AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr,bool storageManager,AliEveEventManager::EDataSource defaultDataSource) :
 TGMainFrame(gClient->GetRoot(), 400, 100, kVerticalFrame),
 fM            (mgr),
 fFirstEvent   (0),
@@ -195,15 +195,13 @@ fEventInfo    (0)
         else{
             fStorageStatus = MkLabel(f,"",0,8,8);
         }
-        fEventServerStatus = MkLabel(f,"Reconstruction: Waiting",0,10,10);
-        fEventServerStatus->SetTextColor(0xFFA500);
         
         TGHButtonGroup *horizontal = new TGHButtonGroup(f, "Data Source");
 //        horizontal->SetTitlePos(TGGroupFrame::kCenter);
         fSwitchToHLT     = new TGRadioButton(horizontal, "HLT",AliEveEventManager::kSourceHLT);
         fSwitchToOnline  = new TGRadioButton(horizontal, "Online",AliEveEventManager::kSourceOnline);
         fSwitchToOffline = new TGRadioButton(horizontal, "Offline",AliEveEventManager::kSourceOffline);
-        horizontal->SetButton(AliEveEventManager::kSourceOnline);
+        horizontal->SetButton(defaultDataSource);
         horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
         f->AddFrame(horizontal, new TGLayoutHints(kLHintsExpandX));
     }
@@ -430,13 +428,9 @@ void AliEveEventManagerWindow::EventServerChangedState(int state)
     cout<<"MAN EDITOR - change state called"<<endl;
     if (state == 0)// Event Server off
     {
-        fEventServerStatus->SetText("Reconstruction: DOWN");
-        fEventServerStatus->SetTextColor(0xFF0000);
     }
     else if(state == 1)// SM on
     {
-        fEventServerStatus->SetText("Reconstruction: OK");
-        fEventServerStatus->SetTextColor(0x00FF00);
     }
 //    SetCleanup(kDeepCleanup);
     Layout();

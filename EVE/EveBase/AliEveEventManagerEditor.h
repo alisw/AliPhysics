@@ -70,7 +70,7 @@ private:
 class AliEveEventManagerWindow : public TGMainFrame
 {
 public:
-  AliEveEventManagerWindow(AliEveEventManager* mgr, bool storageManager=false);
+    AliEveEventManagerWindow(AliEveEventManager* mgr, bool storageManager=false,AliEveEventManager::EDataSource defaultDataSource = AliEveEventManager::kSourceOffline);
   virtual ~AliEveEventManagerWindow();
 
   void DoFirstEvent();
@@ -115,7 +115,6 @@ protected:
 
   TGComboBox           *fTrigSel;      // Trigger selection combo box
   TGLabel              *fStorageStatus; // Display status of Storage Manager
-  TGLabel              *fEventServerStatus; // Display status of Event Server
 
   TGTextView           *fEventInfo;    // Text box with event info
 
