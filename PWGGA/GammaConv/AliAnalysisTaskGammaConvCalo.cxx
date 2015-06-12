@@ -647,7 +647,6 @@ void AliAnalysisTaskGammaConvCalo::InitBack(){
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   
-	cout << fIsMC << endl;
 	if (fIsMC == 2){
 		fDoPhotonQA = 0;
 		fDoClusterQA = 0;
@@ -2720,9 +2719,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 						//cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
 					}
 				}
-				fHistoMCK0sPt[fiCut]->Fill(particle->Pt(),weightedK0s*fWeightJetJetMC);
-				fHistoMCK0sWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
-				fHistoMCK0sPtY[fiCut]->Fill(particle->Pt(),mesonY,weightedK0s*fWeightJetJetMC);
+				fHistoMCK0sPt[fiCut]->Fill(particle->Pt(),weightedK0s);
+				fHistoMCK0sWOWeightPt[fiCut]->Fill(particle->Pt());
+				fHistoMCK0sPtY[fiCut]->Fill(particle->Pt(),mesonY,weightedK0s);
 			}
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 				->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
@@ -2863,9 +2862,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 						}
 					}
 					if (fMCStack->IsPhysicalPrimary(i)){
-						fHistoMCK0sPt[fiCut]->Fill(particle->Pt(),weightedK0s*fWeightJetJetMC);
-						fHistoMCK0sWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
-						fHistoMCK0sPtY[fiCut]->Fill(particle->Pt(),mesonY,weightedK0s*fWeightJetJetMC);
+						fHistoMCK0sPt[fiCut]->Fill(particle->Pt(),weightedK0s);
+						fHistoMCK0sWOWeightPt[fiCut]->Fill(particle->Pt());
+						fHistoMCK0sPtY[fiCut]->Fill(particle->Pt(),mesonY,weightedK0s);
 					}
 				}
 				if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
