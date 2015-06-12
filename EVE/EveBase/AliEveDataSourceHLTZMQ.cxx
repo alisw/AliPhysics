@@ -32,18 +32,34 @@ AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     fZMQeventQueue(NULL),
     fHLTPublisherAddress("tcp://localhost:60201")
 {
+  //ctor
+  Init();
+}
+
+void AliEveDataSourceHLTZMQ::Init()
+{
 #ifdef ZMQ
   //get the address of the HLT proxy from the environment
   if (gSystem->Getenv("HLT_ZMQ_proxy")) 
     fHLTPublisherAddress=gSystem->Getenv("HLT_ZMQ_proxy");
   //single ZMQ context for inter thread comm. etc.
-  fZMQContext = zmq_ctx_new();
+  if (!fZMQContext) fZMQContext = zmq_ctx_new();
   //single ZMQ socket for gathering the events form various listening threads
   //must be bound before threads can connect
-  fZMQeventQueue = zmq_socket(fZMQContext, ZMQ_PULL);
-  zmq_bind(fZMQeventQueue, "inproc://fCurrentEvent");
+  if (! fZMQeventQueue) 
+  {
+    fZMQeventQueue = zmq_socket(fZMQContext, ZMQ_PULL);
+    zmq_bind(fZMQeventQueue, "inproc://fCurrentEvent");
+  }
 
-  cout<<"ZMQ FOUND. Starting subscriber threads."<<endl;
+  AliInfo("Starting HLT subscriber thread.");
+  if(fEventListenerThreadHLT)
+  {
+    fEventListenerThreadHLT->Join();
+    fEventListenerThreadHLT->Kill();
+    delete fEventListenerThreadHLT;
+    AliInfo("HLT listener thread killed and deleted");
+  }
   fEventListenerThreadHLT = new TThread("fEventListenerThreadHLT",DispatchEventListenerHLT,(void*)this);
   fEventListenerThreadHLT->Run();
 #endif
@@ -117,7 +133,7 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
       //receive the topic
       char receivedTopic[kAliHLTComponentDataTypeTopicSize+1]; memset(&receivedTopic, 0, sizeof(receivedTopic));
       int receivedTopicSize = zmq_recv(listenerSocket, &receivedTopic, sizeof(receivedTopic), 0);
-      if (receivedTopicSize < 0 && errno==ETERM) {printf("listenerSocket received ETERM, exiting main loop\n"); done=true; break;}
+      if (receivedTopicSize < 0 && errno==ETERM) {AliInfo("listenerSocket received ETERM, exiting main loop"); done=true; break;}
 
       //reive the message if there is any
       zmq_msg_t message;
@@ -243,9 +259,10 @@ void AliEveDataSourceHLTZMQ::NextEvent()
     int runNumber = esdObject->GetRunNumber();
     InitOCDB(runNumber);
 
+    printf("deleting current data\n");
     //replace the ESD
-    delete fCurrentData->fESD;
-    fCurrentData->fESD = esdObject;
+    fCurrentData.Clear();
+    fCurrentData.fESD = esdObject;
   }
   else
   {

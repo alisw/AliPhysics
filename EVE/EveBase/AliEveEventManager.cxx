@@ -68,6 +68,7 @@
 
 #ifdef ZMQ
 #include "AliEveDataSourceOnline.h"
+#include "AliEveDataSourceHLTZMQ.h"
 
 //#include "AliZMQManager.h"
 //#include "AliOnlineReconstructionUtil.h"
@@ -143,6 +144,7 @@ fCenterProjectionsAtPrimaryVertex(false)
     
     fDataSourceOnline = new AliEveDataSourceOnline();
     fDataSourceOffline = new AliEveDataSourceOffline();
+    fDataSourceHLTZMQ = new AliEveDataSourceHLTZMQ();
     
     ChangeDataSource(defaultDataSource);
 }
@@ -210,6 +212,10 @@ void AliEveEventManager::ChangeDataSource(EDataSource newSource)
     else if(newSource == kSourceOffline)
     {
         fCurrentDataSource = fDataSourceOffline;
+    }
+    else if(newSource == kSourceHLT)
+    {
+        fCurrentDataSource = fDataSourceHLTZMQ;
     }
     fCurrentData = fCurrentDataSource->GetData();
 }

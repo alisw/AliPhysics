@@ -28,7 +28,7 @@ private:
     void PullEventFromHLT();
     void InitOCDB(int runNo);
     void GotoEvent(Int_t event);
-    void Init() {}
+    void Init();
     void NextEvent();
     
     TThread *fEventListenerThreadHLT;

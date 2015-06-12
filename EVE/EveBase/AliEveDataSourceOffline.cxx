@@ -42,7 +42,6 @@ fgAODfriends(0),
 fgRawFromStandardLoc(false)
 {
     cout<<"Constructor of AliEveDataSourceOffline"<<endl;
-    fCurrentData = new AliEveData();
     cout<<"AliEveData initialized"<<endl;
     Open();
     cout<<"Files opened"<<endl;
@@ -135,11 +134,11 @@ void AliEveDataSourceOffline::SetEvent(AliRunLoader *runLoader, AliRawReader *ra
     
     Info(kEH,"setting it!!! ============================");
     
-    fCurrentData->fRunLoader = runLoader;
-    fCurrentData->fRawReader = rawReader;
-    fCurrentData->fESD       = esd;
-    fCurrentData->fESDfriend = esdf;
-    fCurrentData->fAOD       = 0;
+    fCurrentData.fRunLoader = runLoader;
+    fCurrentData.fRawReader = rawReader;
+    fCurrentData.fESD       = esd;
+    fCurrentData.fESDfriend = esdf;
+    fCurrentData.fAOD       = 0;
     
     AliEveEventManager::GetMaster()->SetEventId(AliEveEventManager::GetMaster()->GetEventId()+1);
     AliEveEventManager::GetMaster()->SetHasEvent(true);
@@ -171,9 +170,9 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // as the number of events is not known.
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    if(fCurrentData->fESD->GetRunNumber() != AliEveEventManager::GetMaster()->GetCurrentRun())
+    if(fCurrentData.fESD->GetRunNumber() != AliEveEventManager::GetMaster()->GetCurrentRun())
     {
-        AliEveEventManager::GetMaster()->SetCurrentRun(fCurrentData->fESD->GetRunNumber());
+        AliEveEventManager::GetMaster()->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
         InitOCDB(AliEveEventManager::GetMaster()->GetCurrentRun());
     }
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
@@ -182,40 +181,40 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     AliEveEventManager::GetMaster()->SetHasEvent(false);
     
     Int_t maxEvent = 0;
-    if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
+    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
     {
-        if(fCurrentData->fESDTree){
-            if (event >= fCurrentData->fESDTree->GetEntries())
-                fCurrentData->fESDTree->Refresh();
-            maxEvent = fCurrentData->fESDTree->GetEntries() - 1;
+        if(fCurrentData.fESDTree){
+            if (event >= fCurrentData.fESDTree->GetEntries())
+                fCurrentData.fESDTree->Refresh();
+            maxEvent = fCurrentData.fESDTree->GetEntries() - 1;
             if (event < 0)
-                event = fCurrentData->fESDTree->GetEntries() + event;
+                event = fCurrentData.fESDTree->GetEntries() + event;
         }
         
-        if(fCurrentData->fHLTESDTree){
-            if (event >= fCurrentData->fHLTESDTree->GetEntries())
-                fCurrentData->fHLTESDTree->Refresh();
-            maxEvent = fCurrentData->fHLTESDTree->GetEntries() - 1;
+        if(fCurrentData.fHLTESDTree){
+            if (event >= fCurrentData.fHLTESDTree->GetEntries())
+                fCurrentData.fHLTESDTree->Refresh();
+            maxEvent = fCurrentData.fHLTESDTree->GetEntries() - 1;
             if (event < 0)
-                event = fCurrentData->fHLTESDTree->GetEntries() + event;
+                event = fCurrentData.fHLTESDTree->GetEntries() + event;
             
         }
     }
-    else if (fCurrentData->fAODTree)
+    else if (fCurrentData.fAODTree)
     {
-        maxEvent = fCurrentData->fAODTree->GetEntries() - 1;
+        maxEvent = fCurrentData.fAODTree->GetEntries() - 1;
         if (event < 0)
-            event = fCurrentData->fAODTree->GetEntries() + event;
+            event = fCurrentData.fAODTree->GetEntries() + event;
     }
-    else if (fCurrentData->fRunLoader)
+    else if (fCurrentData.fRunLoader)
     {
-        maxEvent = fCurrentData->fRunLoader->GetNumberOfEvents() - 1;
+        maxEvent = fCurrentData.fRunLoader->GetNumberOfEvents() - 1;
         if (event < 0)
-            event = fCurrentData->fRunLoader->GetNumberOfEvents() + event;
+            event = fCurrentData.fRunLoader->GetNumberOfEvents() + event;
     }
-    else if (fCurrentData->fRawReader)
+    else if (fCurrentData.fRawReader)
     {
-        maxEvent = fCurrentData->fRawReader->GetNumberOfEvents() - 1;
+        maxEvent = fCurrentData.fRawReader->GetNumberOfEvents() - 1;
         if (maxEvent < 0)
         {
             maxEvent = 10000000;
@@ -228,7 +227,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         else
         {
             if (event < 0)
-                event = fCurrentData->fRawReader->GetNumberOfEvents() + event;
+                event = fCurrentData.fRawReader->GetNumberOfEvents() + event;
         }
     }
     else
@@ -270,48 +269,48 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     
     AliSysInfo::AddStamp(sysInfoHeader + "PostDestroy");
     
-    if (fCurrentData->fESDTree) {
-        if (fCurrentData->fESDTree->GetEntry(event) <= 0)
+    if (fCurrentData.fESDTree) {
+        if (fCurrentData.fESDTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from ESD.");
         
         if (fESDfriendExists)
-            fCurrentData->fESD->SetESDfriend(fCurrentData->fESDfriend);
+            fCurrentData.fESD->SetESDfriend(fCurrentData.fESDfriend);
     }
-    if (fCurrentData->fHLTESDTree) {
-        if (fCurrentData->fHLTESDTree->GetEntry(event) <= 0)
+    if (fCurrentData.fHLTESDTree) {
+        if (fCurrentData.fHLTESDTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from HLT ESD.");
         
         if (fESDfriendExists)
-            fCurrentData->fESD->SetESDfriend(fCurrentData->fESDfriend);
+            fCurrentData.fESD->SetESDfriend(fCurrentData.fESDfriend);
     }
     
-    if (fCurrentData->fAODTree) {
-        if (fCurrentData->fAODTree->GetEntry(event) <= 0)
+    if (fCurrentData.fAODTree) {
+        if (fCurrentData.fAODTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from AOD.");
     }
     
-    if (fCurrentData->fRunLoader) {
-        if (fCurrentData->fRunLoader->GetEvent(event) != 0)
+    if (fCurrentData.fRunLoader) {
+        if (fCurrentData.fRunLoader->GetEvent(event) != 0)
             throw (kEH + "failed getting required event.");
     }
-    if (fCurrentData->fRawReader)
+    if (fCurrentData.fRawReader)
     {
         // AliRawReader::GotoEvent(Int_t) works for AliRawReaderRoot/Chain.
-        if (fCurrentData->fRawReader->GotoEvent(event) == kFALSE)
+        if (fCurrentData.fRawReader->GotoEvent(event) == kFALSE)
         {
             // Use fallback method - iteration with NextEvent().
             Int_t rawEv = AliEveEventManager::GetMaster()->GetEventId();
             if (event < rawEv)
             {
-                fCurrentData->fRawReader->RewindEvents();
+                fCurrentData.fRawReader->RewindEvents();
                 rawEv = -1;
             }
             
             while (rawEv < event)
             {
-                if ( ! fCurrentData->fRawReader->NextEvent())
+                if ( ! fCurrentData.fRawReader->NextEvent())
                 {
-                    fCurrentData->fRawReader->RewindEvents();
+                    fCurrentData.fRawReader->RewindEvents();
                     AliEveEventManager::GetMaster()->SetEventId(-1);
 //                    fEventId = -1;
                     throw (kEH + Form("Error going to next raw-event from event %d.", rawEv));
@@ -342,7 +341,7 @@ void AliEveDataSourceOffline::NextEvent()
 //    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     
     /*
-     if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
+     if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
      {
      cout<<"There is ESD or HLTESD tree"<<endl;
      Int_t nextevent=0;
@@ -371,7 +370,7 @@ void AliEveDataSourceOffline::PrevEvent()
     // Loads previous event.
     static const TEveException kEH("AliEveEventManager::PrevEvent ");
     
-    if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
+    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
     {
         Int_t nextevent=0;
         if (AliEveEventManager::GetMaster()->GetEventSelector()->FindPrev(nextevent))
@@ -399,43 +398,43 @@ void AliEveDataSourceOffline::Open()
     Int_t runNo = -1;
 
     // Open ESD and ESDfriends
-    if ((fCurrentData->fESDFile = TFile::Open(fgESDFileName)))
+    if ((fCurrentData.fESDFile = TFile::Open(fgESDFileName)))
     {
-        fCurrentData->fESD = new AliESDEvent();
+        fCurrentData.fESD = new AliESDEvent();
         
         switch(fgESDvisibleTrees){
             case kOfflineTree :
-                fCurrentData->fESDTree = readESDTree("esdTree", runNo);
+                fCurrentData.fESDTree = readESDTree("esdTree", runNo);
                 break;
             case kHLTTree :
-                fCurrentData->fHLTESDTree = readESDTree("HLTesdTree", runNo);
+                fCurrentData.fHLTESDTree = readESDTree("HLTesdTree", runNo);
                 break;
             default:
-                fCurrentData->fESDTree    = readESDTree("esdTree", runNo);
-                fCurrentData->fHLTESDTree = readESDTree("HLTesdTree", runNo);
+                fCurrentData.fESDTree    = readESDTree("esdTree", runNo);
+                fCurrentData.fHLTESDTree = readESDTree("HLTesdTree", runNo);
         }
         
-        if(!fCurrentData->fESDTree && !fCurrentData->fHLTESDTree){
+        if(!fCurrentData.fESDTree && !fCurrentData.fHLTESDTree){
             // both ESD trees are == 0
-            delete fCurrentData->fESDFile; fCurrentData->fESDFile = 0;
-            delete fCurrentData->fESD; fCurrentData->fESD = 0;
+            delete fCurrentData.fESDFile; fCurrentData.fESDFile = 0;
+            delete fCurrentData.fESD; fCurrentData.fESD = 0;
         }
         
         
     }
     else{Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());}
-    if (fCurrentData->fESDTree == 0 && fCurrentData->fHLTESDTree==0)
+    if (fCurrentData.fESDTree == 0 && fCurrentData.fHLTESDTree==0)
     {
         if (fgAssertESD){throw (kEH + "ESD not initialized. Its precence was requested.");}
         else {Warning(kEH, "ESD not initialized.");}
     }
     
     // Open AOD and registered friends
-    if ( (fCurrentData->fAODFile = TFile::Open(fgAODFileName)) )
+    if ( (fCurrentData.fAODFile = TFile::Open(fgAODFileName)) )
     {
-        fCurrentData->fAOD = new AliAODEvent();
-        fCurrentData->fAODTree = (TTree*) fCurrentData->fAODFile->Get("aodTree");
-        if (fCurrentData->fAODTree != 0)
+        fCurrentData.fAOD = new AliAODEvent();
+        fCurrentData.fAODTree = (TTree*) fCurrentData.fAODFile->Get("aodTree");
+        if (fCurrentData.fAODTree != 0)
         {
             // Check if AODfriends exist and attach them.
             TIter       friends(fgAODfriends);
@@ -446,24 +445,24 @@ void AliEveDataSourceOffline::Open()
                 if (fgAODFileName.EndsWith(".zip")) p.Form("%s#%s",fgAODFileName.Data(),name->GetName());
                 if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
                 {
-                    fCurrentData->fAODTree->AddFriend("aodTree", name->GetName());
+                    fCurrentData.fAODTree->AddFriend("aodTree", name->GetName());
                 }
             }
             
-            fCurrentData->fAOD->ReadFromTree(fCurrentData->fAODTree);
+            fCurrentData.fAOD->ReadFromTree(fCurrentData.fAODTree);
             
-            if (fCurrentData->fAODTree->GetEntry(0) <= 0)
+            if (fCurrentData.fAODTree->GetEntry(0) <= 0)
             {
-                delete fCurrentData->fAODFile; fCurrentData->fAODFile = 0;
-                delete fCurrentData->fAOD;     fCurrentData->fAOD     = 0;
+                delete fCurrentData.fAODFile; fCurrentData.fAODFile = 0;
+                delete fCurrentData.fAOD;     fCurrentData.fAOD     = 0;
                 Warning(kEH, "failed getting the first entry from addTree.");
             }
-            else if (runNo < 0){runNo = fCurrentData->fAOD->GetRunNumber();}
+            else if (runNo < 0){runNo = fCurrentData.fAOD->GetRunNumber();}
         }
         else // aodtree == 0
         {
-            delete fCurrentData->fAODFile; fCurrentData->fAODFile = 0;
-            delete fCurrentData->fAOD;     fCurrentData->fAOD     = 0;
+            delete fCurrentData.fAODFile; fCurrentData.fAODFile = 0;
+            delete fCurrentData.fAOD;     fCurrentData.fAOD     = 0;
             Warning(kEH, "failed getting the aodTree.");
         }
     }
@@ -471,7 +470,7 @@ void AliEveDataSourceOffline::Open()
     {
         Warning(kEH, "can not read AOD file '%s'.", fgAODFileName.Data());
     }
-    if (fCurrentData->fAODTree == 0)
+    if (fCurrentData.fAODTree == 0)
     {
         if (fgAssertAOD){throw (kEH + "AOD not initialized. Its precence was requested.");}
         else {Warning(kEH, "AOD not initialized.");}
@@ -486,31 +485,31 @@ void AliEveDataSourceOffline::Open()
         gafile->Close();
         delete gafile;
         cout<<"SETTING RUN LOADER in Open()"<<endl;
-        fCurrentData->fRunLoader = AliRunLoader::Open(fgGAliceFileName, AliEveEventManager::GetMaster()->GetName());
-        if (fCurrentData->fRunLoader)
+        fCurrentData.fRunLoader = AliRunLoader::Open(fgGAliceFileName, AliEveEventManager::GetMaster()->GetName());
+        if (fCurrentData.fRunLoader)
         {
             TString alicePath(gSystem->DirName(fgGAliceFileName));
             alicePath.Append("/");
-            fCurrentData->fRunLoader->SetDirName(alicePath);
+            fCurrentData.fRunLoader->SetDirName(alicePath);
             
-            if (fCurrentData->fRunLoader->LoadgAlice() != 0){Warning(kEH, "failed loading gAlice via run-loader.");}
+            if (fCurrentData.fRunLoader->LoadgAlice() != 0){Warning(kEH, "failed loading gAlice via run-loader.");}
             
-            if (fCurrentData->fRunLoader->LoadHeader() == 0){
+            if (fCurrentData.fRunLoader->LoadHeader() == 0){
                 if(runNo < 0){
-                    runNo = fCurrentData->fRunLoader->GetHeader()->GetRun();
+                    runNo = fCurrentData.fRunLoader->GetHeader()->GetRun();
                 }
             }
             else{
                 Warning(kEH, "failed loading run-loader's header.");
-                delete fCurrentData->fRunLoader;
-                fCurrentData->fRunLoader = 0;
+                delete fCurrentData.fRunLoader;
+                fCurrentData.fRunLoader = 0;
             }
         }
         else{Warning(kEH, "failed opening ALICE run-loader from '%s'.", fgGAliceFileName.Data());}
     }
     else{Warning(kEH, "can not read '%s'.", fgGAliceFileName.Data());}
     
-    if (fCurrentData->fRunLoader == 0)
+    if (fCurrentData.fRunLoader == 0)
     {
         if (fgAssertRunLoader){throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");}
         else{Warning(kEH, "Bootstraping of run-loader failed.");}
@@ -551,27 +550,27 @@ void AliEveDataSourceOffline::Open()
     if (fgAssertRaw == kFALSE){AliLog::SetGlobalLogLevel(AliLog::kFatal);}
     
     if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE){
-        fCurrentData->fRawReader = AliRawReader::Create(rawPath);
+        fCurrentData.fRawReader = AliRawReader::Create(rawPath);
     }
     else{
-        fCurrentData->fRawReader = AliRawReader::Create(fgRawFileName);
+        fCurrentData.fRawReader = AliRawReader::Create(fgRawFileName);
     }
     
     if (fgAssertRaw == kFALSE){AliLog::SetGlobalLogLevel(oldLogLevel);}
     
-    if (fCurrentData->fRawReader == 0)
+    if (fCurrentData.fRawReader == 0)
     {
         if (fgAssertRaw){throw (kEH + "raw-data not initialized. Its precence was requested.");}
         else{Warning(kEH, "raw-data not initialized.");}
     }
     if (runNo < 0)
     {
-        if (fCurrentData->fRawReader)
+        if (fCurrentData.fRawReader)
         {
-            if (!fCurrentData->fRawReader->NextEvent()){throw (kEH + "can not go to first event in raw-reader to determine run-id.");}
-            runNo = fCurrentData->fRawReader->GetRunNumber();
+            if (!fCurrentData.fRawReader->NextEvent()){throw (kEH + "can not go to first event in raw-reader to determine run-id.");}
+            runNo = fCurrentData.fRawReader->GetRunNumber();
             Info(kEH, "Determining run-no from raw ... run=%d.", runNo);
-            fCurrentData->fRawReader->RewindEvents();
+            fCurrentData.fRawReader->RewindEvents();
         }
         else
         {
@@ -600,30 +599,30 @@ void AliEveDataSourceOffline::Close()
     if (AliEveEventManager::GetMaster()->GetAutoLoadRunning()){
         AliEveEventManager::GetMaster()->StopAutoLoadTimer();
     }
-    if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0)) {
-        delete fCurrentData->fESD;       fCurrentData->fESD       = 0;
-        // delete fCurrentData->fESDfriend; // friend tree is deleted with the tree
-        fCurrentData->fESDfriend = 0;
+    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0)) {
+        delete fCurrentData.fESD;       fCurrentData.fESD       = 0;
+        // delete fCurrentData.fESDfriend; // friend tree is deleted with the tree
+        fCurrentData.fESDfriend = 0;
         fESDfriendExists = kFALSE;
         
-        if(fCurrentData->fESDTree) { delete fCurrentData->fESDTree;   fCurrentData->fESDTree = 0; }
-        if(fCurrentData->fHLTESDTree) { delete fCurrentData->fHLTESDTree;   fCurrentData->fHLTESDTree = 0; }
-        delete fCurrentData->fESDFile;   fCurrentData->fESDFile = 0;
+        if(fCurrentData.fESDTree) { delete fCurrentData.fESDTree;   fCurrentData.fESDTree = 0; }
+        if(fCurrentData.fHLTESDTree) { delete fCurrentData.fHLTESDTree;   fCurrentData.fHLTESDTree = 0; }
+        delete fCurrentData.fESDFile;   fCurrentData.fESDFile = 0;
     }
     
-    if (fCurrentData->fAODTree) {
-        delete fCurrentData->fAOD;       fCurrentData->fAOD       = 0;
+    if (fCurrentData.fAODTree) {
+        delete fCurrentData.fAOD;       fCurrentData.fAOD       = 0;
         
-        delete fCurrentData->fAODTree;   fCurrentData->fAODTree = 0;
-        delete fCurrentData->fAODFile;   fCurrentData->fAODFile = 0;
+        delete fCurrentData.fAODTree;   fCurrentData.fAODTree = 0;
+        delete fCurrentData.fAODFile;   fCurrentData.fAODFile = 0;
     }
     
-    if (fCurrentData->fRunLoader) {
-        delete fCurrentData->fRunLoader; fCurrentData->fRunLoader = 0;
+    if (fCurrentData.fRunLoader) {
+        delete fCurrentData.fRunLoader; fCurrentData.fRunLoader = 0;
     }
     
-    if (fCurrentData->fRawReader) {
-        delete fCurrentData->fRawReader; fCurrentData->fRawReader = 0;
+    if (fCurrentData.fRawReader) {
+        delete fCurrentData.fRawReader; fCurrentData.fRawReader = 0;
     }
     
     AliEveEventManager::GetMaster()->SetEventId(-1);
@@ -648,12 +647,12 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
         return -1;
     }
     
-    if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
+    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
     {
         if (refreshESD)
         {
-            if(fCurrentData->fESDTree!=0) fCurrentData->fESDTree->Refresh();
-            if(fCurrentData->fHLTESDTree!=0) fCurrentData->fHLTESDTree->Refresh();
+            if(fCurrentData.fESDTree!=0) fCurrentData.fESDTree->Refresh();
+            if(fCurrentData.fHLTESDTree!=0) fCurrentData.fHLTESDTree->Refresh();
             AliEveEventManager::GetMaster()->GetEventSelector()->Update();
         }
         
@@ -661,26 +660,26 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
         switch(fgESDvisibleTrees){
             default:
             case AliEveEventManager::kOfflineTree :
-                maxEventId = fCurrentData->fESDTree->GetEntries() - 1;
+                maxEventId = fCurrentData.fESDTree->GetEntries() - 1;
                 break;
             case AliEveEventManager::kHLTTree :
-                maxEventId = fCurrentData->fHLTESDTree->GetEntries() - 1;
+                maxEventId = fCurrentData.fHLTESDTree->GetEntries() - 1;
                 break;
         }
         
         return maxEventId;
     }
-    else if (fCurrentData->fAODTree)
+    else if (fCurrentData.fAODTree)
     {
-        return fCurrentData->fAODTree->GetEntries() - 1;
+        return fCurrentData.fAODTree->GetEntries() - 1;
     }
-    else if (fCurrentData->fRunLoader)
+    else if (fCurrentData.fRunLoader)
     {
-        return fCurrentData->fRunLoader->GetNumberOfEvents() - 1;
+        return fCurrentData.fRunLoader->GetNumberOfEvents() - 1;
     }
-    else if (fCurrentData->fRawReader)
+    else if (fCurrentData.fRawReader)
     {
-        Int_t n = fCurrentData->fRawReader->GetNumberOfEvents() - 1;
+        Int_t n = fCurrentData.fRawReader->GetNumberOfEvents() - 1;
         return n > -1 ? n : 10000000;
     }
     else
@@ -809,13 +808,13 @@ void AliEveDataSourceOffline::SetFilesPath(const TString& urlPath)
 
 TTree* AliEveDataSourceOffline::readESDTree(const char *treeName, int &runNo)
 {
-    if(!fCurrentData->fESDFile && !fCurrentData->fESD) return 0;
+    if(!fCurrentData.fESDFile && !fCurrentData.fESD) return 0;
     
     static const TEveException kEH("AliEveEventManager::readESDTree ");
     
     TTree* tempTree = 0;
     
-    tempTree =(TTree*) fCurrentData->fESDFile->Get(treeName);
+    tempTree =(TTree*) fCurrentData.fESDFile->Get(treeName);
     if (tempTree != 0)
     {
         TFile *esdFriendFile = TFile::Open(fgESDfriendsFileName);
@@ -830,10 +829,10 @@ TTree* AliEveDataSourceOffline::readESDTree(const char *treeName, int &runNo)
             delete esdFriendFile;
         }
         
-        fCurrentData->fESD->ReadFromTree(tempTree);
+        fCurrentData.fESD->ReadFromTree(tempTree);
         if (fESDfriendExists)
         {
-            fCurrentData->fESDfriend = (AliESDfriend*) fCurrentData->fESD->FindListObject("AliESDfriend");
+            fCurrentData.fESDfriend = (AliESDfriend*) fCurrentData.fESD->FindListObject("AliESDfriend");
             Info(kEH, "found and attached ESD friend.");
         }
         else
@@ -848,7 +847,7 @@ TTree* AliEveDataSourceOffline::readESDTree(const char *treeName, int &runNo)
         else
         {
             if (runNo < 0)
-                runNo = fCurrentData->fESD->GetESDRun()->GetRunNumber();
+                runNo = fCurrentData.fESD->GetESDRun()->GetRunNumber();
         }
     }
     else // tree == 0
