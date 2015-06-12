@@ -78,9 +78,10 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
     return;
   }
   TKey *tk(NULL); AliTRDtrendValue *tv(NULL); Int_t itv(0);
-  Double_t trendValues[100]={0.0};
+  const Int_t ntrends(5000);
+  Double_t trendValues[ntrends]={0.0};
   TIterator *it(trendFile->GetListOfKeys()->MakeIterator());
-  while((tk = (TKey*)it->Next()) && itv < 5000){
+  while((tk = (TKey*)it->Next()) && itv < ntrends){
     if(!(tv = (AliTRDtrendValue*)trendFile->Get(tk->GetName()))) continue;
     trendValues[itv] = tv->GetVal();
     TString trendName = tv->GetName();
