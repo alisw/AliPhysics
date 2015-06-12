@@ -111,7 +111,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
              dataSource->SetAODFileName(fFileDialog->GetPathAOD());
              dataSource->AddAODfriend(fFileDialog->GetPathAODfriend());
              dataSource->SetRawFileName(fFileDialog->GetPathRaw());
-                AliEveEventManager::SetCdbUri(fFileDialog->GetCDBStoragePath());
+             dataSource->SetCdbUri(fFileDialog->GetCDBStoragePath());
              loadFiles();
             }
         }
@@ -129,7 +129,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
             if(dataSource)
             {
                  dataSource->SetFilesPath(fFileDialog->GetUrl());
-                AliEveEventManager::SetCdbUri(fFileDialog->GetCDBStoragePath());
+                 dataSource->SetCdbUri(fFileDialog->GetCDBStoragePath());
             }
 
     // Open event

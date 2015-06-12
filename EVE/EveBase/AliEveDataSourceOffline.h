@@ -21,6 +21,9 @@ public:
     
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
     
+    void           SetCdbUri(const TString& cdb);
+    const TString& GetCdbUri() {return fgCdbUri;}
+    
     void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
                                   Bool_t assertAod, Bool_t assertRaw);
     
@@ -49,6 +52,7 @@ private:
     TTree* readESDTree(const char* treeName, int &run);
     
     int fCurrentRun;
+    TString  fgCdbUri;		// Global URI to CDB.
     bool            fIsOpen;         // Are event-files opened.
     AliEventInfo	fEventInfo;		// Current Event Info
     Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.

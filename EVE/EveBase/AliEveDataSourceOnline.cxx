@@ -360,7 +360,7 @@ void AliEveDataSourceOnline::NextEvent()
                 printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
                 
                 StorageManagerDown(); // block SM while event is being loaded
-//                DestroyElements();
+                AliEveEventManager::GetMaster()->DestroyElements();
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() != fCurrentRun){
                     AliEveEventManager::GetMaster()->ResetMagneticField();
                 }
@@ -375,8 +375,6 @@ void AliEveDataSourceOnline::NextEvent()
                     AliEveEventManager::GetMaster()->StartAutoLoadTimer();
                 }
                 AliEveEventManager::GetMaster()->NewEventLoaded();
-                
-//                SetEvent(0,0,fCurrentEvent[fEventInUse],0);
             }
         }
         fIsNewEventAvaliable = false;
@@ -427,6 +425,12 @@ void AliEveDataSourceOnline::MarkCurrentEvent()
         cout<<"ADMIN PANEL -- Could not matk event"<<endl;
     }
     if(requestMessage){delete requestMessage;}
+}
+
+void AliEveDataSourceOnline::SetCdbUri(const TString& cdb)
+{
+    // Set path to CDB, there is no default.
+    if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }
 
 void AliEveDataSourceOnline::StorageManagerOk()

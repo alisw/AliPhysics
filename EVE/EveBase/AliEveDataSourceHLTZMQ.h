@@ -20,6 +20,9 @@ public:
     AliEveDataSourceHLTZMQ(bool storageManager=false);
     ~AliEveDataSourceHLTZMQ();
 
+    void           SetCdbUri(const TString& cdb);
+    const TString& GetCdbUri() {return fgCdbUri;}
+    
 private:
     static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveDataSourceHLTZMQ*>(arg)->PullEventFromHLT();return nullptr;}
     void PullEventFromHLT();
@@ -31,7 +34,8 @@ private:
     TThread *fEventListenerThreadHLT;
     
     int fCurrentRun;
-
+    TString  fgCdbUri;		// Global URI to CDB.
+    
     void* fZMQContext;
     void* fZMQeventQueue; //this is the ONLY queue for threads!
     TString fHLTPublisherAddress;

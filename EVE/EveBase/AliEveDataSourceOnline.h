@@ -26,6 +26,9 @@ public:
     void EventServerOk();    // *SIGNAL*
     void EventServerDown();  // *SIGNAL*
     
+    void           SetCdbUri(const TString& cdb);
+    const TString& GetCdbUri() {return fgCdbUri;}
+    
 private:
     void GetNextEvent();
     void CheckStorageStatus();
@@ -44,6 +47,7 @@ private:
     bool fIsNewEventAvaliable;
     int fFailCounter;
     int fCurrentRun;
+    TString  fgCdbUri;		// Global URI to CDB.
     
     Bool_t fOnlineMode;
     Bool_t fStorageDown;

@@ -63,6 +63,7 @@ set(SRCS
     AliEveHF.cxx
     AliEveHFEditor.cxx
     AliEveHFListEditor.cxx
+    AliEveInit.cxx
     AliEveJetPlane.cxx
     AliEveJetPlaneEditor.cxx
     AliEveJetPlaneGL.cxx
@@ -77,7 +78,6 @@ set(SRCS
     AliEveMagField.cxx
     AliEveMainWindow.cxx
     AliEveMultiView.cxx
-    AliEveOffline.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx
@@ -96,9 +96,7 @@ set(SRCS
 if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
-        AliEveHLT.cxx
         AliEveDataSourceHLTZMQ.cxx
-        AliEveOnline.cxx
         AliEveDataSourceOnline.cxx
        )
 endif(ZEROMQ_FOUND)

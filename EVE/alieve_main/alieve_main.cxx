@@ -30,11 +30,7 @@
 #include <AliEveApplication.h>
 #include <AliEveMainWindow.h>
 
-#include "AliEveOffline.h"
-#ifdef ZMQ
-#include "AliEveOnline.h"
-#include "AliEveHLT.h"
-#endif
+#include "AliEveInit.h"
 
 #include <iostream>
 using namespace std;
@@ -76,12 +72,14 @@ int main(int argc, char **argv)
     int dipolePolarity=0;
     bool onlineMode=false;
     bool hltMode=false;
-    const char* cdbPath="";
+    const char* cdbPath="local:///local/cdb";
+    
+    AliEveEventManager::EDataSource dataSource=AliEveEventManager::kSourceOffline;
     
     for (int i=0; i<argc; i++)
     {
-        if(strcmp(argv[i],"online")==0){    onlineMode = true; }
-        if(strcmp(argv[i],"hlt")==0){       hltMode = true; }
+        if(strcmp(argv[i],"online")==0){    dataSource = AliEveEventManager::kSourceOnline; }
+        if(strcmp(argv[i],"hlt")==0){       dataSource = AliEveEventManager::kSourceHLT; }
         if(strcmp(argv[i],"local") ==0){    cdbPath = "local:///local/cdb"; }
         if(strcmp(argv[i],"mc")==0){        cdbPath = "mcideal://"; }
         if(strcmp(argv[i],"raw")==0){       cdbPath = "raw://";}
@@ -134,30 +132,8 @@ int main(int argc, char **argv)
 
     if(mfFix){gROOT->ProcessLine(Form(".x mf_fix.C(%d,%d)",solenoidPolarity,dipolePolarity));}
 
-    AliEveOffline *offline = NULL;
+    AliEveInit *init = new AliEveInit(".",cdbPath,dataSource);
     
-    if(onlineMode)
-    {
-#ifdef ZMQ
-        AliEveOnline *online = new AliEveOnline(storageManager);
-#else
-        printf("\nOnline mode not avaliable -- no ZMQ installed!\n");
-        return 1;
-#endif
-    }
-    else if(hltMode)
-    {
-#ifdef ZMQ
-        AliEveHLT *hlt = new AliEveHLT(storageManager);
-#else
-        printf("\nHLT mode not avaliable -- no ZMQ installed!\n");
-        return 1;
-#endif
-    }
-    else if(strcmp(cdbPath,"")!=0)
-    {
-        offline = new AliEveOffline(".",cdbPath);
-    }
     
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
     app->Run(kTRUE);
