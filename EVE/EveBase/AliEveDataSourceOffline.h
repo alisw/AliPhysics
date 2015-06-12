@@ -50,7 +50,6 @@ private:
     void Close();
     TTree* readESDTree(const char* treeName, int &run);
     
-    int fCurrentRun;
     TString  fgCdbUri;		// Global URI to CDB.
     bool            fIsOpen;         // Are event-files opened.
     AliEventInfo	fEventInfo;		// Current Event Info

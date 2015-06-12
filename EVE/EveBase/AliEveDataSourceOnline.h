@@ -43,7 +43,6 @@ private:
     int fWritingToEventIndex;       // Specifies to which element of fCurrentEvent subsriber's thread is writing
     bool fIsNewEventAvaliable;      // New event from reco flag
     int fFailCounter;               // How many times there were no event to be displayed
-    int fCurrentRun;                // Current run number
     
     Bool_t fStorageDown;            // Flag specifing if communication with Storage Manager is fine
     Bool_t fFinished;               // Will be set to true in destructor

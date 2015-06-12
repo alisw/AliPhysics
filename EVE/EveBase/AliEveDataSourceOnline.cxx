@@ -31,7 +31,6 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     fWritingToEventIndex(0),
     fIsNewEventAvaliable(false),
     fFailCounter(0),
-    fCurrentRun(-1),
     fStorageDown(false),
     fFinished(false),
     fStorageManager(storageManager),
@@ -190,12 +189,12 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
     TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
     AliCDBManager* cdb = AliCDBManager::Instance();
     
-    if(runNo != fCurrentRun)
+    if(runNo != fEventManager->GetCurrentRun())
     {
         cout<<"Loading OCDB for new run:"<<runNo<<" in online mode."<<endl;
         TEnv settings;
         settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
-        fCurrentRun = runNo;
+        fEventManager->SetCurrentRun(runNo);
         
         // Retrieve GRP entry for given run from aldaqdb.
         TString dbHost = settings.GetValue("logbook.host", DEFAULT_LOGBOOK_HOST);
@@ -209,8 +208,10 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
         cout<<"CDB path for GRP:"<<cdbPath<<endl;
         
         TString gdc;
-        
-        Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fCurrentRun, dbHost.Data(),
+
+        cdb->UnsetDefaultStorage();
+
+        Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(runNo, dbHost.Data(),
                                                                   dbPort, dbName.Data(),
                                                                   user.Data(), password.Data(),
                                                                   Form("%s",cdbPath.Data()),
@@ -223,7 +224,7 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
         
         cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
         cdb->SetSpecificStorage("GRP/GRP/Data",cdbPath.Data());
-        cdb->SetRun(fCurrentRun);
+        cdb->SetRun(runNo);
         cdb->Print();
     }
 }
@@ -333,11 +334,11 @@ void AliEveDataSourceOnline::NextEvent()
                 
                 StorageManagerDown(); // block SM while event is being loaded
                 fEventManager->DestroyElements();
-                if(fCurrentEvent[fEventInUse]->GetRunNumber() != fCurrentRun){
+                if(fCurrentEvent[fEventInUse]->GetRunNumber() != fEventManager->GetCurrentRun()){
                     fEventManager->ResetMagneticField();
                 }
-                InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
                 fCurrentData->fESD = fCurrentEvent[fEventInUse];
+                InitOCDB(fCurrentData->fESD->GetRunNumber());
                 
                 fEventManager->SetHasEvent(true);
                 fEventManager->AfterNewEventLoaded();

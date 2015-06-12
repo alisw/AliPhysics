@@ -149,12 +149,16 @@ public:
     void ResetMagneticField(){fgMagField=0;}
     void SetHasEvent(bool hasEvent){fHasEvent=hasEvent;}
     
+    void SetCurrentRun(int run){fCurrentRun = run;}
+    int  GetCurrentRun(){return fCurrentRun;}
+    
 protected:
     virtual ~AliEveEventManager();
     void SetMaster(AliEveEventManager *master);
     
     
     Int_t         fEventId;		// Id of current event.
+    int fCurrentRun;
 
     AliEveData* fCurrentData; //current data struct from one of the data sources
     AliEveDataSource* fCurrentDataSource; //data source in use at the moment
