@@ -28,7 +28,6 @@ using namespace std;
 AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     AliEveDataSource("HLT"),
     fEventListenerThreadHLT(0),
-    fCurrentRun(-1),
     fZMQContext(NULL),
     fZMQeventQueue(NULL),
     fHLTPublisherAddress("tcp://localhost:60201")
@@ -196,11 +195,13 @@ void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
   }
   else {
     if (gSystem->Getenv("ocdbStorage")) {
-    cdb->SetDefaultStorage(gSystem->Getenv("ocdbStorage"));
-    if (runNo!=AliEveEventManager::GetMaster()->GetCurrentRun()){
-        AliEveEventManager::GetMaster()->SetCurrentRun(runNo);
-      cdb->SetRun(runNo);
+      cdb->SetDefaultStorage(gSystem->Getenv("ocdbStorage"));
     }
+  }
+  if (runNo!=AliEveEventManager::GetMaster()->GetCurrentRun()){
+    AliEveEventManager::GetMaster()->SetCurrentRun(runNo);
+    cdb->SetRun(runNo);
+  }
 }
 
 void AliEveDataSourceHLTZMQ::GotoEvent(Int_t /*event*/)
