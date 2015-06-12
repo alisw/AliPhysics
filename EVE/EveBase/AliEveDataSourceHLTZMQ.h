@@ -33,7 +33,6 @@ private:
     
     TThread *fEventListenerThreadHLT;
     
-    int fCurrentRun;
     TString  fgCdbUri;		// Global URI to CDB.
     
     void* fZMQContext;

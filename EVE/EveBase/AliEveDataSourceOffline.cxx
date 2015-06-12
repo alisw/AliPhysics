@@ -35,7 +35,6 @@ fgAssertRunLoader(false),
 fgAssertESD(false),
 fgAssertAOD(false),
 fgAssertRaw(false),
-fCurrentRun(-1),
 fIsOpen(false),
 fESDfriendExists(kFALSE),
 fEventInfo(),
@@ -61,12 +60,12 @@ void AliEveDataSourceOffline::InitOCDB(int runNo)
     
     static const TEveException kEH("AliEveDataSourceOffline::InitOCDB ");
 
-    if (cdb->IsDefaultStorageSet() == kTRUE)
-    {
-        Warning(kEH, "CDB already set - using the old storage:\n  '%s'",
-                cdb->GetDefaultStorage()->GetURI().Data());
-    }
-    else
+//    if (cdb->IsDefaultStorageSet() == kTRUE)
+//    {
+//        Warning(kEH, "CDB already set - using the old storage:\n  '%s'",
+//                cdb->GetDefaultStorage()->GetURI().Data());
+//    }
+//    else
     {
         if (fgCdbUri.IsNull())
         {
@@ -172,10 +171,10 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // as the number of events is not known.
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    if(fCurrentData->fESD->GetRunNumber() != fCurrentRun)
+    if(fCurrentData->fESD->GetRunNumber() != AliEveEventManager::GetMaster()->GetCurrentRun())
     {
-        fCurrentRun = fCurrentData->fESD->GetRunNumber();
-        InitOCDB(fCurrentRun);
+        AliEveEventManager::GetMaster()->SetCurrentRun(fCurrentData->fESD->GetRunNumber());
+        InitOCDB(AliEveEventManager::GetMaster()->GetCurrentRun());
     }
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     

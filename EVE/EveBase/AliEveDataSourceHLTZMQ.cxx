@@ -27,7 +27,6 @@ using namespace std;
 AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     AliEveDataSource("HLT"),
     fEventListenerThreadHLT(0),
-    fCurrentRun(-1),
     fZMQContext(NULL),
     fZMQeventQueue(NULL),
     fHLTPublisherAddress("tcp://localhost:60201")
@@ -169,8 +168,8 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
 void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
 {
     AliCDBManager* cdb = AliCDBManager::Instance();
-    if (runNo!=fCurrentRun){
-      fCurrentRun=runNo;
+    if (runNo!=AliEveEventManager::GetMaster()->GetCurrentRun()){
+        AliEveEventManager::GetMaster()->SetCurrentRun(runNo);
       cdb->SetRun(runNo);
     }
 }

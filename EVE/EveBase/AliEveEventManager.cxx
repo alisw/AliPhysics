@@ -123,6 +123,7 @@ AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
 AliEveEventManager::AliEveEventManager(EDataSource defaultDataSource) :
 TEveEventManager("Event", ""),
 fEventId(-1),
+fCurrentRun(-1),
 fEventInfo(),
 fAutoLoad  (kFALSE), fAutoLoadTime (5),fAutoLoadTimer(0),
 fHasEvent(kFALSE),
