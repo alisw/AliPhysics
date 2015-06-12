@@ -114,7 +114,6 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     dataSourceOffline->AddAODfriend("AliAOD.VertexingHF.root");
 
     dataSourceOffline->SetCdbUri(fCDBuri);
-    dataSourceOnline->SetCdbUri("local:///local/cdb");
     
     TString ocdbStorage;
     if (gSystem->Getenv("ocdbStorage"))
@@ -277,7 +276,7 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
      */
 //    browser->GetTabRight()->SetTab(1);
     browser->StartEmbedding(TRootBrowser::kBottom);
-    new AliEveEventManagerWindow(man,storageManager);
+    new AliEveEventManagerWindow(man,storageManager,defaultDataSource);
     browser->StopEmbedding("EventCtrl");
     
     slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());

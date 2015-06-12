@@ -22,7 +22,6 @@ public:
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
     
     void           SetCdbUri(const TString& cdb);
-    const TString& GetCdbUri() {return fgCdbUri;}
     
     void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
                                   Bool_t assertAod, Bool_t assertRaw);

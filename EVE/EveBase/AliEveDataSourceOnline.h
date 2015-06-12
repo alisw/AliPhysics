@@ -11,7 +11,6 @@
 
 #include "AliEveEventManager.h"
 #include "AliEveDataSource.h"
-#include "AliStorageTypes.h"
 
 #include <TQObject.h>
 
@@ -23,43 +22,37 @@ public:
         
     void StorageManagerOk();    // *SIGNAL*
     void StorageManagerDown();  // *SIGNAL*
-    void EventServerOk();    // *SIGNAL*
-    void EventServerDown();  // *SIGNAL*
-    
-    void           SetCdbUri(const TString& cdb);
-    const TString& GetCdbUri() {return fgCdbUri;}
+    void EventServerOk();       // *SIGNAL*
+    void EventServerDown();     // *SIGNAL*
     
 private:
-    void GetNextEvent();
-    void CheckStorageStatus();
-    void Init(){};// to implement
-    void InitOCDB(int runNo);
-    void GotoEvent(Int_t event);
-    void NextEvent();
-    void MarkCurrentEvent();
+    TThread *fEventListenerThread;          // Subscriber's thread receiving events from online reco
+    TThread *fStorageManagerWatcherThread;  // Thread periodically checking state of Storage Manager
     
-    TThread *fEventListenerThread;
-    TThread *fStorageManagerWatcherThread;
-    AliESDEvent *fCurrentEvent[2];
-    TTree *fCurrentTree[2];
-    int fEventInUse;
-    int fWritingToEventIndex;
-    bool fIsNewEventAvaliable;
-    int fFailCounter;
-    int fCurrentRun;
-    TString  fgCdbUri;		// Global URI to CDB.
+    void GetNextEvent();            // Handler of fEventListenerThread
+    void CheckStorageStatus();      // Handler of fStorageManagerWatcherThread
+
+    void InitOCDB(int runNo);       // Method to build and set OCDB objects for given run
+    void GotoEvent(Int_t event);    // Method to find proper way of delivering next event to be displayed
+    void NextEvent();               // Setting new event from subscriber's thread
+
+    void MarkCurrentEvent();        // Send request to Storage Manager to mark current event
     
-    Bool_t fOnlineMode;
-    Bool_t fStorageDown;
-    Bool_t fEventServerDown;
-    Bool_t fFinished;
-    bool fStorageManager;
+    AliESDEvent *fCurrentEvent[2];  // Array of currently displayed event and event being recently received from reco
+    int fEventInUse;                // Specifies which element of fCurrentEvent is currently displayed
+    int fWritingToEventIndex;       // Specifies to which element of fCurrentEvent subsriber's thread is writing
+    bool fIsNewEventAvaliable;      // New event from reco flag
+    int fFailCounter;               // How many times there were no event to be displayed
+    int fCurrentRun;                // Current run number
     
+    Bool_t fStorageDown;            // Flag specifing if communication with Storage Manager is fine
+    Bool_t fFinished;               // Will be set to true in destructor
+    bool fStorageManager;           // Should Storage Manager's features be activated
+    AliEveEventManager *fEventManager; // Pointer to AliEveEventManager
+    
+    // dispatchers for threads' handlers:
     static void* DispatchEventListener(void *arg){static_cast<AliEveDataSourceOnline*>(arg)->GetNextEvent();return nullptr;}
     static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveDataSourceOnline*>(arg)->CheckStorageStatus();return nullptr;}
-    
-    AliEveDataSourceOnline(const AliEveDataSourceOnline&);
-    AliEveDataSourceOnline& operator=(const AliEveDataSourceOnline&);
     
     ClassDef(AliEveDataSourceOnline, 0); // Interface for getting all event components in a uniform way.
 };

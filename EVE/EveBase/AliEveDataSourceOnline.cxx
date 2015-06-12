@@ -10,14 +10,12 @@
 #include "AliEveConfigManager.h"
 
 #include "AliCDBManager.h"
-
 #include "AliZMQManager.h"
 #include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
 
 #include <TEnv.h>
 #include <TInterpreter.h>
-#include <TEveViewer.h>
 
 #include <iostream>
 
@@ -34,30 +32,27 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     fIsNewEventAvaliable(false),
     fFailCounter(0),
     fCurrentRun(-1),
-    fOnlineMode(kFALSE),
     fStorageDown(false),
-    fEventServerDown(false),
     fFinished(false),
-    fStorageManager(storageManager)
+    fStorageManager(storageManager),
+    fEventManager(0)
 {
-    cout<<"\n\n\nAliEveDataSourceOnline constructor called!!!\n\n\n"<<endl;
+    fEventManager = AliEveEventManager::GetMaster();
     
     InitOCDB(-1);
     fCurrentData = new AliEveData();
-//    fIsOpen = kFALSE;
     
     StorageManagerDown(); // turn SM off by default
-    EventServerDown();
+    EventServerDown();    // assume that there are no events comming from online reco
     
+    // start threads:
     fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
     fEventListenerThread->Run();
     
-    if(fStorageManager)
-    {
+    if(fStorageManager){
         fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
         fStorageManagerWatcherThread->Run();
     }
-//    AliEveEventManager::SetMaster(this);
 }
 
 AliEveDataSourceOnline::~AliEveDataSourceOnline()
@@ -81,8 +76,6 @@ AliEveDataSourceOnline::~AliEveDataSourceOnline()
 
 void AliEveDataSourceOnline::GetNextEvent()
 {
-    cout<<"\n\nGet next event called\n\n"<<endl;
-    
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
     eventManager->CreateSocket(EVENTS_SERVER_SUB);
     
@@ -110,10 +103,8 @@ void AliEveDataSourceOnline::GetNextEvent()
                     cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
                     if(fCurrentEvent[fWritingToEventIndex])
                     {
-                        cout<<"EVENT DISPLAY -- deleting old event..."<<fCurrentEvent[fWritingToEventIndex]<<"...";
                         delete fCurrentEvent[fWritingToEventIndex];
                         fCurrentEvent[fWritingToEventIndex]=0;
-                        cout<<"deleted"<<endl;
                     }
                     fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                     fIsNewEventAvaliable = true;
@@ -189,7 +180,7 @@ void AliEveDataSourceOnline::CheckStorageStatus()
         sendStatus=false;
     }
     
-    AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliEveEventManager *manager = fEventManager;
     manager->Disconnect("StorageManagerOk");
     manager->Disconnect("StorageManagerDown");
 }
@@ -205,7 +196,6 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
         TEnv settings;
         settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
         fCurrentRun = runNo;
-        cout<<"config read"<<endl;
         
         // Retrieve GRP entry for given run from aldaqdb.
         TString dbHost = settings.GetValue("logbook.host", DEFAULT_LOGBOOK_HOST);
@@ -236,19 +226,11 @@ void AliEveDataSourceOnline::InitOCDB(int runNo)
         cdb->SetRun(fCurrentRun);
         cdb->Print();
     }
-    
-    
-//    AliEveEventManager::InitOCDB(runNo);
 }
 
 void AliEveDataSourceOnline::GotoEvent(Int_t event)
 {
     cout<<"Go to event:"<<event<<endl;
-    
-    static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    
-//    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
-//    else if (!fIsOpen && !fOnlineMode){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
     if (fStorageDown && -1 == event)
     {
@@ -288,7 +270,6 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
 //            DestroyElements();
             InitOCDB(resultEvent->GetRunNumber());
             fCurrentData->fESD = resultEvent;
-//            SetEvent(0,0,resultEvent,0);
         }
         else
         {
@@ -323,30 +304,21 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
 //            DestroyElements();
             InitOCDB(resultEvent->GetRunNumber());
             fCurrentData->fESD = resultEvent;
-//            SetEvent(0,0,resultEvent,0);
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->UnLock();
 #endif
     }
-    //
-//    AliEveEventManager::GotoEvent(event);
-    //
 }
 
 void AliEveDataSourceOnline::NextEvent()
 {
-    static const TEveException kEH("AliEveEventManager::NextEvent ");
-    
-//    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
-    
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->Lock();
 #endif
     if(fIsNewEventAvaliable)
     {
-        AliEveEventManager::GetMaster()->DestroyTransients();
+        fEventManager->DestroyTransients();
         
         if(fWritingToEventIndex == 0) fEventInUse = 0;
         else if(fWritingToEventIndex == 1) fEventInUse = 1;
@@ -357,24 +329,23 @@ void AliEveDataSourceOnline::NextEvent()
             {
                 fFailCounter=0;
                 EventServerOk();
-                printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
+                cout<<"================ setting event to "<<fCurrentEvent[fEventInUse]->GetEventNumberInFile()<<"================"<<endl;
                 
                 StorageManagerDown(); // block SM while event is being loaded
-                AliEveEventManager::GetMaster()->DestroyElements();
+                fEventManager->DestroyElements();
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() != fCurrentRun){
-                    AliEveEventManager::GetMaster()->ResetMagneticField();
+                    fEventManager->ResetMagneticField();
                 }
                 InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
                 fCurrentData->fESD = fCurrentEvent[fEventInUse];
                 
-                AliEveEventManager::GetMaster()->SetHasEvent(true);
+                fEventManager->SetHasEvent(true);
+                fEventManager->AfterNewEventLoaded();
                 
-                AliEveEventManager::GetMaster()->AfterNewEventLoaded();
-                
-                if (AliEveEventManager::GetMaster()->GetAutoLoad()) {
-                    AliEveEventManager::GetMaster()->StartAutoLoadTimer();
+                if (fEventManager->GetAutoLoad()) {
+                    fEventManager->StartAutoLoadTimer();
                 }
-                AliEveEventManager::GetMaster()->NewEventLoaded();
+                fEventManager->NewEventLoaded();
             }
         }
         fIsNewEventAvaliable = false;
@@ -383,18 +354,15 @@ void AliEveDataSourceOnline::NextEvent()
     {
         cout<<"No new event is avaliable."<<endl;
         fFailCounter++;
-        AliEveEventManager::GetMaster()->NoEventLoaded();
+        fEventManager->NoEventLoaded();
     }
     if(fFailCounter==5)
     {
-        cout<<"fail counter = 5"<<endl;
         EventServerDown();
         fFailCounter=0;
     }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->UnLock();
-
-    
     gSystem->ProcessEvents();
 }
 
@@ -425,12 +393,6 @@ void AliEveDataSourceOnline::MarkCurrentEvent()
         cout<<"ADMIN PANEL -- Could not matk event"<<endl;
     }
     if(requestMessage){delete requestMessage;}
-}
-
-void AliEveDataSourceOnline::SetCdbUri(const TString& cdb)
-{
-    // Set path to CDB, there is no default.
-    if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }
 
 void AliEveDataSourceOnline::StorageManagerOk()
