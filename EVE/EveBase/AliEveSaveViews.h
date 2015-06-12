@@ -27,7 +27,6 @@ public:
     void SaveWithDialog();
     int SendToAmore();
 private:
-    TString GetEventInfo();
     void ChangeRun();
     
     void BuildEventInfoString();

@@ -757,11 +757,11 @@ void AliEveEventManager::AfterNewEventLoaded()
         }
     }
     
-//    if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
-//    {
-//        fViewsSaver->Save();
-//        fViewsSaver->SendToAmore();
-//    }
+    if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
+    {
+        fViewsSaver->Save();
+        fViewsSaver->SendToAmore();
+    }
     
 //    if (this == fgMaster && fSubManagers != 0)
 //    {

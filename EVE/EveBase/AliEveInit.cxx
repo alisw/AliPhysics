@@ -50,7 +50,6 @@
 #include <AliEveTrackFitter.h>
 #include <AliEveGeomGentle.h>
 #include <AliEveDataSourceOffline.h>
-#include <AliEveDataSourceOnline.h>
 #include <AliEveDataSourceHLTZMQ.h>
 #include <AliEveEventManager.h>
 
@@ -108,7 +107,6 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     }
     
     AliEveDataSourceOffline *dataSourceOffline  = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
-    AliEveDataSourceOnline  *dataSourceOnline   = (AliEveDataSourceOnline*) man->GetDataSourceOnline();
     AliEveDataSourceHLTZMQ  *dataSourceHLT      = (AliEveDataSourceHLTZMQ*) man->GetDataSourceHLTZMQ();
     
     dataSourceOffline->AddAODfriend("AliAOD.VertexingHF.root");
@@ -122,10 +120,7 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     dataSourceHLT->SetCdbUri(ocdbStorage);         // current OCDB snapshot
     
     ImportMacros();
-    
-//    if(defaultDataSource == AliEveEventManager::kSourceOffline){
-        Init();
-//    }
+    Init();
     
     TEveUtil::AssertMacro("VizDB_scan.C");
     
