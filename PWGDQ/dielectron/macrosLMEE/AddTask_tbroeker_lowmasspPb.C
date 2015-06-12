@@ -1,4 +1,8 @@
-AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString cFileName = "Config_tbroeker_lowmasspPb.C",Char_t* outputFileName="LMEEoutput.root"){
+AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,
+                                             TString cFileName = "Config_tbroeker_lowmasspPb.C",
+                                             Char_t* outputFileName="LMEEoutput.root"
+                                             )
+{
 
 
   //get the current analysis manager
@@ -8,18 +12,18 @@ AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,TString 
     return 0;
   }
 
-  //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
-    TString configBasePath=Form("%s/",gSystem->pwd());
+    configBasePath=Form("%s/",gSystem->pwd());
   }
 
   TString configFilePath(configBasePath+cFileName);
 
   std::cout << "Configpath:  " << configFilePath << std::endl;
+  
+    //Do we have an MC handler?
+  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
   gROOT->LoadMacro(configFilePath.Data());
