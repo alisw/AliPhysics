@@ -95,7 +95,7 @@ void alieve_init(const TString& cdburi = "",
   }
   
   dataSource->SetRawFileName(rawfile);
-  AliEveEventManager::SetCdbUri(cdburi);
+  dataSource->SetCdbUri(cdburi);
   dataSource->SetAssertElements(assert_runloader, assert_esd,assert_aod, assert_raw);
 
   // Open event

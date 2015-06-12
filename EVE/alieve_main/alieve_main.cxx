@@ -70,17 +70,15 @@ int main(int argc, char **argv)
     bool mfFix=false;
     int solenoidPolarity=0;
     int dipolePolarity=0;
-    bool onlineMode=false;
-    bool hltMode=false;
     const char* cdbPath="local:///local/cdb";
-    
+    bool classesMode=false;
     AliEveEventManager::EDataSource dataSource=AliEveEventManager::kSourceOffline;
     
     for (int i=0; i<argc; i++)
     {
-        if(strcmp(argv[i],"online")==0){    dataSource = AliEveEventManager::kSourceOnline; }
-        if(strcmp(argv[i],"hlt")==0){       dataSource = AliEveEventManager::kSourceHLT; }
-        if(strcmp(argv[i],"local") ==0){    cdbPath = "local:///local/cdb"; }
+        if(strcmp(argv[i],"online")==0){    dataSource = AliEveEventManager::kSourceOnline;classesMode=true; }
+        if(strcmp(argv[i],"hlt")==0){       dataSource = AliEveEventManager::kSourceHLT;classesMode=true; }
+        if(strcmp(argv[i],"local") ==0){    cdbPath = "local:///local/cdb";classesMode=true; }
         if(strcmp(argv[i],"mc")==0){        cdbPath = "mcideal://"; }
         if(strcmp(argv[i],"raw")==0){       cdbPath = "raw://";}
         if(strcmp(argv[i],"mcfull")==0){    cdbPath = "mcfull://"; }
@@ -132,8 +130,9 @@ int main(int argc, char **argv)
 
     if(mfFix){gROOT->ProcessLine(Form(".x mf_fix.C(%d,%d)",solenoidPolarity,dipolePolarity));}
 
-    AliEveInit *init = new AliEveInit(".",cdbPath,dataSource);
-    
+    if(classesMode){
+        AliEveInit *init = new AliEveInit(".",cdbPath,dataSource);
+    }
     
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
     app->Run(kTRUE);
