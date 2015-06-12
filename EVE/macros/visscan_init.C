@@ -34,7 +34,7 @@
 #include <AliEveTrack.h>
 #include <AliEveTrackCounter.h>
 #include <AliEveMagField.h>
-#include <AliEveOfflineEventManager.h>
+#include <AliEveEventManager.h>
 #include <AliEveEventManagerEditor.h>
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
@@ -43,6 +43,8 @@
 #include <AliEveEventSelectorWindow.h>
 #include <AliEveTrackFitter.h>
 #include <AliCDBManager.h>
+
+#include <AliEveDataSourceOffline.h>
 
 #endif
 
@@ -66,7 +68,7 @@ void visscan_init(const TString& cdburi = "",
                   Bool_t showMuon = kTRUE,
                   Bool_t showTrd = kFALSE)
 {
-    AliEveOfflineEventManager *man = new AliEveOfflineEventManager();
+    AliEveEventManager *man = new AliEveEventManager(AliEveEventManager::kSourceOffline);
     
     if (showMuon)
     {
@@ -92,8 +94,9 @@ void visscan_init(const TString& cdburi = "",
         Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
     }
     
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
     
-    AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
+    dataSource->AddAODfriend("AliAOD.VertexingHF.root");
     
     TEveUtil::LoadMacro("alieve_init.C+");
     alieve_init(cdburi, path, -1, showHLTESDTree);

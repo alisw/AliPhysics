@@ -55,7 +55,7 @@ class AliEveEventManager : public TEveEventManager, public TQObject
 public:
   enum EDataSource { kSourceHLT, kSourceOnline, kSourceOffline };
 
-    AliEveEventManager(const TString& name="Event");
+    AliEveEventManager(EDataSource defaultDataSource=kSourceOffline);
     static AliEveEventManager* GetMaster();
     
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
