@@ -18,7 +18,10 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   //
   // Process run level QA
   // Create standard QA plots and trending tree in the current directory
+  const Char_t *friendsOpt="PID DET RES";
   
+  gStyle->SetTitleX(gStyle->GetPadLeftMargin());
+
   // Load needed libraries
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_PHYSICS -I$ALICE_ROOT/TRD");
   gSystem->Load("libSTEERBase");
@@ -61,13 +64,13 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   };
   for(Int_t i=0; i<kNESDtrends; ++i)
     (*treeStreamer)<< "trending" << Form("%s=",kESDTrendNames[i].Data()) << esdTrendValues[i];
-
+  
   // process the QA output from the other tasks----------------------------------------
   if(dataType.Contains("sim"))
-    makeResults("PID DET RES", qaFile.Data());
+    makeResults(friendsOpt, qaFile.Data());
   else  
-    makeResults("NOMC PID DET RES", qaFile.Data());
-
+    makeResults(Form("NOMC %s", friendsOpt), qaFile.Data());
+  
   TFile *trendFile = new TFile("TRD.Trend.root","READ");
   if(!trendFile || !trendFile->IsOpen() ){
     printf("E-Couldn't open the TRD.Trend.root file. No tree.\n");
@@ -75,10 +78,9 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
     return;
   }
   TKey *tk(NULL); AliTRDtrendValue *tv(NULL); Int_t itv(0);
-  const Int_t ntrends(5000);
-  Double_t trendValues[ntrends]={0.0};
+  Double_t trendValues[100]={0.0};
   TIterator *it(trendFile->GetListOfKeys()->MakeIterator());
-  while((tk = (TKey*)it->Next()) && itv < ntrends){
+  while((tk = (TKey*)it->Next()) && itv < 5000){
     if(!(tv = (AliTRDtrendValue*)trendFile->Get(tk->GetName()))) continue;
     trendValues[itv] = tv->GetVal();
     TString trendName = tv->GetName();
@@ -144,19 +146,19 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
     for(Int_t iLumiMeas=0;iLumiMeas<nLumiMeasA;iLumiMeas++){
       dipVal0 = lhcData->GetLuminosityTotal(0,iLumiMeas);
       if(dipVal0) {
-	beamIntensityA += dipVal0->GetValue();
-	++nA;
+        beamIntensityA += dipVal0->GetValue();
+        ++nA;
       }
     }
-    beamIntensityA /= Double_t(nA);
+    if(nA) beamIntensityA /= Double_t(nA);
     for(Int_t iLumiMeas=0;iLumiMeas<nLumiMeasC;iLumiMeas++){
       dipVal1 = lhcData->GetLuminosityTotal(1,iLumiMeas);
       if(dipVal1) {
-	beamIntensityC += dipVal1->GetValue();
-	++nC;
+        beamIntensityC += dipVal1->GetValue();
+        ++nC;
       }
     }
-    beamIntensityC /= Double_t(nC);
+    if(nC) beamIntensityC /= Double_t(nC);
   }
   (*treeStreamer)<< "trending"
                  << "beamIntensityA=" << beamIntensityA

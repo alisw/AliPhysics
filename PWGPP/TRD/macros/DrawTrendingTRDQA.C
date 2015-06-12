@@ -49,6 +49,17 @@ enum Trends {
   kTRDcheckDET_ChargeCluster, kTRDcheckDET_ChargeClusterRMS, 
   kTRDcheckDET_ChargeTracklet, kTRDcheckDET_ChargeTrackletRMS, 
   kTRDcheckDET_PHplateau, kTRDcheckDET_PHslope, kTRDcheckDET_PHamplificationPeak,
+  kTRDresolution_ClS0,kTRDresolution_ClS1,kTRDresolution_ClS2,kTRDresolution_ClS3,kTRDresolution_ClS4,kTRDresolution_ClS5, 
+  kTRDresolution_TrkltY0, kTRDresolution_TrkltY1, kTRDresolution_TrkltY2, kTRDresolution_TrkltY3, kTRDresolution_TrkltY4, kTRDresolution_TrkltY5,
+  kTRDresolution_TrkltYS0, kTRDresolution_TrkltYS1, kTRDresolution_TrkltYS2, kTRDresolution_TrkltYS3, kTRDresolution_TrkltYS4, kTRDresolution_TrkltYS5,
+  kTRDresolution_TrkInYn, kTRDresolution_TrkInYnl, kTRDresolution_TrkInYh, 
+  kTRDresolution_TrkInYp, kTRDresolution_TrkInYpl, kTRDresolution_TrkInYph,
+  kTRDresolution_TrkInYSn, kTRDresolution_TrkInYSnl, kTRDresolution_TrkInYSh, 
+  kTRDresolution_TrkInYSp, kTRDresolution_TrkInYSpl, kTRDresolution_TrkInYSph,
+  kTRDresolution_TrkInPhn, kTRDresolution_TrkInPhnl, kTRDresolution_TrkInPhh, 
+  kTRDresolution_TrkInPhp, kTRDresolution_TrkInPhpl, kTRDresolution_TrkInPhph,
+  kTRDresolution_TrkInPhSn, kTRDresolution_TrkInPhSnl, kTRDresolution_TrkInPhSh, 
+  kTRDresolution_TrkInPhSp, kTRDresolution_TrkInPhSpl, kTRDresolution_TrkInPhSph,
   kMeanExB, kRmsExB,
   kMeanGainFactor, kRmsGainFactor,
   kMeanT0, kRmsT0,
@@ -82,6 +93,17 @@ TString gTrendNames[kNtrends] = {
   "TRDcheckDET_ChargeCluster", "TRDcheckDET_ChargeClusterRMS", 
   "TRDcheckDET_ChargeTracklet", "TRDcheckDET_ChargeTrackletRMS", 
   "TRDcheckDET_PHplateau", "TRDcheckDET_PHslope", "TRDcheckDET_PHamplificationPeak",
+  "TRDresolution_ClS0","TRDresolution_ClS1","TRDresolution_ClS2","TRDresolution_ClS3","TRDresolution_ClS4","TRDresolution_ClS5", 
+  "TRDresolution_TrkltY0", "TRDresolution_TrkltY1", "TRDresolution_TrkltY2", "TRDresolution_TrkltY3", "TRDresolution_TrkltY4", "TRDresolution_TrkltY5",
+  "TRDresolution_TrkltYS0", "TRDresolution_TrkltYS1", "TRDresolution_TrkltYS2", "TRDresolution_TrkltYS3", "TRDresolution_TrkltYS4", "TRDresolution_TrkltYS5",
+  "TRDresolution_TrkInYn", "TRDresolution_TrkInYnl", "TRDresolution_TrkInYnh", 
+  "TRDresolution_TrkInYp", "TRDresolution_TrkInYpl", "TRDresolution_TrkInYph",
+  "TRDresolution_TrkInYSn", "TRDresolution_TrkInYSnl", "TRDresolution_TrkInYSnh", 
+  "TRDresolution_TrkInYSp", "TRDresolution_TrkInYSpl", "TRDresolution_TrkInYSph",
+  "TRDresolution_TrkInPhn", "TRDresolution_TrkInPhnl", "TRDresolution_TrkInPhnh", 
+  "TRDresolution_TrkInPhp", "TRDresolution_TrkInPhpl", "TRDresolution_TrkInPhph",
+  "TRDresolution_TrkInPhSn", "TRDresolution_TrkInPhSnl", "TRDresolution_TrkInPhSnh", 
+  "TRDresolution_TrkInPhSp", "TRDresolution_TrkInPhSpl", "TRDresolution_TrkInPhSph",
   "meanExB", "rmsExB",
   "meanGainFactor", "rmsGainFactor",
   "meanT0", "rmsT0",
@@ -103,6 +125,7 @@ void DrawTrendingTRDQA(TString trendingFilename="trending.root") {
   //
   // Draw the TRD QA trending
   //
+  gStyle->SetTitleX(gStyle->GetPadLeftMargin());
   TFile* trendingFile = TFile::Open(trendingFilename.Data(), "READ");
   TTree* tree = (TTree*)trendingFile->Get("trending");
   if(!tree){
@@ -160,7 +183,8 @@ void DrawAllHistograms(TList* l) {
   if(!l) return;
   TCanvas* c=0x0;
   for(Int_t i=0; i<l->GetEntries(); ++i) {
-    TObject* o=l->At(i);
+    TNamed* o=l->At(i);
+    if(TString(o->GetName()).BeginsWith("hTRDresolution_")) continue;
     c=new TCanvas(Form("canvas_%s",o->GetName()), Form("%s", o->GetName()), 800.,600.);
     c->SetLeftMargin(0.15); c->SetBottomMargin(0.15); c->SetTopMargin(0.08); c->SetRightMargin(0.03);
     ((TH1*)o)->SetStats(kFALSE);
@@ -172,6 +196,152 @@ void DrawAllHistograms(TList* l) {
     c->Print(Form("%s.png", TString(o->GetName()).Remove(0,1).Data()));
     delete c;
   }
+
+  // TRD resolution combined trending plots
+  TLegend *leg = new TLegend(.17, .85, .96, .9);
+  leg->SetFillColor(kWhite); leg->SetNColumns(6);
+  Bool_t first(kTRUE);
+  c=new TCanvas("canvas_cluster", "Cluster Resolution", 900.,600.);
+  c->SetLeftMargin(0.1); c->SetBottomMargin(0.15); c->SetTopMargin(0.08); c->SetRightMargin(0.03);
+  for(Int_t ily=0; ily<6; ily++) {
+    TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_ClS%d", ily));
+    if(!h) continue;
+    h->SetStats(kFALSE);
+    h->Draw(first?"pl":"plsame");
+    leg->AddEntry(h, h->GetTitle(), "pl");
+    if(first){ 
+      h->SetTitle("Cluster-Tracklet Resolution");
+      ay = h->GetYaxis();
+      ay->CenterTitle();ay->SetTitleOffset(1.2);
+      ay->SetRangeUser(350, 500);
+    }
+    first=kFALSE;
+  }
+  leg->Draw();
+  c->Print("cl-tracklet_resolution.png");
+
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  const Char_t *sufPt[] = {"", "l", "h"};
+  for(Int_t ich=0; ich<2; ich++) {
+    for(Int_t ipt=0; ipt<3; ipt++) {
+      TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_TrkInY%c%s", ich?'p':'n', sufPt[ipt]));
+      if(!h) continue;
+      h->SetStats(kFALSE);
+      h->Draw(first?"pl":"pl same");
+      leg->AddEntry(h, h->GetTitle(), "pl");
+      if(first){ 
+        h->SetTitle("TRD-TPC matching r-#phi");
+        ay = h->GetYaxis();
+        ay->CenterTitle();ay->SetTitleOffset(1.2);
+        ay->SetRangeUser(-0.15, 0.15);
+      }
+      first=kFALSE;
+    }
+  }
+  leg->Draw();
+  c->Print("TPC-TRD_matching_yshift.png");
+
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  for(Int_t ich=0; ich<2; ich++) {
+    for(Int_t ipt=1; ipt<3; ipt++) {
+      TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_TrkInYS%c%s", ich?'p':'n', sufPt[ipt]));
+      if(!h) continue;
+      h->SetStats(kFALSE);
+      h->Draw(first?"pl":"pl same"); 
+      leg->AddEntry(h, h->GetTitle(), "pl");
+      if(first){ 
+        h->SetTitle("TRD-TPC resolution r-#phi");
+        ay = h->GetYaxis();
+        ay->CenterTitle();ay->SetTitleOffset(1.2);
+        ay->SetRangeUser(0.1, 0.3);
+      }
+      first=kFALSE;
+    }
+  }
+  leg->Draw();
+  c->Print("TPC-TRD_matching_yresolution.png");
+
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  for(Int_t ich=0; ich<2; ich++) {
+    for(Int_t ipt=0; ipt<3; ipt++) {
+      TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_TrkInPh%c%s", ich?'p':'n', sufPt[ipt]));
+      if(!h) continue;
+      h->SetStats(kFALSE);
+      h->Draw(first?"pl":"pl same"); 
+      leg->AddEntry(h, h->GetTitle(), "pl");
+      if(first){ 
+        h->SetTitle("TRD-TPC matching angular");
+        ay = h->GetYaxis();
+        ay->CenterTitle();ay->SetTitleOffset(1.2);
+        ay->SetRangeUser(-0.8, 0.8);
+      }
+      first=kFALSE;
+    }
+  }
+  leg->Draw();
+  c->Print("TPC-TRD_matching_angshift.png");
+
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  for(Int_t ich=0; ich<2; ich++) {
+    for(Int_t ipt=1; ipt<3; ipt++) {
+      TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_TrkInPhS%c%s", ich?'p':'n', sufPt[ipt]));
+      if(!h) continue;
+      h->SetStats(kFALSE);
+      h->Draw(first?"pl":"pl same"); 
+      leg->AddEntry(h, h->GetTitle(), "pl");
+      if(first){ 
+        h->SetTitle("TRD-TPC angular resolution");
+        ay = h->GetYaxis();
+        ay->CenterTitle();ay->SetTitleOffset(1.2);
+        ay->SetRangeUser(0.3, 1.8);
+      }
+      first=kFALSE;
+    }
+  }
+  leg->Draw();
+  c->Print("TPC-TRD_matching_angresolution.png");
+  
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  for(Int_t ily=1; ily<6; ily++) {
+    TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_TrkltY%d", ily));
+    if(!h) continue;
+    h->SetStats(kFALSE);
+    h->Draw(first?"pl":"pl same"); 
+    leg->AddEntry(h, h->GetTitle(), "pl");
+    if(first){ 
+      h->SetTitle("TRD tracklet r-#phi shift");
+      ay = h->GetYaxis();
+      ay->CenterTitle();ay->SetTitleOffset(1.2);
+      ay->SetRangeUser(-500, 500);
+    }
+    first=kFALSE;
+  }
+  leg->Draw();
+  c->Print("track-tracklet_shift.png");
+
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  for(Int_t ily=1; ily<6; ily++) {
+    TH1* h=(TH1*)l->FindObject(Form("hTRDresolution_TrkltYS%d", ily));
+    if(!h) continue;
+    h->SetStats(kFALSE);
+    h->Draw(first?"pl":"pl same"); 
+    leg->AddEntry(h, h->GetTitle(), "pl");
+    if(first){ 
+      h->SetTitle("TRD tracklet r-#phi resolution");
+      ay = h->GetYaxis();
+      ay->CenterTitle();ay->SetTitleOffset(1.2);
+      ay->SetRangeUser(1.2, 1.8);
+    }
+    first=kFALSE;
+  }
+  leg->Draw();
+  c->Print("track-tracklet_resolution.png");
 }
 
 
@@ -189,35 +359,56 @@ void FillHistograms(Int_t irun, TList* l, Double_t* v, Bool_t* branchFound) {
       
       // Deal with the exceptions (no assigned space in the Trends enum)
       if(TString(h1->GetName()).Contains("hTPCTRDmatchChargeAsymm")) {
-	if(branchFound[kTPCTRDmatchEffPosAll] && branchFound[kTPCTRDmatchEffNegAll]) {
-	  Double_t p=v[kTPCTRDmatchEffPosAll], m=v[kTPCTRDmatchEffNegAll], 
-	       dp=v[kTPCTRDmatchEffPosAllErr], dm=v[kTPCTRDmatchEffNegAllErr];
-	  if(TMath::Abs(p+m)>1.0e-6) {
-	    h1->SetBinContent(irun+1, 100.0*2.0*(p-m)/(p+m));
-	    h1->SetBinError(irun+1, 100.0*4.0*TMath::Sqrt(m*m*dp*dp+p*p*dm*dm)/(p+m)/(p+m));
-	  }
-	}
-	continue;
+        if(branchFound[kTPCTRDmatchEffPosAll] && branchFound[kTPCTRDmatchEffNegAll]) {
+          Double_t p=v[kTPCTRDmatchEffPosAll], m=v[kTPCTRDmatchEffNegAll], 
+              dp=v[kTPCTRDmatchEffPosAllErr], dm=v[kTPCTRDmatchEffNegAllErr];
+          if(TMath::Abs(p+m)>1.0e-6) {
+            h1->SetBinContent(irun+1, 100.0*2.0*(p-m)/(p+m));
+            h1->SetBinError(irun+1, 100.0*4.0*TMath::Sqrt(m*m*dp*dp+p*p*dm*dm)/(p+m)/(p+m));
+          }
+        }
+        continue;
       }
       if(TString(h1->GetName()).Contains("hTRDTOFmatchChargeAsymm")) {
-	if(branchFound[kTRDTOFmatchEffPosAll] && branchFound[kTRDTOFmatchEffNegAll]) {
-	  Double_t p=v[kTRDTOFmatchEffPosAll], m=v[kTRDTOFmatchEffNegAll], 
-	       dp=v[kTRDTOFmatchEffPosAllErr], dm=v[kTRDTOFmatchEffNegAllErr];
-	  if(TMath::Abs(p+m)>1.0e-6) {
-	    h1->SetBinContent(irun+1, 100.0*2.0*(p-m)/(p+m));
-	    h1->SetBinError(irun+1, 100.0*4.0*TMath::Sqrt(m*m*dp*dp+p*p*dm*dm)/(p+m)/(p+m));
-	  }
-	}
-	continue;
+        if(branchFound[kTRDTOFmatchEffPosAll] && branchFound[kTRDTOFmatchEffNegAll]) {
+          Double_t p=v[kTRDTOFmatchEffPosAll], m=v[kTRDTOFmatchEffNegAll], 
+              dp=v[kTRDTOFmatchEffPosAllErr], dm=v[kTRDTOFmatchEffNegAllErr];
+          if(TMath::Abs(p+m)>1.0e-6) {
+            h1->SetBinContent(irun+1, 100.0*2.0*(p-m)/(p+m));
+            h1->SetBinError(irun+1, 100.0*4.0*TMath::Sqrt(m*m*dp*dp+p*p*dm*dm)/(p+m)/(p+m));
+          }
+        }
+        continue;
+      }
+      TString s(h1->GetName());
+      if(s.Contains("hTRDresolution_ClS")) {
+        TString sly=s(18,18);
+        Int_t idx=Int_t(kTRDresolution_ClS0)+sly.Atoi();
+        //printf("%s idx[%d-\"%s\":%d] v[%f]\n", s.Data(), idx, sly.Data(), sly.Atoi(), v[idx]);
+        if(branchFound[idx]) h1->SetBinContent(irun+1, 1.e4*v[idx]);
+        continue;
+      }
+      if(s.BeginsWith("hTRDresolution_TrkltY") &&
+        !s.BeginsWith("hTRDresolution_TrkltYS")) {
+        TString sly=s(21,21);
+        Int_t idx=Int_t(kTRDresolution_TrkltY0)+sly.Atoi();
+        //printf("%s idx[%d-\"%s\":%d] v[%f]\n", s.Data(), idx, sly.Data(), sly.Atoi(), v[idx]);
+        if(branchFound[idx]) h1->SetBinContent(irun+1, 1.e4*v[idx]);
+        continue;
+      }
+      if(s.BeginsWith("hTRDresolution_TrkltYS")) {
+        TString sly=s(22,22);
+        Int_t idx=Int_t(kTRDresolution_TrkltYS0)+sly.Atoi();
+        //printf("%s idx[%d-\"%s\":%d] v[%f]\n", s.Data(), idx, sly.Data(), sly.Atoi(), v[idx]);
+        if(branchFound[idx]) h1->SetBinContent(irun+1, 1.e1*v[idx]);
+        continue;
       }
       
       // Fill the rest of the histograms
       Int_t var = h1->GetUniqueID()-1;
       Int_t errY = h1->GetYaxis()->GetUniqueID()-1;
-      if(var>=0 && branchFound[var]) 
-	h1->SetBinContent(irun+1, v[var]);
+      if(var>=0 && branchFound[var]) h1->SetBinContent(irun+1, v[var]);
       if(errY>=0 && branchFound[errY]) h1->SetBinError(irun+1, v[errY]);
-      
     }  // end if(TH1D)
   }  // end loop over histograms
 }
@@ -365,6 +556,72 @@ void DefineHistograms(TList* outList, Int_t nRuns) {
                                   nRuns, 0., nRuns);
   hBeamIntensityC->SetUniqueID(kBeamIntensityC+1);
   SetDrawStyle(hBeamIntensityC); outList->Add(hBeamIntensityC);
+  
+  TH1D *hRes(NULL); 
+  const Int_t nly(6);
+  for(Int_t ires(0), jres(Int_t(kTRDresolution_ClS0)); ires<nly; ires++, jres++){
+    hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("Ly%d;run;#sigma(#Deltay) [#mum]", ires),
+                                  nRuns, 0., nRuns);
+    hRes->SetUniqueID(jres+1);
+    SetDrawStyle(hRes, "pl", 20, ires+1, 1, 1, ires+1); 
+    outList->Add(hRes);
+  }
+  const Int_t npt(3);
+  const Char_t *cpt[npt] = {"all", "[0.5, 0.8]", "[1.5, 5]"};
+  for(Int_t ich(0), jres(Int_t(kTRDresolution_TrkInYn)); ich<2; ich++){
+    for(Int_t ires(0); ires<npt; ires++, jres++){
+      hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("p_{t}[%c]=%s;run;#mu(#Deltay) [cm]", ich?'+':'-', cpt[ires]),
+                                    nRuns, 0., nRuns);
+      hRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+      SetDrawStyle(hRes, "E2", ires<2?24:20, ich?kRed:kBlue, ires?1:2, 
+                               ires?2:1, ich?kRed:kBlue, ires?1:2); 
+      outList->Add(hRes);
+    }
+  }
+  for(Int_t ich(0), jres(Int_t(kTRDresolution_TrkInYSn)); ich<2; ich++){
+    for(Int_t ires(0); ires<npt; ires++, jres++){
+      hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("p_{t}[%c]=%s;run;#sigma(#Deltay) [cm]", ich?'+':'-', cpt[ires]),
+                                    nRuns, 0., nRuns);
+      hRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+      SetDrawStyle(hRes, "E2", ires<2?24:20, ich?kRed:kBlue, ires?1:2, 
+                               ires?2:1, ich?kRed:kBlue, ires?1:2); 
+      outList->Add(hRes);
+    }
+  }
+  for(Int_t ich(0), jres(Int_t(kTRDresolution_TrkInPhn)); ich<2; ich++){
+    for(Int_t ires(0); ires<npt; ires++, jres++){
+      hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("p_{t}[%c]=%s;run;#mu(#Delta#phi) [deg]", ich?'+':'-', cpt[ires]),
+                                    nRuns, 0., nRuns);
+      hRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+      SetDrawStyle(hRes, "E2", ires<2?24:20, ich?kRed:kBlue, ires?1:2, 
+                               ires?2:1, ich?kRed:kBlue, ires?1:2); 
+      outList->Add(hRes);
+    }
+  }
+  for(Int_t ich(0), jres(Int_t(kTRDresolution_TrkInPhSn)); ich<2; ich++){
+    for(Int_t ires(0); ires<npt; ires++, jres++){
+      hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("p_{t}[%c]=%s;run;#sigma(#Delta#phi) [deg]", ich?'+':'-', cpt[ires]),
+                                    nRuns, 0., nRuns);
+      hRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+      SetDrawStyle(hRes, "E2", ires<2?24:20, ich?kRed:kBlue, ires?1:2, 
+                               ires?2:1, ich?kRed:kBlue, ires?1:2); 
+      outList->Add(hRes);
+    }
+  }
+  for(Int_t ires(0), jres(Int_t(kTRDresolution_TrkltY0)); ires<nly; ires++, jres++){
+    hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("Ly%d;run;#mu(#Deltay) [#mum]", ires),
+                                  nRuns, 0., nRuns);
+    hRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+    SetDrawStyle(hRes, "E2", 20, ires+1, 1, 1, ires+1); 
+    outList->Add(hRes);
+  }
+  for(Int_t ires(0), jres(Int_t(kTRDresolution_TrkltYS0)); ires<nly; ires++, jres++){
+    hRes=new TH1D(Form("h%s", gTrendNames[jres].Data()), Form("Ly%d;run;#sigma(#Deltay) [mm]", ires),
+                                  nRuns, 0., nRuns);
+    hRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+    SetDrawStyle(hRes, "E2", 20, ires+1, 1, 1, ires+1); 
+    outList->Add(hRes);
+  }
 }
 
 
