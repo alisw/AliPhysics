@@ -109,24 +109,9 @@ using std::vector;
 
 ClassImp(AliEveEventManager)
 
-//Bool_t AliEveEventManager::fgAssertRunLoader = kFALSE;
-//Bool_t AliEveEventManager::fgAssertESD       = kFALSE;
-//Bool_t AliEveEventManager::fgAssertAOD       = kFALSE;
-//Bool_t AliEveEventManager::fgAssertRaw       = kFALSE;
-
-//TString  AliEveEventManager::fgESDFileName("AliESDs.root");
-//AliEveEventManager::EVisibleESDTrees  AliEveEventManager::fgESDvisibleTrees(AliEveEventManager::kOfflineTree);
-//TString  AliEveEventManager::fgESDfriendsFileName("AliESDfriends.root");
-//TString  AliEveEventManager::fgAODFileName("AliAOD.root");
-//TString  AliEveEventManager::fgGAliceFileName("galice.root");
-//TString  AliEveEventManager::fgRawFileName("raw.root");
 TString  AliEveEventManager::fgCdbUri;
 //TString  AliEveEventManager::fgSpecificCdbUriValue;
 //TString  AliEveEventManager::fgSpecificCdbUriPath;
-
-//TList*   AliEveEventManager::fgAODfriends = 0;
-//
-//Bool_t   AliEveEventManager::fgRawFromStandardLoc = kFALSE;
 
 Bool_t   AliEveEventManager::fgGRPLoaded    = kFALSE;
 AliMagF* AliEveEventManager::fgMagField     = 0;
@@ -135,8 +120,8 @@ Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 
 AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
 
-AliEveEventManager::AliEveEventManager(const TString& name) :
-TEveEventManager(name, ""),
+AliEveEventManager::AliEveEventManager(EDataSource defaultDataSource) :
+TEveEventManager("Event", ""),
 fEventId(-1),
 fRunLoader (0),
 fESDFile   (0), fESDTree (0), fHLTESDTree(0), fESD (0),
@@ -157,14 +142,12 @@ fDrawESDtracksByType(false),
 fFirstEvent(true),
 fCenterProjectionsAtPrimaryVertex(false)
 {
-    fDataSourceOnline = new AliEveDataSourceOnline();
-//    fDataSourceOffline = new AliEveDataSourceOffline();
-    
-    fCurrentDataSource=fDataSourceOnline;
-    fCurrentData = fDataSourceOnline->GetData();
-    
     InitInternals();
-    fgMaster = this;
+    
+    fDataSourceOnline = new AliEveDataSourceOnline();
+    fDataSourceOffline = new AliEveDataSourceOffline();
+    
+    ChangeDataSource(defaultDataSource);
 }
 
 AliEveEventManager::~AliEveEventManager()
@@ -174,8 +157,6 @@ AliEveEventManager::~AliEveEventManager()
     fAutoLoadTimer->Disconnect("Timeout");
     fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
     
-//    if(fSubManagers){delete fSubManagers;}
-//    if(fMutex){delete fMutex;}
     if (fIsOpen){Close();}
     
     //    fTransients->DecDenyDestroy();
@@ -199,15 +180,9 @@ void AliEveEventManager::SetMaster(AliEveEventManager *master)
 void AliEveEventManager::InitInternals()
 {
     // Initialize internal members.
-    
     static const TEveException kEH("AliEveEventManager::InitInternals ");
     
-//    if (fgCurrent != 0){
-//        throw(kEH + "Dependent event-managers should be created via static method AddDependentManager().");
-//    }
-    
-//    if (fgMaster == 0){fgMaster = this;}
-//    fgCurrent = this;
+    fgMaster = this;
     
     fAutoLoadTimer = new TTimer;
     fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
@@ -304,7 +279,6 @@ Bool_t AliEveEventManager::HasRunLoader()
 Bool_t AliEveEventManager::HasESD()
 {
     // Check if AliESDEvent is initialized.
-    
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fESD;
 }
 

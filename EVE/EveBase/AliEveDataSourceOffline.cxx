@@ -35,14 +35,18 @@ fgAssertRunLoader(false),
 fgAssertESD(false),
 fgAssertAOD(false),
 fgAssertRaw(false),
+fCurrentRun(-1),
 fIsOpen(false),
 fESDfriendExists(kFALSE),
 fEventInfo(),
 fgAODfriends(0),
 fgRawFromStandardLoc(false)
 {
+    cout<<"Constructor of AliEveDataSourceOffline"<<endl;
     fCurrentData = new AliEveData();
+    cout<<"AliEveData initialized"<<endl;
     Open();
+    cout<<"Files opened"<<endl;
 }
 
 AliEveDataSourceOffline::~AliEveDataSourceOffline()
@@ -162,19 +166,26 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // as the number of events is not known.
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    
+    if(fCurrentData->fESD->GetRunNumber() != fCurrentRun)
+    {
+        fCurrentRun = fCurrentData->fESD->GetRunNumber();
+        InitOCDB(fCurrentRun);
+    }
+    cout<<"\n\n1\n\n"<<endl;
 //    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
     fEventInfo.Reset();
-    
+    cout<<"\n\n2\n\n"<<endl;
 //    fHasEvent = kFALSE;
     AliEveEventManager::GetMaster()->SetHasEvent(false);
     
     Int_t maxEvent = 0;
     if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
     {
+        cout<<"a"<<endl;
         if(fCurrentData->fESDTree){
+            cout<<"b"<<endl;
             if (event >= fCurrentData->fESDTree->GetEntries())
                 fCurrentData->fESDTree->Refresh();
             maxEvent = fCurrentData->fESDTree->GetEntries() - 1;
@@ -225,6 +236,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     {
         throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
     }
+    cout<<"\n\n3\n\n"<<endl;
     if (event < 0)
     {
         throw (kEH + Form("event %d not present, available range [%d, %d].",
@@ -235,12 +247,12 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         event=0;
         cout<<"Event number out of range. Going to event 0"<<endl;
     }
-    
+
     TString sysInfoHeader;
     sysInfoHeader.Form("AliEveEventManager::GotoEvent(%d) - ", event);
     AliSysInfo::AddStamp(sysInfoHeader + "Start");
 
-    
+    cout<<"\n\n4\n\n"<<endl;
     AliEveEventManager::GetMaster()->DestroyTransients();
     
 //    TEveManager::TRedrawDisabler rd(gEve);
@@ -267,7 +279,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         if (fESDfriendExists)
             fCurrentData->fESD->SetESDfriend(fCurrentData->fESDfriend);
     }
-    
+    cout<<"\n\n5\n\n"<<endl;
     if (fCurrentData->fHLTESDTree) {
         if (fCurrentData->fHLTESDTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from HLT ESD.");
@@ -285,7 +297,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         if (fCurrentData->fRunLoader->GetEvent(event) != 0)
             throw (kEH + "failed getting required event.");
     }
-    
+    cout<<"\n\n6\n\n"<<endl;
     if (fCurrentData->fRawReader)
     {
         // AliRawReader::GotoEvent(Int_t) works for AliRawReaderRoot/Chain.
@@ -313,10 +325,12 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
             Warning(kEH, "Loaded raw-event %d with fallback method.\n", rawEv);
         }
     }
-    
+    cout<<"\n\n7\n\n"<<endl;
 //    fHasEvent = kTRUE;
     AliEveEventManager::GetMaster()->SetHasEvent(true);
+    cout<<"1 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
     AliEveEventManager::GetMaster()->SetEventId(event);
+    cout<<"2 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
 //    fEventId  = event;
     
 //    if (this == fgMaster)
@@ -325,10 +339,12 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         AliEveEventManager::GetMaster()->ElementChanged();
 //    }
     
+    cout<<"3 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
     AliSysInfo::AddStamp(sysInfoHeader + "PostLoadEvent");
-    
+    cout<<"\n\n8\n\n"<<endl;
+    cout<<"4 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
     AliEveEventManager::GetMaster()->AfterNewEventLoaded();
-    
+    cout<<"After new event loaded executed"<<endl;
     AliSysInfo::AddStamp(sysInfoHeader + "PostUserActions");
 }
 
@@ -403,7 +419,7 @@ void AliEveDataSourceOffline::Open()
     if (fIsOpen){throw (kEH + "Event-files already opened.");}
     
     Int_t runNo = -1;
-    
+
     // Open ESD and ESDfriends
     if ((fCurrentData->fESDFile = TFile::Open(fgESDFileName)))
     {
@@ -482,7 +498,6 @@ void AliEveDataSourceOffline::Open()
         if (fgAssertAOD){throw (kEH + "AOD not initialized. Its precence was requested.");}
         else {Warning(kEH, "AOD not initialized.");}
     }
-    
     // Open RunLoader from galice.root
     //    fgGAliceFileName = "/Users/Jerus/galice.root"; // temp
     
@@ -493,7 +508,7 @@ void AliEveDataSourceOffline::Open()
         gafile->Close();
         delete gafile;
         cout<<"SETTING RUN LOADER in Open()"<<endl;
-        fCurrentData->fRunLoader = AliRunLoader::Open(fgGAliceFileName, GetName());
+        fCurrentData->fRunLoader = AliRunLoader::Open(fgGAliceFileName, AliEveEventManager::GetMaster()->GetName());
         if (fCurrentData->fRunLoader)
         {
             TString alicePath(gSystem->DirName(fgGAliceFileName));
@@ -522,7 +537,6 @@ void AliEveDataSourceOffline::Open()
         if (fgAssertRunLoader){throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");}
         else{Warning(kEH, "Bootstraping of run-loader failed.");}
     }
-    
     // Open raw-data file
     TString rawPath;
     if (fgRawFromStandardLoc)
@@ -552,7 +566,6 @@ void AliEveDataSourceOffline::Open()
     {
         rawPath = fgRawFileName;
     }
-    
     // If i use open directly, raw-reader reports an error but i have
     // no way to detect it.
     // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
@@ -573,7 +586,6 @@ void AliEveDataSourceOffline::Open()
         if (fgAssertRaw){throw (kEH + "raw-data not initialized. Its precence was requested.");}
         else{Warning(kEH, "raw-data not initialized.");}
     }
-    
     if (runNo < 0)
     {
         if (fCurrentData->fRawReader)
@@ -590,9 +602,8 @@ void AliEveDataSourceOffline::Open()
             return;
         }
     }
-    
     // Initialize OCDB ... only in master event-manager
-    InitOCDB(runNo);
+//    InitOCDB(runNo);
     fIsOpen = kTRUE;
 }
 

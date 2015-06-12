@@ -67,7 +67,7 @@ AliEveHLT::AliEveHLT(bool storageManager)
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage(ocdbStorage);
 
-  AliEveEventManager* eventManager = new AliEveEventManager();
+    AliEveEventManager* eventManager = new AliEveEventManager(AliEveEventManager::kSourceHLT);
   gEve->AddEvent(eventManager);
   cout<<"Event manager created"<<endl;
 

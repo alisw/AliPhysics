@@ -82,20 +82,21 @@ void alieve_init(const TString& cdburi = "",
 
   gSystem->ProcessEvents();
 
-  AliEveEventManager::SetFilesPath(path);
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+    
+    dataSource->SetFilesPath(path);
   
   if(showHLTESDTree){
-   AliEveEventManager::GetMaster()->GetDataSourceOffline()->SetESDFileName(esdfile, AliEveEventManager::kHLTTree);
+    dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kHLTTree);
   }
   else
   {
-   AliEveEventManager::GetMaster()->GetDataSourceOffline()->SetESDFileName(esdfile, AliEveEventManager::kOfflineTree);
+    dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kOfflineTree);
   }
   
-  AliEveEventManager::SetRawFileName(rawfile);
+  dataSource->SetRawFileName(rawfile);
   AliEveEventManager::SetCdbUri(cdburi);
-  AliEveEventManager::SetAssertElements(assert_runloader, assert_esd,
-					assert_aod, assert_raw);
+  dataSource->SetAssertElements(assert_runloader, assert_esd,assert_aod, assert_raw);
 
   // Open event
   if (path.BeginsWith("alien:") || ! cdburi.BeginsWith("local:"))

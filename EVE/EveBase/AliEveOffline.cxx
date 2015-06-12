@@ -62,8 +62,6 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     fCDBuri(cdbUri),
     fPath(path)
 {
-    cout<<"AliEveOffline"<<endl;
-    
     //-----------------------------------------------------------------------------------------
     //  Set all preferences here
     //
@@ -90,10 +88,8 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     //-----------------------------------------------------------------------------------------
 
     cout<<"creating manager...";
-    AliEveEventManager *man = new AliEveEventManager();
+    AliEveEventManager *man = new AliEveEventManager(AliEveEventManager::kSourceOffline);
     cout<<"created"<<endl;
-    Init();
-//    man->Open();
     
     if (gSystem->Getenv("ALICE_ROOT") != 0)
     {
@@ -102,16 +98,19 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     }
 
     
-    if (!AliCDBManager::Instance()->IsDefaultStorageSet())
+    if (cdbUri.IsNull() && !AliCDBManager::Instance()->IsDefaultStorageSet())
     {
         gEnv->SetValue("Root.Stacktrace", "no");
-        Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
+        Fatal("AliEveOffline", "OCDB path MUST be specified as the first argument.");
     }
     
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
     
     dataSource->AddAODfriend("AliAOD.VertexingHF.root");
 
+    Init();
+    man->Open();
+    
     TEveUtil::AssertMacro("VizDB_scan.C");
     
     AliEveMacroExecutor *exec = man->GetExecutor();
@@ -343,7 +342,7 @@ void AliEveOffline::Init()
     
     dataSource->SetRawFileName(rawfile);
     AliEveEventManager::SetCdbUri(fCDBuri);
-//    AliEveEventManager::SetAssertElements(0,0,0,0);
+    dataSource->SetAssertElements(0,0,0,0);
     
     // Open event
     if (fPath.BeginsWith("alien:") || !fCDBuri.BeginsWith("local:"))
