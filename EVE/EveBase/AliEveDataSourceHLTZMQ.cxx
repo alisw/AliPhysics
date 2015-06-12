@@ -9,6 +9,7 @@
 
 #include "AliEveConfigManager.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliGRPPreprocessor.h"
 #include <TEnv.h>
 #include <TInterpreter.h>
@@ -168,6 +169,11 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
 void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
 {
     AliCDBManager* cdb = AliCDBManager::Instance();
+  if (cdb->IsDefaultStorageSet() == kTRUE)
+  {
+    AliInfo(Form("CDB already set - using the old storage:  '%s'", cdb->GetDefaultStorage()->GetURI().Data()));
+    return;
+  }
     if (runNo!=AliEveEventManager::GetMaster()->GetCurrentRun()){
         AliEveEventManager::GetMaster()->SetCurrentRun(runNo);
       cdb->SetRun(runNo);
@@ -176,13 +182,8 @@ void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
 
 void AliEveDataSourceHLTZMQ::GotoEvent(Int_t /*event*/)
 {
-    static const TEveException kEH("AliEveDataSourceHLTZMQ::GotoEvent ");
-    
     NextEvent();
-    gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
-    
     return;
-    
 }
 
 void AliEveDataSourceHLTZMQ::NextEvent()
