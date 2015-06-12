@@ -80,10 +80,10 @@ public:
   
   void IntegratedLuminosity(const char* triggerList="",
                             const char* lumiTrigger="C0TVX-B-NOPF-ALLNOTRD",
-                            Double_t lumiCrossSection=0.755*2000,
+                            Double_t lumiCrossSection=39,
                             const char* csvOutputFile="",
                             const char sep='\t',
-                            const char* csUnit="ub");
+                            const char* csUnit="nb");
 
   TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
                     const std::vector<double>& vy, const std::vector<double>& vey);
