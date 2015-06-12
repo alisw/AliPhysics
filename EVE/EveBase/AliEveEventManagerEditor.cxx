@@ -23,6 +23,12 @@
 #include <TGTextView.h>
 #include <TGLabel.h>
 
+#include <TTimeStamp.h>
+#include <AliRawReader.h>
+#include <AliDAQ.h>
+#include <AliRawEventHeaderBase.h>
+
+
 #include "Riostream.h"
 
 //______________________________________________________________________________
@@ -83,7 +89,7 @@ void AliEveEventManagerEditor::SetModel(TObject* obj)
     
     fM = static_cast<AliEveEventManager*>(obj);
     
-    fEventInfo->LoadBuffer(fM->GetEventInfoVertical());
+    fEventInfo->LoadBuffer(GetEventInfoVertical());
 }
 
 /******************************************************************************/
@@ -97,7 +103,7 @@ void AliEveEventManagerEditor::DumpEventInfo()
     ofstream f("event_info.txt", ios::out | ios::app);
     
     f << "================================================================================\n\n";
-    f << fM->GetEventInfoHorizontal() << std::endl << std::endl;
+    f << GetEventInfoHorizontal() << std::endl << std::endl;
     
     f.close();
 }
@@ -475,3 +481,90 @@ TGLabel* AliEveEventManagerWindow::MkLabel(TGCompositeFrame* p,
     return l;
 }
 
+TString AliEveEventManagerEditor::GetEventInfoHorizontal() const
+{
+    // Dumps the event-header contents in vertical formatting.
+    
+    TString rawInfo, esdInfo;
+    
+    if (!AliEveEventManager::AssertRawReader())
+    {
+        rawInfo = "No raw-data event info is available!\n";
+    }
+    else
+    {
+        const UInt_t* attr = AliEveEventManager::AssertRawReader()->GetAttributes();
+        TTimeStamp ts(AliEveEventManager::AssertRawReader()->GetTimestamp());
+        rawInfo.Form("RAW event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
+                     "Trigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x  Timestamp: %s\n",
+                     AliEveEventManager::AssertRawReader()->GetRunNumber(),AliEveEventManager::AssertRawReader()->GetType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertRawReader()->GetType()),
+                     AliEveEventManager::AssertRawReader()->GetPeriod(),AliEveEventManager::AssertRawReader()->GetOrbitID(),AliEveEventManager::AssertRawReader()->GetBCID(),
+                     AliEveEventManager::AssertRawReader()->GetClassMask(),
+                     *(AliEveEventManager::AssertRawReader())->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(AliEveEventManager::AssertRawReader())->GetDetectorPattern()),
+                     attr[0],attr[1],attr[2], ts.AsString("s"));
+    }
+    
+    if (!AliEveEventManager::AssertESD())
+    {
+        esdInfo = "No ESD event info is available!";
+    }
+    else
+    {
+        TString acttrclasses   = AliEveEventManager::AssertESD()->GetESDRun()->GetActiveTriggerClasses();
+        TString firedtrclasses = AliEveEventManager::AssertESD()->GetFiredTriggerClasses();
+        TTimeStamp ts(AliEveEventManager::AssertESD()->GetTimeStamp());
+        esdInfo.Form("ESD event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
+                     "Active trigger classes: %s\nTrigger: %llx (%s)\nEvent# in file: %d  Timestamp: %s, MagField: %.2e",
+                     AliEveEventManager::AssertESD()->GetRunNumber(),
+                     AliEveEventManager::AssertESD()->GetEventType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertESD()->GetEventType()),
+                     AliEveEventManager::AssertESD()->GetPeriodNumber(),AliEveEventManager::AssertESD()->GetOrbitNumber(),AliEveEventManager::AssertESD()->GetBunchCrossNumber(),
+                     acttrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetTriggerMask(),firedtrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetEventNumberInFile(), ts.AsString("s"), AliEveEventManager::AssertESD()->GetMagneticField());
+    }
+    
+    return rawInfo + esdInfo;
+}
+
+TString AliEveEventManagerEditor::GetEventInfoVertical() const
+{
+    // Dumps the event-header contents in vertical formatting.
+    
+    TString rawInfo, esdInfo;
+    
+    if (!AliEveEventManager::AssertRawReader())
+    {
+        rawInfo = "No raw-data event info is available!\n";
+    }
+    else
+    {
+        const UInt_t* attr = AliEveEventManager::AssertRawReader()->GetAttributes();
+        rawInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
+                     AliEveEventManager::AssertRawReader()->GetRunNumber(),AliEveEventManager::AssertRawReader()->GetType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertRawReader()->GetType()),
+                     AliEveEventManager::AssertRawReader()->GetPeriod(),AliEveEventManager::AssertRawReader()->GetOrbitID(),AliEveEventManager::AssertRawReader()->GetBCID(),
+                     AliEveEventManager::AssertRawReader()->GetClassMask(),
+                     *(AliEveEventManager::AssertRawReader())->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(AliEveEventManager::AssertRawReader())->GetDetectorPattern()),
+                     attr[0],attr[1],attr[2],
+                     AliEveEventManager::AssertRawReader()->GetTimestamp());
+    }
+    
+    if (!AliEveEventManager::AssertESD())
+    {
+        esdInfo = "No ESD event info is available!\n";
+    }
+    else
+    {
+        TString acttrclasses   = AliEveEventManager::AssertESD()->GetESDRun()->GetActiveTriggerClasses();
+        TString firedtrclasses = AliEveEventManager::AssertESD()->GetFiredTriggerClasses();
+        esdInfo.Form("ESD event info:\nRun#: %d\nActive trigger classes: %s\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx (%s)\nEvent# in file:%d\nTimestamp: %x\n",
+                     AliEveEventManager::AssertESD()->GetRunNumber(),
+                     acttrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetEventType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertESD()->GetEventType()),
+                     AliEveEventManager::AssertESD()->GetPeriodNumber(),AliEveEventManager::AssertESD()->GetOrbitNumber(),AliEveEventManager::AssertESD()->GetBunchCrossNumber(),
+                     AliEveEventManager::AssertESD()->GetTriggerMask(),firedtrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetEventNumberInFile(),
+                     AliEveEventManager::AssertESD()->GetTimeStamp());
+    }
+    
+    return rawInfo + "\n" + esdInfo;
+}

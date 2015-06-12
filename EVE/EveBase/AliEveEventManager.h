@@ -32,7 +32,6 @@ class AliAODEvent;
 class AliRawReader;
 
 class AliGRPObject;
-class AliRecoParam;
 class AliMagF;
 
 class TEveElement;
@@ -78,9 +77,6 @@ public:
     TTree*        GetAODTree()         const { return fCurrentData->fAODTree; }
     AliAODEvent*  GetAOD()             const { return fCurrentData->fAOD;     }
     AliEveEventSelector* GetEventSelector() const { return fPEventSelector; }
-    TString       GetEventInfoHorizontal() const;
-    TString       GetEventInfoVertical()   const;
-    const AliEventInfo*	GetEventInfo();
 
     static Int_t  CurrentEventId();
     static Bool_t HasRunLoader();
@@ -97,7 +93,6 @@ public:
     static AliRawReader* AssertRawReader();
     static AliMagF*      AssertMagField();
     static TGeoManager*  AssertGeometry();
-    static AliRecoParam* AssertRecoParams();
 
 
     static void RegisterTransient(TEveElement* element);
@@ -107,7 +102,7 @@ public:
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
     bool          GetAutoLoadRunning()     const { return fAutoLoadTimerRunning;}
     
-    void          SetAutoLoadTime(Float_t time);
+    void          SetAutoLoadTime(Float_t time){fAutoLoadTime = time;}
     void          SetAutoLoad(Bool_t autoLoad);
     void          StartAutoLoadTimer();
     void          StopAutoLoadTimer();
@@ -189,7 +184,6 @@ protected:
 
     static Bool_t        fgGRPLoaded;     // Global run parameters loaded?
     static AliMagF      *fgMagField;      // Global pointer to magnetic field.
-    static AliRecoParam* fgRecoParam;
     static Bool_t        fgUniformField;  // Track with uniform field.
     Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
@@ -198,7 +192,6 @@ private:
     
     void InitInternals();
     static Bool_t InitGRP();
-    static Bool_t InitRecoParam();
 
     AliEveSaveViews *fViewsSaver;
     AliEveESDTracks *fESDdrawer;

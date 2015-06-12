@@ -52,6 +52,9 @@ protected:
    TGTextView          *fEventInfo;     // Text box with event info.
 
 private:
+    TString GetEventInfoHorizontal() const;
+    TString GetEventInfoVertical() const;
+    
    AliEveEventManagerEditor(const AliEveEventManagerEditor&);            // Not implemented
    AliEveEventManagerEditor& operator=(const AliEveEventManagerEditor&); // Not implemented
 
