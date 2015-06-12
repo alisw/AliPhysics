@@ -255,4 +255,12 @@ void AliEveDataSourceHLTZMQ::NextEvent()
 #endif
 }
 
+void AliEveDataSourceHLTZMQ::SetCdbUri(const TString& cdb)
+{
+    // Set path to CDB, there is no default.
+    if ( ! cdb.IsNull()) fgCdbUri = cdb;
+    AliCDBManager* cdbManager = AliCDBManager::Instance();
+    cdbManager->SetDefaultStorage(cdb);
+}
+
 

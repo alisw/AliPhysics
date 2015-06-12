@@ -68,29 +68,29 @@ void AliEveDataSourceOffline::InitOCDB(int runNo)
     }
     else
     {
-        if (AliEveEventManager::GetCdbUri().IsNull())
+        if (fgCdbUri.IsNull())
         {
             gEnv->SetValue("Root.Stacktrace", "no");
             Fatal("Open()", "OCDB path was not specified.");
         }
-        cout<<"Setting default storage:"<<AliEveEventManager::GetCdbUri()<<endl;
+        cout<<"Setting default storage:"<<fgCdbUri<<endl;
         // Handle some special cases for MC (should be in OCDBManager).
-        if (AliEveEventManager::GetCdbUri() == "mcideal://")
+        if (fgCdbUri == "mcideal://")
             cdb->SetDefaultStorage("MC", "Ideal");
-        else if (AliEveEventManager::GetCdbUri() == "mcresidual://")
+        else if (fgCdbUri == "mcresidual://")
             cdb->SetDefaultStorage("MC", "Residual");
-        else if (AliEveEventManager::GetCdbUri() == "mcfull://")
+        else if (fgCdbUri == "mcfull://")
             cdb->SetDefaultStorage("MC", "Full");
-        else if (AliEveEventManager::GetCdbUri() == "local://"){
-            AliEveEventManager::SetCdbUri(Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT")));
-            cdb->SetDefaultStorage(AliEveEventManager::GetCdbUri());
+        else if (fgCdbUri == "local://"){
+            fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
+            cdb->SetDefaultStorage(fgCdbUri);
         }
         else{
-            cdb->SetDefaultStorage(AliEveEventManager::GetCdbUri());
+            cdb->SetDefaultStorage(fgCdbUri);
         }
         cdb->SetRun(runNo);
         
-        if (cdb->IsDefaultStorageSet() == kFALSE){throw kEH + "CDB initialization failed for '" + AliEveEventManager::GetCdbUri() + "'.";}
+        if (cdb->IsDefaultStorageSet() == kFALSE){throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";}
     }
     /*
      if (fgCdbUri.BeginsWith("local://"))
@@ -112,6 +112,12 @@ void AliEveDataSourceOffline::InitOCDB(int runNo)
      }
      }
      */
+}
+
+void AliEveDataSourceOffline::SetCdbUri(const TString& cdb)
+{
+    // Set path to CDB, there is no default.
+    if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }
 
 void AliEveDataSourceOffline::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf)
@@ -171,21 +177,15 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         fCurrentRun = fCurrentData->fESD->GetRunNumber();
         InitOCDB(fCurrentRun);
     }
-    cout<<"\n\n1\n\n"<<endl;
-//    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
     fEventInfo.Reset();
-    cout<<"\n\n2\n\n"<<endl;
-//    fHasEvent = kFALSE;
     AliEveEventManager::GetMaster()->SetHasEvent(false);
     
     Int_t maxEvent = 0;
     if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
     {
-        cout<<"a"<<endl;
         if(fCurrentData->fESDTree){
-            cout<<"b"<<endl;
             if (event >= fCurrentData->fESDTree->GetEntries())
                 fCurrentData->fESDTree->Refresh();
             maxEvent = fCurrentData->fESDTree->GetEntries() - 1;
@@ -236,7 +236,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     {
         throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
     }
-    cout<<"\n\n3\n\n"<<endl;
     if (event < 0)
     {
         throw (kEH + Form("event %d not present, available range [%d, %d].",
@@ -279,7 +278,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         if (fESDfriendExists)
             fCurrentData->fESD->SetESDfriend(fCurrentData->fESDfriend);
     }
-    cout<<"\n\n5\n\n"<<endl;
     if (fCurrentData->fHLTESDTree) {
         if (fCurrentData->fHLTESDTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from HLT ESD.");
@@ -297,7 +295,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         if (fCurrentData->fRunLoader->GetEvent(event) != 0)
             throw (kEH + "failed getting required event.");
     }
-    cout<<"\n\n6\n\n"<<endl;
     if (fCurrentData->fRawReader)
     {
         // AliRawReader::GotoEvent(Int_t) works for AliRawReaderRoot/Chain.
@@ -325,26 +322,14 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
             Warning(kEH, "Loaded raw-event %d with fallback method.\n", rawEv);
         }
     }
-    cout<<"\n\n7\n\n"<<endl;
-//    fHasEvent = kTRUE;
     AliEveEventManager::GetMaster()->SetHasEvent(true);
-    cout<<"1 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
     AliEveEventManager::GetMaster()->SetEventId(event);
-    cout<<"2 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
-//    fEventId  = event;
     
-//    if (this == fgMaster)
-//    {
-        SetName(Form("Event %d", AliEveEventManager::GetMaster()->GetEventId()));
-        AliEveEventManager::GetMaster()->ElementChanged();
-//    }
+    SetName(Form("Event %d", AliEveEventManager::GetMaster()->GetEventId()));
+    AliEveEventManager::GetMaster()->ElementChanged();
     
-    cout<<"3 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
     AliSysInfo::AddStamp(sysInfoHeader + "PostLoadEvent");
-    cout<<"\n\n8\n\n"<<endl;
-    cout<<"4 EM has event:"<<AliEveEventManager::GetMaster()->IsEventAvailable()<<endl;
     AliEveEventManager::GetMaster()->AfterNewEventLoaded();
-    cout<<"After new event loaded executed"<<endl;
     AliSysInfo::AddStamp(sysInfoHeader + "PostUserActions");
 }
 
@@ -385,13 +370,7 @@ void AliEveDataSourceOffline::NextEvent()
 void AliEveDataSourceOffline::PrevEvent()
 {
     // Loads previous event.
-    
     static const TEveException kEH("AliEveEventManager::PrevEvent ");
-    
-//    if (fAutoLoadTimerRunning)
-//    {
-//        throw (kEH + "Event auto-load timer is running.");
-//    }
     
     if ((fCurrentData->fESDTree!=0) || (fCurrentData->fHLTESDTree!=0))
     {
@@ -598,12 +577,9 @@ void AliEveDataSourceOffline::Open()
         else
         {
             AliEveEventManager::GetMaster()->SetEventId(0);
-//            fEventId = 0;
             return;
         }
     }
-    // Initialize OCDB ... only in master event-manager
-//    InitOCDB(runNo);
     fIsOpen = kTRUE;
 }
 
@@ -652,10 +628,8 @@ void AliEveDataSourceOffline::Close()
     }
     
     AliEveEventManager::GetMaster()->SetEventId(-1);
-//    fEventId  = -1;
     fIsOpen   = kFALSE;
     AliEveEventManager::GetMaster()->SetHasEvent(false);
-//    fHasEvent = kFALSE;
 }
 
 Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const

@@ -60,9 +60,6 @@ public:
     
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
 
-    static void           SetCdbUri(const TString& cdb);
-    static const TString& GetCdbUri() {return fgCdbUri;}
-
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const{
         return fDataSourceOffline?fDataSourceOffline->GetMaxEventId(refreshESD):-1;
     }
@@ -71,15 +68,15 @@ public:
 
     Int_t         GetEventId()         const { return fEventId; }
     void          SetEventId(int eventId)    { fEventId=eventId;}
-    AliRunLoader* GetRunLoader()       const { return fRunLoader; }
-    TFile*        GetESDFile()         const { return fESDFile; }
-    TTree*        GetESDTree()         const { return fESDTree; }
-    TTree*        GetHLTESDTree()      const { return fHLTESDTree; }
+    AliRunLoader* GetRunLoader()       const { return fCurrentData->fRunLoader; }
+    TFile*        GetESDFile()         const { return fCurrentData->fESDFile; }
+    TTree*        GetESDTree()         const { return fCurrentData->fESDTree; }
+    TTree*        GetHLTESDTree()      const { return fCurrentData->fHLTESDTree; }
     AliESDEvent*  GetESD()             const { return fCurrentData->fESD;     }
-    AliESDfriend* GetESDfriend()       const { return fESDfriend; }
-    TFile*        GetAODFile()         const { return fAODFile; }
-    TTree*        GetAODTree()         const { return fAODTree; }
-    AliAODEvent*  GetAOD()             const { return fAOD;     }
+    AliESDfriend* GetESDfriend()       const { return fCurrentData->fESDfriend; }
+    TFile*        GetAODFile()         const { return fCurrentData->fAODFile; }
+    TTree*        GetAODTree()         const { return fCurrentData->fAODTree; }
+    AliAODEvent*  GetAOD()             const { return fCurrentData->fAOD;     }
     AliEveEventSelector* GetEventSelector() const { return fPEventSelector; }
     TString       GetEventInfoHorizontal() const;
     TString       GetEventInfoVertical()   const;
@@ -142,9 +139,6 @@ public:
     void          EventServerDown();  // *SIGNAL*
     
     AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
-    void InitOCDB(int runNo=-1);
-
-//    void PrepareForNewEvent(AliESDEvent *event);
 
     void ChangeDataSource(EDataSource newSource);
     AliEveDataSource* GetDataSourceOnline(){return fDataSourceOnline;}
@@ -162,18 +156,6 @@ protected:
     
     Int_t         fEventId;		// Id of current event.
 
-    AliRunLoader* fRunLoader;		// Run loader.
-
-    TFile        *fESDFile;		// ESD file.
-    TTree        *fESDTree;		// ESD tree.
-    TTree        *fHLTESDTree;	// HLT ESD tree.
-    AliESDEvent  *fESD;			// ESDEvent object.
-    AliESDfriend *fESDfriend;		// ESDfriend object.
-    Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
-    TFile        *fAODFile;		// AOD file.
-    TTree        *fAODTree;		// AOD tree.
-    AliAODEvent  *fAOD;			// AODEvent object.
-
     AliEveData* fCurrentData; //current data struct from one of the data sources
     AliEveDataSource* fCurrentDataSource; //data source in use at the moment
     AliEveDataSource *fDataSourceOnline;
@@ -182,14 +164,12 @@ protected:
     
     //std::map<EDataSource, AliDataSource*> fDataSources; //list of registered data sources (HLT,File,Online)
 
-    AliRawReader *fRawReader;             // Raw-data reader.
     AliEventInfo	fEventInfo;		// Current Event Info
 
     Bool_t        fAutoLoad;              // Automatic loading of events (online)
     Float_t       fAutoLoadTime;          // Auto-load time in seconds
     TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
 
-    Bool_t        fIsOpen;                // Are event-files opened.
     Bool_t        fHasEvent;              // Is an event available.
 
     TMap*         fGlobal;
@@ -202,8 +182,6 @@ protected:
     TEveElementList     *fTransientLists; // Container for lists of transient (per event) elements.
 
     AliEveEventSelector* fPEventSelector; // Event filter
-
-    static TString  fgCdbUri;		// Global URI to CDB.
 
     static Bool_t        fgGRPLoaded;     // Global run parameters loaded?
     static AliMagF      *fgMagField;      // Global pointer to magnetic field.

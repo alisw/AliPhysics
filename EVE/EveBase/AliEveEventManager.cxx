@@ -109,7 +109,7 @@ using std::vector;
 
 ClassImp(AliEveEventManager)
 
-TString  AliEveEventManager::fgCdbUri;
+//TString  AliEveEventManager::fgCdbUri;
 //TString  AliEveEventManager::fgSpecificCdbUriValue;
 //TString  AliEveEventManager::fgSpecificCdbUriPath;
 
@@ -123,13 +123,9 @@ AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
 AliEveEventManager::AliEveEventManager(EDataSource defaultDataSource) :
 TEveEventManager("Event", ""),
 fEventId(-1),
-fRunLoader (0),
-fESDFile   (0), fESDTree (0), fHLTESDTree(0), fESD (0),
-fESDfriend (0), fESDfriendExists(kFALSE),
-fAODFile   (0), fAODTree (0), fAOD (0),
-fRawReader (0), fEventInfo(),
+fEventInfo(),
 fAutoLoad  (kFALSE), fAutoLoadTime (5),fAutoLoadTimer(0),
-fIsOpen    (kFALSE), fHasEvent(kFALSE),
+fHasEvent(kFALSE),
 fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
 fExecutor    (0), fTransients(0), fTransientLists(0),
 fPEventSelector(0),
@@ -156,8 +152,6 @@ AliEveEventManager::~AliEveEventManager()
     fAutoLoadTimer->Stop();
     fAutoLoadTimer->Disconnect("Timeout");
     fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
-    
-    if (fIsOpen){Close();}
     
     //    fTransients->DecDenyDestroy();
     //    fTransients->Destroy();
@@ -206,12 +200,6 @@ void AliEveEventManager::InitInternals()
     fESDdrawer = new AliEveESDTracks();
 }
 
-void AliEveEventManager::SetCdbUri(const TString& cdb)
-{
-    // Set path to CDB, there is no default.
-    if ( ! cdb.IsNull()) fgCdbUri = cdb;
-}
-
 void AliEveEventManager::ChangeDataSource(EDataSource newSource)
 {
     if(newSource == kSourceOnline)
@@ -246,14 +234,6 @@ void AliEveEventManager::Timeout()
     Emit("Timeout()");
 }
 
-//void AliEveEventManager::PrepareForNewEvent(AliESDEvent *event)
-//{
-//    DestroyElements();
-//    InitOCDB(event->GetRunNumber());
-//    printf("======================= setting event to %d\n", fEventId);
-//    SetEvent(0,0,event,0);
-//}
-
 //------------------------------------------------------------------------------
 // Static convenience functions, mainly used from macros.
 //------------------------------------------------------------------------------
@@ -272,7 +252,6 @@ Int_t AliEveEventManager::CurrentEventId()
 Bool_t AliEveEventManager::HasRunLoader()
 {
     // Check if AliRunLoader is initialized.
-    
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fRunLoader;
 }
 
@@ -285,21 +264,18 @@ Bool_t AliEveEventManager::HasESD()
 Bool_t AliEveEventManager::HasESDfriend()
 {
     // Check if AliESDfriend is initialized.
-    
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fESDfriend;
 }
 
 Bool_t AliEveEventManager::HasAOD()
 {
     // Check if AliESDEvent is initialized.
-    
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fAOD;
 }
 
 Bool_t AliEveEventManager::HasRawReader()
 {
     // Check if raw-reader is initialized.
-    
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fRawReader;
 }
 
@@ -620,7 +596,7 @@ void AliEveEventManager::SetTrigSel(Int_t trig)
 {
     static const TEveException kEH("AliEveEventManager::SetTrigSel ");
     
-    if (!fRawReader)
+    if (!fCurrentData->fRawReader)
     {
         Warning(kEH, "No Raw-reader exists. Ignoring the call.");
         return;
@@ -630,7 +606,7 @@ void AliEveEventManager::SetTrigSel(Int_t trig)
         ULong64_t trigMask = 0;
         if (trig >= 0) trigMask = (1ull << trig);
         Info(kEH,"Trigger selection: 0x%llx",trigMask);
-        fRawReader->SelectEvents(-1,trigMask,NULL);
+        fCurrentData->fRawReader->SelectEvents(-1,trigMask,NULL);
     }
 }
 
@@ -688,6 +664,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
     
     Info(kEH, "------------------!!!------------");
+
     ElementChanged();
     
     NewEventDataLoaded();
@@ -828,12 +805,12 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
     // Fill the event info object
     
     AliCentralTrigger *aCTP = NULL;
-    if (fRawReader) {
-        fEventInfo.SetEventType(fRawReader->GetType());
+    if (fCurrentData->fRawReader) {
+        fEventInfo.SetEventType(fCurrentData->fRawReader->GetType());
         
-        ULong64_t mask = fRawReader->GetClassMask();
+        ULong64_t mask = fCurrentData->fRawReader->GetClassMask();
         fEventInfo.SetTriggerMask(mask);
-        UInt_t clmask = fRawReader->GetDetectorPattern()[0];
+        UInt_t clmask = fCurrentData->fRawReader->GetDetectorPattern()[0];
         fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(clmask));
         
         aCTP = new AliCentralTrigger();
@@ -846,8 +823,8 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
         aCTP->SetClassMask(mask);
         aCTP->SetClusterMask(clmask);
         
-        if (fRunLoader) {
-            AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
+        if (fCurrentData->fRunLoader) {
+            AliCentralTrigger* rlCTP = fCurrentData->fRunLoader->GetTrigger();
             if (rlCTP) {
                 rlCTP->SetClassMask(mask);
                 rlCTP->SetClusterMask(clmask);
@@ -857,8 +834,8 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
     else {
         fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
         
-        if (fRunLoader && (!fRunLoader->LoadTrigger())) {
-            aCTP = fRunLoader->GetTrigger();
+        if (fCurrentData->fRunLoader && (!fCurrentData->fRunLoader->LoadTrigger())) {
+            aCTP = fCurrentData->fRunLoader->GetTrigger();
             fEventInfo.SetTriggerMask(aCTP->GetClassMask());
             // get inputs from actp - just get
             AliESDHeader* esdheader = fCurrentData->fESD->GetHeader();
@@ -876,7 +853,7 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
     AliTriggerConfiguration *config = aCTP->GetConfiguration();
     if (!config) {
         AliError("No trigger configuration has been found! The trigger configuration information will not be used!");
-        if (fRawReader) delete aCTP;
+        if (fCurrentData->fRawReader) delete aCTP;
         return 0;
     }
     
@@ -888,7 +865,7 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
         THashList * lst = dynamic_cast<THashList*>(entry->GetObject());
         if (lst) {
             lst->Sort(kSortDescending); // to avoid problems with substrings
-            if (fRawReader) fRawReader->LoadTriggerAlias(lst);
+            if (fCurrentData->fRawReader) fCurrentData->fRawReader->LoadTriggerAlias(lst);
             // Now declare all the triggers present in the aliases
             TIter iter(lst);
             TNamed *nmd = 0;
@@ -916,7 +893,7 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
         if (trclass && trclass->GetMask()>0) {
             Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
             if (fCurrentData->fESD) fCurrentData->fESD->SetTriggerClass(trclass->GetName(),trindex);
-            if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
+            if (fCurrentData->fRawReader) fCurrentData->fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
             if (trmask & (1ull << trindex)) {
                 trclasses += " ";
                 trclasses += trclass->GetName();
@@ -928,11 +905,11 @@ const AliEventInfo* AliEveEventManager::GetEventInfo()
     fEventInfo.SetTriggerClasses(trclasses);
     
     if (!aCTP->CheckTriggeredDetectors()) {
-        if (fRawReader) delete aCTP;
+        if (fCurrentData->fRawReader) delete aCTP;
         return 0;
     }
     
-    if (fRawReader) delete aCTP;
+    if (fCurrentData->fRawReader) delete aCTP;
     
     // everything went ok, return pointer
     return (&fEventInfo);
@@ -945,20 +922,20 @@ TString AliEveEventManager::GetEventInfoHorizontal() const
     
     TString rawInfo, esdInfo;
     
-    if (!fRawReader)
+    if (!fCurrentData->fRawReader)
     {
         rawInfo = "No raw-data event info is available!\n";
     }
     else
     {
-        const UInt_t* attr = fRawReader->GetAttributes();
-        TTimeStamp ts(fRawReader->GetTimestamp());
+        const UInt_t* attr = fCurrentData->fRawReader->GetAttributes();
+        TTimeStamp ts(fCurrentData->fRawReader->GetTimestamp());
         rawInfo.Form("RAW event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
                      "Trigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x  Timestamp: %s\n",
-                     fRawReader->GetRunNumber(),fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fRawReader->GetType()),
-                     fRawReader->GetPeriod(),fRawReader->GetOrbitID(),fRawReader->GetBCID(),
-                     fRawReader->GetClassMask(),
-                     *fRawReader->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*fRawReader->GetDetectorPattern()),
+                     fCurrentData->fRawReader->GetRunNumber(),fCurrentData->fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fCurrentData->fRawReader->GetType()),
+                     fCurrentData->fRawReader->GetPeriod(),fCurrentData->fRawReader->GetOrbitID(),fCurrentData->fRawReader->GetBCID(),
+                     fCurrentData->fRawReader->GetClassMask(),
+                     *(fCurrentData->fRawReader)->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(fCurrentData->fRawReader)->GetDetectorPattern()),
                      attr[0],attr[1],attr[2], ts.AsString("s"));
     }
     
@@ -990,20 +967,20 @@ TString AliEveEventManager::GetEventInfoVertical() const
     
     TString rawInfo, esdInfo;
     
-    if (!fRawReader)
+    if (!fCurrentData->fRawReader)
     {
         rawInfo = "No raw-data event info is available!\n";
     }
     else
     {
-        const UInt_t* attr = fRawReader->GetAttributes();
+        const UInt_t* attr = fCurrentData->fRawReader->GetAttributes();
         rawInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
-                     fRawReader->GetRunNumber(),fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fRawReader->GetType()),
-                     fRawReader->GetPeriod(),fRawReader->GetOrbitID(),fRawReader->GetBCID(),
-                     fRawReader->GetClassMask(),
-                     *fRawReader->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*fRawReader->GetDetectorPattern()),
+                     fCurrentData->fRawReader->GetRunNumber(),fCurrentData->fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fCurrentData->fRawReader->GetType()),
+                     fCurrentData->fRawReader->GetPeriod(),fCurrentData->fRawReader->GetOrbitID(),fCurrentData->fRawReader->GetBCID(),
+                     fCurrentData->fRawReader->GetClassMask(),
+                     *(fCurrentData->fRawReader)->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(fCurrentData->fRawReader)->GetDetectorPattern()),
                      attr[0],attr[1],attr[2],
-                     fRawReader->GetTimestamp());
+                     fCurrentData->fRawReader->GetTimestamp());
     }
     
     if (!fCurrentData->fESD)

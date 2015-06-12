@@ -1,12 +1,12 @@
 //
-//  AliEveOffline.cpp
+//  AliEveInit.cpp
 //  xAliRoot
 //
 //  Created by Jeremi Niedziela on 01/06/15.
 //
 //
 
-#include "AliEveOffline.h"
+#include "AliEveInit.h"
 
 //#include <AliQAHistViewer.h>
 
@@ -50,6 +50,8 @@
 #include <AliEveTrackFitter.h>
 #include <AliEveGeomGentle.h>
 #include <AliEveDataSourceOffline.h>
+#include <AliEveDataSourceOnline.h>
+#include <AliEveDataSourceHLTZMQ.h>
 #include <AliEveEventManager.h>
 
 #include <AliCDBManager.h>
@@ -58,7 +60,7 @@
 
 using namespace std;
 
-AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
+AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventManager::EDataSource defaultDataSource,bool storageManager) :
     fCDBuri(cdbUri),
     fPath(path)
 {
@@ -81,6 +83,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     bool drawKinks = false;
     bool drawV0s = false;
     bool drawCascades = false;
+    bool saveViews = true;
     
     //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
     
@@ -88,7 +91,7 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     //-----------------------------------------------------------------------------------------
 
     cout<<"creating manager...";
-    AliEveEventManager *man = new AliEveEventManager(AliEveEventManager::kSourceOffline);
+    AliEveEventManager *man = new AliEveEventManager(defaultDataSource);
     cout<<"created"<<endl;
     
     if (gSystem->Getenv("ALICE_ROOT") != 0)
@@ -101,15 +104,29 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     if (cdbUri.IsNull() && !AliCDBManager::Instance()->IsDefaultStorageSet())
     {
         gEnv->SetValue("Root.Stacktrace", "no");
-        Fatal("AliEveOffline", "OCDB path MUST be specified as the first argument.");
+        Fatal("AliEveInit", "OCDB path MUST be specified as the first argument.");
     }
     
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
+    AliEveDataSourceOffline *dataSourceOffline  = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
+    AliEveDataSourceOnline  *dataSourceOnline   = (AliEveDataSourceOnline*) man->GetDataSourceOnline();
+    AliEveDataSourceHLTZMQ  *dataSourceHLT      = (AliEveDataSourceHLTZMQ*) man->GetDataSourceHLTZMQ();
     
-    dataSource->AddAODfriend("AliAOD.VertexingHF.root");
+    dataSourceOffline->AddAODfriend("AliAOD.VertexingHF.root");
 
-    Init();
-    man->Open();
+    dataSourceOffline->SetCdbUri(fCDBuri);
+    dataSourceOnline->SetCdbUri("local:///local/cdb");
+    
+    TString ocdbStorage;
+    if (gSystem->Getenv("ocdbStorage"))
+        ocdbStorage=gSystem->Getenv("ocdbStorage");
+    
+    dataSourceHLT->SetCdbUri(ocdbStorage);         // current OCDB snapshot
+    
+    ImportMacros();
+    
+//    if(defaultDataSource == AliEveEventManager::kSourceOffline){
+        Init();
+//    }
     
     TEveUtil::AssertMacro("VizDB_scan.C");
     
@@ -257,11 +274,10 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
      slot->StartEmbedding();
      new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
      slot->StopEmbedding("QA histograms");
-     
-     browser->GetTabRight()->SetTab(1);
      */
+//    browser->GetTabRight()->SetTab(1);
     browser->StartEmbedding(TRootBrowser::kBottom);
-    new AliEveEventManagerWindow(man);
+    new AliEveEventManagerWindow(man,storageManager);
     browser->StopEmbedding("EventCtrl");
     
     slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
@@ -288,24 +304,32 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     // Final stuff
     //==============================================================================
     
+    
     // A refresh to show proper window.
 //    gEve->GetViewers()->SwitchColorSet();
+
     browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
-    gEve->Redraw3D(kTRUE);
+    gEve->Redraw3D(true);
     gSystem->ProcessEvents();
-    
-    man->GotoEvent(0);
     
     gEve->EditElement(g_trkcnt);
     gEve->Redraw3D();
     
-    //move multiview to the front
+    // move and rotate sub-views
     browser->GetTabRight()->SetTab(1);
     TGLViewer *glv1 = mv->Get3DView()->GetGLViewer();
+    TGLViewer *glv2 = mv->GetRPhiView()->GetGLViewer();
+    TGLViewer *glv3 = mv->GetRhoZView()->GetGLViewer();
+    
     glv1->CurrentCamera().RotateRad(-0.4, 0.6);
+    glv2->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+    glv3->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+    
+//    man->GotoEvent(0);
+    
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
-    gEve->Redraw3D(kTRUE);
+    gEve->Redraw3D(true);
     
 //        man->SetESDcolors(colors);
     man->SetESDwidth(width);
@@ -315,17 +339,17 @@ AliEveOffline::AliEveOffline(const TString& path, const TString& cdbUri) :
     man->SetESDtracksByCategory(false);
     man->SetESDtracksByType(true);
     
-    man->SetAutoLoad(false);// set autoload by default
+    man->SetSaveViews(saveViews);
+    man->SetAutoLoad(true);// set autoload by default
 }
 
-void AliEveOffline::Init()
+void AliEveInit::Init()
 {
     const Text_t* esdfile = 0;
     const Text_t* aodfile = 0;
     const Text_t* rawfile = 0;
     
     cout<<"Adding standard macros"<<endl;
-    ImportMacros();
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();
     
@@ -341,7 +365,6 @@ void AliEveOffline::Init()
     }
     
     dataSource->SetRawFileName(rawfile);
-    AliEveEventManager::SetCdbUri(fCDBuri);
     dataSource->SetAssertElements(0,0,0,0);
     
     // Open event
@@ -370,7 +393,7 @@ void AliEveOffline::Init()
     gEve->AddEvent(AliEveEventManager::GetMaster());
 }
 
-void AliEveOffline::ImportMacros()
+void AliEveInit::ImportMacros()
 {
     // Put macros in the list of browsables, add a macro browser to
     // top-level GUI.
