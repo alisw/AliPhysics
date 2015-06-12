@@ -213,7 +213,7 @@ void DrawAllHistograms(TList* l) {
       h->SetTitle("Cluster-Tracklet Resolution");
       ay = h->GetYaxis();
       ay->CenterTitle();ay->SetTitleOffset(1.2);
-      ay->SetRangeUser(350, 500);
+      ay->SetRangeUser(350, 550);
     }
     first=kFALSE;
   }
