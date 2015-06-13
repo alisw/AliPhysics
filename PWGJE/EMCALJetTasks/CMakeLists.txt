@@ -139,7 +139,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
-    UserTasks/AliEmcalMultTaskEli.cxx
     UserTasks/AliAnalysisTaskGammaHadron.cxx   
    )
 
