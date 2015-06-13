@@ -432,7 +432,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelected(){
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if ((vtxTyp.Contains("vertexer:Z") && (zRes>0.25))){
+  if ((vtxTyp.Contains("vertexer: Z") && (zRes>0.25))){
     return kFALSE;
   }
   if ((TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5)){
