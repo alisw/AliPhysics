@@ -290,7 +290,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     Float_t charge = 0.;
     if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
     else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
-
+    
     // Fill histograms
     Double_t vEffHisto[9] = {mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
     fEffHisto->Fill(vEffHisto);
@@ -929,7 +929,7 @@ void AliPerformanceEff::Analyse()
   if(GetAnalysisMode() != 5) {
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99);   // pt range  // FIXME maybe remove since range is defined in THnSparse 
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99);   // pt range  , primaries below 0.1 do not exist in TPC
 
   // rec efficiency vs pt
   fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
@@ -1002,7 +1002,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-1.5,1.49); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99); // pt range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.01,19.99); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.0);   // all
 
   // rec efficiency vs eta
@@ -1077,7 +1077,7 @@ void AliPerformanceEff::Analyse()
   //
 
   fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,19.99); // pt range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.01,19.99); // pt range
   fEffHisto->GetAxis(5)->SetRangeUser(0.,1.);   // all
 
   // rec efficiency vs phi
@@ -1150,7 +1150,7 @@ void AliPerformanceEff::Analyse()
   // 
   Float_t minEta=-1.5, maxEta=1.49;
   Float_t minR=0.0, maxR=150.0;
-  Float_t minPt=0.10, maxPt=19.99;
+  Float_t minPt=0.040, maxPt=19.99;
 
   // mother eta range
   fEffSecHisto->GetAxis(8)->SetRangeUser(minEta,maxEta);
