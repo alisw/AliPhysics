@@ -30,6 +30,7 @@ class AliTPCSAMPAEmulator : public TNamed {
 public:
   AliTPCSAMPAEmulator();
   ~AliTPCSAMPAEmulator();
+  Bool_t  DigitalFilterFloat(Int_t npoints, Double_t *dataArray,  Double_t &baseline);
   //
   //
   Bool_t  BC3SlopeFilterFloat(Int_t npoints, Double_t *dataArray,  Double_t &baseline);
@@ -43,6 +44,7 @@ private:
   AliTPCSAMPAEmulator(const AliTPCSAMPAEmulator &sig);
   AliTPCSAMPAEmulator& operator = (const  AliTPCSAMPAEmulator &source);
 public:
+  Int_t fDigitFilterType;   //
   //
   // BC3 parameters
   //
@@ -55,6 +57,8 @@ public:
   Double_t  fMAFMIKernelWidth;   // kernel width for MAF filtering 
   Double_t  fMAFMIDiffCut;       // cut on the diff to skip "signal"
   Double_t  fMAFMIOnlyMinima;         // use only local minima
+
+
 
   ClassDef(AliTPCSAMPAEmulator,1);
 };

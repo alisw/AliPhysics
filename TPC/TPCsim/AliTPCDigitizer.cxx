@@ -1095,7 +1095,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	Double_t baseline=0;
         for (Int_t itime=0; itime<nTimeBins;itime++) vecSAMPAIn[itime]=pdig1[1+itime-nTimeBins];  // set workin array for SAMPA emulator 
         for (Int_t itime=0; itime<nTimeBins;itime++) vecSAMPAOut[itime]=pdig1[1+itime-nTimeBins];  // set workin array for SAMPA emulator 
-	fgSAMPAEmulator->BC3SlopeFilterFloat(nTimeBins, vecSAMPAOut.GetMatrixArray(), baseline);
+	fgSAMPAEmulator->DigitalFilterFloat(nTimeBins, vecSAMPAOut.GetMatrixArray(), baseline);
 	//
 	if ( ((AliTPCReconstructor::StreamLevel()&kStreamSignal)>0)){	  
 	  (*fDebugStreamer)<<"sampaEmulator"<<
