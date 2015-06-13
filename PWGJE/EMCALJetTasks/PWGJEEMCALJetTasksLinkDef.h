@@ -78,6 +78,8 @@
 #pragma link C++ class AliAnalysisTaskJetV2+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
+#pragma link C++ class AliEmcalMultTaskEli+;
+#pragma link C++ class AliAnalysisTaskGammaHadron+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
