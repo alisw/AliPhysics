@@ -56,6 +56,7 @@ Bool_t doVertex       = 1;
 Bool_t doSPD          = 1;   // needs RP   
 Bool_t doTPC          = 1;
 Bool_t doHLT          = 1;
+Bool_t doTPCTracking  = 0;   //TPC Tracking comparison of offline and HLT (needs HLT)
 Bool_t doSDD          = 1;   // needs RP
 Bool_t doSSDdEdx      = 1;
 
@@ -290,6 +291,14 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
     AliPerformanceTask *hltQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kFALSE,0,kTRUE);
     hltQA->SelectCollisionCandidates(kTriggerMask);
+    
+    if (doTPCTracking)
+    {
+        AliPerformanceTask *offline_tpconly_QA = AddTaskPerformanceTPCdEdxQA(kTRUE, kTRUE, kTRUE, 0, kFALSE, kFALSE, kTRUE, kTRUE); //offline TPC
+        offline_tpconly_QA->SelectCollisionCandidates(kTriggerMask);
+        AliPerformanceTask *hlt_tpconly_QA = AddTaskPerformanceTPCdEdxQA(kTRUE, kTRUE, kTRUE, 0, kTRUE, kFALSE, kTRUE, kTRUE); //HLT TPC
+        hlt_tpconly_QA->SelectCollisionCandidates(kTriggerMask);
+    }
   }  
   //
   // SPD (A. Mastroserio)
