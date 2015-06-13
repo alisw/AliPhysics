@@ -289,7 +289,6 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     Float_t charge = 0.;
     if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
     else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
-
     // Fill histograms
     Double_t vEffHisto[9] = {mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
     fEffHisto->Fill(vEffHisto);
