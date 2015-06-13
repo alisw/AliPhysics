@@ -144,18 +144,11 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         
         
         if(!isVZERO && Qvector=="Qa"){
-            SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );//not working
-            //SP_POI[icentr]->SetEtaRange( etamin, etamax );//working
-            //SP_POI[icentr]->SetEtaRange( 0.5,0.8);
-            //cutsRP[icentr]->SetEtaRange( etamin,-0.5*EtaGap);
-            //cutsRP[icentr]->SetEtaRange( etamin,etamax);
-            //cutsRP[icentr]->SetEtaRange( -0.8,0.8);
+            SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
             printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
-            
         }
         if(!isVZERO && Qvector=="Qb"){
-            SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
-            //cutsRP[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
+            SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
             printf(" > NOTE: Using half TPC (Qb) as POI selection u < \n");
             
         }
@@ -218,10 +211,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             outputSlotName[icentr][harmonic-2] = "";
             outputSlotName[icentr][harmonic-2]+=uniqueStr;
             outputSlotName[icentr][harmonic-2]+=Form("_v%i_",harmonic);
-            outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
-            outputSlotName[icentr][harmonic-2]+="_";
-            outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
-            outputSlotName[icentr][harmonic-2]+=Form("_%i-",centrMin[icentr+ncentrminlim]);
+            outputSlotName[icentr][harmonic-2]+=Form("%i-",centrMin[icentr+ncentrminlim]);
             outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr+ncentrminlim]);
             
             
