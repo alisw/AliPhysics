@@ -1027,10 +1027,20 @@ void AliPerformanceRes::Analyse() {
   {
     for(Int_t j=5; j<10; j++) 
     {
+      //Ranges
       if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
+      if (j!=9) fResolHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // pt threshold
+      else fResolHisto->GetAxis(9)->SetRangeUser(0.1,9.99);
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
+
+      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
+      if (j!=9) fPullHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // pt threshold
+      else fPullHisto->GetAxis(9)->SetRangeUser(0.1,9.99);
+      if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
+      
+      //Resolutions
 
       h2D = (TH2F*)fResolHisto->Projection(i,j);
 
@@ -1065,12 +1075,7 @@ void AliPerformanceRes::Analyse() {
       fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
       fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.);
 
-      //
-      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      //if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89);    // eta window
-      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // 1./pt threshold
-      if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
+      //Pulls
 
       h2D = (TH2F*)fPullHisto->Projection(i,j);
 
