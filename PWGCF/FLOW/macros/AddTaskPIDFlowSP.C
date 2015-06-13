@@ -312,7 +312,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                                              AliFlowEventSimple::Class(),
                                                              AliAnalysisManager::kExchangeContainer );
             
-            tskFilter[icentr][harm-2] = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP[icentr][harm-2].Data()),cutsRP[icentr], NULL);
+            tskFilter[icentr][harm-2] = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP[icentr][harm-2].Data()),cutsRP[icentr], SP_POI[icentr]);
             if(!isVZERO){
                 tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
                 //tskFilter[icentr][harm-2]->SetSubeventEtaRange(-0.8, -0.5, 0.5,0.8);
