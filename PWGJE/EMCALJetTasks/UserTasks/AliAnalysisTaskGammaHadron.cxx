@@ -52,27 +52,29 @@ fCent2(0),
 fCent3(0),
 fVZERO(0),
 fV0ATotMult(0),
-fV0CTotMult(0),
-fHistEventQA(0),
-fHistTrNegativeLabels(0),
-fHistTrZeroLabels(0),
-fHistTrPhiEtaPt(0),
-fHistTrPhiEtaZeroLab(0),
-fHistTrPtZeroLab(0),
-fHistTrEmcPhiEta(0),
-fHistTrEmcPt(0),
-fHistTrPhiEtaNonProp(0),
-fHistTrPtNonProp(0),
-fHistDeltaEtaPt(0),
-fHistDeltaPhiPt(0),
-fHistDeltaPtvsPt(0),
-fHistClusPhiEtaEnergy(0),
-fHistClusDeltaPhiEPEnergy(0),
-fHistNCellsEnergy(0),
-fHistFcrossEnergy(0),
-fHistClusTimeEnergy(0),
-fHistClusMCEnergyFraction(0),
-fHistCellsAbsIdEnergy(0)
+fV0CTotMult(0)
+//fHistEventQA(0),
+
+//fHistTrNegativeLabels(0),
+//fHistTrZeroLabels(0),
+//fHistTrPhiEtaPt(0),
+//fHistTrPhiEtaZeroLab(0),
+//fHistTrPtZeroLab(0),
+//fHistTrEmcPhiEta(0),
+//fHistTrEmcPt(0),
+//fHistTrPhiEtaNonProp(0),
+//fHistTrPtNonProp(0),
+//fHistDeltaEtaPt(0),
+//fHistDeltaPhiPt(0),
+//fHistDeltaPtvsPt(0)
+
+//fHistClusPhiEtaEnergy(0),
+//fHistClusDeltaPhiEPEnergy(0),
+//fHistNCellsEnergy(0),
+//fHistFcrossEnergy(0),
+//fHistClusTimeEnergy(0),
+//fHistClusMCEnergyFraction(0),
+//fHistCellsAbsIdEnergy(0)
 {
 	// Default constructor.
 
@@ -98,27 +100,28 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(const char *name) :
 		  fCent3(0),
 		  fVZERO(0),
 		  fV0ATotMult(0),
-		  fV0CTotMult(0),
-		  fHistEventQA(0),
-		  fHistTrNegativeLabels(0),
-		  fHistTrZeroLabels(0),
-		  fHistTrPhiEtaPt(0),
-		  fHistTrPhiEtaZeroLab(0),
-		  fHistTrPtZeroLab(0),
-		  fHistTrEmcPhiEta(0),
-		  fHistTrEmcPt(0),
-		  fHistTrPhiEtaNonProp(0),
-		  fHistTrPtNonProp(0),
-		  fHistDeltaEtaPt(0),
-		  fHistDeltaPhiPt(0),
-		  fHistDeltaPtvsPt(0),
-		  fHistClusPhiEtaEnergy(0),
-		  fHistClusDeltaPhiEPEnergy(0),
-		  fHistNCellsEnergy(0),
-		  fHistFcrossEnergy(0),
-		  fHistClusTimeEnergy(0),
-		  fHistClusMCEnergyFraction(0),
-		  fHistCellsAbsIdEnergy(0)
+		  fV0CTotMult(0)
+		 // fHistEventQA(0),
+		 // fHistTrNegativeLabels(0),
+		 // fHistTrZeroLabels(0),
+		 // fHistTrPhiEtaPt(0),
+		 // fHistTrPhiEtaZeroLab(0),
+		 // fHistTrPtZeroLab(0),
+		 // fHistTrEmcPhiEta(0),
+		 // fHistTrEmcPt(0),
+		 // fHistTrPhiEtaNonProp(0),
+		 // fHistTrPtNonProp(0),
+		 // fHistDeltaEtaPt(0),
+		 // fHistDeltaPhiPt(0),
+		//  fHistDeltaPtvsPt(0)
+
+		  //fHistClusPhiEtaEnergy(0),
+		  //fHistClusDeltaPhiEPEnergy(0),
+		  //fHistNCellsEnergy(0),
+		  //fHistFcrossEnergy(0),
+		  //fHistClusTimeEnergy(0),
+		  //fHistClusMCEnergyFraction(0),
+	//	  fHistCellsAbsIdEnergy(0)
 {
 	// Standard
 
@@ -137,9 +140,9 @@ AliAnalysisTaskGammaHadron::~AliAnalysisTaskGammaHadron()
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::AllocateHistogramArrays()
 {
-	fHistTrNegativeLabels = new TH1*[fNcentBins];
-	fHistTrZeroLabels = new TH1*[fNcentBins];
-	fHistTrPhiEtaZeroLab = new TH2*[fNcentBins];
+//	fHistTrNegativeLabels = new TH1*[fNcentBins];
+//	fHistTrZeroLabels = new TH1*[fNcentBins];
+/*	fHistTrPhiEtaZeroLab = new TH2*[fNcentBins];
 	fHistTrPtZeroLab = new TH1*[fNcentBins];
 	fHistTrEmcPhiEta = new TH2*[fNcentBins];
 	fHistTrEmcPt = new TH1*[fNcentBins];
@@ -148,25 +151,25 @@ void AliAnalysisTaskGammaHadron::AllocateHistogramArrays()
 	fHistDeltaEtaPt = new TH2*[fNcentBins];
 	fHistDeltaPhiPt = new TH2*[fNcentBins];
 	fHistDeltaPtvsPt = new TH2*[fNcentBins];
+*/
+	//fHistClusPhiEtaEnergy = new TH3*[fNcentBins];
+	//fHistClusDeltaPhiEPEnergy = new TH2*[fNcentBins];
+	//fHistNCellsEnergy = new TH2*[fNcentBins];
+	//fHistFcrossEnergy = new TH2*[fNcentBins];
+	//fHistClusTimeEnergy = new TH2*[fNcentBins];
+	//fHistClusMCEnergyFraction = new TH1*[fNcentBins];
 
-	fHistClusPhiEtaEnergy = new TH3*[fNcentBins];
-	fHistClusDeltaPhiEPEnergy = new TH2*[fNcentBins];
-	fHistNCellsEnergy = new TH2*[fNcentBins];
-	fHistFcrossEnergy = new TH2*[fNcentBins];
-	fHistClusTimeEnergy = new TH2*[fNcentBins];
-	fHistClusMCEnergyFraction = new TH1*[fNcentBins];
-
-	fHistCellsAbsIdEnergy = new TH2*[fNcentBins];
+//	fHistCellsAbsIdEnergy = new TH2*[fNcentBins];
 
 
-	fHistTrPhiEtaPt = new TH3**[fNcentBins];
+//	fHistTrPhiEtaPt = new TH3**[fNcentBins];
 
 	for (Int_t i = 0; i < fNcentBins; i++)
 	{
 
-		fHistTrPhiEtaPt[i] = new TH3*[4];
-		for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
-
+//		fHistTrPhiEtaPt[i] = new TH3*[4];
+//		for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+/*
 		fHistTrNegativeLabels[i] = 0;
 		fHistTrZeroLabels[i] = 0;
 		fHistTrPhiEtaZeroLab[i] = 0;
@@ -178,15 +181,15 @@ void AliAnalysisTaskGammaHadron::AllocateHistogramArrays()
 		fHistDeltaEtaPt[i] = 0;
 		fHistDeltaPhiPt[i] = 0;
 		fHistDeltaPtvsPt[i] = 0;
-
-		fHistClusPhiEtaEnergy[i] = 0;
+*/
+	/*	fHistClusPhiEtaEnergy[i] = 0;
 		fHistClusDeltaPhiEPEnergy[i] = 0;
 		fHistNCellsEnergy[i] = 0;
 		fHistFcrossEnergy[i] = 0;
 		fHistClusTimeEnergy[i] = 0;
 		fHistClusMCEnergyFraction[i] = 0;
-
-		fHistCellsAbsIdEnergy[i] = 0;
+*/
+	//	fHistCellsAbsIdEnergy[i] = 0;
 
 	}
 }
@@ -212,6 +215,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 	if (fParticleCollArray.GetEntriesFast()>0)
 	{
+		/*
 		if (!fParticleLevel && fIsMC)
 		{
 			for (Int_t i = 0; i < fNcentBins; i++)
@@ -228,13 +232,14 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 				fHistTrZeroLabels[i]->GetYaxis()->SetTitle("counts");
 				fOutput->Add(fHistTrZeroLabels[i]);
 			}
-		}
+		}*/
 
 		Int_t nlabels = 4;
 		if (fParticleLevel)
 			nlabels = 1;
 
 		for (Int_t i = 0; i < fNcentBins; i++) {
+			/*
 			for (Int_t j = 0; j < nlabels; j++) {
 				histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
 				fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
@@ -242,10 +247,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 				fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
 				fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
 				fOutput->Add(fHistTrPhiEtaPt[i][j]);
-			}
+			}*/
 
 			if (!fParticleLevel) {
 				if (fIsMC) {
+					/*
 					histname = Form("fHistTrPhiEtaZeroLab_%d",i);
 					fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
 					fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
@@ -258,8 +264,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 					fHistTrPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
 					fHistTrPtZeroLab[i]->GetYaxis()->SetTitle("counts");
 					fOutput->Add(fHistTrPtZeroLab[i]);
+					*/
 				}
-
+/*
 				histname = Form("fHistTrEmcPhiEta_%d",i);
 				fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
 				fHistTrEmcPhiEta[i]->GetXaxis()->SetTitle("#eta");
@@ -302,6 +309,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 				fHistDeltaPtvsPt[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
 				fHistDeltaPtvsPt[i]->GetZaxis()->SetTitle("counts");
 				fOutput->Add(fHistDeltaPtvsPt[i]);
+				*/
 			}
 		}
 	}
@@ -310,6 +318,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	{
 		for (Int_t i = 0; i < fNcentBins; i++)
 		{
+			/*
 			histname = "fHistClusPhiEtaEnergy_";
 			histname += i;
 			fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
@@ -341,9 +350,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 			fHistClusTimeEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
 			fHistClusTimeEnergy[i]->GetYaxis()->SetTitle("Time");
 			fOutput->Add(fHistClusTimeEnergy[i]);
-
+*/
 			Int_t nbins = fMaxCellsInCluster;
 			while (nbins > fNbins) nbins /= 2;
+			/*
 			histname = "fHistNCellsEnergy_";
 			histname += i;
 			fHistNCellsEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
@@ -357,14 +367,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 			fHistFcrossEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
 			fHistFcrossEnergy[i]->GetYaxis()->SetTitle("F_{cross}");
 			fOutput->Add(fHistFcrossEnergy[i]);
-
+			*/
+/*
 			histname = "fHistCellsAbsIdEnergy_";
 			histname += i;
 			fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
 			fHistCellsAbsIdEnergy[i]->GetXaxis()->SetTitle("cell abs. Id");
 			fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cluster} (GeV)");
 			fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");
-			fOutput->Add(fHistCellsAbsIdEnergy[i]);
+			fOutput->Add(fHistCellsAbsIdEnergy[i]);*/
 		}
 	}
 
@@ -523,11 +534,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	}
 
 
-	fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
+	/*fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
 	for (Int_t i = 0; i < dim; i++)
 		fHistEventQA->GetAxis(i)->SetTitle(title[i]);
 	fOutput->Add(fHistEventQA);
-
+*/
 
 	// - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . -
 	//
@@ -537,40 +548,40 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 	// Create histograms
 	// all clusters as a function of p_T^{Cluster}
-	fHistNoClus_pt = new TH1F(Form("fHistNoClus_pt_%0.0d",1),Form("fHistNoClus_pt_%0.0d",1), 20, 0, 20);
+	fHistNoClus_pt = new TH1F(Form("fHistNoClus_pt_%0.0d",1),Form("fHistNoClus_pt_%0.0d",1), 25, 0, 25);
 	fHistNoClus_pt->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_pt->GetYaxis()->SetTitle(Form("No. of Clusters [counts/%0.1f GeV/c]",fHistNoClus_pt->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_pt);
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_Leadpt = new TH1F(Form("fHistNoClus_Leadpt_%0.0d",1),Form("fHistNoClus_Leadpt_%0.0d",1), 20, 0, 20);
+	fHistNoClus_Leadpt = new TH1F(Form("fHistNoClus_Leadpt_%0.0d",1),Form("fHistNoClus_Leadpt_%0.0d",1), 25, 0, 25);
 	fHistNoClus_Leadpt->GetXaxis()->SetTitle("p_{T}^{Leading Calo Cluster}");
 	fHistNoClus_Leadpt->GetYaxis()->SetTitle(Form("No. of lead. Clus. [counts/%0.1f GeV/c]",fHistNoClus_Leadpt->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_Leadpt);
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_ptH = new TH1F(Form("fHistNoClus_ptH_%0.0d",1),Form("fHistNoClus_ptH_%0.0d",1), 20, 0, 20);
+	fHistNoClus_ptH = new TH1F(Form("fHistNoClus_ptH_%0.0d",1),Form("fHistNoClus_ptH_%0.0d",1), 25, 0, 25);
 	fHistNoClus_ptH->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_ptH->GetYaxis()->SetTitle(Form("No. of Clus. with h [counts/%0.1f GeV/c]",fHistNoClus_ptH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_ptH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_LeadptH = new TH1F(Form("fHistNoClus_LeadptH_%0.0d",1),Form("fHistNoClus_LeadptH_%0.0d",1), 20, 0, 20);
+	fHistNoClus_LeadptH = new TH1F(Form("fHistNoClus_LeadptH_%0.0d",1),Form("fHistNoClus_LeadptH_%0.0d",1), 25, 0, 25);
 	fHistNoClus_LeadptH->GetXaxis()->SetTitle("p_{T}^{Leading Calo Cluster}");
 	fHistNoClus_LeadptH->GetYaxis()->SetTitle(Form("No. of lead. Clus. with h [counts/%0.1f GeV/c]",fHistNoClus_LeadptH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_LeadptH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_ptLeadH = new TH1F(Form("fHistNoClus_ptLeadH_%0.0d",1),Form("fHistNoClus_ptLeadH_%0.0d",1), 20, 0, 20);
+	fHistNoClus_ptLeadH = new TH1F(Form("fHistNoClus_ptLeadH_%0.0d",1),Form("fHistNoClus_ptLeadH_%0.0d",1), 25, 0, 25);
 	fHistNoClus_ptLeadH->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_ptLeadH->GetYaxis()->SetTitle(Form("No. of Clus. with lead. h [counts/%0.1f GeV/c]",fHistNoClus_ptLeadH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_ptLeadH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_LeadptLeadH = new TH1F(Form("fHistNoClus_LeadptLeadH_%0.0d",1),Form("fHistNoClus_LeadptLeadH_%0.0d",1), 20, 0, 20);
+	fHistNoClus_LeadptLeadH = new TH1F(Form("fHistNoClus_LeadptLeadH_%0.0d",1),Form("fHistNoClus_LeadptLeadH_%0.0d",1), 25, 0, 25);
 	fHistNoClus_LeadptLeadH->GetXaxis()->SetTitle("p_{T}^{Leading Calo Cluster}");
 	fHistNoClus_LeadptLeadH->GetYaxis()->SetTitle(Form("No. of lead. Clus. with lead. h [counts/%0.1f GeV/c]",fHistNoClus_LeadptLeadH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_LeadptLeadH);
@@ -715,17 +726,17 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 
 
 
-	FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal,
+	/*FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal,
 			ntracks, nclusters, ncells,
 			leadingTrackPt, leadingTrackEta, leadingTrackPhi,
 			leadingClusE, leadingClusEta, leadingClusPhi);
-
+*/
 
 	return kTRUE;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c,
+/*void AliAnalysisTaskGammaHadron::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c,
 		Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells,
 		Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
 		Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi)
@@ -774,7 +785,7 @@ void AliAnalysisTaskGammaHadron::FillEventQAHisto(Float_t cent, Float_t cent2, F
 
 	fHistEventQA->Fill(contents);
 }
-
+*/
 //________________________________________________________________________
 Int_t AliAnalysisTaskGammaHadron::DoCellLoop(Float_t &sum)
 {
@@ -796,7 +807,7 @@ Int_t AliAnalysisTaskGammaHadron::DoCellLoop(Float_t &sum)
 		if (amp < fCellEnergyCut)
 			continue;
 
-		fHistCellsAbsIdEnergy[fCentBin]->Fill(absId,amp);
+	//	fHistCellsAbsIdEnergy[fCentBin]->Fill(absId,amp);
 		nAccCells++;
 		sum += amp;
 	}
@@ -927,24 +938,11 @@ Int_t AliAnalysisTaskGammaHadron::DoClusterLoop(Float_t &sum, AliVCluster* &lead
 			}
 		}
 
-		fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), nPart.Phi(), cluster->E());
+		//fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), nPart.Phi(), cluster->E());
 
 		Double_t ep = nPart.Phi() - fEPV0;
 		while (ep < 0) ep += TMath::Pi();
 		while (ep >= TMath::Pi()) ep -= TMath::Pi();
-
-		fHistClusDeltaPhiEPEnergy[fCentBin]->Fill(cluster->E(), ep);
-		fHistNCellsEnergy[fCentBin]        ->Fill(cluster->E(), cluster->GetNCells());
-		fHistClusTimeEnergy[fCentBin]      ->Fill(cluster->E(), cluster->GetTOF());
-
-		if (cells)
-		{
-			fHistFcrossEnergy[fCentBin]->Fill(cluster->E(), GetFcross(cluster, cells));
-		}
-		if (fHistClusMCEnergyFraction[fCentBin])
-		{
-			fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
-		}
 
 		nAccClusters++;
 	}
@@ -1020,18 +1018,18 @@ Int_t AliAnalysisTaskGammaHadron::DoTrackLoop(Float_t &sum, AliVParticle* &leadi
 
 		if (fParticleLevel)
 		{
-			fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
+			//fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
 		}
 		else
 		{
 			if (track->GetLabel() == 0)
 			{
 				zero++;
-				if (fHistTrPhiEtaZeroLab[fCentBin])
+				/*if (fHistTrPhiEtaZeroLab[fCentBin])
 				{
 					fHistTrPhiEtaZeroLab[fCentBin]->Fill(track->Eta(), track->Phi());
 					fHistTrPtZeroLab[fCentBin]->Fill(track->Pt());
-				}
+				}*/
 			}
 
 			if (track->GetLabel() < 0)
@@ -1059,7 +1057,7 @@ Int_t AliAnalysisTaskGammaHadron::DoTrackLoop(Float_t &sum, AliVParticle* &leadi
 
 			if (type >= 0 && type <= 3)
 			{
-				fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
+			//	fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
 			}
 			else
 			{
@@ -1069,11 +1067,11 @@ Int_t AliAnalysisTaskGammaHadron::DoTrackLoop(Float_t &sum, AliVParticle* &leadi
 			AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
 			if (!vtrack) continue;
 
-			if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
+		/*	if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
 				fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
 				fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
-			}
-
+			}*/
+/*
 			if (fHistTrEmcPhiEta[fCentBin])
 				fHistTrEmcPhiEta[fCentBin]->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
 			if (fHistTrEmcPt[fCentBin])
@@ -1084,16 +1082,17 @@ Int_t AliAnalysisTaskGammaHadron::DoTrackLoop(Float_t &sum, AliVParticle* &leadi
 				fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
 			if (fHistDeltaPtvsPt[fCentBin])
 				fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
+		*/
 		}
 	}
 
-	if (fHistTrNegativeLabels[fCentBin]) {
+	/*if (fHistTrNegativeLabels[fCentBin]) {
 		fHistTrNegativeLabels[fCentBin]->Fill(1. * neg / nAccTracks);
 	}
 
 	if (fHistTrZeroLabels[fCentBin]) {
 		fHistTrZeroLabels[fCentBin]->Fill(1. * zero / nAccTracks);
-	}
+	}*/
 
 	return nAccTracks;
 }

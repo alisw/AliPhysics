@@ -35,11 +35,11 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   void                        ExecOnce()        											  ;
   Bool_t                      RetrieveEventObjects()                                        ;
   Bool_t                      FillHistograms()                                              ;
-  void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho,
+ /* void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho,
 					       Int_t ntracks, Int_t nclusters, Int_t ncells,
 					       Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
 					       Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi);
-
+*/
   Int_t                       DoCellLoop(Float_t &sum)                                      ;
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
   Int_t                       DoClusterLoop(Float_t &sum, AliVCluster* &leading)            ;
@@ -62,8 +62,9 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   Double_t                    fV0CTotMult;               //!Event V0C total multiplicity
  
   // General histograms
-  THnSparse                  *fHistEventQA;              //!Event-wise QA observables
+ // THnSparse                  *fHistEventQA;              //!Event-wise QA observables
 
+  /*
   // Tracks
   TH1                       **fHistTrNegativeLabels;  //!Percentage of negative label tracks
   TH1                       **fHistTrZeroLabels;      //!Percentage of tracks with label=0
@@ -77,7 +78,8 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistDeltaEtaPt;        //!Eta-EtaProp vs. Pt
   TH2                       **fHistDeltaPhiPt;        //!Phi-PhiProp vs. Pt
   TH2                       **fHistDeltaPtvsPt;       //!Pt-PtProp vs. Pt
-
+*/
+ /*
   // Clusters
   TH3                       **fHistClusPhiEtaEnergy;       //!Phi-Eta-Energy distribution of clusters
   TH2                       **fHistClusDeltaPhiEPEnergy;   //!DeltaPhi EP vs Energy of clusters
@@ -85,9 +87,9 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistFcrossEnergy;           //!Fcross vs. energy of cluster
   TH2                       **fHistClusTimeEnergy;         //!Time vs. energy of cluster
   TH1                       **fHistClusMCEnergyFraction;   //!MC energy fraction (embedding)
-
+*/
   // EMCAL Cells
-  TH2                       **fHistCellsAbsIdEnergy;  //!Energy spectrum of cells
+ // TH2                       **fHistCellsAbsIdEnergy;  //!Energy spectrum of cells
 
   // ELIANE
   TH1  						*fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
