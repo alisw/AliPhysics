@@ -117,7 +117,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	if (trainConfig == 5) numberOfCuts = 6;
 	if (trainConfig == 31) numberOfCuts = 4;
 	if (trainConfig == 32 || trainConfig == 101) numberOfCuts = 1;
-	if (trainConfig == 51 || trainConfig == 52 || trainConfig == 53 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56  || trainConfig == 61 || trainConfig == 112 || trainConfig == 113 || trainConfig == 114)) numberOfCuts = 7;
+	if (trainConfig == 51 || trainConfig == 52 || trainConfig == 53 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56  || trainConfig == 61 || trainConfig == 112 || trainConfig == 113 || trainConfig == 114) numberOfCuts = 7;
 	if (trainConfig == 111) numberOfCuts = 3;
 
 	TString *eventCutArray = new TString[numberOfCuts];
