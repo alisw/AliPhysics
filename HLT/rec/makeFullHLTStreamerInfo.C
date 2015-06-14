@@ -33,35 +33,43 @@ void makeFullHLTStreamerInfo(const char* className = "AliESDEvent",
   AliCDBEntry* pExistingEntry=ocdbSourceStorage->Get(gkCalibStreamerInfoEntry, runRange);  
   
   //get the list of streamers from OCDB
-  TObjArray* list = NULL;
-  if (pExistingEntry) list=(TObjArray*)pExistingEntry->GetObject();
-  else list = new TObjArray;  
+  TObjArray* listOld = NULL;
+  if (pExistingEntry) listOld=(TObjArray*)pExistingEntry->GetObject();
+  TObjArray* listNew      = new TObjArray;  
                              
-  //update the list of streamers for selected class
+  //create a complete list of streamers for selected class
   TClass* pClass = TClass::GetClass(className);
   if (!pClass) {return;}
-  updateStreamerInfos(pClass, list);
+  createStreamerInfos(pClass, listNew);
+
+  listNew->Print();
+
+  //update the old list with new definitions
+  updateStreamerList(listOld, listNew);
+  
+  //listOld->Print();
 
   // Write the updated object to target OCDB
   AliCDBId id(gkCalibStreamerInfoEntry, firstRun, lastRun, version);
   AliCDBMetaData* metaData = new AliCDBMetaData();
   metaData->SetResponsible("HLT");
   metaData->SetComment("Streamer info for streamed objects in the HLT raw data payload.");
-  ocdbTargetStorage->Put(list, id, metaData);  
+  ocdbTargetStorage->Put(listOld, id, metaData);  
 }
 
-void updateStreamerInfos(TClass* pClass, TObjArray* existingStreamerObjects)
+void createStreamerInfos(TClass* pClass, TObjArray* listOfStreamerInfos)
 {
   //update a TObjArray of stremer infos with TStreamerInfos of the class
   // including TStreamerInfos of all the data member types recursively
-  if (HaveStreamersForClass(pClass, existingStreamerObjects)) {return;}
-  
+  cout << "processing class " << pClass->GetName() << endl;
+  if (HaveStreamersForClass(pClass, listOfStreamerInfos)) return;
+
   TStreamerInfo* streamerInfo = new TStreamerInfo(pClass);
   streamerInfo->Build();
   cout << "adding streamer info for class " << pClass->GetName()
     << "version " << pClass->GetClassVersion()
     << endl;
-  existingStreamerObjects->AddAtFree(streamerInfo);
+  listOfStreamerInfos->AddAtFree(streamerInfo);
   
   TList* listOfDataMembers = pClass->GetListOfDataMembers();
   if (!listOfDataMembers) {return;}
@@ -70,14 +78,12 @@ void updateStreamerInfos(TClass* pClass, TObjArray* existingStreamerObjects)
   while (member = dynamic_cast<TDataMember*>(nextDataMember()))
   {
     TString memberClassName = member->GetTypeName();
-    cout << "  scanning member of type " << memberClassName 
-         << " is basic: " << member->IsBasic()
-         << " is enum: " << member->IsEnum()
+    cout << "  scanning member " << member->GetName()
+         << " of type " << memberClassName 
          << endl;
     TClass* memberClass = TClass::GetClass(member->GetTypeName());
     if (!memberClass) {continue;}
-    cout << "processing class " << memberClass->GetName() << endl;
-    updateStreamerInfos(memberClass, existingStreamerObjects);
+    createStreamerInfos(memberClass, listOfStreamerInfos);
   }
 }
 
@@ -111,4 +117,31 @@ Bool_t HaveStreamersForClass(TClass* pClass, TObjArray* pInfos)
     }
   }
   return kFALSE;
+}
+
+void updateStreamerList(TObjArray* oldList, TObjArray* newList)
+{
+  //update the old list with new/unique entries from new list
+    for (int j=0; j<oldList->GetEntriesFast(); j++)
+    {
+      TStreamerInfo* oldStreamerInfo=dynamic_cast<TStreamerInfo*>(oldList->At(j));
+      if (!oldStreamerInfo) continue;
+      TString oldName = oldStreamerInfo->GetName();
+      int oldVersion = oldStreamerInfo->GetClassVersion();
+
+      for (int i=0; i<newList->GetEntriesFast(); i++) {
+        TStreamerInfo* newStreamerInfo=dynamic_cast<TStreamerInfo*>(newList->At(i));
+        if (!newStreamerInfo) continue;
+        TString newName = newStreamerInfo->GetName();
+        int newVersion = newStreamerInfo->GetClassVersion();
+        //update; or not
+        if (! oldName.EqualTo(newName)) continue;
+        if (oldVersion == newVersion) continue;
+
+        cout << "adding " << newName << " v" << newVersion
+             << " (old: " << oldName << " v" << oldVersion << ")"<<endl;
+        oldList->AddAtFree(newStreamerInfo);
+      }
+    }
+  return;
 }
