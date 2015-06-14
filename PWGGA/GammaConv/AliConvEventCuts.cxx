@@ -1578,7 +1578,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	weight = 1;
 	
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
-	if (periodName.CompareTo("LHC15a3b") != 0) return kTRUE;
+	if (periodName.CompareTo("LHC15a3b") != 0 || periodName.CompareTo("LHC15a3a") != 0) return kTRUE;
 
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if(dynamic_cast<AliMCEvent*>(MCEvent)){
@@ -1630,6 +1630,15 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 						if (bin < 12) weight = weightsBins[bin];
 					}
+					if (periodName.CompareTo("LHC15a3a") == 0 ){
+						Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
+															84,		117, 	152,	191, 	1000};
+						Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+															6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
+						Int_t bin = 0;
+						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+						if (bin < 9) weight = weightsBins[bin];
+					}
 				}
 				return eventAccepted;
 			} 	
@@ -1660,7 +1669,16 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					Int_t bin = 0;
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 12) weight = weightsBins[bin];
-				}				
+				}
+				if (periodName.CompareTo("LHC15a3a") == 0 ){
+					Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
+														84,		117, 	152,	191, 	1000};
+					Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+														6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
+					Int_t bin = 0;
+					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+					if (bin < 9) weight = weightsBins[bin];
+				}
 			}
 			return eventAccepted;
 		} else {
