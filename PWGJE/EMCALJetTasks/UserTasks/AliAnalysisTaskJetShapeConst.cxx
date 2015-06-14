@@ -436,12 +436,13 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};
       	 fhnMassResponse[fCentBin]->Fill(varsp);
       	 
-      	 varsp[0] = var-var2;
-      	 varsp[1] = ptjet1-ptJetR;
-      	 varsp[2] = var;
-      	 varsp[3] = var2;
-      	 varsp[4] = ptjet1;
-      	 varsp[5] = ptJetR;
+      	 Double_t varsp1[6];
+      	 varsp1[0] = var-var2;
+      	 varsp1[1] = ptjet1-ptJetR;
+      	 varsp1[2] = var;
+      	 varsp1[3] = var2;
+      	 varsp1[4] = ptjet1;
+      	 varsp1[5] = ptJetR;
       	 
       	 fhnDeltaMass[fCentBin]->Fill(varsp);
       	 
