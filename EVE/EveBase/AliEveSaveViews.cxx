@@ -515,14 +515,11 @@ void AliEveSaveViews::BuildTriggerClassesStrings()
 void AliEveSaveViews::BuildClustersInfoString()
 {
     vector<TString> clustersDescription;
-    TString clustersInfo;
     ULong64_t mask = 1;
-    
-    fClustersInfo="";
     
     for(int clusterIter=0;clusterIter<fNumberOfClusters;clusterIter++)//loop over all clusters in run
     {
-        clustersInfo="";
+        string clustersInfo="";
         mask=1;
         for(int i=0;i<22;i++)
         {
@@ -534,7 +531,9 @@ void AliEveSaveViews::BuildClustersInfoString()
             
             mask=mask<<1;
         }
-        clustersDescription.push_back(clustersInfo);
+        clustersInfo = clustersInfo.substr(0, clustersInfo.size()-2);
+        
+        clustersDescription.push_back(TString(clustersInfo));
     }
     
     for (int i=0;i<clustersDescription.size();i++) {
