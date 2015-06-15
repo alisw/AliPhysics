@@ -59,6 +59,9 @@ void THepMCParser::init(HepMC::IO_BaseClass * events)
 //   delete array;
 //   array = 0; // nullptr
    cout << " parsed " << particlecount << " particles" << endl;
+   if(array->Capacity() != array->GetEntries()) {
+     cerr << ("Not all particles processed");
+   }
 }
 
 
@@ -344,17 +347,19 @@ string THepMCParser::ListReactionChain(TClonesArray * particles, Int_t particleI
 
 string THepMCParser::ParseGenEvent2TCloneArray(HepMC::GenEvent * genEvent, TClonesArray * array, string momUnit, string lenUnit, bool requireSecondMotherBeforeDaughters)
 {
+   ostringstream errMsgStream;
    if (requireSecondMotherBeforeDaughters) {
-      return "requireSecondMotherBeforeDaughters not implemented yet!";
+      errMsgStream <<  " WARNING: requireSecondMotherBeforeDaughters not fully implemented yet!\n";
    }
    genEvent->use_units(momUnit, lenUnit);
    array->Clear();
-   ostringstream errMsgStream;
    map<int,Int_t> partonMemory; // unordered_map in c++11 - but probably not much performance gain from that: log(n) vs log(1) where constant can be high
+   Bool_t beamParticlesToTheSameVertex = kTRUE; // This is false if the beam particles do not end up in the same vertex. This happens for some HepMC files produced by agile-runmc
 
+   
    // Check event with HepMC's internal validation algorithm
    if (!genEvent->is_valid()) {
-      errMsgStream << "Error with event id: " << genEvent->event_number() << ", event is not valid!";
+      errMsgStream << "Error with event id: " << genEvent->event_number() << ", event is not valid!\n";
       return errMsgStream.str();
    }
 
@@ -367,23 +372,29 @@ string THepMCParser::ParseGenEvent2TCloneArray(HepMC::GenEvent * genEvent, TClon
    // - Both beam particles should have defined end vertices, as they both should contribute
    // - Both beam particles should have the exact same end vertex
    if (!beamparts.first || !beamparts.second || beamparts.first->barcode()==beamparts.second->barcode()) {
-      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles doesn't exists or are the same";
+      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles doesn't exists or are the same\n";
       return errMsgStream.str();
    }
    if (beamparts.first->production_vertex() || beamparts.second->production_vertex()) {
-      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles have production vertex/vertices...";
+      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles have production vertex/vertices...\n";
       return errMsgStream.str();
    }
    if (!beamparts.first->end_vertex() || !beamparts.second->end_vertex()) {
-      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles have undefined end vertex/vertices...";
+      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles have undefined end vertex/vertices...\n";
       return errMsgStream.str();
    }
    if (beamparts.first->end_vertex() != beamparts.second->end_vertex()) {
-      errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles do not collide in the same end vertex.";
-      return errMsgStream.str();
+     
+      errMsgStream << "Warning with event id: " << genEvent->event_number() << ", beam particles do not collide in the same end vertex.\n";// This was downgraded to a warning, because I noticed in Pythia 6 HepMC (generated via agile-runmc) files the barcode of the vertex was different, but the 4-vector of the vertices was the same.
+      beamParticlesToTheSameVertex = kFALSE;
+      if (beamparts.first->end_vertex()->position() != beamparts.second->end_vertex()->position()){
+        errMsgStream << "Error with event id: " << genEvent->event_number() << ", beam particles do not collide in the same end vertex and the two vertices have different four vectors.\n"; 
+        return errMsgStream.str();
+      }
    }
 
    // Set the array to hold the number of particles in the event
+   Int_t nParticlesInHepMC = genEvent->particles_size(); // FIXME
    array->Expand(genEvent->particles_size());
 
    // Create a TParticle for each beam particle
@@ -421,140 +432,194 @@ string THepMCParser::ParseGenEvent2TCloneArray(HepMC::GenEvent * genEvent, TClon
          0
    );
    partonMemory[beamparts.second->barcode()] = 1;
+   
    Int_t arrayID = 2; // start counting IDs after the beam particles
 
-   // Do first vertex as a special case for performance, since its often has the most daughters and both mothers are known
-   Int_t firstDaughter = arrayID;
-   for (HepMC::GenVertex::particles_out_const_iterator iter = beamparts.first->end_vertex()->particles_out_const_begin();
-         iter != beamparts.first->end_vertex()->particles_out_const_end();
-         ++iter) {
-      new((*array)[arrayID]) TParticle(
-            (*iter)->pdg_id(),
-            (*iter)->status(),
-            0, // beam particle 1
-            1, // beam particle 2
-            -1, // first daughter not known yet
-            -1, // last daughter not known yet
-            (*iter)->momentum().px(),
-            (*iter)->momentum().py(),
-            (*iter)->momentum().pz(),
-            (*iter)->momentum().e(),
-            beamparts.first->end_vertex()->position().x(),
-            beamparts.first->end_vertex()->position().y(),
-            beamparts.first->end_vertex()->position().z(),
-            beamparts.first->end_vertex()->position().t()
-      );
-      partonMemory[(*iter)->barcode()] = arrayID;
-      ++arrayID;
-   }
-   Int_t lastDaughter = arrayID-1;
-   ((TParticle*)array->AddrAt(0))->SetFirstDaughter(firstDaughter); // beam particle 1
-   ((TParticle*)array->AddrAt(0))->SetLastDaughter(lastDaughter);
-   ((TParticle*)array->AddrAt(1))->SetFirstDaughter(firstDaughter); // beam particle 2
-   ((TParticle*)array->AddrAt(1))->SetLastDaughter(lastDaughter);
+   // If the beam particles end
+   // in the same vertex, this has to be done only once, otherwise, it
+   // has to be done twice (else we lose the "second beam part"
+   // branch)
 
-   // Build vertex list by exploring tree and sorting such that daughters comes after mothers
-   list<HepMC::GenVertex*> vertexList;
-   set<int> vertexSearchSet;
-   ExploreVertex(beamparts.first->end_vertex(),vertexList,vertexSearchSet,requireSecondMotherBeforeDaughters);
+   for (Int_t ibeamPart =0 ; ibeamPart < 2; ibeamPart++) {
+     //     std::cout << "1" << std::endl;
+     
+     HepMC::GenVertex * startVertex = 0;
+     if (ibeamPart == 0) startVertex = beamparts.first  ->end_vertex();
+     else                {
+       startVertex = beamparts.second ->end_vertex();
+       if (beamParticlesToTheSameVertex) break; // both beam particles end to the same vertex: no need to do this twice.
+     }
+     //     std::cout << "2" << std::endl;
+     
+     // Do first vertex as a special case for performance, since its often has the most daughters and both mothers are known
+     Int_t firstDaughter = arrayID;
+     for (HepMC::GenVertex::particles_out_const_iterator iter = startVertex->particles_out_const_begin();
+          iter != startVertex->particles_out_const_end();
+          ++iter) {
+       new((*array)[arrayID]) TParticle(
+                                        (*iter)->pdg_id(),
+                                        (*iter)->status(),
+                                        0, // beam particle 1
+                                        1, // beam particle 2
+                                        -1, // first daughter not known yet
+                                        -1, // last daughter not known yet
+                                        (*iter)->momentum().px(),
+                                        (*iter)->momentum().py(),
+                                        (*iter)->momentum().pz(),
+                                        (*iter)->momentum().e(),
+                                        beamparts.first->end_vertex()->position().x(),
+                                        beamparts.first->end_vertex()->position().y(),
+                                        beamparts.first->end_vertex()->position().z(),
+                                        beamparts.first->end_vertex()->position().t()
+                                        );
+       partonMemory[(*iter)->barcode()] = arrayID;
+       ++arrayID;
+     }
+     Int_t lastDaughter = arrayID-1;
+     if (ibeamPart == 0){
+       ((TParticle*)array->AddrAt(0))->SetFirstDaughter(firstDaughter); // beam particle 1
+       ((TParticle*)array->AddrAt(0))->SetLastDaughter(lastDaughter);
+       // If both beam particles end in the same vertex, we have to reference the daughters of the second beam particle here (this loop is only done once). Otherwise, we do it when ibeamPart is == 1
+       if(beamParticlesToTheSameVertex) {
+         ((TParticle*)array->AddrAt(1))->SetFirstDaughter(firstDaughter); // beam particle 2
+         ((TParticle*)array->AddrAt(1))->SetLastDaughter(lastDaughter);
+       }
+     } else {
+       ((TParticle*)array->AddrAt(1))->SetFirstDaughter(firstDaughter); // beam particle 2
+       ((TParticle*)array->AddrAt(1))->SetLastDaughter(lastDaughter);
 
-   // Analyze each vertex
-   for (list<HepMC::GenVertex*>::iterator i = vertexList.begin(); i != vertexList.end(); ++i) {
-      HepMC::GenVertex * vertex = (*i);
+     }
+     
+     // Then we loop over all other vertices. 
+     // Build vertex list by exploring tree and sorting such that
+     // daughters comes after mothers
+     list<HepMC::GenVertex*> vertexList;
+     set<int> vertexSearchSet;
+     ExploreVertex(startVertex,vertexList,vertexSearchSet,requireSecondMotherBeforeDaughters);
 
-      // first establish mother relations
-      HepMC::GenVertex::particles_in_const_iterator iter = vertex->particles_in_const_begin();
-      if (iter == vertex->particles_in_const_end()) {
-         return "Particle without a mother, and its not a beam particle!";
-      }
-      int motherA = partonMemory[(*iter)->barcode()];
-      if (((TParticle*)array->AddrAt(motherA))->GetFirstDaughter() > -1) {
-         return "Trying to assign new daughters to a particle that already has daughters defined!";
-      }
-      ++iter;
-      int motherB = -1;
-      if (iter != vertex->particles_in_const_end()) {
-         motherB = partonMemory[(*iter)->barcode()];
-         if (((TParticle*)array->AddrAt(motherB))->GetFirstDaughter() > -1) {
-            return "Trying to assign new daughters to a particle that already has daughters defined!";
+     // Analyze each vertex
+     for (list<HepMC::GenVertex*>::iterator i = vertexList.begin(); i != vertexList.end(); ++i) {
+       HepMC::GenVertex * vertex = (*i);
+       //       std::cout << "Vertex: " << vertex->barcode() << std::endl;
+       
+       //      std::cout << "Processing vertex: " << vertex->barcode() << std::endl;
+      
+       // first establish mother-daughter relations (look at particles incoming in the vertex)
+       HepMC::GenVertex::particles_in_const_iterator iterInParticles = vertex->particles_in_const_begin();
+       if (iterInParticles == vertex->particles_in_const_end()) {
+         return "Particle without a mother, and its not a beam particle!\n";
+       }
+       int motherA = partonMemory[(*iterInParticles)->barcode()];
+       //      std::cout << "MotherA: "  << (*iterInParticles)->barcode() << ", " << motherA << std::endl;
+      
+       if (((TParticle*)array->AddrAt(motherA))->GetFirstDaughter() > -1 && motherA > 1) { // FIXME Temp hack: if motherA <2 it means it was not in the array (0 is the beam particle)
+         errMsgStream << Form("Trying to assign new daughters to a particle that already has daughters defined! (motherA, barcode = %d, event = %d)\n",(*iterInParticles)->barcode(), genEvent->event_number());
+         return errMsgStream.str();
+         ((TParticle*)array->AddrAt(motherA))->Print();
+       }
+       ++iterInParticles;
+       int motherB = -1;
+       if (iterInParticles != vertex->particles_in_const_end()) {
+         motherB = partonMemory[(*iterInParticles)->barcode()];
+         //         std::cout << "MotherB: "  << (*iterInParticles)->barcode() << std::endl;
+         if (((TParticle*)array->AddrAt(motherB))->GetFirstDaughter() > -1 && motherB > 1) { // FIXME Temp hack: if motherB < 2 it means it was not in the array (0 is the beam particle)
+           errMsgStream << Form("Trying to assign new daughters to a particle that already has daughters defined! (motherB, barcode = %d, event = %d)\n",(*iterInParticles)->barcode(), genEvent->event_number());
+           return errMsgStream.str();
          }
-         ++iter;
-         if (iter != vertex->particles_in_const_end()) {
-            return "Particle with more than two mothers!";
+         ++iterInParticles;
+         if (iterInParticles != vertex->particles_in_const_end() && (*iterInParticles)->pdg_id() != 93) { // If it's a string it could have many partons attached.. In that case, we ignore mother-daughter relationships
+           //           std::cout << "Daughters" << std::endl;
+           errMsgStream << Form ("Particle with more than two mothers! (Vertex Barcode: %d, PDG: %d)\n", (*iterInParticles)->barcode(), (*iterInParticles)->pdg_id()) ;
+           //           return Form ("Particle with more than two mothers! (Vertex Barcode: %d, PDG: %d)", (*iterInParticles)->barcode(), (*iterInParticles)->pdg_id()) ;
+            
          }
-      }
-      if (motherB > -1 && motherB < motherA) {
+       }
+       if (motherB > -1 && motherB < motherA) {
          int swap = motherA; motherA = motherB; motherB = swap;
-      }
+       }
 
-      // add the particles to the array, important that they are add in succession with respect to arrayID
-      firstDaughter = arrayID;
-      for (iter = vertex->particles_out_const_begin();
-            iter != vertex->particles_out_const_end();
-            ++iter) {
+       // add the particles to the array, important that they are add in succession with respect to arrayID
+       
+       firstDaughter = arrayID;
+       for (HepMC::GenVertex::particles_in_const_iterator iterOutParticles = vertex->particles_out_const_begin();
+            iterOutParticles != vertex->particles_out_const_end();
+            ++iterOutParticles) {
+         //        std::cout << "Adding daughter: " << (*iterOutParticles)->barcode() << std::endl;
+        
          new((*array)[arrayID]) TParticle(
-               (*iter)->pdg_id(),
-               (*iter)->status(),
-               motherA, // mother 1
-               motherB, // mother 2
-               -1, // first daughter, if applicable, not known yet
-               -1, // last daughter, if applicable, not known yet
-               (*iter)->momentum().px(),
-               (*iter)->momentum().py(),
-               (*iter)->momentum().pz(),
-               (*iter)->momentum().e(),
-               vertex->position().x(),
-               vertex->position().y(),
-               vertex->position().z(),
-               vertex->position().t()
-         );
-         partonMemory[(*iter)->barcode()] = arrayID;
+                                          (*iterOutParticles)->pdg_id(),
+                                          (*iterOutParticles)->status(),
+                                          motherA, // mother 1
+                                          motherB, // mother 2
+                                          -1, // first daughter, if applicable, not known yet
+                                          -1, // last daughter, if applicable, not known yet
+                                          (*iterOutParticles)->momentum().px(),
+                                          (*iterOutParticles)->momentum().py(),
+                                          (*iterOutParticles)->momentum().pz(),
+                                          (*iterOutParticles)->momentum().e(),
+                                          vertex->position().x(),
+                                          vertex->position().y(),
+                                          vertex->position().z(),
+                                          vertex->position().t()
+                                          );
+         partonMemory[(*iterOutParticles)->barcode()] = arrayID;
          ++arrayID;
-      }
-      lastDaughter = arrayID-1;
-      if (lastDaughter < firstDaughter) {
+       }
+       lastDaughter = arrayID-1;
+       if (lastDaughter < firstDaughter) {
          return "Vertex with no out particles, should not be possible!";
-      }
-      // update mother with daughter interval
-      ((TParticle*)array->AddrAt(motherA))->SetFirstDaughter(firstDaughter);
-      ((TParticle*)array->AddrAt(motherA))->SetLastDaughter(lastDaughter);
-      if (motherB > -1) {
+       }
+       // update mother with daughter interval
+       ((TParticle*)array->AddrAt(motherA))->SetFirstDaughter(firstDaughter);
+       ((TParticle*)array->AddrAt(motherA))->SetLastDaughter(lastDaughter);
+       if (motherB > -1) {
          ((TParticle*)array->AddrAt(motherB))->SetFirstDaughter(firstDaughter);
          ((TParticle*)array->AddrAt(motherB))->SetLastDaughter(lastDaughter);
-      }
+       }
+     }
    }
 
+   Printf("Particles in event: %d, added: %d, entries: %d/%d", nParticlesInHepMC, arrayID, array->GetEntries(), array->GetEntriesFast());
+   std::cout << errMsgStream.str() << std::endl;
+   
    return "";
 }
 
 
 void THepMCParser::ExploreVertex(HepMC::GenVertex * vertex, list<HepMC::GenVertex*> & vertexList, set<int> & vertexSearchSet, bool requireSecondMotherBeforeDaughters)
 {
-   for (HepMC::GenVertex::particles_out_const_iterator iter = vertex->particles_out_const_begin();
-         iter != vertex->particles_out_const_end();
-         ++iter) {
-      HepMC::GenVertex * testVertex = (*iter)->end_vertex();
+   // Prepare vertex list, and sort vertices so that mothers come before daughters (if required)
+
+   // Loop over all particles exiting from our start vertex 
+   for (HepMC::GenVertex::particles_out_const_iterator partOut = vertex->particles_out_const_begin();
+         partOut != vertex->particles_out_const_end();
+         ++partOut) {
+      HepMC::GenVertex * testVertex = (*partOut)->end_vertex();
       if (testVertex) {
-         bool foundVertex = vertexSearchSet.find((*iter)->end_vertex()->barcode()) != vertexSearchSet.end();
+         bool foundVertex = vertexSearchSet.find((*partOut)->end_vertex()->barcode()) != vertexSearchSet.end(); // If this is true, the vertex was already found
          if (requireSecondMotherBeforeDaughters) {
             // redo this algorithem to move subtree instead of node....
             // its not completely error proof in its current implementation even though the error is extremely rare
 
-            if (foundVertex) for (list<HepMC::GenVertex*>::iterator i = vertexList.begin(); i != vertexList.end(); ++i) {
-               if ((*i)->barcode() == testVertex->barcode()) {
-                  vertexList.erase(i);
+            // Loop over all already found vertices if the vertex was already found, and remove the previous instance
+            if (foundVertex) for (list<HepMC::GenVertex*>::iterator ivert = vertexList.begin(); ivert != vertexList.end(); ++ivert) {
+               if ((*ivert)->barcode() == testVertex->barcode()) {
+                  vertexList.erase(ivert);
                   cout << " it happened, the vertex parsing order had to be changed " << endl;
                   break;
                }
             } else {
-               vertexSearchSet.insert((*iter)->end_vertex()->barcode());
+              //otherwise, just add it to the list
+               vertexSearchSet.insert((*partOut)->end_vertex()->barcode());
             }
             vertexList.push_back(testVertex);
+            // Follow daughter recursively
             if (!foundVertex) ExploreVertex(testVertex,vertexList,vertexSearchSet,requireSecondMotherBeforeDaughters);
 
          } else {
             if (!foundVertex) {
-               vertexSearchSet.insert((*iter)->end_vertex()->barcode());
+              // If we don't care about having all mothers first, we just add it to list and set if not already found
+               vertexSearchSet.insert((*partOut)->end_vertex()->barcode());
                vertexList.push_back(testVertex);
                ExploreVertex(testVertex,vertexList,vertexSearchSet,requireSecondMotherBeforeDaughters);
             }
