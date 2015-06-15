@@ -407,7 +407,7 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
   if(hTrigger->Integral()>0){
     //trigger plot does have some counts in it
     //are Mean, ORA and ORC not empty?  
-    if( hTrigger->GetBinContent(1)<0.001 || hTrigger->GetBinContent(3)<0.001 || hTrigger->GetBinContent(4)<0.001){
+    if(/* hTrigger->GetBinContent(1)<0.001 ||*/ hTrigger->GetBinContent(3)<0.001 || hTrigger->GetBinContent(4)<0.001){
       qualityFlagTrigger = kT0Error; //no entries on diagonal
       AliDebug(AliQAv1::GetQADebugLevel(), Form("T0: too little ORA and ORC in  %s", hTrigger->GetName() ));
 
