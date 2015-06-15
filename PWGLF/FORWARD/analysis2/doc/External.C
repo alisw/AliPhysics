@@ -326,6 +326,70 @@ class AliESDEvent : public TObject{};
  */
 class AliESDFMD : public TObject{};
 
-//
+class AliOADBPhysicsSelection : public TObject
+{
+  /** 
+   * Add a hardware trigger combination as a collision trigger. 
+   * 
+   * @param type       Event type (See AliVEvent) 
+   * @param hwTrigger  Combination of triggers. 
+   * @param hwClass    Hardware class (B, A, C, E, ACE) 
+   * @param id         Identifier 
+   *
+   * @a hwTrigger is a comma separated list of of hardware triggers
+   * which togethr make up a event type.  The list is inclusive, that
+   * is, each comma represents a new term in an OR mask.
+   *
+   * @verbatim 
+   hwTrigger := triggers 
+             |= hwTrigger ',' triggers 
+   triggers  := positive_negative_word 
+             |= positive_negative_word ' ' triggers 
+   positive_negative_word 
+             := positive_word 
+             |  negative_word 
+   positive_word
+             := word 
+             |  '+' word
+   negative_word 
+             := '-' word 
+   @endverbatim 
+   *
+   * Some examples
+   *
+   * @verbatim
+   1: hwTrigger = "A"
+   2: hwTrigger = "A, B"
+   3: hwTrigger = "A B" 
+   4: hwTrigger = "A -B" 
+   5: hwTrigger = "A, B -C"
+   @endverbatim 
+   * 
+   * - 1: Word "A" is a collision 
+   * - 2: Word "A" or "B" are collisions 
+   * - 3: Word "A" together with word "B" are collisions 
+   * - 4: Word "A" is a collision, except when together with "B"
+   * - 5: Word "A" or "B" are collisions, except when "B" is together with "C"
+   *
+   */
+  void AddCollisionTriggerClass(Int_t type,
+				const char* hwTrigger,
+				const char* hwClass,
+				Int_t id);
+  /** 
+   * 
+   * 
+   * @param type       Event type (See AliVEvent) 
+   * @param hwTrigger  Combination of triggers. 
+   * @param hwClass    Hardware class (B, A, C, E, ACE) 
+   * @param id         Identifier 
+   */
+  void AddBGTriggerClass(Int_t type,
+			 const char* hwTrigger,
+			 const char* hwClass,
+			 Int_t id);
+};
+
+// 
 // EOF
 //
