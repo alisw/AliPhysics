@@ -3019,19 +3019,70 @@ struct dNdetaDrawer
 	 << "}\n" << std::endl;
 
     TString tgt(fRebin > 1 ? "rebin" : "full");
-    TString clean(Form("sed -e 's/\\(_[0-9]\\{3\\}d[0-9]\\{2\\}\\)"
-		       "\\(_[ac]\\|\\)"
-		       "_[0-9a-f]\\{4\\}"
-		       "\\(__[0-9]\\{1,3\\}\\|\\)/\\1\\2/g' "
-		       "-e 's/%s/%s/g' < %s > %s.C",
+    TString clean(Form("sed -e 's/_[0-9a-f]\\{4\\}"
+		       "\\(\\|_\\{1,4\\}[0-9a-f]\\{1,4\\}\\)//g'"
+		       " -e 's/%s/%s/g' < %s > %s.C",
 		       bname.Data(), tgt.Data(), fname.Data(), tgt.Data()));
-    // Printf("Execute \"%s\"", clean.Data());
+    Printf("Execute \"%s\"", clean.Data());
     gSystem->Exec(clean);
+    TString trg(fTrigString->GetTitle());
+    if (HasCent()) trg = Form("CENT%s", fCentMeth->GetTitle());
     Printf("Copy %s.C to %s/%s/%05d/%s%s/%s.C",tgt.Data(),
 	   (fEmpirical.IsNull() ? "normal" : "nosec"),
-	   fSysString->GetTitle(), snn, (fCentMeth ? "CENT" : ""),
-	   (fCentMeth ? fCentMeth->GetTitle() : fTrigString->GetTitle()),
+	   fSysString->GetTitle(), snn, trg.Data(),
 	   tgt.Data());
+
+    std::ofstream outs("gse.C");
+    if (!outs) { 
+      Error("Export", "Failed to open output file %s", fname.Data());
+      return;
+    }
+    outs << "// \n"
+	 << "TList* gse() {\n"
+	 << "  gROOT->SetMacroPath(Form(\"${HOME}/GraphSysErr:${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2/dndeta:%s\",gROOT->GetMacroPath()));\n"
+	 << "  gSystem->AddIncludePath(\"-I${HOME}/GraphSysErr\");\n"
+	 << "  gROOT->LoadMacro(\"GraphSysErr.C+g\");\n"
+	 << "  gROOT->LoadMacro(\"SysErrorAdder.C+g\");\n"
+	 << "  TString  t = \"" << fTrigString->GetTitle() << "\";\n"
+	 << "  TString  c = \"" << (HasCent() ? fCentMeth->GetTitle():"") <<"\";\n"
+	 << "  TString  s = \"" << fSysString->GetTitle() << "\";\n"
+	 << "  UShort_t e = " << snn << ";\n"
+	 << "  TString  m = \"" << tgt << ".C\";\n"
+	 << "  TList*   r = new TList;\n"
+	 << "  THStack* l = new THStack(\"l\",\"l\");\n"
+	 << "  gROOT->Macro(Form(\"%s((THStack*)%p,0,20)\",m.Data(),l));\n"
+	 << "  SysErrorAdder* a = 0;\n"
+	 << "  if      (t.EqualTo(\"INEL\"))    a = new INELAdder(s,e);\n"
+	 << "  else if (t.EqualTo(\"INELGt0\")) a = new INELGt0Adder(s,e);\n"
+	 << "  else if (t.EqualTo(\"V0AND\"))   a = new NSDAdder(s,e);\n"
+	 << "  else                           a = new CENTAdder(s,e,c);\n"
+	 << "  TIter  n(l->GetHists());\n"
+	 << "  TH1*   h = 0;\n"
+	 << "  Bool_t f = true;\n"
+	 << "  while ((h = static_cast<TH1*>(n()))) {\n"
+	 << "    TString nme(h->GetName());\n"
+	 << "    if (nme.Contains(\"mirror\")||nme.Contains(\"SysError\"))\n"
+	 << "      continue;\n"
+	 << "    h->SetMarkerColor(kBlack);\n"
+	 << "    h->SetFillColor(kBlack);\n"
+	 << "    h->SetLineColor(kBlack);\n"
+	 << "    GraphSysErr* g = a->Make(h,0);\n"
+	 << "    g->SetName(\"data\");\n"
+	 << "    g->SetSumOption(GraphSysErr::kBox);\n"
+	 << "    g->SetSumFillColor(g->GetMarkerColor());\n"
+	 << "    g->SetSumFillStyle(3002);\n"
+	 << "    g->SetCommonSumOption(GraphSysErr::kBox);\n"
+	 << "    g->SetCommonSumFillColor(g->GetMarkerColor());\n"
+	 << "    g->SetCommonSumFillStyle(3001);\n"
+	 << "    if (f) g->Draw(\"SUM QUAD AXIS\");\n"
+	 << "    else   g->Draw(\"SUM QUAD\");\n"
+	 << "    f = false;\n"
+	 << "    r->Add(g);\n"
+	 << "  }\n"
+	 << "  return r;\n"
+	 << "}\n"
+	 << "// EOF" << std::endl;
+    outs.close();
   }
   /* @} */ 
   /** 
