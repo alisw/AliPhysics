@@ -15,6 +15,7 @@
 
 #include "AliDigitizer.h"
 #include "AliADConst.h"
+#include "TSpline.h"
 
 class TClonesArray;
 class TF1;
@@ -23,6 +24,7 @@ class AliCDBManager;
 class AliCDBStorage;
 class AliADCalibData;
 class AliAD;
+class TSpline3;
 
 class AliADDigitizer: public AliDigitizer {
 
@@ -53,6 +55,8 @@ public:
    void ResetDigits();
 						
    AliADCalibData *GetCalibData() const;
+   void GetTimeSlewingSplines();
+   Float_t UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
 
    TF1*   GetChargeSignalShape() const { return fChargeSignalShape; }
    TF1*   GetTimeSignalShape() const { return fTimeSignalShape; }
@@ -93,6 +97,7 @@ public:
    Float_t  fBinSize[16];            //! Bin size in fTime container
    Float_t  fHptdcOffset[16];        //! HPTDC time offsets channel by channel
    Float_t  fClockOffset[16];        //! Clock offsets channel by channel
+   TSpline3 *fTimeSlewingSpline[16]; //! Time slewing splines
 
    Float_t *fTime[16];               //! Main container used in digitization
    Int_t    fLabels[16][3];          //! Container for MC labels

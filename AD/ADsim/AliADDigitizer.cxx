@@ -51,6 +51,7 @@
 #include "AliADCalibData.h"
 #include "AliCTPTimeParams.h"
 #include "AliLHCClockPhase.h"
+#include "TSpline.h"
 #include "AliADdigit.h"
 #include "AliADDigitizer.h"
 #include "AliADSDigit.h"
@@ -174,6 +175,9 @@ Bool_t AliADDigitizer::Init()
   AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("AD/Calib/PulseShapes");
   if (!entry4) AliFatal("AD pulse shapes are not found in OCDB !");
   TH2F *PulseShapes = (TH2F*)entry4->GetObject();
+  
+  //Time slewing splines
+  GetTimeSlewingSplines();
 
   for(Int_t i = 0 ; i < 16; ++i) {
   
@@ -336,7 +340,7 @@ void AliADDigitizer::DigitizeHits()
 	     
      Int_t firstBin = TMath::Max(0,(Int_t)((PMmeanTime[iPM])/fBinSize[iPM]));
      Int_t lastBin = fNBins[iPM]-1;
-     //std::cout<<"First Bin: "<<firstBin<<std::endl;
+     std::cout<<"First Bin: "<<firstBin<<std::endl;
      for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
 	 Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMmeanTime[iPM];
 	 if(tempT<=0)continue;
@@ -351,9 +355,10 @@ void AliADDigitizer::DigitizeSDigits()
 {
   // Digitize the fTime arrays (SDigits) to the level of
   // Digits (fAdc arrays)
+  Float_t fMCTime[16];
   for(Int_t i = 0 ; i < 16; ++i) {
     for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
-    fLeadingTime[i] = fTimeWidth[i] = 0;
+    fMCTime[i] = fLeadingTime[i] = fTimeWidth[i] = 0;
   }
 
 
@@ -366,21 +371,21 @@ void AliADDigitizer::DigitizeSDigits()
     //Float_t thr = 0;
        
     Bool_t ltFound = kFALSE, ttFound = kFALSE;
-    for (Int_t iBin = 0; iBin < fNBins[ipmt]; ++iBin) {
+    for (Int_t iBin = 1; iBin < fNBins[ipmt]; ++iBin) {
       Float_t t = fBinSize[ipmt]*Float_t(iBin);
-      if (fTime[ipmt][iBin] > thr) {
+      if (fTime[ipmt][iBin] > 0.0) {
 	if (!ltFound && (iBin < fNBinsLT[ipmt])) {
 	  ltFound = kTRUE;
-	  fLeadingTime[ipmt] = t;
+	  fMCTime[ipmt] = t;
 	  //std::cout<<"Leading Bin: "<<iBin<<std::endl;
 	  //std::cout<<"Leading TADC: "<<t-fClockOffset[ipmt]<<std::endl;
 	}
       }
-      else {
+      if(fTime[ipmt][iBin-1] > thr && fTime[ipmt][iBin] < thr){
 	if (ltFound) {
 	  if (!ttFound) {
 	    ttFound = kTRUE;
-	    fTimeWidth[ipmt] = t - fLeadingTime[ipmt];
+	    fTimeWidth[ipmt] = t - fMCTime[ipmt];
 	  }
 	}
       }
@@ -389,7 +394,7 @@ void AliADDigitizer::DigitizeSDigits()
       if (clock >= 0 && clock < kNClocks)
 	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
     }
-    AliDebug(1,Form("Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fLeadingTime[ipmt]));
+    AliDebug(1,Form("Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fMCTime[ipmt]));
     Int_t board = AliADCalibData::GetBoardNumber(ipmt);
     if (ltFound && ttFound) {
       fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
@@ -403,11 +408,18 @@ void AliADDigitizer::DigitizeSDigits()
 
   fEvenOrOdd = gRandom->Integer(2);
   for (Int_t j=0; j<16; ++j){
+    Float_t adcSignal = 0.0;
+    Float_t adcClock = 0.0;
     for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
       AliDebug(1,Form("ADC %d %d %f",j,iClock,fAdc[j][iClock]));
+      adcClock = fAdc[j][iClock];
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
+      if(fAdc[j][iClock]>1023) adcClock = 1023 - fAdcPedestal[j][integrator];
+      adcSignal += adcClock;
     }
+    fLeadingTime[j] = UnCorrectLeadingTime(j,fMCTime[j],adcSignal);
+    
   }
   //Fill BB and BG flags in trigger simulator
   AliADTriggerSimulator * triggerSimulator = new AliADTriggerSimulator();
@@ -608,7 +620,48 @@ AliCDBManager *man = AliCDBManager::Instance();
   return calibdata;
 
 }
+//____________________________________________________________________________
+Float_t AliADDigitizer::UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+{
+  // UnCorrect the MC time
+  // for slewing effect and
+  // misalignment of the channels
+  const Double_t fTOF[4] = {65.30,65.12,56.54,56.71};
+  
+  if (time < 1e-6) return time;
+  if (adc < 1) return time;
 
+  // Slewing and offset correction
+  Int_t board = AliADCalibData::GetBoardNumber(i);
+  //std::cout<<"MC time: "<<time<<std::endl;
+  time -= fHptdcOffset[i];
+  //std::cout<<"TOF: "<<time<<std::endl;
+  time -= fTOF[i/4];
+  time += fTimeSlewingSpline[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
+  //std::cout<<"Charge: "<<adc<<std::endl;
+  //std::cout<<"Leading time: "<<time<<std::endl;
+
+  return time;
+}
+//_____________________________________________________________________________
+void AliADDigitizer::GetTimeSlewingSplines()
+{
+
+  AliCDBManager *man = AliCDBManager::Instance();
+
+  AliCDBEntry *entry=0;
+
+  entry = man->Get("AD/Calib/TimeSlewing");
+  
+  TList *fListSplines = 0;
+
+  if (entry) fListSplines = (TList*) entry->GetObject();
+  if (!fListSplines)  AliFatal("No time slewing correction from calibration database !");
+  
+  for(Int_t i=0; i<16; i++) fTimeSlewingSpline[i] = (TSpline3*)(fListSplines->At(i));
+  
+
+}
 //____________________________________________________________________________
 double AliADDigitizer::ChargeSignalShape(double *x, double *par)
 {

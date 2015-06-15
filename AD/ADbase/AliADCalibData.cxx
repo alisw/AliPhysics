@@ -309,6 +309,20 @@ Float_t AliADCalibData::GetGain(Int_t channel)
     gain = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel])*kChargePerADC/kNPhotonsPerMIP;
   return gain;
 }
+//________________________________________________________________
+Float_t AliADCalibData::GetADCperMIP(Int_t channel)
+{
+  // Computes the MIP position wrt gain curve and HV
+  // Argument passed is the PM number (aliroot numbering)
+  if (!fPMGainsA) InitPMGains();
+
+  // High Voltage retrieval from Calibration Data Base:  
+  Float_t hv = fMeanHV[kOnlineChannel[channel]];
+  Float_t ADCperMIP = 0;
+  if (hv>0)
+    ADCperMIP = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel]);
+  return ADCperMIP;
+}
 
 //________________________________________________________________
 Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel)
@@ -1185,10 +1199,11 @@ printf("======================================================\n");
 printf("\n"); 
  
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
-    printf("ChOff = %d, ChOn = %d, HV = %.1f, Dead = %s, Threshold = %.1f, DelayHit = %.2f\n",
+    printf("ChOff = %d, ChOn = %d, HV = %.1f, MIP = %.1f ADC, Dead = %s, Threshold = %.1f, DelayHit = %.2f\n",
 	   pmNumber,
 	   kOnlineChannel[pmNumber],
 	   GetMeanHV(pmNumber),
+	   GetADCperMIP(pmNumber),
 	   IsChannelDead(pmNumber)?"yes":"no",
 	   GetDiscriThr(pmNumber),
 	   GetTimeOffset(pmNumber)

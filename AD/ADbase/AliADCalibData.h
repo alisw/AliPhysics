@@ -39,6 +39,7 @@ class AliADCalibData: public TNamed {
   Bool_t*  GetDeadMap()   const {return (bool*)fDeadChannel;} 
    
   Float_t  GetGain(Int_t channel);
+  Float_t  GetADCperMIP(Int_t channel);
   Float_t  GetTimeOffset(Int_t channel)	const {return fTimeOffset[channel];}
   Float_t* GetTimeOffset()   const {return (float*)fTimeOffset;}
   Float_t  GetTimeGain(Int_t channel)	const {return fTimeGain[channel];}

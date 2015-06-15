@@ -276,23 +276,12 @@ void AliADTriggerSimulator::Run() {
 	}
 	
 	for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
-    	//Enable time is used to turn off the coincidence 
-    	if(fCalibData->GetEnableTiming(iChannel) && fCalibData->GetEnableTiming(iChannel+4)){
-    		if(fBBFlags[iChannel] && fBBFlags[iChannel+4]) nBBflagsADC++;
-		if(fBGFlags[iChannel] && fBGFlags[iChannel+4]) nBGflagsADC++;
-		}
-	else{
-		if(fBBFlags[iChannel] || fBBFlags[iChannel+4]) nBBflagsADC++;
-		if(fBGFlags[iChannel] || fBGFlags[iChannel+4]) nBGflagsADC++;
-		}
-	if(fCalibData->GetEnableTiming(iChannel+8) && fCalibData->GetEnableTiming(iChannel+12)){	
-		if(fBBFlags[iChannel+8] && fBBFlags[iChannel+12]) nBBflagsADA++;
-		if(fBGFlags[iChannel+8] && fBGFlags[iChannel+12]) nBGflagsADA++;
-		}
-	else{
-		if(fBBFlags[iChannel+8] || fBBFlags[iChannel+12]) nBBflagsADA++;
-		if(fBGFlags[iChannel+8] || fBGFlags[iChannel+12]) nBGflagsADA++;
-		}
+    	    //Enable time is used to turn off the coincidence 
+      	    if((!fCalibData->GetEnableTiming(iChannel) || fBBFlags[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || fBBFlags[iChannel+4])) nBBflagsADC++;
+      	    if((!fCalibData->GetEnableTiming(iChannel) || fBGFlags[iChannel]) && (!fCalibData->GetEnableTiming(iChannel+4) || fBGFlags[iChannel+4])) nBGflagsADC++;
+
+      	    if((!fCalibData->GetEnableTiming(iChannel+8) || fBBFlags[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || fBBFlags[iChannel+12])) nBBflagsADA++;
+      	    if((!fCalibData->GetEnableTiming(iChannel+8) || fBGFlags[iChannel+8]) && (!fCalibData->GetEnableTiming(iChannel+12) || fBGFlags[iChannel+12])) nBGflagsADA++;
 	}
 
 	// BBA
