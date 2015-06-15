@@ -20,24 +20,19 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {Error("AddTask_dNdPtAnalysis_TPCITS", "No analysis manager found.");return 0;}
 
-  if (!mgr) {
-    Error("AddTask_dNdPtAnalysis_TPCITS", "No analysis manager found.");
-    return 0;
-  }
+//   Switch off all AliInfo (too much output!!!)
+//   AliLog::SetGlobalLogLevel(AliLog::kError);
+//   mgr->SetDebugLevel(0);
 
-  // Switch off all AliInfo (too much output!!!)
-  AliLog::SetGlobalLogLevel(AliLog::kError);
-  mgr->SetDebugLevel(0);
+/// Create physics trigger selection class
 
-  //
-  // Create physics trigger selection class
-  //
   //AliPhysicsSelection *physTrigSel =  new AliPhysicsSelection();
   //physTrigSel->AddBackgroundIdentification(new AliBackgroundSelection());
 
 
-/// <b> Create event cuts:</b> \li Vertex z-window #pm 10 cm
+/// <b> Create event cuts:</b> \li Vertex z-window #pm 10 cm \li Trigger Requirement set to \b kFALSE if no physics selection exists.
 
   Float_t zvWindow = 10. ;
 
@@ -45,7 +40,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   evtCuts->SetZvRange(-zvWindow,zvWindow);
   evtCuts->SetMeanXYZv(0.0,0.0,0.0);
   evtCuts->SetSigmaMeanXYZv(1.0,1.0,10.0);
-  evtCuts->SetTriggerRequired(kTRUE);
+  evtCuts->SetTriggerRequired(kFALSE);
 
 
 /// <b> Create geom. acceptance cuts:</b> \li Eta window #pm 1 \li Minimum pT = 0.1 Gev/c
@@ -58,18 +53,48 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   accCuts->SetPtRange(ptMin,1.e10);
 
 
-/// <b> Create standard esd track cuts:</b> \li Call ".../PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C" \li Cut mode: 222 \li TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS
+/// <b> Create standard esd track cuts:</b> \li Stop loading external macro. \li Trackcuts according to "CutMode=222"
 
-  Int_t cutMode = 222;
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
-  if (!esdTrackCuts) {
-    printf("ERROR: esdTrackCuts could not be created\n");
-    return;
-  } else {
-    esdTrackCuts->SetHistogramsOn(kTRUE);
-  }
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 
+  //Int_t    minclsTPC=70;
+  Float_t minNCrossedRowsTPC = 120; 
+  Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
+  Float_t maxFractionSharedTPCCluster = 0.4;
+  Double_t maxchi2perTPCcl=4.;
+  Double_t maxdcazITSTPC=2.0;
+  //
+  // TPC
+  //
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  
+  //esdTrackCuts->SetMinNClustersTPC(minclsTPC);
+  esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+  esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
+  //
+  // ITS
+  //
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMaxChi2PerClusterITS(36.);
+  //
+  // primary selection
+  //
+  esdTrackCuts->SetDCAToVertex2D(kFALSE);
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
+  // DCArphi parametrization (LHC10c pass2)
+  // 7*(0.0026+0.0050/pt^1.01)
+  esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+  // tpcc cut
+  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);    
+  
+  
+  
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
 /// <b>Create task</b>
@@ -83,9 +108,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   task->SelectCollisionCandidates(AliVEvent::kMB); 
 
 
-  //
-  // set analysis options from the Helper here !!!
-  //
+/// Set analysis options from the helper
 
   //AliTriggerAnalysis::Trigger trigger = AliTriggerAnalysis::kMB1;
   AlidNdPtHelper::AnalysisMode analysisMode = AlidNdPtHelper::kTPCITS;
@@ -132,26 +155,21 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   fdNdPtAnalysis->SetBinsPt(ptNbins, binsPt);
   fdNdPtAnalysis->SetBinsPtCorr(ptNbins, binsPt);  
   fdNdPtAnalysis->SetBinsMult(multNbins, binsMult);
-    
-  // for mean pt use tpc tracks as mult. estimator
-  AlidNdPtAcceptanceCuts *multAccCuts = new AlidNdPtAcceptanceCuts("MultaccCuts","Geom. acceptance cuts");
-  multAccCuts->SetEtaRange(-0.3,0.3);
-  multAccCuts->SetPtRange(0.0,1.e10); 
-  AliESDtrackCuts* multTrackCuts = CreatedNdPtTrackCuts(222);
-  fdNdPtAnalysis->SetMultAcceptanceCuts(multAccCuts);
-  fdNdPtAnalysis->SetMultTrackCuts(multTrackCuts);  
-  
+   
   task->AddAnalysisObject( fdNdPtAnalysis );
   mgr->AddTask(task);
+  
 /// <b>Create containers for input and output </b>
 /// \code AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); \endcode
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 ///  Adjust the Data Container to the Grid:
-/// \code  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:dNdPtHistos", mgr->GetCommonFileName()));\endcode
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpPb",
+/// \code AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp-Standard",TList::Class(), AliAnalysisManager::kOutputContainer, "dNdPt_jgronef");  \endcode
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpp-Standard",
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
-							   Form("%s:dNdPtHistos", mgr->GetCommonFileName())); 
+							   Form("%s:dNdPt_jgronef", mgr->GetCommonFileName())); 
+
+  
   
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);
