@@ -470,23 +470,25 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 //________________________________________________________________________
 AliVParticle* AliAnalysisTaskJetShapeConst::GetEmbeddedConstituent(AliEmcalJet *jet) {
 
-  AliJetContainer *jetCont = GetJetContainer(fContainerBase);
-  AliVParticle *vp = 0x0;
+  AliParticleContainer *partContEmb = GetParticleContainer(); //the only particle container given is the one with embedded track(s)
+  
   AliVParticle *vpe = 0x0; //embedded particle
-  Int_t nc = 0;
-  for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
-    vp = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray())); //check if fTracks is the correct track branch
-    //if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
-    Int_t lab = TMath::Abs(vp->GetLabel());
-    if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
-      continue;
-
-    if(!vpe) vpe = vp;
-    else if(vp->Pt()>vpe->Pt()) vpe = vp;
-    nc++;
+  for(Int_t ip = partContEmb->GetNParticles()-1; ip>-1; ip--){
+      AliVParticle *vp = partContEmb->GetAcceptParticle(ip);
+      if(!vpe){
+      	 AliDebug(2, Form("Particle %d not found", ip));
+      	 continue;
+      }
+      Int_t lab = TMath::Abs(vp->GetLabel());
+      if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
+      	 continue;
+      if(!vpe) vpe = vp;
+      else if(vp->Pt()>vpe->Pt()) vpe = vp;
+  
   }
-  AliDebug(11,Form("Found %d embedded particles",nc));
-  return vpe;
+  
+  Double_t deltaR= jet->DeltaR(vpe);
+  if(deltaR < 0.2) return vpe;
 }
 
 
