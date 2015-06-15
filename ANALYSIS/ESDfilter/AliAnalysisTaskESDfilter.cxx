@@ -107,6 +107,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fIsVZEROEnabled(kTRUE),
   fIsTZEROEnabled(kTRUE),
   fIsZDCEnabled(kTRUE),
+  fIsADEnabled(kTRUE),
   fIsHMPIDEnabled(kTRUE), 
   fIsV0CascadeRecoEnabled(kFALSE),
   fAreCascadesEnabled(kTRUE),
@@ -184,6 +185,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fIsVZEROEnabled(kTRUE),
   fIsTZEROEnabled(kTRUE),
   fIsZDCEnabled(kTRUE),
+  fIsADEnabled(kTRUE),
   fIsHMPIDEnabled(kTRUE), 
   fIsV0CascadeRecoEnabled(kFALSE),
   fAreCascadesEnabled(kTRUE),
@@ -2011,7 +2013,14 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
     else zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(13, 0));
   }
 }
-
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::ConvertAD(const AliESDEvent& esd)
+{
+  // Convert AD data
+  AliAODAD* adData = AODEvent()->GetADData();
+  if (adData && esd.GetADData())
+    *adData = *(esd.GetADData());
+}
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskESDfilter::ConvertHMPID(const AliESDEvent& esd) // clm
 {
@@ -2336,6 +2345,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   if (fArePHOSTriggerEnabled) ConvertCaloTrigger(TString("PHOS"), *esd);
   if (fAreTrackletsEnabled) ConvertTracklets(*esd);
   if (fIsZDCEnabled) ConvertZDC(*esd);
+  if (fIsADEnabled) ConvertAD(*esd);
   if (fIsHMPIDEnabled) nHmpidRings = ConvertHMPID(*esd); 
   if (fIsTRDEnabled) ConvertTRD(*esd);
 

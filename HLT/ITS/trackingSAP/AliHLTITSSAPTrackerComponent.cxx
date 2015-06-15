@@ -36,7 +36,8 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliGeomManager.h"
-#include "TObjString.h"
+#include <TObjString.h>
+#include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
 #include "AliITSSAPTracker.h"
@@ -47,9 +48,12 @@
 #include "AliGeomManager.h"
 #include "AliHLTTrackMCLabel.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecoParam.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliHLTMessage.h"
 #include "AliFlatESDVertex.h"
+#include "AliHLTReadoutList.h"
+#include "AliHLTCTPData.h"
 #include <map>
 
 using namespace std;
@@ -57,7 +61,13 @@ using namespace std;
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTITSSAPTrackerComponent )
 AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent()
-: fSolenoidBz( 0 ),
+: fRecoParamType(AliRecoParam::kDefault),
+  fSkipSDD(-1),
+  fMaxMissL(1),
+  fMaxTrackletsToRun(-1),
+  fMaxVtxIter(-1),
+  fStopScaleChange(-1),
+  fMaxRSPDVtx(-1),
   fBenchmark("ITSSAPTracker"),
   fTracker(0),
   fClusters(0)
@@ -72,7 +82,13 @@ AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent()
 
 AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent( const AliHLTITSSAPTrackerComponent& )
   :AliHLTProcessor(),
-   fSolenoidBz( 0 ),
+   fRecoParamType(AliRecoParam::kDefault),
+   fSkipSDD(-1),
+   fMaxMissL(1),
+   fMaxTrackletsToRun(-1),
+   fMaxVtxIter(-1),
+   fStopScaleChange(-1),
+   fMaxRSPDVtx(-1),
    fBenchmark("ITSSAPTracker"),
    fTracker(0),
    fClusters(0)
@@ -147,11 +163,9 @@ AliHLTComponent* AliHLTITSSAPTrackerComponent::Spawn()
 
 void AliHLTITSSAPTrackerComponent::SetDefaultConfiguration()
 {
-  // Set default configuration for the CA tracker component
+  // Set default configuration for the ITSSAP tracker component
   // Some parameters can be later overwritten from the OCDB
-
-  fSolenoidBz = -5.00668;
-  
+    
 }
 
 int AliHLTITSSAPTrackerComponent::ReadConfigurationString(  const char* arguments )
@@ -159,9 +173,9 @@ int AliHLTITSSAPTrackerComponent::ReadConfigurationString(  const char* argument
   // Set configuration parameters for the CA tracker component from the string
 
   int iResult = 0;
-  if ( !arguments ) return iResult;
-
   TString allArgs = arguments;
+  if (allArgs.IsNull()) return iResult;
+
   TString argument;
   int bMissingParam = 0;
 
@@ -171,14 +185,74 @@ int AliHLTITSSAPTrackerComponent::ReadConfigurationString(  const char* argument
 
   for ( int i = 0; i < nArgs; i++ ) {
     argument = ( ( TObjString* )pTokens->At( i ) )->GetString();
+    argument.ToLower();
     if ( argument.IsNull() ) continue;
-
-    if ( argument.CompareTo( "-solenoidBz" ) == 0 ) {
-      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
+    
+    if (argument.CompareTo("-lowflux")==0) {
+      fRecoParamType = AliRecoParam::kLowMult;
+      HLTInfo("Low flux reconstruction selected");
       continue;
     }
-
+    if (argument.CompareTo("-highflux")==0) {
+      fRecoParamType = AliRecoParam::kHighMult;
+      HLTInfo("High flux reconstruction selected");
+      continue;
+    }
+    if (argument.CompareTo("-cosmics")==0 ||
+	     argument.CompareTo("-calib")==0) {
+      HLTWarning("%s reconstruction selected: override to default",argument.Data());
+      continue;
+    }    
+    //
+    if (argument.CompareTo("-skipsdd")==0) {
+      fSkipSDD = 1;
+      HLTInfo("SDD will be ignored");
+      continue;
+    }    
+    //
+    if (argument.CompareTo("-maxmisslayers")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fMaxMissL = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+      HLTInfo("Allow max active layers missed: %d", fMaxMissL);
+      continue;
+    } 
+    //
+    if (argument.CompareTo("-maxmult")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fMaxTrackletsToRun = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+      HLTInfo("Skip tracking if N SPD tracklets > %d", fMaxTrackletsToRun);
+      continue;
+    } 
+    //
+    if (argument.CompareTo("-maxitervtx")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fMaxVtxIter = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+      if (fMaxVtxIter<1) {
+	HLTError("Incorrect maxitervtx %d supplied, ITSSAPTracker default will be used", fMaxVtxIter);
+	fMaxVtxIter = -1;
+      }
+      else HLTInfo("Allow max %d iterations for vertexer", fMaxVtxIter);
+      continue;
+    } 
+    //
+    if (argument.CompareTo("-stopscalevtx")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fStopScaleChange = ((TObjString*)pTokens->At(i))->GetString().Atof();
+      if (fStopScaleChange<0.3) {
+	HLTError("Incorrect stopscalevtx %.2f supplied, ITSSAPTracker default will be used", fStopScaleChange);
+	fStopScaleChange = -1;
+      }
+      else HLTInfo("Stop vertexing on scale change below %.2f", fStopScaleChange);
+      continue;
+    } 
+    //
+    if (argument.CompareTo("-maxrspdv")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fMaxRSPDVtx = ((TObjString*)pTokens->At(i))->GetString().Atof();
+      HLTInfo("Accept SPD vertices with R<",fMaxRSPDVtx);
+      continue;
+    }
+    //
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }
@@ -188,7 +262,7 @@ int AliHLTITSSAPTrackerComponent::ReadConfigurationString(  const char* argument
     HLTError( "Specifier missed for parameter \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }
-
+  
   return iResult;
 }
 
@@ -232,7 +306,7 @@ int AliHLTITSSAPTrackerComponent::Configure( const char* cdbEntry, const char* c
   // Configure the component
   // There are few levels of configuration,
   // parameters which are set on one step can be overwritten on the next step
-
+  HLTInfo("cdbEnty: %s chaindId: %s commandLine: %s",cdbEntry,chainId,commandLine);
   //* read hard-coded values
 
   SetDefaultConfiguration();
@@ -240,10 +314,6 @@ int AliHLTITSSAPTrackerComponent::Configure( const char* cdbEntry, const char* c
   //* read the default CDB entry
 
   int iResult1 = ReadCDBEntry( NULL, chainId );
-
-  //* read magnetic field
-
-  fSolenoidBz = GetBz();
 
   //* read the actual CDB entry if required
 
@@ -254,7 +324,7 @@ int AliHLTITSSAPTrackerComponent::Configure( const char* cdbEntry, const char* c
   int iResult3 = 0;
 
   if ( commandLine && commandLine[0] != '\0' ) {
-    HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
+    //    HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
     iResult3 = ReadConfigurationString( commandLine );
   }
 
@@ -270,6 +340,8 @@ int AliHLTITSSAPTrackerComponent::DoInit( int argc, const char** argv )
   // Configure the ITS tracker component
 
   if ( fTracker ) return -EINPROGRESS;
+
+  SetupCTPData();
 
   if(AliGeomManager::GetGeometry()==NULL){
     AliGeomManager::LoadGeometry();
@@ -289,10 +361,49 @@ int AliHLTITSSAPTrackerComponent::DoInit( int argc, const char** argv )
     HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
     return -ENODEV;
   }
-  fSolenoidBz=GetBz();
 
   fTracker = new AliITSSAPTracker();
-  fTracker->Init();
+  fTracker->SetBz(GetBz());
+  fTracker->Init();  // init defaults
+  //
+  // check consistency of options (if provided)
+  TObjArray* pArr = dynamic_cast<TObjArray*>(LoadAndExtractOCDBObject("ITS/Calib/RecoParam"));
+  AliITSRecoParam* param = 0;   // fetch relevant recoparam
+  if (pArr) {
+    int np = pArr->GetEntriesFast();
+    for (int ip=np;ip--;) {
+      if (!(param=(AliITSRecoParam*)pArr->At(ip)) ||
+	  param->GetEventSpecie()!=fRecoParamType) {
+	param = 0;
+	continue;
+      }
+    }
+  }
+  //
+  if (fSkipSDD<0) {
+    if (param && (param->GetLayersToSkip(2)||param->GetLayersToSkip(3))) {
+      fSkipSDD = 1;
+      HLTInfo("Force to skip SDD layers (recoparam)");
+    }
+    else fSkipSDD = 0;
+  }
+  //
+  if (fMaxTrackletsToRun<0) {
+    if (param) fMaxTrackletsToRun = param->GetMaxSPDcontrForSAToUseAllClusters();
+    else fMaxTrackletsToRun = 99999;
+  }
+  HLTInfo("Max N SPD tracklets to run tracking: %d",fMaxTrackletsToRun);
+  //
+  if (fMaxMissL<0 && param) {
+    fMaxMissL = 6 - param->GetMinNPointsSA();
+  }
+  if (fMaxMissL>3) fMaxMissL = 3;
+  HLTInfo("Allow to skip at most %d layers",fMaxMissL);
+  //
+  if (fMaxRSPDVtx<0) fMaxRSPDVtx = 1.5;
+  else HLTInfo("Accept SPD vertices with R<",fMaxRSPDVtx);
+  fTracker->SetMaxRSPDVtx(fMaxRSPDVtx);
+
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
   fBenchmark.SetTimer(1,"reco");
@@ -323,13 +434,12 @@ int AliHLTITSSAPTrackerComponent::DoEvent
 (
   const AliHLTComponentEventData& evtData,
   const AliHLTComponentBlockData* blocks,
-  AliHLTComponentTriggerData& /*trigData*/,
+  AliHLTComponentTriggerData& trigData,
   AliHLTUInt8_t* outputPtr,
   AliHLTUInt32_t& size,
   vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //* process event
-
   AliHLTUInt32_t maxBufferSize = size;
   size = 0; // output size
   
@@ -339,6 +449,20 @@ int AliHLTITSSAPTrackerComponent::DoEvent
     HLTWarning( "no blocks in event" );
     return 0;
   }
+
+  // we don't use SDD if not in trigger or explicitly forbidden
+  const AliHLTCTPData* ctpdata=CTPData();
+  AliHLTReadoutList rd=ctpdata->ReadoutList(trigData);
+  Bool_t skipSDD = fSkipSDD || !rd.DetectorEnabled(AliHLTReadoutList::kITSSDD);
+  fTracker->SetSkipLayer(AliITSSAPTracker::kALrSDD1,skipSDD);
+  fTracker->SetSkipLayer(AliITSSAPTracker::kALrSDD2,skipSDD);
+
+  int maxMiss = fMaxMissL;
+  if (skipSDD && maxMiss>1) maxMiss = 1; // there should be at least 1 hits above SPD
+  fTracker->SetMaxMissedLayers(maxMiss);
+
+  if (fMaxVtxIter>0)      fTracker->SetMaxVtxIter(fMaxVtxIter);
+  if (fStopScaleChange>0) fTracker->SetStopScaleChange(fStopScaleChange);
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
@@ -364,6 +488,13 @@ int AliHLTITSSAPTrackerComponent::DoEvent
       return 0;
     }
   }  
+  
+  if (vertexSPD->GetNContributors()>fMaxTrackletsToRun) {
+    HLTInfo("Skip tracking: HLT SPD vertex has %d>%d tracklets",
+	    vertexSPD->GetNContributors(),fMaxTrackletsToRun );
+    return 0;
+  }
+  fTracker->SetMaxTrackletsToRunTracking(fMaxTrackletsToRun);
 
   int nBlocks = evtData.fBlockCnt;
   if (!fClusters) fClusters = new TClonesArray("AliITSRecPoint",1000);
@@ -475,8 +606,8 @@ int AliHLTITSSAPTrackerComponent::DoEvent
 
   // Set log level to "Warning" for on-line system monitoring
   HLTInfo( "ITS SAP Tracker: output %d tracks;  input %d clusters, VertexTracks: %s",
-	   nAddedTracks, nClTotal, vtxOK ? "OK" : "Found" );
+	   nAddedTracks, nClTotal, vtxOK ? "OK" : "Not Found" );
 
-  HLTBenchmark(fBenchmark.GetStatistics());
+  HLTInfo(fBenchmark.GetStatistics());
   return iResult;
 }

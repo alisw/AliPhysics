@@ -44,6 +44,8 @@ ClassImp(AliTPCSAMPAEmulator)
 
 AliTPCSAMPAEmulator::AliTPCSAMPAEmulator() : 
   TNamed(),
+  fDigitFilterType(0),   // type of the digital filter
+  //
   fBC3SlopeDown(0.2),    // BC3 slope down parameter
   fBC3SlopeUp(0.1),      // BC3 slope up   parameter
   fBC3Round(-1),         // Rounding error of BC3 filter
@@ -67,11 +69,16 @@ AliTPCSAMPAEmulator::AliTPCSAMPAEmulator() :
 AliTPCSAMPAEmulator::~AliTPCSAMPAEmulator() {
   //
   // Destructor of SAMPA Class
-  //
-
- 
+  // 
 }
 
+
+Bool_t   AliTPCSAMPAEmulator::DigitalFilterFloat(Int_t npoints, Double_t *dataArray,  Double_t &baseline){
+  //
+  if (fDigitFilterType==0) return BC3SlopeFilterFloat(npoints,dataArray,baseline);
+  if (fDigitFilterType==1) return MovingAverageFilter(npoints,dataArray,baseline);
+  //
+}
 
 void AliTPCSAMPAEmulator::SetBC3Parameters(Double_t slopeDown, Double_t slopeUp, Double_t round){
   //

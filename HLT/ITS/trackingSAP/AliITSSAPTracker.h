@@ -27,7 +27,7 @@ class AliITSSAPTracker : public TObject
   enum {kALrSPD1,kALrSPD2, kALrSDD1,kALrSDD2, kALrSSD1,kALrSSD2,kNLrActive};
   enum {kLrBeamPime, kLrSPD1,kLrSPD2, kLrShield1, kLrSDD1,kLrSDD2, kLrShield2, kLrSSD1,kLrSSD2,
 	kMaxLrITS,kNLrPassive=kMaxLrITS-kNLrActive};
-  enum {kInvalidBit=BIT(14)};
+  enum {kInvalidBit=BIT(14),kVtUsedBit=BIT(15)};
   //
   struct SPDtracklet {
   SPDtracklet() : id1(0),id2(0),label(0),dphi(0),dtht(0),chi2(0) {}
@@ -66,6 +66,7 @@ class AliITSSAPTracker : public TObject
   const AliESDVertex* GetSPDVertex()  const        {return fSPDVertex;}
   void AddCluster(AliITSRecPoint* cl);
   void SetBz(float v)                              {fBz = v;}
+  void SetMaxRSPDVtx(float v=1.5)                  {fMaxRSPDVtx = v>0.5 ? v:0.5;}
   //
   // methods for trackleting ---------------->>>
   Bool_t FindTracklets();
@@ -77,6 +78,8 @@ class AliITSSAPTracker : public TObject
   void SetSigThetaTracklet(float v=0.025)           {fSigThetaTracklet = v;}
   void SetSigPhiTracklet(float v=0.08)              {fSigPhiTracklet = v;}
   void SetChi2CutTracklet(float v=1.5)              {fChi2CutTracklet = v;}
+  void SetMaxTrackletsToRunTracking(int n=9999)     {fMaxTrackletsToRunTracking = n;}
+  Int_t GetMaxTrackletsToRunTracking() const        {return fMaxTrackletsToRunTracking;}
   //
   Double_t GetClSystYErr2(Int_t lr)    const        {return fgkClSystYErr2[lr];}
   Double_t GetClSystZErr2(Int_t lr)    const        {return fgkClSystZErr2[lr];}
@@ -103,7 +106,8 @@ class AliITSSAPTracker : public TObject
   void    CookLabel(AliITSSAPTracker::ITStrack_t& track);
   void    CookLabel(AliITSSAPTracker::SPDtracklet_t& tracklet);
   void    PrintTrack(const AliITSSAPTracker::ITStrack_t& track) const;
-  Bool_t  IsObligatoryLayer(int lr)    const        {return !fSkipLayer[lr];}
+  Bool_t  GetSkipLayer(int lr)                    const  {return fSkipLayer[lr];}
+  void    SetSkipLayer(int lr, Bool_t v=kTRUE)           {fSkipLayer[lr] = v;}
   Bool_t  IsAcceptableTrack(const AliITSSAPTracker::ITStrack_t& track) const;
   void    PrintTracks()                const;
   Int_t   GetTrackletMCTruth(AliITSSAPTracker::SPDtracklet_t& trlet) const;
@@ -117,6 +121,10 @@ class AliITSSAPTracker : public TObject
   // methods for vertex reconstruction ------>>>
   Bool_t  FitTrackVertex();
   AliESDVertex& GetTrackVertex()      const       {return (AliESDVertex&)fTrackVertex;}
+  void      SetMaxVtxIter(Int_t n=5)              {fMaxVtxIter = n;}
+  Int_t     GetMaxVtxIter()           const       {return fMaxVtxIter;}
+  void      SetStopScaleChange(float v=0.8)       {fStopScaleChange = v;}
+  Float_t   GetStopScaleChange()           const  {return fStopScaleChange;}
   // methods for vertex reconstruction ------<<<
   //
  protected:
@@ -138,6 +146,7 @@ class AliITSSAPTracker : public TObject
   Float_t  fDThetaTrackletSc;                     //! max dTheta for tracklets with scaling from chi2 cut
   Float_t  fDPhiTrackletSc;                       //! max dPhi for tracklets with scaling from chi2 cut
   Float_t  fBz;                                   //! Bz field in ITS
+  Float_t  fMaxRSPDVtx;                           //! max allowed R of SPD vertex
   //
   // auxilary precomputed stuff
   Float_t  fDPhiTol;                              //! tolerance on phi, accounting for bending
@@ -158,14 +167,21 @@ class AliITSSAPTracker : public TObject
   Float_t  fNSigma2[kNLrActive];                  //! N^2 sigma margin for cluster search
   Float_t  fYToler2[kNLrActive];                  //! Y additional margin^2 for cluster search
   Float_t  fZToler2[kNLrActive];                  //! Z additional margin^2 for cluster search
+  Float_t  fMaxDRPhi;                             //! maximal search window in rphi
+  Float_t  fMaxDZ;                                //! maximal search window in z
 
   Float_t  fMSDist[kNLrActive];                   //! shift due to the MS for 1 GeV particle
   Float_t  fMSPhi[kNLrActive];                    //! dphi due to the MS for 1 GeV particle
   Float_t  fTolPhiCrude[kNLrActive];              //! tolerance in dphi for particle of unknown momentum
   Float_t  fTolZCrude[kNLrActive];                //! tolerance in Z for particle of unknown momentum
-  Float_t fMissChi2Penalty;                          //! penalize missed clusters
-  Int_t     fMaxMissedLayers;                        //! allow to miss at most this number of layers
-  Int_t     fNTracks;                                        //! n found tracks
+  Float_t  fMissChi2Penalty;                      //! penalize missed clusters
+  Int_t    fMaxMissedLayers;                      //! allow to miss at most this number of layers
+  Int_t    fNTracks;                              //! n found tracks
+  Int_t    fMaxTrackletsToRunTracking;            //! skip tracking if too many SPD tracklets
+  //
+  Int_t    fMaxVtxIter;                           //! max number of vertexing iterations
+  Float_t  fStopScaleChange;                      //! stop vertexing if sigma scaling change is above this
+  //
   std::vector<ITStrack_t> fTracks;                //! found tracks container
   AliESDVertex fTrackVertex;                      //! fitted track vertex
   Bool_t    fFitVertex;                           //! fit vertex with tracks

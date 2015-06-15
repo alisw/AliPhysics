@@ -19,6 +19,7 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTComponentBenchmark.h"
+#include "AliRecoParam.h"
 class AliITSSAPTracker;
 class TClonesArray;
 
@@ -136,9 +137,23 @@ protected:
 	       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 
 private:
+  /** type of imposed recoparam:   
+      kDefault=1,kLowMult = 2,kHighMult=4,kCosmic=8,kCalib = 16 **/
+  AliRecoParam::EventSpecie_t fRecoParamType; // event type imposed
 
-  /** magnetic field */
-  double fSolenoidBz;                                            // see above
+  /** if fSkipSDD>=0, forbid or allow to use sdd, otherwise rely on recoparam **/
+  int fSkipSDD;   // skip sdd layers even if data are shipped by HLT
+
+  int fMaxMissL;  // max number of active layers track can miss
+
+  int fMaxTrackletsToRun; // don't run tracking if Ntracklets above this value
+
+  int fMaxVtxIter;        // max iteration for vertexer
+  
+  float fStopScaleChange; // min scale change in vertexer to stop iterations
+
+  float fMaxRSPDVtx;      // max R of SPD vertex to accept
+
   AliHLTComponentBenchmark fBenchmark;// benchmark
   AliITSSAPTracker *fTracker; // the tracker itself
 

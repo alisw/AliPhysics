@@ -36,8 +36,6 @@
 #include "TKey.h"
 #include "TList.h"
 #include "TObjString.h"
-#include "TFitResult.h"
-#include "TFitResultPtr.h"
 #include "AliCDBEntry.h"
 ClassImp(AliPHOSCpvPreprocessor)
 
@@ -113,6 +111,7 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
 		  if(hBadMap->GetBinContent(iX+1,iY+1))
 		    badMap->SetBadChannel(AliPHOSCpvParam::DDL2Mod(iDDL),iX+1,iY+1);
 	    }
+	  f.Close();
 	}//while((source = dynamic_cast<TObjString *> (iter.Next())))
 	Bool_t storeOK_BCM = Store("Calib", "CpvBadChannels", badMap, &md, 0, kTRUE);
       }//if(BCM)
@@ -159,24 +158,28 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
 	  Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
 	  return 1;
 	}
-	Int_t minimalStatistics = 50;// minimal statistics to calculate calibration coeff
+	Int_t minimalStatistics = 150;// minimal statistics to calculate calibration coeff
 	Float_t coeff;
+	TF1* fitFunc = new TF1("fitFunc","landau",0.,4000.);
+	fitFunc->SetParameters(1.,200.,60.);fitFunc->SetParLimits(1,10.,2000.);
 	for(Int_t iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2){
 	  TH2* entriesMap=(TH2*)f.Get(Form("hEntriesMap%d",iDDL));
 	  if(!entriesMap)continue;
 	  for(Int_t iX = 0; iX<AliPHOSCpvParam::kPadPcX;iX++)
 	    for(Int_t iY = 0; iY<AliPHOSCpvParam::kPadPcY;iY++)
 	      if(entriesMap->GetBinContent(iX+1,iY+1)){//we have some statistics for current channel
+		fitFunc->SetParameters(1.,200.,60.);
 		TH1* hAmpl = (TH1*)f.Get(Form("hAmplA0_DDL%d_iX%d_iY%d",iDDL,iX,iY));
 		if(!hAmpl)continue;
-		if(hAmpl->Integral(10,-1)<minimalStatistics)continue;
-		TF1* fitFunc = new TF1("fitFunc","landau",0.,4000.);
-		fitFunc->SetParameters(1.,200.,60.);fitFunc->SetParLimits(1,10.,2000.);
-		TFitResultPtr r = hAmpl->Fit("landau","SQL","",10.,4000.);
-		coeff = 200./r->Parameter(1);
+		hAmpl->Rebin(4);
+		if(hAmpl->Integral(20,2000)<minimalStatistics)continue;
+		hAmpl->Fit(fitFunc,"QL0","",20.,2000.);
+		coeff = 200./fitFunc->GetParameter(1);
 		calib->SetADCchannelCpv(AliPHOSCpvParam::DDL2Mod(iDDL),iX+1,iY+1,coeff);
+		hAmpl->Delete();
 	      }
 	}
+	f.Close();
       }//while ((source =...
       
       //Store CPV calibration data

@@ -192,7 +192,7 @@ ClassImp(AliPHOSClusterizerv1)
 //____________________________________________________________________________
 AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   AliPHOSClusterizer(),
-  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
+  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),  fToUnfoldCPV(0),
   fWrite(0),                  
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
@@ -213,7 +213,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
 //____________________________________________________________________________
 AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
   AliPHOSClusterizer(geom),
-  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
+  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),  fToUnfoldCPV(0),
   fWrite(0),                
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
@@ -262,8 +262,7 @@ void AliPHOSClusterizerv1::Digits2Clusters(Option_t *option)
     fCPVRecPoints->Print();
   }
 
-  if(fToUnfold)             
-    MakeUnfolding();
+  MakeUnfolding();
 
   WriteRecPoints();
 
@@ -419,6 +418,7 @@ void AliPHOSClusterizerv1::InitParameters()
   fEcoreRadius             = recoParam->GetEMCEcoreRadius();
   
   fToUnfold                = recoParam->EMCToUnfold() ;
+  fToUnfoldCPV             = recoParam->CPVToUnfold() ;
     
   fWrite                   = kTRUE ;
 }
@@ -684,8 +684,7 @@ void AliPHOSClusterizerv1::MakeUnfolding()
   // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all EMC/CPV clusters
 
-  // Unfold first EMC clusters 
-  if(fNumberOfEmcClusters > 0){
+  if(fToUnfold && (fNumberOfEmcClusters > 0)){ // Unfold first EMC clusters 
 
     Int_t nModulesToUnfold = fGeom->GetNModules() ; 
 
@@ -723,7 +722,7 @@ void AliPHOSClusterizerv1::MakeUnfolding()
 
 
   // Unfold now CPV clusters
-  if(fNumberOfCpvClusters > 0){
+  if(fToUnfoldCPV && (fNumberOfCpvClusters > 0)){
     
     Int_t nModulesToUnfold = fGeom->GetNModules() ;
 

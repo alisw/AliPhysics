@@ -44,13 +44,15 @@ namespace AliITSSAPAux {
 //_________________________________________________________________________________
 inline void AliITSSAPAux::BringTo02Pi(double &phi) {   
   // bring phi to 0-2pi range
-  if (phi<0) phi+=k2Pi; else if (phi>k2Pi) phi-=k2Pi;
+  while (phi<0) phi+=k2Pi; 
+  while (phi>k2Pi) phi-=k2Pi;
 }
 
 //_________________________________________________________________________________
 inline void AliITSSAPAux::BringTo02Pi(float &phi) {   
   // bring phi to 0-2pi range
-  if (phi<0) phi+=k2Pi; else if (phi>k2Pi) phi-=k2Pi;
+  while (phi<0) phi+=k2Pi; 
+  while (phi>k2Pi) phi-=k2Pi;
 }
 
 //_________________________________________________________________________________

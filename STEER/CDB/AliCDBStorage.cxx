@@ -441,7 +441,8 @@ void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
   AliCDBPath filter(pathFilter);
   for (Int_t i=fValidFileIds.GetEntries()-1; i>=0; --i) {
     AliCDBId *rmMe = dynamic_cast<AliCDBId*>(fValidFileIds.At(i));
-    AliCDBPath rmPath = rmMe->GetAliCDBPath();
+    if (!rmMe) continue;
+    const AliCDBPath & rmPath = rmMe->GetAliCDBPath();
     if (filter.Comprises(rmPath)) {
       AliDebug(3,Form("Removing id \"%s\" matching: \"%s\"", rmPath.GetPath().Data(), pathFilter));
       delete fValidFileIds.RemoveAt(i);
