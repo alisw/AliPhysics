@@ -78,11 +78,13 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  * @param input     Input file 
  * @param output    Output file 
  * @param shift     Enable shift 
+ * @param flags     0x1: residuals, 0x2: debug
  */
 void RerunELossFits(Bool_t forceSet=false, 
 		    const TString& input="forward_eloss.root", 
 		    Bool_t shift=true,
-		    const TString& output="")
+		    const TString& output="",
+		    UShort_t       flags=0x1)
 {
   const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
@@ -163,9 +165,11 @@ void RerunELossFits(Bool_t forceSet=false,
       // fitter->SetMaxChi2PerNDF(10);
       // Enable debug 
     }
-    fitter->SetDebug(3);
-    fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
-    fitter->SetRegularizationCut(1e8); // Lower by factor 3
+    if (flags & 0x2)
+      fitter->SetDebug(3);
+    if (flags & 0x1)
+      fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
+    // fitter->SetRegularizationCut(1e8); // Lower by factor 3
     // Set the number of bins to subtract from maximum of distributions
     // to get the lower bound of the fit range
     // fitter->SetFitRangeBinWidth(2);
