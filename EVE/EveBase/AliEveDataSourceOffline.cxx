@@ -248,7 +248,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     sysInfoHeader.Form("AliEveEventManager::GotoEvent(%d) - ", event);
     AliSysInfo::AddStamp(sysInfoHeader + "Start");
 
-    cout<<"\n\n4\n\n"<<endl;
     AliEveEventManager::GetMaster()->DestroyTransients();
     
 //    TEveManager::TRedrawDisabler rd(gEve);

@@ -50,6 +50,7 @@
 #include <AliEveMacro.h>
 #include <AliEveMacroExecutorWindow.h>
 #include <AliEveEventSelectorWindow.h>
+#include <AliEveDataSourceOffline.h>
 #include <AliEveTrackFitter.h>
 #include <AliCDBManager.h>
 
