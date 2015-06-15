@@ -363,12 +363,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Double32_t vertex = 9999999;
   Int_t onlineMean=0;
   Float_t meanVertex = 0;
-  Int_t pedestal[24];
+  Int_t pedestal[24], qtccut10[24];
   for (Int_t i0=0; i0<24; i0++) {
     low[i0] = Int_t(fTime0vertex[i0]) - corridor;
     high[i0] = Int_t(fTime0vertex[i0]) + corridor;
     time2zero[i0] = 99999;
-    pedestal[i0]=Int_t (GetRecoParam()->GetLow(100+i0) );
+    qtccut10[i0]=Int_t (GetRecoParam()->GetLow(100+i0) );
+    pedestal[i0]=Int_t (GetRecoParam()->GetLow(124+i0) );
     //   printf(" pedestal %i \n",pedestal[i0]);
   }
   
@@ -458,7 +459,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
 	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
-		if( (allData[2*in+25][iHit] - chargeQT1[in])>pedestal[in] &&
+		if( (allData[2*in+25][iHit] - chargeQT1[in])>qtccut10[in] &&
 		    chargeQT1[in]>0)		
 		  {
 		    chargeQT0[in]=allData[2*in+25][0];
@@ -483,7 +484,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      }
     	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
-		if( (allData[2*in+57][iHit] - chargeQT1[in])>pedestal[in]  &&
+		if( (allData[2*in+57][iHit] - chargeQT1[in])>qtccut10[in]  &&
 		    chargeQT1[in]>0) 
 		  {
 		    chargeQT0[in]=allData[2*in+57][0];
@@ -501,7 +502,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	Double32_t time[24], adc[24], adcmip[24], noncalibtime[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
 	  if(timeCFD[ipmt] >  0 && 
-	     (chargeQT0[ipmt] - chargeQT1[ipmt])> pedestal[ipmt]+5 &&
+	     (chargeQT0[ipmt] - chargeQT1[ipmt])>qtccut10[ipmt]+5 &&
 	     (timeLED[ipmt]-timeCFD[ipmt])<badLEDminCFD){
 	   //for simulated data
 	     //for physics  data
@@ -517,7 +518,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   if (ampGraph) ampMip = ampGraph->Eval(sl);
 	   Double_t qtMip = 0;
 	   TGraph * qtGraph = (TGraph*)fQTC.At(ipmt);
-	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
+	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]) - pedestal[ipmt];
 	   //	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
 	   printf("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]);
 	   if( equalize  ==0 ) 
