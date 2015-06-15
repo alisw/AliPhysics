@@ -13,6 +13,7 @@
 #include "AliEveDataSource.h"
 
 #include <TQObject.h>
+#include <TThread.h>
 
 class AliEveDataSourceOnline : public AliEveDataSource
 {

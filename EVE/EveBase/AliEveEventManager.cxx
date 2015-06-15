@@ -10,69 +10,31 @@
 #include "AliEveEventManager.h"
 #include "AliEveEventSelector.h"
 #include "AliEveMacroExecutor.h"
-#include "AliEveConfigManager.h"
-#include "AliEveVSDCreator.h"
 #include "AliEveMultiView.h"
-
-#include <THashList.h>
-#include <TEveElement.h>
-#include <TEveManager.h>
-#include <TEveViewer.h>
-
-#include <AliLog.h>
-#include <AliRunLoader.h>
-#include <AliRun.h>
-#include <AliESDRun.h>
-#include <AliESDEvent.h>
-#include <AliESDfriend.h>
-#include <AliAODEvent.h>
-
-#include <AliCentralTrigger.h>
-#include <AliCDBEntry.h>
-#include <AliTriggerClass.h>
-#include <AliTriggerConfiguration.h>
-#include <AliTriggerCluster.h>
-#include <AliDetectorRecoParam.h>
-
-#include <AliDAQ.h>
-#include <AliRawEventHeaderBase.h>
-#include <AliRawReaderRoot.h>
-#include <AliRawReaderFile.h>
-#include <AliRawReaderDate.h>
-#include <AliMagF.h>
-#include <AliCDBManager.h>
-#include <AliCDBStorage.h>
-#include <AliGRPObject.h>
-#include <AliHeader.h>
-#include <AliGeomManager.h>
-#include <AliGRPManager.h>
-#include <AliSysInfo.h>
-
-#include <TFile.h>
-#include <TTree.h>
-#include <TGeoManager.h>
-#include <TGeoGlobalMagField.h>
-#include <TSystem.h>
-#include <TTimeStamp.h>
-#include <TPRegexp.h>
-#include <TError.h>
-#include <TEnv.h>
-#include <TString.h>
-#include <TMap.h>
-#include <TROOT.h>
-#include <TEveManager.h>
-#include <TEveBrowser.h>
-#include <TEveText.h>
-#include <TEveTrans.h>
-
+#include "AliEveDataSourceOffline.h"
 #ifdef ZMQ
 #include "AliEveDataSourceOnline.h"
 #include "AliEveDataSourceHLTZMQ.h"
 #endif
 
+#include <AliGRPManager.h>
+#include <AliLog.h>
+#include <AliCDBEntry.h>
+#include <AliMagF.h>
+#include <AliGeomManager.h>
+
+#include <TEveElement.h>
+#include <TEveManager.h>
+#include <TGeoManager.h>
+#include <TGeoGlobalMagField.h>
+#include <TTimeStamp.h>
+#include <TROOT.h>
+#include <TEveText.h>
+#include <TEveTrans.h>
+
+
 using std::cout;
 using std::endl;
-using std::vector;
 //==============================================================================
 //==============================================================================
 // AliEveEventManager
@@ -105,38 +67,30 @@ using std::vector;
 
 ClassImp(AliEveEventManager)
 
-Bool_t   AliEveEventManager::fgGRPLoaded    = kFALSE;
-AliMagF* AliEveEventManager::fgMagField     = 0;
-Bool_t   AliEveEventManager::fgUniformField = kFALSE;
-
 AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
 
 AliEveEventManager::AliEveEventManager(EDataSource defaultDataSource) :
 TEveEventManager("Event", ""),
-fEventId(-1),
-fCurrentRun(-1),
-fEventInfo(),
-fAutoLoad  (kFALSE), fAutoLoadTime (5),fAutoLoadTimer(0),
-fHasEvent(kFALSE),
-fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
-fExecutor    (0), fTransients(0), fTransientLists(0),
-fPEventSelector(0),
-fAutoLoadTimerRunning(kFALSE),
-fViewsSaver(0),
-fESDdrawer(0),
+fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
+fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
+fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
+fExecutor(0),fViewsSaver(0),fESDdrawer(0),fPEventSelector(0),
+fgGRPLoaded(false),
+fgMagField(0),
 fSaveViews(false),
 fDrawESDtracksByCategory(false),
 fDrawESDtracksByType(false),
-fFirstEvent(true),
-fCenterProjectionsAtPrimaryVertex(false)
+fFirstEvent(true)
 {
     InitInternals();
-    
-    fDataSourceOnline = new AliEveDataSourceOnline();
-    fDataSourceOffline = new AliEveDataSourceOffline();
-    fDataSourceHLTZMQ = new AliEveDataSourceHLTZMQ();
-    
     ChangeDataSource(defaultDataSource);
+}
+
+AliEveEventManager* AliEveEventManager::GetMaster()
+{
+    // Get master event-manager.
+    if(fgMaster){return fgMaster;}
+    else{cout<<"FATAL -- Event Manager was not created.\n"<<endl;exit(0);}
 }
 
 AliEveEventManager::~AliEveEventManager()
@@ -145,30 +99,11 @@ AliEveEventManager::~AliEveEventManager()
     fAutoLoadTimer->Stop();
     fAutoLoadTimer->Disconnect("Timeout");
     fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
-    
-    //    fTransients->DecDenyDestroy();
-    //    fTransients->Destroy();
-    
-    //    fTransientLists->DecDenyDestroy();
-    //    fTransientLists->Destroy();
-    
-    //delete fExecutor;
-}
-
-void AliEveEventManager::SetMaster(AliEveEventManager *master)
-{
-    if(fgMaster!=NULL)
-    {
-        AliFatal("Instance of AliEveEventManager already exists. Cannot create another one!!");
-    }
-    fgMaster = master;
 }
 
 void AliEveEventManager::InitInternals()
 {
     // Initialize internal members.
-    static const TEveException kEH("AliEveEventManager::InitInternals ");
-    
     fgMaster = this;
     
     fAutoLoadTimer = new TTimer;
@@ -186,11 +121,14 @@ void AliEveEventManager::InitInternals()
     gEve->AddToListTree(fTransientLists, kFALSE);
     
     fPEventSelector = new AliEveEventSelector(this);
-    
     fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
     
     fViewsSaver = new AliEveSaveViews();
     fESDdrawer = new AliEveESDTracks();
+    
+    fDataSourceOnline = new AliEveDataSourceOnline();
+    fDataSourceOffline = new AliEveDataSourceOffline();
+    fDataSourceHLTZMQ = new AliEveDataSourceHLTZMQ();
 }
 
 void AliEveEventManager::ChangeDataSource(EDataSource newSource)
@@ -226,9 +164,9 @@ void AliEveEventManager::DestroyTransients()
     ElementChanged();
 }
 
-void AliEveEventManager::Timeout()
+Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
 {
-    Emit("Timeout()");
+    return fDataSourceOffline?fDataSourceOffline->GetMaxEventId(refreshESD):-1;
 }
 
 //------------------------------------------------------------------------------
@@ -360,29 +298,29 @@ AliMagF* AliEveEventManager::AssertMagField()
     
     static const TEveException kEH("AliEveEventManager::AssertMagField ");
     
-    if (fgMagField)
+    if (fgMaster->fgMagField)
     {
-        return fgMagField;
+        return fgMaster->fgMagField;
     }
-
-    AliEveEventManager::GetMaster()->AssertESD()->InitMagneticField();
+    
+    fgMaster->AssertESD()->InitMagneticField();
     if (TGeoGlobalMagField::Instance()->GetField())
     {
-        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-        if (fgMagField == 0)
+        fgMaster->fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+        if (fgMaster->fgMagField == 0)
             throw kEH + "Global field set, but it is not AliMagF.";
-        return fgMagField;
+        return fgMaster->fgMagField;
     }
     
-    if (!fgGRPLoaded)
+    if (!fgMaster->fgGRPLoaded)
     {
-        InitGRP();
+        fgMaster->InitGRP();
     }
     
     if (TGeoGlobalMagField::Instance()->GetField())
     {
-        fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-        if (fgMagField == 0)
+        fgMaster->fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+        if (fgMaster->fgMagField == 0)
             throw kEH + "Global field set, but it is not AliMagF.";
     }
     else
@@ -390,7 +328,7 @@ AliMagF* AliEveEventManager::AssertMagField()
         throw kEH + "Could not initialize magnetic field.";
     }
     
-    return fgMagField;
+    return fgMaster->fgMagField;
 }
 
 TGeoManager* AliEveEventManager::AssertGeometry()
@@ -427,26 +365,15 @@ TGeoManager* AliEveEventManager::AssertGeometry()
     return gGeoManager;
 }
 
-AliEveEventManager* AliEveEventManager::GetMaster()
-{
-    // Get master event-manager.
-    if(fgMaster){return fgMaster;}
-    else
-    {
-        cout<<"FATAL -- Event Manager was not created. You must create it first with new AliEveEventManager()\n"<<endl;
-        exit(0);
-    }
-}
-
 void AliEveEventManager::RegisterTransient(TEveElement* element)
 {
     GetMaster()->fTransients->AddElement(element);
 }
 
-void AliEveEventManager::RegisterTransientList(TEveElement* element)
-{
-    GetMaster()->fTransientLists->AddElement(element);
-}
+//void AliEveEventManager::RegisterTransientList(TEveElement* element)
+//{
+//    GetMaster()->fTransientLists->AddElement(element);
+//}
 
 //------------------------------------------------------------------------------
 // Autoloading of events
@@ -457,6 +384,8 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
     // Set the automatic event loading mode
     static const TEveException kEH("AliEveEventManager::SetAutoLoad ");
     
+    cout<<"\n\n setting autoload to:"<<autoLoad<<endl;
+    
     if (fAutoLoad == autoLoad)
     {
         Warning(kEH, "Setting autoload to the same value as before - %s. Ignoring.", fAutoLoad ? "true" : "false");
@@ -466,12 +395,12 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
     fAutoLoad = autoLoad;
     if (fAutoLoad)
     {
-//        StorageManagerDown();
+        //        StorageManagerDown();
         StartAutoLoadTimer();
     }
     else
     {
-//        StorageManagerOk();
+        //        StorageManagerOk();
         StopAutoLoadTimer();
     }
 }
@@ -497,6 +426,7 @@ void AliEveEventManager::SetTrigSel(Int_t trig)
 void AliEveEventManager::StartAutoLoadTimer()
 {
     // Start the auto-load timer.
+    cout<<"\n\nStarting autoload timer\n\n"<<endl;
     
     fAutoLoadTimer->SetTime((Long_t)(1000*fAutoLoadTime));
     fAutoLoadTimer->Reset();
@@ -507,7 +437,6 @@ void AliEveEventManager::StartAutoLoadTimer()
 void AliEveEventManager::StopAutoLoadTimer()
 {
     // Stop the auto-load timer.
-    
     fAutoLoadTimerRunning = kFALSE;
     fAutoLoadTimer->TurnOff();
 }
@@ -516,7 +445,7 @@ void AliEveEventManager::AutoLoadNextEvent()
 {
     // Called from auto-load timer, so it has to be public.
     // Do NOT call it directly.
-    
+        
     static const TEveException kEH("AliEveEventManager::AutoLoadNextEvent ");
     
     Info(kEH, "called!");
@@ -546,7 +475,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     // Virtual from TEveEventManager.
     
     cout<<"AliEveEventManager::AfterNewEventLoaded ------------------!!!------------"<<endl;
-
+    
     ElementChanged();
     
     NewEventDataLoaded();
@@ -554,36 +483,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
-    
-    // tests of embedded text
-    /*
-    TTimeStamp ts(fCurrentData->fESD->GetTimeStamp());
-    
-    TEveText *txt = new TEveText(Form("Run:%d",fCurrentData->fESD->GetRunNumber()));
-    TEveText *txt2 = new TEveText(Form("Timestamp:%s",ts.AsString("s")));
-    txt->SetMainColor(kWhite);
-    txt->SetFontSize(20);
-    txt->SetMainTransparency('1');
-    
-    txt2->SetMainColor(kWhite);
-    txt2->SetFontSize(20);
-    txt2->SetMainTransparency('1');
-    
-    TEveTrans trans = txt->RefMainTrans();
-    double *arr = trans.Array();
-    arr[12]=0;
-    arr[13]=-1200;
-    arr[14]=0;
-    txt->SetTransMatrix(arr);
 
-    arr[13]+=100;
-    txt2->SetTransMatrix(arr);
-    
-    gEve->AddElement(txt);
-    gEve->AddElement(txt2);
-     */
-    //
-    
     if(HasESD())
     {
         if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
@@ -604,23 +504,10 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         AliEveMultiView *mv = AliEveMultiView::Instance();
         
-//        mv->DestroyEventRPhi();
-        if (fCenterProjectionsAtPrimaryVertex){
-            mv->SetCenterRPhi(x[0], x[1], x[2]);
-        }
         mv->ImportEventRPhi(top);
-        
-//        mv->DestroyEventRhoZ();
-        if (fCenterProjectionsAtPrimaryVertex){
-            mv->SetCenterRhoZ(x[0], x[1], x[2]);
-        }
         mv->ImportEventRhoZ(top);
-        
-        if (fCenterProjectionsAtPrimaryVertex)
-            mv->SetCenterMuon(x[0], x[1], x[2]);
         mv->ImportEventMuon(top);
         
- 
         gEve->GetBrowser()->RaiseWindow();
         gEve->FullRedraw3D();
         gSystem->ProcessEvents();
@@ -639,27 +526,26 @@ void AliEveEventManager::AfterNewEventLoaded()
     }
 }
 
+void AliEveEventManager::Timeout()
+{
+    Emit("Timeout()");
+}
 void AliEveEventManager::NewEventDataLoaded()
 {
-    // Emit NewEventDataLoaded signal.
     Emit("NewEventDataLoaded()");
 }
 void AliEveEventManager::NewEventLoaded()
 {
-    // Emit NewEventLoaded signal.
     Emit("NewEventLoaded()");
 }
 void AliEveEventManager::NoEventLoaded()
 {
-    // Emit NoEventLoaded signal.
     Emit("NoEventLoaded()");
 }
 
 Bool_t AliEveEventManager::InitGRP()
 {
-    //------------------------------------
     // Initialization of the GRP entry
-    //------------------------------------
     
     static const TEveException kEH("AliEveEventManager::InitGRP ");
     
