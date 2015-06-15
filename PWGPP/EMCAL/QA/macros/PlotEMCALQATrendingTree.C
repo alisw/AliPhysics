@@ -141,6 +141,8 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   if(! elist->GetN()) { Error("PlotEMCALQATrendingTree","The current selection doess not match any entry!"); return -2; }
   CurN = tree->GetMinimum("nSM");
   const Int_t n = CurN;
+  if(n<=12) const Int_t nEMCAL = n;
+  if(n>12) const Int_t nEMCAL = 12;
   tree->GetEntry(elist->GetEntry(0));
 
   TGraphErrors* AverNclustersSM[n];
@@ -264,7 +266,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   AverNclusters->SetMarkerColor(1);
   AverNclusters->Draw("same P") ;
 
-  for(Int_t ism = 0 ; ism < 12 ; ism++){
+  for(Int_t ism = 0 ; ism < nEMCAL ; ism++){
     tree->Draw(Form("NextInt():ClusterMeanSM[%i]:xe:ClusterRMSSM[%i]",ism,ism),"","goff");
     AverNclustersSM[ism] = new  TGraphErrors(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2(),tree->GetV3(),tree->GetV4());
     if (ism !=8)AverNclustersSM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else AverNclustersSM[ism]->SetMarkerColor(7);
@@ -279,7 +281,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   l2->SetTextSize(0.04);
   l2->SetHeader(Form("<# of clusters> in %s (period %s trigger %s)",fCalorimeter->Data(),period->Data(),((*fTrigger)(r)).Data()));
   l2->AddEntry(AverNclusters,"average", "p");
-  for(Int_t ism = 0; ism < 12 ; ism++){
+  for(Int_t ism = 0; ism < nEMCAL ; ism++){
     TString projname = Form("SM %d",ism);
     l2->AddEntry(AverNclustersSM[ism],projname.Data(), "p");
   }
@@ -288,7 +290,8 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   if(SavePlots)     c2->SaveAs(ClusterAveragesEntries);
   if(SavePlots==2)  c2->SaveAs(ClusterAveragesEntries2);
 
-
+  if(n>12)
+    {
   TCanvas* c2D = new TCanvas("ClusterAveragesEventsD", "Mean Nb of Cluster per Event", 1000, 500);
   c2D->SetFillColor(0);
   c2D->SetBorderSize(0);
@@ -337,7 +340,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   c2D->Update();
   if(SavePlots)     c2D->SaveAs(ClusterAveragesEntriesD);
   if(SavePlots==2)  c2D->SaveAs(ClusterAveragesEntries2D);
-
+    }
 
   TCanvas* c2Tot = new TCanvas("ClusterTotEvents", "Tot Nb of Cluster per Event", 1000, 500);
   c2Tot->SetFillColor(0);
@@ -359,7 +362,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
 
 
 
-  for(Int_t ism = 0 ; ism < 12 ; ism++){
+  for(Int_t ism = 0 ; ism < nEMCAL ; ism++){
     tree->Draw(Form("NextInt():ClusterTotSM[%i]",ism),"","goff");
     TotNclustersSM[ism] = new  TGraph(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2());
     if (ism !=8)TotNclustersSM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else TotNclustersSM[ism]->SetMarkerColor(7);
@@ -374,7 +377,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   l2Tot->SetTextSize(0.04);
   l2Tot->SetHeader(Form("# of clusters in %s (period %s trigger %s)",fCalorimeter->Data(),period->Data(),((*fTrigger)(r)).Data()));
   //l2Tot->AddEntry(TotNclusters,"total", "p");
-  for(Int_t ism = 0; ism < 12 ; ism++){
+  for(Int_t ism = 0; ism < nEMCAL ; ism++){
     TString projname = Form("SM %d",ism);
     l2Tot->AddEntry(TotNclustersSM[ism],projname.Data(), "p");
   }
@@ -383,6 +386,8 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   if(SavePlots)     c2Tot->SaveAs(ClusterTotEntries);
   if(SavePlots==2)  c2Tot->SaveAs(ClusterTotEntries2);
 
+  if(n>12)
+    {
   TCanvas* c2TotD = new TCanvas("ClusterTotEventsD", "Tot Nb of Cluster per Event in DCAL", 1000, 500);
   c2TotD->SetFillColor(0);
   c2TotD->SetBorderSize(0);
@@ -427,7 +432,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   if(SavePlots)     c2TotD->SaveAs(ClusterTotEntriesD);
   if(SavePlots==2)  c2TotD->SaveAs(ClusterTotEntriesD2);
 
-
+    }
 
 
 

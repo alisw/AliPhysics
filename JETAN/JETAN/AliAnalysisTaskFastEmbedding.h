@@ -44,13 +44,12 @@ public:
    virtual void UserExec(Option_t*);
    virtual void Terminate(Option_t */*option*/);
 
-   //AZ
-
    enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };  
    enum { kK0, kLambda, kAntiLambda }; 
 
 
    void SetAODPath(TString path) {fAODPath = path;}
+   void SetJetFriends(TString str){fStrJetFriends = str;}
    void SetArrayOfAODPaths(TObjArray* arr) {fAODPathArray = arr;}
    void SetArrayOfAODEntries(TArrayI* arr) {fAODEntriesArray = arr;}
    void SetAODEntriesSum(Int_t i){ fAODEntriesSum = i;}
@@ -140,6 +139,7 @@ public:
    Bool_t             HasMinLConstPt(AliAODJet* jet);
    virtual void  LoadDiceTrackMapRootFile();
    virtual void SetEfficiencyMap(TH1 *h1);
+
    // embedding modes
    enum {kAODFull=0, kAODJetTracks, kAODJet4Mom, kToyTracks};
    // event selection from AOD
@@ -151,8 +151,11 @@ private:
    AliESDEvent    *fESD;        //! ESD object
    AliAODEvent    *fAODout;     //! AOD out
    AliAODEvent    *fAODevent;   //! AOD in
+   AliAODEvent    *fAODeventJets; //! AOD in jets
    TTree          *fAODtree;    //! AODin tree
+   TTree          *fAODtreeJets;//! AODin tree
    TFile          *fAODfile;    //! AODin file
+   TFile          *fAODfileJets; //! AODin file jets (friends)
    AliAODMCHeader *mcHeader;    //! mc header
    Double_t fFFRadius;          // jet cone size
 
@@ -193,6 +196,7 @@ private:
    TObjArray *fAODPathArray;    // array of paths of AOD in file
    TArrayI   *fAODEntriesArray; // array of entries of AODs 
    TString    fAODPath;         // path of AOD in file
+   TString    fStrJetFriends;   // AliAODFriends name 
    Int_t      fAODEntries;      // entries of AOD
    Int_t      fAODEntriesSum;   // sum of all entries of AODs
    Int_t      fAODEntriesMax;   // maximum entries of AODs
@@ -229,7 +233,11 @@ private:
    Float_t fEvtSelJetMinLConstPt; // minimum leading constituent pt of the leading jet
    Double_t fExtraEffPb;          //extra efficiency PbPb      
    Bool_t   fDiceMapEff;           //if kTRUE,dice tracks according to a map in a user histogram
-   // settings for toy "track generation"
+ 
+   TString fPathDiceTrackMap;             // path to root file containing eff. maps
+   TH1    *fhEffH1;               //histogram containing the efficiency map 
+
+  // settings for toy "track generation"
    Int_t    fToyMinNbOfTracks;             // minimum nb. of tracks per event
    Int_t    fToyMaxNbOfTracks;             // maximum nb. of tracks per event
    Float_t  fToyMinTrackPt;                // minimum track pT
@@ -265,8 +273,8 @@ private:
    TH1F  *fh1TrackPt;         //! track pt
    TH2F  *fh2TrackEtaPhi;     //! track eta-phi
    TH1F  *fh1TrackN;          //! nb. of tracks
-   TString fPathDiceTrackMap;             // path to root file containing eff. maps
-   TH1    *fhEffH1;               //histogram containing the efficiency map 
+ 
+ 
    //AZ:
    TH1F  *fh1V0Pt;         //! track pt
    TH2F  *fh2V0EtaPhi;     //! track eta-phi

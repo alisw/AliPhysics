@@ -678,12 +678,13 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fOutput->Add(fHClustEnergyNCell);
   }
   
-  // histogram for conversion photons
-  fHConvEnergyPt = new TH2F("hConvEnergyPt","",250,0,50,250,0,50);
-  fHConvEnergyPt->SetXTitle("E [GeV]");
-  fHConvEnergyPt->SetYTitle("p_{T} [GeV/c]");
-  fOutput->Add(fHConvEnergyPt);
-  
+  if(fDoConvAna){
+    // histogram for conversion photons
+    fHConvEnergyPt = new TH2F("hConvEnergyPt","",250,0,50,250,0,50);
+    fHConvEnergyPt->SetXTitle("E [GeV]");
+    fHConvEnergyPt->SetYTitle("p_{T} [GeV/c]");
+    fOutput->Add(fHConvEnergyPt);
+  }
   
   // histograms for primary tracks
   fHPrimTrackPt = new TH1F("hPrimTrackPt",";p_{T} [GeV/c]",500,0,50);
@@ -735,7 +736,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionPtAsym = new TH2F("hPionPtAsym","",nbins,0,ptmax,50,0,1);
     fHPionPtAsym->SetXTitle("p_{T} [GeV/c]");
     fHPionPtAsym->SetYTitle("Z_{#gamma#gamma} [GeV]");
-    fOutput->Add(fHPionMggAsym);
+    fOutput->Add(fHPionPtAsym);
 
     fHPionMggDgg = new TH2F("hPionMggDgg","",100,0,1,500,0,15);
     fHPionMggDgg->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
@@ -825,19 +826,19 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fOutput->Add(fHMatPionInvMasses);
 
     // no clean gammas
-    // added pair invariant mass < asym
-    fHPionInvMassesAdd1 = new TH2F("hPionInvMassAdd1","hPionInvMassAdd1",massbins,0,massmax,nbins,0,ptmax);
-    fHPionInvMassesAdd1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-    fHPionInvMassesAdd1->SetYTitle("p_{T} [GeV/c]");
-    fHPionInvMassesAdd1->Sumw2();
-    fOutput->Add(fHPionInvMassesAdd1);
-
     // unweighted added signals
     fHPionInvMassesAdd1NoWgt= new TH2F("hPionInvMassAdd1NoWgt","hPionInvMassAdd1NoWgt",massbins,0,massmax,nbins,0,ptmax);
     fHPionInvMassesAdd1NoWgt->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesAdd1NoWgt->SetYTitle("p_{T} [GeV/c]");
     fHPionInvMassesAdd1NoWgt->Sumw2();
     fOutput->Add(fHPionInvMassesAdd1NoWgt);
+
+    // added pair invariant mass < asym
+    fHPionInvMassesAdd1 = new TH2F("hPionInvMassAdd1","hPionInvMassAdd1",massbins,0,massmax,nbins,0,ptmax);
+    fHPionInvMassesAdd1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+    fHPionInvMassesAdd1->SetYTitle("p_{T} [GeV/c]");
+    fHPionInvMassesAdd1->Sumw2();
+    fOutput->Add(fHPionInvMassesAdd1);
 
     // added pair invariant mass > asym
     fHPionInvMassesAdd1Sym = new TH2F("hPionInvMassAdd1Sym","hPionInvMassAdd1Sym",massbins,0,massmax,nbins,0,ptmax);

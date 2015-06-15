@@ -7,7 +7,6 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   TString jetArrname = "",
   TString trackArrname = "PicoTracks",
   TString rhoname="",
-  Bool_t triggerOnLeadingJet = kFALSE,
   Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
   Float_t jptcut = 10.,
@@ -109,7 +108,6 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   }
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
-  taskCorr->SetTriggerOnLeadingJet(triggerOnLeadingJet);
   taskCorr->SetTypeDJetSelection(typeDjet);
   if(theMCon && trType!=AliAnalysisTaskEmcal::kND){
      taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -144,6 +142,8 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
 
   TString nameContainerFC2="Dcandidates";
   TString nameContainerFC3="DSBcandidates";
+    
+  TString nameContainerFC4 = "DcandidatesAndTracks";
 
   nameContainerF0  += candname;
   nameContainerF1  += candname;
@@ -151,6 +151,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   nameContainerC1  += candname;
   nameContainerFC2 += candname;
   nameContainerFC3 += candname;
+  nameContainerFC4 += candname;
   
   nameContainerF0  += suffix;
   nameContainerF1  += suffix;
@@ -158,6 +159,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   nameContainerC1  += suffix;
   nameContainerFC2 += suffix;
   nameContainerFC3 += suffix;
+  nameContainerFC4 += suffix;
   
   nameContainerC0+=sR;
   nameContainerC1+=sR;
@@ -178,6 +180,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   AliAnalysisDataContainer *coutputF1;
   AliAnalysisDataContainer *coutputFC2;
   AliAnalysisDataContainer *coutputFC3;
+  AliAnalysisDataContainer *coutputFC4;
   
   if(!bTaskFilter){
   coutputF0 = mgr->CreateContainer(nameContainerF0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfileF.Data());
@@ -188,12 +191,15 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   
   coutputFC3 = mgr->CreateContainer(nameContainerFC3, TClonesArray::Class(),AliAnalysisManager::kExchangeContainer, outputfileF.Data()); // exchange
 
+  coutputFC4 = mgr->CreateContainer(nameContainerFC4, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
+      
   } else {
      TObjArray * cnt = mgr->GetContainers();
      coutputF0 = (AliAnalysisDataContainer*)cnt->FindObject(nameContainerF0);
      coutputF1 = (AliAnalysisDataContainer*)cnt->FindObject(nameContainerF1);
      coutputFC2= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC2);
      coutputFC3= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC3);
+     coutputFC4= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC4);
   }
   
   AliAnalysisDataContainer *coutputC0 = mgr->CreateContainer(nameContainerC0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfileC.Data());
@@ -208,10 +214,12 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   mgr->ConnectOutput(taskFilter,2,coutputF1);
   mgr->ConnectOutput(taskFilter,3,coutputFC2);
   mgr->ConnectOutput(taskFilter,4,coutputFC3);
+  mgr->ConnectOutput(taskFilter,5,coutputFC4);
   
   
   mgr->ConnectInput(taskCorr,1,coutputFC2);
   mgr->ConnectInput(taskCorr,2,coutputFC3);
+  mgr->ConnectInput(taskCorr,3,coutputFC4);
   mgr->ConnectOutput(taskCorr,1,coutputC0);
   mgr->ConnectOutput(taskCorr,2,coutputC1);
   //if(cand==1) mgr->ConnectOutput(task,4,coutput4);

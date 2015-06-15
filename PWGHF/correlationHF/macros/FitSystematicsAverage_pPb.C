@@ -354,3 +354,316 @@ void Systematics_pPb_integratedpthad(Bool_t useReflected){
 }
 
 
+
+
+
+//////// TEMPLATE CASE ///////////////
+void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
+    
+  
+    TString path = inputpath;
+    TString mcCase;
+    if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
+    else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
+    else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
+    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else {
+      Printf("MC case not foreseen");
+      return;
+    }
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    
+    AliHFCorrFitSystematics * systfitter = new AliHFCorrFitSystematics();
+    
+    // set up the sysfitter
+    gROOT->ProcessLine(Form(".!mkdir -p %s/FitOutputs_pPb",outputpath.Data()));
+    systfitter->SetIsFittingTemplate(kTRUE); 
+    systfitter->CreateOutputFile(Form("%s/FitOutputs_pPb/FitSystematics_pPb_%s_1.0_99.0.root",outputpath.Data(),mcCase.Data())); // set the name of the output file
+    systfitter->SetUseCorrelatedSystematics(kFALSE); // kTRUE (will use the Delta phi independent systematics (from the correlation plots) to sum in quadrature for the final systematics)
+    systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
+    systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
+    systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kTRUE); // set true if you want the v2 box to be plotted separately
+
+    //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    
+    if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
+    if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    
+    systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
+    
+    if(useReflected){
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+    }
+    else {
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+    }
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    
+    //systfitter->CheckBaselineRanges();
+    //return;
+    systfitter->SetAssociatedTrackPtMin(1); // set the min pt assoc (only for plotting purposes)
+    systfitter->SetAssociatedTrackPtMax(99); // set the max pt assoc (only for plotting purposes)
+    
+    Bool_t ishistoadded;
+    // add histograms to fit (different pt bins of the
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+        
+    
+    Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)
+    if(!setupfitter) {cout << "cannot set up fitter " << endl;
+        return;
+    }
+    Bool_t fitted = systfitter->RunFits(); // main function, does all the calculations
+    if(!fitted) {cout << "something went wrong with the fits - sorry " << endl;
+        return;
+    }
+    
+    systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
+   
+    systfitter->DrawFinalPlots(); // draws the final trend plots
+    
+    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
+    gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb/%s",outputpath.Data(),mcCase.Data()));
+    systfitter->SetOutputDirectory(Form("%s/Trends_pPb/%s/",outputpath.Data(),mcCase.Data()));
+
+    systfitter->SaveCanvasesDotC();
+    systfitter->SaveCanvasesDotRoot();
+    systfitter->SaveCanvasesDotPng();
+    systfitter->SaveCanvasesDotEps();
+    systfitter->SaveCanvasesDotPdf();
+    
+    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+
+    // systfitter->CheckHisto(1);
+}
+
+
+
+
+void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
+    
+  
+    TString path = inputpath;
+    TString mcCase;
+    if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
+    else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
+    else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
+    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else {
+      Printf("MC case not foreseen");
+      return;
+    }
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    
+    AliHFCorrFitSystematics * systfitter = new AliHFCorrFitSystematics();
+    
+    // set up the sysfitter
+    gROOT->ProcessLine(Form(".!mkdir -p %s/FitOutputs_pPb",outputpath.Data()));
+    systfitter->SetIsFittingTemplate(kTRUE); 
+    systfitter->CreateOutputFile(Form("%s/FitOutputs_pPb/FitSystematics_pPb_%s_0.3_1.0.root",outputpath.Data(),mcCase.Data())); // set the name of the output file
+    systfitter->SetUseCorrelatedSystematics(kFALSE); // kTRUE (will use the Delta phi independent systematics (from the correlation plots) to sum in quadrature for the final systematics)
+    systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
+    systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
+    systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kTRUE); // set true if you want the v2 box to be plotted separately
+    //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    
+    if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
+    if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    
+    systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
+    
+    if(useReflected){
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+    }
+    else {
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+    }
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    
+    //systfitter->CheckBaselineRanges();
+    //return;
+    systfitter->SetAssociatedTrackPtMin(0.3); // set the min pt assoc (only for plotting purposes)
+    systfitter->SetAssociatedTrackPtMax(1.); // set the max pt assoc (only for plotting purposes)
+    
+    Bool_t ishistoadded;
+    // add histograms to fit (different pt bins of the
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+        
+    
+    Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)
+    if(!setupfitter) {cout << "cannot set up fitter " << endl;
+        return;
+    }
+    Bool_t fitted = systfitter->RunFits(); // main function, does all the calculations
+    if(!fitted) {cout << "something went wrong with the fits - sorry " << endl;
+        return;
+    }
+    
+    systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
+   
+    systfitter->DrawFinalPlots(); // draws the final trend plots
+    
+    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
+    gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb/%s",outputpath.Data(),mcCase.Data()));
+    systfitter->SetOutputDirectory(Form("%s/Trends_pPb/%s/",outputpath.Data(),mcCase.Data()));
+
+    systfitter->SaveCanvasesDotC();
+    systfitter->SaveCanvasesDotRoot();
+    systfitter->SaveCanvasesDotPng();
+    systfitter->SaveCanvasesDotEps();
+    systfitter->SaveCanvasesDotPdf();
+    
+    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+
+    // systfitter->CheckHisto(1);
+}
+
+
+
+
+void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName){
+    
+  
+    TString path = inputpath;
+    TString mcCase;
+    if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
+    else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
+    else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
+    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else {
+      Printf("MC case not foreseen");
+      return;
+    }
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    
+    AliHFCorrFitSystematics * systfitter = new AliHFCorrFitSystematics();
+    
+    // set up the sysfitter
+    gROOT->ProcessLine(Form(".!mkdir -p %s/FitOutputs_pPb",outputpath.Data()));
+    systfitter->SetIsFittingTemplate(kTRUE); 
+    systfitter->CreateOutputFile(Form("%s/FitOutputs_pPb/FitSystematics_pPb_%s_0.3_99.0.root",outputpath.Data(),mcCase.Data())); // set the name of the output file
+    systfitter->SetUseCorrelatedSystematics(kFALSE); // kTRUE (will use the Delta phi independent systematics (from the correlation plots) to sum in quadrature for the final systematics)
+    systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
+    systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
+    systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kTRUE); // set true if you want the v2 box to be plotted separately
+    //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    
+    if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
+    if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    
+    systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
+    
+    if(useReflected){
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+    }
+    else {
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+    }
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    
+    //systfitter->CheckBaselineRanges();
+    //return;
+    systfitter->SetAssociatedTrackPtMin(0.3); // set the min pt assoc (only for plotting purposes)
+    systfitter->SetAssociatedTrackPtMax(99.); // set the max pt assoc (only for plotting purposes)
+    
+    Bool_t ishistoadded;
+    // add histograms to fit (different pt bins of the
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+
+    ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
+        
+    
+    Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)
+    if(!setupfitter) {cout << "cannot set up fitter " << endl;
+        return;
+    }
+    Bool_t fitted = systfitter->RunFits(); // main function, does all the calculations
+    if(!fitted) {cout << "something went wrong with the fits - sorry " << endl;
+        return;
+    }
+    
+    systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
+   
+    systfitter->DrawFinalPlots(); // draws the final trend plots
+    
+    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
+    gROOT->ProcessLine(Form(".!mkdir -p %s/Trends_pPb/%s",outputpath.Data(),mcCase.Data()));
+    systfitter->SetOutputDirectory(Form("%s/Trends_pPb/%s/",outputpath.Data(),mcCase.Data()));
+
+    systfitter->SaveCanvasesDotC();
+    systfitter->SaveCanvasesDotRoot();
+    systfitter->SaveCanvasesDotPng();
+    systfitter->SaveCanvasesDotEps();
+    systfitter->SaveCanvasesDotPdf();
+    
+    systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
+
+    // systfitter->CheckHisto(1);
+}

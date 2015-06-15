@@ -54,7 +54,7 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   
   void SetAnalysisType               (const char* analysisType          = "ESD"  ) { fAnalysisType                = analysisType;               }
-  void SetCollidingSystem            (const char* collidingSystem       = "pp") { fCollidingSystem             = collidingSystem;            }
+  void SetCollidingSystem            (const char* collidingSystem       = "pp"   ) { fCollidingSystem             = collidingSystem;            }
   void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = kFALSE ) { fkRerunV0CascVertexers       = rerunV0CascVertexers;       }
   void SetSDDSelection               (Bool_t sddOnSelection             = kTRUE  ) { fkSDDSelectionOn             = sddOnSelection;             }
   void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE  ) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
@@ -190,7 +190,7 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadepp276(const AliAnalysisTaskCheckCascadepp276&);            // not implemented
   AliAnalysisTaskCheckCascadepp276& operator=(const AliAnalysisTaskCheckCascadepp276&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadepp276, 7);
+  ClassDef(AliAnalysisTaskCheckCascadepp276, 8);
 };
 
 #endif

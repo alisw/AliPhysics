@@ -745,7 +745,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   fOutputListStd->Add(fh1AreaExcluded);
   fOutputListStd->Add(fh2EventCentTracks);
 
-  fh1V0CandPerEvent = new TH1D("fh1V0CandPerEvent", "Number of all V0 candidates per event;candidates;events", 1000, 0, 1000);
+  fh1V0CandPerEvent = new TH1D("fh1V0CandPerEvent", "Number of all V0 candidates per event;candidates;events", 300, 0, 30000);
   fOutputListStd->Add(fh1V0CandPerEvent);
 
   for(Int_t i = 0; i < fgkiNBinsCent; i++)
@@ -753,9 +753,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh1EventCounterCutCent[i] = new TH1D(Form("fh1EventCounterCutCent_%d", i), Form("Number of events after filtering, cent %s;selection filter;counts", GetCentBinLabel(i).Data()), iNCategEvent, 0, iNCategEvent);
     for(Int_t j = 0; j < iNCategEvent; j++)
       fh1EventCounterCutCent[i]->GetXaxis()->SetBinLabel(j + 1, categEvent[j].Data());
-    fh1V0CandPerEventCentK0s[i] = new TH1D(Form("fh1V0CandPerEventCentK0s_%d", i), Form("Number of selected K0s candidates per event, cent %s;candidates;events", GetCentBinLabel(i).Data()), 100, 0, 100);
-    fh1V0CandPerEventCentLambda[i] = new TH1D(Form("fh1V0CandPerEventCentLambda_%d", i), Form("Number of selected Lambda candidates per event, cent %s;candidates;events", GetCentBinLabel(i).Data()), 100, 0, 100);
-    fh1V0CandPerEventCentALambda[i] = new TH1D(Form("fh1V0CandPerEventCentALambda_%d", i), Form("Number of selected ALambda candidates per event, cent %s;candidates;events", GetCentBinLabel(i).Data()), 100, 0, 100);
+    fh1V0CandPerEventCentK0s[i] = new TH1D(Form("fh1V0CandPerEventCentK0s_%d", i), Form("Number of selected K0s candidates per event, cent %s;candidates;events", GetCentBinLabel(i).Data()), 100, 0, 200);
+    fh1V0CandPerEventCentLambda[i] = new TH1D(Form("fh1V0CandPerEventCentLambda_%d", i), Form("Number of selected Lambda candidates per event, cent %s;candidates;events", GetCentBinLabel(i).Data()), 100, 0, 200);
+    fh1V0CandPerEventCentALambda[i] = new TH1D(Form("fh1V0CandPerEventCentALambda_%d", i), Form("Number of selected ALambda candidates per event, cent %s;candidates;events", GetCentBinLabel(i).Data()), 100, 0, 200);
     fh1V0CounterCentK0s[i] = new TH1D(Form("fh1V0CounterCentK0s_%d", i), Form("Number of K0s candidates after cuts, cent %s;cut;counts", GetCentBinLabel(i).Data()), fgkiNCategV0, 0, fgkiNCategV0);
     fh1V0CounterCentLambda[i] = new TH1D(Form("fh1V0CounterCentLambda_%d", i), Form("Number of Lambda candidates after cuts, cent %s;cut;counts", GetCentBinLabel(i).Data()), fgkiNCategV0, 0, fgkiNCategV0);
     fh1V0CounterCentALambda[i] = new TH1D(Form("fh1V0CounterCentALambda_%d", i), Form("Number of ALambda candidates after cuts, cent %s;cut;counts", GetCentBinLabel(i).Data()), fgkiNCategV0, 0, fgkiNCategV0);
@@ -1164,6 +1164,12 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListQA->Add(fh1QAV0RapLambda[i]);
     fOutputListQA->Add(fh2QAV0PtPtLambdaPeak[i]);
 
+    fOutputListQA->Add(fh2QAV0EtaPtALambdaPeak[i]);
+    fOutputListQA->Add(fh2QAV0EtaEtaALambda[i]);
+    fOutputListQA->Add(fh2QAV0PhiPhiALambda[i]);
+    fOutputListQA->Add(fh1QAV0RapALambda[i]);
+    fOutputListQA->Add(fh2QAV0PtPtALambdaPeak[i]);
+
     fOutputListQA->Add(fh2QAV0PhiPtK0sPeak[i]);
     fOutputListQA->Add(fh2QAV0PhiPtLambdaPeak[i]);
     fOutputListQA->Add(fh2QAV0PhiPtALambdaPeak[i]);
@@ -1560,9 +1566,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Bool_t bLeadingJetOnly = 0; // consider only leading jets
 
   Int_t iNJet = 0; // number of reconstructed jets in the input
-  TClonesArray* jetArraySel = new TClonesArray("AliAODJet", 0); // object where the selected jets are copied
+  TClonesArray* arrayJetSel = new TClonesArray("AliAODJet", 0); // object where the selected jets are copied
   Int_t iNJetSel = 0; // number of selected reconstructed jets
-  TClonesArray* jetArrayPerp = new TClonesArray("AliAODJet", 0); // object where the perp. cones are stored
+  TClonesArray* arrayJetPerp = new TClonesArray("AliAODJet", 0); // object where the perp. cones are stored
   Int_t iNJetPerp = 0; // number of perpendicular cones
   TObjArray* arrayMixedEventAdd = new TObjArray; // array of jets from this event to be added to the pool
   arrayMixedEventAdd->SetOwner(kTRUE);
@@ -1659,22 +1665,21 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       vecPerpPlus.RotateZ(TMath::Pi() / 2.); // rotate vector by +90 deg around z
       vecPerpMinus.RotateZ(-TMath::Pi() / 2.); // rotate vector by -90 deg around z
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding perp. cones number %d, %d, pt %g", iNJetPerp, iNJetPerp + 1, vecPerpPlus.Pt()));
-      new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus); // write perp. cone to the array
-      new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
+      new((*arrayJetPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus); // write perp. cone to the array
+      new((*arrayJetPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Adding jet number %d", iNJetSel));
-      new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
+      new((*arrayJetSel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
       fh2PtJetPtTrackLeading[iCentIndex]->Fill(dPtJetCorr, dPtTrackJet); // pt_jet vs pt of leading jet track
       if(fbCorrelations)
         arrayMixedEventAdd->Add(new TLorentzVector(vecJetSel)); // copy selected jet to the list of new jets for event mixing
     }
     if(fDebug > 3) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Added jets: %d", iNJetSel));
-    iNJetSel = jetArraySel->GetEntriesFast();
+    iNJetSel = arrayJetSel->GetEntriesFast();
     if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Selected jets in array: %d", iNJetSel));
-    fh1NJetPerEvent[iCentIndex]->Fill(iNJetSel);
     // fill jet spectra
     for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
     {
-      jet = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+      jet = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
       fh1PtJet[iCentIndex]->Fill(jet->Pt()); // pt spectrum of selected jets
       fh1EtaJet[iCentIndex]->Fill(jet->Eta()); // eta spectrum of selected jets
       fh2EtaPtJet[iCentIndex]->Fill(jet->Eta(), jet->Pt()); // eta-pT spectrum of selected jets
@@ -1688,13 +1693,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       for(Int_t iJetPair = iJet + 1; iJetPair < iNJetSel; iJetPair++)
       {
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Calculating distance for jet pair: %d-%d/%d\n", iJet, iJetPair, iNJetSel));
-        jet = (AliAODJet*)jetArraySel->At(iJetPair); // load a another jet in the list
+        jet = (AliAODJet*)arrayJetSel->At(iJetPair); // load a another jet in the list
         vecJetMomentumPair.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of the second jet momentum
         fh1DistanceJets[iCentIndex]->Fill(vecJetMomentum.DeltaR(vecJetMomentumPair));
       }
     }
     jet = 0; // just to be sure
   }
+  fh1NJetPerEvent[iCentIndex]->Fill(iNJetSel);
 
   if(bJetEventGood) // there should be some reconstructed jets
   {
@@ -1713,7 +1719,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   if(iNJetSel)
   {
-    jetRnd = GetRandomCone(jetArraySel, dCutEtaJetMax, 2 * fdDistanceV0JetMax);
+    jetRnd = GetRandomCone(arrayJetSel, dCutEtaJetMax, 2 * fdDistanceV0JetMax);
     if(jetRnd)
     {
       fh1NRndConeCent->Fill(iCentIndex);
@@ -1747,7 +1753,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           {
             for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
             {
-              jetTrig = (AliAODJet*)jetArraySel->At(iJet);
+              jetTrig = (AliAODJet*)arrayJetSel->At(iJet);
               fh2PtJetPtTrigger[iCentIndex]->Fill(jetTrig->Pt(), track->Pt());
             }
           }
@@ -1764,7 +1770,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         {
           for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
           {
-            jetTrig = (AliAODJet*)jetArraySel->At(iJet);
+            jetTrig = (AliAODJet*)arrayJetSel->At(iJet);
             fh2PtJetPtTrigger[iCentIndex]->Fill(jetTrig->Pt(), 0.);
           }
         }
@@ -2100,7 +2106,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         bIsCandidateLambda = kFALSE;
         bIsCandidateALambda = kFALSE;
       }
-      FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     }
     if(fdCutRapV0Max > 0.)
     {
@@ -2113,6 +2118,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         bIsCandidateALambda = kFALSE;
       }
     }
+    if(fdCutEtaV0Max > 0. || fdCutRapV0Max > 0.)
+      FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
     // 11
@@ -2211,7 +2218,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d in %d jet cones", bIsCandidateK0s, bIsCandidateLambda, iNJetSel));
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
-        jet = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+        jet = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
         if(!jet)
           continue;
         vecJetMomentum.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
@@ -2227,7 +2234,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d in %d perp. cones", bIsCandidateK0s, bIsCandidateLambda, iNJetPerp));
       for(Int_t iJet = 0; iJet < iNJetPerp; iJet++)
       {
-        jetPerp = (AliAODJet*)jetArrayPerp->At(iJet); // load a jet in the list
+        jetPerp = (AliAODJet*)arrayJetPerp->At(iJet); // load a jet in the list
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if V0 %d %d in perp. cone %d", bIsCandidateK0s, bIsCandidateLambda, iJet));
         if(IsParticleInCone(v0, jetPerp, fdDistanceV0JetMax)) // V0 in perp. cone
         {
@@ -2258,7 +2265,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
       // Selection of V0s outside jet cones
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for V0 %d %d outside jet cones", bIsCandidateK0s, bIsCandidateLambda));
-      if(!OverlapWithJets(jetArraySel, v0, dRadiusExcludeCone)) // V0 oustide jet cones
+      if(!OverlapWithJets(arrayJetSel, v0, dRadiusExcludeCone)) // V0 oustide jet cones
       {
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("V0 %d %d found outside jet cones", bIsCandidateK0s, bIsCandidateLambda));
         bIsOutsideCones = kTRUE;
@@ -2467,7 +2474,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       // Fill V0-jet correlations in same events
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
-        AliAODJet* jetCorrel = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+        AliAODJet* jetCorrel = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
         dDPhi = GetNormalPhi(dPhiV0 - jetCorrel->Phi());
         dDEta = dEtaV0 - jetCorrel->Eta();
         if(TMath::Abs(dDEta) > fdDeltaEtaMax)
@@ -2778,7 +2785,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   {
     if(bPoolReady)
       fh1VtxZME[iCentIndex]->Fill(dZVtxME); // fill z_vtx if event was used for event mixing
-    pool->UpdatePool(arrayMixedEventAdd); // updated the pool with jets from this event
+    pool->UpdatePool(arrayMixedEventAdd); // update the pool with jets from this event
   }
 
   fh1V0CandPerEvent->Fill(iNV0CandTot);
@@ -2874,7 +2881,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for gen V0 in %d MC jets", iNJetSel));
         for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
         {
-          jetMC = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
+          jetMC = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
           if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if gen V0 in MC jet %d", iJet));
           if(IsParticleInCone(particleMC, jetMC, fdDistanceV0JetMax)) // If good jet in event, find out whether V0 is in that jet
           {
@@ -2928,10 +2935,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
   }
 
-  jetArraySel->Delete();
-  delete jetArraySel;
-  jetArrayPerp->Delete();
-  delete jetArrayPerp;
+  arrayJetSel->Delete();
+  delete arrayJetSel;
+  arrayJetPerp->Delete();
+  delete arrayJetPerp;
   if(jetRnd)
     delete jetRnd;
   jetRnd = 0;
@@ -2975,15 +2982,15 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const A
     }
     // Daughters: pseudo-rapidity cut
     fh1QAV0Eta[iIndexHisto]->Fill(track->Eta());
-    if((nCrossedRowsTPC > (160. / (250. - 85.) * (255.*TMath::Abs(tan(track->Theta())) - 85.)) + 20.) && (track->Eta() < 0) && (track->Pt() > 0.15))
+//    if((nCrossedRowsTPC > (160. / (250. - 85.) * (255.*TMath::Abs(tan(track->Theta())) - 85.)) + 20.) && (track->Eta() < 0) && (track->Pt() > 0.15))
 //      if (IsCandK0s)
-    {
+//    {
       fh2QAV0EtaRows[iIndexHisto]->Fill(track->Eta(), nCrossedRowsTPC);
       fh2QAV0PtRows[iIndexHisto]->Fill(track->Pt(), nCrossedRowsTPC);
       fh2QAV0PhiRows[iIndexHisto]->Fill(track->Phi(), nCrossedRowsTPC);
       fh2QAV0NClRows[iIndexHisto]->Fill(findable, nCrossedRowsTPC);
       fh2QAV0EtaNCl[iIndexHisto]->Fill(track->Eta(), findable);
-    }
+//    }
 
     // Daughters: transverse momentum cut
     fh1QAV0Pt[iIndexHisto]->Fill(track->Pt());

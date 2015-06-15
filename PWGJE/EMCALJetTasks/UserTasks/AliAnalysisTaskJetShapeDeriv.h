@@ -44,6 +44,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
 
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
+  void SetPartialExclusion(Bool_t b)                            { fPartialExclusion  = b   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -61,7 +62,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   JetMassVarType                      fJetMassVarType;             // observable to use
   ResponseReference                   fResponseReference;          // true axis of response matrix
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
-
+  Bool_t                              fPartialExclusion;           // randomly esclude areas according to Ncoll
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       // jet1(AA) vector  
   TLorentzVector  *fJet2Vec;                                       // jet2(probe) vector
@@ -88,6 +89,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue
   THnSparse     **fhnDeltaMass;                                    //! DeltaM, DeltapT 
+  THnSparse      *fhnDeltaMassAndBkgInfo;                          //! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
 
   TH2F          **fh2PtTrueSubFacV1;                               //! true pT vs -(rho+rhom)*V1
   TH2F          **fh2PtRawSubFacV1;                                //! raw pT vs -(rho+rhom)*V1

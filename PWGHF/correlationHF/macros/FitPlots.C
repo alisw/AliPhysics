@@ -332,14 +332,18 @@ TF1* FitPlotsObsolete(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Do
   if(fixBase<0){
     Int_t npointsAv=TMath::Abs(fixBase);
     Int_t *ind=new Int_t[h->GetNbinsX()];
-    Double_t *hval=h->GetArray();
+    Double_t *hval=new Double_t[h->GetNbinsX()];// needed because problems were found with usage of fHist->GetArray();
+    for(Int_t k=1;k<=h->GetNbinsX();k++){
+      hval[k-1]=h->GetBinContent(k);
+    }
+    //    Double_t *hval=h->GetArray();
     Double_t errAv=0.,av=0.;
-    TMath::Sort(h->GetNbinsX(),&hval[1],ind,kFALSE);// need to exclude under and over flow bins
+    TMath::Sort(h->GetNbinsX(),hval,ind,kFALSE);// need to exclude under and over flow bins
     // Average of abs(fixbase) lower points
     for(Int_t k=0;k<npointsAv;k++){
-      
+      //      Printf("Point %d, index %d,value: %f",k,ind[k],h->GetBinContent(ind[k]+1));
       av+=(h->GetBinContent(ind[k]+1)/(h->GetBinError(ind[k]+1)*h->GetBinError(ind[k]+1)));
-      //	printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
+      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
       errAv+=1./(h->GetBinError(ind[k]+1)*h->GetBinError(ind[k]+1));	  
     }
     av/=errAv;

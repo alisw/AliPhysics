@@ -915,8 +915,8 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[8]  = 40;     //DcaV0ToPrimVertex            :  [0.0,0.39,110.0]    -> Rec.Cut = 0.01;  
    lNbBinsPerVar[9]  = 25;     //DcaPosToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01;
    lNbBinsPerVar[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01;
-   lNbBinsPerVar[11] = 150;    //InvMassXi                    :   2-MeV/c2 bins
-   lNbBinsPerVar[12] = 120;    //InvMassOmega                 :   2-MeV/c2 bins
+   lNbBinsPerVar[11] = 250;    //InvMassXi                    :   1-MeV/c2 bins
+   lNbBinsPerVar[12] = 220;    //InvMassOmega                 :   1-MeV/c2 bins
    lNbBinsPerVar[13] = 100;    //XiTransvMom                  :  [0.0,10.0]
    lNbBinsPerVar[14] = 110;    //Y(Xi)                        :   0.02 in rapidity units
    lNbBinsPerVar[15] = 110;    //Y(Omega)                     :   0.02 in rapidity units
@@ -992,9 +992,9 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadeCuts -> SetBinLimits(10,  lBinLim10 );            // DcaPosToPrimVertexXi : 0.0 to 0.25 
    delete [] lBinLim10;
      //11 - InvMassXi
-   fCFContCascadeCuts->SetBinLimits(11, 1.25, 1.40);
+   fCFContCascadeCuts->SetBinLimits(11, 1.20, 1.45);
      //12 - InvMassOmega
-   fCFContCascadeCuts->SetBinLimits(12, 1.62, 1.74);
+   fCFContCascadeCuts->SetBinLimits(12, 1.57, 1.79);
      //13 - XiTransvMom
    fCFContCascadeCuts->SetBinLimits(13, 0.0, 10.0); 
      //14 - Y(Xi)

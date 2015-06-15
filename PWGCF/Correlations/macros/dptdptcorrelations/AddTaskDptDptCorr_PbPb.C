@@ -1,53 +1,55 @@
-// Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
-// Author: Prabhat Pujahari & Claude Pruneau, Wayne State
-//           system:  0: PbPb                 1: pPb
-//      singlesOnly:  0: full correlations    1: singles only
-//       useWeights:  0: no                   1: yes
-// centralityMethod:  3: track count  4: V0 centrality  7: V0A centrality for pPb
-//        chargeSet:  0: ++    1: +-    2: -+    3: --
+/* Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
+   Author: Prabhat Pujahari & Claude Pruneau, Wayne State
+   system:           0 -- PbPb                 1 -- pPb
+   singlesOnly:      0 -- full correlations    1 -- singles only
+   useWeights:       0 -- no                   1 -- yes
+   centralityMethod: 4 -- V0M  5 -- TPC  7: V0A for pPb
+   chargeSet:        0: ++    1: +-    2: -+    3: --
+*/
 /////////////////////////////////////////////////////////////////////////////////
 AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
 (int    system                  = 0, 
- int    singlesOnly             = 0,
- int    useWeights              = 1, 
- int    centralityMethod        = 4,
+ int    singlesOnly             = 1,
+ int    useWeights              = 0, //no weight 
+ int    centralityMethod        = 4, // 5 for syst.
  int    chargeSet               = 1,
- double zMin                    = -10.,
- double zMax                    =  10.,
- int    trackFilterBit          = 128,
- int    nClusterMin             = 80, 
- double eta1Min                 = -0.8,
- double eta1Max                 =  0.8,
- double eta2Min                 = -0.8,
- double eta2Max                 =  0.8,
+ double zMin                    = -10.0,
+ double zMax                    =  10.0,
+ int    trackFilterBit          = 1, //Global
+ int    nClusterMin             = 70, 
+ double eta1Min                 = -1.0,
+ double eta1Max                 =  1.0,
+ double eta2Min                 = -1.0,
+ double eta2Max                 =  1.0,
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  1,
+ int nCentrality                =  4,
  Bool_t trigger                 = kFALSE,
- const char* taskname           = "dcaz2",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPbCalib_dca1.root")
+ const char* taskname           = "ChPM",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/trkcent/TrkCent_weight.root")
   
 {
   // Set Default Configuration of this analysis
-  // ==========================================
   int    debugLevel             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
-  
+
+  //----------------------------------------------------  
   //int    nCentrality;
   double minCentrality[10];
   double maxCentrality[10];
 
   if (system==0) // PbPb
     {
-    if (centralityMethod == 4)
+    if (centralityMethod == 4 || centralityMethod == 5)
       {
 	minCentrality[0] = 0.0;   maxCentrality[0]  = 5.0;
-        minCentrality[1] = 5.0;  maxCentrality[1]  = 10.;
-        minCentrality[2] = 20.;   maxCentrality[2]  = 30.;
+        minCentrality[1] = 30.0;  maxCentrality[1]  = 40.0;
+        minCentrality[2] = 50.0;  maxCentrality[2]  = 60.0;
+        minCentrality[3] = 70.0;  maxCentrality[3]  = 80.0;
        
       }
     else
@@ -55,27 +57,26 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
 	return 0;
       }
     }
-  else if (system==1) // PbPb  //splited to take care of memory problem
+  else if (system==1) //for p-Pb collision
     {
-    if (centralityMethod == 4)
+    if (centralityMethod == 7)
       {
-	//minCentrality[0] = 30.0;   maxCentrality[0]  = 40.0;
-	//minCentrality[1] = 50.0;   maxCentrality[1]  = 60.0;
-	//minCentrality[2] = 70.0;   maxCentrality[2]  = 80.0;
-
-	minCentrality[0] = 10.0;   maxCentrality[0]  = 20.0;
-	minCentrality[1] = 40.0;   maxCentrality[1]  = 50.0;
-	minCentrality[2] = 60.0;   maxCentrality[2]  = 70.0;
+	minCentrality[0] = 0.0;    maxCentrality[0]  = 20.0;
+	minCentrality[1] = 20.0;   maxCentrality[1]  = 40.0;
+	minCentrality[2] = 40.0;   maxCentrality[2]  = 60.0;
+	minCentrality[3] = 60.0;   maxCentrality[3]  = 80.0;
+	minCentrality[4] = 80.0;   maxCentrality[4]  = 100.0;
       }
     else
       {
-      return 0;
+	return 0;
       }
     }
   else
     {
-    return 0;
+      return 0;
     }
+  //----------------------------------------------
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
   double dedxMin                =  0.0;
@@ -128,29 +129,9 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
           case 3: part1Name = "M_"; part2Name = "M_"; requestedCharge1 = -1; requestedCharge2 = -1; sameFilter = 1;   break;
         }
 
-      part1Name += "eta";
-      part1Name += int(1000*eta1Max);
-      part1Name += "_";
-      part1Name += int(1000*ptMin);
-      part1Name += "pt";
-      part1Name += int(1000*ptMax);
-      part1Name += "_";
-      part1Name += int(1000*dcaZMin);
       part1Name += "DCA";
       part1Name += int(1000*dcaZMax);
       part1Name += "_";
-
-      part2Name += "eta";
-      part2Name += int(1000*eta2Max);
-      part2Name += "_";
-      part2Name += int(1000*ptMin);
-      part2Name += "pt";
-      part2Name += int(1000*ptMax);
-      part2Name += "_";
-      part2Name += int(1000*dcaZMin);
-      part2Name += "DCA";
-      part2Name += int(1000*dcaZMax);
-      part2Name += "_";
 
       eventName =  "";
       eventName += int(10.*minCentrality[iCentrality] );
@@ -163,7 +144,6 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
       baseName     +=  eventName;
       listName     =   baseName;
       taskName     =   baseName;
-
 
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;

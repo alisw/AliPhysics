@@ -72,6 +72,8 @@ void runEMCALTimeCalibTask(Int_t type=0)
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
 
+
+
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("MyEmcalAnalysis");
   AliESDInputHandler* esdH = new AliESDInputHandler();
@@ -87,12 +89,12 @@ void runEMCALTimeCalibTask(Int_t type=0)
     AliCentralitySelectionTask* centralityTask = AddTaskCentrality(); // Create task
   }
 
-  AliCalorimeterUtils *cu = new AliCalorimeterUtils();
+  //AliCalorimeterUtils *cu = new AliCalorimeterUtils();
   //   cu->SwitchOnBadChannelsRemoval(); 
 
   // Create task
-  UInt_t kTriggerInt = AliVEvent::kAnyINT;
-  UInt_t kTriggerEMC   = AliVEvent::kEMC8 || AliVEvent::kEMC7 || AliVEvent::kEMCEJE || AliVEvent::kEMCEGA;
+  //UInt_t kTriggerInt = AliVEvent::kAnyINT;
+  //UInt_t kTriggerEMC   = AliVEvent::kEMC8 || AliVEvent::kEMC7 || AliVEvent::kEMCEJE || AliVEvent::kEMCEGA;
   
   AliAnalysisTaskEMCALTimeCalib *taskmbemcal = new AliAnalysisTaskEMCALTimeCalib("TimeCalibTask");
   //  AliEMCALRecoUtils *reco = taskmbemcal->GetEMCALRecoUtils();
@@ -100,6 +102,8 @@ void runEMCALTimeCalibTask(Int_t type=0)
   //  reco->SwitchOnRejectExoticCluster();
 
   taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+  taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+
   //taskmbemcal->SelectCollisionCandidates(AliVEvent::kAnyINT);
   //taskmbemcal->SetDebugLevel(10);
 

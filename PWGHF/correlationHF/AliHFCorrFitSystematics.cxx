@@ -57,6 +57,7 @@ ClassImp(AliHFCorrFitSystematics)
 
 //___________________________________________________________
 AliHFCorrFitSystematics::AliHFCorrFitSystematics():
+fIsFittingTemplate(kFALSE),
 fVecHisto(0),
   fVecHistoMinVar(0),
   fVecHistoMaxVar(0),
@@ -68,8 +69,10 @@ fVecHisto(0),
   fVecLowEdgeDpt(0),
   fVecUpEdgeDpt(0),
   fVecSystMode(0),
+  fFitFuncType(0),
   fMinBaselineEstimationRange(0),
   fMaxBaselineEstimationRange(0),
+  fNMinPointsBaselineEstimationRange(0),
   fVecIsReference(0),
   fEntries(0),
   fVecSize(-1),
@@ -95,6 +98,7 @@ fVecHisto(0),
   fAssocTrackPtMax(100),
   fMinReferenceBaselineEstimationRange(0),
   fMaxReferenceBaselineEstimationRange(0),
+  fMinNPointsReferenceBaseline(0),
   fValueNSYield(0x0),
   fRatioNSYield(0x0),
   fValueNSSigma(0x0),
@@ -269,22 +273,44 @@ Bool_t AliHFCorrFitSystematics::AddHistoToFit(TString path, TString cname, TStri
     if(!file->IsOpen()){
         std::cout << "Cannot open file " << path << " - check your input! " << std::endl; return kFALSE;
     }
-    
+    TH1D * hist;
+    TList * thelist;
     TCanvas * c = (TCanvas*)file->Get(cname.Data());
-    if(!c){   std::cout << "Cannot extract canvas " << cname << " from file " << path << " - check your input! " << std::endl; return kFALSE;}
+    if(c){
+      thelist = (TList *)c->GetListOfPrimitives();
+      hist = (TH1D*)c->FindObject(havname.Data());
+      if(!hist){   std::cout << "Cannot extract histogram  " << havname << "  from canvas" << cname << " from file " << path << " - check your input! " << std::endl; return kFALSE;
+      }
+    }
+    else {
+      cout<<"Canvas with name: < "<<cname<<" > does not exist. Trying to take the histo directly from file "<<std::endl;
+      c=0x0;
+      hist=(TH1D*)file->Get(havname.Data());
+      if(!hist){   
+	std::cout << "Cannot extract histogram " << havname << "  from file " << path << " - check your input! " << std::endl; return kFALSE;
+      }
+    }
 
-    TList * list = (TList *)c->GetListOfPrimitives();
     
-    TH1D * hist = (TH1D*)c->FindObject(havname.Data());
+
     if(!hist){   std::cout << "Cannot extract histogram of average " << havname << "  from file " << path << " - check your input! " << std::endl; return kFALSE;}
     
     TH1D * histminvar = (TH1D *)file->Get(havmin.Data());
-    if(!histminvar){   std::cout << "Cannot extract histogram of min variation " << havmin << " from file " << path << " - check your input! " << std::endl; return kFALSE;}
+    if(!histminvar){   
+      if(!fIsFittingTemplate){
+	std::cout << "Cannot extract histogram of min variation " << havmin << " from file " << path << " - check your input! " << std::endl; return kFALSE;
+      }
+      histminvar=0x0;
+    }
     
     TH1D * histmaxvar = (TH1D *)file->Get(havmax.Data());
-    if(!histmaxvar){   std::cout << "Cannot extract histogram of max variation " << havmax << " from file " << path << " - check your input! " << std::endl; return kFALSE;}
-    
-    
+    if(!histmaxvar){         
+      if(!fIsFittingTemplate){
+	std::cout << "Cannot extract histogram of max variation " << havmax << " from file " << path << " - check your input! " << std::endl; return kFALSE;
+      }
+      histmaxvar=0x0;
+    }
+      
     hist->GetXaxis()->SetTitle("#Delta#varphi (rad)");
     hist->GetYaxis()->SetTitle("#frac{1}{N_{D}}#frac{dN}{d#Delta#varphi}(rad^{-1})");
     hist->GetXaxis()->SetTitleSize(0.03);
@@ -299,10 +325,13 @@ Bool_t AliHFCorrFitSystematics::AddHistoToFit(TString path, TString cname, TStri
     fVecHistoMaxVar.push_back(histmaxvar);
     fCorrelationCanvas.push_back(c);
     
-    TGraphAsymmErrors * tgraphassocerror = (TGraphAsymmErrors *)list->At(2);
-    tgraphassocerror->SetName(Form("grapherror%d",fEntries));
-    fCorrelationGraphAsymmErrors.push_back(tgraphassocerror);
-    fEntries++;
+    if(thelist && !fIsFittingTemplate){
+      TGraphAsymmErrors * tgraphassocerror = (TGraphAsymmErrors *)thelist->At(2);
+      tgraphassocerror->SetName(Form("grapherror%d",fEntries));
+      fCorrelationGraphAsymmErrors.push_back(tgraphassocerror);     
+      fEntries++;
+    }
+
     /*delete file;
     delete c;
     delete list;
@@ -343,26 +372,44 @@ Bool_t AliHFCorrFitSystematics::AddHistoToFit(TString path, TString cname, TStri
     
 }
 //_______________________________________________________________________________
-void AliHFCorrFitSystematics::AddSystematicMode(SystematicModes mode, Bool_t isReference, Double_t min, Double_t max){
+void AliHFCorrFitSystematics::AddSystematicMode(SystematicModes mode, Bool_t isReference, Double_t min, Double_t max, Int_t minNpoints,AliHFCorrFitter::FunctionType fitfunctype){
     if(fIsReferenceAlreadySet && isReference) {std::cout << " " << std::endl; std::cout << "You hava already set a reference histo!" << std::endl; return;}
     fVecSystMode.push_back(mode);
+    fFitFuncType.push_back(fitfunctype);
     fVecIsReference.push_back(isReference);
     if(isReference) fIsReferenceAlreadySet = kTRUE;
     
     if(mode == kTransverse && !isReference){
-        fMinBaselineEstimationRange.push_back(min);
-        fMaxBaselineEstimationRange.push_back(max);
-        //  cout << "Range set " << min << ","<< max << endl;
+      fMinBaselineEstimationRange.push_back(min);
+      fMaxBaselineEstimationRange.push_back(max);
+      //  cout << "Range set " << min << ","<< max << endl;
+    }
+    else if(mode == kTransverse && isReference){
+      fMinBaselineEstimationRange.push_back(min);
+      fMaxBaselineEstimationRange.push_back(max);
+      fMinReferenceBaselineEstimationRange=min;
+      fMaxReferenceBaselineEstimationRange=max;      
     }
     else{
-        fMinBaselineEstimationRange.push_back(fMinReferenceBaselineEstimationRange);
-        fMaxBaselineEstimationRange.push_back(fMaxReferenceBaselineEstimationRange);
-        //cout << "Range set else" << fMinReferenceBaselineEstimationRange << ","<< fMaxReferenceBaselineEstimationRange << endl;
+      fMinBaselineEstimationRange.push_back(fMinReferenceBaselineEstimationRange);
+      fMaxBaselineEstimationRange.push_back(fMaxReferenceBaselineEstimationRange);
+      //cout << "Range set else" << fMinReferenceBaselineEstimationRange << ","<< fMaxReferenceBaselineEstimationRange << endl;
+    }
+
+    if(mode == kNLowest && !isReference){
+      fNMinPointsBaselineEstimationRange.push_back(minNpoints);
+    }
+    else if(mode == kNLowest && isReference){
+      fNMinPointsBaselineEstimationRange.push_back(minNpoints);
+      fMinNPointsReferenceBaseline=minNpoints;
+    }
+    else{
+      fNMinPointsBaselineEstimationRange.push_back(fMinNPointsReferenceBaseline);
     }
 }
 //_______________________________________________________________________________
 void AliHFCorrFitSystematics::AddSystematicMode(SystematicModes mode, Bool_t isReference){
-    AddSystematicMode(mode,isReference, fMinReferenceBaselineEstimationRange, fMaxReferenceBaselineEstimationRange);
+  AddSystematicMode(mode,isReference, fMinReferenceBaselineEstimationRange, fMaxReferenceBaselineEstimationRange,fMinNPointsReferenceBaseline);
 }
 
 /*
@@ -403,6 +450,9 @@ void AliHFCorrFitSystematics::CheckBaselineRanges(){
     std::cout << "======================== " <<fMinBaselineEstimationRange.size() <<  std::endl;
     for(Int_t k =0; k<(Int_t)fMinBaselineEstimationRange.size(); k++){
         std::cout << "Baseline in range (" << k << "): " << fMinBaselineEstimationRange[k]/TMath::Pi() << "*pi - " << fMaxBaselineEstimationRange[k]/TMath::Pi() << "*pi" << std::endl;
+    }
+    for(Int_t k=0; k<(Int_t)fNMinPointsBaselineEstimationRange.size();k++){
+      std::cout << "Min Npoints for baseline (" << k <<"):" << fNMinPointsBaselineEstimationRange[k]<<std::endl;
     }
 }
 
@@ -708,10 +758,19 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         
         
         fFitter = new AliHFCorrFitter((TH1F*)v2subtractedhisto[iPtBin],fMinFitRange,fMaxFitRange);
-        fFitter->SetFixBasetype(5);
-        fFitter->SetBaselineEstimationRange(fMinReferenceBaselineEstimationRange,fMaxReferenceBaselineEstimationRange);
+	if(fVecSystMode[fReferenceIndex]==kNLowest){
+	  fFitter->SetFixBasetype(-1*fNMinPointsBaselineEstimationRange[fReferenceIndex]);
+	  cout << "Reference baseline for v2 calculation will be defined by " << fNMinPointsBaselineEstimationRange[fReferenceIndex] << "lowest points " << endl;
+	}
+	else if(fVecSystMode[fReferenceIndex]==kLowestPoint){
+	  fFitter->SetFixBasetype(-1);
+	  cout << "Reference baseline for v2 calculation will be defined by the minimum point " << endl;
+	}
+	else fFitter->SetFixBasetype(fVecSystMode[fReferenceIndex]);
+	if(fVecSystMode[fReferenceIndex]==kTransverse)fFitter->SetBaselineEstimationRange(fMinReferenceBaselineEstimationRange,fMaxReferenceBaselineEstimationRange);
+
         fFitter->SetFixMeanType(3);
-        fFitter->SetFuncType(AliHFCorrFitter::kTwoGausPeriodicity);
+        fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
         fFitter->Fitting();
         fFitter->DrawLegendWithParameters();
         pave->Draw("same");
@@ -761,6 +820,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       Bool_t setup = SetUpSystematicsFitter();
         if(!setup) return kFALSE;
     }
+    CheckBaselineRanges();
     //fOutputFile->cd();
     
     //*************************************************************************************************************************
@@ -796,14 +856,23 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       paveRef->SetFillStyle(0);
       paveRef->SetBorderSize(0);
       paveRef->SetTextSize(0.03);
-      
+
+      Printf("The reference will be calceulated with baseline mode %d and with the fit function mode %d",fVecSystMode[fReferenceIndex],fFitFuncType[fReferenceIndex]);
       fFitter = new AliHFCorrFitter((TH1F*)fVecHisto[iPtBin],fMinFitRange,fMaxFitRange);
-      fFitter->SetFixBasetype(fVecSystMode[fReferenceIndex]);
-       
+      if(fVecSystMode[fReferenceIndex]==kNLowest){
+	fFitter->SetFixBasetype(-1*fNMinPointsBaselineEstimationRange[fReferenceIndex]);
+	cout << "Reference baseline will be defined by " << fNMinPointsBaselineEstimationRange[fReferenceIndex] << "lowest points " << endl;
+      }
+      else if(fVecSystMode[fReferenceIndex]==kLowestPoint){
+	fFitter->SetFixBasetype(-1);
+	cout << "Reference baseline will be defined by the minimum point " << endl;
+      }
+      else fFitter->SetFixBasetype(fVecSystMode[fReferenceIndex]);
+      
       if(fVecSystMode[fReferenceIndex]==kTransverse)fFitter->SetBaselineEstimationRange(fMinReferenceBaselineEstimationRange,fMaxReferenceBaselineEstimationRange);
       fCanvasRefernce->cd(iPtBin+1);
       fFitter->SetFixMeanType(3);
-      fFitter->SetFuncType(AliHFCorrFitter::kTwoGausPeriodicity);
+      fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
       fFitter->Fitting();
       fFitter->DrawLegendWithParameters();
       paveRef->Draw("same");
@@ -835,7 +904,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     //
     for(Int_t iSystMode = 0; iSystMode < fVecSystModesSize; iSystMode++){ // loop on systematic modes
       
-        
+      
         if(fVecSize == 1)fCanvasFitting[iSystMode] = new TCanvas(Form("cFitting_%d",iSystMode),"cFitting",0,0,1000,1000);
         if(fVecSize == 2){fCanvasFitting[iSystMode] = new TCanvas(Form("cFitting_%d",iSystMode),"cFitting",0,0,1500,1000); fCanvasFitting[iSystMode]->Divide(2,1);}
         if(fVecSize == 3){fCanvasFitting[iSystMode] = new TCanvas(Form("cFitting_%d",iSystMode),"cFitting",0,0,1500,1000); fCanvasFitting[iSystMode]->Divide(3,1);}
@@ -876,21 +945,42 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                
                
             fCanvasFitting[iSystMode]->cd(iPtBin+1);
-            if(fVecSystMode[iSystMode]==kMinVar || fVecSystMode[iSystMode]==kMaxVar) fFitter->SetFixBasetype(5);
+            if(fVecSystMode[iSystMode]==kMinVar || fVecSystMode[iSystMode]==kMaxVar) {
+	      if(fVecSystMode[fReferenceIndex]==kNLowest){
+		fFitter->SetFixBasetype(-1*fNMinPointsBaselineEstimationRange[fReferenceIndex]);
+		cout << "Reference baseline for v2 calculation will be defined by " << fNMinPointsBaselineEstimationRange[fReferenceIndex] << "lowest points " << endl;
+	      }
+	      else if(fVecSystMode[fReferenceIndex]==kLowestPoint){
+		fFitter->SetFixBasetype(-1);
+		cout << "Reference baseline for v2 calculation will be defined by the minimum point " << endl;
+	      }
+	      else fFitter->SetFixBasetype(fVecSystMode[fReferenceIndex]);
+	      if(fVecSystMode[fReferenceIndex]==kTransverse)fFitter->SetBaselineEstimationRange(fMinReferenceBaselineEstimationRange,fMaxReferenceBaselineEstimationRange);
+	    }
+	    else if(fVecSystMode[iSystMode]==kNLowest){
+	      fFitter->SetFixBasetype(-1*fNMinPointsBaselineEstimationRange[iSystMode]);
+	      cout << "Baseline will be defined by " << fNMinPointsBaselineEstimationRange[iSystMode] << "lowest points " << endl;
+	    }
+	    else if(fVecSystMode[iSystMode]==kLowestPoint){
+	      fFitter->SetFixBasetype(-1);
+	      cout << "Baseline will be defined by the minimum point " << endl;
+	    }
             else fFitter->SetFixBasetype(fVecSystMode[iSystMode]);
+	    
             //if(fVecSystMode[iSystMode]==kTransverse) fFitter->SetBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi());
               cout << " " << index <<endl;
-            cout << "Baseline range for systmode ("<< iSystMode <<"): " << fMinBaselineEstimationRange[iSystMode] << "," << fMaxBaselineEstimationRange[iSystMode] << endl;
+	      cout << "Baseline range for systmode ("<< iSystMode <<"): " << fMinBaselineEstimationRange[iSystMode] << "," << fMaxBaselineEstimationRange[iSystMode] << endl;
+	      cout << "Nmin points for systmode ("<<iSystMode<<"): "<< fNMinPointsBaselineEstimationRange[iSystMode]<< "," <<fNMinPointsBaselineEstimationRange[iSystMode]<<endl;
              cout << " " << endl;
             if(fVecSystMode[iSystMode]==kTransverse)fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
-            if(fVecSystMode[iSystMode]==kMinVar || fVecSystMode[iSystMode]==kMaxVar) fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
+	    if(fVecSystMode[iSystMode]==kMinVar || fVecSystMode[iSystMode]==kMaxVar) fFitter->SetBaselineEstimationRange(fMinBaselineEstimationRange[iSystMode],fMaxBaselineEstimationRange[iSystMode]);
             
             
                     //  fFitter->SetBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi());
             
             
             fFitter->SetFixMeanType(3);
-            fFitter->SetFuncType(AliHFCorrFitter::kTwoGausPeriodicity);
+            fFitter->SetFuncType(fFitFuncType[iSystMode]);
             fFitter->Fitting();
             fFitter->DrawLegendWithParameters();
             pave->Draw("same");
@@ -1101,19 +1191,20 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
 
         }
         if(fCombineSystematics == kRMS){
-            std::cout << "Using RMS" << std::endl;
-            fValueSystematicBaselineNSYield[iPtBin] = fRMSHistoNSYield[iPtBin]->GetRMS();
-            fValueSystematicBaselineNSSigma[iPtBin] = fRMSHistoNSSigma[iPtBin]->GetRMS();
-            fValueSystematicBaselineASYield[iPtBin] = fRMSHistoASYield[iPtBin]->GetRMS();
-            fValueSystematicBaselineASSigma[iPtBin] = fRMSHistoASSigma[iPtBin]->GetRMS();
-            fValueSystematicBaselinePedestal[iPtBin] = fRMSHistoPedestal[iPtBin]->GetRMS();
-            
-            fRMSHistoNSYield[iPtBin]->Write();
-            fRMSHistoNSSigma[iPtBin]->Write();
-            fRMSHistoASYield[iPtBin]->Write();
-            fRMSHistoASSigma[iPtBin]->Write();
-            fRMSHistoPedestal[iPtBin]->Write();
-
+	  std::cout << "Using RMS" << std::endl;
+	  if(fReferenceHistoNSYield->GetBinContent(iPtBin+1)>1.e-6){
+	    fValueSystematicBaselineNSYield[iPtBin] = fRMSHistoNSYield[iPtBin]->GetRMS()/fReferenceHistoNSYield->GetBinContent(iPtBin+1);
+	    fValueSystematicBaselineNSSigma[iPtBin] = fRMSHistoNSSigma[iPtBin]->GetRMS()/fReferenceHistoNSSigma->GetBinContent(iPtBin+1);
+	    fValueSystematicBaselineASYield[iPtBin] = fRMSHistoASYield[iPtBin]->GetRMS()/fReferenceHistoASYield->GetBinContent(iPtBin+1);
+	    fValueSystematicBaselineASSigma[iPtBin] = fRMSHistoASSigma[iPtBin]->GetRMS()/fReferenceHistoASSigma->GetBinContent(iPtBin+1);
+	    fValueSystematicBaselinePedestal[iPtBin] = fRMSHistoPedestal[iPtBin]->GetRMS()/fReferenceHistoPedestal->GetBinContent(iPtBin+1);
+	  }
+	  fRMSHistoNSYield[iPtBin]->Write();
+	  fRMSHistoNSSigma[iPtBin]->Write();
+	  fRMSHistoASYield[iPtBin]->Write();
+	  fRMSHistoASSigma[iPtBin]->Write();
+	  fRMSHistoPedestal[iPtBin]->Write();
+	  
         }
         
     }
@@ -1247,7 +1338,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             
       
             
-        // summing the correalted syt
+	  // summing the correalted syt
         fValueSystematicNSYieldUp[iPtBin] = fValueSystematicBaselineNSYield[iPtBin]*fValueSystematicBaselineNSYield[iPtBin];
         fValueSystematicNSSigmaUp[iPtBin] = fValueSystematicBaselineNSSigma[iPtBin]*fValueSystematicBaselineNSSigma[iPtBin];
         fValueSystematicASYieldUp[iPtBin] = fValueSystematicBaselineASYield[iPtBin]*fValueSystematicBaselineASYield[iPtBin];
@@ -1553,6 +1644,7 @@ void AliHFCorrFitSystematics::DrawBaselineSystematicsOnCanvas(TH1D * histoinput,
 
     TString suffix = "";
     if(fVecSystMode[iSystMode] == kLowestPoint) suffix = "Lowest Point";
+    if(fVecSystMode[iSystMode] == kNLowest) suffix = Form("%dLowest Point",fNMinPointsBaselineEstimationRange[iSystMode]);
     if(fVecSystMode[iSystMode] == k2PointsAtPiHalf) suffix = "2 Points at pi half";
     if(fVecSystMode[iSystMode] == k4PointsAtPiHalf) suffix = "4 Points at pi half";
     if(fVecSystMode[iSystMode] == kTransverse) suffix = Form("Baseline from region %.3f#pi - %.3f#pi ",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
@@ -1625,8 +1717,10 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
         std::cout << "  " << std::endl;
         std::cout << "================================================================= " << std::endl;
         std::cout << "  " << std::endl;
-        
+
+        if(fVecSystMode[iSystMode] == kFree) std::cout << "Systematic mode is free baseline " << std::endl;       
         if(fVecSystMode[iSystMode] == kLowestPoint) std::cout << "Systematic mode is Lowest point in Dphi " << std::endl;
+        if(fVecSystMode[iSystMode] == kNLowest) std::cout << "Systematic mode is "<< fNMinPointsBaselineEstimationRange[iSystMode] <<" lowest points in Dphi " << std::endl;
         if(fVecSystMode[iSystMode] == k2PointsAtPiHalf) std::cout << "Systematic mode is two points at pi/2  " << std::endl;
         if(fVecSystMode[iSystMode] == k4PointsAtPiHalf) std::cout << "Systematic mode is 4 points at pi/2  " << std::endl;
         if(fVecSystMode[iSystMode] == kTransverse) std::cout << "Systematic mode is transverse region : (" << fMinBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi, "<< fMaxBaselineEstimationRange[iSystMode]/TMath::Pi() << "*pi)"<<std::endl;
@@ -1811,7 +1905,7 @@ Bool_t AliHFCorrFitSystematics::DrawFinalCorrelationPlot(Bool_t drawNSy, Bool_t 
         cFinalCorrelation[iPtBin]->cd();
         cFinalCorrelation[iPtBin]->SetTicks();
         fVecHisto[iPtBin]->Draw("ep");
-        fCorrelationGraphAsymmErrors[iPtBin]->Draw("E2same");
+        if(!fIsFittingTemplate && fCorrelationGraphAsymmErrors[iPtBin])fCorrelationGraphAsymmErrors[iPtBin]->Draw("E2same");
         DefinePaveText();
         fFitFunctions[iPtBin]->Draw("same");
         pave->Draw("same");
@@ -2291,11 +2385,28 @@ Bool_t AliHFCorrFitSystematics::CheckSize(){
    Int_t size2 = fVecHistoMinVar.size();
    Int_t size3 = fVecHistoMaxVar.size();
     
+
    Int_t size4 =  fVecMinCorrelatedSyst.size();
    Int_t size5 =  fVecMaxCorrelatedSyst.size();
 
    Int_t size6 =  fVecLowEdgeDpt.size();
    Int_t size7 =  fVecUpEdgeDpt.size();
+
+   if(!fUseCorrelatedSystematics && fIsFittingTemplate){
+     if(size4<size1){
+       for(Int_t j=size4;j<size1;j++){
+	 fVecMinCorrelatedSyst.push_back(0.);
+       }
+       size4=size1;
+     }
+
+     if(size5<size1){
+       for(Int_t j=size5;j<size1;j++){
+	 fVecMaxCorrelatedSyst.push_back(0.);
+       }
+       size5=size1;
+     }
+   }
     
     
     if((size1 == size2) && (size1 == size3) && (size1 == size4) && (size1 == size5) && (size1 == size6) && (size1 == size7)){

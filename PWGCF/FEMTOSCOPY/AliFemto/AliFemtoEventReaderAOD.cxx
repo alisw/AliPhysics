@@ -375,6 +375,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(fEvent->GetTrack(i));
     assert(aodtrack && "Not a standard AOD");
     if (!aodtrack->TestFilterBit(fFilterBit)) {
+      // Skip TPC-only tracks
       if (aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
     }
@@ -419,9 +420,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
 
     // For TPC Only tracks we have to copy PID information from corresponding global tracks
-    AliAODTrack *aodtrackpid = ( fFilterBit == (1 << (7)) || fFilterMask == 128 )
-                             ? dynamic_cast<AliAODTrack *>(fEvent->GetTrack(labels[-1 - fEvent->GetTrack(i)->GetID()]))
-                             : dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
+    Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
+                       ? labels[-1 - fEvent->GetTrack(i)->GetID()]
+                       : i;
+    AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
     assert(aodtrackpid && "Not a standard AOD");
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);

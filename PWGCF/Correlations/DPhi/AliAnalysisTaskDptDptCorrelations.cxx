@@ -1,17 +1,11 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/*
+AnalysisTask: Momentum correlation 
+System:       p-Pb and Pb-Pb
+Authors:      P.Pujahari & C. Pruneau
+              Wayne State University 
+Dated:        March 15, 2013
+*/
+//================================
 #include "TChain.h"
 #include "TList.h"
 #include "TFile.h"
@@ -22,6 +16,7 @@
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include "TRandom.h"
+
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -36,6 +31,7 @@
 #include <TH2D.h>
 #include <TH3D.h>
 #include "AliAnalysisManager.h"
+
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliInputEventHandler.h"
@@ -45,8 +41,10 @@
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptCorrelations.h"
+
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
@@ -114,7 +112,7 @@ _mult4    ( 0 ),
 _mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
-arraySize ( 2500),
+arraySize ( 5000),
 _id_1(0),       
 _charge_1(0),    
 _iEtaPhi_1(0),    
@@ -378,8 +376,8 @@ _centralityMin        (  0.),
 _centralityMax        (  1.),
 _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
-_dcaZMin              ( -3), 
-_dcaZMax              (  3.), 
+_dcaZMin              ( -3.2), 
+_dcaZMax              (  3.2), 
 _dcaXYMin             ( -2.4), 
 _dcaXYMax             (  2.4),
 _dedxMin              ( 0),
@@ -882,7 +880,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   
   name = "eventAccounting";
   
-   _eventAccounting      = createHisto1D(name,name,10, -0.5, 9.5, "event Code", _title_counts);
+  _eventAccounting      = createHisto1D(name,name,10, -0.5, 9.5, "event Code", _title_counts);
   
   name = "m0"; _m0      = createHisto1D(name,name,_nBins_M1, _min_M1, _max_M1, _title_m0, _title_counts);
   name = "m1"; _m1      = createHisto1D(name,name,_nBins_M1, _min_M1, _max_M1, _title_m1, _title_counts);
@@ -901,10 +899,11 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
 
   // name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
-  
+    
+
   if (_singlesOnly)
     {
-    name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
+      name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
     name = n1Name+part_1_Name+vsZ+vsEtaPhi+vsPt; _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
 
     name = n1Name+part_2_Name+vsPt;              _n1_2_vsPt              = createHisto1F(name,name, _nBins_pt_2,  _min_pt_2,  _max_pt_2,   _title_pt_2,  _title_AvgN_2);
@@ -1019,7 +1018,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;
-  //int    nClus;
+  int    nClus;
   bool   bitOK;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -1071,30 +1070,25 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexY  = -999;
   float vertexZ  = -999;
   //float vertexXY = -999;
-  //float dcaZ     = -999;
-  //float dcaXY    = -999;
   float centrality = -999;
   
   if(fAODEvent)
     {
       //Centrality
-      AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
+      AliCentrality* centralityObject =  ((AliAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
       if (centralityObject)
 	{
-	  //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 6" << endl;
-	  
 	  v0Centr  = centralityObject->GetCentralityPercentile("V0M");
-	  v0ACentr  = centralityObject->GetCentralityPercentile("V0A");
+	  v0ACentr = centralityObject->GetCentralityPercentile("V0A");
 	  trkCentr = centralityObject->GetCentralityPercentile("TRK"); 
 	  spdCentr = centralityObject->GetCentralityPercentile("CL1");
-	  
 	}
       
       _nTracks  =fAODEvent->GetNumberOfTracks();//NEW Test
       
       _mult3    = _nTracks; 
       _mult4    = v0Centr;
-      _mult4a    = v0ACentr;
+      _mult4a   = v0ACentr;
       _mult5    = trkCentr;
       _mult6    = spdCentr;
       _field    = fAODEvent->GetMagneticField(); 
@@ -1111,50 +1105,34 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	case 6: centrality = _mult6; break;
 	case 7: centrality = _mult4a; break;
 	}
-      
-      
+            
       if ( centrality < _centralityMin ||  
 	   centrality > _centralityMax ||
-	   fabs(v0Centr-trkCentr)>5.0)         
+	   fabs(v0Centr-trkCentr)>5.0)
 	{
 	  return;
-	} //only for pPb centrality
-      
-      /* if ( centrality < _centralityMin ||  
-	 centrality > _centralityMax )       
-	 {
-	 return;
-	 }*/ //only for pPb centrality
-      
-
-      _eventAccounting->Fill(2);// count all events with right centrality
-      
-      // filter on z and xy vertex
-      vertex = (AliAODVertex*) fAODEvent->GetPrimaryVertex();
-      // Double_t V[2];
-      //vertex->GetXYZ(V);      
-
-      if(vertex)
-	{
-	  Double32_t fCov[6];
-	  vertex->GetCovarianceMatrix(fCov);
-	  if(vertex->GetNContributors() > 0)
-	    {
-	      if(fCov[5] != 0)
-		{
-		  vertexX = vertex->GetX();
-		  vertexY = vertex->GetY();
-		  vertexZ = vertex->GetZ();
-		  
-		  if(TMath::Abs(vertexZ) > 6) //10 regular //6 for syst.
-		    {
-		      return;
-		    } // Z-Vertex Cut  
-		}
-	    }
 	}
       
-      // _vertexZ->Fill(vertexZ);
+      _eventAccounting->Fill(2);// count all events with right centrality
+  
+      // filter on z and xy vertex
+      vertex = (AliAODVertex*) fAODEvent->GetPrimaryVertexSPD();
+      if (!vertex || vertex->GetNContributors()<1)
+	{
+	  vertexZ  = -999;
+	  //vertexXY = -999;
+	}
+      else
+	{
+	  vertexX = vertex->GetX();
+	  vertexY = vertex->GetY();
+	  vertexZ = vertex->GetZ();
+	  //vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
+	}
+      if (!vertex ||
+	  vertexZ  < _vertexZMin  ||
+	  vertexZ  > _vertexZMax )
+	return;
       
       iVertex = int((vertexZ-_min_vertexZ)/_width_vertexZ);
       iVertexP1 = iVertex*_nBins_etaPhiPt_1;
@@ -1209,22 +1187,12 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  pz     = t->Pz();
 	  eta    = t->Eta();
 	  dedx   = t->GetTPCsignal();
-	  //dcaXY = t->DCA(); 
-	  //dcaZ  = t->ZAtDCA();  
-	  //nClus  = t->GetTPCNcls();	  
+	  nClus  = t->GetTPCNcls();	  
 	  
-	  //if ( nClus<_nClusterMin ) continue;
-	  
-	  //_Ncluster1->Fill(nClus);
-	  
-	  /*
-	  //cuts on more than 0 shared cluster (suggested by Michael)
-	  if(t->GetTPCnclsS() > 0){
-	  continue;
-	  }*/
-	  
+	  if ( nClus<_nClusterMin ) continue;
+	  	  
 	  //for Global tracks
-	   Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
 	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
 	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
@@ -1242,32 +1210,22 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
-	  /* //checking for systematic error due to dca */
 	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
-	  
+
 	  Double_t DCAX = pos[0] - vertexX;
 	  Double_t DCAY = pos[1] - vertexY;
 	  Double_t DCAZ = pos[2] - vertexZ;
-	  
+	  	
 	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-	  
+ 	  
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
 	      DCAXY    >  _dcaXYMax ) continue; 
-	  //-------------------------------------
-
-	    //------- Eff. test---------- //just for checking
-	  //Double_t yy = (1 - 0.7)/1.8;
-	  //Double_t zz = (pt - 0.2);
-	  //Double_t effValue = 0.7 + yy*zz;
-	  //Double_t R = gRandom->Rndm();
-          //if(R > effValue) continue;
-	  //---------------------------	  
-	  
+	  	  	  
 	  //==== QA ===========================
-	  //_dcaz->Fill(DCAZ);
-	  //_dcaxy->Fill(DCAXY);
+	  _dcaz->Fill(DCAZ);
+	  _dcaxy->Fill(DCAXY);
 	  //_etadis->Fill(eta);
 	  //_phidis->Fill(phi);
 	  //===================================
@@ -1422,13 +1380,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   
   
   //cout << "Filling histograms now" << endl;
-  _m0->Fill(_mult0);
-  _m1->Fill(_mult1);
-  _m2->Fill(_mult2);
+  //_m0->Fill(_mult0);
+  //_m1->Fill(_mult1);
+  //_m2->Fill(_mult2);
   _m3->Fill(_mult3);
-  _m4->Fill(_mult4);
-  _m5->Fill(_mult5);
-  _m6->Fill(_mult6);
+  _m4->Fill(_mult4); //Pb-Pb
+  //_m4->Fill(_mult4a); //when run for p-Pb 
+  //_m5->Fill(_mult5);
+  //_m6->Fill(_mult6);
   _vertexZ->Fill(vertexZ);
   
   if (_singlesOnly)
@@ -1859,7 +1818,7 @@ TH2D * AliAnalysisTaskDptDptCorrelations::createHisto2D(const TString &  name, c
                                                       int nx, double xMin, double xMax, int ny, double yMin, double yMax, 
                                                       const TString &  xTitle, const TString &  yTitle, const TString &  zTitle)
 {
-  AliInfo(Form("createHisto 2D histo %s  nx: %d  xMin: %f10.4 xMax: %f10.4  ny: %d   yMin: %f10.4 yMax: %f10.4",name.Data(),nx,xMin,xMax,ny,yMin,yMax));
+  AliInfo(Form("createHisto 2D histo %s  nx: %d  xMin: %f xMax: %f  ny: %d   yMin: %f yMax: %f",name.Data(),nx,xMin,xMax,ny,yMin,yMax));
   TH2D * h = new TH2D(name,title,nx,xMin,xMax,ny,yMin,yMax);
   h->GetXaxis()->SetTitle(xTitle);
   h->GetYaxis()->SetTitle(yTitle);
@@ -1918,7 +1877,7 @@ TH2F * AliAnalysisTaskDptDptCorrelations::createHisto2F(const TString &  name, c
                                                         int nx, double xMin, double xMax, int ny, double yMin, double yMax, 
                                                         const TString &  xTitle, const TString &  yTitle, const TString &  zTitle)
 {
-  AliInfo(Form("createHisto 2D histo %s  nx: %d  xMin: %f10.4 xMax: %f10.4  ny: %d   yMin: %f10.4 yMax: %f10.4",name.Data(),nx,xMin,xMax,ny,yMin,yMax));
+  AliInfo(Form("createHisto 2D histo %s  nx: %d  xMin: %f xMax: %f  ny: %d   yMin: %f yMax: %f",name.Data(),nx,xMin,xMax,ny,yMin,yMax));
   TH2F * h = new TH2F(name,title,nx,xMin,xMax,ny,yMin,yMax);
   h->GetXaxis()->SetTitle(xTitle);
   h->GetYaxis()->SetTitle(yTitle);
@@ -1950,7 +1909,7 @@ TH3F * AliAnalysisTaskDptDptCorrelations::createHisto3F(const TString &  name, c
                                                       int nz, double zMin, double zMax, 
                                                       const TString &  xTitle, const TString &  yTitle, const TString &  zTitle)
 {
-  AliInfo(Form("createHisto 2D histo %s  nx: %d  xMin: %f10.4 xMax: %f10.4  ny: %d   yMin: %f10.4 yMax: %f10.4 nz: %d   zMin: %f10.4 zMax: %f10.4",name.Data(),nx,xMin,xMax,ny,yMin,yMax,nz,zMin,zMax));
+  AliInfo(Form("createHisto 2D histo %s  nx: %d  xMin: %f xMax: %f  ny: %d   yMin: %f yMax: %f nz: %d   zMin: %f zMax: %f",name.Data(),nx,xMin,xMax,ny,yMin,yMax,nz,zMin,zMax));
   TH3F * h = new TH3F(name,title,nx,xMin,xMax,ny,yMin,yMax,nz,zMin,zMax);
   h->GetXaxis()->SetTitle(xTitle);
   h->GetYaxis()->SetTitle(yTitle);
@@ -1965,7 +1924,7 @@ TProfile * AliAnalysisTaskDptDptCorrelations::createProfile(const TString & name
                                                             int nx,double xMin,double xMax,
                                                             const TString &  xTitle, const TString &  yTitle)
 {
-  AliInfo(Form("createHisto 1D profile %s   nBins: %d  xMin: %f10.4 xMax: %f10.4",name.Data(),nx,xMin,xMax));
+  AliInfo(Form("createHisto 1D profile %s   nBins: %d  xMin: %f xMax: %f",name.Data(),nx,xMin,xMax));
   TProfile * h = new TProfile(name,description,nx,xMin,xMax);
   h->GetXaxis()->SetTitle(xTitle);
   h->GetYaxis()->SetTitle(yTitle);

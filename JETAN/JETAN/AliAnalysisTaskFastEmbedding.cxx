@@ -68,8 +68,11 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fESD(0)
   ,fAODout(0)
   ,fAODevent(0)
+  ,fAODeventJets(0)
   ,fAODtree(0)
+  ,fAODtreeJets(0)
   ,fAODfile(0)
+  ,fAODfileJets(0)
   ,mcHeader(0)
   ,fFFRadius(0)
   ,fCutPostrackEta(0)
@@ -103,6 +106,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fAODPathArray(0)
   ,fAODEntriesArray(0)
   ,fAODPath("AliAOD.root")
+  ,fStrJetFriends("")
   ,fAODEntries(-1)
   ,fAODEntriesSum(0)
   ,fAODEntriesMax(0)
@@ -210,8 +214,11 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fESD(0)
 ,fAODout(0)
 ,fAODevent(0)
+,fAODeventJets(0)
 ,fAODtree(0)
+,fAODtreeJets(0)
 ,fAODfile(0)
+,fAODfileJets(0)
 ,mcHeader(0)
 ,fFFRadius(0)
 ,fCutPostrackEta(0)
@@ -245,6 +252,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fAODPathArray(0)
 ,fAODEntriesArray(0)
 ,fAODPath("AliAOD.root")
+,fStrJetFriends("")
 ,fAODEntries(-1)
 ,fAODEntriesSum(0)
 ,fAODEntriesMax(0)
@@ -352,8 +360,11 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fESD(copy.fESD)
 ,fAODout(copy.fAODout)
 ,fAODevent(copy.fAODevent)
+,fAODeventJets(copy.fAODeventJets)
 ,fAODtree(copy.fAODtree)
+,fAODtreeJets(copy.fAODtreeJets)
 ,fAODfile(copy.fAODfile)
+,fAODfileJets(copy.fAODfileJets)
 ,mcHeader(copy.mcHeader)
 ,fFFRadius(copy.fFFRadius)
 ,fCutPostrackEta(copy.fCutPostrackEta)
@@ -387,6 +398,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fAODPathArray(copy.fAODPathArray)
 ,fAODEntriesArray(copy.fAODEntriesArray)
 ,fAODPath(copy.fAODPath)
+,fStrJetFriends(copy.fStrJetFriends)
 ,fAODEntries(copy.fAODEntries)
 ,fAODEntriesSum(copy.fAODEntriesSum)
 ,fAODEntriesMax(copy.fAODEntriesMax)
@@ -498,8 +510,12 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fESD               = o.fESD;
       fAODout            = o.fAODout;
       fAODevent          = o.fAODevent;
+      fAODeventJets      = o.fAODeventJets;
       fAODtree           = o.fAODtree;
+      fAODtreeJets       = o.fAODtreeJets;
+      fStrJetFriends     = o.fStrJetFriends; 
       fAODfile           = o.fAODfile;
+      fAODfileJets       = o.fAODfileJets;
       mcHeader           = o.mcHeader;
       fFFRadius          = o.fFFRadius;
       fCutPostrackEta    = o.fCutPostrackEta;
@@ -533,6 +549,7 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fAODPathArray      = o.fAODPathArray;
       fAODEntriesArray   = o.fAODEntriesArray;
       fAODPath           = o.fAODPath;
+      fStrJetFriends     = o.fStrJetFriends; 
       fAODEntries        = o.fAODEntries;
       fAODEntriesSum     = o.fAODEntriesSum;
       fAODEntriesMax     = o.fAODEntriesMax;
@@ -1645,6 +1662,8 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
          // get next event
          fAODtree->GetEvent(fAODEntry);
+         if(fAODtreeJets) fAODtreeJets->GetEvent(fAODEntry);
+
 
          // get pt hard
          if(mcHeader){
@@ -2200,6 +2219,17 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial)
 
    cout<<" Embedding task open AOD file "<<fAODPath.Data()<<" ID "<<fFileId<<endl;
    
+   if(fStrJetFriends.Length()){
+     TString fAODPathJets = fAODPath; 
+     fAODPathJets.ReplaceAll("AliAOD.root",fStrJetFriends.Data()); 
+
+     if (fAODfileJets && fAODfileJets->IsOpen()) fAODfileJets->Close();
+     fAODfileJets = TFile::Open(fAODPathJets.Data(),"TIMEOUT=180");
+
+     cout<<" Embedding task open AOD jets file "<<fAODPathJets.Data()<<endl;
+   }
+   owd->cd();
+
    if(!fAODfile){
 
       fFileId = -1;
@@ -2219,9 +2249,18 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial)
    }
 
    fAODtree = (TTree*)fAODfile->Get("aodTree");
+   if(fAODfileJets) fAODtreeJets = (TTree*)fAODfileJets->Get("aodTree");
+
+
 
    if(!fAODtree){
       AliError("AOD tree not found.");
+      return -1;
+   }
+
+  
+   if(fStrJetFriends.Length() && !fAODtreeJets){
+      AliError("AOD tree jets not found.");
       return -1;
    }
 
@@ -2240,24 +2279,34 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial)
    fAODevent = new AliAODEvent();
    fAODevent->ReadFromTree(fAODtree);
 
+   delete fAODeventJets;
+   fAODeventJets = new AliAODEvent();
+   fAODeventJets->ReadFromTree(fAODtreeJets);
+
 
    // fetch header, jets, etc. from new file
    fNevents = fAODtree->GetEntries();
    mcHeader = (AliAODMCHeader*)fAODevent->FindListObject(AliAODMCHeader::StdBranchName());
-
-   if(fJetBranch.Length()) fAODJets = dynamic_cast<TClonesArray*>(fAODevent->FindListObject(fJetBranch.Data()));
+   
+   
+   if(fJetBranch.Length()){ 
+     fAODJets = dynamic_cast<TClonesArray*>(fAODevent->FindListObject(fJetBranch.Data()));
+     if(!fAODJets){
+       fAODJets = dynamic_cast<TClonesArray*>(fAODeventJets->FindListObject(fJetBranch.Data()));
+     }
+   }
    else                    fAODJets = fAODevent->GetJets();
    if(!fAODJets){
-      AliError("Could not find jets in AOD. Check jet branch when indicated.");
+     AliError("Could not find jets in AOD. Check jet branch when indicated.");
       return -1;
    }
-
+   
    TFile *curfile = fAODtree->GetCurrentFile();
    if (!curfile) {
-      AliError("No current file.");
-      return -1;
+     AliError("No current file.");
+     return -1;
    }
-
+   
    Float_t trials = 1.;
    Float_t xsec = 0.;
    PythiaInfoFromFile(curfile->GetName(),xsec,trials);

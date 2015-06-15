@@ -445,9 +445,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     //fHistograms->Add(fHistNLMAfterQA);
 
 	if(fExtendedMatchAndQA > 1){
-		fHistClusterEM02BeforeQA = new TH2F(Form("EVsM02_beforeClusterQA %s",GetCutNumber().Data()),"EVsM02_beforeClusterQA",300,0,30,400,0,5);
+		fHistClusterEM02BeforeQA = new TH2F(Form("EVsM02_beforeClusterQA %s",GetCutNumber().Data()),"EVsM02_beforeClusterQA",500,0,50,400,0,5);
 		fHistExtQA->Add(fHistClusterEM02BeforeQA);
-		fHistClusterEM02AfterQA = new TH2F(Form("EVsM02_afterClusterQA %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",300,0,30,400,0,5);
+		fHistClusterEM02AfterQA = new TH2F(Form("EVsM02_afterClusterQA %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",500,0,50,400,0,5);
 		fHistExtQA->Add(fHistClusterEM02AfterQA);
 
 		if( GetClusterType() == 1 ){ //EMCAL
@@ -591,7 +591,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
 //________________________________________________________________________
 // This function selects the clusters based on their quality criteria
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, Bool_t isMC)
+Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, Int_t isMC)
 {   // Specific Photon Cuts
     if(event){} // suppress warning
 
@@ -644,7 +644,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	
 	// Check wether timing is ok
 	if (fUseTimeDiff){
-		if(abs(cluster->GetTOF()) > fMaxTimeDiff && !isMC){
+		if(abs(cluster->GetTOF()) > fMaxTimeDiff && !(isMC>0)){
 			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //1
 			return kFALSE;
 		}
@@ -869,7 +869,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 }
 
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * event, Bool_t isMC)
+Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * event, Int_t isMC)
 {
 	//Selection of Reconstructed photon clusters with Calorimeters
 
@@ -1453,10 +1453,6 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
 		if( !fUsePhiCut ) fUsePhiCut=1;
 		fMinPhiCut = 4.54;  //PHOS acceptance
 		break;
-		
-	  
-		
-		
 	default:
 		AliError(Form("MinPhi Cut not defined %d",minPhi));
 		return kFALSE;

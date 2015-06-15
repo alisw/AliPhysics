@@ -27,8 +27,10 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliVEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliESDpid.h"
 #include "AliTOFcalib.h"
 #include "AliCDBManager.h"
@@ -37,6 +39,8 @@
 #include "AliTOFT0maker.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
+#include "AliAODCaloCluster.h"
+#include "AliAODCaloCells.h"
 #include "AliEMCALGeometry.h"
 
 #include "AliAnalysisTaskEMCALTimeCalib.h"
@@ -45,16 +49,19 @@
 ClassImp(AliAnalysisTaskEMCALTimeCalib) ;
 /// \endcond
 
+using std::cout;
+using std::endl;
+
 //________________________________________________________________________
 /// Constructor
 AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
 : AliAnalysisTaskSE(name),
-  fESD(0),
+  fEvent(0),
   fRunNumber(-1),
   fTOFmaker(0),
   fOutputList(0x0),
   fgeom(0),
-
+  fGeometryName(),
   fMinClusterEnergy(0),
   fMaxClusterEnergy(0),
   fMinNcells(0),
@@ -135,7 +142,6 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
   //(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
   AliDebug(1,"*** the code version is: AliAnalysisTaskEMCALTimeCalib ***");
-  //  printf("*** the code version is: AliAnalysisTaskEMCALTimeCalib ***\n");
   //TFile *myFile = TFile::Open("RefLHC13bcCorrected.root");
   //TFile *myFile = TFile::Open("Reference.root");
   
@@ -158,8 +164,6 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
     AliDebug(1,Form("hAllAverage entries %d", (Int_t)fhAllAverageBC[0]->GetEntries() ));
     AliDebug(1,Form("hAllAverage entries2 %d",(Int_t)fhAllAverageBC[2]->GetEntries() ));
     
-    //cout << " hAllAverage entries " << fhAllAverageBC[0]->GetEntries() << endl;
-    //cout << " hAllAverage entries2 " << fhAllAverageBC[2]->GetEntries() << endl;
   }
 } // End of AliAnalysisTaskTimeTaskMB2::Init()
 
@@ -169,42 +173,42 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
 Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
 {
   AliDebug(1,"AnalysisTaskEMCalGeom::Notify()");
-  //  Printf("AnalysisTaskEMCalGeom::Notify()\n");
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
     AliFatal("ERROR: Could not read chain from input slot 0");
-    //    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
+  } else if(TString(tree->GetName()).Contains("esdTree")) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (!esdH) {
       AliFatal("ERROR: Could not get ESDInputHandler");
-      //      Printf("ERROR: Could not get ESDInputHandler");
     } else {
-      fESD = esdH->GetEvent();
-      if (!fESD) AliFatal("ERROR: fESD not set"); //printf("ERROR: fESD not set\n");
-      else AliDebug(1,"Good, fESD set");//printf("Good, fESD set\n");
+      fEvent = dynamic_cast<AliESDEvent*> (esdH->GetEvent());
     }
+  } else if(TString(tree->GetName()).Contains("aodTree")) {
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!aodH) {
+      AliFatal("ERROR: Could not get AODInputHandler");
+    } else {
+      fEvent = dynamic_cast<AliAODEvent*> (aodH->GetEvent());
+    }
+  } else {
+    AliFatal("FATAL:  Only ESD or AOD. You have used other tree.");
   }
- 
+
+  if (!fEvent) AliFatal("ERROR: fEvent not set");
+  else AliDebug(1,"Good, fEvent set");
+
 //   // connect ref run here
 //   TH2F *hAllAverage = (TH2F*)hAllAverage;
 //   cout << " hAllAverage entries " << hAllAverage->GetEntries() << endl;
 
   // Init EMCAL geometry 
-  //fESD = esdH->GetEvent();
-  //fESD->ReadFromTree(esdTree);
   Bool_t ok = SetEMCalGeometry();
-  if(ok) 
-  {
+  if(ok) {
     AliDebug(1,"EMCal geometry properly set...");
-    //    Printf("EMCal geometry properly set..."); 
     return kTRUE;
-  } 
-  else 
-  {
+  } else {
     AliDebug(1,"Make sure the EMCal geometry is set properly !");
-    //    Printf("Make sure the EMCal geometry is set properly !"); 
     return kFALSE;
   }
 }
@@ -213,27 +217,23 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
 /// Set the EMCal Geometry
 Bool_t AliAnalysisTaskEMCALTimeCalib::SetEMCalGeometry()
 {
-  //fESD = esdH->GetEvent();
   AliDebug(1,"Read and set MisalMatrix");
-  //Printf("Read and set MisalMatrix \n");
   
-  if (!fESD) 
+  if (!fEvent) 
   {
-    AliDebug(1,"ERROR: fESD not available");
-    //printf("ERROR: fESD not available\n");
+    AliDebug(1,"ERROR: fEvent not available");
     return kFALSE;
   }
   
   // Define EMCAL geometry to be able to read ESDs
   // fgeom = new AliEMCALGeoUtils("EMCAL_COMPLETEv1","EMCAL");
   // fgeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMv1","EMCAL");
-  fgeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL");
-  AliDebug(1,"fgeom defined");
-  //  Printf("fgeom defined \n");
+  // fgeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL");
+  fgeom = new AliEMCALGeometry(fGeometryName.Data(),"EMCAL");
+  AliDebug(1,Form("Geometry defined as %s",fGeometryName.Data()));
   
-  fRunNumber = fESD->GetRunNumber();
+  fRunNumber = fEvent->GetRunNumber();
   AliDebug(1,Form("RunNumber %d", fRunNumber));
-  //  Printf("RunNumber %d \n",fRunNumber);
     
   return kTRUE;
 }
@@ -242,6 +242,7 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::SetEMCalGeometry()
 /// Get T0 time from TOF
 void AliAnalysisTaskEMCALTimeCalib::PrepareTOFT0maker()
 {
+  //method under development
   AliInfo(Form("<D> -- Run # = %d", fRunNumber));
   AliInfo("prepare TOFT0maker!!");
   
@@ -426,38 +427,46 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 /// Main loop executed for each event
 void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 {
-  AliVEvent* event = InputEvent();
-  
-  //  cout<<"T0TOF "<<event->GetT0TOF()<<endl;//bad idea
-  //cout<< event->GetEventNumberInFile()<<endl;
-  //cout<<  event->GetTOFHeader()->GetDefaultEventTimeVal()<<endl;
-  
-  //Remove next lines when AODs ready
-  fESD = dynamic_cast<AliESDEvent*>(event);
-  if (!fESD) {
-    AliError("Work only with ESDs, ESD not available, exit");
-    fhEventType->Fill(0.5);
-    return;
-  }
   // Called for each event
+
+  // Check whether ESD or AOD
+  if(AODEvent()!=0) {
+    fEvent = dynamic_cast<AliAODEvent*>(AODEvent());
+    if (!fEvent) {
+      AliError("AOD not available, exit");
+      fhEventType->Fill(1.5);
+      return;
+    }
+  } else {
+    AliVEvent* event = InputEvent();
+    //cout<<"T0TOF "<<event->GetT0TOF()<<endl;//bad idea
+    //cout<< event->GetEventNumberInFile()<<endl;
+    //cout<< event->GetTOFHeader()->GetDefaultEventTimeVal()<<endl;
+    fEvent = dynamic_cast<AliESDEvent*>(event);
+    if (!fEvent) {
+      AliError("ESD not available, exit");
+      fhEventType->Fill(0.5);
+      return;
+    }
+  }
   
-  if(fESD->IsPileupFromSPD(3,0.8,3.,2.,5.)){
-    //		printf("Event: PileUp skip \n");
-    fhEventType->Fill(1.5);
+  if(fEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+    AliDebug(1,"Event: PileUp skip.");
+    fhEventType->Fill(2.5);
     return;
   }	
 
-  TString triggerclasses = fESD->GetFiredTriggerClasses();
+  TString triggerclasses = fEvent->GetFiredTriggerClasses();
   if(triggerclasses=="") {
-    fhEventType->Fill(2.5);
+    fhEventType->Fill(3.5);
     return;
   }
 
   Int_t eventType = ((AliVHeader*)InputEvent()->GetHeader())->GetEventType();
   // physics events eventType=7, select only those
-  // cout << "triggerclasses  " << triggerclasses<< " eventType "<< eventType;
+  AliDebug(1,Form("Triggerclasses %s, eventType %d",triggerclasses.Data(),eventType));
   if(eventType != 7) {
-    fhEventType->Fill(3.5);
+    fhEventType->Fill(4.5);
     return;
   }
   
@@ -496,23 +505,23 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
      triggerclasses.Contains("CEMC8EJE") ||
      triggerclasses.Contains("CPBI2EJE")                 )   bL1J = kTRUE;
   
-  if( bL1G || bL1J ||  bL0 ){ fhEventType->Fill(4.5);}
-  if( bMB ){ fhEventType->Fill(5.5);}
+  if( bL1G || bL1J ||  bL0 ){ fhEventType->Fill(5.5);}
+  if( bMB ){ fhEventType->Fill(6.5);}
 
 
   //  if(bL1G || bL1J ||  bL0){
 
   // Prepare TOFT0 maker at the beginning of a run
-  if (fESD->GetRunNumber() != fRunNumber)
+  if (fEvent->GetRunNumber() != fRunNumber)
   {
-      fRunNumber = fESD->GetRunNumber();
-      	//	PrepareTOFT0maker();
-        //  	cout<<"tofT0maker per run"<<fRunNumber<<endl;
+    fRunNumber = fEvent->GetRunNumber();
+    //	PrepareTOFT0maker();
+    //  	cout<<"tofT0maker per run"<<fRunNumber<<endl;
   }// fi Check if run number has changed
   
   // --- Use of AliTOFT0maker
   //Double_t *calcolot;//=0.0;
-  //  calcolot = fTOFmaker->ComputeT0TOF(fESD);
+  //  calcolot = fTOFmaker->ComputeT0TOF(fEvent);
 
   Double_t calcolot0=0.0;
   //calcolot0=calcolot[0];
@@ -527,16 +536,16 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   fhcalcEvtTime->Fill(calcolot0);
   
   TRefArray* caloClusters = new TRefArray();
-  fESD->GetEMCALClusters(caloClusters);
-  //           	cout << " ###########Bunch Cross nb  = " << fESD->GetBunchCrossNumber() << endl;
+  fEvent->GetEMCALClusters(caloClusters);
+  //           	cout << " ###########Bunch Cross nb  = " << fEvent->GetBunchCrossNumber() << endl;
   
-  Int_t BunchCrossNumber =fESD->GetBunchCrossNumber(); 
+  Int_t BunchCrossNumber =fEvent->GetBunchCrossNumber(); 
   
   Float_t offset=0;
   
   Int_t nBC = 0;
   nBC = BunchCrossNumber%4;
-  //Int_t nTriggerMask =fESD->GetTriggerMask();
+  //Int_t nTriggerMask =fEvent->GetTriggerMask();
   //	cout << " nBC " << nBC << " nTriggerMask " << nTriggerMask<< endl;
   Float_t timeBCoffset = 0.; //manual offest
   //	if( nBC%4 ==0 || nBC%4==1) timeBCoffset = 100.; // correction was for LHC11 when BC was not corrected
@@ -544,15 +553,15 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   Int_t nclus = caloClusters->GetEntries();
   AliDebug(1,Form("###########Bunch Cross nb = %d nclus = %d",nBC,nclus ));
   //cout << " ###########Bunch Cross nb  = " << nBC <<" nclus= "<< nclus<< endl;
-  //Int_t ntracks = fESD-> GetNumberOfTracks() ; 
+  //Int_t ntracks = fEvent-> GetNumberOfTracks() ; 
   
   for (Int_t icl = 0; icl < nclus; icl++) {
+    //ESD and AOD CaloCells carries the same information
     AliESDCaloCluster* clus = (AliESDCaloCluster*)caloClusters->At(icl);
     if(!AcceptCluster(clus)) continue;
   
-    AliESDCaloCells &cells= *(fESD->GetEMCALCells());
-    //Int_t nCells = clus->GetNCells();
-    //cout<<"nCells="<<nCells<<endl;
+    AliESDCaloCells &cells= *(dynamic_cast<AliESDCaloCells*>(fEvent->GetEMCALCells()));
+    //cout<<"nCells="<< clus->GetNCells();<<endl;
    
     UShort_t * index = clus->GetCellsAbsId() ;
     
@@ -653,14 +662,17 @@ void AliAnalysisTaskEMCALTimeCalib::Terminate(Option_t *)
 
 //________________________________________________________________________
 /// Selection criteria of good cluster are set here
-Bool_t AliAnalysisTaskEMCALTimeCalib::AcceptCluster(AliESDCaloCluster* clus)
+Bool_t AliAnalysisTaskEMCALTimeCalib::AcceptCluster(AliVCluster* clus)
 {
   //fix with noisy EMCAL fee card
   Int_t nCells = clus->GetNCells();
   
   if(clus->IsEMCAL())
   {    
-    if ((clus->E() > fMaxClusterEnergy && nCells > fMaxNcells ) || nCells > fMaxNcells)  return kFALSE;
+    if ((clus->E() > fMaxClusterEnergy && nCells > fMaxNcells ) || nCells > fMaxNcells){
+      AliDebug(1,"very big cluster with enormous energy - cluster rejected");
+      return kFALSE;
+    }
   }
   
   // remove other than photonlike
@@ -738,6 +750,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMaxRtrack=0.025;
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="Reference.root";
+  fGeometryName="EMCAL_COMPLETE12SMV1_DCAL_8SM";
 }
 
 //________________________________________________________________________
@@ -749,14 +762,14 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 {
   TFile *file =new TFile(inputFile.Data());
   if(file==0x0) {
-    cout<<"Input file does not exist!"<<endl;
+    AliWarning("Input file does not exist!");
     return;
   }
 
   TList *list=(TList*)file->Get("chistolist");
   if(list==0x0) 
   {
-    AliWarning("List chistolist does not exist ion file!");
+    AliWarning("List chistolist does not exist in file!");
     return;
   }
 
@@ -794,7 +807,7 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
     hAllTimeRMSLGBC[i]=new TH1F(Form("hAllTimeRMSLGBC%d",i),Form("hAllTimeRMSLGBC%d",i),h6[i]->GetNbinsX(),h6[i]->GetXaxis()->GetXmin(),h6[i]->GetXaxis()->GetXmax());
   }
   
-  //cout<<"Histograms booked."<<endl;
+  AliWarning("Histograms booked.");
 
   for(Int_t i=0;i<4;i++){
     for(Int_t j=1;j<=h1[i]->GetNbinsX();j++){
@@ -817,8 +830,8 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 
     }
   }
-  
-  //cout<<"Average and rms calculated"<<endl;
+
+  AliWarning("Average and rms calculated.");
   TFile *fileNew=new TFile(outputFile.Data(),"recreate");
   for(Int_t i=0;i<4;i++){
     hAllTimeAvBC[i]->Write();
@@ -826,13 +839,14 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
     hAllTimeAvLGBC[i]->Write();
     hAllTimeRMSLGBC[i]->Write();
   }
-  
-  //cout<<"Histograms saved in "<<outputFile.Data()<<" file."<<endl;
+
+  AliWarning(Form("Histograms saved in %s file.",outputFile.Data()));
 
   fileNew->Close();
   delete fileNew;
   file->Close();
   delete file;
-  //cout<<"Pointers deleted. Memory cleaned."<<endl;
+
+  AliWarning("Pointers deleted. Memory cleaned.");
 
 }
