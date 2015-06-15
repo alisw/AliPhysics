@@ -11,10 +11,11 @@
  **************************************************************************/
 
 // Root 
-#include "TRefArray.h"
-#include "TList.h"
-#include "TH1F.h"
+#include <TRefArray.h>
+#include <TList.h>
+#include <TH1F.h>
 #include <TGeoManager.h>
+#include <TFile.h>
 
 // AliRoot
 #include "AliAnalysisTaskEMCALPi0CalibSelection.h"
@@ -30,7 +31,7 @@
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelection) ;
 /// \endcond
 
-//______________________________________________________________________________________________
+///
 /// Default constructor. Arrays initialization is done here.
 //______________________________________________________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
@@ -39,7 +40,8 @@ fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(new AliEMCALRecoUtils), 
-fOADBFilePath(""),        fCorrectClusters(kFALSE),  fRecalPosition(kTRUE),
+fOADBFilePath(""),        fCalibFilePath(""),
+fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 fCuts(0x0),               fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
@@ -124,7 +126,7 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
   DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
-//_____________________________________________________________________________
+///
 /// Destructor.
 //_____________________________________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelection::~AliAnalysisTaskEMCALPi0CalibSelection()
@@ -140,7 +142,7 @@ AliAnalysisTaskEMCALPi0CalibSelection::~AliAnalysisTaskEMCALPi0CalibSelection()
   if(fNMaskCellColumns) delete [] fMaskCellColumns;
 }
 
-//____________________________________________________________
+///
 /// Loop over EMCAL clusters and recalibrate and recalculate
 /// energy, time and position.
 //____________________________________________________________
@@ -206,7 +208,7 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
   } // cluster loop
 }
 
-//__________________________________________________________
+///
 /// Fill the invariant mass analysis per channel with the
 /// corrected clusters, and other general histograms.
 //__________________________________________________________
@@ -500,7 +502,32 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
   } // end of loop over EMCAL clusters
 }
 
-//________________________________________________________________
+
+///
+/// Recover energy calibration factors from file to be provided by the user
+/// via the string fCalibFilePath and pass it to fRecoUtils.
+/// Do it only once
+//______________________________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelection::InitEnergyCalibrationFactors()
+{
+  if ( !fRecoUtils->IsRecalibrationOn() || fCalibFilePath == "" ) return ;
+  
+  TFile * calibFactorsFile = TFile::Open(fCalibFilePath);
+  
+  if ( !calibFactorsFile ) AliFatal("Cannot recover the calibration factors");
+  
+  for(Int_t ism = 0; ism < fEMCALGeo->GetNumberOfSuperModules(); ism++)
+  {
+    TH2F * histo = (TH2F*) calibFactorsFile->Get(Form("EMCALRecalFactors_SM%d",ism));
+    
+    if ( histo ) 
+      fRecoUtils->SetEMCALChannelRecalibrationFactors(ism,histo);
+    else  
+      AliWarning(Form("Null histogram with calibration factors for SM%d, 1 will be used for the full SM!",ism));
+  }
+}
+
+///
 /// Init geometry and set the geometry matrix, for the first event, skip the rest.
 /// Also set once the run dependent calibrations.
 //________________________________________________________________
@@ -565,8 +592,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
   }// Load matrices from Data
 }
 
-//______________________________________________________________________
-/// Apply run dependent calibration correction.
+///
+/// Recover the run dependent calibration correction and pass it to fRecoUtils.
+/// Do it only once.
 //______________________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
 {
@@ -642,7 +670,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
   else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
 }
 
-//___________________________________________________________________
+
+///
 /// Create output container, init geometry.
 //___________________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
@@ -883,7 +912,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   PostData(2, fCuts);
 }
 
-//______________________________________________________________________________________________________
+///
 /// Check if cell is in one of the regions where we have significant amount of material in front of EMCAL.
 /// \return True if this cell is in one problematic region
 /// \param iSM: supermodule number of the cell.
@@ -905,7 +934,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::MaskFrameCluster(Int_t iSM, Int_t 
   return kFALSE;
 }
 
-//__________________________________________________________________________
+///
 /// Main method, do the analysis per event:
 /// * first, select the events;
 /// * then, correct the clusters if needed;
@@ -961,12 +990,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   
   fhNEvents->Fill(0); //Count the events to be analyzed
 
-  // Acccess once the geometry matrix and temperature corrections
-  if(fhNEvents->GetEntries()==1) 
+  // Acccess once the geometry matrix and temperature corrections and calibration coefficients
+  if(fhNEvents->GetEntries() == 1) 
   {
     InitGeometryMatrices();
 
     InitTemperatureCorrections();
+
+    InitEnergyCalibrationFactors();
   }
   
   //Get the list of clusters and cells
@@ -988,7 +1019,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   PostData(1,fOutputContainer);
 }
 
-//_____________________________________________________
+///
 /// Print settings.
 //_____________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo()
@@ -1004,13 +1035,16 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo()
   
   printf("Switchs:\n \t Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, and their position? %d \n \t Mass per channel same SM clusters? %d\n",
          fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
+
+  printf("OADB path        : %s\n",fOADBFilePath .Data());
+  printf("Calibration path : %s\n",fCalibFilePath.Data());
   
   printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
 
   if(fLoadMatrices) { for(Int_t ism = 0; ism < AliEMCALGeoParams::fgkEMCALModules; ism++) if(fMatrix[ism]) fMatrix[ism]->Print() ; }
 }
 
-//_____________________________________________________________________
+///
 /// Set the total number of columns to be masked in the analysis
 /// \param n: number of columns
 //_____________________________________________________________________
@@ -1026,7 +1060,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::SetNMaskCellColumns(Int_t n)
     fNMaskCellColumns = n ;
 }
 
-//___________________________________________________________________________________
+///
 /// Define which column must be masked and its position in the array of columns
 /// \param ipos: position in the list of columns.
 /// \param icol: column to be masked in EMCal mapping coordinate.
@@ -1038,7 +1072,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::SetMaskCellColumn(Int_t ipos, Int_t 
 }
 
 
-//______________________________________________________________
+///
 /// Create cuts/param objects and publish to slot
 //______________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::Terminate(Option_t*)
