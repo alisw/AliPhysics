@@ -216,8 +216,9 @@ int main(int argc, char **argv) {
 	   AliADRawStream* rawStream  = new AliADRawStream(rawReader); 
 	   if (rawStream->Next()) {
 	   
-	   Float_t adc[16], time[16]; 	
+	   Float_t adc[16], time[16];	
            for(Int_t iChannel=0; iChannel<16; iChannel++) {
+	   	adc[iChannel] = 0.0;
 	   	time[iChannel] = rawStream->GetTime(iChannel);
 	   	Float_t maxadc = 0;
       		Int_t imax = -1;
@@ -279,7 +280,7 @@ int main(int argc, char **argv) {
 
   for(Int_t i=0; i<16; i++){
 	TString MeanTimeVsChargeName = "hMeanTimeVsCharge";
-	MeanTimeVsChargeName += i;
+	MeanTimeVsChargeName += kOfflineChannel[i];
 	hMeanTimeVsCharge[i] = new TH1F(MeanTimeVsChargeName.Data(),MeanTimeVsChargeName.Data(),kNBinsCharge,-4,0);
 	hMeanTimeVsCharge[i]->GetXaxis()->SetTitle("Log10(1/charge) [ADC counts]");
 	hMeanTimeVsCharge[i]->GetYaxis()->SetTitle("Mean leading time [TDC counts]");
