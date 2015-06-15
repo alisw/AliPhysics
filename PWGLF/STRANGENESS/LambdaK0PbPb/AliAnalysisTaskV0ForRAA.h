@@ -114,8 +114,7 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   void SetDCAXLambda(Double_t dcaXL)                          {fDCAXL = dcaXL; Printf("AliAnalysisTaskV0ForRAA::SetDCAXLambda %2.3f",dcaXL);}
   void SetDCAYLambda(Double_t dcaYL)                          {fDCAXL = dcaYL; Printf("AliAnalysisTaskV0ForRAA::SetDCAYLambda %2.3f",dcaYL);}
   void SetDCAZ(Double_t dcaZ)                                 {fDCAZ  = dcaZ;  Printf("AliAnalysisTaskV0ForRAA::SetDCAZ %2.3f",dcaZ);}
-  void SetChi2CutKf(Bool_t chi2){ fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %i",chi2);}
-  //Double_t chi2)                            {fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %3.2f",chi2);}
+  void SetChi2CutKf(Double_t chi2)                            {fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %3.2f",chi2);}
   void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut = alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
   void SetArmenterosCutQt(Double_t ptmin,Double_t ptmax,Bool_t k0s,Bool_t la,Double_t slope=0.2,Double_t qtLinear=0.0){fQtCutPt = ptmax;fQtCutPtLow = ptmin, fArmQtSlope = slope,fArmCutK0 = k0s;fArmCutL = la;fQtCut = qtLinear;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut ptmin = %3.2f ptmax = %3.2f. slope: %1.2f.  Is K0s? %i La? %i, qt linear: %3.2f",ptmin,ptmax,slope,k0s,la,qtLinear);}
   void SetMinMassDiffLK0s(Double_t diffK,Double_t diffL)      {fExcludeLambdaFromK0s = diffK;fExcludeK0sFromLambda = diffL; Printf("AliAnalysisTaskV0ForRAA::SetMaxMassDifferenceLK0s for K0s %1.3f  K0s for L %1.3f",diffK,diffL);}
@@ -579,8 +578,8 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fCtauPtCutL;               // pt max for ctau cut usage for Lambda
 
   //KF particle chi cut
-  //   Double_t  fChiCutKf;            //cut value of chi2 of AliKFParticle
-  Bool_t    fChiCutKf;                 //cut value of chi2 of AliKFParticle
+  Double_t  fChiCutKf;            //cut value of chi2 of AliKFParticle
+    // Bool_t    fChiCutKf;                 //cut value of chi2 of AliKFParticle
 
   Double_t  fK0sLowMassCut;            //lower cut on K0s mass
   Double_t  fK0sHighMassCut;           //higher cut on K0s mass
