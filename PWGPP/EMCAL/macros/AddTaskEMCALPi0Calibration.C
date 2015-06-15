@@ -5,40 +5,27 @@
 /// histograms for each of the EMCal channels. It has to be executed in several iterations.
 ///
 /// The parameters for the analysis are:
-/// \param arrayName: TString name of new cluster branch.
-/// \param bFillAOD: Bool, keep the new clusters in output file.
-/// \param bMC: Bool, simulation or data.
-/// \param exotic: Bool, remove exotic clusters.
-/// \param name: TString, name of clusterizer: V1, V2, V1Unfold, NxN.
-/// \param trigger: TString, name of triggered events to be analyzed.
-/// \param tm: Bool, perform track matching recalculation.
-/// \param minEcell: float, minimum cell energy entering the cluster.
-/// \param minEseed: float, minimum cell energy seed of the cluster
-/// \param maxDeltaT: float, maximum difference in time of cells in cluster, keep it rather open.
-/// \param timeWindow: float, maximum/minimum time of the clusters/cells, after time recalibration.
-/// \param minEUnf: minimum energy cut for unfolding (check what it does)
-/// \param minFrac: minimum fraction of energy cut for unfolding (check what it does)
-/// \param bRecalE: Bool, recalibrate EMCal energy
-/// \param bBad: Bool, remove bad channels
-/// \param bRecalT: Bool, recalibrate EMCal time
-/// \param bNonLine: Bool, correct cluster non linearity
-/// \param minCen: Integer, minimum centrality, -1 no selection
-/// \param maxCen: Integer, maximum centrality, -1 no selection
-/// \param clusterEnergyCutEvent: Float, in case of event filtering, select events with at least one EMCal cluster with this energy
-/// \param nRowDiff: Integer, number of rows for NxM clusterizer
-/// \param nColDiff: Integer, number of collumns for NxM clusterizer
-/// \param skipOrReject: Bool, for unfolding (check)
+/// \param calibPath : TString with full path and name of file with calibration factors from previous iteration.
+/// \param trigger   : TString, event that triggered must contain this string.
+/// \param recalE    : Bool, recalibrate EMCal energy
+/// \param recalT    : Bool, recalibrate EMCal time
+/// \param rmBad     : Bool, remove bad channels
+/// \param nonLin    : Bool, correct cluster non linearity
+/// \param simu      : Bool, simulation or data.
+/// \param outputFile: TString with name of output file (AnalysisResults.root).
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outputFile = "", // AnalysisResults.root
-                                                                   TString trigger ="CEMC7",
-                                                                   Bool_t recalE = kFALSE, 
-                                                                   Bool_t recalT = kFALSE,
-                                                                   Bool_t rmBad  = kFALSE,
-                                                                   Bool_t nonlin = kTRUE,
-                                                                   Bool_t simu   = kFALSE)
+AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calibPath = "", // "alienpath/RecalibrationFactors.root"
+                                                                   TString trigger   ="CEMC7",
+                                                                   Bool_t  recalE    = kFALSE, 
+                                                                   Bool_t  recalT    = kFALSE,
+                                                                   Bool_t  rmBad     = kFALSE,
+                                                                   Bool_t  nonlin    = kTRUE,
+                                                                   Bool_t  simu      = kFALSE,
+                                                                   TString outputFile = "") // AnalysisResults.root
+
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -114,17 +101,29 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   
   
   //---------------------
-  // Recalibration
+  // Pass recalibration factors
+  // Do it here or inside the task
   //---------------------
   
-  if(recalE)
+  pi0calib->SetCalibrationFilePath(calibPath); 
+  
+  if(recalE && calibPath == "")
   {
-    TFile * f = new TFile("RecalibrationFactors.root","read");
+    printf("Get the calibration file from AddTask!!!\n");
+    
+    TFile * calibFile = TFile::Open("RecalibrationFactors.root");
+    if(!calibFile)
+    {
+      printf("File %d not found!\n",calibPath.Data());
+      return;
+    }
+    
     for(Int_t ism = 0; ism < 20; ism++)
     {
-      TH2F * h = (TH2F*)f->Get("EMCALRecalFactors_SM0");
+      TH2F * h = (TH2F*)calibFile->Get(Form("EMCALRecalFactors_SM%d",ism));
+      
       if(h) reco->SetEMCALChannelRecalibrationFactors(ism,h);
-      else  AliWarning(Form("Null hisogram with calibration factors for SM%d",ism));
+      else  printf("Null histogram with calibration factors for SM%d, 1 will be used in the full SM\n",ism);
     }
   }
   
