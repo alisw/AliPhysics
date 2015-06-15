@@ -2037,9 +2037,11 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	Bool_t ecsSuccess = entry->GetECSSuccess();
 	TString runType = entry->GetRunType();
 	TString tmpdaqstartTime = entry->GetRunParameter("DAQ_time_start");
+	TString tmpdaqendTime   = entry->GetRunParameter("DAQ_time_end");
 	TString recordingFlagString = entry->GetRunParameter("GDCmStreamRecording");
 	UInt_t recordingFlag = recordingFlagString.Atoi();
 	UInt_t daqstartTime = tmpdaqstartTime.Atoi();
+	UInt_t daqendTime = tmpdaqendTime.Atoi();
 	
 	UInt_t now = time(0);
 	Int_t dcsDelay = fConfig->GetDCSDelay()+fConfig->GetDCSQueryOffset();
@@ -2047,7 +2049,7 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	Bool_t skip = kFALSE;
 				
 	// runs are processed if
-	//   a) runType is PHYSICS and ecsSuccess is set
+	//   a) runType is PHYSICS and ecsSuccess is set and duration is longer than 5 minutes
 	//   b) runType is not PHYSICS and (ecsSuccess is set or DAQ_time_start is non-0)
 	// effectively this means that all runs are processed that started properly (ecsSucess behaviour is different for PHYSICS and non-PHYSICS runs (check with ECS!)
 	if (startTime != 0 && endTime != 0) {
@@ -2062,7 +2064,12 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 				else {
 					if (runType == "PHYSICS") {
 						if (ecsSuccess) {
+						    if(daqendTime - daqstartTime >= 300) {
 							return entry;
+						    } else { // don't process runs shorter than 5 minutes, they could not be calibrated anyway
+							Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is PHYSICS but it lasts less than 5 minutes - Skipping!", run));
+							skip = kTRUE;
+						    }
 						} else {
 							Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is PHYSICS but ECS success flag not set (Reason = %s) - Skipping!", run, entry->GetRunParameter("eor_reason")));
 							skip = kTRUE;
