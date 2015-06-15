@@ -67,13 +67,16 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   pi0calib->SetClusterMinEnergy(0.3);
   pi0calib->SetClusterMaxEnergy(10.);
   pi0calib->SetClusterLambda0Cuts(0.1,0.5);
+  
   pi0calib->SetAsymmetryCut(1.);
   pi0calib->SetClusterMinNCells(1);
   pi0calib->SetNCellsGroup(0);
   pi0calib->SwitchOnSameSM();
-  pi0calib->SetPairDTimeCut(20);
-  pi0calib->SetClusterMinTime(560);
-  pi0calib->SetClusterMaxTime(610);
+  
+  // Timing cuts
+  pi0calib->SetPairDTimeCut(100);   //  20 ns in Run1  
+  pi0calib->SetClusterMinTime(300); // 560 ns in Run1
+  pi0calib->SetClusterMaxTime(800); // 610 ns in Run1
 
   pi0calib->SetTriggerName(trigger);
   
@@ -117,10 +120,11 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   if(recalE)
   {
     TFile * f = new TFile("RecalibrationFactors.root","read");
-    for(Int_t ism = 0; ism < 12; ism++)
+    for(Int_t ism = 0; ism < 20; ism++)
     {
       TH2F * h = (TH2F*)f->Get("EMCALRecalFactors_SM0");
-      reco->SetEMCALChannelRecalibrationFactors(0,h);
+      if(h) reco->SetEMCALChannelRecalibrationFactors(ism,h);
+      else  AliWarning(Form("Null hisogram with calibration factors for SM%d",ism));
     }
   }
   
