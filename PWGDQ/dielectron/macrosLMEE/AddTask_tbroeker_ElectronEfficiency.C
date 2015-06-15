@@ -4,19 +4,17 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree'! (needed for LEGO trains)
                                                      )
 {
+
+  //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_tbroeker_ElectronEfficiency", "No analysis manager found.");
     return 0;
   }
   
+  //Base Directory for GRID / LEGO Train  
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  
-  //Load updated macros from private ALIEN path
-  if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName)))
-      // Task files (.cxx & .h) not possible because they need to be compiled...
-      ) {
+  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
     configBasePath=Form("%s/",gSystem->pwd());
   }
 

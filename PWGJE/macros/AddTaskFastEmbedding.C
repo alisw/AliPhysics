@@ -17,6 +17,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    // kAODFull=0, kAODJetTracks, kAODJet4Mom, kToySingle4Mom
    //task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kToyTracks);
    task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kAODFull);      // embed full event: all tracks in PYTHIA event are added to PbPb data event 
+   task->SetJetFriends("AliAOD.Jets.root");
 
    // ## set ranges for toy ##
    //SetToyTrackRanges(

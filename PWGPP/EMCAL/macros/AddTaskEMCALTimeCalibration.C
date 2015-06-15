@@ -1,0 +1,81 @@
+/// \file AddTaskEMCALTimeCalibration.C
+/// \brief Configuration of task AliAnalysisTaskEMCALTimeCalib.
+///
+/// Configuration of task AliAnalysisTaskEMCALTimeCalib
+///
+/// The parameters for the analysis are:
+/// \param outputFile: TString, output file name
+/// \param geometryName: TString, geometry name
+/// \param minClusterEne: Double_t, minimum cluster energy
+/// \param maxClusterEne: Double_t, maximum cluster energy
+/// \param minNcells: Int_t, minimum number of cells in cluster
+/// \param maxNcells: Int_t, maximum number of cells in cluster
+/// \param minLambda0: Double_t, minimum cluster lambda0
+/// \param maxLambda0: Double_t, maximum cluster lambda0
+/// \param maxRtrack: Double_t, maximum cluster track distance
+/// \param minCellEne: Double_t, minimum cell energy
+/// \param referenceFileName: TString, name of reference file
+///
+/// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
+///
+
+AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile = "", // timeResults.root
+							     TString  geometryName = "EMCAL_COMPLETE12SMV1_DCAL_8SM",
+							     Double_t minClusterEne = 1.0,
+							     Double_t maxClusterEne = 500,
+							     Int_t    minNcells = 2,
+							     Int_t    maxNcells = 200,
+							     Double_t minLambda0 = 0.1,
+							     Double_t maxLambda0 = 0.4,
+							     Double_t maxRtrack = 0.025,
+							     Double_t minCellEne = 0.4,
+							     TString  referenceFileName = "Reference.root")
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) 
+  {
+    ::Error("AddTaskEMCALTimeCalibration", "No analysis manager to connect to.");
+    return NULL;
+  }  
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) 
+  {
+    ::Error("AddTaskEMCALTimeCalibration", "This task requires an input event handler");
+    return NULL;
+  }
+    
+  AliAnalysisTaskEMCALTimeCalib *taskmbemcal = new AliAnalysisTaskEMCALTimeCalib("TimeCalibTask");
+  taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+  taskmbemcal->SetGeometryName(geometryName);
+  taskmbemcal->SetMinClusterEnergy (minClusterEne);
+  taskmbemcal->SetMaxClusterEnergy (maxClusterEne);
+  taskmbemcal->SetMinNcells        (minNcells);  
+  taskmbemcal->SetMaxNcells        (maxNcells);   
+  taskmbemcal->SetMinLambda0       (minLambda0);	   
+  taskmbemcal->SetMaxLambda0       (maxLambda0);	   
+  taskmbemcal->SetMaxRtrack        (maxRtrack);	   
+  taskmbemcal->SetMinCellEnergy    (minCellEne);	   
+  taskmbemcal->SetReferenceFileName(referenceFileName);
+  //taskmbemcal->PrintInfo();
+  
+  if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName(); 
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("chistolist", TList::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   outputFile.Data());
+
+  mgr->AddTask(taskmbemcal);
+
+                                                             
+  mgr->ConnectInput  (taskmbemcal, 0, cinput1);
+  mgr->ConnectOutput (taskmbemcal, 1, coutput);
+
+
+  return taskmbemcal;
+}

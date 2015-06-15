@@ -19,11 +19,11 @@
 #include <TLatex.h>
 #include <TGraphAsymmErrors.h>
 #include <TGraphAsymmErrors.h>
+#include "AliHFCorrFitter.h"
 
 class TH1F;
 class TCanvas;
 class TF1;
-
 
 class AliHFCorrFitSystematics{
     
@@ -31,8 +31,8 @@ public:
     
     
     //enum
-    enum SystematicModes{kLowestPoint = 1, k2PointsAtPiHalf = 2, k4PointsAtPiHalf=4,kTransverse = 5, kBinCount = -1, kMinVar=100, kMaxVar=200, kv2Mod = 300};
-    enum SystCombination{kSumQuadr = 1, kMax = 2, kRMS =3};
+  enum SystematicModes{kFree=0, kLowestPoint = 1, k2PointsAtPiHalf = 2, k4PointsAtPiHalf=4,kTransverse = 5, kNLowest=6, k2GausNS=7, kBinCount = -1, kMinVar=100, kMaxVar=200, kv2Mod = 300};
+  enum SystCombination{kSumQuadr = 1, kMax = 2, kRMS =3};
     
     AliHFCorrFitSystematics();
     virtual ~AliHFCorrFitSystematics();
@@ -56,8 +56,8 @@ public:
     
     void AddSystematicMode(SystematicModes mode, Bool_t isReference);
     
-    void AddSystematicMode(SystematicModes mode, Bool_t isReference, Double_t min, Double_t max);
-    
+    void AddSystematicMode(SystematicModes mode, Bool_t isReference, Double_t min, Double_t max, Int_t minNpoints=0,AliHFCorrFitter::FunctionType functype=AliHFCorrFitter::kTwoGausPeriodicity);
+    void SetIsFittingTemplate(Bool_t isfitTempl){fIsFittingTemplate=isfitTempl;}
     
     
     void AddSystematicMode(SystematicModes mode){
@@ -136,7 +136,8 @@ private:
     //functions
     Bool_t CheckSize();
     Bool_t CheckDiffSystematicsSize();
-    
+
+    Bool_t fIsFittingTemplate;
     //standard vectors in size of D meson pt
     std::vector<TH1D*> fVecHisto;
     std::vector<TH1D*> fVecHistoMinVar;
@@ -155,9 +156,10 @@ private:
     
     //standard vectors in size of Different modes
     std::vector<SystematicModes> fVecSystMode;
+    std::vector<AliHFCorrFitter::FunctionType> fFitFuncType;
     std::vector<Double_t> fMinBaselineEstimationRange;
     std::vector<Double_t> fMaxBaselineEstimationRange;
-    
+    std::vector<Int_t> fNMinPointsBaselineEstimationRange;
     std::vector<Bool_t> fVecIsReference;
     
     //variables
@@ -193,7 +195,7 @@ private:
     
     Double_t fMinReferenceBaselineEstimationRange;
     Double_t fMaxReferenceBaselineEstimationRange;
-    
+    Double_t fMinNPointsReferenceBaseline;
     Double_t *fValueNSYield;
     Double_t *fRatioNSYield;
     Double_t *fValueNSSigma;
@@ -320,7 +322,7 @@ private:
     TCanvas *fCanvasRefernce;
     TCanvas **fCanvasFitting;
 
-    ClassDef(AliHFCorrFitSystematics,3);    
+    ClassDef(AliHFCorrFitSystematics,4);    
     
 };
 

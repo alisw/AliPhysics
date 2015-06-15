@@ -351,6 +351,11 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fCheckCertainSpecies > 0)
     fListOfHistos->Add(new TH2F("checkSpecies", ";eta;pt;particles", 20, -1, 1, 40, 0, 10));
   
+  if (fCentralityMethod == "ZNAC")
+  {
+    fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
+  }
+
   PostData(0,fListOfHistos);
   
   // Add task configuration to output list 
@@ -388,7 +393,7 @@ void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
 {
   // exec (per event)
   fAnalyseUE->NextEvent();
-  
+
   // receive ESD pointer if we are not running AOD analysis
   if (!fAOD)
   {
@@ -584,7 +589,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   Float_t weight = 1;
   if (fFillpT)
     weight = -1;
-  
+
+  Double_t evtPlanePhi = -999.; //A value outside [-pi/2,pi/2] will be ignored
+  if(fTrackPhiCutEvPlMax > 0.0001)
+    if(!InitiateEventPlane(evtPlanePhi, inputEvent)) return; //Reject event if plane is not available
+ 
   // For productions with injected signals, figure out above which label to skip particles/tracks
   Int_t skipParticlesAbove = 0;
   if (fInjectedSignals)
@@ -654,7 +663,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // debug for certain species
   if (fCheckCertainSpecies > 0) {
     // need to get also neutral particles here
-    TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, -999., kFALSE);
+    TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi, kFALSE);
     for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
       AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
       if (!particle)
@@ -668,14 +677,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   // Get MC primaries
   // triggers
-  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   CleanUp(tmpList, mc, skipParticlesAbove);
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
   // associated
   TObjArray* tracksCorrelateMC = tracksMC;
-  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
+  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001)
   {
     tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
     CleanUp(tmpList, mc, skipParticlesAbove);
@@ -748,16 +757,16 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       for (Int_t particleSpecies = 0; particleSpecies < 4; particleSpecies++)
       {
-        TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE);
-        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kFALSE);
-        TObjArray* allRecoTracksMatched  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kFALSE);
+        TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE, kTRUE, evtPlanePhi);
+        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kFALSE, evtPlanePhi);
+        TObjArray* allRecoTracksMatched  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kFALSE, evtPlanePhi);
         TObjArray* primRecoTracksMatchedPID = 0;
         TObjArray* allRecoTracksMatchedPID  = 0;
 	
 	if (fHelperPID)
 	{
-	  primRecoTracksMatchedPID = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kTRUE);
-	  allRecoTracksMatchedPID  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kTRUE);
+	  primRecoTracksMatchedPID = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kTRUE, evtPlanePhi);
+	  allRecoTracksMatchedPID  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kTRUE, evtPlanePhi);
 	}
 	
 	CleanUp(primMCParticles, mc, skipParticlesAbove);
@@ -803,14 +812,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries that match reconstructed track
       // triggers
-      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
       CleanUp(tmpList, mc, skipParticlesAbove);
       TObjArray* tracksRecoMatchedPrim = CloneAndReduceTrackList(tmpList);
       delete tmpList;
       
       // associated
       TObjArray* tracksCorrelateRecoMatchedPrim = tracksRecoMatchedPrim;
-      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
+      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001)
       {
 	tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesAssociated, kTRUE);
 	CleanUp(tmpList, mc, skipParticlesAbove);
@@ -834,14 +843,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries + secondaries that match reconstructed track
       // triggers
-      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
       CleanUp(tmpList, mc, skipParticlesAbove);
       TObjArray* tracksRecoMatchedAll = CloneAndReduceTrackList(tmpList);
       delete tmpList;
       
       // associated
       TObjArray* tracksCorrelateRecoMatchedAll = tracksRecoMatchedAll;
-      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
+      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001)
       {
 	tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesAssociated, kTRUE);
 	CleanUp(tmpList, mc, skipParticlesAbove);
@@ -865,14 +874,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get RECO tracks
       // triggers
-      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
       CleanUp(tmpList, mc, skipParticlesAbove);
       TObjArray* tracks = CloneAndReduceTrackList(tmpList);
       delete tmpList;
       
       // associated
       TObjArray* tracksCorrelate = tracks;
-      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
+      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001)
       {
 	tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
 	CleanUp(tmpList, mc, skipParticlesAbove);
@@ -1055,6 +1064,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   Double_t centrality = 0;
   
   AliCentrality *centralityObj = 0;
+
   if (fCentralityMethod.Length() > 0)
   {
     if (fCentralityMethod == "ZNA_MANUAL")
@@ -1081,6 +1091,29 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       }
       else
 	centrality = -1;
+    }
+    else if (fCentralityMethod == "ZNAC") // pp
+    {
+      // values from Cvetan
+      const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
+      const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
+
+      Double_t enZNA = 1.13 * towZNA[0];
+      Double_t enZNC = towZNC[0];
+      Double_t enZN = enZNA + enZNC;
+
+      Float_t znaccut[8] = {1e9, 797.743, 526.879, 238.595, 107.325, 39.214, 7.633, -100};
+      
+      if(enZN > znaccut[1] && enZN < znaccut[0]) centrality = 96;
+      else if(enZN > znaccut[2]) centrality = 91;
+      else if(enZN > znaccut[3]) centrality = 81;
+      else if(enZN > znaccut[4]) centrality = 71;
+      else if(enZN > znaccut[5]) centrality = 61;
+      else if(enZN > znaccut[6]) centrality = 51;
+      else if(enZN > znaccut[7]) centrality = 1;
+      else centrality = -1;
+
+     ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
     }
     else if (fCentralityMethod == "TRACKS_MANUAL")
     {
@@ -1121,7 +1154,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     }
    else if (fCentralityMethod == "PPVsMultUtils")
      {
-       if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+         if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
        else centrality = -1;
     }
    else
@@ -1174,7 +1207,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
   
   // Pileup selection ************************************************
-  if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(inputEvent)) 
+  if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(inputEvent))
   {
     // count the removed events
     fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
@@ -1198,22 +1231,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (fAOD)
       ((TH2F*) fListOfHistos->FindObject("V0AMultCorrelation"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A(), fAOD->GetTracklets()->GetNumberOfTracklets());
   }
-    
+ 
   // optimization
   if (centrality < 0)
     return;
 
   TObjArray* tracks = 0;
- 
+
   Double_t evtPlanePhi = -999.; //A value outside [-pi/2,pi/2] will be ignored
-  if(fTrackPhiCutEvPlMax > 0.0001) {
-    AliEventplane* evtPlane = inputEvent->GetEventplane();
-    Double_t qx = 0; Double_t qy = 0;
-    if(evtPlane) evtPlanePhi = evtPlane->CalculateVZEROEventPlane(inputEvent, 10, 2, qx, qy);
-    //Reject event if the plane is not available
-    else return; 
-  }
- 
+  if(fTrackPhiCutEvPlMax > 0.0001)
+    if(!InitiateEventPlane(evtPlanePhi, inputEvent)) return; //Reject event if plane is not available
+
   if (fTriggersFromDetector == 0)
     tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   else if (fTriggersFromDetector <= 4)
@@ -1264,7 +1292,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracks;
     return;
   }
-  
+
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if(fAssociatedFromDetector==0){
@@ -1686,4 +1714,16 @@ Bool_t AliAnalysisTaskPhiCorrelations::IsMuEvent(){
   }
   return kFALSE;
   
+}
+
+//____________________________________________________________________
+Bool_t AliAnalysisTaskPhiCorrelations::InitiateEventPlane(Double_t& evtPlanePhi, AliVEvent* inputEvent){
+  AliEventplane* evtPlane = inputEvent->GetEventplane();
+  Double_t qx = 0; Double_t qy = 0;
+  if(evtPlane) {
+    evtPlanePhi = evtPlane->CalculateVZEROEventPlane(inputEvent, 10, 2, qx, qy);
+    return 1;
+  }
+  else
+    return 0;
 }

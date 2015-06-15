@@ -119,7 +119,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_vn(),
 	fh_vn_vn()
 {
- 
+	cout << "analysis task created " << endl;
 	const int NCent = 7;
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
@@ -140,6 +140,11 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 		fCentBin[ic] = CentBin[ic];
 	}	
 
+	for(int icent=0; icent<NCent; icent++){
+		for(int isub=0; isub<2; isub++){
+			h_phi_module[icent][isub]=NULL;
+		}
+	}
 
 	// pt bins to check pt dist copied from AliJHistos
 	const int nJacek = 73;
@@ -202,7 +207,6 @@ void AliJFFlucAnalysis::Init(){
 }
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserCreateOutputObjects(){
-
 	fEfficiency = new AliJEfficiency();
 	cout << "********" << endl;
 	cout << fEffMode << endl ;
@@ -224,7 +228,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(9);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(12);
 
 	// set AliJTH1D here //
 	fh_cent
@@ -301,19 +305,19 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// Main loop
 	// Called for each event
-	//
-	// GUESS We load Phi Modulation info root file Here!!!
-	if (AnaEntry == 0){
-	if (IsPhiModule == kTRUE){
-		TGrid::Connect("alien:");
-		inclusFile = TFile::Open( fInFileName.Data() , "read" );
-		for(int icent=0; icent<fNCent; icent++){
-			for(int isub=0; isub<2; isub++){	
-				h_phi_module[icent][isub] = (TH1D*)inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub));
+/*	if (AnaEntry == 0){
+			if (IsPhiModule == kTRUE){
+					TGrid::Connect("alien:");
+					inclusFile = TFile::Open( fInFileName.Data() , "read" );
+					cout << "open grid file " << endl;
+					for(int icent=0; icent<fNCent; icent++){
+							for(int isub=0; isub<2; isub++){	
+									h_phi_module[icent][isub] = (TH1D*)inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub));
+							}
+					}
 			}
-		}
-	}
-	}
+	} // DO NOT READ FILE ON EVENT LOOP!!!!!!!!!!! DO this in AddTask => Save into lego_train.root !
+*/
 	//
 	// DO ANALYSIS WORK HERE // 
 	// find Centrality
@@ -398,7 +402,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 							for(int ikk=1; ikk<nKL; ikk++){
 									vn2_vn2[ih][ik][ihh][ikk] = (  
 													TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
-							}
+								}
 					}
 			}
 	}
@@ -433,6 +437,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex V6V3star_2 = QnA[6] * TComplex::Power( QnB_star[3], 2) ;
 	TComplex V7V2star_2V3star = QnA[7] * TComplex::Power( QnB_star[2] , 2) * QnB_star[3]; 
 
+	// New correlattors (Modified by You's corretion term for self-correlations)
+	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
+	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
+	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
 
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
 	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
@@ -443,6 +451,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[6][fCBin]->Fill( V6V2star_3.Re() );
 	fh_correlator[7][fCBin]->Fill( V6V3star_2.Re() );
 	fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re() ) ;
+	
+	fh_correlator[9][fCBin]->Fill( nV4V2star.Re() ); // added 2015. 6. 10
+	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
+	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
 	//
 	//
@@ -490,6 +502,10 @@ double AliJFFlucAnalysis::Get_Qn_Real(double eta1, double eta2, int harmonics)
 			}
 		}
 		Qn_real /= Sub_Ntrk;
+		int iside = 0; // eta - 
+		if (eta1 > 0 ) iside = 1; // eta +
+		NSubTracks[iside] = Sub_Ntrk; // it will be overwrite for each harmonics but should be same.		
+
 		return Qn_real; 
 }
 //________________________________________________________________________
@@ -506,7 +522,6 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 			if( eta > 0 ) isub = 1;
 			double phi = itrack->Phi();
 			double phi_module_corr =1; 
-
 			if( IsPhiModule == kTRUE){
 				phi_module_corr=
 						h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
@@ -598,9 +613,12 @@ double AliJFFlucAnalysis::Complex_sqr_img(double real, double img)
 		// this value is  real-part of  (Qn)^2 
 		return ( 2* real * img ) ;
 }
-
-
-
+//_____________________
+void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi)
+{
+		// hPhi histo setter
+		h_phi_module[cent][sub] = hModuledPhi;
+}
 
 
 

@@ -33,7 +33,9 @@ declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/
 declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pPb"
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
-
+### the following is needed for hte comparison to MC (as well as MC fitting)
+declare Nmccase=3
+declare -a templRootName=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" )
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dzero_pp"
@@ -92,6 +94,7 @@ declare doAverage=1
 declare doNicePlot=1
 declare doCompareMesons=1
 declare dofit=1
+declare dofitMC=1
 declare doCompareWithMC=1
 declare doComparepppPb=1
 
@@ -400,10 +403,23 @@ EOF
 fi
 
 ######## NOW FIT DISTRIBUTIONS ############
+if [ ${dofitMC} = 1 ]; then
+    mkdir -p ${templateDir[${collsyst}]}/FitResults
+    while [ ${collsyst} -le ${lastcollsyst} ]; do
+	cd ${templateDir[${collsyst}]}/FitResults/
+	for (( mccase=0; mccase<${Nmccase}; mccase++ ))
+	do 
+	    $HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${reflect} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootName[$mccase]}
+	done
+	collsyst=${collsyst}+1
+    done
+fi
+collsyst=${firstcollsyst}
+
 if [ ${dofit} = 1 ]; then
     cd ${baseDir}/AllPlots/Averages/FitResults    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/
 	collsyst=${collsyst}+1
     done
 fi

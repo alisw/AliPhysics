@@ -143,29 +143,29 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   TH1::AddDirectory(kFALSE);
 
   fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
-  const Int_t nVar = 18;
+  const Int_t nVar = 14;
   fShapesVar = new Float_t [nVar]; 
   TString *fShapesVarNames = new TString [nVar];
 
   fShapesVarNames[0] = "partonCode"; 
   fShapesVarNames[1] = "ptJet"; 
   fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "mJet";
-  fShapesVarNames[4] = "nbOfConst";
-  fShapesVarNames[5] = "angularity";
-  fShapesVarNames[6] = "circularity";
-  fShapesVarNames[7] = "lesub";
-  fShapesVarNames[8] = "sigma2";
+  //fShapesVarNames[3] = "mJet";
+  // fShapesVarNames[4] = "nbOfConst";
+  fShapesVarNames[3] = "angularity";
+  fShapesVarNames[4] = "circularity";
+  fShapesVarNames[5] = "lesub";
+  fShapesVarNames[6] = "sigma2";
 
-  fShapesVarNames[9] = "ptJetMatch"; 
-  fShapesVarNames[10] = "ptDJetMatch"; 
-  fShapesVarNames[11] = "mJetMatch";
-  fShapesVarNames[12] = "nbOfConstMatch";
-  fShapesVarNames[13] = "angularityMatch";
-  fShapesVarNames[14] = "circularityMatch";
-  fShapesVarNames[15] = "lesubMatch";
-  fShapesVarNames[16] = "sigma2Match";
-  fShapesVarNames[17]="weightPythia";
+  fShapesVarNames[7] = "ptJetMatch"; 
+  fShapesVarNames[8] = "ptDJetMatch"; 
+  //fShapesVarNames[11] = "mJetMatch";
+  // fShapesVarNames[12] = "nbOfConstMatch";
+  fShapesVarNames[9] = "angularityMatch";
+  fShapesVarNames[10] = "circularityMatch";
+  fShapesVarNames[11] = "lesubMatch";
+  fShapesVarNames[12] = "sigma2Match";
+  fShapesVarNames[13]="weightPythia";
 
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -393,12 +393,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] = GetJetMass(jet1,0);
-      fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
-      fShapesVar[5] = GetJetAngularity(jet1,0);
-      fShapesVar[6] = GetJetCircularity(jet1,0);
-      fShapesVar[7] = GetJetLeSub(jet1,0);
-      fShapesVar[8] = GetSigma2(jet1,0);
+      //fShapesVar[3] = GetJetMass(jet1,0);
+      // fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
+      fShapesVar[3] = GetJetAngularity(jet1,0);
+      fShapesVar[4] = GetJetCircularity(jet1,0);
+      fShapesVar[5] = GetJetLeSub(jet1,0);
+      fShapesVar[6] = GetSigma2(jet1,0);
 
       Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0.;
       Int_t kMatched = 0;
@@ -406,8 +406,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         kMatched = 1;
         ptMatch=jet2->Pt();
         ptDMatch=GetJetpTD(jet2, kMatched);
-        massMatch=GetJetMass(jet2,kMatched);
-        constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
+        //massMatch=GetJetMass(jet2,kMatched);
+	// constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
         angulMatch=GetJetAngularity(jet2, kMatched);
         circMatch=GetJetCircularity(jet2, kMatched);
         lesubMatch=GetJetLeSub(jet2, kMatched);
@@ -420,8 +420,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
          if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=GetJetMass(jet3,kMatched);
-        constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
+	// massMatch=GetJetMass(jet3,kMatched);
+	// constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
         circMatch=GetJetCircularity(jet3, kMatched);
         lesubMatch=GetJetLeSub(jet3, kMatched);
@@ -435,8 +435,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         kMatched = 0;
         ptMatch=0.;
         ptDMatch=0.;
-        massMatch=0.;
-        constMatch=0.;
+        //massMatch=0.;
+	// constMatch=0.;
         angulMatch=0.;
         circMatch=0.;
         lesubMatch=0.;
@@ -444,15 +444,15 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
-      fShapesVar[9] = ptMatch;
-      fShapesVar[10] = ptDMatch;
-      fShapesVar[11] = massMatch;
-      fShapesVar[12] = constMatch;
-      fShapesVar[13] = angulMatch;
-      fShapesVar[14] = circMatch;
-      fShapesVar[15] = lesubMatch;
-      fShapesVar[16] = sigma2Match;
-      fShapesVar[17] = kWeight;
+      fShapesVar[7] = ptMatch;
+      fShapesVar[8] = ptDMatch;
+      // fShapesVar[11] = massMatch;
+      // fShapesVar[12] = constMatch;
+      fShapesVar[9] = angulMatch;
+      fShapesVar[10] = circMatch;
+      fShapesVar[11] = lesubMatch;
+      fShapesVar[12] = sigma2Match;
+      fShapesVar[13] = kWeight;
       fTreeObservableTagging->Fill();
       
     }
@@ -650,18 +650,18 @@ Float_t AliAnalysisTaskEmcalQGTagging::LeSub(AliEmcalJet *jet, Int_t jetContNb =
   //Printf("Nbof const = %d", jet->GetNumberOfTracks());
   //Printf("ordindex[0] = %d, ordindex[1] = %d", ordindex[0], ordindex[1]);
   
-  if ((&ordindex[0] == 0x0) || (&ordindex[1]==0x0)) return 0;
+  if(ordindex.size()<2) return -1;
   
   vp1 = static_cast<AliVParticle*>(jet->TrackAt(ordindex[0], jetCont->GetParticleContainer()->GetArray()));
   if (!vp1){
     Printf("AliVParticle associated to Leading constituent not found");
-    return 0;
+    return -1;
   }
   
   vp2 = static_cast<AliVParticle*>(jet->TrackAt(ordindex[1], jetCont->GetParticleContainer()->GetArray()));
   if (!vp2){
     Printf("AliVParticle associated to Subleading constituent not found");
-    return 0;
+    return -1;
   }
   
   

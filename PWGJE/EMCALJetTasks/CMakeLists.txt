@@ -139,6 +139,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
+    UserTasks/AliAnalysisTaskGammaHadron.cxx   
    )
 
 if(FASTJET_FOUND)

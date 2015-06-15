@@ -52,6 +52,8 @@ set(SRCS
     AliLeadingV0Correlation.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx
+    AliAnalysisTaskEPCorrPP.cxx
+    AliAnalysisTaskEPCorrAA.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
     DiHadronPID/AliAODEventCutsDiHadronPID.cxx

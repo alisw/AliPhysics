@@ -52,7 +52,8 @@ private:
   TH2F        *fHistChargePerPM_BB;
   TH2F        *fHistChargePerPM_BG;
   TH2F        *fHistTimePerPM_Corr;
-  TH2F	      *fHistTimeVsCharge_Corr;
+  TH2F	      *fHistTimeVsChargeADA_Corr;
+  TH2F	      *fHistTimeVsChargeADC_Corr;
   TH2F        *fHistWidthPerPM;
   TH2F	      *fHistWidthVsCharge;
   TH1F        *fHistNBBflagsADA;
@@ -90,8 +91,22 @@ private:
   TH2F	      *fHistBGFlagPerChannel;
   TH2F	      *fHistMaxChargeClock;
   TH2F        *fHistTimePerPM_UnCorr;
-  TH2F	      *fHistTimeVsCharge_UnCorr;
+  TH2F	      *fHistTimeVsChargeADA_UnCorr;
+  TH2F	      *fHistTimeVsChargeADC_UnCorr;
   TH3F	      *fHistTimeVsChargePerPM_UnCorr;
+  
+  /*Robust time testing*/
+  TH1F	      *fHistMedianTimeADA;
+  TH1F	      *fHistMedianTimeADC;
+  TH1F	      *fHistNTimesMedianADA;
+  TH1F	      *fHistNTimesMedianADC;
+  TH1F	      *fHistRobustTimeADA;
+  TH1F	      *fHistRobustTimeADC;
+  TH1F	      *fHistNTimesRobustADA;
+  TH1F	      *fHistNTimesRobustADC;
+  TH2F	      *fHistMedianIndDiffVsChargeADA;
+  TH2F	      *fHistMedianIndDiffVsChargeADC;
+  
   
   
   

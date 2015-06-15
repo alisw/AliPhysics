@@ -81,6 +81,7 @@ set(SRCS
   AliFemtoPairOriginMonitor.cxx
   AliFemtoPairCutAntiGammaAlpha.cxx
   AliFemtoCorrFctnGammaMonitorAlpha.cxx
+  AliFemtoCorrFctn3DPRF.cxx
   )
 
 # Headers from sources

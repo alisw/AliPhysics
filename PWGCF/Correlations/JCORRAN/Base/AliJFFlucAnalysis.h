@@ -36,8 +36,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		void SetEventCentrality( float cent ){fCent = cent;};
 		void SetEventImpactParameter( float ip ){ fImpactParameter = ip; };
 		void SetEventVertex( double *vtx ){ fVertex = vtx; };
-		void SetInFileName( TString inName){ fInFileName = inName ; };
-		void SetIsPhiModule( Bool_t isphi ){ IsPhiModule = isphi ; } ;
+		void SetIsPhiModule( Bool_t isphi ){ IsPhiModule = isphi ; };
+		void SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi);
 
 		void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; };
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
@@ -86,6 +86,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
 		double fEta_min;
 		double fEta_max;
+		double NSubTracks[2]; 
 
 		TH1D *h_phi_module[7][2]; // cent, isub 
 		TFile *inclusFile; // pointer for root file  

@@ -277,13 +277,16 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		TObjString 		*fCutString; 							// cut number used for analysis
 		Int_t			fIsHeavyIon;							// flag for pp (0), PbPb (1), pPb (2)
 		Bool_t 			fUseITSpid; 							// flag to use tof pid		
-	    Double_t 		fITSPIDnSigmaAboveElectronLine;			// sigma cut RRnewTOF
+	        Double_t 		fITSPIDnSigmaAboveElectronLine;			// sigma cut RRnewTOF
 		Double_t 		fITSPIDnSigmaBelowElectronLine;			// sigma cut RRnewTOF
-	    Double_t        fMaxPtPIDITS;                           //max pt for ITS PID
+	        Double_t                fMaxPtPIDITS;                           //max pt for ITS PID
 
-		
-	    Double_t 		fTRDPIDBelowCut;						// TRD cut range
+	        Double_t 		fTRDPIDBelowCut;						// TRD cut range
 		Double_t 		fTRDPIDAboveCut;						// TRD cut range
+                Bool_t                  fDoDoubleCountingCut;                                           // Flag to reject double counting
+                Double_t                fMinRDC;                                                        // Min R for Double Counting Cut
+                Double_t                fDeltaR;                                                        // Delta R for Double Counting Cut
+                Double_t                fOpenAngle;                                                     // Opening Angle for Double Counting Cut
 
 
 		
@@ -315,7 +318,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
 	private:
 	
-		ClassDef(AliConversionPhotonCuts,2)
+		ClassDef(AliConversionPhotonCuts,3)
 };
 
 

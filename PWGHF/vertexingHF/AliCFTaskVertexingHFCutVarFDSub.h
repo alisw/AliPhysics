@@ -28,28 +28,18 @@
 // Felix Reidt  <Felix.Reidt@cern.ch>
 //-----------------------------------------------------------------------
 
+#include "THnSparse.h"
+#include "TH1F.h"
+#include "TProfile.h"
+
 #include "AliAnalysisTaskSE.h"
-#include "AliCFVertexingHF2Prong.h"
 #include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHFLctoV0bachelor.h"
-#include "AliCFVertexingHF.h"
-#include "AliHFsubtractBFDcuts.h"
-#include <TH1F.h>
-#include <TProfile.h>
 
-class TH1I;
-class TParticle ;
-class TFile ;
-class TClonesArray ;
 class AliCFManager;
-class AliAODRecoDecay;
-class AliAODRecoDecayHF2Prong;
-class AliAODMCParticle;
-class THnSparse;
-class TF1;
 class AliRDHFCuts;
-class AliCFVertexingHF2Prong;
-class AliCFVertexingHF3Prong;
+class AliHFsubtractBFDcuts;
+class TH3F;
 
 class AliCFTaskVertexingHFCutVarFDSub: public AliAnalysisTaskSE {
 public:
@@ -295,11 +285,11 @@ protected:
                               // these are the pre-selection cuts for the TMVA
   Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
   Float_t fCutOnMomConservation; // cut on momentum conservation
-  AliHFsubtractBFDcuts *fobjSpr; // object for cut variation study
-  THnSparseF *fhsparsecutvar; //
-  TH1F *fhPtCutVar; //
+  AliHFsubtractBFDcuts* fobjSpr; // object for cut variation study
+  THnSparseF* fhsparsecutvar; //
+  TH3F* fhPtCutVar; //
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,2); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,4); // class for HF corrections as a function of many variables
 };
 
 #endif

@@ -79,6 +79,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		SetSelectSpecialTrigger (Int_t selectSpecialTrigger);
 		Bool_t 		SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
 		Bool_t 		SetRejectExtraSignalsCut (Int_t extraSignal);
+		void		SetTriggerMimicking(Bool_t value) 					{ fMimicTrigger = value									; 
+																		  AliInfo("enabled trigger mimicking");
+		}
 		void 		SetV0ReaderName (TString name) 						{ fV0ReaderName = name									; }
 		void 		SetAddedSignalPDGCode (Int_t addedSignalPDGcode) 	{ fAddedSignalPDGCode = addedSignalPDGcode				; }
 		void 		SetPreSelectionCutFlag (Bool_t preSelFlag)			{ fPreSelCut = preSelFlag								; }   
@@ -198,6 +201,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		// Event Cuts
 		Bool_t 		IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
 		Bool_t 		VertexZCut(AliVEvent *fInputEvent);
+		Bool_t		IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
+		Bool_t 		MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC );
 		Bool_t 		IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC);
 		Bool_t 		HasV0AND()												{ return fHasV0AND										; }
 		Bool_t		IsSDDFired()											{ return fIsSDDFired									; }
@@ -288,10 +293,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t						fEMCALTrigInitialized;					// EMCAL triggers initialized
 		// Primary secondary distinction
 		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
+		Int_t						fBinJetJetMC;							//
+		Bool_t						fMimicTrigger; 							// enable trigger mimiking
 		
 	private:
 
-		ClassDef(AliConvEventCuts,6)
+		ClassDef(AliConvEventCuts,8)
 };
 
 

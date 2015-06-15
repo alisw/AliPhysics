@@ -56,20 +56,35 @@ AliJFFlucTask::AliJFFlucTask():
 	fFilterBit = 0;
 	fEta_min = 0;
 	fEta_max = 0;
+	fDebugLevel = 0;
+	fEffMode =0;
+	fEffFilterBit=0;	
+	fPt_min=0;
+	fPt_max=0;
+	fInFileName="";
+	IsMC = kFALSE;
+	IsKineOnly = kFALSE;
+	IsExcludeWeakDecay = kFALSE;
+	IsCentFlat = kFALSE;
+	IsPhiModule = kFALSE;
+	for(int icent=0; icent<7; icent++){
+		for(int isub=0; isub<2; isub++){
+			h_ModuledPhi[icent][isub]=NULL;		
+		}
+	}
 	//  DefineOutput(1, TDirectory::Class());
 }
 
-
 //______________________________________________________________________________
-AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t IsExcludeWeakDecay):
+AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWeakDecay):
 	fInputList(0),
 	AliAnalysisTaskSE(name), 
 	fFFlucAna(0x0),
 	fOutput(),
 	h_ratio(0)
 {
-	fTaskName = name;
 	DefineOutput(1, TDirectory::Class());
+	fTaskName = name;
 
 	fEvtNum=0;
 	fFilterBit = 0;
@@ -85,8 +100,12 @@ AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t I
 	IsKineOnly = kFALSE;
 	IsExcludeWeakDecay = kFALSE;
 	IsCentFlat = kFALSE;
-	IsPhiModule = kFALSE;	
-
+	IsPhiModule = kFALSE;
+	for(int icent=0; icent<7; icent++){
+		for(int isub=0; isub<2; isub++){
+			h_ModuledPhi[icent][isub]=NULL;		
+		}
+	}
 }
 
 //____________________________________________________________________________
@@ -125,8 +144,14 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
 	fFFlucAna->SetDebugLevel(fDebugLevel); 
 	fFFlucAna->SetIsPhiModule( IsPhiModule); 
-	fFFlucAna->SetInFileName( fInFileName );
-	//=== create the jcorran outputs objects
+	// setting histos for phi modulation
+	if( IsPhiModule==kTRUE){
+			for(int icent=0; icent<7; icent++){
+					for(int isub=0; isub<2; isub++){
+							fFFlucAna->SetPhiModuleHistos( icent, isub, h_ModuledPhi[icent][isub] );
+					}
+			}
+	}
 
 	//=== Get AnalysisManager
 	/*
@@ -737,4 +762,24 @@ b(fm) ALICE   &0.00-3.50&3.50-4.94&4.94-6.98&6.98-    &    -9.88 &9.81-      &  
 		if(bmin[i]<ip&&ip<=bmin[i+1]) {iC=i;  break;} 
 	}
 	return centmean[iC];
+}
+
+
+
+void AliJFFlucTask::SetInFileName( TString inName ){
+	if( IsPhiModule == kFALSE){
+		cout << "Phi Modulation option is setted OFF : InFile will be ignored" << endl;
+		return ;
+	}
+	cout << "Setting InFIle as " << inName.Data() << endl;
+	fInFileName = inName;
+	TGrid::Connect("alien:");
+	TFile *inclusFile = TFile::Open( fInFileName.Data() , "read" );
+	cout << "File connected to Alien" << endl;
+	for(int icent=0; icent< 7; icent++){
+			for(int isub=0; isub<2; isub++){
+					h_ModuledPhi[icent][isub] = dynamic_cast<TH1D *>(inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
+			}
+	}
+
 }

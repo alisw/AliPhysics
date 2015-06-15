@@ -51,7 +51,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 
  public:
   AliJFFlucTask();
-  AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t IsExcludeWeakDecay);
+  AliJFFlucTask(const char *name, Bool_t IsMC, Bool_t IsExcludeWeakDecay);
   AliJFFlucTask(const AliJFFlucTask& ap);   
   AliJFFlucTask& operator = (const AliJFFlucTask& ap);
   virtual ~AliJFFlucTask();
@@ -85,8 +85,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
   void SetIsCentFlat( Bool_t isCentFlat);
   void SetEffConfig( int effMode, int FilterBit );
-  void SetInFileName( TString inName){ fInFileName = inName; 
-					cout << "setting fInfile = " << fInFileName.Data() << endl ; };
+  void SetInFileName( TString inName); 
   void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ; 
 					cout << "setting phi modulation = " << isphi << endl; };
 
@@ -113,6 +112,8 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   AliJFFlucAnalysis *fFFlucAna; // analysis code
   TDirectory *fOutput;     // output
   ClassDef(AliJFFlucTask, 1);
+
+  TH1D *h_ModuledPhi[7][2]; // cent7, sub2
  
 };
 #endif // AliJFFlucTask_H

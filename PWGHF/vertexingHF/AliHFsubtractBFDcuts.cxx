@@ -21,31 +21,70 @@
 //     Felix Reidt  <felix.reidt@cern.ch>                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+#include "AliHFsubtractBFDcuts.h"
+
 #include <TNamed.h>
 #include <THnSparse.h>
 #include <TH1F.h>
 #include <TClonesArray.h>
-#include "AliAODRecoDecayHF2Prong.h"
-#include "AliHFsubtractBFDcuts.h"
 
-AliHFsubtractBFDcuts::AliHFsubtractBFDcuts() :
-  TNamed(),
-  fIsMC(kTRUE),
-  fPtMCGenStep(0x0),
-  fCutsData(0x0),
-  fCutsMC(0x0)
+#include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODMCParticle.h"
+
+ClassImp(AliHFsubtractBFDcuts);
+
+AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
+  : TNamed()
+  , fIsMC(kTRUE)
+  , fCheckAcceptance(kTRUE)
+  , fResolveResonances(kTRUE)
+  , fPtMCGenStep(0x0)
+  , fCutsData(0x0)
+  , fCutsMC(0x0)
+  , fMCarray(0x0)
+  , fLabCand(-1)
+  , fNprongs((UInt_t)-1)
+  , fMotherPt(-1.)
 {
   // default constructor
 }
 
-AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const char* name, const char* title) :
-  TNamed(name,title),
-  fIsMC(kTRUE),
-  fPtMCGenStep(0x0),
-  fCutsData(0x0),
-  fCutsMC(0x0)
+AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const char* name, const char* title)
+  : TNamed(name,title)
+  , fIsMC(kTRUE)
+  , fCheckAcceptance(kTRUE)
+  , fResolveResonances(kTRUE)
+  , fPtMCGenStep(0x0)
+  , fCutsData(0x0)
+  , fCutsMC(0x0)
+  , fMCarray(0x0)
+  , fLabCand(-1)
+  , fNprongs((UInt_t)-1)
+  , fMotherPt(-1.)
 {
   // default constructor with name
+}
+
+AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
+  : TNamed(c.GetName(),c.GetTitle())
+  , fIsMC(c.fIsMC)
+  , fCheckAcceptance(c.fCheckAcceptance)
+  , fResolveResonances(c.fResolveResonances)
+  , fPtMCGenStep(c.fPtMCGenStep)
+  , fCutsData(c.fCutsData)
+  , fCutsMC(c.fCutsMC)
+  , fMCarray(c.fMCarray)
+  , fLabCand(c.fLabCand)
+  , fNprongs(c.fNprongs)
+  , fMotherPt(c.fMotherPt)
+{
+  // copy constructor
+}
+
+AliHFsubtractBFDcuts AliHFsubtractBFDcuts::operator=(const AliHFsubtractBFDcuts& c)
+{
+  // assignment operator
+  return c;
 }
 
 void AliHFsubtractBFDcuts::InitHistos(){
@@ -77,20 +116,34 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fCutsMC->GetAxis(4)->SetName("Mother_pt");
   fCutsMC->GetAxis(4)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
 
-  fPtMCGenStep=new TH1F("fPtMCGenStep","fPtMCGenStep",20,0.,20);
+  fPtMCGenStep=new TH3F("fPtMCGenStep","fPtMCGenStep;#it{p}_{T};Number of prongs;Mother #it{p}_{T}",24,0.,24.,20,0.,20.,24,0.,24.);
   return;
 }
 
-void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*=-1.*/,Double_t weight/*=1.*/){
-  if(pt<0){
+void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*=-1.*/,Double_t weight/*=1.*/,TClonesArray* mcArray/*=0x0*/){
+  fMCarray=mcArray;
+  if (pt<0) {
     pt=dzeropart->Pt();
   }
-  else  fPtMCGenStep->Fill(pt,weight);
+  if (fIsMC && fMCarray) {
+    fNprongs=0;
+    fDecayChain=kFALSE; // TODO: use this value
+    fMotherPt=pt;
+    fLabCand=dzeropart->GetLabel();
+    if (!AnalyseDecay()) {
+      AliDebug(3, "Error during the decay type determination!");
+    }
+    fPtMCGenStep->Fill(pt,(Double_t)fNprongs,fMotherPt,weight);
+  }
+  else {
+    fPtMCGenStep->Fill(pt,0.,weight);
+  }
+  fMCarray=0x0;
   return;
 }
 
 void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t isSelected,Double_t pt,Double_t massD0,Double_t massD0bar,Double_t weight,TClonesArray* mcArray){
-
+  fMCarray=mcArray;
   if(isSelected<=0||isSelected>3){
     Printf("isSelected = %d", isSelected);
     return;
@@ -105,7 +158,6 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t 
   Double_t normalDecayLengXY=dzerocand->NormalizedDecayLengthXY();
   Double_t cptangXY=dzerocand->CosPointingAngleXY();
   Double_t pointData[4]={massD0,pt,normalDecayLengXY,cptangXY};
-  Double_t pointMC[5]={pt,normalDecayLengXY,cptangXY,0.,pt};
 
   if(isSelected==1||isSelected==3){
     fCutsData->Fill(pointData,weight);
@@ -115,60 +167,84 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t 
     fCutsData->Fill(pointData,weight);
   }
 
-  if(fIsMC){
-    Int_t labCand=GetCandidateLabel(dzerocand, mcArray);
-    UInt_t nProngs=0;
-    Bool_t decayChain=kFALSE;
-    if (!DetermineDecayType(labCand, mcArray, nProngs, decayChain, pointMC[4])) {
+  if(fIsMC && fMCarray) {
+    fNprongs=0;
+    fDecayChain=kFALSE; // TODO: use this value
+    fMotherPt=pt;
+    GetCandidateLabel(dzerocand);
+    if (!AnalyseDecay()) {
       AliDebug(3, "Error during the decay type determination!");
     }
-    else {
-      pointMC[3]=(Double_t)nProngs;
-    }
-    fCutsMC->Fill(pointMC,weight);
-    //Int_t* a =0x0;
-    //*a=1;
+    Double_t pointMC[5]={pt,normalDecayLengXY,cptangXY,(Double_t)fNprongs,fMotherPt};
+    fCutsMC->Fill(pointMC, weight);
   }
-
+  fMCarray=0x0;
   return;
 }
 
-Int_t AliHFsubtractBFDcuts::GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand,TClonesArray* mcArray) const {
-  if (mcArray) {
-    Int_t labDau0=((AliAODTrack*)dzerocand->GetDaughter(0))->GetLabel();
-    AliAODMCParticle* firstDau=(AliAODMCParticle*)mcArray->UncheckedAt(TMath::Abs(labDau0));
-    Int_t labCand = firstDau->GetMother();
-    return labCand;
-  }
-  else return -1;
+void AliHFsubtractBFDcuts::GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand) {
+  Int_t labDau0=((AliAODTrack*)dzerocand->GetDaughter(0))->GetLabel();
+  AliAODMCParticle* firstDau=(AliAODMCParticle*)fMCarray->UncheckedAt(TMath::Abs(labDau0));
+  fLabCand = firstDau->GetMother();
 }
 
-
-Bool_t AliHFsubtractBFDcuts::DetermineDecayType(Int_t labCand, TClonesArray* mcArray, UInt_t& nProngs, Bool_t& decayChain, Double_t& motherPt) const {
-  if (mcArray) {
-    AliAODMCParticle* cand=(AliAODMCParticle*)mcArray->UncheckedAt(labCand);
-    Int_t labMother = cand->GetMother();
-    AliAODMCParticle* mother = (AliAODMCParticle*)mcArray->UncheckedAt(labMother);
-    Int_t pdgMother = mother->GetPdgCode();
-    if (pdgMother<0) pdgMother*=-1; // treat particles and anti-particles the same way
-    if (pdgMother==4 || pdgMother==2212 || pdgMother==2112) { // prompt production
-      nProngs=1;
-      return kTRUE;
-    }
-    if ((pdgMother%1000)/100==4) { // chained decay of charmed hadrons
-      return DetermineDecayType(labMother, mcArray, nProngs, decayChain, motherPt);
-    }
-    if ((pdgMother%1000)/100!=5) {
-      AliDebug(3, "Found strange decay!");
-      nProngs=0;
-      return kFALSE;
-    }
-    nProngs = 0;
-    for (Int_t i=0; i<mcArray->GetEntriesFast(); ++i) {
-      if (((AliAODMCParticle*)mcArray->UncheckedAt(i))->GetMother()==labMother) ++nProngs;
-    }
-    motherPt=mother->Pt();
+Bool_t AliHFsubtractBFDcuts::AnalyseDecay() {
+  AliAODMCParticle* cand=(AliAODMCParticle*)fMCarray->UncheckedAt(fLabCand);
+  fLabMother = cand->GetMother();
+  AliAODMCParticle* mother = (AliAODMCParticle*)fMCarray->UncheckedAt(fLabMother);
+  Int_t pdgMother = mother->GetPdgCode();
+  if (pdgMother<0) pdgMother*=-1; // treat particles and anti-particles the same way
+  if (pdgMother==4 || pdgMother==2212 || pdgMother==2112) { // prompt production
+    fNprongs=1;
     return kTRUE;
   }
-  else return kFALSE;
+  if ((pdgMother%1000)/100==4 || (pdgMother%10000)/1000==4) {
+    // chained decay of charmed hadrons, using recursion to resolve it
+    fDecayChain=kTRUE;
+    fLabCand=fLabMother;
+    return AnalyseDecay();
+  }
+  if ((pdgMother%1000)/100!=5 && (pdgMother%10000)/1000!=5) {
+    AliDebug(3, "Found strange decay, expected the mother to be a beauty hadron!");
+    fNprongs=0;
+    return kFALSE;
+  }
+  CountProngs(fLabMother, fLabCand); // count the prongs
+
+  fMotherPt=mother->Pt();
+  return kTRUE;
+}
+
+void AliHFsubtractBFDcuts::CountProngs(Int_t labCurrMother, Int_t labCurrExcl) {
+  for (Int_t i=0; i<fMCarray->GetEntriesFast(); ++i) {
+    if (i!=labCurrExcl) {
+      if (((AliAODMCParticle*)fMCarray->UncheckedAt(i))->GetMother()==labCurrMother) {
+        if (!fResolveResonances || IsStable(i)) {
+          if (!fCheckAcceptance || IsInAcceptance(i)) {
+            ++fNprongs;
+          }
+        }
+        else CountProngs(i, -1);
+      }
+    }
+    else ++fNprongs; // candidate is only counted as a single prong
+  }
+}
+
+Bool_t AliHFsubtractBFDcuts::IsStable(Int_t labProng) const {
+  const Int_t stablePartPdgs[] = { 11, 13, 211, 321, 2212, 12, 14, 22, 111, 130 };
+  const Int_t nStablePartPdgs  = sizeof(stablePartPdgs)/sizeof(Int_t);
+  AliAODMCParticle* prong = (AliAODMCParticle*)fMCarray->UncheckedAt(labProng);
+  Int_t pdgProng = prong->GetPdgCode();
+  if (pdgProng<0) pdgProng*=-1; // treat particles and anti-particles the same way
+  for (Int_t iPdg=0; iPdg<nStablePartPdgs; ++iPdg) {
+    if (stablePartPdgs[iPdg] == pdgProng) return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliHFsubtractBFDcuts::IsInAcceptance(Int_t labProng) const {
+  AliDebug(1, "AliHFsubtractBFDcuts::IsInAcceptance(...) hasn't been implemented yet, prong");
+  ++labProng; // avoid warnings for the moment
+  return kTRUE;
 }
