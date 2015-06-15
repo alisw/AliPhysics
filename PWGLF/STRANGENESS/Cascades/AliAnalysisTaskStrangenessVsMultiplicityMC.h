@@ -374,35 +374,58 @@ private:
     TH1D *fHistPt_GenK0Short;      //!
     TH1D *fHistPt_GenLambda;       //!
     TH1D *fHistPt_GenAntiLambda;   //!
-
     TH1D *fHistPt_GenXiMinus;      //!
     TH1D *fHistPt_GenXiPlus;       //!
     TH1D *fHistPt_GenOmegaMinus;   //!
     TH1D *fHistPt_GenOmegaPlus;    //!
 
     //VsRefMult
+    TH2D *fHistPtVsRefMultEta5_GenK0Short;      //!
+    TH2D *fHistPtVsRefMultEta5_GenLambda;       //!
+    TH2D *fHistPtVsRefMultEta5_GenAntiLambda;   //!
     TH2D *fHistPtVsRefMultEta5_GenXiMinus;      //!
     TH2D *fHistPtVsRefMultEta5_GenXiPlus;       //!
     TH2D *fHistPtVsRefMultEta5_GenOmegaMinus;   //!
     TH2D *fHistPtVsRefMultEta5_GenOmegaPlus;    //!
+    TH2D *fHistPtVsRefMultEta8_GenK0Short;      //!
+    TH2D *fHistPtVsRefMultEta8_GenLambda;       //!
+    TH2D *fHistPtVsRefMultEta8_GenAntiLambda;   //!
     TH2D *fHistPtVsRefMultEta8_GenXiMinus;      //!
     TH2D *fHistPtVsRefMultEta8_GenXiPlus;       //!
     TH2D *fHistPtVsRefMultEta8_GenOmegaMinus;   //!
     TH2D *fHistPtVsRefMultEta8_GenOmegaPlus;    //!
 
     //VsCentralities
+    TH2D *fHistPtVsCentV0A_GenK0Short;      //!
+    TH2D *fHistPtVsCentV0A_GenLambda;       //!
+    TH2D *fHistPtVsCentV0A_GenAntiLambda;   //!
     TH2D *fHistPtVsCentV0A_GenXiMinus;      //!
     TH2D *fHistPtVsCentV0A_GenXiPlus;       //!
     TH2D *fHistPtVsCentV0A_GenOmegaMinus;   //!
     TH2D *fHistPtVsCentV0A_GenOmegaPlus;    //!
+    TH2D *fHistPtVsCentV0C_GenK0Short;      //!
+    TH2D *fHistPtVsCentV0C_GenLambda;       //!
+    TH2D *fHistPtVsCentV0C_GenAntiLambda;   //!
     TH2D *fHistPtVsCentV0C_GenXiMinus;      //!
     TH2D *fHistPtVsCentV0C_GenXiPlus;       //!
     TH2D *fHistPtVsCentV0C_GenOmegaMinus;   //!
     TH2D *fHistPtVsCentV0C_GenOmegaPlus;    //!
+    TH2D *fHistPtVsCentV0M_GenK0Short;      //!
+    TH2D *fHistPtVsCentV0M_GenLambda;       //!
+    TH2D *fHistPtVsCentV0M_GenAntiLambda;   //!
     TH2D *fHistPtVsCentV0M_GenXiMinus;      //!
     TH2D *fHistPtVsCentV0M_GenXiPlus;       //!
     TH2D *fHistPtVsCentV0M_GenOmegaMinus;   //!
     TH2D *fHistPtVsCentV0M_GenOmegaPlus;    //!
+    
+    //Pre-selection stage
+    TH2D *fHistPtVsCentV0MUnselected_GenK0Short;      //!
+    TH2D *fHistPtVsCentV0MUnselected_GenLambda;       //!
+    TH2D *fHistPtVsCentV0MUnselected_GenAntiLambda;   //!
+    TH2D *fHistPtVsCentV0MUnselected_GenXiMinus;      //!
+    TH2D *fHistPtVsCentV0MUnselected_GenXiPlus;       //!
+    TH2D *fHistPtVsCentV0MUnselected_GenOmegaMinus;   //!
+    TH2D *fHistPtVsCentV0MUnselected_GenOmegaPlus;    //!  
 
     //Equalized
     TH2D *fHistPtVsCentV0AEq_GenXiMinus;      //!
