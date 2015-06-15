@@ -18,7 +18,8 @@
 /// TimeTaskMB2_v4f   new histos for time for each BC 
 /// TimeTaskMB2_v5   new histos for time for each BC calc average for each BC -> new ref  
 ///
-/// Extended to DCal, added setters and getters
+/// 2015.06.03 Extended to DCal, added setters and getters
+/// 2015.06.11 Added AODs and lego train
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -30,8 +31,12 @@ class TH1F;
 class TH1D;
 class TH2D;
 
-class AliESDEvent;
-class AliESDCaloCluster;
+//class AliESDEvent;
+//class AliESDCaloCluster;
+//class AliAODCaloCluster;
+class AliVCluster;
+//class AliAODEvent;
+class AliVEvent;
 class AliTOFT0maker;
 
 #include "AliAnalysisTaskSE.h"
@@ -43,11 +48,12 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   enum { kNSM = 20, kNBCmask = 4 };
 
    AliAnalysisTaskEMCALTimeCalib() : AliAnalysisTaskSE(),
-    fESD(0),
+    fEvent(0),
     fRunNumber(-1),
     fTOFmaker(0),
     fOutputList(0),
     fgeom(0),
+    fGeometryName(0),
     fMinClusterEnergy(0),
     fMaxClusterEnergy(0),
     fMinNcells(0),
@@ -101,7 +107,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t GetMaxRtrack()         { return fMaxRtrack         ; }
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
-
+  TString  GetGeometryName()      { return fGeometryName      ; }
+ 
   void SetMinClusterEnergy (Double_t v) { fMinClusterEnergy = v ; }
   void SetMaxClusterEnergy (Double_t v) { fMaxClusterEnergy = v ; }
   void SetMinNcells        (Int_t    v) { fMinNcells        = v ; }  
@@ -111,31 +118,30 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMaxRtrack        (Double_t v) { fMaxRtrack        = v ; }	   
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
+  void SetGeometryName     (TString  v) { fGeometryName     = v ; }
 
   void SetDefaultCuts();
 
  private:
   
   virtual void PrepareTOFT0maker();
-  
   Bool_t SetEMCalGeometry();
-  
-  Bool_t AcceptCluster(AliESDCaloCluster* clus);
-  
+  //Bool_t AcceptCluster(AliESDCaloCluster* clus);
+  Bool_t AcceptCluster(AliVCluster* clus);
   Bool_t CheckCellRCU(Int_t nSupMod,Int_t icol,Int_t irow);
-  
   void   ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root");
 
   // data members
 
-  /// pointer to ESD object
-  AliESDEvent   *fESD ;       //->
+  /// pointer to ESD or AOD object
+  AliVEvent   *fEvent ;       //->
+  //AliESDEvent   *fESD ;       //->
  
   Int_t          fRunNumber ; //!<! run number
   
   // Use the RemakePID method in the task::UserExec                  //
   // Double_t* calcolot0;                                            //
-  // calcolot0=fTOFmaker->RemakePID(fESD);                           //
+  // calcolot0=fTOFmaker->RemakePID(fEvent);                           //
   // calcolot0[0] = calculated event time                            //
 
   /// pointer to get T0 from TOF
@@ -146,6 +152,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   
   /// pointer to EMCal geometry
   AliEMCALGeometry *fgeom;    //->
+  TString        fGeometryName ;        ///< geometry name
    
   // setable variables for cuts
   
@@ -166,29 +173,13 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
-  
   TH1F          *fhEventType;           //!<! spectrum calcolot0[0]
-  
   TH1F          *fhTOFT0vsEventNumber;  //!<! TOF T0 evolution as a function of time 
-  
   TH2F          *fhTcellvsTOFT0;        //!<! time of cell vs TOF T0 time
-  
   TH2F          *fhTcellvsTOFT0HD;      //!<! time of cell vs TOF T0 time for higher energy threshold
-  
   TH2F          *fhTcellvsSM;           //!<! cell time vs SM
-  
-//  TH1F          *fhTmp;                 //!<! id of cells with strange time
-//  TH1F          *fhTmp2;                //!<! id of cells with strange time
-//  TH2F          *fhEtavsPhi;            //!<! eta vs phi of cells with strange time
-  
   TH2F          *fhEneVsAbsIdHG;        //!<! energy of each cell for high gain cells with strange time
-  
   TH2F          *fhEneVsAbsIdLG;        //!<! energy of each cell for low gain cells with strange time
-  
-//  TH2F          *fhEneVsAbsIdNormHG;    //!<! energy of each cell for high gain cells with normal time
-  
-//  TH2F          *fhEneVsAbsIdNormLG;    //!<! energy of each cell for low gain cells with normal time
-  
   TH2F          *fhTimeVsBC;            //!<!cell time vs BC
 
   // histos for storing the time values per cell for further averaging;
