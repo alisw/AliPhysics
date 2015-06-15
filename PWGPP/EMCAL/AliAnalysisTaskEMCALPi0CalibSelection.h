@@ -120,7 +120,11 @@ public:
   void    SwitchOnClusterCorrection()                    { fCorrectClusters = kTRUE  ; }
  
   void    SwitchOffClusterCorrection()                   { fCorrectClusters = kFALSE ; }
+
+  void    SwitchOnRecalculatePosition()                  { fRecalPosition   = kTRUE  ; }
   
+  void    SwitchOffRecalculatePosition()                 { fRecalPosition   = kFALSE ; }
+
   void    SetEMCALRecoUtils(AliEMCALRecoUtils * ru)      { fRecoUtils = ru           ; }
   
   AliEMCALRecoUtils* GetEMCALRecoUtils()    const        { return fRecoUtils         ; }
@@ -161,7 +165,8 @@ private:
     
   Bool_t              fCorrectClusters;  ///<  Correct clusters energy, position etc.
 
-
+  Bool_t              fRecalPosition;    ///<  Switch on/off cluster position calculation, in case alignment matrices are not available.
+  
   TRefArray         * fCaloClustersArr;  //!<! List of clusters.
     
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
@@ -269,7 +274,7 @@ private:
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,21) ;
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,22) ;
   /// \endcond
 
 };

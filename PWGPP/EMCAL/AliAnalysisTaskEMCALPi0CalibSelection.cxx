@@ -39,7 +39,7 @@ fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(new AliEMCALRecoUtils), 
-fOADBFilePath(""),        fCorrectClusters(kFALSE), 
+fOADBFilePath(""),        fCorrectClusters(kFALSE),  fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 fCuts(0x0),               fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
@@ -185,7 +185,7 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     AliDebug(2,Form("Energy: after recalibration %f",c1->E()));
       
     // Recalculate cluster position
-    fRecoUtils->RecalculateClusterPosition(fEMCALGeo, fEMCALCells,c1);
+    if ( fRecalPosition ) fRecoUtils->RecalculateClusterPosition(fEMCALGeo, fEMCALCells,c1);
       
     // Correct Non-Linearity
     c1->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c1));
@@ -521,9 +521,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     
     TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
     
-    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+    for(Int_t mod = 0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
     {
-      
       if (!fMatrix[mod]) // Get it from OADB
       {
         AliDebug(1,Form("EMCAL matrices SM %d, %p",mod,((TGeoHMatrix*) matEMCAL->At(mod))));
@@ -1001,10 +1000,10 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo()
   
   printf("Cluster maximal cell away from border at least %d cells\n", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
   
-  printf("Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV\n",fNbins,fMinBin,fMaxBin) ;
+  printf("Histograms: bins %d; energy range: %2.2f < E < %2.2f MeV\n",fNbins,fMinBin,fMaxBin) ;
   
-  printf("Switchs:\n \t Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, \n \t Mass per channel same SM clusters? %d\n",
-         fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fSameSM) ;
+  printf("Switchs:\n \t Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, and their position? %d \n \t Mass per channel same SM clusters? %d\n",
+         fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
   
   printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
 
@@ -1058,8 +1057,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::Terminate(Option_t*)
   fCuts->Add(new TObjString(onePar));
   snprintf(onePar,buffersize, "Histograms, Time bins %d; energy range: %2.2f < E < %2.2f GeV;",fNTimeBins,fMinTimeBin,fMaxTimeBin) ;
   fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, Mass per channel same SM clusters? %d ",
-           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fSameSM) ;
+  snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d and their position? %d, Mass per channel same SM clusters? %d ",
+           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
   fCuts->Add(new TObjString(onePar));
   snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
   fCuts->Add(new TObjString(onePar));
