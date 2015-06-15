@@ -52,29 +52,21 @@ fCent2(0),
 fCent3(0),
 fVZERO(0),
 fV0ATotMult(0),
-fV0CTotMult(0)
-//fHistEventQA(0),
+fV0CTotMult(0),
 
-//fHistTrNegativeLabels(0),
-//fHistTrZeroLabels(0),
-//fHistTrPhiEtaPt(0),
-//fHistTrPhiEtaZeroLab(0),
-//fHistTrPtZeroLab(0),
-//fHistTrEmcPhiEta(0),
-//fHistTrEmcPt(0),
-//fHistTrPhiEtaNonProp(0),
-//fHistTrPtNonProp(0),
-//fHistDeltaEtaPt(0),
-//fHistDeltaPhiPt(0),
-//fHistDeltaPtvsPt(0)
 
-//fHistClusPhiEtaEnergy(0),
-//fHistClusDeltaPhiEPEnergy(0),
-//fHistNCellsEnergy(0),
-//fHistFcrossEnergy(0),
-//fHistClusTimeEnergy(0),
-//fHistClusMCEnergyFraction(0),
-//fHistCellsAbsIdEnergy(0)
+fHistNoClus_pt(0),
+fHistNoClus_ptH(0),
+fHistNoClus_ptLeadH(0),
+fHistNoClus_Leadpt(0),
+fHistNoClus_LeadptH(0),
+fHistNoClus_LeadptLeadH(0),
+
+fHistNoClus_xEH(0),
+fHistNoClus_LeadxEH(0),
+fHistNoClus_xELeadH(0),
+fHistNoClus_LeadxELeadH(0)
+
 {
 	// Default constructor.
 
@@ -100,28 +92,21 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(const char *name) :
 		  fCent3(0),
 		  fVZERO(0),
 		  fV0ATotMult(0),
-		  fV0CTotMult(0)
-		 // fHistEventQA(0),
-		 // fHistTrNegativeLabels(0),
-		 // fHistTrZeroLabels(0),
-		 // fHistTrPhiEtaPt(0),
-		 // fHistTrPhiEtaZeroLab(0),
-		 // fHistTrPtZeroLab(0),
-		 // fHistTrEmcPhiEta(0),
-		 // fHistTrEmcPt(0),
-		 // fHistTrPhiEtaNonProp(0),
-		 // fHistTrPtNonProp(0),
-		 // fHistDeltaEtaPt(0),
-		 // fHistDeltaPhiPt(0),
-		//  fHistDeltaPtvsPt(0)
+		  fV0CTotMult(0),
 
-		  //fHistClusPhiEtaEnergy(0),
-		  //fHistClusDeltaPhiEPEnergy(0),
-		  //fHistNCellsEnergy(0),
-		  //fHistFcrossEnergy(0),
-		  //fHistClusTimeEnergy(0),
-		  //fHistClusMCEnergyFraction(0),
-	//	  fHistCellsAbsIdEnergy(0)
+
+		  fHistNoClus_pt(0),
+		  fHistNoClus_ptH(0),
+		  fHistNoClus_ptLeadH(0),
+		  fHistNoClus_Leadpt(0),
+		  fHistNoClus_LeadptH(0),
+		  fHistNoClus_LeadptLeadH(0),
+
+		  fHistNoClus_xEH(0),
+		  fHistNoClus_LeadxEH(0),
+		  fHistNoClus_xELeadH(0),
+		  fHistNoClus_LeadxELeadH(0)
+
 {
 	// Standard
 
@@ -140,68 +125,9 @@ AliAnalysisTaskGammaHadron::~AliAnalysisTaskGammaHadron()
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::AllocateHistogramArrays()
 {
-//	fHistTrNegativeLabels = new TH1*[fNcentBins];
-//	fHistTrZeroLabels = new TH1*[fNcentBins];
-/*	fHistTrPhiEtaZeroLab = new TH2*[fNcentBins];
-	fHistTrPtZeroLab = new TH1*[fNcentBins];
-	fHistTrEmcPhiEta = new TH2*[fNcentBins];
-	fHistTrEmcPt = new TH1*[fNcentBins];
-	fHistTrPhiEtaNonProp = new TH2*[fNcentBins];
-	fHistTrPtNonProp = new TH1*[fNcentBins];
-	fHistDeltaEtaPt = new TH2*[fNcentBins];
-	fHistDeltaPhiPt = new TH2*[fNcentBins];
-	fHistDeltaPtvsPt = new TH2*[fNcentBins];
-*/
-	//fHistClusPhiEtaEnergy = new TH3*[fNcentBins];
-	//fHistClusDeltaPhiEPEnergy = new TH2*[fNcentBins];
-	//fHistNCellsEnergy = new TH2*[fNcentBins];
-	//fHistFcrossEnergy = new TH2*[fNcentBins];
-	//fHistClusTimeEnergy = new TH2*[fNcentBins];
-	//fHistClusMCEnergyFraction = new TH1*[fNcentBins];
 
-//	fHistCellsAbsIdEnergy = new TH2*[fNcentBins];
-
-
-//	fHistTrPhiEtaPt = new TH3**[fNcentBins];
-
-	for (Int_t i = 0; i < fNcentBins; i++)
-	{
-
-//		fHistTrPhiEtaPt[i] = new TH3*[4];
-//		for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
-/*
-		fHistTrNegativeLabels[i] = 0;
-		fHistTrZeroLabels[i] = 0;
-		fHistTrPhiEtaZeroLab[i] = 0;
-		fHistTrPtZeroLab[i] = 0;
-		fHistTrEmcPhiEta[i] = 0;
-		fHistTrEmcPt[i] = 0;
-		fHistTrPhiEtaNonProp[i] = 0;
-		fHistTrPtNonProp[i] = 0;
-		fHistDeltaEtaPt[i] = 0;
-		fHistDeltaPhiPt[i] = 0;
-		fHistDeltaPtvsPt[i] = 0;
-*/
-	/*	fHistClusPhiEtaEnergy[i] = 0;
-		fHistClusDeltaPhiEPEnergy[i] = 0;
-		fHistNCellsEnergy[i] = 0;
-		fHistFcrossEnergy[i] = 0;
-		fHistClusTimeEnergy[i] = 0;
-		fHistClusMCEnergyFraction[i] = 0;
-*/
-	//	fHistCellsAbsIdEnergy[i] = 0;
-
-	}
 }
 
-/*
- //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::UserCreateOutputHistograms()
-{
-
-
-
-}*/
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 {
@@ -212,173 +138,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	AllocateHistogramArrays();
 
 	TString histname;
-
-	if (fParticleCollArray.GetEntriesFast()>0)
-	{
-		/*
-		if (!fParticleLevel && fIsMC)
-		{
-			for (Int_t i = 0; i < fNcentBins; i++)
-			{
-				histname = Form("fHistTrNegativeLabels_%d",i);
-				fHistTrNegativeLabels[i] = new TH1F(histname,histname, 500, 0, 1);
-				fHistTrNegativeLabels[i]->GetXaxis()->SetTitle("% of negative labels");
-				fHistTrNegativeLabels[i]->GetYaxis()->SetTitle("counts");
-				fOutput->Add(fHistTrNegativeLabels[i]);
-
-				histname = Form("fHistTrZeroLabels_%d",i);
-				fHistTrZeroLabels[i] = new TH1F(histname,histname, 500, 0, 1);
-				fHistTrZeroLabels[i]->GetXaxis()->SetTitle("% of negative labels");
-				fHistTrZeroLabels[i]->GetYaxis()->SetTitle("counts");
-				fOutput->Add(fHistTrZeroLabels[i]);
-			}
-		}*/
-
-		Int_t nlabels = 4;
-		if (fParticleLevel)
-			nlabels = 1;
-
-		for (Int_t i = 0; i < fNcentBins; i++) {
-			/*
-			for (Int_t j = 0; j < nlabels; j++) {
-				histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
-				fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
-				fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
-				fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
-				fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-				fOutput->Add(fHistTrPhiEtaPt[i][j]);
-			}*/
-
-			if (!fParticleLevel) {
-				if (fIsMC) {
-					/*
-					histname = Form("fHistTrPhiEtaZeroLab_%d",i);
-					fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
-					fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
-					fHistTrPhiEtaZeroLab[i]->GetYaxis()->SetTitle("#phi");
-					fHistTrPhiEtaZeroLab[i]->GetZaxis()->SetTitle("counts");
-					fOutput->Add(fHistTrPhiEtaZeroLab[i]);
-
-					histname = Form("fHistTrPtZeroLab_%d",i);
-					fHistTrPtZeroLab[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
-					fHistTrPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-					fHistTrPtZeroLab[i]->GetYaxis()->SetTitle("counts");
-					fOutput->Add(fHistTrPtZeroLab[i]);
-					*/
-				}
-/*
-				histname = Form("fHistTrEmcPhiEta_%d",i);
-				fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
-				fHistTrEmcPhiEta[i]->GetXaxis()->SetTitle("#eta");
-				fHistTrEmcPhiEta[i]->GetYaxis()->SetTitle("#phi");
-				fOutput->Add(fHistTrEmcPhiEta[i]);
-
-				histname = Form("fHistTrEmcPt_%d",i);
-				fHistTrEmcPt[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
-				fHistTrEmcPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-				fHistTrEmcPt[i]->GetYaxis()->SetTitle("counts");
-				fOutput->Add(fHistTrEmcPt[i]);
-
-				histname = Form("fHistTrPhiEtaNonProp_%d",i);
-				fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
-				fHistTrPhiEtaNonProp[i]->GetXaxis()->SetTitle("#eta");
-				fHistTrPhiEtaNonProp[i]->GetYaxis()->SetTitle("#phi");
-				fOutput->Add(fHistTrPhiEtaNonProp[i]);
-
-				histname = Form("fHistTrPtNonProp_%d",i);
-				fHistTrPtNonProp[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
-				fHistTrPtNonProp[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-				fHistTrPtNonProp[i]->GetYaxis()->SetTitle("counts");
-				fOutput->Add(fHistTrPtNonProp[i]);
-
-				histname = Form("fHistDeltaEtaPt_%d",i);
-				fHistDeltaEtaPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
-				fHistDeltaEtaPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-				fHistDeltaEtaPt[i]->GetYaxis()->SetTitle("#delta#eta");
-				fOutput->Add(fHistDeltaEtaPt[i]);
-
-				histname = Form("fHistDeltaPhiPt_%d",i);
-				fHistDeltaPhiPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -2, 2);
-				fHistDeltaPhiPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-				fHistDeltaPhiPt[i]->GetYaxis()->SetTitle("#delta#phi");
-				fOutput->Add(fHistDeltaPhiPt[i]);
-
-				histname = Form("fHistDeltaPtvsPt_%d",i);
-				fHistDeltaPtvsPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
-				fHistDeltaPtvsPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-				fHistDeltaPtvsPt[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
-				fHistDeltaPtvsPt[i]->GetZaxis()->SetTitle("counts");
-				fOutput->Add(fHistDeltaPtvsPt[i]);
-				*/
-			}
-		}
-	}
-
-	if (fClusterCollArray.GetEntriesFast()>0)
-	{
-		for (Int_t i = 0; i < fNcentBins; i++)
-		{
-			/*
-			histname = "fHistClusPhiEtaEnergy_";
-			histname += i;
-			fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
-			fHistClusPhiEtaEnergy[i]->GetXaxis()->SetTitle("#eta");
-			fHistClusPhiEtaEnergy[i]->GetYaxis()->SetTitle("#phi");
-			fHistClusPhiEtaEnergy[i]->GetZaxis()->SetTitle("E_{cluster} (GeV)");
-			fOutput->Add(fHistClusPhiEtaEnergy[i]);
-
-			histname = "fHistClusDeltaPhiEPEnergy_";
-			histname += i;
-			fHistClusDeltaPhiEPEnergy[i] = new TH2F(histname, histname, fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());
-			fHistClusDeltaPhiEPEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-			fHistClusDeltaPhiEPEnergy[i]->GetYaxis()->SetTitle("#phi_{cluster} - #psi_{RP}");
-			fOutput->Add(fHistClusDeltaPhiEPEnergy[i]);
-
-			if (fIsEmbedded)
-			{
-				histname = "fHistClusMCEnergyFraction_";
-				histname += i;
-				fHistClusMCEnergyFraction[i] = new TH1F(histname, histname, fNbins, 0, 1.2);
-				fHistClusMCEnergyFraction[i]->GetXaxis()->SetTitle("MC fraction");
-				fHistClusMCEnergyFraction[i]->GetYaxis()->SetTitle("counts");
-				fOutput->Add(fHistClusMCEnergyFraction[i]);
-			}
-
-			histname = "fHistClusTimeEnergy_";
-			histname += i;
-			fHistClusTimeEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
-			fHistClusTimeEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-			fHistClusTimeEnergy[i]->GetYaxis()->SetTitle("Time");
-			fOutput->Add(fHistClusTimeEnergy[i]);
-*/
-			Int_t nbins = fMaxCellsInCluster;
-			while (nbins > fNbins) nbins /= 2;
-			/*
-			histname = "fHistNCellsEnergy_";
-			histname += i;
-			fHistNCellsEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
-			fHistNCellsEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-			fHistNCellsEnergy[i]->GetYaxis()->SetTitle("N_{cells}");
-			fOutput->Add(fHistNCellsEnergy[i]);
-
-			histname = "fHistFcrossEnergy_";
-			histname += i;
-			fHistFcrossEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
-			fHistFcrossEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-			fHistFcrossEnergy[i]->GetYaxis()->SetTitle("F_{cross}");
-			fOutput->Add(fHistFcrossEnergy[i]);
-			*/
-/*
-			histname = "fHistCellsAbsIdEnergy_";
-			histname += i;
-			fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
-			fHistCellsAbsIdEnergy[i]->GetXaxis()->SetTitle("cell abs. Id");
-			fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cluster} (GeV)");
-			fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");
-			fOutput->Add(fHistCellsAbsIdEnergy[i]);*/
-		}
-	}
-
 
 
 	Int_t dim = 0;
@@ -533,12 +292,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		dim++;
 	}
 
-
-	/*fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
-	for (Int_t i = 0; i < dim; i++)
-		fHistEventQA->GetAxis(i)->SetTitle(title[i]);
-	fOutput->Add(fHistEventQA);
-*/
 
 	// - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . -
 	//
@@ -723,69 +476,9 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 		AliDebug(2,Form("%d cells found in the event", ncells));
 	}
 
-
-
-
-	/*FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal,
-			ntracks, nclusters, ncells,
-			leadingTrackPt, leadingTrackEta, leadingTrackPhi,
-			leadingClusE, leadingClusEta, leadingClusPhi);
-*/
-
 	return kTRUE;
 }
 
-//________________________________________________________________________
-/*void AliAnalysisTaskGammaHadron::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c,
-		Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells,
-		Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
-		Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi)
-{
-	Double_t contents[20]={0};
-
-	for (Int_t i = 0; i < fHistEventQA->GetNdimensions(); i++) {
-		TString title(fHistEventQA->GetAxis(i)->GetTitle());
-		if (title=="Centrality %")
-			contents[i] = cent;
-		else if (title==Form("Centrality %s %%", fCentMethod2.Data()))
-			contents[i] = cent2;
-		else if (title==Form("Centrality %s %%", fCentMethod3.Data()))
-			contents[i] = cent3;
-		else if (title=="V0A total multiplicity")
-			contents[i] = v0a;
-		else if (title=="V0C total multiplicity")
-			contents[i] = v0c;
-		else if (title=="V0A+V0C total multiplicity")
-			contents[i] = v0a+v0c;
-		else if (title=="#psi_{RP}")
-			contents[i] = ep;
-		else if (title=="#rho (GeV/c)")
-			contents[i] = rho;
-		else if (title=="No. of tracks")
-			contents[i] = ntracks;
-		else if (title=="No. of clusters")
-			contents[i] = nclusters;
-		else if (title=="No. of cells")
-			contents[i] = ncells;
-		else if (title=="p_{T,track}^{leading} (GeV/c)")
-			contents[i] = maxTrackPt;
-		else if (title=="#eta_{track}^{leading}")
-			contents[i] = maxTrackEta;
-		else if (title=="#phi_{track}^{leading}")
-			contents[i] = maxTrackPhi;
-		else if (title=="E_{cluster}^{leading} (GeV)")
-			contents[i] = maxClusterE;
-		else if (title=="#eta_{cluster}^{leading}")
-			contents[i] = maxClusterEta;
-		else if (title=="#phi_{cluster}^{leading}")
-			contents[i] = maxClusterPhi;
-		else
-			AliWarning(Form("Unable to fill dimension %s!",title.Data()));
-	}
-
-	fHistEventQA->Fill(contents);
-}
-*/
 //________________________________________________________________________
 Int_t AliAnalysisTaskGammaHadron::DoCellLoop(Float_t &sum)
 {
