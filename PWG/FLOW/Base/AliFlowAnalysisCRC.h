@@ -38,6 +38,7 @@ class TProfile;
 class TProfile2D;
 class TDirectoryFile;
 class TRandom3;
+class TNtuple;
 class THnSparse;
 
 class AliFlowEventSimple;
@@ -760,26 +761,12 @@ public:
  TH1D* GetCRCZDCCorrProdTempHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCorrProdTempHist[c][eg][h];};
  
 //  13.) CRC Pt differential
- void SetCRCPtCorrTHnS(THnSparse* const TH) {this->fCRCPtCorrTHnS = TH;};
- THnSparse* GetCRCPtCorrTHnS() const {return this->fCRCPtCorrTHnS;};
- void SetCRCPtNUATHnS(THnSparse* const TH) {this->fCRCPtNUATHnS = TH;};
- THnSparse* GetCRCPtNUATHnS() const {return this->fCRCPtNUATHnS;};
- void SetCRCPtCovTHnS(THnSparse* const TH) {this->fCRCPtCovTHnS = TH;};
- THnSparse* GetCRCPtCovTHnS() const {return this->fCRCPtCovTHnS;};
- 
- void SetCRCVZCorTHnS(THnSparse* const TH) {this->fCRCVZCorTHnS = TH;};
- THnSparse* GetCRCVZCorTHnS() const {return this->fCRCVZCorTHnS;};
- void SetCRCVZNUATHnS(THnSparse* const TH) {this->fCRCVZNUATHnS = TH;};
- THnSparse* GetCRCVZNUATHnS() const {return this->fCRCVZNUATHnS;};
- void SetCRCVZCovTHnS(THnSparse* const TH) {this->fCRCVZCovTHnS = TH;};
- THnSparse* GetCRCVZCovTHnS() const {return this->fCRCVZCovTHnS;};
- 
- void SetCRCZDCCorTHnS(THnSparse* const TH) {this->fCRCZDCCorTHnS = TH;};
- THnSparse* GetCRCZDCCorTHnS() const {return this->fCRCZDCCorTHnS;};
- void SetCRCZDCNUATHnS(THnSparse* const TH) {this->fCRCZDCNUATHnS = TH;};
- THnSparse* GetCRCZDCNUATHnS() const {return this->fCRCZDCNUATHnS;};
- void SetCRCZDCCovTHnS(THnSparse* const TH) {this->fCRCZDCCovTHnS = TH;};
- THnSparse* GetCRCZDCCovTHnS() const {return this->fCRCZDCCovTHnS;};
+ void SetCRCPtTPCTNt(TNtuple* const TH) {this->fCRCPtTPCTNt = TH;};
+ TNtuple* GetCRCPtTPCTNt() const {return this->fCRCPtTPCTNt;};
+ void SetCRCPtVZTNt(TNtuple* const TH) {this->fCRCPtVZTNt = TH;};
+ TNtuple* GetCRCPtVZTNt() const {return this->fCRCPtVZTNt;};
+ void SetCRCPtZDCTNt(TNtuple* const TH) {this->fCRCPtZDCTNt = TH;};
+ TNtuple* GetCRCPtZDCTNt() const {return this->fCRCPtZDCTNt;};
  
  Int_t GetnRun() const {return this->fCRCnRun;};
  Int_t GetCRCPtnCen() const {return this->fCRCPtnCenBin;};
@@ -1225,6 +1212,7 @@ private:
  TList *fCRCPtList; //! list to hold CRC histograms
  
  Int_t fCRCPtnPtBin;
+ const static Int_t fCRCPtnPtBinMax = 48;
  Double_t fCRCPtMinPt;
  Double_t fCRCPtMaxPt;
  Double_t fCRCPtwPtBin;
@@ -1234,19 +1222,10 @@ private:
  Double_t fCRCPtCenMax;
  Double_t fCRCPtwCenBin;
  
- THnSparse *fCRCPtEbEQVec; //! EbE Q vectors
- THnSparse *fCRCPtCorrTHnS; //! correlation
- THnSparse *fCRCPtNUATHnS; //! NUA terms
- THnSparse *fCRCPtCovTHnS; //! covariance terms
- TH1D *fCRCPtTempHist[2]; //!
- 
- THnSparse *fCRCVZCorTHnS; //! correlation
- THnSparse *fCRCVZNUATHnS; //! NUA terms
- THnSparse *fCRCVZCovTHnS; //! covariance terms
- 
- THnSparse *fCRCZDCCorTHnS; //! correlation
- THnSparse *fCRCZDCNUATHnS; //! NUA terms
- THnSparse *fCRCZDCCovTHnS; //! covariance terms
+ TNtuple *fCRCPtTPCTNt; //! TNtuple test
+ TNtuple *fCRCPtVZTNt; //! TNtuple test
+ TNtuple *fCRCPtZDCTNt; //! TNtuple test
+ THnSparse *fCRCPtEbEQVec; //!
  
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
