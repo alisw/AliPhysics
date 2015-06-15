@@ -31,6 +31,7 @@ class AliT0CalibWalk: public TNamed {
   TGraph *  GetAmpLEDRec(Int_t ipmt) const   {return (TGraph*)fAmpLEDRec.At(ipmt);}
   void    GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma);
   void SetCalibByData(Bool_t calib) {fCalibByData=calib;}
+  void SetWalk2015(TString filename);
  protected:
    
    TObjArray   fWalk;  //time - amp. walk

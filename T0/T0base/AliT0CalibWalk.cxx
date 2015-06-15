@@ -258,7 +258,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
        
 	TGraph *grwalkqtc = new TGraph (250,xdata,ydata);
 	grwalkqtc->Print();
-	grwalkqtc->SetTitle(Form("PMT%i",i));
+	grwalkqtc->SetTitle(Form("PMT%i",i) );
 	fWalk.AddAtAndExpand(grwalkqtc,i);
 	for (Int_t ip=0; ip<250; ip++)
 	  {
@@ -271,7 +271,75 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   
 return ok;
 }
-
+void AliT0CalibWalk::SetWalk2015(TString filename)
+{
+  printf("AliT0CalibWalk::SetWalk2015\n");
+  //set zero LED correction
+  Float_t ampled[200], walkled[200], ampqtc[200];;
+  for (int  i=0; i<200; i++) {
+    ampled[i] = Float_t(i*10);  
+    walkled[i]=0;
+    ampqtc[i] = Float_t (i*100);
+  }
+  Int_t nbins=0;
+  Double_t xgr[350], ygr[350];
+  Float_t ampcut10[24] = {1563, 1544, 1555, 1645, 1745, 1555, 
+			  1526, 1455, 1739, 1413, 1614, 1194,
+			  1693, 1454, 1566, 1670, 1516, 1810, 
+			  1607, 1516, 1675, 1566, 1443, 1545 }; 
+  
+  Float_t meanmax[24]= {3077.13, 3069.43, 3070.27, 3123.97, 3150.55, 3127.22,
+			3110.7,  3088.24, 3164.09, 3154.94, 3142.93, 3103.78, 
+			3091.14, 3055.07, 3043.82, 3051.3,  3062.58, 3087.11,
+			3055.03, 3072.61, 3064.25, 3120.34, 3115.8, 3095.93};
+  TProfile * prQTC_CFD[24];  
+  TFile *f = new TFile(filename.Data());
+  if (!f) {
+    printf (" no file \n");
+    return;
+  }
+  for (int i=0; i<24; i++) {
+    prQTC_CFD[i]= (TProfile*) f->Get(Form("Slew%i",i+1) );
+  }
+  // collect graph
+  for (Int_t i=0; i<24; i++)
+    {   
+      nbins=0;
+      cout<<" nachalo "<<i<<endl;
+      for (Int_t j=10; j<350; j++) {
+	Int_t nentr = prQTC_CFD[i]->GetBinEntries(j);
+	Float_t prqt = prQTC_CFD[i]->GetBinContent(j);
+	xgr[nbins]=prQTC_CFD[i]->GetBinCenter(j);
+	cout<<" bin "<<j<<" cont "<<prqt<<endl;
+	if (prQTC_CFD[i]->GetBinCenter(j)>ampcut10[i]) {
+	  if(nentr>1000) {
+	    ygr[nbins]=prqt-meanmax[i];
+	  }
+	  else 
+	    ygr[nbins]= ygr[nbins-1];
+	  cout<<nbins<<" "<< xgr[nbins]<<" "<< ygr[nbins]<<endl;
+	  nbins++;
+	}
+      }
+      TGraph *grwalkqtc = new TGraph (nbins,xgr,ygr);
+      grwalkqtc->SetTitle(Form("PMT%i",i+1));
+      fWalk.AddAtAndExpand(grwalkqtc,i);
+      TGraph *grwalkled = new TGraph (100,ampled,walkled);
+      fAmpLEDRec.AddAtAndExpand(grwalkled,i);
+      grwalkled->SetTitle(Form("PMT%i",i+1));
+      
+      //fit amplitude graphs to make comparison wth new one	  
+      TGraph *grampled = new TGraph (200,ampled,ampled);
+      TGraph *grqtc = new TGraph (200,ampqtc,ampqtc);
+      fQTC.AddAtAndExpand(grqtc,i);	 
+      fAmpLED.AddAtAndExpand(grampled,i);
+      cout<<" add amp "<<i<<endl;
+      
+      
+    }
+  printf(" AliT0CalibWalk return \n");
+  
+}
 void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma) 
 {
 
