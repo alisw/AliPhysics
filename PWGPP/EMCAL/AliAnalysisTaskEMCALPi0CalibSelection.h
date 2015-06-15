@@ -51,10 +51,12 @@ public:
   
   void    FillHistograms();
   
+  void    InitEnergyCalibrationFactors();
+
   void    InitGeometryMatrices();
   
   void    InitTemperatureCorrections();
-  
+    
   void    UserCreateOutputObjects();
   
   void    UserExec(Option_t * opt);
@@ -64,7 +66,7 @@ public:
   void    Terminate(Option_t* opt);
   
   void    GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
-  
+    
   // Analysis parameter setting
   
   void    SetPairDTimeCut(Float_t t)                     { fDTimeCut    = t          ; }
@@ -113,7 +115,9 @@ public:
   
   void    SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fMatrix[i]    = m         ; }
 
-  void    SetOADBFilePath(TString path)                  { fOADBFilePath      = path ; }
+  void    SetOADBFilePath(TString path)                  { fOADBFilePath = path      ; }
+  
+  void    SetCalibrationFilePath( TString path )         { fCalibFilePath = path     ; }
   
   // Cluster recalculation
   
@@ -158,10 +162,11 @@ private:
     
   TString             fTriggerName;      ///<  Trigger name must contain this name.
     
-    
   AliEMCALRecoUtils * fRecoUtils;        ///<  Access to reconstruction utilities.
     
   TString             fOADBFilePath ;    ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
+  
+  TString             fCalibFilePath;    ///< Full path with file with energy calibration factors per channel from previous iteration.
     
   Bool_t              fCorrectClusters;  ///<  Correct clusters energy, position etc.
 
