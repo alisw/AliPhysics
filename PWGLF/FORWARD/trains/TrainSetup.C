@@ -44,6 +44,7 @@ class AliVEventHandler;
 class AliAnalysisManager;
 class AliInputEventHandler;
 #endif
+class AliAnalysisTask;
 
 //====================================================================
 /** 
@@ -72,8 +73,7 @@ struct TrainSetup
       fEscapedName(name),
       fDatimeString(""),
       fOptions(),
-      fRailway(0),
-      fMonitored("")
+      fRailway(0)
   {
     fOptions.Add("help", "Show help", false);
     fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
@@ -87,6 +87,7 @@ struct TrainSetup
     fOptions.Add("branches", "Load only requested branches", false);
     fOptions.Add("version", "Print version and exit", false);
     fOptions.Add("tender","WHICH","Specify tender supplies", "");
+    fOptions.Add("ocdb","WHICH","Specify OCDB for tenders", "");
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -100,8 +101,7 @@ struct TrainSetup
       fEscapedName(o.fEscapedName), 
       fDatimeString(o.fDatimeString),
       fOptions(o.fOptions), 
-      fRailway(o.fRailway),
-      fMonitored(o.fMonitored)
+      fRailway(o.fRailway)
   {}
   /** 
    * Assignment operator
@@ -117,8 +117,7 @@ struct TrainSetup
     fEscapedName  = o.fEscapedName;
     fDatimeString = o.fDatimeString;
     fOptions      = o.fOptions;
-    fRailway       = o.fRailway;
-    fMonitored    = o.fMonitored;
+    fRailway      = o.fRailway;
     return *this;
   }
   
@@ -561,6 +560,81 @@ protected:
   }
   /** 
    * Create physics selection, and add to manager
+   *
+   * The physis selectuion used can be specified in the option @c ps. 
+   * 
+   * - NONE            Do not set a physics selection 
+   * - BARE            Set physics selection on input handler directly 
+   * - CUSTOM[=macro]  Read custom physics selection, @c macro.  
+   *                   If not macro is given, then assume it to be 
+   *                   @c CustomPS.C 
+   * - ALL             Do not ignore background triggers. 
+   *
+   * The macro passed to CUSTOM must accept a single argument of a
+   * pointer to an AliPhysicsSelection object.  The macro should set
+   * the collision and background candidates, as well as the filling
+   * scheme, and trigger analysis.
+   *
+   * @code 
+   void CustomPS(AliPhysicsSelection* ps)
+   {
+     // --- Defaults filling scheme ----------------------------------
+     AliOADBFillingScheme * cFS = new AliOADBFillingScheme("Default");
+     cFS->SetFillingSchemeName("Default");
+     cFS->SetBXIDs("B",  "");
+     cFS->SetBXIDs("A",  "");
+     cFS->SetBXIDs("AC", "");
+     cFS->SetBXIDs("ACE","");
+     cFS->SetBXIDs("C",  "");
+     cFS->SetBXIDs("E",  "");
+
+     // --- Define hardware triggers, and how to replay them offline -
+     // This redefines Min.Bias. by an or of VZERO-OR and SPD-FASTOR 
+     AliOADBPhysicsSelection * cPS = new AliOADBPhysicsSelection("cPS");
+     Int_t id = 0;
+     // B (bunch-crossing) trigger - or of CINT5 (V0-OR) 
+     // and SPD COSMB (FASTOR)
+     cPS->AddCollisionTriggerClass(AliVEvent::kMB,
+                                   "+CINT5-B-NOPF-ALLNOTRD,"
+				   "+C0SMB-B-NOPF-ALLNOTRD","B",    id);
+     // Control triggers 
+     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+                                   "+CINT5-A-NOPF-ALLNOTRD,"
+                                   "+C0SMB-A-NOPF-ALLNOTRD","A",    id);
+     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+                                   "+CINT5-C-NOPF-ALLNOTRD,"
+                                   "+C0SMB-C-NOPF-ALLNOTRD","C",    id);
+     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+                                   "+CINT5-E-NOPF-ALLNOTRD,"
+                                   "+C0SMB-E-NOPF-ALLNOTRD","E",    id);
+     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+                                   "+CINT5-ACE-NOPF-ALLNOTRD,"
+                                   "+C0SMB-ACE-NOPF-ALLNOTRD","ACE",id);
+     // How to replay hardware trigger 
+     cPS->SetHardwareTrigger      (id,"SPDGFO >= 1 || V0A || V0C");
+     // Additional off-line trigger 
+     cPS->SetOfflineTrigger       (id,"(SPDGFO >= 1 || V0A || V0C) "
+                                  "&& !V0ABG && !V0CBG && !TPCLaserWarmUp");
+  
+     // --- Trigger analysis defaults --------------------------------
+     AliOADBTriggerAnalysis * cTA = new AliOADBTriggerAnalysis("Default");
+     cTA->SetZDCCorrParameters(0.5, 0, 4*0.7, 4*0.7);
+   }
+   @endcode 
+   *
+   * @c AliPhysicsSelection::AddCollisionTriggerClass sets a hardware
+   * trigger (combination) to be a collision of a given kind (e.g.,
+   * kMB). First argument is the collision kind (see AliVEvent), second is the 
+   *
+   * @c AliPhysicsSelection::AddBGTrigerClass sets a hardware trigger
+   * (combination) to be a background trigger of the quivilent
+   * collisions trigger.
+   *
+   * @c AliPhysicsSelection::SetHardwareTrigger sets how to replay the
+   * hardware trigger off-line.
+   *
+   * @c AliPhysicsSelection::SetOfflineTrigger sets the off-line
+   * conditions to meet.
    * 
    * @param mc Whether this is for MC 
    * @param mgr Manager
@@ -568,9 +642,9 @@ protected:
   virtual void CreatePhysicsSelection(Bool_t mc, AliAnalysisManager* mgr)
   {
     TString opt = fOptions.Get("ps");
-    opt.ToUpper();
+    // opt.ToUpper();
 
-    if (opt.EqualTo("NONE")) return;
+    if (opt.EqualTo("NONE",TString::kIgnoreCase)) return;
 
     AliPhysicsSelection* ps = 0;
     AliInputEventHandler* input = 
@@ -578,7 +652,7 @@ protected:
     if (!input) return;
 
     // --- Create object, either directory or via task ---------------
-    if (opt.Contains("BARE")) {
+    if (opt.Contains("BARE",TString::kIgnoreCase)) {
       // --- Just create object and set on input handler -------------
       ps = new AliPhysicsSelection();
       if (mc) ps->SetAnalyzeMC();
@@ -594,13 +668,29 @@ protected:
       // --- Retrive object from input handler -----------------------
       ps = dynamic_cast<AliPhysicsSelection*>(input->GetEventSelection());
     }
-    if (opt.Contains("CUSTOM")) {
+    if (opt.Contains("CUSTOM",TString::kIgnoreCase)) {
       // --- Load custom trigger definitions -------------------------
-      Info("CreatePhysicsSelection", "Loading custom PS from ../CustomPS.C");
-      gROOT->Macro(Form("../CustomPS.C((AliPhysicsSelection*)%p)", ps));
+      TString macro("CustomPS.C");
+      Int_t eq = opt.Index("custom=",7,0,TString::kIgnoreCase);
+      if (eq != kNPOS) {
+	Int_t end = opt.Index(".C",2,eq+7,TString::kIgnoreCase);
+	if (end != kNPOS) {
+	  macro = opt(eq+7,end+2-eq-7);
+	}
+      }
+      fRailway->LoadAux(macro);
+      TString rmacro = gSystem->Which(gROOT->GetMacroPath(), macro);
+      if (rmacro.IsNull()) {
+	Error("CreatePhysicsSelection", "Custom PS script %s not found",
+	      macro.Data());
+	return;
+      }
+      Info("CreatePhysicsSelection", "Loading custom PS from %s",rmacro.Data());
+      TString base(gSystem->BaseName(rmacro.Data()));
+      gROOT->Macro(Form("%s((AliPhysicsSelection*)%p)", base.Data(), ps));
     }
 
-    if (opt.Contains("ALL")) {
+    if (opt.Contains("ALL",TString::kIgnoreCase)) {
       // --- Ignore trigger class when selecting events.  This means -
       // --- that we get offline+(A,C,E) events too ------------------
       Info("CreatePhysicsSelection", "Skipping trigger selection");
@@ -723,16 +813,90 @@ protected:
 		name.Data());
     return task;
   }
-  virtual void* AddTenderSupply(void* tender,
-				const Char_t* cls,
-				const Char_t* nme)
+  /* @} */
+  /** 
+   * @{ 
+   * @name Tender 
+   */
+  /** 
+   * Enumeration of tenders 
+   */
+  enum {
+    kTenderV0    = 0x0001,
+    kTenderTPC   = 0x0002,
+    kTenderPtFix = 0x0004,
+    kTenderT0    = 0x0008,
+    kTenderTOF   = 0x0010,
+    kTenderTRD   = 0x0020,
+    kTenderVTX   = 0x0040,
+    kTenderEMCAL = 0x0080,
+    kTenderPID   = 0x0100,
+    kTenderHMPID = 0x0200,
+    kTenderPHOS  = 0x0400
+  };
+  /** 
+   * Add individual tender supplies 
+   * 
+   * @param tender Tender task 
+   * @param flag   Which supply to add
+   * @param debug  Debug flag for supply
+   * 
+   * @return Pointer to tender supply 
+   */
+  virtual void* AddTenderSupply(void*     tender,
+				UShort_t  flag,
+				Int_t     debug)
   {
+    if (flag == 0) return 0;
+
+    TString c;
+    TString n;
+    switch (flag) {
+    case kTenderV0:    n = "VZERO";    c = "VZERO";    break;
+    case kTenderTPC:   n = "TPC";      c = "TPC";      break;
+    case kTenderPtFix: n = "TrackFix"; c = "PtInvFix"; break;
+    case kTenderT0:    n = "T0";       c = "TZERO";    break;
+    case kTenderTOF:   n = "TOF";      c = "TOF";      break;
+    case kTenderTRD:   n = "TRD";      c = "TRD";      break;
+    case kTenderVTX:   n = "Vtx";      c = "IP";       break;
+    case kTenderEMCAL: n = "EMCAL";    c = "EMCAL";    break;
+    case kTenderPID:   n = "PID";      c = "PID";      break;
+    case kTenderHMPID: n = "HMPID";    c = "HMPID";    break;
+    case kTenderPHOS:  n = "PHOS";     c = "PHOS";     break;
+    default:     
+      Warning("AddTenderSupply", "Unknown tender flag: 0x%08x", flag);
+      return 0;
+    }
+    TString m;
+    switch (flag) {
+    case kTenderV0:    m = Form("s->SetDebug(%d);", debug);     break;
+    case kTenderEMCAL: // Fall through 
+    case kTenderTOF:   // Fall through 
+    case kTenderTPC:   // Fall through 
+    case kTenderPtFix: // Fall through 
+    case kTenderTRD:   m = Form("s->SetDebugLevel(%d);", debug); break;
+    }
+
+    TString cls(Form("Ali%sTenderSupply", c.Data()));
     Long_t ret =
-      gROOT->ProcessLine(Form("{ AliTenderSupply* s = new %s(\"%s\");"
-			      "((AliTender*)%p)->AddSupply(supply);} s;",
-			      cls, nme, tender));
-    return reinterpret_cast<void*>(ret);
+      gROOT->ProcessLine(Form("{ %s* s = new %s(\"%s\");"
+			      "((AliTender*)%p)->AddSupply(s);%s"
+			      "} s;",
+			      cls.Data(),
+			      cls.Data(),
+			      n.Data(),
+			      tender,
+			      m.Data()));
+    void* ptr = reinterpret_cast<void*>(ret);
+    Info("AddTenderSupply", "Adding supply %s (an %s object): %p",
+	 n.Data(), cls.Data(), ret);
+    return ptr;
   }
+  
+  /** 
+   * Add tender to train.  
+   * 
+   */
   virtual void AddTender()
   {
     TString supplies = fOptions.Get("tender");
@@ -740,21 +904,22 @@ protected:
 
     UShort_t which = 0;
     supplies.ToUpper();
-    if (supplies.Contains("V0"))    which |= 0x0001;
-    if (supplies.Contains("TPC"))   which |= 0x0002;
-    if (supplies.Contains("PTFIX")) which |= 0x0004;
-    if (supplies.Contains("T0"))    which |= 0x0008;
-    if (supplies.Contains("TOF"))   which |= 0x0010;
-    if (supplies.Contains("TRD"))   which |= 0x0020;
-    if (supplies.Contains("VTX"))   which |= 0x0040;
-    if (supplies.Contains("EMCAL")) which |= 0x0080;
-    if (supplies.Contains("PID"))   which |= 0x0100;
+    if (supplies.Contains("V0") ||
+	supplies.Contains("VZERO")) which |= kTenderV0    ;
+    if (supplies.Contains("TPC"))   which |= kTenderTPC   ;
+    if (supplies.Contains("PTFIX")) which |= kTenderPtFix ;
+    if (supplies.Contains("T0"))    which |= kTenderT0    ;
+    if (supplies.Contains("TOF"))   which |= kTenderTOF   ;
+    if (supplies.Contains("TRD"))   which |= kTenderTRD   ;
+    if (supplies.Contains("VTX"))   which |= kTenderVTX   ;
+    if (supplies.Contains("EMCAL")) which |= kTenderEMCAL ;
+    if (supplies.Contains("PID"))   which |= kTenderPID   ;
 
     AddTender(which);
   }
     
   /** 
-   * Add a tender 
+   * Add a tender with supplies specified in argument 
    *
    *
    */
@@ -762,15 +927,7 @@ protected:
   {
     if (which == 0) return;
     
-    Bool_t useV0    = which & 0x0001;
-    Bool_t useTPC   = which & 0x0002;
-    Bool_t usePtFix = which & 0x0004;
-    Bool_t useT0    = which & 0x0008;
-    Bool_t useTOF   = which & 0x0010;
-    Bool_t useTRD   = which & 0x0020;
-    Bool_t useVTX   = which & 0x0040;
-    Bool_t useEMCAL = which & 0x0080;
-    Bool_t usePID   = which & 0x0100;
+    Int_t  vrb      = fOptions.AsInt("verbose", 3);
 
     fRailway->LoadLibrary("Tender");
     fRailway->LoadLibrary("TenderSupplies");
@@ -782,20 +939,37 @@ protected:
     }
     void* tender = reinterpret_cast<void*>(ret);
     gROOT->ProcessLine(Form("((AliTender*)%p)->SetCheckEventSelection(%d)",
-			    tender, useV0));
-    gROOT->ProcessLine(Form("((AliTender*)%p)->SetDefaultCDBStorage(\"raw://\")",
-			    tender));
+			    tender, (which & kTenderV0)));
+    gROOT->ProcessLine(Form("((AliTender*)%p)->SetDebugLevel(%d)",
+			    tender, vrb));
+    
+    // OCDB settings for tender 
+    TString ocdb = fOptions.Get("ocdb");
+    if (ocdb.IsNull())
+      ocdb = "raw://";
+    else if (ocdb.EndsWith(".root")) {
+      fRailway->LoadLibrary("CDB");
+      fRailway->LoadAux(ocdb);
+      gROOT->ProcessLine(Form("AliCDBManager::Instance()->"
+			      "SetSnapshotMode(\"%s\");",
+			      ocdb.Data()));
+      ocdb = "raw://";
+    }
+    gROOT->ProcessLine(Form("((AliTender*)%p)->SetDefaultCDBStorage(\"%s\")",
+			    tender, ocdb.Data()));
 
-    if (useV0)    AddTenderSupply(tender,"AliVZEROTenderSupply",   "VZERO");
-    if (useTPC)   AddTenderSupply(tender,"AliTPCTenderSupply",     "TPC");
-    if (usePtFix) AddTenderSupply(tender,"AliTrackFixTenderSupply","PtInvFix");
-    if (useT0)    AddTenderSupply(tender,"AliT0TenderSupply",      "TZERO");
-    if (useTOF)   AddTenderSupply(tender,"AliTOFTenderSupply",     "TOF");
-    if (useTRD)   AddTenderSupply(tender,"AliTRDTenderSupply",     "TRD");
-    if (useVTX)   AddTenderSupply(tender,"AliVtxTenderSupply",     "IP");
-    if (useEMCAL) AddTenderSupply(tender,"AliEMCALTenderSupply",   "EMCAL");
-    if (usePID)   AddTenderSupply(tender,"AliPIDTenderSupply",     "PID");
+    AddTenderSupply(tender, which & kTenderV0,     vrb);
+    AddTenderSupply(tender, which & kTenderTPC,    vrb);
+    AddTenderSupply(tender, which & kTenderPtFix,  vrb);
+    AddTenderSupply(tender, which & kTenderT0,     vrb);
+    AddTenderSupply(tender, which & kTenderTOF,    vrb);
+    AddTenderSupply(tender, which & kTenderTRD,    vrb);
+    AddTenderSupply(tender, which & kTenderVTX,    vrb);
+    AddTenderSupply(tender, which & kTenderEMCAL,  vrb);
+    AddTenderSupply(tender, which & kTenderPID,    vrb);
 
+    gROOT->ProcessLine(Form("((AliTender*)%p)->GetSupplies()->Print()",tender));
+    
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     AliAnalysisTask*    tsk = reinterpret_cast<AliAnalysisTask*>(tender);
     mgr->AddTask(tsk);
@@ -941,23 +1115,16 @@ protected:
   //__________________________________________________________________
   virtual void AddMonitor(const TString& name)
   {
-    if (!fMonitored.IsNull()) fMonitored.Append(":");
-    fMonitored.Append(name);
+    if (fRailway->Mode() != Railway::kProof) return;
+    Warning("CreateMonitors", "Monitoring not supported yet");
   }
+  //__________________________________________________________________
+  /** 
+   * Create the monitors
+   * 
+   */
   virtual void CreateMonitors() 
   {
-    if (fMonitored.IsNull()) return;
-    if (fRailway->Mode() != Railway::kProof) return;
-
-    TObjArray* tokens = fMonitored.Tokenize(":");
-    TObject*   token  = 0;
-    TIter      next(tokens);
-    while ((token = next())) {
-      gROOT->ProcessLine(Form("gProof->AddFeedback(\"%s\");", 
-			      token->GetName()));
-      
-    }
-    tokens->Delete();
   }
   //__________________________________________________________________
   /** 
@@ -1279,7 +1446,6 @@ protected:
   TString      fEscapedName;
   TString      fDatimeString;
   OptionList   fOptions;
-  Railway*      fRailway;
-  TString      fMonitored;
+  Railway*     fRailway;
 };
 #endif
