@@ -750,7 +750,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMaxRtrack=0.025;
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="Reference.root";
-  fGeometryName="EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL";
+  fGeometryName="EMCAL_COMPLETE12SMV1_DCAL_8SM";
 }
 
 //________________________________________________________________________
