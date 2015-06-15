@@ -101,6 +101,9 @@ public:
     AliEveDataSource* GetDataSourceOffline(){return fDataSourceOffline;}
     AliEveDataSource* GetDataSourceHLTZMQ(){return fDataSourceHLTZMQ;}
     
+    Bool_t ReceivePromptRecoParameters(Int_t runNo);
+
+    void SetDefaultCDBstorage(TString path);
 
     // getters and setters for info about events:
     Int_t          GetEventId() const {return fEventId;}
@@ -118,6 +121,8 @@ public:
     virtual void          AfterNewEventLoaded();
     AliEveMacroExecutor*  GetExecutor() const { return fExecutor; }
     AliEveEventSelector*  GetEventSelector() const { return fPEventSelector; }
+
+    Bool_t InitOCDB(int runNo);
     
     // signals:
     void Timeout();             // *SIGNAL*

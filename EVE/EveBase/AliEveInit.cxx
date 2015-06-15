@@ -111,13 +111,10 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     
     dataSourceOffline->AddAODfriend("AliAOD.VertexingHF.root");
 
-    dataSourceOffline->SetCdbUri(fCDBuri);
-    
     TString ocdbStorage;
     if (gSystem->Getenv("ocdbStorage"))
         ocdbStorage=gSystem->Getenv("ocdbStorage");
-    
-    dataSourceHLT->SetCdbUri(ocdbStorage);         // current OCDB snapshot
+    AliCDBManager::Instance()->SetDefaultStorage(ocdbStorage);
     
     ImportMacros();
     Init();

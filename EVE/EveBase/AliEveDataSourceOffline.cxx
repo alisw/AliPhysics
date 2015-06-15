@@ -8,12 +8,11 @@
 
 #include "AliEveDataSourceOffline.h"
 
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliSysInfo.h"
 #include "AliEveEventSelector.h"
 #include "AliHeader.h"
 
+#include "TSystem.h"
 #include "TEnv.h"
 #include <TPRegexp.h>
 
@@ -52,70 +51,6 @@ AliEveDataSourceOffline::~AliEveDataSourceOffline()
     
 }
 
-
-void AliEveDataSourceOffline::InitOCDB(int runNo)
-{
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    
-    static const TEveException kEH("AliEveDataSourceOffline::InitOCDB ");
-
-    if (cdb->IsDefaultStorageSet())
-    {
-        cdb->UnsetDefaultStorage();
-    }
-
-    if (fgCdbUri.IsNull())
-    {
-        gEnv->SetValue("Root.Stacktrace", "no");
-        Fatal("Open()", "OCDB path was not specified.");
-    }
-    cout<<"Setting default storage:"<<fgCdbUri<<endl;
-
-    // Handle some special cases for MC (should be in OCDBManager).
-    if (fgCdbUri == "mcideal://")
-        cdb->SetDefaultStorage("MC", "Ideal");
-    else if (fgCdbUri == "mcresidual://")
-        cdb->SetDefaultStorage("MC", "Residual");
-    else if (fgCdbUri == "mcfull://")
-        cdb->SetDefaultStorage("MC", "Full");
-    else if (fgCdbUri == "local://"){
-        fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
-        cdb->SetDefaultStorage(fgCdbUri);
-    }
-    else{
-        cdb->SetDefaultStorage(fgCdbUri);
-    }
-    cdb->SetRun(runNo);
-    
-    if (!cdb->IsDefaultStorageSet()){throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";}
-
-    /*
-     if (fgCdbUri.BeginsWith("local://"))
-     {
-     TString curPath = gSystem->WorkingDirectory();
-     TString grp     = "GRP/GRP/Data";
-     TString grppath = curPath + "/" + grp;
-     if (gSystem->AccessPathName(grppath, kReadPermission) == kFALSE)
-     {
-     if (cdb->GetSpecificStorage(grp)){
-     Warning(kEH, "Local GRP exists, but the specific storage is already set.");
-     }
-     else{
-     Info(kEH, "Setting CDB specific-storage for GRP from event directory.");
-     TString lpath("local://");
-     lpath += curPath;
-     cdb->SetSpecificStorage(grp, lpath);
-     }
-     }
-     }
-     */
-}
-
-void AliEveDataSourceOffline::SetCdbUri(const TString& cdb)
-{
-    // Set path to CDB, there is no default.
-    if ( ! cdb.IsNull()) fgCdbUri = cdb;
-}
 
 void AliEveDataSourceOffline::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf)
 {
@@ -172,7 +107,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     if(fCurrentData.fESD->GetRunNumber() != AliEveEventManager::GetMaster()->GetCurrentRun())
     {
         AliEveEventManager::GetMaster()->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
-        InitOCDB(AliEveEventManager::GetMaster()->GetCurrentRun());
     }
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
@@ -759,13 +693,6 @@ void AliEveDataSourceOffline::SetRawFileName(const TString& raw)
     if (raw.IsNull()) return;
     
     fgRawFileName = raw;
-}
-
-void AliEveDataSourceOffline::SetSpecificCdbUri(const TString& path,const TString& value)
-{
-    // Set path to specific CDB object, there is no default.
-    if ( ! value.IsNull()) fgSpecificCdbUriValue = value;
-    if ( ! path.IsNull()) fgSpecificCdbUriPath = path;
 }
 
 void AliEveDataSourceOffline::SetGAliceFileName(const TString& galice)

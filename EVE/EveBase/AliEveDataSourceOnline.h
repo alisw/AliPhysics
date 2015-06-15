@@ -33,7 +33,6 @@ private:
     void GetNextEvent();            // Handler of fEventListenerThread
     void CheckStorageStatus();      // Handler of fStorageManagerWatcherThread
 
-    void InitOCDB(int runNo);       // Method to build and set OCDB objects for given run
     void GotoEvent(Int_t event);    // Method to find proper way of delivering next event to be displayed
     void NextEvent();               // Setting new event from subscriber's thread
 

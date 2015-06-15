@@ -21,8 +21,6 @@ public:
     
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
     
-    void           SetCdbUri(const TString& cdb);
-    
     void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
                                   Bool_t assertAod, Bool_t assertRaw);
     
@@ -33,7 +31,6 @@ public:
     void SetAODFileName(const TString& aod);
     void AddAODfriend  (const TString& friendFileName);
     void SetRawFileName(const TString& raw);
-    void SetSpecificCdbUri(const TString& path,const TString& value);
     void SetGAliceFileName(const TString& galice);
     void SetFilesPath(const TString& path);
 
@@ -42,7 +39,6 @@ public:
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
 private:
     void Init(){};// to implement
-    void InitOCDB(int runNo);
     void SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf);
     void NextEvent();
     void PrevEvent();
@@ -50,7 +46,6 @@ private:
     void Close();
     TTree* readESDTree(const char* treeName, int &run);
     
-    TString  fgCdbUri;		// Global URI to CDB.
     bool            fIsOpen;         // Are event-files opened.
     AliEventInfo	fEventInfo;		// Current Event Info
     Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
@@ -65,8 +60,6 @@ private:
     
     EVisibleESDTrees  fgESDvisibleTrees; // trees to open from ESD
     
-    TString  fgSpecificCdbUriValue;		// Global URI to specific CDB object.
-    TString  fgSpecificCdbUriPath;		// Global URI to specific CDB object.
     Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
     
     Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
