@@ -102,7 +102,8 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
         
         if(fFileDialog->accepted()) {
             
-            AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+            AliEveEventManager* evMan = AliEveEventManager::GetMaster();
+            AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)evMan->GetDataSourceOffline();
             
             if(dataSource)
             {
@@ -111,7 +112,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
              dataSource->SetAODFileName(fFileDialog->GetPathAOD());
              dataSource->AddAODfriend(fFileDialog->GetPathAODfriend());
              dataSource->SetRawFileName(fFileDialog->GetPathRaw());
-             dataSource->SetCdbUri(fFileDialog->GetCDBStoragePath());
+             evMan->SetDefaultCDBstorage(fFileDialog->GetCDBStoragePath());
              loadFiles();
             }
         }
@@ -124,12 +125,13 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
         fFileDialog->setMode(kAliEveFDRemote);
         fFileDialog->MapWindow();
         if(fFileDialog->accepted()) {
-            AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+            AliEveEventManager* evMan = AliEveEventManager::GetMaster();
+            AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)evMan->GetDataSourceOffline();
             
             if(dataSource)
             {
                  dataSource->SetFilesPath(fFileDialog->GetUrl());
-                 dataSource->SetCdbUri(fFileDialog->GetCDBStoragePath());
+                 evMan->SetDefaultCDBstorage(fFileDialog->GetCDBStoragePath());
             }
 
     // Open event

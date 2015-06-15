@@ -8,8 +8,6 @@
 #include "AliEveDataSourceHLTZMQ.h"
 
 #include "AliEveConfigManager.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliGRPPreprocessor.h"
 #include <TEnv.h>
 #include <TInterpreter.h>
@@ -182,28 +180,6 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
 #endif
 }
 
-void AliEveDataSourceHLTZMQ::InitOCDB(int runNo)
-{  
-  AliInfo(Form("Initializing OCDB for run: %i",runNo));
-  AliCDBManager* cdb = AliCDBManager::Instance();
-  if (!cdb) return;
-
-  if (cdb->IsDefaultStorageSet() == kTRUE)
-  {
-    AliInfo(Form("CDB already set - using the old storage:  '%s'", cdb->GetDefaultStorage()->GetURI().Data()));
-    return;
-  }
-  else {
-    if (gSystem->Getenv("ocdbStorage")) {
-      cdb->SetDefaultStorage(gSystem->Getenv("ocdbStorage"));
-    }
-  }
-  if (runNo!=AliEveEventManager::GetMaster()->GetCurrentRun()){
-    AliEveEventManager::GetMaster()->SetCurrentRun(runNo);
-    cdb->SetRun(runNo);
-  }
-}
-
 void AliEveDataSourceHLTZMQ::GotoEvent(Int_t /*event*/)
 {
     NextEvent();
@@ -265,7 +241,6 @@ void AliEveDataSourceHLTZMQ::NextEvent()
     printf("setting new event\n");
     esdObject->GetStdContent();
     int runNumber = esdObject->GetRunNumber();
-    InitOCDB(runNumber);
 
     printf("deleting current data\n");
     //replace the ESD
@@ -286,13 +261,4 @@ void AliEveDataSourceHLTZMQ::NextEvent()
   zmq_msg_close(&message);
 #endif
 }
-
-void AliEveDataSourceHLTZMQ::SetCdbUri(const TString& cdb)
-{
-    // Set path to CDB, there is no default.
-    if ( ! cdb.IsNull()) fgCdbUri = cdb;
-    AliCDBManager* cdbManager = AliCDBManager::Instance();
-    cdbManager->SetDefaultStorage(cdb);
-}
-
 

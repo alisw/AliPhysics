@@ -9,7 +9,6 @@
 #include "AliEveDataSourceOnline.h"
 #include "AliEveConfigManager.h"
 
-#include "AliCDBManager.h"
 #include "AliZMQManager.h"
 #include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
@@ -37,8 +36,6 @@ AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
     fEventManager(0)
 {
     fEventManager = AliEveEventManager::GetMaster();
-    
-    InitOCDB(-1);
     
     StorageManagerDown(); // turn SM off by default
     EventServerDown();    // assume that there are no events comming from online reco
@@ -183,48 +180,6 @@ void AliEveDataSourceOnline::CheckStorageStatus()
     manager->Disconnect("StorageManagerDown");
 }
 
-void AliEveDataSourceOnline::InitOCDB(int runNo)
-{
-    TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    
-    if(runNo != fEventManager->GetCurrentRun())
-    {
-        cout<<"Loading OCDB for new run:"<<runNo<<" in online mode."<<endl;
-        TEnv settings;
-        settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
-        fEventManager->SetCurrentRun(runNo);
-        
-        // Retrieve GRP entry for given run from aldaqdb.
-        TString dbHost = settings.GetValue("logbook.host", DEFAULT_LOGBOOK_HOST);
-        Int_t   dbPort =  settings.GetValue("logbook.port", DEFAULT_LOGBOOK_PORT);
-        TString dbName =  settings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB);
-        TString user =  settings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER);
-        TString password = settings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
-        
-        gSystem->cd(cdbPath.Data());
-        gSystem->Exec("rm -fr GRP/");
-        cout<<"CDB path for GRP:"<<cdbPath<<endl;
-        
-        TString gdc;
-
-        Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(runNo, dbHost.Data(),
-                                                                  dbPort, dbName.Data(),
-                                                                  user.Data(), password.Data(),
-                                                                  Form("%s",cdbPath.Data()),
-                                                                  gdc);
-        
-        if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
-        else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
-        else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
-        
-        cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
-        cdb->SetSpecificStorage("GRP/GRP/Data",cdbPath.Data());
-        cdb->SetRun(runNo);
-        cdb->Print();
-    }
-}
-
 void AliEveDataSourceOnline::GotoEvent(Int_t event)
 {
     cout<<"Go to event:"<<event<<endl;
@@ -265,7 +220,6 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         if(resultEvent)
         {
 //            DestroyElements();
-            InitOCDB(resultEvent->GetRunNumber());
             fCurrentData.fESD = resultEvent;
         }
         else
@@ -299,7 +253,6 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         if(resultEvent)
         {
 //            DestroyElements();
-            InitOCDB(resultEvent->GetRunNumber());
             fCurrentData.fESD = resultEvent;
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
@@ -334,7 +287,6 @@ void AliEveDataSourceOnline::NextEvent()
                     fEventManager->ResetMagneticField();
                 }
                 fCurrentData.fESD = fCurrentEvent[fEventInUse];
-                InitOCDB(fCurrentData.fESD->GetRunNumber());
                 
                 fEventManager->SetHasEvent(true);
                 fEventManager->AfterNewEventLoaded();
