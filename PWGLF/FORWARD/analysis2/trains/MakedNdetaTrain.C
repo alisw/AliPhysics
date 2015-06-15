@@ -101,6 +101,7 @@ protected:
     CoupledNdetaCar("Forward", fwdCfg);
     CoupledNdetaCar("Central", cenCfg);
     if (mc) CoupledNdetaCar("MCTruth", mcCfg);
+
   }
   //__________________________________________________________________
   /** 
