@@ -104,8 +104,8 @@ private:
 
   //Store Pt Bin Limits
   //Max Number of Pt Bins Set here (100)
-  Double_t fptbinlimits[100];
-  Double_t fptX[100];
+  Double_t fptbinlimits[200];
+  Double_t fptX[200];
   Long_t fptbinnumb;
 
   //Rapidity Range Window
