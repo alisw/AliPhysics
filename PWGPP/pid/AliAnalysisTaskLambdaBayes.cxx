@@ -758,13 +758,13 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       nSigmaCombRef = TMath::Abs(nSigmaTPCRef);
     }
 
-    // use sigmaTOF instead of sigmaComb
     nSigmaTOFRef = TMath::Abs(nSigmaTOFRef);
 
-    if(tofMatch1){
-      nSigmaComb = nSigmaTOF;
-      nSigmaCombRef = nSigmaTOFRef;
-    }
+    // use sigmaTOF instead of sigmaComb
+    //if(tofMatch1){
+    //  nSigmaComb = nSigmaTOF;
+    //  nSigmaCombRef = nSigmaTOFRef;
+    //}
 
     if(nSigmaComb < 2) nSigmaComb = 2;
     else if(nSigmaComb < 3) nSigmaComb = 3;
@@ -874,7 +874,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       }
 
       // use sigmaTOF instead of sigmaComb
-      if(tofMatch2) nSigmaComb2 = nSigmaTOF2;
+      //if(tofMatch2) nSigmaComb2 = nSigmaTOF2;
 
       if(nSigmaComb2 < 2) nSigmaComb2 = 2;
       else if(nSigmaComb2 < 3) nSigmaComb2 = 3;
