@@ -44,9 +44,16 @@ void AliEveDataSourceHLTZMQ::Init()
   if (!fZMQContext) fZMQContext = zmq_ctx_new();
   //single ZMQ socket for gathering the events form various listening threads
   //must be bound before threads can connect
+  int rc=0;
   if (! fZMQeventQueue) 
   {
     fZMQeventQueue = zmq_socket(fZMQContext, ZMQ_PULL);
+    //set default socket options
+    int highWaterMarkRecv = 20;
+    rc = zmq_setsockopt(fZMQeventQueue, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
+    int highWaterMarkSend = 20;
+    rc = zmq_setsockopt(fZMQeventQueue, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
+    //bind the socket
     zmq_bind(fZMQeventQueue, "inproc://fCurrentEvent");
   }
 
@@ -101,6 +108,12 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
   //connection to the HLT data
   void* listenerSocket = zmq_socket(fZMQContext, ZMQ_SUB);
   if (!listenerSocket) {return;}
+  //set default socket options
+  int highWaterMarkRecv = 20;
+  rc = zmq_setsockopt(listenerSocket, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
+  int highWaterMarkSend = 20;
+  rc = zmq_setsockopt(listenerSocket, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
+  //connect the socket
   printf("connecting to ZMQ socket: %s\n", fHLTPublisherAddress.Data());
   rc = zmq_connect(listenerSocket, fHLTPublisherAddress.Data());
   rc = zmq_setsockopt (listenerSocket, ZMQ_SUBSCRIBE, NULL, 0);
@@ -109,6 +122,12 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
   //internal publisher
   void* internalPublisher = zmq_socket(fZMQContext, ZMQ_PUSH);
   if (!internalPublisher) {return;}
+  //set default socket options
+  highWaterMarkRecv = 20;
+  rc = zmq_setsockopt(internalPublisher, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
+  highWaterMarkSend = 20;
+  rc = zmq_setsockopt(internalPublisher, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
+  //connect the socket
   rc = zmq_connect(internalPublisher, "inproc://fCurrentEvent");
   if (rc < 0) {return;}
   
