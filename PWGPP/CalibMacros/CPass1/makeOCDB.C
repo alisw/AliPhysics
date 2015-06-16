@@ -164,7 +164,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     procesTRD->SetAlternativeDriftVelocityFit(kTRUE);
     if((!isLHC10) && (!isLHC11) && (!isLHC12) && (!isLHC13)) {
       printf("Run II\n");
-      procestrd.SetT0Shift1(0.2524132);// release the condition on the first bin and last bins
+      procesTRD->SetT0Shift1(0.2524132);// release the condition on the first bin and last bins
     }
     procesTRD->Init("CalibObjects.root");
     Int_t versionVdriftUsed = procesTRD->GetVersionVdriftUsed();
