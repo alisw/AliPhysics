@@ -99,7 +99,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   Double_t vec_hNoEvts[4];   // vector used to fill hNoEvts
   THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(3);
 //   vec_hNoEvts[1] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);				// combined multiplicity with |eta| < 0.8
-  vec_hNoEvts[1] = mult_comb08;;				// combined multiplicity with |eta| < 0.8
+  vec_hNoEvts[1] = mult_comb08;				// combined multiplicity with |eta| < 0.8
 //   vec_hNoEvts[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);				// V0M percentile
   vec_hNoEvts[2] = mult_V0M;				// V0M percentile
 //   vec_hNoEvts[3] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);		// combined multiplicity with 0.4 < |eta| < 0.8
@@ -109,7 +109,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
  // !!!!!!!!!!
  // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
  // !!!!!!!!!!
- 
+
   if( !fEvInfo->HasTriggerMB() ) return;
 
   if( !fEvInfo->HasVertex() ) return;
@@ -170,7 +170,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 
 
-	Double_t vec_hAllESD[10];    	// vector used to fill hAllESD
+	Double_t vec_hAllESD[12];    	// vector used to fill hAllESD
 	Double_t vec_hPIDQA[8];	//  vector used to fill hPIDQA
 
 	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(1);
@@ -186,7 +186,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 // 	AliInfo(Form("mult ESD = %g",vec_hAllESD[0]));
 	vec_hAllESD[l_V0M] = mult_V0M;
 	vec_hAllESD[l_comb0408] = mult_comb0408;
-	
+
 	// ---------------------------
 	// get pT
 // 	vec_hAllESD[1] = t->Pt();
@@ -364,39 +364,45 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	hDCA->Fill(valDCA);
 	*/
 
-	if( HasMCdata() ){ // run only on MC
-		Double_t vec_ESDtree[6];
-		vec_ESDtree[0] = t->Eta();
+// 	if( HasMCdata() ){ // run only on MC
+    if(DebugLevel()>0){
+        Double_t vec_ESDtree[2];
+        vec_ESDtree[0] = t->Eta();
 		vec_ESDtree[1] = t->Phi();
-		vec_ESDtree[2] = t->GetPID()->GetTOFmisProb();
+// 		vec_ESDtree[2] = t->GetPID()->GetTOFmisProb();
 		// 		vec_ESDtree[3] = tMC->P();
 		// 		vec_ESDtree[4] = t->Charge();
 		// 		vec_ESDtree[5] = tMC->Charge();
 
-		// fill debug
-		if(DebugLevel()>1){
-			(*AliMESbaseTask::DebugStream()) << "pidTrk"
-			<<"mult=" << vec_hAllESD[0]
-			<<"pT=" << vec_hAllESD[1]
-			<<"charge=" << vec_hAllESD[2]
-			<<"TPC_PID=" << vec_hAllESD[3]
-			<<"TOF_PID=" << vec_hAllESD[4]
-			<<"y=" << vec_hAllESD[5]
-			<<"mismatch=" << vec_ESDtree[2]
-			<<"MC_PID=" << vec_hAllESD[7]
-			<<"MC_primary=" << vec_hAllESD[9]
-			<<"MC_y=" << vec_hAllESD[8]
-			// ----
-			<<"eta=" << vec_ESDtree[0]
-			<<"phi=" << vec_ESDtree[1]
-			// ----
-// 			<< "dEta=" << dEta
-// 			<< "dPhi=" << dPhi
-			// 		<<"t.=" << t
-			// 		<<"tMC.=" << tMC
-			<< "\n";
-		}
-	}
+        Double_t vec_syst[1];
+        vec_syst[0] = t->GetNclustersTPC();
+
+        // fill debug
+        (*AliMESbaseTask::DebugStream()) << "pidTrk"
+		<<"mult08=" << vec_hAllESD[l_comb08]
+		<<"multV0M=" << vec_hAllESD[l_V0M]
+		<<"mult0408=" << vec_hAllESD[l_comb0408]
+        <<"pT=" << vec_hAllESD[l_pT]
+        <<"charge=" << vec_hAllESD[l_charge]
+        <<"TPC_PID=" << vec_hAllESD[l_pidTPC]
+        <<"TOF_PID=" << vec_hAllESD[l_pidTOF]
+        <<"y=" << vec_hAllESD[l_rapidity]
+        <<"mismatch=" << vec_hAllESD[l_TOFmatching]
+        <<"MC_PID=" << vec_hAllESD[l_MCPID]
+        <<"MC_y=" << vec_hAllESD[l_yMCPID]
+        <<"MC_primary=" << vec_hAllESD[l_MCprimary]
+        // ----
+        <<"eta=" << vec_ESDtree[0]
+        <<"phi=" << vec_ESDtree[1]
+        // ----
+        <<"NclustersTPC=" << vec_syst[0]
+        // 			<< "dEta=" << dEta
+        // 			<< "dPhi=" << dPhi
+        // 		<<"t.=" << t
+        // 		<<"tMC.=" << tMC
+        << "\n";
+    }
+// 	}
 
   } // end ESD track loop
 
@@ -503,14 +509,14 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // use for matching, PID and contaminations efficiency
   Double_t binLimits[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
-  
+
   // used for raw spectra and a lot of corrections
   const Int_t ndimAllESD(12);
   const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 102, 150, 52, 2, 5, 5, 20, 2, 5, 20, 2};
   const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0., 0.5, 0., -2., -0.5, -0.5, -1., -0.5, -0.5, -1., -0.5},
   cldMaxAllESD[ndimAllESD]  = {150.5, 100., 150.5, 5., 2., 4.5, 4.5, 1., 1.5, 4.5, 1.,1.5};
   THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;combined0408;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
-  hAllESD->GetAxis(1)->Set(102, binLimitsV0M); 
+  hAllESD->GetAxis(1)->Set(102, binLimitsV0M);
   hAllESD->GetAxis(3)->Set(52, binLimits);
   fHistosQA->AddAt(hAllESD, 1);
 

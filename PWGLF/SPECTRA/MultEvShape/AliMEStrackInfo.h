@@ -114,6 +114,7 @@ public:
   Double_t    Y() const                { return fY; }
   Double_t    GetdEdx() const         {return fdEdx;}
   Double_t    Getbeta() const          {return fBeta;}
+  Double_t    GetNclustersTPC() const          {return fNclustersTPC;}
   Double_t    OneOverPt() const        { return Pt()>kAlmost0?1./Pt():0.; }
   Bool_t      IsFilteredOut() const    { return fFilterId>0; }
   Bool_t      IsFilteredOutBy(EMESfilterId id) const     { return TESTBIT(fFilterId, id); }
@@ -133,6 +134,7 @@ public:
   void        SetP(Double_t p)            { fP = p; }
   void        SetdEdx(Double_t dEdx)            { fdEdx = dEdx; }
   void        Setbeta(Double_t beta)            { fBeta = beta; }
+  void        SetNclustersTPC(Double_t clusters)            { fNclustersTPC = clusters; }
   void        SetPt(Double_t pt, Bool_t chg) { fPt = pt*(chg?1:-1); }
   void        SetTOFmisProb(Double_t tm)  { fPID.fTOFmisProb = tm; }
 //   void        SetTOFmisProb(Bool_t tm)  { fPID.fTOFmisProb = tm; }
@@ -146,7 +148,7 @@ private:
   UChar_t            fDetStat;          // detector contribution to the track see EMESdetStat
   Double_t           fPt;               // q*pt of the track @ vertex
   Double_t           fP;                // momentum of the track @ vertex
-  Double_t           fPz;                // momentum along the z axis - use to compute y 
+  Double_t           fPz;                // momentum along the z axis - use to compute y
   Double_t           fEta;              // eta of the track @ vertex
   Double_t           fPhi;              // phi of the track @ vertex
   Double_t           fY;                // rapidity
@@ -154,9 +156,10 @@ private:
   Float_t           fDCA[2];           // DCAxy and DCAz
   Double_t        fdEdx;              // energy loss in TPC
   Double_t        fBeta;               // computed beta using TOF
+  Int_t               fNclustersTPC;     // number of TPC clusters - syst err
   AliMESpid          fPID;              // PID info
   AliMESfilterParam *fFilterParam;      // Filtering parameters used for debugging purposes
-  ClassDef(AliMEStrackInfo, 1)          // Track summary data for MultiEvShape
+  ClassDef(AliMEStrackInfo, 2)          // Track summary data for MultiEvShape
 };
 
 Double_t AliMEStrackInfo::Rv() const
