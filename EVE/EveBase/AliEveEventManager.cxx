@@ -769,7 +769,7 @@ Bool_t AliEveEventManager::ReceivePromptRecoParameters(Int_t runNo)
   return kTRUE;
 }
 
-void AliEveEventManager::SetDefaultCDBstorage(TString path) 
+void AliEveEventManager::SetCdbUri(TString path) 
 {
   AliCDBManager::Instance()->SetDefaultStorage(path);
 }
