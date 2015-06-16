@@ -147,11 +147,12 @@ private:
     Bool_t        fHasEvent;    // Is an event available.
     int           fCurrentRun;  // Current run number
     
+    AliEveData        fEmptyData;          //just a place holder in case we have no sources
     const AliEveData* fCurrentData;        //current data struct from one of the data sources
     AliEveDataSource* fCurrentDataSource;  // data source in use at the moment
-    AliEveDataSource *fDataSourceOnline;   // pointer to online data source
-    AliEveDataSource *fDataSourceOffline;  // pointer to offline data source
-    AliEveDataSource *fDataSourceHLTZMQ;   // pointer to HLT ZMQ data source
+    AliEveDataSource* fDataSourceOnline;   // pointer to online data source
+    AliEveDataSource* fDataSourceOffline;  // pointer to offline data source
+    AliEveDataSource* fDataSourceHLTZMQ;   // pointer to HLT ZMQ data source
     
 
     Bool_t   fAutoLoad;              // Automatic loading of events (online)
