@@ -119,7 +119,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
   Bool_t fDiffractiveOnly; //Only look at diffractive generated events
-  Bool_t fEtaRefMult; // Ref Mult eta range 
+  Double_t fEtaRefMult; // Ref Mult eta range 
 
 //===========================================================================================
 //   Variables for Tree, V0s
