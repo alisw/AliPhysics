@@ -144,13 +144,13 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         
         
         if(!isVZERO && Qvector=="Qa"){
-            SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
-            printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
-        }
-        if(!isVZERO && Qvector=="Qb"){
             SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
             printf(" > NOTE: Using half TPC (Qb) as POI selection u < \n");
             
+        }
+        if(!isVZERO && Qvector=="Qb"){
+            SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
+            printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
         }
         if(isVZERO){
             SP_POI[icentr]->SetEtaRange( etamin,etamax );
@@ -211,7 +211,10 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             outputSlotName[icentr][harmonic-2] = "";
             outputSlotName[icentr][harmonic-2]+=uniqueStr;
             outputSlotName[icentr][harmonic-2]+=Form("_v%i_",harmonic);
-            outputSlotName[icentr][harmonic-2]+=Form("%i-",centrMin[icentr+ncentrminlim]);
+            outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
+            outputSlotName[icentr][harmonic-2]+="_";
+            outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
+            outputSlotName[icentr][harmonic-2]+=Form("_%i-",centrMin[icentr+ncentrminlim]);
             outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr+ncentrminlim]);
             
             
@@ -315,7 +318,6 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             tskFilter[icentr][harm-2] = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP[icentr][harm-2].Data()),cutsRP[icentr], NULL);//SP_POI[icentr]
             if(!isVZERO){
                 tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
-                //tskFilter[icentr][harm-2]->SetSubeventEtaRange(-0.8, -0.5, 0.5,0.8);
             }
             if(isVZERO) tskFilter[icentr][harm-2]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
             mgr->AddTask(tskFilter[icentr][harm-2]);
