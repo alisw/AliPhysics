@@ -320,29 +320,9 @@ const char * AliQAv1::GetAliTaskName(ALITASK_t tsk)
 //_______________________________________________________________
 const char * AliQAv1::GetBitName(QABIT_t bit) const
 {
-	// returns the char name corresponding to bit 
-	TString bitName ;
-	switch (bit) {
-		case kNULLBit:
-			bitName = "NONE" ;
-			break ; 
-		case kINFO:
-			bitName = "INFO" ;
-			break ;  
-		case kWARNING:
-			bitName = "WARNING" ;
-			break ;
-		case kERROR:
-			bitName = "ERROR" ;
-			break ;
-		case kFATAL:
-			bitName = "FATAL" ;
-			break ;
-		default:
-			bit = kNULLBit ; 
-			break ;
-	}
-	return bitName.Data() ;
+  const char* bitName[kNBIT+1]={"NONE","INFO","WARNING","ERROR","FATAL"};
+  if (bit>=kNULLBit && bit<kNBIT) return bitName[int(bit)-kNULLBit];
+  return 0;
 }
 
 //_______________________________________________________________
