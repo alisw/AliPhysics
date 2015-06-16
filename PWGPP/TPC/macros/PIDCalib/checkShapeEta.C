@@ -364,11 +364,14 @@ TH1D* getSeparation(THnSparse* hist, Bool_t fromV0s, TFile* fSave)
 */
 
 //--------------------------------------------------
-Int_t checkShapeEta(TString path = ".", Int_t multiplicityStepSize = -1/*-1 for all multiplicities*/,
-                    Int_t maxMultiplicity = 20000,
+Int_t checkShapeEta(TString path = ".", Double_t multiplicityStepSize = -1/*-1 for all multiplicities*/,
+                    Double_t maxMultiplicity = 20000,
                     Int_t onlyEtaShapeComparison = 0, TString fileName = "bhess_PIDetaAdv.root", 
-                    TString listName = "bhess_PIDetaAdv", Int_t momentumAxis = kPtpcInner/* = kPt*/) { 
+                    TString listName = "bhess_PIDetaAdv", Int_t momentumAxis = kPtpcInner/* = kPt*/, Int_t binTypePt = kPtBinTypePPMult) { 
 			       
+  Int_t nPtBins = -1;
+  const Double_t* binsPt = GetPtBins(binTypePt, nPtBins);
+  
   Double_t binWidthsPt[nPtBins];
   for (Int_t i = 0; i < nPtBins; i++) 
     binWidthsPt[i] = (binsPt[i + 1] - binsPt[i]) / 2.;
@@ -761,7 +764,7 @@ Int_t checkShapeEta(TString path = ".", Int_t multiplicityStepSize = -1/*-1 for 
   
   // If valid multiplicityStepSize, fill each multiplicity bin + 1 bin with all multiplicities. Otherwise: Only bin with all multiplicities
   const Int_t nMultBins = (multiplicityStepSize <= 0) ? 1 :
-                          (((Int_t)((Double_t)maxMultiplicity / multiplicityStepSize)) + ((maxMultiplicity % multiplicityStepSize) != 0) + 1);
+                          (((Int_t)((Double_t)maxMultiplicity / multiplicityStepSize)) + (((Int_t)maxMultiplicity % TMath::Max(1, (Int_t)multiplicityStepSize)) != 0) + 1);
   
   const Int_t nSpeciesBins = (oldStyleWithAllIDprimaries ? 6 : 5) + additionalV0bins;
   TH2D* hPEtaDependence[nMultBins][nSpeciesBins];
@@ -772,10 +775,10 @@ Int_t checkShapeEta(TString path = ".", Int_t multiplicityStepSize = -1/*-1 for 
   
   for (Int_t i = 0; i < nMultBins; i++) {
     TString currDir = (i == nMultBins - 1) ? "AllMultiplicites" : 
-                      Form("Multiplicity%d_%d", i * multiplicityStepSize, TMath::Min(maxMultiplicity, (i + 1) * multiplicityStepSize));
+                      Form("Multiplicity%g_%g", i * multiplicityStepSize, TMath::Min(maxMultiplicity, (i + 1) * multiplicityStepSize));
     
     TString multTitle = (i == nMultBins - 1) ? "all multiplicites" :
-                        Form("multiplicity %d - %d", i * multiplicityStepSize, TMath::Min(maxMultiplicity, (i + 1) * multiplicityStepSize));
+                        Form("multiplicity %g - %g", i * multiplicityStepSize, TMath::Min(maxMultiplicity, (i + 1) * multiplicityStepSize));
                         
     fSave->cd();
     fSave->mkdir(currDir.Data());
