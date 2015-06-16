@@ -78,6 +78,7 @@ AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
 AliEveEventManager::AliEveEventManager(EDataSource defaultDataSource) :
 TEveEventManager("Event", ""),
 fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
+fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
 fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
 fExecutor(0),fViewsSaver(0),fESDdrawer(0),fPEventSelector(0),
@@ -132,13 +133,16 @@ void AliEveEventManager::InitInternals()
     fViewsSaver = new AliEveSaveViews();
     fESDdrawer = new AliEveESDTracks();
     
+#ifdef ZMQ
     fDataSourceOnline = new AliEveDataSourceOnline();
-    fDataSourceOffline = new AliEveDataSourceOffline();
     fDataSourceHLTZMQ = new AliEveDataSourceHLTZMQ();
+#endif
+    fDataSourceOffline = new AliEveDataSourceOffline();
 }
 
 void AliEveEventManager::ChangeDataSource(EDataSource newSource)
 {
+    fCurrentData = &fEmptyData;
     if(newSource == kSourceOnline)
     {
         fCurrentDataSource = fDataSourceOnline;
@@ -151,7 +155,7 @@ void AliEveEventManager::ChangeDataSource(EDataSource newSource)
     {
         fCurrentDataSource = fDataSourceHLTZMQ;
     }
-    fCurrentData = fCurrentDataSource->GetData();
+    if (fCurrentDataSource) fCurrentData = fCurrentDataSource->GetData();
 }
 
 void AliEveEventManager::DestroyTransients()
