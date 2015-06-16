@@ -103,7 +103,7 @@ public:
     
     Bool_t ReceivePromptRecoParameters(Int_t runNo);
 
-    void SetDefaultCDBstorage(TString path);
+    static void SetCdbUri(TString path);
 
     // getters and setters for info about events:
     Int_t          GetEventId() const {return fEventId;}

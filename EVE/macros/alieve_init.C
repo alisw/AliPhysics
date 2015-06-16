@@ -73,6 +73,8 @@ void alieve_init(const TString& cdburi = "",
     gEnv->SetValue("Root.Stacktrace", "no");
     Fatal("alieve_init.C", "OCDB path MUST be specified as the first argument.");
   }
+  
+  AliEveEventManager::SetCdbUri(cdburi);
 
   Info("alieve_init", "Adding standard macros.");
   TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
@@ -96,7 +98,6 @@ void alieve_init(const TString& cdburi = "",
   }
   
   dataSource->SetRawFileName(rawfile);
-  dataSource->SetCdbUri(cdburi);
   dataSource->SetAssertElements(assert_runloader, assert_esd,assert_aod, assert_raw);
 
   // Open event
