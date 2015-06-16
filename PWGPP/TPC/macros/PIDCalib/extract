@@ -1,0 +1,12 @@
+#!/bin/bash
+#1: path to TPCresidualPID.root (eg. /analysis/TPCresidualPID.root)
+#2: splines filename (eg. splines_11h.pass2.root)
+#3: data or MC in capital letters (eg. DATA)
+#4: period in capital letters (eg. LHC11H)
+#5: pass number in capital letters (eg. PASS2)
+#6: collision system in capital letters (eg. PBPB)
+
+# example for calling the bash script inside the folder of the root container:
+# bash extract TPCresidualPID.root splines_11h.pass2.root DATA LHC11A PASS2 PBPB
+
+root.exe -l /hera/alice/bhess/trunk/STEER/macros/loadlibsANA.C extract.C\(\"$1\"\,\"$2\",\"$3\",\"$4\",\"$5\",\"$6\"\) -b -q
