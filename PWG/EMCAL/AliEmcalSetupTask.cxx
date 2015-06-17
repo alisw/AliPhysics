@@ -24,30 +24,30 @@ ClassImp(AliEmcalSetupTask)
 
 //________________________________________________________________________
 AliEmcalSetupTask::AliEmcalSetupTask() : 
-  AliAnalysisTaskSE(),
-  fOcdbPath("uselocal"),
-  fOadbPath("$ALICE_PHYSICS/OADB/EMCAL"),
-  fGeoPath("$ALICE_PHYSICS/OADB/EMCAL"),
-  fObjs("GRP ITS TPC TRD EMCAL"),
-  fNoOCDB(kFALSE),
-  fIsInit(kFALSE),
-  fLocalOcdb(),
-  fLocalOcdbStor()
+       AliAnalysisTaskSE(),
+       fOcdbPath("uselocal"),
+       fOadbPath("$ALICE_PHYSICS/OADB/EMCAL"),
+       fGeoPath("$ALICE_PHYSICS/OADB/EMCAL"),
+       fObjs("GRP ITS TPC TRD EMCAL"),
+       fNoOCDB(kFALSE),
+       fIsInit(kFALSE),
+       fLocalOcdb(),
+       fLocalOcdbStor()
 {
   // Constructor.
 }
 
 //________________________________________________________________________
 AliEmcalSetupTask::AliEmcalSetupTask(const char *name) : 
-  AliAnalysisTaskSE(name),
-  fOcdbPath("uselocal"),
-  fOadbPath("$ALICE_PHYSICS/OADB/EMCAL"),
-  fGeoPath("$ALICE_PHYSICS/OADB/EMCAL"),
-  fObjs("GRP ITS TPC TRD EMCAL"),
-  fNoOCDB(kFALSE),
-  fIsInit(kFALSE),
-  fLocalOcdb(),
-  fLocalOcdbStor()
+      AliAnalysisTaskSE(name),
+      fOcdbPath("uselocal"),
+      fOadbPath("$ALICE_PHYSICS/OADB/EMCAL"),
+      fGeoPath("$ALICE_PHYSICS/OADB/EMCAL"),
+      fObjs("GRP ITS TPC TRD EMCAL"),
+      fNoOCDB(kFALSE),
+      fIsInit(kFALSE),
+      fLocalOcdb(),
+      fLocalOcdbStor()
 {
   // Constructor.
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.";
@@ -176,46 +176,46 @@ void AliEmcalSetupTask::Setup(Int_t runno)
       AliInfo(Form("Default OCDB storage already set"));
     } else {
       if (fOcdbPath.Length()==0) {
-	man = 0; // do not use OCDB
+        man = 0; // do not use OCDB
       } else if (fOcdbPath != "uselocal") {
-	AliInfo(Form("Setting up OCDB to point to %s",fOcdbPath.Data()));
-	man->SetDefaultStorage(fOcdbPath);
+        AliInfo(Form("Setting up OCDB to point to %s",fOcdbPath.Data()));
+        man->SetDefaultStorage(fOcdbPath);
       } else { // use local copy of OCDB
-	TString tmpdir=gSystem->WorkingDirectory();
-	if (gSystem->AccessPathName(tmpdir))
-	  tmpdir = "/tmp";
-	tmpdir+="/";
-	tmpdir+=gSystem->GetUid();
-	tmpdir+="-";
-	TDatime t;
-	tmpdir+=t.Get();
-	tmpdir+="-";
-	Int_t counter = 0;
-	fLocalOcdb = tmpdir;
-	fLocalOcdb += Form("%d%d%d",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
-	while (!gSystem->AccessPathName(fLocalOcdb)) {
-	  fLocalOcdb = tmpdir;
-	  fLocalOcdb += Form("%d%d%d",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
-	  counter++;
-	  if (counter>100) {
-	    AliFatal(Form("Could not create local directory for OCDB at %s",tmpdir.Data()));
-	  }
-	}
-	gSystem->MakeDirectory(fLocalOcdb);
-	TString filename(Form("$ALICE_PHYSICS/PWG/EMCAL/data/%d.dat",year));
-	TString cmd(Form("cd %s && tar -xf %s",fLocalOcdb.Data(),filename.Data()));
-	Int_t ret = gSystem->Exec(cmd);
-	if (ret==0) {
-	  TString locdb("local://");
-	  locdb+=fLocalOcdb;
-	  locdb+="/";
-	  locdb+=year;
-	  AliInfo(Form("Setting up local OCDB at %s",locdb.Data()));
-	  man->SetDefaultStorage(locdb);
-	  fLocalOcdbStor = locdb;
-	} else {
-	  AliFatal(Form("Could not set up local OCDB at %s",fLocalOcdb.Data()));
-	}
+        TString tmpdir=gSystem->WorkingDirectory();
+        if (gSystem->AccessPathName(tmpdir))
+          tmpdir = "/tmp";
+        tmpdir+="/";
+        tmpdir+=gSystem->GetUid();
+        tmpdir+="-";
+        TDatime t;
+        tmpdir+=t.Get();
+        tmpdir+="-";
+        Int_t counter = 0;
+        fLocalOcdb = tmpdir;
+        fLocalOcdb += Form("%d%d%d",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
+        while (!gSystem->AccessPathName(fLocalOcdb)) {
+          fLocalOcdb = tmpdir;
+          fLocalOcdb += Form("%d%d%d",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
+          counter++;
+          if (counter>100) {
+            AliFatal(Form("Could not create local directory for OCDB at %s",tmpdir.Data()));
+          }
+        }
+        gSystem->MakeDirectory(fLocalOcdb);
+        TString filename(Form("$ALICE_PHYSICS/PWG/EMCAL/data/%d.dat",year));
+        TString cmd(Form("cd %s && tar -xf %s",fLocalOcdb.Data(),filename.Data()));
+        Int_t ret = gSystem->Exec(cmd);
+        if (ret==0) {
+          TString locdb("local://");
+          locdb+=fLocalOcdb;
+          locdb+="/";
+          locdb+=year;
+          AliInfo(Form("Setting up local OCDB at %s",locdb.Data()));
+          man->SetDefaultStorage(locdb);
+          fLocalOcdbStor = locdb;
+        } else {
+          AliFatal(Form("Could not set up local OCDB at %s",fLocalOcdb.Data()));
+        }
       }
     }
   }
@@ -260,7 +260,7 @@ void AliEmcalSetupTask::Setup(Int_t runno)
   if (fOadbPath.Length()>0) {
     AliOADBContainer emcalgeoCont(Form("emcal"));
     emcalgeoCont.InitFromFile(Form("%s/EMCALlocal2master.root",fOadbPath.Data()),
-                              Form("AliEMCALgeo"));
+        Form("AliEMCALgeo"));
     TObjArray *mobj=dynamic_cast<TObjArray*>(emcalgeoCont.GetObject(runno,"EmcalMatrices"));
     if (mobj) {
       for(Int_t mod=0; mod < (geom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
