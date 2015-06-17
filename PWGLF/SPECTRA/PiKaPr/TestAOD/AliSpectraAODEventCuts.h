@@ -261,15 +261,7 @@ private:
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
-<<<<<<< HEAD
-
   ClassDef(AliSpectraAODEventCuts, 14);
-
-=======
-  
-  ClassDef(AliSpectraAODEventCuts, 11);
-  
->>>>>>> All UInt_t physics selection masks replaced with AliBits
 };
 #endif
 
