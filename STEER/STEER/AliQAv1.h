@@ -68,13 +68,13 @@ public:
   static TFile *	     GetQADataFile(const char * fileName) ;
   static const char *    GetQADataFileName(const char * name, Int_t run) 
   {return Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run)  ; }
-  static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
+  static const char *    GetQADataFileName() { static TString nm; nm=fgQADataFileName.Data() ; return nm; }
   static Int_t           GetQADebugLevel() { return fgkQADebugLevel ; }
   static const char *    GetQAName() { return fgkQAName ; } 
   static const char *    GetQACorrName() { return fgkQACorrNtName ; }
   static  UShort_t       GetMaxQAObj() { return fgkMaxQAObjects ; }
   static TFile *         GetQAResultFile() ; 
-  static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
+  static const char  *   GetQAResultFileName() { static TString nm; nm=(fgQAResultDirName + fgQAResultFileName).Data() ; return nm.Data(); }
   static const char  *   GetQARefDefaultStorage() { return fgkQARefOCDBDefault.Data() ; }
   static const char  *   GetQARefFileName() { return fgQARefFileName ; }
   static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }

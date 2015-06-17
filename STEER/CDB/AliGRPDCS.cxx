@@ -128,9 +128,7 @@ const char* AliGRPDCS::ProcessBoolean()
     previousBool = fDCSBool;
   }
 
-  TString fDCSDataPointValue = (fDCSBool)? "1" : "0";
-
-  return fDCSDataPointValue.Data();
+  return (fDCSBool)? "1" : "0";
 }
 
 //_______________________________________________________________
@@ -149,8 +147,9 @@ const char* AliGRPDCS::ProcessInt()
   else fFDCSArrayMean = -10.;
  
   TString fDCSDataPointValue; fDCSDataPointValue += fFDCSArrayMean;
-
-  return fDCSDataPointValue.Data();
+  //return fDCSDataPointValue.Data()
+  // return string from root circular buffer, do not return local pointer
+  return Form("%s",fDCSDataPointValue.Data());
 }
 
 //_______________________________________________________________
@@ -169,8 +168,11 @@ const char* AliGRPDCS::ProcessUInt()
   else fFDCSArrayMean = -10.;
    
   TString fDCSDataPointValue; fDCSDataPointValue += fFDCSArrayMean;
+  //return fDCSDataPointValue.Data();
+  // return string from root circular buffer, do not return local pointer
+  return Form("%s",fDCSDataPointValue.Data());
 
-  return fDCSDataPointValue.Data();
+
 }
 
 //_______________________________________________________________
@@ -191,8 +193,10 @@ const char* AliGRPDCS::ProcessFloat()
   else fFDCSArrayMean = -10.;
    
   TString fDCSDataPointValue; fDCSDataPointValue += fFDCSArrayMean;
-
-  return fDCSDataPointValue.Data();
+  //  return fDCSDataPointValue.Data();
+  // return string from root circular buffer, do not return local pointer
+  return Form("%s",fDCSDataPointValue.Data());
+  
 }
 
 //_______________________________________________________________

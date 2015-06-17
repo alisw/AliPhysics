@@ -679,7 +679,7 @@ const char* AliCalibViewerGUItime::GetDrawOption() const {
   //
   // get user selected draw options
   //
-  TString drawOpt;
+  static TString drawOpt="";
   if (fComboAddDrawOpt->GetSelectedEntry()) drawOpt=fComboAddDrawOpt->GetSelectedEntry()->GetTitle();
   if (fChkDrawOptSame->GetState()==kButtonDown && !drawOpt.Contains("same",TString::kIgnoreCase))
     drawOpt+="same";

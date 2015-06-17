@@ -68,7 +68,7 @@ public:
 	static const char *    GetQAName() { return fgkQAName ; } 
   static const char *    GetQACorrName() { return fgkQACorrNtName ; }
 	static TFile *         GetQAResultFile() ; 
-	static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
+	static const char  *   GetQAResultFileName() { static TString nm; nm=(fgQAResultDirName + fgQAResultFileName).Data() ; return nm; }
 	static const char  *   GetQARefDefaultStorage() { return fgkQARefOCDBDefault.Data() ; }
 	static const char  *   GetQARefFileName() { return fgQARefFileName ; }
 	static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }

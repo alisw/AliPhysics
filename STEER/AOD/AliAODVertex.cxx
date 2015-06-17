@@ -606,7 +606,7 @@ const char* AliAODVertex::AsString() const
     }
   }
   
-  return tmp.Data();
+  return Form("%s",tmp.Data()); // feed to circular buffer
 }
 
 //______________________________________________________________________________
