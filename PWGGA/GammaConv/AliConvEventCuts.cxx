@@ -1874,10 +1874,10 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 			
 			if (isSelected && !fPreSelCut){
 // 				cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
-				if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
-					if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
-					fTriggersEMCAL= GetTriggerList();	
-				}
+// 				if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+// 					if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
+// 					fTriggersEMCAL= GetTriggerList();	
+// 				}
 				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
 				} else if (isMC){
