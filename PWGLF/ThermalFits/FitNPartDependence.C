@@ -32,7 +32,7 @@ Double_t ErrorFunction (Double_t *xx, Double_t *p ) ;
 Double_t FuncPlusErr (Double_t *xx, Double_t *p) ;
 
 enum {kNoShift, kShiftUp, kShiftDown, kShiftHarder, kShiftSofter};
-
+enum {kCorrelated, kAntiCorrelated};
 
 TF1 * fForErrors = 0;
 const int npar = 3;
@@ -40,8 +40,8 @@ Double_t matrix[npar][npar];
 TString centrFile;
 TString systemAndEnergy;
 Double_t maxy = 0;
-//TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (#it{N}_{part})^{#it{c}}";
-TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (d#it{N}/d#it{#eta})^{#it{c}}";
+TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (#it{N}_{part})^{#it{c}}";
+//TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (d#it{N}/d#it{#eta})^{#it{c}}";
 Int_t collSystem  = 2;
 Float_t energy = 2760;
 
@@ -80,6 +80,8 @@ void FitNPartDependence() {
   // systemAndEnergy = "Pb-Pb #sqrt{#it{s}}_{NN} = 2.76 TeV";
   // const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080" , 0};
   // const char * centrToExtrapolate = "V0M0010";
+  //    Int_t errorType = kAntiCorrelated;
+
   // Int_t pdg = 313;
   // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./PbPb_2760_Kstar892.txt");  
   // Deuteron
@@ -89,16 +91,16 @@ void FitNPartDependence() {
   // Int_t pdg = 1000010020;
   // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
   //  Deuteron pPb
-  centrFile = "dndeta_pPb.txt";
-  const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
-  const char * centrToExtrapolate = "V0A0005";
-  //const char * centrToExtrapolate = "V0A6080";
-  Int_t pdg = -1000010020;
-  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
-  maxy = 0.01;
-  systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
-  energy = 5020;
-  collSystem = 1;
+  // centrFile = "dndeta_pPb.txt";
+  // const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
+  // const char * centrToExtrapolate = "V0A0005";
+  // //const char * centrToExtrapolate = "V0A6080";
+  // Int_t pdg = -1000010020;
+  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
+  // maxy = 0.01;
+  // systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
+  // energy = 5020;
+  // collSystem = 1;
   // K* pPb
   // centrFile =  "dndeta_pPb.txt";
   // //  centrFile = "dndeta_PbPb.txt";
@@ -113,13 +115,16 @@ void FitNPartDependence() {
 
 
   // Helium3
-  // gROOT->ProcessLine(".x figTemplate.C(0,0.00001,400,0.2)");  
-  // const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2080" ,0};
-  // const char * centrToExtrapolate = "V0M0010";
-  // Int_t pdg = 1000020030;
-  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
+  centrFile = "npart_PbPb.txt";
+  // //  centrFile = "dndeta_PbPb.txt";
 
-
+  gROOT->ProcessLine(".x figTemplate.C(0,0.00001,400,0.2)");  
+  const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2080" ,0};
+  const char * centrToExtrapolate = "V0M1020"; // "V0M0010";
+  Int_t pdg = 1000020030;
+  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
+  maxy=1e-3;
+  Int_t errorType = kCorrelated;
   
 
   //  gPad->GetCanvas()->SetTitle(Form("c%s", TDatabasePDG::Instance()->GetParticle(pdg)->GetName()));
@@ -134,9 +139,11 @@ void FitNPartDependence() {
   // f1->SetParameters(1,1);
   TF1 * f1 = new TF1 ("f1", "[0] + [1]*x^[2]", 0, maxx);
   f1->SetParameters(0, 6.3266e-04, 8.99883e-01);
-
+  f1->FixParameter(0,0);
+  maxx=400;
+  std::cout << "Centrality "<< maxx << " " << maxy << std::endl;
   
-  gROOT->ProcessLine(Form(".x figTemplate.C(0,0.1,%f,%f)", maxx, maxy));
+  gROOT->ProcessLine(Form(".x figTemplate.C(0,0.0000001,%f,%f)", maxx, maxy));
   gPad->GetCanvas()->SetTitle("cKstar");
 
   //  f1->FixParameter(0, 0);
@@ -176,11 +183,20 @@ void FitNPartDependence() {
   TF1 * fError = new TF1("fError", ErrorFunction, 0,maxx, 0);
 
   // The uncertainty on the systematics is computed shifting the graph up and down + refitting
-  // Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield);
-  // Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield);
-  Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
-  Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
-
+  Double_t errorSystPlus  = 0;
+  Double_t errorSystMinus = 0;
+  if (errorType == kCorrelated) {
+    errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield);
+    errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield);
+  }
+  else if (errorType == kAntiCorrelated) {
+    errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
+    errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
+  }
+  else {
+    std::cout << "Wrong error type" << std::endl;
+    return;
+  }
 
   Double_t errorStat = fError->Eval(npartPbPb[centrToExtrapolate]);
 
