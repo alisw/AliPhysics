@@ -113,7 +113,24 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(Int_t fitAlgo) :
   // ctor
   SetFittingAlgorithm(fitAlgo);
 
-  fGeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM", "EMCAL");
+  fGeom = AliEMCALGeometry::GetInstance();
+    
+  if(!fGeom)
+  {
+    AliCDBManager* man = AliCDBManager::Instance();
+    Int_t runNumber = man->GetRun();
+    fGeom =  AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
+  }
+  
+  if(!fGeom) 
+  {
+    AliWarning(Form("Using default geometry in reconstruction!!!"));
+    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+  }
+  
+  if ( !fGeom ) AliFatal(Form("Could not get geometry!"));
+  else          AliInfo (Form("Geometry name: <<%s>>",fGeom->GetName())); 
+  
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
 //    fTextSM[sm] = NULL ;
 //  }
