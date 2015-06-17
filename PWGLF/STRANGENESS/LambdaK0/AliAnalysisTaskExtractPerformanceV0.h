@@ -514,6 +514,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH1F      *fHistPVzAnalysisHasHighPtLambda;                      //! PVz distrib
 
    TH1F      *fHistSwappedV0Counter;                      //! Swapped v0 counter
+   TH2F *fHistXCheckVertexerZ; //! //for cross-checking
 
    AliAnalysisTaskExtractPerformanceV0(const AliAnalysisTaskExtractPerformanceV0&);            // not implemented
    AliAnalysisTaskExtractPerformanceV0& operator=(const AliAnalysisTaskExtractPerformanceV0&); // not implemented
