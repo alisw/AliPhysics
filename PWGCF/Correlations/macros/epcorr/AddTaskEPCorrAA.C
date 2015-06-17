@@ -10,7 +10,7 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
 
 
 	// Additional tasks
-
+/*
     // Centrality
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
@@ -30,7 +30,7 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
 	// V0 Event Plane
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
     AliVZEROEPSelectionTask *VZEROEPTask = AddTaskVZEROEPSelection();
-
+*/
 	// My Task
     AliAnalysisTaskEPCorrAA* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
 //    AliAnalysisTaskSE* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
