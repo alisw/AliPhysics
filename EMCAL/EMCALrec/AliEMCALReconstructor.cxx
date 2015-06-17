@@ -86,60 +86,83 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 
   fgRawUtils = new AliEMCALRawUtils;
   
-  //To make sure we match with the geometry in a simulation file,
-  //let's try to get it first.  If not, take the default geometry
+  AliCDBManager* man = AliCDBManager::Instance();
+  
+  //----------------------------------
+  // Get the geometry, 3 posibilities:
+  //  * To make sure we match with the geometry in a simulation file,
+  //    let's try to get it first.  
+  //  * If not, check the run number assigned for this chunk and set the 
+  //    geometry depending on the run number
+  //  * If not, take the default geometry
+  
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl->GetAliRun()){
+  if (rl->GetAliRun())
+  {
     AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
     if(emcal) fGeom = emcal->GetGeometry();
   }
   
-  if(!fGeom) {
-    AliInfo(Form("Using default geometry in reconstruction"));
+  if(!fGeom)
+  {
+    Int_t runNumber = man->GetRun();
+    fGeom =  AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
+  }
+  
+  if(!fGeom) 
+  {
+    AliWarning(Form("Using default geometry in reconstruction!!!"));
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
   }
   
-  //Get calibration parameters	
+  if ( !fGeom ) AliFatal(Form("Could not get geometry!"));
+  else          AliInfo (Form("Geometry name: <<%s>>",fGeom->GetName())); 
+  
+  //---------------------------
+  // Get calibration parameters	
   if(!fCalibData)
-    {
-      AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+  {
+      AliCDBEntry *entry = (AliCDBEntry*)  man->Get("EMCAL/Calib/Data");
       if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
-    }
+  }
   
   if(!fCalibData)
     AliFatal("Calibration parameters not found in CDB!");
   
-  //Get calibration parameters	
+  //------------------
+  // Get bad channels	
   if(!fPedestalData)
-    {
-      AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+  {
+      AliCDBEntry *entry = (AliCDBEntry*) man->Get("EMCAL/Calib/Pedestals");
       if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
-    }
+  }
   
   if(!fPedestalData)
     AliFatal("Dead map not found in CDB!");
   
-  if(!fGeom) AliFatal(Form("Could not get geometry!"));
-  
+  //----------------------------------------------------
+  // Get trigger parameters and init other trigger stuff
   AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
   
   const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
   
-  if (!dcsConfig) AliFatal("No Trigger DCS Configuration from OCDB!");
+  if (!dcsConfig) 
+    AliFatal("No Trigger DCS Configuration from OCDB!");
+  
   fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
   
   fTriggerData = new AliEMCALTriggerData();
   
-  //Init temporary list of digits
+  //-----------------------------
+  // Init temporary list of digits
   fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
   fgClustersArr   = new TObjArray(1000);
 
   const int kNTRU = fGeom->GetNTotalTRU();
   fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit", kNTRU * 96);	
 	
-  //Track matching
+  //--------------------------
+  // Init Track matching array
   fMatches = new TList();
   fMatches->SetOwner(kTRUE);
 } 
