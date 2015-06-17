@@ -91,7 +91,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
  fTimeVSAmplitude = new TH2F*[kNPMT0];
 
  for (Int_t i=0; i<kNPMT0; i++) {
-    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",60, -10, 50,500,2000,7000);
+    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,2000,4000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",100,-2000,2000);   //or A plus or C 
@@ -150,8 +150,12 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
   for (Int_t i=0; i<kNPMT0; i++) {
     if(time[i]<9999 &&abs(time[i])>1e-8 && amplitude[i]<9999&&abs(amplitude[i])>1e-8 )
       {
-	//	cout<<"time "<<time[i]<<" amplitude "<<amplitude[i]<<endl;
-	fTimeVSAmplitude[i]->Fill(amplitude[i],time[i]);
+	if(amplitude[i]<1000){
+	  fTimeVSAmplitude[i]->Fill(amplitude[i],time[i]);
+	}
+	else {
+	  fTimeVSAmplitude[i]->Fill(amplitude[i]/1000.,time[i]); //in RUN2 we don't convert to MIPs
+	}	
 	fCFDVSPmtId->Fill(i,time[i]);
       }
   }
