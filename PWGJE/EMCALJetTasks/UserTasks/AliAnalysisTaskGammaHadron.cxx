@@ -301,40 +301,40 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
 	// Create histograms
 	// all clusters as a function of p_T^{Cluster}
-	fHistNoClus_pt = new TH1F(Form("fHistNoClus_pt_%0.0d",1),Form("fHistNoClus_pt_%0.0d",1), 25, 0, 25);
+	fHistNoClus_pt = new TH1F(Form("fHistNoClus_pt_%0d",1),Form("fHistNoClus_pt_%0d",1), 25, 0, 25);
 	fHistNoClus_pt->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_pt->GetYaxis()->SetTitle(Form("No. of Clusters [counts/%0.1f GeV/c]",fHistNoClus_pt->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_pt);
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_Leadpt = new TH1F(Form("fHistNoClus_Leadpt_%0.0d",1),Form("fHistNoClus_Leadpt_%0.0d",1), 25, 0, 25);
+	fHistNoClus_Leadpt = new TH1F(Form("fHistNoClus_Leadpt_%0d",1),Form("fHistNoClus_Leadpt_%0d",1), 25, 0, 25);
 	fHistNoClus_Leadpt->GetXaxis()->SetTitle("p_{T}^{Leading Calo Cluster}");
 	fHistNoClus_Leadpt->GetYaxis()->SetTitle(Form("No. of lead. Clus. [counts/%0.1f GeV/c]",fHistNoClus_Leadpt->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_Leadpt);
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_ptH = new TH1F(Form("fHistNoClus_ptH_%0.0d",1),Form("fHistNoClus_ptH_%0.0d",1), 25, 0, 25);
+	fHistNoClus_ptH = new TH1F(Form("fHistNoClus_ptH_%0d",1),Form("fHistNoClus_ptH_%0d",1), 25, 0, 25);
 	fHistNoClus_ptH->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_ptH->GetYaxis()->SetTitle(Form("No. of Clus. with h [counts/%0.1f GeV/c]",fHistNoClus_ptH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_ptH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_LeadptH = new TH1F(Form("fHistNoClus_LeadptH_%0.0d",1),Form("fHistNoClus_LeadptH_%0.0d",1), 25, 0, 25);
+	fHistNoClus_LeadptH = new TH1F(Form("fHistNoClus_LeadptH_%0d",1),Form("fHistNoClus_LeadptH_%0d",1), 25, 0, 25);
 	fHistNoClus_LeadptH->GetXaxis()->SetTitle("p_{T}^{Leading Calo Cluster}");
 	fHistNoClus_LeadptH->GetYaxis()->SetTitle(Form("No. of lead. Clus. with h [counts/%0.1f GeV/c]",fHistNoClus_LeadptH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_LeadptH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_ptLeadH = new TH1F(Form("fHistNoClus_ptLeadH_%0.0d",1),Form("fHistNoClus_ptLeadH_%0.0d",1), 25, 0, 25);
+	fHistNoClus_ptLeadH = new TH1F(Form("fHistNoClus_ptLeadH_%0d",1),Form("fHistNoClus_ptLeadH_%0d",1), 25, 0, 25);
 	fHistNoClus_ptLeadH->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_ptLeadH->GetYaxis()->SetTitle(Form("No. of Clus. with lead. h [counts/%0.1f GeV/c]",fHistNoClus_ptLeadH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_ptLeadH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_LeadptLeadH = new TH1F(Form("fHistNoClus_LeadptLeadH_%0.0d",1),Form("fHistNoClus_LeadptLeadH_%0.0d",1), 25, 0, 25);
+	fHistNoClus_LeadptLeadH = new TH1F(Form("fHistNoClus_LeadptLeadH_%0d",1),Form("fHistNoClus_LeadptLeadH_%0d",1), 25, 0, 25);
 	fHistNoClus_LeadptLeadH->GetXaxis()->SetTitle("p_{T}^{Leading Calo Cluster}");
 	fHistNoClus_LeadptLeadH->GetYaxis()->SetTitle(Form("No. of lead. Clus. with lead. h [counts/%0.1f GeV/c]",fHistNoClus_LeadptLeadH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_LeadptLeadH);
@@ -344,28 +344,28 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   x_E
 	//
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_xEH = new TH1F(Form("fHistNoClus_xEH_%0.0d",1),Form("fHistNoClus_xEH_%0.0d",1), 20, 0, 2);
+	fHistNoClus_xEH = new TH1F(Form("fHistNoClus_xEH_%0d",1),Form("fHistNoClus_xEH_%0d",1), 20, 0, 2);
 	fHistNoClus_xEH->GetXaxis()->SetTitle("x_{E} (Cluster - hadron)");
 	fHistNoClus_xEH->GetYaxis()->SetTitle(Form("dN/dx_{E} [counts/%0.1f]",fHistNoClus_xEH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_xEH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_LeadxEH = new TH1F(Form("fHistNoClus_LeadxEH_%0.0d",1),Form("fHistNoClus_LeadxEH_%0.0d",1), 20, 0, 2);
+	fHistNoClus_LeadxEH = new TH1F(Form("fHistNoClus_LeadxEH_%0d",1),Form("fHistNoClus_LeadxEH_%0d",1), 20, 0, 2);
 	fHistNoClus_LeadxEH->GetXaxis()->SetTitle("x_{E} (Lead. Cluster - hadron)");
 	fHistNoClus_LeadxEH->GetYaxis()->SetTitle(Form("dN/dx_{E} [counts/%0.1f]",fHistNoClus_LeadxEH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_LeadxEH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_xELeadH = new TH1F(Form("fHistNoClus_xELeadH_%0.0d",1),Form("fHistNoClus_xELeadH_%0.0d",1), 20, 0, 2);
+	fHistNoClus_xELeadH = new TH1F(Form("fHistNoClus_xELeadH_%0d",1),Form("fHistNoClus_xELeadH_%0d",1), 20, 0, 2);
 	fHistNoClus_xELeadH->GetXaxis()->SetTitle("x_{E} (Cluster - Lead. hadron)");
 	fHistNoClus_xELeadH->GetYaxis()->SetTitle(Form("dN/dx_{E} [counts/%0.1f]",fHistNoClus_xELeadH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_xELeadH);
 
 
 	//leading clusters as a function of p_T^{Cluster}
-	fHistNoClus_LeadxELeadH = new TH1F(Form("fHistNoClus_LeadxELeadH_%0.0d",1),Form("fHistNoClus_LeadxELeadH_%0.0d",1), 20, 0, 2);
+	fHistNoClus_LeadxELeadH = new TH1F(Form("fHistNoClus_LeadxELeadH_%0d",1),Form("fHistNoClus_LeadxELeadH_%0d",1), 20, 0, 2);
 	fHistNoClus_LeadxELeadH->GetXaxis()->SetTitle("x_{E} (Lead. Cluster - Lead. hadron)");
 	fHistNoClus_LeadxELeadH->GetYaxis()->SetTitle(Form("dN/dx_{E} [counts/%0.1f]",fHistNoClus_LeadxELeadH->GetBinWidth(0)));
 	fOutput->Add(fHistNoClus_LeadxELeadH);
