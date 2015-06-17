@@ -1363,8 +1363,6 @@ int main(Int_t argc, Char_t **argv)
     Int_t status = 0;
     Int_t nDateEvents = 0;
 
-    void* event;
-
     // containers
     // old decoder
     AliMUONDDLTrigger*       ddlTrigger     = 0x0;
@@ -1499,6 +1497,8 @@ int main(Int_t argc, Char_t **argv)
     // event loop
     while(1) 
     {
+
+      void *event;
       
       if (cfg.GetPrintLevel()) {
 	if (nEvents && nEvents % 1000 == 0) 	
@@ -1757,6 +1757,8 @@ int main(Int_t argc, Char_t **argv)
 	  }
 	}
       } // end write scalers
+
+      delete event;
 
       delete rawReader;
       delete rawStream;
