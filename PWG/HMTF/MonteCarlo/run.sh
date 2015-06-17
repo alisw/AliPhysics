@@ -42,8 +42,9 @@ LIBSOPTIONS="0";
 rm -fr dummy
 
 # non settable variables
-TARGETDIR="alien:/alice/cern.ch/user/i/ilakomov/HMTF/Test/"
+TARGETDIR="alien:/alice/cern.ch/user/${ALIEN_USERNAME:0:1}/${ALIEN_USERNAME}/HMTF/Test/"
 CURRENTDIR=`pwd`
+
 
 ###
 give_help() {
@@ -210,7 +211,7 @@ if [ $sendOnGrid = "yes" ]
 
     echo "USER: /${ALIEN_USERNAME:0:1}/${ALIEN_USERNAME}"
 
-    sed s/MYARGS/"-d $dir -t $tune -n $nev -e $energy -m \"$thresholds\" -f \"scaling\" -b"/ $CURRENTDIR/templateJOB.jdl > tmp.jdl
+    sed s/MYARGS/"-d $dir -t $tune -n $nev -e $energy -m \"$threshold\" -f \"$scaling\" -b"/ $CURRENTDIR/templateJOB.jdl > tmp.jdl
     DIRJOB=${TARGETDIR//\//\\\/}
     DIRJOB=${DIRJOB/alien:/}
     sed s/TARGETDIR/$DIRJOB/ tmp.jdl > tmp2.jdl
