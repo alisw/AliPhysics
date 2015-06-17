@@ -72,10 +72,12 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
+  fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fMinBiasSelection(AliVEvent::kINT7)
 {
-
+  fCentralityRange[0] = 0.;
+  fCentralityRange[1] = 100.;
 }
 
 /**
@@ -94,10 +96,14 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
+  fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fMinBiasSelection(AliVEvent::kINT7)
 {
   DefineOutput(2, TTree::Class());
+
+  fCentralityRange[0] = 0.;
+  fCentralityRange[1] = 100.;
 
   fTrackSelections = new TObjArray;
   fTrackSelections->SetOwner(kTRUE);
@@ -291,6 +297,10 @@ void AliReducedHighPtEventCreator::AddVirtualTrackSelection(
  * \return True if the event was selected, false otherwise
  */
 Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
+  if(fApplyCentralitySelection && fInputEvent->GetCentrality()){
+    Float_t fCentrality = fInputEvent->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+    if(fCentrality < fCentralityRange[0] || fCentrality > fCentralityRange[1]) return kFALSE;
+  }
   const AliVVertex *primvtx = event->GetPrimaryVertex();
   if(!primvtx || !primvtx->GetNContributors()) return kFALSE;
   if(TMath::Abs(primvtx->GetZ()) > 10.) return kFALSE;
