@@ -92,20 +92,26 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title,
   // Nov 22, 2006 - case of 1X1  
   
   for(Int_t i = 0; i < 5 ; i++) fParEMOD[i]=0.0;
+  
   TString ntmp(GetTitle());
   ntmp.ToUpper();
 
-  AliEMCALGeometry *g = GetGeometry() ; 
-  TString gn(g->GetName()); gn.ToUpper();
-  fShishKebabModules = g->GetShishKebabTrd1Modules(); 
-  fGeometry = g;
-  fSampleWidth = Double_t(g->GetECPbRadThick()+g->GetECScintThick());
-  if(gn.Contains("V1")) fSampleWidth += 2.*g->GetTrd1BondPaperThick();
+  fGeometry = GetGeometry() ; 
+    
+  TString gn(fGeometry->GetName()); 
+  gn.ToUpper();
+  
+  fShishKebabModules = fGeometry->GetShishKebabTrd1Modules(); 
+
+  fSampleWidth = Double_t(fGeometry->GetECPbRadThick() + fGeometry->GetECScintThick());
+  
+  if(gn.Contains("V1")) fSampleWidth += 2.*fGeometry->GetTrd1BondPaperThick();
+  
   AliDebug(2,Form("fGeometry %p : TVirtualMC::GetMC() %p : fSampleWidth %5.4f\n", 
 	 fGeometry, TVirtualMC::GetMC(), fSampleWidth));
-  //Set geometry name again, in case it was changed during the initialization of the geometry.
+  
+  // Set geometry name again, in case it was changed during the initialization of the geometry.
   SetTitle(fGeometry->GetEMCGeometry()->GetName());
-
 }
 
 //______________________________________________________________________
