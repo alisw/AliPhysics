@@ -165,6 +165,10 @@ public:
    * \param header The Monte-Carlo event header
    */
   void SetMonteCarloHeader(AliReducedMCHeader *header) { fMCHeader = header; }
+  /**
+   * Set the run number
+   * \param runnumber The run number
+   */
   void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
 
 protected:
