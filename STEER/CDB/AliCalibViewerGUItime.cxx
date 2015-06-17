@@ -1184,7 +1184,7 @@ const char* AliCalibViewerGUItime::SubstituteUnderscores(const char* in)
   s.ReplaceAll("_{","|{");
   s.ReplaceAll("_"," ");
   s.ReplaceAll("|{","_{");
-  return s.Data();
+  return Form("%s",s.Data());
 }
 
 //______________________________________________________________________________
