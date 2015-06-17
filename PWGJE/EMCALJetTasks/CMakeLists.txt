@@ -94,6 +94,7 @@ set(SRCS
     Tracks/AliReducedReconstructedTrack.cxx
     Tracks/AliReducedHighPtEvent.cxx
     Tracks/AliReducedHighPtEventCreator.cxx
+    Tracks/AliAnalysisTaskTrackDCA.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
