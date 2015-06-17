@@ -36,6 +36,7 @@ namespace HighPtTracks {
  */
 AliReducedHighPtEvent::AliReducedHighPtEvent(Bool_t doAlloc):
   TObject(),
+  fRunNumber(0),
   fCentralityPercentile(100.),
   fVertexZ(-999.9),
   fMCHeader(NULL),
@@ -65,6 +66,7 @@ AliReducedHighPtEvent::AliReducedHighPtEvent(Bool_t doAlloc):
  */
 AliReducedHighPtEvent::AliReducedHighPtEvent(const AliReducedHighPtEvent& ref):
   TObject(ref),
+  fRunNumber(0),
   fCentralityPercentile(ref.fCentralityPercentile),
   fVertexZ(ref.fVertexZ),
   fMCHeader(NULL),
