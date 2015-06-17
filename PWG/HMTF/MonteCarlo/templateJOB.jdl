@@ -1,0 +1,43 @@
+# this is the startup process for root
+User="USER";
+Executable="/alice/cern.ch/user/USERPATH/bin/runFastSimulation.sh";
+Arguments="MYARGS";
+Jobtag={"FastGen"};
+
+split="production:1-10000";
+SplitArguments = "a #alien_counter# b";
+# Packages to be used
+Packages = {
+   "VO_ALICE@AliPhysics::vAN-20150323",
+   "VO_ALICE@AliRoot::v5-06-09",   
+   "VO_ALICE@GEANT3::v1-15a-1",
+   "VO_ALICE@ROOT::v5-34-08-7",
+   "VO_ALICE@APISCONFIG::V1.1x"
+};
+
+# price will be used soon by AliEn banking system
+Price="1";
+
+# Time to live
+TTL="72000";
+
+
+InputFile= {"LF:TARGETDIRrungen.C",
+            "LF:TARGETDIRLoadLibs.C"};
+
+Output = {
+        "log_archive:gen*.log,task*.log,LoadLibs.C,rungen.C,stdout.log,stderr.log@disk=1",
+        "root_archive.zip:Kinematics*.root,galice.root,@disk=2"
+};
+
+# Output directory
+OutputDir="TARGETDIROUTDIR/#alien_counter_05i#";
+
+# validation command
+Validationcommand ="/TARGETDIRvalidation.sh";
+
+# Resubmit failed jobs until DONE rate reaches this percentage
+MasterResubmitThreshold = "90%";
+
+# email
+Email="igor.lakomov@cern.ch";
