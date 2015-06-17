@@ -4198,6 +4198,7 @@ TGraphAsymmErrors* AliJetFlowTools::AddHistoErrorsToGraphErrors(TGraphAsymmError
     for(Int_t i(0); i < h->GetNbinsX(); i++) {
         yerr = g->GetErrorY(i);
         herr = h->GetBinError(i+1);
+        cout << " graph error " << yerr << "\t histo error " << herr << endl;
         yerr = TMath::Sqrt(yerr*yerr+herr*herr);
         g->SetPointError(i, g->GetErrorX(i), g->GetErrorX(i), yerr, yerr);
     }
