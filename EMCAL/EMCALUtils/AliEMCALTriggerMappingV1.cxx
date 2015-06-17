@@ -238,7 +238,7 @@ Bool_t AliEMCALTriggerMappingV1::GetTRUIndexFromOnlineIndex(const Int_t id, Int_
 {
   //Trigger mapping method, from STU index get TRU index 
 
-   idx = GetOnlineIndexFromTRUIndex(id);
+   idx = GetTRUIndexFromOnlineIndex(id);
    if (idx > fNTRU - 1 || idx < 0) {
      AliError(Form("TRU index out of range: %d",idx));
      return kFALSE;
@@ -254,16 +254,13 @@ Int_t AliEMCALTriggerMappingV1::GetTRUIndexFromOnlineIndex(const Int_t id) const
   if (id > fNTRU - 1 || id < 0) {
     AliError(Form("TRU index out of range: %d",id));
   }
+  
   if (id == 31) {
     return 31;
   }
 
-  //jump 4 TRUs for DCAL
-  Int_t tmp=0;
-  if(id > 31) tmp = id+4;
-  else        tmp = id;
-  Int_t idx = ((tmp% 6) < 3) ? 6 * int(tmp/ 6) + 2 * (tmp% 3) : 6 * int(tmp/ 6) + 2 * (2 - (tmp% 3)) + 1;
-  if(id > 31) idx-=4;
+  Int_t idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
+
   return idx;
 }
 
@@ -293,12 +290,8 @@ Int_t AliEMCALTriggerMappingV1::GetOnlineIndexFromTRUIndex(const Int_t id) const
     return 31;
   }
 
-  //jump 4 TRUs for DCAL
-  Int_t tmp=0;
-  if(id > 31) tmp = id+4;
-  else        tmp = id;
-  Int_t idx = (tmp % 2) ? int((6 - (tmp % 6)) / 2) + 3 * (2 * int(tmp / 6) + 1) : 3 * int(tmp / 6) + int(tmp / 2);
-  if(id > 31) idx-=4;
+  Int_t idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
+
   return idx;
 }
 
