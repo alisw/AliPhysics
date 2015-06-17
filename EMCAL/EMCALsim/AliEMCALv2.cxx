@@ -64,13 +64,18 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title,
     // Standard Creator.
 
     //fHits= new TClonesArray("AliEMCALHit",1000); //Already done in ctor of v1
+  
     gAlice->GetMCApp()->AddHitList(fHits);
 
     fNhits    = 0;
     fIshunt   = 2; // All hits are associated with particles entering the calorimeter
     fTimeCut  = 30e-09;
   
-    fGeometry = GetGeometry(); 
+  //fGeometry = GetGeometry(); 
+  // pointer already initialized in AliEMCALv0 ctor, grandmother of this class
+  // not sure why it was also invoked here, comment and leave the comment.
+  
+  AliInfo("Very good, V2 version is used!");
 }
 
 //______________________________________________________________________
