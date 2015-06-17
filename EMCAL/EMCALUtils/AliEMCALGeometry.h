@@ -118,10 +118,15 @@ public:
   virtual ~AliEMCALGeometry(void); 
   AliEMCALGeometry & operator = (const AliEMCALGeometry  & rvalue);
   
-  static AliEMCALGeometry * GetInstance(const Text_t* name,      const Text_t* title="",
-                                        const Text_t* mcname="TGeant3", const Text_t* mctitle="") ; 
   static AliEMCALGeometry * GetInstance();
 
+  static AliEMCALGeometry * GetInstance(const Text_t* name,               const Text_t* title  =  "",
+                                        const Text_t* mcname = "TGeant3", const Text_t* mctitle = "" ) ; 
+  
+  static AliEMCALGeometry * GetInstanceFromRunNumber(Int_t runNumber, 
+                                                     TString geoName = "",
+                                                     const Text_t* mcname  = "TGeant3", 
+                                                     const Text_t* mctitle = ""        ) ;
 
   //////////
   // General

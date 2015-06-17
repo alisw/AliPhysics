@@ -437,9 +437,13 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
   //Initializes and returns geometry
   
   // Pass the transpor model name (Geant3, Geant4, Fluka) and title to the geometry
+  // Check the transport model name and option in the geometry, 
+  // set sampling fraction depending on it (AliEMCALEMCGeometry::DefineSamplingFraction)
+
   TString mcname   = "";
   TString mctitle  = "";
-  if(TVirtualMC::GetMC()){
+  if(TVirtualMC::GetMC())
+  {
     mcname  = TVirtualMC::GetMC()->GetName()  ;
     mctitle = TVirtualMC::GetMC()->GetTitle() ;
   }
@@ -450,91 +454,23 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
   //in real data taking. To prevent errors in official simulation productions
   if(!(AliEMCALGeometry::GetInstance()))
   {
-    // Check the transport model name and option, set sampling fraction depending on it
-    if(!fCheckRunNumberAndGeoVersion){// Set geometry with the name used in the configuration file
+    // Set geometry with the name used in the configuration file
+    if(!fCheckRunNumberAndGeoVersion)
+    {
       AliInfo(Form("Geometry name in use <<%s>>, requested via Config file", geoName.Data()));
       return AliEMCALGeometry::GetInstance(GetTitle(),"EMCAL",mcname,mctitle) ;
     }
     else
-    {//Check run number and version and set the corresponding one.
-      //Get run number
-      //AliRunLoader *rl = AliRunLoader::Instance();
-      //Int_t runNumber = rl->GetRunNumber();
+    {
+      // Check run number and version and set the corresponding one.
+      // Get run number
+      // AliRunLoader *rl = AliRunLoader::Instance();
+      // Int_t runNumber = rl->GetRunNumber();
       
       AliCDBManager* man = AliCDBManager::Instance();
       Int_t runNumber = man->GetRun();
       
-      //Instanciate geometry depending on the run number
-      if(runNumber >= 104064 && runNumber < 140000 ){//2009-2010 runs
-        //First year geometry, 4 SM.
-        
-        if(!geoName.Contains("FIRSTYEARV1"))
-        { 
-          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>> for run %d is not considered! \n \t In use <<EMCAL_FIRSTYEARV1>>, check run number and year \n ",
-                       geoName.Data(),runNumber)); 
-        }
-        else 
-        {
-          AliDebug(1,"Initialized geometry with name <<EMCAL_FIRSTYEARV1>>");
-        }
-
-        return AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
-      }
-      else if(runNumber >= 140000 && runNumber <= 170593)
-      {
-        //Almost complete EMCAL geometry, 10 SM. Year 2011 configuration
-        
-        if(!geoName.Contains("COMPLETEV1"))
-        {
-          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETEV1>>, check run number and year \n ",
-                       geoName.Data(),runNumber));
-        }
-        else 
-        {
-          AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETEV1>>");
-        }
-        
-        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
-      }
-      else if(runNumber > 176000 && runNumber <= 197692)
-      {
-        //Complete EMCAL geometry, 12 SM. Year 2012 and on
-        if(!geoName.Contains("COMPLETE12SMV1"))
-        {
-          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ", geoName.Data(),runNumber));
-        } else {
-          AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>");
-        }
-      
-        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
-
-      }
-      else
-      {
-        //EMCAL + DCAL geometry, 20 SM. Year 2014 and on
-        
-        if(geoName.Contains("DCAL_DEV"))
-        {
-          AliInfo("*** ATTENTION *** \n \t Set geometry name <<EMCAL_COMPLETE12SMV1_DCAL_DEV>> \n ");
-          return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_DEV","EMCAL",mcname,mctitle) ;
-        }
-        else if(geoName.Contains("DCAL_8SM"))
-        {
-          AliInfo("*** ATTENTION *** \n \t Set geometry name <<EMCAL_COMPLETE12SMV1_DCAL_8SM>> \n ");
-          return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL",mcname,mctitle) ;
-        }
-      
-        if(!geoName.Contains("COMPLETE12SMV1"))
-        {
-          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ", geoName.Data(),runNumber));
-        }
-        else
-        {
-          AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>");
-        }
-                
-        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
-      }
+      return AliEMCALGeometry::GetInstanceFromRunNumber(runNumber,geoName,mcname,mctitle);
     }
   }// Init geometry for the first time
   

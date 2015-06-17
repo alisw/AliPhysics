@@ -175,6 +175,9 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
     PrintGeometryGeoUtils();
   }
   
+  AliLog::Message(AliLog::kInfo, Form("Name <<%s>>",name),
+                  MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);  
+  
   if ((fEMCGeometry->GetGeoName()).Contains("DCAL")) {
     fTriggerMapping = new AliEMCALTriggerMappingV2(46, this);
     AliLog::Message(AliLog::kInfo, "EMCAL Trigger Mapping Version V2 Enabled",
@@ -230,33 +233,136 @@ AliEMCALGeometry *  AliEMCALGeometry::GetInstance()
   return rv; 
 }
 
+//
+/// \return the pointer of the unique instance
+///
 //______________________________________________________________________
 AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text_t* title,
                                                 const Text_t* mcname, const Text_t* mctitle )
 {
-  // Returns the pointer of the unique instance
-    
   AliEMCALGeometry * rv = 0; 
-  if ( fgGeom == 0 ) {
-    if ( strcmp(name,"") == 0 ) { // get default geometry
-      fgGeom = new AliEMCALGeometry(fgkDefaultGeometryName, title,mcname,mctitle);
-    } else {
+  
+  if ( fgGeom == 0 ) 
+  {
+    if ( strcmp(name,"") == 0 ) 
+    { // get default geometry
+      fgGeom = new AliEMCALGeometry(fgkDefaultGeometryName, title, mcname, mctitle);
+    } 
+    else 
+    {
       fgGeom = new AliEMCALGeometry(name, title,mcname,mctitle);
     }  // end if strcmp(name,"")
-    if ( AliEMCALEMCGeometry::fgInit ) rv = (AliEMCALGeometry * ) fgGeom;
-    else {
+    
+    if ( AliEMCALEMCGeometry::fgInit ) 
+    {
+      rv = (AliEMCALGeometry * ) fgGeom;
+    }
+    else 
+    {
       rv = 0; 
       delete fgGeom; 
       fgGeom = 0; 
     } // end if fgInit
-  }else{
-    if ( strcmp(fgGeom->GetName(), name) != 0) {
-      printf("\ncurrent geometry is %s : ", fgGeom->GetName());
-      printf(" you should not call %s ",name);
+  }
+  else
+  {
+    if ( strcmp(fgGeom->GetName(), name) != 0)
+    {
+      printf("\n current geometry is %s : ", fgGeom->GetName());
+      printf(" you should not call %s \n",name);
     } // end 
+    
     rv = (AliEMCALGeometry *) fgGeom; 
   }  // end if fgGeom
+  
   return rv; 
+}
+
+///
+/// Instanciate geometry depending on the run number
+///
+/// \return the pointer of the unique instance
+///
+//___________________________________________________________________________
+AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,       TString geoName,
+                                                             const Text_t* mcname,  const Text_t* mctitle )
+{
+  //printf("AliEMCALGeometry::GetInstanceFromRunNumber() - run %d, geoName <<%s>> \n",runNumber,geoName.Data());
+  
+  if      ( runNumber >= 104064 && runNumber < 140000  ) 
+  {
+    // 2009-2010 runs
+    // First year geometry, 4 SM.
+    
+    if(!geoName.Contains("FIRSTYEARV1") && geoName!="")
+    { 
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+      printf("\t In use <<EMCAL_FIRSTYEARV1>>, check run number and year\n");
+    }
+    else 
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_FIRSTYEARV1>>\n");
+    }
+    
+    return AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1","EMCAL",mcname,mctitle) ;
+  }
+  else if ( runNumber >= 140000 && runNumber <= 170593 )
+  {
+    // Almost complete EMCAL geometry, 10 SM. Year 2011 configuration
+    
+    if(!geoName.Contains("COMPLETEV1") && geoName!="")
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+      printf("\t In use <<EMCAL_COMPLETEV1>>, check run number and year\n");
+    }
+    else 
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETEV1>>\n");
+    }
+    
+    return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL",mcname,mctitle) ;
+  }
+  else if ( runNumber >  176000 && runNumber <= 197692 )
+  {
+    // Complete EMCAL geometry, 12 SM. Year 2012 and on
+    // The last 2 SM were not active, anyway they were there.
+    
+    if(!geoName.Contains("COMPLETE12SMV1") && geoName!="")
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+      printf("\t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year\n");
+    }
+    else 
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>\n");
+    }
+    
+    return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1","EMCAL",mcname,mctitle) ;
+  }
+  else // Run 2
+  {
+    // EMCAL + DCAL geometry, 20 SM. Year 2015 and on
+    
+    if(!geoName.Contains("DCAL_8SM") && geoName!="")
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+      printf("\t In use <<EMCAL_COMPLETE12SMV1_DCAL_8SM>>, check run number and year\n");
+    }
+    else 
+    {
+      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETE12SMV1_DCAL_8SM>>\n");
+    }
+
+    return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL",mcname,mctitle) ;
+  }
+  
+  printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Run not assigned to range, default geometry <<%s>>\n",fgkDefaultGeometryName);
+
+  return AliEMCALGeometry::GetInstance(fgkDefaultGeometryName,"EMCAL",mcname,mctitle) ;
 }
 
 //________________________________________________________________________________________________
