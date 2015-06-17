@@ -21,7 +21,7 @@ void InterpolateRatiosAndYields() {
 #endif
   collSystem = 2; energy =2760;
   // *************** pi, K, pr *****************
-  arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_PiKaPr.txt");
+  //  arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_PiKaPr.txt");
   // Interpolate0010(211);
   // Interpolate0010(-211);
   // Interpolate0010(321);
@@ -39,21 +39,26 @@ void InterpolateRatiosAndYields() {
   // InterpolateRatios(2212,211, "V0M6070", "V0M7080", "V0M6080");  
   //  InterpolateRatios(321,211, "V0M6070", "V0M7080", "V0M6080");    
 
-  Interpolate2040(211);
-  Interpolate2040(-211);
-  Interpolate2040(2212);
-  Interpolate2040(-2212);
-  Interpolate2040(321);
-  Interpolate2040(-321);
+  // Interpolate2040(211);
+  // Interpolate2040(-211);
+  // Interpolate2040(2212);
+  // Interpolate2040(-2212);
+  // Interpolate2040(321);
+  // Interpolate2040(-321);
 
   // *************** Lambda and K0 *****************
   // arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_LambdaK0.txt");
   // Interpolate0010(3122);
   // Interpolate0010(310);
   // *************** Helium 3 *****************
-  // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
-  // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
-  // ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
+  arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
+  arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
+  // --> 0-10
+
+  //  ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
+  // --> 10-20
+  arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./pbpb_2760_pikapr.txt"));
+  ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M1020");
   // *************** Kstar *****************
   // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_Kstar892.txt");
   // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
