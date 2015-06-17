@@ -132,9 +132,25 @@ public:
   }
   /**
    * Set trigger bit for min. bias event selection
-   * \param minbiasbit
+   * \param minbiasbit Bit number of the min. bias bit in AliVEvent
    */
   void SetMinBiasSelection(AliVEvent::EOfflineTriggerTypes minbiasbit) { fMinBiasSelection = minbiasbit; }
+
+  /**
+   * Switch for applying selection on a given centrality range in the tree production
+   * \param doApply
+   */
+  void SetApplyCentralitySelection(Bool_t doApply = kTRUE) { fApplyCentralitySelection = doApply; }
+
+  /**
+   * Set the range of the centrality selection
+   * \param mincent Minimum centrality percentile
+   * \param maxcent Maximum centrality percentile
+   */
+  void SetCentraltityRange(Float_t mincent, Float_t maxcent) {
+    fCentralityRange[0] = mincent;
+    fCentralityRange[1] = maxcent;
+  }
 
 protected:
   Bool_t SelectEvent(AliVEvent *event) const;
@@ -155,7 +171,9 @@ protected:
   Double_t                  fMaxPt;                       ///< Max. track \f$ p_{t} \f$
   Double_t                  fMinEta;                      ///< Min. track \f$ \eta \f$
   Double_t                  fMaxEta;                      ///< Max. track \f$ \eta \f$
+  Bool_t                    fApplyCentralitySelection;    ///< Switch for doing centrality selection
   TString                   fCentralityMethod;            ///< Method to obtain the event centrality
+  Float_t                   fCentralityRange[2];          ///< Range for centraltity selection
   AliVEvent::EOfflineTriggerTypes fMinBiasSelection;      ///< Trigger bit for min. bias event tagging
 
 private:
