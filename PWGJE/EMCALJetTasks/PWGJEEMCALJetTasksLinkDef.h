@@ -116,6 +116,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ namespace HighPtTracks+;
 #pragma link C++ class HighPtTracks::AliReducedClusterParticle+;
