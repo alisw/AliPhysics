@@ -54,8 +54,6 @@ void alieve_hlt(TString ocdbStorage="local://OCDB")
     if (gSystem->Getenv("ocdbStorage"))
       ocdbStorage=gSystem->Getenv("ocdbStorage");
     AliEveEventManager::SetCdbUri(ocdbStorage);         // current OCDB snapshot
-    AliCDBManager* cdbManager = AliCDBManager::Instance();
-    cdbManager->SetDefaultStorage(ocdbStorage);
     
     cout<<"Creating multiview...";
     AliEveMultiView *multiView = new AliEveMultiView(kTRUE);
