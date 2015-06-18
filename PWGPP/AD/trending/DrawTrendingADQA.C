@@ -1,0 +1,559 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TError.h>
+#include <TROOT.h>
+#include <TKey.h>
+#include <TH2.h>
+#include <TF1.h>
+#include <TH1.h>
+#include <TFile.h>
+#include <TCanvas.h>
+#include <TPad.h>
+#include <TStyle.h>
+#include <TGrid.h>
+#include <TGridResult.h>
+#include <TEnv.h>
+#include <TLegend.h>
+#include <TMath.h>
+#include <TSpectrum.h>
+#include <TTree.h>
+
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliGRPObject.h"
+#include "AliTriggerInput.h"
+#include "AliTriggerConfiguration.h"
+#endif
+
+Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
+{
+  Int_t badrun=0;
+  Int_t goodrun=0;
+  if(!mergedTrendFile)
+    {
+      printf("Cannot open merged trend file with AD QA");
+      return 1;
+    }
+  char outfilename[200]="ProductionQA.hist.root";
+  TString plotDir(".");
+  
+  TFile *treandFile = TFile::Open(mergedTrendFile.Data());
+  if(!treandFile)
+    {
+      Printf("ERROR: trending file not found. Exiting ...\n");
+      return -1;
+    }
+  TTree*ttree=(TTree*)treandFile->Get("trending");
+  if(!ttree)
+    {
+      printf("Invalid trending tree");
+      return 2;
+    }
+  //----------------------Take trending tree------------------------------------ 
+  Int_t runNumber=0;
+  Int_t adReady=0,invalidInput=0,qaNotFound=0,adActive=0,adQANotfound=0,noEntries=0;
+  Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
+  Float_t meanTimeADA = -1024, meanTimeADC = -1024;
+  Float_t meanTimeRMSADA = -1024, meanTimeRMSADC = -1024;
+  Float_t rateUBA = -1024, rateUBC = -1024, rateUGA = -1024, rateUGC = -1024;
+  Float_t rateADAND = -1024, rateADOR = -1024; 
+  
+  ttree->SetBranchAddress("adReady",&adReady);
+  ttree->SetBranchAddress("invalidInput",&invalidInput);
+  ttree->SetBranchAddress("qaNotFound",&qaNotFound);
+  ttree->SetBranchAddress("adActive",&adActive);
+  ttree->SetBranchAddress("adQANotfound",&adQANotfound);
+  ttree->SetBranchAddress("noEntries",&noEntries);
+  ttree->SetBranchAddress("run",&runNumber);
+  
+  ttree->SetBranchAddress("meanTotalChargeADA",&meanTotalChargeADA);
+  ttree->SetBranchAddress("meanTotalChargeADC",&meanTotalChargeADC);
+  ttree->SetBranchAddress("meanTimeADA",&meanTimeADA);
+  ttree->SetBranchAddress("meanTimeADC",&meanTimeADC);
+  ttree->SetBranchAddress("meanTimeRMSADA",&meanTimeRMSADA);
+  ttree->SetBranchAddress("meanTimeRMSADC",&meanTimeRMSADC);
+  ttree->SetBranchAddress("rateUBA",&rateUBA);
+  ttree->SetBranchAddress("rateUBC",&rateUBC);
+  ttree->SetBranchAddress("rateUGA",&rateUGA);
+  ttree->SetBranchAddress("rateUGC",&rateUGC);
+  ttree->SetBranchAddress("rateADAND",&rateADAND);
+  ttree->SetBranchAddress("rateADOR",&rateADOR);
+  
+  //----------------------Make trending histos------------------------------------
+  ttree->GetEntry(0);
+  Int_t nRuns=ttree->GetEntries();
+  TList fListHist;
+  
+  TH1I *hADready= new TH1I("hADready","Run with higt voltage off",0,0,1);
+  TH1I *hInvalidInput= new TH1I("hInvalidInput","run with invalid input",0,0,1);
+  TH1I *hQANotFound= new TH1I("hQANotFound","QA not found",0,0,1);
+  TH1I *hADactive= new TH1I("hADactive","AD not active",0,0,1);
+  TH1I *hADqaNotfound= new TH1I("hADqaNotfound","AD QA not found",0,0,1);
+  TH1I *hNoEntries= new TH1I("hNoEntries","no entries in qa file",0,0,1);
+      
+  TH1F *hMeanTotalChargeADA = new TH1F("hMeanTotalChargeADA","Mean total charge;;Charge (ADC counts)",nRuns,-0.5,nRuns-0.5);
+  TH1F *hMeanTotalChargeADC = new TH1F("hMeanTotalChargeADC","Mean total charge;;Charge (ADC counts)",nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hMeanTimeADA = new TH1F("hMeanTimeADA","Mean time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
+  TH1F *hMeanTimeADC = new TH1F("hMeanTimeADC","Mean time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
+  TH1F *hMeanTimeRMSADA = new TH1F("hMeanTimeRMSADA","Mean time RMS;;Time (ns)",nRuns,-0.5,nRuns-0.5);
+  TH1F *hMeanTimeRMSADC = new TH1F("hMeanTimeRMSADC","Mean time RMS;;Time (ns)",nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hRateUBA = new TH1F("hRateUBA","Mean trigger rate UB;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRateUBC = new TH1F("hRateUBC","Mean trigger rate UB;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRateUGA = new TH1F("hRateUGA","Mean trigger rate UG;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRateUGC = new TH1F("hRateUGC","Mean trigger rate UG;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hRateADAND = new TH1F("hRateADAND","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRateADOR = new TH1F("hRateADOR","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+      
+  fListHist.Add(hMeanTotalChargeADA);
+  fListHist.Add(hMeanTotalChargeADC);
+  fListHist.Add(hMeanTimeADA);
+  fListHist.Add(hMeanTimeADC);
+  fListHist.Add(hMeanTimeRMSADA);
+  fListHist.Add(hMeanTimeRMSADC);
+  fListHist.Add(hRateUBA);
+  fListHist.Add(hRateUBC);
+  fListHist.Add(hRateUGA);
+  fListHist.Add(hRateUGC);
+  fListHist.Add(hRateADAND);
+  fListHist.Add(hRateADOR);
+  
+  //----------------------Loop over runs in tree------------------------------------
+  char runlabel[6];      
+  for(Int_t irun=0;irun<nRuns;irun++){
+  
+      ttree->GetEntry(irun);
+      sprintf(runlabel,"%i",runNumber);
+      
+      //----------------------Bad runs------------------------------------
+      if(invalidInput==1 || qaNotFound==1 || adActive==1 || adQANotfound==1 || noEntries==1){
+      	hInvalidInput->SetBins(badrun+1,0,badrun+1);	  
+      	hInvalidInput->GetXaxis()->SetBinLabel(badrun+1,runlabel);
+      	hQANotFound->SetBins(badrun+1,0,badrun+1);
+      	hQANotFound->GetXaxis()->SetBinLabel(badrun+1,runlabel);
+      	hADactive->SetBins(badrun+1,0,badrun+1);
+      	hADactive->GetXaxis()->SetBinLabel(badrun+1,runlabel);
+      	hADqaNotfound->SetBins(badrun+1,0,badrun+1);
+      	hADqaNotfound->GetXaxis()->SetBinLabel(badrun+1,runlabel);
+      	hNoEntries->SetBins(badrun+1,0,badrun+1);
+      	hNoEntries->GetXaxis()->SetBinLabel(badrun+1,runlabel);
+      	hADready->SetBins(badrun,0,badrun);
+      	hADready->GetXaxis()->SetBinLabel(badrun,runlabel);
+      	if(adReady==1) hADready->SetBinContent(badrun,adReady);
+	}
+      if(invalidInput==1){
+    	hInvalidInput->SetBinContent(badrun+1,invalidInput);
+    	badrun++;
+    	}
+      else if(qaNotFound==1){
+	hQANotFound->SetBinContent(badrun+1,qaNotFound);
+	badrun++;
+	}
+      else if(adActive==1){ 
+	hADactive->SetBinContent(badrun+1,v0active);
+	badrun++;
+	}
+      else if(adQANotfound==1){
+	hADqaNotfound->SetBinContent(badrun+1,v0qaNotfound);
+	badrun++;
+	}
+      else if(noEntries==1){ 
+	hNoEntries->SetBinContent(badrun+1,noEntries);
+	badrun++;
+	}
+      //----------------------Good runs------------------------------------
+      else 
+	{
+	hMeanTotalChargeADA->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTotalChargeADA->SetBinContent(goodrun+1,meanTotalChargeADA);
+	hMeanTotalChargeADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMeanTotalChargeADC->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTotalChargeADC->SetBinContent(goodrun+1,meanTotalChargeADC);
+	hMeanTotalChargeADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMeanTimeADA->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTimeADA->SetBinContent(goodrun+1,meanTimeADA);
+	hMeanTimeADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMeanTimeADC->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTimeADC->SetBinContent(goodrun+1,meanTimeADC);
+	hMeanTimeADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+
+	hMeanTimeRMSADA->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTimeRMSADA->SetBinContent(goodrun+1,meanTimeRMSADA);
+	hMeanTimeRMSADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMeanTimeRMSADC->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTimeRMSADC->SetBinContent(goodrun+1,meanTimeRMSADC);
+	hMeanTimeRMSADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+
+	hRateUBA->SetBins(goodrun+1,0,goodrun+1);
+	hRateUBA->SetBinContent(goodrun+1,rateUBA);
+	hRateUBA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRateUBC->SetBins(goodrun+1,0,goodrun+1);
+	hRateUBC->SetBinContent(goodrun+1,rateUBC);
+	hRateUBC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRateUGA->SetBins(goodrun+1,0,goodrun+1);
+	hRateUGA->SetBinContent(goodrun+1,rateUGA);
+	hRateUGA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRateUGC->SetBins(goodrun+1,0,goodrun+1);
+	hRateUGC->SetBinContent(goodrun+1,rateUGC);
+	hRateUGC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+
+	hRateADAND->SetBins(goodrun+1,0,goodrun+1);
+	hRateADAND->SetBinContent(goodrun+1,rateADAND);
+	hRateADAND->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRateADOR->SetBins(goodrun+1,0,goodrun+1);
+	hRateADOR->SetBinContent(goodrun+1,rateADOR);
+	hRateADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	goodrun++;
+        }
+    }
+    
+  TFile*fout=new TFile(outfilename,"recreate");
+  fout->cd();
+  fListHist.Write();
+  fout->Close();
+  
+  //----------------------Print trending plots------------------------------------   
+  int maxRun =runNumber;
+  ttree->GetEntry(0);
+  int minRun = runNumber;
+    	
+  myOptions();
+  gROOT->ForceStyle();
+  
+  TDatime now;
+  int iDate = now.GetDate();
+  int iYear=iDate/10000;
+  int iMonth=(iDate%10000)/100;
+  int iDay=iDate%100;
+  char* cMonth[12]={"Jan","Feb","Mar","Apr","May","Jun",
+  		    "Jul","Aug","Sep","Oct","Nov","Dec"};
+  char cStamp1[25],cStamp2[25];
+  sprintf(cStamp1,"%i %s %i",iDay, cMonth[iMonth-1], iYear);
+  sprintf(cStamp2,"%i/%.2d/%i",iDay, iMonth, iYear);
+
+  
+
+  TCanvas *c1 = new TCanvas("MeanTotalCharge"," ",800,400); 
+  c1->Draw();								 
+  c1->cd();
+  TPad *myPad1 = new TPad("myPad1", "The pad",0,0,1,1);
+  myPadSetUp(myPad1,0.15,0.1,0.04,0.15);
+  myPad1->SetGridy();
+  myPad1->Draw();
+  myPad1->cd();
+
+  myHistSetUp(hMeanTotalChargeADA);
+  myHistSetUp(hMeanTotalChargeADC);
+  hMeanTotalChargeADA->SetMarkerColor(kBlue);
+  hMeanTotalChargeADC->SetMarkerColor(kRed);
+  hMeanTotalChargeADA->SetMarkerStyle(kFullCircle);
+  hMeanTotalChargeADC->SetMarkerStyle(kFullCircle); 
+  myScaleSetUp(hMeanTotalChargeADA,hMeanTotalChargeADC); 
+  hMeanTotalChargeADA->Draw("P");
+  hMeanTotalChargeADC->Draw("Psame");
+
+  TLegend *myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
+  myLegendSetUp(myLegend1,0.04,1);
+  myLegend1->AddEntry(hMeanTotalChargeADA,"ADA","p");
+  myLegend1->AddEntry(hMeanTotalChargeADC,"ADC","p");
+  myLegend1->Draw();
+    	
+  c1->Print(Form("%s/QA_Resume_%d_%d.pdf(",plotDir.Data(),minRun,maxRun));
+  c1->SaveAs(Form("%s/ADQA__Mean_charge.png",plotDir.Data()));
+  
+  TCanvas *c2 = new TCanvas("MeanTime"," ",800,400); 
+  c2->Draw();						
+  c2->cd();
+  TPad *myPad2 = new TPad("myPad2", "The pad",0,0,1,1);
+  myPadSetUp(myPad2,0.15,0.1,0.04,0.15);
+  myPad2->SetGridy();
+  myPad2->Draw();
+  myPad2->cd();
+
+  myHistSetUp(hMeanTimeADA);
+  myHistSetUp(hMeanTimeADC);
+  hMeanTimeADA->SetMarkerColor(kBlue);
+  hMeanTimeADC->SetMarkerColor(kRed);
+  hMeanTimeADA->SetMarkerStyle(kFullCircle);
+  hMeanTimeADC->SetMarkerStyle(kFullCircle);  
+  myScaleSetUp(hMeanTimeADA,hMeanTimeADC);  
+  hMeanTimeADA->Draw("P");
+  hMeanTimeADC->Draw("Psame");
+  myLegend1->Draw();
+  
+  c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c2->SaveAs(Form("%s/ADQA__Mean_time.png",plotDir.Data()));
+  
+  TCanvas *c3 = new TCanvas("MeanTimeRMS"," ",800,400); 
+  c3->Draw();						
+  c3->cd();
+  TPad *myPad3 = new TPad("myPad3", "The pad",0,0,1,1);
+  myPadSetUp(myPad3,0.15,0.1,0.04,0.15);
+  myPad3->SetGridy();
+  myPad3->Draw();
+  myPad3->cd();
+
+  myHistSetUp(hMeanTimeRMSADA);
+  myHistSetUp(hMeanTimeRMSADC);
+  hMeanTimeRMSADA->SetMarkerColor(kBlue);
+  hMeanTimeRMSADC->SetMarkerColor(kRed);
+  hMeanTimeRMSADA->SetMarkerStyle(kFullCircle);
+  hMeanTimeRMSADC->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hMeanTimeRMSADA,hMeanTimeRMSADC);
+  hMeanTimeRMSADA->Draw("P");
+  hMeanTimeRMSADC->Draw("Psame");
+  myLegend1->Draw();
+  
+  c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c3->SaveAs(Form("%s/ADQA__Mean_time_RMS.png",plotDir.Data()));
+  
+  if(hADready->GetEntries())
+    {
+      TCanvas * cBad1 = new TCanvas("cBad1","");
+      cBad1->cd();
+      hADready->Draw();
+      cBad1->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad1->SaveAs(Form("%s/ADQA__adReady.png",plotDir.Data()));
+    }
+  if(hInvalidInput->GetEntries())
+    {
+      TCanvas * cBad2 = new TCanvas("cBad2","");
+      cBad2->cd();
+      hInvalidInput->Draw();
+      cBad2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad2->SaveAs(Form("%s/ADQA__InvalidInput_%d_%d.png",plotDir.Data(),minRun,maxRun));
+    }
+  if(hQANotFound->GetEntries())
+    {
+      TCanvas * cBad3 = new TCanvas("cBad3","");
+      cBad3->cd();
+      QaNotFound->Draw();
+      cBad3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad3->SaveAs(Form("%s/ADQA__QA_Not_Found_%d_%d.png",plotDir.Data()));
+    }
+  if(hADactive->GetEntries())
+    {
+      TCanvas * cBad4 = new TCanvas("cBad4","");
+      cBad4->cd();
+      ADactive->Draw();
+      cBad4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad4->SaveAs(Form("%s/ADQA__AD_not_Active.png",plotDir.Data()));
+    }
+  if(hADqaNotfound->GetEntries())
+    {
+      TCanvas * cBad5 = new TCanvas("cBad5","");
+      cBad5->cd();
+      ADqaNotfound->Draw();
+      cBad5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad5->SaveAs(Form("%s/ADQA__v0qa_Not_Found.png",plotDir.Data()));
+    }
+  if(hNoEntries->GetEntries())
+    {
+      TCanvas * cBad6 = new TCanvas("cBad6","");
+      cBad6->cd();
+      NoEntrie->Draw();
+      cBad6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad6->SaveAs(Form("%s/ADQA__NoEntrie.png",plotDir.Data()));
+    }
+
+    
+  TCanvas *c4 = new TCanvas("Rate UB"," ",800,400); 
+  c4->Draw();						
+  c4->cd();
+  TPad *myPad4 = new TPad("myPad4", "The pad",0,0,1,1);
+  myPadSetUp(myPad4,0.15,0.1,0.04,0.15);
+  myPad4->SetGridy();
+  myPad4->Draw();
+  myPad4->cd();
+
+  myHistSetUp(hRateUBA);
+  myHistSetUp(hRateUBC);
+  hRateUBA->SetMarkerColor(kBlue);
+  hRateUBC->SetMarkerColor(kRed);
+  hRateUBA->SetMarkerStyle(kFullCircle);
+  hRateUBC->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRateUBA,hRateUBC);
+  hRateUBA->Draw("P");
+  hRateUBC->Draw("Psame");
+  myLegend1->Draw();
+  
+  c4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c4->SaveAs(Form("%s/ADQA__RateUB.png",plotDir.Data()));
+  
+  TCanvas *c5 = new TCanvas("Rate UG"," ",800,400); 
+  c5->Draw();						
+  c5->cd();
+  TPad *myPad5 = new TPad("myPad5", "The pad",0,0,1,1);
+  myPadSetUp(myPad5,0.15,0.1,0.04,0.15);
+  myPad5->SetGridy();
+  myPad5->Draw();
+  myPad5->cd();
+
+  myHistSetUp(hRateUGA);
+  myHistSetUp(hRateUGC);
+  hRateUGA->SetMarkerColor(kBlue);
+  hRateUGC->SetMarkerColor(kRed);
+  hRateUGA->SetMarkerStyle(kFullCircle);
+  hRateUGC->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRateUGA,hRateUGC);
+  hRateUGA->Draw("P");
+  hRateUGC->Draw("Psame");
+  myLegend1->Draw();
+  
+  c5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c5->SaveAs(Form("%s/ADQA__RateUG.png",plotDir.Data()));
+  
+  TCanvas *c6 = new TCanvas("Rate UG"," ",800,400); 
+  c6->Draw();						
+  c6->cd();
+  TPad *myPad6 = new TPad("myPad6", "The pad",0,0,1,1);
+  myPadSetUp(myPad6,0.15,0.1,0.04,0.15);
+  myPad6->SetGridy();
+  myPad6->Draw();
+  myPad6->cd();
+
+  myHistSetUp(hRateADAND);
+  myHistSetUp(hRateADOR);
+  hRateADAND->SetMarkerColor(kBlue);
+  hRateADOR->SetMarkerColor(kRed);
+  hRateADAND->SetMarkerStyle(kFullCircle);
+  hRateADOR->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRateADAND,hRateADOR);
+  hRateADAND->Draw("P");
+  hRateADOR->Draw("Psame");
+  
+  TLegend *myLegend2 = new TLegend(0.70,0.67,0.97,0.82);
+  myLegendSetUp(myLegend2,0.04,1);
+  myLegend2->AddEntry(hRateADAND,"ADAND","p");
+  myLegend2->AddEntry(hRateADOR,"ADOR","p");
+  myLegend2->Draw();
+  
+  c6->Print(Form("%s/QA_Resume_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
+  c6->SaveAs(Form("%s/ADQA__RateAD.png",plotDir.Data()));
+  
+  return 0;
+}
+
+void myScaleSetUp(TH1F* histoBlue, TH1F* histoRed){
+
+  Float_t min[2], max[2];
+
+  max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+  max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+
+  min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
+  min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
+	
+  histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.5*TMath::MaxElement(2,max));  
+
+}
+
+void myPadSetUp(TVirtualPad *currentPad, float currentLeft=0.31, float currentTop=0.04, float currentRight=0.04, float currentBottom=0.15){
+  currentPad->SetLeftMargin(currentLeft);
+  currentPad->SetTopMargin(currentTop);
+  currentPad->SetRightMargin(currentRight);
+  currentPad->SetBottomMargin(currentBottom);
+  return;
+}
+
+void myPadSetUp(TPad *currentPad, float currentLeft=0.11, float currentTop=0.04, float currentRight=0.11, float currentBottom=0.15){
+  currentPad->SetLeftMargin(currentLeft);
+  currentPad->SetTopMargin(currentTop);
+  currentPad->SetRightMargin(currentRight);
+  currentPad->SetBottomMargin(currentBottom);
+  return;
+}
+
+void myLegendSetUp(TLegend *currentLegend=0,float currentTextSize=0.07,int columns=2){
+  currentLegend->SetTextFont(42);
+  currentLegend->SetBorderSize(0);
+  currentLegend->SetFillStyle(0);
+  currentLegend->SetFillColor(0);
+  currentLegend->SetMargin(0.25);
+  currentLegend->SetTextSize(currentTextSize);
+  currentLegend->SetEntrySeparation(0.5);
+  currentLegend->SetNColumns(columns);
+  return;
+}
+
+
+void myHistSetUp(TH1 *currentGraph=0){
+ 
+  currentGraph->SetLabelSize(0.05,"xyz");
+  currentGraph->SetLabelFont(42,"xyz"); 
+  currentGraph->SetLabelOffset(0.01,"xyz");
+  currentGraph->SetTitleFont(42,"xyz");   
+  currentGraph->GetXaxis()->SetTitleOffset(1.1);
+  currentGraph->GetYaxis()->SetTitleOffset(1.1);  
+  currentGraph->SetTitleSize(0.06,"xyz");
+  currentGraph->SetStats(kFALSE); 
+  return;
+}
+void myHistSetUp(TH2 *currentGraph=0){
+ 
+  currentGraph->SetLabelSize(0.05,"xyz");
+  currentGraph->SetLabelFont(42,"xyz"); 
+  currentGraph->SetLabelOffset(0.01,"xyz");
+  currentGraph->SetTitleFont(42,"xyz"); 
+  currentGraph->GetXaxis()->SetTitleOffset(1.3);
+  currentGraph->GetYaxis()->SetTitleOffset(1.3);  
+  currentGraph->SetTitleSize(0.05,"xyz");
+  currentGraph->SetStats(kFALSE);
+  return;
+}
+
+void myOptions(Int_t lStat=0){
+  // Set gStyle
+  int font = 42;
+  // From plain
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetPadColor(10);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetTitleFillColor(10);
+  gStyle->SetTitleBorderSize(1);
+  gStyle->SetStatColor(10);
+  gStyle->SetStatBorderSize(1);
+  gStyle->SetLegendBorderSize(1);
+  //
+  gStyle->SetDrawBorder(0);
+  gStyle->SetTextFont(font);
+  gStyle->SetStatFont(font);
+  gStyle->SetStatFontSize(0.05);
+  gStyle->SetStatX(0.97);
+  gStyle->SetStatY(0.98);
+  gStyle->SetStatH(0.03);
+  gStyle->SetStatW(0.3);
+  gStyle->SetTickLength(0.02,"y");
+  gStyle->SetEndErrorSize(3);
+  gStyle->SetLabelSize(0.05,"xyz");
+  gStyle->SetLabelFont(font,"xyz"); 
+  gStyle->SetLabelOffset(0.01,"xyz");
+  gStyle->SetTitleFont(font,"xyz");  
+  gStyle->SetTitleOffset(1.0,"xyz");  
+  gStyle->SetTitleSize(0.06,"xyz");  
+  gStyle->SetMarkerSize(1); 
+  gStyle->SetPalette(1,0); 
+  if (lStat){
+    gStyle->SetOptTitle(1);
+    gStyle->SetOptStat(1111111);
+    gStyle->SetOptFit(1111111);
+    }
+  else {
+    gStyle->SetOptTitle(1);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+  }
+}
