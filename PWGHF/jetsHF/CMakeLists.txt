@@ -54,6 +54,7 @@ set(SRCS
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
     AliHFJetsContainerVertex.cxx
+    AliAnalysisHFjetTagHFE.cxx
 )
 
 if(FASTJET_FOUND)
