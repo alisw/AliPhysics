@@ -41,7 +41,8 @@ enum ETATriggerType{
   kTAEMCJHigh       = 0,            ///< Jet trigger, high threshold
   kTAEMCJLow        = 1,            ///< Jet trigger, low threshold
   kTAEMCGHigh       = 2,            ///< Gamma trigger, high threshold
-  kTAEMCGLow        = 3             ///< Gamma trigger, low threshold
+  kTAEMCGLow        = 3,            ///< Gamma trigger, low threshold
+  kTAUndef          = -1            ///< Default, undefined
 };
 
 /**
@@ -148,7 +149,7 @@ private:
   Double_t                      fEnergyThresholds[4];                       ///< Energy thresholds applied in the analysis
   EPatchEnergyType_t            fEnergyType;                                ///< Energy type from patch used for the patch energy selection
 
-  /// \cond
+  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaTriggerDecisionConfig, 1);
   /// \endcond
 };
@@ -205,24 +206,12 @@ public:
   const AliEMCalTriggerAnaTriggerDecisionConfig * GetConfiguration() const { return &fConfiguration; }
 
   /**
-   * Flag event as minimum bias event
-   * \param isMB If true, the event is also a minimum bias event
-   */
-  void SetIsMinBias(Bool_t isMB = kTRUE) { fIsMinBias = isMB; }
-
-  /**
    * Set the configuration used for the trigger selection.
    * \param conf Configuration used for the trigger selection
    */
   void ConfigureTriggerDecision(const AliEMCalTriggerAnaTriggerDecisionConfig &conf) { fConfiguration = conf; }
 
   void Reset();
-
-  /**
-   * Check if the event is also a minimum bias event.
-   * \return True if the event was selected as minimum bias event.
-   */
-  Bool_t IsMinBias() const { return fIsMinBias; }
 
   void Print(Option_t * opt = NULL) const;
 
@@ -244,7 +233,6 @@ protected:
   AliEMCalTriggerAnaTriggerDecisionConfig     fConfiguration;                      ///< Configuration for the trigger decision handler
   Bool_t                                      fDecisionFromPatches[4];             ///< Storage for result from trigger string
   Bool_t                                      fDecisionFromString[4];              ///< Storage for result from trigger patches
-  Bool_t                                      fIsMinBias;                          ///< Marker for event as minimum bias event
 
   Bool_t fDoDebug;                                                                 ///< Switch for debug mode
 

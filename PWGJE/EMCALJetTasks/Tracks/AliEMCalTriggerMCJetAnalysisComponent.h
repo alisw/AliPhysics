@@ -48,12 +48,6 @@ public:
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
   /**
-   * Specify method used to select trigger patches.
-   * \param method Method used to select trigger patches
-   */
-  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
-
-  /**
    * Specify minimum \f$ p_{t} \f$ for selected jets.
    * \param minpt The minimum \f$ p_{t} \f$
    */
@@ -64,7 +58,6 @@ protected:
   void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
 
   Double_t                fMinimumJetPt;                      ///< Min. \f$ p_{t} \f$ request for the jet
-  ETriggerMethod_t        fTriggerMethod;                     ///< Method used to select triggered events
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerMCJetAnalysisComponent, 1);         // Analysis component for MC Jets

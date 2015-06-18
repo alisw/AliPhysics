@@ -58,15 +58,6 @@ public:
   void SetSwapEta(Bool_t doSwap = kTRUE) { fSwapEta = doSwap; }
 
   /**
-   * Defines trigger selection mode (patches or trigger string). If true is set, the
-   * trigger selection is done from patches. Otherwise (default) it is done from the
-   * trigger string.
-   *
-   * \param doUse If true, patches are used for the trigger selection, otherwise the trigger string
-   */
-  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
-
-  /**
    * Defines whether tracks are required to be MC-true tracks, defined as track with
    * associated MC particle which fulfills the physical primary condition. Only relevant
    * for analysis of Monte-Carlo data sets
@@ -99,7 +90,6 @@ protected:
 
   AliEMCalPtTaskVTrackSelection *   fTrackSelection;          ///< Track selection cuts used in the analysis
   Bool_t                            fSwapEta;                 ///< Swap eta sign
-  ETriggerMethod_t                  fTriggerMethod;           ///< Method used for trigger decision
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fDoMatchPatches;          ///< Request matching with trigger patches
 

@@ -38,8 +38,7 @@ AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent() :
   AliEMCalTriggerTracksAnalysisComponent(),
   fSwapOnlineThresholds(kFALSE),
   fSwapOfflineThresholds(kFALSE),
-  fWithEventSelection(kFALSE),
-  fTriggerMethod(kTriggerString)
+  fWithEventSelection(kFALSE)
 {
 }
 
@@ -54,8 +53,7 @@ AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent(con
   AliEMCalTriggerTracksAnalysisComponent(name),
   fSwapOnlineThresholds(kFALSE),
   fSwapOfflineThresholds(kFALSE),
-  fWithEventSelection(withEventSelection),
-  fTriggerMethod(kTriggerString)
+  fWithEventSelection(withEventSelection)
 {
 }
 
@@ -102,21 +100,7 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
 
   // Create trigger definitions
   std::map<std::string, std::string> triggerCombinations;
-  const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
-      "EMCGLow", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
-      "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"};
-  // Define names and titles for different triggers in the histogram container
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[1], "jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "jet and gamma triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "exclusively gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "jet and gamma triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "exclusively gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively-triggered events (low threshold)"));
+  GetAllTriggerNamesAndTitles(triggerCombinations);
 
   std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
   std::string triggermodes[] = {"Online", "Offline"};
@@ -156,7 +140,7 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
   while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
     if(fWithEventSelection){
       std::vector<std::string> triggernames;
-      GetMachingTriggerNames(triggernames, fTriggerMethod);
+      GetMachingTriggerNames(triggernames);
       for(std::vector<std::string>::iterator trgclassit = triggernames.begin(); trgclassit != triggernames.end(); ++trgclassit){
         FillStandardMonitoring(triggerpatch, trgclassit->c_str());
       }

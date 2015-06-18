@@ -140,8 +140,8 @@ void AliAnalysisTaskTrackDCA::UserExec(Option_t *){
     Double_t pt = TMath::Abs(copytrack.Pt());
     copytrack.GetImpactParameters(dcaR, dcaZ);
     for(std::vector<std::string>::iterator trgit = triggers.begin(); trgit != triggers.end(); ++trgit){
-      fHistos->FillTH1(Form("hDCAr%s", trgit->c_str()), dcaR);
-      fHistos->FillTH1(Form("hDCAz%s", trgit->c_str()), dcaZ);
+      fHistos->FillTH1(Form("hDCAr%s", trgit->c_str()), pt, dcaR);
+      fHistos->FillTH1(Form("hDCAz%s", trgit->c_str()), pt, dcaZ);
     }
     /*
      * In case AliRoot will at some point support c++-11 (in the far future)
