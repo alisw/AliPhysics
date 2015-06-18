@@ -42,6 +42,8 @@ fgRawFromStandardLoc(false)
 {
     cout<<"Constructor of AliEveDataSourceOffline"<<endl;
     cout<<"AliEveData initialized"<<endl;
+    
+    fEventManager = AliEveEventManager::GetMaster();
     Open();
     cout<<"Files opened"<<endl;
 }
@@ -74,16 +76,16 @@ void AliEveDataSourceOffline::SetEvent(AliRunLoader *runLoader, AliRawReader *ra
     fCurrentData.fESDfriend = esdf;
     fCurrentData.fAOD       = 0;
     
-    AliEveEventManager::GetMaster()->SetEventId(AliEveEventManager::GetMaster()->GetEventId()+1);
-    AliEveEventManager::GetMaster()->SetHasEvent(true);
+    fEventManager->SetEventId(fEventManager->GetEventId()+1);
+    fEventManager->SetHasEvent(true);
     
     SetTitle("Online event in memory");
     SetName ("Online Event");
-    AliEveEventManager::GetMaster()->ElementChanged();
-    AliEveEventManager::GetMaster()->AfterNewEventLoaded();
+    fEventManager->ElementChanged();
+    fEventManager->AfterNewEventLoaded();
     
-    if (AliEveEventManager::GetMaster()->GetAutoLoad()){
-        AliEveEventManager::GetMaster()->StartAutoLoadTimer();
+    if (fEventManager->GetAutoLoad()){
+        fEventManager->StartAutoLoadTimer();
     }
     
 }
@@ -104,14 +106,16 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // as the number of events is not known.
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    if(fCurrentData.fESD->GetRunNumber() != AliEveEventManager::GetMaster()->GetCurrentRun())
+    if(fCurrentData.fESD->GetRunNumber() != fEventManager->GetCurrentRun())
     {
-        AliEveEventManager::GetMaster()->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
+        fEventManager->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
+        fEventManager->ResetMagneticField();
     }
+    
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
     fEventInfo.Reset();
-    AliEveEventManager::GetMaster()->SetHasEvent(false);
+    fEventManager->SetHasEvent(false);
     
     Int_t maxEvent = 0;
     if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
@@ -182,7 +186,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     sysInfoHeader.Form("AliEveEventManager::GotoEvent(%d) - ", event);
     AliSysInfo::AddStamp(sysInfoHeader + "Start");
 
-    AliEveEventManager::GetMaster()->DestroyTransients();
+    fEventManager->DestroyTransients();
     
 //    TEveManager::TRedrawDisabler rd(gEve);
 //    gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
@@ -231,7 +235,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         if (fCurrentData.fRawReader->GotoEvent(event) == kFALSE)
         {
             // Use fallback method - iteration with NextEvent().
-            Int_t rawEv = AliEveEventManager::GetMaster()->GetEventId();
+            Int_t rawEv = fEventManager->GetEventId();
             if (event < rawEv)
             {
                 fCurrentData.fRawReader->RewindEvents();
@@ -243,7 +247,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
                 if ( ! fCurrentData.fRawReader->NextEvent())
                 {
                     fCurrentData.fRawReader->RewindEvents();
-                    AliEveEventManager::GetMaster()->SetEventId(-1);
+                    fEventManager->SetEventId(-1);
 //                    fEventId = -1;
                     throw (kEH + Form("Error going to next raw-event from event %d.", rawEv));
                 }
@@ -252,14 +256,15 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
             Warning(kEH, "Loaded raw-event %d with fallback method.\n", rawEv);
         }
     }
-    AliEveEventManager::GetMaster()->SetHasEvent(true);
-    AliEveEventManager::GetMaster()->SetEventId(event);
     
-    SetName(Form("Event %d", AliEveEventManager::GetMaster()->GetEventId()));
-    AliEveEventManager::GetMaster()->ElementChanged();
+    fEventManager->SetHasEvent(true);
+    fEventManager->SetEventId(event);
+    
+    SetName(Form("Event %d", fEventManager->GetEventId()));
+    fEventManager->ElementChanged();
     
     AliSysInfo::AddStamp(sysInfoHeader + "PostLoadEvent");
-    AliEveEventManager::GetMaster()->AfterNewEventLoaded();
+    fEventManager->AfterNewEventLoaded();
     AliSysInfo::AddStamp(sysInfoHeader + "PostUserActions");
 }
 
@@ -283,10 +288,10 @@ void AliEveDataSourceOffline::NextEvent()
      GotoEvent(nextevent);
      }
      }*/
-    /*else*/ if (AliEveEventManager::GetMaster()->GetEventId() < GetMaxEventId(kTRUE))
+    /*else*/ if (fEventManager->GetEventId() < GetMaxEventId(kTRUE))
     {
-        cout<<"GotoEvent:"<<AliEveEventManager::GetMaster()->GetEventId()+1<<endl;
-        GotoEvent(AliEveEventManager::GetMaster()->GetEventId() + 1);
+        cout<<"GotoEvent:"<<fEventManager->GetEventId()+1<<endl;
+        GotoEvent(fEventManager->GetEventId() + 1);
     }
     else
     {
@@ -305,14 +310,14 @@ void AliEveDataSourceOffline::PrevEvent()
     if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
     {
         Int_t nextevent=0;
-        if (AliEveEventManager::GetMaster()->GetEventSelector()->FindPrev(nextevent))
+        if (fEventManager->GetEventSelector()->FindPrev(nextevent))
         {
             GotoEvent(nextevent);
         }
     }
-    else if (AliEveEventManager::GetMaster()->GetEventId() > 0)
+    else if (fEventManager->GetEventId() > 0)
     {
-        GotoEvent(AliEveEventManager::GetMaster()->GetEventId() - 1);
+        GotoEvent(fEventManager->GetEventId() - 1);
     }
 }
 
@@ -417,7 +422,7 @@ void AliEveDataSourceOffline::Open()
         gafile->Close();
         delete gafile;
         cout<<"SETTING RUN LOADER in Open()"<<endl;
-        fCurrentData.fRunLoader = AliRunLoader::Open(fgGAliceFileName, AliEveEventManager::GetMaster()->GetName());
+        fCurrentData.fRunLoader = AliRunLoader::Open(fgGAliceFileName, fEventManager->GetName());
         if (fCurrentData.fRunLoader)
         {
             TString alicePath(gSystem->DirName(fgGAliceFileName));
@@ -506,7 +511,7 @@ void AliEveDataSourceOffline::Open()
         }
         else
         {
-            AliEveEventManager::GetMaster()->SetEventId(0);
+            fEventManager->SetEventId(0);
             return;
         }
     }
@@ -528,8 +533,8 @@ void AliEveDataSourceOffline::Close()
         throw (kEH + "Event-files not opened.");
     }
     
-    if (AliEveEventManager::GetMaster()->GetAutoLoadRunning()){
-        AliEveEventManager::GetMaster()->StopAutoLoadTimer();
+    if (fEventManager->GetAutoLoadRunning()){
+        fEventManager->StopAutoLoadTimer();
     }
     if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0)) {
         delete fCurrentData.fESD;       fCurrentData.fESD       = 0;
@@ -557,9 +562,9 @@ void AliEveDataSourceOffline::Close()
         delete fCurrentData.fRawReader; fCurrentData.fRawReader = 0;
     }
     
-    AliEveEventManager::GetMaster()->SetEventId(-1);
+    fEventManager->SetEventId(-1);
     fIsOpen   = kFALSE;
-    AliEveEventManager::GetMaster()->SetHasEvent(false);
+    fEventManager->SetHasEvent(false);
 }
 
 Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
@@ -585,7 +590,7 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
         {
             if(fCurrentData.fESDTree!=0) fCurrentData.fESDTree->Refresh();
             if(fCurrentData.fHLTESDTree!=0) fCurrentData.fHLTESDTree->Refresh();
-            AliEveEventManager::GetMaster()->GetEventSelector()->Update();
+            fEventManager->GetEventSelector()->Update();
         }
         
         Int_t maxEventId=0;

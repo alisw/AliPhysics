@@ -57,6 +57,7 @@ private:
     TString  fgAODFileName;           // Name by which to open AOD.
     TString  fgRawFileName;           // Name by which to open raw-data file.
     
+    AliEveEventManager *fEventManager;
     
     EVisibleESDTrees  fgESDvisibleTrees; // trees to open from ESD
     
