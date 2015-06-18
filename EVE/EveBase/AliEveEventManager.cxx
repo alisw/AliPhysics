@@ -536,12 +536,11 @@ void AliEveEventManager::AfterNewEventLoaded()
             gROOT->ProcessLine(".x geom_emcal.C");
             fFirstEvent=false;
         }
-    }
-    
-    if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
-    {
-        fViewsSaver->Save();
-        fViewsSaver->SendToAmore();
+        if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
+        {
+            fViewsSaver->Save();
+            fViewsSaver->SendToAmore();
+        }
     }
 }
 

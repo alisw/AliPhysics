@@ -285,6 +285,7 @@ void AliEveDataSourceOnline::NextEvent()
                 fEventManager->DestroyElements();
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() != fEventManager->GetCurrentRun()){
                     fEventManager->ResetMagneticField();
+                    fEventManager->SetCurrentRun(fCurrentEvent[fEventInUse]->GetRunNumber());
                 }
                 fCurrentData.fESD = fCurrentEvent[fEventInUse];
                 
