@@ -21,7 +21,25 @@ class TH1F;
 class TList;
 class AliAnalysisManager;
 class AliESDtrackCuts;
-
+/*
+class AliAODEvent;
+class AliAODTrack;
+class AliInputEventHandler;
+class AliMCEvent;
+class AliMCEventHandler;
+class AliVParticle;
+class AliEventPoolManager;
+class AliESDEvent;
+class AliHelperPID;
+class AliAnalysisUtils;
+class AliGenEventHeader;
+class AliVEvent;
+//class AliAnalysisManager;
+class AliAnalysisUtils;
+class AliVVertex;
+class AliVertex;
+*/
+//
 #include "TObjArray.h"
 
 #ifndef ALIANALYSISTASKSE_H
@@ -35,20 +53,33 @@ class AliESDtrackCuts;
 #include "AliVParticle.h"
 #include "AliVVertex.h"
 #include "AliPIDResponse.h"
+#include "AliAODTrack.h"
+
+//#include "AliAODEvent.h"
+//#include "AliInputEventHandler.h" // event mixing
+//#include "AliEventPoolManager.h"  // event mixing
+//#include "AliMCEvent.h"
+//#include "AliMCEventHandler.h"
+//#include "AliHelperPID.h"
+//#include "AliAnalysisUtils.h"
+//#include "AliVEvent.h"
 
 #include <vector>
 using std::vector;
 
 class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
 	public:
+		enum{
+            kCentBin = 1,
+            kZvertBin = 7,
+            kpTBin = 7,
+            kPID = 4
+        };
 
 		enum{
-			kCentBin = 1,
-			kZvertBin = 7,
-			kpTBin = 7,
-			kPID = 4
+			kTPCOnlyTrackCut = 128,
+			kHybridTrackCut = 768
 		};
-
 
 		AliAnalysisTaskEPCorrPP();
 		AliAnalysisTaskEPCorrPP(const char *name);
@@ -58,7 +89,7 @@ class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
 		virtual void     UserExec(Option_t *option);
 		virtual void     Terminate(Option_t *);
 
-		TObjArray*    AcceptTracksReduced(AliESDEvent *event, Bool_t useCuts);
+		TObjArray*    AcceptTracksReduced(AliAODEvent *event, Bool_t useCuts);
 //		float CalculatedPhiStar(float dPhi, float Zv, float Zv2, float pT, float pT2);
         float CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign);
 
@@ -67,11 +98,11 @@ class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
 		void DoMixing(double cent, double zvtx, TObjArray* fMyprimRecoTracks, float bSign);
 	    double DeltaPhi(double phi1, double phi2);
 
-		int GetParticleID(AliESDtrack* track);
+		int GetParticleID(AliAODTrack *track, double nsigmaCut);
 		
 	private:
 		TList           *fOutput;        // Output list
-		AliESDtrackCuts *fTrackCuts;     // Track cuts
+//		AliESDtrackCuts *fTrackCuts;     // Track cuts
 		AliEventPoolManager*  fPoolMgr; //!
 		AliPIDResponse *fPIDResponse; //!
 
@@ -138,23 +169,23 @@ class AliCorrReducedTrackPP : public AliVParticle // TObject
 		~AliCorrReducedTrackPP() {}
 
 		// AliVParticle functions
-		virtual Double_t  Px() const { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  Py() const { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  Pz() const { AliFatal("Not implemented"); return 0; }
+		virtual Double_t  Px() const { return 0; }
+		virtual Double_t  Py() const { return 0; }
+		virtual Double_t  Pz() const { return 0; }
 		virtual Double_t  Pt() const { return fPtReduced; }
-		virtual Double_t  P() const   { AliFatal("Not implemented"); return 0; }
-		virtual Bool_t        PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  Xv() const  { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  Yv() const  { AliFatal("Not implemented"); return 0; }
+		virtual Double_t  P() const   { return 0; }
+		virtual Bool_t        PxPyPz(Double_t[3]) const { return 0; }
+		virtual Double_t  Xv() const  { return 0; }
+		virtual Double_t  Yv() const  { return 0; }
 		virtual Double_t  Zv() const  { return fZvReduced; }
-		virtual Bool_t    XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  OneOverPt() const   { AliFatal("Not implemented"); return 0; }
+		virtual Bool_t    XvYvZv(Double_t[3]) const { return 0; }
+		virtual Double_t  OneOverPt() const   { return 0; }
 		virtual Double_t  Phi() const { return fPhiReduced; }
-		virtual Double_t  Theta() const   { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  E() const { AliFatal("Not implemented"); return 0; }
-		virtual Double_t  M() const   { AliFatal("Not implemented"); return 0; }
+		virtual Double_t  Theta() const   { return 0; }
+		virtual Double_t  E() const { return 0; }
+		virtual Double_t  M() const   { return 0; }
 		virtual Double_t  Eta() const { return fEtaReduced; }
-		virtual Double_t  Y() const   { AliFatal("Not implemented"); return 0; }
+		virtual Double_t  Y() const   { return 0; }
 		virtual Short_t   Charge() const  { return fChargeReduced; }
 
 		// void Print() { Printf(Form("Reduced track, eta: %lf phi: %lf pt: %lf p: %lf", fEtaReduced, fPhiReduced, fPtReduced, fPReduced)); }
@@ -162,9 +193,9 @@ class AliCorrReducedTrackPP : public AliVParticle // TObject
 		//________ PID
 		Int_t             GetMyPartID() const { return fParticleIDReduced; }
 		virtual Bool_t            IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
-		virtual Int_t         GetLabel() const { AliFatal("Not implemented"); return 0; }
-		virtual Int_t         PdgCode() const { AliFatal("Not implemented"); return 0; }
-		virtual const Double_t*   PID() const { AliFatal("Not implemented"); return 0; }
+		virtual Int_t         GetLabel() const { return 0; }
+		virtual Int_t         PdgCode() const { return 0; }
+		virtual const Double_t*   PID() const { return 0; }
 
 	private:
 
