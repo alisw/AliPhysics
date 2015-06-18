@@ -44,7 +44,8 @@ public:
 	 kGainNotEnoughStatsNotFill = 8,
 	 kVdriftNotEnoughStatsNotFill = 16,
 	 kTimeOffsetNotEnoughStatsNotFill = 32,
-	 kExBErrorRange = 64};  
+	 kExBErrorRange = 64,
+	 kChamberStatusTooFewGood = 128};  
   enum { kGainErrorOld = 2,
 	 kVdriftErrorOld = 4,
 	 kExBErrorOld = 8,
@@ -115,6 +116,8 @@ public:
     { return CheckStatus(fStatusNeg, kTimeOffsetNotEnoughStatsNotFill);  };
   Bool_t      IsExBErrorRange() const 
     { return CheckStatus(fStatusNeg, kExBErrorRange);  };
+  Bool_t      IsChamberStatusTooFewGood() const 
+   { return CheckStatus(fStatusNeg, kChamberStatusTooFewGood);  };
   
   Bool_t      IsGainErrorOld() const 
     { return CheckStatus(fStatusPos, kGainErrorOld);  };
@@ -251,8 +254,12 @@ public:
   Bool_t   fNotEnoughStatisticsForTheVdriftLinear;// Take the chamber per chamber distribution from the default distribution
   Int_t    fStatusNeg;                    // Info but ok
   Int_t    fStatusPos;                    // Problems
+  Int_t    fNotCalib[18];                 // number of not calibrated chambers per sm
+  Int_t    fNotGood[18];                  // number of not good chambers per sm
   Int_t    fBadCalib[18];                 // number of bad calibrated chambers per sm
   Int_t    fNoData[18];                   // number of  chambers w/o data per sm
+  Int_t    fNoDataA[18];                  // number of  chambers w/o data A per sm
+  Int_t    fNoDataB[18];                  // number of  chambers w/o data B per sm
   Int_t    fBadCalibValidate;             // validation limit for bad calibrated chambers
   Int_t    fNoDataValidate;               // validation limit for chamber w/o data (sm w/o data excluded)
   Double_t fRMSBadCalibratedGain;         // value to decide when it is bad calibrated 
@@ -285,7 +292,7 @@ private:
   Bool_t fPHQon;                 //switch of PHQ
   Bool_t fDebugPHQon;                 //switch of DebugPHQ
 
-  ClassDef(AliTRDPreprocessorOffline,6)
+  ClassDef(AliTRDPreprocessorOffline,7)
 };
 
 #endif
