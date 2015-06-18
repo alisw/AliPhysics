@@ -991,7 +991,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 
     /* vertex selection */
     Bool_t fHasVertex = kFALSE;
-    Bool_t lWouldHaveBeenRemoved = kFALSE; 
+    Bool_t lWouldHaveBeenRemoved = kFALSE;
 
     const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
     if (vertex->GetNContributors() < 1) {
@@ -1002,12 +1002,15 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
         Double_t cov[6]= {0};
         vertex->GetCovarianceMatrix(cov);
         Double_t zRes = TMath::Sqrt(cov[5]);
-        if (vtxTyp.Contains("vertexer: Z") && (zRes>0.25)){ 
-	  fHasVertex = kFALSE;
-	  lWouldHaveBeenRemoved = kTRUE; 
-	}
+        if (vtxTyp.Contains("vertexer: Z") && (zRes>0.25)) {
+            if( fHasVertex ) lWouldHaveBeenRemoved = kTRUE;
+            fHasVertex = kFALSE;
+        }
     }
     else fHasVertex = kTRUE;
+
+    if ( lWouldHaveBeenRemoved == kTRUE  ) fHistXCheckVertexerZ -> Fill( 1.5, lMultiplicityV0A );
+    if ( lWouldHaveBeenRemoved == kFALSE ) fHistXCheckVertexerZ -> Fill( 0.5, lMultiplicityV0A );
 
     //Is First event in chunk rejection: Still present!
     if(fkpAVertexSelection==kTRUE && fHasVertex == kFALSE) {
@@ -1044,9 +1047,8 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
     fHistMultiplicityTRK->Fill(lMultiplicityTRK);
     fHistMultiplicitySPD->Fill(lMultiplicitySPD);
 
-    if ( lWouldHaveBeenRemoved == kTRUE  ) fHistXCheckVertexerZ -> Fill( 1.5, lMultiplicityV0A ); 
-    if ( lWouldHaveBeenRemoved == kFALSE ) fHistXCheckVertexerZ -> Fill( 0.5, lMultiplicityV0A ); 
-    
+
+
 //------------------------------------------------
 // Only look at events with well-established PV
 //------------------------------------------------
