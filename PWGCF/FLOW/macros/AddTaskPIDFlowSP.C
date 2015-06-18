@@ -17,10 +17,10 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Int_t AODfilterBit = 1,
                       Int_t charge=0,
                       Int_t MinTPCdedx = 10,
-                      Int_t ncentralityminlim = 0,//0 start from 0-1cc
-                      Int_t ncentralitymaxlim = 6,//6 runs over 0-50%
+                      Int_t ncentralitymin = 0,
+                      Int_t ncentralitymax = 50,
                       Int_t maxITSCls = 7,
-                      Double_t maxChi2ITSCls = 37,
+                      Int_t maxChi2ITSCls = 37,
                       Float_t PurityLevel=0.8,
                       Bool_t isPID = kTRUE,
                       Bool_t isVZERO = kFALSE, // use vzero sp method
@@ -45,11 +45,16 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t minB = +0.5*EtaGap;//
     Double_t maxB = etamax;//
     
-    int centrMin[8] = {0,0,10,20,30,40,60,60};
-    int centrMax[8] = {1,2,20,30,40,50,70,80};
-    const int ncentrminlim = ncentralityminlim;
-    const int ncentrmaxlim = ncentralitymaxlim;
     
+    int centrMin[8] = {0,0,10,20,30,40,60,60};
+    int centrMax[8] = {1,10,20,30,40,50,70,80};
+    
+    for(int i=0;i<8;i++){
+        if(ncentralitymin == 0) const int ncentrminlim = 0;
+        if(ncentralitymin == 60) const int ncentrminlim = 6;
+        if(ncentralitymin == centrMin[i] && ncentralitymin != 0 && ncentralitymin != 60) const int ncentrminlim = i;
+        if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
+    }
     
     //---------Data selection---------- ESD only!!!
     //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
@@ -67,7 +72,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     
     //===========================================================================
     // EVENTS CUTS:
-    const int ncentr = ncentrmaxlim - ncentrminlim;
+    const int ncentr = ncentrmaxlim - ncentrminlim + 1;
     
     const int nharmonics = uptoWhichHarmonics-1;
     AliFlowEventCuts* cutsEvent[ncentr];
@@ -211,10 +216,10 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             outputSlotName[icentr][harmonic-2] = "";
             outputSlotName[icentr][harmonic-2]+=uniqueStr;
             outputSlotName[icentr][harmonic-2]+=Form("_v%i_",harmonic);
-            outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
-            outputSlotName[icentr][harmonic-2]+="_";
-            outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
-            outputSlotName[icentr][harmonic-2]+=Form("_%i-",centrMin[icentr+ncentrminlim]);
+            //outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
+            //outputSlotName[icentr][harmonic-2]+="_";
+            //outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
+            outputSlotName[icentr][harmonic-2]+=Form("%i-",centrMin[icentr+ncentrminlim]);
             outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr+ncentrminlim]);
             
             
@@ -317,7 +322,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             
             tskFilter[icentr][harm-2] = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP[icentr][harm-2].Data()),cutsRP[icentr], NULL);//SP_POI[icentr]
             if(!isVZERO){
-                tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
+                tskFilter[icentr][harm-2]->SetSubeventEtaRange(minA, maxA, minB, maxB);
             }
             if(isVZERO) tskFilter[icentr][harm-2]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
             mgr->AddTask(tskFilter[icentr][harm-2]);
