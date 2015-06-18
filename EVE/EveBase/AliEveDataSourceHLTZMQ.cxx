@@ -27,19 +27,19 @@ AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     AliEveDataSource("HLT"),
     fEventListenerThreadHLT(0),
     fZMQContext(NULL),
-    fZMQeventQueue(NULL),
-    fHLTPublisherAddress("tcp://localhost:60201")
+    fZMQeventQueue(NULL)
 {
   //ctor
+  fSourceURL="tcp://localhost:60201";
   Init();
 }
 
 void AliEveDataSourceHLTZMQ::Init()
 {
 #ifdef ZMQ
-  //get the address of the HLT proxy from the environment
-  if (gSystem->Getenv("HLT_ZMQ_proxy")) 
-    fHLTPublisherAddress=gSystem->Getenv("HLT_ZMQ_proxy");
+  //get the address of the HLT proxy from the environment if not set
+  if (gSystem->Getenv("HLT_ZMQ_proxy") && fSourceURL.IsNull()) 
+    fSourceURL=gSystem->Getenv("HLT_ZMQ_proxy");
   //single ZMQ context for inter thread comm. etc.
   if (!fZMQContext) fZMQContext = zmq_ctx_new();
   //single ZMQ socket for gathering the events form various listening threads
@@ -105,6 +105,9 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
   
   if (!fZMQContext) return;
   
+  //get the URL - no lock, should be OK, since we start the thread after it is set
+  const char* dataURL = fSourceURL.Data();
+
   //connection to the HLT data
   void* listenerSocket = zmq_socket(fZMQContext, ZMQ_SUB);
   if (!listenerSocket) {return;}
@@ -114,10 +117,10 @@ void AliEveDataSourceHLTZMQ::PullEventFromHLT()
   int highWaterMarkSend = 20;
   rc = zmq_setsockopt(listenerSocket, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
   //connect the socket
-  printf("connecting to ZMQ socket: %s\n", fHLTPublisherAddress.Data());
-  rc = zmq_connect(listenerSocket, fHLTPublisherAddress.Data());
+  printf("connecting to ZMQ socket: %s\n", dataURL);
+  rc = zmq_connect(listenerSocket, dataURL);
   rc = zmq_setsockopt (listenerSocket, ZMQ_SUBSCRIBE, NULL, 0);
-  if (rc < 0) {return;}
+  if (rc < 0) {printf("Cannot connect! exiting\n"); return;}
 
   //internal publisher
   void* internalPublisher = zmq_socket(fZMQContext, ZMQ_PUSH);
