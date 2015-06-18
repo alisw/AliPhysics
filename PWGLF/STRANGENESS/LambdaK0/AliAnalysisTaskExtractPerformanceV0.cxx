@@ -2564,11 +2564,14 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
         vertex->GetCovarianceMatrix(cov);
         Double_t zRes = TMath::Sqrt(cov[5]);
         if (vtxTyp.Contains("vertexer: Z") && (zRes>0.25)) {
+            if( fHasVertex ) lWouldHaveBeenRemoved = kTRUE;
             fHasVertex = kFALSE;
-            lWouldHaveBeenRemoved = kTRUE;
         }
     }
     else fHasVertex = kTRUE;
+
+    if ( lWouldHaveBeenRemoved == kTRUE  ) fHistXCheckVertexerZ -> Fill( 1.5, lMultiplicityV0A );
+    if ( lWouldHaveBeenRemoved == kFALSE ) fHistXCheckVertexerZ -> Fill( 0.5, lMultiplicityV0A );
 
     //Is First event in chunk rejection: Still present!
     if(fkpAVertexSelection==kTRUE && fHasVertex == kFALSE) {
@@ -2646,9 +2649,6 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
     fHistMultiplicityZNANoTPCOnlyNoPileup->Fill(lMultiplicityZNA);
     fHistMultiplicityTRKNoTPCOnlyNoPileup->Fill(lMultiplicityTRK);
     fHistMultiplicitySPDNoTPCOnlyNoPileup->Fill(lMultiplicitySPD);
-
-    if ( lWouldHaveBeenRemoved == kTRUE  ) fHistXCheckVertexerZ -> Fill( 1.5, lMultiplicityV0A );
-    if ( lWouldHaveBeenRemoved == kFALSE ) fHistXCheckVertexerZ -> Fill( 0.5, lMultiplicityV0A );
 
     f2dHistMultiplicityVsTrueNoTPCOnlyNoPileup->Fill ( lMultiplicity , lNumberOfCharged );
     fHistGenVertexZNoTPCOnlyNoPileup->Fill( (mcPrimaryVtx.At(2)) );
