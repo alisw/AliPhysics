@@ -10,6 +10,7 @@
 AliEveDataSource::AliEveDataSource(bool storageManager)
   : TNamed("","")
   , fCurrentData()
+  , fSourceURL()
     
 {
 }

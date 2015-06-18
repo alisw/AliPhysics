@@ -70,6 +70,7 @@ public:
     virtual void NextEvent();
     virtual const AliEveData* GetData() const {return &fCurrentData;}
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const{return -1;}
+    virtual void SetSourceURL(TString url) {fSourceURL=url; Init();}
     
     void StorageManagerOk();     // *SIGNAL*
     void StorageManagerDown();   // *SIGNAL*
@@ -78,6 +79,7 @@ public:
     
 protected:
     AliEveData fCurrentData;
+    TString fSourceURL;
     
 private:
     ClassDef(AliEveDataSource, 0); // Interface for getting all event components in a uniform way.
