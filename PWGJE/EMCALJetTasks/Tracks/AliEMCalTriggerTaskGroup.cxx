@@ -93,9 +93,10 @@ AliEMCalTriggerTaskGroup::~AliEMCalTriggerTaskGroup() {
 /**
  * Initialise all analysis components. Build a global histlist for the full group
  *
+ * \param classmgr The trigger class manager
  * \return: the global histogram list
  */
-TList *AliEMCalTriggerTaskGroup::InitialiseAnalysisComponents() {
+TList *AliEMCalTriggerTaskGroup::InitialiseAnalysisComponents(const AliEMCalTriggerAnaClassManager *classmgr) {
   TIter compIter(fAnalysisComponents);
   AliEMCalTriggerTracksAnalysisComponent *ana(NULL);
   // Build a global histogram list
@@ -104,6 +105,7 @@ TList *AliEMCalTriggerTaskGroup::InitialiseAnalysisComponents() {
   while((ana = dynamic_cast<AliEMCalTriggerTracksAnalysisComponent *>(compIter()))){
     ana->SetBinning(fBinning);
     ana->SetKineCuts(fKineCuts);
+    ana->SetTriggerClassManager(classmgr);
     if(fWeightHandler) ana->SetWeightHandler(fWeightHandler);
     ana->CreateHistos();
     TList *ltmp = ana->GetHistList();
@@ -134,19 +136,6 @@ void AliEMCalTriggerTaskGroup::Process(const AliEMCalTriggerEventData* const eve
 void AliEMCalTriggerTaskGroup::AddAnalysisComponent(AliEMCalTriggerTracksAnalysisComponent * const analysis) {
   if(fWeightHandler) analysis->SetWeightHandler(fWeightHandler);
   fAnalysisComponents->Add(analysis);
-}
-
-/**
- * Forward trigger decision to the analysis components
- *
- * \param trigger: the trigger decision
- */
-void EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup::SetTriggerDecision(
-    const AliEMCalTriggerAnaTriggerDecision* trigger) {
-  AliEMCalTriggerTracksAnalysisComponent *myana(NULL);
-  TIter compIter(fAnalysisComponents);
-  while((myana = dynamic_cast<AliEMCalTriggerTracksAnalysisComponent *>(compIter())))
-    myana->SetTriggerDecision(trigger);
 }
 
 /**

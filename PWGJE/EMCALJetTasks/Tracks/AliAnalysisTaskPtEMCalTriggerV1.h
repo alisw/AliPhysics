@@ -12,6 +12,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliEMCalTriggerAnaClassManager.h"
 #include <TObjArray.h>
 #include <TString.h>
 
@@ -26,6 +27,7 @@ class TArrayD;
  */
 namespace EMCalTriggerPtAnalysis {
 
+class AliEMCalTriggerAnaTriggerClass;
 class AliEMCalTriggerAnaTriggerDecisionConfig;
 class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventData;
@@ -54,6 +56,12 @@ public:
   void SetBinning(const char *dimname, const TArrayD &binning);
 
   /**
+   * Add trigger class to the list of trigger classes
+   * \param triggerclass Trigger class to be added
+   */
+  void AddTriggerClass(AliEMCalTriggerAnaTriggerClass * triggerclass) { fTriggerClassManager->AddTriggerClass(triggerclass); }
+
+  /**
    * Set the name of the jet container for generator level jets
    * \param name
    */
@@ -77,12 +85,6 @@ public:
    */
   void SetTriggerDecisionConfig(AliEMCalTriggerAnaTriggerDecisionConfig *config) { fTriggerDecisionConfig = config; }
 
-  /**
-   * Set trigger bit for min bias event selection
-   * \param evsel Min. bias trigger bits
-   */
-  void SetMinBiasEventSelection(Long_t evsel){ fMinBiasSelection = evsel; }
-
 protected:
   AliEMCalTriggerEventData *BuildEvent();
   void FixTrackInputEvent(AliVTrack *trk);
@@ -90,9 +92,9 @@ protected:
   TObjArray                           *fTaskGroups;                       ///< grouped analysis components
   AliEMCalTriggerBinningComponent     *fBinning;                          ///< Global binning component
   AliEMCalTriggerAnaTriggerDecisionConfig *fTriggerDecisionConfig;		    ///< Configuration for the trigger decision handling
+  AliEMCalTriggerAnaClassManager      *fTriggerClassManager;              ///< Manager for trigger classes
   TString                              fMCJetContainer;                   ///< Name of the Monte-Carlo jet container
   TString                              fDataJetContainer;                 ///< Data jet container name
-  Long_t                              fMinBiasSelection;                  ///< Trigger bit selection for Min. Bias events
   Bool_t                               fSwapTriggerThresholds;            ///< Swap thresholds of the low and high threshold trigger
   Bool_t                               fDoTriggerDebug;                   ///< Debug trigger decision creator
 

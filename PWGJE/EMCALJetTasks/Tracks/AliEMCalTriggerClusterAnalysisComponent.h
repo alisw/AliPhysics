@@ -48,12 +48,6 @@ public:
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
   /**
-   * Define method used to select triggered events.
-   * \param method The method which is used by this component
-   */
-  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
-
-  /**
    * Set the range of the energy in which clusters are accepted
    * \param min Minimum energy of the cluster
    * \param max Maximum energy of the cluster
@@ -64,7 +58,6 @@ protected:
   void FillHistogram(const TString &histname, const AliVCluster *clust, AliVEvent *ev, Bool_t inMB);
 
   AliCutValueRange<double>    fEnergyRange;               ///< Allowed energy range for the cluster
-  ETriggerMethod_t            fTriggerMethod;             ///< Method used for the trigger decision
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerClusterAnalysisComponent, 1);       // Analysis component for EMCal cluster

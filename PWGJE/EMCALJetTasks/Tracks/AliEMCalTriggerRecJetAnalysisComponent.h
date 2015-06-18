@@ -51,12 +51,6 @@ public:
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
   /**
-   * Set the method used to select triggered events
-   * \param method Trigger method used
-   */
-  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
-
-  /**
    * Set the minimum \f$ p_{t} \f$ allowed to select reconstructed jets.
    * \param minpt The minimum jet \f$ p_{t} \f$
    */
@@ -83,7 +77,6 @@ protected:
   Double_t                          fMinimumJetPt;            ///< Minimum jet \f$ p_{t} \f$
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fSwapEta;                 ///< Swap eta sign on request
-  ETriggerMethod_t                  fTriggerMethod;           ///< Method used for the trigger decision
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerRecJetAnalysisComponent, 1);        // Analysis component for reconstructed Jets

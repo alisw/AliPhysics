@@ -13,6 +13,7 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <map>
 #include <vector>
 #include <string>
 #include <TNamed.h>
@@ -28,7 +29,7 @@
  */
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalTriggerAnaTriggerDecision;
+class AliEMCalTriggerAnaClassManager;
 class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerBinningDimension;
 class AliEMCalTriggerEventData;
@@ -76,15 +77,15 @@ public:
 
   /**
    * Set the global kinematical cuts to this analysis components.
-   * \param cuts
+   * \param cuts The global kinematic cuts
    */
   void SetKineCuts(const AliEMCalTriggerKineCuts * const cuts) { fKineCuts = cuts; }
 
   /**
-   * Set trigger decision container for the current event.
-   * \param trigger The trigger decision container.
+   * Set the global trigger class manager
+   * \param classmgr The global trigger class manager
    */
-  void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger) { fTriggerDecision = trigger; }
+  void SetTriggerClassManager(const AliEMCalTriggerAnaClassManager *classmgr) { fTriggerClassManager = classmgr; }
 
   /**
    * Set the global weight handler to this analysis component.
@@ -101,13 +102,14 @@ public:
 protected:
   TAxis *DefineAxis(const char *name, const AliEMCalTriggerBinningDimension *binning);
   TAxis *DefineAxis(const char *name, int nbins, double min, double max);
-  void GetMachingTriggerNames(std::vector<std::string> &triggernames, ETriggerMethod_t usePatches);
+  void GetMachingTriggerNames(std::vector<std::string> &triggernames) const;
+  void GetAllTriggerNamesAndTitles(std::map<std::string, std::string> &triggers) const;
   void PrintTriggerNames(const std::vector<std::string> &, const std::string &componentName) const;
 
   AliEMCalHistoContainer                      *fHistos;                   ///< Histogram container of the analysis component
+  const AliEMCalTriggerAnaClassManager        *fTriggerClassManager;      ///< Global trigger class manager
   const AliEMCalTriggerBinningComponent       *fBinning;                  ///< Global binning handler
   const AliEMCalTriggerKineCuts               *fKineCuts;                 ///< Kinematical cuts for tracks and particle selection
-  const AliEMCalTriggerAnaTriggerDecision     *fTriggerDecision;          ///< Trigger decision handler
   const AliEMCalTriggerWeightHandler          *fWeightHandler;            ///< Event weight handler
 
   Int_t                                         fComponentDebugLevel;     ///< Debug level for the given analysis component
