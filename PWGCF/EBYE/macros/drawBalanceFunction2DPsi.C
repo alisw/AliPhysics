@@ -1588,6 +1588,8 @@ void mergeBFPsi2D(TString momDirectory = "./",
 		  TString directory2 = "",
 		  TString directory3 = "",
 		  TString directory4 = "",
+		  TString directory5 = "",
+		  TString directory6 = "",
 		  Int_t gCentrality = 1,
 		  Double_t psiMin = -0.5, Double_t psiMax = 3.5,
 		  TString  eventClass = "Centrality",
@@ -1604,7 +1606,7 @@ void mergeBFPsi2D(TString momDirectory = "./",
   TGaxis::SetMaxDigits(3);
   gStyle->SetPalette(55,0);
 
-  const Int_t nMaxDirectories = 4; // maximum number of directories to merge (set to 4 for now)
+  const Int_t nMaxDirectories = 6; // maximum number of directories to merge (set to 4 for now)
   TString sDirectory[nMaxDirectories];
   Int_t nDirectories = nMaxDirectories;
 
@@ -1636,12 +1638,29 @@ void mergeBFPsi2D(TString momDirectory = "./",
     sDirectory[1]=directory2;
     sDirectory[2]=directory3;
   }
+  else if(directory5==""){
+    nDirectories=4;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+    sDirectory[2]=directory3;
+    sDirectory[3]=directory4;
+  }
+  else if(directory6==""){
+    nDirectories=5;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+    sDirectory[2]=directory3;
+    sDirectory[3]=directory4;
+    sDirectory[4]=directory5;
+  }
   else{
     nDirectories=nMaxDirectories;
     sDirectory[0]=directory1;
     sDirectory[1]=directory2;
     sDirectory[2]=directory3;
     sDirectory[3]=directory4;
+    sDirectory[4]=directory5;
+    sDirectory[5]=directory6;
   }
 
  for(Int_t iDir = 0; iDir < nDirectories; iDir++){
