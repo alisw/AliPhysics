@@ -344,7 +344,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    UInt_t c2[8], c1[8];
    ULong64_t c64[6]; 
    ULong64_t c1_64[8],c2_64[8]; 
-   ULong64_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
+   ULong64_t const max1 = 4294967296ul;  //32bit counters overflow after 4294967296
    ULong64_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
    AliTriggerScalersRecord* scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
