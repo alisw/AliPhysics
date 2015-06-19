@@ -224,11 +224,13 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
 
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
+  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
 
   const Int_t nBinsSparse1 = 7;
+  // #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
   const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPt};
   const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt, minPt};
   const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxPt};
@@ -286,7 +288,7 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     fOutput->Add(fhnMassResponse[i]);
     
     histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,A} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det,A}; #it{p}_{T,part}; #it{p}_{T,det,Const}",histName.Data());
+    histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
     Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
     fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
     fOutput->Add(fhnDeltaMass[i]);
@@ -359,7 +361,22 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
   if(jetContNoEmb) jetL = jetContNoEmb->GetLeadingJet("rho");
-
+  
+  //rho
+  AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetContS->GetRhoName()));
+  fRho = 0;
+  if (!rhoParam) {
+     AliError(Form("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetContS->GetRhoName().Data()));
+     
+  } else fRho = rhoParam->GetVal();
+  //rhom
+  AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetContS->GetRhoMassName()));
+  fRhoM = 0;
+  if (!rhomParam) {
+     AliError(Form("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetContS->GetRhoMassName().Data()));
+     
+  } else fRhoM = rhomParam->GetVal();
+  
   AliDebug(11,Form("NJets  Incl: %d  Csub: %d",jetCont->GetNJets(),jetContS->GetNJets()));
   if(jetCont) {
     jetCont->ResetCurrentID();
@@ -460,11 +477,12 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,ptJetR,jet1->MaxTrackPt());
       	 fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
-      	 Double_t varsp[5] = {var,var2,ptjetS,ptJetR,jet1->MaxTrackPt()};
+      	 //M sub;M true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
+      	 Double_t varsp[5] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt()};
       	 fhnMassResponse[fCentBin]->Fill(varsp);
       	 
       	 Double_t varsp1[7];
-      	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,A} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det,A}; #it{p}_{T,part}; #it{p}_{T,det,Const}
+      	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
       	 varsp1[0] = var-var2;
       	 varsp1[1] = ptjetS-ptJetR;
       	 varsp1[2] = var;
@@ -473,10 +491,10 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 varsp1[5] = ptJetR;
       	 varsp1[6] = ptjet1;
       	 
-      	 fhnDeltaMass[fCentBin]->Fill(varsp);
+      	 fhnDeltaMass[fCentBin]->Fill(varsp1);
       	 
       	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-      	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var2, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
+      	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
       	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
 
       }
