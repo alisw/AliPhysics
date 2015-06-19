@@ -308,6 +308,7 @@ void AliRawDB::MakeTree()
 
    fTree = new TTree("RAW", Form("ALICE raw-data tree (%s)", GetAliRootTag()));
    fTree->SetAutoSave(21000000000LL);  // autosave when 21 Gbyte written
+   fTree->SetAutoFlush(0LL);  // autoflush off
 
    fTree->BranchRef();
 
