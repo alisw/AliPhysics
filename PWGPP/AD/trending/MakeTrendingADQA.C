@@ -34,10 +34,11 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   Int_t adReady=0,invalidInput=0,qaNotFound=0,adActive=0,adQANotfound=0,noEntries=0;
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
-  Float_t meanTimeRMSADA = -1024, meanTimeRMSADC = -1024;
+  Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
   Float_t rateUBA = -1024, rateUBC = -1024, rateUGA = -1024, rateUGC = -1024;
   Float_t rateADAND = -1024, rateADOR = -1024; 
   Float_t saturationADA = -1024, saturationADC = -1024;
+  Float_t MPV[16];
   
 
   TString treePostFileName="trending.root";
@@ -89,14 +90,15 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   ttree->Branch("meanTotalChargeADC",&meanTotalChargeADC,"Mean total charge ADC;;Charge (ADC counts)/F");
   ttree->Branch("meanTimeADA",&meanTimeADA,"Mean time ADA;;Time (ns)/F");
   ttree->Branch("meanTimeADC",&meanTimeADC,"Mean time ADC;;Time (ns)/F");
-  ttree->Branch("meanTimeRMSADA",&meanTimeRMSADA,"Mean time RMS ADA;;Time RMS (ns)/F");
-  ttree->Branch("meanTimeRMSADC",&meanTimeRMSADC,"Mean time RMS ADC;;Time RMS (ns)/F");
+  ttree->Branch("meanTimeSigmaADA",&meanTimeSigmaADA,"Mean time Sigma ADA;;Time Sigma (ns)/F");
+  ttree->Branch("meanTimeSigmaADC",&meanTimeSigmaADC,"Mean time Sigma ADC;;Time Sigma (ns)/F");
   ttree->Branch("rateUBA",&rateUBA,"Trigger rate UBA;;Rate/F");
   ttree->Branch("rateUBC",&rateUBC,"Trigger rate UBC;;Rate/F");
   ttree->Branch("rateUGA",&rateUGA,"Trigger rate UGA;;Rate/F");
   ttree->Branch("rateUGC",&rateUGC,"Trigger rate UGC;;Rate/F");
   ttree->Branch("rateADAND",&rateADAND,"Trigger rate ADAND;;Rate/F");
   ttree->Branch("rateADOR",&rateADOR,"Trigger rate ADOR;;Rate/F");
+  ttree->Branch("MPV", &MPV[0], "MPV[16]/F");
   //Wait for histo
   //ttree->Branch("saturationADA",&saturationADA,"Saturation ADA;;Saturated fraction/F");
   //ttree->Branch("saturationADC",&saturationADC,"Saturation ADC;;Saturated fraction/F");
@@ -250,10 +252,20 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   meanTotalChargeADA = fHistTotalChargePerEventADA->GetMean();
   meanTotalChargeADC = fHistTotalChargePerEventADC->GetMean();
   
-  meanTimeADA = fHistMeanTimeADA->GetMean();
-  meanTimeADC = fHistMeanTimeADC->GetMean();
-  meanTimeRMSADA = fHistMeanTimeADA->GetRMS();
-  meanTimeRMSADC = fHistMeanTimeADC->GetRMS();
+  Int_t minFitRange = 48;
+  Int_t maxFitRange = 58;
+  fHistMeanTimeADA->Fit("gaus","R+","",minFitRange,maxFitRange);
+  TF1 *fitTimeADA = (TF1*) fHistMeanTimeADA->GetFunction("gaus");
+  meanTimeADA = fitTimeADA->GetParameter(1);
+  meanTimeSigmaADA = fitTimeADA->GetParameter(2);
+  
+  minFitRange = 55;
+  maxFitRange = 70;
+  fHistMeanTimeADC->Fit("gaus","R+","",minFitRange,maxFitRange);
+  TF1 *fitTimeADC = (TF1*) fHistMeanTimeADC->GetFunction("gaus");
+  meanTimeADC = fitTimeADC->GetParameter(1);
+  meanTimeSigmaADC = fitTimeADC->GetParameter(2);
+  
   
   Float_t nEvents = fHistTotalChargePerEventADA->GetEntries();
   rateUBA = fHistTrigger->GetBinContent(1)/nEvents;
@@ -262,6 +274,30 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   rateUGC = fHistTrigger->GetBinContent(4)/nEvents;
   rateADAND = fHistTrigger->GetBinContent(5)/nEvents;
   rateADOR = fHistTrigger->GetBinContent(6)/nEvents;
+  
+  TH1D *hChargeSliceAll[16];
+  TH1D *hChargeSliceBB[16];
+  for(Int_t i = 0; i<16; i++){
+  	TString channelNameAll = "hChargeSliceAll";
+	channelNameAll += i;
+  	hChargeSliceAll[i] = fHistChargePerPM_All->ProjectionY(channelNameAll.Data(),i+1,i+1);
+	
+	TString channelNameBB = "hChargeSliceBB";
+	channelNameBB += i;
+  	hChargeSliceBB[i] = fHistChargePerPM_BB->ProjectionY(channelNameBB.Data(),i+1,i+1);
+	
+	TString channelTitle = "Integrated charge, PM ";
+	channelTitle += i;
+	hChargeSliceAll[i]->SetTitle(channelTitle.Data());
+  
+  	minFitRange = 7;
+  	maxFitRange = 20;
+
+  	hChargeSliceAll[i]->Fit("landau","R+","",minFitRange,maxFitRange);
+  	TF1 *fitLandau = (TF1*) hChargeSliceAll[i]->GetFunction("landau");
+  	MPV[i] = fitLandau->GetParameter(1); //MPV
+	}
+
   
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
   ttree->Fill();
@@ -370,6 +406,38 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
     fHistChargePerPM_BG->DrawCopy("COLZ");
       
     c23->Print(Form("ADQA_Run_%d.pdf",runNumber));
+    
+    TCanvas *c24 = new TCanvas("ChargeLandau"," ",1500,800);
+    c24->Draw();
+    c24->cd();
+    TPad *myPad24 = new TPad("myPad24", "The pad",0,0,1,1);
+    myPad24->Divide(4,4);
+    myPad24->Draw();
+    
+    TLegend *myLegend3 = new TLegend(0.36,0.68,0.63,0.84);
+    myLegendSetUp(myLegend3,0.08,1);
+    myLegend3->AddEntry(hChargeSliceAll[0],"All events","f");
+    myLegend3->AddEntry(hChargeSliceBB[0],"Event with BB flag","f");
+    
+    
+    for(Int_t i=0; i<16; i++){
+    	myPadSetUp(myPad24->cd(i+1),0.00,0.00,0.00,0.15);
+    	myPad24->cd(i+1);
+    	gPad->SetLogy();
+	myHistSetUp(hChargeSliceAll[i]);
+	myHistSetUp(hChargeSliceBB[i]);
+    	hChargeSliceAll[i]->GetXaxis()->SetRangeUser(1,50);
+	hChargeSliceAll[i]->SetFillStyle(3001);
+	hChargeSliceAll[i]->SetFillColor(11);
+	hChargeSliceBB[i]->SetFillStyle(3001);
+	hChargeSliceBB[i]->SetFillColor(kYellow);
+	hChargeSliceAll[i]->Draw();
+	hChargeSliceBB[i]->Draw("same");
+	myLegend3->Draw();
+	}
+ 
+    c24->Print(Form("ADQA_Run_%d.pdf",runNumber));
+    
     
     myHistSetUp(fHistTimePerPM_Corr);
     myHistSetUp(fHistTimePerPM_UnCorr);
