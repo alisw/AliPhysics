@@ -46,6 +46,8 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
   void SetPartialExclusion(Bool_t b)                            { fPartialExclusion  = b   ; }
 
+  void SetSmallSystRanges(Bool_t small = kTRUE)                 { fSmallSyst = small; }
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -79,7 +81,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   Int_t           fMatch;                                          // 1: matched to MC jet; 0: no match
   Int_t           fMinLabelEmb;                                    // min label of embedded particles
   Int_t           fMaxLabelEmb;                                    // max label of embedded particles
-
+  Bool_t          fSmallSyst;                                      // flag for the axes ranges in pPb
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
   TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
   TH3F          **fh3MSubPtRawDRMatch;                             //! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
@@ -103,7 +105,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 8)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 9)
 };
 #endif
 
