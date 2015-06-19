@@ -351,9 +351,9 @@ void AliADCalibData::FillDCSData(AliADDataDCS * data){
 	
 	while ((  aliasName = (TObjString*) iter.Next() ))  {
 		AliDCSValue* aValue = (AliDCSValue*) params->GetValue(aliasName);
-		Int_t val;
+		UInt_t val;
 		if(aValue) {
-			val = aValue->GetInt();
+			val = aValue->GetUInt();
 			AliInfo(Form("%s : %d",aliasName->String().Data(), val));
 			SetParameter(aliasName->String(),val);
 		}

@@ -162,7 +162,7 @@ TMap* CreateDCSAliasMap()
 			}
 		} else {
 			for(int i=0;i<2;i++){
-				AliDCSValue* dcsVal = new AliDCSValue((Int_t) (val), timeStamp+10*i);
+				AliDCSValue* dcsVal = new AliDCSValue((UInt_t) (val), timeStamp+10*i);
 				valueSet->Add(dcsVal);
 			}
 		}
