@@ -296,10 +296,12 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	// HPTDC leading time and width
 	// Correction for slewing and various time delays
         time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
-	//time[pmNumber]  =  digit->Time();
 	width[pmNumber] =  digit->Width();
 	aBBflag[pmNumber] = digit->GetBBflag();
 	aBGflag[pmNumber] = digit->GetBGflag();
+	
+	//MIP multiplicity
+	if(fCalibData->GetADCperMIP(pmNumber) != 0) mult[pmNumber] = adc[pmNumber]/fCalibData->GetADCperMIP(pmNumber);
 
 	if (adc[pmNumber] > 0) {
 	  AliDebug(1,Form("PM = %d ADC = %.2f (%.2f) TDC %.2f (%.2f)   Int %d (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)    %.2f %.2f   %.2f %.2f    %d %d",pmNumber, adc[pmNumber],
@@ -329,14 +331,14 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   } // end of loop over events in digits tree
          
   fESDAD->SetBit(AliESDAD::kCorrectedLeadingTime,kTRUE);
-  //fESDAD->SetMultiplicity(mult);
+  fESDAD->SetBit(AliESDAD::kCorrectedForSaturation,kFALSE);
+  fESDAD->SetMultiplicity(mult);
   fESDAD->SetADC(adc);
   fESDAD->SetTime(time);
   fESDAD->SetWidth(width);
   fESDAD->SetBBFlag(aBBflag);
   fESDAD->SetBGFlag(aBGflag);
-  //fESDAD->SetBit(AliESDAD::kCorrectedForSaturation,kTRUE);
-  
+   
   Int_t	pBBmulADA = 0;
   Int_t	pBBmulADC = 0;
   Int_t	pBGmulADA = 0;
