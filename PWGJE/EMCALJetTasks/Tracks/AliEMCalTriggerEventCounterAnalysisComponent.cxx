@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
 #include <map>
 #include <string>
 
@@ -60,6 +61,13 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
   std::map<std::string, std::string> triggerCombinations;
   GetAllTriggerNamesAndTitles(triggerCombinations);
 
+  if(fComponentDebugLevel > 0){
+    std::cout << "Event counter component - Found the following triggers:" << std::endl;
+    for(std::map<std::string, std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); it++){
+      std::cout << it->first << ", " << it->second << std::endl;
+    }
+  }
+
   AliEMCalTriggerBinningDimension *vertexbinning = fBinning->GetBinning("zvertex");
 
   for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
@@ -79,7 +87,7 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
     triggeraxis[itrg] = mytrgaxis+itrg;
     trgiter++;
   }
-  fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
+  fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", triggerCombinations.size(), triggeraxis);
   delete[] mytrgaxis;
   delete[] triggeraxis;
 }

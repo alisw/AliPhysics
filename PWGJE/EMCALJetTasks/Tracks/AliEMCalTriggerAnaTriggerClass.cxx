@@ -69,8 +69,13 @@ AliEMCalTriggerAnaTriggerClass::~AliEMCalTriggerAnaTriggerClass()  {}
  * Selection of events according to the trigger class. In case any condition fails, the others from that time on are not checked anymore.
  * \param triggerevnet The event data to check
  * \return True if the event is selected for this trigger class, false otherwise
+ * \throw TriggerMethodUndefinedException in case no method to select events is defined
+ * \throw EventCorruptionException if the reconstructed event is missing or the trigger patch container is missing
+ * \throw PatchHandlerMissingException if the trigger patch handler is not set
  */
 bool AliEMCalTriggerAnaTriggerClass::IsEventTriggered(const AliEMCalTriggerEventData *const triggerevent) const{
+  if(!(fDecisionFromTriggerBits || fDecisionFromTriggerString || fDecisionFromTriggerPatches))
+    throw TriggerMethodUndefinedException(this->GetName());
   bool result = kTRUE;
 
   if(fDecisionFromTriggerBits){
@@ -79,20 +84,22 @@ bool AliEMCalTriggerAnaTriggerClass::IsEventTriggered(const AliEMCalTriggerEvent
   if(!result) return kFALSE;
 
   if(fDecisionFromTriggerString){
+    if(!triggerevent->GetRecEvent())
+      throw EventCorruptionException(this->GetName(), "Reconstructed event missing");
     result = result && fTriggerStringPattern.CheckTriggerString(triggerevent->GetRecEvent()->GetFiredTriggerClasses().Data());
   }
   if(!result) return kFALSE;
 
   if(fDecisionFromTriggerPatches){
     if(fEmcalTriggerHandler){
+      if(triggerevent->GetTriggerPatchContainer())
+        throw EventCorruptionException(this->GetName(), "Trigger patch container missing");
       for(TIter typeiter = TIter(&fTriggerPatchTypes).Begin(); typeiter != TIter::End(); ++typeiter){
         AliEMCalTriggerAnaTriggerPatchTypeObject *patchtype = static_cast<AliEMCalTriggerAnaTriggerPatchTypeObject *>(*typeiter);
         result = result && fEmcalTriggerHandler->IsTriggered(patchtype->GetTriggerType(), kTriggerPatches);
       }
-    } else {
-      AliError("Needs trigger decision handler for a trigger decision from patches");
-      result = kFALSE;
-    }
+    } else
+      throw PatchHandlerMissingException(this->GetName());
   }
 
   return result;

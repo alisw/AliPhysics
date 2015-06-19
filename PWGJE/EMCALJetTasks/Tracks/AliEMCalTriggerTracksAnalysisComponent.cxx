@@ -15,6 +15,8 @@
 #include <iostream>
 
 #include <TAxis.h>
+#include <TClass.h>
+
 #include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerAnaTriggerClass.h"
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
@@ -101,12 +103,12 @@ TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, int 
 
 /**
  * Get a set of names of trigger strings that is matching with the trigger decision.
- *
  * \param triggernames: output container for selected trigger names
+ * \throw TriggerHandlerNotFoundException in case no trigger handler is available
  */
 void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<std::string>& triggernames) const {
   triggernames.clear();
-  if(!fTriggerClassManager) return;
+  if(!fTriggerClassManager) throw TriggerManagerNotFoundException(this->IsA()->GetName());
   for(TIter trgiter = TIter(fTriggerClassManager->GetSelectedTriggerClasses()).Begin(); trgiter != TIter::End(); ++ trgiter){
     triggernames.push_back((static_cast<AliEMCalTriggerAnaTriggerClass *>(*trgiter))->GetName());
   }
@@ -115,11 +117,14 @@ void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<
 /**
  * Get trigger names and titles for the event
  * \param triggers Map with trigger names and titles
+ * \throw TriggerHandlerNotFoundException in case no trigger handler is available
  */
 void AliEMCalTriggerTracksAnalysisComponent::GetAllTriggerNamesAndTitles(std::map<std::string, std::string> &triggers) const {
   triggers.clear();
-  if(!fTriggerClassManager) return;
-  for(TIter trgiter = TIter(fTriggerClassManager->GetSelectedTriggerClasses()).Begin(); trgiter != TIter::End(); ++ trgiter){
+  if(!fTriggerClassManager) {
+    throw TriggerManagerNotFoundException(this->IsA()->GetName());
+  }
+  for(TIter trgiter = TIter(fTriggerClassManager->GetAllTriggerClasses()).Begin(); trgiter != TIter::End(); ++ trgiter){
     AliEMCalTriggerAnaTriggerClass *trgcls = static_cast<AliEMCalTriggerAnaTriggerClass *>(*trgiter);
     triggers.insert(std::pair<std::string, std::string>(trgcls->GetName(), trgcls->GetTitle()));
   }
