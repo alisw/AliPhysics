@@ -36,6 +36,7 @@ if(FASTJET)
     if(NOT FASTJET_CONFIG)
         message(FATAL_ERROR "Could not find fastjet-config executable")
     endif(NOT FASTJET_CONFIG)
+    mark_as_advanced(FASTJET_CONFIG)
 
     # Check for header installation
     find_path(FASTJETHH include/fastjet/PseudoJet.hh PATHS ${FASTJET})
@@ -43,6 +44,7 @@ if(FASTJET)
     if (FASTJETHH-NOTFOUND)
         message(FATAL_ERROR "Header file fastjet/PseudoJet.hh not found in ${FASTJET}/include. Please check your FASTJET installation")
     endif(FASTJETHH-NOTFOUND)
+    mark_as_advanced(FASTJETHH)
 
     # FastJet version
     execute_process(COMMAND ${FASTJET_CONFIG} --version OUTPUT_VARIABLE FASTJET_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
