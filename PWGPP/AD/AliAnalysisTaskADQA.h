@@ -51,6 +51,7 @@ private:
   TH2F        *fHistChargePerPM_All;
   TH2F        *fHistChargePerPM_BB;
   TH2F        *fHistChargePerPM_BG;
+  TH2F        *fHistChargePerPM_Time;
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
