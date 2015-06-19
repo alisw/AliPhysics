@@ -39,6 +39,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   Float_t rateADAND = -1024, rateADOR = -1024; 
   Float_t saturationADA = -1024, saturationADC = -1024;
   Float_t MPV[16];
+  Float_t meanPedestal[32],widthPedestal[32]; 
   
 
   TString treePostFileName="trending.root";
@@ -99,6 +100,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   ttree->Branch("rateADAND",&rateADAND,"Trigger rate ADAND;;Rate/F");
   ttree->Branch("rateADOR",&rateADOR,"Trigger rate ADOR;;Rate/F");
   ttree->Branch("MPV", &MPV[0], "MPV[16]/F");
+  ttree->Branch("meanPedestal", &meanPedestal[0], "meanPedestal[32]/F");
+  ttree->Branch("widthPedestal", &widthPedestal[0], "widthPedestal[32]/F");
   //Wait for histo
   //ttree->Branch("saturationADA",&saturationADA,"Saturation ADA;;Saturated fraction/F");
   //ttree->Branch("saturationADC",&saturationADC,"Saturation ADC;;Saturated fraction/F");
@@ -234,6 +237,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   TH2F *fHistMaxChargeClock = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMaxChargeClock"));
   
   TH3F *fHistTimeVsChargePerPM_UnCorr = dynamic_cast<TH3F*> (flistQA->FindObject("fHistTimeVsChargePerPM_UnCorr"));
+  fHistTimeVsChargePerPM_UnCorr->RebinY(10);//To be removed
 
   if(fHistTrigger->GetEntries()==0)
     {
@@ -253,7 +257,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   meanTotalChargeADC = fHistTotalChargePerEventADC->GetMean();
   
   Int_t minFitRange = 48;
-  Int_t maxFitRange = 58;
+  Int_t maxFitRange = 65;
   fHistMeanTimeADA->Fit("gaus","R+","",minFitRange,maxFitRange);
   TF1 *fitTimeADA = (TF1*) fHistMeanTimeADA->GetFunction("gaus");
   meanTimeADA = fitTimeADA->GetParameter(1);
@@ -297,7 +301,14 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   	TF1 *fitLandau = (TF1*) hChargeSliceAll[i]->GetFunction("landau");
   	MPV[i] = fitLandau->GetParameter(1); //MPV
 	}
-
+  
+  AliCDBEntry *entCD = man->Get("AD/Calib/Data");
+  AliADCalibData *fCalibData = (AliADCalibData*)entCD->GetObject();
+  for(Int_t i = 0; i<32; i++){
+  	meanPedestal[i] = fCalibData->GetPedestal(i);
+	widthPedestal[i] = fCalibData->GetSigma(i);
+	}
+  
   
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
   ttree->Fill();
@@ -478,8 +489,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
 	}
 	
     TSpline3 *fTimeSlewingSpline[16];
-    AliCDBEntry *ent = man->Get("AD/Calib/TimeSlewing");
-    TList *fListSplines = (TList*)ent->GetObject();
+    AliCDBEntry *entTS = man->Get("AD/Calib/TimeSlewing");
+    TList *fListSplines = (TList*)entTS->GetObject();
     for(Int_t i=0; i<16; i++)fTimeSlewingSpline[i] = dynamic_cast<TSpline3*> (fListSplines->At(i));
 
     TCanvas *c41 = new TCanvas("TimeSlewingADA"," ",1800,600);
@@ -653,17 +664,13 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
     c11->cd();
     TPad *myPad11 = new TPad("myPad11", "The pad",0,0,1,1);
     myPadSetUp(myPad11,0.15,0.15,0.15,0.15);
-    myPad11->Divide(2,1);
     myPad11->Draw();
-    myPadSetUp(myPad11->cd(1),0.15,0.15,0.15,0.15);
-    myPadSetUp(myPad11->cd(2),0.15,0.15,0.15,0.15);
-    myPad11->cd(1);
     gPad->SetLogy();
     fHistTrigger->Draw("HIST");
     fHistTrigger->Draw("TEXT0SAME");
-    myPad11->cd(2);
-    gPad->SetLogz();
-    fHistDecision->Draw("COLZTEXT");
+    
+    //gPad->SetLogz();
+    //fHistDecision->Draw("COLZTEXT");
 
     c11->Print(Form("ADQA_Run_%d.pdf)",runNumber));
         
