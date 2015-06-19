@@ -76,7 +76,7 @@ AliAnalysisTaskTrackDCA::~AliAnalysisTaskTrackDCA() {
 void AliAnalysisTaskTrackDCA::UserCreateOutputObjects(){
   fAnalysisUtils = new AliAnalysisUtils;
 
-  std::string triggerclasses[] = {"MinBiasINT7", "MinBiasINT8", "EGAINT7", "EGAINT7" "EJEINT7", "EJEINT8"};
+  std::string triggerclasses[] = {"MinBiasINT7", "MinBiasINT8", "EGAINT7", "EGAINT8", "EJEINT7", "EJEINT8"};
   TArrayD ptbinning, dcarbinning, dcazbinning;
   CreatePtBinning(ptbinning);
   CreateLinearBinning(dcarbinning, 200, -0.1, 0.1);
