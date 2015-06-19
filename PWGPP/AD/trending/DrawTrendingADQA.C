@@ -57,6 +57,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   Float_t rateUBA = -1024, rateUBC = -1024, rateUGA = -1024, rateUGC = -1024;
   Float_t rateADAND = -1024, rateADOR = -1024;
   Float_t MPV[16]; 
+  Float_t meanPedestal[32],widthPedestal[32]; 
   
   ttree->SetBranchAddress("adReady",&adReady);
   ttree->SetBranchAddress("invalidInput",&invalidInput);
@@ -79,6 +80,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("rateADAND",&rateADAND);
   ttree->SetBranchAddress("rateADOR",&rateADOR);
   ttree->SetBranchAddress("MPV",&MPV);
+  ttree->SetBranchAddress("meanPedestal",&meanPedestal);
+  ttree->SetBranchAddress("widthPedestal",&widthPedestal);
   
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
@@ -107,7 +110,18 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   TH1F *hRateADAND = new TH1F("hRateADAND","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
   TH1F *hRateADOR = new TH1F("hRateADOR","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
-  TH2F *hMPV = new TH2F("hMPV","MIP position per channel;;MPV (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hMPV = new TH2F("hMPV","MIP position per channel;Channel;MPV (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hMeanPedestal = new TH2F("hMeanPedestal","Pedestal mean per channel;;Pedestal (ADC counts)",32,-0.5,31.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hWidthPedestal = new TH2F("hWidthPedestal","Pedestal width per channel;;Width (ADC counts)",32,-0.5,31.5,nRuns,-0.5,nRuns-0.5);
+  
+  char ChannelInt[10];
+  for(Int_t iPM=0; iPM<16; iPM++){
+  	for(Int_t iInt=0; iInt<2; iInt++){
+		sprintf(ChannelInt,"Ch %d Int%d",iPM,iInt);
+  		hMeanPedestal->GetXaxis()->SetBinLabel(1+iPM+16*iInt,ChannelInt);
+  		hWidthPedestal->GetXaxis()->SetBinLabel(1+iPM+16*iInt,ChannelInt);
+		}
+	}
       
   fListHist.Add(hMeanTotalChargeADA);
   fListHist.Add(hMeanTotalChargeADC);
@@ -122,6 +136,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   fListHist.Add(hRateADAND);
   fListHist.Add(hRateADOR);
   fListHist.Add(hMPV);
+  fListHist.Add(hMeanPedestal);
+  fListHist.Add(hWidthPedestal);
   
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
@@ -220,6 +236,14 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hMPV->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
 	for(Int_t i=0; i<16; i++)hMPV->SetBinContent(i+1,goodrun+1,MPV[i]);
 	hMPV->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMeanPedestal->SetBins(32,-0.5,31.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<32; i++)hMeanPedestal->SetBinContent(i+1,goodrun+1,meanPedestal[i]);
+	hMeanPedestal->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hWidthPedestal->SetBins(32,-0.5,31.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<32; i++)hWidthPedestal->SetBinContent(i+1,goodrun+1,widthPedestal[i]);
+	hWidthPedestal->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	goodrun++;
         }
@@ -325,56 +349,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c3->SaveAs(Form("%s/ADQA__Mean_time_Sigma.png",plotDir.Data()));
   
-  if(hADready->GetEntries())
-    {
-      TCanvas * cBad1 = new TCanvas("cBad1","");
-      cBad1->cd();
-      hADready->Draw();
-      cBad1->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad1->SaveAs(Form("%s/ADQA__adReady.png",plotDir.Data()));
-    }
-  if(hInvalidInput->GetEntries())
-    {
-      TCanvas * cBad2 = new TCanvas("cBad2","");
-      cBad2->cd();
-      hInvalidInput->Draw();
-      cBad2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad2->SaveAs(Form("%s/ADQA__InvalidInput_%d_%d.png",plotDir.Data(),minRun,maxRun));
-    }
-  if(hQANotFound->GetEntries())
-    {
-      TCanvas * cBad3 = new TCanvas("cBad3","");
-      cBad3->cd();
-      QaNotFound->Draw();
-      cBad3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad3->SaveAs(Form("%s/ADQA__QA_Not_Found_%d_%d.png",plotDir.Data()));
-    }
-  if(hADactive->GetEntries())
-    {
-      TCanvas * cBad4 = new TCanvas("cBad4","");
-      cBad4->cd();
-      ADactive->Draw();
-      cBad4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad4->SaveAs(Form("%s/ADQA__AD_not_Active.png",plotDir.Data()));
-    }
-  if(hADqaNotfound->GetEntries())
-    {
-      TCanvas * cBad5 = new TCanvas("cBad5","");
-      cBad5->cd();
-      ADqaNotfound->Draw();
-      cBad5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad5->SaveAs(Form("%s/ADQA__v0qa_Not_Found.png",plotDir.Data()));
-    }
-  if(hNoEntries->GetEntries())
-    {
-      TCanvas * cBad6 = new TCanvas("cBad6","");
-      cBad6->cd();
-      NoEntrie->Draw();
-      cBad6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad6->SaveAs(Form("%s/ADQA__NoEntrie.png",plotDir.Data()));
-    }
-
-    
   TCanvas *c4 = new TCanvas("Rate UB"," ",800,400); 
   c4->Draw();						
   c4->cd();
@@ -449,7 +423,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   c6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c6->SaveAs(Form("%s/ADQA__RateAD.png",plotDir.Data()));
   
-  TCanvas *c7 = new TCanvas("Rate UG"," ",800,400); 
+  TCanvas *c7 = new TCanvas("MPV"," ",800,400); 
   c7->Draw();						
   c7->cd();
   TPad *myPad7 = new TPad("myPad7", "The pad",0,0,1,1);
@@ -461,8 +435,88 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myHistSetUp(hMPV);
   hMPV->Draw("COLZTEXT");
  
-  c7->Print(Form("%s/QA_Resume_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
+  c7->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c7->SaveAs(Form("%s/ADQA__MPV.png",plotDir.Data()));
+  
+  if(hADready->GetEntries())
+    {
+      TCanvas * cBad1 = new TCanvas("cBad1","");
+      cBad1->cd();
+      hADready->Draw();
+      cBad1->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad1->SaveAs(Form("%s/ADQA__adReady.png",plotDir.Data()));
+    }
+  if(hInvalidInput->GetEntries())
+    {
+      TCanvas * cBad2 = new TCanvas("cBad2","");
+      cBad2->cd();
+      hInvalidInput->Draw();
+      cBad2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad2->SaveAs(Form("%s/ADQA__InvalidInput_%d_%d.png",plotDir.Data(),minRun,maxRun));
+    }
+  if(hQANotFound->GetEntries())
+    {
+      TCanvas * cBad3 = new TCanvas("cBad3","");
+      cBad3->cd();
+      QaNotFound->Draw();
+      cBad3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad3->SaveAs(Form("%s/ADQA__QA_Not_Found_%d_%d.png",plotDir.Data()));
+    }
+  if(hADactive->GetEntries())
+    {
+      TCanvas * cBad4 = new TCanvas("cBad4","");
+      cBad4->cd();
+      ADactive->Draw();
+      cBad4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad4->SaveAs(Form("%s/ADQA__AD_not_Active.png",plotDir.Data()));
+    }
+  if(hADqaNotfound->GetEntries())
+    {
+      TCanvas * cBad5 = new TCanvas("cBad5","");
+      cBad5->cd();
+      ADqaNotfound->Draw();
+      cBad5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad5->SaveAs(Form("%s/ADQA__v0qa_Not_Found.png",plotDir.Data()));
+    }
+  if(hNoEntries->GetEntries())
+    {
+      TCanvas * cBad6 = new TCanvas("cBad6","");
+      cBad6->cd();
+      NoEntrie->Draw();
+      cBad6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cBad6->SaveAs(Form("%s/ADQA__NoEntrie.png",plotDir.Data()));
+    }
+
+  TCanvas *c8 = new TCanvas("Pedestal mean"," ",1200,400); 
+  c8->Draw();						
+  c8->cd();
+  TPad *myPad8 = new TPad("myPad8", "The pad",0,0,1,1);
+  myPadSetUp(myPad8,0.15,0.1,0.04,0.15);
+  myPad8->SetGridy();
+  myPad8->Draw();
+  myPad8->cd();
+
+  myHistSetUp(hMeanPedestal);
+  hMeanPedestal->Draw("COLZTEXT");
+ 
+  c8->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c8->SaveAs(Form("%s/ADQA__PedMean.png",plotDir.Data())); 
+  
+  TCanvas *c9 = new TCanvas("Pedestal width"," ",1200,400); 
+  c9->Draw();						
+  c9->cd();
+  TPad *myPad9 = new TPad("myPad9", "The pad",0,0,1,1);
+  myPadSetUp(myPad9,0.15,0.1,0.04,0.15);
+  myPad9->SetGridy();
+  myPad9->Draw();
+  myPad9->cd();
+
+  myHistSetUp(hWidthPedestal);
+  hWidthPedestal->Draw("COLZTEXT");
+ 
+  c9->Print(Form("%s/QA_Resume_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
+  c9->SaveAs(Form("%s/ADQA__PedWidth.png",plotDir.Data())); 
+  
   
   return 0;
 }
