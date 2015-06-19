@@ -801,7 +801,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		else if(fIsHeavyIon == 2) fHistoNGoodESDTracksVsNGammaCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",400,0,400,50,0,50);
 		else fHistoNGoodESDTracksVsNGammaCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",200,0,200,50,0,50);
 		fHistoNGoodESDTracksVsNGammaCandidates[iCut]->SetXTitle("# TPC tracks");
-		fHistoNGoodESDTracksVsNGammaCandidates[iCut]->SetYTitle("# accepted $#gamma_{conv}");
+		fHistoNGoodESDTracksVsNGammaCandidates[iCut]->SetYTitle("# accepted #gamma_{conv}");
 		fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCandidates[iCut]);
     
 		
