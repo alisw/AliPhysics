@@ -442,8 +442,6 @@ void AliEveEventManager::SetTrigSel(Int_t trig)
 void AliEveEventManager::StartAutoLoadTimer()
 {
     // Start the auto-load timer.
-    cout<<"\n\nStarting autoload timer\n\n"<<endl;
-    
     fAutoLoadTimer->SetTime((Long_t)(1000*fAutoLoadTime));
     fAutoLoadTimer->Reset();
     fAutoLoadTimer->TurnOn();
