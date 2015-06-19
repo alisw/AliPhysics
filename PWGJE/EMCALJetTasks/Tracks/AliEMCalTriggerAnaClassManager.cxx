@@ -60,9 +60,11 @@ AliEMCalTriggerAnaClassManager::~AliEMCalTriggerAnaClassManager() {
 /**
  * For each trigger class test whether event is selected for the class and mark as selected
  * \param trgevent The event data to check.
+ * \throw TriggerManagerEmptyException
  */
 void AliEMCalTriggerAnaClassManager::PerformEventSelection(AliEMCalTriggerEventData* trgevent) {
   fSelected->Clear();
+  if(!fTriggerClasses->GetEntries()) throw TriggerManagerEmptyException();
   for(TIter clsiter = TIter(fTriggerClasses).Begin(); clsiter != TIter::End(); ++clsiter){
     AliEMCalTriggerAnaTriggerClass * myclass = static_cast<AliEMCalTriggerAnaTriggerClass *>(*clsiter);
     if(myclass->IsEventTriggered(trgevent)) fSelected->Add(myclass);
@@ -99,6 +101,25 @@ bool AliEMCalTriggerAnaClassManager::HasMinBiasTrigger() const {
     }
   }
   return kTRUE;
+}
+
+/**
+ * Get the list of selected trigger classes. Event selection has to be performed before.
+ * \return The list of selected trigger classes.
+ * \throw TriggerManagerEmptyException
+ */
+TObjArray * AliEMCalTriggerAnaClassManager::GetSelectedTriggerClasses() const {
+  if(!fTriggerClasses->GetEntries()) throw TriggerManagerEmptyException();
+  return fSelected;
+}
+/**
+ * Get list of all trigger classes
+ * \return List of all trigger classes
+ * \throw TriggerManagerEmptyException
+ */
+TObjArray * AliEMCalTriggerAnaClassManager::GetAllTriggerClasses() const {
+  if(!fTriggerClasses->GetEntries()) throw TriggerManagerEmptyException();
+  return fTriggerClasses;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

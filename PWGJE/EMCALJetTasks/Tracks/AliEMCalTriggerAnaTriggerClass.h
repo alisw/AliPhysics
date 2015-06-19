@@ -14,6 +14,9 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <exception>
+#include <string>
+#include <sstream>
 #include <TNamed.h>
 #include <TObjArray.h>
 #include <TString.h>
@@ -144,6 +147,107 @@ private:
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaTriggerPatchTypeObject, 1);
   /// \endcond
+};
+
+/*
+ * Exceptions:
+ */
+
+/**
+ * \class TriggerMethodUndefinedException
+ * \brief Exception class for events trigger classes which do not have a method for event selection defined
+ */
+class TriggerMethodUndefinedException : public std::exception{
+public:
+  /**
+   * Constructor, creating error message
+   * \param triggerclass Trigger class throwing the exception
+   */
+  TriggerMethodUndefinedException(std::string triggerclass):
+    fMessage("")
+  {
+    fMessage = "Trigger method undefined for trigger class " + triggerclass;
+  }
+  /**
+   * Destructor
+   */
+  virtual ~TriggerMethodUndefinedException() throw () { }
+
+  /**
+   * Returns the error message
+   * \return The error message
+   */
+  const char *what() const throw () {
+    return fMessage.c_str();
+  }
+private:
+  std::string                     fMessage;     ///< The error message
+};
+
+/**
+ * \class PatchHandlerMissingException
+ * \brief Exception class for events where the trigger patch handler is not set
+ */
+class PatchHandlerMissingException : public std::exception{
+public:
+  /**
+   * Constructor, creating error message
+   * \param triggerclass Trigger class throwing the exception
+   */
+  PatchHandlerMissingException(std::string triggerclass):
+    fMessage("")
+  {
+    fMessage = "Trigger method undefined for trigger class " + triggerclass;
+  }
+  /**
+   * Destructor
+   */
+  virtual ~PatchHandlerMissingException() throw () { }
+
+  /**
+   * Returns the error message
+   * \return The error message
+   */
+  const char *what() const throw () {
+    return fMessage.c_str();
+  }
+private:
+  std::string                     fMessage;     ///< The error message
+};
+
+/**
+ * \class EventCorruptionException
+ * \brief Exception class thrown when event collection is corrupted (event pointer 0 or trigger patch container not found)
+ */
+class EventCorruptionException : public std::exception{
+public:
+  /**
+   * Constructor, building the error message
+   * \param triggerclass Trigger class throwing the exception
+   * \param reason Reason for throwing the exception
+   */
+  EventCorruptionException(std::string triggerclass, std::string reason):
+    fMessage("")
+  {
+      std::stringstream messagebuilder;
+      messagebuilder << "Event corrupted for trigger class " << triggerclass << ": " << reason;
+      fMessage = messagebuilder.str();
+  }
+  /**
+   * Destructor
+   */
+  virtual ~EventCorruptionException() throw () { }
+
+  /**
+   * Returns the error message
+   * \return The error message
+   */
+  const char *what() const throw () {
+    return fMessage.c_str();
+  }
+
+private:
+  std::string                     fMessage;     ///< The error message
 };
 
 /**

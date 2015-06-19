@@ -13,6 +13,7 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <exception>
 #include <map>
 #include <vector>
 #include <string>
@@ -35,6 +36,42 @@ class AliEMCalTriggerBinningDimension;
 class AliEMCalTriggerEventData;
 class AliEMCalTriggerKineCuts;
 class AliEMCalTriggerWeightHandler;
+
+/**
+ * \class TriggerManagerNotFoundException
+ * \brief Exception class for events with missing trigger configuration handler
+ */
+class TriggerManagerNotFoundException : public std::exception{
+public:
+  /**
+   * Dummy constructor
+   */
+  TriggerManagerNotFoundException():
+    fMessage("")
+  {
+    fMessage =  "Trigger handler not found";
+  }
+  /**
+   * Main constructor, to be called when the exception is thrown
+   * \param producer Object producing the exception
+   */
+  TriggerManagerNotFoundException(std::string producer):
+    fMessage("")
+  {
+    fMessage = "Trigger handler not found for object " + producer;
+  }
+  /**
+   * Destructor, nothing to do
+   */
+  virtual ~TriggerManagerNotFoundException() throw() {}
+
+  const char *what() const throw() {
+    return fMessage.c_str();
+  }
+
+private:
+  std::string                     fMessage;
+};
 
 /**
  * \class AliEMCalTriggerTracksAnalysisComponent

@@ -100,7 +100,7 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
   outputList->SetName(Form("histos%s", GetName()));
   while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter()))){
     mygroup->SetGlobalBinning(fBinning);
-    TList *ltmp = mygroup->InitialiseAnalysisComponents();
+    TList *ltmp = mygroup->InitialiseAnalysisComponents(fTriggerClassManager);
     // Collect output list and append it to the global output list
     TIter listIter(ltmp);
     TObject *hist(NULL);

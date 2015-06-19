@@ -9,6 +9,7 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <exception>
 #include <TNamed.h>
 
 class TObjArray;
@@ -25,6 +26,29 @@ namespace EMCalTriggerPtAnalysis {
 class AliEMCalTriggerAnaTriggerClass;
 class AliEMCalTriggerAnaTriggerDecision;
 class AliEMCalTriggerEventData;
+
+/**
+ * \class TriggerManagerEmptyException
+ * \brief Exception handling in case event selection is performed on an empty trigger manager
+ */
+class TriggerManagerEmptyException : public std::exception {
+public:
+  /**
+   * Constructor
+   */
+  TriggerManagerEmptyException() {}
+  /**
+   * Destructor, nothing to do
+   */
+  virtual ~TriggerManagerEmptyException() throw () {}
+
+  /**
+   * Return error message
+   * \return The error message
+   */
+  const char *what() throw () { return "Trigger manager does not contain any trigger class"; }
+
+};
 
 /**
  * \class AliEMCalTriggerAnaClassManager
@@ -44,16 +68,8 @@ public:
   void AddTriggerClass(AliEMCalTriggerAnaTriggerClass *triggerclass);
   void SetTriggerDecision(AliEMCalTriggerAnaTriggerDecision *triggerdecision);
 
-  /**
-   * Get the list of selected trigger classes. Event selection has to be performed before.
-   * \return The list of selected trigger classes.
-   */
-  TObjArray * GetSelectedTriggerClasses() const { return fSelected; }
-  /**
-   * Get list of all trigger classes
-   * \return List of all trigger classes
-   */
-  TObjArray * GetAllTriggerClasses() const { return fTriggerClasses; }
+  TObjArray * GetSelectedTriggerClasses() const;
+  TObjArray * GetAllTriggerClasses() const;
 
   bool HasMinBiasTrigger() const;
 
