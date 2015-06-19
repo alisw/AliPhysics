@@ -106,6 +106,13 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // as the number of events is not known.
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
+    
+    if(!fCurrentData.fESD)
+    {
+        cout<<"No ESD event avaliable. Probably files were not opened."<<endl;
+        return;
+    }
+    
     if(fCurrentData.fESD->GetRunNumber() != fEventManager->GetCurrentRun())
     {
         fEventManager->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
