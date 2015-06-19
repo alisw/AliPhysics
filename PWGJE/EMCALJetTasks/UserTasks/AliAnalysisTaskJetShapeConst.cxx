@@ -61,6 +61,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fMatch(0),
   fMinLabelEmb(-kMaxInt),
   fMaxLabelEmb(kMaxInt),
+  fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -124,6 +125,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fMatch(0),
   fMinLabelEmb(-kMaxInt),
   fMaxLabelEmb(kMaxInt),
+  fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -185,6 +187,7 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   Int_t nBinsM  = 100;
   Double_t minM = -20.;
   Double_t maxM = 80.;
+  if(fSmallSyst) maxM = 40.;
   if(fJetMassVarType==kRatMPt) {
     nBinsM = 100;
     minM   = -0.2;
@@ -211,16 +214,30 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   const Double_t minPtLead = 0.;
   const Double_t maxPtLead = 20.;
 
+  //These are good for pPb
+  Int_t nBinsRho = 50;
+  Double_t minRho = 0.;
+  Double_t maxRho = 20.;
+  Int_t nBinsRhom = 50;
+  Double_t minRhom = 0.;
+  Double_t maxRhom = 1.;
+
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
 
-  const Int_t nBinsSparse1 = 6;
-  const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt};
-  const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt};
-  const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt};
+  const Int_t nBinsSparse1 = 7;
+  const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPt};
+  const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt, minPt};
+  const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxPt};
+
+  const Int_t nBinsSparse2 = 8;
+  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
+  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
+  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
 
   TString histName = "";
   TString histTitle = "";
@@ -269,12 +286,19 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     fOutput->Add(fhnMassResponse[i]);
     
     histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+    histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,A} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det,A}; #it{p}_{T,part}; #it{p}_{T,det,Const}",histName.Data());
     Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
     fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
     fOutput->Add(fhnDeltaMass[i]);
 
   }
+
+  //Chiara's histograms: rho and rhom correlation with pT and mass at reco level with no subtraction
+  histName = "fhnDeltaMassAndBkgInfo";
+  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
+  
+  fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
+  fOutput->Add(fhnDeltaMassAndBkgInfo);
 
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
@@ -364,15 +388,18 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       if(!jetS) continue;
 
       Double_t mjetS = jetS->M();
+      Double_t mUnsubjet1 = jet1->M();
       Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
+      Double_t ptjetS = jetS->Pt();
+      Double_t ptUnsubjet1 = jet1->Pt();
       Double_t var = mjetS;
       if(fJetMassVarType==kRatMPt) {
-      	 if(ptjet1>0. || ptjet1<0.) var = mjetS/ptjet1;
+      	 if(ptjetS>0. || ptjetS<0.) var = mjetS/ptjetS;
       	 else var = -999.;
       }
       
       //Fill histograms for all AA jets
-      fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
+      fh2MSubPtRawAll[fCentBin]->Fill(var,ptjetS);
       
       Double_t fraction = 0.;
       fMatch = 0;
@@ -433,19 +460,25 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,ptJetR,jet1->MaxTrackPt());
       	 fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
-      	 Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};
+      	 Double_t varsp[5] = {var,var2,ptjetS,ptJetR,jet1->MaxTrackPt()};
       	 fhnMassResponse[fCentBin]->Fill(varsp);
       	 
-      	 Double_t varsp1[6];
+      	 Double_t varsp1[7];
+      	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,A} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{part}; #it{p}_{T,det,A}; #it{p}_{T,part}; #it{p}_{T,det,Const}
       	 varsp1[0] = var-var2;
-      	 varsp1[1] = ptjet1-ptJetR;
+      	 varsp1[1] = ptjetS-ptJetR;
       	 varsp1[2] = var;
       	 varsp1[3] = var2;
-      	 varsp1[4] = ptjet1;
+      	 varsp1[4] = ptjetS;
       	 varsp1[5] = ptJetR;
+      	 varsp1[6] = ptjet1;
       	 
       	 fhnDeltaMass[fCentBin]->Fill(varsp);
       	 
+      	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+      	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var2, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
+      	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
+
       }
       
       if(fCreateTree) {      
@@ -471,11 +504,11 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 AliVParticle* AliAnalysisTaskJetShapeConst::GetEmbeddedConstituent(AliEmcalJet *jet) {
 
   AliParticleContainer *partContEmb = GetParticleContainer(); //the only particle container given is the one with embedded track(s)
-  
+
   AliVParticle *vpe = 0x0; //embedded particle
   for(Int_t ip = partContEmb->GetNParticles()-1; ip>-1; ip--){
-      AliVParticle *vp = partContEmb->GetAcceptParticle(ip);
-      if(!vpe){
+      AliVParticle *vp = partContEmb->GetParticle(ip);
+      if(!vp){
       	 AliDebug(2, Form("Particle %d not found", ip));
       	 continue;
       }
@@ -483,12 +516,13 @@ AliVParticle* AliAnalysisTaskJetShapeConst::GetEmbeddedConstituent(AliEmcalJet *
       if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
       	 continue;
       if(!vpe) vpe = vp;
-      else if(vp->Pt()>vpe->Pt()) vpe = vp;
-  
+      else if(vp->Pt()>vpe->Pt()) vpe =vp;
   }
   
-  Double_t deltaR= jet->DeltaR(vpe);
+  Double_t deltaR = 99;
+  if(vpe && jet) deltaR = jet->DeltaR(vpe);
   if(deltaR < 0.2) return vpe;
+  else return 0x0;
 }
 
 
