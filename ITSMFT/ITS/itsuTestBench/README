@@ -1,0 +1,7 @@
+#
+# ITSU test bench for simulation and reconstrucion
+#
+# Before starting:
+# - Select generator, detectors and the ITSU geometry version in Config.C
+#
+# Run the runtest.sh for full simulation and reconstruction 
