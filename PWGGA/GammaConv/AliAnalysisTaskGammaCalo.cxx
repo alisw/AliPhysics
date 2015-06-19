@@ -2472,15 +2472,15 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			if (secMotherLabel >-1){
 				if(MCStack->Particle(secMotherLabel)->GetPdgCode()==310 && isTruePi0){
 					fHistoTrueSecondaryPi0FromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec* fWeightJetJetMC);
-					if (fDoMesonQA > 0)fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(MCStack->Particle(secMotherLabel)->Pt(), fWeightJetJetMC);
+					if (fDoMesonQA > 0 && fIsMC != 2)fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(MCStack->Particle(secMotherLabel)->Pt(), fWeightJetJetMC);
 				}
 				if(MCStack->Particle(secMotherLabel)->GetPdgCode()==221 && isTruePi0){
 					fHistoTrueSecondaryPi0FromEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec* fWeightJetJetMC);
-					if (fDoMesonQA > 0)fHistoTrueEtaWithPi0DaughterMCPt[fiCut]->Fill(MCStack->Particle(secMotherLabel)->Pt(), fWeightJetJetMC);
+					if (fDoMesonQA > 0 && fIsMC != 2)fHistoTrueEtaWithPi0DaughterMCPt[fiCut]->Fill(MCStack->Particle(secMotherLabel)->Pt(), fWeightJetJetMC);
 				}
 				if(MCStack->Particle(secMotherLabel)->GetPdgCode()==3122 && isTruePi0){
 					fHistoTrueSecondaryPi0FromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec* fWeightJetJetMC);
-					if (fDoMesonQA > 0)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(MCStack->Particle(secMotherLabel)->Pt(), fWeightJetJetMC);
+					if (fDoMesonQA > 0 && fIsMC != 2)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(MCStack->Particle(secMotherLabel)->Pt(), fWeightJetJetMC);
 				}
 			}
 		} else { // Only primary pi0 for efficiency calculation
@@ -2746,15 +2746,15 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 			if (secMotherLabel >-1){
 				if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310 && isTruePi0 ){
 					fHistoTrueSecondaryPi0FromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec* fWeightJetJetMC);
-					if (fDoMesonQA > 0)fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt(), fWeightJetJetMC);
+					if (fDoMesonQA > 0 && fIsMC != 2 )fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt(), fWeightJetJetMC);
 				}
 				if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==221 && isTruePi0){
 					fHistoTrueSecondaryPi0FromEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec* fWeightJetJetMC);
-					if (fDoMesonQA > 0)fHistoTrueEtaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt(), fWeightJetJetMC);
+					if (fDoMesonQA > 0 && fIsMC != 2)fHistoTrueEtaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt(), fWeightJetJetMC);
 				}
 				if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==3122 && isTruePi0){
 					fHistoTrueSecondaryPi0FromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec* fWeightJetJetMC);
-					if (fDoMesonQA > 0)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt(), fWeightJetJetMC);
+					if (fDoMesonQA > 0 && fIsMC != 2)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt(), fWeightJetJetMC);
 				}
 			}	
 		} else{ // Only primary pi0 for efficiency calculation
