@@ -422,11 +422,12 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       fMatch = 0;
       fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
       if(fSingleTrackEmb) {
-      	 AliVParticle *vp = GetEmbeddedConstituent(jet1);
-      	 if(vp) {
-      	    fJet2Vec->SetPxPyPzE(vp->Px(),vp->Py(),vp->Pz(),vp->E());
+      	 vpe = GetEmbeddedConstituent(jet1);
+      	 if(vpe) {
+      	    fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
       	    fMatch = 1;
       	 }
+      	 
       } else {
       	 jet2 = jet1->ClosestJet();
       	 fraction = jetCont->GetFractionSharedPt(jet1);
