@@ -155,6 +155,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistCellTimevsCellID(NULL),
 	fHistClusterEM02BeforeQA(NULL),
 	fHistClusterEM02AfterQA(NULL),
+	fHistClusterIncludedCellsBeforeQA(NULL),
+	fHistClusterIncludedCellsAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -257,6 +259,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistCellTimevsCellID(NULL),
 	fHistClusterEM02BeforeQA(NULL),
 	fHistClusterEM02AfterQA(NULL),
+	fHistClusterIncludedCellsBeforeQA(NULL),
+	fHistClusterIncludedCellsAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -466,6 +470,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistExtQA->Add(fHistCellEnergyvsCellID);
 			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",1200,-timeMax,timeMax,nMaxCellsEMCAL,0,nMaxCellsEMCAL);
 			fHistExtQA->Add(fHistCellTimevsCellID);
+			fHistClusterIncludedCellsBeforeQA = new TH1F(Form("ClusterIncludedCells_beforeClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_beforeClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistExtQA->Add(fHistClusterIncludedCellsBeforeQA);
+			fHistClusterIncludedCellsAfterQA = new TH1F(Form("ClusterIncludedCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistExtQA->Add(fHistClusterIncludedCellsAfterQA);
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
@@ -483,6 +491,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistExtQA->Add(fHistCellEnergyvsCellID);
 			fHistCellTimevsCellID = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",1200,-timeMax,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
 			fHistExtQA->Add(fHistCellTimevsCellID);
+			fHistClusterIncludedCellsBeforeQA = new TH1F(Form("ClusterIncludedCells_beforeClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_beforeClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistExtQA->Add(fHistClusterIncludedCellsBeforeQA);
+			fHistClusterIncludedCellsAfterQA = new TH1F(Form("ClusterIncludedCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistExtQA->Add(fHistClusterIncludedCellsAfterQA);
 		}
 		else{AliError(Form("fExtendedMatchAndQA (%i) not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,GetClusterType()));}
 	}
@@ -639,6 +651,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion());
 // 	if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(cluster->GetNExMax());
 	if(fExtendedMatchAndQA > 1){
+		if(fHistClusterIncludedCellsBeforeQA){
+			Int_t nCellCluster = cluster->GetNCells();
+			for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+				fHistClusterIncludedCellsBeforeQA->Fill(cluster->GetCellAbsId(iCell));
+			}
+		}
 		if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02());
 	}
 	
@@ -783,6 +801,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 // 	if(fHistNLMBeforeQA) fHistNLMAfterQA->Fill(cluster->GetNExMax());
 
 	if(fExtendedMatchAndQA > 1){
+		if(fHistClusterIncludedCellsAfterQA){
+			Int_t nCellCluster = cluster->GetNCells();
+			for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+				fHistClusterIncludedCellsAfterQA->Fill(cluster->GetCellAbsId(iCell));
+			}
+		}
 		if(fHistClusterEM02AfterQA) fHistClusterEM02AfterQA->Fill(cluster->E(),cluster->GetM02());
 		if(fHistClusterEnergyvsNCells) fHistClusterEnergyvsNCells->Fill(cluster->E(),cluster->GetNCells());
 		if(cluster->IsEMCAL()){
@@ -837,9 +861,11 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 
 	Int_t nMod = -1;
 	for(Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++){
-		Short_t cellNumber;
-		Double_t cellAmplitude, cellTime, cellEFrac;
-		Int_t cellMCLabel;
+		Short_t cellNumber=0;
+		Double_t cellAmplitude=0;
+		Double_t cellTime=0;
+		Double_t cellEFrac=0;
+		Int_t cellMCLabel=0;
 
 		cells->GetCell(iCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
 		if( GetClusterType() == 1 ){ //EMCAL
