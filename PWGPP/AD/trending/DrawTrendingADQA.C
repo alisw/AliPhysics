@@ -53,9 +53,10 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   Int_t adReady=0,invalidInput=0,qaNotFound=0,adActive=0,adQANotfound=0,noEntries=0;
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
-  Float_t meanTimeRMSADA = -1024, meanTimeRMSADC = -1024;
+  Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
   Float_t rateUBA = -1024, rateUBC = -1024, rateUGA = -1024, rateUGC = -1024;
-  Float_t rateADAND = -1024, rateADOR = -1024; 
+  Float_t rateADAND = -1024, rateADOR = -1024;
+  Float_t MPV[16]; 
   
   ttree->SetBranchAddress("adReady",&adReady);
   ttree->SetBranchAddress("invalidInput",&invalidInput);
@@ -69,14 +70,15 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("meanTotalChargeADC",&meanTotalChargeADC);
   ttree->SetBranchAddress("meanTimeADA",&meanTimeADA);
   ttree->SetBranchAddress("meanTimeADC",&meanTimeADC);
-  ttree->SetBranchAddress("meanTimeRMSADA",&meanTimeRMSADA);
-  ttree->SetBranchAddress("meanTimeRMSADC",&meanTimeRMSADC);
+  ttree->SetBranchAddress("meanTimeSigmaADA",&meanTimeSigmaADA);
+  ttree->SetBranchAddress("meanTimeSigmaADC",&meanTimeSigmaADC);
   ttree->SetBranchAddress("rateUBA",&rateUBA);
   ttree->SetBranchAddress("rateUBC",&rateUBC);
   ttree->SetBranchAddress("rateUGA",&rateUGA);
   ttree->SetBranchAddress("rateUGC",&rateUGC);
   ttree->SetBranchAddress("rateADAND",&rateADAND);
   ttree->SetBranchAddress("rateADOR",&rateADOR);
+  ttree->SetBranchAddress("MPV",&MPV);
   
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
@@ -95,8 +97,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   TH1F *hMeanTimeADA = new TH1F("hMeanTimeADA","Mean time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
   TH1F *hMeanTimeADC = new TH1F("hMeanTimeADC","Mean time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
-  TH1F *hMeanTimeRMSADA = new TH1F("hMeanTimeRMSADA","Mean time RMS;;Time (ns)",nRuns,-0.5,nRuns-0.5);
-  TH1F *hMeanTimeRMSADC = new TH1F("hMeanTimeRMSADC","Mean time RMS;;Time (ns)",nRuns,-0.5,nRuns-0.5);
+  TH1F *hMeanTimeSigmaADA = new TH1F("hMeanTimeSigmaADA","Mean time Sigma;;#sigma (ns)",nRuns,-0.5,nRuns-0.5);
+  TH1F *hMeanTimeSigmaADC = new TH1F("hMeanTimeSigmaADC","Mean time Sigma;;#sigma (ns)",nRuns,-0.5,nRuns-0.5);
   
   TH1F *hRateUBA = new TH1F("hRateUBA","Mean trigger rate UB;;Trigger rate",nRuns,-0.5,nRuns-0.5);
   TH1F *hRateUBC = new TH1F("hRateUBC","Mean trigger rate UB;;Trigger rate",nRuns,-0.5,nRuns-0.5);
@@ -105,19 +107,21 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   TH1F *hRateADAND = new TH1F("hRateADAND","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
   TH1F *hRateADOR = new TH1F("hRateADOR","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH2F *hMPV = new TH2F("hMPV","MIP position per channel;;MPV (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
       
   fListHist.Add(hMeanTotalChargeADA);
   fListHist.Add(hMeanTotalChargeADC);
   fListHist.Add(hMeanTimeADA);
   fListHist.Add(hMeanTimeADC);
-  fListHist.Add(hMeanTimeRMSADA);
-  fListHist.Add(hMeanTimeRMSADC);
+  fListHist.Add(hMeanTimeSigmaADA);
+  fListHist.Add(hMeanTimeSigmaADC);
   fListHist.Add(hRateUBA);
   fListHist.Add(hRateUBC);
   fListHist.Add(hRateUGA);
   fListHist.Add(hRateUGC);
   fListHist.Add(hRateADAND);
   fListHist.Add(hRateADOR);
+  fListHist.Add(hMPV);
   
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
@@ -181,13 +185,13 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hMeanTimeADC->SetBinContent(goodrun+1,meanTimeADC);
 	hMeanTimeADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 
-	hMeanTimeRMSADA->SetBins(goodrun+1,0,goodrun+1);
-	hMeanTimeRMSADA->SetBinContent(goodrun+1,meanTimeRMSADA);
-	hMeanTimeRMSADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	hMeanTimeSigmaADA->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTimeSigmaADA->SetBinContent(goodrun+1,meanTimeSigmaADA);
+	hMeanTimeSigmaADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
-	hMeanTimeRMSADC->SetBins(goodrun+1,0,goodrun+1);
-	hMeanTimeRMSADC->SetBinContent(goodrun+1,meanTimeRMSADC);
-	hMeanTimeRMSADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	hMeanTimeSigmaADC->SetBins(goodrun+1,0,goodrun+1);
+	hMeanTimeSigmaADC->SetBinContent(goodrun+1,meanTimeSigmaADC);
+	hMeanTimeSigmaADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 
 	hRateUBA->SetBins(goodrun+1,0,goodrun+1);
 	hRateUBA->SetBinContent(goodrun+1,rateUBA);
@@ -212,6 +216,10 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hRateADOR->SetBins(goodrun+1,0,goodrun+1);
 	hRateADOR->SetBinContent(goodrun+1,rateADOR);
 	hRateADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMPV->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<16; i++)hMPV->SetBinContent(i+1,goodrun+1,MPV[i]);
+	hMPV->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	goodrun++;
         }
@@ -294,7 +302,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c2->SaveAs(Form("%s/ADQA__Mean_time.png",plotDir.Data()));
   
-  TCanvas *c3 = new TCanvas("MeanTimeRMS"," ",800,400); 
+  TCanvas *c3 = new TCanvas("MeanTimeSigma"," ",800,400); 
   c3->Draw();						
   c3->cd();
   TPad *myPad3 = new TPad("myPad3", "The pad",0,0,1,1);
@@ -303,19 +311,19 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad3->Draw();
   myPad3->cd();
 
-  myHistSetUp(hMeanTimeRMSADA);
-  myHistSetUp(hMeanTimeRMSADC);
-  hMeanTimeRMSADA->SetMarkerColor(kBlue);
-  hMeanTimeRMSADC->SetMarkerColor(kRed);
-  hMeanTimeRMSADA->SetMarkerStyle(kFullCircle);
-  hMeanTimeRMSADC->SetMarkerStyle(kFullCircle);
-  myScaleSetUp(hMeanTimeRMSADA,hMeanTimeRMSADC);
-  hMeanTimeRMSADA->Draw("P");
-  hMeanTimeRMSADC->Draw("Psame");
+  myHistSetUp(hMeanTimeSigmaADA);
+  myHistSetUp(hMeanTimeSigmaADC);
+  hMeanTimeSigmaADA->SetMarkerColor(kBlue);
+  hMeanTimeSigmaADC->SetMarkerColor(kRed);
+  hMeanTimeSigmaADA->SetMarkerStyle(kFullCircle);
+  hMeanTimeSigmaADC->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hMeanTimeSigmaADA,hMeanTimeSigmaADC);
+  hMeanTimeSigmaADA->Draw("P");
+  hMeanTimeSigmaADC->Draw("Psame");
   myLegend1->Draw();
   
   c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c3->SaveAs(Form("%s/ADQA__Mean_time_RMS.png",plotDir.Data()));
+  c3->SaveAs(Form("%s/ADQA__Mean_time_Sigma.png",plotDir.Data()));
   
   if(hADready->GetEntries())
     {
@@ -438,8 +446,23 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend2->AddEntry(hRateADOR,"ADOR","p");
   myLegend2->Draw();
   
-  c6->Print(Form("%s/QA_Resume_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
+  c6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c6->SaveAs(Form("%s/ADQA__RateAD.png",plotDir.Data()));
+  
+  TCanvas *c7 = new TCanvas("Rate UG"," ",800,400); 
+  c7->Draw();						
+  c7->cd();
+  TPad *myPad7 = new TPad("myPad7", "The pad",0,0,1,1);
+  myPadSetUp(myPad7,0.15,0.1,0.04,0.15);
+  myPad7->SetGridy();
+  myPad7->Draw();
+  myPad7->cd();
+
+  myHistSetUp(hMPV);
+  hMPV->Draw("COLZTEXT");
+ 
+  c7->Print(Form("%s/QA_Resume_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
+  c7->SaveAs(Form("%s/ADQA__MPV.png",plotDir.Data()));
   
   return 0;
 }
