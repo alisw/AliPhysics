@@ -836,8 +836,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     fHistEventStats->Fill(6,gRefMultiplicity); 
   }
   // check for pile-up event
+  AliAnalysisUtils ut;
   if(fCheckPileUp){
-    AliAnalysisUtils ut;
     ut.SetUseMVPlpSelection(kTRUE);
     ut.SetUseOutOfBunchPileUp(kTRUE);
     if(ut.IsPileUpEvent(event))
@@ -919,7 +919,19 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
 
 		  // get the reference multiplicty or centrality
-		  gRefMultiplicity = GetRefMultiOrCentrality(event);
+		  if((fEventClass=="Multiplicity")&&(fMultiplicityEstimator.Contains("Utils"))) {
+		    if ((fMultiplicityEstimator == "V0MUtils")) 
+		      gRefMultiplicity = ut.GetMultiplicityPercentile(event,"V0MEq");
+		    if ((fMultiplicityEstimator == "V0AUtils")) 
+		      gRefMultiplicity = ut.GetMultiplicityPercentile(event,"V0AEq");
+		    if ((fMultiplicityEstimator == "V0CUtils")) 
+		      gRefMultiplicity = ut.GetMultiplicityPercentile(event,"V0CEq");
+		    else 
+		      AliError("The requested estimator from AliAnalysisUtils is not supported");
+		  }//use the framework to define the multiplicity class
+		  
+		  else
+		    gRefMultiplicity = GetRefMultiOrCentrality(event);
 		  
 		  fHistVx->Fill(vertex->GetX());
 		  fHistVy->Fill(vertex->GetY());
