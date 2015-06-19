@@ -97,6 +97,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fMinDistanceToBadChannel(0),
 	fUseDistanceToBadChannel(0),
 	fMaxTimeDiff(10e10),
+	fMinTimeDiff(-10e10),
 	fUseTimeDiff(0),
     fMaxDistTrackToClusterEta(0),
     fMinDistTrackToClusterPhi(0),
@@ -201,6 +202,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fMinDistanceToBadChannel(ref.fMinDistanceToBadChannel),
 	fUseDistanceToBadChannel(ref.fUseDistanceToBadChannel),
 	fMaxTimeDiff(ref.fMaxTimeDiff),
+	fMinTimeDiff(ref.fMinTimeDiff),
 	fUseTimeDiff(ref.fUseTimeDiff),
     fMaxDistTrackToClusterEta(ref.fMaxDistTrackToClusterEta),
     fMinDistTrackToClusterPhi(ref.fMinDistTrackToClusterPhi),
@@ -413,7 +415,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 		timeMax = 12e-7;
     }
 
-    fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",800,timeMin,timeMax,100,0,40);
+	fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",800,timeMin,timeMax,100,0,40);
 	fHistograms->Add(fHistClusterTimevsEBeforeQA);
     fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",800,timeMin,timeMax,100,0,40);
 	fHistograms->Add(fHistClusterTimevsEAfterQA);
@@ -662,7 +664,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	
 	// Check wether timing is ok
 	if (fUseTimeDiff){
-		if(abs(cluster->GetTOF()) > fMaxTimeDiff && !(isMC>0)){
+		if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
 			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //1
 			return kFALSE;
 		}
@@ -1352,7 +1354,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseDistanceToBadChannel) printf("\tcut on exotics applied \n");
 	
 	printf("Cluster Quality cuts: \n");
-	if (fUseTimeDiff) printf("\t time difference < %3.2f\n", fMaxTimeDiff );
+	if (fUseTimeDiff) printf("\t %3.2f < time difference < %3.2f\n", fMinTimeDiff, fMaxTimeDiff );
     if (fUseDistTrackToCluster) printf("\tmin distance to track in eta > %3.2f, min phi < %3.2f and max phi > %3.2f\n", fMaxDistTrackToClusterEta, fMinDistTrackToClusterPhi, fMaxDistTrackToClusterPhi );
     if (fUseExoticCell)printf("\t exotic cell: %3.2f\n", fExoticCell );
     if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
@@ -1543,27 +1545,53 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 	switch(timing){
 	case 0: 
 		fUseTimeDiff=0;
+		fMinTimeDiff=-500;
 		fMaxTimeDiff=500;
 		break;
 	case 1: 
 		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-10e-7;
 		fMaxTimeDiff=10e-7; //1000ns
 		break;
 	case 2: 
 		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-50e-8;
 		fMaxTimeDiff=50e-8; //500ns
 		break;
 	case 3: 
 		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-20e-8;
 		fMaxTimeDiff=20e-8; //200ns
 		break;
 	case 4: 
 		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-10e-8;
 		fMaxTimeDiff=10e-8; //100ns
 		break;
 	case 5: 
 		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-50e-9;
 		fMaxTimeDiff=50e-9; //50ns
+		break;
+	case 6:
+		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-30e-9;
+		fMaxTimeDiff=35e-9;
+		break;
+	case 7:
+		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-30e-9;
+		fMaxTimeDiff=30e-9; //30ns
+		break;
+	case 8:
+		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-20e-9;
+		fMaxTimeDiff=30e-9;
+		break;
+	case 9:
+		if (!fUseTimeDiff) fUseTimeDiff=1;
+		fMinTimeDiff=-20e-9;
+		fMaxTimeDiff=25e-9;
 		break;
 
 	default:
