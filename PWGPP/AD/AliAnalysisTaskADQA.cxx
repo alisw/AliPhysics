@@ -277,42 +277,40 @@ if (!fHistDecision) {
 
     
 if(!fHistTriggerMasked) {
-    fHistTriggerMasked = CreateHist1D("fHistTriggerMasked","Trigger inputs, from FEE (BC masked)",11,0 ,11,"AD0 Trigger Type","Counts");
+    fHistTriggerMasked = CreateHist1D("fHistTriggerMasked","Trigger inputs, from FEE (BC masked)",10,0 ,10,"AD0 Trigger Type","Counts");
     fHistTriggerMasked->SetFillColor(kAzure-8);
     fHistTriggerMasked->SetLineWidth(2);
     fHistTriggerMasked->GetXaxis()->SetLabelSize(0.04);
     fHistTriggerMasked->GetXaxis()->SetNdivisions(808,kFALSE);
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(1, "UBA");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(2, "UBC");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(3, "UGA");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(4, "UGC");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(5, "UBA & UBC");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(6, "UBA || UBC");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(7, "(UBA || UBC) & !(UGA || UGC)");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(8, "UGA & UBC");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(9, "UGC & UBA");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(10, "UGA || UGC");
-    fHistTriggerMasked->GetXaxis()->SetBinLabel(11, "(UGA & UBC) || (UGC & UBA)");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(1, "UBA & UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(2, "UBA || UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(3, "UGA & UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(4, "UGA");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(5, "UGC & UBA");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(6, "UGC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(7, "UBA");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(8, "UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(9, "UGA || UGC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(10, "(UGA & UBC) || (UGC & UBA)");
     fListHist->Add(fHistTriggerMasked);
     }
  
  if(!fHistTriggerUnMasked) {
-    fHistTriggerUnMasked = CreateHist1D("fHistTriggerUnMasked","Trigger inputs, from FEE (BC masked)",11,0 ,11,"AD0 Trigger Type","Counts");
+    fHistTriggerUnMasked = CreateHist1D("fHistTriggerUnMasked","Trigger inputs, from FEE (BC masked)",10,0 ,10,"AD0 Trigger Type","Counts");
     fHistTriggerUnMasked->SetFillColor(kAzure-8);
     fHistTriggerUnMasked->SetLineWidth(2);
     fHistTriggerUnMasked->GetXaxis()->SetLabelSize(0.04);
     fHistTriggerUnMasked->GetXaxis()->SetNdivisions(808,kFALSE);
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(1, "UBA");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(2, "UBC");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(3, "UGA");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(4, "UGC");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(5, "UBA & UBC");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(6, "UBA || UBC");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(7, "(UBA || UBC) & !(UGA || UGC)");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(8, "UGA & UBC");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(9, "UGC & UBA");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(10, "UGA || UGC");
-    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(11, "(UGA & UBC) || (UGC & UBA)");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(1, "UBA & UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(2, "UBA || UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(3, "UGA & UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(4, "UGA");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(5, "UGC & UBA");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(6, "UGC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(7, "UBA");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(8, "UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(9, "UGA || UGC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(10, "(UGA & UBC) || (UGC & UBA)");
     fListHist->Add(fHistTriggerUnMasked);
     }
 
@@ -523,11 +521,17 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
     
   //Triggers
   UShort_t fTriggerBC = esdAD->GetTriggerBits();
-  for(Int_t i = 0; i<16; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
+  for(Int_t i = 0; i<16; i++){ 
+  	if(i>5 && i<12)continue; //unused inputs
+  	if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
+	}
   
   if(esdADfriend){
   	UShort_t fTriggerUnBC = esdADfriend->GetTriggerInputs();
-  	for(Int_t i = 0; i<16; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i);
+  	for(Int_t i = 0; i<16; i++) {
+		if(i>5 && i<12)continue; //unused inputs
+		if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i);
+		}
   }
   
   //Robusts time testing

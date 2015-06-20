@@ -27,7 +27,7 @@
 
 bool IsADReady(Int_t run);
 
-Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumber = 226440,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE)
+Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 226440,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE)
 {
   
   TTree *ttree=new TTree("trending","tree of trending variables");
@@ -44,7 +44,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
 
   TString treePostFileName="trending.root";
 
-  ttree->Branch("IsADReady",&adReady,"adReady/I");
+  ttree->Branch("adReady",&adReady,"adReady/I");
   ttree->Branch("invalidInput",&invalidInput,"invalidInput/I");
   ttree->Branch("qaNotFound",&qaNotFound,"qaNotFound/I");
   ttree->Branch("adActive",&adActive,"adActive/I");
@@ -184,14 +184,17 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   TH2F *fHistChargePerPM_All = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerPM_All"));
   TH2F *fHistChargePerPM_BB = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerPM_BB"));
   TH2F *fHistChargePerPM_BG = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerPM_BG"));
+  TH2F *fHistChargePerPM_Time = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerPM_Time"));
 
   TH2F *fHistTimePerPM_Corr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimePerPM_Corr"));
   TH2F *fHistTimePerPM_UnCorr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimePerPM_UnCorr"));
 
   TH2F *fHistWidthPerPM = dynamic_cast<TH2F*> (flistQA->FindObject("fHistWidthPerPM"));
 
-  TH2F *fHistTimeVsCharge_Corr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsCharge_Corr"));
-  TH2F *fHistTimeVsCharge_UnCorr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsCharge_UnCorr"));
+  TH2F *fHistTimeVsChargeADA_Corr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADA_Corr"));
+  TH2F *fHistTimeVsChargeADA_UnCorr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADA_UnCorr"));
+  TH2F *fHistTimeVsChargeADC_Corr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADC_Corr"));
+  TH2F *fHistTimeVsChargeADC_UnCorr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADC_UnCorr"));
 
   TH2F *fHistWidthVsCharge = dynamic_cast<TH2F*> (flistQA->FindObject("fHistWidthVsCharge"));
 
@@ -212,7 +215,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   TH2F *fHistNBGCoincidencesADAVsADC = dynamic_cast<TH2F*> (flistQA->FindObject("fHistNBGCoincidencesADAVsADC"));
 
   TH1F *fHistChargeNoFlag = dynamic_cast<TH1F*> (flistQA->FindObject("fHistChargeNoFlag"));
-  TH1F *fHistTimeNoFlag = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTimeNoFlag"));
+  TH2F *fHistTimeNoFlag = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeNoFlag"));
   TH1F *fHistChargeNoTime = dynamic_cast<TH1F*> (flistQA->FindObject("fHistChargeNoTime"));
 
   TH2F *fHistChargePerCoincidence = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerCoincidence"));
@@ -226,7 +229,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
 
   TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
 
-  TH1F *fHistTrigger = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTrigger"));
+  TH1F *fHistTriggerMasked = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerMasked"));
 
   TH2F *fHistChargeVsClockInt0 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargeVsClockInt0"));
   TH2F *fHistChargeVsClockInt1 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargeVsClockInt1"));
@@ -239,7 +242,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   TH3F *fHistTimeVsChargePerPM_UnCorr = dynamic_cast<TH3F*> (flistQA->FindObject("fHistTimeVsChargePerPM_UnCorr"));
   fHistTimeVsChargePerPM_UnCorr->RebinY(10);//To be removed
 
-  if(fHistTrigger->GetEntries()==0)
+  if(fHistTriggerMasked->GetEntries()==0)
     {
     if(!IsADReady(runNumber)) adReady=1;
     noEntries=1;
@@ -249,7 +252,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
     ttree->Write();
     trendFile->Close();
   
-    printf("fHistTrigger no entries\n");
+    printf("fHistTriggerMasked no entries\n");
     return 0;
     }  
   //-----------------------Fill trending variables------------------------------------------------
@@ -272,23 +275,23 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
   
   
   Float_t nEvents = fHistTotalChargePerEventADA->GetEntries();
-  rateUBA = fHistTrigger->GetBinContent(1)/nEvents;
-  rateUBC = fHistTrigger->GetBinContent(2)/nEvents;
-  rateUGA = fHistTrigger->GetBinContent(3)/nEvents;
-  rateUGC = fHistTrigger->GetBinContent(4)/nEvents;
-  rateADAND = fHistTrigger->GetBinContent(5)/nEvents;
-  rateADOR = fHistTrigger->GetBinContent(6)/nEvents;
+  rateUBA = fHistTriggerMasked->GetBinContent(7)/nEvents;
+  rateUBC = fHistTriggerMasked->GetBinContent(8)/nEvents;
+  rateUGA = fHistTriggerMasked->GetBinContent(4)/nEvents;
+  rateUGC = fHistTriggerMasked->GetBinContent(6)/nEvents;
+  rateADAND = fHistTriggerMasked->GetBinContent(1)/nEvents;
+  rateADOR = fHistTriggerMasked->GetBinContent(2)/nEvents;
   
   TH1D *hChargeSliceAll[16];
-  TH1D *hChargeSliceBB[16];
+  TH1D *hChargeSliceTime[16];
   for(Int_t i = 0; i<16; i++){
   	TString channelNameAll = "hChargeSliceAll";
 	channelNameAll += i;
   	hChargeSliceAll[i] = fHistChargePerPM_All->ProjectionY(channelNameAll.Data(),i+1,i+1);
 	
-	TString channelNameBB = "hChargeSliceBB";
-	channelNameBB += i;
-  	hChargeSliceBB[i] = fHistChargePerPM_BB->ProjectionY(channelNameBB.Data(),i+1,i+1);
+	TString channelNameTime = "hChargeSliceTime";
+	channelNameTime += i;
+  	hChargeSliceTime[i] = fHistChargePerPM_Time->ProjectionY(channelNameTime.Data(),i+1,i+1);
 	
 	TString channelTitle = "Integrated charge, PM ";
 	channelTitle += i;
@@ -428,22 +431,21 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
     TLegend *myLegend3 = new TLegend(0.36,0.68,0.63,0.84);
     myLegendSetUp(myLegend3,0.08,1);
     myLegend3->AddEntry(hChargeSliceAll[0],"All events","f");
-    myLegend3->AddEntry(hChargeSliceBB[0],"Event with BB flag","f");
-    
+    myLegend3->AddEntry(hChargeSliceTime[0],"Event with time","f");
     
     for(Int_t i=0; i<16; i++){
     	myPadSetUp(myPad24->cd(i+1),0.00,0.00,0.00,0.15);
     	myPad24->cd(i+1);
     	gPad->SetLogy();
 	myHistSetUp(hChargeSliceAll[i]);
-	myHistSetUp(hChargeSliceBB[i]);
+	myHistSetUp(hChargeSliceTime[i]);
     	hChargeSliceAll[i]->GetXaxis()->SetRangeUser(1,50);
 	hChargeSliceAll[i]->SetFillStyle(3001);
 	hChargeSliceAll[i]->SetFillColor(11);
-	hChargeSliceBB[i]->SetFillStyle(3001);
-	hChargeSliceBB[i]->SetFillColor(kYellow);
+	hChargeSliceTime[i]->SetFillStyle(3001);
+	hChargeSliceTime[i]->SetFillColor(kYellow);
 	hChargeSliceAll[i]->Draw();
-	hChargeSliceBB[i]->Draw("same");
+	hChargeSliceTime[i]->Draw("same");
 	myLegend3->Draw();
 	}
  
@@ -526,25 +528,37 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
     c42->Print(Form("ADQA_Run_%d.pdf",runNumber)); 
     //-------------------------------------------------------------------
     
-    myHistSetUp(fHistTimeVsCharge_Corr);
-    myHistSetUp(fHistTimeVsCharge_UnCorr);
+    myHistSetUp(fHistTimeVsChargeADA_Corr);
+    myHistSetUp(fHistTimeVsChargeADA_UnCorr);
+    myHistSetUp(fHistTimeVsChargeADC_Corr);
+    myHistSetUp(fHistTimeVsChargeADC_UnCorr);
 
-    TCanvas *c5 = new TCanvas("TimeVsCharge"," ",1000,500);
+    TCanvas *c5 = new TCanvas("TimeVsCharge"," ",1000,1000);
     c5->Draw();
     c5->cd();
     TPad *myPad5 = new TPad("myPad5", "The pad",0,0,1,1);
-    myPad5->Divide(2,1);
+    myPad5->Divide(2,2);
     myPad5->Draw();
     myPadSetUp(myPad5->cd(1),0.15,0.1,0.1,0.15);
     myPadSetUp(myPad5->cd(2),0.15,0.1,0.1,0.15);
+    myPadSetUp(myPad5->cd(3),0.15,0.1,0.1,0.15);
+    myPadSetUp(myPad5->cd(4),0.15,0.1,0.1,0.15);
     myPad5->cd(1);
     gPad->SetLogz();
-    fHistTimeVsCharge_Corr->GetXaxis()->SetRangeUser(40,80);
-    fHistTimeVsCharge_Corr->Draw("COLZ");
+    fHistTimeVsChargeADA_Corr->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADA_Corr->Draw("COLZ");
     myPad5->cd(2);
     gPad->SetLogz();
-    fHistTimeVsCharge_UnCorr->GetXaxis()->SetRangeUser(40,80);
-    fHistTimeVsCharge_UnCorr->Draw("COLZ");
+    fHistTimeVsChargeADA_UnCorr->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADA_UnCorr->Draw("COLZ");
+    myPad5->cd(3);
+    gPad->SetLogz();
+    fHistTimeVsChargeADC_Corr->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADC_Corr->Draw("COLZ");
+    myPad5->cd(4);
+    gPad->SetLogz();
+    fHistTimeVsChargeADC_UnCorr->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADC_UnCorr->Draw("COLZ");
 
     c5->Print(Form("ADQA_Run_%d.pdf",runNumber));
 
@@ -605,7 +619,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
 
     myPad8->cd(2);
     gPad->SetLogy();
-    fHistTimeNoFlag->Draw();
+    fHistTimeNoFlag->Draw("COLZ");
 
     c8->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
@@ -666,8 +680,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.226440.root",Int_t runNumb
     myPadSetUp(myPad11,0.15,0.15,0.15,0.15);
     myPad11->Draw();
     gPad->SetLogy();
-    fHistTrigger->Draw("HIST");
-    fHistTrigger->Draw("TEXT0SAME");
+    fHistTriggerMasked->Draw("HIST");
+    fHistTriggerMasked->Draw("TEXT0SAME");
     
     //gPad->SetLogz();
     //fHistDecision->Draw("COLZTEXT");
