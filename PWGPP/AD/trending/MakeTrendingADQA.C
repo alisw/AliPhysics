@@ -35,11 +35,15 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
   Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
+  Float_t meanTimeErrADA = -1024, meanTimeErrADC = -1024;
+  Float_t meanTimeSigmaErrADA = -1024, meanTimeSigmaErrADC = -1024;
   Float_t rateUBA = -1024, rateUBC = -1024, rateUGA = -1024, rateUGC = -1024;
-  Float_t rateADAND = -1024, rateADOR = -1024; 
+  Float_t rateADAND = -1024, rateADOR = -1024, rateErr = -1024;
+  Float_t rateRatioADV0AND = -1024, rateRatioADV0OR = -1024;
   Float_t saturationADA = -1024, saturationADC = -1024;
-  Float_t MPV[16];
+  Float_t MPV[16], MPVErr[16];
   Float_t meanPedestal[32],widthPedestal[32]; 
+  Float_t slewingChi2ADA = -1024, slewingChi2ADC = -1024;
   
 
   TString treePostFileName="trending.root";
@@ -91,20 +95,29 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   ttree->Branch("meanTotalChargeADC",&meanTotalChargeADC,"Mean total charge ADC;;Charge (ADC counts)/F");
   ttree->Branch("meanTimeADA",&meanTimeADA,"Mean time ADA;;Time (ns)/F");
   ttree->Branch("meanTimeADC",&meanTimeADC,"Mean time ADC;;Time (ns)/F");
+  ttree->Branch("meanTimeErrADA",&meanTimeErrADA,"Mean time err ADA;;Time (ns)/F");
+  ttree->Branch("meanTimeErrADC",&meanTimeErrADC,"Mean time err ADC;;Time (ns)/F");
   ttree->Branch("meanTimeSigmaADA",&meanTimeSigmaADA,"Mean time Sigma ADA;;Time Sigma (ns)/F");
   ttree->Branch("meanTimeSigmaADC",&meanTimeSigmaADC,"Mean time Sigma ADC;;Time Sigma (ns)/F");
+  ttree->Branch("meanTimeSigmaErrADA",&meanTimeSigmaErrADA,"Mean time Sigma err ADA;;Time Sigma (ns)/F");
+  ttree->Branch("meanTimeSigmaErrADC",&meanTimeSigmaErrADC,"Mean time Sigma err ADC;;Time Sigma (ns)/F");
   ttree->Branch("rateUBA",&rateUBA,"Trigger rate UBA;;Rate/F");
   ttree->Branch("rateUBC",&rateUBC,"Trigger rate UBC;;Rate/F");
   ttree->Branch("rateUGA",&rateUGA,"Trigger rate UGA;;Rate/F");
   ttree->Branch("rateUGC",&rateUGC,"Trigger rate UGC;;Rate/F");
   ttree->Branch("rateADAND",&rateADAND,"Trigger rate ADAND;;Rate/F");
   ttree->Branch("rateADOR",&rateADOR,"Trigger rate ADOR;;Rate/F");
+  ttree->Branch("rateRatioADV0AND",&rateRatioADV0AND,"Trigger rate ratio VZEROAND ADAND;;Ratio/F");
+  ttree->Branch("rateRatioADV0OR",&rateRatioADV0OR,"Trigger rate ratio VZEROOR ADOR;;Ratio/F");
+  ttree->Branch("rateErr",&rateErr,"Trigger rate err;;Rate/F");
   ttree->Branch("MPV", &MPV[0], "MPV[16]/F");
+  ttree->Branch("MPVErr", &MPVErr[0], "MPVErr[16]/F");
   ttree->Branch("meanPedestal", &meanPedestal[0], "meanPedestal[32]/F");
   ttree->Branch("widthPedestal", &widthPedestal[0], "widthPedestal[32]/F");
-  //Wait for histo
-  //ttree->Branch("saturationADA",&saturationADA,"Saturation ADA;;Saturated fraction/F");
-  //ttree->Branch("saturationADC",&saturationADC,"Saturation ADC;;Saturated fraction/F");
+  ttree->Branch("slewingChi2ADA",&slewingChi2ADA,"Time slewing Chi2 ADA;;Chi2perNDF/F");
+  ttree->Branch("slewingChi2ADC",&slewingChi2ADC,"Time slewing Chi2 ADC;;Chi2perNDF/F");
+  ttree->Branch("saturationADA",&saturationADA,"Saturation ADA;;Saturated fraction/F");
+  ttree->Branch("saturationADC",&saturationADC,"Saturation ADC;;Saturated fraction/F");
 
 
   if(!QAfile)
@@ -230,6 +243,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
 
   TH1F *fHistTriggerMasked = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerMasked"));
+  TH1F *fHistTriggerOthers = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerOthers"));
 
   TH2F *fHistChargeVsClockInt0 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargeVsClockInt0"));
   TH2F *fHistChargeVsClockInt1 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargeVsClockInt1"));
@@ -238,9 +252,10 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH2F *fHistBBFlagPerChannel = dynamic_cast<TH2F*> (flistQA->FindObject("fHistBBFlagPerChannel"));
   TH2F *fHistBGFlagPerChannel = dynamic_cast<TH2F*> (flistQA->FindObject("fHistBGFlagPerChannel"));
   TH2F *fHistMaxChargeClock = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMaxChargeClock"));
+  TH2F *fHistMaxChargeValueInt0 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMaxChargeValueInt0"));
+  TH2F *fHistMaxChargeValueInt1 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMaxChargeValueInt1"));
   
   TH3F *fHistTimeVsChargePerPM_UnCorr = dynamic_cast<TH3F*> (flistQA->FindObject("fHistTimeVsChargePerPM_UnCorr"));
-  fHistTimeVsChargePerPM_UnCorr->RebinY(10);//To be removed
 
   if(fHistTriggerMasked->GetEntries()==0)
     {
@@ -265,6 +280,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TF1 *fitTimeADA = (TF1*) fHistMeanTimeADA->GetFunction("gaus");
   meanTimeADA = fitTimeADA->GetParameter(1);
   meanTimeSigmaADA = fitTimeADA->GetParameter(2);
+  meanTimeErrADA = fitTimeADA->GetParError(1);
+  meanTimeSigmaErrADA = fitTimeADA->GetParError(2);
   
   minFitRange = 55;
   maxFitRange = 70;
@@ -272,8 +289,29 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TF1 *fitTimeADC = (TF1*) fHistMeanTimeADC->GetFunction("gaus");
   meanTimeADC = fitTimeADC->GetParameter(1);
   meanTimeSigmaADC = fitTimeADC->GetParameter(2);
+  meanTimeErrADC = fitTimeADC->GetParError(1);
+  meanTimeSigmaErrADC = fitTimeADC->GetParError(2);
   
+  const Double_t fTOFADA = 56.63;
+  TH1D *hSlewingSlice;
+  slewingChi2ADA = 0;
+  for(Int_t i = 0; i<550; i++){
+  	hSlewingSlice = fHistTimeVsChargeADA_Corr->ProjectionX("hSlewingSlice",i+1,i+1);
+	if(hSlewingSlice->Integral() < 100) continue;
+	slewingChi2ADA += TMath::Power(hSlewingSlice->GetMean() - fTOFADA, 2);
+  	}
+  slewingChi2ADA = slewingChi2ADA/550;
   
+  const Double_t fTOFADC = 65.21;
+  TH1D *hSlewingSlice;
+  slewingChi2ADC = 0;
+  for(Int_t i = 0; i<550; i++){
+  	hSlewingSlice = fHistTimeVsChargeADC_Corr->ProjectionX("hSlewingSlice",i+1,i+1);
+	if(hSlewingSlice->Integral() < 100) continue;
+	slewingChi2ADC += TMath::Power(hSlewingSlice->GetMean() - fTOFADC, 2);
+  	}
+  slewingChi2ADC = slewingChi2ADC/550;
+   
   Float_t nEvents = fHistTotalChargePerEventADA->GetEntries();
   rateUBA = fHistTriggerMasked->GetBinContent(7)/nEvents;
   rateUBC = fHistTriggerMasked->GetBinContent(8)/nEvents;
@@ -281,6 +319,9 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   rateUGC = fHistTriggerMasked->GetBinContent(6)/nEvents;
   rateADAND = fHistTriggerMasked->GetBinContent(1)/nEvents;
   rateADOR = fHistTriggerMasked->GetBinContent(2)/nEvents;
+  rateRatioADV0AND = fHistTriggerOthers->GetBinContent(1)/fHistTriggerMasked->GetBinContent(1);
+  rateRatioADV0OR = fHistTriggerOthers->GetBinContent(2)/fHistTriggerMasked->GetBinContent(2);
+  rateErr = 2/TMath::Sqrt(nEvents);
   
   TH1D *hChargeSliceAll[16];
   TH1D *hChargeSliceTime[16];
@@ -303,6 +344,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   	hChargeSliceAll[i]->Fit("landau","R+","",minFitRange,maxFitRange);
   	TF1 *fitLandau = (TF1*) hChargeSliceAll[i]->GetFunction("landau");
   	MPV[i] = fitLandau->GetParameter(1); //MPV
+	MPVErr[i] = fitLandau->GetParError(1); 
 	}
   
   AliCDBEntry *entCD = man->Get("AD/Calib/Data");
@@ -312,6 +354,29 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	widthPedestal[i] = fCalibData->GetSigma(i);
 	}
   
+  TH1D *hMaxChargeSlice;
+  
+  Float_t sat=0, nonsat=0;
+  for(Int_t i = 0; i<8; i++){
+  	hMaxChargeSlice = fHistMaxChargeValueInt0->ProjectionY("hMaxChargeSlice",i+1,i+1);
+	sat += hMaxChargeSlice->Integral(1000,1025);
+	nonsat += hMaxChargeSlice->Integral(meanPedestal[i]+3*widthPedestal[i],1025);
+	hMaxChargeSlice = fHistMaxChargeValueInt1->ProjectionY("hMaxChargeSlice",i+1,i+1);
+	sat += hMaxChargeSlice->Integral(1000,1025);
+	nonsat += hMaxChargeSlice->Integral(meanPedestal[i]+3*widthPedestal[i],1025);
+	}
+  saturationADC = sat/nonsat;
+  
+  sat=0; nonsat=0;
+  for(Int_t i = 8; i<16; i++){
+  	hMaxChargeSlice = fHistMaxChargeValueInt0->ProjectionY("hMaxChargeSlice",i+1,i+1);
+	sat += hMaxChargeSlice->Integral(1000,1025);
+	nonsat += hMaxChargeSlice->Integral(meanPedestal[i]+3*widthPedestal[i],1025);
+	hMaxChargeSlice = fHistMaxChargeValueInt1->ProjectionY("hMaxChargeSlice",i+1,i+1);
+	sat += hMaxChargeSlice->Integral(1000,1025);
+	nonsat += hMaxChargeSlice->Integral(meanPedestal[i]+3*widthPedestal[i],1025);
+	}
+  saturationADA = sat/nonsat;
   
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
   ttree->Fill();
@@ -699,7 +764,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 bool IsADReady(Int_t run)
 {
   bool result=true;
-  /*/
+  
   AliCDBManager *man = AliCDBManager::Instance();
 
   man->SetDefaultStorage("raw://");
@@ -708,10 +773,10 @@ bool IsADReady(Int_t run)
   AliCDBEntry *ent = man->Get("AD/Calib/Data");
   AliADCalibData *calData = (AliADCalibData*)ent->GetObject();
 
-  int dead=calData->IsChannelDead(0);
-  if(dead==1)
+  int HV=calData->GetMeanHV(0);
+  if(HV<100)
     result=false;
-    /*/
+    
   return result;
 }
 

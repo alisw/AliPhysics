@@ -54,10 +54,15 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
   Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
+  Float_t meanTimeErrADA = -1024, meanTimeErrADC = -1024;
+  Float_t meanTimeSigmaErrADA = -1024, meanTimeSigmaErrADC = -1024;
   Float_t rateUBA = -1024, rateUBC = -1024, rateUGA = -1024, rateUGC = -1024;
-  Float_t rateADAND = -1024, rateADOR = -1024;
-  Float_t MPV[16]; 
-  Float_t meanPedestal[32],widthPedestal[32]; 
+  Float_t rateADAND = -1024, rateADOR = -1024, rateErr = -1024;
+  Float_t rateRatioADV0AND = -1024, rateRatioADV0OR = -1024;
+  Float_t saturationADA = -1024, saturationADC = -1024;
+  Float_t MPV[16], MPVErr[16];
+  Float_t meanPedestal[32],widthPedestal[32];
+  Float_t slewingChi2ADA = -1024, slewingChi2ADC = -1024; 
   
   ttree->SetBranchAddress("adReady",&adReady);
   ttree->SetBranchAddress("invalidInput",&invalidInput);
@@ -71,17 +76,29 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("meanTotalChargeADC",&meanTotalChargeADC);
   ttree->SetBranchAddress("meanTimeADA",&meanTimeADA);
   ttree->SetBranchAddress("meanTimeADC",&meanTimeADC);
+  ttree->SetBranchAddress("meanTimeErrADA",&meanTimeErrADA);
+  ttree->SetBranchAddress("meanTimeErrADC",&meanTimeErrADC);
   ttree->SetBranchAddress("meanTimeSigmaADA",&meanTimeSigmaADA);
   ttree->SetBranchAddress("meanTimeSigmaADC",&meanTimeSigmaADC);
+  ttree->SetBranchAddress("meanTimeSigmaErrADA",&meanTimeSigmaErrADA);
+  ttree->SetBranchAddress("meanTimeSigmaErrADC",&meanTimeSigmaErrADC);
   ttree->SetBranchAddress("rateUBA",&rateUBA);
   ttree->SetBranchAddress("rateUBC",&rateUBC);
   ttree->SetBranchAddress("rateUGA",&rateUGA);
   ttree->SetBranchAddress("rateUGC",&rateUGC);
   ttree->SetBranchAddress("rateADAND",&rateADAND);
   ttree->SetBranchAddress("rateADOR",&rateADOR);
+  ttree->SetBranchAddress("rateRatioADV0AND",&rateRatioADV0AND);
+  ttree->SetBranchAddress("rateRatioADV0OR",&rateRatioADV0OR);
+  ttree->SetBranchAddress("rateErr",&rateErr);
   ttree->SetBranchAddress("MPV",&MPV);
+  ttree->SetBranchAddress("MPVErr",&MPVErr);
   ttree->SetBranchAddress("meanPedestal",&meanPedestal);
   ttree->SetBranchAddress("widthPedestal",&widthPedestal);
+  ttree->SetBranchAddress("slewingChi2ADA",&slewingChi2ADA);
+  ttree->SetBranchAddress("slewingChi2ADC",&slewingChi2ADC);
+  ttree->SetBranchAddress("saturationADA",&saturationADA);
+  ttree->SetBranchAddress("saturationADC",&saturationADC);
   
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
@@ -110,9 +127,19 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   TH1F *hRateADAND = new TH1F("hRateADAND","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
   TH1F *hRateADOR = new TH1F("hRateADOR","Mean trigger rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hRatioVZEROADAND = new TH1F("hRatioVZEROADAND","Trigger rate ratio VZERO/AD",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRatioVZEROADOR = new TH1F("hRatioVZEROADOR","Trigger rate ratio VZERO/AD",nRuns,-0.5,nRuns-0.5);
+  
   TH2F *hMPV = new TH2F("hMPV","MIP position per channel;Channel;MPV (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
   TH2F *hMeanPedestal = new TH2F("hMeanPedestal","Pedestal mean per channel;;Pedestal (ADC counts)",32,-0.5,31.5,nRuns,-0.5,nRuns-0.5);
   TH2F *hWidthPedestal = new TH2F("hWidthPedestal","Pedestal width per channel;;Width (ADC counts)",32,-0.5,31.5,nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hSlewingChi2ADA = new TH1F("hSlewingChi2ADA","Time slewing Chi2 ADA;;Chi2",nRuns,-0.5,nRuns-0.5);
+  TH1F *hSlewingChi2ADC = new TH1F("hSlewingChi2ADC","Time slewing Chi2 ADC;;Chi2",nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hSaturationADA = new TH1F("hSaturationADA","Saturation;;Saturation",nRuns,-0.5,nRuns-0.5);
+  TH1F *hSaturationADC = new TH1F("hSaturationADC","Saturation;;Saturation",nRuns,-0.5,nRuns-0.5);
   
   char ChannelInt[10];
   for(Int_t iPM=0; iPM<16; iPM++){
@@ -135,9 +162,15 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   fListHist.Add(hRateUGC);
   fListHist.Add(hRateADAND);
   fListHist.Add(hRateADOR);
+  fListHist.Add(hRatioVZEROADAND);
+  fListHist.Add(hRatioVZEROADOR);
   fListHist.Add(hMPV);
   fListHist.Add(hMeanPedestal);
   fListHist.Add(hWidthPedestal);
+  fListHist.Add(hSlewingChi2ADA);
+  fListHist.Add(hSlewingChi2ADC);
+  fListHist.Add(hSaturationADA);
+  fListHist.Add(hSaturationADC);
   
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
@@ -195,46 +228,69 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	
 	hMeanTimeADA->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTimeADA->SetBinContent(goodrun+1,meanTimeADA);
+	hMeanTimeADA->SetBinError(goodrun+1,meanTimeErrADA);
 	hMeanTimeADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hMeanTimeADC->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTimeADC->SetBinContent(goodrun+1,meanTimeADC);
+	hMeanTimeADC->SetBinError(goodrun+1,meanTimeErrADC);
 	hMeanTimeADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 
 	hMeanTimeSigmaADA->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTimeSigmaADA->SetBinContent(goodrun+1,meanTimeSigmaADA);
+	hMeanTimeSigmaADA->SetBinError(goodrun+1,meanTimeSigmaErrADA);
 	hMeanTimeSigmaADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hMeanTimeSigmaADC->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTimeSigmaADC->SetBinContent(goodrun+1,meanTimeSigmaADC);
+	hMeanTimeSigmaADC->SetBinError(goodrun+1,meanTimeSigmaErrADC);
 	hMeanTimeSigmaADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 
 	hRateUBA->SetBins(goodrun+1,0,goodrun+1);
 	hRateUBA->SetBinContent(goodrun+1,rateUBA);
+	if(rateUBA!=0)hRateUBA->SetBinError(goodrun+1,rateErr/rateUBA);
 	hRateUBA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRateUBC->SetBins(goodrun+1,0,goodrun+1);
 	hRateUBC->SetBinContent(goodrun+1,rateUBC);
+	if(rateUBC!=0)hRateUBC->SetBinError(goodrun+1,rateErr/rateUBC);
 	hRateUBC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRateUGA->SetBins(goodrun+1,0,goodrun+1);
 	hRateUGA->SetBinContent(goodrun+1,rateUGA);
+	if(rateUGA!=0)hRateUGA->SetBinError(goodrun+1,rateErr/rateUGA);
 	hRateUGA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRateUGC->SetBins(goodrun+1,0,goodrun+1);
 	hRateUGC->SetBinContent(goodrun+1,rateUGC);
+	if(rateUGC!=0)hRateUGC->SetBinError(goodrun+1,rateErr/rateUGC);
 	hRateUGC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 
 	hRateADAND->SetBins(goodrun+1,0,goodrun+1);
 	hRateADAND->SetBinContent(goodrun+1,rateADAND);
+	if(rateADAND!=0)hRateADAND->SetBinError(goodrun+1,rateErr/rateADAND);
 	hRateADAND->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRateADOR->SetBins(goodrun+1,0,goodrun+1);
 	hRateADOR->SetBinContent(goodrun+1,rateADOR);
+	if(rateADOR!=0)hRateADOR->SetBinError(goodrun+1,rateErr/rateADOR);
 	hRateADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
+	hRatioVZEROADAND->SetBins(goodrun+1,0,goodrun+1);
+	hRatioVZEROADAND->SetBinContent(goodrun+1,rateRatioADV0AND);
+	if(hRatioVZEROADAND!=0)hRatioVZEROADAND->SetBinError(goodrun+1,rateErr/rateRatioADV0AND);
+	hRatioVZEROADAND->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRatioVZEROADOR->SetBins(goodrun+1,0,goodrun+1);
+	hRatioVZEROADOR->SetBinContent(goodrun+1,rateRatioADV0OR);
+	if(hRatioVZEROADOR!=0)hRatioVZEROADOR->SetBinError(goodrun+1,rateErr/rateRatioADV0OR);
+	hRatioVZEROADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
 	hMPV->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
-	for(Int_t i=0; i<16; i++)hMPV->SetBinContent(i+1,goodrun+1,MPV[i]);
+	for(Int_t i=0; i<16; i++){
+		hMPV->SetBinContent(i+1,goodrun+1,MPV[i]);
+		hMPV->SetBinError(i+1,goodrun+1,MPVErr[i]);
+		}
 	hMPV->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hMeanPedestal->SetBins(32,-0.5,31.5,goodrun+1,0,goodrun+1);
@@ -244,6 +300,22 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hWidthPedestal->SetBins(32,-0.5,31.5,goodrun+1,0,goodrun+1);
 	for(Int_t i=0; i<32; i++)hWidthPedestal->SetBinContent(i+1,goodrun+1,widthPedestal[i]);
 	hWidthPedestal->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hSlewingChi2ADA->SetBins(goodrun+1,0,goodrun+1);
+	hSlewingChi2ADA->SetBinContent(goodrun+1,slewingChi2ADA);
+	hSlewingChi2ADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hSlewingChi2ADC->SetBins(goodrun+1,0,goodrun+1);
+	hSlewingChi2ADC->SetBinContent(goodrun+1,slewingChi2ADC);
+	hSlewingChi2ADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hSaturationADA->SetBins(goodrun+1,0,goodrun+1);
+	hSaturationADA->SetBinContent(goodrun+1,saturationADA);
+	hSaturationADA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hSaturationADC->SetBins(goodrun+1,0,goodrun+1);
+	hSaturationADC->SetBinContent(goodrun+1,saturationADC);
+	hSaturationADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	goodrun++;
         }
@@ -319,8 +391,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hMeanTimeADA->SetMarkerStyle(kFullCircle);
   hMeanTimeADC->SetMarkerStyle(kFullCircle);  
   myScaleSetUp(hMeanTimeADA,hMeanTimeADC);  
-  hMeanTimeADA->Draw("P");
-  hMeanTimeADC->Draw("Psame");
+  hMeanTimeADA->Draw("E");
+  hMeanTimeADC->Draw("Esame");
   myLegend1->Draw();
   
   c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -342,8 +414,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hMeanTimeSigmaADA->SetMarkerStyle(kFullCircle);
   hMeanTimeSigmaADC->SetMarkerStyle(kFullCircle);
   myScaleSetUp(hMeanTimeSigmaADA,hMeanTimeSigmaADC);
-  hMeanTimeSigmaADA->Draw("P");
-  hMeanTimeSigmaADC->Draw("Psame");
+  hMeanTimeSigmaADA->Draw("E");
+  hMeanTimeSigmaADC->Draw("Esame");
   myLegend1->Draw();
   
   c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -365,8 +437,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hRateUBA->SetMarkerStyle(kFullCircle);
   hRateUBC->SetMarkerStyle(kFullCircle);
   myScaleSetUp(hRateUBA,hRateUBC);
-  hRateUBA->Draw("P");
-  hRateUBC->Draw("Psame");
+  hRateUBA->Draw("E");
+  hRateUBC->Draw("Esame");
   myLegend1->Draw();
   
   c4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -388,14 +460,14 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hRateUGA->SetMarkerStyle(kFullCircle);
   hRateUGC->SetMarkerStyle(kFullCircle);
   myScaleSetUp(hRateUGA,hRateUGC);
-  hRateUGA->Draw("P");
-  hRateUGC->Draw("Psame");
+  hRateUGA->Draw("E");
+  hRateUGC->Draw("Esame");
   myLegend1->Draw();
   
   c5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c5->SaveAs(Form("%s/ADQA__RateUG.png",plotDir.Data()));
   
-  TCanvas *c6 = new TCanvas("Rate UG"," ",800,400); 
+  TCanvas *c6 = new TCanvas("Rate AD"," ",800,400); 
   c6->Draw();						
   c6->cd();
   TPad *myPad6 = new TPad("myPad6", "The pad",0,0,1,1);
@@ -411,8 +483,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hRateADAND->SetMarkerStyle(kFullCircle);
   hRateADOR->SetMarkerStyle(kFullCircle);
   myScaleSetUp(hRateADAND,hRateADOR);
-  hRateADAND->Draw("P");
-  hRateADOR->Draw("Psame");
+  hRateADAND->Draw("E");
+  hRateADOR->Draw("Esame");
   
   TLegend *myLegend2 = new TLegend(0.70,0.67,0.97,0.82);
   myLegendSetUp(myLegend2,0.04,1);
@@ -422,6 +494,34 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   c6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c6->SaveAs(Form("%s/ADQA__RateAD.png",plotDir.Data()));
+  
+  TCanvas *c11 = new TCanvas("Rate AD"," ",800,400); 
+  c11->Draw();						
+  c11->cd();
+  TPad *myPad11 = new TPad("myPad11", "The pad",0,0,1,1);
+  myPadSetUp(myPad11,0.15,0.1,0.04,0.15);
+  myPad11->SetGridy();
+  myPad11->Draw();
+  myPad11->cd();
+
+  myHistSetUp(hRatioVZEROADAND);
+  myHistSetUp(hRatioVZEROADOR);
+  hRatioVZEROADAND->SetMarkerColor(kBlue);
+  hRatioVZEROADOR->SetMarkerColor(kRed);
+  hRatioVZEROADAND->SetMarkerStyle(kFullCircle);
+  hRatioVZEROADOR->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRatioVZEROADAND,hRatioVZEROADOR);
+  hRatioVZEROADAND->Draw("E");
+  hRatioVZEROADOR->Draw("Esame");
+  
+  TLegend *myLegend3 = new TLegend(0.70,0.67,0.97,0.82);
+  myLegendSetUp(myLegend3,0.04,1);
+  myLegend3->AddEntry(hRatioVZEROADAND,"VZERO_AND/AD_AND","p");
+  myLegend3->AddEntry(hRatioVZEROADOR,"VZERO_OR/AD_OR","p");
+  myLegend3->Draw();
+  
+  c11->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c11->SaveAs(Form("%s/ADQA__RateRatio.png",plotDir.Data()));
   
   TCanvas *c7 = new TCanvas("MPV"," ",800,400); 
   c7->Draw();						
@@ -437,6 +537,52 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
  
   c7->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c7->SaveAs(Form("%s/ADQA__MPV.png",plotDir.Data()));
+  
+  TCanvas *c10 = new TCanvas("SlewingChi2"," ",800,400); 
+  c10->Draw();						
+  c10->cd();
+  TPad *myPad10 = new TPad("myPad10", "The pad",0,0,1,1);
+  myPadSetUp(myPad10,0.15,0.1,0.04,0.15);
+  myPad10->SetGridy();
+  myPad10->Draw();
+  myPad10->cd();
+
+  myHistSetUp(hSlewingChi2ADA);
+  myHistSetUp(hSlewingChi2ADC);
+  hSlewingChi2ADA->SetMarkerColor(kBlue);
+  hSlewingChi2ADC->SetMarkerColor(kRed);
+  hSlewingChi2ADA->SetMarkerStyle(kFullCircle);
+  hSlewingChi2ADC->SetMarkerStyle(kFullCircle);  
+  myScaleSetUp(hSlewingChi2ADA,hSlewingChi2ADC);  
+  hSlewingChi2ADA->Draw("P");
+  hSlewingChi2ADC->Draw("Psame");
+  myLegend1->Draw();
+  
+  c10->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c10->SaveAs(Form("%s/ADQA__SlewingChi2.png",plotDir.Data()));
+  
+  TCanvas *c12 = new TCanvas("Saturation"," ",800,400); 
+  c12->Draw();						
+  c12->cd();
+  TPad *myPad12 = new TPad("myPad12", "The pad",0,0,1,1);
+  myPadSetUp(myPad12,0.15,0.1,0.04,0.15);
+  myPad12->SetGridy();
+  myPad12->Draw();
+  myPad12->cd();
+
+  myHistSetUp(hSaturationADA);
+  myHistSetUp(hSaturationADC);
+  hSaturationADA->SetMarkerColor(kBlue);
+  hSaturationADC->SetMarkerColor(kRed);
+  hSaturationADA->SetMarkerStyle(kFullCircle);
+  hSaturationADC->SetMarkerStyle(kFullCircle);  
+  myScaleSetUp(hSaturationADA,hSaturationADC);  
+  hSaturationADA->Draw("P");
+  hSaturationADC->Draw("Psame");
+  myLegend1->Draw();
+  
+  c12->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c12->SaveAs(Form("%s/ADQA__Saturation.png",plotDir.Data()));
   
   if(hADready->GetEntries())
     {
@@ -476,7 +622,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad5->cd();
       ADqaNotfound->Draw();
       cBad5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad5->SaveAs(Form("%s/ADQA__v0qa_Not_Found.png",plotDir.Data()));
+      cBad5->SaveAs(Form("%s/ADQA__adQA_Not_Found.png",plotDir.Data()));
     }
   if(hNoEntries->GetEntries())
     {
@@ -484,7 +630,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad6->cd();
       NoEntrie->Draw();
       cBad6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad6->SaveAs(Form("%s/ADQA__NoEntrie.png",plotDir.Data()));
+      cBad6->SaveAs(Form("%s/ADQA__NoEntries.png",plotDir.Data()));
     }
 
   TCanvas *c8 = new TCanvas("Pedestal mean"," ",1200,400); 
@@ -623,6 +769,7 @@ void myOptions(Int_t lStat=0){
   gStyle->SetTitleSize(0.06,"xyz");  
   gStyle->SetMarkerSize(1); 
   gStyle->SetPalette(1,0); 
+  gStyle->SetErrorX(0);
   if (lStat){
     gStyle->SetOptTitle(1);
     gStyle->SetOptStat(1111111);
