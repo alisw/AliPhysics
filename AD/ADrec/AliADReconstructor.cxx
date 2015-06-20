@@ -205,7 +205,7 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
     if(UGC) fTrigger |= (1<<5);
     if(UBA) fTrigger |= (1<<12);
     if(UBC) fTrigger |= (1<<13); 
-    if(UBA || UBC) fTrigger |= (1<<14);
+    if(UGA || UGC) fTrigger |= (1<<14);
     if((UGA && UBC) || (UGC && UBA)) fTrigger |= (1<<15);
    
     fESDADfriend->SetTriggerInputs(fTrigger);
@@ -380,7 +380,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   
   if(UBA) fTrigger |= (1<<12);
   if(UBC) fTrigger |= (1<<13); 
-  if(UBA || UBC) fTrigger |= (1<<14);
+  if(UGA || UGC) fTrigger |= (1<<14);
   if((UGA && UBC) || (UGC && UBA)) fTrigger |= (1<<15);
 
   fESDAD->SetTriggerBits(fTrigger);
