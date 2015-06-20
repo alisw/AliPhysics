@@ -83,6 +83,7 @@ private:
   
   TH1F	      *fHistTriggerMasked;
   TH1F	      *fHistTriggerUnMasked;
+  TH1F	      *fHistTriggerOthers;
   
   /*From ESD friend*/
   TH2F	      *fHistChargeVsClockInt0;
@@ -92,6 +93,8 @@ private:
   TH2F	      *fHistBBFlagPerChannel;
   TH2F	      *fHistBGFlagPerChannel;
   TH2F	      *fHistMaxChargeClock;
+  TH2F	      *fHistMaxChargeValueInt0;
+  TH2F	      *fHistMaxChargeValueInt1;
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;

@@ -31,6 +31,7 @@
 #include "AliESDfriend.h"
 #include "AliESDAD.h"
 #include "AliESDADfriend.h"
+#include "AliESDVZERO.h"
 
 #include "AliAnalysisTaskADQA.h"
 
@@ -47,8 +48,9 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA()
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
-    fHistTriggerMasked(0),fHistTriggerUnMasked(0),
+    fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
+    fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
     fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0)
@@ -66,8 +68,9 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name)
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
-    fHistTriggerMasked(0),fHistTriggerUnMasked(0),
+    fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
+    fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
     fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0)
@@ -313,6 +316,18 @@ if(!fHistTriggerMasked) {
     fHistTriggerUnMasked->GetXaxis()->SetBinLabel(10, "(UGA & UBC) || (UGC & UBA)");
     fListHist->Add(fHistTriggerUnMasked);
     }
+    
+if(!fHistTriggerOthers) {
+    fHistTriggerOthers = CreateHist1D("fHistTriggerOthers","Trigger inputs, from other detectors",2,0 ,2,"Trigger inputs","Counts");
+    fHistTriggerOthers->SetFillColor(kAzure-8);
+    fHistTriggerOthers->SetLineWidth(2);
+    fHistTriggerOthers->GetXaxis()->SetLabelSize(0.04);
+    fHistTriggerOthers->GetXaxis()->SetNdivisions(808,kFALSE);
+    fHistTriggerOthers->GetXaxis()->SetBinLabel(1, "VBAND");
+    fHistTriggerOthers->GetXaxis()->SetBinLabel(2, "VBOR");
+
+    fListHist->Add(fHistTriggerOthers);
+    }
 
      
 if (!fHistChargeVsClockInt0) {
@@ -342,6 +357,14 @@ if (!fHistBGFlagPerChannel) {
 if (!fHistMaxChargeClock) {
     fHistMaxChargeClock = CreateHist2D("fHistMaxChargeClock","Clock with maximum charge per channel",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
     fListHist->Add(fHistMaxChargeClock);
+  }
+if (!fHistMaxChargeValueInt0) {
+    fHistMaxChargeValueInt0 = CreateHist2D("fHistMaxChargeValueInt0","Maximum charge value per PM Int0",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
+    fListHist->Add(fHistMaxChargeValueInt0);
+  }
+if (!fHistMaxChargeValueInt1) {
+    fHistMaxChargeValueInt1 = CreateHist2D("fHistMaxChargeValueInt1","Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
+    fListHist->Add(fHistMaxChargeValueInt1);
   }
 if(!fHistTimeVsChargePerPM_UnCorr) {
     fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",800, 400, 1200, 
@@ -425,7 +448,7 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
     return;
   }
   AliESDADfriend* esdADfriend = fESDfriend->GetADfriend();
- 
+  
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
   Int_t nBBflagsADA = 0;
@@ -482,7 +505,10 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 			}
 		fHistBBFlagPerChannel->Fill(i,nbbFlag);
 		fHistBGFlagPerChannel->Fill(i,nbgFlag);
-		fHistMaxChargeClock->Fill(i,TMath::LocMax(21,charge)-10);
+		Int_t maxClock = TMath::LocMax(21,charge);
+		fHistMaxChargeClock->Fill(i,maxClock-10);
+		if(!esdADfriend->GetIntegratorFlag(i,maxClock))fHistMaxChargeValueInt0->Fill(i,charge[maxClock]);
+		if( esdADfriend->GetIntegratorFlag(i,maxClock))fHistMaxChargeValueInt1->Fill(i,charge[maxClock]);
 		}
   }
 	
@@ -601,7 +627,13 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
   fHistNTimesRobustADA->Fill(nrobTimeA);
   fHistNTimesRobustADC->Fill(nrobTimeC);
 
-  
+  //Triggers from VZERO for reference
+  AliESDVZERO* esdVZERO = fESD->GetVZEROData();
+  if(esdVZERO){
+  	UShort_t fTriggerVZERO = esdVZERO->GetTriggerBits();
+	if(fTriggerVZERO & (1 << 0) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(0);
+	if(fTriggerVZERO & (1 << 1) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(1);
+  	}
 
   // Post output data.
   PostData(1, fListHist);
