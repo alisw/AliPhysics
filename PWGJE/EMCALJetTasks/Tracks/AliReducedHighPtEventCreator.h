@@ -148,9 +148,17 @@ public:
    * \param maxcent Maximum centrality percentile
    */
   void SetCentraltityRange(Float_t mincent, Float_t maxcent) {
-    fCentralityRange[0] = mincent;
-    fCentralityRange[1] = maxcent;
+    fSelectCentralityRange[0] = mincent;
+    fSelectCentralityRange[1] = maxcent;
   }
+  /**
+   * Set the EMCAL trigger selection
+   * \param triggersetup
+   */
+  void SetTriggerSetup(const char *triggersetup){
+    fTriggerSetup = triggersetup;
+  }
+  void SetBasicEventSelection(UInt_t selection) { fEventSelectionBits = selection; }
 
 protected:
   Bool_t SelectEvent(AliVEvent *event) const;
@@ -164,6 +172,7 @@ protected:
   AliReducedHighPtEvent   *fOutputEvent;                  ///< Output event
   TObjArray               *fTrackSelections;              ///< List of track selections
 
+  UInt_t                    fEventSelectionBits;          ///< Basic event selection
   Bool_t                    fSwapTriggerThresholds;       ///< Switch for swapping of the thresholds
   Double_t                  fMinClusterE;                 ///< Min. cluster E
   Double_t                  fMaxClusterE;                 ///< Max. cluster E
@@ -173,7 +182,8 @@ protected:
   Double_t                  fMaxEta;                      ///< Max. track \f$ \eta \f$
   Bool_t                    fApplyCentralitySelection;    ///< Switch for doing centrality selection
   TString                   fCentralityMethod;            ///< Method to obtain the event centrality
-  Float_t                   fCentralityRange[2];          ///< Range for centraltity selection
+  TString                   fTriggerSetup;                ///< Trigger setup
+  Float_t                   fSelectCentralityRange[2];    // Range for centraltity selection
   AliVEvent::EOfflineTriggerTypes fMinBiasSelection;      ///< Trigger bit for min. bias event tagging
 
 private:
