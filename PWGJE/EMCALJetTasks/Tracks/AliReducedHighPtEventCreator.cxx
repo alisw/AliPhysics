@@ -65,6 +65,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fOutputTree(NULL),
   fOutputEvent(NULL),
   fTrackSelections(NULL),
+  fEventSelectionBits(AliVEvent::kAny),
   fSwapTriggerThresholds(kFALSE),
   fMinClusterE(-1),
   fMaxClusterE(1000),
@@ -74,10 +75,11 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fMaxEta(1000),
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
+  fTriggerSetup("4classes"),
   fMinBiasSelection(AliVEvent::kINT7)
 {
-  fCentralityRange[0] = 0.;
-  fCentralityRange[1] = 100.;
+  fSelectCentralityRange[0] = 0.;
+  fSelectCentralityRange[1] = 100.;
 }
 
 /**
@@ -89,6 +91,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fOutputTree(NULL),
   fOutputEvent(NULL),
   fTrackSelections(NULL),
+  fEventSelectionBits(AliVEvent::kAny),
   fSwapTriggerThresholds(kFALSE),
   fMinClusterE(-1),
   fMaxClusterE(1000),
@@ -98,12 +101,13 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fMaxEta(1000),
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
+  fTriggerSetup("4classes"),
   fMinBiasSelection(AliVEvent::kINT7)
 {
   DefineOutput(2, TTree::Class());
 
-  fCentralityRange[0] = 0.;
-  fCentralityRange[1] = 100.;
+  fSelectCentralityRange[0] = 0.;
+  fSelectCentralityRange[1] = 100.;
 
   fTrackSelections = new TObjArray;
   fTrackSelections->SetOwner(kTRUE);
@@ -150,6 +154,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     AliError("Track container missing");
     return kFALSE;
   }
+  if(this->fInputHandler->IsEventSelected() & fEventSelectionBits) return kFALSE;
   if(!SelectEvent(fInputEvent)) return kFALSE;
   new(fOutputEvent) AliReducedHighPtEvent(kTRUE);
 
@@ -159,7 +164,10 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   if(centralityHandler) fOutputEvent->SetCentralityPercentile(centralityHandler->GetCentralityPercentile(fCentralityMethod.Data()));
   ConvertTriggerPatches(fTriggerPatchInfo, fOutputEvent->GetPatchContainer());
   TString triggerString(fInputEvent->GetFiredTriggerClasses());
-  fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EG1"), triggerString.Contains("EG2"), triggerString.Contains("EJ1"), triggerString.Contains("EJ2"));
+  if(!fTriggerSetup.CompareTo("4classes"))
+    fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EG1"), triggerString.Contains("EG2"), triggerString.Contains("EJ1"), triggerString.Contains("EJ2"));
+  else
+    fOutputEvent->SetDecisionFromTriggerString(triggerString.Contains("EGA"), kFALSE, triggerString.Contains("EJE"), kFALSE);
   fOutputEvent->SetMinBiasEvent(fInputHandler->IsEventSelected() & fMinBiasSelection);
   fOutputEvent->SetRunNumber(fInputEvent->GetRunNumber());
 
@@ -232,6 +240,8 @@ Bool_t AliReducedHighPtEventCreator::Run() {
   }
 
   // Filter tracks
+  int nsel(0);
+  AliDebug(1, Form("Number of tracks in container: %d", fTracks->GetEntries()));
   for(TIter trkiter = TIter(fTracks).Begin(); trkiter != TIter::End(); ++trkiter){
     AliVTrack *trackRaw = static_cast<AliVTrack *>(*trkiter), *trackToCheck(NULL);
     // handlinf for pico tracks as input
@@ -273,8 +283,11 @@ Bool_t AliReducedHighPtEventCreator::Run() {
         rectrack->SetMatchedClusterIndex(found->second);
       }
     }
+    //std::cout << "Track selected" << std::endl;
     fOutputEvent->AddReducedReconstructedParticle(rectrack);
+    nsel++;
   }
+  AliDebug(1, Form("Number of selected tracks :%d ", nsel ));
 
   fOutputTree->Fill();
   PostData(2, fOutputTree);
@@ -298,8 +311,11 @@ void AliReducedHighPtEventCreator::AddVirtualTrackSelection(
  */
 Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
   if(fApplyCentralitySelection && fInputEvent->GetCentrality()){
-    Float_t fCentrality = fInputEvent->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
-    if(fCentrality < fCentralityRange[0] || fCentrality > fCentralityRange[1]) return kFALSE;
+    AliDebug(1, Form("Centrality selection applied in range %f - %f\n", fSelectCentralityRange[0], fSelectCentralityRange[1]));
+    Float_t centrality = fInputEvent->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+    AliDebug(1, Form("Centrality before: %f\n", centrality));
+    if(centrality < fSelectCentralityRange[0] || centrality > fSelectCentralityRange[1]) return kFALSE;
+    AliDebug(1, Form("Centrality: %f\n", centrality));
   }
   const AliVVertex *primvtx = event->GetPrimaryVertex();
   if(!primvtx || !primvtx->GetNContributors()) return kFALSE;
