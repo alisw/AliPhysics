@@ -130,6 +130,9 @@ int AliHLTTriggerCTPRE::DoInit(int argc, const char** argv)
   if (retCode>=0 && argc>0)
     retCode=ConfigureFromArgumentString(remainingArgs.size(), &(remainingArgs[0]));
 
+  //make sure the regexp pointer is not null, even if the regexp is empty
+  if (!fRegexp) fRegexp=new TPRegexp();
+
   return retCode;
 }
 
@@ -221,6 +224,11 @@ int AliHLTTriggerCTPRE::ScanConfigurationArgument(int argc, const char** argv)
     argument = argv[i];
     delete fRegexp;
     fRegexp = new TPRegexp(argument);
+    if (!fRegexp->IsValid()) {
+      HLTError("regexp %s not valid!\n", fRegexp->GetPattern().Data());
+      delete fRegexp;
+      fRegexp = new TPRegexp();
+    }
     return 2;
   }
 
