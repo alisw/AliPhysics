@@ -309,35 +309,31 @@ AliMagF* AliEveEventManager::AssertMagField()
     
     static const TEveException kEH("AliEveEventManager::AssertMagField ");
     
-    if (fgMaster->fgMagField)
-    {
-        return fgMaster->fgMagField;
-    }
+    //if we already have a field we're done
+    if (fgMaster->fgMagField) return fgMaster->fgMagField;
     
-    //init the mag field from the ESD information
+    //if not: init the mag field from the ESD information
     if (fgMaster->AssertESD()) fgMaster->AssertESD()->InitMagneticField();
 
-    //TODO: i think it makes no sense to do it here - all of OCDB (including GRP) 
-    //is/should be initialized in InitOCDB() *ONLY*
-    //
-    //if (TGeoGlobalMagField::Instance()->GetField())
-    //{
-    //    fgMaster->fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-    //    if (fgMaster->fgMagField == 0)
-    //        throw kEH + "Global field set, but it is not AliMagF.";
-    //    return fgMaster->fgMagField;
-    //}
-    //
-    //if (!fgMaster->fgGRPLoaded)
-    //{
-    //    fgMaster->InitGRP();
-    //    fgMaster->fgGRPLoaded = kTRUE;
-    //}
-    
+    //check if we have field from ESD header
     if (TGeoGlobalMagField::Instance()->GetField())
     {
         fgMaster->fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-        if (fgMaster->fgMagField == 0)
+        if (fgMaster->fgMagField) return fgMaster->fgMagField;
+    }
+    
+    //if no field from ESD, try to init from GRP
+    if (!fgMaster->fgGRPLoaded)
+    {
+        fgMaster->InitGRP();
+        fgMaster->fgGRPLoaded = kTRUE;
+    }
+    
+    //check if now we have some field from the GRP:
+    if (TGeoGlobalMagField::Instance()->GetField())
+    {
+        fgMaster->fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+        if (!fgMaster->fgMagField)
             throw kEH + "Global field set, but it is not AliMagF.";
     }
     else
@@ -666,19 +662,26 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
   }
 
   //check is there is a GRP object for this run
-  //if there is one - we are set, we stop processing
   AliCDBStorage* defaultStorage = cdb->GetDefaultStorage();
   if (!defaultStorage) AliFatal("At this point we really should have the default storage set!");
   if (defaultStorage->GetId("GRP/GRP/Data", runNo))
   {
     cdb->SetRun(runNo);
-    
-    return kTRUE;
-    
+  }
+  else
+  {
+    //now if we don't have a GRP we need to get one from somewhere
+    ReceivePromptRecoParameters(runNo);
+  }
+  
+  //on run change destroy the mag field, it will be reinitialized via AssertMagField/InitGRP
+  if (runNo != cdb->GetRun())
+  {
+    delete TGeoGlobalMagField::Instance();
+    new TGeoGlobalMagField();
+    fgMaster->fgMagField=NULL;
   }
 
-  //now if we don't have a GRP we need to get one from somewhere
-  if(runNo != cdb->GetRun()) ReceivePromptRecoParameters(runNo);
   return kTRUE;
 }
 
