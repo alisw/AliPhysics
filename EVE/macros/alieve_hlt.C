@@ -64,8 +64,6 @@ void alieve_hlt(TString ocdbStorage="local://OCDB")
     gROOT->ProcessLine(".L geom_gentle.C+");
     gROOT->ProcessLine(".L geom_gentle_trd.C+");
     gROOT->ProcessLine(".L geom_gentle_muon.C+");
-    TEveUtil::LoadMacro("saveViews.C");
-    cout<<"Standard macros added"<<endl;
 
     AliEveEventManager* eventManager = new AliEveEventManager(AliEveEventManager::kSourceHLT);
     gEve->AddEvent(eventManager);
