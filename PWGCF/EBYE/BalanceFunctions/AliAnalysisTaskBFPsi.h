@@ -15,6 +15,7 @@ class TParticle;
 class AliBalancePsi;
 class AliESDtrackCuts;
 class AliEventPoolManager;
+class AliAnalysisUtils;
 
 
 #include "AliAnalysisTaskSE.h"
@@ -378,6 +379,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
   TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
+
+  //AliAnalysisUtils
+  AliAnalysisUtils *fUtils;//AliAnalysisUtils
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
