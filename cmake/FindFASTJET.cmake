@@ -71,25 +71,24 @@ if(FASTJET)
     # Extracting compilation flags
     execute_process(COMMAND ${FASTJET_CONFIG} --cxxflags OUTPUT_VARIABLE FASTJET_CXXFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(error)
-        message(FATAL_ERROR "Error retrieving FastJet compilation flags : ${error}")
+        message(FATAL_ERROR "Error retrieving FastJet compilation flags: ${error}")
     endif(error)
     
-    # Extracting the include path from the CXX flags
+    # Extracting the include path(s?) from the CXX flags (LIST)
     set(FASTJET_INCLUDE_DIR)
     if(FASTJET_CXXFLAGS)
         string(REGEX MATCHALL "(^| )-I[^ ]+" incfolders ${FASTJET_CXXFLAGS})
         foreach(incfolder ${incfolders})
             string(STRIP ${incfolder} incfolder)
             string(SUBSTRING ${incfolder} 2 -1 incfolder)
-            set(FASTJET_INCLUDE_DIR ${incfolder})
-            break()
+            list(APPEND FASTJET_INCLUDE_DIR ${incfolder})
         endforeach()
     endif(FASTJET_CXXFLAGS)
 
     # Extracting libraries and linking options
     execute_process(COMMAND ${FASTJET_CONFIG} --libs OUTPUT_VARIABLE FASTJET_CONFIGLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(error)
-        message(FATAL_ERROR "Error retrieving FastJet libs : ${error}")
+        message(FATAL_ERROR "Error retrieving FastJet libs: ${error}")
     endif(error)
     
     # Extracting the list of needed libraries during linking and the linking directory
@@ -97,7 +96,7 @@ if(FASTJET)
     set(FASTJET_LIBS_DIR)
     if(FASTJET_CONFIGLIBS)
 
-        # Extract libraries needed at link time (-l): the output is a LIST
+        # Extract libraries needed at link time (-l) (LIST)
         string(REGEX MATCHALL "(^| )-l[^ ]+" fjlibs ${FASTJET_CONFIGLIBS})
         foreach(fjlib ${fjlibs})
             string(STRIP ${fjlib} fjlib)
@@ -105,13 +104,12 @@ if(FASTJET)
             list(APPEND FASTJET_LIBS ${fjlib})
         endforeach()
 
-        # Extract library path: only one STRING as output
+        # Extract library paths used by FastJet to find needed libs: (LIST)
         string(REGEX MATCHALL "(^| )-L[^ ]+" fjlibdirs ${FASTJET_CONFIGLIBS})
         foreach(fjlibdir ${fjlibdirs})
             string(STRIP ${fjlibdir} fjlibdir)
             string(SUBSTRING ${fjlibdir} 2 -1 fjlibdir)
-            set(FASTJET_LIBS_DIR ${fjlibdir})
-            break()
+            list(APPEND FASTJET_LIBS_DIR ${fjlibdir})
         endforeach()
 
     endif(FASTJET_CONFIGLIBS)
