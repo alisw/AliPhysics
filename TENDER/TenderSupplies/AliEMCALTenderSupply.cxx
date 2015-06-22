@@ -116,8 +116,8 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
 {
   // Default constructor.
 
-  for(Int_t i = 0; i < 12;    i++) fEMCALMatrix[i]      = 0 ;
-  for(Int_t j = 0; j < 12672; j++) fOrgClusterCellId[j] = -1;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i]      = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) fOrgClusterCellId[j] = -1;
 }
 
 //_____________________________________________________
@@ -183,8 +183,8 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
 {
   // Named constructor
   
-  for(Int_t i = 0; i < 12;    i++) fEMCALMatrix[i]      = 0 ;
-  for(Int_t j = 0; j < 12672; j++) fOrgClusterCellId[j] = -1;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i]      = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) fOrgClusterCellId[j] = -1;
 }
 
 //_____________________________________________________
@@ -250,8 +250,8 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
 {
   // Named constructor.
   
-  for(Int_t i = 0; i < 12;    i++) fEMCALMatrix[i]      = 0 ;
-  for(Int_t j = 0; j < 12672; j++) fOrgClusterCellId[j] = -1;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i]      = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) fOrgClusterCellId[j] = -1;
 }
 
 //_____________________________________________________
@@ -349,7 +349,7 @@ void AliEMCALTenderSupply::Init()
     fExoticCellDiffTime     = tender->fExoticCellDiffTime;
     fExoticCellMinAmplitude = tender->fExoticCellMinAmplitude;
 
-    for(Int_t i = 0; i < 12; i++) 
+    for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) 
       fEMCALMatrix[i] = tender->fEMCALMatrix[i] ;
   }
   
@@ -1455,10 +1455,10 @@ void AliEMCALTenderSupply::FillDigitsArray()
   // In case of MC productions done before aliroot tag v5-02-Rev09
   // assing the cluster label to all the cells belonging to this cluster
   // very rough
-  Int_t cellLabels[12672];
+  Int_t cellLabels[fgkTotalCellNumber];
   if (fSetCellMCLabelFromCluster)
   {
-    for (Int_t i = 0; i < 12672; i++)
+    for (Int_t i = 0; i < fgkTotalCellNumber; i++)
     {
       cellLabels       [i] = 0 ;
       fOrgClusterCellId[i] =-1 ;

@@ -32,6 +32,8 @@ class AliEMCALRecParam;
 class AliAnalysisTaskSE;
 class AliVEvent;
 
+#include "AliEMCALGeoParams.h"
+
 class AliEMCALTenderSupply: public AliTenderSupply {
   
 public:
@@ -218,7 +220,7 @@ private:
   Bool_t                 fRejectExoticCells;      // reject exotic cells
   Bool_t                 fRejectExoticClusters;   // recect clusters with exotic cells
   Bool_t                 fClusterBadChannelCheck; // check clusters for bad channels
-  TGeoHMatrix           *fEMCALMatrix[12];        // geometry matrices with misalignments
+  TGeoHMatrix           *fEMCALMatrix[AliEMCALGeoParams::fgkEMCALModules]; // geometry matrices with misalignments
   Bool_t                 fRecalClusPos;           // switch for applying missalignment
   Bool_t                 fFiducial;               // switch for checking cells in the fiducial region
   Int_t                  fNCellsFromEMCALBorder;  // number os cells from EMCAL border  
@@ -252,7 +254,9 @@ private:
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
 
   // MC labels
-  Int_t                  fOrgClusterCellId[12672]; // Array ID of cluster to wich the cell belongs in unmodified clusters
+  static const Int_t     fgkTotalCellNumber = 17664 ; // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
+  
+  Int_t                  fOrgClusterCellId[fgkTotalCellNumber]; // Array ID of cluster to wich the cell belongs in unmodified clusters. This is only needed for Run1 old passes where cell MC label info was not available.
  
   Int_t                  fSetCellMCLabelFromCluster; // Use cluster MC label as cell label:
                                                      // 0 - get the MC label stored in cells
@@ -270,6 +274,6 @@ private:
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 17); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 18); // EMCAL tender task
 };
 #endif
