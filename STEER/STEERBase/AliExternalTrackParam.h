@@ -244,7 +244,7 @@ class AliExternalTrackParam: public AliVTrack {
 	 Double_t (*f)(Double_t)=AliExternalTrackParam::BetheBlochSolid);
 
   Bool_t GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t b);
-  Int_t GetIndex(Int_t i, Int_t j) const;
+  static Int_t GetIndex(Int_t i, Int_t j);
   Int_t GetLabel() const {return -1;} 
   Int_t PdgCode()  const {return 0;}
 

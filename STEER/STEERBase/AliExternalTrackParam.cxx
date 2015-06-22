@@ -2212,7 +2212,7 @@ void AliExternalTrackParam::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Flo
   }
 }
 
-Int_t AliExternalTrackParam::GetIndex(Int_t i, Int_t j) const {
+Int_t AliExternalTrackParam::GetIndex(Int_t i, Int_t j){
   //
   Int_t min = TMath::Min(i,j);
   Int_t max = TMath::Max(i,j);
