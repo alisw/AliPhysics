@@ -1169,15 +1169,14 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
   {
     if(fGeomName=="")
     {
-      if     (runnumber < 140000) fGeomName = "EMCAL_FIRSTYEARV1";
-      else if(runnumber < 171000) fGeomName = "EMCAL_COMPLETEV1";
-      else if(runnumber < 198000) fGeomName = "EMCAL_COMPLETE12SMV1";
-      else                        fGeomName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+      fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
+      AliInfo(Form("Get EMCAL geometry name <%s> for run %d",fGeom->GetName(),runnumber));
     }
-    
-    AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fGeomName.Data(),runnumber));
-
-		fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+    else
+    {
+      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+      AliInfo(Form("Set EMCAL geometry name to <%s>",fGeomName.Data()));
+    }
     
     // Init geometry, I do not like much to do it like this ...
     if(fImportGeometryFromFile && !gGeoManager)
