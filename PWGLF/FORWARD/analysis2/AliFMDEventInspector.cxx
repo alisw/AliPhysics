@@ -46,6 +46,16 @@
 
 //====================================================================
 namespace {
+  const UInt_t kTriggerMask = AliAODForwardMult::kOffline;
+    // (AliAODForwardMult::kInel      |
+    //  AliAODForwardMult::kV0AND     |
+    //  AliAODForwardMult::kADOR      |
+    //  AliAODForwardMult::kADAND     |
+    //  AliAODForwardMult::kSatellite |
+    //  AliAODForwardMult::kOffline   |
+    //  AliAODForwardMult::kInclusive);
+
+
   AliPhysicsSelection* GetPhysicsSelection()
   {
     AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
@@ -83,7 +93,6 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHEventsAccepted(0),
     fHEventsAcceptedXY(0),
     fHTriggers(0),
-    fHTriggerCorr(0),
     fHType(0),
     fHWords(0),
     fHCent(0),
@@ -137,7 +146,6 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHEventsAccepted(0),
     fHEventsAcceptedXY(0),
     fHTriggers(0),
-    fHTriggerCorr(0),
     fHType(0),
     fHWords(0),
     fHCent(0),
@@ -313,14 +321,29 @@ AliFMDEventInspector::CacheConfiguredTriggerClasses(TList& cache,
     TIter       nextPart(parts);
     while ((part = static_cast<TObjString*>(nextPart()))) {
       // We only care about the positive ones 
-      if (part->GetName()[0] != '+') continue;
-      part->String().Remove(0,1);
+      // if (part->GetName()[0] == '-') continue;
+      // part->String().Remove(0,1);
 	
       // Tokenize on a comma to get the words 
       TObjArray*  words = part->String().Tokenize(",");
       TObjString* word  = 0;
       TIter       nextWord(words);
       while ((word = static_cast<TObjString*>(nextWord()))) {
+	char first = word->String()[0];
+	switch (first) {
+	case '-': // Negatives 
+	case '&': // bunch crossing
+	case '*': // ?
+	  continue;
+	  break;
+	case '+':
+	  word->String().Remove(0,1);
+	  break;
+	}
+	if (cache.FindObject(word->String())) {
+	  DMSG(fDebug, 3, "Word %s already cached", word->GetName());
+	  continue;
+	}
 	TNamed* store = new TNamed(word->String(), side);
 	cache.Add(store);
 	DMSG(fDebug,3,"Caching %s trigger word %s", 
@@ -368,10 +391,50 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
       AliWarning("No configured background trigger classes");
       return;
     }
+#if 1 
+    // This histogram disabled as it causes problems in the merge 
+    fHWords = new TH1I("words", "Trigger words seen", 1, 0, 0); 
+    fHWords->SetFillColor(kBlue-2);
+    fHWords->SetFillStyle(3001);
+    fHWords->SetStats(0);
+    fHWords->SetDirectory(0);
+#endif
+    
     CacheConfiguredTriggerClasses(fCollWords, collTriggClasses, oadb);
     CacheConfiguredTriggerClasses(fBgWords,   bgTriggClasses,   oadb);
-    // fCollWords.ls();
-    // fBgWords.ls();
+    fCollWords.Sort();
+    fBgWords.Sort();
+    DMSG(fDebug, 3, "fHWords=%p", fHWords);
+    if (fHWords) {
+      Int_t  nColl = fCollWords.GetEntries();
+      Int_t  nBg   = fBgWords.GetEntries();
+      TAxis* xAxis = fHWords->GetXaxis();
+
+      DMSG(fDebug,3, "Got a total of %d+%d=%d trigger words",
+	   nColl, nBg, nColl+nBg); 
+      xAxis->Set(nColl+nBg, 0.5, nColl+nBg+.5);
+      TIter nextC(&fCollWords);
+      TIter nextB(&fBgWords);
+      Int_t bin = 1;
+      TObject* word = 0;
+      while((word = nextC())) {
+	DMSG(fDebug, 3, "Defining bin %d to be %s", bin, word->GetName());
+	word->SetUniqueID(bin);
+	xAxis->SetBinLabel(bin++, word->GetName());
+      }
+      while((word = nextB())) {
+	DMSG(fDebug, 3, "Defining bin %d to be %s", bin, word->GetName());
+	word->SetUniqueID(bin);	
+	xAxis->SetBinLabel(bin++, word->GetName());
+      }
+      fHWords->Rebuild();
+    }
+    if (fDebug >= 3) {
+      DMSG(fDebug, 3, "Collision trigger classes");
+      fCollWords.ls();
+      DMSG(fDebug, 3, "Background trigger classes");
+      fBgWords.ls();
+    }
   }
   
   TArrayD limits;
@@ -439,56 +502,10 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   // fHEventsAccepted->Sumw2();
   fList->Add(fHEventsAcceptedXY);
 
-  
-  fHTriggers = new TH1I("triggers", "Triggers", kOffline+1, 0, kOffline+1);
-  fHTriggers->SetFillColor(kRed+1);
-  fHTriggers->SetFillStyle(3001);
+  fHTriggers = AliAODForwardMult::MakeTriggerHistogram("triggers",kTriggerMask);
   fHTriggers->SetStats(0);
   fHTriggers->SetDirectory(0);
-
-  fHTriggerCorr = new TH2I("triggerCorr", "Trigger correlation", 
-			   kOffline+1, 0, kOffline+1, 
-			   kOffline+1, 0, kOffline+1);
-  fHTriggerCorr->SetStats(0);
-  fHTriggerCorr->SetDirectory(0);
-  fHTriggerCorr->SetXTitle("Requirement");
-  fHTriggerCorr->SetYTitle("Companion");
-
-  Int_t binNum[] = { kInel   +1,
-		     kInelGt0+1,
-		     kNSD    +1,
-		     kV0AND  +1,
-		     kEmpty  +1,
-		     kA      +1,
-		     kB      +1,
-		     kC      +1,
-		     kE      +1,
-		     kPileUp +1,
-		     kMCNSD  +1,
-		     kSatellite+1,
-		     kSpdOutlier+1,
-		     kOffline+1 };
-  const char* binLbl[] = { "INEL",	 
-			   "INEL>0",
-			   "NSD",	 
-			   "VOAND",
-			   "Empty",	 
-			   "A",	 
-			   "B",	 
-			   "C",	 
-			   "E",	 
-			   "Pileup",
-			   "NSD_{MC}", 
-			   "Satellite",
-			   "SPD outlier",
-			   "Offline" };
-  for (Int_t i = 0; i < kOffline+1; i++) {
-    fHTriggers->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
-    fHTriggerCorr->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
-    fHTriggerCorr->GetYaxis()->SetBinLabel(binNum[i], binLbl[i]);
-  }
   fList->Add(fHTriggers);
-  fList->Add(fHTriggerCorr);
   
 
   fHType = new TH1I("type", Form("Event type (cut: SPD mult>%d)", 
@@ -501,16 +518,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   fHType->GetXaxis()->SetBinLabel(2,"High-flux");
   fList->Add(fHType);
 
-#if 0 
-  // This histogram disabled as it causes problems in the merge 
-  fHWords = new TH1I("words", "Trigger words seen", 1, 0, 0); 
-  fHWords->SetFillColor(kBlue+1);
-  fHWords->SetFillStyle(3001);
-  fHWords->SetStats(0);
-  fHWords->SetDirectory(0);
-  fHWords->SetBit(TH1::kCanRebin);
-  fList->Add(fHWords);
-#endif
+  if (fHWords) fList->Add(fHWords);
 
   fHCent = new TH1F("cent", "Centrality", limits.GetSize()-1,limits.GetArray());
   fHCent->SetFillColor(kBlue+1);
@@ -579,10 +587,13 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(kMinBias,		"CINT1 (V0A||V0C||FASTOR)");
   xAxis->SetBinLabel(kMinBiasNoSPD,	"CINT5 (V0A||V0C)");
   xAxis->SetBinLabel(kV0AndTrg,		"CINT7 (V0A&&V0C)");
+  xAxis->SetBinLabel(kMinBiasAD,	"CINT10 (ADA||ADC||V0A||V0C||FASTOR)");
   xAxis->SetBinLabel(kHighMult,		"N>>0");
   xAxis->SetBinLabel(kCentral,	        "Central"); 
   xAxis->SetBinLabel(kSemiCentral,	"Semi-central"); 
   xAxis->SetBinLabel(kDiffractive,	"Diffractive");
+  xAxis->SetBinLabel(kADOr,	        "(ADA || ADC)");
+  xAxis->SetBinLabel(kADAnd,	        "(ADA && ADC)");
   xAxis->SetBinLabel(kUser,	        "User");
   xAxis->SetBinLabel(kOther,	        "Other");
   fList->Add(fHTrgStatus);
@@ -752,6 +763,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     fHStatus->Fill(3);
     return kNoTriggers;
   }
+  Bool_t trig = (triggers & kTriggerMask);
+  if (trig) fHTriggers->Fill(AliAODForwardMult::kWithTrigger);
 
   // --- Check if this is a high-flux event --------------------------
   const AliMultiplicity* testmult = event->GetMultiplicity();
@@ -773,7 +786,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     fHStatus->Fill(6);
     return kNoVertex;
   }
-
+  if (trig) fHTriggers->Fill(AliAODForwardMult::kWithVertex);
+  
    // --- Read centrality information 
   cent          = -10;
   UShort_t qual = 0;
@@ -809,6 +823,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
   fHEventsAccepted->Fill(ip.Z());
   fHEventsAcceptedXY->Fill(ip.X(),ip.Y());
+  if (trig) fHTriggers->Fill(AliAODForwardMult::kAccepted);
   
   // --- Check the FMD ESD data --------------------------------------
   if (!event->GetFMDData()) { 
@@ -941,7 +956,6 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   TString trigStr  = esd.GetFiredTriggerClasses();
 
   if (trigStr.IsNull()) fHTrgStatus->Fill(kNoTrgWords);
-  if (fHWords) fHWords->Fill(trigStr.Data(), 1);
   
   if(AllowDisplaced()) {
     DMSG(fDebug,3,"Using displaced vertex stuff");
@@ -981,16 +995,22 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     triggers |= AliAODForwardMult::kInel;
     CheckINELGT0(esd, nClusters, triggers);
   }
+  // Flag as V0-AND if kINT7 is there 
+  if (trgMask & AliVEvent::kINT7) {
+    triggers |= AliAODForwardMult::kV0AND;
+    if (fUseV0AND)
+      // If we want to use V0-AND for NSD, flag as NSD 
+      triggers |= AliAODForwardMult::kNSD;    
+  }
+  // Check if NSD trigger fired off-line 
+  if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kNSD1)) 
+    triggers |= AliAODForwardMult::kNSD;
   
   //   AliTriggerAnalysis ta; 
   if (ta.IsSPDClusterVsTrackletBG(&esd, false)) 
     // SPD outlier 
     triggers |= AliAODForwardMult::kSPDOutlier;
 
-  CheckNSD(esd,triggers);
-  if (!ps) {
-    if (trgMask & AliVEvent::kINT7) triggers |= AliAODForwardMult::kV0AND;
-  }
   CheckPileup(esd, triggers);
   CheckEmpty(trigStr, triggers);
   // if (CheckPileup(esd, triggers)) fHTriggers->Fill(kPileUp+.5);
@@ -998,6 +1018,8 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 
   CheckWords(esd, triggers); 
 
+  AliAODForwardMult::FillTriggerHistogram(kTriggerMask, triggers, fHTriggers);
+#if 0
 #define TEST_TRIG_BIN(RET,BIN,TRIGGERS) \
   do { switch (BIN) { \
     case kInel:      RET = triggers & AliAODForwardMult::kInel;       break; \
@@ -1034,6 +1056,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
       fHTriggerCorr->Fill(i+.5, j+.5);
     }
   }
+#endif
   return kTRUE;
 }
 
@@ -1107,23 +1130,6 @@ AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd,
   return triggers & AliAODForwardMult::kNClusterGt0;
 }
 
-//____________________________________________________________________
-Bool_t
-AliFMDEventInspector::CheckNSD(const AliESDEvent& esd, UInt_t& triggers) const
-{
-  // Analyse some trigger stuff 
-  AliTriggerAnalysis ta;
-  if (GetPhysicsSelection()) {
-    if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kV0AND)) {
-      triggers |= AliAODForwardMult::kV0AND;
-      if (fUseV0AND) 
-	triggers |= AliAODForwardMult::kNSD;
-    }
-  }
-  if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kNSD1)) 
-    triggers |= AliAODForwardMult::kNSD;
-  return triggers & AliAODForwardMult::kNSD;
-}
 //____________________________________________________________________
 Bool_t
 AliFMDEventInspector::CheckPileup(const AliESDEvent& esd, 
@@ -1265,25 +1271,30 @@ AliFMDEventInspector::CheckWords(const AliESDEvent& esd, UInt_t& triggers) const
   TObject* word = 0;
   TIter nextColl(&fCollWords);
   while ((word = nextColl())) {
-    DMSG(fDebug,10,"Checking if %s trigger %s is fired", 
-	 word->GetTitle(), word->GetName());
+    DMSG(fDebug,10,"Checking if %s (Coll) trigger %s is fired (%d)", 
+	 word->GetTitle(), word->GetName(), word->GetUniqueID());
     if (!esd.IsTriggerClassFired(word->GetName())) continue;
+    // if (fHWords) fHWords->Fill(word->GetName(), 1.);
+    if (fHWords) fHWords->Fill(word->GetUniqueID());
 
     TString beamSide = word->GetTitle();
     DMSG(fDebug,10,"Found it - this is a %s trigger", beamSide.Data());
 
     if (!beamSide.EqualTo("B")) continue;
     triggers |= AliAODForwardMult::kB;
-    break; // No more to do here
+
+    // break; // No more to do here
   }
   TIter nextBg(&fBgWords);
   UInt_t all = (AliAODForwardMult::kA | 
 		AliAODForwardMult::kC | 
 		AliAODForwardMult::kE);
   while ((word = nextBg())) {
-    DMSG(fDebug,10,"Checking if %s trigger %s is fired", 
-	 word->GetTitle(), word->GetName());
+    DMSG(fDebug,10,"Checking if %s (BG) trigger %s is fired (%d)", 
+	 word->GetTitle(), word->GetName(), word->GetUniqueID());
     if (!esd.IsTriggerClassFired(word->GetName())) continue;
+    // if (fHWords) fHWords->Fill(word->GetName(), 1.);
+    if (fHWords) fHWords->Fill(word->GetUniqueID());
     
     TString beamSide = word->GetTitle();
     DMSG(fDebug,10,"Found it - this is a %s trigger", beamSide.Data());

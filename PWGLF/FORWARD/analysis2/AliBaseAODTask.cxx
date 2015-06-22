@@ -13,41 +13,41 @@
 //____________________________________________________________________
 AliBaseAODTask::AliBaseAODTask()
   : AliAnalysisTaskSE(),
-    fTriggerMask(0xFFFFFFFF), 
+    fTriggerMask(0xFFFFFFFF),
     fFilterMask(AliAODForwardMult::kDefaultFilter),
-    fMinIpZ(0), 
-    fMaxIpZ(-1), 
-    fCentAxis(0, 0, -1), 
-    fTriggers(0), 
-    fEventStatus(0), 
+    fMinIpZ(0),
+    fMaxIpZ(-1),
+    fCentAxis(0, 0, -1),
+    fTriggers(0),
+    fEventStatus(0),
     fVertex(0),
     fCent(0),
     fAccVertex(0),
     fAccCent(0),
     fFirstEvent(true),
     fCloneList(false),
-    fSums(0), 
+    fSums(0),
     fResults(0)
 {
 }
 //____________________________________________________________________
 AliBaseAODTask::AliBaseAODTask(const char* name,
-			       const char* title)
+             const char* title)
   : AliAnalysisTaskSE(name),
-    fTriggerMask(0xFFFFFFFF), 
+    fTriggerMask(0xFFFFFFFF),
     fFilterMask(AliAODForwardMult::kDefaultFilter),
-    fMinIpZ(0), 
-    fMaxIpZ(-1), 
-    fCentAxis(0, 0, -1), 
-    fTriggers(0), 
-    fEventStatus(0), 
+    fMinIpZ(0),
+    fMaxIpZ(-1),
+    fCentAxis(0, 0, -1),
+    fTriggers(0),
+    fEventStatus(0),
     fVertex(0),
     fCent(0),
     fAccVertex(0),
     fAccCent(0),
-    fFirstEvent(true), 
+    fFirstEvent(true),
     fCloneList(false),
-    fSums(0), 
+    fSums(0),
     fResults(0)
 {
   SetTitle(title && title[0] != '\0' ? title : this->ClassName());
@@ -58,12 +58,12 @@ AliBaseAODTask::AliBaseAODTask(const char* name,
 }
 
 //____________________________________________________________________
-Bool_t 
+Bool_t
 AliBaseAODTask::Configure(const char* macro)
 {
   // --- Configure the task ------------------------------------------
   TString macroPath(gROOT->GetMacroPath());
-  if (!macroPath.Contains("$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2")) { 
+  if (!macroPath.Contains("$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2")) {
     macroPath.Append(":$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2");
     gROOT->SetMacroPath(macroPath);
   }
@@ -74,26 +74,26 @@ AliBaseAODTask::Configure(const char* macro)
     AliWarningF("%s not found in %s", mac.Data(), gROOT->GetMacroPath());
     return false;
   }
-  // if (gInterpreter->IsLoaded(config)) 
+  // if (gInterpreter->IsLoaded(config))
   // gInterpreter->UnloadFile(config);
 
   AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
   gROOT->Macro(Form("%s((%s*)%p)", config, GetTitle(), this));
-  
+
   Info("Configure", "Unloading configuration script");
   gInterpreter->UnloadFile(config);
   delete config;
- 
+
  return true;
 }
 
 //________________________________________________________________________
-void 
+void
 AliBaseAODTask::SetTriggerMask(const char* mask)
 {
-  // 
-  // Set the trigger maskl 
-  // 
+  //
+  // Set the trigger maskl
+  //
   // Parameters:
   //    mask Trigger mask
   //
@@ -101,19 +101,19 @@ AliBaseAODTask::SetTriggerMask(const char* mask)
   SetTriggerMask(AliAODForwardMult::MakeTriggerMask(mask));
 }
 //________________________________________________________________________
-void 
-AliBaseAODTask::SetTriggerMask(UInt_t mask) 
-{ 
+void
+AliBaseAODTask::SetTriggerMask(UInt_t mask)
+{
   DGUARD(fDebug,3,"Set the trigger mask: 0x%0x", mask);
-  fTriggerMask = mask; 
+  fTriggerMask = mask;
 }
 //________________________________________________________________________
-void 
+void
 AliBaseAODTask::SetFilterMask(const char* mask)
 {
-  // 
-  // Set the trigger maskl 
-  // 
+  //
+  // Set the trigger maskl
+  //
   // Parameters:
   //    mask Trigger mask
   //
@@ -121,19 +121,19 @@ AliBaseAODTask::SetFilterMask(const char* mask)
   SetFilterMask(AliAODForwardMult::MakeTriggerMask(mask, "|"));
 }
 //________________________________________________________________________
-void 
-AliBaseAODTask::SetFilterMask(UInt_t mask) 
-{ 
+void
+AliBaseAODTask::SetFilterMask(UInt_t mask)
+{
   DGUARD(fDebug,3,"Set the filter mask: 0x%0x", mask);
-  fFilterMask = mask; 
+  fFilterMask = mask;
 }
 //________________________________________________________________________
-void 
+void
 AliBaseAODTask::SetCentralityAxis(UShort_t n, Short_t* bins)
 {
   DGUARD(fDebug,3,"Set centrality axis, %d bins", n);
   TArrayD dbins(n+1);
-  for (UShort_t i = 0; i <= n; i++) 
+  for (UShort_t i = 0; i <= n; i++)
     dbins[i] = (bins[i] == 100 ? 100.1 : bins[i]);
   fCentAxis.Set(n, dbins.GetArray());
 
@@ -143,7 +143,7 @@ namespace {
   Double_t GetEdge(const TString& str, Int_t start, Int_t end)
   {
     TString sub(str(start, end));
-    return sub.Atof();  
+    return sub.Atof();
   }
   Bool_t ExtractBins(const TString& spec, TArrayD& edges)
   {
@@ -152,23 +152,23 @@ namespace {
     Int_t   cnt   = 0;
     for (Int_t i=1; i<spec.Length(); i++) {
       if (spec[i] == '-' || spec[i] == ':') {
-	Double_t c = GetEdge(spec, start, i);
-	if (cnt > 0 && c < tmp[cnt-1]) {
-	  Warning("ExtractBins",
-		  "Invalid edge @ %d: %f (< %f)", cnt, c, tmp[cnt-1]);
-	tmp.Set(0);
-	return false;
-	}
-	tmp[cnt] = c;
-	i++;
-	start = i;
-	cnt++;
+  Double_t c = GetEdge(spec, start, i);
+  if (cnt > 0 && c < tmp[cnt-1]) {
+    Warning("ExtractBins",
+      "Invalid edge @ %d: %f (< %f)", cnt, c, tmp[cnt-1]);
+  tmp.Set(0);
+  return false;
+  }
+  tmp[cnt] = c;
+  i++;
+  start = i;
+  cnt++;
       }
     }
     if (start+1 != spec.Length()) {
       Double_t c = GetEdge(spec, start, spec.Length());
       tmp[cnt] = c;
-      cnt++;    
+      cnt++;
     }
     edges.Set(cnt, tmp.GetArray());
     return true;
@@ -176,7 +176,7 @@ namespace {
 }
 
 //________________________________________________________________________
-void 
+void
 AliBaseAODTask::SetCentralityAxis(const char* bins)
 {
   DGUARD(fDebug,3,"Set centrality axis: %s", bins);
@@ -189,16 +189,16 @@ AliBaseAODTask::SetCentralityAxis(const char* bins)
   TArrayD edges;
   if (spec.EqualTo("default", TString::kIgnoreCase) ||
       spec.EqualTo("pbpb", TString::kIgnoreCase)) {
-    //                 1  2  3   4   5   6   7   8   9   10  11 
+    //                 1  2  3   4   5   6   7   8   9   10  11
     Double_t tmp[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
     edges.Set(11, tmp);
   }
   else if (spec.EqualTo("ppb", TString::kIgnoreCase) ||
-	   spec.EqualTo("pbp", TString::kIgnoreCase)) {
-    //                 1  2  3   4   5   6   7   8  
+     spec.EqualTo("pbp", TString::kIgnoreCase)) {
+    //                 1  2  3   4   5   6   7   8
     Double_t tmp[] = { 0, 5, 10, 20, 40, 60, 80, 100 };
     edges.Set(8, tmp);
-  }    
+  }
   else {
     ExtractBins(spec, edges);
   }
@@ -206,14 +206,14 @@ AliBaseAODTask::SetCentralityAxis(const char* bins)
 }
 
 //________________________________________________________________________
-void 
+void
 AliBaseAODTask::SetCentralityAxis(UShort_t n, Double_t* bins)
 {
   DGUARD(fDebug,3,"Set centrality axis, %d bins", n);
   fCentAxis.Set(n, bins);
 }
 //________________________________________________________________________
-void 
+void
 AliBaseAODTask::SetCentralityAxis(Short_t low, Short_t high)
 {
   Short_t a[] = { low, high };
@@ -222,14 +222,14 @@ AliBaseAODTask::SetCentralityAxis(Short_t low, Short_t high)
 
 //____________________________________________________________________
 Bool_t
-AliBaseAODTask::Connect(const char* sumFile, 
-			const char* resFile)
+AliBaseAODTask::Connect(const char* sumFile,
+      const char* resFile)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskForwardMult", "No analysis manager to connect to.");
     return false;
-  }   
+  }
 
   // --- Check that we have an AOD input handler ---------------------
   UShort_t aodInput = 0;
@@ -243,10 +243,10 @@ AliBaseAODTask::Connect(const char* sumFile,
     return false;
   }
 
-  // Add to the manager 
+  // Add to the manager
   mgr->AddTask(this);
-  
-  // Create and connect output containers 
+
+  // Create and connect output containers
   TString sumOut;
   TString resOut;
   if      (sumFile && sumFile[0] != '\0') sumOut = sumFile;
@@ -255,30 +255,30 @@ AliBaseAODTask::Connect(const char* sumFile,
   if (sumOut.IsNull()) sumOut = AliAnalysisManager::GetCommonFileName();
   if (resOut.IsNull()) resOut = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisDataContainer* sumCon = 
-    mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, sumOut);
-  AliAnalysisDataContainer* resCon = 
-    mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
-			 AliAnalysisManager::kParamContainer, resOut);
+  AliAnalysisDataContainer* sumCon =
+    mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(),
+       AliAnalysisManager::kOutputContainer, sumOut);
+  AliAnalysisDataContainer* resCon =
+    mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(),
+       AliAnalysisManager::kParamContainer, resOut);
   mgr->ConnectInput(this, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(this, 1, sumCon);
   mgr->ConnectOutput(this, 2, resCon);
-  
+
   return true;
 }
 //____________________________________________________________________
 void
 AliBaseAODTask::UserCreateOutputObjects()
 {
-  // 
-  // Create output objects 
-  // 
+  //
+  // Create output objects
+  //
   //
   DGUARD(fDebug,1,"Create user ouput");
   fSums = new TList;
   fSums->SetName(Form("%sSums", GetName()));
-  fSums->SetOwner();
+  fSums->SetOwner(true);
 
   fTriggers = AliAODForwardMult::MakeTriggerHistogram("triggers",fTriggerMask);
   fTriggers->SetDirectory(0);
@@ -290,8 +290,8 @@ AliBaseAODTask::UserCreateOutputObjects()
   fSums->Add(fEventStatus);
 
   TAxis* vA = AliForwardUtil::MakeFullIpZAxis(20);
-  fVertex = new TH1D("vertex", "IP_{z} of all events", 
-		     vA->GetNbins(), vA->GetXbins()->GetArray());
+  fVertex = new TH1D("vertex", "IP_{z} of all events",
+         vA->GetNbins(), vA->GetXbins()->GetArray());
   fVertex->SetXTitle("IP_{z} [cm]");
   fVertex->SetYTitle("Events");
   fVertex->SetDirectory(0);
@@ -323,26 +323,26 @@ AliBaseAODTask::UserCreateOutputObjects()
 
   // Store centrality axis as a histogram - which can be merged
   TH1* cH = 0;
-  if (fCentAxis.GetXbins() && fCentAxis.GetXbins()->GetSize() > 0) 
-    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
-		  fCentAxis.GetNbins(), fCentAxis.GetXbins()->GetArray());
-  else 
-    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
-		  fCentAxis.GetNbins(), fCentAxis.GetXmin(), 
-		  fCentAxis.GetXmax());
+  if (fCentAxis.GetXbins() && fCentAxis.GetXbins()->GetSize() > 0)
+    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(),
+      fCentAxis.GetNbins(), fCentAxis.GetXbins()->GetArray());
+  else
+    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(),
+      fCentAxis.GetNbins(), fCentAxis.GetXmin(),
+      fCentAxis.GetXmax());
   cH->SetBinContent(1,1);
   cH->GetXaxis()->SetTitle(fCentAxis.GetTitle());
   cH->GetXaxis()->SetName(fCentAxis.GetName());
 
   fSums->Add(cH);
-  
+
   fSums->Add(AliForwardUtil::MakeParameter("trigger", ULong_t(fTriggerMask)));
   fSums->Add(AliForwardUtil::MakeParameter("filter",  ULong_t(fFilterMask)));
   fSums->Add(AliForwardUtil::MakeParameter("count", 1));
-  fSums->Add(AliForwardUtil::MakeParameter("alirootRev", 
-					   AliForwardUtil::AliROOTRevision()));
-  fSums->Add(AliForwardUtil::MakeParameter("alirootBranch", 
-					   AliForwardUtil::AliROOTBranch()));
+  fSums->Add(AliForwardUtil::MakeParameter("alirootRev",
+             AliForwardUtil::AliROOTRevision()));
+  fSums->Add(AliForwardUtil::MakeParameter("alirootBranch",
+             AliForwardUtil::AliROOTBranch()));
 
 
 
@@ -357,11 +357,11 @@ AliBaseAODTask::UserCreateOutputObjects()
 AliAODForwardMult*
 AliBaseAODTask::GetForward(const AliAODEvent& aod, Bool_t mc, Bool_t verb)
 {
-  // Get the forward object that contains our event selection stuff 
+  // Get the forward object that contains our event selection stuff
   TObject* obj = 0;
   if (mc) obj = aod.FindListObject("ForwardMC");
   else    obj = aod.FindListObject("Forward");
-  if (!obj) { 
+  if (!obj) {
     if (verb) AliWarning("No forward object found");
     return 0;
   }
@@ -372,9 +372,9 @@ AliBaseAODTask::GetForward(const AliAODEvent& aod, Bool_t mc, Bool_t verb)
 AliAODMultEventClass*
 AliBaseAODTask::GetMultClass(const AliAODEvent& aod, Bool_t verb)
 {
-  // Get the forward object that contains our event selection stuff 
+  // Get the forward object that contains our event selection stuff
   TObject* obj = aod.FindListObject("MultClass");
-  if (!obj) { 
+  if (!obj) {
     if (verb) AliWarning("No multiplicity event class object found");
     return 0;
   }
@@ -384,18 +384,18 @@ AliBaseAODTask::GetMultClass(const AliAODEvent& aod, Bool_t verb)
 //____________________________________________________________________
 Double_t
 AliBaseAODTask::GetCentrality(AliAODEvent&,
-			      AliAODForwardMult* forward)
+            AliAODForwardMult* forward)
 {
   Double_t cent = forward->GetCentrality();
   Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
   if (cent < 0)   cent = -.5;
   if (cent > max) cent = TMath::Max(max+.1,100.5);
-  return cent;  
+  return cent;
 }
 //____________________________________________________________________
 Double_t
 AliBaseAODTask::GetIpZ(AliAODEvent&,
-		       AliAODForwardMult* forward)
+           AliAODForwardMult* forward)
 {
   return forward->GetIpZ();
 }
@@ -404,11 +404,11 @@ AliBaseAODTask::GetIpZ(AliAODEvent&,
 AliAODCentralMult*
 AliBaseAODTask::GetCentral(const AliAODEvent& aod, Bool_t mc, Bool_t verb)
 {
-  // Get the central object that contains our event selection stuff 
+  // Get the central object that contains our event selection stuff
   TObject* obj = 0;
   if (mc) obj = aod.FindListObject("CentralClustersMC");
   else    obj = aod.FindListObject("CentralClusters");
-  if (!obj) { 
+  if (!obj) {
     if (verb) AliWarning("No central object found");
     return 0;
   }
@@ -424,14 +424,14 @@ AliBaseAODTask::GetPrimary(const AliAODEvent& aod)
   TH2D* ret = static_cast<TH2D*>(obj);
   return ret;
 }
-  
+
 //____________________________________________________________________
-void 
-AliBaseAODTask::UserExec(Option_t *) 
+void
+AliBaseAODTask::UserExec(Option_t *)
 {
-  // 
-  // Process a single event 
-  // 
+  //
+  // Process a single event
+  //
   // Parameters:
   //    option Not used
   //
@@ -442,36 +442,36 @@ AliBaseAODTask::UserExec(Option_t *)
   AliAODEvent* aod = AliForwardUtil::GetAODEvent(this);
   if (!aod) return;
 
-  // Get the forward object that contains our event selection stuff 
+  // Get the forward object that contains our event selection stuff
   AliAODForwardMult* forward = GetForward(*aod);
   if (!forward) return;
 
-  if (fFirstEvent) { 
+  if (fFirstEvent) {
     if (!PreData()) return;
     StoreInformation(*forward);
     fFirstEvent = false;
   }
 
-  // Get our ip_z and centrality 
+  // Get our ip_z and centrality
   Double_t vtx   = GetIpZ(*aod, forward);
   Float_t  cent  = GetCentrality(*aod, forward);
   fVertex->Fill(vtx);
   fCent->Fill(cent);
 
-  // Now check our event selectio up front 
+  // Now check our event selectio up front
   if (!CheckEvent(*forward)) return;
 
-  // Let user defined code do the job 
+  // Let user defined code do the job
   Bool_t taken = Event(*aod);
 
-  // Fill our histograms 
+  // Fill our histograms
   if (taken) {
     fAccVertex->Fill(vtx);
     fAccCent->Fill(cent);
   }
 
   PostData(1, fSums);
-  
+
   PostEvent();
 }
 
@@ -480,14 +480,14 @@ Bool_t
 AliBaseAODTask::CheckEvent(const AliAODForwardMult& forward)
 {
   if (HasCentrality())
-    return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-			      fCentAxis.GetXmin(), 
-			      fCentAxis.GetXmax(), 
-			      fTriggers, fEventStatus,
-			      fFilterMask);
- return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-			   0, 0, fTriggers, fEventStatus,
-			   fFilterMask);
+    return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
+            fCentAxis.GetXmin(),
+            fCentAxis.GetXmax(),
+            fTriggers, fEventStatus,
+            fFilterMask);
+ return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
+         0, 0, fTriggers, fEventStatus,
+         fFilterMask);
 }
 
 //____________________________________________________________________
@@ -509,20 +509,20 @@ AliBaseAODTask::Terminate(Option_t*)
     return;
   }
 
-  // Assign to our internal variable for use by sub-classes 
+  // Assign to our internal variable for use by sub-classes
   fSums = list;
 
-  // Create our output container 
+  // Create our output container
   TString resName(Form("%sResults", GetName()));
   if (fCloneList)
-    fResults = static_cast<TList*>(fSums->Clone(resName));
+    fResults = static_cast<TList*>(fSums->Clone(resName.Data()));
   else {
     fResults = new TList;
-    fResults->SetName(resName);
+    fResults->SetName(resName.Data());
   }
-  fResults->SetOwner();
- 
-  // Now call user defined routines 
+  fResults->SetOwner(true);
+
+  // Now call user defined routines
   if (!Finalize()) {
     AliErrorF("Failed to finalize this task (%s)", GetName());
     return;
@@ -545,11 +545,11 @@ AliBaseAODTask::Terminate(Option_t*)
 
 //____________________________________________________________________
 void
-AliBaseAODTask::Print(Option_t* /*option=""*/) const 
+AliBaseAODTask::Print(Option_t* /*option=""*/) const
 {
-  /** 
-   * Print this task 
-   * 
+  /**
+   * Print this task
+   *
    * @param option Not used
    */
   AliForwardUtil::PrintTask(*this);
@@ -562,7 +562,7 @@ AliBaseAODTask::Print(Option_t* /*option=""*/) const
   if (HasCentrality()) {
     Int_t           nBins = fCentAxis.GetNbins();
     const Double_t* bins  = fCentAxis.GetXbins()->GetArray();
-    for (Int_t i = 0; i <= nBins; i++) 
+    for (Int_t i = 0; i <= nBins; i++)
       std::cout << (i==0 ? " " : "-") << bins[i];
     std::cout << std::endl;
   }
