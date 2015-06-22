@@ -1102,9 +1102,9 @@ if(ftwoplus1){
     
   //Catgry2: Correlations Plots for SE and ME (T1, T2)
  //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t    fBins12[7] = {nBinsCentorMult,     5,   18,               36, pTbinTrigger1, pTbinTrigger2, 8};
+  Int_t    fBins12[7] = {nBinsCentorMult,     5,   18,               36, pTbinTrigger1, pTbinTrigger2, 10};
   Double_t  fMin12[7] = {fMinCentorMult,   -10.0, -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
-  Double_t  fMax12[7] = {fMaxCentorMult,  10.0,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, 6};
+  Double_t  fMax12[7] = {fMaxCentorMult,  10.0,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, 10};
   THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-T1-T2-Trk",7, fBins12, fMin12, fMax12);
   THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-T1-T2-Trk",7, fBins12, fMin12, fMax12);
         
@@ -1124,9 +1124,9 @@ if(ftwoplus1){
   
    
   //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t   fBins121plus1[6] = {nBinsCentorMult,     5,   18,                36,  pTbinTrigger1plus1,  8};
+  Int_t   fBins121plus1[6] = {nBinsCentorMult,     5,   18,                36,  pTbinTrigger1plus1,  10};
   Double_t  fMin121plus1[6] = {fMinCentorMult,   -10., -1.8, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
-  Double_t  fMax121plus1[6] = {fMaxCentorMult,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, 6};
+  Double_t  fMax121plus1[6] = {fMaxCentorMult,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, 10};
   THnCentZvtxDEtaDPhipTTpTA1plus1   = new THnSparseD(nameThnCentZvtxDEtaDPhipTTpTA1plus1.Data(),"Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
   
     }
@@ -1185,8 +1185,8 @@ if(ftwoplus1){
 
   //Munual pT tracks Values
 if(fuseVarPtBins){
-    const Int_t nvarBinspT = 8;
-    Double_t varBinspT[nvarBinspT+1] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0};
+    const Int_t nvarBinspT = 10;
+    Double_t varBinspT[nvarBinspT+1] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0};
       if(ftwoplus1){
       THnTrig1CentZvtxDEtaDPhi->GetAxis(6)->Set(nvarBinspT, varBinspT);
       THnTrig2CentZvtxDEtaDPhi->GetAxis(6)->Set(nvarBinspT, varBinspT);
