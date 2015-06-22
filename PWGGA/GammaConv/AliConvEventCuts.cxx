@@ -1616,7 +1616,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
 					jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
 					//Compare jet pT and pt Hard
-					if(jet->Pt() > 4 * ptHard){
+					if(jet->Pt() > 3 * ptHard){
 						eventAccepted= kFALSE;
 					}	
 					if (periodName.CompareTo("LHC15a3b") == 0 ){
@@ -1656,7 +1656,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 				dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
 				jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
 				//Compare jet pT and pt Hard
-				if(jet->Pt() > 4 * ptHard){
+				if(jet->Pt() > 3 * ptHard){
 					eventAccepted= kFALSE;
 				}	
 				if (periodName.CompareTo("LHC15a3b") == 0 ){
