@@ -986,14 +986,14 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
   {
     if(fGeoName=="")
     {
-      if     (runnumber < 140000) fGeoName = "EMCAL_FIRSTYEARV1";
-      else if(runnumber < 171000) fGeoName = "EMCAL_COMPLETEV1";
-      else                        fGeoName = "EMCAL_COMPLETE12SMV1";
-        
-      AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fGeoName.Data(),runnumber));
+      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
+      AliInfo(Form("Get EMCAL geometry name to <%s> for run %d",fGeometry->GetName(),runnumber));
     }
-    
-    fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
+    else
+    {
+      fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
+      AliInfo(Form("Set EMCAL geometry name to <%s>",fGeoName.Data()));
+    }
   }
   
   fGeoSet = kTRUE;
