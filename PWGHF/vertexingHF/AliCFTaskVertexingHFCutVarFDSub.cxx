@@ -146,7 +146,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fObjSpr(0x0),
   fhSparseCutVar(0x0),
   fhPtCutVar(0x0),
-  fhBptCutVar(0x0)
+  fhBptCutVar(0x0),
+  fListBdecays(0x0)
 {
   //
   //Default ctor
@@ -214,7 +215,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fObjSpr(0x0),
   fhSparseCutVar(0x0),
   fhPtCutVar(0x0),
-  fhBptCutVar(0x0)
+  fhBptCutVar(0x0),
+  fListBdecays(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -232,6 +234,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   DefineOutput(6,THnSparseF::Class());
   DefineOutput(7,TH3F::Class());
   DefineOutput(8,TH1F::Class());
+  DefineOutput(9,TList::Class());
 
   fCuts->PrintAll();
 }
@@ -256,6 +259,7 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fhSparseCutVar=c.fhSparseCutVar;
     fhPtCutVar=c.fhPtCutVar;
     fhBptCutVar=c.fhBptCutVar;
+    fListBdecays=c.fListBdecays;  // FIXME: TList copy contructor not implemented
   }
   return *this;
 }
@@ -321,7 +325,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fObjSpr(c.fObjSpr),
   fhSparseCutVar(c.fhSparseCutVar),
   fhPtCutVar(c.fhPtCutVar),
-  fhBptCutVar(c.fhBptCutVar)
+  fhBptCutVar(c.fhBptCutVar),
+  fListBdecays(c.fListBdecays) // FIXME: TList copy contructor not implemented
 {
   //
   // Copy Constructor
@@ -1511,9 +1516,10 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
     fObjSpr->InitHistos();
     fhSparseCutVar=fObjSpr->GetSparseMC();
     fhPtCutVar=fObjSpr->GetHistoPtMCgen();
+    fListBdecays=fObjSpr->GetDecayStrings();
   }
 
-  fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",48,0.,24.);
+  fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
@@ -1521,6 +1527,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   PostData(6,fhSparseCutVar);
   PostData(7,fhPtCutVar);
   PostData(8,fhBptCutVar);
+  PostData(9,fListBdecays);
 }
 
 

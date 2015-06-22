@@ -290,8 +290,9 @@ protected:
   THnSparseF* fhSparseCutVar; //
   TH3F* fhPtCutVar;  // Generator level histogram D0 pt, Nprongs of the decay, Mother pt
   TH1F* fhBptCutVar; // B0 pt spectrum
+  TList* fListBdecays; // List with B hadron decays (unique entries)
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,5); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,6); // class for HF corrections as a function of many variables
 };
 
 #endif
