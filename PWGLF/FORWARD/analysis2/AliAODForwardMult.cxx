@@ -232,30 +232,38 @@ AliAODForwardMult::GetTriggerString(UInt_t mask, const char* sep)
   static TString trg;
   trg = "";
   if (mask == 0) return "none";
-  if ((mask & kInel)        != 0x0) AppendAnd(trg, sep, "MBOR");
-  if ((mask & kInelGt0)     != 0x0) AppendAnd(trg, sep, "INEL>0");
-  if ((mask & kNSD)         != 0x0) AppendAnd(trg, sep, "MBAND");
-  if ((mask & kV0AND)       != 0x0) AppendAnd(trg, sep, "V0AND");
-  if ((mask & kA)           != 0x0) AppendAnd(trg, sep, "A");
-  if ((mask & kB)           != 0x0) AppendAnd(trg, sep, "B");
-  if ((mask & kC)           != 0x0) AppendAnd(trg, sep, "C");
-  if ((mask & kE)           != 0x0) AppendAnd(trg, sep, "E");
-  if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, sep, "MCNSD");
-  if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, sep, "NCluster>0");
-  if ((mask & kSatellite)   != 0x0) AppendAnd(trg, sep, "Satellite");
-  if ((mask & kOffline)     != 0x0) AppendAnd(trg, sep, "Offline");
-  if ((mask & kSPDOutlier)  != 0x0) AppendAnd(trg, sep, "Outlier");
-  if ((mask & kPileUp)      != 0x0) AppendAnd(trg, sep, "Pileup");
-  if ((mask & kPileupSPD)   != 0x0) AppendAnd(trg, sep, "Pileup-SPD");
-  if ((mask & kPileupTrack) != 0x0) AppendAnd(trg, sep, "Pileup-TRK");
-  if ((mask & kPileupBC)    != 0x0) AppendAnd(trg, sep, "Pileup-BC");
-  if ((mask & kPileupBins)  != 0x0) AppendAnd(trg, sep, "Pileup-BIN");
+
+  bool   isOr = mask & kInclusive;
+  UInt_t tmp  = 0x7FFFFFFF & mask;
+  TString s(sep);
+  if (s.IsNull()) s = isOr ? "|" : "&";
+  
+  if ((tmp & kInel)        != 0x0) AppendAnd(trg, s, "MBOR");
+  if ((tmp & kInelGt0)     != 0x0) AppendAnd(trg, s, "INEL>0");
+  if ((tmp & kNSD)         != 0x0) AppendAnd(trg, s, "MBAND");
+  if ((tmp & kV0AND)       != 0x0) AppendAnd(trg, s, "V0AND");
+  if ((tmp & kA)           != 0x0) AppendAnd(trg, s, "A");
+  if ((tmp & kB)           != 0x0) AppendAnd(trg, s, "B");
+  if ((tmp & kC)           != 0x0) AppendAnd(trg, s, "C");
+  if ((tmp & kE)           != 0x0) AppendAnd(trg, s, "E");
+  if ((tmp & kMCNSD)       != 0x0) AppendAnd(trg, s, "MCNSD");
+  if ((tmp & kNClusterGt0) != 0x0) AppendAnd(trg, s, "NCluster>0");
+  if ((tmp & kSatellite)   != 0x0) AppendAnd(trg, s, "Satellite");
+  if ((tmp & kOffline)     != 0x0) AppendAnd(trg, s, "Offline");
+  if ((tmp & kSPDOutlier)  != 0x0) AppendAnd(trg, s, "Outlier");
+  if ((tmp & kPileUp)      != 0x0) AppendAnd(trg, s, "Pileup");
+  if ((tmp & kPileupSPD)   != 0x0) AppendAnd(trg, s, "Pileup-SPD");
+  if ((tmp & kPileupTrack) != 0x0) AppendAnd(trg, s, "Pileup-TRK");
+  if ((tmp & kPileupBC)    != 0x0) AppendAnd(trg, s, "Pileup-BC");
+  if ((tmp & kPileupBins)  != 0x0) AppendAnd(trg, s, "Pileup-BIN");
+  if ((tmp & kADOR)        != 0x0) AppendAnd(trg, s, "ADOR");
+  if ((tmp & kADAND)       != 0x0) AppendAnd(trg, s, "ADAND");
   return trg.Data();
 }
   
 //____________________________________________________________________
 TH1I*
-AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask) 
+AliAODForwardMult::MakeTriggerHistogram(const char* name, UInt_t triggerMask) 
 {
   // 
   // Make a histogram to record triggers in. 
@@ -270,35 +278,31 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
   // Return:
   //    Newly allocated histogram 
   //
-  TString sel("");
-  TString andSel("");
-  if (mask > 0) {
-    sel    = GetTriggerString(mask);
-    andSel = GetTriggerString(mask & ~kB);
-    andSel.Prepend(" & ");
-  }
-  TH1I* ret = new TH1I(name, "Triggers", kAccepted+1, -.5, kAccepted+.5);
+  TString sel = GetTriggerString(triggerMask, "");
+  TH1I*   ret = new TH1I(name,
+			 Form("Triggers (%s)", sel.Data()),
+			 kAccepted, .5, kAccepted+.5);
   ret->SetYTitle("Events");
-  ret->SetFillColor(kRed+1);
+  ret->SetFillColor(kRed-2);
   ret->SetFillStyle(3002);
   ret->GetXaxis()->SetBinLabel(kBinAll,         "All events");
-  ret->GetXaxis()->SetBinLabel(kBinB,           Form("B (Coll.)%s", 
-						     andSel.Data()));
-  ret->GetXaxis()->SetBinLabel(kBinA,           Form("A%s", andSel.Data()));
-  ret->GetXaxis()->SetBinLabel(kBinC,           Form("C%s", andSel.Data()));
-  ret->GetXaxis()->SetBinLabel(kBinE,           Form("E%s", andSel.Data()));
   ret->GetXaxis()->SetBinLabel(kBinInel,        "Coll. & MBOR");
   ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "Coll. & MBOR&&nTracklet>0");
   ret->GetXaxis()->SetBinLabel(kBinNSD,         "Coll. & V0AND||FASTOR>5");
   ret->GetXaxis()->SetBinLabel(kBinV0AND,       "Coll. & V0AND");
-  ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
+  ret->GetXaxis()->SetBinLabel(kBinADOR,        "Coll. & ADOR");
+  ret->GetXaxis()->SetBinLabel(kBinADAND,       "Coll. & ADAND");
+  ret->GetXaxis()->SetBinLabel(kBinB,           "B (Coll.) & Sel.");
+  ret->GetXaxis()->SetBinLabel(kBinA,           "A & Sel.");
+  ret->GetXaxis()->SetBinLabel(kBinC,           "C & Sel.");
+  ret->GetXaxis()->SetBinLabel(kBinE,           "E & Sel.");
   ret->GetXaxis()->SetBinLabel(kBinSatellite,   "Satellite");
+  ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
   ret->GetXaxis()->SetBinLabel(kBinNClusterGt0, "w/N_{cluster}>1");
   ret->GetXaxis()->SetBinLabel(kWithVertex,     "w/Vertex");
-  ret->GetXaxis()->SetBinLabel(kWithTrigger,    Form("w/Selected trigger (%s)",
-						     sel.Data()));
+  ret->GetXaxis()->SetBinLabel(kWithTrigger,    "w/Selected trigger");
   ret->GetXaxis()->SetBinLabel(kAccepted,       "Accepted by cut");
   ret->GetXaxis()->SetNdivisions(kAccepted, false);
   ret->SetStats(0);
@@ -350,6 +354,8 @@ AliAODForwardMult::MakeTriggerMask(const char* what, const char* sep)
   TObjArray*  parts = trgs.Tokenize(sep);
   TObjString* trg;
   TIter       next(parts);
+  if      (sep && sep[0] == '|') trgMask |= kInclusive; 
+  else if (sep && sep[0] == '&') trgMask &= ~kInclusive;  
   while ((trg = static_cast<TObjString*>(next()))) { 
     TString s(trg->GetString());
     s.Strip(TString::kBoth, ' ');
@@ -379,6 +385,9 @@ AliAODForwardMult::MakeTriggerMask(const char* what, const char* sep)
     else if (s.CompareTo("PILEUP-BIN") == 0) trgMask |= kPileupBins;
     else if (s.CompareTo("PILEUP-BC")  == 0) trgMask |= kPileupBC;
     else if (s.CompareTo("PILEUP")     == 0) trgMask |= kPileUp;
+    else if (s.CompareTo("ADOR")       == 0) trgMask |= kADOR;
+    else if (s.CompareTo("ADAND")      == 0) trgMask |= kADAND;
+    else if (s.BeginsWith("INCL"))           trgMask |= kInclusive;
     // trgMask &= ~(kInel|kInelGt0|kNSD|kV0AND|kMCNSD);
     else 
       AliWarningGeneral("MakeTriggerMask", 
@@ -388,13 +397,104 @@ AliAODForwardMult::MakeTriggerMask(const char* what, const char* sep)
   return trgMask;
 }
 
+
+//____________________________________________________________________
+void
+AliAODForwardMult::FillTriggerHistogram(UInt_t triggerMask,
+					UInt_t trg,
+					TH1* hist)
+{
+  if (!hist) return;
+
+  UInt_t tmp = triggerMask & ~kB;
+  hist->Fill(kBinAll);
+  if (IsTriggerBits(kB|kInel,    trg)) hist->Fill(kBinInel);
+  if (IsTriggerBits(kB|kInelGt0, trg)) hist->Fill(kBinInelGt0);
+  if (IsTriggerBits(kB|kNSD,     trg)) hist->Fill(kBinNSD);
+  if (IsTriggerBits(kB|kV0AND,   trg)) hist->Fill(kBinV0AND);
+  if (IsTriggerBits(kB|kADOR,    trg)) hist->Fill(kBinADOR);
+  if (IsTriggerBits(kB|kADAND,   trg)) hist->Fill(kBinADAND);
+  if (IsTriggerBits(kB,          trg) &&
+      IsTriggerBits(tmp,         trg)) hist->Fill(kBinB);
+  if (IsTriggerBits(kA,          trg) &&
+      IsTriggerBits(tmp,         trg)) hist->Fill(kBinA);
+  if (IsTriggerBits(kC,          trg) &&
+      IsTriggerBits(tmp,         trg)) hist->Fill(kBinC);
+  if (IsTriggerBits(kE,          trg) &&
+      IsTriggerBits(tmp,         trg)) hist->Fill(kBinE);
+  if (IsTriggerBits(kSatellite,  trg)) hist->Fill(kBinSatellite);
+  if (IsTriggerBits(kMCNSD,      trg)) hist->Fill(kBinMCNSD);
+  if (IsTriggerBits(kPileUp,     trg)) hist->Fill(kBinPileUp);
+  if (IsTriggerBits(kOffline,    trg)) hist->Fill(kBinOffline);
+  if (IsTriggerBits(kNClusterGt0,trg)) hist->Fill(kBinNClusterGt0);
+  if (IsTriggerBits(triggerMask,trg) &&
+      !IsTriggerBits(kB|tmp,trg))
+    ::Warning("CheckEvent", "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
+	      trg, triggerMask, tmp, tmp|kB);
+}
+
 //____________________________________________________________________
 Bool_t
-AliAODForwardMult::CheckEvent(Int_t    triggerMask,
+AliAODForwardMult::FilterEvent(Double_t vzMin, Double_t vzMax,
+			       TH1* hist, TH1* status,
+			       UInt_t filterMask) const
+{
+  // Check if event is SPD outlier
+  if (filterMask & kSPDOutlier && IsTriggerBits(kSPDOutlier)) {
+    if (status) status->Fill(kOutlierEvent);
+    return false;
+  }
+  // Check for pileup
+  UInt_t checkPileup = (filterMask & (kPileUp      |
+				      kPileupSPD   |
+				      kPileupTrack |
+				      kPileupBC    |
+				      kPileupBins));
+  if (checkPileup && IsTriggerBits(kInclusive | checkPileup)) {
+    if (status) status->Fill(kIsPileup);
+    return false;
+  }
+  UInt_t other = filterMask & ~(kPileUp      |
+				kPileupSPD   |
+				kPileupTrack |
+				kPileupBC    |
+				kPileupBins  | 
+				kSPDOutlier);
+  // Unspecified stuff 
+  if (other && IsTriggerBits(kInclusive | other)) {
+    if (status) status->Fill(kIsFilterOut);
+    return false;
+  }
+  // Got a non-vetoed trigger 
+  if (hist) hist->Fill(kWithTrigger);
+  
+  // Check that we have a valid vertex
+  if (vzMin < vzMax && !HasIpZ()) {
+    if (status) status->Fill(kNoVertex);
+    return false;
+  }
+  // Got valid vertex 
+  if (hist) hist->Fill(kWithVertex);
+
+  // Check that vertex is within cuts 
+  if (vzMin < vzMax && !InRange(vzMin, vzMax)) {
+    if (status) status->Fill(kWrongVertex);
+    return false;
+  }
+  // Trigger and vertex 
+  if (hist)   hist->Fill(kAccepted);
+  if (status) status->Fill(kGoodEvent);
+
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t
+AliAODForwardMult::CheckEvent(UInt_t   triggerMask,
 			      Double_t vzMin, Double_t vzMax,
 			      Double_t cMin,  Double_t cMax, 
 			      TH1*     hist,  TH1*     status,
-			      Int_t    filterMask) const 
+			      UInt_t   filterMask) const 
 {
   // 
   // Check if event meets the passses requirements.   
@@ -424,78 +524,14 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (status) status->Fill(kWrongCentrality);
     return false;
   }
-
-  if (hist) { 
-    Int_t tmp = triggerMask & ~kB;
-    hist->AddBinContent(kBinAll);
-    if (IsTriggerBits(kB|tmp))          hist->AddBinContent(kBinB);
-    if (IsTriggerBits(kA|tmp))          hist->AddBinContent(kBinA);
-    if (IsTriggerBits(kC|tmp))          hist->AddBinContent(kBinC);
-    if (IsTriggerBits(kE|tmp))          hist->AddBinContent(kBinE);
-    if (IsTriggerBits(kB|kInel))        hist->AddBinContent(kBinInel);
-    if (IsTriggerBits(kB|kInelGt0))     hist->AddBinContent(kBinInelGt0);
-    if (IsTriggerBits(kB|kNSD))         hist->AddBinContent(kBinNSD);
-    if (IsTriggerBits(kB|kV0AND))       hist->AddBinContent(kBinV0AND);
-    if (IsTriggerBits(kPileUp))         hist->AddBinContent(kBinPileUp);
-    if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
-    if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);
-    if (IsTriggerBits(kNClusterGt0))    hist->AddBinContent(kBinNClusterGt0);
-    if (IsTriggerBits(kSatellite))      hist->AddBinContent(kBinSatellite);
-    if (IsTriggerBits(triggerMask) && !IsTriggerBits(kB|tmp))
-      Warning("CheckEvent", "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
-	     fTriggers, triggerMask, tmp, tmp|kB);
-  }
+  FillTriggerHistogram(triggerMask, fTriggers, hist);
+  
   // Check if we have an event of interest. 
-  Int_t mask = triggerMask; //|kB
-  if (!IsTriggerBits(mask)) { 
+  if (!IsTriggerBits(triggerMask)) {
     if (status) status->Fill(kWrongTrigger);
     return false;
   }
-  // Check if event is SPD outlier
-  if (filterMask & kSPDOutlier && IsTriggerBits(kSPDOutlier)) {
-    if (status) status->Fill(kOutlierEvent);
-    return false;
-  }
-  // Check for pileup
-  UInt_t checkPileup = (filterMask & (kPileUp      |
-				      kPileupSPD   |
-				      kPileupTrack |
-				      kPileupBC    |
-				      kPileupBins));
-  if (checkPileup && IsTriggerOrBits(checkPileup)) {
-    if (status) status->Fill(kIsPileup);
-    return false;
-  }
-  UInt_t other = filterMask & ~(kPileUp      |
-				kPileupSPD   |
-				kPileupTrack |
-				kPileupBC    |
-				kPileupBins  | 
-				kSPDOutlier);
-  // Unspecified stuff 
-  if (other && IsTriggerOrBits(other)) {
-    if (status) status->Fill(kIsFilterOut);
-    return false;
-  }
-  
-  if (hist) hist->AddBinContent(kWithTrigger);
-  
-  // Check that we have a valid vertex
-  if (vzMin < vzMax && !HasIpZ()) {
-    if (status) status->Fill(kNoVertex);
-    return false;
-  }
-  if (hist) hist->AddBinContent(kWithVertex);
-
-  // Check that vertex is within cuts 
-  if (vzMin < vzMax && !InRange(vzMin, vzMax)) {
-    if (status) status->Fill(kWrongVertex);
-    return false;
-  }
-  if (hist) hist->AddBinContent(kAccepted);
-  
-  if (status) status->Fill(kGoodEvent);
-  return true;
+  return FilterEvent(vzMin,vzMax,hist,status,filterMask);
 }
 
 //____________________________________________________________________
