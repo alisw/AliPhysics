@@ -8,8 +8,6 @@
 
 #include "AliEveInit.h"
 
-//#include <AliQAHistViewer.h>
-
 #include <TString.h>
 #include <TGrid.h>
 #include <TSystem.h>
@@ -59,69 +57,70 @@
 
 using namespace std;
 
-AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventManager::EDataSource defaultDataSource,bool storageManager) :
-    fCDBuri(cdbUri),
+AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defaultDataSource,bool storageManager) :
     fPath(path)
 {
-    //-----------------------------------------------------------------------------------------
-    //  Set all preferences here
-    //
-    fShowHLTESDtree = kFALSE;       // show HLT ESD tree
-    Bool_t showMuon = kTRUE;        // show MUON
+    //==============================================================================
+    // Reading preferences from config file
+    //==============================================================================
     
-    Color_t colorTRD = kGray;      // color of TRD modules
-    Color_t colorMUON = kGray;     // color of MUON modules
+    TEnv settings;
+    GetConfig(&settings);
     
-//    bool customPreset = true;            // should one of the following custom presets be used
-    Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-    Width_t width = 2;
-    bool dashNoRefit = true;
-    bool drawNoRefit = true;
-    
-    bool drawClusters = false;
-    bool drawKinks = false;
-    bool drawV0s = false;
-    bool drawCascades = false;
-    bool saveViews = true;
-    
-    //    Color_t colors[9] = {kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen}; // preset for cosmics
-    
-    //
-    //-----------------------------------------------------------------------------------------
+    fShowHLTESDtree       = settings.GetValue("HLTESDtree.show", false);      // show HLT ESD tree
+    bool showMuon         = settings.GetValue("MUON.show", true);             // show MUON's geom
+    Color_t colorTRD      = settings.GetValue("TRD.geom.color", kGray);       // color of TRD modules
+    Color_t colorMUON     = settings.GetValue("MUON.geom.color",kGray);       // color of MUON modules
 
-    cout<<"creating manager...";
+    Width_t width         = settings.GetValue("tracks.width",2);              // width of all ESD tracks
+    bool dashNoRefit      = settings.GetValue("tracks.noRefit.dash",true);    // dash no-refit tracks
+    bool drawNoRefit      = settings.GetValue("tracks.noRefit.show",true);    // show no-refit tracks
+    bool tracksByType     = settings.GetValue("tracks.byType.show",true);     // colorize tracks by PID
+    bool tracksByCategory = settings.GetValue("tracks.byCategory.show",false);// colorize tracks by reconstruction quality
+
+    bool autoloadEvents   = settings.GetValue("events.autoload.set",false);   // set autoload by default
+    
+    bool drawClusters     = settings.GetValue("clusters.show",false);          // show clusters
+    bool drawKinks        = settings.GetValue("kinks.show",false);             // show kinks
+    bool drawV0s          = settings.GetValue("V0s.show",false);               // show V0s
+    bool drawCascades     = settings.GetValue("cascades.show",false);          // show cascades
+    bool drawRawData      = settings.GetValue("rawData.show",false);           // show raw data
+    bool drawPrimaryVertex= settings.GetValue("primary.vertex.show",false);    // show primary vertex
+    bool drawHits         = settings.GetValue("hits.show",false);              // show hits
+    bool drawDigits       = settings.GetValue("digits.show",false);              // show digits
+    bool saveViews        = settings.GetValue("ALICE_LIVE.send",false);       // send pictures to ALICE LIVE
+    
+    TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
+    
+    
+    cout<<"\n\nOCDB path:"<<ocdbStorage<<endl<<endl<<endl;
+    
+    bool customPreset = false; // should custom colors presets be used
+    
+    //==============================================================================
+    // Event Manager and different data sources
+    //==============================================================================
+
     AliEveEventManager *man = new AliEveEventManager(defaultDataSource);
-    cout<<"created"<<endl;
+    
+    AliEveEventManager::SetCdbUri(ocdbStorage);
     
     if (gSystem->Getenv("ALICE_ROOT") != 0)
     {
         gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
         gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
     }
-
-    
-    if (cdbUri.IsNull() && !AliCDBManager::Instance()->IsDefaultStorageSet())
-    {
-        gEnv->SetValue("Root.Stacktrace", "no");
-        Fatal("AliEveInit", "OCDB path MUST be specified as the first argument.");
-    }
     
     AliEveDataSourceOffline *dataSourceOffline  = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
     AliEveDataSourceHLTZMQ  *dataSourceHLT      = (AliEveDataSourceHLTZMQ*) man->GetDataSourceHLTZMQ();
     
     dataSourceOffline->AddAODfriend("AliAOD.VertexingHF.root");
-
-    TString ocdbStorage;
-    if (gSystem->Getenv("ocdbStorage"))
-        ocdbStorage=gSystem->Getenv("ocdbStorage");
-    AliCDBManager::Instance()->SetDefaultStorage(ocdbStorage);
     
     ImportMacros();
     Init();
     
     TEveUtil::AssertMacro("VizDB_scan.C");
     
-    AliEveMacroExecutor *exec = man->GetExecutor();
     TEveBrowser *browser = gEve->GetBrowser();
     browser->ShowCloseTab(kFALSE);
     
@@ -148,56 +147,54 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     // Registration of per-event macros
     //==============================================================================
     
+    AliEveMacroExecutor *exec = man->GetExecutor();
+    
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C", "kine_tracks", "", kFALSE));
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ITS", "its_hits.C",    "its_hits",    "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TPC", "tpc_hits.C",    "tpc_hits",    "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits T0",  "t0_hits.C",     "t0_hits",     "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits FMD", "fmd_hits.C",    "fmd_hits",    "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ACORDE", "acorde_hits.C",    "acorde_hits",    "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits EMCAL", "emcal_hits.C",    "emcal_hits",    "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TOF",  "tof_hits.C",     "tof_hits",     "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TRD", "trd_hits.C",    "trd_hits",    "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits VZERO", "vzero_hits.C",    "vzero_hits",    "", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ITS", "its_hits.C",    "its_hits",    "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TPC", "tpc_hits.C",    "tpc_hits",    "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits T0",  "t0_hits.C",     "t0_hits",     "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits FMD", "fmd_hits.C",    "fmd_hits",    "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ACORDE", "acorde_hits.C",    "acorde_hits",    "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits EMCAL", "emcal_hits.C",    "emcal_hits",    "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TOF",  "tof_hits.C",     "tof_hits",     "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TRD", "trd_hits.C",    "trd_hits",    "", drawHits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits VZERO", "vzero_hits.C",    "vzero_hits",    "", drawHits));
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG ITS",     "its_digits.C",  "its_digits",  "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG TPC",     "tpc_digits.C",  "tpc_digits",  "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG TOF",     "tof_digits.C",  "tof_digits",  "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG HMPID",   "hmpid_digits.C","hmpid_digits","", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG FMD",     "fmd_digits.C",  "fmd_digits",  "", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG ITS",     "its_digits.C",  "its_digits",  "", drawDigits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG TPC",     "tpc_digits.C",  "tpc_digits",  "", drawDigits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG TOF",     "tof_digits.C",  "tof_digits",  "", drawDigits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG HMPID",   "hmpid_digits.C","hmpid_digits","", drawDigits));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG FMD",     "fmd_digits.C",  "fmd_digits",  "", drawDigits));
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw",     "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw",     "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw",     "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW HMPID",   "hmpid_raw.C",   "hmpid_raw",   "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW T0",      "t0_raw.C",      "t0_raw",      "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw",     "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw",   "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw",  "", kFALSE));
-    /*
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",             "primary_vertex.C", "primary_vertex",             "",                kTRUE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse",     "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",         "primary_vertex.C", "primary_vertex_box",         "kFALSE, 3, 3, 3", kFALSE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX SPD",         "primary_vertex.C", "primary_vertex_spd",         "",                kTRUE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse SPD", "primary_vertex.C", "primary_vertex_ellipse_spd", "",                kTRUE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box SPD",     "primary_vertex.C", "primary_vertex_box_spd",     "kFALSE, 3, 3, 3", kFALSE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX TPC",         "primary_vertex.C", "primary_vertex_tpc",         "",                kFALSE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse TPC", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
-     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box TPC",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
-     */
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_onfly","",drawV0s));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw",     "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw",     "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw",     "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW HMPID",   "hmpid_raw.C",   "hmpid_raw",   "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW T0",      "t0_raw.C",      "t0_raw",      "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw",     "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw",   "", drawRawData));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw",  "", drawRawData));
+    
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",             "primary_vertex.C", "primary_vertex",             "",                drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse",     "primary_vertex.C", "primary_vertex_ellipse",     "",                drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",         "primary_vertex.C", "primary_vertex_box",         "kFALSE, 3, 3, 3", drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX SPD",         "primary_vertex.C", "primary_vertex_spd",         "",                drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse SPD", "primary_vertex.C", "primary_vertex_ellipse_spd", "",                drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box SPD",     "primary_vertex.C", "primary_vertex_box_spd",     "kFALSE, 3, 3, 3", drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX TPC",         "primary_vertex.C", "primary_vertex_tpc",         "",                drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse TPC", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                drawPrimaryVertex));
+     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box TPC",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", drawPrimaryVertex));
+    
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_onfly","",  drawV0s));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_offline","",drawV0s));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",              "esd_V0","",drawV0s));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade_points.C",  "esd_cascade_points","",drawCascades));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade.C",         "esd_cascade","",drawCascades));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points","",drawKinks));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink","",drawKinks));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",              "esd_V0","",               drawV0s));
+
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade_points.C",  "esd_cascade_points","", drawCascades));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade.C",         "esd_cascade","",        drawCascades));
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks",              "esd_tracks.C", "esd_tracks",              "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS standalone",          "esd_tracks.C", "esd_tracks_ITS_standalone",              "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS",          "esd_tracks.C", "esd_tracks_ITS",              "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks TPC",           "esd_tracks.C", "esd_tracks_TPC",              "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MI",           "esd_tracks.C", "esd_tracks_MI",           "", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points","",    drawKinks));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink","",           drawKinks));
     
     // default appearance:
     //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
@@ -206,40 +203,27 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
     
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by anal cuts", "esd_tracks.C", "esd_tracks_by_anal_cuts", "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks Lego", "lego.C", "lego", "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks Beams Info", "beams_info.C", "beams_info", "", kFALSE));
-    
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklets SPD", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kTRUE));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
     
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters",     "clusters.C",     "clusters"    ,"",drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "its_clusters.C", "its_clusters","",drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "tpc_clusters.C", "tpc_clusters","",drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TRD", "trd_clusters.C", "trd_clusters","",drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TOF", "tof_clusters.C", "tof_clusters","",drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "its_clusters.C", "its_clusters","",     drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "tpc_clusters.C", "tpc_clusters","",     drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TRD", "trd_clusters.C", "trd_clusters","",     drawClusters));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TOF", "tof_clusters.C", "tof_clusters","",     drawClusters));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters HMPID", "hmpid_clusters.C","hmpid_clusters","",drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters PHOS", "phos_clusters.C","phos_clusters","",drawClusters));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "vplot_tpc.C",    "vplot_tpc", "", kFALSE));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA HF",   "aod_HF.C",   "aod_HF",   "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA Jets", "jetplane.C", "jetplane", "", kFALSE));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "DUMP VZERO",   "vzero_dump.C",   "vzero_dump",   "", kFALSE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters PHOS", "phos_clusters.C","phos_clusters","",   drawClusters));
     
     if (showMuon)
     {
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM TrackRef MUON", "muon_trackRefs.C", "muon_trackRefs", "kTRUE", kFALSE));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON", "muon_raw.C", "muon_raw", "", kFALSE));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C", "muon_digits", "", kFALSE));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", kTRUE));
+        exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON", "muon_raw.C", "muon_raw", "", drawRawData));
+        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C", "muon_digits", "", drawDigits));
+        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", drawClusters));
         exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
     }
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
-//    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "PT Histo 2D", "histo2d.C", "histo2d", "", kTRUE));
     
     
     //==============================================================================
@@ -303,6 +287,8 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     gEve->Redraw3D(true);
     gSystem->ProcessEvents();
     
+    man->GotoEvent(0);
+    
     gEve->EditElement(g_trkcnt);
     gEve->Redraw3D();
     
@@ -316,22 +302,23 @@ AliEveInit::AliEveInit(const TString& path, const TString& cdbUri,AliEveEventMan
     glv2->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     glv3->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     
-//    man->GotoEvent(0);
-    
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
     gEve->Redraw3D(true);
     
-//        man->SetESDcolors(colors);
+    if(customPreset){
+        Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
+        man->SetESDcolorsByType(colors);
+    }
     man->SetESDwidth(width);
     man->SetESDdashNoRefit(dashNoRefit);
     man->SetESDdrawNoRefit(drawNoRefit);
     
-    man->SetESDtracksByCategory(false);
-    man->SetESDtracksByType(true);
+    man->SetESDtracksByCategory(tracksByCategory);
+    man->SetESDtracksByType(tracksByType);
     
     man->SetSaveViews(saveViews);
-    man->SetAutoLoad(true);// set autoload by default
+    man->SetAutoLoad(autoloadEvents);// set autoload by default
 }
 
 void AliEveInit::Init()
@@ -359,23 +346,23 @@ void AliEveInit::Init()
     dataSource->SetAssertElements(0,0,0,0);
     
     // Open event
-    if (fPath.BeginsWith("alien:") || !fCDBuri.BeginsWith("local:"))
+    if (fPath.BeginsWith("alien:"))
     {
         if (gGrid != 0)
         {
-            Info("alieve_init", "TGrid already initializied. Skiping checks and initialization.");
+            Info("AliEveInit::Init()", "TGrid already initializied. Skiping checks and initialization.");
         }
         else
         {
-            Info("alieve_init", "AliEn requested - connecting.");
+            Info("AliEveInit::Init()", "AliEn requested - connecting.");
             if (gSystem->Getenv("GSHELL_ROOT") == 0)
             {
-                Error("alieve_init", "AliEn environment not initialized. Aborting.");
+                Error("AliEveInit::Init()", "AliEn environment not initialized. Aborting.");
                 gSystem->Exit(1);
             }
             if (TGrid::Connect("alien") == 0)
             {
-                Error("alieve_init", "TGrid::Connect() failed. Aborting.");
+                Error("AliEveInit::Init()", "TGrid::Connect() failed. Aborting.");
                 gSystem->Exit(1);
             }
         }
@@ -435,4 +422,17 @@ void AliEveInit::ImportMacros()
     }
     gSystem->cd(hack);
 }
+
+void AliEveInit::GetConfig(TEnv *settings)
+{
+    if(settings->ReadFile("~/eve_config", kEnvUser) < 0){
+        cout<<"Warning - could not find eve_config in home directory! Trying in $ALICE_ROOT/EVE/EveBase/"<<endl;
+        if(settings->ReadFile(Form("%s/EVE/EveBase/eve_config",gSystem->Getenv("ALICE_ROOT")), kEnvUser) < 0){
+            cout<<"Error - could not find eve_config file!."<<endl;
+            exit(0);
+        }
+    }
+}
+
+
 

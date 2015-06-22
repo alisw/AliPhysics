@@ -129,10 +129,6 @@ public:
     void NewEventDataLoaded();  // *SIGNAL*
     void NewEventLoaded();      // *SIGNAL*
     void NoEventLoaded();       // *SIGNAL*
-    void StorageManagerOk();    // *SIGNAL*
-    void StorageManagerDown();  // *SIGNAL*
-    void EventServerOk();       // *SIGNAL*
-    void EventServerDown();     // *SIGNAL*
     
     void AutoLoadNextEvent();
 private:

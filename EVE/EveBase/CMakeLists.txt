@@ -134,3 +134,4 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install(FILES "eve_config" DESTINATION EVE/EveBase)
