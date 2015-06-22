@@ -21,38 +21,41 @@
 ClassImp(AliAnalysisTaskESDfilterEMCALEventSelect) ;
 /// \endcond
 
-//____________________________________________________________________________________
+///
 /// Default constructor.
+///
 //____________________________________________________________________________________
 AliAnalysisTaskESDfilterEMCALEventSelect::AliAnalysisTaskESDfilterEMCALEventSelect() :
 AliAnalysisTaskESDfilter("ESD Filte : EMCAL selected events"), 
 fEnergyCut(10),            fNcellsCut (2),
 fRecoUtils(0x0),           
-fGeometry(0),              fGeoName("EMCAL_COMPLETE12SMV1")        
+fGeometry(0),              fGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM")        
 {
   fRecoUtils = new AliEMCALRecoUtils;
 }		      
 
-//____________________________________________________________________________________________________
+///
 /// Constructor.
+///
 //____________________________________________________________________________________________________
 AliAnalysisTaskESDfilterEMCALEventSelect::AliAnalysisTaskESDfilterEMCALEventSelect(const char *name) :
 AliAnalysisTaskESDfilter(name), 
 fEnergyCut(10),            fNcellsCut (2),
 fRecoUtils(0x0),           
-fGeometry(0),              fGeoName("EMCAL_COMPLETE12SMV1")
+fGeometry(0),              fGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM")
 {
   fRecoUtils = new AliEMCALRecoUtils;
 }
 
-//_________________________________________________________________
+///
 /// \return True if there is signal in EMCal
 /// Accept event given there is a EMCAL cluster with
 /// enough energy and cells.
+///
 //_________________________________________________________________
 Bool_t AliAnalysisTaskESDfilterEMCALEventSelect::AcceptEventEMCAL()
 {
-  if(!fGeometry)  fGeometry  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1");
+  if(!fGeometry)  fGeometry  = AliEMCALGeometry::GetInstance(fGeoName);
 
   Int_t           nCluster = InputEvent() -> GetNumberOfCaloClusters();
   AliVCaloCells * caloCell = InputEvent() -> GetEMCALCells();
@@ -77,10 +80,11 @@ Bool_t AliAnalysisTaskESDfilterEMCALEventSelect::AcceptEventEMCAL()
   return kFALSE;
 }
 
-//_________________________________________________________________
+///
 /// Main method, execute per event:
 /// * Check if the events contains what we want in EMCAL, if not, do not copy the ESD into AOD
 /// * Continue the processing in the same way as in the ESD filter.
+///
 //_________________________________________________________________
 void AliAnalysisTaskESDfilterEMCALEventSelect::UserExec(Option_t *)
 {
