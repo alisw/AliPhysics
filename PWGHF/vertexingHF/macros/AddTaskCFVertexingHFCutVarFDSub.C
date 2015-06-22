@@ -806,7 +806,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
   // ----- output data -----
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  TString output1name="", output2name="", output3name="",output4name="", output5name="", output6name="", output7name="", output8name="";
+  TString output1name="", output2name="", output3name="",output4name="", output5name="", output6name="", output7name="", output8name="", output9name="";
   output2name=nameContainer;
   output3name=nameCorr;
   output4name= "Cuts";
@@ -814,6 +814,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
   output6name= "SparseCutVarStudies";
   output7name= "PtCutVarStudies";
   output8name= "BptCutVarStudies";
+  output9name= "BdecayList";
   if(!isKeepDfromB) {
     outputfile += ":PWG3_D2H_CFtaskD0toKpi";
     output1name="CFHFchist0";
@@ -823,6 +824,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
     output6name+="_cOnly";
     output7name+="_cOnly";
     output8name+="_cOnly";
+    output9name+="_cOnly";
   }
   else  if(isKeepDfromBOnly){
     outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
@@ -833,6 +835,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
     output6name+="_bOnly";
     output7name+="_bOnly";
     output8name+="_bOnly";
+    output9name+="_bOnly";
   }
   else{
     outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB";
@@ -843,6 +846,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
     output6name+="_all";
     output7name+="_all";
     output8name+="_all";
+    output9name+="_all";
   }
 
   outputfile += suffix;
@@ -852,6 +856,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
   output6name += suffix;
   output7name += suffix;
   output8name += suffix;
+  output9name += suffix;
 
   //now comes user's output objects :
   // output TH1I for event counting
@@ -864,12 +869,10 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   // estimators list
   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, THnSparseF::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(output7name, TH3F::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-
   AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(output8name, TH1F::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer(output9name, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
 
   mgr->AddTask(task);
@@ -883,6 +886,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
   mgr->ConnectOutput(task,6,coutput6);
   mgr->ConnectOutput(task,7,coutput7);
   mgr->ConnectOutput(task,8,coutput8);
+  mgr->ConnectOutput(task,9,coutput9);
 
   return task;
 }

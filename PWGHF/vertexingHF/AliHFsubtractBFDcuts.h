@@ -23,12 +23,16 @@
 //     Felix Reidt  <felix.reidt@cern.ch>                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+#include <vector>
+
 #include "TNamed.h"
 #include "THnSparse.h"
 #include "TH3F.h"
 
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
+
+class TList;
 
 class AliHFsubtractBFDcuts : public TNamed{
 
@@ -50,15 +54,16 @@ public:
   void SetFillMC (Bool_t fillMC = kTRUE) {fIsMC = fillMC;}
 
   void FillSparses(AliAODRecoDecayHF2Prong *dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
+  TList* GetDecayStrings() { return fDecayStrList; }
 
 private:
   AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c);
   AliHFsubtractBFDcuts operator=(const AliHFsubtractBFDcuts& c);
 
   void GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand);
-  Bool_t AnalyseDecay();                 // check in which decay process a particle was created
-  void   CountProngs(Int_t labCurrMother, Int_t labCurrExcl);  // counting the prongs of labCurrMother,
-                                                               // labCurrExcl is assumed to be a stable particle
+  Bool_t AnalyseDecay(Bool_t generateString);                  // check in which decay process a particle was created
+  void   CountProngs(Int_t labCurrMother, Int_t labCurrExcl, Bool_t generateString);
+  // counting the prongs of labCurrMother, labCurrExcl is assumed to be a stable particle
   Bool_t IsStable(Int_t labProng) const;       // Is that prong a stable particle?
   Bool_t IsInAcceptance(Int_t labProng) const; // Is that prong within the fiducial acceptance
 
@@ -70,15 +75,19 @@ private:
   THnSparseF* fCutsMC;            //! THnSparse for cut variables (MC at PID level, w/o mass axis)
 
   // Event specific variables
-  TClonesArray* fMCarray;    //! TClonesArray holding the particles of the event to be processed
-  Int_t         fLabCand;    // Label of the candidate D0 (charmed hadron in case of a chained decay)
-  Int_t         fLabMother;  // Label of the mother of the candidate D0 (or charmed hadron)
-  UInt_t        fNprongs;    // Number of prongs, counting the first charmed hadron as one particle
-  Bool_t        fDecayChain; // Chained decay of charmed hadrons
-  Double_t      fMotherPt;   // Transverse momentum of the mother particle (B hadron in case of feed-down,
-                             // the charmed hadron itsself in case of prompt production)
+  TClonesArray* fMCarray;      //! TClonesArray holding the particles of the event to be processed
+  Int_t         fLabCand;      // Label of the candidate D0 (charmed hadron in case of a chained decay)
+  Int_t         fLabMother;    // Label of the mother of the candidate D0 (or charmed hadron)
+  UInt_t        fNprongs;      // Number of prongs, counting the first charmed hadron as one particle
+  UInt_t        fNprongsInAcc; // Number of prongs, counting only the particles within acceptance
+  Bool_t        fDecayChain;   // Chained decay of charmed hadrons
+  Double_t      fMotherPt;     // Transverse momentum of the mother particle (B hadron in case of feed-down,
+                               // the charmed hadron itsself in case of prompt production)
+  Bool_t             fGenerateDecayList; // Generate the list containig strings with all PDG codes of the decay prongs
+  std::vector<Int_t> fDecayProngs;       // PDG codes of the daughters separated
+  TList*             fDecayStrList;      //! List with all decay strings
 
-  ClassDef(AliHFsubtractBFDcuts,5);
+  ClassDef(AliHFsubtractBFDcuts,6);
 };
 
 #endif
