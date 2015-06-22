@@ -146,6 +146,7 @@ void AliReducedHighPtEventCreator::UserCreateOutputObjects() {
  * \return True if the event was selected, false otherwise
  */
 Bool_t AliReducedHighPtEventCreator::Run() {
+  AliDebug(1, "Starting creation of the reconstructed event");
   if(!fCaloClusters){
     AliError("Cluster container missing");
     return kFALSE;
@@ -154,7 +155,12 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     AliError("Track container missing");
     return kFALSE;
   }
-  if(this->fInputHandler->IsEventSelected() & fEventSelectionBits) return kFALSE;
+  if(!(this->fInputHandler->IsEventSelected() & fEventSelectionBits)){
+    AliDebug(1, "Trigger not selected");
+    return kFALSE;
+  } else {
+    AliDebug(1, "Trigger selected");
+  }
   if(!SelectEvent(fInputEvent)) return kFALSE;
   new(fOutputEvent) AliReducedHighPtEvent(kTRUE);
 
@@ -310,12 +316,12 @@ void AliReducedHighPtEventCreator::AddVirtualTrackSelection(
  * \return True if the event was selected, false otherwise
  */
 Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
-  if(fApplyCentralitySelection && fInputEvent->GetCentrality()){
+  if(fApplyCentralitySelection && InputEvent()->GetCentrality()){
     AliDebug(1, Form("Centrality selection applied in range %f - %f\n", fSelectCentralityRange[0], fSelectCentralityRange[1]));
-    Float_t centrality = fInputEvent->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
-    AliDebug(1, Form("Centrality before: %f\n", centrality));
+    Float_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+    AliDebug(1, Form("Centrality before: %f, estimator %s\n", centrality, fCentralityMethod.Data()));
     if(centrality < fSelectCentralityRange[0] || centrality > fSelectCentralityRange[1]) return kFALSE;
-    AliDebug(1, Form("Centrality: %f\n", centrality));
+    AliDebug(1, "Centrality selected");
   }
   const AliVVertex *primvtx = event->GetPrimaryVertex();
   if(!primvtx || !primvtx->GetNContributors()) return kFALSE;
