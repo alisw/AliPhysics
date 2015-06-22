@@ -4,6 +4,7 @@
 #include "TPRegexp.h"
 #include "TString.h"
 #include "TSystem.h"
+#include "TROOT.h"
 
 #include "AliOADBContainer.h"
 
@@ -84,6 +85,22 @@ Int_t addMapToFile(TString filePathNameMapToAdd, TString normalisation, TString 
     
     runLow[0] = 126461;
     runUp[0] = 130930;
+  }
+  else if (period.Contains("LHC10F") == 1 && !isMC) {
+    mapTitle = Form("LHC10f.pass%d", pass);
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 130931;
+    runUp[0] = 135393;
+  }
+  else if (period.Contains("LHC10G") == 1 && !isMC) {
+    mapTitle = Form("LHC10g.pass%d", pass);
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 135394;
+    runUp[0] = 136781;
   }
   else if (period.Contains("LHC11A_7TEV") == 1 && !isMC) {
     //LHC11a -> 7TeV
@@ -571,6 +588,10 @@ Int_t addMapToFile(TString filePathNameMapToAdd, TString normalisation, TString 
   //etaMapsCont->WriteToFile(filePathNameMapPackage.Data());
   // Does the same as the WriteToFile function, but allow for using "kOverwrite" to save memory!
   TFile* f = new TFile(filePathNameMapPackage.Data(), "update");
+  if (!f) {
+    printf("Error opening file \"%s\"!\n", filePathNameMapPackage.Data());
+    return -1;
+  }
   f->Delete(etaMapsCont->GetName());
   etaMapsCont->Write(0, TObject::kOverwrite);
   f->Purge();
@@ -581,6 +602,9 @@ Int_t addMapToFile(TString filePathNameMapToAdd, TString normalisation, TString 
                      filePathNameMapToAdd.Data(), mapNameInFile.Data(), pathMapPackage.Data()));
   
   fMapToAdd->Close();
+  
+  // I don't understand why, but if the file list is not cleaned up, there are problems when adding further things to the OADB containers
+  gROOT->GetListOfFiles()->RemoveAll();
   
   printf("\n****************Successfully added map \"%s\"!\n\n\n\n", mapTitle.Data());
   return 0;

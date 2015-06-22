@@ -44,6 +44,10 @@ Author : minwoo.kim@cern.ch
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 
+#include "AliAODHandler.h"
+#include "AliAODInputHandler.h"
+#include "AliAODTrack.h"
+
 #include "AliExternalTrackParam.h"
 
 #include "AliEventPoolManager.h"
@@ -60,7 +64,7 @@ ClassImp(AliCorrReducedTrackPP)
 AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP() // All data members should be initialised here
 	:AliAnalysisTaskSE(),
 	fOutput(0),
-	fTrackCuts(0),
+//	fTrackCuts(0),
 	fPoolMgr(0x0),
 	fMyprimRecoTracks(0x0),
 	fTracksMixing(0x0),
@@ -119,7 +123,7 @@ AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP() // All data members should be
 	AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP(const char *name) // All data members should be initialised here
 :AliAnalysisTaskSE(name),
 	fOutput(0),
-	fTrackCuts(0),
+//	fTrackCuts(0),
 	fPoolMgr(0x0),
 	fMyprimRecoTracks(0x0),
 	fTracksMixing(0x0),
@@ -182,7 +186,7 @@ AliAnalysisTaskEPCorrPP::~AliAnalysisTaskEPCorrPP()
 	if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
 		delete fOutput;
 	}
-	if(fTrackCuts) {delete fTrackCuts; fTrackCuts=0x0;}
+//	if(fTrackCuts) {delete fTrackCuts; fTrackCuts=0x0;}
 	if(fPoolMgr) {delete fPoolMgr; fPoolMgr=0x0;}
 	if(fPIDResponse) {delete fPIDResponse; fPIDResponse=0x0;}
 	if(fMyprimRecoTracks) {delete fMyprimRecoTracks; fMyprimRecoTracks=0x0;}
@@ -200,48 +204,6 @@ void AliAnalysisTaskEPCorrPP::UserCreateOutputObjects()
 
 	fOutput = new TList();
 	fOutput->SetOwner();  // IMPORTANT!
-/*
-	fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, 0); // clusterCut==0 is set by default
-	fTrackCuts->SetMaxDCAToVertexZ(3.2);
-	fTrackCuts->SetMaxDCAToVertexXY(2.4);
-	fTrackCuts->SetDCAToVertex2D(kTRUE); //  Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1 (from AliESDtrackCut.h)
-*/
-
-	fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-	fTrackCuts->SetMinNClustersTPC(70);
-
-	// === Primary Track Selection ===
-	//
-	// The definition of a primary track is taken from the ALICE Twiki
-	// page https://twiki.cern.ch/twiki/bin/view/ALICE/SelectionOfPrimaryTracksForPpDataAnalysis
-	// using the following parameters for a standard dN/dPt analysis:
-	//  track quality cuts:
-	//          esdTrackCuts->SetMinNClustersTPC(70);
-	//          esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-	//          esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-	//          esdTrackCuts->SetRequireTPCRefit(kTRUE);
-	//          esdTrackCuts->SetRequireITSRefit(kTRUE);
-	//          esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-	//                                                                                     AliESDtrackCuts::kAny);
-	//  dca:
-	//          if(selPrimaries) {
-	//                  // 7*(0.0026+0.0050/pt^1.01)
-	//                  esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-	//          }
-	//          esdTrackCuts->SetMaxDCAToVertexZ(2);
-	//          esdTrackCuts->SetDCAToVertex2D(kFALSE);
-	//          esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-	//
-	// The Primary Track Selection is implemented here by creating an
-	// AliESDtrackCuts object, with kTRUE argument to choose primary tracks.
-	//
-	// By default, it is set to the above conditions which are suitable for
-	// a standard inclusive dN/dPt analysis. For others, such as identified
-	// dN/dPt or strangeness as well as others, follow the above link for
-	// the specific changes to include in the selection.
-
-	// To change cuts after selecting some default set, one can use 
-	// esdtrackcuts->SetMinNClustersTPC(70) for example
 
 	// Create histograms
 
@@ -441,8 +403,8 @@ void AliAnalysisTaskEPCorrPP::UserCreateOutputObjects()
 	SetupForMixing();
 
 	PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
-	//cout << "DEBUG0" << endl;
-
+//	cout << "DEBUG0" << endl;
+	
 }
 
 //________________________________________________________________________
@@ -450,6 +412,8 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 {
 	// Main loop
 	// Called for each event
+//	cout << "DEBUG1" << endl;
+
 
 	// Create pointer to reconstructed event
 	AliVEvent *event = InputEvent();
@@ -466,7 +430,7 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 	AliStack* stack = mcEvent->Stack();
 	if( !stack ) { Printf( "Stack not available"); return; }
 	 */  
-	//cout << "DEBUG1" << endl;
+//	cout << "DEBUG2" << endl;
 
 
 //	cout << "anamanager = " << anamanager << endl;
@@ -474,16 +438,14 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 //	cout << "fPIDResponse = " << fPIDResponse << endl;
 
 	// create pointer to event
-	AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
-	if (!esdevent) {
-		AliError("Cannot get the ESD event");
+	AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
+	if (!aodevent) {
+		AliError("Cannot get the AOD event");
 		return;
 	}  
-	//if (!TGeoGlobalMagField::Instance()->GetField()) esdevent->InitMagneticField(); 
+	//if (!TGeoGlobalMagField::Instance()->GetField()) aodevent->InitMagneticField(); 
 
-	AliESDHeader* esdheader = (AliESDHeader*)esdevent->GetHeader();
-	//cout << "DEBUG2" << endl;
-
+	AliAODHeader* aodheader = (AliAODHeader*)aodevent->GetHeader();
 
 
 	// === Physics Selection Task ===
@@ -504,8 +466,8 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 	// For more complicated trigger selections, one can directly test both
 	// trigger classes and fired trigger inputs for a particular event, for e.g.
 	//
-	//  Bool_t bCSH1 = (esd->IsTriggerClassFired("CSH1-B-NOPF-ALLNOTRD")) ? 1 : 0;
-	//  Bool_t b0SH1 = (esdheader->IsTriggerInputFired("0SH1")) ? 1 : 0;
+	//  Bool_t bCSH1 = (aod->IsTriggerClassFired("CSH1-B-NOPF-ALLNOTRD")) ? 1 : 0;
+	//  Bool_t b0SH1 = (aodheader->IsTriggerInputFired("0SH1")) ? 1 : 0;
 	//
 	// These booleans can then be used to fill different histograms for specific
 	// conditions, or summed to make one cut for all events that fill histos.
@@ -515,12 +477,14 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 
 	// Do some fast cuts first
 	// check for good reconstructed vertex
-	if(!(esdevent->GetPrimaryVertex()->GetStatus())) return;
+	if(!(aodevent->GetPrimaryVertex())) return;
 	// if vertex is from spd vertexZ, require more stringent cut
-	if (esdevent->GetPrimaryVertex()->IsFromVertexerZ()) {
-		if (esdevent->GetPrimaryVertex()->GetDispersion()>0.02 ||  esdevent->GetPrimaryVertex()->GetZRes()>0.25 ) return; // bad vertex from VertexerZ
-	}
+//	if (aodevent->GetPrimaryVertex()->IsFromVertexerZ()) {
+//		if ( (AliVVertex*)(aodevent->GetPrimaryVertex())->GetDispersion()>0.02 || (AliVVertex*)(aodevent->GetPrimaryVertex())->GetZRes()>0.25 ) return; // bad vertex from VertexerZ
+//	}
 
+
+//cout << "DEBUG1" << endl;
 
 	Float_t bSign = 0;
 	bSign = (event->GetMagneticField() > 0) ? 1 : -1;
@@ -528,7 +492,7 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 
 	Float_t cent = 0; // pp collisions can be considered as 100% cent however set it 0 just for convenience
 
-//	cent = esdevent->GetCentrality()->GetCentralityPercentile("V0M");
+//	cent = aodevent->GetCentrality()->GetCentralityPercentile("V0M");
 //	fHistCent->Fill(cent);
 
 //	float cBinArray[] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90}; // 10 bins
@@ -554,7 +518,7 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 
 	//	float zBinArray[] = {-8, -4, 0, 4, 8}; // 4 bins
 	float zvertex = -999;
-	zvertex = esdevent->GetPrimaryVertex()->GetZ();
+	zvertex = aodevent->GetPrimaryVertex()->GetZ();
 
 	// select the events within |vtx-z| < 7 cm 
 	if( TMath::Abs(zvertex) > 7.0 ) return;
@@ -575,33 +539,54 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 
 	//	cout << "zvertex = " << zvertex << " zBin = " << zBin << endl;
 
+
+		// track filter selection
+		/*
+		enum AODTrkFilterBits_t {
+		    kTrkTPCOnly            = BIT(0), // Standard TPC only tracks
+		    kTrkITSsa              = BIT(1), // ITS standalone
+		    kTrkITSConstrained     = BIT(2), // Pixel OR necessary for the electrons
+		    kTrkElectronsPID       = BIT(3),    // PID for the electrons
+		    kTrkGlobalNoDCA        = BIT(4), // standard cuts with very loose DCA
+		    kTrkGlobal             = BIT(5),  // standard cuts with tight DCA cut
+		    kTrkGlobalSDD          = BIT(6), // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster tracks selected by this cut are exclusive to those selected by the previous cut
+		    kTrkTPCOnlyConstrained = BIT(7) // TPC only tracks: TPConly information constrained to SPD vertex in the filter below
+		};
+		*/
+
+
 	//cout << "DEBUG4" << endl;
 	// ===== Track loop for reconstructed event in SAME events =====
-	Int_t ntracks = esdevent->GetNumberOfTracks();
+	Int_t ntracks = aodevent->GetNumberOfTracks();
 	//cout << "ntracks = " << ntracks << endl;
 	for(Int_t i = 0; i < ntracks; i++) {
 
 		//cout << "DEBUG5" << endl;
-		AliESDtrack* esdtrack = esdevent->GetTrack(i); // pointer to reconstructed to track          
-		if(!esdtrack) { 
-			AliError(Form("ERROR: Could not retrieve esdtrack %d",i)); 
+		AliAODTrack* aodtrack = (AliAODTrack*)aodevent->GetTrack(i); // pointer to reconstructed to track          
+		if(!aodtrack) { 
+			AliError(Form("ERROR: Could not retrieve aodtrack %d",i)); 
 			continue; 
 		}
 
 		//cout << "DEBUG6" << endl;
 		// Some MC checks, if MC is used
-		//if(esdtrack->GetLabel() < 0) continue; // get rid of "ghost" tracks
+		if(aodtrack->GetLabel() < 0) continue; // get rid of "ghost" tracks
 
-		// ... and the thorough checking of ESD cuts after.
+
+		// ... and the thorough checking of AOD cuts after.
 		// if this is not a primary track, skip to the next one
-		if(!fTrackCuts->AcceptTrack(esdtrack)) continue;
+//		if(!fTrackCuts->AcceptTrack(aodtrack)) continue;
+		if(aodtrack->GetType() != AliAODTrack::kPrimary) continue;
+//		if (!aodtrack->TestFilterBit(kHybridTrackCut)) continue;
+		if (!aodtrack->TestFilterBit(kTPCOnlyTrackCut)) continue;
 
-		float trackpT = esdtrack->Pt();
-		float trackEta = esdtrack->Eta(); 
-		float trackPhi = esdtrack->Phi();
 
-//		float trackZv = esdtrack->GetZ();
-		float trackZv = esdtrack->Charge();
+		float trackpT = aodtrack->Pt();
+		float trackEta = aodtrack->Eta(); 
+		float trackPhi = aodtrack->Phi();
+
+//		float trackZv = aodtrack->GetZ();
+		float trackZv = aodtrack->Charge();
 
 		if( TMath::Abs(trackEta)>0.8 ) continue;
 
@@ -624,37 +609,48 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 
 
 		int trigID = -1; // 0(hadron) 1(pion) 2(kaon) 3(proton)
-		trigID = GetParticleID(esdtrack);
+
+		double nsigmaCut = 3.0;
+		trigID = GetParticleID(aodtrack, nsigmaCut);
+
+		int trigIDBin = -1;
+        if(trigID==1 || trigID==3 || trigID==5 || trigID==7) trigIDBin = 1; // recon. pion
+        if(trigID==2 || trigID==6) trigIDBin = 2; // recon. kaon
+        if(trigID==4 || trigID==5 || trigID==6 || trigID==7) trigIDBin = 3; // recon. proton
+
 
 		fHistPt[0]->Fill(trackpT); // fill inclusive spectra
 		fHistEta[0]->Fill(trackEta);
 		fHistPhi[0]->Fill(trackPhi);
 
-		if(!(trigID == -1)) {
-			fHistPt[trigID]->Fill(trackpT);
-			fHistEta[trigID]->Fill(trackEta);
-			fHistPhi[trigID]->Fill(trackPhi);
+		if(!(trigIDBin == -1)) {
+			fHistPt[trigIDBin]->Fill(trackpT);
+			fHistEta[trigIDBin]->Fill(trackEta);
+			fHistPhi[trigIDBin]->Fill(trackPhi);
 		}
 
 		if(!(zBin == -1 || cBin == -1)) fHistPtSame[cBin][zBin]->Fill(trackpT);
 
 		// ===== another track loop to use dEta-dPhi analysis in same event =====
 		for(int j = i+1; j < ntracks; j++) {
-			AliESDtrack* esdtrack2 = esdevent->GetTrack(j); // pointer to reconstructed to track          
-			if(!esdtrack2) { 
-				AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
+			AliAODTrack* aodtrack2 = (AliAODTrack*)aodevent->GetTrack(j); // pointer to reconstructed to track          
+			if(!aodtrack2) { 
+				AliError(Form("ERROR: Could not retrieve aodtrack %d",j)); 
 				continue; 
 			}
 
-			if(!fTrackCuts->AcceptTrack(esdtrack2)) continue;
-		
+//			if(!fTrackCuts->AcceptTrack(aodtrack2)) continue;
+			if(aodtrack2->GetType() != AliAODTrack::kPrimary) continue;
+//			if (!aodtrack2->TestFilterBit(kHybridTrackCut)) continue;
+			if (!aodtrack2->TestFilterBit(kTPCOnlyTrackCut)) continue;
 
-			float trackpT2 = esdtrack2->Pt();
-			float trackEta2 = esdtrack2->Eta(); 
-			float trackPhi2 = esdtrack2->Phi();
 
-//			float trackZv2 = esdtrack2->GetZ();
-			float trackZv2 = esdtrack2->Charge();
+			float trackpT2 = aodtrack2->Pt();
+			float trackEta2 = aodtrack2->Eta(); 
+			float trackPhi2 = aodtrack2->Phi();
+
+//			float trackZv2 = aodtrack2->GetZ();
+			float trackZv2 = aodtrack2->Charge();
 
 			int pTBinA = -1; // pT bin of associated particles
 			for(int ipTbin = 0; ipTbin<kpTBin; ipTbin++) {
@@ -700,24 +696,28 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 			if(TMath::Abs(deltaEta)<0.02) continue;
 
 			int assocID = -1; // 0(hadron) 1(pion) 2(kaon) 3(proton)
-			assocID = GetParticleID(esdtrack);
+			assocID = GetParticleID(aodtrack, nsigmaCut);
 
+			int assocIDBin = -1;
+    	    if(assocID==1 || assocID==3 || assocID==5 || assocID==7) assocIDBin = 1; // recon. pion
+      	 	if(assocID==2 || assocID==6) assocIDBin = 2; // recon. kaon
+      		if(assocID==4 || assocID==5 || assocID==6 || assocID==7) assocIDBin = 3; // recon. proton
 
 			fHistdEtadPhiSame[cBin][zBin][pTBinT][pTBinA][0]->Fill(deltaEta, deltaPhi);
-	        if(!(assocID == -1)) {
-				fHistdEtadPhiSame[cBin][zBin][pTBinT][pTBinA][assocID]->Fill(deltaEta, deltaPhi); 
+	        if(!(assocIDBin == -1)) {
+				fHistdEtadPhiSame[cBin][zBin][pTBinT][pTBinA][assocIDBin]->Fill(deltaEta, deltaPhi); 
 			//			cout << "deltaPhi = " << deltaPhi << " cBin = " << cBin << " zBin = " << zBin << " pTBinT = " << pTBinT << " pTBinA = " << pTBinA << endl;
 			}
-//		delete esdtrack2;
+//		delete aodtrack2;
 		} // end of j track loop
-//		delete esdtrack;
+//		delete aodtrack;
 	} // end of i track loop
 
 	//	cout << "===== Prepare event-mixing =====" << endl;
 
 	bool kTrackCut = kTRUE;
 
-	fMyprimRecoTracks = AcceptTracksReduced(esdevent, kTrackCut);
+	fMyprimRecoTracks = AcceptTracksReduced(aodevent, kTrackCut);
 
 	if(fMyprimRecoTracks==0x0) { AliInfo(" ==== fMyprimRecoTracks: Zero track pointer"); return; }
 
@@ -817,22 +817,36 @@ float AliAnalysisTaskEPCorrPP::CalculatedPhiStar(float dPhi, float dEta, float Z
 
 
 //________________________________________________________________________
-TObjArray* AliAnalysisTaskEPCorrPP::AcceptTracksReduced(AliESDEvent *esdevent, bool useCuts) {
-	Int_t nTracks = esdevent->GetNumberOfTracks();
+TObjArray* AliAnalysisTaskEPCorrPP::AcceptTracksReduced(AliAODEvent *aodevent, bool useCuts) {
+	Int_t nTracks = aodevent->GetNumberOfTracks();
 
 	TObjArray* tracksAccepted = new TObjArray;
 	tracksAccepted->SetOwner(kTRUE);
 
 	for (Int_t itrk=0; itrk < nTracks; itrk++)
 	{
-		AliESDtrack* track = dynamic_cast<AliESDtrack*>(esdevent->GetTrack(itrk));
+		AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(itrk));
 		if (!track) { AliInfo("AcceptTracksReduced: Could not receive track"); continue; }
 
 		// You can put some track cuts here
-		if(useCuts) { if(!fTrackCuts->AcceptTrack(track)) continue ;}
+//		if(useCuts) { if(!fTrackCuts->AcceptTrack(track)) continue ;}
+		if(useCuts) {
+			if(track->GetType() != AliAODTrack::kPrimary) continue;
+//			if (!track->TestFilterBit(kHybridTrackCut)) continue;
+			if (!track->TestFilterBit(kTPCOnlyTrackCut)) continue;
+
+		}
+
+		double nsigmaCut = 3.0;
 
 		int  myPartID = -1;
-		myPartID = GetParticleID(track);
+		int myPartIDinit = -1;		
+		myPartIDinit = GetParticleID(track, nsigmaCut);
+
+    	if(myPartIDinit==1 || myPartIDinit==3 || myPartIDinit==5 || myPartIDinit==7) myPartID = 1; // recon. pion
+      	if(myPartIDinit==2 || myPartIDinit==6) myPartID = 2; // recon. kaon
+      	if(myPartIDinit==4 || myPartIDinit==5 || myPartIDinit==6 || myPartIDinit==7) myPartID = 3; // recon. proton
+
 
 //		int myPartID = 1; // This is the mark for PID by GetParticleID function. included later. INCLUDE 150518
 		tracksAccepted->Add(new AliCorrReducedTrackPP(myPartID,track->Eta(),track->Phi(),track->Pt(),track->Zv(),track->Charge()));
@@ -849,11 +863,11 @@ TObjArray* AliAnalysisTaskEPCorrPP::AcceptTracksReduced(AliESDEvent *esdevent, b
 }
 
 //___________________________________________________________
-int AliAnalysisTaskEPCorrPP::GetParticleID(AliESDtrack* track)
+int AliAnalysisTaskEPCorrPP::GetParticleID(AliAODTrack* track, double nsigmaCut)
 {
 //	cout << "GetParticleID CALLED!!!" << endl;
 
-	int trackPID = -1;
+	int trackPID = 0;
 
 	float nsigmaTPC[kPID]; float nsigmaTOF[kPID]; 
 	// float nSigmaITS[kPID];
@@ -902,9 +916,9 @@ int AliAnalysisTaskEPCorrPP::GetParticleID(AliESDtrack* track)
 
 	}
 */
-		if(TMath::Sqrt( nsigmaTPC[0]*nsigmaTPC[0] + nsigmaTOF[0]*nsigmaTOF[0] ) < 3.0) trackPID = 1;
-		if(TMath::Sqrt( nsigmaTPC[1]*nsigmaTPC[1] + nsigmaTOF[1]*nsigmaTOF[1] ) < 3.0) trackPID = 2;
-		if(TMath::Sqrt( nsigmaTPC[2]*nsigmaTPC[2] + nsigmaTOF[2]*nsigmaTOF[2] ) < 3.0) trackPID = 3;
+		if(TMath::Sqrt( nsigmaTPC[0]*nsigmaTPC[0] + nsigmaTOF[0]*nsigmaTOF[0] ) < nsigmaCut) trackPID = trackPID + 1;
+		if(TMath::Sqrt( nsigmaTPC[1]*nsigmaTPC[1] + nsigmaTOF[1]*nsigmaTOF[1] ) < nsigmaCut) trackPID = trackPID + 2;
+		if(TMath::Sqrt( nsigmaTPC[2]*nsigmaTPC[2] + nsigmaTOF[2]*nsigmaTOF[2] ) < nsigmaCut) trackPID = trackPID + 4;
 
 	} // end of detectorOK
 
@@ -1010,7 +1024,7 @@ void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* par
 
 		for(int is = 0; is < ntrackSecond; is++) 
 		{ 
-//			AliCorrReducedTrackPP* second = dynamic_cast<AliCorrReducedTrackPP*>(particleMixed->At(is));
+//			AliCorrReducedTrack* second = dynamic_cast<AliCorrReducedTrack*>(particleMixed->At(is));
 			//		if(is==targetindex) cout << "second(init) = " << second << endl;
 //			if (!second) { AliInfo("AcceptTracks: Could not receive second track"); continue; }
 			if(!(particleMixed->At(is))) continue;
@@ -1032,7 +1046,6 @@ void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* par
 			secondPID = ((AliCorrReducedTrackPP*)particleMixed->At(is))->GetMyPartID();
 
 
-
 			int pTBinA = -1; // pT bin of associated particles
 			for(int ipTbin = 0; ipTbin<kpTBin; ipTbin++) {
 				if(0 > secondpT) continue;
@@ -1042,7 +1055,6 @@ void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* par
 			}
 
 			if( cBin == -1 || zBin == -1 || pTBinT == -1 || pTBinA == -1 ) continue; // exclude what have initial values
-
 
 			if( firstpT < secondpT ) continue; // select pT_trigg >= pT_assoc
 /*
@@ -1152,7 +1164,7 @@ void AliAnalysisTaskEPCorrPP::DoMixing(double cent, double zvertex, TObjArray* t
 				fTracksMixing = pool->GetEvent(jMix);
 				if (!fTracksMixing) continue;
 
-//				fTracksMixing = AcceptTracks(esdevent, kTrackCut); // NEW 150527
+//				fTracksMixing = AcceptTracksReduced(aodevent, kTrackCut); // NEW 150617
 //				if(!fTrackCuts->AcceptTrack(fTracksMixing)) continue ;
 
 
@@ -1215,7 +1227,7 @@ void AliAnalysisTaskEPCorrPP::Terminate(Option_t *)
 
 	// Get the physics selection histograms with the selection statistics
 	//AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-	//AliESDInputHandler *inputH = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
+	//AliAODInputHandler *inputH = dynamic_cast<AliAODInputHandler*>(mgr->GetInputEventHandler());
 	//TH2F *histStat = (TH2F*)inputH->GetStatistics();
 
 	// NEW HISTO should be retrieved from the TList container in the above way,

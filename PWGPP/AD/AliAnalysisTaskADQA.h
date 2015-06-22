@@ -51,6 +51,7 @@ private:
   TH2F        *fHistChargePerPM_All;
   TH2F        *fHistChargePerPM_BB;
   TH2F        *fHistChargePerPM_BG;
+  TH2F        *fHistChargePerPM_Time;
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
@@ -69,7 +70,7 @@ private:
   TH1F	      *fHistNBGCoincidencesADC;
   TH2F	      *fHistNBGCoincidencesADAVsADC;
   TH1F	      *fHistChargeNoFlag;
-  TH1F	      *fHistTimeNoFlag;
+  TH2F	      *fHistTimeNoFlag;
   TH1F	      *fHistChargeNoTime;
   TH2F	      *fHistChargePerCoincidence;
   
@@ -80,7 +81,9 @@ private:
   TH2F	      *fHistMeanTimeSumDiff;
   TH2F	      *fHistDecision;
   
-  TH1F	      *fHistTrigger;
+  TH1F	      *fHistTriggerMasked;
+  TH1F	      *fHistTriggerUnMasked;
+  TH1F	      *fHistTriggerOthers;
   
   /*From ESD friend*/
   TH2F	      *fHistChargeVsClockInt0;
@@ -90,6 +93,8 @@ private:
   TH2F	      *fHistBBFlagPerChannel;
   TH2F	      *fHistBGFlagPerChannel;
   TH2F	      *fHistMaxChargeClock;
+  TH2F	      *fHistMaxChargeValueInt0;
+  TH2F	      *fHistMaxChargeValueInt1;
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;

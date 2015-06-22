@@ -65,6 +65,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fMatch(0),
   fMinLabelEmb(-kMaxInt),
   fMaxLabelEmb(kMaxInt),
+  fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -156,6 +157,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fMatch(0),
   fMinLabelEmb(-kMaxInt),
   fMaxLabelEmb(kMaxInt),
+  fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
@@ -242,6 +244,7 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   Int_t nBinsM  = 100;
   Double_t minM = -20.;
   Double_t maxM = 80.;
+  if(fSmallSyst) maxM = 40.;
   if(fJetMassVarType==kRatMPt) {
     nBinsM = 100;
     minM   = -0.2;

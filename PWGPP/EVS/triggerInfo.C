@@ -68,15 +68,24 @@ Int_t triggerInfo(Int_t run, TString refClassName, TString ocdbStorage, TString 
     par[0] = lhc->GetFillNumber();
   }
   
+  AliGRPObject* grp = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
+  printf("%s\n",grp->GetLHCState().Data());
+  if (!grp->GetLHCState().Contains("STABLE") && !grp->GetLHCState().Contains("ADJUST")) return 1;
+  
   AliTriggerConfiguration* cfg = (AliTriggerConfiguration*) man->Get("GRP/CTP/Config")->GetObject();
   if (!cfg) { printf("No GRP/CTP/Config object for run %i\n",run); return 1; }
+  printf("%s\n",cfg->GetName());
+  if (!TString(cfg->GetName()).Contains("PHYSICS_1")) return 1;
+  
+  
   activeDetectors = cfg->GetActiveDetectors().Data();
 
   // Get scalers 
   AliTriggerRunScalers* scalers = (AliTriggerRunScalers*) man->Get("GRP/CTP/Scalers")->GetObject();
   if (!scalers) { printf("No GRP/CTP/Scalers object for run %i\n",run); return 1; }
   Int_t nEntries = scalers->GetScalersRecords()->GetEntriesFast();
-
+  printf("Scalers records: %i\n",nEntries);
+  if (nEntries==0) return 5;
   Double_t run_duration   = 0;
   ULong64_t l0b      = 0;
   ULong64_t l0bempty = 0;

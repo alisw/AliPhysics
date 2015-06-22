@@ -163,22 +163,18 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TH1D* hLumiReconstructed[NBITS] = {0x0};
   TH1D* hLumiAccepted[NBITS]      = {0x0};
   
-  TH2D* hActiveDetectors = new TH2D("hActiveDetectors","Active detectors",nRuns,0,nRuns,AliDAQ::kNDetectors,0,AliDAQ::kNDetectors);
-  TH1D* hInteractionRate = new TH1D("hInteractionRate","Minimum bias interaction rate [Hz]",nRuns,0,nRuns);
-  TH1D* hMu       = new TH1D("hMu","Average number of minimum bias collisions per BC",nRuns,0,nRuns);
+
+  const Int_t nDetectors=19;
+
+  TH2D* hActiveDetectors = new TH2D("hActiveDetectors","Active detectors",nRuns,0,nRuns,nDetectors,0,nDetectors);
+  TH1D* hInteractionRate = new TH1D("hInteractionRate","INEL interaction rate [Hz]",nRuns,0,nRuns);
+  TH1D* hMu       = new TH1D("hMu","Average number of INEL collisions per BC",nRuns,0,nRuns);
   TH1D* hBCs      = new TH1D("hBCs","Number of colliding bunches",nRuns,0,nRuns);
   TH1D* hDuration = new TH1D("hDuration","Duration, s",nRuns,0,nRuns);
   TH1D* hLumiSeen = new TH1D("hLumiSeen","Luminosity seen, nb-1",nRuns,0,nRuns);
 
-  for (Int_t iDet=0;iDet<AliDAQ::kNDetectors;iDet++) {
-//    if      (!TString(AliDAQ::DetectorName(iDet)).CompareTo("HLT")) continue;
-//    else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("TRG")) continue;
-//    else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("MFT")) continue;
-//    else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("FIT")) continue;
-//    else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("CPV")) continue;
-//    else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("DAQ_TEST")) continue;
-    hActiveDetectors->GetYaxis()->SetBinLabel(iDet+1,AliDAQ::DetectorName(iDet));
-  }
+  TString detName[nDetectors]={"ACORDE","AD","CPV","EMCAL","FMD","HMPID","ITSSPD","ITSSDD","ITSSSD","MUONTRK","MUONTRG","PHOS","PMD","T0","TOF","TPC","TRD","VZERO","ZDC"};
+  for (Int_t iDet=0;iDet<nDetectors;iDet++) hActiveDetectors->GetYaxis()->SetBinLabel(iDet+1,detName[iDet].Data());
   
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
@@ -188,14 +184,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hBCs->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
     hDuration->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
     hLumiSeen->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    for (Int_t iDet=0;iDet<AliDAQ::kNDetectors;iDet++) {
-//      if      (!TString(AliDAQ::DetectorName(iDet)).CompareTo("HLT")) continue;
-//      else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("TRG")) continue;
-//      else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("MFT")) continue;
-//      else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("FIT")) continue;
-//      else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("CPV")) continue;
-//      else if (!TString(AliDAQ::DetectorName(iDet)).CompareTo("DAQ_TEST")) continue;
-     hActiveDetectors->Fill(Form("%i",run),AliDAQ::DetectorName(iDet),activeDetectors->String().Contains(AliDAQ::DetectorName(iDet)));
+    for (Int_t iDet=0;iDet<nDetectors;iDet++) {
+     hActiveDetectors->Fill(Form("%i",run),detName[iDet].Data(),activeDetectors->String().Contains(detName[iDet].Data()));
     }
     hInteractionRate->SetBinContent(r+1,interactionRate);
     hMu->SetBinContent(r+1,mu);
@@ -204,6 +194,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hLumiSeen->SetBinContent(r+1,lumi_seen);
     fills[run]=fill;
   }
+  
+  
   
   TFile* fclassL0B = new TFile("class_L0B_counts.root","recreate");
   TCanvas* cClassL0B = new TCanvas("cClassL0B","Class L0B vs run",1800,900);
@@ -269,25 +261,25 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   gPad->Print("class_lifetime.pdf]");
   fclassLifetime->Close();
   
-  TFile* fclassLumi = new TFile("class_lumi.root","recreate");
-  TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
-  gPad->SetMargin(0.15,0.01,0.08,0.06);
-  SetHisto(hClassLumiVsRun);
-  hClassLumiVsRun->Draw("col");
-  gPad->Print("class_lumi.pdf(");
-  TCanvas* clumi = new TCanvas("clumi","lumi vs run",1800,500);
-  clumi->SetMargin(0.05,0.01,0.18,0.06);
-  
-  for (Int_t i=1;i<=hClassLumiVsRun->GetNbinsY();i++){
-    TH1D* h = (TH1D*) hClassLumiVsRun->ProjectionX(Form("hClassLumiVsRun_%02i",i),i,i);
-    h->SetTitle(Form("%s luminosity [ub-1]: %.0g",hClassLumiVsRun->GetYaxis()->GetBinLabel(i),h->Integral()));
-    SetHisto(h);
-    h->Draw();
-    AddFillSeparationLines(h,fills);
-    gPad->Print("class_lumi.pdf");
-  }
-  gPad->Print("class_lumi.pdf]");
-  fclassLumi->Close();
+//  TFile* fclassLumi = new TFile("class_lumi.root","recreate");
+//  TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
+//  gPad->SetMargin(0.15,0.01,0.08,0.06);
+//  SetHisto(hClassLumiVsRun);
+//  hClassLumiVsRun->Draw("col");
+//  gPad->Print("class_lumi.pdf(");
+//  TCanvas* clumi = new TCanvas("clumi","lumi vs run",1800,500);
+//  clumi->SetMargin(0.05,0.01,0.18,0.06);
+//
+//  for (Int_t i=1;i<=hClassLumiVsRun->GetNbinsY();i++){
+//    TH1D* h = (TH1D*) hClassLumiVsRun->ProjectionX(Form("hClassLumiVsRun_%02i",i),i,i);
+//    h->SetTitle(Form("%s luminosity [ub-1]: %.0g",hClassLumiVsRun->GetYaxis()->GetBinLabel(i),h->Integral()));
+//    SetHisto(h);
+//    h->Draw();
+//    AddFillSeparationLines(h,fills);
+//    gPad->Print("class_lumi.pdf");
+//  }
+//  gPad->Print("class_lumi.pdf]");
+//  fclassLumi->Close();
   
   SetHisto(hActiveDetectors);
   SetHisto(hInteractionRate);
@@ -334,7 +326,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cLumiSeen = new TCanvas("lumiseen","lumi seen",1800,500);
   cLumiSeen->SetMargin(0.05,0.01,0.18,0.06);
-  hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.0g",hLumiSeen->Integral()));
+  hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.3f",hLumiSeen->Integral()));
   hLumiSeen->Draw("h");
   AddFillSeparationLines(hLumiSeen,fills);
   gPad->Print("global_properties.pdf)");

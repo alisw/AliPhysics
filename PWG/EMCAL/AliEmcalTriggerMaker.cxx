@@ -523,6 +523,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // get low left edge (eta max, phi min)
   TVector3 edge1;
   fGeom->GetGlobal(cellAbsId[0], edge1);
+  Int_t colEdge1 = globCol, rowEdge1 = globRow, absIdEdge1 = absId, cellIdEdge1 = cellAbsId[0]; // Used in warning for invalid patch position
 	
   // sum the available energy in the 32/32 window of cells
   // step over trigger channels and get all the corresponding cells
@@ -601,6 +602,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   fGeom->GetCellIndexFromFastORIndex(absId, cellAbsId);
   TVector3 edge2;
   fGeom->GetGlobal(cellAbsId[3], edge2);
+  Int_t colEdge2 = globCol+posOffset, rowEdge2 = globRow+posOffset, absIdEdge2 = absId, cellIdEdge2 = cellAbsId[3]; // Used in warning for invalid patch position
 	
   // get the geometrical center as an average of two diagonally
   // adjacent patches in the center
@@ -649,10 +651,28 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   centerGeo *= 0.5;
 	
   // relate all to primary vertex
+  TVector3 edge1tmp = edge1, edge2tmp = edge2; // Used in warning for invalid patch position
   centerGeo -= vertex;
   centerMass -= vertex;
   edge1 -= vertex;
   edge2 -= vertex;
+  // Check for invalid patch positions
+  if(!(edge1[0] || edge1[1] || edge1[2])){
+    AliWarning(Form("Inconsistency in patch position for edge1: [%f|%f|%f]", edge1[0], edge1[1], edge1[2]));
+    AliWarning("Original vectors:");
+    AliWarning(Form("edge1: [%f|%f|%f]", edge1tmp[0], edge1tmp[1], edge1tmp[2]));
+    AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
+    AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge1, rowEdge1, absIdEdge1, cellIdEdge1));
+    AliWarning(Form("Offline: %s", isOfflineSimple ? "yes" : "no"));
+  }
+  if(!(edge2[0] || edge2[1] || edge2[2])){
+    AliWarning(Form("Inconsistency in patch position for edge2: [%f|%f|%f]", edge2[0], edge2[1], edge2[2]));
+    AliWarning("Original vectors:");
+    AliWarning(Form("edge2: [%f|%f|%f]", edge2tmp[0], edge2tmp[1], edge2tmp[2]));
+    AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
+    AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge2, rowEdge2, absIdEdge2, cellIdEdge2));
+    AliWarning(Form("Offline: %s", isOfflineSimple ? "yes" : "no"));
+  }
 
   Int_t isMC = MCEvent() ? 1 : 0;
   Int_t offSet = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
@@ -748,6 +768,11 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   // run the trigger algo, stepping by 8 towers (= 4 trigger channels)
   Int_t maxCol = 48;
   Int_t maxRow = fGeom->GetNTotalTRU()*2;
+  // Markus:
+  // temp fix for the number of TRUs in the 2011 PbPb data to 30
+  // @TODO: Fix in the geometry in the OCDB
+  int runnumber = InputEvent()->GetRunNumber();
+  if(runnumber > 139517 && runnumber <= 170593) maxRow = 60;
   Int_t isMC = MCEvent() ? 1 : 0;
   Int_t bitOffSet = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
   for (Int_t i = 0; i <= (maxCol-16); i += 4) {

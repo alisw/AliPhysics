@@ -288,7 +288,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 //       return;
     }
   }
-/*  
+/*
   if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
 // 	  return;
@@ -297,7 +297,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
 // 	  return;
   }
-  
+
 // 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
 */
 
@@ -522,7 +522,7 @@ void AliMEStender::SetPriors(){
 
 	fPIDcomb = new AliPIDCombined();
 	fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
-	
+
 	switch(fConfig.fPIDpriors){
 		case AliMESconfigTender::kTPC:
 			// default aliroot priors
@@ -533,26 +533,24 @@ void AliMEStender::SetPriors(){
 		case AliMESconfigTender::kIterative:
 		{  // data priors identified @ 15.04.2015 by Cristi for LHC10d
 			AliInfo("Getting iterative data priors from file...");
+			TDirectory *cwd(gDirectory);
 			TFile *lPriors=TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
 			if (lPriors->IsZombie()) {
 				AliError("Could not open the priors file");
 				return;
 			}
-			TH1F *priorsDist[4];
-			priorsDist[0] = (TH1F*)lPriors->Get("priors_e_final");
-			priorsDist[1] = (TH1F*)lPriors->Get("priors_pi_final");
-			priorsDist[2] = (TH1F*)lPriors->Get("priors_K_final");
-			priorsDist[3] = (TH1F*)lPriors->Get("priors_p_final");
-			for(Int_t i=0; i<4; i++) priorsDist[i]->SetDirectory(0);
-			lPriors->Close();
-			AliInfo("Done getting the data priors.");
-
+			const Char_t *pname[] = {"e", "e", "pi", "K", "p"};
 			AliInfo("Setting iterative data priors ...");
-			fPIDcomb->SetPriorDistribution(AliPID::kMuon, priorsDist[0]);
-			fPIDcomb->SetPriorDistribution(AliPID::kElectron, priorsDist[0]);
-			fPIDcomb->SetPriorDistribution(AliPID::kPion, priorsDist[1]);
-			fPIDcomb->SetPriorDistribution(AliPID::kKaon, priorsDist[2]);
-			fPIDcomb->SetPriorDistribution(AliPID::kProton, priorsDist[3]);
+			for(Int_t i=0; i<5; i++){
+				fPIDcomb->SetPriorDistribution(AliPID::EParticleType(i), (TH1F*)lPriors->Get(Form("priors_%s_final", pname[i])));
+				fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i))->SetDirectory(cwd);
+			}
+			lPriors->Close(); delete lPriors;
+
+			for(Int_t i=0; i<5; i++){
+				TH1 *h(fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i)));
+				printf("%s -> %s\n", h->GetName(), h->GetDirectory()->GetName());
+			}
 			AliInfo("Done setting iterative data priors.");
 			break;
 		}
@@ -567,8 +565,8 @@ void AliMEStender::SetPriors(){
 			AliWarning("No PID priors selected");
 			break;
 	}
-	
-	
+
+
 }
 
 //________________________________________________________________________

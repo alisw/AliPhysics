@@ -1,29 +1,29 @@
-void AddTaskCRC(Double_t centrMin,
-                Double_t centrMax,
-                Int_t nCenBin,
-                Double_t CenBinWidth,
-                Double_t ptMin=0.2,
-                Double_t ptMax=5.0,
-                Double_t etaMin=-0.8,
-                Double_t etaMax=0.8,
-                TString analysisTypeUser="AOD",
-                Int_t AODfilterBit=768,
-                TString TPCMultOut="2010",
-                TString EvTrigger="MB",
-                Bool_t bCalculateCRCPt=kFALSE,
-                Bool_t bUseCRCRecentering=kFALSE,
-                TString QVecWeightsFileName,
-                Bool_t bUsePhiEtaWeights,
-                TString PhiEtaWeightsFileName,
-                Bool_t bUseVZERO=kFALSE,
-                Bool_t bUseVZEROCalib=kFALSE,
-                Bool_t bUseZDC=kFALSE,
-                Bool_t bRecenterZDC=kFALSE,
-                Bool_t bDivSigma=kTRUE,
-                Bool_t bEventCutsQA=kFALSE,
-                Bool_t bTrackCutsQA=kFALSE,
-                TString Label="",
-                const char* suffix="") {
+AliAnalysisTask * AddTaskCRC(Double_t centrMin,
+                             Double_t centrMax,
+                             Int_t nCenBin,
+                             Double_t CenBinWidth,
+                             Double_t ptMin=0.2,
+                             Double_t ptMax=5.0,
+                             Double_t etaMin=-0.8,
+                             Double_t etaMax=0.8,
+                             TString analysisTypeUser="AOD",
+                             Int_t AODfilterBit=768,
+                             TString TPCMultOut="2010",
+                             TString EvTrigger="MB",
+                             Bool_t bCalculateCRCPt=kFALSE,
+                             Bool_t bUseCRCRecentering=kFALSE,
+                             TString QVecWeightsFileName,
+                             Bool_t bUsePhiEtaWeights,
+                             TString PhiEtaWeightsFileName,
+                             Bool_t bUseVZERO=kFALSE,
+                             Bool_t bUseVZEROCalib=kFALSE,
+                             Bool_t bUseZDC=kFALSE,
+                             Bool_t bRecenterZDC=kFALSE,
+                             Bool_t bDivSigma=kTRUE,
+                             Bool_t bEventCutsQA=kFALSE,
+                             Bool_t bTrackCutsQA=kFALSE,
+                             TString Label="",
+                             const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
  gSystem->Load("libVMC");
@@ -99,6 +99,7 @@ void AddTaskCRC(Double_t centrMin,
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
  if(!bUseZDC) {
   AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
+//  taskFE->SetAnalysisType(analysisType);
  } else {
   AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
   taskFE->SetCentralityRange(centrMin,centrMax);
@@ -317,4 +318,5 @@ void AddTaskCRC(Double_t centrMin,
  // which will be written to the output file
  mgr->ConnectOutput(taskQC, 1, coutputQC);
  
+ return taskQC;
 }

@@ -119,7 +119,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
   Bool_t fDiffractiveOnly; //Only look at diffractive generated events
-  Bool_t fEtaRefMult; // Ref Mult eta range 
+  Double_t fEtaRefMult; // Ref Mult eta range 
 
 //===========================================================================================
 //   Variables for Tree, V0s
@@ -514,6 +514,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH1F      *fHistPVzAnalysisHasHighPtLambda;                      //! PVz distrib
 
    TH1F      *fHistSwappedV0Counter;                      //! Swapped v0 counter
+   TH2F *fHistXCheckVertexerZ; //! //for cross-checking
 
    AliAnalysisTaskExtractPerformanceV0(const AliAnalysisTaskExtractPerformanceV0&);            // not implemented
    AliAnalysisTaskExtractPerformanceV0& operator=(const AliAnalysisTaskExtractPerformanceV0&); // not implemented

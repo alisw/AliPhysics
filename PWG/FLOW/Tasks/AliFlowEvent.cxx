@@ -1021,7 +1021,7 @@ AliFlowTrack* AliFlowEvent::ReuseTrack(Int_t i)
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
                             AliFlowTrackCuts* poiCuts ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fDivSigma(kTRUE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 
 {
   // constructor
@@ -1052,7 +1052,7 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliESDPmdTrack *pmdtracks,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
+  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fDivSigma(kTRUE), fCachedRun(-1), fVZEROcentralityBin(-1), fEvent(0x0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0)
 
 {
   // constructor

@@ -15,6 +15,10 @@
 #include <iostream>
 
 #include <TAxis.h>
+#include <TClass.h>
+
+#include "AliEMCalTriggerAnaClassManager.h"
+#include "AliEMCalTriggerAnaTriggerClass.h"
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
@@ -31,9 +35,9 @@ namespace EMCalTriggerPtAnalysis {
 AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent() :
   TNamed(),
   fHistos(NULL),
+  fTriggerClassManager(NULL),
   fBinning(NULL),
   fKineCuts(NULL),
-  fTriggerDecision(NULL),
   fWeightHandler(NULL),
   fComponentDebugLevel(0)
 {
@@ -53,9 +57,9 @@ AliEMCalTriggerTracksAnalysisComponent::~AliEMCalTriggerTracksAnalysisComponent(
 AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(const char* name) :
   TNamed(name,""),
   fHistos(NULL),
+  fTriggerClassManager(NULL),
   fBinning(NULL),
   fKineCuts(NULL),
-  fTriggerDecision(NULL),
   fWeightHandler(NULL),
   fComponentDebugLevel(0)
 {
@@ -99,37 +103,30 @@ TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, int 
 
 /**
  * Get a set of names of trigger strings that is matching with the trigger decision.
- *
  * \param triggernames: output container for selected trigger names
- * \param usePatches: determines whether we use the trigger decision from patches
+ * \throw TriggerHandlerNotFoundException in case no trigger handler is available
  */
-void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<std::string>& triggernames, ETriggerMethod_t method) {
+void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<std::string>& triggernames) const {
   triggernames.clear();
-  if(!fTriggerDecision) return;
-  if(fTriggerDecision->IsMinBias()) triggernames.push_back("MinBias");
-  if(fTriggerDecision->IsTriggered(kTAEMCJHigh, method)){
-    triggernames.push_back("EMCJHigh");
-    if(fTriggerDecision->IsTriggered(kTAEMCGHigh, method))
-      triggernames.push_back("EMCHighBoth");
-    else
-      triggernames.push_back("EMCHighJetOnly");
+  if(!fTriggerClassManager) throw TriggerManagerNotFoundException(this->IsA()->GetName());
+  for(TIter trgiter = TIter(fTriggerClassManager->GetSelectedTriggerClasses()).Begin(); trgiter != TIter::End(); ++ trgiter){
+    triggernames.push_back((static_cast<AliEMCalTriggerAnaTriggerClass *>(*trgiter))->GetName());
   }
-  if(fTriggerDecision->IsTriggered(kTAEMCJLow, method)){
-    triggernames.push_back("EMCJLow");
-    if(fTriggerDecision->IsTriggered(kTAEMCGLow, method))
-      triggernames.push_back("EMCLowBoth");
-    else
-      triggernames.push_back("EMCLowJetOnly");
+}
+
+/**
+ * Get trigger names and titles for the event
+ * \param triggers Map with trigger names and titles
+ * \throw TriggerHandlerNotFoundException in case no trigger handler is available
+ */
+void AliEMCalTriggerTracksAnalysisComponent::GetAllTriggerNamesAndTitles(std::map<std::string, std::string> &triggers) const {
+  triggers.clear();
+  if(!fTriggerClassManager) {
+    throw TriggerManagerNotFoundException(this->IsA()->GetName());
   }
-  if(fTriggerDecision->IsTriggered(kTAEMCGHigh, method)){
-    triggernames.push_back("EMCGHigh");
-    if(!fTriggerDecision->IsTriggered(kTAEMCJHigh, method))
-      triggernames.push_back("EMCHighGammaOnly");
-  }
-  if(fTriggerDecision->IsTriggered(kTAEMCGLow, method)){
-    triggernames.push_back("EMCGLow");
-    if(!fTriggerDecision->IsTriggered(kTAEMCJLow, method))
-      triggernames.push_back("EMCLowGammaOnly");
+  for(TIter trgiter = TIter(fTriggerClassManager->GetAllTriggerClasses()).Begin(); trgiter != TIter::End(); ++ trgiter){
+    AliEMCalTriggerAnaTriggerClass *trgcls = static_cast<AliEMCalTriggerAnaTriggerClass *>(*trgiter);
+    triggers.insert(std::pair<std::string, std::string>(trgcls->GetName(), trgcls->GetTitle()));
   }
 }
 

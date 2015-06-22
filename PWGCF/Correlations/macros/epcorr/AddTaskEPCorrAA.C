@@ -1,4 +1,4 @@
-AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const char *containerName = "EPCorrAA", const char* folderName = "PWGCF_EPCorrAA" )
+AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const char *containerName = "EPCorrAA_TPCOnly_150619", const char* folderName = "PWGCF_EPCorrelation" )
 {
 
     // Get a pointer to the analysis manager.
@@ -9,8 +9,8 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
     }
 
 
-	// Additional tasks
-
+	// Additional tasks will be managed by 'Dependendies' in wagon
+/*
     // Centrality
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
@@ -24,20 +24,17 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
 
     // Physics Selection
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); // 150608
-    AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(bMCphyssel, kTRUE);
+    AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0, kTRUE); // 0 (real), 1 (MC gen or rec.)
 //  physSelTask->SelectCollisionCandidates(AliVEvent::kMB);
 
 	// V0 Event Plane
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
     AliVZEROEPSelectionTask *VZEROEPTask = AddTaskVZEROEPSelection();
-
+*/
 	// My Task
     AliAnalysisTaskEPCorrAA* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
 //    AliAnalysisTaskSE* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
 //    EPCorrAATask->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
-
-	// Setter
-//    task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); // set in source code
 
     // Add the task.
     mgr->AddTask(EPCorrAATask);
@@ -53,7 +50,5 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
     mgr->ConnectOutput(EPCorrAATask,1,coutput1);
 
     return EPCorrAATask;
-
-
 
 }

@@ -12,22 +12,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Event Data used in exchange to the different analysis components
- *
- * Author:
- *    Markus Fasel
- */
+
 #include "AliEMCalTriggerEventData.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventData)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEMCalTriggerEventData::AliEMCalTriggerEventData() :
     TObject(),
     fRecEvent(NULL),
+    fTriggerBitSelection(0),
     fMCEvent(NULL),
     fClusterContainer(NULL),
     fTrackContainer(NULL),
@@ -36,15 +36,15 @@ AliEMCalTriggerEventData::AliEMCalTriggerEventData() :
     fJetContainerMC(NULL),
     fJetContainerData(NULL)
 {
-  /*
-   * Default constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Copy constructor
+ */
 AliEMCalTriggerEventData::AliEMCalTriggerEventData(const AliEMCalTriggerEventData &ref) :
     TObject(ref),
     fRecEvent(ref.fRecEvent),
+    fTriggerBitSelection(ref.fTriggerBitSelection),
     fMCEvent(ref.fMCEvent),
     fClusterContainer(ref.fClusterContainer),
     fTrackContainer(ref.fTrackContainer),
@@ -53,19 +53,16 @@ AliEMCalTriggerEventData::AliEMCalTriggerEventData(const AliEMCalTriggerEventDat
     fJetContainerMC(ref.fJetContainerMC),
     fJetContainerData(ref.fJetContainerData)
 {
-  /*
-   * copy constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * assignment operator
+ */
 AliEMCalTriggerEventData &AliEMCalTriggerEventData::operator=(const AliEMCalTriggerEventData &ref) {
-  /*
-   * assignment operator
-   */
   TObject::operator=(ref);
   if(this != &ref){
     fRecEvent = ref.fRecEvent;
+    fTriggerBitSelection = ref.fTriggerBitSelection;
     fMCEvent = ref.fMCEvent;
     fClusterContainer = ref.fClusterContainer;
     fTrackContainer = ref.fTrackContainer;

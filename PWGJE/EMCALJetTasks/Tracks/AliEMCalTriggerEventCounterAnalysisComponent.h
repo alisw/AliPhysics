@@ -41,18 +41,11 @@ public:
   virtual void CreateHistos();
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
-  /**
-   * Specify method to select triggered events
-   * \param method Method applied
-   */
-  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
-
 protected:
   void DefineAxis(TAxis& axis, const char* name,
       const char* title, int nbins, double min, double max,
       const char** labels) const;
-
-  ETriggerMethod_t                          fTriggerMethod;     ///< Use patches for trigger decision
+  Int_t FindAxis(THnSparse *hist, const char *title) const;
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerEventCounterAnalysisComponent, 1);    // Analysis component for event counting

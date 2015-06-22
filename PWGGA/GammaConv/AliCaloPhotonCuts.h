@@ -151,6 +151,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Double_t 	fMinDistanceToBadChannel; 			// minimum distance to bad channel
 		Bool_t 		fUseDistanceToBadChannel;			// flag for switching on distance to bad channel cut
 		Double_t 	fMaxTimeDiff; 						// maximum time difference to triggered collision
+		Double_t	fMinTimeDiff;						// minimum time difference to triggered collision
 		Bool_t 		fUseTimeDiff;						// flag for switching on time difference cut
         Double_t 	fMaxDistTrackToClusterEta; 			// minimum distance between track and cluster in eta
         Double_t 	fMinDistTrackToClusterPhi; 			// minimum distance between track and cluster in phi
@@ -216,6 +217,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH2F*		fHistCellTimevsCellID;					// Cell Time vs CellID
 		TH2F* 		fHistClusterEM02BeforeQA;				// 2-dim plot E vs. M02
 		TH2F* 		fHistClusterEM02AfterQA;				// 2-dim plot E vs. M02
+		TH1F*		fHistClusterIncludedCellsBeforeQA;		// CellIDs in Cluster
+		TH1F*		fHistClusterIncludedCellsAfterQA;		// CellIDs in Cluster of accepted ones
 
         //Track matching histograms
 		TH1F* 		fHistClusterRBeforeQA;					// cluster position in R=SQRT(x^2+y^2) (before QA)

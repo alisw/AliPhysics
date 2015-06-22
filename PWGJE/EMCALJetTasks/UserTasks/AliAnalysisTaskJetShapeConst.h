@@ -44,7 +44,8 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
-
+  void SetSmallSystRanges(Bool_t small = kTRUE)                 { fSmallSyst = small; }
+  
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -76,7 +77,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   Int_t           fMatch;                                          // 1: matched to MC jet; 0: no match
   Int_t           fMinLabelEmb;                                    // min label of embedded particles
   Int_t           fMaxLabelEmb;                                    // max label of embedded particles
-  
+  Bool_t          fSmallSyst;                                      // flag for the axes ranges in pPb
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
   TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
   TH3F          **fh3MSubPtRawDRMatch;                             //! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
@@ -86,11 +87,12 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
   THnSparse     **fhnDeltaMass;                                    //! deltaM vs deltapT
+  THnSparse      *fhnDeltaMassAndBkgInfo;                          //! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
 
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 8)
+  ClassDef(AliAnalysisTaskJetShapeConst, 9)
 };
 #endif
 

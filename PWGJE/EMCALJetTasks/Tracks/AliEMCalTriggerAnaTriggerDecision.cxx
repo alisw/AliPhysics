@@ -31,7 +31,6 @@ namespace EMCalTriggerPtAnalysis {
  * Dummy (I/O) and main constructor
  */
 AliEMCalTriggerAnaTriggerDecision::AliEMCalTriggerAnaTriggerDecision() :
-    fIsMinBias(kFALSE),
     fDoDebug(kFALSE)
 {
   Reset();
@@ -184,7 +183,6 @@ Double_t AliEMCalTriggerAnaTriggerDecision::GetPatchEnergy(EPatchEnergyType_t en
 void AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
   std::cout << "Trigger decision" << std::endl;
   std::cout << "===============================" << std::endl;
-  std::cout << "MinBias:                   " << (fIsMinBias ? "yes" : "no") << std::endl;
   std::string triggertitles[4] = {"Jet High", "Jet Low", "Gamma High", "Gamma Low"};
   for(int icase = 0; icase < 4; icase++){
     std::cout << triggertitles[icase] << ": String[" << (fDecisionFromString[icase] ? "yes" : "no")

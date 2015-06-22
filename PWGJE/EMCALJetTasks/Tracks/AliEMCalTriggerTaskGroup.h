@@ -22,7 +22,7 @@
  */
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalTriggerAnaTriggerDecision;
+class AliEMCalTriggerAnaClassManager;
 class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventSelection;
 class AliEMCalTriggerKineCuts;
@@ -58,7 +58,6 @@ public:
    */
   void SetGlobalBinning(const AliEMCalTriggerBinningComponent *const binning) { fBinning = binning; }
 
-  void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger);
   void SetWeightHandler(const AliEMCalTriggerWeightHandler *handler);
 
   /**
@@ -69,7 +68,7 @@ public:
 
   void AddAnalysisComponent(AliEMCalTriggerTracksAnalysisComponent * const analysis);
 
-  TList * InitialiseAnalysisComponents();
+  TList * InitialiseAnalysisComponents(const AliEMCalTriggerAnaClassManager *mgr = NULL);
   void Process(const AliEMCalTriggerEventData * const event);
 
 protected:

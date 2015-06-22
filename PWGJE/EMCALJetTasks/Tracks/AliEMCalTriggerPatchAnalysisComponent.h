@@ -66,13 +66,6 @@ public:
   void SetSwapOnlineThresholds(Bool_t doSwap = kTRUE) { fSwapOnlineThresholds = doSwap; }
 
   /**
-   * Define method to select event as triggered event
-   *
-   * \param triggermethod Method used to select event as triggered event
-   */
-  void SetTriggerMethod(ETriggerMethod_t triggermethod) { fTriggerMethod = triggermethod; }
-
-  /**
    * Swap offline thresholds (i.e. low threshold becomes high threshold and vice versa)
    *
    * \param doSwap Do swap the thresholds
@@ -251,7 +244,6 @@ protected:
   Bool_t                        fSwapOnlineThresholds;          ///< Swap trigger thresholds for online patches
   Bool_t                        fSwapOfflineThresholds;         ///< Swap trigger thresholds for offline patches
   Bool_t                        fWithEventSelection;            ///< Define whether patches are analysed with event selection
-  ETriggerMethod_t              fTriggerMethod;                 ///< Trigger method used for event selection
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerPatchAnalysisComponent, 1);     // Component for trigger patch analysis

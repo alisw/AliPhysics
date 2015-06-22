@@ -12,13 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
 #include <map>
 #include <string>
+
+#include <TArrayD.h>
+#include <TAxis.h>
+#include <THnSparse.h>
 
 #include "AliVEvent.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalHistoContainer.h"
@@ -34,8 +39,7 @@ namespace EMCalTriggerPtAnalysis {
  * Default (I/O) constructor, not to be used
  */
 AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysisComponent():
-  AliEMCalTriggerTracksAnalysisComponent(),
-  fTriggerMethod(kTriggerString)
+  AliEMCalTriggerTracksAnalysisComponent()
 {
 }
 
@@ -43,8 +47,7 @@ AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysi
  * Main constructor
  */
 AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysisComponent(const char *name):
-  AliEMCalTriggerTracksAnalysisComponent(name),
-  fTriggerMethod(kTriggerString)
+  AliEMCalTriggerTracksAnalysisComponent(name)
 {
 }
 
@@ -56,21 +59,14 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
 
   // Create trigger definitions
   std::map<std::string, std::string> triggerCombinations;
-  const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
-      "EMCGLow", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
-      "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"};
-  // Define names and titles for different triggers in the histogram container
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[1], "jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "jet and gamma triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "exclusively gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "jet and gamma triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "exclusively gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively-triggered events (low threshold)"));
+  GetAllTriggerNamesAndTitles(triggerCombinations);
+
+  if(fComponentDebugLevel > 0){
+    std::cout << "Event counter component - Found the following triggers:" << std::endl;
+    for(std::map<std::string, std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); it++){
+      std::cout << it->first << ", " << it->second << std::endl;
+    }
+  }
 
   AliEMCalTriggerBinningDimension *vertexbinning = fBinning->GetBinning("zvertex");
 
@@ -81,14 +77,19 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
   }
 
   // Make correlation histogram for different trigger classes
-  const TAxis *triggeraxis[5]; memset(triggeraxis, 0, sizeof(const TAxis *) * 5);
+  const TAxis **triggeraxis = new const TAxis *[triggerCombinations.size()];
+  memset(triggeraxis, 0, sizeof(const TAxis *) * triggerCombinations.size());
   const char *binlabels[2] = {"OFF", "ON"};
-  TAxis mytrgaxis[5];
-  for(int itrg = 0; itrg < 5; ++itrg){
-    DefineAxis(mytrgaxis[itrg], triggernames[itrg], triggernames[itrg], 2, -0.5, 1.5, binlabels);
+  TAxis *mytrgaxis = new TAxis[triggerCombinations.size()];
+  std::map<std::string, std::string>::iterator trgiter = triggerCombinations.begin();
+  for(int itrg = 0; itrg < triggerCombinations.size(); ++itrg){
+    DefineAxis(mytrgaxis[itrg], trgiter->first.c_str(), trgiter->first.c_str(), 2, -0.5, 1.5, binlabels);
     triggeraxis[itrg] = mytrgaxis+itrg;
+    trgiter++;
   }
-  fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
+  fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", triggerCombinations.size(), triggeraxis);
+  delete[] mytrgaxis;
+  delete[] triggeraxis;
 }
 
 /**
@@ -97,52 +98,24 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
  *  -# Fill also correlation histogram
  */
 void AliEMCalTriggerEventCounterAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
-  if(!fTriggerDecision) return;
+  if(!fTriggerClassManager) return;
 
   double vz = data->GetRecEvent()->GetPrimaryVertex()->GetZ();
-  double triggerCorrelation[5]; memset(triggerCorrelation, 0, sizeof(double) * 5);
+  TArrayD triggerCorrelation(fTriggerClassManager->GetAllTriggerClasses()->GetEntries());
+  memset(triggerCorrelation.GetArray(), 0, sizeof(double) * triggerCorrelation.GetSize());
 
-  if(fComponentDebugLevel > 2)
-    fTriggerDecision->Print();
+  std::vector<std::string> triggernames;
+  this->GetMachingTriggerNames(triggernames);
 
-  if(fTriggerDecision->IsMinBias()){
-    triggerCorrelation[0] = 1.;
-    fHistos->FillTH1("hEventHistMinBias", vz);
-  }
-  if(fTriggerDecision->IsTriggered(kTAEMCJHigh, fTriggerMethod)){
-    triggerCorrelation[2] = 1.;
-    fHistos->FillTH1("hEventHistEMCJHigh", vz);
-    // Check whether also the gamma high-threshold trigger fired
-    if(fTriggerDecision->IsTriggered(kTAEMCGHigh, fTriggerMethod)){
-      fHistos->FillTH1("hEventHistEMCHighBoth", vz);
-    } else {
-      fHistos->FillTH1("hEventHistEMCHighJetOnly", vz);
+  THnSparse *correlationhist = dynamic_cast<THnSparse *>(fHistos->FindObject("hEventTriggers"));
+  for(std::vector<std::string>::iterator it = triggernames.begin(); it != triggernames.end(); it++){
+    fHistos->FillTH1(Form("hEventHist%s", it->c_str()) ,vz);
+    if(correlationhist){
+      int idim = FindAxis(correlationhist, it->c_str());
+      if(idim >= 0) triggerCorrelation[idim] = 1.;
     }
   }
-  if(fTriggerDecision->IsTriggered(kTAEMCJLow, fTriggerMethod)){
-    triggerCorrelation[1] = 1.;
-    fHistos->FillTH1("hEventHistEMCJLow", vz);
-    // Check whether also the gamma high-threshold trigger fired
-    if(fTriggerDecision->IsTriggered(kTAEMCGLow, fTriggerMethod)){
-      fHistos->FillTH1("hEventHistEMCLowBoth", vz);
-    } else {
-      fHistos->FillTH1("hEventHistEMCLowJetOnly", vz);
-    }
-  }
-  if(fTriggerDecision->IsTriggered(kTAEMCGHigh, fTriggerMethod)){
-    triggerCorrelation[3] = 1.;
-    fHistos->FillTH1("hEventHistEMCGHigh", vz);
-    if(!fTriggerDecision->IsTriggered(kTAEMCJHigh, fTriggerMethod))
-      fHistos->FillTH1("hEventHistEMCHighGammaOnly", vz);
-  }
-  if(fTriggerDecision->IsTriggered(kTAEMCGLow, fTriggerMethod)){
-    triggerCorrelation[4] = 1.;
-    fHistos->FillTH1("hEventHistEMCGLow", vz);
-    if(!fTriggerDecision->IsTriggered(kTAEMCJLow, fTriggerMethod))
-      fHistos->FillTH1("hEventHistEMCLowGammaOnly", vz);
-  }
-
-  fHistos->FillTHnSparse("hEventTriggers", triggerCorrelation);
+  if(correlationhist) correlationhist->Fill(triggerCorrelation.GetArray());
 }
 
 /**
@@ -166,6 +139,18 @@ void AliEMCalTriggerEventCounterAnalysisComponent::DefineAxis(TAxis& axis, const
     for(int ib = 1; ib <= axis.GetNbins(); ++ib)
       axis.SetBinLabel(ib, labels[ib-1]);
   }
+}
+
+Int_t AliEMCalTriggerEventCounterAnalysisComponent::FindAxis(THnSparse* hist, const char* title) const {
+  Int_t naxis = hist->GetNdimensions();
+  Int_t result = -1;
+  for(int idim = 0; idim < naxis; idim++){
+    if(!TString(hist->GetAxis(idim)->GetName()).CompareTo(title)){
+      result = idim;
+      break;
+    }
+  }
+  return result;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

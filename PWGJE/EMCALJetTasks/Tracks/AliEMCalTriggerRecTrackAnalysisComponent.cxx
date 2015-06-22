@@ -32,7 +32,7 @@
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 
-#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerKineCuts.h"
@@ -55,7 +55,6 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   AliEMCalTriggerTracksAnalysisComponent(),
   fTrackSelection(NULL),
   fSwapEta(kFALSE),
-  fTriggerMethod(kTriggerString),
   fRequestMCtrue(kFALSE),
   fDoMatchPatches(kFALSE)
 {
@@ -71,7 +70,6 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   AliEMCalTriggerTracksAnalysisComponent(name),
   fTrackSelection(NULL),
   fSwapEta(kFALSE),
-  fTriggerMethod(kTriggerString),
   fRequestMCtrue(kFALSE),
   fDoMatchPatches(kFALSE)
 {
@@ -106,21 +104,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
 
   // Create trigger definitions
   std::map<std::string, std::string> triggerCombinations;
-  const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
-      "EMCGLow", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
-      "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"};
-  // Define names and titles for different triggers in the histogram container
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[1], "jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "jet and gamma triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "exclusively gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "jet and gamma triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "exclusively gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively-triggered events (low threshold)"));
+  GetAllTriggerNamesAndTitles(triggerCombinations);
 
   // Create axis definitions
   const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
@@ -188,7 +172,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
   if(fRequestMCtrue && !data->GetMCEvent()) return;
 
   std::vector<std::string> triggernames;
-  this->GetMachingTriggerNames(triggernames, fTriggerMethod);
+  this->GetMachingTriggerNames(triggernames);
 
   AliVTrack *track(NULL);
   const AliVParticle *assocMC(NULL);
@@ -296,7 +280,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
   data[1] = (fSwapEta ? -1. : 1.) * (useMCkine ? assocMC->Eta() : trk->Eta());
   data[2] = useMCkine ? assocMC->Phi() : trk->Phi();
   data[3] = recev->GetPrimaryVertex()->GetZ();
-  data[4] = fTriggerDecision->IsMinBias();
+  data[4] = fTriggerClassManager->HasMinBiasTrigger();
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
@@ -358,19 +342,11 @@ Bool_t AliEMCalTriggerRecTrackAnalysisComponent::HasMatchedPatchOfType(
       hasJetHigh = kFALSE;
   for(TIter patchIter = TIter(&patches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEmcalTriggerPatchInfo *matchedpad = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
-    if(fTriggerDecision->GetConfiguration()->IsUsingOfflinePatches()){
-      if(!matchedpad->IsOfflineSimple()) continue;
-      if(matchedpad->IsJetHighSimple()) hasJetHigh = kTRUE;
-      if(matchedpad->IsJetLowSimple()) hasJetLow = kTRUE;
-      if(matchedpad->IsGammaHighSimple()) hasGammaHigh = kTRUE;
-      if(matchedpad->IsGammaLowSimple()) hasGammaLow = kTRUE;
-    } else {
-      if(matchedpad->IsOfflineSimple()) continue;
-      if(matchedpad->IsJetHigh()) hasJetHigh = kTRUE;
-      if(matchedpad->IsJetLow()) hasJetLow = kTRUE;
-      if(matchedpad->IsGammaHigh()) hasGammaHigh = kTRUE;
-      if(matchedpad->IsGammaLow()) hasGammaLow = kTRUE;
-    }
+    if(matchedpad->IsOfflineSimple()) continue;
+    if(matchedpad->IsJetHigh()) hasJetHigh = kTRUE;
+    if(matchedpad->IsJetLow()) hasJetLow = kTRUE;
+    if(matchedpad->IsGammaHigh()) hasGammaHigh = kTRUE;
+    if(matchedpad->IsGammaLow()) hasGammaLow = kTRUE;
   }
   // Evaluate status
   if((triggertype.Contains("EMCJHigh") || triggertype.Contains("EMCHighJetOnly")) && hasJetHigh) return kTRUE;

@@ -73,6 +73,18 @@ public:
   void FillMomentumVector(TVector3 &) const;
 
   /**
+   * Access to components of the  3-momentum vector.
+   * \param px x-component
+   * \param py y-component
+   * \param pz z-component
+   */
+  void GetMomentumVector(Double_t &px, Double_t &py, Double_t &pz) const {
+    px = fPVec[0];
+    py = fPVec[1];
+    pz = fPVec[2];
+  }
+
+  /**
    * Set the basic paricle parameters
    * \param id ID of the particle
    * \param pdgcode PDG code of the particle

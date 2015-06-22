@@ -31,6 +31,7 @@
 #include "AliESDfriend.h"
 #include "AliESDAD.h"
 #include "AliESDADfriend.h"
+#include "AliESDVZERO.h"
 
 #include "AliAnalysisTaskADQA.h"
 
@@ -39,7 +40,7 @@ ClassImp(AliAnalysisTaskADQA)
 //________________________________________________________________________
 AliAnalysisTaskADQA::AliAnalysisTaskADQA() 
   : AliAnalysisTaskSE(),fListHist(0),fHistTotalChargePerEventADA(0),fHistTotalChargePerEventADC(0),
-    fHistChargePerPM_All(0), fHistChargePerPM_BB(0), fHistChargePerPM_BG(0), fHistTimePerPM_Corr(0), fHistTimePerPM_UnCorr(0),
+    fHistChargePerPM_All(0), fHistChargePerPM_BB(0), fHistChargePerPM_BG(0), fHistChargePerPM_Time(0), fHistTimePerPM_Corr(0), fHistTimePerPM_UnCorr(0),
     fHistWidthPerPM(0),fHistTimeVsChargeADA_Corr(0), fHistTimeVsChargeADC_Corr(0),fHistTimeVsChargeADA_UnCorr(0),fHistTimeVsChargeADC_UnCorr(0),fHistWidthVsCharge(0),
     fHistNBBflagsADA(0),fHistNBBflagsADC(0),fHistNBBflagsADAVsADC(0),
     fHistNBBCoincidencesADA(0),fHistNBBCoincidencesADC(0),fHistNBBCoincidencesADAVsADC(0),
@@ -47,8 +48,9 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA()
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
-    fHistTrigger(0),
+    fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
+    fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
     fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0)
@@ -58,7 +60,7 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA()
 //________________________________________________________________________
 AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name) 
   : AliAnalysisTaskSE(name),fListHist(0),fHistTotalChargePerEventADA(0),fHistTotalChargePerEventADC(0),
-    fHistChargePerPM_All(0), fHistChargePerPM_BB(0), fHistChargePerPM_BG(0), fHistTimePerPM_Corr(0), fHistTimePerPM_UnCorr(0),
+    fHistChargePerPM_All(0), fHistChargePerPM_BB(0), fHistChargePerPM_BG(0), fHistChargePerPM_Time(0), fHistTimePerPM_Corr(0), fHistTimePerPM_UnCorr(0),
     fHistWidthPerPM(0),fHistTimeVsChargeADA_Corr(0), fHistTimeVsChargeADC_Corr(0),fHistTimeVsChargeADA_UnCorr(0),fHistTimeVsChargeADC_UnCorr(0),fHistWidthVsCharge(0),
     fHistNBBflagsADA(0),fHistNBBflagsADC(0),fHistNBBflagsADAVsADC(0),
     fHistNBBCoincidencesADA(0),fHistNBBCoincidencesADC(0),fHistNBBCoincidencesADAVsADC(0),
@@ -66,8 +68,9 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name)
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
-    fHistTrigger(0),
+    fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
+    fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
     fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0)
@@ -129,7 +132,11 @@ if (!fHistChargePerPM_BB) {
 if (!fHistChargePerPM_BG) {
     fHistChargePerPM_BG = CreateHist2D("fHistChargePerPM_BG","Charge per PM BG events",kNChannelBins, kChannelMin, kChannelMax,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"PM number","ADC counts");
     fListHist->Add(fHistChargePerPM_BG);
-  }  
+  }
+if (!fHistChargePerPM_Time) {
+    fHistChargePerPM_Time = CreateHist2D("fHistChargePerPM_Time","Charge per PM Time events",kNChannelBins, kChannelMin, kChannelMax,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"PM number","ADC counts");
+    fListHist->Add(fHistChargePerPM_Time);
+  }    
 if (!fHistTimePerPM_Corr) {
     fHistTimePerPM_Corr = CreateHist2D("fHistTimePerPM_Corr","Corrected Time per PM",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"PM number","Leading time [ns]");
     fListHist->Add(fHistTimePerPM_Corr);
@@ -217,7 +224,7 @@ if (!fHistChargeNoFlag) {
     fListHist->Add(fHistChargeNoFlag);
   } 
 if (!fHistTimeNoFlag) {
-    fHistTimeNoFlag = CreateHist1D("fHistTimeNoFlag","Time in PM without BB flag",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
+    fHistTimeNoFlag = CreateHist2D("fHistTimeNoFlag","Time in PM without BB flag",kNChannelBins, kChannelMin, kChannelMax,kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
     fListHist->Add(fHistTimeNoFlag);
   }   
 if (!fHistChargeNoTime) {
@@ -272,25 +279,56 @@ if (!fHistDecision) {
  }
 
     
-if(!fHistTrigger) {
-    fHistTrigger = CreateHist1D("fHistTrigger","Trigger inputs, from online Bits",11,0 ,11,"AD0 Trigger Type","Counts");
-    fHistTrigger->SetFillColor(kAzure-8);
-    fHistTrigger->SetLineWidth(2);
-    fHistTrigger->GetXaxis()->SetLabelSize(0.04);
-    fHistTrigger->GetXaxis()->SetNdivisions(808,kFALSE);
-    fHistTrigger->GetXaxis()->SetBinLabel(1, "UBA");
-    fHistTrigger->GetXaxis()->SetBinLabel(2, "UBC");
-    fHistTrigger->GetXaxis()->SetBinLabel(3, "UGA");
-    fHistTrigger->GetXaxis()->SetBinLabel(4, "UGC");
-    fHistTrigger->GetXaxis()->SetBinLabel(5, "UBA & UBC");
-    fHistTrigger->GetXaxis()->SetBinLabel(6, "UBA || UBC");
-    fHistTrigger->GetXaxis()->SetBinLabel(7, "(UBA || UBC) & !(UGA || UGC)");
-    fHistTrigger->GetXaxis()->SetBinLabel(8, "UGA & UBC");
-    fHistTrigger->GetXaxis()->SetBinLabel(9, "UGC & UBA");
-    fHistTrigger->GetXaxis()->SetBinLabel(10, "UGA || UGC");
-    fHistTrigger->GetXaxis()->SetBinLabel(11, "(UGA & UBC) || (UGC & UBA)");
-    fListHist->Add(fHistTrigger);
+if(!fHistTriggerMasked) {
+    fHistTriggerMasked = CreateHist1D("fHistTriggerMasked","Trigger inputs, from FEE (BC masked)",10,0 ,10,"AD0 Trigger Type","Counts");
+    fHistTriggerMasked->SetFillColor(kAzure-8);
+    fHistTriggerMasked->SetLineWidth(2);
+    fHistTriggerMasked->GetXaxis()->SetLabelSize(0.04);
+    fHistTriggerMasked->GetXaxis()->SetNdivisions(808,kFALSE);
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(1, "UBA & UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(2, "UBA || UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(3, "UGA & UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(4, "UGA");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(5, "UGC & UBA");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(6, "UGC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(7, "UBA");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(8, "UBC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(9, "UGA || UGC");
+    fHistTriggerMasked->GetXaxis()->SetBinLabel(10, "(UGA & UBC) || (UGC & UBA)");
+    fListHist->Add(fHistTriggerMasked);
     }
+ 
+ if(!fHistTriggerUnMasked) {
+    fHistTriggerUnMasked = CreateHist1D("fHistTriggerUnMasked","Trigger inputs, from FEE (BC masked)",10,0 ,10,"AD0 Trigger Type","Counts");
+    fHistTriggerUnMasked->SetFillColor(kAzure-8);
+    fHistTriggerUnMasked->SetLineWidth(2);
+    fHistTriggerUnMasked->GetXaxis()->SetLabelSize(0.04);
+    fHistTriggerUnMasked->GetXaxis()->SetNdivisions(808,kFALSE);
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(1, "UBA & UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(2, "UBA || UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(3, "UGA & UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(4, "UGA");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(5, "UGC & UBA");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(6, "UGC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(7, "UBA");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(8, "UBC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(9, "UGA || UGC");
+    fHistTriggerUnMasked->GetXaxis()->SetBinLabel(10, "(UGA & UBC) || (UGC & UBA)");
+    fListHist->Add(fHistTriggerUnMasked);
+    }
+    
+if(!fHistTriggerOthers) {
+    fHistTriggerOthers = CreateHist1D("fHistTriggerOthers","Trigger inputs, from other detectors",2,0 ,2,"Trigger inputs","Counts");
+    fHistTriggerOthers->SetFillColor(kAzure-8);
+    fHistTriggerOthers->SetLineWidth(2);
+    fHistTriggerOthers->GetXaxis()->SetLabelSize(0.04);
+    fHistTriggerOthers->GetXaxis()->SetNdivisions(808,kFALSE);
+    fHistTriggerOthers->GetXaxis()->SetBinLabel(1, "VBAND");
+    fHistTriggerOthers->GetXaxis()->SetBinLabel(2, "VBOR");
+
+    fListHist->Add(fHistTriggerOthers);
+    }
+
      
 if (!fHistChargeVsClockInt0) {
     fHistChargeVsClockInt0 = CreateHist2D("fHistChargeVsClockInt0","Charge Vs Clock (Int0)",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
@@ -320,9 +358,17 @@ if (!fHistMaxChargeClock) {
     fHistMaxChargeClock = CreateHist2D("fHistMaxChargeClock","Clock with maximum charge per channel",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
     fListHist->Add(fHistMaxChargeClock);
   }
+if (!fHistMaxChargeValueInt0) {
+    fHistMaxChargeValueInt0 = CreateHist2D("fHistMaxChargeValueInt0","Maximum charge value per PM Int0",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
+    fListHist->Add(fHistMaxChargeValueInt0);
+  }
+if (!fHistMaxChargeValueInt1) {
+    fHistMaxChargeValueInt1 = CreateHist2D("fHistMaxChargeValueInt1","Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
+    fListHist->Add(fHistMaxChargeValueInt1);
+  }
 if(!fHistTimeVsChargePerPM_UnCorr) {
     fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",800, 400, 1200, 
-    					2000,-4,0,
+    					200,-4,0,
 					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
     fListHist->Add(fHistTimeVsChargePerPM_UnCorr);
   } 
@@ -402,7 +448,7 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
     return;
   }
   AliESDADfriend* esdADfriend = fESDfriend->GetADfriend();
- 
+  
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
   Int_t nBBflagsADA = 0;
@@ -421,6 +467,7 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	fHistChargePerPM_All->Fill(i,esdAD->GetAdc(i));
 	if(esdAD->GetBBFlag(i))fHistChargePerPM_BB->Fill(i,esdAD->GetAdc(i));
 	if(esdAD->GetBGFlag(i))fHistChargePerPM_BG->Fill(i,esdAD->GetAdc(i));
+	if(esdAD->GetTime(i)>1e-6)fHistChargePerPM_Time->Fill(i,esdAD->GetAdc(i));
 	
 	fHistTimePerPM_Corr->Fill(i,esdAD->GetTime(i));
 	
@@ -428,13 +475,14 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
         if(i>7)fHistTimeVsChargeADA_Corr->Fill(esdAD->GetTime(i),esdAD->GetAdc(i));
 	fHistWidthPerPM->Fill(i,esdAD->GetWidth(i));
 	fHistWidthVsCharge->Fill(esdAD->GetWidth(i),esdAD->GetAdc(i));
-	if(!esdAD->GetBBFlag(i)) {
-		fHistChargeNoFlag->Fill(esdAD->GetAdc(i));
-		fHistTimeNoFlag->Fill(esdAD->GetTime(i));
-		}
-	if(esdAD->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(esdAD->GetAdc(i));
 	
 	if(esdADfriend){
+		if(!esdAD->GetBBFlag(i)) {
+			fHistChargeNoFlag->Fill(esdAD->GetAdc(i));
+			fHistTimeNoFlag->Fill(i,esdADfriend->GetTime(i));
+			}
+		if(esdADfriend->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(esdAD->GetAdc(i));
+	
 		fHistTimePerPM_UnCorr->Fill(i,esdADfriend->GetTime(i));
  		if(i<8) fHistTimeVsChargeADC_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
  		if(i>7) fHistTimeVsChargeADA_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
@@ -457,8 +505,10 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 			}
 		fHistBBFlagPerChannel->Fill(i,nbbFlag);
 		fHistBGFlagPerChannel->Fill(i,nbgFlag);
-		fHistMaxChargeClock->Fill(i,TMath::LocMax(21,charge)-10);
-		
+		Int_t maxClock = TMath::LocMax(21,charge);
+		fHistMaxChargeClock->Fill(i,maxClock-10);
+		if(!esdADfriend->GetIntegratorFlag(i,maxClock))fHistMaxChargeValueInt0->Fill(i,charge[maxClock]);
+		if( esdADfriend->GetIntegratorFlag(i,maxClock))fHistMaxChargeValueInt1->Fill(i,charge[maxClock]);
 		}
   }
 	
@@ -494,29 +544,21 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	fHistMeanTimeSumDiff->Fill(esdAD->GetADATime()-esdAD->GetADCTime(),esdAD->GetADATime()+esdAD->GetADCTime());
 	}
   fHistDecision->Fill(esdAD->GetADADecision(),esdAD->GetADCDecision());
-  
+    
   //Triggers
-  Bool_t UBA = kFALSE;
-  Bool_t UBC = kFALSE;
-  Bool_t UGA = kFALSE;
-  Bool_t UGC = kFALSE;
+  UShort_t fTriggerBC = esdAD->GetTriggerBits();
+  for(Int_t i = 0; i<16; i++){ 
+  	if(i>5 && i<12)continue; //unused inputs
+  	if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
+	}
   
-  if(nBBCoincidencesADA>=1) UBA = kTRUE;
-  if(nBBCoincidencesADC>=1) UBC = kTRUE;
-  if(nBGCoincidencesADA>=1) UGA = kTRUE;
-  if(nBGCoincidencesADC>=1) UGC = kTRUE;
-
-  if(UBA) fHistTrigger->Fill(0);
-  if(UBC) fHistTrigger->Fill(1);
-  if(UGA) fHistTrigger->Fill(2);
-  if(UGC) fHistTrigger->Fill(3);
-  if(UBA && UBC) fHistTrigger->Fill(4);
-  if(UBA || UBC) fHistTrigger->Fill(5);
-  if((UBA || UBC) && !(UGA || UGC)) fHistTrigger->Fill(6);
-  if(UGA && UBC) fHistTrigger->Fill(7);
-  if(UGC && UBA) fHistTrigger->Fill(8);
-  if(UGA || UGC) fHistTrigger->Fill(9);
-  if((UGA && UBC) || (UGC && UBA)) fHistTrigger->Fill(10);
+  if(esdADfriend){
+  	UShort_t fTriggerUnBC = esdADfriend->GetTriggerInputs();
+  	for(Int_t i = 0; i<16; i++) {
+		if(i>5 && i<12)continue; //unused inputs
+		if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i);
+		}
+  }
   
   //Robusts time testing
   Double_t timesADA[8], timesADC[8];
@@ -585,7 +627,13 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
   fHistNTimesRobustADA->Fill(nrobTimeA);
   fHistNTimesRobustADC->Fill(nrobTimeC);
 
-  
+  //Triggers from VZERO for reference
+  AliESDVZERO* esdVZERO = fESD->GetVZEROData();
+  if(esdVZERO){
+  	UShort_t fTriggerVZERO = esdVZERO->GetTriggerBits();
+	if(fTriggerVZERO & (1 << 0) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(0);
+	if(fTriggerVZERO & (1 << 1) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(1);
+  	}
 
   // Post output data.
   PostData(1, fListHist);

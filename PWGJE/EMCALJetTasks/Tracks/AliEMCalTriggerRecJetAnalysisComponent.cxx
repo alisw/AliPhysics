@@ -32,7 +32,7 @@
 
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
-#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliEMCalTriggerEventData.h"
@@ -53,8 +53,7 @@ AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent()
   fTrackSelection(NULL),
   fMinimumJetPt(20.),
   fRequestMCtrue(kFALSE),
-  fSwapEta(kFALSE),
-  fTriggerMethod(kTriggerString)
+  fSwapEta(kFALSE)
 {
 }
 
@@ -67,8 +66,7 @@ AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent(c
   fTrackSelection(NULL),
   fMinimumJetPt(20.),
   fRequestMCtrue(kFALSE),
-  fSwapEta(kFALSE),
-  fTriggerMethod(kTriggerString)
+  fSwapEta(kFALSE)
 {
 }
 
@@ -88,22 +86,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
   // Create trigger definitions
   std::map<std::string, std::string> triggerCombinations;
-  const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
-      "EMCGLow", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
-      "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"};
-  // Define names and titles for different triggers in the histogram container
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[1], "jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "jet and gamma triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "exclusively gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "jet and gamma triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "exclusively gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively-triggered events (low threshold)"));
-
+  GetAllTriggerNamesAndTitles(triggerCombinations);
   // Create axis definitions
   const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
       *jetptbinning = fBinning->GetBinning("jetpt"),
@@ -163,15 +146,12 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
    * Analyse tracks from jets with a given minimum pt
    */
   std::vector<std::string> triggernames;
-  this->GetMachingTriggerNames(triggernames, fTriggerMethod);
+  this->GetMachingTriggerNames(triggernames);
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
   // Debugging:
   if(fComponentDebugLevel > 1){
     PrintTriggerNames(triggernames, "RecJets");
-    fTriggerDecision->Print();
-    if(!fTriggerDecision->CheckConsistency())
-      std::cout << "Decision from patches and from strings do not match" << std::endl;
   }
 
   double weight = 1.;
@@ -241,8 +221,8 @@ void AliEMCalTriggerRecJetAnalysisComponent::FillHistogram(
     const TString& histname, const AliVParticle* track, const AliEmcalJet* jet,
     double vz, double weight) {
 
-  if(!fTriggerDecision) return;
-  double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
+  if(!fTriggerClassManager) return;
+  double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * track->Eta(), track->Phi(), vz, fTriggerClassManager->HasMinBiasTrigger() ? 1. : 0.};
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
