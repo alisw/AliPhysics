@@ -247,7 +247,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoTrueSecondaryClusConvGammaFromXFromEtasPt;//! array of histos with validated secondary cluster conversion photon from Eta, pt  
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
-		TH1F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
+		TH2F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
 		vector<Int_t>						fVectorDoubleCountTrueClusterGammas;			//! vector containing labels of validated cluster photons

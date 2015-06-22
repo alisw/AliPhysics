@@ -309,7 +309,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
-		TH1F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
+		TH2F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
 		vector<Int_t>						fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
