@@ -1008,7 +1008,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoTrueClusGammaPt 				= new TH1F*[fnCuts];
 		fHistoTruePrimaryClusGammaPt 		= new TH1F*[fnCuts];
 		fHistoTruePrimaryClusGammaESDPtMCPt = new TH2F*[fnCuts];
-		fHistoDoubleCountTrueClusterGammaPt = new TH1F*[fnCuts];
+		fHistoDoubleCountTrueClusterGammaPt = new TH2F*[fnCuts];
 		fHistoMultipleCountTrueClusterGamma = new TH1F*[fnCuts];
 		fHistoTrueNLabelsInClus 			= new TH1F*[fnCuts];
 		fHistoTrueClusGammaEM02				= new TH2F*[fnCuts];
@@ -1307,7 +1307,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fClusterOutputList[iCut]->Add(fHistoTruePrimaryClusGammaPt[iCut]);
 			fHistoTruePrimaryClusGammaESDPtMCPt[iCut] = new TH2F("TruePrimaryClusGamma_Pt_MCPt","ESD_TruePrimaryClusGamma_MCPt",300,0,30,300,0,30);
 			fClusterOutputList[iCut]->Add(fHistoTruePrimaryClusGammaESDPtMCPt[iCut]);
-			fHistoDoubleCountTrueClusterGammaPt[iCut] = new TH1F("TrueDoubleCountClusterGamma_Pt","TrueDoubleCountClusterGamma_Pt",300,0,30);
+			fHistoDoubleCountTrueClusterGammaPt[iCut] = new TH2F("TrueDoubleCountClusterGamma_Pt","TrueDoubleCountClusterGamma_Pt",300,0,30,2,0,2);
 			fClusterOutputList[iCut]->Add(fHistoDoubleCountTrueClusterGammaPt[iCut]);
 			fHistoMultipleCountTrueClusterGamma[iCut] = new TH1F("TrueMultipleCountClusterGamma","TrueMultipleCountClusterGamma",10,1,11);
 			fClusterOutputList[iCut]->Add(fHistoMultipleCountTrueClusterGamma[iCut]);
@@ -2149,7 +2149,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 		if (motherLab > -1){
 			if (TruePhotonCandidate->IsLargestComponentPhoton()){
 				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueClusterGammas,motherLab)){
-					fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
+					fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),(Double_t)0,fWeightJetJetMC);
 					FillMultipleCountMap(fMapMultipleCountTrueClusterGammas,motherLab);
 				}
 			}
@@ -2159,7 +2159,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 			if (grandMotherLab > -1){
 				if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
 					if (CheckVectorForDoubleCount(fVectorDoubleCountTrueClusterGammas,grandMotherLab)){
-						fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
+						fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),(Double_t)1,fWeightJetJetMC);
 						FillMultipleCountMap(fMapMultipleCountTrueClusterGammas,grandMotherLab);
 					}
 				}
@@ -2248,7 +2248,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 		if (motherLab > -1){
 			if (TruePhotonCandidate->IsLargestComponentPhoton()){
 				if (CheckVectorForDoubleCount(fVectorDoubleCountTrueClusterGammas,motherLab)){
-					fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
+					fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),(Double_t)0,fWeightJetJetMC);
 					FillMultipleCountMap(fMapMultipleCountTrueClusterGammas,motherLab);
 				}
 			}
@@ -2258,7 +2258,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 			if (grandMotherLab > -1){
 				if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
 					if (CheckVectorForDoubleCount(fVectorDoubleCountTrueClusterGammas,grandMotherLab)){
-						fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
+						fHistoDoubleCountTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),(Double_t)1,fWeightJetJetMC);
 						FillMultipleCountMap(fMapMultipleCountTrueClusterGammas,grandMotherLab);
 					}
 				}
