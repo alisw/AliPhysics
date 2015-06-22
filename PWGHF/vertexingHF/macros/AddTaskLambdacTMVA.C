@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,
+AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t keepLcNoQuark,
 Int_t syst=0, Int_t bit=0, TString postname="")
 {
   //==============================================================================                                                      
@@ -35,6 +35,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   AliAnalysisTaskSELambdacTMVA *lambdacTask = new AliAnalysisTaskSELambdacTMVA("LambdacAnalysis",storeNtuple,analysiscuts);
   //if(storeNtuple<0 || storeNtuple>2) {AliFatal("Invalid storeNtuple argument - check value");}
   lambdacTask->SetReadMC(readMC);
+	lambdacTask->SetKeepLcNotFromQuark(keepLcNoQuark);
   if(MCPid) lambdacTask->SetMCPid();
   if(resPid) lambdacTask->SetResonantPid();
   if(realPid) lambdacTask->SetRealPid();

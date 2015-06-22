@@ -50,7 +50,7 @@ TString bitNames[NBITS] = {
 //Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12h/000189694/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=189694, TString ocdbStorage = "local:///data/alice/OCDB"){
 //Int_t runLevelEventStatQA(TString qafilename="/data/alice/sim/2014/LHC14j5/138192/QA_merge_archive.zip#event_stat.root", Int_t run=138192, TString ocdbStorage = "local:///data/alice/OCDB"){
 //  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10d/000124360/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=124360, TString ocdbStorage = "local:///alice/data/OCDB"){
-  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10f/000133007/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=133007, TString ocdbStorage = "local:///alice/data/OCDB"){
+  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10f/000133007/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=133007, TString ocdbStorage = "raw://"){
   printf("runLevelEventStatQA %s %i\n",qafilename.Data(),run);
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -58,10 +58,6 @@ TString bitNames[NBITS] = {
   gStyle->SetPadRightMargin(0.02);
   gStyle->SetPadTopMargin(0.07);
   gStyle->SetPadLeftMargin(0.07);
-
-  TFile* fin = new TFile(qafilename);
-  TH2D* h = (TH2D*) fin->Get("fHistStatistics");
-  if (!h) { printf("fHistStatistics not found\n"); return 1; }
 
   // tree variables
   TObjArray classes = TObjArray();
@@ -93,7 +89,7 @@ TString bitNames[NBITS] = {
   TString refClass="";
   Double_t refSigma=-1;
   Double_t refEff = 1.;
-
+  Double_t refMu = 1.e-11;
   if      (               run<=118501) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
   else if (run>=118502 && run<=118561) { refSigma=  47.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_0.90: 47mb=52 mb *0.91=sigma(INEL)*R(INT1/INEL) (arxiv: 1208.4968, fig.10 + table 3)
   else if (run>=118903 && run<=120829) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
@@ -137,21 +133,30 @@ TString bitNames[NBITS] = {
   else if (run>=193693 && run<=193766) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=195344 && run<=197388) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: arxiv:1405.1849
   else if (run>=197470 && run<=197692) { refSigma=  18.; refEff = 0.39; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_2.76: 18mb=47.7mb*0.39=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
-
+  else if (run>=221835 && run<=223669) { refSigma= 52.5; refEff = 0.32; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino
+  else if (run>=221670 && run<=223983) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  else if (run>=223984 && run<=223984) { refSigma= 79.0; refEff = 0.74; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino and MC
+  else if (run>=226111 && run<=226115) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=226116)                { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  
+  
   Double_t par[5] = {0};
   TString det;
-  triggerInfo(run,refClass,ocdbStorage,det,par);
+  Int_t status = triggerInfo(run,refClass,ocdbStorage,det,par);
+  if (status>0) return 2;
   fill          = TMath::Nint(par[0]);
   run_duration   = par[1];
   refl0b         = par[2];
   nBCsPerOrbit   = TMath::Nint(par[3]);
-  mu             = par[4];
+  refMu          = par[4];
   activeDetectors.SetString(det.Data());
 
-  interactionRate = (run_duration>1e-10) ? refl0b/run_duration/refEff : 0;
-  if (refSigma>1.e-10) lumi_seen = refl0b/refSigma/1000; //[ub-1]
-  if (mu>1.e-10) lumi_seen*=mu/(1-TMath::Exp(-mu)); // pile-up correction
+  Double_t refInteractionRate = (run_duration>1e-10) ? (refMu>1.e-10 ? refMu/(1-TMath::Exp(-refMu)):1)*refl0b/run_duration : 0;
+  interactionRate = refInteractionRate/refEff; // INEL interaction rate 
+  mu              = refMu/refEff;              // INEL mu value
+  if (refSigma>1.e-10) lumi_seen = interactionRate/refSigma/1000; //[ub-1]
 
+  
   classes = GetClasses(run,ocdbStorage,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
   for (Int_t i=0;i<classes.GetEntriesFast();i++){
     // printf("%30s %12lli %10lli %10lli %10lli %10lli %10lli\n",classes.At(i)->GetName(),class_l0b[i],class_l0a[i],class_l1b[i],class_l1a[i],class_l2b[i],class_l2a[i]);
@@ -190,6 +195,17 @@ TString bitNames[NBITS] = {
   t->Branch("alias_lumi_reconstructed",&alias_lumi_reconstructed,Form("alias_lumi_reconstructed[%i]/D",NBITS));
   t->Branch("alias_lumi_accepted",&alias_lumi_accepted,Form("alias_lumi_accepted[%i]/D",NBITS));
   t->Branch("activeDetectors",&activeDetectors);
+  
+  TFile* fin = new TFile(qafilename);
+  TH2D* h = fin ? (TH2D*) fin->Get("fHistStatistics") : 0;
+  if (!fin || !h) {
+    printf("fHistStatistics not found\n");
+    fout->cd();
+    t->Fill();
+    t->Write();
+    fout->Close();
+    return 1; 
+  }
   
   for (Int_t j=1;j<=h->GetNbinsY();j++){
     TString label = h->GetYaxis()->GetBinLabel(j);
@@ -348,7 +364,7 @@ TString bitNames[NBITS] = {
     gPad->Print(Form("%s_TimeCorrZDC.pdf",bitName));
     hTimeCorrZDC->Write(Form("%s_TimeCorrZDC",bitName));
   }
-  
+  fout->cd();
   t->Fill();
   t->Write();
   fout->Close();

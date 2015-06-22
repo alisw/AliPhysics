@@ -43,7 +43,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core Geom RIO)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALUtils ESD STEERBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD EMCALUtils ESD STEERBase)
 
 # Generate the ROOT map
 # Dependecies

@@ -399,8 +399,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 
         Int_t binMCMotherPDG=50,bindx=200, bindz=200, /*bincells=20,*/ binlabel=1500;
 
-        Double_t pTbin[11]={10.,12.,14.,16.,18.,20.,25.,30.,40.,60.,70.};
-
         Int_t bins[] = {binTrackMult, binPT, binM02, binETiso, binETUE, binETisoUE, binetacl, binphicl,binlabel};
 
         fNDimensions = sizeof(bins)/sizeof(Int_t);
@@ -413,7 +411,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         sTitle = Form("Direct Photons: Track Multiplicity, p_{T} , M02 , E_{T} Iso%s in %s, E_{T} UE %s in %s, E_{T} Iso_%s - E_{T} UE_%s in %s, #eta_{clus} distribution,#phi_{clus} distribution,Label; N_{ch}; p_{T} (GeV/c); M02; E_{T}^{iso%s} (GeV/c) ; E_{T}^{UE%s} (GeV/c); E_{T}^{iso%s}-E_{T}^{UE%s} (GeV/c); #eta_{cl}; #phi_{cl}; Label", sIsoMethod.Data(), sBoundaries.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data(), sIsoMethod.Data(), sUEMethod.Data());
 
         fOutputTHnS =  new THnSparseF("fHnOutput",sTitle.Data(), ndims, bins, xmin, xmax);
-        fOutputTHnS->SetBinEdges(1,pTbin);
         fOutputTHnS->Sumw2();
 
         fOutput->Add(fOutputTHnS);
@@ -430,7 +427,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           Double_t xmaxbis[] = {1000., 70., 100., 100.,  1000.,  1.0, 3.5, 1500};
 
           fOutMCTruth = new THnSparseF ("fOutMCTruth","Multiplicity, E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; N_{Tracks}; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",8,binsMC,xminbis,xmaxbis);
-          fOutMCTruth->SetBinEdges(1,pTbin);
           fOutMCTruth->Sumw2();
           fOutput->Add(fOutMCTruth);
 
@@ -451,7 +447,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           Double_t xmaxbismix[] = {70., 2.,  3000,  4000, 70., 1.,  1., 100.,1500};
 
           fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); M02;PDG Code; PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",9,binsSMC,xminbismix,xmaxbismix);
-          fOutClustMC->SetBinEdges(0,pTbin);
           fOutClustMC->Sumw2();
           fOutput->Add(fOutClustMC);
     }

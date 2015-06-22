@@ -1578,7 +1578,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	weight = 1;
 	
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
-	if (periodName.CompareTo("LHC15a3b") != 0 || periodName.CompareTo("LHC15a3a") != 0) return kTRUE;
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0) return kTRUE;
 
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if(dynamic_cast<AliMCEvent*>(MCEvent)){
@@ -1874,10 +1874,10 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 			
 			if (isSelected && !fPreSelCut){
 // 				cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
-				if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
-					if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
-					fTriggersEMCAL= GetTriggerList();	
-				}
+// 				if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+// 					if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
+// 					fTriggersEMCAL= GetTriggerList();	
+// 				}
 				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
 				} else if (isMC){

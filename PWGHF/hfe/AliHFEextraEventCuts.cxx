@@ -260,7 +260,7 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
       Double_t cov[6]={0};
       vtxSPD->GetCovarianceMatrix(cov);
       Double_t zRes = TMath::Sqrt(cov[5]);
-      if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fBitMap->SetBitNumber(kResolution, kFALSE);
+      if (vtxSPD->IsFromVertexerZ() && (zRes>0.25)) fBitMap->SetBitNumber(kResolution, kFALSE);
     } else{
       fBitMap->SetBitNumber(kResolution, kFALSE);
     }

@@ -44,9 +44,9 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     fTaskGroups(NULL),
     fBinning(NULL),
     fTriggerDecisionConfig(NULL),
+    fTriggerClassManager(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
-    fMinBiasSelection(AliVEvent::kINT7),
     fSwapTriggerThresholds(kFALSE),
     fDoTriggerDebug(kFALSE)
 {
@@ -61,12 +61,13 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
     fTaskGroups(NULL),
     fBinning(NULL),
     fTriggerDecisionConfig(NULL),
+    fTriggerClassManager(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
-    fMinBiasSelection(AliVEvent::kINT7),
     fSwapTriggerThresholds(kFALSE),
     fDoTriggerDebug(kFALSE)
 {
+  fTriggerClassManager = new AliEMCalTriggerAnaClassManager("triggermanager");
   fTaskGroups = new TObjArray;
   fTaskGroups->SetOwner();
   fBinning = new AliEMCalTriggerBinningComponent();
@@ -78,6 +79,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
  * Destructor
  */
 AliAnalysisTaskPtEMCalTriggerV1::~AliAnalysisTaskPtEMCalTriggerV1() {
+  delete fTriggerClassManager;
   delete fTaskGroups;
   delete fBinning;
 }
@@ -98,7 +100,7 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
   outputList->SetName(Form("histos%s", GetName()));
   while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter()))){
     mygroup->SetGlobalBinning(fBinning);
-    TList *ltmp = mygroup->InitialiseAnalysisComponents();
+    TList *ltmp = mygroup->InitialiseAnalysisComponents(fTriggerClassManager);
     // Collect output list and append it to the global output list
     TIter listIter(ltmp);
     TObject *hist(NULL);
@@ -121,11 +123,11 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
   if(fDoTriggerDebug) triggerDecision.SetDebugMode();
   if(fTriggerDecisionConfig) triggerDecision.ConfigureTriggerDecision(*fTriggerDecisionConfig);
   triggerDecision.Create(event);
-  triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & fMinBiasSelection);
+  fTriggerClassManager->SetTriggerDecision(&triggerDecision);
+  fTriggerClassManager->PerformEventSelection(event);
   TIter groupIter(fTaskGroups);
   AliEMCalTriggerTaskGroup *mygroup(NULL);
   while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter()))){
-    mygroup->SetTriggerDecision(&triggerDecision);
     mygroup->Process(event);
   }
 
@@ -169,6 +171,7 @@ AliEMCalTriggerEventData* AliAnalysisTaskPtEMCalTriggerV1::BuildEvent() {
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++){
     FixTrackInputEvent(static_cast<AliVTrack *>(fInputEvent->GetTrack(itrk)));
   }
+  eventstruct->SetTriggerBitSelection(fInputHandler->IsEventSelected());
   eventstruct->SetMCEvent(fMCEvent);
   eventstruct->SetTriggerPatchContainer(fTriggerPatchInfo);
   eventstruct->SetClusterContainer(fCaloClusters);

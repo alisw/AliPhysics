@@ -127,6 +127,10 @@ void DrawTrendingTRDQA(TString trendingFilename="trending.root") {
   // Draw the TRD QA trending
   //
   //gStyle->SetTitleX(gStyle->GetPadLeftMargin());
+	gStyle->SetGridColor(kBlack);
+	gStyle->SetGridStyle(3);
+	gStyle->SetGridWidth(1);
+
   TFile* trendingFile = TFile::Open(trendingFilename.Data(), "READ");
   TTree* tree = (TTree*)trendingFile->Get("trending");
   if(!tree){

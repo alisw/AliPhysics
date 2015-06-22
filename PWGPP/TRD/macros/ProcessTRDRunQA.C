@@ -21,6 +21,9 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   const Char_t *friendsOpt="PID DET RES";
   
   //gStyle->SetTitleX(gStyle->GetPadLeftMargin());
+	gStyle->SetGridColor(kBlack);
+	gStyle->SetGridStyle(3);
+	gStyle->SetGridWidth(1);
 
   // Load needed libraries
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_PHYSICS -I$ALICE_ROOT/TRD");

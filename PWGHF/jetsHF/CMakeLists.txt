@@ -54,6 +54,7 @@ set(SRCS
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
     AliHFJetsContainerVertex.cxx
+    AliAnalysisHFjetTagHFE.cxx
 )
 
 if(FASTJET_FOUND)
@@ -69,6 +70,7 @@ endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+list (APPEND HDRS AliHFjetsUtils.h)
 
 if(FASTJET_FOUND)
   list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
@@ -86,6 +88,10 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJE STEERBase PWGTools
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice

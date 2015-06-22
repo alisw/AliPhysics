@@ -10,7 +10,7 @@
 
 void AddMESpidTask(Bool_t mc)
 {
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager(); 
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESpidTask *pid = new AliMESpidTask("MESpid");
   mgr->AddTask(pid);
   pid->SetPostProcess(kFALSE);
@@ -27,10 +27,10 @@ void AddMESpidTask(Bool_t mc)
 	  ci[2] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCeventInfo"));
 	  ci[3] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCtracks"));
   }
-  Info("AddMESpidTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
-							 ci[0]?ci[0]->GetName():"none", 
-							 ci[1]?ci[1]->GetName():"none", 
-							 ci[2]?ci[2]->GetName():"none", 
+  Info("AddMESpidTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"",
+							 ci[0]?ci[0]->GetName():"none",
+							 ci[1]?ci[1]->GetName():"none",
+							 ci[2]?ci[2]->GetName():"none",
 							 ci[3]?ci[3]->GetName():"none"));
 
   // connect containers

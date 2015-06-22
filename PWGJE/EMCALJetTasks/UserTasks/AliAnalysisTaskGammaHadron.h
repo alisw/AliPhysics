@@ -35,11 +35,7 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   void                        ExecOnce()        											  ;
   Bool_t                      RetrieveEventObjects()                                        ;
   Bool_t                      FillHistograms()                                              ;
- /* void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho,
-					       Int_t ntracks, Int_t nclusters, Int_t ncells,
-					       Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
-					       Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi);
-*/
+
   Int_t                       DoCellLoop(Float_t &sum)                                      ;
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
   Int_t                       DoClusterLoop(Float_t &sum, AliVCluster* &leading)            ;
@@ -61,48 +57,19 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   Double_t                    fV0ATotMult;               //!Event V0A total multiplicity
   Double_t                    fV0CTotMult;               //!Event V0C total multiplicity
  
-  // General histograms
- // THnSparse                  *fHistEventQA;              //!Event-wise QA observables
-
-  /*
-  // Tracks
-  TH1                       **fHistTrNegativeLabels;  //!Percentage of negative label tracks
-  TH1                       **fHistTrZeroLabels;      //!Percentage of tracks with label=0
-  TH3                      ***fHistTrPhiEtaPt;        //!Phi-Eta-Pt distribution of tracks
-  TH2                       **fHistTrPhiEtaZeroLab;   //!Phi-Eta distribution of tracks with label=0
-  TH1                       **fHistTrPtZeroLab;       //!Pt distribution of tracks with label=0
-  TH2                       **fHistTrEmcPhiEta;       //!Phi-Eta emcal propagated distribution of tracks
-  TH1                       **fHistTrEmcPt;           //!Pt emcal propagated distribution of tracks
-  TH2                       **fHistTrPhiEtaNonProp;   //!Phi-Eta distribution of non emcal propagated tracks
-  TH1                       **fHistTrPtNonProp;       //!Pt distribution of non emcal propagated tracks
-  TH2                       **fHistDeltaEtaPt;        //!Eta-EtaProp vs. Pt
-  TH2                       **fHistDeltaPhiPt;        //!Phi-PhiProp vs. Pt
-  TH2                       **fHistDeltaPtvsPt;       //!Pt-PtProp vs. Pt
-*/
- /*
-  // Clusters
-  TH3                       **fHistClusPhiEtaEnergy;       //!Phi-Eta-Energy distribution of clusters
-  TH2                       **fHistClusDeltaPhiEPEnergy;   //!DeltaPhi EP vs Energy of clusters
-  TH2                       **fHistNCellsEnergy;           //!Number of cells vs. energy of cluster
-  TH2                       **fHistFcrossEnergy;           //!Fcross vs. energy of cluster
-  TH2                       **fHistClusTimeEnergy;         //!Time vs. energy of cluster
-  TH1                       **fHistClusMCEnergyFraction;   //!MC energy fraction (embedding)
-*/
-  // EMCAL Cells
- // TH2                       **fHistCellsAbsIdEnergy;  //!Energy spectrum of cells
 
   // ELIANE
   TH1  						*fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
   TH1					    *fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
   TH1					    *fHistNoClus_ptLeadH;      //! No of calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
-  TH1					    *fHistNoClus_Leadpt;        //! No of leading calorimeter Clusters as a function of p_T
-  TH1					    *fHistNoClus_LeadptH;       //! No of leading calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_LeadptLeadH;   //! No of leading calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
+  TH1					    *fHistNoClus_Leadpt;       //! No of leading calorimeter Clusters as a function of p_T
+  TH1					    *fHistNoClus_LeadptH;      //! No of leading calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
+  TH1					    *fHistNoClus_LeadptLeadH;  //! No of leading calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
 
-  TH1					    *fHistNoClus_xEH;
-  TH1					    *fHistNoClus_LeadxEH;
-  TH1					    *fHistNoClus_xELeadH;
-  TH1					    *fHistNoClus_LeadxELeadH;
+  TH1					    *fHistNoClus_xEH;          //!
+  TH1					    *fHistNoClus_LeadxEH;      //!
+  TH1					    *fHistNoClus_xELeadH;      //!
+  TH1					    *fHistNoClus_LeadxELeadH;  //!
   //
   //
 
@@ -110,6 +77,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 1) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskGammaHadron, 2) // Quality task for Emcal analysis
 };
 #endif

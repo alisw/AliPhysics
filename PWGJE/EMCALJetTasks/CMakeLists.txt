@@ -85,6 +85,8 @@ set(SRCS
     Tracks/AliEMCalTriggerTaskGroup.cxx
     Tracks/AliEMCalTriggerTracksAnalysisComponent.cxx
     Tracks/AliEMCalTriggerWeightHandler.cxx
+    Tracks/AliEMCalTriggerAnaTriggerClass.cxx
+    Tracks/AliEMCalTriggerAnaClassManager.cxx
     Tracks/AliParticleMap.cxx
     Tracks/AliReducedEmcalCluster.cxx
     Tracks/AliReducedPatchInfo.cxx
@@ -94,6 +96,7 @@ set(SRCS
     Tracks/AliReducedReconstructedTrack.cxx
     Tracks/AliReducedHighPtEvent.cxx
     Tracks/AliReducedHighPtEventCreator.cxx
+    Tracks/AliAnalysisTaskTrackDCA.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx

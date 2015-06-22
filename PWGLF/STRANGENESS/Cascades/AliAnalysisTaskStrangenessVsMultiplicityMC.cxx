@@ -271,29 +271,52 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fHistPt_GenOmegaPlus(0),
 
       //VsRefMult
+      fHistPtVsRefMultEta5_GenK0Short(0),
+      fHistPtVsRefMultEta5_GenLambda(0),
+      fHistPtVsRefMultEta5_GenAntiLambda(0),
       fHistPtVsRefMultEta5_GenXiMinus(0),
       fHistPtVsRefMultEta5_GenXiPlus(0),
       fHistPtVsRefMultEta5_GenOmegaMinus(0),
       fHistPtVsRefMultEta5_GenOmegaPlus(0),
+      fHistPtVsRefMultEta8_GenK0Short(0),
+      fHistPtVsRefMultEta8_GenLambda(0),
+      fHistPtVsRefMultEta8_GenAntiLambda(0),
       fHistPtVsRefMultEta8_GenXiMinus(0),
       fHistPtVsRefMultEta8_GenXiPlus(0),
       fHistPtVsRefMultEta8_GenOmegaMinus(0),
       fHistPtVsRefMultEta8_GenOmegaPlus(0),
 
       //VsCentralities
+      fHistPtVsCentV0A_GenK0Short(0),
+      fHistPtVsCentV0A_GenLambda(0),
+      fHistPtVsCentV0A_GenAntiLambda(0),
       fHistPtVsCentV0A_GenXiMinus(0),
       fHistPtVsCentV0A_GenXiPlus(0),
       fHistPtVsCentV0A_GenOmegaMinus(0),
       fHistPtVsCentV0A_GenOmegaPlus(0),
+      fHistPtVsCentV0C_GenK0Short(0),
+      fHistPtVsCentV0C_GenLambda(0),
+      fHistPtVsCentV0C_GenAntiLambda(0),
       fHistPtVsCentV0C_GenXiMinus(0),
       fHistPtVsCentV0C_GenXiPlus(0),
       fHistPtVsCentV0C_GenOmegaMinus(0),
       fHistPtVsCentV0C_GenOmegaPlus(0),
+      fHistPtVsCentV0M_GenK0Short(0),
+      fHistPtVsCentV0M_GenLambda(0),
+      fHistPtVsCentV0M_GenAntiLambda(0),
       fHistPtVsCentV0M_GenXiMinus(0),
       fHistPtVsCentV0M_GenXiPlus(0),
       fHistPtVsCentV0M_GenOmegaMinus(0),
       fHistPtVsCentV0M_GenOmegaPlus(0),
+      fHistPtVsCentV0MUnselected_GenK0Short(0),
+      fHistPtVsCentV0MUnselected_GenLambda(0),
+      fHistPtVsCentV0MUnselected_GenAntiLambda(0),
+      fHistPtVsCentV0MUnselected_GenXiMinus(0),
+      fHistPtVsCentV0MUnselected_GenXiPlus(0),
+      fHistPtVsCentV0MUnselected_GenOmegaMinus(0),
+      fHistPtVsCentV0MUnselected_GenOmegaPlus(0),
 
+      
       //Equalized
       fHistPtVsCentV0AEq_GenXiMinus(0),
       fHistPtVsCentV0AEq_GenXiPlus(0),
@@ -518,29 +541,51 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fHistPt_GenOmegaPlus(0),
 
       //VsRefMult
+      fHistPtVsRefMultEta5_GenK0Short(0),
+      fHistPtVsRefMultEta5_GenLambda(0),
+      fHistPtVsRefMultEta5_GenAntiLambda(0),
       fHistPtVsRefMultEta5_GenXiMinus(0),
       fHistPtVsRefMultEta5_GenXiPlus(0),
       fHistPtVsRefMultEta5_GenOmegaMinus(0),
       fHistPtVsRefMultEta5_GenOmegaPlus(0),
+      fHistPtVsRefMultEta8_GenK0Short(0),
+      fHistPtVsRefMultEta8_GenLambda(0),
+      fHistPtVsRefMultEta8_GenAntiLambda(0),
       fHistPtVsRefMultEta8_GenXiMinus(0),
       fHistPtVsRefMultEta8_GenXiPlus(0),
       fHistPtVsRefMultEta8_GenOmegaMinus(0),
       fHistPtVsRefMultEta8_GenOmegaPlus(0),
 
       //VsCentralities
+      fHistPtVsCentV0A_GenK0Short(0),
+      fHistPtVsCentV0A_GenLambda(0),
+      fHistPtVsCentV0A_GenAntiLambda(0),
       fHistPtVsCentV0A_GenXiMinus(0),
       fHistPtVsCentV0A_GenXiPlus(0),
       fHistPtVsCentV0A_GenOmegaMinus(0),
       fHistPtVsCentV0A_GenOmegaPlus(0),
+      fHistPtVsCentV0C_GenK0Short(0),
+      fHistPtVsCentV0C_GenLambda(0),
+      fHistPtVsCentV0C_GenAntiLambda(0),
       fHistPtVsCentV0C_GenXiMinus(0),
       fHistPtVsCentV0C_GenXiPlus(0),
       fHistPtVsCentV0C_GenOmegaMinus(0),
       fHistPtVsCentV0C_GenOmegaPlus(0),
+      fHistPtVsCentV0M_GenK0Short(0),
+      fHistPtVsCentV0M_GenLambda(0),
+      fHistPtVsCentV0M_GenAntiLambda(0),
       fHistPtVsCentV0M_GenXiMinus(0),
       fHistPtVsCentV0M_GenXiPlus(0),
       fHistPtVsCentV0M_GenOmegaMinus(0),
       fHistPtVsCentV0M_GenOmegaPlus(0),
-
+      fHistPtVsCentV0MUnselected_GenK0Short(0),
+      fHistPtVsCentV0MUnselected_GenLambda(0),
+      fHistPtVsCentV0MUnselected_GenAntiLambda(0),
+      fHistPtVsCentV0MUnselected_GenXiMinus(0),
+      fHistPtVsCentV0MUnselected_GenXiPlus(0),
+      fHistPtVsCentV0MUnselected_GenOmegaMinus(0),
+      fHistPtVsCentV0MUnselected_GenOmegaPlus(0),
+      
       //Equalized
       fHistPtVsCentV0AEq_GenXiMinus(0),
       fHistPtVsCentV0AEq_GenXiPlus(0),
@@ -938,6 +983,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
         fListHist->Add(fHistPt_GenOmegaPlus);
     }
     //2D Histos for vs Mult calculation
+    if(! fHistPtVsRefMultEta5_GenK0Short ) {
+        fHistPtVsRefMultEta5_GenK0Short    = new TH2D( "fHistPtVsRefMultEta5_GenK0Short",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsRefMultEta5_GenK0Short);
+    }
+    if(! fHistPtVsRefMultEta5_GenLambda ) {
+        fHistPtVsRefMultEta5_GenLambda    = new TH2D( "fHistPtVsRefMultEta5_GenLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsRefMultEta5_GenLambda);
+    }
+    if(! fHistPtVsRefMultEta5_GenAntiLambda ) {
+        fHistPtVsRefMultEta5_GenAntiLambda    = new TH2D( "fHistPtVsRefMultEta5_GenAntiLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsRefMultEta5_GenAntiLambda);
+    }
     if(! fHistPtVsRefMultEta5_GenXiMinus ) {
         fHistPtVsRefMultEta5_GenXiMinus    = new TH2D( "fHistPtVsRefMultEta5_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta5_GenXiMinus);
@@ -953,6 +1010,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     if(! fHistPtVsRefMultEta5_GenOmegaPlus ) {
         fHistPtVsRefMultEta5_GenOmegaPlus     = new TH2D( "fHistPtVsRefMultEta5_GenOmegaPlus",  "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta5_GenOmegaPlus);
+    }
+    if(! fHistPtVsRefMultEta8_GenK0Short ) {
+        fHistPtVsRefMultEta8_GenK0Short    = new TH2D( "fHistPtVsRefMultEta8_GenK0Short",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsRefMultEta8_GenK0Short);
+    }
+    if(! fHistPtVsRefMultEta8_GenLambda ) {
+        fHistPtVsRefMultEta8_GenLambda    = new TH2D( "fHistPtVsRefMultEta8_GenLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsRefMultEta8_GenLambda);
+    }
+    if(! fHistPtVsRefMultEta8_GenAntiLambda ) {
+        fHistPtVsRefMultEta8_GenAntiLambda    = new TH2D( "fHistPtVsRefMultEta8_GenAntiLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsRefMultEta8_GenAntiLambda);
     }
     if(! fHistPtVsRefMultEta8_GenXiMinus ) {
         fHistPtVsRefMultEta8_GenXiMinus    = new TH2D( "fHistPtVsRefMultEta8_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
@@ -972,6 +1041,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     }
 
     //Centralities: V0A, V0C, V0M, +Eq
+    if(! fHistPtVsCentV0A_GenK0Short ) {
+        fHistPtVsCentV0A_GenK0Short    = new TH2D(
+            "fHistPtVsCentV0A_GenK0Short",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0A_GenK0Short);
+    }
+    if(! fHistPtVsCentV0A_GenLambda ) {
+        fHistPtVsCentV0A_GenLambda    = new TH2D(
+            "fHistPtVsCentV0A_GenLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0A_GenLambda);
+    }
+    if(! fHistPtVsCentV0A_GenAntiLambda ) {
+        fHistPtVsCentV0A_GenAntiLambda    = new TH2D(
+            "fHistPtVsCentV0A_GenAntiLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0A_GenAntiLambda);
+    }
     if(! fHistPtVsCentV0A_GenXiMinus ) {
         fHistPtVsCentV0A_GenXiMinus    = new TH2D(
             "fHistPtVsCentV0A_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
@@ -993,6 +1077,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
         fListHist->Add(fHistPtVsCentV0A_GenOmegaPlus);
     }
 
+    if(! fHistPtVsCentV0C_GenK0Short ) {
+        fHistPtVsCentV0C_GenK0Short    = new TH2D(
+            "fHistPtVsCentV0C_GenK0Short",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0C_GenK0Short);
+    }
+    if(! fHistPtVsCentV0C_GenLambda ) {
+        fHistPtVsCentV0C_GenLambda    = new TH2D(
+            "fHistPtVsCentV0C_GenLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0C_GenLambda);
+    }
+    if(! fHistPtVsCentV0C_GenAntiLambda ) {
+        fHistPtVsCentV0C_GenAntiLambda    = new TH2D(
+            "fHistPtVsCentV0C_GenAntiLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0C_GenAntiLambda);
+    }
     if(! fHistPtVsCentV0C_GenXiMinus ) {
         fHistPtVsCentV0C_GenXiMinus    = new TH2D(
             "fHistPtVsCentV0C_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
@@ -1014,6 +1113,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
         fListHist->Add(fHistPtVsCentV0C_GenOmegaPlus);
     }
 
+    if(! fHistPtVsCentV0M_GenK0Short ) {
+        fHistPtVsCentV0M_GenK0Short    = new TH2D(
+            "fHistPtVsCentV0M_GenK0Short",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0M_GenK0Short);
+    }
+    if(! fHistPtVsCentV0M_GenLambda ) {
+        fHistPtVsCentV0M_GenLambda    = new TH2D(
+            "fHistPtVsCentV0M_GenLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0M_GenLambda);
+    }
+    if(! fHistPtVsCentV0M_GenAntiLambda) {
+        fHistPtVsCentV0M_GenAntiLambda    = new TH2D(
+            "fHistPtVsCentV0M_GenAntiLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0M_GenAntiLambda);
+    }
     if(! fHistPtVsCentV0M_GenXiMinus ) {
         fHistPtVsCentV0M_GenXiMinus    = new TH2D(
             "fHistPtVsCentV0M_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
@@ -1033,6 +1147,43 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
         fHistPtVsCentV0M_GenOmegaPlus    = new TH2D(
             "fHistPtVsCentV0M_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0M_GenOmegaPlus);
+    }
+
+    //Special Unselected
+    if(! fHistPtVsCentV0MUnselected_GenK0Short ) {
+        fHistPtVsCentV0MUnselected_GenK0Short    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenK0Short",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenK0Short);
+    }
+    if(! fHistPtVsCentV0MUnselected_GenLambda ) {
+        fHistPtVsCentV0MUnselected_GenLambda    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenLambda);
+    }
+    if(! fHistPtVsCentV0MUnselected_GenAntiLambda) {
+        fHistPtVsCentV0MUnselected_GenAntiLambda    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenAntiLambda",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenAntiLambda);
+    }
+    if(! fHistPtVsCentV0MUnselected_GenXiMinus ) {
+        fHistPtVsCentV0MUnselected_GenXiMinus    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenXiMinus);
+    }
+    if(! fHistPtVsCentV0MUnselected_GenXiPlus ) {
+        fHistPtVsCentV0MUnselected_GenXiPlus    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenXiPlus);
+    }
+    if(! fHistPtVsCentV0MUnselected_GenOmegaMinus ) {
+        fHistPtVsCentV0MUnselected_GenOmegaMinus    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenOmegaMinus);
+    }
+    if(! fHistPtVsCentV0MUnselected_GenOmegaPlus ) {
+        fHistPtVsCentV0MUnselected_GenOmegaPlus    = new TH2D(
+            "fHistPtVsCentV0MUnselected_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
+        fListHist->Add(fHistPtVsCentV0MUnselected_GenOmegaPlus);
     }
 
     //Equalized
@@ -1318,6 +1469,59 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
 
+    //Before selections !
+    Float_t fCentrality_V0MUnselected = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M" , kFALSE );
+    Int_t    lThisPDG  = 0;
+    Double_t lThisRap  = 0;
+    Double_t lThisPt   = 0;
+
+    //----- Loop on Generated CASCADES ---------------
+    for (Int_t ilab = 0;  ilab < (lMCstack->GetNtrack()); ilab++)
+    {   // This is the begining of the loop on tracks
+
+        TParticle* lPart = 0x0;
+        lPart = lMCstack->Particle( ilab );
+        if(!lPart) {
+            Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
+            continue;
+        }
+
+        lThisPDG = lPart->GetPdgCode();
+
+        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 )
+        {
+            lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
+            lThisPt    = lPart->Pt();
+
+            //Use Physical Primaries only for filling These Histos
+            if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
+
+            if( lThisPDG ==   310 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenK0Short       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+            if( lThisPDG ==  3122 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenLambda       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+            if( lThisPDG == -3122 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenAntiLambda       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+            if( lThisPDG ==  3312 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenXiMinus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+            if( lThisPDG == -3312 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenXiPlus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+            if( lThisPDG ==  3334 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenOmegaMinus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+            if( lThisPDG == -3334 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPtVsCentV0M_GenOmegaPlus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+            }
+        }
+    }//End of loop on tracks
+//----- End Loop on Cascades ------------------------------------------------------------
+
+
 //------------------------------------------------
 // MC type (ND, SD, DD)
 //------------------------------------------------
@@ -1592,9 +1796,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 // Fill Efficiency Denominators, please
 //------------------------------------------------
 
-    Int_t    lThisPDG  = 0;
-    Double_t lThisRap  = 0;
-    Double_t lThisPt   = 0;
+    lThisPDG  = 0;
+    lThisRap  = 0;
+    lThisPt   = 0;
 
 //----- Loop on Generated CASCADES ---------------
     for (Int_t ilab = 0;  ilab < (lMCstack->GetNtrack()); ilab++)
@@ -1617,10 +1821,33 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
             //Use Physical Primaries only for filling These Histos
             if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
 
-            if( lThisPDG ==   310 && TMath::Abs(lThisRap) < 0.5 ) fHistPt_GenK0Short       -> Fill ( lThisPt );
-            if( lThisPDG ==  3122 && TMath::Abs(lThisRap) < 0.5 ) fHistPt_GenLambda     -> Fill ( lThisPt );
-            if( lThisPDG == -3122 && TMath::Abs(lThisRap) < 0.5 ) fHistPt_GenAntiLambda -> Fill ( lThisPt );
-
+            if( lThisPDG ==   310 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPt_GenK0Short       -> Fill ( lThisPt );
+                fHistPtVsRefMultEta5_GenK0Short   -> Fill (lThisPt, fRefMultEta5);
+                fHistPtVsRefMultEta8_GenK0Short   -> Fill (lThisPt, fRefMultEta8);
+                //Centralities
+                fHistPtVsCentV0A_GenK0Short       -> Fill (lThisPt, fCentrality_V0A);
+                fHistPtVsCentV0C_GenK0Short       -> Fill (lThisPt, fCentrality_V0C);
+                fHistPtVsCentV0M_GenK0Short       -> Fill (lThisPt, fCentrality_V0M);
+            }
+            if( lThisPDG ==  3122 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPt_GenLambda     -> Fill ( lThisPt );
+                fHistPtVsRefMultEta5_GenLambda   -> Fill (lThisPt, fRefMultEta5);
+                fHistPtVsRefMultEta8_GenLambda   -> Fill (lThisPt, fRefMultEta8);
+                //Centralities
+                fHistPtVsCentV0A_GenLambda       -> Fill (lThisPt, fCentrality_V0A);
+                fHistPtVsCentV0C_GenLambda       -> Fill (lThisPt, fCentrality_V0C);
+                fHistPtVsCentV0M_GenLambda       -> Fill (lThisPt, fCentrality_V0M);
+            }
+            if( lThisPDG == -3122 && TMath::Abs(lThisRap) < 0.5 ) {
+                fHistPt_GenAntiLambda -> Fill ( lThisPt );
+                fHistPtVsRefMultEta5_GenAntiLambda   -> Fill (lThisPt, fRefMultEta5);
+                fHistPtVsRefMultEta8_GenAntiLambda   -> Fill (lThisPt, fRefMultEta8);
+                //Centralities
+                fHistPtVsCentV0A_GenAntiLambda       -> Fill (lThisPt, fCentrality_V0A);
+                fHistPtVsCentV0C_GenAntiLambda       -> Fill (lThisPt, fCentrality_V0C);
+                fHistPtVsCentV0M_GenAntiLambda       -> Fill (lThisPt, fCentrality_V0M);
+            }
             if( lThisPDG ==  3312 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenXiMinus                -> Fill (lThisPt);
                 fHistPtVsRefMultEta5_GenXiMinus   -> Fill (lThisPt, fRefMultEta5);

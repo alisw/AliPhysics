@@ -30,6 +30,7 @@ class AliESDtrackCuts;
 #include "AliVParticle.h"
 #include "AliVVertex.h"
 #include "AliPIDResponse.h"
+#include "AliAODTrack.h"
 
 #include <vector>
 using std::vector;
@@ -44,6 +45,11 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
             kPID = 4
         };
 
+        enum{
+            kTPCOnlyTrackCut = 128,
+            kHybridTrackCut = 768
+        };
+
 		AliAnalysisTaskEPCorrAA();
 		AliAnalysisTaskEPCorrAA(const char *name);
 		virtual ~AliAnalysisTaskEPCorrAA();
@@ -52,7 +58,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		virtual void     UserExec(Option_t *option);
 		virtual void     Terminate(Option_t *);
 
-		TObjArray*    AcceptTracksReduced(AliESDEvent *event, Bool_t useCuts);
+		TObjArray*    AcceptTracksReduced(AliAODEvent *event, Bool_t useCuts);
 		float CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign);
 		
 
@@ -61,11 +67,11 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		void DoMixing(double cent, double zvtx, double epangle, TObjArray* fMyprimRecoTracks, float bSign);
 	    double DeltaPhi(double phi1, double phi2);
 
-        int GetParticleID(AliESDtrack* track);
+        int GetParticleID(AliAODTrack* track, double nsigmaCut);
 		
 	private:
 		TList           *fOutput;        // Output list
-		AliESDtrackCuts *fTrackCuts;     // Track cuts
+//		AliESDtrackCuts *fTrackCuts;     // Track cuts
 		AliEventPoolManager*  fPoolMgr; //!
         AliPIDResponse *fPIDResponse; //!
 

@@ -10,11 +10,30 @@
  * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  * \date Dec 12, 2014
  */
-#if !defined (__CINT__) || defined (__MAKECINT__)
+#if !(defined (__CINT__) || defined (__CLING__)) || defined (__MAKECINT__) || defined (__ROOTCLING__)
 #include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliEMCalPtTaskVTrackSelection.h"
+#include "AliEMCalPtTaskTrackSelectionAOD.h"
+#include "AliEMCalPtTaskTrackSelectionESD.h"
+#include "AliEMCalTriggerAnaTriggerClass.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerClusterAnalysisComponent.h"
+#include "AliEMCalTriggerPatchAnalysisComponent.h"
+#include "AliEMCalTriggerRecTrackAnalysisComponent.h"
+#include "AliEMCalTriggerRecJetAnalysisComponent.h"
+#include "AliEMCalTriggerEventCounterAnalysisComponent.h"
+#include "AliEMCalTriggerMCParticleAnalysisComponent.h"
+#include "AliEMCalTriggerMCJetAnalysisComponent.h"
+#include "AliEMCalTriggerTaskGroup.h"
+#include "AliEMCalTriggerExtraCuts.h"
+#include "AliEMCalTriggerKineCuts.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
 #include "AliESDtrackCuts.h"
+#include "AliClusterContainer.h"
 #include "AliJetContainer.h"
+#include "AliParticleContainer.h"
+#include "AliVEvent.h"
 #include <TList.h>
 #include <TString.h>
 #include <cstring>
@@ -27,11 +46,11 @@ void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt);
 void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
 void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task);
+void CreateTriggerClassespPb2013(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task, bool isMC);
+void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task, bool isMC);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char *trackCutsName, bool isAOD);
-
-EMCalTriggerPtAnalysis::ETriggerMethod_t gEventSelection;
 
 /**
  * \brief Configuring the analysis of high-p_{t} tracks in triggered events and adds it to the analysis train
@@ -65,7 +84,7 @@ EMCalTriggerPtAnalysis::ETriggerMethod_t gEventSelection;
  * \param jetradius Jet resolution parameter used for both jetfinders
  * \param ntrackcuts Name of the track cuts used in the selection of reconstructed tracks
  * \param components Components enabled in the analysis (see above)
- * \param usePatches Make trigger selection from patches
+ * \param triggersetup Pre-defined trigger setup for several periods
  * \param useOfflinePatches True if offline patches are used (only relevant in case patches are used for the trigger decision)
  * \return The fully configured task
  */
@@ -81,7 +100,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
     const char *components = "particles:clusters:tracks:mcjets:recjets:triggers:patchevent",
-    const char * triggermethod = "string",
+    const char * triggersetup = "pPb2013",
     bool useOfflinePatches = kFALSE
 )
 {
@@ -128,14 +147,6 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
 
-  /*
-   * Set event selection
-   */
-  gEventSelection = EMCalTriggerPtAnalysis::kTriggerString;
-  if(triggermethod == "patches") gEventSelection = EMCalTriggerPtAnalysis::kTriggerPatches;
-  else if(triggermethod == "combined") gEventSelection = EMCalTriggerPtAnalysis::kTriggerMixed;
-  else if(triggermethod == "string") gEventSelection = EMCalTriggerPtAnalysis::kTriggerString;
-
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
   if(isMC && !useOfflinePatches) trgconf->SetSwapThresholds();
   //printf("Using offline patches: %s\n", useOfflinePatches ? "yes" :"no");
@@ -149,6 +160,15 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCJLow, 127);
   }
   pttriggertask->SetTriggerDecisionConfig(trgconf);
+
+  // Create trigger setup
+  if(!TString(triggersetup).CompareTo("pPb2013")){
+   CreateTriggerClassespPb2013(pttriggertask, isMC);
+  } else if(!TString(triggersetup).CompareTo("pp2012")){
+   CreateTriggerClassespp2012(pttriggertask, isMC);
+  } else {
+    std::cout << "No trigger setup defined for the given request " << triggersetup << std::endl;
+  }
 
   CreateJetPtBinning(pttriggertask);
 //  pttriggertask->SetTriggerDebug(kTRUE);
@@ -196,7 +216,6 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   if(doTriggersEvents){
     EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent * triggereventcomp = new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchineventanalysis", kTRUE);
     if(isMC) triggereventcomp->SetSwapOnlineThresholds(true);
-    triggereventcomp->SetTriggerMethod(gEventSelection);
     defaultselect->AddAnalysisComponent(triggereventcomp);
   }
 
@@ -253,7 +272,6 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group){
   EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent *clusteranalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent("clusterAnalysis");
   clusteranalysis->SetEnergyRange(2., 100.);
-  clusteranalysis->SetTriggerMethod(gEventSelection);
   group->AddAnalysisComponent(clusteranalysis);
 }
 
@@ -275,7 +293,6 @@ void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
   trackanalysis->SetTrackSelection(trackcuts);
 
   if(isMC) trackanalysis->SetRequestMCtrueTracks();
-  trackanalysis->SetTriggerMethod(gEventSelection);
   if(isSwapEta) trackanalysis->SetSwapEta();
 }
 
@@ -289,7 +306,6 @@ void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
  */
 void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group){
   EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent * evcount = new EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent("eventCounter");
-  evcount->SetTriggerMethod(gEventSelection);
   group->AddAnalysisComponent(evcount);
 }
 
@@ -317,7 +333,6 @@ void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *gr
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt){
   EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent(Form("MCJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
-  jetana->SetTriggerMethod(EMCalTriggerPtAnalysis::kTriggerPatches);
   group->AddAnalysisComponent(jetana);
 }
 
@@ -336,7 +351,6 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
 void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
-  jetana->SetTriggerMethod(gEventSelection);
   jetana->SetSingleTrackCuts(trackcuts);
   //jetana->SetComponentDebugLevel(2);
   group->AddAnalysisComponent(jetana);
@@ -355,6 +369,114 @@ void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 
   TArrayD binlimits(21);
   for(int i = 0; i < 21; i++) binlimits[i] = 10.*i;
   task->SetBinning("jetpt", binlimits);
+}
+
+/**
+ * Define trigger class handling for p-Pb 2013 and add the classes to the analysis task. Trigger classes available:
+ *  - 1 Min bias trigger
+ *  - EMCAL jet trigger, high threshold
+ *  - EMCAL jet trigger, low threshold
+ *  - EMCAL single shower trigger, high threshold
+ *  - EMCAL single shower trigger, low threshold
+ *  In case of data the EMCAL trigger decision is obtained from the trigger string while in case of MC it is obtained
+ *  from the trigger patches.
+ *
+ * \param task Target task
+ * \param isMC Definition whether task runs on data or on MC
+ */
+void CreateTriggerClassespPb2013(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task, bool isMC){
+  // Min Bias trigger
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass *minbiastrigger = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("MinBias", "min. bias events");
+  minbiastrigger->SetMinBiasTrigger(kTRUE);
+  minbiastrigger->AddTriggerBit(AliVEvent::kINT7);
+  task->AddTriggerClass(minbiastrigger);
+
+  // EMCAL trigger classes
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass *jethigh = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCJHigh", "jet-triggered events (high threshold)");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass *jetlow = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCJLow", "jet-triggered events (low threshold)");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass *gammahigh = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCGHigh", "gamma-triggered events (high threshold)");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass *gammalow = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCGLow", "gamma-triggered events (low threshold)");
+
+  if(isMC){
+    // Get triggers from patches
+    jethigh->AddTriggerStringPattern("EJ1", kTRUE);
+    jetlow->AddTriggerStringPattern("EJ2", kTRUE);
+    gammahigh->AddTriggerStringPattern("EG1", kTRUE);
+    gammalow->AddTriggerStringPattern("EG2", kTRUE);
+  } else {
+    // Get triggers from trigger string
+    jethigh->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
+    jethigh->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJLow);
+    jethigh->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCGHigh);
+    jethigh->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCGLow);
+  }
+  task->AddTriggerClass(jethigh);
+  task->AddTriggerClass(jetlow);
+  task->AddTriggerClass(gammahigh);
+  task->AddTriggerClass(gammalow);
+
+  /* No handling for mixed classes for the moment, these would be
+   *
+   * "EMCHighBoth", "jet and gamma triggered events (high threshold)"
+   * "EMCHighGammaOnly", "exclusively gamma-triggered events (high threshold)"
+   * "EMCHighJetOnly", "exclusively jet-triggered events (high threshold)"
+   * "EMCLowBoth", "jet and gamma triggered events (low threshold)"
+   * "EMCLowGammaOnly", "exclusively gamma-triggered events (low threshold)"
+   * "EMCLowJetOnly", "exclusively-triggered events (low threshold)"
+   */
+}
+
+/**
+ * Define trigger class handling for pp 8 TeV 2012 and add the classes to the analysis task. Trigger classes available:
+ *  - 2 Min bias triggers (INT7 and INT8, handled separately)
+ *  - EMCAL jet trigger, level 0 based on INT7 or INT8 (handled separately)
+ *  - EMCAL single shower trigger, level 0 based on INT7 or INT8 (handled separately)
+ *  In case of data the EMCAL trigger decision is obtained from the trigger string while in case of MC it is obtained
+ *  from the trigger patches and the min. bias bit for INT7 or INT8.
+ *
+ * \param task Target task
+ * \param isMC Definition whether task runs on data or on MC
+ */
+void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task, bool isMC){
+  // Min Bias triggers (INT7 and INT8)
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * mbINT7 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("MinBiasINT7", "min. bias events (INT7)");
+  mbINT7->SetMinBiasTrigger(kTRUE);
+  mbINT7->AddTriggerBit(AliVEvent::kINT7);
+  task->AddTriggerClass(mbINT7);
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * mbINT8 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("MinBiasINT8", "min. bias events (INT8)");
+  mbINT8->SetMinBiasTrigger(kTRUE);
+  mbINT8->AddTriggerBit(AliVEvent::kINT8);
+  task->AddTriggerClass(mbINT8);
+
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * jetINT7 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCJetINT7", "EMCAL jet triggered events (INT7)");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * jetINT8 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCJetINT8", "EMCAL jet triggered events (INT8)");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * gammaINT7 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCGammaINT7", "EMCAL gamma triggered events (INT7)");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * gammaINT8 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCGammaINT8", "EMCAL gamma triggered events (INT8)");
+  if(!isMC){
+    // EMCAL triggers for single shower, separated for INT7 and INT8, detected from trigger string
+    jetINT7->AddTriggerStringPattern("EJE", kTRUE);
+    jetINT7->AddTriggerStringPattern("CEMC7", kTRUE);
+    jetINT8->AddTriggerStringPattern("EJE", kTRUE);
+    jetINT8->AddTriggerStringPattern("CEMC7", kTRUE);
+    gammaINT7->AddTriggerStringPattern("EGA", kTRUE);
+    gammaINT7->AddTriggerStringPattern("CEMC7", kTRUE);
+    gammaINT8->AddTriggerStringPattern("EGA", kTRUE);
+    gammaINT8->AddTriggerStringPattern("CEMC7", kTRUE);
+  } else {
+    jetINT7->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
+    jetINT7->AddTriggerBit(AliVEvent::kINT7);
+    jetINT8->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
+    jetINT8->AddTriggerBit(AliVEvent::kINT8);
+    gammaINT7->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCGHigh);
+    gammaINT7->AddTriggerBit(AliVEvent::kINT7);
+    gammaINT8->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCGHigh);
+    gammaINT8->AddTriggerBit(AliVEvent::kINT8);
+  }
+
+  task->AddTriggerClass(jetINT7);
+  task->AddTriggerClass(jetINT8);
+  task->AddTriggerClass(gammaINT7);
+  task->AddTriggerClass(gammaINT8);
 }
 
 /**

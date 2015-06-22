@@ -186,7 +186,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCustomBinning(""),
   fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
-  fHistVZEROChannelGainEqualizationMap(0) {
+  fHistVZEROChannelGainEqualizationMap(0),
+  fUtils(0) {
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -649,7 +650,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   AliInfo("Finished setting up the Output");
 
   TH1::AddDirectory(oldStatus);
-
+  
+  fUtils = new AliAnalysisUtils();
 }
 
 
@@ -830,17 +832,16 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
   // check first event in chunk (is not needed for new reconstructions)
   if(fCheckFirstEventInChunk){
-    AliAnalysisUtils ut;
-    if(ut.IsFirstEventInChunk(event)) 
+    if(fUtils->IsFirstEventInChunk(event)) 
       return -1.;
     fHistEventStats->Fill(6,gRefMultiplicity); 
   }
   // check for pile-up event
+  AliAnalysisUtils ut;
   if(fCheckPileUp){
-    AliAnalysisUtils ut;
-    ut.SetUseMVPlpSelection(kTRUE);
-    ut.SetUseOutOfBunchPileUp(kTRUE);
-    if(ut.IsPileUpEvent(event))
+    fUtils->SetUseMVPlpSelection(kTRUE);
+    fUtils->SetUseOutOfBunchPileUp(kTRUE);
+    if(fUtils->IsPileUpEvent(event))
       return -1.;
     fHistEventStats->Fill(7,gRefMultiplicity); 
   }
@@ -919,7 +920,19 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
 
 		  // get the reference multiplicty or centrality
-		  gRefMultiplicity = GetRefMultiOrCentrality(event);
+		  if((fEventClass=="Multiplicity")&&(fMultiplicityEstimator.Contains("Utils"))) {
+		    if ((fMultiplicityEstimator == "V0MUtils")) 
+		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0MEq");
+		    if ((fMultiplicityEstimator == "V0AUtils")) 
+		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0AEq");
+		    if ((fMultiplicityEstimator == "V0CUtils")) 
+		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0CEq");
+		    else 
+		      AliError("The requested estimator from AliAnalysisUtils is not supported");
+		  }//use the framework to define the multiplicity class
+		  
+		  else
+		    gRefMultiplicity = GetRefMultiOrCentrality(event);
 		  
 		  fHistVx->Fill(vertex->GetX());
 		  fHistVy->Fill(vertex->GetY());

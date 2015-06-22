@@ -80,7 +80,15 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fhMCmassLcPtSig(0),
 		fhMCmassLcPtSigc(0),
 		fhMCmassLcPtSigb(0),
+		fhProbmassLcPt(0),
+		fhProbmassLcPtSig(0),
+		fhProbmassLcPtSigc(0),
+		fhProbmassLcPtSigb(0),
 		fhIsLcResonantGen(0),
+		fhIsLcResonantReco(0),
+		fhIsLcGen(0),
+		fhIsLcReco(0),
+		fhRecoPDGmom(0),
 		fhSelectBit(0),
 		fhSelectionBits(0),
 		fhSelectionBitsSigc(0),
@@ -104,7 +112,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fLcPIDCut(kFALSE),    
 		fNentries(0),
 		fPIDResponse(0),
-		fCounter(0)
+		fCounter(0),
+		fVertUtil(0)
 
 {
 	//
@@ -181,7 +190,15 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fhMCmassLcPtSig(0),
 	fhMCmassLcPtSigc(0),
 	fhMCmassLcPtSigb(0),
+	fhProbmassLcPt(0),
+	fhProbmassLcPtSig(0),
+	fhProbmassLcPtSigc(0),
+	fhProbmassLcPtSigb(0),
 	fhIsLcResonantGen(0),
+	fhIsLcResonantReco(0),
+	fhIsLcGen(0),
+	fhIsLcReco(0),
+	fhRecoPDGmom(0),
 	fhSelectBit(0),
 	fhSelectionBits(0),
 	fhSelectionBitsSigc(0),
@@ -205,7 +222,8 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fLcPIDCut(kFALSE),    
 	fNentries(0),
 	fPIDResponse(0),
-	fCounter(0)
+	fCounter(0),
+	fVertUtil(0)
 {
 	//
 	// Default constructor
@@ -265,6 +283,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 		fhPtPhiLcDeltab[i]=0x0;
 
 	}
+	fVertUtil = new AliVertexingHFUtils();
 
 	DefineOutput(1,TList::Class());  //My private output
 	DefineOutput(2,TList::Class());
@@ -320,6 +339,10 @@ AliAnalysisTaskSELambdacTMVA::~AliAnalysisTaskSELambdacTMVA()
 	if(fCounter){
 		delete fCounter;
 		fCounter = 0;
+	}
+	if(fVertUtil) {
+		delete fVertUtil;
+		fVertUtil = 0;
 	}
 
 }  
@@ -383,6 +406,10 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fhMCmassLcPtSig = new TH2F("hMCmassLcPtSig","hMCmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
 	fhMCmassLcPtSigc = new TH2F("hMCmassLcPtSigc","hMCmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
 	fhMCmassLcPtSigb = new TH2F("hMCmassLcPtSigb","hMCmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPt = new TH2F("hProbmassLcPt","hProbmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPtSig = new TH2F("hProbmassLcPtSig","hProbmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPtSigc = new TH2F("hProbmassLcPtSigc","hProbmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPtSigb = new TH2F("hProbmassLcPtSigb","hProbmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
 	fOutput->Add(fhPIDmassLcPt);
 	fOutput->Add(fhPIDmassLcPtSig);
 	fOutput->Add(fhPIDmassLcPtSigc);
@@ -391,11 +418,24 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fOutput->Add(fhMCmassLcPtSig);
 	fOutput->Add(fhMCmassLcPtSigc);
 	fOutput->Add(fhMCmassLcPtSigb);
+	fOutput->Add(fhProbmassLcPt);
+	fOutput->Add(fhProbmassLcPtSig);
+	fOutput->Add(fhProbmassLcPtSigc);
+	fOutput->Add(fhProbmassLcPtSigb);
 
-	fhIsLcResonantGen = new TH1F("fIsLcResonantGen","IsLcResonant flag",6,-1.5,4.5);
+	fhIsLcResonantGen = new TH1F("hIsLcResonantGen","IsLcResonant flag gen",6,-1.5,4.5);
+	fhIsLcResonantReco = new TH1F("hIsLcResonantReco","IsLcResonant flag reco",6,-1.5,4.5);
+	fhIsLcGen = new TH1F("hIsLcGen","IsLc flag gen",4,-1.5,2.5);
+	fhIsLcReco = new TH1F("hIsLcReco","IsLc flag reco",4,-1.5,2.5);
 	fOutput->Add(fhIsLcResonantGen);
+	fOutput->Add(fhIsLcResonantReco);
+	fOutput->Add(fhIsLcGen);
+	fOutput->Add(fhIsLcReco);
 
-	fhSetIsLc = new TH1F("SetIsLc","Check candidates before/after rec. set is Lc",2,-0.5,1.5);
+	fhRecoPDGmom = new TH1F("hRecoPDGmom","pdg of mother reco. MatchToMCLambdac",7,-0.5,6.5);
+	fOutput->Add(fhRecoPDGmom);
+
+	fhSetIsLc = new TH1F("hSetIsLc","Check candidates before/after rec. set is Lc",2,-0.5,1.5);
 	fOutput->Add(fhSetIsLc);
 
 	fhSelectionBits = new TH2F("hSelectionBits","Reconstruction + selection bit",13,-0.5,12.5,150,0,15);
@@ -817,7 +857,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 
 	//MC Generated level
 	//loop over MC particles to find Lc generated
-	Int_t pdgcode = 0;
 	Bool_t isInFidAcc = kFALSE; 
 	Bool_t isInAcc = kFALSE;
 	if(fReadMC) {
@@ -835,76 +874,59 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 				AliError("Failed casting particle from MC array!, Skipping particle");
 				continue;
 			}
+			//Check whether particle is Lc
+			SetIsLcGen(mcPart,arrayMC);
+			if(fIsLc==0) continue;
+			//-- is Lc --
 			isInFidAcc = fRDCutsAnalysis->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y());
 			fCandidateVars[0] = mcPart->Pt();
 			fCandidateVars[1] = mcPart->Eta();
 			fCandidateVars[2] = mcPart->Y();
 			fCandidateVars[3] = mcPart->Phi();
-			//Check whether particle is Lc
-			pdgcode = TMath::Abs(mcPart->GetPdgCode());
-			if(pdgcode==4122) {
-				AliDebug(2,"Found Lc! now check mother");
-				fIsLc=1;
-				AliVertexingHFUtils *util = new AliVertexingHFUtils();
-				Int_t pdgMom = 0;
-				pdgMom=util->CheckOrigin(arrayMC,mcPart,kFALSE);
-				if(pdgMom==0) {
-					fhIsLcResonantGen->Fill(-1);
+			Int_t imother=mcPart->GetMother();
+			if(imother>0) { //found mother
+				AliAODMCParticle* mcPartMother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imother));
+				if(!mcPart){
+					AliError("Failed casting mother particle, Skipping particle");
 					continue;
 				}
-				if(pdgMom == 5){
-					AliDebug(2,"Lc comes from b");
-					fIsLc=2;
-				}
-				else if(pdgMom==4) {
-					fIsLc=1;
-				}
-				else {fIsLc=0; fIsLcResonant=0;}
-
-				Int_t imother=mcPart->GetMother();
-				if(imother>0) { //found mother
-					AliAODMCParticle* mcPartMother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imother));
-					if(!mcPart){
-						AliError("Failed casting mother particle, Skipping particle");
-						continue;
-					}
-				}
-
-				//Check daughters
-				SetLambdacDaugh(mcPart,arrayMC,isInAcc);
-				if(fIsLcResonant>=1 && imother>0) {
-					AliDebug(2,"Lc has p K pi in final state");
-					FillEffHists(kGeneratedAll);
-					fNentries->Fill(4);
-					if(isInFidAcc){
-						fNentries->Fill(5);
-						if((TMath::Abs(mcPart->Y()) < 0.5)) {//limited acceptance
-							AliDebug(2,"Lc in limited acceptance");
-							FillEffHists(kGeneratedLimAcc);
-						}
-						FillEffHists(kGenerated); //MC generated ---> Should be within fiducial acceptance
-						if(isInAcc) FillEffHists(kGeneratedAcc); //all daughters in acceptance
-					}
-				}
-				else if(fIsLcResonant==0){
-				 	AliError("no p K pi final state");
-//					TClonesArray *ares = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-//					Int_t nentriesres = ares->GetEntriesFast();
-//					for(Int_t ires=0;ires<nentriesres;ires++) {
-//						AliAODMCParticle* mcPartRes = dynamic_cast<AliAODMCParticle*>(ares->At(ires));
-//						Printf("%i",ires);
-//						mcPartRes->Print();
-//					}
-//					TIter next(aod->GetList());
-//					while (TObject *obj = next())
-//						obj->Print();
-				}
-				else AliError(Form("Not pKpi or background - should not happen! fIsLcResonant = %i",fIsLcResonant));
-				fhIsLcResonantGen->Fill(Double_t(fIsLcResonant));
-				delete util;
 			}
+
+			//Check daughters
+			SetLambdacDaugh(mcPart,arrayMC,isInAcc);
+			if(fIsLcResonant>=1 && imother>0) {
+				AliDebug(2,"Lc has p K pi in final state");
+				FillEffHists(kGeneratedAll);
+				fNentries->Fill(4);
+				if(isInFidAcc){
+					fNentries->Fill(5);
+					if((TMath::Abs(mcPart->Y()) < 0.5)) {//limited acceptance
+						AliDebug(2,"Lc in limited acceptance");
+						FillEffHists(kGeneratedLimAcc);
+					}
+					FillEffHists(kGenerated); //MC generated ---> Should be within fiducial acceptance
+					if(isInAcc) FillEffHists(kGeneratedAcc); //all daughters in acceptance
+				}
+			}
+			else if(fIsLcResonant==0){
+				AliError("no p K pi final state");
+				//					TClonesArray *ares = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+				//					Int_t nentriesres = ares->GetEntriesFast();
+				//					for(Int_t ires=0;ires<nentriesres;ires++) {
+				//						AliAODMCParticle* mcPartRes = dynamic_cast<AliAODMCParticle*>(ares->At(ires));
+				//						Printf("%i",ires);
+				//						mcPartRes->Print();
+				//					}
+				//					TIter next(aod->GetList());
+				//					while (TObject *obj = next())
+				//						obj->Print();
+			}
+			else AliError(Form("Not pKpi or background - should not happen! fIsLcResonant = %i",fIsLcResonant));
+			fhIsLcResonantGen->Fill(Double_t(fIsLcResonant));
+			fhIsLcGen->Fill(Double_t(fIsLc));
 		}
 	}
+
 
 	fHistNEvents->Fill(2); // count event after event selection (as CF task)
 
@@ -915,14 +937,19 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		return;
 	}
 
+	//
 	//Reconstruction level
 	//loop over 3 prong candidates
+	//
+
 	for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
 		AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
 		//(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part,TClonesArray *arrayMC)
 		fhSetIsLc->Fill(0);
-		SetIsLc(d,arrayMC);
+		SetIsLcReco(d,arrayMC);
 		fhSetIsLc->Fill(1);
+		fhIsLcResonantReco->Fill(Double_t(fIsLcResonant));
+		fhIsLcReco->Fill(Double_t(fIsLc));
 		fCandidateVars[0] = d->Pt();
 		fCandidateVars[1] = d->Eta();
 		fCandidateVars[2] = d->Y(4122);
@@ -975,18 +1002,21 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		//idproton, pion using isSelectedPID
 		//Bool_t isPID=fRDCutsAnalysis->GetIsUsePID();
 		Int_t isSelectedPID=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kPID,aod);
+
 		if(isSelectedPID==0 ) fNentries->Fill(12);
 		else if(isSelectedPID==1) fNentries->Fill(13);
 		else if(isSelectedPID==2) fNentries->Fill(14);
 		else fNentries->Fill(15);
 		if(isSelectedPID>0) FillEffHists(kIsSelectedPID);
+		//PID selection using maximum probability configuration
+		Int_t selectionProb = GetPIDselectionMaxProb(d);
 
 		Int_t selection=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
 		if(!selection) continue;
 		FillEffHists(kIsSelectedCandidate);
 		fNentries->Fill(11);
 
-		FillMassHists(aod,d,arrayMC,selection);
+		FillMassHists(aod,d,arrayMC,selection,selectionProb);
 		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
 		if(fIsLc>=1 && fIsLc <= 2) fNentries->Fill(16);
@@ -1238,7 +1268,37 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 
 //-----------------------------
 
-void AliAnalysisTaskSELambdacTMVA::SetIsLc(AliAODRecoDecayHF3Prong *part,
+void AliAnalysisTaskSELambdacTMVA::SetIsLcGen(AliAODMCParticle *mcPart, TClonesArray *arrayMC) {
+
+	//
+	//Set fIsLc from AliAODMCParticle
+	//fIsLc 0 = not Lc from quark, 1 = Lc from c, 2 = Lc from b
+	//
+
+	fIsLc=0;
+	if(TMath::Abs(mcPart->GetPdgCode())==4122) {
+		AliDebug(2,"Found Lc! now check mother");
+		fIsLc=1;
+		Int_t pdgMom = 0;
+		pdgMom=fVertUtil->CheckOrigin(arrayMC,mcPart,fKeepLcNotFromQuark ? kFALSE : kTRUE);
+		if(pdgMom == 5){
+			AliDebug(2,"Lc comes from b");
+			fIsLc=2;
+		}
+		else if(pdgMom==4) {
+			fIsLc=1;
+		}
+		else {
+			fIsLc=0;
+			fhIsLcResonantGen->Fill(-1);
+		}
+	}
+}
+
+
+//-----------------------------
+
+void AliAnalysisTaskSELambdacTMVA::SetIsLcReco(AliAODRecoDecayHF3Prong *part,
 		TClonesArray *arrayMC) {
 
 	//
@@ -1252,63 +1312,35 @@ void AliAnalysisTaskSELambdacTMVA::SetIsLc(AliAODRecoDecayHF3Prong *part,
 	fIsLcResonant=0;
 	if(!fReadMC) return;
 	else{ //MC, check if Lc prompt or non prompt
-		AliVertexingHFUtils *util = new AliVertexingHFUtils();
-		labDp = MatchToMCLambdac(part,arrayMC);
+		Int_t pdgCand =4122;
+		Int_t pdgDaughter[3]={-1,-1,-1};
+		pdgDaughter[0]=2212;
+		pdgDaughter[1]=321;
+		pdgDaughter[2]=211;   
+
+		labDp = part->MatchToMC(pdgCand,arrayMC,3,pdgDaughter);
 		if(labDp>0){
-			fIsLc=1;
 			AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-			Int_t pdgMom=util->CheckOrigin(arrayMC,partDp,kFALSE);
-			if(pdgMom == 5) fIsLc=2;
+			Int_t pdgMom=fVertUtil->CheckOrigin(arrayMC,partDp,fKeepLcNotFromQuark ? kFALSE : kTRUE);
+			fhRecoPDGmom->Fill(pdgMom);
+			if(pdgMom == 4) fIsLc=1;
+			else if(pdgMom == 5) fIsLc=2;
+			else fIsLc=0;
+			Bool_t dummy = kTRUE;
+			if(fIsLc>0) SetLambdacDaugh(partDp, arrayMC, dummy);
 		}
-		delete util;
 
-
-		if(fIsLc){ //sig, MC
-
-			AliCFVertexingHF3Prong *Lcres0 = new AliCFVertexingHF3Prong(arrayMC,0,32,1); //nonresonant
-			AliCFVertexingHF3Prong *Lcres1 = new AliCFVertexingHF3Prong(arrayMC,0,32,2); // Lc -> L(1520) + p
-			AliCFVertexingHF3Prong *Lcres2 = new AliCFVertexingHF3Prong(arrayMC,0,32,3); //Lc -> K* + pi
-			AliCFVertexingHF3Prong *Lcres3 = new AliCFVertexingHF3Prong(arrayMC,0,32,4); // Lc -> Delta + K
-
-			Lcres0->SetRecoCandidateParam(part);
-			Lcres1->SetRecoCandidateParam(part);
-			Lcres2->SetRecoCandidateParam(part);
-			Lcres3->SetRecoCandidateParam(part);
-
-			Int_t mclabel0 = Lcres0->GetMCLabel();
-			Int_t mclabel1 = Lcres1->GetMCLabel();
-			Int_t mclabel2 = Lcres2->GetMCLabel();
-			Int_t mclabel3 = Lcres3->GetMCLabel();
-
-			Lcres0->SetMCCandidateParam(mclabel0);
-			Lcres1->SetMCCandidateParam(mclabel1);
-			Lcres2->SetMCCandidateParam(mclabel2);
-			Lcres3->SetMCCandidateParam(mclabel3);
-
-			if(Lcres0->CheckLc3Prong()) fIsLcResonant=1;
-			else if(Lcres1->CheckLc3Prong()) fIsLcResonant=2;
-			else if(Lcres2->CheckLc3Prong()) fIsLcResonant=3;
-			else if(Lcres3->CheckLc3Prong()) fIsLcResonant=4;
-			else fIsLcResonant=-1;
-
-			delete Lcres0;
-			delete Lcres1;
-			delete Lcres2;
-			delete Lcres3;
-		}
 	}
 }
 
 //---------------------------
 
-void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection) {
+void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection, Int_t selectionProb) {
 	//fill mass hists
 	Int_t IsInjected = -1;
 	if(fReadMC) {
 		AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-		AliVertexingHFUtils *util = new AliVertexingHFUtils();
-		IsInjected = util->IsCandidateInjected(d,mcHeader2,arrayMC)?1:0;
-		delete util;
+		IsInjected = fVertUtil->IsCandidateInjected(d,mcHeader2,arrayMC)?1:0;
 
 		//signal
 		if(fIsLc>=1) {
@@ -1339,6 +1371,17 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 					fhPIDmassLcPtSigb->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
 				}
 			}
+			//max prob PID
+			if(selectionProb==1) {
+				fhProbmassLcPtSig->Fill(d->Pt(), d->InvMassLcpKpi());
+				if(fIsLc==1)fhProbmassLcPtSigc->Fill(d->Pt(), d->InvMassLcpKpi());
+				if(fIsLc==2)fhProbmassLcPtSigb->Fill(d->Pt(), d->InvMassLcpKpi());
+			}
+			else if(selectionProb==2) {
+				fhProbmassLcPtSig->Fill(d->Pt(), d->InvMassLcpiKp());
+				if(fIsLc==1)fhProbmassLcPtSigc->Fill(d->Pt(), d->InvMassLcpiKp());
+				if(fIsLc==2)fhProbmassLcPtSigb->Fill(d->Pt(), d->InvMassLcpiKp());
+			}
 		}
 	}
 	//Bkg
@@ -1356,6 +1399,9 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
 			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
 		}
+		//max prob PID
+		if(selectionProb==1) fhProbmassLcPt->Fill(d->Pt(),d->InvMassLcpKpi());
+		else if(selectionProb==2)	fhProbmassLcPt->Fill(d->Pt(),d->InvMassLcpiKp());
 	}
 }
 
@@ -1374,9 +1420,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 
 	if(fReadMC){ 
 		AliAODMCHeader *mcHeader3 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-		AliVertexingHFUtils *util = new AliVertexingHFUtils();
-		IsInjected = util->IsCandidateInjected(part,mcHeader3,arrayMC)?1:0;
-		delete util;
+		IsInjected = fVertUtil->IsCandidateInjected(part,mcHeader3,arrayMC)?1:0;
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
@@ -1647,4 +1691,30 @@ void AliAnalysisTaskSELambdacTMVA::FillSelectionBits(AliAODRecoDecayHF3Prong *d,
 	if(d->HasSelectionBit(AliRDHFCuts::kLcPID)) hSelectionBits->Fill(10,fCandidateVars[0]);
 	if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) hSelectionBits->Fill(11,fCandidateVars[0]);
 	if(d->HasSelectionBit(AliRDHFCuts::kDstarPID)) hSelectionBits->Fill(12,fCandidateVars[0]);
+}
+
+Int_t AliAnalysisTaskSELambdacTMVA::GetPIDselectionMaxProb(AliAODRecoDecayHF3Prong *part) {
+
+	Int_t selection = 0;
+
+	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
+		AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
+		AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
+		AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
+		//bayesian probabilities
+		Double_t prob0[AliPID::kSPECIES];
+		Double_t prob1[AliPID::kSPECIES];
+		Double_t prob2[AliPID::kSPECIES];
+
+		if (!track0 || !track1 || !track2) {
+			AliError("AliVTrack missing");
+			return 0;
+		}
+		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
+		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
+		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
+		if(prob0[AliPID::kProton] * prob1[AliPID::kKaon] * prob2[AliPID::kPion] > prob2[AliPID::kProton] * prob1[AliPID::kKaon] * prob0[AliPID::kPion]) selection = 1; // pKpi
+		else selection = 2; // piKp
+	}
+	return selection;
 }

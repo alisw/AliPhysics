@@ -100,6 +100,18 @@ public:
   Double_t Phi() const;
 
   /**
+   * Access to components of the  3-momentum vector.
+   * \param px x-component
+   * \param py y-component
+   * \param pz z-component
+   */
+  void GetMomentumVector(Double_t &px, Double_t &py, Double_t &pz) const {
+    px = fPVec[0];
+    py = fPVec[1];
+    pz = fPVec[2];
+  }
+
+  /**
    * Get the charge of the reconstructed track
    * \return Charge of the reconstructed track
    */
