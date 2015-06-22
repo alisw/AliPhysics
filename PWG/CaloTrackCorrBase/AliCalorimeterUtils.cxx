@@ -1340,16 +1340,15 @@ void AliCalorimeterUtils::InitEMCALGeometry()
   
   if(fEMCALGeoName=="")
   {
-    if     (fRunNumber <  140000) fEMCALGeoName = "EMCAL_FIRSTYEARV1";
-    else if(fRunNumber <  171000) fEMCALGeoName = "EMCAL_COMPLETEV1";
-    else if(fRunNumber <  198000) fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
-    else                          fEMCALGeoName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+    fEMCALGeo = AliEMCALGeometry::GetInstanceFromRunNumber(fRunNumber);
+    AliInfo(Form("Get EMCAL geometry name to <%s> for run %d",fEMCALGeo->GetName(),fRunNumber));
   }
-  
-  AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fEMCALGeoName.Data(),fRunNumber));
+  else
+  {
+    fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
+    AliInfo(Form("Set EMCAL geometry name to <%s>",fEMCALGeoName.Data()));
+  }
 
-  fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
-  
   // Init geometry, I do not like much to do it like this ...
   if(fImportGeometryFromFile && !gGeoManager)
   {
