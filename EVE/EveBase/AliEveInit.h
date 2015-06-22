@@ -12,17 +12,18 @@
 #include <AliEveEventManager.h>
 
 #include <TString.h>
+#include <TEnv.h>
 
 class AliEveInit
 {
 public:
     AliEveInit(const TString& path = ".",
-                  const TString& cdbUri="local:///local/cdb",
                   AliEveEventManager::EDataSource defaultDataSource= AliEveEventManager::kSourceOffline,
                   bool storageManager=false);
     ~AliEveInit(){};
+    
+    static void GetConfig(TEnv *settings);
 private:
-    const TString& fCDBuri;
     const TString& fPath;
     
     bool fShowHLTESDtree;

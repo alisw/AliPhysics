@@ -740,6 +740,12 @@ void AliEveDataSourceOffline::SetFilesPath(const TString& urlPath)
     AddAODfriend(  TString(Form("%s%sAliAOD.VertexingHF.root", path.Data(), sep.Data())) );
     SetGAliceFileName( TString(Form("%s%sgalice.root", path.Data(), sep.Data())) );
     SetRawFileName(TString(Form("%s%sraw.root", path.Data(), sep.Data())));
+    
+    if(fIsOpen)
+    {
+        Close(); // close old files
+    }
+    Open();  // open files with new path
 }
 
 

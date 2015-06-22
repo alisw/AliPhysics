@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     if(mfFix){gROOT->ProcessLine(Form(".x mf_fix.C(%d,%d)",solenoidPolarity,dipolePolarity));}
 
     if(classesMode){
-        AliEveInit *init = new AliEveInit(".",cdbPath,dataSource);
+        AliEveInit *init = new AliEveInit(".",dataSource);
     }
     
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
