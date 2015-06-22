@@ -145,6 +145,12 @@ public:
     kPileupBC    = 0x40000,
     /** SPD pile-up in mult bins */
     kPileupBins  = 0x80000,
+    /** AD-OR */
+    kADOR        = 0x100000,
+    /** AD-AND */
+    kADAND       = 0x200000,
+    /** Flag that says the pattern is an OR rather than an AND */
+    kInclusive   = 0x8000000,
     /** Our default negative filter */
     kDefaultFilter = kPileupBins|kSPDOutlier
   };
@@ -159,13 +165,15 @@ public:
     kBinInelGt0, 
     kBinNSD, 
     kBinV0AND,
+    kBinADOR,
+    kBinADAND,
     kBinA, 
     kBinB, 
     kBinC, 
     kBinE,
     kBinSatellite,
-    kBinPileUp, 
     kBinMCNSD,
+    kBinPileUp, 
     kBinOffline,
     kBinNClusterGt0,
     kWithTrigger, 
@@ -426,14 +434,28 @@ public:
    */
   void SetTriggerBits(UInt_t bits) { fTriggers |= bits; } // Set trigger bits
   /** 
-   * Check if all bit(s) are set in the trigger mask.  Note, this is
-   * an @e and between the bits.  If you need an @e or you should use
-   * the member function IsTriggerOrBits
+   * Check if all/some bit(s) are set in the trigger mask @a trg.
+   * Note, this is an @e and between the bits, unless the bit
+   * kInclusive is set in the @a bits argument.  If you need an @e or
+   * you should use the member function IsTriggerOrBits, or set the
+   * bit @c kInclusive
+   * 
+   * @param bits Bits to test for 
+   * @param trg  Event trigger bits 
+   * 
+   * @return true if all/some enabled bits in the argument is also set in
+   * the trigger word @a trg
+   */
+  static Bool_t IsTriggerBits(UInt_t bits, UInt_t trg);
+  /** 
+   * Check if all/some bit(s) are set in the trigger mask.  Calls the
+   * static version if this member function with the second argument
+   * set to fTriggers
    * 
    * @param bits Bits to test for 
    * 
-   * @return true if all enabled bits in the argument is also set in
-   * the trigger word
+   * @return true if all/some enabled bits in the argument is also set
+   * in the trigger word stored in this object
    */
   Bool_t IsTriggerBits(UInt_t bits) const;
   /** 
@@ -686,7 +708,7 @@ public:
   /* @} */
   /** 
    * @{ 
-   * @name Generalt tests 
+   * @name General tests 
    */
   /** 
    * Check if event meets the passses requirements.   
@@ -718,12 +740,34 @@ public:
    * 
    * @return @c true if the event meets the requirements 
    */
-  Bool_t CheckEvent(Int_t    triggerMask=kInel,
+  Bool_t CheckEvent(UInt_t   triggerMask=kInel,
 		    Double_t vzMin=-10, Double_t vzMax=10,
 		    Double_t cMin=0,    Double_t cMax=100, 
 		    TH1*     hist=0,
 		    TH1*     status=0,
-		    Int_t    pileUpMask=kDefaultFilter) const;
+		    UInt_t   pileUpMask=kDefaultFilter) const;
+  /** 
+   * Fill the trigger histogram previously made with MakeTriggerHistogram
+   * 
+   * @param triggerMask 
+   * @param hist 
+   */
+  static void FillTriggerHistogram(UInt_t triggerMask, UInt_t trg, TH1* hist);
+  /** 
+   * Check wether this event was vetoed. 
+   * 
+   * @param vzMin         Least @f$\mbox{IP}_{z}@f$ 
+   * @param vzMax         Largest  @f$\mbox{IP}_{z}@f$ 
+   * @param hist          Trigger histogram 
+   * @param status        Status histogram 
+   * @param filterMask    Filter mask. Interpreted as an OR pattern of bits 
+   *                      we should filter out. 
+   * 
+   * @return true if the event was not vetoed. 
+   */
+  Bool_t FilterEvent(Double_t vzMin, Double_t vzMax,
+		     TH1* hist, TH1* status,
+		     UInt_t filterMask) const;
   /** 
    * Make a histogram to record triggers in. 
    *
@@ -737,7 +781,7 @@ public:
    * @return Newly allocated histogram 
    */
   static TH1I* MakeTriggerHistogram(const char* name="triggers",
-				    Int_t mask=0);
+				    UInt_t mask=0);
   /** 
    * Make a histogram to record status in. 
    *
@@ -752,19 +796,19 @@ public:
 protected: 
   /** From MC or not */
   Bool_t   fIsMC;       // Whether this is from MC 
-  /** Histogram of @f$d^2N_{ch}/(d\eta d\phi)@f$ for this event */
-  TH2D     fHist;       // Histogram of d^2N_{ch}/(deta dphi) for this event
+  /** Histogram of @f$ N_{ch}(\eta,\phi)@f$ for this event */
+  TH2D     fHist;       // Histogram of N_{ch}(eta,phi)
   /** Trigger bits */
   UInt_t   fTriggers;   // Trigger bit mask 
-  /** Interaction point @f$z@f$ coordinate */
+  /** Interaction point @f$ z@f$ coordinate */
   Float_t  fIpZ;        // Z coordinate of the interaction point
   /** Centrality */
   Float_t  fCentrality; // Event centrality 
   /** Number of clusters in @f$|\eta|<1@f$ */
   UShort_t fNClusters;  // Number of SPD clusters in |eta|<1
-  /** Invalid value for interaction point @f$z@f$ coordiante */
+  /** Invalid value for interaction point @f$ z@f$ coordinate */
   static const Float_t fgkInvalidIpZ; // Invalid IpZ value 
-  ClassDef(AliAODForwardMult,6); // AOD forward multiplicity 
+  ClassDef(AliAODForwardMult,7); // AOD forward multiplicity 
 };
 
 //____________________________________________________________________
@@ -777,9 +821,19 @@ AliAODForwardMult::InRange(Float_t low, Float_t high) const
 //____________________________________________________________________
 inline Bool_t 
 AliAODForwardMult::IsTriggerBits(UInt_t bits) const 
-{ 
-  return HasTrigger() && ((fTriggers & bits) == bits); 
+{
+  return IsTriggerBits(bits, fTriggers);
 }
+//____________________________________________________________________
+inline Bool_t 
+AliAODForwardMult::IsTriggerBits(UInt_t bits, UInt_t trig)
+{
+  const UInt_t mask = ~kInclusive;
+  if (bits & kInclusive)
+    return trig > 0 && ((trig & mask & bits) != 0);
+  return trig > 0 && ((trig & mask & bits) == bits); 
+}
+
 //____________________________________________________________________
 inline Bool_t 
 AliAODForwardMult::IsTriggerOrBits(UInt_t bits) const 

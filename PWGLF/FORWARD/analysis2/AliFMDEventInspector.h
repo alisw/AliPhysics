@@ -149,13 +149,16 @@ public:
     kPP2760Fast, 
     kMUON,
     kTriggered,
-    kMinBias,
-    kMinBiasNoSPD,
-    kV0AndTrg,
+    kMinBias,           // CINT1
+    kMinBiasNoSPD,      // CINT5
+    kV0AndTrg,          // CINT7
+    kMinBiasAD,         // CINT10
     kHighMult,
     kCentral, 
     kSemiCentral, 
     kDiffractive,
+    kADOr,              // 
+    kADAnd,             // 
     kUser,
     kOther
   };
@@ -525,15 +528,6 @@ protected:
    */
   virtual Bool_t CheckFastPartition(bool fastonly) const;
   /** 
-   * Check if we have an NSD trigger for pp runs 
-   * 
-   * @param esd      Data
-   * @param triggers Trigger mask to be filled 
-   * 
-   * @return true if we have an NSD trigger 
-   */
-  virtual Bool_t CheckNSD(const AliESDEvent& esd, UInt_t& triggers) const;
-  /** 
    * Check if we have an INEL&gt;0 trigger 
    *  
    * @param esd        Data 
@@ -671,7 +665,6 @@ protected:
   TH1I*    fHEventsAccepted;      //! Events w/trigger and vertex in range 
   TH2D*    fHEventsAcceptedXY;    //! XY vtx with trigger and Z vertex in range 
   TH1I*    fHTriggers;            //! Triggers
-  TH2I*    fHTriggerCorr;         //! Correlation of triggers
   TH1I*    fHType;                //! Type (low/high flux) of event
   TH1I*    fHWords;               //! Trigger words 
   TH1F*    fHCent;                //! Centrality 
@@ -711,7 +704,7 @@ protected:
   Int_t    fProdSVN;              // AliROOT revision used in production
   Bool_t   fProdMC;               // True if anchor production
 
-  ClassDef(AliFMDEventInspector,15); // Inspect the event 
+  ClassDef(AliFMDEventInspector,16); // Inspect the event 
 };
 
 #endif
