@@ -474,8 +474,8 @@ void AliEMCALTenderSupply::ProcessEvent()
   }
   
   // Initialising parameters once per run number
-  if (RunChanged()) { 
-
+  if (RunChanged()) 
+  { 
     fRun = event->GetRunNumber();
     AliWarning(Form("Run changed, initializing parameters for %d", fRun));
     if (dynamic_cast<AliAODEvent*>(event)) {
@@ -485,15 +485,12 @@ void AliEMCALTenderSupply::ProcessEvent()
     }
 
     // init geometry if not already done
-    if (fEMCALGeoName.Length()==0) {
-      fEMCALGeoName = "EMCAL_FIRSTYEARV1";
-      if      (fRun>139517 && fRun <= 170593) fEMCALGeoName = "EMCAL_COMPLETEV1";
-      else if (fRun>170593 && fRun <= 198000) fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
-      else if (fRun>198000) fEMCALGeoName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
-
-      fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
+    if (fEMCALGeoName.Length()==0) 
+    {
+      fEMCALGeo = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
       
-      if (!fEMCALGeo) {
+      if (!fEMCALGeo) 
+      {
         AliFatal(Form("Can not create geometry: %s", fEMCALGeoName.Data()));
         return;
       }
