@@ -137,34 +137,30 @@ void AliEmcalSetupTask::Setup(Int_t runno)
 {
   // Setup everything
 
+  if ( runno < 0 )  // Run number 0 can occur for MC
+    return;
+  
+  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstanceFromRunNumber(runno);
+  
+  if (!geom) {
+    AliFatal("Can not create geometry!");
+    return;
+  }
+  
   // Setup AliEMCALGeometry corresponding to year
-  TString geoname("EMCAL_COMPLETE12SMV1");
   Int_t year = 2013;
   if (runno>0 && runno<=139517) {
     year = 2010;
-    geoname = "EMCAL_FIRSTYEARV1";
-  } else if ((runno>139517) && (runno<=170593)) {
+  } else if ((runno > 139517) && (runno <= 170593)) {
     year = 2011;
-    geoname = "EMCAL_COMPLETEV1";
-  } else if ((runno>170593) && (runno<=193766)) {
+  } else if ((runno > 170593) && (runno <= 193766)) {
     year = 2012;
-    geoname = "EMCAL_COMPLETE12SMV1";
-  } else if ((runno>193766) && (runno <= 199161)) {
-    geoname = "EMCAL_COMPLETE12SMV1";
+  } else if ((runno > 193766) && (runno <= 199161)) {
     year = 2013;
-  } else if (runno>199161) { //MV: is this the last run of run 1?
-    geoname = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+  } else if ( runno > 199161) { //MV: is this the last run of run 1?
     year = 2015;
   }
-  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
-  if (!geom) {
-    AliFatal(Form("Can not create geometry: %s",geoname.Data()));
-    return;
-  }
-
-  if (runno<0)  // Run number 0 can occur for MC
-    return;
-
+  
   // Setup CDB manager
   AliCDBManager *man = 0;
   if (!fNoOCDB) {
