@@ -340,7 +340,7 @@ void AliADDigitizer::DigitizeHits()
 	     
      Int_t firstBin = TMath::Max(0,(Int_t)((PMmeanTime[iPM])/fBinSize[iPM]));
      Int_t lastBin = fNBins[iPM]-1;
-     std::cout<<"First Bin: "<<firstBin<<std::endl;
+     //std::cout<<"First Bin: "<<firstBin<<std::endl;
      for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
 	 Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMmeanTime[iPM];
 	 if(tempT<=0)continue;
@@ -419,6 +419,7 @@ void AliADDigitizer::DigitizeSDigits()
       adcSignal += adcClock;
     }
     fLeadingTime[j] = UnCorrectLeadingTime(j,fMCTime[j],adcSignal);
+    //std::cout<<"Leading Time: "<<t-fClockOffset[ipmt]<<std::endl;
     
   }
   //Fill BB and BG flags in trigger simulator

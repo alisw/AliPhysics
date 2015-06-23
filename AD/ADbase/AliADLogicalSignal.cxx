@@ -20,6 +20,8 @@
 // Use it to generate observation windows
 // which are used by AliADTriggerSimulator class
 // 
+#include <iostream>
+#include <bitset>
 
 #include "AliLog.h"
 #include "AliADLogicalSignal.h"
@@ -32,27 +34,47 @@ AliADLogicalSignal::AliADLogicalSignal() : TObject(), fStart(0.), fStop(0.)
 	// Default constructor
 }
 //_____________________________________________________________________________
-AliADLogicalSignal::AliADLogicalSignal(UShort_t profilClock, UInt_t delay) : TObject(), fStart(0.), fStop(0.)
+AliADLogicalSignal::AliADLogicalSignal(UShort_t profilClock, UInt_t delay, UInt_t latch, UInt_t reset) : TObject(), fStart(0.), fStop(0.)
 {
+	/*/
+	std::cout << "P " << std::bitset<5>(profilClock)<< std::endl;
+	std::cout << "L " << std::bitset<5>(latch)<< std::endl;
+	std::cout << "R " << std::bitset<5>(reset)<< std::endl;
+	std::cout << "Delay " <<delay<< std::endl;
+	/*/
+	
 	// Constructor using the profilClock and delay parameters comming from the FEE
+	Bool_t fClock[11];
+	Int_t fTimes[11];
+	Bool_t risingFound = kFALSE;
 	
-	Bool_t word;
-	Bool_t up=kFALSE;
-	Bool_t down=kFALSE;
-	
-	for(int i=0 ; i<5 ; i++) {
-	        Int_t shift = (i<4) ? (3-i) : 4;
-	        word = (profilClock >> shift) & 0x1;
-		if(word&&!up) {
-		        fStart = 5. * (i + 1);
-			up = kTRUE;
+	for(Int_t i=0; i<5; i++) {
+		fClock[i+1] = (profilClock >> 4-i) & 0x1;
+		fClock[i+6] = (profilClock >> 4-i) & 0x1;
 		}
-		if(!word&&up&&!down) {
-		        fStop = 5. * (i + 1);
-			down = kTRUE;
-		}		
-	}
-	if(!down) fStop = 30.;
+	fClock[0] = (profilClock >> 0) & 0x1;
+	 
+	if(reset>latch) for(Int_t i=0; i<11; i++) fTimes[i] = -5+5*i;
+	if(reset<latch) for(Int_t i=0; i<11; i++) fTimes[i] = -30+5*i;
+	
+	/*/
+	for(Int_t i=0; i<10; i++)std::cout<<fTimes[i]<<" ";
+	std::cout<<std::endl;
+	for(Int_t i=0; i<10; i++)std::cout<<fClock[i]<<" ";
+	std::cout<<std::endl;
+	/*/
+	
+	for(Int_t i=1; i<11; i++){
+		if(!risingFound && !fClock[i-1] && fClock[i]){
+			risingFound = kTRUE;
+			fStart = fTimes[i];
+			continue;
+			}
+		else if(risingFound && fClock[i-1] && !fClock[i]) {
+			fStop = fTimes[i];
+			break;
+			}	
+		}
 	
 	fStart += delay*1e-2; // Add 10 ps par register unit
 	fStop  += delay*1e-2; 

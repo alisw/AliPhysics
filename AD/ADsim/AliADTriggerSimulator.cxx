@@ -49,15 +49,12 @@ TObject(),fCalibData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(
 	for(int i=0;i<16;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
 		fCharges[i] = 0;
+		fTime[i] = 0;
 	}
+	GenerateBCMask();
 	GenerateBBWindows();
 	GenerateBGWindows();
-	for (int i=0; i<kNCIUBoards; i++) {
-		fBBLatch[i] = new AliADLogicalSignal(fCalibData->GetLatchWin1(i),0); 
-		fBGLatch[i] = new AliADLogicalSignal(fCalibData->GetLatchWin2(i),0); 
-		fBBReset[i] = new AliADLogicalSignal(fCalibData->GetResetWin1(i),0);
-		fBGReset[i] = new AliADLogicalSignal(fCalibData->GetResetWin2(i),0);		
-	}
+			
 }
 //_____________________________________________________________________________
 AliADTriggerSimulator::AliADTriggerSimulator() : 
@@ -70,15 +67,11 @@ TObject(),fCalibData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 	for(int i=0;i<16;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
 		fCharges[i] = 0;
+		fTime[i] = 0;
 	}
+	GenerateBCMask();
 	GenerateBBWindows();
-	GenerateBGWindows();
-	for (int i=0; i<kNCIUBoards; i++) {
-		fBBLatch[i] = new AliADLogicalSignal(fCalibData->GetLatchWin1(i),0); 
-		fBGLatch[i] = new AliADLogicalSignal(fCalibData->GetLatchWin2(i),0); 
-		fBBReset[i] = new AliADLogicalSignal(fCalibData->GetResetWin1(i),0);
-		fBGReset[i] = new AliADLogicalSignal(fCalibData->GetResetWin2(i),0);		
-	}
+	GenerateBGWindows();	
 }
 
 //_____________________________________________________________________________
@@ -87,12 +80,23 @@ AliADTriggerSimulator::~AliADTriggerSimulator(){
   for (Int_t i=0; i<kNCIUBoards; i++) {
     delete fBBGate[i];
     delete fBGGate[i];
-    delete fBBLatch[i];
-    delete fBBReset[i];
-    delete fBGLatch[i];
-    delete fBGReset[i];
+    delete fBCMask[i];
   }
 }
+
+//_____________________________________________________________________________
+void AliADTriggerSimulator::GenerateBCMask() 
+{
+  // Generates the BC mask
+  // Gate at central clock 25ns wide
+  for (Int_t i=0; i<kNCIUBoards; i++) {
+  	  fBCMask[i] = new AliADLogicalSignal();
+  	  fBCMask[i]->SetStartTime(fWindowOffset[i]);
+  	  fBCMask[i]->SetStopTime(fWindowOffset[i]+25.0);
+  }    
+
+}
+
 
 //_____________________________________________________________________________
 void AliADTriggerSimulator::GenerateBBWindows() 
@@ -100,17 +104,20 @@ void AliADTriggerSimulator::GenerateBBWindows()
   // Generates the BB observation window
   // In case gates are open the windows are equal to 25ns
   if (AreGatesOpen()) {
-	for (int i=0; i<kNCIUBoards; i++) {
+	for (Int_t i=0; i<kNCIUBoards; i++) {
 	        fBBGate[i] = new AliADLogicalSignal();
-		fBBGate[i]->SetStartTime(0.);
-		fBBGate[i]->SetStopTime(25.0);
+		fBBGate[i]->SetStartTime(fWindowOffset[i]);
+		fBBGate[i]->SetStopTime(fWindowOffset[i]+25.0);
 	}    
   }
   else {
-	for (int i=0; i<kNCIUBoards; i++) {
-		AliADLogicalSignal clk1BB(fCalibData->GetClk1Win1(i),fCalibData->GetDelayClk1Win1(i));
-		AliADLogicalSignal clk2BB(fCalibData->GetClk2Win1(i),fCalibData->GetDelayClk2Win1(i));
+	for (Int_t i=0; i<kNCIUBoards; i++) {
+		AliADLogicalSignal clk1BB(fCalibData->GetClk1Win1(i),fCalibData->GetDelayClk1Win1(i),fCalibData->GetLatchWin1(i),fCalibData->GetResetWin1(i));
+		AliADLogicalSignal clk2BB(fCalibData->GetClk2Win1(i),fCalibData->GetDelayClk2Win1(i),fCalibData->GetLatchWin1(i),fCalibData->GetResetWin1(i));
 		fBBGate[i] = new AliADLogicalSignal(clk1BB & clk2BB);
+		fBBGate[i]->SetStartTime(fBBGate[i]->GetStartTime()+fWindowOffset[i]);
+		fBBGate[i]->SetStopTime(fBBGate[i]->GetStopTime()+fWindowOffset[i]);
+					
 	}
   }
 }
@@ -120,17 +127,23 @@ void AliADTriggerSimulator::GenerateBGWindows()
   // Generates the BG observation window
   // In case gates are open the windows are equal to 25ns
   if (AreGatesOpen()) {
-	for (int i=0; i<kNCIUBoards; i++) {
+	for (Int_t i=0; i<kNCIUBoards; i++) {
 	        fBGGate[i] = new AliADLogicalSignal();
-		fBGGate[i]->SetStartTime(0.);
-		fBGGate[i]->SetStopTime(25.0);
+		fBGGate[i]->SetStartTime(fWindowOffset[i]);
+		fBGGate[i]->SetStopTime(fWindowOffset[i]+25.0);
 	}    
   }
   else {
-	for (int i=0; i<kNCIUBoards; i++) {
-		AliADLogicalSignal clk1BG(fCalibData->GetClk1Win2(i),fCalibData->GetDelayClk1Win2(i));
-		AliADLogicalSignal clk2BG(fCalibData->GetClk2Win2(i),fCalibData->GetDelayClk2Win2(i));
+	for (Int_t i=0; i<kNCIUBoards; i++) {
+		AliADLogicalSignal clk1BG(fCalibData->GetClk1Win2(i),fCalibData->GetDelayClk1Win2(i),fCalibData->GetLatchWin2(i),fCalibData->GetResetWin2(i));
+		clk1BG.SetStartTime(clk1BG.GetStartTime()+2);
+		clk1BG.SetStopTime(clk1BG.GetStopTime()+2);
+		AliADLogicalSignal clk2BG(fCalibData->GetClk2Win2(i),fCalibData->GetDelayClk2Win2(i),fCalibData->GetLatchWin2(i),fCalibData->GetResetWin2(i));
+		clk2BG.SetStartTime(clk2BG.GetStartTime()-2);
+		clk2BG.SetStopTime(clk2BG.GetStopTime()-2);
 		fBGGate[i] = new AliADLogicalSignal(clk1BG & clk2BG);
+		fBGGate[i]->SetStartTime(fBGGate[i]->GetStartTime()+fWindowOffset[i]);
+		fBGGate[i]->SetStopTime(fBGGate[i]->GetStopTime()+fWindowOffset[i]);		
 	}
   }
 }
@@ -203,12 +216,30 @@ void AliADTriggerSimulator::FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t ti
 
   for(Int_t i = 0; i<16; i++){
   	Int_t board   = AliADCalibData::GetBoardNumber(i);
-  	Float_t temptime = time[i] - fWindowOffset[board];
-  	bbFlag[i] = fCalibData->GetEnableTiming(i) && fBBGate[board]->IsInCoincidence(temptime);
-	bgFlag[i] = fCalibData->GetEnableTiming(i) && fBGGate[board]->IsInCoincidence(temptime);
-	//std::cout<<std::endl;
-	//std::cout<<"Time - Offset = "<<temptime<<std::endl;
-	//AliInfo(Form("Ch %d BB=%d BG=%d",i,bbFlag[i],bgFlag[i] ));
+	
+	Bool_t inBCmask = fBCMask[board]->IsInCoincidence(time[i]);
+	Bool_t inBBwindow = kFALSE;
+	Bool_t inBGwindow = kFALSE;
+	
+	AliADLogicalSignal fBBGateShifted;
+	AliADLogicalSignal fBGGateShifted;
+	//std::cout<<"CIU = "<<board<<std::endl;
+	for(Int_t j=-10; j<=10; j++){
+		fBBGateShifted.SetStartTime(fBBGate[board]->GetStartTime() + 25*j);
+		fBBGateShifted.SetStopTime(fBBGate[board]->GetStopTime() + 25*j);
+		fBGGateShifted.SetStartTime(fBGGate[board]->GetStartTime() + 25*j);
+		fBGGateShifted.SetStopTime(fBGGate[board]->GetStopTime() + 25*j);
+		
+		//std::cout<<"BB "<<fBBGateShifted.GetStartTime()<<" - "<<fBBGateShifted.GetStopTime()<<std::endl; 
+		//std::cout<<"BG "<<fBGGateShifted.GetStartTime()<<" - "<<fBGGateShifted.GetStopTime()<<std::endl;  
+		
+		if(fBBGateShifted.IsInCoincidence(time[i])) inBBwindow = kTRUE;
+		if(fBGGateShifted.IsInCoincidence(time[i])) inBGwindow = kTRUE;
+		}
+  	bbFlag[i] = inBBwindow && inBCmask;
+	bgFlag[i] = inBGwindow && inBCmask;
+	
+	//AliInfo(Form("Ch %d Time=%.1f BCM=%d BB=%d BG=%d",i,time[i],inBCmask,bbFlag[i],bgFlag[i] ));
   	}
 }
 //_____________________________________________________________________________
@@ -222,7 +253,6 @@ void AliADTriggerSimulator::Run() {
 		fDigitsTree->GetEvent(ievt);
 		
 		Int_t nDigits = fDigits->GetEntriesFast();
-		
 		for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
 			AliADdigit* digit = (AliADdigit*)fDigits->At(iDigit);
 			
@@ -244,24 +274,11 @@ void AliADTriggerSimulator::Run() {
 				fCharges[pmNumber] = 0.;
 			}
 			
-			Float_t time = digit->Time();
-			time -= fWindowOffset[board];
-
-			AliDebug(10,Form(" Digit: %f %d %d %d %d %d %d %d %d",digit->Time(),
-					 digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
-					 digit->ChargeADC(11),digit->ChargeADC(12),digit->ChargeADC(13),
-					 digit->ChargeADC(14),digit->ChargeADC(15)));
-			//std::cout<<std::endl;
-			//std::cout<<"Time - Offset = "<<time<<std::endl;
-			AliDebug(10,Form(" PM nb : %d ; TDC= %f(%f)  Enable Time %d charge %d inCoin %d charge %f",
-					 pmNumber,time,digit->Time(),
-					 fCalibData->GetEnableTiming(pmNumber),fCalibData->GetEnableCharge(pmNumber),
-					 fBBGate[board]->IsInCoincidence(time),fCharges[pmNumber]));
-			fBBFlags[pmNumber] = fBBGate[board]->IsInCoincidence(time);
-			fBGFlags[pmNumber] = fBGGate[board]->IsInCoincidence(time);
+			fTime[pmNumber] = digit->Time();
 			
 		} // end of loop over digits
 	} // end of loop over events in digits tree
+	FillFlags(fBBFlags,fBGFlags,fTime);
 	
 	Int_t nBBflagsADA = 0;
 	Int_t nBBflagsADC = 0;

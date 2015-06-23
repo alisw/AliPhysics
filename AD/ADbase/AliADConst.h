@@ -6,7 +6,7 @@
 #include "TROOT.h"
 
 const Float_t kIntTimeRes = 0.39; // intrinsic time resolution of the scintillator
-const Float_t kADOffset = 965; // general AD offset between the TDCs and the trigger
+const Float_t kADOffset = 962; // general AD offset between the TDCs and the trigger
 const Int_t   kNClocks = 21; // Number of ADC clocks that are read out
 const Float_t kChargePerADC = 0.6e-12; // Charge per ADC
 const Int_t   kNPhotonsPerMIP = 60000;// Number of photons per MIP

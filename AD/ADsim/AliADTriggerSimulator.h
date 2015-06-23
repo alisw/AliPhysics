@@ -75,16 +75,13 @@ private:
 	void                  LoadClockOffset();
 	void GenerateBBWindows();
 	void GenerateBGWindows();
+	void GenerateBCMask();
 	Bool_t AreGatesOpen() const;
 	
 	// Members
 	AliADLogicalSignal * fBBGate[kNCIUBoards];  // BB Observation window
-	AliADLogicalSignal * fBBLatch[kNCIUBoards]; // BB Latch window
-	AliADLogicalSignal * fBBReset[kNCIUBoards]; // BB Reset Window
-	
 	AliADLogicalSignal * fBGGate[kNCIUBoards];  // BG Observation window
-	AliADLogicalSignal * fBGLatch[kNCIUBoards]; // BG Latch Window
-	AliADLogicalSignal * fBGReset[kNCIUBoards]; // BG Reset Window
+	AliADLogicalSignal * fBCMask[kNCIUBoards];  // BC Mask
 
 	AliADCalibData *fCalibData; // Object holding the trigger configuration parameters
 	Float_t fWindowOffset[kNCIUBoards]; // TDC clock offset including roll-over, trig count and L0->L1 delay
@@ -92,13 +89,14 @@ private:
 	TTree* fDigitsTree; //Pointer to AD digit tree
 	TClonesArray* fDigits; //Pointer to AD digit array
 	
+	Float_t fTime[16];
 	Bool_t fBBFlags[16]; // Individual BB Flags
 	Bool_t fBGFlags[16]; // Individual BG Flags
 	Float_t  fCharges[16]; // Individual Charge
 	
 	UShort_t fTriggerWord; // Word holding the 16 triggers return by the FEE
 		
-	ClassDef( AliADTriggerSimulator, 3 )  
+	ClassDef( AliADTriggerSimulator, 4 )  
 
 };
 

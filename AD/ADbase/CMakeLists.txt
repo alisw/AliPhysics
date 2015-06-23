@@ -34,6 +34,7 @@ set(SRCS
     AliADDataDCS.cxx
     AliADdigit.cxx
     AliADLoader.cxx
+    AliADLogicalSignal.cxx
     AliADPreprocessor.cxx
     AliADRawStream.cxx
     AliADSDigit.cxx  

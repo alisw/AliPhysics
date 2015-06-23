@@ -15,6 +15,7 @@
 
 /* $Id: AliADCalibData.cxx,                                            */
 #include <Riostream.h>
+#include <bitset>
 
 #include <TMath.h>
 #include <TObjString.h>
@@ -28,6 +29,7 @@
 #include "AliADDataDCS.h"
 #include "AliADCalibData.h"
 #include "AliADConst.h"
+#include "AliADLogicalSignal.h"
 #include "AliLog.h"
 
 ClassImp(AliADCalibData)
@@ -317,7 +319,7 @@ Float_t AliADCalibData::GetADCperMIP(Int_t channel)
   if (!fPMGainsA) InitPMGains();
 
   // High Voltage retrieval from Calibration Data Base:  
-  Float_t hv = fMeanHV[kOnlineChannel[channel]];
+  Float_t hv = fMeanHV[channel];
   Float_t ADCperMIP = 0;
   if (hv>0)
     ADCperMIP = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel]);
@@ -1178,19 +1180,35 @@ for (Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
     }
 if(!gatesOpen){
  for(Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
-    printf("CIU= %d Clk1WinBB= %d DelayClk1WinBB = %d Clk2WinBB = %d DelayClk2WinBB = %d Clk1WinBG= %d DelayClk1WinBG = %d Clk2WinBG = %d DelayClk2WinBG = %d\n",
-	   CIUNumber,
-	   GetClk1Win1(CIUNumber),
-	   GetDelayClk1Win1(CIUNumber),
-	   GetClk2Win1(CIUNumber),
-	   GetDelayClk2Win1(CIUNumber),
-	   GetClk1Win2(CIUNumber),
-	   GetDelayClk1Win2(CIUNumber),
-	   GetClk2Win2(CIUNumber),
-	   GetDelayClk2Win2(CIUNumber));	  
+  	std::cout <<"CIU = "<<CIUNumber<<std::endl;
+	std::cout << "P1 BB " << std::bitset<5>(GetClk1Win1(CIUNumber))<<  "   P1 BG " << std::bitset<5>(GetClk1Win2(CIUNumber))<< std::endl;
+	std::cout << "P2 BB " << std::bitset<5>(GetClk2Win1(CIUNumber))<<  "   P2 BG " << std::bitset<5>(GetClk2Win2(CIUNumber))<< std::endl;
+	std::cout << "  L   " << std::bitset<5>(GetLatchWin1(CIUNumber))<< "     L   " << std::bitset<5>(GetLatchWin2(CIUNumber))<< std::endl;
+	std::cout << "  R   " << std::bitset<5>(GetResetWin1(CIUNumber))<< "     R   " << std::bitset<5>(GetResetWin2(CIUNumber))<< std::endl;
+	printf("\n");
+	std::cout << "BB Delay1 = " <<GetDelayClk1Win1(CIUNumber)<< "  BG Delay1 = " <<GetDelayClk1Win2(CIUNumber)<<std::endl;
+	std::cout << "BB Delay2 = " <<GetDelayClk2Win1(CIUNumber)<< "  BG Delay2 = " <<GetDelayClk2Win2(CIUNumber)<<std::endl;
+	printf("\n");
+  
+  	AliADLogicalSignal clk1BB(GetClk1Win1(CIUNumber),GetDelayClk1Win1(CIUNumber),GetLatchWin1(CIUNumber),GetResetWin1(CIUNumber));
+	AliADLogicalSignal clk2BB(GetClk2Win1(CIUNumber),GetDelayClk2Win1(CIUNumber),GetLatchWin1(CIUNumber),GetResetWin1(CIUNumber));
+	AliADLogicalSignal *fBBGate = new AliADLogicalSignal(clk1BB & clk2BB);
+	
+	std::cout<<"BB window = ["<<fBBGate->GetStartTime()<<" , "<<fBBGate->GetStopTime()<<"]"<<std::endl;
+	
+	AliADLogicalSignal clk1BG(GetClk1Win2(CIUNumber),GetDelayClk1Win2(CIUNumber),GetLatchWin2(CIUNumber),GetResetWin2(CIUNumber));
+	clk1BG.SetStartTime(clk1BG.GetStartTime()+2);
+	clk1BG.SetStopTime(clk1BG.GetStopTime()+2);
+	AliADLogicalSignal clk2BG(GetClk2Win2(CIUNumber),GetDelayClk2Win2(CIUNumber),GetLatchWin2(CIUNumber),GetResetWin2(CIUNumber));
+	clk2BG.SetStartTime(clk2BG.GetStartTime()-2);
+	clk2BG.SetStopTime(clk2BG.GetStopTime()-2);
+	AliADLogicalSignal *fBGGate = new AliADLogicalSignal(clk1BG & clk2BG);
+	
+	std::cout<<"BG window = ["<<fBGGate->GetStartTime()<<" , "<<fBGGate->GetStopTime()<<"]"<<std::endl;
+	printf("\n");	  
   }
 }
-else printf("Test windows 25ns\n");
+else printf("Test window 25ns\n");
 
 printf("\n");  
 printf("======================================================\n");

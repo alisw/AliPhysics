@@ -12,7 +12,6 @@
 #pragma link C++ class  AliADDigitizer+;
 #pragma link C++ class  AliADQADataMakerSim+;
 #pragma link C++ class  AliADBuffer+;
-#pragma link C++ class  AliADLogicalSignal+;
 #pragma link C++ class  AliADTriggerSimulator+;
 
 #endif

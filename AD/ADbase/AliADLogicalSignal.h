@@ -22,7 +22,7 @@
 class AliADLogicalSignal  : public TObject {
 public:
 	AliADLogicalSignal();
-	AliADLogicalSignal(UShort_t profilClock, UInt_t delay);
+	AliADLogicalSignal(UShort_t profilClock, UInt_t delay, UInt_t latch, UInt_t reset);
 	virtual ~AliADLogicalSignal();
 	AliADLogicalSignal(const AliADLogicalSignal &signal);
 	AliADLogicalSignal& operator= (const AliADLogicalSignal &signal);
