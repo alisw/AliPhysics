@@ -77,6 +77,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
     fRMS                (kTRUE),
     fSymmRMS            (0),
+    fConstantUE         (kTRUE),
     fRho0               (kFALSE),
     fBootstrap          (kFALSE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
@@ -144,7 +145,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fDptOut             (0x0),
     fFullResponseIn     (0x0),
     fFullResponseOut    (0x0),
-    fPivot              (40.),
+    fPivot              (50.),
     fSubdueError        (kTRUE),
     fUnfoldedSpectrumIn (0x0),
     fUnfoldedSpectrumOut(0x0) { // class constructor
@@ -2397,10 +2398,10 @@ void AliJetFlowTools::GetShapeUncertainty(
     Double_t aInLow(0.), cInLow(0.), dInLow(0.), eInLow(0.);
     Double_t aOutLow(0.), cOutLow(0.), dOutLow(0.), eOutLow(0.);
 
-    GetErrorFromFit(relativeErrorRecBinInUp, relativeErrorRecBinInLow, rangeLow, rangeUp, fPivot, fSubdueError);
-    GetErrorFromFit(relativeErrorRecBinOutUp, relativeErrorRecBinOutLow, rangeLow, rangeUp, fPivot, fSubdueError);
-    GetErrorFromFit(relativeErrorMethodInUp, relativeErrorMethodInLow, rangeLow, rangeUp, fPivot, fSubdueError);
-    GetErrorFromFit(relativeErrorMethodOutUp, relativeErrorMethodOutLow, rangeLow, rangeUp, fPivot, fSubdueError);
+    GetErrorFromFit(relativeErrorRecBinInUp, relativeErrorRecBinInLow, rangeLow, rangeUp, fPivot, fSubdueError, "measured, in-plane");
+    GetErrorFromFit(relativeErrorRecBinOutUp, relativeErrorRecBinOutLow, rangeLow, rangeUp, fPivot, fSubdueError, "measured, out-of-plane");
+    GetErrorFromFit(relativeErrorMethodInUp, relativeErrorMethodInLow, rangeLow, rangeUp, fPivot, fSubdueError, "background, in-plane");
+    GetErrorFromFit(relativeErrorMethodOutUp, relativeErrorMethodOutLow, rangeLow, rangeUp, fPivot, fSubdueError, "background, out-of-plane");
 
     for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
         // for the upper bound only add regularization stuff if it is NOT done on v2 directly
@@ -3362,6 +3363,21 @@ void AliJetFlowTools::DoIntermediateSystematicsOnV2(
         printf(" total absolute error in bin %i is %.4f \n", k+1, relativeErrorInUp->GetBinError(k+1));
         relativeErrorInUp->SetBinContent(k+1, relativeErrorInUp->GetBinError(k+1)/nominal->GetBinContent(k+1));
     }
+    if(fConstantUE) {
+        Int_t ctr(0);
+        Double_t av(0), avct(0);
+        for(Int_t k(2); k < 8; k++) {
+            av+=relativeErrorInUp->GetBinError(k+1);
+            avct+=relativeErrorInUp->GetBinContent(k+1);
+            ctr++;
+        }
+        av/=((double)ctr);
+        avct/=((double)ctr);
+        for(Int_t k(8); k < nominal->GetNbinsX(); k++) {
+            relativeErrorInUp->SetBinError(k+1, av);
+            relativeErrorInUp->SetBinContent(k+1, avct);
+        }
+    }
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
@@ -4193,14 +4209,17 @@ TGraphAsymmErrors* AliJetFlowTools::AddHistoErrorsToGraphErrors(TGraphAsymmError
     printf("\n\n\n adding histo error to graph error \n\n\n\n");
 
 
-    Double_t yerr(0), herr(0);
+    Double_t yerrL(0), yerrH(0), herr(0);
     // quadratic sum of the errors, assyming here symmetric ones
     for(Int_t i(0); i < h->GetNbinsX(); i++) {
-        yerr = g->GetErrorY(i);
+        yerrH = g->GetErrorY(i);//high(i);
+        yerrL = g->GetErrorY(i);//low(i);
         herr = h->GetBinError(i+1);
-        cout << " graph error " << yerr << "\t histo error " << herr << endl;
-        yerr = TMath::Sqrt(yerr*yerr+herr*herr);
-        g->SetPointError(i, g->GetErrorX(i), g->GetErrorX(i), yerr, yerr);
+        cout << " graph error H " << yerrH << "\t histo error " << herr << endl;
+        cout << " graph error L " << yerrL << "\t histo error " << herr << endl;
+        yerrH = TMath::Sqrt(yerrH*yerrH+herr*herr);
+        yerrL = TMath::Sqrt(yerrL*yerrL+herr*herr);
+        g->SetPointError(i, g->GetErrorX(i), g->GetErrorX(i), yerrL, yerrH);
     }
     return g;
 }
@@ -4231,7 +4250,7 @@ Double_t AliJetFlowTools::GetRMSOfTH1(TH1* h, Double_t a, Double_t b)
 }
 //_____________________________________________________________________________
 TF1* AliJetFlowTools::GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b, 
-        Float_t pivot, Bool_t subdueError, Bool_t setContent) 
+        Float_t pivot, Bool_t subdueError, TString str, Bool_t setContent) 
 {
 #ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
@@ -4242,17 +4261,42 @@ TF1* AliJetFlowTools::GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b,
     TF1* fit_pol0 = new TF1("fit_pol0", "pol0", pivot, b);
     TF1* fit_pol1 = new TF1("fit_pol1", "pol1", a, pivot);
 
-    TH1* h((TH1*)h1->Clone(Form("%s clone", h1->GetName())));
-    // add them
-    h->Add(h2);
+    TH1* h((TH1*)h1->Clone(str.Data()));
+    // reset the guy and fill it with the maxima
+    h->Reset();
+    Double_t _a(0), _b(0);
+    for(Int_t i(1); i < h->GetNbinsX() + 1; i++) {
+        _a = TMath::Abs(h1->GetBinContent(i));
+        _b = TMath::Abs(h2->GetBinContent(i));
+        if(_a > _b) {
+            h->SetBinContent(i, _a);
+            h->SetBinError(i, h1->GetBinError(i));
+        } else {
+            h->SetBinContent(i, _b);
+            h->SetBinError(i, h2->GetBinError(i));
+        }
+    }
+
+
+
     // fit to full error. root doesn't like fitting a step-function, so fit these
     // two components separately ...
     h->Fit(fit_pol0, "", "", pivot, b);
     lin->SetParameter(2, (subdueError) ? 0. : fit_pol0->GetParameter(0));
 
     h->Fit(fit_pol1, "", "", a, pivot);
-    lin->SetParameter(0, fit_pol1->GetParameter(0));
-    lin->SetParameter(1, fit_pol1->GetParameter(1));
+
+    //check if it makes sense
+    if(fit_pol1->GetParameter(1) > 0) {
+        fit_pol1 = new TF1("fit_pol2", "pol0", a, pivot);
+        h->Fit(fit_pol1, "", "", a, pivot);
+        lin->SetParameter(0, fit_pol1->GetParameter(0));
+        lin->SetParameter(1, 0);
+    } else {
+        lin->SetParameter(0, fit_pol1->GetParameter(0));
+        lin->SetParameter(1, fit_pol1->GetParameter(1));
+    }
+
 
     // .. and then add them together
     h->GetListOfFunctions()->Add(lin);
@@ -4276,8 +4320,6 @@ TF1* AliJetFlowTools::GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b,
                 h2->SetBinContent(i, dud);
             }
         }
-        h1->Write();
-        h2->Write();    // just bookkeep these guys here
         h->Write();
     } 
     return lin;
@@ -4333,6 +4375,13 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         axh[i] = binWidth/2.;
         // now get the coordinate for the poin
         tempV2->GetPoint(i, ax[i], ay[i]);
+        if(rho<=0) {
+            cout << "[print]  pt " << ax[i] << " errorLow" << gReductionFactor*ayl[i] << " errorUp " << gReductionFactor*ayh[i] << endl;
+            cout << "[print]   %" << ax[i] << " low " << (gReductionFactor*ayl[i])/ay[i] << " up " << (gReductionFactor*ayh[i])/ay[i] << endl;
+        } else {
+            cout << "[print]  pt " << ax[i] << " errorLow" << ayl[i]*gReductionFactorCorr << " errorUp " << ayh[i]*gReductionFactorCorr << endl;
+            cout << "[print]   %" << ax[i] << " low " << (gReductionFactorCorr*ayl[i])/ay[i] << " up " << (gReductionFactorCorr*ayh[i])/ay[i] << endl;
+        }
     }
     // save the nominal ratio
     TGraphAsymmErrors* nominalError(new TGraphAsymmErrors(fBinsTrue->GetSize()-1, ax, ay, axl, axh, ayl, ayh));
