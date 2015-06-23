@@ -77,6 +77,7 @@ class AliJetFlowTools {
         void            SetReductionFactorCorr(Float_t g)       {gReductionFactorCorr   =g;}
         void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
         void            SetPivot(Float_t p)             {fPivot                 = p;}
+        void            SetConstantUE(Bool_t ue)        {fConstantUE            = ue;}
         void            SetSubdueError(Bool_t b)        {fSubdueError           = b;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
@@ -270,7 +271,8 @@ class AliJetFlowTools {
         static TGraphAsymmErrors*       AddHistoErrorsToGraphErrors(TGraphAsymmErrors* g, TH1D* h);
         static Double_t         GetRMSOfTH1(TH1* h, Double_t a, Double_t b);
         static TF1*             GetErrorFromFit(TH1* h1, TH1* h2, Double_t a, Double_t b, 
-                Float_t pivot = 40., Bool_t subdueError = kFALSE, Bool_t setContent = kTRUE);
+                Float_t pivot = 50., Bool_t subdueError = kFALSE, 
+                TString str = "", Bool_t setContent = kTRUE);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
@@ -493,6 +495,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
         Bool_t                  fRMS;                   // systematic method
         Bool_t                  fSymmRMS;               // symmetric systematic method
+        Bool_t                  fConstantUE;            // assign a constant unfolding error
         Bool_t                  fRho0;                  // use the result obtained with the 'classic' fixed rho
         Bool_t                  fBootstrap;             // use bootstrap resampling of input data
         TF1*                    fPower;                 // smoothening fit
@@ -585,10 +588,10 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
 
 };
 // initialize the static members
-TArrayD* AliJetFlowTools::gV2           = new TArrayD(6);       // DO NOT TOUCH - these arrays are filled by the
-TArrayD* AliJetFlowTools::gStat         = new TArrayD(6);       // 'GetSignificance' function and
-TArrayD* AliJetFlowTools::gShape        = new TArrayD(6);       // then used in the chi2 minimization routine
-TArrayD* AliJetFlowTools::gCorr         = new TArrayD(6);       // to calculate the significance of the results
+TArrayD* AliJetFlowTools::gV2           = new TArrayD(8);       // DO NOT TOUCH - these arrays are filled by the
+TArrayD* AliJetFlowTools::gStat         = new TArrayD(8);       // 'GetSignificance' function and
+TArrayD* AliJetFlowTools::gShape        = new TArrayD(8);       // then used in the chi2 minimization routine
+TArrayD* AliJetFlowTools::gCorr         = new TArrayD(8);       // to calculate the significance of the results
 Int_t    AliJetFlowTools::gOffsetStart  =  0;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Int_t    AliJetFlowTools::gOffsetStop   = 0;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
