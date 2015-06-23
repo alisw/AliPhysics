@@ -158,6 +158,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistClusterEM02AfterQA(NULL),
 	fHistClusterIncludedCellsBeforeQA(NULL),
 	fHistClusterIncludedCellsAfterQA(NULL),
+	fHistClusterEnergyFracCellsBeforeQA(NULL),
+	fHistClusterEnergyFracCellsAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -263,6 +265,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistClusterEM02AfterQA(NULL),
 	fHistClusterIncludedCellsBeforeQA(NULL),
 	fHistClusterIncludedCellsAfterQA(NULL),
+	fHistClusterEnergyFracCellsBeforeQA(NULL),
+	fHistClusterEnergyFracCellsAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -476,6 +480,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistExtQA->Add(fHistClusterIncludedCellsBeforeQA);
 			fHistClusterIncludedCellsAfterQA = new TH1F(Form("ClusterIncludedCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
 			fHistExtQA->Add(fHistClusterIncludedCellsAfterQA);
+			fHistClusterEnergyFracCellsBeforeQA = new TH1F(Form("ClusterEnergyFracCells_beforeClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_beforeClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistClusterEnergyFracCellsBeforeQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsBeforeQA);
+			fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistClusterEnergyFracCellsAfterQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
@@ -497,6 +507,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistExtQA->Add(fHistClusterIncludedCellsBeforeQA);
 			fHistClusterIncludedCellsAfterQA = new TH1F(Form("ClusterIncludedCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
 			fHistExtQA->Add(fHistClusterIncludedCellsAfterQA);
+			fHistClusterEnergyFracCellsBeforeQA = new TH1F(Form("ClusterEnergyFracCells_beforeClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_beforeClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistClusterEnergyFracCellsBeforeQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsBeforeQA);
+			fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistClusterEnergyFracCellsAfterQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
 		}
 		else{AliError(Form("fExtendedMatchAndQA (%i) not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,GetClusterType()));}
 	}
@@ -652,11 +668,19 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	if(fHistM20BeforeQA) fHistM20BeforeQA->Fill(cluster->GetM20());
 	if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion());
 // 	if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(cluster->GetNExMax());
+
+	AliVCaloCells* cells = NULL;
 	if(fExtendedMatchAndQA > 1){
+		if(cluster->IsEMCAL()){ //EMCAL
+			cells = event->GetEMCALCells();
+		}else if(cluster->IsPHOS()){ //PHOS
+			cells = event->GetPHOSCells();
+		}
 		if(fHistClusterIncludedCellsBeforeQA){
 			Int_t nCellCluster = cluster->GetNCells();
 			for(Int_t iCell=0;iCell<nCellCluster;iCell++){
 				fHistClusterIncludedCellsBeforeQA->Fill(cluster->GetCellAbsId(iCell));
+				fHistClusterEnergyFracCellsBeforeQA->Fill(cluster->GetCellAbsId(iCell),cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))/cluster->E());
 			}
 		}
 		if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02());
@@ -807,6 +831,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 			Int_t nCellCluster = cluster->GetNCells();
 			for(Int_t iCell=0;iCell<nCellCluster;iCell++){
 				fHistClusterIncludedCellsAfterQA->Fill(cluster->GetCellAbsId(iCell));
+				fHistClusterEnergyFracCellsAfterQA->Fill(cluster->GetCellAbsId(iCell),cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))/cluster->E());
 			}
 		}
 		if(fHistClusterEM02AfterQA) fHistClusterEM02AfterQA->Fill(cluster->E(),cluster->GetM02());
