@@ -120,11 +120,25 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
-	if (trainConfig==101 || trainConfig==131 || trainConfig==120) {numberOfCuts = 1;}
-	if (trainConfig==113 || trainConfig==114 || trainConfig==115 || trainConfig==116) {numberOfCuts = 3;}
-	if (trainConfig==8 || trainConfig==10 || trainConfig==13 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig==108 || trainConfig==111 || trainConfig == 15|| trainConfig == 16 || trainConfig == 117 || trainConfig == 118 || trainConfig == 119) {numberOfCuts = 4;}
-	if (trainConfig==2 || trainConfig==3 || trainConfig==5 || trainConfig==6 || trainConfig==7 || trainConfig==14 || trainConfig==102 || trainConfig==103 || trainConfig==105 || trainConfig==106 || trainConfig==107) {numberOfCuts = 5;}
-	if (trainConfig==4 || trainConfig==11 || trainConfig==31 || trainConfig==32 || trainConfig==104) {numberOfCuts = 6;}
+	if (trainConfig == 101 || 	trainConfig == 131 || 	trainConfig == 120) {
+		numberOfCuts = 1;
+	}
+	if (trainConfig == 113 || 	trainConfig == 114 || 	trainConfig == 115 || 	trainConfig == 116) {
+		numberOfCuts = 3;
+	}
+	if (trainConfig == 8 || 	trainConfig == 10 || 	trainConfig == 11 ||	trainConfig == 13 || 	trainConfig == 15||
+		trainConfig == 16 ||	trainConfig == 18 || 	trainConfig == 19 || 	trainConfig == 20 ||	trainConfig == 108 || 	
+		trainConfig == 111 || 	trainConfig == 117 || 	trainConfig == 118 || 	trainConfig == 119  	 ) {
+		numberOfCuts = 4;		
+	}
+	if (trainConfig == 2 || 	trainConfig == 3 || 	trainConfig == 5 || 	trainConfig == 6 || 	trainConfig == 7 || 
+		trainConfig == 14 ||	trainConfig == 102 ||	trainConfig == 103 || 	trainConfig == 105 || 	trainConfig == 106 || 
+		trainConfig == 107) {
+		numberOfCuts = 5;	
+	}
+	if (trainConfig == 4  || 		trainConfig == 31 || 		trainConfig == 32 || 		trainConfig == 104) {
+		numberOfCuts = 6;
+	}
 
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
@@ -192,12 +206,10 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
         eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10000053092230000"; mesonCutArray[3] = "0163103100000000"; // min Energy cluster = 6.0 GeV
 		// LHC13g	
 	} else if (trainConfig == 11){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
-        eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1,
-        eventCutArray[ 1] = "0008511"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "0163103100000000"; // EMCEG2,
-        eventCutArray[ 2] = "0009311"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "0163103100000000"; // EMCEJ1,
-        eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10000053032230000"; mesonCutArray[3] = "0163103100000000"; // EMCEJ2,
-        eventCutArray[ 4] = "0000011"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "10000053032230000"; mesonCutArray[4] = "0163103100000000"; // INT7
-        eventCutArray[ 5] = "0005211"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "10000053032230000"; mesonCutArray[5] = "0163103100000000"; // EMC7
+        eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // INT7
+        eventCutArray[ 1] = "0005211"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "0163103100000000"; // EMC7
+		eventCutArray[ 2] = "0008311"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "0163103100000000"; // EMCEG1,
+        eventCutArray[ 3] = "0008511"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10000053032230000"; mesonCutArray[3] = "0163103100000000"; // EMCEG2,
 	// LHC11a	
 	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD without and with added signals
         eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // 400 MeV cluster min energy
@@ -246,7 +258,6 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 21){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
 		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1,
 		eventCutArray[ 1] = "0008511"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "0163103100000000"; // EMCEG2,
-		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "10000053032230000"; mesonCutArray[2] = "0163103100000000"; // INT7
 	} else if (trainConfig == 22){  // EMCAL clusters, kEMC trigger, track matching 0.035
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000053032230000"; mesonCutArray[0] = "0163103100000000"; // INT7
 		eventCutArray[ 1] = "0005211"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "10000053032230000"; mesonCutArray[1] = "0163103100000000"; // EMC7
