@@ -1,13 +1,13 @@
-AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC){
+AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut){
   //
   // HFE standard task configuration
   //
-
+    
   Bool_t kAnalyseTaggedTracks = kTRUE;
   
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEMCAL","HFE Standard Cuts");
   hfecuts->CreateStandardCuts();
-  hfecuts->SetMinNClustersTPC(100);
+  hfecuts->SetMinNClustersTPC(TPCnCut);
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersITS(3);
@@ -21,6 +21,11 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC){
   AliAnalysisTaskFlowTPCEMCalEP *task = new AliAnalysisTaskFlowTPCEMCalEP("HFE v2");
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
+  task->SetAssPtCut(AssPtCut);
+  task->SetAssTPCnCut(AssTPCnCut);
+  task->SetAssITSrefitCut(AssITSrefitCut);
+
+  
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
