@@ -49,9 +49,7 @@ AliFITReconstructor:: AliFITReconstructor(): AliReconstructor(),
  
   //constructor
  
-  
-   fESDFIT  = new AliESDFIT();
-   printf("@@@ AliFITReconstructor:: AliFITReconstructor()\n");
+  printf("@@@ AliFITReconstructor:: AliFITReconstructor()\n");
  
 }
 //_____________________________________________________________________________
@@ -74,7 +72,7 @@ void AliFITReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTr
     return;
   }
 
-  fDigits = new TClonesArray ("AliFITDigit", 100);
+  if (!fDigits)  fDigits = new TClonesArray ("AliFITDigit", 100);
   digitsTree->Branch("FIT", &fDigits);
 
   AliFITRawReader myrawreader(rawReader);
