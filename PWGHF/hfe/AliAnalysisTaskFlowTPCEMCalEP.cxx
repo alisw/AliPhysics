@@ -89,6 +89,9 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)
+  ,fAssPtCut(1)
+  ,fAssTPCnCut(80)
+  ,fAssITSrefitCut(kTRUE)
   ,fESD(0)
   ,fAOD(0)
   ,fVevent(0)
@@ -97,6 +100,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fStack(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
+  ,fAssTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
@@ -187,7 +191,8 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 
   fPID = new AliHFEpid("hfePid");
   fTrackCuts = new AliESDtrackCuts();
-
+  fAssTrackCuts = new AliESDtrackCuts();
+  
   InitParameters();
   
   DefineInput(0, TChain::Class());
@@ -197,6 +202,9 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
+  ,fAssPtCut(1)
+  ,fAssTPCnCut(80)
+  ,fAssITSrefitCut(kTRUE)
   ,fESD(0)
   ,fAOD(0)
   ,fVevent(0)
@@ -205,6 +213,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fStack(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
+  ,fAssTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
@@ -296,7 +305,8 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 
   fPID = new AliHFEpid("hfePid");
   fTrackCuts = new AliESDtrackCuts();
-
+  fAssTrackCuts = new AliESDtrackCuts();
+  
   InitParameters();
 
   DefineInput(0, TChain::Class());
@@ -313,6 +323,7 @@ AliAnalysisTaskFlowTPCEMCalEP::~AliAnalysisTaskFlowTPCEMCalEP()
   delete fCFM;
   delete fPIDqa;
   delete fTrackCuts;
+  delete fAssTrackCuts;
 }
 //_________________________________________
 
@@ -666,7 +677,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	  
 	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
 	  
-	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,(Double_t)iDecay};
+	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
           fCorr->Fill(corr,MCweight);
 	  
 	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
@@ -1306,16 +1317,16 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(TParticle *particle)
 void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetRequireITSRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.9,0.9);
-  fTrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts->SetMinNClustersTPC(80);
-  fTrackCuts->SetMaxDCAToVertexZ(3.2);
-  fTrackCuts->SetMaxDCAToVertexXY(2.4);
-  fTrackCuts->SetDCAToVertex2D(kTRUE);
+  fAssTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fAssTrackCuts->SetRequireTPCRefit(kTRUE);
+  fAssTrackCuts->SetRequireITSRefit(fAssITSrefitCut);
+  fAssTrackCuts->SetEtaRange(-0.9,0.9);
+  fAssTrackCuts->SetRequireSigmaToVertex(kTRUE);
+  fAssTrackCuts->SetMaxChi2PerClusterTPC(4);
+  fAssTrackCuts->SetMinNClustersTPC(fAssTPCnCut);
+  fAssTrackCuts->SetMaxDCAToVertexZ(3.2);
+  fAssTrackCuts->SetMaxDCAToVertexXY(2.4);
+  fAssTrackCuts->SetDCAToVertex2D(kTRUE);
   
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   
@@ -1343,8 +1354,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDt
     chargeAsso = trackAsso->Charge();
     charge = track->Charge();
         
-    if(ptAsso <0.5) continue;
-    if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
+    if(ptAsso <fAssPtCut) continue;
+    if(!fAssTrackCuts->AcceptTrack(trackAsso)) continue;
     if(TMath::Abs(nTPCsigmaAsso)>3) continue;
     
     /*if(fIsMC && fMC && fStack){
@@ -1384,8 +1395,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDt
 
     openingAngle = ge1.GetAngle(ge2);
 
-    if(fFlagLS) fOpeningAngleLS[iCent]->Fill(openingAngle,pt);
-    if(fFlagULS) fOpeningAngleULS[iCent]->Fill(openingAngle,pt);
+    if(fFlagLS) fOpeningAngleLS[iCent]->Fill(openingAngle,ptAsso);
+    if(fFlagULS) fOpeningAngleULS[iCent]->Fill(openingAngle,ptAsso);
 
     //if(openingAngle > fOpeningAngleCut) continue;
     

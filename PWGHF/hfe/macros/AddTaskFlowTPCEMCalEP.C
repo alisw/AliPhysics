@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP()
+AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -44,12 +44,11 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP()
   mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
   //analysis task 
-//   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx++g");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
 
-  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
-  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
-  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
+  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
+  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
+  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
  
   mgr->AddTask(taskcorrMB);
   mgr->AddTask(taskMB);
@@ -91,7 +90,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP()
   
   if(MCthere){
     
-    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
+    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
     mgr->AddTask(taskMC);
     
     taskMC->SelectCollisionCandidates(AliVEvent::kMB);
