@@ -288,11 +288,12 @@ protected:
   Float_t fCutOnMomConservation; // cut on momentum conservation
   AliHFsubtractBFDcuts* fObjSpr; // object for cut variation study
   THnSparseF* fhSparseCutVar; //
-  TH3F* fhPtCutVar;  // Generator level histogram D0 pt, Nprongs of the decay, Mother pt
-  TH1F* fhBptCutVar; // B0 pt spectrum
-  TList* fListBdecays; // List with B hadron decays (unique entries)
+  TH3F* fhPtCutVar;           // Generator level histogram D0 pt, Nprongs of the decay, Mother pt
+  TH1F* fhBptCutVar;          // B0 pt spectrum
+  TList* fListBdecays;        // List with B hadron decays (unique entries)
+  TList* fQAHists;            // List with QA histograms used to study the B hardon decays
 
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,6); // class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,7); // class for HF corrections as a function of many variables
 };
 
 #endif

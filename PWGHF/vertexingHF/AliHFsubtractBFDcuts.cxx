@@ -24,7 +24,6 @@
 #include "AliHFsubtractBFDcuts.h"
 
 #include <vector>
-#include <iostream>
 
 #include "TNamed.h"
 #include "THnSparse.h"
@@ -32,6 +31,7 @@
 #include "TClonesArray.h"
 #include "TString.h"
 #include "TObjString.h"
+#include "TMath.h"
 
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
@@ -54,6 +54,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
   , fGenerateDecayList(kTRUE)
   , fDecayProngs()
   , fDecayStrList(0x0)
+  , fQAHists(0x0)
 {
   // default constructor
 }
@@ -74,10 +75,13 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const char* name, const char* title)
   , fGenerateDecayList(kTRUE)
   , fDecayProngs()
   , fDecayStrList(0x0)
+  , fQAHists(0x0)
 {
   // default constructor with name
   fDecayStrList = new TList();
   fDecayStrList->SetOwner();
+  fQAHists = new TList();
+  fQAHists->SetOwner();
 }
 
 AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
@@ -96,6 +100,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
   , fGenerateDecayList(c.fGenerateDecayList)
   , fDecayProngs(c.fDecayProngs)
   , fDecayStrList(c.fDecayStrList) // FIXME: TList copy contructor not implemented
+  , fQAHists(c.fQAHists)
 {
   // copy constructor
 }
@@ -104,6 +109,10 @@ AliHFsubtractBFDcuts AliHFsubtractBFDcuts::operator=(const AliHFsubtractBFDcuts&
 {
   // assignment operator
   return c;
+}
+
+AliHFsubtractBFDcuts::~AliHFsubtractBFDcuts() {
+  AliDebug(3, "TODO: implement me!");
 }
 
 void AliHFsubtractBFDcuts::InitHistos(){
@@ -136,6 +145,13 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fCutsMC->GetAxis(4)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
 
   fPtMCGenStep=new TH3F("fPtMCGenStep","fPtMCGenStep;#it{p}_{T};Number of prongs;Mother #it{p}_{T}",24,0.,24.,20,0.,20.,24,0.,24.);
+
+  fQAHists->Add(new TH1F("hRapidityDist", "All particles;y;Counts (a.u.)",800,-4.0,4.0)); // 0
+  fQAHists->Add(new TH1F("hRapidityDistStable", "All stable particles;y;Counts (a.u.)",800,-4.0,4.0)); // 1
+  fQAHists->Add(new TH1F("hDecayLengthB", ";Decay Length B Meson (cm?);counts (a.u.)",200,0.,2.0)); // 2
+  fQAHists->Add(new TH1F("hDecayLengthBxy", ";Decay Length B Meson in XY direction (cm?);counts (a.u.)",200,0.,2.0)); // 3
+  fQAHists->Add(new TH1F("hDecayLengthD", ";Decay Length D Meson (cm?);counts (a.u.)",200,0.,2.0)); // 4
+  fQAHists->Add(new TH1F("hDecayLengthDxy", ";Decay Length D Meson in XY direction (cm?);counts (a.u.)",200,0.,2.0)); // 5
   return;
 }
 
@@ -150,10 +166,17 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*
     fDecayChain=kFALSE; // TODO: use this value
     fMotherPt=pt;
     fLabCand=dzeropart->GetLabel();
-    if (!AnalyseDecay(fGenerateDecayList)) {
+    if (!AnalyseDecay(fGenerateDecayList, kTRUE)) {
       AliDebug(3, "Error during the decay type determination!");
     }
     fPtMCGenStep->Fill(pt,(Double_t)fNprongsInAcc,fMotherPt,weight);
+
+    // y distribution of all particles
+    for (Int_t i=0; i<fMCarray->GetEntriesFast(); ++i) {
+      Double_t y =((AliAODMCParticle*)fMCarray->UncheckedAt(i))->Y();
+      ((TH1F*)fQAHists->At(0))->Fill(y); // all particles
+      if (IsStable(i)) ((TH1F*)fQAHists->At(1))->Fill(y); // all stable particles
+    }
   }
   else {
     fPtMCGenStep->Fill(pt,0.,weight);
@@ -193,7 +216,7 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t 
     fDecayChain=kFALSE; // TODO: use this value
     fMotherPt=pt;
     GetCandidateLabel(dzerocand);
-    if (!AnalyseDecay(kFALSE)) {
+    if (!AnalyseDecay(kFALSE, kFALSE)) {
       AliDebug(3, "Error during the decay type determination!");
     }
     Double_t pointMC[5]={pt,normalDecayLengXY,cptangXY,(Double_t)fNprongsInAcc,fMotherPt};
@@ -209,7 +232,7 @@ void AliHFsubtractBFDcuts::GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand)
   fLabCand = firstDau->GetMother();
 }
 
-Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString) {
+Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t MConly) {
   AliAODMCParticle* cand=(AliAODMCParticle*)fMCarray->UncheckedAt(fLabCand);
   fLabMother = cand->GetMother();
   AliAODMCParticle* mother = (AliAODMCParticle*)fMCarray->UncheckedAt(fLabMother);
@@ -224,7 +247,7 @@ Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString) {
     // chained decay of charmed hadrons, using recursion to resolve it
     fDecayChain=kTRUE;
     fLabCand=fLabMother;
-    return AnalyseDecay(generateString);
+    return AnalyseDecay(generateString, MConly);
   }
   if ((pdgMother%1000)/100!=5 && (pdgMother%10000)/1000!=5) {
     AliDebug(3, "Found strange decay, expected the mother to be a beauty hadron!");
@@ -244,6 +267,22 @@ Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString) {
     TObjString* str = new TObjString(decayStr);
     if (!fDecayStrList->FindObject(str)) fDecayStrList->Add(str); // only allow unique entries
     fDecayProngs.clear();
+  }
+
+  if (MConly) {
+      Double_t decayLengthB;   // Decay length B meson
+      Double_t decayLengthBxy; // Decay length B meson (xy-plane)
+      Double_t decayLengthD;   // Decay length D meson
+      Double_t decayLengthDxy; // Decay length D meson (xy-plane)
+      Double_t originB[3] = {0.,0.,0.};
+      if(!mother->XvYvZv(originB)) AliDebug(3, "Couldn't determine MC origin of the beauty hadron");
+      Double_t originD[3] = {0.,0.,0.};
+      if(!cand->XvYvZv(originD)) AliDebug(3, "Couldn't determine MC origin of the charmed hadron");
+      decayLengthBxy = TMath::Sqrt((originB[0]-originD[0])*(originB[0]-originD[0])+
+                                   (originB[1]-originD[1])*(originB[1]-originD[1]));
+      decayLengthB   = TMath::Sqrt(decayLengthBxy*decayLengthBxy+(originB[2]-originD[2])*(originB[2]-originD[2]));
+      ((TH1F*)fQAHists->At(2))->Fill(decayLengthB);
+      ((TH1F*)fQAHists->At(3))->Fill(decayLengthBxy);
   }
 
   fMotherPt=mother->Pt();
