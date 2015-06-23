@@ -28,6 +28,7 @@
 #include "AliESDRun.h"
 #include "AliESDHeader.h"
 #include "AliESDTZERO.h"
+#include "AliESDFIT.h"
 #include "AliESDZDC.h"
 #include "AliESDACORDE.h"
 #include "AliESDAD.h"
@@ -120,6 +121,7 @@ public:
 		       kTOFclusters,
 		       kTOFhit,
 		       kTOFmatch,
+		       kESDFIT,
 		       kESDListN
   };
 
@@ -240,6 +242,10 @@ public:
     // FMD
   void SetFMDData(AliESDFMD * obj);
   AliESDFMD *GetFMDData() const { return fESDFMD; }
+
+  // FIT methods
+  const AliESDFIT*    GetESDFIT() const {return fESDFIT;}
+  void SetFITData(const AliESDFIT * obj);
 
 
   // TZERO CKB: put this in the header?
@@ -581,6 +587,7 @@ protected:
   AliESDFMD       *fESDFMD;           //! FMD object containing rough multiplicity
   AliESDVZERO     *fESDVZERO;         //! VZERO object containing rough multiplicity
   AliESDTZERO     *fESDTZERO;         //! TZEROObject
+  AliESDFIT       *fESDFIT;           //! FITObject
   AliESDVertex    *fTPCVertex;        //! Primary vertex estimated by the TPC
   AliESDVertex    *fSPDVertex;        //! Primary vertex estimated by the SPD
   AliESDVertex    *fPrimaryVertex;    //! Primary vertex estimated using ESD tracks
@@ -634,7 +641,7 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,23)  //ESDEvent class 
+  ClassDef(AliESDEvent,24)  //ESDEvent class 
 };
 #endif 
 

@@ -119,7 +119,8 @@ ClassImp(AliESDEvent)
                                                         "CosmicTracks",
 							"AliESDTOFCluster",
 							"AliESDTOFHit",
-							"AliESDTOFMatch"};
+							"AliESDTOFMatch",
+							"AliESDFIT"};
 
 
 //______________________________________________________________________________
@@ -132,6 +133,7 @@ AliESDEvent::AliESDEvent():
   fESDFMD(0),
   fESDVZERO(0),
   fESDTZERO(0),
+  fESDFIT(0),
   fTPCVertex(0),
   fSPDVertex(0),
   fPrimaryVertex(0),
@@ -185,6 +187,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDFMD(new AliESDFMD(*esd.fESDFMD)),
   fESDVZERO(new AliESDVZERO(*esd.fESDVZERO)),
   fESDTZERO(new AliESDTZERO(*esd.fESDTZERO)),
+  fESDFIT(new AliESDFIT(*esd.fESDFIT)),
   fTPCVertex(new AliESDVertex(*esd.fTPCVertex)),
   fSPDVertex(new AliESDVertex(*esd.fSPDVertex)),
   fPrimaryVertex(new AliESDVertex(*esd.fPrimaryVertex)),
@@ -267,6 +270,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fTOFHeader);
   AddObject(fMuonClusters);
   AddObject(fMuonPads);
+  //
+  AddObject(fESDFIT);
   GetStdContent();
   ConnectTracks();
 
@@ -503,6 +508,7 @@ void AliESDEvent::ResetStdContent()
     new (fESDAD) AliESDAD();	
   } 
 
+  if(fESDFIT) fESDFIT->Reset(); 
 
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
@@ -1442,6 +1448,14 @@ void AliESDEvent::SetTZEROData(const AliESDTZERO * obj)
     *fESDTZERO = *obj;
 }
 
+//______________________________________________________________________________
+void AliESDEvent::SetFITData(const AliESDFIT * obj)
+{ 
+  // use already allocated space
+  if(fESDFIT)
+    *fESDFIT = *obj;
+}
+
 
 //______________________________________________________________________________
 void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
@@ -1503,6 +1517,7 @@ void AliESDEvent::GetStdContent()
   fESDFMD = (AliESDFMD*)fESDObjects->FindObject(fgkESDListName[kESDFMD]);
   fESDVZERO = (AliESDVZERO*)fESDObjects->FindObject(fgkESDListName[kESDVZERO]);
   fESDTZERO = (AliESDTZERO*)fESDObjects->FindObject(fgkESDListName[kESDTZERO]);
+  fESDFIT = (AliESDFIT*)fESDObjects->FindObject(fgkESDListName[kESDFIT]);
   fTPCVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kTPCVertex]);
   fSPDVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kSPDVertex]);
   fPrimaryVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kPrimaryVertex]);
@@ -1605,7 +1620,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDTOFCluster",0));
   AddObject(new TClonesArray("AliESDTOFHit",0));
   AddObject(new TClonesArray("AliESDTOFMatch",0));
-	
+  AddObject(new AliESDFIT());	
   // check the order of the indices against enum...
 
   // set names
