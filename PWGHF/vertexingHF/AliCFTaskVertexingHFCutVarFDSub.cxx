@@ -147,7 +147,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fhSparseCutVar(0x0),
   fhPtCutVar(0x0),
   fhBptCutVar(0x0),
-  fListBdecays(0x0)
+  fListBdecays(0x0),
+  fQAHists(0x0)
 {
   //
   //Default ctor
@@ -216,7 +217,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fhSparseCutVar(0x0),
   fhPtCutVar(0x0),
   fhBptCutVar(0x0),
-  fListBdecays(0x0)
+  fListBdecays(0x0),
+  fQAHists(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -235,6 +237,7 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   DefineOutput(7,TH3F::Class());
   DefineOutput(8,TH1F::Class());
   DefineOutput(9,TList::Class());
+  DefineOutput(10,TList::Class());
 
   fCuts->PrintAll();
 }
@@ -260,6 +263,7 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fhPtCutVar=c.fhPtCutVar;
     fhBptCutVar=c.fhBptCutVar;
     fListBdecays=c.fListBdecays;  // FIXME: TList copy contructor not implemented
+    fQAHists=c.fQAHists;  // FIXME: TList copy contructor not implemented
   }
   return *this;
 }
@@ -326,7 +330,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fhSparseCutVar(c.fhSparseCutVar),
   fhPtCutVar(c.fhPtCutVar),
   fhBptCutVar(c.fhBptCutVar),
-  fListBdecays(c.fListBdecays) // FIXME: TList copy contructor not implemented
+  fListBdecays(c.fListBdecays), // FIXME: TList copy contructor not implemented
+  fQAHists(c.fQAHists) // FIXME: TList copy contructor not implemented
 {
   //
   // Copy Constructor
@@ -340,23 +345,27 @@ AliCFTaskVertexingHFCutVarFDSub::~AliCFTaskVertexingHFCutVarFDSub()
   //
   //destructor
   //
-  if (fCFManager)           delete fCFManager ;
-  if (fHistEventsProcessed) delete fHistEventsProcessed ;
-  if (fCorrelation)         delete fCorrelation ;
-  if (fListProfiles)        delete fListProfiles;
-  if (fCuts)                delete fCuts;
-  if (fFuncWeight)          delete fFuncWeight;
-  if (fHistoPtWeight)       delete fHistoPtWeight;
-  if (fHistoMeasNch)        delete fHistoMeasNch;
-  if (fHistoMCNch)          delete fHistoMCNch;
-  for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
-  if(fObjSpr) delete fObjSpr;
-  if(fhSparseCutVar) delete fhSparseCutVar;
-  if(fhPtCutVar) delete fhPtCutVar;
-  if(fhBptCutVar) delete fhBptCutVar;
+  if (fCFManager)           { delete fCFManager;           fCFManager=0x0;           }
+  if (fHistEventsProcessed) { delete fHistEventsProcessed; fHistEventsProcessed=0x0; }
+  if (fCorrelation)         { delete fCorrelation;         fCorrelation=0x0;         }
+  if (fListProfiles)        { delete fListProfiles;        fListProfiles=0x0;        }
+  if (fCuts)                { delete fCuts;                fCuts=0x0;                }
+  if (fFuncWeight)          { delete fFuncWeight;          fFuncWeight=0x0;          }
+  if (fHistoPtWeight)       { delete fHistoPtWeight;       fHistoPtWeight=0x0;       }
+  if (fHistoMeasNch)        { delete fHistoMeasNch;        fHistoMeasNch=0x0;        }
+  if (fHistoMCNch)          { delete fHistoMCNch;          fHistoMCNch=0x0;          }
+  if (fObjSpr)              { delete fObjSpr;              fObjSpr=0x0;              }
+  if (fhSparseCutVar)       { delete fhSparseCutVar;       fhSparseCutVar=0x0;       }
+  if (fhPtCutVar)           { delete fhPtCutVar;           fhPtCutVar=0x0;           }
+  if (fhBptCutVar)          { delete fhBptCutVar;          fhBptCutVar=0x0;          }
+  if (fListBdecays)         { delete fListBdecays;         fListBdecays=0x0;         }
+  if (fQAHists)             { delete fQAHists;             fQAHists=0x0;             }
+  for(Int_t i=0; i<4; i++) {
+    if(fMultEstimatorAvg[i]) { delete fMultEstimatorAvg[i]; fMultEstimatorAvg[i]=0x0; }
+  }
 }
 
-//_________________________________________________________________________-
+//__________________________________________________________________________
 void AliCFTaskVertexingHFCutVarFDSub::Init()
 {
   //
@@ -1517,17 +1526,19 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
     fhSparseCutVar=fObjSpr->GetSparseMC();
     fhPtCutVar=fObjSpr->GetHistoPtMCgen();
     fListBdecays=fObjSpr->GetDecayStrings();
+    fQAHists=fObjSpr->GetQAHists();
   }
 
   fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
 
-  PostData(1,fHistEventsProcessed) ;
-  PostData(2,fCFManager->GetParticleContainer()) ;
-  PostData(3,fCorrelation) ;
-  PostData(6,fhSparseCutVar);
-  PostData(7,fhPtCutVar);
-  PostData(8,fhBptCutVar);
-  PostData(9,fListBdecays);
+  PostData( 1,fHistEventsProcessed) ;
+  PostData( 2,fCFManager->GetParticleContainer()) ;
+  PostData( 3,fCorrelation) ;
+  PostData( 6,fhSparseCutVar);
+  PostData( 7,fhPtCutVar);
+  PostData( 8,fhBptCutVar);
+  PostData( 9,fListBdecays);
+  PostData(10,fQAHists);
 }
 
 

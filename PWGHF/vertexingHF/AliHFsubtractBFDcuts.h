@@ -39,6 +39,7 @@ class AliHFsubtractBFDcuts : public TNamed{
 public:
   AliHFsubtractBFDcuts();
   AliHFsubtractBFDcuts(const char* name,const char* title);
+  ~AliHFsubtractBFDcuts();
 
   void InitHistos();
 
@@ -55,13 +56,14 @@ public:
 
   void FillSparses(AliAODRecoDecayHF2Prong *dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
   TList* GetDecayStrings() { return fDecayStrList; }
+  TList* GetQAHists() { return fQAHists; }
 
 private:
   AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c);
   AliHFsubtractBFDcuts operator=(const AliHFsubtractBFDcuts& c);
 
   void GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand);
-  Bool_t AnalyseDecay(Bool_t generateString);                  // check in which decay process a particle was created
+  Bool_t AnalyseDecay(Bool_t generateString, Bool_t MConly);  // check in which decay process a particle was created
   void   CountProngs(Int_t labCurrMother, Int_t labCurrExcl, Bool_t generateString);
   // counting the prongs of labCurrMother, labCurrExcl is assumed to be a stable particle
   Bool_t IsStable(Int_t labProng) const;       // Is that prong a stable particle?
@@ -86,8 +88,9 @@ private:
   Bool_t             fGenerateDecayList; // Generate the list containig strings with all PDG codes of the decay prongs
   std::vector<Int_t> fDecayProngs;       // PDG codes of the daughters separated
   TList*             fDecayStrList;      //! List with all decay strings
+  TList*        fQAHists;      //! List with QA histograms
 
-  ClassDef(AliHFsubtractBFDcuts,6);
+  ClassDef(AliHFsubtractBFDcuts,7);
 };
 
 #endif
