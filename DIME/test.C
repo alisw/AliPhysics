@@ -1,6 +1,7 @@
 void test()
 {
   gSystem->Load("libEG");
+  gSystem->Load("libEVGEN.so");
   gSystem->Load("libdime");
   gSystem->Load("libTDime");
   
