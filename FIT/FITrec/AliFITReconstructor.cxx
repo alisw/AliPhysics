@@ -170,7 +170,7 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
       pmt = digit->NPMT();
       time[pmt] = Float_t (digit->TimeCFD() );
       amp[pmt] = 0.001 * Float_t (digit->TimeQT1() - digit->TimeQT0() );
-      cout<<"@@@ "<<dig<<" "<<pmt<<" "<<time[pmt]<<" "<<amp[pmt]<<endl;
+      //    cout<<"@@@ "<<dig<<" "<<pmt<<" "<<time[pmt]<<" "<<amp[pmt]<<endl;
     } 
     fESDFIT->SetFITtime(time);         // best TOF on each PMT 
     fESDFIT->SetFITamplitude(amp);     // number of particles(MIPs) on each 
@@ -184,9 +184,9 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
 	  if(time[ipmt]<firsttime[1]) firsttime[1]=time[ipmt]; 
     
     
-    AliDebug(1,Form("1stimeA %f , 1sttimeC %f  ",
-		    firsttime[1],
-		    firsttime[2] ) );
+    //  printf("1stimeA %f , 1sttimeC %f  ",
+    //		    firsttime[1],
+    //		    firsttime[2] ) ;
     if (firsttime[1]<max_time && firsttime[2]<max_time)  {
 	firsttime[0] =  channelWidth *(firsttime[1] + firsttime[2])/2;
 	vertexFIT =  c*channelWidth*(firsttime[1] - firsttime[2])/2;
@@ -204,5 +204,5 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
         
     AliDebug(1,Form("FIT: SPDshift %f Vertex %f  FITsignal %f ps FITA %f ps FITC %f ps \n",shift, vertexFIT, firsttime[0], firsttime[1],firsttime[2]));
   }
-  //   if (pESD)    pESD->SetFITData(fESDFIT); 
+     if (pESD)    pESD->SetFITData(fESDFIT); 
 }
