@@ -146,7 +146,7 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   owd->cd();
 
   fPidCont->Branch("fRunNumber", &fRunNumber,  "fRunNumber/I");
-  fPidCont->Branch("cent",fCentrality,"fCentrality[5]/F");
+  fPidCont->Branch("cent",fCentrality,"fCentrality[6]/F");
   if (fIsTrig) fPidCont->Branch("Trigger",fTrigMask,  "fTrigMask[5]/I");
   fPidCont->Branch("vertex",fVtx,"fVtx[3]/F");
   fPidCont->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
@@ -241,14 +241,26 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     if (!(fInputEventHandler->IsEventSelected() & AliVEvent::kMB))  return;        
   }
   
+  // AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+  // if (!header) return;
+
   fCentrality[0] = centrality->GetCentralityPercentile("V0M");
   fCentrality[1] = centrality->GetCentralityPercentile("CL1");
   fCentrality[2] = centrality->GetCentralityPercentile("TRK");
-  fCentrality[3] = centrality->GetCentralityPercentile("V0A");
-  fCentrality[4] = centrality->GetCentralityPercentile("V0C");
-  // fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
+    
+  fCentrality[3] = event->GetVZEROData()->GetMTotV0A();
+  fCentrality[4] = event->GetVZEROData()->GetMTotV0C();
+  fCentrality[5] = event->GetZDCData()->GetZDCParticipants();
+ 
+  // fCentrality[3] = header->GetCentralityP()->GetCentralityPercentile("V0M");
+  // fCentrality[4] = header->GetCentralityP()->GetCentralityPercentile("V0A");
+  // fCentrality[5] = header->GetCentralityP()->GetCentralityPercentile("V0C");
+  // fCentrality[6] = header->GetCentralityP()->GetCentralityPercentile("FMD");
+  // fCentrality[7] = header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD");
+
   
-  //  Printf("%f %f %f %f", fCentrality[0],fCentrality[1],fCentrality[2],fVtx[2]);
+  //  Printf("%f %f %f  %f %f  %f %f: %f %f", fCentrality[0],fCentrality[1],
+  //	  fCentrality[2], fCentrality[3],fCentrality[4], fCentrality[5],fCentrality[6], fCentrality[7],fVtx[2]);
   
 
   //---------- Initiate MC
