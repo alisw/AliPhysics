@@ -308,8 +308,20 @@ void AliRawDB::MakeTree()
 
    fTree = new TTree("RAW", Form("ALICE raw-data tree (%s)", GetAliRootTag()));
    fTree->SetAutoSave(21000000000LL);  // autosave when 21 Gbyte written
-   fTree->SetAutoFlush(0LL);  // autoflush off
-
+   // fTree->SetAutoFlush(0LL);  // autoflush off
+   TString autoflush = gSystem->Getenv("ALIMDC_AUTOFLUSH");
+   if (!autoflush.IsNull()) {
+     Long64_t afval = autoflush.Atoll();
+     Info("MakeTree","Set autoflush to %lld",afval);
+     fTree->SetAutoFlush(afval);
+   }
+   TString bsksize = gSystem->Getenv("ALIMDC_BASKETSIZE");
+   if (!bsksize.IsNull()) {
+     Int_t bsval = bsksize.Atoi();
+     Info("MakeTree","Set basket size to %d",bsval);
+     fBasketSize = bsval;
+   }
+  
    fTree->BranchRef();
 
    Int_t split   = 99;
