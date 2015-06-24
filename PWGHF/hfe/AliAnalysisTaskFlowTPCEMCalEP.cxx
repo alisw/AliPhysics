@@ -89,7 +89,7 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)
-  ,fAssPtCut(1)
+  ,fAssPtCut(0.3)
   ,fAssTPCnCut(80)
   ,fAssITSrefitCut(kTRUE)
   ,fESD(0)
@@ -202,7 +202,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
-  ,fAssPtCut(1)
+  ,fAssPtCut(0.3)
   ,fAssTPCnCut(80)
   ,fAssITSrefitCut(kTRUE)
   ,fESD(0)
