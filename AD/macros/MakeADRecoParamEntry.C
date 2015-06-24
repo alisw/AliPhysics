@@ -23,6 +23,15 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetEndClock(20);
     ADRecoParam->SetNPreClocks(1);
     ADRecoParam->SetNPostClocks(10);
+    ADRecoParam->SetTimeWindowBBALow(-3.3);
+    ADRecoParam->SetTimeWindowBBAUp(3.3);
+    ADRecoParam->SetTimeWindowBGALow(90);
+    ADRecoParam->SetTimeWindowBGAUp(140);
+    ADRecoParam->SetTimeWindowBBCLow(-1.8);
+    ADRecoParam->SetTimeWindowBBCUp(1.8);
+    ADRecoParam->SetTimeWindowBGCLow(90);
+    ADRecoParam->SetTimeWindowBGCUp(140);
+    ADRecoParam->SetAdcThresHold(5);
     recoParamArray->AddLast(ADRecoParam);
   }
   {
@@ -31,6 +40,15 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetEndClock(20);
     ADRecoParam->SetNPreClocks(1);
     ADRecoParam->SetNPostClocks(10);
+    ADRecoParam->SetTimeWindowBBALow(-3.3);
+    ADRecoParam->SetTimeWindowBBAUp (3.3);
+    ADRecoParam->SetTimeWindowBGALow(90);
+    ADRecoParam->SetTimeWindowBGAUp (140);
+    ADRecoParam->SetTimeWindowBBCLow(-1.8);
+    ADRecoParam->SetTimeWindowBBCUp (1.8);
+    ADRecoParam->SetTimeWindowBGCLow(90);
+    ADRecoParam->SetTimeWindowBGCUp (140);
+    ADRecoParam->SetAdcThresHold(5);
     ADRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     recoParamArray->AddLast(ADRecoParam);
   }
@@ -39,6 +57,15 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetStartClock(9);
     ADRecoParam->SetEndClock(11);
     ADRecoParam->SetNPostClocks(6);
+    ADRecoParam->SetTimeWindowBBALow(-3.3);
+    ADRecoParam->SetTimeWindowBBAUp (3.3);
+    ADRecoParam->SetTimeWindowBGALow(90);
+    ADRecoParam->SetTimeWindowBGAUp (140);
+    ADRecoParam->SetTimeWindowBBCLow(-1.8);
+    ADRecoParam->SetTimeWindowBBCUp (1.8);
+    ADRecoParam->SetTimeWindowBGCLow(90);
+    ADRecoParam->SetTimeWindowBGCUp (140);
+    ADRecoParam->SetAdcThresHold(5);
     ADRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     recoParamArray->AddLast(ADRecoParam);
   }
