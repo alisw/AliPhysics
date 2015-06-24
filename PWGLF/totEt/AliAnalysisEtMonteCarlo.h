@@ -342,6 +342,7 @@ protected:
     TH2F *fHistGammasFoundOutOfAccAltCent;//!
     TH2F *fHistGammasGeneratedCent;//!
     TH2F *fHistGammasFoundRecoEnergyCent;//!
+    TH3F *fHistGammasFoundRecoEnergyTrueEnergyCent;//!
     TH2F *fHistAllGammasFoundRecoEnergyCent;//!
     TH2F *fHistGammasFoundOutOfAccRecoEnergyCent;//!
     TH2F *fHistAllGammasFoundOutOfAccRecoEnergyCent;//!
