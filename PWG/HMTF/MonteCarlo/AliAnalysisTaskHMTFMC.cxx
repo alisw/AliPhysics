@@ -29,15 +29,16 @@ using namespace std;
 ClassImp(AliAnalysisTaskHMTFMC)
 
 AliAnalysisTaskHMTFMC::AliAnalysisTaskHMTFMC() 
-: AliAnalysisTaskSE(), fHistEta(0), fHistNch(0), fHistNchUnweighted(0),  fHistIev(0), fMyOut(0)
+: AliAnalysisTaskSE(), fHistEta(0), fHistNch(0), fHistNchUnweighted(0),  fHistIev(0), fMyOut(0),
+  fPrimaryPDGs(), fMotherPDGs()
 {
 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHMTFMC::AliAnalysisTaskHMTFMC(const char *name) 
-  : AliAnalysisTaskSE(name), fHistEta(0), fHistNch(0), fHistNchUnweighted(0), fHistIev(0), fMyOut(0)
-    
+  : AliAnalysisTaskSE(name), fHistEta(0), fHistNch(0), fHistNchUnweighted(0), fHistIev(0), fMyOut(0),
+  fPrimaryPDGs(), fMotherPDGs()
 {
 
   AliPDG::AddParticlesToPdgDataBase();
