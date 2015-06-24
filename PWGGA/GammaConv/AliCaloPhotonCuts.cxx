@@ -623,7 +623,6 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, Int_t isMC)
 {   // Specific Photon Cuts
-    if(event){} // suppress warning
 
 	Int_t cutIndex = 0;
 	if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);
