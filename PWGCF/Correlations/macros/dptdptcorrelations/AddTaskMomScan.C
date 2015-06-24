@@ -12,7 +12,7 @@ AliAnaTaskMomScan *AddTaskMomScan
  int    singlesOnly             = 1,
  int    useWeights              = 0, //no weight 
  int    centralityMethod        = 4, // 5 for syst.
- int    chargeSet               = 1,
+ int    chargeSet               = 0,
  double zMin                    = -10.0,
  double zMax                    =  10.0,
  int    trackFilterBit          = 1, //Global
@@ -20,7 +20,7 @@ AliAnaTaskMomScan *AddTaskMomScan
  double pt1Min                  =  0.2,
  double pt1Max                  =  3.0,
  double pt2Min                  =  3.0,
- double pt2Max                  =  8.0,
+ double pt2Max                  =  10.0,
  double eta1Min                 = -1.0,
  double eta1Max                 =  1.0,
  double eta2Min                 = -1.0,
@@ -31,8 +31,8 @@ AliAnaTaskMomScan *AddTaskMomScan
  double dcaXYMax                =  2.4,
  int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
- const char* taskname           = "TrgWeightPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Globaltrk/SysErrWgt/TrkCent_weight.root")
+ const char* taskname           = "testMP",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Trigptwgt/weightpt_mm.root")
   
 {
   // Set Default Configuration of this analysis
@@ -156,58 +156,49 @@ AliAnaTaskMomScan *AddTaskMomScan
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
       TH3F   * weight_2   = 0;
+            
       if (useWeights)
         {
-        TGrid::Connect("alien:");
-        inputFile = TFile::Open(inputHistogramFileName,"OLD");
-        if (!inputFile)
-          {
-	    //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
-          return;
-          }
+	  TGrid::Connect("alien:");
+	  inputFile = TFile::Open(inputHistogramFileName,"OLD");
+	  if (!inputFile)
+	    {
+	      return;
+	    }
         TString nameHistoBase = "correction_";
         TString nameHisto;
+	
         nameHistoBase += eventName;
         if (requestedCharge1 == 1)
           {
           nameHisto = nameHistoBase + "_p";
-          //cout << "Input Histogram named: " << nameHisto << endl;
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         else
           {
-          nameHisto = nameHistoBase + "_m";
-          //cout << "Input Histogram named: " << nameHisto << endl;
-          weight_1 = (TH3F *) inputFile->Get(nameHisto);
+	    nameHisto = nameHistoBase + "_m";
+	    weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         if (!weight_1) 
           {
-	    //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
-          return 0;
+	    return 0;
           }
-        
-        if (!sameFilter)
-          {
-          weight_2 = 0;
-          if (requestedCharge2 == 1)
-            {
+	weight_2 = 0;
+	if (requestedCharge2 == 1)
+	  {
             nameHisto = nameHistoBase + "_p";
-            //cout << "Input Histogram named: " << nameHisto << endl;
-            weight_2 = (TH3F *) inputFile->Get(nameHisto);
-            }
-          else
-            {
-            nameHisto = nameHistoBase + "_m";
-            //cout << "Input Histogram named: " << nameHisto << endl;
-            weight_2 = (TH3F *) inputFile->Get(nameHisto);
-            }
-          if (!weight_2) 
-            {
-	      //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+	    weight_2 = (TH3F *) inputFile->Get(nameHisto);
+	  }
+	else
+	  {
+            nameHisto2 = nameHistoBase + "_m";
+	    weight_2 = (TH3F *) inputFile->Get(nameHisto);
+	  }
+	if (!weight_2) 
+	  {
             return 0;
-            }
-          }  
-        }
+	  }
+	}
       task = new  AliAnaTaskMomScan(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      ); 
