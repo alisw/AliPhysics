@@ -419,7 +419,8 @@ void AliADDigitizer::DigitizeSDigits()
       adcSignal += adcClock;
     }
     fLeadingTime[j] = UnCorrectLeadingTime(j,fMCTime[j],adcSignal);
-    //std::cout<<"Leading Time: "<<t-fClockOffset[ipmt]<<std::endl;
+    if(j<8)fLeadingTime[j] += gRandom->Gaus(0,1); //windth of TS spline
+    else   fLeadingTime[j] += gRandom->Gaus(0,2);
     
   }
   //Fill BB and BG flags in trigger simulator
