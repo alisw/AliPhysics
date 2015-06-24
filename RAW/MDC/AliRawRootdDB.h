@@ -22,7 +22,8 @@ public:
 		 AliESDEvent *esd,
 		 Int_t compress,
 		 const char* fileName = NULL,
-		 Int_t basketsize = 32000);
+		 Int_t basketsize = 32000,
+		 Long64_t autoflush = -5000000LL);
    ~AliRawRootdDB() { Close(); }
 
    Long64_t Close();

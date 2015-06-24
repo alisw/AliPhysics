@@ -89,7 +89,7 @@ const char* const AliMDC::fgkFilterName[kNFilters] = {"AliHoughFilter"};
 AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode, 
 	       Double_t maxSizeTagDB, const char* fileNameTagDB,
 	       const char *guidFileFolder,
-	       Int_t basketsize) :
+	       Int_t basketsize, Long64_t autoflush) :
   fEvent(new AliRawEventV2),
   fESD(NULL),
   fRawDB(NULL),
@@ -97,6 +97,7 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   fEventTag(new AliRawEventTag),
   fCompress(compress),
   fBasketSize(basketsize),
+  fAutoFlush(autoflush),
   fDeleteFiles(deleteFiles),
   fFilterMode(filterMode),
   fFilters(),
@@ -196,15 +197,15 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName,
 // open a new raw DB file
 
   if (mode == kRFIO)
-    fRawDB = new AliRawRFIODB(fEvent, fESD, fCompress, fileName, fBasketSize);
+    fRawDB = new AliRawRFIODB(fEvent, fESD, fCompress, fileName, fBasketSize, fAutoFlush);
   else if (mode == kROOTD)
-    fRawDB = new AliRawRootdDB(fEvent, fESD, fCompress, fileName, fBasketSize);
+    fRawDB = new AliRawRootdDB(fEvent, fESD, fCompress, fileName, fBasketSize, fAutoFlush);
   else if (mode == kCASTOR)
-    fRawDB = new AliRawCastorDB(fEvent, fESD, fCompress, fileName, fBasketSize);
+    fRawDB = new AliRawCastorDB(fEvent, fESD, fCompress, fileName, fBasketSize, fAutoFlush);
   else if (mode == kDEVNULL)
-    fRawDB = new AliRawNullDB(fEvent, fESD, fCompress, fileName, fBasketSize);
+    fRawDB = new AliRawNullDB(fEvent, fESD, fCompress, fileName, fBasketSize, fAutoFlush);
   else
-    fRawDB = new AliRawDB(fEvent, fESD, fCompress, fileName, fBasketSize);
+    fRawDB = new AliRawDB(fEvent, fESD, fCompress, fileName, fBasketSize, fAutoFlush);
   fRawDB->SetDeleteFiles(fDeleteFiles);
 
   if (fRawDB->IsZombie()) {

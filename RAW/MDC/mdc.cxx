@@ -28,14 +28,14 @@
 void* alimdcCreate(int compress, int filterMode, 
 		   double maxSizeTagDB, const char* fileNameTagDB,
 		   const char* guidFileFolder,
-		   int basketsize)
+		   int basketsize, long long autoflush)
 {
 // create an AliMDC object
 
   return new AliMDC(compress, kFALSE, AliMDC::EFilterMode(filterMode), 
 		    maxSizeTagDB, fileNameTagDB,
 		    guidFileFolder,
-		    basketsize);
+		    basketsize,autoflush);
 
 }
 

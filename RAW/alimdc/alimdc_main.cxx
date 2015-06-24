@@ -161,6 +161,9 @@ int main(int argc, char **argv)
    const char* castorFS   = castorStr.Data();
 #endif
    const char* rootdFS    = "root://localhost//tmp/mdc1";
+   
+   Int_t basketSize = 16000;
+   Long64_t autoflush = -5000000LL;
 
    // User defined file system locations
    if (gSystem->Getenv("ALIMDC_RAWDB1")) 
@@ -175,6 +178,18 @@ int main(int argc, char **argv)
      castorFS = gSystem->Getenv("ALIMDC_CASTOR");
    if (gSystem->Getenv("ALIMDC_ROOTD")) 
      rootdFS = gSystem->Getenv("ALIMDC_ROOTD");
+
+   // User defined basket and autoflush settings
+   TString autoflushS = gSystem->Getenv("ALIMDC_AUTOFLUSH");
+   if (!autoflushS.IsNull()) {
+     autoflush = autoflushS.Atoll();
+     Info(argv[0],"Set autoflush to %lld",autoflush);
+   }
+   TString bsksizeS = gSystem->Getenv("ALIMDC_BASKETSIZE");
+   if (!bsksizeS.IsNull()) {
+     basketSize = bsksizeS.Atoi();
+     Info(argv[0],"Set basket size to %d",basketSize);
+   }
 
    // Handle command line arguments
    if ((argc == 2 && (!strcmp(argv[1], "-?") || !strcmp(argv[1], "-help"))) ||
@@ -269,10 +284,9 @@ int main(int argc, char **argv)
       }
    }
 
-   Int_t basketsize = 32000;
    // Create MDC processor object and process input stream
    AliMDC mdcproc(compress, delFiles, AliMDC::EFilterMode(filterMode), 
-		  maxTagSize, tagDBFS,NULL,basketsize);
+		  maxTagSize, tagDBFS,NULL,basketSize,autoflush);
 
    Int_t result = mdcproc.Run(file, useLoop, wmode, maxFileSize, fs1, fs2);
 

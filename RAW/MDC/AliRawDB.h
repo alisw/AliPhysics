@@ -43,7 +43,7 @@ public:
 	    AliESDEvent *esd,
 	    Int_t compress,
             const char* fileName = NULL,
-	    Int_t basketsize = 32000);
+	    Int_t basketsize = 32000, Long64_t autoflush = -5000000LL);
    virtual ~AliRawDB();
 
    virtual const char *GetOpenOption() const { return "RECREATE"; }
@@ -68,6 +68,8 @@ public:
    Float_t      GetCompressionFactor() const;
    Int_t        GetCompressionMode() const { return fRawDB->GetCompressionLevel(); }
    Int_t        GetBasketSize() const { return fBasketSize; }
+   Long64_t     GetAutoFlush()  const { return fAutoFlush; }
+   void         SetAutoFlush(Long64_t af) { fAutoFlush = af; }
    void         Stop() { fStop = kTRUE; }
    static const char *GetAliRootTag();
    Bool_t       WriteGuidFile(TString &guidFileFolder);
@@ -83,6 +85,7 @@ protected:
    AliESDEvent        *fESD;           // pointer to HLT ESD object
    Int_t          fCompress;      // compression mode (1 default)
    Int_t          fBasketSize;    // root i/o basket size (default = 32000)
+   Long64_t       fAutoFlush;     // tree autoflush setting
    Double_t       fMaxSize;       // maximum size in bytes of the raw DB
    TString        fFS1;           // first raw DB file system location
    TString        fFS2;           // second raw DB file system location
@@ -100,7 +103,7 @@ private:
    AliRawDB(const AliRawDB& rawDB);
    AliRawDB& operator = (const AliRawDB& rawDB);
 
-   ClassDef(AliRawDB,5)  // Raw DB
+   ClassDef(AliRawDB,6)  // Raw DB
 };
 
 #endif
