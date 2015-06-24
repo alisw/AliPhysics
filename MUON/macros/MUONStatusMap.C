@@ -377,11 +377,21 @@ void DrawEvolution(const char* file, bool normalized=true)
   
   // 2013
   
-  DrawPeriod(195344,195483,0,ymax,"LHC13b");
-  DrawPeriod(195529,195677,0,ymax,"LHC13c");
-  DrawPeriod(195681,195873,0,ymax,"LHC13d");
-  DrawPeriod(195949,196311,0,ymax,"LHC13e");
-  DrawPeriod(196433,197388,0,ymax,"LHC13f");
+  DrawPeriod(195344,195483,0,ymax,"13b");
+  DrawPeriod(195529,195677,0,ymax,"13c");
+  DrawPeriod(195681,195873,0,ymax,"13d");
+  DrawPeriod(195949,196311,0,ymax,"13e");
+  DrawPeriod(196433,197388,0,ymax,"13f");
+  
+  // 2015
+  // periods are from the logbook, taking only PHYSICS% partitions
+  // into account
+  DrawPeriod(213329,215151,0,ymax,"15a");
+  DrawPeriod(215160,215579,0,ymax,"15b");
+  DrawPeriod(215580,219968,0,ymax,"15c");
+  DrawPeriod(220050,223195,0,ymax,"15d");
+  DrawPeriod(223227,224779,0,ymax,"15e");
+  DrawPeriod(224826,226606,0,ymax,"15f");
   
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
@@ -423,18 +433,25 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
     return;    
   }
   
-  int year(2013);
+  int year(2015);
   
   if ( runs[0] <= 139699 ) year=2010;
   
   if ( runs[0] <= 176000 ) year=2011;
   
   if ( runs[0] <= 195344 ) year = 2012;
-      
-  AliCDBManager::Instance()->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year));
 
-//  AliCDBManager::Instance()->SetDefaultStorage("local:///Users/laurent/Alice/OCDBcopy2013");
-//
+  if ( runs[0] <= 198000 ) year = 2013;
+
+  TString defaultOCDB;
+  
+  defaultOCDB.Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",year);
+  
+//  defaultOCDB.Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year);
+  
+  AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
+  AliCDBManager::Instance()->SetRun(0);
+
   TList glist;
   
   glist.SetOwner(kTRUE);
