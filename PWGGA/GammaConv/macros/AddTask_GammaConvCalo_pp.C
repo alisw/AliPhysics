@@ -120,7 +120,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
-	if (trainConfig == 101 || 	trainConfig == 131 || 	trainConfig == 120) {
+	if (trainConfig == 101 || 	trainConfig == 131 || 	trainConfig == 120 || 	trainConfig == 121
+		|| 	trainConfig == 122 || 	trainConfig == 123) {
 		numberOfCuts = 1;
 	}
 	if (trainConfig == 113 || 	trainConfig == 114 || 	trainConfig == 115 || 	trainConfig == 116) {
@@ -374,6 +375,13 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "10000093032230000"; mesonCutArray[3] = "0163103100000000"; // time
 	} else if (trainConfig == 120){ // EMCAL clusters, timing variation for extendedQA
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000063032230000"; mesonCutArray[0] = "0163103100000000"; // time
+	} else if (trainConfig == 121){ // EMCAL clusters kEMC for extQA
+		eventCutArray[ 0] = "0005211"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000063032230000"; mesonCutArray[0] = "0163103100000000"; //
+	} else if (trainConfig == 122){ // EMCAL clusters EMCEGAC for extQA
+		eventCutArray[ 0] = "0008111"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000063032230000"; mesonCutArray[0] = "0163103100000000"; //
+	} else if (trainConfig == 123){ // EMCAL clusters EMCEJEC for extQA
+		eventCutArray[ 0] = "0009111"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "10000063032230000"; mesonCutArray[0] = "0163103100000000"; //
+
 	// ************************************* PHOS cuts ****************************************************
 	// LHC12
 	} else if (trainConfig == 131){ // PHOS clusters 8 TeV LHC12
