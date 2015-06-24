@@ -24,5 +24,6 @@ add_subdirectory(muon)
 add_subdirectory(muondep)
 add_subdirectory(Tools)
 add_subdirectory(TRD)
+add_subdirectory(HMTF)
 
 message(STATUS "PWG enabled")
