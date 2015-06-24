@@ -137,7 +137,7 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
     Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
   }     
 
-  fEventCounter = new TH1D("fEventCounter","EventCounter", 100, 0.5,100.5);
+  fEventCounter = new TH1D("fEventCounter","EventCounter", 100, -0.5,99.5);
   fThnList->Add(fEventCounter);
   
    TDirectory *owd = gDirectory;
@@ -146,7 +146,7 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   owd->cd();
 
   fPidCont->Branch("fRunNumber", &fRunNumber,  "fRunNumber/I");
-  fPidCont->Branch("cent",fCentrality,"fCentrality[3]/F");
+  fPidCont->Branch("cent",fCentrality,"fCentrality[5]/F");
   if (fIsTrig) fPidCont->Branch("Trigger",fTrigMask,  "fTrigMask[5]/I");
   fPidCont->Branch("vertex",fVtx,"fVtx[3]/F");
   fPidCont->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
@@ -244,8 +244,8 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fCentrality[0] = centrality->GetCentralityPercentile("V0M");
   fCentrality[1] = centrality->GetCentralityPercentile("CL1");
   fCentrality[2] = centrality->GetCentralityPercentile("TRK");
-  // fCentrality[3] = centrality->GetCentralityPercentile("FMD");
-  // fCentrality[4] = centrality->GetCentralityPercentile("TKL");
+  fCentrality[3] = centrality->GetCentralityPercentile("V0A");
+  fCentrality[4] = centrality->GetCentralityPercentile("V0C");
   // fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
   
   //  Printf("%f %f %f %f", fCentrality[0],fCentrality[1],fCentrality[2],fVtx[2]);

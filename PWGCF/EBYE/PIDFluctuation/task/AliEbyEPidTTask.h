@@ -106,7 +106,7 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Int_t   fNumberOfTracks;      //
   Int_t   fNumberOfTracksM;     //
   Int_t   fNTracks;            // Number of Tracks of Current Events
-  Float_t fCentrality[3];       //
+  Float_t fCentrality[5];       //
   Float_t fVtx[3];              // 
   Int_t   fTrigMask[5];         //
   Int_t   fPidStat[kTrack]; //
