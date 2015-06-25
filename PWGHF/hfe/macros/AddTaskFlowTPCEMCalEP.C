@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut)
+AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut, TString ID="ContName")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -35,11 +35,12 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
 
   mgr->AddTask(eventplaneTask);
 
-  TString containerName3 = mgr->GetCommonFileName();
-  containerName3 += ":PWGHF_hfeCalEventPlane";
+  TString containerName0 = mgr->GetCommonFileName();
+  containerName0 += ":PWGHF_hfeCalEventPlane";
+  containerName0 += ID;
   
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("EPStat",TList::Class(), AliAnalysisManager::kOutputContainer,containerName3.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("EPStat",TList::Class(), AliAnalysisManager::kOutputContainer,containerName0.Data());
   mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
@@ -58,33 +59,36 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
 
   taskcorrMB->SelectCollisionCandidates(AliVEvent::kAny);
 
-  TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGHF_hfeCalcorrSemiCentralV2";
+  TString containerName1 = mgr->GetCommonFileName();
+  containerName1 += ":PWGHF_hfeCalcorrSemiCentralV2";
+  containerName1 += ID;
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histcorrMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histcorrMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
   mgr->ConnectInput(taskcorrMB, 0, cinput);
   mgr->ConnectOutput(taskcorrMB, 1, coutput1);
 
   // Central trigger
   taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
 
-  TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGHF_hfeCalCentralV2";
+  TString containerName2 = mgr->GetCommonFileName();
+  containerName2 += ":PWGHF_hfeCalCentralV2";
+  containerName2 += ID;
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
   mgr->ConnectInput(taskMB, 0, cinput);
   mgr->ConnectOutput(taskMB, 1, coutput1);
   
   //L1 gamma trigger
   taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA);
 
-  TString containerName2 = mgr->GetCommonFileName();
-  containerName2 += ":PWGHF_hfeCalL1GammaV2";
+  TString containerName3 = mgr->GetCommonFileName();
+  containerName3 += ":PWGHF_hfeCalL1GammaV2";
+  containerName3 += ID;
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histTR", TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histTR", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
   mgr->ConnectInput(taskTR, 0, cinput);
   mgr->ConnectOutput(taskTR, 1, coutput1);
   
@@ -95,11 +99,12 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
     
     taskMC->SelectCollisionCandidates(AliVEvent::kMB);
     
-    TString containerName3 = mgr->GetCommonFileName();
-    containerName3 += ":PWGHF_hfeCalMCV2";
+    TString containerName4 = mgr->GetCommonFileName();
+    containerName4 += ":PWGHF_hfeCalMCV2";
+    containerName4 += ID;
     
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histMC", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histMC", TList::Class(),AliAnalysisManager::kOutputContainer, containerName4.Data());
     mgr->ConnectInput(taskMC, 0, cinput);
     mgr->ConnectOutput(taskMC, 1, coutput1);
   }

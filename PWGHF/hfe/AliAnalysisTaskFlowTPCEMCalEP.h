@@ -82,9 +82,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
-  Double_t 		fAssPtCut;		//! pt cut for associated electron
-  Int_t 		fAssTPCnCut;		//! TPC number of clusters for associated electron
-  Bool_t 		fAssITSrefitCut;	//! ITS refir for associated electron
+  Double_t 		fAssPtCut;		// pt cut for associated electron
+  Int_t 		fAssTPCnCut;		// TPC number of clusters for associated electron
+  Bool_t 		fAssITSrefitCut;	// ITS refir for associated electron
 
   AliESDEvent        	*fESD;	            	 //! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
