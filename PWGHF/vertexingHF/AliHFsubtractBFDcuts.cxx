@@ -326,8 +326,9 @@ Bool_t AliHFsubtractBFDcuts::IsStable(Int_t labProng) const {
 
 Bool_t AliHFsubtractBFDcuts::IsInAcceptance(Int_t labProng) const {
   AliDebug(1, "AliHFsubtractBFDcuts::IsInAcceptance(...) hasn't been implemented yet, prong");
-  Double_t eta = ((AliAODMCParticle*)fMCarray->UncheckedAt(labProng))->Eta();
-  Double_t pt = ((AliAODMCParticle*)fMCarray->UncheckedAt(labProng))->Pt();
-  if ((pt>0.15) && (eta>-0.9) && (eta<0.9)) return kTRUE;
+  Double_t eta    = ((AliAODMCParticle*)fMCarray->UncheckedAt(labProng))->Eta();
+  Double_t pt     = ((AliAODMCParticle*)fMCarray->UncheckedAt(labProng))->Pt();
+  Short_t charge = ((AliAODMCParticle*)fMCarray->UncheckedAt(labProng))->Charge();
+  if ((pt>0.15) && (eta>-0.9) && (eta<0.9) && (charge!=0)) return kTRUE;
   return kFALSE;
 }
