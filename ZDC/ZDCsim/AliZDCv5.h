@@ -39,15 +39,15 @@ public:
 	 else printf("\n\n AliZDCv5: WARNING! TCDD pos. aperture set to max. value: 2.0 cm\n\n");}
   virtual void SetTCDDApertureNeg(Float_t aperture) 
     	{if(aperture<=2.4) fTCDDApertureNeg = aperture;
-	 else printf("\n\n AliZDCv5: WARNING! TCDD neg. aperture set to max. value: -2.2 cm\n\n");}
+	 else printf("\n\n AliZDCv5: WARNING! TCDD neg. aperture set to max. value: -2.0 cm\n\n");}
 
   
   virtual void SetTDIAperturePos(Float_t aperture) 
   	{if(aperture<=6.) fTDIAperturePos = aperture;
-	 else printf("\n\n AliZDCv5: WARNING! TDI pos. aperture set to max. value: 6.0 cm\n\n");}
+	 else printf("\n\n AliZDCv5: WARNING! TDI pos. aperture set to max. value: 5.5 cm\n\n");}
   virtual void SetTDIApertureNeg(Float_t aperture) 
   	{if(aperture<=6.) fTDIApertureNeg = aperture;
-	 else printf("\n\n AliZDCv5: WARNING! TDI neg. aperture set to max. value: -6.0 cm\n\n");}
+	 else printf("\n\n AliZDCv5: WARNING! TDI neg. aperture set to max. value: -5.5 cm\n\n");}
   virtual void SetTDIConfiguration(Int_t configuration) 
   	{if(fTDIConfiguration>=0 && fTDIConfiguration<=2) fTDIConfiguration=configuration;
 	 else printf("\n\n AliZDCv5: WARNING! TDI invalid configuration -> setting to 2\n\n");}

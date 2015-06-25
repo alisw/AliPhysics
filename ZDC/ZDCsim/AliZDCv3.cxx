@@ -2055,7 +2055,7 @@ void AliZDCv3::CreateMaterials()
   AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfdv, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(13,"ZTANT",13, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(14, "ZIRONT", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(14,"ZIRONT",7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
 
 } 
 
@@ -2255,7 +2255,10 @@ void AliZDCv3::StepManager()
   Float_t hits[14], x[3], xdet[3]={999.,999.,999.}, um[3], ud[3];
   Float_t destep=0., be=0., out=0.;
   Double_t s[3], p[4];
-  const char *knamed;
+  const char *knamed = (TVirtualMC::GetMC())->CurrentVolName();
+  //Int_t  mid = TVirtualMC::GetMC()->CurrentMedium();
+  TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+  //printf("\tZDC::StepManager\t volume %s medium %d (x,y,z) = (%f, %f, %f)\n", knamed, mid, s[0], s[1], s[2]);
   //
   for(j=0;j<14;j++) hits[j]=-999.;
   //
@@ -2267,9 +2270,7 @@ void AliZDCv3::StepManager()
     // If option NoShower is set -> StopTrack
 
     Int_t ipr = 0; 
-      TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
       if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensPI){
-        knamed = TVirtualMC::GetMC()->CurrentVolName();
         if(!strncmp(knamed,"YMQ",3)){
 	  if(s[2]<0) fpLostITC += 1;
 	  else fpLostITA += 1;
@@ -2282,7 +2283,6 @@ void AliZDCv3::StepManager()
 	}
       }
       else if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensTDI){ 
-        knamed = TVirtualMC::GetMC()->CurrentVolName();
         if(!strncmp(knamed,"MD1",3)){
 	  if(s[2]<0) fpLostD1C += 1;
 	  else  fpLostD1A += 1;
@@ -2291,7 +2291,6 @@ void AliZDCv3::StepManager()
 	else if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
       }
       else if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensVColl){ 
-        knamed = TVirtualMC::GetMC()->CurrentVolName();
         if(!strncmp(knamed,"QCVC",4)) fpcVCollC++;
  	else if(!strncmp(knamed,"QCVA",4))  fpcVCollA++;
 	ipr=1;
@@ -2324,14 +2323,12 @@ void AliZDCv3::StepManager()
 
     
   //Particle coordinates 
-    TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
     for(j=0; j<=2; j++) x[j] = s[j];
     hits[0] = x[0];
     hits[1] = x[1];
     hits[2] = x[2];
 
   // Determine in which ZDC the particle is
-    knamed = TVirtualMC::GetMC()->CurrentVolName();
     if(!strncmp(knamed,"ZN",2)){
           if(x[2]<0.) vol[0]=1; // ZNC (dimuon side)
 	  else if(x[2]>0.) vol[0]=4; //ZNA
@@ -2536,7 +2533,6 @@ void AliZDCv3::StepManager()
        ialfa = Int_t(1.+alfa/2.);
  
        // Distance between particle trajectory and fibre axis
-       TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
        for(j=0; j<=2; j++){
    	  x[j] = s[j];
        }
@@ -2594,7 +2590,6 @@ void AliZDCv3::StepManager()
        else if(vol[0]==3) {	// (3) ZEM fibres
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
-	 TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
 	 Float_t xalic[3];
          for(j=0; j<3; j++){
             xalic[j] = s[j];

@@ -234,7 +234,7 @@ void AliZDCv5::CreateBeamLine()
   //
   // Create the beam line elements
   //
-  if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
+  //if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
   
   Double_t zd1=0., zd2=0., zCorrDip=0., zInnTrip=0., zD1=0.;
   Double_t tubpar[3]={0.,0.,0}, boxpar[3]={0.,0.,0};
@@ -261,7 +261,7 @@ void AliZDCv5::CreateBeamLine()
   //								//
   ////////////////////////////////////////////////////////////////
   
-if(!fOnlyZEM){  
+//if(!fOnlyZEM){  
   // -- Mother of the ZDCs (Vacuum PCON)
   zd1 = 1947.2;
   // zd1 = 1921.6;
@@ -666,8 +666,8 @@ if(!fOnlyZEM){
   pQCLext->AddNode(pQCLint, 1);
     
   zd1 += 90.1;
-  Double_t offset = 0.5;
-  zd1 = zd1+offset;
+  Double_t zoffset = 0.5;
+  zd1 = zd1+zoffset;
   
   //  second section : 2 tubes (ID = 54. OD = 58.)  
   tubpar[0] = 5.4/2.;
@@ -682,7 +682,7 @@ if(!fOnlyZEM){
   zd1 += 2.*tubpar[2];
   
   // transition x2zdc to recombination chamber : skewed cone  
-  conpar[0] = (10.-0.2-offset)/2.;
+  conpar[0] = (10.-0.2-zoffset)/2.;
   conpar[1] = 6.3/2.;
   conpar[2] = 7.0/2.;
   conpar[3] = 5.4/2.;
@@ -716,7 +716,7 @@ if(!fOnlyZEM){
     TVirtualMC::GetMC()->Gspos("QLUC", 1, "ZDCC", 0., 0.,  fPosZNC[2]+66.+boxpar[2], 0, "ONLY");
     printf("	C SIDE LUMINOMETER %1.2f < z < %1.2f\n",  fPosZNC[2]+66., fPosZNC[2]+66.+2*boxpar[2]);
   }
-}  	         
+//}  	         
   // --  END OF BEAM PIPE VOLUME DEFINITION FOR SIDE C (RB26 SIDE) 
   // ----------------------------------------------------------------
 
@@ -2379,7 +2379,7 @@ void AliZDCv5::AddAlignableVolumes() const
  // name with the corresponding volume path. Needs to be syncronized with
  // eventual changes in the geometry.
  //
- if(fOnlyZEM) return;
+ //if(fOnlyZEM) return;
  
  TString volpath1 = "ALIC_1/ZDCC_1/ZNEU_1";
  TString volpath2 = "ALIC_1/ZDCC_1/ZPRO_1";

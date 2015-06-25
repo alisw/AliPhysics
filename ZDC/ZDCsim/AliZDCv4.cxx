@@ -247,39 +247,34 @@ void AliZDCv4::CreateBeamLine()
   TVirtualMC::GetMC()->Matrix(irotpipe2,90.+1.0027,0.,90.,90.,1.0027,0.);
 
   Int_t *idtmed = fIdtmed->GetArray();
-  Double_t dx=0., dy=0., dz=0.;
-  Double_t thx=0., thy=0., thz=0.;
-  Double_t phx=0., phy=0., phz=0.;
-  
-  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRONT");
-  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
-    
+      
   ////////////////////////////////////////////////////////////////
   //								//
   //                SIDE C - RB26 (dimuon side)			//
   //								//
   ////////////////////////////////////////////////////////////////
   
-if(!fOnlyZEM){  
+//if(!fOnlyZEM){  
   // -- Mother of the ZDCs (Vacuum PCON)
+  //zd1 = 1921.6;
+  //const Double_t kZComDip = 1972.5;
+  // New -> to accomodate AD detector (by A. Morsch)
   zd1 = 1947.2;
-  // zd1 = 1921.6;
-  // const Double_t kZComDip = -1972.5;
-  const Double_t kZComDip = -1974.0;
+  const Double_t kZComDip = 1974.0;
+  //
   conpar[ 0] = 0.;
   conpar[ 1] = 360.;
   conpar[ 2] = 4.;      // Num radius specifications: 4
   conpar[ 3] = -13500.; // (1) end of mother vol
   conpar[ 4] = 0.;
   conpar[ 5] = 55.;
-  conpar[ 6] = kZComDip; // (2) Beginning of Compensator Dipole
+  conpar[ 6] = -kZComDip; // (2) Beginning of Compensator Dipole
   conpar[ 7] = 0.;
   conpar[ 8] = 55.;
-  conpar[ 9] = kZComDip; // (3) Reducing radii of ZDCC to beam pipe radius
+  conpar[ 9] = -kZComDip; // (3) Beginning of Compensator Dipole
   conpar[10] = 0.;
   conpar[11] = 6.7/2.;
   conpar[12] = -zd1;    // (4) Beginning of ZDCC mother volume
-  // conpar[12] = -1947.2;    // (4) Beginning of ZDCC mother volume
   conpar[13] = 0.;
   conpar[14] = 6.7/2.; 
   TVirtualMC::GetMC()->Gsvolu("ZDCC", "PCON", idtmed[10], conpar, 15);
@@ -556,7 +551,7 @@ if(!fOnlyZEM){
  
   zd1 += 2.*tubpar[2];
   // Ch.debug
-  ////printf("	Beginning of VCTYB volume @ z = %1.2f \n",-zd1);
+  //printf("	Beginning of VCTYB volume @ z = %1.2f \n",-zd1);
   
   // simulation of the trousers (VCTYB)     
   tubpar[0] = 19.6/2.;
@@ -601,13 +596,13 @@ if(!fOnlyZEM){
   // --------------------------------------------------------
   // TRANSFORMATION MATRICES
   // Combi transformation: 
-  dx = -3.970000;
-  dy = 0.000000;
-  dz = 0.0;
+  Double_t dx = -3.970000;
+  Double_t dy = 0.000000;
+  Double_t dz = 0.0;
   // Rotation: 
-  thx = 84.989100;   phx = 180.000000;
-  thy = 90.000000;   phy = 90.000000;
-  thz = 185.010900;  phz = 0.000000;
+  Double_t thx = 84.989100;   Double_t phx = 180.000000;
+  Double_t thy = 90.000000;   Double_t phy = 90.000000;
+  Double_t thz = 185.010900;  Double_t phz = 0.000000;
   TGeoRotation *rotMatrix1c = new TGeoRotation("c",thx,phx,thy,phy,thz,phz);
   // Combi transformation: 
   dx = -3.970000;
@@ -649,6 +644,7 @@ if(!fOnlyZEM){
   TGeoCompositeShape *pOutTrousersC = new TGeoCompositeShape("outTrousersC", "QCLext:ZDCC_c1+QCLext:ZDCC_c2");
   
   // Volume: QCLext
+  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
   TGeoVolume *pQCLext = new TGeoVolume("QCLext",pOutTrousersC, medZDCFe);
   pQCLext->SetLineColor(kGreen);
   pQCLext->SetVisLeaves(kTRUE);
@@ -660,6 +656,7 @@ if(!fOnlyZEM){
   // Inner trousers
   TGeoCompositeShape *pIntTrousersC = new TGeoCompositeShape("intTrousersC", "QCLint:ZDCC_c1+QCLint:ZDCC_c2");
   // Volume: QCLint
+  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
   TGeoVolume *pQCLint = new TGeoVolume("QCLint",pIntTrousersC, medZDCvoid);
   pQCLint->SetLineColor(kTeal);
   pQCLint->SetVisLeaves(kTRUE);
@@ -704,7 +701,7 @@ if(!fOnlyZEM){
   //printf("	QT13 TUBE from z = %1.2f to z = %1.2f (separate beam pipes)\n",-zd1,-2*tubpar[2]-zd1);  
 
   zd1 += 2.*tubpar[2];
-  printf("	END OF C SIDE BEAM PIPE DEFINITION @ z = %f m from IP2\n\n",-zd1/100.);
+  //printf("	END OF C SIDE BEAM PIPE DEFINITION @ z = %f m from IP2\n\n",-zd1/100.);
 
 	   
   // -- Luminometer (Cu box) in front of ZN - side C
@@ -716,7 +713,7 @@ if(!fOnlyZEM){
     TVirtualMC::GetMC()->Gspos("QLUC", 1, "ZDCC", 0., 0.,  fPosZNC[2]+66.+boxpar[2], 0, "ONLY");
     printf("	C SIDE LUMINOMETER %1.2f < z < %1.2f\n",  fPosZNC[2]+66., fPosZNC[2]+66.+2*boxpar[2]);
   }
-}  	         
+//}  	         
   // --  END OF BEAM PIPE VOLUME DEFINITION FOR SIDE C (RB26 SIDE) 
   // ----------------------------------------------------------------
 
@@ -1011,7 +1008,7 @@ if(!fOnlyZEM){
   TGeoScale *scaleQA07 = new TGeoScale(1., tubpar[1]/tubpar[0], 1.);
   TGeoScaledShape *sshapeQA07 = new TGeoScaledShape(tubeQA07, scaleQA07);
   new TGeoVolume("QA07", sshapeQA07, gGeoManager->GetMedium(idtmed[10]));
-  ////printf("	QA07 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
+  //printf("	QA07 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
   TVirtualMC::GetMC()->Gspos("QA06", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY"); 
   TVirtualMC::GetMC()->Gspos("QA07", 1, "QA06", 0., 0., 0., 0, "ONLY");  
     
@@ -1091,8 +1088,7 @@ if(!fOnlyZEM){
   TVirtualMC::GetMC()->Gspos("QTD3", 2, "Q13TM", -3.8+5.5+boxpar[0], -fTDIApertureNeg,  0., 0, "ONLY"); 
   TVirtualMC::GetMC()->Gspos("QTD3", 3, "Q13TM", -3.8-5.5-boxpar[0], fTDIAperturePos,  0., 0, "ONLY");  
   TVirtualMC::GetMC()->Gspos("QTD3", 4, "Q13TM", -3.8-5.5-boxpar[0], -fTDIApertureNeg,  0., 0, "ONLY");  
-  printf("  AliZDCv4 -> TDI apertures +%1.2f/-%1.2f cm\n", 
-    	fTDIAperturePos, fTDIApertureNeg);
+  printf("  AliZDCv4 -> TDI apertures +%1.2f/-%1.2f cm\n", fTDIAperturePos, fTDIApertureNeg);
   //
   tubspar[0] = 12.0/2.;
   tubspar[1] = 12.4/2.;
@@ -1387,7 +1383,6 @@ if(!fOnlyZEM){
   TGeoCompositeShape *pOutTrousers = new TGeoCompositeShape("outTrousers", "QALext:ZDC_c1+QALext:ZDC_c2");
   
   // Volume: QALext
-  //TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
   TGeoVolume *pQALext = new TGeoVolume("QALext",pOutTrousers, medZDCFe);
   pQALext->SetLineColor(kBlue);
   pQALext->SetVisLeaves(kTRUE);
@@ -1453,7 +1448,7 @@ if(!fOnlyZEM){
     TVirtualMC::GetMC()->Gspos("QLUA", 1, "ZDCA", 0., 0.,  fPosZNA[2]-66.-boxpar[2], 0, "ONLY");
     printf("	A SIDE LUMINOMETER %1.2f < z < %1.2f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
   }
-  printf("	END OF A SIDE BEAM PIPE VOLUME DEFINITION AT z = %f m from IP2\n",zd2/100.);
+  //printf("	END OF A SIDE BEAM PIPE VOLUME DEFINITION AT z = %f m from IP2\n",zd2/100.);
   
 
   // ----------------------------------------------------------------
@@ -1468,15 +1463,21 @@ if(!fOnlyZEM){
   // --  GAP (VACUUM WITH MAGNETIC FIELD)
   tubpar[0] = 0.;
   tubpar[1] = 3.14;
-  tubpar[2] = 153./2.;
+  // New -> Added to accomodate AD (A. Morsch)
+  tubpar[2] = 150./2.;
+  //tubpar[2] = 153./2.;
   TVirtualMC::GetMC()->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
+  // Ch.debug
+  //printf("	MBXW volume: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
   // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
-  tubpar[2] = 150./2.;
+  tubpar[2] = 153./2.;
   TVirtualMC::GetMC()->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
-  TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -1.5-tubpar[2]-zCorrDip, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
+  // Ch.debug
+  //printf("	MBXW yoke: %1.2f < z < %1.2f\n\n",  -zCorrDip, -zCorrDip-2*tubpar[2]);
   
   
   // -- INNER TRIPLET 
@@ -1551,7 +1552,7 @@ if(!fOnlyZEM){
   //printf("	MD1 from z = %1.2f to z= %1.2f cm\n",-zD1, -zD1-2*tubpar[2]); 
   
   // -- DIPOLE D2 
-/*  zD2 = 12167.8;
+  Float_t zD2 = 12167.8;
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
   tubpar[1] = 7.5/2.;
@@ -1566,11 +1567,11 @@ if(!fOnlyZEM){
   
   TVirtualMC::GetMC()->Gspos("YD2 ", 1, "ZDCC", 0., 0., -tubpar[2]-zD2, 0, "ONLY");
   // Ch debug
-  //printf("	YD2 from z = %1.2f to z= %1.2f cm\n",-zD2, -zD2-2*tubpar[2]); 
+  printf("	YD2 from z = %1.2f to z= %1.2f cm\n",-zD2, -zD2-2*tubpar[2]); 
   
   TVirtualMC::GetMC()->Gspos("MD2 ", 1, "YD2 ", -9.4, 0., 0., 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("MD2 ", 2, "YD2 ",  9.4, 0., 0., 0, "ONLY");
-*/  
+  
   // ***************************************************************  
   //		SIDE A - RB24 
   // ***************************************************************
@@ -1582,6 +1583,8 @@ if(!fOnlyZEM){
   tubpar[2] = 153./2.;
   TVirtualMC::GetMC()->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);  
   TVirtualMC::GetMC()->Gspos("MCBW", 1, "ZDCA", 0., 0., tubpar[2]+zCorrDip, 0, "ONLY");
+  // Ch.debug
+  //printf("	MCBWA volume: %1.2f < z < %1.2f\n\n",  zCorrDip, zCorrDip+2*tubpar[2]);
     
    // --  YOKE 
   tubpar[0] = 4.5;
@@ -1589,6 +1592,8 @@ if(!fOnlyZEM){
   tubpar[2] = 153./2.;
   TVirtualMC::GetMC()->Gsvolu("YMCB", "TUBE", idtmed[7], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("YMCB", 1, "ZDCA", 0., 0., tubpar[2]+zCorrDip, 0, "ONLY");  
+  // Ch.debug
+  //printf("	MCBWA volume: %1.2f < z < %1.2f\n\n",  zCorrDip, zCorrDip+2*tubpar[2]);
   
    // -- INNER TRIPLET 
   // -- DEFINE MQX1 AND MQX2 QUADRUPOLE ELEMENT 
@@ -1712,7 +1717,7 @@ if(!fOnlyZEM){
   
   // -- DIPOLE D2 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
-/*  tubpar[0] = 0.;
+  tubpar[0] = 0.;
   tubpar[1] = 7.5/2.; // this has to be checked
   tubpar[2] = 945./2.;
   TVirtualMC::GetMC()->Gsvolu("MD2L", "TUBE", idtmed[11], tubpar, 3);
@@ -1727,7 +1732,7 @@ if(!fOnlyZEM){
   
   TVirtualMC::GetMC()->Gspos("MD2L", 1, "YD2L", -9.4, 0., 0., 0, "ONLY");
   TVirtualMC::GetMC()->Gspos("MD2L", 2, "YD2L",  9.4, 0., 0., 0, "ONLY");
-*/  
+  
   // -- END OF MAGNET DEFINITION     
 }
   
@@ -1751,7 +1756,7 @@ void AliZDCv4::CreateZDC()
   Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-kFibRadZEM;
   Float_t fFibZEM[3] = {0., 0.0275, fFibZEM2};  // Fibers for EM calorimeter
 
-if(!fOnlyZEM){
+//if(!fOnlyZEM){
   // Parameters for hadronic calorimeters geometry
   // NB -> parameters used ONLY in CreateZDC()
   Float_t fGrvZN[3] = {0.03, 0.03, 50.};  // Grooves for neutron detector
@@ -1813,12 +1818,14 @@ if(!fOnlyZEM){
   //
   TVirtualMC::GetMC()->Gspos("ZNEU", 1, "ZDCC", fPosZNC[0], fPosZNC[1], fPosZNC[2]-fDimZN[2], irotzdc, "ONLY");
   //Ch debug
-  //printf("\n ZN -> %f < z < %f cm\n",fPosZN[2],fPosZN[2]-2*fDimZN[2]);
+  if(TMath::Abs(fPosZNC[1])>0.) printf("\n ZNC placed at  y %f\n",fPosZNC[1]);
+  printf("\n ZNC -> %f < z < %f cm\n",fPosZNC[2],fPosZNC[2]-2*fDimZN[2]);
 
   // --- Position the neutron calorimeter in ZDC2 (left line) 
   // -- No Rotation of ZDCs
   TVirtualMC::GetMC()->Gspos("ZNEU", 2, "ZDCA", fPosZNA[0], fPosZNA[1], fPosZNA[2]+fDimZN[2], 0, "ONLY");
   //Ch debug
+  if(TMath::Abs(fPosZNA[1])>0.) printf("\n ZNA placed at  y %f\n",fPosZNA[1]);
   printf("\n ZNA -> %f < z < %f cm\n",fPosZNA[2],fPosZNA[2]+2*fDimZN[2]);
 
 
@@ -1868,14 +1875,16 @@ if(!fOnlyZEM){
   // --- Position the proton calorimeter in ZDCC
   TVirtualMC::GetMC()->Gspos("ZPRO", 1, "ZDCC", fPosZPC[0], fPosZPC[1], fPosZPC[2]-fDimZP[2], irotzdc, "ONLY");
   //Ch debug
-  //printf("\n ZP -> %f < z < %f cm\n",fPosZP[2],fPosZP[2]-2*fDimZP[2]);
+  printf("\n ZPC -> %f < z < %f cm\n",fPosZPC[2],fPosZPC[2]-2*fDimZP[2]);
+  if(TMath::Abs(fPosZPC[1])>0.) printf("\n ZNA placed at  y %f\n",fPosZPC[1]);
   
   // --- Position the proton calorimeter in ZDCA
   // --- No rotation 
   TVirtualMC::GetMC()->Gspos("ZPRO", 2, "ZDCA", fPosZPA[0], fPosZPA[1], fPosZPA[2]+fDimZP[2], 0, "ONLY");
   //Ch debug
   printf("\n ZPA -> %f < z < %f cm\n",fPosZPA[2],fPosZPA[2]+2*fDimZP[2]);  
-}    
+  if(TMath::Abs(fPosZPA[1])>0.) printf("\n ZNA placed at  y %f\n",fPosZPA[1]);
+//}    
   
   // -------------------------------------------------------------------------------
   // -> EM calorimeter (ZEM)  
@@ -1943,7 +1952,7 @@ if(!fOnlyZEM){
   TVirtualMC::GetMC()->Gspos("ZEL2", 1,"ALIC", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
   //Ch debug
   //printf("\n ZEM lenght = %f cm\n",2*fZEMLength);
-  //printf("\n ZEM -> %f < z < %f cm\n",fPosZEM[2],fPosZEM[2]+2*fZEMLength+zLastSlice+kDimZEMPb);
+  printf("\n ZEM -> %f < z < %f cm\n\n",fPosZEM[2],fPosZEM[2]+2*fZEMLength+kDimZEMPb);
   
 }
  
@@ -2091,7 +2100,7 @@ void AliZDCv4::AddAlignableVolumes() const
  // name with the corresponding volume path. Needs to be syncronized with
  // eventual changes in the geometry.
  //
- if(fOnlyZEM) return;
+ //if(fOnlyZEM) return;
  
  TString volpath1 = "ALIC_1/ZDCC_1/ZNEU_1";
  TString volpath2 = "ALIC_1/ZDCC_1/ZPRO_1";
@@ -2286,11 +2295,13 @@ void AliZDCv4::StepManager()
   for(int j=0; j<14; j++) hits[j]=-999.;
   const char *knamed = (TVirtualMC::GetMC())->CurrentVolName();
   Int_t  mid = TVirtualMC::GetMC()->CurrentMedium();
+  TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+  //printf("\tZDC::StepManager\t volume %s medium %d (x,y,z) = (%f, %f, %f)\n", knamed, mid, s[0], s[1], s[2]);
   
   // Study spectator protons distributions at TDI z
   /*TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
   if(s[2]>=7813.30 && s[2]<=8353.30){
-     //printf(" \t**** particle in vol. %s\n ",knamed);  
+     printf(" \t**** particle in vol. %s\n ",knamed);  
      TVirtualMC::GetMC()->TrackMomentum(p[0], p[1], p[2], p[3]);
      Int_t ctrack = gAlice->GetMCApp()->GetCurrentTrackNumber();
      TParticle *cpart = gAlice->GetMCApp()->Particle(ctrack);
@@ -2364,8 +2375,7 @@ void AliZDCv4::StepManager()
 	ipr=1;
       }
       //
-      //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
-        //   TVirtualMC::GetMC()->TrackMass(), p[3], p[2], knamed);
+      //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", TVirtualMC::GetMC()->TrackMass(), p[3], p[2], knamed);
       //
       if(ipr<0){
         printf("\n\t **********************************\n");
@@ -2563,26 +2573,26 @@ void AliZDCv4::StepManager()
       if(fNoShower==1){
         if(vol[0]==1){
           fnDetectedC += 1;
-          //printf("	### Particle in ZNC\n\n");
+          printf("	### Particle in ZNC\n\n");
         }
         else if(vol[0]==2){
           fpDetectedC += 1;
-          //printf("	### Particle in ZPC\n\n");
+          printf("	### Particle in ZPC\n\n");
         }
-        //else if(vol[0]==3) printf("	### Particle in ZEM\n\n");	  
+        else if(vol[0]==3) printf("	### Particle in ZEM\n\n");	  
         else if(vol[0]==4){
           fnDetectedA += 1;
-          //printf("	### Particle in ZNA\n\n");	  
+          printf("	### Particle in ZNA\n\n");	  
         }
         else if(vol[0]==5){
           fpDetectedA += 1;
-          //printf("	### Particle in ZPA\n\n"); 	 
+          printf("	### Particle in ZPA\n\n"); 	 
         }
     	//
         //printf("\t Track %d: x %1.2f y %1.2f z %1.2f  E %1.2f GeV pz = %1.2f GeV in volume %s -> det %d\n", 
-          // gAlice->GetMCApp()->GetCurrentTrackNumber(),x[0],x[1],x[2],p[3],p[2],knamed, vol[0]);
+           //gAlice->GetMCApp()->GetCurrentTrackNumber(),x[0],x[1],x[2],p[3],p[2],knamed, vol[0]);
         //printf("\t Track %d: pc %d  E %1.2f GeV pz = %1.2f GeV in volume %s -> det %d\n", 
-          // gAlice->GetMCApp()->GetCurrentTrackNumber(),part->GetPdgCode(),p[3],p[2],knamed, vol[0]);
+           //gAlice->GetMCApp()->GetCurrentTrackNumber(),part->GetPdgCode(),p[3],p[2],knamed, vol[0]);
         //
         TVirtualMC::GetMC()->StopTrack();
         return;

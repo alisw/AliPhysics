@@ -39,15 +39,15 @@ public:
 	 else printf("\n\n AliZDCv4: WARNING! TCDD pos. aperture set to max. value: 2.0 cm\n\n");}
   virtual void SetTCDDApertureNeg(Float_t aperture) 
     	{if(aperture<=2.4) fTCDDApertureNeg = aperture;
-	 else printf("\n\n AliZDCv4: WARNING! TCDD neg. aperture set to max. value: -2.2 cm\n\n");}
+	 else printf("\n\n AliZDCv4: WARNING! TCDD neg. aperture set to max. value: -2.0 cm\n\n");}
 
   
   virtual void SetTDIAperturePos(Float_t aperture) 
   	{if(aperture<=6.) fTDIAperturePos = aperture;
-	 else printf("\n\n AliZDCv4: WARNING! TDI pos. aperture set to max. value: 6.0 cm\n\n");}
+	 else printf("\n\n AliZDCv4: WARNING! TDI pos. aperture set to max. value: 5.5 cm\n\n");}
   virtual void SetTDIApertureNeg(Float_t aperture) 
   	{if(aperture<=6.) fTDIApertureNeg = aperture;
-	 else printf("\n\n AliZDCv4: WARNING! TDI neg. aperture set to max. value: -6.0 cm\n\n");}
+	 else printf("\n\n AliZDCv4: WARNING! TDI neg. aperture set to max. value: -5.5 cm\n\n");}
   
   void SetLumiLength(Float_t length) {fLumiLength = length;}
   

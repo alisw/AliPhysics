@@ -290,7 +290,7 @@ void AliZDCRawStream::ReadCDHHeader()
   UChar_t message = header ? header->GetAttributes() : headerV3->GetAttributes();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
-    if((message & 0xf0) == 0x0){ // PHYSICS RUN
+    /*if((message & 0xf0) == 0x0){ // PHYSICS RUN
        //printf("\t PHYSICS RUN raw data found\n");
     }
     else if((message & 0xf0) == 0x10){ // COSMIC RUN
@@ -313,7 +313,7 @@ void AliZDCRawStream::ReadCDHHeader()
     }
     else if((message & 0xf0) == 0x70){ // CALIBRATION_EMD
        //printf("\t CALIBRATION_EMD RUN raw data found\n");
-    }
+    }*/
     // *** Checking the bit indicating the used readout card
     // (the payload is different in the 2 cases!)
     if((message & 0x08) == 0){  // ** DARC card
