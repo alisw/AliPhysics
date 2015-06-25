@@ -9,6 +9,9 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
 						     const char * ntracksTrue,
 						     const char *type,				      
 						     const char *CentEst,
+						     Int_t SubJetAlgorithm,
+						     Float_t SubJetRadius,
+						     Float_t SubJetMinPt,
 						     Int_t       pSel,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
@@ -45,6 +48,9 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
   task->SetJetSelection(jetSelection);
+  task->SetSubJetAlgorithm(SubJetAlgorithm);
+  task->SetSubJetRadius(SubJetRadius);
+  task->SetSubJetMinPt(SubJetMinPt);
   if (jetSelection == AliAnalysisTaskSubJetFraction::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   TString thename(njetsBase);

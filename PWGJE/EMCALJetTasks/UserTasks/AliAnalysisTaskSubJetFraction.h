@@ -11,6 +11,7 @@ class TClonesArray;
 class TArrayI;
 class AliAnalysisManager;
 class AliJetContainer;
+class AliEmcalJetFinder;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -60,6 +61,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
   void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
   void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
+  void SetSubJetAlgorithm(Int_t SubJetAlgorithm)        {fSubJetAlgorithm=SubJetAlgorithm;}
+  void SetSubJetRadius(Float_t SubJetRadius)            {fSubJetRadius=SubJetRadius;}
+  void SetSubJetMinPt(Float_t SubJetMinPt)              {fSubJetMinPt=SubJetMinPt;}
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -86,6 +90,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
+  Int_t                               fSubJetAlgorithm;
+  Float_t                             fSubJetRadius;
+  Float_t                             fSubJetMinPt; 
 
   Double_t                              Background_Median;
   Double_t                              Background_Fluc;

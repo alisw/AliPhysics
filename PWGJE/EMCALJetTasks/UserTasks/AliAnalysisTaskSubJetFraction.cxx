@@ -87,6 +87,9 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
+  fSubJetAlgorithm(0),
+  fSubJetRadius(0.1),
+  fSubJetMinPt(1),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -139,6 +142,9 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
+  fSubJetAlgorithm(0),
+  fSubJetRadius(0.1),
+  fSubJetMinPt(1),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -192,27 +198,24 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
+  //create a tree used for the MC data and making a 4D response matrix 
   const Int_t nVar = 4;
   fShapesVar = new Double_t [nVar]; //shapes used for tagging   
-  if(fJetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet){
-  //create a tree used for the MC data and making a 4D response matrix
+  fTreeResponseMatrixAxis = new TTree("fTreeJetShape", "fTreeJetShape");
+  TString *fShapesVarNames = new TString [nVar];
   
-    fTreeResponseMatrixAxis = new TTree("fTreeJetShape", "fTreeJetShape");
-    TString *fShapesVarNames = new TString [nVar];
-    
-    fShapesVarNames[0] = "Pt_Particle_Level";
-    fShapesVarNames[1] = "Frac_Particle_Level";
-    fShapesVarNames[2] = "Pt_Detector_Level";
-    fShapesVarNames[3] = "Frac_Detector_Level";
-    
-    for(Int_t ivar=0; ivar < nVar; ivar++){
-      cout<<"looping over variables"<<endl;
-      fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));
-    }
-    
+  fShapesVarNames[0] = "Pt_Particle_Level";
+  fShapesVarNames[1] = "Frac_Particle_Level";
+  fShapesVarNames[2] = "Pt_Detector_Level";
+  fShapesVarNames[3] = "Frac_Detector_Level";
+  
+  for(Int_t ivar=0; ivar < nVar; ivar++){
+    cout<<"looping over variables"<<endl;
+    fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
   }
   
-
+  
+  
   if (fJetShapeType==AliAnalysisTaskSubJetFraction::kData){
     
     fhJetPt= new TH1F("fhJetPt", "Jet Pt", (XBinsJetPtSize)-1, XBinsJetPt);
@@ -267,8 +270,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhDetectorSubJetPtFrac);
     fhSubJetPtFracRatio= new TH1F("fhSubJetPtFracRatio", "Ratio of Pt Fraction of Highest Pt Subjet compared to original Jet for MC particle and Detector Level data", 1010,-0.05,10.5); 
     fOutput->Add(fhSubJetPtFracRatio);
-    fOutput->Add(fTreeResponseMatrixAxis);
   }
+  fOutput->Add(fTreeResponseMatrixAxis);
   fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
   fOutput->Add(fhEventCounter);
   TH1::AddDirectory(oldStatus);
@@ -312,14 +315,14 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     AliEmcalJet *Jet4=NULL; //MC detector level jet
     AliEmcalJet *Jet5=NULL; //MC particle level subjet                                                                                                                             
     AliEmcalJet *Jet6=NULL; //MC detector level subjet  
-    AliEmcalJetFinder *ReclustererParticle =NULL; //JetFinder Object for reclustered jets from MC particle Level data                                                          
-    ReclustererParticle->SetRadius(0.1);
-    ReclustererParticle->SetJetMinPt(0.5);
-    ReclustererParticle->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  
-    AliEmcalJetFinder *ReclustererDetector =NULL; //JetFinder Object for reclustered jets from MC detector Level data                                                         
-    ReclustererDetector->SetRadius(0.1);
-    ReclustererDetector->SetJetMinPt(0.5);
-    ReclustererDetector->SetJetAlgorithm(0); //0 for anti-kt     1 for kt           
+    AliEmcalJetFinder *ReclustererParticle = new AliEmcalJetFinder("SubJetFinder2"); //JetFinder Object for reclustered jets from MC particle Level data                   
+    ReclustererParticle->SetRadius(fSubJetRadius);
+    ReclustererParticle->SetJetMinPt(fSubJetMinPt);
+    ReclustererParticle->SetJetAlgorithm(fSubJetAlgorithm); //0 for anti-kt     1 for kt  
+    AliEmcalJetFinder *ReclustererDetector = new AliEmcalJetFinder("SubJetFinder3"); //JetFinder Object for reclustered jets from MC detector Level data                        
+    ReclustererDetector->SetRadius(fSubJetRadius);
+    ReclustererDetector->SetJetMinPt(fSubJetMinPt);
+    ReclustererDetector->SetJetAlgorithm(fSubJetAlgorithm); //0 for anti-kt     1 for kt           
     Int_t SubJetCounterParticle=0;
     Int_t SubJetCounterDetector=0;
     Int_t ParticleReclusterOk=0; //makes sure clustering has happened before commiting values to the response matrix
@@ -368,7 +371,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 		fhDetectorSubJetPtFrac->Fill(DetectorSubJetPtFrac); //Pt fraction of highest Pt subjet compared to original jet                                              
 	      }
 	    }
-	    if((ParticleReclusterOk==1) && (DetectorReclusterOk==1)){
+	    if((ParticleReclusterOk==1) && (DetectorReclusterOk==1) && (SubJetCounterParticle>=1) && (SubJetCounterDetector>=1)){
 	      if (DetectorSubJetPtFrac>0) fhSubJetPtFracRatio->Fill(ParticleSubJetPtFrac/DetectorSubJetPtFrac);
 	      fShapesVar[0] = (Jet3->Pt());
 	      fShapesVar[1] = ParticleSubJetPtFrac;
@@ -396,10 +399,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                                           
     AliEmcalJet *Jet2 = NULL; //Reclustered SubJet                                                                                                                               
-    AliEmcalJetFinder *Reclusterer =NULL; //JetFinder Object for reclustered jets                                                                                                  
-    Reclusterer->SetRadius(0.1);
-    Reclusterer->SetJetMinPt(0.5);
-    Reclusterer->SetJetAlgorithm(0); //0 for anti-kt     1 for kt                                                                                                                  
+    AliEmcalJetFinder *Reclusterer = new AliEmcalJetFinder("SubjetFinder3"); //JetFinder Object for reclustered jets                                 
+    Reclusterer->SetRadius(fSubJetRadius);
+    Reclusterer->SetJetMinPt(fSubJetMinPt);
+    Reclusterer->SetJetAlgorithm(fSubJetAlgorithm); //0 for anti-kt     1 for kt                                                                                     
     Double_t Jet1_Pt_Subtracted = 0;
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event                                                                                                       
     Double_t JetPhi=0;
@@ -512,6 +515,11 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      fhSubJetEnergyFrac->Fill((HighestSubJetEnergy)/(Jet1->E())); //Energy fraction of most energetic subjet compared to original jet       
 	      fhSubJetEnergyLoss->Fill(((Jet1->E())-HighestSubJetEnergy)/(Jet1->E()));	//Energy differance of jet and its most energetic subjet  
 	      fhEventCounter->Fill(8);
+	      fShapesVar[0]=Jet1->Pt();
+	      fShapesVar[1]=(HighestSubJetPt)/(Jet1->Pt());
+	      fShapesVar[2]=0;
+	      fShapesVar[3]=0;
+              fTreeResponseMatrixAxis->Fill();
 	    }
 	    if (SubJetCounter>=2){
 	      fhSubJetPtFrac2->Fill((HighestSubJetPt+NextHighestSubJetPt)/(Jet1->Pt())); //Pt fraction of two highest Pt subjets compared to original jet  
@@ -543,7 +551,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  // cout << Jetiness_Numerator/Jetiness_Denominator<<endl;
 	  fhJetiness->Fill(Jetiness_Numerator/Jetiness_Denominator);
 	 */ 
-	  }  
+	  }
 	}
       }
       fhJetCounter->Fill(JetCounter); //Number of Jets in Each Event
