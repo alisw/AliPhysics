@@ -2,12 +2,12 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   //
   // HFE standard task configuration
   //
-    
+
   Bool_t kAnalyseTaggedTracks = kTRUE;
   
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEMCAL","HFE Standard Cuts");
   hfecuts->CreateStandardCuts();
-  hfecuts->SetMinNClustersTPC(100);
+  hfecuts->SetMinNClustersTPC(TPCnCut);
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersITS(3);
