@@ -2088,7 +2088,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 			//                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
 			//                   }
 						}
-					}
+					}	
 					Double_t mesonY = 10.;
 					if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
 						mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
@@ -2136,7 +2136,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 						}
 					}
 				}
-			}	
+			}
 		} else {
 			if (fDoMesonQA){
 				// fill secondary histograms

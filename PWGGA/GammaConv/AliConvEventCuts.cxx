@@ -2459,13 +2459,12 @@ Float_t AliConvEventCuts::GetWeightForMeson(TString period, Int_t index, AliStac
 		   period.CompareTo("LHC14b2") == 0 	|| period.Contains("LHC14e2")					|| period.CompareTo("LHC12f1a") == 0 		|| period.CompareTo("LHC12f1b") == 0  	|| 
 		   period.CompareTo("LHC12i3") == 0)) return 1.;
 	Int_t kCaseGen = 0;
-	for (Int_t i = 0; i < fnHeaders; i++){
-		if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){
-			if (period.Contains("LHC13d2") 		|| period.CompareTo("LHC13e7") == 0 			|| period.Contains("LHC13b2_efix")  		|| period.Contains("LHC14a1") 			||
-				period.CompareTo("LHC14b2") == 0 || period.Contains("LHC14e2")					|| period.CompareTo("LHC12f1a") == 0 		|| period.CompareTo("LHC12f1b") == 0  	|| 
-				period.CompareTo("LHC12i3") == 0){
-				kCaseGen = 1;
-			}
+		
+	if (IsParticleFromBGEvent(index, MCStack, InputEvent)){
+		if (period.Contains("LHC13d2") 		|| period.CompareTo("LHC13e7") == 0 			|| period.Contains("LHC13b2_efix")  		|| period.Contains("LHC14a1") 			||
+			period.CompareTo("LHC14b2") == 0 || period.Contains("LHC14e2")					|| period.CompareTo("LHC12f1a") == 0 		|| period.CompareTo("LHC12f1b") == 0  	|| 
+			period.CompareTo("LHC12i3") == 0){
+			kCaseGen = 1;
 		}
 	}
 	if (kCaseGen == 0) return 1;
