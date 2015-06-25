@@ -42,7 +42,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
             kCentBin = 5,
             kZvertBin = 7,
             kpTBin = 7,
-            kPID = 4
+            kPID = 1
         };
 
         enum{
@@ -67,7 +67,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		void DoMixing(double cent, double zvtx, double epangle, TObjArray* fMyprimRecoTracks, float bSign);
 	    double DeltaPhi(double phi1, double phi2);
 
-        int GetParticleID(AliAODTrack* track, double nsigmaCut);
+        int GetParticleID(AliAODTrack* track);
 		
 	private:
 		TList           *fOutput;        // Output list
@@ -75,18 +75,6 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		AliEventPoolManager*  fPoolMgr; //!
         AliPIDResponse *fPIDResponse; //!
 
-        TH1F            *fHistPt[kPID];        // Pt spectrum
-        TH1F            *fHistEta[kPID];       // pseudorapidity spectrum
-        TH1F            *fHistPhi[kPID];       // Azimuthal angle
-
-		TH1F            *fHistZvertex;       // primary z-vertex of each events
-		TH1F            *fHistZvertexBin[kZvertBin];       // primary z-vertex of each events
-		TH1F *fHistCent; // centrality by V0M
-		TH1F *fHistCentBin[kCentBin]; // centrality by V0M
-
-		// Nevt histo for normalisation
-		TH1F *fHistNevtSame[kCentBin][kZvertBin]; // Nevt for each categories(cBin, zBin) in same events (! removed 140505)
-		TH1F *fHistNevtMixed[kCentBin][kZvertBin]; // Nevt for each categories(cBin, zBin) in mixed events
 
 		TObjArray*        fMyprimRecoTracks; //
 		TObjArray*        fTracksMixing; //
@@ -95,16 +83,43 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		Int_t         fPoolSize; // AliEventPoolManager(), max number of event to mix
 		Int_t         fMinNEventsToMix; //
 
+		double		fNsigmaCut; // nsigmaCut with TOF and TPC
+
 		// array for naming
-		char hname[10000]; char htit[10000];
+//		char hname[10000]; char htit[10000];
+
+		TH1F            *fHistZvertex;       //! primary z-vertex of each events
+		TH1F 			*fHistCent; 		 //! centrality by V0M
+/*
+		// Histograms for PID QA
+		TH2F            *fHistNsigmaTPCpT[kCentBin];       //! nsigma_{TPC} vs pT 
+		TH2F            *fHistNsigmaTOFpT[kCentBin];       //! nsigma_{TOF} vs pT 
+		TH2F            *fHistNsigmaITSpT[kCentBin];       //! nsigma_{ITS} vs pT 
+		TH2F			*fHistNsigmaITSTPC[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TPC}
+		TH2F			*fHistNsigmaTPCTOF[kCentBin][kpTBin];       //! nsigma_{TPC} vs nsigma_{TOF}
+		TH2F            *fHistNsigmaITSTOF[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TOF}
+*/
 
 		// Histograms for pT,trig 
-		TH1F			*fHistPtSame[kCentBin][kZvertBin]; // pT spectrum of triggered particles in same evt
-		TH1F			*fHistPtSameH[kCentBin][kZvertBin]; // pT spectrum of triggered particles in same evt
-		TH1F			*fHistPtSameMone[kCentBin][kZvertBin]; // pT spectrum of triggered particles in same evt
-		TH1F			*fHistPtSameMtwo[kCentBin][kZvertBin]; // pT spectrum of triggered particles in same evt
-		TH1F			*fHistPtSameL[kCentBin][kZvertBin]; // pT spectrum of triggered particles in same evt
-		TH1F			*fHistPtMixed[kCentBin][kZvertBin]; // pT spectrum of triggered particles in mixed evt
+        TH1F            *fHistPt[kPID];        //! Pt spectrum
+        TH1F            *fHistEta[kPID];       //! pseudorapidity spectrum
+        TH1F            *fHistPhi[kPID];       //! Azimuthal angle
+
+		TH1F            *fHistZvertexBin[kZvertBin];       //! primary z-vertex of each events
+		TH1F *fHistCentBin[kCentBin]; //! centrality by V0M
+
+
+
+		// Nevt histo for normalisation
+		TH1F *fHistNevtSame[kCentBin][kZvertBin]; //! Nevt for each categories(cBin, zBin) in same events (! removed 140505)
+		TH1F *fHistNevtMixed[kCentBin][kZvertBin]; //! Nevt for each categories(cBin, zBin) in mixed events
+
+		TH1F			*fHistPtSame[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in same evt
+		TH1F			*fHistPtSameH[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in same evt
+		TH1F			*fHistPtSameMone[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in same evt
+		TH1F			*fHistPtSameMtwo[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in same evt
+		TH1F			*fHistPtSameL[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in same evt
+		TH1F			*fHistPtMixed[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in mixed evt
 
 
 		// Histograms for 2PC
@@ -130,24 +145,17 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		TH2F            *fHistdEtadPhiSameL[kCentBin][kZvertBin][kpTBin][kpTBin]; //!
 		TH2F            *fHistdEtadPhiMixedL[kCentBin][kZvertBin][kpTBin][kpTBin]; //!
 
-		TH1F			*fHistEPQv[kCentBin]; // event plane calculated by Q-vector (Scalar Product method) with V0A and V0C
-		TH1F			*fHistEPQvVzeroA[kCentBin]; // event plane calculated by Q-vector (Scalar Product method) with V0A only
-		TH1F			*fHistEPQvVzeroC[kCentBin]; // event plane calculated by Q-vector (Scalar Product method) with V0C only
-		TH1F			*fHistEPQvTPC[kCentBin]; // event plane calculated by Q-vector (Scalar Product method) with TPC
+		TH1F			*fHistEPQv[kCentBin]; //! event plane calculated by Q-vector (Scalar Product method) with V0A and V0C
+		TH1F			*fHistEPQvVzeroA[kCentBin]; //! event plane calculated by Q-vector (Scalar Product method) with V0A only
+		TH1F			*fHistEPQvVzeroC[kCentBin]; //! event plane calculated by Q-vector (Scalar Product method) with V0C only
+		TH1F			*fHistEPQvTPC[kCentBin]; //! event plane calculated by Q-vector (Scalar Product method) with TPC
 
-		TH2F			*fHistEPQvAandC[kCentBin]; // 2D histo to understand the correlation between each EP angles by V0A & C
-		TH2F			*fHistEPQvAandAC[kCentBin]; // 2D histo to understand the correlation between each EP angles by V0A & C
-		TH2F			*fHistEPQvCandAC[kCentBin]; // 2D histo to understand the correlation between each EP angles by V0A & C
-
-		// Histograms for PID QA
-		TH2F            *fHistNsigmaTPCpT[kCentBin];       //! nsigma_{TPC} vs pT 
-		TH2F            *fHistNsigmaTOFpT[kCentBin];       //! nsigma_{TOF} vs pT 
-		TH2F            *fHistNsigmaITSpT[kCentBin];       //! nsigma_{ITS} vs pT 
-		TH2F			*fHistNsigmaITSTPC[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TPC}
+		TH2F			*fHistEPQvAandC[kCentBin]; //! 2D histo to understand the correlation between each EP angles by V0A & C
+		TH2F			*fHistEPQvAandAC[kCentBin]; //! 2D histo to understand the correlation between each EP angles by V0A & C
+		TH2F			*fHistEPQvCandAC[kCentBin]; //! 2D histo to understand the correlation between each EP angles by V0A & C
 
 
-TH2F			*fHistNsigmaTPCTOF[kCentBin][kpTBin];       //! nsigma_{TPC} vs nsigma_{TOF}
-TH2F            *fHistNsigmaITSTOF[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TOF}
+
 
 
 //AliAnalysisTaskCorrHadrons(const AliAnalysisTaskCorrHadrons&); // not implemented
@@ -186,6 +194,7 @@ class AliCorrReducedTrackAA : public AliVParticle // TObject
 		virtual Double_t  Eta() const { return fEtaReduced; }
 		virtual Double_t  Y() const   { AliFatal("Not implemented"); return 0; }
 		virtual Short_t   Charge() const  { return fChargeReduced; }
+//		virtual int		  myFilterBit() const { return fFilterBitReduced;}
 
 		// void Print() { Printf(Form("Reduced track, eta: %lf phi: %lf pt: %lf p: %lf", fEtaReduced, fPhiReduced, fPtReduced, fPReduced)); }
 
@@ -204,6 +213,7 @@ class AliCorrReducedTrackAA : public AliVParticle // TObject
 		Double_t  fPtReduced;         // pT
 		Double_t  fZvReduced;			// z vertex
 		Short_t   fChargeReduced;     // charge
+//		int		  fFilterBitReduced;	// filter bit
 
 		ClassDef(AliCorrReducedTrackAA, 1); // reduced track class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };

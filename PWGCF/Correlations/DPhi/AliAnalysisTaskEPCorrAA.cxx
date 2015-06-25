@@ -63,7 +63,6 @@ using namespace std;
 ClassImp(AliAnalysisTaskEPCorrAA)
 ClassImp(AliCorrReducedTrackAA)
 
-
 //________________________________________________________________________
 AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be initialised here
 	:AliAnalysisTaskSE(),
@@ -75,26 +74,20 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be
 	fMinNumTrack(50000),
 	fPoolSize(100), // from 1000 (150610)
 	fMinNEventsToMix(5),
-//	fHistPt(0), 
-//	fHistEta(0),  
-//	fHistPhi(0),  
-//	fHistNevtSame(0),
-//	fHistNevtMixed(0),
+	fNsigmaCut(3.0),
 	fHistZvertex(0),
-//	fHistZvertexBin(0),
-//	fHistCentBin(0),
 	fPIDResponse(0),
 	fHistCent(0) // The last in the above list should not have a comma after it
 {
 	// Dummy constructor ALWAYS needed for I/O.
 	for(int ic=0; ic<kCentBin;ic++) {
-		fHistNsigmaTPCpT[ic]=0x0;
-		fHistNsigmaTOFpT[ic]=0x0;
-		fHistNsigmaITSpT[ic]=0x0;
+//		fHistNsigmaTPCpT[ic]=0x0;
+//		fHistNsigmaTOFpT[ic]=0x0;
+//		fHistNsigmaITSpT[ic]=0x0;
 		for(int iptt=0; iptt<kpTBin;iptt++) {
-			fHistNsigmaITSTPC[ic][iptt]=0x0;
-			fHistNsigmaTPCTOF[ic][iptt]=0x0;
-			fHistNsigmaITSTOF[ic][iptt]=0x0;
+//			fHistNsigmaITSTPC[ic][iptt]=0x0;
+//			fHistNsigmaTPCTOF[ic][iptt]=0x0;
+//			fHistNsigmaITSTOF[ic][iptt]=0x0;
 			for(int ipta=0; ipta<kpTBin; ipta++) {
 				for(int iz=0; iz<kZvertBin;iz++) {
 					for(int ipid=0; ipid<kPID;ipid++) {
@@ -136,6 +129,7 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be
 
 }
 
+
 //________________________________________________________________________
 AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA(const char *name) // All data members should be initialised here
 :AliAnalysisTaskSE(name),
@@ -147,6 +141,7 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA(const char *name) // All data m
 	fMinNumTrack(50000),
 	fPoolSize(100), // from 1000 (150610)
 	fMinNEventsToMix(5),
+	fNsigmaCut(3.0),
 //	fHistPt(0), 
 //	fHistEta(0), 
 //	fHistPhi(0), 
@@ -159,13 +154,13 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA(const char *name) // All data m
 	// Input slot #0 works with a TChain - it is connected to the default input container
 	// Output slot #1 writes into a TH1 container
 	for(int ic=0; ic<kCentBin;ic++) {
-		fHistNsigmaTPCpT[ic]=0x0;
-		fHistNsigmaTOFpT[ic]=0x0;
-		fHistNsigmaITSpT[ic]=0x0;
+//		fHistNsigmaTPCpT[ic]=0x0;
+//		fHistNsigmaTOFpT[ic]=0x0;
+//		fHistNsigmaITSpT[ic]=0x0;
 		for(int iptt=0; iptt<kpTBin;iptt++) {
-			fHistNsigmaITSTPC[ic][iptt]=0x0;
-			fHistNsigmaTPCTOF[ic][iptt]=0x0;
-			fHistNsigmaITSTOF[ic][iptt]=0x0;
+//			fHistNsigmaITSTPC[ic][iptt]=0x0;
+//			fHistNsigmaTPCTOF[ic][iptt]=0x0;
+//			fHistNsigmaITSTOF[ic][iptt]=0x0;
 			for(int ipta=0; ipta<kpTBin; ipta++) {
 				for(int iz=0; iz<kZvertBin;iz++) {
 					for(int ipid=0; ipid<kPID;ipid++) {
@@ -205,6 +200,7 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA(const char *name) // All data m
         fHistPhi[ipid]=0x0;
     }
 
+	DefineInput(0, TChain::Class());
 	DefineOutput(1, TList::Class());                                            // for output list
 }
 
@@ -221,6 +217,7 @@ AliAnalysisTaskEPCorrAA::~AliAnalysisTaskEPCorrAA()
     if(fPIDResponse) {delete fPIDResponse; fPIDResponse=0x0;}
     if(fMyprimRecoTracks) {delete fMyprimRecoTracks; fMyprimRecoTracks=0x0;}
     if(fTracksMixing) {delete fTracksMixing; fTracksMixing=0x0;}
+
 }
 
 //________________________________________________________________________
@@ -274,8 +271,9 @@ void AliAnalysisTaskEPCorrAA::UserCreateOutputObjects()
 	// To change cuts after selecting some default set, one can use 
 	// esdtrackcuts->SetMinNClustersTPC(70) for example
 
-	// Create histograms
+    char hname[10000]; char htit[10000];
 
+	// Create histograms
     for(int ipid=0; ipid<kPID; ipid++) {
         Int_t ptbins = 100;
         Float_t ptlow = 0.1, ptup = 20.1;
@@ -741,6 +739,15 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 
 	//	cout << "zvertex = " << zvertex << " zBin = " << zBin << endl;
 
+
+
+//	const double nsigmaCut = 3.0;
+
+
+
+
+
+
 	//cout << "DEBUG4" << endl;
 	// ===== Track loop for reconstructed event in SAME events =====
 	Int_t ntracks = aodevent->GetNumberOfTracks();
@@ -793,12 +800,12 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 
         int trigID = -1; // 0(hadron) 1(pion) 2(kaon) 3(proton)
 
-        double nsigmaCut = 3.0;
-        trigID = GetParticleID(aodtrack, nsigmaCut);
+//        double nsigmaCut = 3.0;
+        trigID = GetParticleID(aodtrack);
 
         int trigIDBin = -1;
         if(trigID==1 || trigID==3 || trigID==5 || trigID==7) trigIDBin = 1; // recon. pion
-        if(trigID==2 || trigID==6) trigIDBin = 2; // recon. kaon
+        if(trigID==2 || trigID==3 || trigID==6 || trigID==7) trigIDBin = 2; // recon. kaon
         if(trigID==4 || trigID==5 || trigID==6 || trigID==7) trigIDBin = 3; // recon. proton
 
 
@@ -918,12 +925,15 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 //*/
 
             int assocID = -1; // 0(hadron) 1(pion) 2(kaon) 3(proton)
-            assocID = GetParticleID(aodtrack, nsigmaCut);
+            assocID = GetParticleID(aodtrack2);
 
             int assocIDBin = -1;
             if(assocID==1 || assocID==3 || assocID==5 || assocID==7) assocIDBin = 1; // recon. pion
-            if(assocID==2 || assocID==6) assocIDBin = 2; // recon. kaon
+            if(assocID==2 || assocID==3 || assocID==6 || assocID==7) assocIDBin = 2; // recon. kaon
  	        if(assocID==4 || assocID==5 || assocID==6 || assocID==7) assocIDBin = 3; // recon. proton
+
+
+//			cout << "assocID = " << assocID << endl;
 
             fHistdEtadPhiSame[cBin][zBin][pTBinT][pTBinA][0]->Fill(deltaEta, deltaPhi);
             if(!(assocIDBin == -1)) {
@@ -1048,14 +1058,14 @@ TObjArray* AliAnalysisTaskEPCorrAA::AcceptTracksReduced(AliAODEvent *aodevent, b
 
         }
 
-        double nsigmaCut = 3.0;
+//        double nsigmaCut = 3.0;
 
         int  myPartID = -1;
         int myPartIDinit = -1;
-        myPartIDinit = GetParticleID(track, nsigmaCut);
+        myPartIDinit = GetParticleID(track);
 
         if(myPartIDinit==1 || myPartIDinit==3 || myPartIDinit==5 || myPartIDinit==7) myPartID = 1; // recon. pion
-        if(myPartIDinit==2 || myPartIDinit==6) myPartID = 2; // recon. kaon
+        if(myPartIDinit==2 || myPartIDinit==3 || myPartIDinit==6 || myPartIDinit==7) myPartID = 2; // recon. kaon
         if(myPartIDinit==4 || myPartIDinit==5 || myPartIDinit==6 || myPartIDinit==7) myPartID = 3; // recon. proton
 
 		tracksAccepted->Add(new AliCorrReducedTrackAA(myPartID,track->Eta(),track->Phi(),track->Pt(),track->Zv(),track->Charge()));
@@ -1065,12 +1075,12 @@ TObjArray* AliAnalysisTaskEPCorrAA::AcceptTracksReduced(AliAODEvent *aodevent, b
 
 	return tracksAccepted;
 
-	delete tracksAccepted;
+//	delete tracksAccepted;
 
 }
 
 //___________________________________________________________
-int AliAnalysisTaskEPCorrAA::GetParticleID(AliAODTrack* track, double nsigmaCut)
+int AliAnalysisTaskEPCorrAA::GetParticleID(AliAODTrack* track)
 {
 //  cout << "GetParticleID CALLED!!!" << endl;
 
@@ -1085,21 +1095,23 @@ int AliAnalysisTaskEPCorrAA::GetParticleID(AliAODTrack* track, double nsigmaCut)
 
 //  if(!(fPIDResponse==0)) {cout << "fPIDResponse exists!" << endl; cout << "fPIDResponse = " << fPIDResponse << endl; }
 
-    TPCok = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,track );
-    TOFok = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track );
+    TPCok = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,(AliVTrack*)track );
+    TOFok = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,(AliVTrack*)track );
 //  ITSok = fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS,track );
 
 //  cout << "TPCok = " << TPCok << endl;
 
     if(!(TPCok==-1 || TOFok==-1)) {
 
-        nsigmaTPC[0] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-        nsigmaTPC[1] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
-        nsigmaTPC[2] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+//		cout << "fPIDResponse = " << fPIDResponse << endl;
 
-        nsigmaTOF[0] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-        nsigmaTOF[1] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
-        nsigmaTOF[2] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+        nsigmaTPC[0] = fPIDResponse->NumberOfSigmasTPC((AliVTrack*)track, AliPID::kPion);
+        nsigmaTPC[1] = fPIDResponse->NumberOfSigmasTPC((AliVTrack*)track, AliPID::kKaon);
+        nsigmaTPC[2] = fPIDResponse->NumberOfSigmasTPC((AliVTrack*)track, AliPID::kProton);
+
+        nsigmaTOF[0] = fPIDResponse->NumberOfSigmasTOF((AliVTrack*)track, AliPID::kPion);
+        nsigmaTOF[1] = fPIDResponse->NumberOfSigmasTOF((AliVTrack*)track, AliPID::kKaon);
+        nsigmaTOF[2] = fPIDResponse->NumberOfSigmasTOF((AliVTrack*)track, AliPID::kProton);
 
 
 //      cout << "nsigmaTPC[0] = " <<  nsigmaTPC[0] << " nsigmaTPC[1] = " << nsigmaTPC[1] << " nsigmaTPC[2] = " << nsigmaTPC[2] << endl;
@@ -1123,11 +1135,21 @@ int AliAnalysisTaskEPCorrAA::GetParticleID(AliAODTrack* track, double nsigmaCut)
 
     }
 */
-        if(TMath::Sqrt( nsigmaTPC[0]*nsigmaTPC[0] + nsigmaTOF[0]*nsigmaTOF[0] ) < nsigmaCut) trackPID = trackPID + 1;
-        if(TMath::Sqrt( nsigmaTPC[1]*nsigmaTPC[1] + nsigmaTOF[1]*nsigmaTOF[1] ) < nsigmaCut) trackPID = trackPID + 2;
-        if(TMath::Sqrt( nsigmaTPC[2]*nsigmaTPC[2] + nsigmaTOF[2]*nsigmaTOF[2] ) < nsigmaCut) trackPID = trackPID + 4;
+
+//		cout << "nsigmaTPC[0] = " << nsigmaTPC[0] << endl;
+//		cout << "nsigmaTOF[0] = " << nsigmaTOF[0] << endl;
+
+
+
+
+        if(TMath::Sqrt( nsigmaTPC[0]*nsigmaTPC[0] + nsigmaTOF[0]*nsigmaTOF[0] ) < fNsigmaCut) trackPID = trackPID + 1;
+        if(TMath::Sqrt( nsigmaTPC[1]*nsigmaTPC[1] + nsigmaTOF[1]*nsigmaTOF[1] ) < fNsigmaCut) trackPID = trackPID + 2;
+        if(TMath::Sqrt( nsigmaTPC[2]*nsigmaTPC[2] + nsigmaTOF[2]*nsigmaTOF[2] ) < fNsigmaCut) trackPID = trackPID + 4;
 
     } // end of detectorOK
+
+//	cout << "fNsigmaCut = " << fNsigmaCut << endl;
+//	cout << "trackPID = " << trackPID << endl;
 
     return trackPID;
 
@@ -1214,6 +1236,9 @@ void AliAnalysisTaskEPCorrAA::FillMixedHistos(TObjArray* partNew, TObjArray* par
 		firstPhi = ((AliCorrReducedTrackAA*)particle->At(targetindex))->Phi();
 //		firstZv = ((AliCorrReducedTrackAA*)particle->At(targetindex))->Zv(); // not implemented in Reduced track....
         firstZv = ((AliCorrReducedTrackAA*)particle->At(targetindex))->Charge(); 
+
+//        if(((AliAODTrack*)particle->At(targetindex))->TestFilterBit(kTPCOnlyTrackCut)) cout << "first track is TPCOnly" << endl;;
+//		cout << ((AliAODTrack*)particle->At(targetindex))->TestFilterBit(kTPCOnlyTrackCut) << endl;
 
 
 		// find pT bin of first track
@@ -1404,8 +1429,11 @@ void AliAnalysisTaskEPCorrAA::DoMixing(double cent, double zvertex, double EPang
 				//				cout << "jMix = " << jMix << endl;
 				fTracksMixing = pool->GetEvent(jMix);
 				if (!fTracksMixing) continue;
-
-
+/*
+				cout << "Apply trackcut on the 2nd track in mixed" << endl;
+				fTracksMixing = AcceptTracksReduced(fTracksMixingEvt, kTRUE);
+				cout << "End : Apply trackcut on the 2nd track in mixed" << endl;
+*/
 //				fMyprimRecoTracks = AcceptTracks(fTracksMixing, kTrackCut);
 
 				// count NevtMixed for nomalization
