@@ -305,8 +305,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 */
 	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
-	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
-	  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
 	 anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 	  
 	   cq3dprfkttpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("cq3d%stpcM%i", chrgs[ichg], imult),200,0.5);

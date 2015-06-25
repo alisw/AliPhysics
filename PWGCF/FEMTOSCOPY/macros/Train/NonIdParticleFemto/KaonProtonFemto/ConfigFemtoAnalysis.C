@@ -63,7 +63,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int multbins[11] = {0.001, 50, 150, 200, 300, 400, 500, 600, 700, 800, 900};
   
   int runch[4] = {1, 1, 1, 1};
-  const char *chrgs[4] = { "PRKP", "PRKM", "APKP","APKM"};//AP-antiproton,PR-Proton,KP-Kaon+,KM-Proton-
+  const char *chrgs[4] = { "PRKP", "PRKM", "APKP","APKM"};//AP-antiproton,PR-Proton,KP-Kaon+,KM-Kaon-
 
  int runktdep = 0;
   double ktrng[3] = {0.2, 0.3, 0.4};
@@ -318,8 +318,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 */
 	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
-	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
-	  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
 	 anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 	  
 	   cq3dprfkttpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("cq3d%stpcM%i", chrgs[ichg], imult),200,0.5);
