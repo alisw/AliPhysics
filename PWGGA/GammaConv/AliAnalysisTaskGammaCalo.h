@@ -123,7 +123,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoMotherEtaPtY;				//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
 		TH2F 								**fHistoMotherPi0PtAlpha;			//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
 		TH2F 								**fHistoMotherEtaPtAlpha;			//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
-		THnSparseF							**fSparseMotherOpenAngleInvMassPt;	//! array of THnSparseF with mother (photon(0), pi0(1), eta(2)), openangle, invmass, pt
+		TH3F								**fHistoGammaOpenAngleInvMassPt;	//! array of TH3F with photon , openangle, invmass, pt
+		TH3F								**fHistoPi0OpenAngleInvMassPt;		//! array of TH3F with pi0,  openangle, invmass, pt
+		TH3F								**fHistoEtaOpenAngleInvMassPt;		//! array of TH3F with eta, openangle, invmass, pt
 		TH2F 								**fHistoMotherPi0PtOpenAngle;		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
 		TH2F 								**fHistoMotherEtaPtOpenAngle;		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
 		TH2F								**fHistoMotherInvMassECalib;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
@@ -284,7 +286,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 7);
+		ClassDef(AliAnalysisTaskGammaCalo, 8);
 };
 
 #endif
