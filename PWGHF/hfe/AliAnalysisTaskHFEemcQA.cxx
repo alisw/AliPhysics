@@ -38,14 +38,14 @@
 #include "AliESDpid.h"
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
-#include "AliHFEcontainer.h"
-#include "AliHFEcuts.h"
-#include "AliHFEpid.h"
-#include "AliHFEpidBase.h"
-#include "AliHFEpidQAmanager.h"
-#include "AliHFEtools.h"
-#include "AliCFContainer.h"
-#include "AliCFManager.h"
+//#include "AliHFEcontainer.h"
+//#include "AliHFEcuts.h"
+//#include "AliHFEpid.h"
+//#include "AliHFEpidBase.h"
+//#include "AliHFEpidQAmanager.h"
+//#include "AliHFEtools.h"
+//#include "AliCFContainer.h"
+//#include "AliCFManager.h"
 
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
@@ -121,7 +121,7 @@ fvalueElectron(0)
 {
     // Constructor
     
-    fvalueElectron = new Double_t[7];
+    fvalueElectron = new Double_t[8];
     // Define input and output slots here
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -194,7 +194,7 @@ fvalueElectron(0)
 {
     //Default constructor
     
-    fvalueElectron = new Double_t[7];
+    fvalueElectron = new Double_t[8];
     // Define input and output slots here
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -381,10 +381,10 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fInvmassULS = new TH1F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
     fOutputList->Add(fInvmassULS);
     
-    Int_t bins[7]={8,500,200,400,400,400,1000}; //trigger, pt, TPCnsig, E/p, M20, M02
-    Double_t xmin[7]={-0.5,0,-10,0,0,0,0};
-    Double_t xmax[7]={7.5,25,10,2,2,2,10};
-    fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;m02/m20",7,bins,xmin,xmax);
+    Int_t bins[8]={8,500,200,400,400,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+    Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
+    Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
+    fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
     fOutputList->Add(fSparseElectron);
     
     PostData(1,fOutputList);
@@ -710,15 +710,18 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             
             //EMCAL EID info
             Double_t eop = -1.0;
-            Double_t m02 = -99999,m20 = -99999,Ratm02m20=-999.0;
+            Double_t m02 = -99999,m20 = -99999,sqm02=-99999.0,sqm20=-99999.0;//Ratm02m20=-999.0;
             if(track->P()>0)eop = clustMatchE/track->P();
             m02 =clustMatch->GetM02();
             m20 =clustMatch->GetM20();
+            sqm02=sqrt(m02);
+            sqm20=sqrt(m20);
             
-            if(m02>0 && m20>0){
-                Ratm02m20 = m02/m20;
-            }
-            cout << "Rat: "<< Ratm02m20 <<endl;
+            
+            //if(m02>0 && m20>0){
+            //    Ratm02m20 = m02/m20;
+            //}
+            //cout << "Rat: "<< Ratm02m20 <<endl;
             if(track->Pt()>1.0){
                 fHistdEdxEop->Fill(eop,dEdx);
                 fHistNsigEop->Fill(eop,fTPCnSigma);
@@ -737,7 +740,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fvalueElectron[3] = eop;
             fvalueElectron[4] = clustMatch->GetM20();
             fvalueElectron[5] = clustMatch->GetM02();
-            fvalueElectron[6] = Ratm02m20;
+            fvalueElectron[6] = sqm20;
+            fvalueElectron[7] = sqm02;
             
             if(fFlagSparse){
                 //cout << "filling sparse"<<endl;
