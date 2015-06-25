@@ -1193,7 +1193,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
 
                 AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)charmCandidate;
                 fObjSpr->SetFillMC(kTRUE);
-                fObjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray);
+                fObjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray, aodEvent);
 
                 icountRecoPID++;
                 AliDebug(3,"Reco PID cuts passed and container filled \n");
@@ -1526,7 +1526,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
     fhSparseCutVar=fObjSpr->GetSparseMC();
     fhPtCutVar=fObjSpr->GetHistoPtMCgen();
     fListBdecays=fObjSpr->GetDecayStrings();
-    fQAHists=fObjSpr->GetQAHists();
+    fQAHists=fObjSpr->GetQAhists();
   }
 
   fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
