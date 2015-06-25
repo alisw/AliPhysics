@@ -35,6 +35,14 @@
 
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
+#include "AliAODEvent.h"
+#include "AliAODVertex.h"
+#include "AliESDVertex.h"
+#include "AliVTrack.h"
+#include "AliAODTrack.h"
+#include "AliVertexerTracks.h"
+#include "AliExternalTrackParam.h"
+#include "AliNeutralTrackParam.h"
 
 ClassImp(AliHFsubtractBFDcuts);
 
@@ -47,6 +55,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
   , fCutsData(0x0)
   , fCutsMC(0x0)
   , fMCarray(0x0)
+  , fAODtracks(0x0)
   , fLabCand(-1)
   , fNprongs((UInt_t)-1)
   , fNprongsInAcc((UInt_t)-1)
@@ -54,7 +63,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
   , fGenerateDecayList(kTRUE)
   , fDecayProngs()
   , fDecayStrList(0x0)
-  , fQAHists(0x0)
+  , fQAhists(0x0)
 {
   // default constructor
 }
@@ -68,6 +77,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const char* name, const char* title)
   , fCutsData(0x0)
   , fCutsMC(0x0)
   , fMCarray(0x0)
+  , fAODtracks(0x0)
   , fLabCand(-1)
   , fNprongs((UInt_t)-1)
   , fNprongsInAcc((UInt_t)-1)
@@ -75,13 +85,13 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const char* name, const char* title)
   , fGenerateDecayList(kTRUE)
   , fDecayProngs()
   , fDecayStrList(0x0)
-  , fQAHists(0x0)
+  , fQAhists(0x0)
 {
   // default constructor with name
   fDecayStrList = new TList();
   fDecayStrList->SetOwner();
-  fQAHists = new TList();
-  fQAHists->SetOwner();
+  fQAhists = new TList();
+  fQAhists->SetOwner();
 }
 
 AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
@@ -93,6 +103,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
   , fCutsData(c.fCutsData)
   , fCutsMC(c.fCutsMC)
   , fMCarray(c.fMCarray)
+  , fAODtracks(c.fAODtracks)
   , fLabCand(c.fLabCand)
   , fNprongs(c.fNprongs)
   , fNprongsInAcc(c.fNprongsInAcc)
@@ -100,7 +111,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
   , fGenerateDecayList(c.fGenerateDecayList)
   , fDecayProngs(c.fDecayProngs)
   , fDecayStrList(c.fDecayStrList) // FIXME: TList copy contructor not implemented
-  , fQAHists(c.fQAHists)
+  , fQAhists(c.fQAhists)
 {
   // copy constructor
 }
@@ -146,12 +157,12 @@ void AliHFsubtractBFDcuts::InitHistos(){
 
   fPtMCGenStep=new TH3F("fPtMCGenStep","fPtMCGenStep;#it{p}_{T};Number of prongs;Mother #it{p}_{T}",24,0.,24.,20,0.,20.,24,0.,24.);
 
-  fQAHists->Add(new TH1F("hRapidityDist", "All particles;y;Counts (a.u.)",800,-4.0,4.0)); // 0
-  fQAHists->Add(new TH1F("hRapidityDistStable", "All stable particles;y;Counts (a.u.)",800,-4.0,4.0)); // 1
-  fQAHists->Add(new TH1F("hDecayLengthB", ";Decay Length B Meson (cm?);counts (a.u.)",200,0.,2.0)); // 2
-  fQAHists->Add(new TH1F("hDecayLengthBxy", ";Decay Length B Meson in XY direction (cm?);counts (a.u.)",200,0.,2.0)); // 3
-  fQAHists->Add(new TH1F("hDecayLengthD", ";Decay Length D Meson (cm?);counts (a.u.)",200,0.,2.0)); // 4
-  fQAHists->Add(new TH1F("hDecayLengthDxy", ";Decay Length D Meson in XY direction (cm?);counts (a.u.)",200,0.,2.0)); // 5
+  fQAhists->Add(new TH1F("hRapidityDist", "All Particles;y;Counts (a.u.)",800,-4.0,4.0)); // 0
+  fQAhists->Add(new TH1F("hRapidityDistStable", "All Stable Particles;y;Counts (a.u.)",800,-4.0,4.0)); // 1
+  fQAhists->Add(new TH1F("hDecayLengthB", ";Decay Length B Meson (cm?);counts (a.u.)",200,0.,2.0)); // 2
+  fQAhists->Add(new TH1F("hDecayLengthBxy", ";Decay Length B Meson in XY direction (cm?);counts (a.u.)",200,0.,2.0)); // 3
+  fQAhists->Add(new TH2F("hDCABhypothesis", "All Particles;Distance of Closest Approach (cm?);Impact parameter of D0 x track (cm^{2});counts (a.u.)",1000,0.,1.0,10000,0.,0.01)); // 4
+  fQAhists->Add(new TH2F("hDCABprongs", "Only Real B Decay Prongs;Distance of Closest Approach (cm?);Impact parameter of D0 x track (cm^{2});counts (a.u.)",1000,0.,1.0,10000,0.,0.01)); // 5
   return;
 }
 
@@ -170,12 +181,11 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*
       AliDebug(3, "Error during the decay type determination!");
     }
     fPtMCGenStep->Fill(pt,(Double_t)fNprongsInAcc,fMotherPt,weight);
-
     // y distribution of all particles
     for (Int_t i=0; i<fMCarray->GetEntriesFast(); ++i) {
-      Double_t y =((AliAODMCParticle*)fMCarray->UncheckedAt(i))->Y();
-      ((TH1F*)fQAHists->At(0))->Fill(y); // all particles
-      if (IsStable(i)) ((TH1F*)fQAHists->At(1))->Fill(y); // all stable particles
+      Double_t y=((AliAODMCParticle*)fMCarray->UncheckedAt(i))->Y();
+      ((TH1F*)fQAhists->At(0))->Fill(y); // all particles
+      if (IsStable(i)) ((TH1F*)fQAhists->At(1))->Fill(y); // all stable particles
     }
   }
   else {
@@ -185,8 +195,13 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle *dzeropart,Double_t pt/*
   return;
 }
 
-void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t isSelected,Double_t pt,Double_t massD0,Double_t massD0bar,Double_t weight,TClonesArray* mcArray){
+void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t isSelected,Double_t pt,Double_t massD0,Double_t massD0bar,Double_t weight,TClonesArray* mcArray,AliAODEvent* aodEvent){
   fMCarray=mcArray;
+  if (aodEvent) {
+    fAODtracks=aodEvent->GetTracks();
+    fBkG      =aodEvent->GetMagneticField();
+    fPriVtx   =aodEvent->GetPrimaryVertex();
+  }
   if(isSelected<=0||isSelected>3){
     Printf("isSelected = %d", isSelected);
     return;
@@ -215,24 +230,36 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong *dzerocand,Int_t 
     fNprongsInAcc=0;
     fDecayChain=kFALSE; // TODO: use this value
     fMotherPt=pt;
-    GetCandidateLabel(dzerocand);
-    if (!AnalyseDecay(kFALSE, kFALSE)) {
+    fD0Cand=dzerocand;
+    if (fD0Cand) fD0CandParam=new AliNeutralTrackParam(fD0Cand);
+    if (!GetCandidateLabel() || !AnalyseDecay(kFALSE, kFALSE)) {
       AliDebug(3, "Error during the decay type determination!");
     }
     Double_t pointMC[5]={pt,normalDecayLengXY,cptangXY,(Double_t)fNprongsInAcc,fMotherPt};
     fCutsMC->Fill(pointMC, weight);
   }
   fMCarray=0x0;
+  fAODtracks=0x0;
+  fBkG=0.;
+  fD0Cand=0x0;
   return;
 }
 
-void AliHFsubtractBFDcuts::GetCandidateLabel(AliAODRecoDecayHF2Prong *dzerocand) {
-  Int_t labDau0=((AliAODTrack*)dzerocand->GetDaughter(0))->GetLabel();
-  AliAODMCParticle* firstDau=(AliAODMCParticle*)fMCarray->UncheckedAt(TMath::Abs(labDau0));
-  fLabCand = firstDau->GetMother();
+Bool_t AliHFsubtractBFDcuts::GetCandidateLabel(){
+  if (fD0Cand) {
+    Int_t labDau0=((AliAODTrack*)fD0Cand->GetDaughter(0))->GetLabel();
+    AliAODMCParticle* firstDau=(AliAODMCParticle*)fMCarray->UncheckedAt(TMath::Abs(labDau0));
+    fLabCand = firstDau->GetMother();
+    return kTRUE;
+  }
+  else {
+    AliDebug(3, "Could not obtain the label of the candidate");
+    return kFALSE;
+  }
+  return kFALSE;
 }
 
-Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t MConly) {
+Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t mcOnly) {
   AliAODMCParticle* cand=(AliAODMCParticle*)fMCarray->UncheckedAt(fLabCand);
   fLabMother = cand->GetMother();
   AliAODMCParticle* mother = (AliAODMCParticle*)fMCarray->UncheckedAt(fLabMother);
@@ -247,7 +274,7 @@ Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t MConly) 
     // chained decay of charmed hadrons, using recursion to resolve it
     fDecayChain=kTRUE;
     fLabCand=fLabMother;
-    return AnalyseDecay(generateString, MConly);
+    return AnalyseDecay(generateString, mcOnly);
   }
   if ((pdgMother%1000)/100!=5 && (pdgMother%10000)/1000!=5) {
     AliDebug(3, "Found strange decay, expected the mother to be a beauty hadron!");
@@ -255,7 +282,7 @@ Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t MConly) 
     fNprongsInAcc=0;
     return kFALSE;
   }
-  CountProngs(fLabMother, fLabCand, generateString); // count the prongs
+  CountProngs(fLabMother, fLabCand, generateString, mcOnly); // count the prongs
 
   if (generateString) {
     // Store the decay
@@ -264,25 +291,29 @@ Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t MConly) 
     for (ULong64_t i=0; i<fDecayProngs.size(); ++i) {
       decayStr = (i==0) ? Form("%d", fDecayProngs[i]) : Form("%s_%d", decayStr.Data(), fDecayProngs[i]);
     }
+    //decayStr = Form("%s__%d_%d_%d", decayStr.Data(), fNprongs, fNprongsInAcc, fDecayProngs.size());
     TObjString* str = new TObjString(decayStr);
     if (!fDecayStrList->FindObject(str)) fDecayStrList->Add(str); // only allow unique entries
     fDecayProngs.clear();
   }
 
-  if (MConly) {
-      Double_t decayLengthB;   // Decay length B meson
-      Double_t decayLengthBxy; // Decay length B meson (xy-plane)
-      Double_t decayLengthD;   // Decay length D meson
-      Double_t decayLengthDxy; // Decay length D meson (xy-plane)
-      Double_t originB[3] = {0.,0.,0.};
-      if(!mother->XvYvZv(originB)) AliDebug(3, "Couldn't determine MC origin of the beauty hadron");
-      Double_t originD[3] = {0.,0.,0.};
-      if(!cand->XvYvZv(originD)) AliDebug(3, "Couldn't determine MC origin of the charmed hadron");
-      decayLengthBxy = TMath::Sqrt((originB[0]-originD[0])*(originB[0]-originD[0])+
-                                   (originB[1]-originD[1])*(originB[1]-originD[1]));
-      decayLengthB   = TMath::Sqrt(decayLengthBxy*decayLengthBxy+(originB[2]-originD[2])*(originB[2]-originD[2]));
-      ((TH1F*)fQAHists->At(2))->Fill(decayLengthB);
-      ((TH1F*)fQAHists->At(3))->Fill(decayLengthBxy);
+  if (mcOnly) {
+    Double_t decayLengthB;   // Decay length B meson
+    Double_t decayLengthBxy; // Decay length B meson (xy-plane)
+    Double_t originB[3] = {0.,0.,0.};
+    if(!mother->XvYvZv(originB)) AliDebug(3, "Couldn't determine MC origin of the beauty hadron");
+    Double_t originD[3] = {0.,0.,0.};
+    if(!cand->XvYvZv(originD)) AliDebug(3, "Couldn't determine MC origin of the charmed hadron");
+    decayLengthBxy = TMath::Sqrt((originB[0]-originD[0])*(originB[0]-originD[0])+
+                                 (originB[1]-originD[1])*(originB[1]-originD[1]));
+    decayLengthB   = TMath::Sqrt(decayLengthBxy*decayLengthBxy+(originB[2]-originD[2])*(originB[2]-originD[2]));
+    ((TH1F*)fQAhists->At(2))->Fill(decayLengthB);
+    ((TH1F*)fQAhists->At(3))->Fill(decayLengthBxy);
+  }
+  else {
+    for (Int_t iAODtrack=0; iAODtrack<fAODtracks->GetEntriesFast(); ++iAODtrack) {
+      CheckBhypothesis(iAODtrack, kFALSE);
+    }
   }
 
   fMotherPt=mother->Pt();
@@ -290,24 +321,30 @@ Bool_t AliHFsubtractBFDcuts::AnalyseDecay(Bool_t generateString, Bool_t MConly) 
 }
 
 void AliHFsubtractBFDcuts::CountProngs(Int_t labCurrMother, Int_t labCurrExcl,
-                                       Bool_t generateString) {
-  for (Int_t i=0; i<fMCarray->GetEntriesFast(); ++i) {
-    if (i!=labCurrExcl) {
-      if (((AliAODMCParticle*)fMCarray->UncheckedAt(i))->GetMother()==labCurrMother) {
-        if (!fResolveResonances || IsStable(i)) {
-          if (generateString) fDecayProngs.push_back(((AliAODMCParticle*)fMCarray->UncheckedAt(i))->GetPdgCode());
-            ++fNprongs;
-          if (!fCheckAcceptance || IsInAcceptance(i)) {
+                                       Bool_t generateString, Bool_t mcOnly) {
+  for (Int_t iMCParticle=0; iMCParticle<fMCarray->GetEntriesFast(); ++iMCParticle) {
+    if (iMCParticle!=labCurrExcl) {
+      if (((AliAODMCParticle*)fMCarray->UncheckedAt(iMCParticle))->GetMother()==labCurrMother) {
+        if (!fResolveResonances || IsStable(iMCParticle)) {
+          if (generateString) fDecayProngs.push_back(((AliAODMCParticle*)fMCarray->UncheckedAt(iMCParticle))->GetPdgCode());
+          ++fNprongs;
+          if (!mcOnly) {
+            for (Int_t iAODtrack=0; iAODtrack<fAODtracks->GetEntriesFast(); ++iAODtrack) {
+              AliAODTrack* aodTrack=(AliAODTrack*)fAODtracks->UncheckedAt(iAODtrack);
+              if (aodTrack->GetLabel()==iMCParticle) CheckBhypothesis(iAODtrack, kTRUE);
+            }
+          }
+          if (!fCheckAcceptance || IsInAcceptance(iMCParticle)) {
             ++fNprongsInAcc;
           }
         }
-        else CountProngs(i, -1, generateString);
+        else CountProngs(iMCParticle, -1, generateString, mcOnly);
       }
     }
     else {
       ++fNprongs; // candidate is only counted as a single prong
       ++fNprongsInAcc;
-      if (generateString) fDecayProngs.push_back(((AliAODMCParticle*)fMCarray->UncheckedAt(i))->GetPdgCode());
+      if (generateString) fDecayProngs.push_back(((AliAODMCParticle*)fMCarray->UncheckedAt(iMCParticle))->GetPdgCode());
     }
   }
 }
@@ -331,4 +368,72 @@ Bool_t AliHFsubtractBFDcuts::IsInAcceptance(Int_t labProng) const {
   Short_t charge = ((AliAODMCParticle*)fMCarray->UncheckedAt(labProng))->Charge();
   if ((pt>0.15) && (eta>-0.9) && (eta<0.9) && (charge!=0)) return kTRUE;
   return kFALSE;
+}
+
+Bool_t AliHFsubtractBFDcuts::CheckBhypothesis(Int_t iAODtrack, Bool_t Bprong) {
+  AliExternalTrackParam *t = new AliExternalTrackParam();
+  t->CopyFromVTrack((AliVTrack*)fAODtracks->UncheckedAt(iAODtrack));
+
+  TObjArray *tracks = new TObjArray(2);
+  tracks->AddAt(t,           0);
+  tracks->AddAt(fD0CandParam,1);
+
+  AliAODVertex *bVtx = RecBvtx(tracks);
+  if(!bVtx) {
+    AliDebug(3, "Couldn't reconstruct B meson vertex!");
+    delete t; t=0x0;
+    return kFALSE;
+  }
+
+  const Double_t maxD = 1.;
+
+  // Propagate candidates to secondary vertex
+  Double_t dz[2],cov[3];
+  t->PropagateToDCA(bVtx,fBkG,maxD,dz,cov);
+  fD0CandParam->PropagateToDCA(bVtx,fBkG,maxD,dz,cov);
+
+  // Impact parameters
+  t->PropagateToDCA(fPriVtx,fBkG,maxD,dz,cov);
+  Double_t d0Track=dz[0];
+  Double_t d0TrackErr=TMath::Sqrt(cov[0]);
+  fD0CandParam->PropagateToDCA(fPriVtx,fBkG,maxD,dz,cov);
+  Double_t d0D0Cand=dz[0];
+  Double_t d0D0CandErr=TMath::Sqrt(cov[0]);
+
+  // distance of closest approach of the D0 and the track
+  Double_t xDCAtrack, xDCAD0;
+  Double_t dcaB=t->GetDCA(fD0CandParam,fBkG,xDCAtrack,xDCAD0);
+  if (!Bprong) ((TH1F*)fQAhists->At(4))->Fill(dcaB,d0D0Cand*d0Track);
+  else         ((TH1F*)fQAhists->At(5))->Fill(dcaB,d0D0Cand*d0Track);
+
+  delete tracks; tracks=0x0;
+  delete bVtx  ; bVtx  =0x0;
+  delete t     ; t     =0x0;
+  return kTRUE;
+}
+
+AliAODVertex* AliHFsubtractBFDcuts::RecBvtx(TObjArray *tracks) const {
+  AliESDVertex* vtxESD=0x0;
+  AliVertexerTracks* vertexer = new AliVertexerTracks(fBkG);
+  vertexer->SetVtxStart((AliESDVertex*)fPriVtx);
+  vtxESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(tracks);
+  delete vertexer; vertexer=0x0;
+  if(!vtxESD || vtxESD->GetNContributors()!=tracks->GetEntriesFast()) {
+    AliDebug(3, "Couldn't reconstruct B Meson vertex");
+    delete vtxESD; vtxESD=0x0;
+    return 0x0;
+  }
+  Double_t rVtxSq=vtxESD->GetX()*vtxESD->GetX()+vtxESD->GetY()*vtxESD->GetY();
+  if(rVtxSq>8.){
+    // vertex outside beam pipe, reject candidate to avoid propagation through material
+    delete vtxESD; vtxESD=0x0;
+    return 0x0;
+  }
+  // convert to AliAODVertex
+  Double_t pos[3],cov[6],chi2perNDF;
+  vtxESD->GetXYZ(pos);
+  vtxESD->GetCovMatrix(cov);
+  chi2perNDF=vtxESD->GetChi2toNDF();
+  delete vtxESD; vtxESD=0x0;
+  return new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,0);
 }
