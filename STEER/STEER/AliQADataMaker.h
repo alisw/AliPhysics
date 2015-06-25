@@ -207,7 +207,7 @@ class AliQADataMaker: public TNamed {
   //
   Int_t          GetEvCountCycle(AliRecoParam::EventSpecie_t sp, AliQAv1::TASKINDEX_t task, Int_t trCl=-1) const;
   Int_t          GetEvCountTotal(AliRecoParam::EventSpecie_t sp, AliQAv1::TASKINDEX_t task, Int_t trCl=-1) const;
-  Int_t          GetEvCountCycle(AliQAv1::TASKINDEX_t task,Int_t trCl=-1)          const {return GetEvCountCycle(fEventSpecie,task,trCl);}
+  Int_t          GetEvCountCycle(AliQAv1::TASKINDEX_t task,Int_t trCl=-1)          const {return GetEvCountTotal(fEventSpecie,task,trCl);}
   Int_t          GetEvCountTotal(AliQAv1::TASKINDEX_t task,Int_t trCl=-1)          const {return GetEvCountCycle(fEventSpecie,task,trCl);}
   //
   Int_t          GetEvCountCycleRaws(Int_t trCl=-1)                       const {return GetEvCountCycle(AliQAv1::kRAWS,trCl);}
