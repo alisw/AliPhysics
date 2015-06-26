@@ -72,6 +72,7 @@ AliJFFlucTask::AliJFFlucTask():
 			h_ModuledPhi[icent][isub]=NULL;		
 		}
 	}
+	fzvtxCut = 10;  // defualt z vertex cut
 	//  DefineOutput(1, TDirectory::Class());
 }
 
@@ -106,6 +107,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 			h_ModuledPhi[icent][isub]=NULL;		
 		}
 	}
+	fzvtxCut = 10;
 }
 
 //____________________________________________________________________________
@@ -329,7 +331,7 @@ else if( IsMC == kFALSE){
 		for( int it=0; it<nt ; it++){
 				AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
-				if(track->TestFilterBit( fFilterBit )){ // hybrid cut
+				if(track->TestFilterBit( fFilterBit )){ //
 						double Pt = track->Pt(); 
 						if( fPt_min > 0){
 								if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
@@ -360,7 +362,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	if(vtx){
 		if( vtx->GetNContributors() > 0 ){
 			double zVert = vtx->GetZ();
-			if( zVert > -10 && zVert < 10) Event_status = kTRUE;
+			if( zVert > -1 * fzvtxCut && zVert < fzvtxCut ) Event_status = kTRUE;
 		}
 	}
 

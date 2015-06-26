@@ -228,7 +228,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(12);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(14);
 
 	// set AliJTH1D here //
 	fh_cent
@@ -441,6 +441,11 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
 	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
 	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
+	// New correlattors (Modifed by Ante's correction term for self-correlations for SC result)
+	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] )) 
+						- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) - (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] ); 
+	TComplex nV3V3V2V2 = (QnA[3]*QnB_star[3]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[5] * QnA[3] *QnA[2] )) 
+						- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) - (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] ); 
 
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
 	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
@@ -455,6 +460,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[9][fCBin]->Fill( nV4V2star.Re() ); // added 2015. 6. 10
 	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
+
+	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() );
+	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() ) ;
 
 	//
 	//
