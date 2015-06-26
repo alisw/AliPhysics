@@ -51,6 +51,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   task->SetSubJetAlgorithm(SubJetAlgorithm);
   task->SetSubJetRadius(SubJetRadius);
   task->SetSubJetMinPt(SubJetMinPt);
+  task->SetJetRadius(R);
   if (jetSelection == AliAnalysisTaskSubJetFraction::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   TString thename(njetsBase);
@@ -167,6 +168,11 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
   contName1 += recoilTriggerString;
   }
+  TString SubJetRadiusString = Form("_SubJetRadius_%f", SubJetRadius);
+  contName1 += SubJetRadiusString;
+  TString SubJetMinPtString = Form("_SubJetMinPt_%f", SubJetMinPt);
+  contName1 += SubJetMinPtString;
+ 
 
 
 
