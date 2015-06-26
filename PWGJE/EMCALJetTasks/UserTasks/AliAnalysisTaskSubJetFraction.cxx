@@ -90,6 +90,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fSubJetAlgorithm(0),
   fSubJetRadius(0.1),
   fSubJetMinPt(1),
+  fJetRadius(0.4),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -108,14 +109,20 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhSubJetEnergyFrac2(0x0),
   fhSubJetEnergyLoss(0x0),
   fhSubJetEnergyLoss2(0x0),
-  fhJetiness(0x0),
   fhEventCounter(0x0),
   fhJetCounter(0x0),
   fhSubJetCounter(0x0),
   fhPtRatio(0x0),
   fhParticleSubJetPtFrac(0x0),
   fhDetectorSubJetPtFrac(0x0),
+  fhParticleSubJetPtFrac2(0x0),
+  fhDetectorSubJetPtFrac2(0x0),
   fhSubJetPtFracRatio(0x0),
+  fhSubJetPtFrac2Ratio(0x0),
+  fhParticleSubJetiness(0x0),
+  fhDetectorSubJetiness(0x0),
+  fhSubJetinessRatio(0x0),
+  fhSubJetiness(0x0),
   fTreeResponseMatrixAxis(0)
 
 {
@@ -145,6 +152,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fSubJetAlgorithm(0),
   fSubJetRadius(0.1),
   fSubJetMinPt(1),
+  fJetRadius(0.4),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -163,14 +171,20 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhSubJetEnergyFrac2(0x0),
   fhSubJetEnergyLoss(0x0),
   fhSubJetEnergyLoss2(0x0),
-  fhJetiness(0x0),
   fhEventCounter(0x0),
   fhJetCounter(0x0),
   fhSubJetCounter(0x0),
   fhPtRatio(0x0),
   fhParticleSubJetPtFrac(0x0),
   fhDetectorSubJetPtFrac(0x0),
+  fhParticleSubJetPtFrac2(0x0),
+  fhDetectorSubJetPtFrac2(0x0),
   fhSubJetPtFracRatio(0x0),
+  fhSubJetPtFrac2Ratio(0x0),
+  fhParticleSubJetiness(0x0),
+  fhDetectorSubJetiness(0x0),
+  fhSubJetinessRatio(0x0),
+  fhSubJetiness(0x0),
   fTreeResponseMatrixAxis(0)
   
 {
@@ -199,16 +213,19 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
   TH1::AddDirectory(kFALSE);
 
   //create a tree used for the MC data and making a 4D response matrix 
-  const Int_t nVar = 4;
+  const Int_t nVar = 8;
   fShapesVar = new Double_t [nVar]; //shapes used for tagging   
   fTreeResponseMatrixAxis = new TTree("fTreeJetShape", "fTreeJetShape");
   TString *fShapesVarNames = new TString [nVar];
   
   fShapesVarNames[0] = "Pt_Particle_Level";
   fShapesVarNames[1] = "Frac_Particle_Level";
-  fShapesVarNames[2] = "Pt_Detector_Level";
-  fShapesVarNames[3] = "Frac_Detector_Level";
-  
+  fShapesVarNames[2] = "Frac2_Particle_Level";
+  fShapesVarNames[3] = "Pt_Detector_Level";
+  fShapesVarNames[4] = "Frac_Detector_Level";
+  fShapesVarNames[5] = "Frac2_Detector_Level";
+  fShapesVarNames[6] = "NSubjettiness_Particle_Level";
+  fShapesVarNames[7] = "NSubjettiness_Detector_Level";
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
     fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
@@ -254,8 +271,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJetEnergyLoss);
     fhSubJetEnergyLoss2= new TH1F("fhSubJetEnergyLoss2", "Pt Difference of Two Most Energetic Subjets compared to original Jet",101, -0.05,1.05);
     fOutput->Add(fhSubJetEnergyLoss2);
-    fhJetiness= new TH1F("fhJetiness", "Jettiness",10100, -0.05,500.05);
-    fOutput->Add(fhJetiness);
+    fhSubJetiness= new TH1F("fhSubjetiness", "Tau 2 value",101, -0.05,10.05);
+    fOutput->Add(fhSubJetiness);
     fhJetCounter= new TH1F("fhJetCounter", "Jet Counter", 100, -0.5, 99.5);
     fOutput->Add(fhJetCounter);
     fhSubJetCounter = new TH1F("fhSubJetCounter", "SubJet Counter",50, -0.5,49.5);
@@ -266,10 +283,22 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhPtRatio);
     fhParticleSubJetPtFrac= new TH1F("fhParticleSubJetPtFrac", "Pt Fraction of Highest Pt Subjet compared to original Jet for MC Particle Level data",101, -0.05,1.05);
     fOutput->Add(fhParticleSubJetPtFrac);
+    fhParticleSubJetPtFrac2= new TH1F("fhParticleSubJetPtFrac2", "Pt Fraction of Two Highest Pt Subjets compared to original Jet for MC Particle Level data",101, -0.05,1.05);
+    fOutput->Add(fhParticleSubJetPtFrac2);
     fhDetectorSubJetPtFrac= new TH1F("fhDetectorSubJetPtFrac", "Pt Fraction of Highest Pt Subjet compared to original Jet for MC Detector Level data",101, -0.05,1.05);
     fOutput->Add(fhDetectorSubJetPtFrac);
+    fhDetectorSubJetPtFrac2= new TH1F("fhDetectorSubJetPtFrac2", "Pt Fraction of Two Highest Pt Subjets compared to original Jet for MC Detector Level data",101, -0.05,1.05);
+    fOutput->Add(fhDetectorSubJetPtFrac2);
     fhSubJetPtFracRatio= new TH1F("fhSubJetPtFracRatio", "Ratio of Pt Fraction of Highest Pt Subjet compared to original Jet for MC particle and Detector Level data", 1010,-0.05,10.5); 
     fOutput->Add(fhSubJetPtFracRatio);
+    fhSubJetPtFrac2Ratio= new TH1F("fhSubJetPtFrac2Ratio", "Ratio of Pt Fraction of Two Highest Pt Subjets compared to original Jet for MC particle and Detector Level data", 1010,-0.05,10.5);
+    fOutput->Add(fhSubJetPtFrac2Ratio);
+    fhParticleSubJetiness= new TH1F("fhParticleSubJetiness", "2Tau  for MC Particle Level data",101, -10.5,10.05);
+    fOutput->Add(fhParticleSubJetiness);
+    fhDetectorSubJetiness= new TH1F("fhDetectorSubJetiness", "2Tau for MC Detector Level data",101, -10.5,10.05);
+    fOutput->Add(fhDetectorSubJetiness);
+    fhSubJetinessRatio= new TH1F("fhSubJetinessRatio", "2Tau Ratio for MC Particle Level and Detector Level data",101, -10.5,10.05);
+    fOutput->Add(fhSubJetinessRatio);
   }
   fOutput->Add(fTreeResponseMatrixAxis);
   fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
@@ -302,7 +331,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   // 7: Number of events were primary vertext was found
   // 8: Number of Jets with more than one SubJet
   // 9:Number of Jets with more than two SubJets
+  // 12:Number of SubJetinessEvents in kData
 
+
+  //Jet1 -> KData Jet
+  //Jet2 -> KData SubJet
+  //Jet3 -> KTrueDet MC Particle level Jet
+  //Jet4 -> KTrueDet MC Detector level Jet
+  //Jet5 -> KTrueDet MC Particle level SubJet
+  //Jet6 -> KTrueDet MC Detector level SubJet
   const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
   Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
   if(vert) fhEventCounter->Fill(7);
@@ -323,14 +360,44 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     ReclustererDetector->SetRadius(fSubJetRadius);
     ReclustererDetector->SetJetMinPt(fSubJetMinPt);
     ReclustererDetector->SetJetAlgorithm(fSubJetAlgorithm); //0 for anti-kt     1 for kt           
+    AliVParticle *ParticleJetParticle = 0x0; //Individual constituent tracks (particles) in a jet   
+    AliVParticle *DetectorJetParticle = 0x0; //Individual constituent tracks (particles) in a jet   
     Int_t SubJetCounterParticle=0;
     Int_t SubJetCounterDetector=0;
     Int_t ParticleReclusterOk=0; //makes sure clustering has happened before commiting values to the response matrix
     Int_t DetectorReclusterOk=0;
     Double_t HighestParticleSubJetPt=-1;
+    Double_t NextHighestParticleSubJetPt=-1;
     Double_t HighestDetectorSubJetPt=-1;
+    Double_t NextHighestDetectorSubJetPt=-1;
     Double_t ParticleSubJetPtFrac=0;
     Double_t DetectorSubJetPtFrac=0;
+    Double_t ParticleSubJetPtFrac2=0;
+    Double_t DetectorSubJetPtFrac2=0;
+
+    Int_t HardestParticleSubJetIndex=-1;
+    Int_t NextHardestParticleSubJetIndex=-1;
+    Double_t HardestParticleSubJetEta=-10;
+    Double_t NextHardestParticleSubJetEta=-10;
+    Double_t HardestParticleSubJetPhi=-10;
+    Double_t NextHardestParticleSubJetPhi=-10;
+    Double_t SubJetiness_Numerator_Particle=0;
+    Double_t SubJetiness_Denominator_Particle=0;
+    Double_t DeltaR_Particle=0;
+    Double_t DeltaR1_Particle=0;
+    Double_t DeltaR2_Particle=0;
+
+    Int_t HardestDetectorSubJetIndex=-1;
+    Int_t NextHardestDetectorSubJetIndex=-1;
+    Double_t HardestDetectorSubJetEta=-10;
+    Double_t NextHardestDetectorSubJetEta=-10;
+    Double_t HardestDetectorSubJetPhi=-10;
+    Double_t NextHardestDetectorSubJetPhi=-10;
+    Double_t SubJetiness_Numerator_Detector=0;
+    Double_t SubJetiness_Denominator_Detector=0;
+    Double_t DeltaR_Detector=0;
+    Double_t DeltaR1_Detector=0;
+    Double_t DeltaR2_Detector=0;
     if(JetContParticle){
       JetContParticle->ResetCurrentID();
       while((Jet3=JetContParticle->GetNextAcceptJet()) && ((Jet3->GetNumberOfTracks())>1) && (Jet3->Pt()>=10)) {      //exludes one or zero(?) track jets                           
@@ -347,13 +414,42 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      SubJetCounterParticle=ReclustererParticle->GetNumberOfJets(); // Number of reclustered SubJets in each original jet                                            
 	      for (Int_t i=0; i<SubJetCounterParticle; i++){ //Loops through each SubJet in a reclustered jet                                                              
 		Jet5=ReclustererParticle->GetJet(i); //jet2 is now set to the Subjet                                                                                           
-		if((Jet5->Pt())>HighestParticleSubJetPt){ //This finds the highest pt subjet in each jet                                                                       
+		if((Jet5->Pt())>HighestParticleSubJetPt){ //This finds the highest pt subjet in each jet
+		  NextHighestParticleSubJetPt=HighestParticleSubJetPt;                                                                       
 		  HighestParticleSubJetPt=Jet5->Pt();
+		  HardestParticleSubJetIndex=i; //NSUBJETINESS                                                                                                                    
+		  HardestParticleSubJetEta=Jet5->Eta(); //NSUBJETINESS                                                                                                            
+		  HardestParticleSubJetPhi=Jet5->Phi(); //NSUBJETINESS 
+		}
+		else if((Jet5->Pt())>NextHighestParticleSubJetPt){ //This finds the 2nd highest pt subjet in each jet                                                       
+		  NextHighestParticleSubJetPt=Jet5->Pt();
+		  NextHardestParticleSubJetIndex=i; //NSUBJETINESS                                                                                                                  
+		  NextHardestParticleSubJetEta=Jet5->Eta(); //NSUBJETINESS                                                                                                       
+		  NextHardestParticleSubJetPhi=Jet5->Phi(); //NSUBJETINESS                                                                                                   
 		}
 	      }
 	      if (SubJetCounterParticle>=1){
 	      ParticleSubJetPtFrac=HighestParticleSubJetPt/(Jet3->Pt());
 	      fhParticleSubJetPtFrac->Fill(ParticleSubJetPtFrac); //Pt fraction of highest Pt subjet compared to original jet                            
+	      }
+	      if (SubJetCounterParticle>=2){
+		ParticleSubJetPtFrac2=(HighestParticleSubJetPt+NextHighestParticleSubJetPt)/(Jet3->Pt());
+		fhParticleSubJetPtFrac2->Fill(ParticleSubJetPtFrac2); //Pt fraction of two highest Pt subjets compared to original jet
+		SubJetiness_Numerator_Particle=0;
+		SubJetiness_Denominator_Particle=0;
+		DeltaR_Particle=0;
+		DeltaR1_Particle=0;
+		DeltaR2_Particle=0;
+		for (Int_t i=0; i< (Jet3->GetNumberOfTracks()); i++){  //loops through all tracks (particles in the jet                                                          
+		  ParticleJetParticle = static_cast<AliVParticle*>(Jet3->TrackAt(i, JetContParticle->GetParticleContainer()->GetArray()));
+		  DeltaR1_Particle=TMath::Sqrt((((ParticleJetParticle->Eta())-HardestParticleSubJetEta)*((ParticleJetParticle->Eta())- HardestParticleSubJetEta))+((RelativePhi(HardestParticleSubJetPhi,ParticleJetParticle->Phi()))*(RelativePhi(HardestParticleSubJetPhi,ParticleJetParticle->Phi()))));
+		  DeltaR2_Particle=TMath::Sqrt((((ParticleJetParticle->Eta())-NextHardestParticleSubJetEta)*((ParticleJetParticle->Eta())- NextHardestParticleSubJetEta))+((RelativePhi(NextHardestParticleSubJetPhi,ParticleJetParticle->Phi()))*(RelativePhi(NextHardestParticleSubJetPhi,ParticleJetParticle->Phi()))));
+
+		  if(DeltaR1_Particle<=DeltaR2_Particle) {DeltaR_Particle=DeltaR1_Particle;}
+		  else {DeltaR_Particle=DeltaR2_Particle;}
+		  SubJetiness_Numerator_Particle=SubJetiness_Numerator_Particle+(ParticleJetParticle->Pt()*DeltaR_Particle);
+		  SubJetiness_Denominator_Particle=SubJetiness_Denominator_Particle+(ParticleJetParticle->Pt()*(fJetRadius));
+		}
 	      }
 	    }
 	    
@@ -363,33 +459,82 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      for (Int_t i=0; i<SubJetCounterDetector; i++){ //Loops through each SubJet in a reclustered jet                                                            
 		Jet6=ReclustererDetector->GetJet(i); //jet2 is now set to the Subjet                                                                                             
 		if((Jet6->Pt())>HighestDetectorSubJetPt){ //This finds the highest pt subjet in each jet                                                                     
+		  NextHighestDetectorSubJetPt=HighestDetectorSubJetPt;
 		  HighestDetectorSubJetPt=Jet6->Pt();
+		  HardestDetectorSubJetIndex=i; //NSUBJETINESS                                                                                                              
+		  HardestDetectorSubJetEta=Jet6->Eta(); //NSUBJETINESS                                                                                                          
+		  HardestDetectorSubJetPhi=Jet6->Phi(); //NSUBJETINESS            
 		}
+		else if((Jet6->Pt())>NextHighestDetectorSubJetPt){ //This finds the 2nd highest pt subjet in each jet                                                    
+                  NextHighestDetectorSubJetPt=Jet6->Pt();
+                  NextHardestDetectorSubJetIndex=i; //NSUBJETINESS                                                                                                                  
+                  NextHardestDetectorSubJetEta=Jet6->Eta(); //NSUBJETINESS                                                                                   
+                  NextHardestDetectorSubJetPhi=Jet6->Phi(); //NSUBJETINESS                                                                                                    
+                }
 	      }
 	      if (SubJetCounterDetector>=1){
 		DetectorSubJetPtFrac=HighestDetectorSubJetPt/(Jet4->Pt());
 		fhDetectorSubJetPtFrac->Fill(DetectorSubJetPtFrac); //Pt fraction of highest Pt subjet compared to original jet                                              
 	      }
+	      if (SubJetCounterDetector>=2){
+                DetectorSubJetPtFrac2=(HighestDetectorSubJetPt+NextHighestDetectorSubJetPt)/(Jet4->Pt());
+                fhDetectorSubJetPtFrac2->Fill(DetectorSubJetPtFrac2); //Pt fraction of two highest Pt subjets compared to original jet
+		SubJetiness_Numerator_Detector=0;
+                SubJetiness_Denominator_Detector=0;
+                DeltaR_Detector=0;
+                DeltaR1_Detector=0;
+                DeltaR2_Detector=0;
+                for (Int_t i=0; i< (Jet4->GetNumberOfTracks()); i++){  //loops through all tracks (particles in the jet                                                          
+                  DetectorJetParticle = static_cast<AliVParticle*>(Jet4->TrackAt(i, JetContDetector->GetParticleContainer()->GetArray()));
+                  DeltaR1_Detector=TMath::Sqrt((((DetectorJetParticle->Eta())-HardestDetectorSubJetEta)*((DetectorJetParticle->Eta())- HardestDetectorSubJetEta))+((RelativePhi(HardestDetectorSubJetPhi,DetectorJetParticle->Phi()))*(RelativePhi(HardestDetectorSubJetPhi,DetectorJetParticle->Phi()))));
+
+                  DeltaR2_Detector=TMath::Sqrt((((DetectorJetParticle->Eta())-NextHardestDetectorSubJetEta)*((DetectorJetParticle->Eta())- NextHardestDetectorSubJetEta))+((RelativePhi(NextHardestDetectorSubJetPhi,DetectorJetParticle->Phi()))*(RelativePhi(NextHardestDetectorSubJetPhi,DetectorJetParticle->Phi()))));
+                  if(DeltaR1_Detector<=DeltaR2_Detector) {DeltaR_Detector=DeltaR1_Detector;}
+                  else {DeltaR_Detector=DeltaR_Detector;}
+                  SubJetiness_Numerator_Detector=SubJetiness_Numerator_Detector+(DetectorJetParticle->Pt()*DeltaR_Detector);
+                  SubJetiness_Denominator_Detector=SubJetiness_Denominator_Detector+(DetectorJetParticle->Pt()*(fJetRadius));
+		}
+	      }
 	    }
 	    if((ParticleReclusterOk==1) && (DetectorReclusterOk==1) && (SubJetCounterParticle>=1) && (SubJetCounterDetector>=1)){
-	      if (DetectorSubJetPtFrac>0) fhSubJetPtFracRatio->Fill(ParticleSubJetPtFrac/DetectorSubJetPtFrac);
+	      if (DetectorSubJetPtFrac>0){
+		fhSubJetPtFracRatio->Fill(ParticleSubJetPtFrac/DetectorSubJetPtFrac);
+	      }
 	      fShapesVar[0] = (Jet3->Pt());
 	      fShapesVar[1] = ParticleSubJetPtFrac;
-	      fShapesVar[2] = (Jet4->Pt());
-	      fShapesVar[3] = DetectorSubJetPtFrac;
+	      fShapesVar[3] = (Jet4->Pt());
+	      fShapesVar[4] = DetectorSubJetPtFrac;
+	      if((SubJetCounterParticle>=2) && (SubJetCounterDetector>=2)){
+		fShapesVar[2]=ParticleSubJetPtFrac2;
+		fShapesVar[5]=DetectorSubJetPtFrac2;
+		fhSubJetPtFrac2Ratio->Fill(ParticleSubJetPtFrac2/DetectorSubJetPtFrac2);
+		if(SubJetiness_Denominator_Particle!=0 && SubJetiness_Denominator_Detector!=0){
+		  fhParticleSubJetiness->Fill(SubJetiness_Numerator_Particle/SubJetiness_Denominator_Particle);
+                  fhDetectorSubJetiness->Fill(SubJetiness_Numerator_Detector/SubJetiness_Denominator_Detector);	      
+		  fShapesVar[6]=SubJetiness_Numerator_Particle/SubJetiness_Denominator_Particle;
+		  fShapesVar[7]=SubJetiness_Numerator_Detector/SubJetiness_Denominator_Detector;
+		  fhSubJetinessRatio->Fill((SubJetiness_Numerator_Particle/SubJetiness_Denominator_Particle)/(SubJetiness_Numerator_Detector/SubJetiness_Denominator_Detector));
+		}
+	      }
+	      else{
+		fShapesVar[2]=0;
+		fShapesVar[5]=0;
+		fShapesVar[6]=0;
+		fShapesVar[7]=0;
+	      }
 	      fTreeResponseMatrixAxis->Fill();
+	      
+	      ParticleReclusterOk=0;
+	      DetectorReclusterOk=0;  
 	    }
-	    ParticleReclusterOk=0;
-	    DetectorReclusterOk=0;
-	    
 	  }
 	}
       }
     }
-    
   }
+    
   
-
+  
 
 
 
@@ -422,6 +567,20 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Double_t Angularity_Denominator=0;
     Double_t PTD_Numerator=0;
     Double_t PTD_Denominator=0;
+
+    Int_t HardestSubJetIndex=-1;
+    Int_t NextHardestSubJetIndex=-1;
+    Double_t HardestSubJetEta=-10;
+    Double_t NextHardestSubJetEta=-10;
+    Double_t HardestSubJetPhi=-10;
+    Double_t NextHardestSubJetPhi=-10;
+    Double_t SubJetiness_Numerator=0;
+    Double_t SubJetiness_Denominator=0;
+    Double_t DeltaR=0;
+    Double_t DeltaR1=0;
+    Double_t DeltaR2=0;
+
+
 
 
     if(JetCont) {
@@ -468,6 +627,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    if(!JetParticle) continue;
 	    JetParticlePt=JetParticle->Pt();
 	    JetParticlePhi=JetParticle->Phi();
+	    /*
 	    if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi()); // Turns the range of 0to2Pi into -PitoPi ???????????
 	    else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
 	    if(JetParticlePhi < -1*TMath::Pi()) JetParticlePhi += (2*TMath::Pi()); 
@@ -475,6 +635,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    DeltaPhi=JetParticlePhi-JetPhi;
 	    if(DeltaPhi < -1*TMath::Pi()) DeltaPhi += (2*TMath::Pi());
 	    else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
+	    */
+	    DeltaPhi=RelativePhi(JetPhi,JetParticlePhi);
 	    Angularity_Numerator=Angularity_Numerator+(JetParticlePt*TMath::Sqrt(((JetParticle->Eta()-JetEta)*(JetParticle->Eta()-JetEta))+(DeltaPhi*DeltaPhi)));
 	    Angularity_Denominator= Angularity_Denominator+JetParticlePt;
 	    PTD_Numerator=PTD_Numerator+(JetParticlePt*JetParticlePt);
@@ -483,7 +645,19 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  }
 	  if(Angularity_Denominator!=0)	fhJetAngularity->Fill(Angularity_Numerator/Angularity_Denominator);
 	  if(PTD_Denominator!=0) fhJetPTD->Fill((TMath::Sqrt(PTD_Numerator))/PTD_Denominator);
-	  //////////////////////////////////////////////////Jet Reclustering//////////////////////////////////////////////////////////////////////////////
+	  //////////////////////////////////////////////////Jet Reclustering and NSubJetiness//////////////////////////////////////////////////////////////////////////////
+	  HardestSubJetIndex=-1;
+	  NextHardestSubJetIndex=-1; 
+	  HardestSubJetEta=-10;    
+	  NextHardestSubJetEta=-10;    
+          HardestSubJetPhi=-10;                                                                                                                       
+	  NextHardestSubJetPhi=-10;
+	  SubJetiness_Numerator=0;
+	  SubJetiness_Denominator=0;
+	  DeltaR=0;
+	  DeltaR1=0;
+	  DeltaR2=0;
+ 
 	  if(Reclusterer->AliEmcalJetFinder::Filter(Jet1, JetCont, dVtx)){  //reclustering jet1 using the jetfinderobject Reclusterer
 	    fhEventCounter->Fill(5); //Number of times jets were reclustered
 	    SubJetCounter=Reclusterer->GetNumberOfJets(); // Number of reclustered SubJets in each original jet
@@ -497,9 +671,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      if((Jet2->Pt())>HighestSubJetPt){ //This finds the highest pt subjet in each jet
 		NextHighestSubJetPt=HighestSubJetPt;	      
 		HighestSubJetPt=Jet2->Pt();
+		HardestSubJetIndex=i; //NSUBJETINESS
+		HardestSubJetEta=Jet2->Eta(); //NSUBJETINESS
+		HardestSubJetPhi=Jet2->Phi(); //NSUBJETINESS
 	      }
 	      else if((Jet2->Pt())>NextHighestSubJetPt){ //This finds the 2nd highest pt subjet in each jet                                                                    
 		NextHighestSubJetPt=Jet2->Pt();
+		NextHardestSubJetIndex=i; //NSUBJETINESS
+		NextHardestSubJetEta=Jet2->Eta(); //NSUBJETINESS                                                                                                      
+		NextHardestSubJetPhi=Jet2->Phi(); //NSUBJETINESS 
 	      }
 	      if((Jet2->E())>HighestSubJetEnergy){ //This finds the highest Energy subjet in each jet                                                                         
 		NextHighestSubJetEnergy=HighestSubJetEnergy;
@@ -515,11 +695,6 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      fhSubJetEnergyFrac->Fill((HighestSubJetEnergy)/(Jet1->E())); //Energy fraction of most energetic subjet compared to original jet       
 	      fhSubJetEnergyLoss->Fill(((Jet1->E())-HighestSubJetEnergy)/(Jet1->E()));	//Energy differance of jet and its most energetic subjet  
 	      fhEventCounter->Fill(8);
-	      fShapesVar[0]=Jet1->Pt();
-	      fShapesVar[1]=(HighestSubJetPt)/(Jet1->Pt());
-	      fShapesVar[2]=0;
-	      fShapesVar[3]=0;
-              fTreeResponseMatrixAxis->Fill();
 	    }
 	    if (SubJetCounter>=2){
 	      fhSubJetPtFrac2->Fill((HighestSubJetPt+NextHighestSubJetPt)/(Jet1->Pt())); //Pt fraction of two highest Pt subjets compared to original jet  
@@ -527,30 +702,46 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      fhSubJetEnergyFrac2->Fill((HighestSubJetEnergy+NextHighestSubJetEnergy)/(Jet1->E())); //Energy fraction of the two most energetic subjets compared to original jet 
 	      fhSubJetEnergyLoss2->Fill(((Jet1->E())-(HighestSubJetEnergy+NextHighestSubJetEnergy))/(Jet1->Pt())); //Energy difference of jet and its two most energetic subjets  
 	      fhEventCounter->Fill(9);
-	    }
-	  /*
-	                                               ////////////////Jetiness///////////
-	  Double_t DeltaR_temp=0;
-	  Double_t DeltaR=100;
-	  Double_t Jetiness_Numerator=0;
-	  Double_t Jetiness_Denominator=0;
-	  for (Int_t i=0; i< NumberOfJetTracks; i++){  //loops through all tracks (particles in the jet                                                                          
-	    JetParticle = static_cast<AliVParticle*>(Jet1->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
-	    for (Int_t i=0; i<SubJetCounter; i++){ //Loops through each SubJet in a reclustered jet                                             
-	      Jet2=Reclusterer->GetJet(i); //jet2 is now set to the Subjet     
-	      DeltaR_temp=TMath::Sqrt(((JetParticle->Eta()-(Jet2->Eta()))*(JetParticle->Eta()-(Jet2->Eta())))+((JetParticle->Phi()-Jet2->Phi())*(JetParticle->Phi()-Jet2->Phi())));
-	      if (DeltaR_temp<DeltaR){
-		DeltaR=DeltaR_temp;
+	      
+	      SubJetiness_Numerator=0;
+	      SubJetiness_Denominator=0;
+	      DeltaR=0;
+	      DeltaR1=0;
+	      DeltaR2=0;
+	      for (Int_t i=0; i< NumberOfJetTracks; i++){  //loops through all tracks (particles in the jet                                                               
+		DeltaR=0;
+		DeltaR1=0;
+		DeltaR2=0;
+		JetParticle = static_cast<AliVParticle*>(Jet1->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
+		DeltaR1=TMath::Sqrt((((JetParticle->Eta())-HardestSubJetEta)*((JetParticle->Eta())- HardestSubJetEta))+((RelativePhi(HardestSubJetPhi,JetParticle->Phi()))*(RelativePhi(HardestSubJetPhi,JetParticle->Phi()))));
+		DeltaR2=TMath::Sqrt((((JetParticle->Eta())-NextHardestSubJetEta)*((JetParticle->Eta())- NextHardestSubJetEta))+((RelativePhi(NextHardestSubJetPhi,JetParticle->Phi()))*(RelativePhi(NextHardestSubJetPhi,JetParticle->Phi()))));
+		if(DeltaR1<=DeltaR2) {DeltaR=DeltaR1;}
+		else {DeltaR=DeltaR2;}
+		SubJetiness_Numerator=SubJetiness_Numerator+(JetParticle->Pt()*DeltaR);
+		SubJetiness_Denominator=SubJetiness_Denominator+(JetParticle->Pt()*fJetRadius);
 	      }
 	    }
-	    Jetiness_Numerator=Jetiness_Numerator+(JetParticle->Pt()*DeltaR);
-	    Jetiness_Denominator=Jetiness_Denominator+(JetParticle->Pt()*TMath::Sqrt((Jet1->Area()/TMath::Pi())));				 
-	    DeltaR_temp=0;
-	    DeltaR=100;	  
-	  }
-	  // cout << Jetiness_Numerator/Jetiness_Denominator<<endl;
-	  fhJetiness->Fill(Jetiness_Numerator/Jetiness_Denominator);
-	 */ 
+            if(SubJetCounter>=1){
+              fShapesVar[0]=Jet1->Pt();
+              fShapesVar[1]=(HighestSubJetPt)/(Jet1->Pt());
+	      if(SubJetCounter>=2){
+		fhEventCounter->Fill(12);
+		fShapesVar[2]=(HighestSubJetPt+NextHighestSubJetPt)/(Jet1->Pt());
+		if (SubJetiness_Denominator!=0){
+		fhSubJetiness->Fill(SubJetiness_Numerator/SubJetiness_Denominator);
+		fShapesVar[6]=SubJetiness_Numerator/SubJetiness_Denominator;
+		}
+	      }
+	      else{
+		fShapesVar[2]=0;
+		fShapesVar[6]=0;
+	      }
+	      fShapesVar[3]=0;
+	      fShapesVar[4]=0;
+	      fShapesVar[5]=0;
+	      fShapesVar[7]=0;
+              fTreeResponseMatrixAxis->Fill();
+            }
 	  }
 	}
       }
@@ -564,7 +755,23 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   return kTRUE;
   
 }
+//________________________________________________________________________
+Double_t AliAnalysisTaskSubJetFraction::RelativePhi(Double_t Phi1, Double_t Phi2){
 
+  if(Phi1 < -1*TMath::Pi()) Phi1 += (2*TMath::Pi()); // Turns the range of 0to2Pi into -PitoPi ???????????                                                             
+  else if (Phi1 > TMath::Pi()) Phi1 -= (2*TMath::Pi());
+  if(Phi2 < -1*TMath::Pi()) Phi2 += (2*TMath::Pi());
+  else if (Phi2 > TMath::Pi()) Phi2 -= (2*TMath::Pi());
+  Double_t DeltaPhi=Phi2-Phi1;
+  if(DeltaPhi < -1*TMath::Pi()) DeltaPhi += (2*TMath::Pi());
+  else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
+
+  return DeltaPhi;
+
+
+
+
+}
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSubJetFraction::RetrieveEventObjects() {
   //
@@ -604,6 +811,7 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
     fhSubJetEnergyFrac2->Scale(100/(fhEventCounter->GetBinContent(9)));
     fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?
     fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));
+    fhSubJetiness->Scale(100/(fhEventCounter->GetBinContent(12)));
   }
 
 }

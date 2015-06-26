@@ -50,6 +50,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
+  void SetJetRadius(Double_t JetRadius)                      {fJetRadius=JetRadius;}
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetPtTriggerSelections(Float_t minpT, Float_t maxpT) { fminpTTrig = minpT; fmaxpTTrig = maxpT; }
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
@@ -70,7 +71,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Bool_t                              FillHistograms();
 
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
-  Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
+  // Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
+  Double_t                           RelativePhi(Double_t Phi1, Double_t Phi2);
 
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -93,6 +95,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Int_t                               fSubJetAlgorithm;
   Float_t                             fSubJetRadius;
   Float_t                             fSubJetMinPt; 
+  Double_t                             fJetRadius;
 
   Double_t                              Background_Median;
   Double_t                              Background_Fluc;
@@ -116,14 +119,20 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhSubJetEnergyFrac2;
   TH1F                                *fhSubJetEnergyLoss;
   TH1F                                *fhSubJetEnergyLoss2;
-  TH1F                                *fhJetiness;
   TH1F                                *fhEventCounter;  
   TH1F                                *fhJetCounter;
   TH1F                                *fhSubJetCounter;
   TH1F                                *fhPtRatio;
   TH1F                                *fhParticleSubJetPtFrac;
   TH1F                                *fhDetectorSubJetPtFrac;
+  TH1F                                *fhParticleSubJetPtFrac2;
+  TH1F                                *fhDetectorSubJetPtFrac2;
   TH1F                                *fhSubJetPtFracRatio;
+  TH1F                                *fhSubJetPtFrac2Ratio;
+  TH1F                                *fhParticleSubJetiness;
+  TH1F                                *fhDetectorSubJetiness;
+  TH1F                                *fhSubJetinessRatio;
+  TH1F                                *fhSubJetiness;
   TTree                               *fTreeResponseMatrixAxis;  //Tree with tagging variables subtracted MC or true MC or raw 
 
  private:
