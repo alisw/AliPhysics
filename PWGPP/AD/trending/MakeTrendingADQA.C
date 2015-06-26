@@ -683,7 +683,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myLegend2->Draw();
 
     myPad8->cd(2);
-    gPad->SetLogy();
+    gPad->SetLogz();
     fHistTimeNoFlag->Draw("COLZ");
 
     c8->Print(Form("ADQA_Run_%d.pdf",runNumber));

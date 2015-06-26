@@ -547,17 +547,14 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
     
   //Triggers
   UShort_t fTriggerBC = esdAD->GetTriggerBits();
-  for(Int_t i = 0; i<16; i++){ 
-  	if(i>5 && i<12)continue; //unused inputs
-  	if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
-	}
+  for(Int_t i = 0; i<6; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
+  for(Int_t i = 12; i<16; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i-6);
+	
   
   if(esdADfriend){
   	UShort_t fTriggerUnBC = esdADfriend->GetTriggerInputs();
-  	for(Int_t i = 0; i<16; i++) {
-		if(i>5 && i<12)continue; //unused inputs
-		if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i);
-		}
+  	for(Int_t i = 0; i<6; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i);
+	for(Int_t i = 12; i<16; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i-6);	
   }
   
   //Robusts time testing
