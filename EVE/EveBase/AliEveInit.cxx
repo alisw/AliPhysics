@@ -425,7 +425,7 @@ void AliEveInit::ImportMacros()
 
 void AliEveInit::GetConfig(TEnv *settings)
 {
-    if(settings->ReadFile("~/eve_config", kEnvUser) < 0){
+    if(settings->ReadFile(Form("%s/eve_config",gSystem->Getenv("HOME")), kEnvUser) < 0){
         cout<<"Warning - could not find eve_config in home directory! Trying in $ALICE_ROOT/EVE/EveBase/"<<endl;
         if(settings->ReadFile(Form("%s/EVE/EveBase/eve_config",gSystem->Getenv("ALICE_ROOT")), kEnvUser) < 0){
             cout<<"Error - could not find eve_config file!."<<endl;
