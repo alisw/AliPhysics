@@ -145,8 +145,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "11111050031230000"; mesonCutArray[0] = "0163103100000000"; //n cells >= 1
 		eventCutArray[ 1] = "0000311"; clusterCutArray[1] = "11111050033230000"; mesonCutArray[1] = "0163103100000000"; //n cells >= 3
 		eventCutArray[ 2] = "0000311"; clusterCutArray[2] = "11111050032000000"; mesonCutArray[2] = "0163103100000000"; //no M02 cut
-		eventCutArray[ 3] = "0000311"; clusterCutArray[3] = "10031050032230000"; mesonCutArray[3] = "0163103100000000"; //only modules with TRD infront
-		eventCutArray[ 4] = "0000311"; clusterCutArray[4] = "10012050032230000"; mesonCutArray[4] = "0163103100000000"; //no modules with TRD infront
+		eventCutArray[ 3] = "0000311"; clusterCutArray[3] = "11131050032230000"; mesonCutArray[3] = "0163103100000000"; //only modules with TRD infront
+		eventCutArray[ 4] = "0000311"; clusterCutArray[4] = "11112050032230000"; mesonCutArray[4] = "0163103100000000"; //no modules with TRD infront
 	// LHC13g	
 	} else if (trainConfig == 5){  // EMCAL clusters, EMCEGA triggers
 		eventCutArray[ 0] = "0008311"; clusterCutArray[0] = "11111050032220000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1,
