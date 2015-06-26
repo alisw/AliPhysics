@@ -600,7 +600,7 @@ Int_t AliAnalysisTaskGammaHadron::DoClusterLoop(Float_t &sum, AliVCluster* &lead
 
 		//check whether there is a hadron in the opposite hemisphere of the gamma
 		AliParticleContainer* tracks = GetParticleContainer(0);
-		if (!tracks) cout<<"ELI: something wrong here"<<endl;
+		if (!tracks) std::cout<<"ELI: something wrong here"<<std::endl;
 		AliVParticle *leadingTrack = 0;
 
 		tracks->ResetCurrentID();
@@ -610,7 +610,7 @@ Int_t AliAnalysisTaskGammaHadron::DoClusterLoop(Float_t &sum, AliVCluster* &lead
 		{
 			if (!leadingTrack || leadingTrack->Pt() < leadingTrack->Pt()) leadingTrack = track;
 
-			//cout<<"nPart.Phi(): "<<nPart.Phi()<<", track->Phi(): "<<track->Phi()<<endl;
+			//std::cout<<"nPart.Phi(): "<<nPart.Phi()<<", track->Phi(): "<<track->Phi()<<std::endl;
 			deltaPhi=fabs(nPart.Phi()-track->Phi());
 			if(deltaPhi>(TMath::Pi()/2.0))
 			{
@@ -649,7 +649,7 @@ Int_t AliAnalysisTaskGammaHadron::DoClusterLoop(Float_t &sum, AliVCluster* &lead
 
 	    //check whether there is a hadron in the opposite hemisphere of the gamma
 		AliParticleContainer* tracks = GetParticleContainer(0);
-		if (!tracks) cout<<"ELI: something wrong here"<<endl;
+		if (!tracks) std::cout<<"ELI: something wrong here"<<std::endl;
 		AliVParticle *leadingTrack = 0;
 
 		tracks->ResetCurrentID();
@@ -678,7 +678,7 @@ Int_t AliAnalysisTaskGammaHadron::DoClusterLoop(Float_t &sum, AliVCluster* &lead
 			}
 		}
 	}
-	//else cout<<"No leading cluster found"<<endl;
+	//else std::cout<<"No leading cluster found"<<std::endl;
 
 	return nAccClusters;
 }
