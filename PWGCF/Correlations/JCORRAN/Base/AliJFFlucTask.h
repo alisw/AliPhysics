@@ -88,6 +88,11 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void SetInFileName( TString inName); 
   void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ; 
 					cout << "setting phi modulation = " << isphi << endl; };
+  void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut; 
+					cout << "setting z vertex cut = " << fzvtxCut << endl;};
+//  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
+//					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
+
 
 
  private:
@@ -101,6 +106,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   double fEta_max;
   double fPt_min;
   double fPt_max;
+  double fzvtxCut;
   TString fInFileName;
   Bool_t IsMC;
   Bool_t IsKineOnly;
