@@ -901,12 +901,17 @@ void  AliAnaTaskMomScan::createHistograms()
     }
   else
     {
-    name = n1Name+part_1_Name+vsEtaPhi;       _n1_1_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgN_1);
-    name = s1ptName+part_1_Name+vsEtaPhi;     _s1pt_1_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgSumPt_1);
-    name = n1Name+part_1_Name+vsM;            _n1_1_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-    name = s1ptName+part_1_Name+vsM;          _s1pt_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
-    name = n1NwName+part_1_Name+vsM;          _n1Nw_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-    name = s1ptNwName+part_1_Name+vsM;        _s1ptNw_1_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
+    name = n1Name+part_1_Name+vsEtaPhi; _n1_1_vsEtaVsPhi = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgN_1);
+
+    name = s1ptName+part_1_Name+vsEtaPhi; _s1pt_1_vsEtaVsPhi = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgSumPt_1);
+
+    name = n1Name+part_1_Name+vsM; _n1_1_vsM = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
+
+    name = s1ptName+part_1_Name+vsM; _s1pt_1_vsM = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
+
+    name = n1NwName+part_1_Name+vsM; _n1Nw_1_vsM = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
+
+    name = s1ptNwName+part_1_Name+vsM; _s1ptNw_1_vsM = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
 
     name = n1Name+part_2_Name+vsEtaPhi;       _n1_2_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgN_2);
     name = s1ptName+part_2_Name+vsEtaPhi;     _s1pt_2_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgSumPt_2);
@@ -915,10 +920,14 @@ void  AliAnaTaskMomScan::createHistograms()
     name = n1NwName+part_2_Name+vsM;          _n1Nw_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
     name = s1ptNwName+part_2_Name+vsM;        _s1ptNw_2_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
 
-    name = n2Name+pair_12_Name+vsEtaPhi;      _n2_12_vsEtaPhi       = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12, _title_AvgN2_12);        
-    name = s2PtPtName+pair_12_Name + vsEtaPhi;_s2PtPt_12_vsEtaPhi   = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtPt_12);    
-    name = s2PtNName+pair_12_Name + vsEtaPhi; _s2PtN_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtN_12);    
-    name = s2NPtName+pair_12_Name + vsEtaPhi; _s2NPt_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgNSumPt_12);    
+    name = n2Name+pair_12_Name+vsEtaPhi;      _n2_12_vsEtaPhi       = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12, _title_AvgN2_12);
+        
+    name = s2PtPtName+pair_12_Name + vsEtaPhi;_s2PtPt_12_vsEtaPhi   = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtPt_12);
+    
+    name = s2PtNName+pair_12_Name + vsEtaPhi; _s2PtN_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtN_12);
+    
+    name = s2NPtName+pair_12_Name + vsEtaPhi; _s2NPt_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgNSumPt_12);
+    
     name = n2Name+pair_12_Name+vsPtVsPt;      _n2_12_vsPtVsPt       = createHisto2F(name,name, _nBins_pt_1, _min_pt_1, _max_pt_1, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_1, _title_pt_2, _title_AvgN2_12);        
     
     name = n2Name+pair_12_Name + vsM;         _n2_12_vsM            = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN2_12);        
@@ -973,7 +982,7 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 {
   
   int    k1,k2;
-  int    iPhi, iEta, iEtaPhi, iPt, charge;
+  int    iPhi, iEta, iEtaPhi, iPt, iPt2, charge;
   float  q, phi, pt, pt1, pt2, eta, corr, corrPt, px, py, pz, dedx;
   int    ij;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
@@ -1182,28 +1191,18 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 	     && nsigmapion   > fNSigmaCut
 	     && nsigmakaon   > fNSigmaCut
 	     && nsigmaproton > fNSigmaCut ) continue;
-	  
-
 	  if(charge == 0) continue;
-	  // Kinematics cuts used                                                                                        
-	  //if( pt < _min_pt_1 || pt > _max_pt_1) continue;
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
-	  
 	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
-
 	  Double_t DCAX = pos[0] - vertexX;
 	  Double_t DCAY = pos[1] - vertexY;
 	  Double_t DCAZ = pos[2] - vertexZ;
-	  	
 	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
- 	  
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
 	      DCAXY    >  _dcaXYMax ) continue; 
-	  	  	  
-	  //*************************************************
-	  	  
+	  	  	  	  
 	  //Particle 1
 	  if (_requestedCharge_1 == charge && 
 	      dedx  >=  _dedxMin && 
@@ -1225,7 +1224,7 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 		  AliWarning(Form("AliAnaTaskMomScan::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
 		  continue;
 		}
-	      iPt     = int((pt -_min_pt_1 )/_width_pt_1 ); 
+	      iPt     = int((pt1 -_min_pt_1 )/_width_pt_1 ); 
 	      if (iPt<0  || iPt >=_nBins_pt_1)
 		{
 		  AliWarning(Form("AliAnaTaskMomScan::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
@@ -1247,19 +1246,18 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 	      
 	      if (_singlesOnly)
 		{
-		  
 		  __n1_1_vsPt[iPt]               += corr;          
 		  __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       
 		  
 		}
 	      else
 		{
-		  corrPt                      = corr*pt;
+		  corrPt                      = corr*pt1;
 		  _id_1[k1]                   = iTrack;     
 		  _charge_1[k1]               = charge;
 		  _iEtaPhi_1[k1]              = iEtaPhi; 
 		  _iPt_1[k1]                  = iPt;   
-		  _pt_1[k1]                   = pt;   
+		  _pt_1[k1]                   = pt1;   
 		  _px_1[k1]                   = px;   
 		  _py_1[k1]                   = py;   
 		  _pz_1[k1]                   = pz;   
@@ -1269,7 +1267,7 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 		  __s1pt_1                    += corrPt;
 		  __s1pt_1_vsEtaPhi[iEtaPhi]  += corrPt;
 		  __n1Nw_1                    += 1;
-		  __s1ptNw_1                  += pt;
+		  __s1ptNw_1                  += pt1;
 		  ++k1;
 		  if (k1>=arraySize)
 		    {
@@ -1299,15 +1297,15 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 		  AliWarning(Form("AliAnaTaskMomScan::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
 		  continue;
 		}
-	      iPt     = int((pt -_min_pt_2 )/_width_pt_2 ); 
-	      if (iPt<0  || iPt >=_nBins_pt_2)
+	      iPt2     = int((pt2 -_min_pt_2 )/_width_pt_2 ); 
+	      if (iPt2<0  || iPt2 >=_nBins_pt_2)
 		{
 		  AliWarning(Form("AliAnaTaskMomScan::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
 		  continue;
 		}
 	      
 	      iEtaPhi = iEta*_nBins_phi_2+iPhi;
-	      iZEtaPhiPt = iVertexP2 + iEtaPhi*_nBins_pt_2 + iPt;
+	      iZEtaPhiPt = iVertexP2 + iEtaPhi*_nBins_pt_2 + iPt2;
 	      if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2)
 		{
 		  AliWarning("AliAnaTaskMomScan::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2");
@@ -1321,17 +1319,17 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 	      
 	      if (_singlesOnly)
 		{
-		  __n1_2_vsPt[iPt]               += corr;      
-		  __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;      
+		  __n1_2_vsPt[iPt2]               += corr;      
+		  __n1_2_vsZEtaPhiPt[iZEtaPhiPt]  += corr;      
 		}
 	      else
 		{
-		  corrPt                      = corr*pt;
+		  corrPt                      = corr*pt2;
 		  _id_2[k2]                   = iTrack;        
 		  _charge_2[k2]               = charge;        
 		  _iEtaPhi_2[k2]              = iEtaPhi;       
 		  _iPt_2[k2]                  = iPt;           
-		  _pt_2[k2]                   = pt;            
+		  _pt_2[k2]                   = pt2;            
 		  _px_2[k2]                   = px;            
 		  _py_2[k2]                   = py;            
 		  _pz_2[k2]                   = pz;            
@@ -1341,7 +1339,7 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 		  __n1Nw_2                    += 1;
 		  __n1_2_vsEtaPhi[iEtaPhi]    += corr;         
 		  __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;       
-		  __s1ptNw_2                  += pt;
+		  __s1ptNw_2                  += pt2;
 		  ++k2;
 		  if (k2>=arraySize)
 		    {
@@ -1391,36 +1389,36 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 	  for (int i2=0; i2<k2; i2++)
 	    {        
 	      id_2   = _id_2[i2];             
-	      if (id_1!=id_2)  // exclude auto correlation
-		{
-		  q_2       = _charge_2[i2];   
-		  iEtaPhi_2 = _iEtaPhi_2[i2];   
-		  iPt_2     = _iPt_2[i2];       
-		  corr_2    = _correction_2[i2];
-		  pt_2      = _pt_2[i2];        
-		  px_2      = _px_2[i2];        
-		  py_2      = _py_2[i2];        
-		  pz_2      = _pz_2[i2];        
-		  dedx_2    = _dedx_2[i2];      
-		  
-		  corr      = corr_1*corr_2;
-		  ij        = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2; 
-		  __n2_12                  += corr;
-		  __n2_12_vsEtaPhi[ij]     += corr;
-		  ptpt                     = pt_1*pt_2;
-		  __s2ptpt_12              += corr*ptpt;
-		  __s2PtN_12               += corr*pt_1;
-		  __s2NPt_12               += corr*pt_2;
-		  __s2ptpt_12_vsEtaPhi[ij] += corr*ptpt;
-		  __s2PtN_12_vsEtaPhi[ij]  += corr*pt_1;
-		  __s2NPt_12_vsEtaPhi[ij]  += corr*pt_2;
-		  __n2_12_vsPtPt[iPt_1*_nBins_pt_2 + iPt_2] += corr;         
-		  __n2Nw_12                  += 1;
-		  __s2ptptNw_12              += ptpt;
-		  __s2PtNNw_12               += pt_1;
-		  __s2NPtNw_12               += pt_2;
-		  
-		}
+	      //if (id_1!=id_2)  // exclude auto correlation
+	      //{
+	      q_2       = _charge_2[i2];   
+	      iEtaPhi_2 = _iEtaPhi_2[i2];   
+	      iPt_2     = _iPt_2[i2];       
+	      corr_2    = _correction_2[i2];
+	      pt_2      = _pt_2[i2];        
+	      px_2      = _px_2[i2];        
+	      py_2      = _py_2[i2];        
+	      pz_2      = _pz_2[i2];        
+	      dedx_2    = _dedx_2[i2];      
+	      
+	      corr      = corr_1*corr_2;
+	      ij        = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2; 
+	      __n2_12                  += corr;
+	      __n2_12_vsEtaPhi[ij]     += corr;
+	      ptpt                     = pt_1*pt_2;
+	      __s2ptpt_12              += corr*ptpt;
+	      __s2PtN_12               += corr*pt_1;
+	      __s2NPt_12               += corr*pt_2;
+	      __s2ptpt_12_vsEtaPhi[ij] += corr*ptpt;
+	      __s2PtN_12_vsEtaPhi[ij]  += corr*pt_1;
+	      __s2NPt_12_vsEtaPhi[ij]  += corr*pt_2;
+	      __n2_12_vsPtPt[iPt_1*_nBins_pt_2 + iPt_2] += corr;         
+	      __n2Nw_12                  += 1;
+	      __s2ptptNw_12              += ptpt;
+	      __s2PtNNw_12               += pt_1;
+	      __s2NPtNw_12               += pt_2;
+	      
+	      //}
 	    } //i2       
 	} //i1         
       
