@@ -176,7 +176,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             
             if(UsePurityPIDmethod){
                 SP_POI[icentr]->SetCentralityPercentile(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
-                SP_POI[icentr]->SetTPCTOFNsigmaPIDPurityFunctions(0.8);
+                SP_POI[icentr]->SetTPCTOFNsigmaPIDPurityFunctions(PurityLevel);
             }
         }
         
