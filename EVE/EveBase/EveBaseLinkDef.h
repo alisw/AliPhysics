@@ -46,6 +46,9 @@
 #pragma link C++ class AliEveMacroExecutor+;
 #pragma link C++ class AliEveMacroExecutorWindow+;
 
+// AliEvePreferencesWindow
+#pragma link C++ class AliEvePreferencesWindow+;
+
 // Special GED editor for VizDB interaction.
 #pragma link C++ class AliEveGedEditor+;
 #pragma link C++ class AliEveGedNameFrame+;
