@@ -8,6 +8,9 @@
 
 #include "AliEvePreferencesWindow.h"
 #include "AliEveInit.h"
+#include "AliEveEventManager.h"
+#include "AliEveDataSourceOffline.h"
+#include "AliEveDataSource.h"
 
 #include <TGLabel.h>
 #include <TSystem.h>
@@ -33,7 +36,35 @@ TGMainFrame(gClient->GetRoot(),10,10,kMainFrame | kVerticalFrame)
 
 AliEvePreferencesWindow::~AliEvePreferencesWindow()
 {
+    delete fTrackWidth;
+    delete fDashNoRefit;
+    delete fDrawNoRefit;
+    delete fTracksByPID;
+    delete fTracksByCategory;
     
+    delete fShowV0s;
+    delete fShowCascades;
+    delete fShowRawData;
+    delete fShowPrimaryVertex;
+    delete fShowHits;
+    delete fShowDigits;
+    delete fShowClusters;
+    delete fShowKinks;
+    
+    delete fLogbookHost;
+    delete fLogbookPort;
+    delete fLogbookDatabase;
+    delete fLogbookUser;
+    delete fLogbookPassword;
+    
+    delete fShowMuon;
+    delete fShowHLTESDTree;
+    delete fOCDBpath;
+    delete fAutoload;
+    delete fAliceLive;
+    
+    delete fSaveAndExitButton;
+    delete fCancel;
 }
 
 AliEvePreferencesWindow* AliEvePreferencesWindow::Instance()
@@ -48,6 +79,7 @@ void AliEvePreferencesWindow::onExit(bool save)
     if(save){
         cout<<" with saving"<<endl;
         SaveToConfigFile();
+        ApplyChanges();
     }
     else{
         cout<<" without saveing"<<endl;
@@ -124,8 +156,41 @@ void AliEvePreferencesWindow::SaveToConfigFile()
     settings.SetValue("events.autoload.set",fAutoload->IsOn());
     settings.SetValue("ALICE_LIVE.send",fAliceLive->IsOn());
     
-//    settings.Save();
     settings.WriteFile(Form("%s/eve_config",gSystem->Getenv("HOME")), kEnvAll);
+}
+
+void AliEvePreferencesWindow::ApplyChanges()
+{
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+ 
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+    const Text_t* esdfile = 0;
+    
+    if(settings.GetValue("HLTESDtree.show", false)){
+        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kHLTTree);
+    }
+    else{
+        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kOfflineTree);
+    }
+ 
+    AliEveInit::AddMacros();
+ 
+    AliEveEventManager *man =  AliEveEventManager::GetMaster();
+ 
+    man->SetESDwidth(settings.GetValue("tracks.width",2));
+    man->SetESDdashNoRefit(settings.GetValue("tracks.noRefit.dash",true));
+    man->SetESDdrawNoRefit(settings.GetValue("tracks.noRefit.show",true));
+    man->SetESDtracksByCategory(settings.GetValue("tracks.byCategory.show",false));
+    man->SetESDtracksByType(settings.GetValue("tracks.byType.show",true));
+    man->SetSaveViews(settings.GetValue("ALICE_LIVE.send",false));
+    man->SetAutoLoad(settings.GetValue("events.autoload.set",false));
+
+//    AliEveEventManager::SetCdbUri(settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB"));
+    
+    man->InitOCDB(man->GetCurrentRun());
+    
+//    man->GetCurrentDataSource()->GotoEvent(man->GetEventId()); // reload event
 }
 
 Bool_t AliEvePreferencesWindow::ProcessMessage(Long_t msg, Long_t parm1, Long_t)

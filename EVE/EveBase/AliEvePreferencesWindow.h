@@ -30,6 +30,7 @@ private:
     void InitWindow();
     void ReadFromConfigFile();
     void SaveToConfigFile();
+    void ApplyChanges();
     
     virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t);
     
