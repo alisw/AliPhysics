@@ -474,7 +474,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             //EMCAL EID info
             Double_t eop = -1.0;
             if(track->P()>0)eop = clustMatchE/track->P();
-            cout << "eop = " << eop << endl;
+            std::cout << "eop = " << eop << std::endl;
             fHistEop->Fill(pt,eop);
             if(eop>0.85 && eop<1.3)isElectron = kTRUE;  
                  
@@ -537,7 +537,7 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jet, double *epT, int MCpid
        if(epT[0] == jetcont->Px() && epT[1] == jetcont->Py() && epT[2] == jetcont->Pz()) // electron in jet
          {
           HFjetTag = kTRUE;
-          cout << "jet tag by HFE" << endl;
+          std::cout << "jet tag by HFE" << std::endl;
          }
      
       }
