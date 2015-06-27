@@ -143,6 +143,12 @@ void AliEveEventManager::InitInternals()
 
 void AliEveEventManager::ChangeDataSource(EDataSource newSource)
 {
+    //before switching stop autoload timer and process events
+    if (fAutoLoadTimerRunning){
+        StopAutoLoadTimer();
+        gSystem->ProcessEvents();
+    }
+
     fCurrentData = &fEmptyData;
     if(newSource == kSourceOnline)
     {
@@ -157,6 +163,12 @@ void AliEveEventManager::ChangeDataSource(EDataSource newSource)
         fCurrentDataSource = fDataSourceHLTZMQ;
     }
     if (fCurrentDataSource) fCurrentData = fCurrentDataSource->GetData();
+
+    //restore timer
+    if (fAutoLoad)
+    {
+      StartAutoLoadTimer();
+    }
 }
 
 void AliEveEventManager::DestroyTransients()
