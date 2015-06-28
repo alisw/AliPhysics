@@ -9,18 +9,18 @@
 /////////////////////////////////////////////////////////////////////////////////
 AliAnaTaskMomScan *AddTaskMomScan
 (int    system                  = 0, 
- int    singlesOnly             = 1,
- int    useWeights              = 0, //no weight 
- int    centralityMethod        = 4, // 5 for syst.
- int    chargeSet               = 0,
+ int    singlesOnly             = 0,
+ int    useWeights              = 1,
+ int    centralityMethod        = 4,
+ int    chargeSet               = 2,
  double zMin                    = -10.0,
  double zMax                    =  10.0,
- int    trackFilterBit          = 1, //Global
+ int    trackFilterBit          = 1,
  int    nClusterMin             = 70, 
- double pt1Min                  =  0.2,
- double pt1Max                  =  3.0,
- double pt2Min                  =  3.0,
- double pt2Max                  =  10.0,
+ double pt1Min                  = 0.2,
+ double pt1Max                  = 3.0,
+ double pt2Min                  = 3.0,
+ double pt2Max                  = 10.0,
  double eta1Min                 = -1.0,
  double eta1Max                 =  1.0,
  double eta2Min                 = -1.0,
@@ -31,8 +31,8 @@ AliAnaTaskMomScan *AddTaskMomScan
  double dcaXYMax                =  2.4,
  int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
- const char* taskname           = "testMP",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Trigptwgt/weightpt_mm.root")
+ const char* taskname           = "corrMP",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/ptwgt/Ptwgt_mp.root")
   
 {
   // Set Default Configuration of this analysis
@@ -171,12 +171,12 @@ AliAnaTaskMomScan *AddTaskMomScan
         nameHistoBase += eventName;
         if (requestedCharge1 == 1)
           {
-          nameHisto = nameHistoBase + "_p";
+          nameHisto = nameHistoBase + "_p1";
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         else
           {
-	    nameHisto = nameHistoBase + "_m";
+	    nameHisto = nameHistoBase + "_m1";
 	    weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         if (!weight_1) 
@@ -186,12 +186,12 @@ AliAnaTaskMomScan *AddTaskMomScan
 	weight_2 = 0;
 	if (requestedCharge2 == 1)
 	  {
-            nameHisto = nameHistoBase + "_p";
+            nameHisto = nameHistoBase + "_p2";
 	    weight_2 = (TH3F *) inputFile->Get(nameHisto);
 	  }
 	else
 	  {
-            nameHisto2 = nameHistoBase + "_m";
+            nameHisto2 = nameHistoBase + "_m2";
 	    weight_2 = (TH3F *) inputFile->Get(nameHisto);
 	  }
 	if (!weight_2) 
