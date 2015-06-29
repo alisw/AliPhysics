@@ -10,10 +10,12 @@
 //=========================================================================//
 
 #include "TH1F.h"
+
 #include "TF1.h"
 
 class TList;
 class TTree;
+class TH2F;
 
 class AliESDtrack;
 class AliMCEvent;
@@ -86,8 +88,19 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   TH1D         *fEventCounter;  //
   TTree        *fPidCont;       //!
   
-  TH2F   *fPt[4][2];         //
-  TH1F   *fHistCent;         //
+
+TH1F         *fHistCent;         //
+TH2F         *fHistPt00;         //
+TH2F         *fHistPt10;         //
+TH2F         *fHistPt20;         //
+TH2F         *fHistPt30;         //
+
+TH2F         *fHistPt01;         //
+TH2F         *fHistPt11;         //
+TH2F         *fHistPt21;         //
+TH2F         *fHistPt31;         //
+
+
 
   Double_t   fVxMax;                        // X vertex  Range
   Double_t   fVyMax;                        // Y vertex Range
@@ -128,13 +141,10 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Int_t   fTrackTpcNcl[kTrack];  //
   Int_t   fTrackPidM[kTrack];   //
 
- 
-
   //________________________________
   AliEbyEPidTTask(const AliEbyEPidTTask&);
   AliEbyEPidTTask& operator = (const AliEbyEPidTTask&);
   ClassDef(AliEbyEPidTTask, 1);
-
 };
 
 #endif
