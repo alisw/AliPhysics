@@ -63,6 +63,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMaxRtrack(0),
     fMinCellEnergy(0),
     fReferenceFileName(),
+    fPileupFromSPD(kFALSE),
+    fMinTime(0),
+    fMaxTime(0),
     fhcalcEvtTime(0),
     fhEventType(0),
     fhTOFT0vsEventNumber(0),
@@ -75,6 +78,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhTimeSumSq(),
     fhTimeEnt(),
     fhTimeSum(),
+    fhTimeLGSumSq(),
+    fhTimeLGEnt(),
+    fhTimeLGSum(),
     fhAllAverageBC(),
     fhTimeDsup(),
     fhTimeDsupBC(),
@@ -108,7 +114,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
   TString  GetGeometryName()      { return fGeometryName      ; }
- 
+  Double_t GetMinTime()           { return fMinTime           ; }
+  Double_t GetMaxTime()           { return fMaxTime           ; }
+
   void SetMinClusterEnergy (Double_t v) { fMinClusterEnergy = v ; }
   void SetMaxClusterEnergy (Double_t v) { fMaxClusterEnergy = v ; }
   void SetMinNcells        (Int_t    v) { fMinNcells        = v ; }  
@@ -119,23 +127,28 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
   void SetGeometryName     (TString  v) { fGeometryName     = v ; }
+  void SetMinTime          (Double_t v) { fMinTime          = v ; }	   
+  void SetMaxTime          (Double_t v) { fMaxTime          = v ; }	
+
+  // Switches
+  void SwitchOnPileupFromSPD()  { fPileupFromSPD = kTRUE ; }
+  void SwitchOffPileupFromSPD() { fPileupFromSPD = kFALSE ; }
+
 
   void SetDefaultCuts();
+  void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root");
 
  private:
   
   virtual void PrepareTOFT0maker();
   Bool_t SetEMCalGeometry();
-  //Bool_t AcceptCluster(AliESDCaloCluster* clus);
   Bool_t AcceptCluster(AliVCluster* clus);
   Bool_t CheckCellRCU(Int_t nSupMod,Int_t icol,Int_t irow);
-  void   ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root");
 
   // data members
 
   /// pointer to ESD or AOD object
   AliVEvent   *fEvent ;       //->
-  //AliESDEvent   *fESD ;       //->
  
   Int_t          fRunNumber ; //!<! run number
   
@@ -171,6 +184,12 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   TString        fReferenceFileName ;   //!<! name of reference file
 
+  Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
+
+  Double_t       fMinTime ;          ///< minimum cluster time after correction
+  Double_t       fMaxTime ;          ///< maximum cluster time after correction
+
+
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
   TH1F          *fhEventType;           //!<! spectrum calcolot0[0]
@@ -186,13 +205,16 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhTimeSumSq[kNBCmask]; //!<!  4
   TH1F		*fhTimeEnt  [kNBCmask]; //!<!  4
   TH1F		*fhTimeSum  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeLGSumSq[kNBCmask]; //!<!  4
+  TH1F		*fhTimeLGEnt  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
 
   // control histos
   TH1D		*fhAllAverageBC     [kNBCmask]; //!<! 4 BCmask
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
   TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4
 
-  //main histos
+  //main histos for raw time
   TH2F          *fhRawTimeVsIdBC     [kNBCmask]; //!<! 4 BCmask HG
   TH1F          *fhRawTimeSumBC      [kNBCmask]; //!<! 4 BCmask HG
   TH1F          *fhRawTimeEntriesBC  [kNBCmask]; //!<! 4 BCmask HG
