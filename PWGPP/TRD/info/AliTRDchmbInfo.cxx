@@ -82,7 +82,9 @@ void AliTRDchmbInfo::Draw(Option_t *opt)
   Int_t style[] = {0, 3003, 3008};
   if(!fBox) fBox = new TBox();
   fBox->SetLineColor(kBlack);fBox->SetFillColor(kWhite);fBox->SetFillStyle(style[0]);
-  Int_t stk(AliTRDgeometry::GetStack(fDet));
+  Int_t sec(AliTRDgeometry::GetSector(fDet)),
+        stk(AliTRDgeometry::GetStack(fDet)),
+        ly(AliTRDgeometry::GetLayer(fDet));
   Float_t xmin(0.), xmax(0.);
   if(strchr(opt, 'p')){
     xmin=-0.6+16*(4-stk)-(stk<2?4:0); xmax=xmin+(stk==2?12:16)-0.2;
@@ -91,10 +93,10 @@ void AliTRDchmbInfo::Draw(Option_t *opt)
   }
   if(strchr(opt, 's')){
     if(stk==2){
-      if(!fLabel) fLabel = new TLatex(0.5*(fPosition[0]+fPosition[2]), 0.5*(fPosition[1]+fPosition[3]), Form("%02d", AliTRDgeometry::GetSector(fDet)));
+      if(!fLabel) fLabel = new TLatex(0.5*(fPosition[0]+fPosition[2]), 0.5*(fPosition[1]+fPosition[3]), Form("%02d", sec));
     }
   } else {
-    if(!fLabel) fLabel = new TLatex(0.5*(fPosition[0]+fPosition[2]), 0.5*(fPosition[1]+fPosition[3]), Form("%03d", fDet));
+    if(!fLabel) fLabel = new TLatex(0.5*(fPosition[0]+fPosition[2]), 0.5*(fPosition[1]+fPosition[3]), Form("%02d_%d_%d", sec, stk, ly));
   }
   if(fLabel){fLabel->SetTextAlign(22);fLabel->SetTextColor(kBlack); fLabel->SetTextFont(32);fLabel->SetTextSize(0.03);}
 
