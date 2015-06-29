@@ -29,6 +29,9 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Double_t maxLambda0 = 0.4,
 							     Double_t maxRtrack = 0.025,
 							     Double_t minCellEne = 0.4,
+							     Double_t minTime = -20.,
+							     Double_t maxTime = 20.,
+							     Bool_t   pileupFromSPDFlag = kFALSE,
 							     TString  referenceFileName = "Reference.root")
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -59,7 +62,11 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMaxLambda0       (maxLambda0);	   
   taskmbemcal->SetMaxRtrack        (maxRtrack);	   
   taskmbemcal->SetMinCellEnergy    (minCellEne);	   
+  taskmbemcal->SetMinTime          (minTime);	   
+  taskmbemcal->SetMaxTime          (maxTime);	   
   taskmbemcal->SetReferenceFileName(referenceFileName);
+  if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
+  else taskmbemcal->SwitchOffPileupFromSPD();
   //taskmbemcal->PrintInfo();
   
   if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName(); 
