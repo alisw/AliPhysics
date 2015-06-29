@@ -60,6 +60,8 @@ enum Trends {
   kTRDresolution_TrkInPhp, kTRDresolution_TrkInPhpl, kTRDresolution_TrkInPhph,
   kTRDresolution_TrkInPhSn, kTRDresolution_TrkInPhSnl, kTRDresolution_TrkInPhSh, 
   kTRDresolution_TrkInPhSp, kTRDresolution_TrkInPhSpl, kTRDresolution_TrkInPhSph,
+  kTRDresolution_TrkInQn, kTRDresolution_TrkInQp, 
+  kTRDresolution_TrkInPtn, kTRDresolution_TrkInPtp, 
   kMeanExB, kRmsExB,
   kMeanGainFactor, kRmsGainFactor,
   kMeanT0, kRmsT0,
@@ -104,6 +106,8 @@ TString gTrendNames[kNtrends] = {
   "TRDresolution_TrkInPhp", "TRDresolution_TrkInPhpl", "TRDresolution_TrkInPhph",
   "TRDresolution_TrkInPhSn", "TRDresolution_TrkInPhSnl", "TRDresolution_TrkInPhSnh", 
   "TRDresolution_TrkInPhSp", "TRDresolution_TrkInPhSpl", "TRDresolution_TrkInPhSph",
+  "TRDresolution_TrkInQn", "TRDresolution_TrkInQp", 
+  "TRDresolution_TrkInPtn", "TRDresolution_TrkInPtp", 
   "meanExB", "rmsExB",
   "meanGainFactor", "rmsGainFactor",
   "meanT0", "rmsT0",
@@ -127,10 +131,11 @@ void DrawTrendingTRDQA(TString trendingFilename="trending.root") {
   // Draw the TRD QA trending
   //
   //gStyle->SetTitleX(gStyle->GetPadLeftMargin());
-	gStyle->SetGridColor(kBlack);
-	gStyle->SetGridStyle(3);
-	gStyle->SetGridWidth(1);
+  gStyle->SetGridColor(kAzure);
+  gStyle->SetGridStyle(3);
+  gStyle->SetGridWidth(1);
 
+  
   TFile* trendingFile = TFile::Open(trendingFilename.Data(), "READ");
   TTree* tree = (TTree*)trendingFile->Get("trending");
   if(!tree){
@@ -319,6 +324,46 @@ void DrawAllHistograms(TList* l) {
   
   // -------- 
   c->Clear(); leg->Clear(); first=kTRUE;
+  TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInPt");
+  h->SetStats(kFALSE); h->Draw("p");
+  for(Int_t ich=0; ich<2; ich++) {
+    TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInPt%c", ich?'p':'n'));
+    if(!g) continue;
+    g->Draw("pl"); 
+    leg->AddEntry(g, g->GetTitle(), "pl");
+    if(first){ 
+      ay = h->GetYaxis();
+      ay->CenterTitle();ay->SetTitleOffset(1.2);
+      ay->SetRangeUser(0.63, 0.67);
+      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+    }
+    first=kFALSE;
+  }
+  leg->Draw();
+  c->Print("TPC-TRD_meanPt.png");
+  
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
+  TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInQ");
+  h->SetStats(kFALSE); h->Draw("p");
+  for(Int_t ich=0; ich<2; ich++) {
+    TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInQ%c", ich?'p':'n'));
+    if(!g) continue;
+    g->Draw("pl"); 
+    leg->AddEntry(g, g->GetTitle(), "pl");
+    if(first){ 
+      ay = h->GetYaxis();
+      ay->CenterTitle();ay->SetTitleOffset(1.2);
+      ay->SetRangeUser(-10, 10);
+      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+    }
+    first=kFALSE;
+  }
+  leg->Draw();
+  c->Print("TRD_meanQ.png");
+  
+  // -------- 
+  c->Clear(); leg->Clear(); first=kTRUE;
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkltY");
   h->SetStats(kFALSE); h->Draw("p");
   for(Int_t ily=1; ily<6; ily++) {
@@ -460,6 +505,18 @@ void FillHistograms(Int_t irun, TList* l, Double_t* v, Bool_t* branchFound) {
         idx+=Int_t(kTRDresolution_TrkInPhSn);
         //printf("%s idx[%d-\"%s\"] v[%f]\n", s.Data(), idx, sid.Data(), v[idx]);
         TH1* hh=(TH1*)l->FindObject("hTRDresolution_TrkInPhS");
+        hh->GetXaxis()->SetBinLabel(irun+1, Form("%.0f", v[kNtrends]));
+        if(branchFound[idx] && v[idx]>-999.) g->SetPoint(ng, irun+0.5, v[idx]);
+      } else if(s.BeginsWith("gTRDresolution_TrkInPt")) {
+        Int_t idx=Int_t(kTRDresolution_TrkInPtn);
+        if(s.EndsWith("p")) idx+=1;
+        TH1* hh=(TH1*)l->FindObject("hTRDresolution_TrkInPt");
+        hh->GetXaxis()->SetBinLabel(irun+1, Form("%.0f", v[kNtrends]));
+        if(branchFound[idx] && v[idx]>-999.) g->SetPoint(ng, irun+0.5, v[idx]);
+      } else if(s.BeginsWith("gTRDresolution_TrkInQ")) {
+        Int_t idx=Int_t(kTRDresolution_TrkInQn);
+        if(s.EndsWith("p")) idx+=1;
+        TH1* hh=(TH1*)l->FindObject("hTRDresolution_TrkInQ");
         hh->GetXaxis()->SetBinLabel(irun+1, Form("%.0f", v[kNtrends]));
         if(branchFound[idx] && v[idx]>-999.) g->SetPoint(ng, irun+0.5, v[idx]);
       } else if(s.BeginsWith("gTRDresolution_TrkltY") &&
@@ -703,6 +760,31 @@ void DefineHistograms(TList* outList, Int_t nRuns) {
       outList->Add(gRes);
     }
   }
+  hRes=new TH1D("hTRDresolution_TrkInQ", "TRD dQdl;run;#mu(dQdl) [% #mu(Landau width)]",
+                                nRuns, 0., nRuns);
+  //SetDrawStyle(hRes); 
+  outList->Add(hRes);
+  for(Int_t ich(0), jres(Int_t(kTRDresolution_TrkInQn)); ich<2; ich++, jres++){
+    gRes=new TGraph();
+    gRes->SetNameTitle(Form("g%s", gTrendNames[jres].Data()), Form("[%c]", ich?'+':'-'));
+    gRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+    gRes->SetMarkerStyle(ich?24:20); gRes->SetMarkerColor(ich?kRed:kBlue); gRes->SetMarkerSize(1); 
+    gRes->SetLineStyle(1); gRes->SetLineColor(ich?kRed:kBlue); gRes->SetLineWidth(1); 
+    outList->Add(gRes);
+  }
+  hRes=new TH1D("hTRDresolution_TrkInPt", "TRD <p_{t}>;run;#mu(p_{t}) [GeV/c]",
+                                nRuns, 0., nRuns);
+  //SetDrawStyle(hRes); 
+  outList->Add(hRes);
+  for(Int_t ich(0), jres(Int_t(kTRDresolution_TrkInPtn)); ich<2; ich++, jres++){
+    gRes=new TGraph();
+    gRes->SetNameTitle(Form("g%s", gTrendNames[jres].Data()), Form("[%c]", ich?'+':'-'));
+    gRes->SetUniqueID(jres+1); //hRes->GetYaxis()->SetUniqueID(jres+2);
+    gRes->SetMarkerStyle(ich?24:20); gRes->SetMarkerColor(ich?kRed:kBlue); gRes->SetMarkerSize(1); 
+    gRes->SetLineStyle(1); gRes->SetLineColor(ich?kRed:kBlue); gRes->SetLineWidth(1); 
+    outList->Add(gRes);
+  }
+
   hRes=new TH1D("hTRDresolution_TrkltY", "TRD Tracklet r-#phi shift ;run;#mu(#Deltay) [#mum]",
                                 nRuns, 0., nRuns);
   SetDrawStyle(hRes, "", 1); 
