@@ -148,10 +148,13 @@ Double_t ptBin[NptBins + 1] = {0.05, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3
     fPt[iPid][1] = new TH2F(Form("fHistPt%dPlus",iPid), 
 			    Form("Centrality vs p_{T} : %d;#it{Bin};p_{T}",iPid), 
 			    20,-0.5,19.5,NptBins, ptBin);
-			 
+   
   }
 
+  fHistCent= new TH1F("fHistCentPid","Centrality",20,-0.5,19.5);			 
+
   for (Int_t iPid = 0; iPid < 4; ++iPid) fThnList->Add(fPt[iPid][1]);
+  fThnList->Add(fHistCent);
 
   fEventCounter = new TH1D("fEventCounter","EventCounter", 100, -0.5,99.5);
   fThnList->Add(fEventCounter);
@@ -268,6 +271,8 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fCentrality[4] = event->GetVZEROData()->GetMTotV0C();
   fCentrality[5] = event->GetZDCData()->GetZDCParticipants();
  
+  fHistCent->Fill(fCentrality[0]);
+
   // fCentrality[3] = header->GetCentralityP()->GetCentralityPercentile("V0M");
   // fCentrality[4] = header->GetCentralityP()->GetCentralityPercentile("V0A");
   // fCentrality[5] = header->GetCentralityP()->GetCentralityPercentile("V0C");
