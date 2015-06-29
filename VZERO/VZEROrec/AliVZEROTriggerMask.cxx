@@ -98,7 +98,7 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
   esdV0->SetBit(AliESDVZERO::kDecisionFilled,kTRUE);
 
   const Float_t p1 = 2.50; // photostatistics term in the time resolution
-  const Float_t p2 = 3.00; // slewing related term in the time resolution
+  Float_t p2 = (AliCDBManager::Instance()->GetRun() >= 215011) ? 1.80 : 3.00; // slewing related term in the time resolution, smaller in Run2
 
   // loop over vzero channels
   Float_t timeAW = 0,timeCW = 0;
@@ -113,11 +113,14 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
       Float_t tdc = esdV0->GetTime(i);
       if (tdc > (AliVZEROReconstructor::kInvalidTime + 1e-6)) {
 	Float_t nphe = adc*kChargePerADC/(cal->GetGain(i)*TMath::Qe());
-	Float_t timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
+	Float_t intTimeRes = kIntTimeRes;
+	// For Run2 reco use the time resolution ring by ring
+	if (AliCDBManager::Instance()->GetRun() >= 215011) intTimeRes = kIntTimeResRing[i/8];
+	Float_t timeErr = TMath::Sqrt(intTimeRes*intTimeRes+
 				      p1*p1/nphe+
 				      p2*p2*(slewing->GetParameter(0)*slewing->GetParameter(1))*(slewing->GetParameter(0)*slewing->GetParameter(1))*
-				      TMath::Power(adc/cal->GetCalibDiscriThr(i,kTRUE),2.*(slewing->GetParameter(1)-1.))/
-				      (cal->GetCalibDiscriThr(i,kTRUE)*cal->GetCalibDiscriThr(i,kTRUE)));
+				      TMath::Power(adc/cal->GetCalibDiscriThr(i,kTRUE,AliCDBManager::Instance()->GetRun()),2.*(slewing->GetParameter(1)-1.))/
+				      (cal->GetCalibDiscriThr(i,kTRUE,AliCDBManager::Instance()->GetRun())*cal->GetCalibDiscriThr(i,kTRUE,AliCDBManager::Instance()->GetRun())));
 
 	if (i < 32) { // in V0C
 	  timesC[ntimeC] = tdc;

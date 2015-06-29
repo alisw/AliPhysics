@@ -722,15 +722,18 @@ void AliVZEROQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
 
       const Float_t p1 = 2.50; // photostatistics term in the time resolution
-      const Float_t p2 = 3.00; // slewing related term in the time resolution
+      Float_t p2 = (AliCDBManager::Instance()->GetRun() >= 215011) ? 1.80 : 3.00; // slewing related term in the time resolution, smaller in Run2
       if(timeCorr[offlineCh]>-1024 + 1.e-6){
 	Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
 	Float_t timeErr = 0;
-	if (nphe>1.e-6) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
+	Float_t intTimeRes = kIntTimeRes;
+	// For Run2 reco use the time resolution ring by ring
+	if (AliCDBManager::Instance()->GetRun() >= 215011) intTimeRes = kIntTimeResRing[offlineCh/8];
+	if (nphe>1.e-6) timeErr = TMath::Sqrt(intTimeRes*intTimeRes+
 					      p1*p1/nphe+
 					      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
-					      TMath::Power(adc[offlineCh]/fCalibData->GetCalibDiscriThr(offlineCh,kTRUE),2.*(fTimeSlewing->GetParameter(1)-1.))/
-					      (fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)*fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)));
+					      TMath::Power(adc[offlineCh]/fCalibData->GetCalibDiscriThr(offlineCh,kTRUE,AliCDBManager::Instance()->GetRun()),2.*(fTimeSlewing->GetParameter(1)-1.))/
+					      (fCalibData->GetCalibDiscriThr(offlineCh,kTRUE,AliCDBManager::Instance()->GetRun())*fCalibData->GetCalibDiscriThr(offlineCh,kTRUE,AliCDBManager::Instance()->GetRun())));
 
 	if (timeErr>1.e-6) {
 	  if (offlineCh<32) {
@@ -966,7 +969,7 @@ Float_t AliVZEROQADataMakerRec::CorrectLeadingTime(Int_t i, Float_t time, Float_
   if (adc < 1e-6) return time;
 
   // Slewing correction
-  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
+  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE,AliCDBManager::Instance()->GetRun());
   //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
   time -= fTimeSlewing->Eval(adc/thr);
 

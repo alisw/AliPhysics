@@ -116,11 +116,12 @@ class AliVZEROCalibData: public TNamed {
   Float_t *GetPMGainsA() const { return fPMGainsA; }
   Float_t *GetPMGainsB() const { return fPMGainsB; }
 
-  Float_t  GetCalibDiscriThr(Int_t channel, Bool_t scaled);
+  Float_t  GetCalibDiscriThr(Int_t channel, Bool_t scaled, Int_t runNumber);
 
  protected:
   void     InitLightYields();
   void     InitPMGains();
+  void     InitCalDiscriThr();
 
   Float_t  fPedestal[128];     // Mean pedestal values
   Float_t  fSigma[128];        // Sigmas of pedestal peaks
@@ -141,12 +142,14 @@ class AliVZEROCalibData: public TNamed {
   UInt_t   fRollOver[kNCIUBoards]; // HPTDC roll-over (25ns units)
 
   Float_t  fDiscriThr[64];     // Discriminator thresholds
+  Bool_t   fIsCalThrInit;      // Are the calibrated thresholds initialized
+  Float_t  fCalDiscriThr[64];  // Calibrated discriminator thresholds
 
   Float_t *fLightYields;       //! Light Yields channel by channel (read from separate OCDB entry)
   Float_t *fPMGainsA;          //! PM gain factors channel by channel (read from separate OCDB entry)
   Float_t *fPMGainsB;          //! PM gain factors channel by channel (read from separate OCDB entry)
 
-  ClassDef(AliVZEROCalibData,8)    // VZERO Calibration data
+  ClassDef(AliVZEROCalibData,9)    // VZERO Calibration data
 };
 
 #endif

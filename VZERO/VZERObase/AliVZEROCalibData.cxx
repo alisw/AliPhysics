@@ -26,6 +26,7 @@
 #include <TMap.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TF1.h>
 
 #include "AliDCSValue.h"
 #include "AliCDBManager.h"
@@ -33,12 +34,14 @@
 #include "AliVZEROCalibData.h"
 #include "AliVZERODataDCS.h"
 #include "AliVZEROConst.h"
+#include "AliVZEROTriggerData.h"
 #include "AliLog.h"
 
 ClassImp(AliVZEROCalibData)
 
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData():
+  fIsCalThrInit(kFALSE),
   fLightYields(NULL),
   fPMGainsA(NULL),
   fPMGainsB(NULL)
@@ -52,6 +55,7 @@ AliVZEROCalibData::AliVZEROCalibData():
         fTimeGain[t]    = 1.0;
 	fDeadChannel[t]= kFALSE;
 	fDiscriThr[t]  = 2.5;
+	fCalDiscriThr[t] = -1024;
     }
     for(int t=0; t<128; t++) {
         fPedestal[t]    = 0.0;     
@@ -78,6 +82,7 @@ void AliVZEROCalibData::Reset()
 
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData(const char* name):
+  fIsCalThrInit(kFALSE),
   fLightYields(NULL),
   fPMGainsA(NULL),
   fPMGainsB(NULL)
@@ -94,6 +99,7 @@ AliVZEROCalibData::AliVZEROCalibData(const char* name):
        fTimeGain[t]    = 1.0;
        fDeadChannel[t]= kFALSE;
        fDiscriThr[t]  = 2.5;
+       fCalDiscriThr[t] = -1024;
     }
    for(int t=0; t<128; t++) {
        fPedestal[t]    = 0.0;     
@@ -115,6 +121,7 @@ AliVZEROCalibData::AliVZEROCalibData(const char* name):
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
   TNamed(calibda),
+  fIsCalThrInit(calibda.fIsCalThrInit),
   fLightYields(NULL),
   fPMGainsA(NULL),
   fPMGainsB(NULL)
@@ -137,6 +144,7 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
       fTimeGain[t]     = calibda.GetTimeGain(t); 
       fDeadChannel[t]  = calibda.IsChannelDead(t);
       fDiscriThr[t]    = calibda.GetDiscriThr(t);
+      fDiscriThr[t]    = calibda.fCalDiscriThr[t];
   }  
   
   for(int i=0; i<kNCIUBoards ;i++) {
@@ -157,6 +165,8 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
 
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
+
+  fIsCalThrInit = calibda.fIsCalThrInit;
   
   for(int t=0; t<128; t++) {
       fPedestal[t] = calibda.GetPedestal(t);
@@ -171,6 +181,7 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
       fTimeGain[t]     = calibda.GetTimeGain(t); 
       fDeadChannel[t]  = calibda.IsChannelDead(t);
       fDiscriThr[t]    = calibda.GetDiscriThr(t);
+      fDiscriThr[t]    = calibda.fCalDiscriThr[t];
   }   
   for(int i=0; i<kNCIUBoards ;i++) {
       fTimeResolution[i]  = calibda.GetTimeResolution(i);
@@ -669,7 +680,7 @@ void  AliVZEROCalibData::InitPMGains()
   }
 }
 
-Float_t AliVZEROCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
+Float_t AliVZEROCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled, Int_t runNumber)
 {
   // The method returns actual TDC discri threshold
   // extracted from the data.
@@ -679,19 +690,56 @@ Float_t AliVZEROCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
   // In this way we avoid a change in the slewing correction
   // for the entire 2010 p-p data.
   //
-  // The method is to be moved to OCDB object.
+  // The method nas been moved to OCDB for Run2 reconstriction
 
   Float_t thr = GetDiscriThr(channel);
 
   Float_t calThr = 0;
-  if (thr <= 1.) 
-    calThr = 3.1;
-  else if (thr >= 2.)
-    calThr = (3.1+1.15*thr-1.7);
-  else
-    calThr = (3.1-0.3*thr+0.3*thr*thr);
 
-  if (scaled) calThr *= 4./(3.1+1.15*4.-1.7);
+  if (runNumber < 215011) {
+    // Run1
+    if (thr <= 1.) 
+      calThr = 3.1;
+    else if (thr >= 2.)
+      calThr = (3.1+1.15*thr-1.7);
+    else
+      calThr = (3.1-0.3*thr+0.3*thr*thr);
+    
+    if (scaled) calThr *= 4./(3.1+1.15*4.-1.7);
+  }
+  else {
+    // Run2
+    if (!fIsCalThrInit) InitCalDiscriThr();
+    calThr = fCalDiscriThr[channel];
+  }
 
   return calThr;
+}
+
+void  AliVZEROCalibData::InitCalDiscriThr()
+{
+  // Initialize the calibrated threshold values
+  // Used in Run2
+  if (fIsCalThrInit) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/Thresholds");
+  if (!entry) AliFatal("VZERO thresholds calibration not found in OCDB !");
+  TObjArray *arr = (TObjArray*)entry->GetObject();
+  if (!arr) AliFatal("No threshold calibration object in the database !");
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Trigger/Data");
+  if (!entry2) AliFatal("VZERO trigger data not found in OCDB !");
+  AliVZEROTriggerData *trigData = (AliVZEROTriggerData *)entry2->GetObject();
+  if (!trigData)  AliFatal("No Trigger data in the database !");
+
+  for(Int_t channel = 0; channel < 64; ++channel) {
+    Float_t thr = GetDiscriThr(channel);
+    // Fix in case the threshold was set to 0.0 which in shuttle leads to a setting of 2.5 ADC
+    Int_t feeBoard   = GetBoardNumber(channel);
+    Int_t feeChannel = GetFEEChannelNumber(channel);
+    if (TMath::Abs(thr-2.5) < 1e-6 && trigData->GetDiscriThr(feeBoard,feeChannel) == 2040) thr = 0.0;
+    TF1 *fThr = (TF1*)arr->UncheckedAt(channel);
+    if (!fThr) AliFatal(Form("Threshold calibration is missing for channel %d",channel));
+    fCalDiscriThr[channel] = fThr->Eval(thr);
+  }
 }
