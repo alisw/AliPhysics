@@ -20,11 +20,11 @@
 #include <TGeoManager.h>
 #include <TTree.h>
 
-#include "AliITSdigit.h"
 #include "AliITSULoader.h"
 #include "AliRunLoader.h"
 #include "AliObjectLoader.h"
 #include "AliLog.h"
+#include "AliITSDigitUpgrade.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Loader for ITS Upgrade
@@ -237,9 +237,9 @@ void AliITSULoader::SetupDigits(TObjArray *digPerDet,Int_t n,
                   "zeroed or filled with TClonesArrays",i,digPerDet);
             return;
         } // end if
-        if(!(cl->GetClass()->GetBaseClass(AliITSdigit::Class()))){
+        if(!(cl->GetClass()->GetBaseClass(AliITSDigitUpgrade::Class()))){
             Error("SetUPDigits","TClones array at digPerDet[%d}=%p must be"
-                  "derived from AliITSdigit",i,digPerDet->At(i));
+                  "derived from AliITSDigitUpgrade",i,digPerDet->At(i));
         } // end if
         cl->Clear();
         if(n==3) snprintf(branch,13,"ITSDigits%s",det[i]);

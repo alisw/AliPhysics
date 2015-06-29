@@ -33,7 +33,6 @@
 #include "AliITSURecoDet.h"
 #include "AliITSURecoSens.h"
 #include "AliITSUReconstructor.h"
-#include "AliITSReconstructor.h"
 #include "AliITSUSeed.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSUGeomTGeo.h"
