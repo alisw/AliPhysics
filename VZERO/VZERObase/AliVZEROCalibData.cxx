@@ -742,4 +742,6 @@ void  AliVZEROCalibData::InitCalDiscriThr()
     if (!fThr) AliFatal(Form("Threshold calibration is missing for channel %d",channel));
     fCalDiscriThr[channel] = fThr->Eval(thr);
   }
+
+  fIsCalThrInit = kTRUE;
 }
