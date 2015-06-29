@@ -37,7 +37,9 @@
 #include "AliRunTag.h"
 
 #include "AliTOFT0maker.h"
+#include "AliVCluster.h"
 #include "AliESDCaloCluster.h"
+#include "AliVCaloCells.h"
 #include "AliESDCaloCells.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODCaloCells.h"
@@ -71,6 +73,9 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fMaxRtrack(0),
   fMinCellEnergy(0),
   fReferenceFileName(),
+  fPileupFromSPD(kFALSE),
+  fMinTime(0),
+  fMaxTime(0),
   fhcalcEvtTime(0),
   fhEventType(0),
   fhTOFT0vsEventNumber(0),
@@ -83,6 +88,9 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhTimeSumSq(),
   fhTimeEnt(),
   fhTimeSum(),
+  fhTimeLGSumSq(),
+  fhTimeLGEnt(),
+  fhTimeLGSum(),
   fhAllAverageBC(),
   fhTimeDsup(),
   fhTimeDsupBC(),
@@ -103,6 +111,10 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
     fhTimeEnt[i]=0;    
     fhTimeSum[i]=0;
 
+    fhTimeLGSumSq[i]=0;
+    fhTimeLGEnt[i]=0;
+    fhTimeLGSum[i]=0;
+
     fhRawTimeVsIdBC[i]=0;
     fhRawTimeSumBC[i]=0;
     fhRawTimeEntriesBC[i]=0;
@@ -114,7 +126,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
     fhRawTimeSumSqLGBC[i]=0;
   }
 
-  //set default cuts for calibration
+  //set default cuts for calibration and geometry name
   SetDefaultCuts();
 
   //T0 TOF time
@@ -140,8 +152,8 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
 {
   //AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>
   //(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-  AliDebug(1,"*** the code version is: AliAnalysisTaskEMCALTimeCalib ***");
+  AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::LocalInit()");
+  //  AliDebug(1,"*** the code version is: AliAnalysisTaskEMCALTimeCalib ***");
   //TFile *myFile = TFile::Open("RefLHC13bcCorrected.root");
   //TFile *myFile = TFile::Open("Reference.root");
   
@@ -152,10 +164,7 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
   else 
   {
     AliDebug(1,"*** OK TFILE");
-    //  printf("*** OK TFILE \n");
-    
     // connect ref run here
-    
     for(Int_t i = 0; i < kNBCmask; i++)
     {
       fhAllAverageBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvBC%d",i));
@@ -165,76 +174,41 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
     AliDebug(1,Form("hAllAverage entries2 %d",(Int_t)fhAllAverageBC[2]->GetEntries() ));
     
   }
-} // End of AliAnalysisTaskTimeTaskMB2::Init()
+} // End of AliAnalysisTaskTimeTaskMB2::LocalInit()
 
 //_____________________________________________________________________
 /// Connect ESD or AOD here
-/// Called once
+/// Called once per file
 Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
 {
-  AliDebug(1,"AnalysisTaskEMCalGeom::Notify()");
+  AliDebug(1,"AnalysisTaskEMCalTimeCalib::Notify()");
+  AliDebug(2,Form("Notify(): EMCal geometry: fGeom = %p, fGeometryName=%s\n ",fgeom,fGeometryName.Data()));
 
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    AliFatal("ERROR: Could not read chain from input slot 0");
-  } else if(TString(tree->GetName()).Contains("esdTree")) {
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!esdH) {
-      AliFatal("ERROR: Could not get ESDInputHandler");
-    } else {
-      fEvent = dynamic_cast<AliESDEvent*> (esdH->GetEvent());
-    }
-  } else if(TString(tree->GetName()).Contains("aodTree")) {
-    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!aodH) {
-      AliFatal("ERROR: Could not get AODInputHandler");
-    } else {
-      fEvent = dynamic_cast<AliAODEvent*> (aodH->GetEvent());
-    }
-  } else {
-    AliFatal("FATAL:  Only ESD or AOD. You have used other tree.");
-  }
-
+  fEvent=InputEvent();
   if (!fEvent) AliFatal("ERROR: fEvent not set");
   else AliDebug(1,"Good, fEvent set");
+
+  fRunNumber = fEvent->GetRunNumber();
+  AliDebug(1,Form("RunNumber %d", fRunNumber));
 
 //   // connect ref run here
 //   TH2F *hAllAverage = (TH2F*)hAllAverage;
 //   cout << " hAllAverage entries " << hAllAverage->GetEntries() << endl;
 
-  // Init EMCAL geometry 
-  Bool_t ok = SetEMCalGeometry();
-  if(ok) {
-    AliDebug(1,"EMCal geometry properly set...");
-    return kTRUE;
-  } else {
-    AliDebug(1,"Make sure the EMCal geometry is set properly !");
-    return kFALSE;
-  }
 }
 
 //_____________________________________________________________________
 /// Set the EMCal Geometry
 Bool_t AliAnalysisTaskEMCALTimeCalib::SetEMCalGeometry()
 {
-  AliDebug(1,"Read and set MisalMatrix");
+  AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::SetEMCalGeometry()");
   
-  if (!fEvent) 
-  {
-    AliDebug(1,"ERROR: fEvent not available");
-    return kFALSE;
-  }
-  
-  // Define EMCAL geometry to be able to read ESDs
   // fgeom = new AliEMCALGeoUtils("EMCAL_COMPLETEv1","EMCAL");
   // fgeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMv1","EMCAL");
   // fgeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL");
   fgeom = new AliEMCALGeometry(fGeometryName.Data(),"EMCAL");
   AliDebug(1,Form("Geometry defined as %s",fGeometryName.Data()));
-  
-  fRunNumber = fEvent->GetRunNumber();
-  AliDebug(1,Form("RunNumber %d", fRunNumber));
-    
+
   return kTRUE;
 }
 
@@ -268,12 +242,23 @@ void AliAnalysisTaskEMCALTimeCalib::PrepareTOFT0maker()
 /// Called once
 void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 {
+  AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()");
+  // Init EMCAL geometry 
+  Bool_t ok = SetEMCalGeometry();
+  if(ok) {
+    AliDebug(1,Form("EMCal geometry properly set: fGeom = %p, fGeometryName=%s",fgeom,fGeometryName.Data()));
+  } else {
+    AliFatal("Make sure the EMCal geometry is set properly !");
+  }
+  //Init EMCAL geometry done
+
   Double_t fineTmin = -500;
   Double_t fineTmax =  400;
   Double_t fineInterval = 0.20;
   Int_t nfinebin = (fineTmax-fineTmin)/fineInterval;
   //cout << "<D> nfinebin = " << nfinebin << endl;
   
+  Int_t nChannels = 17664;
   //book histograms
   fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",nfinebin, fineTmin,fineTmax);
   fhcalcEvtTime->GetXaxis()->SetTitle("T ");
@@ -290,72 +275,93 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
   
   for (Int_t i = 0; i < kNBCmask ;  i++)
   {
+    //already after correction
+    //high gain
     fhTimeSumSq[i] = new TH1F(Form("hTimeSumSq%d", i),
-			      Form("cell Sum Square time BC %d ", i),
-			      12289,0.,12289.);
+			      Form("cell Sum Square time HG, BC %d ", i),
+			      nChannels,0.,(Double_t)nChannels);
     fhTimeSumSq[i]->SetYTitle("Sum Sq Time ");
     fhTimeSumSq[i]->SetXTitle("AbsId");
     
     fhTimeSum[i] = new TH1F(Form("hTimeSum%d", i),
-			    Form("cell Sum  time BC %d ", i),
-			    12289,0.,12289.);
+			    Form("cell Sum  time HG, BC %d ", i),
+			    nChannels,0.,(Double_t)nChannels);
     fhTimeSum[i]->SetYTitle("Sum  Time ");
     fhTimeSum[i]->SetXTitle("AbsId");
     
     fhTimeEnt[i] = new TH1F(Form("hTimeEnt%d", i),
-			    Form("cell Entries BC %d ", i),
-			    12289,0.,12289.);
+			    Form("cell Entries HG, BC %d ", i),
+			    nChannels,0.,(Double_t)nChannels);
     fhTimeEnt[i]->SetYTitle("Entries for Time ");
     fhTimeEnt[i]->SetXTitle("AbsId");
     
-    //by adam
+    //low gain 
+    fhTimeLGSumSq[i] = new TH1F(Form("hTimeLGSumSq%d", i),
+			      Form("cell Sum Square time LG, BC %d ", i),
+			      nChannels,0.,(Double_t)nChannels);
+    fhTimeLGSumSq[i]->SetYTitle("Sum Sq Time ");
+    fhTimeLGSumSq[i]->SetXTitle("AbsId");
+    
+    fhTimeLGSum[i] = new TH1F(Form("hTimeLGSum%d", i),
+			    Form("cell Sum time LG, BC %d ", i),
+			    nChannels,0.,(Double_t)nChannels);
+    fhTimeLGSum[i]->SetYTitle("Sum  Time ");
+    fhTimeLGSum[i]->SetXTitle("AbsId");
+    
+    fhTimeLGEnt[i] = new TH1F(Form("hTimeLGEnt%d", i),
+			    Form("cell Entries LG, BC %d ", i),
+			    nChannels,0.,(Double_t)nChannels);
+    fhTimeLGEnt[i]->SetYTitle("Entries for Time ");
+    fhTimeLGEnt[i]->SetXTitle("AbsId");
+
+    //raw time histograms
     //high gain
     fhRawTimeVsIdBC[i] = new TH2F(Form("RawTimeVsIdBC%d", i),
 			      Form("cell raw time vs ID for high gain BC %d ", i),
-			      17664,0.,17664.,600,300,900);
+			      nChannels,0.,(Double_t)nChannels,600,300,900);
     fhRawTimeVsIdBC[i]->SetXTitle("AbsId");
     fhRawTimeVsIdBC[i]->SetYTitle("Time");
 
     fhRawTimeSumBC[i] = new TH1F(Form("RawTimeSumBC%d", i),
 				 Form("sum of cell raw time for high gain BC %d ", i),
-				 17664,0.,17664.);
+				 nChannels,0.,(Double_t)nChannels);
     fhRawTimeSumBC[i]->SetXTitle("AbsId");
     fhRawTimeSumBC[i]->SetYTitle("Sum Time");
 
     fhRawTimeEntriesBC[i] = new TH1F(Form("RawTimeEntriesBC%d", i),
 				     Form("No. entries of cells raw time for high gain BC %d ", i),
-				     17664,0.,17664.);
+				     nChannels,0.,(Double_t)nChannels);
     fhRawTimeEntriesBC[i]->SetXTitle("AbsId");
     fhRawTimeEntriesBC[i]->SetYTitle("Entries for Time ");
 
     fhRawTimeSumSqBC[i] = new TH1F(Form("RawTimeSumSqBC%d", i),
 				   Form("sum of (cell raw time)^2 for high gain BC %d ", i),
-				   17664,0.,17664.);
+				   nChannels,0.,(Double_t)nChannels);
     fhRawTimeSumSqBC[i]->SetXTitle("AbsId");
     fhRawTimeSumSqBC[i]->SetYTitle("Sum Sq Time");
 
     //low gain
     fhRawTimeVsIdLGBC[i] = new TH2F(Form("RawTimeVsIdLGBC%d", i),
 			      Form("cell raw time vs ID for low gain BC %d ", i),
-			      17664,0.,17664.,600,300,900);
+			      nChannels,0.,(Double_t)nChannels,600,300,900);
     fhRawTimeVsIdLGBC[i]->SetXTitle("AbsId");
     fhRawTimeVsIdLGBC[i]->SetYTitle("Time");
 
     fhRawTimeSumLGBC[i] = new TH1F(Form("RawTimeSumLGBC%d", i),
 				 Form("sum of cell raw time for low gain BC %d ", i),
-				 17664,0.,17664.);
+				 nChannels,0.,(Double_t)nChannels);
     fhRawTimeSumLGBC[i]->SetXTitle("AbsId");
     fhRawTimeSumLGBC[i]->SetYTitle("Sum Time");
 
     fhRawTimeEntriesLGBC[i] = new TH1F(Form("RawTimeEntriesLGBC%d", i),
 				     Form("No. entries of cells raw time for low gain BC %d ", i),
-				     17664,0.,17664.);
+				     nChannels,0.,(Double_t)nChannels);
     fhRawTimeEntriesLGBC[i]->SetXTitle("AbsId");
     fhRawTimeEntriesLGBC[i]->SetYTitle("Entries for Time ");
 
     fhRawTimeSumSqLGBC[i] = new TH1F(Form("RawTimeSumSqLGBC%d", i),
 				   Form("sum of (cell raw time)^2 for low gain BC %d ", i),
-				   17664,0.,17664.);
+				     nChannels,0.,(Double_t)nChannels);
     fhRawTimeSumSqLGBC[i]->SetXTitle("AbsId");
     fhRawTimeSumSqLGBC[i]->SetYTitle("Sum Sq Time");
 
@@ -395,6 +401,10 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fOutputList->Add(fhTimeEnt[i]);
     fOutputList->Add(fhTimeSum[i]);
 
+    fOutputList->Add(fhTimeLGSumSq[i]);
+    fOutputList->Add(fhTimeLGEnt[i]);
+    fOutputList->Add(fhTimeLGSum[i]);
+
     fOutputList->Add(fhRawTimeVsIdBC[i]);
     fOutputList->Add(fhRawTimeSumBC[i]);
     fOutputList->Add(fhRawTimeEntriesBC[i]);
@@ -428,37 +438,31 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 {
   // Called for each event
+  AliDebug(2,Form("UserExec: EMCal geometry: fGeom = %p fGeometryName %s",fgeom,fGeometryName.Data()));
 
-  // Check whether ESD or AOD
-  if(AODEvent()!=0) {
-    fEvent = dynamic_cast<AliAODEvent*>(AODEvent());
-    if (!fEvent) {
-      AliError("AOD not available, exit");
-      fhEventType->Fill(1.5);
-      return;
-    }
-  } else {
-    AliVEvent* event = InputEvent();
-    //cout<<"T0TOF "<<event->GetT0TOF()<<endl;//bad idea
-    //cout<< event->GetEventNumberInFile()<<endl;
-    //cout<< event->GetTOFHeader()->GetDefaultEventTimeVal()<<endl;
-    fEvent = dynamic_cast<AliESDEvent*>(event);
-    if (!fEvent) {
-      AliError("ESD not available, exit");
-      fhEventType->Fill(0.5);
-      return;
-    }
+  fEvent = InputEvent();
+  //cout<<"T0TOF "<<event->GetT0TOF()<<endl;//bad idea
+  //cout<< event->GetEventNumberInFile()<<endl;
+  //cout<< event->GetTOFHeader()->GetDefaultEventTimeVal()<<endl;
+  
+  //fEvent = dynamic_cast<AliESDEvent*>(event);
+  if (!fEvent) {
+    AliError("ESD not available, exit");
+    fhEventType->Fill(0.5);
+    return;
   }
   
-  if(fEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
-    AliDebug(1,"Event: PileUp skip.");
-    fhEventType->Fill(2.5);
-    return;
-  }	
+  if(fPileupFromSPD==kTRUE){
+    if(fEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+      AliDebug(1,"Event: PileUp skip.");
+      fhEventType->Fill(1.5);
+      return;
+    }	
+  }
 
   TString triggerclasses = fEvent->GetFiredTriggerClasses();
   if(triggerclasses=="") {
-    fhEventType->Fill(3.5);
+    fhEventType->Fill(2.5);
     return;
   }
 
@@ -466,7 +470,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   // physics events eventType=7, select only those
   AliDebug(1,Form("Triggerclasses %s, eventType %d",triggerclasses.Data(),eventType));
   if(eventType != 7) {
-    fhEventType->Fill(4.5);
+    fhEventType->Fill(3.5);
     return;
   }
   
@@ -505,8 +509,8 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
      triggerclasses.Contains("CEMC8EJE") ||
      triggerclasses.Contains("CPBI2EJE")                 )   bL1J = kTRUE;
   
-  if( bL1G || bL1J ||  bL0 ){ fhEventType->Fill(5.5);}
-  if( bMB ){ fhEventType->Fill(6.5);}
+  if( bL1G || bL1J ||  bL0 ){ fhEventType->Fill(4.5);}
+  if( bMB ){ fhEventType->Fill(5.5);}
 
 
   //  if(bL1G || bL1J ||  bL0){
@@ -557,10 +561,10 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   
   for (Int_t icl = 0; icl < nclus; icl++) {
     //ESD and AOD CaloCells carries the same information
-    AliESDCaloCluster* clus = (AliESDCaloCluster*)caloClusters->At(icl);
+    AliVCluster* clus = (AliVCluster*)caloClusters->At(icl);
     if(!AcceptCluster(clus)) continue;
   
-    AliESDCaloCells &cells= *(dynamic_cast<AliESDCaloCells*>(fEvent->GetEMCALCells()));
+    AliVCaloCells &cells= *(fEvent->GetEMCALCells());
     //cout<<"nCells="<< clus->GetNCells();<<endl;
    
     UShort_t * index = clus->GetCellsAbsId() ;
@@ -575,7 +579,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       Int_t iphi, ieta, nIphi, nIeta;
 
 
-      //main histograms with time information 
+      //main histograms with raw time information 
       if(amp>fMinCellEnergy){
 	if(isHighGain){
 	  fhRawTimeVsIdBC[nBC]->Fill(absId,hkdtime);
@@ -592,7 +596,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       //fgeom->PrintCellIndexes(absId);
       //fgeom->PrintCellIndexes(absId,1);
       
-      // 2015 GEOMETRY
+      // GEOMETRY ranformations
       fgeom->GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
       fgeom->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
 
@@ -619,19 +623,33 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 
       fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset);
 
-      hkdtime = hkdtime-timeBCoffset;
+      hkdtime = hkdtime-timeBCoffset;//time corrected by manual offset (default=0)
       Float_t hkdtimecorr;
-      hkdtimecorr= hkdtime-offset;
+      hkdtimecorr= hkdtime-offset;//time after first iteration
 
-      if(hkdtimecorr>=-20. && hkdtimecorr<=20. && amp>0.9 ) {
+      //main histograms after the first itereation for calibration constants
+      //if(hkdtimecorr>=-20. && hkdtimecorr<=20. && amp>0.9 ) {
+      if(hkdtimecorr>=fMinTime && hkdtimecorr<=fMaxTime && amp>fMinCellEnergy ) {
 	// per cell
-	Float_t entriesTime=fhTimeEnt[nBC]->GetBinContent(absId)+1;
-	Float_t sumTimeSq=(fhTimeSumSq[nBC]->GetBinContent(absId)+(hkdtime*hkdtime));
-	Float_t sumTime=(fhTimeSum[nBC]->GetBinContent(absId)+hkdtime);
-	
-	fhTimeEnt[nBC]->SetBinContent(absId,entriesTime);
-	fhTimeSumSq[nBC]->SetBinContent(absId,sumTimeSq);
-	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
+//	Float_t entriesTime=fhTimeEnt[nBC]->GetBinContent(absId)+1;
+//	Float_t sumTimeSq=(fhTimeSumSq[nBC]->GetBinContent(absId)+(hkdtime*hkdtime));
+//	Float_t sumTime=(fhTimeSum[nBC]->GetBinContent(absId)+hkdtime);
+//	
+//	fhTimeEnt[nBC]->SetBinContent(absId,entriesTime);
+//	fhTimeSumSq[nBC]->SetBinContent(absId,sumTimeSq);
+//	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
+
+	if(isHighGain){
+	  fhTimeEnt[nBC]->Fill(absId,1.);
+	  fhTimeSumSq[nBC]->Fill(absId,hkdtime*hkdtime);
+	  fhTimeSum[nBC]->Fill(absId,hkdtime);
+	}else{
+	  fhTimeLGEnt[nBC]->Fill(absId,1.);
+	  fhTimeLGSumSq[nBC]->Fill(absId,hkdtime*hkdtime);
+	  fhTimeLGSum[nBC]->Fill(absId,hkdtime);
+	}
+
+
       } // hkdtime:[-20;20]
     } // end icell
   } //end cluster
@@ -751,13 +769,15 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="Reference.root";
   fGeometryName="EMCAL_COMPLETE12SMV1_DCAL_8SM";
+  fPileupFromSPD=kFALSE;
+  fMinTime=-20.;
+  fMaxTime=20.;
 }
 
 //________________________________________________________________________
 /// Calculate calibration constants
 /// input - root file with histograms 
 /// output - root file with constants in historams
-//void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root"){
 void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString outputFile)
 {
   TFile *file =new TFile(inputFile.Data());
