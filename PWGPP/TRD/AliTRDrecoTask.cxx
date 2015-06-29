@@ -827,20 +827,17 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
     return NULL;
   }
   TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
-  TH2D *h2s(NULL), *hyx(NULL);
+  TH2D *h2s(NULL);
   if(!(h2s = (TH2D*)fH->Project3D("yx"))){
     AliDebug(1, Form("Failed Project3D(\"yx\") in %s", GetName()));
     return NULL;
   }
-  // save a copy of the original distribution
-  if(!del){
-    hyx = (TH2D*)h2s->Clone();
-    hyx->SetName(Form("%sEn", fH->GetName()));
-  }
   Int_t irebin(Rebin(h2s, fNrebin, fRebin[0], fRebin[1], nstat)), dxBin(1), dyBin(1);
   for(Int_t ir(0); ir<irebin; ir++){dxBin*=fRebin[0][ir]; dyBin*=fRebin[1][ir];}
   Int_t nx(h2s->GetNbinsX()), ny(h2s->GetNbinsY());
-  delete h2s;
+  // save a copy of the original distribution
+  if(!del) h2s->SetNameTitle(Form("%sEn", fH->GetName()), Form("%s statistics", fH->GetTitle()));
+  else delete h2s;
   if(mid<0) return NULL;
 
   // start projection
@@ -863,7 +860,7 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
     for(Int_t ix(0); ix<nx; ix++){
       h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin);
       Int_t ne((Int_t)h->Integral());
-      //printf("  x[%2d %2d] y[%2d %2d] ne[%4d]\n", ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin, ne);
+      //printf("  %s :: x[%2d %2d] y[%2d %2d] ne[%4d] nstat[%2d %2d]\n", h2->GetName(), ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin, ne, nstat, nstat/4);
       if(ne<nstat/4){
         h2->SetBinContent(ix+1, iy+1, -999);
         h2->SetBinError(ix+1, iy+1, 1.);
@@ -872,9 +869,12 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
         // redo the projection by adding 1 bin @ left and 1 bin @ right for smoothing
         h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin, (ix+1)*dxBin+1, iy*dyBin, (iy+1)*dyBin+1);
         Float_t v(h->GetMean()), ve(h->GetRMS());
+        if(ne<h->GetNbinsX()) h->Rebin(2);
         if(mid==1){
           TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
-          fg.SetParameter(0, Float_t(ne)); fg.SetParameter(1, v); fg.SetParameter(2, ve);
+          fg.SetParameter(0, h->GetBinContent(h->GetMaximumBin())); 
+          fg.SetParameter(1, v);fg.SetParLimits(1, v-0.5*ve, v+0.5*ve); 
+          fg.SetParameter(2, ve);fg.SetParLimits(2, 0.5*ve, 1.5*ve);
           h->Fit(&fg, "WQ0");
           v = fg.GetParameter(1); ve = fg.GetParameter(2);
         } else if (mid==2) {
