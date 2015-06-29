@@ -6,19 +6,20 @@
 /// Remember to apply energy cuts. We want to take into account only GOOD cells.
 /// 2. Run method ProduceCalibConsts(inputFile,outputFile) to obtain reference 
 /// file with constants. 
-/// 3. Second iteration with applied conatants give results.
+/// 3. Second iteration with applied consatants plus extra timing cut gives corrected calibration constants.
 ///
+/// \param type: Int_t, local or grid processing
+/// \param isESD: Bool_t, flag to process ESD or AOD
+/// \param isPhysicsSelection: Bool_t, flag to use Physics Selection
+/// \param isCentralitySelection: Bool_t, flag to use Centrality Selection
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 /// \date Jun 3, 2015
 
-void runEMCALTimeCalibTask(Int_t type=0)
+void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSelection=kFALSE, Bool_t isCentralitySelection=kFALSE)
 {
   //type = 0: local 
   //type = 1: grid
-
-  Bool_t isPhysicsSelection=kFALSE;// <<-----FIXME <<-----uncomment it in real data
-  Bool_t isCentralitySelection=kFALSE;
 
   TStopwatch timer;
   timer.Start();
@@ -36,7 +37,7 @@ void runEMCALTimeCalibTask(Int_t type=0)
   //gSystem->Load("libVMC.so");
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libESD.so");
-  //gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD.so");
   
   // load analysis framework
   gSystem->Load("libANALYSIS");
@@ -56,14 +57,25 @@ void runEMCALTimeCalibTask(Int_t type=0)
 
 
   //ANALYSIS PART
-  const char *collectionfile = "wn.xml";
+  //  const char *collectionfile = "wn_1run.xml";
+  //  const char *collectionfile = "wn.xml";
+  const char *collectionfile;
+  if(isESD==kTRUE) collectionfile = "esd_156889.xml";
+  else collectionfile= "aod_156889.xml";
+  //const char *collectionfile = "esd_156889.xml";
   TChain* chain = NULL;
   if(type==0){//local files
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
-    chain = CreateESDChain("files.txt", 1);
+    if(isESD==kTRUE) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
+      chain = CreateESDChain("files.txt", 1);
+    } else {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
+      chain = CreateAODChain("filesAOD.txt", 1);
+    }
   }
   else if(type==1){//grid files
-    chain = CreateChainFromCollection(collectionfile, "esdTree");
+    if(isESD==kTRUE) chain = CreateChainFromCollection(collectionfile, "esdTree");
+    else chain = CreateChainFromCollection(collectionfile, "aodTree");
   }
 
   // for includes use either global setting in $HOME/.rootrc
@@ -76,17 +88,28 @@ void runEMCALTimeCalibTask(Int_t type=0)
 
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("MyEmcalAnalysis");
-  AliESDInputHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
-  
+  AliInputEventHandler *inputHandler=NULL;
+
+  //  AliESDInputHandler* esdH = new AliESDInputHandler();
+  //  mgr->SetInputEventHandler(esdH);
+
+  if(isESD==kTRUE) inputHandler = new AliESDInputHandler();
+  else inputHandler = new AliAODInputHandler();
+
+  mgr->SetInputEventHandler(inputHandler);
+
+  AliPhysicsSelectionTask* physselTask=NULL;
   if(isPhysicsSelection){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physselTask = AddTaskPhysicsSelection();
+    //    AliPhysicsSelectionTask* physselTask = AddTaskPhysicsSelection();
+    physselTask = AddTaskPhysicsSelection();
     // physselTask->AddCollisionTriggerClass("+CINT1WU-B-NOPF-ALL");
   }
+  AliCentralitySelectionTask* centralityTask=NULL;
   if(isCentralitySelection){
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-    AliCentralitySelectionTask* centralityTask = AddTaskCentrality(); // Create task
+    //    AliCentralitySelectionTask* centralityTask = AddTaskCentrality(); // Create task
+    centralityTask = AddTaskCentrality(); // Create task
   }
 
   //AliCalorimeterUtils *cu = new AliCalorimeterUtils();
@@ -110,6 +133,7 @@ void runEMCALTimeCalibTask(Int_t type=0)
   // Add task(s)
   // taskmbemcal->PrintInfo();
   if(isPhysicsSelection) mgr->AddTask(physselTask);
+  if(isCentralitySelection) mgr->AddTask(centralityTask);
   mgr->AddTask(taskmbemcal);
 
   TString outputFileName;
