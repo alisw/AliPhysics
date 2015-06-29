@@ -53,6 +53,11 @@ public:
     fPVec[1] = py;
     fPVec[2] = pz;
   }
+
+  Double_t GetPx() const { return fPVec[0]; }
+  Double_t GetPy() const { return fPVec[1]; }
+  Double_t GetPz() const { return fPVec[2]; }
+
   /**
    * Check whether track was selected by a certain track cut combination during filtering
    * \param index Index of the track cuts in the map
