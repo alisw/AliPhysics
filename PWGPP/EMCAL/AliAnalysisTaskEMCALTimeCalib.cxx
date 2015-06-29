@@ -185,7 +185,12 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
   AliDebug(2,Form("Notify(): EMCal geometry: fGeom = %p, fGeometryName=%s\n ",fgeom,fGeometryName.Data()));
 
   fEvent=InputEvent();
-  if (!fEvent) AliFatal("ERROR: fEvent not set");
+  
+  if (!fEvent)
+  {
+    AliFatal("ERROR: fEvent not set");
+    return kFALSE;
+  }
   else AliDebug(1,"Good, fEvent set");
 
   fRunNumber = fEvent->GetRunNumber();
@@ -195,6 +200,7 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
 //   TH2F *hAllAverage = (TH2F*)hAllAverage;
 //   cout << " hAllAverage entries " << hAllAverage->GetEntries() << endl;
 
+  return kTRUE;
 }
 
 //_____________________________________________________________________
