@@ -390,8 +390,8 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     } else if (icharge>0) {
       fHistPt01->Fill(fCentrality[0],lPt); 
       if (b == 1) fHistPt11->Fill(fCentrality[0],lPt); 
-      else if (b == 3)fHistPt21->Fill(fCentrality[0],lPt); 
-      else if (b == 4)fHistPt31->Fill(fCentrality[0],lPt); 
+      else if (b == 2)fHistPt21->Fill(fCentrality[0],lPt); 
+      else if (b == 3)fHistPt31->Fill(fCentrality[0],lPt); 
     }
 
     fTrackCnDf[iTracks]   =  ndf;
