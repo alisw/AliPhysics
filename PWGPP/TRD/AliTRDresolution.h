@@ -162,6 +162,7 @@ protected:
   Float_t     GetChargeNTC(AliTRDseedV1 *trklt);
   Bool_t      HasDump3DFor(ETRDresolutionClass cls) const { return TESTBIT(fSteer, 8+cls);}
   Bool_t      HasProcess(ETRDresolutionClass cls) const   { return TESTBIT(fSteer, cls);}
+  Bool_t      MakeDQDL(TObjArray *arr, const Char_t *prefix="", Double_t *v=NULL);
   Bool_t      MakeProjectionDetector();
   Bool_t      MakeProjectionCluster(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionOnlTracklet(Bool_t mc=kFALSE);
