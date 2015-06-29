@@ -8,7 +8,7 @@
 #include <AliMESpidTask.h>
 #endif
 
-void AddMESpidTask(Bool_t mc)
+AliMESpidTask *AddMESpidTask(Bool_t mc)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESpidTask *pid = new AliMESpidTask("MESpid");
@@ -41,5 +41,7 @@ void AddMESpidTask(Bool_t mc)
     mgr->ConnectInput(pid, AliMESbaseTask::kMCtracks, ci[3]);    // connect MC tracks container
   }
   mgr->ConnectOutput(pid, AliMESbaseTask::kQA, mgr->CreateContainer("pidQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MES", mgr->GetCommonFileName())));
+
+  return pid;
 }
 

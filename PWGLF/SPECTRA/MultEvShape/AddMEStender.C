@@ -8,7 +8,7 @@
 #include <AliMEStender.h>
 #endif
 
-void AddMEStender(Bool_t mc)
+AliMEStender *AddMEStender(Bool_t mc)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -39,6 +39,9 @@ void AddMEStender(Bool_t mc)
   // connect output
   for(Int_t ios(0);ios<AliMESbaseTask::kNcontainers;ios++)
 	  if(co[ios]) mgr->ConnectOutput(tender, ios+1, co[ios]);
+
+
+  return tender;
 
 }
 
