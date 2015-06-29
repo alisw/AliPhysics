@@ -137,6 +137,22 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
     Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
   }     
 
+const Int_t NptBins = 52;
+Double_t ptBin[NptBins + 1] = {0.05, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0};
+
+  for (Int_t iPid = 0; iPid < 4; ++iPid) {
+    fPt[iPid][0] = new TH2F(Form("fHistPt%dMinus",iPid), 
+			    Form("Centrality vs p_{T} : %d;#it{Bin};p_{T}",iPid), 
+			    20,-0.5,19.5,NptBins, ptBin);
+    
+    fPt[iPid][1] = new TH2F(Form("fHistPt%dPlus",iPid), 
+			    Form("Centrality vs p_{T} : %d;#it{Bin};p_{T}",iPid), 
+			    20,-0.5,19.5,NptBins, ptBin);
+			 
+  }
+
+  for (Int_t iPid = 0; iPid < 4; ++iPid) fThnList->Add(fPt[iPid][1]);
+
   fEventCounter = new TH1D("fEventCounter","EventCounter", 100, -0.5,99.5);
   fThnList->Add(fEventCounter);
   
@@ -340,6 +356,11 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     else if (a == 1 ) b = 2;
     else if (a == 2 ) b = 3;
     else              b = 4;    
+
+    fPt[0][icharge]->Fill(fCentrality[0], track->Pt()); 
+    if (b > 0 && b < 4) {
+      fPt[b][icharge]->Fill(fCentrality[0], track->Pt()); 
+    }
 
     //   Printf("%10.5f %10.5f %2d %2d %10.5f",dca[0], dca[1], icharge, b, ndf);
 

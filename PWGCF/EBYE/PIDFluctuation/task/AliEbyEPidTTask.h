@@ -86,6 +86,8 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   TH1D         *fEventCounter;  //
   TTree        *fPidCont;       //!
   
+  TH2F   *fPt[4][2];         //
+
   Double_t   fVxMax;                        // X vertex  Range
   Double_t   fVyMax;                        // Y vertex Range
   Double_t   fVzMax;                        // Z vertex Range
