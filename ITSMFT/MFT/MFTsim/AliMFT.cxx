@@ -290,23 +290,6 @@ void AliMFT::CreateMaterials() {
   AliMedium(kAlu,      "Alu$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
   
   
-  AliMaterial(++matId, "Alu1$", aAlu, zAlu, dAlu1, radAlu, absAlu);
-  AliMedium(kAlu1,     "Alu1$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  AliMaterial(++matId, "Alu2$", aAlu, zAlu, dAlu2, radAlu, absAlu);
-  AliMedium(kAlu2,     "Alu2$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  AliMaterial(++matId, "Alu3$", aAlu, zAlu, dAlu3, radAlu, absAlu);
-  AliMedium(kAlu3,     "Alu3$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  AliMaterial(++matId, "Alu4$", aAlu, zAlu, dAlu4, radAlu, absAlu);
-  AliMedium(kAlu4,     "Alu4$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  AliMaterial(++matId, "Alu5$", aAlu, zAlu, dAlu5, radAlu, absAlu);
-  AliMedium(kAlu5,     "Alu5$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  
-  
   AliMixture(++matId, "Water$", aWater, zWater, dWater, nWater, wWater);
   AliMedium(kWater,   "Water$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
