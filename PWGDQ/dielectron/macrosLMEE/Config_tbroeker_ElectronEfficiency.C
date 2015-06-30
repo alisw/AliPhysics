@@ -1,4 +1,4 @@
-TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20;pt200_cut21;pt200_cut22;pt200_cut23");
+TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20");
 
 
 TObjArray*  arrNames=names.Tokenize(";");
@@ -109,7 +109,13 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   // produce analysis filter by using functions in this config:
   // -----
   anaFilter->AddCuts( SetupTrackCuts(cutInstance) );
-  anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
+  if(cutInstance == 25){
+    AliDielectronVarCuts *pInCut = new AliDielectronVarCuts("pInCut","pInCut");  
+    pInCut->AddCut(AliDielectronVarManager::kPIn,0.4,0.7,kTRUE);
+    pInCut->AddCut(AliDielectronVarManager::kPIn,0.8,1.3,kTRUE); 
+    anaFilter->AddCuts(pInCut);
+  }
+  if(cutInstance != 23) anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
   std::cout << "...cuts added!" <<std::endl; 
   
 //  std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance <<std::endl;
@@ -203,8 +209,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
 
   if(cutInstance == 0){
     fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -213,8 +218,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 1){
     fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(130);
@@ -223,8 +227,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 2){
     fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -233,8 +236,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 3){
     fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(130);
@@ -243,8 +245,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 4){
     fesdTrackCuts->SetMinNClustersITS(6);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(2.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -253,8 +254,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 5){
     fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -263,8 +263,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 6){
     fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
@@ -273,8 +272,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 7){
     fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
@@ -283,149 +281,111 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   }
   if(cutInstance == 8){
     fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fesdTrackCuts->SetMinNClustersTPC(100);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(130);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(2.5);
-  }
-  if(cutInstance == 9){
-    fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(80);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
-  if(cutInstance == 10){
+  if(cutInstance == 9){
     fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  }
+  if(cutInstance == 10){
+    fesdTrackCuts->SetMinNClustersITS(5);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(6);
+    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    fesdTrackCuts->SetMinNClustersTPC(100);
+    fesdTrackCuts->SetMinNCrossedRowsTPC(120);
+    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
   if(cutInstance == 11){
     fesdTrackCuts->SetMinNClustersITS(5);
 //    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fesdTrackCuts->SetMinNClustersTPC(80);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
-  }
-  if(cutInstance == 12){
-    fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(120);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
-  if(cutInstance == 13){
-    fesdTrackCuts->SetMinNClustersITS(5);
+  if(cutInstance == 12){
+    fesdTrackCuts->SetMinNClustersITS(6);
 //    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(120);
+    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
-  if(cutInstance == 14){
+  if(cutInstance == 13){
     fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fesdTrackCuts->SetMinNClustersTPC(100);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(120);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
+    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    fesdTrackCuts->SetMinNClustersTPC(80);
+    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
+    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
+    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
+  }
+  if(cutInstance == 14){
+    fesdTrackCuts->SetMinNClustersITS(6);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(2.5);
+    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    fesdTrackCuts->SetMinNClustersTPC(80);
+    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
   if(cutInstance == 15){
-    fesdTrackCuts->SetMinNClustersITS(6);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMinNClustersITS(5);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    fesdTrackCuts->SetMinNClustersTPC(80);
+    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
+    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
+    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
+  }
+  if(cutInstance == 16){
+    fesdTrackCuts->SetMinNClustersITS(4);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
+//    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
-  if(cutInstance == 16){
-    fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
-    fesdTrackCuts->SetMinNClustersTPC(80);
+  if(cutInstance == 17){
+    fesdTrackCuts->SetMinNClustersITS(3);
+//    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
+//    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    fesdTrackCuts->SetMinNClustersTPC(100);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
-  }
-  if(cutInstance == 17){
-    fesdTrackCuts->SetMinNClustersITS(6);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
-    fesdTrackCuts->SetMinNClustersTPC(80);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
+    fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
   if(cutInstance == 18){
-    fesdTrackCuts->SetMinNClustersITS(5);
+    fesdTrackCuts->SetMinNClustersITS(4);
 //    fesdTrackCuts->SetMaxChi2PerClusterITS(6);    
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fesdTrackCuts->SetMinNClustersTPC(100);
+//    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
   if(cutInstance == 19){
-    fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetMinNClustersTPC(100);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
-  }
-  if(cutInstance == 20){
-    fesdTrackCuts->SetMinNClustersITS(3);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetMinNClustersTPC(100);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
-  }
-  if(cutInstance == 21){
-    fesdTrackCuts->SetMinNClustersITS(4);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(100);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
-    fesdTrackCuts->SetMinNClustersTPC(80);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);  
-  }
-  if(cutInstance == 22){
     fesdTrackCuts->SetMinNClustersITS(5);
-//    fesdTrackCuts->SetMaxChi2PerClusterITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(120);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(3); 
+    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
 
   return fesdTrackCuts;
@@ -487,90 +447,72 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   if(cutInstance == 8){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3.5,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  }
-  if(cutInstance == 9){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3.5,0. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutInstance == 10){
+  if(cutInstance == 9){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutInstance == 11){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -2. ,2. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  }
-  if(cutInstance == 12){
+  if(cutInstance == 10){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutInstance == 13){
+  if(cutInstance == 11){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -2. ,2. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  if(cutInstance == 12){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutInstance == 14){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  if(cutInstance == 13){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -2. ,2. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  if(cutInstance == 14){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   if(cutInstance == 15){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   if(cutInstance == 16){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -2. ,2. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   if(cutInstance == 17){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  }
-  if(cutInstance == 18){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  }
-  if(cutInstance == 19){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  }
-  if(cutInstance == 20){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutInstance == 21){
+  if(cutInstance == 18){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutInstance == 22){
+  if(cutInstance == 19){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
@@ -579,3 +521,6 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
   pidCuts = pid;   
   return pidCuts;
 }
+
+
+
