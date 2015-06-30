@@ -69,3 +69,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY macros DESTINATION  PWGPP/Alignment)
+install(DIRECTORY utils DESTINATION  PWGPP/Alignment)

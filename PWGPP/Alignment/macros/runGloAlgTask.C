@@ -1,6 +1,8 @@
 TChain* CreateChainXML(const char *xmlfile);
 TChain* CreateChainTXT(const char *txtfile);
-Bool_t InputHandlerSetup(TString formatFr = "AliESDfriends_Barrel.root");
+Bool_t InputHandlerSetup(TString formatFr = "AliESDfriends.root");
+
+Bool_t barrelFlag = kFALSE;
 
 
 //====================================================================
@@ -9,8 +11,7 @@ void runGloAlgTask
  TString data="wn.xml",
  // TString data="algColl.txt",
  Int_t nEvents=-1,
- UInt_t trigSel = AliVEvent::kAny,
- TString formatFr = "AliESDfriends_Barrel.root"
+ UInt_t trigSel = AliVEvent::kAny
  )
 {
   //
@@ -33,6 +34,11 @@ void runGloAlgTask
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("mgr");
   //
+  TChain *chain = data.EndsWith(".xml") ? CreateChainXML(data) : CreateChainTXT(data);
+  TString formatFr = "AliESDfriends.root";
+  if (barrelFlag) formatFr = "AliESDfriends_Barrel.root";
+  printf("Deduced friend name : %s\n",formatFr.Data());
+  //
   InputHandlerSetup(formatFr.Data());
   //
   //================================================================================
@@ -45,9 +51,12 @@ void runGloAlgTask
   //-------------------------------------------
   algTask->SetTriggerSelection(trigSel);
   algTask->SetConfMacroName("alignConf.C");
+  //  algTask->SetConfMacroName("pedeF/alignConf.C");
+  algTask->SetIniParFileName("millepede.res");
+  //  algTask->SetApplyMPSolAlignment(kTRUE);
   //-------------------------------------------
   AliAnalysisDataContainer *coutput1 = 
-    mgr->CreateContainer("clist", TList::Class(),AliAnalysisManager::kOutputContainer,"statOut.root");
+    mgr->CreateContainer("clist", TList::Class(),AliAnalysisManager::kOutputContainer,"mpStatOut.root");
   mgr->AddTask(algTask);
   //
   mgr->ConnectInput(algTask, 0,  mgr->GetCommonInputContainer());
@@ -55,7 +64,6 @@ void runGloAlgTask
   //
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  TChain *chain = data.EndsWith(".xml") ? CreateChainXML(data) : CreateChainTXT(data);
   // Start analysis in grid.
   if (nEvents<0) nEvents = chain->GetEntries();
   mgr->StartAnalysis("localfile",chain,nEvents);
@@ -68,7 +76,8 @@ Bool_t InputHandlerSetup(TString esdFName)
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cin = mgr->GetCommonInputContainer();
   if (cin) return;
-  AliESDInputHandler *esdInputHandler = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliESDInputHandler *esdInputHandler = 
+    dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!esdInputHandler) {
     Info("CustomAnalysisTaskInputSetup", "Creating esdInputHandler ...");
     esdInputHandler = new AliESDInputHandler();
@@ -101,6 +110,7 @@ TChain* CreateChainXML(const char *xmlfile)
    coll->Reset();
    while (coll->Next()) {
       filename = coll->GetTURL();
+      if (filename.EndsWith("Barrel.root")) barrelFlag = kTRUE;
       if (mgr) {
          Int_t nrun = AliAnalysisManager::GetRunFromAlienPath(filename);
          if (nrun && nrun != run) {
@@ -144,6 +154,7 @@ TChain* CreateChainTXT(const char* inpData)
       if (flName.BeginsWith("//") || flName.BeginsWith("#")) {flName.ReadLine(inpf); continue;}
       flName = flName.Strip(TString::kBoth,',');
       flName = flName.Strip(TString::kBoth,'"');
+      if (flName.EndsWith("Barrel.root")) barrelFlag = kTRUE;
       printf("Adding %s\n",flName.Data());
       chain->AddFile(flName.Data());
       flName.ReadLine(inpf);

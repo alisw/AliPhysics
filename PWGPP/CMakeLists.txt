@@ -19,6 +19,7 @@ add_subdirectory(EVCHAR)
 add_subdirectory(EVCHAR/EventPlaneFramework)
 add_subdirectory(MUON)
 add_subdirectory(EMCAL)
+add_subdirectory(Alignment)
 
 #Module
 set (MODULE PWGPP)
