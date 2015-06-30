@@ -151,7 +151,8 @@ AliHLTComponent* AliHLTVZERORecoComponent::Spawn() {
 // #################################################################################
 Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // see header file for class documentation
-
+  //cout<<"\n\n\nVZero Reconstruction Init\n\n\n"<<endl;
+ 
   Int_t iResult=0;
 
   // -- Load GeomManager
@@ -301,22 +302,27 @@ Int_t AliHLTVZERORecoComponent::DoDeinit() {
 Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 					AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
-
   Int_t iResult=0;
 
   // -- Only use data event
   if (!IsDataEvent()) 
     return 0;
+ 
+  //cout<<"\n\n\nVZero Reconstruction Do Event\n\n\n"<<endl;
 
   // -- Get VZERO raw dat a input block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginVZERO);
   if (!pBlock) {
+    //cout<<"No VZERO input block at event"<<endl;
     ALIHLTERRORGUARD(1, "No VZERO input block at event %d", GetEventCount());
     return 0;
   }
   
+  //cout<<"VZERO input block found"<<endl;
+ 
   // -- Add input block to raw reader
   if (!fRawReader->SetMemory((UChar_t*) pBlock->fPtr, pBlock->fSize )){
+    cout<<"Could not add buffer of data block to rawreader"<<endl;
     HLTError("Could not add buffer of data block  %s, 0x%08x to rawreader",
 	     DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification);
     iResult = -1;
@@ -324,11 +330,12 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   
   TTree *digitsTree = new TTree("D", "Digits Tree");
   if (!digitsTree) {
+    cout<<"No digit tree created"<<endl;
     iResult=-ENOMEM;
   }
 
   if (iResult >= 0) {
-
+    //cout<<"ok 1"<<endl;
     // -- Set VZERO EquipmentID
     fRawReader->SetEquipmentID(3584);
   

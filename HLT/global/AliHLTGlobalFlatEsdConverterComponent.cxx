@@ -57,7 +57,7 @@
 //#include "AliHLTCaloClusterDataStruct.h"
 //#include "AliHLTCaloClusterReader.h"
 //#include "AliESDCaloCluster.h"
-//#include "AliESDVZERO.h"
+#include "AliESDVZERO.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
 #include "AliHLTTPCSpacePointData.h"
@@ -435,7 +435,31 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
  
     if( err ) break;
+   
+    // FIXME: the size of all input blocks can be added in one loop
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      fBenchmark.AddInput(pBlock->fSize);
+    }
+
+    {
+      const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
+      if( pObject ){
+	AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );
+	//cout<<"\n\nVZero is set to flat ESD \n\n"<<endl;
+	if (esdVZERO) {
+	  //cout<<"V0 object ok, set flat VZERO.. "<<endl;
+	  err = flatEsd->SetVZEROData( esdVZERO, freeSpace );
+	  freeSpace = maxOutputSize - flatEsd->GetSize();
+	} else {
+	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZERO",
+			   DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO).c_str());
+	}
+      }
+    }
     
+    if( err ) break;
+
     const AliESDVertex *primaryVertex = 0;
     const AliESDVertex *primaryVertexTracks = 0;
     const AliESDVertex *primaryVertexSPD = 0;    

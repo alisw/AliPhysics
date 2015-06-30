@@ -100,10 +100,12 @@ Int_t AliHLTVZEROAgent::CreateConfigurations(AliHLTConfigurationHandler* handler
   else if (runloader && !rawReader) {
     // indicates AliSimulation with no RawReader available -> run on digits
     
-    /* NOT Tested/ implemented yet
-      handler->CreateConfiguration("DigitPublisher","AliLoaderPublisher",NULL,
-      "-loader VZEROLoader -datatype 'ALITREED' 'VZRO'");
-      handler->CreateConfiguration("Digit","VZEROReconstruction","DigitPublisher","");
+    // NOT Tested/ implemented yet
+    /*
+    handler->CreateConfiguration("V0DigitPublisher","AliLoaderPublisher",NULL,
+				 "-loader VZEROLoader -datatype 'ALITREED' 'VZRO'");
+    //handler->CreateConfiguration("Digit","VZEROReconstruction","DigitPublisher","");    
+    handler->CreateConfiguration("VZERO-RECO", "VZEROReconstruction", "V0DigitPublisher", "");
     */
   }
   

@@ -59,6 +59,7 @@
 #include "AliFlatExternalTrackParam.h"
 #include "Riostream.h"
 
+#include "AliFlatESDVZERO.h"
 #include "AliFlatESDVertex.h"
 
 #include "AliFlatESDV0.h"
@@ -85,6 +86,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fNTracks(0),
   fNV0s(0),
   fTriggerPointer(0),
+  fVZEROPointer(0),
   fPrimaryVertexTracksPointer(0),
   fPrimaryVertexTPCPointer(0),
   fPrimaryVertexSPDPointer(0),
@@ -111,6 +113,12 @@ AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ )
       trigger->Reinitialize();
       trigger = trigger->GetNextTriggerNonConst();
     }
+  }
+
+  // Reinitialise VZERO information  
+  {    
+    AliFlatESDVZERO * vzero =  reinterpret_cast< AliFlatESDVZERO*>( fContent + fVZEROPointer ); 
+    if( vzero ) vzero->Reinitialize();    
   }
 
   // Reinitialise primary vertices
@@ -186,6 +194,7 @@ void AliFlatESDEvent::Reset()
   fNTracks = 0;
   fNV0s = 0;
   fTriggerPointer = 0;
+  fVZEROPointer = 0;
   fPrimaryVertexTracksPointer = 0;
   fPrimaryVertexTPCPointer = 0;
   fPrimaryVertexSPDPointer = 0;
@@ -205,8 +214,22 @@ void AliFlatESDEvent::Reset()
 	// one Long64_t per track for tracks table
   size += esd->GetNumberOfTracks() * ( AliFlatESDTrack::EstimateSize() + sizeof(Long64_t) );
   size += AliESDRun::kNTriggerClasses * sizeof(AliFlatESDTrigger) ;
+  if( esd->GetVZEROData() ) size += sizeof(AliFlatESDVZERO) ;
   if( fillV0s ) size += esd->GetNumberOfV0s()*sizeof(AliFlatESDV0);
   return size;
+}
+
+Int_t AliFlatESDEvent::SetVZEROData( const AliESDVZERO *vzero, size_t allocatedVZEROMemory )
+{
+  // fill VZERO info
+  fVZEROPointer = 0;
+  if( !vzero ) return 0;
+  if( allocatedVZEROMemory < sizeof(AliFlatESDVZERO) ) return -1;
+  fVZEROPointer = fContentSize;
+  AliFlatESDVZERO *flatVZERO = reinterpret_cast<AliFlatESDVZERO*> (fContent + fContentSize);
+  flatVZERO->SetFromESDVZERO( *vzero );
+  fContentSize += flatVZERO->GetSize();
+  return 0;
 }
 
 Int_t AliFlatESDEvent::SetPrimaryVertexTracks( const AliESDVertex *vtx, size_t allocatedVtxMemory )
@@ -303,6 +326,13 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
     SetTriggersEnd( nTriggers, triggerSize );    
   }
 
+  // fill VZERO info 
+
+  
+  err = SetVZEROData( esd->GetVZEROData(), freeSpace );
+  if( err!=0 ) return err;
+  freeSpace = allocatedMemorySize - GetSize();  
+  
   // fill primary vertices
 
   err = SetPrimaryVertexTracks( esd->GetPrimaryVertexTracks(), freeSpace );
@@ -408,6 +438,13 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
     esd->SetTriggerMaskNext50( GetTriggerMaskNext50() );
   }
 
+  // fill VZERO info 
+  
+  {
+    AliESDVZERO v;
+    if( GetVZEROData( v )>=0 ) esd->SetVZEROData( &v );
+  }
+  
   // fill primary vertices
   {
     AliESDVertex v;

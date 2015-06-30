@@ -35,6 +35,7 @@ class AliVMFT;   // AU
 class AliESDkink;
 class AliESDv0;
 class AliESDVertex;
+class AliESDVZERO;
 class AliVTrack;
 
 class AliVEvent : public TObject {
@@ -220,6 +221,8 @@ public:
   virtual UInt_t           GetEventSpecie() const { return 0; }
   virtual AliESDkink*      GetKink(Int_t /*i*/) const { return NULL; }
   virtual Int_t            GetNumberOfKinks() const { return 0; }
+ 
+  virtual Int_t GetVZEROData( AliESDVZERO & ) const {return -1;}
 
   // Primary vertex
   virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}

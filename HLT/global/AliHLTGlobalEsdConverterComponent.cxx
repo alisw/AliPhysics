@@ -1054,10 +1054,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   for ( const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
 	pObject != NULL; pObject = GetNextInputObject() ) {
-    AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );
+    AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );  
     if (esdVZERO) {
       pESD->SetVZEROData( esdVZERO );
-      break;
+     break;
     } else {
       ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZERO",
 		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO).c_str());

@@ -12,10 +12,12 @@
 #include "Rtypes.h"
 #include "AliVMisc.h"
 #include "AliVEvent.h"
+#include "AliFlatESDVZERO.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
 #include "AliFlatESDFriend.h"
 #include "AliESDVertex.h"
+#include "AliESDVZERO.h"
 
 class AliFlatESDV0;
 class AliFlatESDTrigger;
@@ -58,6 +60,10 @@ class AliFlatESDEvent :public AliVEvent {
   AliVTrack  *GetVTrack( Int_t i ) const { return GetFlatTrackNonConst(i); }
   AliESDkink *GetKink(Int_t /*i*/) const { return NULL;}
 
+  
+  using AliVEvent::GetVZEROData;
+  Int_t GetVZEROData( AliESDVZERO & ) const ;
+  
   using AliVEvent::GetPrimaryVertex;
   using AliVEvent::GetPrimaryVertexTPC;
   using AliVEvent::GetPrimaryVertexSPD;
@@ -95,6 +101,8 @@ class AliFlatESDEvent :public AliVEvent {
   void  SetTriggerMask(ULong64_t n) { fTriggerMask = n; }
   void  SetTriggerMaskNext50(ULong64_t n) { fTriggerMaskNext50 = n; }
   
+  Int_t  SetVZEROData( const AliESDVZERO *v, size_t allocatedVtxMemory );
+
   Int_t  SetPrimaryVertexTracks( const AliESDVertex *v, size_t allocatedVtxMemory );
   Int_t  SetPrimaryVertexSPD( const AliESDVertex *v, size_t allocatedVtxMemory  );
   Int_t  SetPrimaryVertexTPC( const AliESDVertex *v, size_t allocatedVtxMemory );
@@ -111,6 +119,8 @@ class AliFlatESDEvent :public AliVEvent {
   // --------------------------------------------------------------------------------
   // -- Getter methods
 
+  const AliFlatESDVZERO *GetFlatVZERO() const { return reinterpret_cast<const AliFlatESDVZERO*>( fContent + fVZEROPointer ); }
+ 
   const AliFlatESDVertex* GetFlatPrimaryVertexSPD() const ;
   const AliFlatESDVertex* GetFlatPrimaryVertexTracks() const ;
   const AliFlatESDVertex* GetFlatPrimaryVertexTPC() const ;
@@ -193,6 +203,7 @@ class AliFlatESDEvent :public AliVEvent {
   // Pointers to specific data in fContent
   
   size_t fTriggerPointer;        // position of the first trigger description in fContent
+  size_t fVZEROPointer;        // position of the first trigger description in fContent
   size_t fPrimaryVertexTracksPointer; // position of primary vertex tracks in fContent
   size_t fPrimaryVertexTPCPointer; // position of primary vertex TPC in fContent
   size_t fPrimaryVertexSPDPointer;  // position of primary vertex SPD in fContent
@@ -291,6 +302,7 @@ inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexTPC() const
   return (fPrimaryVertexMask & 0x4) ? (reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexTPCPointer)  ) : NULL;
 } 
 
+
 inline Int_t AliFlatESDEvent::GetPrimaryVertexSPD( AliESDVertex &v ) const 
 {
   const AliFlatESDVertex* flatVertex = GetFlatPrimaryVertexSPD();
@@ -323,5 +335,12 @@ inline Int_t AliFlatESDEvent::GetPrimaryVertex( AliESDVertex &v ) const
   return ret;
 }
 
+inline Int_t AliFlatESDEvent::GetVZEROData( AliESDVZERO &v ) const 
+{
+  const AliFlatESDVZERO* flatVZERO = GetFlatVZERO();
+  if( !flatVZERO ) return -1;
+  flatVZERO->GetESDVZERO( v );
+  return 0;
+}
 
 #endif

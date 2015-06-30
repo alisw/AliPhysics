@@ -272,7 +272,11 @@ public:
   // VZERO 
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
   void SetVZEROData(const AliESDVZERO * obj);
-	
+  Int_t GetVZEROData( AliESDVZERO &v ) const { 
+    if( fESDVZERO ){ v=*fESDVZERO; return 0; }
+    return -1;
+  }
+
  // ACORDE
   AliESDACORDE *GetACORDEData() const { return fESDACORDE;}
   void SetACORDEData(AliESDACORDE * obj);
