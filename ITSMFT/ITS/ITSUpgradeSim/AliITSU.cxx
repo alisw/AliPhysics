@@ -78,7 +78,6 @@ the AliITS class.
 #include <TMath.h>
 #include "AliDetector.h"
 #include "AliITSU.h"
-#include "AliITSLoader.h"
 #include "AliITSULoader.h"
 #include "AliITSUHit.h"
 #include "AliITSUSDigit.h"
@@ -86,7 +85,6 @@ the AliITS class.
 #include "AliITSUSimulationPix.h"
 #include "AliMC.h"
 #include "AliITSUDigitizer.h"
-#include "AliITSRecPoint.h"
 #include "AliRawReader.h"
 #include "AliRun.h"
 #include "AliLog.h"
@@ -95,7 +93,6 @@ the AliITS class.
 #include "AliITSUDigitPix.h"
 #include "AliITSUSegmentationPix.h"
 #include "AliITSUSimuParam.h"
-#include "AliITSFOSignalsSPD.h"
 #include "AliITSUParamList.h"
 #include "AliCDBManager.h" // tmp! Later the simuparam should be loaded centrally
 #include "AliCDBEntry.h"
