@@ -46,13 +46,12 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t maxB = etamax;//
     
     
-    int centrMin[8] = {0,0,10,20,30,40,60,60};
-    int centrMax[8] = {1,10,20,30,40,50,70,80};
+    int centrMin[16] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,60,70};
+    int centrMax[16] = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,70,80};
+
     
-    for(int i=0;i<8;i++){
-        if(ncentralitymin == 0) const int ncentrminlim = 0;
-        if(ncentralitymin == 60) const int ncentrminlim = 6;
-        if(ncentralitymin == centrMin[i] && ncentralitymin != 0 && ncentralitymin != 60) const int ncentrminlim = i;
+    for(int i=0;i<16;i++){
+        if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
         if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
     }
     
