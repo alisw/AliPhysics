@@ -59,7 +59,7 @@ void AliAlgDetITS::DefineVolumes()
   AliAlgVol *volITS=0,*hstave=0,*ladd=0;
   AliAlgSensITS *sens=0;
   //
-  int labDet = (GetDetID()+1)*1000000;
+  int labDet = GetDetLabel();
   AddVolume( volITS = new AliAlgVol("ITS",labDet) );
   //
   // SPD

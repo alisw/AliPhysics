@@ -13,65 +13,58 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAlgDetTOF.h"
+#include "AliAlgDetHMPID.h"
+#include "AliHMPIDParam.h"
 #include "AliAlgVol.h"
-#include "AliAlgSensTOF.h"
+#include "AliAlgSensHMPID.h"
 #include "AliAlgSteer.h"
 #include "AliGeomManager.h"
-#include "AliTOFGeometry.h"
 #include "AliESDtrack.h"
+#include "AliLog.h"
 #include <TGeoManager.h>
 
-ClassImp(AliAlgDetTOF);
+ClassImp(AliAlgDetHMPID);
 
 //____________________________________________
-AliAlgDetTOF::AliAlgDetTOF(const char* title)
+AliAlgDetHMPID::AliAlgDetHMPID(const char* title)
 {
   // default c-tor
-  SetNameTitle(AliAlgSteer::GetDetNameByDetID(AliAlgSteer::kTOF),title);
-  SetDetID(AliAlgSteer::kTOF);
+  SetNameTitle(AliAlgSteer::GetDetNameByDetID(AliAlgSteer::kHMPID),title);
+  SetDetID(AliAlgSteer::kHMPID);
 }
 
 //____________________________________________
-AliAlgDetTOF::~AliAlgDetTOF()
+AliAlgDetHMPID::~AliAlgDetHMPID()
 {
   // d-tor
 }
 
 //____________________________________________
-void AliAlgDetTOF::DefineVolumes()
+void AliAlgDetHMPID::DefineVolumes()
 {
-  // define TOF volumes
+  // define HMPID volumes
   //
-  const int kNSect = 18, kNStrips = AliTOFGeometry::NStripA()+2*AliTOFGeometry::NStripB()+2*AliTOFGeometry::NStripC();
   int labDet = GetDetLabel();
-  AliAlgSensTOF *strip=0;
-  //
-  //  AddVolume( volTOF = new AliAlgVol("TOF") ); // no main volume, why?
-  AliAlgVol *sect[kNSect] = {0};
-  //
-  for (int isc=0;isc<kNSect;isc++) {
-    int iid = labDet + (1+isc)*100;
-    AddVolume(sect[isc] = new AliAlgVol(Form("TOF/sm%02d",isc),iid));
-  }
-  //
-  int cnt = 0;
-  for (int isc=0;isc<kNSect;isc++) {
-    for (int istr=1;istr<=kNStrips;istr++) { // strip
-      int iid = labDet + (1+isc)*100 + (1+istr);
-      int vid = AliGeomManager::LayerToVolUID(AliGeomManager::kTOF, cnt++);
-      const char *symname = Form("TOF/sm%02d/strip%02d",isc,istr);
-      if (!gGeoManager->GetAlignableEntry(symname)) continue;
-      AddVolume( strip=new AliAlgSensTOF(symname,vid,iid,isc) );
-      strip->SetParent(sect[isc]);
-    } // strip
-  } // layer
+  AliGeomManager::ELayerID idHMPID = AliGeomManager::kHMPID;
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+    const char *symname = Form("/HMPID/Chamber%i",iCh);
+    if (!gGeoManager->GetAlignableEntry(symname)) {
+      AliErrorF("Did not find alignable %s",symname);
+      continue;
+    }
+    UShort_t vid = AliGeomManager::LayerToVolUID(idHMPID,iCh);
+    int iid = labDet + (1+iCh)*10000;
+    AliAlgSensHMPID* sens = new AliAlgSensHMPID(symname,vid,iid);
+    AddVolume(sens);
+  }//iCh loop
   //
 }
 
 //____________________________________________
-Bool_t AliAlgDetTOF::AcceptTrack(const AliESDtrack* trc,Int_t trtype) const 
+Bool_t AliAlgDetHMPID::AcceptTrack(const AliESDtrack* trc, Int_t trtype) const 
 {
   // test if detector had seed this track
-  return CheckFlags(trc,trtype);
+  if (!CheckFlags(trc,trtype)) return kFALSE;
+  if (trc->GetNcls(1)<fNPointsSel[trtype]) return kFALSE;
+  return kTRUE;
 }

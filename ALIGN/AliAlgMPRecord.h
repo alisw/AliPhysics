@@ -41,6 +41,9 @@ class AliAlgMPRecord : public TObject
   Float_t      GetResid(int id)        const {return fResid[id];}
   Float_t      GetResErr(int id)       const {return fResErr[id];}
   //
+  Float_t      GetChi2Ini()            const {return fChi2Ini;}
+  Float_t      GetQ2Pt()               const {return fQ2Pt;}
+  Float_t      GetTgl()                const {return fTgl;}
   Int_t        GetNDLocTot()           const {return fNDLocTot;}
   Int_t        GetNDGloTot()           const {return fNDGloTot;}
   const Float_t* GetArrGlo()           const {return fDGlo;}
@@ -71,6 +74,10 @@ class AliAlgMPRecord : public TObject
   Int_t        fNVarGlo;         // number of global variables defined
   Int_t        fNDLocTot;        // total number of non-zero local derivatives
   Int_t        fNDGloTot;        // total number of non-zero global derivatives
+  Int_t        fNMeas;           // number of measured points
+  Float_t      fChi2Ini;         // chi2 of initial kalman fit
+  Float_t      fQ2Pt;            // q/pt at ref point
+  Float_t      fTgl;             // dip angle at ref point
   //
   Short_t*     fNDLoc;           //[fNResid] number of non-0 local derivatives per residual
   Int_t*       fNDGlo;           //[fNResid] number of non-0 global derivatives per residual
@@ -88,7 +95,7 @@ class AliAlgMPRecord : public TObject
   Int_t        fNDLocTotBook;    //! number of slots booked for local derivatives
   Int_t        fNDGloTotBook;    //! number of slots booked for global derivatives
   //
-  ClassDef(AliAlgMPRecord,3);
+  ClassDef(AliAlgMPRecord,4);
 };
 
 

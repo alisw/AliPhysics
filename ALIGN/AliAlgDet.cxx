@@ -18,6 +18,7 @@
 #include "AliAlgDet.h"
 #include "AliAlgSteer.h"
 #include "AliAlgTrack.h"
+#include "AliAlgDOFStat.h"
 #include "AliAlgConstraint.h"
 #include "AliLog.h"
 #include "AliGeomManager.h"
@@ -27,8 +28,11 @@
 #include "AliAlignObj.h"
 #include "AliCDBId.h"
 #include "AliExternalTrackParam.h"
+#include "AliAlignObjParams.h"
 #include <TString.h>
 #include <TH1.h>
+#include <TTree.h>
+#include <TFile.h>
 #include <stdio.h>
 
 ClassImp(AliAlgDet)
@@ -43,7 +47,15 @@ AliAlgDet::AliAlgDet()
   ,fNSensors(0)
   ,fSID2VolID(0)
   ,fNProcPoints(0)
-  //
+   //
+  ,fNCalibDOF(0)
+  ,fNCalibDOFFree(0)
+  ,fCalibDOF(0)
+  ,fFirstParGloID(-1)
+  ,fParVals(0)
+  ,fParErrs(0)
+  ,fParLabs(0)   
+   //
   ,fUseErrorParam(0)
   ,fSensors()
   ,fVolumes()
@@ -92,8 +104,10 @@ Int_t AliAlgDet::ProcessPoints(const AliESDtrack* esdTr, AliAlgTrack* algTrack, 
   int npSel(0);
   AliAlgPoint* apnt(0);
   for (int ip=0;ip<np;ip++) {
-    if (!SensorOfDetector(trP->GetVolumeID()[ip])) continue;
-    if (!(apnt=TrackPoint2AlgPoint(ip, trP, esdTr))) continue;
+    int vid = trP->GetVolumeID()[ip];
+    if (!SensorOfDetector(vid)) continue;
+    apnt = GetSensorByVolId(vid)->TrackPoint2AlgPoint(ip, trP, esdTr);
+    if (!apnt) continue;
     algTrack->AddPoint(apnt);
     if (inv) apnt->SetInvDir();
     npSel++;
@@ -101,74 +115,6 @@ Int_t AliAlgDet::ProcessPoints(const AliESDtrack* esdTr, AliAlgTrack* algTrack, 
   }
   //
   return npSel;
-}
-
-//____________________________________________
-AliAlgPoint* AliAlgDet::TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trpArr, const AliESDtrack*)
-{
-  // convert the pntId-th point to AliAlgPoint, detectors may override this method
-  //
-  // convert to detector tracking frame
-  UShort_t vid = trpArr->GetVolumeID()[pntId];
-  Int_t sid = VolID2SID(vid); // sensor index within the detector
-  if (!sid<0) return 0;
-  AliAlgSens* sens = GetSensor(sid);
-  if (sens->GetSkip()) return 0;
-  AliAlgPoint* pnt = GetPointFromPool();
-  pnt->SetSensor(sens);
-  //
-  double tra[3],traId[3],loc[3],
-    glo[3] = {trpArr->GetX()[pntId], trpArr->GetY()[pntId], trpArr->GetZ()[pntId]};
-  const TGeoHMatrix& matL2Grec = sens->GetMatrixL2GReco(); // local to global matrix used for reconstruction
-  //const TGeoHMatrix& matL2G    = sens->GetMatrixL2G();     // local to global orig matrix used as a reference 
-  const TGeoHMatrix& matT2L    = sens->GetMatrixT2L();     // matrix for tracking to local frame translation
-  //
-  // undo reco-time alignment
-  matL2Grec.MasterToLocal(glo,loc); // go to local frame using reco-time matrix 
-  matT2L.MasterToLocal(loc,traId); // go to tracking frame 
-  //
-  sens->GetMatrixClAlg().LocalToMaster(traId,tra);   // apply alignment
-  //
-  if (!fUseErrorParam) {
-    // convert error
-    TGeoHMatrix hcov;
-    Double_t hcovel[9];
-    const Float_t *pntcov = trpArr->GetCov()+pntId*6; // 6 elements per error matrix
-    hcovel[0] = double(pntcov[0]);
-    hcovel[1] = double(pntcov[1]);
-    hcovel[2] = double(pntcov[2]);
-    hcovel[3] = double(pntcov[1]);
-    hcovel[4] = double(pntcov[3]);
-    hcovel[5] = double(pntcov[4]);
-    hcovel[6] = double(pntcov[2]);
-    hcovel[7] = double(pntcov[4]);
-    hcovel[8] = double(pntcov[5]);
-    hcov.SetRotation(hcovel);
-    hcov.Multiply(&matL2Grec);                
-    hcov.MultiplyLeft(&matL2Grec.Inverse());    // errors in local frame
-    hcov.Multiply(&matT2L);
-    hcov.MultiplyLeft(&matT2L.Inverse());       // errors in tracking frame
-    //
-    Double_t *hcovscl = hcov.GetRotationMatrix();
-    const double *sysE = sens->GetAddError(); // additional syst error
-    pnt->SetYZErrTracking(hcovscl[4]+sysE[0]*sysE[0],hcovscl[5],hcovscl[8]+sysE[1]*sysE[1]);
-  }
-  else { // errors will be calculated just before using the point in the fit, using track info
-    pnt->SetYZErrTracking(0,0,0);
-    pnt->SetNeedUpdateFromTrack();
-  }
-  pnt->SetXYZTracking(tra[0],tra[1],tra[2]);
-  pnt->SetAlphaSens(sens->GetAlpTracking());
-  pnt->SetXSens(sens->GetXTracking());
-  pnt->SetDetID(GetDetID());
-  pnt->SetSID(sid);
-  //
-  pnt->SetContainsMeasurement();
-  //
-  pnt->Init();
-  //
-  return pnt;
-  //
 }
 
 //_________________________________________________________
@@ -199,10 +145,32 @@ void AliAlgDet::UpdateL2GRecoMatrices()
   //
 }
 
+
+//_________________________________________________________
+void  AliAlgDet::ApplyAlignmentFromMPSol()
+{
+  // apply alignment from millepede solution array to reference alignment level
+  AliInfo("Applying alignment from Millepede solution");
+  for (int isn=GetNSensors();isn--;) GetSensor(isn)->ApplyAlignmentFromMPSol();
+}
+
 //_________________________________________________________
 void AliAlgDet::CacheReferenceOCDB()
 {
   // if necessary, detector may fetch here some reference OCDB data
+  //
+  // cache global deltas to avoid preicision problem
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliCDBEntry* ent = man->Get(Form("%s/Align/Data",GetName()));
+  TObjArray* arr = (TObjArray*)ent->GetObject();
+  for (int i=arr->GetEntriesFast();i--;) {
+    const AliAlignObjParams* par = (const AliAlignObjParams*)arr->At(i);
+    AliAlgVol* vol = GetVolume(par->GetSymName());
+    if (!vol) {AliErrorF("Volume %s not found",par->GetSymName()); continue;}
+    TGeoHMatrix delta;
+    par->GetMatrix(delta);
+    vol->SetGlobalDeltaRef(delta);
+  }
 }
 
 
@@ -277,7 +245,10 @@ void AliAlgDet::DefineMatrices()
   // is used for as the reference for the alignment parameters only,
   // see its definition in the AliAlgVol::PrepateMatrixT2L
   next.Reset();
-  while ( (vol=(AliAlgVol*)next()) ) vol->PrepareMatrixT2L();
+  while ( (vol=(AliAlgVol*)next()) ) {
+    vol->PrepareMatrixT2L();
+    if (vol->IsSensor()) ((AliAlgSens*)vol)->PrepareMatrixClAlg(); // alignment matrix
+  }
   //
 }
 
@@ -292,7 +263,10 @@ void AliAlgDet::SortSensors()
   }
   fSensors.Sort();
   fSID2VolID = new Int_t[fNSensors]; // cash id's for fast binary search
-  for (int i=0;i<fNSensors;i++) fSID2VolID[i] = GetSensor(i)->GetVolID();
+  for (int i=0;i<fNSensors;i++) {
+    fSID2VolID[i] = GetSensor(i)->GetVolID();
+    GetSensor(i)->SetSID(i);
+  }
   //
 }
 
@@ -314,6 +288,7 @@ Int_t AliAlgDet::InitGeom()
     fNDOFs += vol->GetNDOFs();
   }
   //
+  fNDOFs += fNCalibDOF;
   SetInitGeomDone();
   return fNDOFs;
 }
@@ -327,6 +302,17 @@ Int_t AliAlgDet::AssignDOFs()
   Float_t* pars = fAlgSteer->GetGloParVal(); 
   Float_t* errs = fAlgSteer->GetGloParErr(); 
   Int_t*   labs = fAlgSteer->GetGloParLab();
+  //
+  // assign calibration DOFs
+  fFirstParGloID = gloCount;
+  fParVals = pars + gloCount;
+  fParErrs = errs + gloCount;
+  fParLabs = labs + gloCount;
+  for (int icl=0;icl<fNCalibDOF;icl++) {
+    fParLabs[icl] = (GetDetLabel() + 10000)*100 + icl;
+    gloCount++;
+  }
+  //
   int nvol = GetNVolumes();
   for (int iv=0;iv<nvol;iv++) {
     AliAlgVol *vol = GetVolume(iv);
@@ -334,6 +320,7 @@ Int_t AliAlgDet::AssignDOFs()
     if (!vol->GetParent()) vol->AssignDOFs(gloCount,pars,errs,labs);
   }
   //
+
   if (fNDOFs != gloCount-gloCount0) AliFatalF("Mismatch between declared %d and initialized %d DOFs for %s",
 					      fNDOFs,gloCount-gloCount0,GetName());
   
@@ -346,8 +333,13 @@ void AliAlgDet::InitDOFs()
   // initialize free parameters
   if (GetInitDOFsDone()) AliFatalF("Something is wrong, DOFs are already initialized for %s",GetName());
   //
+  // process calibration DOFs
+  for (int i=0;i<fNCalibDOF;i++) if (fParErrs[i]<-9999 && IsZeroAbs(fParVals[i])) FixDOF(i);
+  //
   int nvol = GetNVolumes();
   for (int iv=0;iv<nvol;iv++) GetVolume(iv)->InitDOFs();
+  //
+  CalcFree(kTRUE);
   //
   SetInitDOFsDone();
   return;
@@ -396,6 +388,10 @@ void AliAlgDet::Print(const Option_t *opt) const
   if (!(IsDisabledColl()&&IsDisabledCosm()) && opts.Contains("long")) 
     for (int iv=0;iv<GetNVolumes();iv++) GetVolume(iv)->Print(opt);
   //
+  for (int i=0;i<GetNCalibDOFs();i++) {
+    printf("CalibDOF%2d: %-20s\t%e\n",i,GetCalibDOFName(i),GetCalibDOFValWithCal(i));
+  }
+
 }
 
 //____________________________________________
@@ -497,6 +493,9 @@ Bool_t AliAlgDet::OwnsDOFID(Int_t id) const
     AliAlgVol* vol = GetVolume(iv); // check only top level volumes
     if (!vol->GetParent() && vol->OwnsDOFID(id)) return kTRUE;
   }
+  // calibration DOF?
+  if (id>=fFirstParGloID && id<fFirstParGloID+fNCalibDOF) return kTRUE;
+  //
   return kFALSE;
 }
 
@@ -513,17 +512,19 @@ AliAlgVol* AliAlgDet::GetVolOfDOFID(Int_t id) const
 }
 
 //______________________________________________________
-void AliAlgDet::Terminate(TH1* h)
+void AliAlgDet::Terminate()
 {
   // called at the end of processing
   //  if (IsDisabled()) return;
   int nvol = GetNVolumes();
   fNProcPoints = 0;
+  AliAlgDOFStat* st = fAlgSteer->GetDOFStat();
   for (int iv=0;iv<nvol;iv++) {
     AliAlgVol *vol = GetVolume(iv);
     // call init for root level volumes, they will take care of their children
-    if (!vol->GetParent()) fNProcPoints += vol->FinalizeStat(h);
+    if (!vol->GetParent()) fNProcPoints += vol->FinalizeStat(st);
   }
+  FillDOFStat(st); // fill stat for calib dofs
 }
 
 //________________________________________
@@ -547,6 +548,25 @@ void AliAlgDet::FixNonSensors()
     vol->SetFreeDOFPattern(0);
     vol->SetChildrenConstrainPattern(0);
   }
+}
+
+//________________________________________
+int AliAlgDet::SelectVolumes(TObjArray* arr, int lev, const char* match)
+{
+  // select volumes matching to pattern and/or hierarchy level
+  //
+  if (!arr) return 0;
+  int nadd = 0;
+  TString mts=match, syms;
+  for (int i=GetNVolumes();i--;) {
+    AliAlgVol *vol = GetVolume(i);
+    if (lev>=0 && vol->CountParents()!=lev) continue; // wrong level
+    if (!mts.IsNull() && !(syms=vol->GetSymName()).Contains(mts)) continue; //wrong name
+    arr->AddLast(vol);
+    nadd++;
+  }
+  //
+  return nadd;
 }
 
 //________________________________________
@@ -579,7 +599,7 @@ void AliAlgDet::SetDOFCondition(int dof, float condErr ,int lev,const char* matc
     if (dof>=vol->GetNDOFs()) continue;
     vol->SetParErr(dof, condErr);
     if (condErr>=0 && !vol->IsFreeDOF(dof)) vol->SetFreeDOF(dof);
-    if (condErr<0  && vol->IsFreeDOF(dof)) vol->FixDOF(dof);
+    //if (condErr<0  && vol->IsFreeDOF(dof)) vol->FixDOF(dof);
   }
   //
 }
@@ -612,4 +632,94 @@ void AliAlgDet::ConstrainOrphans(const double* sigma, const char* match)
   }
   else ((TObjArray*)fAlgSteer->GetConstraints())->Add(constr);
   //
+}
+
+//________________________________________
+void AliAlgDet::SetFreeDOF(Int_t dof) 
+{
+  // set detector free dof
+  if (dof>=kNMaxKalibDOF) {AliFatalF("Detector CalibDOFs limited to %d, requested %d",kNMaxKalibDOF,dof);}
+  fCalibDOF |= 0x1<<dof; 
+  CalcFree();
+}
+
+//________________________________________
+void AliAlgDet::FixDOF(Int_t dof)
+{
+  // fix detector dof
+  if (dof>=kNMaxKalibDOF) {AliFatalF("Detector CalibDOFs limited to %d, requested %d",kNMaxKalibDOF,dof);}
+  fCalibDOF &=~(0x1<<dof); 
+  CalcFree();
+}
+
+//__________________________________________________________________
+Bool_t AliAlgDet::IsCondDOF(Int_t i) const
+{
+  // is DOF free and conditioned?
+  return (!IsZeroAbs(GetParVal(i)) || !IsZeroAbs(GetParErr(i)));
+}
+
+//__________________________________________________________________
+void AliAlgDet::CalcFree(Bool_t condFix)
+{
+  // calculate free calib dofs. If condFix==true, condition parameter a la pede, i.e. error < 0
+  fNCalibDOFFree = 0;
+  for (int i=0;i<fNCalibDOF;i++) {
+    if (!IsFreeDOF(i)) {
+      if (condFix) SetParErr(i,-999);
+      continue;
+    }
+    fNCalibDOFFree++;
+  }
+  //
+}
+
+//______________________________________________________
+void AliAlgDet::FillDOFStat(AliAlgDOFStat* st) const
+{
+  // fill statistics info hist
+  if (!st) return;
+  int ndf = GetNCalibDOFs();
+  int dof0 = GetFirstParGloID();
+  int stat = GetNProcessedPoints();
+  for (int idf=0;idf<ndf;idf++) {
+    int dof = idf+dof0;
+    st->AddStat(dof,stat);
+  }
+  //
+}
+
+//______________________________________________________
+void AliAlgDet::WriteSensorPositions(const char* outFName)
+{
+  // create tree with sensors ideal, ref and reco positions
+  int ns = GetNSensors();
+  double loc[3]={0};
+  // ------- local container type for dumping sensor positions ------
+  typedef struct {
+    int    volID;  // volume id
+    double pId[3]; // ideal
+    double pRf[3]; // reference
+    double pRc[3]; // reco-time
+  } snpos_t;
+  snpos_t spos; // 
+  TFile* fl = TFile::Open(outFName,"recreate");
+  TTree* tr = new TTree("snpos",Form("sensor poisitions for %s",GetName()));
+  tr->Branch("volID",&spos.volID,"volID/I");
+  tr->Branch("pId",&spos.pId,"pId[3]/D");
+  tr->Branch("pRf",&spos.pRf,"pRf[3]/D");
+  tr->Branch("pRc",&spos.pRc,"pRc[3]/D");
+  //
+  for (int isn=0;isn<ns;isn++) {
+    AliAlgSens* sens = GetSensor(isn);
+    spos.volID = sens->GetVolID();
+    sens->GetMatrixL2GIdeal().LocalToMaster(loc,spos.pId);
+    sens->GetMatrixL2G().LocalToMaster(loc,spos.pRf);
+    sens->GetMatrixL2GReco().LocalToMaster(loc,spos.pRc);
+    tr->Fill();
+  }
+  tr->Write();
+  delete tr;
+  fl->Close();
+  delete fl;
 }

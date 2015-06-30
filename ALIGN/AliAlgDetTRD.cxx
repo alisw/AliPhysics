@@ -20,16 +20,30 @@
 #include "AliGeomManager.h"
 #include "AliESDtrack.h"
 #include "AliTRDgeometry.h"
-#include "TGeoManager.h"
+#include <TGeoManager.h>
+#include <TMath.h>
+
+using namespace TMath;
 
 ClassImp(AliAlgDetTRD);
 
+const char* AliAlgDetTRD::fgkCalibDOFName[AliAlgDetTRD::kNCalibParams]={"DZdTglNRC","DVDriftT"};
+
 //____________________________________________
 AliAlgDetTRD::AliAlgDetTRD(const char* title)
+  : AliAlgDet()
+  ,fNonRCCorrDzDtgl(0)
+  ,fCorrDVT(0)
 {
   // default c-tor
   SetNameTitle(AliAlgSteer::GetDetNameByDetID(AliAlgSteer::kTRD),title);
   SetDetID(AliAlgSteer::kTRD);
+  fExtraErrRC[0] = fExtraErrRC[1] = 0;
+  //
+  // ad hoc correction
+  SetNonRCCorrDzDtgl();
+  SetExtraErrRC();
+  fNCalibDOF = kNCalibParams;
 }
 
 
@@ -47,7 +61,7 @@ void AliAlgDetTRD::DefineVolumes()
   const int kNSect = 18, kNStacks = 5, kNLayers = 6;
   AliAlgSensTRD *chamb=0;
   //
-  int labDet = (GetDetID()+1)*1000000;
+  int labDet = GetDetLabel();
   //  AddVolume( volTRD = new AliAlgVol("TRD") ); // no main volume, why?
   AliAlgVol *sect[kNSect] = {0};
   //
@@ -82,24 +96,59 @@ Bool_t AliAlgDetTRD::AcceptTrack(const AliESDtrack* trc,Int_t trtype) const
   return kTRUE;
 }
 
+//__________________________________________
 //____________________________________________
-AliAlgPoint* AliAlgDetTRD::TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trp, const AliESDtrack* tr)
+void AliAlgDetTRD::Print(const Option_t *opt) const
 {
-  // custom correction for non-crossing points, to account for the dependence of Z bias
-  // on track inclination (prob. to not cross pads)
+  // print info
+  AliAlgDet::Print(opt);
+  printf("Extra error for RC tracklets: Y:%e Z:%e\n",fExtraErrRC[0],fExtraErrRC[1]);
+}
+ 
+const char* AliAlgDetTRD::GetCalibDOFName(int i) const
+{
+  // return calibration DOF name
+  return i<kNCalibParams ? fgkCalibDOFName[i]:0;
+}
+
+//______________________________________________________
+void AliAlgDetTRD::WritePedeInfo(FILE* parOut, const Option_t *opt) const
+{
+  // contribute to params and constraints template files for PEDE
+  AliAlgDet::WritePedeInfo(parOut,opt);
   //
-  AliAlgPoint* pnt = AliAlgDet::TrackPoint2AlgPoint(pntId,trp,tr); // process in usual way
-  if (!pnt) return 0;
+  // write calibration parameters
+  enum {kOff,kOn,kOnOn};
+  const char* comment[3] = {"  ","! ","!!"};
+  const char* kKeyParam = "parameter";
   //
-  // is it pad crrossing?
-  double sgYZ = pnt->GetYZErrTracking()[1];
-  if (TMath::Abs(sgYZ)<0.01) return pnt; // crossing
+  fprintf(parOut,"%s%s %s\t %d calibraction params for %s\n",comment[kOff],kKeyParam,comment[kOnOn],
+	  GetNCalibDOFs(),GetName());
   //
-  double* pYZ = (double*)pnt->GetYZTracking();
-  double corrZ = 1.055*tr->GetTgl();
-  double sgZ2 = pnt->GetYZErrTracking()[2];
-  pYZ[1] += corrZ; 
-  pYZ[0] += corrZ*sgYZ/sgZ2;  // Y and Z are correlated
-  return pnt;
+  for (int ip=0;ip<GetNCalibDOFs();ip++) {
+    int cmt = IsCondDOF(ip) ? kOff : kOn;
+    fprintf(parOut,"%s %9d %+e %+e\t%s %s p%d\n",comment[cmt],GetParLab(ip),
+	    GetParVal(ip),GetParErr(ip),comment[kOnOn],IsFreeDOF(ip) ? "  ":"FX",ip);
+  }
   //
+}
+
+//_______________________________________________________
+Double_t AliAlgDetTRD::GetCalibDOFVal(int id) const
+{
+  // return preset value of calibration dof
+  double val = 0;
+  switch (id) {
+  case kCalibNRCCorrDzDtgl : val = GetNonRCCorrDzDtgl(); break;
+  case kCalibDVT           : val = GetCorrDVT();         break;
+  default: break;
+  };
+  return val;
+}
+
+//_______________________________________________________
+Double_t AliAlgDetTRD::GetCalibDOFValWithCal(int id) const
+{
+  // return preset value of calibration dof + mp correction
+  return GetCalibDOFVal(id) + GetParVal(id);
 }

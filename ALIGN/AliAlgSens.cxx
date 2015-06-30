@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <stdio.h>
+#include <TClonesArray.h>
 #include "AliAlgSens.h"
 #include "AliAlgAux.h"
 #include "AliLog.h"
@@ -21,6 +22,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliAlgPoint.h"
 #include "AliAlgDet.h"
+#include "AliAlgDOFStat.h"
 
 ClassImp(AliAlgSens)
 
@@ -30,8 +32,10 @@ using namespace TMath;
 //_________________________________________________________
 AliAlgSens::AliAlgSens(const char* name,Int_t vid, Int_t iid) 
   : AliAlgVol(name,iid)
+  ,fSID(0)
   ,fDet(0)
   ,fMatClAlg()  
+  ,fMatClAlgReco()
 {
   // def c-tor
   SetVolID(vid);
@@ -46,7 +50,7 @@ AliAlgSens::~AliAlgSens()
 }
 
 //_________________________________________________________
-void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv) const
+void AliAlgSens::DPosTraDParGeomLOC(const AliAlgPoint* pnt, double* deriv) const
 {
   // Jacobian of position in sensor tracking frame (tra) vs sensor LOCAL frame 
   // parameters in TGeoHMatrix convention.
@@ -57,6 +61,7 @@ void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv) const
   //
   memset(delta,0,kNDOFGeom*sizeof(double));
   memset(deriv,0,kNDOFGeom*3*sizeof(double));
+  const double *tra = pnt->GetXYZTracking();
   //
   for (int ip=kNDOFGeom;ip--;) {
     //
@@ -88,7 +93,7 @@ void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv) const
 }
 
 //_________________________________________________________
-void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv, const AliAlgVol* parent) const
+void AliAlgSens::DPosTraDParGeomLOC(const AliAlgPoint* pnt, double* deriv, const AliAlgVol* parent) const
 {
   // Jacobian of position in sensor tracking frame (tra) vs parent volume LOCAL frame parameters.
   // NO check of parentship is done!
@@ -102,6 +107,7 @@ void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv, const AliA
   //
   memset(delta,0,kNDOFGeom*sizeof(double));
   memset(deriv,0,kNDOFGeom*3*sizeof(double));
+  const double *tra = pnt->GetXYZTracking();
   //
   for (int ip=kNDOFGeom;ip--;) {
     //
@@ -132,7 +138,7 @@ void AliAlgSens::DPosTraDParGeomLOC(const double *tra, double* deriv, const AliA
 }
 
 //_________________________________________________________
-void AliAlgSens::DPosTraDParGeomTRA(const double *tra, double* deriv) const
+void AliAlgSens::DPosTraDParGeomTRA(const AliAlgPoint* pnt, double* deriv) const
 {
   // Jacobian of position in sensor tracking frame (tra) vs sensor TRACKING 
   // frame parameters in TGeoHMatrix convention, i.e. the modified parameter is
@@ -145,6 +151,7 @@ void AliAlgSens::DPosTraDParGeomTRA(const double *tra, double* deriv) const
   //
   memset(delta,0,kNDOFGeom*sizeof(double));
   memset(deriv,0,kNDOFGeom*3*sizeof(double));
+  const double *tra = pnt->GetXYZTracking();
   //
   for (int ip=kNDOFGeom;ip--;) {
     //
@@ -175,7 +182,7 @@ void AliAlgSens::DPosTraDParGeomTRA(const double *tra, double* deriv) const
 }
 
 //_________________________________________________________
-void AliAlgSens::DPosTraDParGeomTRA(const double *tra, double* deriv, const AliAlgVol* parent) const
+void AliAlgSens::DPosTraDParGeomTRA(const AliAlgPoint* pnt, double* deriv, const AliAlgVol* parent) const
 {
   // Jacobian of position in sensor tracking frame (tra) vs sensor TRACKING 
   // frame parameters in TGeoHMatrix convention, i.e. the modified parameter is
@@ -202,6 +209,7 @@ void AliAlgSens::DPosTraDParGeomTRA(const double *tra, double* deriv, const AliA
   //
   memset(delta,0,kNDOFGeom*sizeof(double));
   memset(deriv,0,kNDOFGeom*3*sizeof(double));
+  const double *tra = pnt->GetXYZTracking();
   //
   for (int ip=kNDOFGeom;ip--;) {
     //
@@ -232,15 +240,15 @@ void AliAlgSens::DPosTraDParGeomTRA(const double *tra, double* deriv, const AliA
 }
 
 //_________________________________________________________
-void AliAlgSens::DPosTraDParGeom(const double *tra, double* deriv, const AliAlgVol* parent) const
+void AliAlgSens::DPosTraDParGeom(const AliAlgPoint* pnt, double* deriv, const AliAlgVol* parent) const
 {
   // calculate point position derivatives in tracking frame of sensor
   // vs standard geometrical DOFs of its parent volume (if parent!=0) or sensor itself
   Frame_t frame = parent ? parent->GetVarFrame() : GetVarFrame();
   switch(frame) {
-  case kLOC : parent ? DPosTraDParGeomLOC(tra,deriv,parent) : DPosTraDParGeomLOC(tra,deriv);
+  case kLOC : parent ? DPosTraDParGeomLOC(pnt,deriv,parent) : DPosTraDParGeomLOC(pnt,deriv);
     break;
-  case kTRA : parent ? DPosTraDParGeomTRA(tra,deriv,parent) : DPosTraDParGeomTRA(tra,deriv);
+  case kTRA : parent ? DPosTraDParGeomTRA(pnt,deriv,parent) : DPosTraDParGeomTRA(pnt,deriv);
     break;
   default   : AliErrorF("Alignment frame %d is not implemented",parent->GetVarFrame()); 
     break;
@@ -285,19 +293,15 @@ Int_t AliAlgSens::Compare(const TObject* b) const
 void AliAlgSens::SetTrackingFrame()
 {
   // define tracking frame of the sensor
-  AliWarningF("Generic method called for %s",GetSymName());
-  double tra[3]={0},loc[3],glo[3];
-  const TGeoHMatrix &t2l = GetMatrixT2L();
-  const double* t = t2l.GetTranslation();
-  double r = TMath::Sqrt(t[0]*t[0]+t[1]*t[1]);
-  // ITS defines tracking frame with origin in sensor, others at 0
-  if (r>1) tra[0] = r;
-  //
-  t2l.LocalToMaster(tra,loc);
-  GetMatrixL2GIdeal().LocalToMaster(loc,glo);
-  fX = Sqrt(glo[0]*glo[0]+glo[1]*glo[1]);
+  //  AliWarningF("Generic method called for %s",GetSymName());
+  double tra[3]={0},glo[3];
+  TGeoHMatrix t2g;
+  GetMatrixT2G(t2g);
+  t2g.LocalToMaster(tra,glo);
+  fX   = Sqrt(glo[0]*glo[0]+glo[1]*glo[1]);  
   fAlp = ATan2(glo[1],glo[0]);
   AliAlgAux::BringToPiPM(fAlp);
+  //
 }
 
 //____________________________________________
@@ -332,6 +336,8 @@ void AliAlgSens::Print(const Option_t *opt) const
     GetMatrixT2L().Print();
     printf("ClAlg       : "); 
     GetMatrixClAlg().Print();
+    printf("ClAlgReco: "); 
+    GetMatrixClAlgReco().Print();
   }
   //
 }
@@ -347,17 +353,134 @@ void AliAlgSens::PrepareMatrixT2L()
   }
   SetMatrixT2L(*t2l);
   //
-  // create alignment matrix
-  TGeoHMatrix ma = GetMatrixT2L();
-  ma.MultiplyLeft(&GetMatrixL2G());
-  ma.MultiplyLeft(&GetMatrixL2GIdeal().Inverse());
-  ma.MultiplyLeft(&GetMatrixT2L().Inverse());
+}
+
+//____________________________________________
+void AliAlgSens::PrepareMatrixClAlg()
+{
+  // prepare alignment matrix in the LOCAL frame: delta = Gideal^-1 * G
+  TGeoHMatrix ma = GetMatrixL2GIdeal().Inverse();
+  ma *= GetMatrixL2G();
   SetMatrixClAlg(ma);
+  //
+}
+
+//____________________________________________
+void AliAlgSens::PrepareMatrixClAlgReco()
+{
+  // prepare alignment matrix used at reco time
+  TGeoHMatrix ma = GetMatrixL2GIdeal().Inverse();
+  ma *= GetMatrixL2GReco();
+  SetMatrixClAlgReco(ma);
   //
 }
 
 //____________________________________________
 void AliAlgSens::UpdatePointByTrackInfo(AliAlgPoint* pnt, const AliExternalTrackParam* t) const
 {
+  // update
   fDet->UpdatePointByTrackInfo(pnt,t);
 }
+
+//____________________________________________
+void AliAlgSens::DPosTraDParCalib(const AliAlgPoint* pnt,double* deriv,int calibID,const AliAlgVol* parent) const
+{
+  // calculate point position X,Y,Z derivatives wrt calibration parameter calibID of given parent
+  // parent=0 means top detector object calibration 
+  //
+  deriv[0]=deriv[1]=deriv[2]=0;
+}
+
+//______________________________________________________
+Int_t AliAlgSens::FinalizeStat(AliAlgDOFStat* st)
+{
+  // finalize statistics on processed points
+  if (st) FillDOFStat(st);
+  return fNProcPoints;
+}
+
+//_________________________________________________________________
+void AliAlgSens::UpdateL2GRecoMatrices(const TClonesArray* algArr, const TGeoHMatrix *cumulDelta)
+{
+  // recreate fMatL2GReco matrices from ideal L2G matrix and alignment objects
+  // used during data reconstruction. 
+  // On top of what each volume does, also update misalignment matrix inverse
+  //
+  AliAlgVol::UpdateL2GRecoMatrices(algArr,cumulDelta);
+  PrepareMatrixClAlgReco();
+  //
+}
+ 
+/*
+//_________________________________________________________________
+AliAlgPoint* AliAlgSens::TrackPoint2AlgPoint(int, const AliTrackPointArray*, const AliESDtrack*)
+{
+  // dummy converter
+  AliError("Generic method, must be implemented in specific sensor");
+  return 0;
+}
+*/
+
+//_________________________________________________________________
+void AliAlgSens::ApplyAlignmentFromMPSol()
+{
+  // apply to the tracking coordinates in the sensor frame the full chain
+  // of alignments found by MP for this sensor and its parents
+  //
+  const AliAlgVol* vol = this;
+  TGeoHMatrix deltaG;
+  // create global combined delta:
+  // DeltaG = deltaG_0*...*deltaG_j, where delta_i is global delta of each member of hierarchy
+  while(vol) {
+    TGeoHMatrix deltaGJ;
+    vol->CreateAlignmenMatrix(deltaGJ);
+    deltaG.MultiplyLeft(&deltaGJ);
+    vol = vol->GetParent();
+  }
+  //
+  // update misaligned L2G matrix
+  deltaG *= GetMatrixL2GIdeal();
+  SetMatrixL2G(deltaG);
+  //
+  // update local misalignment matrix
+  PrepareMatrixClAlg();
+  //
+}
+
+/*
+//_________________________________________________________________
+void AliAlgSens::ApplyAlignmentFromMPSol()
+{
+  // apply to the tracking coordinates in the sensor frame the full chain
+  // of alignments found by MP for this sensor and its parents
+  double delta[kNDOFGeom]={0};
+  //
+  TGeoHMatrix matMod;
+  //
+  // sensor proper variation
+  GetParValGeom(delta);
+  IsFrameTRA() ? GetDeltaT2LmodTRA(matMod,delta) : GetDeltaT2LmodLOC(matMod,delta);
+  fMatClAlg.MultiplyLeft(&matMod); 
+  //
+  AliAlgVol* parent = this;
+  while ((parent==parent->GetParent())) {
+    // this is the matrix for transition from sensor to parent volume frame
+    parent->GetParValGeom(delta);
+    TGeoHMatrix matRel,t2gP;
+    if (parent->IsFrameTRA()) {
+      GetMatrixT2G(matRel);           // t2g matrix of child
+      parent->GetMatrixT2G(t2gP);     // t2g matrix of parent
+      matRel.MultiplyLeft(&t2gP.Inverse());
+      GetDeltaT2LmodTRA(matMod, delta, matRel);
+    }
+    else {
+      matRel = parent->GetMatrixL2GIdeal().Inverse(); 
+      matRel *= GetMatrixL2GIdeal();
+      GetDeltaT2LmodLOC(matMod, delta, matRel);
+    }
+    fMatClAlg.MultiplyLeft(&matMod);
+  }
+  //
+}
+
+*/

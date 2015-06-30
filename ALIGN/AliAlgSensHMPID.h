@@ -1,5 +1,5 @@
-#ifndef ALIALGSENSITS_H
-#define ALIALGSENSITS_H
+#ifndef ALIALGSENSHMPID_H
+#define ALIALGSENSHMPID_H
 
 #include "AliAlgSens.h"
 
@@ -11,25 +11,25 @@ class AliAlgPoint;
 
 
 /*--------------------------------------------------------
-  ITS sensor
+  HMPID sensor (chamber)
   -------------------------------------------------------*/
 
 // Author: ruben.shahoyan@cern.ch
 
 
-class AliAlgSensITS : public AliAlgSens
+class AliAlgSensHMPID : public AliAlgSens
 {
  public:
-  AliAlgSensITS(const char* name=0, Int_t vid=0, Int_t iid=0);
-  virtual ~AliAlgSensITS();
+  AliAlgSensHMPID(const char* name=0, Int_t vid=0, Int_t iid=0, Int_t isec=0);
+  virtual ~AliAlgSensHMPID();
   //
   virtual AliAlgPoint* TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trpArr, const AliESDtrack* t);
-
   //  virtual void   SetTrackingFrame();
+  virtual void PrepareMatrixT2L();
   //
  protected:
   //
-  ClassDef(AliAlgSensITS,1)
+  ClassDef(AliAlgSensHMPID,1)
 };
 
 

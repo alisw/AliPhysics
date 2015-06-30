@@ -16,6 +16,10 @@
 
 
 #include "AliAlgSens.h"
+class AliTrackPointArray;
+class AliESDtrack;
+class AliAlgPoint;
+
 
 class AliAlgVtx : public AliAlgSens
 {
@@ -29,7 +33,13 @@ class AliAlgVtx : public AliAlgSens
   virtual void   PrepareMatrixL2G(Bool_t=0)      {fMatL2G.Clear();} // unit matrix
   virtual void   PrepareMatrixL2GIdeal() {fMatL2GIdeal.Clear();} // unit matrix
   virtual void   PrepareMatrixT2L();
-
+  //
+  virtual AliAlgPoint* TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trpArr, const AliESDtrack* t);
+  //
+ protected:
+  AliAlgVtx(const AliAlgVtx&);
+  AliAlgVtx& operator=(const AliAlgVtx&);
+  //
  protected:
   //
   ClassDef(AliAlgVtx,1);

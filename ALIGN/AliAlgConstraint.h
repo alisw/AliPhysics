@@ -23,7 +23,8 @@ class AliAlgConstraint : public TNamed
 {
  public:
   enum {kNDOFGeom=AliAlgVol::kNDOFGeom};
-
+  enum {kNoJacobianBit=BIT(14)};
+  //
   AliAlgConstraint(const char* name=0,const char* title=0);
   virtual ~AliAlgConstraint();
   //
@@ -32,7 +33,7 @@ class AliAlgConstraint : public TNamed
   //
   Int_t       GetNChildren()                   const {return fChildren.GetEntriesFast();}
   AliAlgVol*  GetChild(int i)                  const {return (AliAlgVol*)fChildren[i];}
-  void        AddChild(const AliAlgVol* v)           {fChildren.AddLast((AliAlgVol*)v);}
+  void        AddChild(const AliAlgVol* v)           {if (v) fChildren.AddLast((AliAlgVol*)v);}
   //
   Bool_t     IsDOFConstrained(Int_t dof)       const {return fConstraint&0x1<<dof;}
   UChar_t    GetConstraintPattern()            const {return fConstraint;}
@@ -42,6 +43,9 @@ class AliAlgConstraint : public TNamed
   Bool_t     HasConstraint()                   const {return  fConstraint;}
   Double_t   GetSigma(int i)                   const {return  fSigma[i];}
   void       SetSigma(int i,double s=0)              {fSigma[i] = s;}
+  //
+  void       SetNoJacobian(Bool_t v=kTRUE)           {SetBit(kNoJacobianBit,v);}
+  Bool_t     GetNoJacobian()                   const {return TestBit(kNoJacobianBit);}
   //
   void       ConstrCoefGeom(const TGeoHMatrix &matRD, float* jac/*[kNDOFGeom][kNDOFGeom]*/) const;
   //

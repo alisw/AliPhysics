@@ -29,6 +29,7 @@
 
   1) local delta:   l'_j = delta_j * l_j
   hence g'  = G_j * delta_j = G'_j*l_j 
+  or as 
   2) global Delta:  g' = Delta_j * G_j * l_j = G'_j*l_j 
   
   Hence Delta and delta are linked as 
@@ -38,11 +39,11 @@
   In case the whole chain of nested volumes is aligned, the corrections pile-up as:
 
   G_0*delta_0 ... G^-1_{j-2}*G_{j-1}*delta_{j-1}*G^-1_{j-1}*G_j*delta_j =
-  Delta_j * Delta_{j-1} ... Delta_{1}*Delta_{0}... * G_j
-  = Delta_0*G_{0}*G^-1_{0}*Delta_1*G_1*...G^-1_{j-1}*Delta_{j-1}*G_j
+  Delta_0 * Delta_{1} ... Delta_{j-1}*Delta_{j}... * G_j
 
-  -> Delta_j = G'_j * G^-1_j * G_{j-1} * G'^-1_{i-1} 
+  -> Delta_j = G'_{j-1} * G^-1_{j-1} * G_j * G'^-1_j 
   where G and G' are modified and original L2G matrices
+
 
   From this by induction one gets relation between local and global deltas:
 
@@ -56,7 +57,7 @@
   of the new incremental alignment Delta_j must be combined with PDelta_j to 
   resulting matrix TDelta_j before writing new alignment object.
 
-  Derivation: if G_j and IG_j and final and ideal L2G matrices for level j, then 
+  Derivation: if G_j and IG_j are final and ideal L2G matrices for level j, then 
 
   G_j = TDelta_j * TDelta_{j-1} ... TDelta_0 * IG_j
   =     (Delta_j * Delta_{j-1} ... Delta_0)  * (PDelta_j * PDelta_{j-1} ... PDelta_0) * IG_j
@@ -96,7 +97,7 @@
 
 
 #include "AliAlgVol.h"
-#include "AliAlgSens.h"
+#include "AliAlgDOFStat.h"
 #include "AliAlgConstraint.h"
 #include "AliAlignObjParams.h"
 #include "AliGeomManager.h"
@@ -118,8 +119,7 @@ using namespace AliAlgAux;
 const char* AliAlgVol::fgkFrameName[AliAlgVol::kNVarFrames] = {"LOC","TRA"};
 //
 UInt_t      AliAlgVol::fgDefGeomFree = 
-  BIT(AliAlgVol::kDOFTX)|BIT(AliAlgVol::kDOFTY)|BIT(AliAlgVol::kDOFTZ)|
-  BIT(AliAlgVol::kDOFPH)|BIT(AliAlgVol::kDOFTH)|BIT(AliAlgVol::kDOFPS);
+  kDOFBitTX | kDOFBitTY | kDOFBitTZ | kDOFBitPS | kDOFBitTH | kDOFBitPH;
 //
 const char* AliAlgVol::fgkDOFName[AliAlgVol::kNDOFGeom]={"TX","TY","TZ","PSI","THT","PHI"};
 
@@ -149,6 +149,7 @@ AliAlgVol::AliAlgVol(const char* symname, int iid) :
   ,fMatL2G()
   ,fMatL2GIdeal()
   ,fMatT2L()
+  ,fMatDeltaRefGlo()
 {
   // def c-tor
   SetVolID(0); // volumes have no VID, unless it is sensor
@@ -178,14 +179,6 @@ void AliAlgVol::Delta2Matrix(TGeoHMatrix& deltaM, const Double_t *delta) const
   //  
 }
 
-//__________________________________________________________________
-void AliAlgVol::GetModifiedMatrixL2G(TGeoHMatrix& matMod, const Double_t *delta) const
-{
-  // prepare for modified L2G matrix from its current matrix 
-  // by applying local delta, i.e. glo = L2G*loc = L2G*delta*loc -> L2G = L2G*delta
-  Delta2Matrix(matMod, delta);
-  matMod.MultiplyLeft(&GetMatrixL2G());
-}
 
 //__________________________________________________________________
 void AliAlgVol::GetDeltaT2LmodLOC(TGeoHMatrix& matMod, const Double_t *delta) const
@@ -401,7 +394,7 @@ void AliAlgVol::InitDOFs()
   //
   // Do we need this strict condition?
   if (GetInitDOFsDone()) AliFatalF("Something is wrong, DOFs are already initialized for %s",GetName());
-  for (int i=0;i<fNDOFs;i++) if (fParErrs[i]<0 && IsZeroAbs(fParVals[i])) FixDOF(i);
+  for (int i=0;i<fNDOFs;i++) if (fParErrs[i]<-9999 && IsZeroAbs(fParVals[i])) FixDOF(i);
   CalcFree(kTRUE);
   //
   SetInitDOFsDone();
@@ -462,17 +455,15 @@ Bool_t AliAlgVol::IsCondDOF(Int_t i) const
 }
 
 //______________________________________________________
-Int_t AliAlgVol::FinalizeStat(TH1* h)
+Int_t AliAlgVol::FinalizeStat(AliAlgDOFStat* st)
 {
   // finalize statistics on processed points
-  if (!IsSensor()) {
-    fNProcPoints = 0;
-    for (int ich=GetNChildren();ich--;) {
-      AliAlgVol* child = GetChild(ich);
-      fNProcPoints += child->FinalizeStat(h);
-    }
+  fNProcPoints = 0;
+  for (int ich=GetNChildren();ich--;) {
+    AliAlgVol* child = GetChild(ich);
+    fNProcPoints += child->FinalizeStat(st);
   }
-  if (h) FillDOFHisto(h);
+  if (st) FillDOFStat(st);
   return fNProcPoints;
 }
 
@@ -531,6 +522,20 @@ void AliAlgVol::CreateGloDeltaMatrix(TGeoHMatrix &deltaM) const
   // This deltaM does not account for eventual prealignment
   // Volume knows if its variation was done in TRA or LOC frame
   //
+  CreateLocDeltaMatrix(deltaM);
+  deltaM.Multiply(&GetMatrixL2G().Inverse());
+  deltaM.MultiplyLeft(&GetMatrixL2G());
+  //
+}
+
+/*
+//_________________________________________________________________
+void AliAlgVol::CreateGloDeltaMatrix(TGeoHMatrix &deltaM) const
+{
+  // Create global matrix deltaM from fParVals array containing corrections.
+  // This deltaM does not account for eventual prealignment
+  // Volume knows if its variation was done in TRA or LOC frame
+  //
   // deltaM = Z * deltaL * Z^-1 
   // where deltaL is local correction matrix and Z is matrix defined as 
   // Z = [ Prod_{k=0}^{j-1} G_k * deltaL_k * G^-1_k ] * G_j
@@ -550,6 +555,7 @@ void AliAlgVol::CreateGloDeltaMatrix(TGeoHMatrix &deltaM) const
   deltaM.Multiply( &zMat.Inverse() );
   //
 }
+*/
 
 //_________________________________________________________________
 void AliAlgVol::CreatePreGloDeltaMatrix(TGeoHMatrix &deltaM) const
@@ -645,6 +651,48 @@ void AliAlgVol::CreateAlignmenMatrix(TGeoHMatrix& alg) const
 {
   // create final alignment matrix, accounting for eventual prealignment
   //
+  // if the correction for this volume at level j is TAU (global delta) then the combined
+  // correction (accounting for reference prealignment) is 
+  // (Delta_0 * .. Delta_{j-1})^-1 * TAU ( Delta_0 * .. Delta_j)
+  // where Delta_i is prealigment global delta of volume i (0 is top)
+  // In principle, it can be obtained as:
+  // GIdeal_{j-1} * G_{j-1}^-1 * TAU * G_{j}^-1 * GIdeal_{j}^-1
+  // where G_i is pre-misaligned reference L2G and GIdeal_i is L2GIdeal,
+  // but this creates precision problem. 
+  // Therefore we use explicitly cached Deltas from prealignment object.
+  //
+  CreateGloDeltaMatrix(alg);
+  //
+  const AliAlgVol* par = GetParent();
+  if (par) {
+    TGeoHMatrix dchain;
+    while (par) {
+      dchain.MultiplyLeft(&par->GetGlobalDeltaRef());
+      par = par->GetParent();
+    }
+    alg.Multiply(&dchain);
+    alg.MultiplyLeft(&dchain.Inverse());
+  }
+  alg *= GetGlobalDeltaRef();
+
+
+  /* // bad precision ?
+  alg.Multiply(&GetMatrixL2G());
+  alg.Multiply(&GetMatrixL2GIdeal().Inverse());
+  if (par) {
+    alg.MultiplyLeft(&par->GetMatrixL2G().Inverse());
+    alg.MultiplyLeft(&par->GetMatrixL2GIdeal());
+  }
+  */
+  //
+}
+
+ /*
+//_________________________________________________________________
+void AliAlgVol::CreateAlignmenMatrix(TGeoHMatrix& alg) const
+{
+  // create final alignment matrix, accounting for eventual prealignment
+  //
   // deltaGlo_j * X_{j-1} * PdeltaGlo_j * X^-1_{j-1}
   // 
   // where deltaGlo_j is global alignment matrix for this volume at level j
@@ -666,6 +714,7 @@ void AliAlgVol::CreateAlignmenMatrix(TGeoHMatrix& alg) const
   alg *= matX.Inverse();
   //
 }
+*/
 
 //_________________________________________________________________
 void AliAlgVol::CreateAlignmentObjects(TClonesArray* arr) const
@@ -742,7 +791,7 @@ const char* AliAlgVol::GetDOFName(int i) const
 }
 
 //______________________________________________________
-void AliAlgVol::FillDOFHisto(TH1* h) const
+void AliAlgVol::FillDOFStat(AliAlgDOFStat* h) const
 {
   // fill statistics info hist
   if (!h) return;
@@ -750,11 +799,9 @@ void AliAlgVol::FillDOFHisto(TH1* h) const
   int dof0 = GetFirstParGloID();
   int stat = GetNProcessedPoints();
   for (int idf=0;idf<ndf;idf++) {
-    int dof = idf+dof0+1;
-    h->SetBinContent(dof,stat);
-    h->GetXaxis()->SetBinLabel(dof,Form("%d_%s_%s",GetParLab(idf),GetSymName(),GetDOFName(idf)));
+    int dof = idf+dof0;
+    h->AddStat(dof,stat);
   }
-  //
 }
 
 //________________________________________

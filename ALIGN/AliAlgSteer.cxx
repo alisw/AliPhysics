@@ -28,6 +28,7 @@
 #include "AliAlgRes.h"
 #include "AliAlgResFast.h"
 #include "AliAlgConstraint.h"
+#include "AliAlgDOFStat.h"
 #include "AliTrackerBase.h"
 #include "AliESDCosmicTrack.h"
 #include "AliESDtrack.h"
@@ -71,7 +72,7 @@ const Char_t* AliAlgSteer::fgkHStatName[AliAlgSteer::kNHVars] = {
 
 
 //________________________________________________________________
-AliAlgSteer::AliAlgSteer(const char* configMacro)
+AliAlgSteer::AliAlgSteer(const char* configMacro, int refRun)
   :fNDet(0)
   ,fNDOFs(0)
   ,fRunNumber(-1)
@@ -80,7 +81,7 @@ AliAlgSteer::AliAlgSteer(const char* configMacro)
   ,fAlgTrack(0)
   ,fVtxSens(0)
   ,fConstraints()
-  ,fSelEventSpecii(AliRecoParam::kCosmic|AliRecoParam::kLowMult|AliRecoParam::kHighMult)
+  ,fSelEventSpecii(AliRecoParam::kCosmic|AliRecoParam::kLowMult|AliRecoParam::kHighMult|AliRecoParam::kDefault)
   ,fCosmicSelStrict(kFALSE)
   ,fVtxMinCont(-1)
   ,fVtxMaxCont(-1)
@@ -99,7 +100,7 @@ AliAlgSteer::AliAlgSteer(const char* configMacro)
   ,fESDEvent(0)
   ,fVertex(0)
   ,fControlFrac(1.0)
-  ,fMPOutType(kMille)
+  ,fMPOutType(kMille|kMPRec|kContR)
   ,fMille(0)
   ,fMPRecord(0)
   ,fCResid(0)
@@ -113,19 +114,21 @@ AliAlgSteer::AliAlgSteer(const char* configMacro)
   ,fMPParFileName("mpParams.txt")
   ,fMPConFileName("mpConstraints.txt")
   ,fMPSteerFileName("mpSteer.txt")
-  ,fResidFileName("controlRes.root")
+  ,fResidFileName("mpControlRes.root")
   ,fMilleOutBin(kTRUE)
+  ,fDoKalmanResid(kTRUE)
   //
   ,fOutCDBPath("local://outOCDB")
   ,fOutCDBComment("AliAlgSteer")
   ,fOutCDBResponsible("")
   //
-  ,fHistoDOF(0)
+  ,fDOFStat(0)
   ,fHistoStat(0)
   //
   ,fConfMacroName(configMacro)
   ,fRecoOCDBConf("configRecoOCDB.C")
   ,fRefOCDBConf("configRefOCDB.C")
+  ,fRefRunNumber(refRun)
   ,fRefOCDBLoaded(0)
   ,fUseRecoOCDB(kTRUE)
 {
@@ -152,6 +155,8 @@ AliAlgSteer::AliAlgSteer(const char* configMacro)
   SetMaxDCAforVC();
   SetMaxChi2forVC();
   SetOutCDBRunRange();
+  SetDefPtBOffCosm();
+  SetDefPtBOffColl();
   //
   // run config macro if provided
   if (!fConfMacroName.IsNull()) {
@@ -178,7 +183,7 @@ AliAlgSteer::~AliAlgSteer()
   for (int i=0;i<fNDet;i++) delete fDetectors[i];
   delete fVtxSens;
   delete fRefPoint;
-  delete fHistoDOF;
+  delete fDOFStat;
   delete fHistoStat;
   //
 }
@@ -189,6 +194,8 @@ void AliAlgSteer::InitDetectors()
   // init all detectors geometry
   //
   if (GetInitGeomDone()) return;
+  //
+
   //
   fAlgTrack = new AliAlgTrack();
   fRefPoint = new AliAlgPoint();
@@ -433,17 +440,17 @@ Bool_t AliAlgSteer::ProcessEvent(const AliESDEvent* esdEv)
     return kFALSE;
   }
   //
-  SetCosmic(esdEv->GetEventSpecie()==AliRecoParam::kCosmic);
+  SetCosmic(esdEv->GetEventSpecie()==AliRecoParam::kCosmic || esdEv->GetNumberOfCosmicTracks()>0);
   //
   FillStatHisto( kEvInp );
   //
 #if DEBUG>2    
-  AliInfoF("Processing event %d of ev.specie %d -> Ntr: %4d",
+  AliInfoF("Processing event %d of ev.specie %d -> Ntr: %4d NtrCosm: %d",
 	   esdEv->GetEventNumberInFile(),esdEv->GetEventSpecie(),
-	   IsCosmic() ? esdEv->GetNumberOfCosmicTracks():esdEv->GetNumberOfTracks());
+	   esdEv->GetNumberOfTracks(),esdEv->GetNumberOfCosmicTracks());
 #endif
   //
-  SetFieldOn(Abs(esdEv->GetMagneticField())>kAlmostZeroF);
+  SetFieldOn(Abs(esdEv->GetMagneticField())>kAlmost0Field);
   if (!IsCosmic() && !CheckSetVertex(esdEv->GetPrimaryVertexTracks())) return kFALSE;
   FillStatHisto( kEvVtx );
   //
@@ -462,7 +469,18 @@ Bool_t AliAlgSteer::ProcessEvent(const AliESDEvent* esdEv)
     ntr = esdEv->GetNumberOfTracks();
     FillStatHisto( kTrackInp, ntr);
     for (int itr=0;itr<ntr;itr++) {
+      //      int accTrOld = accTr;
       accTr += ProcessTrack(esdEv->GetTrack(itr));      
+      /*
+      if (accTr>accTrOld && fCResid) {
+	int ndf = fCResid->GetNPoints()*2-5;
+	if (fCResid->GetChi2()/ndf>20 || !fCResid->GetKalmanDone() 
+	    || fCResid->GetChi2K()/ndf>20) {
+	  printf("BAD FIT for %d\n",itr);
+	}
+       	fCResid->Print("er");
+      }
+      */
     }
     if (accTr) fStat[kAccStat][kEventColl]++;
   }    
@@ -516,6 +534,7 @@ Bool_t AliAlgSteer::ProcessTrack(const AliESDtrack* esdTr)
   fAlgTrack->AddPoint(fRefPoint); // reference point which the track will refer to
   //
   fAlgTrack->CopyFrom(esdTr);
+  if (!GetFieldOn()) fAlgTrack->ImposePtBOff(fDefPtBOff[AliAlgAux::kColl]);
   fAlgTrack->SetFieldON( GetFieldOn() );
   fAlgTrack->SortPoints();
   //
@@ -639,7 +658,8 @@ Bool_t AliAlgSteer::ProcessTrack(const AliESDCosmicTrack* cosmTr)
   if (!CheckDetectorPoints(npsel)) return kFALSE;
   //
   fAlgTrack->CopyFrom(cosmTr);
-  fAlgTrack->SetFieldON( Abs(AliTrackerBase::GetBz())>kAlmost0Field );
+  if (!GetFieldOn()) fAlgTrack->ImposePtBOff(fDefPtBOff[AliAlgAux::kCosm]);
+  fAlgTrack->SetFieldON(  GetFieldOn() );
   fAlgTrack->SortPoints();
    //
   // at this stage the points are sorted from maxX to minX, the latter corresponding to
@@ -806,7 +826,7 @@ Bool_t AliAlgSteer::FillControlData()
   if (nps<0) return kTRUE;
   //
   fCResid->Clear();
-  if (!fCResid->FillTrack(fAlgTrack)) return kFALSE;
+  if (!fCResid->FillTrack(fAlgTrack, fDoKalmanResid)) return kFALSE;
   fCResid->SetRun(fRunNumber);
   fCResid->SetTimeStamp(fESDEvent->GetTimeStamp());
   fCResid->SetBz(fESDEvent->GetMagneticField());
@@ -884,7 +904,7 @@ Bool_t AliAlgSteer::LoadRecoTimeOCDB()
     AliFatalF("macro %s failed to configure reco-time OCDB",fRecoOCDBConf.Data());
   }
   else AliWarningF("No reco-time OCDB config macro %s is found, will use ESD:UserInfo",
-		   fRefOCDBConf.Data());
+		   fRecoOCDBConf.Data());
   //
   if (!fESDTree) AliFatal("Cannot preload Reco-Time OCDB since the ESD tree is not set");
   const TTree* tr = fESDTree;  // go the the real ESD tree
@@ -919,6 +939,7 @@ void AliAlgSteer::Print(const Option_t *opt) const
   printf("%5d DOFs in %d detectors",fNDOFs,fNDet);
   if (!fConfMacroName.IsNull()) printf("(config: %s)",fConfMacroName.Data());
   printf("\n");
+  if (GetMPAlignDone()) printf("ALIGNMENT FROM MILLEPEDE SOLUTION IS APPLIED\n");
   //
   for (int idt=0;idt<kNDetectors;idt++) {
     AliAlgDet* det = GetDetectorByDetID(idt);
@@ -951,7 +972,9 @@ void AliAlgSteer::Print(const Option_t *opt) const
   printf("Collision tracks: Min pT: %5.2f |etaMax|: %5.2f\n",fPtMin[kColl],fEtaMax[kColl]);
   printf("Cosmic    tracks: Min pT: %5.2f |etaMax|: %5.2f\n",fPtMin[kCosm],fEtaMax[kCosm]);
   //
-  printf("%-40s:\t%s\n","Config. for reference OCDB",fRefOCDBConf.Data());
+  printf("%-40s:\t%s","Config. for reference OCDB",fRefOCDBConf.Data());
+  if (fRefRunNumber>=0) printf("(%d)",fRefRunNumber);
+  printf("\n");
   printf("%-40s:\t%s\n","Config. for reco-time OCDB",fRecoOCDBConf.Data());
   //
   printf("%-40s:\t%s\n","Output OCDB path",fOutCDBPath.Data());
@@ -1218,7 +1241,7 @@ void AliAlgSteer::SetResidFileName(const char* name)
 {
   // set output file name
   fResidFileName = name; 
-  if (fResidFileName.IsNull()) fResidFileName = "controlRes.root"; 
+  if (fResidFileName.IsNull()) fResidFileName = "mpControlRes.root"; 
   //
 }
 
@@ -1323,7 +1346,8 @@ Bool_t AliAlgSteer::LoadRefOCDB()
   // 
   if (!fRefOCDBConf.IsNull() && !gSystem->AccessPathName(fRefOCDBConf.Data(), kFileExists)) {
     AliInfoF("Executing reference OCDB setup macro %s",fRefOCDBConf.Data());
-    gROOT->ProcessLine(Form(".x %s",fRefOCDBConf.Data()));
+    if (fRefRunNumber>0) gROOT->ProcessLine(Form(".x %s(%d)",fRefOCDBConf.Data(),fRefRunNumber));    
+    else                 gROOT->ProcessLine(Form(".x %s",fRefOCDBConf.Data()));
   }
   else {
     AliWarningF("No reference OCDB config macro %s is found, assume raw:// with run %d",
@@ -1372,24 +1396,39 @@ AliAlgVol* AliAlgSteer::GetVolOfDOFID(int id) const
 }
 
 //________________________________________________________
-void AliAlgSteer::Terminate(Bool_t dohisto)
+void AliAlgSteer::Terminate(Bool_t doStat)
 {
   // finalize processing
   if (fRunNumber>0) FillStatHisto( kRunDone );
-  if (dohisto) {
-    fHistoDOF = new TH1F("DOFstat","DOF statistics",fNDOFs,0.5,fNDOFs+0.5);
-    fHistoDOF->SetDirectory(0);
-    AliInfoF("Preparing histo with stat/DOF %s",fHistoDOF->GetName());
+  if (doStat) {
+    if (fDOFStat) delete fDOFStat;
+    fDOFStat = new AliAlgDOFStat(fNDOFs);
   }
-  if (fVtxSens) fVtxSens->FillDOFHisto(fHistoDOF);
+  if (fVtxSens) fVtxSens->FillDOFStat(fDOFStat);
   //
-  for (int i=fNDet;i--;) GetDetector(i)->Terminate(fHistoDOF);
+  for (int i=fNDet;i--;) GetDetector(i)->Terminate();
   CloseMPRecOutput();
   CloseMilleOutput();
   CloseResidOutput();
   Print("stat");
   //
 }
+
+//________________________________________________________
+Char_t* AliAlgSteer::GetDOFLabelTxt(int idf) const
+{
+  // get DOF full label
+  AliAlgVol* vol = GetVolOfDOFID(idf);
+  if (vol) return Form("%d_%s_%s",GetGloParLab(idf),vol->GetSymName(),
+		       vol->GetDOFName(idf-vol->GetFirstParGloID()));
+  //
+  // this might be detector-specific calibration dof
+  AliAlgDet* det = GetDetOfDOFID(idf);
+  if (det) return Form("%d_%s_%s",GetGloParLab(idf),det->GetName(),
+		       det->GetCalibDOFName(idf-det->GetFirstParGloID()));
+  return 0;
+}
+
 
 //********************* interaction with PEDE **********************
 
@@ -1622,12 +1661,7 @@ void AliAlgSteer::CreateStatHisto()
 void AliAlgSteer::PrintLabels() const
 {
   // print global IDs and Labels
-  for (int i=0;i<fNDOFs;i++) {
-    AliAlgVol* vol = GetVolOfDOFID(i);
-    if (!vol) {printf("DOF %d is orphan: Lb:%d\n",i,fGloParLab[i]); continue;}
-    printf("%5d %9d ! %s %s\n",i,fGloParLab[i],vol->GetSymName(),
-	   vol->GetDOFName(i-vol->GetFirstParGloID()));
-  }
+  for (int i=0;i<fNDOFs;i++) printf("%5d %s\n",i,GetDOFLabelTxt(i));
 }
 
 //____________________________________________________________
@@ -1664,68 +1698,53 @@ void AliAlgSteer::WritePedeConstraints() const
 }
 
 //____________________________________________________________
-void AliAlgSteer::FixLowStatFromHisto(Int_t thresh)
+void AliAlgSteer::FixLowStatFromDOFStat(Int_t thresh)
 {
   // fix DOFs having stat below threshold
   //
-  if (!fHistoDOF) {
-    AliError("No histo with DOFs statistics");
+  if (!fDOFStat) {
+    AliError("No object with DOFs statistics");
     return;
   }
-  TAxis*  xax = fHistoDOF->GetXaxis();
-  int nb = xax->GetNbins();
-  for (int ib=1;ib<=nb;ib++) {
-    if (fHistoDOF->GetBinContent(ib)>=thresh) continue;
-    TString lb = xax->GetBinLabel(ib);
-    int id = lb.First('_');
-    if (id<0) {
-      AliErrorF("Failed to extract DOF label from bin %d: %s",ib,lb.Data());
-      if (lb.IsNull()) continue;
-      else             return;
-    }
-    lb.Resize(id);
-    if (!lb.IsDigit()) {
-      AliErrorF("Label for bin %d is not digit: %s",ib,lb.Data());
-      return;
-    }
-    int lbID = lb.Atoi();
-    int parID = Label2ParID(lbID);
-    if (parID<0) {
-      AliErrorF("Did not find parameter for label %d of bin %d: %s",lbID,ib,xax->GetBinLabel(ib));
-      return;
-    }
-    AliInfoF("Fixing DOF (stat: %4d) %s",int(fHistoDOF->GetBinContent(ib)),xax->GetBinLabel(ib));
+  if (fNDOFs != fDOFStat->GetNDOFs()) {
+    AliErrorF("Discrepancy between NDOFs=%d of and statistics object: %d",fNDOFs,fDOFStat->GetNDOFs());
+    return;
+  }
+  for (int parID=0;parID<fNDOFs;parID++) {
+    if (fDOFStat->GetStat(parID)>=thresh) continue;
     fGloParErr[parID] = -999.;
   }
   //
 }
 
 //____________________________________________________________
-void AliAlgSteer::LoadStatHistos(const char* flname)
+void AliAlgSteer::LoadStat(const char* flname)
 {
   // load statistics histos from external file produced by alignment task
   TFile* fl = TFile::Open(flname);
   //
-  TH1F *hdf=0,*hst=0;
+  TObject *hdfO=0,*hstO=0;
   TList* lst = (TList*)fl->Get("clist");
   if (lst) {
-    hdf = (TH1F*)lst->FindObject("DOFstat");
-    if (hdf) lst->Remove(hdf);
-    hst = (TH1F*)lst->FindObject("stat");
-    if (hst) lst->Remove(hst);
+    hdfO = lst->FindObject("DOFstat");
+    if (hdfO) lst->Remove(hdfO);
+    hstO = lst->FindObject("stat");
+    if (hstO) lst->Remove(hstO);
     delete lst;
   }
   else {
-    hdf = (TH1F*)fl->Get("DOFstat");
-    hst = (TH1F*)fl->Get("stat");
+    hdfO = fl->Get("DOFstat");
+    hstO = fl->Get("stat");
   }
-  if (hdf) hdf->SetDirectory(0);
-  else AliWarning("did not fine DOFstat histo");
-  if (hst) hst->SetDirectory(0);
-  else AliWarning("did not fine stat histo");
+  TH1F* hst = 0;
+  if (hstO && (hst=dynamic_cast<TH1F*>(hstO))) hst->SetDirectory(0);
+  else AliWarning("did not find stat histo");
+  //
+  AliAlgDOFStat* dofSt = 0;
+  if (!hdfO || !(dofSt=dynamic_cast<AliAlgDOFStat*>(hdfO))) AliWarning("did not find DOFstat object");
   //
   SetHistoStat(hst);
-  SetHistoDOF(hdf);
+  SetDOFStat(dofSt);
   //
   fl->Close();
   delete fl;
@@ -1857,8 +1876,13 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
       int idP = Label2ParID(lbI);
       if (idP<0) AliFatalF("Did not find parameted for label %d\n",lbI);
       double parVal = GetGloParVal()[idP];
-      resid[irs] -= parVal*recDGlo[ig];
-      if (!ig) volID[irs] = GetVolOfDOFID(idP)->GetVolID();
+      //      resid[irs] -= parVal*recDGlo[ig];
+      resid[irs] += parVal*recDGlo[ig];
+      if (!ig) {
+	AliAlgVol* vol = GetVolOfDOFID(idP);
+	if (vol) volID[irs] = vol->GetVolID();
+	else volID[irs] = -2; // calibration DOF !!! TODO 
+      }
     }
     //
     double  sg2inv = rec->GetResErr(irs);
@@ -2010,4 +2034,18 @@ Bool_t AliAlgSteer::CheckSol(AliAlgMPRecord* rec,
   delete[] resid;
   delete[] volID;
   return kTRUE;
+}
+
+//______________________________________________
+void AliAlgSteer::ApplyAlignmentFromMPSol()
+{
+  // apply alignment from millepede solution array to reference alignment level
+  AliInfo("Applying alignment from Millepede solution");
+  for (int idt=0;idt<kNDetectors;idt++) {
+    AliAlgDet* det = GetDetectorByDetID(idt);
+    if (!det || det->IsDisabled()) continue;
+    det->ApplyAlignmentFromMPSol();
+  }
+  SetMPAlignDone();
+  //
 }

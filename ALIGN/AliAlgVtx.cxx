@@ -14,6 +14,11 @@
  **************************************************************************/
 
 #include "AliAlgVtx.h"
+#include "AliTrackPointArray.h"
+#include "AliESDtrack.h"
+#include "AliAlgPoint.h"
+#include "AliAlgDet.h"
+#include "AliLog.h"
 #include <TMath.h>
 
 using namespace TMath;
@@ -51,4 +56,13 @@ void AliAlgVtx::ApplyCorrection(double* vtx) const
   vtx[kDOFTY] += GetParVal(kDOFTY);
   vtx[kDOFTZ] += GetParVal(kDOFTZ);
   //
+}
+
+//____________________________________________
+AliAlgPoint* AliAlgVtx::TrackPoint2AlgPoint(int, const AliTrackPointArray*, const AliESDtrack*)
+{
+  // convert the pntId-th point to AliAlgPoint
+  static int cnt=0;
+  AliErrorF("This method shound not have been called, %d",cnt++);
+  return 0;
 }

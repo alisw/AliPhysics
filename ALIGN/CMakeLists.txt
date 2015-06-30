@@ -28,31 +28,35 @@ include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/TRD/TRDbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/TOF/TOFbase
+		    ${AliRoot_SOURCE_DIR}/HMPID/HMPIDbase
 		   )
 
 # Sources - alphabetical order
 set(SRCS
-  AliAlgVtx.cxx
-  AliAlgVol.cxx
-  AliAlgTrack.cxx
-  AliAlgSteer.cxx
-  AliAlgSensTOF.cxx
-  AliAlgSensTPC.cxx
-  AliAlgSensTRD.cxx
-  AliAlgSensITS.cxx
-  AliAlgRes.cxx
-  AliAlgResFast.cxx
-  AliAlgSens.cxx
-  AliAlgMPRecord.cxx
-  AliAlgPoint.cxx
   AliAlgAux.cxx
   AliAlgConstraint.cxx
   AliAlgDet.cxx
+  AliAlgDetHMPID.cxx
   AliAlgDetITS.cxx
   AliAlgDetTOF.cxx
   AliAlgDetTPC.cxx
   AliAlgDetTRD.cxx
-  Mille.cxx  
+  AliAlgDOFStat.cxx
+  AliAlgMPRecord.cxx
+  AliAlgPoint.cxx
+  AliAlgRes.cxx
+  AliAlgResFast.cxx
+  AliAlgSens.cxx
+  AliAlgSensHMPID.cxx
+  AliAlgSensITS.cxx
+  AliAlgSensTOF.cxx
+  AliAlgSensTPC.cxx
+  AliAlgSensTRD.cxx
+  AliAlgSteer.cxx
+  AliAlgTrack.cxx
+  AliAlgVol.cxx
+  AliAlgVtx.cxx
+  Mille.cxx
   )
 
 # Headers from sources
@@ -102,7 +106,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 # install macros
-install(DIRECTORY utils DESTINATION  ALIGN)
+#install(DIRECTORY utils DESTINATION  ALIGN)
 
 install(FILES ${HDRS} DESTINATION include)
 

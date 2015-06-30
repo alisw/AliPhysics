@@ -33,6 +33,10 @@ AliAlgMPRecord::AliAlgMPRecord()
   ,fNVarGlo(0)
   ,fNDLocTot(0)
   ,fNDGloTot(0)
+  ,fNMeas(0)
+  ,fChi2Ini(0)
+  ,fQ2Pt(0)
+  ,fTgl(0)
   ,fNDLoc(0)
   ,fNDGlo(0)
   ,fVolID(0)
@@ -71,6 +75,8 @@ void AliAlgMPRecord::DummyRecord(Float_t res, Float_t err, Float_t dGlo, Int_t l
 {
   // create dummy residuals record
   if (!fNDGlo) Resize(1,1,1);
+  fChi2Ini = 0;
+  fNMeas = 1;
   fNResid = 1;
   fNVarLoc = 0;
   fNVarGlo = 1;
@@ -102,6 +108,10 @@ Bool_t AliAlgMPRecord::FillTrack(const AliAlgTrack* trc, const Int_t *id2Lab)
   fNResid = 0;
   fNDLocTot = 0;
   fNDGloTot = 0;
+  fChi2Ini = trc->GetChi2Ini();
+  fQ2Pt = trc->GetSigned1Pt();
+  fTgl  = trc->GetTgl();
+  fNMeas = 0;
   SetCosmic(trc->IsCosmic());
   // 1) check sizes for buffers, expand if needed
   int np = trc->GetNPoints();
@@ -115,6 +125,7 @@ Bool_t AliAlgMPRecord::FillTrack(const AliAlgTrack* trc, const Int_t *id2Lab)
       nres    += 2;                     // every point has 2 residuals
       nlocd   += fNVarLoc+fNVarLoc;     // each residual has max fNVarLoc local derivatives
       nglod   += ngl + ngl;             // number of global derivatives
+      fNMeas++;
     }
     if (pnt->ContainsMaterial()) {
       int nmatpar = pnt->GetNMatPar();
@@ -268,7 +279,9 @@ void AliAlgMPRecord::Print(const Option_t *) const
 {
   // print info
   //
-  printf("Track %d Event TimeStamp:%d Run:%d\n",fTrackID,fTimeStamp,GetRun());
+  printf("Track %d Event TimeStamp:%d Run:%d\n",
+	 fTrackID,fTimeStamp,GetRun());
+  printf("Nmeas:%3d Q/pt:%+.2e Tgl:%+.2e Chi2Ini:%.1f\n",fNMeas,fQ2Pt,fTgl,fChi2Ini);
   printf("NRes: %3d NLoc: %3d NGlo:%3d | Stored: Loc:%3d Glo:%5d\n",
 	 fNResid,fNVarLoc,fNVarGlo,fNDLocTot,fNDGloTot);
   //
@@ -292,15 +305,20 @@ void AliAlgMPRecord::Print(const Option_t *) const
     //
     //
     printf("Global Derivatives:\n");
-    eolOK = kTRUE;
-    const int kNColGlo=6;
+    //    eolOK = kTRUE;
+    //    const int kNColGlo=6;
+    int prvID = -1;
     for (int id=0;id<ndglo;id++) {
       int jd = id+curGlo;
+      //      eolOK==kFALSE;
+      if (prvID>fIDGlo[jd]%100) {printf("\n");/* eolOK = kTRUE;*/}
       printf("[%5d] %+.2e  ",fIDGlo[jd],fDGlo[jd]);
-      if (((id+1)%kNColGlo)==0) {printf("\n"); eolOK = kTRUE;}
-      else eolOK = kFALSE;
+      //      if (((id+1)%kNColGlo)==0) 
+      //      else eolOK = kFALSE;
+      prvID=fIDGlo[jd]%100;
     }
-    if (!eolOK) printf("\n");
+    //    if (!eolOK) printf("\n");
+    printf("\n");
     curGlo += ndglo;
     //
   }

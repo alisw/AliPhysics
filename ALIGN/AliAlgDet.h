@@ -7,6 +7,7 @@
 #include "AliAlgAux.h"
 #include "AliESDtrack.h"
 class AliAlgTrack;
+class AliAlgDOFStat;
 class AliAlgPoint;
 class AliAlgSens;
 class AliAlgVol;
@@ -25,6 +26,7 @@ class AliAlgDet : public TNamed
 {
  public:
   enum {kInitGeomDone=BIT(14),kInitDOFsDone=BIT(15)};
+  enum {kNMaxKalibDOF=64};
   //
   AliAlgDet();
   AliAlgDet(const char* name, const char* title="");
@@ -35,6 +37,7 @@ class AliAlgDet : public TNamed
   virtual void  CacheReferenceOCDB();
   virtual void  AcknowledgeNewRun(Int_t run);
   virtual void  UpdateL2GRecoMatrices();
+  virtual void  ApplyAlignmentFromMPSol();
   //
   Int_t   VolID2SID(Int_t vid)                  const;
   Int_t   SID2VolID(Int_t sid)                  const {return sid<GetNSensors() ? fSID2VolID[sid] : -1;} //todo
@@ -58,16 +61,28 @@ class AliAlgDet : public TNamed
   Bool_t      OwnsDOFID(Int_t id)               const;
   AliAlgVol*  GetVolOfDOFID(Int_t id)           const;
   //
+  Int_t       GetDetLabel()                     const {return (GetDetID()+1)*1000000;}
+  void        SetFreeDOF(Int_t dof);
+  void        FixDOF(Int_t dof);
+  void        SetFreeDOFPattern(ULong64_t pat)        {fCalibDOF = pat; CalcFree();}
+  Bool_t      IsFreeDOF(Int_t dof)              const {return (fCalibDOF&(0x1<<dof))!=0;}
+  Bool_t      IsCondDOF(Int_t dof)              const;
+  ULong64_t   GetFreeDOFPattern()               const {return fCalibDOF;}
+  Int_t       GetNProcessedPoints()             const {return fNProcPoints;}
+  virtual const char* GetCalibDOFName(int)      const {return 0;}
+  virtual     Double_t GetCalibDOFVal(int)      const {return 0;}
+  virtual     Double_t GetCalibDOFValWithCal(int) const {return 0;}
+  //
   virtual Int_t InitGeom();
   virtual Int_t AssignDOFs();
   virtual void  InitDOFs();
-  virtual void  Terminate(TH1* hdof=0);
+  virtual void  Terminate();
+  void          FillDOFStat(AliAlgDOFStat* dofst=0) const;
   virtual void  AddVolume(AliAlgVol* vol);
   virtual void  DefineVolumes();
   virtual void  DefineMatrices();
   virtual void  Print(const Option_t *opt="")    const;
   virtual Int_t ProcessPoints(const AliESDtrack* esdTr, AliAlgTrack* algTrack,Bool_t inv=kFALSE);
-  virtual AliAlgPoint* TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trp, const AliESDtrack* tr);
   virtual void  UpdatePointByTrackInfo(AliAlgPoint* pnt, const AliExternalTrackParam* t) const;
   virtual void  SetUseErrorParam(Int_t v=0);
   Int_t         GetUseErrorParam()                   const {return fUseErrorParam;}
@@ -77,6 +92,7 @@ class AliAlgDet : public TNamed
   //
   virtual AliAlgPoint* GetPointFromPool();
   virtual void ResetPool();
+  virtual void WriteSensorPositions(const char* outFName);
   //
   void      SetInitGeomDone()                             {SetBit(kInitGeomDone);}
   Bool_t    GetInitGeomDone()                       const {return TestBit(kInitGeomDone);}
@@ -86,8 +102,11 @@ class AliAlgDet : public TNamed
   void      FixNonSensors();
   void      SetFreeDOFPattern(UInt_t pat=0xffffffff, int lev=-1,const char* match=0);
   void      SetDOFCondition(int dof, float condErr, int lev=-1,const char* match=0);
+  int       SelectVolumes(TObjArray* arr, int lev=-1,const char* match=0);
   //
   Int_t     GetNDOFs()                              const {return fNDOFs;}
+  Int_t     GetNCalibDOFs()                         const {return fNCalibDOF;}
+  Int_t     GetNCalibDOFsFree()                     const {return fNCalibDOFFree;}
   //
   void      SetDisabled(Int_t tp,Bool_t v)                {fDisabled[tp]=v;SetObligatory(tp,!v);}
   void      SetDisabled()                                 {SetDisabledColl();SetDisabledCosm();}
@@ -127,8 +146,22 @@ class AliAlgDet : public TNamed
   virtual void      WriteCalibrationResults()       const;
   virtual void      WriteAlignmentResults()         const;
   //
+  Float_t*   GetParVals()                           const {return fParVals;}
+  Double_t   GetParVal(int par)                     const {return fParVals ? fParVals[par] : 0;}
+  Double_t   GetParErr(int par)                     const {return fParErrs ? fParErrs[par] : 0;}
+  Int_t      GetParLab(int par)                     const {return fParLabs ? fParLabs[par] : 0;}
+  //
+  void       SetParVals(Int_t npar,Double_t *vl,Double_t *er);
+  void       SetParVal(Int_t par,Double_t v=0)            {fParVals[par] = v;}
+  void       SetParErr(Int_t par,Double_t e=0)            {fParErrs[par] = e;}
+  //
+  Int_t      GetFirstParGloID()                     const {return fFirstParGloID;}
+  Int_t      GetParGloID(Int_t par)                 const {return fFirstParGloID+par;}
+  void       SetFirstParGloID(Int_t id)                   {fFirstParGloID=id;}
+  //
  protected:
   void     SortSensors();
+  void     CalcFree(Bool_t condFree=kFALSE);
   //
   // ------- dummies ---------
   AliAlgDet(const AliAlgDet&);
@@ -142,6 +175,15 @@ class AliAlgDet : public TNamed
   Int_t     fNSensors;                   // number of sensors (i.e. volID's)
   Int_t*    fSID2VolID;                  //[fNSensors] table of conversion from VolID to sid
   Int_t     fNProcPoints;                // total number of points processed
+  //
+  // Detector specific calibration degrees of freedom
+  Int_t     fNCalibDOF;                 // number of calibDOFs for detector (preset)
+  Int_t     fNCalibDOFFree;             // number of calibDOFs for detector (preset)
+  ULong64_t fCalibDOF;                  // status of calib dof
+  Int_t     fFirstParGloID;             // ID of the 1st parameter in the global results array
+  Float_t*  fParVals;                   //! values of the fitted params
+  Float_t*  fParErrs;                   //! errors of the fitted params
+  Int_t*    fParLabs;                   //! labels for parameters
   //
   // Track selection
   Bool_t    fDisabled[AliAlgAux::kNTrackTypes];      // detector disabled/enabled in the track

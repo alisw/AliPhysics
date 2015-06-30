@@ -13,36 +13,34 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAlgSensTOF.h"
+#include "AliAlgSensHMPID.h"
 #include "AliAlgAux.h"
-#include "AliAlgDetTOF.h"
 #include "AliLog.h"
-#include "AliAlgPoint.h"
 #include "AliTrackPointArray.h"
 #include "AliESDtrack.h"
+#include "AliAlgPoint.h"
+#include "AliAlgDet.h"
 
-ClassImp(AliAlgSensTOF)
+ClassImp(AliAlgSensHMPID)
 
 using namespace AliAlgAux;
 using namespace TMath;
 
 //_________________________________________________________
-AliAlgSensTOF::AliAlgSensTOF(const char* name,Int_t vid, Int_t iid, Int_t isec) 
+AliAlgSensHMPID::AliAlgSensHMPID(const char* name,Int_t vid, Int_t iid, Int_t isec) 
   :AliAlgSens(name,vid,iid)
-  ,fSector(isec)
 {
   // def c-tor
 }
 
 //_________________________________________________________
-AliAlgSensTOF::~AliAlgSensTOF()
+AliAlgSensHMPID::~AliAlgSensHMPID()
 {
   // d-tor
 }
-
 /*
 //__________________________________________________________________
-void AliAlgSensTOF::SetTrackingFrame()
+void AliAlgSensHMPID::SetTrackingFrame()
 {
   // define tracking frame of the sensor: just rotation by sector angle
   fAlp = Sector2Alpha(fSector);
@@ -51,12 +49,12 @@ void AliAlgSensTOF::SetTrackingFrame()
 */
 
 //____________________________________________
-void AliAlgSensTOF::PrepareMatrixT2L()
+void AliAlgSensHMPID::PrepareMatrixT2L()
 {
-  // extract from geometry T2L matrix
-  double alp = Sector2Alpha(fSector);
+  // creat T2L matrix
   double loc[3]={0,0,0},glo[3];
   GetMatrixL2GIdeal().LocalToMaster(loc,glo);
+  double alp = ATan2(glo[1],glo[0]);
   double x = Sqrt(glo[0]*glo[0]+glo[1]*glo[1]);
   TGeoHMatrix t2l;
   t2l.SetDx(x);
@@ -74,39 +72,18 @@ void AliAlgSensTOF::PrepareMatrixT2L()
 }
 
 //____________________________________________
-AliAlgPoint* AliAlgSensTOF::TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trpArr, const AliESDtrack* tr)
+AliAlgPoint* AliAlgSensHMPID::TrackPoint2AlgPoint(int pntId, const AliTrackPointArray* trpArr, const AliESDtrack*)
 {
-  // convert the pntId-th point to AliAlgPoint, detectors may override this method
+  // convert the pntId-th point to AliAlgPoint
   //
-  // TOF stores in the trackpoints X,Y with alignment applied but Z w/o alignment!!!
-  // -> need special treatment
-  //
-  AliAlgDetTOF* det = (AliAlgDetTOF*)GetDetector();
+  AliAlgDet* det = GetDetector();
   AliAlgPoint* pnt = det->GetPointFromPool();
   pnt->SetSensor(this);
   //
-  double tra[3],locId[3],loc[3],traId[3],
+  double tra[3],locId[3],loc[3],
     glo[3] = {trpArr->GetX()[pntId], trpArr->GetY()[pntId], trpArr->GetZ()[pntId]};
   const TGeoHMatrix& matL2Grec = GetMatrixL2GReco(); // local to global matrix used for reconstruction
   const TGeoHMatrix& matT2L    = GetMatrixT2L();     // matrix for tracking to local frame translation
-  //
-  // >>>------------- here we fix the z by emulating Misalign action in the tracking frame ------>>>
-  //  /*
-  // we need reco-time alignment matrix in tracking frame, T^-1 * delta * T, where delta is local alignment matrix
-  TGeoHMatrix mClAlgTrec = GetMatrixClAlgReco();
-  mClAlgTrec.Multiply(&GetMatrixT2L());
-  mClAlgTrec.MultiplyLeft(&GetMatrixT2L().Inverse());
-  TGeoHMatrix mT2G;
-  GetMatrixT2G(mT2G);
-  mT2G.MasterToLocal(glo,tra);     // we are in tracking frame, with original wrong alignment
-  mClAlgTrec.MasterToLocal(tra,traId); // here we have almost ideal X,Y and wrong Z
-  const double *trans = mClAlgTrec.GetTranslation();
-  const double *rotmt = mClAlgTrec.GetRotationMatrix();  
-  tra[2] = trans[2] + traId[0]*rotmt[6]+traId[1]*rotmt[7]+tra[2]*rotmt[8]; //we got misaligned Z
-  mT2G.LocalToMaster(tra,glo);
-  //  */
-  // now continue as usual
-  // <<<------------- here we fix the z by emulating Misalign action in the tracking frame ------<<<
   //
   // undo reco-time alignment
   matL2Grec.MasterToLocal(glo,locId); // go to local frame using reco-time matrix, here we recover ideal measurement 

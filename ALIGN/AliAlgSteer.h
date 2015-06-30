@@ -26,6 +26,7 @@ class AliAlgMPRecord;
 class AliAlgRes;
 class AliAlgResFast;
 class AliAlgConstraint;
+class AliAlgDOFStat;
 class TTree;
 class TFile;
 //
@@ -49,7 +50,7 @@ class AliAlgSteer : public TObject
   enum {kInpStat,kAccStat,kNStatCl};
   enum {kRun,kEventColl,kEventCosm,kTrackColl,kTrackCosm, kMaxStat};
   enum MPOut_t {kMille=BIT(0),kMPRec=BIT(1),kContR=BIT(2)};
-  enum {kInitGeomDone=BIT(14),kInitDOFsDone=BIT(15)};
+  enum {kInitGeomDone=BIT(14),kInitDOFsDone=BIT(15),kMPAlignDone=BIT(16)};
   //
   enum {             // STAT histo entries
     kRunDone         // input runs
@@ -68,7 +69,7 @@ class AliAlgSteer : public TObject
   };
 
   //
-  AliAlgSteer(const char* configMacro=0);
+  AliAlgSteer(const char* configMacro=0, int refRun=-1);
   virtual ~AliAlgSteer();
   Bool_t   LoadRefOCDB();
   Bool_t   LoadRecoTimeOCDB();
@@ -77,7 +78,8 @@ class AliAlgSteer : public TObject
 
   void     InitDetectors();
   void     InitDOFs();  
-  void     Terminate(Bool_t dohisto=kTRUE);
+  void     Terminate(Bool_t dostat=kTRUE);
+  void     SetStatHistoLabels(TH1* h)                     const;
   //
   void     SetInitGeomDone()                                    {SetBit(kInitGeomDone);}
   Bool_t   GetInitGeomDone()                              const {return TestBit(kInitGeomDone);}
@@ -85,6 +87,9 @@ class AliAlgSteer : public TObject
   void     SetInitDOFsDone()                                    {SetBit(kInitDOFsDone);}
   Bool_t   GetInitDOFsDone()                              const {return TestBit(kInitDOFsDone);}
   //
+  void     SetMPAlignDone()                                     {SetBit(kMPAlignDone);}
+  Bool_t   GetMPAlignDone()                               const {return TestBit(kMPAlignDone);}
+
   void     AssignDOFs();
   //
   void     AddDetector(UInt_t id, AliAlgDet* det=0);
@@ -127,13 +132,17 @@ class AliAlgSteer : public TObject
   //
   Double_t GetPtMin(Bool_t tp)                            const {return fPtMin[tp];}
   void     SetPtMin(Bool_t tp,double pt)                        {fPtMin[tp] = pt;}
-  void     SetPtMinColl(double pt=0.5)                          {SetPtMin(AliAlgAux::kColl,pt);}
+  void     SetPtMinColl(double pt=0.7)                          {SetPtMin(AliAlgAux::kColl,pt);}
   void     SetPtMinCosm(double pt=1.0)                          {SetPtMin(AliAlgAux::kCosm,pt);}
   //
   Double_t GetEtaMax(Bool_t tp)                           const {return fEtaMax[tp];}
   void     SetEtaMax(Bool_t tp,double eta)                      {fEtaMax[tp]=eta;}
   void     SetEtaMaxColl(double eta=1.5)                        {SetEtaMax(AliAlgAux::kColl,eta);}
   void     SetEtaMaxCosm(double eta=1.5)                        {SetEtaMax(AliAlgAux::kCosm,eta);}
+  //
+  void     SetDefPtBOffCosm(double pt=5.0)                      {fDefPtBOff[AliAlgAux::kCosm] = pt>0.3 ? pt:0.3;}
+  void     SetDefPtBOffColl(double pt=0.6)                      {fDefPtBOff[AliAlgAux::kColl] = pt>0.3 ? pt:0.3;}
+  Double_t GetDefPtBOff(Bool_t tp)                              {return fDefPtBOff[tp];}
   //
   Int_t    GetMinDetAcc(Bool_t tp)                        const {return fMinDetAcc[tp];}
   void     SetMinDetAcc(Bool_t tp, int n)                       {fMinDetAcc[tp] = n;}
@@ -179,6 +188,7 @@ class AliAlgSteer : public TObject
   //
   AliAlgPoint* GetRefPoint()                              const {return (AliAlgPoint*)fRefPoint;}
   //
+  AliAlgRes* GetContResid()                               const {return (AliAlgRes*)fCResid;}
   AliAlgMPRecord* GetMPRecord()                           const {return (AliAlgMPRecord*)fMPRecord;}
   TTree*    GetMPRecTree()                                const {return fMPRecTree;}
   AliAlgTrack* GetAlgTrack()                              const {return (AliAlgTrack*)fAlgTrack;}
@@ -205,7 +215,7 @@ class AliAlgSteer : public TObject
   void     SetMPParFileName(const char* name="mpParams.txt");
   void     SetMPConFileName(const char* name="mpConstraints.txt");
   void     SetMPSteerFileName(const char* name="mpSteer.txt");
-  void     SetResidFileName(const char* name="controlRes.root");
+  void     SetResidFileName(const char* name="mpControlRes.root");
   void     SetOutCDBPath(const char* name="local://outOCDB");
   void     SetOutCDBComment(const char* cm=0)                    {fOutCDBComment = cm;}
   void     SetOutCDBResponsible(const char* v=0)                 {fOutCDBResponsible = v;}
@@ -216,6 +226,7 @@ class AliAlgSteer : public TObject
   Float_t  GetControlFrac()                                const {return fControlFrac;}
   void     SetControlFrac(float v=1.)                            {fControlFrac = v;}
   void     WriteCalibrationResults()                       const;
+  void     ApplyAlignmentFromMPSol();
   const  char* GetOutCDBComment()                          const {return fOutCDBComment.Data();}
   const  char* GetOutCDBResponsible()                      const {return fOutCDBResponsible.Data();}
   const  char* GetOutCDBPath()                             const {return fOutCDBPath.Data();}
@@ -228,11 +239,13 @@ class AliAlgSteer : public TObject
   Bool_t   FillMPRecData();
   Bool_t   FillMilleData();
   Bool_t   FillControlData();
+  void     SetDoKalmanResid(Bool_t v=kTRUE)                      {fDoKalmanResid = v;}
   void     SetMPOutType(Int_t t)                                 {fMPOutType = t;}
   void     ProduceMPData(Bool_t v=kTRUE)                         {if (v) fMPOutType|=kMille; else fMPOutType&=~kMille;}
   void     ProduceMPRecord(Bool_t v=kTRUE)                       {if (v) fMPOutType|=kMPRec; else fMPOutType&=~kMPRec;}
   void     ProduceControlRes(Bool_t v=kTRUE)                     {if (v) fMPOutType|=kContR; else fMPOutType&=~kContR;}
   Int_t    GetMPOutType()                                  const {return fMPOutType;}
+  Bool_t   GetDoKalmanResid()                              const {return fDoKalmanResid;}
   Bool_t   GetProduceMPData()                              const {return fMPOutType&kMille;}
   Bool_t   GetProduceMPRecord()                            const {return fMPOutType&kMPRec;}
   Bool_t   GetProduceControlRes()                          const {return fMPOutType&kContR;}
@@ -250,18 +263,22 @@ class AliAlgSteer : public TObject
   void     GenPedeSteerFile(const Option_t *opt="")        const;
   void     WritePedeConstraints()                          const;
   void     CheckConstraints(const char* params=0);
-  TH1*     GetHistoDOF()                                   const {return fHistoDOF;}
-  void     SetHistoDOF(TH1F* h)                                  {fHistoDOF = h;}
-  void     DetachHistoDOF()                                      {SetHistoDOF(0);}
+  AliAlgDOFStat* GetDOFStat()                              const {return fDOFStat;}
+  void     SetDOFStat(AliAlgDOFStat* st)                        {fDOFStat = st;}
+  void     DetachDOFStat()                                      {SetDOFStat(0);}
   TH1*     GetHistoStat()                                  const {return fHistoStat;}
   void     DetachHistoStat()                                     {SetHistoStat(0);}
   void     SetHistoStat(TH1F* h)                                 {fHistoStat = h;}
   void     FillStatHisto(int type, float w=1);
   void     CreateStatHisto();
-  void     FixLowStatFromHisto(Int_t thresh=40);
-  void     LoadStatHistos(const char* flname);
+  void     FixLowStatFromDOFStat(Int_t thresh=40);
+  void     LoadStat(const char* flname);
   //
   //----------------------------------------
+  //
+  Int_t  GetRefRunNumber()                                const {return fRefRunNumber;}
+  void   SetRefRunNumber(int r=-1)                               {fRefRunNumber = r;}
+  //
   void   SetRefOCDBConfigMacro(const char* nm="configRefOCDB.C") {fRefOCDBConf = nm;}
   const  char* GetRefOCDBConfigMacro()                    const {return fRefOCDBConf.Data();}
   void   SetRecoOCDBConfigMacro(const char* nm="configRecoOCDB.C") {fRecoOCDBConf = nm;}
@@ -270,6 +287,7 @@ class AliAlgSteer : public TObject
   //
   virtual void Print(const Option_t *opt="")              const;
   void         PrintLabels()                              const;
+  Char_t*      GetDOFLabelTxt(int idf)                    const;
   //
   static Char_t* GetDetNameByDetID(Int_t id)              {return (Char_t*)fgkDetectorName[id];}
   static void    MPRec2Mille(const char* mprecfile,const char* millefile="mpData.mille",Bool_t bindata=kTRUE);
@@ -307,6 +325,7 @@ class AliAlgSteer : public TObject
   Bool_t        fCosmicSelStrict;                         // if true, each cosmic track leg selected like separate track
   Int_t         fMinPoints[AliAlgAux::kNTrackTypes][2];   // require min points per leg (case Boff,Bon)
   Int_t         fMinDetAcc[AliAlgAux::kNTrackTypes];      // min number of detector required in track
+  Double_t      fDefPtBOff[AliAlgAux::kNTrackTypes];      // nominal pt for tracks in Boff run
   Double_t      fPtMin[AliAlgAux::kNTrackTypes];          // min pT of tracks to consider
   Double_t      fEtaMax[AliAlgAux::kNTrackTypes];         // eta cut on tracks
   Int_t         fVtxMinCont;                              // require min number of contributors in Vtx
@@ -355,19 +374,21 @@ class AliAlgSteer : public TObject
   TString         fMPSteerFileName;                       //  file name for MP steering
   TString         fResidFileName;                         //  file name for optional control residuals
   Bool_t          fMilleOutBin;                           //  optionally text output for Mille debugging
+  Bool_t          fDoKalmanResid;                         //  calculate residuals with smoothed kalman in the ControlRes
   //
   TString         fOutCDBPath;                            // output OCDB path
   TString         fOutCDBComment;                         // optional comment to add to output cdb objects
   TString         fOutCDBResponsible;                     // optional responsible for output metadata
   Int_t           fOutCDBRunRange[2];                     // run range for output storage
   //
-  TH1F*           fHistoDOF;                              // histo with entries per dof
+  AliAlgDOFStat*  fDOFStat;                               // stat of entries per dof
   TH1F*           fHistoStat;                             // histo with general statistics
   //
   // input related
   TString         fConfMacroName;                         // optional configuration macro
   TString         fRecoOCDBConf;                          // optional macro name for reco-time OCDB setup: void fun(int run)
   TString         fRefOCDBConf;                           // optional macro name for prealignment OCDB setup: void fun()
+  Int_t           fRefRunNumber;                          // optional run number used for reference
   Int_t           fRefOCDBLoaded;                         // flag/counter for ref.OCDB loading
   Bool_t          fUseRecoOCDB;                           // flag to preload reco-time calib objects
   //
@@ -376,7 +397,7 @@ class AliAlgSteer : public TObject
   static const Char_t* fgkHStatName[kNHVars];             // names for stat.bins in the stat histo
   static const Char_t* fgkMPDataExt;                      // extension for MP2 binary data 
   //
-  ClassDef(AliAlgSteer,1)
+  ClassDef(AliAlgSteer,2)
 };
 
 //__________________________________________________________

@@ -19,6 +19,7 @@
 #include "AliLog.h"
 #include "AliAlgSens.h"
 #include "AliAlgVol.h"
+#include "AliAlgDet.h"
 #include "AliAlgAux.h"
 #include <TMatrixD.h>
 #include <TVectorD.h>
@@ -45,8 +46,8 @@ AliAlgTrack::AliAlgTrack() :
   ,fMass(0.14)
   ,fChi2(0)
   ,fChi2CosmUp(0)
+  ,fChi2CosmDn(0)
   ,fChi2Ini(0)
-  ,fChi2IniCosmUp(0)
   ,fPoints(0)
   ,fLocPar()
   ,fGloParID(0)
@@ -81,9 +82,8 @@ void AliAlgTrack::Clear(Option_t *)
   TObject::Clear();
   ResetBit(0xffffffff);
   fPoints.Clear();
-  fChi2 = fChi2CosmUp = 0;
+  fChi2 = fChi2CosmUp = fChi2CosmDn = fChi2Ini = 0;
   fNDF = 0;
-  fChi2Ini = fChi2IniCosmUp = 0;
   fInnerPointID = -1;
   fNeedInv[0] = fNeedInv[1] = kFALSE;
   fNLocPar = fNLocExtPar = fNGloPar = 0;
@@ -342,7 +342,7 @@ Bool_t AliAlgTrack::CalcResidDeriv(double *params,Bool_t invert,int pFrom,int pT
 Bool_t AliAlgTrack::CalcResidDerivGlo(AliAlgPoint* pnt)
 {
   // calculate residuals derivatives over point's sensor and its parents global params
-  double derGeom[AliAlgVol::kNDOFGeom*3];
+  double deriv[AliAlgVol::kNDOFGeom*3];
   //
   const AliAlgSens* sens = pnt->GetSensor();
   const AliAlgVol* vol = sens;
@@ -357,20 +357,20 @@ Bool_t AliAlgTrack::CalcResidDerivGlo(AliAlgPoint* pnt)
     // measurement residuals
     int nfree = vol->GetNDOFFree();
     if (!nfree) continue; // no free parameters?
-    sens->DPosTraDParGeom(pnt->GetXYZTracking(),derGeom,vol==sens ? 0:vol);
+    sens->DPosTraDParGeom(pnt,deriv,vol==sens ? 0:vol);
     //
     CheckExpandDerGloBuffer(fNGloPar+nfree);  // if needed, expand derivatives buffer
     //
     for (int ip=0;ip<AliAlgVol::kNDOFGeom;ip++) { // we need only free parameters
       if (!vol->IsFreeDOF(ip)) continue;
-      double* dXYZ = &derGeom[ip*3];   // tracking XYZ derivatives over this parameter
+      double* dXYZ = &deriv[ip*3];   // tracking XYZ derivatives over this parameter
       // residual is defined as diagonalized track_estimate - measured Y,Z in tracking frame
       // where the track is evaluated at measured X! 
       // -> take into account modified X using track parameterization at the point (paramWSA)
       // Attention: small simplifications(to be checked if it is ok!!!): 
-      // effect of changing X is accounted neglecting track curvature
+      // effect of changing X is accounted neglecting track curvature to preserve linearity
       //
-      // store diagonalize residuals in track buffer
+      // store diagonalized residuals in track buffer
       pnt->DiagonalizeResiduals((dXYZ[AliAlgPoint::kX]*slpY - dXYZ[AliAlgPoint::kY]),
 				(dXYZ[AliAlgPoint::kX]*slpZ - dXYZ[AliAlgPoint::kZ]),
 				fDResDGloA[0][fNGloPar],fDResDGloA[1][fNGloPar]);
@@ -380,6 +380,24 @@ Bool_t AliAlgTrack::CalcResidDerivGlo(AliAlgPoint* pnt)
     }
     //
   } while( (vol=vol->GetParent()) );
+  //
+  // eventual detector calibration parameters
+  const AliAlgDet* det = sens->GetDetector();
+  int ndof=0;
+  if (det && (ndof=det->GetNCalibDOFs())) {
+    // if needed, expand derivatives buffer
+    CheckExpandDerGloBuffer(fNGloPar+det->GetNCalibDOFsFree());
+    for (int idf=0;idf<ndof;idf++) {
+      if (!det->IsFreeDOF(idf)) continue;
+      sens->DPosTraDParCalib(pnt,deriv,idf,0);
+      pnt->DiagonalizeResiduals((deriv[AliAlgPoint::kX]*slpY - deriv[AliAlgPoint::kY]),
+				(deriv[AliAlgPoint::kX]*slpZ - deriv[AliAlgPoint::kZ]),
+				fDResDGloA[0][fNGloPar],fDResDGloA[1][fNGloPar]);
+      // and register global ID of varied parameter
+      fGloParIDA[fNGloPar] = det->GetParGloID(idf);
+      fNGloPar++;
+    }
+  } 
   //
   pnt->SetNGloDOFs(fNGloPar-pnt->GetDGloOffs());  // mark number of global derivatives filled
   //
@@ -402,8 +420,6 @@ Bool_t AliAlgTrack::CalcResiduals(const double *params)
   //
   if (!params) params = fLocParA;
   int np = GetNPoints();
-  fChi2Ini = fChi2;  // save chi2
-  fChi2IniCosmUp = fChi2CosmUp;  
   fChi2 = 0;
   fNDF = 0;
   //
@@ -416,14 +432,12 @@ Bool_t AliAlgTrack::CalcResiduals(const double *params)
   }
   //
   if (IsCosmic()) { // cosmic upper leg
-    fChi2CosmUp = -fChi2;
     if (!CalcResiduals(params,fNeedInv[1],GetInnerPointID()+1,np-1)) {
 #if DEBUG>3
     AliWarning("Failed on residuals calculation 1");
 #endif
       return kFALSE;
     }
-    fChi2CosmUp += fChi2;
   }
   //
   fNDF -= fNLocExtPar;
@@ -847,13 +861,12 @@ void AliAlgTrack::Print(Option_t *opt) const
   // print track data
   printf("%s ",IsCosmic() ? "  Cosmic  ":"Collision ");
   AliExternalTrackParam::Print();
-  printf("N Free Par: %d (Kinem: %d) | Npoints: %d (Inner:%d) | M : %.3f | Chi2: %.1f/%d",fNLocPar,fNLocExtPar,
-	 GetNPoints(),GetInnerPointID(),fMass,fChi2,fNDF);
+  printf("N Free Par: %d (Kinem: %d) | Npoints: %d (Inner:%d) | M : %.3f | Chi2Ini:%.1f Chi2: %.1f/%d",
+	 fNLocPar,fNLocExtPar,GetNPoints(),GetInnerPointID(),fMass,fChi2Ini,fChi2,fNDF);
   if (IsCosmic()) {
-    double chi2CosmLow = fChi2 - fChi2CosmUp;
     int npLow = GetInnerPointID();
     int npUp  = GetNPoints() - npLow - 1;
-    printf(" [Low:%.1f/%d Up:%.1f/%d]",chi2CosmLow,npLow, fChi2CosmUp,npUp);
+    printf(" [Low:%.1f/%d Up:%.1f/%d]",fChi2CosmDn,npLow, fChi2CosmUp,npUp);
   }
   printf("\n");
   //
@@ -928,7 +941,10 @@ Bool_t AliAlgTrack::IniFit()
   //
   AliExternalTrackParam trc = *this;
   //
-  fChi2 = fChi2CosmUp = 0;
+  if (!GetFieldON()) { // for field-off data impose nominal momentum
+    
+  }
+  fChi2 = fChi2CosmUp = fChi2CosmDn = 0;
   //
   // the points are ranged from outer to inner for collision tracks, 
   // and from outer point of lower leg to outer point of upper leg for the cosmic track 
@@ -945,6 +961,7 @@ Bool_t AliAlgTrack::IniFit()
   //  printf("Lower leg: %d %d\n",0,GetInnerPointID()); trc.Print();
   //
   if (IsCosmic()) {
+    fChi2CosmDn = fChi2;
     AliExternalTrackParam trcU = trc;
     if (!FitLeg(trcU,GetNPoints()-1,GetInnerPointID()+1,fNeedInv[1])) {  //fit upper leg of cosmic track
 #if DEBUG>3
@@ -958,6 +975,7 @@ Bool_t AliAlgTrack::IniFit()
     const AliAlgPoint* refP = GetPoint(GetInnerPointID());
     if (!PropagateToPoint(trcU,refP,kMinNStep,kMaxDefStep,kTRUE)) return kFALSE;
     //
+    fChi2CosmUp = fChi2 - fChi2CosmDn;
     //    printf("Upper leg: %d %d\n",GetInnerPointID()+1,GetNPoints()-1); trcU.Print();
     //
     if (!CombineTracks(trc,trcU)) return kFALSE;
@@ -965,6 +983,8 @@ Bool_t AliAlgTrack::IniFit()
   }
   CopyFrom(&trc);
   //
+  fChi2Ini = fChi2;
+
   return kTRUE;
 }
 
@@ -994,6 +1014,8 @@ Bool_t AliAlgTrack::CombineTracks(AliExternalTrackParam& trcL, const AliExternal
   TMatrixD matCL(mtSize,mtSize),matCLplCU(mtSize,mtSize);
   TVectorD vl(mtSize),vUmnvL(mtSize);
   //
+  //  trcL.Print();
+  //  trcU.Print();
   //
   for (int i=mtSize;i--;) {
     vUmnvL[i] = parU[i] - parL[i];     // y = residual of 2 tracks
@@ -1020,6 +1042,13 @@ Bool_t AliAlgTrack::CombineTracks(AliExternalTrackParam& trcL, const AliExternal
     for (int j=i+1;j--;) covL[((i*(i+1))>>1)+j] -= matKdotCL(i,j); // updated covariance: Cl' = Cl - K*Cl
   } 
   //
+  // update chi2
+  double chi2 = 0;
+  for (int i=mtSize;i--;) for (int j=mtSize;j--;) chi2 += matCLplCU(i,j)*vUmnvL[i]*vUmnvL[j];
+  fChi2 += chi2;
+  //
+  //  printf("Combined: Chi2Tot:%.2f ChiUp:%.2f ChiDn:%.2f ChiCmb:%.2f\n",fChi2,fChi2CosmUp,fChi2CosmDn, chi2);
+  
   return kTRUE;
 }
 
@@ -1030,7 +1059,7 @@ Bool_t AliAlgTrack::FitLeg(AliExternalTrackParam& trc, int pFrom,int pTo, Bool_t
   // the fit will always start from the outgoing track in inward direction (i.e. if cosmics - bottom leg)
   const int    kMinNStep = 3;
   const double kMaxDefStep = 3.0; 
-  const double kErrSpace=50.;
+  const double kErrSpace= 50.;
   const double kErrAng = 0.7;
   const double kErrRelPtI = 1.;
   const double kIniErr[15] = { // initial error
@@ -1040,7 +1069,6 @@ Bool_t AliAlgTrack::FitLeg(AliExternalTrackParam& trc, int pFrom,int pTo, Bool_t
     0                  ,                   0,               0, kErrAng*kErrAng,
     0                  ,                   0,               0,               0, kErrRelPtI*kErrRelPtI
   };
-  const Double_t kOverShootX = 5;//kMaxDefStep*0.7;
   //
   // prepare seed at outer point
   AliAlgPoint* p0 = GetPoint(pFrom);
@@ -1063,7 +1091,9 @@ Bool_t AliAlgTrack::FitLeg(AliExternalTrackParam& trc, int pFrom,int pTo, Bool_t
 #endif
     return kFALSE;
   }
-  if (!trc.PropagateParamOnlyTo(p0->GetXPoint()+kOverShootX,AliTrackerBase::GetBz())) {
+  if (!PropagateParamToPoint(trc,p0,30)) {
+    //  if (!PropagateToPoint(trc,p0,5,30,kTRUE)) {
+    //trc.PropagateParamOnlyTo(p0->GetXPoint()+kOverShootX,AliTrackerBase::GetBz())) {
 #if DEBUG>3
     AliWarningF("Failed on PropagateParamOnlyTo to %f",p0->GetXPoint()+kOverShootX);
     trc.Print();
@@ -1088,15 +1118,16 @@ Bool_t AliAlgTrack::FitLeg(AliExternalTrackParam& trc, int pFrom,int pTo, Bool_t
     AliAlgPoint* pnt = GetPoint(ip);
     //
     //    printf("*** FitLeg %d (%d %d)\n",ip,pFrom,pTo);
-    //    trc.Print();
+    //    printf("Before propagate: "); trc.Print();
     if (!PropagateToPoint(trc,pnt,kMinNStep, kMaxDefStep, kTRUE)) return kFALSE;
     if (pnt->ContainsMeasurement()) {
       if (pnt->GetNeedUpdateFromTrack()) pnt->UpdatePointByTrackInfo(&trc); 
       const double* yz    = pnt->GetYZTracking();
       const double* errYZ = pnt->GetYZErrTracking();
       double chi = trc.GetPredictedChi2(yz,errYZ);
-      //      printf("***>> fitleg-> Y: %+e %+e / Z: %+e %+e -> Chi2: %e | %+e %+e\n",yz[0],trc.GetY(),yz[1],trc.GetZ(),chi,
-      //	     trc.Phi(),trc.GetAlpha());
+      //printf("***>> fitleg-> Y: %+e %+e / Z: %+e %+e -> Chi2: %e | %+e %+e\n",yz[0],trc.GetY(),yz[1],trc.GetZ(),chi,
+      //  trc.Phi(),trc.GetAlpha());
+      //      printf("Before update at %e %e\n",yz[0],yz[1]); trc.Print();
       if (!trc.Update(yz,errYZ)) {
 #if DEBUG>3
 	AliWarningF("Failed on Update %f,%f {%f,%f,%f}",yz[0],yz[1],errYZ[0],errYZ[1],errYZ[2]);
@@ -1105,6 +1136,7 @@ Bool_t AliAlgTrack::FitLeg(AliExternalTrackParam& trc, int pFrom,int pTo, Bool_t
 	return kFALSE;
       }
       fChi2 += chi;
+      //      printf("After update: (%f) -> %f\n",chi,fChi2); trc.Print();
     }
   }
   //
@@ -1113,6 +1145,168 @@ Bool_t AliAlgTrack::FitLeg(AliExternalTrackParam& trc, int pFrom,int pTo, Bool_t
     trc.Invert();
   }
   //
+  return kTRUE;
+}
+
+//______________________________________________
+Bool_t AliAlgTrack::ResidKalman() 
+{
+  // calculate residuals from bi-directional Kalman smoother
+  // ATTENTION: this method modifies workspaces of the points!!!
+  // 
+  Bool_t inv = kFALSE;
+  const int    kMinNStep = 3;
+  const double kMaxDefStep = 3.0; 
+  const double kErrSpace=50.;
+  const double kErrAng = 0.7;
+  const double kErrRelPtI = 1.;
+  const double kIniErr[15] = { // initial error
+    kErrSpace*kErrSpace,
+    0                  , kErrSpace*kErrSpace,
+    0                  ,                   0, kErrAng*kErrAng,
+    0                  ,                   0,               0, kErrAng*kErrAng,
+    0                  ,                   0,               0,               0, kErrRelPtI*kErrRelPtI
+  };
+  //  const Double_t kOverShootX = 5;
+  //
+  AliExternalTrackParam trc = *this;
+  //
+  int pID=0, nPnt = GetNPoints();;
+  AliAlgPoint* pnt = 0;
+  // get 1st measured point  
+  while ( pID<nPnt && !(pnt=GetPoint(pID))->ContainsMeasurement() ) pID++;
+  if (!pnt) return kFALSE;
+  double phi = trc.Phi(),alp=pnt->GetAlphaSens();
+  BringTo02Pi(phi);
+  BringTo02Pi(alp);
+  double dphi = DeltaPhiSmall(phi,alp);
+  if (dphi>Pi()/2.) { // need to invert the track to new frame
+    inv = kTRUE;
+    trc.Invert();
+  }
+  // prepare track seed at 1st valid point
+  if (!trc.RotateParamOnly(pnt->GetAlphaSens())) {
+#if DEBUG>3
+    AliWarningF("Failed on RotateParamOnly to %f",pnt->GetAlphaSens());
+    trc.Print();
+#endif
+    return kFALSE;
+  }
+  if (!PropagateParamToPoint(trc,pnt,30)) {
+    //if (!trc.PropagateParamOnlyTo(pnt->GetXPoint()+kOverShootX,AliTrackerBase::GetBz())) {
+#if DEBUG>3
+    AliWarningF("Failed on PropagateParamOnlyTo to %f",pnt->GetXPoint()+kOverShootX);
+    trc.Print();
+#endif
+    return kFALSE;
+  }
+  //
+  double* cov = (double*)trc.GetCovariance();
+  memcpy(cov,kIniErr,15*sizeof(double));
+  cov[14] *= trc.GetSigned1Pt()*trc.GetSigned1Pt();
+  //
+  double chifwd = 0, chibwd = 0;
+  // inward fit
+  for (int ip=0;ip<nPnt;ip++) {
+    pnt = GetPoint(ip);
+    if (pnt->IsInvDir()!=inv) { // crossing point where the track should be inverted?
+      trc.Invert();
+      inv = !inv;
+    }
+    //    printf("*** ResidKalm %d (%d %d)\n",ip,0,nPnt);
+    //    printf("Before propagate: "); trc.Print();
+    if (!PropagateToPoint(trc,pnt,kMinNStep, kMaxDefStep, kTRUE)) return kFALSE;
+    if (!pnt->ContainsMeasurement()) continue;
+    const double* yz    = pnt->GetYZTracking();
+    const double* errYZ = pnt->GetYZErrTracking();
+    // store track position/errors before update in the point WorkSpace-A
+    double* ws = (double*)pnt->GetTrParamWSA();
+    ws[0] = trc.GetY();
+    ws[1] = trc.GetZ();
+    ws[2] = trc.GetSigmaY2();
+    ws[3] = trc.GetSigmaZY();
+    ws[4] = trc.GetSigmaZ2();
+    double chi = trc.GetPredictedChi2(yz,errYZ);
+    //    printf(">> INV%d (%9d): %+.2e %+.2e | %+.2e %+.2e %+.2e %+.2e %+.2e | %.2e %d \n",ip,pnt->GetSensor()->GetInternalID(),yz[0],yz[1], ws[0],ws[1],ws[2],ws[3],ws[4],chi,inv);
+    //    printf(">>Bef ");trc.Print();
+    // printf("KLM Before update at %e %e\n",yz[0],yz[1]); trc.Print();
+    if (!trc.Update(yz,errYZ)) {
+#if DEBUG>3
+      AliWarningF("Failed on Inward Update %f,%f {%f,%f,%f}",yz[0],yz[1],errYZ[0],errYZ[1],errYZ[2]);
+      trc.Print();
+#endif
+      return kFALSE;
+    }
+    //    printf(">>Aft ");trc.Print();
+    chifwd += chi;   
+    //printf("KLM After update: (%f) -> %f\n",chi,chifwd);   trc.Print();
+  }
+  //
+  // outward fit
+  cov = (double*)trc.GetCovariance();
+  memcpy(cov,kIniErr,15*sizeof(double));
+  cov[14] *= trc.GetSigned1Pt()*trc.GetSigned1Pt();
+  for (int ip=nPnt;ip--;) {
+    pnt = GetPoint(ip);
+    if (pnt->IsInvDir()!=inv) { // crossing point where the track should be inverted?
+      trc.Invert();
+      inv = !inv;
+    }
+    if (!PropagateToPoint(trc,pnt,kMinNStep, kMaxDefStep, kTRUE)) return kFALSE;
+    if (!pnt->ContainsMeasurement()) continue;
+    const double* yz    = pnt->GetYZTracking();
+    const double* errYZ = pnt->GetYZErrTracking();
+    // store track position/errors before update in the point WorkSpace-B
+    double* ws = (double*)pnt->GetTrParamWSB();
+    ws[0] = trc.GetY();
+    ws[1] = trc.GetZ();
+    ws[2] = trc.GetSigmaY2();
+    ws[3] = trc.GetSigmaZY();
+    ws[4] = trc.GetSigmaZ2();
+    double chi = trc.GetPredictedChi2(yz,errYZ);    
+    //    printf("<< OUT%d (%9d): %+.2e %+.2e | %+.2e %+.2e %+.2e %+.2e %+.2e | %.2e %d \n",ip,pnt->GetSensor()->GetInternalID(),yz[0],yz[1], ws[0],ws[1],ws[2],ws[3],ws[4],chi,inv);
+    //    printf("<<Bef ");    trc.Print();
+    if (!trc.Update(yz,errYZ)) {
+#if DEBUG>3
+      AliWarningF("Failed on Outward Update %f,%f {%f,%f,%f}",yz[0],yz[1],errYZ[0],errYZ[1],errYZ[2]);
+      trc.Print();
+#endif
+      return kFALSE;
+    }
+    chibwd += chi;    
+    //    printf("<<Aft ");    trc.Print();
+  }
+  //  
+  // now compute smoothed prediction and residual
+  for (int ip=0;ip<nPnt;ip++) {
+    pnt = GetPoint(ip);
+    if (!pnt->ContainsMeasurement()) continue;
+    double* wsA = (double*)pnt->GetTrParamWSA(); // inward measurement
+    double* wsB = (double*)pnt->GetTrParamWSB(); // outward measurement
+    double &yA=wsA[0],&zA=wsA[1],&sgAYY=wsA[2],&sgAYZ=wsA[3],&sgAZZ=wsA[4];
+    double &yB=wsB[0],&zB=wsB[1],&sgBYY=wsB[2],&sgBYZ=wsB[3],&sgBZZ=wsB[4];
+    // compute weighted average
+    double sgYY = sgAYY+sgBYY, sgYZ=sgAYZ+sgBYZ, sgZZ=sgAZZ+sgBZZ;
+    double detI = sgYY*sgZZ - sgYZ*sgYZ;
+    if (TMath::Abs(detI) < kAlmost0) return kFALSE; else detI = 1./detI;
+    double tmp = sgYY; 
+    sgYY  = sgZZ*detI; 
+    sgZZ  = tmp*detI; 
+    sgYZ  = -sgYZ*detI;
+    double dy=yB-yA, dz=zB-zA;
+    double k00=sgAYY*sgYY+sgAYZ*sgYZ, k01=sgAYY*sgYZ+sgAYZ*sgZZ;
+    double k10=sgAYZ*sgYY+sgAZZ*sgYZ, k11=sgAYZ*sgYZ+sgAZZ*sgZZ;
+    double sgAYZt=sgAYZ;
+    yA += dy*k00 + dz*k01; // these are smoothed predictions, stored in WSA
+    zA += dy*k10 + dz*k11; //
+    sgAYY -= k00*sgAYY + k01*sgAYZ;
+    sgAYZ -= k00*sgAYZt+ k01*sgAZZ;
+    sgAZZ -= k10*sgAYZt+ k11*sgAZZ;
+    //    printf("|| WGH%d (%9d): | %+.2e %+.2e %+.2e %.2e %.2e\n",ip,pnt->GetSensor()->GetInternalID(), wsA[0],wsA[1],wsA[2],wsA[3],wsA[4]);
+  }
+  //
+  fChi2 = chifwd;
+  SetKalmanDone(kTRUE);
   return kTRUE;
 }
 

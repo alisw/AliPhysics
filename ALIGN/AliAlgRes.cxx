@@ -36,6 +36,7 @@ AliAlgRes::AliAlgRes()
   ,fNBook(0)
   ,fChi2(0)
   ,fChi2Ini(0)
+  ,fChi2K(0)
   ,fQ2Pt(0)
   ,fX(0)
   ,fY(0)
@@ -45,9 +46,14 @@ AliAlgRes::AliAlgRes()
   ,fAlpha(0)
   ,fDY(0)
   ,fDZ(0)
+  ,fDYK(0)
+  ,fDZK(0)
   ,fSigY2(0)
   ,fSigYZ(0)
   ,fSigZ2(0)
+  ,fSigY2K(0)
+  ,fSigYZK(0)
+  ,fSigZ2K(0)
   ,fVolID(0)
   ,fLabel(0)
 {
@@ -69,6 +75,11 @@ AliAlgRes::~AliAlgRes()
   delete[] fSigY2;
   delete[] fSigYZ;
   delete[] fSigZ2;
+  delete[] fDYK;
+  delete[] fDZK;
+  delete[] fSigY2K;
+  delete[] fSigYZK;
+  delete[] fSigZ2K;
   delete[] fVolID;
   delete[] fLabel;
 }
@@ -89,6 +100,11 @@ void AliAlgRes::Resize(Int_t np)
     delete[] fSigY2;
     delete[] fSigYZ;
     delete[] fSigZ2;
+    delete[] fDYK;
+    delete[] fDZK;
+    delete[] fSigY2K;
+    delete[] fSigYZK;
+    delete[] fSigZ2K;
     delete[] fVolID;
     delete[] fLabel;
     //
@@ -104,6 +120,11 @@ void AliAlgRes::Resize(Int_t np)
     fSigY2   = new Float_t[fNBook];
     fSigYZ   = new Float_t[fNBook];
     fSigZ2   = new Float_t[fNBook];
+    fDYK     = new Float_t[fNBook];
+    fDZK     = new Float_t[fNBook];
+    fSigY2K  = new Float_t[fNBook];
+    fSigYZK  = new Float_t[fNBook];
+    fSigZ2K  = new Float_t[fNBook];
     fVolID   = new Int_t[fNBook];
     fLabel   = new Int_t[fNBook];
     //
@@ -118,6 +139,11 @@ void AliAlgRes::Resize(Int_t np)
     memset(fSigY2, 0,fNBook*sizeof(Float_t));
     memset(fSigYZ, 0,fNBook*sizeof(Float_t));
     memset(fSigZ2, 0,fNBook*sizeof(Float_t));
+    memset(fDYK  , 0,fNBook*sizeof(Float_t));
+    memset(fDZK  , 0,fNBook*sizeof(Float_t));
+    memset(fSigY2K,0,fNBook*sizeof(Float_t));
+    memset(fSigYZK,0,fNBook*sizeof(Float_t));
+    memset(fSigZ2K,0,fNBook*sizeof(Float_t));
     memset(fVolID, 0,fNBook*sizeof(Int_t));
     memset(fLabel, 0,fNBook*sizeof(Int_t));
   }
@@ -135,6 +161,7 @@ void AliAlgRes::Clear(const Option_t *)
   fTimeStamp = 0;
   fTrackID = 0;
   fChi2 = 0;
+  fChi2K= 0;
   fQ2Pt = 0;
   //
 }
@@ -148,11 +175,18 @@ void AliAlgRes::Print(const Option_t *opt) const
   printf("%5sTr.",IsCosmic() ? "Cosm.":"Coll.");
   if (IsCosmic()) printf("%2d/%2d ",fTrackID>>16,fTrackID&0xffff);
   else            printf("%5d ",fTrackID);
-  printf("Run:%6d Bz:%+4.1f Np: %3d q/Pt:%+.4f | Chi2:%6.1f |Vtx:%3s| TStamp:%d\n",
-	 fRun,fBz,fNPoints,fQ2Pt,fChi2,HasVertex() ? "ON":"OFF",fTimeStamp);
+  printf("Run:%6d Bz:%+4.1f Np: %3d q/Pt:%+.4f | Chi2: Ini: %6.1f LinSol:%6.1f Kalm:%6.1f |Vtx:%3s| TStamp:%d\n",
+	 fRun,fBz,fNPoints,fQ2Pt,fChi2Ini,fChi2,fChi2K,HasVertex() ? "ON":"OFF",fTimeStamp);
   if (opts.Contains("r")) {
-    printf("%5s %s %7s %7s %7s %5s %5s %9s %9s\n",
-	   " VID "," Alp ","   X   ","   Y   ","   Z   "," Snp "," Tgl ","    DY   ","    DZ   ");
+    Bool_t ers = opts.Contains("e");
+    printf("%5s %7s %s %7s %7s %7s %5s %5s %9s %9s",
+	   " VID "," Label "," Alp ","   X   ","   Y   ","   Z   "," Snp "," Tgl ","    DY   ","    DZ   ");
+    if (ers) printf(" %8s %8s %8s"," pSgYY "," pSgYZ "," pSgZZ "); // cluster errors
+    if (GetKalmanDone()) {
+      printf(" %9s %9s","    DYK  ","    DZK  ");
+      if (ers) printf(" %8s %8s %8s"," tSgYY "," tSgYZ "," tSgZZ "); // track errors
+    }
+    printf("\n");
     for (int i=0;i<fNPoints;i++) {
       float x=fX[i],y=fY[i],z=fZ[i];
       if (lab) {
@@ -160,14 +194,20 @@ void AliAlgRes::Print(const Option_t *opt) const
 	y = GetYLab(i);
 	z = GetZLab(i);
       }
-      printf("%5d %7d %+5.2f %+7.2f %+7.2f %+7.2f %+5.2f %+5.2f %+9.2e %+9.2e\n",
+      printf("%5d %7d %+5.2f %+7.2f %+7.2f %+7.2f %+5.2f %+5.2f %+9.2e %+9.2e",
 	     fVolID[i],fLabel[i],fAlpha[i],x,y,z,fSnp[i],fTgl[i],fDY[i],fDZ[i]);
+      if (ers) printf(" %.2e %+.1e %.2e",fSigY2[i],fSigYZ[i],fSigZ2[i]);
+      if (GetKalmanDone()) {
+	printf(" %+9.2e %+9.2e",fDYK[i],fDZK[i]);
+	if (ers) printf(" %.2e %+.1e %.2e",fSigY2K[i],fSigYZK[i],fSigZ2K[i]);
+      }
+      printf("\n");
     }
   }
 }
 
 //____________________________________________________________
-Bool_t AliAlgRes::FillTrack(const AliAlgTrack* trc)
+Bool_t AliAlgRes::FillTrack(AliAlgTrack* trc, Bool_t doKalman)
 {
   // fill tracks residuals info
   int nps,np = trc->GetNPoints();
@@ -210,6 +250,31 @@ Bool_t AliAlgRes::FillTrack(const AliAlgTrack* trc)
     trc->Print("p");
     AliFatalF("Something is wrong: %d residuals were stored instead of %d",nfill,nps);
   }
+  //
+  SetKalmanDone(kFALSE);
+  int nfilk=0;
+  if (doKalman && trc->ResidKalman()) {
+    for (int i=0;i<np;i++) {
+      AliAlgPoint* pnt = trc->GetPoint(i);
+      if (!pnt->ContainsMeasurement()) continue;
+      if (fVolID[nfilk] != int(pnt->GetVolID())) {
+	AliFatalF("Mismatch in Kalman filling for point %d: filled VID:%d, point VID:%d",
+		  i,fVolID[nfilk],pnt->GetVolID());
+      }
+      const double* wsA = pnt->GetTrParamWSA();
+      fDYK[nfilk]    = pnt->GetResidY();
+      fDZK[nfilk]    = pnt->GetResidZ();
+      fSigY2K[nfilk] = wsA[2];
+      fSigYZK[nfilk] = wsA[3];
+      fSigZ2K[nfilk] = wsA[4];
+      //
+      nfilk++;
+    }
+    //
+    fChi2K = trc->GetChi2();
+    SetKalmanDone(kTRUE);
+  }
+
   return kTRUE;
 }
 

@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 class TObjArray;
+class AliAlgDOFStat;
 class TH1;
 
 
@@ -23,7 +24,9 @@ class TH1;
 class AliAlgVol : public TNamed
 {
  public:
-  enum DOFGeom_t {kDOFTX,kDOFTY,kDOFTZ,kDOFPH,kDOFTH,kDOFPS,kNDOFGeom,kAllGeomDOF=0x3F};
+  enum DOFGeom_t {kDOFTX,kDOFTY,kDOFTZ,kDOFPS,kDOFTH,kDOFPH,kNDOFGeom,kAllGeomDOF=0x3F};
+  enum {kDOFBitTX=BIT(kDOFTX),kDOFBitTY=BIT(kDOFTY),kDOFBitTZ=BIT(kDOFTZ),
+	kDOFBitPS=BIT(kDOFPS),kDOFBitTH=BIT(kDOFTH),kDOFBitPH=BIT(kDOFPH)};
   enum {kNDOFMax=32};
   enum Frame_t {kLOC,kTRA,kNVarFrames};  // variation frames defined
   enum {kInitDOFsDoneBit=BIT(14),kSkipBit=BIT(15),kExclFromParentConstraintBit=BIT(16)};
@@ -76,13 +79,14 @@ class AliAlgVol : public TNamed
   Double_t   GetAlpTracking()                    const {return fAlp;}
   //
   Int_t      GetNProcessedPoints()               const {return fNProcPoints;}
-  Int_t      FinalizeStat(TH1* h=0);
-  void       FillDOFHisto(TH1* h)                const;
+  virtual Int_t FinalizeStat(AliAlgDOFStat* h=0);
+  void       FillDOFStat(AliAlgDOFStat* h)       const;
   //
   Float_t*   GetParVals()                        const {return fParVals;}
   Double_t   GetParVal(int par)                  const {return fParVals[par];}
   Double_t   GetParErr(int par)                  const {return fParErrs[par];}
   Int_t      GetParLab(int par)                  const {return fParLabs[par];}
+  void       GetParValGeom(double* delta)        const {for (int i=kNDOFGeom;i--;) delta[i]=fParVals[i];}
   //
   void       SetParVals(Int_t npar,Double_t *vl,Double_t *er);
   void       SetParVal(Int_t par,Double_t v=0)          {fParVals[par] = v;}
@@ -101,9 +105,12 @@ class AliAlgVol : public TNamed
   const TGeoHMatrix&  GetMatrixL2G()             const {return fMatL2G;}
   const TGeoHMatrix&  GetMatrixL2GIdeal()        const {return fMatL2GIdeal;}
   const TGeoHMatrix&  GetMatrixL2GReco()         const {return fMatL2GReco;}
+  const TGeoHMatrix&  GetGlobalDeltaRef()        const {return fMatDeltaRefGlo;}
   void  SetMatrixL2G(const TGeoHMatrix& m)             {fMatL2G = m;}
   void  SetMatrixL2GIdeal(const TGeoHMatrix& m)        {fMatL2GIdeal = m;}
   void  SetMatrixL2GReco(const TGeoHMatrix& m)         {fMatL2GReco = m;}
+  void  SetGlobalDeltaRef(TGeoHMatrix& mat)            {fMatDeltaRefGlo = mat;}
+  //
   virtual void   PrepareMatrixL2G(Bool_t reco=kFALSE);
   virtual void   PrepareMatrixL2GIdeal();
   virtual void   UpdateL2GRecoMatrices(const TClonesArray* algArr,const TGeoHMatrix* cumulDelta);
@@ -114,7 +121,6 @@ class AliAlgVol : public TNamed
   void  SetMatrixT2L(const TGeoHMatrix& m);
   //
   void  Delta2Matrix(TGeoHMatrix& deltaM, const Double_t *delta)         const;
-  void  GetModifiedMatrixL2G(TGeoHMatrix& matMod, const Double_t *delta) const;
   //
   // preparation of variation matrices
   void GetDeltaT2LmodLOC(TGeoHMatrix& matMod, const Double_t *delta) const;
@@ -186,12 +192,13 @@ class AliAlgVol : public TNamed
   TGeoHMatrix fMatL2G;                // local to global matrix, including current alignment
   TGeoHMatrix fMatL2GIdeal;           // local to global matrix, ideal
   TGeoHMatrix fMatT2L;                // tracking to local matrix (ideal)
+  TGeoHMatrix fMatDeltaRefGlo;        // global reference delta from Align/Data
   //
   static const char* fgkDOFName[kNDOFGeom];
   static const char* fgkFrameName[kNVarFrames];
   static UInt_t      fgDefGeomFree;
   //
-  ClassDef(AliAlgVol,1)
+  ClassDef(AliAlgVol,2)
 };
 
 //___________________________________________________________

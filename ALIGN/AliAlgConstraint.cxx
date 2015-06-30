@@ -66,8 +66,10 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
   const char* comment[3] = {"  ","! ","!!"};
   const char* kKeyConstr[2] = {"constraint","measurement"};
   //
+  Bool_t doJac = !GetNoJacobian(); // do we need jacobian evaluation?
   int nch = GetNChildren();
   float *cstrArr = new float[nch*kNDOFGeom*kNDOFGeom];
+  memset(cstrArr,0,nch*kNDOFGeom*kNDOFGeom*sizeof(float));
   // we need for each children the matrix for vector transformation from children frame 
   // (in which its DOFs are defined, LOC or TRA) to this parent variation frame
   // matRel = mPar^-1*mChild
@@ -75,9 +77,9 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
   //
   // in case of parent assigned use its matrix, 
   // otherwise Alice global frame is assumed to be the parent -> Unit matrix 
-  if (fParent) { 
+  if (fParent && doJac) { 
     if (fParent->IsFrameTRA()) fParent->GetMatrixT2G(mPar); // tracking to global
-    else                       mPar = fParent->GetMatrixL2G(); // local to global
+    else                       mPar = fParent->GetMatrixL2GIdeal(); // local to global
     mPar = mPar.Inverse();
   }
   //
@@ -85,16 +87,26 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
   int nContCh[kNDOFGeom] = {0}; // we need at least on contributing children DOF to constrain the parent DOF
   for (int ich=0;ich<nch;ich++) {
     AliAlgVol* child = GetChild(ich);
-    TGeoHMatrix matRel;
-    if (child->IsFrameTRA()) child->GetMatrixT2G(matRel); // tracking to global
-    else                     matRel = child->GetMatrixL2G(); // local to global
-    matRel.MultiplyLeft(&mPar);
-    ConstrCoefGeom(matRel,jac);
     //
-    for (int ics=0;ics<kNDOFGeom;ics++) { // DOF of parent to be constrained
-      for (int ip=0;ip<kNDOFGeom;ip++) { // count contributing DOFs
-	float jv = jac[ics*kNDOFGeom+ip];
-	if (!IsZeroAbs(jv) && child->IsFreeDOF(ip) && child->GetParErr(ip)>=0) nContCh[ip]++;
+    if (doJac) { // calculate jacobian
+      TGeoHMatrix matRel;
+      if (child->IsFrameTRA()) child->GetMatrixT2G(matRel); // tracking to global
+      else                     matRel = child->GetMatrixL2GIdeal(); // local to global
+      matRel.MultiplyLeft(&mPar);
+      ConstrCoefGeom(matRel,jac);
+      //
+      for (int ics=0;ics<kNDOFGeom;ics++) { // DOF of parent to be constrained
+	for (int ip=0;ip<kNDOFGeom;ip++) { // count contributing DOFs
+	  float jv = jac[ics*kNDOFGeom+ip];
+	  if (!IsZeroAbs(jv) && child->IsFreeDOF(ip) && child->GetParErr(ip)>=0) nContCh[ip]++;
+	}
+      }
+    }
+    else { // simple constraint on the sum of requested DOF
+      //
+      for (int ip=0;ip<kNDOFGeom;ip++) {
+	if (child->IsFreeDOF(ip) && child->GetParErr(ip)>=0) nContCh[ip]++;
+	jac[ip*kNDOFGeom+ip] = 1.;
       }
     }
     jac += kNDOFGeom*kNDOFGeom; // matrix for next slot
@@ -126,11 +138,13 @@ void AliAlgConstraint::WriteChildrenConstraints(FILE* conOut) const
       } // loop over DOF's of children contributing to this constraint
       // now, after comment, write disabled constraints
       fprintf(conOut,"%s ",comment[kOn]);
-      for (int ip=0;ip<kNDOFGeom;ip++) {
-	float jv = jac[ics*kNDOFGeom+ip];
-	if (child->IsFreeDOF(ip)&&!IsZeroAbs(jv)&& child->GetParErr(ip)>=0) continue;
-	fprintf(conOut,"%9d %+.3e\t",child->GetParLab(ip),jv);
-      } // loop over DOF's of children contributing to this constraint
+      if (doJac) {
+	for (int ip=0;ip<kNDOFGeom;ip++) {
+	  float jv = jac[ics*kNDOFGeom+ip];
+	  if (child->IsFreeDOF(ip)&&!IsZeroAbs(jv)&& child->GetParErr(ip)>=0) continue;
+	  fprintf(conOut,"%9d %+.3e\t",child->GetParLab(ip),jv);
+	} // loop over DOF's of children contributing to this constraint
+      }
       fprintf(conOut,"%s from %s\n",comment[kOnOn],child->GetName());
     } // loop over children
   } // loop over constraints in parent volume
@@ -146,16 +160,18 @@ void AliAlgConstraint::CheckConstraint() const
   int nch = GetNChildren();
   if (!nch) return;
   //
+  Bool_t doJac = !GetNoJacobian(); // do we need jacobian evaluation?
   float *cstrArr = new float[nch*kNDOFGeom*kNDOFGeom];
+  memset(cstrArr,0,nch*kNDOFGeom*kNDOFGeom*sizeof(float));  
   // we need for each children the matrix for vector transformation from children frame 
   // (in which its DOFs are defined, LOC or TRA) to this parent variation frame
   // matRel = mPar^-1*mChild
   TGeoHMatrix mPar;
   // in case of parent assigned use its matrix, 
   // otherwise Alice global frame is assumed to be the parent -> Unit matrix 
-  if (fParent) { 
+  if (fParent && doJac) { 
     if (fParent->IsFrameTRA()) fParent->GetMatrixT2G(mPar); // tracking to global
-    else                       mPar = fParent->GetMatrixL2G(); // local to global
+    else                       mPar = fParent->GetMatrixL2GIdeal(); // local to global
     mPar = mPar.Inverse();
   }
   //
@@ -171,50 +187,69 @@ void AliAlgConstraint::CheckConstraint() const
   printf(" ! %s\n",GetName());
   for (int ich=0;ich<nch;ich++) {
     AliAlgVol* child = GetChild(ich);
-    TGeoHMatrix matRel;
-    if (child->IsFrameTRA()) child->GetMatrixT2G(matRel); // tracking to global
-    else                     matRel = child->GetMatrixL2G(); // local to global
-    //
-    matRel.MultiplyLeft(&mPar);
-    ConstrCoefGeom(matRel,jac); // Jacobian for analytical constraint used by MillePeded
-    //
     double parsC[kNDOFGeom]={0},parsPAn[kNDOFGeom]={0},parsPEx[kNDOFGeom]={0};
     for (int jc=kNDOFGeom;jc--;) parsC[jc] = child->GetParVal(jc); // child params in child frame
-    TGeoHMatrix tau; 
-    child->Delta2Matrix(tau,parsC); // child correction matrix in the child frame
-    tau.Multiply(&matRel.Inverse());
-    tau.MultiplyLeft(&matRel);     //  child correction matrix in the parent frame
-    AliAlignObjParams tmpPar;
-    tmpPar.SetMatrix(tau);
-    tmpPar.GetTranslation(&parsPEx[0]);
-    tmpPar.GetAngles(&parsPEx[3]);    // explicitly calculated child params in parent frame
-    //
-    // analytically calculated child params in parent frame
     printf("#%3d | ",ich);
-    for (int jp=0;jp<kNDOFGeom;jp++) {
-      for (int jc=0;jc<kNDOFGeom;jc++) 	parsPAn[jp] += jac[jp*kNDOFGeom+jc]*parsC[jc];
-      parsTotAn[jp] += parsPAn[jp];   // analyticaly calculated total modification
-      parsTotEx[jp] += parsPEx[jp];   // explicitly calculated total modification
+    //
+    if (doJac) {
+      TGeoHMatrix matRel;
+      if (child->IsFrameTRA()) child->GetMatrixT2G(matRel); // tracking to global
+      else                     matRel = child->GetMatrixL2GIdeal(); // local to global
       //
-      printf("%+.1e/%+.1e ",parsPAn[jp],parsPEx[jp]);
+      matRel.MultiplyLeft(&mPar);
+      ConstrCoefGeom(matRel,jac); // Jacobian for analytical constraint used by MillePeded
+    //
+      TGeoHMatrix tau; 
+      child->Delta2Matrix(tau,parsC); // child correction matrix in the child frame
+      tau.Multiply(&matRel.Inverse());
+      tau.MultiplyLeft(&matRel);     //  child correction matrix in the parent frame
+      AliAlignObjParams tmpPar;
+      tmpPar.SetMatrix(tau);
+      tmpPar.GetTranslation(&parsPEx[0]);
+      tmpPar.GetAngles(&parsPEx[3]);    // explicitly calculated child params in parent frame
       //
+      // analytically calculated child params in parent frame
+      for (int jp=0;jp<kNDOFGeom;jp++) {
+	for (int jc=0;jc<kNDOFGeom;jc++) 	parsPAn[jp] += jac[jp*kNDOFGeom+jc]*parsC[jc];
+	parsTotAn[jp] += parsPAn[jp];   // analyticaly calculated total modification
+	parsTotEx[jp] += parsPEx[jp];   // explicitly calculated total modification
+	//
+	printf("%+.1e/%+.1e ",parsPAn[jp],parsPEx[jp]);
+	//
+      }
+      //
+      jac += kNDOFGeom*kNDOFGeom; // matrix for next slot
+    }
+    else {
+      for (int jc=0;jc<kNDOFGeom;jc++) {
+	Bool_t acc = child->IsFreeDOF(jc) && child->GetParErr(jc)>=0;
+	if (acc) { printf("    %+.3e    ",parsC[jc]); parsTotAn[jc] += parsC[jc];}
+	else       printf(" /* %+.3e */ ",parsC[jc]);  // just for info, not in the constraint
+      }
     }
     printf(" | ");
     for (int jc=0;jc<kNDOFGeom;jc++) printf("%+.1e ",parsC[jc]); // child proper corrections
     printf(" ! %s\n", child->GetSymName());
-    //
-    jac += kNDOFGeom*kNDOFGeom; // matrix for next slot
   }
   // 
   printf(" Tot | ");
-  for (int jp=0;jp<kNDOFGeom;jp++) printf("%+.1e/%+.1e ",parsTotAn[jp],parsTotEx[jp]);
+  for (int jp=0;jp<kNDOFGeom;jp++) {
+    if (doJac) printf("%+.1e/%+.1e ",parsTotAn[jp],parsTotEx[jp]);
+    else {
+      if (IsDOFConstrained(jp)) printf("    %+.3e    ",parsTotAn[jp]);
+      else                      printf(" /* %+.3e */ ",parsTotAn[jp]);
+    }
+  }
   printf(" | ");
   if (fParent) for (int jp=0;jp<kNDOFGeom;jp++) printf("%+.1e ",fParent->GetParVal(jp)); // parent proper corrections
-  else printf(" no parent -> Global ");
+  else printf(" no parent -> %s ",doJac ? "Global":"Simple");
   printf(" ! <----- %s\n",GetName());
   //
   printf(" Sig | ");
-  for (int jp=0;jp<kNDOFGeom;jp++) printf("    %+.3e    ",fSigma[jp]);
+  for (int jp=0;jp<kNDOFGeom;jp++) {
+    if (IsDOFConstrained(jp)) printf("    %+.3e    ",fSigma[jp]);
+    else                      printf(" /* %+.3e */ ",fSigma[jp]);
+  }
   printf(" ! <----- \n");
 
   //
@@ -256,6 +291,7 @@ void AliAlgConstraint::ConstrCoefGeom(const TGeoHMatrix &matRD, float* jac/*[kND
   //   sinpsi*sinthe*cosphi + cospsi*sinphi; -sinpsi*sinthe*sinphi + cospsi*cosphi; -costhe*sinpsi;
   //  -cospsi*sinthe*cosphi + sinpsi*sinphi;  cospsi*sinthe*sinphi + sinpsi*cosphi;  costhe*cospsi;
   //
+  const double kJTol = 1e-4;  // treat derivatives below this threshold as 0
   const double sgc[kNDOFGeom] = {1.,1.,1.,-RadToDeg(),RadToDeg(),-RadToDeg()};
   //
   double dDPar[kNDOFGeom][4][4] = {
@@ -284,8 +320,10 @@ void AliAlgConstraint::ConstrCoefGeom(const TGeoHMatrix &matRD, float* jac/*[kND
   //
   for (int cs=0;cs<kNDOFGeom;cs++) {
     int i=ij[cs][0],j=ij[cs][1];
-    for (int ip=0;ip<kNDOFGeom;ip++) 
-      jac[cs*kNDOFGeom+ip] = sgc[cs]*dDPar[ip][i][j]*cf[ip]; // [cs][ip]
+    for (int ip=0;ip<kNDOFGeom;ip++) {
+      double jval = sgc[cs]*dDPar[ip][i][j]*cf[ip];
+      jac[cs*kNDOFGeom+ip] =  (Abs(jval)>kJTol) ? jval : 0; // [cs][ip]
+    }
   }
 }
 
@@ -296,6 +334,7 @@ void AliAlgConstraint::Print(const Option_t *) const
   printf("Constraint on ");
   for (int i=0;i<kNDOFGeom;i++) if (IsDOFConstrained(i)) printf("%3s (Sig:%+e) ",GetDOFName(i),GetSigma(i));
   printf(" | %s %s\n",GetName(),GetTitle());
+  if (GetNoJacobian()) printf("!!! This is explicit constraint on sum of DOFs (no Jacobian)!!!\n");
   for (int i=0;i<GetNChildren();i++) {
     const AliAlgVol* child = GetChild(i);
     printf("%3d %s\n",i,child->GetName());

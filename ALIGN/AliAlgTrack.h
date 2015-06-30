@@ -21,7 +21,8 @@ class AliAlgTrack: public AliExternalTrackParam
 {
  public:
 
-  enum {kCosmicBit=BIT(14),kFieldONBit=BIT(15),kResidDoneBit=BIT(16),kDerivDoneBit=BIT(17)};
+  enum {kCosmicBit=BIT(14),kFieldONBit=BIT(15),kResidDoneBit=BIT(16),
+	kDerivDoneBit=BIT(17),kKalmanDoneBit=BIT(18)};
   enum {kNKinParBOFF=4                       // N params for ExternalTrackParam part w/o field
 	,kNKinParBON=5                       // N params for ExternalTrackParam part with field
 	,kParY = 0                           // track parameters
@@ -66,23 +67,23 @@ class AliAlgTrack: public AliExternalTrackParam
   void   SetResidDone(Bool_t v=kTRUE)                  {SetBit(kResidDoneBit,v);}
   Bool_t GetDerivDone()                          const {return TestBit(kDerivDoneBit);}
   void   SetDerivDone(Bool_t v=kTRUE)                  {SetBit(kDerivDoneBit,v);}
+  Bool_t GetKalmanDone()                         const {return TestBit(kKalmanDoneBit);}
+  void   SetKalmanDone(Bool_t v=kTRUE)                 {SetBit(kKalmanDoneBit,v);}
   //
   void   SortPoints();
   Bool_t IniFit();
+  Bool_t ResidKalman();
   Bool_t ProcessMaterials();
   Bool_t CombineTracks(AliExternalTrackParam& trcL, const AliExternalTrackParam& trcU);
   //
   void     SetChi2(double c)                           {fChi2 = c;};
-  void     SetChi2CosmUp(double c)                     {fChi2CosmUp = c;};
   Double_t GetChi2()                             const {return fChi2;}
-  Double_t GetChi2CosmUp()                       const {return fChi2CosmUp;}
-  Double_t GetChi2CosmLow()                      const {return fChi2-fChi2CosmUp;}
   void     SetChi2Ini(double c)                        {fChi2Ini = c;};
-  void     SetChi2IniCosmUp(double c)                  {fChi2IniCosmUp = c;};
   Double_t GetChi2Ini()                          const {return fChi2Ini;}
-  Double_t GetChi2IniCosmUp()                    const {return fChi2IniCosmUp;}
-  Double_t GetChi2IniCosmLow()                   const {return fChi2Ini-fChi2IniCosmUp;}
+  Double_t GetChi2CosmUp()                       const {return fChi2CosmUp;}
+  Double_t GetChi2CosmDn()                       const {return fChi2CosmDn;}
   //
+  void   ImposePtBOff(double pt)                       {fP[kParQ2Pt] = 1./pt;}
   // propagation methods
   void   CopyFrom(const AliExternalTrackParam* etp);
   Bool_t ApplyMatCorr(AliExternalTrackParam& trPar, const Double_t *corrDiag, const AliAlgPoint* pnt);
@@ -136,8 +137,8 @@ class AliAlgTrack: public AliExternalTrackParam
   Double_t  fMass;                       // assumed mass
   Double_t  fChi2;                       // chi2 with current residuals
   Double_t  fChi2CosmUp;                 // chi2 for cosmic upper leg
+  Double_t  fChi2CosmDn;                 // chi2 for cosmic down leg
   Double_t  fChi2Ini;                    // chi2 with current residuals
-  Double_t  fChi2IniCosmUp;              // chi2 for cosmic upper leg
   TObjArray fPoints;                     // alignment points
   TArrayD   fResid[2];                   // residuals array
   TArrayD   fDResDLoc[2];                // array for derivatives over local params
@@ -150,7 +151,7 @@ class AliAlgTrack: public AliExternalTrackParam
   Int_t     *fGloParIDA;                 //! fast access to relevant global param IDs
   Double_t  *fLocParA;                   //! fast access to local params
   //
-  ClassDef(AliAlgTrack,1)
+  ClassDef(AliAlgTrack,2)
 };
 
 //____________________________________________________________________________________________

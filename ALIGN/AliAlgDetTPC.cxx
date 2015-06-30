@@ -48,7 +48,7 @@ void AliAlgDetTPC::DefineVolumes()
   const char* kROC[kIOROC] = {"Inner","Outer"};
   //  AliAlgSensTPC *chamb=0;
   //
-  int labDet = (GetDetID()+1)*1000000;
+  int labDet = GetDetLabel();
   AliAlgVol* volTPC = new AliAlgVol("ALIC_1/TPC_M_1",labDet);
   AddVolume( volTPC ); 
   //
