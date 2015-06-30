@@ -129,10 +129,15 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhDetectorSubJetPtFrac2;
   TH1F                                *fhSubJetPtFracRatio;
   TH1F                                *fhSubJetPtFrac2Ratio;
-  TH1F                                *fhParticleSubJetiness;
-  TH1F                                *fhDetectorSubJetiness;
-  TH1F                                *fhSubJetinessRatio;
-  TH1F                                *fhSubJetiness;
+  TH1F                                *fhParticleSubJetiness1;
+  TH1F                                *fhDetectorSubJetiness1;
+  TH1F                                *fhSubJetiness1Ratio;
+  TH1F                                *fhSubJetiness1;
+  TH1F                                *fhParticleSubJetiness2;
+  TH1F                                *fhDetectorSubJetiness2;
+  TH1F                                *fhSubJetiness2Ratio;
+  TH1F                                *fhSubJetiness2;
+  TH1F                                *fh2to1SubJetinessRatio;
   TTree                               *fTreeResponseMatrixAxis;  //Tree with tagging variables subtracted MC or true MC or raw 
 
  private:
