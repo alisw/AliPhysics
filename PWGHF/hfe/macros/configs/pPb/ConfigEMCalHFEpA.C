@@ -76,9 +76,10 @@ Bool_t isTender = kFALSE
 ///_______________________________________________________________________________________________________________
 	// new cuts for event selection
 	
-	//hfecuts->SetUseCorrelationVertex();
-	//hfecuts->SetSPDVtxResolutionCut();
-	hfecuts->SetpApileupCut();
+		// done inside the task, by hand
+		//	hfecuts->SetUseCorrelationVertex();
+		//	hfecuts->SetSPDVtxResolutionCut();
+		//hfecuts->SetpApileupCut();
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
@@ -103,7 +104,7 @@ Bool_t isTender = kFALSE
 		task->SetUseTrigger();
 		task->SetUseShowerShapeCut(kTRUE);
 		//task->SetM02Cut(0.0,0.3);
-		task->SetM20Cut(0.0,0.3);
+		//task->SetM20Cut(0.0,0.3);
 		
 	}
 	
@@ -249,6 +250,10 @@ Bool_t isTender = kFALSE
 	else if (configIndex==72) params[0] = 0;
 	else if (configIndex==73) params[0] = 0.25;
 	else if (configIndex==74) params[0] = -1.75;
+	
+	//for 13d which is shifted
+	else if (configIndex==200) params[0] = -0.5;
+
 	else params[0] = -1;
 	
 	if(configIndex==75)Double_t max=1.5;
@@ -256,6 +261,10 @@ Bool_t isTender = kFALSE
 	else if(configIndex==77)Double_t max=2.5;
 	else if(configIndex==78)Double_t max=3.5;
 	else if(configIndex==79)Double_t max=4.0;
+    
+	//for 13d which is shifted
+	else if(configIndex==200)Double_t max=3.9;
+	
 	else Double_t max=3.0;
 	
 	

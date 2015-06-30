@@ -43,6 +43,7 @@ class AliCaloTrackReader;
 class AliEMCALRecoUtils;
 class AliAODReader;
 class AliCalorimeterUtils;
+class AliAnalysisUtils;
 
 	// --- ROOT system ---
 #include <TObject.h> 
@@ -237,7 +238,7 @@ private:
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
 	
-		//mc closure
+	//mc closure
 	TH1F				*fPtElec_ULS_mc_closure;
 	TH1F				*fPtElec_LS_mc_closure;
 	TH1F				*fPtElec_ULS2_mc_closure;
@@ -250,13 +251,22 @@ private:
 	TH1F				*fPtElec_ULS2_weight;
 	TH1F				*fPtElec_LS2_weight;
 	
-		//PID Histograms
+	//PID Histograms
 	
 	TH2F				*fTOF01;
 	TH2F				*fTOF02;
 	TH2F				*fTOF03;
 	TH1F				*fpid;	
 	TH2F				*fEoverP_pt_true_electrons;
+	TH2F				*fEoverP_ntracks_matched;
+	TH2F				*fEoverP_ncells;
+	
+	TH2F				*fEmc_Ereco_gamma;
+	TH2F				*fEmc_Ereco_gamma_ratio;
+	TH1F				*fEmc;
+	TH2F				*fEmc_Ereco_ele;
+	TH2F				*fEmc_Ereco_ele_ratio;
+	
 	TH2F				*fEoverP_pt_true_hadrons;
 	TH2F				*fEoverP_pt_true_electrons0;
 	TH2F				*fEoverP_pt_true_hadrons0;
@@ -357,7 +367,9 @@ private:
 	TH1F				*fOpAngle;
 	TH1F				*fOpAngleBack;
 	TH1F				*fInvMass2;
+	TH1F				*fInvMass2_weight;
 	TH1F				*fInvMassBack2;
+	TH1F				*fInvMassBack2_weight;
 	
 	TH1F				**fInvMass_pT;
 	TH1F				**fInvMassBack_pT;
@@ -493,6 +505,7 @@ private:
 												//AliCalorimeterUtils *fCaloUtils;
 	
 	Int_t            fBitEGA;                    // Trigger bit on VCaloTrigger for EGA
+	AliAnalysisUtils *fAnalysisUtils;     // Analysis Utils for pA pileup cut
 
 	 
 		//______________________________________________________________________
@@ -521,6 +534,8 @@ protected:
 private:
 	AliEHCParticle(const AliEHCParticle&);
 	AliEHCParticle& operator=(const AliEHCParticle&);
+	
+	
 	
 	Double_t fEta;
 	Double_t fPhi;
