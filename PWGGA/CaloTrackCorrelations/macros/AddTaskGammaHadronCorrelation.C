@@ -1126,6 +1126,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     printf("**** SET M02 limits in correlation task *** \n");
     ana->SetM02Cut(0.10,shshMax);
     ana->SwitchOnInvariantMassHistograms();
+    ana->SwitchOnBackgroundBinsPtInConeHistograms();
   }
   
   ana->SetMCGenType(0,7);
