@@ -156,6 +156,8 @@ class AliTRDmcmSim : public TObject {
   static const Int_t fgkDmemAddrNdrift        = 0xc025; // DMEM address of Ndrift
   static const Int_t fgkDmemAddrDeflCutStart  = 0xc030; // DMEM start address of deflection cut
   static const Int_t fgkDmemAddrDeflCutEnd    = 0xc055; // DMEM end address of deflection cut
+  static const Int_t fgkDmemAddrTimeOffset    = 0xc3fe; // DMEM address of time offset t0
+  static const Int_t fgkDmemAddrYcorr         = 0xc3ff; // DMEM address of y correction (mis-alignment)
 
  protected:
 	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized

@@ -75,6 +75,12 @@ class AliTRDfeeParam : public TObject
   // tracklet simulation
 	  Bool_t   GetTracklet()         const { return fgTracklet; } 
   static  void     SetTracklet(Bool_t trackletSim = kTRUE) { fgTracklet = trackletSim; }
+          Bool_t   GetRejectMultipleTracklets() const { return fgRejectMultipleTracklets; }
+  static  void     SetRejectMultipleTracklets(Bool_t rej = kTRUE) { fgRejectMultipleTracklets = rej; }
+          Bool_t   GetUseMisalignCorr()            const { return fgUseMisalignCorr; }
+  static  void     SetUseMisalignCorr(Bool_t misalign = kTRUE) { fgUseMisalignCorr = misalign; }
+          Bool_t   GetUseTimeOffset()              const { return fgUseTimeOffset; }
+  static  void     SetUseTimeOffset(Bool_t timeOffset = kTRUE) { fgUseTimeOffset = timeOffset; }
 
   // Concerning raw data format
           Int_t    GetRAWversion() const                    { return fRAWversion;        }
@@ -104,6 +110,9 @@ class AliTRDfeeParam : public TObject
 
  // Tracklet  processing on/off 
   static       Bool_t   fgTracklet; // tracklet processing
+  static       Bool_t   fgRejectMultipleTracklets; // only accept best tracklet if found more than once
+  static       Bool_t   fgUseMisalignCorr; // add correction for mis-alignment in y
+  static       Bool_t   fgUseTimeOffset; // add time offset in calculation of fit sums
 
   // For raw production
                Int_t    fRAWversion;                      // Raw data production version

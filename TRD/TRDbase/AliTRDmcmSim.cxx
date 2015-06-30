@@ -1550,6 +1550,43 @@ void AliTRDmcmSim::TrackletSelection()
   AliDebug(10,Form("found %i tracklet candidates\n", ntracks));
   for (i = 0; i < 4; i++)
     AliDebug(10,Form("fitPtr[%i]: %i\n", i, fFitPtr[i]));
+
+  // reject multiple tracklets
+  if (AliTRDfeeParam::Instance()->GetRejectMultipleTracklets())
+    {
+      UShort_t counts = 0;
+      for(j = 0; j < (ntracks -1); j++)
+	{
+	  if(fFitPtr[j] == 31)
+	    continue;
+
+	  for(i = j+1; i < ntracks; i++)
+	    {
+	      // check if tracklets are from neighbouring ADC channels
+	      if(TMath::Abs(fFitPtr[j] - fFitPtr[i]) > 1.)
+		continue;
+
+	      // check which tracklet candidate has higher amount of hits
+	      if((fFitReg[fFitPtr[j]].fNhits + fFitReg[fFitPtr[j]+1].fNhits) >=
+		 (fFitReg[fFitPtr[i]].fNhits + fFitReg[fFitPtr[i]+1].fNhits))
+		{
+		  fFitPtr[i] = 31;
+		  counts++;
+		}
+	      else
+		{
+		  fFitPtr[j] = 31;
+		  counts++;
+		  break;
+		}
+	    }
+	}
+      ntracks = ntracks - counts;
+
+      AliDebug(10,Form("found %i tracklet candidates\n", ntracks));
+      for (i = 0; i < 4; i++)
+	AliDebug(10,Form("fitPtr[%i]: %i\n", i, fFitPtr[i]));
+    }
 }
 
 void AliTRDmcmSim::FitTracklet()
@@ -1572,6 +1609,14 @@ void AliTRDmcmSim::FitTracklet()
   Int_t padrow = ((fRobPos >> 1) << 2) | (fMcmPos >> 2);
   Int_t yoffs = (((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) -
     ((18*4*2 - 18*2 - 1) << 7);
+
+  // add corrections for mis-alignment
+  if (AliTRDfeeParam::Instance()->GetUseMisalignCorr())
+    {
+      AliDebug(5,Form("using mis-alignment correction"));
+      yoffs += (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrYcorr, fDetector, fRobPos, fMcmPos);
+    }
+
   yoffs = yoffs << decPlaces; // holds position of ADC channel 1
   Int_t layer = fDetector % 6;
   UInt_t scaleY = (UInt_t) ((0.635 + 0.03 * layer)/(256.0 * 160.0e-4) * shift);
@@ -1610,6 +1655,12 @@ void AliTRDmcmSim::FitTracklet()
       mult = mult << (32 + decPlaces);
       mult = -mult;
 
+      // time offset for fit sums
+      const Int_t t0 = AliTRDfeeParam::Instance()->GetUseTimeOffset() ?
+	(Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrTimeOffset, fDetector, fRobPos, fMcmPos) : 0;
+
+      AliDebug(5,Form("using time offset t0 = %i",t0));
+
       // Merging
       nHits   = fit0->fNhits + fit1->fNhits; // number of hits
       sumX    = fit0->fSumX  + fit1->fSumX;
@@ -1623,8 +1674,13 @@ void AliTRDmcmSim::FitTracklet()
       sumXY   = fit0->fSumXY + fit1->fSumXY + 256*fit1->fSumX;
       sumY2   = fit0->fSumY2 + fit1->fSumY2 + 512*fit1->fSumY + 256*256*fit1->fNhits;
 
-      slope   = nHits*sumXY - sumX * sumY;
-      offset  = sumX2*sumY  - sumX * sumXY;
+      slope   = nHits*sumXY - sumX*sumY;
+      //offset  = sumX2*sumY  - sumX*sumXY - t0 * sumX*sumY + t0 * nHits*sumXY;
+      offset  = sumX2*sumY - sumX*sumXY;
+      offset  = offset << 5;
+      offset += t0 * nHits*sumXY - t0 * sumX*sumY;
+      offset  = offset >> 5;
+
       temp    = mult * slope;
       slope   = temp >> 32; // take the upper 32 bits
       slope   = -slope;
