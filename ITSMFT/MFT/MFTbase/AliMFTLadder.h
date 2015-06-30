@@ -4,16 +4,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//=============================================================================================
-//
-//      Class describing geometry of one MFT Ladder
-//
-//      Contact author: raphael.tieulent@cern.ch
-//
-//=============================================================================================
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTLadder
+/// \brief Class building the Ladder geometry
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
 
 #include "TNamed.h"
-#include "AliLog.h"
 #include "TGeoVolume.h"
 
 class AliMFTLadderSegmentation;
@@ -33,18 +33,19 @@ public:
   TGeoVolume * CreateVolume();
   void CreateSensors();
 
-  
-protected:
-  const static Double_t kLadderDeltaY;
-  const static Double_t kLadderDeltaZ;
-  AliMFTLadderSegmentation *fSegmentation;
-  AliMFTFlex      * fMFTFlex;          // ! Ladder's Flex
-  TGeoVolume * fLadderVolume;
-
 private:
+
+  const static Double_t kLadderDeltaY;      ///< \brief Ladder size along Y direction (height)
+  const static Double_t kLadderDeltaZ;      ///< \brief Ladder size along Z direction (thickness)
+  AliMFTLadderSegmentation *fSegmentation;  ///< \brief Virtual Segmentation object of the ladder
+  AliMFTFlex      * fMFTFlex;               ///< \brief Flex object (\todo to be removed ?)
+  TGeoVolume * fLadderVolume;               ///< \brief Pointer to the Volume holding the ladder geometry
+
   
-  ClassDef(AliMFTLadder,1)
-  
+  /// \cond CLASSIMP
+  ClassDef(AliMFTLadder, 1);
+  /// \endcond
+
 };
 
 //=============================================================================================

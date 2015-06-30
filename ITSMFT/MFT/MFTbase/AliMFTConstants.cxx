@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //====================================================================================================================================================
-//
+/// \class AliMFTConstants
 //      Constants for the Muon Forward Tracker
 //
 //      Contact author: antonio.uras@cern.ch
@@ -23,12 +23,14 @@
 
 #include "AliMFTConstants.h"
 
-ClassImp(AliMFTConstants)
+/// \cond CLASSIMP
+ClassImp(AliMFTConstants);
+/// \endcond
 
-// Geometry Realated Constants
+// Geometry Related Constants
 
-const Double_t AliMFTConstants::kSensorLength = 3.; //[cm]
-const Double_t AliMFTConstants::kSensorHeight = 1.5; //[cm]
+const Double_t AliMFTConstants::kSensorLength=3.; //[cm]
+const Double_t AliMFTConstants::kSensorHeight=1.5; //[cm]
 const Double_t AliMFTConstants::kXPixelPitch=29.250e-4; // 29.15 micron // TODO : Check that
 const Double_t AliMFTConstants::kYPixelPitch=26.880e-4; // 26.88 micron // TODO : Check that
 const Double_t AliMFTConstants::kSensorMargin=29.120e-4; // 29.12 micron // TODO : Check that

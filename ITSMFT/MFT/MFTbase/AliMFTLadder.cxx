@@ -13,16 +13,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//=============================================================================================
-//
-//      Class describing geometry of one MFT Ladder
-//
-//      Contact author: raphael.tieulent@cern.ch
-//
-//=============================================================================================
+// $Id$
+
+//-----------------------------------------------------------------------------
+/// \class AliMFTLadder
+///
+/// Ladder Builder
+///
+// author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
+
 #include "TGeoMatrix.h"
 #include "TGeoManager.h"
 #include "TGeoBBox.h"
+
+#include "AliLog.h"
 
 #include "AliMFTLadderSegmentation.h"
 #include "AliMFTChipSegmentation.h"
@@ -32,34 +37,34 @@
 #include "AliMFTConstants.h"
 #include "AliMFTGeometry.h"
 
-ClassImp(AliMFTLadder)
+/// \cond CLASSIMP
+ClassImp(AliMFTLadder);
+/// \endcond
 
 // Units are cm
 const Double_t AliMFTLadder::kLadderDeltaY = AliMFTConstants::kSensorHeight + 2.*AliMFTConstants::kSensorTopOffset;
 const Double_t AliMFTLadder::kLadderDeltaZ = AliMFTConstants::kFlexThickness + AliMFTConstants::kSensorThickness; // TODO: Adjust that value when adding glue layer
 
 //=============================================================================================
+/// \brief Default constructor
 
 AliMFTLadder::AliMFTLadder():
 TNamed(), fMFTFlex(NULL){
   
-  // default constructor
   
 }
 //=============================================================================================
-
+/// \brief Constructor
 AliMFTLadder::AliMFTLadder(AliMFTLadderSegmentation *segmentation):TNamed(segmentation->GetName(),segmentation->GetName()),
 fSegmentation(segmentation), fMFTFlex(NULL)
 {
   AliInfo(Form("Creating : %s", GetName()));
-  Int_t nChips = fSegmentation->GetNumberOfChips();
+  Int_t nChips = fSegmentation->GetNSensors();
   TGeoMedium *medVac  = gGeoManager->GetMedium("MFT_Air$");
   Double_t ladderDeltaX = AliMFTConstants::kLadderOffsetToEnd + AliMFTConstants::kSensorSideOffset + nChips * (AliMFTConstants::kSensorLength + AliMFTConstants::kSensorInterspace) ;
   fLadderVolume = gGeoManager->MakeBox(GetName(), medVac, ladderDeltaX/2., kLadderDeltaY/2., kLadderDeltaZ/2.);
   
-  //fLadderVolume = new TGeoVolumeAssembly(GetName());
 
-  AliWarning("TODO ### Flex To be added ###");
 }
 
 
@@ -71,10 +76,10 @@ AliMFTLadder::~AliMFTLadder() {
 }
 
 //=============================================================================================
-
+/// \brief Build the ladder
 TGeoVolume * AliMFTLadder::CreateVolume() {
-//  AliWarning("TODO ### Positinning To be worked on ###");
 
+  /// \todo Flex need To be added
   // Create the flex
   
 //  fMFTFlex = new AliMFTFlex(fSegmentation);
@@ -83,16 +88,14 @@ TGeoVolume * AliMFTLadder::CreateVolume() {
   
   
   // Create the CMOS Sensors
-  
   CreateSensors();
   
-
   return fLadderVolume;
   
 }
 
 //=============================================================================================
-
+/// \brief Build the sensors
 void AliMFTLadder::CreateSensors() {
   // Create Shapes
   
@@ -153,7 +156,7 @@ void AliMFTLadder::CreateSensors() {
   chipVol->AddNode(readoutVol, 1, new TGeoTranslation(0.,-AliMFTConstants::kSensorHeight/2.+readout->GetDY(),  0.));
   chipVol->AddNode(sensorVol, 1, new TGeoTranslation( 0., AliMFTConstants::kSensorHeight/2.-sensor->GetDY(),0.));
 
-  for (int ichip =0; ichip<fSegmentation->GetNumberOfChips(); ichip++) {
+  for (int ichip =0; ichip<fSegmentation->GetNSensors(); ichip++) {
     AliMFTChipSegmentation * chipSeg = fSegmentation->GetSensor(ichip);
     TGeoCombiTrans * chipPos = chipSeg->GetTransformation();
     // Position of the center on the chip in the chip coordinate system

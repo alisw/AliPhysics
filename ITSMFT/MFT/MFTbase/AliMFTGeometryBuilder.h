@@ -16,10 +16,6 @@
 
 #include "TNamed.h"
 
-class AliMFTSegmentation;
-class TClonesArray;
-class TGeoVolumeAssembly;
-
 //=============================================================================================
 
 
@@ -31,14 +27,9 @@ public:
   
   virtual ~AliMFTGeometryBuilder();
   
-  void LoadSegmentation();
-  
   void BuildGeometry();
   
   
-protected:
-  TClonesArray *fMFTHalves;                  // ! list
-
 private:
   
   /// \cond CLASSIMP

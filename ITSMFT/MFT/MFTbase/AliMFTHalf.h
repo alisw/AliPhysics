@@ -4,16 +4,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//=============================================================================================
-//
-//      Class describing geometry of one half of the ALICE Muon Forward Tracker
-//
-//      Contact author: raphael.tieulent@cern.ch
-//
-//=============================================================================================
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTHalf
+/// \brief Class describing geometry of one half of the ALICE Muon Forward Tracker
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
 
 #include "TNamed.h"
-#include "AliLog.h"
 #include "TGeoVolume.h"
 
 class AliMFTHalfSegmentation;
@@ -29,20 +29,21 @@ public:
   
   virtual ~AliMFTHalf();
   
+  /// \brief Returns the Volume holding the Half-MFT
   TGeoVolumeAssembly * GetVolume() {return fHalfVolume;};
-  void Init();
-
   
 protected:
   TGeoVolumeAssembly * fHalfVolume;
 
 private:
-  AliMFTHalfSegmentation * fSegmentation;
+  AliMFTHalfSegmentation * fSegmentation; ///< \brief Pointer to the half-MFT segmentation
   void CreateHalfDisks();
 
   
-  ClassDef(AliMFTHalf,1)
-  
+  /// \cond CLASSIMP
+  ClassDef(AliMFTHalf, 1);
+  /// \endcond
+
 };
 
 //=============================================================================================

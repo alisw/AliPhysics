@@ -4,13 +4,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//=============================================================================================
-//
-//      Class describing geometry of one half of a MFT disk
-//
-//      Contact author: raphael.tieulent@cern.ch
-//
-//=============================================================================================
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTHalfDisk
+/// \brief Class Building geometry of one half of a MFT disk
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
 
 #include "TNamed.h"
 #include "TGeoVolume.h"
@@ -33,19 +34,20 @@ public:
 
   virtual ~AliMFTHalfDisk();
   
+  /// \brief Returns a pointer to the Volume Assembly describing the entire half-disk
   TGeoVolumeAssembly * GetVolume() {return fHalfDiskVolume;};
-  
-  
-protected:
-  AliMFTSupport    * fMFTSupport;       // ! Disk Support
-  AliMFTHeatExchanger * fMFTHeatExchanger;    // ! Heat Exchanger
-  TGeoVolumeAssembly * fHalfDiskVolume;
-  AliMFTHalfDiskSegmentation * fSegmentation;
   
 private:
 
-  ClassDef(AliMFTHalfDisk,1)
-  
+  AliMFTSupport    * fMFTSupport;             ///< \brief Disk Support
+  AliMFTHeatExchanger * fMFTHeatExchanger;    ///< \brief Heat Exchanger
+  TGeoVolumeAssembly * fHalfDiskVolume;       ///< \brief Half-Disk Volume
+  AliMFTHalfDiskSegmentation * fSegmentation; ///< \brief Virtual Segmentation of the half-disk
+
+  /// \cond CLASSIMP
+  ClassDef(AliMFTHalfDisk, 1);
+  /// \endcond
+ 
 };
 
 //=============================================================================================

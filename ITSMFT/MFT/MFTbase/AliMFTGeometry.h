@@ -1,49 +1,32 @@
 #ifndef AliMFTGeometry_H
 #define AliMFTGeometry_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
- * reserved.
- *
- * See cxx source for full Copyright notice
- */
-/** @file    AliMFTGeometry.h
- @author  Raphael Tieulent <raphael.tieulent@cern.ch>
- @date    June 9th 2015
- @brief   Geometry mananger for the MFT
- */
-//____________________________________________________________________
-//
-// Muon Forward Tracker Geometry.
-//
-// This class is a singleton that handles the geometry parameters of
-// the MFT detectors.
-//
+
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTGeometry
+/// \brief Class Handling both Virutal Segmentation and Real Volumes
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
+
 # include "AliGeometry.h"
 # include "AliMFTSegmentation.h"
 
 class AliMFTGeometryBuilder;
-class TParticle;
-class AliRecPoint;
-class TVector3;
 
 //__________________________________________________________________
-/** @brief Singleton object of MFT geometry descriptions and parameters.
- This class is a singleton that handles the geometry parameters of
- the MFT detectors.
- 
- The actual code is done by various separate classes.
- @endverbatim
- 
- @ingroup MFTbase
- */
+
 class AliMFTGeometry : public AliGeometry
 {
 public:
-  /**
-   * singleton access
-   *
-   * @return Singleton
-   */
+  /// \brief Retuns MFT Geometry singleton object
   static AliMFTGeometry* Instance();
+  
   enum ObjectTypes {kHalfMFTType, kHalfDiskType, kPlaneType, kLadderType, kSensorType};
   
   virtual ~AliMFTGeometry();
@@ -52,11 +35,16 @@ public:
   virtual Bool_t Impact(const TParticle * particle) const             {return kFALSE;};
   void   Build();
   
+  /// \brief Returns Object type based on Unique ID provided
   Int_t GetObjectType(UInt_t uniqueID)  const {return ((uniqueID>>13)&0x7);};
+  /// \brief Returns Half-MFT ID based on Unique ID provided
   Int_t GetHalfMFTID(UInt_t uniqueID)   const {return ((uniqueID>>12)&0x1);};
+  /// \brief Returns Half-Disk ID based on Unique ID provided
   Int_t GetHalfDiskID(UInt_t uniqueID)  const {return ((uniqueID>>9)&0x7);};
+  /// \brief Returns Ladder ID based on Unique ID provided
   Int_t GetLadderID(UInt_t uniqueID)    const {return ((uniqueID>>4)&0x1F);};
-  Int_t GetSensorID(UInt_t uniqueID)    const {return (uniqueID&0xF);}; 
+  /// \brief Returns Sensor ID based on Unique ID provided
+  Int_t GetSensorID(UInt_t uniqueID)    const {return (uniqueID&0xF);};
   
   UInt_t GetObjectID(ObjectTypes type, Int_t half=0, Int_t disk=0, Int_t ladder=0, Int_t chip=0) const;
   
@@ -78,7 +66,7 @@ public:
   
 private:
 
-  static AliMFTGeometry* fgInstance; // Singleton instance
+  static AliMFTGeometry* fgInstance; ///< \brief  Singleton instance
   AliMFTGeometry();
   AliMFTGeometry(const char* name);
   

@@ -4,20 +4,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//====================================================================================================================================================
-//
-//      Segmentation class for each half of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
 
-#include "TFile.h"
-#include "THnSparse.h"
+/// \ingroup MFTbase
+/// \class AliMFTHalfSegmentation
+/// \brief Segmentation class for each half of the ALICE Muon Forward Tracker
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
+
 #include "TXMLEngine.h"
-#include "TAxis.h"
-#include "TVector3.h"
-#include "TRotation.h"
 #include "AliMFTSegmentation.h"
 #include "AliMFTConstants.h"
 #include "AliMFTVSegmentation.h"
@@ -33,48 +29,27 @@ public:
   AliMFTHalfSegmentation();
   AliMFTHalfSegmentation(const Char_t *initFile, const Short_t id);
   AliMFTHalfSegmentation(const AliMFTHalfSegmentation &source);
-  void CreateHalfDisks(TXMLEngine* xml, XMLNodePointer_t node);
-  XMLNodePointer_t SetHalfPosRot(TXMLEngine* xml, XMLNodePointer_t node);
-  void FindHalf(TXMLEngine* xml, XMLNodePointer_t node, XMLNodePointer_t &retnode);
 
-  
   virtual ~AliMFTHalfSegmentation();
   virtual void Clear(const Option_t* /*opt*/);
   
   Bool_t GetID() const {return (GetUniqueID()>>12);};
-
-  THnSparseC* GetDetElem(Int_t detElemID) const;
-
-  Int_t GetDetElemGlobalID(Int_t plane, Int_t detElem) const { return fNMaxDetElemPerPlane*plane + detElem; }
-  Int_t GetDetElemLocalID(Int_t detElem) const { return detElem%fNMaxDetElemPerPlane; }
-    
-  Bool_t Hit2PixelID(Double_t xHit, Double_t yHit, Int_t detElemID, Int_t &xPixel, Int_t &yPixel);  
-
-  Double_t GetPixelSizeX(Int_t detElemID) const { THnSparseC *detElem = GetDetElem(detElemID); return detElem->GetAxis(0)->GetBinWidth(1); }
-  Double_t GetPixelSizeY(Int_t detElemID) const { THnSparseC *detElem = GetDetElem(detElemID); return detElem->GetAxis(1)->GetBinWidth(1); }
-  Double_t GetPixelSizeZ(Int_t detElemID) const { THnSparseC *detElem = GetDetElem(detElemID); return detElem->GetAxis(2)->GetBinWidth(1); }
-
-  Double_t GetPixelCenterX(Int_t detElemID, Int_t iPixel) const { THnSparseC *detElem = GetDetElem(detElemID); return detElem->GetAxis(0)->GetBinCenter(iPixel+1); }
-  Double_t GetPixelCenterY(Int_t detElemID, Int_t iPixel) const { THnSparseC *detElem = GetDetElem(detElemID); return detElem->GetAxis(1)->GetBinCenter(iPixel+1); }
-  Double_t GetPixelCenterZ(Int_t detElemID, Int_t iPixel) const { THnSparseC *detElem = GetDetElem(detElemID); return -1.*(detElem->GetAxis(2)->GetBinCenter(iPixel+1)); }
-
+  
   Int_t GetNHalfDisks() const { return fMFTHalfDisks->GetEntries(); }
 
   AliMFTHalfDiskSegmentation* GetHalfDisk(Int_t iDisk) const { if (iDisk>=0 && iDisk<fMFTHalfDisks->GetEntries()) return (AliMFTHalfDiskSegmentation*) fMFTHalfDisks->At(iDisk); else return NULL; }
-
-  Bool_t DoesPixelExist(Int_t detElemID, Int_t xPixel, Int_t yPixel);
  
-protected:
-
-  static const Int_t fNMaxDisks           = AliMFTConstants::fNMaxPlanes;                // max number of MFT planes
-  static const Int_t fNMaxDetElemPerPlane = AliMFTConstants::fNMaxDetElemPerPlane;
-
-  TClonesArray *fMFTHalfDisks;
-
 private:
+  
+  void FindHalf(TXMLEngine* xml, XMLNodePointer_t node, XMLNodePointer_t &retnode);
+  void CreateHalfDisks(TXMLEngine* xml, XMLNodePointer_t node);
 
-  ClassDef(AliMFTHalfSegmentation,1)
-    
+  TClonesArray *fMFTHalfDisks; ///< \brief Array of pointer to AliMFTHalfDiskSegmentation
+
+  /// \cond CLASSIMP
+  ClassDef(AliMFTHalfSegmentation, 1);
+  /// \endcond
+  
 };
 
 //====================================================================================================================================================

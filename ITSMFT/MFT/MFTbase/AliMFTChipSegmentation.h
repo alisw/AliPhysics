@@ -4,16 +4,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//====================================================================================================================================================
-//
-//      Class for the description of the structure for the planes of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTChipSegmentation
+/// \brief Chip Segmentation description
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
 
 #include "AliMFTVSegmentation.h"
-#include "AliMFTConstants.h"
 
 //====================================================================================================================================================
 
@@ -28,11 +28,14 @@ public:
   virtual void Clear(const Option_t* /*opt*/) {;}
   virtual void Print(Option_t* /*option*/);
 
+  /// \brief Transform (x,y) Hit coordinate into Pixel ID on the matrix
   Bool_t Hit2PixelID(Double_t xHit, Double_t yHit, Int_t &xPixel, Int_t &yPixel);
   
 private:
   
-  ClassDef(AliMFTChipSegmentation, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliMFTChipSegmentation, 1);
+  /// \endcond
 
 };
 

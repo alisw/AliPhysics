@@ -13,34 +13,41 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//=============================================================================================
-//
-//      Class describing geometry of one half of the ALICE Muon Forward Tracker
-//
-//      Contact author: raphael.tieulent@cern.ch
-//
-//=============================================================================================
+// $Id$
+
+//-----------------------------------------------------------------------------
+/// \class AliMFTHalf
+///
+/// Class Building the geometry of one half of the ALICE Muon Forward Tracker
+///
+// author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
 
 #include "TGeoMatrix.h"
+
+#include "AliLog.h"
 
 #include "AliMFTHalfDiskSegmentation.h"
 #include "AliMFTHalfSegmentation.h"
 #include "AliMFTHalfDisk.h"
-#include "AliMFTHalf.h"
 #include "AliMFTGeometry.h"
+#include "AliMFTHalf.h"
 
-ClassImp(AliMFTHalf)
+
+/// \cond CLASSIMP
+ClassImp(AliMFTHalf);
+/// \endcond
 
 //=============================================================================================
+/// \brief Default constructor
 
 AliMFTHalf::AliMFTHalf():
 TNamed(){
   
-  // default constructor
-  
 }
-//=============================================================================================
 
+//=============================================================================================
+/// \brief Constructor
 AliMFTHalf::AliMFTHalf(AliMFTHalfSegmentation *seg):TNamed(),
 fSegmentation(seg)
 {
@@ -67,13 +74,8 @@ AliMFTHalf::~AliMFTHalf() {
   
 }
 
-
 //=============================================================================================
-void AliMFTHalf::Init(){
-  AliWarning("To be written");
-
-}
-//=============================================================================================
+/// \brief Creates the Half-disks composing the Half-MFT 
 void AliMFTHalf::CreateHalfDisks(){
   AliInfo(Form("Creating  %d Half-Disk ",fSegmentation->GetNHalfDisks()));
 

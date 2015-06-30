@@ -5,18 +5,19 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//=============================================================================================
-//
-//      Class describing geometry of one half of a MFT heat exchanger
-//
-//      Primary Author: P. Demongadin
-//      Contact author: raphael.tieulent@cern.ch
-//
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTHeatExchanger
+/// \brief MFT Heat Exchanger builder
+///
+//  \author Primary Author: P. Demongadin
+/// \author Contact : Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
 
 #include "TNamed.h"
 #include "TGeoVolume.h"
 #include "TGeoMatrix.h"
-#include "AliLog.h"
 #include "AliMFTConstants.h"
 
 class AliMFTHeatExchanger : public TNamed {
@@ -114,7 +115,9 @@ class AliMFTHeatExchanger : public TNamed {
   Double_t fangle4fifth[4]; // angle of torus for fifth pipe of disk 4
   Double_t fradius4fifth[4]; // radius of torus for fifth pipe of disk 4
 
-  ClassDef(AliMFTHeatExchanger,1)
+  /// \cond CLASSIMP
+  ClassDef(AliMFTHeatExchanger, 1);
+  /// \endcond
 
 };
 

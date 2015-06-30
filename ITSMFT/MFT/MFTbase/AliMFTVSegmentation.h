@@ -37,13 +37,13 @@ public:
   /// \brief Set The rotation angles. Unit is [deg].
   void SetRotationAngles(const Double_t *ang);
   
-  /// \brief Rotate around X axis
+  /// \brief Rotate around X axis, ang in deg
   void RotateX(const Double_t ang) {fTransformation->RotateX(ang);};
-  /// \brief Rotate around Y axis
+  /// \brief Rotate around Y axis, ang in deg
   void RotateY(const Double_t ang) {fTransformation->RotateY(ang);};
-  /// \brief Rotate around Z axis
+  /// \brief Rotate around Z axis, ang in deg
   void RotateZ(const Double_t ang) {fTransformation->RotateZ(ang);};
-
+  
   /// \brief Returns the Transformation Combining a Rotation followed by a Translation
   ///
   /// The rotation is a composition of : first a rotation about Z axis with
@@ -51,15 +51,13 @@ public:
   /// finally a rotation with psi about the new Z axis.
   /// [For more details see the ROOT TGeoCombiTrans documentation](https://root.cern.ch/root/htmldoc/TGeoCombiTrans.html).
   TGeoCombiTrans * GetTransformation() const {return fTransformation;};
-
-protected:
   
+private:
+
   TGeoCombiTrans * fTransformation; ///< \brief Represent a rotation folowed by a translation.
                                     /// The rotation is a composition of : first a rotation about Z axis with
                                     /// angle phi, then a rotation with theta about the rotated X axis, and
                                     /// finally a rotation with psi about the new Z axis.
-  
-private:
   
   /// \cond CLASSIMP
   ClassDef(AliMFTVSegmentation, 1);

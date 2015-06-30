@@ -4,13 +4,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//====================================================================================================================================================
-//
-//      Constants for the Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
+
+/// \ingroup MFTbase
+/// \class AliMFTConstants
+/// \brief Constants for the Muon Forward Tracker
+///
+/// Distance Unit is [cm]
+///
+/// \author Antonio Uras <antonio.uras@cern.ch>
 
 #include <TObject.h>
 
@@ -18,24 +20,23 @@ class AliMFTConstants : public TObject {
 
 public:
   // Geometry
-  static const Int_t kNDisks = 5;
-  static const Int_t kNPlanePerDisk = 2;
-  static const Double_t kSensorLength;
-  static const Double_t kSensorHeight;
-  static const Double_t kSensorActiveHeight;
-  static const Double_t kSensorActiveWidth;
-  static const Double_t kSensorInterspace;
-  static const Double_t kSensorSideOffset;
-  static const Double_t kSensorTopOffset;
-  static const Double_t kLadderOffsetToEnd;
-  static const Double_t kSensorThickness;
-  static const Double_t kFlexThickness; 
-  static const Double_t kXPixelPitch;
-  static const Double_t kYPixelPitch;
-  static const Double_t kSensorMargin;
+  static const Int_t kNDisks = 5;             ///< \brief Number of Disk
+  static const Double_t kSensorLength;        ///< \brief CMOS Sensor Length
+  static const Double_t kSensorHeight;        ///< \brief CMOS Sensor Height
+  static const Double_t kSensorActiveHeight;  ///< \brief CMOS Sensor Active height
+  static const Double_t kSensorActiveWidth;   ///< \brief CMOS Sensor Active width
+  static const Double_t kSensorThickness;     ///< \brief CMOS Sensor Thickness
+  static const Double_t kXPixelPitch;         ///< \brief Pixel pitch along X
+  static const Double_t kYPixelPitch;         ///< \brief Pixel pitch along Y
+  static const Int_t kNPixelX = 1024;         ///< \brief Number of Pixel along X
+  static const Int_t kNPixelY = 512;          ///< \brief Number of Pixel along Y
+  static const Double_t kSensorMargin;        ///< \brief Inactive margin around active area
 
-  static const Int_t kNPixelX = 1024;
-  static const Int_t kNPixelY = 512;
+  static const Double_t kSensorInterspace;    ///< \brief Interspace between 2 sensors on a ladder
+  static const Double_t kSensorSideOffset;    ///< \brief Offset of sensor compare to ladder edge (close to the beam pipe)
+  static const Double_t kSensorTopOffset;     ///< \brief Offset of sensor compare to ladder top edge
+  static const Double_t kLadderOffsetToEnd;   ///< \brief Offset of sensor compare to ladder connector edge
+  static const Double_t kFlexThickness;       ///< \brief Flex Thickness
 
   
   
@@ -101,8 +102,10 @@ protected:
 
   AliMFTConstants() : TObject() {}
   virtual ~AliMFTConstants(){}
-
-  ClassDef(AliMFTConstants, 4)    // MFT global constants 
+  
+  /// \cond CLASSIMP
+  ClassDef(AliMFTConstants, 4);
+  /// \endcond
 
 };
 	

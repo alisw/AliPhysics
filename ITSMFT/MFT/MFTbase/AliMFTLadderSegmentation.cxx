@@ -12,36 +12,39 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+// $Id$
 
-//====================================================================================================================================================
-//
-//      Class for the description of the virtual segmentation of the ladders of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+//-----------------------------------------------------------------------------
+/// \class AliMFTLadderSegmentation
+///
+/// Description of the virtual segmentation of a ladder
+///
+// author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
 
 #include "AliLog.h"
 #include "AliMFTConstants.h"
-#include "AliMFTChipSegmentation.h"
 #include "AliMFTLadderSegmentation.h"
 #include "AliMFTGeometry.h"
 
-ClassImp(AliMFTLadderSegmentation)
+/// \cond CLASSIMP
+ClassImp(AliMFTLadderSegmentation);
+/// \endcond
 
 //====================================================================================================================================================
+/// Default constructor
 
 AliMFTLadderSegmentation::AliMFTLadderSegmentation():
   AliMFTVSegmentation(),
   fChips(NULL)
 {
 
-  // default constructor
 
 }
 
 //====================================================================================================================================================
-
+/// Constructor
+/// \param [in] uniqueID UInt_t: Unique ID of the Ladder to build
 AliMFTLadderSegmentation::AliMFTLadderSegmentation(UInt_t uniqueID):
   AliMFTVSegmentation(),
   fChips(NULL)
@@ -60,7 +63,7 @@ AliMFTLadderSegmentation::AliMFTLadderSegmentation(UInt_t uniqueID):
 }
 
 //====================================================================================================================================================
-
+/// Copy Constructor
 AliMFTLadderSegmentation::AliMFTLadderSegmentation(const AliMFTLadderSegmentation& ladder):
   AliMFTVSegmentation(ladder),
   fNSensors(ladder.fNSensors)
@@ -101,7 +104,7 @@ AliMFTLadderSegmentation& AliMFTLadderSegmentation::operator=(const AliMFTLadder
 }
 
 //====================================================================================================================================================
-
+/// Creates the Sensors Segmentation array on the Ladder
 void AliMFTLadderSegmentation::CreateSensors() {
   
   if (!fChips) {
@@ -128,7 +131,8 @@ void AliMFTLadderSegmentation::CreateSensors() {
 
 
 //====================================================================================================================================================
-
+/// Returns pointer to a sensor segmentation
+/// \param [in] sensorID Int_t: ID of the sensor on the ladder
 AliMFTChipSegmentation* AliMFTLadderSegmentation::GetSensor(Int_t sensorID) {
   
   if (sensorID<0 || sensorID>=fNSensors) return NULL;
@@ -140,6 +144,8 @@ AliMFTChipSegmentation* AliMFTLadderSegmentation::GetSensor(Int_t sensorID) {
 }
 
 //==================================================================================================================
+/// Print out Ladder information (position, orientation, # of sensors)
+/// \param [in] opt "s" or "sensor" -> The individual sensor information will be printed out as well
 void AliMFTLadderSegmentation::Print(Option_t* opt){
   
   AliInfo(Form("Ladder %s (Unique ID = %d)",GetName(),GetUniqueID()));

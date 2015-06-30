@@ -79,7 +79,7 @@ fGlueThickness(250e-4),    // 25 microns
 fKaptonThickness(250e-4),  // 25 microns
 fVarnishThickness(300e-4), // 30 microns
 fNLayer(2),               // number of layers
-fNSensors(ladder->GetNumberOfChips()),
+fNSensors(ladder->GetNSensors()),
 fChipWidth(AliMFTConstants::fChipWidth),
 fChipInterspace(AliMFTConstants::fChipInterspace),
 fChipSideOffset(AliMFTConstants::fChipSideOffset),

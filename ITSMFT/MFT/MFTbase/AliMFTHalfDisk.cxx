@@ -28,7 +28,6 @@
 #include "TGeoBBox.h"
 
 #include "AliMFTHalfDisk.h"
-
 #include "AliMFTGeometry.h"
 #include "AliMFTHalfDiskSegmentation.h"
 #include "AliMFTLadder.h"
@@ -40,15 +39,14 @@ ClassImp(AliMFTHalfDisk);
 /// \endcond
 
 //=============================================================================================
+/// \brief Default constructor
 
 AliMFTHalfDisk::AliMFTHalfDisk():
 TNamed(), fMFTSupport(NULL),fMFTHeatExchanger(NULL),fSegmentation(NULL){
   
-  // default constructor
-  
 }
 //=============================================================================================
-
+/// \brief Constructor
 AliMFTHalfDisk::AliMFTHalfDisk(AliMFTHalfDiskSegmentation *segmentation):TNamed(),
   fMFTSupport(NULL),
   fMFTHeatExchanger(NULL),
@@ -59,14 +57,14 @@ AliMFTHalfDisk::AliMFTHalfDisk(AliMFTHalfDiskSegmentation *segmentation):TNamed(
   Int_t halfDiskID = mftGeom->GetHalfDiskID(GetUniqueID());
   SetName(Form("D%d",halfDiskID));
 
-  AliDebug(1,Form("Creating Half-Disk: %s", GetName()));
+  AliDebug(1,Form("Creating Half-Disk: %s Unique ID = %d ", GetName(), GetUniqueID()));
 
   fHalfDiskVolume = new TGeoVolumeAssembly(GetName());
   
 
   // Building Heat Exchanger Between faces
-//  TGeoVolumeAssembly * heatExchangerVol = CreateHeatExchanger();
-//  fHalfDiskVolume->AddNode(heatExchangerVol,1);
+  TGeoVolumeAssembly * heatExchangerVol = CreateHeatExchanger();
+  fHalfDiskVolume->AddNode(heatExchangerVol,1);
   
   //   Building Front Face of the Half Disk
   CreateLadders();
@@ -82,6 +80,8 @@ AliMFTHalfDisk::~AliMFTHalfDisk() {
 }
 
 //=============================================================================================
+/// \brief Build Heat exchanger
+/// \return Pointer to the volume assembly holding the heat exchanger
 
 TGeoVolumeAssembly * AliMFTHalfDisk::CreateHeatExchanger(){
   
@@ -96,12 +96,13 @@ TGeoVolumeAssembly * AliMFTHalfDisk::CreateHeatExchanger(){
 }
 
 //=============================================================================================
-
+/// \brief Build Ladders on the Half-disk
 void AliMFTHalfDisk::CreateLadders(){
-  
+  AliDebug(1,"Start Building Ladders" );
   for (Int_t iLadder=0; iLadder<fSegmentation->GetNLadders(); iLadder++) {
     
     AliMFTLadderSegmentation * ladderSeg = fSegmentation->GetLadder(iLadder);
+    if(!ladderSeg) AliFatal(Form("No Segmentation found for ladder %d ",iLadder));
     AliMFTLadder * ladder = new AliMFTLadder(ladderSeg);
     TGeoVolume * ladVol = ladder->CreateVolume();
     

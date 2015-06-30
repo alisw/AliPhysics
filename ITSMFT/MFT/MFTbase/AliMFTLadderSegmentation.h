@@ -4,16 +4,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//====================================================================================================================================================
-//
-//      Class for the description of the virtual segmentation of the ladders of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
 
-#include "AliMFTVSegmentation.h"
+/// \ingroup MFTbase
+/// \class AliMFTLadderSegmentation
+/// \brief Description of the virtual segmentation of a ladder
+///
+/// \author Raphael Tieulent <raphael.tieulent@cern.ch>
+/// \date June 9th, 2015
+
 #include "TClonesArray.h"
+#include "AliMFTVSegmentation.h"
 #include "AliMFTChipSegmentation.h"
 
 //====================================================================================================================================================
@@ -35,25 +36,22 @@ public:
 
 
   void CreateSensors();
+  
+  /// \brief Returns number of Sensor on the ladder
   Int_t GetNSensors() const { return fNSensors; };
-  Int_t GetNumberOfChips() const { return fNSensors; };
+  /// \brief Set number of Sensor on the ladder
   void SetNSensors(Int_t val) {fNSensors = val;};
   
-  Bool_t GetChipActiveOrigin(Int_t chipNumber, Double_t *origin);
-  Bool_t GetChipActiveLength(Int_t chipNumber, Double_t *length);
-  Bool_t GetChipReadoutOrigin(Int_t chipNumber, Double_t *origin);
-  Bool_t GetChipReadoutLength(Int_t chipNumber, Double_t *length);
-
   AliMFTChipSegmentation* GetChip(Int_t chipNumber);
 
 private:
   
-  // measures in cm
+  Int_t fNSensors;      ///< \brief Number of Sensors holded by the ladder
+  TClonesArray *fChips; ///< \brief Array of pointer to AliMFTChipSegmentation
 
-  Int_t fNSensors;
-  TClonesArray *fChips;
-
-  ClassDef(AliMFTLadderSegmentation, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliMFTLadderSegmentation, 1);
+  /// \endcond
 
 };
 

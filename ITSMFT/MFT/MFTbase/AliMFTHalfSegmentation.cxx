@@ -13,36 +13,40 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//====================================================================================================================================================
-//
-//      Segmentation class for each half of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
 
-#include "TNamed.h"
-#include "TNtuple.h"
+//-----------------------------------------------------------------------------
+/// \class AliMFTHalfSegmentation
+///
+/// Segmentation class for each half of the ALICE Muon Forward Tracker
+///
+// author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
+
 #include "TClonesArray.h"
-#include "TMath.h"
+
+#include "AliLog.h"
+
 #include "AliMFTHalfDiskSegmentation.h"
 #include "AliMFTHalfSegmentation.h"
 #include "AliMFTGeometry.h"
 
-ClassImp(AliMFTHalfSegmentation)
+/// \cond CLASSIMP
+ClassImp(AliMFTHalfSegmentation);
+/// \endcond
 
 //====================================================================================================================================================
-
-AliMFTHalfSegmentation::AliMFTHalfSegmentation(): 
+/// Default constructor
+AliMFTHalfSegmentation::AliMFTHalfSegmentation():
   AliMFTVSegmentation(),
   fMFTHalfDisks(NULL)
 { 
 
-  // default constructor
 
 }
 
 //====================================================================================================================================================
+/// Copy constructor
 
 AliMFTHalfSegmentation::AliMFTHalfSegmentation(const AliMFTHalfSegmentation& source):
 AliMFTVSegmentation(source),
@@ -53,7 +57,10 @@ fMFTHalfDisks(NULL){
 	
 }
 //====================================================================================================================================================
-
+/// Constructor
+/// \param nameGeomFile Char_t * : name of the XML geometry file.
+/// By default it is : $ALICE_ROOT/ITSMFT/MFT/data/AliMFTGeometry.xml
+/// \param id Short_t : ID Of the Half-MFT to build (0=Bottom; 1=Top)
 AliMFTHalfSegmentation::AliMFTHalfSegmentation(const Char_t *nameGeomFile, const Short_t id):
   AliMFTVSegmentation(),
   fMFTHalfDisks(NULL)
@@ -79,7 +86,7 @@ AliMFTHalfSegmentation::AliMFTHalfSegmentation(const Char_t *nameGeomFile, const
   }
   XMLNodePointer_t mainnode = geomFile->DocGetRootElement(xmldoc);
   
-  // Find  HAlf-MFT node in the XML file
+  // Find  Half-MFT node in the XML file
   XMLNodePointer_t halfnode ;
   FindHalf(geomFile, mainnode, halfnode);
 
@@ -90,97 +97,6 @@ AliMFTHalfSegmentation::AliMFTHalfSegmentation(const Char_t *nameGeomFile, const
   // Release memory
   geomFile->FreeDoc(xmldoc);
   delete geomFile;
-  
-//
-//  Float_t zCenter, planeType, nLadderPerPlane, rMinSupport, rMaxSupport, rMinLadders, rMaxLadders, supportThickness, interspaceThickness;
-//  Float_t ladderStiffenerThickness, ladderFlexThickness, chipActiveHeight, chipReadoutHeight, chipActiveSuperposition, sensorInterspace;
-//  Float_t pixelSizeX, pixelSizeY;
-//
-//  Float_t equivalentSilicon, equivalentSiliconBeforeFront, equivalentSiliconBeforeBack, hasPixelRectangularPatternAlongY;
-//
-//  TNtuple *geomNtuple = (TNtuple*) initFile->Get("AliMFTGeometry");
-//
-//  geomNtuple -> SetBranchAddress("zCenter",                          &zCenter);
-//  geomNtuple -> SetBranchAddress("planeType",                        &planeType);                       
-//  geomNtuple -> SetBranchAddress("nLadderPerPlane",             &nLadderPerPlane);
-//  geomNtuple -> SetBranchAddress("rMinSupport",		       	     &rMinSupport);
-//  geomNtuple -> SetBranchAddress("rMaxSupport",		       	     &rMaxSupport);			   
-//  geomNtuple -> SetBranchAddress("rMinLadders", 	       	     &rMinLadders);			   
-//  geomNtuple -> SetBranchAddress("rMaxLadders",		       	     &rMaxLadders);			   
-//  geomNtuple -> SetBranchAddress("supportThickness",	       	     &supportThickness);		   
-//  geomNtuple -> SetBranchAddress("interspaceThickness",	       	     &interspaceThickness);		   
-//  geomNtuple -> SetBranchAddress("ladderStiffenerThickness",   	     &ladderStiffenerThickness);	   
-//  geomNtuple -> SetBranchAddress("ladderFlexThickness",	       	     &ladderFlexThickness);		   
-//  geomNtuple -> SetBranchAddress("chipActiveHeight",	       	     &chipActiveHeight);
-//  geomNtuple -> SetBranchAddress("chipReadoutHeight",	       	     &chipReadoutHeight);
-//  geomNtuple -> SetBranchAddress("chipActiveSuperposition",    	     &chipActiveSuperposition);
-//  geomNtuple -> SetBranchAddress("sensorInterspace",    	     &sensorInterspace);
-//  geomNtuple -> SetBranchAddress("pixelSizeX",		       	     &pixelSizeX);
-//  geomNtuple -> SetBranchAddress("pixelSizeY", 		       	     &pixelSizeY);			   
-//
-//  geomNtuple -> SetBranchAddress("equivalentSilicon",                &equivalentSilicon);
-//  geomNtuple -> SetBranchAddress("equivalentSiliconBeforeFront",     &equivalentSiliconBeforeFront);
-//  geomNtuple -> SetBranchAddress("equivalentSiliconBeforeBack",      &equivalentSiliconBeforeBack);
-//
-//  if (geomNtuple -> GetBranch("hasPixelRectangularPatternAlongY")) {
-//    geomNtuple -> SetBranchAddress("hasPixelRectangularPatternAlongY", &hasPixelRectangularPatternAlongY);
-//  }
-//  else hasPixelRectangularPatternAlongY = 0.;
-//  
-//  Int_t nDisks = geomNtuple->GetEntries();
-//  AliInfo(Form("%d half-disks will be created \n", nDisks));
-//
-//  Bool_t isDown = (GetID()==AliMFTSegmentation::kBottom);
-//  AliInfo(Form("IsDown = %d \n", isDown));
-//
-//  for (Int_t iDisk=0; iDisk<nDisks; iDisk++) {
-//
-//    // Create new half disk
-//
-//
-//    geomNtuple -> GetEntry(iDisk);
-//    AliInfo(Form("Setting segmentation for MFT half disk #%02d with %2d ladders \n", iDisk,TMath::Nint(nLadderPerPlane)));
-//    // zCenter = TMath::Abs(zCenter); ---- > Why ????
-//
-//    AliMFTHalfDiskSegmentation *halfDisk = new AliMFTHalfDiskSegmentation(Form("MFT_D_%1d_%1d", GetID(), iDisk), Form("MFT_D_%1d_%1d", GetID(), iDisk));
-//
-//    UInt_t halfDiskID = (1<<13) // Half-Disk Type
-//                      + (GetID()<<12) //Half-MFT ID
-//                      + (iDisk<<9);
-//    AliInfo(Form("Init segmentation for MFT half disk #%02d with Unique ID = %d \n",iDisk, halfDiskID));
-//
-//    halfDisk -> Init(halfDiskID,
-//		     isDown,
-//		     zCenter, 
-//		     TMath::Nint(planeType),
-//         TMath::Nint(nLadderPerPlane),
-//		     rMinSupport,
-//		     rMaxSupport,
-//		     rMinLadders, 
-//		     rMaxLadders,
-//		     supportThickness,
-//		     interspaceThickness,                       // only for the kHollow type
-//		     ladderStiffenerThickness,
-//		     ladderFlexThickness,
-//		     chipActiveHeight,
-//		     chipReadoutHeight,
-//		     chipActiveSuperposition,
-//         sensorInterspace,
-//		     pixelSizeX,
-//		     pixelSizeY, 
-//		     (hasPixelRectangularPatternAlongY>0.5));
-////
-////    halfDisk -> SetEquivalentSilicon(equivalentSilicon);
-////    halfDisk -> SetEquivalentSiliconBeforeFront(equivalentSiliconBeforeFront);
-////    halfDisk -> SetEquivalentSiliconBeforeBack(equivalentSiliconBeforeBack);
-////    
-////    new ((*fMFTHalfDisks)[fMFTHalfDisks->GetEntries()]) AliMFTHalfDiskSegmentation(*halfDisk);
-////    delete halfDisk;
-//  
-//    AliInfo(Form("Done Setting segmentation for MFT half disk #%02d\n", iDisk));
-//
-//  }
-  
   
 
 }
@@ -195,6 +111,7 @@ AliMFTHalfSegmentation::~AliMFTHalfSegmentation() {
 }
 
 //====================================================================================================================================================
+///Clear the TClonesArray holding the AliMFTHalfDiskSegmentation objects
 
 void AliMFTHalfSegmentation::Clear(const Option_t* /*opt*/) {
 
@@ -204,55 +121,8 @@ void AliMFTHalfSegmentation::Clear(const Option_t* /*opt*/) {
   
 }
 
-//====================================================================================================================================================
-
-THnSparseC* AliMFTHalfSegmentation::GetDetElem(Int_t detElemID) const {
-      
-  // Find det elem
-
-  Int_t planeNb = detElemID/fNMaxDetElemPerPlane;
-  Int_t detElemNb = detElemID - planeNb*fNMaxDetElemPerPlane;
-  
-  /// To do fixed !!!!!!!
-  //THnSparseC *detElem = GetHalfDisk(planeNb)->GetActiveElement(detElemNb);
-  THnSparseC *detElem=0;
-  ///
-  return detElem;
-
-}
-
-//====================================================================================================================================================
-
-Bool_t AliMFTHalfSegmentation::Hit2PixelID(Double_t xHit, Double_t yHit, Int_t detElemID, Int_t &xPixel, Int_t &yPixel) {
-
-  // xPixel and yPixel start from 0
-
-  THnSparseC *detElem = GetDetElem(detElemID);
-
-  if ( xHit<detElem->GetAxis(0)->GetXmin() ||
-       xHit>detElem->GetAxis(0)->GetXmax() ||
-       yHit<detElem->GetAxis(1)->GetXmin() ||
-       yHit>detElem->GetAxis(1)->GetXmax() ) return kFALSE;
-
-  xPixel = detElem->GetAxis(0)->FindBin(xHit) - 1;
-  yPixel = detElem->GetAxis(1)->FindBin(yHit) - 1;
-
-  return kTRUE;
-
-}
-
-//====================================================================================================================================================
-
-Bool_t AliMFTHalfSegmentation::DoesPixelExist(Int_t detElemID, Int_t xPixel, Int_t yPixel) {
-
-  THnSparseC *detElem = GetDetElem(detElemID);
-
-  if (xPixel>=0 && xPixel<detElem->GetAxis(0)->GetNbins() && yPixel>=0 && yPixel<detElem->GetAxis(1)->GetNbins()) return kTRUE;
-  else return kFALSE;
-
-}
-
 //====================================================================================
+///Create the Half-Disks 
 void AliMFTHalfSegmentation::CreateHalfDisks(TXMLEngine* xml, XMLNodePointer_t node)
 {
   // this function display all accessible information about xml node and its children
@@ -331,6 +201,7 @@ void AliMFTHalfSegmentation::CreateHalfDisks(TXMLEngine* xml, XMLNodePointer_t n
   }
 }
 //====================================================================================
+/// Find Half-Disk in the XML file (private)
 
 void AliMFTHalfSegmentation::FindHalf(TXMLEngine* xml, XMLNodePointer_t node, XMLNodePointer_t &retnode){
   // Find in the XML Geometry File the node corresponding to the Half-MFT being build

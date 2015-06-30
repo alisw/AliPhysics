@@ -13,14 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//=============================================================================================
-//
-//      Class describing geometry of one half of a MFT heat exchanger
-//
-//      Primary Author: P. Demongodin
-//      Contact author: raphael.tieulent@cern.ch
-//
-//=============================================================================================
+// $Id$
+
+//-----------------------------------------------------------------------------
+/// \class AliMFTHeatExchanger
+///
+/// Class building the MFT heat Exchanger
+///
+//  Primary Author: P. Demongodin
+//  Contact Author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
+
 
 #include "TMath.h"
 #include "TGeoManager.h"
@@ -30,8 +33,9 @@
 #include "AliLog.h"
 #include "AliMFTHeatExchanger.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMFTHeatExchanger);
-
+/// \endcond
 
 //====================================================================================================================================================
 

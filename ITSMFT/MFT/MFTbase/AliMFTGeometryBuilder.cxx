@@ -23,16 +23,16 @@
 // author Raphael Tieulent <raphael.tieulent@cern.ch>
 //-----------------------------------------------------------------------------
 
+#include "TGeoVolume.h"
+#include "TGeoManager.h"
+
+#include "AliLog.h"
 
 #include "AliMFTGeometryBuilder.h"
 #include "AliMFTGeometry.h"
 #include "AliMFTSegmentation.h"
 #include "AliMFTHalfSegmentation.h"
 #include "AliMFTHalf.h"
-#include "AliLog.h"
-
-#include "TGeoVolume.h"
-#include "TGeoManager.h"
 
 
 /// \cond CLASSIMP
@@ -40,11 +40,10 @@ ClassImp(AliMFTGeometryBuilder);
 /// \endcond
 
 //=============================================================================================
+/// Default constructor
 
 AliMFTGeometryBuilder::AliMFTGeometryBuilder():
 TNamed(){
-  
-  // default constructor
   
 }
 
@@ -57,15 +56,13 @@ AliMFTGeometryBuilder::~AliMFTGeometryBuilder() {
 
 
 //=============================================================================================
+/// \brief Build the MFT Geometry
 void AliMFTGeometryBuilder::BuildGeometry(){
-  AliInfo("Start");
   
   AliMFTGeometry *mftGeo = AliMFTGeometry::Instance();
   
   AliMFTSegmentation * seg = mftGeo->GetSegmentation();
   
-//  new TGeoVolumeAssembly("MFT");
-//  TGeoVolume *volMFT = gGeoManager->GetVolume("MFT");
   TGeoVolume *volMFT = new TGeoVolumeAssembly("MFT");
 
   for (int iHalf=0; iHalf<2; iHalf++) {
@@ -74,6 +71,9 @@ void AliMFTGeometryBuilder::BuildGeometry(){
     volMFT->AddNode(halfMFT->GetVolume(),iHalf,halfSeg->GetTransformation());
     delete halfMFT;
   }
+  
+  
+  /// \todo Add the service, Barrel, etc Those objects will probably be defined into the COMMON ITSMFT area.
   
   gGeoManager->GetVolume("ALIC")->AddNode(volMFT,0);
     

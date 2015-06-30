@@ -13,33 +13,36 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//====================================================================================================================================================
-//
-//      Class for the description of the virtual segmentation of the chips of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
+
+//-----------------------------------------------------------------------------
+/// \class AliMFTChipSegmentation
+///
+/// Description of the virtual segmentation of the chips
+///
+// author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
+
+#include "AliLog.h"
 
 #include "AliMFTConstants.h"
 #include "AliMFTChipSegmentation.h"
 #include "AliMFTGeometry.h"
-#include "AliLog.h"
 
-ClassImp(AliMFTChipSegmentation)
+/// \cond CLASSIMP
+ClassImp(AliMFTChipSegmentation);
+/// \endcond
 
 //====================================================================================================================================================
+/// Default constructor
 
 AliMFTChipSegmentation::AliMFTChipSegmentation():
   AliMFTVSegmentation()
 {
-
-  // Default constructor
-
 }
 
 //====================================================================================================================================================
-
+/// Constructor
 AliMFTChipSegmentation::AliMFTChipSegmentation(UInt_t uniqueID):
   AliMFTVSegmentation()
 {
@@ -62,12 +65,21 @@ AliMFTChipSegmentation::AliMFTChipSegmentation(UInt_t uniqueID):
   SetPosition(pos);
   
   AliDebug(2,Form("Creating %s, UniqueID = %d, Position = (%.2f, %.2f, %.2f)",GetName(), GetUniqueID(), pos[0], pos[1], pos[2]));
-
   
 }
 
 
 //====================================================================================================================================================
+/// Returns the pixel ID corresponding to a hit at (x,y) in the Sensor  frame
+///
+/// \param [in] xHit Double_t : x Position of the Hit
+/// \param [in] yHit Double_t : y Position of the Hit
+///
+/// \param [out] xPixel Int_t : x position of the pixel hit on the sensor matrix
+/// \param [out] yPixel Int_t : y position of the pixel hit on the sensor matrix
+/// \retval <kTRUE> if hit into the active part of the sensor
+/// \retval <kFALSE> if hit outside the active part
+//
 
 Bool_t AliMFTChipSegmentation::Hit2PixelID(Double_t xHit, Double_t yHit, Int_t &xPixel, Int_t &yPixel) {
   // TODO Need to work on the Misalignment
@@ -84,13 +96,14 @@ Bool_t AliMFTChipSegmentation::Hit2PixelID(Double_t xHit, Double_t yHit, Int_t &
 
   xPixel = Int_t( xHitLocal / AliMFTConstants::kXPixelPitch );
   yPixel = Int_t( yHitLocal / AliMFTConstants::kYPixelPitch );
-  AliDebug(1,Form("--> Pixel %d ; %d ",xPixel,yPixel));
+  AliDebug(1,Form("--> Hit in Pixel %d ; %d ",xPixel,yPixel));
 
   return kTRUE;
 
 }
 
 //==================================================================================================================
+/// \brief Print out Sensor information (Name, ID, position, orientation)
 void AliMFTChipSegmentation::Print(Option_t* /*option*/){
   
   AliInfo(Form("Sensor %s (Unique ID = %d)",GetName(),GetUniqueID()));

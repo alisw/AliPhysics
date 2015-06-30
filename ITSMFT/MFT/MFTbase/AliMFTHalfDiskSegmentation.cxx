@@ -13,45 +13,44 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//====================================================================================================================================================
-//
-//      Class for the description of the structure for the planes of the ALICE Muon Forward Tracker
-//
-//      Contact author: antonio.uras@cern.ch
-//
-//====================================================================================================================================================
+// $Id$
 
-#include "TNamed.h"
-#include "THnSparse.h"
+//-----------------------------------------------------------------------------
+/// \class AliMFTHalfDiskSegmentation
+///
+/// Class for the description of the structure a Half-Disk
+///
+// author Raphael Tieulent <raphael.tieulent@cern.ch>
+//-----------------------------------------------------------------------------
 #include "TClonesArray.h"
-#include "TAxis.h"
-#include "TPave.h"
-#include "TCanvas.h"
-#include "TH2D.h"
-#include "TEllipse.h"
-#include "TMath.h"
+
 #include "AliLog.h"
 #include "AliMFTConstants.h"
 #include "AliMFTHalfDiskSegmentation.h"
 #include "AliMFTGeometry.h"
 
-ClassImp(AliMFTHalfDiskSegmentation)
+/// \cond CLASSIMP
+ClassImp(AliMFTHalfDiskSegmentation);
+/// \endcond
+
 
 //====================================================================================================================================================
-
+/// Default constructor
 AliMFTHalfDiskSegmentation::AliMFTHalfDiskSegmentation():
   AliMFTVSegmentation(),
-  fLadders(0)
+  fNLadders(0),
+  fLadders(NULL)
 {
 
-  // default constructor
 
 }
 
 //====================================================================================================================================================
-
+/// Constructor
+/// \param [in] uniqueID UInt_t: Unique ID of the Half-Disk to build
 AliMFTHalfDiskSegmentation::AliMFTHalfDiskSegmentation(UInt_t uniqueID):
   AliMFTVSegmentation(),
+  fNLadders(0),
   fLadders(NULL)
 {
 
@@ -72,7 +71,7 @@ AliMFTHalfDiskSegmentation::AliMFTHalfDiskSegmentation(UInt_t uniqueID):
 }
 
 //====================================================================================================================================================
-
+/// Copy Constructor
 AliMFTHalfDiskSegmentation::AliMFTHalfDiskSegmentation(const AliMFTHalfDiskSegmentation& input):
   AliMFTVSegmentation(input),
   fNLadders(input.fNLadders)
@@ -94,6 +93,7 @@ AliMFTHalfDiskSegmentation::~AliMFTHalfDiskSegmentation() {
 }
 
 //====================================================================================================================================================
+/// Clear the TClonesArray holding the ladder segmentations
 
 void AliMFTHalfDiskSegmentation::Clear(const Option_t* /*opt*/) {
 
@@ -103,33 +103,11 @@ void AliMFTHalfDiskSegmentation::Clear(const Option_t* /*opt*/) {
 
 }
 
+
 //====================================================================================================================================================
-
-AliMFTHalfDiskSegmentation& AliMFTHalfDiskSegmentation::operator=(const AliMFTHalfDiskSegmentation& plane) {
-
-  // Assignment operator
-  
-  // check assignement to self
-  if (this != &plane) {
-    
-    // base class assignement
-    TNamed::operator=(plane);
-    
-    // clear memory
-    Clear("");
-    fLadders                          = plane.fLadders;
-
-    if (plane.fLadders) fLadders = new TClonesArray(*(plane.fLadders));
-
-  }
-  
-  return *this;
-  
-}
-//====================================================================================================================================================
+/// Creates the Ladders on this half-Disk based on the information contained in the XML file
 void AliMFTHalfDiskSegmentation::CreateLadders(TXMLEngine* xml, XMLNodePointer_t node)
 {
-  // Creates Ladders on this half-Disk based on the information contained in the XML file
   Int_t iladder;
   Int_t nsensor;
   Double_t pos[3];
@@ -202,7 +180,8 @@ void AliMFTHalfDiskSegmentation::CreateLadders(TXMLEngine* xml, XMLNodePointer_t
     ladder->SetPosition(pos);
     ladder->SetRotationAngles(ang);
 
-    // TODO : In the XML geometry file, the position of the top-left corner of the chip closest to the pipe is given in the Halfdisk coordinate system.
+    /// @todo : In the XML geometry file, the position of the top-left corner of the chip closest to the pipe is given in the Halfdisk coordinate system.
+    /// Need to put in the XML file the position of the ladder coordinate center
     // Find the position of the corner of the flex which is the ladder corrdinate system center.
     
     pos[0] = -AliMFTConstants::kSensorSideOffset;
@@ -235,7 +214,7 @@ void AliMFTHalfDiskSegmentation::CreateLadders(TXMLEngine* xml, XMLNodePointer_t
 
 
 //==================================================================================================================
-
+/// Returns the number of sensors on the Half-Disk
 Int_t AliMFTHalfDiskSegmentation::GetNChips() {
 
   Int_t nChips = 0;
@@ -243,7 +222,7 @@ Int_t AliMFTHalfDiskSegmentation::GetNChips() {
   for (Int_t iLadder=0; iLadder<fLadders->GetEntries(); iLadder++) {
 
     AliMFTLadderSegmentation *ladder = (AliMFTLadderSegmentation*) fLadders->At(iLadder);
-    nChips += ladder -> GetNumberOfChips();
+    nChips += ladder -> GetNSensors();
 
   }
 
@@ -252,6 +231,9 @@ Int_t AliMFTHalfDiskSegmentation::GetNChips() {
 }
 
 //==================================================================================================================
+/// Print out Half-Disk information
+/// \param [in] opt "l" or "ladder" -> The ladder information will be printed out as well
+
 void AliMFTHalfDiskSegmentation::Print(Option_t* opt){
 
   AliInfo(Form("Half-Disk %s (Unique ID = %d)",GetName(),GetUniqueID()));
@@ -261,6 +243,4 @@ void AliMFTHalfDiskSegmentation::Print(Option_t* opt){
     for (int i=0; i<GetNLadders(); i++)  GetLadder(i)->Print(opt);
     
   }
-  
-
 }
