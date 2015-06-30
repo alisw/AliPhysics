@@ -288,7 +288,7 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList( hRefPoint,0, expert, !image, !saveCorr);
 
   TH1F *hRefPointcal = new TH1F("hRefPointcal","Ref Point laser", 5000, 0 ,20000);
-  Add2RawsList( hRefPointcal,250, expert, !image, !saveCorr);
+  Add2RawsList( hRefPointcal,249, expert, !image, !saveCorr);
 
   TH1F *hRawCFD[24]; 
   TH1F *hRawLEDamp[24];
@@ -657,7 +657,7 @@ void AliT0QADataMakerRec::InitESDs()
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
   //indices in lookup table lookUpTable_tanay.txt 
-  enum { kTZeroRefPoint=0, kTZeroFirstCfdC=1, kTZeroFirstLedC=13, kTZeroFirstQT0C=25,kTZeroFirstQT1C=26,
+  enum { kTZeroRefPoint=49, kTZeroFirstCfdC=1, kTZeroFirstLedC=13, kTZeroFirstQT0C=25,kTZeroFirstQT1C=26,
          kTZeroVertex=50, kTZeroOrA=51, kTZeroOrC=52, kT0multAQ0=53, kT0multAQ1=54, kTZeroMultCent=55, kTZeroMultSemi=56,
          kTZeroFirstCfdA=57, kTZeroFirstLedA=69, kTZeroFirstQT0A=81,kTZeroFirstQT1A=82,
          kT0multCQ0=105, kT0multCQ1=106 
