@@ -24,6 +24,7 @@
 #include "AliGloAlgTask.h"
 #include "AliLog.h"
 #include "AliAlgSteer.h"
+#include "AliAlgDOFStat.h"
 
 ClassImp(AliGloAlgTask)
 
@@ -37,6 +38,7 @@ AliGloAlgTask::AliGloAlgTask(const char *name)
   ,fConfMacroName()
   ,fStopWatch()
   ,fChunks(0)
+  ,fApplyMPSolAlignment(kFALSE)
 {
   // Constructor
   DefineOutput(1, TList::Class());
@@ -117,10 +119,10 @@ void AliGloAlgTask::Terminate(Option_t *)
   Printf("Terminating...");
   fAlgSteer->Terminate();
   //
-  TH1* hstat;
-  hstat = fAlgSteer->GetHistoDOF();
-  if (hstat) fOutput->Add(hstat);
-  fAlgSteer->DetachHistoDOF();
+  TH1* hstat = 0;
+  AliAlgDOFStat* dofSt= fAlgSteer->GetDOFStat();
+  if (dofSt) fOutput->Add(dofSt);
+  fAlgSteer->DetachDOFStat();
   //
   hstat = fAlgSteer->GetHistoStat();
   if (hstat) fOutput->Add(hstat);
@@ -150,6 +152,7 @@ void AliGloAlgTask::LocalInit()
   if (!fIniParFileName.IsNull() && !gSystem->AccessPathName(fIniParFileName.Data(), kFileExists)) {
     AliInfoF("Imposing initial parameters from %s",fIniParFileName.Data());
     fAlgSteer->ReadParameters(fIniParFileName.Data());
+    if (fApplyMPSolAlignment) fAlgSteer->ApplyAlignmentFromMPSol();
   }
   fAlgSteer->Print();
 }

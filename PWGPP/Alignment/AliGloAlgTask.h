@@ -26,7 +26,10 @@ class AliGloAlgTask : public AliAnalysisTaskSE {
   const char* GetConfMacroName()                              const {return fConfMacroName.Data();}
   //
   void        SetIniParFileName(const char* nm=0)                   {fIniParFileName = nm;}
-  const char* GetIniParFileName()                              const {return fIniParFileName.Data();}
+  const char* GetIniParFileName()                             const {return fIniParFileName.Data();}
+  //
+  Bool_t      GetApplyMPSolAlignment()                        const {return fApplyMPSolAlignment;}
+  void        SetApplyMPSolAlignment(Bool_t v=kTRUE)                {fApplyMPSolAlignment=v;}
   //
  protected:
   //
@@ -39,6 +42,8 @@ class AliGloAlgTask : public AliAnalysisTaskSE {
   //
   TStopwatch   fStopWatch;               // stopwatch
   Int_t        fChunks;                  // chunks processed
+  //
+  Bool_t       fApplyMPSolAlignment;     // if millepede solution is loaded, apply it as alignment
   //
  private:    
   AliGloAlgTask(const AliGloAlgTask&); // not implemented
