@@ -27,7 +27,7 @@
 /** @} */
 
 /** @defgroup MFTsim MFTsim
- *  Category of classes for sim ;
+ *  Category of sim classes
  *  @ingroup MFT
  *  @{
  */
