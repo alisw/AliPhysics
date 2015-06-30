@@ -14,7 +14,7 @@ AliAnalysisTask *AddTask_tbroeker_RandomRejection(Bool_t getFromAlien=kFALSE,
   
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if(getFromAlien && (!configsPreloaded) &&(!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
     configBasePath=Form("%s/",gSystem->pwd());
   }
 
