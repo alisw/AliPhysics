@@ -83,7 +83,7 @@ public:
   
   AliMFTSegmentation* GetSegmentation() const { return fSegmentation; }
   
-  enum EMedia{kZero,kAir, kVacuum, kSi, kReadout, kSupport, kCarbon, kBe, kAlu, kAlu1, kAlu2 ,kAlu3, kAlu4, kAlu5, kWater, kSiO2, kInox, kKapton, kEpoxy, kCarbonFiber, kCarbonEpoxy};  // media IDs used in CreateMaterials
+  enum EMedia{kZero,kAir, kVacuum, kSi, kReadout, kSupport, kCarbon, kBe, kAlu, kAlu1, kAlu2 ,kAlu3, kAlu4, kAlu5, kWater, kSiO2, kInox, kKapton, kEpoxy, kCarbonFiber, kCarbonEpoxy, kRohacell, kPolyimide};  // media IDs used in CreateMaterials
   
   // Geometry/segmentation creation part
   void AddAlignableVolumes() const { /* not needed */ return; }

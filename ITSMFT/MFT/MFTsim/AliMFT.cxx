@@ -157,6 +157,8 @@ AliMFT::~AliMFT() {
 
 void AliMFT::CreateMaterials() {
   
+  /// \todo Check all materials Remove the one unneeded
+  
   
   // Definition of MFT materials  - to be updated to the most recent values
   
@@ -206,7 +208,22 @@ void AliMFT::CreateMaterials() {
   Float_t zCM55J[4]={6.,7.,8.,1.};
   Float_t wCM55J[4]={0.908508078,0.010387573,0.055957585,0.025146765};
   Float_t dCM55J = 1.8;  // 1.63 from AliITSv11Geometry.cxx !?
+
+  // Rohacell mixture
+  const Int_t nRohacell = 3;
+  Float_t aRohacell[nRohacell] = {1.00794, 12.0107, 15.9994};
+  Float_t zRohacell[nRohacell] = {1., 6., 8.};
+  Float_t wRohacell[nRohacell] = {0.0858, 0.5964, 0.3178};
+  Float_t dRohacell = 0.075;
   
+  // Polyimide pipe mixture
+  const Int_t nPolyimide = 4;
+  Float_t aPolyimide[nPolyimide] = {1.00794, 12.0107, 14.0067, 15.9994};
+  Float_t zPolyimide[nPolyimide] = {1, 6, 7, 8};
+  Float_t wPolyimide[nPolyimide] = {0.00942, 0.56089, 0.13082, 0.29887};
+  Float_t dPolyimide = 2.595;   /// \todo Polyimide density to be checked
+
+
   
   Int_t   matId  = 0;                        // tmp material id number
   Int_t   unsens = 0, sens=1;                // sensitive or unsensitive medium
@@ -307,6 +324,12 @@ void AliMFT::CreateMaterials() {
   
   AliMixture(++matId,"C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
   AliMedium(kCarbonEpoxy,"CarbonFiber$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture(++matId,  "Rohacell", aRohacell, zRohacell, dRohacell, nRohacell, wRohacell);
+  AliMedium(kRohacell, "Rohacell", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture(++matId,  "Polyimide", aPolyimide, zPolyimide, dPolyimide, nPolyimide, wPolyimide);
+  AliMedium(kPolyimide, "Polyimide", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliDebug(1,"End MFT materials");
   
