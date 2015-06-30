@@ -95,8 +95,8 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   else if (half == kBottom) printf("Creating MFT heat exchanger for disk0 bottom\n");
   else     printf("No valid option for MFT heat exchanger on disk0\n");
   
-  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon$");
+  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water$");
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
@@ -339,8 +339,8 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   else if (half == kBottom) printf("Creating MFT heat exchanger for disk1 bottom\n");
   else     printf("No valid option for MFT heat exchanger on disk1\n");
   
-  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon$");
+  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water$");
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
@@ -589,8 +589,8 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   else     printf("No valid option for MFT heat exchanger on disk2\n");
   
   
-  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon$");
+  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water$");
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
@@ -837,8 +837,8 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   else if (half == kBottom) printf("Creating MFT heat exchanger for disk3 bottom\n");
   else     printf("No valid option for MFT heat exchanger on disk3\n");
   
-  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon$");
+  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water$");
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
@@ -1254,8 +1254,8 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   else     printf("No valid option for MFT heat exchanger on disk4\n");
   
   
-  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *carbon   = gGeoManager->GetMedium("MFT_Carbon$");
+  TGeoMedium *water    = gGeoManager->GetMedium("MFT_Water$");
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
