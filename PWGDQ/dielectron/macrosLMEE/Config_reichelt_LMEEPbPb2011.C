@@ -19,9 +19,7 @@ const TString  RndmPtExpr="exp(-x/3.)";
 const Double_t RndmPtMin=0.4;
 const Double_t RndmPtMax=3.5;
 const Double_t RndmEtaMax=0.9;
-const UInt_t nRndmPt=12;
-const UInt_t nRndmEta=5;
-const UInt_t nRndmPhi=8;
+const Int_t nTestpartPerEle=100; // number of testparticles used per final analysis electron in an event.
 // _____
 const Bool_t randomizeDau=kFALSE;
 

@@ -65,7 +65,7 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection_nr3(Char_t* outputFileName="LM
   task->SetPtExpr(RndmPtExpr);
   task->SetPtRange(RndmPtMin, RndmPtMax);
   task->SetEtaMax(RndmEtaMax);
-  task->SetNPtEtaPhi(nRndmPt,nRndmEta,nRndmPhi);
+  task->SetNTestpartPerEle(nTestpartPerEle);
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
