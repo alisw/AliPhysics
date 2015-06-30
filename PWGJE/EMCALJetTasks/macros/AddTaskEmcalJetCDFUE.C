@@ -25,6 +25,7 @@ AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE (
   const char *nrho               = "",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1.,
+  Double_t    jetptcutmax        = 250.,
   Double_t    jetareacut         = 0.001,
   const char *type               = "TPC",      // EMCAL, TPC
   Int_t       leadhadtype        = 0,          // AliJetContainer :: Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
@@ -82,6 +83,7 @@ AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE (
       jetCont->ConnectClusterContainer ( clusterCont );
       jetCont->SetPercAreaCut ( jetareacut );
       jetCont->SetJetPtCut ( jetptcut );
+      jetCont->SetJetPtCutMax ( jetptcutmax );
       jetCont->SetLeadingHadronType ( leadhadtype ); // Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
       jetCont->SetZLeadingCut ( 0., 1. );
       }
@@ -116,6 +118,7 @@ AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE (
 /// \return AliAnalysisTaskEmcalJetCDFUE* task
 AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE ( AliEmcalJetTask *jetFinderTask,
     Double_t     jetptcut     = 1.,
+    Double_t     jetptcutmax  = 250.,
     Double_t     jetareacut   = 0.001,
     const char  *type         = "TPC",     // EMCAL, TPC
     Int_t        leadhadtype  = 0,         // AliJetContainer :: Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
@@ -130,7 +133,7 @@ AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE ( AliEmcalJetTask *jetFinderT
   const char *njets              = jetFinderTask->GetJetsName();
   Double_t    jetradius          = jetFinderTask->GetRadius();
 
-  return AddTaskEmcalJetCDFUE ( ntracks , nclusters, njets, nrho, jetradius, jetptcut, jetareacut, type, leadhadtype, taskname );
+  return AddTaskEmcalJetCDFUE ( ntracks , nclusters, njets, nrho, jetradius, jetptcut, jetptcutmax, jetareacut, type, leadhadtype, taskname );
   }
 
 /// Add a AliAnalysisTaskEmcalJetCDFUE task - info from char* taskname
@@ -144,6 +147,7 @@ AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE ( AliEmcalJetTask *jetFinderT
 /// \return AliAnalysisTaskEmcalJetCDFUE* task
 AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE ( const char* taskname,
     Double_t     jetptcut     = 1.,
+    Double_t     jetptcutmax  = 250.,
     Double_t     jetareacut   = 0.001,
     const char  *type         = "TPC",     // EMCAL, TPC
     Int_t        leadhadtype  = 0,         // AliJetContainer :: Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
@@ -161,7 +165,7 @@ AliAnalysisTaskEmcalJetCDFUE *AddTaskEmcalJetCDFUE ( const char* taskname,
   const char *njets              = jf->GetJetsName();
   Double_t    jetradius          = jf->GetRadius();
 
-  return AddTaskEmcalJetCDFUE ( ntracks , nclusters, njets, nrho, jetradius, jetptcut, jetareacut, type, leadhadtype, taskname );
+  return AddTaskEmcalJetCDFUE ( ntracks , nclusters, njets, nrho, jetradius, jetptcut, jetptcutmax, jetareacut, type, leadhadtype, taskname );
   }
 
 // kate: indent-mode none; indent-width 2; replace-tabs on;
