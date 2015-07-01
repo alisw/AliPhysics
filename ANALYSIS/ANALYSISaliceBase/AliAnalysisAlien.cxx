@@ -543,11 +543,12 @@ Bool_t AliAnalysisAlien::CheckDependencies()
             // down to index i included.
             fModules->RemoveAt(idep);
             for (k=idep-1; k>=i; k--) fModules->AddAt(fModules->RemoveAt(k),k+1);
+            istart = i;
             fModules->AddAt(dep, i++);
          }
-         //Redo from istart if dependencies were inserted
-         if (i>istart) i=istart-1;
       }
+      //Redo from istart if dependencies were inserted
+      if (i>istart) i=istart-1;
    }
    return kTRUE;
 }      

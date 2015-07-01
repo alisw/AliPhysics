@@ -235,8 +235,8 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
       return -1;
    }
 //   Long64_t ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
+   TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
    if (retval) {
-      TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
       fRAddTask = reinterpret_cast<TObject*>(retval);
       if (fConfigDeps && dynamic_cast<TObject*>(fRAddTask)) {
          TString classname = fRAddTask->ClassName();
