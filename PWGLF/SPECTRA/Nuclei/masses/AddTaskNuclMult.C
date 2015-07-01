@@ -19,27 +19,27 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t kAOD=kTRUE){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
   const Int_t Nmult_0=12;//number of multiplicity classes (VZERO Amplitude Estimator)
-  //const Int_t Nmult_1=15;//number of multiplicity classes (Mid-pseudorapidity Estimator)
+  const Int_t Nmult_1=15;//number of multiplicity classes (Mid-pseudorapidity Estimator)
   
   const Int_t Ntask_0=Nmult_0+1;//+1 = +analysis on over all Minimum Bias collisions
-  //const Int_t Ntask_1=Nmult_1+1;//+1 = +analysis on over all Minimum Bias collisions
+  const Int_t Ntask_1=Nmult_1+1;//+1 = +analysis on over all Minimum Bias collisions
   
   Char_t mytaskName[100];
   snprintf(mytaskName,100,"AliAnalysisNuclMult");
   
   AliAnalysisNuclMult *task_0[Ntask_0];
-  //AliAnalysisNuclMult *task_1[Ntask_1];
+  AliAnalysisNuclMult *task_1[Ntask_1];
   for(Int_t i=0;i<Ntask_0;i++) {
     task_0[i] = new AliAnalysisNuclMult(mytaskName);
     mgr->AddTask(task_0[i]);
   }
-  /*for(Int_t i=0;i<Ntask_1;i++) {
+  for(Int_t i=0;i<Ntask_1;i++) {
     task_1[i] = new AliAnalysisNuclMult(mytaskName);
     mgr->AddTask(task_1[i]);
-    }*/
+  }
   
   Float_t multiplicityRanges_0[Nmult_0+1]={0.00,0.01,0.10,1,5,10,15,20,30,40,50,70,100};
-  //Float_t multiplicityRanges_1[Nmult_1+1]={1,4,7,10,15,20,25,30,40,50,60,70,80,90,100,999};
+  Float_t multiplicityRanges_1[Nmult_1+1]={1,4,7,10,15,20,25,30,40,50,60,70,80,90,100,999};
 
   Bool_t iMultEstimator=0;
   
@@ -50,7 +50,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t kAOD=kTRUE){
     if(i<Nmult_0) task_0[i]->SetMultiplicityRange(multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
     else task_0[i]->SetMultiplicityRange(-999,999);//over all Minimum Bias collisions
   }
-  /*
+  
   iMultEstimator=1;//pay attention to that;
   for(Int_t i=0;i<Ntask_1;i++) {
     if(!kAOD) task_1[i]->SetTrackFilter(trackFilter);
@@ -58,7 +58,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t kAOD=kTRUE){
     
     if(i<Nmult_1) task_1[i]->SetMultiplicityRange(multiplicityRanges_1[i],multiplicityRanges_1[i+1]);
     else task_1[i]->SetMultiplicityRange(-999,999);//over all Minimum Bias collisions
-    }*/
+  }
   
   iMultEstimator=0;//pay attention to that;
   AliAnalysisDataContainer *cinput_0[Ntask_0];
@@ -77,7 +77,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t kAOD=kTRUE){
     cOutputL_0[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task_0[i],1,cOutputL_0[i]);
   }
-  /*
+  
   iMultEstimator=1;//pay attention to that;
   AliAnalysisDataContainer *cinput_1[Ntask_1];
   AliAnalysisDataContainer *cOutputL_1[Ntask_1];
@@ -95,6 +95,6 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t kAOD=kTRUE){
     cOutputL_1[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task_1[i],1,cOutputL_1[i]);
   }
-  */
+  
   return task_0[0];
 }

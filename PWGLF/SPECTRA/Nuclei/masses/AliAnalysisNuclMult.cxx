@@ -116,7 +116,7 @@ void AliAnalysisNuclMult::UserCreateOutputObjects()
     hpileUp->Fill(xaxisTitle2[i],0);
   }
   
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",1200,-200,1000);
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
   if(iMultEstimator==0) hmult->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
   else if(iMultEstimator==1) hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
 
