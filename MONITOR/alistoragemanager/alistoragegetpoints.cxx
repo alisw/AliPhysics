@@ -54,7 +54,7 @@ int main()
 	{
         manager->Get(event,EVENTS_SERVER_SUB);
 		cout<<"sending xml"<<endl;
-		manager->Send(getXml(event),XML_PUB);
+		manager->SendAsXml(event,XML_PUB);
 		cout<<"xml sent"<<endl;
 	}
 	return 0;
