@@ -169,7 +169,6 @@ void AliMFT::CreateMaterials() {
   Float_t   aSi = 28.085 ,    zSi   = 14. ,     dSi      =  2.329 ,   radSi   =  21.82/dSi , absSi   = 108.4/dSi  ;    // Silicon
   Float_t   aCarb = 12.01 ,   zCarb =  6. ,     dCarb    =  2.265 ,   radCarb =  18.8 ,      absCarb = 49.9       ;    // Carbon
   Float_t   aAlu = 26.98 ,    zAlu  = 13. ,     dAlu     =  2.70  ,   radAlu  =  8.897 ,     absAlu  = 39.70      ;    // Aluminum
-  Float_t   dAlu1 =  2.70,    dAlu2 =  2.70*2,  dAlu3    = 2.70*3,    dAlu4   =  2.70*4,     dAlu5   = 2.70*5     ;    // Aluminum for tracks
   Float_t   aBe = 9.012182 ,  zBe   = 4. ,      dBe      =  1.85 ,    radBe   =  65.19/dBe , absBe   = 77.8/dBe  ;     // Beryllium
   
   // Air mixture
@@ -221,7 +220,7 @@ void AliMFT::CreateMaterials() {
   Float_t aPolyimide[nPolyimide] = {1.00794, 12.0107, 14.0067, 15.9994};
   Float_t zPolyimide[nPolyimide] = {1, 6, 7, 8};
   Float_t wPolyimide[nPolyimide] = {0.00942, 0.56089, 0.13082, 0.29887};
-  Float_t dPolyimide = 2.595;   /// \todo Polyimide density to be checked
+  Float_t dPolyimide = 1.4;   
 
 
   
