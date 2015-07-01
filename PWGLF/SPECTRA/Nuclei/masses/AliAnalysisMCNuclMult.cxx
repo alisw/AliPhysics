@@ -137,11 +137,11 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   fNtrVsMult = new TH2I("fNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,1000,-100,900);
   prNtrVsMult = new TProfile("prNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,-100,900,"");
 
-  hmult_tot = new TH1I("hmult_tot","Multiplicity distribution (after cuts on event)",1200,-200,1000);
+  hmult_tot = new TH1I("hmult_tot","Multiplicity distribution (after cuts on event)",30000,-100,200);
   if(iMultEstimator==0) hmult_tot->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
   else if(iMultEstimator==1) hmult_tot->GetXaxis()->SetTitle("kTrackletsITSTPC");
 
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",1200,-200,1000);
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
   if(iMultEstimator==0) hmult->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
   else if(iMultEstimator==1) hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
 

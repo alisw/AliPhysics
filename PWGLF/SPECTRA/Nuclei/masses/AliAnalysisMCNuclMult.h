@@ -59,15 +59,15 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   AliAODEvent* fAOD;                              //! AOD object
   AliESDEvent* fESD;                              //! ESD object
   AliVEvent* fEvent;                              //! general object
-  AliAnalysisFilter *fTrackFilter;                //track filter object
-  AliPPVsMultUtils *fPPVsMultUtils;               //for multiplicity estimators
+  AliAnalysisFilter *fTrackFilter;                //  track filter object
+  AliPPVsMultUtils *fPPVsMultUtils;               //  for multiplicity estimator
   AliPIDResponse *fPIDResponse;                   //! pointer to PID response
 
-  TList *fList;                                   //! lists for slot
+  TList *fList;                                   //! output container
   
-  Int_t iMultEstimator;                           //! iMultEstimator: 0-> VZERO Amplitude Estimator; 1->Mid-psudorapidity Estimator;
-  Float_t multiplicityMin;                        //! min. mult.
-  Float_t multiplicityMax;                        //! max. mult.
+  Int_t iMultEstimator;                           //  iMultEstimator: 0-> VZERO Amplitude Estimator; 1->Mid-psudorapidity Estimator;
+  Float_t multiplicityMin;                        //  min. mult.
+  Float_t multiplicityMax;                        //  max. mult.
   
   Int_t stdPdg[9];                                //! Pdg code of e,mu,pi,K,p,d,t,He3,He4
 
@@ -82,7 +82,7 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   TH1I *hmult;                                    //! selected multiplicity distribution
   TH1I *hNtrack;                                  //! number of tracks distribution
     
-  TH1I *hpdg;
+  TH1I *hpdg;                                     //! pdg label
 
   TH1F *hpt[7][18];                               //! pT efficiencies
   
