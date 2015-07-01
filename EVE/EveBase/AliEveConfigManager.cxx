@@ -20,7 +20,6 @@
 #include "AliEveMacroExecutor.h"
 #include "AliEveMacroExecutorWindow.h"
 #include "AliEveMacro.h"
-#include "AliEvePreferencesWindow.h"
 
 //Storage Manager:
 #ifdef ZMQ
@@ -49,7 +48,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent, kPreferences
+	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent
  };
 }
  
@@ -157,8 +156,6 @@ AliEveConfigManager::AliEveConfigManager(bool storageManager) :
   fAliEveVizDBs->AddSeparator();
 
   fAliEvePopup = new TGPopupMenu(gClient->GetRoot());
-    fAliEvePopup->AddEntry("&Preferences", kPreferences);
-    fAliEvePopup->AddSeparator();
   fAliEvePopup->AddEntry("&Set Default Settings", kAEMSetDefault);
   fAliEvePopup->AddSeparator();
   fAliEvePopup->AddPopup("&Geometries/VizDBs", fAliEveGeometries);
@@ -1065,12 +1062,6 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
           AliStorageAdministratorPanelMarkEvent *markEventWindow =
           AliStorageAdministratorPanelMarkEvent::GetInstance();
 #endif
-          break;
-      }
-      case kPreferences:
-      {
-          AliEvePreferencesWindow *preferences = AliEvePreferencesWindow::Instance();
-          
           break;
       }
           

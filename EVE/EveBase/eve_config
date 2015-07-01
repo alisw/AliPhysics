@@ -39,3 +39,5 @@ logbook.pass:           	logbook_pass
 screenshot.logo.draw		1
 screenshot.info.draw		1
 screenshot.projections.draw	1
+
+HLT.ZMQ.proxy:          tcp://localhost:60201
