@@ -546,9 +546,31 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
   fHistDecision->Fill(esdAD->GetADADecision(),esdAD->GetADCDecision());
     
   //Triggers
+  /*/
   UShort_t fTriggerBC = esdAD->GetTriggerBits();
   for(Int_t i = 0; i<6; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
   for(Int_t i = 12; i<16; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i-6);
+  /*/
+  Bool_t UBA = kFALSE;
+  Bool_t UBC = kFALSE;
+  Bool_t UGA = kFALSE;
+  Bool_t UGC = kFALSE;
+
+  if(nBBCoincidencesADA>=1) UBA = kTRUE;
+  if(nBBCoincidencesADC>=1) UBC = kTRUE;
+  if(nBGCoincidencesADA>=1) UGA = kTRUE;
+  if(nBGCoincidencesADC>=1) UGC = kTRUE;
+  
+  if(UBA && UBC) fHistTriggerMasked->Fill(0);
+  if(UBA || UBC) fHistTriggerMasked->Fill(1);
+  if(UGA && UBC) fHistTriggerMasked->Fill(2);
+  if(UGA)fHistTriggerMasked->Fill(3);
+  if(UGC && UBA) fHistTriggerMasked->Fill(4);
+  if(UGC) fHistTriggerMasked->Fill(5);
+  if(UBA)fHistTriggerMasked->Fill(6);
+  if(UBC) fHistTriggerMasked->Fill(7); 
+  if(UGA || UGC) fHistTriggerMasked->Fill(8);
+  if((UGA && UBC) || (UGC && UBA))fHistTriggerMasked->Fill(9);
 	
   
   if(esdADfriend){
