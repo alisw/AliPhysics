@@ -76,6 +76,10 @@ class AliJetFlowTools {
         void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
         void            SetReductionFactorCorr(Float_t g)       {gReductionFactorCorr   =g;}
         void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
+        void            SetPwrtToArray(TArrayD* a)      {
+            gPwrtToArray = a;   // set the array
+            gPwrtTo = -9999;    // tells instance to not use this value
+        }
         void            SetPivot(Float_t p)             {fPivot                 = p;}
         void            SetConstantUE(Bool_t ue)        {fConstantUE            = ue;}
         void            SetSubdueError(Bool_t b)        {fSubdueError           = b;}
@@ -581,6 +585,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         static Float_t          gReductionFactor;       // multiply shape uncertainty by this factor
         static Float_t          gReductionFactorCorr;   // multiply corr uncertainty by this factor
         static Float_t          gPwrtTo;                // p-value will be evaluated wrt y = gPwrtTo
+        static TArrayD*         gPwrtToArray;           // p-value will be evaluated wrt y = gPwrtToArray[i]
 
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
@@ -597,5 +602,6 @@ Int_t    AliJetFlowTools::gOffsetStop   = 0;           // stop chi2 fit at this 
 Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
 Float_t  AliJetFlowTools::gReductionFactorCorr  = 1.;   // multiply corr uncertainty by this factor
 Float_t  AliJetFlowTools::gPwrtTo               = 0.;   // p-value will be evaluated wrt y = gPwrtTo
+TArrayD* AliJetFlowTools::gPwrtToArray          = new TArrayD(8);// array of values w.r.t. p value is evaluated
 #endif
 //_____________________________________________________________________________

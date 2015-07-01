@@ -4899,29 +4899,52 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
     Double_t chi2(0);
     Int_t counts(gV2->GetSize() + gOffsetStop);
 
-    // altered implemtation of eq 3 of arXiv:0801.1665v2
-    // see analysis note and QM2014 poster for validation
-    for(Int_t i(gOffsetStart); i < counts; i++) {
+    if(gPwrtTo > -999) {
+        // altered implemtation of eq 3 of arXiv:0801.1665v2
+        // see analysis note and QM2014 poster for validation
+        for(Int_t i(gOffsetStart); i < counts; i++) {
 
-        // quadratic sum of statistical and uncorrelated systematic error
-        Double_t e = gStat->At(i);;
+            // quadratic sum of statistical and uncorrelated systematic error
+            Double_t e = gStat->At(i);;
 
-        // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
-        // also the numerator of equation 3 of phenix paper
-        Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb-gPwrtTo, 2);
+            // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
+            // also the numerator of equation 3 of phenix paper
+            Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb-gPwrtTo, 2);
 
-        // modified denominator of equation 3 of phenix paper
-        Double_t denominator = e*e;
+            // modified denominator of equation 3 of phenix paper
+            Double_t denominator = e*e;
 
-        // add to the sum
-        chi2 += numerator/denominator;
+            // add to the sum
+            chi2 += numerator/denominator;
+        }
+        // add the square of epsilon to the total chi2 as penalty
+
+        Double_t sumEpsb(0);
+        for(Int_t j(gOffsetStart); j < counts; j++) sumEpsb += (epsb*epsb)/(gShape->At(j)*gShape->At(j));
+        chi2 += epsc*epsc + sumEpsb/((float)counts);
+    } else {
+        // otherwise use the array
+        for(Int_t i(gOffsetStart); i < counts; i++) {
+
+            // quadratic sum of statistical and uncorrelated systematic error
+            Double_t e = gStat->At(i);;
+
+            // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
+            // also the numerator of equation 3 of phenix paper
+            Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb-gPwrtToArray->At(i), 2);
+
+            // modified denominator of equation 3 of phenix paper
+            Double_t denominator = e*e;
+
+            // add to the sum
+            chi2 += numerator/denominator;
+        }
+        // add the square of epsilon to the total chi2 as penalty
+
+        Double_t sumEpsb(0);
+        for(Int_t j(gOffsetStart); j < counts; j++) sumEpsb += (epsb*epsb)/(gShape->At(j)*gShape->At(j));
+        chi2 += epsc*epsc + sumEpsb/((float)counts);
     }
-    // add the square of epsilon to the total chi2 as penalty
-
-    Double_t sumEpsb(0);
-    for(Int_t j(gOffsetStart); j < counts; j++) sumEpsb += (epsb*epsb)/(gShape->At(j)*gShape->At(j));
-    chi2 += epsc*epsc + sumEpsb/((float)counts);
-
     return chi2;
 }
 //_____________________________________________________________________________
