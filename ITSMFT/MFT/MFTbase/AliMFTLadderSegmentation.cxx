@@ -133,7 +133,7 @@ void AliMFTLadderSegmentation::CreateSensors() {
 //====================================================================================================================================================
 /// Returns pointer to a sensor segmentation
 /// \param [in] sensorID Int_t: ID of the sensor on the ladder
-AliMFTChipSegmentation* AliMFTLadderSegmentation::GetSensor(Int_t sensorID) {
+AliMFTChipSegmentation* AliMFTLadderSegmentation::GetSensor(Int_t sensorID) const {
   
   if (sensorID<0 || sensorID>=fNSensors) return NULL;
   
@@ -142,6 +142,7 @@ AliMFTChipSegmentation* AliMFTLadderSegmentation::GetSensor(Int_t sensorID) {
   return chip;
   
 }
+
 
 //==================================================================================================================
 /// Print out Ladder information (position, orientation, # of sensors)

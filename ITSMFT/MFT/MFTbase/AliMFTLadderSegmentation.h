@@ -32,7 +32,7 @@ public:
   virtual void Print(Option_t* opt="");
   virtual void Clear(const Option_t* /*opt*/) { if(fChips){fChips->Clear();} }
   
-  AliMFTChipSegmentation* GetSensor(Int_t sensor);
+  AliMFTChipSegmentation* GetSensor(Int_t sensor) const ;
 
 
   void CreateSensors();
@@ -42,7 +42,7 @@ public:
   /// \brief Set number of Sensor on the ladder
   void SetNSensors(Int_t val) {fNSensors = val;};
   
-  AliMFTChipSegmentation* GetChip(Int_t chipNumber);
+  AliMFTChipSegmentation* GetChip(Int_t chipNumber) const {return GetSensor(chipNumber);};
 
 private:
   

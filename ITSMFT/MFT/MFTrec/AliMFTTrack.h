@@ -35,17 +35,17 @@ class AliMFTTrack : public TObject {
 
   /// return pointer to track parameters at vertex (can be 0x0)
   AliMFTTrackParam* GetTrackParamAtVertex() const {return fTrackParamAtVertex;}
-  void SetTrackParamAtVertex(  AliMFTTrackParam* trackParam);
+  void SetTrackParamAtVertex(  AliMFTTrackParam* trackParam){};
  
   /// return pointer to track found by Track Finder (includes clusters)
   AliMFTCATrack* GetCATrack() const {return fCATrack;}
-  void SetCATrack(  AliMFTCATrack* track);
+  void SetCATrack(  AliMFTCATrack* track) {};
 
   protected:
   
-  Double_t fChi2; ///<  chi2 of the track
-  AliMFTTrackParam* fTrackParamAtVertex; //!<! Track parameters at vertex
-  AliMFTCATrack* fCATrack; //!<! Track found by Track Finder (includes clusters)
+  Double_t fChi2;                         ///<  Chi2 of the track
+  AliMFTTrackParam* fTrackParamAtVertex;  ///<  Track parameters at vertex
+  AliMFTCATrack* fCATrack;                ///<  Track found by Track Finder (includes clusters)
   
   /// \cond CLASSIMP
   ClassDef(AliMFTTrack,1);
