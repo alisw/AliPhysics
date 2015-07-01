@@ -27,6 +27,7 @@
 
 // --- ROOT system ---
 
+#include <RVersion.h>
 #include <TProfile2D.h>
 #include <TH2F.h>
 #include <TH1F.h>
@@ -531,8 +532,10 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
     fSDDhRawsTask++;
 
     //Event Size 
-    TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5); 
+    TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
     hsize->SetBit(TH1::kCanRebin);
+#endif
     hsize->GetXaxis()->SetTitle("Event Size [kB]");
     hsize->GetYaxis()->SetTitle("Entries");
     rv = fAliITSQADataMakerRec->Add2RawsList(hsize,kSDDDataSize+offsRW, expert, !image, !saveCorr); 
@@ -881,7 +884,9 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   TH1F *h13 = new TH1F("SDDrdistrib_Layer3" ,"SDD r distribution Layer3" ,100,14.,16.5);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   h13->SetBit(TH1::kCanRebin);
+#endif
   h13->GetXaxis()->SetTitle("r (cm)");
   h13->GetXaxis()->CenterTitle();
   h13->GetYaxis()->SetTitle("Entries");
@@ -889,7 +894,9 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   TH1F *h14 = new TH1F("SDDrdistrib_Layer4" ,"SDD r distribution Layer4" ,100,23.,25.);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   h14->SetBit(TH1::kCanRebin);
+#endif
   h14->GetXaxis()->SetTitle("r (cm)");
   h14->GetXaxis()->CenterTitle();
   h14->GetYaxis()->SetTitle("Entries");
@@ -912,7 +919,9 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 
   
   TH1F *h17 = new TH1F("SDDdrifttime_Layer3","SDDdrifttime_Layer3",45,-0.5,4499.5);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   h17->SetBit(TH1::kCanRebin);
+#endif
   h17->GetXaxis()->SetTitle("Drift time (ns)");
   h17->GetXaxis()->CenterTitle();
   h17->GetYaxis()->SetTitle("Entries");
@@ -920,7 +929,9 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   TH1F *h18 = new TH1F("SDDdrifttime_Layer4","SDDdrifttime_Layer4",45,-0.5,4499.5);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   h18->SetBit(TH1::kCanRebin);
+#endif
   h18->GetXaxis()->SetTitle("Drift time (ns)");
   h18->GetXaxis()->CenterTitle();
   h18->GetYaxis()->SetTitle("Entries");
