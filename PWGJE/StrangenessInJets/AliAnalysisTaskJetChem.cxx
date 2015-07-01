@@ -3395,6 +3395,18 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
      
       if(!(fUseExtraTracks == 0)){//only for Embedding study used
       
+	if(fUseExtraTracks == -1){//only for extraonly particles used
+	  TClonesArray *st = 0x0;//access MC stack to get MC truth information for V0 pT
+	  TList* listmc = fAOD->GetList();
+	  if (!listmc)continue;
+	  st = (TClonesArray*)listmc->FindObject(AliAODMCParticle::StdBranchName()); //get MCAOD branch in data
+	  if (!st)continue;
+    
+
+	  AliAODMCHeader *header=(AliAODMCHeader*)listmc->FindObject(AliAODMCHeader::StdBranchName());
+	  if(!header)continue;
+	}
+	
       	//std::cout<<"fCutFractionPtEmbedded: "<<fCutFractionPtEmbedded<<" fCutDeltaREmbedded: "<<fCutDeltaREmbedded<<std::endl;	
 
 	Double_t ptFractionEmbedded = 0; 
@@ -3521,13 +3533,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	//Int_t nChargedTracks = fTracksRecCuts->GetEntries(); //number of all charged tracks in event
 
-               
-
-
-
-
-
-
 	//###############################
 	jettracklist->Clear();
 
@@ -3558,20 +3563,69 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(it));
 	  if(!v0) continue;
 	
+	  TString generatorName;
+	  Bool_t isinjected = kFALSE;
 	  Bool_t   incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	  Double_t invMK0s =0;
 	  Double_t trackPt=0;
 	  Double_t fEta=0;
+	  Int_t negDaughterpdg = 0;
+	  Int_t posDaughterpdg = 0;
+	  Int_t v0Label = -1;
+	  Bool_t fPhysicalPrimary = -1;   //v0 physical primary check
+	  Int_t MCv0PdgCode = 0;
+	  Bool_t mclabelcheck = kFALSE;
+	  Int_t motherType = -1;
+	  Double_t MCPt = 0;
+
+
 	  fEta = v0->Eta();
 	  
 	  CalculateInvMass(v0, kK0, invMK0s, trackPt);  //function to calculate invMass with TLorentzVector class
 	  
+	  if(fUseExtraTracks == -1){//only for extraonly particles used
+
+	    Int_t nnum;
+	    Int_t pnum;
+	    TList *listmc = fAOD->GetList();
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue; 
+
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    mclabelcheck = MCLabelCheck(v0, kK0, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
+	    if(mclabelcheck == kFALSE)continue;
+	  }
+	  
 	  
 	  if(incrementJetPt==kTRUE){
-	    fh1IMK0EmbCone->Fill(jetPt);}//normalisation by number of selected jets
+	    fh1IMK0EmbCone->Fill(jetPt);
+	  }//normalisation by number of selected jets
 	  
-	  Double_t vK0sEmbCone[4] = {jetPt, invMK0s,trackPt,fEta};
-	  fhnK0sEmbCone->Fill(vK0sEmbCone);
+
+	  if(fUseExtraTracks == 1){//only for extra particles used
+	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s,trackPt,fEta};
+	    
+	    
+	    fhnK0sEmbCone->Fill(vK0sEmbCone);
+	  }
+	  
+	  if(fUseExtraTracks == -1){//only for extraonly particles used
+	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s,MCPt,fEta};
+	    
+	    
+	    fhnK0sEmbCone->Fill(vK0sEmbCone);
+	  }
+	  
+	  
+	  
 	}
 	
 	
@@ -3651,20 +3705,67 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetConeLaEmblist->At(it));
 	  if(!v0) continue;
 	
+	  TString generatorName;
+	  Bool_t isinjected = kFALSE;
 	  Bool_t   incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	  Double_t invMLa =0;
 	  Double_t trackPt=0;
 	  Double_t fEta=0;
+	  Int_t negDaughterpdg = 0;
+	  Int_t posDaughterpdg = 0;
+	  Int_t v0Label = -1;
+	  Bool_t fPhysicalPrimary = -1;   //v0 physical primary check
+	  Int_t MCv0PdgCode = 0;
+	  Bool_t mclabelcheck = kFALSE;
+	  Int_t motherType = -1;
+	  Double_t MCPt = 0;
+
+
 	  fEta = v0->Eta();
 	  
 	  CalculateInvMass(v0, kLambda, invMLa, trackPt);  //function to calculate invMass with TLorentzVector class
 	  
+	  if(fUseExtraTracks == -1){//only for extraonly particles used
+	    
+	    Int_t nnum;
+	    Int_t pnum;
+	    TList *listmc = fAOD->GetList();
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue; 
+
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+	    
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+	    
+	    mclabelcheck = MCLabelCheck(v0, kLambda, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
+	    if(mclabelcheck == kFALSE)continue;
+	  }
 	  
+	  
+
 	  if(incrementJetPt==kTRUE){
 	    fh1IMLaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
 	  
-	  Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
-	  fhnLaEmbCone->Fill(vLaEmbCone);
+	  if(fUseExtraTracks == 1){//only for extra particles used
+	    
+	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
+	    fhnLaEmbCone->Fill(vLaEmbCone);
+	    
+	  }
+	  
+	  if(fUseExtraTracks == -1){//only for extraonly particles used
+	   
+    	    Double_t vLaEmbCone[4] = {jetPt, invMLa,MCPt,fEta};
+	    fhnLaEmbCone->Fill(vLaEmbCone);
+	    
+	  }
+	  
+	  
 	}
 	
 	
@@ -3741,20 +3842,67 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetConeALaEmblist->At(it));
 	  if(!v0) continue;
 	
+	  TString generatorName;
+	  Bool_t isinjected = kFALSE;
 	  Bool_t   incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	  Double_t invMALa =0;
 	  Double_t trackPt=0;
 	  Double_t fEta=0;
+	  Int_t negDaughterpdg = 0;
+	  Int_t posDaughterpdg = 0;
+	  Int_t v0Label = -1;
+	  Bool_t fPhysicalPrimary = -1;   //v0 physical primary check
+	  Int_t MCv0PdgCode = 0;
+	  Bool_t mclabelcheck = kFALSE;
+	  Int_t motherType = -1;
+	  Double_t MCPt = 0;
+
+
 	  fEta = v0->Eta();
 	  
 	  CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);  //function to calculate invMass with TLorentzVector class
+	  
+	  if(fUseExtraTracks == -1){//only for extraonly particles used
+	    
+	    Int_t nnum;
+	    Int_t pnum;
+	    TList *listmc = fAOD->GetList();
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue; 
+
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+	    
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+	    
+	    mclabelcheck = MCLabelCheck(v0, kAntiLambda, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
+	    if(mclabelcheck == kFALSE)continue;
+	  }
 	  
 	  
 	  if(incrementJetPt==kTRUE){
 	    fh1IMALaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
 	  
-	  Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
-	  fhnALaEmbCone->Fill(vALaEmbCone);
+
+	  if(fUseExtraTracks == 1){//only for extra particles used
+	    
+	    Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
+	    fhnALaEmbCone->Fill(vALaEmbCone);
+	    
+	  }
+	  
+	  if(fUseExtraTracks == -1){//only for extraonly particles used
+	    	    
+	    Double_t vALaEmbCone[4] = {jetPt, invMALa,MCPt,fEta};
+	    fhnALaEmbCone->Fill(vALaEmbCone);
+	    	    
+	  }
+
+	 
 	}
 	
 	
