@@ -102,12 +102,12 @@ private:
   AliAnalysisFilter  *fTrackFilter;  // working track filter
   AliPIDCombined     *fPIDcomb;      // working PID combined service
 
-  TObjArray *fTracks;
-  AliMESeventInfo *fEvInfo;
-  TObjArray *fMCtracks;
-  AliMESeventInfo *fMCevInfo;
+  TObjArray *fTracks;  //!
+  AliMESeventInfo *fEvInfo;  //!
+  TObjArray *fMCtracks;  //!
+  AliMESeventInfo *fMCevInfo;  //!
 
-  AliPPVsMultUtils *fUtils;
+  AliPPVsMultUtils *fUtils;  //!
 
   ClassDef(AliMEStender, 5)          // Tender task for the Multi Event Shape
 };

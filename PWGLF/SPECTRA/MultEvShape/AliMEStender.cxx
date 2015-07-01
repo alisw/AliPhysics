@@ -336,6 +336,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     }
     if(!(fTrackFilter->IsSelected(track)) && !DebugLevel() ) continue;
     tmes = new AliMEStrackInfo(track, pidResponse, fPIDcomb);
+
     // TOF matching (old version - Alex)
 // 	if(pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) tmes->SetTOFmisProb(fPIDcomb->GetTOFmismatchProb());
 // 	printf("mismatch prob from AliMEStender = %g\n", fPIDcomb->GetTOFmismatchProb());
@@ -343,9 +344,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 
     // TOF matching (Cristi)
 	Int_t fTOFout;
-	if (!(track->GetStatus()&AliESDtrack::kTOFout)==0) {fTOFout=1;}else {fTOFout=0;}
+	if ((!(track->GetStatus()&AliESDtrack::kTOFout))==0) {fTOFout=1;}else {fTOFout=0;}
 	Int_t ftime;
-	if (!(track->GetStatus()&AliESDtrack::kTIME)==0) {ftime=1;}else {ftime=0;}
+	if ((!(track->GetStatus()&AliESDtrack::kTIME))==0) {ftime=1;}else {ftime=0;}
 	Double_t flength;
 	flength=track->GetIntegratedLength();
 	Double_t ftimetof;
@@ -546,11 +547,11 @@ void AliMEStender::SetPriors(){
 				fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i))->SetDirectory(cwd);
 			}
 			lPriors->Close(); delete lPriors;
-
 			for(Int_t i=0; i<5; i++){
 				TH1 *h(fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i)));
 				printf("%s -> %s\n", h->GetName(), h->GetDirectory()->GetName());
 			}
+			fPIDcomb->SetEnablePriors(kTRUE);
 			AliInfo("Done setting iterative data priors.");
 			break;
 		}
