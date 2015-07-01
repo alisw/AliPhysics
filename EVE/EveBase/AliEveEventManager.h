@@ -97,6 +97,7 @@ public:
     
     // data sources:
     void ChangeDataSource(EDataSource newSource);
+    AliEveDataSource* GetCurrentDataSource(){return fCurrentDataSource;}
     AliEveDataSource* GetDataSourceOnline(){return fDataSourceOnline;}
     AliEveDataSource* GetDataSourceOffline(){return fDataSourceOffline;}
     AliEveDataSource* GetDataSourceHLTZMQ(){return fDataSourceHLTZMQ;}
