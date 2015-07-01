@@ -167,7 +167,7 @@ void AliEveEventManager::ChangeDataSource(EDataSource newSource)
     //restore timer
     if (fAutoLoad)
     {
-      StartAutoLoadTimer();
+        StartAutoLoadTimer();
     }
 }
 
@@ -337,8 +337,18 @@ AliMagF* AliEveEventManager::AssertMagField()
     //if no field from ESD, try to init from GRP
     if (!fgMaster->fgGRPLoaded)
     {
-        fgMaster->InitGRP();
-        fgMaster->fgGRPLoaded = kTRUE;
+        if (fgMaster->InitGRP()){
+            fgMaster->fgGRPLoaded = kTRUE;
+        }
+    }
+    
+    //one last check
+    if (!TGeoGlobalMagField::Instance()->GetField())
+    {
+        fgMaster->ReceivePromptRecoParameters(AliCDBManager::Instance()->GetRun());
+        if (fgMaster->InitGRP()){
+            fgMaster->fgGRPLoaded = kTRUE;
+        }
     }
     
     //check if now we have some field from the GRP:
@@ -545,7 +555,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         }
         if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
         {
-            fViewsSaver->SaveForAmore();
+            fViewsSaver->Save();
             fViewsSaver->SendToAmore();
         }
     }

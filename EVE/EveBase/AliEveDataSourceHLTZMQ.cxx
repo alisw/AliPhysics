@@ -8,6 +8,7 @@
 #include "AliEveDataSourceHLTZMQ.h"
 
 #include "AliEveConfigManager.h"
+#include "AliEveInit.h"
 #include "AliGRPPreprocessor.h"
 #include <TEnv.h>
 #include <TInterpreter.h>
@@ -30,7 +31,9 @@ AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     fZMQeventQueue(NULL)
 {
   //ctor
-  fSourceURL="tcp://localhost:60201";
+  TEnv settings;
+  AliEveInit::GetConfig(&settings);
+  fSourceURL=settings.GetValue("HLT.ZMQ.proxy","tcp://localhost:60201");
   Init();
 }
 
@@ -38,7 +41,7 @@ void AliEveDataSourceHLTZMQ::Init()
 {
 #ifdef ZMQ
   //get the address of the HLT proxy from the environment if not set
-  if (gSystem->Getenv("HLT_ZMQ_proxy") && fSourceURL.IsNull()) 
+  if (gSystem->Getenv("HLT_ZMQ_proxy"))
     fSourceURL=gSystem->Getenv("HLT_ZMQ_proxy");
   //single ZMQ context for inter thread comm. etc.
   if (!fZMQContext) fZMQContext = zmq_ctx_new();
@@ -269,6 +272,13 @@ void AliEveDataSourceHLTZMQ::NextEvent()
     fCurrentData.Clear();
     fCurrentData.fESD = esdObject;
     
+      AliEveEventManager::GetMaster()->DestroyElements();
+      
+      if(esdObject->GetRunNumber() != AliEveEventManager::GetMaster()->GetCurrentRun()){
+          AliEveEventManager::GetMaster()->ResetMagneticField();
+              AliEveEventManager::GetMaster()->SetCurrentRun(esdObject->GetRunNumber());
+      }
+      
     AliEveEventManager::GetMaster()->SetHasEvent(true);
     AliEveEventManager::GetMaster()->AfterNewEventLoaded();
     //if (AliEveEventManager::GetMaster()->GetAutoLoad()) {

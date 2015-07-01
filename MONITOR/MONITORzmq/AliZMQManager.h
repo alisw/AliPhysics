@@ -1,19 +1,3 @@
-#ifndef AliZMQManager_H
-#define AliZMQManager_H
-
-#include "AliESDEvent.h"
-#include "AliStorageTypes.h"
-
-#include <vector>
-#include <string>
-#include <sstream>
-#include <set>
-
-#include <TMessage.h>
-#include <TFile.h>
-
-struct zmq_msg_t;
-
 /// \class AliZMQManager
 /// \brief ZMQ communication manager
 ///
@@ -53,6 +37,22 @@ struct zmq_msg_t;
 ///         one of existing cases and modify it).
 ///
 /// \author Jeremi Niedziela <jeremi.niedziela@cern.ch>, Warsaw University of Technology, CERN
+
+#ifndef AliZMQManager_H
+#define AliZMQManager_H
+
+#include "AliESDEvent.h"
+#include "AliStorageTypes.h"
+
+#include <vector>
+#include <string>
+#include <sstream>
+#include <set>
+
+#include <TMessage.h>
+#include <TFile.h>
+
+struct zmq_msg_t;
 
 class AliZMQManager
 {

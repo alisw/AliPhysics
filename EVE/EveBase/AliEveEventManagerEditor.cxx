@@ -8,7 +8,6 @@
  **************************************************************************/
 
 #include "AliEveEventManagerEditor.h"
-#include "AliEveDataSource.h"
 #include "AliEveDataSourceOffline.h"
 #ifdef ZMQ
 #include "AliStorageAdministratorPanelListEvents.h"
@@ -323,10 +322,9 @@ void AliEveEventManagerWindow::DoRefresh()
     // Refresh event status.
     
     Int_t ev = fM->GetEventId();
-//    fM->Close();
-//    fM->Open();
-    AliEveDataSource *currentDataSource = fM->GetCurrentDataSource();
-    currentDataSource->GotoEvent(ev);
+    fM->Close();
+    fM->Open();
+    fM->GotoEvent(ev);
 }
 
 //______________________________________________________________________________
@@ -366,7 +364,7 @@ void AliEveEventManagerWindow::Update(int state)
     
     if (state==1)
     {
-//        fRefresh->SetEnabled(!autoLoad);
+        fRefresh->SetEnabled(!autoLoad);
         
         fEventId->SetNumber(fM->GetEventId());
         fEventId->SetState(kTRUE);
