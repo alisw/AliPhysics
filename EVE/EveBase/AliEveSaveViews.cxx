@@ -20,6 +20,7 @@
 #include <TSQLServer.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
+#include <TSystem.h>
 
 #include <AliRawReader.h>
 #include <AliRawEventHeaderBase.h>
