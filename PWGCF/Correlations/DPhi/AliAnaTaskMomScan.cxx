@@ -692,10 +692,6 @@ void AliAnaTaskMomScan::UserCreateOutputObjects()
   __s1pt_1_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_1,    0.);
   __n1_1_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_1,  0.);
   
-    
-  //if (_requestedCharge_2!=_requestedCharge_1)
-  //{
-  //_sameFilter = 0;
     //particle 2
     _id_2       = new int[arraySize];   
     _charge_2   = new int[arraySize]; 
@@ -711,166 +707,156 @@ void AliAnaTaskMomScan::UserCreateOutputObjects()
     __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
     __s1pt_2_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_2,    0.);
     __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);
+    __n2_12_vsPtPt           = getDoubleArray(_nBins_pt_1*_nBins_pt_2,0.);
+    __n2_12_vsEtaPhi         = getFloatArray(_nBins_etaPhi_12,       0.);
+    __s2ptpt_12_vsEtaPhi     = getFloatArray(_nBins_etaPhi_12,       0.);
+    __s2PtN_12_vsEtaPhi      = getFloatArray(_nBins_etaPhi_12,       0.);
+    __s2NPt_12_vsEtaPhi      = getFloatArray(_nBins_etaPhi_12,       0.);
     
-    //}
-  
-  __n2_12_vsPtPt           = getDoubleArray(_nBins_pt_1*_nBins_pt_2,0.);
-  __n2_12_vsEtaPhi         = getFloatArray(_nBins_etaPhi_12,       0.);
-  __s2ptpt_12_vsEtaPhi     = getFloatArray(_nBins_etaPhi_12,       0.);
-  __s2PtN_12_vsEtaPhi      = getFloatArray(_nBins_etaPhi_12,       0.);
-  __s2NPt_12_vsEtaPhi      = getFloatArray(_nBins_etaPhi_12,       0.);
-  
-  // Setup all the labels needed.
-  
-  part_1_Name   = "_1";
-  part_2_Name   = "_2";
-  pair_12_Name  = "_12";
-  
-  n1Name     = "n1";
-  n2Name     = "n2";
-  n1NwName   = "n1Nw";
-  n2NwName   = "n2Nw";
-  r1Name     = "r1";
-  r2Name     = "r2";
-  r3Name     = "r3";
-  r2r1Name   = "r2r1";
-  c2Name     = "c2";
-  c3Name     = "c3";
-  d3Name     = "d3";
-  p3Name     = "p3";
-  cName      = "sean";
-  
-  intR2Name       = "intR2";
-  binCorrName     = "binCorr";
-  intBinCorrName  = "intBinCorr";
-  
-  avgName      = "avg";
-  sumName      = "sum";
-  s1ptName     = "sumPt";
-  s1ptNwName   = "sumPtNw";
-  s1DptName    = "sumDpt";
-  s2PtPtName   = "sumPtPt";
-  s2PtPtNwName = "sumPtPtNw";
-  s2DptDptName = "sumDptDpt";
-  s2NPtName    = "sumNPt";
-  s2NPtNwName  = "sumNPtNw";
-  s2PtNName    = "sumPtN";
-  s2NPtNwName  = "sumNPtNw";
-  s2PtNNwName  = "sumPtNNw";
-  ptName       = "avgPt";
-  ptptName     = "avgPtPt";
-  pt1pt1Name   = "avgPtavgPt";
-  DptName      = "avgDpt";
-  DptDptName   = "avgDptDpt";
-  RDptDptName  = "relDptDpt"; // ratio of avgDptDpt by avgPt*avgPt
-  nPtName      = "avgNpt";
-  ptNName      = "avgPtN";
-  seanName     = "seanC";
-  
-  _title_counts = "yield";
-  
-  _title_m0     = "M_{0}";
-  _title_m1     = "M_{1}";
-  _title_m2     = "M_{2}";
-  _title_m3     = "M_{3}";
-  _title_m4     = "V0Centrality";
-  _title_m5     = "TrkCentrality";
-  _title_m6     = "SpdCentrality";
-  
-  _title_eta_1       = "#eta_{1}";
-  _title_phi_1       = "#varphi_{1} (radian)";
-  _title_etaPhi_1    = "#eta_{1}#times#varphi_{1}";
-  _title_pt_1        = "p_{t,1} (GeV/c)";
-  _title_n_1         = "n_{1}";
-  _title_SumPt_1     = "#Sigma p_{t,1} (GeV/c)";
-  _title_AvgPt_1     = "#LT p_{t,1} #GT (GeV/c)";
-  _title_AvgN_1      = "#LT n_{1} #GT";
-  _title_AvgSumPt_1  = "#LT #Sigma p_{t,1} #GT (GeV/c)";
-  
-  _title_eta_2       = "#eta_{2}";
-  _title_phi_2       = "#varphi_{2} (radian)";
-  _title_etaPhi_2    = "#eta_{2}#times#varphi_{2}";
-  _title_pt_2        = "p_{t,2} (GeV/c)";
-  _title_n_2         = "n_{2}";
-  _title_SumPt_2     = "#Sigma p_{t,1} (GeV/c)";
-  _title_AvgPt_2     = "#LT p_{t,2} #GT (GeV/c)";
-  _title_AvgN_2      = "#LT n_{2} #GT";
-  _title_AvgSumPt_2  = "#LT #Sigma p_{t,2} #GT (GeV/c)";
-  
-  _title_etaPhi_12   = "#eta_{1}#times#varphi_{1}#times#eta_{2}#times#varphi_{2}";
-  
-  _title_AvgN2_12       = "#LT n_{2} #GT";;
-  _title_AvgSumPtPt_12  = "#LT #Sigma p_{t,1}p_{t,2} #GT";;
-  _title_AvgSumPtN_12   = "#LT #Sigma p_{t,1}N #GT";;
-  _title_AvgNSumPt_12   = "#LT N#Sigma p_{t,2} #GT";;
-  
-  
-  vsZ         = "_vsZ";
-  vsM         = "_vsM";
-  vsPt         = "_vsPt";
-  vsPhi        = "_vsPhi"; 
-  vsEta        = "_vsEta"; 
-  vsEtaPhi     = "_vsEtaPhi"; 
-  vsPtVsPt     = "_vsPtVsPt";
-  
-  
-  if (_useWeights)
-    {
-    int iZ, iEtaPhi, iPt;
-    int iZ1,iEtaPhi1,iPt1;
-    int a, b;
-    if (_weight_1)
+    part_1_Name   = "_1";
+    part_2_Name   = "_2";
+    pair_12_Name  = "_12";
+    
+    n1Name     = "n1";
+    n2Name     = "n2";
+    n1NwName   = "n1Nw";
+    n2NwName   = "n2Nw";
+    r1Name     = "r1";
+    r2Name     = "r2";
+    r3Name     = "r3";
+    r2r1Name   = "r2r1";
+    c2Name     = "c2";
+    c3Name     = "c3";
+    d3Name     = "d3";
+    p3Name     = "p3";
+    cName      = "sean";
+    
+    intR2Name       = "intR2";
+    binCorrName     = "binCorr";
+    intBinCorrName  = "intBinCorr";
+    
+    avgName      = "avg";
+    sumName      = "sum";
+    s1ptName     = "sumPt";
+    s1ptNwName   = "sumPtNw";
+    s1DptName    = "sumDpt";
+    s2PtPtName   = "sumPtPt";
+    s2PtPtNwName = "sumPtPtNw";
+    s2DptDptName = "sumDptDpt";
+    s2NPtName    = "sumNPt";
+    s2NPtNwName  = "sumNPtNw";
+    s2PtNName    = "sumPtN";
+    s2NPtNwName  = "sumNPtNw";
+    s2PtNNwName  = "sumPtNNw";
+    ptName       = "avgPt";
+    ptptName     = "avgPtPt";
+    pt1pt1Name   = "avgPtavgPt";
+    DptName      = "avgDpt";
+    DptDptName   = "avgDptDpt";
+    RDptDptName  = "relDptDpt"; // ratio of avgDptDpt by avgPt*avgPt
+    nPtName      = "avgNpt";
+    ptNName      = "avgPtN";
+    seanName     = "seanC";
+    
+    _title_counts = "yield";
+    
+    _title_m0     = "M_{0}";
+    _title_m1     = "M_{1}";
+    _title_m2     = "M_{2}";
+    _title_m3     = "M_{3}";
+    _title_m4     = "V0Centrality";
+    _title_m5     = "TrkCentrality";
+    _title_m6     = "SpdCentrality";
+    
+    _title_eta_1       = "#eta_{1}";
+    _title_phi_1       = "#varphi_{1} (radian)";
+    _title_etaPhi_1    = "#eta_{1}#times#varphi_{1}";
+    _title_pt_1        = "p_{t,1} (GeV/c)";
+    _title_n_1         = "n_{1}";
+    _title_SumPt_1     = "#Sigma p_{t,1} (GeV/c)";
+    _title_AvgPt_1     = "#LT p_{t,1} #GT (GeV/c)";
+    _title_AvgN_1      = "#LT n_{1} #GT";
+    _title_AvgSumPt_1  = "#LT #Sigma p_{t,1} #GT (GeV/c)";
+    
+    _title_eta_2       = "#eta_{2}";
+    _title_phi_2       = "#varphi_{2} (radian)";
+    _title_etaPhi_2    = "#eta_{2}#times#varphi_{2}";
+    _title_pt_2        = "p_{t,2} (GeV/c)";
+    _title_n_2         = "n_{2}";
+    _title_SumPt_2     = "#Sigma p_{t,1} (GeV/c)";
+    _title_AvgPt_2     = "#LT p_{t,2} #GT (GeV/c)";
+    _title_AvgN_2      = "#LT n_{2} #GT";
+    _title_AvgSumPt_2  = "#LT #Sigma p_{t,2} #GT (GeV/c)";
+    
+    _title_etaPhi_12   = "#eta_{1}#times#varphi_{1}#times#eta_{2}#times#varphi_{2}";
+    
+    _title_AvgN2_12       = "#LT n_{2} #GT";;
+    _title_AvgSumPtPt_12  = "#LT #Sigma p_{t,1}p_{t,2} #GT";;
+    _title_AvgSumPtN_12   = "#LT #Sigma p_{t,1}N #GT";;
+    _title_AvgNSumPt_12   = "#LT N#Sigma p_{t,2} #GT";;
+    
+    
+    vsZ         = "_vsZ";
+    vsM         = "_vsM";
+    vsPt         = "_vsPt";
+    vsPhi        = "_vsPhi"; 
+    vsEta        = "_vsEta"; 
+    vsEtaPhi     = "_vsEtaPhi"; 
+    vsPtVsPt     = "_vsPtVsPt";
+    
+    
+    if (_useWeights)
       {
-      _correctionWeight_1 = new float[_nBins_vertexZ*_nBins_etaPhi_1*_nBins_pt_1];
-      a = _nBins_pt_1;
-      b = _nBins_etaPhi_1*_nBins_pt_1;
-      for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
-        {
-        for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_1; iEtaPhi++, iEtaPhi1++)
-          {
-          for (iPt=0,iPt1=1; iPt<_nBins_pt_1; iPt++, iPt1++)
-            {
-            _correctionWeight_1[iZ*b+iEtaPhi*a+iPt] = _weight_1->GetBinContent(iZ1,iEtaPhi1,iPt1);
-            }      
-          }
-        }
-      } // _weight_1
-    else
-      {
-      AliError("AliAnaTaskMomScan:: _weight_1 is a null pointer.");
-      return;
+	int iZ, iEtaPhi, iPt;
+	int iZ1,iEtaPhi1,iPt1;
+	int a, b;
+	if (_weight_1)
+	  {
+	    _correctionWeight_1 = new float[_nBins_vertexZ*_nBins_etaPhi_1*_nBins_pt_1];
+	    a = _nBins_pt_1;
+	    b = _nBins_etaPhi_1*_nBins_pt_1;
+	    for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
+	      {
+		for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_1; iEtaPhi++, iEtaPhi1++)
+		  {
+		    for (iPt=0,iPt1=1; iPt<_nBins_pt_1; iPt++, iPt1++)
+		      {
+			_correctionWeight_1[iZ*b+iEtaPhi*a+iPt] = _weight_1->GetBinContent(iZ1,iEtaPhi1,iPt1);
+		      }      
+		  }
+	      }
+	  } // _weight_1
+	else
+	  {
+	    AliError("AliAnaTaskMomScan:: _weight_1 is a null pointer.");
+	    return;
+	  }
+	
+	if (_weight_2)
+	  {
+	    _correctionWeight_2 = new float[_nBins_vertexZ*_nBins_etaPhi_2*_nBins_pt_2];
+	    a = _nBins_pt_2;
+	    b = _nBins_etaPhi_2*_nBins_pt_2;
+	    for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
+	      {
+		for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_2; iEtaPhi++, iEtaPhi1++)
+		  {
+		    for (iPt=0,iPt1=1; iPt<_nBins_pt_2; iPt++, iPt1++)
+		      {
+			_correctionWeight_2[iZ*b+iEtaPhi*a+iPt] = _weight_2->GetBinContent(iZ1,iEtaPhi1,iPt1);
+		      }      
+		  }
+	      }
+	  } // _weight_2
+	else
+	  {
+	    AliError("AliAnaTaskMomScan:: _weight_1 is a null pointer.");
+	    return;
+	  }
       }
-    //if (!_sameFilter) 
-    //{
-      if (_weight_2)
-        {
-        _correctionWeight_2 = new float[_nBins_vertexZ*_nBins_etaPhi_2*_nBins_pt_2];
-        a = _nBins_pt_2;
-        b = _nBins_etaPhi_2*_nBins_pt_2;
-        for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
-          {
-          for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_2; iEtaPhi++, iEtaPhi1++)
-            {
-            for (iPt=0,iPt1=1; iPt<_nBins_pt_2; iPt++, iPt1++)
-              {
-              _correctionWeight_2[iZ*b+iEtaPhi*a+iPt] = _weight_2->GetBinContent(iZ1,iEtaPhi1,iPt1);
-              }      
-            }
-          }
-        } // _weight_2
-      else
-        {
-        AliError("AliAnaTaskMomScan:: _weight_1 is a null pointer.");
-        return;
-        }
-      //}
-    }
-  
-  createHistograms();
-  PostData(0,_outputHistoList);
-  
-  //cout<< "AliAnaTaskMomScan::CreateOutputObjects() DONE " << endl;
-  
+    
+    createHistograms();
+    PostData(0,_outputHistoList);
 }
 
 void  AliAnaTaskMomScan::createHistograms()
@@ -1357,7 +1343,7 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 	      pt_1      = _pt_1[i1];         
 	      dedx_1    = _dedx_1[i1];       
 	      //1 and 2
-	      for (int i2=i1+1; i2<k2; i2++)
+	      for (int i2=0; i2<k2; i2++)
 		{        
 		  id_2      = _id_2[i2];            
 		  if (id_1!=id_2)
@@ -1404,7 +1390,7 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 	      pt_1      = _pt_1[i1];         
 	      dedx_1    = _dedx_1[i1];       
 	      //1 and 2
-	      for (int i2=i1+1; i2<k1; i2++)
+	      for (int i2=0; i2<k1; i2++)
 		{        
 		  id_2      = _id_2[i2];     
 		  if (id_1!=id_2)
@@ -1481,15 +1467,14 @@ void  AliAnaTaskMomScan::UserExec(Option_t */*option*/)
 		      py_2      = _py_2[i2];        
 		      pz_2      = _pz_2[i2];        
 		      dedx_2    = _dedx_2[i2];      
-		      
-		      
+		      		      
 		      if (_rejectPairConversion)
 			{
 			  float e1Sq = massElecSq + pt_1*pt_1 + pz_1*pz_1;
 			  float e2Sq = massElecSq + pt_2*pt_2 + pz_2*pz_2;
 			  float mInvSq = 2*(massElecSq + sqrt(e1Sq*e2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
 			  float mInv = sqrt(mInvSq);
-			  _invMass->Fill(mInv);
+			  //_invMass->Fill(mInv);
 			  if (mInv<0.51)
 			    {
 			      if (dedx_1>75. && dedx_2>75.)
