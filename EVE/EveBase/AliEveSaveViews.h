@@ -12,7 +12,7 @@
 #include <AliESDEvent.h>
 
 #include <TString.h>
-#include "TASImage.h"
+#include <TASImage.h>
 
 #include <vector>
 
@@ -23,7 +23,7 @@ public:
     AliEveSaveViews(int width=1440,int height=900,int heightInfoBar=65,bool showLiveBar=true);
     ~AliEveSaveViews();
     
-    void Save();
+    void SaveForAmore();
     void SaveWithDialog();
     int SendToAmore();
 private:

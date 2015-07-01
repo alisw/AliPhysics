@@ -5,33 +5,37 @@
 #                                                               #
 #===============================================================#
 
-HLTESDtree.show:        false
-MUON.show:              true
-TRD.geom.color:         kGray
-MUON.geom.color:        kGray
+HLTESDtree.show:        	0
+MUON.show:              	1
+TRD.geom.color:         	kGray
+MUON.geom.color:        	kGray
 
-tracks.width:           2
-tracks.noRefit.dash:	true
-tracks.noRefit.show:	true
-tracks.byType.show:     true
-tracks.byCategory.show:	false
+tracks.width:           	2
+tracks.noRefit.dash:		1
+tracks.noRefit.show:		1
+tracks.byType.show:     	1
+tracks.byCategory.show:		0
 
-clusters.show:          false
-kinks.show:             false
-V0s.show:               false
-cascades.show:          false
-rawData.show:           false
-primary.vertex.show:	false
-hits.show:              false
-digits.show:            false
+clusters.show:          	0
+kinks.show:             	0
+V0s.show:               	0
+cascades.show:          	0
+rawData.show:           	0
+primary.vertex.show:		0
+hits.show:              	0
+digits.show:            	0
 
-events.autoload.set:	false
-ALICE_LIVE.send:        false
+events.autoload.set:		0
+ALICE_LIVE.send:        	0
 
-OCDB.default.path:      local://$(ALICE_ROOT)/../src/OCDB/
+OCDB.default.path:      	local://$(ALICE_ROOT)/../src/OCDB/
 
-logbook.host:           logbook_host
-logbook.port:           0000
-logbook.db:             logbook_db
-logbook.user:           logbook_user
-logbook.pass:           logbook_pass
+logbook.host:           	logbook_host
+logbook.port:           	0000
+logbook.db:             	logbook_db
+logbook.user:           	logbook_user
+logbook.pass:           	logbook_pass
+
+screenshot.logo.draw		1
+screenshot.info.draw		1
+screenshot.projections.draw	1

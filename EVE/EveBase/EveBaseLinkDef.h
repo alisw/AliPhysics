@@ -36,6 +36,9 @@
 #pragma link C++ class AliEveDataSourceOnline+;
 #endif
 
+// AliEveSaveViews
+#pragma link C++ class AliEveSaveViews+;
+
 // AliEveEventSelector
 #pragma link C++ class AliEveEventSelector+;
 #pragma link C++ class AliEveEventSelectorWindow+;
