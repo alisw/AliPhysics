@@ -58,7 +58,7 @@ TNamed(), fMFTFlex(NULL){
 AliMFTLadder::AliMFTLadder(AliMFTLadderSegmentation *segmentation):TNamed(segmentation->GetName(),segmentation->GetName()),
 fSegmentation(segmentation), fMFTFlex(NULL)
 {
-  AliInfo(Form("Creating : %s", GetName()));
+  AliDebug(1, Form("Creating : %s", GetName()));
   Int_t nChips = fSegmentation->GetNSensors();
   TGeoMedium *medVac  = gGeoManager->GetMedium("MFT_Air$");
   Double_t ladderDeltaX = AliMFTConstants::kLadderOffsetToEnd + AliMFTConstants::kSensorSideOffset + nChips * (AliMFTConstants::kSensorLength + AliMFTConstants::kSensorInterspace) ;
@@ -113,13 +113,6 @@ void AliMFTLadder::CreateSensors() {
   
   AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
   
-  AliInfo(Form("Object Type = %d",mftGeom->GetObjectType(fSegmentation->GetUniqueID())));
-  AliInfo(Form("Half-MFT    = %d",mftGeom->GetHalfMFTID(fSegmentation->GetUniqueID())));
-  AliInfo(Form("Half-Disk   = %d",mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID())));
-  AliInfo(Form("Ladder      = %d",mftGeom->GetLadderID(fSegmentation->GetUniqueID())));
-  
-  
-  
   TString namePrefix = Form("MFT_S_%d_%d_%d",
                                     mftGeom->GetHalfMFTID(fSegmentation->GetUniqueID()),
                                     mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID()),
@@ -168,7 +161,7 @@ void AliMFTLadder::CreateSensors() {
     master[0] -= shape->GetDX();
     master[1] -= shape->GetDY();
     master[2] -= shape->GetDZ();
-    AliInfo(Form("Adding Chip %s_%d ",namePrefix.Data(),ichip));
+    AliDebug(1,Form("Adding Chip %s_%d ",namePrefix.Data(),ichip));
     fLadderVolume->AddNode(chipVol, ichip, new TGeoTranslation(master[0],master[1],master[2]));
 
   }
