@@ -25,6 +25,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                    )
 
 add_definitions(-DZMQ)
+include_directories(${ZEROMQ_INCLUDE_DIR})
 
 # alistorage executable
 add_executable(alistorage alistorage.cxx)
