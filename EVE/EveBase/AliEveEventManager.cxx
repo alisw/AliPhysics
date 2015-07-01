@@ -555,7 +555,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         }
         if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
         {
-            fViewsSaver->Save();
+            fViewsSaver->SaveForAmore();
             fViewsSaver->SendToAmore();
         }
     }

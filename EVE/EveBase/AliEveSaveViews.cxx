@@ -7,6 +7,7 @@
 //
 
 #include "AliEveSaveViews.h"
+#include "AliEveInit.h"
 
 #include <TGFileDialog.h>
 #include <TGLViewer.h>
@@ -19,12 +20,12 @@
 #include <TSQLServer.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
+#include <TSystem.h>
 
 #include <AliRawReader.h>
 #include <AliRawEventHeaderBase.h>
 #include <AliEveEventManager.h>
 #include <AliDAQ.h>
-#include <AliOnlineReconstructionUtil.h>
 
 #include <iostream>
 using namespace std;
@@ -58,7 +59,7 @@ void AliEveSaveViews::ChangeRun()
 {
     // read crededentials to logbook from config file:
     TEnv settings;
-    settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+    AliEveInit::GetConfig(&settings);
     const char *dbHost = settings.GetValue("logbook.host", "");
     Int_t   dbPort =  settings.GetValue("logbook.port", 0);
     const char *dbName =  settings.GetValue("logbook.db", "");
@@ -99,7 +100,7 @@ void AliEveSaveViews::ChangeRun()
     fNumberOfClusters=i;
 }
 
-void AliEveSaveViews::Save()
+void AliEveSaveViews::SaveForAmore()
 {
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
@@ -267,6 +268,13 @@ void AliEveSaveViews::Save()
 
 void AliEveSaveViews::SaveWithDialog()
 {
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    bool logo        = settings.GetValue("screenshot.logo.draw",true);
+    bool info        = settings.GetValue("screenshot.info.draw",true);
+    bool projections = settings.GetValue("screenshot.projections.draw",true);
+    
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
@@ -290,7 +298,7 @@ void AliEveSaveViews::SaveWithDialog()
     TASImage *compositeImg = new TASImage(width, height);
     
     // 3D View size
-    int width3DView = TMath::FloorNint(2.*width/3.);            // the width of the 3D view
+    int width3DView = projections ? TMath::FloorNint(2.*width/3.) : 3556;            // the width of the 3D view
     int height3DView= height;                                   // the height of the 3D view
     float aspectRatio = (float)width3DView/(float)height3DView; // 3D View aspect ratio
     
@@ -368,50 +376,58 @@ void AliEveSaveViews::SaveWithDialog()
             y+=heightChildView;
         }
         index++;
+        if(!projections){
+            break;
+        }
     }
     
     //draw ALICE Logo
-    TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
-    if(aliceLogo)
+    if(logo)
     {
-        double ratio = 1434./1939.;
-        aliceLogo->Scale(0.08*width,0.08*width/ratio);
-        compositeImg->Merge(aliceLogo, "alphablend", 20, 20);
-        delete aliceLogo;aliceLogo=0;
+        TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
+        if(aliceLogo)
+        {
+            double ratio = 1434./1939.;
+            aliceLogo->Scale(0.08*width,0.08*width/ratio);
+            compositeImg->Merge(aliceLogo, "alphablend", 20, 20);
+            delete aliceLogo;aliceLogo=0;
+        }
     }
     
-    // draw info
-    TTimeStamp ts(fESDEvent->GetTimeStamp());
-    //    TTimeStamp offset(0,0,0,0,0,0,0,true,-2*3600);
-    //    ts.Add(offset);
-    const char *runNumber = Form("Run:%d",fESDEvent->GetRunNumber());
-    const char *timeStamp = Form("Timestamp:%s(UTC)",ts.AsString("s"));
-    const char *system;
-    if(strcmp(fESDEvent->GetBeamType(),"")!=0)
+    //draw info
+    if(info)
     {
-        system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+        TTimeStamp ts(fESDEvent->GetTimeStamp());
+        //    TTimeStamp offset(0,0,0,0,0,0,0,true,-2*3600);
+        //    ts.Add(offset);
+        const char *runNumber = Form("Run:%d",fESDEvent->GetRunNumber());
+        const char *timeStamp = Form("Timestamp:%s(UTC)",ts.AsString("s"));
+        const char *system;
+        if(strcmp(fESDEvent->GetBeamType(),"")!=0)
+        {
+            system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+        }
+        else
+        {
+            system = "Colliding system: unknown";
+        }
+        const char *energy;
+        if(fESDEvent->GetBeamEnergy()>=0.0000001)
+        {
+            energy = Form("Energy:%.0f TeV",2*fESDEvent->GetBeamEnergy()/1000);
+        }
+        else
+        {
+            energy = "Energy: unknown";
+        }
+        int fontSize = 0.015*height;
+        compositeImg->BeginPaint();
+        compositeImg->DrawText(10, height-25-4*fontSize, runNumber, fontSize, "#BBBBBB", "FreeSansBold.otf");
+        compositeImg->DrawText(10, height-20-3*fontSize, timeStamp, fontSize, "#BBBBBB", "FreeSansBold.otf");
+        compositeImg->DrawText(10, height-15-2*fontSize, system,    fontSize, "#BBBBBB", "FreeSansBold.otf");
+        compositeImg->DrawText(10, height-10-1*fontSize, energy,    fontSize, "#BBBBBB", "FreeSansBold.otf");
+        compositeImg->EndPaint();
     }
-    else
-    {
-        system = "Colliding system: unknown";
-    }
-    const char *energy;
-    if(fESDEvent->GetBeamEnergy()>=0.0000001)
-    {
-        energy = Form("Energy:%.0f TeV",2*fESDEvent->GetBeamEnergy()/1000);
-    }
-    else
-    {
-        energy = "Energy: unknown";
-    }
-    int fontSize = 0.015*height;
-    compositeImg->BeginPaint();
-    compositeImg->DrawText(10, height-25-4*fontSize, runNumber, fontSize, "#BBBBBB", "FreeSansBold.otf");
-    compositeImg->DrawText(10, height-20-3*fontSize, timeStamp, fontSize, "#BBBBBB", "FreeSansBold.otf");
-    compositeImg->DrawText(10, height-15-2*fontSize, system,    fontSize, "#BBBBBB", "FreeSansBold.otf");
-    compositeImg->DrawText(10, height-10-1*fontSize, energy,    fontSize, "#BBBBBB", "FreeSansBold.otf");
-    compositeImg->EndPaint();
-    
     // write composite image to disk
     TASImage *imgToSave = new TASImage(width,height);
     compositeImg->CopyArea(imgToSave, 0,0, width, height);
