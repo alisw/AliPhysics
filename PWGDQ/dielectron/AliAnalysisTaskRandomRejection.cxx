@@ -285,7 +285,7 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
     }
     
     /// We need the (track) arrays later.
-    die->SetDontClearArrays(kTRUE);
+    die->SetDontClearArrays(kTRUE); // AliDielectron will take care of cleaning the arrays when the next event is executed.
     
     /// Pairing and rejection need to be switched off, otherwise the track arrays are already filtered!
     die->SetNoPairing(kTRUE);
@@ -354,19 +354,19 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
   /// this avoids a slight multiplicity bias, because the total number of electrons is increased by 1 due to the testparticle.
   TRandom3 rnd;
   rnd.SetSeed(0);
-  Int_t whichEleToRemove = (Int_t) rnd.Rndm()*nFinalAnaElePosi;
-  Int_t fromWhichArray   = (whichEleToRemove<fFinalTracks[0].GetEntriesFast())?0:1; // remove from first array, if it is within the arrays size.
+  Int_t whichEleToRemove = Int_t(rnd.Rndm()*nFinalAnaElePosi);
+  Int_t fromWhichArray   = (whichEleToRemove<fFinalTracks[0].GetEntriesFast())?0:1; // remove from first array, if it is within the arrays size, otherwise from second array.
   if (fromWhichArray==1) whichEleToRemove -= fFinalTracks[0].GetEntriesFast(); // this is needed to not go out of bounds if it is in second array.
   TObject *eleToRemove=fFinalTracks[fromWhichArray].At(whichEleToRemove);
   TObjArray* arrToReduce = const_cast<TObjArray*>(die->GetTrackArray(fromWhichArray));
   if (arrToReduce->FindObject(eleToRemove)) {
-    arrToReduce->AddAt(0x0, arrToReduce->IndexOf(eleToRemove)); // remove the track from the array. //@TODO: is it needed to delete the track object itself?
+    arrToReduce->AddAt(0x0, arrToReduce->IndexOf(eleToRemove)); // remove the track from the array. (don't delete the track object itself, because it's in the input data rootfile!)
     arrToReduce->Compress(); // compress the array
   } else {
-    AliFatal(Form("did not find track to delete from array die->GetTrackArray(%i). this should never happen.", fromWhichArray));
-    return;
+    AliWarning(Form("WARNING: Did not find track to delete from array die->GetTrackArray(%i). Not deleting this track... (this should never happen, but rare cases can be ignored. nFinalAnaElePosi=%i, whichEleToRemove=%i, array sizes: %i, %i.)", fromWhichArray, nFinalAnaElePosi, whichEleToRemove, fFinalTracks[0].GetEntriesFast(), fFinalTracks[1].GetEntriesFast()));
+    // return;
   }
-  // 'eleToRemove' and 'arrToReduce' are just pointers to existing objects, so they dont need to be deleted.
+  // 'eleToRemove' and 'arrToReduce' are just pointers to existing objects, so they don't need to be deleted.
   
   /// The pairing needs to be done between testparticles and prefilter electrons. Get them from track arrays:
   TObjArray* arrTracks2 = const_cast<TObjArray*>(die->GetTrackArray(0));  //  0: Event1, positive particles
@@ -409,8 +409,9 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
     Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
     
     if (ntrack1RP<nNeededTestPart) {
-      AliFatal(Form("size of testparticle array is smaller than needed (%i < %i). this should never happen.", ntrack1RP, nNeededTestPart));
-      return;
+      AliWarning(Form("WARNING: Size of testparticle array is smaller than needed (%i < %i). Using all available testparticles... (this should never happen, it will give less weight to high multiplicity events.)", ntrack1RP, nNeededTestPart));
+      nNeededTestPart = ntrack1RP;
+      //return;
     }
     //AliInfo(Form("RP %i: nNeededTestPart = %i", iRP, nNeededTestPart));
     for (Int_t itrack1=0; itrack1<nNeededTestPart; ++itrack1){
