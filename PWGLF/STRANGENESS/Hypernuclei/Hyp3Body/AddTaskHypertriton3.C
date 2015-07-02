@@ -50,7 +50,7 @@ AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE,
   TString tskname = "hypertriton";
   tskname.Append(Form("%s",suffix.Data()));
   AliAnalysisTaskHypertriton3 *taskhyp = new AliAnalysisTaskHypertriton3();
-  taskhyp->SetReadMC(kFALSE);
+  taskhyp->SetReadMC(readMC);
   taskhyp->SetFillTree(kFALSE);
   
   mgr->AddTask(taskhyp);
