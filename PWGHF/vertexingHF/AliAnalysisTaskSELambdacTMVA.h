@@ -68,6 +68,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   void SetAnalysis(Bool_t analysis=kTRUE){fAnalysis=analysis;}
   void SetUseFilterBitCut(Bool_t setter)   { fLcCut = setter;	 return; }  
   void SetUseFilterBitPID(Bool_t setter)   { fLcPIDCut = setter; return; }
+	void SetCollisionSystem(Int_t syst) {fSyst = syst; return; }
   void SetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC, Bool_t &isInAcc) {fIsLcResonant=LambdacDaugh(part,arrayMC,isInAcc);} 
   void SetIsLcGen(AliAODMCParticle *partMC, TClonesArray *arrayMC);
   void SetIsLcReco(AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC);
@@ -183,6 +184,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   TList *fListCuts; // list of cuts
   Int_t fFillNtuple;   //  filling ntuple type
 	Bool_t fKeepLcNotFromQuark; //flag to keep Lc not from quark
+	Int_t fSyst; // flag for collision system. 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;    // flag for access to MC
   Bool_t fMCPid;    // flag for access to MC
   Bool_t fRealPid;    // flag for real PID
@@ -199,7 +201,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	AliVertexingHFUtils *fVertUtil;         // vertexing HF Util
 
 
-  ClassDef(AliAnalysisTaskSELambdacTMVA,5); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,6); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif

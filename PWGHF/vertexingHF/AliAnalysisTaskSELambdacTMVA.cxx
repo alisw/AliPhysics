@@ -110,6 +110,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fVHF(0),
 		fLcCut(kFALSE),
 		fLcPIDCut(kFALSE),    
+		fKeepLcNotFromQuark(kFALSE),
+		fSyst(2),
 		fNentries(0),
 		fPIDResponse(0),
 		fCounter(0),
@@ -220,6 +222,8 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fVHF(0),
 	fLcCut(kFALSE),
 	fLcPIDCut(kFALSE),    
+	fKeepLcNotFromQuark(kFALSE),
+	fSyst(2),
 	fNentries(0),
 	fPIDResponse(0),
 	fCounter(0),
@@ -1385,7 +1389,7 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 		}
 	}
 	//Bkg
-	if(!fReadMC || (fIsLc==0 && IsInjected==0)) { //data or non-injected background
+	if(!fReadMC || (fIsLc==0 && (IsInjected==0 || fSyst ==0))) { //data or non-injected background or pp background
 		//MC PID
 		if(fReadMC) fhMCmassLcPt->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
 		//Real PID
@@ -1424,7 +1428,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
-	if(fReadMC && IsInjected && !IsLc) return; //dont fill if injected bkg
+	if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
 
 	Double_t invMasspKpi=-1.;
 	Double_t invMasspiKp=-1.;
