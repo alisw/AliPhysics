@@ -75,8 +75,8 @@ const Char_t* pprField[] = { "kNoField", "k5kG", "kFieldMax" };
 void LoadLibs();
 
 // ----------------------- Generator, field, beam energy,... ------------------------------------------------------------
-static PDCProc_t     proc     = kGenParamJpsi;
-static PDCProc_t     signal   = kGenParamJpsi;    // only in case kHijing2500Cocktail is the proc
+static PDCProc_t     proc     = kGenBox;
+static PDCProc_t     signal   = kGenBox;    // only in case kHijing2500Cocktail is the proc
 static Mag_t         mag      = k5kG;
 static Float_t       energy   = 5500.; // energy in CMS
 static Float_t       bMin     = 0.;
@@ -195,7 +195,7 @@ void Config() {
   Int_t iPIPE  = 1;
   Int_t iSHIL  = 1;
   Int_t iT0    = 0;
-  Int_t iVZERO = 1;
+  Int_t iVZERO = 0;
   Int_t iMFT   = 1;
   Int_t iACORDE= 0;
   Int_t iEMCAL = 0;
@@ -236,7 +236,7 @@ void Config() {
   }
   if (iPIPE) {
     //    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
-    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe");
+    AliPIPE *PIPE = new AliPIPEupgrade("PIPE", "Beam Pipe");
   }
   if (iZDC) {
     AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
@@ -267,9 +267,9 @@ void Config() {
 
 AliGenerator* GenBox() {
 
-  AliGenBox *gener = new AliGenBox(10);
-  gener->SetMomentumRange(4, 50);
-  gener->SetPhiRange(0., 360.);         
+  AliGenBox *gener = new AliGenBox(100);
+  gener->SetMomentumRange(20, 50);
+  gener->SetPhiRange(0., 360.);
   gener->SetThetaRange(170.0,178.0);
   Bool_t isMuPlus = gRandom->Integer(2);
   if (isMuPlus) gener->SetPart(kMuonPlus);           // Muons
