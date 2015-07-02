@@ -3,13 +3,21 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//_________________________________________________________________________
+/// \class AliAODPWG4Particle
+/// \brief Container for input particle information on CaloTrackCorr package
+///
+///  AOD objects class in use in the CaloTrackCorrelations
+///  analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations)
+///  Common format for selected tracks or calorimeter clusters to give as input
+///  for different analysis. Basically it contains the particle kinematics
+///  and some detailed parameters of the calorimeter cluster and of the intermediate
+///  steps of the analysis.
+///
+///  More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+///  \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
 //-------------------------------------------------------------------------
-//     AOD objects class in use in the CaloTrackCorrelations
-//     analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations)
-//
-//     Author: Gustavo Conesa Balbastre - CNRS-LPSC-Grenoble
-//-------------------------------------------------------------------------
-
 
 //-- ROOT system --
 #include <TLorentzVector.h>
@@ -33,11 +41,11 @@ class AliAODPWG4Particle : public AliVParticle {
   AliAODPWG4Particle & operator=(const AliAODPWG4Particle& photon);
 
   // Main methods to recover kinematics or PID
-  TLorentzVector * Momentum() const                { return fMomentum ; }
-  virtual void     SetMomentum(TLorentzVector *lv) { fMomentum = lv   ; }
+  TLorentzVector * Momentum() const                  { return fMomentum ; }
+  virtual void     SetMomentum(TLorentzVector *lv)   { fMomentum = lv   ; }
   
-  Bool_t IsPIDOK(const Int_t ipid, const Int_t pdgwanted) const;
-  Double_t GetPairMass(AliAODPWG4Particle * p)const{ return (*(p->fMomentum)+*fMomentum).M(); }
+  Bool_t IsPIDOK(Int_t ipid, Int_t pdgwanted)  const;
+  Double_t GetPairMass(AliAODPWG4Particle * p) const { return (*(p->fMomentum)+*fMomentum).M() ; }
   
   // AliVParticle methods
   virtual Double_t Px()         const { return fMomentum->Px();      }
@@ -61,9 +69,9 @@ class AliAODPWG4Particle : public AliVParticle {
   
   //
   //Dummy
-  virtual Short_t Charge()      const { return 0;}
-  virtual const Double_t* PID() const { return NULL;}
-  Int_t   PdgCode() const {return 0;}
+  virtual Short_t Charge()      const { return 0    ; }
+  virtual const Double_t* PID() const { return NULL ; }
+  Int_t   PdgCode()             const { return 0    ; }
   //
 
   //
@@ -142,68 +150,71 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetNeutralPtSumInCone (Float_t pts) { fIsoConeSumPt[1]  = pts ; }   
   
   //
-  // BTagging
-  // enumerated type for various b-tags of electrons
+  /// BTagging (not in use)
+  /// enumerated type for various b-tags of electrons
   enum btagTypes {kDVMTag0, kDVMTag1, kDVMTag2, kTransverseIPTag, kUnknownTag};
   
   virtual void  SetBtag(Int_t tag)      { fBtag        = tag  ; }
   virtual Int_t GetBtag()         const { return fBtag        ; }
 
-  void SetBTagBit(Int_t &tag, const UInt_t set) const {
-    // Set bit of type set (btagTypes) in tag
-    tag |= (1<<set) ;
-  }
+  /// Set bit of type set (btagTypes) in tag
+  void SetBTagBit(Int_t &tag, UInt_t set) const { tag |= (1<<set) ; }
   
-  Bool_t CheckBTagBit(const Int_t tag, const UInt_t test) const {
-    // Check if in fBtag the bit test (btagTypes) is set.
+  /// Check if in fBtag the bit test (btagTypes) is set (not in use).
+  Bool_t CheckBTagBit(Int_t tag, UInt_t test) const 
+  {
     if (tag & (1<<test) ) return  kTRUE ;
-    else return kFALSE ;
+    else                  return kFALSE ;
   }
   
  private:
   
-  TLorentzVector* fMomentum; // Photon 4-momentum vector
-  Int_t      fPdg ;          // type of identified particle, same code as PDG, but this is not a MonteCarlo particle 
-  Int_t      fTag ;          // tag of particle (decay, fragment, prompt photon), MC
-  Int_t      fLabel ;        // MC label
-  Int_t      fCaloLabel[2];  // CaloCluster index, 1 for photons, 2 for pi0.
-  Int_t      fTrackLabel[4]; // Track lable, 1 for pions, 2 for conversion photons 
-  UInt_t     fDetectorTag ;  // Detector where particle was measured, integer
+  TLorentzVector* fMomentum;    ///< Photon 4-momentum vector
+  Int_t      fPdg ;             ///< type of identified particle, same code as PDG, but this is not a MonteCarlo particle 
+  Int_t      fTag ;             ///< tag of particle (decay, fragment, prompt photon), MC
+  Int_t      fLabel ;           ///< MC label
+  Int_t      fCaloLabel[2];     ///< CaloCluster index, 1 for photons, 2 for pi0.
+  Int_t      fTrackLabel[4];    ///< Track lable, 1 for pions, 2 for conversion photons 
+  UInt_t     fDetectorTag ;     ///< Detector where particle was measured, integer
   
   // Calo specific
-  Int_t      fBadDist ;      // Distance to bad module in module units
-  UInt_t     fNLM ;          // Store the number of local maxima
-  Float_t    fM02 ;          // Store the main axis of the calorimeter shower shape
-  Float_t    fTime;          // Store the time of cluster or track, nano seconds
-  Int_t      fNCells;        // Store the number of cells in cluster
-  Int_t      fSuperModule;   // Store the super-module number of cluster
+  Int_t      fBadDist ;         ///< Distance to calorimeter bad cell in cell units
+  UInt_t     fNLM ;             ///< Store the number of local maxima in calorimeter cluster
+  Float_t    fM02 ;             ///< Store the main axis of the calorimeter shower shape
+  Float_t    fTime;             ///< Store the time of calorimeter cluster or track, nano seconds
+  Int_t      fNCells;           ///< Store the number of cells in calorimeter cluster
+  Int_t      fSuperModule;      ///< Store the super-module number of calorimeter cluster
   
   // Tags
-  Int_t      fDecayTag;      // Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
-  Bool_t     fIsolated ;     // Particle is isolated or not
-  Bool_t     fLeadingParticle ; // Particle is leading or not
+  Int_t      fDecayTag;         ///< Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
+  Bool_t     fIsolated ;        ///< Particle is isolated or not
+  Bool_t     fLeadingParticle ; ///< Particle is leading or not
 
-  Float_t    fIsoConePtLead[2]; // Pt of track [0] and calo cluster [1] with highest energy in the isolation cone
-  Float_t    fIsoConeSumPt [2]; // Sum of Pt of tracks [0] and calo clusters [1] in the isolation cone
+  Float_t    fIsoConePtLead[2]; ///< Pt of track [0] and calo cluster [1] with highest energy in the isolation cone
+  Float_t    fIsoConeSumPt [2]; ///< Sum of Pt of tracks [0] and calo clusters [1] in the isolation cone
   
   // PID bits
-  Bool_t     fDisp ;         // Dispersion bit
-  Bool_t     fTof ;          // TOF bit
-  Bool_t     fCharged ;      // Charged bit
+  Bool_t     fDisp ;            ///< Dispersion bit
+  Bool_t     fTof ;             ///< TOF bit
+  Bool_t     fCharged ;         ///< Charged bit
 
   // Not in use currently ...
-  Bool_t     fTagged ;       // If photon tagged (pi0 decay), not used anymore, replace by fDecayTag
-  Int_t      fFidArea ;      // Type of fiducial area hit by this photon
-  Int_t      fInputFileIndex;// 0, standard input, 1 first input added. Only possible one for now, not really used.
-  Int_t      fBtag;          // tag particle from B.
+  Bool_t     fTagged ;          ///< If photon tagged (pi0 decay), not used anymore, replace by fDecayTag
+  Int_t      fFidArea ;         ///< Type of fiducial area hit by this photon
+  Int_t      fInputFileIndex;   ///< 0, standard input, 1 first input added. Only possible one for now, not really used.
+  Int_t      fBtag;             ///< tag particle from B.
 
-  
+  /// \cond CLASSIMP
   ClassDef(AliAODPWG4Particle, 7);
+  /// \endcond
+
 };
 
+///
+/// \return azimuth angle, shift 2pi in case the TLorentz is negative
+///
 inline Double_t AliAODPWG4Particle::Phi() const
 {
-  // Return phi
   Double_t phi = fMomentum->Phi();
   if (phi < 0.) phi += TMath::TwoPi();
   return phi;

@@ -14,13 +14,17 @@
  **************************************************************************/
 
 
-//-- Analysis system
 #include "AliAODPWG4Particle.h"
 
+/// \cond CLASSIMP
 ClassImp(AliAODPWG4Particle)
+/// \endcond
 
 
 //______________________________________________________________________________
+///
+/// Constructor.
+///
 AliAODPWG4Particle::AliAODPWG4Particle() :
 AliVParticle(),
 fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
@@ -32,7 +36,6 @@ fIsoConePtLead(), fIsoConeSumPt(),
 fDisp(0), fTof(0), fCharged(0),
 fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
-  // constructor
   fCaloLabel [0] = -1;
   fCaloLabel [1] = -1;
   fTrackLabel[0] = -1;
@@ -47,6 +50,16 @@ fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 }
 
 //______________________________________________________________________________
+///
+/// Constructor.
+///
+/// \param px particle momentum in x
+/// \param py particle momentum in y
+/// \param pz particle momentum in z
+/// \param e particle energy
+///
+/// particle: cluster or track
+///
 AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
@@ -58,7 +71,6 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
   fDisp(0), fTof(0), fCharged(0),
   fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
-  // constructor
   fMomentum = new TLorentzVector(px, py, pz, e);
   
   fCaloLabel [0] = -1;
@@ -75,6 +87,13 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
 }
 
 //______________________________________________________________________________
+///
+/// Constructor.
+///
+/// \param p: TLorentzVector of particle kinematics.
+///
+/// particle: cluster or track
+///
 AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
@@ -86,7 +105,6 @@ AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   fDisp(0), fTof(0), fCharged(0),
   fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
-  // constructor
   fMomentum = new TLorentzVector(p);
   
   fCaloLabel [0] = -1;
@@ -102,22 +120,28 @@ AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   fIsoConeSumPt [1] = 0.;  
 }
 
-
 //______________________________________________________________________________
+///
+/// Destructor.
+///
 AliAODPWG4Particle::~AliAODPWG4Particle() 
 {
-  // destructor
     delete fMomentum;
 }
 
 //______________________________________________________________________________
+///
+/// Clear pointers.
+///
 void AliAODPWG4Particle::Clear(const Option_t* /*opt*/) 
 {
-  //clear
   delete fMomentum;
 }
 
 //______________________________________________________________________________
+///
+///  Copy constructor.
+///
 AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   AliVParticle(part),
   fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fLabel(part.fLabel),
@@ -128,7 +152,6 @@ AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   fDisp(part.fDisp), fTof(part.fTof), fCharged(part.fCharged),
   fTagged(part.fTagged), fFidArea(part.fFidArea), fInputFileIndex(part.fInputFileIndex),fBtag(part.fBtag)
 {
-  // Copy constructor
   fMomentum = new TLorentzVector(*part.fMomentum);
   
   fCaloLabel [0] = part.fCaloLabel[0];
@@ -145,9 +168,11 @@ AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
 }
 
 //________________________________________________________________________________
+///
+/// Assignment operator.
+///
 AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle & part)
 {
-  // Assignment operator
   if(this!=&part)
   {
     fPdg   = part.fPdg;
@@ -189,9 +214,13 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle & par
 }
 
 //_______________________________________________________________
-Bool_t AliAODPWG4Particle::IsPIDOK(const Int_t ipid, const Int_t pdgwanted) const{
-  // returns true if particle satisfies given PID criterium
-	switch(ipid){
+///
+/// \return true if particle satisfies given PID criterium
+///
+Bool_t AliAODPWG4Particle::IsPIDOK(Int_t ipid, Int_t pdgwanted) const
+{
+	switch(ipid)
+  {
     case 0: return kTRUE ; //No PID at all
     case 1:
 	  {
@@ -209,11 +238,12 @@ Bool_t AliAODPWG4Particle::IsPIDOK(const Int_t ipid, const Int_t pdgwanted) cons
 	}
 }
 
-//______________________________________________________________________________
+//_________________________________________________________
+///
+/// Print information of all data members.
+///
 void AliAODPWG4Particle::Print(Option_t* /*option*/) const 
-{
-  // Print information of all data members
-  
+{  
   printf("Particle 4-vector:\n");
   printf("     E  = %13.3f", E() );
   printf("     Px = %13.3f", Px());
