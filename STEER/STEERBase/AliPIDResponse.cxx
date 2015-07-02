@@ -770,6 +770,9 @@ void AliPIDResponse::SetRecoInfo()
       fMCperiodTPC="LHC13B2_FIXn1";
   }
 
+  // Use for pp and pPb 12E-G pass 1 the PPB runs
+  if (fRecoPass==1 && fRun >= 186346 && fRun < 188719) { fLHCperiod="LHC12G"; fBeamType="PPB";fBeamTypeNum=kPPB; fMCperiodTPC="LHC12G"; }
+
   // settings for pass2 of 2012 data
   if (fRecoPass>=2 && fRun>=170719 && fRun<=194479) {
     fBeamType    = "PP";
@@ -786,11 +789,10 @@ void AliPIDResponse::SetRecoInfo()
     if (fRun >= 192739 && fRun <= 193766) { fLHCperiod="LHC12I"; }
     // no special parametrisations for 12J, use 12I instead
     if (fRun >= 193767 && fRun <= 194479) { /*fLHCperiod="LHC12J";*/ fLHCperiod="LHC12I"; }
+
+    // overwriting for the PPB period
+    if (fRun >= 188167 && fRun <= 188418) { fLHCperiod="LHC12G"; fBeamType="PPB";fBeamTypeNum=kPPB; fMCperiodTPC="LHC12G"; }
   }
-
-
-  // overwriting for the PPB period
-  if (fRun >= 186346 && fRun < 188719) { fLHCperiod="LHC12G"; fBeamType="PPB";fBeamTypeNum=kPPB; fMCperiodTPC="LHC12G"; }
 
   // New parametrisation for 2013 pPb runs
   if (fRun >= 194480) {
