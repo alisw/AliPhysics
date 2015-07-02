@@ -58,16 +58,6 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		virtual void     UserExec(Option_t *option);
 		virtual void     Terminate(Option_t *);
 
-		TObjArray*    AcceptTracksReduced(AliAODEvent *event, Bool_t useCuts);
-		float CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign);
-		
-
-		void SetupForMixing();
-		void FillMixedHistos(TObjArray* particle, TObjArray* particleMixed, int cBin, int zBin, double epangle, float bSign, double weight);
-		void DoMixing(double cent, double zvtx, double epangle, TObjArray* fMyprimRecoTracks, float bSign);
-	    double DeltaPhi(double phi1, double phi2);
-
-        int GetParticleID(AliAODTrack* track);
 		
 	private:
 		TList           *fOutput;        // Output list
@@ -75,9 +65,17 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		AliEventPoolManager*  fPoolMgr; //!
         AliPIDResponse *fPIDResponse; //!
 
-
 		TObjArray*        fMyprimRecoTracks; //
 		TObjArray*        fTracksMixing; //
+
+		TObjArray*    AcceptTracksReduced(AliAODEvent *event, Bool_t useCuts);
+		float CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign);
+		void SetupForMixing();
+		void FillMixedHistos(TObjArray* particle, TObjArray* particleMixed, int cBin, int zBin, double epangle, float bSign, double weight);
+		void DoMixing(double cent, double zvtx, double epangle, TObjArray* fMyprimRecoTracks, float bSign);
+//	    double DeltaPhi(double phi1, double phi2);
+        int GetParticleID(AliAODTrack* track);
+
 
 		Int_t         fMinNumTrack; // AliEventPoolManager(), Size of track buffer for event mixing (number of tracks to fill the pool)
 		Int_t         fPoolSize; // AliEventPoolManager(), max number of event to mix
@@ -153,8 +151,6 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		TH2F			*fHistEPQvAandC[kCentBin]; //! 2D histo to understand the correlation between each EP angles by V0A & C
 		TH2F			*fHistEPQvAandAC[kCentBin]; //! 2D histo to understand the correlation between each EP angles by V0A & C
 		TH2F			*fHistEPQvCandAC[kCentBin]; //! 2D histo to understand the correlation between each EP angles by V0A & C
-
-
 
 
 

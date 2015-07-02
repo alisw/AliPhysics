@@ -71,14 +71,8 @@ AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP() // All data members should be
 	fMinNumTrack(2000),
 	fPoolSize(100), // from 1000 (150610)
 	fMinNEventsToMix(5),
-//	fHistPt(0), 
-//	fHistEta(0),  
-//	fHistPhi(0),  
-//	fHistNevtSame(0),
-//	fHistNevtMixed(0),
+	fNsigmaCut(3.0),
 	fHistZvertex(0),
-//	fHistZvertexBin(0),
-//	fHistCentBin(0),
 	fPIDResponse(0),
 	fHistCent(0) // The last in the above list should not have a comma after it
 {
@@ -130,9 +124,7 @@ AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP() // All data members should be
 	fMinNumTrack(2000),
 	fPoolSize(100),
 	fMinNEventsToMix(5),
-//	fHistPt(0), 
-//	fHistEta(0), 
-//	fHistPhi(0), 
+    fNsigmaCut(3.0),
 	fHistZvertex(0),
 	fPIDResponse(0),
 	fHistCent(0) // The last in the above list should not have a comma after it
@@ -142,13 +134,13 @@ AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP() // All data members should be
 	// Input slot #0 works with a TChain - it is connected to the default input container
 	// Output slot #1 writes into a TH1 container
 	for(int ic=0; ic<kCentBin;ic++) {
-		fHistNsigmaTPCpT[ic]=0x0;
-		fHistNsigmaTOFpT[ic]=0x0;
-		fHistNsigmaITSpT[ic]=0x0;
+//		fHistNsigmaTPCpT[ic]=0x0;
+//		fHistNsigmaTOFpT[ic]=0x0;
+//		fHistNsigmaITSpT[ic]=0x0;
 		for(int iptt=0; iptt<kpTBin;iptt++) {
-			fHistNsigmaITSTPC[ic][iptt]=0x0;
-			fHistNsigmaTPCTOF[ic][iptt]=0x0;
-			fHistNsigmaITSTOF[ic][iptt]=0x0;
+//			fHistNsigmaITSTPC[ic][iptt]=0x0;
+//			fHistNsigmaTPCTOF[ic][iptt]=0x0;
+//			fHistNsigmaITSTOF[ic][iptt]=0x0;
 			for(int ipta=0; ipta<kpTBin; ipta++) {
 				for(int iz=0; iz<kZvertBin;iz++) {
                     for(int ipid=0; ipid<kPID; ipid++) {
@@ -175,6 +167,7 @@ AliAnalysisTaskEPCorrPP::AliAnalysisTaskEPCorrPP() // All data members should be
 		fHistPhi[ipid]=0x0;
 	}
 
+	DefineInput(0, TChain::Class());
 	DefineOutput(1, TList::Class());                                            // for output list
 }
 
@@ -206,6 +199,8 @@ void AliAnalysisTaskEPCorrPP::UserCreateOutputObjects()
 	fOutput->SetOwner();  // IMPORTANT!
 
 	// Create histograms
+
+    char hname[10000]; char htit[10000];
 
     for(int ipid=0; ipid<kPID; ipid++) {
 
@@ -609,30 +604,32 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 
 
 		int trigID = -1; // 0(hadron) 1(pion) 2(kaon) 3(proton)
-
+/*
 		double nsigmaCut = 3.0;
 		trigID = GetParticleID(aodtrack, nsigmaCut);
-
 		int trigIDBin = -1;
         if(trigID==1 || trigID==3 || trigID==5 || trigID==7) trigIDBin = 1; // recon. pion
-        if(trigID==2 || trigID==6) trigIDBin = 2; // recon. kaon
+        if(trigID==2 || trigID==3 || trigID==6 || trigID==7) trigIDBin = 2; // recon. kaon
         if(trigID==4 || trigID==5 || trigID==6 || trigID==7) trigIDBin = 3; // recon. proton
-
+*/
 
 		fHistPt[0]->Fill(trackpT); // fill inclusive spectra
 		fHistEta[0]->Fill(trackEta);
 		fHistPhi[0]->Fill(trackPhi);
-
+/*
 		if(!(trigIDBin == -1)) {
 			fHistPt[trigIDBin]->Fill(trackpT);
 			fHistEta[trigIDBin]->Fill(trackEta);
 			fHistPhi[trigIDBin]->Fill(trackPhi);
 		}
-
+*/
 		if(!(zBin == -1 || cBin == -1)) fHistPtSame[cBin][zBin]->Fill(trackpT);
 
 		// ===== another track loop to use dEta-dPhi analysis in same event =====
-		for(int j = i+1; j < ntracks; j++) {
+		for(int j = 0; j < ntracks; j++) {
+
+			if(i==j) continue;
+
 			AliAODTrack* aodtrack2 = (AliAODTrack*)aodevent->GetTrack(j); // pointer to reconstructed to track          
 			if(!aodtrack2) { 
 				AliError(Form("ERROR: Could not retrieve aodtrack %d",j)); 
@@ -686,28 +683,32 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 			float deltaEta, deltaPhi; // calculate the difference of two tracks
 			deltaEta = trackEta - trackEta2;
 			//			deltaPhi = trackPhi - trackPhi2;
-			deltaPhi = DeltaPhi(trackPhi, trackPhi2);
+            deltaPhi = trackPhi - trackPhi2;
 
-			float dPhiStar = -99; // for two-track efficiency cut
-			dPhiStar = CalculatedPhiStar(deltaPhi, deltaEta, trackZv, trackZv2, trackpT, trackpT2, bSign);
+            if(deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+            if(deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+			float dPhiStarSame = -99; // for two-track efficiency cut
+			dPhiStarSame = CalculatedPhiStar(deltaPhi, deltaEta, trackZv, trackZv2, trackpT, trackpT2, bSign);
 
 			// two-track efficiency cut
-			if(TMath::Abs(dPhiStar)<0.02) continue;
+			if(TMath::Abs(dPhiStarSame)<0.02) continue;
 			if(TMath::Abs(deltaEta)<0.02) continue;
-
+/*
 			int assocID = -1; // 0(hadron) 1(pion) 2(kaon) 3(proton)
 			assocID = GetParticleID(aodtrack, nsigmaCut);
-
 			int assocIDBin = -1;
     	    if(assocID==1 || assocID==3 || assocID==5 || assocID==7) assocIDBin = 1; // recon. pion
       	 	if(assocID==2 || assocID==6) assocIDBin = 2; // recon. kaon
       		if(assocID==4 || assocID==5 || assocID==6 || assocID==7) assocIDBin = 3; // recon. proton
-
+*/
 			fHistdEtadPhiSame[cBin][zBin][pTBinT][pTBinA][0]->Fill(deltaEta, deltaPhi);
+/*
 	        if(!(assocIDBin == -1)) {
 				fHistdEtadPhiSame[cBin][zBin][pTBinT][pTBinA][assocIDBin]->Fill(deltaEta, deltaPhi); 
 			//			cout << "deltaPhi = " << deltaPhi << " cBin = " << cBin << " zBin = " << zBin << " pTBinT = " << pTBinT << " pTBinA = " << pTBinA << endl;
 			}
+*/
 //		delete aodtrack2;
 		} // end of j track loop
 //		delete aodtrack;
@@ -742,12 +743,12 @@ void AliAnalysisTaskEPCorrPP::UserExec(Option_t *)
 }
 
 
-float AliAnalysisTaskEPCorrPP::CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign) {
+float AliAnalysisTaskEPCorrPP::CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSigntmp) {
 
-    float dPhiStar;
-    float dPhiStartemp;
+    float dPhiStar = 999; // init
+    float dPhiStartemp = 0; // init
     float Bze = 0.075;
-    float radius;
+    float radius = 0; // init
     float twoTrackEfficiencyCutValue = 0.02;
 
 //    const float kLimit = twoTrackEfficiencyCutValue * 3;
@@ -758,8 +759,8 @@ float AliAnalysisTaskEPCorrPP::CalculatedPhiStar(float dPhi, float dEta, float Z
 
     if(TMath::Abs(dEta) < twoTrackEfficiencyCutValue * 2.5 * 3) {
 
-        float dphistarInner = dPhi + bSign*TMath::ASin((Zv*Bze*0.8)/(2*pT)) - bSign*TMath::ASin((Zv2*Bze*0.8)/(2*pT2));
-        float dphistarOuter = dPhi + bSign*TMath::ASin((Zv*Bze*2.5)/(2*pT)) - bSign*TMath::ASin((Zv2*Bze*2.5)/(2*pT2));
+        float dphistarInner = dPhi + bSigntmp*TMath::ASin((Zv*Bze*0.8)/(2*pT)) - bSigntmp*TMath::ASin((Zv2*Bze*0.8)/(2*pT2));
+        float dphistarOuter = dPhi + bSigntmp*TMath::ASin((Zv*Bze*2.5)/(2*pT)) - bSigntmp*TMath::ASin((Zv2*Bze*2.5)/(2*pT2));
 
         if (dphistarInner > kPi) dphistarInner = kPi * 2 - dphistarInner;
         if (dphistarInner < -kPi) dphistarInner = -kPi * 2 - dphistarInner;
@@ -774,7 +775,7 @@ float AliAnalysisTaskEPCorrPP::CalculatedPhiStar(float dPhi, float dEta, float Z
             // find the smallest deltaPhistar
             for(int ir = 80; ir < 251; ir++) { // radius inside TPC vary for 0.80 ~ 2.50 (m)
                 radius = ir*0.01;
-                dPhiStartemp = dPhi + bSign*TMath::ASin((Zv*Bze*radius)/(2*pT)) - bSign*TMath::ASin((Zv2*Bze*radius)/(2*pT2));
+                dPhiStartemp = dPhi + bSigntmp*TMath::ASin((Zv*Bze*radius)/(2*pT)) - bSigntmp*TMath::ASin((Zv2*Bze*radius)/(2*pT2));
                 dPhiStartemp = TMath::Abs(dPhiStartemp);
                 if(ir==80) {dPhiStar = dPhiStartemp;} // init once
                 if(dPhiStartemp < dPhiStar) { dPhiStar = dPhiStartemp; }
@@ -837,8 +838,8 @@ TObjArray* AliAnalysisTaskEPCorrPP::AcceptTracksReduced(AliAODEvent *aodevent, b
 
 		}
 
-		double nsigmaCut = 3.0;
-
+//		double nsigmaCut = 3.0;
+/*
 		int  myPartID = -1;
 		int myPartIDinit = -1;		
 		myPartIDinit = GetParticleID(track, nsigmaCut);
@@ -846,7 +847,8 @@ TObjArray* AliAnalysisTaskEPCorrPP::AcceptTracksReduced(AliAODEvent *aodevent, b
     	if(myPartIDinit==1 || myPartIDinit==3 || myPartIDinit==5 || myPartIDinit==7) myPartID = 1; // recon. pion
       	if(myPartIDinit==2 || myPartIDinit==6) myPartID = 2; // recon. kaon
       	if(myPartIDinit==4 || myPartIDinit==5 || myPartIDinit==6 || myPartIDinit==7) myPartID = 3; // recon. proton
-
+*/
+		int myPartID = 0; // PID disabled 150701
 
 //		int myPartID = 1; // This is the mark for PID by GetParticleID function. included later. INCLUDE 150518
 		tracksAccepted->Add(new AliCorrReducedTrackPP(myPartID,track->Eta(),track->Phi(),track->Pt(),track->Zv(),track->Charge()));
@@ -858,7 +860,7 @@ TObjArray* AliAnalysisTaskEPCorrPP::AcceptTracksReduced(AliAODEvent *aodevent, b
 
 	return tracksAccepted;
 
-	delete tracksAccepted;
+//	delete tracksAccepted;
 
 }
 
@@ -869,6 +871,7 @@ int AliAnalysisTaskEPCorrPP::GetParticleID(AliAODTrack* track, double nsigmaCut)
 
 	int trackPID = 0;
 
+/* // disabled at 150629 to exclude PID part
 	float nsigmaTPC[kPID]; float nsigmaTOF[kPID]; 
 	// float nSigmaITS[kPID];
 	int TPCok, TOFok, ITSok = -1;
@@ -901,27 +904,12 @@ int AliAnalysisTaskEPCorrPP::GetParticleID(AliAODTrack* track, double nsigmaCut)
 //	nsigmaITS[1] = fPIDResponse->NumberOfSigmasITS(track, AliPID::kKaon);
 //	nsigmaITS[2] = fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton);
 
-/*
-	float trackpT = track->Pt();
-	// apply different PID method by pT range
-	if(trackpT >= 0.5 && trackpT < 2.0) { // use TPC-TOF nsigma < 3
-		if(TMath::Sqrt( nsigmaTPC[0]**2 + nsigmaTOF[0]**2 ) < 3.0) trackPID = 1;
-		if(TMath::Sqrt( nsigmaTPC[1]**2 + nsigmaTOF[1]**2 ) < 3.0) trackPID = 2;
-		if(TMath::Sqrt( nsigmaTPC[2]**2 + nsigmaTOF[2]**2 ) < 3.0) trackPID = 3;
-	}
-	else if(trackpT >= 2.0) { // use TOF nsigma < 3
-		if(TMath::Sqrt( nsigmaTOF[0]**2 ) < 3.0) trackPID = 1;
-		if(TMath::Sqrt( nsigmaTOF[0]**2 ) < 3.0) trackPID = 2;
-		if(TMath::Sqrt( nsigmaTOF[0]**2 ) < 3.0) trackPID = 3;
-
-	}
-*/
 		if(TMath::Sqrt( nsigmaTPC[0]*nsigmaTPC[0] + nsigmaTOF[0]*nsigmaTOF[0] ) < nsigmaCut) trackPID = trackPID + 1;
 		if(TMath::Sqrt( nsigmaTPC[1]*nsigmaTPC[1] + nsigmaTOF[1]*nsigmaTOF[1] ) < nsigmaCut) trackPID = trackPID + 2;
 		if(TMath::Sqrt( nsigmaTPC[2]*nsigmaTPC[2] + nsigmaTOF[2]*nsigmaTOF[2] ) < nsigmaCut) trackPID = trackPID + 4;
 
 	} // end of detectorOK
-
+*/
 	return trackPID;
 
 /*
@@ -965,7 +953,7 @@ void AliAnalysisTaskEPCorrPP::SetupForMixing()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* partMix, int cBin, int zBin, float bSign, double weight)
+void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* partMix, int cBin, int zBin, float bSignHistos, double weight)
 {
 //	TObjArray *particle = new TObjArray;
 //	TObjArray *particleMixed = new TObjArray;
@@ -1078,24 +1066,28 @@ void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* par
 
 
 
-			float dEta, dPhi; // delta Eta - delat Phi in mixed events
-			dEta = firstEta - secondEta;
+			float deltaEtaMixed, deltaPhiMixed; // delta Eta - delat Phi in mixed events
+			deltaEtaMixed = firstEta - secondEta;
 			//			dPhi = firstPhi - secondPhi;
-			dPhi = DeltaPhi(firstPhi, secondPhi);
+//			deltaEtaPhiMixed = DeltaPhi(firstPhi, secondPhi);
+			deltaPhiMixed = firstPhi - secondPhi;
+            if(deltaPhiMixed < -0.5*TMath::Pi()) deltaPhiMixed += TMath::TwoPi();
+            if(deltaPhiMixed > 1.5*TMath::Pi()) deltaPhiMixed -= TMath::TwoPi();
 
-			float dPhiStar = -99; // for two-track efficiency cut
+			float dPhiStarMixed = -99; // for two-track efficiency cut
 //			cout << "firstZv = " << firstZv << " | secondZv = " << secondZv << endl;
-			dPhiStar = CalculatedPhiStar(dPhi, dEta, firstZv, secondZv, firstpT, secondpT, bSign);
+			dPhiStarMixed = CalculatedPhiStar(deltaPhiMixed, deltaEtaMixed, firstZv, secondZv, firstpT, secondpT, bSignHistos);
 
 			// two-track efficiency cut
-			if(TMath::Abs(dPhiStar)<0.02) continue;
-			if(TMath::Abs(dEta)<0.02) continue;
+			if(TMath::Abs(dPhiStarMixed)<0.02) continue;
+			if(TMath::Abs(deltaEtaMixed)<0.02) continue;
 
-			fHistdEtadPhiMixed[cBin][zBin][pTBinT][pTBinA][0]->Fill(dEta, dPhi, useWeight); 
+			fHistdEtadPhiMixed[cBin][zBin][pTBinT][pTBinA][0]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight); 
+/*
             if(!(secondPID == -1)) {
 				fHistdEtadPhiMixed[cBin][zBin][pTBinT][pTBinA][secondPID]->Fill(dEta, dPhi, useWeight); 
 			}
-
+*/
 			//			cout << "|dEta| = " << TMath::Abs(dEta) << " cBin = " << cBin << " zBin = " << zBin << " pTBinT = " << pTBinT << " pTBinA = " << pTBinA << endl;
 			//		if(is==targetindex) cout << "secondEta = " << secondEta << endl;
 			//		if(is==targetindex) cout << "secondPhi = " << secondPhi << endl;
@@ -1113,7 +1105,7 @@ void AliAnalysisTaskEPCorrPP::FillMixedHistos(TObjArray* partNew, TObjArray* par
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEPCorrPP::DoMixing(double cent, double zvertex, TObjArray* trigTracks, float bSign)
+void AliAnalysisTaskEPCorrPP::DoMixing(double cent, double zvertex, TObjArray* trigTracks, float bSignDoMixing)
 {
 	AliEventPool* pool = fPoolMgr->GetEventPool(cent, zvertex);
 	if (!pool) {
@@ -1173,7 +1165,7 @@ void AliAnalysisTaskEPCorrPP::DoMixing(double cent, double zvertex, TObjArray* t
 
 				// Fill sub-information in jMix-th event to fTracksMixing to proceed to next step!
 //				cout << "FillMixedHistos Start" << endl;
-				FillMixedHistos( trigTracks, fTracksMixing, cBin, zBin, bSign, 1./nMix );
+				FillMixedHistos( trigTracks, fTracksMixing, cBin, zBin, bSignDoMixing, 1./nMix );
 //				cout << "FillMixedHistos Finished" << endl;
 
 			} // end of jMix
@@ -1191,7 +1183,7 @@ void AliAnalysisTaskEPCorrPP::DoMixing(double cent, double zvertex, TObjArray* t
 } // end of DoMixing
 
 
-
+/*
 double AliAnalysisTaskEPCorrPP::DeltaPhi(double phi1, double phi2) {
 	// dphi
 	double res =  atan2(sin(phi1-phi2), cos(phi1-phi2));
@@ -1201,7 +1193,7 @@ double AliAnalysisTaskEPCorrPP::DeltaPhi(double phi1, double phi2) {
   return res;
 
 }
-
+*/
 //________________________________________________________________________
 void AliAnalysisTaskEPCorrPP::Terminate(Option_t *) 
 {
