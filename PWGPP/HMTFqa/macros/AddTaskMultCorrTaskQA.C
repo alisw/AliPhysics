@@ -1,6 +1,5 @@
 const char *anatype = "ESD";
 AliAnalysisMultCorrTaskQA *AddTaskMultCorrTaskQA( const TString lMasterJobSessionFlag = "")
-//void AddTaskMultCorrTaskQA()
 {
     
     // Creates, configures and attaches to the train a cascades check task.
@@ -17,12 +16,11 @@ AliAnalysisMultCorrTaskQA *AddTaskMultCorrTaskQA( const TString lMasterJobSessio
         ::Error("AddTaskMultCorrTaskQA", "This task requires an input event handler");
         return NULL;
     }
-    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
+    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     // Create and configure the task
-    //gROOT->LoadMacro("AliAnalysisMultCorrTaskQA.cxx++g"); //-- me
     AliAnalysisMultCorrTaskQA *taskAuxiliary = new AliAnalysisMultCorrTaskQA("taskAuxiliary");
-    mgr->AddTask(taskAuxiliary); // comment this line in order to work
+    mgr->AddTask(taskAuxiliary); 
     
     //-------------------------------------------------------------------------------
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
@@ -43,3 +41,7 @@ AliAnalysisMultCorrTaskQA *AddTaskMultCorrTaskQA( const TString lMasterJobSessio
     return taskAuxiliary;
 
 }
+
+
+// - david.dobrigkeit.chinellato@cern.ch
+// --hector.bello.martinez@cern.ch
