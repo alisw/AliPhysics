@@ -193,8 +193,7 @@ Int_t AliFITRawData::RawDataFIT(TBranch* branch)
 	  fIndex++;
 	  iTDC = det / 4;
 	  channel = ch[det - iTDC*4];
-	  //	  AliDebug(2, Form("det %i  alldata %i trm %i chain %i tdc %i channel %i \n",det, det + itrm*120 + chain*60, itrm, chain, iTDC, det - iTDC*4) );
-	  printf("det %i  alldata %i trm %i chain %i tdc %i channel %i \n",det, det + itrm*120 + chain*60, itrm, chain, iTDC, det - iTDC*4);
+	  AliDebug(2, Form("det %i  alldata %i trm %i chain %i tdc %i channel %i \n",det, det + itrm*120 + chain*60, itrm, chain, iTDC, det - iTDC*4) );
 	  FillTime(channel,iTDC, time);
 	}
       } 
