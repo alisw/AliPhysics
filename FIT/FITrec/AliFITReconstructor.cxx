@@ -170,26 +170,20 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
       pmt = digit->NPMT();
       time[pmt] = Float_t (digit->TimeCFD() );
       amp[pmt] = 0.001 * Float_t (digit->TimeQT1() - digit->TimeQT0() );
-      //    cout<<"@@@ "<<dig<<" "<<pmt<<" "<<time[pmt]<<" "<<amp[pmt]<<endl;
     } 
     fESDFIT->SetFITtime(time);         // best TOF on each PMT 
     fESDFIT->SetFITamplitude(amp);     // number of particles(MIPs) on each 
      Float_t firsttime[3] = {max_time,max_time,max_time};
     
     Float_t vertexFIT = 9999999;
-    for (Int_t ipmt=0; ipmt<100; ipmt++)//timeC
+    for (Int_t ipmt=0; ipmt<96; ipmt++)//timeC
       if(time[ipmt]<firsttime[2]) firsttime[2]=time[ipmt]; 
     
-    for ( Int_t ipmt=100; ipmt<240; ipmt++) 
-	  if(time[ipmt]<firsttime[1]) firsttime[1]=time[ipmt]; 
-    
-    
-    //  printf("1stimeA %f , 1sttimeC %f  ",
-    //		    firsttime[1],
-    //		    firsttime[2] ) ;
+    for ( Int_t ipmt=96; ipmt<240; ipmt++) 
+      if(time[ipmt]<firsttime[1]) firsttime[1]=time[ipmt]; 
     if (firsttime[1]<max_time && firsttime[2]<max_time)  {
-	firsttime[0] =  channelWidth *(firsttime[1] + firsttime[2])/2;
-	vertexFIT =  c*channelWidth*(firsttime[1] - firsttime[2])/2;
+      firsttime[0] =  channelWidth *(firsttime[1] + firsttime[2])/2;
+      vertexFIT =  c*channelWidth*(firsttime[1] - firsttime[2])/2;
     }
     if (firsttime[1]<max_time) 
       firsttime[1] = firsttime[1] * channelWidth + shift; 
