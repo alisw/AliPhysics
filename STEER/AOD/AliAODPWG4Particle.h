@@ -3,14 +3,13 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAODPWG4Particle.h  $ */
-
 //-------------------------------------------------------------------------
 //     AOD objects class in use in the CaloTrackCorrelations
-//     analysis pacackge ($ALICE_ROOT/PWGGA/CaloTrackCorrelations)
+//     analysis pacackge ($ALICE_PHYSICS/PWGGA/CaloTrackCorrelations)
 //
 //     Author: Gustavo Conesa Balbastre - CNRS-LPSC-Grenoble
 //-------------------------------------------------------------------------
+
 
 //-- ROOT system --
 #include <TLorentzVector.h>
@@ -96,6 +95,13 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual Int_t   GetNCells()            const { return fNCells       ; }
   virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
 
+  // Isolation cone background info
+  virtual Float_t SetChargedLeadPtInCone() const { return fIsoConePtLead[0] ; } 
+  virtual Float_t SetNeutralLeadPtInCone() const { return fIsoConePtLead[1] ; }   
+  
+  virtual Float_t SetChargedPtSumInCone () const { return fIsoConeSumPt[0]  ; } 
+  virtual Float_t SetNeutralPtSumInCone () const { return fIsoConeSumPt[1]  ; }   
+  
   //
   // Specific setters
   virtual void SetIdentifiedParticleType(Int_t pdg) { fPdg = pdg ; }
@@ -127,6 +133,13 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetTime  (Float_t tim)    { fTime        = tim  ; }
   virtual void SetNCells(Int_t   nce)    { fNCells      = nce  ; }
   virtual void SetSModNumber(Int_t sm)   { fSuperModule = sm   ; }
+  
+  // Isolation cone background info
+  virtual void SetChargedLeadPtInCone(Float_t ptl) { fIsoConePtLead[0] = ptl ; } 
+  virtual void SetNeutralLeadPtInCone(Float_t ptl) { fIsoConePtLead[1] = ptl ; }   
+
+  virtual void SetChargedPtSumInCone (Float_t pts) { fIsoConeSumPt[0]  = pts ; } 
+  virtual void SetNeutralPtSumInCone (Float_t pts) { fIsoConeSumPt[1]  = pts ; }   
   
   //
   // BTagging
@@ -168,8 +181,11 @@ class AliAODPWG4Particle : public AliVParticle {
   // Tags
   Int_t      fDecayTag;      // Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
   Bool_t     fIsolated ;     // Particle is isolated or not
-  Bool_t     fLeadingParticle ; //Particle is leading or not
+  Bool_t     fLeadingParticle ; // Particle is leading or not
 
+  Float_t    fIsoConePtLead[2]; // Pt of track [0] and calo cluster [1] with highest energy in the isolation cone
+  Float_t    fIsoConeSumPt [2]; // Sum of Pt of tracks [0] and calo clusters [1] in the isolation cone
+  
   // PID bits
   Bool_t     fDisp ;         // Dispersion bit
   Bool_t     fTof ;          // TOF bit
@@ -182,7 +198,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBtag;          // tag particle from B.
 
   
-  ClassDef(AliAODPWG4Particle, 6);
+  ClassDef(AliAODPWG4Particle, 7);
 };
 
 inline Double_t AliAODPWG4Particle::Phi() const

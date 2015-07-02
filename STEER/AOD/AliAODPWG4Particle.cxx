@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:   AliAODPWG4Particle.h $ */
-
-//-------------------------------------------------------------------------
-//     AOD objects class in use in the CaloTrackCorrelations
-//     analysis pacackge ($ALICE_ROOT/PWGGA/CaloTrackCorrelations)
-//
-//     Author: Gustavo Conesa Balbastre - CNRS-LPSC-Grenoble
-//-------------------------------------------------------------------------
-
-//-- ROOT system --
 
 //-- Analysis system
 #include "AliAODPWG4Particle.h"
@@ -38,6 +28,7 @@ fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
 fBadDist(0), fNLM(0), fM02(0),
 fTime(0),fNCells(0),fSuperModule(0),
 fDecayTag(0),fIsolated(0), fLeadingParticle(0),
+fIsoConePtLead(), fIsoConeSumPt(),
 fDisp(0), fTof(0), fCharged(0),
 fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
@@ -48,6 +39,11 @@ fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
   fTrackLabel[1] = -1;
   fTrackLabel[2] = -1;
   fTrackLabel[3] = -1;
+  
+  fIsoConePtLead[0] = 0.;
+  fIsoConeSumPt [0] = 0.;
+  fIsoConePtLead[1] = 0.;
+  fIsoConeSumPt [1] = 0.;
 }
 
 //______________________________________________________________________________
@@ -58,6 +54,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
   fBadDist(0), fNLM(0), fM02(0),
   fTime(0),fNCells(0),fSuperModule(0),
   fDecayTag(0),fIsolated(0), fLeadingParticle(0),
+  fIsoConePtLead(), fIsoConeSumPt(),
   fDisp(0), fTof(0), fCharged(0),
   fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
@@ -70,6 +67,11 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
   fTrackLabel[1] = -1;	
   fTrackLabel[2] = -1;
   fTrackLabel[3] = -1;	
+  
+  fIsoConePtLead[0] = 0.;
+  fIsoConeSumPt [0] = 0.;
+  fIsoConePtLead[1] = 0.;
+  fIsoConeSumPt [1] = 0.;
 }
 
 //______________________________________________________________________________
@@ -80,6 +82,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   fBadDist(0), fNLM(0), fM02(0),
   fTime(0),fNCells(0),fSuperModule(0),
   fDecayTag(0),fIsolated(0), fLeadingParticle(0),
+  fIsoConePtLead(), fIsoConeSumPt(),
   fDisp(0), fTof(0), fCharged(0),
   fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
@@ -92,6 +95,11 @@ AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   fTrackLabel[1] = -1;
   fTrackLabel[2] = -1;
   fTrackLabel[3] = -1;
+  
+  fIsoConePtLead[0] = 0.;
+  fIsoConeSumPt [0] = 0.;
+  fIsoConePtLead[1] = 0.;
+  fIsoConeSumPt [1] = 0.;  
 }
 
 
@@ -129,6 +137,11 @@ AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   fTrackLabel[1] = part.fTrackLabel[1];
   fTrackLabel[2] = part.fTrackLabel[2];
   fTrackLabel[3] = part.fTrackLabel[3];
+  
+  fIsoConePtLead[0] = part.fIsoConePtLead[0];
+  fIsoConeSumPt [0] = part.fIsoConeSumPt [0];
+  fIsoConePtLead[1] = part.fIsoConePtLead[1];
+  fIsoConeSumPt [1] = part.fIsoConeSumPt [1];
 }
 
 //________________________________________________________________________________
@@ -145,6 +158,11 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle & par
     fCaloLabel [1] = part.fCaloLabel[1];
     fTrackLabel[0] = part.fTrackLabel[0];
     fTrackLabel[1] = part.fTrackLabel[1];
+    
+    fIsoConePtLead[0] = part.fIsoConePtLead[0];
+    fIsoConeSumPt [0] = part.fIsoConeSumPt [0];
+    fIsoConePtLead[1] = part.fIsoConePtLead[1];
+    fIsoConeSumPt [1] = part.fIsoConeSumPt [1];
     
     fDetectorTag = part.fDetectorTag;
     fDisp     = part.fDisp;
@@ -224,6 +242,10 @@ void AliAODPWG4Particle::Print(Option_t* /*option*/) const
   if(fIsolated)        printf("      Isolated! \n");
   if(fLeadingParticle) printf("      Leading! \n");
   
+  printf("Isolation cone: \n");
+  printf("\t charged: pT Max %2.2f, Sum pT %2.2f",fIsoConePtLead[0],fIsoConeSumPt[0]);
+  printf("\t neutral: pT Max %2.2f, Sum pT %2.2f",fIsoConePtLead[1],fIsoConeSumPt[1]);
+  
   printf("PID bits :\n");
   printf("     TOF        : %d",fTof);
   printf("     Charged    : %d",fCharged);
@@ -231,5 +253,4 @@ void AliAODPWG4Particle::Print(Option_t* /*option*/) const
 
   //  printf("Fid Area  : %d\n",fFidArea);
   //  printf("Input File Index : %d\n",fInputFileIndex);
-
 }
