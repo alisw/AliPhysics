@@ -12,34 +12,11 @@
 #ifndef ALIANALYSISTASKEPCORRPP_H
 #define ALIANALYSISTASKEPCORRPP_H
 
-//#define kCentBin 1
-//#define kZvertBin 7
-//#define kpTBin 7
-//#define kPID 4
-
 class TH1F;
 class TList;
 class AliAnalysisManager;
 class AliESDtrackCuts;
-/*
-class AliAODEvent;
-class AliAODTrack;
-class AliInputEventHandler;
-class AliMCEvent;
-class AliMCEventHandler;
-class AliVParticle;
-class AliEventPoolManager;
-class AliESDEvent;
-class AliHelperPID;
-class AliAnalysisUtils;
-class AliGenEventHeader;
-class AliVEvent;
-//class AliAnalysisManager;
-class AliAnalysisUtils;
-class AliVVertex;
-class AliVertex;
-*/
-//
+
 #include "TObjArray.h"
 
 #ifndef ALIANALYSISTASKSE_H
@@ -55,15 +32,6 @@ class AliVertex;
 #include "AliPIDResponse.h"
 #include "AliAODTrack.h"
 
-//#include "AliAODEvent.h"
-//#include "AliInputEventHandler.h" // event mixing
-//#include "AliEventPoolManager.h"  // event mixing
-//#include "AliMCEvent.h"
-//#include "AliMCEventHandler.h"
-//#include "AliHelperPID.h"
-//#include "AliAnalysisUtils.h"
-//#include "AliVEvent.h"
-
 #include <vector>
 using std::vector;
 
@@ -73,7 +41,7 @@ class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
             kCentBin = 1,
             kZvertBin = 7,
             kpTBin = 7,
-            kPID = 4
+            kPID = 1
         };
 
 		enum{
@@ -89,16 +57,6 @@ class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
 		virtual void     UserExec(Option_t *option);
 		virtual void     Terminate(Option_t *);
 
-		TObjArray*    AcceptTracksReduced(AliAODEvent *event, Bool_t useCuts);
-//		float CalculatedPhiStar(float dPhi, float Zv, float Zv2, float pT, float pT2);
-        float CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign);
-
-		void SetupForMixing();
-		void FillMixedHistos(TObjArray* particle, TObjArray* particleMixed, int cBin, int zBin, float bSign, double weight);
-		void DoMixing(double cent, double zvtx, TObjArray* fMyprimRecoTracks, float bSign);
-	    double DeltaPhi(double phi1, double phi2);
-
-		int GetParticleID(AliAODTrack *track, double nsigmaCut);
 		
 	private:
 		TList           *fOutput;        // Output list
@@ -106,32 +64,41 @@ class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
 		AliEventPoolManager*  fPoolMgr; //!
 		AliPIDResponse *fPIDResponse; //!
 
-		TH1F            *fHistPt[kPID];        // Pt spectrum
-		TH1F            *fHistEta[kPID];       // pseudorapidity spectrum
-		TH1F            *fHistPhi[kPID];       // Azimuthal angle
-		TH1F            *fHistZvertex;       // primary z-vertex of each events
-		TH1F            *fHistZvertexBin[kZvertBin];       // primary z-vertex of each events
-		TH1F *fHistCent; // centrality by V0M
-		TH1F *fHistCentBin[kCentBin]; // centrality by V0M
-
-		// Nevt histo for normalisation
-		TH1F *fHistNevtSame[kCentBin][kZvertBin]; // Nevt for each categories(cBin, zBin) in same events (! removed 140505)
-		TH1F *fHistNevtMixed[kCentBin][kZvertBin]; // Nevt for each categories(cBin, zBin) in mixed events
-
 		TObjArray*        fMyprimRecoTracks; //
 		TObjArray*        fTracksMixing; //
+
+		TObjArray*    AcceptTracksReduced(AliAODEvent *event, Bool_t useCuts);
+        float CalculatedPhiStar(float dPhi, float dEta, float Zv, float Zv2, float pT, float pT2, float bSign);
+		void SetupForMixing();
+		void FillMixedHistos(TObjArray* particle, TObjArray* particleMixed, int cBin, int zBin, float bSign, double weight);
+		void DoMixing(double cent, double zvtx, TObjArray* fMyprimRecoTracks, float bSign);
+//	    double DeltaPhi(double phi1, double phi2);
+		int GetParticleID(AliAODTrack *track, double nsigmaCut);
 
 		Int_t         fMinNumTrack; // AliEventPoolManager(), Size of track buffer for event mixing (number of tracks to fill the pool)
 		Int_t         fPoolSize; // AliEventPoolManager(), max number of event to mix
 		Int_t         fMinNEventsToMix; //
 
+        double      fNsigmaCut; // nsigmaCut with TOF and TPC
+
+		TH1F            *fHistPt[kPID];        //! Pt spectrum
+		TH1F            *fHistEta[kPID];       //! pseudorapidity spectrum
+		TH1F            *fHistPhi[kPID];       //! Azimuthal angle
+		TH1F            *fHistZvertex;       //! primary z-vertex of each events
+		TH1F            *fHistZvertexBin[kZvertBin];       //! primary z-vertex of each events
+		TH1F 			*fHistCent; //! centrality by V0M
+		TH1F			*fHistCentBin[kCentBin]; //! centrality by V0M
+
+		// Nevt histo for normalisation
+		TH1F 			*fHistNevtSame[kCentBin][kZvertBin]; //! Nevt for each categories(cBin, zBin) in same events (! removed 140505)
+		TH1F 			*fHistNevtMixed[kCentBin][kZvertBin]; //! Nevt for each categories(cBin, zBin) in mixed events
+
 		// array for naming
-		char hname[10000]; char htit[10000];
+//		char hname[10000]; char htit[10000];
 
 		// Histograms for pT,trig 
-		TH1F			*fHistPtSame[kCentBin][kZvertBin]; // pT spectrum of triggered particles in same evt
-		TH1F			*fHistPtMixed[kCentBin][kZvertBin]; // pT spectrum of triggered particles in mixed evt
-
+		TH1F			*fHistPtSame[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in same evt
+		TH1F			*fHistPtMixed[kCentBin][kZvertBin]; //! pT spectrum of triggered particles in mixed evt
 
 		// Histograms for 2PC
 		// cent : 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90 (10 bins)
@@ -146,10 +113,8 @@ class AliAnalysisTaskEPCorrPP : public AliAnalysisTaskSE {
 		TH2F            *fHistNsigmaTOFpT[kCentBin];       //! nsigma_{TOF} vs pT 
 		TH2F            *fHistNsigmaITSpT[kCentBin];       //! nsigma_{ITS} vs pT 
 		TH2F			*fHistNsigmaITSTPC[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TPC}
-
-
-TH2F			*fHistNsigmaTPCTOF[kCentBin][kpTBin];       //! nsigma_{TPC} vs nsigma_{TOF}
-TH2F            *fHistNsigmaITSTOF[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TOF}
+		TH2F			*fHistNsigmaTPCTOF[kCentBin][kpTBin];       //! nsigma_{TPC} vs nsigma_{TOF}
+		TH2F            *fHistNsigmaITSTOF[kCentBin][kpTBin];       //! nsigma_{ITS} vs nsigma_{TOF}
 
 //AliAnalysisTaskCorrHadrons(const AliAnalysisTaskCorrHadrons&); // not implemented
 //AliAnalysisTaskCorrHadrons& operator=(const AliAnalysisTaskCorrHadrons&); // not implemented
