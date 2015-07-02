@@ -13,84 +13,98 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:   AliAODPWG4ParticleCorrelation.h $ */
-
-//-------------------------------------------------------------------------
-//     AOD objects class in use in the CaloTrackCorrelations
-//     analysis pacackge ($ALICE_ROOT/PWGGA/CaloTrackCorrelations)
-//     Includes correlation objects
-//
-//     Author: Gustavo Conesa Balbastre - CNRS-LPSC-Grenoble
-//-------------------------------------------------------------------------
-
-//-- ROOT system --
-
-//-- Analysis system
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliAODJet.h"
 
+/// \cond CLASSIMP
 ClassImp(AliAODPWG4ParticleCorrelation)
-
+/// \endcond
 
 //______________________________________________________________________________
+///
+/// Default Constructor.
+///
  AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
    AliAODPWG4Particle(),
    fLeadingDetector(-1), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
    fListOfObjArrays(0)
 {
-  // constructor
 }
 
 //______________________________________________________________________________
+///
+/// Constructor.
+///
+/// \param px particle momentum in x
+/// \param py particle momentum in y
+/// \param pz particle momentum in z
+/// \param e particle energy
+///
+/// particle: cluster or track
+///
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliAODPWG4Particle(),
   fLeadingDetector(-1),  fLeading(), fCorrJet(),
   fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
-  // constructor
   SetMomentum(new TLorentzVector(px, py, pz, e));
+  
   fListOfObjArrays->SetOwner(kTRUE);
-
 }
 
 //______________________________________________________________________________
+///
+/// Constructor.
+///
+/// \param p: TLorentzVector of particle kinematics.
+///
+/// particle: cluster or track
+///
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p):
   AliAODPWG4Particle(p),
   fLeadingDetector(-1),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0), fListOfObjArrays(new TList)
 {
-  // constructor
   fListOfObjArrays->SetOwner(kTRUE);
-
 }
 
 //______________________________________________________________________________
+///
+/// Constructor.
+///
+/// \param p: AliAODPWG4Particle of particle kinematics and detector other inputs.
+///
+/// particle: cluster or track
+///
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p):
   AliAODPWG4Particle(p),
   fLeadingDetector(-1),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0), fListOfObjArrays(new TList)
 {
-  // constructor
   fListOfObjArrays->SetOwner(kTRUE);
-
 }
 
 //______________________________________________________________________________
+///
+/// Destructor.
+///
 AliAODPWG4ParticleCorrelation::~AliAODPWG4ParticleCorrelation() 
 {
-  // destructor
-  if(fListOfObjArrays){
+  if(fListOfObjArrays)
+  {
     fListOfObjArrays->Clear();
     delete   fListOfObjArrays ;
   }
 }
 
 //______________________________________________________________________________
+///
+/// Clear object.
+///
 void AliAODPWG4ParticleCorrelation::Clear(const Option_t* /*opt*/) 
-{
-  // Clear
-  
+{  
   AliAODPWG4Particle::Clear(""); //delete fMomentum
   
-  if(fListOfObjArrays){
+  if(fListOfObjArrays)
+  {
     fListOfObjArrays->Clear();
     delete   fListOfObjArrays ;
   }
@@ -98,36 +112,39 @@ void AliAODPWG4ParticleCorrelation::Clear(const Option_t* /*opt*/)
 
 
 //______________________________________________________________________________
+///
+/// Copy constructor
+///
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& part) :
   AliAODPWG4Particle(part), fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
   fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet),   
   fListOfObjArrays(new TList)
 {
-  // Copy constructor
-
 }
 
 //______________________________________________________________________________
+///
+/// Assignment operator
+///
 //AliAODPWG4ParticleCorrelation& AliAODPWG4ParticleCorrelation::operator=(const AliAODPWG4ParticleCorrelation& part)
 //{
-//  // Assignment operator
-//  if(this!=&part) {
-//
+//  if(this!=&part) 
+//  {
 //    fRefJet   = part.fRefJet ;
 //    fLeading  = part.fLeading;
 //    fCorrJet  = part.fCorrJet ;
 //    fCorrBkg  = part.fCorrBkg; 
 //    fListOfObjArrays = fListOfObjArrays;
-//
 //  }
-//  
 //  return *this;
 //}
 
 //______________________________________________________________________________
+///
+/// Print information of all data members.
+///
 void AliAODPWG4ParticleCorrelation::Print(Option_t* /*option*/) const 
 {
-  // Print information of all data members
   AliAODPWG4Particle::Print("");
 
   if(GetJet()) GetJet()->Print("");
