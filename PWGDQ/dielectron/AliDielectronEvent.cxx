@@ -203,10 +203,6 @@ void AliDielectronEvent::Clear(Option_t *opt)
   for (Int_t i=0; i<fArrVertex.GetEntriesFast(); ++i){
     delete fArrVertex.RemoveAt(i);
   }
-  
-  fArrTrackP.ExpandCreateFast(1);
-  fArrTrackN.ExpandCreateFast(1);
-  fArrVertex.ExpandCreateFast(1);
 
   fArrPairs.Clear(opt);
 }
