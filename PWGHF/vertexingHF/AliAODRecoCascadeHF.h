@@ -20,6 +20,7 @@
 #include <TClass.h>
 #include "AliAODVertex.h"
 #include "AliAODv0.h"
+#include "AliAODcascade.h"
 #include "AliAODRecoDecayHF2Prong.h"
 
 class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
@@ -57,6 +58,15 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
        return 0;
       }
     return (AliAODv0*)GetDaughter(1);
+    }
+
+  // Cascade 
+  AliAODcascade* GetCascade() const {
+    if ( ! ((AliAODRecoDecay*)GetDaughter(1))->IsA()->InheritsFrom("AliAODcascade") ){
+       AliWarning("Object is not of type cascade");
+       return 0;
+      }
+    return (AliAODcascade*)GetDaughter(1);
     }
 
   // Get v0 positive track
