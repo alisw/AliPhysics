@@ -395,7 +395,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           //Initialization by Davide;
 
         TString sTitle;
-        Int_t binTrackMult=100, binPT=70, binM02=100, binETiso=110, binETUE=110, binETisoUE=110, binetacl=140,binphicl=100;
+        Int_t binTrackMult=100, binPT=70, binM02=200, binETiso=110, binETUE=110, binETisoUE=110, binetacl=100,binphicl=50;
 
         Int_t binMCMotherPDG=50,bindx=200, bindz=200, /*bincells=20,*/ binlabel=1500;
 
