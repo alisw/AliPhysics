@@ -1,6 +1,6 @@
 AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
 
-                        Bool_t  isMC                    = kFALSE, 
+                        Bool_t  isMC            = kFALSE, 
                         Int_t   triggerIndex    = 0, 
                         Int_t   configIndex     = 0, 
                         Int_t   centralityIndex = 0, 
@@ -9,7 +9,7 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
 						Bool_t isTrigger 		= kFALSE,
                         char * period           = "b",
                         Int_t EMCalThreshould   = 0,
-                        Bool_t isTender = kFALSE
+                        Bool_t isTender = kFALSE,
                 )
 {
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -28,7 +28,7 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //Config Task
         //gROOT->LoadMacro("ConfigEMCalHFEpA.C");
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
-        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender);
+        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender, period);
         
         //_______________________
         //Trigger

@@ -65,6 +65,8 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
   ,fNLS(0)
   ,fNULS(0)
   ,fTpcNcls(50)
+  ,fweight1(1)
+  ,fweight2(1)
   ,fLSPartner(0)
   ,fULSPartner(0)
   ,fHistMass(0)
@@ -111,6 +113,8 @@ AliSelectNonHFE::AliSelectNonHFE()
   ,fNLS(0)
   ,fNULS(0)
   ,fTpcNcls(50)
+  ,fweight1(1)
+  ,fweight2(1)
   ,fLSPartner(0)
   ,fULSPartner(0)
   ,fHistMass(0)
@@ -261,7 +265,7 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
     
        //added by Cris to not take same track  for tender case
       if(p1[0]==p2[0] && p1[1]==p2[1] && p1[2]==p2[2]){
-            printf("Track %d was rejected when combined with main track %d", iTrack2, iTrack1);
+			  // printf("Track %d was rejected when combined with main track %d", iTrack2, iTrack1);
             continue;
         
       }
@@ -302,8 +306,8 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
 	    }
 	  
 	  //Fill some histograms
-	  if(fCharge1*fCharge2<0 && fHistMass) fHistMass->Fill(imass);
-	  if(fCharge1*fCharge2>0 && fHistMassBack) fHistMassBack->Fill(imass);
+	  if(fCharge1*fCharge2<0 && fHistMass) fHistMass->Fill(imass, fweight1);
+	  if(fCharge1*fCharge2>0 && fHistMassBack) fHistMassBack->Fill(imass, fweight2);
 	  
 	  if(fCharge1*fCharge2<0 && fHistDCA) fHistDCA->Fill(dca12);
 	  if(fCharge1*fCharge2>0 && fHistDCABack) fHistDCABack->Fill(dca12);
@@ -364,8 +368,8 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
 	    }
 	  
 	  //Fill some histograms
-	  if(fCharge1*fCharge2<0 && fHistMass) fHistMass->Fill(imass);
-	  if(fCharge1*fCharge2>0 && fHistMassBack) fHistMassBack->Fill(imass);
+	  if(fCharge1*fCharge2<0 && fHistMass) fHistMass->Fill(imass, fweight1);
+	  if(fCharge1*fCharge2>0 && fHistMassBack) fHistMassBack->Fill(imass, fweight2);
 	  
 	}
       else

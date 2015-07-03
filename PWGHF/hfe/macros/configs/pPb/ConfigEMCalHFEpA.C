@@ -15,7 +15,8 @@ Bool_t isAOD = kFALSE,
 Bool_t isEMCal = kFALSE,
 Bool_t isTrigger = kFALSE,
 Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
-Bool_t isTender = kFALSE
+Bool_t isTender = kFALSE,
+char * period = "b"											
 )
 
 {
@@ -98,14 +99,31 @@ Bool_t isTender = kFALSE
 	if(EMCalThreshould==1 && triggerIndex==2) task->SetEMCalTriggerEG2();
 	
 	if(isEMCal) task->SetUseEMCal();
-		//Bool_t isTrigger = kFALSE;
+		
 	
 	if(isTrigger){
 		task->SetUseTrigger();
 		task->SetUseShowerShapeCut(kTRUE);
-		//task->SetM02Cut(0.0,0.3);
-		//task->SetM20Cut(0.0,0.3);
+				
+		if(configIndex==120)task->SetM20Cut(0.0,0.2);
+		else if(configIndex==121)task->SetM20Cut(0.0,0.4);
+		else if(configIndex==122)task->SetM20Cut(0.0,0.6);
+		else if(configIndex==123)task->SetM20Cut(0.0,2);
+		else task->SetM20Cut(0.0,0.3);
 		
+		if(configIndex==124)task->SetM02Cut(0.0,0.2);
+		else if(configIndex==125)task->SetM02Cut(0.0,0.4);
+		else if(configIndex==126)task->SetM02Cut(0.0,0.5);
+		else if(configIndex==127)task->SetM02Cut(0.0,0.6);
+		else task->SetM02Cut(0.0,2);
+			
+		
+	}
+	if(period == "d"){
+		if(configIndex==200){
+			task->SetTPCCalibration(kTRUE);
+			task->SetTPC_mean_sigma(0.6, 1.1);
+		}
 	}
 	
 	if(isTender) task->SetUseTender();
@@ -118,13 +136,7 @@ Bool_t isTender = kFALSE
 	else if(configIndex==108)  task->SetdcaCut(0.1,0.2);//r,z
 	//else task->SetdcaCut(1,2);//r,z
 	
-	/*	
-	if(configIndex==100){
-		task->SetUseShowerShapeCut(kTRUE);
-		//task->SetM02Cut(0.0,0.3);
-		task->SetM20Cut(0.0,0.3);
-	}
-	*/
+
 	
 	task->SetBackground(kTRUE);
 	
@@ -250,22 +262,16 @@ Bool_t isTender = kFALSE
 	else if (configIndex==72) params[0] = 0;
 	else if (configIndex==73) params[0] = 0.25;
 	else if (configIndex==74) params[0] = -1.75;
-	
-	//for 13d which is shifted
-	else if (configIndex==200) params[0] = -0.5;
-
 	else params[0] = -1;
+	if(period == "d")params[0] = -0.5;
 	
 	if(configIndex==75)Double_t max=1.5;
 	else if(configIndex==76)Double_t max=2.0;
 	else if(configIndex==77)Double_t max=2.5;
 	else if(configIndex==78)Double_t max=3.5;
 	else if(configIndex==79)Double_t max=4.0;
-    
-	//for 13d which is shifted
-	else if(configIndex==200)Double_t max=3.9;
-	
 	else Double_t max=3.0;
+	if(period == "d")Double_t max=3.9;
 	
 	
 		
@@ -354,12 +360,7 @@ Bool_t isTender = kFALSE
 		task->SetEoverPCut(0.86,1.3);
 	}
 	
-	//shower shape cut for E/p default
-	if(configIndex==119){
-		task->SetUseShowerShapeCut(kTRUE);
-			//task->SetM02Cut(0.0,0.3);
-		task->SetM20Cut(0.0,0.5);
-	}
+
 	
 	
 	
