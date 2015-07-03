@@ -110,16 +110,6 @@ Bool_t AliAlgAux::PreloadOCDB(int run, const TMap* cdbMap, const TList* cdbList)
     man->SetSpecificStorage(key.Data(),uri.Data(),ver,sver);
   }
   //
-  // now set remaining objects from the list as specific storages
-  TIter nextL(cdbList);
-  while ( (ostr=(TObjString*)nextL()) ) {
-    AliCDBId *cdbIDF = AliCDBId::MakeFromString(ostr->GetString());
-    cdbIDF->Print();
-    man->SetSpecificStorage(cdbIDF->GetPath().Data(),uriDef.Data(),
-			    cdbIDF->GetVersion(),cdbIDF->GetSubVersion());
-    delete cdbIDF;
-  }
-  //
   return kTRUE;
 }
 
