@@ -826,9 +826,9 @@ void AliHFSystErr::InitD0toKpi2010ppLowPtAn() {
   fRawYield->SetBinContent(1,0.14);
   fRawYield->SetBinContent(2,0.14);
   fRawYield->SetBinContent(3,0.10);
-  fRawYield->SetBinContent(4,0.12);
-  fRawYield->SetBinContent(5,0.12);
-  fRawYield->SetBinContent(6,0.16);
+  fRawYield->SetBinContent(4,0.10);
+  fRawYield->SetBinContent(5,0.10);
+  fRawYield->SetBinContent(6,0.14);
   fRawYield->SetBinContent(7,0.18);
   fRawYield->SetBinContent(8,0.18);
   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.2);
@@ -933,9 +933,9 @@ void AliHFSystErr::InitD0toKpi2013pPb0100LowPtAn(){
   fRawYield->SetBinContent(3,0.10);
   fRawYield->SetBinContent(4,0.10);
   fRawYield->SetBinContent(5,0.10);
-  fRawYield->SetBinContent(6,0.105);
-  fRawYield->SetBinContent(7,0.11);
-  fRawYield->SetBinContent(8,0.11);
+  fRawYield->SetBinContent(6,0.10);
+  fRawYield->SetBinContent(7,0.10);
+  fRawYield->SetBinContent(8,0.10);
   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.11);
 
   // Cuts efficiency (from cuts variation)
