@@ -1056,6 +1056,8 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 			       new TGeoRotation("",thetaW,0,0) ) );
   }
 
+  vM->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
   // Some debugging if requested
   if(GetDebug(1)){
     vM->PrintNodes();
@@ -3043,6 +3045,8 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,const TGeoManager *mgr)
 			      new TGeoRotation("",thetaB,0,0)));
   }
 
+  vC->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
   // Finally put everything in the mother volume
   moth->AddNode(cfcylinder,1,0);
 
@@ -3817,7 +3821,7 @@ void AliITSv11GeometrySupport::TraySupportsSideA(TGeoVolume *moth,
 			   new TGeoCombiTrans( 0, 0, zloc,
 					       new TGeoRotation("",180,0,0)));
 
-
+  trayASuppStruct->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
   // Finally put everything in the mother volume
   moth->AddNode(trayASuppStruct,1,0);
 
@@ -4671,6 +4675,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 		      new TGeoCombiTrans( xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
 
+
   // To simplify following placement in MARS, origin is on top
   yloc = -kExternalTrayHigh + kExternalTrayThick/2;
   zloc = kExternalTrayLen/2;
@@ -4735,6 +4740,8 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 		      new TGeoCombiTrans( xloc, 0, 0,
 					 new TGeoRotation("",90,-90,-90)));
 
+  cableTrayAForw->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  cableTrayAExt->GetShape()->ComputeBBox(); 
 
   // Finally put everything in the mother volume
   Double_t rExtTray = kTrayAR2Trans + kExternalTrayHigh;
@@ -5496,6 +5503,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   cableTrayC->AddNode(traySideCCoaxMeg, 1,
 		      new TGeoTranslation( 0, 0, zloc));
 
+  cableTrayC->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   // Finally put everything in the mother volume
   for (Int_t jt = 0; jt < kNumTraysSideC/2; jt++) {
@@ -6352,6 +6360,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
 
+  cableTrayA->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   // Finally put everything in the mother volume
   Double_t rforw = kTrayARTrans + kExternTrayTotalHeight +
@@ -7109,7 +7118,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
   trayStructure->AddNode(ppsPCBBoards, 1,
 			 new TGeoTranslation( xloc, yloc , 0) );
 
-
+  trayStructure->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
   // Finally put everything in the mother volume
   alphafold = kSideCFoldAngle;
 
@@ -7608,7 +7617,10 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
   cableTrayAExt->AddNode(extPolyUr,1,
 		        new TGeoCombiTrans( xloc, yloc, 0,
 		        new TGeoRotation("",-90, 90, 90)        ) );
-
+  
+  cableTrayAForw->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  cableTrayAExt->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  
 
   // Finally put everything in the mother volume
   zloc = kTrayAZTrans;
@@ -7851,6 +7863,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
   trayStructure->AddNode(trayWater,1,0);
   trayStructure->AddNode(trayPolyUr,1,0);
 
+  trayStructure->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   // Finally put everything in the mother volume
   alphafold = kSideCFoldAngle;
@@ -8877,6 +8890,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySupport::CreateSDDSSDTraysSideC(
 
 
   // Finally return what we made up
+  cableTrayC->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   return cableTrayC;
 }

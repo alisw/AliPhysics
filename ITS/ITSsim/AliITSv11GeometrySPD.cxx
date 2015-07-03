@@ -315,6 +315,7 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth, TGeoManager *mgr)
 	    vCarbonFiberSector[is] = new TGeoVolumeAssembly("ITSSPDCarbonFiberSectorV");
 	    vCarbonFiberSector[is]->SetMedium(medSPDcf);
 	    CarbonFiberSector(vCarbonFiberSector[is], is, xAAtubeCenter0, yAAtubeCenter0, mgr);
+	    vCarbonFiberSector[is]->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
     }
 
     // Compute the radial shift out of the sectors
@@ -363,6 +364,9 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth, TGeoManager *mgr)
         angle += kSectorRelativeAngle;
         secRot->RotateZ(kSectorRelativeAngle);
     } // end for i
+
+    vcenteral->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
     if(GetDebug(3)) moth->PrintNodes();
     delete secRot;
 
@@ -1172,6 +1176,8 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
 					    mas[1]+h*SinD(180-t),
 					    mas[2],
 					    new TGeoRotation("",90+t,90,90)));
+
+    vM0->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
     if(GetDebug(3)){
         vM0->PrintNodes();
@@ -2066,6 +2072,9 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
         if (isRight) z += shift;
         else z -= shift;
     } // end for i
+
+    container->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
     return container;
 }
 //___________________________________________________________________
@@ -2353,6 +2362,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateMCM(Bool_t isRight,
     // add cap top
     mcmAssembly->AddNode(volCapTop, 1, gGeoIdentity);
 
+    mcmAssembly->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
     return mcmAssembly;
 }
 
@@ -2638,6 +2649,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     sizes[3] = yRef + pt1000Y;
     sizes[4] = zRef + pt1000Z[2];
     sizes[5] = zRef + pt1000Z[7];
+
+    container->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
     return container;
 }
@@ -3005,6 +3018,12 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     zloc -= shWatCool->GetDz();
     container[4]->AddNode(volFitt, 1,
 			  new TGeoTranslation(0, -yloc, zloc));
+
+    container[0]->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+    container[1]->GetShape()->ComputeBBox();
+    container[2]->GetShape()->ComputeBBox();
+    container[3]->GetShape()->ComputeBBox();
+    container[4]->GetShape()->ComputeBBox();
 
     // Finally create the list of assemblies and return it to the caller
     TList* conemodulelist = new TList();
@@ -3642,6 +3661,9 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
       zpos += kCoolManifCollDZ;
     }
 
+    coolmanifA->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+    coolmanifC->GetShape()->ComputeBBox();
+
     // Now add the cooling tubes to the assembly
     CreateCoolingTubes(coolmanifA, kFALSE);
     CreateCoolingTubes(coolmanifC, kTRUE);
@@ -4200,6 +4222,8 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
     sizes[5] = zBus + busSize[4];
     sizes[6] = zBus + busSize[5];
 
+    container->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
     return container;
 }
 //______________________________________________________________________
@@ -4278,6 +4302,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateStave(Int_t layer,
     container->AddNode(hstaveL, 1);
     container->AddNode(hstaveR, 1);
 
+    container->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
     return container;
 }
 //______________________________________________________________________
